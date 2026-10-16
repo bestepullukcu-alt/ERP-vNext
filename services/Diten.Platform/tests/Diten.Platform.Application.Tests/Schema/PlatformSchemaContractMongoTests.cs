@@ -47,7 +47,7 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
         // this one is reading it back, so the machine-wide lock comes first.
         await PlatformMongoTestLock.EnsureHeldAsync();
 
-        var settings = MongoClientSettings.FromConnectionString(PlatformMongoTestConnection.RequireConnectionString());
+        var settings = MongoClientSettings.FromConnectionString(await PlatformMongoTestConnection.RequireConnectionStringAsync());
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         /*
          * ⚠ THE SAME GUID REPRESENTATION PRODUCTION USES, AND IT IS NOT OPTIONAL. MongoIntegrationHarness

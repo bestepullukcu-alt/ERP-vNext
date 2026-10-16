@@ -42,6 +42,14 @@ public sealed class User : EntityBase
     public string? PlatformActorType { get; private set; }
 
     /// <summary>
+    /// BL-521 FIX6 item 13 — A PLATFORM ACCOUNT: an account whose Auth record carries a platform actor type (set when Platform
+    /// provisions or syncs an administrator, and by the seed). The platform system tenant is ALSO a business tenant (its
+    /// ordinary users are ordinary users), so "platform" is a property of the ACCOUNT, never of the tenant: the tenant
+    /// sign-in doors refuse such an account and a tenant actor never sees or acts on one. Computed, not stored.
+    /// </summary>
+    public bool IsPlatformAccount => !string.IsNullOrWhiteSpace(PlatformActorType);
+
+    /// <summary>
     /// WP-INFRA-AUTH-ACCOUNT-KIND-01 — the account-kind FACT (Unknown/Human/Service). Stored as its number; missing
     /// on older documents → <see cref="AccountKind.Unknown"/>. Mutated only through <see cref="SetAccountKind"/>.
     /// </summary>
@@ -54,6 +62,25 @@ public sealed class User : EntityBase
     public void SetAccountKind(AccountKind kind)
     {
         AccountKind = kind;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// WP-EMAIL-LANG-01 — the language this user wants mail in (one of <see cref="UserLanguages.Supported"/>); null = no
+    /// choice, the tenant's language applies. Missing on documents written before the field: it reads as null.
+    /// </summary>
+    public string? PreferredLanguage { get; private set; }
+
+    /// <summary>Sets or clears (null / blank) the preference. A value outside the supported set is refused here too, so
+    /// no caller can store one.</summary>
+    public void SetPreferredLanguage(string? language)
+    {
+        if (!UserLanguages.TryNormalize(language, out var normalized))
+        {
+            throw new ArgumentException("Unsupported language.", nameof(language));
+        }
+
+        PreferredLanguage = normalized;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -73,6 +100,14 @@ public sealed class User : EntityBase
     }
 
     /// <summary>
+    /// BL-529 FIX8 item 1 (b) — an account an administrator switched off, whether or not it carries the mark: marked (every
+    /// deactivation since BL-529), or inactive and NOT a pending invitation (a deactivation from before BL-529, which set
+    /// no mark). A set-password link never switches such an account on; only an administrator's activation does. A pending
+    /// invitation is inactive because it was never activated, and its link is what activates it.
+    /// </summary>
+    public bool IsDeactivatedByAdministrator() => DeactivatedByAdministrator || (!IsActive && !IsInvitationPending());
+
+    /// <summary>
     /// WP-AUTH-INVITED-LIFECYCLE-01 — the account was INVITED and its owner has never set a password: it holds only
     /// the unusable placeholder hash, so it cannot sign in whatever <see cref="IsActive"/> says. Derived, never stored.
     /// Each fact rules out one look-alike: <see cref="MustChangePassword"/> (not a normal account),
@@ -82,8 +117,46 @@ public sealed class User : EntityBase
     /// </summary>
     public bool IsInvitationPending() => MustChangePassword && !EmailConfirmed && LastLoginAt is null;
 
+    /// <summary>
+    /// BL-529 FIX2 — an administrator switched this account off (as opposed to an invitation that is simply not active
+    /// yet). A set-password link does not switch such an account back on; only an administrator's activation does.
+    /// </summary>
+    public bool DeactivatedByAdministrator { get; private set; }
+
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
+
+    /// <summary>
+    /// BL-529 FIX2 — the administrator's deactivation: off, and marked so a link cannot undo it. FIX3 — a pending reset link
+    /// goes with it (whichever door deactivates: the kebab or the edit form); a pending INVITATION keeps its link (the
+    /// mark alone stops it, and "Resend invitation" lifts the mark).
+    /// </summary>
+    public void DeactivateByAdministrator()
+    {
+        IsActive = false;
+        DeactivatedByAdministrator = true;
+        if (!IsInvitationPending())
+        {
+            ClearPasswordResetToken();
+        }
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>BL-529 FIX3 — "Resend invitation" of a marked pending invitation: the administrator asks for it again.</summary>
+    public void LiftAdministratorDeactivation()
+    {
+        DeactivatedByAdministrator = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>BL-529 FIX2 — the administrator's activation lifts the mark.</summary>
+    public void ActivateByAdministrator()
+    {
+        IsActive = true;
+        DeactivatedByAdministrator = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
     public void ConfirmEmail() => EmailConfirmed = true;
     public void SetPlatformActorType(string actorType)
     {
@@ -123,18 +196,47 @@ public sealed class User : EntityBase
         LockoutEnd = null;
     }
 
-    public void RecordLoginFailure()
+    /// <summary>BL-529 — a password set through a link starts clean: no failed-attempt count, no lockout.</summary>
+    public void ClearLockout()
     {
-        RecordLoginFailure(5, 15);
+        FailedLoginAttempts = 0;
+        LockoutEnd = null;
     }
 
-    public void RecordLoginFailure(int maxFailedAttempts, int lockoutDurationMinutes)
+    /// <summary>BL-529 — an outstanding set-password / reset link stops working (a deactivated account keeps none).</summary>
+    public void ClearPasswordResetToken()
     {
-        FailedLoginAttempts++;
-        if (FailedLoginAttempts >= maxFailedAttempts)
+        PasswordResetTokenHash = null;
+        PasswordResetTokenExpiresAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX5 — the lockout as the store writes it: the lock starts and the count starts over.</summary>
+    public void LockOut(int lockoutDurationMinutes)
+    {
+        LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+        FailedLoginAttempts = 0;
+    }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX6 N4 — one failed sign-in on this copy, by the store's rule (FIX5): while locked it
+    /// is not counted; otherwise the count goes up, and the failure that reaches the threshold locks the account and starts the
+    /// count over. True when THIS failure started the lock. (Before, the count was never reset: a caller that used this would
+    /// bring the permanent lock back.)</summary>
+    public bool RecordLoginFailure(int maxFailedAttempts, int lockoutDurationMinutes)
+    {
+        if (LockoutEnd is { } end && end > DateTime.UtcNow)
         {
-            LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+            return false;
         }
+
+        FailedLoginAttempts++;
+        if (FailedLoginAttempts < maxFailedAttempts)
+        {
+            return false;
+        }
+
+        LockOut(lockoutDurationMinutes);
+        return true;
     }
 
     public void UpdatePassword(string newHashedPassword)

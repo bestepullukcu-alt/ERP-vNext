@@ -1,0 +1,33 @@
+@using Diten.Web.Views.MasterDataManagement.Items
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemsIndex> Localizer
+@{
+    // The table card is the shared component (BL-440): the page describes it, _ListShell renders it. Every header is
+    // localized HERE; the shell produces no text.
+    //
+    // SERVER data (MOD-0290-FU04 §11): MDM pages, searches and filters; it sorts by code only, so index.js marks no
+    // column orderable except the code.
+    //
+    // NO SELECTION COLUMN, deliberately: items are never bulk-changed or deleted (GxP — every lifecycle step is its
+    // own request with a reason), so a checkbox would select into nothing.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-items",
+        DataMode = "server",
+        Slug = "items",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["CanonicalCode"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Name"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["MaterialType"].Value },
+            new DataTableColumnViewModel { Header = Localizer["BaseUomCode"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Stockable"].Value },
+            new DataTableColumnViewModel { Header = Localizer["LifecycleStatus"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

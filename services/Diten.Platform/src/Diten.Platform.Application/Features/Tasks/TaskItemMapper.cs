@@ -57,7 +57,13 @@ public static class TaskItemMapper
         /// </summary>
         decimal spentHours,
         bool reviewOutstanding = false,
-        bool reviewRejected = false) => new(
+        bool reviewRejected = false,
+        /// <summary>
+        /// BL-509 — WHO is reading. Who a request was put to, and a decline's reason, reach only the two people
+        /// they concern (<see cref="TaskRequestPolicy.MaySeeAddressee"/> / <see cref="TaskRequestPolicy.MaySeeDecline"/>).
+        /// The default names nobody, so a caller that forgets to say gets neither field — fail-closed.
+        /// </summary>
+        Guid viewerUserId = default) => new(
         task.Id,
         task.Title,
         task.Description,
@@ -133,5 +139,8 @@ public static class TaskItemMapper
                 r.ListVersionId))
             .ToList(),
         task.TaskTypeId,
-        task.ClosureNote);
+        task.ClosureNote,
+        TaskRequestPolicy.MaySeeAddressee(task, viewerUserId) ? task.OfferedToUserId : null,
+        task.IsRequest,
+        TaskRequestPolicy.MaySeeDecline(task, viewerUserId) ? task.OfferDeclineReason : null);
 }

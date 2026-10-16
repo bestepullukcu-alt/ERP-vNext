@@ -10,7 +10,7 @@ Read AGENTS.md
 ```
 
 ⚠ Claude Code **yalnız bu dosyayı** otomatik yükler. `AGENTS.md`, `.antigravity/rules/`
-(41 kural), `.antigravity/agents/` (20 ajan) ve `.antigravity/workflows/` (18 akış)
+(44 kural), `.antigravity/agents/` (20 ajan) ve `.antigravity/workflows/` (18 akış)
 **otomatik yüklenmez** — 2026-09-08'de canlı oturumda ölçüldü: bağlamdaki tek proje
 dosyası `MEMORY.md`'ydi.
 
@@ -35,13 +35,17 @@ set**. Tamamı için `AGENTS.md` §6.1 Kural Haritası.
 | **Ekran** | Yetkisiz kullanıcıya sayfa iskeleti çizilmez (UAS-001), yönlendirme yapılmaz. |
 | **Belge** | `docs/` köküne dosya konmaz; yeri `.antigravity/rules/docs-organization.md` beş soruyla belirlenir. |
 | **Test** | Kural, kendi kopyasıyla değil üretim koduyla ölçülür. Sabotaj kanıtı olmayan guard, guard değildir. |
+| **Başka modül** | İşin kapsamı dışındaki bir modülde düzeltme gerekirse dokunmadan önce sor: "bunu da düzeltelim mi?" (XMC-001). |
+| **Kayıt kodu** | Yeni kayıt türünün görünen kodu `MG-ORG-000042` biçiminde ortak servisten gelir (RCS-001). |
 
 ## Portlar
 
 ```
 5000 Gateway · 5001 Web · 5056 Auth · 5057 Platform · 5058 DevEnablement
-5059 MDM · 5060 HCM · 5061 CRM · 5065 Procurement · 5066 SupplyChain · 5067 Inventory
-(bant 5061+ uzatıldı — tam tablo ve notlar AGENTS.md §3; sıradaki boş port 5068)
+5059 MDM · 5060 HCM · 5061 CRM · 5062 PPM · 5063 HumanCapital · 5064 TEP · 5065 Procurement
+5066 SupplyChain · 5067 Inventory · 5070 Manufacturing · 5011 PVG · 5004 ESBP/teslim/yükleme
+(bant 5061+ uzatıldı — tam tablo ve notlar AGENTS.md §3 (5062–5064 orada "drift" notunda); sıradaki boş port 5068;
+ağ geçidi testinin bildiği küme: OcelotConfigurationTests.KnownDownstreamPorts)
 ```
 
 ## Neden bu dosya var

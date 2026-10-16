@@ -147,6 +147,36 @@ public sealed class AuditOutboxWorkerTests
     }
 
     [Fact]
+    public async Task The_duplicate_check_asks_by_the_messages_idempotency_key_and_not_by_correlation()
+    {
+        // INTX FIX2 A3(b) — a record already written under another message's correlation must not hide this one, and
+        // one under this correlation but another key must not swallow it: the question is the key, on its own index.
+        var item = CreateItem();
+        var sameCorrelationOtherKey = new AuditEvent
+        {
+            TenantId = item.TenantId,
+            CorrelationId = item.CorrelationId,
+            Category = AuditCategory.Security,
+            EntityType = "TestEntity",
+            Operation = AuditOperation.Update,
+            Outcome = AuditOutcome.Succeeded,
+            SourceService = "Diten.Platform",
+            Metadata = new Dictionary<string, object?>
+            {
+                [AuditOutboxPayloadMapper.OutboxIdempotencyMetadataKey] = "another-message"
+            }
+        };
+        var outbox = new FakeAuditOutboxProcessingRepository(item);
+        var auditEvents = new FakeAuditEventRepository(sameCorrelationOtherKey);
+
+        await CreateProcessor(outbox, auditEvents).ProcessBatchAsync();
+
+        Assert.Equal([item.IdempotencyKey], auditEvents.KeyLookups);
+        Assert.Single(auditEvents.Appended);
+        Assert.Equal(0, auditEvents.CorrelationLookups);
+    }
+
+    [Fact]
     public async Task Processor_ShouldHandleEnumParseErrorsAsControlledDeadLetter()
     {
         var item = CreateItem(payloadOverrides: new Dictionary<string, object?> { ["Operation"] = "Explode" });
@@ -347,8 +377,21 @@ public sealed class AuditOutboxWorkerTests
             return Task.FromResult(new AuditEventSearchResult(_existingEvents, _existingEvents.Count));
         }
 
+        public Task<bool> ExistsByOutboxIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
+        {
+            KeyLookups.Add(idempotencyKey);
+            return Task.FromResult(_existingEvents.Any(auditEvent =>
+                auditEvent.Metadata.TryGetValue("AuditOutboxIdempotencyKey", out var value)
+                && string.Equals(value?.ToString(), idempotencyKey, StringComparison.Ordinal)));
+        }
+
+        public List<string> KeyLookups { get; } = [];
+
+        public int CorrelationLookups { get; private set; }
+
         public Task<IReadOnlyList<AuditEvent>> GetByCorrelationIdAsync(Guid correlationId, CancellationToken ct = default)
         {
+            CorrelationLookups++;
             var events = _existingEvents.Where(auditEvent => auditEvent.CorrelationId == correlationId).ToList();
             return Task.FromResult(events as IReadOnlyList<AuditEvent>);
         }

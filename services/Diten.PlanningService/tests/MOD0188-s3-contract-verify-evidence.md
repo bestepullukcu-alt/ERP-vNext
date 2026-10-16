@@ -1,0 +1,12 @@
+# MOD-0188 S3 — Demand v2 DRAFT contract verification (2026-10-14)
+
+Scope: owned DRAFT syntax and independent contract-side checksum tests only. No central freeze/publication, Gateway route, event delivery, or AC closure.
+
+- Baseline: branch `feature/sce/mod-0188-demand-planning`, HEAD `870c9157ce61d70d38d7c1882cd94c086e93fdfe`. Existing dirty pack, `2026-10-13-evidence-baseline.md`, and `CT-QUEUE.tsv` were preserved.
+- OpenAPI 3.1 validator: `openapi-spec-validator==0.9.0` from official PyPI in a unique temporary user directory; Python command `python -m openapi_spec_validator services/Diten.PlanningService/contracts/drafts/demand-v2.openapi.yaml`; final exit `0`, `OK`. Initial validation failed because unquoted commas created unexpected YAML properties in response descriptions. Only those DRAFT descriptions were quoted. Temporary validator directory removed.
+- Independent test: `IndependentPublishedChecksumMongoTests.cs` reads persisted manifest and parts directly from isolated Mongo and encodes the DRAFT `x-checksum-canonicalization` rules without calling `PublishedSnapshotIntegrity.Calculate`. CANONICAL-1 manual and CANONICAL-2 Method digests both matched the stored SHA-256. Changing a quantity or Method policy version in the independent projection changed the digest.
+- Mongo: own `mongod` PID 4352, loopback `127.0.0.1:31994`, `rs-mod0188`, fresh repo-outside temporary folder, test DB `mod0188_tests`, explicit `MOD0188_TEST_MONGO_URI`. Replica set reached PRIMARY. Focused tests `2/2`, skipped `0`, exit `0`. Transient test-only Method policy encoder sabotage: targeted test failed `1/1`, exit `1`; restored source, focused tests `2/2`, skipped `0`, exit `0`.
+- Full MOD-0188 tests: `341/341`, skipped `0`, exit `0`. API build: exit `0`, `0 Uyarı`, `0 Hata`. Commands used user-local .NET 8 SDK `C:\Users\epenc\AppData\Local\DitenSdk\dotnet8\dotnet.exe` with `--no-restore`.
+- Cleanup measured: own Mongo PID gone, port free, own temporary data/log folder gone. Test-only sabotage restored. No staged files, commit, push or PR.
+
+Limit: This confirms the DRAFT's byte-level algorithm against persisted fixture-backed Published Mongo documents. Independent checksum recomputation from the current public HTTP projection remains an open consumer contract/test gate, as the DRAFT itself states; this does not freeze the contract or close acceptance criteria.

@@ -24,6 +24,11 @@
     }
 </div>
 
+@* WP-MDM-BRAND-ACCEPT-01 FIX2 (M9) — the archive proxy validates this token; a cross-site POST cannot archive. *@
+<form id="productListToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
+
 @* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
 <partial name="~/Views/MasterData/Products/_DataTable.cshtml" />
 

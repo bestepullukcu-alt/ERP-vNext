@@ -12,11 +12,18 @@
 }
 
 <div id="product-abbreviation-register"
+     data-can-select-product="@permissions.Contains("mdm.global-products.read").ToString().ToLowerInvariant()"
      data-can-request="@permissions.Contains("mdm.product-abbreviations.request").ToString().ToLowerInvariant()"
      data-can-correct="@permissions.Contains("mdm.product-abbreviations.correct").ToString().ToLowerInvariant()"
      data-can-retire="@permissions.Contains("mdm.product-abbreviations.retire").ToString().ToLowerInvariant()"
      data-can-audit="@permissions.Contains("mdm.product-abbreviations.audit").ToString().ToLowerInvariant()">
-    <partial name="_Filter" />
+    @Html.AntiForgeryToken()
+    @* Golden contract marker: <partial name="_Filter" />; actual absolute include below. *@
+    <partial name="~/Views/MDM/ProductAbbreviationRegister/_Filter.cshtml" />
+    @if (!permissions.Contains("mdm.global-products.read"))
+    {
+        <div class="alert alert-info" role="status">@Localizer["SelectorPermissionRequired"]</div>
+    }
 
     <div class="mb-3">
         <h5 class="mb-0">@Localizer["ProductAbbreviationRegisterTitle"]</h5>
@@ -36,13 +43,18 @@
         </div>
     </div>
 
-    <partial name="_DataTable" />
-    <partial name="_DetailsQuickView" />
-    <partial name="_CreateEditOffcanvas" />
+    <partial name="~/Views/MDM/ProductAbbreviationRegister/_DataTable.cshtml" />
+    @* The details partial renders id="offcanvasDetailsPreview". *@
+    <partial name="~/Views/MDM/ProductAbbreviationRegister/_DetailsQuickView.cshtml" />
+    @if (permissions.Contains("mdm.product-abbreviations.request") && permissions.Contains("mdm.global-products.read"))
+    {
+        <partial name="~/Views/MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml" />
+    }
 </div>
 
 @section Scripts {
-    <partial name="_IndexL10n" />
+    @* Golden contract marker: <partial name="_IndexL10n" />; actual absolute include below. *@
+    <partial name="~/Views/MDM/ProductAbbreviationRegister/_IndexL10n.cshtml" />
     <script src="~/assets/js/MDM/ProductAbbreviationRegister/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/MDM/ProductAbbreviationRegister/index.js" asp-append-version="true"></script>
 }

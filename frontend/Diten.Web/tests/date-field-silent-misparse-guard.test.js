@@ -1,5 +1,3 @@
-const fs = require("fs");
-const path = require("path");
 const { loadScript } = require("./load-script");
 
 /*
@@ -12,17 +10,13 @@ const { loadScript } = require("./load-script");
  * — the same choice date-field-never-dies-silently.test.js already made for this component instead of loading
  * the real vendor bundle into jsdom.
  *
- * Organization/PositionAssignments/form.js's OWN copy (`guardDateAgainstSilentMisparse`, altInput/altFormat
- * shape — that file cannot depend on this component being loaded, since its host view never loads it) is
- * checked below by structural equivalence: it must implement the identical close-time contract and actually be
- * wired to the flatpickr instance it creates.
+ * Organization/PositionAssignments/form.js no longer carries its own copy (XMC-001): it delegates to this guard,
+ * and that delegation is measured through the real form in position-assignments-date-guard.test.js. Every entry
+ * path (Enter, Tab / blur, click outside) × field shape (plain, altInput, enableTime) is measured with the real
+ * flatpickr in date-field-typed-commit-paths.test.js.
  */
 
 const DATEFIELD = "wwwroot/assets/js/shared/diten-datefield.js";
-const repoRoot = path.resolve(__dirname, "..", "..", "..");
-const POSITION_ASSIGNMENTS_FORM = path.join(
-  repoRoot, "frontend", "Diten.Web", "wwwroot", "assets", "js", "Organization", "PositionAssignments", "form.js"
-);
 
 const fakeInstance = ({ altInput = false } = {}) => {
   const input = document.createElement("input");
@@ -120,25 +114,8 @@ describe("BL-391: DitenDateField.guardAgainstSilentMisparse never lets a misread
   });
 });
 
-describe("BL-391: PositionAssignments/form.js's OWN altInput guard matches the same close-time contract", () => {
-  const source = fs.readFileSync(POSITION_ASSIGNMENTS_FORM, "utf8");
-
-  test("guardDateAgainstSilentMisparse re-renders through the SAME altFormat the field displays, not dateFormat", () => {
-    expect(source).toContain("instance.formatDate(resolved, instance.config.altFormat)");
-  });
-
-  test("a mismatch or an unresolved date clears the field and marks the VISIBLE (altInput) element invalid", () => {
-    expect(source).toContain("if (!resolved || reformatted !== raw) { instance.clear(); target.classList.add('is-invalid'); }");
-    expect(source).toContain("const target = instance.altInput || instance.input;");
-  });
-
-  test("the raw typed text is captured on 'input', before flatpickr's own close-time reformat can overwrite it", () => {
-    expect(source).toContain("target.addEventListener('input', () => { lastTyped = target.value; });");
-  });
-
-  test("the guard is actually wired to the flatpickr instance initDatePickers() just created", () => {
-    const initFn = source.slice(source.indexOf("const initDatePickers"), source.indexOf("const dateOrNull"));
-    expect(initFn).toContain("window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });");
-    expect(initFn).toContain("guardDateAgainstSilentMisparse(el._flatpickr);");
-  });
-});
+/*
+ * WP-WCN-FIX-01 (XMC-001, BL-588) — PositionAssignments/form.js no longer carries its OWN copy of this guard (the copy
+ * had the shared one's BL-588 defect too). It calls `DitenDateField.guardAgainstSilentMisparse(instance, 'altFormat')`;
+ * that delegation and the view's script order are asserted in date-field-first-pick.test.js, against the real flatpickr.
+ */

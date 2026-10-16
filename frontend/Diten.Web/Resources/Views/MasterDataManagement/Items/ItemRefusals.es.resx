@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>Este artículo aún no se puede activar: complete los campos de stock indicados abajo y vuelva a enviarlo.</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>Control por lote</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>Unidad base</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>Condiciones de almacenamiento (al menos una)</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>Conversiones de unidades (cada unidad a cuatro pasos como máximo de la unidad base)</value></data>
+  <data name="RefusalApprovalForbidden" xml:space="preserve"><value>No tiene permiso para enviar, solicitar ni retirar la activación de este artículo.</value></data>
+  <data name="RefusalApprovalNotRequester" xml:space="preserve"><value>Solo la persona que envió este artículo para su activación puede retirarla.</value></data>
+  <data name="RefusalApprovalChanged" xml:space="preserve"><value>La aprobación de este artículo cambió mientras trabajaba. Vuelva a cargar el artículo e inténtelo de nuevo.</value></data>
+  <data name="RefusalApprovalBusy" xml:space="preserve"><value>La aprobación de este artículo se está procesando. Inténtelo de nuevo en un momento.</value></data>
+  <data name="RefusalApprovalSubmitInFlight" xml:space="preserve"><value>La solicitud de activación de este artículo todavía se está procesando. Inténtelo de nuevo en un momento.</value></data>
+  <data name="RefusalApprovalRepeatDiffers" xml:space="preserve"><value>Esta solicitud ya se envió con datos diferentes. Vuelva a abrir el artículo y empiece de nuevo.</value></data>
+  <data name="RefusalApprovalWithdrawalInvalid" xml:space="preserve"><value>No se pudo leer la retirada. Vuelva a abrir el artículo e inténtelo de nuevo.</value></data>
+  <data name="RefusalApprovalWithdrawalRefused" xml:space="preserve"><value>No se pudo retirar la aprobación. Es posible que ya se haya decidido. Vuelva a cargar el artículo.</value></data>
+  <data name="RefusalApprovalUnavailable" xml:space="preserve"><value>No se puede acceder al servicio de aprobación en este momento. Inténtelo de nuevo en un momento.</value></data>
+  <data name="RefusalApprovalNeedsCheck" xml:space="preserve"><value>Un administrador debe revisar la aprobación de este artículo. Su solicitud no se aplicó.</value></data>
+  <data name="RefusalApprovalStartRefused" xml:space="preserve"><value>No se pudo iniciar la aprobación. Pida a su administrador que revise la configuración de aprobaciones.</value></data>
+  <data name="RefusalApprovalSelf" xml:space="preserve"><value>No puede aprobar su propia solicitud. Otro aprobador debe decidir.</value></data>
+  <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>Se eliminó o cambió un valor de lista que usa este artículo. Corrija el artículo y vuelva a enviarlo.</value></data>
+  <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>No se pueden comprobar las listas del artículo en este momento. Inténtelo de nuevo en un momento.</value></data>
+  <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>La solicitud de reparación del código no es válida.</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>El servicio de aprobación no aceptó su sesión. Inicie sesión de nuevo y repita la acción.</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>La configuración de aprobación de esta acción está incompleta. Informe a su administrador.</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>La solicitud no llegó al servicio de aprobación. Envíe la misma solicitud de nuevo.</value></data>
+</root>

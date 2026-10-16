@@ -145,6 +145,34 @@ public class PlatformSchemaManifestTests
         Assert.Equal(19, collections.Sum(c => c.LogicalIndexCount));
     }
 
+    // CT kararı 2026-10-09 (WP-CT-LANE-TKO-MERGE-01): 20 → 21, yalnız hattın INTX teslim kimliği dizini
+    // (WP-PLATFORM-AUDIT-INTX-01). Takeover'ın 5 koleksiyon / 20 dizin onayı bu dizinden önce yazılmıştı. Bir sonraki dizin
+    // yeni karar ister.
+    [Fact]
+    public void AccessGovernanceTemporalCutover_UsesExactApprovedFiveCollectionTwentyOneIndexBudget()
+    {
+        var collections = PlatformSchemaManifest.For(SchemaProfile.AccessGovernance);
+        var logicalIndexes = collections.Sum(collection => collection.LogicalIndexCount);
+        var outbox = Assert.Single(collections, collection =>
+            string.Equals(collection.Name, "audit_outbox", StringComparison.Ordinal));
+        var events = Assert.Single(collections, collection =>
+            string.Equals(collection.Name, "audit_events", StringComparison.Ordinal));
+
+        Assert.Equal(5, collections.Count);
+        Assert.Equal(21, logicalIndexes);
+        Assert.Contains(outbox.Indexes, index => string.Equals(
+            index.Name,
+            "ix_audit_outbox_status_next_attempt_ticks_v1_created_ticks_v1_id",
+            StringComparison.Ordinal));
+        // The twenty-first: the number alone would accept any index in its place.
+        Assert.Contains(events.Indexes, index => string.Equals(
+            index.Name,
+            "ix_audit_events_outbox_idempotency_key",
+            StringComparison.Ordinal));
+        Assert.Equal(5, SchemaProfileBudget.AccessGovernance.MaxCollections);
+        Assert.Equal(21, SchemaProfileBudget.AccessGovernance.MaxLogicalIndexes);
+    }
+
     // ── THE REPOSITORIES AND THE MANIFEST NAME THE SAME COLLECTIONS ────────────────────────────────────────
 
     [Fact]

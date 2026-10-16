@@ -49,6 +49,8 @@ public sealed class BackgroundJobContractsTests
                 "Diten.Platform.MOD-0021.AuditLogArchiveJob",
                 "Diten.Platform.MOD-0022.ESignatureRequestExpirySweepJob",
                 "Diten.Platform.MOD-0023.WorkflowEscalationSweepJob",
+                // WP-WF-ENGINE-RECOVERY-01 — the abandoned-start recovery (BL-549/BL-539); off unless EnabledJobs names it.
+                "Diten.Platform.MOD-0023.WorkflowStartRecoverySweepJob",
                 "Diten.Platform.MOD-0024.TaskDueSoonSweepJob",
                 "Diten.Platform.MOD-0024.TaskRecurrenceSweepJob",
                 "Diten.Platform.MOD-0027.EmailDispatchJob",
@@ -77,7 +79,9 @@ public sealed class BackgroundJobContractsTests
     [Fact]
     public void Platform_registrar_enables_descriptor_from_configuration()
     {
-        var options = new BackgroundJobSchedulerOptions { RegisterStandardJobs = true };
+        // BL-454 — the email sweep's descriptor is EmailDispatchSweepJob.IsScheduled, the same three gates the queue
+        // handler reads; the scheduler being on is one of them (the registrar only runs when it is).
+        var options = new BackgroundJobSchedulerOptions { Enabled = true, RegisterStandardJobs = true };
         options.EnabledJobs["Diten.Platform.MOD-0027.EmailDispatchJob"] = true;
         // Same reasoning as above: the working-calendar schedule stays off so the only descriptor this test
         // turns on is the one it configures by key. Found by ID, not JobName: the email job's handler became

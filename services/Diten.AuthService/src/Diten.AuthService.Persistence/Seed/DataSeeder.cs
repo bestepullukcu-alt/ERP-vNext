@@ -1,7 +1,9 @@
+using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
 using Diten.AuthService.Persistence.Repositories;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Seed;
@@ -109,6 +111,8 @@ public static class DataSeeder
         "mdm.brands.create",
         "mdm.brands.update",
         "mdm.brands.archive",
+        // WP-MDM-BRAND-ACCEPT-01 (M-4) — the Brands list's copy/print/file entries are their own right now.
+        "mdm.brands.export",
         "mdm.products.read",
         "mdm.products.create",
         "mdm.products.update",
@@ -138,12 +142,37 @@ public static class DataSeeder
     /// </summary>
     public const string MockUsersOptInConfigurationKey = "DevSeeds:MockUsers";
 
-    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false)
+    /// <summary>
+    /// Opt-in switch for the dev tenant administrator (<see cref="DevTenantAdminEmail"/>) — BL-521 follow-up, owner decision
+    /// 2026-10-13. Since BL-521 the seeded admin@diten.com is a platform account and every tenant door refuses it, so a dev
+    /// database had no account that could open Users / Roles. Same gate as the mock users: Development AND this key, read in
+    /// <c>DependencyInjection.AddPersistence</c>; set it only in a local, never-committed appsettings.Development.json.
+    /// </summary>
+    public const string TenantAdminOptInConfigurationKey = "DevSeeds:TenantAdmin";
+
+    /// <summary>The dev tenant administrator: tenant Admin role in the seed tenant, never a platform account.</summary>
+    public const string DevTenantAdminEmail = "kiraci.admin@diten.com";
+
+    private static readonly Guid DevTenantAdminId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+    public static Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false, ILogger? logger = null)
+        => SeedAsync(database, seedMockUsers, seedTenantAdmin: false, logger);
+
+    public static Task SeedAsync(IMongoDatabase database, bool seedMockUsers, bool seedTenantAdmin, ILogger? logger = null)
+        => SeedCoreAsync(database, seedMockUsers, seedTenantAdmin, logger, beforeSeedSteps: null);
+
+    /// <param name="beforeSeedSteps">Test seam: runs where the seed steps begin; a test makes it throw to stand for a
+    /// seed step that failed, and measures that the export backfill still runs.</param>
+    public static Task SeedAsync(IMongoDatabase database, bool seedMockUsers, ILogger? logger, Func<Task>? beforeSeedSteps)
+        => SeedCoreAsync(database, seedMockUsers, seedTenantAdmin: false, logger, beforeSeedSteps);
+
+    private static async Task SeedCoreAsync(
+        IMongoDatabase database, bool seedMockUsers, bool seedTenantAdmin, ILogger? logger, Func<Task>? beforeSeedSteps)
     {
+        logger ??= SeedConsoleLogger.Instance;
         try 
         {
-            // BL-452 package 3 — which tenants already hold auth.users.export, measured BEFORE this run writes anything.
-            var tenantsAlreadyOnExport = await SnapshotTenantsOnUsersExportAsync(database);
+            if (beforeSeedSteps is not null) await beforeSeedSteps();
 
             Console.WriteLine("Seeding permissions...");
             await SeedPermissionsAsync(database);
@@ -152,7 +181,13 @@ public static class DataSeeder
             await SeedRolesAsync(database);
             
             Console.WriteLine("Seeding users...");
-            await SeedUsersAsync(database, seedMockUsers);
+            await SeedUsersAsync(database, seedMockUsers, logger);
+
+            if (seedTenantAdmin)
+            {
+                Console.WriteLine("Seeding the dev tenant administrator...");
+                await SeedDevTenantAdminAsync(database, logger);
+            }
 
             Console.WriteLine("Seeding tenant-97c5 BRD consumer grant...");
             await SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(database);
@@ -199,15 +234,32 @@ public static class DataSeeder
             Console.WriteLine("Reconciling tenant Admin self-service grants (backfill)...");
             await ReconcileTenantAdminSelfServiceGrantsAsync(database);
 
-            Console.WriteLine("Backfilling auth.users.export for roles that read users (one-way, once per tenant)...");
-            await BackfillUsersExportAsync(database, tenantsAlreadyOnExport);
-
             Console.WriteLine("Seeding completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Critical Seeding Error: {ex.Message}");
-            if (ex.InnerException != null) Console.WriteLine($"Inner: {ex.InnerException.Message}");
+            // The exception's TYPE only (and its inner exception's): a driver's or a serializer's message quotes values
+            // from the documents it was reading.
+            Console.WriteLine($"Critical Seeding Error: {ex.GetType().FullName}");
+            if (ex.InnerException != null) Console.WriteLine($"Inner: {ex.InnerException.GetType().FullName}");
+        }
+
+        // BL-452 / WP-ROLES-CLOSE-01 — the export backfill (an AUTHORITY WRITER) runs in its own step: a seed step that
+        // failed above does not skip it, and a failure in it is logged through ILogger with its TYPE only (never the
+        // message: a serializer's message quotes document contents). Inside, each tenant fails on its own.
+        try
+        {
+            var result = await ExportGrantBackfillRunner.RunAsync(database, logger);
+            if (result.GrantsWritten > 0 || result.SourcesCorrected > 0 || result.FailedTenants.Count > 0 || result.GrantsNotRepeated.Count > 0)
+            {
+                logger.LogInformation(
+                    "Export backfill: {Grants} grant(s) written, {NotRepeated} role(s) whose grant was not repeated, {Corrected} grant source(s) corrected, {Failed} tenant(s) failed and will be retried.",
+                    result.GrantsWritten, result.GrantsNotRepeated.Count, result.SourcesCorrected, result.FailedTenants.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Export backfill could not run: {ExceptionType}. Nothing is marked; it is retried on the next start.", ex.GetType().FullName);
         }
     }
 
@@ -227,9 +279,18 @@ public static class DataSeeder
         await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
         await ReconcilePermissionScopesAsync(col, permissions);
         // BL-411 — allowlisted PlatformAdmin → Tenant correction for synced-only keys the seed-list reconcile cannot reach.
-        // WP-0023-FX — also the ONLY path that lowers the allowlisted workflow runtime keys (seeded ones included; the
+        // WP-0023-FX (main) — also the ONLY path that lowers the allowlisted workflow runtime keys (seeded ones included; the
         // seed reconcile above skips that move), and every applied row is audited in authAuditLogs.
         await ApplyTenantRouteScopeCorrectionsAsync(col, database.GetCollection<AuthAuditLog>("authAuditLogs"));
+        // Read-only: a listed key on a NON-system row can never keep Tenant against the catalog sync — say so at startup
+        // instead of letting its scope flap silently (SeedOwnedTenantScopeKeys, "the precondition on an existing database").
+        var seedOwnedRows = await col.Find(Builders<Permission>.Filter.In(x => x.Key, SeedOwnedTenantScopeKeys.Keys)).ToListAsync();
+        foreach (var key in SeedOwnedTenantScopeKeys.RowsTheExceptionCannotHold(seedOwnedRows))
+        {
+            Console.WriteLine(
+                $"WARNING: permission '{key}' is decided tenant-scoped (SeedOwnedTenantScopeKeys) but its row is not a system row; "
+                + "the catalog sync will promote it back to PlatformAdmin. Needs an operator decision — nothing was changed.");
+        }
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
         await ReconcilePermissionSegmentSpellingAsync(col);
@@ -420,7 +481,7 @@ public static class DataSeeder
             new("auth", "users", "delete", "Delete User", "Permission to delete users", moduleOverride: "access-governance"),
             new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users", moduleOverride: "access-governance"),
             // BL-452 package 3 — exporting the Users list is its own right (was auth.users.read). Tenant Admin receives it
-            // through the access-governance breadth; existing reading roles get it once, by BackfillUsersExportAsync.
+            // through the access-governance breadth; existing reading roles of old tenants get it once (ExportGrantBackfillRunner).
             new("auth", "users", "export", "Export Users", "Permission to export the user list (CSV/Excel) as the screen shows it", moduleOverride: "access-governance"),
             new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references", moduleOverride: "access-governance"),
             // WP-INFRA-AUTH-ACCOUNT-KIND-01 — two keys, two natures. `auth.users.lookup` is an ORDINARY tenant key
@@ -436,6 +497,12 @@ public static class DataSeeder
             new("auth", "roles", "update", "Update Role", "Permission to edit roles", moduleOverride: "access-governance"),
             new("auth", "roles", "delete", "Delete Role", "Permission to delete roles", moduleOverride: "access-governance"),
             new("auth", "roles", "assign-permission", "Assign Permission", "Permission to assign permissions to roles", moduleOverride: "access-governance"),
+            // WP-ROLES-CLOSE-01 (BL-452) — the Roles screen's Action menu (print/CSV/Excel/PDF/copy) is its own right
+            // (was auth.roles.read). ⚠ It gates the MENU, not the data: the Roles list is a client-mode list, its rows
+            // are served by GET api/roles under auth.roles.read, and the file is made in the browser from those rows.
+            // There is no export endpoint for this key to protect. Tenant Admin receives it through the
+            // access-governance breadth; existing reading roles of old tenants get it once (ExportGrantBackfillRunner).
+            new("auth", "roles", "export", "Export Roles", "Shows the export menu (print/CSV/Excel/PDF/copy) on the Roles list; the rows themselves are read with auth.roles.read", moduleOverride: "access-governance"),
 
             new("mdm", "legal-entities", "create", "Create Legal Entity", null, moduleOverride: "legal-entity"),
             new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
@@ -453,6 +520,9 @@ public static class DataSeeder
             new("mdm", "brands", "create", "Create Brand", "Permission to create brand master records", moduleOverride: "brand-product-master"),
             new("mdm", "brands", "update", "Update Brand", "Permission to edit brand master records", moduleOverride: "brand-product-master"),
             new("mdm", "brands", "archive", "Archive Brand", "Permission to archive brand master records (soft lifecycle)", moduleOverride: "brand-product-master"),
+            // WP-MDM-BRAND-ACCEPT-01 (M-4) — exporting the Brands list (copy / print / file) is its own right (was
+            // mdm.brands.read). Existing reading roles of old tenants get it once (ExportGrantBackfillRunner, ExportGrantBackfill.Brands).
+            new("mdm", "brands", "export", "Export Brands", "Permission to export the brand list (copy, print, CSV/Excel/PDF) as the screen shows it", moduleOverride: "brand-product-master"),
             new("mdm", "products", "read", "Read Product", "Permission to view product master lists and details", moduleOverride: "brand-product-master"),
             new("mdm", "products", "create", "Create Product", "Permission to create product master records", moduleOverride: "brand-product-master"),
             new("mdm", "products", "update", "Update Product", "Permission to edit product master records", moduleOverride: "brand-product-master"),
@@ -883,8 +953,9 @@ public static class DataSeeder
             new("platform", "document-management.signature-policies", "manage", "Manage Signature Policies", "Permission to manage electronic signature policies"),
 
             // MOD-0023 — Workflow Config / Approval Templates permissions (13). Keys must match the
-            // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Platform-scoped, so
-            // the DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
+            // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Workflow control-plane
+            // permissions stay PlatformAdmin. FU24/FU25 explicitly make start/approve/reject tenant-scoped so bounded
+            // tenant responsibility roles can start and decide assigned records; default Admin/Viewer still receive none.
             new("platform", "workflow.definitions", "view", "View Workflow Definitions", "Permission to view workflow approval templates and versions", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "manage", "Manage Workflow Definitions", "Permission to create and edit workflow approval templates", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "publish", "Publish Workflow Definition", "Permission to publish an immutable workflow template version", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
@@ -964,7 +1035,8 @@ public static class DataSeeder
     // authoritative Scope by Key. This is REQUIRED now that Module is the manifest ModuleCode: a Module-derived
     // ClassifyScope reconcile would wrongly force workflow (Module="workflow") to Tenant and leak a platform-admin
     // module into tenant roles. The seed literals carry the correct Scope explicitly where it diverges from the
-    // Module classification (workflow → PlatformAdmin), so reconciling by Key keeps the boundary exact.
+    // Module classification: Workflow control-plane stays PlatformAdmin, while FU24/FU25's exact instance-start and
+    // task approve/reject execution keys are Tenant. Reconciling by Key keeps both boundaries exact.
     // Synced-only permissions (not in the seed list) are intentionally NOT touched — their Scope is route-derived and
     // carried by the catalog sync (authoritative), so this reconcile must never overwrite it. Idempotent + Scope-only:
     // the server-side $ne skips rows already correct (and matches rows where the field is absent → legacy backfill).
@@ -1109,7 +1181,14 @@ public static class DataSeeder
         await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
     }
 
-    private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers)
+    private static Application.Common.TenantContext SeedTenant()
+    {
+        var tenant = new Application.Common.TenantContext();
+        tenant.SetTenant(DefaultTenantId);
+        return tenant;
+    }
+
+    private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers, ILogger logger)
     {
         var userCol = database.GetCollection<User>("users");
         var roleCol = database.GetCollection<Role>("roles");
@@ -1145,15 +1224,30 @@ public static class DataSeeder
         }
         else
         {
+            // BL-529 FIX8 item 2 — runs at EVERY Auth start, in every environment. An administrator's deactivation of the
+            // seeded admin is not undone by a restart ("active AND marked" is never written), and only the fields the seed
+            // changes are written, only while the mark is the one read — never the whole document from this copy.
+            var userRepository = new Repositories.UserRepository(database, SeedTenant());
+            var state = userRepository.CaptureState(user);
             if (string.IsNullOrWhiteSpace(user.NormalizedUserName))
             {
                 user.SetUserName("admin");
             }
 
             user.SetPlatformActorType("platform_admin");
-            user.Activate();
+            if (!user.DeactivatedByAdministrator)
+            {
+                user.Activate();
+            }
+
             user.ConfirmEmail();
-            await userCol.ReplaceOneAsync(u => u.Id == user.Id, user);
+            if (!await userRepository.TryWriteChangesAsync(user, state, DefaultTenantId,
+                    new UserWriteCondition(DeactivatedByAdministrator: user.DeactivatedByAdministrator), CancellationToken.None))
+            {
+                // FIX9 (M5) — the admin changed between the read and the write (an administrator marked or deleted it): the seed
+                // leaves it as it is, and says so.
+                logger.LogWarning("The seeded admin changed while the seed was updating it; it was left as it is.");
+            }
         }
 
         var roles = await roleCol.Find(r => r.Name == "SuperAdmin").ToListAsync();
@@ -1177,6 +1271,55 @@ public static class DataSeeder
         {
             await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
             await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        }
+    }
+
+    // BL-521 follow-up — the dev tenant administrator. Created once (static id, the dev seed password hash admin@diten.com
+    // has), never marked platform, and given the seed tenant's Admin role (not SuperAdmin). An existing account is never
+    // rewritten: an administrator's deactivation or edits survive a restart; only a missing Admin link is added back.
+    private static async Task SeedDevTenantAdminAsync(IMongoDatabase database, ILogger logger)
+    {
+        var userCol = database.GetCollection<User>("users");
+        var roleCol = database.GetCollection<Role>("roles");
+        var urCol = database.GetCollection<UserRole>("userRoles");
+
+        var user = (await userCol.Find(u => u.Email == DevTenantAdminEmail).ToListAsync())
+            .FirstOrDefault(u => u.TenantId == DefaultTenantId && !u.IsDeleted);
+        if (user == null)
+        {
+            user = new User(DevTenantAdminEmail, "$2a$12$F1MdLL6aHDzrwl/790xPVuiSNW8xJM5/.5E8A/6M3DwAYYenixKwC", "Kiracı", "Admin", DefaultTenantId)
+            {
+                Id = DevTenantAdminId
+            };
+            user.SetUserName("kiraci.admin");
+            user.Activate();
+            user.ConfirmEmail();
+            user.SetAccountKind(AccountKind.Unknown); // WP-INFRA-AUTH-ACCOUNT-KIND-01 — seed never classifies
+            try
+            {
+                await userCol.InsertOneAsync(user);
+                Console.WriteLine("Created the dev tenant administrator.");
+            }
+            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                logger.LogWarning("The dev tenant administrator was created by another start-up at the same moment; it was left as it is.");
+                return;
+            }
+        }
+
+        var adminRole = (await roleCol.Find(r => r.Name == "Admin").ToListAsync())
+            .FirstOrDefault(r => r.TenantId == DefaultTenantId && !r.IsDeleted);
+        if (adminRole == null)
+        {
+            logger.LogWarning("The seed tenant has no Admin role; the dev tenant administrator got no role.");
+            return;
+        }
+
+        var linked = await urCol.Find(ur => ur.UserId == user.Id && ur.RoleId == adminRole.Id).AnyAsync();
+        if (!linked)
+        {
+            await urCol.InsertOneAsync(new UserRole(user.Id, adminRole.Id, DefaultTenantId, SystemUser));
+            Console.WriteLine("Assigned the Admin role to the dev tenant administrator.");
         }
     }
 
@@ -1367,73 +1510,6 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Reconciled {planned.Count} missing tenant self-service grant(s) across {affectedTenants.Count} tenant(s).");
-    }
-
-    private static async Task<IReadOnlySet<Guid>> SnapshotTenantsOnUsersExportAsync(IMongoDatabase database)
-    {
-        var export = await database.GetCollection<Permission>("permissions")
-            .Find(p => p.Key == UsersExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
-        if (export is null) return new HashSet<Guid>();
-
-        var (roles, grants) = await LoadRoleGrantsAsync(database);
-        return UsersExportGrantBackfill.TenantsAlreadyOnExport(roles, grants, export.Id);
-    }
-
-    // BL-452 package 3 — see UsersExportGrantBackfill: every role holding auth.users.read gets auth.users.export, in the
-    // tenants that were not on the export key when this run started. Additive, idempotent, System-sourced grants.
-    private static async Task BackfillUsersExportAsync(IMongoDatabase database, IReadOnlySet<Guid> tenantsAlreadyOnExport)
-    {
-        var permCol = database.GetCollection<Permission>("permissions");
-        var read = await permCol.Find(p => p.Key == UsersExportGrantBackfill.ReadKey && p.IsDeleted == false).FirstOrDefaultAsync();
-        var export = await permCol.Find(p => p.Key == UsersExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
-        if (read is null || export is null) return;
-
-        var (roles, grants) = await LoadRoleGrantsAsync(database);
-
-        // v2 — the persistent gate: a tenant marked once is never backfilled again (its revokes stick).
-        var marks = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
-        var marked = (await marks.Find(m => m.Key == UsersExportGrantBackfill.ExportKey).ToListAsync())
-            .Select(m => m.TenantId)
-            .ToHashSet();
-        var skip = marked.Concat(tenantsAlreadyOnExport).ToHashSet();
-
-        var planned = UsersExportGrantBackfill.PlanMissingGrants(roles, grants, read.Id, export.Id, skip);
-        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
-        foreach (var g in planned)
-        {
-            await rpCol.InsertOneAsync(RolePermission.SystemGrant(g.RoleId, g.PermissionId, g.TenantId, SystemUser));
-        }
-
-        // Every tenant looked at in this run is marked — granted, skipped as already on the key, or with no reader at all.
-        var now = DateTime.UtcNow;
-        foreach (var tenantId in UsersExportGrantBackfill.TenantsToMark(roles, marked))
-        {
-            await marks.ReplaceOneAsync(
-                m => m.TenantId == tenantId && m.Key == UsersExportGrantBackfill.ExportKey,
-                new PermissionReconciliationMark { TenantId = tenantId, Key = UsersExportGrantBackfill.ExportKey, ReconciledAtUtc = now },
-                new ReplaceOptions { IsUpsert = true });
-        }
-
-        if (planned.Count == 0) return;
-
-        var versionService = new RoleAssignmentVersionRepository(database);
-        foreach (var tenantId in planned.Select(g => g.TenantId).ToHashSet())
-        {
-            await versionService.IncrementAsync(tenantId, CancellationToken.None);
-        }
-
-        Console.WriteLine($"Backfilled auth.users.export on {planned.Count} role(s) that read users.");
-    }
-
-    private static async Task<(List<TenantAdminSelfServiceReconciler.RoleRef> Roles, HashSet<(Guid RoleId, Guid PermissionId)> Grants)> LoadRoleGrantsAsync(IMongoDatabase database)
-    {
-        var roles = (await database.GetCollection<Role>("roles").Find(r => r.IsDeleted == false).ToListAsync())
-            .Select(r => new TenantAdminSelfServiceReconciler.RoleRef(r.Id, r.Name, r.TenantId))
-            .ToList();
-        var grants = (await database.GetCollection<RolePermission>("rolePermissions").Find(rp => rp.IsDeleted == false).ToListAsync())
-            .Select(rp => (rp.RoleId, rp.PermissionId))
-            .ToHashSet();
-        return (roles, grants);
     }
 
     private static async Task SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(IMongoDatabase database)

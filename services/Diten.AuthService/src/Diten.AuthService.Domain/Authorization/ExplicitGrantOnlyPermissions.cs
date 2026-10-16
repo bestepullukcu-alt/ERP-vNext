@@ -57,6 +57,15 @@ public static class ExplicitGrantOnlyPermissions
     public const string TimeEntryPersonReportsRead = "time-entry.person-reports.read";
 
     /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 (BL-509) — sending a task REQUEST to somebody outside the sender's assignment scope,
+    /// typically in another legal entity of the same tenant. Addressing a person across the company boundary shows
+    /// that they exist and what seat they hold (the BL-057 boundary is a data-protection one: Poland is inside
+    /// GDPR, Turkey is not), so the tenant switches the feature on by granting this key to a role. It never
+    /// arrives with the module-entitlement sync or the SuperAdmin full-catalog path (owner decision, 2026-10-02).
+    /// </summary>
+    public const string TaskRequestsCreate = "platform.tasks.requests.create";
+
+    /// <summary>
     /// WP-VP-2 (B-1) — every planned visit and visit report in the tenant. Without it a field rep sees and acts on
     /// only their own planned visits (a foreign one answers 404); if the module-entitlement sync handed it to every
     /// tenant Admin, that ownership rule would have nothing left to enforce (owner decision, 2026-10-06).
@@ -81,6 +90,6 @@ public static class ExplicitGrantOnlyPermissions
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll, WorkReportReadTenantWide,
-            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead, PlannedVisitReadAll, VisitPlanReadAll, DoctorInsightsReadAll
+            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead, TaskRequestsCreate, PlannedVisitReadAll, VisitPlanReadAll, DoctorInsightsReadAll
         };
 }

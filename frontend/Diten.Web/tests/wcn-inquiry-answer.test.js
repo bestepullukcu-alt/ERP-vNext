@@ -121,7 +121,11 @@ describe("the Cevapla dialog", () => {
     expect(dispatched.itemId).toBe(MATRIX.asked_read.id);
     expect(dispatched.actionCode).toBe("answer");
     expect(dispatched.providerCode).toBe("tasks");
-    expect(dispatched.body).toEqual({ expectedVersion: 4, answer: "Cuma günü tedarikçiden." });
+    // …plus the attempt's stable identity (product takeover): the same click repeated is the same attempt.
+    expect(dispatched.body).toEqual({
+      expectedVersion: 4, answer: "Cuma günü tedarikçiden.",
+      idempotencyKey: expect.stringMatching(/^wcn-action-v1:[0-9a-f]{32}$/)
+    });
   });
 });
 

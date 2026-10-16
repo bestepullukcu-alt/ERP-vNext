@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.PlatformAdministrators.Commands;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using FluentValidation;
 
@@ -46,7 +47,15 @@ public sealed class InvitePlatformAdministratorValidator : AbstractValidator<Inv
             .Must(values => values is { Count: > 0 } && values.All(id => id != Guid.Empty))
             .When(x => IsPartnerAdmin(x.Request.ActorType))
             .WithMessage("AllowedTenantIds must contain at least one tenant id for PartnerAdmin.");
+
+        // BL-521 FIX1 F6 — the platform system tenant is the platform administrators' home, never a tenant a partner
+        // administrator can be given (the scope drops it anyway; refusing it here keeps the record honest).
+        RuleFor(x => x.Request.AllowedTenantIds)
+            .Must(values => values is null || values.All(id => !SystemTenantRules.IsSystemTenantId(id)))
+            .WithMessage(SystemTenantNotAllowedMessage);
     }
+
+    public const string SystemTenantNotAllowedMessage = "AllowedTenantIds must not contain the platform system tenant.";
 
     private static bool IsPartnerAdmin(string actorType) =>
         Enum.TryParse<ActorType>(actorType, ignoreCase: false, out var parsed)

@@ -2,7 +2,9 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Diten.MdmService.Persistence.Repositories;
@@ -10,13 +12,26 @@ namespace Diten.MdmService.Persistence.Repositories;
 public sealed class GskuRepository : IGskuRepository
 {
     private readonly IMongoCollection<Gsku> _gskus;
+    private readonly IMongoCollection<BsonDocument> _documents;
     private readonly IMongoCollection<CodeReservation> _reservations;
+    private readonly IMongoCollection<ProductDefinitionRevision> _revisions;
+    private readonly IMongoCollection<Lsku> _lskus;
+    private readonly IMongoCollection<FinishedGood> _finishedGoods;
     private readonly Guid _tenantId;
+    private readonly IMongoDatabase _database;
+    private readonly IMongoCollection<FirstGskuIdentityWorkflowOperation> _identityOperations;
 
     public GskuRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
+        _database = database;
+        _identityOperations = database.GetCollection<FirstGskuIdentityWorkflowOperation>(
+            FirstGskuIdentityWorkflowOperationRepository.CollectionName);
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
+        _documents = database.GetCollection<BsonDocument>("mdm_gskus");
         _reservations = database.GetCollection<CodeReservation>("mdm_code_reservations");
+        _revisions = database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions");
+        _lskus = database.GetCollection<Lsku>("mdm_lskus");
+        _finishedGoods = database.GetCollection<FinishedGood>("mdm_finished_goods");
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
     }
@@ -25,9 +40,19 @@ public sealed class GskuRepository : IGskuRepository
         => _gskus.Find(ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<Gsku?> GetReferenceableByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _gskus.Find(
-                ReferenceableFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id))
+    {
+        var gsku = await _gskus.Find(ReferenceableFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id))
             .FirstOrDefaultAsync(cancellationToken);
+        if (gsku is null) return null;
+        var revisionApproved = await _revisions.Find(
+                Builders<ProductDefinitionRevision>.Filter.Eq(x => x.TenantId, _tenantId)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.IsDeleted, false)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.Id, gsku.ProductDefinitionRevisionId)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(
+                    x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved))
+            .AnyAsync(cancellationToken);
+        return revisionApproved ? gsku : null;
+    }
 
     public async Task<IReadOnlyList<Gsku>> GetByIdsAsync(
         IReadOnlyCollection<Guid> ids,
@@ -48,7 +73,266 @@ public sealed class GskuRepository : IGskuRepository
         string? canonicalCodeSearch,
         CancellationToken cancellationToken = default)
     {
-        var filter = ReferenceableFilter;
+        var match = new BsonDocument
+        {
+            { nameof(Gsku.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
+            { nameof(Gsku.IsDeleted), false },
+            { nameof(Gsku.LifecycleStatus), (int)ProductIdentityLifecycleStatus.IdentityApproved }
+        };
+        if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
+        {
+            match[nameof(Gsku.CanonicalCode)] = new BsonRegularExpression(
+                "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch));
+        }
+
+        var pipeline = new[]
+        {
+            new BsonDocument("$match", match),
+            new BsonDocument("$lookup", new BsonDocument
+            {
+                { "from", "mdm_product_definition_revisions" },
+                { "let", new BsonDocument("revisionId", "$" + nameof(Gsku.ProductDefinitionRevisionId)) },
+                { "pipeline", new BsonArray
+                    {
+                        new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$and", new BsonArray
+                        {
+                            new BsonDocument("$eq", new BsonArray
+                            {
+                                "$" + nameof(ProductDefinitionRevision.TenantId),
+                                ProductLegalEntityScopeAggregation.GuidBson(_tenantId)
+                            }),
+                            new BsonDocument("$eq", new BsonArray
+                            {
+                                "$" + nameof(ProductDefinitionRevision.IsDeleted), false
+                            }),
+                            new BsonDocument("$eq", new BsonArray { "$_id", "$$revisionId" }),
+                            new BsonDocument("$eq", new BsonArray
+                            {
+                                "$" + nameof(ProductDefinitionRevision.LifecycleStatus),
+                                (int)ProductIdentityLifecycleStatus.IdentityApproved
+                            })
+                        })))
+                    }
+                },
+                { "as", "ReferenceableRevision" }
+            }),
+            new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$size", "$ReferenceableRevision"), 1
+            }))),
+            new BsonDocument("$unset", "ReferenceableRevision"),
+            new BsonDocument("$sort", new BsonDocument
+            {
+                { nameof(Gsku.CanonicalCode), 1 },
+                { "_id", 1 }
+            }),
+            new BsonDocument("$facet", new BsonDocument
+            {
+                { "items", new BsonArray
+                    {
+                        new BsonDocument("$skip", (long)(pageNumber - 1) * pageSize),
+                        new BsonDocument("$limit", pageSize)
+                    }
+                },
+                { "summary", new BsonArray { new BsonDocument("$count", "total") } }
+            })
+        };
+
+        // FIX5 item 7: every sorted register aggregation may spill to disk (FIX4 item 9 gave it to one of three).
+        var result = await _documents.Aggregate<BsonDocument>(pipeline, new AggregateOptions { AllowDiskUse = true })
+            .FirstOrDefaultAsync(cancellationToken);
+        var items = result?["items"].AsBsonArray
+            .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
+            .ToArray() ?? [];
+        var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
+        return new(items, total);
+    }
+
+    public async Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+        => await GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, canonicalCodeSearch,
+            referenceableOnly, lifecycleStatus: null, effectiveCandidateLegalEntityIds, serverNowUtc,
+            cancellationToken);
+
+    public Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+        => GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, canonicalCodeSearch, referenceableOnly,
+            lifecycleStatus, GskuListSort.Default, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    public Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+        => GetEnforcedLegalEntityScopePageCoreAsync(pageNumber, pageSize, canonicalCodeSearch, listSearch: null,
+            referenceableOnly, lifecycleStatus, sort, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's W4-FIX-d (G-8) list search INSIDE the enforced Legal Entity scope —
+    // the same pipeline (tenant, soft delete, scope lookup, lifecycle filter, order); only the search predicate differs.
+    public Task<GskuPage> SearchEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+        => GetEnforcedLegalEntityScopePageCoreAsync(pageNumber, pageSize, canonicalCodeSearch: null,
+            new GskuListSearch(search, productDefinitionRevisionIds), referenceableOnly: false, lifecycleStatus, sort,
+            effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    private async Task<GskuPage> GetEnforcedLegalEntityScopePageCoreAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        GskuListSearch? listSearch,
+        bool referenceableOnly,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(sort);
+        cancellationToken.ThrowIfCancellationRequested();
+        var match = new BsonDocument
+        {
+            { nameof(Gsku.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
+            { nameof(Gsku.IsDeleted), false }
+        };
+        if (referenceableOnly)
+        {
+            match[nameof(Gsku.LifecycleStatus)] = new BsonDocument("$in", new BsonArray
+            {
+                (int)ProductIdentityLifecycleStatus.IdentityApproved
+            });
+        }
+        else if (lifecycleStatus.HasValue)
+        {
+            match[nameof(Gsku.LifecycleStatus)] = (int)lifecycleStatus.Value;
+        }
+        if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
+        {
+            match[nameof(Gsku.CanonicalCode)] = new BsonRegularExpression(
+                "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch));
+        }
+        ApplyListSearch(match, listSearch);
+
+        var revisionPredicates = new BsonArray
+        {
+            new BsonDocument("$eq", new BsonArray
+            {
+                "$" + nameof(ProductDefinitionRevision.TenantId),
+                ProductLegalEntityScopeAggregation.GuidBson(_tenantId)
+            }),
+            new BsonDocument("$eq", new BsonArray
+            {
+                "$" + nameof(ProductDefinitionRevision.IsDeleted), false
+            }),
+            new BsonDocument("$eq", new BsonArray { "$_id", "$$revisionId" })
+        };
+        if (referenceableOnly)
+        {
+            revisionPredicates.Add(new BsonDocument("$eq", new BsonArray
+            {
+                "$" + nameof(ProductDefinitionRevision.LifecycleStatus),
+                (int)ProductIdentityLifecycleStatus.IdentityApproved
+            }));
+        }
+
+        var pipeline = new List<BsonDocument>
+        {
+            new("$match", match),
+            new("$lookup", new BsonDocument
+            {
+                { "from", "mdm_product_definition_revisions" },
+                { "let", new BsonDocument("revisionId", "$" + nameof(Gsku.ProductDefinitionRevisionId)) },
+                { "pipeline", new BsonArray
+                    {
+                        new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$and", revisionPredicates)))
+                    }
+                },
+                { "as", "ScopeRevisions" }
+            }),
+            new("$match", new BsonDocument("$expr", new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$size", "$ScopeRevisions"),
+                1
+            }))),
+            new("$set", new BsonDocument(
+                ProductLegalEntityScopeAggregation.ResolvedGlobalProductIdField,
+                new BsonDocument("$getField", new BsonDocument
+                {
+                    { "field", nameof(ProductDefinitionRevision.GlobalProductId) },
+                    { "input", new BsonDocument("$arrayElemAt", new BsonArray { "$ScopeRevisions", 0 }) }
+                })))
+        };
+        pipeline.AddRange(ProductLegalEntityScopeAggregation.CreateAccessStages(
+            _tenantId,
+            effectiveCandidateLegalEntityIds,
+            serverNowUtc));
+        pipeline.Add(ProductLegalEntityScopeAggregation.CleanupStage("ScopeRevisions"));
+        pipeline.AddRange(ListSortStages(sort));
+        pipeline.Add(new BsonDocument("$facet", new BsonDocument
+        {
+            { "items", new BsonArray
+                {
+                    new BsonDocument("$skip", (long)(pageNumber - 1) * pageSize),
+                    new BsonDocument("$limit", pageSize)
+                }
+            },
+            { "summary", new BsonArray { new BsonDocument("$count", "total") } }
+        }));
+
+        // FIX5 item 7: every sorted register aggregation may spill to disk (FIX4 item 9 gave it to one of three).
+        var result = await _documents.Aggregate<BsonDocument>(pipeline, new AggregateOptions { AllowDiskUse = true })
+            .FirstOrDefaultAsync(cancellationToken);
+        var items = result?["items"].AsBsonArray
+            .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
+            .ToArray() ?? [];
+        var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
+        return new(items, total);
+    }
+
+    public async Task<GskuPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        CancellationToken cancellationToken = default)
+        => await GetPageAsync(pageNumber, pageSize, canonicalCodeSearch, lifecycleStatus: null, cancellationToken);
+
+    public async Task<GskuPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        CancellationToken cancellationToken = default)
+    {
+        var filter = ActiveFilter;
+        if (lifecycleStatus.HasValue)
+        {
+            filter &= Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, lifecycleStatus.Value);
+        }
         if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
         {
             filter &= Builders<Gsku>.Filter.Regex(
@@ -66,28 +350,144 @@ public sealed class GskuRepository : IGskuRepository
         return new(items, totalCount);
     }
 
-    public async Task<GskuPage> GetPageAsync(
+    // FIX3 B17: the register's own read with a whitelisted order. One aggregation for every order, because the pack
+    // quantity is stored as a decimal STRING (driver default) and only a converted key sorts it as a number.
+    public Task<GskuPage> GetPageAsync(
         int pageNumber,
         int pageSize,
         string? canonicalCodeSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
         CancellationToken cancellationToken = default)
+        => GetSortedPageCoreAsync(pageNumber, pageSize, canonicalCodeSearch, listSearch: null, lifecycleStatus, sort, cancellationToken);
+
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's G-8 search on the register's own read (preparation mode), with its
+    // lifecycle filter and whitelisted order.
+    public Task<GskuPage> SearchPageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        CancellationToken cancellationToken = default)
+        => GetSortedPageCoreAsync(pageNumber, pageSize, canonicalCodeSearch: null,
+            new GskuListSearch(search, productDefinitionRevisionIds), lifecycleStatus, sort, cancellationToken);
+
+    private async Task<GskuPage> GetSortedPageCoreAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        GskuListSearch? listSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        CancellationToken cancellationToken)
     {
-        var filter = ActiveFilter;
+        ArgumentNullException.ThrowIfNull(sort);
+        var match = new BsonDocument
+        {
+            { nameof(Gsku.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
+            { nameof(Gsku.IsDeleted), false }
+        };
+        if (lifecycleStatus.HasValue)
+        {
+            match[nameof(Gsku.LifecycleStatus)] = (int)lifecycleStatus.Value;
+        }
         if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
         {
-            filter &= Builders<Gsku>.Filter.Regex(
-                x => x.CanonicalCode,
-                new BsonRegularExpression("^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch)));
+            match[nameof(Gsku.CanonicalCode)] = new BsonRegularExpression(
+                "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch));
+        }
+        ApplyListSearch(match, listSearch);
+
+        var pipeline = new List<BsonDocument> { new("$match", match) };
+        pipeline.AddRange(ListSortStages(sort));
+        pipeline.Add(new BsonDocument("$facet", new BsonDocument
+        {
+            { "items", new BsonArray
+                {
+                    new BsonDocument("$skip", (long)(pageNumber - 1) * pageSize),
+                    new BsonDocument("$limit", pageSize)
+                }
+            },
+            { "summary", new BsonArray { new BsonDocument("$count", "total") } }
+        }));
+
+        // FIX4 item 9: a sort over a large register may exceed the in-memory sort limit — it may spill to disk.
+        var result = await _documents.Aggregate<BsonDocument>(pipeline, new AggregateOptions { AllowDiskUse = true })
+            .FirstOrDefaultAsync(cancellationToken);
+        var items = result?["items"].AsBsonArray
+            .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
+            .ToArray() ?? [];
+        var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
+        return new(items, total);
+    }
+
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's G-8 predicate in the register's own match — the GSKU's code CONTAINS
+    // the text (MdmSearchText: case and Turkish I / İ insensitive) OR its product definition revision is one of the revisions
+    // of the (same-tenant) global products whose name / code matched. Tenant and soft delete stay in the same match.
+    private sealed record GskuListSearch(string Search, IReadOnlyCollection<Guid> ProductDefinitionRevisionIds);
+
+    private static void ApplyListSearch(BsonDocument match, GskuListSearch? listSearch)
+    {
+        if (listSearch is null || MdmSearchText.ContainsPattern(listSearch.Search) is not { } pattern)
+        {
+            return;
         }
 
-        var totalCount = await _gskus.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
-        var items = await _gskus.Find(filter)
-            .SortBy(x => x.CanonicalCode)
-            .ThenBy(x => x.Id)
-            .Skip((pageNumber - 1) * pageSize)
-            .Limit(pageSize)
-            .ToListAsync(cancellationToken);
-        return new(items, totalCount);
+        var byCode = new BsonDocument(nameof(Gsku.CanonicalCode), new BsonRegularExpression(pattern, "i"));
+        if (listSearch.ProductDefinitionRevisionIds.Count == 0)
+        {
+            match.AddRange(byCode);
+            return;
+        }
+
+        var revisionIds = new BsonArray(listSearch.ProductDefinitionRevisionIds.Select(ProductLegalEntityScopeAggregation.GuidBson));
+        match["$or"] = new BsonArray
+        {
+            byCode,
+            new BsonDocument(nameof(Gsku.ProductDefinitionRevisionId), new BsonDocument("$in", revisionIds))
+        };
+    }
+
+    private const string PackQuantitySortKey = "__GskuPackQuantitySortKey";
+
+    // The sort stages of a register read: the chosen field in the chosen direction, then _id ascending as the stable
+    // tiebreak (two rows with the same value never swap between pages). The pack-quantity key is a temporary decimal
+    // conversion, removed again before the documents are deserialized.
+    private static IEnumerable<BsonDocument> ListSortStages(GskuListSort sort)
+    {
+        var direction = sort.Descending ? -1 : 1;
+        if (sort.Field == GskuListSortField.PackQuantity)
+        {
+            yield return new BsonDocument("$set", new BsonDocument(PackQuantitySortKey, new BsonDocument("$convert",
+                new BsonDocument
+                {
+                    { "input", "$" + nameof(Gsku.PackQuantity) },
+                    { "to", "decimal" },
+                    { "onError", BsonNull.Value },
+                    { "onNull", BsonNull.Value }
+                })));
+            yield return new BsonDocument("$sort", new BsonDocument
+            {
+                { PackQuantitySortKey, direction },
+                { "_id", 1 }
+            });
+            yield return new BsonDocument("$unset", PackQuantitySortKey);
+            yield break;
+        }
+
+        var field = sort.Field switch
+        {
+            GskuListSortField.CanonicalCode => nameof(Gsku.CanonicalCode),
+            GskuListSortField.LifecycleStatus => nameof(Gsku.LifecycleStatus),
+            _ => throw new ArgumentOutOfRangeException(nameof(sort), sort.Field, "GSKU_LIST_SORT_FIELD_UNKNOWN")
+        };
+        yield return new BsonDocument("$sort", new BsonDocument
+        {
+            { field, direction },
+            { "_id", 1 }
+        });
     }
 
     public async Task<GskuPage> SearchPageAsync(
@@ -201,15 +601,1033 @@ public sealed class GskuRepository : IGskuRepository
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1)
             .Push(x => x.AuditIntents, newIntent);
-        var updated = await _gskus.FindOneAndUpdateAsync(
-            filter,
-            update,
-            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After },
-            cancellationToken);
-        return updated is null
-            ? new(false, null, "CONCURRENCY_CONFLICT")
-            : new(true, updated);
+        // FIX2 items 1 and 10: the draft's latest identity submit is read and the draft written in ONE transaction (the
+        // reservation touches the draft in its own), so an edit and a submit cannot both commit. A submit on its way, or
+        // one the engine may hold, keeps the draft as submitted; one the engine never received is set aside by the edit
+        // (its maker replaced it) — the edit is the way out of it, as a repeat of the same submit is.
+        Gsku? updated = null;
+        for (var attempt = 0; ; attempt++)
+        {
+            using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+            try
+            {
+                session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            }
+            catch (NotSupportedException)
+            {
+                // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
+                return new(false, null, ProductIdentityStore.Unavailable);
+            }
+            try
+            {
+                var latest = await FirstGskuIdentityWorkflowOperationRepository.LatestForGsku(
+                        _identityOperations, IdentityOperationTenantFilter, gsku.Id, session)
+                    .FirstOrDefaultAsync(cancellationToken);
+                var state = FirstGskuIdentitySubmitState.Of(latest, expectedVersion);
+                if (state.Kind is FirstGskuIdentitySubmitStateKind.InFlight
+                    or FirstGskuIdentitySubmitStateKind.ReconciliationRequired)
+                {
+                    await session.AbortTransactionAsync(cancellationToken);
+                    return new(false, await GetByIdAsync(gsku.Id, cancellationToken),
+                        state.Kind == FirstGskuIdentitySubmitStateKind.InFlight
+                            ? SubmitInFlight
+                            : IdentityReconciliationRequired);
+                }
+                if (state.Kind == FirstGskuIdentitySubmitStateKind.ResubmitRequired)
+                {
+                    var nowTicks = DateTimeOffset.UtcNow.UtcTicks;
+                    var setAside = await _identityOperations.UpdateOneAsync(session,
+                        IdentityOperationTenantFilter
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.OperationId, latest!.OperationId)
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                            x => x.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.WorkflowInstanceId, null)
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.WithdrawalCommandId, null)
+                        // FIX3 S4: never under a live lease — the maker's own repeat may be starting it at the engine
+                        // right now (its start would land on an abandoned operation and the approval be orphaned).
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
+                            Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseOwner, null),
+                            Builders<FirstGskuIdentityWorkflowOperation>.Filter.Lte(x => x.LeaseUntilUtcTicksV1, nowTicks)),
+                        Builders<FirstGskuIdentityWorkflowOperation>.Update
+                            .Set(x => x.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)
+                            .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
+                            .Set(x => x.LastFailureCode, SubmitReplacedByEdit)
+                            .Set(x => x.NextAttemptAtUtcTicksV1, null)
+                            .Set(x => x.LeaseOwner, null)
+                            .Set(x => x.LeaseUntilUtcTicksV1, null)
+                            .Set(x => x.UpdatedAtUtcTicksV1, nowTicks)
+                            .Set(x => x.UpdatedAt, new DateTimeOffset(nowTicks, TimeSpan.Zero))
+                            .Inc(x => x.Version, 1),
+                        cancellationToken: cancellationToken);
+                    if (setAside.ModifiedCount != 1)
+                    {
+                        await session.AbortTransactionAsync(cancellationToken);
+                        return new(false, await GetByIdAsync(gsku.Id, cancellationToken), SubmitInFlight);
+                    }
+                }
+                updated = await _gskus.FindOneAndUpdateAsync(
+                    session,
+                    filter,
+                    update,
+                    new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After },
+                    cancellationToken);
+                if (updated is null)
+                {
+                    await session.AbortTransactionAsync(cancellationToken);
+                    break;
+                }
+                await session.CommitTransactionAsync(cancellationToken);
+                return new(true, updated);
+            }
+            catch (MongoException exception) when (attempt == 0 && exception.HasErrorLabel("TransientTransactionError"))
+            {
+                // A submit committed its reservation between this edit's read and its write: read again.
+                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            }
+            catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+            {
+                // FIX3 S5: no transaction (a standalone mongod), or still conflicting after the one repeat, or a store
+                // that is away — said with a code and a 503, not an uncoded 500.
+                if (session.IsInTransaction) await AbortQuietlyAsync(session);
+                return new(false, null, ProductIdentityStore.Unavailable);
+            }
+            catch
+            {
+                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                throw;
+            }
+        }
+
+        var current = await GetByIdAsync(gsku.Id, cancellationToken);
+        var isExactExternalReplay = Guid.TryParseExact(
+                newIntent.IdempotencyKey,
+                "D",
+                out _)
+            && current is not null
+            && current.Version == expectedVersion + 1
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+            && current.PackQuantity == gsku.PackQuantity
+            && string.Equals(current.PackUomCode, gsku.PackUomCode, StringComparison.Ordinal)
+            && PersistedWrite(current, newIntent) is { Operation: ProductAuditOperation.GskuDraftUpdated } persisted
+            && string.Equals(persisted.EvidenceHash, newIntent.EvidenceHash, StringComparison.Ordinal);
+        return isExactExternalReplay
+            ? new(true, current)
+            : new(false, current, CapacityOr(current, "CONCURRENCY_CONFLICT"));
     }
+
+    public Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> MarkIdentityPendingAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) => MutateLifecycleAsync(
+            id, expectedVersion, ProductIdentityLifecycleStatus.Draft,
+            ProductIdentityLifecycleStatus.PendingIdentityApproval, binding, auditIntent,
+            ProductAuditOperation.GskuIdentitySubmitted, cancellationToken);
+
+    public Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> ApproveIdentityAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) => MutateLifecycleAsync(
+            id, expectedVersion, ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            ProductIdentityLifecycleStatus.IdentityApproved, binding, auditIntent,
+            ProductAuditOperation.GskuIdentityApproved, cancellationToken);
+
+    public Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> RestoreDraftAfterRejectionAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) => MutateLifecycleAsync(
+            id, expectedVersion, ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            ProductIdentityLifecycleStatus.Draft, binding, auditIntent,
+            ProductAuditOperation.GskuIdentityRejected, cancellationToken);
+
+    public async Task<GskuChildCreationAdmissionResult> AcquireChildCreationAdmissionAsync(
+        Guid id, GskuChildIdentityKind childKind, string creationCommandId,
+        string requestFingerprint, DateTimeOffset acquiredAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var error = ValidateAdmission(childKind, creationCommandId, requestFingerprint, acquiredAtUtc);
+        if (error is not null) return new(false, false, null, error);
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current is null) return new(false, false, null, "GSKU_NOT_FOUND");
+        var existing = current.ChildCreationAdmissions.SingleOrDefault(x =>
+            x.ChildKind == childKind && x.CreationCommandId == creationCommandId);
+        if (existing is not null)
+            return existing.RequestFingerprint == requestFingerprint
+                ? new(true, true, current, null)
+                : new(false, false, current, "GSKU_CHILD_ADMISSION_CONFLICT");
+        if (current.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
+            return new(false, false, current, "PARENT_NOT_IDENTITY_APPROVED");
+        if (current.RetirementOperationId.HasValue)
+            return new(false, false, current, "GSKU_RETIREMENT_IN_PROGRESS");
+        // B4 (b): while a correction or a retirement request is in flight, no child is admitted — a child created
+        // between the request and its decision would turn an approved retirement into a silent "later".
+        if (current.ActiveLifecycleOperation is not null)
+            return new(false, false, current, "GSKU_LIFECYCLE_OPERATION_ACTIVE");
+        if (current.ChildCreationAdmissions.Count >= GskuChildCreationAdmission.MaximumActiveAdmissions)
+            return new(false, false, current, "GSKU_CHILD_ADMISSION_LIMIT_REACHED");
+
+        var admission = new GskuChildCreationAdmission
+        {
+            ChildKind = childKind, CreationCommandId = creationCommandId,
+            RequestFingerprint = requestFingerprint, AcquiredAtUtc = acquiredAtUtc
+        };
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & Builders<Gsku>.Filter.Not(Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+                x => x.ChildKind == childKind && x.CreationCommandId == creationCommandId))
+            & Builders<Gsku>.Filter.Where(x => x.ChildCreationAdmissions.Count < GskuChildCreationAdmission.MaximumActiveAdmissions);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Push(x => x.ChildCreationAdmissions, admission).Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, false, updated, null);
+        current = await GetByIdAsync(id, cancellationToken);
+        existing = current?.ChildCreationAdmissions.SingleOrDefault(x =>
+            x.ChildKind == childKind && x.CreationCommandId == creationCommandId);
+        return existing?.RequestFingerprint == requestFingerprint
+            ? new(true, true, current, null)
+            : new(false, false, current, existing is not null ? "GSKU_CHILD_ADMISSION_CONFLICT" : "GSKU_CHILD_ADMISSION_REJECTED");
+    }
+
+    public async Task<GskuChildCreationAdmissionResult> CompleteChildCreationAdmissionAsync(
+        Guid id, GskuChildIdentityKind childKind, string creationCommandId,
+        string requestFingerprint, CancellationToken cancellationToken = default)
+    {
+        var error = ValidateAdmission(childKind, creationCommandId, requestFingerprint, DateTimeOffset.UtcNow);
+        if (error is not null) return new(false, false, null, error);
+        var durable = await GetDurableChildFingerprintAsync(id, childKind, creationCommandId, cancellationToken);
+        if (durable is null) return new(false, false, await GetByIdAsync(id, cancellationToken), "GSKU_CHILD_BINDING_NOT_DURABLE");
+        if (durable != requestFingerprint)
+            return new(false, false, await GetByIdAsync(id, cancellationToken), "GSKU_CHILD_ADMISSION_CONFLICT");
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+                x => x.ChildKind == childKind && x.CreationCommandId == creationCommandId
+                     && x.RequestFingerprint == requestFingerprint);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.PullFilter(x => x.ChildCreationAdmissions,
+                x => x.ChildKind == childKind && x.CreationCommandId == creationCommandId
+                     && x.RequestFingerprint == requestFingerprint).Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, false, updated, null);
+        var current = await GetByIdAsync(id, cancellationToken);
+        var remaining = current?.ChildCreationAdmissions.SingleOrDefault(x =>
+            x.ChildKind == childKind && x.CreationCommandId == creationCommandId);
+        return remaining is null
+            ? new(true, true, current, null)
+            : new(false, false, current, "GSKU_CHILD_ADMISSION_CONFLICT");
+    }
+
+    /*
+     * LSKU FIX1 B1 (b) — child-kind independent (LSKU now, Finished Good in FG FIX1, CT 2026-10-06): an admission is
+     * NEVER released while its command still holds something that can become a child — a live child row (a cancelled,
+     * deleted draft holds nothing, B3) or a live code reservation of that kind (reserved, or consumed and not burned:
+     * the command's repeat, or a write whose outcome is unknown, may still produce the child). Otherwise it is
+     * released conditionally here, or swept by age (FindOrphan… / RepairOrphan…); one still held past the cutoff is
+     * counted (the tenant-free census, ChildCreationAdmissionCensusRepository — the GSKU_CHILD_ADMISSION gauge).
+     */
+    public async Task<GskuChildCreationAdmissionResult> ReleaseChildCreationAdmissionAsync(
+        Guid id, GskuChildIdentityKind childKind, string creationCommandId,
+        string requestFingerprint, CancellationToken cancellationToken = default)
+    {
+        var error = ValidateAdmission(childKind, creationCommandId, requestFingerprint, DateTimeOffset.UtcNow);
+        if (error is not null) return new(false, false, null, error);
+        if (await ChildHeldAsync(childKind, creationCommandId, cancellationToken))
+            return new(false, false, await GetByIdAsync(id, cancellationToken), ChildCreationAdmissionCodes.ChildRowExists);
+        var updated = await _gskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id) & AdmissionMatch(childKind, creationCommandId, requestFingerprint),
+            Builders<Gsku>.Update.PullFilter(x => x.ChildCreationAdmissions,
+                x => x.ChildKind == childKind && x.CreationCommandId == creationCommandId
+                     && x.RequestFingerprint == requestFingerprint).Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, false, updated, null);
+        var current = await GetByIdAsync(id, cancellationToken);
+        var remaining = current?.ChildCreationAdmissions.SingleOrDefault(x =>
+            x.ChildKind == childKind && x.CreationCommandId == creationCommandId);
+        return remaining is null
+            ? new(true, true, current, null)
+            : new(false, false, current, "GSKU_CHILD_ADMISSION_CONFLICT");
+    }
+
+    // LSKU FIX1 B1 (c): tenant-bounded read of admissions held past the cutoff with no child row behind them.
+    public async Task<IReadOnlyList<GskuOrphanChildAdmission>> FindOrphanChildCreationAdmissionsAsync(
+        GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc, int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Enum.IsDefined(childKind) || limit is < 1 or > 500 || acquiredBeforeUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(limit), ChildCreationAdmissionCodes.RepairContractInvalid);
+        // Paged by GSKU id: admissions that are held (a live row or reservation) never fill the page for good and
+        // hide the orphans of later GSKUs; the walk is bounded (MaximumHolderPages pages per call).
+        var orphans = new List<GskuOrphanChildAdmission>();
+        Guid? after = null;
+        for (var page = 0; page < MaximumHolderPages && orphans.Count < limit; page++)
+        {
+            var filter = ActiveFilter & Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+                x => x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc);
+            if (after.HasValue) filter &= Builders<Gsku>.Filter.Gt(x => x.Id, after.Value);
+            var holders = await _gskus.Find(filter).SortBy(x => x.Id).Limit(HolderPageSize).ToListAsync(cancellationToken);
+            foreach (var gsku in holders)
+            foreach (var admission in gsku.ChildCreationAdmissions.Where(x =>
+                         x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc))
+            {
+                if (orphans.Count >= limit) return orphans;
+                if (await ClassifyOrphanAsync(gsku, admission, childKind, acquiredBeforeUtc, cancellationToken) is { } orphan)
+                    orphans.Add(orphan);
+            }
+            if (holders.Count < HolderPageSize) break;
+            after = holders[^1].Id;
+        }
+        return orphans;
+    }
+
+    // The classification of one admission, shared by the bounded read above and the paged walk below (FIX2: extracted
+    // unchanged — held / bound to a cancelled row / never-consumed code / stale consumed code).
+    private async Task<GskuOrphanChildAdmission?> ClassifyOrphanAsync(
+        Gsku gsku, GskuChildCreationAdmission admission, GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc,
+        CancellationToken cancellationToken)
+    {
+        var hold = await ChildHoldAsync(childKind, admission.CreationCommandId, cancellationToken);
+        // FIX3 M6: not held because its code is bound to a row that was cancelled (deleted) — a cancel that
+        // committed and then failed before its burn: the repair burns that code too, then releases.
+        if (!hold.Held && hold.Reservation is
+            {
+                ReservationState: CodeReservationState.Consumed,
+                BindingState: CodeReservationBindingState.PendingIdentityWrite,
+                ConsumedEntityId: { } deletedIdentity
+            } boundToDeleted)
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc,
+                boundToDeleted.Id, deletedIdentity, boundToDeleted.Version);
+        else if (!hold.Held)
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc);
+        // FIX3 M6: held only by a code reserved before the cutoff and never consumed — nothing can become the
+        // child without consuming it; the repair consumes and burns it, then releases.
+        else if (!hold.ByRow && hold.Reservation is { ReservationState: CodeReservationState.Reserved } reserved
+                 && reserved.ReservedAt < acquiredBeforeUtc)
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc,
+                reserved.Id, null, reserved.Version, ReservationNeverConsumed: true);
+        // LSKU FIX2 item 5: held ONLY by a code consumed for an identity whose row never came, older than the
+        // cutoff — the operator path burns that code first (the repair handler), then releases.
+        else if (!hold.ByRow && hold.Reservation is
+                 {
+                     ReservationState: CodeReservationState.Consumed,
+                     BindingState: CodeReservationBindingState.PendingIdentityWrite,
+                     ConsumedEntityId: { } identity
+                 } stale
+                 && stale.ConsumedAt < acquiredBeforeUtc
+                 && !await IdentityRowExistsAsync(childKind, identity, cancellationToken))
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc,
+                stale.Id, identity, stale.Version);
+        return null;
+    }
+
+    // WP-MDM-SCOPE-INT-01 FIX2 item 1: one page of holder GSKUs after the cursor, every orphan of each (whole GSKUs, so
+    // the cursor never splits one). The caller walks the pages (bounded) and filters; NextAfterGskuId null = done.
+    public async Task<GskuOrphanAdmissionPage> FindOrphanChildCreationAdmissionPageAsync(
+        GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc, Guid? afterGskuId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Enum.IsDefined(childKind) || acquiredBeforeUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(childKind), ChildCreationAdmissionCodes.RepairContractInvalid);
+        var filter = ActiveFilter & Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+            x => x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc);
+        if (afterGskuId.HasValue) filter &= Builders<Gsku>.Filter.Gt(x => x.Id, afterGskuId.Value);
+        var holders = await _gskus.Find(filter).SortBy(x => x.Id).Limit(HolderPageSize).ToListAsync(cancellationToken);
+        var orphans = new List<GskuOrphanChildAdmission>();
+        foreach (var gsku in holders)
+        foreach (var admission in gsku.ChildCreationAdmissions.Where(x =>
+                     x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc))
+        {
+            if (await ClassifyOrphanAsync(gsku, admission, childKind, acquiredBeforeUtc, cancellationToken) is { } orphan)
+                orphans.Add(orphan);
+        }
+        return new(orphans, holders.Count < HolderPageSize ? null : holders[^1].Id);
+    }
+
+    // LSKU FIX1 B1 (c): conditioned on the version read, on no lifecycle operation holding the GSKU (its binding is
+    // tied to the version) and on the row still missing; the intent rides in the same write.
+    public async Task<GskuChildCreationAdmissionResult> RepairOrphanChildCreationAdmissionAsync(
+        GskuOrphanChildAdmission orphan, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(orphan);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var error = ValidateAdmission(orphan.ChildKind, orphan.CreationCommandId, orphan.RequestFingerprint, DateTimeOffset.UtcNow);
+        if (error is not null || _tenantId == Guid.Empty || orphan.GskuId == Guid.Empty
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Gsku
+            || auditIntent.AggregateId != orphan.GskuId || auditIntent.PreVersion != orphan.GskuVersion
+            || auditIntent.PostVersion != orphan.GskuVersion + 1
+            || auditIntent.Operation != ProductAuditOperation.GskuChildCreationAdmissionReleased
+            || !Exact(auditIntent.IdempotencyKey, 256) || !Exact(auditIntent.EvidenceHash, 256))
+            return new(false, false, null, ChildCreationAdmissionCodes.RepairContractInvalid);
+        if (await ChildHeldAsync(orphan.ChildKind, orphan.CreationCommandId, cancellationToken))
+            return new(false, false, await GetByIdAsync(orphan.GskuId, cancellationToken), ChildCreationAdmissionCodes.ChildRowExists);
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, orphan.GskuId)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, orphan.GskuVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & AdmissionMatch(orphan.ChildKind, orphan.CreationCommandId, orphan.RequestFingerprint)
+            & Builders<Gsku>.Filter.Exists($"AuditIntents.{AuditIntentLimits.MaxPerAggregate - 1}", false);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.PullFilter(x => x.ChildCreationAdmissions,
+                    x => x.ChildKind == orphan.ChildKind && x.CreationCommandId == orphan.CreationCommandId
+                         && x.RequestFingerprint == orphan.RequestFingerprint)
+                .Push(x => x.AuditIntents, auditIntent)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1),
+            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, false, updated, null);
+        var current = await GetByIdAsync(orphan.GskuId, cancellationToken);
+        if (PersistedWrite(current, auditIntent) is { } persisted)
+            return persisted.Operation == auditIntent.Operation && persisted.EvidenceHash == auditIntent.EvidenceHash
+                ? new(true, true, current, null)
+                : new(false, false, current, ChildCreationAdmissionCodes.RepairIdempotencyConflict);
+        return new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+            : current.ActiveLifecycleOperation is not null ? "GSKU_LIFECYCLE_OPERATION_ACTIVE"
+            : CapacityOr(current, "GSKU_CONCURRENCY_CONFLICT"));
+    }
+
+    private const int HolderPageSize = 100;
+    private const int MaximumHolderPages = GskuOrphanAdmissionPage.MaximumPages;
+
+    private static FilterDefinition<Gsku> AdmissionMatch(
+        GskuChildIdentityKind childKind, string creationCommandId, string requestFingerprint) =>
+        Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+            x => x.ChildKind == childKind && x.CreationCommandId == creationCommandId
+                 && x.RequestFingerprint == requestFingerprint);
+
+    // CT 2026-10-06: what may still become a child of this command — its live row, or its live code reservation.
+    private async Task<bool> ChildHeldAsync(
+        GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken) =>
+        (await ChildHoldAsync(childKind, creationCommandId, cancellationToken)).Held;
+
+    private sealed record ChildHold(bool Held, bool ByRow, CodeReservation? Reservation);
+
+    // A live row holds; so does a live reservation (reserved, or consumed and not burned) — except one bound to a row
+    // that was cancelled (an LSKU deleted; a Finished Good whose retained cancellation is settled — FG FIX1 review R1):
+    // that identity is over and its code is never handed out again (FIX2 item 4).
+    private async Task<ChildHold> ChildHoldAsync(
+        GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken)
+    {
+        if (await ChildRowExistsAsync(childKind, creationCommandId, cancellationToken)) return new(true, true, null);
+        var reservation = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.TenantId, _tenantId)
+                & Builders<CodeReservation>.Filter.Ne(x => x.IsDeleted, true)
+                & Builders<CodeReservation>.Filter.Eq(x => x.ReservationCommandId, creationCommandId)
+                & Builders<CodeReservation>.Filter.Eq(x => x.EntityType, childKind == GskuChildIdentityKind.Lsku
+                    ? CodeBearingEntityType.Lsku : CodeBearingEntityType.FinishedGood)
+                & (Builders<CodeReservation>.Filter.Eq(x => x.ReservationState, CodeReservationState.Reserved)
+                   | (Builders<CodeReservation>.Filter.Eq(x => x.ReservationState, CodeReservationState.Consumed)
+                      & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned))))
+            .FirstOrDefaultAsync(cancellationToken);
+        if (reservation is null) return new(false, false, null);
+        if (reservation.ConsumedEntityId is { } identity && await EndedIdentityRowExistsAsync(childKind, identity, cancellationToken))
+            return new(false, false, reservation);
+        return new(true, false, reservation);
+    }
+
+    private Task<bool> IdentityRowExistsAsync(GskuChildIdentityKind childKind, Guid identityId, CancellationToken ct) =>
+        childKind == GskuChildIdentityKind.Lsku
+            ? _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<Lsku>.Filter.Eq(x => x.Id, identityId)).AnyAsync(ct)
+            : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)).AnyAsync(ct);
+
+    private async Task<bool> EndedIdentityRowExistsAsync(GskuChildIdentityKind childKind, Guid identityId, CancellationToken ct)
+    {
+        if (childKind == GskuChildIdentityKind.Lsku)
+            return await _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<Lsku>.Filter.Eq(x => x.Id, identityId)
+                                     & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct);
+        var row = await _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+                                            & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)).FirstOrDefaultAsync(ct);
+        return row is not null && (row.IsDeleted || Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationProof.Disposition(row) == FinishedGoodCancellationDisposition.Cancelled);
+    }
+
+    private async Task<bool> ChildRowExistsAsync(
+        GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken)
+    {
+        if (childKind == GskuChildIdentityKind.Lsku)
+            return await _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
+                          & Builders<Lsku>.Filter.Ne(x => x.IsDeleted, true)
+                          & Builders<Lsku>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
+                .AnyAsync(cancellationToken);
+        // FG FIX1 review R1: a Finished Good is retained when cancelled; once its cancellation is SETTLED (the same
+        // proof as the retirement blocker) it holds nothing — its admission may then be released or swept.
+        var rows = await _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+                                             & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+                                             & Builders<FinishedGood>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
+            .ToListAsync(cancellationToken);
+        return rows.Any(row => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationProof.Disposition(row) != FinishedGoodCancellationDisposition.Cancelled);
+    }
+
+    public async Task<FirstGskuIdentityRetirementWriteResult<Gsku>> CloseChildAdmissionFenceAsync(
+        Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
+        CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || operationId == Guid.Empty || expectedVersion < 0 || !Exact(operationFingerprint, 256))
+            return new(false, false, null, "FIRST_GSKU_RETIREMENT_CONTRACT_INVALID");
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current?.RetirementOperationId == operationId)
+            return current.RetirementOperationFingerprint == operationFingerprint
+                ? new(true, true, current, null)
+                : new(false, false, current, "FIRST_GSKU_RETIREMENT_IDEMPOTENCY_CONFLICT");
+        if (current?.ChildCreationAdmissions.Count > 0)
+            return new(false, false, current, "GSKU_CHILD_CREATION_IN_PROGRESS");
+        var lifecycleBinding = current?.ActiveLifecycleOperation;
+        var fromRequest = lifecycleBinding is { Kind: GskuLifecycleOperationKind.Retirement }
+            && lifecycleBinding.OperationId == operationId
+            && lifecycleBinding.BaseGskuVersion + 1 == expectedVersion;
+        if (lifecycleBinding is not null && !fromRequest)
+            return new(false, false, current, "GSKU_LIFECYCLE_OPERATION_ACTIVE");
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
+            & (fromRequest
+                ? Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, lifecycleBinding)
+                : Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null))
+            & NoChildCreationAdmission;
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.RetirementOperationId, operationId)
+                .Set(x => x.RetirementOperationFingerprint, operationFingerprint)
+                .Set(x => x.ActiveLifecycleOperation, null)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1),
+            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND" : "FIRST_GSKU_RETIREMENT_FENCE_CONFLICT");
+    }
+
+    public async Task<string?> FindRetirementBlockerAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current is null) return "GSKU_NOT_FOUND";
+        if (current.ChildCreationAdmissions.Count > 0) return "GSKU_CHILD_CREATION_IN_PROGRESS";
+        if (await HasNonRetiredSiblingAsync(current.ProductDefinitionRevisionId, id, cancellationToken))
+            return "DEPENDENT_IDENTITIES_EXIST";
+        var childFilter = Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
+            & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, false)
+            & Builders<Lsku>.Filter.Eq(x => x.GskuId, id)
+            & Builders<Lsku>.Filter.Ne(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired);
+        if (await _lskus.Find(childFilter).AnyAsync(cancellationToken)) return "DEPENDENT_IDENTITIES_EXIST";
+        // FG FIX1 item 1 (BL-559; MOD-0290 s21.5): a Draft FG blocks like any non-retired child — except one whose audited
+        // Draft cancellation is FINISHED (its intent's central receipt is on the FG and validates). A cancellation still
+        // pending its audit, a decision without its evidence, a forged or legacy record: all keep blocking. An active
+        // sibling blocks whatever another FG's cancellation says. Ne(IsDeleted, true): a document without the field.
+        var fgFilter = Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+            & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+            & Builders<FinishedGood>.Filter.Eq(x => x.GskuId, id)
+            & Builders<FinishedGood>.Filter.Ne(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired);
+        using var children = await _finishedGoods.Find(fgFilter).ToCursorAsync(cancellationToken);
+        while (await children.MoveNextAsync(cancellationToken))
+        {
+            if (children.Current.Any(child => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+                    .FinishedGoodDraftCancellationProof.Disposition(child) != FinishedGoodCancellationDisposition.Cancelled))
+                return "DEPENDENT_IDENTITIES_EXIST";
+        }
+        return null;
+    }
+
+    public Task<bool> HasNonRetiredSiblingAsync(
+        Guid productDefinitionRevisionId, Guid excludingGskuId,
+        CancellationToken cancellationToken = default) =>
+        _gskus.Find(ActiveFilter
+                    & Builders<Gsku>.Filter.Eq(x => x.ProductDefinitionRevisionId, productDefinitionRevisionId)
+                    & Builders<Gsku>.Filter.Ne(x => x.Id, excludingGskuId)
+                    & Builders<Gsku>.Filter.Ne(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired))
+            .AnyAsync(cancellationToken);
+
+    public async Task<FirstGskuIdentityRetirementWriteResult<Gsku>> RetireIdentityAsync(
+        Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        if (await FindRetirementBlockerAsync(id, cancellationToken) is { } blocker)
+            return new(false, false, await GetByIdAsync(id, cancellationToken), blocker);
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replay = PersistedWrite(current, auditIntent);
+        if (replay is not null)
+            return replay.Operation == ProductAuditOperation.GskuIdentityRetired && replay.EvidenceHash == auditIntent.EvidenceHash
+                   && current!.LifecycleStatus == ProductIdentityLifecycleStatus.Retired
+                   && current.RetirementOperationId == operationId
+                   && current.RetirementOperationFingerprint == operationFingerprint
+                ? new(true, true, current, null)
+                : new(false, false, current, "FIRST_GSKU_RETIREMENT_IDEMPOTENCY_CONFLICT");
+        if (!ValidRetirementAudit(id, expectedVersion, auditIntent, ProductAuditOperation.GskuIdentityRetired))
+            return new(false, false, current, "AUDIT_INTENT_CONTRACT_INVALID");
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, operationId)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationFingerprint, operationFingerprint)
+            & NoChildCreationAdmission
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1).Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND" : CapacityOr(current, "FIRST_GSKU_RETIREMENT_CONCURRENCY_CONFLICT"));
+    }
+
+    public async Task<GskuRetirementRequestWriteResult> AcquireRetirementRequestAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        var error = ValidateRetirementRequest(id, expectedVersion, binding, auditIntent,
+            ProductAuditOperation.GskuRetirementRequested, false);
+        if (error is not null) return new(false, false, null, error);
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replay = RetirementRequestReplay(current, auditIntent, binding, false);
+        if (replay is not null) return replay;
+        if (await FindRetirementBlockerAsync(id, cancellationToken) is { } blocker)
+            return new(false, false, current, blocker);
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
+            & NoChildCreationAdmission
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, binding)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, false, updated, null);
+        // Said from what is there NOW (as the correction does): a lock that got in after the reads above is "active",
+        // not an unexplained admission conflict.
+        current = await GetByIdAsync(id, cancellationToken);
+        return new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+                : current.ActiveLifecycleOperation is not null ? "GSKU_LIFECYCLE_OPERATION_ACTIVE"
+                : CapacityOr(current, "GSKU_RETIREMENT_REQUEST_ADMISSION_CONFLICT"));
+    }
+
+    public async Task<GskuRetirementRequestWriteResult> RejectRetirementRequestAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        var error = ValidateRetirementRequest(id, expectedVersion, binding, auditIntent,
+            ProductAuditOperation.GskuRetirementRejected, true);
+        if (error is not null) return new(false, false, null, error);
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replay = RetirementRequestReplay(current, auditIntent, binding, true);
+        if (replay is not null) return replay;
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, GskuLifecycleOperationKind.Retirement)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseGskuVersion, binding.BaseGskuVersion)
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, null)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+                : CapacityOr(current, "GSKU_RETIREMENT_REQUEST_CONCURRENCY_CONFLICT"));
+    }
+
+    public async Task<GskuRetirementRequestWriteResult> RecordRetirementRequestConflictAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        if (_tenantId == Guid.Empty || id == Guid.Empty || expectedVersion < 0
+            || binding.Kind != GskuLifecycleOperationKind.Retirement || binding.OperationId == Guid.Empty
+            || binding.BaseGskuVersion >= expectedVersion
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Gsku
+            || auditIntent.AggregateId != id || auditIntent.PreVersion != expectedVersion
+            || auditIntent.PostVersion != expectedVersion + 1
+            || auditIntent.Operation != ProductAuditOperation.GskuRetirementManualReconciliationRequired
+            || !Exact(auditIntent.IdempotencyKey, 256) || !Exact(auditIntent.EvidenceHash, 256))
+            return new(false, false, null, "GSKU_RETIREMENT_REQUEST_CONTRACT_INVALID");
+        var current = await GetByIdAsync(id, cancellationToken);
+        var persisted = PersistedWrite(current, auditIntent);
+        if (persisted is not null)
+            return persisted.Operation == auditIntent.Operation && persisted.EvidenceHash == auditIntent.EvidenceHash
+                ? new(true, true, current, null)
+                : new(false, false, current, "GSKU_RETIREMENT_REQUEST_IDEMPOTENCY_CONFLICT");
+        var activeBinding = Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseGskuVersion, binding.BaseGskuVersion);
+        var pairFence = Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, binding.OperationId);
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & (activeBinding | pairFence)
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+                : CapacityOr(current, "GSKU_RETIREMENT_REQUEST_CONCURRENCY_CONFLICT"));
+    }
+
+    private string? ValidateRetirementRequest(Guid id, int expectedVersion,
+        GskuActiveLifecycleOperationBinding binding, LocalAuditIntent auditIntent,
+        ProductAuditOperation operation, bool terminal)
+    {
+        if (_tenantId == Guid.Empty || id == Guid.Empty || expectedVersion < 0
+            || binding.Kind != GskuLifecycleOperationKind.Retirement || binding.OperationId == Guid.Empty
+            || binding.BaseGskuVersion + (terminal ? 1 : 0) != expectedVersion
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Gsku
+            || auditIntent.AggregateId != id || auditIntent.PreVersion != expectedVersion
+            || auditIntent.PostVersion != expectedVersion + 1 || auditIntent.Operation != operation
+            || !Exact(auditIntent.IdempotencyKey, 256) || !Exact(auditIntent.EvidenceHash, 256))
+            return "GSKU_RETIREMENT_REQUEST_CONTRACT_INVALID";
+        return null;
+    }
+
+    private static GskuRetirementRequestWriteResult? RetirementRequestReplay(Gsku? current,
+        LocalAuditIntent auditIntent, GskuActiveLifecycleOperationBinding binding, bool terminal)
+    {
+        var persisted = PersistedWrite(current, auditIntent);
+        if (persisted is null) return null;
+        var bindingMatches = terminal ? current!.ActiveLifecycleOperation is null
+            : current!.ActiveLifecycleOperation == binding;
+        return persisted.Operation == auditIntent.Operation && persisted.EvidenceHash == auditIntent.EvidenceHash
+               && bindingMatches
+            ? new(true, true, current, null)
+            : new(false, false, current, "GSKU_RETIREMENT_REQUEST_IDEMPOTENCY_CONFLICT");
+    }
+
+    public async Task<GskuCorrectionWriteResult> AcquireCorrectionAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        var error = ValidateCorrection(id, expectedVersion, binding, auditIntent,
+            ProductAuditOperation.GskuCorrectionRequested, false);
+        if (error is not null) return new(false, false, null, error);
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replay = CorrectionReplay(current, auditIntent, binding, false);
+        if (replay is not null) return replay;
+        if (await FindRetirementBlockerAsync(id, cancellationToken) is { } blocker)
+            return new(false, false, current, blocker);
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
+            & NoChildCreationAdmission
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, binding)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, false, updated, null);
+        current = await GetByIdAsync(id, cancellationToken);
+        return new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+            : current.ActiveLifecycleOperation is not null ? "GSKU_LIFECYCLE_OPERATION_ACTIVE"
+            : current.Version != expectedVersion ? "GSKU_CONCURRENCY_CONFLICT"
+            : CapacityOr(current, "GSKU_CORRECTION_ADMISSION_CONFLICT"));
+    }
+
+    public async Task<GskuCorrectionWriteResult> ApplyCorrectionDecisionAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        decimal? approvedPackQuantity, string? approvedPackUomCode,
+        ReferenceCatalogSelection? approvedPackApplicabilitySelection,
+        ReferenceCatalogSelection? approvedPackUomSelection,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        var approved = approvedPackQuantity.HasValue || approvedPackUomCode is not null
+            || approvedPackApplicabilitySelection is not null || approvedPackUomSelection is not null;
+        var expectedOperation = approved ? ProductAuditOperation.GskuCorrectionApplied
+            : ProductAuditOperation.GskuCorrectionRejected;
+        var error = ValidateCorrection(id, expectedVersion, binding, auditIntent, expectedOperation, true);
+        if (error is not null || approved && (approvedPackQuantity is not > 0
+                || string.IsNullOrWhiteSpace(approvedPackUomCode)
+                || approvedPackApplicabilitySelection is null || approvedPackUomSelection is null))
+            return new(false, false, null, error ?? "GSKU_CORRECTION_CONTRACT_INVALID");
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replay = CorrectionReplay(current, auditIntent, binding, true);
+        if (replay is not null) return replay;
+        if (approved && await FindRetirementBlockerAsync(id, cancellationToken) is { } blocker)
+            return new(false, false, current, blocker);
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, GskuLifecycleOperationKind.Correction)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseGskuVersion, binding.BaseGskuVersion)
+            & NoChildCreationAdmission
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, null)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        if (approved)
+            update = update.Set(x => x.PackQuantity, approvedPackQuantity!.Value)
+                .Set(x => x.PackUomCode, approvedPackUomCode!)
+                .Set(x => x.PackApplicabilitySelection, approvedPackApplicabilitySelection!)
+                .Set(x => x.PackUomSelection, approvedPackUomSelection!);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter, update,
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND" : CapacityOr(current, "GSKU_CORRECTION_CONCURRENCY_CONFLICT"));
+    }
+
+    public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
+    public const string SubmitInFlight = "GSKU_IDENTITY_SUBMIT_IN_FLIGHT";
+
+    private static async Task AbortQuietlyAsync(IClientSessionHandle session)
+    {
+        try { await session.AbortTransactionAsync(CancellationToken.None); }
+        catch (MongoException) { /* the store is away; the transaction ends with it */ }
+    }
+    public const string IdentityReconciliationRequired = "GSKU_IDENTITY_RECONCILIATION_REQUIRED";
+    public const string SubmitReplacedByEdit = "FIRST_GSKU_IDENTITY_SUBMIT_REPLACED_BY_EDIT";
+
+    private FilterDefinition<FirstGskuIdentityWorkflowOperation> IdentityOperationTenantFilter =>
+        Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.TenantId, _tenantId)
+        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.IsDeleted, false);
+
+    // A write the per-aggregate cap refused (intents wait for delivery to be compacted into receipts) says so — it is
+    // not a conflict of the record, and a caller must not treat it as one.
+    private static string CapacityOr(Gsku? current, string otherwise) =>
+        current is not null && current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate
+            ? AuditCapacityReached
+            : otherwise;
+
+    private sealed record PersistedIntent(ProductAuditOperation Operation, string EvidenceHash);
+
+    // What a write with this key left on the aggregate: its intent, or — once delivered and compacted — its receipt
+    // (the receipt keeps the intent's id, which is derived from the operation, and its evidence). LSKU's rule.
+    private static PersistedIntent? PersistedWrite(Gsku? current, LocalAuditIntent expected)
+    {
+        var intent = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == expected.IdempotencyKey);
+        if (intent is not null) return new(intent.Operation, intent.EvidenceHash);
+        var receipt = current?.AuditIntentReceipts.SingleOrDefault(x => x.IdempotencyKey == expected.IdempotencyKey);
+        if (receipt is null) return null;
+        return receipt.IntentId == expected.IntentId && receipt.TenantId == expected.TenantId
+               && !string.IsNullOrWhiteSpace(receipt.CentralAcknowledgement)
+               && !string.IsNullOrWhiteSpace(receipt.CompactReceiptReference)
+            ? new(expected.Operation, receipt.EvidenceHash)
+            : new((ProductAuditOperation)(-1), receipt.EvidenceHash); // a receipt of another write: a conflict
+    }
+
+    /*
+     * B3: a correction or retirement request that ends without its decision being applied (nothing was started,
+     * the decision could not be used, the decision is not applicable any more) gives the GSKU back: the lock goes in
+     * the same write that records why (the intent), conditioned on this very operation and version.
+     */
+    public async Task<GskuCorrectionWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        var expectedOperation = binding.Kind == GskuLifecycleOperationKind.Correction
+            ? ProductAuditOperation.GskuCorrectionManualReconciliationRequired
+            : ProductAuditOperation.GskuRetirementManualReconciliationRequired;
+        if (_tenantId == Guid.Empty || id == Guid.Empty || binding.OperationId == Guid.Empty
+            || binding.BaseGskuVersion + 1 != expectedVersion
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Gsku
+            || auditIntent.AggregateId != id || auditIntent.PreVersion != expectedVersion
+            || auditIntent.PostVersion != expectedVersion + 1 || auditIntent.Operation != expectedOperation
+            || !Exact(auditIntent.IdempotencyKey, 256) || !Exact(auditIntent.EvidenceHash, 256))
+            return new(false, false, null, "GSKU_LIFECYCLE_RELEASE_CONTRACT_INVALID");
+        var current = await GetByIdAsync(id, cancellationToken);
+        var persisted = PersistedWrite(current, auditIntent);
+        if (persisted is not null)
+            return persisted.Operation == auditIntent.Operation && persisted.EvidenceHash == auditIntent.EvidenceHash
+                   && current!.ActiveLifecycleOperation is null
+                ? new(true, true, current, null)
+                : new(false, false, current, "GSKU_LIFECYCLE_RELEASE_IDEMPOTENCY_CONFLICT");
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseGskuVersion, binding.BaseGskuVersion)
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, null)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+                : current.ActiveLifecycleOperation is null ? "GSKU_LIFECYCLE_NOT_HELD"
+                : CapacityOr(current, "GSKU_LIFECYCLE_RELEASE_CONFLICT"));
+    }
+
+    private string? ValidateCorrection(Guid id, int expectedVersion,
+        GskuActiveLifecycleOperationBinding binding, LocalAuditIntent auditIntent,
+        ProductAuditOperation operation, bool terminal)
+    {
+        if (_tenantId == Guid.Empty || id == Guid.Empty || expectedVersion < 0
+            || binding.Kind != GskuLifecycleOperationKind.Correction || binding.OperationId == Guid.Empty
+            || binding.BaseGskuVersion + (terminal ? 1 : 0) != expectedVersion
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Gsku
+            || auditIntent.AggregateId != id || auditIntent.PreVersion != expectedVersion
+            || auditIntent.PostVersion != expectedVersion + 1 || auditIntent.Operation != operation
+            || !Exact(auditIntent.IdempotencyKey, 256) || !Exact(auditIntent.EvidenceHash, 256))
+            return "GSKU_CORRECTION_CONTRACT_INVALID";
+        return null;
+    }
+
+    private static GskuCorrectionWriteResult? CorrectionReplay(Gsku? current,
+        LocalAuditIntent auditIntent, GskuActiveLifecycleOperationBinding binding, bool terminal)
+    {
+        var persisted = PersistedWrite(current, auditIntent);
+        if (persisted is null) return null;
+        var bindingMatches = terminal ? current!.ActiveLifecycleOperation is null
+            : current!.ActiveLifecycleOperation == binding;
+        return persisted.Operation == auditIntent.Operation && persisted.EvidenceHash == auditIntent.EvidenceHash
+               && bindingMatches
+            ? new(true, true, current, null)
+            : new(false, false, current, "GSKU_CORRECTION_IDEMPOTENCY_CONFLICT");
+    }
+
+    private async Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> MutateLifecycleAsync(
+        Guid id, int expectedVersion, ProductIdentityLifecycleStatus sourceStatus,
+        ProductIdentityLifecycleStatus targetStatus, FirstGskuIdentityWorkflowBinding binding,
+        LocalAuditIntent auditIntent, ProductAuditOperation operation, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var contractError = ValidateLifecycleContract(id, expectedVersion, binding, auditIntent, operation);
+        if (contractError is not null)
+        {
+            return new(false, false, null, contractError);
+        }
+
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replayIntent = PersistedWrite(current, auditIntent);
+        if (replayIntent is not null)
+        {
+            var exact = replayIntent.Operation == operation
+                        && replayIntent.EvidenceHash == auditIntent.EvidenceHash
+                        && current!.LifecycleStatus == targetStatus
+                        && SameBinding(current.IdentityWorkflowBinding, binding);
+            return exact
+                ? new(true, true, current, null)
+                : new(false, false, current, "FIRST_GSKU_IDENTITY_IDEMPOTENCY_CONFLICT");
+        }
+
+        var filter = ActiveFilter
+                     & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+                     & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, sourceStatus)
+                     & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        if (sourceStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
+        {
+            filter &= BindingFence(binding);
+        }
+
+        var update = Builders<Gsku>.Update
+            .Set(x => x.LifecycleStatus, targetStatus)
+            .Set(x => x.IdentityWorkflowBinding, binding)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _gskus.FindOneAndUpdateAsync(
+            filter, update, new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After },
+            cancellationToken);
+        if (updated is not null)
+        {
+            return new(true, false, updated, null);
+        }
+
+        current = await GetByIdAsync(id, cancellationToken);
+        return new(false, false, current, current is null
+            ? "FIRST_GSKU_NOT_FOUND"
+            : current.Version != expectedVersion
+                ? "FIRST_GSKU_CONCURRENCY_CONFLICT"
+                : current.LifecycleStatus != sourceStatus
+                    ? "FIRST_GSKU_STATE_CONFLICT"
+                    // FIX2 item 7: the cap is said as the cap (the processor waits), not as a binding conflict.
+                    : CapacityOr(current, "FIRST_GSKU_WORKFLOW_BINDING_CONFLICT"));
+    }
+
+    private string? ValidateLifecycleContract(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding,
+        LocalAuditIntent auditIntent, ProductAuditOperation operation)
+    {
+        if (_tenantId == Guid.Empty || id == Guid.Empty || expectedVersion < 0
+            || binding.GskuId != id || binding.ProductDefinitionRevisionId == Guid.Empty
+            || binding.WorkflowInstanceId == Guid.Empty || binding.WorkflowTemplateId == Guid.Empty
+            || binding.WorkflowTemplateVersionId == Guid.Empty || binding.ApprovalTaskId == Guid.Empty
+            || binding.AssignmentSnapshotId == Guid.Empty || binding.StartTransitionLogId == Guid.Empty
+            || binding.SubmitterSubjectId == Guid.Empty || binding.ObjectType != "gsku"
+            || binding.SubmittedAtUtc.Offset != TimeSpan.Zero
+            || binding.DueAtUtc.HasValue && binding.DueAtUtc.Value.Offset != TimeSpan.Zero
+            || string.IsNullOrWhiteSpace(binding.ObjectRef)
+            || string.IsNullOrWhiteSpace(binding.StartIdempotencyKey)
+            || string.IsNullOrWhiteSpace(binding.StartRequestFingerprint))
+        {
+            return "FIRST_GSKU_WORKFLOW_BINDING_INVALID";
+        }
+        var expectedDecision = operation switch
+        {
+            ProductAuditOperation.GskuIdentityApproved => ProductIdentityDecisionKind.Approved,
+            ProductAuditOperation.GskuIdentityRejected => ProductIdentityDecisionKind.Rejected,
+            _ => (ProductIdentityDecisionKind?)null
+        };
+        if (expectedDecision.HasValue
+                ? !ValidTerminalDecision(binding, expectedDecision.Value)
+                : binding.TerminalDecision is not null)
+        {
+            return "FIRST_GSKU_WORKFLOW_DECISION_INVALID";
+        }
+        if (auditIntent.TenantId != _tenantId || auditIntent.AggregateId != id
+            || auditIntent.PreVersion != expectedVersion || auditIntent.PostVersion != expectedVersion + 1
+            || auditIntent.Operation != operation || string.IsNullOrWhiteSpace(auditIntent.IdempotencyKey)
+            || string.IsNullOrWhiteSpace(auditIntent.EvidenceHash))
+        {
+            return "AUDIT_INTENT_CONTRACT_INVALID";
+        }
+        return null;
+    }
+
+    private FilterDefinition<Gsku> BindingFence(FirstGskuIdentityWorkflowBinding binding) =>
+        Builders<Gsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.WorkflowInstanceId, binding.WorkflowInstanceId)
+        & Builders<Gsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.ApprovalTaskId, binding.ApprovalTaskId)
+        & Builders<Gsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.StartRequestFingerprint, binding.StartRequestFingerprint);
+
+    private static bool SameBinding(FirstGskuIdentityWorkflowBinding? left, FirstGskuIdentityWorkflowBinding right) =>
+        left is not null && left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.WorkflowTemplateId == right.WorkflowTemplateId
+        && left.WorkflowTemplateVersionId == right.WorkflowTemplateVersionId
+        && left.ApprovalTaskId == right.ApprovalTaskId
+        && left.AssignmentSnapshotId == right.AssignmentSnapshotId
+        && left.StartTransitionLogId == right.StartTransitionLogId
+        && left.ObjectType == right.ObjectType
+        && left.GskuId == right.GskuId
+        && left.ProductDefinitionRevisionId == right.ProductDefinitionRevisionId
+        && left.ObjectRef == right.ObjectRef
+        && left.SubmitterSubjectId == right.SubmitterSubjectId
+        && left.StartIdempotencyKey == right.StartIdempotencyKey
+        && left.StartRequestFingerprint == right.StartRequestFingerprint
+        && left.SubmittedAtUtc == right.SubmittedAtUtc
+        && left.DueAtUtc == right.DueAtUtc
+        && SameTerminalDecision(left.TerminalDecision, right.TerminalDecision);
+
+    private static bool ValidTerminalDecision(
+        FirstGskuIdentityWorkflowBinding binding, ProductIdentityDecisionKind expected)
+    {
+        var value = binding.TerminalDecision;
+        return value is not null && value.Decision == expected
+            && value.WorkflowInstanceId == binding.WorkflowInstanceId
+            && value.ApprovalTaskId == binding.ApprovalTaskId
+            && value.WorkflowTemplateId == binding.WorkflowTemplateId
+            && value.WorkflowTemplateVersionId == binding.WorkflowTemplateVersionId
+            && value.ObjectType == binding.ObjectType && value.ObjectId == binding.GskuId
+            && value.ObjectRef == binding.ObjectRef && value.DecisionActorSubjectId != Guid.Empty
+            && value.DecisionActorSubjectId != binding.SubmitterSubjectId
+            && value.DecisionAtUtc.Offset == TimeSpan.Zero && value.TransitionSequence > 0
+            && (expected == ProductIdentityDecisionKind.Approved
+                ? value.TaskStatus == "Approved" && value.InstanceStatus == "Completed"
+                : value.TaskStatus == "Rejected" && value.InstanceStatus == "Rejected");
+    }
+
+    private static bool SameTerminalDecision(
+        ProductIdentityWorkflowDecisionEvidence? left, ProductIdentityWorkflowDecisionEvidence? right) =>
+        left is null && right is null
+        || left is not null && right is not null
+        && left.Decision == right.Decision && left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.ApprovalTaskId == right.ApprovalTaskId && left.WorkflowTemplateId == right.WorkflowTemplateId
+        && left.WorkflowTemplateVersionId == right.WorkflowTemplateVersionId
+        && left.ObjectType == right.ObjectType && left.ObjectId == right.ObjectId
+        && left.ObjectRef == right.ObjectRef && left.DecisionActorSubjectId == right.DecisionActorSubjectId
+        && left.ReasonCode == right.ReasonCode && left.DecisionAtUtc == right.DecisionAtUtc
+        && left.TransitionSequence == right.TransitionSequence && left.TaskStatus == right.TaskStatus
+        && left.InstanceStatus == right.InstanceStatus;
 
     private static bool SameFacts(Gsku left, Gsku right)
         => left.Id == right.Id
@@ -217,6 +1635,78 @@ public sealed class GskuRepository : IGskuRepository
            && left.CodeReservationId == right.CodeReservationId
            && left.CanonicalCode == right.CanonicalCode
            && left.CreationCommandId == right.CreationCommandId;
+
+    private async Task<string?> GetDurableChildFingerprintAsync(
+        Guid gskuId, GskuChildIdentityKind childKind, string creationCommandId,
+        CancellationToken cancellationToken)
+    {
+        if (childKind == GskuChildIdentityKind.Lsku)
+        {
+            var child = await _lskus.Find(
+                    Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
+                    & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, false)
+                    & Builders<Lsku>.Filter.Eq(x => x.GskuId, gskuId)
+                    & Builders<Lsku>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
+                .Project(x => new { x.Id, x.CodeReservationId, x.CanonicalCode, x.MarketCode })
+                .FirstOrDefaultAsync(cancellationToken);
+            if (child is null || !await HasConfirmedReservationAsync(
+                    child.CodeReservationId, CodeBearingEntityType.Lsku, child.Id, child.CanonicalCode, cancellationToken))
+                return null;
+            return GskuChildCreationAdmission.ComputeRequestFingerprint(
+                gskuId, childKind, creationCommandId, child.MarketCode);
+        }
+        // FG FIX1 part B item 8: Ne(true), not Eq(false) — a Finished Good written before the field existed is live
+        // (the cancel's Complete step reaches here for it too).
+        var finishedGood = await _finishedGoods.Find(
+                Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+                & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+                & Builders<FinishedGood>.Filter.Eq(x => x.GskuId, gskuId)
+                & Builders<FinishedGood>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
+            .Project(x => new { x.Id, x.CodeReservationId, x.CanonicalCode }).FirstOrDefaultAsync(cancellationToken);
+        if (finishedGood is null || !await HasConfirmedReservationAsync(
+                finishedGood.CodeReservationId, CodeBearingEntityType.FinishedGood,
+                finishedGood.Id, finishedGood.CanonicalCode, cancellationToken))
+            return null;
+        return GskuChildCreationAdmission.ComputeRequestFingerprint(gskuId, childKind, creationCommandId);
+    }
+
+    private Task<bool> HasConfirmedReservationAsync(
+        Guid reservationId, CodeBearingEntityType entityType, Guid entityId,
+        string canonicalCode, CancellationToken cancellationToken) =>
+        _reservations.Find(
+            Builders<CodeReservation>.Filter.Eq(x => x.TenantId, _tenantId)
+            & Builders<CodeReservation>.Filter.Eq(x => x.IsDeleted, false)
+            & Builders<CodeReservation>.Filter.Eq(x => x.Id, reservationId)
+            & Builders<CodeReservation>.Filter.Eq(x => x.EntityType, entityType)
+            & Builders<CodeReservation>.Filter.Eq(x => x.ReservationState, CodeReservationState.Consumed)
+            & Builders<CodeReservation>.Filter.Eq(x => x.BindingState, CodeReservationBindingState.Confirmed)
+            & Builders<CodeReservation>.Filter.Eq(x => x.ConsumedEntityId, entityId)
+            & Builders<CodeReservation>.Filter.Eq(x => x.ReservedCode, canonicalCode))
+        .AnyAsync(cancellationToken);
+
+    private static string? ValidateAdmission(
+        GskuChildIdentityKind childKind, string creationCommandId,
+        string requestFingerprint, DateTimeOffset acquiredAtUtc)
+    {
+        if (!Enum.IsDefined(childKind) || !Exact(creationCommandId, 200)
+            || requestFingerprint is not { Length: 64 }
+            || requestFingerprint.Any(c => !Uri.IsHexDigit(c))
+            || acquiredAtUtc.Offset != TimeSpan.Zero)
+            return "GSKU_CHILD_ADMISSION_CONTRACT_INVALID";
+        return null;
+    }
+
+    private bool ValidRetirementAudit(
+        Guid id, int expectedVersion, LocalAuditIntent auditIntent, ProductAuditOperation operation) =>
+        _tenantId != Guid.Empty && id != Guid.Empty && expectedVersion >= 0
+        && auditIntent.TenantId == _tenantId && auditIntent.AggregateId == id
+        && auditIntent.PreVersion == expectedVersion && auditIntent.PostVersion == expectedVersion + 1
+        && auditIntent.Operation == operation && Exact(auditIntent.IdempotencyKey, 256)
+        && Exact(auditIntent.EvidenceHash, 256);
+
+    private static bool Exact(string? value, int maximum) =>
+        value is { Length: > 0 } && value.Length <= maximum
+        && value == value.Trim() && !value.Any(char.IsControl);
 
     private void EnsureIndexes()
     {
@@ -228,14 +1718,28 @@ public sealed class GskuRepository : IGskuRepository
             new CreateIndexModel<Gsku>(Builders<Gsku>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CanonicalCode),
                 new CreateIndexOptions { Unique = true, Name = "ux_mdm_gskus_tenant_code" }),
             new CreateIndexModel<Gsku>(Builders<Gsku>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ProductDefinitionRevisionId),
-                new CreateIndexOptions { Name = "ix_mdm_gskus_tenant_revision" })
+                new CreateIndexOptions { Name = "ix_mdm_gskus_tenant_revision" }),
+            // FIX3 M5: the census (every tenant, every 300 s) reads only GSKUs holding an admission — a partial
+            // multikey index on the acquisition time instead of a scan of every GSKU.
+            new CreateIndexModel<Gsku>(Builders<Gsku>.IndexKeys.Ascending("ChildCreationAdmissions.AcquiredAtUtc"),
+                new CreateIndexOptions<Gsku>
+                {
+                    Name = "ix_mdm_gskus_child_admission_acquired",
+                    PartialFilterExpression = Builders<Gsku>.Filter.Exists("ChildCreationAdmissions.AcquiredAtUtc")
+                })
         ]);
     }
 
     private FilterDefinition<Gsku> TenantFilter => Builders<Gsku>.Filter.Eq(x => x.TenantId, _tenantId);
+    // LSKU FIX2 item 13 (CT addendum; GP flow 1 FIX1's shape): a GSKU written before ChildCreationAdmissions existed
+    // has no such field, and Mongo's $size 0 does not match a missing field — such a GSKU could take no lock or fence
+    // and could never be retired. "No admission" is an empty list OR no list at all.
+    private static FilterDefinition<Gsku> NoChildCreationAdmission =>
+        Builders<Gsku>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+        | Builders<Gsku>.Filter.Exists(x => x.ChildCreationAdmissions, false);
+
     private FilterDefinition<Gsku> ActiveFilter => TenantFilter & Builders<Gsku>.Filter.Eq(x => x.IsDeleted, false);
     private FilterDefinition<Gsku> ReferenceableFilter =>
-        ActiveFilter & Builders<Gsku>.Filter.In(
-            x => x.LifecycleStatus,
-            [ProductIdentityLifecycleStatus.Draft, ProductIdentityLifecycleStatus.IdentityApproved]);
+        ActiveFilter & Builders<Gsku>.Filter.Eq(
+            x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved);
 }

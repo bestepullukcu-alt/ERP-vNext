@@ -310,6 +310,16 @@ public static class AccountKindAcceptance
         }
 
         /// <summary>
+        /// BL-529 — the host's environment name; "Development" (the default) for every host but one that must measure
+        /// production behaviour. Outside Development the host reads no appsettings.Development.json and no user secrets,
+        /// and gets disposable S2S keys (<see cref="InternalApiKey"/>).
+        /// </summary>
+        protected virtual string HostEnvironmentName => "Development";
+
+        /// <summary>BL-529 — the test-owned internal API key of a non-Development host (null on a Development host).</summary>
+        public string? InternalApiKey { get; private set; }
+
+        /// <summary>
         /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — TEST-ONLY seam. When set, invoked AFTER the real host is
         /// built (the production DataSeeder has already run against it) but BEFORE this fixture's own
         /// <c>SeedAsync</c> — including its read-back checks that verify the production seeder's catalog keys
@@ -433,7 +443,10 @@ public static class AccountKindAcceptance
                     // InitializeAsync()/InitializeAsync_ForTestingInjectedFailure(), which always pass
                     // mongoDataDirectory: null) are UNCHANGED: they keep "Development" exactly as before.
                     var isAcceptanceHostPath = _isAcceptanceHostPath;
-                    var hostEnvironmentName = isAcceptanceHostPath ? "AcceptanceHostPrep" : "Development";
+                    // BL-529 — a derived host may ask for a non-Development name (HostEnvironmentName) to measure what
+                    // production does where Development differs (the tenant-resolution bypass, dev-only links).
+                    var hostEnvironmentName = isAcceptanceHostPath ? "AcceptanceHostPrep" : HostEnvironmentName;
+                    var isNonDevelopmentHost = !isAcceptanceHostPath && !string.Equals(hostEnvironmentName, "Development", StringComparison.Ordinal);
 
                     var overrides = new Dictionary<string, string?>
                     {
@@ -449,8 +462,24 @@ public static class AccountKindAcceptance
                         // Development base URL is the LIVE dev Platform on 5057 and its shared database: a test must never
                         // reach it. A refused loopback port instead — a derived host that wants a Platform replaces the
                         // primary handler (ConfigureTestServices); every other host sees "Platform down", the best-effort path.
-                        ["PlatformService__BaseUrl"] = UnreachablePlatformBaseUrl
+                        ["PlatformService__BaseUrl"] = UnreachablePlatformBaseUrl,
+                        // MOD-0033-FU02 §F.3 — this host runs the real Program under "Development" with the API project
+                        // directory as content root. After a developer runs scripts/dev/setup-service-trust.*, a
+                        // git-ignored appsettings.Development.local.json sits there (issuer key, client registry): the
+                        // host would load it and apply the developer's registry to the test database. Off, through the
+                        // one channel CreateBuilder reads before Program.cs adds that file.
+                        ["DevelopmentLocalSettings__Enabled"] = "false"
                     };
+
+                    if (isNonDevelopmentHost)
+                    {
+                        // BL-529 — outside Development the API reads neither appsettings.Development.json nor user secrets,
+                        // and its required-secret validation wants the two S2S keys: test-owned, disposable values (the
+                        // internal key is handed to the derived host's tests through InternalApiKey).
+                        InternalApiKey = GenerateTestOnlyJwtSecret();
+                        overrides["InternalEventAuth__ApiKey"] = InternalApiKey;
+                        overrides["PlatformService__InternalApiKey"] = GenerateTestOnlyJwtSecret();
+                    }
 
                     if (isAcceptanceHostPath)
                     {
@@ -494,7 +523,7 @@ public static class AccountKindAcceptance
                     // acceptance path this preview must mirror what the REAL factory build below will actually do
                     // (the test-owned overrides only, as an in-memory source), or the §1(c) comparison would no
                     // longer mean what it claims to.
-                    var preview = BuildEffectiveHostConfigurationPreview(isAcceptanceHostPath, overrides);
+                    var preview = BuildEffectiveHostConfigurationPreview(isAcceptanceHostPath, overrides, isNonDevelopmentHost);
                     AccountKindAcceptanceGuard.EnsureEffectiveConfigurationTargetsTheIsolatedDatabase(
                         preview, _runner.ConnectionString, DatabaseName);
 
@@ -782,7 +811,7 @@ public static class AccountKindAcceptance
         /// preview resolves to exactly what Program.cs will resolve once the host is actually built.
         /// </summary>
         private static IConfigurationRoot BuildEffectiveHostConfigurationPreview(
-            bool isAcceptanceHostPath, IReadOnlyDictionary<string, string?> overrides)
+            bool isAcceptanceHostPath, IReadOnlyDictionary<string, string?> overrides, bool isNonDevelopmentHost = false)
         {
             var builder = new ConfigurationBuilder();
 
@@ -796,9 +825,16 @@ public static class AccountKindAcceptance
             }
 
             var apiContentRoot = ResolveApiContentRoot();
-            builder
-                .AddJsonFile(Path.Combine(apiContentRoot, "appsettings.json"), optional: true, reloadOnChange: false)
-                .AddJsonFile(Path.Combine(apiContentRoot, "appsettings.Development.json"), optional: true, reloadOnChange: false);
+            builder.AddJsonFile(Path.Combine(apiContentRoot, "appsettings.json"), optional: true, reloadOnChange: false);
+
+            // BL-529 — a non-Development host reads what Program.cs reads there: appsettings.json and the environment.
+            if (isNonDevelopmentHost)
+            {
+                builder.AddEnvironmentVariables();
+                return builder.Build();
+            }
+
+            builder.AddJsonFile(Path.Combine(apiContentRoot, "appsettings.Development.json"), optional: true, reloadOnChange: false);
 
             var userSecretsId = typeof(Program).Assembly.GetCustomAttribute<UserSecretsIdAttribute>()?.UserSecretsId;
             if (!string.IsNullOrWhiteSpace(userSecretsId))

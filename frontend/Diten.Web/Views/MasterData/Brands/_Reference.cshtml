@@ -1,0 +1,22 @@
+@model string?
+@using Diten.Web.Views.MasterData.Brands
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BrandsIndex> Localizer
+@*
+    WP-MDM-BRAND-ACCEPT-01 FIX1 (item 8) — one reference on the brand page, never as an id:
+      null         → no reference ("—")
+      ""           → a reference is stored but nothing resolves it here ("could not be resolved", 7 languages)
+      any text     → the resolved name
+*@
+@if (Model is null)
+{
+    <span>—</span>
+}
+else if (Model.Length == 0)
+{
+    <span class="text-muted fst-italic">@Localizer["Unresolved"]</span>
+}
+else
+{
+    <span>@Model</span>
+}

@@ -2,6 +2,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
+using Diten.Web.Security;
+using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -17,6 +19,11 @@ namespace Diten.Web.Controllers;
 [Route("RoleAssignments")]
 public sealed class RoleAssignmentsController : Controller
 {
+    // WP-URA-FIX-01 FIX1 (UAS-001, CT decision: the same page family as User Roles) — the key that opens this screen:
+    // the platform manifest's ROLE_PERMISSIONS page and AuthService's role-permission assign / revoke require it.
+    // Display + proxy gate only; AuthService stays the authority.
+    public const string AssignPermissionPermission = "auth.roles.assign-permission";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -40,17 +47,39 @@ public sealed class RoleAssignmentsController : Controller
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/Governance/RoleAssignments/Index.cshtml");
+    public IActionResult Index()
+    {
+        // UAS-001 — 403 and the access-denied face inside the shell (Index.cshtml checks first); never a redirect.
+        if (!PermissionClaims.HasPermission(User, AssignPermissionPermission))
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+        return View("~/Views/Governance/RoleAssignments/Index.cshtml");
+    }
+
+    // A write this user may not make is refused here, before any call leaves for the gateway, with the sentence a 403
+    // from AuthService produces through GatewayRefusal.
+    // FIX2 — a JsonResult, not StatusCode(403, value): an ObjectResult goes through content negotiation, so the
+    // caller's Accept header could pick another formatter (or a 406); the refusal is always the same JSON body. It is
+    // the FIRST line of each write — before the id check and the tenant/bearer headers (pinned by test).
+    private IActionResult? RefuseWithoutPermission() =>
+        PermissionClaims.HasPermission(User, AssignPermissionPermission)
+            ? null
+            : new JsonResult(GatewayRefusal.Local(_sharedLocalizer["AccessDenied"].Value))
+            {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
 
     [HttpPost("assign")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Assign([FromForm] Guid roleId, [FromForm] Guid permissionId)
     {
+        if (RefuseWithoutPermission() is { } refused)
+            return refused;
+
         if (roleId == Guid.Empty || permissionId == Guid.Empty)
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["ValidationFailed"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
 
         try
         {
@@ -60,12 +89,11 @@ public sealed class RoleAssignmentsController : Controller
                 _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Role-permission assign failed for {RoleId}/{PermissionId}.", roleId, permissionId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "Role-permission assign"));
         }
     }
 
@@ -73,52 +101,26 @@ public sealed class RoleAssignmentsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Revoke([FromForm] Guid roleId, [FromForm] Guid permissionId)
     {
+        if (RefuseWithoutPermission() is { } refused)
+            return refused;
+
         if (roleId == Guid.Empty || permissionId == Guid.Empty)
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["ValidationFailed"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
 
         try
         {
             var response = await _httpClient.DeleteAsync($"{_gatewayUrl}/api/roles/{roleId}/permissions/{permissionId}");
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Role-permission revoke failed for {RoleId}/{PermissionId}.", roleId, permissionId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "Role-permission revoke"));
         }
-    }
-
-    private List<string> BuildExceptionErrors(Exception ex)
-    {
-        var message = ex.GetBaseException().Message;
-        return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
-    }
-
-    private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)
-    {
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            return [_sharedLocalizer["Unauthorized"].Value];
-        if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-            return [_sharedLocalizer["Forbidden"].Value];
-
-        try
-        {
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var doc = await JsonDocument.ParseAsync(stream);
-            if (doc.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
-            {
-                var list = errors.EnumerateArray().Select(e => e.GetString()).Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s!).ToList();
-                if (list.Count > 0) return list;
-            }
-        }
-        catch { }
-
-        return [_sharedLocalizer["GatewayError"].Value];
     }
 
     private bool AddAuthHeaders()

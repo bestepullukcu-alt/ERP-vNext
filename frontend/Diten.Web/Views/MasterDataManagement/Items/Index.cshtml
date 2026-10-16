@@ -1,0 +1,41 @@
+@using Diten.Web.Views.MasterDataManagement.Items
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ItemsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = ViewData["CanCreateItem"] as bool? == true;
+}
+
+@*
+    UAS-001 (MOD-0290-FU04 §9) — nothing of the list is drawn without mdm.items.read: no filter bar, no heading, no
+    skeleton, no empty table, no script. ItemsController.Index answers 403 with this surface instead of redirecting.
+    ⚠ Display only: MDM's [HasPermission("mdm.items.read")] and the proxy's own check remain the authority.
+*@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.items.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ItemsTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/MasterDataManagement/Items/_Filter.cshtml" />
+
+<div class="mb-3" data-can-create="@canCreate.ToString().ToLowerInvariant()">
+    <h5 class="mb-0">@Localizer["ItemsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<form id="itemLifecycleToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
+
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table id="dt-items" data-dt-standard="v2"> *@
+<partial name="~/Views/MasterDataManagement/Items/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/MasterDataManagement/Items/_IndexL10n.cshtml" />
+    <script src="~/assets/js/MasterDataManagement/Items/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterDataManagement/Items/index.js" asp-append-version="true"></script>
+}

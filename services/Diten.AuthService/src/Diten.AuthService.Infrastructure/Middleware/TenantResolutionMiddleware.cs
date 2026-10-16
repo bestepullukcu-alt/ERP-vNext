@@ -9,6 +9,25 @@ namespace Diten.AuthService.Infrastructure.Middleware;
 public sealed class TenantResolutionMiddleware
 {
     private const string TenantHeader = "X-Tenant-Id";
+
+    /// <summary>The platform tenant — the tenant every platform administrator account lives in.</summary>
+    public static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+    /// <summary>
+    /// BL-529 — the platform-auth endpoints that are called WITHOUT a tenant (no header, no tenant JWT) and always act on
+    /// the platform tenant: Platform's server-to-server provision / sync of an administrator account (internal key), and
+    /// the anonymous "forgot password" / set-password-link redemption of a platform administrator. Outside Development
+    /// (where the bypass hid it) each of them was refused 400 "Missing Tenant" — so a re-invited administrator could not
+    /// be provisioned, nor redeem the link. The list is EXACT paths, never a prefix: anything else under
+    /// /api/platform-auth still needs its tenant, and the endpoints keep their own checks (the internal key → 401).
+    /// </summary>
+    public static readonly IReadOnlyList<string> PlatformTenantPaths =
+    [
+        "/api/platform-auth/platform-admins/provision",
+        "/api/platform-auth/platform-admins/sync",
+        "/api/platform-auth/forgot-password",
+        "/api/platform-auth/reset-password"
+    ];
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
     private readonly IConfiguration _configuration;
@@ -62,7 +81,10 @@ public sealed class TenantResolutionMiddleware
         }
 
         var resolvedTenant = jwtTenant ?? headerTenant;
-        if (resolvedTenant is null && TryGetDevelopmentBypassTenant(out var bypassTenant))
+        var isServiceTokenIssuance = IsServiceTokenIssuancePath(context.Request.Path);
+        // The dev bypass never stands in for a tenant on the service-token endpoint: its tenant is the one in the
+        // request body and nothing else (see IsServiceTokenIssuancePath).
+        if (resolvedTenant is null && !isServiceTokenIssuance && TryGetDevelopmentBypassTenant(out var bypassTenant))
         {
             resolvedTenant = bypassTenant;
             _logger.LogWarning(
@@ -71,9 +93,14 @@ public sealed class TenantResolutionMiddleware
                 bypassTenant);
         }
 
+        if (resolvedTenant is null && IsPlatformTenantPath(context.Request.Path))
+        {
+            resolvedTenant = PlatformTenantId;
+        }
+
         if (resolvedTenant is null)
         {
-            if (IsPublicAuthPath(context.Request.Path))
+            if (isServiceTokenIssuance || IsPublicAuthPath(context.Request.Path))
             {
                 await _next(context);
                 return;
@@ -114,6 +141,25 @@ public sealed class TenantResolutionMiddleware
                || path.StartsWithSegments("/internal", StringComparison.OrdinalIgnoreCase)
                || path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool IsPlatformTenantPath(PathString path)
+        => PlatformTenantPaths.Any(p => path.Equals(new PathString(p), StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// MOD-0033-FU02 — <c>POST /api/internal/v1/auth/service-tokens/issue</c> (InternalServiceIdentityTokensController).
+    /// A service authenticates there with its client id and secret; it has no tenant JWT and sends no
+    /// <c>X-Tenant-Id</c>. The tenant it asks a token FOR is a field of the JSON body, which the handler checks
+    /// against an explicit tenant grant — nothing on that path reads the ambient tenant context. Without this the
+    /// endpoint answered 400 "Missing Tenant" in every environment but Development, where it only worked because the
+    /// dev bypass tenant happened to be set.
+    ///
+    /// <para>Deliberately THIS prefix and not <c>/api/internal</c>: the other internal controllers keep the rule.
+    /// And deliberately not a full bypass: a request that does carry a header or JWT tenant is treated as on any
+    /// other path (a contradiction is still 400), only the REQUIREMENT of a tenant — and the dev-bypass stand-in for
+    /// one — is lifted.</para>
+    /// </summary>
+    private static bool IsServiceTokenIssuancePath(PathString path) =>
+        path.StartsWithSegments("/api/internal/v1/auth/service-tokens", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsPublicAuthPath(PathString path)
     {

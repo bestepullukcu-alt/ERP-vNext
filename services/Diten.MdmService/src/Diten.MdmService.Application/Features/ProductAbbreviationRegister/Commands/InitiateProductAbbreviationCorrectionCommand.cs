@@ -9,4 +9,4 @@ public sealed record InitiateProductAbbreviationCorrectionCommand(
     string ReplacementAbbreviation,
     string IdempotencyKey,
     string Reason)
-    : IRequest<Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>>;
+    : IRequest<Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>>, global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation;

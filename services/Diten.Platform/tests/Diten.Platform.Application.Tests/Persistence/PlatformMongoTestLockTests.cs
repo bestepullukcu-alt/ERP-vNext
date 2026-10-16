@@ -172,7 +172,8 @@ public sealed class PlatformMongoTestLockTests
     {
         var project = Path.Combine(RepoPaths.Services(), "Diten.Platform", "tests", "Diten.Platform.Application.Tests");
         var sharedMongod = new Regex(
-            @"PlatformMongoTestConnection\s*\.\s*RequireConnectionString\s*\(\s*\)|mongodb://(?:localhost|127\.0\.0\.1):27017");
+            // Main sync (CT decision C): the resolver call is now RequireConnectionStringAsync() — the same sanctioned way in.
+            @"PlatformMongoTestConnection\s*\.\s*RequireConnectionString(?:Async)?\s*\(\s*\)|mongodb://(?:localhost|127\.0\.0\.1):27017");
         // The resolver and its own tests are not callers: Validate is pure by its stated contract and its tests only
         // hand it strings — one of them is the literal 27017 it must refuse, which is why it matches at all.
         var resolver = new[]
@@ -247,6 +248,10 @@ public sealed class PlatformMongoTestLockTests
 
         public static LockProofProcess Start(IReadOnlyDictionary<string, string?>? environment, params string[] args)
         {
+            // Main sync (CT decision C): THIS process's Mongo exists before the child starts, so the child inherits its
+            // address (DITEN_PLATFORM_TEST_MONGO_URI, published by PlatformTestMongo) instead of starting a mongod of its
+            // own — some children are KILLED, and a killed child cannot stop what it started.
+            PlatformMongoTestConnection.RequireConnectionStringAsync().GetAwaiter().GetResult();
             var start = new ProcessStartInfo(DotnetHost())
             {
                 UseShellExecute = false,

@@ -243,13 +243,15 @@ public sealed class SelfAccessExplainServiceTests
     }
 
     [Fact]
-    public async Task Partner_admin_with_empty_scope_is_satisfied_no_false_negative()
+    public async Task A_partner_admin_is_not_admitted_by_a_permission_key_alone()
     {
+        // BL-521 — it used to be reported as bypassing every key; it now reaches only the endpoints that admit
+        // partners, for its allowed tenants, so a key alone answers "no".
         _authContext.SetupGet(c => c.ActorType).Returns("partner_admin");
         WithScopes(); // empty
         var result = await CreateService().ExplainAsync(Principal(), Canonical, Module, null, CancellationToken.None);
-        Assert.Equal("bypass-partner-admin", result.Data!.PermissionMatch);
-        Assert.True(result.Data.PermissionSatisfied);
+        Assert.Equal("partner-admin-endpoint-scoped", result.Data!.PermissionMatch);
+        Assert.False(result.Data.PermissionSatisfied);
     }
 
     // ── permissionKey ↔ moduleCode independence (no binding catalog) ──

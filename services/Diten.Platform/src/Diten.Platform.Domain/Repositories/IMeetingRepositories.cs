@@ -68,6 +68,10 @@ public interface IMeetingRepository
 
     Task<Meeting?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
+    /// <summary>BL-533 — the meeting as the caller's Platform transaction sees it (a minutes publish completes the meeting
+    /// as it is when the publish is written, never a copy read before the transaction began).</summary>
+    Task<Meeting?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default);
+
     /// <summary>The idempotency check (K11) — a meeting already created for this exact key, if any.</summary>
     Task<Meeting?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default);
 
@@ -80,6 +84,10 @@ public interface IMeetingRepository
     /// <summary>Optimistic-concurrency replace. Returns <c>false</c> (never throws) when <paramref name="expectedVersion"/>
     /// no longer matches the stored row — the caller turns that into a 409.</summary>
     Task<bool> UpdateAsync(Meeting meeting, int expectedVersion, CancellationToken ct = default);
+
+    /// <summary>BL-533 — <see cref="UpdateAsync(Meeting, int, CancellationToken)"/> inside the caller's Platform
+    /// transaction (the Completed a minutes publish writes).</summary>
+    Task<bool> UpdateAsync(IPlatformTransactionSession session, Meeting meeting, int expectedVersion, CancellationToken ct = default);
 
     /// <summary>Every meeting in the tenant, unfiltered by visibility — the handler applies D3 (organizer ∨
     /// attendee ∨ read-all) afterward, once, in one place, rather than duplicating it per repository method.</summary>
@@ -140,6 +148,11 @@ public interface IMeetingAttendeeRepository
     /// <c>expectedVersion</c>, same reasoning as <see cref="UpdateInvitationResponseAsync"/> — a re-publish of
     /// the SAME attendance value is a no-op, and nothing else writes this field.</summary>
     Task UpdateAttendanceStatusAsync(Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default);
+
+    /// <summary>BL-533 — <see cref="UpdateAttendanceStatusAsync(Guid, Guid, AttendanceStatus, CancellationToken)"/> inside
+    /// the publish's (or correction's) own Platform transaction.</summary>
+    Task UpdateAttendanceStatusAsync(
+        IPlatformTransactionSession session, Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default);
 
     /// <summary>S5c — <c>MeetingWorkItemProvider</c>'s own source query: every invitation still awaiting THIS
     /// user's Accept/Decline, across every meeting in the tenant. Filtered at the query, not in memory — an
@@ -209,6 +222,11 @@ public interface IMeetingMinutesVersionRepository
     /// </summary>
     Task<MeetingMinutesVersion?> TryCreateAsync(MeetingMinutesVersion version, CancellationToken ct = default);
 
+    /// <summary>BL-533 — <see cref="TryCreateAsync(MeetingMinutesVersion, CancellationToken)"/> inside the caller's
+    /// Platform transaction (a correction, written with the attendance it records).</summary>
+    Task<MeetingMinutesVersion?> TryCreateAsync(
+        IPlatformTransactionSession session, MeetingMinutesVersion version, CancellationToken ct = default);
+
     /// <summary>The single highest <see cref="MeetingMinutesVersion.VersionNumber"/> for this meeting, or null
     /// if none exists yet — every command handler's own "what is the current state" read.</summary>
     Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
@@ -233,6 +251,11 @@ public interface IMeetingMinutesVersionRepository
     /// <see cref="MeetingMinutesVersion.Status"/> <c>Draft</c> — publishing and correcting never call it (see
     /// the type's own doc comment on why a Published row is never replaced).</summary>
     Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default);
+
+    /// <summary>BL-533 — <see cref="UpdateAsync(MeetingMinutesVersion, int, CancellationToken)"/> inside the caller's
+    /// Platform transaction (a publish, written with the attendance and the meeting's Completed).</summary>
+    Task<bool> UpdateAsync(
+        IPlatformTransactionSession session, MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="MeetingSeries"/> (MOD-0357 S11).</summary>

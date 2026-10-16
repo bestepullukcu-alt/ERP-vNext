@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>Görev üzerinize alındı.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Bu görevi başka biri önce üzerine aldı.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Ad ya da pozisyon yazın…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Aramak için en az 2 karakter yazın.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>Bu aramada kimse bulunamadı.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Bulunamayan kişi</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Kısa sürede çok fazla arama yapıldı. Biraz bekleyip yeniden deneyin.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>Arama yapılamadı. Biraz sonra yeniden deneyin.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>Kişi bilgisi şu an yüklenemedi</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Adla ya da kayıtlı kişilerle arayın; ikisi birden olmaz.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Tek seferde çok fazla kişi istendi.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>Kayıtlı bir kişi bağlantısı geçerli değil.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>Kişi rehberine şu an ulaşılamıyor. Biraz sonra yeniden deneyin.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Görev servisine ulaşılamadı. Tekrar deneyin.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Henüz görev yok</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>İlk görevinizi oluşturun; burada ve Görev Merkezi'nde görünecek.</value></data>
@@ -123,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Talep ettiğiniz bir onayın onaylayıcısı siz olamazsınız. Onay yöneticisi olarak başka birini seçin.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Kendi gönderdiğiniz işi inceleyemezsiniz. Bu görevi incelemesi için başka birini seçin.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>Bu görevi sizden başka inceleyebilecek kimse yok. Başka bir inceleyici seçin.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Bu onayın sonraki adımında sizden başka karar verebilecek kimse yok. İş akışının onaycılarını düzenlemesi için yöneticinize başvurun.</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>Değişiklikleriniz kaydedildi, ancak süren onay geri çekilemedi. Yeniden denemek için tekrar kaydedin.</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>Değişiklikleriniz kaydedildi, ancak süren inceleme geri çekilemedi. Yeniden denemek için tekrar kaydedin.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>Bağlı onay ya da inceleme geri çekilemedi; işlem yapılmadı. Biraz sonra yeniden deneyin.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>Bu görev için açık bir inceleme zaten var.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Başlık girin.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Başlık en fazla 200 karakter olabilir.</value></data>

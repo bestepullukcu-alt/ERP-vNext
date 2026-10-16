@@ -41,9 +41,14 @@ public sealed class VwW4FixDWebTests
 
         var view = File.ReadAllText(Path.Combine(WebRoot(), "Views", "MasterDataManagement", "Gskus", "Index.cshtml"));
         Assert.True(view.IndexOf("gsku-product-picker.js", StringComparison.Ordinal) < view.IndexOf("Gskus/index.js", StringComparison.Ordinal));
+        // WP-LANE-MAIN-SYNC-04 (CT): the lane's GSKU screen already pages and searches the product picker through the same
+        // create-options proxy (MDM takeover FIX3 B17 — abortable requests, late answers dropped, a failure sentence); that
+        // picker is kept, so the page is pinned on IT: the typed text and the page reach create-options.
         var page = File.ReadAllText(Path.Combine(GskuScripts(), "index.js"));
-        Assert.Contains("picker.url(endpoint, term, page)", page);
-        Assert.Contains("processResults: (data, params) => picker.results(data, params.page || 1)", page);
+        Assert.Contains("const fetchProductPage = async ({ term, page, pageSize }) =>", page);
+        Assert.Contains("const query = new URLSearchParams({ pageNumber: String(page), pageSize: String(pageSize) });", page);
+        Assert.Contains("if (term) query.set('search', term);", page);
+        Assert.Contains("fetch(`${endpoint}/create-options?${query.toString()}`", page);
     }
 
     [Fact]

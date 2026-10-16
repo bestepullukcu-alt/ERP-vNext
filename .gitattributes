@@ -1,3 +1,8 @@
+# MOD-0290-FU04 S4 FIX1 (R7): the product-master contract fixtures are compared byte for byte (SHA-256);
+# no line-ending conversion on any platform.
+services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Fixtures/ProductMasterBundle/* -text
+# WP-UX-TOUR-DRIVERJS-01: the vendored Driver.js files are pinned by SHA-256; no line-ending conversion on any platform.
+frontend/Diten.Web/wwwroot/assets/vendor/libs/driverjs/* -text
 # WP-VW-W4-INFRA — the LOCKED reference catalogs are verified byte-for-byte: Platform hashes the file (SHA-256) and
 # compares it with the fingerprint pinned in code (VerifiedGskuOperationalProvisioningOptions /
 # VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint). A Windows checkout with core.autocrlf=true

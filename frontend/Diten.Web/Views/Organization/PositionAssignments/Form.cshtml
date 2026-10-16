@@ -150,5 +150,7 @@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_FormL10n" />
     <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    @* WP-WCN-FIX-01 (XMC-001) — the shared date-field guard this form uses (no copy of its own any more). *@
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
     <script src="~/assets/js/Organization/PositionAssignments/form.js" asp-append-version="true"></script>
 }

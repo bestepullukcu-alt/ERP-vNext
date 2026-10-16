@@ -1,0 +1,100 @@
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
+
+namespace Diten.MdmService.Domain.Repositories;
+
+public sealed record GlobalProductIdentityWorkflowReserveResult(
+    bool Succeeded,
+    bool IsReplay,
+    GlobalProductIdentityWorkflowOperation? Operation,
+    string? ErrorCode);
+
+public sealed record GlobalProductIdentityWorkflowClaim(
+    Guid TenantId,
+    Guid OperationId,
+    string OperationFingerprint,
+    string LeaseOwner,
+    long LeaseGeneration,
+    GlobalProductIdentityWorkflowCheckpoint Checkpoint,
+    long LeaseUntilUtcTicksV1);
+
+public sealed record GlobalProductIdentityWorkflowClaimRequest(
+    Guid OperationId,
+    string OperationFingerprint,
+    IReadOnlyCollection<GlobalProductIdentityWorkflowCheckpoint> EligibleCheckpoints,
+    string LeaseOwner,
+    long NowUtcTicks,
+    long LeaseUntilUtcTicks,
+    // An interactive caller (the maker) is not paced by the worker's retry schedule: exclusion rests on the lease
+    // — who holds it and until when — and on nothing else.
+    bool IgnoreRetrySchedule = false);
+
+public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
+    GlobalProductIdentityWorkflowCheckpoint NextCheckpoint,
+    ProductIdentityWorkflowRecoveryDisposition RecoveryDisposition,
+    long UpdatedAtUtcTicks,
+    long? NextAttemptAtUtcTicksV1 = null,
+    string? LastFailureCode = null,
+    Guid? WorkflowInstanceId = null,
+    Guid? WorkflowTemplateId = null,
+    Guid? WorkflowTemplateVersionId = null,
+    Guid? ApprovalTaskId = null,
+    Guid? AssignmentSnapshotId = null,
+    Guid? StartTransitionLogId = null,
+    long? WorkflowStartedAtUtcTicksV1 = null,
+    Guid? DecisionTransitionLogId = null,
+    ProductIdentityDecisionKind? DecisionKind = null,
+    long? DecisionObservedAtUtcTicksV1 = null,
+    Guid? DecisionActorSubjectId = null,
+    string? DecisionReasonCode = null,
+    string? DecisionObjectType = null,
+    string? DecisionObjectId = null,
+    string? DecisionObjectRef = null,
+    Guid? DecisionWorkflowTemplateId = null,
+    Guid? DecisionWorkflowTemplateVersionId = null,
+    string? DecisionTaskStatus = null,
+    string? DecisionInstanceStatus = null,
+    long? DecisionTransitionSequence = null,
+    long? DecisionAtUtcTicksV1 = null,
+    Guid? WithdrawalCommandId = null,
+    string? WithdrawalFingerprint = null,
+    Guid? WithdrawalRequesterSubjectId = null,
+    int? WithdrawalExpectedProductVersion = null,
+    string? WithdrawalReasonCode = null,
+    string? WithdrawalComment = null,
+    int? WithdrawalExpectedWorkflowInstanceVersion = null,
+    int? WithdrawalExpectedApprovalTaskVersion = null,
+    Guid? WithdrawalTransitionLogId = null,
+    long? WithdrawalObservedAtUtcTicksV1 = null,
+    long? WithdrawalTransitionSequence = null,
+    int? WithdrawalResultWorkflowInstanceVersion = null,
+    int? WithdrawalResultApprovalTaskVersion = null,
+    string? WithdrawalTaskStatus = null,
+    string? WithdrawalInstanceStatus = null,
+    string? WithdrawalObjectRef = null,
+    bool ReleaseLease = false,
+    // null leaves the two service-fault fields as they are; a value writes BOTH, exactly as given.
+    int? ServiceFaultCount = null,
+    long? ServiceFaultSinceUtcTicksV1 = null,
+    // Forgets a withdrawal that did not happen (every Withdrawal* field), so the requester can ask again.
+    bool ClearWithdrawal = false,
+    // Why a withdrawal was refused for good (the approval was decided or closed first): the answer a repeat of the
+    // same withdrawal reads. Its own field — LastFailureCode is rewritten by every decision poll.
+    string? WithdrawalRefusalCode = null,
+    long? WithdrawalAwaitingRequesterSinceUtcTicksV1 = null,
+    // BL-552: how this write changes the record-answer retry streak (atomically, in the store), and when a start was
+    // sent unanswered (the settle window).
+    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset,
+    long? LastStartSentAtUtcTicksV1 = null);
+
+public sealed record GlobalProductIdentityWorkflowTenantPartitionPage(
+    IReadOnlyList<Guid> TenantIds,
+    Guid? NextAfterTenantId);
+
+public sealed record GlobalProductIdentityWorkflowRecoveryCursor(
+    long? NextAttemptAtUtcTicksV1,
+    Guid OperationId);
+
+public sealed record GlobalProductIdentityWorkflowRecoverablePage(
+    IReadOnlyList<GlobalProductIdentityWorkflowOperation> Operations,
+    GlobalProductIdentityWorkflowRecoveryCursor? NextCursor);

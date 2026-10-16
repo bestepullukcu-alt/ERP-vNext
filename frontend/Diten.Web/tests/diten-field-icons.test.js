@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { loadScript } = require("./load-script");
+const { SCE, MAIN_SYNC_WHY, misnamedRows } = require("./main-sync-owners");
 
 /*
  * Leading icons, and the second half of the alignment claim.
@@ -642,6 +643,7 @@ const relView = (f) => path.relative(VIEWS_ROOT, f).split(path.sep).join("/");
  * control with no `.diten-field` wrapper and therefore no icon. Grouped as the owner counted them:
  *   CRM 10 · EnterpriseStrategy 2 · MasterDataManagement 4 · MDM 1 · ManagementGovernance 1
  *   Organization 3 · PPM 2 · Platform 6
+ * WP-LANE-GUARDS-02: GlobalProducts and Gskus create / edit carry the wrapper now and left the list (MDM 4 → 2).
  */
 const KNOWN_NO_ICONS = [
   "CRM/Accounts/_ContactLinkEndOffcanvas.cshtml",
@@ -658,8 +660,6 @@ const KNOWN_NO_ICONS = [
   "MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml",
   "ManagementGovernance/ProcessModeling/_CreateEditOffcanvas.cshtml",
   "MasterDataManagement/FinishedGoods/_CreateEditOffcanvas.cshtml",
-  "MasterDataManagement/GlobalProducts/_CreateEditOffcanvas.cshtml",
-  "MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml",
   "MasterDataManagement/Lskus/_CreateEditOffcanvas.cshtml",
   "Organization/OrganizationUnits/_CreateEditOffcanvas.cshtml",
   "Organization/PositionAssignments/_CreateEditOffcanvas.cshtml",
@@ -674,6 +674,27 @@ const KNOWN_NO_ICONS = [
   "Platform/WorkingCalendarImports/_CreateEditOffcanvas.cshtml"
 ];
 
+/*
+ * WP-LANE-GUARDS-02 (CT decision) — offcanvas forms that arrived with main, owned by another team (XMC-001: their
+ * views are not ours to change). Named with the owner and the reason; the wrapper is the owner's work and is sent to
+ * them. NOT a licence: the latch below pins the exact keys, so the next unwrapped panel is red again, whoever adds it;
+ * a row whose owner wraps the panel is red until it leaves (the same "only shrinks" rule as KNOWN_NO_ICONS).
+ */
+const MAIN_SYNC_NO_ICONS = {
+  "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Loads/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Shipments/_PodOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Shipments/_TransitionOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY }
+};
+const MAIN_SYNC_NO_ICONS_KEYS = [
+  "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml",
+  "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml",
+  "SupplyChain/Loads/_CreateEditOffcanvas.cshtml",
+  "SupplyChain/Shipments/_PodOffcanvas.cshtml",
+  "SupplyChain/Shipments/_TransitionOffcanvas.cshtml"
+];
+
 describe("every offcanvas form carries the leading-icon pattern, or is a named debt", () => {
   test("the census sees a real population — guards against a vacuous sweep", () => {
     // A walk that found nothing would make both assertions below pass while measuring the empty set.
@@ -684,7 +705,7 @@ describe("every offcanvas form carries the leading-icon pattern, or is a named d
     const offenders = offcanvasForms()
       .filter((f) => !fs.readFileSync(f, "utf8").includes("diten-field"))
       .map(relView)
-      .filter((f) => !KNOWN_NO_ICONS.includes(f))
+      .filter((f) => !KNOWN_NO_ICONS.includes(f) && !(f in MAIN_SYNC_NO_ICONS))
       .sort();
     expect(offenders,
       "these offcanvas forms draw a control with no .diten-field wrapper — copy the golden reference "
@@ -697,12 +718,17 @@ describe("every offcanvas form carries the leading-icon pattern, or is a named d
      * The half that makes the list honest. Without it a ported screen keeps its exemption, and the next
      * regression in that same file walks in free.
      */
-    const stale = KNOWN_NO_ICONS.filter((f) => {
+    const stale = [...KNOWN_NO_ICONS, ...Object.keys(MAIN_SYNC_NO_ICONS)].filter((f) => {
       const full = path.join(VIEWS_ROOT, f);
       return !fs.existsSync(full) || fs.readFileSync(full, "utf8").includes("diten-field");
     });
-    expect(stale, "these files now carry the pattern (or are gone) — delete their KNOWN_NO_ICONS entries")
+    expect(stale, "these files now carry the pattern (or are gone) — delete their KNOWN_NO_ICONS / MAIN_SYNC_NO_ICONS entries")
       .toEqual([]);
+  });
+
+  test("WP-LANE-GUARDS-02: the main-sync list is pinned by name, and every row names its path's owner and the reason", () => {
+    expect(Object.keys(MAIN_SYNC_NO_ICONS).sort(), "the main-sync list changed without its pin").toEqual(MAIN_SYNC_NO_ICONS_KEYS);
+    expect(misnamedRows(MAIN_SYNC_NO_ICONS), "a main-sync row without its path's owner or the main-sync reason").toEqual([]);
   });
 });
 

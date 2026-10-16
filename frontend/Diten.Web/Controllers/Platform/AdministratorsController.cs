@@ -15,6 +15,9 @@ namespace Diten.Web.Controllers.Platform;
 [Route("Platform/Administrators")]
 public sealed class AdministratorsController : Controller
 {
+    /// <summary>BL-521 FIX4 item 1 — Platform's 409 code for a refused e-mail change (AdminSafetyReasonCodes.EmailImmutable).</summary>
+    private const string EmailImmutableReasonCode = "PLATFORM_ADMINISTRATOR_EMAIL_IMMUTABLE";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -145,7 +148,9 @@ public sealed class AdministratorsController : Controller
     {
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_gatewayUrl}/api/platform-auth/forgot-password")
+            // BL-529 — the administrator's reset, not the anonymous "forgot password": AuthService ends the old password and
+            // every session of that administrator, audits it, and refuses one's own account (409 USER_RESET_SELF).
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_gatewayUrl}/api/platform-auth/platform-admins/reset-password")
             {
                 Content = JsonContent.Create(new { email }, options: _jsonOptions)
             };
@@ -327,6 +332,16 @@ public sealed class AdministratorsController : Controller
             using var doc = JsonDocument.Parse(raw);
             var root = doc.RootElement;
 
+            // BL-521 FIX4 item 1 — an administrator's e-mail cannot be changed: said from Platform's CODE, in the reader's
+            // language (en, tr), not by matching its English sentence.
+            if (root.ValueKind == JsonValueKind.Object
+                && (root.TryGetProperty("reason_code", out var reasonCode) || root.TryGetProperty("reasonCode", out reasonCode))
+                && reasonCode.ValueKind == JsonValueKind.String
+                && string.Equals(reasonCode.GetString(), EmailImmutableReasonCode, StringComparison.Ordinal))
+            {
+                return [_sharedLocalizer["AdminEmailImmutable"].Value];
+            }
+
             // 1. Try to parse "errors" property (can be list or dictionary)
             if (root.TryGetProperty("errors", out var errorsProp) || root.TryGetProperty("Errors", out errorsProp))
             {
@@ -431,6 +446,17 @@ public sealed class AdministratorsController : Controller
         if (normalized.Contains("The system seed administrator cannot be suspended", StringComparison.OrdinalIgnoreCase))
         {
             return _sharedLocalizer["AdminSeedSuspendDenied"].Value;
+        }
+
+        // BL-521 FIX3 — Platform's AdminSafetyMessages.SeedEmailCannotChange / SafetyCheckUnavailable.
+        if (normalized.Contains("The system seed administrator's e-mail cannot be changed", StringComparison.OrdinalIgnoreCase))
+        {
+            return _sharedLocalizer["AdminSeedEmailChangeDenied"].Value;
+        }
+
+        if (normalized.Contains("The administrator change could not be saved right now", StringComparison.OrdinalIgnoreCase))
+        {
+            return _sharedLocalizer["AdminChangeUnavailable"].Value;
         }
 
         if (isTurkish)

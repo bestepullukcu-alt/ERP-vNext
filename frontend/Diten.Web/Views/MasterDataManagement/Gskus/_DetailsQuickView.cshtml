@@ -27,11 +27,18 @@
                 <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-git-branch"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["RevisionIdentifier"]</div><div id="oc-revision" class="backbone-preview-value mt-1">-</div></div></div></div>
                 <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calculator"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["PackQuantity"]</div><div id="oc-pack" class="backbone-preview-value mt-1">-</div></div></div></div>
                 <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-pulse"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["LifecycleStatus"]</div><div class="mt-1"><span id="oc-status" class="badge bg-label-secondary">-</span></div></div></div></div>
+                <div class="col-12 d-none" id="oc-identity-not-applied-row"><div class="alert alert-warning mb-0" role="status" id="oc-identity-not-applied"></div></div>
                 <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-revision"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["Version"]</div><div id="oc-version" class="backbone-preview-value mt-1">-</div></div></div></div>
                 <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-plus"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["CreatedAt"]</div><div id="oc-created-at" class="backbone-preview-value mt-1">-</div></div></div></div>
                 <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-edit"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["UpdatedAt"]</div><div id="oc-updated-at" class="backbone-preview-value mt-1">-</div></div></div></div>
             </div>
         </section>
+        @* MOD-0290-FU04 S5 (O-12, UAS-001 — CT decision): the "Stock behaviour" section is not in the page at all for a
+           user without the stock-edit key (no heading, no placeholder). Display only — MDM's permission stays the judge. *@
+        @if (Diten.Web.Security.PermissionClaims.HasPermission(User, Diten.Web.Services.MasterData.StockBehaviourAccess.Gsku))
+        {
+            <partial name="~/Views/MasterDataManagement/Gskus/_StockBehaviourSection.cshtml" />
+        }
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-end bg-white">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>

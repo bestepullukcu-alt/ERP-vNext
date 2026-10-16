@@ -32,7 +32,12 @@ public class GskuListItemViewModel
     public DateTimeOffset? UpdatedAt { get; set; }
 }
 
-public sealed class GskuDetailViewModel : GskuListItemViewModel;
+public sealed class GskuDetailViewModel : GskuListItemViewModel
+{
+    public int RevisionVersion { get; set; }
+    public int GskuVersion { get; set; }
+    public IReadOnlyList<string> AvailableActions { get; set; } = [];
+}
 
 public sealed class GskuDraftViewModel
 {

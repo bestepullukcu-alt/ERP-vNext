@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>需求计划</value></data>
+  <data name="UnavailableTitle" xml:space="preserve"><value>工作区不可用</value></data>
+  <data name="UnavailableBody" xml:space="preserve"><value>已批准的网关路由和权威公司列表尚不可用，无法安全打开计划数据。</value></data>
+  <data name="UnavailableNext" xml:space="preserve"><value>正式使用前，集成负责人须验证这两个来源。</value></data>
+  <data name="PreviewBanner" xml:space="preserve"><value>测试数据预览</value></data>
+  <data name="PreviewNotice" xml:space="preserve"><value>这是未保存的本地界面演示，并非实时计划或授权公司列表。</value></data>
+  <data name="Company" xml:space="preserve"><value>公司</value></data>
+  <data name="Cycle" xml:space="preserve"><value>计划周期</value></data>
+  <data name="Revision" xml:space="preserve"><value>版本</value></data>
+  <data name="Series" xml:space="preserve"><value>SKU × 仓库序列</value></data>
+  <data name="Week" xml:space="preserve"><value>周</value></data>
+  <data name="Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Origin" xml:space="preserve"><value>来源</value></data>
+  <data name="Reason" xml:space="preserve"><value>原因</value></data>
+  <data name="SavePreview" xml:space="preserve"><value>在预览中应用</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>提交审核</value></data>
+  <data name="Approve" xml:space="preserve"><value>批准</value></data>
+  <data name="Reject" xml:space="preserve"><value>驳回</value></data>
+  <data name="NextWeeks" xml:space="preserve"><value>后 13 周</value></data>
+  <data name="PreviousWeeks" xml:space="preserve"><value>前 13 周</value></data>
+  <data name="ShowAllWeeks" xml:space="preserve"><value>显示全部 52 周</value></data>
+  <data name="FirstThirteen" xml:space="preserve"><value>显示前 13 周</value></data>
+  <data name="KnownZero" xml:space="preserve"><value>明确的零</value></data>
+  <data name="Missing" xml:space="preserve"><value>缺失</value></data>
+  <data name="Manual" xml:space="preserve"><value>手动</value></data>
+  <data name="InvalidatedWarning" xml:space="preserve"><value>已失效：仅供历史审计，勿用于计划或 MRP。</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>继续前请输入原因。</value></data>
+  <data name="InvalidQuantity" xml:space="preserve"><value>已知周请输入非负数量。</value></data>
+  <data name="NoScope" xml:space="preserve"><value>选择一个测试公司查看示例。此选择不授予实时访问权限。</value></data>
+  <data name="NoEditPermission" xml:space="preserve"><value>需要草稿编辑权限。</value></data>
+  <data name="NoReviewPermission" xml:space="preserve"><value>需要独立审核权限。</value></data>
+  <data name="Draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="InReview" xml:space="preserve"><value>审核中</value></data>
+  <data name="ApprovedState" xml:space="preserve"><value>已批准</value></data>
+  <data name="Published" xml:space="preserve"><value>已发布</value></data>
+  <data name="Superseded" xml:space="preserve"><value>已被取代</value></data>
+  <data name="Invalidated" xml:space="preserve"><value>已失效</value></data>
+  <data name="Changes" xml:space="preserve"><value>此预览中的更改记录</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>预览中无更改。</value></data>
+  <data name="SavedLocally" xml:space="preserve"><value>仅在此预览中更新，未保存任何内容。</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>版本与状态预览</value></data>
+  <data name="SelectSeries" xml:space="preserve"><value>选择序列</value></data>
+  <data name="EditWeek" xml:space="preserve"><value>编辑周</value></data>
+  <data name="IncompleteWeeks" xml:space="preserve"><value>审核前每个选定序列的 52 周都须有明确数量。缺失和未知保持不变。</value></data>
+  <data name="NoAuditPermission" xml:space="preserve"><value>历史内容需要单独的审计权限。</value></data>
+  <data name="WeekWindow" xml:space="preserve"><value>周</value></data>
+  <data name="ReviewReason" xml:space="preserve"><value>决定原因</value></data>
+  <data name="NoActionPermission" xml:space="preserve"><value>此权限范围内操作不可用。</value></data>
+  <data name="NoCompanyData" xml:space="preserve"><value>没有可用的已验证公司范围。</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>已被取代的版本仅显示状态；没有获批的关联 MRP 证明时，内容保持关闭。</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>已接受的需求历史</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>没有可用的有效公司。</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>该公司没有已接受的记录。</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>无法获取已接受的历史记录。</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>发生日期</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>已接受单位</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>已接受数量</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>单位尚未经 MOD-0290 验证</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>导入批次</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>决定</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>决定人</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>决定时间</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>上一页</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>下一页</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>正在加载已接受的历史记录...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>评估单个 SKU × 仓库的已接受历史，并明确选择方法。</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>公司列表来自租户在 MDM 中的有效公司。用户公司授权及实时序列验证尚待完成；无法验证时操作将被阻止。</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>正在加载已验证数据…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>预期周期版本</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>请输入现有周期、SKU 和仓库的标识。服务器会重新验证这些值；它们不会授予访问权限。</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>评估方法</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>方法比较</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>不自动排名或选出优胜方法。实际需求分母为零时 WAPE 未定义，不会用其他指标替代。正偏差表示预测偏低。每个起点 × 测试周是独立样本；重叠周可能重复计数。</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>策略版本</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>明确选择方法</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>请选择符合条件的方法</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>创建预测与草稿</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>打开已创建草稿</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>预测运行和草稿已保存，包含必需的审计记录。</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>选择单个序列、进行评估并明确选择符合条件的方法。</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>请输入有效的公司、周期、SKU、仓库和周期版本。</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>当前无法验证，尚未确认操作成功。请在来源可用后重试。</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>会话已过期，请重新登录并刷新此页面。</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>您的账号无权执行此操作。请向管理员申请权限并刷新页面。</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>所选记录或序列在您的权限范围内不可用。请在访问权限验证后重新选择。</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>周期或请求已更改。请确认最新版本并重新评估。</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>所选方法或输入已不符合条件。请重新评估并填写理由。</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>未定义</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>符合条件</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>符合条件；回测指标不可用。</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>此方法所需的可靠完整周数不足。</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>Croston 所需的实际需求事件或不同正需求周数不足。</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>历史单位混合或缺失；换算未经验证。</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>无法验证历史可靠性或单位一致性。</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>此方法产生了无效预测，无法选择。</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>可靠周数</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>实际需求事件</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>WAPE 比率</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>偏差（实际 − 预测）</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>按预测距离分组的指标</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>提前周数</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>样本数</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>朴素法</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>移动平均法</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>简单指数平滑法</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>Holt 趋势法</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>季节朴素法</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>Holt-Winters 法</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>偏差修正 Croston 法</value></data>
+</root>

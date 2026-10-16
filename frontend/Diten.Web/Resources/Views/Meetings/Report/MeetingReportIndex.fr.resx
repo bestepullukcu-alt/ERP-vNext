@@ -102,4 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>Tout le tenant</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Mes réunions</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Vous n'avez pas accès à ce rapport.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
 </root>

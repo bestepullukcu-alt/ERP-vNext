@@ -111,7 +111,14 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         // declared AUTHORITY, not a request-body flag, even though no button calls it yet.
                         new ModuleManifestAction("READ_ALL", "Read All Tasks (Tenant-Wide)",
                             TaskPermissions.ReadAll,
-                            "Toolbar", 100, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                            "Toolbar", 100, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        // BL-509 — gives the request-sending key its manifest home (Module="tasks", Scope=Tenant),
+                        // for the reason READ_ALL has one: without it the A1 reflection worker would stamp the key
+                        // PlatformAdmin and no tenant role could ever be granted it. Explicit-grant-only in
+                        // AuthService, so it reaches a role only when an authorized person assigns it.
+                        new ModuleManifestAction("REQUEST_CREATE", "Send Task Request",
+                            TaskPermissions.RequestsCreate,
+                            "Toolbar", 110, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ]),
 
                 new ModuleManifestPage(
@@ -327,7 +334,15 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         new ModuleManifestNotificationVariable("TaskTitle"),
                         new ModuleManifestNotificationVariable("TaskId")
                     ],
-                    OptionalVariables: [new ModuleManifestNotificationVariable("DueAt", "Date", false)],
+                    OptionalVariables:
+                    [
+                        new ModuleManifestNotificationVariable("DueAt", "Date", false),
+                        // BL-454 — what the e-mail shell shows beside the body: the button's address, the
+                        // priority in the mail's language, and the assigner's display name.
+                        new ModuleManifestNotificationVariable("TaskUrl", "Url", false),
+                        new ModuleManifestNotificationVariable("Priority", "String", false),
+                        new ModuleManifestNotificationVariable("AssignerName", "String", false)
+                    ],
                     TargetPageCode: PageTaskDetail,
                     RequiredPermissionKey: TaskPermissions.Read,
                     CanTenantOverride: true,

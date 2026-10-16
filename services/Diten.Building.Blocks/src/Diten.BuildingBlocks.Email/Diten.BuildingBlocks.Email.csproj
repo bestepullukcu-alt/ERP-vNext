@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <!-- BL-454 — deliberately no package and no project reference: input model in, HTML + plain text out. No DI, no
+       SMTP, no storage, so AuthService and Platform can both call it without either taking on the other's stack. -->
+</Project>

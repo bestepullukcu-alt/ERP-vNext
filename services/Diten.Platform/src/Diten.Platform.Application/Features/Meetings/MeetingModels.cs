@@ -29,6 +29,29 @@ public static class MeetingPermissions
     public const string SeriesManage = "platform.meetings.series-manage";
 }
 
+/// <summary>
+/// WP-WCN-TASK-REQUEST-01 FIX4 (item 1) — what a carried-forward agenda line holds as its text: a CODE, never a task's
+/// title (the line is one stored row every reader of the meeting sees). The screen renders it in the reader's own
+/// language and names the task from the linked-task list, which the read rule answers per reader.
+/// </summary>
+public static class MeetingAgendaCodes
+{
+    public const string CarriedOpenAction = "MEETING_CARRIED_OPEN_ACTION";
+
+    /// <summary>
+    /// FIX5 (item 1) — what a reader is SENT as an agenda line's text. A carried-forward line (it came from a previous
+    /// meeting AND names its task through a RecordLink) is always the code, whatever is stored: lines carried before
+    /// FIX4 stored the task's TITLE (origin/main) or TASK_NOT_ACCESSIBLE (FIX3), and the stored text never leaves the
+    /// server. No migration — the rule is applied at read time. The screen names the task from the reader's own
+    /// linked-task list, which the read rule answers per reader.
+    /// </summary>
+    public static string TextFor(Diten.Platform.Domain.Entities.Meetings.AgendaItem line)
+    {
+        ArgumentNullException.ThrowIfNull(line);
+        return line.CarriedFromMeetingId is not null && line.RecordLinkId is not null ? CarriedOpenAction : line.Text;
+    }
+}
+
 public static class MeetingReasonCodes
 {
     public const string NotFound = "MEETING_NOT_FOUND";
@@ -168,7 +191,9 @@ public sealed record MeetingDto(
     /// <summary>K6's reverse read — the continuation THIS meeting was followed up by, if any (a derived query,
     /// never a stored field; see <c>IMeetingRepository.FindByFollowUpOfMeetingIdAsync</c>).</summary>
     Guid? FollowedByMeetingId = null,
-    string? FollowedByMeetingTitle = null);
+    string? FollowedByMeetingTitle = null,
+    /// <summary>BL-531 — the organizer's name, resolved in this read (null = not resolved; never the id).</summary>
+    string? OrganizerDisplayName = null);
 
 /// <summary>K12 — a failed dispatch is reported, never silently absorbed into a 201. <paramref name="Sent"/> and
 /// <paramref name="Failed"/> are deliberately NOT each other's negation: no attendee to tell (organizer-only
@@ -189,7 +214,9 @@ public sealed record MeetingListItemDto(
     /// <summary>MOD-0357 S7 — resolved from the SAME in-tenant meeting list this handler already loaded (no
     /// extra query); null when this meeting is not a continuation of another.</summary>
     Guid? FollowUpOfMeetingId = null,
-    string? FollowUpOfMeetingTitle = null);
+    string? FollowUpOfMeetingTitle = null,
+    /// <summary>BL-531 — the organizer's name, resolved once for the whole page (null = not resolved).</summary>
+    string? OrganizerDisplayName = null);
 
 public sealed record GetMeetingListFilter(
     DateTimeOffset? FromUtc,
@@ -199,7 +226,17 @@ public sealed record GetMeetingListFilter(
     bool? IAmAttendeeOnly,
     bool? HasLinkedTasksOnly,
     int Page = 1,
-    int PageSize = 25);
+    int PageSize = 25,
+    /// <summary>ATT-FIX1 — false: the organizer names are not resolved (a caller that shows titles only).</summary>
+    bool IncludeNames = true,
+    /// <summary>ATT-FIX2 — true: only id, title and visibility are worked out (no linked tasks, type or person names).</summary>
+    bool TitlesOnly = false);
+
+/// <summary>ATT-FIX1 — the most rows one list page answers, whatever the caller asks.</summary>
+public static class MeetingListLimits
+{
+    public const int MaxPageSize = 200;
+}
 
 public sealed record MeetingListResultDto(IReadOnlyList<MeetingListItemDto> Items, int TotalCount);
 
@@ -482,7 +519,11 @@ public sealed record MeetingSeriesDto(
     Guid? LastGeneratedMeetingId,
     DateTimeOffset? LastGeneratedAt,
     bool IsActive,
-    int Version);
+    int Version,
+    /// <summary>BL-531 — the organizer's and the attendees' names, resolved in this read, so the series form
+    /// shows who is already chosen without asking the directory (null name = not resolved).</summary>
+    string? OrganizerDisplayName = null,
+    IReadOnlyList<MeetingPersonNameDto>? Attendees = null);
 
 /// <summary>What one sweep pass did for one tenant — same shape <c>GenerateDueRecurringTasksResponse</c>
 /// already takes for MOD-0024's own recurrence sweep.</summary>

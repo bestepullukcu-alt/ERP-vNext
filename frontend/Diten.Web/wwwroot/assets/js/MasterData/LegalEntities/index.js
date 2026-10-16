@@ -428,12 +428,26 @@ const LegalEntitiesList = (function () {
             requestAnimationFrame(() => syncMultiSelectSummary($s));
         });
     };
+    /*
+     * BL-391 × WCN-FIX-03 (XMC-001) — the list filter's created-from / created-to dates use the shared typed-date guard (`DitenDateField.guardAgainstSilentMisparse`,
+     * altFormat shape): a typed date that does not exist ("31.02") is cleared and marked, never saved as another date.
+     * Without the shared script the dates FAIL CLOSED: `allowInput: false` (read-only box, picked from the calendar).
+     */
+    const dateGuard = () => {
+        const guard = window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse;
+        return typeof guard === 'function' ? guard : null;
+    };
+    const reportMissingDateGuard = () => console.error('[Legal Entities] The dates cannot be typed: assets/js/shared/diten-datefield.js '
+        + '(the BL-391 typed-date guard) is not loaded on this page, so they open read-only and are picked from the calendar.');
     const initDatePickers = () => {
         if (typeof window.flatpickr !== 'function') return;
+        const guard = dateGuard();
+        if (!guard) reportMissingDateGuard();
         ['filterCreatedFrom', 'filterCreatedTo'].forEach((id) => {
             const el = document.getElementById(id);
             if (!el || datePickers[id]) return;
-            datePickers[id] = window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
+            datePickers[id] = window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: !!guard });
+            if (guard) guard(datePickers[id], 'altFormat');
         });
     };
     const dateVal = (id) => normalizeString(document.getElementById(id)?.value);
@@ -475,6 +489,17 @@ const LegalEntitiesList = (function () {
         initDatePickers();
         applySavedTableState(api, defaultViewState || { filters: appliedFilters });
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
+            /*
+             * WCN-FIX-04 — a refused filter date is cleared by the guard; applying would drop it from the query
+             * silently AND close the panel that shows its red mark. Apply stops instead: the panel stays open and
+             * the reason is said.
+             */
+            const refusedDate = ['filterCreatedFrom', 'filterCreatedTo']
+                .some((id) => !!datePickers[id]?.altInput?.classList.contains('is-invalid'));
+            if (refusedDate) {
+                window.showToast?.(L.DateNotRecognized || 'A date you typed could not be read.', 'error');
+                return;
+            }
             appliedFilters = {
                 country: $('#filterCountry').val() || [],
                 operationalStatus: $('#filterOperationalStatus').val() || [],

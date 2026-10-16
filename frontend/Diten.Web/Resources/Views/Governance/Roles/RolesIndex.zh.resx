@@ -31,4 +31,34 @@
   <data name="KpiSystemRoles" xml:space="preserve"><value>系统角色</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>自定义角色</value></data>
   <data name="KpiAssignedUsers" xml:space="preserve"><value>已分配用户</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>无法验证您的会话。请重新登录后再试。</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>此角色已不存在。请刷新页面。</value>
+  </data>
+  <data name="ErrorRoleNameTaken" xml:space="preserve">
+    <value>已存在同名角色。请换一个名称。</value>
+  </data>
+  <data name="ErrorRoleSystemNotDeletable" xml:space="preserve">
+    <value>系统角色无法删除。</value>
+  </data>
+  <data name="ErrorRoleNameRequired" xml:space="preserve">
+    <value>请输入角色名称。</value>
+  </data>
+  <data name="ErrorRoleNameTooLong" xml:space="preserve">
+    <value>角色名称最多 50 个字符。</value>
+  </data>
+  <data name="ErrorRoleDisplayNameRequired" xml:space="preserve">
+    <value>请输入显示名称。</value>
+  </data>
+  <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
+    <value>显示名称最多 100 个字符。</value>
+  </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>说明最多 500 个字符。</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>系统角色无法编辑。</value>
+  </data>
 </root>

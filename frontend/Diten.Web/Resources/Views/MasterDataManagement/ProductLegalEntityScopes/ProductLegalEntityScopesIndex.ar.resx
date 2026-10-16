@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ProductLegalEntityScopesTitle"><value>نطاقات الكيانات القانونية للمنتج</value></data><data name="PageDescription"><value>حدد الكيانات القانونية التي يمكنها استخدام كل منتج عالمي</value></data><data name="AddNewProductLegalEntityScope"><value>تهيئة نطاق المنتج</value></data>
+  <data name="Actions"><value>الإجراءات</value></data><data name="CanonicalCode"><value>الرمز القياسي</value></data><data name="GlobalProduct"><value>المنتج العالمي</value></data><data name="LifecycleStatus"><value>حالة دورة الحياة</value></data>
+  <data name="ConfigureTitle"><value>تهيئة نطاق المنتج</value></data><data name="ReplaceTitle"><value>استبدال نطاق المنتج</value></data><data name="ScopeMode"><value>وضع النطاق</value></data><data name="GroupWide"><value>على مستوى المجموعة</value></data><data name="Scoped"><value>كيانات قانونية محددة</value></data><data name="LegalEntities"><value>الكيانات القانونية</value></data><data name="LegalEntityLimitHint"><value>اختر ما يصل إلى 200 كيان قانوني.</value></data>
+  <data name="QuickView"><value>عرض سريع</value></data><data name="Unknown"><value>غير معروف</value></data><data name="PolicyStatus"><value>حالة السياسة</value></data><data name="EffectiveFrom"><value>ساري من</value></data><data name="EffectiveTo"><value>ساري حتى</value></data><data name="Version"><value>الإصدار</value></data>
+  <data name="Configure"><value>تهيئة</value></data><data name="Replace"><value>استبدال</value></data><data name="End"><value>إنهاء</value></data><data name="EndConfirmation"><value>هل تريد إنهاء فترة نطاق المنتج الحالية؟</value></data><data name="ViewDetails"><value>عرض التفاصيل</value></data><data name="LegacyUnclassified"><value>غير مهيأ</value></data><data name="Configured"><value>مهيأ</value></data>
+  <data name="ErrorGateway"><value>تعذر إكمال الطلب.</value></data><data name="ErrorValidation"><value>تحقق من الحقول المطلوبة.</value></data><data name="ErrorConflict"><value>تغير النطاق أو يتعارض مع البيانات الحالية.</value></data><data name="ErrorNotFound"><value>لم يتم العثور على المنتج أو السياسة.</value></data><data name="ErrorForbidden"><value>ليس لديك إذن.</value></data><data name="ErrorProviderUnavailable"><value>موفر نطاق الكيان القانوني غير متاح.</value></data><data name="ErrorProviderTimeout"><value>انتهت مهلة موفر نطاق الكيان القانوني.</value></data><data name="ErrorInvalidFormAttempt"><value>محاولة النموذج غير صالحة أو منتهية.</value></data><data name="Saved"><value>تم حفظ نطاق المنتج.</value></data><data name="ReconciliationPending"><value>التغيير بانتظار التسوية.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve">
+    <value>بانتظار اعتماد الهوية</value>
+  </data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve">
+    <value>تم اعتماد الهوية</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>متوقف</value>
+  </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>يجري تفعيل تطبيق النطاق أو إيقافه؛ التغييرات متوقفة مؤقتًا. أعد المحاولة بعد بضع دقائق.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>هناك تغيير آخر قيد التنفيذ على هذا المنتج. أعد المحاولة بعد قليل.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>تطبيق نطاق المنتج معلّق؛ لا تُقبل التغييرات حتى يُستأنف.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>تعذّرت قراءة إعدادات نطاق المنتج لهذا المستأجر. اتصل بالمسؤول.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>شركات أخرى: {0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>تُجرى حاليًا تغييرات كثيرة جدًا في مجموعة الشركات هذه. أعد المحاولة بعد بضع دقائق.</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>يتعذّر الوصول إلى إعدادات نطاق المنتج حاليًا. أعد المحاولة بعد قليل.</value></data>
+  <data name="ErrorStoreNotReady" xml:space="preserve"><value>يجري تجهيز إعدادات نطاق المنتج. أعد المحاولة بعد قليل.</value></data>
+</root>

@@ -17,6 +17,12 @@ public static class MongoDbIndexConfigurations
     /// <summary>The driver-default name of the index it replaces: unique on { Email, TenantId }, deleted users included.</summary>
     public const string LegacyUserEmailIndexName = "Email_1_TenantId_1";
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 5 — the set-password link's lookup.</summary>
+    public const string PasswordResetTokenHashIndexName = "ix_users_password_reset_token_hash_v2";
+
+    /// <summary>FIX2's sparse index (held every user: the field is written as null). No longer created; to be removed later.</summary>
+    public const string RetiredSparsePasswordResetTokenHashIndexName = "ix_users_password_reset_token_hash";
+
     public static async Task EnsureIndexesAsync(IMongoDatabase database)
     {
         // Users
@@ -36,47 +42,22 @@ public static class MongoDbIndexConfigurations
                         Builders<User>.Filter.Gt(u => u.NormalizedUserName, string.Empty))
                 }),
             new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.TenantId)),
-            new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.IsActive).Ascending(u => u.TenantId))
-        });
-
-        // Roles
-        var rolesCol = database.GetCollection<Role>("roles");
-        await rolesCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<Role>(
-                Builders<Role>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.Name),
-                new CreateIndexOptions<Role>
+            new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.IsActive).Ascending(u => u.TenantId)),
+            // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 5 — the set-password link finds its account by the link's hash, across
+            // tenants and anonymously (the page's check and the redemption): without an index every such request scanned
+            // the whole users collection. FIX3 item 7 — PARTIAL on a string value: User writes PasswordResetTokenHash: null
+            // explicitly, so FIX2's sparse index held every user. A new NAME (an index of the same name with other options
+            // cannot be created over it); FIX2's ix_users_password_reset_token_hash is no longer created here and is NOT
+            // dropped — remove it later where it exists.
+            new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.PasswordResetTokenHash),
+                new CreateIndexOptions<User>
                 {
-                    Unique = true,
-                    Name = "uq_roles_tenant_name_active",
-                    PartialFilterExpression = Builders<Role>.Filter.Eq(r => r.IsDeleted, false)
-                }),
-            new CreateIndexModel<Role>(Builders<Role>.IndexKeys.Ascending(r => r.TenantId))
+                    Name = PasswordResetTokenHashIndexName,
+                    PartialFilterExpression = Builders<User>.Filter.Type(u => u.PasswordResetTokenHash, MongoDB.Bson.BsonType.String)
+                })
         });
 
-        // Permissions
-        var permissionsCol = database.GetCollection<Permission>("permissions");
-        await permissionsCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending(p => p.Key), new CreateIndexOptions { Unique = true }),
-            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending("Module").Ascending("Resource").Ascending("Action"), new CreateIndexOptions { Unique = true })
-        });
-
-        // UserRoles
-        var userRolesCol = database.GetCollection<UserRole>("userRoles");
-        await userRolesCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("RoleId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
-            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("TenantId"))
-        });
-
-        // RolePermissions
-        var rolePermissionsCol = database.GetCollection<RolePermission>("rolePermissions");
-        await rolePermissionsCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("PermissionId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
-            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("TenantId"))
-        });
+        await EnsurePermissionOnboardingIndexesAsync(database);
 
         // RefreshTokens
         var refreshTokensCol = database.GetCollection<RefreshToken>("refreshTokens");
@@ -140,6 +121,81 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<ESignReauthWindow>(
                 Builders<ESignReauthWindow>.IndexKeys.Ascending(x => x.ExpiresAtUtc),
                 new CreateIndexOptions { ExpireAfter = TimeSpan.FromHours(1), Name = "ttl_esign_window_expiry" })
+        });
+
+        await EnsureServiceIdentityIndexesAsync(database);
+    }
+
+    public static async Task EnsurePermissionOnboardingIndexesAsync(IMongoDatabase database)
+    {
+        // Roles
+        var rolesCol = database.GetCollection<Role>("roles");
+        await rolesCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<Role>(
+                Builders<Role>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.Name),
+                new CreateIndexOptions<Role>
+                {
+                    Unique = true,
+                    Name = "uq_roles_tenant_name_active",
+                    PartialFilterExpression = Builders<Role>.Filter.Eq(r => r.IsDeleted, false)
+                }),
+            new CreateIndexModel<Role>(Builders<Role>.IndexKeys.Ascending(r => r.TenantId))
+        });
+
+        // Permissions
+        var permissionsCol = database.GetCollection<Permission>("permissions");
+        await permissionsCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending(p => p.Key), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending("Module").Ascending("Resource").Ascending("Action"), new CreateIndexOptions { Unique = true })
+        });
+
+        // UserRoles
+        var userRolesCol = database.GetCollection<UserRole>("userRoles");
+        await userRolesCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("RoleId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("TenantId"))
+        });
+
+        // RolePermissions
+        var rolePermissionsCol = database.GetCollection<RolePermission>("rolePermissions");
+        await rolePermissionsCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("PermissionId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("TenantId"))
+        });
+    }
+
+    public static async Task EnsureServiceIdentityIndexesAsync(IMongoDatabase database)
+    {
+        var serviceClients = database.GetCollection<ServiceClientIdentity>("serviceClientIdentities");
+        await serviceClients.Indexes.CreateOneAsync(new CreateIndexModel<ServiceClientIdentity>(
+            Builders<ServiceClientIdentity>.IndexKeys.Ascending(x => x.ClientCode),
+            new CreateIndexOptions<ServiceClientIdentity>
+            {
+                Unique = true,
+                Name = "ux_service_client_identity_code_active",
+                PartialFilterExpression = Builders<ServiceClientIdentity>.Filter.Eq(x => x.IsDeleted, false)
+            }));
+
+        var serviceGrants = database.GetCollection<ServiceClientTenantGrant>("serviceClientTenantGrants");
+        await serviceGrants.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ServiceClientTenantGrant>(
+                Builders<ServiceClientTenantGrant>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.ServiceClientIdentityId).Ascending(x => x.Audience),
+                new CreateIndexOptions<ServiceClientTenantGrant>
+                {
+                    Unique = true,
+                    Name = "ux_service_client_grant_tenant_client_audience_active",
+                    PartialFilterExpression = Builders<ServiceClientTenantGrant>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ServiceClientTenantGrant>(
+                Builders<ServiceClientTenantGrant>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.IsEnabled),
+                new CreateIndexOptions { Name = "ix_service_client_grant_tenant_enabled" })
         });
     }
 

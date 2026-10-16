@@ -1013,8 +1013,13 @@
                         ${scopeItem('all', t('ScopeAll'), t('ScopeAllSub'))}` : ''}
                     </ul>
                 </div>
-                <div class="dropdown">
-                    <button type="button" class="btn btn-primary shadow-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                ${/*
+                   * BL-589 (WP-WCN-FIX-01, UAS-001 §6) — "+ Yeni" is drawn only when it has an item. Its one item is
+                   * "Görev" (platform.tasks.create); a user without it gets NO button rather than a menu that opens on
+                   * nothing (BL-208: a dead control is worse than an absence).
+                   */ ''}
+                ${canCreateTask ? `<div class="dropdown">
+                    <button type="button" class="btn btn-primary shadow-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-wcn-new-menu data-tour="wcn-new">
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
@@ -1041,10 +1046,16 @@
                            * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
                            * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
                            */ ''}
-                        ${canCreateTask ? '<li><hr class="dropdown-divider"></li>' : ''}
-                        ${createItem('source', 'bx-link-external', t('NewInSource'))}
+                        ${/*
+                           * BL-589 (WP-WCN-FIX-01) — "KAYNAK MODÜLDE OLUŞTUR" WAS REMOVED, NOT DISABLED (2026-10-09).
+                           * MEASURED: drawn without any permission check; its module list came from the user's own
+                           * work items (empty for a user with none); and confirming it only toasted "(mock)" — the
+                           * projection carries no CREATE address (`deepLink` addresses an existing object). It returns
+                           * only with a real source: the tenant navigation's per-module CreateRoute + CreatePermission
+                           * (what Ctrl+K already lists), filtered to modules the user may create in.
+                           */ ''}
                     </ul>
-                </div>
+                </div>` : ''}
             </div>
         </div>`;
     };
@@ -1253,7 +1264,7 @@
         const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-wcn-shortcuts aria-haspopup="dialog" aria-keyshortcuts="?" title="${esc(t('KeyboardHint'))}" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button></div>`;
         return `<div class="card mb-3 wcn-tabcard">
             <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
-                <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
+                <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}" data-tour="wcn-tabs">
                     ${TABS.map(tab).join('')}
                 </ul>
                 ${views}
@@ -1409,7 +1420,7 @@
             return `<div id="wcnTableFilterHost" class="px-3"><div class="collapse${state.filtersOpen ? ' show' : ''}" id="wcnFilterCollapse"><div class="pt-0 pb-3 wcn-filter-panel dt-filter-host">${filterPanel()}</div></div></div>`;
         }
         // Persistent search (page-level, not per-view) with a clear affordance.
-        const searchBox = `<div class="wcn-search wcn-search-inline">
+        const searchBox = `<div class="wcn-search wcn-search-inline" data-tour="wcn-search">
             <i class="bx bx-search"></i>
             <input type="text" class="form-control shadow-none" data-wcn-search
                 value="${esc(state.search)}" placeholder="${esc(t('SearchPlaceholder'))}" aria-label="${esc(t('SearchPlaceholder'))}">
@@ -1800,7 +1811,7 @@
                 ${compact ? '' : `<p class="wcn-row-summary">${summaryHtml}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
-            <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
+            <div class="wcn-row-actions" data-tour="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
         </div>`;
     };
 
@@ -4851,7 +4862,12 @@
     const renderRelated = (item) => {
         if (!hasCap(item, 'relatedRecords') || !(item.relatedRecords || []).length) { return ''; }
         const typeKeys = { parent: 'RelatedTypeParent', child: 'RelatedTypeChild', transaction: 'RelatedTypeTransaction', document: 'RelatedTypeDocument' };
-        const rows = global.DitenRelatedRecords.renderRelatedRows(item.relatedRecords, {
+        // WP-WCN-TASK-REQUEST-01 FIX4 — a related task this reader may not read arrives with TASK_NOT_ACCESSIBLE where its
+        // title would be (the server never sends a refused title); it is shown as a sentence, never as the code.
+        const records = item.relatedRecords.map((record) => (record.title === 'TASK_NOT_ACCESSIBLE'
+            ? { ...record, title: t('RelatedTaskNotAccessible') }
+            : record));
+        const rows = global.DitenRelatedRecords.renderRelatedRows(records, {
             esc,
             resolveTypeLabel: (record) => t(typeKeys[record.type] || 'RelatedTypeDocument')
         });
@@ -6157,7 +6173,8 @@
         if (expectedVersion === null) { return; }
 
         const result = await global.TasksApi.transition(subtaskId, 'cancel', { expectedVersion });
-        if (!result.ok) { toast(global.TasksApi.failureMessage(result), 'error'); return; }
+        // FIX4 (item 7) — a cancel's own sentence for a workflow that could not be withdrawn.
+        if (!result.ok) { toast(global.TasksApi.failureMessage(result, global.TasksApi.reasonOverridesFor('cancel')), 'error'); return; }
         toast(tf('ToastSubtaskCancelled', title));
         await loadWorkItems();
         render();
@@ -7625,7 +7642,8 @@
          */
         const sidePanel = '';
 
-        const mainPanel = `<div id="wcn-main-panel" class="wcn-main${state.view === 'table' ? '' : ' wcn-main-open'}" role="tabpanel" aria-labelledby="wcn-tab-${state.tab}" tabindex="0">${main}</div>`;
+        // WP-UX-COMMON-01 — `data-tour` marks are the Task Center tour's targets (tour.js); markup only, no behaviour.
+        const mainPanel = `<div id="wcn-main-panel" data-tour="wcn-list" class="wcn-main${state.view === 'table' ? '' : ' wcn-main-open'}" role="tabpanel" aria-labelledby="wcn-tab-${state.tab}" tabindex="0">${main}</div>`;
         const workspaceToolbar = state.view === 'table'
             ? buildChips()
             : `<section class="card wcn-workspace-card wcn-workspace-toolbar-card">${buildChips()}</section>`;
@@ -8039,7 +8057,8 @@
                 ? await global.TasksApi.fieldRecords(definition.code)
                 : await global.TasksApi.fieldOptions(definition.code);
 
-            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+            // ATT-FIX2 — the task form's rule: a record source with an empty first page is still resolved.
+            if (result.ok && Array.isArray(result.data) && (result.data.length > 0 || kind === 'record')) {
                 byCode[definition.code] = result.data;
                 return;
             }
@@ -8058,7 +8077,7 @@
         global.console?.warn?.(
             `[WorkCenterNext] searching records for closure field "${code}" failed `
             + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
-        return [];
+        return result;   // BL-512 FIX1 — the picker says "the search could not be done", never "no results"
     };
 
     /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
@@ -8184,6 +8203,35 @@
         if (running && running.switchToken) { showTimerUndo(running); }
     };
 
+    /*
+     * One browser attempt must keep one identity across a double-click, retry or lost response. The identity is
+     * derived from the exact projected tuple rather than generated at click time, so rebuilding the payload does
+     * not create a second business attempt. The digest is deliberately non-secret and bounded; the server still
+     * owns authorization, assignment, maker-checker and replay decisions.
+     */
+    const hashActionAttemptTuple = (value) => {
+        const hashes = [0x811c9dc5, 0x9e3779b9, 0x85ebca6b, 0xc2b2ae35];
+        const primes = [0x01000193, 0x27d4eb2d, 0x165667b1, 0x1b873593];
+        for (let index = 0; index < value.length; index += 1) {
+            const code = value.charCodeAt(index);
+            for (let slot = 0; slot < hashes.length; slot += 1) {
+                hashes[slot] = Math.imul(hashes[slot] ^ (code + slot), primes[slot]);
+            }
+        }
+        return hashes.map((hash) => (hash >>> 0).toString(16).padStart(8, '0')).join('');
+    };
+
+    const stableWorkItemActionIdentity = (providerCode, itemId, actionCode, projectedVersion) => {
+        const parts = [providerCode, itemId, actionCode].map((part) => typeof part === 'string' ? part : '');
+        const version = Number(projectedVersion);
+        // Version 0 is a real version: a provider whose records start there (MDM) is as writable as one that starts at 1.
+        if (parts.some((part) => !part.trim()) || !Number.isInteger(version) || version < 0) { return null; }
+
+        // Length prefixes make tuple boundaries unambiguous without normalizing the ordinal source facts.
+        const tuple = parts.map((part) => `${part.length}:${part}`).concat(`v:${version}`).join('|');
+        return `wcn-action-v1:${hashActionAttemptTuple(tuple)}`;
+    };
+
     const submitRealTransition = async (
         item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
@@ -8197,7 +8245,19 @@
         render();
 
         // The concurrency token from the projection — an expected-version write, so a stale screen loses cleanly.
-        const expectedVersion = Number(item.concurrency?.token ?? 0);
+        const projectedToken = item.concurrency?.token;
+        const expectedVersion = Number(projectedToken ?? 0);
+        /*
+         * The stable identity exists only when the projection CARRIED a version. An item with no token has nothing
+         * that changes between two honest attempts (accept → decline → accept on an invitation), so a key derived
+         * for it would make the second attempt look like a replay of the first; it sends no key and the owner
+         * decides. Nothing is refused here: whether a version or a key is REQUIRED is the owning module's rule,
+         * answered by the server (MOD-0023's dispatcher refuses both when missing) — a browser-side refusal turned
+         * every item that starts at version 0, or carries no token, into an action that could never be taken.
+         */
+        const idempotencyKey = projectedToken === null || projectedToken === undefined
+            ? null
+            : stableWorkItemActionIdentity(item.source?.providerCode, item.id, action.code, expectedVersion);
         /*
          * WC-D2 — ONE ADDRESS, EVERY PROVIDER. This used to be TasksApi.transition(), which posts to
          * /Tasks/api/{id}/{verb} — MOD-0024's own route, and the reason only MOD-0024's items could be acted on.
@@ -8207,9 +8267,12 @@
          * The body's shape still comes from the vocabulary above, never from a guess at this call site — the
          * server now reads those same field names off one payload and builds the module's DTO itself.
          */
-        const body = buildTransitionBody(
-            action.code,
-            { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues });
+        const body = {
+            ...buildTransitionBody(
+                action.code,
+                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }),
+            ...(idempotencyKey ? { idempotencyKey } : {})
+        };
         if (signature.signatureId) body.signatureId = signature.signatureId; // WorkItemActionPayloadDto.SignatureId (E4)
         // BL-491 — the person an action flagged by the server hands the work to, in the field the dispatcher reads.
         // Added only for such an action, so every other request is byte for byte what it was.
@@ -8262,7 +8325,9 @@
          * answers with the assignment sentence, because every other action IS an assignment; inquire is the one
          * action that must ask for the other sentence, and it asks here, at its only call site.
          */
-        const overrides = action.code === 'inquire' ? global.TasksApi.INQUIRE_REASON_CODE_OVERRIDES : undefined;
+        // FIX4 (item 7) — and an act that withdraws the task's linked workflow (cancel, return, reassign, release,
+        // delete) asks for its own sentence: the one rule lives in TasksApi.reasonOverridesFor.
+        const overrides = global.TasksApi.reasonOverridesFor(action.code);
 
         // A 409 means two very different things, and they must not share a message. A CONCURRENCY conflict is
         // "someone changed it first, here is the fresh screen"; a workflow BLOCK is "the approver has not released
@@ -9365,6 +9430,35 @@
      * pinned class names (`wcn-dialog-select`/`wcn-dialog-select-dropdown`, styled in backbone-custom.css)
      * by passing them as options — a shared component does not reach into a module's own CSS hook.
      */
+    /*
+     * BL-512 — the approval-delegate picker SEARCHES the server (TasksApi.decisionMakers): at least two characters,
+     * typed with a pause (~300 ms), at most 20 people per answer. The people the action cannot be handed to
+     * (`excludedTargetIds`) are still never offered. Three answers are told apart, each in words: "type at least two
+     * characters", "nobody found for this search", and a READ that failed — a 403 or a dropped connection is never
+     * shown as "nobody" (BL-491). The sentences live in the Tasks resx this page already carries.
+     */
+    const peopleText = (key) => global.TasksL10n?.t?.(key) ?? key;
+    const bindPeopleSearch = (element, popup, excludedTargetIds) => (global.DitenDialog && global.DitenPeopleSearch
+        // BL-512 FIX1 — the ONE shared transport (shared/diten-people-search.js): it returns the request object
+        // select2 inspects on failure, so a 429 / 403 / dropped connection is SAID in the window instead of the
+        // picker sitting on "searching…" for ever.
+        ? global.DitenDialog.bindDialogSelect2(element, popup, Object.assign({
+            containerCssClass: 'wcn-dialog-select',
+            dropdownCssClass: 'wcn-dialog-select-dropdown'
+        }, global.DitenPeopleSearch.options({
+            search: (term) => global.TasksApi.decisionMakers({ search: term }),
+            exclude: excludedTargetIds,
+            text: {
+                minimumLength: peopleText('peopleSearchMinimumLength'),
+                noResults: peopleText('peopleSearchNoResults'),
+                searching: peopleText('peopleSearching'),
+                unknown: peopleText('decisionMakerUnavailable'),
+                rateLimited: peopleText('errorPeopleSearchRateLimited'),
+                failed: peopleText('searchFailed')
+            }
+        })))
+        : false);
+
     const bindDialogSelect2 = (element, popup) => (global.DitenDialog
         ? global.DitenDialog.bindDialogSelect2(element, popup, {
             containerCssClass: 'wcn-dialog-select',
@@ -10108,50 +10202,7 @@
         return item;
     };
 
-    const openCreateInSource = () => {
-        const opts = {};
-        moduleOptions().forEach((m) => { opts[m] = m; });
-        sharedConfirm({
-            title: t('NewInSource'),
-            // Where the record will LIVE, which is the thing a module picker leaves unsaid.
-            subtext: t('NewInSourceSubtext'),
-            icon: 'bx-cube',
-            // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
-            // 'NewOpenSource' label promised an act this dialog no longer performs.
-            confirmText: t('NewCreateInSource'),
-            input: {
-                type: 'select',
-                options: opts,
-                label: t('NewPickModuleLabel'),
-                /*
-                 * A SELECT'S PLACEHOLDER IS ITS EMPTY OPTION, not an example — there is nothing to exemplify,
-                 * the choices are all listed. And its glyph is the THEME'S OWN caret, which `.swal2-select`
-                 * already draws: adding a second one would put two arrows on one control.
-                 */
-                placeholder: t('NewPickModule'),
-                // select2, from the same binder the filter panel uses — and parented INTO the popup so its
-                // list cannot open behind the dialog the way flatpickr's calendar once did.
-                onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
-            },
-            onConfirm: (value) => {
-                if (value) {
-                /*
-                 * Nothing is opened here, DELIBERATELY — do not "restore" this.
-                 *
-                 * It used to find an arbitrary EXISTING item from the chosen module and open that record's detail
-                 * page. The user asked to CREATE something in that module; showing them an unrelated record they
-                 * did not ask for is not a lesser version of creating one, it is the wrong act.
-                 *
-                 * Creating in another module needs that module's CREATE url, and the projection does not carry
-                 * one (`deepLink` addresses an existing object). Until a provider supplies it, the honest
-                 * behaviour is to say this is not wired yet and do nothing — which is exactly what the "(mock)"
-                 * toast below already says.
-                 */
-                    toast(tf('ToastCreateInSource', value), 'info');
-                }
-            }
-        });
-    };
+    // BL-589 (WP-WCN-FIX-01) — `openCreateInSource` was deleted with its menu item: it could only toast "(mock)".
 
     /*
      * ⚠ `openMeetingForm` WAS DELETED (2026-08-24) — see the note on the "+ Yeni" menu above. It collected a
@@ -10252,16 +10303,10 @@
                  * list would silently leave out every approver outside the reader's own company.
                  */
                 const res = asksTarget
-                    ? await global.TasksApi.decisionMakers()
+                    ? { ok: true, data: [] }   // BL-512: searched as the reader types (bindPeopleSearch)
                     : await global.TasksApi.assignablePeople();
-                /*
-                 * A read that FAILED is not an empty list. "Nobody this can be delegated to" printed over a 403 or
-                 * a dropped connection is a false sentence; the failure says what it was, and no window opens.
-                 */
-                if (!res.ok && asksTarget) {
-                    toast(global.TasksApi.failureMessage(res), 'error');
-                    return { outcome: 'refused' };
-                }
+                // BL-512 FIX1 — the approval delegate reads nothing here (its picker searches), so its old "a read
+                // that failed" refusal could no longer be reached; a failed SEARCH is said inside the window.
                 // `data` IS the array for both lists — unwrapped once in TasksApi (BL-113). This line was wrong for
                 // three rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
@@ -10271,9 +10316,9 @@
                     people = people.filter((person) =>
                         !action.excludedTargetIds.includes(String(personUserId(person) || '').toLowerCase()));
                 }
-                if (!people.length && needsAssignee) {
-                    // Refusing beats opening a dialog that cannot be confirmed.
-                    toast(t(asksTarget ? 'DelegateNoEligiblePeople' : 'ReassignNoAssignableUsers'), 'error');
+                // Refusing beats opening a dialog that cannot be confirmed (not the BL-512 search: it says "nobody").
+                if (!people.length && needsAssignee && !asksTarget) {
+                    toast(t('ReassignNoAssignableUsers'), 'error');
                     return { outcome: 'refused' };
                 }
             }
@@ -10289,7 +10334,8 @@
             const assigneeField = needsAssignee
                 ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t(asksTarget ? 'DelegateTargetLabel' : 'ReassignAssigneeLabel'))}</label>`
                   + `<select id="wcnReassignAssignee" class="form-select">`
-                  + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
+                  // BL-512 — the approval delegate's first line invites a search; it has no other options until one runs.
+                  + `<option value="">${esc(asksTarget ? peopleText('peopleSearchHint') : t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
             /*
              * The optional picker. Its empty option is not a placeholder to be replaced — it is a REAL CHOICE
@@ -10363,7 +10409,11 @@
                 cancelButtonText: t('DialogDismiss'),
                 // Both pickers become select2, through the same binder, parented into this popup.
                 didOpen: (popup) => {
-                    bindDialogSelect2(document.getElementById('wcnReassignAssignee'), popup);
+                    if (asksTarget) {
+                        bindPeopleSearch(document.getElementById('wcnReassignAssignee'), popup, action.excludedTargetIds);
+                    } else {
+                        bindDialogSelect2(document.getElementById('wcnReassignAssignee'), popup);
+                    }
                     bindDialogSelect2(document.getElementById('wcnWaitingOn'), popup);
                 },
                 preConfirm: () => {
@@ -10544,7 +10594,10 @@
                             // one case needing a translator, and it is WCN's own strings it would ever name.
                             translate: t
                         });
-                        global.TaskForm.enhanceSelects?.(fieldsRow, { searchRecords: searchClosureFieldRecords });
+                        global.TaskForm.enhanceSelects?.(fieldsRow, {
+                            searchRecords: searchClosureFieldRecords,
+                            recordSearchText: { rateLimited: peopleText('errorPeopleSearchRateLimited'), failed: peopleText('searchFailed'), noResults: peopleText('recordSearchNoResults') }
+                        });
                     }
                 },
                 preConfirm: () => {
@@ -11090,9 +11143,14 @@
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
 
-        // The toolbar's keyboard button — the same list `?` opens (WP-UI-SHORTCUTS-01).
+        // The toolbar's keyboard button — the same panel `?` opens (UX-COMMON-FIX1: the page help panel, which carries
+        // the shortcut list; the bare list only where the shell drew no panel).
         if (event.target.closest('[data-wcn-shortcuts]')) {
-            if (global.DitenShortcuts) { global.DitenShortcuts.open(); }
+            if (global.DitenShortcuts && typeof global.DitenShortcuts.overlayOpen === 'function' && global.DitenShortcuts.overlayOpen()) { return; } // UX-COMMON-FIX2: not over an open overlay, as `?`
+            const help = global.DitenHelp;
+            if (!(help && typeof help.open === 'function' && help.open()) && global.DitenShortcuts) {
+                global.DitenShortcuts.open();
+            }
             return;
         }
 
@@ -11205,7 +11263,6 @@
             const kind = newEl.getAttribute('data-wcn-new');
             // The entry is not rendered without the key; this refuses a stale menu the same way (UAS-001 §6).
             if (kind === 'task') { if (canCreateSelfTask()) { openSelfTask(); } }
-            else if (kind === 'source') { openCreateInSource(); }
             return;
         }
 

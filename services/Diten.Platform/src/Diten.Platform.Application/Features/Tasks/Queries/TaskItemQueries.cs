@@ -50,7 +50,10 @@ public sealed record GetTaskAssignmentPositionLookupQuery(string CorrelationId)
 /// be two places to disagree about who holds a live position.</para>
 public sealed record GetTaskAssignmentPersonLookupQuery(
     string CorrelationId,
-    TaskPersonLookupPurpose Purpose = TaskPersonLookupPurpose.Assignment)
+    TaskPersonLookupPurpose Purpose = TaskPersonLookupPurpose.Assignment,
+    // ATT-FIX2 — false: the rows come back unnamed; the caller names them itself (the decision-makers search does,
+    // in ONE completeness-checked call, instead of a second call after this one).
+    bool ResolveNames = true)
     : IRequest<Response<AssignablePersonLookupDto>>;
 
 /// <summary>
@@ -232,4 +235,4 @@ public sealed record GetTaskTypeGoverningDocumentsQuery(
 /// the closest existing term+limit lookup — rather than opening a second one.
 /// </summary>
 public sealed record GetTaskLinkCandidatesQuery(string? Term, int Limit, string CorrelationId)
-    : IRequest<Response<IReadOnlyList<TaskLinkCandidateDto>>>;
+    : IRequest<Response<TaskLinkCandidatesDto>>;

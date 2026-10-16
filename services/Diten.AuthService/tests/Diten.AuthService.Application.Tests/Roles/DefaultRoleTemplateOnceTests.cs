@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Diten.AuthService.Api.Controllers;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Events;
@@ -249,9 +250,14 @@ public sealed class DefaultRoleTemplateOnceTests : IClassFixture<AccountKindAcce
                 new UserRoleRepository(Database, _context),
                 new TenantUserMembershipRepository(Database),
                 new PlainHasher(),
-                new DefaultLoginSettings(),
-                new TemporaryPasswords(),
-                NullLogger<InternalEventsController>.Instance);
+                // Main sync 2026-10-13: the lane's controller mints the set-password link itself (token + hash, refresh-token
+                // store) and records the account write (IUserAuditRecorder) — where main asked the login settings and the
+                // password policy. Fakes for exactly what the provisioning paths touch; the repository is the real one.
+                Tokens,
+                Tokens,
+                NullLogger<InternalEventsController>.Instance,
+                new RefreshTokenRepository(Database, _context, Tokens),
+                new NoUserAudit());
             controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
             return controller;
         }
@@ -348,6 +354,32 @@ public sealed class DefaultRoleTemplateOnceTests : IClassFixture<AccountKindAcce
         public Task SyncTenantModulesAsync(Guid tenantId, IReadOnlyCollection<string> entitledModuleCodes, string actor, CancellationToken ct = default) => throw new NotSupportedException();
         public Task GrantModuleWithKeysAsync(Guid tenantId, string moduleCode, IReadOnlyCollection<string> permissionKeys, string actor, CancellationToken ct = default) => throw new NotSupportedException();
         public Task SyncTenantModulesWithKeysAsync(Guid tenantId, IReadOnlyCollection<EntitledModulePermissionKeys> modules, string actor, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    private static readonly SetupLinkTokens Tokens = new();
+
+    private sealed class SetupLinkTokens : ITokenService, IRefreshTokenHasher
+    {
+        public string GenerateRefreshToken() => Guid.NewGuid().ToString("N");
+        public string Hash(string refreshToken) => "test-hash:" + refreshToken;
+
+        public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions) => throw Unused();
+        public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions, int expiresInMinutes) => throw Unused();
+        public string GeneratePlatformAccessToken(Guid userId, string email, string? firstName, string? lastName, Guid tenantId, string actorType, IEnumerable<string> roles, IEnumerable<string> permissions) => throw Unused();
+        public string GeneratePlatformAccessToken(Guid userId, string email, string? firstName, string? lastName, Guid tenantId, string actorType, IEnumerable<string> roles, IEnumerable<string> permissions, int expiresInMinutes) => throw Unused();
+        public string GeneratePlatformAccessToken(Guid userId, string email, string? firstName, string? lastName, Guid tenantId, string actorType, IEnumerable<string> roles, IEnumerable<string> permissions, int expiresInMinutes, bool requiresPasswordChange) => throw Unused();
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token) => throw Unused();
+
+        private static NotSupportedException Unused() => new("not used by the provisioning paths under test");
+    }
+
+    private sealed class NoUserAudit : IUserAuditRecorder
+    {
+        public Task RecordAsync(string eventName, Guid tenantId, Guid targetUserId, IReadOnlyDictionary<string, object?> metadata, CancellationToken ct = default)
+            => Task.CompletedTask;
+
+        public Task RecordAsync(string eventName, Guid tenantId, Guid targetUserId, IReadOnlyDictionary<string, object?> metadata, bool succeeded, CancellationToken ct)
+            => Task.CompletedTask;
     }
 
     private sealed class PlainHasher : IPasswordHasher

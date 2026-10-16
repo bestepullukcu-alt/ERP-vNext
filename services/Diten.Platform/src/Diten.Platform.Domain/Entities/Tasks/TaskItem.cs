@@ -120,6 +120,37 @@ public sealed class TaskItem : TenantScopedEntity
     /// <summary>Who created it (used for creator-scope surfaces later — BL-016).</summary>
     public Guid? CreatedByUserId { get; set; }
 
+    // ── The task request (BL-509) ────────────────────────────────────────────
+
+    /// <summary>
+    /// Who this task is being ASKED of, while <see cref="AssignmentTarget"/> is
+    /// <see cref="TaskAssignmentTarget.Offered"/> and nobody holds it. Null once they accept (they become the
+    /// assignee), decline, or the sender withdraws.
+    ///
+    /// <para>Deliberately NOT <see cref="AssigneeUserId"/>: every surface that counts somebody's work reads the
+    /// assignee, and a request nobody has agreed to is not yet anybody's work.</para>
+    /// </summary>
+    public Guid? OfferedToUserId { get; set; }
+
+    /// <summary>
+    /// This task was born as a request and stays one for life: after acceptance the sender watches and comments,
+    /// and no longer directs the work. False on every task written before the request existed.
+    /// </summary>
+    public bool IsRequest { get; set; }
+
+    /// <summary>
+    /// Why the last person asked declined, in their own words. Its presence is what tells the sender "declined"
+    /// apart from "withdrawn"; cleared when the request is addressed to somebody again or stops being a request.
+    /// </summary>
+    public string? OfferDeclineReason { get; set; }
+
+    /// <summary>
+    /// The unit the request was filed under when it was SENT (the sender's). Accepting moves the task to the
+    /// recipient's unit; handing it BACK moves it here again, so the sender's own work is not left filed in another
+    /// company. Null on every task that was never a request.
+    /// </summary>
+    public Guid? RequestOriginUnitId { get; set; }
+
     // ── Organization context (pack §12 K6) ───────────────────────────────────
     /// <summary>Owning unit/facility; defaults to the assignee's or pool position's unit.</summary>
     public required Guid OrganizationUnitId { get; set; }

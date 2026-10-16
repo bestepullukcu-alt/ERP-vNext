@@ -1,11 +1,25 @@
 @using Diten.Web.Views.MasterDataManagement.FinishedGoods
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<FinishedGoodsIndex> Localizer
-@inject Diten.Web.Services.IPermissionSnapshot Permissions
 @{
     ViewData["Title"] = Localizer["FinishedGoodsTitle"].Value;
     Layout = "_LayoutTenantShell";
-    var canCreate = Permissions.Has("mdm.finished-goods.create");
+    var canCreate = ViewData["CanCreateFinishedGood"] as bool? == true;
+    // MOD-0290-FU04 S5 (O-12, UAS-001): the stock-behaviour offcanvas and its script exist only with the stock-edit key.
+    var canEditStock = Diten.Web.Security.PermissionClaims.HasPermission(User, Diten.Web.Services.MasterData.StockBehaviourAccess.FinishedGood);
+}
+
+@*
+    FG FIX1 item 5 (UAS-001) — nothing of the register is drawn without mdm.finished-goods.read: no filter bar, no
+    heading, no skeleton, no table, no script. FinishedGoodsController.Index answers 403 with this surface, never a
+    redirect. The same reader as the controller (PermissionClaims), not the UX snapshot.
+
+    ⚠ Display only. MDM's [HasPermission] and the proxy's own checks remain the authority.
+*@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.finished-goods.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["FinishedGoodsTitle"].Value" />
+    return;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
@@ -19,11 +33,23 @@
 <partial name="~/Views/MasterDataManagement/FinishedGoods/_DataTable.cshtml" />
 @* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@
 <partial name="~/Views/MasterDataManagement/FinishedGoods/_DetailsQuickView.cshtml" />
-<partial name="~/Views/MasterDataManagement/FinishedGoods/_CreateEditOffcanvas.cshtml" />
+@* The create form (and its attempt token) exists only for a user who may create. *@
+@if (canCreate)
+{
+    <partial name="~/Views/MasterDataManagement/FinishedGoods/_CreateEditOffcanvas.cshtml" />
+}
+@if (canEditStock)
+{
+    <partial name="~/Views/MasterDataManagement/FinishedGoods/_StockBehaviourOffcanvas.cshtml" />
+}
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/MasterDataManagement/FinishedGoods/_IndexL10n.cshtml" />
     <script src="~/assets/js/MasterDataManagement/FinishedGoods/index.l10n.js" asp-append-version="true"></script>
+    @if (canEditStock)
+    {
+        <script src="~/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js" asp-append-version="true"></script>
+    }
     <script src="~/assets/js/MasterDataManagement/FinishedGoods/index.js" asp-append-version="true"></script>
 }

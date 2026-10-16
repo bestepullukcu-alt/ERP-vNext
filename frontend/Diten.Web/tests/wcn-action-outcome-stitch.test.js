@@ -217,7 +217,9 @@ describe("performAction resolves an outcome for every branch", () => {
 
   // ── the button path is unchanged: dispatch body/shape match the pre-existing suites' own assertions ────────
 
-  it("the button path still dispatches the same body it always did (byte for byte)", async () => {
+  // Product takeover (2026-10-01): the body is the one it always was, plus the attempt's stable identity — derived
+  // from (provider, item, action, projected version), so a double-click or a retry is the SAME attempt to the owner.
+  it("the button path still dispatches the same body it always did, plus the attempt's stable identity", async () => {
     await boot(projectionItem());
     await click("start");
 
@@ -225,7 +227,10 @@ describe("performAction resolves an outcome for every branch", () => {
       itemId: TASK_ID,
       actionCode: "start",
       providerCode: "tasks",
-      body: { expectedVersion: 5, reasonCode: null, note: null }
+      body: {
+        expectedVersion: 5, reasonCode: null, note: null,
+        idempotencyKey: expect.stringMatching(/^wcn-action-v1:[0-9a-f]{32}$/)
+      }
     });
   });
 });

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Diten.AuthService.Application.Features.Roles;
 using Diten.AuthService.Application.Features.Users.Services;
 
 namespace Diten.AuthService.Application.Tests.Users;
@@ -16,7 +17,13 @@ public sealed class UserAuditEventLabelGuardTests
 {
     private static readonly string[] PlatformLanguages = ["en", "tr"];
 
-    private static IReadOnlySet<string> Vocabulary => UserAuditEvents.Operations.Keys.ToHashSet(StringComparer.Ordinal);
+    private static IReadOnlySet<string> UserVocabulary => UserAuditEvents.Operations.Keys.ToHashSet(StringComparer.Ordinal);
+
+    // WP-ROLES-CLOSE-01 — the role events travel the same bridge and are labelled by the same screen. The screen's
+    // labels are held equal to the UNION of the two vocabularies; each vocabulary is still held complete on its own.
+    private static IReadOnlySet<string> RoleVocabulary => RoleAuditEvents.Operations.Keys.ToHashSet(StringComparer.Ordinal);
+
+    private static IReadOnlySet<string> Vocabulary => UserVocabulary.Concat(RoleVocabulary).ToHashSet(StringComparer.Ordinal);
 
     [Fact]
     public void Every_event_constant_is_in_the_forwarded_vocabulary()
@@ -27,7 +34,20 @@ public sealed class UserAuditEventLabelGuardTests
             .Select(f => (string)f.GetRawConstantValue()!)
             .ToHashSet(StringComparer.Ordinal);
 
-        Assert.Equal(constants.OrderBy(x => x), Vocabulary.OrderBy(x => x));
+        Assert.Equal(constants.OrderBy(x => x), UserVocabulary.OrderBy(x => x));
+    }
+
+    [Fact]
+    public void Every_role_event_constant_is_in_the_forwarded_vocabulary_and_none_collides_with_a_user_event()
+    {
+        var constants = typeof(RoleAuditEvents)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f.IsLiteral && f.FieldType == typeof(string) && f.Name != nameof(RoleAuditEvents.EntityType))
+            .Select(f => (string)f.GetRawConstantValue()!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.Equal(constants.OrderBy(x => x), RoleVocabulary.OrderBy(x => x));
+        Assert.Empty(UserVocabulary.Intersect(RoleVocabulary));
     }
 
     [Fact]
@@ -54,7 +74,7 @@ public sealed class UserAuditEventLabelGuardTests
                 .ToHashSet(StringComparer.Ordinal);
 
             Assert.True(Vocabulary.SetEquals(labels),
-                $"AuditLogIndex.{language}.resx AuditLog.Event.* keys differ from UserAuditEvents: "
+                $"AuditLogIndex.{language}.resx AuditLog.Event.* keys differ from UserAuditEvents + RoleAuditEvents: "
                 + $"missing [{string.Join(", ", Vocabulary.Except(labels))}] extra [{string.Join(", ", labels.Except(Vocabulary))}]");
         }
     }

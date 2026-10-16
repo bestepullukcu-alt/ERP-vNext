@@ -63,7 +63,12 @@ public static partial class PlatformSchemaManifest
                         new CreateIndexOptions { Name = "ix_audit_events_operation_occurred" }),
                     new CreateIndexModel<AuditEvent>(
                         Builders<AuditEvent>.IndexKeys.Ascending(x => x.CorrelationId),
-                        new CreateIndexOptions { Name = "ix_audit_events_correlation_id" })
+                        new CreateIndexOptions { Name = "ix_audit_events_correlation_id" }),
+                    // INTX FIX2 — the outbox worker's duplicate check looks a delivery up by its idempotency key. Additive,
+                    // non-unique, sparse (records written before the outbox carried the key have none): no data migration.
+                    new CreateIndexModel<AuditEvent>(
+                        Builders<AuditEvent>.IndexKeys.Ascending(Repositories.AuditEventRepository.OutboxIdempotencyKeyPath),
+                        new CreateIndexOptions { Name = "ix_audit_events_outbox_idempotency_key", Sparse = true })
 
             }),
         Collection<AuditEventRetentionPolicy>(
@@ -125,8 +130,22 @@ public static partial class PlatformSchemaManifest
                         Builders<AuditOutboxMessage>.IndexKeys
                             .Ascending(x => x.TenantId)
                             .Descending(x => x.CreatedAtUtc),
-                        new CreateIndexOptions { Name = "ix_audit_outbox_tenant_created" })
+                        new CreateIndexOptions { Name = "ix_audit_outbox_tenant_created" }),
+                    new CreateIndexModel<AuditOutboxMessage>(
+                        Builders<AuditOutboxMessage>.IndexKeys
+                            .Ascending(x => x.Status)
+                            .Ascending(x => x.NextAttemptAtUtcTicksV1)
+                            .Ascending(x => x.CreatedAtUtcTicksV1)
+                            .Ascending(x => x.Id),
+                        new CreateIndexOptions
+                        {
+                            Name = "ix_audit_outbox_status_next_attempt_ticks_v1_created_ticks_v1_id"
+                        })
 
             }),
+        Collection<AuditOutboxTemporalMigrationState>(
+            SchemaProfile.AccessGovernance,
+            AuditCollectionNames.AuditOutboxTemporalMigrations,
+            () => Array.Empty<CreateIndexModel<AuditOutboxTemporalMigrationState>>()),
     };
 }

@@ -1,0 +1,199 @@
+{
+  "workPackage": "WP-MOD0188-S3-FORECAST-PUBLISH-E2E",
+  "recordedUtc": "2026-10-14T18:02:41.105320+00:00",
+  "ctQueueRowExact": "WP-MOD0188-S3-FORECAST-PUBLISH-E2E\tAccepted history through ForecastRun, persisted method Draft, independent review and Published snapshot\tREADY\tMOD-0188 DEV lane\tWP-MOD0188-S3-FORECAST-COMMAND\tOne focused real-Mongo/JWT path with provenance, audit, failure rollback and immutable Published content; no live AC closure\tservices/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/PublishedRevisionMongoIntegrationTests.cs",
+  "branch": "feature/sce/mod-0188-demand-planning",
+  "baseHead": "7ebf9d875588dfee3ddb04a8ff7adefac173b1a8",
+  "agentVerdict": "Focused fixture E2E verified locally; CT independent verification pending",
+  "changedFiles": [
+    "services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/ForecastPublishHttpMongoIntegrationTests.cs",
+    "services/Diten.PlanningService/tests/MOD0188-s3-forecast-publish-e2e-results.json"
+  ],
+  "testSourceSha256": "d185c6d0fe33f1791f04292da72e4135e1d89eeacbfc14660b93b748a0d58708",
+  "productionCodeChanged": false,
+  "draftOrigin": "POST /api/v2/demand/forecast-runs with real signed JWT; returned revisionId loaded from Mongo; no direct Draft builder/factory used by test",
+  "fixtureBoundary": "Accepted file history/coverage and authority adapters are test fixtures; live Platform/MDM/Inventory acceptance is not performed; production publish default-deny remains unchanged",
+  "focusedFinal": {
+    "counts": {
+      "total": 1,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "tests": [
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.ForecastHttp_ToPublished_PreservesProvenanceSoDAndAtomicAudit",
+        "outcome": "Passed",
+        "error": ""
+      }
+    ]
+  },
+  "relatedRegressions": {
+    "counts": {
+      "total": 7,
+      "executed": 7,
+      "passed": 7,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "tests": [
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.ForecastHttp_ReevaluatesAcceptedHistoryAndWritesRunDraftAndAudits",
+        "outcome": "Passed",
+        "error": ""
+      },
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.ContractChecksum_Canonical1_RecomputesFromPersistedMongoDocuments",
+        "outcome": "Passed",
+        "error": ""
+      },
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.ForecastHttp_EitherMandatoryAuditInsertFailure_RollsBackAllWrites",
+        "outcome": "Passed",
+        "error": ""
+      },
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.V2Commands_FixturePublishAndInvalidate_AreAtomicAndReplayOnce",
+        "outcome": "Passed",
+        "error": ""
+      },
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.ForecastHttp_ToPublished_PreservesProvenanceSoDAndAtomicAudit",
+        "outcome": "Passed",
+        "error": ""
+      },
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.MethodDraft_RoundTripsThroughIndependentReviewAndVerifiedPublication",
+        "outcome": "Passed",
+        "error": ""
+      },
+      {
+        "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.ContractChecksum_Canonical2_RecomputesAndDetectsMethodProvenanceChange",
+        "outcome": "Passed",
+        "error": ""
+      }
+    ]
+  },
+  "fullSuiteRun": false,
+  "apiBuild": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 0
+  },
+  "negativeProof": {
+    "run": {
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 0,
+        "failed": 1,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tests": [
+        {
+          "name": "Diten.PlanningService.Cycles.Tests.PublishedRevisionMongoIntegrationTests.ForecastHttp_ToPublished_PreservesProvenanceSoDAndAtomicAudit",
+          "outcome": "Failed",
+          "error": "Assert.Equal() Failure: Strings differ\r\n           â†“ (pos 0)\r\nExpected: \"E3EDAE0E2E7AE04FDE86F73627BB1C0311B866455\"Â·Â·Â·\r\nActual:   \"FBB509C159A9F1DAB6650A4D6860D461F99E79FB8\"Â·Â·Â·\r\n           â†‘ (pos 0)"
+        }
+      ]
+    },
+    "expectedExitCode": 1,
+    "mechanism": "Temporary copied test adds exactly one impossible equality assertion after detached method-provenance ForecastRunId tamper. All original assertions remain enabled; no production/test Mongo security guard disabled. Independent ContractDigest mismatch is observed.",
+    "sourceAssertionRemoved": false,
+    "productionMutation": false
+  },
+  "assertedPersistence": {
+    "forecastRun": "One durable run linked to same tenant/company/cycle/SKU/Warehouse/revision, explicit Naive policy and accepted-history fingerprint",
+    "draft": "52 known 5 CASE method weeks with matching run/policy/parameters/cutoff/history hash and pending UoM marker",
+    "auditChain": "Created + ForecastSelection + Submitted by planner + Approved by independent reviewer + publication and general checksum audit by reviewer",
+    "versions": "ContentVersion 0; Draft stateVersion 0, InReview 1, Approved 2, Published 3; stale state/content requests rejected",
+    "publishRollback": "Tenant-only stronger unique index rejects general Published audit; HTTP 409; Approved 2 and candidate slot retained; Published manifest/parts/baseline/publication audit/outbox all absent; fixture sentinel alone remains",
+    "publication": "Same request succeeds after only fixture collision index is removed; one Published snapshot, canonical-2 contract checksum, one undispatched outbox with same scope/revision/state/checksum; replay once",
+    "immutableContent": "Published edit HTTP 404; persisted parts BSON and run BSON unchanged; reread snapshot validates"
+  },
+  "denials": {
+    "selfReview": 403,
+    "selfPublish": 403,
+    "crossTenantRead": 404,
+    "otherVerifiedCompanyReview": 404,
+    "staleReviewOrPublish": 409
+  },
+  "setupCorrections": [
+    "Initial new fixture did not verify the second company and produced 503; fixture now explicitly verifies two companies so missing-company record isolation is tested",
+    "Initial publish test body included unsupported reason and produced 400; final body uses only actual version fields"
+  ],
+  "excludedBaselineUnchanged": true,
+  "excludedBaselineSha256": "ad4d446ffa0371427cd4eab486436a406668b4d831146d18cf74fc4d69eacc6a",
+  "preexistingQueueChangePreserved": true,
+  "queueSha256": "d6f0c97e4ddb61263c3c780ccd992fdfe03ffcd17c658d129cfeb36184e3d926",
+  "mongoCleanup": {
+    "pid": 16196,
+    "port": 31994,
+    "status": "complete",
+    "gracefulShutdown": true,
+    "exitCode": 0,
+    "pidAbsent": true,
+    "portClosed": true,
+    "directoryAbsent": true,
+    "verifiedUtc": "2026-10-14T18:03:36.238675+00:00"
+  },
+  "stagedFiles": [],
+  "commitCreated": false,
+  "pushPerformed": false,
+  "pullRequestCreated": false,
+  "acClosed": false,
+  "openGates": [
+    "CT independent verification of this WP",
+    "Live series authority/cross-service integration and central company authority acceptance",
+    "S1/S3 browser and both audit trace screen evidence remain deferred",
+    "Full module AC acceptance; Demand v2 remains DRAFT"
+  ],
+  "reproduce": {
+    "mongo": "Explicit owned loopback rs-mod0188 in allowed port band; MOD0188_TEST_MONGO_URI required; shared mod0188_tests database with per-test tenant GUID",
+    "focusedFilter": "FullyQualifiedName~ForecastHttp_ToPublished_PreservesProvenanceSoDAndAtomicAudit",
+    "relatedFilter": "FullyQualifiedName~ForecastHttp_|FullyQualifiedName~ContractChecksum_|FullyQualifiedName~V2Commands_FixturePublishAndInvalidate_AreAtomicAndReplayOnce|FullyQualifiedName~MethodDraft_RoundTripsThroughIndependentReviewAndVerifiedPublication"
+  },
+  "temporaryNegativeInputsRemoved": true,
+  "temporaryBuildOutputsRemoved": true,
+  "roleFilesRead": [
+    "orchestrator",
+    "backend-architect",
+    "data-agent",
+    "security-agent",
+    "testing-agent"
+  ]
+}

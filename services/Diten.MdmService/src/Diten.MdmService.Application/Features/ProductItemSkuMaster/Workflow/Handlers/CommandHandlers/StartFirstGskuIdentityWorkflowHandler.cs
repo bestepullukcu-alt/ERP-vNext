@@ -1,0 +1,121 @@
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Contracts.Workflow;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
+using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
+using Diten.MdmService.Domain.Repositories;
+using Diten.Shared.Core;
+using MediatR;
+
+namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Handlers.CommandHandlers;
+
+public sealed class StartFirstGskuIdentityWorkflowHandler(
+    ITenantContext tenantContext,
+    IProductIdentityLifecycleActorContext actorContext,
+    IProductIdentityDelegatedTokenAccessor delegatedTokenAccessor,
+    IGskuRepository gskus,
+    IProductDefinitionRevisionRepository revisions,
+    IGlobalProductRepository products,
+    IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+    IProductLegalEntityScopePolicyRepository scopePolicies,
+    ProductLegalEntityScopeCandidateFacade scopeCandidates,
+    FirstGskuIdentityWorkflowProcessor processor,
+    FirstGskuIdentityWorkflowExecutionConfiguration executionConfiguration,
+    IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null)
+    : IRequestHandler<StartFirstGskuIdentityWorkflowCommand, Response<FirstGskuIdentityWorkflowResult>>
+{
+    public async Task<Response<FirstGskuIdentityWorkflowResult>> Handle(
+        StartFirstGskuIdentityWorkflowCommand request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (!actorContext.TryResolveCanonicalHumanSubject(out var makerSubjectId)
+            || !actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit))
+        {
+            return Fail("FIRST_GSKU_IDENTITY_LIFECYCLE_FORBIDDEN", 403);
+        }
+
+        string delegatedToken;
+        try
+        {
+            delegatedToken = delegatedTokenAccessor.GetRequiredToken();
+        }
+        catch (ProductIdentityDelegatedTokenException exception)
+        {
+            return Fail(exception.ErrorCode, 401);
+        }
+
+        var input = request.Request;
+        if (input is null)
+        {
+            return Fail("FIRST_GSKU_IDENTITY_WORKFLOW_START_INVALID", 400);
+        }
+        var scopeGuard = new ProductLegalEntityScopeConsumerGuard(
+            rolloutStates, scopePolicies, scopeCandidates, tenantContext);
+        var scope = await scopeGuard.ResolveContextAsync(
+            FirstGskuIdentityLifecyclePermissions.Submit, cancellationToken);
+        if (!scope.IsSuccessful) return Fail(scope.FailureCode!, scope.StatusCode);
+        var gsku = await gskus.GetByIdAsync(input.GskuId, cancellationToken);
+        var revision = gsku is null ? null
+            : await revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+        var product = revision is null ? null
+            : await products.GetByIdAsync(revision.GlobalProductId, cancellationToken);
+        if (gsku is null || revision is null || product is null) return Fail("GSKU_NOT_FOUND", 404);
+        var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
+        if (!decision.Allowed) return Fail("GSKU_NOT_FOUND", 404);
+        // S3b (R-04): a NEW submit of a draft needs its lot flag set. (Only drafts are checked: an older approved GSKU may
+        // still have it unset — the read contract then publishes it stockable: false.) S3b FIX1: the repeat of an
+        // operation that already exists (the same operation id for this GSKU — e.g. a submit made before the gate, now
+        // waiting for its maker's replay) is not a new submit and is not stopped here (FIX2: the same maker and expected
+        // version, not at a final checkpoint).
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+            && StockFlagGate.SubmitRefusalForGsku(gsku) is { } refusal
+            && !await IsRepeatAsync(input, gsku.Id, makerSubjectId, cancellationToken))
+            return Response<FirstGskuIdentityWorkflowResult>.Fail(refusal, 409);
+        var result = await processor.StartInteractiveAsync(
+            tenantContext.TenantId,
+            input.GskuId,
+            input.ExpectedGskuVersion,
+            input.OperationId,
+            makerSubjectId,
+            delegatedToken,
+            executionConfiguration.LeaseDuration,
+            executionConfiguration.RetryDelay,
+            cancellationToken);
+        if (!result.Succeeded || result.Operation is null)
+        {
+            return Fail(result.ErrorCode ?? "FIRST_GSKU_IDENTITY_WORKFLOW_START_FAILED", result.StatusCode);
+        }
+
+        var operation = result.Operation;
+        return Response<FirstGskuIdentityWorkflowResult>.Success(
+            new(
+                operation.OperationId,
+                operation.ProductDefinitionRevisionId,
+                operation.GskuId,
+                operation.Checkpoint.ToString(),
+                operation.WorkflowInstanceId,
+                operation.RecoveryDisposition.ToString(),
+                result.IsReplay),
+            operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed ? 200 : 202);
+    }
+
+    // S3b FIX2 (hardening): a repeat is the SAME submit — this GSKU, this maker, this expected version — still under way
+    // (not at a final checkpoint). Anything else under that operation id is a new submit and meets the gate.
+    private async Task<bool> IsRepeatAsync(
+        StartFirstGskuIdentityWorkflowRequest input, Guid gskuId, Guid makerSubjectId, CancellationToken cancellationToken) =>
+        identityOperations is not null
+        && await identityOperations.GetByOperationIdAsync(input.OperationId, cancellationToken) is { } existing
+        && existing.GskuId == gskuId
+        && existing.MakerSubjectId == makerSubjectId
+        && existing.ExpectedGskuVersion == input.ExpectedGskuVersion
+        && !IdentityStartReplay.CannotContinue(existing.Checkpoint);
+
+    private static Response<FirstGskuIdentityWorkflowResult> Fail(string code, int statusCode) =>
+        Response<FirstGskuIdentityWorkflowResult>.Fail(code, statusCode);
+}

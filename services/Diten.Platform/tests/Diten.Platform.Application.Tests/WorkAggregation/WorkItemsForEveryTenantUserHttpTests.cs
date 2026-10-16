@@ -31,6 +31,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
+using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -432,7 +433,11 @@ public sealed class WorkItemsForEveryTenantUserHttpTests
 
                     // The org chart, resolved per request for whoever the token says the caller is.
                     services.AddScoped<IDataScopeResolver>(_ =>
-                        new OrgDataScopeResolver(units, positions, seats, new ReferenceableLegalEntities()));
+                        new OrgDataScopeResolver(units, positions, seats, new ReferenceableLegalEntities(),
+                            new OrgDataScopeCandidateResolver(
+                                new RepositoryCandidateFactReader(units, positions, seats),
+                                TimeProvider.System,
+                                new NeverUnavailable())));
                     services.AddScoped<ITaskAssignmentScopeResolver>(sp => new TaskAssignmentScopeResolver(
                         sp.GetRequiredService<IDataScopeResolver>(),
                         positions,
@@ -610,6 +615,44 @@ public sealed class WorkItemsForEveryTenantUserHttpTests
     }
 
     /// <summary>Every legal entity in this world is referenceable, as a live Legal Entity master would answer.</summary>
+    // The Legal Entity candidates of a seat holder, read from the same three fakes the org chart above is built from —
+    // the rule the production fact reader applies (live seat → live position → live unit → its legal entity).
+    private sealed class RepositoryCandidateFactReader(
+        IOrganizationUnitRepository units,
+        IPositionRepository positions,
+        IPositionAssignmentRepository seats) : IOrgDataScopeCandidateFactReader
+    {
+        public async Task<IReadOnlyList<Guid>> ResolveLegalEntityIdsAsync(
+            Guid tenantId,
+            Guid userId,
+            DateTimeOffset effectiveAtUtc,
+            int maxCandidates,
+            CancellationToken cancellationToken)
+        {
+            var positionIds = (await seats.GetAllAsync(cancellationToken))
+                .Where(x => x.TenantId == tenantId && x.UserId == userId && !x.IsDeleted && !x.IsCancelled
+                    && x.EffectiveFrom <= effectiveAtUtc && (x.EffectiveTo is null || x.EffectiveTo > effectiveAtUtc))
+                .Select(x => x.PositionId)
+                .ToHashSet();
+            var unitIds = (await positions.GetAllAsync(cancellationToken))
+                .Where(x => positionIds.Contains(x.Id) && !x.IsDeleted && !x.IsArchived)
+                .Select(x => x.OrganizationUnitId)
+                .ToHashSet();
+            return (await units.GetAllAsync(cancellationToken))
+                .Where(x => unitIds.Contains(x.Id) && !x.IsDeleted && !x.IsArchived)
+                .Select(x => x.LegalEntityId)
+                .Where(x => x != Guid.Empty)
+                .Distinct()
+                .Take(maxCandidates + 1)
+                .ToArray();
+        }
+    }
+
+    private sealed class NeverUnavailable : IOrgDataScopeCandidateAvailabilityClassifier
+    {
+        public bool IsUnavailable(Exception exception) => false;
+    }
+
     private sealed class ReferenceableLegalEntities : ILegalEntityReferenceValidator
     {
         public Task<Response<LegalEntityReferenceDto>> ValidateAsync(Guid legalEntityId, CancellationToken ct = default)

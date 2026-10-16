@@ -35,8 +35,8 @@ const until = async (predicate, timeoutMs = 2000) => {
 
 const bootHeader = async () => {
   await bootSurface({ items: [] });
-  // "Kaynağında oluştur" is rendered for everybody, so it is the header's arrival signal.
-  await until(() => !!app().querySelector('[data-wcn-new="source"]'));
+  // BL-589 — "+ Yeni" may now be absent, so the header itself is the arrival signal.
+  await until(() => !!app().querySelector(".wcn-header"));
 };
 
 afterEach(() => {
@@ -45,13 +45,14 @@ afterEach(() => {
 });
 
 describe("+ Yeni ▸ Görev follows platform.tasks.create", () => {
-  test("is shown, with its divider, to a user who holds the key", async () => {
+  test("is shown to a user who holds the key — and it is the menu's only item", async () => {
     withSnapshot(["platform.tasks.read", "platform.tasks.create"]);
     await bootHeader();
 
+    expect(app().querySelector("[data-wcn-new-menu]")).not.toBeNull();
     expect(app().querySelector('[data-wcn-new="task"]')).not.toBeNull();
-    const sourceRow = app().querySelector('[data-wcn-new="source"]').closest("li");
-    expect(sourceRow.previousElementSibling.querySelector("hr.dropdown-divider")).not.toBeNull();
+    expect([...app().querySelectorAll("[data-wcn-new]")].map((x) => x.getAttribute("data-wcn-new"))).toEqual(["task"]);
+    expect(app().querySelector(".wcn-header-actions hr.dropdown-divider")).toBeNull();
   });
 
   test("is not rendered at all for a user without the key — hidden, not disabled", async () => {
@@ -59,9 +60,6 @@ describe("+ Yeni ▸ Görev follows platform.tasks.create", () => {
     await bootHeader();
 
     expect(app().querySelector('[data-wcn-new="task"]')).toBeNull();
-    // The menu does not open on a dangling divider: the source entry is the first row.
-    const sourceRow = app().querySelector('[data-wcn-new="source"]').closest("li");
-    expect(sourceRow.previousElementSibling).toBeNull();
   });
 
   test("is hidden when the page carries no permission snapshot at all (fail-closed)", async () => {
@@ -69,6 +67,43 @@ describe("+ Yeni ▸ Görev follows platform.tasks.create", () => {
     await bootHeader();
 
     expect(app().querySelector('[data-wcn-new="task"]')).toBeNull();
+  });
+});
+
+/*
+ * BL-589 (WP-WCN-FIX-01, UAS-001 §6, BL-208) — "+ Yeni ▸ Kaynak modülde oluştur" was a mock: drawn without a
+ * permission check, its module list built from the user's own work items, its confirm only toasting "(mock)". It is
+ * removed, and "+ Yeni" itself is not drawn when no item is left: a user with no create permission sees no button.
+ */
+describe("BL-589: no mock create-in-source, no empty + Yeni", () => {
+  test("a user without platform.tasks.create (e.g. no role) gets no + Yeni button at all", async () => {
+    withSnapshot(["platform.tasks.read"]);
+    await bootHeader();
+
+    expect(app().querySelector("[data-wcn-new-menu]")).toBeNull();
+    expect(app().querySelectorAll("[data-wcn-new]").length).toBe(0);
+  });
+
+  test("no permission snapshot: no + Yeni button (fail-closed)", async () => {
+    withSnapshot(undefined);
+    await bootHeader();
+
+    expect(app().querySelector("[data-wcn-new-menu]")).toBeNull();
+  });
+
+  test.each([[["platform.tasks.read", "platform.tasks.create"]], [["platform.tasks.read"]]])(
+    "the create-in-source entry is never drawn (permissions %j)", async (keys) => {
+      withSnapshot(keys);
+      await bootHeader();
+
+      expect(app().querySelector('[data-wcn-new="source"]')).toBeNull();
+    });
+
+  test("the mock dialog is gone from the source: no openCreateInSource, no create-in-source dispatch", () => {
+    const appJs = fs.readFileSync(web("wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
+    expect(appJs).not.toMatch(/const openCreateInSource\s*=/);
+    expect(appJs).not.toMatch(/kind === 'source'/);
+    expect(appJs).not.toMatch(/createItem\('source'/);
   });
 });
 

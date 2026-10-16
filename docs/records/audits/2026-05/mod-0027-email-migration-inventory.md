@@ -80,8 +80,9 @@ This document catalogs every ad-hoc email/invitation/notification sending code p
 
 ### P2 - Platform administrator invitation email
 
-- **Path:** `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/PlatformAdministratorInvitationEmailService.cs`
-- **Current behavior:** Sends platform-admin onboarding email after AuthService provisioning. Uses `System.Net.Mail.SmtpClient` and `PlatformAdministratorInvitationEmailTemplate`. Subject: `Your Di10 platform admin account`.
+- **Status (2026-10-06):** deleted in WP-EMAIL-SHELL-01 stage C — no caller on any branch tip; the platform administrator's set-password link is sent by AuthService (`PlatformAuthEmailService`, in the shared shell since stage D, 2026-10-07).
+- **Path:** `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/PlatformAdministratorInvitationEmailService.cs` (deleted)
+- **Current behavior (as audited 2026-05):** Sends platform-admin onboarding email after AuthService provisioning. Uses `System.Net.Mail.SmtpClient` and `PlatformAdministratorInvitationEmailTemplate`. Subject: `Your Di10 platform admin account`.
 - **Owner / service:** Diten.Platform.
 - **Template candidate key:** `platform.admin.invite.email`
 - **Required variables:** `email`, `userName`, `displayName`, `temporaryPassword`, `loginUrl`, `expiryDays` (currently hardcoded 7).

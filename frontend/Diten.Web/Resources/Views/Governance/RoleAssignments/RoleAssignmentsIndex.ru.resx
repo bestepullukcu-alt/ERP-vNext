@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="Title" xml:space="preserve"><value>Разрешения роли</value></data>
+  <data name="Title" xml:space="preserve"><value>Разрешения ролей</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Назначьте или снимите разрешения для роли.</value></data>
   <data name="SelectRole" xml:space="preserve"><value>Роль</value></data>
   <data name="SearchPermissions" xml:space="preserve"><value>Поиск разрешений…</value></data>
@@ -94,4 +94,22 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Перемещение</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Старт</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Просмотр цепочки руководителей</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Не удалось подтвердить ваш сеанс. Войдите снова и повторите попытку.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Эта роль больше не существует. Обновите страницу.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>Это разрешение предназначено для администрирования платформы и не может быть выдано роли.</value>
+  </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>Это разрешение предназначено для автоматических системных процессов и не может быть выдано роли.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>Это разрешение предоставляется вместе с ролью или модулем вашей подписки, поэтому его нельзя снять здесь.</value>
+  </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>У роли уже есть это разрешение. Обновите страницу.</value>
+  </data>
 </root>
