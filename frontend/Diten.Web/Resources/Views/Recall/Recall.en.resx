@@ -644,4 +644,11 @@
   <data name="Recall.Ev.W.from" xml:space="preserve"><value>From</value></data>
   <data name="Recall.Ev.W.to" xml:space="preserve"><value>To</value></data>
   <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>Drill count</value></data>
+  <data name="Recall.Band.Badge" xml:space="preserve"><value>Open recall: {0}</value></data>
+  <data name="Recall.Band.Trace" xml:space="preserve"><value>Trace</value></data>
+  <data name="Recall.Band.FullTrace" xml:space="preserve"><value>Full trace (recall)</value></data>
+  <data name="Recall.Band.Exit" xml:space="preserve"><value>This lot is under recall — outbound movements are blocked ({0})</value></data>
+  <data name="Recall.Band.Release" xml:space="preserve"><value>This lot is under recall ({0}); releasing it does not lift the exit block.</value></data>
+  <data name="Recall.Band.HoldSource" xml:space="preserve"><value>Source: recall {0}</value></data>
+  <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>Enter customer return</value></data>
 </root>

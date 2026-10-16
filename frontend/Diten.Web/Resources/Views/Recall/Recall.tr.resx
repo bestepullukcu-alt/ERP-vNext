@@ -644,4 +644,11 @@
   <data name="Recall.Ev.W.from" xml:space="preserve"><value>Başlangıç tarihi</value></data>
   <data name="Recall.Ev.W.to" xml:space="preserve"><value>Bitiş tarihi</value></data>
   <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>Tatbikat sayısı</value></data>
+  <data name="Recall.Band.Badge" xml:space="preserve"><value>Açık geri çağırma: {0}</value></data>
+  <data name="Recall.Band.Trace" xml:space="preserve"><value>İzle</value></data>
+  <data name="Recall.Band.FullTrace" xml:space="preserve"><value>Tam izleme (geri çağırma)</value></data>
+  <data name="Recall.Band.Exit" xml:space="preserve"><value>Bu lot geri çağırmada — çıkış engelli ({0})</value></data>
+  <data name="Recall.Band.Release" xml:space="preserve"><value>Bu lot geri çağırmada ({0}); serbest bırakmak çıkış engelini kaldırmaz.</value></data>
+  <data name="Recall.Band.HoldSource" xml:space="preserve"><value>Kaynak: Geri çağırma {0}</value></data>
+  <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>Müşteri iadesi gir</value></data>
 </root>

@@ -644,4 +644,11 @@
   <data name="Recall.Ev.W.from" xml:space="preserve"><value>开始日期</value></data>
   <data name="Recall.Ev.W.to" xml:space="preserve"><value>结束日期</value></data>
   <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>演练次数</value></data>
+  <data name="Recall.Band.Badge" xml:space="preserve"><value>进行中的召回：{0}</value></data>
+  <data name="Recall.Band.Trace" xml:space="preserve"><value>追溯</value></data>
+  <data name="Recall.Band.FullTrace" xml:space="preserve"><value>完整追溯（召回）</value></data>
+  <data name="Recall.Band.Exit" xml:space="preserve"><value>该批次正在召回——出库已被阻止（{0}）</value></data>
+  <data name="Recall.Band.Release" xml:space="preserve"><value>该批次正在召回（{0}）；放行不会解除出库阻止。</value></data>
+  <data name="Recall.Band.HoldSource" xml:space="preserve"><value>来源：召回 {0}</value></data>
+  <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>录入客户退货</value></data>
 </root>
