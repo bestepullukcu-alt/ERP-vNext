@@ -239,3 +239,35 @@ Kullanıcı (2026-10-16): **planın sonunda düzeltilecek.** Yol haritası `ROAD
 - **Tek koşul:** Eşleme iki yerde tutulursa yetkili kaynak **kimlik kaydı** (`module-id-registry.md`) olmalı. Master'daki özet ona atıf yapan bir not olarak kalmalı; ikisi ayrışırsa kayıt kazanır. Bu, iki haritanın zamanla birbirinden kopmasını önler.
 - **İş yükü:** "Rota / izin / namespace" bugün boş çıkıyor (§8); projede gerçek iş belgeler + 2 çalışma anı değeri.
 - **Açık karar** hâlâ §11'deki: 0043 / 0044 / 0046.
+
+
+## 13. Hedef ve öncelik değişti (kullanıcı, 2026-10-16) + ad sapması ölçümü
+**Hedef:** Projedeki modül kimlikleri ve ADLARI Blueprint ile birebir aynı olmalı.
+**Öncelik:** Master 8.2 repoya geldiğinde **ilk iş** bu düzeltme. §10'daki "planın sonunda" kararının yerine geçer.
+
+**Ad sapması ölçümü:** `module-id-registry.md`'deki kanonik (takma ad olmayan) MOD satırları 8.1 adlarıyla karşılaştırıldı. **106 aynı, 5 farklı.**
+
+| Kimlik | Projedeki ad | 8.1 adı | Kod / belge | Tür |
+|---|---|---|---|---|
+| MOD-0031 | Evidence Linking Service | Evidence Linking Service (object ↔ evidence) | — | yalnız ek açıklama; adı 8.1'e eşitle |
+| **MOD-0013** | Premium Modal Standard | **Platform Standards Registry** | 25 kod / 29 belge | **çakışma** — kodda çoğu yorum (`showConfirm`, premium modal, Template Customizer 7 dil). Premium modal bir UI standardı → MOD-0286 UI Design System & Page Pattern Governance altına. Yorumlar 0286'ya |
+| **MOD-0045** | Tenant Management Legacy / Gap Reference | **Disaster Recovery (RTO/RPO)** | 0 / 5 | **çakışma** — yalnız belge; takma adı emekli et |
+| **MOD-0169** | Platform Reference | **Billing & Invoicing** | 0 / 19 | **çakışma** — Program T4 (müşteri faturalama) bu numarayı kullanacak. Proje kaydı mutlaka düzelmeli; "Platform Reference" anlamı nereden geldiyse oraya taşınmalı |
+| **MOD-0262** | Docs Repository (SharePoint / M365 / Google Drive) [External] | **Internal Document Repository Service** | 41 kod / 30 belge | **ad sapması** — kod zaten iç belge deposu (MOD-0262-FU01 Document Binary Store) olarak çalışıyor; kayıttaki ad eski / yanlış. Kaydı 8.1'e eşitle |
+
+Bu dört çakışma §1–§7 listelerinde yoktu; 8.2 geldiğinde ilk iş paketine eklenir.
+
+**8.2 geldiğinde ilk iş paketi (taslak sıra):**
+1. 8.2'yi `docs/reference/blueprint/` altına koy; 0360–0364'ü ve **bütün** kayıt adlarını 8.2 ile yeniden karşılaştır (bu ölçüm 8.2 ile tekrarlanır).
+2. Kayıt güncellemesi:
+   - aday → kanonik (§7);
+   - 4 ad çakışması (bu bölüm);
+   - DCP-006 yeniden kimliklendirme (§3.2);
+   - 0043 / 0044 / 0046 kararı (§11, kullanıcı / EA).
+3. Kod etiketleri:
+   - CRM CycleCapacity 0008 → 0362 (§3.1);
+   - CRM denetim `sourceModule` 0011 → 0363 (eski kayıtlar değişmez);
+   - Platform Hangfire `MOD-0297` iş kimlikleri (eski kayıt silinir);
+   - MOD-0013 yorumları → 0286.
+4. Belgeler, modül paketi dosya adları, `baseline.json`; uygulama kaydı (`module-implementation-status.md`) adları ve durumları (0167 / 0024 eski görünüyor).
+5. Koruma testi: kayıttaki kanonik ad ≠ Blueprint adı, ya da kodda takma ad / kayıtsız numara → kırmızı.
