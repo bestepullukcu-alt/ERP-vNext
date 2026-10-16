@@ -1,0 +1,224 @@
+clone: depth 1 at ddafb1e9125106ea5a6d4f6da70d998b5d28cba2; the two files under test committed on top in the scratch clone only
+gate under test sha256 63424ce4c914ca8dbae61a7c41ea4579cac49dffcddf940e57484a3aa5eac3a4 · mode 0o755
+python3 on PATH: __SCRATCH__/ci/venv-bare/bin/python3 · openpyxl visible: False
+## R0 old gate (HEAD), dotnet spy exits 0 — exit 0, dotnet calls 18
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] build gateway
+   | SPY dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
+   | [phase1] build auth
+   | SPY dotnet build services/Diten.AuthService/Diten.AuthService.sln -c Debug
+   | [phase1] build platform
+   | SPY dotnet build services/Diten.Platform/Diten.Platform.sln -c Debug
+   | [phase1] build mdm
+   | SPY dotnet build services/Diten.MdmService/Diten.MdmService.sln -c Debug
+   | [phase1] test ci scripts
+   | [phase1] build test projects outside their solution
+   | SPY dotnet build services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj -c 
+   | SPY dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.CaseProcessing.Tests/Diten.PvgService.CaseProcessing.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.MeddraCoding.Tests/Diten.PvgService.MeddraCoding.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj -c Debug
+   | SPY dotnet build gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj -c Debug
+   | [phase1] test tenancy
+   | SPY dotnet test tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj -c Debug
+   | [phase1] test architecture
+   | SPY dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj -c Debug
+   | [phase1] test web (nav l10n guard + web contracts)
+   | SPY dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Debug
+   | [phase1] gates passed
+## R1 new gate, dotnet spy exits 0 — exit 0, dotnet calls 18
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   | self-test: 71/71 passed
+   | self-test: 75/75 passed
+   | self-test: 21/21 passed
+   | self-test: 24/24 passed
+   | self-test: 167/167 passed
+   | [phase1] build gateway
+   | SPY dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
+   | [phase1] build auth
+   | SPY dotnet build services/Diten.AuthService/Diten.AuthService.sln -c Debug
+   | [phase1] build platform
+   | SPY dotnet build services/Diten.Platform/Diten.Platform.sln -c Debug
+   | [phase1] build mdm
+   | SPY dotnet build services/Diten.MdmService/Diten.MdmService.sln -c Debug
+   | [phase1] test ci scripts
+   | [phase1] build test projects outside their solution
+   | SPY dotnet build services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj -c 
+   | SPY dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.CaseProcessing.Tests/Diten.PvgService.CaseProcessing.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.MeddraCoding.Tests/Diten.PvgService.MeddraCoding.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj -c Debug
+   | SPY dotnet build services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj -c Debug
+   | SPY dotnet build gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj -c Debug
+   | [phase1] test tenancy
+   | SPY dotnet test tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj -c Debug
+   | [phase1] test architecture
+   | SPY dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj -c Debug
+   | [phase1] test web (nav l10n guard + web contracts)
+   | SPY dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Debug
+   | [phase1] gates passed
+   PASS R0 old gate completes
+   PASS R1 new gate completes
+   PASS R1 the seven self-tests run and pass — [('69', '69'), ('100', '100'), ('71', '71'), ('75', '75'), ('21', '21'), ('24', '24'), ('167', '167')]
+   PASS R1 the block runs before the first dotnet call
+   PASS R1 the dotnet calls are exactly the old gate's (same commands, same order) — 18 calls
+   PASS R0 the old gate runs no self-test
+## R2 new gate, dotnet spy exits 1 — exit 1, dotnet calls 1
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   | self-test: 71/71 passed
+   | self-test: 75/75 passed
+   | self-test: 21/21 passed
+   | self-test: 24/24 passed
+   | self-test: 167/167 passed
+   | [phase1] build gateway
+   | SPY dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
+   PASS R2 a failing build still stops the gate at once
+## R3 ct_queue's self-test exits 1 — exit 1, dotnet calls 0
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   PASS R3 ct_queue: the gate stops non-zero before any build — exit 1
+## R3 acceptance_record's self-test exits 1 — exit 1, dotnet calls 0
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   PASS R3 acceptance_record: the gate stops non-zero before any build — exit 1
+## R3 prompt_gate's self-test exits 1 — exit 1, dotnet calls 0
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   | self-test: 71/71 passed
+   PASS R3 prompt_gate: the gate stops non-zero before any build — exit 1
+## R3 status_report (its self-test is status_report_v2's)'s self-test exits 1 — exit 1, dotnet calls 0
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   | self-test: 71/71 passed
+   | self-test: 75/75 passed
+   PASS R3 status_report (its self-test is status_report_v2's): the gate stops non-zero before any build — exit 1
+## R3 list_screen_touch_hook's self-test exits 1 — exit 1, dotnet calls 0
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   | self-test: 71/71 passed
+   | self-test: 75/75 passed
+   | self-test: 21/21 passed
+   PASS R3 list_screen_touch_hook: the gate stops non-zero before any build — exit 1
+## R3 known_failures's self-test exits 1 — exit 1, dotnet calls 0
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   | self-test: 71/71 passed
+   | self-test: 75/75 passed
+   | self-test: 21/21 passed
+   | self-test: 24/24 passed
+   PASS R3 known_failures: the gate stops non-zero before any build — exit 1
+## R3 ct_route's self-test exits 1 — exit 1, dotnet calls 0
+   | [phase1] audit ledger growth
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   | [phase1] page-help ledger ceiling
+   | [phase1] page-help ceiling: *** SKIPPED *** — no base branch (not a pull request). NOTHING WAS CHECKED.
+   | [phase1] validate event schemas
+   | [phase1] cross-db enforcement
+   | [phase1] CT tool self-tests
+   | self-test: 69/69 passed
+   | self-test: 100/100 passed
+   | self-test: 71/71 passed
+   | self-test: 75/75 passed
+   | self-test: 21/21 passed
+   | self-test: 24/24 passed
+   | self-test: 167/167 passed
+   PASS R3 ct_route: the gate stops non-zero before any build — exit 1
+## R4 old gate --audit-ledger-only — exit 0, dotnet calls 0
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+## R4 new gate --audit-ledger-only — exit 0, dotnet calls 0
+   | [phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set).
+   | [phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run.
+   PASS R4 --audit-ledger-only: same exit and output as the old gate — exit 0
+   PASS R4 --audit-ledger-only runs no self-test
+   PASS R5 '||' count is still 2
+   PASS R5 no exit 0, trap, set +, --filter
+   PASS R5 exactly one 'dotnet test TenantArchitecture.TenancyTests.csproj -c Debug' line
+   PASS R5 exactly one 'dotnet test TenantArchitecture.ArchitectureTests.csproj -c Debug' line
+   PASS R5 exactly one 'dotnet test Diten.Web.Tests.csproj -c Debug' line
+   PASS R5 the change is insertion only (every old line kept, in order) — 12 lines inserted at line 139
+   PASS R5 first line and set -euo pipefail unchanged
+   PASS R5 the clone is clean after the probe
+
+result: 0 failed

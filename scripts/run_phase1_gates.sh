@@ -136,6 +136,18 @@ echo "[phase1] validate event schemas"
 echo "[phase1] cross-db enforcement"
 ./scripts/check_cross_db_enforcement.sh
 
+# CT-CI-01 (owner decision, relayed by Codex 2026-10-16): the Control Tower tools' own self-tests, before the heavy
+# builds. Standard library and git only — measured in a depth-1 clone with a package-free Python. Each line fails fast
+# like every other step; nothing here reads or changes a test result of the suites below.
+echo "[phase1] CT tool self-tests"
+python3 -B scripts/ct_queue.py --self-test
+python3 -B scripts/acceptance_record.py --self-test
+python3 -B scripts/prompt_gate.py --self-test
+python3 -B scripts/status_report.py --self-test
+python3 -B .antigravity/scripts/list_screen_touch_hook.py --self-test
+python3 -B scripts/known_failures.py --self-test
+python3 -B scripts/ct_route.py --self-test
+
 echo "[phase1] build gateway"
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
 
