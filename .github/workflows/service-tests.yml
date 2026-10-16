@@ -251,6 +251,11 @@ jobs:
   # (DOTNET_INSTALL_DIR, its README). Before it, one step prepares that directory on the fresh VM — not a symlink, absent
   # or empty, created with sudo -n and owned by the runner user, writable; after it, one step checks that binary and its
   # 8.0 runtime. Both fail closed, before any test. /usr/local may be root-owned on Apple silicon images (not measured).
+  # CT-CI-MACOS-02: the tests start the host with a minimal environment (DITEN_ITEST_MONGOD_BIN_DIR is not in it), and
+  # its mongod resolver (AccountKindAcceptance: that variable, PATH, /opt/homebrew/bin, /usr/local/bin, /usr/bin) did
+  # not see the pinned mongod (first run, job 117179592751: 19 of 71 red, "mongo-start-failed"). One step links the
+  # pinned binary at /usr/local/bin/mongod — only if nothing is there — and checks, in the resolver's own order, that the
+  # first mongod found is exactly that binary (real path and sha256). No test code, env allow-list or PATH change.
   service-tests-macos:
     name: service-tests (${{ matrix.suite }})
     runs-on: macos-15
@@ -303,6 +308,29 @@ jobs:
           "$bin/mongod" --version | grep -F "db version v$MONGODB_VERSION"
           echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
           echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
+
+      - name: The acceptance host resolves the pinned mongod (macOS)
+        run: |
+          set -euo pipefail
+          test -x "$DITEN_TEST_MONGOD"
+          test ! -e /usr/local/bin/mongod
+          test ! -L /usr/local/bin/mongod
+          sudo -n mkdir -p /usr/local/bin
+          sudo -n ln -s "$DITEN_TEST_MONGOD" /usr/local/bin/mongod
+          first=""
+          IFS=: read -r -a entries <<< "$PATH"
+          for dir in "${entries[@]}" /opt/homebrew/bin /usr/local/bin /usr/bin; do
+            if [ -z "$first" ] && [ -n "$dir" ] && [ -f "$dir/mongod" ]; then first="$dir/mongod"; fi
+          done
+          test -n "$first"
+          selected="$(realpath "$first")"
+          pinned="$(realpath "$DITEN_TEST_MONGOD")"
+          test "$selected" = "$pinned"
+          selected_sha="$(shasum -a 256 < "$first")"
+          pinned_sha="$(shasum -a 256 < "$DITEN_TEST_MONGOD")"
+          test "$selected_sha" = "$pinned_sha"
+          "$first" --version | grep -F "db version v$MONGODB_VERSION"
+          echo "the acceptance host resolves mongod at $first -> $selected"
 
       - name: Owned Mongo is required (Auth)
         if: startsWith(matrix.suite, 'auth-')

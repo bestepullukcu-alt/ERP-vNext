@@ -479,6 +479,7 @@ public class CiServiceTestsGuardTests
                      ("service-tests.yml", "Install mongod (pinned version and digest, macOS)"),
                      ("service-tests.yml", "Prepare the dotnet install directory (macOS)"),
                      ("service-tests.yml", "The acceptance host's dotnet (macOS)"),
+                     ("service-tests.yml", "The acceptance host resolves the pinned mongod (macOS)"),
                      ("phase1-gates.yml", "Run Phase 1 Gates")
                  })
             Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?im)^[ \t]+[""']?if[""']?[ \t]*:"), $"{file} '{step}' has an if:");
@@ -933,6 +934,10 @@ public class CiServiceTestsGuardTests
     // pinned mongod version from the macOS arm64 tarball and its own digest, the tests' fixed
     // /usr/local/share/dotnet/dotnet installed there and checked fail-closed before any test, the same test / skip /
     // upload steps — and in no other job.
+    // CT-CI-MACOS-02 (first macOS run, job 117179592751: 19 of 71 red, "mongo-start-failed"): the tests start the host with
+    // a minimal environment, so its mongod resolver (DITEN_ITEST_MONGOD_BIN_DIR, PATH, /opt/homebrew/bin, /usr/local/bin,
+    // /usr/bin) must find the pinned binary on its own: one exact step links it at /usr/local/bin/mongod (never over an
+    // existing file or link) and proves, in the resolver's order, that the first mongod is that binary (real path, sha256).
     [Fact]
     public void The_acceptance_host_runs_whole_on_macos_with_its_pinned_mongod_and_dotnet_path()
     {
@@ -995,10 +1000,36 @@ public class CiServiceTestsGuardTests
             + "          echo \"DITEN_TEST_MONGOD=$bin/mongod\" >> \"$GITHUB_ENV\"\n"
             + "          echo \"DITEN_ITEST_MONGOD_BIN_DIR=$bin\" >> \"$GITHUB_ENV\"\n",
             Step(mac, "Install mongod (pinned version and digest, macOS)"));
+        Assert.Equal(
+            "- name: The acceptance host resolves the pinned mongod (macOS)\n        run: |\n          set -euo pipefail\n"
+            + "          test -x \"$DITEN_TEST_MONGOD\"\n"
+            + "          test ! -e /usr/local/bin/mongod\n"
+            + "          test ! -L /usr/local/bin/mongod\n"
+            + "          sudo -n mkdir -p /usr/local/bin\n"
+            + "          sudo -n ln -s \"$DITEN_TEST_MONGOD\" /usr/local/bin/mongod\n"
+            + "          first=\"\"\n"
+            + "          IFS=: read -r -a entries <<< \"$PATH\"\n"
+            + "          for dir in \"${entries[@]}\" /opt/homebrew/bin /usr/local/bin /usr/bin; do\n"
+            + "            if [ -z \"$first\" ] && [ -n \"$dir\" ] && [ -f \"$dir/mongod\" ]; then first=\"$dir/mongod\"; fi\n"
+            + "          done\n"
+            + "          test -n \"$first\"\n"
+            + "          selected=\"$(realpath \"$first\")\"\n"
+            + "          pinned=\"$(realpath \"$DITEN_TEST_MONGOD\")\"\n"
+            + "          test \"$selected\" = \"$pinned\"\n"
+            + "          selected_sha=\"$(shasum -a 256 < \"$first\")\"\n"
+            + "          pinned_sha=\"$(shasum -a 256 < \"$DITEN_TEST_MONGOD\")\"\n"
+            + "          test \"$selected_sha\" = \"$pinned_sha\"\n"
+            + "          \"$first\" --version | grep -F \"db version v$MONGODB_VERSION\"\n"
+            + "          echo \"the acceptance host resolves mongod at $first -> $selected\"\n",
+            Step(mac, "The acceptance host resolves the pinned mongod (macOS)"));
+        // The link path is named only by that step (3 times): no other step may create, replace or remove it.
+        Assert.Equal(3, Regex.Matches(code, "/usr/local/bin/mongod").Count);
 
-        // Order: the directory, then setup-dotnet, then its binary, then mongod, then the flag, then the tests.
+        // Order: the directory, then setup-dotnet, then its binary, then mongod, then the host's view of it, then the flag,
+        // then the tests.
         var order = new[] { "Prepare the dotnet install directory (macOS)", "Setup .NET", "The acceptance host's dotnet (macOS)",
-                "Install mongod (pinned version and digest, macOS)", "Owned Mongo is required (Auth)", "Test", "Skipped = 0", "Upload test results" }
+                "Install mongod (pinned version and digest, macOS)", "The acceptance host resolves the pinned mongod (macOS)",
+                "Owned Mongo is required (Auth)", "Test", "Skipped = 0", "Upload test results" }
             .Select(name => mac.IndexOf("- name: " + name + "\n", StringComparison.Ordinal)).ToArray();
         Assert.All(order, at => Assert.True(at >= 0));
         Assert.Equal(order.Order().ToArray(), order);

@@ -247,21 +247,31 @@ uykudan uyanınca zaman aşımı. Main'in Q121b ölçümü: 49 veritabanı.
   Herkese açık depoda standart koşucular ücretsizdir (GitHub belgesi); hesap ayarları ayrıca doğrulanmadı.
 - **mongod:** aynı sürüm 7.0.28, `mongodb-macos-arm64-7.0.28.tgz`. SHA-256 tarball'ın kendisinden hesaplandı
   (2026-10-16, 69 532 134 bayt) ve iş dosyasına yazılı; uymazsa iş kırmızı. Değişkenler Linux'takiyle aynı.
+- **Sunucunun mongod'u görmesi (CT-CI-MACOS-02):** testler kabul sunucusunu kısıtlı bir ortamla başlatır;
+  `DITEN_ITEST_MONGOD_BIN_DIR` o ortamda yoktur. Sunucunun çözümleyicisi sırasıyla o değişkene, PATH'e,
+  `/opt/homebrew/bin`, `/usr/local/bin` ve `/usr/bin`'e bakar. İlk macOS koşusu (iş 117179592751) sabit mongod'u bu
+  yüzden göremedi: 71 testten 19'u kırmızı, `mongo-start-failed`. Bir adım sabit ikiliyi `/usr/local/bin/mongod`'a
+  bağlar (orada dosya ya da bağlantı varsa durur) ve çözümleyicinin sırasıyla bulunan ilk `mongod`'un gerçek yolunun
+  ve sha256'sının sabit ikiliyle aynı olduğunu denetler. Bu, çözümleyicinin taklididir; sunucunun kendisi testte ölçülür.
+  Test kodu, ortam izin listesi ve `GITHUB_PATH` yasağı değişmedi. **Kanıt sınırı:** görünürlük eksikliği statik olarak
+  doğrulandı; 19 hatanın tamamının bu eksikten kaynaklandığı ve yeni adımla kapanacağı henüz doğrulanmadı
+  (NOT VERIFIED). Bunu sonraki gerçek CI koşusu gösterecek.
 - **dotnet yolu:** iki test sınıfı `/usr/local/share/dotnet/dotnet`'i sabit yoldan başlatır (`SevenStateAcceptanceTests`,
   `ExceptionTextLeakTests`). `setup-dotnet` oraya kurar (`DOTNET_INSTALL_DIR`, sabit sürümün README'si). Önce taze
   VM'de dizin hazırlanır: sembolik bağ olamaz, yok ya da boş olmalı; `sudo -n` ile açılır ve yalnız o dizin koşucu
   kullanıcısına verilir; sonra yazılabilirliği denetlenir. Kurulumdan sonra o ikilinin 8.0 çalışma zamanı denetlenir.
   Hepsi kapalı başarısız. Kabul sunucusunun test kodu değişmedi (değişen test yalnız mimari bekçi). Apple silicon
   imajlarında `/usr/local` root'a ait olabilir; setup-dotnet v3 tasarım kaydına göre macOS'ta önceden kurulu .NET
-  `/Users/runner/.dotnet`'tedir, yani bu dizinin boş ya da yok olması beklenir.
-  **Gerçek koşucuda ölçülmedi (NOT VERIFIED);** ilk macOS koşusu gösterecek.
+  `/Users/runner/.dotnet`'tedir, yani bu dizinin boş ya da yok olması beklenir. İlk macOS koşusunda (iş 117179592751)
+  dizin hazırlığı, 8.0.32 çalışma zamanı denetimi ve mongod 7.0.28 kurulumu geçti.
 - **Soket yolu:** süpervizör kökü `/tmp`'nin gerçek yolu altında `dak-XXXXXX` (macOS'ta `/private/tmp/...`), yani kısa;
   geçici dizin altındaki öteki soketler 49 karakterlik bir `TMPDIR` ile en çok ~89 bayt (sınır 104). Koşucunun gerçek
   `TMPDIR`'ı CI'da ölçülecek.
 - **Bekçi:** `The_acceptance_host_runs_whole_on_macos_with_its_pinned_mongod_and_dotnet_path`; Test / Skipped = 0 /
   Auth bayrağı adımları her iki işte birebir; mongod değişkenleri yalnız iki kurulum adımında. Mac pinleri
   (`MONGODB_VERSION`, `MONGODB_MACOS_TARBALL`, `MONGODB_MACOS_SHA256`) tek anahtar; iş ya da adım `env:` ile ezilemez,
-  macOS adları global satırları ve birebir sabit kurulum adımı dışında hiçbir yerde geçmez.
+  macOS adları global satırları ve birebir sabit kurulum adımı dışında hiçbir yerde geçmez. mongod görünürlüğü adımı
+  birebir sabit; `/usr/local/bin/mongod` yalnız o adımda geçer.
 
 ## RabbitMQ (Eventing satırı)
 
