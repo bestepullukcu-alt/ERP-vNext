@@ -1,0 +1,29 @@
+@using Diten.Web.Views.CRM.PotentialThresholds
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PotentialThresholdsIndex> Localizer
+@{
+    // W3E-E4R2-FIX-c (U-5) — the thresholds on the shared table card (_ListShell, v2). CLIENT mode: the CRM answers the
+    // tenant default + every product row in ONE read (it does not page — a bounded set: one row per Global Product).
+    // No selection, declared: a threshold is edited one row at a time through the drawer and its save confirm (each save
+    // carries that row's version); there is no bulk endpoint to select into.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-potentialthresholds",
+        DataMode = "client",
+        Slug = "potentialthresholds",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColProduct"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColLow"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColMedium"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColHigh"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColSource"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLastChange"].Value }
+        ],
+        ActionsHeader = Localizer["RowActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

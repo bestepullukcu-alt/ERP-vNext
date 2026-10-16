@@ -27,7 +27,7 @@ namespace Diten.Web.Tests.Controllers;
 /// (pharmacy submit, photo, passive order, read-only, the 60-minute correction; threshold save + history, read-only);
 /// (5) seven languages, no echo, placeholders, Arabic, RTL and dark tokens, the menu label, the extension point.
 /// </summary>
-public sealed class VwW4PharmacyThresholdsWebTests
+public sealed partial class VwW4PharmacyThresholdsWebTests
 {
     private const string GatewayUrl = "http://gateway.test";
     private static readonly Guid TenantId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
@@ -80,8 +80,9 @@ public sealed class VwW4PharmacyThresholdsWebTests
 
         Assert.False(ThresholdModel(Thresholds(InsightRead).Index()).CanManage);
         Assert.True(ThresholdModel(Thresholds(ThresholdManage).Index()).CanManage);
-        // the add button exists only with manage + the product picker key
-        Assert.Contains("@if (Model.CanManage && Model.CanReadProducts)", view);
+        // the add action (the toolbar's Add New since W3E-E4R2-FIX-c) exists only with manage + the product picker key
+        Assert.Contains("data-can-add=\"@((Model.CanManage && Model.CanReadProducts).ToString().ToLowerInvariant())\"", view);
+        Assert.Contains("addNewText: canAdd ? L.AddProduct : ''", Script("PotentialThresholds", "index.js"));
         // the menu entry (BE-c) points here
         Assert.Equal("CRM/PotentialThresholds", typeof(PotentialThresholdsController).GetCustomAttribute<RouteAttribute>()!.Template);
     }
@@ -180,20 +181,20 @@ public sealed class VwW4PharmacyThresholdsWebTests
 
     [Theory]
     [InlineData("Thresholds", "GET", "/api/crm/doctor-insights/thresholds")]
-    [InlineData("History", "GET", "/api/crm/doctor-insights/thresholds/history?page=1&pageSize=50")]
+    [InlineData("History", "GET", "/api/crm/doctor-insights/thresholds/history?page=1&pageSize=10")]
     public async Task B7_the_threshold_reads_open_with_any_read_key(string action, string method, string path)
     {
         foreach (var key in new[] { InsightRead, InsightReadAll, ThresholdManage })
         {
             var (gateway, controller) = ThresholdArrange([key], "");
-            await (action == "Thresholds" ? controller.Thresholds(CancellationToken.None) : controller.History(null, null, CancellationToken.None));
+            await (action == "Thresholds" ? controller.Thresholds(CancellationToken.None) : controller.History(null, null, null, null, null, CancellationToken.None));
             var call = Assert.Single(gateway.Requests);
             Assert.Equal(method, call.Method);
             Assert.Equal(GatewayUrl + path, call.Uri);
         }
 
         var (g2, c2) = ThresholdArrange([ProductRead], "");
-        Assert.Equal(403, Status(await (action == "Thresholds" ? c2.Thresholds(CancellationToken.None) : c2.History(null, null, CancellationToken.None))));
+        Assert.Equal(403, Status(await (action == "Thresholds" ? c2.Thresholds(CancellationToken.None) : c2.History(null, null, null, null, null, CancellationToken.None))));
         Assert.Empty(g2.Requests);
     }
 
@@ -404,11 +405,15 @@ public sealed class VwW4PharmacyThresholdsWebTests
     public void B13_thresholds_smoke_save_confirm_put_and_history_and_read_only()
     {
         var r = Smoke("potential-thresholds-smoke.js", PotentialThresholdsIndex.ScriptKeys, "PotentialThresholds", "PotentialThresholdsIndex", "manage");
+        // W3E-E4R2-FIX-c: the list is the shared factory (client mode), the history its second table (server mode); the
+        // drawer, the checks and the save confirm are as they were
         if (r is null) return;
         var o = r.Value;
         Assert.Equal(JsonValueKind.Null, o.GetProperty("createError").ValueKind);
         var rows = o.GetProperty("rows").GetString()!;
         Assert.True(rows.IndexOf("Kiracı varsayılanı", StringComparison.Ordinal) < rows.IndexOf("Ürofleks", StringComparison.Ordinal)); // default first
+        Assert.Contains("data-row-action=\"edit\"", rows);
+        Assert.Equal(("client", "server", true), (o.GetProperty("dataMode").GetString(), o.GetProperty("historyMode").GetString(), o.GetProperty("historyServerSide").GetBoolean()));
         Assert.Contains("Ayşe Demir", o.GetProperty("historyRows").GetString());
         Assert.True(o.GetProperty("drawerShown").GetBoolean());
         // High below Low: refused before any call
@@ -421,11 +426,12 @@ public sealed class VwW4PharmacyThresholdsWebTests
         Assert.Contains("Ürofleks", o.GetProperty("saveText").GetString());
         Assert.Contains("Az sınırı", o.GetProperty("saveDiff").GetString());
         var put = Assert.Single(o.GetProperty("put").EnumerateArray());
-        Assert.Equal("/api/thresholds/P1", put[0].GetString());
+        Assert.Equal("/CRM/PotentialThresholds/api/thresholds/P1", put[0].GetString());
         Assert.Equal("{\"lowBelow\":50,\"highAbove\":60,\"expectedVersion\":1}", put[1].GetRawText());
-        Assert.Contains("Eşikler kaydedildi.", Strings(o.GetProperty("toasts")));
+        Assert.Contains("Eşikler kaydedildi.", Strings(o.GetProperty("toasts")));                       // the standard reload-with-toast
         Assert.Contains("&gt; 60", o.GetProperty("rowsAfter").GetString());
         Assert.Contains("50", o.GetProperty("historyAfter").GetString());
+        Assert.Equal(2, o.GetProperty("historyReads").GetInt32());                                            // a save reloads the history
         // a new row offers only products without a row, and needs one
         Assert.DoesNotContain("value=\"P1\"", o.GetProperty("newOptions").GetString());
         Assert.Contains("value=\"P2\"", o.GetProperty("newOptions").GetString());
@@ -433,7 +439,8 @@ public sealed class VwW4PharmacyThresholdsWebTests
         Assert.Equal(0, o.GetProperty("callsWithoutProduct").GetInt32());
 
         var ro = Smoke("potential-thresholds-smoke.js", PotentialThresholdsIndex.ScriptKeys, "PotentialThresholds", "PotentialThresholdsIndex", "readonly")!.Value;
-        Assert.DoesNotContain("data-edit", ro.GetProperty("rows").GetString());
+        Assert.DoesNotContain("data-row-action=\"edit\"", ro.GetProperty("rows").GetString());
+        Assert.Equal("", ro.GetProperty("addNewText").GetString());
         Assert.False(ro.GetProperty("drawerShown").GetBoolean());
         Assert.Equal(0, ro.GetProperty("writes").GetInt32());
     }
@@ -466,11 +473,15 @@ public sealed class VwW4PharmacyThresholdsWebTests
         // every key the view writes is a ViewKey; every L.X / T('X') the page script reads is a ScriptKey
         var view = View(folder);
         foreach (Match m in Regex.Matches(view, "Localizer\\[\"([A-Za-z_]+)\"\\]")) Assert.Contains(m.Groups[1].Value, viewKeys);
-        var js = Script(folder, folder == "PharmacyReport" ? "pharmacy-report.js" : "potential-thresholds.js");
-        foreach (Match m in Regex.Matches(js, "\\bL\\.([A-Za-z_]+)|\\bT\\('([A-Za-z_]+)'"))
+        var js = folder == "PharmacyReport" ? Script(folder, "pharmacy-report.js") : Script(folder, "index.js") + Script(folder, "history.js");
+        // W3E-E4R2-FIX-c: the thresholds page reads window.L10n (the standard payload): its own ScriptKeys + the shared words
+        // the payload carries beside them (_IndexL10n.cshtml)
+        var shared = folder == "PharmacyReport" ? Array.Empty<string>()
+            : Regex.Matches(File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", folder, "_IndexL10n.cshtml")), "(\\w+) = (?:Shared)?Localizer\\[").Select(x => x.Groups[1].Value).ToArray();
+        foreach (Match m in Regex.Matches(js, "\\bL(?:\\(\\))?\\.([A-Za-z_]+)|\\bT\\('([A-Za-z_]+)'"))
         {
             var key = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value;
-            Assert.True(script.Contains(key), $"{folder}: L.{key} is not a ScriptKey");
+            Assert.True(script.Contains(key) || shared.Contains(key), $"{folder}: L.{key} is not a ScriptKey");
         }
     }
 
@@ -498,7 +509,7 @@ public sealed class VwW4PharmacyThresholdsWebTests
         foreach (var (folder, file, css, rootId) in new[]
                  {
                      ("PharmacyReport", "pharmacy-report.js", "pharmacy-report.css", "#ph-root"),
-                     ("PotentialThresholds", "potential-thresholds.js", "potential-thresholds.css", "#pt-root")
+                     ("PotentialThresholds", "index.js", "potential-thresholds.css", "#pt-root")
                  })
         {
             var js = Script(folder, file);

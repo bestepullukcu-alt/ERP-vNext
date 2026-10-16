@@ -5,8 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>Пороги потенциала</value></data>
-  <data name="Crumb" xml:space="preserve"><value>Настройки CRM / Профили врачей</value></data>
-  <data name="Intro" xml:space="preserve"><value>Ежемесячные пациенты врача в показаниях продукта классифицируются как Низкий, Средний или Высокий по этим границам. Строка продукта имеет приоритет над значением арендатора по умолчанию; если нет ни того, ни другого, действуют встроенные значения.</value></data>
   <data name="AddProduct" xml:space="preserve"><value>Добавить продукт</value></data>
   <data name="ReadOnly" xml:space="preserve"><value>Вы можете просматривать пороги; для изменения нужно право управления порогами.</value></data>
   <data name="RetryButton" xml:space="preserve"><value>Повторить</value></data>
@@ -78,4 +76,6 @@
   <data name="Err_permission_denied" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Сервер недоступен; ваши значения сохранены на этом экране.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>Не удалось выполнить операцию.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Ежемесячные пациенты врача в показаниях продукта классифицируются как Низкий, Средний или Высокий по этим границам. Строка продукта имеет приоритет над значением арендатора по умолчанию; если нет ни того, ни другого, действуют встроенные значения.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
 </root>

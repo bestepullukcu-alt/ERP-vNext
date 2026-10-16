@@ -1,6 +1,6 @@
 /* WP-VW-W4 (W4-WEB-b) — the potential thresholds page (the W3 CRM settings look, 00-tema.css tokens). Light and dark
    tokens (the shell's data-bs-theme); logical properties only (inline-start / inline-end) so Arabic (dir=rtl) mirrors the
-   table, the drawer and the arrows. */
+   table rows, the drawer and the arrows. */
 #pt-root, .pt-modal, .pt-drawer {
     --pt-bg: #f5f5f9; --pt-card: #fff; --pt-h: #384551; --pt-tx: #646e78; --pt-mu: #8592a3; --pt-bd: #e4e6e8; --pt-bd2: #d9dee3;
     --pt-soft: #f5f5f9; --pt-pl: rgba(var(--bs-primary-rgb), .12); --pt-p: var(--bs-primary); --pt-pt: var(--bs-primary);
@@ -17,11 +17,9 @@
 }
 [dir="rtl"] .pt-flip { transform: scaleX(-1); }
 
-.pt-page { display: flex; flex-direction: column; gap: 20px; }
-.pt-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-.pt-crumb { font-size: 13px; color: var(--pt-mu); }
-.pt-title { margin: 2px 0 0; font-size: 22px; font-weight: 500; color: var(--pt-h); }
-.pt-intro { font-size: 14px; margin-top: 4px; max-width: 760px; }
+/* W3E-E4R2-FIX-c — the page header, the cards and the hand-written tables are the Golden Compact ones now (div.mb-3 > h5
+   + p, the shared tab card, _ListShell); the tenant default row keeps its soft background in the shared table. */
+#pt-root tr.pt-default > td { background: var(--pt-soft); }
 .pt-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
 .pt-top { align-items: flex-start; }
 .pt-end { justify-content: flex-end; }
@@ -34,16 +32,6 @@
 .pt-nowrap { white-space: nowrap; }
 .pt-cap { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--pt-h); }
 
-.pt-card { background: var(--pt-card); border-radius: 8px; box-shadow: var(--pt-sh); }
-.pt-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 16px 20px; border-block-end: 1px solid var(--pt-bd); }
-.pt-card-title { font-size: 16px; font-weight: 500; color: var(--pt-h); }
-.pt-table-wrap { overflow-x: auto; }
-.pt-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.pt-table th { text-align: start; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--pt-h); padding: 10px 16px; background: var(--pt-soft); white-space: nowrap; }
-.pt-table td { padding: 12px 16px; border-block-start: 1px solid var(--pt-bd); vertical-align: middle; }
-.pt-table tr.pt-default td { background: var(--pt-soft); }
-.pt-actions { text-align: end; white-space: nowrap; }
-.pt-empty { text-align: center; color: var(--pt-mu); padding: 28px 16px; }
 
 .pt-alert { border-radius: 6px; padding: 12px 16px; display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 14px; }
 .pt-alert-info { background: var(--pt-inb); color: var(--pt-in); justify-content: flex-start; }

@@ -2,15 +2,29 @@
 @using Diten.Web.Views.CRM.PotentialThresholds
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<PotentialThresholdsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["PageTitle"].Value;
     Layout = "_LayoutTenantShell";
+    var tabCard = new Diten.Web.Models.Tabs.TabCardViewModel
+    {
+        AriaLabel = Localizer["PageTitle"].Value,
+        Tabs =
+        [
+            new Diten.Web.Models.Tabs.TabCardItem { Key = "thresholds", Id = "pt-tab-thresholds", Icon = "bx-slider-alt", Text = Localizer["ThresholdsTitle"].Value, Active = true, Controls = "pt-pane-thresholds" },
+            new Diten.Web.Models.Tabs.TabCardItem { Key = "history", Id = "pt-tab-history", Icon = "bx-history", Text = Localizer["HistoryTitle"].Value, Controls = "pt-pane-history" }
+        ]
+    };
 }
 
 @*
-    WP-VW-W4 (W4-WEB-b, §2.2) — the potential thresholds (the CRM settings pattern of W3 VisitEvidenceSettings): the tenant
-    default row + one row per Global Product ("Az < X · Orta · Çok > Y"), the edit drawer with the band preview, the save
-    confirm (changed values) and the change history. Every call is a same-origin proxy under /CRM/PotentialThresholds/api/*.
+    WP-VW-W4 (W4-WEB-b, §2.2) — the potential thresholds: the tenant default row + one row per Global Product ("Az < X · Orta
+    · Çok > Y"), the edit drawer with the band preview, the save confirm (changed values) and the change history.
+    W3E-E4R2-FIX-c (U-5, K-STD, K-TABS): the Golden Compact header (div.mb-3 > h5 + p, no page crumb), the two tables on the
+    shared tab card — "Thresholds" (the page's primary list: the Golden Compact DataTable, CLIENT mode — the CRM answers the
+    whole bounded set in one read; the page action "add a product" is the toolbar's Add New) and "Change history" (the
+    second table, SERVER mode — the CRM pages it, newest first; read only). The edit drawer and the save confirm are as they
+    were. Every call is a same-origin proxy under /CRM/PotentialThresholds/api/*.
     UAS-001: without a doctor-insights read key NOTHING but the notice.
 *@
 @if (!Model.CanRead)
@@ -19,51 +33,75 @@
     return;
 }
 
-<div id="pt-root" class="pt-page"
-     data-api-base="/CRM/PotentialThresholds/api"
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/PotentialThresholds/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="pt-root"
      data-can-manage="@Model.CanManage.ToString().ToLowerInvariant()"
+     data-can-add="@((Model.CanManage && Model.CanReadProducts).ToString().ToLowerInvariant())"
      data-can-read-products="@Model.CanReadProducts.ToString().ToLowerInvariant()"
      data-me="@Model.Me">
-
-    <div class="pt-head">
-        <div>
-            <div class="pt-crumb">@Localizer["Crumb"]</div>
-            <h4 class="pt-title">@Localizer["PageTitle"]</h4>
-            <div class="pt-intro">@Localizer["Intro"]</div>
-        </div>
-        @if (Model.CanManage && Model.CanReadProducts)
-        {
-            <button type="button" class="pt-btn pt-btn-p" id="pt-add"><i class="bx bx-plus"></i> @Localizer["AddProduct"]</button>
-        }
-    </div>
-
     @if (!Model.CanManage)
     {
-        <div class="pt-alert pt-alert-info" id="pt-readonly"><i class="bx bx-lock-alt"></i> @Localizer["ReadOnly"]</div>
+        <div class="pt-alert pt-alert-info mb-3" id="pt-readonly"><i class="bx bx-lock-alt"></i> @Localizer["ReadOnly"]</div>
     }
-    <div class="pt-alert pt-alert-danger d-none" id="pt-load-error" role="alert">
+    <div class="pt-alert pt-alert-danger d-none mb-3" id="pt-load-error" role="alert">
         <span id="pt-load-error-text"></span>
         <button type="button" class="pt-link" id="pt-retry">@Localizer["RetryButton"]</button>
     </div>
 
-    <div class="pt-card">
-        <div class="pt-card-head"><div class="pt-col"><span class="pt-card-title">@Localizer["ThresholdsTitle"]</span><span class="pt-sub">@Localizer["ThresholdsNote"]</span></div></div>
-        <div class="pt-table-wrap">
-            <table class="pt-table">
-                <thead><tr><th>@Localizer["ColProduct"]</th><th>@Localizer["ColLow"]</th><th>@Localizer["ColMedium"]</th><th>@Localizer["ColHigh"]</th><th>@Localizer["ColSource"]</th><th>@Localizer["ColLastChange"]</th><th><span class="visually-hidden">@Localizer["RowActions"]</span></th></tr></thead>
-                <tbody id="pt-rows"></tbody>
-            </table>
+    @* K-TABS — the shared tab card (Views/Shared/Components/Tabs/_TabCard.cshtml); the selected tab is not part of Save View *@
+    <partial name="~/Views/Shared/Components/Tabs/_TabCard.cshtml" model="tabCard" />
+    <div class="tab-content p-0">
+        @* the thresholds: the primary list (client mode) — built FIRST, so the shared placeholder it removes is its own *@
+        <div class="tab-pane fade show active" id="pt-pane-thresholds" role="tabpanel" aria-labelledby="pt-tab-thresholds">
+            @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-potentialthresholds" data-dt-standard="v2"> *@
+            <partial name="~/Views/CRM/PotentialThresholds/_DataTable.cshtml" />
+            <p class="text-muted small mt-2 mb-0">@Localizer["ThresholdsNote"]</p>
+        </div>
+        @* the change history: the second table (server mode), read only *@
+        <div class="tab-pane fade" id="pt-pane-history" role="tabpanel" aria-labelledby="pt-tab-history">
+            <partial name="~/Views/CRM/PotentialThresholds/_HistoryTable.cshtml" />
+            <p class="text-muted small mt-2 mb-0"><i class="bx bx-lock-alt"></i> @Localizer["AuditReadOnly"]</p>
         </div>
     </div>
+</div>
 
-    <div class="pt-card">
-        <div class="pt-card-head"><span class="pt-card-title">@Localizer["HistoryTitle"]</span><span class="pt-sub pt-row"><i class="bx bx-lock-alt"></i> @Localizer["AuditReadOnly"]</span></div>
-        <div class="pt-table-wrap">
-            <table class="pt-table">
-                <thead><tr><th>@Localizer["ColDate"]</th><th>@Localizer["ColPerson"]</th><th>@Localizer["ColTarget"]</th><th>@Localizer["ColField"]</th><th>@Localizer["ColChange"]</th></tr></thead>
-                <tbody id="pt-history-rows"></tbody>
-            </table>
+@* ④ Quick view — the row as it stands (no extra read); "Edit" opens the edit drawer below *@
+<div class="offcanvas offcanvas-end pt-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title" style="width: 420px;">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-slider-alt fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">-</h5>
+                <small id="oc-subtitle" class="text-muted">-</small>
+            </div>
         </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="p-4">
+            <div class="pt-bands mb-4" id="oc-bands"></div>
+            <dl class="row mb-0" id="oc-details-list">
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ColSource"]</dt><dd id="oc-source" class="col-7 mb-2">-</dd>
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ColLastChange"]</dt><dd id="oc-last" class="col-7 mb-2">-</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@Localizer["CloseButton"]</button>
+        @if (Model.CanManage)
+        {
+            <button type="button" id="oc-btn-edit" class="btn btn-primary flex-grow-1"><i class="bx bx-edit-alt me-1"></i>@Localizer["EditButton"]</button>
+        }
     </div>
 </div>
 
@@ -124,11 +162,12 @@
 }
 
 @section Scripts {
-    <script>
-        window.PotentialThresholdsL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-            PotentialThresholdsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
-    </script>
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/PotentialThresholds/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/PotentialThresholds/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/PotentialThresholds/thresholds-core.js" asp-append-version="true"></script>
-    <script src="~/assets/js/CRM/PotentialThresholds/potential-thresholds.js" asp-append-version="true"></script>
+    <script src="~/assets/js/diten-tabs.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/PotentialThresholds/history.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/PotentialThresholds/index.js" asp-append-version="true"></script>
 }

@@ -5,8 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>حدود الإمكانات</value></data>
-  <data name="Crumb" xml:space="preserve"><value>إعدادات CRM / رؤى الأطباء</value></data>
-  <data name="Intro" xml:space="preserve"><value>يُصنَّف عدد مرضى الطبيب الشهري في دواعي استعمال المنتج إلى منخفض أو متوسط أو مرتفع وفق هذه الحدود. يتقدّم سطر المنتج على الإعداد الافتراضي للمستأجر؛ وإن لم يوجد أيٌّ منهما تُطبَّق القيم المضمَّنة.</value></data>
   <data name="AddProduct" xml:space="preserve"><value>إضافة منتج</value></data>
   <data name="ReadOnly" xml:space="preserve"><value>يمكنك عرض الحدود؛ ويتطلب تغييرها صلاحية إدارة الحدود.</value></data>
   <data name="RetryButton" xml:space="preserve"><value>إعادة المحاولة</value></data>
@@ -78,4 +76,6 @@
   <data name="Err_permission_denied" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>تعذّر الوصول إلى الخادم؛ قيمك محفوظة في هذه الشاشة.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>تعذّر إكمال العملية.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>يُصنَّف عدد مرضى الطبيب الشهري في دواعي استعمال المنتج إلى منخفض أو متوسط أو مرتفع وفق هذه الحدود. يتقدّم سطر المنتج على الإعداد الافتراضي للمستأجر؛ وإن لم يوجد أيٌّ منهما تُطبَّق القيم المضمَّنة.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
 </root>
