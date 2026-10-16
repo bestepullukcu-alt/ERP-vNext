@@ -163,7 +163,7 @@
                             @* read-only: the bar stays hidden (the script shows it only with crm.visit-evidence-policy.manage) *@
                             <div class="ve-row ve-end d-none" id="ve-save-bar">
                                 <button type="button" class="ve-btn ve-btn-s" id="ve-revert" disabled>@Localizer["CancelButton"]</button>
-                                <button type="button" class="ve-btn ve-btn-p" id="ve-save" disabled>@Localizer["SaveButton"]</button>
+                                <button type="button" class="ve-btn ve-btn-p" id="ve-save" data-dt-primary="enter" disabled>@Localizer["SaveButton"]</button>
                             </div>
                         </div>
                     </div>
@@ -215,7 +215,7 @@
                 <div class="ve-diff" id="ve-save-diff"></div>
                 <div class="ve-row ve-end">
                     <button type="button" class="ve-btn ve-btn-s" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
-                    <button type="button" class="ve-btn ve-btn-p" id="ve-save-confirm">@Localizer["SaveConfirm"]</button>
+                    <button type="button" class="ve-btn ve-btn-p" id="ve-save-confirm" data-dt-primary="chord">@Localizer["SaveConfirm"]</button>
                 </div>
             </div>
         </div>
@@ -253,7 +253,7 @@
     </div>
     <div class="ve-drawer-foot">
         <button type="button" class="ve-btn ve-btn-s" data-bs-dismiss="offcanvas">@Localizer["CloseButton"]</button>
-        <button type="button" class="ve-btn ve-btn-p" id="ve-nx-submit"><i class="bx bx-send"></i> @Localizer["XSubmit"]</button>
+        <button type="button" class="ve-btn ve-btn-p" id="ve-nx-submit" data-dt-primary="chord"><i class="bx bx-send"></i> @Localizer["XSubmit"]</button>
     </div>
 </div>
 

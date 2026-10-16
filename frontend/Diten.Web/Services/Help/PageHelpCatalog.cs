@@ -31,6 +31,14 @@ public static class PageHelpCatalog
             ["ROLEPERMISSIONS"] = ["bx-id-card", "bx-filter-alt", "bx-check-square", "bx-x-circle", "bx-bar-chart-alt-2"],
             ["USERROLES"] = ["bx-user", "bx-filter-alt", "bx-user-check", "bx-user-minus"],
             ["ITEMS"] = ["bx-filter-alt", "bx-plus-circle", "bx-send", "bx-transfer-alt", "bx-help-circle"],
+            // WP-SYNC-144 W-UXH — the CRM tenant pages of W3 / W4 / W3E (BL-642 + the two W3E pages)
+            ["VISITEVIDENCESETTINGS"] = ["bx-slider-alt", "bx-check-shield", "bx-history", "bx-time-five", "bx-task"],
+            ["CRMVISITEVIDENCEFLAGS"] = ["bx-calendar", "bx-filter-alt", "bx-bar-chart-alt-2", "bx-show", "bx-group"],
+            ["CRMVISITQRCODES"] = ["bx-filter-alt", "bx-qr", "bx-printer", "bx-block", "bx-slider-alt"],
+            ["CRMDOCTORINSIGHTTHRESHOLDS"] = ["bx-table", "bx-edit-alt", "bx-check-circle", "bx-plus-circle", "bx-history"],
+            ["OBJECTIONRESPONSES"] = ["bx-filter-alt", "bx-plus-circle", "bx-send", "bx-check-shield", "bx-archive"],
+            ["COMPETITORPRODUCTS"] = ["bx-filter-alt", "bx-plus-circle", "bx-user-voice", "bx-task", "bx-git-merge"],
+            ["VISITWORKSPACE"] = ["bx-calendar-week", "bx-check-double", "bx-play-circle", "bx-send", "bx-calendar-x"],
         };
 
     /// <summary>The icon of step <paramref name="step"/> (1-based) of a page, or <see cref="DefaultStepIcon"/>.</summary>

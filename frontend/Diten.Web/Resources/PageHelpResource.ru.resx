@@ -414,4 +414,274 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Пользуйтесь клавиатурой</value>
   </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Задайте подтверждения, которые представитель должен дать при начале визита: геолокация, фото, QR-код учреждения и проверка устройства. Настройка арендатора действует для всех представителей; временное исключение на время ослабляет правило для одного представителя.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Руководители коммерческих операций</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Сохранение и применение настройки</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>На вкладке «Настройки по областям» в разделе «Форма настроек» сделайте выбор для каждого подтверждения. Предпросмотр справа показывает, что увидит представитель при начале визита.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Выберите правила</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>Нажмите «Сохранить», проверьте изменённые строки и подтвердите кнопкой «Сохранить и применить». Настройка сразу применяется ко всем представителям.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Сохраните и примените</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>«История изменений» показывает, кто, что и когда изменил. «Представители» показывает действующее сегодня значение для каждого представителя; значение, ослабленное исключением, отмечено словом «исключение».</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Следите за историей и представителями</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>На вкладке «Временные исключения» нажмите «Новое исключение». Укажите представителя, ослабляемые правила, период не длиннее 30 дней и причину, затем нажмите «Отправить на одобрение» или Ctrl+Enter (⌘+Enter на Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Запросите временное исключение</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>Исключение утверждается в разделе Центр задач; запросивший не может утвердить своё исключение. Действует только утверждённое исключение в пределах его дат. В быстром просмотре «Отменить исключение» и «Завершить досрочно» требуют причину; введите её и подтвердите сочетанием Ctrl+Enter.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>Управляйте исключением</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Просматривайте отметки подтверждений начатых визитов: далёкая или отсутствующая геолокация, короткий визит, неотсканированный или недействительный QR-код, начало по исключению. Отметка — повод проверить; сама по себе она не означает нарушения правила.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Региональные менеджеры и команда коммерческих операций</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>В поле «Период» выберите «Последние 7 дней», «Последние 30 дней» или «Свой период…». Произвольный диапазон — не более 92 дней.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Выберите период</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>Фильтруйте по полям «Представитель», «Учреждение» и типу отметки. Переключатель «Только отмеченные» включён; выключите его, чтобы видеть и визиты без отметок.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>Карточки вверху показывают «Начатые визиты», «Отмеченные визиты» и «По типу отметки». У одного визита может быть несколько отметок.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Прочитайте сводку</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>Быстрый просмотр строки показывает геолокацию, расстояние до учреждения, результат QR-кода и исключение, если оно есть; для просмотра фото нужно отдельное право. «Открыть визит» открывает сам визит.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Откройте подтверждение</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>Вкладка «Сводка по представителям» показывает по каждому представителю начатые и отмеченные визиты, долю и самую частую отметку. Щелчок по строке фильтрует список визитов по этому представителю.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Сравните представителей</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Управляйте QR-кодами, размещёнными на стойках регистрации учреждений. Представитель сканирует этот код при начале визита; подразделение без собственного кода использует код родительского учреждения.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>Команда коммерческих операций</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Создание, перевыпуск и отзыв кода</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Фильтруйте список по полям «Регион», «Город», «Тип учреждения» и «Статус QR». «Последнее сканирование» и «За 30 дней» показывают, используется ли код.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Найдите учреждения</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Выберите строки и выполните «Создать для выбранных (без кода)»; учреждения с уже активным кодом пропускаются. За один раз можно выбрать до 200 учреждений.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Создайте коды массово</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Один код печатается кнопкой «Напечатать код» в строке, несколько — через «Печать выбранных (лист наклеек)». На странице печати выберите «Один» или «Лист наклеек» и нажмите «Печать».</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Напечатайте</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>На странице учреждения в карточке «QR-код учреждения» используйте «Создать заново» или «Отозвать». Оба действия сразу делают недействительными размещённые и напечатанные старые коды; для отзыва нужна причина.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Обновите или отзовите код</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Обязателен код или нет, задаёт настройка «QR-код учреждения» на странице Подтверждение визита. При обязательной настройке визит, начатый в учреждении без кода, отмечается.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Учитывайте настройку</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Задайте границы, по которым число пациентов врача в месяц по показаниям продукта относится к классу Низкий, Средний или Высокий. Строка продукта важнее значения арендатора по умолчанию; если нет ни того ни другого, действуют встроенные значения.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Руководители коммерческих операций и маркетинга</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>Изменение порога</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>На вкладке «Пороги» строка «Значение арендатора по умолчанию» остаётся вверху при любой сортировке; строки продуктов имеют приоритет над ней. Столбец «Источник» показывает, откуда взято значение.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Просмотрите пороги</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>Действие «Изменить» в строке открывает боковую панель. Введите «Низкий ниже (X)» и «Высокий выше (Y)»; попробуйте в предпросмотре число пациентов в месяц, чтобы увидеть класс.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Измените</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>Нажмите «Сохранить» или Enter; проверьте изменённые значения и подтвердите кнопкой «Да, сохранить». Изменение вступает в силу сразу.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Сохраните</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>Для продукта, которому нужны границы, отличные от значения по умолчанию, откройте собственную строку кнопкой «Добавить продукт».</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Добавьте продукт</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>Вкладка «История изменений» показывает каждое изменение с автором, строкой и старым → новым значением; список можно выгрузить в CSV или Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Следите за историей</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Пишите утверждённые ответы на возражения, которые представитель может услышать от врача на визите. Утверждённый ответ выбирается как ожидаемое возражение в шагах пути знаний и появляется в заметках представителя во время презентации.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>Команды контента и медицинские утверждающие</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Вывод ответа из обращения</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Сузьте список по полям «Продукт», «Категория» и «Статус» или ищите по тексту возражения.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте библиотеку</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>Нажмите «Новый ответ на возражение»; заполните «Продукт», «Категория», «Возражение · вопрос врача» и «Утверждённый ответ», выберите опорные утверждения из утверждённых для продукта и нажмите «Сохранить черновик».</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Напишите ответ</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>«Отправить на утверждение» блокирует ответ на время проверки; «Отозвать» возвращает его в черновик.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Отправьте на утверждение</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>Утверждающий выбирает «Утвердить» или пишет заметку и выбирает «Вернуть в черновик». Автор или отправитель ответа не может его утвердить.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Утвердите или верните</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>Утверждённый ответ изменить нельзя; откройте новый черновик через «Новый черновик из копии». «Вывести из обращения» сразу убирает ответ из всех презентаций без возможности отмены; «Где используется» показывает затронутые шаги.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Измените или выведите из обращения</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Управляйте продуктами, которые представители выбирают как конкурентов в отчётах: компания, действующее вещество, наши продукты, с которыми они конкурируют, цена и возмещение по странам.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Команды мастер-данных и коммерческих операций</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Сохранение, деактивация</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>Фильтруйте по полям «Наш продукт», «Компания», «Действующее вещество», «Страна» или «Статус»; поиск охватывает и другие названия.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте список</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>Нажмите «Новый продукт конкурента»; укажите название, компанию, действующее вещество и хотя бы один наш продукт, впишите цену упаковки и возмещение в строки стран и нажмите «Сохранить». «Вид представителя» показывает карточку, которую представитель увидит в отчёте.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Добавьте запись</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>На вкладке «Предложения представителей» ждут новые конкуренты, которых представители вписали в отчёты. Через «Решение» подготовьте решение — дополнить, объединить или отклонить — и нажмите «Отправить на одобрение».</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Решите по предложениям</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>Решение применяется после утверждения в разделе Центр задач; подготовивший его не может его утвердить. До этого предложение используется только в отчётах предложившего представителя.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Дождитесь утверждения</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>Страница сведений показывает «Использование в отчётах» и «История изменений». «Объединить с другой записью» после утверждения связывает запись с другой без возможности отмены; «Деактивировать» делает её недоступной для выбора в новых отчётах.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Управляйте записью</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Планируйте неделю, проводите визиты и отчитывайтесь в одном календаре. При начале визита собираются подтверждения, которые требует арендатор (геолокация, фото, QR-код учреждения); отчёт отправляется в течение 48 часов.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Полевые представители и региональные менеджеры</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Утверждение недели, начало визита, отправка отчёта</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>Перейдите в режим «Планирование»; перетащите целевых врачей на день или время. Добавьте продукты запланированным врачам учреждения через «Применить продукты».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Спланируйте неделю</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>Когда план готов, нажмите «Утвердить неделю». Утверждённая неделя доступна только для чтения; чтобы её изменить, используйте «Открыть неделю заново» с указанием причины.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Утвердите неделю</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>В режиме «Выполнение» откройте сегодняшний визит и по прибытии в учреждение нажмите «Начать визит». В зависимости от настройки запрашиваются фото, геолокация и «QR-код учреждения»; затем «Начать презентацию» открывает презентацию.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Начните визит</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>После визита нажмите «Отправить отчёт». На отчёт даётся 48 часов; после этого запись блокируется.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Отчитайтесь</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>Для визита, который не состоялся, выберите «Не выполнен» или «Перенести» и укажите причину. Внеплановый визит на сегодня добавляется через «Внеплановый визит».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Закройте несостоявшееся</value>
+  </data>
 </root>

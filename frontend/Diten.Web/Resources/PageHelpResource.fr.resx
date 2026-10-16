@@ -414,4 +414,274 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Utiliser le clavier</value>
   </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Définissez les preuves qu'un délégué doit fournir au début d'une visite : localisation, photo, code QR de l'établissement et vérification de l'appareil. Le paramètre du locataire s'applique à tous les délégués ; une exception limitée dans le temps assouplit une règle pour un seul délégué, pour une durée donnée.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Responsables des opérations commerciales</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Enregistrer et appliquer le paramètre</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>Dans l'onglet « Paramètres par périmètre », faites un choix pour chaque preuve dans « Formulaire ». L'aperçu à droite montre ce que le délégué verra au début de la visite.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Choisir les règles</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>Cliquez sur « Enregistrer », vérifiez les lignes modifiées et confirmez avec « Enregistrer et appliquer ». Le paramètre s'applique immédiatement à tous les délégués.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Enregistrer et appliquer</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>« Historique des modifications » montre qui a modifié quoi et quand. « Délégués » montre la valeur en vigueur aujourd'hui pour chaque délégué ; une valeur assouplie par une exception porte la mention « exception ».</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Suivre l'historique et les délégués</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>Dans l'onglet « Exceptions temporaires », cliquez sur « Nouvelle exception ». Saisissez le délégué, les règles à assouplir, une période de 30 jours au plus et le motif, puis cliquez sur « Envoyer pour approbation » ou appuyez sur Ctrl+Entrée (⌘+Entrée sur Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Demander une exception</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>L'exception est approuvée dans le Centre des tâches ; le demandeur ne peut pas approuver la sienne. Seule une exception approuvée et dans sa période s'applique. Dans l'aperçu rapide, « Annuler l'exception » et « Terminer plus tôt » demandent un motif ; saisissez-le et confirmez avec Ctrl+Entrée.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>Gérer l'exception</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Examinez les signalements de preuve des visites démarrées : localisation éloignée ou absente, visite courte, code QR non scanné ou invalide, démarrage sous exception. Un signalement est un indice à examiner ; à lui seul, il ne signifie pas qu'une règle a été enfreinte.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Responsables de secteur et équipe des opérations commerciales</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>Pour « Période », choisissez « 7 derniers jours », « 30 derniers jours » ou « Période personnalisée… ». Une plage personnalisée couvre 92 jours au plus.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Choisir la période</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>Filtrez par « Délégué », « Établissement » et type de signalement. « Signalées uniquement » est activé ; désactivez-le pour voir aussi les visites sans signalement.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Affiner la liste</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>Les cartes du haut indiquent « Visites commencées », « Visites signalées » et « Par type de signalement ». Une visite peut porter plusieurs signalements.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Lire la synthèse</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>L'aperçu rapide de la ligne montre la localisation, la distance à l'établissement, le résultat du code QR et l'éventuelle exception ; voir la photo exige une autorisation propre. « Ouvrir la visite » ouvre la visite elle-même.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Ouvrir la preuve</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>L'onglet « Synthèse par délégué » montre, par délégué, les visites démarrées et signalées, le taux et le signalement le plus fréquent. Un clic sur une ligne filtre la liste des visites sur ce délégué.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Comparer les délégués</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Gérez les codes QR affichés à l'accueil des établissements. Le délégué scanne ce code au début de la visite ; une sous-unité sans code propre utilise celui de l'établissement parent.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>Équipe des opérations commerciales</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Générer, régénérer et révoquer un code</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Filtrez la liste par « Région », « Ville », « Type d'établissement » et « Statut QR ». « Dernier scan » et « 30 derniers jours » indiquent si le code est utilisé.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Trouver les établissements</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Sélectionnez des lignes et lancez « Générer pour la sélection (sans code) » ; les établissements qui ont déjà un code actif sont ignorés. Jusqu'à 200 établissements peuvent être sélectionnés à la fois.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Générer en masse</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Imprimez un code avec « Imprimer le code » sur la ligne et plusieurs avec « Imprimer la sélection (planche d’étiquettes) ». Sur la page d'impression, choisissez « Unique » ou « Planche d’étiquettes » et cliquez sur « Imprimer ».</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Imprimer</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>Sur la page de l'établissement, utilisez « Régénérer » ou « Révoquer » dans la carte « Code QR de l’établissement ». Les deux invalident immédiatement les anciens codes affichés et imprimés ; la révocation demande un motif.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Renouveler ou révoquer</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Le caractère obligatoire ou facultatif du code se règle avec « Code QR de l'établissement » sur la page Preuves de visite. Avec le réglage obligatoire, une visite démarrée dans un établissement sans code est signalée.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Lire avec le paramètre</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Fixez les limites qui classent le nombre mensuel de patients d'un médecin dans les indications d'un produit en Faible, Moyen ou Élevé. Une ligne produit passe avant la valeur par défaut du locataire ; à défaut des deux, les valeurs intégrées s'appliquent.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Responsables des opérations commerciales et du marketing</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>Une modification de seuil</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>Dans l'onglet « Seuils », la ligne « Valeur par défaut du locataire » reste en tête quel que soit le tri ; les lignes produit l'emportent sur elle. La colonne « Source » indique l'origine d'une valeur.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Lire les seuils</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>L'action « Modifier » de la ligne ouvre le panneau latéral. Saisissez « Faible en dessous de (X) » et « Élevé au-dessus de (Y) » ; essayez un nombre mensuel de patients dans l'aperçu pour voir sa classe.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>Cliquez sur « Enregistrer » ou appuyez sur Entrée ; vérifiez les valeurs modifiées et confirmez avec « Oui, enregistrer ». La modification prend effet immédiatement.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>Pour un produit qui demande des limites différentes de la valeur par défaut, ouvrez sa propre ligne avec « Ajouter un produit ».</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Ajouter un produit</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>L'onglet « Historique des modifications » montre chaque modification avec la personne, la ligne et l'ancienne → nouvelle valeur ; la liste s'exporte en CSV ou Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Suivre l'historique</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Rédigez des réponses approuvées aux objections qu'un délégué peut entendre d'un médecin pendant une visite. Une réponse approuvée est choisie comme objection attendue dans les étapes d'un parcours de connaissances et apparaît dans les notes du délégué pendant la présentation.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>Équipes de contenu et approbateurs médicaux</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Retirer une réponse</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Affinez la liste par « Produit », « Catégorie » et « Statut », ou recherchez dans le texte de l'objection.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Filtrer la bibliothèque</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>Cliquez sur « Nouvelle réponse à une objection » ; remplissez « Produit », « Catégorie », « Objection · la question du médecin » et « Réponse approuvée », choisissez des allégations d'appui parmi celles approuvées pour le produit et cliquez sur « Enregistrer le brouillon ».</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Rédiger une réponse</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>« Envoyer pour approbation » verrouille la réponse pendant la revue ; « Retirer la demande » la remet en brouillon.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Envoyer pour approbation</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>L'approbateur choisit « Approuver », ou rédige une note et choisit « Renvoyer en brouillon ». La personne qui a rédigé ou envoyé la réponse ne peut pas l'approuver.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Approuver ou renvoyer</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>Une réponse approuvée ne peut pas être modifiée ; ouvrez un nouveau brouillon avec « Nouveau brouillon à partir d’une copie ». « Retirer » retire la réponse de toutes les présentations immédiatement, sans retour possible ; « Où elle est utilisée » montre les étapes concernées.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Modifier ou retirer</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Gérez les produits que les délégués choisissent comme concurrents dans leurs rapports : laboratoire, principe actif, nos produits concurrencés, prix et remboursement par pays.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Équipes données de référence et opérations commerciales</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Enregistrer, désactiver</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>Filtrez par « Notre produit », « Laboratoire », « Principe actif », « Pays » ou « Statut » ; la recherche couvre aussi les autres noms.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Filtrer la liste</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>Cliquez sur « Nouveau produit concurrent » ; saisissez le nom, le laboratoire, le principe actif et au moins un de nos produits, indiquez le prix de la boîte et le remboursement sur les lignes pays, puis cliquez sur « Enregistrer ». « Vue du délégué » montre la carte que le délégué verra dans le rapport.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Ajouter un enregistrement</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>Dans l'onglet « Propositions des délégués » attendent les nouveaux concurrents saisis par les délégués dans leurs rapports. Avec « Décision », préparez une décision de compléter, fusionner ou rejeter, puis cliquez sur « Envoyer pour approbation ».</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Statuer sur les propositions</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>La décision s'applique une fois approuvée dans le Centre des tâches ; la personne qui l'a préparée ne peut pas l'approuver. D'ici là, la proposition n'est utilisée que dans les rapports du délégué qui l'a faite.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Attendre l'approbation</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>La page de détail montre « Utilisation dans les rapports » et « Historique des modifications ». « Fusionner avec un autre enregistrement » rattache l'enregistrement à un autre après approbation, sans retour possible ; « Désactiver » le rend non sélectionnable dans les nouveaux rapports.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Gérer un enregistrement</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Planifiez, visitez et rendez compte de votre semaine dans un seul calendrier. Au début d'une visite, les preuves demandées par le locataire (localisation, photo, code QR de l'établissement) sont prises ; le rapport est envoyé sous 48 heures.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Délégués terrain et responsables de secteur</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Approuver la semaine, démarrer une visite, envoyer un rapport</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>Passez en mode « Planifier » ; glissez les médecins cibles sur un jour ou une heure. Ajoutez des produits aux médecins planifiés d'un établissement avec « Appliquer des produits ».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Planifier la semaine</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>Quand le plan est prêt, cliquez sur « Valider la semaine ». Une semaine approuvée est en lecture seule ; pour la modifier, utilisez « Rouvrir la semaine » avec un motif.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Approuver la semaine</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>En mode « Exécuter », ouvrez la visite du jour et cliquez sur « Démarrer la visite » à votre arrivée. Selon le paramètre, une photo, la localisation et le « Code QR de l’établissement » sont demandés ; « Démarrer la présentation » ouvre ensuite la présentation.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Démarrer la visite</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>Après la visite, cliquez sur « Envoyer le rapport ». Vous disposez de 48 heures pour le rapport ; ensuite l'enregistrement est verrouillé.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Rendre compte</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>Pour une visite non réalisée, choisissez « Non réalisée » ou « Reporter » et indiquez la raison. Vous pouvez ajouter une visite non planifiée pour aujourd'hui avec « Visite non planifiée ».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Clore ce qui n'a pas eu lieu</value>
+  </data>
 </root>

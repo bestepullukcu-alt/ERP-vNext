@@ -414,4 +414,274 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>استخدام لوحة المفاتيح</value>
   </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>حدِّد الأدلة التي يجب أن يقدّمها المندوب عند بدء الزيارة: الموقع والصورة ورمز QR الخاص بالمؤسسة والتحقق من الجهاز. يسري إعداد المستأجر على جميع المندوبين؛ ويخفّف الاستثناء المؤقت قاعدةً لمندوب واحد لفترة محددة.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>مديرو عمليات المبيعات</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>حفظ الإعداد وتطبيقه</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>في تبويب «الإعدادات حسب النطاق»، اختر لكل دليل خيارًا في «نموذج الإعداد». تعرض المعاينة على الجانب ما سيراه المندوب عند بدء الزيارة.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>اختر القواعد</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>انقر «حفظ» وراجع الصفوف المتغيّرة ثم أكّد بـ«حفظ وتطبيق». يُطبَّق الإعداد فورًا على جميع المندوبين.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>احفظ وطبّق</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>يعرض «سجل التغييرات» من غيّر ماذا ومتى. ويعرض «المندوبون» القيمة السارية اليوم لكل مندوب؛ وتُوسَم القيمة المخفّفة باستثناء بعبارة «استثناء».</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>تابع السجل والمندوبين</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>في تبويب «الاستثناءات المؤقتة»، انقر «استثناء جديد». أدخل المندوب والقواعد المراد تخفيفها ونطاقًا زمنيًا لا يتجاوز 30 يومًا والسبب، ثم انقر «إرسال للاعتماد» أو اضغط Ctrl+Enter (⌘+Enter على Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>اطلب استثناءً مؤقتًا</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>يُعتمد الاستثناء في مركز المهام؛ ولا يمكن لمقدّم الطلب اعتماد استثنائه. لا يسري إلا الاستثناء المعتمد وضمن تواريخه. في العرض السريع يطلب «إلغاء الاستثناء» و«إنهاء مبكر» سببًا؛ اكتبه ثم أكّد بـCtrl+Enter.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>أدِر الاستثناء</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>راجِع إشارات الأدلة للزيارات التي بدأت: موقع بعيد أو غير متاح، زيارة قصيرة، رمز QR لم يُمسح أو غير صالح، بدء باستثناء. الإشارة مؤشر يستحق المراجعة، ولا تعني وحدها مخالفة قاعدة.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>مديرو المناطق وفريق عمليات المبيعات</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>في «الفترة» اختر «آخر 7 أيام» أو «آخر 30 يومًا» أو «نطاق مخصص…». لا يتجاوز النطاق المخصص 92 يومًا.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>اختر الفترة</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>صفِّ حسب «المندوب» و«المؤسسة» ونوع الإشارة. الخيار «المُعلَّمة فقط» مفعّل؛ أوقفه لعرض الزيارات غير المعلَّمة أيضًا.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>تعرض البطاقات العلوية «الزيارات المبدوءة» و«الزيارات المُعلَّمة» و«حسب نوع العلامة». قد تحمل الزيارة الواحدة عدة إشارات.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>اقرأ الملخص</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>يعرض العرض السريع للصف الموقع والمسافة إلى المؤسسة ونتيجة رمز QR والاستثناء إن وُجد؛ ويتطلب عرض الصورة صلاحية مستقلة. يفتح «فتح الزيارة» الزيارة نفسها.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>افتح الدليل</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>يعرض تبويب «ملخص المندوبين» لكل مندوب الزيارات التي بدأت والمعلَّمة والنسبة والإشارة الأكثر تكرارًا. النقر على صف يصفّي قائمة الزيارات على ذلك المندوب.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>قارن المندوبين</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>أدِر رموز QR المعلّقة في استقبال المؤسسات. يمسح المندوب هذا الرمز عند بدء الزيارة؛ والوحدة الفرعية التي ليس لها رمز خاص تستخدم رمز المؤسسة الأم.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>فريق عمليات المبيعات</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>إنشاء الرمز وإعادة إنشائه وإلغاؤه</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>صفِّ القائمة حسب «المنطقة» و«المدينة» و«نوع المؤسسة» و«حالة QR». يبيّن «آخر مسح» و«آخر 30 يومًا» ما إذا كان الرمز مستخدمًا.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>اعثر على المؤسسات</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>حدّد الصفوف ونفّذ «إنشاء للمحدد (التي بلا رمز)»؛ تُتخطّى المؤسسات التي لديها رمز نشط. يمكن تحديد 200 مؤسسة كحد أقصى في المرة الواحدة.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>أنشئ رموزًا دفعةً واحدة</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>اطبع رمزًا واحدًا عبر «طباعة الرمز» في الصف، وعدة رموز عبر «طباعة المحدد (ورقة ملصقات)». في صفحة الطباعة اختر «مفرد» أو «ورقة ملصقات» ثم انقر «طباعة».</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>اطبع</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>في صفحة المؤسسة استخدم «إعادة الإنشاء» أو «إلغاء» في بطاقة «رمز QR للمؤسسة». كلاهما يُبطل فورًا الرموز القديمة المعلّقة والمطبوعة؛ ويتطلب الإلغاء سببًا.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>جدّد الرمز أو ألغِه</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>يُحدَّد كون الرمز إلزاميًا أو اختياريًا عبر إعداد «رمز QR للمؤسسة» في صفحة إثبات الزيارة. في الإعداد الإلزامي تُعلَّم الزيارة التي تبدأ في مؤسسة بلا رمز.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>اقرأه مع الإعداد</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>حدِّد الحدود التي تصنّف عدد المرضى الشهري للطبيب في دواعي استعمال منتج ما إلى منخفض أو متوسط أو مرتفع. يتقدّم صف المنتج على الإعداد الافتراضي للمستأجر؛ وإن لم يوجد أيّ منهما تُطبَّق القيم المدمجة.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>مديرو عمليات المبيعات والتسويق</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>تغيير حدّ</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>في تبويب «الحدود» يبقى صف «الإعداد الافتراضي للمستأجر» في الأعلى في أي ترتيب؛ وتتقدّم عليه صفوف المنتجات. يبيّن عمود «المصدر» مصدر القيمة.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>اقرأ الحدود</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>يفتح إجراء «تعديل» في الصف اللوحة الجانبية. أدخل «منخفض أقل من (X)» و«مرتفع أكثر من (Y)»؛ وجرّب في المعاينة عدد مرضى شهريًا لرؤية تصنيفه.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>عدّل</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>انقر «حفظ» أو اضغط Enter؛ راجع القيم المتغيّرة ثم أكّد بـ«نعم، احفظ». يسري التغيير فورًا.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>احفظ</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>للمنتج الذي يحتاج حدودًا مختلفة عن الافتراضي، افتح صفه الخاص عبر «إضافة منتج».</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>أضف منتجًا</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>يعرض تبويب «سجل التغييرات» كل تغيير مع الشخص والصف والقيمة القديمة ← الجديدة؛ ويمكن تصدير القائمة بصيغة CSV أو Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>تابع السجل</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>اكتب إجابات معتمدة على الاعتراضات التي قد يسمعها المندوب من الطبيب أثناء الزيارة. تُختار الإجابة المعتمدة اعتراضًا متوقعًا في خطوات مسار المعرفة، وتظهر في ملاحظات المندوب أثناء العرض.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>فرق المحتوى والمعتمِدون الطبيون</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>إيقاف إجابة</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>ضيّق القائمة حسب «المنتج» و«الفئة» و«الحالة»، أو ابحث في نص الاعتراض.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>صفِّ المكتبة</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>انقر «رد جديد على اعتراض»؛ واملأ «المنتج» و«الفئة» و«الاعتراض · سؤال الطبيب» و«الرد المعتمد»، واختر ادعاءات داعمة من ادعاءات المنتج المعتمدة، ثم انقر «حفظ المسودة».</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>اكتب إجابة</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>يقفل «إرسال للموافقة» الإجابة أثناء المراجعة؛ ويعيدها «سحب» إلى مسودة.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>أرسل للاعتماد</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>يختار المعتمِد «موافقة»، أو يكتب ملاحظة ويختار «إعادة إلى المسودة». لا يمكن لمن كتب الإجابة أو أرسلها اعتمادها.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>اعتمد أو أعد</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>لا يمكن تغيير الإجابة المعتمدة؛ افتح مسودة جديدة عبر «مسودة جديدة من نسخة». يزيل «إيقاف» الإجابة من جميع العروض فورًا ولا يمكن التراجع عنه؛ ويبيّن «أماكن الاستخدام» الخطوات المتأثرة.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>غيّر أو أوقف</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>أدِر المنتجات التي يختارها المندوبون منافسين في تقاريرهم: الشركة والمادة الفعالة ومنتجاتنا التي تنافسها والسعر والتعويض لكل دولة.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>فرق البيانات الرئيسية وعمليات المبيعات</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>الحفظ، إلغاء التنشيط</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>صفِّ حسب «منتجنا» أو «الشركة» أو «المادة الفعالة» أو «الدولة» أو «الحالة»؛ ويشمل البحث الأسماء الأخرى أيضًا.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>صفِّ القائمة</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>انقر «منتج منافس جديد»؛ أدخل الاسم والشركة والمادة الفعالة ومنتجًا واحدًا على الأقل من منتجاتنا، واكتب سعر العلبة والتعويض في صفوف الدول ثم انقر «حفظ». تعرض «عرض المندوب» البطاقة التي سيراها المندوب في التقرير.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>أضف سجلًا</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>في تبويب «اقتراحات المندوبين» تنتظر المنافسات الجديدة التي كتبها المندوبون في تقاريرهم. عبر «القرار» حضّر قرار الإكمال أو الدمج أو الرفض ثم انقر «إرسال للموافقة».</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>قرّر بشأن الاقتراحات</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>يُطبَّق القرار عند اعتماده في مركز المهام؛ ولا يمكن لمن حضّره اعتماده. وحتى ذلك الحين لا يُستخدم الاقتراح إلا في تقارير المندوب الذي قدّمه.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>انتظر الاعتماد</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>تعرض صفحة التفاصيل «الاستخدام في التقارير» و«سجل التغييرات». يربط «دمج مع سجل آخر» السجل بسجل آخر بعد الاعتماد ولا يمكن التراجع عنه؛ ويجعل «إلغاء التفعيل» السجل غير قابل للاختيار في التقارير الجديدة.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>أدِر السجل</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>خطّط أسبوعك وزُر وأبلِغ في تقويم واحد. عند بدء الزيارة تُؤخذ الأدلة التي يطلبها المستأجر (الموقع، الصورة، رمز QR الخاص بالمؤسسة)؛ ويُرسل التقرير خلال 48 ساعة.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>المندوبون الميدانيون ومديرو المناطق</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>اعتماد الأسبوع، بدء الزيارة، إرسال التقرير</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>انتقل إلى وضع «تخطيط»؛ واسحب الأطباء المستهدفين إلى يوم أو ساعة. أضف منتجات إلى أطباء المؤسسة المخطط لهم عبر «تطبيق المنتجات».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>خطّط الأسبوع</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>عندما تكون الخطة جاهزة انقر «اعتماد الأسبوع». الأسبوع المعتمد للقراءة فقط؛ ولتغييره استخدم «إعادة فتح الأسبوع» مع ذكر السبب.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>اعتمد الأسبوع</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>في وضع «تنفيذ» افتح زيارة اليوم وانقر «بدء الزيارة» عند وصولك إلى المؤسسة. بحسب الإعداد تُطلب صورة والموقع و«رمز QR للمؤسسة»؛ ثم يفتح «بدء العرض» العرض.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>ابدأ الزيارة</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>بعد الزيارة انقر «إرسال التقرير». لديك 48 ساعة للتقرير؛ وبعدها يُقفل السجل.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>أبلِغ</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>للزيارة التي لم تتم اختر «لم تتم» أو «تأجيل» واذكر السبب. يمكنك إضافة زيارة غير مخططة لليوم عبر «زيارة غير مخطط لها».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>أغلِق ما لم يتم</value>
+  </data>
 </root>

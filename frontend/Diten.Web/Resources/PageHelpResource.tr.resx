@@ -414,4 +414,274 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Klavyeyi kullanın</value>
   </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Temsilcinin ziyarete başlarken vermesi gereken kanıtları ayarlayın: konum, fotoğraf, kurum QR kodu ve cihaz doğrulama. Kiracı ayarı tüm temsilcilere uygulanır; süreli istisna tek bir temsilci için kuralı geçici olarak gevşetir.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Satış operasyon yöneticileri</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Ayarı kaydedip uygulama</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>“Kapsamlı ayarlar” sekmesinde “Ayar formu” içinde her kanıt için seçiminizi yapın. Sağdaki önizleme, temsilcinin ziyarete başlarken ne göreceğini gösterir.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Kuralları seçin</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>“Kaydet”e tıklayın, değişen satırları kontrol edin ve “Kaydet ve uygula” ile onaylayın. Ayar tüm temsilcilere hemen uygulanır.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Kaydedip uygulayın</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>“Değişiklik geçmişi” kimin neyi ne zaman değiştirdiğini gösterir. “Temsilciler” her temsilcinin bugün geçerli değerini gösterir; istisnayla gevşeyen değerin yanında “istisna” yazar.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Geçmişi ve temsilcileri izleyin</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>“Süreli istisnalar” sekmesinde “Yeni istisna”ya tıklayın. Temsilciyi, gevşetilecek kuralları, en çok 30 günlük tarih aralığını ve gerekçeyi girip “Onaya gönder”e tıklayın ya da Ctrl+Enter'a (Mac'te ⌘+Enter) basın.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Süreli istisna isteyin</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>İstisna Görev Merkezi'nde onaylanır; isteyen kişi kendi istisnasını onaylayamaz. Yalnız onaylı ve tarih aralığındaki istisna uygulanır. Hızlı görünümde “İptal et” ve “Erken bitir” gerekçe ister; gerekçeyi yazıp Ctrl+Enter ile onaylayın.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>İstisnayı yönetin</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Başlatılan ziyaretlerin kanıt işaretlerini inceleyin: uzak ya da alınamayan konum, kısa ziyaret, okutulmayan ya da geçersiz QR kodu, istisnayla başlama. İşaret incelenecek bir ipucudur; tek başına kural ihlali anlamına gelmez.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Bölge yöneticileri ve satış operasyon ekibi</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>“Dönem” için “Son 7 gün”, “Son 30 gün” ya da “Özel aralık…” seçin. Özel aralık en çok 92 gün olabilir.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Dönemi seçin</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>“Temsilci”, “Kurum” ve işaret türüne göre süzün. “Yalnız işaretliler” açıktır; kapatırsanız işaretsiz ziyaretler de listelenir.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>Üstteki kartlar “Başlatılan ziyaret”, “İşaretli ziyaret” ve “İşaret türüne göre” sayılarını gösterir. Bir ziyarette birden çok işaret olabilir.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Özeti okuyun</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>Satırın hızlı görünümü konumu, kuruma mesafeyi, QR kodu sonucunu ve varsa istisnayı gösterir; fotoğrafı görmek ayrı yetki ister. “Ziyareti aç” ziyaretin kendisini açar.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Kanıtı açın</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>“Temsilci özeti” sekmesi temsilci başına başlatılan ve işaretli ziyaretleri, oranı ve en sık işareti gösterir. Satıra tıklayınca ziyaret listesi o temsilciye süzülür.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Temsilcileri karşılaştırın</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Kurumların kabulüne asılan QR kodlarını yönetin. Temsilci ziyarete başlarken bu kodu okutur; alt birimin kendi kodu yoksa üst kurumun kodu geçer.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>Satış operasyon ekibi</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Kod üretme, yeniden üretme, iptal etme</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Listeyi “Bölge”, “Şehir”, “Kurum türü” ve “QR durumu” ile süzün. “Son okutma” ve “Son 30 gün” kodun kullanılıp kullanılmadığını gösterir.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Kurumları bulun</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Satırları seçip “Seçilenlere kod üret (kodu olmayanlar)” işlemini çalıştırın; zaten aktif kodu olan kurumlar atlanır. Bir seferde en çok 200 kurum seçilebilir.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Toplu kod üretin</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Tek kodu satırdaki “Kodu yazdır” ile, birden çok kodu “Seçilenleri yazdır (etiket sayfası)” ile yazdırın. Yazdırma sayfasında “Tekli” ya da “Etiket sayfası” seçip “Yazdır”a tıklayın.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Yazdırın</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>Kurumun sayfasındaki “Kurum QR kodu” kartında “Yeniden üret” ya da “İptal et” kullanın. İkisi de asılı ve basılı eski kodları hemen geçersiz kılar; iptal gerekçe ister.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Kodu yenileyin ya da iptal edin</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Kodun zorunlu mu isteğe bağlı mı olduğu Ziyaret Kanıtı sayfasındaki “Kurum QR kodu” ayarındadır. Zorunlu ayarda kodu olmayan kurumda başlatılan ziyaret işaretlenir.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Ayarla birlikte düşünün</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Doktorun bir ürünün endikasyonlarındaki aylık hasta sayısını Az, Orta ya da Çok olarak sınıflayan sınırları belirleyin. Ürün satırı kiracı varsayılanından önce gelir; ikisi de yoksa yerleşik değerler uygulanır.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Satış operasyon ve pazarlama yöneticileri</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>Eşik değişikliği</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>“Eşikler” sekmesinde “Kiracı varsayılanı” satırı her sıralamada en üsttedir; ürün satırları onun önüne geçer. “Kaynak” sütunu değerin nereden geldiğini gösterir.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Eşikleri okuyun</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>Satırın “Düzenle” işlemi yan paneli açar. “Az sınırı (X)” ve “Çok sınırı (Y)” değerlerini girin; önizlemede bir aylık hasta sayısı yazarak sınıfı deneyin.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Düzenleyin</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>“Kaydet”e tıklayın ya da Enter'a basın; değişen değerleri kontrol edip “Evet, kaydet” ile onaylayın. Değişiklik hemen geçerli olur.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Kaydedin</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>Varsayılandan farklı sınır isteyen bir ürün için “Ürün ekle” ile kendi satırını açın.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Ürün ekleyin</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>“Değişiklik geçmişi” sekmesi her değişikliği kişi, satır ve eski → yeni değerle gösterir; liste CSV ya da Excel olarak dışa aktarılabilir.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Geçmişi izleyin</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Temsilcinin ziyarette doktordan duyabileceği itirazlara onaylı yanıtlar yazın. Onaylanan yanıt bilgi yolu adımlarında beklenen itiraz olarak seçilir ve sunum sırasında temsilcinin notlarında görünür.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>İçerik ekipleri ve medikal onaylayıcılar</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Emekliye ayırma</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Listeyi “Ürün”, “Kategori” ve “Durum” ile daraltın ya da itiraz metninde arayın.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Kütüphaneyi süzün</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>“Yeni itiraz yanıtı”na tıklayın; “Ürün”, “Kategori”, “İtiraz · doktorun sorusu” ve “Onaylı yanıt” alanlarını doldurun, ürünün onaylı iddialarından dayanak seçin ve “Taslağı kaydet”e tıklayın.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Yanıt yazın</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>“Onaya gönder” yanıtı inceleme süresince kilitler; “Geri çek” ile taslağa döndürebilirsiniz.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Onaya gönderin</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>Onaylayıcı “Onayla” ya da not yazarak “Taslağa geri gönder” seçer. Yanıtı yazan ya da gönderen kişi onaylayamaz.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Onaylayın ya da geri gönderin</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>Onaylı yanıt değiştirilemez; “Kopyasından yeni taslak” ile yeni taslak açın. “Emekliye ayır” yanıtı tüm sunumlardan hemen düşürür ve geri alınamaz; “Kullanıldığı yerler” hangi adımların etkileneceğini gösterir.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Değiştirin ya da emekliye ayırın</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Temsilcilerin raporda rakip olarak seçtiği ürünleri yönetin: firma, etken madde, rakibi olduğu ürünlerimiz ve ülke bazında fiyat ile geri ödeme.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Ana veri ve satış operasyon ekipleri</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Kaydetme, pasife alma</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>“Ürünümüz”, “Firma”, “Etken madde”, “Ülke” ya da “Durum” ile süzün; arama diğer adları da tarar.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Listeyi süzün</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>“Yeni rakip ürün”e tıklayın; ad, firma, etken madde ve en az bir ürünümüzü girin, ülke satırlarına kutu fiyatı ve geri ödemeyi yazıp “Kaydet”e tıklayın. “Temsilci görünümü” temsilcinin raporda göreceği kartı gösterir.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Kayıt ekleyin</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>“Temsilci önerileri” sekmesinde temsilcilerin raporda yazdığı yeni rakipler bekler. “Karar” ile tamamlama, birleştirme ya da ret kararını hazırlayıp “Onaya gönder”e tıklayın.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Önerileri karara bağlayın</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>Karar Görev Merkezi'nde onaylanınca uygulanır; kararı hazırlayan kişi onaylayamaz. O zamana kadar öneri yalnız öneren temsilcinin raporlarında kullanılır.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Onayı bekleyin</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>Ayrıntı sayfasında “Raporlarda kullanım” ve “Değişiklik geçmişi” görünür. “Başka kayıtla birleştir” onaydan sonra kaydı başka bir kayda bağlar ve geri alınamaz; “Pasife al” kaydı yeni raporlarda seçilemez yapar.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Kaydı yönetin</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Haftanızı tek takvimde planlayın, ziyaret edin ve raporlayın. Ziyarete başlarken kiracının istediği kanıtlar (konum, fotoğraf, kurum QR kodu) alınır; rapor 48 saat içinde gönderilir.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Saha temsilcileri ve bölge yöneticileri</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Haftayı onaylama, ziyarete başlama, raporu gönderme</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>“Planla” moduna geçin; hedef doktorları güne ya da saate sürükleyip bırakın. Bir kurumun plandaki doktorlarına “Ürün uygula” ile ürün ekleyin.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Haftayı planlayın</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>Plan hazır olunca “Haftayı onayla”ya tıklayın. Onaylı hafta salt okunurdur; değiştirmek için gerekçeyle “Haftayı yeniden aç” kullanılır.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Haftayı onaylayın</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>“Yürüt” modunda bugünün ziyaretini açın ve kuruma vardığınızda “Ziyarete başla”ya tıklayın. Ayara göre fotoğraf, konum ve “Kurum QR kodu” istenir; ardından “Sunumu başlat” ile sunum açılır.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Ziyarete başlayın</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>Ziyaretten sonra “Raporu gönder”e tıklayın. Rapor için 48 saat vardır; süre dolunca kayıt kilitlenir.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Raporlayın</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>Gerçekleşmeyen ziyaret için “Yapılamadı” ya da “Ertele” seçip nedenini girin. Bugün için plan dışı bir ziyareti “Plan dışı ziyaret” ile ekleyebilirsiniz.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Yapılamayanı kapatın</value>
+  </data>
 </root>

@@ -414,4 +414,274 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>使用键盘</value>
   </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>设置代表开始拜访时必须提供的证据：位置、照片、机构二维码和设备验证。租户设置适用于所有代表；限时例外会在一段时间内为某一位代表放宽规则。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>销售运营经理</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>保存并应用设置</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>在“分范围设置”选项卡的“设置表单”中为每项证据做出选择。右侧的预览显示代表开始拜访时会看到的内容。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>选择规则</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>点击“保存”，检查变更的行，然后用“保存并应用”确认。设置会立即应用于所有代表。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>保存并应用</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>“变更历史”显示谁在何时更改了什么。“代表”显示每位代表今天生效的值；因例外而放宽的值旁标有“例外”。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>查看历史和代表</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>在“限时例外”选项卡中点击“新建例外”。填写代表、要放宽的规则、最长 30 天的日期范围和理由，然后点击“提交审批”或按 Ctrl+Enter（Mac 上为 ⌘+Enter）。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>申请限时例外</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>例外在任务中心中审批；申请人不能审批自己的例外。只有已批准且在日期范围内的例外才会生效。在快速查看中，“取消例外”和“提前结束”需要填写理由；填写后按 Ctrl+Enter 确认。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>管理例外</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>查看已开始拜访的证据标记：位置过远或缺失、拜访过短、二维码未扫描或无效、在例外下开始。标记是需要查看的线索，本身并不表示违反了规则。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>区域经理和销售运营团队</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>在“期间”中选择“最近 7 天”、“最近 30 天”或“自定义范围…”。自定义范围最长 92 天。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>选择期间</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>按“代表”、“机构”和标记类型筛选。“仅已标记”默认开启；关闭后也会列出没有标记的拜访。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>顶部的卡片显示“已开始的拜访”、“已标记的拜访”和“按标记类型”。一次拜访可以有多个标记。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>阅读汇总</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>行的快速查看显示位置、到机构的距离、二维码结果以及例外（如有）；查看照片需要单独的权限。“打开拜访”会打开该拜访本身。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>打开证据</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>“代表汇总”选项卡按代表显示已开始和已标记的拜访、比率以及最常见的标记。点击某一行，拜访列表会按该代表筛选。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>比较代表</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>管理张贴在机构接待处的二维码。代表开始拜访时扫描此码；没有自己代码的下级单位使用上级机构的代码。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>销售运营团队</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>生成、重新生成和撤销代码</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>按“区域”、“城市”、“机构类型”和“二维码状态”筛选列表。“最近扫描”和“近 30 天”显示代码是否在使用。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>查找机构</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>选择行并执行“为所选生成（无二维码的）”；已有有效代码的机构会被跳过。一次最多可选择 200 家机构。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>批量生成</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>用行上的“打印二维码”打印单个代码，用“打印所选（标签页）”打印多个代码。在打印页面选择“单张”或“标签页”，然后点击“打印”。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>打印</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>在机构页面的“机构二维码”卡片上使用“重新生成”或“撤销”。两者都会使张贴和打印的旧代码立即失效；撤销需要填写理由。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>更新或撤销代码</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>代码是必需还是可选，由拜访证据页面上的“机构二维码”设置决定。在必需设置下，在没有代码的机构开始的拜访会被标记。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>结合设置理解</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>设置界限，将医生在某产品适应症中的月患者数分为低、中或高。产品行优先于租户默认值；两者都没有时使用内置值。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>销售运营和市场经理</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>阈值变更</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>在“阈值”选项卡中，“租户默认值”行在任何排序下都保持在最上方；产品行优先于它。“来源”列显示值的来源。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>查看阈值</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>行的“编辑”操作会打开侧边面板。输入“低于此值为低（X）”和“高于此值为高（Y）”；在预览中输入一个月患者数，查看其分类。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>点击“保存”或按 Enter；检查变更的值，然后用“是，保存”确认。变更立即生效。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>如果某个产品需要不同于默认值的界限，用“添加产品”为其开设单独的行。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>添加产品</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>“变更历史”选项卡显示每次变更的人员、行以及旧值 → 新值；列表可导出为 CSV 或 Excel。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>查看历史</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>为代表在拜访中可能听到的医生异议编写已批准的回答。已批准的回答会在知识路径步骤中被选为预期异议，并在演示期间显示在代表的备注中。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>内容团队和医学审批人</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>停用回答</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>按“产品”、“类别”和“状态”缩小列表，或在异议文本中搜索。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>筛选资料库</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>点击“新建异议回应”；填写“产品”、“类别”、“异议 · 医生的问题”和“已批准回应”，从该产品已批准的声明中选择依据，然后点击“保存草稿”。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>编写回答</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>“提交审批”会在审核期间锁定回答；“撤回”可将其退回草稿。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>提交审批</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>审批人选择“批准”，或写下备注并选择“退回草稿”。编写或提交回答的人不能批准它。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>批准或退回</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>已批准的回答不能更改；请用“从副本新建草稿”新建草稿。“停用”会立即从所有演示中移除该回答，且无法撤销；“使用位置”显示受影响的步骤。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>更改或停用</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>管理代表在报告中选作竞品的产品：公司、活性成分、与之竞争的我方产品，以及各国的价格和报销。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>主数据和销售运营团队</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>保存、停用</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>按“我方产品”、“公司”、“活性成分”、“国家”或“状态”筛选；搜索也会覆盖其他名称。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>筛选列表</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>点击“新建竞品”；填写名称、公司、活性成分和至少一个我方产品，在国家行中写明每盒价格和报销，然后点击“保存”。“代表视图”显示代表在报告中看到的卡片。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>添加记录</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>“代表建议”选项卡中是代表在报告中填写的新竞品。通过“决定”准备完成、合并或拒绝的决定，然后点击“提交审批”。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>处理提议</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>决定在任务中心中获批后生效；准备决定的人不能批准它。在此之前，该提议只在提议代表的报告中使用。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>等待审批</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>详情页面显示“报告中的使用情况”和“变更历史”。“与其他记录合并”会在审批后将记录关联到另一条记录，且无法撤销；“停用”使其在新报告中不可选。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>管理记录</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>在一个日历中计划、拜访并报告您的一周。开始拜访时会采集租户要求的证据（位置、照片、机构二维码）；报告须在 48 小时内发送。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>一线代表和区域经理</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>批准一周、开始拜访、发送报告</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>切换到“计划”模式；将目标医生拖到某一天或某个时间。用“应用产品”为机构已计划的医生添加产品。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>计划一周</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>计划就绪后点击“确认本周”。已批准的一周为只读；如需更改，请填写理由并使用“重新开放本周”。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>批准一周</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>在“执行”模式下打开今天的拜访，到达机构后点击“开始拜访”。根据设置，会要求照片、位置和“机构二维码”；随后“开始演示”会打开演示。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>开始拜访</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>拜访后点击“提交报告”。报告有 48 小时时限；超时后记录会被锁定。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>报告</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>对于未进行的拜访，选择“未完成”或“改期”并填写原因。可用“计划外拜访”为今天添加一个计划外拜访。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>关闭未完成的拜访</value>
+  </data>
 </root>

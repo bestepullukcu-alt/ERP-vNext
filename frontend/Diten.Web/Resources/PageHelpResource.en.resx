@@ -414,4 +414,274 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Use the keyboard</value>
   </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Set the evidence a rep must give when starting a visit: location, photo, institution QR code and device verification. The tenant setting applies to every rep; a time-boxed exception relaxes a rule for one rep for a while.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Sales operations managers</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Saving and applying the setting</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>On the “Scoped settings” tab, make a choice for each kind of evidence in the “Setting form”. The preview on the right shows what the rep will see when starting a visit.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Choose the rules</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>Click “Save”, check the changed rows and confirm with “Save and apply”. The setting applies to every rep at once.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Save and apply</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>“Change history” shows who changed what and when. “Reps” shows each rep's value in force today; a value relaxed by an exception is marked “exception”.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Follow the history and the reps</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>On the “Time-boxed exceptions” tab, click “New exception”. Enter the rep, the rules to relax, a date range of at most 30 days and the reason, then click “Send for approval” or press Ctrl+Enter (⌘+Enter on a Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Request a time-boxed exception</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>The exception is approved in the Task Center; the requester cannot approve their own. Only an approved exception within its dates applies. In the quick view, “Cancel exception” and “End early” ask for a reason; type it and confirm with Ctrl+Enter.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>Manage the exception</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Review the evidence flags of started visits: a far or missing location, a short visit, a QR code not scanned or invalid, a start under an exception. A flag is a hint to look into; on its own it does not mean a rule was broken.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Area managers and the sales operations team</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>For “Period”, choose “Last 7 days”, “Last 30 days” or “Custom range…”. A custom range can be at most 92 days.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Choose the period</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>Filter by “Rep”, “Institution” and flag type. “Flagged only” is on; turn it off to list visits without flags too.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Narrow the list</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>The cards on top show “Visits started”, “Flagged visits” and “By flag type”. One visit can carry several flags.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Read the summary</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>The row's quick view shows the location, the distance to the institution, the QR code result and any exception; seeing the photo needs its own permission. “Open the visit” opens the visit itself.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Open the evidence</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>The “Rep summary” tab shows started and flagged visits per rep, the rate and the most frequent flag. Clicking a row filters the visit list to that rep.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Compare the reps</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Manage the QR codes posted at the institutions' reception desks. The rep scans this code when starting a visit; a sub-unit without its own code uses its parent institution's code.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>The sales operations team</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Generating, regenerating and revoking a code</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Filter the list by “Region”, “City”, “Institution type” and “QR status”. “Last scan” and “Last 30 days” show whether the code is in use.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Find the institutions</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Select rows and run “Generate for selected (those without a code)”; institutions that already have an active code are skipped. Up to 200 institutions can be selected at a time.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Generate codes in bulk</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Print one code with the row's “Print the code” and several with “Print selected (label sheet)”. On the print page, choose “Single” or “Label sheet” and click “Print”.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Print</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>On the institution's page, use “Regenerate” or “Revoke” on the “Institution QR code” card. Both make the posted and printed old codes invalid at once; revoking asks for a reason.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Renew or revoke a code</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Whether the code is required or optional is the “Institution QR code” setting on the Visit Evidence page. Under the required setting, a visit started at an institution without a code is flagged.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Read it with the setting</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Set the limits that class a doctor's monthly patient count in a product's indications as Low, Medium or High. A product row comes before the tenant default; when neither exists, the built-in values apply.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Sales operations and marketing managers</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>A threshold change</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>On the “Thresholds” tab, the “Tenant default” row stays on top in every sort order; product rows take precedence over it. The “Source” column shows where a value comes from.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Read the thresholds</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>The row's “Edit” action opens the side panel. Enter “Low below (X)” and “High above (Y)”; try a monthly patient count in the preview to see its class.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>Click “Save” or press Enter; check the changed values and confirm with “Yes, save”. The change takes effect at once.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>For a product that needs limits different from the default, open its own row with “Add product”.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Add a product</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>The “Change history” tab shows every change with the person, the row and the old → new value; the list can be exported as CSV or Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Follow the history</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Write approved answers to the objections a rep may hear from a doctor during a visit. An approved answer is chosen as an expected objection in knowledge path steps and appears in the rep's notes during the presentation.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>Content teams and medical approvers</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Retiring an answer</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Narrow the list by “Product”, “Category” and “Status”, or search the objection text.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Filter the library</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>Click “New objection response”; fill in “Product”, “Category”, “Objection · the doctor’s question” and “Approved answer”, choose supporting claims from the product's approved claims and click “Save draft”.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Write an answer</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>“Send for approval” locks the answer during review; “Withdraw” returns it to draft.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Send for approval</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>The approver chooses “Approve”, or writes a note and chooses “Return to draft”. The person who wrote or sent the answer cannot approve it.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Approve or return</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>An approved answer cannot be changed; open a new draft with “New draft from copy”. “Retire” drops the answer from every presentation at once and cannot be undone; “Where it is used” shows which steps are affected.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Change or retire</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Manage the products reps choose as competitors in their reports: company, active ingredient, the products of ours they compete with, and price and reimbursement per country.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Master data and sales operations teams</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Saving, deactivating</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>Filter by “Our product”, “Company”, “Active ingredient”, “Country” or “Status”; the search also covers other names.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Filter the list</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>Click “New competitor product”; enter the name, company, active ingredient and at least one of our products, write the box price and reimbursement on the country rows and click “Save”. “Rep view” shows the card the rep will see in the report.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Add a record</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>On the “Rep proposals” tab, new competitors written by reps in their reports are waiting. With “Decision”, prepare a complete, merge or reject decision and click “Send for approval”.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Decide on proposals</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>The decision applies once it is approved in the Task Center; whoever prepared it cannot approve it. Until then, the proposal is used only in the proposing rep's reports.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Wait for approval</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>The details page shows “Usage in reports” and “Change history”. “Merge with another record” links the record to another one after approval and cannot be undone; “Deactivate” makes it unselectable in new reports.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Manage a record</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Plan, visit and report your week in one calendar. When you start a visit, the evidence the tenant asks for (location, photo, institution QR code) is taken; the report is sent within 48 hours.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Field reps and area managers</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Approving the week, starting a visit, sending a report</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>Switch to “Plan” mode; drag target doctors onto a day or a time. Add products to an institution's planned doctors with “Apply products”.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Plan the week</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>When the plan is ready, click “Approve the week”. An approved week is read-only; to change it, use “Reopen the week” with a reason.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Approve the week</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>In “Execute” mode, open today's visit and click “Start visit” when you arrive at the institution. Depending on the setting, a photo, the location and the “Institution QR code” are asked for; then “Start presentation” opens the presentation.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Start the visit</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>After the visit, click “Send the report”. You have 48 hours for the report; after that the record is locked.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>For a visit that did not take place, choose “Not done” or “Reschedule” and give the reason. You can add an unplanned visit for today with “Unplanned visit”.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Close what did not happen</value>
+  </data>
 </root>

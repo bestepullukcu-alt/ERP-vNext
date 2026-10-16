@@ -440,11 +440,13 @@
                 + '<span class="ve-err' + (state.closeTried ? '' : ' d-none') + '" id="ve-x-reason-err">' + esc(L.XErrWhy) + '</span></div>' : '')
             + (errorText ? '<div class="ve-alert ve-alert-danger" role="alert">' + esc(errorText) + '</div>' : '');
 
-        const btn = (action, label, cls, disabled) => '<button type="button" class="ve-btn ' + cls + '" data-xact="' + action + '"' + (disabled ? ' disabled aria-disabled="true"' : '') + '>' + esc(L[label] || '') + '</button>';
+        const btn = (action, label, cls, disabled, mark) => '<button type="button" class="ve-btn ' + cls + '" data-xact="' + action + '"' + (mark ? ' data-dt-primary="' + mark + '"' : '') + (disabled ? ' disabled aria-disabled="true"' : '') + '>' + esc(L[label] || '') + '</button>';
         const buttons = [btn('close', 'CloseButton', 've-btn-s')];
         if (state.close) {
             buttons.push(btn('back', 'CancelButton', 've-btn-s'));
-            buttons.push(btn('confirm-' + state.close, state.close === 'return' ? 'XBtnConfirmReturn' : state.close === 'cancel' ? 'XBtnConfirmCancel' : 'XBtnConfirmEndEarly', state.close === 'return' ? 've-btn-w' : 've-btn-d'));
+            // UXH-001 §3 — with the reason field shown, this confirm is the panel's primary: a return / cancel / early end
+            // cannot be taken back, so Ctrl / ⌘ + Enter only (chord)
+            buttons.push(btn('confirm-' + state.close, state.close === 'return' ? 'XBtnConfirmReturn' : state.close === 'cancel' ? 'XBtnConfirmCancel' : 'XBtnConfirmEndEarly', state.close === 'return' ? 've-btn-w' : 've-btn-d', false, 'chord'));
         } else {
             if (a.withdraw) { buttons.push(btn('withdraw', 'XBtnWithdraw', 've-btn-s')); }
             if (a.submit) { buttons.push(btn('submit', 'XBtnSubmit', 've-btn-p')); }
@@ -454,6 +456,8 @@
             if (a.decide || a.sod) { buttons.push(btn('approve', 'XBtnApprove', 've-btn-ok', a.approveDisabled)); }
         }
         el('oc-actions').innerHTML = buttons.join('');
+        // the shared Enter module tells the reader about a chord mark when the panel opens; this one is drawn after that
+        if (window.DitenEnterPrimary && typeof window.DitenEnterPrimary.decorate === 'function') { window.DitenEnterPrimary.decorate(el('oc-actions')); }
     }
 
     function exceptionAction(action) {

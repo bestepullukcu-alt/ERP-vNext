@@ -414,4 +414,274 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Usar el teclado</value>
   </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Defina las evidencias que un representante debe aportar al iniciar una visita: ubicación, foto, código QR de la institución y verificación del dispositivo. La configuración del inquilino se aplica a todos los representantes; una excepción temporal relaja una regla para un solo representante durante un tiempo.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Responsables de operaciones comerciales</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Guardar y aplicar la configuración</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>En la pestaña «Ajustes por ámbito», elija una opción para cada evidencia en «Formulario». La vista previa de la derecha muestra lo que verá el representante al iniciar la visita.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Elegir las reglas</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>Haga clic en «Guardar», revise las filas cambiadas y confirme con «Guardar y aplicar». La configuración se aplica de inmediato a todos los representantes.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Guardar y aplicar</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>«Historial de cambios» muestra quién cambió qué y cuándo. «Representantes» muestra el valor vigente hoy para cada representante; un valor relajado por una excepción lleva la marca «excepción».</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Seguir el historial y los representantes</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>En la pestaña «Excepciones temporales», haga clic en «Nueva excepción». Indique el representante, las reglas que se relajan, un periodo de 30 días como máximo y el motivo, y haga clic en «Enviar a aprobación» o pulse Ctrl+Intro (⌘+Intro en Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Solicitar una excepción</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>La excepción se aprueba en el Centro de tareas; quien la solicita no puede aprobar la suya. Solo se aplica una excepción aprobada y dentro de sus fechas. En la vista rápida, «Cancelar excepción» y «Finalizar antes» piden un motivo; escríbalo y confirme con Ctrl+Intro.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>Gestionar la excepción</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Revise las señales de evidencia de las visitas iniciadas: ubicación lejana o ausente, visita corta, código QR no escaneado o no válido, inicio con excepción. Una señal es un indicio que revisar; por sí sola no significa que se haya incumplido una regla.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Gerentes de zona y equipo de operaciones comerciales</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>En «Periodo», elija «Últimos 7 días», «Últimos 30 días» o «Rango personalizado…». Un rango personalizado abarca como máximo 92 días.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Elegir el periodo</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>Filtre por «Representante», «Institución» y tipo de señal. «Solo marcadas» está activado; desactívelo para ver también las visitas sin señales.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Acotar la lista</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>Las tarjetas superiores muestran «Visitas iniciadas», «Visitas marcadas» y «Por tipo de marca». Una visita puede tener varias señales.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Leer el resumen</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>La vista rápida de la fila muestra la ubicación, la distancia a la institución, el resultado del código QR y la excepción, si la hay; ver la foto requiere un permiso propio. «Abrir la visita» abre la visita.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Abrir la evidencia</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>La pestaña «Resumen por representante» muestra, por representante, las visitas iniciadas y señaladas, la tasa y la señal más frecuente. Al hacer clic en una fila, la lista de visitas se filtra por ese representante.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Comparar representantes</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Gestione los códigos QR colocados en la recepción de las instituciones. El representante escanea este código al iniciar la visita; una subunidad sin código propio usa el de su institución principal.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>Equipo de operaciones comerciales</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Generar, regenerar y revocar un código</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Filtre la lista por «Región», «Ciudad», «Tipo de institución» y «Estado QR». «Último escaneo» y «Últimos 30 días» indican si el código se usa.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Encontrar las instituciones</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Seleccione filas y ejecute «Generar para las seleccionadas (sin código)»; se omiten las instituciones que ya tienen un código activo. Se pueden seleccionar hasta 200 instituciones a la vez.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Generar en bloque</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Imprima un código con «Imprimir el código» en la fila y varios con «Imprimir las seleccionadas (hoja de etiquetas)». En la página de impresión, elija «Individual» o «Hoja de etiquetas» y haga clic en «Imprimir».</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Imprimir</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>En la página de la institución, use «Regenerar» o «Revocar» en la tarjeta «Código QR de la institución». Ambos invalidan de inmediato los códigos antiguos colocados e impresos; revocar pide un motivo.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Renovar o revocar</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Que el código sea obligatorio u opcional se define con «Código QR de la institución» en la página Evidencias de visita. Con la opción obligatoria, una visita iniciada en una institución sin código queda señalada.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Leerlo con la configuración</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Fije los límites que clasifican el número mensual de pacientes de un médico en las indicaciones de un producto como Bajo, Medio o Alto. Una fila de producto va antes que el valor predeterminado del inquilino; si no hay ninguno, se aplican los valores integrados.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Responsables de operaciones comerciales y de marketing</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>Un cambio de umbral</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>En la pestaña «Umbrales», la fila «Valor predeterminado del inquilino» queda arriba en cualquier orden; las filas de producto prevalecen sobre ella. La columna «Origen» indica de dónde viene un valor.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Leer los umbrales</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>La acción «Editar» de la fila abre el panel lateral. Indique «Bajo por debajo de (X)» y «Alto por encima de (Y)»; pruebe un número mensual de pacientes en la vista previa para ver su clase.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>Haga clic en «Guardar» o pulse Intro; revise los valores cambiados y confirme con «Sí, guardar». El cambio surte efecto de inmediato.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>Para un producto que necesite límites distintos del predeterminado, abra su propia fila con «Añadir producto».</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Añadir un producto</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>La pestaña «Historial de cambios» muestra cada cambio con la persona, la fila y el valor anterior → nuevo; la lista se puede exportar a CSV o Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Seguir el historial</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Redacte respuestas aprobadas a las objeciones que un representante puede oír de un médico durante una visita. Una respuesta aprobada se elige como objeción esperada en los pasos de una ruta de conocimiento y aparece en las notas del representante durante la presentación.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>Equipos de contenido y aprobadores médicos</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Retirar una respuesta</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Acote la lista por «Producto», «Categoría» y «Estado», o busque en el texto de la objeción.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Filtrar la biblioteca</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>Haga clic en «Nueva respuesta a objeción»; complete «Producto», «Categoría», «Objeción · la pregunta del médico» y «Respuesta aprobada», elija afirmaciones de apoyo entre las aprobadas del producto y haga clic en «Guardar borrador».</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Redactar una respuesta</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>«Enviar para aprobación» bloquea la respuesta durante la revisión; «Retirar solicitud» la devuelve a borrador.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Enviar a aprobación</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>El aprobador elige «Aprobar», o escribe una nota y elige «Devolver a borrador». Quien redactó o envió la respuesta no puede aprobarla.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Aprobar o devolver</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>Una respuesta aprobada no se puede cambiar; abra un nuevo borrador con «Nuevo borrador a partir de copia». «Retirar» quita la respuesta de todas las presentaciones de inmediato y no se puede deshacer; «Dónde se usa» muestra los pasos afectados.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Cambiar o retirar</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Gestione los productos que los representantes eligen como competidores en sus informes: laboratorio, principio activo, nuestros productos con los que compiten y precio y reembolso por país.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Equipos de datos maestros y de operaciones comerciales</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Guardar, desactivar</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>Filtre por «Nuestro producto», «Empresa», «Principio activo», «País» o «Estado»; la búsqueda también cubre otros nombres.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Filtrar la lista</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>Haga clic en «Nuevo producto competidor»; indique el nombre, el laboratorio, el principio activo y al menos uno de nuestros productos, escriba el precio por caja y el reembolso en las filas de país y haga clic en «Guardar». «Vista del representante» muestra la tarjeta que verá el representante en el informe.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Añadir un registro</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>En la pestaña «Propuestas de representantes» esperan los nuevos competidores que los representantes escribieron en sus informes. Con «Decisión», prepare una decisión de completar, fusionar o rechazar y haga clic en «Enviar a aprobación».</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Decidir sobre las propuestas</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>La decisión se aplica cuando se aprueba en el Centro de tareas; quien la preparó no puede aprobarla. Hasta entonces, la propuesta solo se usa en los informes del representante que la hizo.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Esperar la aprobación</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>La página de detalle muestra «Uso en informes» y «Historial de cambios». «Fusionar con otro registro» vincula el registro a otro tras la aprobación y no se puede deshacer; «Desactivar» impide seleccionarlo en informes nuevos.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Gestionar un registro</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Planifique, visite e informe su semana en un solo calendario. Al iniciar una visita se toman las evidencias que pide el inquilino (ubicación, foto, código QR de la institución); el informe se envía en un plazo de 48 horas.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Representantes de campo y gerentes de zona</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Aprobar la semana, iniciar una visita, enviar un informe</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>Cambie al modo «Planificar»; arrastre los médicos objetivo a un día o una hora. Añada productos a los médicos planificados de una institución con «Aplicar productos».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Planificar la semana</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>Cuando el plan esté listo, haga clic en «Aprobar la semana». Una semana aprobada es de solo lectura; para cambiarla, use «Reabrir la semana» con un motivo.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Aprobar la semana</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>En el modo «Ejecutar», abra la visita de hoy y haga clic en «Iniciar visita» al llegar a la institución. Según la configuración, se piden una foto, la ubicación y el «Código QR de la institución»; después «Iniciar presentación» abre la presentación.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Iniciar la visita</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>Después de la visita, haga clic en «Enviar el informe». Tiene 48 horas para el informe; después el registro se bloquea.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Informar</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>Para una visita que no se realizó, elija «No realizada» o «Reprogramar» e indique el motivo. Puede añadir una visita no planificada para hoy con «Visita no planificada».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Cerrar lo que no ocurrió</value>
+  </data>
 </root>
