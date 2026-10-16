@@ -819,6 +819,14 @@ def print_report(checks: List[Check]) -> None:
         print("\nResult: PASS")
 
 
+def print_gaps(checks: List[Check]) -> int:
+    """The gaps format: one numbered line per failed check, in check order; exit 0 when none failed, else 1."""
+    gaps = [c for c in checks if not c.ok]
+    for i, c in enumerate(gaps, 1):
+        print(f"{i}) {c.name}" + (f" — {c.details}" if c.details else ""))
+    return 0 if not gaps else 1
+
+
 def compile_required_l10n_keys(is_v2: bool, has_bulk_surface: bool = True) -> List[Tuple[str, Pattern[str]]]:
     """
     Required L10n bridge keys for DataTable pages.
@@ -952,6 +960,8 @@ def main() -> int:
 
     # Stop early if core files missing (avoid confusing follow-up errors).
     if any(not c.ok for c in checks[:8]):
+        if args.format == "gaps":
+            return print_gaps(checks)
         print_report(checks)
         return 1
 
@@ -1599,10 +1609,7 @@ def main() -> int:
         )
 
     if args.format == "gaps":
-        gaps = [c for c in checks if not c.ok]
-        for i, c in enumerate(gaps, 1):
-            print(f"{i}) {c.name}" + (f" — {c.details}" if c.details else ""))
-        return 0 if not gaps else 1
+        return print_gaps(checks)
     print_report(checks)
     return 1 if any(not c.ok for c in checks) else 0
 

@@ -1,0 +1,78 @@
+=== Context
+HEAD=d2cde88496e0e6dce329595cd2406d984d7764de + uncommitted early-return files (pinned: pin-before.txt)
+Pinned before the architecture run (sha256  path):
+670c9cd4788b53f1b841c1e5520c3dd82997bd57f12a39db6201928410a58779  .antigravity/scripts/verify_datatable_page.py
+665348e53dc98f7e45f5160e3779899102b9a03e05729f7f738165de16d9e5c0  docs/records/decisions/2026-10/ct-vdp-early-return-joint-decision-01.md
+Diff of the tracked files against HEAD, sha256: 13ab1a47b3c11a1da00455e73a57440037420d495104737b5896c13abd4215bc
+After the run (sha256  path):
+670c9cd4788b53f1b841c1e5520c3dd82997bd57f12a39db6201928410a58779  .antigravity/scripts/verify_datatable_page.py
+665348e53dc98f7e45f5160e3779899102b9a03e05729f7f738165de16d9e5c0  docs/records/decisions/2026-10/ct-vdp-early-return-joint-decision-01.md
+
+=== Acceptance K1–K5 — HEAD's verifier (d146fd0e) against the baseline: red first
+PASS K1 rapor kipi: 152 ekranda stdout, stderr ve exit bayt bayt aynı — 152/152
+PASS K2 gaps kipi: zaten gaps biçiminde olan 88 ekranda bayt bayt aynı — 88/88
+FAIL K3 erken dönüş (64 ekran; referans {'compact': 42, None: 17, 'slim': 5}): yalnız numaralı satırlar = raporun [FAIL] adları+ayrıntıları aynı sırada, exit 1, stderr boş — 0/64 · ilk: ('HumanCapital', 'ApplicantIntake')
+FAIL K4 kanca (afb5beeca classify): erken dönüşteki 64 ekran artık 'sapma' (gap listesi) — 0/64 · ilk: ('HumanCapital', 'ApplicantIntake')
+PASS K5 kanca: diğer 88 ekranın sınıfı değişmedi — 88/88
+kabul: 3/5
+
+=== Acceptance K1–K5 — the verifier in the repository (670c9cd4): green
+PASS K1 rapor kipi: 152 ekranda stdout, stderr ve exit bayt bayt aynı — 152/152
+PASS K2 gaps kipi: zaten gaps biçiminde olan 88 ekranda bayt bayt aynı — 88/88
+PASS K3 erken dönüş (64 ekran; referans {'compact': 42, None: 17, 'slim': 5}): yalnız numaralı satırlar = raporun [FAIL] adları+ayrıntıları aynı sırada, exit 1, stderr boş — 64/64
+PASS K4 kanca (afb5beeca classify): erken dönüşteki 64 ekran artık 'sapma' (gap listesi) — 64/64
+PASS K5 kanca: diğer 88 ekranın sınıfı değişmedi — 88/88
+kabul: 5/5
+
+=== Sabotage — each guard of the fix removed in a scratch copy, the acceptance run again
+[verify_datatable_page] guard removed: erken dönüşte gaps dalı -> exit 1; kabul: 3/5; red: K3 erken dönüş (64 ekran; referans {'compact': 42, None: 17, | K4 kanca (afb5beeca classify): erken dönüşteki 64 ekran artı
+[verify_datatable_page] guard removed: ortak biçimleyici ayrıntıyı korur -> exit 1; kabul: 2/5; red: K2 gaps kipi: zaten gaps biçiminde olan 88 ekranda bayt bayt | K3 erken dönüş (64 ekran; referans {'compact': 42, None: 17, | K5 kanca: diğer 88 ekranın sınıfı değişmedi
+[verify_datatable_page] guard removed: gap varken exit 1 -> exit 1; kabul: 1/5; red: K2 gaps kipi: zaten gaps biçiminde olan 88 ekranda bayt bayt | K3 erken dönüş (64 ekran; referans {'compact': 42, None: 17, | K4 kanca (afb5beeca classify): erken dönüşteki 64 ekran artı | K5 kanca: diğer 88 ekranın sınıfı değişmedi
+
+=== End to end — the committed hook (afb5beeca), JSON on stdin, every list screen, the new verifier (e2e-hook.json)
+{
+ "ekran": 152,
+ "kanca çıkışları": {
+  "0": 152
+ },
+ "geçiş": {
+  "sapma → sapma": 88,
+  "DOĞRULANAMADI → sapma": 64
+ }
+}
+
+=== list_screen_touch_hook.py --self-test (unchanged file)
+PASS a file that is not a list file -> no context
+PASS exit 0, empty output -> no deviation
+PASS exit 0, only the verifier's own info lines -> no deviation
+PASS exit 1, numbered gaps -> the deviation list
+PASS exit 1, info lines and a numbered gap -> the deviation list
+PASS 13 gaps -> 12 shown and '… ve 1 sapma daha'
+PASS sabotage: exit 1, empty output -> DOĞRULANAMADI, not 'no deviation'
+PASS sabotage: exit 2, empty output -> DOĞRULANAMADI
+PASS sabotage: the verifier times out -> DOĞRULANAMADI with the timeout, never silent
+PASS sabotage: the full report instead of the gaps format (early return) -> DOĞRULANAMADI
+PASS sabotage: exit 0 with a numbered gap (contradiction) -> DOĞRULANAMADI
+PASS sabotage: output on stderr (Traceback) -> DOĞRULANAMADI, the raw stderr not printed
+PASS sabotage: an unknown [shell] line (not the producer's format) -> DOĞRULANAMADI
+PASS sabotage: gap numbers not 1..n -> DOĞRULANAMADI
+PASS sabotage: an exit code outside the contract with gaps -> DOĞRULANAMADI
+PASS sabotage: no verifier -> DOĞRULANAMADI 'doğrulayıcı bulunamadı'
+PASS sabotage (Codex): exit 0 with the shell WARNING and no gap (the producer pairs it with red checks) -> DOĞRULANAMADI
+PASS exit 1 with the shell WARNING and its numbered gap -> the deviation list
+PASS sabotage (Codex): an error after the match (root lookup raises) -> DOĞRULANAMADI, the exception text not printed
+PASS the manual command survives a root with a space (shlex.join): it splits back to the same root
+PASS every path: main() returns 0 and the temporary repository is unchanged (the hook writes nothing)
+self-test: 21/21 passed
+
+=== Architecture suite (one run)
+Command (under the shared test lock ct-heavy.py): DOTNET_CLI_UI_LANGUAGE=en dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj --logger "trx;LogFileName=<raw>"
+Code: HEAD d2cde8849 + the early-return files; the pinned files (Context) and the tracked diff were unchanged after the run.
+dotnet: Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 8 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Raw TRX sha256 (kept outside the repository): 623c5ef18f08dc8548d7d848c48563646aeece266c6ca8f565a31d89278b914f
+run.sanitized.trx sha256: a89496794940e3e3168d269804daddd39afa4c3350e33e35eafda1ec8a14c7ca
+Sanitiser sha256 b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72 (step 1): R1 306 · R2 145 · R3 1 · R4 1; left: home 0 · user 0 · unsanitised computerName 0 · full host name 0
+Raw against sanitised: 138 results; test names, outcomes and failure messages identical; the sanitised copy parses as XML.
+known_failures.py check <raw> --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+known_failures.py check run.sanitized.trx --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+Failure fingerprints identical to the İ2 run (7 of 7).
