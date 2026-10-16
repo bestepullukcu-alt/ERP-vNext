@@ -1,0 +1,312 @@
+Test run for /Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+/Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.13]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.25]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.26]   Starting:    Diten.SupplyChainService.Tests
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 4decb076-cfc3-4439-8e22-edf6296f7a47=1,1,1,1,1
+Returns scoped counts 4decb076-cfc3-4439-8e22-edf6296f7a47=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 571d33b3-d495-431d-aafc-c780475b3455=1,1,1,1,1
+Returns scoped counts 571d33b3-d495-431d-aafc-c780475b3455=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts b25d3dc8-1cf0-430d-8ac7-3a320eb57c92=1,1,1,1,1
+Returns scoped counts b25d3dc8-1cf0-430d-8ac7-3a320eb57c92=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 2687c594-34f4-466f-8cca-3d1ef7d4c103=1,1,2,2,2
+Returns write stage=aggregate
+Returns write stage=entitlement
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 2687c594-34f4-466f-8cca-3d1ef7d4c103=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 421346c5-d07c-40ed-ac8b-09342164bf03=1,1,2,2,2
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=entitlement
+Returns write stage=afterCommit
+Returns scoped counts 421346c5-d07c-40ed-ac8b-09342164bf03=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts f0152b67-a6e0-4d76-a29b-84ecc562359c=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts f0152b67-a6e0-4d76-a29b-84ecc562359c=1,2,2,2,2
+Returns scoped counts f0152b67-a6e0-4d76-a29b-84ecc562359c=1,2,2,2,2
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8644cdc7-5cca-4572-b47e-da57f672a6b9=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=entitlement
+Returns write stage=entitlement
+Returns scoped counts 8644cdc7-5cca-4572-b47e-da57f672a6b9=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 8644cdc7-5cca-4572-b47e-da57f672a6b9=1,2,2,2,2
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "uom") [472 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "item") [30 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "sku") [33 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_Races_TwoActorsOneReturn_ExactlyOneMoveTakesEffect(firstIssued: "Cancelled", secondIssued: "InTransit") [97 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_Races_TwoActorsOneReturn_ExactlyOneMoveTakesEffect(firstIssued: "InTransit", secondIssued: "Cancelled") [58 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.FirstSnapshot_NumericEquivalentAllowed_DriftConflictsAtomically [49 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "4", second: "6", successes: 2) [49 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "6", second: "6", successes: 1) [50 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.RmaNumber_KnownCollision_MaxThreeAttemptsAndAtomicRecovery [126 ms]
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 4a68d982-2019-497b-ad16-87539de55186=1,1,2,2,2
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 4a68d982-2019-497b-ad16-87539de55186=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1b1e5af6-b6b0-4496-8854-d80b3e028846=1,1,2,2,2
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts 1b1e5af6-b6b0-4496-8854-d80b3e028846=1,1,3,3,3
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns scoped counts caaed9a7-e360-41e9-a05a-a0add5ed3d77=1,1,1,1,1
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+Returns write stage=entitlement
+Returns write stage=aggregate
+Returns write stage=receipt
+Returns write stage=audit
+Returns write stage=outbox
+Returns write stage=beforeCommit
+Returns write stage=afterCommit
+[xUnit.net 00:00:02.13]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.ClosedAndManualReceived_RetainEntitlementOpaqueReferenceAndPendingEvents [97 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_ConflictIsSymmetric_EitherTargetRefusesTheOther(applied: "InTransit", refused: "Cancelled", usedAfter: "10") [55 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Transition_ConflictIsSymmetric_EitherTargetRefusesTheOther(applied: "Cancelled", refused: "InTransit", usedAfter: "0") [63 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Rejected) [50 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Cancelled) [53 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.SameKey_TwentyConcurrentCalls_OneAggregateReceiptEvent [125 ms]
+  Passed Diten.SupplyChainService.Tests.Returns.ReturnConcurrencyTests.Entitlement_DefaultCaseInsensitiveCollection_UsesExplicitOrdinalOperations [405 ms]
+
+Test Run Successful.
+Total tests: 16
+     Passed: 16
+ Total time: 2.8250 Seconds
