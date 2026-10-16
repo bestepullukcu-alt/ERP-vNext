@@ -12,6 +12,8 @@
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
   satırı ([`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)) `vocabulary` = `sop7`,
   `strict` = `yes` ile, sahip onayıyla `main`'e girer. `python3 scripts/ct_queue.py validate --queue <kuyruk>` 0 hata.
+  Kuyruk bir DCP diliminin teslimatıysa `scope` `dcp:<DCP yolu>#<Slice>` ile başlar (CAP-001 §4 sonu); önek yoksa
+  `scope` serbest metindir, yönlendirme verisi değildir.
 - [ ] **Durumlar:** sözlük `sop7` = SOP §7'nin 13 ana + 6 istisna durumu. İzinli geçişler ve her geçişin kanıtı
   [`ct-sop7-transitions.tsv`](../../../execution/delivery/ct-sop7-transitions.tsv)'de; `öneri` işaretli satırlar SOP'de
   açıkça yazmayan, sahibin onayladığı geçişlerdir. Son durumlar (çıkış yok): ACCEPTED, REWORK, FAILED, SUPERSEDED,
@@ -81,6 +83,7 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
 - [ ] **Acceptance:** golden/contract/inspection flow + measurable AC + required evidence level açık.
 - [ ] **Görev kaynağı satırı (R8, r3):** WP'nin satırı, dağıtan Control Tower'ın kayıtlı görev kaynağında dağıtımdan önce var (kayıtlı = `execution/delivery/ct-queue-registry.tsv`'de `main`'de geçerli bir satır; SCE / MVP6: `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv`). Kayıtlı kaynak yoksa: 30 günlük geçiş süresinde yalnız `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` kapsamında (kararı aldığını doğrulamış, onaylı WP / Module Pack, ayrı geçiş referansı); süre bitince yalnız bitişten önce onaylanmış WP'ler, sonra onaylananlar için kayıtlı kaynak ya da sahibin süreli istisnası. Değilse yeni dağıtım yok; çalışan iş durdurulmaz (SOP §0.1 r3, §17.1, §20.1).
 - [ ] **Kuyruk kontrolü (yardımcı; zorunlu kapı değil):** `python3 scripts/ct_queue.py require <WP-ID> --queue <kuyruk>` — çıkış 1 = satır yok, aynı kimlikle birden çok satır ya da durum dağıtılabilir değil. Kuyruklar [`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)'de; kayıtlı kuyruğu olmayan Control Tower için dağıtım kendiliğinden serbest değildir. Kuyruğa yazmadan önce `guard` (kilit değildir); dallar arası kimlik çakışması için `writers`.
+- [ ] **Başka bir MVP'ye soru (yardımcı; zorunlu kapı değil):** `python3 scripts/ct_route.py --kind delivery|contract --module <MOD>` ya da `--kind delivery --wp <WP-ID> --queue <kuyruk>` (`--in-force`: yalnız `origin/main`'de yürürlükteyse 0). Çıkış 0 = tek hedef ve bir soru taslağı — taslak gönderilmez, bu bir dağıtım izni değildir; 1 = hedef yok ya da belirsiz → koordinatöre; 2 = ölçülemez. Sözleşme sorusunda önce gösterilen paket okunur; Control Tower teknik temastır, karar otoritesi değildir. Kişi depoda tutulmaz: isteğe bağlı `--contacts <depo dışı dosya>` ([`ct-contacts-template.tsv`](../../../execution/delivery/ct-contacts-template.tsv) yalnız başlık örneğidir).
 
 **Bir kritik madde FAIL → implementation dispatch yok.**
 

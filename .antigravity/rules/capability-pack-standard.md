@@ -74,6 +74,23 @@ Her Delivery Capability Pack en az şu bölümleri içerir:
 19. Future follow-ups
 20. Audit and reconciliation notes
 
+**İsteğe bağlı — `## 8.1 Delivery slices` (yalnız yeni Control Tower'ların yönlendirmesi için).** §8'in teslim sırası
+Control Tower'lara bölüştürülecekse §8'in altına bu bölüm eklenir. Başlıktan sonraki ilk dolu satır tablonun başlığıdır;
+her satır bir dilimdir: `Slice` (büyük harf, rakam, `-`) ve `Kapsam` (virgüllü `MOD-nnnn` / `MOD-nnnn-FUn` listesi; WP
+ve kişi yazılmaz). Dilimi bir kuyruk teslim eder: kayıt satırının (`execution/delivery/ct-queue-registry.tsv`) `scope`
+alanı `dcp:<DCP dosya yolu>#<Slice>` ile başlar — DCP kimliği değil yol, çünkü aynı kimlik birden çok dosyada olabilir.
+Okuyan araç `scripts/ct_route.py`'dir. Bölümü olmayan DCP'ler ve önekle başlamayan eski `scope` metinleri değişmez. Bu
+bölüm yeni bir durum eklemez; yetki §5'teki `status`'tan gelir (`approved` ve sonrası).
+
+```markdown
+## 8.1 Delivery slices
+
+| Slice | Kapsam | Not |
+|---|---|---|
+| MVP1 | MOD-0101 | örnek — kimlikler yer tutucudur |
+| MVP2 | MOD-0101-FU01, MOD-0102 | örnek |
+```
+
 ## 5. Status lifecycle
 
 ```text
