@@ -1,0 +1,32 @@
+{
+  "main": "3912d568b18193f627539a1b27965167ac4077b6",
+  "ct": "2121420dd946056aa411d298ec11b679ad5eb135",
+  "i5b": "88205c3d656176d5678f2a4dbeac00f547c61fd4",
+  "scope": "read-only measurement; separate I5-B branch; not included in CT chain; pairwise merges do not prove three-way assembly",
+  "merges": [
+    {
+      "left": "3912d568b18193f627539a1b27965167ac4077b6",
+      "right": "88205c3d656176d5678f2a4dbeac00f547c61fd4",
+      "exit": 0,
+      "tree": "64d2d1afa272f2501704c494996ee7bbcf100baf",
+      "conflicts": []
+    },
+    {
+      "left": "2121420dd946056aa411d298ec11b679ad5eb135",
+      "right": "88205c3d656176d5678f2a4dbeac00f547c61fd4",
+      "exit": 0,
+      "tree": "819f4e1959f419955531c09c01a142ea899a3a69",
+      "conflicts": []
+    }
+  ],
+  "main_only_i5b_only_counts": "27\t2",
+  "adapter_check": {
+    "exit": 0,
+    "output": "OK 9 adapter(s) match their sources\n"
+  },
+  "instructions_bytes": {
+    "AGENTS.md": 20364,
+    "CLAUDE.md": 822,
+    ".claude/rules/agents-core.md": 2785
+  }
+}
