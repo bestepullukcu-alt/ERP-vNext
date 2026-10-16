@@ -144,3 +144,81 @@ Kaynak envanter: artifact "Blueprint Modülleri Main Durumu" (https://claude.ai/
 - 3 kapat: 0007 / 0008 / 0009 (zaten 8.1'de var).
 - 2 aday: 0004, 0005 (koda başlarken 0360 özelliği / 0364).
 - CRM'in iki aday numarası yeniden kimliklendirilir.
+
+## 8. Kod etkisi — ölçüm (CT, 2026-10-16)
+**Kod taşınmaz.** Hiçbir rota, izin anahtarı, namespace ya da Mongo koleksiyon adı CAND-CAP / eski MOD numarası taşımıyor. Değişecek olan etiketler.
+
+| Kimlik | Kod satırı | Yorum | Dize içinde | Dize içindekiler ne |
+|---|---|---|---|---|
+| CAND-CAP-0011 | 75 | 71 | 4 | **CRM denetim kaydı `sourceModule: "CAND-CAP-0011"`** (`HttpCrmAuditPublisher.cs:126`) + 2 log metni + 1 BRD seed notu |
+| CAND-CAP-0008 | 10 | 6 | 3 | CRM CycleCapacity (Çalışma Takvimi anlamında, §3.1) |
+| MOD-0297 / 0299 | 5 | 0 | 5 | **Platform Hangfire tekrarlı iş kimlikleri** `Diten.Platform.MOD-0297.TrialExpiryScanJob`, `…SubscriptionRenewalJob` (`PlatformRecurringJobRegistrar.cs:30-31`) |
+| CAND-CAP-0001 / 0002 / 0003 / 0006 | 1–6 | 0 | 1–6 | Yalnız `docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json`'daki **dosya yolu karmaları** (modül paketi dosya adları) |
+| CAND-CAP-0010, MOD-0040 | 2 | 2 | 0 | yalnız yorum |
+
+**Çalışma anında dikkat isteyen iki yer:**
+1. **Denetim kaydı (`sourceModule`):** Yeni olaylar MOD-0363 yazar. Eski denetim kayıtları DEĞİŞTİRİLMEZ (denetim değişmez kayıttır). Raporlama ve sorgular eski ile yeni değeri birlikte tanımalı; eşleme kayıttan (registry) okunur.
+2. **Hangfire iş kimlikleri:** Kimlik değişirse yeni iş kaydedilir, eski kimlik Hangfire'da kalır ve iş **iki kez** çalışabilir. Göçte eski tekrarlı iş kaydı silinir (RemoveIfExists) ve bu bir testle korunur. Kayıttaki "RUNTIME COMPATIBILITY LITERAL" notu bunu anlatıyor.
+
+**Belge tarafı (asıl yük):**
+- `execution/.../module-packs/CAND-CAP-*.md` dosya adları ve içleri, belgeler arası bağlantılar.
+- `baseline.json` karmaları dosya adı değişince yeniden üretilir.
+- Hafıza ve WP notlarımızdaki eski adlar.
+
+## 9. Proje ve Master ayrımı — kullanıcıya gelen öneri (2026-10-16) ve CT değerlendirmesi
+**Öneri:** İkisi birden güncellensin, farklı amaçla.
+- **Proje:** aktif CAND-CAP / eski kimlikler kanonik MOD'a taşınır (rota, izin, namespace, modül paketi, belge, test, gerekiyorsa DB / sözleşme).
+- **Master:** yeni gerçek modüller eklenir. Katılanlar ayrı modül değil, ilgili modülün altında çalışma alanı / özellik olarak gösterilir; sınır, sayfa ve SoR notları güncellenir.
+
+| Grup | Proje | Master |
+|---|---|---|
+| Yeni modül: 0001, 0002, 0010, 0011 (+ planlı 0005) | yeniden adlandır / taşı | yeni modül satırı ekle |
+| Katılan: 0003, 0006, 0004 | kimliği emekli et; özellik / çalışma alanı olarak taşı | yeni modül YOK; ilgili modülün sınır / sayfa / SoR notu güncellenir |
+| Zaten kanonik: 0007, 0008, 0009 | proje kimliğini MOD'a taşı | zaten var; gerekirse ad / sınır uzlaştır |
+
+**CT değerlendirmesi:** ✅ Doğru, §6 kurallarıyla uyumlu. Uyum koşulları:
+- **Rol ayrımı:** Master = anlam ve sınır (hangi modül var, neyi kapsar, hangi çalışma alanı hangi modülün altında). Kimlik kaydı (`module-id-registry.md`) = eski → yeni eşleme ve durum (Deprecated Alias / Migrating / Retired). Eşleme tablosu Master'a kopyalanmaz.
+- **"Namespace / route / permission" güncellemesi bugün GEREKMİYOR:** §8 ölçümüne göre bunların hiçbiri CAND-CAP taşımıyor. Önerinin genel listesi doğru, ama ölçülen iş daha küçük.
+- **"Gerekirse DB / sözleşme" maddesi bizde somut iki yer:** denetim `sourceModule` (eski kayıtlar değişmez) ve Hangfire iş kimlikleri (eski kayıt silinir).
+- **Master'a eklenirken eksik kalmaması gerekenler:**
+  - 0010'un sınırı: CRM ve İK tüketici, Platform sahibi.
+  - 0011 ile MOD-0162 Knowledge Base sınırı.
+  - 0005 / 0364 ile MOD-0169 müşteri faturası ayrımı.
+  - DCP-006'nın "Commercial Activity, Interaction & Commitment" yeteneği için yeni modül (BD yazışma / etkileşim kaydıyla tek yetenek).
+- **Önkoşul değişmedi:** 8.2 repoya konmadan 0360–0364 doğrulanamaz.
+
+## 10. Plandaki yeri
+Kullanıcı (2026-10-16): **planın sonunda düzeltilecek.** Yol haritası `ROADMAP-visit-workspace.md` §8 son satırı. Tetikleyiciler: 8.2'nin repoya girmesi + EA / Kapanış hattı ile sahiplik netleşmesi. Bizim (CRM) payımız:
+- CycleCapacity'nin 0008 → 0362 etiketleri;
+- CRM denetim `sourceModule` 0011 → 0363 (eski kayıt eşlemesiyle);
+- DCP-006 yeniden kimliklendirme;
+- hafıza ve WP notlarının güncellenmesi.
+
+## 11. Üçüncü mesaj (2026-10-16) — eski 8 MOD numarası için özet öneri ve CT değerlendirmesi
+**Öneri:**
+- Blueprint anlamları değişmez; projede eski takma adlar emekli edilir.
+- Eski anlamlar şöyle taşınır:
+  - 0040 → 0009 + 0288'e katılır;
+  - 0043 → 0013 + 0014 altında yönetişim konusu;
+  - 0044 → ayrı modül değil, uygulama bileşeni;
+  - 0046 → ayrı modül değil, platform yönetim çalışma alanı;
+  - 0047 → 0360;
+  - 0297 / 0298 → 0361;
+  - 0299 → 0364.
+- Sonra route / permission / namespace / docs / test referansları taşınır.
+- Kural: eski Blueprint ID'leri yeniden kullanılmaz.
+
+**CT değerlendirmesi:**
+- ✅ **Kural ve 0047 / 0297 / 0298 / 0299 hedefleri doğru**; §1 ve §7 ile aynı. Kayıtta bunlar bugün CAND-CAP-0001 / 0002 / 0002-FU05 / 0005 üzerinden bağlı; göçte doğrudan 0360 / 0361 / 0364'e bağlanır.
+- ◐ **0040:** Kayıt bugün 0040'ı (ve 0040-FU01'i) **MOD-0288**'e (+ 0288-FU01) taşımış, durum "done". Önerinin "0009 + 0288" ifadesi uyumlu: kiracı yapılandırması zaten 0009'da. Yeni iş yok, yalnız 0288 satırının notu "0009 ile sınır" diye netleştirilebilir.
+- ⚠ **0043 / 0044 / 0046: mevcut kararla ÇELİŞİYOR.** Kayıt (DCP-002) bunları zaten **MOD-0009-FU01 / FU02 / FU03** yapmış:
+  - FU01 Tenant Architecture Foundation — done;
+  - FU02 Tenant Manager Backend — in-progress;
+  - FU03 Tenant Core UI — in-progress;
+  - her birinin aktif modül paketi var.
+
+  Öneri bunları "0013 / 0014 yönetişim konusu", "uygulama bileşeni" ve "çalışma alanı" olarak dağıtıyor. Bu, çalışan bir kararı bozar, aktif paketleri sahipsiz bırakır ve gereksiz bir göç turu açar.
+  **CT önerisi:** MOD-0009-FU01..03 kalsın. FU02 (backend) içindeki kullanıcı ve abonelik parçaları 0360 / 0361 kurulunca oraya bağlanır. FU03 (UI) zaten "platform admin çalışma alanı" anlamında, yani önerinin amacına uygun.
+- ℹ **"route / permission / namespace" taşıması:** §8 ölçümüne göre bunların hiçbiri eski numara taşımıyor. Gerçek iş belgeler + 2 çalışma anı değeri (CRM denetim `sourceModule`, Platform Hangfire iş kimlikleri).
+
+**Karar bekleyen tek nokta (kullanıcı / EA):** 0043 / 0044 / 0046 için kayıttaki MOD-0009-FU01..03 kararı mı korunacak (CT önerisi), yoksa öneri mi uygulanacak?
