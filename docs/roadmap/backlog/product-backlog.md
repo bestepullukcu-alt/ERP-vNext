@@ -10175,6 +10175,59 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-649
+
+**`A_hanging_name_source_costs_the_search_at_most_the_bound` duvar saati sınırını yüklü makinede aşıyor — ürün aynı davranırken test kırmızıya dönüyor**
+
+DURUM: AÇIK · SAHİP: Platform / Tasks (test sahibi) · BULAN: WP-LANE-MAIN-SYNC-05 merge tamamlama kapısı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tasks/DecisionMakerSearchHttpMongoTests.cs:213`
+`Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"took {clock.Elapsed}")` ile **geçen gerçek süreyi** ölçüyor.
+8650 testlik tam suite koşusunda `took 00:00:04.8444922` ile kırmızı; **tek başına, aynı ağaç ve aynı derlemelerle 3/3 yeşil**
+(yeniden koşuda yük ortalaması hâlâ 10.44'tü, yani tertemiz bir makine sonucu da değil).
+
+**Sınıflandırma:** yüke duyarlı duvar saati sınırı. Merge regresyonu değil (merge bu dosyaya dokunmadı) ve ürün kusuru değil —
+makineyi paylaşan başka iş varken 4 saniyelik tavan, ürün birebir aynı davranırken aşılabiliyor.
+
+**CT'nin iddia ETMEDİĞİ şey:** ürünün yük altında yeterince hızlı olduğu. Testin kendi konusu — asılı bir ad kaynağının aramaya
+en çok sınır kadar maliyet çıkarması ve ardından 503 dönmesi — aynı testte doğrulanıyor ve üç izole koşunun hepsinde 503 dahil geçti.
+
+**Yapılacak (sahibin kararı):** ya sınır yük payıyla yükseltilir, ya ölçüm duvar saatinden çıkarılıp sahte saatle/iptal jetonuyla
+yapılır (asılı kaynağın iptal edildiğini davranışsal olarak ölçmek), ya da test CI'da seri koşan bir kümeye alınır. Bugünkü hâliyle
+CI'da sebepsiz kırmızı üretip birinin saatini harcar.
+
+**Gelecek regresyon riski:** 🟡 (yanlış pozitif; gerçek bir yavaşlamayı da maskeleyebilir çünkü aşım "yük" diye okunur).
+
+---
+
+### BL-648
+
+**Platform yetki guard'ı üç E-imza eylemini kırmızı gösteriyor: biri `[AllowAnonymous]` ve iç allow-list'te değil, ikisi hiç kapıda değil**
+
+DURUM: AÇIK · SAHİP: E-imza / MOD-0022 — düzeltme sahibin işi · BULAN: WP-LANE-MAIN-SYNC-05 merge tamamlama kapısı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `Diten.Platform.Application.Tests` içindeki `Authorization/LoginOnlyEndpointGuardTests` iki testle kırmızı:
+
+1. `InternalESignActionsController.Register` **`[AllowAnonymous]`** taşıyor ama controller'ı iç API-anahtarı allow-list'inde değil
+   (`services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalESignActionsController.cs`).
+2. `ESignatureSamplesController.Image` ve `ESignatureSettingsController.ListMeanings` **izin anahtarı, platform policy ve `[LoginOnly]`
+   üçünü de taşımıyor** — guard'ın kendi ifadesiyle "gate them, or mark them `[LoginOnly("why")]` and add them to the reviewed list".
+
+**Merge'e ait değil, ölçüldü:** merge (`681bb44d3` → `1b3408c2b`) ne bu controller'lara ne guard'ın kendisine dokundu; ikisi de merge
+öncesi HEAD'de (`681bb44d3`) vardı ve `origin/main`'de de var. Değişmemiş girdi + değişmemiş guard = değişmemiş verdikt, yani guard
+merge öncesinde de kırmızıydı. Bu kapı onu bulmuş oldu, üretmedi.
+
+**Neden önemli:** birincisi kimliksiz erişime açık bir uç ve guard'ın tam olarak yakalamak için var olduğu şey; ikincisi iki eylemin
+hiçbir yetki kapısından geçmemesi. CT bunları değerlendirmedi — yalnız guard'ın söylediğini aktarıyor; gerçek etkiyi (uçların ne
+döndürdüğünü, kiracı izolasyonunu) sahibi ölçmeli.
+
+**Yapılacak:** MOD-0022 sahibi üç eylemi kapıya alır ya da gerekçesiyle allow-list / reviewed list'e yazar; guard yeşile dönünce
+Platform regresyonu bu iki testte temizlenir. CT dokunmadı (XMC-001: başka modülün üretim kodu).
+
+**Gelecek regresyon riski:** 🔴 (kimliksiz uç; sahibi ölçene kadar etkisi bilinmiyor).
+
+---
+
 ### BL-647
 
 **`openNew` guard'ı ağaç-geneli bir listede genel bir ad tutuyor ve CRM'in canlı fonksiyonuyla çakışıyor — merge'den önce de kırmızıydı**
