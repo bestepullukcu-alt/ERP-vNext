@@ -10192,6 +10192,18 @@ ve GSKU aynı kuralı paylaşır; Market tüketicisi (74355e70-…) ile karşıl
 
 ---
 
+### BL-649
+
+**Aralıklı Auth testi: `ProductIdentityEntitlementReconciliationMongoTests.Commit_WhenAcknowledgementIsLostAfterRealCommit…` bazen `QUIESCENCE_DRIFT` ile düşüyor**
+
+DURUM: AÇIK · SAHİP: CT (Legacy; MDM ürün devralma hattı) · BULAN: AI001 (PR #147 service-tests ölçümü, 2026-10-16) · KAYIT: 2026-10-16
+
+Ölçüldü: auth-app işinde 1/2817 başarısız; main 3912d568b'de geçmiş, main 22b056c8c ve 6b8a62d5a koşularında aynı imzayla (1/2817, QUIESCENCE_DRIFT) düşmüş → aralıklı. Önceki iz: `docs/records/audits/2026-09/product-five-cross-branch-delivery-audit-2026-09-29.md:944`, `:969` ("değiştirilmemiş tekil tekrar geçti", istemci-sessizlik / test yaşam döngüsü teşhisi sürüyordu).
+**Yapılacak:** testin sessizlik (quiescence) koşulunun hangi eşzamanlı yazımla kaydığını ölçmek; düzeltme testin kendi bekleme sözleşmesinde (ürün kuralı gevşetilmez); düzeltilene kadar CI'da bu testin kırmızısı "bilinen aralıklı" olarak adıyla anılır, toplu yeniden deneme yok.
+**Gelecek regresyon riski:** 🟡 (aralıklı kırmızı gerçek gerilemeyi gizleyebilir).
+
+---
+
 ### BL-648
 
 **Auth DataSeeder tek bir 97c5 kullanıcısına (e-postayla) HER ortamda rol veriyor**
