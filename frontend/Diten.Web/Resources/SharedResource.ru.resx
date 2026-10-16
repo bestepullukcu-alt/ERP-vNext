@@ -1101,4 +1101,7 @@
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Прослеживание для отзыва</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Случаи отзыва</value></data>
   <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Случай отзыва</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Планировщик учений по отзыву</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Пакет доказательств отзыва</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Настройки отзыва</value></data>
 </root>

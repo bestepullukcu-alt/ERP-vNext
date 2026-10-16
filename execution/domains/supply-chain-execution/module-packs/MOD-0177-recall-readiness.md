@@ -1459,6 +1459,33 @@ Dal `feature/sce/mod-0177-r7a` (taban `3842938ad`). Kanıt `docs/records/audits/
   RECALL 1.7.0). Pack'e D-28 eklenmedi.
 **R7a CT-ACCEPTED (2026-10-15).** BLOCKED → CT decisions A / A (D-26 no target date → FU-0177-TARGET-DATE; D-27 no "Müşteri iadesi gir" until R7b extends the 0173 form, KR-H). CT run on the branch tip (contains `3842938ad`): Web **2411/2411**, Inventory **1244 + 4** all green. **CT sabotage (not in a–g):** the shared case-command helper lets a page-sent `action` win over the door's own (`body["action"]` kept when present) → `A_prepare_door_prepares_only_its_own_decision_whatever_the_body_says` red ×2; restored, porcelain clean. Last open fact (agent asked): the mockup's Geri dönüşler links each return to its quarantine record (KRN →) but `ReturnLink` carries no hold → **CT decision A: D-28** + RECALL 1.7.0 additive `ReturnLink.holdId / holdNumber` in R7b. Merged `--no-ff` into MVP-1.
 
+### 19.19 WP-0177-R7b — agent result, pending CT (2026-10-15)
+
+Dal `feature/sce/mod-0177-r7b` (taban `a62f8a39a`). Kanıt `docs/records/audits/2026-10/mod-0177-r7b-evidence-2026-10-15.md`. Commit'ler:
+`78d9651f3` **owner step MOD-0175** (salt okunur), `f7764c851` + `1d9dde503` RECALL **1.7.0** (yalnız ekleme), `18f4e1169` Inventory,
+`30028675a` Web, `3bb22d0a0` önizleme bulguları, (kanıt commit'i) kanıt + bu not + §20.
+
+- **İlk okuma → BLOCKED** (D-28: hareketle hold okuyan port yok, uygulama 0175 dosyasında) → **CT kararı A**: 0177 portuna salt okunur
+  `HoldOfMovementAsync`, 0175 uygulaması mevcut `FindHoldBySourceMovementAsync` ile (tek ifade); 0175'e yeni yazma / metot / koleksiyon yok;
+  0175 Quarantine testleri 150 / 150 → 150 / 150.
+- **Kanıt Paketi** (`previewEvidence`, `createEvidenceExport`, `listEvidenceExports`, `getEvidenceFile`; recall.evidence.export): vaka / tatbikat koşusu /
+  dönem (≤ 366 gün); 7 bölüm kayıtlardan; PDF (PDFsharp-MigraDoc, 0176 F5 yolu, aynı yazı tipi çözücü) / CSV; **SHA-256 üretilen ve saklanan
+  baytlardan** (D-12), aynı anahtar → aynı dosya ve hash; `recall_evidence_exports` + `recall_evidence_files` (yalnız ekleme); yerel denetim +
+  BL-501 merkezi denetim komut işleminde; 7. bölüm imzaları MOD-0022'den okunur, okunamayan "Unreadable:<sonuç>" ve alanlar boş; başka şirketin
+  vakası / koşusu / dosyası 403. Etiketler tr / en (FU-0176-PDF-L10N sınırı).
+- **Web:** Tatbikat Planlayıcı (saat sunucunun yanıt zamanından, üç adım sunucu sırasıyla, "Sistem seçsin / Ben seçeyim", gerekçeli iptal — kayıt
+  saklanır, iki adımlı sonuç imzası; "+30 dk" yok), Kanıt Paketi (indirilen dosyanın SHA-256'sı sayfada yeniden hesaplanır), Ayarlar (gerekçe ≥ 10,
+  politika isterse rs-v1 iki adım, geçmiş; e-imza politikası burada değil — D-10). Bağlantılar: Panel "Tatbikat planla", Vakalar tatbikat satırı →
+  koşu, Vaka Detayı "Kanıt paketi", Geri dönüşler KRN → (D-28). 20 yeni kapı, her biri kendi anahtarı; 7 dil; UXH-001 yardım anahtarları.
+- **Sabotaj:** a–h + d2 9/9 kırmızı → yeşil, özgün baytlar, SHA eşit, porcelain aynı.
+- **Sayılar:** Inventory 1244 + 4 → **1251 + 4**; Web 2411 → **2507**; mimari 71/79 aynı 8 (iletiler birebir), denetimsiz komut 0; gateway 164/165;
+  derleme uyarısı aynı (Web 24, Inventory 0).
+- **Önizleme:** 5168 / 5105 / 5104 / 5107: plan ekle → başlat (Auto) → tarayıcı saati 3 gün ileri, sayaç değişmedi → sıra dışı adım 409 →
+  3 adım → Geçti → kısa not reddedildi → hazırla + imza → Tamamlandı; ikinci koşu gerekçeyle iptal. Kapalı vakanın PDF / CSV'si: sayfadaki,
+  günlükteki ve bağımsız `sha256sum` aynı. Ayarlar 180 → 120 gerekçeyle, geçmişte. Anahtarsız: yalnız açıklama, kapılar 403, gateway'e 0 istek.
+- **CT'ye:** O-R7b-1 Vakalar tatbikat satırı WP'ye göre Tatbikat Planlayıcı'yı açar, maket metni Kanıt Paketi diyor; O-R7b-2 plan sorumlusu =
+  kaydeden (FU-0177-PLAN-OWNER); O-R7b-3 konu seçici `recall.cases.read` ister.
+
 
 ## 20. Follow-up Items
 
@@ -1477,6 +1504,7 @@ Dal `feature/sce/mod-0177-r7a` (taban `3842938ad`). Kanıt `docs/records/audits/
 | FU-SYNC1-AUDIT | 0177 write commands join the Inventory audit-ledger debt (0176 O-F1-1) | CT |
 | FU-0177-TARGET-DATE | Recall case target date / days left (mockup `template.html:392` "Hedef tarih · N gün kaldı") — the rule is undefined (who sets it, how it is computed); product decision, then an additive RECALL change (D-26) | Product / CT |
 | FU-0177-HELP-PANEL | Bind the Recall pages' UXH-001 help texts (`Help.RECALL*`, delivered in 7 languages by R6) to the page help panel once the rule / component is on the base branch | MOD-0177 / UI |
+| FU-0177-PLAN-OWNER | Drill plan owner picker (R7b: the owner is the user who saves the plan; an edit keeps the owner) — needs a tenant user lookup door (proposal, WP-0177-R7b O-R7b-2) | MOD-0177 / UI |
 
 ## 21. UI input — approved mockup ("Geri Çağırma Recall (offline).html", 2026-10-12)
 

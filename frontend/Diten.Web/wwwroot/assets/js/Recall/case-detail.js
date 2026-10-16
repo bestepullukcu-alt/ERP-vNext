@@ -247,8 +247,10 @@
         const links = returns.links || [];
         byId('rc-ret-links').querySelector('tbody').innerHTML = links.map((l) => `<tr><td class="font-monospace small">${esc(l.transactionNumber || l.transactionId)}</td><td class="small">${esc(l.customerRef)}</td>`
             + `<td class="font-monospace small">${esc(l.lot?.lotNumber || '')}</td><td class="text-end">${qty(l.quantity, l.baseUomId)}</td><td class="small">${esc(ui.date(l.postedAtUtc))}</td>`
-            + `<td><span class="badge bg-label-info">${esc(t('Recall.Ret.Source.' + l.source))}</span></td></tr>`).join('')
-            || `<tr><td colspan="6" class="text-muted">${esc(t('Recall.Ret.Empty'))}</td></tr>`;
+            + `<td><span class="badge bg-label-info">${esc(t('Recall.Ret.Source.' + l.source))}</span></td>`
+            // D-28 (RECALL 1.7.0): the hold MOD-0175 opened for THIS movement → its quarantine record page; none → "—" (never another hold)
+            + `<td>${l.holdId ? `<a href="/Quarantine/Details/${encodeURIComponent(l.holdId)}" class="font-monospace small">${esc(l.holdNumber || l.holdId)} →</a>` : '—'}</td></tr>`).join('')
+            || `<tr><td colspan="7" class="text-muted">${esc(t('Recall.Ret.Empty'))}</td></tr>`;
         const candidates = returns.candidates || [];
         byId('rc-ret-candidates').querySelector('tbody').innerHTML = candidates.map((c) => {
             const button = c.eligible && state.offers.link && byId('rc-link-modal')

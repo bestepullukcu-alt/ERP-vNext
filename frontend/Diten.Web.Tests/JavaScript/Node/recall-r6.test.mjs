@@ -82,17 +82,19 @@ test('CT-R8: another company is ONE count (the band), never a row; it is not cou
     assert.equal(views.RecallTraceView.tableRows(trace, t).length, trace.nodes.length); // nothing added
 });
 
-test('a drill row is not a case: "Tatbikat", class and level "—" (D-25), its result and duration, never a link (a real case links — R7a)', () => {
+test('a drill row is not a case: "Tatbikat", class and level "—" (D-25), its result and duration; a link to its run only for the planner key (R7b)', () => {
     const drill = plain(views.RecallCasesView.cells({ rowKind: 'Drill', number: 'RC-2026-D011', status: 'Completed', passed: true, durationMinutes: 102,
         lot: { lotNumber: 'PRC-2502' }, itemLabel: 'Parasetamol', startedAtUtc: '2026-06-05T09:00:00Z', owner: { userId: 'u', name: 'Charlie Brown' } }, fmt));
     assert.deepEqual([drill.type, drill.class, drill.level, drill.progress, drill.clickable],
         [tr['Recall.Type.Drill'], '—', '—', `${tr['Recall.Drill.Passed']} · ${t('Recall.Duration.HoursMinutes', 1, 42)}`, false]);
     assert.equal(drill.status, tr['Recall.DrillStatus.Completed']);
+    const linked = plain(views.RecallCasesView.cells({ rowKind: 'Drill', runId: 'r-11', number: 'RC-2026-D011', status: 'Completed', lot: { lotNumber: 'PRC-2502' } }, { ...fmt, canDrills: true }));
+    assert.deepEqual([linked.clickable, linked.href], [true, '/Recall/Drills?run=r-11']); // R7b: the run in the Tatbikat Planlayıcı
     const real = plain(views.RecallCasesView.cells({ rowKind: 'Case', caseId: 'c-4', number: 'RC-2026-0004', status: 'Active', class: 2, level: 'Pharmacy',
         rootLot: { lotNumber: 'LKT-25K004' }, openedAtUtc: '2026-10-06T09:12:00Z', owner: { userId: 'u' }, progress: [{ returned: 180, shipped: 1150, baseUomId: 'EA' }] }, fmt));
     assert.deepEqual([real.type, real.class, real.level, real.progress, real.clickable],
         [tr['Recall.Type.Real'], t('Recall.Class.N', 2), tr['Recall.Level.Pharmacy'], '180 / 1150 EA', true]);
-    assert.equal(real.href, '/Recall/Cases/Details/c-4'); // R7a: a real case opens its Vaka Detayı; a drill row stays without a link until R7b
+    assert.equal(real.href, '/Recall/Cases/Details/c-4'); // R7a: a real case opens its Vaka Detayı
 });
 
 test('the panel cards print exactly the getDashboard numbers; the band shows only when the server says so', () => {

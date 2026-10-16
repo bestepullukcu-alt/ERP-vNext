@@ -183,11 +183,19 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
         Op("POST", "/api/recall/drill-runs/{id}/steps/{id}", [200, 400, 401, 403, 404, 409, 503], "DrillRun", etag: true),
         Op("POST", "/api/recall/drill-runs/{id}/pending-result", [200, 400, 401, 403, 404, 409, 503], "PendingActionResponse", etag: true),
         Op("POST", "/api/recall/drill-runs/{id}/result", [200, 400, 401, 403, 404, 409, 503], "DrillRun", etag: true),
-        Op("POST", "/api/recall/drill-runs/{id}/cancel", [200, 400, 401, 403, 404, 409, 503], "DrillRun", etag: true)
+        Op("POST", "/api/recall/drill-runs/{id}/cancel", [200, 400, 401, 403, 404, 409, 503], "DrillRun", etag: true),
+        // R7b — the Kanıt Paketi (RECALL 1.7.0)
+        Op("GET", "/api/recall/evidence/preview", [200, 400, 401, 403, 404, 503], "EvidencePreview"),
+        Op("GET", "/api/recall/evidence/exports", [200, 400, 401, 403, 503], "EvidenceExportPage"),
+        Op("POST", "/api/recall/evidence/exports", [200, 201, 400, 401, 403, 404, 503], "EvidenceExport"),
+        Op("GET", "/api/recall/evidence/exports/{id}/file", [200, 401, 403, 404, 503], Binary)
     ];
 
     /// <summary>exportTrace answers text/csv (UTF-8 BOM, ';') — checked for its media type and BOM, not a JSON schema.</summary>
     private const string Csv = "text/csv";
+
+    /// <summary>getEvidenceFile answers the stored bytes: application/pdf ("%PDF") or text/csv (UTF-8 BOM) — checked for media type and magic.</summary>
+    private const string Binary = "binary";
 
     private static readonly Regex WeakETag = new("^W/\"\\d+\"$", RegexOptions.Compiled);
 
@@ -259,6 +267,20 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
             var csv = new ByteArrayContent(raw);
             foreach (var header in response.Content.Headers) csv.Headers.TryAddWithoutValidation(header.Key, header.Value);
             response.Content = csv;
+            return response;
+        }
+
+        if (schema == Binary)
+        {
+            var raw = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            var media = response.Content.Headers.ContentType?.MediaType;
+            var pdf = media == "application/pdf" && raw.Length > 4 && raw[0] == (byte)'%' && raw[1] == (byte)'P' && raw[2] == (byte)'D' && raw[3] == (byte)'F';
+            var csv = media == Csv && raw.Length >= 3 && raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF;
+            if (!pdf && !csv) throw new ContractViolationException($"{request.Method} {path} {status} is neither a PDF nor a UTF-8 BOM CSV ({response.Content.Headers.ContentType}).");
+            Validated.AddOrUpdate($"{request.Method} {operation.Path} {status} → recall:{media}", 1, (_, n) => n + 1);
+            var bytes = new ByteArrayContent(raw);
+            foreach (var header in response.Content.Headers) bytes.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            response.Content = bytes;
             return response;
         }
 
@@ -531,4 +553,7 @@ public sealed class SeamedRecallQuarantineRequester(IRecallQuarantineRequester i
 
     public Task<IReadOnlyList<RecallHoldView>> OpenHoldsOfLotAsync(string lotId, CancellationToken cancellationToken = default)
         => inner.OpenHoldsOfLotAsync(lotId, cancellationToken);
+
+    public Task<RecallHoldView?> HoldOfMovementAsync(string transactionId, CancellationToken cancellationToken = default)
+        => inner.HoldOfMovementAsync(transactionId, cancellationToken);
 }

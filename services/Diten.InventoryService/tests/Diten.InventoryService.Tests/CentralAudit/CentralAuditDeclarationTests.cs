@@ -31,8 +31,8 @@ public sealed class CentralAuditDeclarationTests
     {
         // 58 measured 2026-10-14 (AuditTrailStandardTests inventory row); 59 after the MVP-1 merge (R4 PrepareRecallSettingsChangeCommand,
         // CT HOLD 2026-10-14). A new command fails here AND in the architecture test.
-        // 66 after WP-0177-R5 (7 drill commands, CT decision 2026-10-14).
-        Assert.Equal(66, WriteCommands.Length);
+        // 66 after WP-0177-R5 (7 drill commands, CT decision 2026-10-14). 67 after WP-0177-R7b (CreateRecallEvidenceExportCommand).
+        Assert.Equal(67, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 

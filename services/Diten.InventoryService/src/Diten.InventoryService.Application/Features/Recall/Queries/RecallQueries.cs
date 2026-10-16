@@ -51,3 +51,14 @@ public sealed record GetRecallCaseCustomersQuery(string CaseId) : IRequest<Respo
 
 /// <summary>getCaseEffectiveness — live until completed, then the stored result (pack §8.6).</summary>
 public sealed record GetRecallCaseEffectivenessQuery(string CaseId) : IRequest<Response<RecallEffectivenessDto>>;
+
+// ── R7b: the Kanıt Paketi reads ──
+
+/// <summary>previewEvidence — the seven sections of ONE subject (caseId | runId | from + to) in the reader's language (tr | en labels).</summary>
+public sealed record PreviewRecallEvidenceQuery(string? CaseId, string? RunId, string? From, string? To, string Language) : IRequest<Response<RecallEvidencePreviewDto>>;
+
+/// <summary>listEvidenceExports — the company's export log, newest first.</summary>
+public sealed record ListRecallEvidenceExportsQuery(string? Page, string? PageSize) : IRequest<Response<RecallEvidenceExportPageDto>>;
+
+/// <summary>getEvidenceFile — the stored bytes of one export.</summary>
+public sealed record GetRecallEvidenceFileQuery(string ExportId) : IRequest<Response<RecallEvidenceFileDto>>;

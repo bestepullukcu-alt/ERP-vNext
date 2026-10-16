@@ -59,6 +59,10 @@ public sealed class QuarantineRecallRequester : IRecallQuarantineRequester
         return page.Items.Where(h => h.Status != HoldStatus.Decided).Select(View).ToList();
     }
 
+    // WP-0177-R7b owner step (MOD-0175, read only): the existing intake-idempotency lookup by source movement — no new write, index or method
+    public async Task<RecallHoldView?> HoldOfMovementAsync(string transactionId, CancellationToken cancellationToken = default)
+        => await _repository.FindHoldBySourceMovementAsync(transactionId, cancellationToken) is { } hold ? View(hold) : null;
+
     private static RecallHoldView View(QuarantineHold h)
         => new(h.Id.ToString("D"), h.HoldNumber, h.Status.ToString(), h.ReviewState.ToString(), h.Quantity, h.LotId, h.WarehouseId, h.LocationId);
 }

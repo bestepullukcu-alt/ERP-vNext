@@ -65,6 +65,10 @@ public static class RecallContract
     public const string AuditQuarantineRetried = "recall.quarantine.retried";
     public const string AuditExitRefused = "recall.exit.refused";
     public const string AuditReturnLinked = "recall.return.linked";
+
+    // WP-0177-R7b (pack §8.12) — the evidence export
+    public const string AuditEvidenceExported = "recall.evidence.exported";
+    public const string SubjectEvidenceExport = "recall.evidence-export";
     public const string AuditScopeRevised = "recall.scope.revised";
 
     /// <summary>KR-B reason of a 0175 hold: "Geri çağırma RC-… · &lt;case reason&gt;" (0175 caps a reason at 1000).</summary>

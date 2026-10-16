@@ -169,6 +169,72 @@ public sealed class RecallController : CustomBaseController
         return await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new RetryRecallQuarantineCommand(id, request, key), ct)), ct);
     }
 
+    // ── R7b: the Kanıt Paketi (RECALL 1.7.0, pack §4.13) ─────────────────────────────────────────────────
+
+    [HttpGet("evidence/preview")]
+    [HasPermission(RecallPermissions.EvidenceExport)]
+    public async Task<IActionResult> PreviewEvidence([FromQuery] string? caseId, [FromQuery] string? runId, [FromQuery] string? from, [FromQuery] string? to,
+        CancellationToken ct)
+        => await EvidenceSubjectChecked(caseId, runId,
+            CreateActionResultInstance(await _mediator.Send(new PreviewRecallEvidenceQuery(caseId, runId, from, to, EvidenceLanguage()), ct)), ct);
+
+    [HttpGet("evidence/exports")]
+    [HasPermission(RecallPermissions.EvidenceExport)]
+    public async Task<IActionResult> ListEvidenceExports([FromQuery] string? page, [FromQuery] string? pageSize, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new ListRecallEvidenceExportsQuery(page, pageSize), ct));
+
+    [HttpPost("evidence/exports")]
+    [HasPermission(RecallPermissions.EvidenceExport)]
+    public async Task<IActionResult> CreateEvidenceExport(CancellationToken ct)
+    {
+        var read = await RecallRequestReader.ReadAsync(Request.Body, RecallRequestReader.EvidenceExportMembers, b => new
+        {
+            CaseId = b.String("caseId"), RunId = b.String("runId"), From = b.String("from"), To = b.String("to"), Format = b.String("format"),
+            Key = b.String("idempotencyKey")
+        }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        var result = await _mediator.Send(new CreateRecallEvidenceExportCommand(body.CaseId, body.RunId, body.From, body.To, body.Format, key, EvidenceLanguage()), ct);
+        return await EvidenceSubjectChecked(body.CaseId, body.RunId, CreateActionResultInstance(result), ct);
+    }
+
+    /// <summary>getEvidenceFile — the stored bytes (their SHA-256 = the logged one); another company's export → 403.</summary>
+    [HttpGet("evidence/exports/{exportId}/file")]
+    [HasPermission(RecallPermissions.EvidenceExport)]
+    public async Task<IActionResult> GetEvidenceFile(string exportId, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetRecallEvidenceFileQuery(exportId), ct);
+        if (result.IsSuccessful && result.Data is { } file) return File(file.Content, file.ContentType, file.FileName);
+        if (RecallSupport.TryParseId(exportId, out var id)
+            && await HttpContext.RequestServices.GetRequiredService<IRecallRepository>().EvidenceExportExistsInAnotherCompanyAsync(id, ct))
+        {
+            return ContractFailure(StatusCodes.Status403Forbidden, InventoryErrorCodes.CrossLeForbidden, "The record belongs to another company.");
+        }
+
+        return CreateActionResultInstance(result);
+    }
+
+    /// <summary>The PDF / CSV labels follow the reader's language (tr | en; any other → en) — the Web forwards its UI culture (the 0176 F5 way).</summary>
+    private string EvidenceLanguage()
+    {
+        var language = Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(l => l.Quality ?? 1).Select(l => l.Value.Value).FirstOrDefault();
+        return language is not null && language.StartsWith("tr", StringComparison.OrdinalIgnoreCase) ? "tr" : "en";
+    }
+
+    /// <summary>A case / run of ANOTHER company of the tenant is not found by the company-bound reads; the answer then says 403, never its data.</summary>
+    private async Task<IActionResult> EvidenceSubjectChecked(string? caseId, string? runId, IActionResult result, CancellationToken ct)
+    {
+        if (result is not ObjectResult { StatusCode: StatusCodes.Status404NotFound }) return result;
+        if (!string.IsNullOrWhiteSpace(caseId)) return await CompanyChecked(caseId, result, ct);
+        if (RecallSupport.TryParseId(runId, out var run)
+            && await HttpContext.RequestServices.GetRequiredService<IRecallDrillRepository>().ExistsInAnotherCompanyAsync(run, ct))
+        {
+            return ContractFailure(StatusCodes.Status403Forbidden, InventoryErrorCodes.CrossLeForbidden, "The record belongs to another company.");
+        }
+
+        return result;
+    }
+
     // ── R7a: the case detail reads (RECALL 1.6.0) ─────────────────────────────────────────────────────────
 
     [HttpGet("cases/{caseId}/customers")]

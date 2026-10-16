@@ -49,12 +49,14 @@ public static class RecallIndexConfiguration
     public const string DrillPlanCodeIndex = "ux_recall_drill_plan_code";
     public const string DrillPlanCreateKeyIndex = "ux_recall_drill_plan_create_key";
     public const string DrillEventKeyIndex = "ux_recall_drill_event_key";
+    public const string EvidenceExportKeyIndex = "ux_recall_evidence_export_key";
 
     public static readonly IReadOnlyList<string> UniqueIndexes =
     [
         SettingsCompanyIndex, CaseNumberIndex, CaseActiveRootIndex, CaseCreateKeyIndex, EventKeyIndex, ScopeNodeIndex, LotBlockIndex,
         NotificationKeyIndex, ConsumptionKeyIndex, SegregationKeyIndex, QuarantineRequestNodeIndex, ReturnLinkTransactionIndex, SettingsChangeKeyIndex,
-        DrillRunNumberIndex, DrillRunningIndex, DrillRunCreateKeyIndex, DrillPlanCodeIndex, DrillPlanCreateKeyIndex, DrillEventKeyIndex
+        DrillRunNumberIndex, DrillRunningIndex, DrillRunCreateKeyIndex, DrillPlanCodeIndex, DrillPlanCreateKeyIndex, DrillEventKeyIndex,
+        EvidenceExportKeyIndex
     ];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
@@ -201,6 +203,15 @@ public static class RecallIndexConfiguration
             new(Builders<RecallSegregationConfirmation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ConfirmedBy).Ascending(x => x.IdempotencyKey),
                 new CreateIndexOptions { Name = SegregationKeyIndex, Unique = true }),
             new(Builders<RecallSegregationConfirmation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CaseId), new CreateIndexOptions { Name = "ix_recall_segregation_case" })
+        ], ct);
+
+        // R7b: the evidence export log (replay key of the exporting user; the company's log newest first); the file has the export's id
+        var exports = Builders<RecallEvidenceExport>.IndexKeys;
+        await database.GetCollection<RecallEvidenceExport>(RecallCollections.EvidenceExports).Indexes.CreateManyAsync(
+        [
+            new(exports.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ExportedBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions { Name = EvidenceExportKeyIndex, Unique = true }),
+            new(exports.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Descending(x => x.ExportedAtUtc), new CreateIndexOptions { Name = "ix_recall_evidence_export_log" })
         ], ct);
     }
 }

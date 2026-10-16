@@ -38,6 +38,8 @@ public sealed class RecallRepository : IRecallRepository
     private readonly IMongoCollection<RecallReturnLink> _returnLinks;
     private readonly IMongoCollection<RecallSettingsChange> _settingsChanges;
     private readonly IMongoCollection<RecallDrillEvent> _drillEvents;
+    private readonly IMongoCollection<RecallEvidenceExport> _evidenceExports;
+    private readonly IMongoCollection<RecallEvidenceFile> _evidenceFiles;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<RecallRepository> _logger;
     private readonly Guid _tenantId;
@@ -62,6 +64,8 @@ public sealed class RecallRepository : IRecallRepository
         _returnLinks = database.GetCollection<RecallReturnLink>(RecallCollections.ReturnLinks);
         _settingsChanges = database.GetCollection<RecallSettingsChange>(RecallCollections.SettingsChanges);
         _drillEvents = database.GetCollection<RecallDrillEvent>(RecallCollections.DrillEvents);
+        _evidenceExports = database.GetCollection<RecallEvidenceExport>(RecallCollections.EvidenceExports);
+        _evidenceFiles = database.GetCollection<RecallEvidenceFile>(RecallCollections.EvidenceFiles);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -258,6 +262,31 @@ public sealed class RecallRepository : IRecallRepository
     public async Task<RecallReturnLink?> FindReturnLinkByKeyAsync(Guid linkedBy, string idempotencyKey, CancellationToken cancellationToken = default)
         => await _returnLinks.Find(Scope<RecallReturnLink>() & Builders<RecallReturnLink>.Filter.Eq(x => x.LinkedBy, linkedBy)
                                    & Builders<RecallReturnLink>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
+
+    // ── R7b: the evidence pack ──
+
+    public async Task<RecallEvidenceExport?> FindEvidenceExportByKeyAsync(Guid exportedBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _evidenceExports.Find(Scope<RecallEvidenceExport>() & Builders<RecallEvidenceExport>.Filter.Eq(x => x.ExportedBy, exportedBy)
+                                       & Builders<RecallEvidenceExport>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<RecallEvidenceExport?> FindEvidenceExportAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _evidenceExports.Find(Scope<RecallEvidenceExport>() & Builders<RecallEvidenceExport>.Filter.Eq(x => x.Id, exportId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<RecallEvidenceFile?> FindEvidenceFileAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _evidenceFiles.Find(Scope<RecallEvidenceFile>() & Builders<RecallEvidenceFile>.Filter.Eq(x => x.Id, exportId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<(IReadOnlyList<RecallEvidenceExport> Items, long Total)> ListEvidenceExportsAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var filter = Scope<RecallEvidenceExport>();
+        var total = await _evidenceExports.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        var items = await _evidenceExports.Find(filter).Sort(Builders<RecallEvidenceExport>.Sort.Descending(x => x.ExportedAtUtc).Descending(x => x.Id))
+            .Skip((page - 1) * pageSize).Limit(pageSize).ToListAsync(cancellationToken);
+        return (items, total);
+    }
+
+    public async Task<bool> EvidenceExportExistsInAnotherCompanyAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _evidenceExports.Find(Builders<RecallEvidenceExport>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<RecallEvidenceExport>.Filter.Ne(x => x.LegalEntityId, _legalEntityId)
+                                       & Builders<RecallEvidenceExport>.Filter.Eq(x => x.Id, exportId)).AnyAsync(cancellationToken);
 
     // ── writes ────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -458,6 +487,14 @@ public sealed class RecallRepository : IRecallRepository
         {
             _owner.Stamp(link);
             return _owner._returnLinks.InsertOneAsync(_session, link, cancellationToken: cancellationToken);
+        }
+
+        public async Task InsertEvidenceExportAsync(RecallEvidenceExport export, RecallEvidenceFile file, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(export);
+            _owner.Stamp(file);
+            await _owner._evidenceExports.InsertOneAsync(_session, export, cancellationToken: cancellationToken);
+            await _owner._evidenceFiles.InsertOneAsync(_session, file, cancellationToken: cancellationToken);
         }
 
         public Task InsertSettingsChangeAsync(RecallSettingsChange change, CancellationToken cancellationToken = default)

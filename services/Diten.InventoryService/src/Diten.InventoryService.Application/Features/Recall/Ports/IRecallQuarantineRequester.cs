@@ -40,4 +40,10 @@ public interface IRecallQuarantineRequester
 
     /// <summary>The open (not decided) holds of a lot in the caller's company — "already quarantined" shows the existing hold.</summary>
     Task<IReadOnlyList<RecallHoldView>> OpenHoldsOfLotAsync(string lotId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// WP-0177-R7b (D-28, RECALL 1.7.0) — the hold (any status) whose intake movement is <paramref name="transactionId"/> in the caller's company:
+    /// the quarantine record a linked customer return went into. Read only; null when the movement opened no hold (e.g. a return into AVAILABLE).
+    /// </summary>
+    Task<RecallHoldView?> HoldOfMovementAsync(string transactionId, CancellationToken cancellationToken = default);
 }

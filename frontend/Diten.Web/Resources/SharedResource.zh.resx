@@ -1101,4 +1101,7 @@
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>召回追溯</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>召回案例</value></data>
   <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>召回案例</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>召回演练计划</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>召回证据包</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>召回设置</value></data>
 </root>

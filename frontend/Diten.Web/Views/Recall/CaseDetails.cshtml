@@ -61,6 +61,10 @@ else if (company.Ready)
                         <div class="d-flex flex-wrap gap-2" id="rc-h-badges"></div>
                     </div>
                     <div class="d-flex flex-wrap gap-2" id="rc-head-actions">
+                        @if (Perms.Has(RecallKeys.EvidenceExport))
+                        {
+                            <a class="btn btn-label-primary" href="/Recall/Evidence?case=@caseId" id="rc-evidence-link"><i class="bx bx-archive me-1"></i>@Localizer["Recall.Case.Evidence"]</a>
+                        }
                         @if (Perms.Has(RecallKeys.CasesCancel))
                         {
                             <button type="button" class="btn btn-label-secondary d-none" data-rc-action="cancel"><i class="bx bx-x-circle me-1"></i>@Localizer["Recall.Case.Cancel"]</button>
@@ -178,7 +182,7 @@ else if (company.Ready)
                 <h6>@Localizer["Recall.Ret.Linked"]</h6>
                 <div class="table-responsive mb-4">
                     <table class="table table-sm align-middle mb-0" id="rc-ret-links">
-                        <thead><tr><th>@Localizer["Recall.RCol.Movement"]</th><th>@Localizer["Recall.CCol.Customer"]</th><th>@Localizer["Recall.StCol.Lot"]</th><th class="text-end">@Localizer["Recall.SCol.Quantity"]</th><th>@Localizer["Recall.RCol.Date"]</th><th>@Localizer["Recall.RCol.Source"]</th></tr></thead>
+                        <thead><tr><th>@Localizer["Recall.RCol.Movement"]</th><th>@Localizer["Recall.CCol.Customer"]</th><th>@Localizer["Recall.StCol.Lot"]</th><th class="text-end">@Localizer["Recall.SCol.Quantity"]</th><th>@Localizer["Recall.RCol.Date"]</th><th>@Localizer["Recall.RCol.Source"]</th><th>@Localizer["Recall.StCol.Hold"]</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>

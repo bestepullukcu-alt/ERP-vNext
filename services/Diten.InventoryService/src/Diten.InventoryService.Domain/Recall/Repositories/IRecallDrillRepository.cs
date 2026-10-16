@@ -57,6 +57,9 @@ public interface IRecallDrillRepository
     /// few times a year), so the union read takes them whole and cuts ONE page together with the cases.
     /// </summary>
     Task<IReadOnlyList<RecallDrillRun>> CaseListRunsAsync(RecallDrillCaseRowQuery query, CancellationToken cancellationToken = default);
+
+    /// <summary>WP-0177-R7b — the company's drill runs started in [from, toExclusive), oldest first: the period evidence pack.</summary>
+    Task<IReadOnlyList<RecallDrillRun>> RunsStartedBetweenAsync(DateTimeOffset from, DateTimeOffset toExclusive, CancellationToken cancellationToken = default);
 }
 
 /// <summary>The writes of one drill transaction — drill records, a <c>Drill</c> snapshot, the counter, audit rows. Nothing else exists here.</summary>

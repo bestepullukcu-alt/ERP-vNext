@@ -190,10 +190,10 @@ public sealed class RecallContractTests
     private static List<string> Strings(JsonNode? node) => node!.AsArray().Select(v => v!.GetValue<string>()).ToList();
 
     [Fact]
-    public void The_contract_is_frozen_1_6_0_owned_by_MOD_0177_with_the_CT_additions()
+    public void The_contract_is_frozen_1_7_0_owned_by_MOD_0177_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.6.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.7.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0177", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/recall", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -212,6 +212,9 @@ public sealed class RecallContractTests
         Assert.All(new[] { "1.5.0", "WP-0177-R6", "getDashboard", "drillRows", "DrillCaseRow", "drillStatus", "D-25" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         // R7a (1.6.0): the case detail reads, D-26 / D-27 (CT decision A)
         Assert.All(new[] { "1.6.0", "WP-0177-R7a", "getCaseCustomers", "getCaseEffectiveness", "CaseCustomerShipment", "D-20", "D-26", "D-27" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
+        // R7b (1.7.0): the Kanıt Paketi (SHA-256 of the produced bytes) and D-28 (MOD-0175 owner step, read only)
+        Assert.All(new[] { "1.7.0", "WP-0177-R7b", "previewEvidence", "createEvidenceExport", "PRODUCED BYTES", "FU-0176-PDF-L10N", "D-28", "holdNumber",
+            "RECALL_EVIDENCE_EXPORT_NOT_FOUND" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         Assert.Equal(RecallPermissions.All.OrderBy(k => k), Strings(Yaml.Value["x-permissions"]!["owned"]).OrderBy(k => k));
         Assert.Equal("APPROVE", Yaml.Value["x-signable-actions"]!["defaultMeaningCode"]!.GetValue<string>());
         var settingsAction = Yaml.Value["x-signable-actions"]!["actions"]!.AsArray().Single(a => a!["actionCode"]!.GetValue<string>() == "recall.settings.update");
@@ -230,19 +233,21 @@ public sealed class RecallContractTests
     }
 
     [Fact]
-    public void The_controller_serves_exactly_the_R1_to_R7a_operations_with_their_permission()
+    public void The_controller_serves_exactly_the_R1_to_R7b_operations_with_their_permission()
     {
         var served = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Concat(typeof(Diten.InventoryService.Api.Controllers.Recall.RecallDrillsController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)) // R5
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(45, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff + R3 six + R4 prepareSettingsChange + R5 ten drill operations + R6 getDashboard + R7a getCaseCustomers, getCaseEffectiveness
+        Assert.Equal(49, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff + R3 six + R4 prepareSettingsChange + R5 ten drill operations + R6 getDashboard + R7a getCaseCustomers, getCaseEffectiveness + R7b the four evidence operations
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
         var r1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"]))
             .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R4"]))
-            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R5"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R6"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R7a"])).ToList();
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R5"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R6"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R7a"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R7b"])).ToList();
+        Assert.Equal(["previewEvidence", "listEvidenceExports", "getEvidenceFile", "createEvidenceExport"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R7b"]));
+        Assert.Empty(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["not-yet-implemented"])); // every operation of the contract is served
         Assert.Equal(["getCaseCustomers", "getCaseEffectiveness"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R7a"]));
         Assert.Equal(["getDashboard"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R6"]));
         Assert.Equal(["listDrillPlans", "createDrillPlan", "updateDrillPlan", "listDrillRuns", "startDrill", "getDrillRun", "completeDrillStep", "prepareDrillResult",
@@ -321,7 +326,9 @@ public sealed class RecallArchitectureTests
         // WP-0177-R6: the first three pages (pack §11.1) carry their keys; every other enforced key stays an API permission
         Assert.Equal(
             [("RECALLDASHBOARD", "/Recall", RecallPermissions.DashboardRead), ("RECALLTRACE", "/Recall/Trace", RecallPermissions.TraceRun),
-             ("RECALLCASES", "/Recall/Cases", RecallPermissions.CasesRead), ("RECALLCASEDETAILS", "/Recall/Cases/Details/{id}", RecallPermissions.CasesRead)],
+             ("RECALLCASES", "/Recall/Cases", RecallPermissions.CasesRead), ("RECALLCASEDETAILS", "/Recall/Cases/Details/{id}", RecallPermissions.CasesRead),
+             ("RECALLDRILLS", "/Recall/Drills", RecallPermissions.DrillsRead), ("RECALLEVIDENCE", "/Recall/Evidence", RecallPermissions.EvidenceExport),
+             ("RECALLSETTINGS", "/Recall/Settings", RecallPermissions.SettingsRead)],
             manifest.Pages.Select(p => (p.PageCode, p.RoutePath, p.RequiredPermission)).ToList());
         Assert.All(manifest.Pages.Where(p => p.PageCode != "RECALLCASEDETAILS"), p => Assert.True(p.IsNavigationVisible));
         // WP-0177-R7a: the case detail is a child page of Vakalar (not in the menu) with one action per pack §11.3 button
@@ -350,11 +357,20 @@ public sealed class RecallArchitectureTests
         Assert.Equal(enforced.OrderBy(k => k, StringComparer.Ordinal), declared.OrderBy(k => k, StringComparer.Ordinal));
         Assert.Equal(RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal), enforced.OrderBy(k => k, StringComparer.Ordinal));
         Assert.Equal(RecallPermissions.R1Only.Concat([RecallPermissions.TraceRun, RecallPermissions.TraceExport, RecallPermissions.QuarantineRequestsCreate, RecallPermissions.ReturnsLink,
-                RecallPermissions.DrillsRead, RecallPermissions.DrillsManage, RecallPermissions.DrillsRun, RecallPermissions.DashboardRead])
+                RecallPermissions.DrillsRead, RecallPermissions.DrillsManage, RecallPermissions.DrillsRun, RecallPermissions.DashboardRead, RecallPermissions.EvidenceExport])
                 .OrderBy(k => k, StringComparer.Ordinal),
             RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal));
         Assert.Same(RecallPermissions.Implemented, RecallPermissions.R1); // the shared namespace test pins R1 (PARALEL KURAL) — an alias, not a copy
         Assert.All(manifest.ApiPermissions!, p => Assert.Equal("Tenant", p.Scope));
+        // WP-0177-R7b: every recall key now has its page / button except the API-only lot status (pack §14.2)
+        Assert.Equal([RecallPermissions.LotsStatusRead], manifest.ApiPermissions!.Select(p => p.PermissionKey).ToList());
+        Assert.Equal(
+            [("RECALL_DRILL_PLAN_SAVE", RecallPermissions.DrillsManage), ("RECALL_DRILL_RUN", RecallPermissions.DrillsRun), ("RECALL_DRILL_SIGN", RecallPermissions.DrillsRun)],
+            manifest.Pages.Single(p => p.PageCode == "RECALLDRILLS").Actions.Select(a => (a.ActionCode, a.PermissionKey)).ToList());
+        Assert.Equal([("RECALL_EVIDENCE_EXPORT", RecallPermissions.EvidenceExport)],
+            manifest.Pages.Single(p => p.PageCode == "RECALLEVIDENCE").Actions.Select(a => (a.ActionCode, a.PermissionKey)).ToList());
+        Assert.Equal([("RECALL_SETTINGS_SAVE", RecallPermissions.SettingsManage)],
+            manifest.Pages.Single(p => p.PageCode == "RECALLSETTINGS").Actions.Select(a => (a.ActionCode, a.PermissionKey)).ToList());
     }
 
     [Fact]
@@ -378,7 +394,7 @@ public sealed class RecallArchitectureTests
     {
         var entities = typeof(EntityBase).Assembly.GetTypes()
             .Where(t => typeof(EntityBase).IsAssignableFrom(t) && t.Namespace?.Contains(".Recall", StringComparison.Ordinal) == true).ToList();
-        Assert.Equal(17, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot; R3: quarantine request, return link; R4: prepared settings change; R5: drill plan, drill run, drill event
+        Assert.Equal(19, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot; R3: quarantine request, return link; R4: prepared settings change; R5: drill plan, drill run, drill event; R7b: evidence export, evidence file
         Assert.DoesNotContain(entities, t => t.Name.Contains("Signature", StringComparison.Ordinal));
         Assert.Contains(typeof(IRecallSignature), typeof(FailClosedRecallSignature).GetInterfaces());
         Assert.False(await new FailClosedRecallSignature().VerifyAsync(new RecallSignatureVerification("s", "recall.scope.approve", "APPROVE", Guid.NewGuid(),
