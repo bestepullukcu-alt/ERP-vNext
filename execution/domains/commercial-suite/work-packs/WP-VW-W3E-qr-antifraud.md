@@ -1122,3 +1122,36 @@ Test dalına alındı: `820a9768e` (ajan `d2a5c263d`), çakışmasız.
 **Açık:**
 - **Görsel kanıt alınmadı** (fleet kapalıydı) → E4 üçüncü turda CT alır.
 - **Ajan raporu (karar kullanıcıda):** Ayarlar sekmesindeki değişiklik geçmişi ve temsilciler paneli hâlâ elle yazılmış `table.ve-table`.
+
+
+## Kullanıcı kararı (2026-10-16) — U-7: Ziyaret kanıtı ayar sekmesindeki elle yazılmış tablolar da Golden'a
+FIX-b raporundan: "Kapsamlı ayarlar" sekmesinde değişiklik geçmişi ve temsilciler paneli hâlâ elle yazılmış `table.ve-table`. İç sekme şeridi "Form / Geçmiş / Temsilciler" (`ve-pane-tab`) de kendine özel. Kullanıcı: bunlar da standarda geçsin.
+
+**CT ölçümü:**
+- **Temsilciler paneli yanlış ucu kullanıyor.** Paneli `GET api/crm/visit-evidence-policy/reps` besliyor; bu, arama kutusu (picker) için yazılmış uç.
+  - CRM tüm listeyi okuyor, `q` ile süzüyor ve `Take(MaxReps = 20)` uyguluyor; toplam sayı döndürmüyor (`VisitEvidencePolicyReads.cs` 76, 150).
+  - Sonuç: 20'den fazla temsilcili kiracıda panel **sessizce kesiliyor**. K-STD bunu yasaklıyor ("sessiz kesme yasak"); canlıda ülkeler eklendikçe kesin aşılır.
+- **Değişiklik geçmişi** CRM'de zaten sayfalı: `VisitEvidencePolicyHistoryDto(Items, Total, Page, PageSize, …)`. Sayfa bugün `page=1&pageSize=100` ile tek okuma yapıyor; 100'den sonrası görünmüyor.
+- **Etkin kurallar kartı** (`ve-effective`; tek temsilcinin Alan / Değer / Kaynak'ı, ~8 satır) bir liste değil, ayrıntı kartı. Bu pakette dönüştürülmüyor.
+
+## §36.1 Agent Prompt — W3E-E4R2-FIX-d (paste-ready · CRM + Web · FIX-c test dalına alındıktan SONRA)
+```text
+@[.antigravity/agents/backend-architect.md] @[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-E4R2-FIX-d — Ziyaret kanıtı "Kapsamlı ayarlar" sekmesi: iç sekmeler (Form / Geçmiş / Temsilciler) K-TABS ortak kartıyla; değişiklik geçmişi ve temsilciler paneli Golden Compact DataTable (server mode); temsilciler için CRM'e sayfalı, toplamlı okuma ucu (bugünkü 20'lik picker ucu sessizce kesiyor)
+Repository: C:\tmp\vw-w3e-e4r2-fix-d (worktree, test/crm-content-visit-e2e güncel başı — FIX-a / b / c dahil) · Branch: wp/vw-w3e-e4r2-fix-d · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: "Kullanıcı kararı (2026-10-16) — U-7", §37 W3E-E4R2-FIX-a (ikinci tablo yöntemi, diten:tab-change'de yeniden ölçme, FU-DT-SKELETON-ID sırası), §37 FIX-b (sayfanın son hali), §37 FIX-c (sunucu modundaki ikinci tablo nasıl kuruldu — AYNI yöntemi kullan), §37 W3E-FLAGS-STD (vekil liste sözleşmesi çevirisi), K-STD, K-TABS, K-THEME. Standartlar: frontend-datatable-template.md, frontend-js-standard.md; verify_datatable_page.py.
+MEVCUT:
+- CRM: services/Diten.CrmService/src/Diten.CrmService.Application/Features/VisitEvidence/VisitEvidencePolicyReads.cs — ListVisitEvidenceRepsQuery(Q) → IReadOnlyList<EvidenceRepDto>, Take(MaxReps = 20), toplam yok (picker); GetVisitEvidencePolicyHistoryQuery(Page, PageSize) → VisitEvidencePolicyHistoryDto(Items, Total, Page, PageSize, …) zaten sayfalı · Api Controllers/CRM/VisitEvidenceSettingsController.cs (policy/history, policy/reps, policy/effective).
+- Web: Views/CRM/VisitEvidenceSettings/Index.cshtml — iç şerit button.ve-pane-tab[data-pane=form|history|reps]; #ve-pane-reps table.ve-table (Temsilci, Konum, Fotoğraf, QR, Cihaz — değerler istemcide C.repRows(state.reps, state.policy, exceptions): kiracı ayarı + bugün aktif onaylı istisna "· istisna"); #ve-pane-history table.ve-table (Tarih, Kişi, Alan, Değişiklik — get('/policy/history?page=1&pageSize=100')) · wwwroot/assets/js/CRM/VisitEvidenceSettings/visit-evidence-settings.js (setPane, renderReps, renderHistory, loadReps) + index.js (istisna listesi = sayfanın TEK createList'i) · Web vekili VisitEvidenceSettingsController (policy/history ve policy/reps düz geçiş).
+NE:
+(1) CRM — temsilci kadrosu ucu: YENİ okuma GET api/crm/visit-evidence-policy/reps/roster?q&page&pageSize → { items: EvidenceRepDto[], total, page, pageSize } (aynı kaynak _reps.ListAsync, aynı q süzgeci, ad sırası kararlı; pageSize 1–100, varsayılan 25; aynı izinler: policy read / manage; kiracı sınırı). Mevcut picker ucu (policy/reps, 20'lik) DEĞİŞMEZ — "Yeni istisna" ve "Etkin kurallar" seçicileri onu kullanmaya devam eder. Komut değil, okuma: AUD-001 satırı gerekmez.
+(2) Web vekili: policy/history ve yeni roster için standart liste sözleşmesi (start / length / search → page / pageSize / q; { items, total, filteredTotal }) — FLAGS-STD'deki çeviri deseni; CRM sözleşmesi aynen.
+(3) İç sekmeler: ve-pane-tab şeridi → _TabCard (Form bx-slider-alt · Geçmiş bx-history · Temsilciler bx-group); dış sekme kartının İÇİNDE ikinci kart olarak (K-TABS); setPane davranışı (form kirliyken uyarı vb.) aynı.
+(4) Değişiklik geçmişi = Golden görünümü, server mode, salt okuma: kart, araç çubuğu (sayfa boyutu, CSV / Excel, sütun görünürlüğü), iskelet, bilgi + sayfalama, v2 + data_mode server; kişi adları bugünkü gibi (displayNames). Kayıt sonrası (Kaydet ve uygula) yenilenir.
+(5) Temsilciler paneli = Golden görünümü, server mode: arama (q → CRM), sayfalama, toplam; hücre değerleri bugünkü kurala göre istemcide hesaplanır (C.repRows mantığı satır başına; istisna listesi sayfanın zaten okuduğu tam liste — temsilci başına okuma YOK). "· istisna" işareti korunur.
+(6) İkinci / üçüncü tablo yöntemi FIX-c'deki gibi (sayfanın tek createList'i istisna listesi); fabrika bu sayıda tabloyu taşıyamıyorsa DUR, raporla (diten-datatable.js'e DOKUNMA). Gizli bölmede çizilen tablo diten:tab-change'de yeniden ölçülür; iskelet sırası FU-DT-SKELETON-ID notuna uyar.
+KORU/YAPMA: ayar formu, önizleme, Kaydet ve uygula, Etkin kurallar kartı (ve-effective — bu pakette dönüştürülmez), istisna listesi ve dış sekmeler (FIX-b) aynen; picker ucu değişmez; K-THEME (yalnız --bs-primary; guard yeşil) + koyu blok; ortak dosyalar (backbone-custom.css, diten-datatable.js, _TabCard, diten-tabs.js) DEĞİŞMEZ; kalıcı veri yazma YOK (görsel kanıtta kaydetme denenmez); kullanıcının sekmesine harness yok.
+DOĞRULA: CRM testleri — roster: sayfalama + toplam (25 / 26. kayıt, son sayfa), q süzgeci, kararlı sıra, pageSize sınırı (0 / 101 → 400), kiracı izolasyonu, izinsiz 403; picker ucu hâlâ 20 ve aynı şekil. Web.Tests (xUnit + RunNode): iç sekmeler _TabCard'dan; geçmiş + temsilciler v2 + server + vekil çevirisi (start / length → page / pageSize, search → q); 20'den fazla temsilcide toplam doğru ve 2. sayfa okunur (sessiz kesme yok); "· istisna" hücresi; diten:tab-change'de yeniden ölçme; UAS-001; 7 dil; tema guard + 3 sabotaj (.bak + touch): (1) roster Take(20)'ye dönsün / total kalksın → kırmızı; (2) vekil page çevirisini bozsun → kırmızı; (3) iç şerit ve-pane-tab'a dönsün → kırmızı. CRM + Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt (AYRI sekme; fleet kapalıysa RAPORLA, fleet'i başlatma): iç sekmeler, geçmiş sayfalama, temsilciler arama + sayfalama, Arapça, açık + koyu, telefon.
+Commit: "fix(crm,web): WP-VW-W3E-E4R2-FIX-d — visit evidence settings inner tabs on the shared tab card; change history and rep roster on the Golden Compact DataTable (server mode); paged rep roster read (the picker's 20-row read silently truncated the panel)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
