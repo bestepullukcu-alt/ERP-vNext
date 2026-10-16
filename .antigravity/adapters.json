@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "about": "İ5-A ajan yükleme pilotu. .antigravity/ tek kaynaktır; aşağıdaki hedefler sync_adapters.py ile üretilir ve elle düzenlenmez. Burada listelenmeyen hiçbir ajan, skill ya da kural platformların otomatik keşfine girmez.",
+  "managed_dirs": [
+    ".claude/agents",
+    ".claude/skills",
+    ".claude/rules",
+    ".codex/agents",
+    ".agents/skills",
+    ".agents/rules"
+  ],
+  "items": [
+    {
+      "id": "l10n-agent",
+      "kind": "agent",
+      "source": ".antigravity/agents/l10n-agent.md",
+      "targets": [
+        {
+          "tool": "claude-code",
+          "format": "markdown",
+          "path": ".claude/agents/l10n-agent.md",
+          "frontmatter": {
+            "name": "l10n-agent",
+            "description": "Diten yerelleştirme uzmanı: .resx kaynak dosyalarını oluşturur ve günceller (Platform modülü en+tr, kiracı modülü 7 dil), SharedResource ile sayfaya özel kaynak ayrımını ve window.L10n köprüsünü uygular. Kullanıcıya görünen metin eklenen ya da çevirisi eksik ekranlarda kullan. Backend, güvenlik, test ya da genel kod incelemesi için KULLANMA.",
+            "tools": "Read, Grep, Glob, Bash, Edit, Write",
+            "model": "sonnet"
+          }
+        },
+        {
+          "tool": "codex",
+          "format": "codex-agent-toml",
+          "path": ".codex/agents/l10n-agent.toml",
+          "fields": {
+            "name": "l10n-agent",
+            "description": "Diten yerelleştirme uzmanı: .resx kaynak dosyalarını oluşturur ve günceller (Platform modülü en+tr, kiracı modülü 7 dil), SharedResource ile sayfaya özel kaynak ayrımını ve window.L10n köprüsünü uygular. Kullanıcıya görünen metin eklenen ya da çevirisi eksik ekranlarda kullan. Backend, güvenlik, test ya da genel kod incelemesi için KULLANMA."
+          }
+        }
+      ]
+    },
+    {
+      "id": "security-agent",
+      "kind": "agent",
+      "source": ".antigravity/agents/security-agent.md",
+      "targets": [
+        {
+          "tool": "claude-code",
+          "format": "markdown",
+          "path": ".claude/agents/security-agent.md",
+          "frontmatter": {
+            "name": "security-agent",
+            "description": "Diten güvenlik denetçisi (salt-okunur): kiracı izolasyonu (TenantId, kiracılar arası 404), JWT ve [HasPermission] yetkisi, denetim kaydı, gizli bilgi ve kişisel veri sızıntısı için kodu ya da bir değişikliği inceler ve bulguları raporlar; dosya değiştirmez. Yalnız güvenlik ya da kiracı incelemesi açıkça istendiğinde kullan. Özellik geliştirme, hata düzeltme ya da yerelleştirme için KULLANMA.",
+            "tools": "Read, Grep, Glob, Bash",
+            "disallowedTools": "Edit, Write, NotebookEdit",
+            "model": "sonnet"
+          }
+        },
+        {
+          "tool": "codex",
+          "format": "codex-agent-toml",
+          "path": ".codex/agents/security-agent.toml",
+          "fields": {
+            "name": "security-agent",
+            "description": "Diten güvenlik denetçisi (salt-okunur): kiracı izolasyonu (TenantId, kiracılar arası 404), JWT ve [HasPermission] yetkisi, denetim kaydı, gizli bilgi ve kişisel veri sızıntısı için kodu ya da bir değişikliği inceler ve bulguları raporlar; dosya değiştirmez. Yalnız güvenlik ya da kiracı incelemesi açıkça istendiğinde kullan. Özellik geliştirme, hata düzeltme ya da yerelleştirme için KULLANMA."
+          }
+        }
+      ]
+    },
+    {
+      "id": "resx-check",
+      "kind": "skill",
+      "source": ".antigravity/skills/resx-check/SKILL.md",
+      "targets": [
+        {
+          "tool": "claude-code",
+          "format": "markdown",
+          "path": ".claude/skills/resx-check/SKILL.md",
+          "frontmatter": "from-source"
+        },
+        {
+          "tool": "codex+antigravity",
+          "format": "markdown",
+          "path": ".agents/skills/resx-check/SKILL.md",
+          "frontmatter": "from-source"
+        }
+      ]
+    },
+    {
+      "id": "localization-standard",
+      "kind": "rule",
+      "source": ".antigravity/rules/localization-standard.md",
+      "targets": [
+        {
+          "tool": "claude-code",
+          "format": "markdown",
+          "path": ".claude/rules/localization-standard.md",
+          "frontmatter": {
+            "paths": [
+              "**/*.resx",
+              "frontend/Diten.Web/Views/**/*.cshtml",
+              "frontend/Diten.Web/wwwroot/assets/js/**/*.l10n.js"
+            ]
+          }
+        },
+        {
+          "tool": "antigravity",
+          "format": "markdown",
+          "path": ".agents/rules/localization-standard.md",
+          "frontmatter": {
+            "trigger": "glob",
+            "globs": "**/*.resx, frontend/Diten.Web/Views/**/*.cshtml, frontend/Diten.Web/wwwroot/assets/js/**/*.l10n.js",
+            "description": "Yerelleştirme standardı: Platform 2 dil, kiracı 7 dil; .resx yolu ve SharedResource ayrımı."
+          }
+        }
+      ]
+    }
+  ]
+}

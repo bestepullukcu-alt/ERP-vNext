@@ -74,6 +74,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
         // RunWorkflowEscalationsCommand — WP-WF-ENGINE-CANDIDATES-01 (zaman aşımı / yükseltme WorkflowTransitionLog yazar).
         ["Diten.Platform"] = new(Debt: 139, Exceptions: 5, K2Debt: 192, WritingQueries: 3, Indirect: 3),
+        ["Diten.PlanningService"] = new(Debt: 2, Exceptions: 0, Indirect: 5),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
@@ -113,6 +114,17 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // CT acceptance 2026-10-06 (MVP-3 lane, MOD-0193 pack §21): the BOM version history is written in the SAME Mongo
         // transaction as the BOM (K2 fail-closed), has no update/delete member, and is read on the BOM's own screen.
         ("Diten.ManufacturingService", "bom-surum-gecmisi", "c", "IBomHistoryJournal.CommitAsync"),
+        // Ali/CT 2026-10-14: temporary local Mongo traces, not the BL-501 central audit.
+        ("Diten.PlanningService", "batch-inceleme-izi", "c", "IHistoryImportBatchStore.TryDecideAsync"),
+        ("Diten.PlanningService", "satir-kabul-izi", "c", "IAcceptedDemandHistoryStore.AcceptAsync"),
+        ("Diten.PlanningService", "draft-olusturma-izi", "c", "IManualDraftStore.CreateAsync"),
+        ("Diten.PlanningService", "forecast-secim-izi", "c", "IForecastDraftStore.CreateForecastAsync"),
+        ("Diten.PlanningService", "draft-duzenleme-izi", "c", "IManualDraftStore.EditWeekAsync"),
+        ("Diten.PlanningService", "draft-dislama-izi", "c", "IManualDraftStore.ExcludeSeriesAsync"),
+        ("Diten.PlanningService", "draft-inceleme-izi", "c", "IManualDraftStore.TransitionReviewAsync"),
+        ("Diten.PlanningService", "yayin-izi", "c", "IInternalPublishedRevisionStore.PublishAsync"),
+        ("Diten.PlanningService", "gecersiz-kilma-izi", "c", "IInternalRevisionInvalidator.InvalidateAsync"),
+        ("Diten.PlanningService", "geri-donus-izi", "c", "IRollbackDraftStore.CreateAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),

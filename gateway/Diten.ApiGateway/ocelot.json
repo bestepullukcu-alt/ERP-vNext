@@ -1,6 +1,22 @@
 {
   "Routes": [
     {
+      "DownstreamPathTemplate": "/api/v2/demand",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5068 }],
+      "UpstreamPathTemplate": "/api/v2/demand",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/v2/demand/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 5068 }],
+      "UpstreamPathTemplate": "/api/v2/demand/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/ppm",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

@@ -1156,4 +1156,6 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Politique de signature</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significations de signature</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Approbation des modèles</value></data>
+  <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
 </root>
