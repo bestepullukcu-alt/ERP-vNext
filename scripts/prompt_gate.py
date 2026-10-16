@@ -63,6 +63,11 @@ PATH_SIGNALS = [(re.compile(r"(^|/)migrations?(/|$)", re.I), "migrasyon"),
                 (re.compile(r"permission|(^|/)diten\.authservice(/|$)", re.I), "yetki")]
 CHOICES = {"parent", "FU", "child", "yeni"}
 PACK_OK = {"ready-for-dev", "approved"}
+HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
+# CT-FIX-01 (11): a governance record approves with exactly 'approved' or 'decided', optionally followed by the two
+# annotation forms its records use — ' (…)' and ' — <text>' (measured 2026-10-17, docs/records/decisions). Any other
+# suffix ('approved-but-draft', 'approved draft', 'approved (…) + F-1: …') is not an approval the gate reads.
+GOV_APPROVED = re.compile(r"^(approved|decided)(?: \([^()]*\))?(?: — \S.*)?$")
 REVIEW_CHECKS = ["sözleşme", "dosyalar", "ct-onayı", "kabul", "durma", "risk"]
 MIN_REASON = 15
 PLACEHOLDER = re.compile(r"^\s*(-|—|tbd|todo|\.\.\.|…|yok|n/?a|bekliyor)?\s*$", re.I)
@@ -240,6 +245,12 @@ class GitRepo:
         out = self._git(self.worktree, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}", ok_fail=True)
         return out.strip() if out else None
 
+    def commit_id(self, ref: str) -> str | None:
+        """CT-FIX-01 (13): a hex id in a prompt names a commit, never a branch that looks like one — it resolves only to
+        a commit that starts with it. resolve() keeps accepting named refs (HEAD, origin/main)."""
+        full = self.resolve(ref) if HEX_ID.match(ref) else None
+        return full if full is not None and full.startswith(ref) else None
+
     def head(self) -> str:
         return self._git(self.worktree, "rev-parse", "HEAD").strip()
 
@@ -292,7 +303,7 @@ def check_git(p: dict, repo, sources: list[str], root_common: str | None = None)
     if root_common is None or repo.common_dir(p["worktree"]) != root_common:
         eng.append("git: prompt bu deponun dışındaki bir depoyu hedefliyor — kuyruk, rapor ve inceleme bu depodan okunur, "
                    "başka deponun işini bu deponun kuyruğu onaylayamaz")
-    full = repo.resolve(p["expected"])
+    full = repo.commit_id(p["expected"])
     if full is None:
         eng.append(f"git: Expected HEAD {p['expected']} bu depoda yok")
     elif repo.head() != full:
@@ -361,6 +372,22 @@ def check_contract(p: dict, repo, commit: str) -> tuple[list[str], list[str], in
     return eng, info, quotes
 
 
+def kunye_status(text: str) -> tuple[str | None, str | None]:
+    """CT-FIX-01 (11): the approval of a pack or a governance record is read from ONE closed front matter holding exactly
+    one 'status:' line. A second status, a status outside the front matter or an unclosed block is refused — never
+    settled by taking the first match. Returns (value, None) or (None, problem)."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    if not lines or lines[0].strip() != "---":
+        return None, "künye yok (dosya '---' ile başlamıyor)"
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        return None, "künye kapanmamış (kapanış '---' yok)"
+    found = [m.group(1).strip() for l in lines[1:end] for m in [re.match(r"^\**status\**\s*:\s*(.*)$", l, re.I)] if m]
+    if len(found) != 1:
+        return None, f"künyede {len(found)} 'status' satırı var, 1 olmalı"
+    return found[0].strip("\"'"), None
+
+
 def check_authority(p: dict, repo, commit: str, row: dict | None = None) -> list[str]:
     path = p["authority"]
     data = repo.file(commit, path)
@@ -370,19 +397,22 @@ def check_authority(p: dict, repo, commit: str, row: dict | None = None) -> list
         if not path.startswith("docs/records/decisions/"):
             return [f"görev sınıfı: yönetişim işinin kapsam kaydı docs/records/decisions/ altında olmalı: {path}"]
         text = data.decode("utf-8", errors="replace")
-        status = next((m.group(1).strip() for l in text.split("\n")[:12] for m in [re.match(r"^status\s*:\s*(.*)$", l, re.I)] if m), "")
+        status, bad = kunye_status(text)
         eng = []
-        if not re.match(r"^(approved|decided)\b", status, re.I):
+        if bad:
+            eng.append(f"görev sınıfı: kapsam kaydının künyesi geçersiz — {bad} — {path}")
+        elif not GOV_APPROVED.match(status):
             eng.append(f"görev sınıfı: kapsam kaydı onaylı değil (status: '{status[:30] or 'yok'}') — {path}")
         named_by_row = bool(row) and (row.get("record") or "").split("@")[0].strip() == path
         if p.get("wp", "\0") not in text and not named_by_row:
             eng.append(f"görev sınıfı: kapsam kaydı bu işe bağlı değil — kayıtta {p.get('wp')} geçmiyor ve kuyruk satırının "
                        f"record sütunu bu kaydı göstermiyor ({path})")
         return eng
-    head = data.decode("utf-8", errors="replace").split("\n")[:25]
-    status = next((m.group(1) for l in head for m in [re.match(r"^\**status\**\s*:\s*([\w-]+)", l, re.I)] if m), None)
+    status, bad = kunye_status(data.decode("utf-8", errors="replace"))   # the whole value: 'approved | draft' is not approved
     eng = []
-    if status not in PACK_OK:
+    if bad:
+        eng.append(f"görev sınıfı: paketin künyesi geçersiz — {bad} ({path})")
+    elif status not in PACK_OK:
         eng.append(f"görev sınıfı: paket durumu '{status or 'yok'}' — ready-for-dev ya da approved olmalı ({path})")
     pack_id = re.match(r"^(MOD-\d{4}(?:-FU\d+)?)", os.path.basename(path))
     if pack_id and row and row.get("module"):
@@ -611,7 +641,7 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
     if eng:
         return 1, out + [f"ENGEL {e}" for e in eng] + ["sonuç: engel — biçim", "çıkış: 1"]
     out.append(f"wp: {p['wp']} · prompt {p['prompt_id']} v{p['version']} · risk {p['risk']} · sınıf {p['task_class']}")
-    commit = repo.resolve(p["expected"])
+    commit = repo.commit_id(p["expected"])
     pack: list[tuple[str, str]] = []
     if commit is None:
         eng.append(f"git: Expected HEAD {p['expected']} bu depoda yok")
@@ -646,7 +676,7 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
 def real_queue(queue_id: str, wp_id: str) -> dict:
     cq = ctq()
     try:
-        queues, states = cq.load(queue_id)
+        queues, states = cq.load_for_dispatch(queue_id)
     except SystemExit as e:
         return {"error": str(e)}
     qd = queues[0]
@@ -682,7 +712,16 @@ def real_names(row: dict) -> set[str]:
 
 
 def real_report(commit: str, path: str) -> bytes | None:
-    return ctq().git_file(commit, path)
+    """CT-FIX-01 (13): the discovery report and the --review record are read at a commit, never at a branch that looks
+    like one — the hex must resolve to a commit that starts with it, and the read uses the full id."""
+    cq = ctq()
+    if not HEX_ID.match(commit):
+        return None
+    done = cq.git("rev-parse", "--verify", "--quiet", "--end-of-options", f"{commit}^{{commit}}")
+    full = done.stdout.decode().strip() if done.returncode == 0 else ""
+    if not full.startswith(commit):
+        return None
+    return cq.git_file(full, path)
 
 
 def run_check(prompt_path: str, queue: str, review_spec: str | None, prepare: bool) -> tuple[int, list[str]]:
@@ -716,6 +755,7 @@ class FakeRepo:
     def is_repo(self, path): return path in self.repos
     def common_dir(self, path): return "/r/.git"
     def resolve(self, ref): return self.h if self.h.startswith(ref) else None
+    def commit_id(self, ref): return self.h if HEX_ID.match(ref) and self.h.startswith(ref) else None
     def head(self): return self.h
     def branch(self): return self.b
     def dirty(self): return self.d
@@ -821,7 +861,7 @@ Rapor formatı: §22
     cases.append(("all surfaces N/A (LOW) -> passes but says 'no contract verified', never 'verified'",
                   r[0] == 0 and any("doğrulanan sözleşme yok" in l for l in r[1])))
     cases.append(("sabotage: pack status draft -> ENGEL",
-                  any("paket durumu 'draft'" in e for e in eng(run(good, rp=FakeRepo(dict(files, **{"execution/domains/d/module-packs/MOD-0288-x.md": "status: draft\n"})))))))
+                  any("paket durumu 'draft'" in e for e in eng(run(good, rp=FakeRepo(dict(files, **{"execution/domains/d/module-packs/MOD-0288-x.md": "---\nstatus: draft\n---\n"})))))))
     cases.append(("sabotage: the named pack belongs to another module than the queue row -> ENGEL",
                   any("ait değil" in e for e in eng(run(good, q=dict(q_ok, row={"item": "Things", "module": "MOD-0151"}))))))
     gov = good.replace("Görev sınıfı: ürün · Paket: execution/domains/d/module-packs/MOD-0288-x.md",
@@ -985,6 +1025,81 @@ Rapor formatı: §22
     commented = [l for l in template if l.startswith(parsed) and re.search(r"\s#", l)]
     cases.append(("SOP §36.1 template: no line the gate reads carries a trailing '#' comment (filled verbatim it must parse)",
                   not commented))
+    # CT-FIX-01 (independent audit 2026-10-17, findings 11 and 13)
+    pack_p = {"authority": "execution/domains/x/module-packs/MOD-0001-x.md", "task_class": "geliştirme", "wp": "W1"}
+    gov_p = {"authority": "docs/records/decisions/2026-10/x.md", "task_class": "yönetişim", "wp": "W1"}
+
+    def auth(p, text):
+        return check_authority(p, FakeRepo({p["authority"]: text}), "a" * 40)
+    cases.append(("CT-FIX-01 11: a pack with one closed front matter and status approved / ready-for-dev passes",
+                  not auth(pack_p, "---\nid: MOD-0001\nstatus: approved\n---\nbody\n")
+                  and not auth(pack_p, "---\nid: MOD-0001\nstatus: ready-for-dev\n---\n")))
+    cases.append(("CT-FIX-01 11: pack status approved then draft -> ENGEL (two status lines)",
+                  any("2 'status'" in e for e in auth(pack_p, "---\nid: MOD-0001\nstatus: approved\nstatus: draft\n---\n"))))
+    cases.append(("CT-FIX-01 11: pack status only outside a front matter -> ENGEL",
+                  any("künye yok" in e for e in auth(pack_p, "# MOD-0001\nstatus: approved\nbody\n"))))
+    cases.append(("CT-FIX-01 11: pack front matter never closed -> ENGEL",
+                  any("kapanmamış" in e for e in auth(pack_p, "---\nid: MOD-0001\nstatus: approved\nbody\n"))))
+    cases.append(("CT-FIX-01 11: pack front matter draft, 'status: approved' in the body -> ENGEL (draft)",
+                  any("'draft'" in e for e in auth(pack_p, "---\nid: MOD-0001\nstatus: draft\n---\nstatus: approved\n"))))
+    cases.append(("CT-FIX-01 11: a governance record with one closed front matter and status approved passes",
+                  not auth(gov_p, "---\nstatus: approved\n---\nW1\n")))
+    cases.append(("CT-FIX-01 11: a pack status with a suffix ('approved | draft', 'approved draft') -> ENGEL (whole value)",
+                  all(auth(pack_p, f"---\nstatus: {v}\n---\n") for v in ("approved | draft", "approved draft", "ready-for-dev-ish"))))
+    cases.append(("CT-FIX-01 11: governance annotation forms in use pass ('approved', ' — …', ' (…)', ' (…) — …', 'decided — …')",
+                  not any(auth(gov_p, f"---\nstatus: {v}\n---\nW1\n") for v in (
+                      "approved", "approved — sahip onayı", "approved (owner 2026-10-15)", "approved (waiver W-1) — gerekçe",
+                      "decided — karar"))))
+    cases.append(("CT-FIX-01 11: governance unknown suffixes -> ENGEL ('approved-but-draft', 'approved draft', '(…) + F-1: …')",
+                  all(auth(gov_p, f"---\nstatus: {v}\n---\nW1\n") for v in (
+                      "approved-but-draft", "approved draft", "approved (X) + F-1: fix together", "approvedx", "draft — approved"))))
+    cases.append(("CT-FIX-01 11: governance approved then draft, and approval only in prose -> ENGEL",
+                  any("2 'status'" in e for e in auth(gov_p, "---\nstatus: approved\nstatus: draft\n---\nW1\n"))
+                  and any("künye yok" in e for e in auth(gov_p, "# Karar\nstatus: approved\nW1\n"))))
+    fake = FakeRepo({})
+    cases.append(("CT-FIX-01 13: Expected HEAD — a real short id resolves, 'deadbee' does not (fake repo)",
+                  fake.commit_id("aaaaaaa") == "a" * 40 and fake.commit_id("deadbee") is None))
+    import subprocess as sp
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@invalid", GIT_COMMITTER_NAME="t",
+                   GIT_COMMITTER_EMAIL="t@invalid", GIT_OPTIONAL_LOCKS="0")
+        sp.run(["git", "init", "-q", tmp], check=True, env=env)
+        Path(tmp, "f.txt").write_text("x\n", encoding="utf-8")
+        sp.run(["git", "-C", tmp, "add", "f.txt"], check=True, env=env)
+        sp.run(["git", "-C", tmp, "commit", "-q", "-m", "x"], check=True, env=env)
+        sha = sp.run(["git", "-C", tmp, "rev-parse", "HEAD"], capture_output=True, text=True, env=env).stdout.strip()
+        name = next(n for n in ("deadbee", "cafe123") if not sha.startswith(n))
+        sp.run(["git", "-C", tmp, "branch", name, sha], check=True, env=env)
+        real = GitRepo(tmp)
+        cases.append(("CT-FIX-01 13: GitRepo.commit_id refuses a hex-named branch, accepts the real short id; resolve() still takes a named ref",
+                      real.commit_id(name) is None and real.commit_id(sha[:9]) == sha and real.resolve(name) == sha))
+        cq, saved_ctq = ctq(), globals()["ctq"]   # ctq() loads a fresh module on every call: pin one, pointed at tmp
+        try:
+            cq.ROOT = Path(tmp)
+            globals()["ctq"] = lambda: cq
+            good, bad = real_report(sha[:9], "f.txt"), real_report(name, "f.txt")
+        finally:
+            globals()["ctq"] = saved_ctq
+        cases.append(("CT-FIX-01 13: real_report (discovery report, --review) reads a real short id, refuses a hex-named branch",
+                      good == b"x\n" and bad is None))
+
+    class DispatchStops:                          # CT-FIX-01 05: the gate's queue goes through the dispatch loader
+        @staticmethod
+        def load_for_dispatch(queue_id): raise SystemExit("DUR: kayıt geçersiz")
+        @staticmethod
+        def load(queue_id): return [{"queue_id": queue_id}], []
+    saved_ctq = globals()["ctq"]
+    try:
+        globals()["ctq"] = lambda: DispatchStops
+        stopped = real_queue("q", "W1")
+    except Exception:                             # a loader that did not stop runs on into the fake module
+        stopped = {}
+    finally:
+        globals()["ctq"] = saved_ctq
+    cases.append(("CT-FIX-01 05: the gate reads its queue through load_for_dispatch (a registry validate rejects stops it)",
+                  stopped.get("error", "").startswith("DUR")))
+
     src = Path(__file__).read_text(encoding="utf-8")
     cases.append(("read-only: no write call in this script", not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))
     failed = 0
@@ -1017,7 +1132,7 @@ def main() -> int:
                 print("DUR: promptta Expected HEAD okunamadı")
                 return 2
             repo = GitRepo(p["worktree"] if os.path.isdir(p.get("worktree", "")) else str(ROOT))
-            commit = repo.resolve(p["expected"])
+            commit = repo.commit_id(p["expected"])
             if commit is None:
                 print(f"DUR: Expected HEAD {p['expected']} yok")
                 return 2

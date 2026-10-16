@@ -737,6 +737,33 @@ def self_test() -> int:
               .replace("docs/records/decisions/<yyyy-aa>/<onay kaydı>.md@<commit>", "docs/records/decisions/2026-10/ornek.md@" + "a" * 40))
     led_t, bad_t = parse_ledger(filled) if tpl else (None, ["şablon yok"])
     cases.append(("the effort ledger template, its placeholders filled, passes the strict ledger reader", led_t is not None and not bad_t))
+
+    # CT-FIX-01 (independent audit 2026-10-17, finding 13): approval_record path@<hex> names a commit, never a hex-named branch.
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@invalid", GIT_COMMITTER_NAME="t",
+                   GIT_COMMITTER_EMAIL="t@invalid", GIT_OPTIONAL_LOCKS="0")
+        subprocess.run(["git", "init", "-q", tmp], check=True, env=env)
+        Path(tmp, "f.txt").write_text("x\n", encoding="utf-8")
+        subprocess.run(["git", "-C", tmp, "add", "f.txt"], check=True, env=env)
+        subprocess.run(["git", "-C", tmp, "commit", "-q", "-m", "x"], check=True, env=env)
+        sha = subprocess.run(["git", "-C", tmp, "rev-parse", "HEAD"], capture_output=True, text=True, env=env).stdout.strip()
+        name = next(n for n in ("deadbee", "cafe123") if not sha.startswith(n))
+        subprocess.run(["git", "-C", tmp, "branch", name, sha], check=True, env=env)
+        saved_root = globals()["ROOT"]
+        try:
+            globals()["ROOT"] = Path(tmp)            # Source.git reads ROOT at call time
+            src7 = object.__new__(Source)
+            refused = src7.commit_id(name) is None and src7.read(name, "f.txt") is None and src7.blob(name, "f.txt") is None
+            accepted = src7.commit_id(sha[:9]) == sha and src7.read(sha[:9], "f.txt") == "x\n"
+            named = src7.resolve(name) == sha and src7.read("HEAD", "f.txt") == "x\n"
+        finally:
+            globals()["ROOT"] = saved_root
+    cases.append(("CT-FIX-01 13: Source — a hex-named branch is refused, the real short id reads; resolve() still takes a named ref",
+                  refused and accepted and named))
+    integration = Path(__file__).read_text(encoding="utf-8").split("\n# " + "-" * 96 + " integration\n", 1)[-1]
+    cases.append(("CT-FIX-01 05/06: the report checks registry, vocabulary and transitions with ct_queue.dispatch_problems",
+                  "reg_problems = ctq.dispatch_problems(registry, states, all_trans," in integration))
     failed = 0
     for name, good in cases:
         print(("PASS " if good else "FAIL ") + name)
@@ -748,6 +775,7 @@ def self_test() -> int:
 # ------------------------------------------------------------------------------------------------ integration
 GIT_ALLOWED = {"rev-parse", "cat-file", "show", "ls-tree", "log", "merge-base", "diff", "status", "for-each-ref"}
 CLOSED_CLASSES = {"closed", "superseded", "cancelled", "failed", "rework"}
+HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
 
 
 class Source:
@@ -774,10 +802,22 @@ class Source:
         out = self.git("rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}", ok_fail=True)
         return out.stdout.decode().strip() if out.returncode == 0 else None
 
-    def read(self, commit: str, path: str) -> str | None:
-        if commit.startswith("-") or self.resolve(commit) is None:
+    def commit_id(self, ref: str) -> str | None:
+        """CT-FIX-01 (13): a hex id names a commit, never a branch that looks like one — it resolves only to a commit
+        that starts with it. resolve() keeps accepting named refs (the report's REF, origin/main)."""
+        full = self.resolve(ref) if HEX_ID.match(ref) else None
+        return full if full is not None and full.startswith(ref) else None
+
+    def _at(self, commit: str) -> str | None:
+        if commit.startswith("-"):
             return None
-        blob = self.git("rev-parse", "--verify", "--quiet", f"{commit}:{path}", ok_fail=True)
+        return self.commit_id(commit) if HEX_ID.match(commit) else self.resolve(commit)
+
+    def read(self, commit: str, path: str) -> str | None:
+        full = self._at(commit)
+        if full is None:
+            return None
+        blob = self.git("rev-parse", "--verify", "--quiet", f"{full}:{path}", ok_fail=True)
         if blob.returncode != 0:
             return None
         data = self.git("cat-file", "blob", blob.stdout.decode().strip()).stdout
@@ -805,7 +845,10 @@ class Source:
         return result
 
     def blob(self, commit: str, path: str) -> str | None:
-        out = self.git("rev-parse", "--verify", "--quiet", f"{commit}:{path}", ok_fail=True)
+        full = self._at(commit)
+        if full is None:
+            return None
+        out = self.git("rev-parse", "--verify", "--quiet", f"{full}:{path}", ok_fail=True)
         return out.stdout.decode().strip() if out.returncode == 0 else None
 
 
@@ -848,12 +891,14 @@ def read_strict_queue(ctq, vmi, src: "Source", queue_id: str) -> dict:
     q = mine_q[0]
     if q["strict"] != "yes":
         raise Incomplete(f"'{queue_id}' katı (strict=yes) kuyruk değil — yeni kip yalnız katı kuyruklar için")
-    reg_problems = ctq.check_registry(registry, states, commit_exists=lambda c: src.resolve(c) is not None,
-                                      path_at=lambda c, path: src.read(c, path) is not None)
+    all_trans = _table_rows(ctq, trans_text, ctq.TRANSITION_COLUMNS, "geçiş tablosu")
+    # CT-FIX-01 (05/06): the same checks that stop require and the prompt gate, read at the report's fixed SHA.
+    reg_problems = ctq.dispatch_problems(registry, states, all_trans, commit_exists=lambda c: src.resolve(c) is not None,
+                                         path_at=lambda c, path: src.read(c, path) is not None)
     if reg_problems:
-        reasons.append(f"kayıt dosyası sorunlu: {reg_problems[0]}")
+        reasons.append(f"kayıt, durum sözlüğü ya da geçiş tablosu sorunlu: {reg_problems[0]}")
     vocab = ctq.vocabulary(states, q["vocabulary"])
-    trans = [t for t in _table_rows(ctq, trans_text, ctq.TRANSITION_COLUMNS, "geçiş tablosu") if t["vocabulary"] == q["vocabulary"]]
+    trans = [t for t in all_trans if t["vocabulary"] == q["vocabulary"]]
     t_problems = ctq.check_transitions(trans, states) if trans else ["sözlüğün geçiş satırı yok"]
     queue_text = src.read(S, q["path"])
     base_text = src.read(q["baseline_commit"], q["path"])

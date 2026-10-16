@@ -44,6 +44,7 @@ MIN_REASON = 15
 PLACEHOLDER = re.compile(r"^\s*(-|—|tbd|todo|\.\.\.|…|yok|n/?a|pass|geçti|ok|tamam)?\s*$", re.I)
 MODULE_VALUE = re.compile(r"^(MOD-\d{4}(?:-FU\d+)?|ortak:\S.*)$")
 SPEC = re.compile(r"^([^@\s]+)@([0-9a-f]{7,40})(?::(\d+))?$")
+HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
 WAIVER = re.compile(r"^\s*(waiver|muafiyet)\b", re.I | re.M)
 GIT_ALLOWED = {"rev-parse", "cat-file", "ls-tree"}
 
@@ -171,10 +172,19 @@ class Git:
         out = self._run("rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}", ok_fail=True)
         return out.decode().strip() if out else None
 
+    def commit_id(self, ref: str) -> str | None:
+        """CT-FIX-01 (13): a hex id in an evidence spec names a commit, never a branch that looks like one — it resolves
+        only to a commit that starts with it. resolve() keeps accepting named refs (the record index's HEAD)."""
+        full = self.resolve(ref) if HEX_ID.match(ref) else None
+        return full if full is not None and full.startswith(ref) else None
+
     def read(self, commit: str, path: str) -> bytes | None:
-        if commit.startswith("-") or self.resolve(commit) is None:
+        if commit.startswith("-"):
             return None
-        blob = self._run("rev-parse", "--verify", "--quiet", f"{commit}:{path}", ok_fail=True)
+        full = self.commit_id(commit) if HEX_ID.match(commit) else self.resolve(commit)
+        if full is None:
+            return None
+        blob = self._run("rev-parse", "--verify", "--quiet", f"{full}:{path}", ok_fail=True)
         if blob is None:
             return None
         return self._run("cat-file", "blob", blob.decode().strip())
@@ -432,7 +442,7 @@ def run_check(spec: str, expect: dict, git: Git | None = None, index_ref: str = 
         data = git.read(m.group(2), m.group(1))
         if data is None:
             raise Incomplete(f"kayıt {spec} commit'te yok")
-        return check_record(data.decode("utf-8"), git.read, lambda c: git.resolve(c) is not None, git.v2_records(index_ref),
+        return check_record(data.decode("utf-8"), git.read, lambda c: git.commit_id(c) is not None, git.v2_records(index_ref),
                             expect, m.group(1))
     except Incomplete as e:
         return 2, [f"sonuç: tamamlanamadı — {e}", "çıkış: 2"]
@@ -905,6 +915,23 @@ def self_test() -> int:
     r = pp(pack("\n".join(block) + "\n")) if block else None
     cases.append(("İ4 S2: the standard's own example pack, its Acceptance Criteria block as written, reads AC-1 mandatory and AC-2 optional",
                   r is not None and not r[1] and not r[2] and r[0].get(1, (None,))[0] is True and r[0].get(2, (None,))[0] is False))
+
+    # CT-FIX-01 (independent audit 2026-10-17, finding 13): evidence path@<hex> names a commit, never a hex-named branch.
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@invalid", GIT_COMMITTER_NAME="t",
+                   GIT_COMMITTER_EMAIL="t@invalid", GIT_OPTIONAL_LOCKS="0")
+        subprocess.run(["git", "init", "-q", tmp], check=True, env=env)
+        Path(tmp, "f.txt").write_text("x\n", encoding="utf-8")
+        subprocess.run(["git", "-C", tmp, "add", "f.txt"], check=True, env=env)
+        subprocess.run(["git", "-C", tmp, "commit", "-q", "-m", "x"], check=True, env=env)
+        sha = subprocess.run(["git", "-C", tmp, "rev-parse", "HEAD"], capture_output=True, text=True, env=env).stdout.strip()
+        name = next(n for n in ("deadbee", "cafe123") if not sha.startswith(n))
+        subprocess.run(["git", "-C", tmp, "branch", name, sha], check=True, env=env)
+        g = Git(Path(tmp))
+        cases.append(("CT-FIX-01 13: evidence @<hex> — a hex-named branch is refused, the real short id reads; resolve() still takes a named ref",
+                      g.commit_id(name) is None and g.read(name, "f.txt") is None and g.commit_id(sha[:9]) == sha
+                      and g.read(sha[:9], "f.txt") == b"x\n" and g.resolve(name) == sha and g.read("HEAD", "f.txt") == b"x\n"))
 
     src = Path(__file__).read_text(encoding="utf-8")
     cases.append(("read-only: no write call in this script",

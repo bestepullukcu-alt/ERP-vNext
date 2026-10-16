@@ -1,0 +1,37 @@
+RED  A01 scripts/ct_queue.py: named 'load_for_dispatch passes one valid row' failed; restored True
+RED  A02 scripts/ct_queue.py: named 'main uses load_for_dispatch' failed; restored True
+RED  A03 scripts/ct_queue.py: named 'main strict=yes, branch strict=no' failed; restored True
+RED  A04 scripts/ct_queue.py: named 'short hex baseline_commit' failed; restored True
+RED  A05 scripts/ct_queue.py: named 'FAILED made dispatchable' failed (+1 other); restored True
+RED  A06 scripts/ct_queue.py: named 'terminal states always include' failed; restored True
+RED  A07 scripts/ct_queue.py: named 'CANCELLED -> READY' failed; restored True
+RED  A08 scripts/ct_queue.py: named 'CANCELLED -> READY' failed; restored True
+RED  A09 .antigravity/scripts/verify_module_id.py: named 'test_a_cut_row_stops_discovery_with_its_line' failed (+1 other); restored True
+RED  A10 .antigravity/scripts/verify_module_id.py: named 'test_a_cut_header_with_its_row_is_refused_even_beside_an_intact_table' failed (+1 other); restored True
+RED  A11 .antigravity/scripts/verify_module_id.py: named 'test_an_empty_id_cell_is_refused' failed; restored True
+RED  A12 scripts/prompt_gate.py: named 'approved then draft -> ENGEL (two status lines)' failed (+1 other); restored True
+RED  A13 scripts/prompt_gate.py: named 'governance unknown suffixes' failed; restored True
+RED  A14 scripts/prompt_gate.py: named 'a pack status with a suffix' failed; restored True
+RED  A15 scripts/prompt_gate.py: named 'GitRepo.commit_id refuses a hex-named branch' failed; restored True
+RED  A16 scripts/prompt_gate.py: named 'real_report (discovery report, --review)' failed; restored True
+RED  A17 scripts/prompt_gate.py: named 'the gate reads its queue through load_for_dispatch' failed; restored True
+RED  A18 scripts/acceptance_record.py: named 'evidence @<hex>' failed; restored True
+RED  A19 scripts/status_report_v2.py: named 'Source — a hex-named branch' failed; restored True
+RED  A20 scripts/status_report_v2.py: named 'the report checks registry, vocabulary and transitions' failed; restored True
+RED  B01 .antigravity/scripts/sync_adapters.py: named 'test_a_missing_link_check_file_is_missing_not_skipped' failed; restored True
+ALL NAMED TESTS RED: True
+ct-fix-01 status after the round:
+ M .antigravity/scripts/verify_module_id.py
+ M scripts/acceptance_record.py
+ M scripts/ct_queue.py
+ M scripts/ct_route.py
+ M scripts/prompt_gate.py
+ M scripts/status_report_v2.py
+?? scripts/tests/test_verify_module_id_discover.py
+
+i5b-fix-01 status after the round:
+ M .antigravity/scripts/sync_adapters.py
+ M .claude/rules/agents-core.md
+ M AGENTS.md
+?? scripts/tests/test_sync_adapters_budget.py
+

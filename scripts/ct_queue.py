@@ -68,6 +68,13 @@ TRANSITIONS = ROOT / "execution" / "delivery" / "ct-sop7-transitions.tsv"
 TRANSITION_COLUMNS = ["vocabulary", "from_state", "to_state", "evidence", "source", "kind"]
 MOD_VALUE = re.compile(r"MOD-\d{4}(?:-FU\d+)?")
 STATE_COLUMNS = ["queue_id", "state", "class", "dispatch", "source", "confirmation"]
+# CT-FIX-01 (06): the SOP §7 vocabulary's terminal states and its only dispatchable state are fixed by the operating card
+# §0 — a change to the transition table or to the states file cannot re-open or dispatch them. Other vocabularies (SCE)
+# keep their own rules.
+SOP7 = "sop7"
+SOP7_TERMINAL = frozenset({"ACCEPTED", "REWORK", "FAILED", "SUPERSEDED", "CANCELLED"})
+SOP7_DISPATCHABLE = frozenset({"READY"})
+FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 DISPATCH_VALUES = ("yes", "new-version", "no")
 CONFIRMATION_VALUES = ("pending", "confirmed")
 UNVERIFIED = "unverified"
@@ -263,7 +270,10 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
             problems.append(f"registry {q['queue_id']}: vocabulary is required")
         elif check_vocab_rows and not any(st["queue_id"] == q["vocabulary"] for st in states):
             problems.append(f"registry {q['queue_id']}: vocabulary '{q['vocabulary']}' has no rows in the states file")
-        if not commit_exists(q["baseline_commit"]):
+        if not FULL_SHA.match(q["baseline_commit"]):
+            # CT-FIX-01 (05/13): a short hex or a name could resolve to a branch; a full id is always the commit itself.
+            problems.append(f"registry {q['queue_id']}: baseline_commit '{q['baseline_commit']}' must be a full 40-hex commit id")
+        elif not commit_exists(q["baseline_commit"]):
             problems.append(f"registry {q['queue_id']}: baseline_commit '{q['baseline_commit']}' is not a commit here")
         elif not path_at(q["baseline_commit"], q["path"]):
             problems.append(f"registry {q['queue_id']}: '{q['path']}' does not exist at the baseline commit")
@@ -285,6 +295,35 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
         if not s["source"].strip():
             problems.append(f"states {s['state']}: source is required (a state without a written source stays unverified)")
     return problems
+
+
+def sop7_problems(states: list[dict], transitions: list[dict]) -> list[str]:
+    """CT-FIX-01 (06): the fixed SOP §7 rules — READY is the only dispatchable state, the five terminal states exist and
+    never dispatch, and no transition row leaves a terminal state, whatever the transition table says."""
+    mine = [s for s in states if s["queue_id"] == SOP7]
+    if not mine:
+        return []
+    problems = []
+    dispatchable = {s["state"] for s in mine if s["dispatch"] != "no"}
+    if dispatchable != SOP7_DISPATCHABLE:
+        problems.append(f"states {SOP7}: dispatchable states are {sorted(dispatchable)}, the SOP allows only {sorted(SOP7_DISPATCHABLE)}")
+    missing = SOP7_TERMINAL - {s["state"] for s in mine}
+    if missing:
+        problems.append(f"states {SOP7}: terminal states missing {sorted(missing)}")
+    for i, r in enumerate(transitions, start=2):
+        if r["vocabulary"] == SOP7 and r["from_state"] in SOP7_TERMINAL:
+            problems.append(f"transitions line {i}: '{r['from_state']}' → '{r['to_state']}' leaves a terminal state "
+                            "(operating card §0: a terminal state has no exit)")
+    return problems
+
+
+def dispatch_problems(registry: list[dict], states: list[dict], transitions: list[dict], commit_exists=None,
+                      path_at=None) -> list[str]:
+    """CT-FIX-01 (05): what must hold before ANY consumer reads a dispatch or report answer from the registry and the
+    state vocabulary — the same checks validate reports, now a stop for require, guard, writers, summary and the
+    prompt gate instead of a list nobody has to read."""
+    return check_registry(registry, states, commit_exists, path_at) + check_transitions(transitions, states) \
+        + sop7_problems(states, transitions)
 
 
 def structure_errors(cur: Table, base: Table) -> list[str]:
@@ -449,6 +488,10 @@ def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, 
         return "kayıt geçersiz", problems[0]
     if row["path"] != queue["path"]:
         return "farklı görev kaynağı", f"orada '{row['path']}'"
+    # CT-FIX-01 (05): the branch may not lower the protection main registered (strict, vocabulary, baseline).
+    for key in ("strict", "vocabulary", "baseline_commit"):
+        if row.get(key) != queue.get(key):
+            return "farklı profil", f"{key}: orada '{row.get(key)}', burada '{queue.get(key)}'"
     return "kayıtlı", ""
 
 
@@ -653,6 +696,19 @@ def load(queue_filter: str | None) -> tuple[list[dict], list[dict]]:
     return [q for q in registry if queue_filter in (None, q["queue_id"])], states
 
 
+def load_for_dispatch(queue_filter: str | None) -> tuple[list[dict], list[dict]]:
+    """CT-FIX-01 (05): load() for every consumer except validate (which lists the problems itself): a registry, state
+    vocabulary or transition table that validate would reject stops here, before any dispatch or report answer."""
+    queues, states = load(queue_filter)
+    transitions = read_table(TRANSITIONS, TRANSITION_COLUMNS) if TRANSITIONS.exists() else []
+    problems = dispatch_problems(read_table(REGISTRY, REGISTRY_COLUMNS), states, transitions)
+    if problems:
+        raise SystemExit(f"DUR: kayıt, durum sözlüğü ya da geçiş tablosu geçersiz — dağıtım ya da rapor kararı verilmez: "
+                         f"{problems[0]}" + (f" (+{len(problems) - 1})" if len(problems) > 1 else "")
+                         + " · ayrıntı: python3 scripts/ct_queue.py validate")
+    return queues, states
+
+
 def current_bytes(queue: dict, ref: str | None) -> bytes:
     if ref is None:
         return (ROOT / queue["path"]).read_bytes()
@@ -694,6 +750,18 @@ def build_profile(queue: dict, vocab: dict[str, dict], states: list[dict], ref: 
     return profile_from_rows(queue, vocab, states, rows, ref)
 
 
+def profile_terminal(queue: dict, vocab: dict[str, dict], edges: set[tuple[str, str]]) -> set[str]:
+    """CT-FIX-01 (06): the table's terminal states; for sop7 the card's five always, and a table row leaving one of them
+    stops the profile instead of quietly re-opening it."""
+    terminal = terminal_states(vocab, edges)
+    if queue["vocabulary"] != SOP7:
+        return terminal
+    exits = sorted(f"{a}→{b}" for a, b in edges if a in SOP7_TERMINAL)
+    if exits:
+        raise ProfileError(f"geçiş tablosu son durumdan çıkış tanımlıyor: {', '.join(exits)} (işletim kartı §0)")
+    return terminal | SOP7_TERMINAL
+
+
 def profile_from_rows(queue: dict, vocab: dict[str, dict], states: list[dict], rows: list[dict], ref: str | None = None) -> dict:
     mine = [r for r in rows if r["vocabulary"] == queue["vocabulary"]]
     if not mine:
@@ -702,7 +770,7 @@ def profile_from_rows(queue: dict, vocab: dict[str, dict], states: list[dict], r
     if problems:
         raise ProfileError(f"geçiş tablosu geçersiz: {problems[0]}" + (f" (+{len(problems) - 1})" if len(problems) > 1 else ""))
     edges = {(r["from_state"], r["to_state"]) for r in mine}
-    return {"edges": edges, "terminal": terminal_states(vocab, edges), "known": known_modules(),
+    return {"edges": edges, "terminal": profile_terminal(queue, vocab, edges), "known": known_modules(),
             "acceptance": acceptance_checker(queue, ref)}
 
 
@@ -960,8 +1028,8 @@ def self_test() -> int:
     cases.append(("tolerant queue: the same undefined state is only a warning",
                   not check_queue(Table(strict_new), b2, vocab, strict=False)["errors"]))
     head = "\t".join(REGISTRY_COLUMNS)
-    good_row = "pq\tX CT\tq.tsv\tabc\tpending\tX only\tevidence\tno\tsop7"
-    qd = {"queue_id": "pq", "path": "q.tsv"}
+    good_row = f"pq\tX CT\tq.tsv\t{'a' * 40}\tpending\tX only\tevidence\tno\tsop7"
+    qd = {"queue_id": "pq", "path": "q.tsv", "strict": "no", "vocabulary": "sop7", "baseline_commit": "a" * 40}
 
     def status(text):
         return in_force_status(qd, text, commit_exists=lambda s: True, path_at=lambda s, p: True)[0]
@@ -1122,6 +1190,71 @@ def self_test() -> int:
                       [{"queue_id": "sop7", "state": "READY", "class": "dispatchable", "dispatch": "yes", "source": "s", "confirmation": "confirmed"}],
                       commit_exists=lambda c: True, path_at=lambda c, x: True))))
 
+    # CT-FIX-01 (independent audit 2026-10-17, findings 05/06): every consumer but validate stops on what validate rejects.
+    s7 = [{"queue_id": SOP7, "state": st, "class": c, "dispatch": d, "source": "SOP §7", "confirmation": "confirmed"}
+          for st, c, d in [("READY", "dispatchable", "yes"), ("IN_PROGRESS", "active", "no"), ("ACCEPTED", "closed", "no"),
+                           ("REWORK", "rework", "no"), ("FAILED", "failed", "no"), ("SUPERSEDED", "superseded", "no"),
+                           ("CANCELLED", "cancelled", "no")]]
+    reg_row = {"queue_id": "pq", "control_tower": "X CT", "path": "q.tsv", "baseline_commit": "a" * 40,
+               "owner_confirmation": "pending", "scope": "X only", "evidence": "e", "strict": "yes", "vocabulary": SOP7}
+    t7 = [{"vocabulary": SOP7, "from_state": a, "to_state": b, "evidence": "SOP §7", "source": "s", "kind": "sop"}
+          for a, b in [("READY", "IN_PROGRESS"), ("IN_PROGRESS", "ACCEPTED"), ("IN_PROGRESS", "REWORK"),
+                       ("IN_PROGRESS", "FAILED"), ("READY", "SUPERSEDED"), ("READY", "CANCELLED")]]
+    yes = dict(commit_exists=lambda c: True, path_at=lambda c, x: True)
+    cases.append(("CT-FIX-01 05: intact registry, vocabulary and transitions -> no dispatch problem",
+                  dispatch_problems([reg_row], s7, t7, **yes) == []))
+    cases.append(("CT-FIX-01 05: the queue registered twice -> dispatch problem (load_for_dispatch stops)",
+                  any("registered twice" in pr for pr in dispatch_problems([reg_row, reg_row], s7, t7, **yes))))
+    cases.append(("CT-FIX-01 05: a short hex baseline_commit -> problem (a name could resolve to a branch)",
+                  any("full 40-hex" in pr for pr in dispatch_problems([dict(reg_row, baseline_commit="a" * 9)], s7, t7, **yes))))
+    strict_main = "\t".join(REGISTRY_COLUMNS) + "\n" + "\t".join(reg_row[c] for c in REGISTRY_COLUMNS) + "\n"
+    cases.append(("CT-FIX-01 05: main strict=yes, branch strict=no -> farklı profil, not kayıtlı",
+                  in_force_status(dict(reg_row, strict="no"), strict_main, **yes)[0] == "farklı profil"
+                  and in_force_status(dict(reg_row, vocabulary="other"), strict_main, **yes)[0] == "farklı profil"
+                  and in_force_status(dict(reg_row), strict_main, **yes)[0] == "kayıtlı"))
+    dup_failed = s7 + [dict(next(s for s in s7 if s["state"] == "FAILED"), dispatch="yes")]
+    found = dispatch_problems([reg_row], dup_failed, t7, **yes)
+    cases.append(("CT-FIX-01 06: FAILED listed twice, the second row dispatchable -> problems",
+                  any("listed twice" in pr for pr in found) and any("dispatchable states" in pr for pr in found)))
+    cases.append(("CT-FIX-01 06: FAILED made dispatchable (one row) -> problem",
+                  any("dispatchable states" in pr for pr in sop7_problems(
+                      [dict(s, dispatch="yes") if s["state"] == "FAILED" else s for s in s7], t7))))
+    reopen = t7 + [{"vocabulary": SOP7, "from_state": "CANCELLED", "to_state": "READY", "evidence": "x", "source": "x", "kind": "öneri"}]
+    cases.append(("CT-FIX-01 06: a transition row CANCELLED -> READY -> problem and ProfileError",
+                  any("leaves a terminal state" in pr for pr in sop7_problems(s7, reopen))
+                  and profile_refused(lambda: profile_from_rows(reg_row, vocabulary(s7, SOP7), s7, reopen))
+                  and profile_refused(lambda: profile_terminal(reg_row, vocabulary(s7, SOP7), {("CANCELLED", "READY")}))))
+    cases.append(("CT-FIX-01 06: a terminal state missing from the vocabulary -> problem",
+                  any("terminal states missing" in pr for pr in sop7_problems([s for s in s7 if s["state"] != "CANCELLED"], t7))))
+    cases.append(("CT-FIX-01 06: other vocabularies (SCE) are not given the SOP rules",
+                  sop7_problems([dict(s, queue_id="sce-mvp6") for s in dup_failed], reopen[-1:]) == []))
+    v_short = vocabulary([s for s in s7 if s["state"] != "CANCELLED"], SOP7)   # a vocabulary that lost CANCELLED
+    cases.append(("CT-FIX-01 06: the sop7 profile's terminal states always include the card's five; SCE keeps its own",
+                  SOP7_TERMINAL <= profile_terminal(reg_row, v_short, {("READY", "IN_PROGRESS")})
+                  and profile_terminal(dict(reg_row, vocabulary="sce-mvp6"), v_short, {("READY", "IN_PROGRESS")})
+                  == terminal_states(v_short, {("READY", "IN_PROGRESS")})))
+    # The loader every consumer but validate uses, in memory (no file is written): a real commit and a tracked path, so a
+    # single registry row passes and only the duplicate stops it.
+    real = dict(reg_row, path="scripts/ct_queue.py", baseline_commit=git_text("rev-parse", "HEAD").strip())
+    saved = {k: globals()[k] for k in ("read_table", "TRANSITIONS")}
+
+    def loads(rows: list[dict]) -> str:
+        globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else s7,
+                         TRANSITIONS=Path("/nonexistent/ct-fix-01/transitions.tsv"))
+        try:
+            load_for_dispatch(real["queue_id"])
+            return "ok"
+        except SystemExit as e:
+            return str(e)
+        finally:
+            globals().update(saved)
+    one, two = loads([real]), loads([real, real])
+    cases.append(("CT-FIX-01 05: load_for_dispatch passes one valid row and stops a duplicate with DUR",
+                  one == "ok" and two.startswith("DUR:") and "registered twice" in two))
+    main_src = Path(__file__).read_text(encoding="utf-8").split("\ndef main() -> int:", 1)[1]
+    cases.append(("CT-FIX-01 05: main uses load_for_dispatch for every command but validate",
+                  'load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)' in main_src))
+
     for name, ok in cases:
         print(f"{'PASS' if ok else 'FAIL'} {name}")
     failed = [n for n, ok in cases if not ok]
@@ -1148,12 +1281,12 @@ def main() -> int:
     pw = sub.add_parser("writers"); pw.add_argument("--queue"); pw.add_argument("--base", default="origin/main")
     ps = sub.add_parser("summary"); ps.add_argument("--queue"); ps.add_argument("--ref"); ps.add_argument("--json", action="store_true")
     a = p.parse_args()
-    queues, states = load(a.queue)
+    queues, states = load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)
 
     if a.cmd == "validate":
         problems = check_registry(read_table(REGISTRY, REGISTRY_COLUMNS), states)
-        if TRANSITIONS.exists():
-            problems += check_transitions(read_table(TRANSITIONS, TRANSITION_COLUMNS), states)
+        transitions = read_table(TRANSITIONS, TRANSITION_COLUMNS) if TRANSITIONS.exists() else []
+        problems += check_transitions(transitions, states) + sop7_problems(states, transitions)
         for line in problems:
             print(f"HATA {line}")
         failed = bool(problems)

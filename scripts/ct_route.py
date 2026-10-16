@@ -1084,7 +1084,7 @@ def self_test() -> int:
             ("the DCP on main is a draft", data(main_dcps={D1: dcp(status="draft")}), 1, "onay öncesi"),
             ("the slice's scope on main differs from the ref's", data(main_dcps={D1: dcp(rows=["| MVP1 | MOD-0150 | x |", "| MVP2 | MOD-0151 | x |"])}), 1, "kapsamı origin/main'de farklı"),
             ("main has the queue twice", data(main_registry=[reg("mvp2-ct", f"dcp:{D1}#MVP2"), reg("mvp2-ct", f"dcp:{D1}#MVP2")]), 2, "registered twice"),
-            ("main's row has a baseline that is not a commit", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), baseline_commit="not-a-commit")]), 2, "is not a commit here"),
+            ("main's row has a baseline that is not a commit", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), baseline_commit="0" * 40)]), 2, "is not a commit here"),
             ("main's row has a vocabulary without states", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), vocabulary="missing-vocabulary")]), 2, "has no rows in the states file"),
             ("main's row has strict=maybe", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), strict="maybe")]), 2, "strict must be yes or no"),
             ("main's row has an empty control_tower", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), control_tower="")]), 2, "boş alan control_tower"),

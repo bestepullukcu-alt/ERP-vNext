@@ -97,6 +97,48 @@ def registry_from_lines(lines):
     return rows
 
 
+REGISTRY_HEADER = ["Canonical ID", "Canonical Module Name", "Slug", "Type", "Status", "Deprecated Alias", "Replacement ID",
+                   "Owner Domain", "Notes"]
+
+
+def registry_table_problems(lines):
+    """CT-FIX-01 (09): discovery may not lose a registry row silently. Every table in the registry file starts with the
+    contract header (REGISTRY_HEADER, exactly) and a separator; each data row has its 9 columns, an id and a name. A
+    table with another or a broken header — a cut header, or rows a blank line split from theirs — is a problem, not a
+    table to skip. Each problem names its line. registry_from_lines (--check-id, --candidate) is not changed."""
+    problems, state = [], None          # None: outside a table · "header": header read · "rows": in a valid table · "bad"
+    for n, line in enumerate(lines, start=1):
+        s = line.strip()
+        if not s.startswith("|"):
+            state = None
+            continue
+        c = [x.strip() for x in s.strip("|").split("|")]
+        separator = all(re.fullmatch(r":?-{3,}:?", x) for x in c)
+        if state is None:
+            if c == REGISTRY_HEADER:
+                state = "header"
+            else:
+                problems.append(f"satır {n}: tablo başlığı sözleşmedeki {len(REGISTRY_HEADER)} sütunluk başlık değil")
+                state = "bad"
+            continue
+        if state == "bad":
+            continue
+        if state == "header":
+            state = "rows"
+            if not separator:
+                problems.append(f"satır {n}: başlıktan sonra ayraç satırı yok")
+            continue
+        if separator:
+            continue
+        if len(c) != len(REGISTRY_HEADER):
+            problems.append(f"satır {n}: {len(c)} sütun, başlık {len(REGISTRY_HEADER)} sütun")
+        elif not c[0] or set(c[0]) <= set("-"):
+            problems.append(f"satır {n}: kimlik hücresi boş")
+        elif not c[1]:
+            problems.append(f"satır {n}: ad hücresi boş")
+    return problems
+
+
 def is_deprecated(row):
     return "deprecated" in row["status"].lower() or "alias" in row["type"].lower() \
         or "retired" in row["status"].lower() or "standard" in row["type"].lower()
@@ -448,6 +490,14 @@ def discover(root, name, resource=None, sor=None):
         lines.append(f"origin/main: {main_sha or 'yok'} · son fetch: {fetched} · uzak durum doğrulanmadı")
         if not query:
             raise Incomplete("sorgu adında anlamlı sözcük yok")
+        reg_file = os.path.join(root, REGISTRY)
+        if os.path.exists(reg_file):
+            with open(reg_file, encoding="utf-8") as f:
+                broken = registry_table_problems(f.read().split("\n"))
+            if broken:
+                raise Incomplete(f"modül kayıt dosyası {broken[0]} (kısmi satır)"
+                                 + (f" (+{len(broken) - 1})" if len(broken) > 1 else "")
+                                 + " — okunamayan satır 'eşleşme yok' sayılmaz")
 
         # Blueprint and SoR_Map
         bp_path = os.path.join(root, BLUEPRINT)
