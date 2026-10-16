@@ -1100,3 +1100,25 @@ Test dalına alındı: `fdda0d5eb` (ajan `175850dbd`), çakışmasız.
 **Yeni ortak takipler** (yol haritası, platform sahibine):
 - **FU-DT-SKELETON-ID:** iki tablolu sayfada iskelet kimliği tekil değil.
 - **FU-DATEFIELD-ALTINPUT:** `DitenDateField.enhance` `altInput` kullanan alanı görünen biçimle değil `Y-m-d` ile doğruluyor; elle girilen geçerli tarihi silebilir.
+
+## §37 CT kabul — W3E-E4R2-FIX-b E2 ACCEPTED (2026-10-16) — Ziyaret kanıtı sayfası Golden + K-TABS
+Test dalına alındı: `820a9768e` (ajan `d2a5c263d`), çakışmasız.
+
+**Ne geldi:**
+- **Başlık:** `ve-crumb` + `h4` kalktı. Yerine Golden yapısı: `h5` + `p.text-muted`. `Intro` anahtarı 8 resx'te `PageDescription` oldu (metin aynı); `Crumb` silindi ve kullanan bir yer kalmadı.
+- **Sekmeler:** `_TabCard` ile "Kapsamlı ayarlar" / "Süreli istisnalar". Bekleyen sayı rozeti `wcn-tab-count`; sayıyı liste okuması verdiği için JS ekliyor, sınıflar `_TabCard`'ınkiyle aynı.
+- **Süreli istisnalar:** `_ListShell` (v2, client, `HasSelection=false`; CRM'de toplu işlem ucu yok).
+  - `_Filter` durum + aşama; seçilen değerler hem vekile `?status` / `?phase` olarak gidiyor hem tarayıcıda süzüyor.
+  - Ayrıntı standart `#offcanvasDetailsPreview`'de (zaman çizelgesi, Workflow eylemleri, SoD); `?exception=` bağlantısı çalışıyor.
+  - Save View, dışa aktarma, boş durum var. "Yeni istisna" listenin standart düğmesi, yalnız manage yetkisiyle.
+
+**CT kontrolü:**
+- **Diff:** ayar sekmesinin form, önizleme ve kaydetme kodu değişmedi; yalnız istisna parçaları değişti.
+  - `ajax.data` istemci modunda (kural yalnız sunucu modunda yasaklıyor; URL'de `pageSize` yok).
+  - CRM, vekil ve ortak dosyalar aynı.
+- **Testler** (CT `-o`): Web tam takım 1806/3. Kırmızılar bilinen 2 `ShipmentDetailsDateNode` + `-o` artefaktı. Ajan 1807/2, taban 1800/2 (+7).
+- **CT sabotajı:** "Yeni istisna" yetki kapısı kaldırıldı (`addNewText` her zaman dolu) → L5 **kırmızı**. Bu bir davranış testi: sayfa Node'da `read` kipinde çalıştırılıyor. md5 ile geri alındı.
+
+**Açık:**
+- **Görsel kanıt alınmadı** (fleet kapalıydı) → E4 üçüncü turda CT alır.
+- **Ajan raporu (karar kullanıcıda):** Ayarlar sekmesindeki değişiklik geçmişi ve temsilciler paneli hâlâ elle yazılmış `table.ve-table`.
