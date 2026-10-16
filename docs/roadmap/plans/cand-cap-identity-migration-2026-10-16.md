@@ -112,3 +112,35 @@
 3. Envanter: CAND-CAP-0008'in Çalışma Takvimi kullanımları (7 kod + 18 belge) ve eski numaraların kod içi kullanımları (0040 → 2, 0297 → 1, 0299 → 1 dosya vb.).
 4. Göç iş paketleri (kimlik başına; önce kod, sonra belge). Büyükler: 0011 → 0363 (Content Studio) ve 0010 + 0008-takvim → 0362.
 5. Koruma testi (kural 5) en sonda; böylece geriye dönüş olmaz.
+
+## 7. Karar önerisi — main'de olup 8.1'de olmayan yetenekler (CT, 2026-10-16)
+Kaynak envanter: artifact "Blueprint Modülleri Main Durumu" (https://claude.ai/artifact/1KPVHJSp7wpwGGXPrvCQfu; main a814bad0f, 2026-10-10).
+
+8.1'de örtüşme taraması: takvim / tatil, abonelik / yetkilendirme, kiracı kullanıcı kimliği, Content Studio / MLR / mesaj, yazışma / etkileşim için 8.1'de modül YOK. Yalnız iki eşleşme var:
+- MOD-0261 Identity Provider: harici sağlayıcı, kiracı kullanıcı kaydı değil.
+- MOD-0024 Task & Checklist Engine: WorkCenter'ın doğal evi.
+
+**Ölçüt:** Kendi kayıt ailesi (SoR) olan → yeni kanonik modül. Başka modüllerin üzerinde bir ekran ya da konsol olan → mevcut modüle kat. Kodu olmayan → aday kalsın, geliştirme başlarken hedef numarayla açılsın.
+
+| Aday | Main'de | Karar | Hedef | Gerekçe |
+|---|---|---|---|---|
+| CAND-CAP-0001 Tenant User / Identity | BE+FE %90 | **Yeni modül** | MOD-0360 (8.2) | Kiracı kullanıcı, üyelik, harici kimlik bağı = kendi SoR'u. 0261 harici sağlayıcı, 0018 yetki |
+| CAND-CAP-0002 SaaS Subscription / Plan / Entitlement | BE+FE %100 | **Yeni modül** | MOD-0361 (8.2) | Plan → abonelik → yetkilendirme tek yaşam döngüsü; 0002-FU05 (eski 0298) içinde |
+| CAND-CAP-0003 Platform Administration & Operations | BE+FE %85 | **Kat** | Konsol → MOD-0009; yönetici hesap / şifre / MFA → MOD-0360 (+0018) | Kendi SoR'u yok; diğer modüllerin üzerinde çalışma alanı |
+| CAND-CAP-0004 Tenant Impersonation | kod yok | **Aday kalsın** | ileride MOD-0360 özelliği (+0018 / 0021) | Kod yok; güvenlik modeli EA kapılı |
+| CAND-CAP-0005 SaaS Billing & Invoicing | kod yok | **Aday kalsın**; numara 8.2'de ayrılsın | MOD-0364 (8.2) | Kendi SoR'u olacak; MOD-0169 müşteri O2C faturasıyla karıştırılmamalı |
+| CAND-CAP-0006 Task Center / WorkCenter | kod var (0024 altında 268 dosya) | **Kat** | MOD-0024 çalışma alanı | "Work Center" ekran adı kalır, modül kimliği 0024 |
+| CAND-CAP-0007 Enterprise Strategy | zaten deprecated alias | **Kapat** (alias'ı emekli et) | MOD-0352 | 8.1'de var |
+| CAND-CAP-0008 Decomposition | zaten deprecated alias | **Kapat**; ⚠ Çalışma Takvimi anlamındaki 0008 kullanımları ayrı (§3.1) | MOD-0354 | Envanterdeki 6 kod dosyası büyük olasılıkla CRM CycleCapacity'nin takvim referansları |
+| CAND-CAP-0009 Business Process Mgmt | zaten deprecated alias | **Kapat** | MOD-0355 | 8.1'de var |
+| CAND-CAP-0010 Working Calendar & Public Holidays | kod var (sevk edildi) | **Yeni modül** | MOD-0362 (8.2) | Takvim, tatil, kural istisnası = kendi SoR'u; CRM ve İK tüketiyor |
+| CAND-CAP-0011 Content Studio (SCMM) | 52 kod dosyası | **Yeni modül** | MOD-0363 (8.2) | Yapılandırılmış içerik + mesaj + onay; 8.1'de MLR / promosyon içeriği modülü yok. MOD-0162 Knowledge Base ile sınır yazılmalı |
+| DCP-006 "CAND-CAP-0006" Commercial Activity, Interaction & Commitment | kod yok | **Yeni kimlik gerekli** (8.2 / EA) | — | 8.1'de yok; BD analizindeki yazışma / etkileşim kaydıyla tek yetenek |
+| DCP-006 "CAND-CAP-0007" Commercial Model & Proposition Routing | kod yok | **Aday kalsın**, doğru numarayla yeniden kaydedilsin | — | Kod yok; mevcut numara WorkCenter / Strateji ile çakışıyor |
+
+**Özet:**
+- 5 yeni modül: 0360, 0361, 0362, 0363 + 0364 ayrılmış.
+- 2 kat: 0003 → 0009 / 0360; 0006 → 0024.
+- 3 kapat: 0007 / 0008 / 0009 (zaten 8.1'de var).
+- 2 aday: 0004, 0005 (koda başlarken 0360 özelliği / 0364).
+- CRM'in iki aday numarası yeniden kimliklendirilir.
