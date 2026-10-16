@@ -18,7 +18,10 @@ const listeners = {};
 const mk = id => ({ id, innerHTML: '', textContent: '', value: '', disabled: false, min: '', dataset: {}, style: {}, attrs: {}, className: '',
   classList: { s: new Set(), add(c) { this.s.add(c); }, remove(c) { this.s.delete(c); }, toggle(c, on) { if (on === undefined ? !this.s.has(c) : on) this.s.add(c); else this.s.delete(c); }, contains(c) { return this.s.has(c); } },
   setAttribute(k, v) { this.attrs[k] = v; }, getAttribute(k) { return this.attrs[k] == null ? null : this.attrs[k]; },
-  addEventListener(ev, fn) { (this.l = this.l || {})[ev] = fn; }, closest() { return null; } });
+  addEventListener(ev, fn) { (this.l = this.l || {})[ev] = fn; }, closest() { return null; },
+  // W3E-E4R2-FIX-b — the tab's corner count is a span the script appends to the shared tab card's button
+  kids: [], appendChild(c) { this.kids.push(c); c.parent = this; return c; }, remove() { if (this.parent) { this.parent.kids = this.parent.kids.filter(k => k !== this); } },
+  querySelector(q) { return q === '.wcn-tab-count' ? (this.kids.find(k => String(k.className).split(' ').indexOf('wcn-tab-count') > -1) || null) : null; } });
 const el = id => nodes[id] || (nodes[id] = mk(id));
 const root = el('ve-root');
 Object.assign(root.attrs, { 'data-api-base': '/api', 'data-me': ME, 'data-can-manage-policy': 'true', 'data-can-read-exceptions': 'true',
@@ -95,7 +98,7 @@ const target = map => ({ closest: q => (map[q] ? Object.assign({ disabled: !!map
   out.history = el('ve-history-rows').innerHTML;
 
   // E2 — the exception window: qr_optional offered for a rep whose QR is required, not for one whose QR is off
-  el('ve-new-exception').l.click(); await tick();
+  window.VisitEvidenceSettingsPage.openNew(); await tick();
   el('ve-nx-rep').l.change({ target: { value: 'rep-2' } }); await tick(); await tick();
   out.rulesRequired = el('ve-nx-rules').innerHTML;
   el('ve-nx-rep').l.change({ target: { value: 'rep-1' } }); await tick(); await tick();

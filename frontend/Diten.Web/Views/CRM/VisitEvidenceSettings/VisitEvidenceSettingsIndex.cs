@@ -46,13 +46,15 @@ public sealed class VisitEvidenceSettingsIndex
         "Err_rejection_comment_required", "Err_workflow_request_rejected", "Err_permission_denied",
         "Err_conflict", "Err_unavailable", "Err_generic",
         // WP-VW-W3E (W3E-WEB-b) — additional evidence (E1), qr_optional (E2), the reps pane and the new fields (E3)
-        "G_extra", "QrCaption", "QrIntro", "DeviceCaption", "DeviceIntro", "ManageQrLink", "F_qrMode", "F_antiFraudMode", "Opt_qrMode_off", "Opt_qrMode_optional", "Opt_qrMode_required", "Opt_antiFraudMode_off", "Opt_antiFraudMode_flag", "Opt_antiFraudMode_block", "D_qrMode_off", "D_qrMode_optional", "D_qrMode_required", "NewBadge", "SoonBadge", "XRule_qr_optional", "XRuleDesc_qr_optional", "XRuleQrNotRequired", "SourceExceptionShort", "RepsEmpty"
+        "G_extra", "QrCaption", "QrIntro", "DeviceCaption", "DeviceIntro", "ManageQrLink", "F_qrMode", "F_antiFraudMode", "Opt_qrMode_off", "Opt_qrMode_optional", "Opt_qrMode_required", "Opt_antiFraudMode_off", "Opt_antiFraudMode_flag", "Opt_antiFraudMode_block", "D_qrMode_off", "D_qrMode_optional", "D_qrMode_required", "NewBadge", "SoonBadge", "XRule_qr_optional", "XRuleDesc_qr_optional", "XRuleQrNotRequired", "SourceExceptionShort", "RepsEmpty",
+        // W3E-E4R2-FIX-b — the exceptions list on the Golden Compact DataTable (index.js reads them through window.L10n)
+        "QuickView", "NewException"
     ];
 
     /// <summary>The strings the view itself writes (headings, buttons, labels).</summary>
     public static readonly string[] ViewKeys =
     [
-        "PageTitle", "Crumb", "Intro", "NewException", "TabSettings", "TabExceptions", "Retry", "ReadOnly", "ScopesTitle",
+        "PageTitle", "PageDescription", "NewException", "TabSettings", "TabExceptions", "Retry", "ReadOnly", "ScopesTitle",
         "ScopesNote", "TenantDefault", "Locked", "AddLegalEntity", "AddLegalEntityHint", "LookTitle", "LookSearch",
         "EffectiveTitle", "CloseButton", "ColField", "ColValue", "ColSource", "Priority", "SourceException", "SourceTenant",
         "ScopeUnresolved", "TypeTenant", "PaneForm", "PaneHistory", "PreviewTitle",
@@ -61,6 +63,9 @@ public sealed class VisitEvidenceSettingsIndex
         "XColRep", "XColRules", "XColRange", "XColReason", "XColPeople", "XColStatus", "OpenRow", "SaveTitle", "SaveConfirm",
         "XNewTitle", "XRep", "XRules", "XRulesHint", "XFrom", "XTo", "XReason", "XReasonPlaceholder", "XSodNew", "XSubmit",
         "XDetailTitle",
-        "PaneReps", "RepsTitle", "RepsNote", "ColRep", "ColLocation", "ColPhoto", "ColQr", "ColDevice"
+        "PaneReps", "RepsTitle", "RepsNote", "ColRep", "ColLocation", "ColPhoto", "ColQr", "ColDevice",
+        // W3E-E4R2-FIX-b — the exceptions list: the filter (status = XColStatus, phase), the actions column, the quick view
+        "FilterPhase", "ColActions", "QuickView", "XFilter_all", "XFilter_active", "XFilter_planned", "XFilter_in_review", "XFilter_draft",
+        "XFilter_expired", "XFilter_cancelled", "XFilter_ended_early"
     ];
 }

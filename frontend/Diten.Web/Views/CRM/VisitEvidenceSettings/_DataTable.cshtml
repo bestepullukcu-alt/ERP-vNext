@@ -1,0 +1,31 @@
+@using Diten.Web.Views.CRM.VisitEvidenceSettings
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceSettingsIndex> Localizer
+@{
+    // W3E-E4R2-FIX-b (K-STD) — the time-boxed exceptions table is the shared component (BL-440): the page describes it,
+    // _ListShell renders it. Client mode: the CRM does not page the exceptions (a bounded set, GET api/exceptions comes back
+    // whole). No selection: every action on an exception is a single-record Workflow step taken in its quick view (submit,
+    // withdraw, approve / return, cancel, end early — each with its own SoD and reason), and the CRM has no bulk endpoint
+    // for any of them, so the selection is DECLARED off (HasSelection = false — the FLAGS-STD / Users list precedent) and no
+    // bulk bar is rendered.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-visitevidenceexceptions",
+        DataMode = "client",
+        Slug = "visitevidenceexceptions",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["XColRep"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["XColRules"].Value },
+            new DataTableColumnViewModel { Header = Localizer["XColRange"].Value },
+            new DataTableColumnViewModel { Header = Localizer["XColReason"].Value },
+            new DataTableColumnViewModel { Header = Localizer["XColPeople"].Value },
+            new DataTableColumnViewModel { Header = Localizer["XColStatus"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

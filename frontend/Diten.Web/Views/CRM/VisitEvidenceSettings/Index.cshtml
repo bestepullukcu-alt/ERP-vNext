@@ -5,6 +5,17 @@
 @{
     ViewData["Title"] = Localizer["PageTitle"].Value;
     Layout = "_LayoutTenantShell";
+    // K-TABS — the shared tab card; the exceptions tab only with an exception read key. Its corner count (in review + active
+    // today) is the list read's, so the page script writes it (the same .wcn-tab-count badge the card draws for a Count).
+    var tabs = new List<Diten.Web.Models.Tabs.TabCardItem>
+    {
+        new() { Key = "settings", Id = "ve-tab-settings", Icon = "bx-layer", Text = Localizer["TabSettings"].Value, Active = true, Controls = "ve-pane-settings" }
+    };
+    if (Model.CanReadExceptions)
+    {
+        tabs.Add(new() { Key = "exceptions", Id = "ve-tab-exceptions", Icon = "bx-time-five", Text = Localizer["TabExceptions"].Value, Controls = "ve-pane-exceptions" });
+    }
+    var tabCard = new Diten.Web.Models.Tabs.TabCardViewModel { AriaLabel = Localizer["PageTitle"].Value, Tabs = tabs };
 }
 
 @*
@@ -13,6 +24,9 @@
     exceptions approved in the Work Center. This round the scope tree holds ONLY the tenant default: the legal entity /
     business unit layers come with their package ("Add legal entity" is disabled with its hint). Every call is a
     same-origin proxy under /CRM/VisitEvidenceSettings/api/*. UAS-001: without a policy read key NOTHING but the notice.
+    W3E-E4R2-FIX-b (K-STD, K-TABS): the Golden Compact header (no page breadcrumb — the layout's own one stands), the two tabs
+    on the shared tab card, and the exceptions on the Golden Compact DataTable (client mode, the standard filter, quick view,
+    Save View, CSV / Excel); "New exception" is that list's standard add-new action (only with the manage key).
 *@
 @if (!Model.CanRead)
 {
@@ -20,7 +34,14 @@
     return;
 }
 
-<div id="ve-root" class="ve-page"
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Shared/Components/Tabs/_TabCard.cshtml" model="tabCard" />
+
+<div id="ve-root" class="ve-page tab-content p-0"
      data-api-base="/CRM/VisitEvidenceSettings/api"
      data-can-manage-policy="@Model.CanManagePolicy.ToString().ToLowerInvariant()"
      data-can-read-exceptions="@Model.CanReadExceptions.ToString().ToLowerInvariant()"
@@ -29,23 +50,9 @@
      data-qr-codes-url="/CRM/VisitQrCodes"
      data-me="@Model.Me">
 
-    <div class="ve-head">
-        <div>
-            <div class="ve-crumb">@Localizer["Crumb"]</div>
-            <h4 class="ve-title">@Localizer["PageTitle"]</h4>
-            <div class="ve-intro">@Localizer["Intro"]</div>
-        </div>
-        <button type="button" class="ve-btn ve-btn-p d-none" id="ve-new-exception"><i class="bx bx-plus"></i> @Localizer["NewException"]</button>
-    </div>
-
-    <div class="ve-tabs" role="tablist">
-        <button type="button" role="tab" class="ve-tab active" data-tab="settings" aria-selected="true"><i class="bx bx-layer"></i> @Localizer["TabSettings"]</button>
-        @if (Model.CanReadExceptions)
-        {
-            <button type="button" role="tab" class="ve-tab" data-tab="exceptions" aria-selected="false"><i class="bx bx-time-five"></i> @Localizer["TabExceptions"] <span class="ve-badge d-none" id="ve-tab-badge"></span></button>
-        }
-    </div>
-
+    @* ── the settings tab ── *@
+    <div class="tab-pane fade show active" id="ve-pane-settings" role="tabpanel" aria-labelledby="ve-tab-settings">
+    <div class="ve-col ve-gap">
     <div class="ve-alert ve-alert-danger d-none" id="ve-save-error" role="alert">
         <span><i class="bx bx-error-circle"></i> <span id="ve-save-error-text"></span></span>
         <button type="button" class="ve-link" id="ve-save-retry">@Localizer["Retry"]</button>
@@ -56,8 +63,7 @@
     }
     <div class="ve-alert ve-alert-danger d-none" id="ve-load-error" role="alert"></div>
 
-    @* ── the settings tab ── *@
-    <section id="ve-pane-settings" class="ve-settings">
+    <section class="ve-settings">
         <aside class="ve-side">
             <div class="ve-card">
                 <div class="ve-card-head ve-col"><span class="ve-card-title">@Localizer["ScopesTitle"]</span><span class="ve-sub">@Localizer["ScopesNote"]</span></div>
@@ -175,22 +181,23 @@
             </div>
         </div>
     </section>
+    </div>
+    </div>
 
-    @* ── C4 — the time-boxed exceptions ── *@
+    @* ── C4 — the time-boxed exceptions: the Golden Compact list (client mode) ── *@
     @if (Model.CanReadExceptions)
     {
-        <section id="ve-pane-exceptions" class="ve-col ve-gap d-none">
-            <div class="ve-alert ve-alert-info"><i class="bx bx-info-circle"></i> @Localizer["ExceptionsInfo"]</div>
-            <div class="ve-card">
-                <div class="ve-card-head"><span class="ve-card-title ve-lg">@Localizer["ExceptionsTitle"]</span><div class="ve-chips" id="ve-x-filters" role="group"></div></div>
-                <div class="ve-table-wrap">
-                    <table class="ve-table">
-                        <thead><tr><th>@Localizer["XColRep"]</th><th>@Localizer["XColRules"]</th><th>@Localizer["XColRange"]</th><th>@Localizer["XColReason"]</th><th>@Localizer["XColPeople"]</th><th>@Localizer["XColStatus"]</th><th><span class="visually-hidden">@Localizer["OpenRow"]</span></th></tr></thead>
-                        <tbody id="ve-x-rows"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+        <div class="tab-pane fade" id="ve-pane-exceptions" role="tabpanel" aria-labelledby="ve-tab-exceptions">
+            <div class="ve-alert ve-alert-info mb-3"><i class="bx bx-info-circle"></i> @Localizer["ExceptionsInfo"]</div>
+
+            @* ① Inline Filter partial *@
+            @* Contract marker: <partial name="_Filter" /> *@
+            <partial name="~/Views/CRM/VisitEvidenceSettings/_Filter.cshtml" />
+
+            @* ③ DataTable Card *@
+            @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-visitevidenceexceptions" data-dt-standard="v2"> *@
+            <partial name="~/Views/CRM/VisitEvidenceSettings/_DataTable.cshtml" />
+        </div>
     }
 </div>
 
@@ -245,11 +252,23 @@
     </div>
 </div>
 
-@* ── the exception detail drawer ── *@
-<div class="offcanvas offcanvas-end ve-drawer" tabindex="-1" id="ve-x-drawer" aria-labelledby="ve-x-title">
-    <div class="ve-drawer-head"><h5 class="ve-dlg-title" id="ve-x-title">@Localizer["XDetailTitle"]</h5><button type="button" class="ve-x" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button></div>
-    <div class="offcanvas-body ve-col ve-gap" id="ve-x-body"></div>
-    <div class="ve-drawer-foot" id="ve-x-foot"></div>
+@* ④ Quick view — the standard offcanvas: the exception's detail (the timeline) and its Workflow actions (submit / withdraw /
+   approve / return / cancel / end early by the CRM abilities and SoD), read once per open *@
+<div class="offcanvas offcanvas-end ve-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-time-five fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">@Localizer["XDetailTitle"]</h5>
+                <small id="oc-subtitle" class="text-muted d-block">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
+    </div>
+    <div class="offcanvas-body ve-col ve-gap" id="oc-details-list"></div>
+    <div class="offcanvas-footer border-top ve-drawer-foot" id="oc-actions"></div>
 </div>
 
 @section Styles {
@@ -257,11 +276,16 @@
 }
 
 @section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/VisitEvidenceSettings/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitEvidenceSettings/index.l10n.js" asp-append-version="true"></script>
     <script>
         window.VisitEvidenceSettingsL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
             VisitEvidenceSettingsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
     </script>
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceSettings/evidence-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/diten-tabs.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceSettings/visit-evidence-settings.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceSettings/index.js" asp-append-version="true"></script>
 }

@@ -5,8 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>إثبات الزيارة</value></data>
-  <data name="Crumb" xml:space="preserve"><value>إعدادات CRM / الزيارة</value></data>
-  <data name="Intro" xml:space="preserve"><value>قواعد «بدء الزيارة» للمندوب. يُطبَّق إعداد المستأجر على جميع المندوبين؛ ويخفّفه الاستثناء المؤقت لمندوب واحد لفترة محددة.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>قواعد «بدء الزيارة» للمندوب. يُطبَّق إعداد المستأجر على جميع المندوبين؛ ويخفّفه الاستثناء المؤقت لمندوب واحد لفترة محددة.</value></data>
   <data name="NewException" xml:space="preserve"><value>استثناء جديد</value></data>
   <data name="TabSettings" xml:space="preserve"><value>الإعدادات حسب النطاق</value></data>
   <data name="TabExceptions" xml:space="preserve"><value>الاستثناءات المؤقتة</value></data>
@@ -249,4 +248,7 @@
   <data name="ColDevice" xml:space="preserve"><value>الجهاز</value></data>
   <data name="PvQr" xml:space="preserve"><value>رمز QR للمؤسسة</value></data>
   <data name="PvDeviceWeb" xml:space="preserve"><value>لا يمكن التحقق من هذا الجهاز؛ ستُعلَّم زيارتك بأنها «جهاز غير متحقَّق منه». يُنصح باستخدام تطبيق الجوال.</value></data>
+  <data name="FilterPhase" xml:space="preserve"><value>المرحلة</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="ColActions" xml:space="preserve"><value>الإجراءات</value></data>
 </root>

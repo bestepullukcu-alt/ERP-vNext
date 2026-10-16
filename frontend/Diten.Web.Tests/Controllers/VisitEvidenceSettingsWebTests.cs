@@ -229,9 +229,10 @@ public sealed class VisitEvidenceSettingsWebTests
         var put = o.GetProperty("put");
         Assert.Equal(("info", 4), (put.GetProperty("locationMode").GetString(), put.GetProperty("expectedVersion").GetInt32()));
 
-        // exceptions: the badge (in review + active), New shown, 31 days refused, 30 days created → sent
+        // exceptions: the shared tab card's corner count (in review + active), New opens, 31 days refused, 30 days created → sent
         Assert.Equal("⁨2⁩", S("badge"));
-        Assert.False(o.GetProperty("newHidden").GetBoolean());
+        Assert.Equal("badge rounded-pill bg-danger wcn-tab-count position-absolute top-0 start-100 translate-middle", S("badgeClass"));
+        Assert.Equal("function,function", S("pageApi"));
         Assert.True(o.GetProperty("newShown").GetBoolean());
         Assert.Contains("Önce temsilci seçin.", S("rulesBeforeRep"));
         Assert.Contains("Şu an: Zorunlu · Kiracı", S("rulesWithRep"));
@@ -260,7 +261,7 @@ public sealed class VisitEvidenceSettingsWebTests
         var o = r.Value;
         Assert.Equal(JsonValueKind.Null, o.GetProperty("createError").ValueKind);
         Assert.True(o.GetProperty("saveBarHidden").GetBoolean());
-        Assert.True(o.GetProperty("newHidden").GetBoolean());
+        Assert.False(o.GetProperty("newShown").GetBoolean()); // without the manage key "New exception" opens nothing
         Assert.False(o.GetProperty("unsavedShown").GetBoolean());
         Assert.False(o.GetProperty("saveModalShown").GetBoolean());
         Assert.Equal(0, o.GetProperty("readonlyPuts").GetInt32());

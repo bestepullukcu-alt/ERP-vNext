@@ -19,10 +19,6 @@
 
 /* ── layout ── */
 .ve-page { display: flex; flex-direction: column; gap: 20px; }
-.ve-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-.ve-crumb { font-size: 13px; color: var(--ve-mu); }
-.ve-title { margin: 2px 0 0; font-size: 22px; font-weight: 500; color: var(--ve-h); }
-.ve-intro { font-size: 14px; margin-top: 4px; max-width: 760px; }
 .ve-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
 .ve-wrap { flex-wrap: wrap; }
 .ve-top { align-items: flex-start; }
@@ -44,11 +40,6 @@
 .ve-cap { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--ve-h); }
 
 /* ── tabs ── */
-.ve-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.ve-tab { height: 38px; border: 0; border-radius: 6px; padding: 0 16px; font-size: 15px; display: inline-flex; gap: 6px; align-items: center; background: var(--ve-card); color: var(--ve-h); box-shadow: var(--ve-sh); cursor: pointer; }
-.ve-tab.active { background: var(--ve-p); color: #fff; box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), .35); }
-.ve-badge { padding: 0 7px; border-radius: 10px; font-size: 12px; font-weight: 600; background: var(--ve-okb); color: var(--ve-ok); }
-.ve-tab.active .ve-badge { background: rgba(255, 255, 255, .25); color: #fff; }
 
 /* ── alerts / pills / buttons ── */
 .ve-alert { border-radius: 6px; padding: 12px 16px; display: flex; gap: 8px; align-items: center; font-size: 14px; }
@@ -168,16 +159,9 @@
 .ve-table th { text-align: start; padding: 12px 16px; font-size: 13px; font-weight: 500; text-transform: uppercase; color: var(--ve-h); border-bottom: 1px solid var(--ve-bd); }
 .ve-table td { padding: 12px 16px; border-bottom: 1px solid var(--ve-bd); color: var(--ve-tx); vertical-align: middle; }
 .ve-table th:first-child, .ve-table td:first-child { padding-inline-start: 24px; }
-.ve-click { cursor: pointer; }
-.ve-click:hover td { background: var(--ve-soft2); }
 .ve-reason { max-width: 240px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; }
 .ve-empty { text-align: center; color: var(--ve-mu); padding: 28px 16px !important; }
 .ve-foot-note { padding: 12px 24px 18px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; align-items: center; }
-.ve-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-.ve-chip { border: 1px solid var(--ve-bd2); background: var(--ve-card); color: var(--ve-h); border-radius: 6px; padding: 3px 10px; font-size: 13px; cursor: pointer; }
-.ve-chip span { color: var(--ve-mu); }
-.ve-chip.active { background: var(--ve-p); color: #fff; border-color: var(--ve-p); }
-.ve-chip.active span { color: rgba(255, 255, 255, .8); }
 
 /* dialogs / drawers */
 .ve-modal .modal-content { border-radius: 8px; box-shadow: var(--ve-sh2); background: var(--ve-card); }
@@ -228,3 +212,9 @@
 .ve-table th.ve-col-new { color: var(--ve-pt); }
 @media (max-width: 900px) { .ve-choices { grid-template-columns: 1fr; } }
 .ve-tone-primary { background: var(--ve-pl); color: var(--ve-pt); }
+
+/* ── W3E-E4R2-FIX-b — the time-boxed exceptions on the Golden Compact list: the header, the tabs (the shared tab card),
+   the table card, the filter and the toolbar are the standard's; the page keeps only its cells' chips and the empty state ── */
+.datatables-visitevidenceexceptions .ve-pill { white-space: nowrap; }
+.ve-empty-state { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 24px; text-align: center; color: var(--ve-h); }
+.ve-empty-state i { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; background: var(--ve-pl); color: var(--ve-pt); margin-bottom: 4px; }

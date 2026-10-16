@@ -5,8 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>Visit evidence</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM Settings / Visit</value></data>
-  <data name="Intro" xml:space="preserve"><value>The rules of the rep's "Start the visit". The tenant setting applies to every rep; a time-boxed exception relaxes it for one rep for a while.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>The rules of the rep's "Start the visit". The tenant setting applies to every rep; a time-boxed exception relaxes it for one rep for a while.</value></data>
   <data name="NewException" xml:space="preserve"><value>New exception</value></data>
   <data name="TabSettings" xml:space="preserve"><value>Scoped settings</value></data>
   <data name="TabExceptions" xml:space="preserve"><value>Time-boxed exceptions</value></data>
@@ -249,4 +248,7 @@
   <data name="ColDevice" xml:space="preserve"><value>Device</value></data>
   <data name="PvQr" xml:space="preserve"><value>Institution QR code</value></data>
   <data name="PvDeviceWeb" xml:space="preserve"><value>This device cannot be verified; your visit will be flagged “device not verified”. Using the mobile app is recommended.</value></data>
+  <data name="FilterPhase" xml:space="preserve"><value>Phase</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
 </root>

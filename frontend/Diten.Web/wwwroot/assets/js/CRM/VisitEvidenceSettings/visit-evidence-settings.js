@@ -6,8 +6,11 @@
  *   Settings tab: the scope tree (the tenant default only this round), the 8-field form in the mockup's groups, the
  *   preview ("the rep in this scope will see"), the save confirm (changed rows, "applies to N reps"), the effective-rules
  *   lookup and the change history.
- *   Exceptions tab: the list (status / phase chips with counts), the new-exception drawer (create → send for approval)
- *   and the detail drawer (timeline; submit / withdraw / approve / return / cancel / end early by the CRM abilities).
+ *   Exceptions tab: the new-exception drawer (create → send for approval) and the detail in the list's quick view
+ *   (timeline; submit / withdraw / approve / return / cancel / end early by the CRM abilities).
+ *   W3E-E4R2-FIX-b — the exceptions LIST is the Golden Compact DataTable (index.js, client mode); this script keeps the
+ *   full list for the tab's corner count, the reps pane and the "?exception=" link, and hands index.js its quick view and
+ *   its "New exception" action through window.VisitEvidenceSettingsPage. The tabs are the shared tab card (diten-tabs.js).
  */
 (function (window, document) {
     'use strict';
@@ -60,7 +63,7 @@
     const state = {
         policy: null, original: null, draft: null, reps: [], repNames: {}, people: {}, history: null,
         tab: 'settings', pane: 'form', look: '', effective: null,
-        list: null, filter: 'all', current: null, close: null, closeTried: false,
+        list: null, current: null, close: null, closeTried: false,
         nx: null, nxTried: false, nxFields: null
     };
 
@@ -314,24 +317,36 @@
     }
 
     // ── C4 — the exceptions ──────────────────────────────────────────────────────────────────────────────────
+    /** K-TABS — selects a tab of the shared tab card from code (the "?exception=" link). */
     function setTab(tab) {
         state.tab = tab;
-        document.querySelectorAll('.ve-tab').forEach(b => { const on = b.getAttribute('data-tab') === tab; b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on)); });
-        show('ve-pane-settings', tab === 'settings');
-        show('ve-pane-exceptions', tab === 'exceptions');
-        show('ve-new-exception', tab === 'exceptions' && perms.manage);
+        if (window.DitenTabs) { window.DitenTabs.activate(el('ve-tab-' + tab)); }
     }
 
+    /** The tab's corner count (in review + active today — the CRM's counts over every exception): the shared tab card's
+     *  own badge (_TabCard.cshtml draws the same span for a Count), written here because the count is the list read's. */
+    const BADGE_CLASS = 'badge rounded-pill bg-danger wcn-tab-count position-absolute top-0 start-100 translate-middle';
+    function renderBadge(n) {
+        const tab = el('ve-tab-exceptions');
+        if (!tab) { return; }
+        let badge = tab.querySelector('.wcn-tab-count');
+        if (!n) { if (badge) { badge.remove(); } return; }
+        if (!badge) { badge = document.createElement('span'); badge.className = BADGE_CLASS; tab.appendChild(badge); }
+        badge.textContent = F.isolate(n);
+    }
+
+    /** The full list (every exception: the reps pane, the corner count, the "?exception=" link); the Golden Compact list
+     *  (index.js) reads its own, filtered by the reader — a change re-reads both. */
     function loadExceptions() {
         if (!perms.read) { return Promise.resolve(); }
+        const table = window.VisitEvidenceExceptionsList;
+        if (table && typeof table.reload === 'function') { table.reload(); }
         return get('/exceptions').then(r => {
             const list = absorb(data(r));
             if (!list) { return; }
             state.list = list;
             (list.items || []).forEach(x => { if (x.resourceId && x.repDisplayName) { state.repNames[x.resourceId] = x.repDisplayName; } });
-            const badge = el('ve-tab-badge');
-            if (badge) { const n = C.tabBadge(list); badge.textContent = F.isolate(n); badge.classList.toggle('d-none', n === 0); }
-            renderExceptions();
+            renderBadge(C.tabBadge(list));
             if (state.pane === 'reps') { renderReps(); }
             openLinkedException();
         });
@@ -343,36 +358,28 @@
         if (linkedOpened) { return; }
         linkedOpened = true;
         const id = new URLSearchParams((window.location && window.location.search) || '').get('exception');
-        if (id && /^[0-9a-fA-F-]{36}$/.test(id)) { setTab('exceptions'); openException(id); }
+        if (id && /^[0-9a-fA-F-]{36}$/.test(id)) { setTab('exceptions'); openException(id, { show: true }); }
     }
 
     const chipHtml = x => { const c = C.chipOf(x); return '<span class="ve-pill ve-tone-' + c.tone + '">' + esc(L[c.key] || '') + '</span>'; };
     const rulesHtml = x => (x.rules || []).map(k => '<span class="ve-pill ve-tone-warning">' + esc(L['XRule_' + k] || k) + '</span>').join('');
 
-    function renderExceptions() {
-        const list = state.list || { items: [] };
-        el('ve-x-filters').innerHTML = C.FILTERS.map(f => '<button type="button" class="ve-chip' + (state.filter === f.key ? ' active' : '') + '" data-xfilter="' + f.key + '">' + esc(L['XFilter_' + f.key] || f.key) + ' <span>' + F.isolate(C.filterCount(list, f.key)) + '</span></button>').join('');
-        const rows = C.filterExceptions(list.items, state.filter);
-        el('ve-x-rows').innerHTML = rows.length
-            ? rows.map(x => '<tr class="ve-click" data-xopen="' + esc(x.id) + '">'
-                + '<td><div class="ve-row"><span class="ve-avatar ve-avatar-sm">' + esc(initials(x.repDisplayName)) + '</span><span class="ve-strong">' + F.bidi(x.repDisplayName || x.resourceId) + '</span></div></td>'
-                + '<td><div class="ve-col ve-gap-xs ve-start">' + rulesHtml(x) + '</div></td>'
-                + '<td><div class="ve-col"><span>' + esc(day(x.startDate)) + ' – ' + esc(day(x.endDate)) + '</span><span class="ve-sub">' + esc(T('XDays', F.isolate(x.days))) + '</span></div></td>'
-                + '<td><span class="ve-reason">' + F.bidi(x.reason || '') + '</span></td>'
-                + '<td><div class="ve-col ve-sub"><span>' + esc(T('XCreatedBy', nameOf(x.createdBy))) + '</span><span>' + esc(T('XApprovedBy', x.approvedBy ? nameOf(x.approvedBy) : '—')) + '</span></div></td>'
-                + '<td>' + chipHtml(x) + '</td>'
-                + '<td><button type="button" class="ve-x" data-xopen="' + esc(x.id) + '" aria-label="' + esc(L.OpenRow || '') + '"><i class="bx bx-show"></i></button></td></tr>').join('')
-            : '<tr><td colspan="7" class="ve-empty">' + esc(L.XEmpty) + '</td></tr>';
-    }
-
-    function openException(id) {
+    /** The quick view (#offcanvasDetailsPreview, the list's standard offcanvas): drawn at once from the list row when
+     *  there is one, then from the exception's own read. The list's quick view action opens the offcanvas itself; the
+     *  "?exception=" link and a just-sent new exception ask for { show: true }. */
+    let detailToken = 0;
+    function openException(id, options) {
+        const o = options || {};
+        const token = ++detailToken;
         state.close = null; state.closeTried = false;
-        get('/exceptions/' + encodeURIComponent(id)).then(r => {
+        if (o.row && o.row.id === id) { state.current = absorb(o.row); renderDetail(); }
+        if (o.show) { const d = drawer('offcanvasDetailsPreview'); if (d) { d.show(); } }
+        return get('/exceptions/' + encodeURIComponent(id)).then(r => {
             const x = absorb(data(r));
+            if (token !== detailToken) { return; }
             if (!x) { toast(errText(r), 'error'); return; }
             state.current = x;
             renderDetail();
-            const d = drawer('ve-x-drawer'); if (d) { d.show(); }
         });
     }
 
@@ -381,7 +388,9 @@
         if (!x) { return; }
         const a = C.actionsOf(x, perms, me);
         const tl = C.timeline(x);
-        el('ve-x-body').innerHTML = '<div class="ve-row ve-between ve-top"><div class="ve-row"><span class="ve-avatar">' + esc(initials(x.repDisplayName)) + '</span><div class="ve-col"><span class="ve-name">' + F.bidi(x.repDisplayName || x.resourceId) + '</span></div></div>' + chipHtml(x) + '</div>'
+        const sub = el('oc-subtitle');
+        if (sub) { sub.innerHTML = F.bidi(x.repDisplayName || x.resourceId) + ' · ' + esc(day(x.startDate)) + ' – ' + esc(day(x.endDate)); }
+        el('oc-details-list').innerHTML = '<div class="ve-row ve-between ve-top"><div class="ve-row"><span class="ve-avatar">' + esc(initials(x.repDisplayName)) + '</span><div class="ve-col"><span class="ve-name">' + F.bidi(x.repDisplayName || x.resourceId) + '</span></div></div>' + chipHtml(x) + '</div>'
             + '<div class="ve-col ve-gap-xs"><span class="ve-cap">' + esc(L.XDetailRules) + '</span><div class="ve-row ve-wrap">' + rulesHtml(x) + '</div></div>'
             + '<div class="ve-col ve-gap-xs"><span class="ve-cap">' + esc(L.XDetailRange) + '</span><span>' + esc(day(x.startDate)) + ' – ' + esc(day(x.endDate)) + ' · ' + esc(T('XDays', F.isolate(x.days))) + '</span></div>'
             + '<div class="ve-col ve-gap-xs"><span class="ve-cap">' + esc(L.XDetailReason) + '</span><span>' + F.bidi(x.reason || '') + '</span></div>'
@@ -406,7 +415,7 @@
             if (a.decide) { buttons.push(btn('return', 'XBtnReturn', 've-btn-w')); }
             if (a.decide || a.sod) { buttons.push(btn('approve', 'XBtnApprove', 've-btn-ok', a.approveDisabled)); }
         }
-        el('ve-x-foot').innerHTML = buttons.join('');
+        el('oc-actions').innerHTML = buttons.join('');
     }
 
     function exceptionAction(action) {
@@ -420,7 +429,7 @@
             renderDetail();
             loadExceptions();
         };
-        if (action === 'close') { const d = drawer('ve-x-drawer'); if (d) { d.hide(); } return; }
+        if (action === 'close') { const d = drawer('offcanvasDetailsPreview'); if (d) { d.hide(); } return; }
         if (action === 'back') { state.close = null; state.closeTried = false; renderDetail(); return; }
         if (action === 'cancel' || action === 'end-early' || action === 'return') { state.close = action; state.closeTried = false; renderDetail(); return; }
         if (action === 'submit') { call('POST', path + '/submit', {}).then(r => done(r, 'XSubmitted')); return; }
@@ -517,11 +526,10 @@
                 btn.disabled = false;
                 const d = drawer('ve-new-drawer'); if (d) { d.hide(); }
                 state.nx = null;
-                state.filter = 'all';
-                state.current = data(s) || created;
+                state.current = absorb(data(s)) || created;
                 loadExceptions();
                 if (s.ok) { toast(L.XSubmitted || ''); renderDetail(); } else { renderDetail(T('XCreatedNotSent', errText(s))); }
-                const x = drawer('ve-x-drawer'); if (x) { x.show(); }
+                const x = drawer('offcanvasDetailsPreview'); if (x) { x.show(); }
             });
         });
     }
@@ -530,20 +538,16 @@
     const on = (id, ev, fn) => { const n = el(id); if (n) { n.addEventListener(ev, fn); } };
 
     root.addEventListener('click', e => {
-        const tab = e.target.closest('[data-tab]');
-        if (tab) { setTab(tab.getAttribute('data-tab')); return; }
         const pane = e.target.closest('[data-pane]');
         if (pane) { setPane(pane.getAttribute('data-pane')); return; }
         const opt = e.target.closest('button[data-opt]');
         // W3E — an "additional evidence" value is taken only when it is one of the field's wire values (never "block")
         if (opt && !opt.disabled && perms.managePolicy && (C.KIND[opt.getAttribute('data-field')] !== 'extra' || C.canSelect(opt.getAttribute('data-field'), opt.getAttribute('data-opt')))) { state.draft[opt.getAttribute('data-field')] = opt.getAttribute('data-opt'); changed(); return; }
         const sw = e.target.closest('[data-switch]');
-        if (sw && !sw.disabled && perms.managePolicy) { const f = sw.getAttribute('data-switch'); state.draft[f] = !state.draft[f]; changed(); return; }
-        const xf = e.target.closest('[data-xfilter]');
-        if (xf) { state.filter = xf.getAttribute('data-xfilter'); renderExceptions(); return; }
-        const open = e.target.closest('[data-xopen]');
-        if (open) { openException(open.getAttribute('data-xopen')); }
+        if (sw && !sw.disabled && perms.managePolicy) { const f = sw.getAttribute('data-switch'); state.draft[f] = !state.draft[f]; changed(); }
     });
+    // K-TABS — the shared tab card says which tab shows
+    document.addEventListener('diten:tab-change', e => { const key = e.detail && e.detail.key; if (key === 'settings' || key === 'exceptions') { state.tab = key; } });
     root.addEventListener('change', e => {
         const radio = e.target.closest && e.target.closest('input[data-opt]');
         if (radio && perms.managePolicy) { state.draft[radio.getAttribute('data-field')] = radio.getAttribute('data-opt'); changed(); }
@@ -568,7 +572,6 @@
     on('ve-eff-close', 'click', closeLook);
     on('ve-node-tenant', 'click', closeLook);
     on('ve-look-search', 'input', e => { clearTimeout(repTimer); const q = e.target.value.trim(); repTimer = setTimeout(() => loadReps(q, 've-look', state.look), 250); });
-    on('ve-new-exception', 'click', openNew);
     on('ve-nx-rep', 'change', e => pickRep(e.target.value));
     on('ve-nx-rep-search', 'input', e => { clearTimeout(repTimer); const q = e.target.value.trim(); repTimer = setTimeout(() => loadReps(q, 've-nx-rep', state.nx ? state.nx.resourceId : ''), 250); });
     on('ve-nx-from', 'change', e => { state.nx.startDate = e.target.value; el('ve-nx-to').min = e.target.value; renderNew(); });
@@ -585,7 +588,7 @@
             renderNew();
         });
     }
-    const xFoot = el('ve-x-foot');
+    const xFoot = el('oc-actions');
     if (xFoot) {
         xFoot.addEventListener('click', e => {
             const b = e.target.closest('[data-xact]');
@@ -593,7 +596,13 @@
         });
     }
 
-    setTab('settings');
+    /** W3E-E4R2-FIX-b — what the exceptions list (index.js) asks of this page: its "New exception" action (only offered
+     *  with the manage key) and its quick view. */
+    window.VisitEvidenceSettingsPage = {
+        openNew: () => { if (perms.manage) { openNew(); } },
+        openException: (id, options) => openException(id, options)
+    };
+
     loadReps('', 've-look', '');
     loadPolicy();
     loadExceptions();

@@ -5,8 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>Preuves de visite</value></data>
-  <data name="Crumb" xml:space="preserve"><value>Paramètres CRM / Visite</value></data>
-  <data name="Intro" xml:space="preserve"><value>Les règles du « Démarrer la visite » du délégué. Le paramètre du locataire s'applique à tous les délégués ; une exception temporaire l'assouplit pour un délégué pendant un temps.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Les règles du « Démarrer la visite » du délégué. Le paramètre du locataire s'applique à tous les délégués ; une exception temporaire l'assouplit pour un délégué pendant un temps.</value></data>
   <data name="NewException" xml:space="preserve"><value>Nouvelle exception</value></data>
   <data name="TabSettings" xml:space="preserve"><value>Paramètres par périmètre</value></data>
   <data name="TabExceptions" xml:space="preserve"><value>Exceptions temporaires</value></data>
@@ -249,4 +248,7 @@
   <data name="ColDevice" xml:space="preserve"><value>Appareil</value></data>
   <data name="PvQr" xml:space="preserve"><value>Code QR de l'établissement</value></data>
   <data name="PvDeviceWeb" xml:space="preserve"><value>Cet appareil ne peut pas être vérifié ; votre visite sera signalée « appareil non vérifié ». L’application mobile est recommandée.</value></data>
+  <data name="FilterPhase" xml:space="preserve"><value>Étape</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Opérations</value></data>
 </root>

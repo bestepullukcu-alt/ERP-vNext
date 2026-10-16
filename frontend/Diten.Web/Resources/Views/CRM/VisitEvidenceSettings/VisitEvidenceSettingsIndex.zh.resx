@@ -5,8 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>拜访证据</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM 设置 / 拜访</value></data>
-  <data name="Intro" xml:space="preserve"><value>代表“开始拜访”的规则。租户设置适用于所有代表；限时例外可在一段时间内为单个代表放宽规则。</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>代表“开始拜访”的规则。租户设置适用于所有代表；限时例外可在一段时间内为单个代表放宽规则。</value></data>
   <data name="NewException" xml:space="preserve"><value>新建例外</value></data>
   <data name="TabSettings" xml:space="preserve"><value>分范围设置</value></data>
   <data name="TabExceptions" xml:space="preserve"><value>限时例外</value></data>
@@ -249,4 +248,7 @@
   <data name="ColDevice" xml:space="preserve"><value>设备</value></data>
   <data name="PvQr" xml:space="preserve"><value>机构二维码</value></data>
   <data name="PvDeviceWeb" xml:space="preserve"><value>无法验证此设备；您的拜访将被标记为“设备未验证”。建议使用移动应用。</value></data>
+  <data name="FilterPhase" xml:space="preserve"><value>阶段</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="ColActions" xml:space="preserve"><value>操作</value></data>
 </root>
