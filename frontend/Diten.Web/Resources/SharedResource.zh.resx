@@ -789,8 +789,8 @@
   <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
     <value>竞品</value>
   </data>
-  <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划访问</value></data>
-  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划访问</value></data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划拜访</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划拜访</value></data>
   <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
     <value>项目组合交付</value>
   </data>
@@ -862,7 +862,7 @@
   <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>内容互动旅程</value></data>
   <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>知识路径</value></data>
   <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>知识主题</value></data>
-  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>计划访问</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>计划拜访</value></data>
   <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>偏好</value></data>
   <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>细分</value></data>
   <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>策略模板</value></data>
