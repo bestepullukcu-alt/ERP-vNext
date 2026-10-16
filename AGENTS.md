@@ -51,7 +51,7 @@ Bir talep birden fazla kaynakta yer alıyorsa, en spesifik katman kazanır:
 
 Bu proje `src/Backend/` veya `src/Frontend/` yapısı **kullanmaz**. Kök: `services/` · `frontend/Diten.Web` · `gateway/Diten.ApiGateway` · `execution/domains/` · `.antigravity/` · `tests/` · `docs/`.
 
-- **Servisler (16):** `Diten.AuthService`, `Diten.CrmService`, `Diten.DevEnablementService`, `Diten.EnterpriseStrategyService`, `Diten.HcmService`, `Diten.HumanCapitalService`, `Diten.InventoryService`, `Diten.ManagementGovernanceService`, `Diten.ManufacturingService`, `Diten.MdmService`, `Diten.Platform`, `Diten.PpmService`, `Diten.ProcurementService`, `Diten.PvgService`, `Diten.SupplyChainService`, `Diten.TalentEcosystemService`
+- **Servisler (17):** `Diten.AuthService`, `Diten.CrmService`, `Diten.DevEnablementService`, `Diten.EnterpriseStrategyService`, `Diten.HcmService`, `Diten.HumanCapitalService`, `Diten.InventoryService`, `Diten.ManagementGovernanceService`, `Diten.ManufacturingService`, `Diten.MdmService`, `Diten.PlanningService`, `Diten.Platform`, `Diten.PpmService`, `Diten.ProcurementService`, `Diten.PvgService`, `Diten.SupplyChainService`, `Diten.TalentEcosystemService`
 - **Ortak kütüphaneler (3):** `Diten.Building.Blocks`, `Diten.Platform.Common`, `Diten.Platform.Contracts`
 - **Domain'ler (11):** `commercial-suite`, `developer-enablement`, `enterprise-strategy-business-performance`, `human-capital-management`, `management-governance`, `master-data-management`, `pharmacovigilance`, `platform-shared-services`, `portfolio-delivery`, `procurement`, `supply-chain-execution`
 
@@ -78,7 +78,7 @@ Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 | Manufacturing Service | 5070 | `services/Diten.ManufacturingService/src/Diten.ManufacturingService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** sıradaki yeni servis **5068**'den başlar. Tabloda olmayan ama kullanılan portlar: 5062 (`PpmService` ve `DataKnowledgeService` — çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`); canonical tahsis EA kararını bekliyor. Port atamadan önce o notları oku.
+> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar: 5062 (`PpmService` ve `DataKnowledgeService` — çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`); canonical tahsis EA kararını bekliyor. Port atamadan önce o notları oku.
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 
