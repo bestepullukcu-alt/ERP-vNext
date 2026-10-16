@@ -67,7 +67,7 @@ public sealed class EntitlementCacheInvalidationEventContractTests
     public void EntitlementInvalidationEvents_reject_default_or_non_utc_occurred_at()
     {
         Assert.Throws<ArgumentException>(() => new TenantEntitlementAddedV1(EventId, default, TenantId, CorrelationId, ActorId, "HR"));
-        Assert.Throws<ArgumentException>(() => new TenantEntitlementAddedV1(EventId, DateTimeOffset.Now, TenantId, CorrelationId, ActorId, "HR"));
+        Assert.Throws<ArgumentException>(() => new TenantEntitlementAddedV1(EventId, OccurredAtUtc.ToOffset(TimeSpan.FromHours(3)), TenantId, CorrelationId, ActorId, "HR"));
     }
 
     [Theory]
