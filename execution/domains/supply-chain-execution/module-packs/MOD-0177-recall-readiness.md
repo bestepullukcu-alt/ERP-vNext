@@ -1485,6 +1485,8 @@ Dal `feature/sce/mod-0177-r7b` (taban `a62f8a39a`). Kanıt `docs/records/audits/
   günlükteki ve bağımsız `sha256sum` aynı. Ayarlar 180 → 120 gerekçeyle, geçmişte. Anahtarsız: yalnız açıklama, kapılar 403, gateway'e 0 istek.
 - **CT'ye:** O-R7b-1 Vakalar tatbikat satırı WP'ye göre Tatbikat Planlayıcı'yı açar, maket metni Kanıt Paketi diyor; O-R7b-2 plan sorumlusu =
   kaydeden (FU-0177-PLAN-OWNER); O-R7b-3 konu seçici `recall.cases.read` ister.
+**R7b CT-ACCEPTED (2026-10-16).** BLOCKED once → CT decision A: owner step MOD-0175 (read-only `HoldOfMovementAsync` on the 0177 port; `QuarantineRecallRequester` answers with the existing `FindHoldBySourceMovementAsync`; 0175 Quarantine tests 150 → 150). CT run on the branch tip (contains `a62f8a39a`): Inventory **1251 + 4**, Web **2507/2507** all green. **CT sabotage (not in a–h):** the evidence export and file reads lose their company / tenant scope (`Scope<…>()` dropped in `RecallRepository.FindEvidenceExportAsync` / `FindEvidenceFileAsync`) → `Another_company_cannot_preview_export_or_download_the_case_evidence_and_the_requests_are_checked` red; restored, porcelain clean. CT answers: O-R7b-1 → in R7c a Completed / Cancelled drill row in Vakalar opens its Kanıt Paketi (mockup), a Running one opens the planner; O-R7b-2 FU-0177-PLAN-OWNER accepted (user picker, same family as FU-0173-UI-USER-01); O-R7b-3 accepted as is (evidence subject picker needs `recall.cases.read`; QA roles hold both); the save key `recall.settings.manage` is correct (`recall.settings.update` is the signable action code). PDF reviewed by hash and header only (no viewer in the agent environment) → visual check in the owner live round. Merged `--no-ff` into MVP-1.
+
 
 
 ## 20. Follow-up Items
