@@ -93,12 +93,18 @@ public sealed class PersonalizationTenantScopeWebTests
     [Fact]
     public void Verifier_tenant_scope_rule_agrees_with_the_code()
     {
+        // SYNC-144 (main 3912d568b): the verifier's Save View tenant rule now lives in check_personalization_proxy_contract
+        // and applies to the proxy profile — the same-origin MVC proxy every page's Save View goes through. The
+        // direct-gateway profile keeps main's historical "client sends X-Tenant-Id" check (follow-up for the shared owner).
         var output = RunPython(".antigravity/scripts/verify_datatable_page.py", ".",
-            "--area", "DevEnablement", "--module", "GoldenReferenceCompact", "--reference", "compact", "--format", "gaps");
+            "--area", "DevEnablement", "--module", "GoldenReferenceCompact", "--reference", "compact", "--format", "gaps",
+            "--api-profile", "proxy");
         if (output is null) return;
 
         Assert.Contains("[factory]", output);   // the verifier ran to the end (a crash would print no gaps either)
-        Assert.DoesNotContain("tenant header", output, StringComparison.OrdinalIgnoreCase);
+        // no gap of main's personalization contract (its wording: "keeps tenant and bearer authority out of the browser",
+        // "uses same-origin MVC proxy endpoint", the proxy's tenant_user header …) — any of them names personalization
+        Assert.DoesNotContain("personalization", output, StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task<(IActionResult Result, HttpRequestMessage? Sent)> ForwardAsync(string actorType, string? tenantClaim)
