@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <ProjectReference Include="..\Diten.SafetyStockService.Application\Diten.SafetyStockService.Application.csproj" />
   </ItemGroup>
 </Project>

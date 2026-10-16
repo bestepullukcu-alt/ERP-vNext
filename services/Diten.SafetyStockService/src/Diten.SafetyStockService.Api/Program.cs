@@ -3,6 +3,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.SafetyStockService.Application;
 using Diten.SafetyStockService.Infrastructure;
 using Diten.SafetyStockService.Persistence;
+using Diten.SafetyStockService.Api.ModuleRegistration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -38,6 +39,9 @@ builder.Services.AddAuthorization(options =>
         .RequireClaim("permission", "safety-stock.policies.read"));
     options.AddPolicy("safety-stock.evaluations.read", policy => policy.RequireAuthenticatedUser()
         .RequireClaim("permission", "safety-stock.evaluations.read"));
+    foreach (var permission in new[] { "safety-stock.policies.create", "safety-stock.policies.update",
+        "safety-stock.policies.submit", "safety-stock.policies.review" })
+        options.AddPolicy(permission, policy => policy.RequireAuthenticatedUser().RequireClaim("permission", permission));
 });
 
 builder.Services.AddControllers();
@@ -47,8 +51,27 @@ builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyReadQuery, PolicyR
 builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyReadQuery, PolicyReadResult>, PolicyReadLoggingBehavior>();
 builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyReadQuery, PolicyReadResult>, PolicyReadExceptionBehavior>();
 builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyReadQuery, PolicyReadResult>, PolicyReadPerformanceBehavior>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, PolicyMutationResult>, PolicyMutationValidationBehavior>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, PolicyMutationResult>, PolicyMutationLoggingBehavior>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, PolicyMutationResult>, PolicyMutationExceptionBehavior>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, PolicyMutationResult>, PolicyMutationPerformanceBehavior>();
 builder.Services.AddScoped<IActorSeriesScopeReader, MdmOnlyLegalEntityScopeReader>();
-builder.Services.AddScoped<IPolicyReadStore, UnconfiguredPolicyReadStore>();
+if (!string.IsNullOrWhiteSpace(builder.Configuration["Mongo:ConnectionString"]))
+{
+    builder.Services.AddSingleton<SafetyStockMongoContext>();
+    builder.Services.AddScoped<IPolicyAuditAppender, PolicyAuditAppender>();
+    builder.Services.AddScoped<IPolicyMutationStore, MongoPolicyMutationStore>();
+    builder.Services.AddScoped<IPolicyReadStore, MongoPolicyReadStore>();
+}
+else
+{
+    builder.Services.AddScoped<IPolicyMutationStore, UnconfiguredPolicyMutationStore>();
+    builder.Services.AddScoped<IPolicyReadStore, UnconfiguredPolicyReadStore>();
+}
+builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection("PlatformRegistration"));
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IModuleManifestProvider, SafetyStockManifestProvider>();
+builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 builder.Services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>(client =>
 {
     var url = builder.Configuration["Mdm:LegalEntitiesUrl"];

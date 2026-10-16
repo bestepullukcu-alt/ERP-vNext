@@ -17,7 +17,7 @@ namespace Diten.SafetyStockService.Read.Tests;
 
 public sealed class ReadHttpTests
 {
-    private static readonly string Secret = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+    private static readonly string Secret = TestJwtSecret.Value;
     private const string Route = "/api/v1/safety-stock/policies";
 
     static ReadHttpTests() => Environment.SetEnvironmentVariable("JwtSettings__Secret", Secret);
