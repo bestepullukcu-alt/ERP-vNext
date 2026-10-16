@@ -1,6 +1,6 @@
 name: service-tests
 
-# BL-577 — the service test projects, on Linux. phase1-gates.yml only BUILDS the service solutions; before this file
+# BL-577 — the service test projects, on Linux (one on macOS: the Auth acceptance host, job service-tests-macos). phase1-gates.yml only BUILDS the service solutions; before this file
 # none of their tests ran in CI, so Linux-only behaviour (BL-570: the Auth operator commands' Unix secret channel and
 # lock) was never measured. Guide: docs/guides/operations/ci-service-tests.md.
 #
@@ -29,6 +29,10 @@ env:
   MONGODB_VERSION: "7.0.28"
   MONGODB_TARBALL: mongodb-linux-x86_64-ubuntu2204-7.0.28.tgz
   MONGODB_SHA256: 7fc16f46fb10753b982ab03bd9d7dd5920d18d181259f825c2462ca903c55d4d
+  # CT-CI-MACOS-01: the same version for the macOS job (Apple silicon tarball, official fastdl.mongodb.org/osx). Its
+  # digest was computed from the tarball itself (2026-10-16, 69 532 134 bytes) and is written HERE, like the Linux one.
+  MONGODB_MACOS_TARBALL: mongodb-macos-arm64-7.0.28.tgz
+  MONGODB_MACOS_SHA256: 1388a09743db960785de75aa4b5e077fca1767e9c948ccfaafef6280c862e239
   # BL-590: RabbitMQ for Platform.Eventing, pinned by the multi-arch index digest of the exact tag (Docker Hub,
   # measured 2026-10-09). 4.3.2 is the version dev runs (Homebrew rabbitmq 4.3.2).
   RABBITMQ_IMAGE: rabbitmq:4.3.2@sha256:345dd3c11d67892c7b452fb2237d94f577acb2aa0569c3fd5c9841eb0c1b57fb
@@ -54,8 +58,6 @@ jobs:
             project: services/Diten.Platform/tests/Diten.Platform.CompositionGuard.Tests/Diten.Platform.CompositionGuard.Tests.csproj
           - suite: auth-app
             project: services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
-          - suite: auth-acceptance-host
-            project: services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj
           # WP-CI-SERVICE-TESTS-03 (with the MDM takeover): starts its OWN mongod (Support/OwnedMongo.cs, random port,
           # DITEN_TEST_MONGOD / DITEN_ITEST_MONGOD_BIN_DIR); auth-* also carries DITEN_REQUIRE_OWNED_MONGO.
           - suite: auth-scr
@@ -122,7 +124,8 @@ jobs:
           tar -xzf "$RUNNER_TEMP/$MONGODB_TARBALL" -C "$RUNNER_TEMP"
           bin="$RUNNER_TEMP/${MONGODB_TARBALL%.tgz}/bin"
           "$bin/mongod" --version | grep -F "db version v$MONGODB_VERSION"
-          # Platform's disposable mongod, and Auth's acceptance host (a directory), use this binary.
+          # Platform's disposable mongod and the other owned-mongod tests use this binary (Auth's acceptance host runs in
+          # the macOS job below, with the macOS build of the same version).
           echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
           echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
           # WP-CI-SERVICE-TESTS-05 (BL-646 item 1): Platform's audit-outbox temporal fixture (AuditOutboxTemporalReplicaSetFixture,
@@ -230,6 +233,89 @@ jobs:
       - name: Stop owned Mongo (Planning)
         if: always() && matrix.suite == 'planning-tests'
         run: bash scripts/test-env/mod0188-ci-mongo.sh stop
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-${{ matrix.suite }}
+          path: ${{ runner.temp }}/test-results
+          if-no-files-found: warn
+
+  # CT-CI-MACOS-01 (PR #148 run): the acceptance host's supervisor tests use macOS-only process interfaces —
+  # posix_spawnattr_t passed as a pointer (glibc's is a struct; the Linux run aborted, "host exited unexpectedly"),
+  # libproc / kinfo_proc, and the host's peer verification, which fails closed on any other system (Program.cs G6(b)).
+  # So the row runs HERE, on the system they were written for, and in no other job: the whole project, no --filter,
+  # no skip, the same test / skip / upload steps. macos-15 (Apple silicon), not macos-14 (retired 2026-11-02).
+  # Two of its tests start /usr/local/share/dotnet/dotnet (a fixed path): setup-dotnet installs there
+  # (DOTNET_INSTALL_DIR, its README). Before it, one step prepares that directory on the fresh VM — not a symlink, absent
+  # or empty, created with sudo -n and owned by the runner user, writable; after it, one step checks that binary and its
+  # 8.0 runtime. Both fail closed, before any test. /usr/local may be root-owned on Apple silicon images (not measured).
+  service-tests-macos:
+    name: service-tests (${{ matrix.suite }})
+    runs-on: macos-15
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: auth-acceptance-host
+            project: services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj
+    env:
+      SUITE: ${{ matrix.suite }}
+      PROJECT: ${{ matrix.project }}
+      DOTNET_INSTALL_DIR: /usr/local/share/dotnet
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Prepare the dotnet install directory (macOS)
+        run: |
+          set -euo pipefail
+          test ! -L "$DOTNET_INSTALL_DIR"
+          if [ -e "$DOTNET_INSTALL_DIR" ]; then
+            entries="$(ls -A "$DOTNET_INSTALL_DIR")"
+            test -z "$entries"
+          fi
+          sudo -n mkdir -p "$DOTNET_INSTALL_DIR"
+          sudo -n chown "$(id -u):$(id -g)" "$DOTNET_INSTALL_DIR"
+          test -w "$DOTNET_INSTALL_DIR"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: The acceptance host's dotnet (macOS)
+        run: |
+          set -euo pipefail
+          test -x /usr/local/share/dotnet/dotnet
+          /usr/local/share/dotnet/dotnet --list-runtimes | grep -F "Microsoft.NETCore.App 8." | grep -F "[/usr/local/share/dotnet/shared/Microsoft.NETCore.App]"
+
+      - name: Install mongod (pinned version and digest, macOS)
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$MONGODB_MACOS_TARBALL" "https://fastdl.mongodb.org/osx/$MONGODB_MACOS_TARBALL"
+          actual="$(shasum -a 256 "$RUNNER_TEMP/$MONGODB_MACOS_TARBALL" | cut -d ' ' -f 1)"
+          test "$actual" = "$MONGODB_MACOS_SHA256"
+          tar -xzf "$RUNNER_TEMP/$MONGODB_MACOS_TARBALL" -C "$RUNNER_TEMP"
+          bin="$RUNNER_TEMP/mongodb-macos-aarch64-$MONGODB_VERSION/bin"
+          "$bin/mongod" --version | grep -F "db version v$MONGODB_VERSION"
+          echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
+          echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
+
+      - name: Owned Mongo is required (Auth)
+        if: startsWith(matrix.suite, 'auth-')
+        run: echo "DITEN_REQUIRE_OWNED_MONGO=1" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: |
+          dotnet test "$PROJECT" -c Debug --blame-hang --blame-hang-timeout 20m \
+            --logger "trx;LogFileName=$SUITE.trx" --results-directory "$RUNNER_TEMP/test-results"
+
+      - name: Skipped = 0
+        if: always()
+        run: python3 scripts/check_trx_no_skipped.py --suite "$SUITE" "$RUNNER_TEMP/test-results/$SUITE.trx"
 
       - name: Upload test results
         if: always()

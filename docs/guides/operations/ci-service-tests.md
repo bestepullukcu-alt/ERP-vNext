@@ -9,7 +9,8 @@
 ## Ne koşar
 
 `phase1-gates.yml` servis çözümlerini yalnız **derler**. `service-tests` onların testlerini **koşar**: Linux'ta,
-her proje ayrı bir iş (matris, `fail-fast: false`).
+her proje ayrı bir iş (matris, `fail-fast: false`). Tek istisna `auth-acceptance-host`: macOS'ta, kendi işinde
+(`service-tests-macos`, CT-CI-MACOS-01; aşağıda "Kabul sunucusu macOS'ta").
 
 | matris satırı | proje | yerel süre (macOS, 2026-10-09) |
 |---|---|---|
@@ -18,7 +19,7 @@ her proje ayrı bir iş (matris, `fail-fast: false`).
 | `platform-eventing` | `Diten.Platform.Eventing.Tests` | 68 test; yerelde özel RabbitMQ 4.3.2 düğümü; Mongo testin kendi mongod'u |
 | `platform-composition-guard` | `Diten.Platform.CompositionGuard.Tests` | main'in Q366 guard'ı + bağlantı kaynağı testleri; Mongo testin kendi mongod'u (`PlatformTestMongo`) |
 | `auth-app` | `Diten.AuthService.Application.Tests` | test 6 dk 52 sn (1617 test) |
-| `auth-acceptance-host` | `Diten.AuthService.AccountKindAcceptanceHost.Tests` | test 3 dk 36 sn (68 test) |
+| `auth-acceptance-host` (**macOS**, `service-tests-macos`) | `Diten.AuthService.AccountKindAcceptanceHost.Tests` | test 3 dk 36 sn (68 test) |
 | `auth-scr` | `Diten.AuthService.ServiceClientRegistry.Tests` | test 4 sn (160 test) |
 | `mdm-app` | `Diten.MdmService.Application.Tests` | test 2 dk 30 sn (2503 test) — önce Platform.API ve MDM.Api **Release** derlenir (aşağıda) |
 | `mdm-api` | `Diten.MdmService.Api.Tests` | test 7 dk 32 sn (762 test) |
@@ -236,6 +237,32 @@ uykudan uyanınca zaman aşımı. Main'in Q121b ölçümü: 49 veritabanı.
   - `scripts/mongo_rs_initiate.py` depoda kalır; yerel betikler kullanabilir.
 - Ortak / dev Mongo'ya hiçbir zaman bağlanılmaz.
 
+## Kabul sunucusu macOS'ta (CT-CI-MACOS-01)
+
+- **Neden:** `auth-acceptance-host`'un süreç testleri macOS'a özgü arayüzler kullanır: `posix_spawnattr_t`'yi işaretçi
+  olarak geçirir (glibc'de bir yapı; PR #148'in Linux koşusu "host exited unexpectedly" ile iptal oldu), `libproc` /
+  `kinfo_proc` ve sunucunun karşı süreç doğrulaması (başka işletim sisteminde kapalı başarısız, `Program.cs` G6(b)). Bu
+  testler yazıldıkları sistemde koşar; satır Linux matrisinde yoktur. Projenin tamamı, `--filter` yok, atlama yok.
+- **Koşucu `macos-15` (Apple silicon):** `macos-14` 2026-11-02'de emekli (GitHub runner-images duyurusu, 2026-10-01).
+  Herkese açık depoda standart koşucular ücretsizdir (GitHub belgesi); hesap ayarları ayrıca doğrulanmadı.
+- **mongod:** aynı sürüm 7.0.28, `mongodb-macos-arm64-7.0.28.tgz`. SHA-256 tarball'ın kendisinden hesaplandı
+  (2026-10-16, 69 532 134 bayt) ve iş dosyasına yazılı; uymazsa iş kırmızı. Değişkenler Linux'takiyle aynı.
+- **dotnet yolu:** iki test sınıfı `/usr/local/share/dotnet/dotnet`'i sabit yoldan başlatır (`SevenStateAcceptanceTests`,
+  `ExceptionTextLeakTests`). `setup-dotnet` oraya kurar (`DOTNET_INSTALL_DIR`, sabit sürümün README'si). Önce taze
+  VM'de dizin hazırlanır: sembolik bağ olamaz, yok ya da boş olmalı; `sudo -n` ile açılır ve yalnız o dizin koşucu
+  kullanıcısına verilir; sonra yazılabilirliği denetlenir. Kurulumdan sonra o ikilinin 8.0 çalışma zamanı denetlenir.
+  Hepsi kapalı başarısız. Kabul sunucusunun test kodu değişmedi (değişen test yalnız mimari bekçi). Apple silicon
+  imajlarında `/usr/local` root'a ait olabilir; setup-dotnet v3 tasarım kaydına göre macOS'ta önceden kurulu .NET
+  `/Users/runner/.dotnet`'tedir, yani bu dizinin boş ya da yok olması beklenir.
+  **Gerçek koşucuda ölçülmedi (NOT VERIFIED);** ilk macOS koşusu gösterecek.
+- **Soket yolu:** süpervizör kökü `/tmp`'nin gerçek yolu altında `dak-XXXXXX` (macOS'ta `/private/tmp/...`), yani kısa;
+  geçici dizin altındaki öteki soketler 49 karakterlik bir `TMPDIR` ile en çok ~89 bayt (sınır 104). Koşucunun gerçek
+  `TMPDIR`'ı CI'da ölçülecek.
+- **Bekçi:** `The_acceptance_host_runs_whole_on_macos_with_its_pinned_mongod_and_dotnet_path`; Test / Skipped = 0 /
+  Auth bayrağı adımları her iki işte birebir; mongod değişkenleri yalnız iki kurulum adımında. Mac pinleri
+  (`MONGODB_VERSION`, `MONGODB_MACOS_TARBALL`, `MONGODB_MACOS_SHA256`) tek anahtar; iş ya da adım `env:` ile ezilemez,
+  macOS adları global satırları ve birebir sabit kurulum adımı dışında hiçbir yerde geçmez.
+
 ## RabbitMQ (Eventing satırı)
 
 - **Sürüm sabit, özetle:** `rabbitmq:4.3.2@sha256:345dd3c1…`, dev ile aynı sürüm (Homebrew rabbitmq 4.3.2). Çoklu mimari
@@ -384,4 +411,5 @@ sisteminde kapalı başarısız olur. Linux'ta üç `LoginPeerVerificationTests`
 PID / başlangıç zamanı karşılaştırması ve yönlendirme reddi o OS reddinin arkasında kalır, yalnız macOS'ta ayrı ayrı
 kanıtlanır. Süreç düzeyindeki testler (`SevenStateSupervisor` koleksiyonu: `proc_listpids`, `kinfo_proc` ebeveyn PID'i,
 macOS `posix_spawn` bayrakları) Linux'ta hâlâ kırmızı olabilir; PR #144'teki `DescriptorAndEofTimingTests` iptali buna
-bağlı görünür. Linux karşılığı (`SO_PEERCRED`, `/proc`) ayrı iştir; karar CT'nin.
+bağlı görünür. Linux karşılığı (`SO_PEERCRED`, `/proc`) ayrı iştir; karar CT'nin. **Karar (CT-CI-MACOS-01):** Linux
+portu ve Linux'ta adlı atlama yerine satır macOS'ta koşar (yukarıda "Kabul sunucusu macOS'ta").

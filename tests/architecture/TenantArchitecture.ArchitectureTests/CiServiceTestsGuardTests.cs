@@ -221,9 +221,13 @@ public class CiServiceTestsGuardTests
     [Fact]
     public void Auth_rows_require_an_owned_mongo()
     {
-        var step = Step(Workflow(), "Owned Mongo is required (Auth)");
-        Assert.Contains("if: startsWith(matrix.suite, 'auth-')", step, StringComparison.Ordinal);
-        Assert.Contains("echo \"DITEN_REQUIRE_OWNED_MONGO=1\" >> \"$GITHUB_ENV\"", step, StringComparison.Ordinal);
+        // CT-CI-MACOS-01: in EVERY job (both run an auth- row), not only the first one Step() would find.
+        foreach (var (_, body) in Jobs(Code(Workflow())))
+        {
+            var step = Step(body, "Owned Mongo is required (Auth)");
+            Assert.Contains("if: startsWith(matrix.suite, 'auth-')", step, StringComparison.Ordinal);
+            Assert.Contains("echo \"DITEN_REQUIRE_OWNED_MONGO=1\" >> \"$GITHUB_ENV\"", step, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
@@ -247,10 +251,12 @@ public class CiServiceTestsGuardTests
         });
         // FIX1: the check runs with the job's suite, so only that suite's allow-list codes can pass.
         // Hardening: the whole step, exact — ` | cat` (no pipefail in the default bash -e) would turn its red green.
-        Assert.Equal(
-            "- name: Skipped = 0\n        if: always()\n"
-            + "        run: python3 scripts/check_trx_no_skipped.py --suite \"$SUITE\" \"$RUNNER_TEMP/test-results/$SUITE.trx\"\n",
-            Step(Code(workflow), "Skipped = 0"));
+        // CT-CI-MACOS-01: in EVERY job, exact.
+        foreach (var (_, body) in jobs)
+            Assert.Equal(
+                "- name: Skipped = 0\n        if: always()\n"
+                + "        run: python3 scripts/check_trx_no_skipped.py --suite \"$SUITE\" \"$RUNNER_TEMP/test-results/$SUITE.trx\"\n",
+                Step(Code(body), "Skipped = 0"));
         // …and phase1 runs the allow-list's own tests (scripts/tests) on every push.
         Assert.Matches(@"(?m)^python3 -m unittest discover -s scripts/tests -p 'test_\*\.py'$", GatesText());
     }
@@ -414,6 +420,10 @@ public class CiServiceTestsGuardTests
             "matrix.suite == 'planning-tests'",
             "always()",
             "always() && matrix.suite == 'planning-tests'",
+            "always()",
+            // CT-CI-MACOS-01: the macOS job (the Auth acceptance host) — its owned-Mongo flag, its skip check, its upload.
+            "startsWith(matrix.suite, 'auth-')",
+            "always()",
             "always()"
         ]
     };
@@ -425,7 +435,10 @@ public class CiServiceTestsGuardTests
         ["phase1-gates.yml"] = 0,
         // WP-CI-SERVICE-TESTS-05: 6 → 7 — the install step's DITEN_FU02_MONGOD_PATH line (BL-646 item 1), pinned below by
         // The_audit_outbox_mongod_variable_is_set_by_the_install_step_only.
-        ["service-tests.yml"] = 7
+        // CT-CI-MACOS-01: 7 → 10 — the macOS job's install step (DITEN_TEST_MONGOD, DITEN_ITEST_MONGOD_BIN_DIR) and its
+        // owned-Mongo flag, pinned below by The_mongod_variables_are_set_by_the_install_step_and_never_overridden and
+        // The_acceptance_host_runs_whole_on_macos_with_its_pinned_mongod_and_dotnet_path.
+        ["service-tests.yml"] = 10
     };
 
     [Fact]
@@ -463,21 +476,34 @@ public class CiServiceTestsGuardTests
         foreach (var (file, step) in new[]
                  {
                      ("service-tests.yml", "Test"), ("service-tests.yml", "Install mongod (pinned version and digest)"),
+                     ("service-tests.yml", "Install mongod (pinned version and digest, macOS)"),
+                     ("service-tests.yml", "Prepare the dotnet install directory (macOS)"),
+                     ("service-tests.yml", "The acceptance host's dotnet (macOS)"),
                      ("phase1-gates.yml", "Run Phase 1 Gates")
                  })
             Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?im)^[ \t]+[""']?if[""']?[ \t]*:"), $"{file} '{step}' has an if:");
 
-        Assert.Equal(
-            "- name: Test\n        run: |\n"
-            + "          dotnet test \"$PROJECT\" -c Debug --blame-hang --blame-hang-timeout 20m \\\n"
-            + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n",
-            Step(Code(WorkflowText("service-tests.yml")), "Test"));
+        // CT-CI-MACOS-01: the Test step is exact in EVERY job (two jobs, one Test step each).
+        var serviceJobs = Jobs(Code(WorkflowText("service-tests.yml")));
+        Assert.Equal(2, serviceJobs.Count);
+        foreach (var (_, body) in serviceJobs)
+        {
+            Assert.Single(Regex.Matches(body, @"(?m)^      - name: Test$"));
+            Assert.Equal(
+                "- name: Test\n        run: |\n"
+                + "          dotnet test \"$PROJECT\" -c Debug --blame-hang --blame-hang-timeout 20m \\\n"
+                + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n",
+                Step(body, "Test"));
+        }
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
         Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[""\*\*""\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
-        // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values.
+        // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values — in each job
+        // (CT-CI-MACOS-01: the macOS job adds only DOTNET_INSTALL_DIR after them).
         Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),
             @"(?m)^    env:\n      SUITE: \$\{\{ matrix\.suite \}\}\n      PROJECT: \$\{\{ matrix\.project \}\}\n    steps:\n"));
-        Assert.Equal(2, Regex.Matches(Code(WorkflowText("service-tests.yml")), @"(?<![\w.$-])[""']?(?:SUITE|PROJECT)[""']?[ \t]*:").Count);
+        Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),
+            @"(?m)^    env:\n      SUITE: \$\{\{ matrix\.suite \}\}\n      PROJECT: \$\{\{ matrix\.project \}\}\n      DOTNET_INSTALL_DIR: /usr/local/share/dotnet\n    steps:\n"));
+        Assert.Equal(4, Regex.Matches(Code(WorkflowText("service-tests.yml")), @"(?<![\w.$-])[""']?(?:SUITE|PROJECT)[""']?[ \t]*:").Count);
 
         var gates = GatesText();
         Assert.Equal("#!/usr/bin/env bash", gates.Split('\n')[0]);
@@ -528,13 +554,19 @@ public class CiServiceTestsGuardTests
         var code = Code(workflow);
         foreach (var variable in new[] { "DITEN_TEST_MONGOD", "DITEN_ITEST_MONGOD_BIN_DIR" })
             Assert.True(KeyCount(code, variable) == 0, $"an env: key (block or flow, any case) overrides {variable}");
-        // FIX2: the only assignments — export, $GITHUB_ENV, anything with "=" — are the install step's two lines.
+        // FIX2: the only assignments — export, $GITHUB_ENV, anything with "=" — are the install steps' two lines each
+        // (CT-CI-MACOS-01: the Linux job's and the macOS job's).
+        var macInstall = Step(workflow, "Install mongod (pinned version and digest, macOS)");
+        Assert.Contains("echo \"DITEN_TEST_MONGOD=$bin/mongod\" >> \"$GITHUB_ENV\"", macInstall, StringComparison.Ordinal);
+        Assert.Contains("echo \"DITEN_ITEST_MONGOD_BIN_DIR=$bin\" >> \"$GITHUB_ENV\"", macInstall, StringComparison.Ordinal);
         var assignments = Regex.Matches(code, @"(?i)DITEN_I?TEST_MONGOD(?:_BIN_DIR)?[ \t]*(?:=|<<)").ToArray();
-        Assert.True(assignments.Length == 2, $"{assignments.Length} assignments of a mongod variable, expected the install step's 2");
-        var installAt = code.IndexOf("- name: Install mongod (pinned version and digest)\n", StringComparison.Ordinal);
+        Assert.True(assignments.Length == 4, $"{assignments.Length} assignments of a mongod variable, expected 2 per install step (2 steps)");
+        var ranges = new[] { "Install mongod (pinned version and digest)", "Install mongod (pinned version and digest, macOS)" }
+            .Select(name => (At: code.IndexOf("- name: " + name + "\n", StringComparison.Ordinal), Length: Step(code, name).Length)).ToArray();
         Assert.All(assignments, assignment =>
-            Assert.True(assignment.Index > installAt && assignment.Index < installAt + Step(code, "Install mongod (pinned version and digest)").Length,
-                "a mongod variable is assigned outside the install step"));
+            Assert.True(ranges.Count(r => assignment.Index > r.At && assignment.Index < r.At + r.Length) == 1,
+                "a mongod variable is assigned outside the install steps"));
+        Assert.All(ranges, r => Assert.Equal(2, assignments.Count(a => a.Index > r.At && a.Index < r.At + r.Length)));
     }
 
     // WP-CI-SERVICE-TESTS-05 (BL-646 item 1): Platform's audit-outbox temporal fixture finds its mongod through
@@ -895,6 +927,92 @@ public class CiServiceTestsGuardTests
 
     // Main sync (CI follow-up 3 review): a suite name is the row's identity — its TRX file, its artifact, its allow-list
     // key and every `matrix.suite ==` condition. Two rows with one name would overwrite each other's results.
+    // CT-CI-MACOS-01 (PR #148): the Auth acceptance host's supervisor tests use macOS-only process interfaces
+    // (posix_spawnattr_t as a pointer — glibc's is a struct, the Linux run aborted; libproc / kinfo_proc; the host's peer
+    // verification, Program.cs G6(b)). Its row runs in a macOS job — macos-15 (macos-14 retires 2026-11-02), the same
+    // pinned mongod version from the macOS arm64 tarball and its own digest, the tests' fixed
+    // /usr/local/share/dotnet/dotnet installed there and checked fail-closed before any test, the same test / skip /
+    // upload steps — and in no other job.
+    [Fact]
+    public void The_acceptance_host_runs_whole_on_macos_with_its_pinned_mongod_and_dotnet_path()
+    {
+        const string project = "services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj";
+        var code = Code(Workflow());
+        var jobs = Jobs(code).ToDictionary(job => job.Name, job => job.Body, StringComparer.Ordinal);
+        Assert.Equal(["service-tests", "service-tests-macos"], jobs.Keys.Order(StringComparer.Ordinal).ToArray());
+        var mac = jobs["service-tests-macos"];
+        Assert.Equal([project], MatrixProjects(mac).ToArray());
+        Assert.DoesNotContain(project, MatrixProjects(jobs["service-tests"]));
+        Assert.Single(Regex.Matches(mac, @"(?m)^    runs-on: macos-15$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^    runs-on: macos-15$"));
+        Assert.Single(Regex.Matches(jobs["service-tests"], @"(?m)^    runs-on: ubuntu-22\.04$"));
+        Assert.Equal(2, KeyCount(code, "runs-on"));
+
+        var version = Regex.Match(code, @"(?m)^  MONGODB_VERSION: ""(7\.0\.\d+)""$").Groups[1].Value;
+        Assert.NotEmpty(version);
+        Assert.Single(Regex.Matches(code, $@"(?m)^  MONGODB_MACOS_TARBALL: mongodb-macos-arm64-{Regex.Escape(version)}\.tgz$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^  MONGODB_MACOS_SHA256: [0-9a-f]{64}$"));
+        // The pins are what the install step really reads: each is ONE key (the workflow env's) — no job or step env:
+        // key, block or flow, any case, overrides it — and the macOS names appear nowhere but on that key's line and in
+        // the exact install step below (no shell, export, read or $GITHUB_ENV line names them).
+        foreach (var pin in new[] { "MONGODB_VERSION", "MONGODB_MACOS_TARBALL", "MONGODB_MACOS_SHA256" })
+            Assert.True(KeyCount(code, pin) == 1, $"{KeyCount(code, pin)} {pin} keys (block or flow, any case), expected the workflow env's 1");
+        var installAt = code.IndexOf("- name: Install mongod (pinned version and digest, macOS)\n", StringComparison.Ordinal);
+        var installEnd = installAt + Step(code, "Install mongod (pinned version and digest, macOS)").Length;
+        var uses = Regex.Matches(code, @"(?i)MONGODB_MACOS_(?:TARBALL|SHA256)").ToArray();
+        Assert.All(uses, use =>
+            Assert.True(
+                Regex.IsMatch(code[(code.LastIndexOf('\n', use.Index) + 1)..], @"^  MONGODB_MACOS_(?:TARBALL|SHA256): ")
+                || (use.Index > installAt && use.Index < installEnd),
+                $"a macOS mongod pin is named outside its workflow env line and the install step (at {use.Index})"));
+        Assert.Equal(2, uses.Count(use => use.Index < installAt || use.Index >= installEnd));
+
+        Assert.Equal(
+            "- name: Prepare the dotnet install directory (macOS)\n        run: |\n          set -euo pipefail\n"
+            + "          test ! -L \"$DOTNET_INSTALL_DIR\"\n"
+            + "          if [ -e \"$DOTNET_INSTALL_DIR\" ]; then\n"
+            + "            entries=\"$(ls -A \"$DOTNET_INSTALL_DIR\")\"\n"
+            + "            test -z \"$entries\"\n"
+            + "          fi\n"
+            + "          sudo -n mkdir -p \"$DOTNET_INSTALL_DIR\"\n"
+            + "          sudo -n chown \"$(id -u):$(id -g)\" \"$DOTNET_INSTALL_DIR\"\n"
+            + "          test -w \"$DOTNET_INSTALL_DIR\"\n",
+            Step(mac, "Prepare the dotnet install directory (macOS)"));
+        Assert.Equal(1, KeyCount(code, "DOTNET_INSTALL_DIR"));
+        Assert.Equal(
+            "- name: The acceptance host's dotnet (macOS)\n        run: |\n          set -euo pipefail\n"
+            + "          test -x /usr/local/share/dotnet/dotnet\n"
+            + "          /usr/local/share/dotnet/dotnet --list-runtimes | grep -F \"Microsoft.NETCore.App 8.\" | grep -F \"[/usr/local/share/dotnet/shared/Microsoft.NETCore.App]\"\n",
+            Step(mac, "The acceptance host's dotnet (macOS)"));
+        Assert.Equal(
+            "- name: Install mongod (pinned version and digest, macOS)\n        run: |\n          set -euo pipefail\n"
+            + "          curl -fsSL --retry 3 -o \"$RUNNER_TEMP/$MONGODB_MACOS_TARBALL\" \"https://fastdl.mongodb.org/osx/$MONGODB_MACOS_TARBALL\"\n"
+            + "          actual=\"$(shasum -a 256 \"$RUNNER_TEMP/$MONGODB_MACOS_TARBALL\" | cut -d ' ' -f 1)\"\n"
+            + "          test \"$actual\" = \"$MONGODB_MACOS_SHA256\"\n"
+            + "          tar -xzf \"$RUNNER_TEMP/$MONGODB_MACOS_TARBALL\" -C \"$RUNNER_TEMP\"\n"
+            + "          bin=\"$RUNNER_TEMP/mongodb-macos-aarch64-$MONGODB_VERSION/bin\"\n"
+            + "          \"$bin/mongod\" --version | grep -F \"db version v$MONGODB_VERSION\"\n"
+            + "          echo \"DITEN_TEST_MONGOD=$bin/mongod\" >> \"$GITHUB_ENV\"\n"
+            + "          echo \"DITEN_ITEST_MONGOD_BIN_DIR=$bin\" >> \"$GITHUB_ENV\"\n",
+            Step(mac, "Install mongod (pinned version and digest, macOS)"));
+
+        // Order: the directory, then setup-dotnet, then its binary, then mongod, then the flag, then the tests.
+        var order = new[] { "Prepare the dotnet install directory (macOS)", "Setup .NET", "The acceptance host's dotnet (macOS)",
+                "Install mongod (pinned version and digest, macOS)", "Owned Mongo is required (Auth)", "Test", "Skipped = 0", "Upload test results" }
+            .Select(name => mac.IndexOf("- name: " + name + "\n", StringComparison.Ordinal)).ToArray();
+        Assert.All(order, at => Assert.True(at >= 0));
+        Assert.Equal(order.Order().ToArray(), order);
+
+        // Non-vacuity: the two tests still start this fixed path — if they stop, the preflight checks a binary nobody runs.
+        foreach (var file in new[]
+                 {
+                     "services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/SevenStateAcceptanceTests.cs",
+                     "services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/ExceptionTextLeakTests.cs"
+                 })
+            Assert.Contains("var dotnetPath = \"/usr/local/share/dotnet/dotnet\";", File.ReadAllText(Path.Combine(RepoRoot(), file)),
+                StringComparison.Ordinal);
+    }
+
     [Fact]
     public void Every_matrix_suite_name_is_unique()
     {
