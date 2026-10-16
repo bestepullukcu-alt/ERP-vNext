@@ -10175,6 +10175,58 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-647
+
+**`openNew` guard'ı ağaç-geneli bir listede genel bir ad tutuyor ve CRM'in canlı fonksiyonuyla çakışıyor — merge'den önce de kırmızıydı**
+
+DURUM: AÇIK · SAHİP: WorkCenterNext (guard sahibi) + CRM (çakışan ad) — karar sahibin · BULAN: WP-LANE-MAIN-SYNC-05 merge kapısı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `frontend/Diten.Web/tests/wcn-dead-code-and-timer.test.js:59` `openNew` adını ağaç-geneli `DELETED` listesinde tutuyor; guard
+`wwwroot` ve `Views` altındaki her dosyada bu adı arıyor ve `wwwroot/assets/js/CRM/VisitEvidenceSettings/visit-evidence-settings.js:373`
+kendi `openNew()` fonksiyonunu tanımlayıp `:497`'de bağlıyor. İkisi alakasız; ad çakışması.
+
+**Merge'e ait değil, ölçüldü:** CRM dosyası merge öncesi HEAD'de (`681bb44d3`) de vardı, iki `openNew` geçişiyle ve **birebir aynıydı**;
+guard da birebir aynıydı. Dolayısıyla bu guard merge öncesinde de kırmızıydı. Dosya `origin/main`'de de aynı (`0ef1f0591` main'de).
+
+**Çözüm deseni dosyanın kendisinde var:** guard `bulkBar` için "genel bir ad yalnız WorkCenterNext içinde aranır, ayırt edici bir ad
+ağaç genelinde" diyor ve `DELETED_IN_THIS_MODULE` listesini bunun için tutuyor; vendor `renderCalendar` için de aynı istisnayı yapıyor.
+`openNew` o listeye taşınırsa çakışma kalkar ve guard WorkCenterNext için işini yapmaya devam eder.
+
+**Yapılacak:** guard sahibi `openNew`'ü `DELETED` yerine `DELETED_IN_THIS_MODULE`'a taşır (küçük, testle doğrulanabilir), ya da CRM
+fonksiyonunu yeniden adlandırır (başka modülün canlı kodu — XMC-001 gereği sahibinin kararı). CT bu turda dokunmadı.
+
+**Gelecek regresyon riski:** 🟡 (guard kırmızı kaldığı sürece gerçek bir ölü-kod dönüşünü de maskeler — yanlış pozitifle birlikte yanlış negatif riski).
+
+---
+
+### BL-646
+
+**MOD-0188 Demand Planning sayfası 7 kiracı dilinde yardım metni olmadan geldi — `DEMANDPLANNING`**
+
+DURUM: AÇIK · SAHİP: Planlama / MOD-0188 (Diten.PlanningService) — metin sahibinin işi · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-05 · KAYIT: 2026-10-16 · SÜRE: 30 gün (2026-11-15)
+
+**Ne:** `services/Diten.PlanningService/src/Diten.PlanningService.Api/ModuleRegistration/DemandPlanningManifestProvider.cs`
+`PageCode: "DEMANDPLANNING"` (`RoutePath: "/SupplyChain/DemandPlanning"`) bildiriyor; `Help.DEMANDPLANNING.Purpose`
+**yedi dilin hiçbirinde yok** — ölçüldü, en/tr/fr/es/zh/ar/ru hepsinde 0.
+
+**Neden defter satırı değil:** `docs/roadmap/backlog/page-help-ledger.md` tavanı ("kiracı 246 · platform 18 · frozen 99") kendi
+sözleriyle WP-LANE-UX-GUARDS-01'den sonraki her yeni satırın yine kırmızı olduğunu söylüyor; oraya satır yazmak CT tavan kararı.
+Bu yüzden sayfa, önceki iki main senkronizasyonunun deseniyle `MAIN_SYNC_4_PAGES`'e sahibi ve gerekçesiyle yazıldı
+(`frontend/Diten.Web/tests/page-help-ledger.test.js`), anahtarları pinlenmiş ve liste yalnız azalır.
+
+**Neden metni CT yazmadı:** sayfa MOD-0188'in; kullanıcıya görünen ifadesi sahibinin seçimi (XMC-001).
+
+⚠ Sayfa `Views/SupplyChain/DemandPlanning` altında duruyor, yani `OWNER_BY_PATH`'in `SupplyChain/` → SCE eşlemesi onu bize
+atardı. Değil: MOD-0188 aynı alandaki ayrı bir modül, kendi servisi ve kendi sahibi var. `ownerOf` bilerek değiştirilmedi
+(önek gerçekten paylaşımlı; daraltmak kendi yedi lojistik modülümüzü yanlış atardı), guard bunun yerine `PLANNING`'i doğrudan kontrol ediyor.
+
+**Yapılacak:** MOD-0188 sahibi `Help.DEMANDPLANNING.Purpose` metnini yedi dilde yazar; yazıldığı anda satır `MAIN_SYNC_4_PAGES`'ten
+çıkar (liste yalnız azalır, satır kalırsa guard kırmızı).
+
+**Gelecek regresyon riski:** 🟢 (yalnız yardım metni; sayfanın işleyişi etkilenmiyor).
+
+---
+
 ### BL-645
 
 **Dev referans kiracısı iki yerde farklı: Pazar (market) operasyonel yüklemesi hattın kilidiyle `0000…0001` istiyor, main'in dev ayarı `0b7d0048-…` diyor — CRM'in yerel Pazar betiği reddediliyor**
