@@ -141,15 +141,16 @@ app.UseWhen(LoadContextMiddleware.IsLoadPath, branch => branch.UseMiddleware<Loa
 // UUIDs." from the Shipment middleware; with this branch wired it returns 200 and the handler runs.
 app.UseWhen(ReturnContextMiddleware.IsReturnPath, branch => branch.UseMiddleware<ReturnContextMiddleware>());
 app.UseWhen(ClaimContextMiddleware.IsClaimPath, branch => branch.UseMiddleware<ClaimContextMiddleware>());
-// Q484 (2026-10-12, integration-owner released): the defect Q271/Q272 found in /returns and /claims was still
-// open for /api/supply-chain/capacity-plans. Composing MOD-0192 made its controller MAPPED but not CONTEXTED:
-// the whole of src held exactly one reference to CapacityContextMiddleware, its own declaration, so Capacity
-// requests fell into the Shipment catch-all below and CapacityRequestContext stayed at its defaults. Measured
-// on the lane before this line: POST /api/supply-chain/capacity-plans with a valid token routed to
-// CapacityPlansController.Create, the handler ran with CorrelationId, TenantId and LegalEntityId all zero, and
-// the request answered 500 INTERNAL_ERROR from an InvalidOperationException, while Sandop answered 201 beside
-// it. SandopCapacityHostCompositionTests recorded that defect on purpose and is replaced by real assertions.
-app.UseWhen(CapacityContextMiddleware.IsCapacityPath, branch => branch.UseMiddleware<CapacityContextMiddleware>());
+// Q484 (owner decision 2026-10-18, Option 2'): the Capacity context middleware is composed ONLY in the test
+// host — gated to the "Testing" environment — never in the production runtime, so the §22 uptake gate (Q292)
+// keeps it out of production until the gate opens. A non-Testing host does not compose Capacity; its controller
+// is dropped (Q381) and a Capacity path 404s (the catch-all exclusion below keeps the Shipment middleware off
+// it). The branch stays at THIS position, not in an outermost test-host IStartupFilter, because
+// CapacityContextMiddleware needs routing and authentication to have run first (it reads GetEndpoint() and
+// User) — measured 2026-10-18, the filter saw a null endpoint and no-opped. See
+// docs/records/decisions/2026-10/mvp6-q484-capacity-middleware-owner-decision-01.md.
+if (string.Equals(app.Environment.EnvironmentName, "Testing", StringComparison.OrdinalIgnoreCase))
+    app.UseWhen(CapacityContextMiddleware.IsCapacityPath, branch => branch.UseMiddleware<CapacityContextMiddleware>());
 app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context)
     && !ReturnContextMiddleware.IsReturnPath(context) && !ClaimContextMiddleware.IsClaimPath(context)
     && !CapacityContextMiddleware.IsCapacityPath(context),
