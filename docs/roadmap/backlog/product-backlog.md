@@ -10175,6 +10175,65 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-653
+
+**Ağ geçidi `X-Correlation-Id`'yi SİLMEDEN kendisini ekliyor: beş modülün dördü "exactly one UUID" kontrolüyle 400 veriyor — sözleşme ise o başlığı zorunlu kılıyor**
+
+DURUM: AÇIK · SAHİP: integration owner (ağ geçidi) · BULAN: WP-LANE-MAIN-SYNC-05 canlı yığın, beş golden flow (2026-10-17) · KAYIT: 2026-10-17 · İLGİLİ: BL-651'i genişletir
+
+**Ne:** Ağ geçidinden `POST /carriers`, `/loads`, `/returns` → **400 `INVALID_REQUEST`**,
+*"X-Correlation-Id must contain exactly one UUID value."* Aynı istek doğrudan 5066'da kabul ediliyor.
+Yani `AddEdgeCorrelation()` çağıranın değerini kaldırmadan kendi değerini **ekliyor**; middleware'lerin
+`Count != 1` kontrolü ateşliyor.
+
+**Neden ciddi:** sözleşme `X-Correlation-Id`'yi **required** parametre olarak bildiriyor. Yani sözleşmenin
+söylediğini yapan bir çağıran, beş modülün dördünü kamuya açık sınırdan **hiç** kullanamıyor — ilk çağrı
+bile başarısız. `POST /shipments` bunu tolere ediyor; beşte bir modülün farklı davranması, bunun bugüne
+kadar görülmemesinin sebebi.
+
+**BL-651'den farkı:** BL-651 kenarın correlation'ı *değiştirip* replay'i kırdığını kaydediyor. Bu daha
+kötü: dört modül için ilk çağrı da düşüyor.
+
+**Yapılacak:** kenar kendi değerini eklerken çağıranınkini kaldırır (ya da BL-651'in 3. seçeneği gibi
+ayrı başlıkta taşır). Düzeltme ağ geçidinde; modüllerin `Count != 1` kuralı doğru.
+
+**Gelecek regresyon riski:** 🔴 (API çağıranları için dört modül kamuya açık sınırdan kullanılamaz).
+
+---
+
+### BL-652
+
+**25 `supplychain.*` anahtarı yetmiyor: doğrulayıcı çağıranın token'ını MDM'e iletiyor, bu yüzden 26. izin (`mdm.legal-entities.read`) şart — yokluğu 503 "schema validation failed" diye görünüyor**
+
+DURUM: AÇIK · SAHİP: SCE / MVP-6 (kuplaj) + CT (Q496 önermesi) · BULAN: WP-LANE-MAIN-SYNC-05 canlı yığın (2026-10-17) · KAYIT: 2026-10-17
+
+**Ne:** `MdmLegalEntityReferenceValidator:111-115` çağıranın `Authorization` başlığını MDM'in
+`GET /api/legal-entities/{id}/lookup-validation` ucuna **iletiyor**; o uç
+`[HasPermission("mdm.legal-entities.read")]` taşıyor. Dolayısıyla 25 `supplychain.*` anahtarının hepsini
+tutup bunu tutmayan bir çağıran her create'te **503 `DEPENDENCY_UNAVAILABLE`** alıyor.
+
+**İki yönlü ölçüldü:** yalnız 25 anahtarla `POST /carriers` → 503. Aynı token'a `mdm.legal-entities.read`
+eklenince, aynı gövdeyle → **201**.
+
+**Q496'nın önermesini düzeltiyor:** 25 modül anahtarını vermek modülleri kullanılabilir yapmıyor; 25
+**artı bir** MDM izni gerekiyor. Kuplaj R-2b'nin iç service-identity yolunu kaldırmasından geliyor —
+geriye tek yol olarak kamuya açık `lookup-validation` kaldı, yani artık çağıranın kendi izinleri kapıyı
+tutuyor. Bu sonucu hiçbir kayıt yazmamış.
+
+**İkinci kusur, aynı yerde:** `CarrierContractError.cs:12` durum→mesaj eşlemesinde **503 vakası yok**, bu
+yüzden `_ =>` varsayılanı uyguluyor: *"Request schema validation failed."* Bağımlılık hatası çağırana
+**şema** hatası olarak görünüyor; geçerli bir gövdeyi kontrol etmeye yönlendiriyor. CT tam buna zaman
+kaybetti.
+
+**Yapılacak:** (a) kuplaj kararı — ya rol şablonuna `mdm.legal-entities.read` eklenir ya doğrulama
+servis kimliğine döner (R-2b'yi tersine çevirir, sahip kararı); (b) `CarrierContractError`'a 503 vakası
+eklenir. (b) küçük ve bağımsız.
+
+**Gelecek regresyon riski:** 🟠 ((a) yetki şablonu düzeltilene kadar her yeni kiracı aynı duvara çarpar;
+(b) yanlış mesaj her 503'te yanlış yere baktırır).
+
+---
+
 ### BL-651
 
 **Idempotent replay imkânsız: ağ geçidi çağıranın `X-Correlation-Id`'sini kasten değiştiriyor, sevkiyat makbuz kontrolü ise eşleşmesini kasten şart koşuyor — ikisi bir arada tutamaz**
