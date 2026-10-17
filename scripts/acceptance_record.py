@@ -26,14 +26,24 @@ draft (CT-FIX-03 U3)  --part record: a v2 künye skeleton on stdout — format, 
                       record or a list with any marker left. No lifecycle state is required (REPORTED / VERIFYING is
                       normal at hand-over). exit 2 = not measurable.
 
+CT-FIX-05 (F3): the künye's `evidence` is a run record of scripts/run_record.py for exactly the künye's `commit` (a
+fresh run directory under docs/records/audits/, the runner's own SHA at that commit, raw exit 0 for an automatic
+acceptance); the evidence commit differs from the code only in the run directory and new acceptance documents; every
+'geçti' row cites an artefact of the run with the recorded bytes and size; an applicable criterion that cannot be
+proven automatically is 'inceleme bekler — <neden>' and keeps a mandatory one open. A conditionally approved pack gives
+no new automatic acceptance (E1). What the run record does not prove is printed with every answer (SINIR).
+
 The künye's `commit` is the verified code tree; the record itself is read at RECORD@COMMIT, a different commit.
 Nothing is derived: decision, queue state and completion level are separate fields (SOP §29.5).
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import importlib.util
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -54,8 +64,11 @@ PLACEHOLDER = re.compile(r"^\s*(-|—|tbd|todo|\.\.\.|…|yok|n/?a|pass|geçti|o
 MODULE_VALUE = re.compile(r"^(MOD-\d{4}(?:-FU\d+)?|ortak:\S.*)$")
 SPEC = re.compile(r"^([^@\s]+)@([0-9a-f]{7,40})(?::(\d+))?$")
 HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
+FULL_HEX = re.compile(r"^[0-9a-f]{40}$")
+REVIEW = re.compile(r"^inceleme bekler\s*[—-]\s*(.*)$")   # CT-FIX-05 (F3): applicable, not provable automatically
+EVIDENCE_DOCS = "docs/records/audits/"
 WAIVER = re.compile(r"^\s*(waiver|muafiyet)\b", re.I | re.M)
-GIT_ALLOWED = {"rev-parse", "cat-file", "ls-tree"}
+GIT_ALLOWED = {"rev-parse", "cat-file", "ls-tree", "diff"}
 
 
 SOURCE_STATUS = {"approved", "ready-for-dev", "in-progress", "review", "done"}  # REP-001 §5 pack states except draft
@@ -107,6 +120,17 @@ def shared():
     if _SHARED is None:
         _SHARED = _load("ct_queue_shared", ROOT / "scripts" / "ct_queue.py")
     return _SHARED
+
+
+def run_record():
+    """CT-FIX-05 (F3): scripts/run_record.py's own reader of a run record (verify_record), never a copy."""
+    global _RUN_RECORD
+    if _RUN_RECORD is None:
+        _RUN_RECORD = _load("run_record_shared", ROOT / "scripts" / "run_record.py")
+    return _RUN_RECORD
+
+
+_RUN_RECORD = None
 
 
 def front_matter_reader():
@@ -201,6 +225,27 @@ class Git:
             return None
         return self._run("cat-file", "blob", blob.decode().strip())
 
+    # CT-FIX-05 (F3): the run record's checks — a commit's tree, a blob, what is tracked under a prefix, two commits' changes
+    def full(self, ref: str) -> str | None:
+        return self.commit_id(ref) if HEX_ID.match(ref or "") else None
+
+    def tree(self, commit: str) -> str | None:
+        out = self._run("rev-parse", "--verify", "--quiet", f"{commit}^{{tree}}", ok_fail=True) if FULL_HEX.match(commit) else None
+        return out.decode().strip() if out else None
+
+    def blob(self, commit: str, path: str) -> bytes | None:
+        return self.read(commit, path)
+
+    def tracked(self, commit: str, prefix: str) -> list[str]:
+        out = self._run("ls-tree", "-r", "--name-only", "-z", commit, "--", prefix, ok_fail=True) if FULL_HEX.match(commit) else None
+        return [p for p in (out or b"").decode("utf-8", errors="replace").split("\0") if p]
+
+    def changed(self, a: str, b: str) -> list[str] | None:
+        if not (FULL_HEX.match(a) and FULL_HEX.match(b)):
+            return None
+        out = self._run("diff", "--name-only", "-z", "--no-renames", a, b, "--", ok_fail=True)
+        return None if out is None else [p for p in out.decode("utf-8", errors="replace").split("\0") if p]
+
     def v2_records(self, ref: str = "HEAD") -> dict[str, str]:
         """{path: text} of every v2 record committed at ref under docs/records/ (the supersedes graph)."""
         if ref.startswith("-") or self.resolve(ref) is None:
@@ -223,9 +268,10 @@ class Git:
 
 
 # ------------------------------------------------------------------------------------------------ checks
-def check_list(text: str, read) -> tuple[list[str], list[str], list[dict]]:
+def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = None) -> tuple[list[str], list[str], list[dict]]:
     """REP-001 §6.2 acceptance list: rows and problems. A mandatory criterion that failed or was not tried is returned
-    in the rows (the caller decides), a malformed row is an ENGEL here."""
+    in the rows (the caller decides), a malformed row is an ENGEL here. CT-FIX-05 (F3): with the run record's artifacts
+    ({path: sha256}) every 'geçti' row cites one of them, its bytes at the cited commit equal to the record's."""
     eng, info, rows = [], [], []
     lines = text.replace("\r\n", "\n").split("\n")
     unfilled = [n for n, l in enumerate(lines, start=1) if DRAFT_MARK in l]
@@ -272,6 +318,11 @@ def check_list(text: str, read) -> tuple[list[str], list[str], list[dict]]:
                 data = read(spec.group(2), spec.group(1))
                 if data is None:
                     eng.append(f"kabul listesi: {rid} kanıtı {spec.group(1)}@{spec.group(2)} commit'te yok")
+                elif artifacts is not None and spec.group(1) not in artifacts:
+                    eng.append(f"kabul listesi: {rid} kanıtı {spec.group(1)} koşu kaydının bir artefaktı değil — elle eklenen "
+                               "dosya otomatik kabul kanıtı olmaz ('inceleme bekler — neden' yazılır)")
+                elif artifacts is not None and (hashlib.sha256(data).hexdigest(), len(data)) != tuple(artifacts[spec.group(1)]):
+                    eng.append(f"kabul listesi: {rid} kanıtı {spec.group(1)}@{spec.group(2)} koşu kaydındaki bayt ve boyutla aynı değil")
                 else:
                     content = data.decode("utf-8", errors="replace")
                     n = spec.group(3)
@@ -283,8 +334,12 @@ def check_list(text: str, read) -> tuple[list[str], list[str], list[dict]]:
         elif na:
             if not reason_ok(na.group(1)):
                 eng.append(f"kabul listesi: {rid} N/A gerekçesi boş ya da yetersiz")
+        elif REVIEW.match(result):
+            if not reason_ok(REVIEW.match(result).group(1)):
+                eng.append(f"kabul listesi: {rid} 'inceleme bekler' gerekçesi boş ya da yetersiz")
         elif result not in ("kaldı", "denenmedi"):
-            eng.append(f"kabul listesi: {rid} sonuç '{result[:20]}' — geçti, kaldı, denenmedi ya da 'N/A — gerekçe'")
+            eng.append(f"kabul listesi: {rid} sonuç '{result[:20]}' — geçti, kaldı, denenmedi, 'inceleme bekler — neden' ya da "
+                       "'N/A — gerekçe'")
         rows.append(r)
     if not rows and not eng:
         eng.append("kabul listesi: boş — en az bir kriter gerekli")
@@ -292,10 +347,11 @@ def check_list(text: str, read) -> tuple[list[str], list[str], list[dict]]:
 
 
 def check_record(text: str, read, exists, records: dict[str, str] | None, expect: dict,
-                 path: str | None = None) -> tuple[int, list[str]]:
+                 path: str | None = None, ops=None) -> tuple[int, list[str]]:
     """The whole decision for one record. read(commit, path) -> bytes | None; exists(commit) -> bool; records:
     {path: text} of the v2 records at HEAD (None = the supersedes graph is not checked); expect: queue /
-    work_package / module to match."""
+    work_package / module to match. ops (CT-FIX-05 F3): full(ref), tree(commit), blob(commit, path),
+    tracked(commit, prefix), changed(a, b) — without it the run record cannot be checked and nothing is accepted."""
     out, eng, info = [], [], []
     unfilled = [n for n, l in enumerate(text.replace("\r\n", "\n").split("\n"), start=1) if DRAFT_MARK in l]
     if unfilled:
@@ -358,6 +414,10 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
                 if wrong:
                     eng.append(f"künye: gerekli seviyenin kaynağı bu işe ait değil — {wrong}"
                                + ("" if is_pack else " (künyesinde bu WP yok)"))
+            if is_pack:   # CT-FIX-05 (E1): the pack's approval decides for the acceptance too (the shared decision)
+                verdict, message = shared().pack_approval_decision(source_text, "accept")
+                if verdict in ("stop", "review"):
+                    eng.append(f"künye: gerekli seviyenin kaynağı — {message}")
             found = set(re.findall(r"\bE[0-5]\b", lines[n - 1])) if 1 <= n <= len(lines) else set()
             if len(found) > 1:
                 eng.append(f"künye: kaynak satırı {n} birden çok seviye söylüyor ({', '.join(sorted(found))}) — belirsiz, dur")
@@ -375,9 +435,50 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         eng.append("künye: muafiyet (waiver) var — K19 gereği sahip/son tarih/kanıtla ayrı değerlendirilir, otomatik kabul yok")
     if not re.match(r"^[0-9a-f]{7,40}$", f["commit"]) or not exists(f["commit"]):
         eng.append(f"künye: commit '{f['commit'][:12]}' (doğrulanan kod ağacı) bu depoda yok")
+    # CT-FIX-05 (F3, v6 audit): the evidence is a run record (scripts/run_record.py) of exactly this code commit
     ev = SPEC.match(f["evidence"])
-    if not ev or read(ev.group(2), ev.group(1)) is None:
-        eng.append(f"künye: evidence '{f['evidence'][:50]}' commit'lenmiş yol@commit değil")
+    artifacts = None
+    al_path = (SPEC.match(f["acceptance_list"]).group(1) if SPEC.match(f["acceptance_list"]) else "")
+    for doc, label in ((path, "kabul kaydı"), (al_path, "kabul listesi")):
+        # CT-FIX-05 (F3, joint decision): the acceptance documents live under the evidence root docs/records/audits/
+        if doc and (not doc.startswith(EVIDENCE_DOCS) or posixpath.normpath(doc) != doc or ".." in doc.split("/") or "\\" in doc):
+            eng.append(f"künye: {label} {doc[:60]} kanıt-belge kökünde ({EVIDENCE_DOCS}) normal bir yol değil")
+    if not ev or ev.group(3):
+        eng.append(f"künye: evidence '{f['evidence'][:50]}' bir koşu kaydı olmalı: <koşu dizini>/run-record-v1.json@<commit> "
+                   "(scripts/run_record.py run)")
+    elif ops is None:
+        eng.append("künye: koşu kaydı doğrulanamadı — git erişimi yok, otomatik kabul yok")
+    else:
+        data = read(ev.group(2), ev.group(1))
+        code_c, ev_c = ops.full(f["commit"]), ops.full(ev.group(2))
+        if data is None or ev_c is None:
+            eng.append(f"künye: evidence '{f['evidence'][:50]}' commit'lenmiş yol@commit değil")
+        elif code_c is not None:
+            problems, rr = run_record().verify_record(data, ev.group(1), code_c, ops)
+            eng += [f"koşu kaydı: {p}" for p in problems]
+            if rr and not problems:
+                if rr["exit"] != 0:
+                    eng.append(f"koşu kaydı: komutun ham çıkışı {rr['exit']} — otomatik kabul yok, inceleme gerekir "
+                               "(bilinen-kırmızı politikası ayrı bir karardır; kırmızı süit yeşil sayılmaz)")
+                changed = ops.changed(code_c, ev_c)
+                # the exception is the run directory and the acceptance documents only as NEW files: a document that
+                # exists at the code commit is not an exception (a code file cannot hide behind a list's name)
+                docs = {p for p in (path, al_path) if p and p.startswith(EVIDENCE_DOCS) and not ops.tracked(code_c, p)}
+                extra = None if changed is None else [p for p in changed if not (p.startswith(rr["out"] + "/") or p in docs)]
+                if changed is None:
+                    eng.append("koşu kaydı: kanıt commit'i ile kod commit'i karşılaştırılamadı")
+                elif extra:
+                    eng.append(f"koşu kaydı: kanıt commit'i {ev_c[:12]} kod commit'inden kanıt dışında da farklı ({extra[0][:70]}"
+                               f"{f' +{len(extra) - 1}' if len(extra) > 1 else ''}) — kanıtın commit'i kodun commit'i değildir")
+                at_e = {a["path"]: (a["sha256"], a["bytes"]) for a in rr["artifacts"]}
+                # Codex: the recorded size is part of the artefact's identity, beside its hash
+                missing = [p for p, (h, n) in at_e.items()
+                           if (lambda b: b is None or len(b) != n or hashlib.sha256(b).hexdigest() != h)(read(ev_c, p))]
+                if missing:
+                    eng.append(f"koşu kaydı: artefakt {missing[0][:70]} kanıt commit'inde kayıttaki bayt ve boyutla yok")
+                artifacts = at_e
+            elif not problems:
+                eng.append("koşu kaydı okunamadı")
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", f["date"]):
         eng.append("künye: date YYYY-AA-GG olmalı")
     if PLACEHOLDER.match(f["verifier"]) or PLACEHOLDER.match(f["implementer"]):
@@ -393,7 +494,7 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         if data is None:
             eng.append(f"künye: kabul listesi {al.group(1)}@{al.group(2)} commit'te yok")
         else:
-            l_eng, l_info, rows = check_list(data.decode("utf-8", errors="replace"), read)
+            l_eng, l_info, rows = check_list(data.decode("utf-8", errors="replace"), read, artifacts if artifacts is not None else {})
             eng += l_eng
             info += l_info
     # CT-FIX-03 (R3, V4A-F5): the pack the record binds (module_pack) is read and checked by parse_pack(), the function
@@ -406,7 +507,7 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         if pdata is None:
             eng.append(f"paket: {f['module_pack'][:90]} commit'te yok — kayıt var olmayan bir paket sürümüne bağlı")
         else:
-            criteria, pbad, old = read_pack(mp.group(1), pdata.decode("utf-8", errors="replace"), f["module"])
+            criteria, pbad, old, _ = read_pack(mp.group(1), pdata.decode("utf-8", errors="replace"), f["module"])
             eng += pbad
             if old:
                 eng.append("paket: AC kimliği yok (eski biçim) — kabul listesinin bu pakete bağlı olduğu ölçülemez")
@@ -440,6 +541,8 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         for r in rows:
             if r.get("Zorunlu") == "evet" and r.get("Sonuç") in ("kaldı", "denenmedi"):
                 eng.append(f"kabul listesi: zorunlu ölçüt {r['ID']} {r['Sonuç']} — accepted verilemez")
+            elif r.get("Zorunlu") == "evet" and REVIEW.match(r.get("Sonuç", "")):
+                eng.append(f"kabul listesi: zorunlu ölçüt {r['ID']} inceleme bekliyor — otomatik kabul yok (CT-FIX-05)")
         failed_optional = [r["ID"] for r in rows if r.get("Zorunlu") == "hayır" and r.get("Sonuç") in ("kaldı", "denenmedi")]
         if failed_optional:
             info.append(f"kabul listesi: zorunlu olmayan, geçmeyen ölçütler: {', '.join(failed_optional)}")
@@ -451,8 +554,9 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
     allows = not eng and f["decision"] == "accepted"
     # CT-FIX-03 (F5n, Codex): what this check does not prove is printed with every answer
     out += [f"BİLGİ {i}" for i in info] + [f"ENGEL {e}" for e in eng] + [
-        "SINIR bu denetim künyedeki kod commit'inin bu depoda var olup olmadığını denetler; testlerin o kod ağacında "
-        "koştuğunu kanıtlamaz — kanıt evidence ve kabul listesindeki yol@commit kayıtlarıdır"]
+        "SINIR koşu kaydı artefaktların taze bir dizinde bu kod commit'inde üretildiğini denetler; komutun ölçütü anlamca "
+        "ölçtüğünü (bağımsız inceleme), koşu sırasında değiştirilip geri alınan bir kaynağı, ignore edilen dosyaları ve elle "
+        "tutarlı biçimde yeniden yazılmış bir kaydın özgünlüğünü (kriptografik değildir) kanıtlamaz"]
     if eng:
         return 1, out + [f"sonuç: engel — {len(eng)} bulgu", "çıkış: 1"]
     if not allows:
@@ -517,7 +621,7 @@ def run_check(spec: str, expect: dict, git: Git | None = None, index_ref: str = 
         if data is None:
             raise Incomplete(f"kayıt {spec} commit'te yok")
         return check_record(data.decode("utf-8"), git.read, lambda c: git.commit_id(c) is not None, git.v2_records(index_ref),
-                            expect, m.group(1))
+                            expect, m.group(1), ops=git)
     except Incomplete as e:
         return 2, [f"sonuç: tamamlanamadı — {e}", "çıkış: 2"]
     except (OSError, UnicodeDecodeError, ValueError) as e:
@@ -526,14 +630,24 @@ def run_check(spec: str, expect: dict, git: Git | None = None, index_ref: str = 
         return 2, [f"sonuç: tamamlanamadı — beklenmeyen hata ({type(e).__name__})", "çıkış: 2"]
 
 
-def read_pack(path: str, text: str, module: str) -> tuple[dict[int, tuple[bool, str]], list[str], bool]:
+def read_pack(path: str, text: str, module: str, mode: str = "accept") -> tuple[dict[int, tuple[bool, str]], list[str], bool, list[str]]:
     """CT-FIX-04 (İ3): the one reader of a pack version for check, draft and module-check — parse_pack() and, on top,
-    the shared identity routine (ct_queue.pack_identity): the file name's MOD id is the künye id and the module."""
+    the shared identity routine (ct_queue.pack_identity): the file name's MOD id is the künye id and the module.
+    CT-FIX-05 (E1): and the shared approval decision (ct_queue.pack_approval_decision) for the mode — 'accept' for check
+    and module-check (a conditional pack gives no new automatic acceptance: review), 'draft' for the list draft (it is
+    produced with the limit shown); a rejected, unknown or unreadable approval_status stops in every mode.
+    Returns (criteria, problems, old format, notes)."""
     criteria, bad, old = parse_pack(text, module)
     wrong = shared().pack_identity(path, text, [module])
     if wrong:
         bad = bad + [f"paket: {wrong}"]
-    return criteria, bad, old
+    verdict, message = shared().pack_approval_decision(text, mode)
+    notes = []
+    if verdict in ("stop", "review"):
+        bad = bad + [f"paket: {message}"]
+    elif verdict == "note":
+        notes.append(f"paket: {message}")
+    return criteria, bad, old, notes
 
 
 def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], list[str], bool]:
@@ -555,8 +669,12 @@ def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], lis
     status, sbad = shared().kunye_status(text)
     if ibad:
         bad.append(f"paket: künyede tek id '{module}' olmalı — {ibad}")
-    elif ids["id"] != module:
-        bad.append(f"paket: künyede tek id '{module}' olmalı (bulunan: {ids['id'] or 'yok'})")
+    else:
+        # CT-FIX-05 (C2, Codex): the gate's identity resolution (ct_queue.pack_module_identity) — a child pack
+        # (MOD-0155-FU06B) belongs to its parent module, as the gate dispatches it; no second reading of the id
+        ident, ibad2 = shared().pack_module_identity(ids["id"]) if ids["id"] else (None, "yok")
+        if ibad2 or ident != module:
+            bad.append(f"paket: künyede tek id '{module}' olmalı ya da onun child kimliği (bulunan: {ids['id'] or 'yok'})")
     if sbad:
         bad.append(f"paket: künyede tek status approved ya da ready-for-dev olmalı — {sbad}")
     elif status not in PACK_STATUS:
@@ -612,7 +730,8 @@ def draft_record(queue: str, wp: str, module: str, pack_spec: str | None) -> str
     hint = {"evidence_level": "E1–E5", "required_evidence_level": "E1–E5", "required_evidence_source": "yol@commit:satır",
             "decision": "accepted | rejected | conditional", "completion": " | ".join(COMPLETIONS),
             "conditions": "- ya da 'ne · sahip · YYYY-AA-GG'", "commit": "doğrulanan kod ağacının 40 haneli commit'i",
-            "evidence": "yol@commit", "acceptance_list": "yol@commit", "date": "YYYY-AA-GG",
+            "evidence": "koşu dizini/run-record-v1.json@commit — scripts/run_record.py run --out docs/records/audits/… -- <komut>",
+            "acceptance_list": "docs/records/… yol@commit", "date": "YYYY-AA-GG",
             "supersedes": "- ya da geçersiz kılınan kaydın yolu", "verifier": "bağımsız doğrulayıcı", "implementer": "geliştiren"}
     lines = ["---"] + [f"{k}: {known[k] if k in known else d(hint[k])}" for k in FIELDS]
     if pack_spec:
@@ -635,6 +754,9 @@ def draft_list(criteria: dict[int, tuple[bool, str]]) -> str:
         if row.count("|") != len(LIST_COLUMNS) + 1:
             raise Incomplete(f"taslak satırı {len(LIST_COLUMNS)} hücreli değil — üretilmez: '{row[:60]}'")
     return "\n".join(out) + "\n"
+
+
+DRAFT_NOTES: list[str] = []
 
 
 def run_draft(part: str, queue: str, wp: str, pack_spec: str | None, git: Git | None = None) -> str:
@@ -671,7 +793,8 @@ def run_draft(part: str, queue: str, wp: str, pack_spec: str | None, git: Git | 
     data = git.read(pm.group(2), pm.group(1))
     if data is None:
         raise Incomplete(f"paket {pack_spec} commit'te yok")
-    criteria, bad, old = read_pack(pm.group(1), data.decode("utf-8", errors="replace"), module)
+    criteria, bad, old, notes = read_pack(pm.group(1), data.decode("utf-8", errors="replace"), module, mode="draft")
+    DRAFT_NOTES[:] = notes          # CT-FIX-05 (E1): printed next to the draft by the command line
     if old:
         raise Incomplete("pakette AC kimliği yok (eski biçim) — AC satırları taşınamaz")
     if bad:
@@ -762,7 +885,7 @@ def run_module_check(queue: str, module: str, pack_spec: str, ref: str = "HEAD")
         data = git.read(pm.group(2), pm.group(1))
         if data is None:
             raise Incomplete(f"paket {pack_spec} commit'te yok")
-        criteria, bad, old = read_pack(pm.group(1), data.decode("utf-8"), module)
+        criteria, bad, old, _ = read_pack(pm.group(1), data.decode("utf-8"), module)
         if old:
             raise Incomplete("pakette AC kimliği yok (eski biçim) — AC kapsamı mekanik olarak ölçülemez")
         if bad:
@@ -803,21 +926,29 @@ def _refuses(fn) -> bool:
 
 
 def self_test() -> int:
-    C1, C2 = "a" * 40, "b" * 40
+    # CT-FIX-05 (F3): C2 is the code commit, C3 = C2 + the run directory the runner wrote (the evidence commit)
+    C1, C2, C3 = "a" * 40, "b" * 40, "c" * 40
+    RUN = "docs/records/audits/2026-10/x/run-1"
+    stdout = "K1 ok\nK2 ok\n"
+    run_rec = {"format": "run-record-v1", "commit": C2, "tree": "t2" * 20, "argv": ["python3", "-m", "unittest"], "cwd": ".",
+               "exit": 0, "started_utc": "2026-10-15T10:00:00Z", "finished_utc": "2026-10-15T10:00:09Z", "out": RUN,
+               "artifacts": [{"path": f"{RUN}/stdout.txt", "sha256": hashlib.sha256(stdout.encode()).hexdigest(), "bytes": len(stdout)}],
+               "tool": {"path": "scripts/run_record.py", "sha256": hashlib.sha256(b"runner").hexdigest()}}
     files = {
         (C1, "docs/wp/W7.md"): "---\nstatus: approved\nwork_package: W7\n---\nEvidence hedefi: E3 (runtime smoke)\n",
-        (C1, "docs/records/audits/2026-10/x/run.log"): "K1 ok\nK2 ok\n",
-        (C2, "src"): "x",
+        (C2, "src"): "x", (C2, "scripts/run_record.py"): "runner",
+        (C3, "src"): "x", (C3, "scripts/run_record.py"): "runner", (C3, f"{RUN}/stdout.txt"): stdout,
+        (C3, f"{RUN}/run-record-v1.json"): json.dumps(run_rec, indent=1, sort_keys=True) + "\n",
     }
     good_list = ("| " + " | ".join(LIST_COLUMNS) + " |\n|" + "---|" * len(LIST_COLUMNS) + "\n"
-                 "| K1 | liste açılır | kullanıcı ilk ekranı görür | GET /api/x çağrısı | 200 ve 3 satır | evet | evet | 200, 3 satır | geçti | `docs/records/audits/2026-10/x/run.log@" + C1 + "` |\n"
-                 "| K2 | yetkisiz red | kiracı izolasyonu | başka kiracı jetonu | 403 | hayır | evet | 403 | geçti | `docs/records/audits/2026-10/x/run.log@" + C1 + ":2` |\n")
+                 "| K1 | liste açılır | kullanıcı ilk ekranı görür | GET /api/x çağrısı | 200 ve 3 satır | evet | evet | 200, 3 satır | geçti | `" + RUN + "/stdout.txt@" + C3 + "` |\n"
+                 "| K2 | yetkisiz red | kiracı izolasyonu | başka kiracı jetonu | 403 | hayır | evet | 403 | geçti | `" + RUN + "/stdout.txt@" + C3 + ":2` |\n")
     files[(C1, "docs/records/audits/2026-10/x/kabul.md")] = good_list
 
     def rec(**over) -> str:
         f = {"format": FORMAT, "module": "MOD-0151", "work_package": "W7", "queue": "pqg-ct", "evidence_level": "E3",
              "required_evidence_level": "E3", "required_evidence_source": f"docs/wp/W7.md@{C1}:5", "decision": "accepted",
-             "completion": "WP Done", "conditions": "-", "commit": C2, "evidence": f"docs/records/audits/2026-10/x/run.log@{C1}",
+             "completion": "WP Done", "conditions": "-", "commit": C2, "evidence": f"{RUN}/run-record-v1.json@{C3}",
              "acceptance_list": f"docs/records/audits/2026-10/x/kabul.md@{C1}", "date": "2026-10-15", "supersedes": "-",
              "verifier": "bağımsız doğrulayıcı", "implementer": "geliştirme ajanı"}
         f.update({k: v for k, v in over.items() if not k.startswith("_")})
@@ -826,7 +957,7 @@ def self_test() -> int:
 
     def read_from(fs):
         def read(commit, path):
-            if commit not in (C1, C2):
+            if commit not in (C1, C2, C3):
                 return None
             if path == ".":
                 return b""
@@ -835,11 +966,23 @@ def self_test() -> int:
 
     expect = {"queue": "pqg-ct", "work_package": "W7", "module": "MOD-0151"}
 
-    exists = lambda c: c in (C1, C2)
+    exists = lambda c: c in (C1, C2, C3)
+
+    class FakeOps:
+        """The run record's git operations over the fixture (CT-FIX-05 F3)."""
+        def __init__(self, fs):
+            self.fs = fs
+        def full(self, ref): return next((c for c in (C1, C2, C3) if HEX_ID.match(ref or "") and c.startswith(ref)), None)
+        def tree(self, c): return {C1: "t1" * 20, C2: "t2" * 20, C3: "t3" * 20}.get(c)
+        def blob(self, c, path): return read_from(self.fs)(c, path)
+        def tracked(self, c, prefix): return [p for (cc, p) in self.fs if cc == c and (p == prefix or p.startswith(prefix + "/"))]
+        def changed(self, a, b):
+            paths = {p for (c, p) in self.fs if c in (a, b)}
+            return sorted(p for p in paths if self.fs.get((a, p)) != self.fs.get((b, p)))
 
     def run(text, fs=files, records=None, path="docs/records/audits/2026-10/x/kayit.md", exp=expect, ex=exists):
         recs = records if records is not None else {path: text}
-        return check_record(text, read_from(fs), ex, recs, exp, path)
+        return check_record(text, read_from(fs), ex, recs, exp, path, ops=FakeOps(fs))
 
     def eng(r):
         return [l for l in r[1] if l.startswith("ENGEL")]
@@ -847,6 +990,41 @@ def self_test() -> int:
     with_list = lambda body: {**files, (C1, "docs/records/audits/2026-10/x/kabul.md"): body}
     cases = []
     cases.append(("a complete accepted v2 record -> allows ACCEPTED (exit 0)", run(rec())[0] == 0))
+    # CT-FIX-05 (F3, v6 audit): the evidence is a run record of exactly this code commit
+    LIST = "docs/records/audits/2026-10/x/kabul.md"
+    def f3(**kw):
+        fs = dict(files)
+        fs.update(kw.get("set", {}))
+        for k in kw.get("drop", ()):
+            fs.pop(k, None)
+        return run(rec(**kw.get("rec", {})), fs=fs)
+    rr = lambda **over: json.dumps(dict(run_rec, **over), indent=1, sort_keys=True) + "\n"
+    for label, kw, why in (
+            ("old evidence for changed code (the record names C1, the run ran on C2)", {"rec": {"commit": C1}}, "eski kanıt yeni kodu"),
+            ("the run's raw exit code 1", {"set": {(C3, f"{RUN}/run-record-v1.json"): rr(exit=1)}}, "ham çıkışı 1"),
+            ("the evidence commit changes code as well", {"set": {(C3, "src"): "y"}}, "kanıt dışında da farklı"),
+            ("an artifact's bytes changed at the evidence commit", {"set": {(C3, f"{RUN}/stdout.txt"): "K1 ok\nK2 FAIL\n"}}, "bayt ve boyutla"),
+            ("the run directory already tracked at the code commit", {"set": {(C2, f"{RUN}/stdout.txt"): stdout}}, "taze bir dizin değil"),
+            ("the runner at the code commit is another file", {"set": {(C2, "scripts/run_record.py"): "other runner"}}, "araç özeti"),
+            ("a row's evidence that is not an artifact of the run", {"set": {(C1, LIST): good_list.replace(f"{RUN}/stdout.txt@{C3}:2", f"docs/wp/W7.md@{C1}:5")}}, "artefaktı değil"),
+            ("a mandatory row waiting for review", {"set": {(C1, LIST): good_list.replace("| 403 | geçti |", "| 403 | inceleme bekler — ekran elle incelenecek |")}}, "inceleme bekliyor"),
+            ("'inceleme bekler' without a reason", {"set": {(C1, LIST): good_list.replace("| 403 | geçti |", "| 403 | inceleme bekler — |")}}, "gerekçesi"),
+            ("an acceptance list outside docs/records/audits/", {"rec": {"acceptance_list": f"docs/records/decisions/kabul.md@{C1}"},
+                                                                 "set": {(C1, "docs/records/decisions/kabul.md"): good_list}}, "kanıt-belge kökünde"),
+            ("an existing file at the code commit changed under the list's name", {"rec": {"acceptance_list": f"{LIST}@{C3}"},
+                                                                                   "set": {(C2, LIST): "eski", (C3, LIST): good_list}}, "kanıt dışında da farklı"),
+            ("the evidence is a plain log, not a run record", {"rec": {"evidence": f"{RUN}/stdout.txt@{C3}"}}, "koşu kaydı"),
+            ("an artifact's recorded size that is not its size (Codex: bytes 999999, the hash kept)",
+             {"set": {(C3, f"{RUN}/run-record-v1.json"): rr(artifacts=[dict(run_rec["artifacts"][0], bytes=999999)])}}, "boyut")):
+        r_f3 = f3(**kw)
+        cases.append((f"CT-FIX-05 F3 sabotage: {label} -> ENGEL ({why})", r_f3[0] == 1 and any(why in e for e in eng(r_f3))))
+    opt_review = good_list.replace("| K2 | yetkisiz red | kiracı izolasyonu | başka kiracı jetonu | 403 | hayır | evet | 403 | geçti |",
+                                   "| K2 | yetkisiz red | kiracı izolasyonu | başka kiracı jetonu | 403 | hayır | hayır | 403 | inceleme bekler — ekran elle incelenecek |")
+    cases.append(("CT-FIX-05 F3: an optional row waiting for review does not stop an accepted record; the plain fixture passes",
+                  f3(set={(C1, LIST): opt_review})[0] == 0 and run(rec())[0] == 0))
+    cases.append(("CT-FIX-05 F3: without git operations the run record cannot be checked -> ENGEL, nothing accepted",
+                  any("doğrulanamadı" in e for e in eng(check_record(rec(), read_from(files), exists, {"docs/records/audits/2026-10/x/kayit.md": rec()},
+                                                                     expect, "docs/records/audits/2026-10/x/kayit.md")))))
     cases.append(("a legacy v1 künye -> exit 1 as a v1 künye, stays valid where it is",
                   any("eski künye (v1)" in e for e in eng(run("---\nmodule: MOD-0151\ndecision: accepted\n---\n")))))
     cases.append(("sabotage: a field missing -> ENGEL", any("'verifier'" in e for e in eng(run(rec(verifier=None))))))
@@ -938,7 +1116,7 @@ def self_test() -> int:
     a, b = rec(supersedes=p2), rec(supersedes=p1)
     cases.append(("sabotage (4): a supersedes cycle -> ENGEL", any("döngü" in e or "0 yetkili" in e for e in eng(run(a, records={p1: a, p2: b}, path=p1)))))
     cases.append(("sabotage (5): the verified commit is not in the repository -> ENGEL",
-                  any("kod ağacı" in e for e in eng(run(rec(commit="c" * 40))))))
+                  any("kod ağacı" in e for e in eng(run(rec(commit="d" * 40))))))   # CT-FIX-05: "c"*40 is now the evidence commit
     cases.append(("sabotage (reader): two decision lines (the legacy reader keeps the last) -> ENGEL, not a silent pick",
                   any("iki kez" in e for e in eng(run(rec(_extra_fm="decision: rejected\n"))))))
     cases.append(("sabotage (reader): a malformed künye line -> ENGEL", any("okunamadı" in e for e in eng(run(rec(_extra_fm="bu bir alan değil\n"))))))
@@ -992,7 +1170,7 @@ def self_test() -> int:
                "AC-4": "sıralama hatırlanır"}
     lrow = lambda rid, req, ln, text=None: (f"| {rid} | {text or ac_text.get(rid, 'ölçüt ' + rid)} | gerekçe {rid} | yöntem {rid} | "
                                             f"beklenen {rid} | hayır | {req} | gözlenen | "
-                                            f"geçti | `docs/records/audits/2026-10/x/run.log@{C1}:{ln}` |\n")
+                                            f"geçti | `{RUN}/stdout.txt@{C3}:{ln}` |\n")
     lhead = "| " + " | ".join(LIST_COLUMNS) + " |\n|" + "---|" * len(LIST_COLUMNS) + "\n"
     ac_list = lhead + lrow("AC-1", "evet", 1) + lrow("AC-2", "evet", 2)
     bound = lambda pk_text=pack(good_ac), lst=ac_list, at=C1: {**files, (at, PK): pk_text,
@@ -1019,6 +1197,22 @@ def self_test() -> int:
             ("the evidence-level source is a pack whose künye id is another module, though it names this WP",
              rec(required_evidence_source=f"{PK}@{C1}:6"), {**files, (C1, PK): wrong_src}, "dosya adındaki kimlikle")):
         cases.append((f"CT-FIX-04 İ3/İ4 sabotage: {label} -> ENGEL ({why})", any(why in e for e in eng(run(rec_, fs=fs_)))))
+    # CT-FIX-05 (C2): one identity resolution — a child pack (file and künye MOD-0151-PREREQ) is read for its parent module
+    child_path = PK.replace("/MOD-0151-", "/MOD-0151-PREREQ-")
+    cr, cb, _, _ = read_pack(child_path, pack(good_ac, fm="id: MOD-0151-PREREQ\nstatus: approved\n"), "MOD-0151")
+    cr2, cb2, _, _ = read_pack(child_path, pack(good_ac, fm="id: MOD-0150-PREREQ\nstatus: approved\n"), "MOD-0151")
+    cases.append(("CT-FIX-05 C2: a child pack is read for its parent module, as the gate dispatches it; another parent's child is refused",
+                  cr and not cb and bool(cb2)))
+    # CT-FIX-05 (E1): a conditional pack gives no new automatic acceptance; a rejected one stops; the draft still comes
+    cond_fm = "id: MOD-0151\nstatus: approved\napproval_status: conditionally-approved-for-p2-slice\n"
+    r_c = run(rec(_extra_fm=good_mp), fs=bound(pack(good_ac, fm=cond_fm)))
+    r_r = run(rec(_extra_fm=good_mp), fs=bound(pack(good_ac, fm=cond_fm.replace("conditionally-approved-for-p2-slice", "rejected"))))
+    cases.append(("CT-FIX-05 E1: a record bound to a conditionally approved pack -> ENGEL 'inceleme gerekir' (no automatic "
+                  "acceptance); a rejected pack -> ENGEL", r_c[0] == 1 and any("inceleme gerekir" in e for e in eng(r_c))
+                  and r_r[0] == 1 and any("onaylı değil" in e for e in eng(r_r))))
+    crit_c, bad_c, _, notes_c = read_pack(PK, pack(good_ac, fm=cond_fm), "MOD-0151", mode="draft")
+    cases.append(("CT-FIX-05 E1: the list draft reads a conditional pack (no problem) and carries the limit as a note",
+                  crit_c and not bad_c and any("taslak hazırlık içindir" in n for n in notes_c)))
     cases.append(("CT-FIX-04 İ4: a WP's subset of the pack's ACs (AC-1 only), text and flag exact -> allows ACCEPTED",
                   run(rec(_extra_fm=good_mp), fs=bound(lst=lhead + lrow("AC-1", "evet", 1)))[0] == 0))
     ok_src = "---\nid: MOD-0151\nwork_package: W7\nstatus: approved\n---\nGerekli kanıt: E3\n"
@@ -1061,14 +1255,14 @@ def self_test() -> int:
     def filled_row(r, ln):
         c = [x.strip() for x in r.strip().strip("|").split("|")]
         c[2:6] = [f"gerekçe {c[0]}", f"yöntem {c[0]}", f"beklenen {c[0]}", "hayır"]
-        c[7:10] = ["gözlenen", "geçti", f"`docs/records/audits/2026-10/x/run.log@{C1}:{ln}`"]
+        c[7:10] = ["gözlenen", "geçti", f"`{RUN}/stdout.txt@{C3}:{ln}`"]
         return "| " + " | ".join(c) + " |"
     lines_d = dl_text.split("\n")
     filled_list = "\n".join(lines_d[:2] + [filled_row(r, i) for i, r in enumerate(dl_rows[:2], start=1)]) + "\n"
     rec_d = draft_record("pqg-ct", "W7", "MOD-0151", f"{PK}@{C1}")
     fills = {"evidence_level": "E3", "required_evidence_level": "E3", "required_evidence_source": f"docs/wp/W7.md@{C1}:5",
              "decision": "accepted", "completion": "WP Done", "conditions": "-", "commit": C2,
-             "evidence": f"docs/records/audits/2026-10/x/run.log@{C1}", "acceptance_list": f"docs/records/audits/2026-10/x/kabul.md@{C1}",
+             "evidence": f"{RUN}/run-record-v1.json@{C3}", "acceptance_list": f"docs/records/audits/2026-10/x/kabul.md@{C1}",
              "date": "2026-10-17", "supersedes": "-", "verifier": "bağımsız doğrulayıcı", "implementer": "geliştirme ajanı"}
     filled_rec = "\n".join((f"{l.split(':', 1)[0]}: {fills[l.split(':', 1)[0]]}" if DRAFT_MARK in l and l.split(":", 1)[0] in fills
                             else ("Gerekçe: kabul listesi geçti." if DRAFT_MARK in l else l)) for l in rec_d.split("\n"))
@@ -1252,6 +1446,8 @@ def main() -> int:
             print(f"DUR: taslak üretilemedi — {e}", file=sys.stderr)
             return 2
         sys.stdout.write(text)
+        for note in DRAFT_NOTES:
+            print(f"SINIR {note}", file=sys.stderr)
         print(f"TASLAK — kabul değildir: çıkış 0 yalnız taslağın üretildiğini söyler. {DRAFT_MARK} … alanları doldurulmadan "
               "check ENGEL verir.", file=sys.stderr)
         return 0

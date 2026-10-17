@@ -12,7 +12,8 @@ approval record are read at that SHA. The working tree is not read.
 exit 0  a complete report was produced; its percentages may still be invalid for a supported reason ("Taban yok —
         hesaplanamadı" when no effort baseline was offered and none exists at the default path)
 exit 1  the report was produced but is not complete (CT-FIX-04 İ5): incomplete_reasons names why — a queue, registry,
-        profile or acceptance problem, an offered effort baseline that is absent, or an existing baseline that is invalid
+        profile or acceptance problem, an offered effort baseline that is absent, or an existing baseline that is invalid,
+        or a --previous report that cannot be verified (CT-FIX-05 F6); without --previous nothing changes
 exit 2  the fixed source could not be read, or the queue is not a registered strict queue at that SHA
 
 Percentages are progress of the approved effort BASELINE only ("TABAN KAPSAMI"), never of the whole Control Tower:
@@ -1160,6 +1161,9 @@ def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous:
                     prev, why = None, f"önceki rapor kendi kaynağından ({psha[:12]}) yeniden üretilemedi — iş verisi ya da hesaplar farklı"
         data["previous"] = ({"spec": previous, "status": "doğrulandı", "lines": diff(prev, data)} if prev is not None
                             else {"spec": previous, "status": f"hesaplanamadı — {why}", "lines": []})
+        if prev is None:   # CT-FIX-05 (F6, v6 audit): an explicitly requested comparison that cannot be made -> not complete
+            data["incomplete_reasons"].append(f"önceki rapor {previous[:80]}: {why}")
+            data["complete"] = False
     problems = schema_problems(data)
     if problems:
         raise Incomplete("rapor kendi şemasına uymuyor: " + problems[0])

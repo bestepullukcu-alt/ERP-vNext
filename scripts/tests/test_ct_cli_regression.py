@@ -38,6 +38,8 @@ PACK = "execution/domains/audit/module-packs/MOD-0288-audit-ledger.md"
 AUTHORITY = "docs/records/decisions/authority.md"
 REASSESS = "docs/records/decisions/reassessment.md"
 ACCEPT = "docs/records/audits/accept.md"
+LIST = "docs/records/audits/acceptance-list.md"        # CT-FIX-05 (F3): the acceptance documents under the evidence root
+RUN_DIR = "docs/records/audits/run-1"                  # CT-FIX-05 (F3): the run directory the real runner writes
 LEDGER = "execution/delivery/effort/ct.md"
 APPROVAL = "docs/records/decisions/effort.md"
 STATES = "execution/delivery/ct-queue-states.tsv"
@@ -114,6 +116,7 @@ class Fixture:
         self.put(AUTHORITY, "---\nstatus: approved\nwork_packages: W1\n---\nW1 approved audit change\n")   # CT-FIX-04 İ2
         self.put("source.txt", "Audit source contract\n")
         self.put("AGENTS.md", "R0 fixture only\n")
+        self.put(".gitignore", "__pycache__/\n")       # a byte-compiled copy is never a change of the run's code state
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Blueprint_Data"
@@ -148,22 +151,28 @@ class Fixture:
         self.marks["discovery"] = self.discovery_commit
         # acceptance inputs
         self.put("wp.md", "---\nstatus: approved\nwork_package: W1\nmodule: MOD-0288\n---\nEvidence required E2\n")
-        self.put("evidence.txt", "AC-1 checked: expected observed\n")
-        self.evidence_commit = self.commit("acceptance input evidence")
+        self.code_commit = self.commit("acceptance inputs: the code state the run records")
+        # CT-FIX-05 (F3): the evidence is the real runner's record of a run on that code state, in a fresh directory
+        p = self.run("scripts/run_record.py", "run", "--out", RUN_DIR, "--", sys.executable, "-c",
+                     "print('AC-1 checked: expected observed')")
+        if p.returncode != 0:
+            raise RuntimeError(f"fixture run record: exit {p.returncode}\n{p.stdout}\n{p.stderr}")
+        self.evidence_commit = self.commit("acceptance input evidence: the run record")
+        self.artifact = f"{RUN_DIR}/stdout.txt"
         lh = "| " + " | ".join(ar.LIST_COLUMNS) + " |\n|" + "---|" * len(ar.LIST_COLUMNS) + "\n"
         self.list_row = (f"| AC-1 | Audit Ledger tested | Safety | CLI test | Expected observed | hayır | evet | Expected observed | "
-                         f"geçti | evidence.txt@{self.evidence_commit}:1 |\n")
+                         f"geçti | {self.artifact}@{self.evidence_commit}:1 |\n")
         self.list_head = lh
-        self.put("acceptance-list.md", lh + self.list_row)
+        self.put(LIST, lh + self.list_row)
         self.list_commit = self.commit("acceptance list")
         self.marks["acceptance-inputs"] = self.list_commit
 
     def acceptance_fields(self, **over) -> dict:
-        e = self.evidence_commit
+        e, c = self.evidence_commit, self.code_commit
         f = {"format": "rep-001-v2", "module": "MOD-0288", "work_package": "W1", "queue": "ct", "evidence_level": "E2",
              "required_evidence_level": "E2", "required_evidence_source": f"wp.md@{e}:6", "decision": "accepted",
-             "completion": "WP Done", "conditions": "-", "commit": e, "evidence": f"evidence.txt@{e}",
-             "acceptance_list": f"acceptance-list.md@{self.list_commit}", "date": "2026-10-17", "supersedes": "-",
+             "completion": "WP Done", "conditions": "-", "commit": c, "evidence": f"{RUN_DIR}/run-record-v1.json@{e}",
+             "acceptance_list": f"{LIST}@{self.list_commit}", "date": "2026-10-17", "supersedes": "-",
              "verifier": "Independent Reviewer", "implementer": "Fixture Author", "module_pack": f"{PACK}@{e}"}
         f.update(over)
         return f
@@ -359,7 +368,9 @@ KUNYE_BAD = {
 class V4A_F3_Kunye(Base):
     def require_r3(self, text):
         FX.put("q.tsv", FX.qh + FX.qrow + REASSESS_ROWS)
-        FX.put(REASSESS, text)
+        # CT-FIX-05 (F2 (b), declared): a reassessment record lists the retry in its künye's work_packages; the status
+        # forms under test are unchanged
+        FX.put(REASSESS, "---\nwork_packages: W2-R3\n" + text[4:] if text.startswith("---\n") else text)
         return FX.run("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ct")
 
     def test_reassessment_valid_forms_dispatch(self):
@@ -462,7 +473,7 @@ class V4A_F5_Acceptance(Base):
         self.assertExit(self.check(h), 1)
 
     def test_ac_not_in_the_pack_is_refused(self):
-        FX.put("acceptance-list.md", FX.list_head + FX.list_row.replace("| AC-1 |", "| AC-999 |"))
+        FX.put(LIST, FX.list_head + FX.list_row.replace("| AC-1 |", "| AC-999 |"))
         FX.list_commit = FX.commit("list with an AC the pack does not have")
         try:
             self.assertExit(self.check(FX.write_acceptance()), 1)
@@ -673,8 +684,8 @@ class U3_AcceptanceDraft(Base):
         self.assertEqual((cells[0], cells[1], cells[6], cells[8]), ("AC-1", "Audit Ledger tested", "evet", "denenmedi"))
         head_lines = p.stdout.splitlines()[:2]
         cells[2:6] = ["Safety", "CLI test", "Expected observed", "hayır"]
-        cells[7:10] = ["Expected observed", "geçti", f"evidence.txt@{FX.evidence_commit}:1"]
-        FX.put("acceptance-list.md", "\n".join(head_lines + ["| " + " | ".join(cells) + " |"]) + "\n")
+        cells[7:10] = ["Expected observed", "geçti", f"{FX.artifact}@{FX.evidence_commit}:1"]
+        FX.put(LIST, "\n".join(head_lines + ["| " + " | ".join(cells) + " |"]) + "\n")
         FX.list_commit = FX.commit("list from the draft, filled")
         try:
             self.assertExit(self.check(FX.write_acceptance()), 0)
@@ -1038,13 +1049,13 @@ class CTFIX04_I4_BoundList(CTFIX04):
     Consumers: check, ct_queue validate (ACCEPTED row), module-check, the report."""
     def row(self, rid, text, req="evet"):
         return (f"| {rid} | {text} | Safety | CLI test | Expected observed | hayır | {req} | Expected observed | geçti | "
-                f"evidence.txt@{FX.evidence_commit}:1 |\n")
+                f"{FX.artifact}@{FX.evidence_commit}:1 |\n")
 
     def variant(self, rows, pack=None):
         if pack is not None:
             FX.put(PACK, pack)
         ph = FX.commit("CT-FIX-04: the pack version")
-        FX.put("acceptance-list.md", FX.list_head + "".join(rows))
+        FX.put(LIST, FX.list_head + "".join(rows))
         FX.list_commit = FX.commit("CT-FIX-04: the list")
         self.addCleanup(setattr, FX, "list_commit", FX.marks["acceptance-inputs"])
         rec = FX.write_acceptance(module_pack=f"{PACK}@{ph}")
@@ -1149,6 +1160,302 @@ class CTFIX04_ConditionalApproval(CTFIX04):
                 with self.subTest(case=label, mode=mode):
                     FX.reset(self.mark)
                     self.assertExit(self.product(approval, mode == "--prepare"), code, text)
+
+
+# ---------------------------------------------------------------------------------------------------- CT-FIX-05 (v6 audit)
+class CTFIX05_F1_MainRegistryWhole(CTFIX04):
+    """F1: origin/main's registry is validated as a whole before the queue is picked — another queue on the same task
+    file, or any broken row, makes the file invalid for every consumer."""
+    def variants(self):
+        two = FX.reg_head + FX.reg_line + FX.reg_line.replace("ct\tAudit CT\t", "ct2\tOther CT\t", 1)
+        broken = FX.reg_head + FX.reg_line + FX.reg_line.replace("ct\tAudit CT\tq.tsv", "zz\t\tz.tsv", 1)
+        return {"two queues on one task file": two, "an unrelated row with an empty field": broken}
+
+    def test_every_consumer_stops(self):
+        for label, main_text in self.variants().items():
+            for name, args, code, text in (
+                    ("validate", ("scripts/ct_queue.py", *CONSUMERS["validate"]), 1, "kayıt geçersiz"),
+                    ("require", ("scripts/ct_queue.py", *CONSUMERS["require"]), 1, "kayıt geçersiz"),
+                    ("require --in-force", ("scripts/ct_queue.py", "require", "W1", "--queue", "ct", "--in-force"), 1, "kayıt geçersiz"),
+                    ("guard", ("scripts/ct_queue.py", *CONSUMERS["guard"]), 1, "kayıt geçersiz"),
+                    ("summary", ("scripts/ct_queue.py", *CONSUMERS["summary"]), 1, "kayıt geçersiz"),
+                    ("writers", ("scripts/ct_queue.py", *CONSUMERS["writers"]), 1, "kayıt geçersiz"),
+                    ("report", ("scripts/status_report.py", "--mode", "v2", "--queue", "ct"), 1, "kayıt geçersiz")):
+                with self.subTest(main=label, consumer=name):
+                    FX.reset(self.mark)
+                    self.with_main(main_text, FX.reg_head + FX.reg_line)
+                    self.assertExit(FX.run(*args), code, text)
+            for prepare in (False, True):
+                with self.subTest(main=label, consumer="gate" + (" --prepare" if prepare else "")):
+                    FX.reset(self.mark)
+                    self.with_main(main_text, FX.reg_head + FX.reg_line)
+                    self.assertExit(self.gate(prepare=prepare), 1, "ENGEL")
+
+    def test_a_valid_main_registry_with_another_queue_still_registers(self):
+        FX.put("q2.tsv", FX.qh + FX.qrow)
+        h2 = FX.commit("CT-FIX-05: another queue's own task file")
+        ct2 = FX.reg_line.replace("ct\tAudit CT\tq.tsv", "ct2\tOther CT\tq2.tsv", 1).replace(FX.marks["base"], h2)
+        self.with_main(FX.reg_head + FX.reg_line + ct2, FX.reg_head + FX.reg_line)
+        self.assertExit(FX.run("scripts/ct_queue.py", "require", "W1", "--queue", "ct", "--in-force"), 0, "— kayıtlı")
+
+    def test_the_same_task_file_under_a_non_normal_path(self):
+        # Codex (relationship-probes): ct2 at './q.tsv' names the same file as ct at 'q.tsv' — a path is a normal
+        # repo-relative path or the registry is invalid; the uniqueness check then compares like with like
+        for spelled in ("./q.tsv", "q.tsv/", "x/../q.tsv", "/q.tsv"):
+            with self.subTest(path=spelled):
+                FX.reset(self.mark)
+                ct2 = FX.reg_line.replace("ct\tAudit CT\tq.tsv", f"ct2\tOther CT\t{spelled}", 1)
+                self.with_main(FX.reg_head + FX.reg_line + ct2, FX.reg_head + FX.reg_line)
+                for name in ("validate", "require", "summary"):
+                    self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS[name]), 1, "kayıt geçersiz")
+                self.assertExit(FX.run("scripts/ct_queue.py", "require", "W1", "--queue", "ct", "--in-force"), 1, "kayıt geçersiz")
+                self.assertExit(self.gate(), 1, "ENGEL")
+                self.assertExit(self.report(), 1, "kayıt geçersiz")
+
+    def test_the_branch_registry_refuses_a_non_normal_path(self):
+        FX.put(REG, FX.reg_head + FX.reg_line.replace("\tq.tsv\t", "\t./q.tsv\t", 1))
+        self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]), 1, "normal")
+
+
+class CTFIX05_F2_Reassessment(CTFIX04):
+    """F2 (b): an approved reassessment record opens a -R3 retry only when its künye's work_packages lists that retry's id
+    exactly; a version after '@' is a commit holding the same record, never cut off."""
+    mark = "registered"
+
+    def require_r3(self, text, record=None):
+        FX.put(REASSESS, text)
+        head = FX.commit("CT-FIX-05: reassessment record")
+        rows = REASSESS_ROWS if record is None else REASSESS_ROWS.replace(f"\t{REASSESS}\n", f"\t{record}\n")
+        FX.put("q.tsv", FX.qh + FX.qrow + rows)
+        return head, (FX.run("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ct"),
+                      FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]))
+
+    def test_normal(self):
+        ok = "---\nstatus: approved\nwork_packages: W2-R3\n---\nresolved\n"
+        for label, extra in (("the retry listed", None), ("the retry among others", "W2-R3, W9")):
+            with self.subTest(form=label):
+                FX.reset(self.mark)
+                text = ok if extra is None else ok.replace("W2-R3", extra)
+                _, (req, val) = self.require_r3(text)
+                self.assertExit(req, 0, "DAĞITILABİLİR W2-R3")
+                self.assertExit(val, 0)
+
+    def test_the_row_s_version_at_a_commit_holding_the_same_record(self):
+        ok = "---\nstatus: approved\nwork_packages: W2-R3\n---\nresolved\n"
+        FX.put(REASSESS, ok)
+        older = FX.commit("CT-FIX-05: the reassessment record")
+        for ref in (older, older[:9]):
+            with self.subTest(version=len(ref)):
+                _, (req, _) = self.require_r3(ok, f"{REASSESS}@{ref}")
+                self.assertExit(req, 0, "DAĞITILABİLİR W2-R3")
+
+    def test_not_bound_to_the_retry(self):
+        for label, wp in (("no work_packages (the row's column alone)", ""), ("the original W2 only", "work_packages: W2\n"),
+                          ("another WP (v6 audit)", "work_packages: UNRELATED-WP\n"), ("W2-R4", "work_packages: W2-R4\n"),
+                          ("written twice", "work_packages: W2-R3\nwork_packages: W2-R3\n"), ("an empty element", "work_packages: W2-R3,,W9\n")):
+            with self.subTest(form=label):
+                FX.reset(self.mark)
+                _, (req, val) = self.require_r3(f"---\nstatus: approved\n{wp}---\nresolved\n")
+                self.assertExit(req, 1, "§28.2")
+                self.assertExit(val, 1, "§28.2")
+
+    def test_summary_counts_what_require_accepts(self):
+        # Codex (relationship-probes): require refused the retry while summary still counted it as "require'ın kabul edeceği"
+        _, (req, _) = self.require_r3("---\nstatus: approved\nwork_packages: UNRELATED-WP\n---\nresolved\n")
+        self.assertExit(req, 1, "§28.2")
+        p = FX.run("scripts/ct_queue.py", *CONSUMERS["summary"])
+        self.assertExit(p, 0, "DAĞITILABİLİR KİMLİK 1 ")
+        self.assertIn("DENETİMDEN GEÇMEYEN 1 kimlik", p.stdout)
+        self.assertIn("W2-R3", p.stdout)
+        FX.reset(self.mark)
+        self.require_r3("---\nstatus: approved\nwork_packages: W2-R3\n---\nresolved\n")
+        p = FX.run("scripts/ct_queue.py", *CONSUMERS["summary"])
+        self.assertExit(p, 0, "DAĞITILABİLİR KİMLİK 2 ")
+        self.assertNotIn("DENETİMDEN GEÇMEYEN", p.stdout)
+
+    def test_a_broken_version_stops(self):
+        ok = "---\nstatus: approved\nwork_packages: W2-R3\n---\nresolved\n"
+        FX.put(REASSESS, "---\nstatus: approved\nwork_packages: W2-R3\n---\nan earlier text\n")
+        differs = FX.commit("CT-FIX-05: another content")
+        FX.put(REASSESS, ok)
+        same = FX.commit("CT-FIX-05: the same content")
+        tree = FX.git("rev-parse", f"{same}^{{tree}}")
+        for label, version in (("a 40-hex id that is no object (v6 audit)", "f" * 40), ("not hex", "not-a-commit"),
+                               ("a tree id holding the same record", tree), ("a commit whose record differs", differs)):
+            with self.subTest(version=label):
+                _, (req, _) = self.require_r3(ok, f"{REASSESS}@{version}")
+                self.assertExit(req, 1, "sürüm")
+
+
+class CTFIX05_F4_Timeout(CTFIX04):
+    """F4: only a completed Failed row is a known failure."""
+    mark = "registered"
+
+    def setUp(self):
+        super().setUp()
+        b = FX.marks["base"]
+        fp = "items:2:" + hashlib.sha256(b"A\nB").hexdigest()[:16]
+        row = ["Audit", "Test.Known", b, "fixture", b, "source.txt", "fixture", "open", fp, "Fixture owner", "2026-12-01"]
+        FX.put("tests/known-failures.tsv", "\t".join(FX.kf.COLUMNS) + "\n" + "\t".join(row) + "\n")
+        FX.put("tests/known-failures-items.json", json.dumps({"tests": {"Test.Known": ["A", "B"]}}))
+        FX.commit("known failure baseline")
+
+    def check(self, text):
+        path = FX.root.parent / "run.trx"
+        path.write_text(text, encoding="utf-8")
+        return FX.run("scripts/known_failures.py", "check", str(path), "--suite", "Audit")
+
+    def test_outcomes(self):
+        self.assertExit(self.check(trx([("Test.Known", "Failed", MSG)])), 0, "BİLİNEN=1")
+        for o in ("Timeout", "Error", "Aborted"):
+            with self.subTest(outcome=o):
+                key = o[0].lower() + o[1:]
+                p = self.check(trx([("Test.Known", o, MSG)], "Failed", {"total": 1, "executed": 1, "passed": 0, "failed": 0, key: 1}))
+                self.assertExit(p, 1, f"sonuç türü {o}")
+                self.assertIn("BİLİNEN=0", p.stdout)
+
+
+class CTFIX05_F6_Previous(CTFIX04):
+    """F6: an explicitly given --previous that cannot be verified makes the report incomplete (exit 1)."""
+    mark = "registered"
+
+    def test_previous(self):
+        p = self.report()
+        self.assertExit(p, 0)
+        FX.put("previous-report.txt", p.stdout)
+        good = FX.commit("CT-FIX-05: a previous report")
+        self.assertExit(self.report("--previous", f"previous-report.txt@{good}"), 0, '"status": "doğrulandı"')
+        FX.put("previous-report.txt", p.stdout.replace("kuyruk: ct", "kuyruk: ct (değiştirildi)", 1))
+        bad = FX.commit("CT-FIX-05: the visible text of the previous report changed")
+        for label, spec in (("a changed visible text (v6 audit)", f"previous-report.txt@{bad}"),
+                            ("a path not at the commit", f"no-such-report.txt@{good}"), ("not path@commit", "previous-report.txt")):
+            with self.subTest(form=label):
+                q = self.report("--previous", spec)
+                self.assertExit(q, 1, "önceki rapor")
+                self.assertIn('"complete": false', q.stdout)
+
+
+class CTFIX05_F3_RunRecord(CTFIX04):
+    """F3: the evidence is the real runner's record of a run on exactly the accepted code state, in a fresh directory;
+    an old record for changed code, a non-zero raw exit, an evidence commit that also changes code, or a row citing a
+    file the run did not produce gives no automatic ACCEPTED (and no percentages)."""
+    def runner(self, out, *argv):
+        return FX.run("scripts/run_record.py", "run", "--out", out, "--", *argv)
+
+    def test_the_runner_refuses(self):
+        cmd = (sys.executable, "-c", "print('x')")
+        self.assertExit(self.runner("src/run-2", *cmd), 2, "docs/records/audits/")
+        self.assertExit(self.runner("docs/records/audits/../run-2", *cmd), 2, "normal")
+        self.assertExit(self.runner(RUN_DIR, *cmd), 2, "zaten var")
+        FX.put("stray.txt", "untracked\n")
+        self.assertExit(self.runner("docs/records/audits/run-2", *cmd), 2, "temiz değil")
+        FX.reset(self.mark)
+        p = self.runner("docs/records/audits/run-4", sys.executable, "-c",
+                        "import os; os.mkfifo('docs/records/audits/run-4/pipe')")      # Codex: a FIFO in the output
+        self.assertExit(p, 2, "normal dosya olmayan")
+        FX.reset(self.mark)
+        p = self.runner("docs/records/audits/run-3", sys.executable, "-c", "open('source.txt', 'a').write('changed during the run')")
+        self.assertExit(p, 2, "dışında değişiklik")
+        self.assertFalse((FX.root / "docs/records/audits/run-3/run-record-v1.json").exists())
+
+    def test_normal_and_the_raw_exit_code(self):
+        self.assertExit(self.check(FX.write_acceptance()), 0, "ACCEPTED'e izin verir")
+        FX.reset(self.mark)
+        code = FX.git("rev-parse", "HEAD")              # the run's code state: the list commit (same code as the fixture's)
+        p = self.runner("docs/records/audits/run-7", sys.executable, "-c", "import sys; print('AC-1 checked'); sys.exit(7)")
+        self.assertExit(p, 0, "komutun çıkışı 7")
+        e7 = FX.commit("CT-FIX-05: a run that exited 7")
+        FX.put(LIST, FX.list_head + FX.list_row.replace(f"{FX.artifact}@{FX.evidence_commit}:1", f"docs/records/audits/run-7/stdout.txt@{e7}:1"))
+        l7 = FX.commit("CT-FIX-05: the list citing that run")
+        p = self.check(FX.write_acceptance(commit=code, evidence=f"docs/records/audits/run-7/run-record-v1.json@{e7}",
+                                           acceptance_list=f"{LIST}@{l7}"))
+        self.assertExit(p, 1, "ham çıkışı 7")
+        self.assertEqual(sum(l.startswith("ENGEL") for l in p.stdout.splitlines()), 1, p.stdout)   # only the raw exit
+
+    def test_old_evidence_does_not_accept_changed_code(self):
+        FX.put("source.txt", "Audit source contract, changed\n")
+        changed = FX.commit("CT-FIX-05: the code changed after the run")
+        rec = FX.write_acceptance(commit=changed)
+        self.assertExit(self.check(rec), 1, "eski kanıt yeni kodu")
+        self.accept_row(rec)
+        self.assertExit(self.report(), 1)
+
+    def test_the_evidence_commit_is_not_code_and_rows_cite_artifacts(self):
+        FX.put("source.txt", "Audit source contract, changed with the evidence\n")
+        e2 = FX.commit("CT-FIX-05: an evidence commit that also changes code")
+        rec = FX.write_acceptance(evidence=f"{RUN_DIR}/run-record-v1.json@{e2}")
+        self.assertExit(self.check(rec), 1, "kanıt dışında da farklı")
+        FX.reset(self.mark)
+        FX.put(LIST, FX.list_head + FX.list_row.replace(f"{FX.artifact}@{FX.evidence_commit}:1", f"wp.md@{FX.code_commit}:6"))
+        FX.list_commit = FX.commit("CT-FIX-05: a row citing a file the run did not produce")
+        self.addCleanup(setattr, FX, "list_commit", FX.marks["acceptance-inputs"])
+        self.assertExit(self.check(FX.write_acceptance()), 1, "artefaktı değil")
+
+
+class CTFIX05_C1_GovernanceScope(CTFIX04):
+    """C1: a governance work package writes no product code; its allowed paths stay out of services/, frontend/, gateway/,
+    with no symbolic link at or under their fixed prefix (every ancestor component too)."""
+    def gate_allowed(self, allowed):
+        head = FX.git("rev-parse", "HEAD")
+        return self.gate(FX.prompt(head).replace("İzinli yollar: source.txt", f"İzinli yollar: {allowed}"))
+
+    def test_scope(self):
+        self.assertExit(self.gate_allowed("source.txt"), 0)
+        self.assertExit(self.gate_allowed("docs/**"), 0)
+        for allowed in ("services/Diten.HcmService/**", "frontend/x.js", "gateway", "**", "{services,docs}/**", "docs/../services/x.cs"):
+            with self.subTest(allowed=allowed):
+                self.assertExit(self.gate_allowed(allowed), 1, "yönetişim işinin izinli yolu")
+
+    def test_a_symbolic_link_on_the_way(self):
+        (FX.root / "services").mkdir(exist_ok=True)
+        (FX.root / "services/a.cs").write_text("x\n", encoding="utf-8")
+        (FX.root / "docs").mkdir(exist_ok=True)
+        os.symlink("../services", FX.root / "docs/alias")
+        FX.git("add", "--", "docs/alias")                 # Fixture.commit lists files; a directory link is staged by name
+        FX.commit("CT-FIX-05: a symbolic link docs/alias -> ../services")
+        self.assertEqual(FX.git("ls-tree", "HEAD", "--", "docs/alias").split()[0], "120000")
+        for allowed in ("docs/alias/New.cs", "docs/alias/sub/New.cs", "docs/alias/**", "docs/**"):
+            with self.subTest(allowed=allowed):
+                self.assertExit(self.gate_allowed(allowed), 1, "sembolik bağ")
+
+
+class CTFIX05_C2_E1_PackIdentityAndApproval(CTFIX04):
+    """C2: the file's full pack id is the künye id, then the parent relation — for the gate and the acceptance reader
+    alike. E1: a conditional pack gives no new automatic acceptance; a rejected one stops; the draft still comes."""
+    CHILD = "execution/domains/audit/module-packs/MOD-0288-FU06B-audit-ledger-detail.md"
+
+    def child_text(self, pid):
+        return (FX.root / PACK).read_text(encoding="utf-8").replace("id: MOD-0288", f"id: {pid}")
+
+    def test_a_lettered_child_pack(self):
+        FX.put(self.CHILD, self.child_text("MOD-0288-FU06B"))
+        h = FX.commit("CT-FIX-05: a lettered child pack")
+        prompt = FX.prompt(h).replace(f"Görev sınıfı: yönetişim · Kapsam kaydı: {AUTHORITY}", f"Görev sınıfı: ürün · Paket: {self.CHILD}")
+        self.assertExit(self.gate(prompt), 0)
+        self.assertExit(self.check(FX.write_acceptance(module_pack=f"{self.CHILD}@{h}")), 0, "ACCEPTED'e izin verir")
+        FX.reset(self.mark)
+        FX.put(self.CHILD, self.child_text("MOD-0288-FU07B"))
+        h = FX.commit("CT-FIX-05: a child pack whose künye names another child")
+        prompt = FX.prompt(h).replace(f"Görev sınıfı: yönetişim · Kapsam kaydı: {AUTHORITY}", f"Görev sınıfı: ürün · Paket: {self.CHILD}")
+        self.assertExit(self.gate(prompt), 1, "dosya adındaki kimlikle")
+        self.assertExit(self.check(FX.write_acceptance(module_pack=f"{self.CHILD}@{h}")), 1, "dosya adındaki kimlikle")
+
+    def test_a_conditional_or_rejected_pack_in_acceptance(self):
+        good = (FX.root / PACK).read_text(encoding="utf-8")
+        for value, code in (("conditionally-approved-for-p2-slice", 1), ("rejected", 1)):
+            with self.subTest(approval=value):
+                FX.reset(self.mark)
+                FX.put(PACK, good.replace("status: approved\n", f"status: approved\napproval_status: {value}\n", 1))
+                h = FX.commit("CT-FIX-05: the pack's second approval field")
+                why = "inceleme gerekir" if value.startswith("conditionally") else "onaylı değil"
+                self.assertExit(self.check(FX.write_acceptance(module_pack=f"{PACK}@{h}")), code, why)
+                self.assertExit(FX.run("scripts/acceptance_record.py", "module-check", "--queue", "ct", "--module", "MOD-0288",
+                                       "--pack", f"{PACK}@{h}"), 2, why)
+                draft = FX.run("scripts/acceptance_record.py", "draft", "--part", "list", "--queue", "ct", "--wp", "W1", "--pack", f"{PACK}@{h}")
+                if value.startswith("conditionally"):
+                    self.assertExit(draft, 0, "taslak hazırlık içindir")
+                else:
+                    self.assertExit(draft, 2, "onaylı değil")
 
 
 if __name__ == "__main__":

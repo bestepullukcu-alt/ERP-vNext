@@ -158,7 +158,9 @@ def parse_trx(text: str) -> dict:
                 prev_outcome, prev_message = results[name]
                 failing = [(o, m) for o, m in ((prev_outcome, prev_message), (outcome_, message)) if o not in NOT_FAILED]
                 if failing:
-                    outcome_, message = failing[0][0], "\n".join(sorted(m for _, m in failing))
+                    # CT-FIX-05 (F4): a non-Failed failing row (Timeout, Error, …) is never hidden behind a Failed one
+                    other = [o for o, _ in failing if o != "Failed"]
+                    outcome_, message = (other[0] if other else "Failed"), "\n".join(sorted(m for _, m in failing))
                 else:
                     outcome_ = "Passed" if "Passed" in (prev_outcome, outcome_) else outcome_
             results[name] = (outcome_, message)
@@ -251,6 +253,10 @@ def classify(rows: list[dict], run: dict, suite: str | None, items: dict[str, li
         row = registered.get(name)
         if row is None:
             out["YENİ"].append(name)
+        elif outcome != "Failed":
+            # CT-FIX-05 (F4, v6 audit): a known failure is a completed, Failed run of the test; Timeout, Error, Aborted
+            # and every other failing outcome is a different result, whatever its message says
+            out["YENİ-AYRINTI"].append(f"{name} (sonuç türü {outcome}, kayıtlı hata Failed — tamamlanmamış ya da başka bir sonuç, incele)")
         elif fingerprint(message) == row["failure_fingerprint"]:
             out["BİLİNEN"].append(name)
         elif row["failure_fingerprint"].startswith("items:") and name in items:
@@ -486,6 +492,16 @@ def self_test() -> int:
              counted([("Ns.A.Known1", "Bogus", known_list)], "Failed", {"total": 1, "executed": 1, "passed": 0, "failed": 0}))):
         cases.append((f"CT-FIX-03 R5 sabotage: {label} -> not trusted (exit 2; red never turns green)", untrusted(text)))
     cases.append(("trx: registered failures with the same fingerprint -> 2 BİLİNEN, exit 0", code == 0 and len(r["BİLİNEN"]) == 2))
+    # CT-FIX-05 (F4, v6 audit): only a completed Failed row is a known failure; Timeout / Error / … with the same message is not
+    for o in ("Timeout", "Error", "Aborted", "Inconclusive"):
+        r4, c4 = run(counted([("Ns.A.Known1", o, known_list)], "Failed",
+                             {"total": 1, "executed": 1, "passed": 0, "failed": 0, o[0].lower() + o[1:]: 1}))
+        cases.append((f"CT-FIX-05 F4: a registered test with outcome {o} and its known message -> YENİ-AYRINTI, exit 1 (not BİLİNEN)",
+                       c4 == 1 and not r4["BİLİNEN"] and any("sonuç türü " + o in x for x in r4["YENİ-AYRINTI"])))
+    r4, c4 = run(counted([("Ns.A.Known1", "Failed", known_list), ("Ns.A.Known1", "Timeout", known_list)], "Failed",
+                         {"total": 2, "executed": 2, "passed": 0, "failed": 1, "timeout": 1}))
+    cases.append(("CT-FIX-05 F4: two rows with one name, Failed and Timeout -> the Timeout is not hidden (YENİ-AYRINTI, exit 1)",
+                  c4 == 1 and not r4["BİLİNEN"] and any("sonuç türü Timeout" in x for x in r4["YENİ-AYRINTI"])))
     r, code = run(good.replace(known_list, plus_one))
     cases.append(("sabotage: one more violation inside a known red test -> YENİ-AYRINTI, exit 1", code == 1 and r["YENİ-AYRINTI"]))
     r, code = run(good.replace('<UnitTestResult testName="Ns.A.Ok" outcome="Passed">', '<UnitTestResult testName="Ns.B.New" outcome="Error">'))

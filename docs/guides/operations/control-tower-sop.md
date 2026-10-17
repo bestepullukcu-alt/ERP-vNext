@@ -1252,9 +1252,11 @@ python3 scripts/prompt_gate.py pack <prompt dosyası>
 
 - `ürün`
   - Adı geçen Module Pack `ready-for-dev` ya da `approved`.
-  - Künyesinde ortak okuyucuyla okunan tek bir `id` var; bu kimliğin modülü (`MOD-nnnn`, `MOD-nnnn-FUn`; child
-    kimlikte mevcut `split_id` tabanı) hem dosya adının başındaki MOD kimliğiyle hem kuyruk satırının modülüyle aynı.
-    Dosya adındaki kimlik `-` ya da `.md` ile biter: `MOD-02880-…`, `MOD-0288X-…` kimlik değildir.
+  - Künyesinde ortak okuyucuyla okunan tek bir `id` var ve dosya adının başındaki **tam** pack kimliği (küçük harfli
+    slug'dan önceki büyük harfli kimlik bölümleri) bu `id`'yle birebir aynı (`MOD-0155-FU06B` ≠ `MOD-0155-FU07B`;
+    `MOD-02880-…`, `MOD-0288X-…` kimlik değildir). Ardından kimliğin modülü (`MOD-nnnn`, `MOD-nnnn-FUn`; child kimlikte
+    mevcut `split_id` tabanı, ör. `MOD-0155-FU06B` → `MOD-0155`) kuyruk satırının modülüyle aynı (CT-FIX-05 C2; dil
+    bilgisi genişlemez).
   - Künyede `approval_status` varsa ve tam `approved` değilse `status` tek başına yetki değildir:
     `conditionally-approved…` yalnız hazırlıkta (`--prepare`) bildirilir, yeni dağıtımda ENGEL — paketin kapsamı ve
     onayı önce pakette netleşir; başka her değer ya da okunamayan alan her kipte ENGEL; hiçbir kayıt bunu aşmaz.
@@ -1265,6 +1267,10 @@ python3 scripts/prompt_gate.py pack <prompt dosyası>
     `work_packages:` satırı WP kimliğini tam üye olarak listeler (virgülle ayrılmış kimlikler, boş eleman yok).
   - Kayıt metninde ya da başka bir alanda WP kimliğinin anılması bağ değildir; açık liste WP'yi içermiyorsa `record`
     bağı onu aşmaz; künyesinde HTML yorumu olan kayıt okunmaz.
+  - Yönetişim işi ürün kodu yazmaz: her "İzinli yol" normal bir depo-içi glob'dur (`/`, `./`, `//`, `..`, `\` yok); sabit
+    öneki (ilk glob karakterinden önceki bölümler) boş değildir ve `services/`, `frontend/`, `gateway/` altında değildir;
+    Expected HEAD'de önekin üst bileşenlerinden birinde ya da altında sembolik bağ yoktur. Bu yalnız ilan edilen yazma
+    kapsamıdır; okumayı sınırlamaz, bir komutun sonradan bağ yaratmayacağını kanıtlamaz (CT-FIX-05 C1).
 
 **§9.1 sinyal adları:** `sözleşme` (paylaşılan sözleşme / olay şeması), `migrasyon`, `yetki` (yetkilendirme /
 kimlik doğrulama), `kiracı`, `denetim` (denetim / kanıt temeli), `finansal`, `uyum`, `gateway`,
@@ -1676,7 +1682,9 @@ WP ACCEPTED ≠ MERGED ≠ MODULE DONE ≠ CAPABILITY DONE ≠ RELEASE VERIFIED
 - **Gerekli kanıt seviyesi (§23.1):** Kayıt onaylı bir WP ya da paket satırına bağlıdır. Yoksa ya da belirsizse kabul
   durur.
 - **`-R3` ve sonrası (§28.2):** Yeniden değerlendirme kararı `reassessment_record` sütunundadır, kabul kaydı
-  `record`'dadır. Kararın künyesinde tek `status: approved` ya da `decided` gerekir. Dosyanın varlığı kararın çözüldüğünü
+  `record`'dadır. Kararın künyesinde tek `status: approved` ya da `decided` ve tek `work_packages:` satırı gerekir; bu
+  satır tekrarın kimliğini tam listeler (`W2-R3`; `W2` ya da başka bir WP değil). Sütun `yol@commit` yazıyorsa o kimlik
+  aynı kaydı taşıyan bir commit nesnesidir; `@`'den sonrası atılmaz (CT-FIX-05 F2). Dosyanın varlığı kararın çözüldüğünü
   kanıtlamaz; çözümü CT doğrular. Karar çözülmeden `-R3` açılmaz ve dağıtılmaz.
 - **Sınır:** Betikler kaydın ve kanıtın bütünlüğünü denetler; anlamca kabul bağımsız doğrulayıcının ve CT'nindir.
 

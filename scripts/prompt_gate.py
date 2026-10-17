@@ -39,7 +39,9 @@ What it checks (each is an ENGEL when it fails):
              second approval field (approval_status) that is not 'approved' never dispatches: a conditional one is
              only prepared (--prepare reports it), any other value stops in every mode; yönetişim: an approved scope
              record under docs/records/decisions/ bound explicitly — the row's record names it (path@commit: that
-             commit holds the same bytes), or its künye's work_packages lists the WP; a mention is not a binding
+             commit holds the same bytes), or its künye's work_packages lists the WP; a mention is not a binding;
+             its allowed paths are normal globs outside services/, frontend/, gateway/, with no symbolic link at or
+             under their fixed prefix at Expected HEAD (CT-FIX-05 C1)
   risk       §9.1 signals from the fixed list; any signal means HIGH; allowed paths that touch migrations, the
              gateway or authorization need the matching signal
   queue      the WP row and scripts/ct_queue.py's own require decision (require_decision) say dispatchable
@@ -110,7 +112,7 @@ _SHARED = ctq()
 GOV_APPROVED, kunye_status = _SHARED.GOV_APPROVED, _SHARED.kunye_status
 # CT-FIX-04 (İ2, İ3): the WP ↔ scope-record binding and the module ↔ pack identity are ct_queue's, not copies
 governance_binding, pack_identity = _SHARED.governance_binding, _SHARED.pack_identity
-pack_approval_limit = _SHARED.pack_approval_limit
+pack_approval_limit, pack_approval_decision = _SHARED.pack_approval_limit, _SHARED.pack_approval_decision
 
 
 def sha256(data: bytes) -> str:
@@ -308,6 +310,17 @@ class GitRepo:
     def files(self, commit: str) -> list[str]:
         return self._git(self.worktree, "ls-tree", "-r", "--name-only", commit).splitlines()
 
+    def symlinks(self, commit: str, prefix: str) -> list[str]:
+        """CT-FIX-05 (C1): the symbolic links at `commit` on the way to `prefix` (every ancestor component, Codex:
+        docs/alias -> ../services under docs/alias/New.cs) and at or under it (git does not follow them)."""
+        parts, found = prefix.split("/"), []
+        for n in range(1, len(parts) + 1):            # each component itself, not recursively
+            out = self._git(self.worktree, "ls-tree", "-z", commit, "--", "/".join(parts[:n])) or ""
+            found += [e.split("\t", 1)[1] for e in out.split("\0") if e.startswith("120000 ") and "\t" in e]
+        out = self._git(self.worktree, "ls-tree", "-r", "-z", commit, "--", prefix) or ""
+        found += [e.split("\t", 1)[1] for e in out.split("\0") if e.startswith("120000 ") and "\t" in e]
+        return sorted(set(found))
+
 
 # ------------------------------------------------------------------------------------------------ checks
 def check_git(p: dict, repo, sources: list[str], root_common: str | None = None) -> tuple[list[str], list[str]]:
@@ -436,16 +449,49 @@ def check_approval_limit(p: dict, repo, commit: str, prepare: bool) -> tuple[lis
     data = repo.file(commit, p["authority"])
     if data is None:
         return [], []          # check_authority reports the missing pack
-    limit, stop = pack_approval_limit(data.decode("utf-8", errors="replace"))
-    if stop:
-        return [f"görev sınıfı: {stop} ({p['authority']})"], []
-    if limit is None:
+    # CT-FIX-05 (E1): the shared decision per mode (ct_queue.pack_approval_decision), not a second reading here
+    verdict, message = pack_approval_decision(data.decode("utf-8", errors="replace"), "prepare" if prepare else "dispatch")
+    if verdict == "ok":
         return [], []
-    head = f"görev sınıfı: paket koşullu onaylı — {limit} ({p['authority']})"
-    if prepare:
-        return [], [f"{head} — HAZIRLIK: yeni dağıtımda ENGEL olur; paketin kapsamı ve onayı önce pakette netleşir"]
-    return [f"{head} — status tek başına bu iş için yetki değil, kapsam türetilmez; yeni dağıtım için paketin kapsamı "
-            "ve onayı önce pakette netleşir"], []
+    if verdict == "note":
+        return [], [f"görev sınıfı: {message} ({p['authority']})"]
+    return [f"görev sınıfı: {message} ({p['authority']})"], []
+
+
+# CT-FIX-05 (C1, v6 audit): a governance work package writes no product code. Its allowed paths are normal repo-relative
+# globs whose fixed prefix (the segments before the first glob character) is not empty and not under a product root,
+# and no symbolic link stands at or under that prefix at Expected HEAD. This bounds the declared write scope only; it
+# does not prove that a command will not create a new link later, and reading is not limited by it.
+PRODUCT_ROOTS = ("services", "frontend", "gateway")
+
+
+def check_governance_paths(p: dict, repo, commit: str) -> list[str]:
+    if p["task_class"] != "yönetişim":
+        return []
+    eng = []
+    for g in p["allowed"]:
+        segs = g.split("/")
+        if g.startswith("/") or "\\" in g or g.startswith("./") or "//" in g or ".." in segs or "." in segs:
+            eng.append(f"görev sınıfı: yönetişim işinin izinli yolu '{g[:60]}' normal bir depo-içi yol değil (/, ./, //, .., \\ yok)")
+            continue
+        prefix = []
+        for seg in segs:
+            if any(c in seg for c in "*?[{"):
+                break
+            prefix.append(seg)
+        if not prefix:
+            eng.append(f"görev sınıfı: yönetişim işinin izinli yolu '{g[:60]}' kökten geniş bir glob — ürün köklerini "
+                       f"({', '.join(r + '/' for r in PRODUCT_ROOTS)}) kapsar")
+            continue
+        if prefix[0].casefold() in PRODUCT_ROOTS:
+            eng.append(f"görev sınıfı: yönetişim işinin izinli yolu '{g[:60]}' ürün köküne ({prefix[0]}/) yazar — ürün kodu "
+                       "yönetişim sınıfıyla dağıtılmaz; ürün sınıfı ve onaylı paket gerekir")
+            continue
+        links = repo.symlinks(commit, "/".join(prefix))
+        if links:
+            eng.append(f"görev sınıfı: yönetişim işinin izinli yolu '{g[:60]}' altında Expected HEAD'de sembolik bağ var "
+                       f"({links[0][:60]}) — yazma kapsamı bağla başka bir köke taşınabilir")
+    return eng
 
 
 def check_risk(p: dict) -> list[str]:
@@ -687,6 +733,7 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
         info += c_info
         info.append(f"sözleşme: {quotes} alıntı Expected HEAD'de birebir denetlendi")
         eng += check_authority(p, repo, commit, q.get("row"))
+        eng += check_governance_paths(p, repo, commit)      # CT-FIX-05 (C1)
         a_eng, a_info = check_approval_limit(p, repo, commit, prepare)
         eng += a_eng
         info += a_info
@@ -849,6 +896,9 @@ class FakeRepo:
     def blob(self, commit, path): return sha256(self.f[path].encode())[:40] if path in self.f else None
     def file(self, commit, path): return self.f[path].encode() if path in self.f else None
     def files(self, commit): return list(self.f)
+    links: tuple = ()
+    def symlinks(self, commit, prefix):
+        return [x for x in self.links if x == prefix or x.startswith(prefix + "/") or prefix.startswith(x + "/")]
 
 
 def self_test() -> int:
@@ -1223,6 +1273,19 @@ Rapor formatı: §22
                       for x in ("approval_status: rejected", "approval_status: draft", "approval_status: conditionally approved",
                                 "approval_status: approved\napproval_status: rejected",
                                 "approval_status: approved\n  approval_status: rejected") for pr in (False, True))))
+    # CT-FIX-05 (C1, v6 audit): a governance work package writes no product code
+    gpaths = lambda allowed, cls="yönetişim", links=(): check_governance_paths(
+        {"task_class": cls, "allowed": allowed}, type("R", (FakeRepo,), {"links": links})({}), "a" * 40)
+    cases.append(("CT-FIX-05 C1: governance allowed paths into services/, frontend/, gateway/ (any case), a root-wide glob, "
+                  "a brace glob, '..', './', '//', an absolute path -> ENGEL each",
+                  all(gpaths([g]) for g in ("services/Diten.HcmService/**", "frontend/x.js", "gateway", "Services/x/**", "**", "*",
+                                            "{services,docs}/**", "docs/../services/**", "./docs/**", "docs//x", "/docs/**"))))
+    cases.append(("CT-FIX-05 C1: a symbolic link at or under the prefix at Expected HEAD -> ENGEL; docs/** without one passes; "
+                  "the product class is not limited by this rule",
+                  bool(gpaths(["docs/**"], links=("docs/alias",))) and not gpaths(["docs/**", "scripts/x.py", "AGENTS.md"])
+                  and bool(gpaths(["docs/alias/New.cs"], links=("docs/alias",)))
+                  and bool(gpaths(["docs/alias/sub/New.cs"], links=("docs/alias",)))
+                  and not gpaths(["services/x/**"], cls="ürün")))
     fake = FakeRepo({})
     cases.append(("CT-FIX-01 13: Expected HEAD — a real short id resolves, 'deadbee' does not (fake repo)",
                   fake.commit_id("aaaaaaa") == "a" * 40 and fake.commit_id("deadbee") is None))

@@ -19,10 +19,12 @@ require   exit 0 only when WP-ID has exactly one row and its state is classed di
           A Control Tower without a registered queue has no dispatch path here. It reports two registrations:
           HAZIRLIK (the registry in this working tree) and YÜRÜRLÜK (the registry in the LOCAL ref origin/main, with
           the measured SHA and the last fetch time — the remote itself is not checked). --in-force refuses unless
-          origin/main's registry is well-formed and holds exactly one valid row for the queue that points at the
-          same task source file. Without --in-force a queue origin/main does not register is preparation; one it
-          registers with another strict / vocabulary / baseline_commit, another task source or an invalid row stops
-          require, guard, writers and summary (DUR) and is a HATA of validate (CT-FIX-02).
+          origin/main's registry is valid as a whole and holds exactly one row for the queue that points at the
+          same task source file with the same profile and a confirmed owner (CT-FIX-04/05). Without --in-force a
+          queue origin/main does not register is preparation, and a row main holds with owner_confirmation pending
+          is 'onaysız' (preparation, never in force); a branch row that differs from main's (strict, vocabulary,
+          baseline_commit, owner_confirmation, task source) or a main registry that is invalid anywhere stops
+          require, guard, writers and summary (DUR) and is a HATA of validate (CT-FIX-02/04/05).
 strict    a queue registered with strict=yes (a new Control Tower's queue) treats an undefined state as an error on
           every row; strict=no (the SCE / MVP6 queue) keeps its tolerance for historical rows. The registry's
           `vocabulary` column names the state vocabulary of each queue (sce-mvp6 for SCE; sop7 for new Control Towers;
@@ -56,6 +58,7 @@ import datetime
 import hashlib
 import json
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -287,6 +290,12 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
     path_at = path_at or (lambda sha, path: git("cat-file", "-e", f"{sha}:{path}").returncode == 0)
     problems, ids, paths = [], set(), set()
     for q in registry:
+        # CT-FIX-05 (F1, Codex): a task file path is a normal repo-relative path — './q.tsv', 'q.tsv/', 'x/../q.tsv',
+        # '/q.tsv' or a backslash would name the same file under another spelling and slip past the uniqueness check
+        p = q["path"]
+        if not p or p.startswith("/") or "\\" in p or posixpath.normpath(p) != p or p.split("/")[0] == "..":
+            problems.append(f"registry {q['queue_id']}: path '{p[:60]}' must be a normal repo-relative path "
+                            "(no './', '..', '//', trailing '/', absolute path or backslash)")
         if q["queue_id"] in ids or q["path"] in paths:
             problems.append(f"registry: '{q['queue_id']}' or its path is registered twice")
         ids.add(q["queue_id"]); paths.add(q["path"])
@@ -446,15 +455,24 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
                 if n >= 3:
                     rr_i = base.index("reassessment_record")  # its own column; old strict data without it: record
                     src_i = rr_i if rr_i is not None else rec_i
-                    rec = (row[src_i] if src_i is not None else "").split("@")[0].strip()
+                    # CT-FIX-05 (F2, v6 audit): the version after '@' is checked, never cut off
+                    rec, at, version = (row[src_i] if src_i is not None else "").strip().partition("@")
+                    rec = rec.strip()
                     reader = profile.get("read_file")  # CT-OPS-04: a fixed commit's blobs instead of the working tree
                     inside = rec.startswith("docs/records/decisions/") and ".." not in Path(rec).parts
-                    text = (reader(rec) if inside else None) if reader else None
-                    if not (inside and (text is not None if reader else (ROOT / rec).is_file())):
+                    if reader:
+                        text = reader(rec) if inside else None
+                    else:
+                        text = (ROOT / rec).read_text(encoding="utf-8", errors="replace") if inside and (ROOT / rec).is_file() else None
+                    if text is None:
                         error(row[id_i], f"satır {i} {row[id_i]}: -R{n} için yeniden değerlendirme kaydı gerekli (SOP §28.2)")
-                    elif not (decision_resolved_text(text) if reader else decision_resolved(ROOT / rec)):
+                    elif not decision_resolved_text(text):
                         error(row[id_i], f"satır {i} {row[id_i]}: -R{n} yeniden değerlendirme kaydı onaylı ya da karara "
                                          f"bağlanmış değil (künyede tek 'status: approved|decided' yok) — SOP §28.2")
+                    else:
+                        unbound = reassessment_binding(text, rec, row[id_i], version if at else None)
+                        if unbound:
+                            error(row[id_i], f"satır {i} {row[id_i]}: -R{n} {unbound} — SOP §28.2")
     for i, row in enumerate(cur.rows, start=2):
         if row[id_i] != row[id_i].strip() or re.search(r"\s", row[id_i]):
             error(row[id_i], f"satır {i}: kimlik '{row[id_i]}' boşluk içeriyor — kimlikler birebir karşılaştırılır")
@@ -515,8 +533,8 @@ def validate_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool
 
 
 def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, path_at=None) -> tuple[str, str]:
-    """('kayıtlı', '') only for a well-formed registry with exactly one valid row for this queue that points at the same
-    task source with the same profile and a confirmed owner; otherwise ('kayıt dosyası yok' | 'kayıt geçersiz' |
+    """('kayıtlı', '') only for a registry that is valid as a whole (CT-FIX-05) with exactly one row for this queue that
+    points at the same task source with the same profile and a confirmed owner; otherwise ('kayıt dosyası yok' | 'kayıt geçersiz' |
     'kayıtlı değil' | 'farklı görev kaynağı' | 'farklı profil' | 'onaysız', reason). 'onaysız' is preparation, not a
     conflict (CT-FIX-04 İ1)."""
     if registry_text is None:
@@ -528,18 +546,21 @@ def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, 
         if len(row) != len(REGISTRY_COLUMNS):
             return "kayıt geçersiz", f"satır {i}: {len(row)} sütun, beklenen {len(REGISTRY_COLUMNS)}"
     rows = [dict(zip(REGISTRY_COLUMNS, row)) for row in table.rows]
+    # CT-FIX-05 (F1, v6 audit): the registry is validated as a whole before one queue is picked — every row without an
+    # empty field, queue_id and path unique across all rows, allowed values, the baseline commit and the task file there
+    # (check_registry, the branch registry's own check). Another queue on the same task file, or any broken row, makes
+    # the file invalid: no queue is in force from it. ct_route validates main's registry the same way.
+    for n, r in enumerate(rows, start=2):
+        empty = [c for c in REGISTRY_COLUMNS if not r[c].strip()]
+        if empty:
+            return "kayıt geçersiz", f"satır {n} ({r['queue_id'][:30] or '?'}): boş alan {', '.join(empty)}"
+    problems = check_registry(rows, [], commit_exists=commit_exists, path_at=path_at, check_vocab_rows=False)
+    if problems:
+        return "kayıt geçersiz", problems[0] + (f" (+{len(problems) - 1})" if len(problems) > 1 else "")
     matches = [r for r in rows if r["queue_id"] == queue["queue_id"]]
     if not matches:
         return "kayıtlı değil", ""
-    if len(matches) > 1:
-        return "kayıt geçersiz", f"'{queue['queue_id']}' {len(matches)} kez kayıtlı"
     row = matches[0]
-    empty = [c for c in REGISTRY_COLUMNS if not row[c].strip()]
-    if empty:
-        return "kayıt geçersiz", f"boş alan: {', '.join(empty)}"
-    problems = check_registry([row], [], commit_exists=commit_exists, path_at=path_at, check_vocab_rows=False)
-    if problems:
-        return "kayıt geçersiz", problems[0]
     if row["path"] != queue["path"]:
         return "farklı görev kaynağı", f"orada '{row['path']}'"
     # CT-FIX-01 (05): the branch may not lower the protection main registered (strict, vocabulary, baseline).
@@ -673,7 +694,10 @@ def describe(content: str, header: list[str]) -> str:
     return " / ".join(out)
 
 
-def summarize(cur: Table, vocab: dict[str, dict], queue: dict) -> dict:
+def summarize(cur: Table, vocab: dict[str, dict], queue: dict, checked: dict | None = None, blocked: str | None = None) -> dict:
+    """CT-FIX-05 (F2, Codex): the dispatchable count is require's — single-row, dispatch=yes ids that the queue's own
+    checks (check_queue + history, as require_decision runs them) do not refuse; a strict queue with a global error or
+    a profile that cannot be built dispatches nothing (blocked)."""
     id_i, state_i, item_i, owner_i = cur.index("id"), cur.index("state"), cur.index("item"), cur.index("owner")
     by_class, unverified, owners, modules = Counter(), Counter(), Counter(), defaultdict(Counter)
     for row in cur.rows:
@@ -689,8 +713,10 @@ def summarize(cur: Table, vocab: dict[str, dict], queue: dict) -> dict:
             modules[mod][cls] += 1
     pending = queue["owner_confirmation"] != "confirmed" or any(v["confirmation"] != "confirmed" for v in vocab.values())
     id_count = Counter(r[id_i] for r in cur.rows if len(r) == len(cur.header))
-    dispatchable_ids = sum(1 for r in cur.rows if len(r) == len(cur.header) and id_count[r[id_i]] == 1
-                           and vocab.get(r[state_i], {}).get("dispatch") == "yes")
+    candidates = [r[id_i] for r in cur.rows if len(r) == len(cur.header) and id_count[r[id_i]] == 1
+                  and vocab.get(r[state_i], {}).get("dispatch") == "yes"]
+    refused = sorted(qid for qid in candidates if checked is not None and qid in checked["bad"])
+    dispatchable_ids = 0 if blocked else len(candidates) - len(refused)
     return {
         "queue_id": queue["queue_id"],
         "control_tower": queue["control_tower"],
@@ -699,6 +725,8 @@ def summarize(cur: Table, vocab: dict[str, dict], queue: dict) -> dict:
         "classification": "provisional" if pending else "confirmed",
         "by_class": dict(sorted(by_class.items())),
         "dispatchable_ids": dispatchable_ids,
+        "refused_by_checks": refused,
+        "blocked": blocked,
         "unverified": {"rows": sum(unverified.values()), "distinct_states": len(unverified),
                        "meaning": "not dispatchable, not closed"},
         "duplicate_ids": {qid: k for qid, k in sorted(Counter(r[id_i] for r in cur.rows).items()) if k > 1},
@@ -712,7 +740,13 @@ def summary_lines(s: dict) -> list[str]:
     state = "geçici — sahip onayı bekliyor" if s["classification"] == "provisional" else "onaylı"
     lines = [f"KUYRUK {s['queue_id']} ({s['control_tower']}) — {s['rows']} satır; sınıflandırma {state}"]
     lines += [f"SINIF {cls} {n} satır" for cls, n in s["by_class"].items()]
-    lines.append(f"DAĞITILABİLİR KİMLİK {s['dispatchable_ids']} (require'ın kabul edeceği: tek satırlı ve dispatch=yes)")
+    lines.append(f"DAĞITILABİLİR KİMLİK {s['dispatchable_ids']} (require'ın kabul edeceği: tek satırlı, dispatch=yes ve "
+                 "kuyruk denetiminden geçen)")
+    if s.get("blocked"):
+        lines.append(f"DAĞITIM KAPALI: {s['blocked'][:200]}")
+    if s.get("refused_by_checks"):
+        shown = ", ".join(s["refused_by_checks"][:10]) + (f" (+{len(s['refused_by_checks']) - 10})" if len(s["refused_by_checks"]) > 10 else "")
+        lines.append(f"DENETİMDEN GEÇMEYEN {len(s['refused_by_checks'])} kimlik (dispatch=yes ama require reddeder): {shown}")
     u = s["unverified"]
     lines.append(f"DOĞRULANMADI {u['rows']} satır, {u['distinct_states']} farklı durum metni — dağıtılabilir de kapalı da sayılmaz")
     if s["duplicate_ids"]:
@@ -1030,6 +1064,53 @@ def work_packages_field(text: str) -> tuple[list[str] | None, str | None]:
     return items, None
 
 
+def record_version_problem(path: str, version: str, commit_id, read_at, head_data: bytes | None) -> str | None:
+    """CT-FIX-04 (İ2), shared by CT-FIX-05 (F2): None when `version` is 7–40 hex, commit_id(version) resolves it to a
+    commit object that starts with it (a tree or blob id, or a branch named like an id, does not), and that commit holds
+    the file with exactly head_data's bytes (read_at(commit, path) -> bytes | None); else the problem."""
+    if not re.fullmatch(r"[0-9a-f]{7,40}", version):
+        return f"sürüm '{version[:20]}' bir commit kimliği değil (yol@7–40 haneli commit) — sürüm bağı bozuk"
+    if commit_id is None or read_at is None or head_data is None:
+        return f"sürüm {version[:12]} doğrulanamadı — sürüm bağı bozuk"
+    full = commit_id(version)
+    if full is None:
+        return f"sürüm {version[:12]} bu depoda bir commit değil (yok, ağaç/blob nesnesi ya da dal adı) — sürüm bağı bozuk"
+    vdata = read_at(full, path)
+    if vdata is None:
+        return f"sürüm {version[:12]} okunamıyor — commit yok ya da bu commit'te kayıt yok; sürüm bağı bozuk"
+    if vdata != head_data:
+        return f"sürüm {version[:12]}'deki kayıt şimdi denetlenen kayıtla aynı değil — sürüm bağı bozuk"
+    return None
+
+
+def local_commit_id(version: str) -> str | None:
+    """A hex id names a commit only when it resolves to a commit object that starts with it (never a branch)."""
+    if not re.fullmatch(r"[0-9a-f]{7,40}", version or ""):
+        return None
+    done = git("rev-parse", "--verify", "--quiet", "--end-of-options", f"{version}^{{commit}}")
+    full = done.stdout.decode().strip() if done.returncode == 0 else ""
+    return full if full.startswith(version) else None
+
+
+def reassessment_binding(text: str, path: str, rid: str, version: str | None) -> str | None:
+    """CT-FIX-05 (F2 (b), joint decision): an approved reassessment record opens a -R<n> (n >= 3) retry only when its
+    künye's one work_packages line lists that retry's id exactly (W2-R3, not W2, not another WP) and, when the row
+    names a version (path@commit), that commit holds the same record. Whether the decision resolves the cause stays
+    the CT's judgement."""
+    if version is not None:
+        bad = record_version_problem(path, version, local_commit_id, git_file, text.encode("utf-8"))
+        if bad:
+            return f"yeniden değerlendirme kaydının {bad}"
+    items, bad = work_packages_field(text)
+    if bad:
+        return f"yeniden değerlendirme kaydının work_packages alanı geçersiz — {bad}"
+    if items is None:
+        return f"yeniden değerlendirme kaydı bu tekrara açıkça bağlı değil — künyede work_packages yok; {rid} tam listelenmeli"
+    if rid not in items:
+        return f"yeniden değerlendirme kaydının work_packages alanı {rid}'yi listelemiyor ({', '.join(items)[:60]})"
+    return None
+
+
 def governance_binding(text: str, path: str, wp: str | None, row: dict | None, commit_id=None, read_at=None,
                        head_data: bytes | None = None) -> str | None:
     """None when the record is bound to this WP explicitly (SOP §20.2, CT-FIX-04), else the problem. A row `record` that
@@ -1041,18 +1122,9 @@ def governance_binding(text: str, path: str, wp: str | None, row: dict | None, c
     rpath, at, version = record.partition("@")
     by_row = rpath.strip() == path
     if by_row and at:
-        if not re.fullmatch(r"[0-9a-f]{7,40}", version):
-            return f"satırın record sürümü '{version[:20]}' bir commit kimliği değil (yol@7–40 haneli commit) — sürüm bağı bozuk"
-        if commit_id is None or read_at is None or head_data is None:
-            return f"satırın record sürümü {version[:12]} doğrulanamadı — sürüm bağı bozuk"
-        full = commit_id(version)
-        if full is None:
-            return f"satırın record sürümü {version[:12]} bu depoda bir commit değil (yok, ağaç/blob nesnesi ya da dal adı) — sürüm bağı bozuk"
-        vdata = read_at(full, path)
-        if vdata is None:
-            return f"satırın record sürümü {version[:12]} okunamıyor — commit yok ya da bu commit'te kayıt yok; sürüm bağı bozuk"
-        if vdata != head_data:
-            return f"satırın record sürümü {version[:12]}'deki kayıt Expected HEAD'de denetlenen kayıtla aynı değil — sürüm bağı bozuk"
+        bad = record_version_problem(path, version, commit_id, read_at, head_data)
+        if bad:
+            return f"satırın record {bad}"
     items, bad = work_packages_field(text)
     if bad:
         return f"kapsam kaydının work_packages alanı geçersiz — {bad}"
@@ -1093,9 +1165,58 @@ def pack_approval_limit(text: str) -> tuple[str | None, str | None]:
     return None, None
 
 
+# CT-FIX-05 (E1, joint decision): the one decision of a pack's second approval field per mode — the reader is
+# pack_approval_limit. 'ok' nothing to say; 'note' prepare / draft go on and print the limit; 'review' no new automatic
+# acceptance (the conditional scope cannot be checked by a tool) — old acceptances are not touched; 'stop' everywhere
+# for a rejected, unknown or unreadable field, and for a new dispatch from a conditional one.
+APPROVAL_MODES = ("dispatch", "prepare", "accept", "draft")
+
+
+def pack_approval_decision(text: str, mode: str) -> tuple[str, str | None]:
+    if mode not in APPROVAL_MODES:
+        raise ValueError(f"unknown approval mode {mode!r}")
+    limit, stop = pack_approval_limit(text)
+    if stop:
+        return "stop", stop
+    if limit is None:
+        return "ok", None
+    if mode == "dispatch":
+        return "stop", (f"paket koşullu onaylı — {limit}: status tek başına bu iş için yetki değil, kapsam türetilmez; "
+                        "yeni dağıtım için paketin kapsamı ve onayı önce pakette netleşir")
+    if mode == "prepare":
+        return "note", f"paket koşullu onaylı — {limit} — HAZIRLIK: yeni dağıtımda ENGEL olur; paketin kapsamı ve onayı önce pakette netleşir"
+    if mode == "draft":
+        return "note", f"paket koşullu onaylı — {limit}: taslak hazırlık içindir, kabul ya da dağıtım değildir"
+    return "review", (f"paket koşullu onaylı — {limit}: kabulün koşullu kapsamın içinde olduğu bir araçla doğrulanamaz — "
+                      "yeni otomatik kabul yok, inceleme gerekir (eski kabuller değişmez)")
+
+
 # CT-FIX-04 (İ3, Codex): the MOD id a pack file name starts with ends at '-' or at '.md' — 'MOD-02880-…' and
 # 'MOD-0288X-…' name no module (an id is never cut out of a longer token); an FU suffix belongs to the id only whole
 PACK_FILE_ID = re.compile(r"^(MOD-\d{4}(?:-FU\d+)?)(?=-|\.md$)")
+# CT-FIX-05 (C2, v6 audit): the file name's FULL pack id — its upper-case id segments before the lower-case slug
+# ('MOD-0155-FU06B-activity-time-budget.md' -> 'MOD-0155-FU06B') — is the künye id exactly, before the parent
+# relation; measured 2026-10-17: 139 of the 140 MOD packs with a künye id follow it (MOD-0021's plan does not)
+PACK_FILE_FULL_ID = re.compile(r"^(MOD-\d{4}(?:-[A-Z0-9]+)*)(?=-[a-z0-9]|\.md$)")
+
+
+def pack_module_identity(pid: str) -> tuple[str | None, str | None]:
+    """CT-FIX-05 (C2, Codex): the module a pack's künye id names — the id itself in the MOD_VALUE form (MOD-nnnn,
+    MOD-nnnn-FUn), a child id's parent by verify_module_id.split_id (MOD-0155-FU06B -> MOD-0155) — one resolution for
+    the gate (pack_identity) and the acceptance reader (parse_pack); no other grammar. (identity, None) or (None, problem)."""
+    if MOD_VALUE.fullmatch(pid):
+        return pid, None
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("verify_module_id_ident", ROOT / ".antigravity" / "scripts" / "verify_module_id.py")
+    vmi = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vmi)
+    try:
+        base, parent = vmi.split_id(pid)
+    except Exception:
+        base, parent = None, None
+    if not base or not parent or not re.fullmatch(r"MOD-\d{4}", base):
+        return None, f"paketin künye id'si '{pid[:40]}' bir modül kimliği değil"
+    return base, None
 
 
 def pack_identity(path: str, text: str, module_ids: list[str]) -> str | None:
@@ -1108,24 +1229,14 @@ def pack_identity(path: str, text: str, module_ids: list[str]) -> str | None:
     pid = fields["id"]
     if not pid:
         return "paketin künyesinde id yok"
-    if MOD_VALUE.fullmatch(pid):
-        identity = pid
-    else:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("verify_module_id_ident", ROOT / ".antigravity" / "scripts" / "verify_module_id.py")
-        vmi = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(vmi)
-        try:
-            base, parent = vmi.split_id(pid)
-        except Exception:
-            base, parent = None, None
-        if not base or not parent or not re.fullmatch(r"MOD-\d{4}", base):
-            return f"paketin künye id'si '{pid[:40]}' bir modül kimliği değil"
-        identity = base
-    file_id = PACK_FILE_ID.match(os.path.basename(path))
-    if not file_id or file_id.group(1) != identity:
+    identity, bad = pack_module_identity(pid)
+    if bad:
+        return bad
+    full = PACK_FILE_FULL_ID.match(os.path.basename(path))
+    if not full or full.group(1) != pid:
+        # CT-FIX-05 (C2): the whole id, not only its module base — FU06B in the name and FU07B in the künye differ
         return (f"paketin künye id'si {pid} dosya adındaki kimlikle "
-                f"({file_id.group(1) if file_id else 'yok'}) aynı değil — {os.path.basename(path)}")
+                f"({full.group(1) if full else 'yok'}) aynı değil — {os.path.basename(path)}")
     if identity not in module_ids:
         return f"paket {pid} bu işin modülüne ({', '.join(module_ids) or 'yok'}) ait değil"
     return None
@@ -1390,6 +1501,18 @@ def self_test() -> int:
                   "MOD-0151-FU08-x with id MOD-0151; id MOD-02880-PREREQ -> refused each",
                   all(pk(n, i) for n, i in (("MOD-02880-x.md", "MOD-0288"), ("MOD-0288X-x.md", "MOD-0288"), ("MOD-0288-x.md", "MOD-0289"),
                                              ("MOD-0151-FU08-x.md", "MOD-0151"), ("MOD-02880-PREREQ-x.md", "MOD-02880-PREREQ")))))
+    cases.append(("CT-FIX-05 C2: the file's full pack id is the künye id — FU06B file with id FU07B, or with the base id, refused; "
+                  "MOD-0021's plan (file MOD-0021-…, id MOD-0021-PLAN) refused (measured real-data effect)",
+                  pk("MOD-0155-FU06B-x.md", "MOD-0155-FU07B") and pk("MOD-0155-FU06B-x.md", "MOD-0155")
+                  and pk("MOD-0021-all-phases-implementation-plan.md", "MOD-0021-PLAN") and pk("MOD-0288-AUDIT-ledger.md", "MOD-0288")
+                  and pk("MOD-0155-FU06B-x.md", "MOD-0155-FU06B") is None and pk("MOD-0288-2fa-setup.md", "MOD-0288") is None))
+    cond_t = "---\nstatus: approved\napproval_status: conditionally-approved-for-x\n---\n"
+    rej_t = "---\nstatus: approved\napproval_status: rejected\n---\n"
+    cases.append(("CT-FIX-05 E1: one decision per mode — conditional: dispatch stop, prepare note, accept review, draft note; "
+                  "rejected: stop in every mode; none: ok",
+                  [pack_approval_decision(cond_t, m)[0] for m in APPROVAL_MODES] == ["stop", "note", "review", "note"]
+                  and all(pack_approval_decision(rej_t, m)[0] == "stop" for m in APPROVAL_MODES)
+                  and all(pack_approval_decision("---\nstatus: approved\n---\n", m) == ("ok", None) for m in APPROVAL_MODES)))
     cases.append(("CT-FIX-04: a second approval field — none or 'approved' -> no limit; conditional / rejected / twice -> limit",
                   pack_approval_limit("---\nstatus: approved\n---\n") == (None, None)
                   and pack_approval_limit("---\nstatus: approved\napproval_status: approved\n---\n") == (None, None)
@@ -1406,6 +1529,12 @@ def self_test() -> int:
                   and status(f"{head}\n{confirmed_row}\n") == "farklı profil"
                   and "farklı profil" in PROFILE_CONFLICT and "onaysız" not in PROFILE_CONFLICT))
     cases.append(("sabotage: header and id only -> kayıt geçersiz, not kayıtlı", status("queue_id\npq\n") == "kayıt geçersiz"))
+    other_same_path = good_row.replace("pq\tX CT", "pq2\tY CT", 1)
+    cases.append(("CT-FIX-05 F1: another queue on the same task file, or an unrelated broken row, makes the whole file invalid -> "
+                  "kayıt geçersiz (the file is validated before one queue is picked)",
+                  status(f"{head}\n{good_row}\n{other_same_path}\n") == "kayıt geçersiz"
+                  and status(f"{head}\n{good_row}\n{good_row.replace('pq', 'zz', 1).replace('X only', '')}\n") == "kayıt geçersiz"
+                  and status(f"{head}\n{good_row}\n{good_row.replace('pq', 'zz', 1).replace('q.tsv', 'z.tsv')}\n") == "onaysız"))
     cases.append(("sabotage: the queue registered twice -> kayıt geçersiz", status(f"{head}\n{good_row}\n{good_row}\n") == "kayıt geçersiz"))
     cases.append(("sabotage: a required field empty -> kayıt geçersiz",
                   status(f"{head}\n{good_row.replace('X only', '')}\n") == "kayıt geçersiz"))
@@ -1456,10 +1585,24 @@ def self_test() -> int:
     cases.append(("sabotage: -R3 without a reassessment record -> refused (SOP §28.2)",
                   any("§28.2" in e for e in errs(ok_rows + "W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t-\n"))))
     rec_ok = "docs/records/decisions/2026-10/ct-new-ct-standards-owner-decision-01.md"
-    r3 = lambda rec: errs(ok_rows + f"W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t{rec}\n")
+    # CT-FIX-05 (F2 (b), declared fixture change): a reassessment record now lists the retry in work_packages; the real
+    # decision record above does not (it is historical and is not changed), so the record text comes from a reader
+    r3_texts = {rec_ok: "---\nstatus: approved\nwork_packages: W1-R3\n---\nreassessed\n"}
+    prof_r3 = dict(prof, read_file=lambda rel: r3_texts.get(rel))
+    r3 = lambda rec, pr=prof_r3: check_queue(Table(h + ok_rows + f"W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t{rec}\n"),
+                                            b7, v7, strict=True, profile=pr)["errors"]
     cases.append(("-R3 naming an existing decision record -> accepted; a path escaping docs/records/decisions/ -> refused",
                   not r3(rec_ok) and any("§28.2" in e for e in r3("docs/records/decisions/../../AGENTS.md"))
                   and any("§28.2" in e for e in r3("docs/records/decisions/2026-10"))))
+    with_text = lambda text: dict(prof, read_file=lambda rel: text if rel == rec_ok else None)
+    cases.append(("CT-FIX-05 F2 (b): an approved reassessment record that does not list the retry exactly -> refused "
+                  "(no work_packages; W1; another WP; W1-R3 twice; an empty element)",
+                  all(any("§28.2" in e and "W1-R3" in e for e in r3(rec_ok, with_text(f"---\nstatus: approved\n{wp}---\nx\n")))
+                      for wp in ("", "work_packages: W1\n", "work_packages: UNRELATED-WP\n", "work_packages: W1-R3, W1-R3\n",
+                                 "work_packages: W1-R3,,W2\n"))
+                  and not r3(rec_ok, with_text("---\nstatus: approved\nwork_packages: W2, W1-R3\n---\nx\n"))))
+    cases.append(("CT-FIX-05 F2: a reassessment record@version that is not hex is refused, never cut off",
+                  any("sürüm" in e and "§28.2" in e for e in r3(rec_ok + "@not-a-commit"))))
     refusing = dict(prof, acceptance=lambda row: [f"kabul kaydı {row.get('record')}: ENGEL zorunlu ölçüt kaldı"])
     acc_errs = check_queue(Table(h + ok_rows), b7, v7, strict=True, profile=refusing)
     cases.append(("CT-OPS-03: an ACCEPTED row whose acceptance record does not allow ACCEPTED -> HATA on that row",
@@ -1468,20 +1611,22 @@ def self_test() -> int:
     h2 = h.rstrip("\n") + "\treassessment_record\n"
     b2r = Table(h2)
     dec = "docs/records/decisions/2026-10/ct-new-ct-standards-owner-decision-01.md"
+    draft_dec = "docs/records/decisions/2026-10/ct-audit-corrections-2026-10-15-01.md"
+    y3_texts = {dec: "---\nstatus: approved\nwork_packages: W1-R3\n---\nreassessed\n", draft_dec: "---\nstatus: draft\nwork_packages: W1-R3\n---\n"}
+    prof_y3 = dict(prof, read_file=lambda rel: y3_texts.get(rel))       # CT-FIX-05: the record lists the retry
     base_rows = "W1\tx\tMOD-0288\tACCEPTED\tCT\t-\t-\t2026-10-15\taudits/k.md@abcdef1\t-\n"
     r3_ready = base_rows + f"W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t-\t{dec}\n"
     r3_acc = base_rows + f"W1-R3\tfix\tMOD-0288\tACCEPTED\tCT\tW1\t-\t2026-10-15\taudits/k3.md@abcdef1\t{dec}\n"
-    cq = lambda rows: check_queue(Table(h2 + rows), b2r, v7, True, prof)["errors"]
+    cq = lambda rows: check_queue(Table(h2 + rows), b2r, v7, True, prof_y3)["errors"]
     cases.append(("Y3 + CT-OPS-03: a -R3 READY row with its reassessment in reassessment_record -> no error", not cq(r3_ready)))
     cases.append(("Y3 + CT-OPS-03: a -R3 ACCEPTED row (acceptance in record, reassessment in its own column) -> no error", not cq(r3_acc)))
     cases.append(("sabotage (Y3): a -R3 ACCEPTED row without a reassessment decision -> refused (SOP §28.2)",
                   any("§28.2" in e for e in cq(r3_acc.replace(f"\t{dec}\n", "\t-\n")))))
-    draft_dec = "docs/records/decisions/2026-10/ct-audit-corrections-2026-10-15-01.md"
     cases.append(("sabotage (Y3): a reassessment record that is not an approved / decided decision -> refused (SOP §28.2)",
                   any("§28.2" in e for e in cq(r3_ready.replace(dec, draft_dec)))))
     # CT-OPS-04: the module and decision data can come from a fixed commit instead of the working tree
     only_sha = "docs/records/decisions/2026-10/only-in-the-fixed-commit.md"
-    texts = {only_sha: "---\nstatus: approved\n---\n"}
+    texts = {only_sha: "---\nstatus: approved\nwork_packages: W1-R3\n---\n"}
     prof_sha = dict(prof, read_file=lambda rel: texts.get(rel))
     cq_sha = lambda rows, pr=prof_sha: check_queue(Table(h2 + rows), b2r, v7, True, pr)["errors"]
     r3_sha = base_rows + f"W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t-\t{only_sha}\n"
@@ -1831,10 +1976,24 @@ def main() -> int:
         result = []
         for q in queues:
             cur = Table(decode(current_bytes(q, a.ref), q["path"]))
-            broken = structure_errors(cur, baseline(q))
+            base = baseline(q)
+            broken = structure_errors(cur, base)
             if broken:
                 fail(f"DUR: {q['queue_id']} kuyruğu okunamıyor — {broken[0]}")
-            result.append(summarize(cur, vocabulary(states, q["vocabulary"]), q))
+            vocab = vocabulary(states, q["vocabulary"])
+            # CT-FIX-05 (F2, Codex): the same checks require makes, so the count is what require accepts
+            try:
+                profile, profile_error = build_profile(q, vocab, states, a.ref), None
+            except ProfileError as e:
+                profile, profile_error = None, str(e)
+            _, _, checked = require_decision(q, vocab, cur, base, "\0", False, profile, profile_error,
+                                             history=lambda: history_errors(q, profile, a.ref))
+            blocked = None
+            if checked is None:
+                blocked = f"katı kuyruk profili kurulamadı — {profile_error}" if profile_error else "kuyruk denetlenemedi"
+            elif q.get("strict") == "yes" and checked["global"]:
+                blocked = f"katı kuyrukta bir işe bağlanmayan doğrulama hatası — {checked['global'][0]}"
+            result.append(summarize(cur, vocab, q, checked, blocked))
         if a.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:

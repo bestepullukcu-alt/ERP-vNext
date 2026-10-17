@@ -133,7 +133,8 @@ implementer: geliştirme ajanının kimliği
 | `completion` | WP Done · Module Done · Capability Done · Release Done · `yok`. Karardan türetilmez; `conditional` ve `rejected` kararda `yok` |
 | `conditions` | Yalnız `conditional` kararda: her koşul `ne · sahip · YYYY-AA-GG`, birden çoksa `;` ile. Diğerlerinde `-` |
 | `commit` | Doğrulanan kod ağacının commit'i. Kaydın kendisi ayrı bir commit'te durur; kuyruğun `record` sütunu onu `yol@commit` ile gösterir |
-| `evidence`, `acceptance_list` | Commit'lenmiş `yol@commit`; kabul listesi §6.2 biçimindedir |
+| `evidence` | Koşu kaydı (CT-FIX-05): `scripts/run_record.py run --out docs/records/audits/<…>/<yeni dizin> -- <komut>` ile yazılan `<koşu dizini>/run-record-v1.json@<commit>`. Koşu kaydının `commit` alanı, kabul künyesindeki kod `commit` alanıyla birebir aynıdır (eski kanıt yeni kodu kabul ettirmez); koşu dizini kod commit'inde yoktu; koşucu özeti o commit'teki `scripts/run_record.py`'nin özetidir; ham çıkış 0 değilse otomatik kabul yoktur (inceleme; bilinen-kırmızı politikası ayrı bir karardır). Kanıtın commit'i koddan yalnız koşu dizini ve yeni kabul belgeleriyle ayrılır |
+| `acceptance_list` | `docs/records/audits/` altında `yol@commit`; §6.2 biçimi. Kabul kaydı da bu köktedir |
 | `supersedes` | `-` ya da aynı kuyruk + WP + modülün önceki kaydının yolu. Döngü olmaz; iş başına tek yetkili kayıt vardır. En yüksek E seviyesi ya da dosya sırası seçim ölçütü değildir |
 | `verifier`, `implementer` | Farklı olur (SOP K13). Beyandır, kimlik doğrulaması değildir |
 | `module_pack` | İsteğe bağlı; yazılırsa bir kez. Kaydın kapsadığı onaylı paket sürümü: `execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit>`. Dosya adının başındaki MOD kimliği, paketin künye `id`'si ve kaydın `module`'ü aynı kimliktir. Yazılırsa kabul listesi yalnız o sürümün ölçütlerinden oluşur: her satır paketin bir `AC-<n>`'si, "Ne kontrol edilir" metni ve "Zorunlu" bayrağı paketle birebir, en az bir AC; bir WP modülün AC'lerinin yalnız kendi alt kümesini teslim edebilir (modülün kapsamını `module-check` ölçer). Yardımcı satır (K1, CHECK-… gibi) bu listede reddedilir, sessizce atlanmaz; yardımcı denetim ayrı kanıtta durur (CT-FIX-04). Yazılmazsa davranış değişmez: bağsız kayıt eski sınırla kalır ve `module-check` onu saymaz |
@@ -154,11 +155,19 @@ listesinin ve kanıtın anlamca yeterli olduğuna bağımsız doğrulayıcı ve 
 |---|---|---|---|---|---|---|---|---|---|
 
 - İlk yedi sütunu `product-owner` yazar; son üç sütunu bağımsız doğrulayıcı doldurur.
-- `Ekran mı` ve `Zorunlu`: `evet` ya da `hayır`. `Sonuç`: `geçti` · `kaldı` · `denenmedi` · `N/A — <gerekçe>`.
-- `geçti` satırında gerçek sonuç yazılıdır ve kanıt `yol@commit:satır` ya da içinde kriter kimliği geçen `yol@commit`
-  olur. Gerçek sonuçsuz ya da kanıtsız "geçti" kanıt değildir.
+- `Ekran mı` ve `Zorunlu`: `evet` ya da `hayır`. `Sonuç`: `geçti` · `kaldı` · `denenmedi` · `inceleme bekler — <neden>`
+  (uygulanabilir ama otomatik kanıtlanamayan ölçüt; açık sayılır) · `N/A — <gerekçe>` (yalnız gerçekten uygulanamayan).
+- `geçti` satırında gerçek sonuç yazılıdır ve kanıt koşu kaydının bir artefaktıdır (`<koşu dizini>/<dosya>@commit:satır`
+  ya da içinde kriter kimliği geçen `<koşu dizini>/<dosya>@commit`); baytı ve boyutu kayıttakiyle aynıdır. Gerçek
+  sonuçsuz, kanıtsız ya da koşunun üretmediği bir dosyaya dayanan "geçti" otomatik kabul kanıtı değildir.
 - Başlıktan sonra ayırıcı satır gelir; tablonun dışında ölçüt satırı kalmaz; boş liste olmaz.
-- `accepted` karar için zorunlu ölçütlerin hepsi `geçti` ya da gerekçeli `N/A` olur.
+- `accepted` karar için zorunlu ölçütlerin hepsi `geçti` ya da gerekçeli `N/A` olur; inceleme bekleyen zorunlu ölçüt
+  varken otomatik kabul yoktur.
+- **Sınır (CT-FIX-05 F3):** koşu kaydı artefaktların taze bir dizinde o kod commit'inde üretildiğini denetler; komutun
+  ölçütü anlamca ölçtüğünü (bağımsız inceleme), koşu sırasında değiştirilip geri alınan bir kaynağı, ignore edilen
+  dosyaları ve elle tutarlı biçimde yeniden yazılmış bir kaydın özgünlüğünü kanıtlamaz (kriptografik değildir). Koşucu
+  hiçbir şeyi stage ya da commit etmez; ham çıktı özel bilgi taşıyabilir ve yayından önce mevcut arındırma incelemesinden
+  geçer.
 - Mevcut senaryo dosyaları değişmez; bu biçim yeni kabul listeleri içindir.
 - `ID` bir paket ölçütünü kapatıyorsa paketteki `AC-<n>` kimliğidir (yeni paketler, `module-pack-standard.md` §7).
 
@@ -172,7 +181,10 @@ olan ve künyesinde `module_pack` ile tam bu sürümü gösteren yetkili kabul k
 olmayan, kimliksiz ya da bozuk biçimli paket; geçersiz kuyruk). Aynı AC kimliği paketin başka sürümünde başka anlam
 taşıyabilir; sürüm bağı olmayan kayıt bu yüzden sayılmaz. Paket, dosya adındaki MOD kimliği künye `id`'siyle ve modülle
 aynı değilse de ölçülemez (2); gerekli kanıt seviyesinin kaynağı bir Module Pack ise aynı kimlik denetimi orada da
-uygulanır (CT-FIX-04).
+uygulanır (CT-FIX-04). Child pack (ör. `MOD-0155-FU06B`) parent modülün (`MOD-0155`) kaydında okunur; dosya adındaki tam
+kimlik künyeninkiyle birebir aynıdır (CT-FIX-05 C2). Paketin `approval_status`'u koşulluysa yeni otomatik kabul yoktur
+(`check` 1, inceleme; `module-check` 2) ama liste taslağı sınırı yazarak üretilir; reddedilmiş ya da okunamayan alan her
+kipte durur. Eski kabuller değişmez (CT-FIX-05 E1).
 
 ---
 
@@ -210,8 +222,9 @@ python3 scripts/status_report.py --mode v2 --queue <kuyruk> [--ref <ref>] [--eff
 - **Çıkış (CT-FIX-04):** 0 = rapor tam (efor tabanı hiç verilmemiş ve varsayılan yolda yoksa "Taban yok —
   hesaplanamadı" desteklenen bir sonuçtur ve rapor tamdır); 1 = rapor basıldı ama eksik — neden makine bloğunun
   `incomplete_reasons` alanında ve "tamamlık: eksik — …" satırında: kuyruk, kayıt, profil ya da kabul sorunu, `--effort`
-  ile verilmiş ama bulunmayan taban, var olan ama geçersiz taban (onay draft, özet yanlış, biçim bozuk); 2 = sabit kaynak
-  okunamadı ya da kuyruk o SHA'da kayıtlı bir katı kuyruk değil.
+  ile verilmiş ama bulunmayan taban, var olan ama geçersiz taban (onay draft, özet yanlış, biçim bozuk), `--previous` ile
+  verilmiş ama doğrulanamayan önceki rapor (CT-FIX-05 F6); 2 = sabit kaynak okunamadı ya da kuyruk o SHA'da kayıtlı bir
+  katı kuyruk değil.
 
 **Efor tabanı (isteğe bağlı).** Yoksa her yüzde alanı tam olarak "Taban yok — hesaplanamadı" yazar. Varsa
 `execution/delivery/effort/<kuyruk>.md` (ya da `--effort`), şablon `execution/delivery/effort-ledger-template.md`:

@@ -27,6 +27,9 @@ there must give the same single target — the same confirmed row (same task fil
 authoritative with the same slice scope, and for --module no other queue covering the module; a contract also needs
 the same single authoritative pack there. A WP question keeps its queue on main too.
 
+A row that origin/main registers differently (profile, task file, owner confirmation; CT-FIX-04 İ1) gives no target
+in either mode; a main registry that cannot be validated is 'not measurable' (plain: said so, --in-force: exit 2).
+
 exit 0  one target found. It is not a permission to develop or dispatch. With --in-force, 0 only when in force.
 exit 1  no single target: none, ambiguous, before approval or not in force — ask the coordinator; nothing is guessed
 exit 2  not measurable: malformed or unreadable input (registry, prefix, DCP, table, queue, contacts) or an unexpected error
