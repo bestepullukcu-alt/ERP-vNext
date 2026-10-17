@@ -1,0 +1,63 @@
+---
+module: TOOLING
+work_package: WP-LANE-MAIN-SYNC-05
+evidence_level: E4
+decision: conditional
+commit:
+---
+
+# MOD-0147 / MOD-0148 (Supplier) readiness — draft, zero code, DEV lane blocked on DC-01…DC-05
+
+    item      : Supplier Performance & Risk (0147) + Supplier Portal (0148) · owner: named DC owners + CT
+    author    : CT (gmg-10)
+    measured  : 2026-10-18 from the packs, the DC ruling, and the tree
+    verdict   : the LEAST-ready MVP-6 modules — not "undeveloped" but "development not yet authorised." Both
+                are `draft` with no runtime code and a blocked DEV lane; the blocker is owner/governance
+                (DC-01…DC-05), not CT code.
+
+## Measured state
+
+| | MOD-0147 Supplier Performance & Risk | MOD-0148 Supplier Portal |
+|---|---|---|
+| pack status | **draft** | **draft** |
+| backend | **none** | **none** |
+| UI | **none** | **none** |
+| effort | **unestimated** | **unestimated** |
+
+Both pack front-matters: *"Phase A specification draft only; no runtime code or service-scaffold
+authority."* A tree search for 0147/0148 backend or UI code returns nothing.
+
+## Why the DEV lane is blocked — DC-01…DC-05
+
+`docs/records/decisions/2026-10/mvp6-ct-ruling-dc01-dc05-concurrence-01.md` (CT ruling, 2026-10-05):
+
+- The owner's `OD-Q19 A` is **not concurrence** for any of DC-01…DC-05 — it is *"a release to solicit, not
+  a concurrence."* For all five, the project owner is "another owner"; each must go to its **named** owner.
+- Each DC needs **a new producer seam, not a signature**: DC-01 durable domain ownership, DC-02 authority
+  to consume the contract (AWAITING-CT), DC-03 binding resolution + trusted LE issuance, DC-04 a live
+  Metric Registry with immutable revisions, DC-05 an immutable taxonomy revision + scoped portal resolver.
+  None of these upstream capabilities exists.
+- Explicit: *"Governance amendment, pack promotion to `ready-for-dev`, and any DEV lane remain blocked."*
+- CT recommendation: pursue **DC-01 first and alone** (the cheapest, releases one governance-diff lane);
+  the owner may overrule.
+
+The SUPPLIER-BASE contract (`supplier.openapi.yaml`, FROZEN) exists and answers *who a supplier is*; the
+five DCs decide *who owns the policy, authority and boundary* — and the pack records "SUPPLIER v1 coverage:
+none" for DC-01/DC-04. So a frozen contract does not make these modules buildable.
+
+## Side finding (folded into the pin reconciliation)
+
+The packs pin SUPPLIER-BASE at `c8badff96…` / 2026-09-15, but the file is now **v1.2.0 /
+`373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7`** — a third instance of the pack-pin
+drift. Recorded in `mvp6-pack-pin-reconciliation-01/RECONCILIATION.md` §C as **low priority** (the packs
+are draft, nothing consumes it yet; re-pin when they promote to `ready-for-dev`).
+
+## CT action: none
+
+No code, no CT-ownable decision. The path to readiness is entirely owner/governance: close DC-01…DC-05 with
+their named owners (CT recommends DC-01 first), which promotes the packs to `ready-for-dev` and unblocks a
+DEV lane. Only then does "develop MOD-0147/0148" become actionable work.
+
+## Files
+
+- `STATUS.md` — this verification.

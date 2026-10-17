@@ -88,6 +88,23 @@ This is the first reconciliation that also records the **method**: a contract re
 "today" row in the same change as the contract bump, or the pins drift — which is exactly what `1ccbc49b7`
 (3.1.0→3.2.0) did not do.
 
+## C. SUPPLIER-BASE (MOD-0147 / MOD-0148) — same drift, lower priority (packs are `draft`)
+
+Added 2026-10-18 while checking 0147/0148 readiness. `docs/analysis/contracts/supplier.openapi.yaml` is now
+**v1.2.0**, SHA-256 `373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7`, but MOD-0147 and
+MOD-0148 pin it as `c8badff96…` / 2026-09-15 (pre-1.2.0 — the `1.1.0 → 1.2.0` additive delete/bulk-delete
+note is on the file). So the supplier contract is a third instance of the same pin drift.
+
+| contract | pack pin (0147/0148) | canonical now |
+|---|---|---|
+| `supplier.openapi.yaml` | `c8badff96…` (2026-09-15) | **v1.2.0 / `373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7`** |
+
+**Priority: low.** Both packs are `draft` with no code and a blocked DEV lane (DC-01…DC-05; see
+`mvp6-supplier-0147-0148-readiness-01`), so nothing consumes this pin yet. Reconcile it **when the packs
+promote to `ready-for-dev`** (the pin should be current at the moment consumption is authorised), or fold it
+into this pass if the pack owners are already editing those files. The additive 1.1.0→1.2.0 change means the
+re-pin, like A and B, binds the pack to content it should re-confirm.
+
 ## Files
 
 - `RECONCILIATION.md` — this inventory. No pack edits are applied; re-binding is the pack owners' acceptance.
