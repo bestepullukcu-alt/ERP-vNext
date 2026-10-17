@@ -21,7 +21,7 @@
       {
         "path": "CLAUDE.md",
         "max_bytes": 2000,
-        "forbidden_regex": ["(?m)^\\s*@AGENTS\\.md\\b"]
+        "forbidden_import": ["AGENTS.md"]
       }
     ],
     "core": {

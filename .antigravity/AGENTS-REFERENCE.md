@@ -202,9 +202,10 @@ Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated
 
 ## Yükleme mimarisi (tarihçe)
 
-bu dosyayı otomatik yüklemez** — yalnız `CLAUDE.md`'yi yükler. 2026-09-08'de
-canlı oturumda ölçüldü: bağlamdaki tek proje dosyası `MEMORY.md`'ydi; bu dosya da,
-`.antigravity/` altındaki 41 kural / 20 ajan / 18 akış da yoktu.
+**Claude Code `AGENTS.md`'yi otomatik yüklemez** — yalnız `CLAUDE.md`'yi yükler. 2026-09-08'de
+canlı oturumda ölçüldü: bağlamdaki tek proje dosyası `MEMORY.md`'ydi; `AGENTS.md` de,
+`.antigravity/` altındaki kural, ajan ve akış dosyaları da yoktu (o günkü git ağacında 38–40 kural,
+20 ajan, 18 akış; İ5B-FIX-03'te git geçmişinden sayıldı).
 
 Bu yüzden repo kökünde **kısa bir `CLAUDE.md`** durur ve tek işi okuyucuyu buraya
 göndermektir. Sembolik bağ denendi ve **geri alındı**: ekipte Windows kullanan var, ve

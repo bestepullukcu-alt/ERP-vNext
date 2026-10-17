@@ -18,6 +18,10 @@ Rules this script enforces (İ5-A pilot):
   .claude/rules/agents-core.md, so Claude Code loads the binding rules without importing all of AGENTS.md.
   The manifest's instruction_budget also fails --check when AGENTS.md exceeds its byte limit (Antigravity truncates
   at 24000), loses a § heading or a core rule, when CLAUDE.md imports AGENTS.md, or when a listed file has a dead link.
+- İ5B-FIX-03 (v4 audits, V4A-F1 / V4B-B5): a link is any inline link (also with a title or in angle brackets) or
+  reference definition; an import is any '@path' outside code naming the forbidden file (also '@./AGENTS.md' or in a
+  sentence); a core rule only inside an HTML comment is lost; a budget problem stops the write before any file is
+  written.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -49,6 +53,60 @@ def read_text(path: str) -> str:
     if not p.is_file():
         raise ConfigError(f"source not found: {path}")
     return p.read_text(encoding="utf-8").replace("\r\n", "\n")
+
+
+# İ5B-FIX-03 (V4A-F1): the link and import grammar of the instruction files
+LINK_TITLE = r"""(?:\s+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?"""
+INLINE_LINK = re.compile(r"\]\(\s*(<[^>\n]*>|[^)\s]+)" + LINK_TITLE + r"\s*\)")
+REFERENCE_DEF = re.compile(r"^ {0,3}\[[^\]\n]+\]:[ \t]*(<[^>\n]*>|\S+)" + LINK_TITLE + r"[ \t]*$", re.M)
+IMPORT = re.compile(r"(?<!\w)@([^\s`]+)")
+FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+HTML_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
+
+
+def link_targets(text: str) -> list[str]:
+    """Every link destination: inline links (a title or angle brackets allowed) and reference definitions."""
+    found = [m.group(1) for m in INLINE_LINK.finditer(text)] + [m.group(1) for m in REFERENCE_DEF.finditer(text)]
+    return [t[1:-1] if t.startswith("<") and t.endswith(">") else t for t in found]
+
+
+def outside_code(text: str) -> list[tuple[int, str]]:
+    """(line number, text) of the lines Claude Code reads imports from: closed fenced blocks (same mark, at least the
+    same length) and inline code spans are blanked; an unclosed fence hides nothing."""
+    lines = text.split("\n")
+    hidden: set[int] = set()
+    i = 0
+    while i < len(lines):
+        m = FENCE_OPEN.match(lines[i])
+        if not m:
+            i += 1
+            continue
+        mark = m.group(1)
+        close = next((j for j in range(i + 1, len(lines))
+                      if re.match(rf"^ {{0,3}}{re.escape(mark[0])}{{{len(mark)},}}[ \t]*$", lines[j])), None)
+        if close is None:
+            break
+        hidden.update(range(i, close + 1))
+        i = close + 1
+    out = []
+    for n, line in enumerate(lines, start=1):
+        if n - 1 in hidden:
+            continue
+        out.append((n, re.sub(r"(`+)(?!`).*?(?<!`)\1(?!`)", " ", line)))
+    return out
+
+
+def forbidden_imports(text: str, names: list[str]) -> list[tuple[int, str]]:
+    """(line, '@token') for every import outside code whose file name is one of names (case-insensitive: a
+    case-insensitive file system resolves '@agents.md' to AGENTS.md)."""
+    wanted = {n.lower() for n in names}
+    hits = []
+    for n, line in outside_code(text):
+        for m in IMPORT.finditer(line):
+            token = m.group(1).split("#", 1)[0].rstrip(".,;:!?)]}>'\"")
+            if token.rsplit("/", 1)[-1].lower() in wanted:
+                hits.append((n, "@" + m.group(1)))
+    return hits
 
 
 def split_frontmatter(text: str) -> tuple[str | None, str]:
@@ -181,7 +239,8 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         text = raw.decode("utf-8")
         size = len(raw)
         if size > spec.get("max_bytes", 10 ** 9):
-            problems.append(f"OVERSIZE {path} is {size} bytes; limit {spec['max_bytes']} (Antigravity truncates AGENTS.md at 24000)")
+            note = " (Antigravity truncates AGENTS.md at 24000)" if path == "AGENTS.md" else ""
+            problems.append(f"OVERSIZE {path} is {size} bytes; limit {spec['max_bytes']}{note}")
         elif size > spec.get("warn_bytes", 10 ** 9):
             warnings.append(f"WARN {path} is {size} bytes; warning threshold {spec['warn_bytes']}")
         for heading in spec.get("required_headings", []):
@@ -190,6 +249,8 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         for pattern in spec.get("forbidden_regex", []):
             if re.search(pattern, text):
                 problems.append(f"FORBIDDEN {path} matches {pattern!r}")
+        for line, token in forbidden_imports(text, spec.get("forbidden_import", [])):
+            problems.append(f"FORBIDDEN {path}:{line} imports {token} (only the core block is loaded; see adapters.json)")
     core = budget.get("core")
     if core:
         try:
@@ -197,9 +258,11 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         except ConfigError as e:
             problems.append(f"CORE {e}")
         else:
+            visible = HTML_COMMENT.sub("", block)
             for needle in core.get("required_text", []):
-                if needle not in block:
-                    problems.append(f"CORE-RULE {core['source']} core block lost: {needle!r}")
+                if needle not in visible:
+                    hidden = " (only inside an HTML comment)" if needle in block else ""
+                    problems.append(f"CORE-RULE {core['source']} core block lost: {needle!r}{hidden}")
     for path in budget.get("link_check", []):
         p = rel(path)
         if not p.is_file():
@@ -207,8 +270,8 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
             # to skip — deleting .antigravity/AGENTS-REFERENCE.md would otherwise lose the moved text with a clean check.
             problems.append(f"MISSING {path} (link_check)")
             continue
-        for target in re.findall(r"\]\(([^)\s]+)\)", p.read_text(encoding="utf-8")):
-            if re.match(r"(https?:|mailto:|#)", target):
+        for target in link_targets(p.read_text(encoding="utf-8")):
+            if not target or re.match(r"(https?:|mailto:|#)", target):
                 continue
             if not (p.parent / target.split("#", 1)[0]).exists():
                 problems.append(f"DEADLINK {path} -> {target}")
@@ -243,6 +306,13 @@ def main() -> int:
         print(f"ERROR {e}")
         return 2
 
+    # İ5B-FIX-03 (V4B-B5): the instruction budget is read before anything is written — a budget problem writes nothing
+    budget_problems, budget_warnings = check_instruction_budget(manifest)
+    if budget_problems and not args.check:
+        for line in budget_warnings + budget_problems:
+            print(line)
+        print(f"FAIL {len(budget_problems)} instruction budget problem(s); nothing written")
+        return 1
     problems: list[str] = []
     for path, (source, content) in expected.items():
         target = rel(path)
@@ -266,7 +336,6 @@ def main() -> int:
             if r not in expected:
                 problems.append(f"UNMANAGED {r} is in a tool discovery folder but not in {MANIFEST}")
 
-    budget_problems, budget_warnings = check_instruction_budget(manifest)
     problems += budget_problems
     for line in budget_warnings:
         print(line)
