@@ -174,20 +174,32 @@ public class CiServiceTestsGuardTests
         }
     }
 
-    // Main sync FIX1 (CT decision D): no row starts a job-local mongod and no step hands the tests a Mongo address.
-    // Every service test owns its mongod (DITEN_TEST_MONGOD): Platform's PlatformTestMongo, MDM's MdmTestMongo (which
-    // ignores MDM_TEST_MONGO by design), Auth's owned replica set. A returning address variable would point a test at a
-    // server it did not start — the shape BL-595 removed — so any of them is red here. PLATFORM_COMPOSITION_GUARD_MONGO_URI
-    // too (WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 FIX1): the platform-composition-guard row uses its owned mongod.
+    // Main sync FIX1 (CT decision D, revised by BL-650): no row starts a job-local mongod INLINE in the workflow and
+    // no step hands the tests a Mongo address — the three text checks below still bind service-tests.yml itself. A row
+    // MAY start a job-local mongod, but only from a named script under scripts/test-env/ (planning-tests does, via
+    // mod0188-ci-mongo.sh; the SupplyChain CI row will), carrying its rationale beside the invocation — and the guard
+    // pins that every such script the workflow runs exists in the tree, so a row cannot point tests at a server through
+    // a script that is not here. Every service test still owns its mongod (DITEN_TEST_MONGOD): Platform's
+    // PlatformTestMongo, MDM's MdmTestMongo (which ignores MDM_TEST_MONGO by design), Auth's owned replica set; a
+    // returning address variable would point a test at a server it did not start (the shape BL-595 removed), so any of
+    // them is red here, PLATFORM_COMPOSITION_GUARD_MONGO_URI included (WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 FIX1).
     [Fact]
-    public void No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address()
+    public void A_job_local_mongod_starts_only_from_a_named_test_env_script_never_inline()
     {
         var code = Code(Workflow());
         foreach (var variable in new[] { "MONGO_TEST_URI", "MDM_TEST_MONGO", "Eventing__MongoDb__ConnectionString",
                      "MongoDbSettings__ConnectionString", "DITEN_PLATFORM_TEST_MONGO_URI", "PLATFORM_COMPOSITION_GUARD_MONGO_URI" })
             Assert.True(!Regex.IsMatch(code, $@"(?i)\b{variable}\b"), $"the workflow names {variable}: a test would be pointed at a server it did not start");
-        Assert.True(!Regex.IsMatch(code, @"(?i)--replSet|--dbpath|mongo_rs_initiate"), "a job-local mongod is started");
+        Assert.True(!Regex.IsMatch(code, @"(?i)--replSet|--dbpath|mongo_rs_initiate"), "the workflow starts a job-local mongod inline; start it from a named scripts/test-env/ script instead");
         Assert.True(!Regex.IsMatch(code, @"(?i)\bmongodb://"), "the workflow carries a Mongo address");
+
+        // BL-650: follow decision D into the script layer instead of stopping at the workflow text — every script the
+        // workflow runs from scripts/test-env/ must exist in the tree.
+        var root = RepoRoot();
+        var referenced = Regex.Matches(code, @"scripts/test-env/[A-Za-z0-9._-]+\.sh")
+            .Select(m => m.Value).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        foreach (var script in referenced)
+            Assert.True(File.Exists(Path.Combine(root, script)), $"the workflow runs {script}, which is not in the tree");
     }
 
     // BL-590: RabbitMQ pinned by tag and digest, a bounded readiness wait with a named failure, no credential written.
