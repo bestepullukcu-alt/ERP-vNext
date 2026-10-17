@@ -1,0 +1,20 @@
+settings-hygiene-01 — checks of .claude/settings.json (old at the parent commit, new staged); run by the AI session.
+
+old SHA-256 2f7bcc24680ab1e1f1b8d945e7729279cfb1c8721383ada04db31bc79c4f87f1
+new SHA-256 a6383fe73e6b574ea9fada76a889412d5fec95010501a39d61a0d990219a552d
+
+PASS  the new file is valid JSON
+PASS  the new allow list is a strict subset of the old one, in the old order
+PASS  every old entry is unique (81, no duplicates)
+PASS  kept 6 + removed 75 = 81
+PASS  the hooks block is equal
+PASS  no additionalDirectories, no ask / deny, no other permission key
+PASS  no top-level key added or removed besides permissions content
+
+kept (in the old file's order, with their old line numbers):
+  line 4: Bash(python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim)
+  line 5: Bash(python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceCompact --reference compact)
+  line 9: Bash(dotnet build *)
+  line 14: Bash(dotnet test *)
+  line 18: Bash(git check-ignore *)
+  line 59: Bash(python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0023 --name "Workflow Designer \(Approvals / SLAs / Escalations\)")
