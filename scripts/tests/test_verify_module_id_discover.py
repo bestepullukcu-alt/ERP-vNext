@@ -142,18 +142,21 @@ class DiscoverySummary(unittest.TestCase):
         self.assertTrue(any(l.startswith("ÖZET kimlik çokluğu — takma ad ilişkisi belirsiz, inceleme gerekli: MOD-0298") for l in out), out)
         self.assertFalse([l for l in out if l.startswith("ÖZET olası kimlik çakışması")], out)
 
+    def kunye(self, out):     # CT-FIX-07: found by its prefix, not by position (the open decisions may come first)
+        return next(l for l in out if l.startswith("ÖZET paket künyesi: "))
+
     def test_kunye_values_keep_their_blob_and_ref_ids(self):
         # Codex: grouping by value dropped the blob ids; the same values in several blobs is not one current version
         same = self.summary([(self.HCM, 3)], meta={self.HCM: [(self.OK, [("b" * 40, {"refs/heads/a", "refs/heads/b"}),
                                                                             ("c" * 40, {"refs/heads/c"})])]})
-        self.assertIn("blob bbbbbbbbb: refs/heads/a, refs/heads/b; blob ccccccccc: refs/heads/c", same[1])
+        self.assertIn("blob bbbbbbbbb: refs/heads/a, refs/heads/b; blob ccccccccc: refs/heads/c", self.kunye(same))
         differ = self.summary([(self.HCM, 2)], meta={self.HCM: [(self.OK, [("b" * 40, {"refs/heads/a"})]),
                                                                 (("draft", "-", "Other"), [("c" * 40, {"refs/heads/c"})])]})
-        self.assertIn("belirsiz — 2 farklı künye", differ[1])
-        self.assertIn("blob bbbbbbbbb: refs/heads/a", differ[1])
-        self.assertIn("status draft · approval_status - · owner Other (blob ccccccccc: refs/heads/c)", differ[1])
+        self.assertIn("belirsiz — 2 farklı künye", self.kunye(differ))
+        self.assertIn("blob bbbbbbbbb: refs/heads/a", self.kunye(differ))
+        self.assertIn("status draft · approval_status - · owner Other (blob ccccccccc: refs/heads/c)", self.kunye(differ))
         legacy = self.summary([(self.HCM, 1)], meta={self.HCM: [(None, [("d" * 40, {"refs/heads/a"})])]})
-        self.assertIn("künye okunamadı (bilgi; kapı değil)", legacy[1])
+        self.assertIn("künye okunamadı (bilgi; kapı değil)", self.kunye(legacy))
         unread = vmi.report_summary([], [], [(self.HCM, 1)], None, set(), None)
         self.assertIn("ÖZET paket künyeleri: okunamadı — özet eksik (bulgular tam rapordadır)", unread)
 
@@ -172,6 +175,64 @@ class DiscoverySummary(unittest.TestCase):
         self.assertIn("ÖZET sınır:", head)
         self.assertTrue(all(len(l.encode("utf-8")) <= vmi.SUMMARY_LINE for l in out))
         self.assertRegex(out[1], r" · \+\d+ yol$")                      # the count of the paths not shown survives the cut
+
+    def test_the_open_decisions_follow_the_collisions(self):
+        # CT-FIX-07 (v7 C5 pilot): the collision and the owner TBD were visible but not used; they are named as decisions
+        meta = {self.HCM: [(self.OK, [("a" * 40, {"refs/heads/x"})])],
+                self.PSS: [(("ready-for-dev", "-", "platform-team"), [("b" * 40, {"refs/remotes/origin/hr-future"})])],
+                "execution/domains/x/module-packs/CAND-CAP-0001-legacy.md": [(("done", "-", "-"), [("c" * 40, {"r"})])]}
+        out = vmi.report_summary([], [], [(self.HCM, 2), (self.PSS, 1), ("execution/domains/x/module-packs/CAND-CAP-0001-legacy.md", 1)],
+                                 meta, set(), None)
+        line = next(l for l in out if l.startswith("ÖZET açık kararlar (bilgi; onay değil): "))
+        self.assertIn("kimlik MOD-0251 — olası çakışma (2 paket yolu)", line)
+        self.assertIn("sahibi belirsiz: MOD-0251-core-hr-employee-master.md (owner 'HCM / HR data owner TBD')", line)
+        self.assertIn("sahibi belirsiz: CAND-CAP-0001-legacy.md (owner '-')", line)     # an absent owner, not a stop
+        self.assertNotIn("hris-external-sor", line)
+        i = out.index(line)
+        self.assertTrue(out[i - 1].startswith("ÖZET paket künyesi: " + self.PSS), out[i - 1])   # right after the collision group
+        alias = vmi.report_summary([], [], [(self.HCM, 2), (self.PSS, 1)], meta, {"MOD-0251"}, None)
+        self.assertTrue(any("kimlik MOD-0251 — takma ad ilişkisi belirsiz (2 paket yolu)" in l for l in alias), alias)
+        none = vmi.report_summary([], [], [(self.PSS, 1)], meta, set(), None)
+        self.assertFalse([l for l in none if l.startswith("ÖZET açık kararlar")], none)
+
+    def test_blueprint_candidates_and_domain_configs_are_listed_and_bounded(self):
+        bp = [("MOD-0251", "Core HR / Employee Master"), ("MOD-0298", "Employee Profile Workspace")]
+        dcs = [("execution/domains/hcm/domain-config.md", True), ("execution/domains/pss/domain-config.md", False)]
+        out = vmi.report_summary([], [], [(self.HCM, 1)], None, set(), None, bp, dcs)
+        self.assertIn("ÖZET blueprint adayları: MOD-0251 'Core HR / Employee Master' · MOD-0298 'Employee Profile Workspace'", out)
+        self.assertIn("ÖZET domain-config (eşleşen paketlerin klasörü; varlık yalnız HEAD ağacında ölçüldü, paketin kendi ref'indeki durum belirsiz; bu keşif komutu içeriğini incelemedi): "
+                      "execution/domains/hcm/domain-config.md (HEAD'de var) · execution/domains/pss/domain-config.md (HEAD'de yok)", out)
+        many = vmi.report_summary([], [], [], {}, set(), None, [(f"MOD-{i:04d}", "Ç" * 40) for i in range(300)], [])
+        line = next(l for l in many if l.startswith("ÖZET blueprint adayları: "))
+        self.assertLessEqual(len(line.encode("utf-8")), vmi.SUMMARY_LINE)
+        self.assertRegex(line, r" · \+\d+ aday$")
+        self.assertLessEqual(sum(len(l.encode("utf-8")) + 1 for l in many), vmi.SUMMARY_BUDGET)
+
+    def test_domain_config_presence_is_read_from_head_s_tree(self):
+        with tempfile.TemporaryDirectory() as root:
+            env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@invalid", GIT_COMMITTER_NAME="t",
+                       GIT_COMMITTER_EMAIL="t@invalid", GIT_OPTIONAL_LOCKS="0")
+            for d in ("a", "b"):
+                os.makedirs(os.path.join(root, "execution", "domains", d))
+                with open(os.path.join(root, "execution", "domains", d, "domain-config.md"), "w") as f:
+                    f.write("x\n")
+            subprocess.run(["git", "init", "-q", root], check=True, env=env)
+            subprocess.run(["git", "-C", root, "add", "--", "execution/domains/a/domain-config.md"], check=True, env=env)
+            subprocess.run(["git", "-C", root, "commit", "-q", "-m", "a"], check=True, env=env)
+            got = vmi.domain_config_at_head(root, ["execution/domains/a/module-packs/MOD-0001-x.md",
+                                                   "execution/domains/b/module-packs/MOD-0002-y.md",
+                                                   "execution/domains/a/module-packs/MOD-0003-z.md", "docs/other.md"])
+            self.assertEqual(got, [("execution/domains/a/domain-config.md", True),
+                                   ("execution/domains/b/domain-config.md", False)])   # b is only in the working tree
+        # Codex: a failed measurement is not an absence — outside a repository, git cannot answer: None, 'HEAD'de ölçülemedi'
+        with tempfile.TemporaryDirectory() as not_a_repo:
+            got = vmi.domain_config_at_head(not_a_repo, ["execution/domains/a/module-packs/MOD-0001-x.md"])
+            self.assertEqual(got, [("execution/domains/a/domain-config.md", None)])
+        out = vmi.report_summary([], [], [], {}, set(), None, (), [("execution/domains/a/domain-config.md", None),
+                                                                    ("execution/domains/b/domain-config.md", False)])
+        line = next(l for l in out if l.startswith("ÖZET domain-config "))
+        self.assertIn("execution/domains/a/domain-config.md (HEAD'de ölçülemedi)", line)
+        self.assertIn("execution/domains/b/domain-config.md (HEAD'de yok)", line)
 
     def test_an_incomplete_discovery_says_so(self):
         out = vmi.report_summary([], [], [], {}, set(), "Blueprint dosyası yok")

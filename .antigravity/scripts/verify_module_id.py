@@ -365,6 +365,9 @@ def check_all(root):
 #       other matched packs' values (different values on different blobs shown unresolved, with blob and ref ids);
 #       what did not fit; the limit. Information only — no finding, no decision, no gate; the BULGU lines and the other
 #       modes are unchanged. A new report's bytes and hash include the block; a saved report keeps its own tool identity.
+#       CT-FIX-07 (v7 C5 pilot): the block also names the open decisions (collisions; a matched pack whose owner is TBD,
+#       empty or absent), the Blueprint candidates' ids and names, and the matched packs' domain-config paths with their
+#       presence in HEAD's tree only (not on the pack's own ref; their content is not inspected by this command).
 #   --check-report <file>
 #       Recomputes rapor-sha256 of a saved report, byte for byte (parse_report: UTF-8, LF only, one final newline,
 #       the hash line exactly 'rapor-sha256: <64 hex>' — CT-FIX-03 R4, V4B-B6). exit 0 = matches, exit 2 = malformed
@@ -547,6 +550,48 @@ def _paths_capped(prefix, paths, limit):
     return _cap(prefix + " · ".join(shown) + (f" · +{rest} yol" if rest and shown else f"+{rest} yol" if rest else ""), limit)
 
 
+def _list_capped(prefix, items, limit, unit):
+    """CT-FIX-07: prefix + as many items as fit in `limit` bytes, then '+k <unit>' for the rest."""
+    shown = []
+    for i, item in enumerate(items):
+        tail = f" · +{len(items) - i - 1} {unit}" if i + 1 < len(items) else ""
+        if len((prefix + " · ".join(shown + [item]) + tail).encode("utf-8")) > limit:
+            break
+        shown.append(item)
+    rest = len(items) - len(shown)
+    return _cap(prefix + " · ".join(shown) + (f" · +{rest} {unit}" if rest and shown else f"+{rest} {unit}" if rest else ""), limit)
+
+
+def domain_config_paths(pack_paths):
+    """CT-FIX-07: the domain-config path of each matched pack's own domain folder (execution/domains/<domain>/
+    module-packs/…), in order, never guessed."""
+    paths = []
+    for p in pack_paths:
+        parts = p.split("/")
+        if len(parts) > 3 and parts[:2] == ["execution", "domains"] and parts[3] == "module-packs":
+            dc = f"execution/domains/{parts[2]}/domain-config.md"
+            if dc not in paths:
+                paths.append(dc)
+    return paths
+
+
+def domain_config_at_head(root, pack_paths):
+    """CT-FIX-07: [(domain-config path, True | False | None)] — True when HEAD's tree holds the file as a blob, False
+    when git answers that it is missing there (a file only in the working tree or only on another ref is not 'in
+    HEAD'), None when the presence could not be measured (git failed or answered otherwise): an unmeasured presence is
+    never reported as absent."""
+    paths = domain_config_paths(pack_paths)
+    if not paths:
+        return []
+    try:
+        out = _git(root, "cat-file", "--batch-check=%(objecttype)", stdin="".join(f"HEAD:{d}\n" for d in paths).encode()).splitlines()
+    except (Incomplete, OSError, ValueError):
+        return [(d, None) for d in paths]
+    if len(out) != len(paths):
+        return [(d, None) for d in paths]
+    return [(d, True if o.strip() == "blob" else False if o.strip().endswith(" missing") else None) for d, o in zip(paths, out)]
+
+
 def _some(names, n=2):
     names = sorted(names)
     return ", ".join(names[:n]) + (f", +{len(names) - n}" if len(names) > n else "")
@@ -596,14 +641,22 @@ def _kunye_line(path, groups):
     return f"ÖZET paket künyesi: {path} — {shown}"
 
 
-def report_summary(info, findings, matched, meta, alias_ids, failure):
+PRESENCE = {True: "HEAD'de var", False: "HEAD'de yok", None: "HEAD'de ölçülemedi"}
+
+
+def report_summary(info, findings, matched, meta, alias_ids, failure, blueprint=(), domain_configs=()):
     """CT-FIX-06 (v7 Employee pilot: a collision in a long report was lost when the interface cut it): the 'ÖZET' lines
     under the header, within SUMMARY_BUDGET UTF-8 bytes and in this order — the counts; for every file id on more than
     one matched pack path (the tool's own file-id reading: a parent and its FU are different ids) a possible identity
     collision with those packs' künye values right after it; then the other matched packs' künye values; then, in space
     kept for them, the omission warning and the limit line. A deprecated alias is said in its own line and does not
     clear the paths it names. Values that differ between blobs are shown as unresolved with blob and ref ids, never one
-    last value. The lines start with 'ÖZET': no finding, no decision, no single-line field of the report contract."""
+    last value. The lines start with 'ÖZET': no finding, no decision, no single-line field of the report contract.
+    CT-FIX-07 (v7 C5 pilot: the four other Blueprint candidates, the domain-config and the owner TBD were not used):
+    after the collisions, the open decisions (each collision; each matched pack whose owner is TBD, empty or absent —
+    information, not an approval), the Blueprint candidates' ids and names, and the matched packs' domain-config paths
+    with whether HEAD's tree holds them — HEAD only: the config on a matched pack's own ref stays undecided, and this
+    command does not inspect its content (it cannot know what a reader read elsewhere)."""
     kinds = ("blueprint", "sor", "registry", "paket", "gateway", "görev")
     count = {k: sum(f.startswith(f"BULGU {k}:") for f in findings) for k in kinds}
     items = [["ÖZET bulgular: " + " · ".join(f"{k} {count[k]}" for k in kinds)
@@ -628,6 +681,22 @@ def report_summary(info, findings, matched, meta, alias_ids, failure):
             group += [_kunye_line(p, meta.get(p, [])) for p, _ in paths[:3]]
         first.update(p for p, _ in paths[:3])
         items.append(group)
+    decisions = [f"kimlik {mid} — {'takma ad ilişkisi belirsiz' if mid in alias_ids else 'olası çakışma'} ({len(paths)} paket yolu)"
+                 for mid, paths in sorted(by_id.items()) if len(paths) > 1]
+    for path, _ in matched:
+        owners = {g[0][2] for g in (meta or {}).get(path, []) if g[0] is not None}
+        unset = sorted(o for o in owners if o.strip() in ("", "-") or "TBD" in o.upper())
+        if unset:
+            decisions.append(f"sahibi belirsiz: {os.path.basename(path)} (owner {', '.join(repr(o) for o in unset)[:80]})")
+    if decisions:
+        items.append([_list_capped("ÖZET açık kararlar (bilgi; onay değil): ", decisions, SUMMARY_LINE, "karar")])
+    if blueprint:
+        items.append([_list_capped("ÖZET blueprint adayları: ", [f"{i} '{n[:50]}'" for i, n in blueprint], SUMMARY_LINE, "aday")])
+    if domain_configs:
+        items.append([_list_capped("ÖZET domain-config (eşleşen paketlerin klasörü; varlık yalnız HEAD ağacında ölçüldü, "
+                                   "paketin kendi ref'indeki durum belirsiz; bu keşif komutu içeriğini incelemedi): ",
+                                   [f"{d} ({PRESENCE[ok]})" for d, ok in domain_configs],
+                                   SUMMARY_LINE, "yol")])
     if meta is None:
         items.append(["ÖZET paket künyeleri: okunamadı — özet eksik (bulgular tam rapordadır)"])
     else:
@@ -662,7 +731,7 @@ def _discover(root, name, resource=None, sor=None):
     query = _tokens(name)
     lines = ["KEŞİF RAPORU v2", f"sorgu: {name} | kaynak: {resource or '-'} | sor: {sor or '-'}"]
     findings, info, ref_lines = [], [], []
-    matched_packs, path_blobs, alias_ids = [], {}, set()
+    matched_packs, path_blobs, alias_ids, bp_hits = [], {}, set(), []
     try:
         script = os.path.abspath(__file__)
         head = _git(root, "rev-parse", "HEAD").strip()
@@ -702,6 +771,7 @@ def _discover(root, name, resource=None, sor=None):
         for r in bp_rows:
             if r["Module ID"] and _similar(query, r["Module Name"]):
                 matched_ids.add(r["Module ID"])
+                bp_hits.append((r["Module ID"], r["Module Name"]))
                 findings.append(f"BULGU blueprint: {r['Module ID']} '{r['Module Name']}' ({r['Domain / Landscape']} / "
                                 f"{r['Capability Group']}) — ad benzer; veri nesneleri: {r['SoR Primary Object(s)'][:80] or '-'}")
         for r in sor_rows:
@@ -836,7 +906,8 @@ def _discover(root, name, resource=None, sor=None):
         meta = pack_kunye_values(root, {p: path_blobs.get(p, {}) for p, _ in matched_packs})
     except (Incomplete, OSError, ValueError):
         meta = None
-    lines[1:1] = report_summary(info, findings, matched_packs, meta, alias_ids, failure)
+    dcs = domain_config_at_head(root, [p for p, _ in matched_packs])   # CT-FIX-07: information; unmeasured stays None
+    lines[1:1] = report_summary(info, findings, matched_packs, meta, alias_ids, failure, bp_hits, dcs)
     lines += info + findings
     if failure is not None:
         lines += GAPS + refs_block + [f"sonuç: tamamlanamadı — {failure}", "çıkış: 2"]

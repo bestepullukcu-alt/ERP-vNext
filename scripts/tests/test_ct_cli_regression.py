@@ -1539,5 +1539,36 @@ class CTFIX06_EvidenceLineAndRegistry(CTFIX04):
         self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]), 0)   # the intact registry
 
 
+class CTFIX07_SummaryDecisions(CTFIX04):
+    """CT-FIX-07 (v7 C5 pilot): the real --discover names the Blueprint candidates, the matched packs' domain-config with
+    its presence in HEAD's tree, and the open decisions; the BULGU lines and the gate's count stay as they were."""
+    DC = "execution/domains/audit/domain-config.md"
+
+    def summary(self):
+        p = FX.run(".antigravity/scripts/verify_module_id.py", str(FX.root), "--discover", "Audit Ledger")
+        self.assertExit(p, 3)
+        return p.stdout.splitlines()
+
+    def test_blueprint_ids_and_domain_config_at_head(self):
+        out = self.summary()
+        self.assertIn("ÖZET blueprint adayları: MOD-0288 'Audit Ledger'", out)
+        self.assertIn(f"ÖZET domain-config (eşleşen paketlerin klasörü; varlık yalnız HEAD ağacında ölçüldü, paketin kendi ref'indeki durum belirsiz; bu keşif komutu içeriğini incelemedi): {self.DC} (HEAD'de yok)", out)
+        FX.put(self.DC, "# audit domain\n")                      # only in the working tree: still not in HEAD
+        self.addCleanup(lambda: (FX.root / self.DC).unlink(missing_ok=True))
+        self.assertIn(f"ÖZET domain-config (eşleşen paketlerin klasörü; varlık yalnız HEAD ağacında ölçüldü, paketin kendi ref'indeki durum belirsiz; bu keşif komutu içeriğini incelemedi): {self.DC} (HEAD'de yok)", self.summary())
+        FX.commit("CT-FIX-07: the audit domain's config")
+        self.assertIn(f"ÖZET domain-config (eşleşen paketlerin klasörü; varlık yalnız HEAD ağacında ölçüldü, paketin kendi ref'indeki durum belirsiz; bu keşif komutu içeriğini incelemedi): {self.DC} (HEAD'de var)", self.summary())
+
+    def test_an_unset_owner_is_an_open_decision_and_the_count_is_unchanged(self):
+        before = sum(l.startswith("BULGU ") for l in self.summary())
+        FX.put(PACK, FX.read(PACK).replace("status: approved\n", "status: approved\nowner: audit data owner TBD\n", 1))
+        FX.commit("CT-FIX-07: the pack's owner is not settled")
+        out = self.summary()
+        line = next(l for l in out if l.startswith("ÖZET açık kararlar (bilgi; onay değil): "))
+        self.assertIn("sahibi belirsiz: MOD-0288-audit-ledger.md (owner ", line)
+        self.assertIn("'audit data owner TBD'", line)       # with the older blob's absent owner '-' on the other refs
+        self.assertEqual(sum(l.startswith("BULGU ") for l in out), before)
+
+
 if __name__ == "__main__":
     unittest.main()

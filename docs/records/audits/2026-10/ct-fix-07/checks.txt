@@ -1,0 +1,18 @@
+CT-FIX-07 — the one full Python run on the final sources; run by the AI session in the CT worktree.
+
+command (from the worktree root):  python3 -B -m unittest discover -s scripts/tests -p 'test_*.py'
+environment: Python 3.9.6 · openpyxl 3.1.5 · git 2.50.1
+sources (SHA-256):
+  .antigravity/scripts/verify_module_id.py          a63ea76bc90faaf3b19d7cc9028a71dc5774bd98e642ea92e6c166dafc82541b
+  scripts/tests/test_verify_module_id_discover.py   4eb97c3b2944371bbbff75e768099e21695232c6a35a4e37c7d917df408613fa
+  scripts/tests/test_ct_cli_regression.py           92127c6f731045af524100feb3f12154a3fdbb121cbbcf55dcc50012f84835ee
+result: Ran 136 tests in 368.069s · OK
+raw log SHA-256 b9f8817b0badaaa278ef83f8938974f481cdfe06db541895ab510b5835d86bfc (kept outside the repository: it holds local paths)
+
+warnings in the log, not hidden (3; local paths replaced by <repo>/):
+  <repo>/.antigravity/scripts/verify_module_id.py:738: ResourceWarning: unclosed file <_io.BufferedReader name='<repo>/.antigravity/scripts/verify_module_id.py'>
+  <repo>/.antigravity/scripts/verify_module_id.py:738: ResourceWarning: unclosed file <_io.BufferedReader name='<repo>/.antigravity/scripts/verify_module_id.py'>
+  <repo>/.antigravity/scripts/verify_module_id.py:738: ResourceWarning: unclosed file <_io.BufferedReader name='<repo>/.antigravity/scripts/verify_module_id.py'>
+
+These are the existing ResourceWarning of the tool's own sha256 line (an open() without close in the araç line);
+they do not fail a test and are not changed by this package.
