@@ -16,12 +16,87 @@
         "path": "AGENTS.md",
         "max_bytes": 24000,
         "warn_bytes": 22000,
-        "required_headings": ["Çekirdek", "1.", "2.", "3.", "4.", "5.", "6.", "6.1", "7.", "8.", "9.", "10.", "11.", "12.", "Module ID Canonicalization Gate (DCP-002)"]
+        "required_headings": [
+          "Çekirdek",
+          "1.",
+          "2.",
+          "3.",
+          "4.",
+          "5.",
+          "6.",
+          "6.1",
+          "7.",
+          "8.",
+          "9.",
+          "10.",
+          "11.",
+          "12.",
+          "Module ID Canonicalization Gate (DCP-002)"
+        ]
       },
       {
         "path": "CLAUDE.md",
         "max_bytes": 2000,
-        "forbidden_import": ["AGENTS.md"]
+        "forbidden_import": [
+          "AGENTS.md"
+        ]
+      },
+      {
+        "path": ".antigravity/AGENTS-REFERENCE.md",
+        "required_sections": [
+          {
+            "heading": "2. Proje Klasör Yapısı",
+            "anchors": [
+              "Güncel servis ve domain listesi `AGENTS.md` §2'dedir."
+            ]
+          },
+          {
+            "heading": "3. Port Şeması — tarihli atama notları",
+            "anchors": [
+              "Tablo ve kural `AGENTS.md` §3'tedir; aşağıdaki notlar oradan kelimesi kelimesine taşındı.",
+              "**port 5065**"
+            ]
+          },
+          {
+            "heading": "5. Build ve Test Komutları",
+            "anchors": [
+              "./run_all.sh",
+              "dotnet build services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj -c Debug"
+            ]
+          },
+          {
+            "heading": "8. Çalışma Akışı (Domain / Module Oluşturma)",
+            "anchors": [
+              "İki ana yol var.",
+              "klasörü kur: `README.md` + `domain-config.md` + `module-packs/`"
+            ]
+          },
+          {
+            "heading": "11. Terim Sözlüğü",
+            "anchors": [
+              "| **Module Pack** | `execution/domains/{d}/module-packs/{ID}-{slug}.md`"
+            ]
+          },
+          {
+            "heading": "12. Adaptasyon Notu",
+            "anchors": [
+              "Layered Agent + Domain Package Model SOP v2.1"
+            ]
+          },
+          {
+            "heading": "Module ID Canonicalization Gate (DCP-002)",
+            "anchors": [
+              "is the canonical authority for every",
+              "never invent a MOD / PSS / NEW identity"
+            ]
+          },
+          {
+            "heading": "Yükleme mimarisi (tarihçe)",
+            "anchors": [
+              "**Claude Code `AGENTS.md`'yi otomatik yüklemez**"
+            ]
+          }
+        ]
       }
     ],
     "core": {
@@ -53,7 +128,12 @@
         "`.antigravity/AGENTS-REFERENCE.md`"
       ]
     },
-    "link_check": ["AGENTS.md", "CLAUDE.md", ".antigravity/AGENTS-REFERENCE.md"]
+    "link_check": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      ".antigravity/AGENTS-REFERENCE.md"
+    ],
+    "about_sections": "İ5B-FIX-04: AGENTS-REFERENCE.md'nin zorunlu bölümleri yorumdan arındırılmış metinde bir kez, görünür içerikle ve çapa cümleleri birebir aranır. Çapa anlamlı bir asgaridir; metnin bütünlüğünü garanti etmez (o, hash sabitleme olurdu)."
   },
   "items": [
     {

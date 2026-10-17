@@ -22,6 +22,12 @@ Rules this script enforces (İ5-A pilot):
   reference definition; an import is any '@path' outside code naming the forbidden file (also '@./AGENTS.md' or in a
   sentence); a core rule only inside an HTML comment is lost; a budget problem stops the write before any file is
   written.
+- İ5B-FIX-04 (v5 quality review 4): headings and sections are read from the visible text — HTML comments removed, an
+  unclosed '<!--' hiding everything after it, fenced code not read as headings — so a heading kept only inside a
+  comment or a code block is lost; a required section
+  ('required_sections') must appear once as a level-2 heading outside code, with at least one visible content line
+  and each of its anchor sentences verbatim. Anchors are a meaningful minimum, not a guarantee of the whole text
+  (that would be hash pinning); an emptied, padded or commented-out AGENTS-REFERENCE.md fails --check.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -62,6 +68,71 @@ REFERENCE_DEF = re.compile(r"^ {0,3}\[[^\]\n]+\]:[ \t]*(<[^>\n]*>|\S+)" + LINK_T
 IMPORT = re.compile(r"(?<!\w)@([^\s`]+)")
 FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 HTML_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
+
+
+def visible_text(text: str) -> str:
+    """İ5B-FIX-04: the text a reader sees — every HTML comment removed; an unclosed '<!--' hides the rest."""
+    return HTML_COMMENT.sub("", text)
+
+
+def heading_in_comment(heading: str, text: str) -> bool:
+    """Whether '## <heading>' is written inside an HTML comment (for the message only; the check reads visible text)."""
+    pattern = re.compile(rf"(?m)(?:^|<!--)[ \t]*## {re.escape(heading)}(?:\s|$)")
+    return any(pattern.search(m.group(0)) for m in HTML_COMMENT.finditer(text))
+
+
+def level2_sections(text: str) -> dict[str, list[list[str]]]:
+    """{heading: [body lines, one list per occurrence]} for the '## ' headings outside fenced code; a body runs to the
+    next '#'/'##' heading outside code. An unclosed fence makes the rest code (its headings are not headings)."""
+    out: dict[str, list[list[str]]] = {}
+    current: list[str] | None = None
+    fence: str | None = None
+    for line in text.split("\n"):
+        if fence is not None:
+            if re.match(rf"^ {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line):
+                fence = None
+            if current is not None:
+                current.append(line)
+            continue
+        m = FENCE_OPEN.match(line)
+        if m:
+            fence = m.group(1)
+            if current is not None:
+                current.append(line)
+            continue
+        h = re.match(r"^(#{1,2})[ \t]+(.+?)[ \t#]*$", line)
+        if h:
+            current = None
+            if h.group(1) == "##":
+                current = []
+                out.setdefault(h.group(2), []).append(current)
+            continue
+        if current is not None:
+            current.append(line)
+    return out
+
+
+def section_problems(path: str, text: str, required: list[dict]) -> list[str]:
+    """İ5B-FIX-04: every required section once, with visible content and its anchor sentences verbatim."""
+    problems = []
+    sections = level2_sections(visible_text(text))
+    for spec in required:
+        heading = spec["heading"]
+        found = sections.get(heading, [])
+        if len(found) != 1:
+            why = ("only inside an HTML comment" if not found and heading_in_comment(heading, text) else
+                   "missing" if not found else f"{len(found)} times")
+            problems.append(f"SECTION {path} '## {heading}' {why} (AGENTS.md points readers here)")
+            continue
+        body = found[0]
+        content = [l for l in body if l.strip() and not re.match(r"^#{1,6}[ \t]", l)]
+        if not content:
+            problems.append(f"SECTION {path} '## {heading}' has no visible content")
+        joined = "\n".join(body)
+        for anchor in spec.get("anchors", []):
+            if anchor not in joined:
+                problems.append(f"ANCHOR {path} '## {heading}' lost: {anchor!r}")
+    return problems
 
 
 def link_targets(text: str) -> list[str]:
@@ -243,9 +314,15 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
             problems.append(f"OVERSIZE {path} is {size} bytes; limit {spec['max_bytes']}{note}")
         elif size > spec.get("warn_bytes", 10 ** 9):
             warnings.append(f"WARN {path} is {size} bytes; warning threshold {spec['warn_bytes']}")
+        # İ5B-FIX-04 (Codex): a required heading is a level-2 heading of the visible text outside fenced code — one kept
+        # only inside an HTML comment or a code block is lost (the same reader as required_sections)
+        heads = list(level2_sections(visible_text(text)))
         for heading in spec.get("required_headings", []):
-            if not re.search(rf"(?m)^## {re.escape(heading)}(?:\s|$)", text):
-                problems.append(f"HEADING {path} lost '## {heading}' (AGENTS.md §-references would break)")
+            if not any(h == heading or (h.startswith(heading) and h[len(heading)].isspace()) for h in heads):
+                hidden = (" (only inside an HTML comment)" if heading_in_comment(heading, text) else
+                          " (only inside a code block)" if re.search(rf"(?m)^## {re.escape(heading)}(?:\s|$)", text) else "")
+                problems.append(f"HEADING {path} lost '## {heading}'{hidden} (AGENTS.md §-references would break)")
+        problems += section_problems(path, text, spec.get("required_sections", []))
         for pattern in spec.get("forbidden_regex", []):
             if re.search(pattern, text):
                 problems.append(f"FORBIDDEN {path} matches {pattern!r}")

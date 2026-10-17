@@ -1,7 +1,8 @@
 """İ5B-FIX-01 (independent audit 2026-10-17, finding 02) — the instruction budget never passes when a file it is asked to
 link-check is gone: a missing link_check file is a MISSING problem, like a missing instruction file. İ5B-FIX-03 (v4
 audits, V4A-F1 / V4B-B5): every Markdown link form, every import form outside code, a core rule only inside an HTML
-comment, and a budget problem before any write. Run by
+comment, and a budget problem before any write. İ5B-FIX-04 (v5 quality review 4): headings and required sections are
+read from the visible text, and AGENTS-REFERENCE.md's sections keep a visible body with their anchor sentences. Run by
 scripts/run_phase1_gates.sh:
 
     python3 -m unittest discover -s scripts/tests -p 'test_*.py'
@@ -101,6 +102,121 @@ class InstructionBudget(unittest.TestCase):
         self.redirect("AGENTS.md", f)
         problems, _ = sa.check_instruction_budget(self.manifest)
         self.assertTrue(any(p.startswith("CORE-RULE") and "only inside an HTML comment" in p for p in problems), problems)
+
+    # İ5B-FIX-04 (v5 quality review 4, Codex): the visible text decides; every case is a counter-example
+    REF = ".antigravity/AGENTS-REFERENCE.md"
+
+    def ref_with(self, text: str) -> list[str]:
+        f = Path(self.tmp.name) / "AGENTS-REFERENCE.md"
+        f.write_text(text, encoding="utf-8")
+        self.redirect(self.REF, f)
+        return sa.check_instruction_budget(self.manifest)[0]
+
+    def sections(self):
+        return next(f for f in self.manifest["instruction_budget"]["files"] if f["path"] == self.REF)["required_sections"]
+
+    def test_the_reference_file_has_required_sections_with_anchors(self):
+        specs = self.sections()
+        self.assertEqual(len(specs), 8)
+        self.assertTrue(all(s.get("anchors") for s in specs))
+
+    def test_an_emptied_reference_file_fails(self):
+        problems = self.ref_with("")
+        self.assertEqual(sum(p.startswith(f"SECTION {self.REF}") for p in problems), 8, problems)
+
+    def test_headings_kept_bodies_removed_fails(self):
+        text = (REPO / self.REF).read_text(encoding="utf-8")
+        heads = "\n\n".join(l for l in text.split("\n") if l.startswith("#")) + "\n"
+        problems = self.ref_with(heads)
+        self.assertTrue(any("has no visible content" in p for p in problems), problems)
+        self.assertTrue(any(p.startswith(f"ANCHOR {self.REF}") for p in problems), problems)
+
+    def test_bodies_inside_html_comments_or_only_blank_fail(self):
+        text = (REPO / self.REF).read_text(encoding="utf-8")
+        lines = text.split("\n")
+        commented, blanked = [], []
+        inside = False
+        for l in lines:
+            if l.startswith("## "):
+                inside = True
+                commented.append(l)
+                blanked.append(l)
+                commented.append("<!--")
+                continue
+            if l.startswith("# "):
+                inside = False
+            if inside:
+                commented.append(l)
+                blanked.append("" if l.strip() else l)
+            else:
+                commented.append(l)
+                blanked.append(l)
+        commented_text = "\n".join(commented).replace("\n## ", "\n-->\n## ") + "\n-->\n"
+        for label, t in (("bodies in comments", commented_text), ("bodies blank", "\n".join(blanked) + "\n"),
+                         ("bodies a comment only", "\n".join(l if not l.strip() or l.startswith("#") else "<!-- x -->" for l in lines))):
+            with self.subTest(form=label):
+                problems = self.ref_with(t)
+                self.assertTrue(any("has no visible content" in p for p in problems), problems)
+
+    def test_padding_without_anchors_fails(self):
+        text = (REPO / self.REF).read_text(encoding="utf-8")
+        padded = "\n".join(l if l.startswith("#") or not l.strip() else "Bu bölüm başka bir yerde anlatılıyor." for l in text.split("\n"))
+        problems = self.ref_with(padded)
+        self.assertEqual(sum(p.startswith(f"ANCHOR {self.REF}") for p in problems), 12, problems)
+
+    def test_one_anchor_removed_fails_by_name(self):
+        text = (REPO / self.REF).read_text(encoding="utf-8")
+        anchor = "**port 5065**"
+        self.assertEqual(text.count(anchor), 1)
+        problems = self.ref_with(text.replace(anchor, "port beş bin altmış beş"))
+        self.assertEqual([p for p in problems if p.startswith("ANCHOR")],
+                         [f"ANCHOR {self.REF} '## 3. Port Şeması — tarihli atama notları' lost: {anchor!r}"])
+
+    def test_a_heading_only_inside_a_comment_or_in_code_is_lost(self):
+        text = (REPO / self.REF).read_text(encoding="utf-8")
+        head = "## 12. Adaptasyon Notu"
+        self.assertEqual(text.count(head), 1)
+        for label, t in (("inside an HTML comment", text.replace(head, "<!--\n" + head + "\n-->")),
+                         ("inside a code fence", text.replace(head, "```\n" + head + "\n```"))):
+            with self.subTest(form=label):
+                problems = self.ref_with(t)
+                self.assertTrue(any(p.startswith(f"SECTION {self.REF} '## 12. Adaptasyon Notu'") for p in problems), problems)
+
+    def test_a_section_written_twice_fails(self):
+        text = (REPO / self.REF).read_text(encoding="utf-8")
+        problems = self.ref_with(text + "\n## 12. Adaptasyon Notu\n\nikinci kopya\n")
+        self.assertIn(f"SECTION {self.REF} '## 12. Adaptasyon Notu' 2 times (AGENTS.md points readers here)", problems)
+
+    def test_an_unclosed_comment_at_the_top_hides_the_rest(self):
+        # Codex: an unclosed '<!--' at the start leaves nothing visible; a closed-comment-only pattern would miss it
+        text = (REPO / self.REF).read_text(encoding="utf-8")
+        problems = self.ref_with("<!--\n" + text)
+        self.assertEqual(sum(p.startswith(f"SECTION {self.REF}") for p in problems), 8, problems)
+        # in AGENTS.md an unclosed '<!--' ends at the next '-->' (HTML reads it so): at the top it hides only what comes
+        # before the core marker; after the last closed comment it hides every heading that follows
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        f.write_text("<!--\n" + agents, encoding="utf-8")
+        self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith(("HEADING", "CORE"))])
+        self.assertEqual(agents.count("<!-- core:end -->"), 1)
+        f.write_text(agents.replace("<!-- core:end -->", "<!-- core:end -->\n<!--"), encoding="utf-8")
+        lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING AGENTS.md lost")]
+        self.assertEqual(len(lost), 14, lost)        # every required heading after the core block: 1.–12., 6.1, DCP-002
+
+    def test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost(self):
+        # Codex (candidate2-adapter-heading): the real '## 12.' heading put inside a fence passed --check
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        head = next(l for l in text.split("\n") if l.startswith("## 12."))
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        for label, wrapped, why in (("an HTML comment", "<!-- " + head + " -->", "only inside an HTML comment"),
+                                    ("a backtick fence", "```\n" + head + "\n```", "only inside a code block"),
+                                    ("a tilde fence", "~~~\n" + head + "\n~~~", "only inside a code block")):
+            with self.subTest(form=label):
+                f.write_text(text.replace(head, wrapped), encoding="utf-8")
+                problems = sa.check_instruction_budget(self.manifest)[0]
+                self.assertIn(f"HEADING AGENTS.md lost '## 12.' ({why}) (AGENTS.md §-references would break)", problems)
 
     def test_oversize_message_names_the_file_it_is_about(self):
         problems = self.claude_with("x" * 3000)
