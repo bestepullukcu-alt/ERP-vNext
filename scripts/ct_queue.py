@@ -20,10 +20,13 @@ require   exit 0 only when WP-ID has exactly one row and its state is classed di
           HAZIRLIK (the registry in this working tree) and YÜRÜRLÜK (the registry in the LOCAL ref origin/main, with
           the measured SHA and the last fetch time — the remote itself is not checked). --in-force refuses unless
           origin/main's registry is well-formed and holds exactly one valid row for the queue that points at the
-          same task source file.
+          same task source file. Without --in-force a queue origin/main does not register is preparation; one it
+          registers with another strict / vocabulary / baseline_commit, another task source or an invalid row stops
+          require, guard, writers and summary (DUR) and is a HATA of validate (CT-FIX-02).
 strict    a queue registered with strict=yes (a new Control Tower's queue) treats an undefined state as an error on
           every row; strict=no (the SCE / MVP6 queue) keeps its tolerance for historical rows. The registry's
-          `vocabulary` column names the state vocabulary of each queue (sce-mvp6 for SCE; sop7 for new Control Towers).
+          `vocabulary` column names the state vocabulary of each queue (sce-mvp6 for SCE; sop7 for new Control Towers;
+          strict=yes requires sop7).
           A strict queue with a transitions profile (execution/delivery/ct-sop7-transitions.tsv) is also checked for:
           a valid `module` value on every row (MOD-nnnn[-FUn], or `ortak:` + MOD list or a scope record path; known in
           the module registry, Blueprint or packs; a deprecated alias is refused); leaving a terminal state between
@@ -75,6 +78,16 @@ SOP7 = "sop7"
 SOP7_TERMINAL = frozenset({"ACCEPTED", "REWORK", "FAILED", "SUPERSEDED", "CANCELLED"})
 SOP7_DISPATCHABLE = frozenset({"READY"})
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+# CT-FIX-01 (11) / CT-FIX-02 (K1): a governance or reassessment record — and an effort baseline's approval — approves with
+# exactly 'approved' or 'decided', optionally followed by the two annotation forms its records use — ' (…)' and
+# ' — <text>' (measured 2026-10-17, docs/records/decisions). Any other suffix ('approved-but-draft', 'approved draft',
+# 'decided-but-draft', 'approved (…) + F-1: …') is not an approval. The prompt gate, the -R3 check and the report all
+# read it through this one pattern and kunye_status().
+GOV_APPROVED = re.compile(r"^(approved|decided)(?: \([^()]*\))?(?: — \S.*)?$")
+# CT-FIX-02 (K3): origin/main registers the queue, but differently or unreadably. A branch would otherwise run on a
+# profile main never accepted (strict lowered, another baseline, another task source). 'kayıt dosyası yok' and
+# 'kayıtlı değil' stay preparation (R8 r3); real dispatch still needs --in-force / the gate's dispatch mode.
+PROFILE_CONFLICT = ("farklı profil", "farklı görev kaynağı", "kayıt geçersiz")
 DISPATCH_VALUES = ("yes", "new-version", "no")
 CONFIRMATION_VALUES = ("pending", "confirmed")
 UNVERIFIED = "unverified"
@@ -147,8 +160,13 @@ def decode(data: bytes, what: str) -> str:
 
 
 def read_table(path: Path, columns: list[str]) -> list[dict]:
-    table = Table(path.read_bytes().decode("utf-8"))
-    name = path.relative_to(ROOT).as_posix()
+    name = path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path)
+    try:
+        table = Table(path.read_bytes().decode("utf-8"))
+    except (OSError, UnicodeDecodeError) as e:
+        # CT-FIX-02: a missing or unreadable registry, vocabulary or transition table is a stop, not a traceback.
+        raise SystemExit(f"DUR: {name} okunamadı ({type(e).__name__}) — kayıt, durum sözlüğü ya da geçiş tablosu "
+                         "olmadan dağıtım ya da rapor kararı verilmez")
     if table.header != columns:
         raise SystemExit(f"{name}: header must be: {' | '.join(columns)}")
     for i, row in enumerate(table.rows, start=2):
@@ -268,8 +286,13 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
             problems.append(f"registry {q['queue_id']}: strict must be yes or no")
         if not (q.get("vocabulary") or "").strip():
             problems.append(f"registry {q['queue_id']}: vocabulary is required")
-        elif check_vocab_rows and not any(st["queue_id"] == q["vocabulary"] for st in states):
-            problems.append(f"registry {q['queue_id']}: vocabulary '{q['vocabulary']}' has no rows in the states file")
+        else:
+            if check_vocab_rows and not any(st["queue_id"] == q["vocabulary"] for st in states):
+                problems.append(f"registry {q['queue_id']}: vocabulary '{q['vocabulary']}' has no rows in the states file")
+            if q.get("strict") == "yes" and q["vocabulary"] != SOP7:
+                # CT-FIX-02 (K3): the SOP §7 rules (READY only dispatches; five terminal states) bind every strict
+                # queue — a copied vocabulary under another name cannot make FAILED dispatchable. SCE stays strict=no.
+                problems.append(f"registry {q['queue_id']}: strict=yes requires vocabulary '{SOP7}' (not '{q['vocabulary']}')")
         if not FULL_SHA.match(q["baseline_commit"]):
             # CT-FIX-01 (05/13): a short hex or a name could resolve to a branch; a full id is always the commit itself.
             problems.append(f"registry {q['queue_id']}: baseline_commit '{q['baseline_commit']}' must be a full 40-hex commit id")
@@ -706,7 +729,29 @@ def load_for_dispatch(queue_filter: str | None) -> tuple[list[dict], list[dict]]
         raise SystemExit(f"DUR: kayıt, durum sözlüğü ya da geçiş tablosu geçersiz — dağıtım ya da rapor kararı verilmez: "
                          f"{problems[0]}" + (f" (+{len(problems) - 1})" if len(problems) > 1 else "")
                          + " · ayrıntı: python3 scripts/ct_queue.py validate")
+    conflicts = main_profile_problems(queues, main_registry_text())
+    if conflicts:
+        raise SystemExit(f"DUR: {conflicts[0]}" + (f" (+{len(conflicts) - 1})" if len(conflicts) > 1 else "")
+                         + " — profil değişikliği önce main'e girer; dağıtım ya da rapor kararı verilmez")
     return queues, states
+
+
+def main_registry_text() -> str | None:
+    """The registry in the LOCAL ref origin/main (no fetch), or None when the ref or the file is absent."""
+    head, _ = main_ref_status()
+    data = git_file(head, REGISTRY.relative_to(ROOT).as_posix()) if head else None
+    return decode(data, MAIN_REF) if data is not None else None
+
+
+def main_profile_problems(queues: list[dict], main_text: str | None, commit_exists=None, path_at=None) -> list[str]:
+    """CT-FIX-02 (K3): one problem per queue that origin/main registers differently or unreadably (PROFILE_CONFLICT).
+    A queue main does not register at all is preparation and gives no problem."""
+    out = []
+    for q in queues:
+        state, reason = in_force_status(q, main_text, commit_exists=commit_exists, path_at=path_at)
+        if state in PROFILE_CONFLICT:
+            out.append(f"'{q['queue_id']}' {MAIN_REF}'deki kayıtla çelişiyor — {state}" + (f" ({reason})" if reason else ""))
+    return out
 
 
 def current_bytes(queue: dict, ref: str | None) -> bytes:
@@ -781,16 +826,32 @@ def decision_resolved(path: Path) -> bool:
 
 
 def decision_resolved_text(text: str) -> bool:
+    """CT-FIX-02 (K1): the same reader as the prompt gate — one closed künye, one status, the GOV_APPROVED grammar."""
+    status, bad = kunye_status(text)
+    return bad is None and GOV_APPROVED.match(status) is not None
+
+
+def kunye_status(text: str) -> tuple[str | None, str | None]:
+    """CT-FIX-01 (11), shared by CT-FIX-02 (K1): the approval of a pack or a governance record is read from ONE closed
+    front matter holding exactly one 'status:' line. A second status, a status outside the front matter or an unclosed
+    block is refused — never settled by taking the first match. Returns (value, None) or (None, problem)."""
     lines = text.replace("\r\n", "\n").split("\n")
     if not lines or lines[0].strip() != "---":
-        return False
-    statuses = []
-    for line in lines[1:]:
-        if line.strip() == "---":
-            break
-        if re.match(r"^status\s*:", line):
-            statuses.append(line.split(":", 1)[1].strip())
-    return len(statuses) == 1 and re.match(r"^(approved|decided)\b", statuses[0], re.I) is not None
+        return None, "künye yok (dosya '---' ile başlamıyor)"
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        return None, "künye kapanmamış (kapanış '---' yok)"
+    found = [m.group(1).strip() for l in lines[1:end] for m in [re.match(r"^\**status\**\s*:\s*(.*)$", l, re.I)] if m]
+    if len(found) != 1:
+        return None, f"künyede {len(found)} 'status' satırı var, 1 olmalı"
+    value = found[0]
+    # CT-FIX-02 (K1): one balanced pair of the same quote is unwrapped ("approved" / 'approved'); a missing, mixed or
+    # doubled quote ('"approved', "approved'", '"'approved'"') is refused instead of being stripped into an approval.
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        value = value[1:-1]
+    if value[:1] in ("\"", "'") or value[-1:] in ("\"", "'"):
+        return None, f"künyedeki status değeri dengesiz ya da iç içe tırnaklı: {found[0][:40]}"
+    return value, None
 
 
 def acceptance_checker(queue: dict, ref: str | None = None):
@@ -1236,11 +1297,11 @@ def self_test() -> int:
     # The loader every consumer but validate uses, in memory (no file is written): a real commit and a tracked path, so a
     # single registry row passes and only the duplicate stops it.
     real = dict(reg_row, path="scripts/ct_queue.py", baseline_commit=git_text("rev-parse", "HEAD").strip())
-    saved = {k: globals()[k] for k in ("read_table", "TRANSITIONS")}
+    saved = {k: globals()[k] for k in ("read_table", "TRANSITIONS", "main_registry_text")}
 
-    def loads(rows: list[dict]) -> str:
+    def loads(rows: list[dict], main_text: str | None = None) -> str:
         globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else s7,
-                         TRANSITIONS=Path("/nonexistent/ct-fix-01/transitions.tsv"))
+                         TRANSITIONS=Path("/nonexistent/ct-fix-01/transitions.tsv"), main_registry_text=lambda: main_text)
         try:
             load_for_dispatch(real["queue_id"])
             return "ok"
@@ -1251,9 +1312,75 @@ def self_test() -> int:
     one, two = loads([real]), loads([real, real])
     cases.append(("CT-FIX-01 05: load_for_dispatch passes one valid row and stops a duplicate with DUR",
                   one == "ok" and two.startswith("DUR:") and "registered twice" in two))
-    main_src = Path(__file__).read_text(encoding="utf-8").split("\ndef main() -> int:", 1)[1]
-    cases.append(("CT-FIX-01 05: main uses load_for_dispatch for every command but validate",
-                  'load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)' in main_src))
+    # CT-FIX-02 (K4): the wiring through main() itself, not a search in this file's text — every command but validate
+    # stops on what validate rejects and on a profile origin/main registers differently; validate lists the conflict;
+    # a queue main does not register is preparation. Nothing is written: the loader's inputs are replaced in memory and
+    # the output is captured.
+    import contextlib
+    import io
+    reg_head = "\t".join(REGISTRY_COLUMNS) + "\n"
+    main_strict = reg_head + "\t".join(real[c] for c in REGISTRY_COLUMNS) + "\n"   # main: the queue strict=yes
+    lowered = [dict(real, strict="no")]                                             # the branch: strict=no
+
+    def via_main(argv: list[str], rows: list[dict], main_text: str | None) -> tuple[str, str]:
+        saved_argv, out = sys.argv, io.StringIO()
+        globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else s7,
+                         TRANSITIONS=Path("/nonexistent/ct-fix-02/transitions.tsv"), main_registry_text=lambda: main_text)
+        sys.argv = ["ct_queue.py", *argv]
+        try:
+            with contextlib.redirect_stdout(out):
+                return f"exit {main()}", out.getvalue()
+        except SystemExit as e:
+            return str(e), out.getvalue()
+        finally:
+            sys.argv = saved_argv
+            globals().update(saved)
+    commands = [["require", "W1", "--queue", "pq"], ["guard", "--queue", "pq"], ["summary", "--queue", "pq"],
+                ["writers", "--queue", "pq"]]
+    dup = [via_main(c, [real, real], None)[0] for c in commands]
+    cases.append(("CT-FIX-02 K4: main() — require, guard, summary and writers each stop on a duplicate registry row (DUR)",
+                  all(r.startswith("DUR:") and "registered twice" in r for r in dup)))
+    clash = [via_main(c, lowered, main_strict)[0] for c in commands]
+    cases.append(("CT-FIX-02 K3: main() — origin/main registers the queue strict=yes, the branch strict=no -> every "
+                  "command DUR (farklı profil)", all(r.startswith("DUR:") and "farklı profil" in r for r in clash)))
+    v_code, v_out = via_main(["validate", "--queue", "pq"], lowered, main_strict)
+    cases.append(("CT-FIX-02 K3: validate lists the same conflict as HATA and exits 1",
+                  v_code == "exit 1" and any(l.startswith("HATA") and "çelişiyor" in l and "farklı profil" in l
+                                             for l in v_out.splitlines())))
+    cases.append(("CT-FIX-02 K3: preparation unchanged — origin/main without the queue, or without a registry -> the loader passes",
+                  loads([real], reg_head) == "ok" and loads([real], None) == "ok"))
+    cases.append(("CT-FIX-02 K3: main registers another path or an invalid row -> farklı görev kaynağı / kayıt geçersiz stop",
+                  "farklı görev kaynağı" in loads([dict(real, path="scripts/prompt_gate.py")], main_strict)
+                  and "kayıt geçersiz" in loads([real], reg_head + "\t".join(dict(real, owner_confirmation="maybe")[c]
+                                                                              for c in REGISTRY_COLUMNS) + "\n")))
+    cases.append(("CT-FIX-02 K3: strict=yes with a vocabulary other than sop7 (a copied 'sop7x') -> registry problem",
+                  any("strict=yes requires vocabulary 'sop7'" in pr for pr in check_registry(
+                      [dict(reg_row, vocabulary="sop7x")], [dict(s, queue_id="sop7x") for s in s7], **yes))
+                  and not any("requires vocabulary" in pr for pr in check_registry([dict(reg_row, strict="no", vocabulary="sce-mvp6")],
+                                                                                    [dict(s, queue_id="sce-mvp6") for s in s7], **yes))))
+    # CT-FIX-02 (K1): the reassessment check reads the approval through the prompt gate's reader
+    k1 = {"approved": True, "decided — not": True, "approved (kapsam)": True, "approved-but-draft": False,
+          "approved draft": False, "decided-but-draft": False, "Approved": False}
+    cases.append(("CT-FIX-02 K1: -R3 record — approved / decided and the two annotation forms resolve; "
+                  "approved-but-draft, approved draft, decided-but-draft do not",
+                  all(decision_resolved_text(f"---\nstatus: {k}\n---\nx\n") is v for k, v in k1.items())))
+    cases.append(("CT-FIX-02 K1: -R3 record — an unclosed künye, two status lines or no künye do not resolve",
+                  not decision_resolved_text("---\nstatus: approved\nbody\n")
+                  and not decision_resolved_text("---\nstatus: approved\nstatus: approved\n---\n")
+                  and not decision_resolved_text("status: approved\n")))
+    quotes = {'"approved"': True, "'decided'": True, '"approved': False, "approved'": False, "'approved\"": False,
+              "\"'approved'\"": False, "''approved''": False, "decided — sahibin 'tamam' yanıtı": True}
+    cases.append(("CT-FIX-02 K1: one balanced pair of the same quote is read; a missing, mixed or doubled quote is refused",
+                  all(decision_resolved_text(f"---\nstatus: {k}\n---\nx\n") is v for k, v in quotes.items())))
+    try:
+        read_table(ROOT / "execution" / "delivery" / "no-such-states-ct-fix-02.tsv", STATE_COLUMNS)
+        missing = "read"
+    except SystemExit as e:
+        missing = str(e)
+    except Exception as e:      # the traceback this case guards against: a named FAIL, not a crash of the self-test
+        missing = f"{type(e).__name__}: {e}"
+    cases.append(("CT-FIX-02: a missing states/registry/transition file -> DUR line, not a traceback",
+                  missing.startswith("DUR:") and "okunamadı" in missing))
 
     for name, ok in cases:
         print(f"{'PASS' if ok else 'FAIL'} {name}")
@@ -1287,6 +1414,7 @@ def main() -> int:
         problems = check_registry(read_table(REGISTRY, REGISTRY_COLUMNS), states)
         transitions = read_table(TRANSITIONS, TRANSITION_COLUMNS) if TRANSITIONS.exists() else []
         problems += check_transitions(transitions, states) + sop7_problems(states, transitions)
+        problems += main_profile_problems(queues, main_registry_text())     # CT-FIX-02 (K3): the stop the others make
         for line in problems:
             print(f"HATA {line}")
         failed = bool(problems)

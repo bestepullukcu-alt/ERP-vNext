@@ -206,8 +206,13 @@ def check_approval(ledger: dict, ledger_path: str, ledger_text: str, approval_pa
             if k in got:
                 bad.append(f"onay kaydında '{k}' iki kez var")
             got[k] = v
-    if not re.match(r"^(approved|decided)\b", got.get("status", ""), re.I):
-        bad.append(f"onay kaydı onaylı değil (status: '{got.get('status', 'yok')[:20]}')")
+    # CT-FIX-02 (K1): the prompt gate's reader (ct_queue.kunye_status + GOV_APPROVED), not a looser copy of it
+    shared = _load("ct_queue", ROOT / "scripts" / "ct_queue.py")
+    status, sbad = shared.kunye_status(approval_text)
+    if sbad:
+        bad.append(f"onay kaydı: {sbad}")
+    elif not shared.GOV_APPROVED.match(status):
+        bad.append(f"onay kaydı onaylı değil (status: '{status[:20] or 'yok'}')")
     if got.get("ledger") != ledger_path:
         bad.append(f"onay kaydı başka bir tabanı gösteriyor ('{got.get('ledger', 'yok')}')")
     if got.get("baseline_version") != ledger.get("baseline_version"):
@@ -761,9 +766,70 @@ def self_test() -> int:
             globals()["ROOT"] = saved_root
     cases.append(("CT-FIX-01 13: Source — a hex-named branch is refused, the real short id reads; resolve() still takes a named ref",
                   refused and accepted and named))
-    integration = Path(__file__).read_text(encoding="utf-8").split("\n# " + "-" * 96 + " integration\n", 1)[-1]
-    cases.append(("CT-FIX-01 05/06: the report checks registry, vocabulary and transitions with ct_queue.dispatch_problems",
-                  "reg_problems = ctq.dispatch_problems(registry, states, all_trans," in integration))
+    # CT-FIX-02 (K4): the report's wiring through read_strict_queue itself (the function build() and module-check call),
+    # not a search in this file's text. A fixed commit is imitated in memory; nothing is written.
+    ctq_mod = _load("ct_queue", ROOT / "scripts" / "ct_queue.py")
+    reg_cols, st_cols, tr_cols = ctq_mod.REGISTRY_COLUMNS, ctq_mod.STATE_COLUMNS, ctq_mod.TRANSITION_COLUMNS
+    fq = {"queue_id": "fq", "control_tower": "F CT", "path": "q.tsv", "baseline_commit": "b" * 40, "owner_confirmation": "pending",
+          "scope": "f", "evidence": "f", "strict": "yes", "vocabulary": "sop7"}
+    tsv = lambda cols, rows: "\t".join(cols) + "\n" + "".join("\t".join(r[c] for c in cols) + "\n" for r in rows)
+    st7 = [{"queue_id": "sop7", "state": a, "class": c, "dispatch": d, "source": "SOP §7", "confirmation": "confirmed"}
+           for a, c, d in [("READY", "dispatchable", "yes"), ("IN_PROGRESS", "active", "no"), ("ACCEPTED", "closed", "no"),
+                           ("REWORK", "rework", "no"), ("FAILED", "failed", "no"), ("SUPERSEDED", "superseded", "no"),
+                           ("CANCELLED", "cancelled", "no")]]
+    tr7 = [{"vocabulary": "sop7", "from_state": a, "to_state": b, "evidence": "SOP §7", "source": "s", "kind": "sop"}
+           for a, b in [("READY", "IN_PROGRESS"), ("IN_PROGRESS", "ACCEPTED"), ("IN_PROGRESS", "REWORK"),
+                        ("IN_PROGRESS", "FAILED"), ("READY", "SUPERSEDED"), ("READY", "CANCELLED")]]
+    qtext = "id\titem\tmodule\tstate\towner\tdepends_on\tredispatch_trigger\tsince\trecord\nW1\tx\tMOD-0288\tREADY\tCT\t-\t-\t2026-10-17\t-\n"
+    rel = lambda path: path.relative_to(ctq_mod.ROOT).as_posix()
+
+    class FakeSource:
+        def __init__(self, states, main_registry=None):
+            self.sha = "e" * 40
+            self.files = {rel(ctq_mod.REGISTRY): tsv(reg_cols, [fq]), rel(ctq_mod.STATES): tsv(st_cols, states),
+                          rel(ctq_mod.TRANSITIONS): tsv(tr_cols, tr7), "q.tsv": qtext}
+            self.main = None if main_registry is None else {rel(ctq_mod.REGISTRY): main_registry, "q.tsv": qtext}
+
+        def resolve(self, ref):
+            if ref == ctq_mod.MAIN_REF:
+                return "d" * 40 if self.main is not None else None
+            return ref if SHA40.match(ref) else None
+
+        def read(self, commit, path):
+            return (self.main if commit == "d" * 40 else self.files).get(path)
+
+        def read_bytes(self, commit, path):
+            text = self.read(commit, path)
+            return None if text is None else text.encode()
+
+        def files_matching(self, commit, prefix, pattern):
+            return {}
+
+        def blob(self, commit, path):
+            return None
+
+    def reasons_of(src_):
+        return read_strict_queue(ctq_mod, vmi, src_, "fq")["reasons"]
+    clean = reasons_of(FakeSource(st7))
+    broken = reasons_of(FakeSource([dict(x, dispatch="yes") if x["state"] == "FAILED" else x for x in st7]))
+    cases.append(("CT-FIX-02 K4: read_strict_queue — a vocabulary that makes FAILED dispatchable -> 'kayıt, durum sözlüğü "
+                  "ya da geçiş tablosu sorunlu' reason; the intact one gives none",
+                  any(r.startswith("kayıt, durum sözlüğü ya da geçiş tablosu sorunlu") for r in broken)
+                  and not any(r.startswith("kayıt, durum sözlüğü") for r in clean)))
+    lowered_main = tsv(reg_cols, [dict(fq, strict="no")])
+    clash = reasons_of(FakeSource(st7, lowered_main))
+    prep = reasons_of(FakeSource(st7, "\t".join(reg_cols) + "\n"))
+    cases.append(("CT-FIX-02 K3: read_strict_queue — origin/main registers the queue strict=no -> 'çelişiyor — farklı profil' "
+                  "reason (report not complete, no percentages); main without the queue -> no such reason",
+                  any("çelişiyor — farklı profil" in r for r in clash) and not any("çelişiyor" in r for r in prep + clean)))
+    k1_ok = lambda status: not any("onay" in b and ("onaylı değil" in b or "tırnak" in b or "künye" in b)
+                                   for b in check_approval({"baseline_version": "1"}, path, ledger_text, "docs/records/decisions/2026-10/taban.md",
+                                                           approval(status=status), approval(status=status)))
+    k1 = {"approved": True, '"approved"': True, "decided — sahip": True, "approved-but-draft": False, "approved draft": False,
+          "decided-but-draft": False, '"approved': False, "approved'": False}
+    cases.append(("CT-FIX-02 K1: the effort approval is read by the prompt gate's reader — approved / decided forms and one "
+                  "balanced quote pass; approved-but-draft, approved draft, decided-but-draft and unbalanced quotes do not",
+                  all(k1_ok(k) is v for k, v in k1.items())))
     failed = 0
     for name, good in cases:
         print(("PASS " if good else "FAIL ") + name)
@@ -897,6 +963,15 @@ def read_strict_queue(ctq, vmi, src: "Source", queue_id: str) -> dict:
                                          path_at=lambda c, path: src.read(c, path) is not None)
     if reg_problems:
         reasons.append(f"kayıt, durum sözlüğü ya da geçiş tablosu sorunlu: {reg_problems[0]}")
+    # CT-FIX-02 (K3): origin/main registers this queue differently or unreadably -> not complete, no percentages (the
+    # stop every ct_queue consumer makes). A queue main does not register is preparation and only shows in source.in_force.
+    main_sha = src.resolve(ctq.MAIN_REF)
+    main_reg = src.read(main_sha, reg_path) if main_sha else None
+    in_force = ctq.in_force_status(q, main_reg, commit_exists=lambda c: src.resolve(c) is not None,
+                                   path_at=lambda c, path: src.read(c, path) is not None)
+    if in_force[0] in ctq.PROFILE_CONFLICT:
+        reasons.append(f"'{queue_id}' {ctq.MAIN_REF}'deki kayıtla çelişiyor — {in_force[0]}"
+                       + (f" ({in_force[1]})" if in_force[1] else ""))
     vocab = ctq.vocabulary(states, q["vocabulary"])
     trans = [t for t in all_trans if t["vocabulary"] == q["vocabulary"]]
     t_problems = ctq.check_transitions(trans, states) if trans else ["sözlüğün geçiş satırı yok"]
@@ -939,7 +1014,7 @@ def read_strict_queue(ctq, vmi, src: "Source", queue_id: str) -> dict:
     if errors:
         reasons.append(f"kuyruk doğrulaması: {len(errors)} hata — ilk: {errors[0][:120]}")
     return {"q": q, "reg_path": reg_path, "vocab": vocab, "cur": cur, "rows_raw": rows_raw, "errors": errors, "bad": bad,
-            "reasons": reasons}
+            "reasons": reasons, "main_sha": main_sha, "in_force": in_force}
 
 
 def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous: str | None = None) -> dict:
@@ -1040,10 +1115,7 @@ def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous:
                 from datetime import date
                 age = f" · {(date.fromisoformat(s_date) - date.fromisoformat(since)).days} gün"
             blockers.append(f"{r['id']} {r.get('item', '')[:60]} · {since}{age} · sahip {r.get('owner', '-')}")
-    main_sha = src.resolve("origin/main")
-    main_reg = src.read(main_sha, reg_path) if main_sha else None
-    in_force, why = ctq.in_force_status(q, main_reg, commit_exists=lambda c: src.resolve(c) is not None,
-                                        path_at=lambda c, path: src.read(c, path) is not None)
+    main_sha, (in_force, why) = sq["main_sha"], sq["in_force"]
     ancestor = bool(main_sha) and src.git("merge-base", "--is-ancestor", S, main_sha, ok_fail=True).returncode == 0
     dirty = src.resolve("HEAD") == S and bool(src.git("status", "--porcelain").stdout.strip())
     data = {"format": "status-report-v2", "queue": queue_id, "control_tower": q["control_tower"],

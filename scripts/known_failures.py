@@ -17,8 +17,10 @@ check         exit 0  no new regression in THIS comparison (not "tests passed", 
                       e.g. one more violation inside an already red test, or any change of a message-type failure):
                       a regression, stop and report
               exit 2  the run or the registry cannot be trusted: empty, unreadable or unknown format, no results, no
-                      test executed, aborted, a console summary that does not match the failures found, or
-                      tests/known-failures.tsv and tests/known-failures-items.json disagree
+                      test executed, aborted, a console summary that does not match the failures found; or the
+                      registry is one validate rejects (a duplicate (suite, test), …), tests/known-failures.tsv and
+                      tests/known-failures-items.json disagree, or — without --suite — one test name is open in two
+                      suites (CT-FIX-02: checked before any classification; the registry is never changed)
               exit 3  console log: names compared, failure details NOT verified — not enough for acceptance
               Acceptance uses a TRX (`dotnet test … --logger "trx;LogFileName=<file>"`).
               Outcomes other than Passed / NotExecuted (Error, Timeout, Aborted, …) count as failed.
@@ -26,7 +28,8 @@ fingerprint   prints the fingerprint of every failed test in a TRX (to record or
               --items-json prints the item lists of list-type failures as JSON instead.
 should-rerun  per registered test: KOŞ önerisi / ATLA önerisi, from its rerun_trigger globs and every path changed since
               its last_verified_commit. ATLA covers ONLY the named registered tests; the rest of the suite (security
-              guards included) still runs. Any git error → KOŞ önerisi and exit 2.
+              guards included) still runs. Any git error → KOŞ önerisi and exit 2. A registry validate rejects -> DUR,
+              exit 2, no recommendation (CT-FIX-02).
 validate      every row names a test, commits that exist, a non-empty fingerprint for open rows, triggers that match at
               least one tracked path; (suite, test) is unique.
 
@@ -305,6 +308,23 @@ def validate(rows: list[dict], exists=commit_exists, tracked: list[str] | None =
     return problems
 
 
+def registry_stop(rows: list[dict], item_problems: list[str], suite: str | None, tracked: list[str]) -> list[str]:
+    """CT-FIX-02 (K2): why check / should-rerun may not use this registry — validate()'s own problems and the item-list
+    disagreements; and for a check without --suite, a test name open in more than one suite: a TRX does not name its
+    suite, so the row is never chosen by guessing from the message. The registry and the item lists are not changed."""
+    problems = validate(rows, tracked=tracked) + item_problems
+    if suite is None:
+        seen: dict[str, set[str]] = {}
+        for r in rows:
+            if r["status"] == "open":
+                seen.setdefault(r["test"], set()).add(r["suite"])
+        for name, suites in sorted(seen.items()):
+            if len(suites) > 1:
+                problems.append(f"'{name}' {len(suites)} süitte açık kayıtlı ({', '.join(sorted(suites))}); TRX süiti "
+                                "kanıtlamaz — --suite verin")
+    return problems
+
+
 def write_calls(source: str) -> list[str]:
     found = []
     for node in ast.walk(ast.parse(source)):
@@ -398,6 +418,48 @@ def self_test() -> int:
     cases.append(("sabotage: open row without fingerprint -> validate fails", any("failure_fingerprint" in p for p in problems)))
     problems = validate(read_registry(reg.replace("docs/*", "services/{A,B}/*")), exists=lambda s: True)
     cases.append(("sabotage: brace glob -> validate fails", any("braces" in p for p in problems)))
+    # CT-FIX-02 (K2/K4): the registry check through main() itself — check and should-rerun refuse a registry validate
+    # rejects before the run is read; a check without --suite refuses a name open in two suites. In memory: the registry
+    # and item files are replaced by text objects, the run file does not exist, the output is captured.
+    import contextlib
+    head = git("rev-parse", "HEAD").strip()
+    kreg = lambda *rows_: "\t".join(COLUMNS) + "\n" + "".join(
+        f"{suite}\tNs.T\t{head}\tfixture\t{head}\tscripts/*\tfixture\topen\t{fp}\tteam\tkarar bekliyor\n" for suite, fp in rows_)
+
+    class Text:
+        def __init__(self, text: str | None, name: str):
+            self.text, self.name = text, name
+
+        def read_text(self, encoding: str = "utf-8") -> str:
+            return self.text
+
+        def exists(self) -> bool:
+            return self.text is not None
+
+    def via_main(argv: list[str], reg_text: str) -> tuple[int, str]:
+        saved, saved_argv, out = {k: globals()[k] for k in ("REGISTRY", "ITEMS")}, sys.argv, io.StringIO()
+        globals().update(REGISTRY=Text(reg_text, "known-failures.tsv"), ITEMS=Text(None, "known-failures-items.json"))
+        sys.argv = ["known_failures.py", *argv]
+        try:
+            with contextlib.redirect_stdout(out):
+                code = main()
+        finally:
+            sys.argv = saved_argv
+            globals().update(saved)
+        return code, out.getvalue()
+    nope = "/nonexistent/ct-fix-02/run.trx"
+    one = via_main(["check", nope, "--suite", "S"], kreg(("S", fp_msg)))
+    dup = via_main(["check", nope, "--suite", "S"], kreg(("S", fp_msg), ("S", fp_list)))
+    two = via_main(["check", nope], kreg(("S", fp_msg), ("S2", fp_msg)))
+    rer = via_main(["should-rerun", "--suite", "S"], kreg(("S", fp_msg), ("S", fp_list)))
+    cases.append(("CT-FIX-02 K2: main() check — a valid registry reaches the run file (DUR: run untrusted, exit 2)",
+                  one[0] == EXIT_UNTRUSTED and "koşu çıktısı güvenilir değil" in one[1] and "HATA" not in one[1]))
+    cases.append(("CT-FIX-02 K2: main() check — a duplicate (suite, test) stops before the run is read, exit 2",
+                  dup[0] == EXIT_UNTRUSTED and "duplicate" in dup[1] and "koşu çıktısı" not in dup[1]))
+    cases.append(("CT-FIX-02 K2: main() check without --suite — one name open in two suites -> exit 2, never guessed",
+                  two[0] == EXIT_UNTRUSTED and "süitte açık kayıtlı" in two[1] and "koşu çıktısı" not in two[1]))
+    cases.append(("CT-FIX-02 K2: main() should-rerun — a duplicate (suite, test) -> exit 2, no KOŞ / ATLA line",
+                  rer[0] == EXIT_UNTRUSTED and "duplicate" in rer[1] and "önerisi\t" not in rer[1]))
     try:
         git("fetch"); refused = False
     except RuntimeError:
@@ -426,6 +488,20 @@ def main() -> int:
     rows = read_registry(REGISTRY.read_text(encoding="utf-8")) if a.cmd != "fingerprint" else []
     items, item_problems = ({}, []) if a.cmd == "fingerprint" else load_items(
         rows, ITEMS.read_text(encoding="utf-8") if ITEMS.exists() else None)
+
+    if a.cmd in ("check", "should-rerun"):
+        # CT-FIX-02 (K2): classify / recommend only from a registry validate accepts — a duplicate row would otherwise let
+        # the last row win (a changed failure read as BİLİNEN) or give one test both KOŞ and ATLA.
+        try:
+            stop = registry_stop(rows, item_problems, a.suite, git("ls-files", "-z").split("\0"))
+        except RuntimeError as e:
+            stop = [f"git ölçümü başarısız — {e}"]
+        if stop:
+            for line in stop:
+                print(f"HATA {line}")
+            print("DUR: tests/known-failures.tsv / tests/known-failures-items.json geçersiz ya da belirsiz — sınıflandırma "
+                  "ve tekrar önerisi yapılmaz (python3 scripts/known_failures.py validate).")
+            return EXIT_UNTRUSTED
 
     if a.cmd == "validate":
         try:
@@ -456,11 +532,6 @@ def main() -> int:
                 if outcome not in NOT_FAILED:
                     print(f"{fingerprint(message)}\t{outcome}\t{name}")
             return EXIT_OK
-        if item_problems:
-            for line in item_problems:
-                print(f"HATA {line}")
-            print("DUR: tests/known-failures.tsv ile tests/known-failures-items.json uyuşmuyor — kayıt güvenilir değil.")
-            return EXIT_UNTRUSTED
         result = classify(rows, run, a.suite, items)
         for label in ("BİLİNEN", "KISMEN-DÜZELDİ", "YENİ", "YENİ-AYRINTI", "DÜZELDİ", "KOŞMADI", "BİLİNMİYOR"):
             for name in result[label]:

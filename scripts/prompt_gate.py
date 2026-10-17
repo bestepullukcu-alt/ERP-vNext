@@ -64,10 +64,6 @@ PATH_SIGNALS = [(re.compile(r"(^|/)migrations?(/|$)", re.I), "migrasyon"),
 CHOICES = {"parent", "FU", "child", "yeni"}
 PACK_OK = {"ready-for-dev", "approved"}
 HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
-# CT-FIX-01 (11): a governance record approves with exactly 'approved' or 'decided', optionally followed by the two
-# annotation forms its records use — ' (…)' and ' — <text>' (measured 2026-10-17, docs/records/decisions). Any other
-# suffix ('approved-but-draft', 'approved draft', 'approved (…) + F-1: …') is not an approval the gate reads.
-GOV_APPROVED = re.compile(r"^(approved|decided)(?: \([^()]*\))?(?: — \S.*)?$")
 REVIEW_CHECKS = ["sözleşme", "dosyalar", "ct-onayı", "kabul", "durma", "risk"]
 MIN_REASON = 15
 PLACEHOLDER = re.compile(r"^\s*(-|—|tbd|todo|\.\.\.|…|yok|n/?a|bekliyor)?\s*$", re.I)
@@ -92,6 +88,13 @@ def vmi():
 
 def ctq():
     return _load("ct_queue", ROOT / "scripts" / "ct_queue.py")
+
+
+# CT-FIX-01 (11) / CT-FIX-02 (K1): the approval reader is ct_queue's — ONE reader for this gate, the -R3 reassessment
+# check and the status report. A governance record approves with exactly 'approved' or 'decided' plus only the ' (…)'
+# and ' — <text>' forms (ct_queue.GOV_APPROVED); kunye_status() reads one closed künye with exactly one status.
+_SHARED = ctq()
+GOV_APPROVED, kunye_status = _SHARED.GOV_APPROVED, _SHARED.kunye_status
 
 
 def sha256(data: bytes) -> str:
@@ -370,22 +373,6 @@ def check_contract(p: dict, repo, commit: str) -> tuple[list[str], list[str], in
             eng.append("sözleşme: HIGH promptta hiç alıntı yok — doğrulanmış sözleşme yüzeyi olmadan HIGH iş dağıtılmaz")
         info.append("sözleşme: hiçbir yüzey alıntılanmadı — doğrulanan sözleşme yok (yalnız gerekçeli N/A)")
     return eng, info, quotes
-
-
-def kunye_status(text: str) -> tuple[str | None, str | None]:
-    """CT-FIX-01 (11): the approval of a pack or a governance record is read from ONE closed front matter holding exactly
-    one 'status:' line. A second status, a status outside the front matter or an unclosed block is refused — never
-    settled by taking the first match. Returns (value, None) or (None, problem)."""
-    lines = text.replace("\r\n", "\n").split("\n")
-    if not lines or lines[0].strip() != "---":
-        return None, "künye yok (dosya '---' ile başlamıyor)"
-    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
-    if end is None:
-        return None, "künye kapanmamış (kapanış '---' yok)"
-    found = [m.group(1).strip() for l in lines[1:end] for m in [re.match(r"^\**status\**\s*:\s*(.*)$", l, re.I)] if m]
-    if len(found) != 1:
-        return None, f"künyede {len(found)} 'status' satırı var, 1 olmalı"
-    return found[0].strip("\"'"), None
 
 
 def check_authority(p: dict, repo, commit: str, row: dict | None = None) -> list[str]:
@@ -1056,6 +1043,12 @@ Rapor formatı: §22
     cases.append(("CT-FIX-01 11: governance approved then draft, and approval only in prose -> ENGEL",
                   any("2 'status'" in e for e in auth(gov_p, "---\nstatus: approved\nstatus: draft\n---\nW1\n"))
                   and any("künye yok" in e for e in auth(gov_p, "# Karar\nstatus: approved\nW1\n"))))
+    bad_quotes = ('"approved', "approved'", "'approved\"", "\"'approved'\"")
+    cases.append(("CT-FIX-02 K1: the gate reads one balanced quote ('\"approved\"') and refuses a missing, mixed or doubled "
+                  "quote on a pack and a governance record",
+                  not auth(pack_p, '---\nstatus: "approved"\n---\n') and not auth(gov_p, "---\nstatus: 'approved'\n---\nW1\n")
+                  and all(auth(pack_p, f"---\nstatus: {v}\n---\n") and auth(gov_p, f"---\nstatus: {v}\n---\nW1\n")
+                          for v in bad_quotes)))
     fake = FakeRepo({})
     cases.append(("CT-FIX-01 13: Expected HEAD — a real short id resolves, 'deadbee' does not (fake repo)",
                   fake.commit_id("aaaaaaa") == "a" * 40 and fake.commit_id("deadbee") is None))

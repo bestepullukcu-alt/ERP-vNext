@@ -1,0 +1,337 @@
+"""CT-FIX-02 trials through the real command lines. One driver for before and after: it builds a fixture repository
+outside the real one (a --shared clone at the CT line's data, plus fixture commits), copies the tools under test from
+CODE into it, and runs them as subprocesses. A case is RED when the tool does the unsafe thing the 2026-10-17 audits v3
+reported; a control (C-*) must keep its expected answer before and after.
+Usage: python3 -I -B ctf2_trials.py <CODE dir> <real repo> <data commit> <new fixture dir> <out.json>"""
+import importlib.util
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+CODE, REAL, DATA, FIX, OUT = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], Path(sys.argv[4]), Path(sys.argv[5])
+TOOLS = ["scripts/ct_queue.py", "scripts/prompt_gate.py", "scripts/status_report.py", "scripts/status_report_v2.py",
+         "scripts/known_failures.py", "scripts/acceptance_record.py", ".antigravity/scripts/verify_module_id.py"]
+ENV = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_AUTHOR_NAME="fixture", GIT_AUTHOR_EMAIL="fixture@invalid",
+           GIT_COMMITTER_NAME="fixture", GIT_COMMITTER_EMAIL="fixture@invalid",
+           GIT_AUTHOR_DATE="2026-10-17T12:00:00Z", GIT_COMMITTER_DATE="2026-10-17T12:00:00Z")
+results = []
+
+
+def git(*args, check=True):
+    r = subprocess.run(["git", "-C", str(FIX), "-c", "commit.gpgsign=false", *args], capture_output=True, text=True, env=ENV)
+    if check and r.returncode != 0:
+        raise SystemExit(f"git {' '.join(args)}: {r.stderr}")
+    return r.stdout.strip()
+
+
+def put(rel, text):
+    p = FIX / rel
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(text, encoding="utf-8")
+
+
+def commit(msg, *paths):
+    git("add", "--", *paths)
+    git("commit", "-q", "--allow-empty", "-m", msg)
+    return git("rev-parse", "HEAD")
+
+
+def tool(*args):
+    r = subprocess.run([sys.executable, "-B", *args], cwd=FIX, capture_output=True, text=True, env=ENV, timeout=600)
+    return r.returncode, r.stdout, r.stderr
+
+
+def first(text, pat):
+    m = next((l for l in text.splitlines() if re.search(pat, l)), "")
+    return m.strip()[:160]
+
+
+def case(cid, expected, observed, red):
+    results.append({"id": cid, "expected": expected, "observed": observed, "red": bool(red)})
+    print(f"{'RED ' if red else 'ok  '} {cid}\n      expected: {expected}\n      observed: {observed}")
+
+
+# ------------------------------------------------------------------ fixture repository
+subprocess.run(["git", "clone", "-q", "--shared", "--no-checkout", str(REAL), str(FIX)], check=True, env=ENV)
+git("checkout", "-q", "--detach", DATA)
+for rel in TOOLS:
+    shutil.copyfile(CODE / rel, FIX / rel)
+code_commit = commit("fixture: tools under test", *TOOLS)
+QH = "id\titem\tmodule\tstate\towner\tdepends_on\tredispatch_trigger\tsince\trecord\treassessment_record\n"
+QROWS = ["W1\tfixture one\tMOD-0288\tREADY\tCT\t-\t-\t2026-10-17\t-\t-",
+         "W2\tfixture two\tMOD-0288\tREWORK\tCT\t-\t-\t2026-10-17\t-\t-",
+         "W2-R1\trework one\tMOD-0288\tREWORK\tCT\tW2\t-\t2026-10-17\t-\t-",
+         "W2-R2\trework two\tMOD-0288\tREWORK\tCT\tW2\t-\t2026-10-17\t-\t-",
+         "W2-R3\trework three\tMOD-0288\tREADY\tCT\tW2\t-\t2026-10-17\t-\tdocs/records/decisions/2026-10/ctf2-w2-r3.md",
+         "W3\tfixture three\tMOD-0288\tFAILED\tCT\t-\t-\t2026-10-17\t-\t-"]
+QPATH = "execution/delivery/ctf2-queue.tsv"
+put(QPATH, QH + "\n".join(QROWS) + "\n")
+c1 = commit("fixture: queue", QPATH)
+put("docs/records/decisions/2026-10/ctf2-note.md", "---\nstatus: decided\n---\nnote\n")
+c1b = commit("fixture: another commit with the queue unchanged", "docs/records/decisions/2026-10/ctf2-note.md")
+REG = "execution/delivery/ct-queue-registry.tsv"
+reg_real = (FIX / REG).read_text(encoding="utf-8")
+cols = reg_real.split("\n", 1)[0].split("\t")
+ROW = {"queue_id": "ctf2", "control_tower": "Fixture CT", "path": QPATH, "baseline_commit": c1, "owner_confirmation": "pending",
+       "scope": "fixture", "evidence": "fixture", "strict": "yes", "vocabulary": "sop7"}
+line = lambda **over: "\t".join(dict(ROW, **over)[c] for c in cols)
+reg_text = lambda **over: reg_real + line(**over) + "\n"
+RR = "docs/records/decisions/2026-10/ctf2-w2-r3.md"
+put(REG, reg_text())
+put(RR, "---\nstatus: approved\n---\nreassessment\n")
+c2 = commit("fixture: registry row + reassessment record", REG, RR)
+# effort baseline: approval record first, then the ledger naming it
+sys.path.insert(0, str(FIX / "scripts"))
+LEDGER = "execution/delivery/effort/ctf2.md"
+APPROVAL = "docs/records/decisions/2026-10/ctf2-effort.md"
+
+
+def ledger_text(at):
+    return ("---\nformat: effort-ledger-v1\nqueue: ctf2\nbaseline_version: 1\nunit: saat\n"
+            "weights: backend=0.5 frontend=0.3 test=0.2\napproval_record: " + APPROVAL + "@" + at + "\n---\n\n"
+            "| ID | Backend | Frontend | Test |\n|---|---|---|---|\n| W1 | 8 | 4 | 4 |\n| W2 | 8 | 0 | 4 |\n| W3 | 2 | 2 | 2 |\n")
+
+
+def content_sha():
+    import hashlib
+    t = ledger_text("0" * 40)
+    return hashlib.sha256("\n".join(l for l in t.split("\n") if not l.startswith("approval_record:")).encode()).hexdigest()
+
+
+def report_at(status):
+    """A side commit chain on top of c2: an approval record with this status, then the ledger naming it. Returns S."""
+    git("checkout", "-q", "--detach", c2)
+    put(APPROVAL, f"---\nstatus: {status}\nledger: {LEDGER}\nbaseline_version: 1\nledger_content_sha256: {content_sha()}\n---\n\nonay\n")
+    a = commit(f"fixture: effort approval ({status})", APPROVAL)
+    put(LEDGER, ledger_text(a))
+    return commit("fixture: effort ledger", LEDGER)
+
+
+def report(ref):
+    code, out, err = tool("scripts/status_report.py", "--mode", "v2", "--queue", "ctf2", "--ref", ref)
+    m = re.search(r"```json status-report-v2\n(.*?)\n```", out, re.S)
+    if not m:
+        return code, None, first(out, r"sonuç|tamamlanamadı") or err.strip()[-160:]
+    d = json.loads(m.group(1))
+    return code, d, f"complete={d['complete']} percentages_valid={d['percentages_valid']} in_force={d['source']['in_force']}"
+
+
+S_ok = report_at("approved")
+head_ok = S_ok
+
+
+def main_ref(text_or_commit):
+    """origin/main imitation: a commit on c1 (the queue file exists there) whose registry is the given text; or an
+    existing commit."""
+    if re.fullmatch(r"[0-9a-f]{40}", text_or_commit):
+        git("update-ref", "refs/remotes/origin/main", text_or_commit)
+        return
+    git("checkout", "-q", "--detach", c1)
+    put(REG, text_or_commit)
+    m = commit("fixture: origin/main imitation", REG)
+    git("update-ref", "refs/remotes/origin/main", m)
+
+
+def at_head(sha):
+    git("checkout", "-q", "--detach", "-f", sha)
+
+
+# ------------------------------------------------------------------ controls (must hold before and after)
+main_ref(c1)                                     # main has the queue file but no registry row: preparation (R8 r3)
+at_head(head_ok)
+code, out, _ = tool("scripts/ct_queue.py", "require", "W1", "--queue", "ctf2")
+case("C-01 main has no row for the queue -> require W1 (preparation)", "exit 0, DAĞITILABİLİR",
+     f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code != 0)
+rc, d, obs = report(head_ok)
+case("C-02 main has no row -> report on an approved baseline", "complete=true, percentages_valid=true", obs,
+     not (d and d["complete"] and d["percentages_valid"]))
+for cmd in (["guard", "--queue", "ctf2"], ["summary", "--queue", "ctf2"], ["writers", "--queue", "ctf2"]):
+    code, out, err = tool("scripts/ct_queue.py", *cmd)
+    case(f"C-08 main has no row -> {cmd[0]}", "exit 0", f"exit {code}; {first(out + err, 'DUR|sha256=|KUYRUK|ÇAKIŞMA|yok') or '-'}", code != 0)
+main_ref(reg_text(baseline_commit=c1))           # main registers the same profile
+at_head(head_ok)
+code, out, _ = tool("scripts/ct_queue.py", "require", "W1", "--queue", "ctf2", "--in-force")
+case("C-03 main registers the same profile -> require --in-force W1", "exit 0", f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code != 0)
+code, out, _ = tool("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ctf2")
+case("C-04 -R3 record 'approved' -> require W2-R3", "exit 0", f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code != 0)
+for label, text in [("decided — note", "---\nstatus: decided — fixture note\n---\nx\n"),
+                    ("approved (scope)", "---\nstatus: approved (fixture scope)\n---\nx\n")]:
+    put(RR, text)
+    code, out, _ = tool("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ctf2")
+    case(f"C-05 -R3 record '{label}' (a form the records use) -> require W2-R3", "exit 0",
+         f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code != 0)
+put(RR, "---\nstatus: approved\nstatus: approved\n---\nx\n")
+code, out, _ = tool("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ctf2")
+case("C-06 -R3 record with two status lines -> require W2-R3", "exit 1", f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code != 1)
+
+# ------------------------------------------------------------------ K1: one approval reader
+for label, text in [("approved-but-draft", "---\nstatus: approved-but-draft\n---\nx\n"),
+                    ("approved draft", "---\nstatus: approved draft\n---\nx\n"),
+                    ("decided-but-draft", "---\nstatus: decided-but-draft\n---\nx\n"),
+                    ("unclosed künye", "---\nstatus: approved\nbody, no closing line\n")]:
+    put(RR, text)
+    code, out, _ = tool("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ctf2")
+    case(f"K1-R -R3 record '{label}' -> require W2-R3", "exit 1, DUR (not resolved)",
+         f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code == 0)
+QUOTES_BAD = ['"approved', "approved'", "'approved\"", "\"'approved'\""]
+for q in QUOTES_BAD:
+    put(RR, f"---\nstatus: {q}\n---\nx\n")
+    code, out, _ = tool("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ctf2")
+    case(f"K1-Rq -R3 record status {q} (unbalanced / mixed / doubled quote) -> require W2-R3", "exit 1, DUR",
+         f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code == 0)
+put(RR, '---\nstatus: "approved"\n---\nx\n')
+code, out, _ = tool("scripts/ct_queue.py", "require", "W2-R3", "--queue", "ctf2")
+results.append({"id": "D-01 -R3 record status \"approved\" (one balanced pair, as the gate reads it) -> require W2-R3",
+                "expected": "designed change: before exit 1 (the old -R reader read no quotes), after exit 0 (the gate's reader)",
+                "observed": f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", "red": False, "designed": True})
+print(f"info D-01 balanced quote -> exit {code}")
+at_head(head_ok)
+for status in ("approved-but-draft", "approved draft", "decided-but-draft"):
+    S = report_at(status)
+    rc, d, obs = report(S)
+    case(f"K1-P effort approval '{status}' -> report", "percentages_valid=false", obs, bool(d and d["percentages_valid"]))
+
+for status in QUOTES_BAD[:2]:
+    S = report_at(status)
+    rc, d, obs = report(S)
+    case(f"K1-Pq effort approval status {status} -> report", "percentages_valid=false", obs, bool(d and d["percentages_valid"]))
+at_head(head_ok)
+# the prompt gate's authority check (production function check_authority, called in process: building a full §36.1
+# prompt pack for its command line is outside this driver; the gate's CLI path is Codex's independent driver)
+spec = importlib.util.spec_from_file_location("pg_fixture", FIX / "scripts/prompt_gate.py")
+pg = importlib.util.module_from_spec(spec); spec.loader.exec_module(pg)
+
+
+class Repo:
+    def __init__(self, text):
+        self.text = text
+
+    def file(self, commit, path):
+        return self.text.encode()
+
+
+for kind, path, status in [("yönetişim", "docs/records/decisions/2026-10/ctf2-scope.md", s_) for s_ in QUOTES_BAD] + \
+        [("geliştirme", "execution/domains/x/module-packs/MOD-0288-fixture.md", s_) for s_ in QUOTES_BAD[:2]]:
+    p_ = {"authority": path, "task_class": kind, "wp": "W1"}
+    eng = pg.check_authority(p_, Repo(f"---\nstatus: {status}\n---\nW1\n"), "0" * 40, None)
+    case(f"K1-Gq prompt gate check_authority ({kind}) status {status}", "an ENGEL (künye/status refused)",
+         f"{len(eng)} engel: {eng[0][:120] if eng else '-'}", not eng)
+for kind, path, status in [("yönetişim", "docs/records/decisions/2026-10/ctf2-scope.md", '"approved"'),
+                           ("geliştirme", "execution/domains/x/module-packs/MOD-0288-fixture.md", '"approved"')]:
+    eng = pg.check_authority({"authority": path, "task_class": kind, "wp": "W1"}, Repo(f"---\nstatus: {status}\n---\nW1\n"), "0" * 40, None)
+    case(f"C-09 prompt gate check_authority ({kind}) status {status} (balanced: kept)", "no engel",
+         f"{len(eng)} engel: {eng[0][:120] if eng else '-'}", bool(eng))
+
+# ------------------------------------------------------------------ K3: a profile main registered differently stops every consumer
+conflicts = [("baseline", reg_text(baseline_commit=c1b)),
+             ("path", reg_text(path="execution/delivery/ct-queue-states.tsv")),
+             ("invalid", reg_text(owner_confirmation="maybe"))]
+for label, main_text in conflicts:
+    main_ref(main_text)
+    at_head(head_ok)
+    for cmd in (["require", "W1", "--queue", "ctf2"], ["guard", "--queue", "ctf2"], ["summary", "--queue", "ctf2"],
+                ["writers", "--queue", "ctf2"]):
+        code, out, err = tool("scripts/ct_queue.py", *cmd)
+        case(f"K3-{label} main row differs ({label}) -> {cmd[0]}", "exit != 0, DUR",
+             f"exit {code}; {first(out + err, 'DUR|DAĞITILABİLİR|sha256=|KUYRUK|YÜRÜRLÜK') or '-'}", code == 0)
+    rc, d, obs = report(head_ok)
+    case(f"K3-{label} main row differs ({label}) -> report", "complete=false, percentages_valid=false", obs,
+         bool(d and (d["complete"] or d["percentages_valid"])))
+main_ref(c1)
+at_head(head_ok)
+st = (FIX / "execution/delivery/ct-queue-states.tsv").read_text(encoding="utf-8")
+tr = (FIX / "execution/delivery/ct-sop7-transitions.tsv").read_text(encoding="utf-8")
+x_states = "".join(l.replace("sop7\t", "sop7x\t", 1) + "\n" for l in st.splitlines()[1:] if l.startswith("sop7\t"))
+x_states = re.sub(r"(?m)^(sop7x\tFAILED\t[^\t]*\t)no\t", r"\1yes\t", x_states)
+put("execution/delivery/ct-queue-states.tsv", st + x_states)
+put("execution/delivery/ct-sop7-transitions.tsv",
+    tr + "".join(l.replace("sop7\t", "sop7x\t", 1) + "\n" for l in tr.splitlines()[1:] if l.startswith("sop7\t")))
+put(REG, reg_text(vocabulary="sop7x"))
+code, out, _ = tool("scripts/ct_queue.py", "validate", "--queue", "ctf2")
+case("K3-sop7x strict=yes, vocabulary sop7x with FAILED dispatchable -> validate", "exit 1", f"exit {code}; {first(out, 'HATA|OK|FAIL')}", code == 0)
+code, out, _ = tool("scripts/ct_queue.py", "require", "W3", "--queue", "ctf2")
+case("K3-sop7x the same -> require W3 (FAILED)", "exit 1, DUR", f"exit {code}; {first(out, 'DAĞITILABİLİR|DUR')}", code == 0)
+at_head(head_ok)
+
+# ------------------------------------------------------------------ K2: the known-failures check reads a valid registry only
+KF, KI = "tests/known-failures.tsv", "tests/known-failures-items.json"
+kf_head = (FIX / KF).read_text(encoding="utf-8").split("\n", 1)[0]
+sys.path.insert(0, str(FIX / "scripts"))
+import importlib.util
+spec = importlib.util.spec_from_file_location("kf_fixture", FIX / "scripts/known_failures.py")
+kf = importlib.util.module_from_spec(spec); spec.loader.exec_module(kf)
+fp_old, fp_new, fp_other = kf.fingerprint("old message"), kf.fingerprint("new message"), kf.fingerprint("other suite message")
+kcols = kf_head.split("\t")
+krow = lambda suite, fp: "\t".join({"suite": suite, "test": "Fx.T", "first_recorded_commit": c1, "first_recorded_source": "fixture",
+                                     "last_verified_commit": c1, "rerun_trigger": "docs/*", "reference": "fixture", "status": "open",
+                                     "failure_fingerprint": fp, "owner": "fixture", "review_by": "fixture"}[c] for c in kcols)
+trx = ('<?xml version="1.0" encoding="utf-8"?><TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results>'
+       '<UnitTestResult testName="Fx.T" outcome="Failed"><Output><ErrorInfo><Message>new message</Message></ErrorInfo></Output>'
+       '</UnitTestResult><UnitTestResult testName="Fx.Pass" outcome="Passed"/></Results><ResultSummary outcome="Failed"/></TestRun>')
+put("fixture-run.trx", trx)
+put(KI, '{"tests": {}}\n')
+for label, rows, args, unsafe in [
+        ("C-07 one row, the message changed", [krow("audit", fp_old)], ["--suite", "audit"], lambda c, o: c != 1),
+        ("K2-dup the same (suite, test) twice, the second with the new fingerprint", [krow("audit", fp_old), krow("audit", fp_new)],
+         ["--suite", "audit"], lambda c, o: c != 2),
+        ("K2-cross the same test name in two suites, no --suite", [krow("other", fp_other), krow("audit", fp_new)], [],
+         lambda c, o: c != 2)]:
+    put(KF, kf_head + "\n" + "\n".join(rows) + "\n")
+    code, out, _ = tool("scripts/known_failures.py", "check", "fixture-run.trx", *args)
+    case(f"{label} -> check", "C-07: exit 1 YENİ-AYRINTI; K2: exit 2, DUR (registry not trusted / name ambiguous)",
+         f"exit {code}; {first(out, 'ÖZET|DUR')}", unsafe(code, out))
+put(KF, kf_head + "\n" + "\n".join([krow("audit", fp_old), krow("audit", fp_new)]) + "\n")
+code, out, _ = tool("scripts/known_failures.py", "should-rerun", "--suite", "audit")
+case("K2-rerun duplicate (suite, test) -> should-rerun", "exit 2, DUR", f"exit {code}; {first(out, 'önerisi|DUR')}", code != 2)
+at_head(head_ok)
+
+# ------------------------------------------------------------------ small: a missing states file
+os.rename(FIX / "execution/delivery/ct-queue-states.tsv", FIX / "states-moved-aside.tsv")   # restored by checkout -f
+code, out, err = tool("scripts/ct_queue.py", "require", "W1", "--queue", "ctf2")
+case("S-01 states file missing -> require W1", "exit != 0 with a DUR line, no traceback",
+     f"exit {code}; {(first(out + err, 'DUR|Traceback|Error') or '-')}", "Traceback" in err or code == 0)
+at_head(head_ok)
+
+# ------------------------------------------------------------------ K4: a wiring self-test must fail when the wiring is broken
+def sabotaged(rel, old, new):
+    text = (FIX / rel).read_text(encoding="utf-8")
+    if text.count(old) != 1:
+        return False
+    (FIX / rel).write_text(text.replace(old, new), encoding="utf-8")
+    return True
+
+
+at_head(head_ok)
+ok_anchor = sabotaged("scripts/ct_queue.py",
+                      'queues, states = load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)\n',
+                      '# load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)\n'
+                      '    queues, states = load(a.queue) if a.cmd in ("validate", "summary") else load_for_dispatch(a.queue)  # sabotage\n')
+put(REG, reg_text() + line() + "\n")                        # the queue registered twice
+code_b, out_b, err_b = tool("scripts/ct_queue.py", "summary", "--queue", "ctf2")
+put(REG, reg_text())
+code_t, out_t, _ = tool("scripts/ct_queue.py", "--self-test")
+case("K4-ct summary wired around load_for_dispatch (string kept) -> ct_queue --self-test",
+     "self-test exit 1 (a behaviour test catches the broken wiring)",
+     f"anchor {ok_anchor}; summary with a duplicate row exit {code_b}; self-test exit {code_t}: {first(out_t, 'self-test:')}",
+     ok_anchor and code_t == 0)
+at_head(head_ok)
+real_rows = reg_real.rstrip("\n").split("\n")
+put(REG, reg_text() + real_rows[1] + "\n")                  # another queue registered twice: a dispatch problem
+S_bad = commit("fixture: registry with a duplicate row", REG)
+ok_anchor = sabotaged("scripts/status_report_v2.py", "    if reg_problems:\n", "    reg_problems = []   # sabotage\n    if reg_problems:\n")
+rc, d, obs = report(S_bad)
+code_t, out_t, _ = tool("scripts/status_report_v2.py", "--self-test")
+case("K4-sr2 report drops the registry problems (string kept) -> status_report_v2 --self-test",
+     "self-test exit 1 (a behaviour test catches the broken wiring)",
+     f"anchor {ok_anchor}; report on a duplicate registry: {obs}; self-test exit {code_t}: {first(out_t, 'self-test:')}",
+     ok_anchor and code_t == 0)
+at_head(head_ok)
+
+OUT.write_text(json.dumps({"code": str(CODE), "data_commit": DATA, "code_commit": code_commit, "cases": results},
+                          ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+red = sum(r["red"] for r in results)
+print(f"\n{red} / {len(results)} RED")
