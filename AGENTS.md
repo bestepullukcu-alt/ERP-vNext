@@ -4,9 +4,11 @@ Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması g
 
 **Yükleme:** Codex ve Antigravity bu dosyayı kendileri yükler (bu denetimde canlı ölçülmedi). Claude Code, `CLAUDE.md` varken bu
 dosyayı yüklemez; bu yüzden aşağıdaki **Çekirdek** bloğu `.claude/rules/agents-core.md` olarak üretilir
-(`python3 .antigravity/scripts/sync_adapters.py`) ve Claude Code'un başlangıç bağlamına girmesi için oraya konur. Canlı ölçüm:
-2026-10-17'de başsız CLI 2.1.71 oturumunda, önceki çekirdek sürümüyle (`c02b28c16`) bir kez geçti; güncel revizyon, etkileşimli
-oturum ve alt ajanlar bu denetimde ölçülmedi. Sembolik bağ kullanılmaz (Windows). Ayrıntı ve tarihçe: `.antigravity/AGENTS-REFERENCE.md`.
+(`python3 .antigravity/scripts/sync_adapters.py`) ve Claude Code'un başlangıç bağlamına girmesi için oraya konur. Canlı ölçüm
+(2026-10-17, başsız CLI 2.1.71 / Haiku 4.5, araçlar ve MCP kapalı): çekirdek `9a8c009001a5` (`c02b28c16`) ve `c9fc70b86047`
+(`c82d7db2c`) birer dar pozitif-negatif ölçümden geçti; başlangıç belleği izole değildi, cevabın yalnız bu dosyadan geldiği
+kanıtlanmadı; etkileşimli oturum, alt ajanlar ve başka modeller ölçülmedi. Sembolik bağ kullanılmaz (Windows). Ayrıntı ve
+tarihçe: `.antigravity/AGENTS-REFERENCE.md`.
 
 `CLAUDE.md` bir kopya değildir ve olmamalıdır; çakışmada **bu dosya kazanır**.
 

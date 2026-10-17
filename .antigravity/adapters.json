@@ -10,7 +10,7 @@
     ".agents/rules"
   ],
   "instruction_budget": {
-    "about": "İ5-B: AGENTS.md Codex ve Antigravity'de tam yüklenir (Antigravity 24000 baytta keser); Claude yalnız Çekirdek bloğunu yükler. CLAUDE.md AGENTS.md'yi içe aktarmaz (her oturuma ve alt ajana ~9k token ekler).",
+    "about": "İ5-B: Codex ve Antigravity'nin AGENTS.md'yi tam yüklediği varsayılır, canlı ölçülmedi (24000 bayt Antigravity'nin kesme sınırı olarak alındı, ölçülmedi); Claude Code için yalnız Çekirdek bloğu .claude/rules/agents-core.md olarak üretilir (yüklenmesi yalnız başsız CLI'da ölçüldü, 2026-10-17). CLAUDE.md AGENTS.md'yi içe aktarmaz: yalnız Çekirdek hedeflenir; tam içe aktarmanın token maliyeti ölçülmedi.",
     "files": [
       {
         "path": "AGENTS.md",
