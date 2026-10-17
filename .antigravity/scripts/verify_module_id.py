@@ -359,6 +359,12 @@ def check_all(root):
 #       "tamamlanamadı" (V4A-F4); the task-source registry's own bytes are named by sha256 and blob (V4A-F8); every
 #       visible pack blob's künye id is read by the shared reader (scripts/ct_queue.py kunye_fields) only to find a
 #       repeated or disguised id — such a pack is "tamamlanamadı"; a pack without a künye is matched by name as before.
+#       CT-FIX-06 (v7 Employee pilot): under the header, a bounded 'ÖZET' block (report_summary; at most SUMMARY_BUDGET
+#       UTF-8 bytes): the counts; a file id on more than one matched pack path as a possible collision (a deprecated
+#       alias in its own line, its paths not cleared) with those packs' status / approval_status / owner first; the
+#       other matched packs' values (different values on different blobs shown unresolved, with blob and ref ids);
+#       what did not fit; the limit. Information only — no finding, no decision, no gate; the BULGU lines and the other
+#       modes are unchanged. A new report's bytes and hash include the block; a saved report keeps its own tool identity.
 #   --check-report <file>
 #       Recomputes rapor-sha256 of a saved report, byte for byte (parse_report: UTF-8, LF only, one final newline,
 #       the hash line exactly 'rapor-sha256: <64 hex>' — CT-FIX-03 R4, V4B-B6). exit 0 = matches, exit 2 = malformed
@@ -513,11 +519,150 @@ def gateway_resources(text):
     return out
 
 
+SUMMARY_KEYS = ("status", "approval_status", "owner")
+SUMMARY_BUDGET = 3500     # UTF-8 bytes of the whole ÖZET block, under the 4 KB an interface may keep (the header is 16)
+SUMMARY_LINE = 420        # bytes of one ÖZET line at most
+SUMMARY_TAIL = 520        # bytes kept free for the closing lines (the omission warning and the limit line)
+
+
+def _cap(text, limit):
+    """text cut to at most `limit` UTF-8 bytes, never inside a character; a cut text ends in '…'."""
+    data = text.encode("utf-8")
+    if len(data) <= limit:
+        return text
+    return data[:limit - 3].decode("utf-8", errors="ignore") + "…"
+
+
+def _paths_capped(prefix, paths, limit):
+    """prefix + as many 'path (n ref)' items as fit in `limit` bytes, then '+k yol' for the rest — the count of what is
+    not shown survives the cut."""
+    shown = []
+    for i, (p, n) in enumerate(paths):
+        item = f"{p} ({n} ref)"
+        tail = f" · +{len(paths) - i - 1} yol" if i + 1 < len(paths) else ""
+        if len((prefix + " · ".join(shown + [item]) + tail).encode("utf-8")) > limit:
+            break
+        shown.append(item)
+    rest = len(paths) - len(shown)
+    return _cap(prefix + " · ".join(shown) + (f" · +{rest} yol" if rest and shown else f"+{rest} yol" if rest else ""), limit)
+
+
+def _some(names, n=2):
+    names = sorted(names)
+    return ", ".join(names[:n]) + (f", +{len(names) - n}" if len(names) > n else "")
+
+
+def pack_kunye_values(root, path_blobs):
+    """CT-FIX-06 (v7 Employee pilot): {path: [(values or None, [(blob, refs), …])]} — the künye's status,
+    approval_status and owner of every distinct blob of each path, read with the shared reader and grouped by value; each
+    group keeps its blob ids and their refs (the same values in several blobs is not one current version). Information
+    for the summary only, never a gate: a pack without a readable künye is (None, …), not a stop."""
+    blobs = sorted({b for per in path_blobs.values() for b in per})
+    if not blobs:
+        return {}
+    kf = _shared_reader().kunye_fields
+    data = _git(root, "cat-file", "--batch", stdin="".join(b + "\n" for b in blobs).encode(), raw=True)
+    values, i = {}, 0
+    while i < len(data):
+        nl = data.index(b"\n", i)
+        head = data[i:nl].decode().split()
+        if len(head) != 3 or head[1] != "blob":
+            raise Incomplete(f"paket blob'u okunamadı ({' '.join(head)[:60]})")
+        size = int(head[2])
+        fields, bad = kf(data[nl + 1:nl + 1 + size].decode("utf-8", errors="replace"), SUMMARY_KEYS)
+        values[head[0]] = None if bad else tuple(fields[k] or "-" for k in SUMMARY_KEYS)
+        i = nl + 1 + size + 1
+    out = {}
+    for path, per in path_blobs.items():
+        groups = {}
+        for blob, refs in per.items():
+            groups.setdefault(values.get(blob), []).append((blob, set(refs)))
+        out[path] = sorted(((v, sorted(bl, key=lambda b: (-len(b[1]), b[0]))) for v, bl in groups.items()),
+                           key=lambda g: (-sum(len(r) for _, r in g[1]), str(g[0])))
+    return out
+
+
+def _kunye_line(path, groups):
+    def blobs(bl):
+        return "; ".join(f"blob {b[:9]}: {_some(r)}" for b, r in bl[:2]) + (f"; +{len(bl) - 2} blob" if len(bl) > 2 else "")
+    def vals(v):
+        return "künye okunamadı (bilgi; kapı değil)" if v is None else " · ".join(f"{k} {x}" for k, x in zip(SUMMARY_KEYS, v))
+    if len(groups) == 1:
+        v, bl = groups[0]
+        shown = f"{vals(v)} ({blobs(bl)})"
+    else:
+        shown = f"belirsiz — {len(groups)} farklı künye: " + " | ".join(f"{vals(v)} ({blobs(bl)})" for v, bl in groups[:2]) \
+            + (f" | +{len(groups) - 2} değer" if len(groups) > 2 else "")
+    return f"ÖZET paket künyesi: {path} — {shown}"
+
+
+def report_summary(info, findings, matched, meta, alias_ids, failure):
+    """CT-FIX-06 (v7 Employee pilot: a collision in a long report was lost when the interface cut it): the 'ÖZET' lines
+    under the header, within SUMMARY_BUDGET UTF-8 bytes and in this order — the counts; for every file id on more than
+    one matched pack path (the tool's own file-id reading: a parent and its FU are different ids) a possible identity
+    collision with those packs' künye values right after it; then the other matched packs' künye values; then, in space
+    kept for them, the omission warning and the limit line. A deprecated alias is said in its own line and does not
+    clear the paths it names. Values that differ between blobs are shown as unresolved with blob and ref ids, never one
+    last value. The lines start with 'ÖZET': no finding, no decision, no single-line field of the report contract."""
+    kinds = ("blueprint", "sor", "registry", "paket", "gateway", "görev")
+    count = {k: sum(f.startswith(f"BULGU {k}:") for f in findings) for k in kinds}
+    items = [["ÖZET bulgular: " + " · ".join(f"{k} {count[k]}" for k in kinds)
+              + f" · BİLGİ {len(info)} (eski takma ad; çakışma sayılmaz)"]]
+    by_id = {}
+    for path, refs in matched:
+        m = re.match(r"^(MOD-\d+(?:-FU\w+)?)", os.path.basename(path))
+        if m:
+            by_id.setdefault(m.group(1), []).append((path, refs))
+    first = set()
+    for mid, paths in sorted(by_id.items()):
+        if len(paths) < 2:
+            continue
+        if mid in alias_ids:
+            group = [f"ÖZET BİLGİ: {mid} registry'de eski takma ad — takma adın kendisi çakışma sayılmaz",
+                     _paths_capped(f"ÖZET kimlik çokluğu — takma ad ilişkisi belirsiz, inceleme gerekli: {mid} dosya kimliği "
+                                   f"{len(paths)} paket yolunda: ", paths, SUMMARY_LINE)]
+        else:
+            group = [_paths_capped(f"ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): {mid} "
+                                   f"dosya kimliği {len(paths)} paket yolunda: ", paths, SUMMARY_LINE)]
+        if meta is not None:
+            group += [_kunye_line(p, meta.get(p, [])) for p, _ in paths[:3]]
+        first.update(p for p, _ in paths[:3])
+        items.append(group)
+    if meta is None:
+        items.append(["ÖZET paket künyeleri: okunamadı — özet eksik (bulgular tam rapordadır)"])
+    else:
+        items += [[_kunye_line(p, meta.get(p, []))] for p, _ in matched if p not in first]
+    out, used, left = [], 0, 0
+    for group in items:
+        group = [_cap(l, SUMMARY_LINE) for l in group]
+        size = sum(len(l.encode("utf-8")) + 1 for l in group)
+        if not left and used + size <= SUMMARY_BUDGET - SUMMARY_TAIL:
+            out += group
+            used += size
+        else:
+            left += 1          # an item is shown whole or not at all; after the first that does not fit, none follow
+    if left:
+        out.append(f"ÖZET EKSİK: {left} madde bayt sınırı ({SUMMARY_BUDGET}) nedeniyle gösterilmedi — tam rapora bakılmalı")
+    if failure is not None:
+        out.append("ÖZET EKSİK: keşif tamamlanamadı — özet yalnız okunabilen kaynaklardandır")
+    out.append("ÖZET sınır: tam rapor {n} satır; bu özet bilgidir, onay ya da karar değildir; rapor bir arayüzde kesilirse "
+               "kesilen kısım okunmamıştır ve inceleme kısmidir")
+    return out
+
+
 def discover(root, name, resource=None, sor=None):
-    """Return (report lines without the hash line, exit code)."""
+    """Return (report lines without the hash line, exit code). CT-FIX-06: the 'ÖZET' lines stand under the header."""
+    lines, code = _discover(root, name, resource, sor)
+    total = len(lines) + 1                                  # with the hash line
+    lines = [l.replace("{n}", str(total)) if l.startswith("ÖZET sınır: ") else l for l in lines]
+    return lines, code
+
+
+def _discover(root, name, resource=None, sor=None):
     query = _tokens(name)
     lines = ["KEŞİF RAPORU v2", f"sorgu: {name} | kaynak: {resource or '-'} | sor: {sor or '-'}"]
     findings, info, ref_lines = [], [], []
+    matched_packs, path_blobs, alias_ids = [], {}, set()
     try:
         script = os.path.abspath(__file__)
         head = _git(root, "rev-parse", "HEAD").strip()
@@ -577,6 +722,7 @@ def discover(root, name, resource=None, sor=None):
             if _similar(query, r["name"]) or r["id"] in matched_ids:
                 if is_deprecated(r):
                     info.append(f"BİLGİ registry: {r['id']} '{r['name']}' eski takma ad/kullanımdan kalkmış — çakışma sayılmaz")
+                    alias_ids.add(r["id"])
                 else:
                     findings.append(f"BULGU registry: {r['id']} '{r['name']}' ({r['status']})")
 
@@ -600,6 +746,7 @@ def discover(root, name, resource=None, sor=None):
                 if "/module-packs/" in path and path.endswith(".md") and not path.lower().endswith("readme.md"):
                     packs.setdefault("execution/domains/" + path, set()).update(ref_names)
                     pack_blobs.setdefault(meta.split()[2], set()).add("execution/domains/" + path)
+                    path_blobs.setdefault("execution/domains/" + path, {}).setdefault(meta.split()[2], set()).update(ref_names)
         conflicts = pack_id_conflicts(root, pack_blobs)
         if conflicts:
             first = sorted(conflicts)[0]
@@ -619,6 +766,7 @@ def discover(root, name, resource=None, sor=None):
             if (pack_id and pack_id.group(1) in matched_ids) or _similar(query, stem.replace("-", " ")):
                 shown = ", ".join(sorted(ref_names)[:3]) + (f", … +{len(ref_names) - 3}" if len(ref_names) > 3 else "")
                 findings.append(f"BULGU paket: {path} — {len(ref_names)} ref'te ({shown})")
+                matched_packs.append((path, len(ref_names)))
 
         # gateway resource -> service
         if main_sha:
@@ -684,6 +832,11 @@ def discover(root, name, resource=None, sor=None):
     else:
         failure = None
     refs_block = [f"İNCELENEN REF'LER: {len(ref_lines)}"] + ref_lines
+    try:   # CT-FIX-06: the summary's künye values are information; a reading problem leaves the summary incomplete, not the report
+        meta = pack_kunye_values(root, {p: path_blobs.get(p, {}) for p, _ in matched_packs})
+    except (Incomplete, OSError, ValueError):
+        meta = None
+    lines[1:1] = report_summary(info, findings, matched_packs, meta, alias_ids, failure)
     lines += info + findings
     if failure is not None:
         lines += GAPS + refs_block + [f"sonuç: tamamlanamadı — {failure}", "çıkış: 2"]

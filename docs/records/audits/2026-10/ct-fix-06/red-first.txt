@@ -1,0 +1,20 @@
+CT-FIX-06 red first — the new tests against the unchanged base code.
+Base: the committed sources of c203303ce (CT-FIX-05) in a copy outside the repository, this package's test files
+copied in; run by the AI session. Every method not listed passed. The two errors of the real-registry tests in the
+first run are the copy's environment (it holds no execution/registries), not a red of this package.
+
+discovery summary (test_verify_module_id_discover + R0 CTFIX06_DiscoverySummary + Controls): ran 23 tests · failed subtests 10 in 10 test methods
+     1  test_ct_cli_regression.CTFIX06_DiscoverySummary.test_different_kunye_values_on_another_ref_stay_unresolved (error)
+     1  test_ct_cli_regression.CTFIX06_DiscoverySummary.test_one_file_id_on_two_pack_paths_is_a_possible_collision_first
+     1  test_ct_cli_regression.CTFIX06_DiscoverySummary.test_the_fixture_report_carries_the_summary_and_the_gate_s_count_is_unchanged
+     1  test_verify_module_id_discover.DiscoverySummary.test_a_collision_is_named_with_its_packs_and_parent_and_fu_are_not_one (error)
+     1  test_verify_module_id_discover.DiscoverySummary.test_a_deprecated_alias_is_said_apart_and_does_not_clear_its_paths (error)
+     1  test_verify_module_id_discover.DiscoverySummary.test_an_incomplete_discovery_says_so (error)
+     1  test_verify_module_id_discover.DiscoverySummary.test_kunye_values_keep_their_blob_and_ref_ids (error)
+     1  test_verify_module_id_discover.DiscoverySummary.test_the_block_stays_within_its_byte_budget_and_says_what_it_left_out (error)
+     1  test_verify_module_id_discover.RegistryTableProblems.test_the_contract_header_is_the_real_registry_header (error)
+     1  test_verify_module_id_discover.RegistryTableProblems.test_the_real_registry_has_no_unreadable_row (error)
+
+evidence lines and required registry columns (R0 CTFIX06_EvidenceLineAndRegistry): ran 2 tests · failed subtests 5 in 2 test methods
+     3  test_ct_cli_regression.CTFIX06_EvidenceLineAndRegistry.test_a_cited_line_must_be_a_real_filled_line
+     2  test_ct_cli_regression.CTFIX06_EvidenceLineAndRegistry.test_an_empty_required_column_in_the_branch_registry_stops

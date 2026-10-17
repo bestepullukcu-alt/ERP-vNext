@@ -66,6 +66,17 @@ SPEC = re.compile(r"^([^@\s]+)@([0-9a-f]{7,40})(?::(\d+))?$")
 HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
 FULL_HEX = re.compile(r"^[0-9a-f]{40}$")
 REVIEW = re.compile(r"^inceleme bekler\s*[—-]\s*(.*)$")   # CT-FIX-05 (F3): applicable, not provable automatically
+
+
+def evidence_line_problem(content: str, n: int) -> str | None:
+    """CT-FIX-06 (v7 audit EK1-2): a cited evidence line is a real, non-blank line of the file — an empty file has no
+    line 1 and a final newline adds no line; a line of spaces cites nothing. What the line means is not checked."""
+    lines = content.splitlines()
+    if not 1 <= n <= len(lines):
+        return f"kanıt satırı {n} dosyada yok ({len(lines)} satır)"
+    if not lines[n - 1].strip():
+        return f"kanıt satırı {n} boş — boş satır kanıt değildir"
+    return None
 EVIDENCE_DOCS = "docs/records/audits/"
 WAIVER = re.compile(r"^\s*(waiver|muafiyet)\b", re.I | re.M)
 GIT_ALLOWED = {"rev-parse", "cat-file", "ls-tree", "diff"}
@@ -326,8 +337,9 @@ def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = N
                 else:
                     content = data.decode("utf-8", errors="replace")
                     n = spec.group(3)
-                    if n is not None and not 1 <= int(n) <= len(content.split("\n")):
-                        eng.append(f"kabul listesi: {rid} kanıt satırı {n} dosyada yok")
+                    bad_line = evidence_line_problem(content, int(n)) if n is not None else None
+                    if bad_line:
+                        eng.append(f"kabul listesi: {rid} {bad_line}")
                     elif n is None and rid not in content:
                         eng.append(f"kabul listesi: {rid} kanıtı kritere bağlı değil — satır numarası ya da dosyada "
                                    f"kriter kimliği gerekli")
@@ -1213,6 +1225,11 @@ def self_test() -> int:
     crit_c, bad_c, _, notes_c = read_pack(PK, pack(good_ac, fm=cond_fm), "MOD-0151", mode="draft")
     cases.append(("CT-FIX-05 E1: the list draft reads a conditional pack (no problem) and carries the limit as a note",
                   crit_c and not bad_c and any("taslak hazırlık içindir" in n for n in notes_c)))
+    # CT-FIX-06 (v7 audit EK1-2): a cited line is a real, non-blank line — an empty file, the phantom line after the final
+    # newline and a line of spaces cite nothing
+    cases.append(("CT-FIX-06 EK1-2: evidence line 1 of an empty file, line 2 of a one-line file ending in LF, a blank line -> refused; a filled line -> fine",
+                  evidence_line_problem("", 1) and evidence_line_problem("AC-1 checked\n", 2)
+                  and evidence_line_problem("x\n   \n", 2) and evidence_line_problem("AC-1 checked\n", 1) is None))
     cases.append(("CT-FIX-04 İ4: a WP's subset of the pack's ACs (AC-1 only), text and flag exact -> allows ACCEPTED",
                   run(rec(_extra_fm=good_mp), fs=bound(lst=lhead + lrow("AC-1", "evet", 1)))[0] == 0))
     ok_src = "---\nid: MOD-0151\nwork_package: W7\nstatus: approved\n---\nGerekli kanıt: E3\n"

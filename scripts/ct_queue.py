@@ -290,6 +290,11 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
     path_at = path_at or (lambda sha, path: git("cat-file", "-e", f"{sha}:{path}").returncode == 0)
     problems, ids, paths = [], set(), set()
     for q in registry:
+        # CT-FIX-06 (v7 audit EK1-6): every column of the registry contract is filled, on the branch as on main — one
+        # check for every consumer (validate, require, in_force_status, ct_route); no new column, no new value
+        empty = [c for c in REGISTRY_COLUMNS if not str(q.get(c) or "").strip()]
+        if empty:
+            problems.append(f"registry {q.get('queue_id') or '?'}: boş zorunlu alan {', '.join(empty)}")
         # CT-FIX-05 (F1, Codex): a task file path is a normal repo-relative path — './q.tsv', 'q.tsv/', 'x/../q.tsv',
         # '/q.tsv' or a backslash would name the same file under another spelling and slip past the uniqueness check
         p = q["path"]
@@ -547,13 +552,9 @@ def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, 
             return "kayıt geçersiz", f"satır {i}: {len(row)} sütun, beklenen {len(REGISTRY_COLUMNS)}"
     rows = [dict(zip(REGISTRY_COLUMNS, row)) for row in table.rows]
     # CT-FIX-05 (F1, v6 audit): the registry is validated as a whole before one queue is picked — every row without an
-    # empty field, queue_id and path unique across all rows, allowed values, the baseline commit and the task file there
+    # empty field (CT-FIX-06: in check_registry itself), queue_id and path unique across all rows, allowed values, the baseline commit and the task file there
     # (check_registry, the branch registry's own check). Another queue on the same task file, or any broken row, makes
     # the file invalid: no queue is in force from it. ct_route validates main's registry the same way.
-    for n, r in enumerate(rows, start=2):
-        empty = [c for c in REGISTRY_COLUMNS if not r[c].strip()]
-        if empty:
-            return "kayıt geçersiz", f"satır {n} ({r['queue_id'][:30] or '?'}): boş alan {', '.join(empty)}"
     problems = check_registry(rows, [], commit_exists=commit_exists, path_at=path_at, check_vocab_rows=False)
     if problems:
         return "kayıt geçersiz", problems[0] + (f" (+{len(problems) - 1})" if len(problems) > 1 else "")
@@ -1830,6 +1831,10 @@ def self_test() -> int:
                   "farklı görev kaynağı" in loads([dict(real, path="scripts/prompt_gate.py")], main_strict)
                   and "kayıt geçersiz" in loads([real], reg_head + "\t".join(dict(real, owner_confirmation="maybe")[c]
                                                                               for c in REGISTRY_COLUMNS) + "\n")))
+    cases.append(("CT-FIX-06 EK1-6: an empty required column (scope, evidence, a blank owner_confirmation) -> registry problem; the full row -> none",
+                  all(any(f"boş zorunlu alan {c}" in pr for pr in check_registry([dict(reg_row, **{c: v})], [], **yes))
+                      for c, v in (("scope", ""), ("evidence", "  "), ("owner_confirmation", "")))
+                  and not any("boş zorunlu alan" in pr for pr in check_registry([reg_row], [], **yes))))
     cases.append(("CT-FIX-02 K3: strict=yes with a vocabulary other than sop7 (a copied 'sop7x') -> registry problem",
                   any("strict=yes requires vocabulary 'sop7'" in pr for pr in check_registry(
                       [dict(reg_row, vocabulary="sop7x")], [dict(s, queue_id="sop7x") for s in s7], **yes))

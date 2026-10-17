@@ -108,5 +108,75 @@ class DiscoverStopsOnABrokenRow(unittest.TestCase):
         self.assertFalse(any("modül kayıt dosyası satır" in l for l in lines))
 
 
+class DiscoverySummary(unittest.TestCase):
+    """CT-FIX-06 (v7 Employee pilot, Codex): the 'ÖZET' block under the report's header — bounded in UTF-8 bytes, the
+    colliding packs first, a deprecated alias said apart, künye values with blob and ref ids, information only."""
+    HCM = "execution/domains/hcm/module-packs/MOD-0251-core-hr-employee-master.md"
+    PSS = "execution/domains/pss/module-packs/MOD-0251-hris-external-sor.md"
+    OK = ("approved", "-", "HCM / HR data owner TBD")
+
+    def summary(self, matched, meta=None, alias=(), findings=(), info=(), failure=None):
+        if meta is None:
+            meta = {p: [(self.OK, [("a" * 40, {"refs/heads/x"})])] for p, _ in matched}
+        return vmi.report_summary(list(info), list(findings), matched, meta, set(alias), failure)
+
+    def test_a_collision_is_named_with_its_packs_and_parent_and_fu_are_not_one(self):
+        out = self.summary([(self.HCM, 500), (self.PSS, 1)], findings=("BULGU paket: x", "BULGU blueprint: y"))
+        self.assertTrue(out[0].startswith("ÖZET bulgular: blueprint 1 · sor 0 · registry 0 · paket 1"), out[0])
+        self.assertTrue(out[1].startswith("ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0251"), out[1])
+        self.assertIn(self.PSS, out[1])
+        self.assertTrue(out[2].startswith(f"ÖZET paket künyesi: {self.HCM}") and "owner HCM / HR data owner TBD" in out[2], out[2])
+        fu = self.summary([("execution/domains/a/module-packs/MOD-0288-ledger.md", 1),
+                           ("execution/domains/a/module-packs/MOD-0288-FU06B-ledger-detail.md", 1)])
+        self.assertFalse([l for l in fu if "çakışma —" in l or "kimlik çokluğu" in l], fu)
+        for line in out + fu:      # never a finding, a decision or a single-line field of the report contract
+            self.assertTrue(line.startswith("ÖZET "), line)
+            self.assertFalse(line.startswith(("BULGU ", "sorgu: ", "origin/main: ", "araç: ", "sonuç: ", "çıkış: ", "İNCELENEN REF'LER: ")))
+
+    def test_a_deprecated_alias_is_said_apart_and_does_not_clear_its_paths(self):
+        # Codex (summary-boundary-interim-01): MOD-0298 in alias_ids with two paths still said 'olası kimlik çakışması'
+        a = "execution/domains/pss/module-packs/MOD-0298-tenant-module-entitlements.md"
+        b = "execution/domains/hcm/module-packs/MOD-0298-employee-profile-workspace.md"
+        out = self.summary([(a, 18), (b, 1)], alias=("MOD-0298",))
+        self.assertIn("ÖZET BİLGİ: MOD-0298 registry'de eski takma ad — takma adın kendisi çakışma sayılmaz", out)
+        self.assertTrue(any(l.startswith("ÖZET kimlik çokluğu — takma ad ilişkisi belirsiz, inceleme gerekli: MOD-0298") for l in out), out)
+        self.assertFalse([l for l in out if l.startswith("ÖZET olası kimlik çakışması")], out)
+
+    def test_kunye_values_keep_their_blob_and_ref_ids(self):
+        # Codex: grouping by value dropped the blob ids; the same values in several blobs is not one current version
+        same = self.summary([(self.HCM, 3)], meta={self.HCM: [(self.OK, [("b" * 40, {"refs/heads/a", "refs/heads/b"}),
+                                                                            ("c" * 40, {"refs/heads/c"})])]})
+        self.assertIn("blob bbbbbbbbb: refs/heads/a, refs/heads/b; blob ccccccccc: refs/heads/c", same[1])
+        differ = self.summary([(self.HCM, 2)], meta={self.HCM: [(self.OK, [("b" * 40, {"refs/heads/a"})]),
+                                                                (("draft", "-", "Other"), [("c" * 40, {"refs/heads/c"})])]})
+        self.assertIn("belirsiz — 2 farklı künye", differ[1])
+        self.assertIn("blob bbbbbbbbb: refs/heads/a", differ[1])
+        self.assertIn("status draft · approval_status - · owner Other (blob ccccccccc: refs/heads/c)", differ[1])
+        legacy = self.summary([(self.HCM, 1)], meta={self.HCM: [(None, [("d" * 40, {"refs/heads/a"})])]})
+        self.assertIn("künye okunamadı (bilgi; kapı değil)", legacy[1])
+        unread = vmi.report_summary([], [], [(self.HCM, 1)], None, set(), None)
+        self.assertIn("ÖZET paket künyeleri: okunamadı — özet eksik (bulgular tam rapordadır)", unread)
+
+    def test_the_block_stays_within_its_byte_budget_and_says_what_it_left_out(self):
+        # Codex (summary-boundary-interim-01): 100 paths under one id made one 15985-byte line and an 18001-byte block
+        many = [(f"execution/domains/d{i:03d}/module-packs/MOD-0251-{'ç' * 60}-{i}.md", 400 + i) for i in range(100)]
+        others = [(f"execution/domains/x/module-packs/CAND-CAP-{i:04d}-{'ğ' * 80}.md", 1) for i in range(40)]
+        meta = {p: [(("approved", "-", "ö" * 300), [(f"{i:040x}", {f"refs/heads/{'ü' * 80}-{i}-{j}" for j in range(30)})
+                                                   for i in range(5)])] for p, _ in many + others}
+        out = vmi.report_summary([], [], others + many, meta, set(), None)   # the other packs come first in the report
+        block = "".join(l + "\n" for l in out).encode("utf-8")
+        self.assertLessEqual(len(block), vmi.SUMMARY_BUDGET)
+        head = ("KEŞİF RAPORU v2\n" + "".join(l + "\n" for l in out)).encode("utf-8")[:4096].decode("utf-8", errors="ignore")
+        self.assertIn("ÖZET olası kimlik çakışması — inceleme gerekli", head)        # the collision first, whatever the order
+        self.assertIn("ÖZET EKSİK:", head)
+        self.assertIn("ÖZET sınır:", head)
+        self.assertTrue(all(len(l.encode("utf-8")) <= vmi.SUMMARY_LINE for l in out))
+        self.assertRegex(out[1], r" · \+\d+ yol$")                      # the count of the paths not shown survives the cut
+
+    def test_an_incomplete_discovery_says_so(self):
+        out = vmi.report_summary([], [], [], {}, set(), "Blueprint dosyası yok")
+        self.assertIn("ÖZET EKSİK: keşif tamamlanamadı — özet yalnız okunabilen kaynaklardandır", out)
+
+
 if __name__ == "__main__":
     unittest.main()

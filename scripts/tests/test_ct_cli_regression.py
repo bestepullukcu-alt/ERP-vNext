@@ -1458,5 +1458,86 @@ class CTFIX05_C2_E1_PackIdentityAndApproval(CTFIX04):
                     self.assertExit(draft, 2, "onaylı değil")
 
 
+class CTFIX06_DiscoverySummary(CTFIX04):
+    """CT-FIX-06 (v7 Employee pilot): the real --discover writes a bounded 'ÖZET' block under the header; the BULGU
+    lines, the gate's decision count and --check-report stay as they were."""
+    def discover(self):
+        return FX.run(".antigravity/scripts/verify_module_id.py", str(FX.root), "--discover", "Audit Ledger")
+
+    def test_the_fixture_report_carries_the_summary_and_the_gate_s_count_is_unchanged(self):
+        lines = FX.read("discovery.txt").splitlines()
+        self.assertEqual(lines[0], "KEŞİF RAPORU v2")
+        k = next(i for i, l in enumerate(lines) if i and not l.startswith("ÖZET "))      # the block right under the header
+        self.assertGreater(k, 2)
+        self.assertTrue(lines[k].startswith("sorgu: "), lines[k])
+        self.assertFalse([l for l in lines[k:] if l.startswith("ÖZET ")])
+        self.assertTrue(lines[k - 1].startswith("ÖZET sınır: tam rapor ") and f" {len(lines)} satır" in lines[k - 1], lines[k - 1])
+        self.assertEqual(sum(l.startswith("BULGU ") for l in lines), FX.discovery_findings)
+        p = FX.run(".antigravity/scripts/verify_module_id.py", "--check-report", str(FX.root / "discovery.txt"))
+        self.assertExit(p, 0, "RAPOR GEÇERLİ")
+        self.assertExit(self.gate(), 0)
+
+    def test_one_file_id_on_two_pack_paths_is_a_possible_collision_first(self):
+        FX.put("execution/domains/other/module-packs/MOD-0288-audit-ledger-external.md",
+               "---\nid: MOD-0288\nstatus: ready-for-dev\nowner: other-team\n---\n# x\n")
+        FX.commit("CT-FIX-06: the same file id on a second pack path")
+        p = self.discover()
+        self.assertExit(p, 3)
+        out = p.stdout.splitlines()
+        self.assertTrue(out[1].startswith("ÖZET bulgular: "), out[1])
+        self.assertTrue(out[2].startswith("ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0288"), out[2])
+        self.assertIn("other/module-packs/MOD-0288-audit-ledger-external.md", out[2])
+        self.assertTrue(any(l.startswith("ÖZET paket künyesi: execution/domains/other/") and "owner other-team" in l for l in out), out[:8])
+
+    def test_different_kunye_values_on_another_ref_stay_unresolved(self):
+        FX.put(PACK, FX.read(PACK).replace("status: approved\n", "status: approved\nowner: another-owner\n", 1))
+        FX.commit("CT-FIX-06: the pack's owner on another ref")
+        FX.git("branch", "-f", "ctfix06-other")
+        self.addCleanup(FX.git, "branch", "-D", "ctfix06-other")
+        FX.reset(self.mark)
+        p = self.discover()
+        self.assertExit(p, 3)
+        line = next(l for l in p.stdout.splitlines() if l.startswith(f"ÖZET paket künyesi: {PACK}"))
+        self.assertIn("belirsiz — 2 farklı künye", line)
+        self.assertIn("owner another-owner (blob ", line)
+        self.assertIn("refs/heads/ctfix06-other", line)
+
+
+class CTFIX06_EvidenceLineAndRegistry(CTFIX04):
+    """CT-FIX-06 (v7 audit EK1-2, EK1-6): a cited evidence line is a real, non-blank line of a run artifact; the branch
+    registry's required columns are filled — one check (check_registry) for every consumer."""
+    def run_with(self, n, script, cited):
+        code = FX.git("rev-parse", "HEAD")
+        out = f"docs/records/audits/run-ek12-{n}"
+        p = FX.run("scripts/run_record.py", "run", "--out", out, "--", sys.executable, "-c", script)
+        self.assertExit(p, 0, "KOŞU KAYDI")
+        e = FX.commit("CT-FIX-06: a run whose output is cited")
+        FX.put(LIST, FX.list_head + FX.list_row.replace(f"{FX.artifact}@{FX.evidence_commit}:1", f"{out}/stdout.txt@{e}:{cited}"))
+        l = FX.commit("CT-FIX-06: the list citing it")
+        return self.check(FX.write_acceptance(commit=code, evidence=f"{out}/run-record-v1.json@{e}", acceptance_list=f"{LIST}@{l}"))
+
+    def test_a_cited_line_must_be_a_real_filled_line(self):
+        for n, (label, script, cited, want, text) in enumerate((
+                ("empty output, line 1", "pass", 1, 1, "kanıt satırı 1 dosyada yok"),
+                ("one line ending in LF, the phantom line 2", "print('AC-1 checked')", 2, 1, "kanıt satırı 2 dosyada yok"),
+                ("a line of spaces", "print('AC-1 checked'); print('   ')", 2, 1, "kanıt satırı 2 boş"),
+                ("a filled line", "print('AC-1 checked: expected observed')", 1, 0, "ACCEPTED'e izin verir"))):
+            with self.subTest(case=label):
+                FX.reset(self.mark)
+                self.assertExit(self.run_with(n, script, cited), want, text)
+
+    def test_an_empty_required_column_in_the_branch_registry_stops(self):
+        for column, index in (("scope", 5), ("evidence", 6)):
+            with self.subTest(column=column):
+                FX.reset(self.mark)
+                cells = FX.reg_line.rstrip("\n").split("\t")
+                cells[index] = ""
+                FX.put(REG, FX.reg_head + "\t".join(cells) + "\n")
+                for args in (CONSUMERS["validate"], CONSUMERS["require"], ["require", "W1", "--queue", "ct", "--in-force"]):
+                    self.assertExit(FX.run("scripts/ct_queue.py", *args), 1, f"boş zorunlu alan {column}")
+        FX.reset(self.mark)
+        self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]), 0)   # the intact registry
+
+
 if __name__ == "__main__":
     unittest.main()
