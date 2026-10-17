@@ -94,7 +94,7 @@ Pack gövdesi (21 zorunlu bölüm — `module-pack-standard.md` Bölüm 6):
 13. Failure Path to Verify
 14. Authorization Convention
 15. Gateway / API Routing Decision
-16. Acceptance Criteria
+16. Acceptance Criteria — yalnız yeni Control Tower'ların yeni paketlerinde her madde `AC-<n> (zorunlu|isteğe bağlı)` (`module-pack-standard.md` §7)
 17. Test Expectations
 18. Ready-for-dev Checklist
 19. Implementation Notes

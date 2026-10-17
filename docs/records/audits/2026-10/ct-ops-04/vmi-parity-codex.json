@@ -1,0 +1,26 @@
+{
+  "hash": "91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341",
+  "old_new": [
+    {
+      "loader": "load_registry",
+      "count": 249,
+      "equal": true
+    },
+    {
+      "loader": "load_blueprint",
+      "count": 357,
+      "equal": true
+    },
+    {
+      "loader": "load_packs",
+      "count": 163,
+      "equal": true
+    }
+  ],
+  "pure_equal": [
+    true,
+    true,
+    true
+  ],
+  "unchanged": true
+}
