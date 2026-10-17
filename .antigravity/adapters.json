@@ -117,6 +117,7 @@
         "`@orchestrator` pack oluşturmaz",
         "MOD kimliği uydurulmaz",
         "`verify_module_id.py`",
+        "Adı verilen yeni modül ya da kapsam istenince önce araştır",
         "`main`'e commit/push yok",
         "`git add -A` / `git add .` yok",
         "Commit, push, PR ve merge yalnız kullanıcının açık onayıyla",

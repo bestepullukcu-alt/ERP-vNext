@@ -28,6 +28,8 @@ Rules this script enforces (İ5-A pilot):
   ('required_sections') must appear once as a level-2 heading outside code, with at least one visible content line
   and each of its anchor sentences verbatim. Anchors are a meaningful minimum, not a guarantee of the whole text
   (that would be hash pinning); an emptied, padded or commented-out AGENTS-REFERENCE.md fails --check.
+- İ5B-FIX-05 (Codex): a core rule (required_text) is read from the same visible text outside fenced code — a rule kept
+  only inside a code block is an example, not a rule; inline code spans inside a rule stay readable.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -73,6 +75,25 @@ HTML_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
 def visible_text(text: str) -> str:
     """İ5B-FIX-04: the text a reader sees — every HTML comment removed; an unclosed '<!--' hides the rest."""
     return HTML_COMMENT.sub("", text)
+
+
+def outside_fenced_code(text: str) -> str:
+    """İ5B-FIX-05: the text with every fenced code block removed (its fence lines too), at any indentation — a fence
+    inside a list item is still a fence; a backtick fence's opening line holds no other backtick (that is an inline
+    span); an unclosed fence hides the rest. Inline code spans are kept — a rule may name `TenantId`."""
+    out: list[str] = []
+    fence: str | None = None
+    for line in text.split("\n"):
+        if fence is not None:
+            if re.match(rf"^[ \t]*{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line):
+                fence = None
+            continue
+        m = re.match(r"^[ \t]*(`{3,}|~{3,})", line)
+        if m and (m.group(1)[0] == "~" or "`" not in line[m.end():]):
+            fence = m.group(1)
+            continue
+        out.append(line)
+    return "\n".join(out)
 
 
 def heading_in_comment(heading: str, text: str) -> bool:
@@ -336,9 +357,11 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
             problems.append(f"CORE {e}")
         else:
             visible = HTML_COMMENT.sub("", block)
+            ruled = outside_fenced_code(visible)      # İ5B-FIX-05: a rule only inside a fence is not a rule
             for needle in core.get("required_text", []):
-                if needle not in visible:
-                    hidden = " (only inside an HTML comment)" if needle in block else ""
+                if needle not in ruled:
+                    hidden = (" (only inside a code block)" if needle in visible else
+                              " (only inside an HTML comment)" if needle in block else "")
                     problems.append(f"CORE-RULE {core['source']} core block lost: {needle!r}{hidden}")
     for path in budget.get("link_check", []):
         p = rel(path)

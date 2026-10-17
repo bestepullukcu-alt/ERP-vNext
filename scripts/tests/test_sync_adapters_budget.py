@@ -218,6 +218,75 @@ class InstructionBudget(unittest.TestCase):
                 problems = sa.check_instruction_budget(self.manifest)[0]
                 self.assertIn(f"HEADING AGENTS.md lost '## 12.' ({why}) (AGENTS.md §-references would break)", problems)
 
+    # İ5B-FIX-05 (the Employee pilot-01, Codex): a named module / scope request is researched before options are offered
+    MODULE_RULE = "Adı verilen yeni modül ya da kapsam istenince önce araştır"
+    DISCOVER = '`python3 .antigravity/scripts/verify_module_id.py . --discover "<ad>"`'
+
+    def test_the_module_request_rule_is_a_required_core_text_once(self):
+        self.assertIn(self.MODULE_RULE, self.manifest["instruction_budget"]["core"]["required_text"])
+        core = sa.extract_core("AGENTS.md")
+        self.assertEqual(core.count(self.MODULE_RULE), 1)
+        line = next(l for l in core.split("\n") if self.MODULE_RULE in l)
+        self.assertTrue(line.startswith("7. **Modül ve kimlik"), line[:60])      # Codex: item 7 only
+        for part in (self.DISCOVER, "Keşif koşmaz ya da eksikse bunu söyle", "küçük düzeltmede tarama gerekmez",
+                     "Kod, commit ya da dağıtım izni değildir"):
+            self.assertIn(part, line)
+
+    def test_the_generated_core_carries_the_rule(self):
+        generated = (REPO / ".claude/rules/agents-core.md").read_text(encoding="utf-8")
+        self.assertEqual(generated.count(self.MODULE_RULE), 1)
+        self.assertIn(self.DISCOVER, generated)
+
+    def test_the_module_request_rule_hidden_in_a_comment_or_removed_is_lost(self):
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        start = text.index(" **Modül talebi:**")
+        end = text.index("dağıtım izni değildir.", start) + len("dağıtım izni değildir.")
+        rule = text[start:end]
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        for label, replaced, why in (("inside an HTML comment", " <!--" + rule + " -->", "only inside an HTML comment"),
+                                     ("removed", "", "")):
+            with self.subTest(form=label):
+                f.write_text(text[:start] + replaced + text[end:], encoding="utf-8")
+                lost = [p for p in sa.check_instruction_budget(self.manifest)[0]
+                        if p.startswith("CORE-RULE") and self.MODULE_RULE in p]
+                self.assertEqual(len(lost), 1, lost)
+                self.assertIn(why, lost[0])
+
+    def test_a_core_rule_only_inside_a_code_block_is_lost(self):
+        # Codex (new-entry-probes): the new sentence moved into a fence inside the core, the adapter regenerated, passed
+        # --check — a fenced block is an example, not a rule; inline code spans in a rule stay readable
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        start = text.index(" **Modül talebi:**")
+        end = text.index("dağıtım izni değildir.", start) + len("dağıtım izni değildir.")
+        rule = text[start + 1:end]
+        first = self.manifest["instruction_budget"]["core"]["required_text"][0]
+        self.assertEqual(text.count(first), 1)
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        for label, changed, needle in (
+                ("the module rule in a backtick fence", text[:start] + "\n   ```\n   " + rule + "\n   ```" + text[end:], self.MODULE_RULE),
+                ("the module rule in a tilde fence", text[:start] + "\n   ~~~\n   " + rule + "\n   ~~~" + text[end:], self.MODULE_RULE),
+                ("the module rule in a fence indented as a list item's content", text[:start] + "\n      ```\n      " + rule + "\n      ```" + text[end:], self.MODULE_RULE),
+                ("the authority order in a fence", text.replace(first, "\n```\n" + first + "\n```\n"), first)):
+            with self.subTest(form=label):
+                f.write_text(changed, encoding="utf-8")
+                lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE") and needle in p]
+                self.assertEqual(len(lost), 1, lost)
+                self.assertIn("only inside a code block", lost[0])
+
+    def test_an_unclosed_fence_in_the_core_hides_the_rules_after_it(self):
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        f.write_text(text.replace("8. **Git (§9", "```\n8. **Git (§9", 1), encoding="utf-8")
+        lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE")]
+        self.assertTrue(any("`main`'e commit/push yok" in p for p in lost), lost)
+        self.assertFalse(any(self.MODULE_RULE in p for p in lost), lost)      # item 7 comes before the fence
+        # an inline span of three backticks is not a fence: the rules after it stay rules
+        f.write_text(text.replace("8. **Git (§9", "Örnek: ```kod``` yazılır.\n8. **Git (§9", 1), encoding="utf-8")
+        self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE")])
+
     def test_oversize_message_names_the_file_it_is_about(self):
         problems = self.claude_with("x" * 3000)
         over = [p for p in problems if p.startswith("OVERSIZE CLAUDE.md")]
