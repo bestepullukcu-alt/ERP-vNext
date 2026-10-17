@@ -8,7 +8,7 @@ info:
     provenance, never a second demand source of record. Tenant and LegalEntity
     scope are resolved from authenticated server context and are never accepted
     in request bodies.
-  version: 3.0.0
+  version: 3.1.0
   x-status: FROZEN
   x-contract-version: v1
   x-semantics-annex: sandop-capacity-semantics-v3.0.0.md
@@ -47,6 +47,8 @@ paths:
               demandPlanId: dp-2027
               demandPlanVersion: '3'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '201':
           description: S&OP plan created
           headers:
@@ -88,6 +90,8 @@ paths:
         - $ref: '#/components/parameters/SandopPlanId'
         - $ref: '#/components/parameters/CorrelationId'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '200':
           description: S&OP plan
           headers:
@@ -146,6 +150,8 @@ paths:
                   resourceId: availability-snapshot-20260915
                   resourceVersion: '12'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '201':
           description: Immutable S&OP input snapshot captured
           headers:
@@ -193,6 +199,8 @@ paths:
         - $ref: '#/components/parameters/SandopPlanId'
         - $ref: '#/components/parameters/CorrelationId'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '200':
           description: S&OP snapshots
           headers:
@@ -256,6 +264,8 @@ paths:
               decision: Approved
               comment: Capacity scenario C-3 accepted
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '201':
           description: Sign-off recorded
           headers:
@@ -297,6 +307,8 @@ paths:
         - $ref: '#/components/parameters/SandopPlanId'
         - $ref: '#/components/parameters/CorrelationId'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '200':
           description: S&OP sign-offs
           headers:
@@ -359,6 +371,8 @@ paths:
               sourceCapturedAt: '2026-09-15T09:45:00Z'
               sourceChecksum: sha256:ee56d4f9a3c8
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '201':
           description: Capacity plan created
           headers:
@@ -404,6 +418,8 @@ paths:
         - $ref: '#/components/parameters/CapacityPlanId'
         - $ref: '#/components/parameters/CorrelationId'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '200':
           description: Capacity plan
           headers:
@@ -465,6 +481,8 @@ paths:
                   availableCapacityDelta: '80.000'
                   uomId: HOUR
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '201':
           description: Capacity scenario created
           headers:
@@ -514,6 +532,8 @@ paths:
         - $ref: '#/components/parameters/ScenarioId'
         - $ref: '#/components/parameters/CorrelationId'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '200':
           description: Capacity scenario
           headers:
@@ -562,6 +582,8 @@ paths:
               evaluationMode: Finite
               resourceRefs: [line-4, labor-cell-a]
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '202':
           description: Capacity evaluation accepted
           headers:
@@ -605,6 +627,8 @@ paths:
         - $ref: '#/components/parameters/EvaluationId'
         - $ref: '#/components/parameters/CorrelationId'
       responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '200':
           description: Capacity evaluation
           headers:
@@ -1378,6 +1402,18 @@ components:
         contractVersion:
           $ref: '#/components/schemas/ContractVersion'
   responses:
+    InternalError:
+      description: Unexpected server fault; no mutation is implied and the transaction is aborted
+      x-error-codes: [INTERNAL_ERROR]
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error: { code: INTERNAL_ERROR, message: Unexpected server fault, correlationId: aaaaaaaa-0000-4000-8000-000000000001 }
+            contractVersion: v1
     InvalidRequest:
       description: Invalid required header, correlation or request payload; no mutation
       x-error-codes: [INVALID_CORRELATION_ID, INVALID_REQUEST]
