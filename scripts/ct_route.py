@@ -64,6 +64,9 @@ ROLE = re.compile(r"^[a-z][a-z0-9-]*$")
 PENDING = re.compile(r"TBD|pending|interim|atanmam", re.I)
 EMAIL = re.compile(r"\S+@\S+")
 NOT_A_PERMISSION = "bu yalnız 'tek hedef bulundu' demektir; geliştirme ya da dağıtım izni değildir"
+# CT-FIX-03 (B8, V4B-B8; Codex): a registry row the owner has not confirmed is a preparation candidate — the answer says
+# so on its result line and in the question draft, and --in-force refuses it whatever origin/main says
+PENDING_STAMP = "Hazırlık adayı; sahip teyidi bekliyor; yürürlükte değil"
 
 
 class Incomplete(Exception):
@@ -119,40 +122,37 @@ def parse_route_scope(scope: str) -> tuple[list[tuple[str, str]] | None, list[st
 
 def front_matter(text: str, keys: tuple[str, ...]) -> tuple[dict[str, str], int | None, list[str]]:
     """A closed '---' künye read only for the named keys: ({key: value}, index of the closing '---', problems). The rest
-    of the YAML (lists, blocks, quoted values holding '#', comments) is left as it is. A named key, when present, is
-    once at the top level with a one-line value (matching quotes removed) that holds no '#'."""
+    of the YAML (lists, blocks, quoted values holding '#', comments) is left as it is. CT-FIX-03 (R1): every named key is
+    read by ct_queue.kunye_fields(), the one grammar the prompt gate, require and the acceptance check use — a key
+    written twice in any form (indented under another key, quoted, bold, another case) is a problem, never a nested
+    value left aside; a value is one canonical line with balanced quotes. On top, this tool's own rule: no '#' in a
+    value. A named 'status' is also refused when the body repeats it on a column-0 line outside closed code fences
+    (ct_queue.body_status_lines(), the kunye_status() rule): the contradiction is not settled automatically."""
     lines = text.replace("\r\n", "\n").split("\n")
     if not lines or lines[0].rstrip() != "---":
         return {}, None, ["künye '---' ile başlamıyor"]
     end = next((i for i in range(1, len(lines)) if lines[i].rstrip() == "---"), None)
     if end is None:
         return {}, None, ["künye kapanmıyor"]
-    found: dict[str, list[list]] = {}
-    current = None
-    for line in lines[1:end]:
-        m = FRONT_KEY.match(line)
-        if m:
-            current = m.group(1)
-            if current in keys:
-                found.setdefault(current, []).append([(m.group(2) or "").strip(), False])
-        elif line.strip() and not line.lstrip().startswith("#") and current in keys:
-            found[current][-1][1] = True          # a list, a block or a continued line under a named key
+    ctq = _tool("ct_queue")
     values: dict[str, str] = {}
     problems: list[str] = []
     for key in keys:
-        got = found.get(key, [])
-        if len(got) > 1:
-            problems.append(f"'{key}' {len(got)} kez")
-        elif got:
-            value, continued = got[0]
-            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
-                value = value[1:-1].strip()
-            if continued or not value or value[0] in "|>[{&*!":
-                problems.append(f"'{key}' tek satırlık bir değer değil")
-            elif "#" in value:
-                problems.append(f"'{key}' değeri '#' içeriyor")
-            else:
-                values[key] = value
+        got, bad = ctq.kunye_fields(text, (key,))
+        if bad:
+            count = sum(1 for line in lines[1:end] if ctq._any_key(key).match(line))
+            problems.append(f"'{key}' {count} kez — {bad}" if count > 1 else f"'{key}' tek satırlık tek bir değer değil — {bad}")
+        elif got[key] is None:
+            continue
+        elif "#" in got[key]:
+            problems.append(f"'{key}' değeri '#' içeriyor")
+        else:
+            values[key] = got[key]
+    if "status" in values:
+        outside = ctq.body_status_lines(lines[end + 1:])
+        if outside:
+            del values["status"]
+            problems.append(f"'status' künye dışında da yazılmış (satır {outside[0] + end + 2}) — çelişki otomatik çözülmez")
     return values, end, problems
 
 
@@ -468,7 +468,12 @@ def _in_force(q: dict, row: dict, covering: list[tuple], data: dict, pack: tuple
 def _success(q: dict, qid: str, reg: dict, subject: str, covering: list[tuple], lines: list[str], data: dict,
              in_force: bool, pack: tuple[str, str] | None = None) -> tuple[int, list[str], dict]:
     row, kind = reg[qid], q["kind"]
-    ok, why = _in_force(q, row, covering, data, pack)
+    # CT-FIX-03 (B8, Codex): one truth — a row the owner has not confirmed is never "yürürlükte", whatever main says
+    pending = row["owner_confirmation"] != "confirmed"
+    if pending:
+        ok, why = False, f"bu ref'teki kayıt satırı sahip teyidi bekliyor (owner_confirmation {row['owner_confirmation'][:20]})"
+    else:
+        ok, why = _in_force(q, row, covering, data, pack)
     lines = list(lines) + [f"kayıt satırı (ref'te): {qid} · owner_confirmation {row['owner_confirmation']}"]
     if ok:
         lines.append(f"yürürlük: yürürlükte (yerel origin/main {data['main_sha']})")
@@ -477,24 +482,29 @@ def _success(q: dict, qid: str, reg: dict, subject: str, covering: list[tuple], 
     else:
         lines.append(f"yürürlük: hazırlık — yürürlükte değil: {why}")
     fronts = {c[1]: c[3] for c in covering}
+    if in_force and pending:
+        return _unresolved(subject, f"--in-force: kayıt satırı {qid} sahip teyidi bekliyor (owner_confirmation "
+                                    f"{row['owner_confirmation'][:20]}) — {PENDING_STAMP}", fronts, lines, data, [qid])
     if in_force and ok is None:
         raise Incomplete(f"--in-force ölçülemedi: {why}")
     if in_force and not ok:
         return _unresolved(subject, f"--in-force: eşleme yürürlükte değil ({why})", fronts, lines, data, [qid])
     lines += [f"koordinatör ({f.get('id')} · {p}): {coordinator(f)}" for p, f in fronts.items()]
     basis = "; ".join(f"{c[1]}#{c[2]} ({c[3].get('id')}, status {c[3].get('status')})" for c in covering) + f" · kayıt satırı {qid} @ {data['sha']}"
+    stamp = f" — {PENDING_STAMP} (owner_confirmation {row['owner_confirmation'][:20]})" if pending else ""
+    basis += stamp
     to = f"{qid} ({row['control_tower']})"
     if kind == "contract":
         lines.append(f"sonuç: tek hedef — sorumlu CT / teknik temas: {to}; karar otoritesi değildir — sözleşmenin dayanağı "
-                     "paket ve onu onaylayan sahiptir")
+                     f"paket ve onu onaylayan sahiptir{stamp}")
         question = (f"{subject} sözleşmesi hakkında, {pack[0]}@{data['sha'][:12]} (status {pack[1]}) okunduktan sonra: "
                     "<sorunuz>. Karar gerekiyorsa paketin sahibine yönlendirin.")
     else:
-        lines.append(f"sonuç: tek hedef — teslimattan sorumlu CT: {to}")
+        lines.append(f"sonuç: tek hedef — teslimattan sorumlu CT: {to}{stamp}")
         question = f"{subject} teslimatı hakkında: <sorunuz>. Bu iş sizin dilim kapsamınızda görünüyor."
     lines.append(NOT_A_PERMISSION)
     lines += _draft(f"{to} — teknik temas" if kind == "contract" else to, subject, question, basis)
-    return 0, lines, {"target": qid, "candidates": [qid]}
+    return 0, lines, {"target": qid, "candidates": [qid], "pending": pending}
 
 
 def _by_module(kind: str, module: str, reg: dict, dcps: _Dcps, data: dict, in_force: bool, lines: list[str],
@@ -877,7 +887,27 @@ def self_test() -> int:
         r = safe(parse_slices, text, known)
         cases.append((f"sabotage: a DCP with {label} -> not measurable, for that reason ({reason})", r is not None and why(r[2], reason)))
     r = safe(parse_slices, dcp(fm="id: DCP-091\nstatus: approved\nowner: x\nreview:\n  status: draft\n  id: DCP-000\n"), known)
-    cases.append(("künye: a nested status / id under another key is not the DCP's own", r is not None and not r[2] and r[0].get("status") == "approved"))
+    cases.append(("künye: a nested status / id in another key's object is not the DCP's own (CT-FIX-03 R1 keeps it, Codex)",
+                  r is not None and not r[2] and r[0].get("status") == "approved"))
+    r = safe(parse_slices, dcp(fm="id: DCP-091\nstatus: approved\nowner: x\nreview:\n- by: a\n  status: draft\nnotes: |\n  status: draft\n"), known)
+    cases.append(("künye: a status inside another key's list item or block text is that key's data", r is not None and not r[2]))
+    for label, fm, reason in (("an indented second status", "id: DCP-091\nstatus: approved\n  status: draft\nowner: x\n", "'status' 2 kez"),
+                              ("a quoted second status", "id: DCP-091\nstatus: approved\n\"status\": draft\nowner: x\n", "'status' 2 kez"),
+                              ("a bold status key", "id: DCP-091\n**status**: approved\nowner: x\n", "'status' tek satırlık"),
+                              ("a capitalised status key", "id: DCP-091\nStatus: approved\nowner: x\n", "'status' tek satırlık"),
+                              ("an unbalanced quote", "id: DCP-091\nstatus: \"approved\nowner: x\n", "'status' tek satırlık"),
+                              ("a status continued after a blank line", "id: DCP-091\nstatus: approved\n\n  later\nowner: x\n", "'status' tek satırlık"),
+                              ("an anchored owner", "id: DCP-091\nstatus: approved\nowner: &o x\n", "'owner' tek satırlık"),
+                              ("a merge key", "id: DCP-091\nstatus: approved\nowner: x\n<<: *base\n", "birleştirme anahtarı"),
+                              ("a status under another scalar key", "id: DCP-091\nstatus: approved\ntitle: x\n  status: draft\nowner: x\n", "'status' 2 kez"),
+                              ("a tab-indented status under an object", "id: DCP-091\nstatus: approved\nreview:\n\tstatus: draft\nowner: x\n", "'status' 2 kez")):
+        r = safe(parse_slices, dcp(fm=fm), known)
+        cases.append((f"CT-FIX-03 R1 sabotage: a DCP künye with {label} -> not measurable ({reason})", r is not None and why(r[2], reason)))
+    r = safe(parse_slices, dcp(extra="\nstatus: draft\n"), known)
+    cases.append(("CT-FIX-03 R1 sabotage: a column-0 'status:' line in the DCP body -> not measurable, the contradiction is not settled",
+                  r is not None and why(r[2], "künye dışında da yazılmış") and "status" not in r[0]))
+    r = safe(parse_slices, dcp(extra="\n```yaml\nstatus: draft\n```\n\n**Status:** in force.\n"), known)
+    cases.append(("CT-FIX-03 R1: a status in a closed fenced example and bold body prose are not a contradiction", r is not None and not r[2]))
     r = safe(parse_slices, dcp(fm="id: DCP-091\nstatus: approved\n# yorum satırı\nowner: x\n"), known)
     cases.append(("künye: a comment line does not make the key above it multi-line", r is not None and not r[2]))
     r = safe(parse_slices, dcp(fm="id: \"DCP-091\"\nstatus: 'approved'\nowner: \"enterprise-architect\"\n"), known)
@@ -1019,7 +1049,10 @@ def self_test() -> int:
                              ("two different ids (the last one MOD-0150)", "---\nid: MOD-0151\nid: MOD-0150\nstatus: approved\n---\n", "MOD-0150"),
                              ("a nested id verify_module_id takes", "---\nid: MOD-0151\nstatus: approved\nsource:\n  id: MOD-0150\n---\n", "MOD-0150"),
                              ("an unclosed künye", "---\nid: MOD-0151\nstatus: approved\n# x\n", "MOD-0151"),
-                             ("two statuses", "---\nid: MOD-0151\nstatus: approved\nstatus: draft\n---\n", "MOD-0151")):
+                             ("two statuses", "---\nid: MOD-0151\nstatus: approved\nstatus: draft\n---\n", "MOD-0151"),
+                             ("CT-FIX-03 R1: an indented second status", "---\nid: MOD-0151\nstatus: approved\n  status: draft\n---\n", "MOD-0151"),
+                             ("CT-FIX-03 R1: a status line in the body", "---\nid: MOD-0151\nstatus: approved\n---\n# x\nstatus: draft\n", "MOD-0151"),
+                             ("CT-FIX-03 R1: an unbalanced quote", "---\nid: \"MOD-0151\nstatus: approved\n---\n", "MOD-0151")):
         rows = safe(pack_entries, PK, text, vid) or []
         named = {m for _, m, _ in rows}
         cases.append((f"sabotage: a pack künye with {label} -> unreadable for every id it names",
@@ -1041,6 +1074,7 @@ def self_test() -> int:
     vmi = _tool("verify_module_id")
     sr2 = _tool("status_report_v2")
     same = total = 0
+    contradicted: list[tuple[str, str]] = []
     for f in sorted((ROOT / "execution/domains").glob("*/module-packs/*.md")):
         if f.name.lower() == "readme.md":
             continue
@@ -1049,8 +1083,16 @@ def self_test() -> int:
         if vid is None:
             continue
         total += 1
-        same += safe(pack_entries, str(f), t, vid) == [(str(f), vid, sr2._status_of(t))]
-    cases.append(("every real pack with an id reads as the old reader read it (one id, the same status)", total > 0 and same == total))
+        got, old = safe(pack_entries, str(f), t, vid), [(str(f), vid, sr2._status_of(t))]
+        if got != old and got and all("künye dışında da yazılmış" in st for _, _, st in got):
+            contradicted.append((f.name, sr2._status_of(t)))
+        else:
+            same += got == old
+    # CT-FIX-03 R1: a pack whose body repeats 'status:' outside the künye is now unreadable; measured on today's packs
+    # this is only MOD-0021's implementation plan, which the old reader did not take as an authority either
+    cases.append(("every real pack with an id reads as the old reader read it (one id, the same status); the ones now "
+                  "unreadable for a body status line were no authority before either",
+                  total > 0 and same + len(contradicted) == total and all(st not in PACK_AUTHORITY for _, st in contradicted)))
     # routing: contract
     code, lines, info = R("contract", "MOD-0150", None, None, data())
     cases.append(("contract --module MOD-0150 -> the pack first (path, status), then mvp1-ct as the responsible CT / technical contact, exit 0",
@@ -1122,6 +1164,20 @@ def self_test() -> int:
     cases.append(("sabotage --in-force: contract, the pack a draft on main -> not in force, exit 1", code == 1 and said(lines, "paket origin/main'de status draft")))
     code, lines, info = R("delivery", None, "W2", "mvp2-ct", data(main_sha=None), in_force=True)
     cases.append(("sabotage --in-force: no local origin/main -> not measurable, exit 2", code == 2 and said(lines, "ölçülemedi")))
+    # CT-FIX-03 (B8, V4B-B8): a pending registry row is a stamped preparation candidate; --in-force refuses it
+    pend = data(registry=[reg("mvp2-ct", f"dcp:{D1}#MVP2", confirmation="pending")])
+    code, lines, info = R("delivery", None, "W2", "mvp2-ct", pend)
+    res = next((l for l in lines if l.startswith("sonuç:")), "")
+    cases.append(("CT-FIX-03 B8: a pending row without --in-force -> its result line and the question draft say "
+                  f"'{PENDING_STAMP}'; no line calls it 'yürürlükte' (main confirmed)",
+                  code == 0 and PENDING_STAMP in res and any(l.strip().startswith("Dayanak:") and PENDING_STAMP in l for l in lines)
+                  and info.get("pending") is True and not said(lines, "yürürlük: yürürlükte")))
+    code, lines, info = R("delivery", None, "W2", "mvp2-ct", pend, in_force=True)
+    cases.append(("CT-FIX-03 B8 sabotage: --in-force on a pending row (main confirmed) -> exit 1, never a single target, never "
+                  "'yürürlükte'", code == 1 and said(lines, "sahip teyidi bekliyor") and not said(lines, "yürürlük: yürürlükte")
+                  and not any(l.startswith("sonuç: tek hedef —") for l in lines)))
+    code, lines, info = R("delivery", None, "W2", "mvp2-ct", data())
+    cases.append(("CT-FIX-03 B8: a confirmed row -> no stamp", code == 0 and not said(lines, PENDING_STAMP) and info.get("pending") is False))
     code, lines, info = R("delivery", None, "W2", "mvp2-ct", data(main_registry=[]))
     cases.append(("without --in-force: a mapping only on the branch -> exit 0, marked 'hazırlık — yürürlükte değil'",
                   code == 0 and said(lines, "hazırlık — yürürlükte değil")))

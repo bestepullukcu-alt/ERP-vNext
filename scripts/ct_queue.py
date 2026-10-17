@@ -45,7 +45,8 @@ summary   counts per state class, the owner column and the module derived from M
 
 Read-only: it never writes a queue, a registry or a git ref; git runs only the read commands in READ_ONLY_GIT, with
 GIT_OPTIONAL_LOCKS=0. Nothing is re-serialised, so the order, spacing and line endings of a queue are never touched.
-Standard library only.
+Standard library and git; the Blueprint is read through .antigravity/scripts/verify_module_id.py, which needs openpyxl
+(scripts/requirements-tools.txt) — without it the Blueprint is unreadable and the module checks fail closed (CT-FIX-03).
 """
 from __future__ import annotations
 
@@ -77,6 +78,15 @@ STATE_COLUMNS = ["queue_id", "state", "class", "dispatch", "source", "confirmati
 SOP7 = "sop7"
 SOP7_TERMINAL = frozenset({"ACCEPTED", "REWORK", "FAILED", "SUPERSEDED", "CANCELLED"})
 SOP7_DISPATCHABLE = frozenset({"READY"})
+# CT-FIX-03 (R2, V4A-F2): SOP §7 itself — the main flow in order and the exception states — is the sop7 vocabulary, state
+# for state; and the main flow's own steps (§7, §7.1: a state moves on only through its gate) are transitions the table
+# must hold, with VERIFIED → ACCEPTED for work that needs no integration ('gerekiyorsa'). A states file or transition
+# table that lost a state, gained one, or lost a main-flow step stops every consumer.
+SOP7_FLOW = ("DISCOVERED", "INSPECTION_REQUIRED", "INSPECTED", "PLANNED", "READY", "DISPATCHED", "IN_PROGRESS",
+             "REPORTED", "VERIFYING", "VERIFIED", "INTEGRATION_READY", "INTEGRATED", "ACCEPTED")
+SOP7_EXCEPTIONS = ("BLOCKED", "REWORK", "DEFERRED", "SUPERSEDED", "CANCELLED", "FAILED")
+SOP7_STATES = frozenset(SOP7_FLOW + SOP7_EXCEPTIONS)
+SOP7_REQUIRED_EDGES = frozenset(zip(SOP7_FLOW, SOP7_FLOW[1:])) | {("VERIFIED", "ACCEPTED")}
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 # CT-FIX-01 (11) / CT-FIX-02 (K1): a governance or reassessment record — and an effort baseline's approval — approves with
 # exactly 'approved' or 'decided', optionally followed by the two annotation forms its records use — ' (…)' and
@@ -320,13 +330,27 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
     return problems
 
 
-def sop7_problems(states: list[dict], transitions: list[dict]) -> list[str]:
+def sop7_problems(states: list[dict], transitions: list[dict], strict_registered: bool = False) -> list[str]:
     """CT-FIX-01 (06): the fixed SOP §7 rules — READY is the only dispatchable state, the five terminal states exist and
-    never dispatch, and no transition row leaves a terminal state, whatever the transition table says."""
+    never dispatch, and no transition row leaves a terminal state, whatever the transition table says. CT-FIX-03 (R2):
+    the vocabulary is SOP §7's state set exactly (SOP7_STATES), and the table holds every main-flow step
+    (SOP7_REQUIRED_EDGES) whenever it has sop7 rows or a strict queue is registered — a missing table is no rows."""
     mine = [s for s in states if s["queue_id"] == SOP7]
     if not mine:
         return []
     problems = []
+    names = {s["state"] for s in mine}
+    if names - SOP7_STATES:
+        problems.append(f"states {SOP7}: states not in SOP §7 {sorted(names - SOP7_STATES)}")
+    if SOP7_STATES - names:
+        problems.append(f"states {SOP7}: SOP §7 states missing {sorted(SOP7_STATES - names)}")
+    edges = {(r["from_state"], r["to_state"]) for r in transitions if r["vocabulary"] == SOP7}
+    if not edges and strict_registered:
+        problems.append(f"transitions {SOP7}: no rows (the table is missing or holds no {SOP7} row) — a registered strict "
+                        "queue's profile cannot be read; nothing is dispatched or reported")
+    elif edges and SOP7_REQUIRED_EDGES - edges:
+        gone = sorted(f"{a}→{b}" for a, b in SOP7_REQUIRED_EDGES - edges)
+        problems.append(f"transitions {SOP7}: SOP §7 main-flow steps missing {', '.join(gone)}")
     dispatchable = {s["state"] for s in mine if s["dispatch"] != "no"}
     if dispatchable != SOP7_DISPATCHABLE:
         problems.append(f"states {SOP7}: dispatchable states are {sorted(dispatchable)}, the SOP allows only {sorted(SOP7_DISPATCHABLE)}")
@@ -345,8 +369,13 @@ def dispatch_problems(registry: list[dict], states: list[dict], transitions: lis
     """CT-FIX-01 (05): what must hold before ANY consumer reads a dispatch or report answer from the registry and the
     state vocabulary — the same checks validate reports, now a stop for require, guard, writers, summary and the
     prompt gate instead of a list nobody has to read."""
-    return check_registry(registry, states, commit_exists, path_at) + check_transitions(transitions, states) \
-        + sop7_problems(states, transitions)
+    return check_registry(registry, states, commit_exists, path_at) + profile_problems(registry, states, transitions)
+
+
+def profile_problems(registry: list[dict], states: list[dict], transitions: list[dict]) -> list[str]:
+    """The transition table and the SOP §7 rules as every consumer and validate read them (CT-FIX-03 R2: one function)."""
+    strict = any(q.get("strict") == "yes" for q in registry)
+    return check_transitions(transitions, states) + sop7_problems(states, transitions, strict_registered=strict)
 
 
 def structure_errors(cur: Table, base: Table) -> list[str]:
@@ -831,27 +860,137 @@ def decision_resolved_text(text: str) -> bool:
     return bad is None and GOV_APPROVED.match(status) is not None
 
 
-def kunye_status(text: str) -> tuple[str | None, str | None]:
-    """CT-FIX-01 (11), shared by CT-FIX-02 (K1): the approval of a pack or a governance record is read from ONE closed
-    front matter holding exactly one 'status:' line. A second status, a status outside the front matter or an unclosed
-    block is refused — never settled by taking the first match. Returns (value, None) or (None, problem)."""
-    lines = text.replace("\r\n", "\n").split("\n")
-    if not lines or lines[0].strip() != "---":
-        return None, "künye yok (dosya '---' ile başlamıyor)"
-    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
-    if end is None:
-        return None, "künye kapanmamış (kapanış '---' yok)"
-    found = [m.group(1).strip() for l in lines[1:end] for m in [re.match(r"^\**status\**\s*:\s*(.*)$", l, re.I)] if m]
-    if len(found) != 1:
-        return None, f"künyede {len(found)} 'status' satırı var, 1 olmalı"
-    value = found[0]
-    # CT-FIX-02 (K1): one balanced pair of the same quote is unwrapped ("approved" / 'approved'); a missing, mixed or
-    # doubled quote ('"approved', "approved'", '"'approved'"') is refused instead of being stripped into an approval.
+# CT-FIX-03 (R1, V4A-F3; Codex review): the fields a tool decides on — status, and the identity fields id,
+# work_package, module, owner, queue — are read by ONE grammar. Any written form of such a key at the root of the front
+# matter counts (column 0 bold, quoted, another case; an indented line nobody owns), so a second or disguised value
+# never escapes the count; only the canonical column-0 form is read. A line inside an explicit object, list or block
+# text of another root key (`metadata:` then `  status: draft`) is that object's data, not an authority, and does not
+# count. A YAML list item ('- module: …') is list data and does not count either.
+STATUS_KEY_BODY = re.compile(r"""^(["']?)status\1\s*:""", re.I)       # column 0, plain or quoted — not bold prose
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+
+
+def _any_key(key: str):
+    return re.compile(rf"""^\s*\**\s*(["']?){re.escape(key)}\1\s*\**\s*:""", re.I)
+
+
+ROOT_KEY_LINE = re.compile(r"^(?!-(?:\s|$))([^\s#][^:]*?)[ \t]*:(?:[ \t]+(.*?))?[ \t]*$")
+
+
+def nested_lines(block: list[str]) -> set[int]:
+    """Indexes of the front-matter lines that belong to an explicit object, list or block text of another root key:
+    space-indented lines (and column-0 list items) under a column-0 key whose value is empty, only an anchor or only a
+    comment (an object or list follows) or starts with '|' / '>' (block text). Everything else that is indented — under
+    a scalar key, under nothing, or indented with a tab — is owned by nobody and is read as a root line. A multi-line
+    flow collection ('meta: {' …) is not recognised as an object: its lines count (a limited, strict contract)."""
+    owned: set[int] = set()
+    opener = False
+    for n, line in enumerate(block):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if line[:1] == " " or (line[:1] == "-" and re.match(r"^-(?:\s|$)", line)):
+            if opener:
+                owned.add(n)
+            continue
+        m = ROOT_KEY_LINE.match(line)
+        value = (m.group(2) or "") if m else None
+        opener = m is not None and (value == "" or value.startswith(("#", "|", ">"))
+                                    or re.fullmatch(r"&\S+(?:[ \t]+#.*)?", value) is not None)
+    return owned
+
+
+def unquote_value(value: str) -> tuple[str | None, str | None]:
+    """CT-FIX-02 (K1): one balanced pair of the same quote is unwrapped ("approved" / 'approved'); a missing, mixed or
+    doubled quote ('"approved', "approved'", '"'approved'"') is refused instead of being stripped into a value."""
     if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
         value = value[1:-1]
     if value[:1] in ("\"", "'") or value[-1:] in ("\"", "'"):
-        return None, f"künyedeki status değeri dengesiz ya da iç içe tırnaklı: {found[0][:40]}"
+        return None, "dengesiz ya da iç içe tırnaklı"
     return value, None
+
+
+def kunye_fields(text: str, keys: tuple[str, ...]) -> tuple[dict[str, str | None], str | None]:
+    """The named decision fields of ONE closed front matter: ({key: value or None when absent}, None) or ({}, problem).
+    Refused: a key written more than once in any form, a non-canonical key ('<key>: <value>' at column 0 is the only
+    one read), an empty, block, multi-line (across blank and comment lines too), anchored, aliased, tagged or flow
+    value, an unbalanced quote, and a YAML merge key ('<<:') anywhere in the block. Lines of another key's explicit
+    object, list or block text (nested_lines()) are that object's data and are left as they are."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    if not lines or lines[0].strip() != "---":
+        return {}, "künye yok (dosya '---' ile başlamıyor)"
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        return {}, "künye kapanmamış (kapanış '---' yok)"
+    block = lines[1:end]
+    if any(re.match(r"^\s*<<\s*:", l) for l in block):
+        return {}, "künyede YAML birleştirme anahtarı ('<<:') var — değer başka bir yerden gelebilir"
+    out: dict[str, str | None] = {}
+    owned = nested_lines(block)
+    for key in keys:
+        hits = [n for n, l in enumerate(block) if n not in owned and _any_key(key).match(l)]
+        if len(hits) > 1:
+            return {}, (f"künyede {len(hits)} '{key}' satırı var ({'iki kez' if len(hits) == 2 else 'birden çok kez'} "
+                        "yazılmış) — en çok 1 olmalı")
+        if not hits:
+            out[key] = None
+            continue
+        m = re.match(rf"^{re.escape(key)}:(?:[ \t]+(.*?))?[ \t]*$", block[hits[0]])
+        if not m:
+            return {}, f"künyedeki {key} satırı tanınmayan biçimde: '{block[hits[0]].strip()[:40]}' (yalnız '{key}: <değer>', sütun 0)"
+        # a YAML plain value continues on the next indented line, also across blank and comment lines; a comment line
+        # is never a continuation
+        nxt = next((l for l in block[hits[0] + 1:] if l.strip() and not l.lstrip().startswith("#")), "")
+        if nxt[:1] in (" ", "\t"):
+            return {}, f"künyedeki {key} değeri çok satırlı (altında girintili devam satırı var)"
+        raw = (m.group(1) or "").strip()
+        if not raw:
+            return {}, f"künyedeki {key} değeri boş"
+        if raw[0] in "|>&*![{":
+            return {}, f"künyedeki {key} değeri tanınmayan biçimde (blok, anchor, alias, etiket ya da akış): {raw[:40]}"
+        value, qbad = unquote_value(raw)
+        if qbad:
+            return {}, f"künyedeki {key} değeri {qbad}: {raw[:40]}"
+        out[key] = value
+    return out, None
+
+
+def body_status_lines(lines: list[str]) -> list[int]:
+    """Line indexes outside fenced code blocks that carry a column-0 plain or quoted status key. A fence closes only
+    with the same character and at least the same length; an unclosed fence hides nothing (its lines are read)."""
+    hidden, i = set(), 0
+    while i < len(lines):
+        m = FENCE.match(lines[i])
+        if not m:
+            i += 1
+            continue
+        mark = m.group(1)
+        close = next((j for j in range(i + 1, len(lines))
+                      if re.match(rf"^ {{0,3}}{re.escape(mark[0])}{{{len(mark)},}}[ \t]*$", lines[j])), None)
+        if close is None:
+            break                                           # unclosed: nothing after it is treated as code
+        hidden.update(range(i, close + 1))
+        i = close + 1
+    return [n for n, l in enumerate(lines) if n not in hidden and STATUS_KEY_BODY.match(l)]
+
+
+def kunye_status(text: str) -> tuple[str | None, str | None]:
+    """CT-FIX-01 (11), shared by CT-FIX-02 (K1), tightened by CT-FIX-03 (R1): the approval of a pack, a governance or
+    reassessment record and an effort baseline is the one 'status' field of kunye_fields() — exactly one, canonical —
+    and, outside the front matter and outside closed code fences, no column-0 plain or quoted 'status:' line (a
+    contradiction is never settled automatically). Bold prose such as '**Status:** in force.' and fenced code examples
+    in the body are not an authority and are not read. Returns (value, None) or (None, problem)."""
+    fields, bad = kunye_fields(text, ("status",))
+    if bad:
+        return None, bad
+    if fields["status"] is None:
+        return None, "künyede 0 'status' satırı var, 1 olmalı"
+    lines = text.replace("\r\n", "\n").split("\n")
+    end = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
+    outside = body_status_lines(lines[end + 1:])
+    if outside:
+        return None, (f"künye dışında status satırı var (satır {outside[0] + end + 2}) — onay yalnız künyeden okunur, "
+                      "çelişki otomatik çözülmez")
+    return fields["status"], None
 
 
 def acceptance_checker(queue: dict, ref: str | None = None):
@@ -1252,15 +1391,14 @@ def self_test() -> int:
                       commit_exists=lambda c: True, path_at=lambda c, x: True))))
 
     # CT-FIX-01 (independent audit 2026-10-17, findings 05/06): every consumer but validate stops on what validate rejects.
-    s7 = [{"queue_id": SOP7, "state": st, "class": c, "dispatch": d, "source": "SOP §7", "confirmation": "confirmed"}
-          for st, c, d in [("READY", "dispatchable", "yes"), ("IN_PROGRESS", "active", "no"), ("ACCEPTED", "closed", "no"),
-                           ("REWORK", "rework", "no"), ("FAILED", "failed", "no"), ("SUPERSEDED", "superseded", "no"),
-                           ("CANCELLED", "cancelled", "no")]]
+    # CT-FIX-03 (R2): the fixture is SOP §7's whole vocabulary (it was 7 of the 19 states)
+    s7 = [{"queue_id": SOP7, "state": st, "class": "dispatchable" if st == "READY" else "x", "dispatch": "yes" if st == "READY" else "no",
+           "source": "SOP §7", "confirmation": "confirmed"} for st in SOP7_FLOW + SOP7_EXCEPTIONS]
     reg_row = {"queue_id": "pq", "control_tower": "X CT", "path": "q.tsv", "baseline_commit": "a" * 40,
                "owner_confirmation": "pending", "scope": "X only", "evidence": "e", "strict": "yes", "vocabulary": SOP7}
     t7 = [{"vocabulary": SOP7, "from_state": a, "to_state": b, "evidence": "SOP §7", "source": "s", "kind": "sop"}
-          for a, b in [("READY", "IN_PROGRESS"), ("IN_PROGRESS", "ACCEPTED"), ("IN_PROGRESS", "REWORK"),
-                       ("IN_PROGRESS", "FAILED"), ("READY", "SUPERSEDED"), ("READY", "CANCELLED")]]
+          for a, b in sorted(SOP7_REQUIRED_EDGES) + [("IN_PROGRESS", "REWORK"), ("IN_PROGRESS", "FAILED"),
+                                                     ("READY", "SUPERSEDED"), ("READY", "CANCELLED")]]
     yes = dict(commit_exists=lambda c: True, path_at=lambda c, x: True)
     cases.append(("CT-FIX-01 05: intact registry, vocabulary and transitions -> no dispatch problem",
                   dispatch_problems([reg_row], s7, t7, **yes) == []))
@@ -1289,6 +1427,24 @@ def self_test() -> int:
                   any("terminal states missing" in pr for pr in sop7_problems([s for s in s7 if s["state"] != "CANCELLED"], t7))))
     cases.append(("CT-FIX-01 06: other vocabularies (SCE) are not given the SOP rules",
                   sop7_problems([dict(s, queue_id="sce-mvp6") for s in dup_failed], reopen[-1:]) == []))
+    # CT-FIX-03 (R2, V4A-F2): the whole SOP §7 set and the main-flow steps
+    cases.append(("CT-FIX-03 R2: the SOP §7 vocabulary as the SOP lists it is 19 states: 13 main flow + 6 exception",
+                  len(SOP7_FLOW) == 13 and len(SOP7_EXCEPTIONS) == 6 and len(SOP7_STATES) == 19 and len(SOP7_REQUIRED_EDGES) == 13))
+    for st in SOP7_FLOW + SOP7_EXCEPTIONS:
+        gone = [s for s in s7 if s["state"] != st]
+        edges_left = [r for r in t7 if st not in (r["from_state"], r["to_state"])]
+        cases.append((f"CT-FIX-03 R2 sabotage: {st} removed with its transitions -> dispatch problem (every consumer stops)",
+                      any("SOP §7 states missing" in pr and st in pr for pr in dispatch_problems([reg_row], gone, edges_left, **yes))))
+    cases.append(("CT-FIX-03 R2 sabotage: a state the SOP does not list -> dispatch problem",
+                  any("not in SOP §7" in pr for pr in dispatch_problems([reg_row], s7 + [dict(s7[0], state="PARKED")], t7, **yes))))
+    for a, b in sorted(SOP7_REQUIRED_EDGES):
+        cases.append((f"CT-FIX-03 R2 sabotage: the main-flow step {a} → {b} removed -> dispatch problem",
+                      any("main-flow steps missing" in pr and f"{a}→{b}" in pr for pr in dispatch_problems(
+                          [reg_row], s7, [r for r in t7 if (r["from_state"], r["to_state"]) != (a, b)], **yes))))
+    cases.append(("CT-FIX-03 R2 sabotage: a strict queue registered, the transition table missing (no rows) -> dispatch problem",
+                  any("no rows" in pr for pr in dispatch_problems([reg_row], s7, [], **yes))))
+    cases.append(("CT-FIX-03 R2: no strict queue registered (SCE only) and no transition table -> no new problem",
+                  dispatch_problems([dict(reg_row, strict="no")], s7, [], **yes) == []))
     v_short = vocabulary([s for s in s7 if s["state"] != "CANCELLED"], SOP7)   # a vocabulary that lost CANCELLED
     cases.append(("CT-FIX-01 06: the sop7 profile's terminal states always include the card's five; SCE keeps its own",
                   SOP7_TERMINAL <= profile_terminal(reg_row, v_short, {("READY", "IN_PROGRESS")})
@@ -1299,9 +1455,12 @@ def self_test() -> int:
     real = dict(reg_row, path="scripts/ct_queue.py", baseline_commit=git_text("rev-parse", "HEAD").strip())
     saved = {k: globals()[k] for k in ("read_table", "TRANSITIONS", "main_registry_text")}
 
-    def loads(rows: list[dict], main_text: str | None = None) -> str:
-        globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else s7,
-                         TRANSITIONS=Path("/nonexistent/ct-fix-01/transitions.tsv"), main_registry_text=lambda: main_text)
+    def loads(rows: list[dict], main_text: str | None = None, table: bool = True) -> str:
+        # CT-FIX-03 (R2): the transition rows are given in memory (TRANSITIONS points at the tracked table's path only so
+        # that it exists; read_table is replaced); table=False is the missing table
+        globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else t7 if cols == TRANSITION_COLUMNS else s7,
+                         TRANSITIONS=saved["TRANSITIONS"] if table else Path("/nonexistent/ct-fix-01/transitions.tsv"),
+                         main_registry_text=lambda: main_text)
         try:
             load_for_dispatch(real["queue_id"])
             return "ok"
@@ -1312,6 +1471,9 @@ def self_test() -> int:
     one, two = loads([real]), loads([real, real])
     cases.append(("CT-FIX-01 05: load_for_dispatch passes one valid row and stops a duplicate with DUR",
                   one == "ok" and two.startswith("DUR:") and "registered twice" in two))
+    no_table = loads([real], table=False)
+    cases.append(("CT-FIX-03 R2 sabotage: load_for_dispatch, a strict queue and no transition table -> DUR (it was a pass)",
+                  no_table.startswith("DUR:") and "no rows" in no_table))
     # CT-FIX-02 (K4): the wiring through main() itself, not a search in this file's text — every command but validate
     # stops on what validate rejects and on a profile origin/main registers differently; validate lists the conflict;
     # a queue main does not register is preparation. Nothing is written: the loader's inputs are replaced in memory and
@@ -1324,8 +1486,8 @@ def self_test() -> int:
 
     def via_main(argv: list[str], rows: list[dict], main_text: str | None) -> tuple[str, str]:
         saved_argv, out = sys.argv, io.StringIO()
-        globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else s7,
-                         TRANSITIONS=Path("/nonexistent/ct-fix-02/transitions.tsv"), main_registry_text=lambda: main_text)
+        globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else t7 if cols == TRANSITION_COLUMNS else s7,
+                         TRANSITIONS=saved["TRANSITIONS"], main_registry_text=lambda: main_text)
         sys.argv = ["ct_queue.py", *argv]
         try:
             with contextlib.redirect_stdout(out):
@@ -1411,9 +1573,9 @@ def main() -> int:
     queues, states = load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)
 
     if a.cmd == "validate":
-        problems = check_registry(read_table(REGISTRY, REGISTRY_COLUMNS), states)
+        registry = read_table(REGISTRY, REGISTRY_COLUMNS)
         transitions = read_table(TRANSITIONS, TRANSITION_COLUMNS) if TRANSITIONS.exists() else []
-        problems += check_transitions(transitions, states) + sop7_problems(states, transitions)
+        problems = check_registry(registry, states) + profile_problems(registry, states, transitions)
         problems += main_profile_problems(queues, main_registry_text())     # CT-FIX-02 (K3): the stop the others make
         for line in problems:
             print(f"HATA {line}")

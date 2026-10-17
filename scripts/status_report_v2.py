@@ -773,13 +773,14 @@ def self_test() -> int:
     fq = {"queue_id": "fq", "control_tower": "F CT", "path": "q.tsv", "baseline_commit": "b" * 40, "owner_confirmation": "pending",
           "scope": "f", "evidence": "f", "strict": "yes", "vocabulary": "sop7"}
     tsv = lambda cols, rows: "\t".join(cols) + "\n" + "".join("\t".join(r[c] for c in cols) + "\n" for r in rows)
-    st7 = [{"queue_id": "sop7", "state": a, "class": c, "dispatch": d, "source": "SOP §7", "confirmation": "confirmed"}
-           for a, c, d in [("READY", "dispatchable", "yes"), ("IN_PROGRESS", "active", "no"), ("ACCEPTED", "closed", "no"),
-                           ("REWORK", "rework", "no"), ("FAILED", "failed", "no"), ("SUPERSEDED", "superseded", "no"),
-                           ("CANCELLED", "cancelled", "no")]]
+    # CT-FIX-03 (R2): the intact fixture is SOP §7's whole vocabulary and its main-flow steps (it was 7 of the 19 states;
+    # ct_queue now refuses that vocabulary, so the old "intact" one would carry a reason)
+    st7 = [{"queue_id": "sop7", "state": a, "class": "dispatchable" if a == "READY" else "x",
+            "dispatch": "yes" if a == "READY" else "no", "source": "SOP §7", "confirmation": "confirmed"}
+           for a in ctq_mod.SOP7_FLOW + ctq_mod.SOP7_EXCEPTIONS]
     tr7 = [{"vocabulary": "sop7", "from_state": a, "to_state": b, "evidence": "SOP §7", "source": "s", "kind": "sop"}
-           for a, b in [("READY", "IN_PROGRESS"), ("IN_PROGRESS", "ACCEPTED"), ("IN_PROGRESS", "REWORK"),
-                        ("IN_PROGRESS", "FAILED"), ("READY", "SUPERSEDED"), ("READY", "CANCELLED")]]
+           for a, b in sorted(ctq_mod.SOP7_REQUIRED_EDGES) + [("IN_PROGRESS", "REWORK"), ("IN_PROGRESS", "FAILED"),
+                                                             ("READY", "SUPERSEDED"), ("READY", "CANCELLED")]]
     qtext = "id\titem\tmodule\tstate\towner\tdepends_on\tredispatch_trigger\tsince\trecord\nW1\tx\tMOD-0288\tREADY\tCT\t-\t-\t2026-10-17\t-\n"
     rel = lambda path: path.relative_to(ctq_mod.ROOT).as_posix()
 
@@ -816,6 +817,10 @@ def self_test() -> int:
                   "ya da geçiş tablosu sorunlu' reason; the intact one gives none",
                   any(r.startswith("kayıt, durum sözlüğü ya da geçiş tablosu sorunlu") for r in broken)
                   and not any(r.startswith("kayıt, durum sözlüğü") for r in clean)))
+    no_deferred = reasons_of(FakeSource([x for x in st7 if x["state"] != "DEFERRED"]))
+    cases.append(("CT-FIX-03 R2: read_strict_queue — the vocabulary lost DEFERRED (a SOP §7 state) -> 'kayıt, durum sözlüğü "
+                  "ya da geçiş tablosu sorunlu' reason, no percentages",
+                  any(r.startswith("kayıt, durum sözlüğü ya da geçiş tablosu sorunlu") and "DEFERRED" in r for r in no_deferred)))
     lowered_main = tsv(reg_cols, [dict(fq, strict="no")])
     clash = reasons_of(FakeSource(st7, lowered_main))
     prep = reasons_of(FakeSource(st7, "\t".join(reg_cols) + "\n"))

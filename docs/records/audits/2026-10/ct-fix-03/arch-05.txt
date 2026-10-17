@@ -1,0 +1,18 @@
+fixture: HEAD 75cf72304ad48f27562c759264277a7bf5e9be57 tree f61c33b5d3d40eaf9a81be3261ce4fee24fb4088 parent da488263ecd7ab8aa38ab6e0a5a62e5437e51a07
+dotnet: 8.0.416
+lock: locked_run.py (sha256 9fa85857fee462256751518a7a8ebab9d63e69348b834e43a09ea08bd68728e5; flock on ct-heavy.lock)
+started: 2026-10-17T12:24:58Z
+restore exit: 0
+dotnet exit: 1
+Failed!  - Failed:     7, Passed:   137, Skipped:     0, Total:   144, Duration: 11 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+finished: 2026-10-17T12:25:13Z
+dirty after: 0
+
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0

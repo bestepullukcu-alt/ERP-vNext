@@ -6,7 +6,9 @@ runs `verify_datatable_page.py --format gaps` for that module and hands the gaps
 with the protocol: OFFER the fix, never do it silently, never skip it silently. It lives in a hook and not only in
 the rule files because `.antigravity/` is not auto-loaded (CLAUDE.md), and a hook is.
 
-"No deviation" is said only on the verifier's clean signal (gaps format: exit 0, nothing but its own info lines);
+"No deviation" is said only on the verifier's clean signal (gaps format with --ok-line: exit 0, its own info lines and
+exactly one closing 'GAPS-OK: <n> kontrol, 0 sapma' line — CT-FIX-03 R6, V4A-F7: exit 0 with empty output is not a
+success);
 exit 1 with numbered gap lines is a deviation; anything else — a timeout, a missing verifier, output on stderr, an
 unknown exit code, unrecognised or contradictory output — is "doğrulanamadı" with the command to run by hand. The
 verifier's stderr is never printed.
@@ -28,6 +30,7 @@ LIST_FILE = re.compile(
 MAX_GAPS = 12
 TIMEOUT = 25
 GAP_LINE = re.compile(r"^(\d+)\) \S")
+OK_LINE = re.compile(r"^GAPS-OK: [1-9]\d* kontrol, 0 sapma$")  # verify_datatable_page.py print_gaps(ok_line=True)
 SHELL_WARNING = re.compile(r"^\[shell\] WARNING: the shell file itself lacks .+ — reported below as a red 'List shell file carries …' check$")
 INFO_LINES = (  # the verifier's own info lines, as its print() calls write them (verify_datatable_page.py)
     re.compile(r"^\[shell\] \S+ calls _ListShell — markers resolved from the model setup \(.*\) and \S.*$"),
@@ -62,13 +65,19 @@ def classify(returncode: int, stdout: str, stderr: str):
         return "unverified", f"doğrulayıcı hata akışına yazdı (çıkış {returncode})"
     lines = [line for line in stdout.splitlines() if line.strip()]
     gaps = [line for line in lines if GAP_LINE.match(line)]
-    other = [line for line in lines if line not in gaps and not any(p.match(line) for p in INFO_LINES)]
+    oks = [n for n, line in enumerate(lines) if OK_LINE.match(line)]
+    other = [line for line in lines if line not in gaps and not OK_LINE.match(line) and not any(p.match(line) for p in INFO_LINES)]
     if other:
         return "unverified", f"beklenen gaps biçimi gelmedi (çıkış {returncode}, {len(other)} tanınmayan satır)"
     if not gaps and any(SHELL_WARNING.match(line) for line in lines):
         return "unverified", f"doğrulayıcı kabuk uyarısı verdi ama numaralı gap satırı gelmedi (çıkış {returncode})"
     if returncode == 0 and not gaps:
-        return "clean", []
+        if oks == [len(lines) - 1]:
+            return "clean", []
+        return "unverified", (f"doğrulayıcı başarı satırı vermedi (çıkış 0, {len(oks)} 'GAPS-OK' satırı, sonda tek olmalı) — "
+                              "boş ya da eksik çıktı temiz sonuç sayılmaz")
+    if oks:
+        return "unverified", f"çıkış {returncode}, numaralı gap satırları ile 'GAPS-OK' birlikte — çıktı kendisiyle çelişiyor"
     numbers = [int(GAP_LINE.match(line).group(1)) for line in gaps]
     if returncode == 1 and gaps and numbers == list(range(1, len(gaps) + 1)):
         return "gaps", gaps
@@ -104,7 +113,7 @@ def main() -> int:
             reference = "slim"
         elif (views / "_Form.cshtml").exists():
             reference = "compact"
-        args = ["--area", area, "--module", module, "--format", "gaps"] + (["--reference", reference] if reference else [])
+        args = ["--area", area, "--module", module, "--format", "gaps", "--ok-line"] + (["--reference", reference] if reference else [])
         manual = shlex.join(["python3", ".antigravity/scripts/verify_datatable_page.py", str(root)] + args)
         if not verifier.exists():
             kind, found = "unverified", "doğrulayıcı bulunamadı"
@@ -157,7 +166,7 @@ def self_test() -> int:
               "[FAIL] _Filter.cshtml exists\n  - Missing: /r/_Filter.cshtml\n\nResult: FAIL\n")
 
     def case(stdout="", stderr="", code=0, sleep=0.0, verifier=True, path="frontend/Diten.Web/Views/A/M/Index.cshtml",
-             timeout=None, rootname="r", raise_root=False):
+             timeout=None, rootname="r", raise_root=False, flag_ok=False):
         global TIMEOUT
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / rootname
@@ -166,8 +175,10 @@ def self_test() -> int:
             stub = root / ".antigravity/scripts/verify_datatable_page.py"
             if verifier:
                 stub.parent.mkdir(parents=True)
+                # flag_ok: the stub prints the success line only when the hook passed --ok-line
+                answer = ("if '--ok-line' in sys.argv:\n    sys.stdout.write('GAPS-OK: 3 kontrol, 0 sapma\\n')\n" if flag_ok else "")
                 stub.write_text("import sys, time\n"
-                                f"time.sleep({sleep})\nsys.stdout.write({stdout!r})\nsys.stderr.write({stderr!r})\nsys.exit({code})\n",
+                                f"time.sleep({sleep})\nsys.stdout.write({stdout!r})\n{answer}sys.stderr.write({stderr!r})\nsys.exit({code})\n",
                                 encoding="utf-8")
             before = sorted((p.relative_to(root).as_posix(), p.stat().st_size) for p in root.rglob("*") if "__pycache__" not in p.parts)
             saved = (sys.stdin, TIMEOUT, globals()["find_verifier"], globals()["repo_root_of"])
@@ -195,10 +206,23 @@ def self_test() -> int:
     cases = []
     r = case(path="frontend/Diten.Web/Views/A/M/Create.cshtml")
     cases.append(("a file that is not a list file -> no context", r[0] == 0 and r[1] == ""))
+    ok = "GAPS-OK: 24 kontrol, 0 sapma"
+    r = case(stdout=ok + "\n")
+    cases.append(("CT-FIX-03 R6: exit 0 with the verifier's success line -> no deviation", r[1].endswith("referansla uyumlu, sapma yok.")))
     r = case()
-    cases.append(("exit 0, empty output -> no deviation", r[1].endswith("referansla uyumlu, sapma yok.")))
+    cases.append(("CT-FIX-03 R6 sabotage (V4A-F7): exit 0, empty output (a 0-byte verifier) -> DOĞRULANAMADI, not 'no deviation' "
+                  "(this case said 'no deviation' before CT-FIX-03)", unverified(r[1]) and "başarı satırı" in r[1]))
+    r = case(stdout="\n".join([shell, factory, pack, ok]) + "\n")
+    cases.append(("exit 0, the verifier's own info lines and its success line -> no deviation", r[1].endswith("sapma yok.")))
     r = case(stdout="\n".join([shell, factory, pack]) + "\n")
-    cases.append(("exit 0, only the verifier's own info lines -> no deviation", r[1].endswith("sapma yok.")))
+    cases.append(("CT-FIX-03 R6 sabotage: exit 0, info lines but no success line -> DOĞRULANAMADI", unverified(r[1])))
+    for label, out, code_ in (("the success line twice", f"{ok}\n{ok}\n", 0), ("the success line not last", f"{ok}\n{pack}\n", 0),
+                              ("a success line with a gap", f"1) gap a\n{ok}\n", 1), ("a success line with 0 checks", "GAPS-OK: 0 kontrol, 0 sapma\n", 0)):
+        r = case(stdout=out, code=code_)
+        cases.append((f"CT-FIX-03 R6 sabotage: {label} -> DOĞRULANAMADI", unverified(r[1])))
+    r = case(stdout="", code=0, flag_ok=True)
+    cases.append(("CT-FIX-03 R6: the hook asks for the success line (--ok-line); a verifier that answers it -> no deviation",
+                  r[1].endswith("sapma yok.")))
     r = case(stdout="1) Index.cshtml carries x — missing\n2) index.js wires y\n", code=1)
     cases.append(("exit 1, numbered gaps -> the deviation list", "2 noktada sapıyor" in r[1] and "2) index.js wires y" in r[1]))
     r = case(stdout=f"{pack}\n{factory}\n1) gap a\n", code=1)

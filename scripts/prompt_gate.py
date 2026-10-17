@@ -15,6 +15,12 @@ check   exit 0  every mechanical check passed. Without --prepare this is the dis
         exit 2  the gate could not complete (unreadable prompt, source or git; unexpected error) — never a pass
         The report ends with "rapor-sha256: <hex>" (the rule of verify_module_id.py --discover; that tool's
         --check-report verifies a saved gate report too).
+draft   (CT-FIX-03 U2) a §36.1 skeleton on stdout: only the measured Repository, Branch, Expected HEAD, Worktree and the
+        WP id are filled; every judgment field (target agent, prompt id, risk, signals, task class and authority, paths,
+        sources, contract surfaces, discovery, NE … Rapor formatı) is a '<<DOLDUR: …>>' marker. exit 0 = a draft was
+        printed, never a dispatch permission; check refuses a prompt with any marker left. Run it after the discovery
+        report is committed — Expected HEAD is the HEAD it measures. exit 2 = not measurable (no single WP row, a
+        worktree of another repository, git error).
 pack    the source pack of a prompt: every source file at Expected HEAD with its git blob id, and its digest. A HIGH
         prompt's independent review names this digest and the prompt's sha256, so any change to the prompt, its
         commands, its scope or its sources makes the review stale.
@@ -69,6 +75,9 @@ MIN_REASON = 15
 PLACEHOLDER = re.compile(r"^\s*(-|—|tbd|todo|\.\.\.|…|yok|n/?a|bekliyor)?\s*$", re.I)
 QUOTE = re.compile(r"«([^»]+)»\s*\(([^()\s:]+):(\d+)\)")
 GIT_ALLOWED = {"rev-parse", "cat-file", "show", "status", "ls-tree", "log", "for-each-ref", "merge-base"}
+
+
+DRAFT_MARK = "<<DOLDUR"   # CT-FIX-03 (U2): a field the draft left for a person; any left in a prompt is an ENGEL
 
 
 class Incomplete(Exception):
@@ -508,12 +517,12 @@ def check_discovery(p: dict, q: dict, read_report, names_for) -> list[str]:
     data = read_report(d["commit"], d["path"])
     if data is None:
         return [f"keşif: rapor {d['path']}@{d['commit']} commit'te yok"]
-    lines = data.decode("utf-8").rstrip("\n").split("\n")
-    if not lines or not lines[-1].startswith("rapor-sha256: "):
-        return ["keşif: raporun son satırı 'rapor-sha256: <hex>' değil"]
-    body, recorded = lines[:-1], lines[-1][len("rapor-sha256: "):].strip()
+    # CT-FIX-03 (R4, V4B-B6): the committed report read byte for byte by the producer's own parser
+    body, recorded, problem = vmi().parse_report(data)
+    if body is None:
+        return [f"keşif: rapor baytları üreticinin biçiminde değil — {problem}"]
     eng = []
-    if vmi().report_hash(body) != recorded:
+    if problem:
         eng.append("keşif: rapor değiştirilmiş — rapor-sha256 içerikle uyuşmuyor")
     if recorded != d["sha256"]:
         eng.append("keşif: 'Keşif:' satırındaki sha256 raporunkiyle aynı değil")
@@ -621,10 +630,15 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
          root_common: str | None = None) -> tuple[int, list[str]]:
     """The whole decision for one prompt. Returns (exit code, report lines without the hash line)."""
     text = prompt.decode("utf-8")
-    p, eng = parse_prompt(text)
     info: list[str] = []
     out = ["PQG RAPORU v1", f"prompt-sha256: {sha256(prompt)}",
            f"kip: {'HAZIRLIK — DAĞITIM İZNİ DEĞİL' if prepare else 'DAĞITIM DENETİMİ'}"]
+    unfilled = [n for n, l in enumerate(text.replace("\r\n", "\n").split("\n"), start=1) if DRAFT_MARK in l]
+    if unfilled:
+        shown = ", ".join(map(str, unfilled[:12])) + (f" (+{len(unfilled) - 12})" if len(unfilled) > 12 else "")
+        return 1, out + [f"ENGEL taslak: {len(unfilled)} satırda doldurulmamış alan ({DRAFT_MARK} …) — satır {shown}; "
+                         "taslak dağıtılamaz", "sonuç: engel — doldurulmamış taslak", "çıkış: 1"]
+    p, eng = parse_prompt(text)
     if eng:
         return 1, out + [f"ENGEL {e}" for e in eng] + ["sonuç: engel — biçim", "çıkış: 1"]
     out.append(f"wp: {p['wp']} · prompt {p['prompt_id']} v{p['version']} · risk {p['risk']} · sınıf {p['task_class']}")
@@ -658,6 +672,59 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
         return 1, out + [f"sonuç: engel — {len(eng)} bulgu", "çıkış: 1"]
     verdict = "hazırlık geçti — DAĞITIM İZNİ DEĞİL" if prepare else "geçti"
     return 0, out + [f"sonuç: {verdict}", "çıkış: 0"]
+
+
+def render_draft(wp: str, repository: str, branch: str | None, head: str, worktree: str) -> str:
+    """CT-FIX-03 (U2): the §36.1 skeleton — the five measured values, every other field a DRAFT_MARK."""
+    d = lambda what: f"{DRAFT_MARK}: {what}>>"
+    return "\n".join([
+        d("hedef ajan ya da akış — @[.antigravity/agents/<ajan>.md] ya da /<akış>"),
+        f"WP: {wp} · Prompt {d('prompt kimliği')} v{d('sürüm, ör. 1.0')}",
+        f"Repository: {repository} · Branch: {branch or d('dal — worktree ayrık HEAD’de')} · Expected HEAD: {head} · Worktree: {worktree}",
+        f"Risk: {d('LOW | MEDIUM | HIGH')} · §9.1 sinyalleri: {d('yok ya da virgüllü liste')}",
+        f"Görev sınıfı: {d('ürün · Paket: <yol> ya da yönetişim · Kapsam kaydı: <yol>')}",
+        f"İzinli yollar: {d('virgülle ayrılmış yollar')}",
+        f"Korunan yollar: {d('virgülle ayrılmış yollar ya da yok')}",
+        "Önce oku:",
+        f"1. {d('yol')}",
+        "",
+        "Sözleşme yüzeyleri:",
+        *[f"- {s}: {d('«alıntı» (yol:satır) ya da N/A — gerekçe')}" for s in SURFACES],
+        "",
+        d("Keşif: <sonuç> · rapor <yol>@<commit> · sha256 <hex> — commit edilmiş keşif raporundan"),
+        d("her BULGU için: Keşif kararı <n>: parent | FU | child | yeni — gerekçe"),
+        "",
+        *[f"{sec} {d('içerik')}" for sec in REQUIRED_SECTIONS],
+        ""])
+
+
+def draft(queue_id: str, wp_id: str, worktree: str) -> str:
+    """CT-FIX-03 (U2): measure the five values for one WP row of a registered queue and render the skeleton."""
+    cq = ctq()
+    try:
+        queues, _ = cq.load(queue_id)
+    except SystemExit as e:
+        raise Incomplete(str(e))
+    qd = queues[0]
+    cur = cq.Table(cq.decode(cq.current_bytes(qd, None), qd["path"]))
+    # Codex: the queue's own structure check first (header, row width, empty id) — a malformed row is never skipped
+    broken = cq.structure_errors(cur, cq.baseline(qd))
+    if broken:
+        raise Incomplete(f"kuyruk '{queue_id}' yapısı bozuk — {broken[0]}" + (f" (+{len(broken) - 1})" if len(broken) > 1 else ""))
+    id_i = cur.index("id")
+    rows = [r for r in cur.rows if r[id_i] == wp_id]
+    if len(rows) != 1:
+        raise Incomplete(f"'{wp_id}' '{queue_id}' kuyruğunda {len(rows)} kez — taslak tek bir WP satırından üretilir")
+    repo = GitRepo(worktree)
+    if not repo.is_repo(worktree):
+        raise Incomplete(f"'{worktree}' bir git çalışma ağacı değil")
+    common = repo.common_dir(worktree)
+    if common != repo.common_dir(str(ROOT)):
+        raise Incomplete("worktree bu Control Tower deposunun değil — kuyruk başka deponun işini taslaklayamaz")
+    top = repo._git(worktree, "rev-parse", "--show-toplevel").strip()
+    repository = os.path.dirname(common) if os.path.basename(common) == ".git" else top
+    branch = repo.branch()
+    return render_draft(wp_id, repository, None if branch == "HEAD" else branch, repo.head(), top)
 
 
 def real_queue(queue_id: str, wp_id: str) -> dict:
@@ -812,6 +879,19 @@ Rapor formatı: §22
     cases.append(("sabotage: Risk line missing -> format ENGEL", run(good.replace("Risk: LOW · §9.1 sinyalleri: yok\n", ""))[0] == 1))
     cases.append(("sabotage: Worktree 'ana checkout' (not a measured path) -> ENGEL",
                   any("Worktree" in e for e in eng(run(good.replace("Worktree: /r", "Worktree: ana checkout"))))))
+    # CT-FIX-03 (U2): the draft and the unfilled-marker stop
+    dr = render_draft("WP-T-01", "/r", "ct/x", "a" * 40, "/r")
+    dl = dr.split("\n")
+    cases.append(("CT-FIX-03 U2: the draft fills exactly the five measured values and the WP id on the gate's own lines",
+                  "Repository: /r · Branch: ct/x · Expected HEAD: " + "a" * 40 + " · Worktree: /r" in dl
+                  and any(l.startswith("WP: WP-T-01 · Prompt ") for l in dl)))
+    cases.append(("CT-FIX-03 U2: every other field of the draft is a marker (no risk, authority or approval invented)",
+                  all(DRAFT_MARK in l for l in dl if l.strip() and not l.startswith(("Repository:", "Önce oku:", "Sözleşme yüzeyleri:")))))
+    cases.append(("CT-FIX-03 U2: a detached worktree leaves Branch as a marker, never 'HEAD'",
+                  any(l.startswith("Repository:") and "Branch: " + DRAFT_MARK in l for l in render_draft("W", "/r", None, "a" * 40, "/r").split("\n"))))
+    cases.append(("CT-FIX-03 U2 sabotage: the draft itself -> ENGEL 'doldurulmamış', exit 1", (lambda r: r[0] == 1 and any("doldurulmamış" in e for e in eng(r)))(run(dr))))
+    cases.append(("CT-FIX-03 U2 sabotage: one marker left anywhere (inside NASIL) in an otherwise good prompt -> ENGEL",
+                  any("doldurulmamış" in e for e in eng(run(good.replace("NASIL:", "NASIL: " + DRAFT_MARK + ": adım>>"))))))
     cases.append(("sabotage: Repository from another machine -> ENGEL",
                   any("Repository" in e for e in eng(run(good.replace("Repository: /r", "Repository: C:\\Users\\u\\ERP"))))))
     cases.append(("sabotage: Expected HEAD not the worktree HEAD -> ENGEL",
@@ -1027,8 +1107,9 @@ Rapor formatı: §22
                   any("künye yok" in e for e in auth(pack_p, "# MOD-0001\nstatus: approved\nbody\n"))))
     cases.append(("CT-FIX-01 11: pack front matter never closed -> ENGEL",
                   any("kapanmamış" in e for e in auth(pack_p, "---\nid: MOD-0001\nstatus: approved\nbody\n"))))
-    cases.append(("CT-FIX-01 11: pack front matter draft, 'status: approved' in the body -> ENGEL (draft)",
-                  any("'draft'" in e for e in auth(pack_p, "---\nid: MOD-0001\nstatus: draft\n---\nstatus: approved\n"))))
+    cases.append(("CT-FIX-01 11 / CT-FIX-03 R1: pack front matter draft, 'status: approved' in the body -> ENGEL "
+                  "(the body line is a contradiction; the approval is never read from it)",
+                  any("künye dışında status satırı" in e for e in auth(pack_p, "---\nid: MOD-0001\nstatus: draft\n---\nstatus: approved\n"))))
     cases.append(("CT-FIX-01 11: a governance record with one closed front matter and status approved passes",
                   not auth(gov_p, "---\nstatus: approved\n---\nW1\n")))
     cases.append(("CT-FIX-01 11: a pack status with a suffix ('approved | draft', 'approved draft') -> ENGEL (whole value)",
@@ -1115,9 +1196,26 @@ def main() -> int:
     pc.add_argument("--prepare", action="store_true", help="preparation only: no dispatch permission")
     pp = sub.add_parser("pack")
     pp.add_argument("prompt")
+    pd = sub.add_parser("draft", help="CT-FIX-03 U2: a §36.1 skeleton on stdout — never a dispatch permission")
+    pd.add_argument("--queue", required=True)
+    pd.add_argument("--wp", required=True)
+    pd.add_argument("--worktree", default=".", help="the target worktree (default: the current directory)")
     a = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    if a.cmd == "draft":
+        try:
+            text = draft(a.queue, a.wp, os.path.abspath(a.worktree))
+        except (Incomplete, OSError, UnicodeDecodeError) as e:
+            print(f"DUR: taslak üretilemedi — {e}", file=sys.stderr)
+            return 2
+        sys.stdout.write(text)
+        print(f"TASLAK — dağıtım izni değil: çıkış 0 yalnız taslağın üretildiğini söyler. {DRAFT_MARK} … alanları "
+              f"doldurulmadan check ENGEL verir. Sonra: python3 scripts/prompt_gate.py check <dosya> --queue {a.queue}"
+              " (kayıt main'de değilse --prepare: yalnız hazırlık)", file=sys.stderr)
+        return 0
     if a.cmd == "pack":
         try:
             p, bad = parse_prompt(Path(a.prompt).read_text(encoding="utf-8"))

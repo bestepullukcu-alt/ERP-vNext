@@ -164,9 +164,37 @@ else
   echo "[phase1] skip mdm: services/Diten.MdmService/Diten.MdmService.sln not found"
 fi
 
-# WP-CI-SERVICE-TESTS-03 FIX1: the CI helper scripts' own tests (the skip allow-list of check_trx_no_skipped.py).
+# CT-FIX-03 (R0, Codex): the Control Tower CLI regression set (scripts/tests/test_ct_cli_regression.py) builds a
+# synthetic Blueprint workbook and needs openpyxl. It is installed from the repository's own pins
+# (scripts/requirements-tools.txt) into an isolated virtual environment under the runner's temp folder — never into the
+# global Python, no new action, no secret. When the venv cannot be made or the pins cannot be installed, the step fails
+# with the reason: the regression set is never skipped (it also raises without openpyxl). The architecture guard
+# (CiServiceTestsGuardTests) keeps its contract: no double-pipe operator here, and the exact discover line below, run with the venv's
+# python3 first on PATH for that one step only.
+ct_tools_python() {
+  local venv="${CT_TOOLS_VENV:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/ct-tools-venv}"
+  if [ ! -x "$venv/bin/python3" ]; then
+    if ! python3 -m venv "$venv" >&2; then
+      echo "[phase1] CT tools venv: 'python3 -m venv $venv' failed" >&2
+      return 1
+    fi
+  fi
+  if ! "$venv/bin/python3" -m pip install --quiet --disable-pip-version-check -r scripts/requirements-tools.txt >&2; then
+    echo "[phase1] CT tools venv: pip install -r scripts/requirements-tools.txt failed" >&2
+    return 1
+  fi
+  echo "$venv/bin/python3"
+}
+
+# WP-CI-SERVICE-TESTS-03 FIX1: the CI helper scripts' own tests (the skip allow-list of check_trx_no_skipped.py), and
+# since CT-FIX-03 the Control Tower CLI regression set, with the tools' pinned packages.
 echo "[phase1] test ci scripts"
+CT_TOOLS_PY="$(ct_tools_python)"
+CT_SAVED_PATH="$PATH"
+PATH="$(dirname "$CT_TOOLS_PY"):$PATH"
+echo "[phase1] python3 for scripts/tests: $(command -v python3)"
 python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+PATH="$CT_SAVED_PATH"
 
 # WP-CI-SERVICE-TESTS-03 (CT decision b; FIX1: here, not in the workflow, so a local gates run builds them too). These
 # service test projects are NOT in their service's solution, so the solution builds above never compile them —

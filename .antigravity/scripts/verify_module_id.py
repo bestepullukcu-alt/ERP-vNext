@@ -352,11 +352,17 @@ def check_all(root):
 #               reported as "not found"
 #       Report v2: tool identity, query, origin/main SHA and last fetch, every source with sha256 and git blob id,
 #       findings, gaps, every inspected ref with its commit SHA, result, exit code. Module packs are matched by file
-#       name (id and slug); their contents are not read.
+#       name (id and slug); their work scope is not read (CT-FIX-03 R4: only the künye id, for repetition/disguise).
 #       The last line is "rapor-sha256: <hex>": SHA-256 of the UTF-8 text of every line before it, joined with
 #       "\n" and ending with "\n".
+#       CT-FIX-03 (R4): a task row with an empty id or state, or with every matchable cell (item, module) empty, is
+#       "tamamlanamadı" (V4A-F4); the task-source registry's own bytes are named by sha256 and blob (V4A-F8); every
+#       visible pack blob's künye id is read by the shared reader (scripts/ct_queue.py kunye_fields) only to find a
+#       repeated or disguised id — such a pack is "tamamlanamadı"; a pack without a künye is matched by name as before.
 #   --check-report <file>
-#       Recomputes rapor-sha256 of a saved report. exit 0 = matches, exit 2 = malformed or altered.
+#       Recomputes rapor-sha256 of a saved report, byte for byte (parse_report: UTF-8, LF only, one final newline,
+#       the hash line exactly 'rapor-sha256: <64 hex>' — CT-FIX-03 R4, V4B-B6). exit 0 = matches, exit 2 = malformed
+#       or altered.
 
 DISCOVER_STOP = {"and", "the", "for", "with", "management", "service", "services", "module", "system", "api",
                  "platform", "internal", "tenant", "admin"}
@@ -370,7 +376,9 @@ GAPS = [
     "EKSİK: bu makinede bulunmayan ya da son fetch'ten sonra itilen dallar görülmedi",
     "EKSİK: commit edilmemiş ya da başka makinedeki işler görülmedi",
     "EKSİK: kayıtlı olmayan görev kaynakları (sohbetler, notlar) görülmedi",
-    "EKSİK: paket içerikleri okunmadı — paketler dosya adından (kimlik ve ad) eşleştirildi",
+    # CT-FIX-03 (R4, Codex): the pack künye id is now read, only to refuse a repeated or disguised id; the pack's work
+    # scope is still not read. A report from the older tool carries the older line and the gate asks for a new run.
+    "EKSİK: paket iş kapsamı okunmadı — paketler dosya adından (kimlik ve ad) eşleştirildi; künyeden yalnız id, tekrar ya da gizlenme için okundu",
 ]
 
 
@@ -396,7 +404,7 @@ def _similar(query, text):
     return len(query & t) >= 2 or (len(query) == 1 and query <= t)
 
 
-def _git(root, *args, stdin=None):
+def _git(root, *args, stdin=None, raw=False):
     import subprocess
     if not args or args[0] not in ("rev-parse", "for-each-ref", "ls-tree", "show", "cat-file"):
         raise Incomplete(f"git {args[:1]} is not a read-only command allowed here")
@@ -404,7 +412,42 @@ def _git(root, *args, stdin=None):
     done = subprocess.run(["git", "-C", root, *args], capture_output=True, input=stdin, env=env)
     if done.returncode != 0:
         raise Incomplete(f"git {' '.join(args[:2])} → {done.returncode}")
-    return done.stdout.decode("utf-8", errors="replace")
+    return done.stdout if raw else done.stdout.decode("utf-8", errors="replace")
+
+
+def _shared_reader():
+    """CT-FIX-03 (R4): the one künye grammar of the CT tools (scripts/ct_queue.py), loaded only by --discover."""
+    import importlib.util
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts", "ct_queue.py")
+    if not os.path.isfile(path):
+        raise Incomplete("ortak künye okuyucusu (scripts/ct_queue.py) yok — paket kimlikleri ölçülemez")
+    spec = importlib.util.spec_from_file_location("ct_queue_shared", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def pack_id_conflicts(root, blobs):
+    """CT-FIX-03 (R4, Codex item 8): {path: problem} for every pack blob whose künye names its id more than once or in
+    a disguised form. A pack without a künye (or with an unclosed one) is not a conflict: it is matched by name."""
+    if not blobs:
+        return {}
+    kf = _shared_reader().kunye_fields
+    data = _git(root, "cat-file", "--batch", stdin="".join(b + "\n" for b in blobs).encode(), raw=True)
+    out, i = {}, 0
+    while i < len(data):
+        nl = data.index(b"\n", i)
+        head = data[i:nl].decode().split()
+        if len(head) != 3 or head[1] != "blob":
+            raise Incomplete(f"paket blob'u okunamadı ({' '.join(head)[:60]})")
+        size = int(head[2])
+        body = data[nl + 1:nl + 1 + size].decode("utf-8", errors="replace")
+        i = nl + 1 + size + 1
+        _, bad = kf(body, ("id",))
+        if bad and not bad.startswith(("künye yok", "künye kapanmamış")):
+            for path in sorted(blobs[head[0]]):
+                out[path] = bad
+    return out
 
 
 def _sha256_bytes(data):
@@ -550,16 +593,26 @@ def discover(root, name, resource=None, sor=None):
             parts = tree_line.split()
             if len(parts) == 2 and parts[1] == "tree":
                 by_tree.setdefault(parts[0], []).append(ref_line.split()[0])
-        packs = {}
+        packs, pack_blobs = {}, {}
         for tree, ref_names in by_tree.items():
-            for path in _git(root, "ls-tree", "-r", "--name-only", tree).splitlines():
+            for entry in _git(root, "ls-tree", "-r", tree).splitlines():
+                meta, path = entry.split("\t", 1)
                 if "/module-packs/" in path and path.endswith(".md") and not path.lower().endswith("readme.md"):
                     packs.setdefault("execution/domains/" + path, set()).update(ref_names)
+                    pack_blobs.setdefault(meta.split()[2], set()).add("execution/domains/" + path)
+        conflicts = pack_id_conflicts(root, pack_blobs)
+        if conflicts:
+            first = sorted(conflicts)[0]
+            raise Incomplete(f"paket künyesinde tekrarlı ya da gizlenmiş kimlik: {first} ({conflicts[first][:90]})"
+                             + (f" (+{len(conflicts) - 1})" if len(conflicts) > 1 else "")
+                             + " — hangi modülün paketi olduğu belirsiz; son değer seçilmez")
         ref_digest = _sha256_bytes("\n".join(sorted(refs)).encode())
         no_dir = len(refs) - sum(len(v) for v in by_tree.values())
         lines.append(f"kaynak paketler: {len(refs)} ref ({no_dir} ref'te execution/domains yok) · {len(by_tree)} farklı "
                      f"execution/domains ağacı · {len(packs)} paket yolu · ref-listesi-sha256 {ref_digest} "
                      f"(ref adı ve commit SHA'sı satırları; liste raporun sonunda)")
+        lines.append(f"kaynak paket-künyeleri: {len(pack_blobs)} farklı paket blob'unun künye id'si ortak okuyucuyla okundu "
+                     "(yalnız tekrar ya da gizlenme için; iş kapsamı okunmadı); künyesiz paket dosya adından eşleşir")
         for path, ref_names in sorted(packs.items()):
             stem = os.path.basename(path)[:-3]
             pack_id = re.match(r"^(MOD-\d+(?:-FU\w+)?)", stem)
@@ -589,7 +642,10 @@ def discover(root, name, resource=None, sor=None):
         if not os.path.exists(q_reg):
             lines.append(f"kaynak görev-kaynakları: {QUEUE_REGISTRY} yok — kayıtlı görev kaynağı okunmadı")
         else:
-            q_lines = open(q_reg, encoding="utf-8").read().split("\n")
+            q_raw = open(q_reg, "rb").read()
+            # CT-FIX-03 (R4, V4A-F8): the registry's own bytes are part of what the report read
+            lines.append(f"kaynak görev-kaynak-kaydı: {QUEUE_REGISTRY} sha256 {_sha256_bytes(q_raw)} · blob {_blob_id(q_raw)}")
+            q_lines = q_raw.decode("utf-8").split("\n")
             header = q_lines[0].split("\t")
             if "path" not in header:
                 raise Incomplete("görev kaynağı kayıt dosyasında 'path' sütunu yok")
@@ -611,6 +667,11 @@ def discover(root, name, resource=None, sor=None):
                     if len(t_row) != len(t_head):
                         raise Incomplete(f"görev kaynağı '{qpath}' satır {m}: {len(t_row)} sütun, beklenen {len(t_head)}")
                     cells = dict(zip(t_head, t_row))
+                    # CT-FIX-03 (R4, V4A-F4): a row that cannot be matched is "tamamlanamadı", never a silent no-match
+                    if not cells["id"].strip() or not cells["state"].strip():
+                        raise Incomplete(f"görev kaynağı '{qpath}' satır {m}: id ya da state boş")
+                    if not any(cells[c].strip() for c in ("item", "module") if c in cells):
+                        raise Incomplete(f"görev kaynağı '{qpath}' satır {m}: item ve module boş — satır eşleştirilemez")
                     if (cells.get("module") and cells["module"] in matched_ids) or _similar(query, cells.get("item", "")[:200]):
                         findings.append(f"BULGU görev: {qpath} {cells.get('id', '?')} [{cells.get('state', '?')}] {cells.get('item', '')[:70]}")
             lines.append(f"kaynak görev-kaynakları: {QUEUE_REGISTRY} · {len([l for l in q_lines[1:] if l.strip()])} kayıtlı kaynak okundu")
@@ -638,19 +699,44 @@ def report_hash(lines):
     return _sha256_bytes(("\n".join(lines) + "\n").encode("utf-8"))
 
 
+REPORT_HASH_LINE = re.compile(r"^rapor-sha256: ([0-9a-f]{64})$")
+REPORT_ALTERED = "rapor-sha256 içerikle uyuşmuyor"
+
+
+def parse_report(data):
+    """CT-FIX-03 (R4, V4B-B6): a saved report read byte for byte, as the tool prints it — UTF-8, LF only, exactly one
+    final newline after the hash line, the hash line exactly 'rapor-sha256: <64 hex>'. Returns (body lines, recorded
+    hash, None), or (body or None, hash or None, problem). Shared by --check-report and the prompt gate."""
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return None, None, "UTF-8 değil"
+    if "\r" in text:
+        return None, None, "satır sonunda CR var — üreticinin yazdığı LF baytları değil"
+    if not text.endswith("\n") or text.endswith("\n\n"):
+        return None, None, "tek bir son satır sonuyla bitmiyor"
+    lines = text[:-1].split("\n")
+    m = REPORT_HASH_LINE.match(lines[-1])
+    if not m:
+        return None, None, "son satır tam olarak 'rapor-sha256: <64 hex>' değil"
+    body = lines[:-1]
+    if report_hash(body) != m.group(1):
+        return body, m.group(1), REPORT_ALTERED
+    return body, m.group(1), None
+
+
 def check_report(path):
     try:
-        text = open(path, encoding="utf-8").read()
-    except (OSError, UnicodeDecodeError) as e:
+        data = open(path, "rb").read()
+    except OSError as e:
         print(f"RAPOR OKUNAMADI: {type(e).__name__}")
         return 2
-    lines = text.rstrip("\n").split("\n")
-    if not lines or not lines[-1].startswith("rapor-sha256: "):
-        print("RAPOR BOZUK: son satır 'rapor-sha256: <hex>' değil")
+    body, _, problem = parse_report(data)
+    if problem == REPORT_ALTERED:
+        print(f"RAPOR DEĞİŞTİRİLMİŞ: {REPORT_ALTERED}")
         return 2
-    body, recorded = lines[:-1], lines[-1][len("rapor-sha256: "):].strip()
-    if report_hash(body) != recorded:
-        print("RAPOR DEĞİŞTİRİLMİŞ: rapor-sha256 içerikle uyuşmuyor")
+    if problem:
+        print(f"RAPOR BOZUK: {problem}")
         return 2
     print(f"RAPOR GEÇERLİ: {next((l for l in body if l.startswith('sonuç:')), 'sonuç satırı yok')}")
     return 0

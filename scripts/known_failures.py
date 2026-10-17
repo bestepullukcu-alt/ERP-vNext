@@ -69,6 +69,19 @@ FAILED_LINE = re.compile(r"^\s*(?:failed|başarısız)\s+(\S.*?)(?:\s+\[[^\]]*\]
 SUMMARY_LINE = re.compile(r"(?:failed|passed|başarısız|başarılı)!\s*-\s*(?:failed|başarısız):\s*(\d+),\s*"
                           r"(?:passed|başarılı):\s*(\d+),\s*(?:skipped|atlanan):\s*(\d+),\s*(?:total|toplam):\s*(\d+)", re.I)
 NOT_FAILED = {"Passed", "NotExecuted"}
+# CT-FIX-03 (R5, V4A-F6): a TRX is trusted only when its one ResultSummary and its one Counters agree with the raw
+# result rows (counted before two rows with one name are merged: a theory test gives several rows, 144 rows / 143 names
+# in the real architecture suite). Every counter named after an outcome equals the rows with that outcome; total equals
+# the rows; executed equals the rows that are not NotExecuted. A summary says Failed exactly when a row failed. The
+# 'notExecuted' counter is 0 or the NotExecuted rows: VSTest writes a skipped test as a NotExecuted row and leaves that
+# counter 0 (measured on four real CRM TRX files: total 1264, executed 1259, 5 NotExecuted rows, notExecuted="0"); any
+# other value is refused. An outcome outside this vocabulary is refused (Codex: a registered message cannot launder it).
+COUNTER_OUTCOMES = {"passed": "Passed", "failed": "Failed", "error": "Error", "timeout": "Timeout", "aborted": "Aborted",
+                    "inconclusive": "Inconclusive", "passedButRunAborted": "PassedButRunAborted",
+                    "notRunnable": "NotRunnable", "disconnected": "Disconnected", "warning": "Warning",
+                    "completed": "Completed", "inProgress": "InProgress", "pending": "Pending"}
+SUMMARY_PASSING = {"Completed", "Passed"}
+KNOWN_OUTCOMES = set(COUNTER_OUTCOMES.values()) | {"NotExecuted"}
 EXIT_OK, EXIT_REGRESSION, EXIT_UNTRUSTED, EXIT_NAMES_ONLY = 0, 1, 2, 3
 
 
@@ -133,11 +146,14 @@ def parse_trx(text: str) -> dict:
     except ET.ParseError as e:
         raise Untrusted(f"TRX okunamadı: {e}")
     results, outcome = {}, None
+    raw: list[str] = []
+    summaries, counters = [], []
     for el in root.iter():
         tag = el.tag.rsplit("}", 1)[-1]
         if tag == "UnitTestResult":
             message = "".join(t.text or "" for t in el.iter() if t.tag.rsplit("}", 1)[-1] == "Message")
             name, outcome_ = el.get("testName", "").strip(), el.get("outcome", "")
+            raw.append(outcome_)
             if name in results:   # two results with one name: a failing one must never be hidden by another
                 prev_outcome, prev_message = results[name]
                 failing = [(o, m) for o, m in ((prev_outcome, prev_message), (outcome_, message)) if o not in NOT_FAILED]
@@ -148,13 +164,53 @@ def parse_trx(text: str) -> dict:
             results[name] = (outcome_, message)
         elif tag == "ResultSummary":
             outcome = el.get("outcome")
+            summaries.append(el)
+        elif tag == "Counters":
+            counters.append(el)
     if not results:
         raise Untrusted("TRX'te hiç test sonucu yok (koşu çökmüş ya da hiç başlamamış olabilir)")
     if all(outcome_ == "NotExecuted" for outcome_, _ in results.values()):
         raise Untrusted("TRX'te hiçbir test koşmamış (hepsi NotExecuted)")
     if outcome in ("Aborted", "Error", "Timeout"):
         raise Untrusted(f"TRX koşu sonucu '{outcome}': koşu tamamlanmadı")
+    reconcile(raw, summaries, counters)
     return {"format": "trx", "results": results}
+
+
+def reconcile(raw: list[str], summaries: list, counters: list) -> None:
+    """CT-FIX-03 (R5): Untrusted unless the summary and the counters agree with the raw result rows (see COUNTER_OUTCOMES)."""
+    if len(summaries) != 1:
+        raise Untrusted(f"TRX'te {len(summaries)} ResultSummary var, tam 1 olmalı")
+    if len(counters) != 1:
+        raise Untrusted(f"TRX'te {len(counters)} Counters var, tam 1 olmalı — sonuç satırları sayaçla uzlaştırılamaz")
+    values = {}
+    for key, value in counters[0].attrib.items():
+        if not re.fullmatch(r"0|[1-9]\d{0,8}", value):
+            raise Untrusted(f"TRX sayacı {key}='{value[:12]}' negatif olmayan bir tam sayı değil")
+        values[key] = int(value)
+    for key in ("total", "executed", "passed", "failed"):
+        if key not in values:
+            raise Untrusted(f"TRX sayaçlarında '{key}' yok")
+    count = {o: raw.count(o) for o in set(raw)}
+    unknown = sorted(set(raw) - KNOWN_OUTCOMES)
+    if unknown:
+        raise Untrusted(f"TRX'te tanınmayan sonuç türü: {', '.join(u[:20] or '(boş)' for u in unknown[:3])} — koşu güvenilir değil")
+    if "notExecuted" in values and values["notExecuted"] not in (0, count.get("NotExecuted", 0)):
+        raise Untrusted(f"TRX sayacı notExecuted={values['notExecuted']}: 0 ya da NotExecuted satır sayısı "
+                        f"({count.get('NotExecuted', 0)}) olmalı")
+    if values["total"] != len(raw):
+        raise Untrusted(f"TRX sayacı total={values['total']}, sonuç satırı {len(raw)} — koşu güvenilir değil")
+    for key, name in COUNTER_OUTCOMES.items():
+        if key in values and values[key] != count.get(name, 0):
+            raise Untrusted(f"TRX sayacı {key}={values[key]}, '{name}' sonuç satırı {count.get(name, 0)} — koşu güvenilir değil")
+    if values["executed"] != len(raw) - count.get("NotExecuted", 0):
+        raise Untrusted(f"TRX sayacı executed={values['executed']}, koşan sonuç satırı {len(raw) - count.get('NotExecuted', 0)}")
+    failing = sum(n for o, n in count.items() if o not in NOT_FAILED)
+    summary = summaries[0].get("outcome")
+    if failing and summary != "Failed":
+        raise Untrusted(f"TRX özeti '{summary}' ama {failing} sonuç satırı başarısız — koşu güvenilir değil")
+    if not failing and summary not in SUMMARY_PASSING:
+        raise Untrusted(f"TRX özeti '{summary}' ama başarısız sonuç satırı yok — kırmızı yeşile dönmez, koşu güvenilir değil")
 
 
 def parse_console(text: str) -> dict:
@@ -361,15 +417,74 @@ def self_test() -> int:
     good = trx([("Ns.A.Known1", "Failed", known_list), (k2, "Failed", known_msg.replace('"', "&quot;")), ("Ns.A.Ok", "Passed", "")])
     cases = []
 
-    def run(text: str) -> tuple[dict | None, int]:
+    # CT-FIX-03 (R5): a TRX must carry one Counters that agrees with its rows and a summary that agrees with them. The
+    # classification cases below are about classification, so run() writes the counters and summary the rows imply
+    # (with_counters); the R5 counter cases pass their TRX untouched (counters=False).
+    def with_counters(text: str) -> str:
+        outs = re.findall(r'<UnitTestResult [^>]*outcome="([^"]*)"', text)
+        failing = any(o not in NOT_FAILED for o in outs)
+        attrs = {"total": len(outs), "executed": len(outs) - outs.count("NotExecuted"), "passed": outs.count("Passed"),
+                 "failed": outs.count("Failed"), "error": outs.count("Error"), "notExecuted": 0}
+        c = "<Counters " + " ".join(f'{k}="{v}"' for k, v in attrs.items()) + "/>"
+
+        def summary(m):
+            o = m.group(1)
+            if o not in ("Aborted", "Error", "Timeout"):
+                o = "Failed" if failing else "Completed"
+            return f'<ResultSummary outcome="{o}">{c}</ResultSummary>'
+        return re.sub(r'<ResultSummary outcome="([^"]*)"/>', summary, text)
+
+    def run(text: str, counters: bool = True) -> tuple[dict | None, int]:
         try:
-            parsed = parse_run(text)
+            parsed = parse_run(with_counters(text) if counters else text)
         except Untrusted:
             return None, EXIT_UNTRUSTED
         result = classify(rows, parsed, "S", item_lists)
         return result, exit_code(result, parsed["format"])
 
     r, code = run(good)
+    # CT-FIX-03 (R5, V4A-F6; Codex's TRX matrix): the counters and the summary against the raw rows, TRX untouched.
+    # The positives run the whole check (every registered test present: exit 0); the sabotages ask parse_run itself, so
+    # a refusal for another reason (a registered test missing) can never make them pass.
+    def counted(rows_, summary="Failed", counters=None, extra=""):
+        body = "".join(f'<UnitTestResult testName="{n}" outcome="{o}"><Output><ErrorInfo><Message>{m}</Message></ErrorInfo></Output></UnitTestResult>'
+                       for n, o, m in rows_)
+        c = "" if counters is None else "<Counters " + " ".join(f'{k}="{v}"' for k, v in counters.items()) + "/>"
+        return f'<TestRun><Results>{body}</Results><ResultSummary outcome="{summary}">{c}</ResultSummary>{extra}</TestRun>'
+
+    def untrusted(text: str) -> bool:
+        try:
+            parse_run(text)
+            return False
+        except Untrusted:
+            return True
+    base3 = [("Ns.A.Known1", "Failed", known_list), (k2, "Failed", known_msg.replace('"', "&quot;")), ("Ns.A.Ok", "Passed", "")]
+    ok_c = {"total": 3, "executed": 3, "passed": 1, "failed": 2}
+    cases.append(("CT-FIX-03 R5: counters and summary agree with the rows -> trusted; the registered reds stay BİLİNEN (exit 0)",
+                  run(counted(base3, "Failed", ok_c), counters=False)[1] == EXIT_OK))
+    skip = base3 + [("Ns.A.Skip", "NotExecuted", "")]
+    for label, nx in (("notExecuted=\"0\" (VSTest)", 0), ("notExecuted = the skipped rows", 1)):
+        cases.append((f"CT-FIX-03 R5: a skipped test — a NotExecuted row, {label}, executed = total - skipped -> trusted (exit 0)",
+                      run(counted(skip, "Failed", {"total": 4, "executed": 3, "passed": 1, "failed": 2, "notExecuted": nx}), counters=False)[1] == EXIT_OK))
+    two_c = "<Counters " + " ".join(f'{k}="{v}"' for k, v in ok_c.items()) + "/>"
+    for label, text in (
+            ("no Counters", counted(base3, "Failed")),
+            ("two Counters", counted(base3, "Failed", ok_c).replace("</ResultSummary>", two_c + "</ResultSummary>")),
+            ("two ResultSummary", counted(base3, "Failed", ok_c, extra='<ResultSummary outcome="Failed"/>')),
+            ("total more than the rows", counted(base3, "Failed", dict(ok_c, total=4))),
+            ("failed more than the failed rows", counted(base3, "Failed", dict(ok_c, failed=3, passed=0))),
+            ("every row passed, counters say failed", counted([(n, "Passed", "") for n, _, _ in base3], "Failed", ok_c)),
+            ("executed not the rows that ran", counted(base3, "Failed", dict(ok_c, executed=2))),
+            ("an arbitrary notExecuted", counted(skip, "Failed", {"total": 4, "executed": 3, "passed": 1, "failed": 2, "notExecuted": 999})),
+            ("a negative counter", counted(base3, "Failed", dict(ok_c, failed=-1))),
+            ("a text counter", counted(base3, "Failed", dict(ok_c, total="many"))),
+            ("no executed counter", counted(base3, "Failed", {k: v for k, v in ok_c.items() if k != "executed"})),
+            ("summary Failed, no failed row", counted([("Ns.A.Ok", "Passed", "")], "Failed", {"total": 1, "executed": 1, "passed": 1, "failed": 0})),
+            ("summary Completed with a failed row", counted(base3, "Completed", ok_c)),
+            ("summary NotExecuted while rows ran", counted([("Ns.A.Ok", "Passed", "")], "NotExecuted", {"total": 1, "executed": 1, "passed": 1, "failed": 0})),
+            ("an unknown outcome on a registered test with its known message (Codex)",
+             counted([("Ns.A.Known1", "Bogus", known_list)], "Failed", {"total": 1, "executed": 1, "passed": 0, "failed": 0}))):
+        cases.append((f"CT-FIX-03 R5 sabotage: {label} -> not trusted (exit 2; red never turns green)", untrusted(text)))
     cases.append(("trx: registered failures with the same fingerprint -> 2 BİLİNEN, exit 0", code == 0 and len(r["BİLİNEN"]) == 2))
     r, code = run(good.replace(known_list, plus_one))
     cases.append(("sabotage: one more violation inside a known red test -> YENİ-AYRINTI, exit 1", code == 1 and r["YENİ-AYRINTI"]))

@@ -1,0 +1,12 @@
+success: exit 0 — as expected
+[phase1] python3 for scripts/tests: $WORK/venv-ok/bin/python3
+REACHED discover with $WORK/venv-ok/bin/python3
+openpyxl 3.1.5
+PATH restored: yes
+
+pip fails: exit 1 — as expected
+[phase1] CT tools venv: pip install -r scripts/requirements-tools.txt failed
+
+venv cannot be made: exit 1 — as expected
+Error: [Errno 20] Not a directory: '$WORK/a-file/venv'
+[phase1] CT tools venv: 'python3 -m venv $WORK/a-file/venv' failed

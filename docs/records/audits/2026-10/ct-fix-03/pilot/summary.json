@@ -1,0 +1,65 @@
+{
+ "unit": "manual value = one typed or copied field value or CLI argument value; draft calls apart",
+ "before_counts": "a computed model of typing every field by hand — not a measured person's work",
+ "pilots": {
+  "P1": "ilk dağıtım",
+  "P2": "MVP'ler arası soru",
+  "P3": "kabul ve kuyruk doğrulama (no status report run)"
+ },
+ "P1": {
+  "draft_markers_filled_by_hand": 20,
+  "measured_values_filled_by_the_draft": 5,
+  "five_measured_values_correct": true,
+  "prompt_values_typed_before": 25,
+  "prompt_values_typed_after": 20,
+  "draft_cli_values": 3,
+  "mandatory_commands_before": [
+   "verify_module_id --discover",
+   "prompt_gate check"
+  ],
+  "mandatory_commands_after": [
+   "verify_module_id --discover",
+   "prompt_gate check"
+  ],
+  "draft_calls": 1
+ },
+ "P2": {
+  "card_names_the_command": true,
+  "commands_before": 1,
+  "commands_after": 1,
+  "no_automatic_message": true,
+  "pending_stamped_one_truth": true
+ },
+ "P3": {
+  "ac_rows": 1,
+  "ac_id_text_mandatory_copied_exactly": true,
+  "ac_values_copied_by_hand_before": 3,
+  "ac_values_copied_by_hand_after": 0,
+  "record_values_typed_before": 18,
+  "record_markers_filled_by_hand_after": 14,
+  "list_cells_typed_before": 10,
+  "list_markers_filled_by_hand_after": 6,
+  "draft_cli_values": 8,
+  "draft_calls": 2,
+  "mandatory_commands_before": [
+   "acceptance_record check",
+   "ct_queue validate"
+  ],
+  "mandatory_commands_after": [
+   "acceptance_record check",
+   "ct_queue validate"
+  ]
+ },
+ "cases": 15,
+ "wrong_pass": 0,
+ "wrong_stop": 0,
+ "agreed_acceptance": {
+  "five_measured_prompt_values_correct_not_retyped": true,
+  "ac_manual_copy_zero": true,
+  "wrong_pass_and_stop_zero": true,
+  "no_additional_mandatory_command": true
+ },
+ "tool_seconds_total": 8.768,
+ "boundary": "Claude in the Control Tower role on a synthetic fixture; not a person's trial. Tool run time is not human time; no token counter was available, no saving is claimed.",
+ "driver_sha256": "76254ec7fd519ae775cb3a4fff52344249429f6179e79fb39cc44d7e24a6a79e"
+}

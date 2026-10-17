@@ -17,6 +17,15 @@ module-check (İ4 S2)  exit 0  every mandatory AC-<n> of that approved pack vers
                               authoritative record of the module bound to it (künye module_pack) — AC coverage only,
                               never Module Done; exit 1 a mandatory AC open; exit 2 not measurable
 
+draft (CT-FIX-03 U3)  --part record: a v2 künye skeleton on stdout — format, queue, work_package and module (from the
+                      single WP row of the registered queue) and module_pack when --pack is given; every decision,
+                      level, commit, evidence, date and person field is a '<<DOLDUR: …>>' marker.
+                      --part list (--pack required): the §6.2 acceptance list with one row per AC of that approved pack
+                      version, ID / criterion text / mandatory flag copied exactly; result 'denenmedi', evidence and
+                      the other columns markers. exit 0 = a draft was printed, never an acceptance; check refuses a
+                      record or a list with any marker left. No lifecycle state is required (REPORTED / VERIFYING is
+                      normal at hand-over). exit 2 = not measurable.
+
 The künye's `commit` is the verified code tree; the record itself is read at RECORD@COMMIT, a different commit.
 Nothing is derived: decision, queue state and completion level are separate fields (SOP §29.5).
 """
@@ -58,6 +67,7 @@ PACK_STATUS = {"approved", "ready-for-dev"}
 AC_HEADING = re.compile(r"^#{1,6}[ \t]*Acceptance Criteria[ \t]*$", re.I)
 AC_ITEM = re.compile(r"^- \[[ xX]\] AC-([1-9][0-9]*) \((zorunlu|isteğe bağlı)\) — (\S.*)$")
 AC_ID = re.compile(r"^AC-([1-9][0-9]*)$")
+DRAFT_MARK = "<<DOLDUR"   # CT-FIX-03 (U3): a field the draft left for a person; any left is an ENGEL
 FENCE = re.compile(r"^(`{3,}|~{3,})")
 
 
@@ -74,22 +84,6 @@ def is_v2(text: str) -> bool:
     return False
 
 
-def header_values(text: str, keys: tuple) -> dict[str, list[str]]:
-    """Every value each key takes in a file's künye block (closed or not), without trusting any reader that keeps the
-    last value: the caller sees repeats and conflicts."""
-    lines = text.replace("\r\n", "\n").split("\n")
-    out: dict[str, list[str]] = {k: [] for k in keys}
-    if not lines or lines[0].strip() != "---":
-        return out
-    for l in lines[1:]:
-        if l.strip() == "---":
-            break
-        m = re.match(r"^([a-z_]+):[ \t]*(.*?)[ \t]*$", l)
-        if m and m.group(1) in out:
-            out[m.group(1)].append(m.group(2).split(" #")[0].strip().strip("\"'"))
-    return out
-
-
 class Incomplete(Exception):
     """The check could not complete: exit 2, never a pass."""
 
@@ -99,6 +93,19 @@ def _load(name: str, path: Path):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+_SHARED = None
+
+
+def shared():
+    """CT-FIX-03 (R1): ct_queue's one reader of the fields a tool decides on (kunye_fields / kunye_status /
+    unquote_value) — the status and identity of a WP record, a module pack and a value of this record are read by it,
+    never by a looser copy."""
+    global _SHARED
+    if _SHARED is None:
+        _SHARED = _load("ct_queue_shared", ROOT / "scripts" / "ct_queue.py")
+    return _SHARED
 
 
 def front_matter_reader():
@@ -134,7 +141,11 @@ def strict_front_matter(text: str) -> tuple[dict[str, str], list[str]]:
         elif "#" in value:
             bad.append(f"künye: '{key}' değeri '#' içeriyor — eski okuyucu onu keser")
         else:
-            fields[key] = value.strip("\"'")
+            unquoted, qbad = shared().unquote_value(value)    # CT-FIX-03 (R3): not a loose strip of every quote
+            if qbad:
+                bad.append(f"künye: '{key}' değeri {qbad} — '{value[:30]}'")
+            else:
+                fields[key] = unquoted
     for k in FIELDS:
         if k not in fields and not any(b.startswith(f"künye: '{k}'") for b in bad):
             bad.append(f"künye: '{k}' yok")
@@ -216,6 +227,10 @@ def check_list(text: str, read) -> tuple[list[str], list[str], list[dict]]:
     in the rows (the caller decides), a malformed row is an ENGEL here."""
     eng, info, rows = [], [], []
     lines = text.replace("\r\n", "\n").split("\n")
+    unfilled = [n for n, l in enumerate(lines, start=1) if DRAFT_MARK in l]
+    if unfilled:
+        eng.append(f"kabul listesi: {len(unfilled)} satırda doldurulmamış alan ({DRAFT_MARK} …) — satır "
+                   f"{', '.join(map(str, unfilled[:10]))}{' …' if len(unfilled) > 10 else ''}")
     head = [i for i, l in enumerate(lines) if [c.strip() for c in l.strip().strip("|").split("|")] == LIST_COLUMNS]
     if len(head) != 1:
         return [f"kabul listesi: §6.2 başlık satırı {len(head)} kez var, 1 olmalı ({' | '.join(LIST_COLUMNS)})"], info, rows
@@ -281,6 +296,10 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
     {path: text} of the v2 records at HEAD (None = the supersedes graph is not checked); expect: queue /
     work_package / module to match."""
     out, eng, info = [], [], []
+    unfilled = [n for n, l in enumerate(text.replace("\r\n", "\n").split("\n"), start=1) if DRAFT_MARK in l]
+    if unfilled:
+        return 1, [f"ENGEL taslak: kayıtta {len(unfilled)} satırda doldurulmamış alan ({DRAFT_MARK} …) — satır "
+                   f"{', '.join(map(str, unfilled[:10]))}; taslak kabul değildir", "sonuç: engel — doldurulmamış taslak", "çıkış: 1"]
     legacy = front_matter_reader().front_matter(text)
     if not legacy and not text.startswith("---"):
         return 1, ["ENGEL künye yok — REP-001 §6.1", "sonuç: engel", "çıkış: 1"]
@@ -313,13 +332,17 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         if lines is None:
             eng.append(f"künye: gerekli seviyenin kaynağı {src.group(1)}@{src.group(2)} commit'te yok")
         else:
-            hv = header_values(data.decode("utf-8", errors="replace"), ("status", "work_package", "module"))
-            repeated = [k for k, v in hv.items() if len(v) > 1]
-            if repeated:
-                eng.append(f"künye: gerekli seviyenin kaynağında {', '.join(repeated)} iki kez var — belirsiz, dur")
-            sf = {k: v[0] for k, v in hv.items() if len(v) == 1}
-            status = sf.get("status", "")
-            if status not in SOURCE_STATUS:
+            # CT-FIX-03 (R1): the source's status and identity fields through the shared reader — a second, indented,
+            # quoted or multi-line value is ambiguous and stops the check; it is never settled by taking one of them
+            source_text = data.decode("utf-8", errors="replace")
+            status, sbad = shared().kunye_status(source_text)
+            ids, ibad = shared().kunye_fields(source_text, ("work_package", "module"))
+            if ibad:
+                eng.append(f"künye: gerekli seviyenin kaynağının künyesi belirsiz — {ibad}")
+            sf = {k: v for k, v in ids.items() if v is not None}
+            if sbad:
+                eng.append(f"künye: gerekli seviyenin kaynağı onaylı değil — künyesi geçersiz: {sbad}")
+            elif status not in SOURCE_STATUS:
                 eng.append(f"künye: gerekli seviyenin kaynağı onaylı değil (status: '{status or 'yok'}') — onaylı WP ya da paket gerekli")
             pack_id = re.match(r"^(MOD-\d{4}(?:-FU\d+)?)", os.path.basename(src.group(1)))
             if sf.get("module") and sf["module"] != f["module"]:
@@ -367,6 +390,33 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
             l_eng, l_info, rows = check_list(data.decode("utf-8", errors="replace"), read)
             eng += l_eng
             info += l_info
+    # CT-FIX-03 (R3, V4A-F5): the pack the record binds (module_pack) is read and checked by parse_pack(), the function
+    # module-check uses — it exists at its commit, its künye is this module's single id with a single approved /
+    # ready-for-dev status, and every AC-<n> row of the acceptance list is one of its criteria with the same
+    # mandatory flag. A record without module_pack stays valid (İ4 S2 backward compatibility); it says so.
+    if f.get("module_pack"):
+        mp = MODULE_PACK.match(f["module_pack"])
+        pdata = read(mp.group(2), mp.group(1)) if mp else None
+        if pdata is None:
+            eng.append(f"paket: {f['module_pack'][:90]} commit'te yok — kayıt var olmayan bir paket sürümüne bağlı")
+        else:
+            criteria, pbad, old = parse_pack(pdata.decode("utf-8", errors="replace"), f["module"])
+            eng += pbad
+            if old:
+                eng.append("paket: AC kimliği yok (eski biçim) — kabul listesinin bu pakete bağlı olduğu ölçülemez")
+            elif not pbad:
+                for r in rows:
+                    m = AC_ID.match(r["ID"])
+                    if not m:
+                        continue
+                    n = int(m.group(1))
+                    if n not in criteria:
+                        eng.append(f"kabul listesi: {r['ID']} bağlı paketin ölçütü değil ({f['module_pack'][:70]})")
+                    elif criteria[n][0] != (r.get("Zorunlu") == "evet"):
+                        eng.append(f"kabul listesi: {r['ID']} zorunluluğu paketle aynı değil (paket: "
+                                   f"{'zorunlu' if criteria[n][0] else 'isteğe bağlı'}, liste: Zorunlu {r.get('Zorunlu')})")
+    else:
+        info.append("module_pack yok — kabul listesindeki AC'lerin bir paket sürümünde olduğu denetlenmedi (İ4 S2 geriye uyum)")
     if f["decision"] == "accepted":
         for r in rows:
             if r.get("Zorunlu") == "evet" and r.get("Sonuç") in ("kaldı", "denenmedi"):
@@ -380,7 +430,10 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
                        "kimliğiyle aynı olmalı" if path in records else "zincir: kayıt dizinde (HEAD ya da verilen ref) yok — yetkili kayıt sayılamaz")
         eng += check_chain(f, path, records)
     allows = not eng and f["decision"] == "accepted"
-    out += [f"BİLGİ {i}" for i in info] + [f"ENGEL {e}" for e in eng]
+    # CT-FIX-03 (F5n, Codex): what this check does not prove is printed with every answer
+    out += [f"BİLGİ {i}" for i in info] + [f"ENGEL {e}" for e in eng] + [
+        "SINIR bu denetim künyedeki kod commit'inin bu depoda var olup olmadığını denetler; testlerin o kod ağacında "
+        "koştuğunu kanıtlamaz — kanıt evidence ve kabul listesindeki yol@commit kayıtlarıdır"]
     if eng:
         return 1, out + [f"sonuç: engel — {len(eng)} bulgu", "çıkış: 1"]
     if not allows:
@@ -395,9 +448,11 @@ def check_chain(f: dict, path: str | None, records: dict[str, str]) -> list[str]
     for p, t in records.items():
         g, bad = strict_front_matter(t)
         if bad:
-            ident = header_values(t, ("queue", "work_package"))
-            q, w = ident["queue"], ident["work_package"]
-            if len(q) == 1 and len(w) == 1 and (q[0], w[0]) != (f["queue"], f["work_package"]):
+            # CT-FIX-03 (R1): the identity of a broken record is read by the shared künye grammar; a repeated, disguised
+            # or commented value is unclear, never "another work"
+            ident, ibad = shared().kunye_fields(t, ("queue", "work_package"))
+            q, w = ident.get("queue"), ident.get("work_package")
+            if not ibad and q and w and "#" not in q + w and (q, w) != (f["queue"], f["work_package"]):
                 continue  # clearly another queue + work package: its own problem, not this acceptance's
             eng.append(f"zincir: {p} künyesi bozuk ve bu işe ait ya da kimliği belirsiz — {bad[0]}")
             continue
@@ -466,11 +521,17 @@ def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], lis
     if close is None:
         return {}, ["paket: künye kapanmıyor"], False
     bad: list[str] = []
-    hv = header_values(text, ("id", "status"))
-    if len(hv["id"]) != 1 or hv["id"][0] != module:
-        bad.append(f"paket: künyede tek id '{module}' olmalı (bulunan: {hv['id'] or 'yok'})")
-    if len(hv["status"]) != 1 or hv["status"][0] not in PACK_STATUS:
-        bad.append(f"paket: künyede tek status approved ya da ready-for-dev olmalı (bulunan: {hv['status'] or 'yok'})")
+    # CT-FIX-03 (R1): the pack's id and status through the shared reader (one canonical line each)
+    ids, ibad = shared().kunye_fields(text, ("id",))
+    status, sbad = shared().kunye_status(text)
+    if ibad:
+        bad.append(f"paket: künyede tek id '{module}' olmalı — {ibad}")
+    elif ids["id"] != module:
+        bad.append(f"paket: künyede tek id '{module}' olmalı (bulunan: {ids['id'] or 'yok'})")
+    if sbad:
+        bad.append(f"paket: künyede tek status approved ya da ready-for-dev olmalı — {sbad}")
+    elif status not in PACK_STATUS:
+        bad.append(f"paket: künyede tek status approved ya da ready-for-dev olmalı (bulunan: {status or 'yok'})")
     outside: list[int] = []          # body lines that are not fenced code (fence delimiter lines are code)
     fence, opened = None, 0
     for i in range(close + 1, len(lines)):
@@ -513,6 +574,80 @@ def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], lis
     if not any(m for m, _ in criteria.values()):
         bad.append("paket: zorunlu AC yok — boş bir başarı üretilmez")
     return criteria, bad, False
+
+
+def draft_record(queue: str, wp: str, module: str, pack_spec: str | None) -> str:
+    """CT-FIX-03 (U3): a v2 künye skeleton — the four identity fields (and module_pack when given), the rest markers."""
+    d = lambda what: f"{DRAFT_MARK}: {what}>>"
+    known = {"format": FORMAT, "module": module, "work_package": wp, "queue": queue}
+    hint = {"evidence_level": "E1–E5", "required_evidence_level": "E1–E5", "required_evidence_source": "yol@commit:satır",
+            "decision": "accepted | rejected | conditional", "completion": " | ".join(COMPLETIONS),
+            "conditions": "- ya da 'ne · sahip · YYYY-AA-GG'", "commit": "doğrulanan kod ağacının 40 haneli commit'i",
+            "evidence": "yol@commit", "acceptance_list": "yol@commit", "date": "YYYY-AA-GG",
+            "supersedes": "- ya da geçersiz kılınan kaydın yolu", "verifier": "bağımsız doğrulayıcı", "implementer": "geliştiren"}
+    lines = ["---"] + [f"{k}: {known[k] if k in known else d(hint[k])}" for k in FIELDS]
+    if pack_spec:
+        lines.append(f"module_pack: {pack_spec}")
+    return "\n".join(lines + ["---", "", f"# Kabul kaydı — {wp}", "", d("kararın gerekçesi"), ""])
+
+
+def draft_list(criteria: dict[int, tuple[bool, str]]) -> str:
+    """CT-FIX-03 (U3): one §6.2 row per AC — ID, criterion text and mandatory flag exactly as the pack has them."""
+    d = lambda what: f"{DRAFT_MARK}: {what}>>"
+    out = ["| " + " | ".join(LIST_COLUMNS) + " |", "|" + "---|" * len(LIST_COLUMNS)]
+    for n, (mandatory, text) in sorted(criteria.items()):
+        if "|" in text or text != text.strip():
+            raise Incomplete(f"AC-{n} ölçüt metni tabloya birebir taşınamaz ('|' ya da baş/son boşluk) — elle düzeltilmez")
+        # a hint never holds '|': it is a table cell (Codex: 'evet | hayır' split the row into 11 cells)
+        cells = [f"AC-{n}", text, d("neden"), d("nasıl"), d("beklenen sonuç"), d("evet veya hayır"),
+                 "evet" if mandatory else "hayır", d("gerçek sonuç"), "denenmedi", d("yol@commit[:satır]")]
+        out.append("| " + " | ".join(cells) + " |")
+    for row in out:
+        if row.count("|") != len(LIST_COLUMNS) + 1:
+            raise Incomplete(f"taslak satırı {len(LIST_COLUMNS)} hücreli değil — üretilmez: '{row[:60]}'")
+    return "\n".join(out) + "\n"
+
+
+def run_draft(part: str, queue: str, wp: str, pack_spec: str | None, git: Git | None = None) -> str:
+    """CT-FIX-03 (U3): the single WP row of the registered queue (no lifecycle state required) and, for the list, the
+    approved pack version the record binds — read by parse_pack(), the function check and module-check use."""
+    git = git or Git(ROOT)
+    ctq = _load("ct_queue", ROOT / "scripts" / "ct_queue.py")
+    try:
+        queues, _ = ctq.load(queue)
+    except SystemExit as e:
+        raise Incomplete(str(e))
+    cur = ctq.Table(ctq.decode(ctq.current_bytes(queues[0], None), queues[0]["path"]))
+    # Codex: the queue's own structure check first (header, row width, empty id) — a malformed row is never skipped
+    broken = ctq.structure_errors(cur, ctq.baseline(queues[0]))
+    if broken:
+        raise Incomplete(f"kuyruk '{queue}' yapısı bozuk — {broken[0]}" + (f" (+{len(broken) - 1})" if len(broken) > 1 else ""))
+    id_i, mod_i = cur.index("id"), cur.index("module")
+    if mod_i is None:
+        raise Incomplete(f"kuyruk '{queue}' module sütunu taşımıyor — kabul taslağı modülü bilemez")
+    rows = [r for r in cur.rows if r[id_i] == wp]
+    if len(rows) != 1:
+        raise Incomplete(f"'{wp}' '{queue}' kuyruğunda {len(rows)} kez — taslak tek bir geçerli satırdan üretilir")
+    module = rows[0][mod_i].strip()
+    if not MODULE_VALUE.match(module):
+        raise Incomplete(f"satırın module değeri '{module[:30]}' tam kimlik değil")
+    if pack_spec is not None:
+        pm = MODULE_PACK.match(pack_spec)
+        if not pm:
+            raise Incomplete("--pack execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit> biçiminde verilir")
+    if part == "record":
+        return draft_record(queue, wp, module, pack_spec)
+    if pack_spec is None:
+        raise Incomplete("--part list için --pack gerekli — AC satırları yalnız onaylı bir paket sürümünden taşınır")
+    data = git.read(pm.group(2), pm.group(1))
+    if data is None:
+        raise Incomplete(f"paket {pack_spec} commit'te yok")
+    criteria, bad, old = parse_pack(data.decode("utf-8", errors="replace"), module)
+    if old:
+        raise Incomplete("pakette AC kimliği yok (eski biçim) — AC satırları taşınamaz")
+    if bad:
+        raise Incomplete("; ".join(bad))
+    return draft_list(criteria)
 
 
 def module_coverage(criteria: dict[int, tuple[bool, str]], works: list[dict], pack_spec: str) -> tuple[int, list[str]]:
@@ -630,6 +765,14 @@ def run_module_check(queue: str, module: str, pack_spec: str, ref: str = "HEAD")
 
 
 # ------------------------------------------------------------------------------------------------ self-test
+def _refuses(fn) -> bool:
+    try:
+        fn()
+        return False
+    except Incomplete:
+        return True
+
+
 def self_test() -> int:
     C1, C2 = "a" * 40, "b" * 40
     files = {
@@ -746,6 +889,12 @@ def self_test() -> int:
     broken_same = "---\nformat: " + FORMAT + "\nqueue: pqg-ct\nwork_package: W7\nbu satır bozuk\n---\n"
     cases.append(("sabotage (fu2): a broken v2 record of the same queue + WP -> ENGEL (fail-closed)",
                   any("bozuk" in e for e in eng(run(rec(), records={"docs/records/audits/2026-10/x/kayit.md": rec(), "o.md": broken_same})))))
+    for label, ident in (("an indented second queue", "queue: baska-ct\n  queue: pqg-ct\nwork_package: W7\n"),
+                         ("a quoted second work package", "queue: pqg-ct\nwork_package: Z1\n\"work_package\": W7\n"),
+                         ("a commented identity", "queue: baska-ct # pqg-ct\nwork_package: W7\n")):
+        disguised = "---\nformat: " + FORMAT + "\n" + ident + "bu satır bozuk\n---\n"
+        cases.append((f"CT-FIX-03 R1 sabotage: a broken v2 record with {label} -> identity unclear, ENGEL (never 'another work')",
+                      any("kimliği belirsiz" in e for e in eng(run(rec(), records={"docs/records/audits/2026-10/x/kayit.md": rec(), "o.md": disguised})))))
     broken_unclear = "---\nformat: " + FORMAT + "\nqueue: pqg-ct\nbu satır bozuk\n---\n"
     cases.append(("sabotage (fu2): a broken v2 record whose identity is unclear -> ENGEL (fail-closed)",
                   any("bozuk" in e for e in eng(run(rec(), records={"docs/records/audits/2026-10/x/kayit.md": rec(), "o.md": broken_unclear})))))
@@ -791,7 +940,7 @@ def self_test() -> int:
     f_mp, bad_mp = strict_front_matter(rec(_extra_fm=good_mp))
     cases.append(("İ4 S2: a record with a well-formed module_pack -> the strict reader accepts it and reads the value",
                   not bad_mp and f_mp.get("module_pack") == f"{PK}@{C1}"))
-    cases.append(("İ4 S2: a record with a module_pack -> check still allows ACCEPTED (exit 0)", run(rec(_extra_fm=good_mp))[0] == 0))
+    # (the "record with a module_pack still allows ACCEPTED" case moved below the pack fixture: CT-FIX-03 R3 reads the pack)
     cases.append(("İ4 S2 (backward compatible): a record without module_pack -> no künye problem", not strict_front_matter(rec())[1]))
     for label, extra in (("twice", good_mp + good_mp), ("a short SHA", f"module_pack: {PK}@abc1234\n"),
                          ("a path outside module-packs", f"module_pack: docs/x/MOD-0151.md@{C1}\n"),
@@ -808,6 +957,77 @@ def self_test() -> int:
     good_ac = ("- [ ] AC-1 (zorunlu) — liste açılır\n- [ ] AC-2 (zorunlu) — yetkisiz kullanıcı 403 alır\n"
                "- [x] AC-3 (zorunlu) — dışa aktarma XLSX verir\n- [ ] AC-4 (isteğe bağlı) — sıralama hatırlanır\n\n"
                "Ölçütlerin kanıtı kabul listesindedir.\n\n```text\n- [ ] AC-9 (zorunlu) — bir kod örneği, ölçüt değil\n```\n")
+    # CT-FIX-03 (R3, V4A-F5): the normal check reads the bound pack with parse_pack() (module-check's function)
+    lrow = lambda rid, req, ln: (f"| {rid} | ölçüt {rid} | gerekçe {rid} | yöntem {rid} | beklenen {rid} | hayır | {req} | gözlenen | "
+                                 f"geçti | `docs/records/audits/2026-10/x/run.log@{C1}:{ln}` |\n")
+    lhead = "| " + " | ".join(LIST_COLUMNS) + " |\n|" + "---|" * len(LIST_COLUMNS) + "\n"
+    ac_list = lhead + lrow("AC-1", "evet", 1) + lrow("AC-2", "evet", 2)
+    bound = lambda pk_text=pack(good_ac), lst=ac_list, at=C1: {**files, (at, PK): pk_text,
+                                                                 (C1, "docs/records/audits/2026-10/x/kabul.md"): lst}
+    r_ok = run(rec(_extra_fm=good_mp), fs=bound())
+    cases.append(("İ4 S2 / CT-FIX-03 R3: a record bound to an existing approved pack of its module, its AC rows in the pack "
+                  "-> allows ACCEPTED (exit 0)", r_ok[0] == 0))
+    cases.append(("İ4 S2: a record with a module_pack and K-rows only (no AC id) -> check still allows ACCEPTED (exit 0)",
+                  run(rec(_extra_fm=good_mp), fs={**files, (C1, PK): pack(good_ac)})[0] == 0))
+    for label, fs_, why in (
+            ("the bound pack is not at its commit", files, "commit'te yok"),
+            ("the bound pack is another module's", bound(pack(good_ac, fm="id: MOD-0150\nstatus: approved\n")), "tek id"),
+            ("the bound pack is a draft", bound(pack(good_ac, fm="id: MOD-0151\nstatus: draft\n")), "tek status"),
+            ("the bound pack has an indented second id", bound(pack(good_ac, fm="id: MOD-0151\n  id: MOD-0150\nstatus: approved\n")), "tek id"),
+            ("the bound pack has a quoted second status", bound(pack(good_ac, fm='id: MOD-0151\nstatus: approved\n"status": draft\n')), "tek status"),
+            ("an AC row the pack does not have (AC-9)", bound(lst=lhead + lrow("AC-1", "evet", 1) + lrow("AC-9", "evet", 2)), "bağlı paketin ölçütü değil"),
+            ("an optional pack AC marked mandatory in the list", bound(lst=lhead + lrow("AC-1", "evet", 1) + lrow("AC-4", "evet", 2)), "zorunluluğu paketle aynı değil"),
+            ("a mandatory pack AC marked optional in the list", bound(lst=lhead + lrow("AC-1", "evet", 1) + lrow("AC-2", "hayır", 2)), "zorunluluğu paketle aynı değil"),
+            ("an old-format pack without AC ids", bound(pack("- liste açılır\n")), "eski biçim")):
+        cases.append((f"CT-FIX-03 R3 sabotage: {label} -> ENGEL ({why})",
+                      any(why in e for e in eng(run(rec(_extra_fm=good_mp), fs=fs_)))))
+    cases.append(("CT-FIX-03 R3: a record without module_pack says that the AC-to-pack binding was not checked",
+                  any(l.startswith("BİLGİ module_pack yok") for l in run(rec())[1])))
+    cases.append(("CT-FIX-03 F5n: every answer after the künye is read (a pass, an ENGEL) prints that the check does not "
+                  "prove the tests ran on that commit",
+                  all(any(l.startswith("SINIR") and "kanıtlamaz" in l for l in r_[1]) for r_ in (r_ok, run(rec(evidence_level="E2"))))))
+    r_gone = run(rec(commit="f" * 40))
+    cases.append(("CT-FIX-03 F5n (Codex): a code commit that is not in the repository -> ENGEL 'bu depoda yok', and the SINIR "
+                  "line does not claim it exists", r_gone[0] == 1 and any("bu depoda yok" in e for e in eng(r_gone))
+                  and any(l.startswith("SINIR") for l in r_gone[1])
+                  and not any(l.startswith("SINIR") and ("var olduğu ölçüldü" in l or " var;" in l) for l in r_gone[1])))
+
+    # CT-FIX-03 (U3): the drafts — the list carries the pack's ACs exactly, every row has the §6.2 cell count, and a
+    # filled draft passes the ordinary check; a marker left anywhere is an ENGEL
+    crit_d = {1: (True, "liste açılır"), 2: (True, "yetkisiz kullanıcı 403 alır"), 4: (False, "sıralama hatırlanır")}
+    dl_text = draft_list(crit_d)
+    dl_rows = [l for l in dl_text.split("\n") if l.startswith("| AC-")]
+    cases.append(("CT-FIX-03 U3: the list draft has one row per pack AC, ID / text / mandatory flag exactly, result 'denenmedi'",
+                  [tuple(c.strip() for c in r.strip().strip("|").split("|"))[:2] + (r.split("|")[7].strip(), r.split("|")[9].strip()) for r in dl_rows]
+                  == [("AC-1", "liste açılır", "evet", "denenmedi"), ("AC-2", "yetkisiz kullanıcı 403 alır", "evet", "denenmedi"),
+                      ("AC-4", "sıralama hatırlanır", "hayır", "denenmedi")]))
+    cases.append(("CT-FIX-03 U3 (Codex): every line of the list draft has exactly the §6.2 column count (no '|' inside a hint)",
+                  all(l.count("|") == len(LIST_COLUMNS) + 1 for l in dl_text.split("\n") if l.strip())))
+    def filled_row(r, ln):
+        c = [x.strip() for x in r.strip().strip("|").split("|")]
+        c[2:6] = [f"gerekçe {c[0]}", f"yöntem {c[0]}", f"beklenen {c[0]}", "hayır"]
+        c[7:10] = ["gözlenen", "geçti", f"`docs/records/audits/2026-10/x/run.log@{C1}:{ln}`"]
+        return "| " + " | ".join(c) + " |"
+    lines_d = dl_text.split("\n")
+    filled_list = "\n".join(lines_d[:2] + [filled_row(r, i) for i, r in enumerate(dl_rows[:2], start=1)]) + "\n"
+    rec_d = draft_record("pqg-ct", "W7", "MOD-0151", f"{PK}@{C1}")
+    fills = {"evidence_level": "E3", "required_evidence_level": "E3", "required_evidence_source": f"docs/wp/W7.md@{C1}:5",
+             "decision": "accepted", "completion": "WP Done", "conditions": "-", "commit": C2,
+             "evidence": f"docs/records/audits/2026-10/x/run.log@{C1}", "acceptance_list": f"docs/records/audits/2026-10/x/kabul.md@{C1}",
+             "date": "2026-10-17", "supersedes": "-", "verifier": "bağımsız doğrulayıcı", "implementer": "geliştirme ajanı"}
+    filled_rec = "\n".join((f"{l.split(':', 1)[0]}: {fills[l.split(':', 1)[0]]}" if DRAFT_MARK in l and l.split(":", 1)[0] in fills
+                            else ("Gerekçe: kabul listesi geçti." if DRAFT_MARK in l else l)) for l in rec_d.split("\n"))
+    pack_crit = pack("- [ ] AC-1 (zorunlu) — liste açılır\n- [ ] AC-2 (zorunlu) — yetkisiz kullanıcı 403 alır\n")
+    fs_d = {**files, (C1, PK): pack_crit, (C1, "docs/records/audits/2026-10/x/kabul.md"): filled_list}
+    cases.append(("CT-FIX-03 U3 (Codex): the record and list drafts, their markers filled, pass the ordinary check (exit 0)",
+                  DRAFT_MARK not in filled_rec + filled_list and run(filled_rec, fs=fs_d)[0] == 0))
+    cases.append(("CT-FIX-03 U3 sabotage: the record draft as printed -> ENGEL 'doldurulmamış', never an acceptance",
+                  (lambda r: r[0] == 1 and any("doldurulmamış" in l for l in r[1]))(run(rec_d, fs=fs_d))))
+    cases.append(("CT-FIX-03 U3 sabotage: a filled record with the list draft as printed -> ENGEL 'doldurulmamış'",
+                  any("doldurulmamış" in e for e in eng(run(filled_rec, fs={**fs_d, (C1, "docs/records/audits/2026-10/x/kabul.md"): dl_text})))))
+    cases.append(("CT-FIX-03 U3: a criterion text holding '|' is refused, never altered",
+                  _refuses(lambda: draft_list({1: (True, "a | b")}))))
+
     def pp(text, module="MOD-0151"):
         try:
             return parse_pack(text, module)
@@ -955,6 +1175,11 @@ def main() -> int:
     pc.add_argument("--wp")
     pc.add_argument("--module")
     pc.add_argument("--index-ref", default="HEAD", help="the tree whose v2 records decide which record is authoritative")
+    pd = sub.add_parser("draft", help="CT-FIX-03 U3: a record or acceptance-list skeleton on stdout — never an acceptance")
+    pd.add_argument("--part", required=True, choices=["record", "list"])
+    pd.add_argument("--queue", required=True)
+    pd.add_argument("--wp", required=True)
+    pd.add_argument("--pack", help="PACK_PATH@40-HEX-COMMIT (required for --part list; written as module_pack in record)")
     pm = sub.add_parser("module-check", help="İ4 S2: mandatory AC coverage of one approved pack version (never Module Done)")
     pm.add_argument("--queue", required=True)
     pm.add_argument("--module", required=True)
@@ -963,6 +1188,18 @@ def main() -> int:
     a = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if a.cmd == "draft":
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        try:
+            text = run_draft(a.part, a.queue, a.wp, a.pack)
+        except (Incomplete, OSError, UnicodeDecodeError) as e:
+            print(f"DUR: taslak üretilemedi — {e}", file=sys.stderr)
+            return 2
+        sys.stdout.write(text)
+        print(f"TASLAK — kabul değildir: çıkış 0 yalnız taslağın üretildiğini söyler. {DRAFT_MARK} … alanları doldurulmadan "
+              "check ENGEL verir.", file=sys.stderr)
+        return 0
     if a.cmd == "module-check":
         code, lines = run_module_check(a.queue, a.module, a.pack, a.ref)
         print("\n".join(lines))

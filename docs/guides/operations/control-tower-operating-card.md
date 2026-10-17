@@ -2,6 +2,25 @@
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
 
+## Bugün hangi komut
+
+> Kısa giriş (CT-FIX-03 U1); kural değildir, ayrıntı aşağıdaki bölümlerdedir. Taslak komutları yalnız taslak üretir:
+> çıkış 0 dağıtım izni ya da kabul değildir, `<<DOLDUR` kalan her alan `check`'te ENGEL'dir. Her komut
+> `scripts/tests/test_ct_card_commands.py` ile aracın kendi `--help` çıktısına karşı denetlenir.
+
+| Ne zaman | Komut | Çıkış |
+|---|---|---|
+| WP dağıtılabilir mi — isteğe bağlı erken kontrol (kapı aynı kararı kendisi verir) | `python3 scripts/ct_queue.py require <WP> --queue <kuyruk>` | 0 dağıtılabilir · 1 DUR |
+| Yeni iş: önce keşif, raporu commit et (taslaktan önce; yoksa Expected HEAD eskir) | `python3 .antigravity/scripts/verify_module_id.py . --discover "<ad>"` | 0 eşleşme yok · 3 inceleme gerekli · 2 tamamlanamadı |
+| Prompt taslağı (keşif commit'inden sonra) | `python3 scripts/prompt_gate.py draft --queue <kuyruk> --wp <WP>` | 0 taslak üretildi — dağıtım izni değil · 2 ölçülemez |
+| Dağıtımdan önce (kayıt `main`'de değilse `--prepare`: yalnız hazırlık) | `python3 scripts/prompt_gate.py check <prompt> --queue <kuyruk>` | 0 geçti · 1 ENGEL · 2 tamamlanamadı |
+| Kuyruğa yazmadan hemen önce | `python3 scripts/ct_queue.py guard --queue <kuyruk>` | yazma öncesi özet; kilit değildir |
+| Başka bir MVP'ye soru | `python3 scripts/ct_route.py --kind delivery --module <MOD>` (sözleşme için `--kind contract`) | 0 tek hedef + gönderilmeyen taslak · 1 hedef yok · 2 ölçülemez |
+| Kabul kaydı taslağı (künye; liste için `--part list` ve `--pack` zorunlu) | `python3 scripts/acceptance_record.py draft --part record --queue <kuyruk> --wp <WP> --pack <paket>@<commit>` | 0 taslak üretildi — kabul değil · 2 ölçülemez |
+| Kabul | `python3 scripts/acceptance_record.py check <kayıt>@<commit> --queue <kuyruk> --wp <WP> --module <MOD>` | 0 ACCEPTED'e izin verir · 1 ENGEL · 2 tamamlanamadı |
+| Rapor | `python3 scripts/status_report.py --mode v2 --queue <kuyruk>` | makine bloğu tamamlığı ve yüzdelerin geçerliliğini söyler |
+| Test koşusundan sonra | `python3 scripts/known_failures.py check <koşu.trx> --suite <süit>` | 0 yeni regresyon yok · 1 regresyon · 2 koşu güvenilmez |
+
 ## 0. Yeni Control Tower açılışı
 
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
@@ -82,7 +101,7 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
 - [ ] **Target agent:** entry point §6'dan seçildi; o ajanın §17.4 zorunlu giriş alanları dolu; paste-ready prompt (§36.1) hazır.
 - [ ] **Acceptance:** golden/contract/inspection flow + measurable AC + required evidence level açık.
 - [ ] **Görev kaynağı satırı (R8, r3):** WP'nin satırı, dağıtan Control Tower'ın kayıtlı görev kaynağında dağıtımdan önce var (kayıtlı = `execution/delivery/ct-queue-registry.tsv`'de `main`'de geçerli bir satır; SCE / MVP6: `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv`). Kayıtlı kaynak yoksa: 30 günlük geçiş süresinde yalnız `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` kapsamında (kararı aldığını doğrulamış, onaylı WP / Module Pack, ayrı geçiş referansı); süre bitince yalnız bitişten önce onaylanmış WP'ler, sonra onaylananlar için kayıtlı kaynak ya da sahibin süreli istisnası. Değilse yeni dağıtım yok; çalışan iş durdurulmaz (SOP §0.1 r3, §17.1, §20.1).
-- [ ] **Kuyruk kontrolü (yardımcı; zorunlu kapı değil):** `python3 scripts/ct_queue.py require <WP-ID> --queue <kuyruk>` — çıkış 1 = satır yok, aynı kimlikle birden çok satır ya da durum dağıtılabilir değil. Kuyruklar [`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)'de; kayıtlı kuyruğu olmayan Control Tower için dağıtım kendiliğinden serbest değildir. Kuyruğa yazmadan önce `guard` (kilit değildir); dallar arası kimlik çakışması için `writers`.
+- [ ] **Kuyruk kontrolü (gerçek durma):** `python3 scripts/ct_queue.py require <WP-ID> --queue <kuyruk>` — çıkış 1 = DUR, dağıtım yok: satır yok, aynı kimlikle birden çok satır ya da durum dağıtılabilir değil. Katı kuyrukta prompt kapısı (CT-PQG-01) aynı kararı (`require_decision`) kendisi verir; komutu ayrıca koşmak kararı yalnız daha erken gösterir. **Profil değişikliği `main`'e birleştikten sonra yürürlüğe girer:** değişiklik dalda yapılır ve PR ile `main`'e girer; o zamana kadar dalda kuyruğun `strict` / `vocabulary` / görev dosyası `origin/main`'deki kayıttan farklıysa (`farklı profil`) her tüketici DUR verir (CT-FIX-02 K3). Kuyruklar [`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)'de; kayıtlı kuyruğu olmayan Control Tower için dağıtım kendiliğinden serbest değildir. Kuyruğa yazmadan önce `guard` (kilit değildir); dallar arası kimlik çakışması için `writers`.
 - [ ] **Başka bir MVP'ye soru (yardımcı; zorunlu kapı değil):** `python3 scripts/ct_route.py --kind delivery|contract --module <MOD>` ya da `--kind delivery --wp <WP-ID> --queue <kuyruk>` (`--in-force`: yalnız `origin/main`'de yürürlükteyse 0). Çıkış 0 = tek hedef ve bir soru taslağı — taslak gönderilmez, bu bir dağıtım izni değildir; 1 = hedef yok ya da belirsiz → koordinatöre; 2 = ölçülemez. Sözleşme sorusunda önce gösterilen paket okunur; Control Tower teknik temastır, karar otoritesi değildir. Kişi depoda tutulmaz: isteğe bağlı `--contacts <depo dışı dosya>` ([`ct-contacts-template.tsv`](../../../execution/delivery/ct-contacts-template.tsv) yalnız başlık örneğidir).
 
 **Bir kritik madde FAIL → implementation dispatch yok.**

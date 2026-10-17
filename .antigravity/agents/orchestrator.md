@@ -191,7 +191,8 @@ Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialis
 - [x] L10n standartları, Altın HTML Şablonu ve DtDefaults.create() uygulandı.
 - [x] Platform/Admin ise Ctrl+K registry + `en/tr` search localization tamamlandı veya N/A/blocker gerekçesi yazıldı.
 > ⚠ **İşe başlamadan önce kural haritasını oku:** `.antigravity/rules/GEMINI.md` §KURAL HARİTASI.
-> 39 kural var ve hangisinin bu işi ilgilendirdiğini o tablo söyler. Ölçüldü 2026-09-07:
+> Kural sayısı tarihlidir (2026-09-07: 39; 2026-10-17: `.antigravity/rules/` altında 46 dosya, GEMINI.md dahil) —
+> hangisinin bu işi ilgilendirdiğini o tablo söyler. Ölçüldü 2026-09-07:
 > 20 ajandan yalnız 3'ü bu dosyayı anıyordu — kural, atıf verildiği kadar görünürdür.
 
 - [x] Quality Gate Datatable checklist işaretlendi (`verify_datatable_page.py --reference slim|compact` PASS).
