@@ -10175,6 +10175,40 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-650
+
+**CT kararı D'nin niyeti ile guard'ın ölçtüğü şey ayrışmış: "hiçbir satır job-local mongod başlatmaz" kuralı workflow metnine bakıyor, script'ten başlatan satır kontrolü geçiyor**
+
+DURUM: AÇIK · SAHİP: CT (karar D'nin sahibi) · BULAN: WP-LANE-MAIN-SYNC-05 SupplyChain CI satırı hazırlığı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs`
+`No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address` kuralı **workflow dosyasının metninde**
+`--replSet`, `--dbpath` ve `mongodb://` arıyor. Niyeti yorumunda yazılı: *"Main sync FIX1 (CT decision D): no row starts
+a job-local mongod and no step hands the tests a Mongo address. Every service test owns its mongod."*
+
+Ama mongod'u bir **script'ten** başlatan satır bu metin kontrolünü geçerken kararın yasakladığı şeyi yapıyor.
+`origin/main` 2026-10-16'da `planning-tests` satırını tam böyle ekledi: `scripts/test-env/mod0188-ci-mongo.sh start`
+içinde `--replSet` ve `--dbpath` var, workflow'da yok.
+
+**Neden şimdi kaydediliyor:** SupplyChain CI satırı aynı deseni izleyecek (sahip kararı 2026-10-16, gerekçesi
+`docs/roadmap/plans/mvp6-supplychain-ci-row-01/README.md`'de). Yani karar D'nin niyeti ikinci kez delinmiş olacak.
+CT bunu gizlemek yerine kaydediyor — niyetine uyan alternatif, Q131a'nın bilinçli "varsayılan yok, eksik URI
+fail-closed" tasarımını yedi çağrı noktası artı üç çocuk-süreç testinde tersine çevirmek, ve bu kendi iş paketini
+hak ediyor.
+
+**Yapılacak (karar D'nin sahibinin kararı), üç seçenek:**
+1. Niyet güncellenir: "job-local mongod, yalnız `scripts/test-env/` altındaki adlandırılmış bir script'ten ve her
+   satır için gerekçesiyle" — guard metni buna göre ölçer (script'lerin varlığını pinler).
+2. Niyet korunur ve guard script'leri de okur — o zaman `planning-tests` ve SupplyChain satırı kırmızıya düşer ve
+   ikisinin de testleri kendi mongod'unu başlatacak şekilde yeniden tasarlanır.
+3. Olduğu gibi bırakılır; o hâlde guard'ın yorumu "workflow metninde job-local mongod yoktur" demeli, "hiçbir satır
+   job-local mongod başlatmaz" dememeli — çünkü ikincisi artık doğru değil.
+
+**Gelecek regresyon riski:** 🟡 (guard yanlış güvence veriyor: okuyan "her test kendi mongod'unu başlatıyor" sanıyor,
+iki satır başlatmıyor).
+
+---
+
 ### BL-649
 
 **`A_hanging_name_source_costs_the_search_at_most_the_bound` duvar saati sınırını yüklü makinede aşıyor — ürün aynı davranırken test kırmızıya dönüyor**
