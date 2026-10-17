@@ -18,7 +18,6 @@ Anything it cannot find is printed as "kayıt yok". It never guesses a level, a 
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import re
 import subprocess
 import sys
@@ -40,11 +39,38 @@ def repo_root(start: Path) -> Path:
     return Path(top) if top else start
 
 
+def glob_to_regex(pattern: str) -> re.Pattern[str]:
+    """Translate a glob to a regex with the SAME semantics Path.glob uses, so the --ref branch and the
+    working-tree branch agree: '*' and '?' never cross a '/', '**' matches any run of directories (including
+    none). The previous fnmatch let '*' cross '/', so a ref-mode run silently matched paths a tree-mode run
+    would not — and 'audits/*/*.md' then under-reached the three-level lane records in tree mode while
+    over-reaching in ref mode."""
+    out: list[str] = []
+    i = 0
+    while i < len(pattern):
+        if pattern[i:i + 2] == "**":
+            out.append(".*")
+            i += 2
+            if i < len(pattern) and pattern[i] == "/":
+                i += 1  # '**/' absorbs its slash so it can also match zero directories
+            continue
+        ch = pattern[i]
+        if ch == "*":
+            out.append("[^/]*")
+        elif ch == "?":
+            out.append("[^/]")
+        else:
+            out.append(re.escape(ch))
+        i += 1
+    return re.compile("".join(out) + r"\Z")
+
+
 def list_files(root: Path, ref: str | None, pattern: str) -> list[str]:
     """Paths matching the glob, either in the working tree or in a git ref."""
     if ref:
+        regex = glob_to_regex(pattern)
         tracked = run(["git", "ls-tree", "-r", "--name-only", ref], root).splitlines()
-        return sorted(p for p in tracked if fnmatch.fnmatch(p, pattern))
+        return sorted(p for p in tracked if regex.match(p))
     return sorted(str(p.relative_to(root)) for p in root.glob(pattern))
 
 
@@ -131,7 +157,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="REP-001 durum tablosu")
     parser.add_argument("--packs", default="execution/domains/*/module-packs/*.md",
                         help="module pack glob'u (varsayılan: tüm domain paketleri)")
-    parser.add_argument("--records", default="docs/records/audits/*/*.md",
+    parser.add_argument("--records", default="docs/records/audits/**/*.md",
                         help="CT karar kaydı glob'u")
     parser.add_argument("--ref", default=None,
                         help="çalışma ağacı yerine bu git ref'inden oku (ör. origin/feature/mvp6-logistics)")
