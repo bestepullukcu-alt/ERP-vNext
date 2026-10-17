@@ -35,6 +35,10 @@ Rules this script enforces (İ5-A pilot):
   and the core block holds no raw HTML tag outside inline code (Codex: <pre>, <script>, <div hidden> around the
   numbered lines passed); the whole block is checked, not only the rule lines. An inline code span stays inside its
   line: a span across lines (Codex: every rule inside one double-backtick span passed) is refused.
+- İ5B-FIX-07 (v7 audit): the text before core:start holds no raw HTML either (a <pre> opened there and closed after
+  core:end wrapped the whole block); after the core the document is free. A required text inside a larger inline code
+  span on its rule line is lost (every rule body inside one five-backtick span passed); a short code term that is the
+  span itself (`TenantId`) still counts.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -262,6 +266,20 @@ RAW_HTML_TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>")
 INLINE_CODE = re.compile(r"(`+)(?!`).*?(?<!`)\1(?!`)", re.S)
 
 
+def on_rule_line(needle: str, line: str) -> bool:
+    """İ5B-FIX-07 (v7 audit): a required text counts on a rule line only where no larger inline code span holds it — a
+    rule wrapped whole in a code span is shown, not stated. A short code term (`TenantId`) is the span itself, with or
+    without its backticks, and still counts; a text that carries its own short spans crosses them and is not inside."""
+    spans = [(m.start(), m.end(), m.group(0).strip("`")) for m in INLINE_CODE.finditer(line)]
+    start = line.find(needle)
+    while start != -1:
+        end = start + len(needle)
+        if all(not (a <= start and end <= b) or inner == needle.strip("`") for a, b, inner in spans):
+            return True
+        start = line.find(needle, start + 1)
+    return False
+
+
 def extract_core(source: str) -> str:
     """İ5-B: the compact core block of AGENTS.md, without its markers."""
     text = read_text(source)
@@ -375,10 +393,18 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
             if tags:
                 problems.append(f"CORE-HTML {core['source']} core block holds raw HTML outside inline code ({', '.join(t[:20] for t in tags[:3])}) "
                                 "— a rule inside HTML is not a rule")
+            # İ5B-FIX-07 (v7 audit): a container opened before core:start wraps the block the check reads — the text
+            # from the start of the file to core:start holds no raw HTML either (after the core the document is free)
+            intro = read_text(core["source"]).split(CORE_START, 1)[0]
+            outer = RAW_HTML_TAG.findall(INLINE_CODE.sub(" ", outside_fenced_code(HTML_COMMENT.sub("", intro))))
+            if outer:
+                problems.append(f"CORE-HTML {core['source']} before the core block holds raw HTML outside inline code "
+                                f"({', '.join(t[:20] for t in outer[:3])}) — a container around the core hides its rules")
             rule_lines = [l for l in ruled.split("\n") if CORE_RULE_LINE.match(l)]
             for needle in core.get("required_text", []):
-                if not any(needle in l for l in rule_lines):
-                    hidden = (" (not on a numbered core rule line)" if needle in ruled else
+                if not any(on_rule_line(needle, l) for l in rule_lines):
+                    hidden = (" (only inside inline code)" if any(needle in l for l in rule_lines) else
+                              " (not on a numbered core rule line)" if needle in ruled else
                               " (only inside a code block)" if needle in visible else
                               " (only inside an HTML comment)" if needle in block else "")
                     problems.append(f"CORE-RULE {core['source']} core block lost: {needle!r}{hidden}")

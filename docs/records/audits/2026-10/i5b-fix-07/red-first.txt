@@ -1,0 +1,8 @@
+İ5B-FIX-07 red first — this package's test_sync_adapters_budget.py against the unchanged base code 5cd4cc527
+(İ5B-FIX-06) in a copy outside the repository; run by the AI session. The 25 errors are the real-file measurement,
+which now calls sync_adapters.on_rule_line (absent in the base). Every method not listed passed.
+
+test_sync_adapters_budget: ran 32 tests · failed subtests 29 in 3 test methods
+     3  test_sync_adapters_budget.InstructionBudget.test_a_container_opened_before_the_core_is_refused
+     1  test_sync_adapters_budget.InstructionBudget.test_a_rule_inside_a_larger_code_span_is_lost
+    25  test_sync_adapters_budget.InstructionBudget.test_every_required_core_text_is_on_a_numbered_rule_line_today (error)

@@ -354,13 +354,53 @@ class InstructionBudget(unittest.TestCase):
         self.redirect("AGENTS.md", REPO / "AGENTS.md")
         self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-SPAN")])
 
+    def test_a_container_opened_before_the_core_is_refused(self):
+        # İ5B-FIX-07 (v7 audit, Codex and Codex Denetim001): <pre> before core:start and </pre> after core:end passed
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        for label, opening, closing in (("pre", "<pre>", "</pre>"), ("details", "<details>", "</details>"),
+                                        ("div hidden", '<div hidden="">', "</div>")):
+            with self.subTest(form=label):
+                f.write_text(text.replace(sa.CORE_START, opening + "\n" + sa.CORE_START, 1)
+                             .replace(sa.CORE_END, sa.CORE_END + "\n" + closing, 1), encoding="utf-8")
+                problems = sa.check_instruction_budget(self.manifest)[0]
+                self.assertTrue(any(p.startswith("CORE-HTML") and "before the core block" in p for p in problems), problems[:3])
+        # after the core the document is free; a tag shown in inline code or a fence before it is not markup
+        for label, changed in (("HTML after core:end", text.replace(sa.CORE_END, sa.CORE_END + "\n<details>x</details>", 1)),
+                               ("a tag in inline code before the core", text.replace(sa.CORE_START, "Örnek: `<pre>`\n" + sa.CORE_START, 1)),
+                               ("a tag in a fence before the core", text.replace(sa.CORE_START, "```\n<pre>\n```\n" + sa.CORE_START, 1))):
+            with self.subTest(form=label):
+                f.write_text(changed, encoding="utf-8")
+                self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-HTML")])
+
+    def test_a_rule_inside_a_larger_code_span_is_lost(self):
+        # İ5B-FIX-07 (v7 audit): every numbered rule body inside one five-backtick span on its own line passed
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        head, rest = text.split(sa.CORE_START, 1)
+        core, tail = rest.split(sa.CORE_END, 1)
+        wrapped = "\n".join(re.sub(r"^(\d{1,2}\. )(.+)$", lambda m: m.group(1) + "`````" + m.group(2) + "`````", l)
+                            for l in core.split("\n"))
+        f.write_text(head + sa.CORE_START + wrapped + sa.CORE_END + tail, encoding="utf-8")
+        problems = sa.check_instruction_budget(self.manifest)[0]
+        lost = [p for p in problems if p.startswith("CORE-RULE") and p.endswith("(only inside inline code)")]
+        self.assertEqual(len(lost), len(self.manifest["instruction_budget"]["core"]["required_text"]), problems[:3])
+        # the short code terms of the real rules still count: the span itself, with or without its backticks
+        self.assertTrue(sa.on_rule_line("`verify_module_id.py`", "7. x `verify_module_id.py` y"))
+        self.assertTrue(sa.on_rule_line("verify_module_id.py", "7. x `verify_module_id.py` y"))
+        self.assertTrue(sa.on_rule_line("`TenantId` ile sınırlanır", "2. sorgu `TenantId` ile sınırlanır."))
+        self.assertFalse(sa.on_rule_line("TenantId ile", "2. `sorgu TenantId ile sınırlanır`"))
+        self.assertTrue(sa.on_rule_line("ile", "2. `ile` gösterilir; kural ile yazılır"))   # one occurrence outside a span is enough
+
     def test_every_required_core_text_is_on_a_numbered_rule_line_today(self):
         core = sa.extract_core("AGENTS.md")
         lines = [l for l in core.split("\n") if sa.CORE_RULE_LINE.match(l)]
         self.assertEqual(len(lines), 11)
         for needle in self.manifest["instruction_budget"]["core"]["required_text"]:
             with self.subTest(needle=needle[:40]):
-                self.assertTrue(any(needle in l for l in lines))
+                self.assertTrue(any(sa.on_rule_line(needle, l) for l in lines))   # İ5B-FIX-07: and not inside a larger span
 
     def test_oversize_message_names_the_file_it_is_about(self):
         problems = self.claude_with("x" * 3000)
