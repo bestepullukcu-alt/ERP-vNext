@@ -41,6 +41,23 @@ authority."* A tree search for 0147/0148 backend or UI code returns nothing.
 - CT recommendation: pursue **DC-01 first and alone** (the cheapest, releases one governance-diff lane);
   the owner may overrule.
 
+### Named owner per DC (from `mvp6-supplier-concurrence-close-prep-01/OWNER-DECISION-PACK.md`)
+
+Each DC goes to its **named** owner, not the project owner, and the pack carries the exact proposed text +
+a `APPROVE … as written` / `REJECT …` response line for each.
+
+| DC | named owner | new producer seam |
+|---|---|---|
+| **DC-01** domain/service ownership | **Enterprise/domain owner** (CT + Supply Chain Execution concurrence) | **none** — only a later governance-diff lane aligning domain-config/DCP-009/registry |
+| DC-02 Supplier consumption + LE eligibility | MOD-0140 Supplier owner + its eligibility owner | affirmative Tenant+LE eligibility, failure/correlation semantics, live-producer evidence |
+| DC-03 identity/binding | Platform auth/security identity owner (0148/0140 concur) | binding resolution, trusted LE issuance, membership currency, mutation/revocation fencing |
+| DC-04 metric registry | Metric Registry owner (0147 consumes) | live registry pointer, immutable revision, validity/withdrawal query |
+| DC-05 risk taxonomy/bands | Risk Register owner (0147 lifecycle, 0148 portal-source, Metric owner on bands) | immutable taxonomy revision + validity source + scoped portal-source resolver |
+
+**Cheapest first step to make 0147/0148 developable:** take **DC-01 to the Enterprise/domain owner** for
+`APPROVE DC-01 as written` — it needs no producer seam from any team and opens the governance-diff lane that
+leads to `ready-for-dev`. The ready approval text is in the pack above.
+
 The SUPPLIER-BASE contract (`supplier.openapi.yaml`, FROZEN) exists and answers *who a supplier is*; the
 five DCs decide *who owns the policy, authority and boundary* — and the pack records "SUPPLIER v1 coverage:
 none" for DC-01/DC-04. So a frozen contract does not make these modules buildable.
