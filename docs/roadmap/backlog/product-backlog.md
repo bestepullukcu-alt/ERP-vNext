@@ -10175,6 +10175,56 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-651
+
+**Idempotent replay imkânsız: ağ geçidi çağıranın `X-Correlation-Id`'sini kasten değiştiriyor, sevkiyat makbuz kontrolü ise eşleşmesini kasten şart koşuyor — ikisi bir arada tutamaz**
+
+DURUM: AÇIK · SAHİP: integration owner (ağ geçidi) + SCE / MVP-6 (makbuz kontrolü) — karar sahibin · BULAN: WP-LANE-MAIN-SYNC-05 canlı lane yığını, gate 6. madde (2026-10-17) · KAYIT: 2026-10-17
+
+**Ne:** Aynı gövde, aynı `Idempotency-Key`, aynı `X-Correlation-Id` ile iki kez POST:
+
+| yol | 1. çağrı | 2. çağrı |
+|---|---|---|
+| doğrudan 5066 | 201 `idempotentReplay:false` | **200 `idempotentReplay:true`, aynı `shipmentId`** |
+| ağ geçidi 5000 | 201 | **400 `INVALID_REQUEST`** |
+
+Dört kez yeniden üretildi; opaque ve UUID biçimli anahtarla, correlation sabit ve değişken tutularak.
+
+**Neden, ve iki taraf da tek başına doğru:**
+* `gateway/Diten.ApiGateway/Program.cs:97-98` — *"INTX FIX2 — the edge does not adopt a caller's
+  `X-Correlation-Id` (EdgeCorrelation)."* Kenar kendi correlation'ını basıyor, bilerek.
+* `ShipmentRepository.cs:70` — makbuz bulunduğunda `receipt["CorrelationId"] != correlationId` ise
+  **400 `INVALID_REQUEST`**. Yalnız *fingerprint* farkı 409 `IDEMPOTENCY_KEY_REUSED` veriyor (`:69`).
+
+Yani kenardan gelen her yeniden deneme yeni bir correlation'la geliyor, makbuz kontrolü asla geçemiyor,
+`:70` her replay'de ateşliyor.
+
+**Maliyeti:** idempotency anahtarının bütün amacı belirsiz sonuçtan sonra güvenli yeniden denemedir —
+kaybolan cevap, timeout. Kenarda o deneme artık saklanmış orijinal yerine 400 dönüyor; çağıran
+"zaten uygulandı" ile "reddedildi"yi ayırt edemiyor ve anahtar hiçbir şey satın almıyor.
+
+**Q497'yi daraltıyor:** Q497 catch-all'ı *"shipment-bundle familyası için şeffaf"* bulmuştu — beş yolda
+doğrudan ve ağ geçidinden **birebir aynı** cevap ölçerek. Bu **ilk** çağrı için doğru; **replay** için
+değil, çünkü şeffaflık durum ve gövde üzerinde ölçüldü, idempotency sözleşmesinin dayandığı o tek
+başlık üzerinde değil. Q497 yanlış değil; cümlesi kapsamından geniş.
+
+**Yapılacak (sahip kararı), üç seçenek:**
+1. Kenar, geçerli bir UUID gelirse çağıranın correlation'ını kabul eder (INTX FIX2'nin gerekçesi
+   yeniden değerlendirilir).
+2. Makbuz kontrolü correlation eşitliği şartını bırakır: aynı fingerprint + aynı anahtar = replay,
+   correlation ne olursa olsun (annex'in *"farklı correlation ama aynı gövde orijinal gövdeyi alır"*
+   cümlesi bunu zaten söylüyor — `:70` o cümleyle çelişiyor).
+3. Kenar correlation'ı ayrı bir başlıkta (örn. `X-Edge-Correlation-Id`) taşır ve çağıranınkini bozmaz.
+
+**Not:** annex'in kendi ifadesi 2. seçeneği destekliyor gibi: *"A retry with a different correlation but
+identical payload therefore gets original business body and current header."* Bu cümle ile
+`ShipmentRepository.cs:70` arasındaki çelişki de bu maddenin parçası.
+
+**Gelecek regresyon riski:** 🔴 (kenar üzerinden her idempotent yeniden deneme 400 alıyor; sessiz değil
+ama yanlış).
+
+---
+
 ### BL-650
 
 **CT kararı D'nin niyeti ile guard'ın ölçtüğü şey ayrışmış: "hiçbir satır job-local mongod başlatmaz" kuralı workflow metnine bakıyor, script'ten başlatan satır kontrolü geçiyor**
