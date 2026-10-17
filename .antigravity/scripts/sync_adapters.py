@@ -30,6 +30,11 @@ Rules this script enforces (İ5-A pilot):
   (that would be hash pinning); an emptied, padded or commented-out AGENTS-REFERENCE.md fails --check.
 - İ5B-FIX-05 (Codex): a core rule (required_text) is read from the same visible text outside fenced code — a rule kept
   only inside a code block is an example, not a rule; inline code spans inside a rule stay readable.
+- İ5B-FIX-06 (v6 audit F5): a core rule counts only on a numbered rule line at column 0 ('7. **…'), the binding place
+  of the core block — an indented code block (spaces or a tab), a blockquote, a table or prose does not hold a rule —
+  and the core block holds no raw HTML tag outside inline code (Codex: <pre>, <script>, <div hidden> around the
+  numbered lines passed); the whole block is checked, not only the rule lines. An inline code span stays inside its
+  line: a span across lines (Codex: every rule inside one double-backtick span passed) is refused.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -252,6 +257,9 @@ def toml_basic(value: str) -> str:
 
 
 CORE_START, CORE_END = "<!-- core:start -->", "<!-- core:end -->"
+CORE_RULE_LINE = re.compile(r"^\d{1,2}\. \S")   # İ5B-FIX-06: '7. **Modül ve kimlik …' at column 0
+RAW_HTML_TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>")
+INLINE_CODE = re.compile(r"(`+)(?!`).*?(?<!`)\1(?!`)", re.S)
 
 
 def extract_core(source: str) -> str:
@@ -358,9 +366,20 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         else:
             visible = HTML_COMMENT.sub("", block)
             ruled = outside_fenced_code(visible)      # İ5B-FIX-05: a rule only inside a fence is not a rule
+            # İ5B-FIX-06 (F5): only a numbered rule line at column 0 is a binding place, and no raw HTML anywhere in it
+            spans = [m.group(0) for m in INLINE_CODE.finditer(visible) if "\n" in m.group(0)]
+            if spans:
+                problems.append(f"CORE-SPAN {core['source']} core block holds an inline code span across lines "
+                                f"({spans[0][:30]!r}…) — a rule inside code is not a rule")
+            tags = RAW_HTML_TAG.findall(INLINE_CODE.sub(" ", visible))
+            if tags:
+                problems.append(f"CORE-HTML {core['source']} core block holds raw HTML outside inline code ({', '.join(t[:20] for t in tags[:3])}) "
+                                "— a rule inside HTML is not a rule")
+            rule_lines = [l for l in ruled.split("\n") if CORE_RULE_LINE.match(l)]
             for needle in core.get("required_text", []):
-                if needle not in ruled:
-                    hidden = (" (only inside a code block)" if needle in visible else
+                if not any(needle in l for l in rule_lines):
+                    hidden = (" (not on a numbered core rule line)" if needle in ruled else
+                              " (only inside a code block)" if needle in visible else
                               " (only inside an HTML comment)" if needle in block else "")
                     problems.append(f"CORE-RULE {core['source']} core block lost: {needle!r}{hidden}")
     for path in budget.get("link_check", []):

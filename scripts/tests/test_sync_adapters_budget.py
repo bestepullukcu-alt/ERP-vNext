@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -228,7 +229,9 @@ class InstructionBudget(unittest.TestCase):
         self.assertEqual(core.count(self.MODULE_RULE), 1)
         line = next(l for l in core.split("\n") if self.MODULE_RULE in l)
         self.assertTrue(line.startswith("7. **Modül ve kimlik"), line[:60])      # Codex: item 7 only
-        for part in (self.DISCOVER, "Keşif koşmaz ya da eksikse bunu söyle", "küçük düzeltmede tarama gerekmez",
+        # İ5B-FIX-06 (Employee EMP-REPORT-01, joint decision): the final answer's four parts, byte-neutral
+        for part in (self.DISCOVER, "Son yanıt dört parça", "koşmayan ya da eksik keşif ve nedeni", '"kısmi inceleme"',
+                     "gerekçeli ilk kapsam", "açık onay/sahiplik kararları", "küçük düzeltmede tarama gerekmez",
                      "Kod, commit ya da dağıtım izni değildir"):
             self.assertIn(part, line)
 
@@ -286,6 +289,78 @@ class InstructionBudget(unittest.TestCase):
         # an inline span of three backticks is not a fence: the rules after it stay rules
         f.write_text(text.replace("8. **Git (§9", "Örnek: ```kod``` yazılır.\n8. **Git (§9", 1), encoding="utf-8")
         self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE")])
+
+    def test_a_core_rule_off_its_numbered_line_is_lost(self):
+        # v6 audit F5: every numbered core rule turned into an indented code block passed write and --check
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        a, b = text.index("<!-- core:start -->"), text.index("<!-- core:end -->")
+        core = text[a:b]
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        required = self.manifest["instruction_budget"]["core"]["required_text"]
+
+        def moved(prefix: str, blank_before: bool = True) -> str:
+            out = []
+            for line in core.split("\n"):
+                if re.match(r"^\d{1,2}\. ", line):
+                    if blank_before and out and out[-1].strip():
+                        out.append("")
+                    out.append(prefix + line)
+                else:
+                    out.append(line)
+            return text[:a] + "\n".join(out) + text[b:]
+        for label, changed in (("indented by four spaces", moved("    ")), ("indented by a tab", moved("\t")),
+                               ("in a blockquote", moved("> ", blank_before=False)), ("in a table row", moved("| ", blank_before=False))):
+            with self.subTest(form=label):
+                f.write_text(changed, encoding="utf-8")
+                lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE")]
+                self.assertEqual(len(lost), len(required), lost[:3])
+                self.assertTrue(all("not on a numbered core rule line" in p for p in lost), lost[:3])
+
+    def test_raw_html_in_the_core_is_refused(self):
+        # Codex (core-format-probes): the numbered lines wrapped in <pre>, <script> or <div hidden> passed write and --check
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        first = next(l for l in text.split("\n") if l.startswith("1. **"))
+        last = next(l for l in text.split("\n") if l.startswith("11. **"))
+        for label, opening, closing in (("pre", "<pre>", "</pre>"), ("script", "<script>", "</script>"),
+                                        ("div hidden", "<div hidden>", "</div>"), ("details", "<details>", "</details>")):
+            with self.subTest(form=label):
+                f.write_text(text.replace(first, opening + "\n" + first).replace(last, last + "\n" + closing), encoding="utf-8")
+                problems = sa.check_instruction_budget(self.manifest)[0]
+                self.assertTrue(any(p.startswith("CORE-HTML") for p in problems), problems[:3])
+        # opened between two rules, not only around the first line
+        mid = next(l for l in text.split("\n") if l.startswith("6. **"))
+        f.write_text(text.replace(mid, "<div hidden>\n" + mid + "\n</div>"), encoding="utf-8")
+        self.assertTrue(any(p.startswith("CORE-HTML") for p in sa.check_instruction_budget(self.manifest)[0]))
+        # inline code that shows a tag is not raw HTML
+        f.write_text(text.replace(mid, mid + " Örnek: `<div hidden>` yazılmaz."), encoding="utf-8")
+        self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith(("CORE-HTML", "CORE-RULE"))])
+
+    def test_a_code_span_across_lines_in_the_core_is_refused(self):
+        # Codex (core-format-probes-03): every numbered rule inside one double-backtick span passed write and --check
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        first = next(l for l in text.split("\n") if l.startswith("1. **"))
+        last = next(l for l in text.split("\n") if l.startswith("11. **"))
+        mid = next(l for l in text.split("\n") if l.startswith("6. **"))
+        for label, changed in (("double backticks around every rule", text.replace(first, "``\n" + first).replace(last, last + "\n``")),
+                               ("single backticks around two rules", text.replace(mid, "`\n" + mid).replace(last, last + "\n`"))):
+            with self.subTest(form=label):
+                f.write_text(changed, encoding="utf-8")
+                self.assertTrue(any(p.startswith("CORE-SPAN") for p in sa.check_instruction_budget(self.manifest)[0]))
+        self.redirect("AGENTS.md", REPO / "AGENTS.md")
+        self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-SPAN")])
+
+    def test_every_required_core_text_is_on_a_numbered_rule_line_today(self):
+        core = sa.extract_core("AGENTS.md")
+        lines = [l for l in core.split("\n") if sa.CORE_RULE_LINE.match(l)]
+        self.assertEqual(len(lines), 11)
+        for needle in self.manifest["instruction_budget"]["core"]["required_text"]:
+            with self.subTest(needle=needle[:40]):
+                self.assertTrue(any(needle in l for l in lines))
 
     def test_oversize_message_names_the_file_it_is_about(self):
         problems = self.claude_with("x" * 3000)
