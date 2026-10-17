@@ -14,6 +14,10 @@ Rules this script enforces (İ5-A pilot):
   security-agent must not come back).
 - Output is LF and UTF-8 on every platform; --check compares after turning CRLF into LF, so a Windows checkout
   with core.autocrlf=true is not drift. No symlinks are used anywhere.
+- İ5-B: the "Çekirdek" block of AGENTS.md (between <!-- core:start --> and <!-- core:end -->) is copied to
+  .claude/rules/agents-core.md, so Claude Code loads the binding rules without importing all of AGENTS.md.
+  The manifest's instruction_budget also fails --check when AGENTS.md exceeds its byte limit (Antigravity truncates
+  at 24000), loses a § heading or a core rule, when CLAUDE.md imports AGENTS.md, or when a listed file has a dead link.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -97,9 +101,20 @@ def toml_basic(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
+CORE_START, CORE_END = "<!-- core:start -->", "<!-- core:end -->"
+
+
+def extract_core(source: str) -> str:
+    """İ5-B: the compact core block of AGENTS.md, without its markers."""
+    text = read_text(source)
+    if text.count(CORE_START) != 1 or text.count(CORE_END) != 1 or text.index(CORE_START) > text.index(CORE_END):
+        raise ConfigError(f"{source}: needs exactly one {CORE_START} … {CORE_END} block")
+    return text.split(CORE_START, 1)[1].split(CORE_END, 1)[0].strip("\n") + "\n"
+
+
 def render(item: dict, target: dict) -> str:
     source = item["source"]
-    text = read_text(source)
+    text = extract_core(source) if item.get("extract") == "core" else read_text(source)
     digest = source_hash(text)
     block, body = split_frontmatter(text)
     body = body.lstrip("\n")
@@ -147,7 +162,57 @@ def render(item: dict, target: dict) -> str:
         head = emit_frontmatter(fm)
     else:
         head = ""
-    return head + "\n" + generated_line(source, digest) + "\n" + body.rstrip("\n") + "\n"
+    return (head + "\n" if head else "") + generated_line(source, digest) + "\n" + body.rstrip("\n") + "\n"
+
+
+def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
+    """İ5-B: size budget, required headings and core rules, forbidden patterns and dead links in the instruction files.
+    Returns (problems, warnings)."""
+    budget = manifest.get("instruction_budget") or {}
+    problems: list[str] = []
+    warnings: list[str] = []
+    for spec in budget.get("files", []):
+        path = spec["path"]
+        p = rel(path)
+        if not p.is_file():
+            problems.append(f"MISSING {path} (instruction file)")
+            continue
+        raw = p.read_bytes().replace(b"\r\n", b"\n")
+        text = raw.decode("utf-8")
+        size = len(raw)
+        if size > spec.get("max_bytes", 10 ** 9):
+            problems.append(f"OVERSIZE {path} is {size} bytes; limit {spec['max_bytes']} (Antigravity truncates AGENTS.md at 24000)")
+        elif size > spec.get("warn_bytes", 10 ** 9):
+            warnings.append(f"WARN {path} is {size} bytes; warning threshold {spec['warn_bytes']}")
+        for heading in spec.get("required_headings", []):
+            if not re.search(rf"(?m)^## {re.escape(heading)}(?:\s|$)", text):
+                problems.append(f"HEADING {path} lost '## {heading}' (AGENTS.md §-references would break)")
+        for pattern in spec.get("forbidden_regex", []):
+            if re.search(pattern, text):
+                problems.append(f"FORBIDDEN {path} matches {pattern!r}")
+    core = budget.get("core")
+    if core:
+        try:
+            block = extract_core(core["source"])
+        except ConfigError as e:
+            problems.append(f"CORE {e}")
+        else:
+            for needle in core.get("required_text", []):
+                if needle not in block:
+                    problems.append(f"CORE-RULE {core['source']} core block lost: {needle!r}")
+    for path in budget.get("link_check", []):
+        p = rel(path)
+        if not p.is_file():
+            # İ5B-FIX-01 (independent audit 2026-10-17, finding 02): a listed file that is gone is a problem, not a file
+            # to skip — deleting .antigravity/AGENTS-REFERENCE.md would otherwise lose the moved text with a clean check.
+            problems.append(f"MISSING {path} (link_check)")
+            continue
+        for target in re.findall(r"\]\(([^)\s]+)\)", p.read_text(encoding="utf-8")):
+            if re.match(r"(https?:|mailto:|#)", target):
+                continue
+            if not (p.parent / target.split("#", 1)[0]).exists():
+                problems.append(f"DEADLINK {path} -> {target}")
+    return problems, warnings
 
 
 def load_manifest() -> dict:
@@ -201,6 +266,10 @@ def main() -> int:
             if r not in expected:
                 problems.append(f"UNMANAGED {r} is in a tool discovery folder but not in {MANIFEST}")
 
+    budget_problems, budget_warnings = check_instruction_budget(manifest)
+    problems += budget_problems
+    for line in budget_warnings:
+        print(line)
     for line in problems:
         print(line)
     if problems:
