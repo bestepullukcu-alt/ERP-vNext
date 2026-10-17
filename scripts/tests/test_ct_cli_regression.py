@@ -111,7 +111,7 @@ class Fixture:
         self.put(vmi.REGISTRY, self.reg_md)
         self.put(PACK, "---\nid: MOD-0288\nstatus: approved\n---\nEvidence required: E2\n## Acceptance Criteria\n"
                        "- [ ] AC-1 (zorunlu) — Audit Ledger tested\n")
-        self.put(AUTHORITY, "---\nstatus: approved\n---\nW1 approved audit change\n")
+        self.put(AUTHORITY, "---\nstatus: approved\nwork_packages: W1\n---\nW1 approved audit change\n")   # CT-FIX-04 İ2
         self.put("source.txt", "Audit source contract\n")
         self.put("AGENTS.md", "R0 fixture only\n")
         wb = openpyxl.Workbook()
@@ -151,7 +151,7 @@ class Fixture:
         self.put("evidence.txt", "AC-1 checked: expected observed\n")
         self.evidence_commit = self.commit("acceptance input evidence")
         lh = "| " + " | ".join(ar.LIST_COLUMNS) + " |\n|" + "---|" * len(ar.LIST_COLUMNS) + "\n"
-        self.list_row = (f"| AC-1 | Audit behavior | Safety | CLI test | Expected observed | hayır | evet | Expected observed | "
+        self.list_row = (f"| AC-1 | Audit Ledger tested | Safety | CLI test | Expected observed | hayır | evet | Expected observed | "
                          f"geçti | evidence.txt@{self.evidence_commit}:1 |\n")
         self.list_head = lh
         self.put("acceptance-list.md", lh + self.list_row)
@@ -374,7 +374,9 @@ class V4A_F3_Kunye(Base):
 
     def gate(self, authority_text):
         FX.reset("acceptance-inputs")
-        FX.put(AUTHORITY, authority_text + "W1 approved audit change\n")   # the record names its work package
+        # the record names its work package; CT-FIX-04 (İ2): explicitly, in its künye's work_packages
+        bound = "---\nwork_packages: W1\n" + authority_text[4:] if authority_text.startswith("---\n") else authority_text
+        FX.put(AUTHORITY, bound + "W1 approved audit change\n")
         head = FX.commit("authority variant")
         path = FX.root.parent / "prompt.txt"
         path.write_text(FX.prompt(head), encoding="utf-8")
@@ -472,7 +474,7 @@ class V4A_F5_Acceptance(Base):
 
     # V4A-F5's report half: the auditor's recipe (accepted queue + approved effort baseline) — a record the check refuses
     # is not counted; the report says the percentages are not valid instead of %100
-    def report_with(self, **over):
+    def report_with(self, want=0, **over):
         FX.reset(self.mark)
         ledger, approval = "execution/delivery/effort/ct.md", "docs/records/decisions/effort.md"
         lt = ("---\nformat: effort-ledger-v1\nqueue: ct\nbaseline_version: 1\nunit: saat\n"
@@ -488,7 +490,7 @@ class V4A_F5_Acceptance(Base):
         FX.put("q.tsv", FX.qh + FX.qrow.replace("\tREADY\t", "\tACCEPTED\t").replace("\t-\t-\n", f"\t{ACCEPT}@{ah}\t-\n"))
         FX.commit("accepted queue")
         p = FX.run("scripts/status_report.py", "--mode", "v2", "--queue", "ct")
-        self.assertExit(p, 0)
+        self.assertExit(p, want)       # CT-FIX-04 (İ5, A3): a report with a refused acceptance is incomplete -> exit 1
         return p.stdout
 
     def test_report_counts_only_an_acceptance_the_check_allows(self):
@@ -496,7 +498,7 @@ class V4A_F5_Acceptance(Base):
         for label, over in (("a nonexistent pack", {"module_pack": "execution/domains/audit/module-packs/MOD-0999-x.md@" + "f" * 40}),
                             ("a nonexistent code commit", {"commit": "f" * 40})):
             with self.subTest(form=label):
-                out = self.report_with(**over)
+                out = self.report_with(1, **over)
                 self.assertIn('"percentages_valid": false', out)
                 self.assertNotIn("%100.0", out)
 
@@ -702,13 +704,13 @@ DCP = "execution/portfolio/delivery-capability-packs/DCP-091-routing-test.md"
 class V4B_B8_Route(Base):
     """CT-FIX-03 B8 (Codex's route matrix): a registry row the owner has not confirmed is a stamped preparation
     candidate; --in-force refuses it although origin/main holds the confirmed row."""
-    def route(self, confirmation, in_force):
+    def route(self, confirmation, in_force, main_confirmation="confirmed"):
         FX.put(DCP, "---\nid: DCP-091\nstatus: approved\nowner: audit-coordinator\n---\n\n## 8.1 Delivery slices\n\n"
                     "| Slice | Kapsam | Not |\n|---|---|---|\n| MVP1 | MOD-0288 | synthetic |\n")
         line = lambda c: FX.reg_head + FX.reg_line.replace("\tconfirmed\taudit\t", f"\t{c}\tdcp:{DCP}#MVP1\t")
-        FX.put(REG, line("confirmed"))
-        FX.git("update-ref", "refs/remotes/origin/main", FX.commit("routing: the confirmed row on main"))
-        if confirmation != "confirmed":
+        FX.put(REG, line(main_confirmation))
+        FX.git("update-ref", "refs/remotes/origin/main", FX.commit("routing: main's row"))
+        if confirmation != main_confirmation:
             FX.put(REG, line(confirmation))
             FX.commit("routing: the branch row not confirmed")
         try:
@@ -724,14 +726,25 @@ class V4B_B8_Route(Base):
                 self.assertNotIn("sahip teyidi bekliyor", p.stdout)
 
     def test_a_pending_row_is_stamped_and_refused_in_force(self):
-        p = self.route("pending", False)
+        # CT-FIX-04 (İ1): the stamp is the preparation answer when main's row is pending too
+        p = self.route("pending", False, "pending")
         self.assertExit(p, 0, "Hazırlık adayı; sahip teyidi bekliyor; yürürlükte değil")
         self.assertTrue(any(l.startswith("sonuç: tek hedef") and "sahip teyidi bekliyor" in l for l in p.stdout.splitlines()))
-        self.assertNotIn("yürürlük: yürürlükte", p.stdout)        # one truth (Codex): main confirmed, the branch row pending
-        p = self.route("pending", True)
+        self.assertNotIn("yürürlük: yürürlükte", p.stdout)
+        p = self.route("pending", True, "pending")
         self.assertExit(p, 1, "sahip teyidi bekliyor")
         self.assertNotIn("sonuç: tek hedef —", p.stdout)
         self.assertNotIn("yürürlük: yürürlükte", p.stdout)
+
+    def test_a_pending_row_against_main_s_confirmed_row_is_a_conflict(self):
+        # CT-FIX-03 B8's case (main confirmed, the branch row pending) — CT-FIX-04 (İ1, A1): never 'yürürlükte' and,
+        # since the rows differ, no single target in either mode (until CT-FIX-04 the plain mode answered 0, stamped)
+        for in_force in (False, True):
+            with self.subTest(in_force=in_force):
+                p = self.route("pending", in_force)
+                self.assertExit(p, 1, "çelişiyor")
+                self.assertNotIn("sonuç: tek hedef —", p.stdout)
+                self.assertNotIn("yürürlük: yürürlükte", p.stdout)
 
 
 # ---------------------------------------------------------------------------------------------------- V4A-F7 (18)
@@ -761,6 +774,381 @@ class V4A_F7_Hook(Base):
         p = self.hook_with("import sys\nprint('[pack] execution/domains/x/module-packs/X.md declares data_mode: server')\nsys.exit(0)\n")
         self.assertExit(p, 0, "DOĞRULANAMADI")
         self.assertNotIn("sapma yok", p.stdout)
+
+# ---------------------------------------------------------------------------------------------------- CT-FIX-04
+# The six relations (v5 audit A1–A3, quality review 1–4, Codex's counter-examples) — each relation's normal and broken
+# inputs through every consumer's real command line. A case's expectation is the matrix's (docs/records/audits/2026-10/
+# ct-fix-04/README.md); none is relaxed to pass.
+def reg_variant(confirmation="confirmed", strict="yes", scope="audit"):
+    return FX.reg_head + FX.reg_line.replace("\tconfirmed\taudit\tfixture\tyes\tsop7\n",
+                                             f"\t{confirmation}\t{scope}\tfixture\t{strict}\tsop7\n")
+
+
+class CTFIX04(Base):
+    mark = "acceptance-inputs"
+
+    def with_main(self, main_text, branch_text):
+        """origin/main holds main_text; the branch commits branch_text on top. origin/main is restored afterwards."""
+        self.addCleanup(FX.git, "update-ref", "refs/remotes/origin/main", FX.marks["registered"])
+        FX.put(REG, main_text)
+        FX.git("update-ref", "refs/remotes/origin/main", FX.commit("CT-FIX-04: main's registry"))
+        if branch_text != main_text:
+            FX.put(REG, branch_text)
+            FX.commit("CT-FIX-04: the branch's registry")
+        return FX.git("rev-parse", "HEAD")
+
+    def gate(self, prompt=None, prepare=False):
+        path = FX.root.parent / "prompt.txt"
+        path.write_text(prompt or FX.prompt(FX.git("rev-parse", "HEAD")), encoding="utf-8")
+        return FX.run("scripts/prompt_gate.py", "check", str(path), "--queue", "ct", *(["--prepare"] if prepare else []))
+
+    def report(self, *extra):
+        return FX.run("scripts/status_report.py", "--mode", "v2", "--queue", "ct", *extra)
+
+    def check(self, head, module="MOD-0288"):
+        return FX.run("scripts/acceptance_record.py", "check", f"{ACCEPT}@{head}", "--queue", "ct", "--wp", "W1",
+                      "--module", module)
+
+    def accept_row(self, head):
+        """W1 ACCEPTED with this record in the working tree and committed (validate and the report read it)."""
+        FX.put("q.tsv", FX.qh + FX.qrow.replace("\tREADY\t", "\tACCEPTED\t").replace("\t-\t-\n", f"\t{ACCEPT}@{head}\t-\n"))
+        return FX.commit("CT-FIX-04: W1 accepted")
+
+
+# ---------------------------------------------------------------------------------------------------- İ1 (A1, A2)
+class CTFIX04_I1_InForce(CTFIX04):
+    """origin/main's row pending = preparation, never in force; a branch row that differs from main's (confirmation,
+    strict) = a conflict for every consumer — ct_queue.in_force_status is the one function."""
+    def variants(self):
+        ok, pend = reg_variant(), reg_variant("pending")
+        return {"both confirmed": (ok, ok), "both pending": (pend, pend), "branch confirmed, main pending": (pend, ok),
+                "branch pending, main confirmed": (ok, pend), "branch strict=no, main strict=yes": (ok, reg_variant(strict="no"))}
+
+    WANT = {  # consumer -> {variant: (exit, text)} — exact per fixture
+        "require": {"both confirmed": (0, "— kayıtlı"), "both pending": (0, "— onaysız"), "conflict": (1, "çelişiyor")},
+        "require --in-force": {"both confirmed": (0, "— kayıtlı"), "both pending": (1, "--in-force"), "conflict": (1, "çelişiyor")},
+        "guard": {"both confirmed": (0, None), "both pending": (0, None), "conflict": (1, "çelişiyor")},
+        "summary": {"both confirmed": (0, None), "both pending": (0, None), "conflict": (1, "çelişiyor")},
+        "writers": {"both confirmed": (0, None), "both pending": (0, None), "conflict": (1, "çelişiyor")},
+        "validate": {"both confirmed": (0, None), "both pending": (0, None), "conflict": (1, "çelişiyor")},
+        "gate --prepare": {"both confirmed": (0, "DAĞITIM İZNİ DEĞİL"), "both pending": (0, "onaysız"), "conflict": (1, "ENGEL")},
+        "gate": {"both confirmed": (0, "— kayıtlı"), "both pending": (1, "yürürlükte değil"), "conflict": (1, "ENGEL")},
+        "report": {"both confirmed": (0, '"complete": true'), "both pending": (0, "YÜRÜRLÜK: onaysız"), "conflict": (1, "çelişiyor")},
+    }
+
+    def run_consumer(self, name):
+        if name.startswith("gate"):
+            return self.gate(prepare=name == "gate --prepare")
+        if name == "report":
+            return self.report()
+        if name == "require --in-force":
+            return FX.run("scripts/ct_queue.py", "require", "W1", "--queue", "ct", "--in-force")
+        return FX.run("scripts/ct_queue.py", *CONSUMERS[name])
+
+    def test_every_consumer_on_every_registry_relation(self):
+        for variant, (main_text, branch_text) in self.variants().items():
+            key = variant if variant in ("both confirmed", "both pending") else "conflict"
+            for name, want in self.WANT.items():
+                with self.subTest(variant=variant, consumer=name):
+                    FX.reset(self.mark)
+                    self.with_main(main_text, branch_text)
+                    code, text = want[key]
+                    if name == "report" and variant == "branch strict=no, main strict=yes":
+                        code, text = 2, "katı (strict=yes) kuyruk değil"   # the report serves strict queues only (exit 2)
+                    self.assertExit(self.run_consumer(name), code, text)
+
+
+class CTFIX04_I1_Route(CTFIX04):
+    """ct_route: the same relation, plus the ref's transition table and SOP §7 rules (ct_queue.profile_problems)."""
+    def route(self, main_c, branch_c, in_force, branch_strict="yes", trans=None):
+        FX.put(DCP, "---\nid: DCP-091\nstatus: approved\nowner: audit-coordinator\n---\n\n## 8.1 Delivery slices\n\n"
+                    "| Slice | Kapsam | Not |\n|---|---|---|\n| MVP1 | MOD-0288 | synthetic |\n")
+        scope = f"dcp:{DCP}#MVP1"
+        self.with_main(reg_variant(main_c, scope=scope), reg_variant(branch_c, branch_strict, scope=scope))
+        if trans is not None:
+            FX.put(TRANS, trans)
+            FX.commit("CT-FIX-04: the ref's transition table")
+        return FX.run("scripts/ct_route.py", "--kind", "delivery", "--module", "MOD-0288", *(["--in-force"] if in_force else []))
+
+    def test_relations(self):
+        no_step = "".join(l + "\n" for l in FX.trans.splitlines() if not l.startswith("sop7\tREADY\tDISPATCHED\t"))
+        cases = [("both confirmed", ("confirmed", "confirmed"), {}, (0, "sonuç: tek hedef"), (0, "yürürlükte (")),
+                 ("both pending", ("pending", "pending"), {}, (0, "Hazırlık adayı"), (1, "sahip teyidi bekliyor")),
+                 ("branch confirmed, main pending", ("pending", "confirmed"), {}, (1, "çelişiyor"), (1, "çelişiyor")),
+                 ("branch pending, main confirmed", ("confirmed", "pending"), {}, (1, "çelişiyor"), (1, "çelişiyor")),
+                 ("branch strict=no, main strict=yes", ("confirmed", "confirmed"), {"branch_strict": "no"}, (1, "çelişiyor"), (1, "çelişiyor")),
+                 ("the ref's READY→DISPATCHED step removed", ("confirmed", "confirmed"), {"trans": no_step}, (2, None), (2, None))]
+        for label, (main_c, branch_c), extra, plain, forced in cases:
+            for in_force, (code, text) in ((False, plain), (True, forced)):
+                with self.subTest(case=label, in_force=in_force):
+                    FX.reset(self.mark)
+                    p = self.route(main_c, branch_c, in_force, **extra)
+                    self.assertExit(p, code, text)
+                    if code != 0 or label != "both confirmed":
+                        self.assertNotIn("yürürlük: yürürlükte", p.stdout)
+
+
+# ---------------------------------------------------------------------------------------------------- İ2 (quality 1, Codex)
+GOV_FM = lambda extra="", body="": f"---\nstatus: approved\n{extra}---\n{body}"
+
+
+class CTFIX04_I2_Binding(CTFIX04):
+    """A governance record binds W1 only explicitly: the row's record names it (path, or path@commit holding the same
+    bytes as at Expected HEAD), or its künye's one work_packages line lists W1. A mention is not a binding."""
+    def gate_with(self, text, record=None):
+        FX.put(AUTHORITY, text)
+        head = FX.commit("CT-FIX-04: scope record variant")
+        if record is not None:
+            FX.put("q.tsv", FX.qh + FX.qrow.replace("\t-\t-\n", f"\t{record}\t-\n"))
+            head = FX.commit("CT-FIX-04: the row's record")
+        return self.gate(FX.prompt(head))
+
+    def test_explicit_bindings_pass(self):
+        for label, text, record in (("work_packages: W1", GOV_FM("work_packages: W1\n"), None),
+                                    ("work_packages: W2, W1", GOV_FM("work_packages: W2, W1\n"), None),
+                                    ("the row's record, plain path", GOV_FM(), AUTHORITY)):
+            with self.subTest(form=label):
+                FX.reset(self.mark)
+                self.assertExit(self.gate_with(text, record), 0)
+
+    def test_the_row_s_record_at_an_older_commit_with_the_same_bytes_passes(self):
+        FX.put(AUTHORITY, GOV_FM())
+        older = FX.commit("CT-FIX-04: the scope record")
+        FX.put("source-note.txt", "unrelated\n")
+        FX.commit("CT-FIX-04: an unrelated change")
+        for ref in (older, older[:9]):
+            with self.subTest(version=len(ref)):
+                self.assertExit(self.gate_with(GOV_FM(), f"{AUTHORITY}@{ref}"), 0)
+
+    def test_no_explicit_binding_stops(self):
+        for label, text in {
+                "only a mention in the text": GOV_FM("", "W1 approved audit change\n"),
+                "work_packages: W10": GOV_FM("work_packages: W10\n", "W1\n"),
+                "work_packages: W1-R1": GOV_FM("work_packages: W1-R1\n", "W1\n"),
+                "'W1 değil' in the text": GOV_FM("", "Bu kayıt W1 değil.\n"),
+                "work_packages twice": GOV_FM("work_packages: W1\nwork_packages: W1\n"),
+                "an indented second work_packages": GOV_FM("work_packages: W2\n  work_packages: W1\n"),
+                "a commented work_packages": GOV_FM("# work_packages: W1\n", "W1\n"),
+                "work_packages inside an HTML comment in the künye (Codex)": GOV_FM("<!--\nwork_packages: W1\n-->\n", "W1\n"),
+                "an empty element": GOV_FM("work_packages: W1,,W2\n"), "a trailing comma": GOV_FM("work_packages: W1,\n"),
+                "a spaced element": GOV_FM("work_packages: W 1, W2\n")}.items():
+            with self.subTest(form=label):
+                FX.reset(self.mark)
+                self.assertExit(self.gate_with(text), 1, "ENGEL")
+
+    def test_the_explicit_list_is_not_overridden_by_the_row_s_record(self):
+        self.assertExit(self.gate_with(GOV_FM("work_packages: W2\n"), AUTHORITY), 1, "aşmaz")
+
+    def test_a_broken_record_version_stops_and_work_packages_does_not_mask_it(self):
+        self.addCleanup(lambda: subprocess.run(["git", "branch", "-D", "abcdef1234"], cwd=FX.root, env=ENV, capture_output=True))
+        for wp in ("", "work_packages: W1\n"):
+            text = GOV_FM(wp, "W1 approved audit change\n")
+            FX.reset(self.mark)
+            FX.put(AUTHORITY, GOV_FM("", "an earlier text\n"))
+            differs = FX.commit("CT-FIX-04: another content of the scope record")
+            FX.put(AUTHORITY, text)
+            same = FX.commit("CT-FIX-04: the scope record as the gate reads it")
+            # a tree id, a blob id and a branch named like an id that all hold the gate's own bytes: only the commit-object
+            # check refuses them (the content comparison cannot)
+            tree, blob = FX.git("rev-parse", f"{same}^{{tree}}"), FX.git("rev-parse", f"{same}:{AUTHORITY}")
+            FX.git("branch", "-f", "abcdef1234", same)
+            for label, version in (("a 40-hex id that is no object", "f" * 40), ("not hex", "not-a-commit"), ("empty", ""),
+                                   ("a tree id holding the same record", tree), ("a blob id", blob),
+                                   ("a branch named like an id, at a commit holding the same record", "abcdef1234"),
+                                   ("a commit whose record differs", differs)):
+                with self.subTest(version=label, work_packages=bool(wp)):
+                    self.assertExit(self.gate_with(text, f"{AUTHORITY}@{version}"), 1, "sürüm bağı bozuk")
+
+
+# ---------------------------------------------------------------------------------------------------- İ3 (quality 2, Codex)
+OTHER_PACK = "execution/domains/audit/module-packs/MOD-0289-audit-ledger.md"
+
+
+class CTFIX04_I3_PackIdentity(CTFIX04):
+    """The pack's künye id, its file name's MOD id and the row / record module are one identity, through
+    ct_queue.pack_identity — for the prompt gate (ürün) and the acceptance reader (module_pack, evidence source)."""
+    def product_gate(self, pack_path, text):
+        FX.put(pack_path, text)
+        head = FX.commit("CT-FIX-04: pack variant")
+        prompt = FX.prompt(head).replace(f"Görev sınıfı: yönetişim · Kapsam kaydı: {AUTHORITY}", f"Görev sınıfı: ürün · Paket: {pack_path}")
+        return self.gate(prompt)
+
+    def test_product_gate(self):
+        good = (FX.root / PACK).read_text(encoding="utf-8")
+        self.assertExit(self.product_gate(PACK, good), 0)
+        for label, path, text in (
+                ("file MOD-0288, künye id MOD-0289", PACK, good.replace("id: MOD-0288", "id: MOD-0289")),
+                ("a second id", PACK, good.replace("id: MOD-0288", "id: MOD-0288\nid: MOD-0289")),
+                ("an indented second id", PACK, good.replace("id: MOD-0288", "id: MOD-0288\n  id: MOD-0289")),
+                ("a quoted second id", PACK, good.replace("id: MOD-0288", 'id: MOD-0288\n"id": MOD-0289')),
+                ("no id", PACK, good.replace("id: MOD-0288\n", "")),
+                ("file MOD-0289, künye id MOD-0288 (the row's module)", OTHER_PACK, good),
+                # Codex (candidate1-identity): the file name's id is never cut out of a longer token
+                ("file MOD-02880-…, künye id MOD-0288", PACK.replace("MOD-0288-", "MOD-02880-"), good),
+                ("file MOD-0288X-…, künye id MOD-0288", PACK.replace("MOD-0288-", "MOD-0288X-"), good)):
+            with self.subTest(form=label):
+                FX.reset(self.mark)
+                self.assertExit(self.product_gate(path, text), 1, "ENGEL")
+
+    def test_acceptance_reader_checks_the_file_name(self):
+        # Codex's 'wrong-filename' variant: the record binds a pack file named MOD-0289 (or MOD-02880-…) whose künye
+        # says MOD-0288 — check, module-check (its own pack read, then through the queue), validate and the report
+        for path in (OTHER_PACK, PACK.replace("MOD-0288-", "MOD-02880-")):
+            with self.subTest(pack=os.path.basename(path)):
+                FX.reset(self.mark)
+                FX.put(path, (FX.root / PACK).read_text(encoding="utf-8"))
+                h = FX.commit("CT-FIX-04: a pack under another module's file name")
+                module_check = lambda: FX.run("scripts/acceptance_record.py", "module-check", "--queue", "ct", "--module",
+                                              "MOD-0288", "--pack", f"{path}@{h}")
+                self.assertExit(module_check(), 2, "dosya adındaki kimlikle")
+                rec = FX.write_acceptance(module_pack=f"{path}@{h}")
+                self.assertExit(self.check(rec), 1, "dosya adındaki kimlikle")
+                self.accept_row(rec)
+                self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]), 1)
+                self.assertExit(module_check(), "nonzero")
+                self.assertExit(self.report(), 1)
+
+    def test_evidence_level_source_pack_identity_with_or_without_a_work_package(self):
+        # Codex: a pack named MOD-0288 whose künye says MOD-0289, as the required_evidence_source; adding
+        # 'work_package: W1' to it must not skip the identity check
+        for label, extra in (("without work_package", ""), ("with work_package: W1", "work_package: W1\n")):
+            with self.subTest(form=label):
+                FX.reset(self.mark)
+                FX.put(PACK, f"---\nid: MOD-0289\n{extra}status: approved\n---\nEvidence required E2\n## Acceptance Criteria\n"
+                             "- [ ] AC-1 (zorunlu) — Audit Ledger tested\n")
+                h = FX.commit("CT-FIX-04: a mismatched pack as the level source")
+                line = 5 + (1 if extra else 0)
+                rec = FX.write_acceptance(required_evidence_source=f"{PACK}@{h}:{line}")   # module_pack: the earlier, correct version
+                self.assertExit(self.check(rec), 1, "dosya adındaki kimlikle")
+
+    def test_evidence_level_source_this_module_s_pack_passes(self):
+        h = FX.evidence_commit
+        line = next(i for i, l in enumerate((FX.root / PACK).read_text(encoding="utf-8").splitlines(), 1) if "E2" in l)
+        self.assertExit(self.check(FX.write_acceptance(required_evidence_source=f"{PACK}@{h}:{line}")), 0)
+
+
+# ---------------------------------------------------------------------------------------------------- İ4 (quality 3, Codex)
+TWO_AC_PACK = ("---\nid: MOD-0288\nstatus: approved\n---\nEvidence required: E2\n## Acceptance Criteria\n"
+               "- [ ] AC-1 (zorunlu) — Audit Ledger tested\n- [ ] AC-2 (zorunlu) — Audit export tested\n")
+
+
+class CTFIX04_I4_BoundList(CTFIX04):
+    """A list bound to a pack version is that version's criteria only — every row an AC-<n> of it with the same text
+    and mandatory flag; a WP may deliver a subset (module-check measures the module); a helper row is refused.
+    Consumers: check, ct_queue validate (ACCEPTED row), module-check, the report."""
+    def row(self, rid, text, req="evet"):
+        return (f"| {rid} | {text} | Safety | CLI test | Expected observed | hayır | {req} | Expected observed | geçti | "
+                f"evidence.txt@{FX.evidence_commit}:1 |\n")
+
+    def variant(self, rows, pack=None):
+        if pack is not None:
+            FX.put(PACK, pack)
+        ph = FX.commit("CT-FIX-04: the pack version")
+        FX.put("acceptance-list.md", FX.list_head + "".join(rows))
+        FX.list_commit = FX.commit("CT-FIX-04: the list")
+        self.addCleanup(setattr, FX, "list_commit", FX.marks["acceptance-inputs"])
+        rec = FX.write_acceptance(module_pack=f"{PACK}@{ph}")
+        return rec, ph
+
+    def consumers(self, rec, ph):
+        out = {"check": self.check(rec)}
+        self.accept_row(rec)
+        out["validate"] = FX.run("scripts/ct_queue.py", *CONSUMERS["validate"])
+        out["module-check"] = FX.run("scripts/acceptance_record.py", "module-check", "--queue", "ct", "--module", "MOD-0288",
+                                     "--pack", f"{PACK}@{ph}")
+        out["report"] = self.report()
+        return out
+
+    def test_normal_and_subset(self):
+        for label, rows, pack, want in (
+                ("AC-1 exact", [self.row("AC-1", "Audit Ledger tested")], None,
+                 {"check": 0, "validate": 0, "module-check": 0, "report": 0}),
+                ("a WP's subset: AC-1 of AC-1, AC-2", [self.row("AC-1", "Audit Ledger tested")], TWO_AC_PACK,
+                 {"check": 0, "validate": 0, "module-check": 1, "report": 0})):
+            FX.reset(self.mark)
+            res = self.consumers(*self.variant(rows, pack))
+            for name, code in want.items():
+                with self.subTest(case=label, consumer=name):
+                    self.assertExit(res[name], code)
+
+    def test_broken_lists(self):
+        ok = self.row("AC-1", "Audit Ledger tested")
+        for label, rows, text in (("CHECK-999 alone", [self.row("CHECK-999", "Audit Ledger tested")], "yardımcı satır"),
+                                  ("K1 alone", [self.row("K1", "Audit Ledger tested")], "yardımcı satır"),
+                                  ("AC-1 and CHECK-999", [ok, self.row("CHECK-999", "extra check")], "yardımcı satır"),
+                                  ("AC-1 with another text", [self.row("AC-1", "Audit behavior")], "ölçüt metni"),
+                                  ("AC-1 optional in the list", [self.row("AC-1", "Audit Ledger tested", "hayır")], "zorunluluğu"),
+                                  ("AC-9, not in the pack", [ok, self.row("AC-9", "Audit Ledger tested")], "ölçütü değil")):
+            FX.reset(self.mark)
+            res = self.consumers(*self.variant(rows))
+            for name, code, msg in (("check", 1, text), ("validate", 1, None), ("module-check", "nonzero", None), ("report", 1, None)):
+                with self.subTest(case=label, consumer=name):
+                    self.assertExit(res[name], code, msg)
+
+
+# ---------------------------------------------------------------------------------------------------- İ5 (A3, Codex)
+class CTFIX04_I5_ReportExit(CTFIX04):
+    """A printed report exits 1 when it is not complete; a baseline never offered and absent at the default path is a
+    supported result (0). An offered absent baseline and an existing invalid one are incomplete (1)."""
+    def baseline(self, approval_status="approved", digest_ok=True, ledger_text=None):
+        lt = ("---\nformat: effort-ledger-v1\nqueue: ct\nbaseline_version: 1\nunit: saat\n"
+              "weights: backend=0.5 frontend=0.3 test=0.2\napproval_record: " + APPROVAL + "@" + "a" * 40 + "\n---\n\n"
+              "| ID | Backend | Frontend | Test |\n|---|---|---|---|\n| W1 | 8 | 4 | 2 |\n")
+        digest = hashlib.sha256("".join(l for l in lt.splitlines(keepends=True)
+                                        if not l.startswith("approval_record:")).encode()).hexdigest()
+        FX.put(APPROVAL, f"---\nstatus: {approval_status}\nledger: {LEDGER}\nbaseline_version: 1\n"
+                         f"ledger_content_sha256: {digest if digest_ok else 'f' * 64}\n---\n")
+        aph = FX.commit("CT-FIX-04: effort approval")
+        FX.put(LEDGER, ledger_text if ledger_text is not None else lt.replace("a" * 40, aph))
+        FX.commit("CT-FIX-04: effort ledger")
+
+    def test_exit_codes(self):
+        for label, setup, extra, code, text in (
+                ("no baseline offered, none at the default path", None, (), 0, "Taban yok — hesaplanamadı"),
+                ("a valid baseline", {}, (), 0, '"complete": true'),
+                ("an offered baseline that is absent", None, ("--effort", "execution/delivery/effort/missing.md"), 1, "efor tabanı"),
+                ("the approval record a draft", {"approval_status": "draft"}, (), 1, "efor tabanı"),
+                ("the approval's ledger hash wrong", {"digest_ok": False}, (), 1, "efor tabanı"),
+                ("a broken ledger", {"ledger_text": "---\nformat: effort-ledger-v1\n---\nnot a table\n"}, (), 1, "efor tabanı")):
+            with self.subTest(case=label):
+                FX.reset(self.mark)
+                if setup is not None:
+                    self.baseline(**setup)
+                p = self.report(*extra)
+                self.assertExit(p, code, text)
+                if code == 1:
+                    self.assertIn('"complete": false', p.stdout)
+                    self.assertIn("tamamlık: eksik — ", p.stdout)
+                    self.assertIn("rapor eksik — çıkış 1", p.stderr)
+
+
+# ---------------------------------------------------------------------------------------------------- conditional approval
+class CTFIX04_ConditionalApproval(CTFIX04):
+    """Joint decision with Codex (Employee pilot): a pack whose künye carries approval_status other than 'approved'
+    gives no product dispatch by its status alone. Conditional: --prepare passes and says so, a dispatch stops; any
+    other value or an unreadable field stops in both modes. No record overrides it; packs and running work unchanged."""
+    def product(self, approval, prepare):
+        good = (FX.root / PACK).read_text(encoding="utf-8")
+        text = good if approval is None else good.replace("status: approved\n", f"status: approved\n{approval}", 1)
+        FX.put(PACK, text)
+        head = FX.commit("CT-FIX-04: pack approval variant")
+        prompt = FX.prompt(head).replace(f"Görev sınıfı: yönetişim · Kapsam kaydı: {AUTHORITY}", f"Görev sınıfı: ürün · Paket: {PACK}")
+        return self.gate(prompt, prepare=prepare)
+
+    def test_matrix(self):
+        cond = "approval_status: conditionally-approved-for-draft-reference-validation-slice\n"
+        for label, approval, dispatch, prepare in (
+                ("no second approval field", None, (0, "sonuç: geçti"), (0, "DAĞITIM İZNİ DEĞİL")),
+                ("approval_status: approved", "approval_status: approved\n", (0, "sonuç: geçti"), (0, "DAĞITIM İZNİ DEĞİL")),
+                ("conditional (the measured MOD-0251 value)", cond, (1, "kapsam türetilmez"), (0, "HAZIRLIK: yeni dağıtımda ENGEL olur")),
+                ("rejected", "approval_status: rejected\n", (1, "onaylı değil"), (1, "onaylı değil")),
+                ("an unknown value", "approval_status: conditionally approved\n", (1, "onaylı değil"), (1, "onaylı değil")),
+                ("written twice", "approval_status: approved\napproval_status: rejected\n", (1, "okunamıyor"), (1, "okunamıyor")),
+                ("an indented second one", "approval_status: approved\n  approval_status: rejected\n", (1, "okunamıyor"), (1, "okunamıyor"))):
+            for mode, (code, text) in (("dispatch", dispatch), ("--prepare", prepare)):
+                with self.subTest(case=label, mode=mode):
+                    FX.reset(self.mark)
+                    self.assertExit(self.product(approval, mode == "--prepare"), code, text)
 
 
 if __name__ == "__main__":

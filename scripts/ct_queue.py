@@ -516,7 +516,9 @@ def validate_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool
 
 def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, path_at=None) -> tuple[str, str]:
     """('kayıtlı', '') only for a well-formed registry with exactly one valid row for this queue that points at the same
-    task source; otherwise ('kayıt dosyası yok' | 'kayıt geçersiz' | 'kayıtlı değil' | 'farklı görev kaynağı', reason)."""
+    task source with the same profile and a confirmed owner; otherwise ('kayıt dosyası yok' | 'kayıt geçersiz' |
+    'kayıtlı değil' | 'farklı görev kaynağı' | 'farklı profil' | 'onaysız', reason). 'onaysız' is preparation, not a
+    conflict (CT-FIX-04 İ1)."""
     if registry_text is None:
         return "kayıt dosyası yok", ""
     table = Table(registry_text)
@@ -541,9 +543,13 @@ def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, 
     if row["path"] != queue["path"]:
         return "farklı görev kaynağı", f"orada '{row['path']}'"
     # CT-FIX-01 (05): the branch may not lower the protection main registered (strict, vocabulary, baseline).
-    for key in ("strict", "vocabulary", "baseline_commit"):
+    # CT-FIX-04 (İ1, A2): the owner's confirmation is part of the same truth — a branch row that differs from main's is a
+    # conflict; main's row not confirmed is preparation ('onaysız'), never in force.
+    for key in ("strict", "vocabulary", "baseline_commit", "owner_confirmation"):
         if row.get(key) != queue.get(key):
             return "farklı profil", f"{key}: orada '{row.get(key)}', burada '{queue.get(key)}'"
+    if row["owner_confirmation"] != "confirmed":
+        return "onaysız", f"origin/main'deki satır owner_confirmation '{row['owner_confirmation'][:20]}' — sahip teyidi bekliyor"
     return "kayıtlı", ""
 
 
@@ -913,7 +919,9 @@ def kunye_fields(text: str, keys: tuple[str, ...]) -> tuple[dict[str, str | None
     """The named decision fields of ONE closed front matter: ({key: value or None when absent}, None) or ({}, problem).
     Refused: a key written more than once in any form, a non-canonical key ('<key>: <value>' at column 0 is the only
     one read), an empty, block, multi-line (across blank and comment lines too), anchored, aliased, tagged or flow
-    value, an unbalanced quote, and a YAML merge key ('<<:') anywhere in the block. Lines of another key's explicit
+    value, an unbalanced quote, a YAML merge key ('<<:') and an HTML comment mark ('<!--' / '-->') anywhere in the
+    block (CT-FIX-04: a renderer hides it, a reader would read it — no field is read from inside a comment, none is
+    guessed outside it; 0 of the 330 front matters in the repository had one, measured 2026-10-17). Lines of another key's explicit
     object, list or block text (nested_lines()) are that object's data and are left as they are."""
     lines = text.replace("\r\n", "\n").split("\n")
     if not lines or lines[0].strip() != "---":
@@ -924,6 +932,8 @@ def kunye_fields(text: str, keys: tuple[str, ...]) -> tuple[dict[str, str | None
     block = lines[1:end]
     if any(re.match(r"^\s*<<\s*:", l) for l in block):
         return {}, "künyede YAML birleştirme anahtarı ('<<:') var — değer başka bir yerden gelebilir"
+    if any("<!--" in l or "-->" in l for l in block):
+        return {}, "künyede HTML yorumu var — alanlar yorum içinden okunmaz, künye belirsiz"
     out: dict[str, str | None] = {}
     owned = nested_lines(block)
     for key in keys:
@@ -991,6 +1001,134 @@ def kunye_status(text: str) -> tuple[str | None, str | None]:
         return None, (f"künye dışında status satırı var (satır {outside[0] + end + 2}) — onay yalnız künyeden okunur, "
                       "çelişki otomatik çözülmez")
     return fields["status"], None
+
+
+# CT-FIX-04 (İ2): a governance record binds a work package only explicitly — the queue row's `record` column names it
+# by its full path, or its künye's one `work_packages:` line lists the id as an exact member (comma-separated). A WP id
+# mentioned in the text is not a binding; an explicit list that leaves the WP out is not overridden by the row's record.
+WP_TOKEN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def work_packages_field(text: str) -> tuple[list[str] | None, str | None]:
+    """(None, None) when the künye has no `work_packages:` line; (ids, None); or (None, problem). One canonical line read
+    by kunye_fields (a commented, indented, quoted, block or flow form is refused or absent); comma-separated ids, none
+    empty, each a plain id token, none twice."""
+    fields, bad = kunye_fields(text, ("work_packages",))
+    if bad:
+        return None, bad
+    value = fields["work_packages"]
+    if value is None:
+        return None, None
+    items = [x.strip() for x in value.split(",")]
+    if any(not x for x in items):
+        return None, "work_packages boş eleman içeriyor"
+    wrong = [x for x in items if not WP_TOKEN.match(x)]
+    if wrong:
+        return None, f"work_packages geçersiz eleman '{wrong[0][:30]}' (bir iş paketi kimliği değil)"
+    if len(set(items)) != len(items):
+        return None, "work_packages aynı kimliği birden çok kez listeliyor"
+    return items, None
+
+
+def governance_binding(text: str, path: str, wp: str | None, row: dict | None, commit_id=None, read_at=None,
+                       head_data: bytes | None = None) -> str | None:
+    """None when the record is bound to this WP explicitly (SOP §20.2, CT-FIX-04), else the problem. A row `record` that
+    names this path with a version (path@commit) binds only when the version is 7–40 hex, commit_id(version) resolves
+    it to a commit object that starts with it (a tree or blob id, or a branch named like an id, does not), and that
+    commit holds the file with exactly the bytes checked at Expected HEAD (head_data; read_at(commit, path) -> bytes |
+    None) — the same content at an older commit is fine. A broken version is a problem work_packages does not cover."""
+    record = (row.get("record") or "").strip() if row else ""
+    rpath, at, version = record.partition("@")
+    by_row = rpath.strip() == path
+    if by_row and at:
+        if not re.fullmatch(r"[0-9a-f]{7,40}", version):
+            return f"satırın record sürümü '{version[:20]}' bir commit kimliği değil (yol@7–40 haneli commit) — sürüm bağı bozuk"
+        if commit_id is None or read_at is None or head_data is None:
+            return f"satırın record sürümü {version[:12]} doğrulanamadı — sürüm bağı bozuk"
+        full = commit_id(version)
+        if full is None:
+            return f"satırın record sürümü {version[:12]} bu depoda bir commit değil (yok, ağaç/blob nesnesi ya da dal adı) — sürüm bağı bozuk"
+        vdata = read_at(full, path)
+        if vdata is None:
+            return f"satırın record sürümü {version[:12]} okunamıyor — commit yok ya da bu commit'te kayıt yok; sürüm bağı bozuk"
+        if vdata != head_data:
+            return f"satırın record sürümü {version[:12]}'deki kayıt Expected HEAD'de denetlenen kayıtla aynı değil — sürüm bağı bozuk"
+    items, bad = work_packages_field(text)
+    if bad:
+        return f"kapsam kaydının work_packages alanı geçersiz — {bad}"
+    if items is not None:
+        if wp not in items:
+            return (f"kapsam kaydının work_packages alanı {wp}'yi listelemiyor ({', '.join(items)[:60]})"
+                    + (" — satırın record bağı bu açık listeyi aşmaz" if by_row else ""))
+        return None
+    if by_row:
+        return None
+    return (f"kapsam kaydı {wp}'ye açıkça bağlı değil — künyede work_packages yok ve kuyruk satırının record sütunu bu kaydı "
+            "göstermiyor; metinde anılma bağ değildir (SOP §20.2)")
+
+
+# CT-FIX-04 (Codex, Employee pilot): a pack whose künye carries a second approval field gives no product dispatch by
+# its 'status' alone. Closed list, measured 2026-10-17: of the repository's pack künyes only MOD-0251 has one
+# ('approval_status: conditionally-approved-for-draft-reference-validation-slice'); approved_on / approved_by /
+# status_note are notes, not approval values, and are not read.
+SECOND_APPROVAL_KEYS = ("approval_status",)
+CONDITIONAL_APPROVAL = re.compile(r"^conditionally-approved(?:-[a-z0-9]+)*$")
+
+
+def pack_approval_limit(text: str) -> tuple[str | None, str | None]:
+    """(None, None) when the pack's approval is its 'status' alone (no second approval field, or exactly 'approved');
+    (limit, None) for a conditional approval ('conditionally-approved[-…]'): preparation may go on, a new dispatch
+    stops until the pack itself settles its scope; (None, problem) for any other value (rejected, draft, unknown) and for
+    a field the shared reader cannot read (twice, indented, quoted, multi-line …): a stop in every mode, never overridden."""
+    fields, bad = kunye_fields(text, SECOND_APPROVAL_KEYS)
+    if bad:
+        return None, f"paketin ikinci onay alanı okunamıyor — {bad}"
+    for key in SECOND_APPROVAL_KEYS:
+        value = fields[key]
+        if value is None or value == "approved":
+            continue
+        if CONDITIONAL_APPROVAL.match(value):
+            return f"künyede {key}: '{value[:80]}'", None
+        return None, f"paketin künyesinde {key}: '{value[:80]}' — onaylı değil; status bunu aşmaz"
+    return None, None
+
+
+# CT-FIX-04 (İ3, Codex): the MOD id a pack file name starts with ends at '-' or at '.md' — 'MOD-02880-…' and
+# 'MOD-0288X-…' name no module (an id is never cut out of a longer token); an FU suffix belongs to the id only whole
+PACK_FILE_ID = re.compile(r"^(MOD-\d{4}(?:-FU\d+)?)(?=-|\.md$)")
+
+
+def pack_identity(path: str, text: str, module_ids: list[str]) -> str | None:
+    """CT-FIX-04 (İ3): None when the pack's künye names one canonical id (the shared reader) whose module identity — the id
+    itself in the MOD_VALUE form (MOD-nnnn, MOD-nnnn-FUn), a child id's base by verify_module_id.split_id — equals the MOD
+    id of the file name and is one of the given module ids; else the problem. The FU / child contract is not narrowed."""
+    fields, bad = kunye_fields(text, ("id",))
+    if bad:
+        return f"paketin künye kimliği okunamıyor — {bad}"
+    pid = fields["id"]
+    if not pid:
+        return "paketin künyesinde id yok"
+    if MOD_VALUE.fullmatch(pid):
+        identity = pid
+    else:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("verify_module_id_ident", ROOT / ".antigravity" / "scripts" / "verify_module_id.py")
+        vmi = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(vmi)
+        try:
+            base, parent = vmi.split_id(pid)
+        except Exception:
+            base, parent = None, None
+        if not base or not parent or not re.fullmatch(r"MOD-\d{4}", base):
+            return f"paketin künye id'si '{pid[:40]}' bir modül kimliği değil"
+        identity = base
+    file_id = PACK_FILE_ID.match(os.path.basename(path))
+    if not file_id or file_id.group(1) != identity:
+        return (f"paketin künye id'si {pid} dosya adındaki kimlikle "
+                f"({file_id.group(1) if file_id else 'yok'}) aynı değil — {os.path.basename(path)}")
+    if identity not in module_ids:
+        return f"paket {pid} bu işin modülüne ({', '.join(module_ids) or 'yok'}) ait değil"
+    return None
 
 
 def acceptance_checker(queue: dict, ref: str | None = None):
@@ -1229,12 +1367,44 @@ def self_test() -> int:
                   not check_queue(Table(strict_new), b2, vocab, strict=False)["errors"]))
     head = "\t".join(REGISTRY_COLUMNS)
     good_row = f"pq\tX CT\tq.tsv\t{'a' * 40}\tpending\tX only\tevidence\tno\tsop7"
-    qd = {"queue_id": "pq", "path": "q.tsv", "strict": "no", "vocabulary": "sop7", "baseline_commit": "a" * 40}
+    qd = {"queue_id": "pq", "path": "q.tsv", "strict": "no", "vocabulary": "sop7", "baseline_commit": "a" * 40,
+          "owner_confirmation": "pending"}
 
     def status(text):
         return in_force_status(qd, text, commit_exists=lambda s: True, path_at=lambda s, p: True)[0]
 
-    cases.append(("in force: a valid single row for the same task source -> kayıtlı", status(f"{head}\n{good_row}\n") == "kayıtlı"))
+    # CT-FIX-04 (İ1, A2): a pending owner confirmation on main is preparation ('onaysız'), never in force
+    confirmed_row = good_row.replace("\tpending\t", "\tconfirmed\t")
+    cases.append(("in force: a valid single confirmed row for the same task source -> kayıtlı; main pending -> onaysız",
+                  in_force_status(dict(qd, owner_confirmation="confirmed"), f"{head}\n{confirmed_row}\n",
+                                  commit_exists=lambda s: True, path_at=lambda s, p: True)[0] == "kayıtlı"
+                  and status(f"{head}\n{good_row}\n") == "onaysız"))
+    # CT-FIX-04 (İ3): the file name's MOD id ends at '-' or '.md'; FU / child ids as the existing grammar reads them
+    pk = lambda name, pid: pack_identity(f"execution/domains/x/module-packs/{name}", f"---\nid: {pid}\nstatus: approved\n---\n",
+                                         [MOD_VALUE.fullmatch(pid) and pid or pid.split("-")[0] + "-" + pid.split("-")[1]])
+    cases.append(("CT-FIX-04 İ3: MOD-0288-x / MOD-0288.md / MOD-0151-FU08-x / MOD-0149-PREREQ-x / MOD-0155-FU06B-x -> one identity",
+                  all(pk(n, i) is None for n, i in (("MOD-0288-x.md", "MOD-0288"), ("MOD-0288.md", "MOD-0288"),
+                                                     ("MOD-0151-FU08-x.md", "MOD-0151-FU08"), ("MOD-0149-PREREQ-x.md", "MOD-0149-PREREQ"),
+                                                     ("MOD-0155-FU06B-x.md", "MOD-0155-FU06B")))))
+    cases.append(("CT-FIX-04 İ3 sabotage (Codex): MOD-02880-x, MOD-0288X-x with id MOD-0288; id MOD-0289 in MOD-0288-x; "
+                  "MOD-0151-FU08-x with id MOD-0151; id MOD-02880-PREREQ -> refused each",
+                  all(pk(n, i) for n, i in (("MOD-02880-x.md", "MOD-0288"), ("MOD-0288X-x.md", "MOD-0288"), ("MOD-0288-x.md", "MOD-0289"),
+                                             ("MOD-0151-FU08-x.md", "MOD-0151"), ("MOD-02880-PREREQ-x.md", "MOD-02880-PREREQ")))))
+    cases.append(("CT-FIX-04: a second approval field — none or 'approved' -> no limit; conditional / rejected / twice -> limit",
+                  pack_approval_limit("---\nstatus: approved\n---\n") == (None, None)
+                  and pack_approval_limit("---\nstatus: approved\napproval_status: approved\n---\n") == (None, None)
+                  and pack_approval_limit("---\nstatus: approved\napproval_status: conditionally-approved-for-x\n---\n")[0]
+                  and all(pack_approval_limit(f"---\nstatus: approved\n{x}---\n")[1] for x in (
+                      "approval_status: rejected\n", "approval_status: draft\n", "approval_status: conditionally approved\n",
+                      "approval_status: approved\napproval_status: rejected\n", "approval_status: approved\n  approval_status: rejected\n"))))
+    cases.append(("CT-FIX-04: a künye field inside an HTML comment is never read (the whole künye is refused)",
+                  bool(kunye_fields("---\nstatus: approved\n<!--\nwork_packages: W1\n-->\n---\n", ("status",))[1])
+                  and bool(kunye_fields("---\n<!-- status: draft -->\nstatus: approved\n---\n", ("status",))[1])))
+    cases.append(("CT-FIX-04 İ1: branch confirmed, main pending (or the reverse) -> farklı profil, a conflict",
+                  in_force_status(dict(qd, owner_confirmation="confirmed"), f"{head}\n{good_row}\n",
+                                  commit_exists=lambda s: True, path_at=lambda s, p: True)[0] == "farklı profil"
+                  and status(f"{head}\n{confirmed_row}\n") == "farklı profil"
+                  and "farklı profil" in PROFILE_CONFLICT and "onaysız" not in PROFILE_CONFLICT))
     cases.append(("sabotage: header and id only -> kayıt geçersiz, not kayıtlı", status("queue_id\npq\n") == "kayıt geçersiz"))
     cases.append(("sabotage: the queue registered twice -> kayıt geçersiz", status(f"{head}\n{good_row}\n{good_row}\n") == "kayıt geçersiz"))
     cases.append(("sabotage: a required field empty -> kayıt geçersiz",
@@ -1410,7 +1580,7 @@ def self_test() -> int:
     cases.append(("CT-FIX-01 05: main strict=yes, branch strict=no -> farklı profil, not kayıtlı",
                   in_force_status(dict(reg_row, strict="no"), strict_main, **yes)[0] == "farklı profil"
                   and in_force_status(dict(reg_row, vocabulary="other"), strict_main, **yes)[0] == "farklı profil"
-                  and in_force_status(dict(reg_row), strict_main, **yes)[0] == "kayıtlı"))
+                  and in_force_status(dict(reg_row), strict_main, **yes)[0] == "onaysız"))   # CT-FIX-04: reg_row is pending
     dup_failed = s7 + [dict(next(s for s in s7 if s["state"] == "FAILED"), dispatch="yes")]
     found = dispatch_problems([reg_row], dup_failed, t7, **yes)
     cases.append(("CT-FIX-01 06: FAILED listed twice, the second row dispatchable -> problems",

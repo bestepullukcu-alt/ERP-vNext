@@ -1,0 +1,78 @@
+CT-FIX-04 / İ5B-FIX-04 guard removal — one guard undone at a time in its own copy outside the repository (the fixed
+sources, SHA-256 equal to Codex's candidate2 / candidate3 sets); the named tests run against it; red = the guard is
+proven by those tests. Driver: drivers/harness.py.txt.
+
+M1a İ1 owner_confirmation not compared
+    file: scripts/ct_queue.py · tests: CTFIX04_I1_InForce.test_every_consumer_on_every_registry_relation, CTFIX04_I1_Route.test_relations
+    result: RED — FAILED (failures=21)
+M1b İ1 main pending read as in force
+    file: scripts/ct_queue.py · tests: CTFIX04_I1_InForce.test_every_consumer_on_every_registry_relation
+    result: RED — FAILED (failures=5)
+M2 İ1 ct_route conflict not checked
+    file: scripts/ct_route.py · tests: CTFIX04_I1_Route.test_relations
+    result: RED — FAILED (failures=6)
+M3 İ1 ct_route profile_problems skipped
+    file: scripts/ct_route.py · tests: CTFIX04_I1_Route.test_relations
+    result: RED — FAILED (failures=2)
+M4 İ2 a mention binds again
+    file: scripts/ct_queue.py · tests: CTFIX04_I2_Binding.test_no_explicit_binding_stops
+    result: RED — FAILED (failures=3)
+M5 İ2 record version not checked
+    file: scripts/ct_queue.py · tests: CTFIX04_I2_Binding.test_a_broken_record_version_stops_and_work_packages_does_not_mask_it
+    result: RED — FAILED (failures=14)
+M6 İ2 version not required to be a commit
+    file: scripts/ct_queue.py · tests: CTFIX04_I2_Binding.test_a_broken_record_version_stops_and_work_packages_does_not_mask_it
+    result: green on the first run (the tree and branch cases held other bytes, so the content check refused them); the case was strengthened (same bytes) and the rerun is RED, 4 failed subtests: the tree id and the branch named like an id, with and without work_packages
+M7 İ2 explicit list not required to name the WP
+    file: scripts/ct_queue.py · tests: CTFIX04_I2_Binding.test_no_explicit_binding_stops, CTFIX04_I2_Binding.test_the_explicit_list_is_not_overridden_by_the_row_s_record
+    result: RED — FAILED (failures=3)
+M8 künye HTML comment read
+    file: scripts/ct_queue.py · tests: CTFIX04_I2_Binding.test_no_explicit_binding_stops
+    result: RED — FAILED (failures=1)
+M9 İ3 file-name id without a boundary
+    file: scripts/ct_queue.py · tests: CTFIX04_I3_PackIdentity.test_product_gate, CTFIX04_I3_PackIdentity.test_acceptance_reader_checks_the_file_name
+    result: RED — FAILED (failures=3)
+M10 İ3 gate skips pack identity
+    file: scripts/prompt_gate.py · tests: CTFIX04_I3_PackIdentity.test_product_gate
+    result: RED — FAILED (failures=8)
+M11 İ3 acceptance reader skips pack identity
+    file: scripts/acceptance_record.py · tests: CTFIX04_I3_PackIdentity.test_acceptance_reader_checks_the_file_name
+    result: RED — FAILED (failures=2)
+M12 İ3 evidence pack with a work_package skips identity
+    file: scripts/acceptance_record.py · tests: CTFIX04_I3_PackIdentity.test_evidence_level_source_pack_identity_with_or_without_a_work_package
+    result: RED — FAILED (failures=1)
+M13 İ4 helper rows skipped
+    file: scripts/acceptance_record.py · tests: CTFIX04_I4_BoundList.test_broken_lists
+    result: RED — FAILED (failures=6)
+M14 İ4 criterion text not compared
+    file: scripts/acceptance_record.py · tests: CTFIX04_I4_BoundList.test_broken_lists
+    result: RED — FAILED (failures=4)
+M15 İ5 incomplete report exits 0
+    file: scripts/status_report_v2.py · tests: CTFIX04_I5_ReportExit.test_exit_codes, CTFIX04_I4_BoundList.test_broken_lists
+    result: RED — FAILED (failures=10)
+M16 İ5 baseline problems not incomplete
+    file: scripts/status_report_v2.py · tests: CTFIX04_I5_ReportExit.test_exit_codes
+    result: RED — FAILED (failures=3)
+M17 conditional approval not read
+    file: scripts/prompt_gate.py · tests: CTFIX04_ConditionalApproval.test_matrix
+    result: RED — FAILED (failures=10)
+M18 rejected treated as conditional
+    file: scripts/ct_queue.py · tests: CTFIX04_ConditionalApproval.test_matrix
+    result: RED — FAILED (failures=4)
+M19 İ6 headings read with comments
+    file: .antigravity/scripts/sync_adapters.py · tests: InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost
+    result: RED — FAILED (failures=2)
+M20 İ6 fences not code
+    file: .antigravity/scripts/sync_adapters.py · tests: InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost, InstructionBudget.test_a_heading_only_inside_a_comment_or_in_code_is_lost
+    result: RED — FAILED (failures=3)
+M21 İ6 anchors not checked
+    file: .antigravity/scripts/sync_adapters.py · tests: InstructionBudget.test_padding_without_anchors_fails, InstructionBudget.test_one_anchor_removed_fails_by_name
+    result: RED — FAILED (failures=2)
+M22 İ6 visible content not required
+    file: .antigravity/scripts/sync_adapters.py · tests: InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+    result: RED — FAILED (failures=3)
+M23 İ6 comments not removed
+    file: .antigravity/scripts/sync_adapters.py · tests: InstructionBudget.test_an_unclosed_comment_at_the_top_hides_the_rest, InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+    result: RED — FAILED (failures=3)
+
+red: 24 of 24 (CT 19, İ5B 5)

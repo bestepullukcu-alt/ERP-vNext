@@ -9,7 +9,10 @@ Every input is read once from one commit: REF (default HEAD) is resolved to a fu
 vocabulary, the transition table, the queue and its history, the v2 acceptance records, the effort ledger and its
 approval record are read at that SHA. The working tree is not read.
 
-exit 0  a report was produced; its machine block says whether it is complete and whether its percentages are valid
+exit 0  a complete report was produced; its percentages may still be invalid for a supported reason ("Taban yok —
+        hesaplanamadı" when no effort baseline was offered and none exists at the default path)
+exit 1  the report was produced but is not complete (CT-FIX-04 İ5): incomplete_reasons names why — a queue, registry,
+        profile or acceptance problem, an offered effort baseline that is absent, or an existing baseline that is invalid
 exit 2  the fixed source could not be read, or the queue is not a registered strict queue at that SHA
 
 Percentages are progress of the approved effort BASELINE only ("TABAN KAPSAMI"), never of the whole Control Tower:
@@ -1073,6 +1076,7 @@ def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous:
     ltext = src.read(S, lpath)
     if ltext is None and effort:
         p_valid, p_reason = False, f"verilen taban {lpath} {S[:12]}'de yok"
+        reasons.append(f"efor tabanı: {p_reason}")   # CT-FIX-04 (İ5): an offered baseline that is absent -> not complete
     elif ltext is not None:
         ledger, lbad = parse_ledger(ltext)
         if ledger is not None:
@@ -1087,6 +1091,7 @@ def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous:
             linked.append(f"efor tabanı onayı: {apath}@{acommit} · status {_status_of(src.read(acommit, apath))}")
         if lbad:
             p_valid, p_reason = False, "taban geçersiz — " + lbad[0]
+            reasons.append(f"efor tabanı {lpath}: {p_reason}")   # CT-FIX-04 (İ5): an existing invalid baseline -> not complete
         else:
             w = ledger["weights"]
             base_info = {"path": lpath, "blob": src.blob(S, lpath) or "", "baseline_version": ledger["baseline_version"],
@@ -1173,7 +1178,11 @@ def main_v2(argv: list[str]) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     try:
-        print("\n".join(report_lines(build(a.queue, a.ref, a.effort, a.previous))))
+        data = build(a.queue, a.ref, a.effort, a.previous)
+        print("\n".join(report_lines(data)))
+        if not data["complete"]:   # CT-FIX-04 (İ5, A3): an incomplete report is printed and never exits 0
+            print(f"status_report: rapor eksik — çıkış 1 ({data['incomplete_reasons'][0][:160]})", file=sys.stderr)
+            return 1
         return 0
     except Incomplete as e:
         print(f"{REPORT_HEADER}\nsonuç: tamamlanamadı — {e}\nçıkış: 2")

@@ -396,6 +396,32 @@ def _unresolved(subject: str, reason: str, fronts: dict, lines: list[str], data:
     return 1, lines, {"target": None, "candidates": sorted(set(candidates))}
 
 
+def _main_relation(row: dict, M: dict) -> tuple[str, str]:
+    """CT-FIX-04 (İ1, A1): this ref's registry row against origin/main's registry (already validated by _snapshot) —
+    ct_queue.in_force_status, the function require, the prompt gate and the report use."""
+    ctq = _tool("ct_queue")
+    if M["registry"] is None:
+        return "kayıt dosyası yok", ""
+    text = "\t".join(ctq.REGISTRY_COLUMNS) + "\n" + "".join(
+        "\t".join(r.get(c, "") for c in ctq.REGISTRY_COLUMNS) + "\n" for r in M["registry"])
+    return ctq.in_force_status(row, text, commit_exists=lambda c: True, path_at=lambda c, p: True)
+
+
+def _main_conflict(row: dict, data: dict) -> str | None:
+    """The conflict (PROFILE_CONFLICT) between this ref's row and origin/main's, or None — also for a row the owner has
+    not confirmed: a branch never answers past a profile main registered differently."""
+    if not data.get("main_sha"):
+        return None
+    try:
+        M = data["main"]()
+    except Incomplete:
+        return None          # not measurable: the in-force line says so; --in-force stops with exit 2
+    state, reason = _main_relation(row, M)
+    if state in _tool("ct_queue").PROFILE_CONFLICT:
+        return f"{state}" + (f" ({reason})" if reason else "")
+    return None
+
+
 def _in_force(q: dict, row: dict, covering: list[tuple], data: dict, pack: tuple[str, str] | None) -> tuple[bool | None, str]:
     """(True, '') when the same question on the local origin/main, read and validated as the ref is, gives the same single
     target: the same confirmed row (same task file, same dcp: assignment), the same covering slices with the same scope
@@ -411,14 +437,11 @@ def _in_force(q: dict, row: dict, covering: list[tuple], data: dict, pack: tuple
     if M["registry"] is None:
         return False, "origin/main'de kayıt dosyası yok"
     qid = row["queue_id"]
-    rows = [r for r in M["registry"] if r["queue_id"] == qid]
-    if len(rows) != 1:
-        return False, f"origin/main'de '{qid}' satırı {len(rows)} kez"
-    mrow = rows[0]
-    if mrow["path"] != row["path"]:
-        return False, f"origin/main'de '{qid}' farklı bir görev dosyasını gösteriyor"
-    if mrow["owner_confirmation"] != "confirmed":
-        return False, f"origin/main'deki satır onaylı değil ({mrow['owner_confirmation'][:20]})"
+    # CT-FIX-04 (İ1): one row, the same task file, profile and a confirmed owner — ct_queue.in_force_status decides
+    state, reason = _main_relation(row, M)
+    if state != "kayıtlı":
+        return False, f"origin/main'de {state}" + (f" ({reason})" if reason else "")
+    mrow = next(r for r in M["registry"] if r["queue_id"] == qid)
     main_pairs, problems = parse_route_scope(mrow["scope"])
     if main_pairs is None or problems or set(main_pairs) != set(parse_route_scope(row["scope"])[0]):
         return False, "origin/main'deki satırın dcp: ataması bu ref'tekiyle aynı değil"
@@ -468,6 +491,14 @@ def _in_force(q: dict, row: dict, covering: list[tuple], data: dict, pack: tuple
 def _success(q: dict, qid: str, reg: dict, subject: str, covering: list[tuple], lines: list[str], data: dict,
              in_force: bool, pack: tuple[str, str] | None = None) -> tuple[int, list[str], dict]:
     row, kind = reg[qid], q["kind"]
+    # CT-FIX-04 (İ1, A1): a row that origin/main registers differently (profile, task file, confirmation) gives no
+    # target in either mode — the profile change enters main first; it is not a stamped preparation answer
+    conflict = _main_conflict(row, data)
+    if conflict:
+        lines = list(lines) + [f"kayıt satırı (ref'te): {qid} · owner_confirmation {row['owner_confirmation']}",
+                               f"yürürlük: çelişki — origin/main'deki kayıt satırı farklı: {conflict}"]
+        return _unresolved(subject, f"kayıt satırı {qid} origin/main'deki kayıtla çelişiyor — {conflict}; profil değişikliği "
+                                    "önce main'e girer", {c[1]: c[3] for c in covering}, lines, data, [qid])
     # CT-FIX-03 (B8, Codex): one truth — a row the owner has not confirmed is never "yürürlükte", whatever main says
     pending = row["owner_confirmation"] != "confirmed"
     if pending:
@@ -652,6 +683,11 @@ def _snapshot(src, commit: str, required: bool) -> dict:
     problems = registry_problems(registry, states,
                                  commit_exists=lambda c: not c.startswith("-") and src.resolve(c) is not None,
                                  path_at=lambda c, p: not c.startswith("-") and src.blob(c, p) is not None)
+    # CT-FIX-04 (İ1, A1): the transition table and the SOP §7 rules through ct_queue.profile_problems — the function
+    # every ct_queue consumer and validate use; an absent table reads as empty, as ct_queue reads it
+    trans_text = read(ctq.TRANSITIONS.relative_to(ctq.ROOT).as_posix())
+    transitions = _rows(trans_text, ctq.TRANSITION_COLUMNS, f"geçiş tablosu @ {where}") if trans_text is not None else []
+    problems += ctq.profile_problems(registry, states, transitions)
     if problems:
         raise Incomplete(f"kayıt dosyası {where}'de sorunlu: {problems[0]}")
     packs = []
@@ -1120,8 +1156,6 @@ def self_test() -> int:
     cases.append(("--in-force: contract, the pack also authoritative on origin/main -> exit 0", code == 0 and said(lines, "yürürlükte (")))
     for label, d, want, reason in (
             ("main's row of the same queue holds another slice", data(main_registry=[reg("mvp2-ct", f"dcp:{D1}#MVP1")]), 1, "ataması bu ref'tekiyle aynı değil"),
-            ("main's row is not confirmed", data(main_registry=[reg("mvp2-ct", f"dcp:{D1}#MVP2", confirmation="pending")]), 1, "onaylı değil"),
-            ("main's row points at another task file", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), path="execution/delivery/elsewhere.tsv")]), 1, "farklı bir görev dosyası"),
             ("main has no registry", data(main_registry=None), 1, "kayıt dosyası yok"),
             ("the DCP on main is a draft", data(main_dcps={D1: dcp(status="draft")}), 1, "onay öncesi"),
             ("the slice's scope on main differs from the ref's", data(main_dcps={D1: dcp(rows=["| MVP1 | MOD-0150 | x |", "| MVP2 | MOD-0151 | x |"])}), 1, "kapsamı origin/main'de farklı"),
@@ -1135,7 +1169,7 @@ def self_test() -> int:
             ("the DCP on main is malformed", data(main_dcps={D1: dcp(rows=[])}), 2, "satır yok"),
             ("the WP's FU unknown on main (its slice lists the base module)",
              data(dcps={D1: dcp(rows=["| MVP1 | MOD-0150 | x |", "| MVP2 | MOD-0151 | x |"])}, main_known={m: {} for m in known if m != "MOD-0151-FU08"}), 2, "paketlerde yok"),
-            ("main's registry has no row for the queue", data(main_registry=[reg("mvp1-ct", f"dcp:{D1}#MVP1")]), 1, "satırı 0 kez"),
+            ("main's registry has no row for the queue", data(main_registry=[reg("mvp1-ct", f"dcp:{D1}#MVP1")]), 1, "kayıtlı değil"),
             ("the slice missing from the DCP on main", data(main_dcps={D1: dcp(rows=["| MVP1 | MOD-0150 | x |"])}), 2, "tablosunda yok"),
             ("the WP renamed in main's queue file", data(main_queues={"mvp2-ct": [{"id": "W2-REPLACEMENT", "module": "MOD-0151-FU08"}]}), 1, "kuyruğunda W2 yok"),
             ("the WP's module changed in main's queue file", data(main_queues={"mvp2-ct": [{"id": "W2", "module": "MOD-0150"}]}), 1, "modülü farklı"),
@@ -1164,16 +1198,31 @@ def self_test() -> int:
     cases.append(("sabotage --in-force: contract, the pack a draft on main -> not in force, exit 1", code == 1 and said(lines, "paket origin/main'de status draft")))
     code, lines, info = R("delivery", None, "W2", "mvp2-ct", data(main_sha=None), in_force=True)
     cases.append(("sabotage --in-force: no local origin/main -> not measurable, exit 2", code == 2 and said(lines, "ölçülemedi")))
+    # CT-FIX-04 (İ1, A1): origin/main registers the queue differently -> no target in EITHER mode (exit 1), through
+    # ct_queue.in_force_status; before CT-FIX-04 a pending ref row skipped the comparison and the plain mode answered 0
+    pend_row = reg("mvp2-ct", f"dcp:{D1}#MVP2", confirmation="pending")
+    for label, d, conflict_kind in (
+            ("main's row is not confirmed, the ref's is", data(main_registry=[pend_row]), "farklı profil"),
+            ("the ref's row is pending, main's is confirmed", data(registry=[pend_row], main_registry=[reg("mvp2-ct", f"dcp:{D1}#MVP2")]), "farklı profil"),
+            ("main's row points at another task file", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), path="execution/delivery/elsewhere.tsv")]), "farklı görev kaynağı"),
+            ("main's row strict=no, the ref's strict=yes", data(main_registry=[dict(reg("mvp2-ct", f"dcp:{D1}#MVP2"), strict="no")]), "farklı profil"),
+            ("the ref's row pending and strict=no, main's strict=yes (both pending)",
+             data(registry=[dict(pend_row, strict="no")], main_registry=[pend_row]), "farklı profil")):
+        for mode in (False, True):
+            code, lines, info = R("delivery", None, "W2", "mvp2-ct", d, in_force=mode)
+            cases.append((f"CT-FIX-04 İ1 sabotage{' --in-force' if mode else ''}: {label} -> exit 1, 'çelişiyor' ({conflict_kind}), no single target",
+                          code == 1 and said(lines, "çelişiyor") and said(lines, conflict_kind) and not said(lines, "yürürlük: yürürlükte")
+                          and not any(l.startswith("sonuç: tek hedef —") for l in lines) and info.get("target") is None))
     # CT-FIX-03 (B8, V4B-B8): a pending registry row is a stamped preparation candidate; --in-force refuses it
     pend = data(registry=[reg("mvp2-ct", f"dcp:{D1}#MVP2", confirmation="pending")])
     code, lines, info = R("delivery", None, "W2", "mvp2-ct", pend)
     res = next((l for l in lines if l.startswith("sonuç:")), "")
     cases.append(("CT-FIX-03 B8: a pending row without --in-force -> its result line and the question draft say "
-                  f"'{PENDING_STAMP}'; no line calls it 'yürürlükte' (main confirmed)",
+                  f"'{PENDING_STAMP}'; no line calls it 'yürürlükte' (main's row the same, also pending)",
                   code == 0 and PENDING_STAMP in res and any(l.strip().startswith("Dayanak:") and PENDING_STAMP in l for l in lines)
                   and info.get("pending") is True and not said(lines, "yürürlük: yürürlükte")))
     code, lines, info = R("delivery", None, "W2", "mvp2-ct", pend, in_force=True)
-    cases.append(("CT-FIX-03 B8 sabotage: --in-force on a pending row (main confirmed) -> exit 1, never a single target, never "
+    cases.append(("CT-FIX-03 B8 sabotage: --in-force on a pending row (main's the same) -> exit 1, never a single target, never "
                   "'yürürlükte'", code == 1 and said(lines, "sahip teyidi bekliyor") and not said(lines, "yürürlük: yürürlükte")
                   and not any(l.startswith("sonuç: tek hedef —") for l in lines)))
     code, lines, info = R("delivery", None, "W2", "mvp2-ct", data())

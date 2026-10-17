@@ -63,6 +63,7 @@ SOURCE_STATUS = {"approved", "ready-for-dev", "in-progress", "review", "done"}  
 # identified acceptance criteria (module-pack-standard.md §7)
 OPTIONAL_FIELDS = ["module_pack"]
 MODULE_PACK = re.compile(r"^(execution/domains/[a-z0-9][a-z0-9-]*/module-packs/[A-Za-z0-9][A-Za-z0-9._-]*\.md)@([0-9a-f]{40})$")
+PACK_PATH = re.compile(r"^execution/domains/[^/]+/module-packs/[^/]+\.md$")
 PACK_STATUS = {"approved", "ready-for-dev"}
 AC_HEADING = re.compile(r"^#{1,6}[ \t]*Acceptance Criteria[ \t]*$", re.I)
 AC_ITEM = re.compile(r"^- \[[ xX]\] AC-([1-9][0-9]*) \((zorunlu|isteğe bağlı)\) — (\S.*)$")
@@ -344,14 +345,19 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
                 eng.append(f"künye: gerekli seviyenin kaynağı onaylı değil — künyesi geçersiz: {sbad}")
             elif status not in SOURCE_STATUS:
                 eng.append(f"künye: gerekli seviyenin kaynağı onaylı değil (status: '{status or 'yok'}') — onaylı WP ya da paket gerekli")
-            pack_id = re.match(r"^(MOD-\d{4}(?:-FU\d+)?)", os.path.basename(src.group(1)))
             if sf.get("module") and sf["module"] != f["module"]:
                 eng.append(f"künye: gerekli seviyenin kaynağı bu işe ait değil (module: {sf['module']})")
-            if sf.get("work_package"):
-                if sf["work_package"] != f["work_package"]:
-                    eng.append(f"künye: gerekli seviyenin kaynağı bu işe ait değil (work_package: {sf['work_package']})")
-            elif not (pack_id and pack_id.group(1) == f["module"]):
-                eng.append("künye: gerekli seviyenin kaynağı bu işe ait değil — künyesinde bu WP yok, dosya bu modülün paketi değil")
+            # CT-FIX-04 (İ3): a Module Pack source — its künye id, its file name's MOD id and this record's module are one
+            # identity (ct_queue.pack_identity, the routine the prompt gate uses), whatever other fields it carries; an
+            # ordinary WP source binds by its work_package
+            is_pack = PACK_PATH.match(src.group(1)) is not None
+            if sf.get("work_package") and sf["work_package"] != f["work_package"]:
+                eng.append(f"künye: gerekli seviyenin kaynağı bu işe ait değil (work_package: {sf['work_package']})")
+            if is_pack or not sf.get("work_package"):
+                wrong = shared().pack_identity(src.group(1), source_text, [f["module"]])
+                if wrong:
+                    eng.append(f"künye: gerekli seviyenin kaynağı bu işe ait değil — {wrong}"
+                               + ("" if is_pack else " (künyesinde bu WP yok)"))
             found = set(re.findall(r"\bE[0-5]\b", lines[n - 1])) if 1 <= n <= len(lines) else set()
             if len(found) > 1:
                 eng.append(f"künye: kaynak satırı {n} birden çok seviye söylüyor ({', '.join(sorted(found))}) — belirsiz, dur")
@@ -400,21 +406,34 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         if pdata is None:
             eng.append(f"paket: {f['module_pack'][:90]} commit'te yok — kayıt var olmayan bir paket sürümüne bağlı")
         else:
-            criteria, pbad, old = parse_pack(pdata.decode("utf-8", errors="replace"), f["module"])
+            criteria, pbad, old = read_pack(mp.group(1), pdata.decode("utf-8", errors="replace"), f["module"])
             eng += pbad
             if old:
                 eng.append("paket: AC kimliği yok (eski biçim) — kabul listesinin bu pakete bağlı olduğu ölçülemez")
             elif not pbad:
+                # CT-FIX-04 (İ4): a list bound to a pack version is made of that version's criteria only — every row an
+                # AC-<n> of it with the same text and mandatory flag (a WP may deliver a subset; module-check measures
+                # the module's coverage); a helper row (K1, CHECK-…) is refused, never skipped
+                acs = 0
                 for r in rows:
                     m = AC_ID.match(r["ID"])
                     if not m:
+                        eng.append(f"kabul listesi: {r['ID'][:24] or '?'} bağlı paketin bir AC-<n> ölçütü değil — paket bağlı "
+                                   "kayıtta yardımcı satır sessizce atlanmaz; yardımcı denetim ayrı kanıtta durur")
                         continue
+                    acs += 1
                     n = int(m.group(1))
                     if n not in criteria:
                         eng.append(f"kabul listesi: {r['ID']} bağlı paketin ölçütü değil ({f['module_pack'][:70]})")
-                    elif criteria[n][0] != (r.get("Zorunlu") == "evet"):
+                        continue
+                    if criteria[n][0] != (r.get("Zorunlu") == "evet"):
                         eng.append(f"kabul listesi: {r['ID']} zorunluluğu paketle aynı değil (paket: "
                                    f"{'zorunlu' if criteria[n][0] else 'isteğe bağlı'}, liste: Zorunlu {r.get('Zorunlu')})")
+                    if criteria[n][1] != r.get("Ne kontrol edilir"):
+                        eng.append(f"kabul listesi: {r['ID']} ölçüt metni paketle aynı değil (paket: '{criteria[n][1][:50]}', "
+                                   f"liste: '{(r.get('Ne kontrol edilir') or '')[:50]}')")
+                if not acs:
+                    eng.append(f"kabul listesi: bağlı paketin hiçbir AC'si yok ({f['module_pack'][:70]}) — boş bir kabul üretilmez")
     else:
         info.append("module_pack yok — kabul listesindeki AC'lerin bir paket sürümünde olduğu denetlenmedi (İ4 S2 geriye uyum)")
     if f["decision"] == "accepted":
@@ -505,6 +524,16 @@ def run_check(spec: str, expect: dict, git: Git | None = None, index_ref: str = 
         return 2, [f"sonuç: tamamlanamadı — {type(e).__name__}", "çıkış: 2"]
     except Exception as e:  # never a pass, never an undefined exit code
         return 2, [f"sonuç: tamamlanamadı — beklenmeyen hata ({type(e).__name__})", "çıkış: 2"]
+
+
+def read_pack(path: str, text: str, module: str) -> tuple[dict[int, tuple[bool, str]], list[str], bool]:
+    """CT-FIX-04 (İ3): the one reader of a pack version for check, draft and module-check — parse_pack() and, on top,
+    the shared identity routine (ct_queue.pack_identity): the file name's MOD id is the künye id and the module."""
+    criteria, bad, old = parse_pack(text, module)
+    wrong = shared().pack_identity(path, text, [module])
+    if wrong:
+        bad = bad + [f"paket: {wrong}"]
+    return criteria, bad, old
 
 
 def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], list[str], bool]:
@@ -642,7 +671,7 @@ def run_draft(part: str, queue: str, wp: str, pack_spec: str | None, git: Git | 
     data = git.read(pm.group(2), pm.group(1))
     if data is None:
         raise Incomplete(f"paket {pack_spec} commit'te yok")
-    criteria, bad, old = parse_pack(data.decode("utf-8", errors="replace"), module)
+    criteria, bad, old = read_pack(pm.group(1), data.decode("utf-8", errors="replace"), module)
     if old:
         raise Incomplete("pakette AC kimliği yok (eski biçim) — AC satırları taşınamaz")
     if bad:
@@ -733,7 +762,7 @@ def run_module_check(queue: str, module: str, pack_spec: str, ref: str = "HEAD")
         data = git.read(pm.group(2), pm.group(1))
         if data is None:
             raise Incomplete(f"paket {pack_spec} commit'te yok")
-        criteria, bad, old = parse_pack(data.decode("utf-8"), module)
+        criteria, bad, old = read_pack(pm.group(1), data.decode("utf-8"), module)
         if old:
             raise Incomplete("pakette AC kimliği yok (eski biçim) — AC kapsamı mekanik olarak ölçülemez")
         if bad:
@@ -958,8 +987,12 @@ def self_test() -> int:
                "- [x] AC-3 (zorunlu) — dışa aktarma XLSX verir\n- [ ] AC-4 (isteğe bağlı) — sıralama hatırlanır\n\n"
                "Ölçütlerin kanıtı kabul listesindedir.\n\n```text\n- [ ] AC-9 (zorunlu) — bir kod örneği, ölçüt değil\n```\n")
     # CT-FIX-03 (R3, V4A-F5): the normal check reads the bound pack with parse_pack() (module-check's function)
-    lrow = lambda rid, req, ln: (f"| {rid} | ölçüt {rid} | gerekçe {rid} | yöntem {rid} | beklenen {rid} | hayır | {req} | gözlenen | "
-                                 f"geçti | `docs/records/audits/2026-10/x/run.log@{C1}:{ln}` |\n")
+    # CT-FIX-04 (İ4): a bound list carries the pack's criterion text verbatim
+    ac_text = {"AC-1": "liste açılır", "AC-2": "yetkisiz kullanıcı 403 alır", "AC-3": "dışa aktarma XLSX verir",
+               "AC-4": "sıralama hatırlanır"}
+    lrow = lambda rid, req, ln, text=None: (f"| {rid} | {text or ac_text.get(rid, 'ölçüt ' + rid)} | gerekçe {rid} | yöntem {rid} | "
+                                            f"beklenen {rid} | hayır | {req} | gözlenen | "
+                                            f"geçti | `docs/records/audits/2026-10/x/run.log@{C1}:{ln}` |\n")
     lhead = "| " + " | ".join(LIST_COLUMNS) + " |\n|" + "---|" * len(LIST_COLUMNS) + "\n"
     ac_list = lhead + lrow("AC-1", "evet", 1) + lrow("AC-2", "evet", 2)
     bound = lambda pk_text=pack(good_ac), lst=ac_list, at=C1: {**files, (at, PK): pk_text,
@@ -967,8 +1000,30 @@ def self_test() -> int:
     r_ok = run(rec(_extra_fm=good_mp), fs=bound())
     cases.append(("İ4 S2 / CT-FIX-03 R3: a record bound to an existing approved pack of its module, its AC rows in the pack "
                   "-> allows ACCEPTED (exit 0)", r_ok[0] == 0))
-    cases.append(("İ4 S2: a record with a module_pack and K-rows only (no AC id) -> check still allows ACCEPTED (exit 0)",
-                  run(rec(_extra_fm=good_mp), fs={**files, (C1, PK): pack(good_ac)})[0] == 0))
+    # CT-FIX-04 (İ4, declared contract change): this case used to allow ACCEPTED; a pack-bound list of helper rows only
+    # is now refused — a helper row is never skipped silently
+    r_k = run(rec(_extra_fm=good_mp), fs={**files, (C1, PK): pack(good_ac)})
+    cases.append(("CT-FIX-04 İ4: a record with a module_pack and K-rows only (no AC id) -> ENGEL (was exit 0 until CT-FIX-03)",
+                  r_k[0] == 1 and any("yardımcı satır" in e for e in eng(r_k)) and any("hiçbir AC'si yok" in e for e in eng(r_k))))
+    PK2 = PK.replace("/MOD-0151-", "/MOD-0152-")
+    wrong_src = "---\nid: MOD-0150\nwork_package: W7\nstatus: approved\n---\nGerekli kanıt: E3\n"
+    for label, rec_, fs_, why in (
+            ("AC-1's text changed in the list", rec(_extra_fm=good_mp),
+             bound(lst=lhead + lrow("AC-1", "evet", 1, "liste açılır ve sıralanır") + lrow("AC-2", "evet", 2)), "ölçüt metni paketle aynı değil"),
+            ("a CHECK-999 helper row next to the pack's ACs", rec(_extra_fm=good_mp),
+             bound(lst=ac_list + lrow("CHECK-999", "evet", 1, "ek denetim")), "yardımcı satır"),
+            ("a K1 helper row next to the pack's ACs", rec(_extra_fm=good_mp),
+             bound(lst=ac_list + lrow("K1", "evet", 1, "ek denetim")), "yardımcı satır"),
+            ("the bound pack's file name names another module than its künye id (MOD-0152 file, id MOD-0151)",
+             rec(_extra_fm=f"module_pack: {PK2}@{C1}\n"), {**bound(), (C1, PK2): pack(good_ac)}, "dosya adındaki kimlikle"),
+            ("the evidence-level source is a pack whose künye id is another module, though it names this WP",
+             rec(required_evidence_source=f"{PK}@{C1}:6"), {**files, (C1, PK): wrong_src}, "dosya adındaki kimlikle")):
+        cases.append((f"CT-FIX-04 İ3/İ4 sabotage: {label} -> ENGEL ({why})", any(why in e for e in eng(run(rec_, fs=fs_)))))
+    cases.append(("CT-FIX-04 İ4: a WP's subset of the pack's ACs (AC-1 only), text and flag exact -> allows ACCEPTED",
+                  run(rec(_extra_fm=good_mp), fs=bound(lst=lhead + lrow("AC-1", "evet", 1)))[0] == 0))
+    ok_src = "---\nid: MOD-0151\nwork_package: W7\nstatus: approved\n---\nGerekli kanıt: E3\n"
+    cases.append(("CT-FIX-04 İ3: the evidence-level source is this module's pack (id = file name = module) -> no source ENGEL",
+                  not any("kaynağı" in e for e in eng(run(rec(required_evidence_source=f"{PK}@{C1}:6"), fs={**files, (C1, PK): ok_src})))))
     for label, fs_, why in (
             ("the bound pack is not at its commit", files, "commit'te yok"),
             ("the bound pack is another module's", bound(pack(good_ac, fm="id: MOD-0150\nstatus: approved\n")), "tek id"),

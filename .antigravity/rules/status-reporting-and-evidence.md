@@ -136,7 +136,7 @@ implementer: geliştirme ajanının kimliği
 | `evidence`, `acceptance_list` | Commit'lenmiş `yol@commit`; kabul listesi §6.2 biçimindedir |
 | `supersedes` | `-` ya da aynı kuyruk + WP + modülün önceki kaydının yolu. Döngü olmaz; iş başına tek yetkili kayıt vardır. En yüksek E seviyesi ya da dosya sırası seçim ölçütü değildir |
 | `verifier`, `implementer` | Farklı olur (SOP K13). Beyandır, kimlik doğrulaması değildir |
-| `module_pack` | İsteğe bağlı; yazılırsa bir kez. Kaydın kapsadığı onaylı paket sürümü: `execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit>`. Yalnız `module-check` ister; olmaması bugünkü kayıtları bozmaz |
+| `module_pack` | İsteğe bağlı; yazılırsa bir kez. Kaydın kapsadığı onaylı paket sürümü: `execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit>`. Dosya adının başındaki MOD kimliği, paketin künye `id`'si ve kaydın `module`'ü aynı kimliktir. Yazılırsa kabul listesi yalnız o sürümün ölçütlerinden oluşur: her satır paketin bir `AC-<n>`'si, "Ne kontrol edilir" metni ve "Zorunlu" bayrağı paketle birebir, en az bir AC; bir WP modülün AC'lerinin yalnız kendi alt kümesini teslim edebilir (modülün kapsamını `module-check` ölçer). Yardımcı satır (K1, CHECK-… gibi) bu listede reddedilir, sessizce atlanmaz; yardımcı denetim ayrı kanıtta durur (CT-FIX-04). Yazılmazsa davranış değişmez: bağsız kayıt eski sınırla kalır ve `module-check` onu saymaz |
 
 Muafiyet (SOP K19) kabul kaydını otomatik geçirmez; sahip, son tarih ve kanıtla ayrı değerlendirilir.
 
@@ -170,7 +170,9 @@ python3 scripts/acceptance_record.py module-check --queue <kuyruk> --module <mod
 olan ve künyesinde `module_pack` ile tam bu sürümü gösteren yetkili kabul kayıtlarında `geçti` ya da gerekçeli `N/A`'dır.
 **Module Done değildir**; SOP §29.2'nin diğer koşulları denetlenmez. 1 = açık zorunlu ölçüt var; 2 = ölçülemez (onaylı
 olmayan, kimliksiz ya da bozuk biçimli paket; geçersiz kuyruk). Aynı AC kimliği paketin başka sürümünde başka anlam
-taşıyabilir; sürüm bağı olmayan kayıt bu yüzden sayılmaz.
+taşıyabilir; sürüm bağı olmayan kayıt bu yüzden sayılmaz. Paket, dosya adındaki MOD kimliği künye `id`'siyle ve modülle
+aynı değilse de ölçülemez (2); gerekli kanıt seviyesinin kaynağı bir Module Pack ise aynı kimlik denetimi orada da
+uygulanır (CT-FIX-04).
 
 ---
 
@@ -204,8 +206,12 @@ python3 scripts/status_report.py --mode v2 --queue <kuyruk> [--ref <ref>] [--eff
   koşullar, bağlı karar kayıtları, karar bekleyenler (yalnız mekanik olarak bilinenler), yeniden işleme nedenleri
   (`neden:` öneki; yoksa bilinmiyor), REP-001 §2 tablosu (modül tam kimlikle, FU korunur), önceki rapordan farklar.
 - **Makine bloğu:** Raporun sonunda kapalı şemalı bir JSON bloğu ve `rapor-sha256` vardır; görünen rapor bu bloktan
-  üretilir. `complete` ve `percentages_valid` alanları tamlığı ve yüzdelerin geçerliliğini söyler; çıkış 0 yalnız
-  raporun üretildiğini söyler.
+  üretilir. `complete` ve `percentages_valid` alanları tamlığı ve yüzdelerin geçerliliğini söyler.
+- **Çıkış (CT-FIX-04):** 0 = rapor tam (efor tabanı hiç verilmemiş ve varsayılan yolda yoksa "Taban yok —
+  hesaplanamadı" desteklenen bir sonuçtur ve rapor tamdır); 1 = rapor basıldı ama eksik — neden makine bloğunun
+  `incomplete_reasons` alanında ve "tamamlık: eksik — …" satırında: kuyruk, kayıt, profil ya da kabul sorunu, `--effort`
+  ile verilmiş ama bulunmayan taban, var olan ama geçersiz taban (onay draft, özet yanlış, biçim bozuk); 2 = sabit kaynak
+  okunamadı ya da kuyruk o SHA'da kayıtlı bir katı kuyruk değil.
 
 **Efor tabanı (isteğe bağlı).** Yoksa her yüzde alanı tam olarak "Taban yok — hesaplanamadı" yazar. Varsa
 `execution/delivery/effort/<kuyruk>.md` (ya da `--effort`), şablon `execution/delivery/effort-ledger-template.md`:

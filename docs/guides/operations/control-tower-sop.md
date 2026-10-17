@@ -1241,11 +1241,30 @@ python3 scripts/prompt_gate.py pack <prompt dosyası>
 | Git | `Repository` ve `Worktree` bu makinede ölçülmüş yollar ve kapının çalıştığı depoyla aynı depo; `Worktree` HEAD'i = `Expected HEAD`; dal; izinli yollara, korunan yollara, kaynak dosyalara ya da "Önce oku" desenlerine dokunan kirli dosya (diğer kirli dosyalar yalnız envanter) |
 | Kaynak | Her "Önce oku" yolu `Expected HEAD`'de var; kısaltılmış (`...`) yol yok; desen en az bir dosyayla eşleşir |
 | Sözleşme | `API`, `İzin`, `Test`, `Sabotaj` yüzeylerinin her biri ya `«birebir metin» (yol:satır)` alıntısı — metin o satırda `Expected HEAD`'de aynen var — ya da `N/A — <gerekçe>`. Alıntısız ifade yorumdur ve reddedilir. HIGH promptta en az bir alıntı gerekir; bütün yüzeyler N/A ise rapor "doğrulanan sözleşme yok" der |
-| Görev sınıfı | `ürün`: adı geçen Module Pack `ready-for-dev` ya da `approved` ve dosya adındaki MOD kimliği kuyruk satırının modülü. `yönetişim`: `docs/records/decisions/` altında `status: approved` (ya da `decided`) kapsam kaydı; kayıt WP kimliğini anar ya da kuyruk satırının `record` sütunu onu gösterir |
+| Görev sınıfı | `ürün`: onaylı Module Pack, tek kimlik, koşulsuz onay; `yönetişim`: onaylı kapsam kaydı ve açık WP bağı — kurallar tablonun hemen altında (**Görev sınıfı kuralı**) |
 | Risk | §9.1 sinyalleri aşağıdaki sabit listeden; herhangi bir sinyal varsa `Risk: HIGH`. İzinli yollar migrasyon, gateway ya da yetki dosyalarına dokunuyorsa ilgili sinyal beyan edilmiş olmalı |
 | Kuyruk | WP satırı var ve `ct_queue.py`'nin kendi `require` kararı dağıtılabilir diyor |
 | Keşif | Katı kuyrukta `Keşif:` satırı zorunlu. Rapor v2, commit'lenmiş, özeti geçerli; üreticinin biçiminde (sonuç sözlüğü ve çıkış kodu, tekil satırlar, EKSİK satırları, ref sayısı = ref satırları, "eşleşme yok" ⇒ BULGU yok); `araç:` satırındaki sha256, raporun ilan ettiği commit'teki `verify_module_id.py`'nin sha256'sı (commit okunamazsa tamamlanamadı); sorgu bu işin adı ya da modülünün kayıtlı adı; "tamamlanamadı" engeldir; "inceleme gerekli" ise her BULGU için `Keşif kararı <n>: <parent\|FU\|child\|yeni> — <gerekçe>` |
 | İnceleme | HIGH promptta aşağıdaki kayıt |
+
+**Görev sınıfı kuralı** (CT-FIX-04). Yürürlük: bu metin `main`'e girdiğinde, yalnız prompt kapısının denetlediği yeni
+§36.1 promptları için; eski kayıtlar, paketler ve yürüyen işler değişmez.
+
+- `ürün`
+  - Adı geçen Module Pack `ready-for-dev` ya da `approved`.
+  - Künyesinde ortak okuyucuyla okunan tek bir `id` var; bu kimliğin modülü (`MOD-nnnn`, `MOD-nnnn-FUn`; child
+    kimlikte mevcut `split_id` tabanı) hem dosya adının başındaki MOD kimliğiyle hem kuyruk satırının modülüyle aynı.
+    Dosya adındaki kimlik `-` ya da `.md` ile biter: `MOD-02880-…`, `MOD-0288X-…` kimlik değildir.
+  - Künyede `approval_status` varsa ve tam `approved` değilse `status` tek başına yetki değildir:
+    `conditionally-approved…` yalnız hazırlıkta (`--prepare`) bildirilir, yeni dağıtımda ENGEL — paketin kapsamı ve
+    onayı önce pakette netleşir; başka her değer ya da okunamayan alan her kipte ENGEL; hiçbir kayıt bunu aşmaz.
+- `yönetişim`
+  - `docs/records/decisions/` altında künyesi `status: approved` (ya da `decided`) olan bir kapsam kaydı.
+  - Şu iki açık bağdan biri: (a) kuyruk satırının `record` sütunu kaydı tam yoluyla gösterir — `yol@commit` ise o
+    kimlik bir commit nesnesidir ve kayıt orada Expected HEAD'deki baytlarla aynıdır; (b) kaydın künyesindeki tek
+    `work_packages:` satırı WP kimliğini tam üye olarak listeler (virgülle ayrılmış kimlikler, boş eleman yok).
+  - Kayıt metninde ya da başka bir alanda WP kimliğinin anılması bağ değildir; açık liste WP'yi içermiyorsa `record`
+    bağı onu aşmaz; künyesinde HTML yorumu olan kayıt okunmaz.
 
 **§9.1 sinyal adları:** `sözleşme` (paylaşılan sözleşme / olay şeması), `migrasyon`, `yetki` (yetkilendirme /
 kimlik doğrulama), `kiracı`, `denetim` (denetim / kanıt temeli), `finansal`, `uyum`, `gateway`,

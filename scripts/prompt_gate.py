@@ -34,8 +34,12 @@ What it checks (each is an ENGEL when it fails):
   contract   every surface has exact quotes «text» (path:line) found verbatim at that line at Expected HEAD, or
              "N/A — <reason>"; text without a quote is a paraphrase and is refused; a HIGH prompt with no quote at all
              is refused; a prompt whose surfaces are all N/A is reported as "no contract verified"
-  task class ürün: the named Module Pack has status ready-for-dev or approved; yönetişim: an approved scope record
-             under docs/records/decisions/ exists
+  task class ürün: the named Module Pack has status ready-for-dev or approved and one künye id that is the file
+             name's MOD id and the row's module (FU / child ids as ct_queue reads them); a pack whose künye has a
+             second approval field (approval_status) that is not 'approved' never dispatches: a conditional one is
+             only prepared (--prepare reports it), any other value stops in every mode; yönetişim: an approved scope
+             record under docs/records/decisions/ bound explicitly — the row's record names it (path@commit: that
+             commit holds the same bytes), or its künye's work_packages lists the WP; a mention is not a binding
   risk       §9.1 signals from the fixed list; any signal means HIGH; allowed paths that touch migrations, the
              gateway or authorization need the matching signal
   queue      the WP row and scripts/ct_queue.py's own require decision (require_decision) say dispatchable
@@ -104,6 +108,9 @@ def ctq():
 # and ' — <text>' forms (ct_queue.GOV_APPROVED); kunye_status() reads one closed künye with exactly one status.
 _SHARED = ctq()
 GOV_APPROVED, kunye_status = _SHARED.GOV_APPROVED, _SHARED.kunye_status
+# CT-FIX-04 (İ2, İ3): the WP ↔ scope-record binding and the module ↔ pack identity are ct_queue's, not copies
+governance_binding, pack_identity = _SHARED.governance_binding, _SHARED.pack_identity
+pack_approval_limit = _SHARED.pack_approval_limit
 
 
 def sha256(data: bytes) -> str:
@@ -399,10 +406,10 @@ def check_authority(p: dict, repo, commit: str, row: dict | None = None) -> list
             eng.append(f"görev sınıfı: kapsam kaydının künyesi geçersiz — {bad} — {path}")
         elif not GOV_APPROVED.match(status):
             eng.append(f"görev sınıfı: kapsam kaydı onaylı değil (status: '{status[:30] or 'yok'}') — {path}")
-        named_by_row = bool(row) and (row.get("record") or "").split("@")[0].strip() == path
-        if p.get("wp", "\0") not in text and not named_by_row:
-            eng.append(f"görev sınıfı: kapsam kaydı bu işe bağlı değil — kayıtta {p.get('wp')} geçmiyor ve kuyruk satırının "
-                       f"record sütunu bu kaydı göstermiyor ({path})")
+        # CT-FIX-04 (İ2): only an explicit binding — the row's record (its version checked) or the künye's work_packages
+        unbound = governance_binding(text, path, p.get("wp"), row, commit_id=repo.commit_id, read_at=repo.file, head_data=data)
+        if unbound:
+            eng.append(f"görev sınıfı: {unbound} ({path})")
         return eng
     status, bad = kunye_status(data.decode("utf-8", errors="replace"))   # the whole value: 'approved | draft' is not approved
     eng = []
@@ -410,12 +417,35 @@ def check_authority(p: dict, repo, commit: str, row: dict | None = None) -> list
         eng.append(f"görev sınıfı: paketin künyesi geçersiz — {bad} ({path})")
     elif status not in PACK_OK:
         eng.append(f"görev sınıfı: paket durumu '{status or 'yok'}' — ready-for-dev ya da approved olmalı ({path})")
-    pack_id = re.match(r"^(MOD-\d{4}(?:-FU\d+)?)", os.path.basename(path))
-    if pack_id and row and row.get("module"):
-        ids = re.findall(r"MOD-\d{4}(?:-FU\d+)?", row["module"])
-        if pack_id.group(1) not in ids:
-            eng.append(f"görev sınıfı: paket {pack_id.group(1)} bu işin modülüne ({row['module']}) ait değil")
+    # CT-FIX-04 (İ3): the künye id, the file name's MOD id and the row's module are one identity (shared routine)
+    ids = re.findall(r"MOD-\d{4}(?:-FU\d+)?", row["module"]) if row and row.get("module") else []
+    wrong = pack_identity(path, data.decode("utf-8", errors="replace"), ids)
+    if wrong:
+        eng.append(f"görev sınıfı: {wrong} ({path})")
     return eng
+
+
+def check_approval_limit(p: dict, repo, commit: str, prepare: bool) -> tuple[list[str], list[str]]:
+    """CT-FIX-04 (joint decision with Codex, Employee pilot): a Module Pack whose künye carries a second approval field
+    that is not plain 'approved' (ct_queue.pack_approval_limit) gives no product dispatch by its 'status' alone — the
+    gate never derives a scope from it. A conditional approval may be prepared (reported) but a new dispatch stops
+    until the pack itself settles its scope and approval; any other value or an unreadable field stops in every mode.
+    No record overrides it. The packs and running work are not changed."""
+    if p["task_class"] != "ürün":
+        return [], []
+    data = repo.file(commit, p["authority"])
+    if data is None:
+        return [], []          # check_authority reports the missing pack
+    limit, stop = pack_approval_limit(data.decode("utf-8", errors="replace"))
+    if stop:
+        return [f"görev sınıfı: {stop} ({p['authority']})"], []
+    if limit is None:
+        return [], []
+    head = f"görev sınıfı: paket koşullu onaylı — {limit} ({p['authority']})"
+    if prepare:
+        return [], [f"{head} — HAZIRLIK: yeni dağıtımda ENGEL olur; paketin kapsamı ve onayı önce pakette netleşir"]
+    return [f"{head} — status tek başına bu iş için yetki değil, kapsam türetilmez; yeni dağıtım için paketin kapsamı "
+            "ve onayı önce pakette netleşir"], []
 
 
 def check_risk(p: dict) -> list[str]:
@@ -657,6 +687,9 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
         info += c_info
         info.append(f"sözleşme: {quotes} alıntı Expected HEAD'de birebir denetlendi")
         eng += check_authority(p, repo, commit, q.get("row"))
+        a_eng, a_info = check_approval_limit(p, repo, commit, prepare)
+        eng += a_eng
+        info += a_info
         out.append(f"kaynak-paketi-sha256: {pack_digest(pack)} · {len(pack)} dosya")
     eng += check_risk(p)
     q_eng, q_info = check_queue(p, q, prepare)
@@ -822,9 +855,9 @@ def self_test() -> int:
     v = vmi()
     files = {"AGENTS.md": "x\n", "docs/api.md": "GET /api/things returns 200\nperm crm.thing.read\n",
              "tests/T.cs": "public void Thing_Returns200()\n",
-             "execution/domains/d/module-packs/MOD-0288-x.md": "---\nstatus: ready-for-dev\n---\n",
-             "docs/records/decisions/2026-10/x.md": "---\nstatus: approved\n---\nWP-T-01 kapsamı\n",
-             "docs/records/decisions/2026-10/draft.md": "---\nstatus: draft\n---\nWP-T-01 kapsamı\n",
+             "execution/domains/d/module-packs/MOD-0288-x.md": "---\nid: MOD-0288\nstatus: ready-for-dev\n---\n",
+             "docs/records/decisions/2026-10/x.md": "---\nstatus: approved\nwork_packages: WP-T-01\n---\nWP-T-01 kapsamı\n",
+             "docs/records/decisions/2026-10/draft.md": "---\nstatus: draft\nwork_packages: WP-T-01\n---\nWP-T-01 kapsamı\n",
              "docs/records/decisions/2026-10/other.md": "---\nstatus: approved\n---\nbaşka bir iş\n",
              "rules/a.md": "kural a\n", "rules/b.md": "kural b\n",
              ".antigravity/scripts/verify_module_id.py": "keşif aracı\n"}
@@ -928,7 +961,7 @@ Rapor formatı: §22
     cases.append(("all surfaces N/A (LOW) -> passes but says 'no contract verified', never 'verified'",
                   r[0] == 0 and any("doğrulanan sözleşme yok" in l for l in r[1])))
     cases.append(("sabotage: pack status draft -> ENGEL",
-                  any("paket durumu 'draft'" in e for e in eng(run(good, rp=FakeRepo(dict(files, **{"execution/domains/d/module-packs/MOD-0288-x.md": "---\nstatus: draft\n---\n"})))))))
+                  any("paket durumu 'draft'" in e for e in eng(run(good, rp=FakeRepo(dict(files, **{"execution/domains/d/module-packs/MOD-0288-x.md": "---\nid: MOD-0288\nstatus: draft\n---\n"})))))))
     cases.append(("sabotage: the named pack belongs to another module than the queue row -> ENGEL",
                   any("ait değil" in e for e in eng(run(good, q=dict(q_ok, row={"item": "Things", "module": "MOD-0151"}))))))
     gov = good.replace("Görev sınıfı: ürün · Paket: execution/domains/d/module-packs/MOD-0288-x.md",
@@ -937,7 +970,7 @@ Rapor formatı: §22
     cases.append(("sabotage (fu): governance scope record with status draft -> ENGEL",
                   any("onaylı değil" in e for e in eng(run(gov.replace("2026-10/x.md", "2026-10/draft.md"))))))
     cases.append(("sabotage (fu): approved scope record that names neither this WP nor is the queue row's record -> ENGEL",
-                  any("bu işe bağlı değil" in e for e in eng(run(gov.replace("2026-10/x.md", "2026-10/other.md"))))))
+                  any("açıkça bağlı değil" in e for e in eng(run(gov.replace("2026-10/x.md", "2026-10/other.md"))))))
     cases.append(("approved scope record named by the queue row's record column -> passes",
                   run(gov.replace("2026-10/x.md", "2026-10/other.md"),
                       q=dict(q_ok, row={"item": "Things", "module": "MOD-0288", "record": "docs/records/decisions/2026-10/other.md"}))[0] == 0))
@@ -1097,7 +1130,11 @@ Rapor formatı: §22
     gov_p = {"authority": "docs/records/decisions/2026-10/x.md", "task_class": "yönetişim", "wp": "W1"}
 
     def auth(p, text):
-        return check_authority(p, FakeRepo({p["authority"]: text}), "a" * 40)
+        # CT-FIX-04: the pack's identity is checked against the row's module; a governance record needs an explicit
+        # binding — every governance text below lists W1 in work_packages (the binding cases are in their own group)
+        if p["task_class"] == "yönetişim" and text.startswith("---\n"):
+            text = "---\nwork_packages: W1\n" + text[4:]
+        return check_authority(p, FakeRepo({p["authority"]: text}), "a" * 40, {"module": "MOD-0001"})
     cases.append(("CT-FIX-01 11: a pack with one closed front matter and status approved / ready-for-dev passes",
                   not auth(pack_p, "---\nid: MOD-0001\nstatus: approved\n---\nbody\n")
                   and not auth(pack_p, "---\nid: MOD-0001\nstatus: ready-for-dev\n---\n")))
@@ -1127,9 +1164,65 @@ Rapor formatı: §22
     bad_quotes = ('"approved', "approved'", "'approved\"", "\"'approved'\"")
     cases.append(("CT-FIX-02 K1: the gate reads one balanced quote ('\"approved\"') and refuses a missing, mixed or doubled "
                   "quote on a pack and a governance record",
-                  not auth(pack_p, '---\nstatus: "approved"\n---\n') and not auth(gov_p, "---\nstatus: 'approved'\n---\nW1\n")
+                  not auth(pack_p, '---\nid: MOD-0001\nstatus: "approved"\n---\n') and not auth(gov_p, "---\nstatus: 'approved'\n---\nW1\n")
                   and all(auth(pack_p, f"---\nstatus: {v}\n---\n") and auth(gov_p, f"---\nstatus: {v}\n---\nW1\n")
                           for v in bad_quotes)))
+    # CT-FIX-04 (İ2, İ3): explicit WP binding and pack identity, through the shared ct_queue routines
+    def auth_raw(p, text, row):
+        return check_authority(p, FakeRepo({p["authority"]: text}), "a" * 40, row)
+    gp = gov_p["authority"]
+    fm = lambda extra, body="": f"---\nstatus: approved\n{extra}---\n{body}"
+    unbound = {"only a mention in the text": fm("", "W1 approved audit change\n"),
+               "work_packages: W10": fm("work_packages: W10\n"), "work_packages: W1-R1": fm("work_packages: W1-R1\n"),
+               "'W1 değil' in the text": fm("", "Bu kayıt W1 değil, W2 içindir.\n"),
+               "work_packages twice": fm("work_packages: W1\nwork_packages: W1\n"),
+               "an indented second work_packages": fm("work_packages: W2\n  work_packages: W1\n"),
+               "a commented work_packages": fm("# work_packages: W1\n"),
+               "work_packages inside an HTML comment in the künye": fm("<!--\nwork_packages: W1\n-->\n"),
+               "an empty element (W1,,W2)": fm("work_packages: W1,,W2\n"), "a trailing comma (W1,)": fm("work_packages: W1,\n"),
+               "a spaced element (W 1)": fm("work_packages: W 1, W2\n")}
+    cases.append(("CT-FIX-04 İ2: a governance record bound by none of the explicit forms -> ENGEL each ("
+                  + "; ".join(unbound) + ")",
+                  all(auth_raw(gov_p, t, {"module": "MOD-0001"}) for t in unbound.values())))
+    cases.append(("CT-FIX-04 İ2: work_packages lists the WP (alone or among others) -> bound",
+                  not auth_raw(gov_p, fm("work_packages: W1\n"), {}) and not auth_raw(gov_p, fm("work_packages: W2, W1\n"), {})))
+    h = "a" * 40
+    cases.append(("CT-FIX-04 İ2: the row's record names the path (plain, or @ a commit holding the same bytes) -> bound",
+                  not auth_raw(gov_p, fm(""), {"record": gp}) and not auth_raw(gov_p, fm(""), {"record": f"{gp}@{h[:9]}"})))
+    cases.append(("CT-FIX-04 İ2: a broken record version (not hex, not a commit, empty) -> ENGEL, also when work_packages lists the WP",
+                  all(any("sürüm bağı bozuk" in e for e in auth_raw(gov_p, fm(wp), {"record": f"{gp}@{v}"}))
+                      for v in ("not-a-commit", "f" * 40, "", "aaaaaaa@b") for wp in ("", "work_packages: W1\n"))))
+    cases.append(("CT-FIX-04 İ2: work_packages lists W2 and the row's record names the record -> ENGEL (the explicit list is not overridden)",
+                  any("record bağı bu açık listeyi aşmaz" in e for e in auth_raw(gov_p, fm("work_packages: W2\n"), {"record": gp}))))
+    pk = "execution/domains/x/module-packs/MOD-0288-x.md"
+    pk_p = dict(pack_p, authority=pk)
+    cases.append(("CT-FIX-04 İ3: pack id = file name = row module -> passes; an FU pack with its FU row -> passes",
+                  not auth_raw(pk_p, "---\nid: MOD-0288\nstatus: approved\n---\n", {"module": "MOD-0288"})
+                  and not auth_raw(dict(pack_p, authority="execution/domains/x/module-packs/MOD-0151-FU08-x.md"),
+                                   "---\nid: MOD-0151-FU08\nstatus: approved\n---\n", {"module": "MOD-0151-FU08"})))
+    cases.append(("CT-FIX-04 İ3: file MOD-0288 with künye id MOD-0289, a second / indented / quoted id, or no id -> ENGEL",
+                  all(auth_raw(pk_p, f"---\n{ids}status: approved\n---\n", {"module": "MOD-0288"}) for ids in (
+                      "id: MOD-0289\n", "id: MOD-0288\nid: MOD-0289\n", "id: MOD-0288\n  id: MOD-0289\n",
+                      'id: MOD-0288\n"id": MOD-0289\n', ""))))
+    # CT-FIX-04 (joint decision, Employee pilot): a second approval field that is not 'approved' never dispatches
+    cond = "---\nid: MOD-0288\nstatus: approved\napproval_status: conditionally-approved-for-p2-slice\n---\n"
+
+    def limit(pack_text, prepare=False):
+        return check_approval_limit(dict(pk_p, task_class="ürün"), FakeRepo({pk: pack_text}), "a" * 40, prepare)
+    e1, i1 = limit(cond)
+    e2, i2 = limit(cond, prepare=True)
+    cases.append(("CT-FIX-04: conditional approval_status -> dispatch ENGEL ('kapsam türetilmez'); --prepare -> no ENGEL, "
+                  "a line that says a new dispatch stops", any("kapsam türetilmez" in e for e in e1) and not i1 and not e2
+                  and any("HAZIRLIK" in i and "ENGEL olur" in i for i in i2)))
+    cases.append(("CT-FIX-04: no second approval field, or approval_status: approved -> nothing to say",
+                  limit("---\nid: MOD-0288\nstatus: approved\n---\n") == ([], [])
+                  and limit(cond.replace("conditionally-approved-for-p2-slice", "approved")) == ([], [])))
+    cases.append(("CT-FIX-04 sabotage: approval_status rejected / draft / unknown, written twice or indented -> ENGEL in "
+                  "dispatch AND in --prepare",
+                  all(limit(cond.replace("approval_status: conditionally-approved-for-p2-slice", x), pr)[0]
+                      for x in ("approval_status: rejected", "approval_status: draft", "approval_status: conditionally approved",
+                                "approval_status: approved\napproval_status: rejected",
+                                "approval_status: approved\n  approval_status: rejected") for pr in (False, True))))
     fake = FakeRepo({})
     cases.append(("CT-FIX-01 13: Expected HEAD — a real short id resolves, 'deadbee' does not (fake repo)",
                   fake.commit_id("aaaaaaa") == "a" * 40 and fake.commit_id("deadbee") is None))
