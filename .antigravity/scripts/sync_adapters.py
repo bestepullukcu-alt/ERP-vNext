@@ -128,9 +128,9 @@ def visible_text(text: str) -> str:
     comment between two '#' does not make a heading. İ5B-FIX-15: raw HTML is masked too — the HTML blocks scan_comments
     finds and the elements mask_html finds, each on the same comment-masked view. İ5B-FIX-16: one context for the
     three — the blocks scan_comments finds are read raw by mask_html, and both read code spans with the same lexer."""
-    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)
+    plain, spans, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)
     block = scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0]
-    element = mask_html(plain, block, info["blocks"])[0]
+    element = mask_html(plain, block, info["blocks"], spans)[0]
     # a character is visible only when neither hides it: an HTML block ends at its own end condition (a blank line for
     # CommonMark's types 6 and 7), an element at its own closing tag
     return "".join(c if block[k] == c and element[k] == c else " " for k, c in enumerate(plain))
@@ -229,6 +229,13 @@ def html_block_end(lines: list[str], n: int, end) -> int:
     return next((m - 1 for m in range(n + 1, len(lines)) if not lines[m].strip()), len(lines) - 1)
 
 
+def comment_end_unread(text: str, start: int, end: int) -> bool:
+    """İ5B-FIX-22 (C20 audits): whether HTML ends the comment opening at start before the reader's first '-->' at end —
+    at once after '<!-->' or '<!--->', or at a '--!>' before it (WHATWG HTML, the comment start, start dash and end bang
+    states). The reader does not follow those ends: such a comment is not verified, also with nothing hidden around it."""
+    return text.startswith(("<!-->", "<!--->"), start) or "--!>" in text[start + 4:end]
+
+
 def scan_comments(text: str, opener=None, closes=None,
                   html_blocks: bool = False) -> tuple[str, list[tuple[int, int]], str | None, dict]:
     """İ5B-FIX-13 / -14 / -16: one small scanner on the source as it stands — nothing deleted, no pieces joined. Returns
@@ -244,7 +251,8 @@ def scan_comments(text: str, opener=None, closes=None,
     - inside an HTML block the text is raw (no code span, escape or fence), and a '<!--' there must close in the block —
       the browser keeps an unclosed one open, so the rest is 'not verified';
     - code spans are read with the shared lexer (code_span_end). What the reader cannot read hides the rest and is
-      reported 'not verified', never as hidden text."""
+      reported 'not verified', never as hidden text.
+    - İ5B-FIX-22: a comment HTML ends earlier (comment_end_unread) is 'not verified' in all three places."""
     opener, closes = opener or fence_opener, closes or fence_closes
     lines = text.split("\n")
     offs, a = [], 0
@@ -263,7 +271,7 @@ def scan_comments(text: str, opener=None, closes=None,
         i = text.find("<!--", a, b)
         while i >= 0:
             e = text.find("-->", i + 4)
-            if e < 0 or e + 3 > b:
+            if e < 0 or e + 3 > b or comment_end_unread(text, i, e):
                 return i
             spans.append((i, e + 3))
             i = text.find("<!--", e + 3, b)
@@ -287,6 +295,9 @@ def scan_comments(text: str, opener=None, closes=None,
                 if e < 0:
                     spans.append((start, size))
                     state, pos = "an HTML comment", size
+                    break
+                if comment_end_unread(text, start, e):
+                    nv = start
                     break
                 spans.append((start, e + 3))
                 m = bisect.bisect_right(offs, e) - 1
@@ -317,7 +328,7 @@ def scan_comments(text: str, opener=None, closes=None,
                 stop, unsure = paragraph_limits(text, pos, opener)
                 e = text.find("-->", pos + 4)
                 if e >= 0 and e + 3 <= stop:
-                    if unsure is not None and e > unsure:
+                    if (unsure is not None and e > unsure) or comment_end_unread(text, pos, e):
                         nv = pos
                         break
                     spans.append((pos, e + 3))
@@ -415,7 +426,7 @@ FOREIGN_ELEMENTS = ("svg", "math")
 HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
 
 
-def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str, tuple[int, str] | None]:
+def mask_html(view: str, block_view: str | None = None, blocks=(), comments=()) -> tuple[str, tuple[int, str] | None]:
     """İ5B-FIX-15 / -16 (C13 and C14 audits): the heading reader's view with raw HTML elements masked in place (spaces,
     line ends kept); comments are already masked (view = scan_comments). One left-to-right reader of the source as it
     stands. Returns (the masked view, (the offset, 'tag' / 'element' / 'code') of what it cannot read, or None).
@@ -446,6 +457,10 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
     - İ5B-FIX-21: a closing tag closes an element only at the top of the stack. One that matches an element below the
       top is 'close': not verified — HTML may ignore it (no such element in scope: a table, template, select or object
       open) or reopen a formatting element after it. An svg or math opener is 'tag': not verified (FOREIGN_ELEMENTS).
+    - İ5B-FIX-22: comments (scan_comments' spans) are HTML comments only where HTML reads one. A comment starting
+      inside a raw-text element (its text there, or a script escape a '</script>' still ends) or inside '<?', '<!X' or
+      '<![CDATA[' may hide the real end, so it is 'code': not verified. '<?' and '<![CDATA[' end at their first '>' in
+      HTML content: a '>' before the reader's end is 'tag': not verified.
     Not an HTML, CSS or DOM engine: an attribute is never read, so any text inside an element is not evidence (a declared
     refusal). The supported lexical rules and the explicit not-verified limits above do not establish general renderer
     equivalence."""
@@ -520,6 +535,7 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
 
     stack: list[tuple[str, int]] = []
     raw: tuple[str, int] | None = None
+    raw_from = 0
     nv: tuple[int, str] | None = None
     i = 0
     while i < size:
@@ -562,6 +578,10 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
             break
         if raw is not None:                                  # inside a raw-text element only its own close counts
             if m and m.group(1) and m.group(2).lower() == raw[0]:
+                inner = next((a for a, _ in comments if raw_from <= a < i), None)
+                if inner is not None:
+                    nv = (inner, "code")                     # İ5B-FIX-22: a comment inside a raw-text element
+                    break
                 if not block and close_unproven(n, i):
                     nv = (i, "close")
                     break
@@ -598,7 +618,7 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
                 if not stack:
                     mask(i, m.end())
             elif name in RAW_TEXT_ELEMENTS:
-                raw = (name, stack[0][1] if stack else i)
+                raw, raw_from = (name, stack[0][1] if stack else i), m.end()
             else:
                 stack.append((name, i))                      # '<x/>' of a non-void element still opens it
             i = m.end()
@@ -607,6 +627,13 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
         if other:
             e = view.find(other[1], i + len(other[0]))
             if e >= 0 and e + len(other[1]) <= limit and (unsure is None or e < unsure):
+                inner = next((a for a, _ in comments if i < a < e), None)
+                if inner is not None:
+                    nv = (inner, "code")                     # İ5B-FIX-22: HTML reads no comment inside it
+                    break
+                if other[0] in ("<?", "<![CDATA[") and view.find(">", i + len(other[0])) < e + len(other[1]) - 1:
+                    nv = (i, "tag")                          # İ5B-FIX-22: HTML ends it at its first '>'
+                    break
                 if not stack:
                     mask(i, e + len(other[1]))
                 i = e + len(other[1])
@@ -690,9 +717,9 @@ def level2_sections(text: str) -> dict[str, list[list[str]]]:
 def unreadable_html(text: str) -> str:
     """İ5B-FIX-15 / -16: the reason a required text is lost when the heading reader met what it cannot read — a code span
     or comment (scan_comments), an HTML tag, or an element never closed (mask_html) — else ''."""
-    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)
+    plain, spans, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)
     found = [(info["not_verified"], "code")] if info["not_verified"] is not None else []
-    html = mask_html(plain, scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0], info["blocks"])[1]
+    html = mask_html(plain, scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0], info["blocks"], spans)[1]
     if html:
         found.append(html)
     if not found:

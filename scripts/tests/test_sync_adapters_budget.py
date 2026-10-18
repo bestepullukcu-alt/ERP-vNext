@@ -1274,6 +1274,57 @@ class InstructionBudget(unittest.TestCase):
                 f.write_text(agents[:at] + ins + head + "\n\n" + tail + agents[at + len(head) + 1:], encoding="utf-8")
                 self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
 
+    def test_a_masked_range_html_ends_earlier_is_not_verified(self):
+        # İ5B-FIX-22 (C20 audits; Claude Denetim001 C20-F1, Codex root): the reader masked a range that HTML ends earlier,
+        # so a real '<table>' behind it was never seen and '</div>' closed the hidden div at the top (HTML ignores it).
+        # HTML ends a comment at '--!>' and at once after '<!-->' or '<!--->'; inside a raw-text element '<!--' is text
+        # (or a script escape that a '</script>' still ends); '<?' and '<![CDATA[' outside foreign content end at their
+        # first '>'. The reader does not follow those ends: each is not verified (a declared limit — also with no hidden
+        # element open). A standard comment, '<?x?>', '<![CDATA[x]]>' and a raw-text element without a comment are as before
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        nv, bt = "not verified", "`"
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        cases = [(f"Claude: '{c}' then '<{el}>' in an HTML block", wrap(f"<div hidden>\n{c} <{el}> -->\n</div>\n\n", f"</{el}>\n</div>\n\n"))
+                 for c, el in (("<!-- a --!>", "table"), ("<!-->", "table"), ("<!--->", "table"), ("<!-- a --!>", "template"))]
+        cases += [("Claude: '<!-- a --!>' then '<table>' in a paragraph", wrap("Not: <div hidden> <!-- a --!> <table> --> </div> başlar.\n\n", "</table>\n</div>\n\n"))]
+        cases += [(f"Codex: a comment inside '<{el}>' hides its real close", wrap(f"<div hidden>\n<{el}><!-- </{el}> <table> --></{el}>\n</div>\n\n", "</table>\n</div>\n\n"))
+                  for el in ("style", "script")]
+        cases += [("Codex: a comment inside '<style>' in a paragraph", wrap("Not: <div hidden> <style><!-- </style> <table> --></style> </div> başlar.\n\n", "</table>\n</div>\n\n"))]
+        cases += [(f"Codex: '{o}' ends at its first '>' in HTML", wrap(f"<div hidden>\n{o} x > <table> {e}\n</div>\n\n", "</table>\n</div>\n\n"))
+                  for o, e in (("<?", "?>"), ("<![CDATA[", "]]>"))]
+        cases += [("'<? x > <table> ?>' in a paragraph", wrap("Not: <div hidden> <? x > <table> ?> </div> başlar.\n\n", "</table>\n</div>\n\n")),
+                  ("'<? <!-- > --> <table> ?>': its real first '>' is inside a masked comment", wrap("<div hidden>\n<? <!-- > --> <table> ?>\n</div>\n\n", "</table>\n</div>\n\n")),
+                  ("'<!X <!-- > --> <table> >': a comment inside a declaration", wrap("<div hidden>\n<!X <!-- > --> <table> >\n</div>\n\n", "</table>\n</div>\n\n")),
+                  ("declared: '--!>' with no element open", before("<!-- a --!> b -->\n\n")),
+                  ("declared: '<!-->' with no element open", before("Not: <!--> metin -->.\n\n"))]
+        for label, text in cases:
+            with self.subTest(not_verified=label):
+                lost = self.section_2_lost(text)
+                self.assertTrue(lost and all(nv in p for p in lost), (label, lost[:1]))
+        for label, text in (
+                ("a standard comment holding '<table>', then the real '</div>'", before("<div hidden>\n<!-- a <table> -->\n</div>\n\n")),
+                ("a standard comment in a paragraph", before("Not: <div hidden> <!-- a <table> --> </div> son.\n\n")),
+                ("'<style>' text without a comment", before("<div hidden>\n<style>a { b: c }</style>\n</div>\n\n")),
+                ("'<?x?>' and '<![CDATA[x]]>' with no '>' inside", before("<div hidden>\n<?x?> <![CDATA[x]]>\n</div>\n\n")),
+                ("'<!-->' in a code span", before("Not: " + bt + "<!-->" + bt + " ve " + bt + "--!>" + bt + " metin.\n\n")),
+                ("'<!-- a --!> b -->' in a fence", before(bt * 3 + "\n<!-- a --!> b -->\n" + bt * 3 + "\n\n"))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        for label, ins in (("Claude: '<!-- a --!> <table> -->'", "<div hidden>\n<!-- a --!> <table> -->\n</div>\n\n"),
+                           ("Codex: '<!--> <table> -->'", "<div hidden>\n<!--> <table> -->\n</div>\n\n"),
+                           ("Codex: a comment inside '<style>'", "<div hidden>\n<style><!-- </style> <table> --></style>\n</div>\n\n")):
+            with self.subTest(hidden="an AGENTS.md required heading after " + label):
+                f.write_text(agents[:at] + ins + head + "\n\n</table>\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
+                self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML
