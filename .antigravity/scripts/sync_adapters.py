@@ -58,6 +58,10 @@ Rules this script enforces (İ5-A pilot):
 - İ5B-FIX-14 (C12 follow-up): the same scanner masks comments in place for the heading / section reader (its own fence
   grammar), the comment diagnosis, the core's view and the text before it — a literal '<!--' in a code example no
   longer swallows what follows, and a comment between two '#' no longer makes a heading.
+- İ5B-FIX-15 (C13 audits): raw HTML around a required heading, section or anchor hides it — an HTML block ends at its
+  own end condition (a blank line for a '<div>' block), an element at its own closing tag, and a tag the reader cannot
+  read hides the rest of the file ('not verified'). Unrelated closed HTML, HTML in code, escaped '<' and autolinks stay
+  allowed. Not an HTML engine: any text inside an element is not evidence.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -103,8 +107,14 @@ def visible_text(text: str) -> str:
     """İ5B-FIX-04: the text a reader sees — every HTML comment hidden; an unclosed '<!--' hides the rest. İ5B-FIX-14:
     through scan_comments with the heading reader's own fence grammar (level2_sections'): comments are masked in place
     (spaces, line ends kept) outside fences and inline code, so a literal '<!--' in a code example hides nothing and a
-    comment between two '#' does not make a heading."""
-    return scan_comments(text, heading_fence_opener, heading_fence_closes)[0]
+    comment between two '#' does not make a heading. İ5B-FIX-15: raw HTML is masked too — the HTML blocks scan_comments
+    finds and the elements mask_html finds, each on the same comment-masked view."""
+    plain = scan_comments(text, heading_fence_opener, heading_fence_closes)[0]
+    block = scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0]
+    element = mask_html(plain)[0]
+    # a character is visible only when neither hides it: an HTML block ends at its own end condition (a blank line for
+    # CommonMark's types 6 and 7), an element at its own closing tag
+    return "".join(c if block[k] == c and element[k] == c else " " for k, c in enumerate(plain))
 
 
 def heading_fence_opener(line: str) -> str | None:
@@ -146,7 +156,8 @@ def fence_closes(fence: str, line: str) -> bool:
     return bool(re.match(rf"^[ \t]*{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line))
 
 
-def scan_comments(text: str, opener=None, closes=None) -> tuple[str, list[tuple[int, int]], str | None]:
+def scan_comments(text: str, opener=None, closes=None,
+                  html_blocks: bool = False) -> tuple[str, list[tuple[int, int]], str | None]:
     """İ5B-FIX-13 / -14 (Codex root, Codex Denetim001): one small scanner on the source as it stands — nothing deleted,
     no pieces joined. Returns (the text with every HTML comment masked in place — spaces, line ends kept —, the comments'
     (start, end) offsets, the context still open at the end: 'a fenced code block', 'an HTML comment' or None). Fences
@@ -159,12 +170,21 @@ def scan_comments(text: str, opener=None, closes=None) -> tuple[str, list[tuple[
     fence: str | None = None
     start: int | None = None
     at = 0
+    html_end, prev_blank = None, True
     for line in text.split("\n"):
-        if fence is not None:
+        if html_end is not None:
+            spans.append((at, at + len(line)))
+            if html_end(line):
+                html_end = None
+        elif fence is not None:
             if closes(fence, line):
                 fence = None
         elif start is None and opener(line) is not None:
             fence = opener(line)
+        elif start is None and html_blocks and line.lstrip(" ")[:4] != "<!--" and html_block_start(line, prev_blank):
+            end = html_block_start(line, prev_blank)
+            spans.append((at, at + len(line)))
+            html_end = None if (end(line) and not HTML_TYPE6.match(line) and not HTML_TYPE7.match(line)) else end
         else:
             i = 0
             while i < len(line):
@@ -184,6 +204,7 @@ def scan_comments(text: str, opener=None, closes=None) -> tuple[str, list[tuple[
                     start, i = at + i, i + 4
                 else:
                     i += 1
+        prev_blank = not line.strip() and start is None
         at += len(line) + 1
     if start is not None:
         spans.append((start, len(text)))
@@ -194,6 +215,111 @@ def scan_comments(text: str, opener=None, closes=None) -> tuple[str, list[tuple[
                 masked[k] = " "
     state = "a fenced code block" if fence is not None else "an HTML comment" if start is not None else None
     return "".join(masked), spans, state
+
+
+# İ5B-FIX-15: the HTML blocks of CommonMark the heading reader masks (scan_comments with html_blocks=True). Type 2, the
+# comment, is scan_comments' own; types 1 and 3-5 end at their own marker, types 6 and 7 at a blank line
+HTML_TYPE1 = re.compile(r"^ {0,3}<(?:script|pre|style|textarea)(?:\s|>|$)", re.I)
+HTML_TYPE1_END = re.compile(r"</(?:script|pre|style|textarea)>", re.I)
+HTML_BLOCK_TAGS = ("address article aside base basefont blockquote body caption center col colgroup dd details dialog dir div dl dt "
+                   "fieldset figcaption figure footer form frame frameset h1 h2 h3 h4 h5 h6 head header hr html iframe legend li link "
+                   "main menu menuitem nav noframes ol optgroup option p param search section summary table tbody td tfoot th thead "
+                   "title tr track ul").split()
+HTML_TYPE6 = re.compile(rf"^ {{0,3}}</?(?:{'|'.join(HTML_BLOCK_TAGS)})(?:\s|/?>|$)", re.I)
+HTML_TYPE7 = re.compile(r"^ {0,3}(?:<[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$")
+
+
+def html_block_start(line: str, after_blank: bool):
+    """İ5B-FIX-15: the end test of the HTML block a line starts (CommonMark's start conditions 1, 3-7), or None. Type 7
+    cannot interrupt a paragraph, so it starts only after a blank line."""
+    if HTML_TYPE1.match(line):
+        return lambda l: bool(HTML_TYPE1_END.search(l))
+    if re.match(r"^ {0,3}<\?", line):
+        return lambda l: "?>" in l
+    if re.match(r"^ {0,3}<!\[CDATA\[", line):
+        return lambda l: "]]>" in l
+    if re.match(r"^ {0,3}<![A-Za-z]", line):
+        return lambda l: ">" in l
+    if HTML_TYPE6.match(line) or (after_blank and HTML_TYPE7.match(line)):
+        return lambda l: not l.strip()        # ends at a blank line
+    return None
+
+
+VOID_ELEMENTS = ("area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr")
+HTML_TAG = re.compile(r"<(/?)([A-Za-z][A-Za-z0-9-]*)(?:\s[^<>]*)?(/?)>")
+HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
+
+
+def mask_html(view: str) -> tuple[str, int | None]:
+    """İ5B-FIX-15 (C13 audits): the heading reader's view with raw HTML elements masked in place (spaces, line ends
+    kept); comments are already masked. Returns (the masked view, the offset of a tag it cannot read, or None).
+
+    Tags are searched outside fences (the heading reader's grammar), inline code and a backslash-escaped character.
+    - An element that is not void is masked from its opening tag to its own closing tag: the same name, nesting
+      counted, searched outside code too. A raw-text element (script, style, textarea, title) ends only at its own
+      closing tag, so a 'script' holding '</pre>' is not closed by it. An element never closed hides the rest of the
+      file, and one left open across a blank line still holds what follows.
+    - A self-closed tag of a non-void element ('<script/>', '<span/>') opens it, as in HTML.
+    - A closing tag alone and a void element mask only themselves; '<?', '<!X' and CDATA mask to their own end.
+    - An opener ('<x', '</x') that is not an autolink and not a tag this reader can read (a '<' inside an attribute)
+      hides the rest of the file; its offset is returned so the required text after it is reported 'not verified'.
+    Not an HTML engine: an attribute is never read, so any text inside an element is not evidence (a declared safe
+    refusal). A tag's attributes may cross a blank line here, unlike CommonMark: the text is still hidden, but the
+    message may say only 'missing' (a known limit of the diagnosis, not of the refusal)."""
+    plain = list(view)                         # where tags are searched: fences, inline code and '\<' blanked
+    at = 0
+    fence = None
+    for line in view.split("\n"):
+        if fence is not None or heading_fence_opener(line):
+            if fence is None:
+                fence = heading_fence_opener(line)
+            elif heading_fence_closes(fence, line):
+                fence = None
+            for k in range(at, at + len(line)):
+                plain[k] = " "
+        else:
+            for m in INLINE_CODE.finditer(line):
+                for k in range(at + m.start(), at + m.end()):
+                    plain[k] = " "
+            for m in re.finditer(r"\\.", line):
+                for k in range(at + m.start(), at + m.end()):
+                    plain[k] = " "
+        at += len(line) + 1
+    plain = "".join(plain)
+    out = list(view)
+    def mask(a, b):
+        for k in range(a, min(b, len(out))):
+            if out[k] != "\n":
+                out[k] = " "
+    i = 0
+    while True:
+        lt = plain.find("<", i)
+        if lt < 0:
+            break
+        m = HTML_TAG.match(plain, lt)
+        if m:
+            closing, name, selfclose = m.group(1), m.group(2).lower(), m.group(3)
+            if closing or name in VOID_ELEMENTS:
+                mask(lt, m.end()); i = m.end(); continue
+            pair = re.compile(rf"<(/?){re.escape(name)}(?:\s[^<>]*)?/?>", re.I)
+            depth, end = 1, len(view)
+            for t in pair.finditer(plain, m.end()):
+                if name in ("script", "style", "textarea", "title") and not t.group(1):
+                    continue                   # raw text: only its own closing tag ends it
+                depth += -1 if t.group(1) else 1     # '<x/>' of a non-void element still opens it
+                if depth == 0:
+                    end = t.end(); break
+            mask(lt, end); i = end; continue
+        other = next(((o, e) for o, e in HTML_OTHER if plain.startswith(o, lt) and (o != "<!" or plain[lt + 2:lt + 3].isalpha())), None)
+        if other:
+            e = plain.find(other[1], lt + len(other[0]))
+            end = len(view) if e < 0 else e + len(other[1])
+            mask(lt, end); i = end; continue
+        if RAW_HTML_OPENER.match(plain, lt) and not AUTOLINK.match(plain, lt):
+            mask(lt, len(view))                # an opener the reader cannot read: nothing after it is evidence
+            return "".join(out), lt
+        i = lt + 1
+    return "".join(out), None
 
 
 def open_context(text: str) -> str | None:
@@ -256,6 +382,13 @@ def level2_sections(text: str) -> dict[str, list[list[str]]]:
     return out
 
 
+def unreadable_html(text: str) -> str:
+    """İ5B-FIX-15: the reason a required text is lost when the heading reader met an HTML tag it cannot read
+    (mask_html), else ''."""
+    at = mask_html(scan_comments(text, heading_fence_opener, heading_fence_closes)[0])[1]
+    return "" if at is None else f" (after an HTML tag at line {text.count(chr(10), 0, at) + 1} the check cannot read — not verified)"
+
+
 def section_problems(path: str, text: str, required: list[dict]) -> list[str]:
     """İ5B-FIX-04: every required section once, with visible content and its anchor sentences verbatim."""
     problems = []
@@ -265,7 +398,7 @@ def section_problems(path: str, text: str, required: list[dict]) -> list[str]:
         found = sections.get(heading, [])
         if len(found) != 1:
             why = ("only inside an HTML comment" if not found and heading_in_comment(heading, text) else
-                   "missing" if not found else f"{len(found)} times")
+                   "missing" + unreadable_html(text) if not found else f"{len(found)} times")
             problems.append(f"SECTION {path} '## {heading}' {why} (AGENTS.md points readers here)")
             continue
         body = found[0]
@@ -275,7 +408,7 @@ def section_problems(path: str, text: str, required: list[dict]) -> list[str]:
         joined = "\n".join(body)
         for anchor in spec.get("anchors", []):
             if anchor not in joined:
-                problems.append(f"ANCHOR {path} '## {heading}' lost: {anchor!r}")
+                problems.append(f"ANCHOR {path} '## {heading}' lost: {anchor!r}{unreadable_html(text)}")
     return problems
 
 
@@ -593,7 +726,7 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         for heading in spec.get("required_headings", []):
             if not any(h == heading or (h.startswith(heading) and h[len(heading)].isspace()) for h in heads):
                 hidden = (" (only inside an HTML comment)" if heading_in_comment(heading, text) else
-                          " (only inside a code block)" if re.search(rf"(?m)^## {re.escape(heading)}(?:\s|$)", text) else "")
+                          (unreadable_html(text) or " (only inside a code block)") if re.search(rf"(?m)^## {re.escape(heading)}(?:\s|$)", text) else "")
                 problems.append(f"HEADING {path} lost '## {heading}'{hidden} (AGENTS.md §-references would break)")
         problems += section_problems(path, text, spec.get("required_sections", []))
         for pattern in spec.get("forbidden_regex", []):

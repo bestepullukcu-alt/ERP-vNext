@@ -768,6 +768,105 @@ class InstructionBudget(unittest.TestCase):
         self.assertFalse([p for p in problems if p.startswith("CORE-RULE")], problems)
         self.assertTrue([p for p in problems if p.startswith("CORE-HTML") and "(<!--)" in p], problems)
 
+    def html_fixture(self):
+        ref = (REPO / self.REF).read_text(encoding="utf-8")
+        anchor = self.sections()[0]["anchors"][0]                                  # section 2's first anchor sentence
+        r2a, r2b = ref.index("## 2. Proje Klasör Yapısı"), ref.index("## 3. Port Şeması")
+        return ref, anchor, r2a, r2b, ref.index(anchor, r2a)
+
+    def section_2_lost(self, text: str) -> list[str]:
+        return [p for p in self.ref_with(text) if p.startswith(("SECTION", "ANCHOR")) and "2. Proje Klasör Yapısı" in p]
+
+    def test_raw_html_around_a_required_text_hides_it(self):
+        # İ5B-FIX-15 (C13 audits, Codex C13-F1): the heading and section reader read raw HTML as plain text — a required
+        # section inside '<script type="text/plain">', '<pre>' or '<div>', or an anchor sentence inside a mid-paragraph
+        # '<script>' or '<span hidden>', still counted (write / check 0 / 0). An HTML block now ends at its own end
+        # condition (a blank line for a '<div>' block), an element at its own closing tag, and either hides what it holds
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        sc, bs = '<script type="text/plain">', chr(92)
+        line_end = ref.rfind("\n", 0, r2a - 1)                                    # the end of the paragraph before section 2
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        for label, text in (
+                *((f"section 2 inside an HTML block <{t.split()[0]}>", wrap(f"<{t}>\n", f"</{t.split()[0]}>\n\n"))
+                  for t in ('script type="text/plain"', "pre", "style", "textarea")),
+                ("section 2's heading inside <div>, no blank line", ref[:r2a] + "<div>\n" + ref[r2a:].replace("\n", "\n</div>\n", 1)),
+                ("the anchor inside a mid-paragraph <script>", ref[:ac] + sc + anchor + "</script>" + ref[ac + len(anchor):]),
+                ("the anchor inside <span hidden>", ref[:ac] + "<span hidden>" + anchor + "</span>" + ref[ac + len(anchor):]),
+                ("a <script> opened mid-line in the paragraph before, closed after section 2",
+                 ref[:line_end] + " " + sc + ref[line_end:r2b] + "</script>\n\n" + ref[r2b:]),
+                ("a <script> opened mid-line before section 2, never closed", ref[:line_end] + " " + sc + ref[line_end:]),
+                ("a <script> holding '</pre>' and a blank line (only its own closing tag ends it)", wrap(sc + "\n</pre>\n\n", "</script>\n\n")),
+                ("<span hidden> left open across a blank line", wrap("Visible prefix <span hidden>\n\n", "</span>\n\n")),
+                ("<div>example</div> right before the heading (the HTML block ends at a blank line, not at </div>)",
+                 ref[:r2a] + "<div>example</div>\n" + ref[r2a:]),
+                ("<script/> (a non-void self-closed tag still opens the element)", wrap("<script/>\n\n", "</script>\n\n")),
+                ("nested <div>: the inner closing tag does not end the outer", wrap("Metin <div><div>x</div>\n\n", "</div>\n\n")),
+                ("a </span> in a closed code example does not close the element", wrap("Metin <span hidden>\n\n```\n</span>\n```\n\n", "</span>\n\n")),
+                ("a </span> in inline code does not close the element", wrap("Metin <span hidden> `</span>`\n\n", "</span>\n\n")),
+                ("an escaped </span> does not close the element", wrap("Metin <span hidden> " + bs + "</span>\n\n", "</span>\n\n")),
+                ("<span/> never closed (a declared safe refusal)", ref[:r2a] + "Metin <span/>\n\n" + ref[r2a:])):
+            with self.subTest(refused=label):
+                self.assertTrue(self.section_2_lost(text), label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(f for f in self.manifest["instruction_budget"]["files"] if f["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        f = Path(self.tmp.name) / "AGENTS.md"
+        for label, text in (("an AGENTS.md required heading inside <pre>", agents[:at] + "<pre>\n" + head + "\n</pre>\n" + agents[at + len(head) + 1:]),
+                            ("an AGENTS.md required heading inside <span hidden> across a blank line",
+                             agents[:at] + "Metin <span hidden>\n\n" + head + "\n</span>\n" + agents[at + len(head) + 1:])):
+            with self.subTest(refused=label):
+                f.write_text(text, encoding="utf-8")
+                self.redirect("AGENTS.md", f)
+                self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
+
+    def test_unrelated_or_shown_html_keeps_the_required_text(self):
+        # İ5B-FIX-15: only the required text inside an HTML context is lost — unrelated closed HTML, HTML shown in code,
+        # escaped or in an autolink, and a void tag leave every required section, body and anchor visible
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        bs = chr(92)
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        for label, text in (("unrelated <div>Example</div> appended to the last section", ref.rstrip("\n") + "\n<div>Example</div>\n"),
+                            ("unrelated <div>Example</div>, a blank line, then the section", before("<div>Example</div>\n\n")),
+                            ("unrelated inline HTML in section 2's body", ref[:ac] + "Not: <b>kalın</b> ve <br> satır. " + ref[ac:]),
+                            ("an unrelated closed <details> block", ref.replace("## 3. Port Şeması", "<details>\n<summary>x</summary>\nnot\n</details>\n\n## 3. Port Şeması", 1)),
+                            ("HTML shown in a closed code example", ref.replace("## 3. Port Şeması", "```\n<script>\n## 2. not a heading\n</script>\n```\n\n## 3. Port Şeması", 1)),
+                            ("HTML in inline code inside section 2", ref[:ac] + "Örnek `<script>` ve `<span hidden>`. " + ref[ac:]),
+                            ("inline HTML at a paragraph start, the heading right after", before("<b>Not:</b> metin\n")),
+                            ("a void <br/> and a blank line", before("Metin <br/>\n\n")),
+                            ("a closed nested <div><div>x</div></div> and a blank line", before("<div><div>x</div></div>\n\n")),
+                            ("a <script> whose text holds '<script>' ends at its own closing tag", before('Metin <script>var s = "<script>";</script>\n\n')),
+                            ("an escaped <span hidden>", before("Metin " + bs + "<span hidden>\n\n")),
+                            ("<script/> shown in inline code", before("Metin `<script/>`\n\n")),
+                            ("a URI autolink", before("Bkz. <https://example.com/x>\n\n")),
+                            ("an e-mail autolink", before("Bkz. <ops@example.com>\n\n")),
+                            ("an escaped '<' in prose", before("Metin a" + bs + "<b c\n\n")),
+                            ("'a<b' in inline code", before("Metin `a<b` c\n\n")),
+                            ("'a < b' with spaces", before("Metin a < b c\n\n")),
+                            ("an unreadable tag shown in a closed code example", before('```\n<script data-example="<">\n```\n\n')),
+                            ("an unreadable tag after every required text", ref.rstrip("\n") + "\n\nMetin <span\n")):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        with self.subTest(passes="the real files"):
+            for path in ("AGENTS.md", "CLAUDE.md", self.REF):
+                t = (REPO / path).read_text(encoding="utf-8")
+                self.assertEqual(sa.visible_text(t), sa.scan_comments(t, sa.heading_fence_opener, sa.heading_fence_closes)[0], path)
+
+    def test_an_html_opener_the_check_cannot_read_is_not_verified(self):
+        # İ5B-FIX-15 (Codex): a tag the reader cannot read — a '<' inside an attribute — was skipped as plain text, and
+        # the required text inside it counted. Such an opener now hides the rest of the file, and the lost required text
+        # says why: 'not verified'. A bare 'a<b' is refused too; its message may say only 'missing' (a known limit)
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        reason = "the check cannot read — not verified"
+        for label, text in (("the anchor inside <script data-example=\"<\">", ref[:ac] + '<script data-example="<">' + anchor + "</script>" + ref[ac + len(anchor):]),
+                            ("a '<' in an attribute before section 2", ref[:r2a] + 'Metin <span title="a<b">x</span>\n\n' + ref[r2a:])):
+            with self.subTest(not_verified=label):
+                lost = self.section_2_lost(text)
+                self.assertTrue(lost and all(reason in p for p in lost), lost)
+        with self.subTest(refused="a bare 'a<b' in prose before section 2"):
+            self.assertTrue(self.section_2_lost(ref[:r2a] + "Metin a<b c\n\n" + ref[r2a:]))
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML
