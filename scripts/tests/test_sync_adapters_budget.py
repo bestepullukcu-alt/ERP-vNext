@@ -606,6 +606,69 @@ class InstructionBudget(unittest.TestCase):
             with self.subTest(visible=label):
                 self.assertFalse(problems(repl, definition), label)
 
+    def test_the_core_markers_keep_their_physical_context(self):
+        # İ5B-FIX-12 (Codex Denetim001 C10-F1, Codex root): extract_core strips the block's edges, so a core:start inside a
+        # title opened before it, or a standalone core:start right after such an opener, hid rule 1 with write / check
+        # 0 / 0 — the shape is measured on the source's physical lines: the line before rule 1 must be really blank
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        lines = text.split("\n")
+        s = next(i for i, l in enumerate(lines) if sa.CORE_START in l)
+        r1 = next(i for i, l in enumerate(lines) if i > s and sa.CORE_RULE_LINE.match(l))
+        self.assertEqual(lines[s].strip(), sa.CORE_START)
+        self.assertFalse(lines[r1 - 1].strip())                            # today: a real blank line before rule 1
+        head, rule1, rest = lines[:s] + lines[s + 1:r1 - 1], lines[r1], lines[r1 + 1:]
+
+        def shape(middle):
+            f.write_text("\n".join(head + middle + rest), encoding="utf-8")
+            problems = sa.check_instruction_budget(self.manifest)[0]
+            return [p for p in problems if p.startswith("CORE-SHAPE")], [p for p in problems if p.startswith("CORE-RULE")]
+
+        for label, middle, why in (
+                ("core:start inside a reference title, rule 1 right after", ['[hidden]: AGENTS.md "' + sa.CORE_START, rule1 + '"'],
+                 "the physical line before rule 1 is not blank"),
+                ("a standalone core:start after a reference title opener", ['[hidden]: AGENTS.md "', sa.CORE_START, rule1 + '"'],
+                 "the physical line before rule 1 is not blank"),
+                ("core:start inside an inline title, rule 1 right after", ['[Dil](AGENTS.md "' + sa.CORE_START, rule1 + '")'],
+                 "the physical line before rule 1 is not blank"),
+                ("core:start and rule 1 on one physical line", [sa.CORE_START + rule1], "not 1..")):
+            with self.subTest(refused=label):
+                found, _ = shape(middle)
+                self.assertTrue(found and why in found[0], found)
+        with self.subTest(passes="core:start, a real blank line, then the visible rules 1..N"):
+            self.assertEqual(shape([sa.CORE_START, "", rule1]), ([], []))
+        with self.subTest(passes="the real core"):
+            f.write_text(text, encoding="utf-8")
+            self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith(("CORE-SHAPE", "CORE-RULE"))])
+
+    def test_an_escaped_bang_before_a_link_is_text(self):
+        # İ5B-FIX-12 (Codex Denetim001 C10-F2): '\![rule](AGENTS.md)' is a visible link after a literal '!', and was
+        # refused as an image — one shared range / escape rule for both readers: an image only after an even number of
+        # backslashes (none included); otherwise a link whose destination and title alone are hidden
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        phrase = "Platform modülü 2 dil (en, tr), kiracı modülü 7 dil (en, tr, fr, es, zh, ar, ru)"
+        line = next(l for l in text.split("\n") if l.startswith("4. **"))
+        bs = chr(92)
+
+        def lost(repl):
+            f.write_text(text.replace(line, line.replace(phrase, repl, 1), 1), encoding="utf-8")
+            return [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE") and phrase in p]
+
+        for label, repl in (("one backslash: a visible link after a literal '!'", bs + "![" + phrase + "](AGENTS.md)"),
+                            ("three backslashes: still escaped", bs * 3 + "![" + phrase + "](AGENTS.md)")):
+            with self.subTest(visible=label):
+                self.assertFalse(lost(repl), label)
+        for label, repl in (("two backslashes: a real image", bs * 2 + "![" + phrase + "](AGENTS.md)"),
+                            ("no backslash: a real image", "![" + phrase + "](AGENTS.md)")):
+            with self.subTest(hidden=label):
+                self.assertTrue(lost(repl), label)
+        with self.subTest(hidden="an escaped bang, the rule only in the link's title"):
+            found = lost(bs + '![Dil](AGENTS.md "' + phrase + '")')
+            self.assertTrue(found and found[0].endswith(sa.METADATA_HIDDEN), found)
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML

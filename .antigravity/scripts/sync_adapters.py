@@ -49,6 +49,9 @@ Rules this script enforces (İ5-A pilot):
 - İ5B-FIX-11 (C9 follow-up): the rule list has one shape — every numbered rule line at its real position in the core, one
   consecutive block numbered 1..N after a blank line, or CORE-SHAPE and no required text is verified; an unescaped image
   opener left after the known links and images makes a rule line 'not verified' (a reference image hides its alt text).
+- İ5B-FIX-12 (C10 audits): the shape is measured on the source's physical lines (the line before rule 1 really blank, so
+  core:start inside or right after a title opener is refused); one range / escape rule for links and images — a '!'
+  after an odd number of backslashes is text, and the link after it keeps its visible label.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -303,6 +306,17 @@ def html_scan(text: str) -> str:
     return AUTOLINK.sub(" ", text)
 
 
+def known_spans(masked: str) -> list[tuple[int, int]]:
+    """İ5B-FIX-12 (Codex Denetim001 C10-F2): the one range rule both readers use for the links and images the check
+    knows. An image only when its '!' has an even number of backslashes before it (none included): hidden whole. A '!'
+    after an odd number is escaped text, so what follows is a link: only its '(destination "title")' is hidden."""
+    out = []
+    for m in LINK_METADATA.finditer(masked):
+        before = len(masked[:m.start()]) - len(masked[:m.start()].rstrip("\\"))
+        out.append((m.start(), m.end()) if m.group(1) and before % 2 == 0 else (m.start(2), m.end(2)))
+    return out
+
+
 def link_metadata(line: str) -> list[tuple[int, int]]:
     """İ5B-FIX-10: the ranges of a rule line that render no text — a link's '(destination "title")', a whole image, and
     the whole line when what follows the number is a reference definition. Inline code is read first and holds none."""
@@ -310,7 +324,7 @@ def link_metadata(line: str) -> list[tuple[int, int]]:
     marker = CORE_RULE_LINE.match(masked)
     if marker and RULE_REFERENCE_DEF.match(masked[marker.end() - 1:]):
         return [(0, len(line))]
-    return [(m.start(), m.end()) if m.group(1) else (m.start(2), m.end(2)) for m in LINK_METADATA.finditer(masked)]
+    return known_spans(masked)
 
 
 UNESCAPED_LINK_OPENER = re.compile(r"(?<!\\)(?:\\\\)*(?:!\[|\]\()")
@@ -326,21 +340,25 @@ def unreadable_link(line: str) -> bool:
     an odd number of backslashes is escaped text and stays allowed; an undefined literal '![x]' is refused too."""
     masked = INLINE_CODE.sub(lambda m: "x" * len(m.group(0)), line)
     out, at = [], 0
-    for m in LINK_METADATA.finditer(masked):
-        a, b = (m.start(), m.end()) if m.group(1) else (m.start(2), m.end(2))
+    for a, b in known_spans(masked):      # İ5B-FIX-12: the same ranges and escape rule as link_metadata
         out += [masked[at:a], " " * (b - a)]
         at = b
     return bool(UNESCAPED_LINK_OPENER.search("".join(out) + masked[at:]))
 
 
-def core_shape_problem(block: str) -> str | None:
+def core_shape_problem(text: str) -> str | None:
     """İ5B-FIX-11 (Codex, C9 follow-up): the one shape the check reads — every numbered rule line of the core, at its real
     position, in one consecutive block numbered 1..N, after a blank line. A title opened before a rule line (directly or
     through an indented bridge) made that line text of the title, invisible, with write / check 0 / 0; any other shape is
     refused, not interpreted: a loose list, a continuation line between two numbered rules and a second numbered list are
     refused too. A line after the last rule is not part of the block and is not judged here."""
-    raw = block.split("\n")
-    at = [i for i, l in enumerate(raw) if CORE_RULE_LINE.match(l)]
+    # İ5B-FIX-12 (Codex Denetim001 C10-F1, Codex root): measured on the source's physical lines, not on extract_core's
+    # block — the block loses its edges, so core:start inside a title, or right after a title opener, looked like a
+    # block that starts with rule 1. The line before rule 1 must be really blank (the marker line is not)
+    raw = text.split("\n")
+    start = next(i for i, l in enumerate(raw) if CORE_START in l)
+    end = next(i for i, l in enumerate(raw) if CORE_END in l)
+    at = [i for i in range(start + 1, end + 1) if CORE_RULE_LINE.match(raw[i])]
     if not at:
         return "no numbered rule line"
     gaps = [i for i, j in zip(at, at[1:]) if j != i + 1]
@@ -349,8 +367,8 @@ def core_shape_problem(block: str) -> str | None:
     numbers = [int(raw[i].split(".")[0]) for i in at]
     if numbers != list(range(1, len(at) + 1)):
         return f"numbered {', '.join(map(str, numbers[:12]))}, not 1..{len(at)}"
-    if at[0] > 0 and raw[at[0] - 1].strip():
-        return "no blank line before rule 1"
+    if raw[at[0] - 1].strip():
+        return "the physical line before rule 1 is not blank"
     return None
 
 
@@ -508,7 +526,7 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
                 problems.append(f"CORE-HTML {core['source']} before the core block holds raw HTML outside inline code "
                                 f"({', '.join(t[:20] for t in outer[:3])}) — a container around the core hides its rules")
             rule_lines = [l for l in ruled.split("\n") if CORE_RULE_LINE.match(l)]
-            shape = core_shape_problem(block)    # İ5B-FIX-11: at the real line positions of the core, before any view
+            shape = core_shape_problem(read_text(core["source"]))   # İ5B-FIX-12: the source's physical lines
             if shape:
                 problems.append(f"CORE-SHAPE {core['source']} the numbered rule lines are not one consecutive list 1..N after "
                                 f"a blank line ({shape}) — no required text is verified")
