@@ -10,8 +10,10 @@ commit:
 
     raised    : 2026-10-18, carved out of the Part A pass by owner choice ("safe tier now, scope the rest")
                 · author: CT (gmg-10)
-    status    : SCOPED. This is app-logic, not a glossary edit; it rewrites each module's error-display
-                path. Measured below; nothing changed here.
+    status    : DONE 2026-10-18, module by module (Carriers, Shipments, Loads). The error resx keys now use
+                the Err* convention across all five modules; 0 plain infra keys remain. Execution + proof:
+                docs/records/audits/2026-10/mvp6-supplychain-l10n-partA2-pass-01/REPORT.md. The scope below
+                is kept for the record.
 
 ## Why it is separate from the Part A safe tier
 

@@ -46,8 +46,8 @@
   <data name="NotProvided" xml:space="preserve"><value>No proporcionado</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data>
   <data name="ListErrorState" xml:space="preserve"><value>No se pudieron cargar las cargas. Inténtelo de nuevo más tarde.</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>Revise los valores introducidos e inténtelo de nuevo.</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Revise los valores introducidos e inténtelo de nuevo.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>El plan de carga se creó correctamente.</value></data>
   <data name="CreateReplaySuccess" xml:space="preserve"><value>Esta solicitud de plan de carga ya se completó correctamente.</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>Reintente sin modificar el formulario para conservar la identidad de la solicitud.</value></data>

@@ -37,15 +37,15 @@
   <data name="CreateReplaySuccess" xml:space="preserve"><value>This carrier request was already completed successfully.</value></data>
   <data name="StatusSuccess" xml:space="preserve"><value>Carrier status changed successfully.</value></data>
   <data name="StatusReplaySuccess" xml:space="preserve"><value>This status request was already completed successfully.</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>Check the entered values and try again.</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
-  <data name="CarrierNotFound" xml:space="preserve"><value>The carrier could not be found.</value></data>
-  <data name="CarrierCodeConflict" xml:space="preserve"><value>This carrier code is already reserved.</value></data>
-  <data name="IdempotencyKeyReused" xml:space="preserve"><value>This request was already received with different values. To make a different request, close this form and open a new one.</value></data>
-  <data name="InvalidCarrierTransition" xml:space="preserve"><value>The current carrier status no longer permits this change.</value></data>
-  <data name="PersistenceUnavailable" xml:space="preserve"><value>The request outcome is unavailable.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Check the entered values and try again.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="ErrCarrierNotFound" xml:space="preserve"><value>The carrier could not be found.</value></data>
+  <data name="ErrCarrierCodeConflict" xml:space="preserve"><value>This carrier code is already reserved.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>This request was already received with different values. To make a different request, close this form and open a new one.</value></data>
+  <data name="ErrInvalidCarrierTransition" xml:space="preserve"><value>The current carrier status no longer permits this change.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>The request outcome is unavailable.</value></data>
   <data name="ListErrorState" xml:space="preserve"><value>Carriers could not be loaded. Try again later.</value></data>
-  <data name="InternalError" xml:space="preserve"><value>An unexpected error occurred.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>An unexpected error occurred.</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>Retry without changing the form to preserve the request identity.</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Support reference</value></data>
   <data name="EmptyState" xml:space="preserve"><value>No carriers were found.</value></data>

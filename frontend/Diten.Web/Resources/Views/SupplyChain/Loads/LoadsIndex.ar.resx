@@ -46,8 +46,8 @@
   <data name="NotProvided" xml:space="preserve"><value>غير متوفر</value></data>
   <data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data>
   <data name="ListErrorState" xml:space="preserve"><value>تعذّر تحميل الحمولات. حاول مرة أخرى لاحقًا.</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>تحقق من القيم المدخلة ثم أعد المحاولة.</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>ليس لديك إذن لتنفيذ هذا الإجراء.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>تحقق من القيم المدخلة ثم أعد المحاولة.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>ليس لديك إذن لتنفيذ هذا الإجراء.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>تم إنشاء خطة الحمولة بنجاح.</value></data>
   <data name="CreateReplaySuccess" xml:space="preserve"><value>اكتمل طلب خطة الحمولة هذا بنجاح من قبل.</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>أعد المحاولة دون تغيير النموذج للحفاظ على هوية الطلب.</value></data>

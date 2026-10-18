@@ -275,7 +275,7 @@ const LoadList = (function () {
         DEPENDENCY_UNAVAILABLE: L.ErrDependencyUnavailable, DEPENDENCY_RESPONSE_INVALID: L.ErrDependencyResponseInvalid,
         REFERENCE_STATE_UNAVAILABLE: L.ErrReferenceStateUnavailable, PERSISTENCE_UNAVAILABLE: L.ErrPersistenceUnavailable,
         INTERNAL_ERROR: L.ErrInternalError
-    })[code] || (status === 403 ? L.AccessDenied : status === 400 || status === 415 ? L.ValidationError : L.ErrInternalError);
+    })[code] || (status === 403 ? L.ErrForbidden : status === 400 || status === 415 ? L.ErrInvalidRequest : L.ErrInternalError);
 
     // ─── List states (MODULE-RECIPE 3.6, 3.11, 4.1) ─────────────────────────────
     // The skeleton is owned by this page (the shared .backbone-skeleton is display:none and DtDefaults fades #skeleton-loader
@@ -422,9 +422,9 @@ const LoadList = (function () {
             if (!/^[1-9][0-9]*$/.test(input.value)) bad.push(input);
         });
         bad.forEach((field) => { field.classList.add('is-invalid'); field.setAttribute('aria-invalid', 'true'); });
-        if (payload.body.shipmentIds.length < 1 || payload.body.stops.length < 2) return L.ValidationError;
+        if (payload.body.shipmentIds.length < 1 || payload.body.stops.length < 2) return L.ErrInvalidRequest;
         if (!payload.departAtValid) return L.PlannedDepartAtInvalid;
-        return bad.length ? L.ValidationError : '';
+        return bad.length ? L.ErrInvalidRequest : '';
     };
     const submitCreate = async () => {
         const form = document.getElementById('formLoad');

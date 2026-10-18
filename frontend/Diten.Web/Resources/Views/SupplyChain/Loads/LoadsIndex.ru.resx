@@ -46,8 +46,8 @@
   <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Номер обращения</value></data>
   <data name="ListErrorState" xml:space="preserve"><value>Не удалось загрузить рейсы. Повторите попытку позже.</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>Проверьте введённые значения и повторите попытку.</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Проверьте введённые значения и повторите попытку.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>План рейса успешно создан.</value></data>
   <data name="CreateReplaySuccess" xml:space="preserve"><value>Этот запрос на план рейса уже был успешно выполнен.</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>Повторите попытку без изменения формы, чтобы сохранить идентификатор запроса.</value></data>

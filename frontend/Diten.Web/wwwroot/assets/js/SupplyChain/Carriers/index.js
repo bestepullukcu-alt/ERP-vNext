@@ -293,15 +293,25 @@ const CarrierList = (function () {
         const correlation = response?.headers?.get('X-Correlation-Id');
         return correlation ? ` ${L.SupportReference}: ${correlation}` : '';
     };
-    const messageForError = (code, status) => ({
-        CARRIER_NOT_FOUND: L.CarrierNotFound,
-        CARRIER_CODE_CONFLICT: L.CarrierCodeConflict,
-        IDEMPOTENCY_KEY_REUSED: L.IdempotencyKeyReused,
-        INVALID_CARRIER_TRANSITION: L.InvalidCarrierTransition,
-        PERSISTENCE_UNAVAILABLE: L.PersistenceUnavailable,
-        INTERNAL_ERROR: L.InternalError
-    })[code] || (status === 403 ? L.AccessDenied : status === 400 || status === 415
-        ? L.ValidationError : L.ErrorOccurred);
+    // Part A2 (glossary {Claims,Returns} camp): wire failure.code -> Err* resx key, with a status
+    // fallback, resolved via t(); mirrors Claims/Returns. Unknown code/status -> ErrInternalError.
+    const ERROR_KEY = Object.freeze({
+        CARRIER_NOT_FOUND: 'ErrCarrierNotFound',
+        CARRIER_CODE_CONFLICT: 'ErrCarrierCodeConflict',
+        IDEMPOTENCY_KEY_REUSED: 'ErrIdempotencyKeyReused',
+        INVALID_CARRIER_TRANSITION: 'ErrInvalidCarrierTransition',
+        PERSISTENCE_UNAVAILABLE: 'ErrPersistenceUnavailable',
+        INVALID_REQUEST: 'ErrInvalidRequest',
+        FORBIDDEN: 'ErrForbidden',
+        INTERNAL_ERROR: 'ErrInternalError'
+    });
+    const STATUS_FALLBACK_CODE = Object.freeze({
+        400: 'INVALID_REQUEST', 415: 'INVALID_REQUEST', 403: 'FORBIDDEN',
+        404: 'CARRIER_NOT_FOUND', 409: 'CARRIER_CODE_CONFLICT', 503: 'PERSISTENCE_UNAVAILABLE'
+    });
+    const t = (key) => L[key] || '';
+    const messageForError = (code, status) =>
+        t(ERROR_KEY[code] || ERROR_KEY[STATUS_FALLBACK_CODE[status]] || 'ErrInternalError');
     const notifyFailure = async (response, options) => {
         if (response.status === 401) {
             handleUnauthorized();
@@ -432,13 +442,13 @@ const CarrierList = (function () {
             externalReference: document.getElementById('externalReference').value
         };
         if (payload.carrierCode.length < 1 || payload.displayName.length < 1 || payload.supportedModes.length < 1) {
-            showFormError('formCarrierAlert', L.ValidationError);
+            showFormError('formCarrierAlert', L.ErrInvalidRequest);
             return;
         }
         const signature = JSON.stringify(payload);
         if (!createIntent) createIntent = newIntent();
         if (createIntent.blocked) {
-            showFormError('formCarrierAlert', L.IdempotencyKeyReused);
+            showFormError('formCarrierAlert', L.ErrIdempotencyKeyReused);
             return;
         }
         setBusy(button, true);
@@ -469,7 +479,7 @@ const CarrierList = (function () {
             dt.ajax.reload(null, false);
         } catch (error) {
             console.error('[Carriers] Create request outcome is unknown.', error);
-            window.showToast?.(`${L.PersistenceUnavailable} ${L.RetrySameRequest}`, 'error');
+            window.showToast?.(`${L.ErrPersistenceUnavailable} ${L.RetrySameRequest}`, 'error');
         } finally {
             setBusy(button, false);
         }
@@ -484,14 +494,14 @@ const CarrierList = (function () {
             reasonCode: document.getElementById('reasonCode').value
         };
         if (!carrierId || !payload.targetStatus) {
-            showFormError('statusCarrierAlert', L.ValidationError);
+            showFormError('statusCarrierAlert', L.ErrInvalidRequest);
             return;
         }
         const signature = JSON.stringify(payload);
         const intent = statusIntents.get(carrierId) || newIntent();
         statusIntents.set(carrierId, intent);
         if (intent.blocked) {
-            showFormError('statusCarrierAlert', L.IdempotencyKeyReused);
+            showFormError('statusCarrierAlert', L.ErrIdempotencyKeyReused);
             return;
         }
         const run = async () => {
@@ -513,7 +523,7 @@ const CarrierList = (function () {
                 dt.ajax.reload(null, false);
             } catch (error) {
                 console.error('[Carriers] Status request outcome is unknown.', error);
-                window.showToast?.(`${L.PersistenceUnavailable} ${L.RetrySameRequest}`, 'error');
+                window.showToast?.(`${L.ErrPersistenceUnavailable} ${L.RetrySameRequest}`, 'error');
             } finally {
                 setBusy(button, false);
             }

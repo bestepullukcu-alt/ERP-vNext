@@ -46,8 +46,8 @@
   <data name="NotProvided" xml:space="preserve"><value>Not provided</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Support reference</value></data>
   <data name="ListErrorState" xml:space="preserve"><value>Loads could not be loaded. Try again later.</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>Check the entered values and try again.</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Check the entered values and try again.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>You do not have permission for this action.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>Load plan created successfully.</value></data>
   <data name="CreateReplaySuccess" xml:space="preserve"><value>This load plan request was already completed successfully.</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>Retry without changing the form to preserve the request identity.</value></data>

@@ -46,8 +46,8 @@
   <data name="NotProvided" xml:space="preserve"><value>Sağlanmadı</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
   <data name="ListErrorState" xml:space="preserve"><value>Yükler yüklenemedi. Daha sonra tekrar deneyin.</value></data>
-  <data name="ValidationError" xml:space="preserve"><value>Girilen değerleri kontrol edip yeniden deneyin.</value></data>
-  <data name="AccessDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Girilen değerleri kontrol edip yeniden deneyin.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>Yük planı başarıyla oluşturuldu.</value></data>
   <data name="CreateReplaySuccess" xml:space="preserve"><value>Bu yük planı isteği daha önce başarıyla tamamlandı.</value></data>
   <data name="RetrySameRequest" xml:space="preserve"><value>İstek kimliğini korumak için formu değiştirmeden yeniden deneyin.</value></data>
