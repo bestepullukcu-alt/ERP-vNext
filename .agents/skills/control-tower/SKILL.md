@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:05524854619c` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:6f4b6d3e0719` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -30,6 +30,9 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   kaynakları. Bütün depoyu tarama.
 - Mükerrer ya da süren iş için kartın keşif komutunu koş. Erişilemeyen kaynak ya da ref'i yaz; görünmeyen işi
   doğrulanmış sayma.
+- Keşfi bir kez koş ve çıktıyı ekrandan oku; geçici dosya dahil hiçbir dosyaya yönlendirme. Aynı kaynak ve sorguyla
+  tekrar koşma; kaynak değiştiyse ya da teknik bir hata olduysa gerekçesini yazıp bir kez yeniden koşabilirsin. Çıktı
+  kesildiyse "kısmi" de.
 - Önceki bir keşif raporu: `--check-report` yalnız bütünlüğü kanıtlar, güncelliği değil. Raporu yalnız aynı iş için,
   HEAD, kirli kaynak baytları ve ref kimliklerinin değişmediği ölçüldüyse yeniden kullan; yeni işte ya da bunlar
   kanıtlanamıyorsa yeniden keşfet.
@@ -55,16 +58,23 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 - Kapsam önerisi, paket taslağı, kod geliştirme ve dağıtım dört ayrı yetkidir; bu skill hiçbirini vermez. Sahibin onayı
   olmadan ürün kodu, commit, push ya da PR yok.
-- İlk çağrıda kuyruğa ya da kayda yazma, `guard` ya da prompt taslağı dosyası yok. Görev, test, kabul ve başka bir
+- İlk çağrıda kuyruğa ya da kayda yazma, `guard` ya da prompt taslağı dosyası yok; geçici dosya dahil hiçbir dosyaya
+  yazma. Görev, test, kabul ve başka bir
   MVP'ye soru için kartın ilgili satırını ve aracını kullan; yeni yetki yaratma, zorunlu kapıları atlama.
 
 ## 6. Yanıt biçimi
 
-Kısa, tek öneriyle ve bu sırayla:
+İlk yanıt kısadır (hedef yaklaşık 12 satır) ve bu sıradadır:
 
-1. Okunan kaynaklar (`yol@commit`) ve okunamayan ya da eksik kaynaklar; eksik varsa "kısmi inceleme".
-2. Olgular (`kaynak:satır`) ile çıkarımlar ayrı.
-3. Adaylar, mükerrer işler ve gerekçeli ilk kapsam önerisi.
-4. Yalnız kullanıcının verebileceği açık iş, onay ve sahiplik kararları.
+1. Tek satırda durum: dal, HEAD, görev kaydı.
+2. Bilinen eksik ya da okunamayan kaynaklar, adlarıyla; eksik varsa "kısmi inceleme". Sayısını bilmiyorsan sayı uydurma.
+3. Kritik çakışma ya da engel (kimlik çakışması, onaysız görünen kod, kayıtlı kuyruğun yokluğu): satır hedefi bunları
+   gizlemez.
+4. Gerekçeli tek öneri, "öneri — onay değil".
+5. Yalnız kullanıcı kararı gerekiyorsa, en çok bloklayan kararı tek soruyla sor; gerekmiyorsa soru uydurma.
+
+Kısa yanıtta da olguyu çıkarımdan ayır. Kaynak tablosu, olgular (`kaynak:satır`), çıkarımlar ve aday listesi istenince
+ayrıntılı verilir. Satır numarasını yalnız numaralı bir okumadan ver (`grep -n`, `nl -ba` ya da okuma aracının satır
+numarası); yoksa yalnız `yol@commit` yaz.
 
 İncelenen kaynak tablosundan geniş "tam inceledim" deme. Zaman ya da token tasarrufu garantisi verme.

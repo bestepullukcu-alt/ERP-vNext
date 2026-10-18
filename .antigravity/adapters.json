@@ -54,7 +54,8 @@
           {
             "heading": "2. Araştırma",
             "anchors": [
-              "`--check-report` yalnız bütünlüğü kanıtlar, güncelliği değil."
+              "`--check-report` yalnız bütünlüğü kanıtlar, güncelliği değil.",
+              "geçici dosya dahil hiçbir dosyaya yönlendirme."
             ]
           },
           {
@@ -78,7 +79,9 @@
           {
             "heading": "6. Yanıt biçimi",
             "anchors": [
-              "İncelenen kaynak tablosundan geniş \"tam inceledim\" deme."
+              "İncelenen kaynak tablosundan geniş \"tam inceledim\" deme.",
+              "satır hedefi bunları",
+              "Satır numarasını yalnız numaralı bir okumadan ver"
             ]
           }
         ]
