@@ -9,10 +9,11 @@ modules: [MOD-0190, MOD-0192]
 
 # Wave 6.1 G7 — default role grants for S&OP + Capacity (owner decision)
 
-> **OWNER RULING RECORDED. The grant is not yet in effect** — it takes effect only when the G7 patch is applied
-> to `DefaultRolePermissionTemplate.cs`. Widening every tenant Admin's permissions is the owner's action (the
-> BL-652 precedent: the harness refuses it from CT as a `[Permission Grant]`). Package and commands:
-> `docs/roadmap/plans/mvp6-0190-0192-g7-permissions-01/README.md`.
+> **IN EFFECT (2026-10-18).** The owner applied `g7-adminmodules-standalone.patch` + `g7-role-split-test.patch`
+> (`git apply`, owner's terminal); CT verified the tree (`AdminModules` line 68 carries both codes; the patch reverse-checks
+> as applied) and ran `Diten.AuthService.Application.Tests` (Roles/DefaultRolePermission/PermissionSeed): **848 passed,
+> 0 failed, 7 skipped**, incl. both G7 facts. Package: `docs/roadmap/plans/mvp6-0190-0192-g7-permissions-01/README.md`.
+> If BL-652 is applied later, it now conflicts on the same line — re-cut BL-652 on top of this (CT can prepare it).
 
 - owner: **ny@gmgroup.ch** — "prep G7 with that split", 2026-10-18
 - split: **tenant Admin = all 8 keys; default Viewer = the 2 `.read` keys**
