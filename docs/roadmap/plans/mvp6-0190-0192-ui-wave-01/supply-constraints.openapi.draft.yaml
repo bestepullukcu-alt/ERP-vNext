@@ -9,7 +9,7 @@ info:
     `ConstraintFixtureReader` seam (MOD-0192 pack §119, §244) with a live, owner-frozen contract.
     Ownership is a PRODUCER-OWNER decision (see x-owner); MOD-0192 only consumes it.
   x-status: DRAFT
-  x-owner: TBD-PRODUCER-OWNER   # NOT MOD-0192 (it consumes). Likely a resource/capacity master or a
+  x-owner: MOD-0193            # owner decision 2026-10-18 (mvp6-next-steps-owner-decisions-2026-10-18): BOM & Routings, Diten.ManufacturingService
                                 # manufacturing-resource module. The owner must be named + the contract
                                 # frozen before any live adapter (mirrors DEMAND x-owner MOD-0188).
   x-consumed-by: [MOD-0192]
