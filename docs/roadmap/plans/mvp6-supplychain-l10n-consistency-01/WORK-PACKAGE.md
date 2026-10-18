@@ -66,8 +66,25 @@ No resx is edited here. Convergence needs the glossary decision (and a native tr
 terms), and it crosses six modules — both reasons it is one owner-authorized pass, not a CT edit. The
 Claims and Returns reviews already fixed everything safe *within* their modules; this closes the rest.
 
+## Addendum (Carriers review, 2026-10-18) — the drift is also at the KEY-NAME level
+
+`DRIFT-INVENTORY.tsv` compares values under the **same key name**, so it undercounts: the Carriers review
+(`mvp6-carriers-l10n-review-01`) found the same concepts carried under **different key names** across
+modules — Carriers `Actions` / `EmptyList` / `ListUnavailable` / `InternalError` / `AccessDenied` /
+`CarrierNotFound` vs Claims `ActionsHeader` / `EmptyState` / `ListErrorState` / `ErrInternalError` /
+`ErrForbidden` / `ErrClaimNotFound`, with some different `en`/wire text too. So the pass must also normalise
+**key names + en source** for shared concepts, not only translated values — a deeper (wire-touching) part
+that the two later lanes (Returns/Claims) standardised and the earlier Carriers lane did not.
+
+Extra confirmed cross-module drifts from that review: `SupportReference` fr/ru; `StatusActive` tr
+("Etkin" vs SharedResource "Aktif") and zh (Retired "已停用" **collides** with SharedResource Passive
+"停用"); `ChangeStatusTitle` ru noun-vs-verb. The `StatusActive`/`StatusRetired` vs **SharedResource**
+collision means the glossary decision must include how module status labels relate to the shared Active/
+Passive strings.
+
 ## Files
 
 - `DRIFT-INVENTORY.tsv` — the measured raw inventory (53 keys × the languages that drift, with each value
-  and the modules that carry it; a rough `class` column that over-flags and must be human-triaged).
+  and the modules that carry it; a rough `class` column that over-flags and must be human-triaged). Note:
+  same-key-name only; see the addendum for key-name-level drift it does not capture.
 - `WORK-PACKAGE.md` — this scope.
