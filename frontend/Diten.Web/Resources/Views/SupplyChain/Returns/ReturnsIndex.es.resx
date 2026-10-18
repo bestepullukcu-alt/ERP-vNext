@@ -35,7 +35,7 @@
   <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Despachado</value></data>
   <data name="ShipmentStatusInTransit" xml:space="preserve"><value>En tránsito</value></data>
   <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Entregado</value></data>
-  <data name="ShipmentStatusException" xml:space="preserve"><value>Incidencia</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Excepción</value></data>
   <data name="ShipmentStatusClosed" xml:space="preserve"><value>Cerrado</value></data>
   <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Cancelado</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Nueva devolución</value></data>

@@ -293,7 +293,7 @@ const LoadList = (function () {
     };
     const showLoadFailure = (reference) => {
         const alert = document.getElementById('loadsLoadError'); if (!alert) return;
-        alert.textContent = withReference(L.ListUnavailable, reference);
+        alert.textContent = withReference(L.ListErrorState, reference);
         alert.classList.remove('d-none'); tableCard()?.classList.add('d-none');
     };
     const clearLoadFailure = () => {
@@ -541,7 +541,7 @@ const LoadList = (function () {
                 { targets: 4, render: (data, type) => type === 'display' ? getStatusBadge(data) : (data ?? '') }
             ],
             buttons: createToolbarButtons(),
-            language: { emptyTable: L.EmptyList, zeroRecords: L.EmptyList },
+            language: { emptyTable: L.EmptyState, zeroRecords: L.EmptyState },
             initComplete: function () {
                 const api = this.api();
                 mountInlineFilter();

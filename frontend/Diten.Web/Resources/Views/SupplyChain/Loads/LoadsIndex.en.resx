@@ -42,10 +42,10 @@
   <data name="StatusDispatched" xml:space="preserve"><value>Dispatched</value></data>
   <data name="StatusCompleted" xml:space="preserve"><value>Completed</value></data>
   <data name="StatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
-  <data name="EmptyList" xml:space="preserve"><value>No loads were found.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No loads were found.</value></data>
   <data name="NotProvided" xml:space="preserve"><value>Not provided</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Support reference</value></data>
-  <data name="ListUnavailable" xml:space="preserve"><value>Loads could not be loaded. Try again later.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Loads could not be loaded. Try again later.</value></data>
   <data name="ValidationError" xml:space="preserve"><value>Check the entered values and try again.</value></data>
   <data name="AccessDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>Load plan created successfully.</value></data>

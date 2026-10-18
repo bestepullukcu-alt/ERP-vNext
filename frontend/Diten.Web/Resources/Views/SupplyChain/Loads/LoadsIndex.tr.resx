@@ -42,10 +42,10 @@
   <data name="StatusDispatched" xml:space="preserve"><value>Sevk Edildi</value></data>
   <data name="StatusCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
   <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
-  <data name="EmptyList" xml:space="preserve"><value>Yük bulunamadı.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Yük bulunamadı.</value></data>
   <data name="NotProvided" xml:space="preserve"><value>Sağlanmadı</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
-  <data name="ListUnavailable" xml:space="preserve"><value>Yükler yüklenemedi. Daha sonra tekrar deneyin.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Yükler yüklenemedi. Daha sonra tekrar deneyin.</value></data>
   <data name="ValidationError" xml:space="preserve"><value>Girilen değerleri kontrol edip yeniden deneyin.</value></data>
   <data name="AccessDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>Yük planı başarıyla oluşturuldu.</value></data>

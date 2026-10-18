@@ -42,10 +42,10 @@
   <data name="StatusDispatched" xml:space="preserve"><value>Отправлен</value></data>
   <data name="StatusCompleted" xml:space="preserve"><value>Завершён</value></data>
   <data name="StatusCancelled" xml:space="preserve"><value>Отменён</value></data>
-  <data name="EmptyList" xml:space="preserve"><value>Рейсы не найдены.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Рейсы не найдены.</value></data>
   <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
   <data name="SupportReference" xml:space="preserve"><value>Номер обращения</value></data>
-  <data name="ListUnavailable" xml:space="preserve"><value>Не удалось загрузить рейсы. Повторите попытку позже.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Не удалось загрузить рейсы. Повторите попытку позже.</value></data>
   <data name="ValidationError" xml:space="preserve"><value>Проверьте введённые значения и повторите попытку.</value></data>
   <data name="AccessDenied" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
   <data name="CreateSuccess" xml:space="preserve"><value>План рейса успешно создан.</value></data>

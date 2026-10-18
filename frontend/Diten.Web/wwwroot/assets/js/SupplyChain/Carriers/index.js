@@ -334,7 +334,7 @@ const CarrierList = (function () {
     };
     const showLoadFailure = (correlation) => {
         const alert = document.getElementById('carriersLoadError'); if (!alert) return;
-        alert.textContent = `${L.ListUnavailable}${correlation ? ` ${L.SupportReference}: ${correlation}` : ''}`;
+        alert.textContent = `${L.ListErrorState}${correlation ? ` ${L.SupportReference}: ${correlation}` : ''}`;
         alert.classList.remove('d-none'); tableCard()?.classList.add('d-none');
     };
     const clearLoadFailure = () => {
@@ -612,7 +612,7 @@ const CarrierList = (function () {
                 }
             ],
             buttons: createToolbarButtons(),
-            language: { emptyTable: L.EmptyList, zeroRecords: L.EmptyList },
+            language: { emptyTable: L.EmptyState, zeroRecords: L.EmptyState },
             initComplete: function () {
                 const api = this.api();
                 mountInlineFilter();
