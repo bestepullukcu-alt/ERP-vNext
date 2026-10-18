@@ -1,0 +1,117 @@
+@using Diten.Web.Models.SupplyChain.CapacityPlans
+@using Diten.Web.Views.SupplyChain.CapacityPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CapacityPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    // MOD-0192 plan workspace (UI-SCOPE-0192 §3): plan header from getCapacityPlan; Create scenario / Open scenario by ID
+    // (no scenario list, F192-LIST); the scenario panel with Evaluate; the evaluation panel with bottlenecks and a manual
+    // Refresh (no polling, F192-POLL). The opened scenario and evaluation ride the page URL, so a shared link shows them.
+    ViewData["Title"] = Localizer["WorkspaceTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var capacityPlanId = (Guid)ViewBag.CapacityPlanId;
+}
+@if (!Perms.Has(CapacityUiPermissions.Read))
+{
+    <partial name="_AccessDenied" model="@Localizer["WorkspaceTitle"].Value" />
+    return;
+}
+@{
+    var permissions = CapacityPagePermissions.From(Perms.Has);
+}
+<div id="capacity-plan-details" data-plan-id="@capacityPlanId.ToString("D")" data-legal-entity-id="@ViewBag.LegalEntityId">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-3">
+        <div>
+            <h4 class="mb-1" id="planName">@SharedLocalizer["Loading"]</h4>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0 py-0"><li class="breadcrumb-item"><a asp-action="Index">@Localizer["CapacityPlansTitle"]</a></li><li class="breadcrumb-item active text-primary">@Localizer["WorkspaceTitle"]</li></ol></nav>
+        </div>
+        <a asp-action="Index" class="btn btn-label-secondary border">@SharedLocalizer["BackToList"]</a>
+    </div>
+    <div id="workspaceAlert" class="alert alert-danger d-none" role="alert" tabindex="-1"></div>
+    <div id="workspaceSkeleton" class="backbone-skeleton p-4" style="display:block" aria-hidden="true"><div class="shimmer skeleton-row skeleton-row-lg"></div><div class="shimmer skeleton-row"></div><div class="shimmer skeleton-row"></div><div class="shimmer skeleton-row skeleton-row-last"></div></div>
+    <div id="workspaceSurface" class="row g-6" hidden inert aria-hidden="true">
+        <div class="col-12">
+            <section class="card backbone-preview-section p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                    <h5 class="card-title mb-0">@Localizer["WorkspaceTitle"]</h5>
+                    @if (permissions.CanCreateScenario)
+                    {
+                        <button type="button" id="btnCreateScenario" class="btn btn-primary">@Localizer["CreateScenario"]</button>
+                    }
+                </div>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["PlanId"]</dt><dd id="detailPlanId" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@SharedLocalizer["Status"]</dt><dd id="detailStatus" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["HorizonStart"]</dt><dd id="detailHorizonStart" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["HorizonEnd"]</dt><dd id="detailHorizonEnd" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["DemandPlanId"]</dt><dd id="detailDemandPlanId" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["DemandPlanVersion"]</dt><dd id="detailDemandPlanVersion" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["SourceCapturedAt"]</dt><dd id="detailSourceCapturedAt" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["SourceChecksum"]</dt><dd id="detailSourceChecksum" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["PlanProvenance"]</dt><dd id="detailProvenance" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["CreatedAt"]</dt><dd id="detailCreated" class="col-sm-8 col-lg-4 mb-3"></dd>
+                </dl>
+                <form id="formOpenScenario" class="row g-3 mt-2 border-top pt-4" novalidate data-no-tracker>
+                    <div class="col-12 col-md-8">
+                        <label for="openScenarioId" class="form-label fw-medium">@Localizer["ScenarioId"]</label>
+                        <div class="d-flex gap-2">
+                            <div class="diten-field flex-grow-1">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" id="openScenarioId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-describedby="openScenarioIdHelp" />
+                            </div>
+                            <button type="submit" id="btnOpenScenario" class="btn btn-label-primary text-nowrap">@Localizer["OpenScenario"]</button>
+                        </div>
+                        <div id="openScenarioIdHelp" class="form-text">@Localizer["ScenarioIdHelp"]</div>
+                        <div class="invalid-feedback d-block" data-for="openScenarioId"></div>
+                    </div>
+                </form>
+            </section>
+        </div>
+        <div class="col-12" id="scenarioSection" hidden>
+            <section class="card backbone-preview-section p-4" aria-live="polite">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                    <h5 class="card-title mb-0" id="scenarioName"></h5>
+                    @if (permissions.CanEvaluate)
+                    {
+                        <button type="button" id="btnEvaluate" class="btn btn-primary">@Localizer["EvaluateScenario"]</button>
+                    }
+                </div>
+                <div id="scenarioAlert" class="alert alert-danger d-none" role="alert"></div>
+                <dl class="row mb-3">
+                    <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["ScenarioId"]</dt><dd id="scenarioId" class="col-sm-8 col-lg-4 mb-3"></dd>
+                    <dt class="col-sm-4 col-lg-2 mb-3">@SharedLocalizer["Status"]</dt><dd id="scenarioStatus" class="col-sm-8 col-lg-4 mb-3"></dd>
+                </dl>
+                <h6 class="mb-2">@Localizer["ConstraintRefs"]</h6>
+                <div id="constraintRefsEmpty" class="text-muted mb-3 d-none">@Localizer["EmptyState"]</div>
+                <div class="table-responsive mb-4" id="constraintRefsHost">
+                    <table class="table"><thead><tr><th>@Localizer["ConstraintId"]</th><th>@Localizer["ConstraintSource"]</th><th>@Localizer["ConstraintVersion"]</th></tr></thead><tbody id="constraintRefsBody"></tbody></table>
+                </div>
+                <h6 class="mb-2">@Localizer["AdjustmentsHeader"]</h6>
+                <div id="adjustmentsEmpty" class="text-muted d-none">@Localizer["EmptyState"]</div>
+                <div class="table-responsive" id="adjustmentsHost">
+                    <table class="table"><thead><tr><th>@Localizer["AdjResourceRef"]</th><th>@Localizer["AdjPeriod"]</th><th class="text-end">@Localizer["AdjCapacityDelta"]</th><th>@Localizer["AdjUom"]</th></tr></thead><tbody id="adjustmentsBody"></tbody></table>
+                </div>
+            </section>
+        </div>
+        <partial name="~/Views/SupplyChain/CapacityPlans/_EvaluationPanel.cshtml" />
+    </div>
+    <div id="workspaceDenied" hidden><partial name="_AccessDenied" model="@Localizer["WorkspaceTitle"].Value" /></div>
+    @if (permissions.CanCreateScenario)
+    {
+        <partial name="~/Views/SupplyChain/CapacityPlans/_CreateScenarioOffcanvas.cshtml" />
+    }
+    @if (permissions.CanEvaluate)
+    {
+        <partial name="~/Views/SupplyChain/CapacityPlans/_EvaluateOffcanvas.cshtml" />
+    }
+    @* The anti-forgery token for the workspace mutations (each offcanvas form also carries one). *@
+    @Html.AntiForgeryToken()
+</div>
+@* Display decision only (UAS-001 §4); the backend [CapacityPermission] stays the authority. *@
+<script id="capacity-plans-permissions" type="application/json">@Json.Serialize(new { canCreate = permissions.CanCreate, canCreateScenario = permissions.CanCreateScenario, canEvaluate = permissions.CanEvaluate })</script>
+@section Scripts {
+    <partial name="~/Views/SupplyChain/CapacityPlans/_IndexL10n.cshtml" />
+    <script src="~/assets/js/SupplyChain/CapacityPlans/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/SupplyChain/CapacityPlans/details.js" asp-append-version="true"></script>
+}

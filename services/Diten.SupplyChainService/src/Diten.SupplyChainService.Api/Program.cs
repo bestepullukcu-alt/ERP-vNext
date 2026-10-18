@@ -137,9 +137,13 @@ builder.Services.AddSingleton<IModuleManifestProvider, CarrierManagementManifest
 builder.Services.AddSingleton<IModuleManifestProvider, RoutingLoadPlanningManifestProvider>();
 // R-4c (2026-10-04): Claims (MOD-0187 §33 ship rule) ships with its UI in the same change (MOD-0187 §32).
 builder.Services.AddSingleton<IModuleManifestProvider, ClaimsManagementManifestProvider>();
-// G6 (2026-10-18, G4 item C): S&OP (MOD-0190 §24) ships with its UI in the same change, and only where it is composed —
+// G6 (2026-10-18, G4 item C): S&OP (MOD-0190 §24) and Capacity (MOD-0192 §24) ship with their UI, and only where composed —
 // a catalog page on a host whose routes answer 404 would be dead navigation (the demand-seed rule above).
-if (demandSeed is not null) builder.Services.AddSingleton<IModuleManifestProvider, SopWorkflowSignoffsManifestProvider>();
+if (demandSeed is not null)
+{
+    builder.Services.AddSingleton<IModuleManifestProvider, SopWorkflowSignoffsManifestProvider>();
+    builder.Services.AddSingleton<IModuleManifestProvider, CapacityPlanningManifestProvider>(); // MOD-0192 §24, same rule
+}
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 // Q381 (2026-10-04, owner decision §4): routes of uncomposed modules answer 404, not 500. The filter below reads
 // which modules exist from the registrations above; it keeps no list of its own (K6).

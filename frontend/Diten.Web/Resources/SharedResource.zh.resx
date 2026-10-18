@@ -1133,6 +1133,8 @@
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>运输索赔</value></data>
   <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>S&amp;OP 工作流与签核</value></data>
   <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>S&amp;OP 计划</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>产能规划</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>产能计划</value></data>
   <data name="Activate" xml:space="preserve"><value>启用</value></data>
   <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>电子邮件或用户名</value></data>

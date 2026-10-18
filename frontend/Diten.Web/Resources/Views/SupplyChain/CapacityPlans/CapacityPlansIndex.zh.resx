@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>打开计划</value></data>
   <data name="PlanId" xml:space="preserve"><value>计划 ID</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>请输入计划的 UUID。</value></data>
-  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="PlanName" xml:space="preserve"><value>名称</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>计划期开始</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>计划期结束</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>需求计划 ID</value></data>
@@ -19,8 +19,8 @@
   <data name="SourceCapturedAt" xml:space="preserve"><value>来源捕获时间</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>来源校验和</value></data>
   <data name="WorkspaceTitle" xml:space="preserve"><value>计划工作区</value></data>
-  <data name="Created" xml:space="preserve"><value>创建时间</value></data>
-  <data name="Provenance" xml:space="preserve"><value>数据溯源</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="PlanProvenance" xml:space="preserve"><value>数据溯源</value></data>
   <data name="CreateScenario" xml:space="preserve"><value>创建方案</value></data>
   <data name="OpenScenario" xml:space="preserve"><value>打开方案</value></data>
   <data name="ScenarioId" xml:space="preserve"><value>方案 ID</value></data>
@@ -32,7 +32,7 @@
   <data name="ConstraintVersion" xml:space="preserve"><value>版本</value></data>
   <data name="AddConstraintRef" xml:space="preserve"><value>添加约束引用</value></data>
   <data name="RemoveConstraintRef" xml:space="preserve"><value>移除约束引用</value></data>
-  <data name="Adjustments" xml:space="preserve"><value>调整</value></data>
+  <data name="AdjustmentsHeader" xml:space="preserve"><value>调整</value></data>
   <data name="AdjResourceRef" xml:space="preserve"><value>资源</value></data>
   <data name="AdjPeriod" xml:space="preserve"><value>期间</value></data>
   <data name="AdjCapacityDelta" xml:space="preserve"><value>可用产能变动量</value></data>
@@ -40,7 +40,7 @@
   <data name="DecimalHelp" xml:space="preserve"><value>请输入十进制数，例如 -12.500。</value></data>
   <data name="AddAdjustment" xml:space="preserve"><value>添加调整</value></data>
   <data name="RemoveAdjustment" xml:space="preserve"><value>移除调整</value></data>
-  <data name="Evaluate" xml:space="preserve"><value>评估</value></data>
+  <data name="EvaluateScenario" xml:space="preserve"><value>评估</value></data>
   <data name="EvaluationMode" xml:space="preserve"><value>评估模式</value></data>
   <data name="ModeFinite" xml:space="preserve"><value>有限</value></data>
   <data name="ModeInfinite" xml:space="preserve"><value>无限</value></data>
@@ -51,9 +51,9 @@
   <data name="EvaluationId" xml:space="preserve"><value>评估 ID</value></data>
   <data name="SubmittedAt" xml:space="preserve"><value>提交时间</value></data>
   <data name="CompletedAt" xml:space="preserve"><value>完成时间</value></data>
-  <data name="Refresh" xml:space="preserve"><value>刷新</value></data>
+  <data name="RefreshEvaluation" xml:space="preserve"><value>刷新</value></data>
   <data name="EvaluationPending" xml:space="preserve"><value>评估尚未完成。请点击“刷新”再次查看。</value></data>
-  <data name="Bottlenecks" xml:space="preserve"><value>瓶颈</value></data>
+  <data name="BottlenecksHeader" xml:space="preserve"><value>瓶颈</value></data>
   <data name="BottleneckResource" xml:space="preserve"><value>资源</value></data>
   <data name="BottleneckPeriod" xml:space="preserve"><value>期间</value></data>
   <data name="BottleneckRequired" xml:space="preserve"><value>需求</value></data>

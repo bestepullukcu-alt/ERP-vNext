@@ -1195,6 +1195,8 @@
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Shipment Claims</value></data>
   <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>S&amp;OP Workflow &amp; Sign-offs</value></data>
   <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>S&amp;OP Plans</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Capacity Planning</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>Capacity Plans</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventory</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stock Ledger</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Locations</value></data>

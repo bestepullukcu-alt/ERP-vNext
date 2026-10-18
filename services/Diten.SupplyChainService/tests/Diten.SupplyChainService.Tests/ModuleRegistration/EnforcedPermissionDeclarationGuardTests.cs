@@ -29,7 +29,7 @@ public sealed class EnforcedPermissionDeclarationGuardTests
         new Dictionary<string, (string, string)>(StringComparer.Ordinal)
         {
             // sandop-plans removed 2026-10-18 (G6): SopWorkflowSignoffsManifestProvider ships with the S&OP UI.
-            ["capacity-plans"] = ("capacity-planning", "MOD-0192:574 ship rule — no UI yet; also uncomposed (Q273)")
+            // capacity-plans removed 2026-10-18 (G6): CapacityPlanningManifestProvider ships with the Capacity UI.
         };
 
     [Fact]

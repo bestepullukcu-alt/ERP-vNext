@@ -99,12 +99,13 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
         Assert.False(constraints.IsExact(bounded, scenario));
     }
 
-    // G6 (G4 item C): S&OP's catalog entry ships with its UI and only where S&OP is composed — this host is seeded.
+    // G6 (G4 item C): the S&OP and Capacity catalog entries ship with their UI and only where composed — this host is seeded.
     [Fact]
-    public void Composed_with_a_seed_the_sop_manifest_reaches_the_catalog_registration()
+    public void Composed_with_a_seed_the_sop_and_capacity_manifests_reach_the_catalog_registration()
     {
         var providers = host.Services.GetServices<Diten.SupplyChainService.Api.ModuleRegistration.IModuleManifestProvider>();
         Assert.Single(providers, p => p is Diten.SupplyChainService.Api.ModuleRegistration.SopWorkflowSignoffsManifestProvider);
+        Assert.Single(providers, p => p is Diten.SupplyChainService.Api.ModuleRegistration.CapacityPlanningManifestProvider);
     }
 
     [Fact]

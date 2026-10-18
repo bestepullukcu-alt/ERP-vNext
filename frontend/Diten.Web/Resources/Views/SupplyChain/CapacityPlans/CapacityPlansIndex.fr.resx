@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Ouvrir le plan</value></data>
   <data name="PlanId" xml:space="preserve"><value>Identifiant du plan</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Saisissez l’UUID du plan.</value></data>
-  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Nom</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Début de l’horizon</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Fin de l’horizon</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Identifiant du plan de demande</value></data>
@@ -19,8 +19,8 @@
   <data name="SourceCapturedAt" xml:space="preserve"><value>Source capturée le</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Somme de contrôle de la source</value></data>
   <data name="WorkspaceTitle" xml:space="preserve"><value>Espace de travail du plan</value></data>
-  <data name="Created" xml:space="preserve"><value>Créé le</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Provenance</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Créé le</value></data>
+  <data name="PlanProvenance" xml:space="preserve"><value>Origine des données</value></data>
   <data name="CreateScenario" xml:space="preserve"><value>Créer un scénario</value></data>
   <data name="OpenScenario" xml:space="preserve"><value>Ouvrir le scénario</value></data>
   <data name="ScenarioId" xml:space="preserve"><value>Identifiant du scénario</value></data>
@@ -32,7 +32,7 @@
   <data name="ConstraintVersion" xml:space="preserve"><value>Version</value></data>
   <data name="AddConstraintRef" xml:space="preserve"><value>Ajouter une référence de contrainte</value></data>
   <data name="RemoveConstraintRef" xml:space="preserve"><value>Retirer la référence de contrainte</value></data>
-  <data name="Adjustments" xml:space="preserve"><value>Ajustements</value></data>
+  <data name="AdjustmentsHeader" xml:space="preserve"><value>Ajustements</value></data>
   <data name="AdjResourceRef" xml:space="preserve"><value>Ressource</value></data>
   <data name="AdjPeriod" xml:space="preserve"><value>Période</value></data>
   <data name="AdjCapacityDelta" xml:space="preserve"><value>Écart de capacité disponible</value></data>
@@ -40,7 +40,7 @@
   <data name="DecimalHelp" xml:space="preserve"><value>Saisissez un nombre décimal, par exemple -12.500.</value></data>
   <data name="AddAdjustment" xml:space="preserve"><value>Ajouter un ajustement</value></data>
   <data name="RemoveAdjustment" xml:space="preserve"><value>Retirer l’ajustement</value></data>
-  <data name="Evaluate" xml:space="preserve"><value>Évaluer</value></data>
+  <data name="EvaluateScenario" xml:space="preserve"><value>Évaluer</value></data>
   <data name="EvaluationMode" xml:space="preserve"><value>Mode d’évaluation</value></data>
   <data name="ModeFinite" xml:space="preserve"><value>Finie</value></data>
   <data name="ModeInfinite" xml:space="preserve"><value>Infinie</value></data>
@@ -51,9 +51,9 @@
   <data name="EvaluationId" xml:space="preserve"><value>Identifiant de l’évaluation</value></data>
   <data name="SubmittedAt" xml:space="preserve"><value>Soumis le</value></data>
   <data name="CompletedAt" xml:space="preserve"><value>Terminé le</value></data>
-  <data name="Refresh" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="RefreshEvaluation" xml:space="preserve"><value>Actualiser</value></data>
   <data name="EvaluationPending" xml:space="preserve"><value>L’évaluation n’est pas encore terminée. Utilisez Actualiser pour vérifier à nouveau.</value></data>
-  <data name="Bottlenecks" xml:space="preserve"><value>Goulots d’étranglement</value></data>
+  <data name="BottlenecksHeader" xml:space="preserve"><value>Goulots d’étranglement</value></data>
   <data name="BottleneckResource" xml:space="preserve"><value>Ressource</value></data>
   <data name="BottleneckPeriod" xml:space="preserve"><value>Période</value></data>
   <data name="BottleneckRequired" xml:space="preserve"><value>Requis</value></data>

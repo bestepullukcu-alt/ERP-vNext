@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Planı aç</value></data>
   <data name="PlanId" xml:space="preserve"><value>Plan kimliği</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Planın UUID değerini girin.</value></data>
-  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Ad</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Ufuk başlangıcı</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Ufuk bitişi</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Talep planı kimliği</value></data>
@@ -19,8 +19,8 @@
   <data name="SourceCapturedAt" xml:space="preserve"><value>Kaynağın alınma zamanı</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Kaynak sağlama toplamı</value></data>
   <data name="WorkspaceTitle" xml:space="preserve"><value>Plan çalışma alanı</value></data>
-  <data name="Created" xml:space="preserve"><value>Oluşturulma zamanı</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Veri kökeni</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma zamanı</value></data>
+  <data name="PlanProvenance" xml:space="preserve"><value>Veri kökeni</value></data>
   <data name="CreateScenario" xml:space="preserve"><value>Senaryo oluştur</value></data>
   <data name="OpenScenario" xml:space="preserve"><value>Senaryoyu aç</value></data>
   <data name="ScenarioId" xml:space="preserve"><value>Senaryo kimliği</value></data>
@@ -32,7 +32,7 @@
   <data name="ConstraintVersion" xml:space="preserve"><value>Sürüm</value></data>
   <data name="AddConstraintRef" xml:space="preserve"><value>Kısıt referansı ekle</value></data>
   <data name="RemoveConstraintRef" xml:space="preserve"><value>Kısıt referansını kaldır</value></data>
-  <data name="Adjustments" xml:space="preserve"><value>Ayarlamalar</value></data>
+  <data name="AdjustmentsHeader" xml:space="preserve"><value>Ayarlamalar</value></data>
   <data name="AdjResourceRef" xml:space="preserve"><value>Kaynak</value></data>
   <data name="AdjPeriod" xml:space="preserve"><value>Dönem</value></data>
   <data name="AdjCapacityDelta" xml:space="preserve"><value>Kullanılabilir kapasite farkı</value></data>
@@ -40,7 +40,7 @@
   <data name="DecimalHelp" xml:space="preserve"><value>Ondalıklı bir sayı girin, örneğin -12.500.</value></data>
   <data name="AddAdjustment" xml:space="preserve"><value>Ayarlama ekle</value></data>
   <data name="RemoveAdjustment" xml:space="preserve"><value>Ayarlamayı kaldır</value></data>
-  <data name="Evaluate" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="EvaluateScenario" xml:space="preserve"><value>Değerlendir</value></data>
   <data name="EvaluationMode" xml:space="preserve"><value>Değerlendirme modu</value></data>
   <data name="ModeFinite" xml:space="preserve"><value>Sonlu</value></data>
   <data name="ModeInfinite" xml:space="preserve"><value>Sonsuz</value></data>
@@ -51,9 +51,9 @@
   <data name="EvaluationId" xml:space="preserve"><value>Değerlendirme kimliği</value></data>
   <data name="SubmittedAt" xml:space="preserve"><value>Gönderilme zamanı</value></data>
   <data name="CompletedAt" xml:space="preserve"><value>Tamamlanma zamanı</value></data>
-  <data name="Refresh" xml:space="preserve"><value>Yenile</value></data>
+  <data name="RefreshEvaluation" xml:space="preserve"><value>Yenile</value></data>
   <data name="EvaluationPending" xml:space="preserve"><value>Değerlendirme henüz bitmedi. Yeniden kontrol etmek için Yenile düğmesini kullanın.</value></data>
-  <data name="Bottlenecks" xml:space="preserve"><value>Darboğazlar</value></data>
+  <data name="BottlenecksHeader" xml:space="preserve"><value>Darboğazlar</value></data>
   <data name="BottleneckResource" xml:space="preserve"><value>Kaynak</value></data>
   <data name="BottleneckPeriod" xml:space="preserve"><value>Dönem</value></data>
   <data name="BottleneckRequired" xml:space="preserve"><value>Gerekli</value></data>

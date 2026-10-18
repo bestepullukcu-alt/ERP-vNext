@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>فتح الخطة</value></data>
   <data name="PlanId" xml:space="preserve"><value>معرّف الخطة</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>أدخل معرّف UUID الخاص بالخطة.</value></data>
-  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="PlanName" xml:space="preserve"><value>الاسم</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>بداية الأفق</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>نهاية الأفق</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>معرّف خطة الطلب</value></data>
@@ -19,8 +19,8 @@
   <data name="SourceCapturedAt" xml:space="preserve"><value>وقت التقاط المصدر</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>المجموع الاختباري للمصدر</value></data>
   <data name="WorkspaceTitle" xml:space="preserve"><value>مساحة عمل الخطة</value></data>
-  <data name="Created" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
-  <data name="Provenance" xml:space="preserve"><value>منشأ البيانات</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="PlanProvenance" xml:space="preserve"><value>منشأ البيانات</value></data>
   <data name="CreateScenario" xml:space="preserve"><value>إنشاء سيناريو</value></data>
   <data name="OpenScenario" xml:space="preserve"><value>فتح السيناريو</value></data>
   <data name="ScenarioId" xml:space="preserve"><value>معرّف السيناريو</value></data>
@@ -32,7 +32,7 @@
   <data name="ConstraintVersion" xml:space="preserve"><value>الإصدار</value></data>
   <data name="AddConstraintRef" xml:space="preserve"><value>إضافة مرجع قيد</value></data>
   <data name="RemoveConstraintRef" xml:space="preserve"><value>إزالة مرجع القيد</value></data>
-  <data name="Adjustments" xml:space="preserve"><value>التعديلات</value></data>
+  <data name="AdjustmentsHeader" xml:space="preserve"><value>التعديلات</value></data>
   <data name="AdjResourceRef" xml:space="preserve"><value>المورد</value></data>
   <data name="AdjPeriod" xml:space="preserve"><value>الفترة</value></data>
   <data name="AdjCapacityDelta" xml:space="preserve"><value>فرق القدرة المتاحة</value></data>
@@ -40,7 +40,7 @@
   <data name="DecimalHelp" xml:space="preserve"><value>أدخل رقمًا عشريًا، مثل -12.500.</value></data>
   <data name="AddAdjustment" xml:space="preserve"><value>إضافة تعديل</value></data>
   <data name="RemoveAdjustment" xml:space="preserve"><value>إزالة التعديل</value></data>
-  <data name="Evaluate" xml:space="preserve"><value>تقييم</value></data>
+  <data name="EvaluateScenario" xml:space="preserve"><value>تقييم</value></data>
   <data name="EvaluationMode" xml:space="preserve"><value>وضع التقييم</value></data>
   <data name="ModeFinite" xml:space="preserve"><value>محدودة</value></data>
   <data name="ModeInfinite" xml:space="preserve"><value>غير محدودة</value></data>
@@ -51,9 +51,9 @@
   <data name="EvaluationId" xml:space="preserve"><value>معرّف التقييم</value></data>
   <data name="SubmittedAt" xml:space="preserve"><value>وقت الإرسال</value></data>
   <data name="CompletedAt" xml:space="preserve"><value>وقت الاكتمال</value></data>
-  <data name="Refresh" xml:space="preserve"><value>تحديث</value></data>
+  <data name="RefreshEvaluation" xml:space="preserve"><value>تحديث</value></data>
   <data name="EvaluationPending" xml:space="preserve"><value>لم يكتمل التقييم بعد. استخدم «تحديث» للتحقق مرة أخرى.</value></data>
-  <data name="Bottlenecks" xml:space="preserve"><value>الاختناقات</value></data>
+  <data name="BottlenecksHeader" xml:space="preserve"><value>الاختناقات</value></data>
   <data name="BottleneckResource" xml:space="preserve"><value>المورد</value></data>
   <data name="BottleneckPeriod" xml:space="preserve"><value>الفترة</value></data>
   <data name="BottleneckRequired" xml:space="preserve"><value>المطلوب</value></data>

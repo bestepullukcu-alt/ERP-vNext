@@ -1,0 +1,68 @@
+@using Diten.Web.Views.SupplyChain.CapacityPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CapacityPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Details.cshtml states it.
+}
+@* CreateCapacityScenarioRequest: name + constraintRefs[] (constraintId, source, sourceVersion) + adjustments[]
+   (resourceRef, period, availableCapacityDelta as a decimal STRING, uomId). Both arrays may be empty; each row needs all
+   its values. Values sent as typed. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasScenario" aria-labelledby="offcanvasScenarioLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasScenarioLabel" class="offcanvas-title">@Localizer["CreateScenario"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formScenarioAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+        <form id="formScenario" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="scenarioNameInput" class="form-label fw-medium">@Localizer["ScenarioName"] <span class="text-danger">*</span></label>
+                    <input type="text" id="scenarioNameInput" class="form-control" autocomplete="off" />
+                    <div class="invalid-feedback" data-for="scenarioNameInput"></div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="form-label fw-medium mb-0">@Localizer["ConstraintRefs"]</span>
+                        <button type="button" id="btnAddConstraintRef" class="btn btn-sm btn-label-primary"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddConstraintRef"]</button>
+                    </div>
+                    <div id="constraintRefRows" class="d-flex flex-column gap-3"></div>
+                    <template id="constraintRefTemplate">
+                        <div class="border rounded p-3 js-constraint-row">
+                            <div class="row g-2">
+                                <div class="col-12 col-sm-4"><label class="form-label small mb-1">@Localizer["ConstraintId"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-constraint-id" aria-label="@Localizer["ConstraintId"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                                <div class="col-12 col-sm-4"><label class="form-label small mb-1">@Localizer["ConstraintSource"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-constraint-source" aria-label="@Localizer["ConstraintSource"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                                <div class="col-12 col-sm-4"><label class="form-label small mb-1">@Localizer["ConstraintVersion"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-constraint-version" aria-label="@Localizer["ConstraintVersion"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                            </div>
+                            <div class="text-end mt-2"><button type="button" class="btn btn-sm btn-text-danger js-row-remove"><i class="bx bx-trash me-1" aria-hidden="true"></i>@Localizer["RemoveConstraintRef"]</button></div>
+                        </div>
+                    </template>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="form-label fw-medium mb-0">@Localizer["AdjustmentsHeader"]</span>
+                        <button type="button" id="btnAddAdjustment" class="btn btn-sm btn-label-primary"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddAdjustment"]</button>
+                    </div>
+                    <div id="adjustmentRows" class="d-flex flex-column gap-3"></div>
+                    <template id="adjustmentTemplate">
+                        <div class="border rounded p-3 js-adjustment-row">
+                            <div class="row g-2">
+                                <div class="col-12 col-sm-6"><label class="form-label small mb-1">@Localizer["AdjResourceRef"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-adj-resource" aria-label="@Localizer["AdjResourceRef"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                                <div class="col-12 col-sm-6"><label class="form-label small mb-1">@Localizer["AdjPeriod"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-adj-period" aria-label="@Localizer["AdjPeriod"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                                <div class="col-12 col-sm-6"><label class="form-label small mb-1">@Localizer["AdjCapacityDelta"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-adj-delta" aria-label="@Localizer["AdjCapacityDelta"]" inputmode="decimal" dir="ltr" autocomplete="off" spellcheck="false" /><div class="form-text">@Localizer["DecimalHelp"]</div></div>
+                                <div class="col-12 col-sm-6"><label class="form-label small mb-1">@Localizer["AdjUom"] <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm js-adj-uom" aria-label="@Localizer["AdjUom"]" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                            </div>
+                            <div class="text-end mt-2"><button type="button" class="btn btn-sm btn-text-danger js-row-remove"><i class="bx bx-trash me-1" aria-hidden="true"></i>@Localizer["RemoveAdjustment"]</button></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitScenario" class="btn btn-primary">@Localizer["CreateScenario"]</button>
+    </div>
+</div>

@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Открыть план</value></data>
   <data name="PlanId" xml:space="preserve"><value>Идентификатор плана</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Введите UUID плана.</value></data>
-  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Название</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Начало горизонта</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Конец горизонта</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Идентификатор плана спроса</value></data>
@@ -19,8 +19,8 @@
   <data name="SourceCapturedAt" xml:space="preserve"><value>Время фиксации источника</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Контрольная сумма источника</value></data>
   <data name="WorkspaceTitle" xml:space="preserve"><value>Рабочая область плана</value></data>
-  <data name="Created" xml:space="preserve"><value>Создан</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Происхождение данных</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создан</value></data>
+  <data name="PlanProvenance" xml:space="preserve"><value>Происхождение данных</value></data>
   <data name="CreateScenario" xml:space="preserve"><value>Создать сценарий</value></data>
   <data name="OpenScenario" xml:space="preserve"><value>Открыть сценарий</value></data>
   <data name="ScenarioId" xml:space="preserve"><value>Идентификатор сценария</value></data>
@@ -32,7 +32,7 @@
   <data name="ConstraintVersion" xml:space="preserve"><value>Версия</value></data>
   <data name="AddConstraintRef" xml:space="preserve"><value>Добавить ссылку на ограничение</value></data>
   <data name="RemoveConstraintRef" xml:space="preserve"><value>Удалить ссылку на ограничение</value></data>
-  <data name="Adjustments" xml:space="preserve"><value>Корректировки</value></data>
+  <data name="AdjustmentsHeader" xml:space="preserve"><value>Корректировки</value></data>
   <data name="AdjResourceRef" xml:space="preserve"><value>Ресурс</value></data>
   <data name="AdjPeriod" xml:space="preserve"><value>Период</value></data>
   <data name="AdjCapacityDelta" xml:space="preserve"><value>Изменение доступной мощности</value></data>
@@ -40,7 +40,7 @@
   <data name="DecimalHelp" xml:space="preserve"><value>Введите десятичное число, например -12.500.</value></data>
   <data name="AddAdjustment" xml:space="preserve"><value>Добавить корректировку</value></data>
   <data name="RemoveAdjustment" xml:space="preserve"><value>Удалить корректировку</value></data>
-  <data name="Evaluate" xml:space="preserve"><value>Оценить</value></data>
+  <data name="EvaluateScenario" xml:space="preserve"><value>Оценить</value></data>
   <data name="EvaluationMode" xml:space="preserve"><value>Режим оценки</value></data>
   <data name="ModeFinite" xml:space="preserve"><value>Конечная</value></data>
   <data name="ModeInfinite" xml:space="preserve"><value>Бесконечная</value></data>
@@ -51,9 +51,9 @@
   <data name="EvaluationId" xml:space="preserve"><value>Идентификатор оценки</value></data>
   <data name="SubmittedAt" xml:space="preserve"><value>Время отправки</value></data>
   <data name="CompletedAt" xml:space="preserve"><value>Время завершения</value></data>
-  <data name="Refresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="RefreshEvaluation" xml:space="preserve"><value>Обновить</value></data>
   <data name="EvaluationPending" xml:space="preserve"><value>Оценка ещё не завершена. Нажмите «Обновить», чтобы проверить снова.</value></data>
-  <data name="Bottlenecks" xml:space="preserve"><value>Узкие места</value></data>
+  <data name="BottlenecksHeader" xml:space="preserve"><value>Узкие места</value></data>
   <data name="BottleneckResource" xml:space="preserve"><value>Ресурс</value></data>
   <data name="BottleneckPeriod" xml:space="preserve"><value>Период</value></data>
   <data name="BottleneckRequired" xml:space="preserve"><value>Требуется</value></data>

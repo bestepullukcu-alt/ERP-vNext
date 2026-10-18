@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Open plan</value></data>
   <data name="PlanId" xml:space="preserve"><value>Plan ID</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Enter the plan’s UUID.</value></data>
-  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Name</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Horizon start</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Horizon end</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Demand plan ID</value></data>
@@ -19,8 +19,8 @@
   <data name="SourceCapturedAt" xml:space="preserve"><value>Source captured at</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Source checksum</value></data>
   <data name="WorkspaceTitle" xml:space="preserve"><value>Plan workspace</value></data>
-  <data name="Created" xml:space="preserve"><value>Created</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Provenance</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Created</value></data>
+  <data name="PlanProvenance" xml:space="preserve"><value>Provenance</value></data>
   <data name="CreateScenario" xml:space="preserve"><value>Create scenario</value></data>
   <data name="OpenScenario" xml:space="preserve"><value>Open scenario</value></data>
   <data name="ScenarioId" xml:space="preserve"><value>Scenario ID</value></data>
@@ -32,7 +32,7 @@
   <data name="ConstraintVersion" xml:space="preserve"><value>Version</value></data>
   <data name="AddConstraintRef" xml:space="preserve"><value>Add constraint reference</value></data>
   <data name="RemoveConstraintRef" xml:space="preserve"><value>Remove constraint reference</value></data>
-  <data name="Adjustments" xml:space="preserve"><value>Adjustments</value></data>
+  <data name="AdjustmentsHeader" xml:space="preserve"><value>Adjustments</value></data>
   <data name="AdjResourceRef" xml:space="preserve"><value>Resource</value></data>
   <data name="AdjPeriod" xml:space="preserve"><value>Period</value></data>
   <data name="AdjCapacityDelta" xml:space="preserve"><value>Available capacity delta</value></data>
@@ -40,7 +40,7 @@
   <data name="DecimalHelp" xml:space="preserve"><value>Enter a decimal number, for example -12.500.</value></data>
   <data name="AddAdjustment" xml:space="preserve"><value>Add adjustment</value></data>
   <data name="RemoveAdjustment" xml:space="preserve"><value>Remove adjustment</value></data>
-  <data name="Evaluate" xml:space="preserve"><value>Evaluate</value></data>
+  <data name="EvaluateScenario" xml:space="preserve"><value>Evaluate</value></data>
   <data name="EvaluationMode" xml:space="preserve"><value>Evaluation mode</value></data>
   <data name="ModeFinite" xml:space="preserve"><value>Finite</value></data>
   <data name="ModeInfinite" xml:space="preserve"><value>Infinite</value></data>
@@ -51,9 +51,9 @@
   <data name="EvaluationId" xml:space="preserve"><value>Evaluation ID</value></data>
   <data name="SubmittedAt" xml:space="preserve"><value>Submitted at</value></data>
   <data name="CompletedAt" xml:space="preserve"><value>Completed at</value></data>
-  <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="RefreshEvaluation" xml:space="preserve"><value>Refresh</value></data>
   <data name="EvaluationPending" xml:space="preserve"><value>The evaluation has not finished yet. Use Refresh to check again.</value></data>
-  <data name="Bottlenecks" xml:space="preserve"><value>Bottlenecks</value></data>
+  <data name="BottlenecksHeader" xml:space="preserve"><value>Bottlenecks</value></data>
   <data name="BottleneckResource" xml:space="preserve"><value>Resource</value></data>
   <data name="BottleneckPeriod" xml:space="preserve"><value>Period</value></data>
   <data name="BottleneckRequired" xml:space="preserve"><value>Required</value></data>
