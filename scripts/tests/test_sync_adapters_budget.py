@@ -234,6 +234,32 @@ class InstructionBudget(unittest.TestCase):
                      "gerekçeli ilk kapsam", "açık onay/sahiplik kararları", "küçük düzeltmede tarama gerekmez",
                      "Kod, commit ya da dağıtım izni değildir"):
             self.assertIn(part, line)
+        # İ5B-FIX-08 (C6 pilot: EMP-06 / EMP-08 and the report's accuracy): the answer contract's parts are required texts of
+        # the production check, not only strings this test looks for
+        required = self.manifest["instruction_budget"]["core"]["required_text"]
+        for part in self.CONTRACT:
+            with self.subTest(part=part[:30]):
+                self.assertIn(part, line)
+                self.assertIn(part, required)
+
+    CONTRACT = ("okunan kaynaklar (çıkarım ayrı)", 'koşmayan ya da eksik keşif ve nedeni ("kısmi inceleme")',
+                "gerekçeli ilk kapsam (tek öneri)", "tüm açık onay/sahiplik kararları (TBD dahil)",
+                "Belirsizde sor, salt-okunur adım öner")
+
+    def test_each_contract_part_removed_or_hidden_in_a_comment_is_lost(self):
+        # İ5B-FIX-08: the production check refuses the core when any one part goes missing, the rest intact
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        for part in self.CONTRACT:
+            for label, replaced in (("removed", ""), ("inside an HTML comment", "<!-- " + part + " -->")):
+                with self.subTest(part=part[:30], form=label):
+                    self.assertEqual(text.count(part), 1)
+                    f.write_text(text.replace(part, replaced, 1), encoding="utf-8")
+                    lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE") and part in p]
+                    self.assertEqual(len(lost), 1, lost)
+        f.write_text(text, encoding="utf-8")
+        self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-")])
 
     def test_the_generated_core_carries_the_rule(self):
         generated = (REPO / ".claude/rules/agents-core.md").read_text(encoding="utf-8")
