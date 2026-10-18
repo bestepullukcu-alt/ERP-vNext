@@ -46,8 +46,11 @@ task of the pass is a human triage:
 | `NotProvided`, `SupportReference`, `ListErrorState`, `OccurredAtHelp`, `EvidenceHelp` | shared helper strings vary | one each |
 
 The two reviews' per-module "needs human translator" items that are actually cross-module also belong here:
-the **zh ship-term split** (货运 vs 发运单/发运行/发运数量), **tr `StatusClosed`** (Kapatıldı vs Kapandı), and
-**Loads fr/es/ru shipment-status gender**.
+the **zh ship-term split** (货运 vs 发运单/发运行/发运数量) and **tr `StatusClosed`** (Kapatıldı vs Kapandı).
+
+**Correction (Loads review, 2026-10-18): the fr/es/ru "shipment-status gender" earlier flagged is NOT a
+drift** — Loads' labels describe a *load* and Claims/Returns' describe a *shipment*, which have different
+grammatical gender; the agreement is correct in each. Do **not** converge it.
 
 ## Method (for the authorized pass)
 
@@ -81,6 +84,19 @@ Extra confirmed cross-module drifts from that review: `SupportReference` fr/ru; 
 "停用"); `ChangeStatusTitle` ru noun-vs-verb. The `StatusActive`/`StatusRetired` vs **SharedResource**
 collision means the glossary decision must include how module status labels relate to the shared Active/
 Passive strings.
+
+## Addendum 2 (Loads review, 2026-10-18) — there are two naming/wording "camps"
+
+The drift is not scattered; it is **two camps** set by lane order. **{Carriers, Loads}** (the earlier
+R-4a/R-4b lanes) use `EmptyList` / `ListUnavailable` / `AccessDenied` / `Err`-less key names, es "Agregar",
+fr "ID …" / "assistance", zh "发运单" ship-term, `NotProvided` = "Sağlanmadı/Non fourni/No proporcionado".
+**{Claims, Returns}** (the later R-4c/R-2 lanes) use `ActionsHeader` / `EmptyState` / `ListErrorState` /
+`ErrXxx` key names, es "Añadir", fr "Identifiant …" / "support", zh "货运", `NotProvided` =
+"Belirtilmemiş/Non renseigné/No indicado". The later lanes standardised one way. **The pass's central
+decision is which camp is canonical** — and converging the {Carriers, Loads} camp touches **key names and
+`en`/wire text**, not only translated values, so it is a wire-level change, heavier than the value fixes
+the per-module reviews made. `ModeRoad`/`ModeParcel` are consistent *within* the {Carriers, Loads} camp and
+converge together.
 
 ## Files
 

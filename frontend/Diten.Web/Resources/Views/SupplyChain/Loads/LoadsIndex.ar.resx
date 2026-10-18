@@ -64,6 +64,6 @@
   <data name="ErrDependencyUnavailable" xml:space="preserve"><value>بيانات شركة النقل أو الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>تعذّرت قراءة بيانات شركة النقل أو الشحنة. تواصل مع الدعم مع ذكر المرجع.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>تعذّر تأكيد الحالة الحالية للشحنة. أعد محاولة الطلب نفسه لاحقًا.</value></data>
-  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>نتيجة الطلب غير متاحة حالياً.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>نتيجة الطلب غير متاحة حاليًا.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>حدث خطأ غير متوقع. تواصل مع الدعم مع ذكر المرجع.</value></data>
 </root>
