@@ -375,6 +375,9 @@ This section supersedes the all-open decision status in §§22/25/26, not the pr
   precedence and status-operation409/cross-correlation replay response semantics. No contract amendment inferred.
 - §23 exact owned paths and minimal Program.cs composition boundary accepted as design; **no runtime write
   grant** while the gate is blocked. All other existing source remains protected.
+  **RELEASED 2026-10-18 (owner runtime acceptance):** runtime write granted within these bounds on independent
+  6-UI VER PASS + the CT-run Q151 through-gateway runtime evidence —
+  `docs/records/decisions/2026-10/mvp6-mod0184-runtime-write-release-owner-decision-01.md`.
 - Phase1.5: checks1/2/3/4/5/9 design approved,6/7 N/A,8 blocked; overall HELD. Replay consistency also gated by05.
 - DoR: identity/ownership/design scope retained; approved pack and unambiguous contract gates fail;
   dispatch and writer assignment remain HELD. Fresh baseline is in the report; remeasure at future dispatch.
