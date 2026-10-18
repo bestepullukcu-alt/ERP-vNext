@@ -1080,6 +1080,81 @@ class InstructionBudget(unittest.TestCase):
             f.write_text(agents[:at] + "Not: <div hidden> başlar.\n\nKapanış </div x> sahte.\n\n" + head + "\n\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
             self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")])
 
+    def test_a_closing_tag_name_in_an_html_block_ends_where_html_ends_it(self):
+        # İ5B-FIX-19 (C17 audits; Claude Denetim001 C17-F1, Codex root): in an HTML block a closing tag was read with
+        # Python's '\\s', so '</div' + NBSP, VT or U+3000 + '>' closed the div. The HTML tokenizer ends a tag name only at
+        # TAB, LF, FF or SPACE, '/' or '>'; any other character is part of the name, so that token closes no div. After
+        # the name, an attribute or a slash still closes, as a browser reads it. A lone CR is not normalized here (CRLF
+        # is, when the file is read): '</div' + CR + '>' is refused — a declared limit, the model refuses more
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        sc, nbsp, vt, ideo, ff, cr = '<script type="text/plain">', chr(0xA0), chr(0x0B), chr(0x3000), chr(0x0C), chr(0x0D)
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        for label, ch in (("NBSP", nbsp), ("VT", vt), ("U+3000", ideo)):
+            with self.subTest(hidden=f"Claude: '</div' + {label} + '>' on an HTML block line"):
+                self.assertTrue(self.section_2_lost(wrap("<div hidden>\n</div" + ch + ">\n\n", "</div>\n\n")), label)
+        with self.subTest(hidden="Claude: '</script' + NBSP + '>' in an HTML block inside an inline script"):
+            self.assertTrue(self.section_2_lost(wrap("Metin " + sc + "\n\n<div>\n</script" + nbsp + ">\n</div>\n\n", "</script>\n\n")))
+        with self.subTest(declared="a lone CR after the name is not read as whitespace (the model refuses more)"):
+            self.assertTrue(self.section_2_lost(wrap("<div hidden>\n</div" + cr + ">\n\n", "</div>\n\n")))
+        # the class, not examples: every character Python calls whitespace, except HTML's own (SPACE, TAB, LF, FF), stays
+        # part of the name after '</div' on an HTML block line, so the div stays open (CR included: not normalized here)
+        others = [c for c in map(chr, range(0x110000)) if c.isspace() and c not in " \t\n\f"]
+        self.assertIn(nbsp, others)
+        for ch in others:
+            with self.subTest(hidden=f"'</div' + U+{ord(ch):04X} + '>' on an HTML block line"):
+                self.assertTrue(self.section_2_lost(wrap("<div hidden>\n</div" + ch + ">\n\n", "</div>\n\n")), hex(ord(ch)))
+        # the start of an HTML block: a type-7 line is a complete open or closing tag in CommonMark's grammar (§6.6:
+        # attribute names start with a letter, '_' or ':'), followed only by spaces or tabs; an opening tag is not pre,
+        # script, style or textarea (a closing tag may be). Otherwise the line is paragraph text, read as Markdown
+        bt = "`"
+        for label, start in (("Codex: '<x !>' is no complete open tag", "<x !>"), ("Codex: '<x>' followed by NBSP", "<x>" + nbsp)):
+            with self.subTest(hidden=label + ": no HTML block starts, so '`</div>`' is code"):
+                self.assertTrue(self.section_2_lost(wrap("<div hidden>\n\n" + start + "\n" + bt + "</div>" + bt + "\n\n", "</div>\n\n")), label)
+        for family, start in (("type 6", "</div" + nbsp + ">"), ("type 7", "</x" + nbsp + ">")):
+            with self.subTest(hidden=f"{family}: a closing start line with NBSP starts no HTML block, so the next line's '`</div>`' is code"):
+                self.assertTrue(self.section_2_lost(wrap("<div hidden>\n\n" + start + "\n" + bt + "</div>" + bt + "\n\n", "</div>\n\n")), family)
+        with self.subTest(hidden="type 7: an attribute after an NBSP is no complete open tag ('<x' + NBSP + 'a>')"):
+            self.assertTrue(self.section_2_lost(wrap("<div hidden>\n\n<x" + nbsp + "a>\n" + bt + "</div>" + bt + "\n\n", "</div>\n\n")))
+        with self.subTest(hidden="Codex: '<script/>' starts no type-7 block, so '`</script>`' is code inside the inline script"):
+            self.assertTrue(self.section_2_lost(wrap("Metin " + sc + "\n\n<script/>\n" + bt + "</script>" + bt + "\n\n", "</script>\n\n")))
+        # the start condition's own whitespace (CommonMark §4.6): after a type-1, type-6 or type-7 tag name only a SPACE or
+        # a TAB (or '>', '/>', the end of the line) — every other character Python calls whitespace starts no HTML block,
+        # so the line is a paragraph and the code span still holds the closing tags
+        for ch in [c for c in map(chr, range(0x110000)) if c.isspace() and c not in " \t\n"]:
+            for family, start, close in (("type 6", "<p" + ch + ">", "</div>"), ("type 1", "<script" + ch + ">", "</script> </div>"),
+                                         ("type 7", "<x" + ch + ">", "</div>")):
+                with self.subTest(hidden=f"{family}: '{start[:-2]}' + U+{ord(ch):04X} + '>' starts no HTML block"):
+                    self.assertTrue(self.section_2_lost(wrap("<div hidden>\n\n" + start + "\n" + bt + close + bt + "\n\n", "</div>\n\n")),
+                                    f"{family} {hex(ord(ch))}")
+        for label, text in (
+                ("'<p>' starts a type-6 HTML block: '`</div>`' is raw and closes the div", before("<div hidden>\n\n<p>\n" + bt + "</div>" + bt + "\n\n")),
+                ("'<p ' + TAB + 'class=\"a\">' starts a type-6 HTML block", before('<div hidden>\n\n<p \tclass="a">\n' + bt + "</div>" + bt + "\n\n")),
+                ("'<script>' starts a type-1 block: '`</script> </div>`' is raw and closes both", before("<div hidden>\n\n<script>\n" + bt + "</script> </div>" + bt + "\n\n")),
+                ("a valid '<x title=\"ok\">' line starts an HTML block: '`</div>`' is raw and closes the div",
+                 before('<div hidden>\n\n<x title="ok">\n' + bt + "</div>" + bt + "\n\n")),
+                ("'<x>' with trailing ASCII spaces starts an HTML block", before("<div hidden>\n\n<x>  \n" + bt + "</div>" + bt + "\n\n")),
+                ("a closing '</script>' line starts a type-7 block (the exception is for opening tags only)",
+                 before("<div hidden>\n\n</script>\n" + bt + "</div>" + bt + "\n\n")),
+                ("'</div x>' on an HTML block line closes the div", before("<div hidden>\n</div x>\n\n")),
+                ("'</div >' on an HTML block line closes the div", before("<div hidden>\n</div >\n\n")),
+                ("'</div' + TAB + 'x>' on an HTML block line closes the div", before("<div hidden>\n</div\tx>\n\n")),
+                ("'</div' + FF + '>' on an HTML block line closes the div", before("<div hidden>\n</div" + ff + ">\n\n")),
+                ("'</div/>' on an HTML block line closes the div", before("<div hidden>\n</div/>\n\n")),
+                ("'</div' + NBSP + '>' in a paragraph with nothing open", before("Not: </div" + nbsp + "> metin.\n\n"))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        with self.subTest(hidden="an AGENTS.md required heading after '</div' + NBSP + '>' on an HTML block line"):
+            f.write_text(agents[:at] + "<div hidden>\n</div" + nbsp + ">\n\n" + head + "\n\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
+            self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")])
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML

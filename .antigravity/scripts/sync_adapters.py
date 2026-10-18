@@ -74,6 +74,11 @@ Rules this script enforces (İ5-A pilot):
 - İ5B-FIX-18 (C16 audits): a closing tag in a paragraph has CommonMark's form — no attribute, no slash, ASCII spaces
   or tabs and at most one line end; '</div x>' there is text. The closing arm of an HTML block's start line takes the
   same ASCII whitespace; openers are unchanged.
+- İ5B-FIX-19 (C17 audits): in an HTML block a closing tag's name ends only at TAB, LF, FF, SPACE, '/' or '>' (HTML's
+  tokenizer); '</div' followed by NBSP, VT or U+3000 is not a closing div. And whether a line starts an HTML block is
+  CommonMark's own test: after a type-1 or type-6 name only SPACE, TAB, '>', '/>' or the line end; a type-7 line a
+  complete open or closing tag in CommonMark's grammar, then only SPACE or TAB; an opening tag not pre / script /
+  style / textarea.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -340,8 +345,10 @@ def scan_comments(text: str, opener=None, closes=None,
 
 
 # İ5B-FIX-15: the HTML blocks of CommonMark the heading reader masks (scan_comments with html_blocks=True). Type 2, the
-# comment, is scan_comments' own; types 1 and 3-5 end at their own marker, types 6 and 7 at a blank line
-HTML_TYPE1 = re.compile(r"^ {0,3}<(?:script|pre|style|textarea)(?:\s|>|$)", re.I)
+# comment, is scan_comments' own; types 1 and 3-5 end at their own marker, types 6 and 7 at a blank line.
+# İ5B-FIX-19 (C17 audits): a start line's own whitespace is CommonMark's (§4.6) — SPACE or TAB only (MD_SPACE)
+MD_SPACE = r"[ \t]"
+HTML_TYPE1 = re.compile(rf"^ {{0,3}}<(?:script|pre|style|textarea)(?:{MD_SPACE}|>|$)", re.I)
 HTML_TYPE1_END = re.compile(r"</(?:script|pre|style|textarea)>", re.I)
 HTML_BLOCK_TAGS = ("address article aside base basefont blockquote body caption center col colgroup dd details dialog dir div dl dt "
                    "fieldset figcaption figure footer form frame frameset h1 h2 h3 h4 h5 h6 head header hr html iframe legend li link "
@@ -349,13 +356,21 @@ HTML_BLOCK_TAGS = ("address article aside base basefont blockquote body caption 
                    "title tr track ul").split()
 # İ5B-FIX-18 (C16 audits): a closing tag's own whitespace is CommonMark's — ASCII space or tab (CLOSE_WS adds at most one
 # line end inside a paragraph). Openers keep their reading; only the closing arms below take it
-CLOSE_SPACE = r"[ \t]"
+CLOSE_SPACE = MD_SPACE
 CLOSE_WS = rf"{CLOSE_SPACE}*(?:\n{CLOSE_SPACE}*)?"
-HTML_TYPE6 = re.compile(rf"^ {{0,3}}(?:<(?:{'|'.join(HTML_BLOCK_TAGS)})(?:\s|/?>|$)|</(?:{'|'.join(HTML_BLOCK_TAGS)})(?:{CLOSE_SPACE}|/?>|$))", re.I)
+HTML_TYPE6 = re.compile(rf"^ {{0,3}}(?:<(?:{'|'.join(HTML_BLOCK_TAGS)})(?:{MD_SPACE}|/?>|$)|</(?:{'|'.join(HTML_BLOCK_TAGS)})(?:{CLOSE_SPACE}|/?>|$))", re.I)
 # İ5B-FIX-17 (C15 audits): a tag's attributes, read so that a '>' inside a quoted value does not end the tag. No attribute
 # grammar is added; a '<' inside a quoted value, or a quote left open, is not read (the tag is 'not verified')
 TAG_ATTRS = r"""(?:\s(?:[^<>"']|"[^"<]*"|'[^'<]*')*)?"""
-HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*{TAG_ATTRS}/?>\s*|</[A-Za-z][A-Za-z0-9-]*{CLOSE_SPACE}*>{CLOSE_SPACE}*)$")
+# İ5B-FIX-19: a type-7 start line is a complete open or closing tag in CommonMark's own grammar (§4.6, §6.6) — a tag name,
+# attributes whose names start with a letter, '_' or ':' and whose values are unquoted, single- or double-quoted, SPACE or
+# TAB only — followed only by SPACE or TAB; an opening tag's name is not pre, script, style or textarea (a closing tag's
+# may be). This strict grammar decides
+# only whether a line starts an HTML block; the inline reader keeps TAG_ATTRS. A line it refuses is paragraph text, read as
+# Markdown — the model refuses more
+TYPE7_NAME = r"(?!(?:pre|script|style|textarea)(?![A-Za-z0-9-]))[A-Za-z][A-Za-z0-9-]*"
+TYPE7_ATTR = rf"""{MD_SPACE}+[A-Za-z_:][A-Za-z0-9_.:-]*(?:{MD_SPACE}*={MD_SPACE}*(?:[^ \t\r\n"'=<>`]+|'[^'\n]*'|"[^"\n]*"))?"""
+HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<{TYPE7_NAME}(?:{TYPE7_ATTR})*{MD_SPACE}*/?>|</[A-Za-z][A-Za-z0-9-]*{MD_SPACE}*>){MD_SPACE}*$", re.I)
 
 
 def html_block_start(line: str, after_blank: bool):
@@ -378,6 +393,11 @@ VOID_ELEMENTS = ("area", "base", "br", "col", "embed", "hr", "img", "input", "li
 HTML_TAG = re.compile(rf"<(/?)([A-Za-z][A-Za-z0-9-]*){TAG_ATTRS}(/?)>")
 # İ5B-FIX-18: a closing tag in a Markdown paragraph is '</name', CLOSE_WS and '>' — no attribute, no slash
 CLOSING_TAG = re.compile(rf"</([A-Za-z][A-Za-z0-9-]*){CLOSE_WS}>")
+# İ5B-FIX-19 (C17 audits): what ends a tag name in HTML's tokenizer — TAB, LF, FF, SPACE, '/' or '>'. Any other character
+# (NBSP, VT, U+3000, a lone CR) is part of the name. CRLF is already LF when the file is read; a lone CR is not
+# normalized here, so such a closing tag is refused (the model refuses more)
+HTML_WS = " \t\n\f"
+HTML_NAME_END = HTML_WS + "/>"
 HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
 
 
@@ -404,6 +424,8 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
     - İ5B-FIX-18: in a paragraph a closing tag must have CommonMark's form (CLOSING_TAG: no attribute, no slash, ASCII
       whitespace with at most one line end); otherwise its '<' is text and the reader goes on with the next character,
       so nothing inside the token is skipped. In an HTML block a browser still reads '</div x>' as a closing tag.
+    - İ5B-FIX-19: in an HTML block a closing tag's name ends where HTML's tokenizer ends it (HTML_NAME_END); after
+      '</div' an NBSP, VT or U+3000 is part of the name, so it closes no div. The reader goes on with the next character.
     Not an HTML engine: an attribute is never read, so any text inside an element is not evidence (a declared safe
     refusal), and an element ends only at its own closing tag (a browser may end it earlier: the model refuses more)."""
     block_view = view if block_view is None else block_view
@@ -511,6 +533,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
             if not valid or valid.end() != m.end():          # İ5B-FIX-18: not a CommonMark closing tag — its '<' is
                 i += 1                                       # text; the reader goes on with the next character
                 continue
+        if m and m.group(1) and block and view[m.end(2)] not in HTML_NAME_END:
+            i += 1                                           # İ5B-FIX-19: HTML reads a longer name — not this closing tag
+            continue
         if m and unsure is not None and m.end() > unsure:
             nv = (i, "tag")
             break
