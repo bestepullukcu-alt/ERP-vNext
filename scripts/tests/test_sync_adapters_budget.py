@@ -1155,6 +1155,69 @@ class InstructionBudget(unittest.TestCase):
             f.write_text(agents[:at] + "<div hidden>\n</div" + nbsp + ">\n\n" + head + "\n\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
             self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")])
 
+    def test_an_opening_tag_name_and_the_raw_text_elements_are_read_as_html_reads_them(self):
+        # İ5B-FIX-20 (C18 audits; Codex Denetim001 C18-F1, Claude Denetim001 C18-F1). Two roots, one contract:
+        # 1. in an HTML block an opening tag's name was cut at Python's '\\s': '<div' + NBSP + ' hidden>' was stacked as
+        #    'div', so '</div>' closed it while HTML's element ('div' + NBSP) stayed open and hid the section. HTML ends a
+        #    name only at TAB, LF, FF, SPACE, '/' or '>'; a longer name the check cannot match is 'not verified';
+        # 2. the raw-text elements were script, style, textarea and title only. HTML's tokenizer also reads xmp, iframe,
+        #    noembed and noframes raw (RAWTEXT), so a '</div>' inside one is text and the outer div stays open. noscript
+        #    (raw only when scripting is on) and plaintext (never closes) depend on what the check cannot know: their
+        #    opener is 'not verified' — reading noscript raw would pass '<noscript><div hidden></noscript>', which hides
+        #    the section when scripting is off
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        nbsp, ff, nv = chr(0xA0), chr(0x0C), "not verified"
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        others = [c for c in map(chr, range(0x110000)) if c.isspace() and c not in " \t\n\f"]
+        self.assertIn(nbsp, others)
+        for ch in others:
+            with self.subTest(hidden=f"Codex: '<div' + U+{ord(ch):04X} + ' hidden>' in an HTML block, closed by '</div>'"):
+                lost = self.section_2_lost(wrap("<hr>\n<div" + ch + " hidden>\n</div>\n\n", "</div" + ch + ">\n\n"))
+                self.assertTrue(lost and all(nv in p for p in lost), (hex(ord(ch)), lost[:1]))
+        with self.subTest(hidden="'<br' + NBSP + '>' in an HTML block is no void br: HTML opens an element never closed"):
+            self.assertTrue(self.section_2_lost(wrap("<hr>\n<br" + nbsp + ">\n\n", "\n")))
+        new_raw = ("xmp", "iframe", "noembed", "noframes")
+        for name in ("script", "style", "textarea", "title") + new_raw:
+            with self.subTest(hidden=f"Claude: '</div>' inside '<{name}>' in an HTML block is text — the outer div stays open"):
+                self.assertTrue(self.section_2_lost(wrap(f"<div hidden>\n<{name}>\n</div>\n</{name}>\n\n", "</div>\n\n")), name)
+            with self.subTest(hidden=f"Claude: '</div>' inside '<{name}>' in a paragraph is text — the outer div stays open"):
+                self.assertTrue(self.section_2_lost(wrap(f"Not: <div hidden> <{name}> </div> </{name}> başlar.\n\n", "</div>\n\n")), name)
+        for label, start in (("noscript holds a '</div>'", "<div hidden>\n<noscript>\n</div>\n</noscript>\n\n"),
+                             ("noscript holds an opening '<div hidden>' (scripting off: the div stays open)",
+                              "<noscript>\n<div hidden>\n</noscript>\n\n"),
+                             ("plaintext never closes", "<div hidden>\n<plaintext>\n</div>\n\n"),
+                             ("noscript in a paragraph", "Not: <noscript> <div hidden> </noscript> başlar.\n\n")):
+            with self.subTest(not_verified=label):
+                lost = self.section_2_lost(wrap(start, "</div>\n\n"))
+                self.assertTrue(lost and all(nv in p for p in lost), (label, lost[:1]))
+        for label, text in (
+                ("'<div hidden>' in an HTML block, closed by '</div>'", before("<hr>\n<div hidden>\n</div>\n\n")),
+                ("'<div' + TAB + 'hidden>'", before("<hr>\n<div\thidden>\n</div>\n\n")),
+                ("'<div' + FF + 'hidden>'", before("<hr>\n<div" + ff + "hidden>\n</div>\n\n")),
+                ("'<div' + LF + 'hidden>'", before("<hr>\n<div\nhidden>\n</div>\n\n")),
+                ("'<div/>' then '</div>'", before("<hr>\n<div/>\n</div>\n\n")),
+                ("'<br/>' and '<br>' in an HTML block", before("<hr>\n<br/><br>\n\n")),
+                ("'<div' + NBSP + ' hidden>' in a paragraph (no CommonMark tag) with its '</div>'",
+                 before("Not: <div" + nbsp + " hidden> metin </div> son.\n\n")),
+                *((f"'<{n}></div></{n}>' with nothing open", before(f"<{n}>\n</div>\n</{n}>\n\n")) for n in new_raw),
+                *((f"a real div holding a closed '<{n}>x</{n}>'", before(f"<div hidden>\n<{n}>x</{n}>\n</div>\n\n")) for n in new_raw),
+                ("a closing '</noscript>' alone", before("<hr>\n</noscript>\n\n"))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        for label, ins in (("Codex: '<div' + NBSP + ' hidden>' in an HTML block", "<hr>\n<div" + nbsp + " hidden>\n</div>\n\n"),
+                           ("Claude: '</div>' inside '<xmp>'", "<div hidden>\n<xmp>\n</div>\n</xmp>\n\n")):
+            with self.subTest(hidden="an AGENTS.md required heading after " + label):
+                f.write_text(agents[:at] + ins + head + "\n\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
+                self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML

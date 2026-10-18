@@ -398,6 +398,16 @@ CLOSING_TAG = re.compile(rf"</([A-Za-z][A-Za-z0-9-]*){CLOSE_WS}>")
 # normalized here, so such a closing tag is refused (the model refuses more)
 HTML_WS = " \t\n\f"
 HTML_NAME_END = HTML_WS + "/>"
+# İ5B-FIX-20 (C18 audits): the elements whose text HTML's tokenizer reads raw, from the WHATWG HTML parsing section
+# (https://html.spec.whatwg.org/multipage/parsing.html — the 'in body' insertion mode and the fragment case's tokenizer
+# state): RCDATA title, textarea; RAWTEXT style, xmp, iframe, noembed, noframes; script data script. Inside one only its
+# own closing tag counts. noscript is RAWTEXT only when scripting is enabled, and plaintext never ends: how they read
+# depends on what the check cannot know, so their opening tag is 'not verified'
+RCDATA_ELEMENTS = ("title", "textarea")
+RAWTEXT_ELEMENTS = ("style", "xmp", "iframe", "noembed", "noframes")
+SCRIPT_DATA_ELEMENTS = ("script",)
+RAW_TEXT_ELEMENTS = RCDATA_ELEMENTS + RAWTEXT_ELEMENTS + SCRIPT_DATA_ELEMENTS
+UNREAD_TEXT_ELEMENTS = ("noscript", "plaintext")
 HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
 
 
@@ -410,7 +420,7 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
       Markdown goes on: escapes, code spans (the shared lexer) and fences — the heading reader's grammar, read on
       block_view, where no fence starts inside an HTML block — hold no tag. A tag never crosses its paragraph's end.
     - An element that is not void is masked from its opening tag to its own closing tag, nesting counted. A raw-text
-      element (script, style, textarea, title) ends at its first real closing tag — raw in a block, outside code in a
+      element (RAW_TEXT_ELEMENTS) ends at its first real closing tag — raw in a block, outside code in a
       paragraph — and no other tag inside it counts, so an outer element's closing tag inside it does not close the
       outer one. An element never closed hides the rest of the file ('element': not verified).
     - A self-closed tag of a non-void element ('<script/>', '<span/>') opens it, as in HTML. A closing tag alone and a
@@ -426,6 +436,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
       so nothing inside the token is skipped. In an HTML block a browser still reads '</div x>' as a closing tag.
     - İ5B-FIX-19: in an HTML block a closing tag's name ends where HTML's tokenizer ends it (HTML_NAME_END); after
       '</div' an NBSP, VT or U+3000 is part of the name, so it closes no div. The reader goes on with the next character.
+    - İ5B-FIX-20: the same for an opening tag in an HTML block — '<div' + NBSP + ' hidden>' is no div in HTML, and its
+      longer name is not one the reader matches, so it is 'tag': not verified (outside a raw-text element, where a tag is
+      text). The raw-text elements are HTML's own list; a noscript or plaintext opener is 'tag': not verified.
     Not an HTML engine: an attribute is never read, so any text inside an element is not evidence (a declared safe
     refusal), and an element ends only at its own closing tag (a browser may end it earlier: the model refuses more)."""
     block_view = view if block_view is None else block_view
@@ -552,6 +565,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
             continue
         if m:
             closing, name = m.group(1), m.group(2).lower()
+            if not closing and (block and view[m.end(2)] not in HTML_NAME_END or name in UNREAD_TEXT_ELEMENTS):
+                nv = (i, "tag")                              # İ5B-FIX-20: a longer name in HTML, or a mode-dependent text
+                break
             if closing:
                 at = next((k for k in range(len(stack) - 1, -1, -1) if stack[k][0] == name), None)
                 if at is not None and not block and close_unproven(n, i):
@@ -567,7 +583,7 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
             elif name in VOID_ELEMENTS:
                 if not stack:
                     mask(i, m.end())
-            elif name in ("script", "style", "textarea", "title"):
+            elif name in RAW_TEXT_ELEMENTS:
                 raw = (name, stack[0][1] if stack else i)
             else:
                 stack.append((name, i))                      # '<x/>' of a non-void element still opens it
