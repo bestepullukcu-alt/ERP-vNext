@@ -42,6 +42,48 @@
         ]
       },
       {
+        "path": ".antigravity/skills/control-tower/SKILL.md",
+        "max_bytes": 6500,
+        "required_sections": [
+          {
+            "heading": "1. Başlangıç ve kimlik",
+            "anchors": [
+              "Kayıt, sahiplik ya da onay uydurma."
+            ]
+          },
+          {
+            "heading": "2. Araştırma",
+            "anchors": [
+              "`--check-report` yalnız bütünlüğü kanıtlar, güncelliği değil."
+            ]
+          },
+          {
+            "heading": "3. Var olan modül",
+            "anchors": [
+              "Onayı bütün modüle yayma."
+            ]
+          },
+          {
+            "heading": "4. Olmayan modül",
+            "anchors": [
+              "Gerekçeli tek bir ilk kapsam öner ve \"öneri — onay değil\" diye işaretle."
+            ]
+          },
+          {
+            "heading": "5. Sınırlar",
+            "anchors": [
+              "bu skill hiçbirini vermez."
+            ]
+          },
+          {
+            "heading": "6. Yanıt biçimi",
+            "anchors": [
+              "İncelenen kaynak tablosundan geniş \"tam inceledim\" deme."
+            ]
+          }
+        ]
+      },
+      {
         "path": ".antigravity/AGENTS-REFERENCE.md",
         "required_sections": [
           {
@@ -225,6 +267,25 @@
           "tool": "codex+antigravity",
           "format": "markdown",
           "path": ".agents/skills/resx-check/SKILL.md",
+          "frontmatter": "from-source"
+        }
+      ]
+    },
+    {
+      "id": "control-tower",
+      "kind": "skill",
+      "source": ".antigravity/skills/control-tower/SKILL.md",
+      "targets": [
+        {
+          "tool": "claude-code",
+          "format": "markdown",
+          "path": ".claude/skills/control-tower/SKILL.md",
+          "frontmatter": "from-source"
+        },
+        {
+          "tool": "codex+antigravity",
+          "format": "markdown",
+          "path": ".agents/skills/control-tower/SKILL.md",
           "frontmatter": "from-source"
         }
       ]
