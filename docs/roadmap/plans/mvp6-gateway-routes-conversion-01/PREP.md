@@ -8,6 +8,11 @@ commit:
 
 # Gateway explicit-routes re-derivation — prep (so the patch is mechanical once the owner confirms)
 
+> **RULED 2026-10-18 (owner ny@gmgroup.ch): A accepted (explicit swap) · B reserve now (404-until-composed).**
+> The two patches are built and verified under `patches/` and handed to the integration-agent. See
+> `docs/records/decisions/2026-10/mvp6-gateway-explicit-routes-owner-decision-01.md`. The "no patch is
+> written" line below was the pre-ruling state.
+
     item      : v9.6 §5 item 5 (gateway explicit routes), after ASSESSMENT.md found the old proposal
                 superseded by OD-P1 · author: CT (gmg-10) · measured 2026-10-18 at HEAD
     purpose    : the authoritative route set derived from the CURRENT contracts on port 5066, the OD-7/8/9
