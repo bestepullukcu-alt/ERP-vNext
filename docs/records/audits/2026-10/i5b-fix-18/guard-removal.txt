@@ -1,0 +1,55 @@
+İ5B-FIX-18 guard removal — one guard undone at a time in ONE work copy outside the repository, restored before every
+mutation (rsync from the İ5B-FIX-14 base, the two frozen files laid over it, checked by SHA-256); run by the AI session.
+Each mutation: the file still parses; the named test fails without a crash; the control test
+(test_a_dead_link_is_still_a_dead_link) passes. Run: drivers/harness18.py.txt — 6 new guards (G-Q1 … G-Q4, G-Q6, G-Q7)
+and the 14 earlier guards whose path runs through the closing branch or an HTML block's start line. The other earlier
+guards' anchors are all still once in the final source and their code is untouched; they are not run again.
+
+proven 20 of 20
+  G-Q1 a closing tag of any form closes in a paragraph
+      tests: test_a_closing_tag_has_the_commonmark_form · named: RED — FAILED (failures=9) · control: OK · proven: True
+  G-Q2 a malformed closing token is skipped whole
+      tests: test_a_closing_tag_has_the_commonmark_form · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Q3 the closing form is required in an HTML block too
+      tests: test_a_closing_tag_has_the_commonmark_form · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Q4 no line end allowed in a closing tag
+      tests: test_a_closing_tag_has_the_commonmark_form · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Q6 an HTML block's closing start arm takes any Unicode whitespace
+      tests: test_a_closing_tag_has_the_commonmark_form · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Q7 a type-7 closing start line takes any Unicode whitespace
+      tests: test_a_closing_tag_has_the_commonmark_form · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Z1 a tag ends at the first '>', even inside a quoted value
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-Z3 a block quote or list line in the paragraph is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Z4 a paragraph that starts indented (a possible list continuation) is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=6) · control: OK · proven: True
+  G-Z5 a closing tag in a link's destination or title counts
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Z6 link syntax the check cannot read is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Z7 every closing tag needs evidence, even one that closes nothing
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Z8 a raw-text close needs no evidence
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Z9 an HTML block start line ends at the first '>', even inside a quoted value
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y6 HTML block lines read as Markdown
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y8 a raw-text element counts the tags inside it
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-X5' nesting of the same element not counted (a closing tag closes the outermost)
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X8' the raw-text rule: a nested '<script>' text counted as an opening
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X4' an HTML block ends with its first line
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X2 the HTML blocks ignored (elements only)
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+
+Not a guard: 'the same end as HTML_TAG'. A paragraph closing tag counts only when CLOSING_TAG matches at the same
+position and reaches the same end as HTML_TAG (the agreed condition). No input was found where a CLOSING_TAG match
+ends elsewhere than HTML_TAG's, so undoing that half of the condition showed no effect; it is kept as a defensive
+check, with no guard that proves it. The search below is finite support, not a proof for every input
+(drivers/same-end-fuzz.py.txt, a seeded random search over closing-tag strings):
+  strings 200000 · CLOSING_TAG matched 3591 · HTML_TAG matched them with the same end 3591 · differ 0

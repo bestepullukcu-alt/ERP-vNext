@@ -71,6 +71,9 @@ Rules this script enforces (İ5-A pilot):
 - İ5B-FIX-17 (C15 audits): a tag ends outside its quoted values, and a closing tag that would close an open element
   needs a proven plain paragraph line or an HTML block — not indented code, an unproven container, link metadata or
   link syntax the check cannot read ('not verified').
+- İ5B-FIX-18 (C16 audits): a closing tag in a paragraph has CommonMark's form — no attribute, no slash, ASCII spaces
+  or tabs and at most one line end; '</div x>' there is text. The closing arm of an HTML block's start line takes the
+  same ASCII whitespace; openers are unchanged.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -344,11 +347,15 @@ HTML_BLOCK_TAGS = ("address article aside base basefont blockquote body caption 
                    "fieldset figcaption figure footer form frame frameset h1 h2 h3 h4 h5 h6 head header hr html iframe legend li link "
                    "main menu menuitem nav noframes ol optgroup option p param search section summary table tbody td tfoot th thead "
                    "title tr track ul").split()
-HTML_TYPE6 = re.compile(rf"^ {{0,3}}</?(?:{'|'.join(HTML_BLOCK_TAGS)})(?:\s|/?>|$)", re.I)
+# İ5B-FIX-18 (C16 audits): a closing tag's own whitespace is CommonMark's — ASCII space or tab (CLOSE_WS adds at most one
+# line end inside a paragraph). Openers keep their reading; only the closing arms below take it
+CLOSE_SPACE = r"[ \t]"
+CLOSE_WS = rf"{CLOSE_SPACE}*(?:\n{CLOSE_SPACE}*)?"
+HTML_TYPE6 = re.compile(rf"^ {{0,3}}(?:<(?:{'|'.join(HTML_BLOCK_TAGS)})(?:\s|/?>|$)|</(?:{'|'.join(HTML_BLOCK_TAGS)})(?:{CLOSE_SPACE}|/?>|$))", re.I)
 # İ5B-FIX-17 (C15 audits): a tag's attributes, read so that a '>' inside a quoted value does not end the tag. No attribute
 # grammar is added; a '<' inside a quoted value, or a quote left open, is not read (the tag is 'not verified')
 TAG_ATTRS = r"""(?:\s(?:[^<>"']|"[^"<]*"|'[^'<]*')*)?"""
-HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*{TAG_ATTRS}/?>|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$")
+HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*{TAG_ATTRS}/?>\s*|</[A-Za-z][A-Za-z0-9-]*{CLOSE_SPACE}*>{CLOSE_SPACE}*)$")
 
 
 def html_block_start(line: str, after_blank: bool):
@@ -369,6 +376,8 @@ def html_block_start(line: str, after_blank: bool):
 
 VOID_ELEMENTS = ("area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr")
 HTML_TAG = re.compile(rf"<(/?)([A-Za-z][A-Za-z0-9-]*){TAG_ATTRS}(/?)>")
+# İ5B-FIX-18: a closing tag in a Markdown paragraph is '</name', CLOSE_WS and '>' — no attribute, no slash
+CLOSING_TAG = re.compile(rf"</([A-Za-z][A-Za-z0-9-]*){CLOSE_WS}>")
 HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
 
 
@@ -392,6 +401,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
       raw-text element counts only in an HTML block or on a proven plain paragraph line (close_unproven); in indented
       code, in a container the reader cannot prove, in link metadata or beside link syntax it cannot read it is
       'close': not verified. A closing tag that closes nothing stays harmless.
+    - İ5B-FIX-18: in a paragraph a closing tag must have CommonMark's form (CLOSING_TAG: no attribute, no slash, ASCII
+      whitespace with at most one line end); otherwise its '<' is text and the reader goes on with the next character,
+      so nothing inside the token is skipped. In an HTML block a browser still reads '</div x>' as a closing tag.
     Not an HTML engine: an attribute is never read, so any text inside an element is not evidence (a declared safe
     refusal), and an element ends only at its own closing tag (a browser may end it earlier: the model refuses more)."""
     block_view = view if block_view is None else block_view
@@ -494,6 +506,11 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
         m = HTML_TAG.match(view, i)
         if m and m.end() > limit:
             m = None                                         # a tag never crosses its paragraph's or block's end
+        if m and m.group(1) and not block:
+            valid = CLOSING_TAG.match(view, i)
+            if not valid or valid.end() != m.end():          # İ5B-FIX-18: not a CommonMark closing tag — its '<' is
+                i += 1                                       # text; the reader goes on with the next character
+                continue
         if m and unsure is not None and m.end() > unsure:
             nv = (i, "tag")
             break

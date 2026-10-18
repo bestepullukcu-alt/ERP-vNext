@@ -1037,6 +1037,49 @@ class InstructionBudget(unittest.TestCase):
             lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")]
             self.assertTrue(lost and all(nv in p for p in lost), lost[:2])
 
+    def test_a_closing_tag_has_the_commonmark_form(self):
+        # İ5B-FIX-18 (C16 audits; Claude Denetim001 C16-F1, Codex root): a closing tag with an attribute or a slash —
+        # '</div x>', '</div/>', '</div title="x">' — is text in a CommonMark paragraph, written escaped, but the reader
+        # let it close the open element. A closing tag is now '</name', ASCII spaces or tabs with at most one line end,
+        # and '>' — the same rule for the closing arm of an HTML block's start line. In an HTML block a browser still
+        # reads '</div x>' as a closing tag, so it closes there. NBSP is not CommonMark whitespace: a normative model,
+        # not a claim about every renderer
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        sc, bt, nbsp = '<script type="text/plain">', "`", chr(160)
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        for label, text in (
+                ("Claude: '</div x>' in a paragraph", wrap("Not: <div hidden> başlar.\n\nKapanış </div x> sahte.\n\n", "</div>\n\n")),
+                ("Claude: '</div/>' in a paragraph", wrap("Not: <div hidden> başlar.\n\nKapanış </div/> sahte.\n\n", "</div>\n\n")),
+                ("Claude: '</div title=\"x\">' in a paragraph", wrap('Not: <div hidden> başlar.\n\nKapanış </div title="x"> sahte.\n\n', "</div>\n\n")),
+                ("Claude: '</script x>' in a paragraph", wrap("Not: " + sc + " başlar.\n\nKapanış </script x> sahte.\n\n", "</script>\n\n")),
+                ("a malformed closing token is read on: its backtick pairs with a later one, and the div after is real",
+                 wrap('Metin </div x="' + bt + '"> sonra ' + bt + "<div hidden>" + bt + " kod.\n\n", "</div>\n\n")),
+                ("NBSP: '</div" + "\\u00a0>' in a paragraph is text", wrap("Not: <div hidden> başlar.\n\nKapanış </div" + nbsp + "> sahte.\n\n", "</div>\n\n")),
+                ("NBSP: '</div" + "\\u00a0>' alone on a line starts no HTML block", wrap("Not: <div hidden> başlar.\n\n</div" + nbsp + ">\n\n", "</div>\n\n"))):
+            with self.subTest(hidden=label):
+                self.assertTrue(self.section_2_lost(text), label)
+        with self.subTest(declared="NBSP: '</span" + "\\u00a0>' alone after a blank line starts no type-7 block (the declared element model)"):
+            self.assertTrue(self.section_2_lost(wrap("Metin <span hidden> x\n\n</span" + nbsp + ">\n\n", "</span>\n\n")))
+        for label, text in (
+                ("'</div x>' with nothing open", before("Not: </div x> metin.\n\n")),
+                ("'</div x>' on a raw HTML block line closes the div", before("<div hidden>\n</div x>\n\n")),
+                ("'</div/>' alone on a line starts an HTML block and closes the div", before("Not: <div hidden> başlar.\n\n</div/>\n\n")),
+                ("a valid closing tag with one line end before '>' (the next line is not a block quote)", before("Metin <div hidden> x </div\n    >\n\n")),
+                ("a valid closing tag with spaces before '>'", before("Metin <div hidden> x </div  >\n\n"))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        with self.subTest(hidden="Claude: an AGENTS.md required heading after '</div x>'"):
+            f.write_text(agents[:at] + "Not: <div hidden> başlar.\n\nKapanış </div x> sahte.\n\n" + head + "\n\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
+            self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")])
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML
