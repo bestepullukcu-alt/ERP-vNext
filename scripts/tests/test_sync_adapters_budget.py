@@ -985,6 +985,58 @@ class InstructionBudget(unittest.TestCase):
                 lost = self.section_2_lost(text)
                 self.assertTrue(lost and all("not verified" in p for p in lost), lost)
 
+    def test_a_tag_ends_outside_quotes_and_a_close_needs_evidence(self):
+        # İ5B-FIX-17 (C15 audits; Codex C15-F1 / -F2, Claude Denetim001 C15-F1): a tag ended at the first '>', even inside
+        # a quoted value, so a '</div>' or '<script>' written in an attribute became a tag of its own. And a closing tag
+        # in indented code, in a link's destination or title, or in a paragraph whose container the reader cannot prove
+        # closed the open element. A tag now ends outside quotes (a '<' in a quoted value is still not read: not
+        # verified), and a closing tag that would close an open element counts only in an HTML block or on a proven
+        # plain paragraph line; elsewhere it is not verified. A closing tag that closes nothing stays harmless
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        sc = '<script type="text/plain">'
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        nv = "not verified"
+        for label, text in (
+                ("Codex F1: a '</div>' in a double-quoted value", wrap('<div hidden title="> </div>">\n\n', "</div>\n\n")),
+                ("Codex F1: a '</div>' in a single-quoted value", wrap("<div hidden title='> </div>'>\n\n", "</div>\n\n")),
+                ("Claude: a '</script>' in indented code", wrap("Not: " + sc + " başlar.\n\n    </script>\n\n", "</script>\n\n")),
+                ("Claude: a '</div>' in indented code", wrap("Not: <div hidden> başlar.\n\n    </div>\n\n", "</div>\n\n")),
+                ("Claude: a '</div>' in tab-indented code", wrap("Not: <div hidden> başlar.\n\n\t</div>\n\n", "</div>\n\n")),
+                ("Claude: a '</div>' in indented code inside a list item", wrap("- madde <div hidden>\n\n      </div>\n\n", "</div>\n\n")),
+                ("Claude: a '</script>' in a link title", wrap("Not: " + sc + ' [x](https://example.com/a "</script>")\n\n', "</script>\n\n")),
+                ("Claude: a '</div>' in a link title", wrap('Not: <div hidden> [x](https://example.com/a "</div>")\n\n', "</div>\n\n")),
+                ("a '</div>' in a paragraph that may continue a list item", wrap("- madde <div hidden>\n\n  devam </div>\n\n", "</div>\n\n")),
+                ("a '</div>' on a block quote line", wrap("Metin <div hidden>\n> alıntı </div>\n\n", "</div>\n\n")),
+                ("a '</div>' in a paragraph with link syntax the check cannot read", wrap('Metin <div hidden> [[[x]]](y "</div>")\n\n', "</div>\n\n"))):
+            with self.subTest(not_verified=label):
+                lost = self.section_2_lost(text)
+                self.assertTrue(lost and all(nv in p for p in lost), lost)
+        with self.subTest(hidden="a quoted value may hold '>': the element is real and hides what follows"):
+            self.assertTrue(self.section_2_lost(wrap('<div hidden title="a>b">\n\n', "</div>\n\n")))
+        with self.subTest(not_verified="Codex F2: a '<script>' in a quoted value is a tag the check cannot read, not a script"):
+            lost = self.section_2_lost(before('<div title="> <script type=text/plain>">örnek</div>\n\n'))
+            self.assertTrue(lost and all("HTML tag" in p and "cannot read" in p and "never closed" not in p for p in lost), lost)
+        for label, text in (
+                ("a closed element whose quoted value holds '>'", before('<div title="x>y">z</div>\n\n')),
+                ("a '</div>' in indented code with nothing open", before("Not:\n\n    </div>\n\n")),
+                ("a '</div>' in a link title with nothing open", before('Not: [x](https://example.com/a "</div>")\n\n')),
+                ("a real '</div>' on an indented paragraph continuation line", before("Metin <div hidden>\n    </div>\n\n")),
+                ("a type-7 line whose quoted value holds '>' starts an HTML block, read raw", before('<span hidden title="a>b">\n`</span>`\n\n'))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        with self.subTest(not_verified="Claude: an AGENTS.md required heading after a '</script>' in indented code"):
+            f.write_text(agents[:at] + "Not: " + sc + " başlar.\n\n    </script>\n\n" + head + "\n\n</script>\n" + agents[at + len(head) + 1:], encoding="utf-8")
+            lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")]
+            self.assertTrue(lost and all(nv in p for p in lost), lost[:2])
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML

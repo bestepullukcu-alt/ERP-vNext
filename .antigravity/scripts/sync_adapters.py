@@ -68,6 +68,9 @@ Rules this script enforces (İ5-A pilot):
   outer element's closing tag inside it does not count; an inline '<!--' is a comment only when it closes in its
   paragraph. What the reader cannot read (a span past a block quote or list line, an element never closed) is 'not
   verified', never counted.
+- İ5B-FIX-17 (C15 audits): a tag ends outside its quoted values, and a closing tag that would close an open element
+  needs a proven plain paragraph line or an HTML block — not indented code, an unproven container, link metadata or
+  link syntax the check cannot read ('not verified').
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -342,7 +345,10 @@ HTML_BLOCK_TAGS = ("address article aside base basefont blockquote body caption 
                    "main menu menuitem nav noframes ol optgroup option p param search section summary table tbody td tfoot th thead "
                    "title tr track ul").split()
 HTML_TYPE6 = re.compile(rf"^ {{0,3}}</?(?:{'|'.join(HTML_BLOCK_TAGS)})(?:\s|/?>|$)", re.I)
-HTML_TYPE7 = re.compile(r"^ {0,3}(?:<[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$")
+# İ5B-FIX-17 (C15 audits): a tag's attributes, read so that a '>' inside a quoted value does not end the tag. No attribute
+# grammar is added; a '<' inside a quoted value, or a quote left open, is not read (the tag is 'not verified')
+TAG_ATTRS = r"""(?:\s(?:[^<>"']|"[^"<]*"|'[^'<]*')*)?"""
+HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*{TAG_ATTRS}/?>|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$")
 
 
 def html_block_start(line: str, after_blank: bool):
@@ -362,7 +368,7 @@ def html_block_start(line: str, after_blank: bool):
 
 
 VOID_ELEMENTS = ("area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr")
-HTML_TAG = re.compile(r"<(/?)([A-Za-z][A-Za-z0-9-]*)(?:\s[^<>]*)?(/?)>")
+HTML_TAG = re.compile(rf"<(/?)([A-Za-z][A-Za-z0-9-]*){TAG_ATTRS}(/?)>")
 HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
 
 
@@ -382,6 +388,10 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
       void element mask only themselves; '<?', '<!X' and CDATA mask to their own end inside the paragraph or block.
     - An opener ('<x', '</x', '<!', '<?') that is not an autolink and not a tag this reader can read hides the rest of
       the file ('tag': not verified); so does a code span whose pair lies past a line it does not read ('code').
+    - İ5B-FIX-17: a tag ends outside its quoted values (TAG_ATTRS). A closing tag that would close an open element or a
+      raw-text element counts only in an HTML block or on a proven plain paragraph line (close_unproven); in indented
+      code, in a container the reader cannot prove, in link metadata or beside link syntax it cannot read it is
+      'close': not verified. A closing tag that closes nothing stays harmless.
     Not an HTML engine: an attribute is never read, so any text inside an element is not evidence (a declared safe
     refusal), and an element ends only at its own closing tag (a browser may end it earlier: the model refuses more)."""
     block_view = view if block_view is None else block_view
@@ -412,6 +422,46 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
         for k in range(a, min(b, size)):
             if out[k] != "\n":
                 out[k] = " "
+
+    in_fence = [False] * len(lines)
+    for f, t in fence_to.items():
+        for k in range(f, t):
+            in_fence[k] = True
+
+    def width(line: str) -> int:                             # the leading indentation, a tab to the next multiple of 4
+        w = 0
+        for ch in line:
+            if ch == " ":
+                w += 1
+            elif ch == "\t":
+                w += 4 - w % 4
+            else:
+                break
+        return w
+
+    def ends_paragraph(k: int) -> bool:                      # line k is not paragraph text
+        l = lines[k]
+        return (not l.strip() or in_block[k] or in_fence[k] or bool(ATX_HEADING.match(l)) or bool(BREAK_LINE.match(l)))
+
+    def close_unproven(n: int, i: int) -> bool:
+        """İ5B-FIX-17: a closing tag at offset i on line n (Markdown context) that would close an open element counts only
+        on a proven plain paragraph line: a paragraph that does not start indented two or more columns (indented code,
+        or a possible list continuation — a paragraph right after indented code is read with it, so it is refused too),
+        no block quote or list line in it, not inside a link's destination or title, an image or a reference
+        definition, and no link syntax the check cannot read."""
+        first = n
+        while first > 0 and not ends_paragraph(first - 1):
+            first -= 1
+        last = n
+        while last + 1 < len(lines) and not ends_paragraph(last + 1):
+            last += 1
+        if width(lines[first]) >= 2 or any(CONTAINER_LINE.match(lines[k]) for k in range(first, last + 1)):
+            return True
+        para = view[offs[first]:offs[last] + len(lines[last])]
+        if any(RULE_REFERENCE_DEF.match(lines[k]) for k in range(first, last + 1)) or unreadable_link(para):
+            return True
+        at = i - offs[first]
+        return any(a <= at < b for a, b in known_spans(mask_code(para)))
 
     stack: list[tuple[str, int]] = []
     raw: tuple[str, int] | None = None
@@ -449,6 +499,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
             break
         if raw is not None:                                  # inside a raw-text element only its own close counts
             if m and m.group(1) and m.group(2).lower() == raw[0]:
+                if not block and close_unproven(n, i):
+                    nv = (i, "close")
+                    break
                 if not stack:
                     mask(raw[1], m.end())
                 raw, i = None, m.end()
@@ -459,6 +512,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
             closing, name = m.group(1), m.group(2).lower()
             if closing:
                 at = next((k for k in range(len(stack) - 1, -1, -1) if stack[k][0] == name), None)
+                if at is not None and not block and close_unproven(n, i):
+                    nv = (i, "close")                        # it would close an element: no proof it is a real close
+                    break
                 if at is not None:
                     outer = stack[0][1]
                     del stack[at:]
@@ -573,7 +629,8 @@ def unreadable_html(text: str) -> str:
     line = text.count(chr(10), 0, at) + 1
     return {"tag": f" (after an HTML tag at line {line} the check cannot read — not verified)",
             "element": f" (after an HTML element opened at line {line} and never closed — not verified)",
-            "code": f" (after a code span or comment at line {line} the check cannot read — not verified)"}[kind]
+            "code": f" (after a code span or comment at line {line} the check cannot read — not verified)",
+            "close": f" (after a closing tag at line {line} the check cannot read as a real close — not verified)"}[kind]
 
 
 def section_problems(path: str, text: str, required: list[dict]) -> list[str]:

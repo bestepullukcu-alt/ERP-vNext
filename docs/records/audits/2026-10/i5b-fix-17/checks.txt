@@ -1,0 +1,30 @@
+İ5B-FIX-17 — the narrow run, on the branch's two frozen files in the İ5B worktree (branch chore/agents/i5b-fix-17 on
+eca57404d with this package's uncommitted changes). Not a full scripts/tests run, not a run on a combined candidate.
+
+commands (from the worktree root):
+  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget
+  python3 -B .antigravity/scripts/sync_adapters.py --check
+sources (SHA-256):
+  .antigravity/scripts/sync_adapters.py             0e456b0f2ef0e6ba542479a263637d8f2fce6c0841dde63c262df305c4f8b200
+  scripts/tests/test_sync_adapters_budget.py        e1a57d60acaf9699a07286462a04250fc7db69d601920398ac97f837a0778895
+result (from the full log):
+  start 2026-10-18T15:27:39Z
+  Python 3.9.6
+  Ran 53 tests in 34.200s
+  OK
+  ### exit 0
+  OK 9 adapter(s) match their sources
+  ### exit 0
+  end 2026-10-18T15:28:14Z
+before = after (branch, status, the two SHA-256 — the identity file's first two lines are the branch name twice; HEAD was not printed there): True
+full log SHA-256 10f74e282c1f42064cb06f09b8dcc6920a5b433bfc05c80b3a212cd5eecaf54a (kept outside the repository)
+
+The real files, C15's reader against this one:
+  AGENTS.md: visible text equal True · level-2 sections equal True · diagnosis ''
+  CLAUDE.md: visible text equal True · level-2 sections equal True · diagnosis ''
+  .antigravity/AGENTS-REFERENCE.md: visible text equal True · level-2 sections equal True · diagnosis ''
+  core view equal True · rule-line decisions equal True
+  check_instruction_budget on the real files: ([], [])
+
+The two frozen sources: 16a11a3a (first) and 0e456b0f (final, the indented-code check removed). Their whole
+difference is drivers/16a11a3a-to-0e456b0f.diff.txt (SHA-256 a1b026978313c680aa6860a9dba82a303f9e19ae7ff9f1251c7f384341c08299).
