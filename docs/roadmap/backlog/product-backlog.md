@@ -9975,6 +9975,19 @@ alandan yapılabilir). Önerilen çözüm: ağ geçidi ürettiği kimliği imzal
 imzaladığı kimliği benimser; servisler kimliği olduğu gibi iletir. Gizli anahtar yönetimi gerektirir (dev betiği + canlı ayar; değer hiçbir yere
 yazılmaz). Gelecek regresyon riski: 🟡 (her servisin korelasyon akışına dokunur).
 
+**İLERLEME KAYDI — 2026-10-18 · `1ace4f30e` (mekanizma teslim edildi; madde AÇIK kalır).** Q151 entegre koşusu bu tasarımın
+SupplyChain tarafındaki karşılığını buldu: ağ geçidi her istekte yeni kimlik ürettiği için sevkiyat yaşam döngüsü kökü (geçişler,
+iade, talep) ağ geçidinden taşınamıyordu (`mvp6-q151-integrated-run-01`, D2). **Yapılan:** imza kimliğin İÇİNDE —
+`Observability:Correlation:SigningKey` verilince (yalnız ağ geçidi, çalışma anında; değer hiçbir yere yazılmaz) uç, ilk yarısı
+rastgele, ikinci yarısı ilk yarının HMAC-SHA256'sı olan kanonik UUID üretir ve gelen kimliği YALNIZ kendi geçerli imzasını
+taşıyorsa benimser (`SignedCorrelation`); aynı commit uçta "N" biçimini "D"ye çevirdi (D1). **Kararlar:** ayrı başlık yerine
+kimlik içi imza seçildi — yeni başlık, CORS açılımı ve servis değişikliği gerekmiyor, her alıcı yine kanonik UUID görüyor.
+Anahtar yoksa davranış INTX FIX2 ile birebir aynı. **Kanıt:** ağ geçidi testleri 254/254 (sahte, kurcalanmış ve başka anahtarla
+imzalanmış kimliğin reddi dahil), canlı koşu `mvp6-q151-integrated-run-02` PASS. **Kasten yapılmayan:** HCM/CRM istemcilerinin
+(`GovernedHcmAuditAppendClient`, `HttpCrmAuditPublisher`) gelen `X-Correlation-Id`'yi Platform çağrısına aynen iletip iletmediği
+ölçülmedi — bu maddenin asıl sorunu o yarı; ölçülene kadar madde kapanmaz. Anahtar yokken ağ geçidinin canlıda hızlı-düşmesi
+(JWT gizlisindeki gibi) önerildi, eklenmedi.
+
 ---
 
 ### BL-527
