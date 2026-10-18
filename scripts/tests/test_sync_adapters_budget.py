@@ -1128,12 +1128,12 @@ class InstructionBudget(unittest.TestCase):
                     self.assertTrue(self.section_2_lost(wrap("<div hidden>\n\n" + start + "\n" + bt + close + bt + "\n\n", "</div>\n\n")),
                                     f"{family} {hex(ord(ch))}")
         for label, text in (
-                ("'<p>' starts a type-6 HTML block: '`</div>`' is raw and closes the div", before("<div hidden>\n\n<p>\n" + bt + "</div>" + bt + "\n\n")),
-                ("'<p ' + TAB + 'class=\"a\">' starts a type-6 HTML block", before('<div hidden>\n\n<p \tclass="a">\n' + bt + "</div>" + bt + "\n\n")),
+                ("'<p>' starts a type-6 HTML block: '`</div>`' is raw and closes the div", before("<div hidden>\n\n<p></p>\n" + bt + "</div>" + bt + "\n\n")),
+                ("'<p ' + TAB + 'class=\"a\">' starts a type-6 HTML block", before('<div hidden>\n\n<p \tclass="a"></p>\n' + bt + "</div>" + bt + "\n\n")),
                 ("'<script>' starts a type-1 block: '`</script> </div>`' is raw and closes both", before("<div hidden>\n\n<script>\n" + bt + "</script> </div>" + bt + "\n\n")),
                 ("a valid '<x title=\"ok\">' line starts an HTML block: '`</div>`' is raw and closes the div",
-                 before('<div hidden>\n\n<x title="ok">\n' + bt + "</div>" + bt + "\n\n")),
-                ("'<x>' with trailing ASCII spaces starts an HTML block", before("<div hidden>\n\n<x>  \n" + bt + "</div>" + bt + "\n\n")),
+                 before('<div hidden>\n\n<x title="ok">\n</x>\n' + bt + "</div>" + bt + "\n\n")),
+                ("'<x>' with trailing ASCII spaces starts an HTML block", before("<div hidden>\n\n<x>  \n</x>\n" + bt + "</div>" + bt + "\n\n")),
                 ("a closing '</script>' line starts a type-7 block (the exception is for opening tags only)",
                  before("<div hidden>\n\n</script>\n" + bt + "</div>" + bt + "\n\n")),
                 ("'</div x>' on an HTML block line closes the div", before("<div hidden>\n</div x>\n\n")),
@@ -1216,6 +1216,62 @@ class InstructionBudget(unittest.TestCase):
                            ("Claude: '</div>' inside '<xmp>'", "<div hidden>\n<xmp>\n</div>\n</xmp>\n\n")):
             with self.subTest(hidden="an AGENTS.md required heading after " + label):
                 f.write_text(agents[:at] + ins + head + "\n\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
+                self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
+
+    def test_a_close_below_the_top_and_foreign_content_are_not_verified(self):
+        # İ5B-FIX-21 (C19 audits; Claude Denetim001 C19-F1, Codex Denetim001 C19-F1). Two roots, one contract:
+        # 1. a closing tag that matched an element below the top of the stack closed it and dropped every element above
+        #    it. HTML may ignore such a close ('</div>' with a table, template, select or object open: no div in scope)
+        #    or reopen a formatting element after it, so the hidden div stays in force. It is now 'close': not verified;
+        # 2. inside svg or math HTML's raw-text names are foreign elements, and '<div>' breaks out as HTML, so
+        #    '<svg><xmp><div hidden></xmp></svg>' leaves an HTML hidden div open. The reader cannot prove an HTML
+        #    namespace there: an svg or math opener is 'tag': not verified (a declared limit — a valid SVG is refused too;
+        #    inside a raw-text element it is text). A strict top-of-stack close alone does not close the second root
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        nv, bt = "not verified", "`"
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        cases = [(f"Claude: '</div>' with '<{el}>' open in an HTML block", wrap(f"<div hidden>\n<{el}>\n</div>\n\n", f"</{el}>\n</div>\n\n"))
+                 for el in ("table", "template", "select", "object")]
+        cases += [("Claude: '</div>' with '<table>' open in a paragraph", wrap("Not: <div hidden> <table> </div> başlar.\n\n", "</table>\n</div>\n\n")),
+                  ("'</p>' with '<b hidden>' open: HTML reopens the b around the next text", wrap("<p>\n<b hidden>\n</p>\n\n", "</b>\n\n"))]
+        cases += [(f"Codex: '<{root}><{raw}><div hidden></{raw}></{root}>' in an HTML block", wrap(f"<hr>\n<{root}><{raw}><div hidden></{raw}></{root}>\n\n", "</div>\n\n"))
+                  for root, raw in (("svg", "xmp"), ("svg", "noembed"), ("math", "xmp"))]
+        cases += [("'<svg><xmp><div hidden></xmp></svg>' in a paragraph", wrap("Not: <svg><xmp><div hidden></xmp></svg> başlar.\n\n", "</div>\n\n")),
+                  ("declared: a closed valid SVG is not verified too", before("<hr>\n<svg><rect/></svg>\n\n"))]
+        for label, text in cases:
+            with self.subTest(not_verified=label):
+                lost = self.section_2_lost(text)
+                self.assertTrue(lost and all(nv in p for p in lost), (label, lost[:1]))
+        # a void element or a closing tag stacks nothing, so neither rule above hides a wrong block start there: these
+        # lines start no HTML block (CommonMark §4.6 — SPACE / TAB only, a complete tag), so '`</div>`' stays code
+        ff, nbsp = chr(0x0C), chr(0xA0)
+        for label, start in (("type 6: '<hr' + FF + '>'", "<hr" + ff + ">"), ("type 7: '<br>' + NBSP at the end", "<br>" + nbsp),
+                             ("type 7: '<br !>' is no complete tag", "<br !>"), ("type 7: '<br' + FF + 'a>'", "<br" + ff + "a>")):
+            with self.subTest(hidden=label + ": no HTML block starts, so '`</div>`' is code"):
+                self.assertTrue(self.section_2_lost(wrap("<div hidden>\n\n" + start + "\n" + bt + "</div>" + bt + "\n\n", "</div>\n\n")), label)
+        for label, text in (
+                ("a balanced '<div hidden><table></table></div>'", before("<div hidden>\n<table>\n</table>\n</div>\n\n")),
+                ("nested divs closed in order", before("<div hidden>\n<div>\n</div>\n</div>\n\n")),
+                ("'<b hidden></b>' closed at the top", before("<p>\n<b hidden></b>\n</p>\n\n")),
+                ("an HTML '<xmp>' holding '<div hidden>' (text)", before("<hr>\n<xmp><div hidden></xmp>\n\n")),
+                ("'<svg>' inside an HTML '<xmp>' is text", before("<hr>\n<xmp><svg></xmp>\n\n")),
+                ("'<svg>' in a code span", before("Not: " + bt + "<svg>" + bt + " metin.\n\n")),
+                ("a lone '</svg>'", before("<hr>\n</svg>\n\n")),
+                ("a closing tag that closes nothing inside an open div", before("<div hidden>\n</span>\n</div>\n\n"))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        for label, ins, tail in (("Claude: '</div>' with '<table>' open", "<div hidden>\n<table>\n</div>\n\n", "</table>\n</div>\n"),
+                                 ("Codex: '<svg><xmp><div hidden></xmp></svg>'", "<hr>\n<svg><xmp><div hidden></xmp></svg>\n\n", "</div>\n")):
+            with self.subTest(hidden="an AGENTS.md required heading after " + label):
+                f.write_text(agents[:at] + ins + head + "\n\n" + tail + agents[at + len(head) + 1:], encoding="utf-8")
                 self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
 
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):

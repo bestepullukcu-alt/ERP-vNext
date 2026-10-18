@@ -366,8 +366,8 @@ TAG_ATTRS = r"""(?:\s(?:[^<>"']|"[^"<]*"|'[^'<]*')*)?"""
 # attributes whose names start with a letter, '_' or ':' and whose values are unquoted, single- or double-quoted, SPACE or
 # TAB only — followed only by SPACE or TAB; an opening tag's name is not pre, script, style or textarea (a closing tag's
 # may be). This strict grammar decides
-# only whether a line starts an HTML block; the inline reader keeps TAG_ATTRS. A line it refuses is paragraph text, read as
-# Markdown — the model refuses more
+# only whether a line starts an HTML block; the inline reader keeps TAG_ATTRS. A line it refuses is paragraph text, read
+# with the paragraph's own lexical rules and their declared not-verified limits
 TYPE7_NAME = r"(?!(?:pre|script|style|textarea)(?![A-Za-z0-9-]))[A-Za-z][A-Za-z0-9-]*"
 TYPE7_ATTR = rf"""{MD_SPACE}+[A-Za-z_:][A-Za-z0-9_.:-]*(?:{MD_SPACE}*={MD_SPACE}*(?:[^ \t\r\n"'=<>`]+|'[^'\n]*'|"[^"\n]*"))?"""
 HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<{TYPE7_NAME}(?:{TYPE7_ATTR})*{MD_SPACE}*/?>|</[A-Za-z][A-Za-z0-9-]*{MD_SPACE}*>){MD_SPACE}*$", re.I)
@@ -408,6 +408,10 @@ RAWTEXT_ELEMENTS = ("style", "xmp", "iframe", "noembed", "noframes")
 SCRIPT_DATA_ELEMENTS = ("script",)
 RAW_TEXT_ELEMENTS = RCDATA_ELEMENTS + RAWTEXT_ELEMENTS + SCRIPT_DATA_ELEMENTS
 UNREAD_TEXT_ELEMENTS = ("noscript", "plaintext")
+# İ5B-FIX-21 (C19 audits): the elements that open foreign content (WHATWG HTML, 'the rules for parsing tokens in foreign
+# content'). Inside them HTML's raw-text names are foreign elements and some HTML tags break out, so the reader cannot
+# prove an HTML namespace: their opening tag is 'not verified' — a declared limit, a valid SVG is refused too
+FOREIGN_ELEMENTS = ("svg", "math")
 HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
 
 
@@ -439,8 +443,12 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
     - İ5B-FIX-20: the same for an opening tag in an HTML block — '<div' + NBSP + ' hidden>' is no div in HTML, and its
       longer name is not one the reader matches, so it is 'tag': not verified (outside a raw-text element, where a tag is
       text). The raw-text elements are HTML's own list; a noscript or plaintext opener is 'tag': not verified.
-    Not an HTML engine: an attribute is never read, so any text inside an element is not evidence (a declared safe
-    refusal), and an element ends only at its own closing tag (a browser may end it earlier: the model refuses more)."""
+    - İ5B-FIX-21: a closing tag closes an element only at the top of the stack. One that matches an element below the
+      top is 'close': not verified — HTML may ignore it (no such element in scope: a table, template, select or object
+      open) or reopen a formatting element after it. An svg or math opener is 'tag': not verified (FOREIGN_ELEMENTS).
+    Not an HTML, CSS or DOM engine: an attribute is never read, so any text inside an element is not evidence (a declared
+    refusal). The supported lexical rules and the explicit not-verified limits above do not establish general renderer
+    equivalence."""
     block_view = view if block_view is None else block_view
     lines = view.split("\n")
     offs, a = [], 0
@@ -568,8 +576,14 @@ def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str,
             if not closing and (block and view[m.end(2)] not in HTML_NAME_END or name in UNREAD_TEXT_ELEMENTS):
                 nv = (i, "tag")                              # İ5B-FIX-20: a longer name in HTML, or a mode-dependent text
                 break
+            if not closing and name in FOREIGN_ELEMENTS:
+                nv = (i, "tag")                              # İ5B-FIX-21: foreign content — no HTML namespace proven
+                break
             if closing:
                 at = next((k for k in range(len(stack) - 1, -1, -1) if stack[k][0] == name), None)
+                if at is not None and at != len(stack) - 1:
+                    nv = (i, "close")                        # İ5B-FIX-21: below the top — HTML may ignore it or reopen
+                    break
                 if at is not None and not block and close_unproven(n, i):
                     nv = (i, "close")                        # it would close an element: no proof it is a real close
                     break
