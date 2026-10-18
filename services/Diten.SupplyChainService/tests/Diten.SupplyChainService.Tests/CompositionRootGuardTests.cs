@@ -10,6 +10,8 @@ using Microsoft.Extensions.Hosting;
 using Xunit;
 using Diten.SupplyChainService.Application.Common;
 using Diten.SupplyChainService.Infrastructure.Common;
+using Diten.SupplyChainService.Domain.Features.CapacityPlans;
+using CapacityInfra = Diten.SupplyChainService.Infrastructure.Features.CapacityPlans;
 
 namespace Diten.SupplyChainService.Tests;
 
@@ -43,10 +45,14 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
     // IDemandFixtureReader, which has no production implementation). MapControllers() still maps its controller, so
     // its routes exist and cannot be served — measured by this guard on 2026-10-03 (Q366), recorded as a finding,
     // not fixed here. Remove the entry when Q273 composes Capacity; the second assertion then forces it.
-    private static readonly IReadOnlyDictionary<string, string> KnownUncomposed = new Dictionary<string, string>
-    {
-        ["Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController"] = "Q273 — Capacity deliberately not composed"
-    };
+    // G4 (Wave 6.1, 2026-10-18): this guard builds the production container WITH the non-production demand seed, so it
+    // measures the composed graph — S&OP and Capacity included. The Q273 entry went stale exactly as predicted above
+    // and is removed. (Without a seed — production — both stay uncomposed and their controllers are dropped, Q381.)
+    private static readonly IReadOnlyDictionary<string, string> KnownUncomposed = new Dictionary<string, string>();
+
+    internal static readonly Guid SeedTenant = Guid.Parse("4a000000-0000-4000-8000-000000000001");
+    internal static readonly Guid SeedLegalEntity = Guid.Parse("4a000000-0000-4000-8000-000000000002");
+    internal const string SeedChecksum = "sha256:g4-composition-guard";
 
     [Fact]
     public void EveryControllerConstructorParameter_IsResolvableFromTheProductionContainer()
@@ -72,6 +78,28 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
     // never active. AddHttpClient<TService, TImpl> carries no ImplementationType, so the descriptor cannot be
     // inspected; the service is resolved and its runtime type asserted instead.
     [Fact]
+    public void Composed_with_a_seed_the_capacity_readers_carry_the_configured_scope_not_the_bounded_one()
+    {
+        // The container must pick the fixture constructor (the seed), not the parameterless bounded one.
+        using var scope = host.Services.CreateScope();
+        var demand = scope.ServiceProvider.GetRequiredService<IDemandFixtureReader>();
+        var constraints = scope.ServiceProvider.GetRequiredService<IConstraintFixtureReader>();
+        var plan = new CapacityPlan { DemandPlanId = "dp-2027", DemandPlanVersion = "3", SourceChecksum = SeedChecksum };
+        var seeded = new CapacityScope(SeedTenant, SeedLegalEntity, Guid.NewGuid());
+        var bounded = new CapacityScope(CapacityInfra.DemandFixtureReader.Tenant, CapacityInfra.DemandFixtureReader.LegalEntity, Guid.NewGuid());
+        var scenario = new CapacityScenario
+        {
+            ConstraintRefs = [new CapacityConstraintReference("line-4-hours", "SUPPLY-CONSTRAINTS", "8")],
+            Adjustments = [new CapacityAdjustment("line-4", "2027-W03", "80.000", "HOUR")]
+        };
+
+        Assert.True(demand.IsExact(seeded, plan));
+        Assert.False(demand.IsExact(bounded, plan));
+        Assert.True(constraints.IsExact(seeded, scenario));
+        Assert.False(constraints.IsExact(bounded, scenario));
+    }
+
+    [Fact]
     public void LegalEntityScopeValidator_IsTheRealMdmOne_InTheProductionContainer()
     {
         using var scope = host.Services.CreateScope();
@@ -96,7 +124,13 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
                 ["Mongo:DatabaseName"] = "diten_supplychain_composition_guard",
                 ["JwtSettings:Secret"] = "composition-guard-signing-key-0123456789abcdef",
                 ["JwtSettings:Issuer"] = "composition-guard",
-                ["JwtSettings:Audience"] = "composition-guard"
+                ["JwtSettings:Audience"] = "composition-guard",
+                ["DemandFixtures:Enabled"] = "true",
+                ["DemandFixtures:TenantId"] = SeedTenant.ToString(),
+                ["DemandFixtures:LegalEntityId"] = SeedLegalEntity.ToString(),
+                ["DemandFixtures:PlanId"] = "dp-2027",
+                ["DemandFixtures:Version"] = "3",
+                ["DemandFixtures:Checksum"] = SeedChecksum
             };
             // Program.cs reads configuration while it is still registering services, before WebApplicationFactory's
             // overrides apply; environment variables are read by CreateBuilder itself. Restored right after the build.

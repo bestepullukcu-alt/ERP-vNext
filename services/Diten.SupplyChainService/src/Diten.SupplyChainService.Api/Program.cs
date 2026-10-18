@@ -20,6 +20,14 @@ using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
 using System.Text.Json.Serialization;
 using Diten.SupplyChainService.Api.Middleware;
+using Diten.SupplyChainService.Api.Composition;
+using Diten.SupplyChainService.Api.Features.SandopPlans;
+using Diten.SupplyChainService.Persistence.Features.SandopPlans;
+using Diten.SupplyChainService.Persistence.Features.CapacityPlans;
+using SandopDomain = Diten.SupplyChainService.Domain.Features.SandopPlans;
+using SandopInfra = Diten.SupplyChainService.Infrastructure.Features.SandopPlans;
+using CapacityDomain = Diten.SupplyChainService.Domain.Features.CapacityPlans;
+using CapacityInfra = Diten.SupplyChainService.Infrastructure.Features.CapacityPlans;
 using Diten.SupplyChainService.Api.Logging;
 using Diten.SupplyChainService.Api.ModuleRegistration;
 using Diten.SupplyChainService.Application;
@@ -62,7 +70,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 builder.Services.AddAuthorization();
-builder.Services.AddApplication();
+// G4 (Wave 6.1): S&OP/Capacity are composed only where a demand source exists — see DemandConsumerComposition.
+var demandSeed = DemandConsumerComposition.SeedFor(builder.Configuration, builder.Environment);
+builder.Services.AddApplication(includeDemandConsumers: demandSeed is not null);
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddCarrierPersistence();
 builder.Services.AddLoadPersistence();
@@ -91,6 +101,24 @@ builder.Services.AddHttpClient<ILegalEntityScopeValidator, MdmLegalEntityScopeVa
 // create would be rejected as a demand-plan mismatch while the module looked alive. A module that
 // silently refuses everything is worse than one that is plainly unreachable (K4), so S&OP stays in the
 // MediatR exclusion list until a real demand reader exists. See ledger Q273.
+// G4 (Wave 6.1, owner decisions 2026-10-18) keeps that K4 rule and makes composition conditional instead: S&OP and
+// Capacity are composed ONLY with a demand source (DemandConsumerComposition.SeedFor). Until DEMAND v2 that is the
+// non-production fixture seed (DemandFixtures:*); production carries none, so both stay uncomposed and 404 honestly.
+if (demandSeed is not null)
+{
+    builder.Services.AddSandopPersistence();
+    builder.Services.AddCapacityPersistence();
+    builder.Services.AddSingleton<SandopDomain.IDemandFixtureReader>(new SandopInfra.DemandFixtureReader(
+        [new SandopInfra.DemandFixture(demandSeed.TenantId, demandSeed.LegalEntityId, demandSeed.PlanId, demandSeed.Version, demandSeed.Checksum, true)]));
+    builder.Services.AddSingleton(new CapacityInfra.CapacityDemandFixture(
+        demandSeed.TenantId, demandSeed.LegalEntityId, demandSeed.PlanId, demandSeed.Version, demandSeed.Checksum));
+    builder.Services.AddSingleton<CapacityDomain.IDemandFixtureReader, CapacityInfra.DemandFixtureReader>();
+    builder.Services.AddSingleton<CapacityDomain.IConstraintFixtureReader, CapacityInfra.ConstraintFixtureReader>();
+    // The approved evaluation runner (mod-0192-executor-exact-decisions-01: lease/fence claim, fixture-literal oracle).
+    // Registered nowhere before — the tests drive RunOnceAsync directly — so a composed host would leave every
+    // evaluation Accepted forever.
+    builder.Services.AddHostedService<CapacityInfra.CapacityEvaluationExecutor>();
+}
 builder.Services.AddHostedService<ShipmentOutboxWorker>();
 // Q339-R2 (2026-10-03): ShipmentTrackingPodManifestProvider and ModuleRegistrationHostedService were
 // written and tested, but nothing composed them, so Shipment never reached the Platform module catalog.
@@ -149,11 +177,12 @@ app.UseWhen(ClaimContextMiddleware.IsClaimPath, branch => branch.UseMiddleware<C
 // CapacityContextMiddleware needs routing and authentication to have run first (it reads GetEndpoint() and
 // User) — measured 2026-10-18, the filter saw a null endpoint and no-opped. See
 // docs/records/decisions/2026-10/mvp6-q484-capacity-middleware-owner-decision-01.md.
-if (string.Equals(app.Environment.EnvironmentName, "Testing", StringComparison.OrdinalIgnoreCase))
+// G4: a host composed with a demand source runs the Capacity branch too; otherwise it stays test-host-only (Q484).
+if (demandSeed is not null || string.Equals(app.Environment.EnvironmentName, "Testing", StringComparison.OrdinalIgnoreCase))
     app.UseWhen(CapacityContextMiddleware.IsCapacityPath, branch => branch.UseMiddleware<CapacityContextMiddleware>());
 app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context)
     && !ReturnContextMiddleware.IsReturnPath(context) && !ClaimContextMiddleware.IsClaimPath(context)
-    && !CapacityContextMiddleware.IsCapacityPath(context),
+    && !CapacityContextMiddleware.IsCapacityPath(context) && !SandopContextMiddleware.IsSandopPath(context),
     branch => branch.UseMiddleware<ShipmentContextMiddleware>());
 app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183", warehouseIntake = "unimplemented", outboxTransport = "integration-owned" })).AllowAnonymous();

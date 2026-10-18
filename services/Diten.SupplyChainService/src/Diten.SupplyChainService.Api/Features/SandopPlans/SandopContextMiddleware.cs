@@ -3,6 +3,9 @@ namespace Diten.SupplyChainService.Api.Features.SandopPlans;
 // Module-local request gate, called by each action until a separately owned Program.cs composition is approved.
 public static class SandopContextMiddleware
 { public sealed record Resolution(SandopScope Scope,string Key,Guid Correlation,int Status,string? ErrorCode);
+ // G4 item B: S&OP resolves its own context per action, so Program.cs keeps the Shipment catch-all off its paths —
+ // otherwise an invalid S&OP request is answered with Shipment-contract errors (the Q271/Q272 shape).
+ public static bool IsSandopPath(HttpContext http)=>http.Request.Path.StartsWithSegments("/api/supply-chain/sandop-plans",StringComparison.OrdinalIgnoreCase);
  static bool UniqueUuid(IEnumerable<string?> values,out Guid value)
  {var arr=values.ToArray();value=Guid.Empty;return arr.Length==1&&Guid.TryParseExact(arr[0],"D",out value);}
  static bool Header(HttpRequest r,string name,out Guid value)=>UniqueUuid(r.Headers.TryGetValue(name,out var values)?values.Select(x=>(string?)x):[],out value);
