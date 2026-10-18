@@ -321,6 +321,25 @@ def nul_paths(raw: bytes, what: str) -> list[str]:
     return out
 
 
+_ONE_LINE = {"\n": "\\n", "\r": "\\r", "\t": "\\t"}
+
+
+def one_line(value) -> str:
+    """CT-FIX-09 (C8 audits): the display form of a dynamic value inside one output line — every control character
+    (Unicode Cc: LF, CR, TAB, VT, FF, NEL, ESC, NUL …) and the line and paragraph separators U+2028 / U+2029 are written
+    visibly ('\\n', '\\x85', '\\u2028'), so a file name cannot add a line to a report. Everything else is kept byte for
+    byte (a backslash too). For display only: it does not name the file uniquely and is never decoded back."""
+    out = []
+    for c in str(value):
+        if c in _ONE_LINE:
+            out.append(_ONE_LINE[c])
+        elif unicodedata.category(c) == "Cc" or c in "\u2028\u2029":
+            out.append(f"\\x{ord(c):02x}" if ord(c) < 0x100 else f"\\u{ord(c):04x}")
+        else:
+            out.append(c)
+    return "".join(out)
+
+
 def check_registry(registry: list[dict], states: list[dict], commit_exists=None, path_at=None,
                    check_vocab_rows: bool = True) -> list[str]:
     commit_exists = commit_exists or (lambda sha: git("cat-file", "-e", f"{sha}^{{commit}}").returncode == 0)
@@ -1878,6 +1897,9 @@ def self_test() -> int:
     cases.append(("CT-FIX-08: has_visible_text — letters, numbers, symbols yes; U+200B, U+FEFF, U+2060, a lone mark, VS16 no",
                   all(has_visible_text(v) for v in ("a", "ş", "7", "-", "\u2705\ufe0f", "e\u0301"))
                   and not any(has_visible_text(v) for v in ("", " ", "\u200b", "\ufeff", "\u2060", "\u0301", "\ufe0f", "\u2028", "\x0c"))))
+    cases.append(("CT-FIX-09: one_line \u2014 LF, CR, TAB, NEL, U+2028 written visibly; a normal name, a backslash and U+200B kept",
+                  one_line("a\nb\rc\td\x85e\u2028f") == "a\\nb\\rc\\td\\x85e\\u2028f"
+                  and all(one_line(v) == v for v in ("\u015ferit.md", 'a "q" b', "back\\slash", "x\u200by"))))
     cases.append(("CT-FIX-06 EK1-6: an empty required column (scope, evidence, a blank owner_confirmation) -> registry problem; the full row -> none",
                   all(any(f"boş zorunlu alan {c}" in pr for pr in check_registry([dict(reg_row, **{c: v})], [], **yes))
                       for c, v in (("scope", ""), ("evidence", "  "), ("owner_confirmation", "")))

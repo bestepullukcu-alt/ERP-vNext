@@ -56,9 +56,11 @@ What it checks (each is an ENGEL when it fails):
 from __future__ import annotations
 
 import argparse
+import contextlib
 import fnmatch
 import hashlib
 import importlib.util
+import io
 import os
 import re
 import subprocess
@@ -617,8 +619,9 @@ def check_discovery(p: dict, q: dict, read_report, names_for) -> list[str]:
     if result.startswith("tamamlanamadı"):
         eng.append("keşif: sonuç 'tamamlanamadı' — dağıtım yok")
     query = next((l[len("sorgu: "):].split(" | kaynak:")[0] for l in body if l.startswith("sorgu: ")), "")
-    accepted = names_for(q.get("row") or {})
-    if norm(query) not in {norm(x) for x in accepted if x}:
+    if q.get("error"):   # CT-FIX-09: without the queue row the binding is not measured — never 'not this work's name'
+        eng.append("keşif: kuyruk okunamadı — keşfin bu işe bağı ölçülemedi")
+    elif norm(query) not in {norm(x) for x in names_for(q.get("row") or {}) if x}:
         eng.append(f"keşif: sorgu '{query[:50]}' bu işin adı ya da modül adı değil — keşif bu işe bağlanamadı")
     if result.startswith("inceleme gerekli"):
         found = [l for l in body if l.startswith("BULGU ")]
@@ -813,11 +816,25 @@ def draft(queue_id: str, wp_id: str, worktree: str) -> str:
 
 
 def real_queue(queue_id: str, wp_id: str) -> dict:
+    """CT-FIX-09 (C8 audits): the queue is read with ct_queue's stdout captured. ct_queue's CLI prints a stop ('DUR: …')
+    and exits 2 (CT-FIX-08), so a stop is named by what it printed — or by a SystemExit text — inside the gate's hashed
+    report, never printed before it. Output on a successful load is not swallowed either: it is a queue problem."""
     cq = ctq()
+    said = io.StringIO()
     try:
-        queues, states = cq.load_for_dispatch(queue_id)
+        with contextlib.redirect_stdout(said):
+            result = _real_queue(cq, queue_id, wp_id)
     except SystemExit as e:
-        return {"error": str(e)}
+        reason = said.getvalue().strip() or (e.code if isinstance(e.code, str) else
+                                             f"kuyruk okuyucusu {e.code} ile durdu ve neden yazmadı")
+        return {"error": cq.one_line(" · ".join(reason.splitlines()))}
+    if said.getvalue().strip():
+        return {"error": cq.one_line("kuyruk okuyucusu beklenmeyen çıktı verdi: " + " · ".join(said.getvalue().strip().splitlines()))}
+    return result
+
+
+def _real_queue(cq, queue_id: str, wp_id: str) -> dict:
+    queues, states = cq.load_for_dispatch(queue_id)
     qd = queues[0]
     vocab = cq.vocabulary(states, qd["vocabulary"])
     cur = cq.Table(cq.decode(cq.current_bytes(qd, None), qd["path"]))
@@ -1324,16 +1341,36 @@ Rapor formatı: §22
         def load_for_dispatch(queue_id): raise SystemExit("DUR: kayıt geçersiz")
         @staticmethod
         def load(queue_id): return [{"queue_id": queue_id}], []
+        one_line = staticmethod(ctq().one_line)
+
+    class PrintsAndStops(DispatchStops):          # CT-FIX-09: ct_queue's own stop — the reason printed, then exit 2
+        @staticmethod
+        def load_for_dispatch(queue_id):
+            print("DUR: registry ct: boş zorunlu alan path")
+            raise SystemExit(2)
+
     saved_ctq = globals()["ctq"]
-    try:
-        globals()["ctq"] = lambda: DispatchStops
-        stopped = real_queue("q", "W1")
-    except Exception:                             # a loader that did not stop runs on into the fake module
-        stopped = {}
-    finally:
-        globals()["ctq"] = saved_ctq
+    found = {}
+    for name, fake in (("string", DispatchStops), ("printed", PrintsAndStops)):
+        try:
+            globals()["ctq"] = lambda fake=fake: fake
+            found[name] = real_queue("q", "W1")
+        except Exception:                         # a loader that did not stop runs on into the fake module
+            found[name] = {}
+        finally:
+            globals()["ctq"] = saved_ctq
     cases.append(("CT-FIX-01 05: the gate reads its queue through load_for_dispatch (a registry validate rejects stops it)",
-                  stopped.get("error", "").startswith("DUR")))
+                  found["string"].get("error", "").startswith("DUR")))
+    cases.append(("CT-FIX-09: a stop ct_queue printed is the gate's reason ('DUR: …'), not the bare exit code '2'",
+                  found["printed"].get("error") == "DUR: registry ct: boş zorunlu alan path"))
+    saved_read = globals()["_real_queue"]
+    try:                                          # CT-FIX-09: output on a load that did not stop is not swallowed
+        globals()["_real_queue"] = lambda cq, queue_id, wp_id: (print("UYARI beklenmeyen"), {"code": 0})[1]
+        noisy = real_queue("q", "W1")
+    finally:
+        globals()["_real_queue"] = saved_read
+    cases.append(("CT-FIX-09: output printed while the queue loads -> a queue error, never a silent pass",
+                  noisy.get("error") == "kuyruk okuyucusu beklenmeyen çıktı verdi: UYARI beklenmeyen"))
 
     src = Path(__file__).read_text(encoding="utf-8")
     cases.append(("read-only: no write call in this script", not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))

@@ -1484,7 +1484,8 @@ def main() -> int:
         print("\n".join(lines))
         return code
     code, lines = run_check(a.record, {"queue": a.queue, "work_package": a.wp, "module": a.module}, index_ref=a.index_ref)
-    print("\n".join(lines))
+    # CT-FIX-09 (C8 audits): one output point — a changed file's name with a line feed cannot add a 'sonuç:' line
+    print("\n".join(shared().one_line(l) for l in lines))
     return code
 
 

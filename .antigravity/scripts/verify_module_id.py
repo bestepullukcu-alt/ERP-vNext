@@ -24,6 +24,7 @@ import glob
 import os
 import re
 import sys
+import unicodedata
 
 BLUEPRINT = "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx"
 REGISTRY = "execution/registries/module-id-registry.md"
@@ -436,6 +437,22 @@ def _shared_reader():
     return mod
 
 
+_ONE_LINE = None
+
+
+def _one_line(text):
+    """CT-FIX-09 (C8 audits): ct_queue.one_line, loaded once — a file name with a control character stays on one report
+    line. Without the shared reader (its absence already makes the discovery incomplete) every character that would
+    start a new line is shown as '?', so the report keeps one result line either way."""
+    global _ONE_LINE
+    if _ONE_LINE is None:
+        try:
+            _ONE_LINE = _shared_reader().one_line
+        except Incomplete:
+            _ONE_LINE = lambda t: "".join("?" if unicodedata.category(c) == "Cc" or c in "\u2028\u2029" else c for c in str(t))
+    return _ONE_LINE(text)
+
+
 def pack_id_conflicts(root, blobs):
     """CT-FIX-03 (R4, Codex item 8): {path: problem} for every pack blob whose künye names its id more than once or in
     a disguised form. A pack without a künye (or with an unclosed one) is not a conflict: it is matched by name."""
@@ -703,7 +720,7 @@ def report_summary(info, findings, matched, meta, alias_ids, failure, blueprint=
         items += [[_kunye_line(p, meta.get(p, []))] for p, _ in matched if p not in first]
     out, used, left = [], 0, 0
     for group in items:
-        group = [_cap(l, SUMMARY_LINE) for l in group]
+        group = [_cap(_one_line(l), SUMMARY_LINE) for l in group]   # CT-FIX-09: shown on one line before the budget
         size = sum(len(l.encode("utf-8")) + 1 for l in group)
         if not left and used + size <= SUMMARY_BUDGET - SUMMARY_TAIL:
             out += group
@@ -722,6 +739,7 @@ def report_summary(info, findings, matched, meta, alias_ids, failure, blueprint=
 def discover(root, name, resource=None, sor=None):
     """Return (report lines without the hash line, exit code). CT-FIX-06: the 'ÖZET' lines stand under the header."""
     lines, code = _discover(root, name, resource, sor)
+    lines = [_one_line(l) for l in lines]                   # CT-FIX-09: one logical line = one physical line
     total = len(lines) + 1                                  # with the hash line
     lines = [l.replace("{n}", str(total)) if l.startswith("ÖZET sınır: ") else l for l in lines]
     return lines, code

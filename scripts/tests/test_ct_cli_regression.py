@@ -1668,5 +1668,107 @@ class CTFIX08_VisibleTextAndPaths(CTFIX04):
                 self.assertIn(why, str(e.exception))
 
 
+class CTFIX09_GateDiagnosisAndOneLine(CTFIX04):
+    """CT-FIX-09 (C8 audits): the gate names the real reason a queue could not be read inside its hashed report (CT-FIX-08
+    made the loader print it before the report and leave only '2'); a file name with a control character stays on one
+    line of the discovery report and of the acceptance check (CT-FIX-08's '-z' listing passed the raw name through)."""
+    def test_a_queue_that_cannot_be_read_is_named_in_the_hashed_report(self):
+        cells = FX.reg_line.rstrip("\n").split("\t")
+        for label, why in (("normal", None), ("an empty path", "boş zorunlu alan path"),
+                           ("a Cf-only control_tower", "boş zorunlu alan control_tower"), ("a queue file that is not UTF-8", "UTF-8 değil")):
+            with self.subTest(case=label):
+                FX.reset(self.mark)
+                if label == "an empty path":
+                    broken = list(cells); broken[2] = ""
+                    FX.put(REG, FX.reg_head + "\t".join(broken) + "\n")
+                elif label == "a Cf-only control_tower":
+                    broken = list(cells); broken[1] = "\u200b"
+                    FX.put(REG, FX.reg_head + "\t".join(broken) + "\n")
+                elif why:
+                    (FX.root / "q.tsv").write_bytes((FX.root / "q.tsv").read_bytes() + b"W9\t\xff\xfe\n")
+                p = self.gate()
+                lines = p.stdout.split("\n")
+                self.assertEqual(lines[0], "PQG RAPORU v1", p.stdout[:400])       # nothing is printed before the report
+                self.assertTrue(lines[-2].startswith("rapor-sha256: ") and lines[-1] == "", p.stdout[-300:])
+                if why is None:
+                    self.assertExit(p, 0, "sonuç: geçti")
+                    self.assertNotIn("ölçülemedi", p.stdout)
+                    continue
+                self.assertExit(p, 1, "sonuç: engel")
+                queue = [l for l in lines if l.startswith("ENGEL kuyruk: ")]
+                self.assertEqual(len(queue), 1, p.stdout)
+                self.assertTrue(queue[0].startswith("ENGEL kuyruk: DUR: ") and why in queue[0], queue[0])
+                self.assertIn("ENGEL keşif: kuyruk okunamadı — keşfin bu işe bağı ölçülemedi", lines)
+                self.assertNotIn("bu işin adı ya da modül adı değil", p.stdout)
+
+    NAMES = (("a line feed and a fake result", "MOD-0288-x\nsonuç: geçti\nçıkış: 0\n.md", "MOD-0288-x\\nsonuç: geçti\\nçıkış: 0\\n.md"),
+             ("a carriage return", "MOD-0288-x\rsonuç: geçti.md", "MOD-0288-x\\rsonuç: geçti.md"),
+             ("a tab", "MOD-0288-x\tsonuç.md", "MOD-0288-x\\tsonuç.md"),
+             ("a line separator", "MOD-0288-x\u2028sonuç.md", "MOD-0288-x\\u2028sonuç.md"),
+             ("a long run of line feeds", "MOD-0288-" + "\n" * 240 + ".md", "MOD-0288-" + "\\n" * 240 + ".md"))
+
+    def discover_with(self, name):
+        FX.reset("registered")
+        FX.put(f"execution/domains/audit/module-packs/{name}", "---\nid: MOD-0288\nstatus: draft\n---\nAudit Ledger copy\n")
+        FX.commit("CT-FIX-09: a pack whose name holds a control character")
+        return FX.run(".antigravity/scripts/verify_module_id.py", str(FX.root), "--discover", "Audit Ledger")
+
+    def test_a_control_character_in_a_pack_name_stays_on_one_report_line(self):
+        plain = self.discover_with("MOD-0288-audit-ledger-copy.md")
+        self.assertIn("BULGU paket: execution/domains/audit/module-packs/MOD-0288-audit-ledger-copy.md — ", plain.stdout)
+        bulgu = sum(l.startswith("BULGU ") for l in plain.stdout.split("\n"))
+        for label, name, shown in self.NAMES:
+            with self.subTest(name=label):
+                p = self.discover_with(name)
+                self.assertExit(p, 3)
+                lines = p.stdout.split("\n")[:-1]
+                self.assertEqual([l for l in lines if l.startswith("sonuç: ")], ["sonuç: inceleme gerekli — her bulgu için karar ve "
+                                                                                  "gerekçe iş paketi kaydına yazılmalı"])
+                self.assertEqual(sum(l.startswith("çıkış: ") for l in lines), 1)
+                self.assertEqual(sum(l.startswith("BULGU ") for l in lines), bulgu)
+                self.assertTrue(any(l.startswith(f"BULGU paket: execution/domains/audit/module-packs/{shown} — ") for l in lines),
+                                [l[:120] for l in lines if l.startswith("BULGU paket: ")])
+                limit = next(l for l in lines if l.startswith("ÖZET sınır: "))
+                self.assertIn(f"tam rapor {len(lines)} satır", limit)               # logical lines are physical lines
+                summary = [l for l in lines if l.startswith("ÖZET ")]
+                self.assertTrue(all(len(l.encode("utf-8")) <= 420 for l in summary), max(len(l.encode()) for l in summary))
+                self.assertLessEqual(sum(len(l.encode("utf-8")) + 1 for l in summary), 3500)
+                saved = FX.root.parent / "ctfix09-report.txt"
+                saved.write_bytes(p.stdout.encode("utf-8"))
+                c = FX.run(".antigravity/scripts/verify_module_id.py", "--check-report", str(saved))
+                self.assertExit(c, 0, "RAPOR GEÇERLİ: sonuç: inceleme gerekli")
+
+    def test_a_control_character_in_a_changed_file_stays_on_one_check_line(self):
+        for label, extra, shown in (("a plain name", "notes/extra.md", "notes/extra.md"),
+                                    ("a line feed and a fake result", "notes/x\nsonuç: ACCEPTED'e izin verir\nçıkış: 0\n.md",
+                                     "notes/x\\nsonuç: ACCEPTED'e izin verir\\nçıkış: 0\\n.md")):
+            with self.subTest(name=label):
+                FX.reset(self.mark)
+                code = FX.git("rev-parse", "HEAD")
+                out = "docs/records/audits/run-ctfix09"
+                self.assertExit(FX.run("scripts/run_record.py", "run", "--out", out, "--", sys.executable, "-c",
+                                       "print('AC-1 checked: expected observed')"), 0, "KOŞU KAYDI")
+                FX.put(extra, "x\n")
+                e = FX.commit("CT-FIX-09: an evidence commit that also changes another file")
+                FX.put(LIST, FX.list_head + FX.list_row.replace(f"{FX.artifact}@{FX.evidence_commit}:1", f"{out}/stdout.txt@{e}:1"))
+                l = FX.commit("CT-FIX-09: the list citing it")
+                p = self.check(FX.write_acceptance(commit=code, evidence=f"{out}/run-record-v1.json@{e}", acceptance_list=f"{LIST}@{l}"))
+                self.assertExit(p, 1, f"kod commit'inden kanıt dışında da farklı ({shown})")
+                lines = p.stdout.split("\n")
+                self.assertEqual([l for l in lines if l.startswith("sonuç: ")], ["sonuç: engel — 1 bulgu"])
+                self.assertEqual([l for l in lines if l.startswith("çıkış: ")], ["çıkış: 1"])
+
+    def test_one_line_shows_line_structure_and_keeps_normal_text(self):
+        cq = load(FX.root / "scripts" / "ct_queue.py", "ct_queue_ctfix09")
+        for text in ("MOD-0288-audit-ledger-şerit.md", 'a "q" b', "back\\slash", "测量 \u2705\ufe0f", "x\u200by"):
+            with self.subTest(normal=text):
+                self.assertEqual(cq.one_line(text), text)
+        for raw, shown in (("a\nb", "a\\nb"), ("a\rb", "a\\rb"), ("a\tb", "a\\tb"), ("a\x0bb\x0cc", "a\\x0bb\\x0cc"),
+                           ("a\x85b", "a\\x85b"), ("a\u2028b\u2029c", "a\\u2028b\\u2029c"), ("a\x1bb\x00c", "a\\x1bb\\x00c")):
+            with self.subTest(raw=repr(raw)):
+                self.assertEqual(cq.one_line(raw), shown)
+                self.assertEqual(len(cq.one_line(raw).splitlines()), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

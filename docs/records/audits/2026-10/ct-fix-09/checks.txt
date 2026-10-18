@@ -1,0 +1,36 @@
+CT-FIX-09 — the one final run on the frozen sources; run by the AI session in the CT worktree (branch
+chore/ct/ct-fix-09 on 65c53153e with this package's uncommitted changes). Not a run on a combined candidate.
+
+commands (from the worktree root):
+  python3 -B <tool> --self-test   for ct_queue, prompt_gate, acceptance_record, status_report, ct_route, known_failures, run_record
+  python3 -B -m unittest discover -v -s scripts/tests -p 'test_*.py'
+sources (SHA-256):
+  scripts/ct_queue.py                               9c2d6d2d80130b2032ecca53bb8cd3f6582baaa566408f105993b9dd2a5f8c09
+  scripts/prompt_gate.py                            239d41144793634e915eea0c3527a0dc20ac6e4508d37df4290f131d3fe1d182
+  scripts/acceptance_record.py                      2fae62f3b13ed241124cfcac94c930f740aad79f48fb4cda9a64c3c6a8a46726
+  .antigravity/scripts/verify_module_id.py          a6e2cf294fbe44a57f5471458c22350253cf3cd5b9ec0ec13639bc305b3bcddb
+  scripts/tests/test_ct_cli_regression.py           8aaa34366a5ca31126f80b7207a33f4a352ae351d1deaf88052c7d524686239d
+result (from the full log):
+  start 2026-10-18T08:06:43Z
+  Python 3.9.6
+  self-test: 141/141 passed
+  ### exit 0
+  self-test: 105/105 passed
+  ### exit 0
+  self-test: 149/149 passed
+  ### exit 0
+  self-test: 80/80 passed
+  ### exit 0
+  self-test: 197/197 passed
+  ### exit 0
+  self-test: 51/51 passed
+  ### exit 0
+  self-test: 29/29 passed
+  ### exit 0
+  Ran 145 tests in 386.936s
+  OK
+  ### exit 0
+  end 2026-10-18T08:13:15Z
+ResourceWarning lines: 3 (the existing unclosed open() of verify_module_id.py's araç line; not a failure, not changed)
+before / after (HEAD, branch, status, the five SHA-256): the same HEAD, branch, modified files and SHA-256; status differs only by ?? docs/records/decisions/2026-10/ct-fix-09-joint-decision-01.md — the decision record written while the run went on; the tests do not read docs/records/decisions
+full log SHA-256 870a82728d5115e3b356d05f481709edc6cf81c19f1d5967eb4c0b496bf10274 · before def57a5c389ba5aa076acc3b7b2e2f0666184972d93b4d710a854bec892f2da7 · after 7e6ba34d74eaadaa552fe6d7eaf1a45571d270c1366da33c7f720aef6ac989e8 (kept outside the repository: they hold local paths)
