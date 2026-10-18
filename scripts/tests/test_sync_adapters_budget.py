@@ -867,6 +867,124 @@ class InstructionBudget(unittest.TestCase):
         with self.subTest(refused="a bare 'a<b' in prose before section 2"):
             self.assertTrue(self.section_2_lost(ref[:r2a] + "Metin a<b c\n\n" + ref[r2a:]))
 
+    def test_one_context_reader_for_comments_code_and_html(self):
+        # İ5B-FIX-16 (C14 audits; Codex C14-F1 / -F2, Claude Denetim001 C14-F1 / -F2, Codex root N1c, N2-N4): the comment,
+        # code and HTML readers each kept their own grammar, so the context they agree on was wrong. Inside an HTML block
+        # the text is raw (no code span, escape or fence); in a paragraph Markdown goes on, so a closing tag shown in code
+        # does not close an element; a raw-text element ends at its own real closing tag; a code span may cross line ends
+        # in its paragraph and needs a run of the same length; an inline '<!--' is a comment only if it closes in its
+        # paragraph. Every case below is hidden from a reader, or shown to it, as written
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        sc, bs, bt = '<script type="text/plain">', chr(92), "`"
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        for label, text in (
+                ("Codex F1: a '</div>' in a script inside a div does not close the div",
+                 wrap("<div>\n" + sc + "\n</div>\n\n", "</script>\n</div>\n\n")),
+                ("Codex F1: a '</div>' in a textarea inside a div does not close the div",
+                 wrap("<div>\n<textarea>\n</div>\n\n", "</textarea>\n</div>\n\n")),
+                ("Codex F1: a '</span>' in a script inside a span does not close the span",
+                 wrap("Metin <span hidden> " + sc + " </span>\n\n", "</script> </span>\n\n")),
+                ("Claude: an escaped backtick opens no code span (script)", wrap(bs + bt + sc + bt + "\n\n", bs + bt + "</script>" + bt + "\n\n")),
+                ("Claude: an escaped backtick opens no code span (div hidden)", wrap(bs + bt + "<div hidden>" + bt + "\n\n", bs + bt + "</div>" + bt + "\n\n")),
+                ("Claude: a double backtick without its pair opens no code span", wrap(bt * 2 + sc + bt + "\n\n", bt * 2 + "</script>" + bt + "\n\n")),
+                ("Claude: a code span across two lines holds the '</div>'", wrap("<div hidden>\n\na " + bt + "b\nc </div>" + bt + " d\n\n", "</div>\n\n")),
+                ("Codex render: a script in a paragraph is not closed by a '</script>' shown in code", before("Metin " + sc + "\n" + bt + "</script>" + bt + "\n\n")),
+                ("N1c: a code span across two lines holds the '<!--'; the div hidden after it is real",
+                 wrap("Metin " + bt + "a\nz <!--" + bt + " <div hidden> -->\n\n", "</div>\n\n")),
+                ("N2: inside an HTML block backticks are raw text, so the span is real", wrap("</p>\n" + bt + "<span hidden>" + bt + "\n\n", "</span>\n\n")),
+                ("N3: inside an HTML block a fence line is raw text, so the span is real",
+                 wrap("</div>\n" + bt * 3 + "\n<span hidden>\n\n", "</span>\n" + bt * 3 + "\n\n")),
+                ("N4: an inline '<!--' not closed in its paragraph is text; the div hidden block is real",
+                 wrap("Metin <!--\n\n<div hidden> -->\n\n", "</div>\n\n")),
+                ("a fence-looking line in an HTML block does not pair with a real code example after it",
+                 wrap("<div>\n" + bt * 3 + "\n</div>\n\n" + bt * 3 + "\nörnek\n" + bt * 3 + "\n\nMetin <span hidden>\n\n", "</span>\n\n")),
+                ("a '<!--' in an HTML block that does not close in the block stays open (not verified)",
+                 wrap("</p>\n<!-- x\n\n", "\n-->\n\n"))):
+            with self.subTest(hidden=label):
+                self.assertTrue(self.section_2_lost(text), label)
+        with self.subTest(not_verified="a '<!--' left open in an HTML block is said to be a comment the check cannot read"):
+            lost = self.section_2_lost(wrap("</p>\n<!-- x\n\n", "\n-->\n\n"))
+            self.assertTrue(lost and all("code span or comment" in p and "not verified" in p for p in lost), lost)
+        with self.subTest(declared="the span form of N1c: refused by the declared element model, not a measured hiding"):
+            self.assertTrue(self.section_2_lost(wrap("Metin " + bt + "a\nz <!--" + bt + " <span hidden> -->\n\n", "</span>\n\n")))
+        for label, text in (
+                ("Codex F2: a block-level script is closed by its '</script>' even between backticks", before(sc + "\n" + bt + "</script>" + bt + "\n\n")),
+                ("Codex render: a script in a paragraph is closed by a bare '</script>'", before("Metin " + sc + "\n</script>\n\n")),
+                ("Codex F2: a fence-looking line inside a block-level script is raw text", before(sc + "\n" + bt * 3 + "\n</script>\n\n")),
+                ("Codex F2: a tilde line inside a block-level style is raw text", before("<style>\n~~~\n</style>\n\n")),
+                ("N1: a line starting with '<!--' ends the paragraph, so the backtick before it is text and the comment is real",
+                 wrap("Metin " + bt + "a\n<!--" + bt + " <span hidden> -->\n\n", "</span>\n\n")),
+                ("N4c: a block comment closed on the next line hides only itself", before("<!--\nnot <div hidden> -->\n\n")),
+                ("Claude reverse: an escaped backtick, then a real code span that shows a tag", before(bs + bt + " and " + bt + sc + bt + " shown as code\n\n")),
+                ("an inline comment closed in its paragraph", before("Metin <!-- not\nshown --> görünür\n\n")),
+                ("a block comment may hold a blank line", before("<!--\nnot\n\nshown -->\n\n")),
+                ("an escaped backtick before a real inline comment opens no code span", before("Metin " + bs + bt + " <!-- <div hidden> --> sonra " + bt + "\n\n"))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        with self.subTest(passes="the real files"):
+            for path in ("AGENTS.md", "CLAUDE.md", self.REF):
+                t = (REPO / path).read_text(encoding="utf-8")
+                self.assertEqual(sa.visible_text(t), sa.scan_comments(t, sa.heading_fence_opener, sa.heading_fence_closes)[0], path)
+
+    def test_the_same_reader_holds_for_agents_md_and_the_core(self):
+        # İ5B-FIX-16 (Claude Denetim001 C14-F1): the same escaped and unpaired backticks hid a required heading after the
+        # core and the core rules themselves; the core's raw-HTML rule now reads code spans with the same lexer
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        sc, bs, bt = '<script type="text/plain">', chr(92), "`"
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        with self.subTest(hidden="an AGENTS.md required heading inside an escaped-backtick script"):
+            f.write_text(agents[:at] + bs + bt + sc + bt + "\n\n" + head + "\n\n" + bs + bt + "</script>" + bt + "\n" + agents[at + len(head) + 1:], encoding="utf-8")
+            self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")])
+        core_head = next(l for l in agents.split("\n") if l.startswith("## Çekirdek"))
+        for label, opening, closing in (("escaped backtick", bs + bt + sc + bt, bs + bt + "</script>" + bt),
+                                        ("unpaired double backtick", bt * 2 + sc + bt, bt * 2 + "</script>" + bt)):
+            with self.subTest(core=label):
+                f.write_text(agents.replace(core_head, core_head + "\n\n" + opening, 1).replace(sa.CORE_END, sa.CORE_END + "\n\n" + closing, 1), encoding="utf-8")
+                self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-HTML")], label)
+        with self.subTest(core_passes="an escaped backtick, then a real code span that shows a tag on a rule line"):
+            mid = next(l for l in agents.split("\n") if l.startswith("6. **"))
+            f.write_text(agents.replace(mid, mid + " " + bs + bt + " ve " + bt + "<div hidden>" + bt + " yazılmaz.", 1), encoding="utf-8")
+            self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith(("CORE-HTML", "CORE-RULE"))])
+
+    def test_the_rule_line_readers_use_the_same_lexer(self):
+        # İ5B-FIX-16 (Codex root): the rule-line readers kept their own code-span regex — after an escaped backtick it
+        # paired the wrong runs, so a phrase that is a code span of its own counted as stated. The core's rule (a phrase
+        # shown in code is not stated; a short term is) is unchanged; only the grammar is the shared lexer's
+        bs, bt = chr(92), "`"
+        for label, needle, line, want in (
+                ("a phrase in a real code span after an escaped backtick", "Platform modülü 2 dil",
+                 "4. " + bs + bt + " and " + bt + "Platform modülü 2 dil" + bt, False),
+                ("the same phrase after a plain backtick pair", "Platform modülü 2 dil", "4. " + bt + "x" + bt + " and Platform modülü 2 dil", True),
+                ("a short term in a code span still counts", "TenantId", "4. " + bs + bt + " and " + bt + "TenantId" + bt, True),
+                ("a phrase after an unpaired double backtick is text", "Platform modülü 2 dil", "4. " + bt * 2 + "x" + bt + " Platform modülü 2 dil", True)):
+            with self.subTest(label):
+                self.assertIs(sa.on_rule_line(needle, line), want, label)
+
+    def test_what_the_reader_cannot_read_is_said_to_be_not_verified(self):
+        # İ5B-FIX-16 (Claude Denetim001 C14-F2, Codex): 'List<T>' written as text opens an element that is never closed —
+        # still refused (a declared safe limit), but the lost heading said '(only inside a code block)'. A code span whose
+        # pair lies only past a block quote or list line, and a bare 'a<b c', are not read either: each says why
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        h1 = next(l for l in agents.split("\n") if l.startswith("## 1."))
+        f.write_text(agents.replace(h1, h1 + "\n\nÖrnek: List<T> kullanılır.", 1), encoding="utf-8")
+        lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")]
+        self.assertTrue(lost and all("not verified" in p and "code block" not in p for p in lost), lost[:2])
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        bt = "`"
+        for label, text in (("a code span whose pair lies past a block quote line", ref[:r2a] + "Metin " + bt + "a\n> b" + bt + " <div hidden>\n\n" + ref[r2a:r2b] + "</div>\n\n" + ref[r2b:]),
+                            ("a bare 'a<b c'", ref[:r2a] + "Metin a<b c\n\n" + ref[r2a:])):
+            with self.subTest(not_verified=label):
+                lost = self.section_2_lost(text)
+                self.assertTrue(lost and all("not verified" in p for p in lost), lost)
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML

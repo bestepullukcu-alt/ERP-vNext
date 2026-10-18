@@ -1,0 +1,43 @@
+İ5B-FIX-16 red first — this package's final test file against C14's sync_adapters.py (1199d23a8, İ5B-FIX-15), in one
+copy outside the repository; run by the AI session. The two files run (SHA-256):
+  .antigravity/scripts/sync_adapters.py             31aaf12a2c33a5cc70014f56d41fdb6669898daf970175552d25bc4de60e414f
+  scripts/tests/test_sync_adapters_budget.py        e6a6939b206bcbe8a9348784be1976d3ba8a1c8d816dcf32ccaceaaa813a6641
+  the test equals the frozen one: True
+
+Ran 52 tests in 15.949s · FAILED (failures=23)
+  every failure is in this package's four new tests: True; the 48 earlier tests pass
+
+failed cases:
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden="Codex F1: a '</div>' in a script inside a div does not close the div")
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden="Codex F1: a '</div>' in a textarea inside a div does not close the div")
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden="Codex F1: a '</span>' in a script inside a span does not close the span")
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden='Claude: an escaped backtick opens no code span (script)')
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden='Claude: an escaped backtick opens no code span (div hidden)')
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden='Claude: a double backtick without its pair opens no code span')
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden="Claude: a code span across two lines holds the '</div>'")
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden="N1c: a code span across two lines holds the '<!--'; the div hidden after it is real")
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden='N2: inside an HTML block backticks are raw text, so the span is real')
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden='N3: inside an HTML block a fence line is raw text, so the span is real')
+  FAIL  test_one_context_reader_for_comments_code_and_html (hidden="N4: an inline '<!--' not closed in its paragraph is text; the div hidden block is real")
+  FAIL  test_one_context_reader_for_comments_code_and_html (not_verified="a '<!--' left open in an HTML block is said to be a comment the check cannot read")
+  FAIL  test_one_context_reader_for_comments_code_and_html (declared='the span form of N1c: refused by the declared element model, not a measured hiding')
+  FAIL  test_one_context_reader_for_comments_code_and_html (passes="Codex F2: a block-level script is closed by its '</script>' even between backticks")
+  FAIL  test_one_context_reader_for_comments_code_and_html (passes='Codex F2: a fence-looking line inside a block-level script is raw text')
+  FAIL  test_one_context_reader_for_comments_code_and_html (passes='Codex F2: a tilde line inside a block-level style is raw text')
+  FAIL  test_one_context_reader_for_comments_code_and_html (passes='Claude reverse: an escaped backtick, then a real code span that shows a tag')
+  FAIL  test_the_same_reader_holds_for_agents_md_and_the_core (hidden='an AGENTS.md required heading inside an escaped-backtick script')
+  FAIL  test_the_same_reader_holds_for_agents_md_and_the_core (core='escaped backtick')
+  FAIL  test_the_same_reader_holds_for_agents_md_and_the_core (core='unpaired double backtick')
+  FAIL  test_the_same_reader_holds_for_agents_md_and_the_core (core_passes='an escaped backtick, then a real code span that shows a tag on a rule line')
+  FAIL  test_what_the_reader_cannot_read_is_said_to_be_not_verified
+
+Read: the hidden cases pass 0 / 0 on C14 (a false pass), the positives are refused there (a false refusal), and the
+rule-line case reads a phrase in a real code span as stated. Three cases added for guards G-Y7, G-Y11 and G-Y17 — a
+fence-looking line in an HTML block before a real example, a '<!--' left open in an HTML block, an escaped backtick
+before a real inline comment — are already refused or accepted the right way by C14's exit; they guard this
+package's own rules (the second one's message is new). The span form of N1c is refused by the declared element
+model, not a measured hiding.
+
+Earlier, not replaced: the first test file (164b44c8…, without those three cases and the message assertion) ran red
+on the same C14 source before the code was written: 22 failures. The test was frozen again twice for the guards; the
+final file is the one above.

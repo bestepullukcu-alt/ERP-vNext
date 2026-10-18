@@ -62,12 +62,19 @@ Rules this script enforces (İ5-A pilot):
   own end condition (a blank line for a '<div>' block), an element at its own closing tag, and a tag the reader cannot
   read hides the rest of the file ('not verified'). Unrelated closed HTML, HTML in code, escaped '<' and autolinks stay
   allowed. Not an HTML engine: any text inside an element is not evidence.
+- İ5B-FIX-16 (C14 audits): one context for comments, code and HTML — one inline lexer (an escape, then a backtick run
+  and its pair of the same length, across line ends in its paragraph) for every reader, rule lines and CORE-SPAN
+  included; HTML blocks read raw, paragraphs as Markdown; a raw-text element ends at its own real closing tag, and an
+  outer element's closing tag inside it does not count; an inline '<!--' is a comment only when it closes in its
+  paragraph. What the reader cannot read (a span past a block quote or list line, an element never closed) is 'not
+  verified', never counted.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
 from __future__ import annotations
 
 import argparse
+import bisect
 import hashlib
 import json
 import re
@@ -108,10 +115,11 @@ def visible_text(text: str) -> str:
     through scan_comments with the heading reader's own fence grammar (level2_sections'): comments are masked in place
     (spaces, line ends kept) outside fences and inline code, so a literal '<!--' in a code example hides nothing and a
     comment between two '#' does not make a heading. İ5B-FIX-15: raw HTML is masked too — the HTML blocks scan_comments
-    finds and the elements mask_html finds, each on the same comment-masked view."""
-    plain = scan_comments(text, heading_fence_opener, heading_fence_closes)[0]
+    finds and the elements mask_html finds, each on the same comment-masked view. İ5B-FIX-16: one context for the
+    three — the blocks scan_comments finds are read raw by mask_html, and both read code spans with the same lexer."""
+    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)
     block = scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0]
-    element = mask_html(plain)[0]
+    element = mask_html(plain, block, info["blocks"])[0]
     # a character is visible only when neither hides it: an HTML block ends at its own end condition (a blank line for
     # CommonMark's types 6 and 7), an element at its own closing tag
     return "".join(c if block[k] == c and element[k] == c else " " for k, c in enumerate(plain))
@@ -156,65 +164,173 @@ def fence_closes(fence: str, line: str) -> bool:
     return bool(re.match(rf"^[ \t]*{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line))
 
 
+# İ5B-FIX-16 (C14 audits): the one inline lexer every reader of the instruction files shares — a backslash escapes an
+# ASCII punctuation character; a code span is a backtick run closed by the next run of exactly the same length, in the
+# same paragraph (it may cross line ends); an unmatched run is text. A paragraph ends at a blank line or at a line the
+# reader knows starts a block; a block quote or list line is not read, so a pair found only past one is 'not verified'
+ESCAPABLE = frozenset("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
+BREAK_LINE = re.compile(r"^ {0,3}(?:(?:([-*_])(?:[ \t]*\1){2,})|=+|-+)[ \t]*$|^ {0,3}<!--")   # thematic, setext, comment
+CONTAINER_LINE = re.compile(r"^ {0,3}(?:>|[-+*](?:[ \t]|$)|\d{1,9}[.)](?:[ \t]|$))")
+
+
+def paragraph_limits(text: str, at: int, opener) -> tuple[int, int | None]:
+    """İ5B-FIX-16: (where the paragraph that holds offset at ends, the first line end it crosses into a block quote or
+    list line, or None). A heading line is a paragraph of its own. The fence grammar is the reader's own."""
+    e = text.find("\n", at)
+    first = text[text.rfind("\n", 0, at) + 1:e if e >= 0 else len(text)]
+    if ATX_HEADING.match(first):
+        return (e if e >= 0 else len(text)), None
+    unsure = None
+    while e >= 0:
+        f = text.find("\n", e + 1)
+        nxt = text[e + 1:f if f >= 0 else len(text)]
+        if (not nxt.strip() or ATX_HEADING.match(nxt) or opener(nxt) is not None or BREAK_LINE.match(nxt)
+                or html_block_start(nxt, False)):
+            return e, unsure
+        if unsure is None and CONTAINER_LINE.match(nxt):
+            unsure = e
+        e = f
+    return len(text), unsure
+
+
+def code_span_end(text: str, at: int, opener) -> tuple[str, int]:
+    """İ5B-FIX-16: the backtick run at offset at — ('span', its end), ('text', the end of the run) or ('not verified', at)
+    when its pair lies only past a line the reader does not read."""
+    run = len(text[at:]) - len(text[at:].lstrip("`"))
+    stop, unsure = paragraph_limits(text, at, opener)
+    j = at + run
+    while True:
+        j = text.find("`", j, stop)
+        if j < 0:
+            return "text", at + run
+        k = len(text[j:]) - len(text[j:].lstrip("`"))
+        if k == run:
+            return ("not verified", at) if unsure is not None and j > unsure else ("span", j + k)
+        j += k
+
+
+def html_block_end(lines: list[str], n: int, end) -> int:
+    """İ5B-FIX-16: the last line of the HTML block line n starts — the line that meets its end test (types 1 and 3-5),
+    or the line before the next blank line (types 6 and 7); the last line when there is none."""
+    if not end(""):
+        return next((m for m in range(n, len(lines)) if end(lines[m])), len(lines) - 1)
+    return next((m - 1 for m in range(n + 1, len(lines)) if not lines[m].strip()), len(lines) - 1)
+
+
 def scan_comments(text: str, opener=None, closes=None,
-                  html_blocks: bool = False) -> tuple[str, list[tuple[int, int]], str | None]:
-    """İ5B-FIX-13 / -14 (Codex root, Codex Denetim001): one small scanner on the source as it stands — nothing deleted,
-    no pieces joined. Returns (the text with every HTML comment masked in place — spaces, line ends kept —, the comments'
-    (start, end) offsets, the context still open at the end: 'a fenced code block', 'an HTML comment' or None). Fences
-    follow the reader's own grammar (opener / closes; the core's by default); inside a fence '<!--' is literal, inside
-    a comment a fence line is not a fence, and an inline code span (read within its line; a backslash escapes the next
-    character) holds neither. An unclosed comment hides the rest. Not a CommonMark parser: a code span across lines is
-    not read, so a '<!--' after it is a comment (a safe refusal)."""
+                  html_blocks: bool = False) -> tuple[str, list[tuple[int, int]], str | None, dict]:
+    """İ5B-FIX-13 / -14 / -16: one small scanner on the source as it stands — nothing deleted, no pieces joined. Returns
+    (the text with every HTML comment masked in place — spaces, line ends kept —, the comments' (start, end) offsets,
+    the context still open at the end, {'blocks': the HTML blocks' (first, last) lines, 'not_verified': the offset of a
+    code span or comment the reader cannot read, or None}). With html_blocks the HTML blocks are masked too.
+
+    Fences follow the reader's own grammar (opener / closes; the core's by default); inside a fence and a code span
+    '<!--' is literal. İ5B-FIX-16 reads the comment by where it stands, as CommonMark does:
+    - a line that starts with '<!--' is a block comment: it runs to the first '-->', and an unclosed one hides the rest
+      (İ5B-FIX-04's contract; core:start's own '-->' still ends a comment opened before it);
+    - an inline '<!--' is a comment only when '-->' follows in the same paragraph; otherwise it is text;
+    - inside an HTML block the text is raw (no code span, escape or fence), and a '<!--' there must close in the block —
+      the browser keeps an unclosed one open, so the rest is 'not verified';
+    - code spans are read with the shared lexer (code_span_end). What the reader cannot read hides the rest and is
+      reported 'not verified', never as hidden text."""
     opener, closes = opener or fence_opener, closes or fence_closes
+    lines = text.split("\n")
+    offs, a = [], 0
+    for l in lines:
+        offs.append(a)
+        a += len(l) + 1
+    size = len(text)
     spans: list[tuple[int, int]] = []
-    fence: str | None = None
-    start: int | None = None
-    at = 0
-    html_end, prev_blank = None, True
-    for line in text.split("\n"):
-        if html_end is not None:
-            spans.append((at, at + len(line)))
-            if html_end(line):
-                html_end = None
-        elif fence is not None:
-            if closes(fence, line):
-                fence = None
-        elif start is None and opener(line) is not None:
+    blocks: list[tuple[int, int]] = []
+    state: str | None = None
+    nv: int | None = None
+    prev_blank = True
+    pos = 0
+
+    def raw_comments(a: int, b: int) -> int | None:    # comments in raw HTML text [a, b); the offset of one left open
+        i = text.find("<!--", a, b)
+        while i >= 0:
+            e = text.find("-->", i + 4)
+            if e < 0 or e + 3 > b:
+                return i
+            spans.append((i, e + 3))
+            i = text.find("<!--", e + 3, b)
+        return None
+
+    while pos < size and nv is None:
+        n = bisect.bisect_right(offs, pos) - 1
+        line, end_of_line = lines[n], offs[n] + len(lines[n])
+        if pos == offs[n]:                                   # a line start: what block does the line open
             fence = opener(line)
-        elif start is None and html_blocks and line.lstrip(" ")[:4] != "<!--" and html_block_start(line, prev_blank):
+            if fence is not None:
+                m = next((k for k in range(n + 1, len(lines)) if closes(fence, lines[k])), None)
+                if m is None:
+                    state, pos = "a fenced code block", size
+                    break
+                pos, prev_blank = offs[m] + len(lines[m]) + 1, False
+                continue
+            if re.match(r"^ {0,3}<!--", line):              # a block comment
+                start = offs[n] + line.index("<!--")
+                e = text.find("-->", start + 4)
+                if e < 0:
+                    spans.append((start, size))
+                    state, pos = "an HTML comment", size
+                    break
+                spans.append((start, e + 3))
+                m = bisect.bisect_right(offs, e) - 1
+                blocks.append((n, m))
+                block_end = offs[m] + len(lines[m])
+                nv = raw_comments(e + 3, block_end)
+                pos, prev_blank = block_end + 1, False
+                continue
             end = html_block_start(line, prev_blank)
-            spans.append((at, at + len(line)))
-            html_end = None if (end(line) and not HTML_TYPE6.match(line) and not HTML_TYPE7.match(line)) else end
-        else:
-            i = 0
-            while i < len(line):
-                if start is not None:
-                    end = line.find("-->", i)
-                    if end < 0:
+            if end:
+                m = html_block_end(lines, n, end)
+                blocks.append((n, m))
+                block_end = offs[m] + len(lines[m])
+                nv = raw_comments(offs[n], block_end)
+                pos, prev_blank = block_end + 1, False
+                continue
+        while pos < end_of_line:                             # Markdown text
+            c = text[pos]
+            if c == "\\" and pos + 1 < size and text[pos + 1] in ESCAPABLE:
+                pos += 2
+            elif c == "`":
+                kind, e = code_span_end(text, pos, opener)
+                if kind == "not verified":
+                    nv = pos
+                    break
+                pos = e
+            elif text.startswith("<!--", pos):
+                stop, unsure = paragraph_limits(text, pos, opener)
+                e = text.find("-->", pos + 4)
+                if e >= 0 and e + 3 <= stop:
+                    if unsure is not None and e > unsure:
+                        nv = pos
                         break
-                    spans.append((start, at + end + 3))
-                    start, i = None, end + 3
-                elif line[i] == "\\":
-                    i += 2
-                elif line[i] == "`":
-                    run = len(line[i:]) - len(line[i:].lstrip("`"))
-                    close = re.compile(rf"(?<!`)`{{{run}}}(?!`)").search(line, i + run)
-                    i = close.end() if close else i + run
-                elif line.startswith("<!--", i):
-                    start, i = at + i, i + 4
+                    spans.append((pos, e + 3))
+                    pos = e + 3
                 else:
-                    i += 1
-        prev_blank = not line.strip() and start is None
-        at += len(line) + 1
-    if start is not None:
-        spans.append((start, len(text)))
+                    pos += 4                                 # not closed in its paragraph: text
+            else:
+                pos += 1
+        if nv is not None:
+            break
+        if pos == end_of_line:                               # the line is read: go to the next one
+            prev_blank, pos = not line.strip(), pos + 1
+        else:                                                # a code span or comment ran into a later line
+            prev_blank = False
     masked = list(text)
-    for a, b in spans:
+    hide = list(spans) + ([(offs[f], offs[l] + len(lines[l])) for f, l in blocks] if html_blocks else [])
+    if nv is not None:
+        hide.append((nv, size))
+        state = "a code span or comment the check cannot read"
+    for a, b in hide:
         for k in range(a, b):
             if masked[k] != "\n":
                 masked[k] = " "
-    state = "a fenced code block" if fence is not None else "an HTML comment" if start is not None else None
-    return "".join(masked), spans, state
+    return "".join(masked), spans, state, {"blocks": blocks, "not_verified": nv}
 
 
 # İ5B-FIX-15: the HTML blocks of CommonMark the heading reader masks (scan_comments with html_blocks=True). Type 2, the
@@ -250,76 +366,137 @@ HTML_TAG = re.compile(r"<(/?)([A-Za-z][A-Za-z0-9-]*)(?:\s[^<>]*)?(/?)>")
 HTML_OTHER = (("<![CDATA[", "]]>"), ("<?", "?>"), ("<!", ">"))
 
 
-def mask_html(view: str) -> tuple[str, int | None]:
-    """İ5B-FIX-15 (C13 audits): the heading reader's view with raw HTML elements masked in place (spaces, line ends
-    kept); comments are already masked. Returns (the masked view, the offset of a tag it cannot read, or None).
+def mask_html(view: str, block_view: str | None = None, blocks=()) -> tuple[str, tuple[int, str] | None]:
+    """İ5B-FIX-15 / -16 (C13 and C14 audits): the heading reader's view with raw HTML elements masked in place (spaces,
+    line ends kept); comments are already masked (view = scan_comments). One left-to-right reader of the source as it
+    stands. Returns (the masked view, (the offset, 'tag' / 'element' / 'code') of what it cannot read, or None).
 
-    Tags are searched outside fences (the heading reader's grammar), inline code and a backslash-escaped character.
-    - An element that is not void is masked from its opening tag to its own closing tag: the same name, nesting
-      counted, searched outside code too. A raw-text element (script, style, textarea, title) ends only at its own
-      closing tag, so a 'script' holding '</pre>' is not closed by it. An element never closed hides the rest of the
-      file, and one left open across a blank line still holds what follows.
-    - A self-closed tag of a non-void element ('<script/>', '<span/>') opens it, as in HTML.
-    - A closing tag alone and a void element mask only themselves; '<?', '<!X' and CDATA mask to their own end.
-    - An opener ('<x', '</x') that is not an autolink and not a tag this reader can read (a '<' inside an attribute)
-      hides the rest of the file; its offset is returned so the required text after it is reported 'not verified'.
+    - Inside an HTML block (blocks, from scan_comments) the text is raw: a tag is a tag, a backtick is text. Elsewhere
+      Markdown goes on: escapes, code spans (the shared lexer) and fences — the heading reader's grammar, read on
+      block_view, where no fence starts inside an HTML block — hold no tag. A tag never crosses its paragraph's end.
+    - An element that is not void is masked from its opening tag to its own closing tag, nesting counted. A raw-text
+      element (script, style, textarea, title) ends at its first real closing tag — raw in a block, outside code in a
+      paragraph — and no other tag inside it counts, so an outer element's closing tag inside it does not close the
+      outer one. An element never closed hides the rest of the file ('element': not verified).
+    - A self-closed tag of a non-void element ('<script/>', '<span/>') opens it, as in HTML. A closing tag alone and a
+      void element mask only themselves; '<?', '<!X' and CDATA mask to their own end inside the paragraph or block.
+    - An opener ('<x', '</x', '<!', '<?') that is not an autolink and not a tag this reader can read hides the rest of
+      the file ('tag': not verified); so does a code span whose pair lies past a line it does not read ('code').
     Not an HTML engine: an attribute is never read, so any text inside an element is not evidence (a declared safe
-    refusal). A tag's attributes may cross a blank line here, unlike CommonMark: the text is still hidden, but the
-    message may say only 'missing' (a known limit of the diagnosis, not of the refusal)."""
-    plain = list(view)                         # where tags are searched: fences, inline code and '\<' blanked
-    at = 0
-    fence = None
-    for line in view.split("\n"):
-        if fence is not None or heading_fence_opener(line):
-            if fence is None:
-                fence = heading_fence_opener(line)
-            elif heading_fence_closes(fence, line):
-                fence = None
-            for k in range(at, at + len(line)):
-                plain[k] = " "
-        else:
-            for m in INLINE_CODE.finditer(line):
-                for k in range(at + m.start(), at + m.end()):
-                    plain[k] = " "
-            for m in re.finditer(r"\\.", line):
-                for k in range(at + m.start(), at + m.end()):
-                    plain[k] = " "
-        at += len(line) + 1
-    plain = "".join(plain)
+    refusal), and an element ends only at its own closing tag (a browser may end it earlier: the model refuses more)."""
+    block_view = view if block_view is None else block_view
+    lines = view.split("\n")
+    offs, a = [], 0
+    for l in lines:
+        offs.append(a)
+        a += len(l) + 1
+    size = len(view)
+    in_block = [False] * len(lines)
+    block_end_line = {}
+    for f, l in blocks:
+        for k in range(f, l + 1):
+            in_block[k], block_end_line[k] = True, l
+    fence_to: dict[int, int] = {}                           # Markdown fences, read where no HTML block masks a line
+    fence = start = None
+    for k, l in enumerate(block_view.split("\n")):
+        if fence is None:
+            fence = heading_fence_opener(l)
+            start = k
+        elif heading_fence_closes(fence, l):
+            fence_to[start], fence = k + 1, None
+    if fence is not None:
+        fence_to[start] = len(lines)
     out = list(view)
-    def mask(a, b):
-        for k in range(a, min(b, len(out))):
+
+    def mask(a: int, b: int) -> None:
+        for k in range(a, min(b, size)):
             if out[k] != "\n":
                 out[k] = " "
+
+    stack: list[tuple[str, int]] = []
+    raw: tuple[str, int] | None = None
+    nv: tuple[int, str] | None = None
     i = 0
-    while True:
-        lt = plain.find("<", i)
-        if lt < 0:
+    while i < size:
+        n = bisect.bisect_right(offs, i) - 1
+        block = in_block[n]
+        if i == offs[n] and not block and n in fence_to:
+            i = offs[fence_to[n]] if fence_to[n] < len(lines) else size
+            continue
+        c = view[i]
+        if not block and c == "\\" and i + 1 < size and view[i + 1] in ESCAPABLE:
+            i += 2
+            continue
+        if not block and c == "`":
+            kind, e = code_span_end(view, i, heading_fence_opener)
+            if kind == "not verified":
+                nv = (i, "code")
+                break
+            i = e
+            continue
+        if c != "<":
+            i += 1
+            continue
+        if block:
+            limit, unsure = offs[block_end_line[n]] + len(lines[block_end_line[n]]), None
+        else:
+            limit, unsure = paragraph_limits(view, i, heading_fence_opener)
+        m = HTML_TAG.match(view, i)
+        if m and m.end() > limit:
+            m = None                                         # a tag never crosses its paragraph's or block's end
+        if m and unsure is not None and m.end() > unsure:
+            nv = (i, "tag")
             break
-        m = HTML_TAG.match(plain, lt)
+        if raw is not None:                                  # inside a raw-text element only its own close counts
+            if m and m.group(1) and m.group(2).lower() == raw[0]:
+                if not stack:
+                    mask(raw[1], m.end())
+                raw, i = None, m.end()
+            else:
+                i += 1
+            continue
         if m:
-            closing, name, selfclose = m.group(1), m.group(2).lower(), m.group(3)
-            if closing or name in VOID_ELEMENTS:
-                mask(lt, m.end()); i = m.end(); continue
-            pair = re.compile(rf"<(/?){re.escape(name)}(?:\s[^<>]*)?/?>", re.I)
-            depth, end = 1, len(view)
-            for t in pair.finditer(plain, m.end()):
-                if name in ("script", "style", "textarea", "title") and not t.group(1):
-                    continue                   # raw text: only its own closing tag ends it
-                depth += -1 if t.group(1) else 1     # '<x/>' of a non-void element still opens it
-                if depth == 0:
-                    end = t.end(); break
-            mask(lt, end); i = end; continue
-        other = next(((o, e) for o, e in HTML_OTHER if plain.startswith(o, lt) and (o != "<!" or plain[lt + 2:lt + 3].isalpha())), None)
+            closing, name = m.group(1), m.group(2).lower()
+            if closing:
+                at = next((k for k in range(len(stack) - 1, -1, -1) if stack[k][0] == name), None)
+                if at is not None:
+                    outer = stack[0][1]
+                    del stack[at:]
+                    if not stack:
+                        mask(outer, m.end())
+                elif not stack:
+                    mask(i, m.end())
+            elif name in VOID_ELEMENTS:
+                if not stack:
+                    mask(i, m.end())
+            elif name in ("script", "style", "textarea", "title"):
+                raw = (name, stack[0][1] if stack else i)
+            else:
+                stack.append((name, i))                      # '<x/>' of a non-void element still opens it
+            i = m.end()
+            continue
+        other = next(((o, e) for o, e in HTML_OTHER if view.startswith(o, i) and (o != "<!" or view[i + 2:i + 3].isalpha())), None)
         if other:
-            e = plain.find(other[1], lt + len(other[0]))
-            end = len(view) if e < 0 else e + len(other[1])
-            mask(lt, end); i = end; continue
-        if RAW_HTML_OPENER.match(plain, lt) and not AUTOLINK.match(plain, lt):
-            mask(lt, len(view))                # an opener the reader cannot read: nothing after it is evidence
-            return "".join(out), lt
-        i = lt + 1
-    return "".join(out), None
+            e = view.find(other[1], i + len(other[0]))
+            if e >= 0 and e + len(other[1]) <= limit and (unsure is None or e < unsure):
+                if not stack:
+                    mask(i, e + len(other[1]))
+                i = e + len(other[1])
+                continue
+        if not block:
+            link = AUTOLINK.match(view, i)
+            if link:
+                i = link.end()
+                continue
+        if RAW_HTML_OPENER.match(view, i):
+            nv = (i, "tag")                                  # an opener the reader cannot read: nothing after it is evidence
+            break
+        i += 1
+    if nv is None and (stack or raw):
+        nv = (min([s for _, s in stack] + ([raw[1]] if raw else [])), "element")
+    if nv is not None:
+        mask(min([nv[0]] + [s for _, s in stack] + ([raw[1]] if raw else [])), size)
+    return "".join(out), nv
 
 
 def open_context(text: str) -> str | None:
@@ -383,10 +560,20 @@ def level2_sections(text: str) -> dict[str, list[list[str]]]:
 
 
 def unreadable_html(text: str) -> str:
-    """İ5B-FIX-15: the reason a required text is lost when the heading reader met an HTML tag it cannot read
-    (mask_html), else ''."""
-    at = mask_html(scan_comments(text, heading_fence_opener, heading_fence_closes)[0])[1]
-    return "" if at is None else f" (after an HTML tag at line {text.count(chr(10), 0, at) + 1} the check cannot read — not verified)"
+    """İ5B-FIX-15 / -16: the reason a required text is lost when the heading reader met what it cannot read — a code span
+    or comment (scan_comments), an HTML tag, or an element never closed (mask_html) — else ''."""
+    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)
+    found = [(info["not_verified"], "code")] if info["not_verified"] is not None else []
+    html = mask_html(plain, scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0], info["blocks"])[1]
+    if html:
+        found.append(html)
+    if not found:
+        return ""
+    at, kind = min(found)
+    line = text.count(chr(10), 0, at) + 1
+    return {"tag": f" (after an HTML tag at line {line} the check cannot read — not verified)",
+            "element": f" (after an HTML element opened at line {line} and never closed — not verified)",
+            "code": f" (after a code span or comment at line {line} the check cannot read — not verified)"}[kind]
 
 
 def section_problems(path: str, text: str, required: list[dict]) -> list[str]:
@@ -514,10 +701,8 @@ CORE_RULE_LINE = re.compile(r"^\d{1,2}\. \S")   # İ5B-FIX-06: '7. **Modül ve k
 # can also open an HTML block that wraps what follows. Read after comments, fences (before the core) and inline code are
 # taken out, so an HTML comment, a fenced example and a tag shown in code stay allowed.
 RAW_HTML_OPENER = re.compile(r"<(?:[A-Za-z]|/[A-Za-z]|!--|![A-Za-z]|!\[CDATA\[|\?)")
-INLINE_CODE = re.compile(r"(`+)(?!`).*?(?<!`)\1(?!`)", re.S)
-# İ5B-FIX-10 (C8 audits): not raw HTML — a '<' after an odd number of backslashes is escaped, and a URI or an e-mail
-# address in angle brackets is an autolink. The common forms only, not a full CommonMark parser.
-ESCAPED_LT = re.compile(r"(?<!\\)(?:\\\\)*\\<")
+# İ5B-FIX-10 (C8 audits): not raw HTML — an escaped '<' (İ5B-FIX-16: read by the shared lexer, ESCAPABLE), and a URI
+# or an e-mail address in angle brackets is an autolink. The common forms only, not a full CommonMark parser.
 AUTOLINK = re.compile(r"<[A-Za-z][A-Za-z0-9+.\-]{1,31}:[^\s<>]*>"
                       r"|<[A-Za-z0-9.!#$%&'*+/=?^_`{|}~\-]+@[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?"
                       r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)*>")
@@ -533,11 +718,61 @@ METADATA_HIDDEN = " (only inside a link's destination or title, an image or a re
 NOT_VERIFIED = " (on a rule line with link syntax the check cannot read — not verified)"
 
 
+def code_spans(text: str, opener=None) -> tuple[list[tuple[int, int]], int | None]:
+    """İ5B-FIX-16: the code spans of text, read left to right with the shared lexer (an escape first, then a backtick
+    run and its pair, code_span_end), and the offset of a run the lexer cannot read, or None. Every reader that needs
+    code spans takes them from here — the rule-line readers, CORE-SPAN, and through the same lexer html_scan."""
+    out, i = [], 0
+    while i < len(text):
+        if text[i] == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:
+            i += 2
+        elif text[i] == "`":
+            kind, e = code_span_end(text, i, opener or fence_opener)
+            if kind == "not verified":
+                return out, i
+            if kind == "span":
+                out.append((i, e))
+            i = e
+        else:
+            i += 1
+    return out, None
+
+
+def mask_code(line: str) -> str:
+    """İ5B-FIX-16: the line with its code spans (code_spans) written as 'x', the same length."""
+    for a, b in code_spans(line)[0]:
+        line = line[:a] + "x" * (b - a) + line[b:]
+    return line
+
+
 def html_scan(text: str) -> str:
-    """The text the raw-HTML opener check reads: inline code, escaped '<' and autolinks taken out (İ5B-FIX-10)."""
-    text = INLINE_CODE.sub(" ", text)
-    text = ESCAPED_LT.sub(lambda m: " " * len(m.group(0)), text)
-    return AUTOLINK.sub(" ", text)
+    """The text the raw-HTML opener check reads: inline code, escaped characters and autolinks taken out (İ5B-FIX-10).
+    İ5B-FIX-16 (Claude Denetim001 C14-F1): code spans and escapes through the shared lexer (code_span_end, the core's
+    fence grammar), read left to right — an escaped or unpaired backtick opens no span, so a tag after it is found. A
+    span the lexer cannot read is left as text: its tags are found (the core refuses them)."""
+    out = list(text)
+    i = 0
+    while i < len(text):
+        if text[i] == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:
+            out[i] = out[i + 1] = " "
+            i += 2
+        elif text[i] == "`":
+            kind, e = code_span_end(text, i, fence_opener)
+            if kind == "span":
+                for k in range(i, e):
+                    if out[k] != "\n":
+                        out[k] = " "
+                i = e
+            else:
+                i += len(text[i:]) - len(text[i:].lstrip("`"))
+        else:
+            link = AUTOLINK.match(text, i) if text[i] == "<" else None
+            if link:
+                out[i:link.end()] = " " * (link.end() - i)
+                i = link.end()
+            else:
+                i += 1
+    return "".join(out)
 
 
 def known_spans(masked: str) -> list[tuple[int, int]]:
@@ -554,7 +789,7 @@ def known_spans(masked: str) -> list[tuple[int, int]]:
 def link_metadata(line: str) -> list[tuple[int, int]]:
     """İ5B-FIX-10: the ranges of a rule line that render no text — a link's '(destination "title")', a whole image, and
     the whole line when what follows the number is a reference definition. Inline code is read first and holds none."""
-    masked = INLINE_CODE.sub(lambda m: "x" * len(m.group(0)), line)
+    masked = mask_code(line)
     marker = CORE_RULE_LINE.match(masked)
     if marker and RULE_REFERENCE_DEF.match(masked[marker.end() - 1:]):
         return [(0, len(line))]
@@ -572,7 +807,7 @@ def unreadable_link(line: str) -> bool:
     collapsed, shortcut) or one inside a visible link label hides its alt text. A known image is taken out whole; of a
     known link only its '(destination "title")', so an image inside its visible label is still found. A '![' or '](' after
     an odd number of backslashes is escaped text and stays allowed; an undefined literal '![x]' is refused too."""
-    masked = INLINE_CODE.sub(lambda m: "x" * len(m.group(0)), line)
+    masked = mask_code(line)
     out, at = [], 0
     for a, b in known_spans(masked):      # İ5B-FIX-12: the same ranges and escape rule as link_metadata
         out += [masked[at:a], " " * (b - a)]
@@ -614,7 +849,7 @@ def on_rule_line(needle: str, line: str) -> bool:
     with link syntax the check cannot read."""
     if needle in line and unreadable_link(line):
         return False
-    spans = [(m.start(), m.end(), m.group(0).strip("`")) for m in INLINE_CODE.finditer(line)]
+    spans = [(a, b, line[a:b].strip("`")) for a, b in code_spans(line)[0]]
     hidden = link_metadata(line)
     start = line.find(needle)
     while start != -1:
@@ -741,10 +976,14 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         except ConfigError as e:
             problems.append(f"CORE {e}")
         else:
-            visible = scan_comments(block)[0]           # İ5B-FIX-14: comments masked outside fences (the core's grammar)
+            visible, comments, _, core_scan = scan_comments(block)   # İ5B-FIX-14: comments masked outside fences (the core's grammar)
             ruled = outside_fenced_code(visible)      # İ5B-FIX-05: a rule only inside a fence is not a rule
             # İ5B-FIX-06 (F5): only a numbered rule line at column 0 is a binding place, and no raw HTML anywhere in it
-            spans = [m.group(0) for m in INLINE_CODE.finditer(visible) if "\n" in m.group(0)]
+            # İ5B-FIX-16: the shared lexer, on the block with only its comments masked — the core view hides what follows a
+            # span the lexer cannot read, and that span is itself the problem to report
+            only_comments = "".join(" " if any(x <= k < y for x, y in comments) and ch != "\n" else ch for k, ch in enumerate(block))
+            found, unread = code_spans(only_comments)
+            spans = [only_comments[a:b] for a, b in found if "\n" in only_comments[a:b]] + ([only_comments[unread:unread + 30]] if unread is not None else [])
             if spans:
                 problems.append(f"CORE-SPAN {core['source']} core block holds an inline code span across lines "
                                 f"({spans[0][:30]!r}…) — a rule inside code is not a rule")
@@ -769,7 +1008,9 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
                                 f"a blank line ({shape}) — no required text is verified")
             for needle in core.get("required_text", []):
                 if not any(on_rule_line(needle, l) for l in rule_lines):
-                    hidden = (NOT_VERIFIED if any(needle in l and unreadable_link(l) for l in rule_lines) else
+                    hidden = (" (after a code span or comment the check cannot read — not verified)"
+                              if core_scan["not_verified"] is not None and needle in block[core_scan["not_verified"]:] else
+                              NOT_VERIFIED if any(needle in l and unreadable_link(l) for l in rule_lines) else
                               METADATA_HIDDEN if any(in_link_metadata(needle, l) for l in rule_lines) else
                               " (only inside inline code)" if any(needle in l for l in rule_lines) else
                               " (not on a numbered core rule line)" if needle in ruled else
