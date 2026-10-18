@@ -1,0 +1,51 @@
+İ5B-FIX-11 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness9.py.txt (harness8 with seven more İ5B mutations; earlier folders keep their own driver copies).
+The copy's two files equal the final sources byte for byte: True. Each mutation: the file still parses; the named
+test fails; the control test (test_a_dead_link_is_still_a_dead_link) passes. G-M1 … G-N1 are İ5B-FIX-10's guards,
+run again on this source; G-S1 … G-I3 are this package's. A run on the first freeze (fb65dbfd) was 14 / 14 too and
+is not counted for these sources.
+
+G-M1 a link's destination and title counted  (.antigravity/scripts/sync_adapters.py)
+    tests: test_a_required_text_only_in_link_metadata_is_lost
+    applied: True · parses: True · named: RED — FAILED (failures=7) · control: OK · proven: True
+G-M2 a numbered reference definition counted  (.antigravity/scripts/sync_adapters.py)
+    tests: test_a_required_text_only_in_link_metadata_is_lost
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-M3 an image's alt text counted  (.antigravity/scripts/sync_adapters.py)
+    tests: test_a_required_text_only_in_link_metadata_is_lost
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-E1 an escaped '<' read as raw HTML  (.antigravity/scripts/sync_adapters.py)
+    tests: test_an_escaped_less_than_or_an_autolink_is_not_raw_html
+    applied: True · parses: True · named: RED — FAILED (failures=4) · control: OK · proven: True
+G-E2 any backslash escapes '<' (parity ignored)  (.antigravity/scripts/sync_adapters.py)
+    tests: test_an_escaped_less_than_or_an_autolink_is_not_raw_html
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-A1 an autolink read as raw HTML  (.antigravity/scripts/sync_adapters.py)
+    tests: test_an_escaped_less_than_or_an_autolink_is_not_raw_html
+    applied: True · parses: True · named: RED — FAILED (failures=4) · control: OK · proven: True
+G-N1 a rule line with link syntax the check cannot read still proves its text  (.antigravity/scripts/sync_adapters.py)
+    tests: test_link_syntax_the_check_cannot_read_is_not_verified
+    applied: True · parses: True · named: RED — FAILED (failures=4) · control: OK · proven: True
+G-S1 the rule list's shape not checked  (.antigravity/scripts/sync_adapters.py)
+    tests: test_the_rule_list_has_one_supported_shape
+    applied: True · parses: True · named: RED — FAILED (failures=10) · control: OK · proven: True
+G-S2 a gap between numbered lines ignored  (.antigravity/scripts/sync_adapters.py)
+    tests: test_the_rule_list_has_one_supported_shape
+    applied: True · parses: True · named: RED — FAILED (failures=7) · control: OK · proven: True
+G-S3 no blank line needed before rule 1  (.antigravity/scripts/sync_adapters.py)
+    tests: test_the_rule_list_has_one_supported_shape
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-S4 the numbering 1..N not checked  (.antigravity/scripts/sync_adapters.py)
+    tests: test_the_rule_list_has_one_supported_shape
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-I1 an image opener left on the line not searched  (.antigravity/scripts/sync_adapters.py)
+    tests: test_a_reference_image_proves_no_required_text
+    applied: True · parses: True · named: RED — FAILED (failures=5) · control: OK · proven: True
+G-I2 a known link masked whole (its visible label lost)  (.antigravity/scripts/sync_adapters.py)
+    tests: test_a_reference_image_proves_no_required_text
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-I3 an escaped opener read as an opener  (.antigravity/scripts/sync_adapters.py)
+    tests: test_a_reference_image_proves_no_required_text
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+
+proven: 14 of 14

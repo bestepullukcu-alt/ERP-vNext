@@ -1,0 +1,76 @@
+"""İ5B-FIX-11: the generated evidence texts from the raw outputs (no local paths).
+Usage: make_evidence10.py <scratch ctfix09> <İ5B-FIX-11 evidence dir>"""
+import hashlib, json, os, re, shutil, sys
+S, I = sys.argv[1:3]
+os.makedirs(os.path.join(I, "drivers"), exist_ok=True)
+
+
+def sha(p):
+    return hashlib.sha256(open(os.path.join(S, p), "rb").read()).hexdigest()
+
+
+def write(name, lines):
+    open(os.path.join(I, name), "w", encoding="utf-8").write("\n".join(l.rstrip() for l in lines) + "\n")
+
+
+def rows_of(text):
+    started = re.findall(r"(?:^|(?<=\.\.\. ))(test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\) \.\.\.", text, re.M)   # subtest lines run together
+    fails = re.findall(r"^(FAIL|ERROR): (test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\)(?: (\(.*\)))?$", text, re.M)
+    bad = {}
+    for res, name, mod, cls, _ in fails:
+        bad.setdefault(f"{mod}.{cls}.{name}", res)
+    return ([(bad.get(f"{mod}.{cls}.{name}", "ok"), f"{mod}.{cls}.{name}") for name, mod, cls in started],
+            [(res, name, sub) for res, name, mod, cls, sub in fails if sub])
+
+
+freeze = dict(reversed(l.split()) for l in open(os.path.join(S, "i5b11-freeze-02.txt"), encoding="utf-8") if l.strip())
+text = open(os.path.join(S, "red-i5b11-final-02.txt"), encoding="utf-8").read()
+rows, subs = rows_of(text)
+out = ["İ5B-FIX-11 red first — this package's final test file (the whole suite) against the committed sync_adapters.py of",
+       "214c12db5 (İ5B-FIX-10) in a copy outside the repository; run by the AI session. Unit / API level",
+       "(check_instruction_budget), not the write / check CLI.", "",
+       re.search(r"^Ran .*$", text, re.M).group(0) + " · " + re.search(r"^(OK|FAILED).*$", text, re.M).group(0), ""]
+out += [f"  {res:5s} {tid}" for res, tid in rows]
+out += ["", "failed subtests:"] + [f"  {res:5s} {name} {sub}" for res, name, sub in subs]
+out += ["", "The two new tests fail on the base source: every shape case (the hidden titles, the declared false refusals and the",
+        "real-shape breaks) passes there (10), every reference-image case passes (5), and the escaped link tail 'a\\](b)' is",
+        "refused there (1) — İ5B-FIX-10 read any '](' as unreadable; İ5B-FIX-11 lets an escaped one through. The 38 other tests",
+        "pass in the same run.", "",
+        "Earlier, not replaced: the two tests first ran red against the unchanged İ5B-FIX-10 source before the code was",
+        "written (15 failures; the escaped link-tail control was added afterwards). The first freeze (fb65dbfd / 1a49310b)",
+        "had the same results; the final files differ from it only by narrower wording (a docstring, a test label) and one",
+        "more passing control (a continuation line after the last rule)."]
+write("red-first.txt", out)
+
+res = json.load(open(os.path.join(S, "guard/i5b-guard-05.json"), encoding="utf-8"))
+same = all(hashlib.sha256(open(os.path.join(S, "guard/i5b-src4", p), "rb").read()).hexdigest() == h for p, h in freeze.items())
+out = ["İ5B-FIX-11 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+       "Driver: drivers/harness9.py.txt (harness8 with seven more İ5B mutations; earlier folders keep their own driver copies).",
+       f"The copy's two files equal the final sources byte for byte: {same}. Each mutation: the file still parses; the named",
+       "test fails; the control test (test_a_dead_link_is_still_a_dead_link) passes. G-M1 … G-N1 are İ5B-FIX-10's guards,",
+       "run again on this source; G-S1 … G-I3 are this package's. A run on the first freeze (fb65dbfd) was 14 / 14 too and",
+       "is not counted for these sources.", ""]
+for r in res:
+    out += [r["mutation"] + f"  ({r['file']})", f"    tests: {', '.join(t.split('.')[-1] for t in r['tests'])}",
+            f"    applied: {r['applied']} · parses: {r['parsed']} · named: {'RED' if r['red'] else 'green'} — {r['summary']}"
+            f" · control: {r['control_summary']} · proven: {r['proven']}"]
+out += ["", f"proven: {sum(r['proven'] for r in res)} of {len(res)}"]
+write("guard-removal.txt", out)
+
+log = open(os.path.join(S, "i5b11-run-02.log"), encoding="utf-8").read()
+same_id = open(os.path.join(S, "i5b11-pre-02.txt"), "rb").read() == open(os.path.join(S, "i5b11-post-02.txt"), "rb").read()
+out = ["İ5B-FIX-11 — the final run on this branch's two frozen source files, in the İ5B worktree (branch",
+       "chore/agents/i5b-fix-11 on 214c12db5 with this package's uncommitted changes). Not a measurement of a complete final",
+       "Git tree, not a run on a combined candidate.", "",
+       "commands (from the worktree root):", "  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget",
+       "  python3 -B .antigravity/scripts/sync_adapters.py --check", "sources (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in freeze.items()]
+out += ["result (from the full log):"] + ["  " + l for l in log.splitlines()
+                                          if l.startswith(("### exit", "Ran ", "OK", "start ", "end ", "Python"))]
+out += [f"before = after (HEAD, branch, status, the two SHA-256): {same_id}",
+        f"full log SHA-256 {sha('i5b11-run-02.log')} (kept outside the repository)", "",
+        "These are unit / API checks. The real write / check CLI counter-examples are Codex's (listed in README)."]
+write("checks.txt", out)
+shutil.copyfile(os.path.join(S, "guard/harness9.py"), os.path.join(I, "drivers", "harness9.py.txt"))
+shutil.copyfile(os.path.join(S, "make_evidence10.py"), os.path.join(I, "drivers", "make_evidence10.py.txt"))
+print("written", same, same_id)

@@ -46,6 +46,9 @@ Rules this script enforces (İ5-A pilot):
   or a rule line that is a reference definition, and a rule line with link syntax the check cannot read (deeper
   nesting) proves none ("not verified"); an escaped '<' and a URI or e-mail autolink are not raw HTML (the common
   forms, not a full CommonMark parser).
+- İ5B-FIX-11 (C9 follow-up): the rule list has one shape — every numbered rule line at its real position in the core, one
+  consecutive block numbered 1..N after a blank line, or CORE-SHAPE and no required text is verified; an unescaped image
+  opener left after the known links and images makes a rule line 'not verified' (a reference image hides its alt text).
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -310,12 +313,45 @@ def link_metadata(line: str) -> list[tuple[int, int]]:
     return [(m.start(), m.end()) if m.group(1) else (m.start(2), m.end(2)) for m in LINK_METADATA.finditer(masked)]
 
 
+UNESCAPED_LINK_OPENER = re.compile(r"(?<!\\)(?:\\\\)*(?:!\[|\]\()")
+
+
 def unreadable_link(line: str) -> bool:
     """İ5B-FIX-10 (Codex): a '](' left on the rule line after inline code and the links and images the check reads are
     taken out — deeper nesting than one level is valid CommonMark the check does not read, so the line proves no
-    required text (a refusal, never a pass). A deep link whose visible label holds the rule is refused too."""
+    required text (a refusal, never a pass). A deep link whose visible label holds the rule is refused too.
+    İ5B-FIX-11 (Codex, Claude Denetim001 EK-02): an image opener '![' left the same way — a reference image (full,
+    collapsed, shortcut) or one inside a visible link label hides its alt text. A known image is taken out whole; of a
+    known link only its '(destination "title")', so an image inside its visible label is still found. A '![' or '](' after
+    an odd number of backslashes is escaped text and stays allowed; an undefined literal '![x]' is refused too."""
     masked = INLINE_CODE.sub(lambda m: "x" * len(m.group(0)), line)
-    return "](" in LINK_METADATA.sub(lambda m: " " * len(m.group(0)), masked)
+    out, at = [], 0
+    for m in LINK_METADATA.finditer(masked):
+        a, b = (m.start(), m.end()) if m.group(1) else (m.start(2), m.end(2))
+        out += [masked[at:a], " " * (b - a)]
+        at = b
+    return bool(UNESCAPED_LINK_OPENER.search("".join(out) + masked[at:]))
+
+
+def core_shape_problem(block: str) -> str | None:
+    """İ5B-FIX-11 (Codex, C9 follow-up): the one shape the check reads — every numbered rule line of the core, at its real
+    position, in one consecutive block numbered 1..N, after a blank line. A title opened before a rule line (directly or
+    through an indented bridge) made that line text of the title, invisible, with write / check 0 / 0; any other shape is
+    refused, not interpreted: a loose list, a continuation line between two numbered rules and a second numbered list are
+    refused too. A line after the last rule is not part of the block and is not judged here."""
+    raw = block.split("\n")
+    at = [i for i, l in enumerate(raw) if CORE_RULE_LINE.match(l)]
+    if not at:
+        return "no numbered rule line"
+    gaps = [i for i, j in zip(at, at[1:]) if j != i + 1]
+    if gaps:
+        return f"a line between rule {raw[gaps[0]].split('.')[0]} and the next numbered line"
+    numbers = [int(raw[i].split(".")[0]) for i in at]
+    if numbers != list(range(1, len(at) + 1)):
+        return f"numbered {', '.join(map(str, numbers[:12]))}, not 1..{len(at)}"
+    if at[0] > 0 and raw[at[0] - 1].strip():
+        return "no blank line before rule 1"
+    return None
 
 
 def on_rule_line(needle: str, line: str) -> bool:
@@ -472,6 +508,10 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
                 problems.append(f"CORE-HTML {core['source']} before the core block holds raw HTML outside inline code "
                                 f"({', '.join(t[:20] for t in outer[:3])}) — a container around the core hides its rules")
             rule_lines = [l for l in ruled.split("\n") if CORE_RULE_LINE.match(l)]
+            shape = core_shape_problem(block)    # İ5B-FIX-11: at the real line positions of the core, before any view
+            if shape:
+                problems.append(f"CORE-SHAPE {core['source']} the numbered rule lines are not one consecutive list 1..N after "
+                                f"a blank line ({shape}) — no required text is verified")
             for needle in core.get("required_text", []):
                 if not any(on_rule_line(needle, l) for l in rule_lines):
                     hidden = (NOT_VERIFIED if any(needle in l and unreadable_link(l) for l in rule_lines) else

@@ -529,6 +529,83 @@ class InstructionBudget(unittest.TestCase):
             with self.subTest(visible=label):
                 self.assertFalse(problems(repl), label)
 
+    def test_the_rule_list_has_one_supported_shape(self):
+        # İ5B-FIX-11 (Codex, C9 follow-up): a title opened before a rule line ('[x]: u "' or '[Dil](u "'), directly or
+        # through an indented bridge line, swallowed rule 4 with write / check 0 / 0 — the numbered rule lines must be one
+        # consecutive block 1..N at their real positions in the core, after a blank line; any other shape verifies nothing
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        lines = text.split("\n")
+        i4 = next(i for i, l in enumerate(lines) if l.startswith("4. **"))
+        u = "https://example.invalid"
+
+        def shape(before, after=(), at=i4):
+            f.write_text("\n".join(lines[:at] + list(before) + lines[at:at + 1] + list(after) + lines[at + 1:]), encoding="utf-8")
+            return [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-SHAPE")]
+
+        for label, before, after in (("a reference title, directly", ["", f'[x]: {u} "'], ['"']),
+                                     ("a reference title through an indented bridge", ["", f'[x]: {u} "', "    bridge"], ['"']),
+                                     ("an inline title, directly", ["", f'[Dil]({u} "'], ['")']),
+                                     ("an inline title through an indented bridge", ["", f'[Dil]({u} "', "    bridge"], ['")']),
+                                     ("a plain paragraph before a rule (not a list item)", ["", "Not."], []),
+                                     ("a loose list: a blank line between two rules (a declared false refusal)", [""], []),
+                                     ("a continuation line between two numbered rules (a declared false refusal)", [], ["   devamı"])):
+            with self.subTest(refused=label):
+                found = shape(before, after)
+                self.assertTrue(found, label)
+                self.assertTrue(found[0].endswith("— no required text is verified"), found[0])
+        with self.subTest(refused="a second numbered list in the core (a declared false refusal)"):
+            end = next(i for i, l in enumerate(lines) if l.startswith("11. "))
+            self.assertTrue(shape(["", "1. ikinci liste"], at=end + 1))
+        with self.subTest(refused="a rule number out of order"):
+            f.write_text(text.replace("\n5. **", "\n6. **", 1), encoding="utf-8")
+            self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-SHAPE")])
+        with self.subTest(refused="rule 1 right after a paragraph line"):
+            i1 = next(i for i, l in enumerate(lines) if l.startswith("1. **"))
+            self.assertFalse(lines[i1 - 1].strip())                        # today: a blank line before rule 1
+            f.write_text("\n".join(lines[:i1 - 1] + ["Not."] + lines[i1:]), encoding="utf-8")
+            self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-SHAPE")])
+        with self.subTest(passes="a continuation line after the last rule (outside the block, not judged by the shape)"):
+            end = next(i for i, l in enumerate(lines) if l.startswith("11. "))
+            self.assertFalse(shape([], ["   devamı"], at=end))
+        with self.subTest(passes="the real core (its links resolve only in place: test_the_real_instruction_files_pass)"):
+            f.write_text(text, encoding="utf-8")
+            self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith(("CORE-SHAPE", "CORE-RULE"))])
+
+    def test_a_reference_image_proves_no_required_text(self):
+        # İ5B-FIX-11 (Codex, Claude Denetim001 EK-02): the rule only in a reference image's alt text — full, collapsed,
+        # shortcut, or inside a visible link label — passed write / check 0 / 0; an image opener left after the links the
+        # check reads makes the line 'not verified'. A visible reference link label still counts.
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        phrase = "Platform modülü 2 dil (en, tr), kiracı modülü 7 dil (en, tr, fr, es, zh, ar, ru)"
+        line = next(l for l in text.split("\n") if l.startswith("4. **"))
+
+        def problems(repl, definition):
+            changed = text.replace(line, line.replace(phrase, repl, 1), 1)
+            changed = changed.replace(sa.CORE_END, sa.CORE_END + "\n\n" + definition, 1)   # the definition after the core
+            f.write_text(changed, encoding="utf-8")
+            return [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE") and phrase in p]
+
+        for label, repl, definition in (("a full reference image", f"![{phrase}][lang]", "[lang]: AGENTS.md"),
+                                        ("a collapsed reference image", f"![{phrase}][]", f"[{phrase}]: AGENTS.md"),
+                                        ("a shortcut reference image", f"![{phrase}]", f"[{phrase}]: AGENTS.md"),
+                                        ("a reference image inside a visible link label", f"[X ![{phrase}][lang]](AGENTS.md)", "[lang]: AGENTS.md"),
+                                        ("an undefined literal '![...]' (a declared false refusal)", f"![{phrase}]", "")):
+            with self.subTest(refused=label):
+                found = problems(repl, definition)
+                self.assertTrue(found, label)
+                self.assertTrue(found[0].endswith(sa.NOT_VERIFIED), found[0])
+        for label, repl, definition in (("a reference link, the rule its visible label", f"[{phrase}][lang]", "[lang]: AGENTS.md"),
+                                        ("a visible inline link label", f"[{phrase}](AGENTS.md)", ""),
+                                        ("plain text with an escaped opener", phrase + " \\![x]", ""),
+                                        ("plain text with an escaped link tail", phrase + " a\\](b)", ""),
+                                        ("plain text with an autolink", phrase + " <https://example.invalid/x>", "")):
+            with self.subTest(visible=label):
+                self.assertFalse(problems(repl, definition), label)
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML
