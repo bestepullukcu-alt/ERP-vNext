@@ -1325,6 +1325,51 @@ class InstructionBudget(unittest.TestCase):
                 f.write_text(agents[:at] + ins + head + "\n\n</table>\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
                 self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
 
+    def test_a_comment_inside_a_tag_is_not_verified(self):
+        # İ5B-FIX-23 (C21 audits; Claude Denetim001 and Codex Denetim001 C21-F1): the comment reader took a '<!--' inside an
+        # attribute value for a comment and masked it, so the masked view showed one long tag and the real '<table>' after
+        # the quote was never seen ('</div>' then closed the hidden div at the top; HTML ignores it). HTML reads no comment
+        # inside a tag. A comment span starting inside a tag the reader reads is 'tag': not verified — a declared limit: a
+        # literal '<!-- -->' wholly inside an attribute is refused too. A comment right after a tag is as before
+        ref, anchor, r2a, r2b, ac = self.html_fixture()
+        nv, bt = "not verified", "`"
+        wrap = lambda before, after: ref[:r2a] + before + ref[r2a:r2b] + after + ref[r2b:]
+        before = lambda ins: ref[:r2a] + ins + ref[r2a:]
+        tail = "</table>\n</div>\n\n"
+        cases = [("Claude: a double-quoted value", wrap('<div hidden title="a<!--b"> <table> -->">\n</div>\n\n', tail)),
+                 ("Claude: a single-quoted value", wrap("<div hidden title='a<!--b'> <table> -->'>\n</div>\n\n", tail)),
+                 ("Claude: an unquoted value", wrap("<div hidden title=a<!--b> <table> -->>\n</div>\n\n", tail)),
+                 ("Claude: '<template>'", wrap('<div hidden title="a<!--b"> <template> -->">\n</div>\n\n', "</template>\n</div>\n\n")),
+                 ("Claude: in a paragraph", wrap('Not: <div hidden title="a<!--b"> <table> -->"> </div> başlar.\n\n', tail)),
+                 ("Codex: '<span title=\"<!--\">'", wrap('<div hidden>\n<span title="<!--"> <table> -->"></span>\n</div>\n\n', tail)),
+                 ("Codex: '<span title='<!--'>'", wrap("<div hidden>\n<span title='<!--'> <table> -->'></span>\n</div>\n\n", tail)),
+                 ("a closing tag that ends at its first '>'", wrap("<div hidden>\n</span <!-- > <table> -->>\n</div>\n\n", tail)),
+                 ("declared: a literal comment wholly inside an attribute", before('<span title="<!-- x -->">y</span>\n\n'))]
+        for label, text in cases:
+            with self.subTest(not_verified=label):
+                lost = self.section_2_lost(text)
+                self.assertTrue(lost and all(nv in p for p in lost), (label, lost[:1]))
+        for label, text in (
+                ("an ordinary attribute", before('<div hidden title="a b">\n</div>\n\n')),
+                ("a comment right after a tag", before("<div hidden><!-- x --></div>\n\n")),
+                ("a standard comment between two tags", before("<div hidden>\n<!-- a <table> -->\n</div>\n\n")),
+                ("a tag with a comment in a code span", before("Not: " + bt + '<span title="<!--">' + bt + " metin.\n\n")),
+                ("a tag with a comment in a fence", before(bt * 3 + '\n<span title="<!--"> -->\n' + bt * 3 + "\n\n"))):
+            with self.subTest(passes=label):
+                self.assertFalse([p for p in self.ref_with(text) if p.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))], label)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END)
+        req = next(x for x in self.manifest["instruction_budget"]["files"] if x["path"] == "AGENTS.md")["required_headings"]
+        head = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req))
+        at = agents.index(head, after)
+        for label, ins in (("Claude: a double-quoted value", '<div hidden title="a<!--b"> <table> -->">\n</div>\n\n'),
+                           ("Codex: '<span title=\"<!--\">'", '<div hidden>\n<span title="<!--"> <table> -->"></span>\n</div>\n\n')):
+            with self.subTest(hidden="an AGENTS.md required heading after " + label):
+                f.write_text(agents[:at] + ins + head + "\n\n</table>\n</div>\n" + agents[at + len(head) + 1:], encoding="utf-8")
+                self.assertTrue([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING")], label)
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML

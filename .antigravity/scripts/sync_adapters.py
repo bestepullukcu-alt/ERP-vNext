@@ -461,6 +461,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=(), comments=()) 
       inside a raw-text element (its text there, or a script escape a '</script>' still ends) or inside '<?', '<!X' or
       '<![CDATA[' may hide the real end, so it is 'code': not verified. '<?' and '<![CDATA[' end at their first '>' in
       HTML content: a '>' before the reader's end is 'tag': not verified.
+    - İ5B-FIX-23: so inside a tag — an attribute value holds no comment in HTML, and a masked one can make the view show
+      one long tag where HTML ends it earlier. A comment span starting inside a tag the reader reads (an opening or a
+      closing one) is 'tag': not verified; a literal comment wholly inside an attribute is refused too (a declared limit).
     Not an HTML, CSS or DOM engine: an attribute is never read, so any text inside an element is not evidence (a declared
     refusal). The supported lexical rules and the explicit not-verified limits above do not establish general renderer
     equivalence."""
@@ -565,6 +568,9 @@ def mask_html(view: str, block_view: str | None = None, blocks=(), comments=()) 
         m = HTML_TAG.match(view, i)
         if m and m.end() > limit:
             m = None                                         # a tag never crosses its paragraph's or block's end
+        if m and any(i < a < m.end() for a, _ in comments):
+            nv = (i, "tag")                                  # İ5B-FIX-23: HTML reads no comment inside a tag
+            break
         if m and m.group(1) and not block:
             valid = CLOSING_TAG.match(view, i)
             if not valid or valid.end() != m.end():          # İ5B-FIX-18: not a CommonMark closing tag — its '<' is
