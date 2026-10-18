@@ -340,6 +340,14 @@ The UI check is a display decision (UAS-001 §4); `[HasPermission]` on the backe
 
 Adapter headers: `Authorization` server-side only; `X-Correlation-Id` = fresh UUID per request; `Idempotency-Key` = browser
 per-intent key forwarded exactly (§12). Tenant and legal entity never come from the browser (§2). Antiforgery on every POST.
+
+> **R-2 alignment (owner decision 2026-10-18, `mvp6-0190-0192-r2-legal-entity-alignment-owner-decision-01`).** Since R-2
+> (`66250b1a1`) AuthService issues no `legal_entity_id` claim, and this module's gate still required it — every real user
+> got 403. The gate now reads tenant and actor from the token and the legal entity from `X-Legal-Entity-Id` only (the
+> page's company choice, carried by the adapter from `?legalEntityId=`), validated by MDM (`ILegalEntityScopeValidator`,
+> fail-closed: not referenceable → this module's own not-found, unavailable → 503 `DEPENDENCY_UNAVAILABLE`), exactly as
+> the five shipment-bundle modules. "Never from the browser" above now reads: never from the browser *unchecked* —
+> tenant stays token-only; the legal entity is the user's choice and MDM, not the caller, decides it is the tenant's and Active.
 "Open plan/scenario by ID" rejects a malformed UUID client-side without a request.
 
 Details address (owner decision F-Q79-05 = A, `docs/records/decisions/2026-09/mvp6-capacity-ui-ids-in-address-owner-decision-01.md`): when a scenario is opened or created and when an evaluation is submitted or

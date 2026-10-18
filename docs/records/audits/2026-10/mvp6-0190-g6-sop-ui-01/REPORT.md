@@ -79,3 +79,13 @@ localized date-times were scrambled in Arabic (forced LTR around RTL text → `d
 
 Capacity UI (next); G7 permission seeding to tenant roles; G8 independent VER; a real demand source (G3).
 `decidedBy` is shown as the actor UUID (no user lookup in scope, UI-SCOPE-0190 §9.5).
+
+## Addendum (same day) — R-2 legal-entity alignment, re-walked
+
+While scoping the Capacity half, CT found that both gates still **required** the `legal_entity_id` claim that
+AuthService stopped issuing at R-2 — the walk above passed only because the lane minter adds it. Owner decision
+`mvp6-0190-0192-r2-legal-entity-alignment-owner-decision-01`: both gates now take the legal entity from
+`X-Legal-Entity-Id` only, validated by MDM (fail-closed). Re-walked with a token **without** `legal_entity_id`
+(what AuthService issues): workspace load 200 ×3 and a new sign-off (Operations/Approved) 201 through Web → gateway →
+SupplyChain. SupplyChain suite **565/566** (recorded ClaimReplay restart-mode only), every S&OP/Capacity HTTP test now on
+R-2-shaped tokens; sabotage (re-requiring the claim in the Capacity gate) turns the new scope facts red.

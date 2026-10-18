@@ -81,16 +81,16 @@ public sealed class SandopHttpContractTests
     {
         var (planId, _) = await Seed();
 
-        // The gate rejects a token/header disagreement with 403 before the repository is reached, so a foreign
-        // scope has to move in both places at once for this to be a 404 about the plan rather than about the scope.
+        // A tenant header that disagrees with the token is 403 at the gate, so a foreign tenant moves in both places.
+        // The legal entity is the header's alone (R-2 alignment, 2026-10-18): the same token reads another one's
+        // scope and finds nothing — the module's 404, disclosing nothing.
         var otherTenant = Guid.NewGuid();
         var foreignTenant = _host.Token(tenant: otherTenant);
         Assert.Equal(404, (await _host.Send("GET", $"{Plans}/{planId}", null, foreignTenant, Key(),
             tenant: otherTenant)).Status);
 
         var otherLe = Guid.NewGuid();
-        var foreignLe = _host.Token(legalEntity: otherLe);
-        Assert.Equal(404, (await _host.Send("GET", $"{Plans}/{planId}", null, foreignLe, Key(),
+        Assert.Equal(404, (await _host.Send("GET", $"{Plans}/{planId}", null, _host.Token(), Key(),
             legalEntity: otherLe)).Status);
 
         var withoutRead = _host.Token(permissions: SandopCapacityHttpHost.AllPermissions

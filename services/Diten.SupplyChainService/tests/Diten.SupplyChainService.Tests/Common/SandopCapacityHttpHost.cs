@@ -157,12 +157,17 @@ public sealed class SandopCapacityHttpHost : WebApplicationFactory<Program>
     /// </summary>
     public MongoDB.Driver.IMongoDatabase Database => Services.GetRequiredService<MongoDB.Driver.IMongoDatabase>();
 
-    public string Token(Guid? tenant = null, Guid? legalEntity = null, IEnumerable<string>? permissions = null, Guid? actor = null)
+    /// <summary>
+    /// The token AuthService issues since R-2: tenant, actor and permissions — no legal_entity_id. Both gates were
+    /// aligned to that on 2026-10-18 (owner decision); before, they required the claim and refused every real user,
+    /// which this host could not see because it minted the claim itself. The legal entity travels in
+    /// X-Legal-Entity-Id (see <see cref="Send"/>).
+    /// </summary>
+    public string Token(Guid? tenant = null, IEnumerable<string>? permissions = null, Guid? actor = null)
     {
         var claims = new List<Claim>
         {
             new("tenant_id", (tenant ?? Tenant).ToString()),
-            new("legal_entity_id", (legalEntity ?? LegalEntity).ToString()),
             new("sub", (actor ?? Actor).ToString())
         };
         claims.AddRange((permissions ?? AllPermissions).Select(p => new Claim("permission", p)));
@@ -190,9 +195,9 @@ public sealed class SandopCapacityHttpHost : WebApplicationFactory<Program>
 
     /// <summary>
     /// Both gates read X-Tenant-Id and X-Legal-Entity-Id through a helper rather than the Headers indexer, so a
-    /// grep for Headers["..."] misses them (it did, on 2026-10-11). They are required, and SandopContextMiddleware
-    /// answers 400 INVALID_REQUEST when either is absent and 403 FORBIDDEN when either disagrees with the token —
-    /// so a caller testing a foreign scope must move the token AND the headers together.
+    /// grep for Headers["..."] misses them (it did, on 2026-10-11). X-Legal-Entity-Id is required by both (400
+    /// INVALID_REQUEST when absent) and is the legal entity's only source since the R-2 alignment; a tenant header that
+    /// disagrees with the token is 403 FORBIDDEN, so a foreign-tenant test moves the token AND the header together.
     /// </summary>
     public async Task<Reply> Send(string method, string path, JsonNode? body = null, string? token = null,
         string? idempotencyKey = "k", string? correlation = null, Action<HttpRequestMessage>? alter = null,
