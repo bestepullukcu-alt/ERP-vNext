@@ -428,6 +428,11 @@ def check_authority(p: dict, repo, commit: str, row: dict | None = None, row_kno
             eng.append(f"görev sınıfı: kapsam kaydı onaylı değil (status: '{status[:30] or 'yok'}') — {path}")
         # CT-FIX-04 (İ2): only an explicit binding — the row's record (its version checked) or the künye's work_packages
         unbound = governance_binding(text, path, p.get("wp"), row, commit_id=repo.commit_id, read_at=repo.file, head_data=data)
+        if unbound and not row_known and _SHARED.work_packages_field(text) == (None, None):
+            # CT-FIX-11 (Claude Denetim001 C13-G1): no work_packages field, so the binding could only be read through the
+            # queue row — the queue could not be read, so the relation is 'not measured', not 'the row does not name it'.
+            # An explicit or a broken work_packages field still decides on its own (governance_binding, unchanged)
+            unbound = "kuyruk okunamadı — kapsam kaydının bu işe bağı ölçülemedi"
         if unbound:
             eng.append(f"görev sınıfı: {unbound} ({path})")
         return eng

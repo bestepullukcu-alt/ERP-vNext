@@ -1874,5 +1874,50 @@ class CTFIX10_UnknownRowAndWriters(CTFIX04):
         self.assertExit(self.writers(), 0, "YAZAN yok")
 
 
+
+class CTFIX11_GovernanceUnknownRow(CTFIX04):
+    """CT-FIX-11 (C13 audits, Claude Denetim001 C13-G1): with the queue unreadable, a governance record bound only by the
+    queue row's record got a false reason ('… record sütunu bu kaydı göstermiyor'). Only that relation is now 'not
+    measured'; an explicit work_packages field, a broken one and the record's status still decide on their own."""
+    unmeasured = "kuyruk okunamadı — kapsam kaydının bu işe bağı ölçülemedi"
+    false_reason = "kuyruk satırının record sütunu bu kaydı göstermiyor"
+
+    def gate_with(self, text, record=None, broken=True):
+        FX.put(AUTHORITY, text)
+        head = FX.commit("CT-FIX-11: a scope record")
+        if record is not None:
+            FX.put("q.tsv", FX.qh + FX.qrow.replace("\t-\t-\n", f"\t{record}\t-\n"))
+            head = FX.commit("CT-FIX-11: the row's record")
+        if broken:
+            cells = FX.reg_line.rstrip("\n").split("\t")
+            cells[2] = ""
+            FX.put(REG, FX.reg_head + "\t".join(cells) + "\n")
+        return self.gate(FX.prompt(head))
+
+    def test_only_the_row_bound_relation_is_unmeasured(self):
+        for label, text, record, broken, want, has, hasnt in (
+                ("bound only by the row's record, the queue unreadable", GOV_FM(), AUTHORITY, True, 1,
+                 [self.unmeasured, "ENGEL kuyruk: DUR: "], [self.false_reason]),
+                ("work_packages lists W1, the queue unreadable", GOV_FM("work_packages: W1\n"), None, True, 1,
+                 ["ENGEL kuyruk: DUR: "], [self.unmeasured, "kapsam kaydı"]),
+                ("work_packages lists only W10, the queue unreadable", GOV_FM("work_packages: W10\n"), None, True, 1,
+                 ["work_packages alanı W1'yi listelemiyor (W10)"], [self.unmeasured]),
+                ("a broken work_packages field, the queue unreadable", GOV_FM("work_packages: W1, \n"), None, True, 1,
+                 ["work_packages alanı geçersiz"], [self.unmeasured]),
+                ("status draft, bound only by the row's record, the queue unreadable", "---\nstatus: draft\n---\nx\n", AUTHORITY, True, 1,
+                 ["onaylı değil (status: 'draft')", self.unmeasured], [self.false_reason]),
+                ("control: bound only by the row's record, an intact queue", GOV_FM(), AUTHORITY, False, 0, [], [self.unmeasured]),
+                ("control: no binding at all, an intact queue", GOV_FM(), None, False, 1,
+                 ["açıkça bağlı değil", self.false_reason], [self.unmeasured])):
+            with self.subTest(case=label):
+                FX.reset(self.mark)
+                p = self.gate_with(text, record, broken)
+                self.assertExit(p, want)
+                for text_ in has:
+                    self.assertIn(text_, p.stdout)
+                for text_ in hasnt:
+                    self.assertNotIn(text_, p.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
