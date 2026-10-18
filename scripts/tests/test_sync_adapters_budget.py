@@ -704,9 +704,9 @@ class InstructionBudget(unittest.TestCase):
             with self.subTest(refused=label):
                 found = context(doc)
                 self.assertTrue(found and why in found[0] and found[0].endswith("— no required text is verified"), found)
-        # the CORE-CONTEXT check only: these inputs raise no CORE-CONTEXT. One of them is still refused end to end by the
-        # global heading reader (a literal '<!--' inside a closed fence: visible_text removes comments before fences) —
-        # an existing, separate false refusal, not this check's
+        # the CORE-CONTEXT check only: these inputs raise no CORE-CONTEXT. Before İ5B-FIX-14 one of them (a literal '<!--'
+        # inside a closed fence) was still refused end to end by the global heading reader, which removed comments before
+        # fences; İ5B-FIX-14 fixed that reader, and test_the_heading_reader_reads_comments_and_fences_in_order covers it
         for label, ins in (("a closed backtick fence before core:start", ["```", "örnek", "```", ""]),
                            ("a closed tilde fence before core:start", ["~~~", "örnek", "~~~", ""]),
                            ("a literal comment opener inside a closed fence (CORE-CONTEXT only)", ["```", "<!-- örnek", "```", ""]),
@@ -718,6 +718,55 @@ class InstructionBudget(unittest.TestCase):
                 self.assertEqual(context("\n".join(lines[:s] + ins + lines[s:])), [])
         with self.subTest(passes="the real file"):
             self.assertEqual(context(text), [])
+
+    def test_the_heading_reader_reads_comments_and_fences_in_order(self):
+        # İ5B-FIX-14 (Codex root, Codex Denetim001): visible_text removed every HTML comment before the heading reader read
+        # fences, and joined the pieces — a literal '<!--' in a closed code example swallowed the headings after it, and
+        # '#<!--x--># 2. …' became a level-2 heading that is not there. One scanner now masks comments in place (spaces,
+        # line ends kept) outside fences and inline code, with each reader's own fence grammar
+        bad = ("HEADING", "SECTION", "CORE")
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        before = agents.index(sa.CORE_START)                                       # required headings follow it
+        after = agents.index(sa.CORE_END) + len(sa.CORE_END) + 1                    # and follow this point too
+        for label, at, ins in (("a closed backtick code example holding a literal '<!--'", before, "```\n<!-- örnek\n```\n\n"),
+                               ("a closed tilde code example holding a literal '<!--'", before, "~~~\n<!-- örnek\n~~~\n\n"),
+                               ("a comment opener shown in inline code", after, "\nÖrnek: `<!--` işaretidir.\n"),
+                               ("an escaped comment opener", after, "\nÖrnek: \\<!-- işaretidir.\n"),
+                               ("a fence line inside a real comment", before, "<!--\n```\n-->\n\n")):
+            with self.subTest(agents_passes=label):
+                self.redirect("AGENTS.md", f)
+                f.write_text(agents[:at] + ins + agents[at:], encoding="utf-8")
+                self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith(bad)], label)
+        ref = (REPO / self.REF).read_text(encoding="utf-8")
+        with self.subTest(ref_passes="a code example holding a literal '<!--' in a section body"):
+            problems = self.ref_with(ref.replace("## 3. Port Şeması", "```\n<!-- örnek\n```\n\n## 3. Port Şeması", 1))
+            self.assertFalse([p for p in problems if p.startswith(bad)], problems)
+            self.assertTrue(any("<!-- örnek" in l for l in sa.level2_sections(sa.visible_text(
+                ref.replace("## 3. Port Şeması", "```\n<!-- örnek\n```\n\n## 3. Port Şeması", 1)))["2. Proje Klasör Yapısı"][0]))
+        with self.subTest(ref_refused="'#<!--x--># 2. …' is not a level-2 heading (comment deletion must not create one)"):
+            problems = self.ref_with(ref.replace("## 2. Proje Klasör Yapısı", "#<!--x--># 2. Proje Klasör Yapısı", 1))
+            self.assertTrue([p for p in problems if p.startswith("SECTION") and "2. Proje Klasör Yapısı" in p], problems)
+        with self.subTest(diagnosis="a heading only inside a code example is said to be in a code block, not in a comment"):
+            head = next(l for l in agents.split("\n") if l.startswith("## Çekirdek"))    # a '<!--' in the example runs past it
+            f.write_text(agents.replace(head, "```\n<!-- örnek\n" + head + "\n```\n-->", 1), encoding="utf-8")
+            self.redirect("AGENTS.md", f)
+            lost = [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("HEADING") and "Çekirdek" in p]
+            self.assertTrue(lost and lost[0].count("(only inside a code block)") == 1, lost)
+
+    def test_the_core_view_masks_comments_outside_fences(self):
+        # İ5B-FIX-14: the core block's own view removed comments before fences too — a tilde code example holding a
+        # literal '<!--' in the core's preamble hid every rule after it (CORE-RULE). With the same scanner (the core's
+        # fence grammar) the rules stay found; the literal opener is still refused as raw HTML, the core's existing rule
+        # (İ5B-FIX-09: a fenced example is free before the core, not inside it)
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        head = next(l for l in agents.split("\n") if l.startswith("## Çekirdek"))
+        f.write_text(agents.replace(head, head + "\n\n~~~\n<!-- örnek\n~~~", 1), encoding="utf-8")
+        problems = sa.check_instruction_budget(self.manifest)[0]
+        self.assertFalse([p for p in problems if p.startswith("CORE-RULE")], problems)
+        self.assertTrue([p for p in problems if p.startswith("CORE-HTML") and "(<!--)" in p], problems)
 
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address

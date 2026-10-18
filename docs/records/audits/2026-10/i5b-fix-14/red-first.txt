@@ -1,0 +1,72 @@
+İ5B-FIX-14 red first — this package's final test file (the whole suite) against the committed sync_adapters.py of
+bb2a6e741 (İ5B-FIX-13) in a copy outside the repository; run by the AI session. Unit / API level
+(check_instruction_budget), not the write / check CLI.
+
+Ran 45 tests in 1.503s · FAILED (failures=8)
+
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_budget_problem_writes_no_adapter
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_code_span_across_lines_in_the_core_is_refused
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_container_opened_before_the_core_is_refused
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_core_rule_off_its_numbered_line_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_core_rule_only_inside_a_code_block_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_core_rule_only_inside_an_html_comment_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_dead_link_is_still_a_dead_link
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_heading_only_inside_a_comment_or_in_code_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_missing_instruction_file_is_still_missing
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_missing_link_check_file_is_missing_not_skipped
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_phrase_that_is_a_span_of_its_own_is_lost_and_short_terms_still_count
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_reference_image_proves_no_required_text
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_required_text_only_in_link_metadata_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_rule_inside_a_larger_code_span_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_section_written_twice_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_emptied_reference_file_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_escaped_bang_before_a_link_is_text
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_escaped_less_than_or_an_autolink_is_not_raw_html
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_import_shown_as_code_is_not_an_import
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_unclosed_comment_at_the_top_hides_the_rest
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_unclosed_fence_in_the_core_hides_the_rules_after_it
+  ok    test_sync_adapters_budget.InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+  ok    test_sync_adapters_budget.InstructionBudget.test_dead_links_in_every_markdown_link_form
+  ok    test_sync_adapters_budget.InstructionBudget.test_each_contract_part_removed_or_hidden_in_a_comment_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_every_import_form_of_agents_md_outside_code_is_forbidden
+  ok    test_sync_adapters_budget.InstructionBudget.test_every_required_core_text_is_on_a_numbered_rule_line_today
+  ok    test_sync_adapters_budget.InstructionBudget.test_headings_kept_bodies_removed_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_link_check_lists_the_reference_file
+  ok    test_sync_adapters_budget.InstructionBudget.test_link_syntax_the_check_cannot_read_is_not_verified
+  ok    test_sync_adapters_budget.InstructionBudget.test_one_anchor_removed_fails_by_name
+  ok    test_sync_adapters_budget.InstructionBudget.test_oversize_message_names_the_file_it_is_about
+  ok    test_sync_adapters_budget.InstructionBudget.test_padding_without_anchors_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_raw_html_in_the_core_is_refused
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_core_markers_keep_their_physical_context
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_core_start_marker_has_no_open_context
+  FAIL  test_sync_adapters_budget.InstructionBudget.test_the_core_view_masks_comments_outside_fences
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_generated_core_carries_the_rule
+  FAIL  test_sync_adapters_budget.InstructionBudget.test_the_heading_reader_reads_comments_and_fences_in_order
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_module_request_rule_hidden_in_a_comment_or_removed_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_module_request_rule_is_a_required_core_text_once
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_raw_html_opener_class_is_refused_before_and_in_the_core
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_real_instruction_files_pass
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_reference_file_has_required_sections_with_anchors
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_rule_list_has_one_supported_shape
+
+failed subtests:
+  FAIL  test_the_heading_reader_reads_comments_and_fences_in_order (agents_passes="a closed backtick code example holding a literal '<!--'")
+  FAIL  test_the_heading_reader_reads_comments_and_fences_in_order (agents_passes="a closed tilde code example holding a literal '<!--'")
+  FAIL  test_the_heading_reader_reads_comments_and_fences_in_order (agents_passes='a comment opener shown in inline code')
+  FAIL  test_the_heading_reader_reads_comments_and_fences_in_order (agents_passes='an escaped comment opener')
+  FAIL  test_the_heading_reader_reads_comments_and_fences_in_order (ref_passes="a code example holding a literal '<!--' in a section body")
+  FAIL  test_the_heading_reader_reads_comments_and_fences_in_order (ref_refused="'#<!--x--># 2. …' is not a level-2 heading (comment deletion must not create one)")
+  FAIL  test_the_heading_reader_reads_comments_and_fences_in_order (diagnosis='a heading only inside a code example is said to be in a code block, not in a comment')
+
+The two new tests fail on the base source: a closed backtick or tilde example holding a literal '<!--', a
+'<!--' shown in inline code and an escaped one swallowed the headings after them (4); a code example holding '<!--'
+in a REF section body swallowed the sections after it (1); '#<!--x--># 2. …' became a level-2 heading that is not
+there (1); a heading inside a code example was said to be in a comment (1); a tilde example holding '<!--' in the
+core's preamble hid every rule (1). A fence line inside a real comment passes there too, as it should. The 43 other
+tests pass in the same run.
+
+Earlier, not replaced: the tests first ran red before the code was written; two cases were moved after core:end so
+that what they swallow is seen, and two test mistakes were corrected in the test (the diagnosis case's fences; the
+core-view case now expects CORE-HTML, İ5B-FIX-09's rule for raw HTML inside the core). The first test identity
+(fd440838) gave the same red; the final test differs from it only by a corrected comment (the AST equal).

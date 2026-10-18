@@ -55,6 +55,9 @@ Rules this script enforces (İ5-A pilot):
 - İ5B-FIX-13 (C11 follow-up): core:start stands alone on its line, and nothing is open at the end of that line, read on
   the whole source by one small scanner (open_context; the shared fence grammar; comments and inline code tracked) —
   a fence opened before the marker made the rules a code example; outside_code's own policy for imports is unchanged.
+- İ5B-FIX-14 (C12 follow-up): the same scanner masks comments in place for the heading / section reader (its own fence
+  grammar), the comment diagnosis, the core's view and the text before it — a literal '<!--' in a code example no
+  longer swallows what follows, and a comment between two '#' no longer makes a heading.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -94,12 +97,24 @@ INLINE_LINK = re.compile(r"\]\(\s*(<[^>\n]*>|[^)\s]+)" + LINK_TITLE + r"\s*\)")
 REFERENCE_DEF = re.compile(r"^ {0,3}\[[^\]\n]+\]:[ \t]*(<[^>\n]*>|\S+)" + LINK_TITLE + r"[ \t]*$", re.M)
 IMPORT = re.compile(r"(?<!\w)@([^\s`]+)")
 FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})")
-HTML_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.S)
 
 
 def visible_text(text: str) -> str:
-    """İ5B-FIX-04: the text a reader sees — every HTML comment removed; an unclosed '<!--' hides the rest."""
-    return HTML_COMMENT.sub("", text)
+    """İ5B-FIX-04: the text a reader sees — every HTML comment hidden; an unclosed '<!--' hides the rest. İ5B-FIX-14:
+    through scan_comments with the heading reader's own fence grammar (level2_sections'): comments are masked in place
+    (spaces, line ends kept) outside fences and inline code, so a literal '<!--' in a code example hides nothing and a
+    comment between two '#' does not make a heading."""
+    return scan_comments(text, heading_fence_opener, heading_fence_closes)[0]
+
+
+def heading_fence_opener(line: str) -> str | None:
+    """The heading reader's fence grammar (level2_sections): three or more backticks or tildes after at most 3 spaces."""
+    m = FENCE_OPEN.match(line)
+    return m.group(1) if m else None
+
+
+def heading_fence_closes(fence: str, line: str) -> bool:
+    return bool(re.match(rf"^ {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line))
 
 
 def outside_fenced_code(text: str) -> str:
@@ -131,41 +146,59 @@ def fence_closes(fence: str, line: str) -> bool:
     return bool(re.match(rf"^[ \t]*{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line))
 
 
-def open_context(text: str) -> str | None:
-    """İ5B-FIX-13 (Codex root, C11 follow-up): the context still open at the end of text, read by one small scanner on
-    the source as it stands — no part is deleted and no pieces are joined. A fenced code block (the shared fence
-    grammar) or an HTML comment; inside a fence '<!--' is literal, inside a comment a fence line is not a fence, and an
-    inline code span (read within its line; a backslash escapes the next character) holds neither. None when nothing is
-    open. Not a CommonMark parser: a code span across lines is not read, so a '<!--' after it may be refused."""
+def scan_comments(text: str, opener=None, closes=None) -> tuple[str, list[tuple[int, int]], str | None]:
+    """İ5B-FIX-13 / -14 (Codex root, Codex Denetim001): one small scanner on the source as it stands — nothing deleted,
+    no pieces joined. Returns (the text with every HTML comment masked in place — spaces, line ends kept —, the comments'
+    (start, end) offsets, the context still open at the end: 'a fenced code block', 'an HTML comment' or None). Fences
+    follow the reader's own grammar (opener / closes; the core's by default); inside a fence '<!--' is literal, inside
+    a comment a fence line is not a fence, and an inline code span (read within its line; a backslash escapes the next
+    character) holds neither. An unclosed comment hides the rest. Not a CommonMark parser: a code span across lines is
+    not read, so a '<!--' after it is a comment (a safe refusal)."""
+    opener, closes = opener or fence_opener, closes or fence_closes
+    spans: list[tuple[int, int]] = []
     fence: str | None = None
-    comment = False
+    start: int | None = None
+    at = 0
     for line in text.split("\n"):
         if fence is not None:
-            if fence_closes(fence, line):
+            if closes(fence, line):
                 fence = None
-            continue
-        if not comment:
-            fence = fence_opener(line)
-            if fence is not None:
-                continue
-        i = 0
-        while i < len(line):
-            if comment:
-                end = line.find("-->", i)
-                if end < 0:
-                    break
-                comment, i = False, end + 3
-            elif line[i] == "\\":
-                i += 2
-            elif line[i] == "`":
-                run = len(line[i:]) - len(line[i:].lstrip("`"))
-                close = re.compile(rf"(?<!`)`{{{run}}}(?!`)").search(line, i + run)
-                i = close.end() if close else i + run
-            elif line.startswith("<!--", i):
-                comment, i = True, i + 4
-            else:
-                i += 1
-    return "a fenced code block" if fence is not None else "an HTML comment" if comment else None
+        elif start is None and opener(line) is not None:
+            fence = opener(line)
+        else:
+            i = 0
+            while i < len(line):
+                if start is not None:
+                    end = line.find("-->", i)
+                    if end < 0:
+                        break
+                    spans.append((start, at + end + 3))
+                    start, i = None, end + 3
+                elif line[i] == "\\":
+                    i += 2
+                elif line[i] == "`":
+                    run = len(line[i:]) - len(line[i:].lstrip("`"))
+                    close = re.compile(rf"(?<!`)`{{{run}}}(?!`)").search(line, i + run)
+                    i = close.end() if close else i + run
+                elif line.startswith("<!--", i):
+                    start, i = at + i, i + 4
+                else:
+                    i += 1
+        at += len(line) + 1
+    if start is not None:
+        spans.append((start, len(text)))
+    masked = list(text)
+    for a, b in spans:
+        for k in range(a, b):
+            if masked[k] != "\n":
+                masked[k] = " "
+    state = "a fenced code block" if fence is not None else "an HTML comment" if start is not None else None
+    return "".join(masked), spans, state
+
+
+def open_context(text: str) -> str | None:
+    """İ5B-FIX-13: the context still open at the end of text (scan_comments, the core's fence grammar)."""
+    return scan_comments(text)[2]
 
 
 CORE_START_LINE = re.compile(r"^ {0,3}<!-- core:start -->[ \t]*$")
@@ -186,9 +219,10 @@ def core_context_problem(text: str) -> str | None:
 
 
 def heading_in_comment(heading: str, text: str) -> bool:
-    """Whether '## <heading>' is written inside an HTML comment (for the message only; the check reads visible text)."""
+    """Whether '## <heading>' is written inside an HTML comment (for the message only; the check reads visible text).
+    İ5B-FIX-14: the comments scan_comments finds (a '<!--' inside a code example is not one)."""
     pattern = re.compile(rf"(?m)(?:^|<!--)[ \t]*## {re.escape(heading)}(?:\s|$)")
-    return any(pattern.search(m.group(0)) for m in HTML_COMMENT.finditer(text))
+    return any(pattern.search(text[a:b]) for a, b in scan_comments(text, heading_fence_opener, heading_fence_closes)[1])
 
 
 def level2_sections(text: str) -> dict[str, list[list[str]]]:
@@ -574,7 +608,7 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         except ConfigError as e:
             problems.append(f"CORE {e}")
         else:
-            visible = HTML_COMMENT.sub("", block)
+            visible = scan_comments(block)[0]           # İ5B-FIX-14: comments masked outside fences (the core's grammar)
             ruled = outside_fenced_code(visible)      # İ5B-FIX-05: a rule only inside a fence is not a rule
             # İ5B-FIX-06 (F5): only a numbered rule line at column 0 is a binding place, and no raw HTML anywhere in it
             spans = [m.group(0) for m in INLINE_CODE.finditer(visible) if "\n" in m.group(0)]
@@ -588,7 +622,7 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
             # İ5B-FIX-07 (v7 audit): a container opened before core:start wraps the block the check reads — the text
             # from the start of the file to core:start holds no raw HTML either (after the core the document is free)
             intro = read_text(core["source"]).split(CORE_START, 1)[0]
-            outer = [m.group(0) for m in RAW_HTML_OPENER.finditer(html_scan(outside_fenced_code(HTML_COMMENT.sub("", intro))))]
+            outer = [m.group(0) for m in RAW_HTML_OPENER.finditer(html_scan(outside_fenced_code(scan_comments(intro)[0])))]
             if outer:
                 problems.append(f"CORE-HTML {core['source']} before the core block holds raw HTML outside inline code "
                                 f"({', '.join(t[:20] for t in outer[:3])}) — a container around the core hides its rules")
