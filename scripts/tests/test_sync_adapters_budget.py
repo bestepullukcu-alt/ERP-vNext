@@ -462,6 +462,98 @@ class InstructionBudget(unittest.TestCase):
         self.assertTrue(any(p.startswith("CORE-RULE") and part in p and p.endswith("(only inside inline code)")
                             for p in sa.check_instruction_budget(self.manifest)[0]))
 
+    def test_a_required_text_only_in_link_metadata_is_lost(self):
+        # İ5B-FIX-10 (C8 audits, both Denetim001 and Codex): a link's destination and title, an image and a reference
+        # definition are not visible text — the whole localization rule in a title passed write / check 0 / 0
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        phrase = "Platform modülü 2 dil (en, tr), kiracı modülü 7 dil (en, tr, fr, es, zh, ar, ru)"
+        line = next(l for l in text.split("\n") if l.startswith("4. **"))
+        self.assertIn(phrase, line)
+        u = "https://example.invalid/l10n"
+
+        def lost(changed_line):
+            f.write_text(text.replace(line, changed_line, 1), encoding="utf-8")
+            return [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE") and phrase in p]
+
+        for label, repl in (("a title in double quotes", f'[Dil]({u} "{phrase}")'),
+                            ("a title in single quotes", f"[Dil]({u} '{phrase}')"),
+                            ("a destination in angle brackets", f"[Dil](<{phrase}>)"),
+                            ("a destination with parentheses and a title", f'[Dil](https://example.invalid/(x) "{phrase}")'),
+                            ("a label with brackets inside", f'[Dil [l10n]]({u} "{phrase}")'),
+                            ("a title with an escaped quote", f'[Dil]({u} "a \\" b {phrase}")'),
+                            ("an image's alt text", f"![{phrase}]({u})")):
+            with self.subTest(hidden=label):
+                problems = lost(line.replace(phrase, repl, 1))
+                self.assertTrue(problems, label)
+                self.assertTrue(problems[0].endswith("(only inside a link's destination or title, an image or a reference definition)"),
+                                problems[0])
+        with self.subTest(hidden="a numbered line that is a reference definition"):
+            self.assertTrue(lost(f'4. [dil]: AGENTS.md "{phrase}"'))
+        for label, repl in (("the visible link label", f"[{phrase}]({u})"),
+                            ("the visible label beside a title", f'[{phrase}]({u} "Dil")'),
+                            ("plain text after a link", f'[Dil]({u} "x") {phrase}')):
+            with self.subTest(visible=label):
+                self.assertFalse(lost(line.replace(phrase, repl, 1)), label)
+        with self.subTest(visible="text that is not a reference definition (no quoted title)"):
+            self.assertFalse(lost(f"4. [dil]: {phrase}"))
+
+    def test_link_syntax_the_check_cannot_read_is_not_verified(self):
+        # İ5B-FIX-10 (Codex, C8 follow-up): deeper nesting than the check reads is valid CommonMark and hid the rule in a
+        # title with write / check 0 / 0 — a rule line with a '](' left after the known links proves no required text
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        phrase = "Platform modülü 2 dil (en, tr), kiracı modülü 7 dil (en, tr, fr, es, zh, ar, ru)"
+        line = next(l for l in text.split("\n") if l.startswith("4. **"))
+        u = "https://example.invalid"
+
+        def problems(repl):
+            f.write_text(text.replace(line, line.replace(phrase, repl, 1), 1), encoding="utf-8")
+            return [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-RULE") and phrase in p]
+
+        for label, repl in (("a label nested three deep", f'[Dil [iç [alt]]]({u} "{phrase}")'),
+                            ("a destination nested two deep", f'[Dil]({u}/a(b(c)) "{phrase}")'),
+                            ("an image nested three deep", f"![{phrase} [a [b]]]({u})"),
+                            ("a deep visible label (refused too: a declared limit)", f"[{phrase} [a [b]]]({u})")):
+            with self.subTest(unreadable=label):
+                found = problems(repl)
+                self.assertTrue(found, label)
+                self.assertTrue(found[0].endswith("(on a rule line with link syntax the check cannot read — not verified)"), found[0])
+        for label, repl in (("one level in the label and the destination", f'[Dil [iç]]({u}/a(b) "{phrase}")'),):
+            with self.subTest(read=label):
+                found = problems(repl)
+                self.assertTrue(found and found[0].endswith(sa.METADATA_HIDDEN), found)
+        for label, repl in (("the visible label, one level", f"[{phrase} [a]]({u})"), ("plain text", phrase)):
+            with self.subTest(visible=label):
+                self.assertFalse(problems(repl), label)
+
+    def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
+        # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
+        # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        mid = next(l for l in text.split("\n") if l.startswith("6. **"))
+
+        def refused(add, before_core=False):
+            changed = (text.replace(sa.CORE_START, add + "\n" + sa.CORE_START, 1) if before_core
+                       else text.replace(mid, mid + " " + add, 1))
+            f.write_text(changed, encoding="utf-8")
+            return any(p.startswith("CORE-HTML") for p in sa.check_instruction_budget(self.manifest)[0])
+
+        for where in (False, True):
+            for label, add in (("an escaped less-than", "\\<b> literal"), ("three backslashes", "\\\\\\<b> literal"),
+                               ("a URI autolink", "<https://example.invalid/x>"), ("an e-mail autolink", "<ops@example.invalid>")):
+                with self.subTest(allowed=label, before_core=where):
+                    self.assertFalse(refused(add, where), label)
+            for label, add in (("a real tag", "<b>x</b>"), ("two backslashes then a tag", "\\\\<b> x"),
+                               ("angle brackets with a space inside", "<https://example.invalid x>"),
+                               ("a one-letter scheme", "<a:b>")):
+                with self.subTest(refused=label, before_core=where):
+                    self.assertTrue(refused(add, where), label)
+
     def test_every_required_core_text_is_on_a_numbered_rule_line_today(self):
         core = sa.extract_core("AGENTS.md")
         lines = [l for l in core.split("\n") if sa.CORE_RULE_LINE.match(l)]

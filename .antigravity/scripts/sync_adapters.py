@@ -42,6 +42,10 @@ Rules this script enforces (İ5-A pilot):
 - İ5B-FIX-09 (v8 audit): raw HTML is read as the CommonMark opener class (an open or closing tag, a comment, a
   declaration, CDATA, a processing instruction) — '<![CDATA[' and '<?' before core:start wrapped the core too; the
   short-term exception holds only for one token without whitespace, not for a phrase that is a span of its own.
+- İ5B-FIX-10 (C8 audits): a required text counts only in visible text — not in a link's destination or title, an image
+  or a rule line that is a reference definition, and a rule line with link syntax the check cannot read (deeper
+  nesting) proves none ("not verified"); an escaped '<' and a URI or e-mail autolink are not raw HTML (the common
+  forms, not a full CommonMark parser).
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -271,20 +275,77 @@ CORE_RULE_LINE = re.compile(r"^\d{1,2}\. \S")   # İ5B-FIX-06: '7. **Modül ve k
 # taken out, so an HTML comment, a fenced example and a tag shown in code stay allowed.
 RAW_HTML_OPENER = re.compile(r"<(?:[A-Za-z]|/[A-Za-z]|!--|![A-Za-z]|!\[CDATA\[|\?)")
 INLINE_CODE = re.compile(r"(`+)(?!`).*?(?<!`)\1(?!`)", re.S)
+# İ5B-FIX-10 (C8 audits): not raw HTML — a '<' after an odd number of backslashes is escaped, and a URI or an e-mail
+# address in angle brackets is an autolink. The common forms only, not a full CommonMark parser.
+ESCAPED_LT = re.compile(r"(?<!\\)(?:\\\\)*\\<")
+AUTOLINK = re.compile(r"<[A-Za-z][A-Za-z0-9+.\-]{1,31}:[^\s<>]*>"
+                      r"|<[A-Za-z0-9.!#$%&'*+/=?^_`{|}~\-]+@[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?"
+                      r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)*>")
+# İ5B-FIX-10: an inline link's destination and title, an image and a reference definition render no rule text. The
+# title is read by its own delimiters with escapes (a '(en, tr)' inside a quoted title stays inside it); a destination
+# may hold one level of balanced parentheses and a label one level of brackets — deeper nesting is a declared limit.
+_LABEL = r"\[(?:[^\[\]\\]|\\.|\[(?:[^\[\]\\]|\\.)*\])*\]"
+_DEST = r"(?:<(?:[^<>\n\\]|\\.)*>|(?:[^\s()<>\\]|\\.|\((?:[^\s()<>\\]|\\.)*\))*)"
+_TITLE = r"""(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\((?:[^()\\]|\\.)*\))"""
+LINK_METADATA = re.compile(rf"(!?){_LABEL}(\(\s*{_DEST}(?:\s+{_TITLE})?\s*\))")
+RULE_REFERENCE_DEF = re.compile(rf"^ {{0,3}}{_LABEL}:\s*{_DEST}(?:\s+{_TITLE})?\s*$")
+METADATA_HIDDEN = " (only inside a link's destination or title, an image or a reference definition)"
+NOT_VERIFIED = " (on a rule line with link syntax the check cannot read — not verified)"
+
+
+def html_scan(text: str) -> str:
+    """The text the raw-HTML opener check reads: inline code, escaped '<' and autolinks taken out (İ5B-FIX-10)."""
+    text = INLINE_CODE.sub(" ", text)
+    text = ESCAPED_LT.sub(lambda m: " " * len(m.group(0)), text)
+    return AUTOLINK.sub(" ", text)
+
+
+def link_metadata(line: str) -> list[tuple[int, int]]:
+    """İ5B-FIX-10: the ranges of a rule line that render no text — a link's '(destination "title")', a whole image, and
+    the whole line when what follows the number is a reference definition. Inline code is read first and holds none."""
+    masked = INLINE_CODE.sub(lambda m: "x" * len(m.group(0)), line)
+    marker = CORE_RULE_LINE.match(masked)
+    if marker and RULE_REFERENCE_DEF.match(masked[marker.end() - 1:]):
+        return [(0, len(line))]
+    return [(m.start(), m.end()) if m.group(1) else (m.start(2), m.end(2)) for m in LINK_METADATA.finditer(masked)]
+
+
+def unreadable_link(line: str) -> bool:
+    """İ5B-FIX-10 (Codex): a '](' left on the rule line after inline code and the links and images the check reads are
+    taken out — deeper nesting than one level is valid CommonMark the check does not read, so the line proves no
+    required text (a refusal, never a pass). A deep link whose visible label holds the rule is refused too."""
+    masked = INLINE_CODE.sub(lambda m: "x" * len(m.group(0)), line)
+    return "](" in LINK_METADATA.sub(lambda m: " " * len(m.group(0)), masked)
 
 
 def on_rule_line(needle: str, line: str) -> bool:
     """İ5B-FIX-07 (v7 audit): a required text counts on a rule line only where no larger inline code span holds it — a
     rule wrapped whole in a code span is shown, not stated. A short code term (`TenantId`) is the span itself, with or
-    without its backticks, and still counts; a text that carries its own short spans crosses them and is not inside."""
+    without its backticks, and still counts; a text that carries its own short spans crosses them and is not inside.
+    İ5B-FIX-10: nor where it touches a link's destination or title, an image or a reference definition, nor on a line
+    with link syntax the check cannot read."""
+    if needle in line and unreadable_link(line):
+        return False
     spans = [(m.start(), m.end(), m.group(0).strip("`")) for m in INLINE_CODE.finditer(line)]
+    hidden = link_metadata(line)
     start = line.find(needle)
     while start != -1:
         end = start + len(needle)
         # İ5B-FIX-09: the short-term exception holds only for one token without whitespace (`TenantId`,
         # `.antigravity/AGENTS-REFERENCE.md`); a natural-language phrase that is a span of its own is shown, not stated
         if all(not (a <= start and end <= b) or (inner == needle.strip("`") and not any(c.isspace() for c in inner))
-               for a, b, inner in spans):
+               for a, b, inner in spans) and all(end <= a or b <= start for a, b in hidden):
+            return True
+        start = line.find(needle, start + 1)
+    return False
+
+
+def in_link_metadata(needle: str, line: str) -> bool:
+    """İ5B-FIX-10: some occurrence of needle on the line touches link metadata (for the CORE-RULE message only)."""
+    hidden = link_metadata(line)
+    start = line.find(needle)
+    while start != -1:
+        if any(not (start + len(needle) <= a or b <= start) for a, b in hidden):
             return True
         start = line.find(needle, start + 1)
     return False
@@ -399,21 +460,23 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
             if spans:
                 problems.append(f"CORE-SPAN {core['source']} core block holds an inline code span across lines "
                                 f"({spans[0][:30]!r}…) — a rule inside code is not a rule")
-            tags = [m.group(0) for m in RAW_HTML_OPENER.finditer(INLINE_CODE.sub(" ", visible))]
+            tags = [m.group(0) for m in RAW_HTML_OPENER.finditer(html_scan(visible))]
             if tags:
                 problems.append(f"CORE-HTML {core['source']} core block holds raw HTML outside inline code ({', '.join(t[:20] for t in tags[:3])}) "
                                 "— a rule inside HTML is not a rule")
             # İ5B-FIX-07 (v7 audit): a container opened before core:start wraps the block the check reads — the text
             # from the start of the file to core:start holds no raw HTML either (after the core the document is free)
             intro = read_text(core["source"]).split(CORE_START, 1)[0]
-            outer = [m.group(0) for m in RAW_HTML_OPENER.finditer(INLINE_CODE.sub(" ", outside_fenced_code(HTML_COMMENT.sub("", intro))))]
+            outer = [m.group(0) for m in RAW_HTML_OPENER.finditer(html_scan(outside_fenced_code(HTML_COMMENT.sub("", intro))))]
             if outer:
                 problems.append(f"CORE-HTML {core['source']} before the core block holds raw HTML outside inline code "
                                 f"({', '.join(t[:20] for t in outer[:3])}) — a container around the core hides its rules")
             rule_lines = [l for l in ruled.split("\n") if CORE_RULE_LINE.match(l)]
             for needle in core.get("required_text", []):
                 if not any(on_rule_line(needle, l) for l in rule_lines):
-                    hidden = (" (only inside inline code)" if any(needle in l for l in rule_lines) else
+                    hidden = (NOT_VERIFIED if any(needle in l and unreadable_link(l) for l in rule_lines) else
+                              METADATA_HIDDEN if any(in_link_metadata(needle, l) for l in rule_lines) else
+                              " (only inside inline code)" if any(needle in l for l in rule_lines) else
                               " (not on a numbered core rule line)" if needle in ruled else
                               " (only inside a code block)" if needle in visible else
                               " (only inside an HTML comment)" if needle in block else "")
