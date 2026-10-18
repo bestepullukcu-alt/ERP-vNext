@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CapacityPlansTitle" xml:space="preserve"><value>Планирование мощностей</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Создавайте планы мощностей, сценарии и оценки и управляйте ими.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Создать план</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Открыть план</value></data>
+  <data name="PlanId" xml:space="preserve"><value>Идентификатор плана</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Введите UUID плана.</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Начало горизонта</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Конец горизонта</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>Идентификатор плана спроса</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Версия плана спроса</value></data>
+  <data name="ValidationHorizonOrder" xml:space="preserve"><value>Конец горизонта не может быть раньше его начала.</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Время фиксации источника</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Контрольная сумма источника</value></data>
+  <data name="WorkspaceTitle" xml:space="preserve"><value>Рабочая область плана</value></data>
+  <data name="Created" xml:space="preserve"><value>Создан</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Происхождение данных</value></data>
+  <data name="CreateScenario" xml:space="preserve"><value>Создать сценарий</value></data>
+  <data name="OpenScenario" xml:space="preserve"><value>Открыть сценарий</value></data>
+  <data name="ScenarioId" xml:space="preserve"><value>Идентификатор сценария</value></data>
+  <data name="ScenarioIdHelp" xml:space="preserve"><value>Введите UUID сценария.</value></data>
+  <data name="ScenarioName" xml:space="preserve"><value>Название</value></data>
+  <data name="ConstraintRefs" xml:space="preserve"><value>Ссылки на ограничения</value></data>
+  <data name="ConstraintId" xml:space="preserve"><value>Идентификатор ограничения</value></data>
+  <data name="ConstraintSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="ConstraintVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="AddConstraintRef" xml:space="preserve"><value>Добавить ссылку на ограничение</value></data>
+  <data name="RemoveConstraintRef" xml:space="preserve"><value>Удалить ссылку на ограничение</value></data>
+  <data name="Adjustments" xml:space="preserve"><value>Корректировки</value></data>
+  <data name="AdjResourceRef" xml:space="preserve"><value>Ресурс</value></data>
+  <data name="AdjPeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="AdjCapacityDelta" xml:space="preserve"><value>Изменение доступной мощности</value></data>
+  <data name="AdjUom" xml:space="preserve"><value>Единица</value></data>
+  <data name="DecimalHelp" xml:space="preserve"><value>Введите десятичное число, например -12.500.</value></data>
+  <data name="AddAdjustment" xml:space="preserve"><value>Добавить корректировку</value></data>
+  <data name="RemoveAdjustment" xml:space="preserve"><value>Удалить корректировку</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Оценить</value></data>
+  <data name="EvaluationMode" xml:space="preserve"><value>Режим оценки</value></data>
+  <data name="ModeFinite" xml:space="preserve"><value>Конечная</value></data>
+  <data name="ModeInfinite" xml:space="preserve"><value>Бесконечная</value></data>
+  <data name="ResourceRefs" xml:space="preserve"><value>Ресурсы</value></data>
+  <data name="AddResourceRef" xml:space="preserve"><value>Добавить ресурс</value></data>
+  <data name="RemoveResourceRef" xml:space="preserve"><value>Удалить ресурс</value></data>
+  <data name="EvaluationPanel" xml:space="preserve"><value>Оценка</value></data>
+  <data name="EvaluationId" xml:space="preserve"><value>Идентификатор оценки</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>Время отправки</value></data>
+  <data name="CompletedAt" xml:space="preserve"><value>Время завершения</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="EvaluationPending" xml:space="preserve"><value>Оценка ещё не завершена. Нажмите «Обновить», чтобы проверить снова.</value></data>
+  <data name="Bottlenecks" xml:space="preserve"><value>Узкие места</value></data>
+  <data name="BottleneckResource" xml:space="preserve"><value>Ресурс</value></data>
+  <data name="BottleneckPeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="BottleneckRequired" xml:space="preserve"><value>Требуется</value></data>
+  <data name="BottleneckAvailable" xml:space="preserve"><value>Доступно</value></data>
+  <data name="BottleneckShortfall" xml:space="preserve"><value>Дефицит</value></data>
+  <data name="BottleneckUom" xml:space="preserve"><value>Единица</value></data>
+  <data name="NoBottlenecks" xml:space="preserve"><value>Узких мест не обнаружено.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusEvaluating" xml:space="preserve"><value>Оценивается</value></data>
+  <data name="StatusReady" xml:space="preserve"><value>Готов</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="StatusEvaluated" xml:space="preserve"><value>Оценён</value></data>
+  <data name="StatusAccepted" xml:space="preserve"><value>Принята</value></data>
+  <data name="StatusRunning" xml:space="preserve"><value>Выполняется</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Завершена</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>Сбой</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>План создан.</value></data>
+  <data name="ScenarioCreated" xml:space="preserve"><value>Сценарий создан.</value></data>
+  <data name="EvaluationSubmitted" xml:space="preserve"><value>Оценка отправлена.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Запрос для этого действия ещё выполняется.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Записей пока нет.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Не удалось загрузить данные. Повторите попытку.</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Код для поддержки</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Запрос недействителен. Проверьте введённые значения.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="ErrCapacityPlanNotFound" xml:space="preserve"><value>План мощностей не найден или недоступен вам.</value></data>
+  <data name="ErrCapacityScenarioNotFound" xml:space="preserve"><value>Сценарий мощностей не найден или недоступен вам.</value></data>
+  <data name="ErrCapacityEvaluationNotFound" xml:space="preserve"><value>Оценка не найдена или недоступна вам.</value></data>
+  <data name="ErrCapacityPlanAlreadyExists" xml:space="preserve"><value>План мощностей с такими данными уже существует.</value></data>
+  <data name="ErrCapacityPlanStateConflict" xml:space="preserve"><value>План тем временем изменился, и это действие больше невозможно.</value></data>
+  <data name="ErrCapacityScenarioNameConflict" xml:space="preserve"><value>Сценарий с таким названием уже есть в этом плане.</value></data>
+  <data name="ErrEvaluationAlreadyActive" xml:space="preserve"><value>Оценка этого сценария уже выполняется.</value></data>
+  <data name="ErrInvalidConstraintReference" xml:space="preserve"><value>Ссылка на ограничение или ресурс недействительна. Проверьте введённые значения.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>Ссылка на план спроса недействительна. Проверьте данные плана спроса.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Необходимая служба временно недоступна. Повторите тот же запрос.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>Не удалось обработать запрос: его идентификатор отслеживания недействителен. Повторите попытку.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Не удалось подтвердить результат запроса. Повторите тот же запрос.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка.</value></data>
+</root>

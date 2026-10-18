@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>S&amp;OP 工作流与签核</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>创建并管理 S&amp;OP 计划及其快照和签核。</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>创建计划</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>打开计划</value></data>
+  <data name="PlanId" xml:space="preserve"><value>计划 ID</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>请输入计划的 UUID。</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>计划期开始</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>计划期结束</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>需求计划 ID</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>需求计划版本</value></data>
+  <data name="ValidationHorizonOrder" xml:space="preserve"><value>计划期结束不能早于计划期开始。</value></data>
+  <data name="WorkspaceTitle" xml:space="preserve"><value>计划工作区</value></data>
+  <data name="CurrentSnapshot" xml:space="preserve"><value>当前快照</value></data>
+  <data name="CurrentMarker" xml:space="preserve"><value>当前</value></data>
+  <data name="Created" xml:space="preserve"><value>创建时间</value></data>
+  <data name="SnapshotsHeader" xml:space="preserve"><value>快照</value></data>
+  <data name="CaptureSnapshot" xml:space="preserve"><value>捕获快照</value></data>
+  <data name="CapturedAt" xml:space="preserve"><value>捕获时间</value></data>
+  <data name="Provenance" xml:space="preserve"><value>数据溯源</value></data>
+  <data name="SupplyInputRefsCount" xml:space="preserve"><value>供应输入引用</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>来源捕获时间</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>来源校验和</value></data>
+  <data name="SupplyInputRefs" xml:space="preserve"><value>供应输入引用</value></data>
+  <data name="RefSource" xml:space="preserve"><value>来源</value></data>
+  <data name="RefResourceId" xml:space="preserve"><value>资源 ID</value></data>
+  <data name="RefResourceVersion" xml:space="preserve"><value>资源版本</value></data>
+  <data name="AddSupplyInputRef" xml:space="preserve"><value>添加引用</value></data>
+  <data name="RemoveSupplyInputRef" xml:space="preserve"><value>移除引用</value></data>
+  <data name="SignOffsHeader" xml:space="preserve"><value>签核</value></data>
+  <data name="RecordSignOff" xml:space="preserve"><value>记录签核</value></data>
+  <data name="SignOffSnapshot" xml:space="preserve"><value>快照</value></data>
+  <data name="SignOffRole" xml:space="preserve"><value>角色</value></data>
+  <data name="SignOffDecision" xml:space="preserve"><value>决定</value></data>
+  <data name="SignOffComment" xml:space="preserve"><value>意见</value></data>
+  <data name="DecidedBy" xml:space="preserve"><value>决定人</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>决定时间</value></data>
+  <data name="SignOffNeedsSnapshot" xml:space="preserve"><value>记录签核前请先捕获快照。</value></data>
+  <data name="SignOffFinalNote" xml:space="preserve"><value>签核一经记录即为最终结果，无法修改或删除。</value></data>
+  <data name="RoleDemandPlanning" xml:space="preserve"><value>需求计划</value></data>
+  <data name="RoleSupplyPlanning" xml:space="preserve"><value>供应计划</value></data>
+  <data name="RoleFinance" xml:space="preserve"><value>财务</value></data>
+  <data name="RoleOperations" xml:space="preserve"><value>运营</value></data>
+  <data name="RoleExecutive" xml:space="preserve"><value>管理层</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>审核中</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>计划已创建。</value></data>
+  <data name="SnapshotCaptured" xml:space="preserve"><value>快照已捕获。</value></data>
+  <data name="SignOffRecorded" xml:space="preserve"><value>签核已记录。</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>此操作的请求仍在处理中。</value></data>
+  <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>未提供</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>暂无记录。</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>无法加载数据。请重试。</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>支持参考号</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>请求无效。请检查输入的值。</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>您的会话已结束，请重新登录。</value></data>
+  <data name="ErrSandopPlanNotFound" xml:space="preserve"><value>未找到该 S&amp;OP 计划，或您无法访问该计划。</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>已存在具有这些信息的 S&amp;OP 计划。</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>计划已在此期间发生变化，无法再执行此操作。计划已重新加载。</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>仅当计划处于审核中时才能记录签核。计划已重新加载。</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>此角色和快照已有签核记录。首次决定保持不变。</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>所选快照不属于此计划。</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>需求计划引用无效。请检查需求计划信息。</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>此请求已使用不同的值接收。如需提交不同的请求，请关闭此表单并打开新表单。</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>所需服务暂时不可用，请重试同一请求。</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>由于请求的跟踪标识符无效，无法处理该请求。请重试。</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>无法确认请求的结果。请重试同一请求。</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>发生意外错误。</value></data>
+</root>

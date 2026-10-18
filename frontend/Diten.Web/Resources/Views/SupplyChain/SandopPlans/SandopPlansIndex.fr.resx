@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>Flux S&amp;OP et validations</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Créez et gérez des plans S&amp;OP, leurs instantanés et leurs validations.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Créer un plan</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Ouvrir le plan</value></data>
+  <data name="PlanId" xml:space="preserve"><value>Identifiant du plan</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Saisissez l’UUID du plan.</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Début de l’horizon</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Fin de l’horizon</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>Identifiant du plan de demande</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Version du plan de demande</value></data>
+  <data name="ValidationHorizonOrder" xml:space="preserve"><value>La fin de l’horizon ne peut pas précéder le début de l’horizon.</value></data>
+  <data name="WorkspaceTitle" xml:space="preserve"><value>Espace de travail du plan</value></data>
+  <data name="CurrentSnapshot" xml:space="preserve"><value>Instantané actuel</value></data>
+  <data name="CurrentMarker" xml:space="preserve"><value>Actuel</value></data>
+  <data name="Created" xml:space="preserve"><value>Créé le</value></data>
+  <data name="SnapshotsHeader" xml:space="preserve"><value>Instantanés</value></data>
+  <data name="CaptureSnapshot" xml:space="preserve"><value>Capturer un instantané</value></data>
+  <data name="CapturedAt" xml:space="preserve"><value>Capturé le</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Provenance</value></data>
+  <data name="SupplyInputRefsCount" xml:space="preserve"><value>Références des entrées d’approvisionnement</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Source capturée le</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Somme de contrôle de la source</value></data>
+  <data name="SupplyInputRefs" xml:space="preserve"><value>Références des entrées d’approvisionnement</value></data>
+  <data name="RefSource" xml:space="preserve"><value>Source</value></data>
+  <data name="RefResourceId" xml:space="preserve"><value>Identifiant de la ressource</value></data>
+  <data name="RefResourceVersion" xml:space="preserve"><value>Version de la ressource</value></data>
+  <data name="AddSupplyInputRef" xml:space="preserve"><value>Ajouter une référence</value></data>
+  <data name="RemoveSupplyInputRef" xml:space="preserve"><value>Retirer la référence</value></data>
+  <data name="SignOffsHeader" xml:space="preserve"><value>Validations</value></data>
+  <data name="RecordSignOff" xml:space="preserve"><value>Enregistrer une validation</value></data>
+  <data name="SignOffSnapshot" xml:space="preserve"><value>Instantané</value></data>
+  <data name="SignOffRole" xml:space="preserve"><value>Rôle</value></data>
+  <data name="SignOffDecision" xml:space="preserve"><value>Décision</value></data>
+  <data name="SignOffComment" xml:space="preserve"><value>Commentaire</value></data>
+  <data name="DecidedBy" xml:space="preserve"><value>Décidé par</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>Décidé le</value></data>
+  <data name="SignOffNeedsSnapshot" xml:space="preserve"><value>Capturez un instantané avant d’enregistrer une validation.</value></data>
+  <data name="SignOffFinalNote" xml:space="preserve"><value>Une validation enregistrée est définitive et ne peut être ni modifiée ni supprimée.</value></data>
+  <data name="RoleDemandPlanning" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="RoleSupplyPlanning" xml:space="preserve"><value>Planification de l’approvisionnement</value></data>
+  <data name="RoleFinance" xml:space="preserve"><value>Finance</value></data>
+  <data name="RoleOperations" xml:space="preserve"><value>Opérations</value></data>
+  <data name="RoleExecutive" xml:space="preserve"><value>Direction</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>En révision</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>Le plan a été créé.</value></data>
+  <data name="SnapshotCaptured" xml:space="preserve"><value>L’instantané a été capturé.</value></data>
+  <data name="SignOffRecorded" xml:space="preserve"><value>La validation a été enregistrée.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Une demande pour cette action est encore en cours.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Réessayer</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Non renseigné</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucun enregistrement pour le moment.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Les données n’ont pas pu être chargées. Réessayez.</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Référence support</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La demande n’est pas valide. Vérifiez les valeurs saisies.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Vous n’avez pas l’autorisation pour cette action.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Votre session a expiré. Veuillez vous reconnecter.</value></data>
+  <data name="ErrSandopPlanNotFound" xml:space="preserve"><value>Le plan S&amp;OP est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>Un plan S&amp;OP avec ces informations existe déjà.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>Le plan a été modifié entre-temps et cette action n’est plus possible. Le plan a été rechargé.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>Les validations ne peuvent être enregistrées que lorsque le plan est en révision. Le plan a été rechargé.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>Une validation est déjà enregistrée pour ce rôle et cet instantané. La première décision est conservée.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>L’instantané sélectionné n’appartient pas à ce plan.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>La référence du plan de demande n’est pas valide. Vérifiez les informations du plan de demande.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Cette demande a déjà été reçue avec des valeurs différentes. Pour une autre demande, fermez ce formulaire et ouvrez-en un nouveau.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Un service requis est temporairement indisponible. Réessayez la même demande.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>La demande n’a pas pu être traitée car son identifiant de suivi n’est pas valide. Réessayez.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Le résultat de la demande n’a pas pu être confirmé. Réessayez la même demande.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Une erreur inattendue s’est produite.</value></data>
+</root>

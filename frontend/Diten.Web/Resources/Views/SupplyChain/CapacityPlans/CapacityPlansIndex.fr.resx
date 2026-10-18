@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CapacityPlansTitle" xml:space="preserve"><value>Planification des capacités</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Créez et gérez des plans de capacité, des scénarios et des évaluations.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Créer un plan</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Ouvrir le plan</value></data>
+  <data name="PlanId" xml:space="preserve"><value>Identifiant du plan</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Saisissez l’UUID du plan.</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Début de l’horizon</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Fin de l’horizon</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>Identifiant du plan de demande</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Version du plan de demande</value></data>
+  <data name="ValidationHorizonOrder" xml:space="preserve"><value>La fin de l’horizon ne peut pas précéder le début de l’horizon.</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Source capturée le</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Somme de contrôle de la source</value></data>
+  <data name="WorkspaceTitle" xml:space="preserve"><value>Espace de travail du plan</value></data>
+  <data name="Created" xml:space="preserve"><value>Créé le</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Provenance</value></data>
+  <data name="CreateScenario" xml:space="preserve"><value>Créer un scénario</value></data>
+  <data name="OpenScenario" xml:space="preserve"><value>Ouvrir le scénario</value></data>
+  <data name="ScenarioId" xml:space="preserve"><value>Identifiant du scénario</value></data>
+  <data name="ScenarioIdHelp" xml:space="preserve"><value>Saisissez l’UUID du scénario.</value></data>
+  <data name="ScenarioName" xml:space="preserve"><value>Nom</value></data>
+  <data name="ConstraintRefs" xml:space="preserve"><value>Références de contraintes</value></data>
+  <data name="ConstraintId" xml:space="preserve"><value>Identifiant de la contrainte</value></data>
+  <data name="ConstraintSource" xml:space="preserve"><value>Source</value></data>
+  <data name="ConstraintVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="AddConstraintRef" xml:space="preserve"><value>Ajouter une référence de contrainte</value></data>
+  <data name="RemoveConstraintRef" xml:space="preserve"><value>Retirer la référence de contrainte</value></data>
+  <data name="Adjustments" xml:space="preserve"><value>Ajustements</value></data>
+  <data name="AdjResourceRef" xml:space="preserve"><value>Ressource</value></data>
+  <data name="AdjPeriod" xml:space="preserve"><value>Période</value></data>
+  <data name="AdjCapacityDelta" xml:space="preserve"><value>Écart de capacité disponible</value></data>
+  <data name="AdjUom" xml:space="preserve"><value>Unité</value></data>
+  <data name="DecimalHelp" xml:space="preserve"><value>Saisissez un nombre décimal, par exemple -12.500.</value></data>
+  <data name="AddAdjustment" xml:space="preserve"><value>Ajouter un ajustement</value></data>
+  <data name="RemoveAdjustment" xml:space="preserve"><value>Retirer l’ajustement</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Évaluer</value></data>
+  <data name="EvaluationMode" xml:space="preserve"><value>Mode d’évaluation</value></data>
+  <data name="ModeFinite" xml:space="preserve"><value>Finie</value></data>
+  <data name="ModeInfinite" xml:space="preserve"><value>Infinie</value></data>
+  <data name="ResourceRefs" xml:space="preserve"><value>Ressources</value></data>
+  <data name="AddResourceRef" xml:space="preserve"><value>Ajouter une ressource</value></data>
+  <data name="RemoveResourceRef" xml:space="preserve"><value>Retirer la ressource</value></data>
+  <data name="EvaluationPanel" xml:space="preserve"><value>Évaluation</value></data>
+  <data name="EvaluationId" xml:space="preserve"><value>Identifiant de l’évaluation</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>Soumis le</value></data>
+  <data name="CompletedAt" xml:space="preserve"><value>Terminé le</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="EvaluationPending" xml:space="preserve"><value>L’évaluation n’est pas encore terminée. Utilisez Actualiser pour vérifier à nouveau.</value></data>
+  <data name="Bottlenecks" xml:space="preserve"><value>Goulots d’étranglement</value></data>
+  <data name="BottleneckResource" xml:space="preserve"><value>Ressource</value></data>
+  <data name="BottleneckPeriod" xml:space="preserve"><value>Période</value></data>
+  <data name="BottleneckRequired" xml:space="preserve"><value>Requis</value></data>
+  <data name="BottleneckAvailable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="BottleneckShortfall" xml:space="preserve"><value>Déficit</value></data>
+  <data name="BottleneckUom" xml:space="preserve"><value>Unité</value></data>
+  <data name="NoBottlenecks" xml:space="preserve"><value>Aucun goulot d’étranglement n’a été signalé.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusEvaluating" xml:space="preserve"><value>En cours d’évaluation</value></data>
+  <data name="StatusReady" xml:space="preserve"><value>Prêt</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="StatusEvaluated" xml:space="preserve"><value>Évalué</value></data>
+  <data name="StatusAccepted" xml:space="preserve"><value>Acceptée</value></data>
+  <data name="StatusRunning" xml:space="preserve"><value>En cours</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Terminée</value></data>
+  <data name="StatusFailed" xml:space="preserve"><value>Échouée</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>Le plan a été créé.</value></data>
+  <data name="ScenarioCreated" xml:space="preserve"><value>Le scénario a été créé.</value></data>
+  <data name="EvaluationSubmitted" xml:space="preserve"><value>L’évaluation a été soumise.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Une demande pour cette action est encore en cours.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Réessayer</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Non renseigné</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucun enregistrement pour le moment.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Les données n’ont pas pu être chargées. Réessayez.</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Référence support</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La demande n’est pas valide. Vérifiez les valeurs saisies.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Vous n’avez pas l’autorisation pour cette action.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Votre session a expiré. Veuillez vous reconnecter.</value></data>
+  <data name="ErrCapacityPlanNotFound" xml:space="preserve"><value>Le plan de capacité est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrCapacityScenarioNotFound" xml:space="preserve"><value>Le scénario de capacité est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrCapacityEvaluationNotFound" xml:space="preserve"><value>L’évaluation est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrCapacityPlanAlreadyExists" xml:space="preserve"><value>Un plan de capacité avec ces informations existe déjà.</value></data>
+  <data name="ErrCapacityPlanStateConflict" xml:space="preserve"><value>Le plan a été modifié entre-temps et cette action n’est plus possible.</value></data>
+  <data name="ErrCapacityScenarioNameConflict" xml:space="preserve"><value>Un scénario portant ce nom existe déjà dans ce plan.</value></data>
+  <data name="ErrEvaluationAlreadyActive" xml:space="preserve"><value>Une évaluation de ce scénario est déjà en cours.</value></data>
+  <data name="ErrInvalidConstraintReference" xml:space="preserve"><value>Une référence de contrainte ou une ressource n’est pas valide. Vérifiez les valeurs saisies.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>La référence du plan de demande n’est pas valide. Vérifiez les informations du plan de demande.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Cette demande a déjà été reçue avec des valeurs différentes. Pour une autre demande, fermez ce formulaire et ouvrez-en un nouveau.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Un service requis est temporairement indisponible. Réessayez la même demande.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>La demande n’a pas pu être traitée car son identifiant de suivi n’est pas valide. Réessayez.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Le résultat de la demande n’a pas pu être confirmé. Réessayez la même demande.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Une erreur inattendue s’est produite.</value></data>
+</root>

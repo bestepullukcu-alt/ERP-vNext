@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>Процесс S&amp;OP и согласования</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Создавайте планы S&amp;OP и управляйте ими, а также их снимками и согласованиями.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Создать план</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Открыть план</value></data>
+  <data name="PlanId" xml:space="preserve"><value>Идентификатор плана</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Введите UUID плана.</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Начало горизонта</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Конец горизонта</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>Идентификатор плана спроса</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Версия плана спроса</value></data>
+  <data name="ValidationHorizonOrder" xml:space="preserve"><value>Конец горизонта не может быть раньше его начала.</value></data>
+  <data name="WorkspaceTitle" xml:space="preserve"><value>Рабочая область плана</value></data>
+  <data name="CurrentSnapshot" xml:space="preserve"><value>Текущий снимок</value></data>
+  <data name="CurrentMarker" xml:space="preserve"><value>Текущий</value></data>
+  <data name="Created" xml:space="preserve"><value>Создан</value></data>
+  <data name="SnapshotsHeader" xml:space="preserve"><value>Снимки</value></data>
+  <data name="CaptureSnapshot" xml:space="preserve"><value>Зафиксировать снимок</value></data>
+  <data name="CapturedAt" xml:space="preserve"><value>Время фиксации</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Происхождение данных</value></data>
+  <data name="SupplyInputRefsCount" xml:space="preserve"><value>Ссылки на входные данные по поставкам</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Время фиксации источника</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Контрольная сумма источника</value></data>
+  <data name="SupplyInputRefs" xml:space="preserve"><value>Ссылки на входные данные по поставкам</value></data>
+  <data name="RefSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="RefResourceId" xml:space="preserve"><value>Идентификатор ресурса</value></data>
+  <data name="RefResourceVersion" xml:space="preserve"><value>Версия ресурса</value></data>
+  <data name="AddSupplyInputRef" xml:space="preserve"><value>Добавить ссылку</value></data>
+  <data name="RemoveSupplyInputRef" xml:space="preserve"><value>Удалить ссылку</value></data>
+  <data name="SignOffsHeader" xml:space="preserve"><value>Согласования</value></data>
+  <data name="RecordSignOff" xml:space="preserve"><value>Зафиксировать согласование</value></data>
+  <data name="SignOffSnapshot" xml:space="preserve"><value>Снимок</value></data>
+  <data name="SignOffRole" xml:space="preserve"><value>Роль</value></data>
+  <data name="SignOffDecision" xml:space="preserve"><value>Решение</value></data>
+  <data name="SignOffComment" xml:space="preserve"><value>Комментарий</value></data>
+  <data name="DecidedBy" xml:space="preserve"><value>Принял решение</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>Время решения</value></data>
+  <data name="SignOffNeedsSnapshot" xml:space="preserve"><value>Перед фиксацией согласования зафиксируйте снимок.</value></data>
+  <data name="SignOffFinalNote" xml:space="preserve"><value>Зафиксированное согласование окончательно: его нельзя изменить или удалить.</value></data>
+  <data name="RoleDemandPlanning" xml:space="preserve"><value>Планирование спроса</value></data>
+  <data name="RoleSupplyPlanning" xml:space="preserve"><value>Планирование поставок</value></data>
+  <data name="RoleFinance" xml:space="preserve"><value>Финансы</value></data>
+  <data name="RoleOperations" xml:space="preserve"><value>Операции</value></data>
+  <data name="RoleExecutive" xml:space="preserve"><value>Руководство</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Отклонён</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>План создан.</value></data>
+  <data name="SnapshotCaptured" xml:space="preserve"><value>Снимок зафиксирован.</value></data>
+  <data name="SignOffRecorded" xml:space="preserve"><value>Согласование зафиксировано.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Запрос для этого действия ещё выполняется.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Записей пока нет.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Не удалось загрузить данные. Повторите попытку.</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Код для поддержки</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Запрос недействителен. Проверьте введённые значения.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="ErrSandopPlanNotFound" xml:space="preserve"><value>План S&amp;OP не найден или недоступен вам.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>План S&amp;OP с такими данными уже существует.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>План тем временем изменился, и это действие больше невозможно. План перезагружен.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>Согласования можно фиксировать только пока план на рассмотрении. План перезагружен.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>Для этой роли и этого снимка согласование уже зафиксировано. Первое решение остаётся в силе.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>Выбранный снимок не относится к этому плану.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>Ссылка на план спроса недействительна. Проверьте данные плана спроса.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Необходимая служба временно недоступна. Повторите тот же запрос.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>Не удалось обработать запрос: его идентификатор отслеживания недействителен. Повторите попытку.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Не удалось подтвердить результат запроса. Повторите тот же запрос.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка.</value></data>
+</root>
