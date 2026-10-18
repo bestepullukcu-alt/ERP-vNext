@@ -68,6 +68,15 @@ DEFERRED** — no Metric Registry or Risk Register service exists in the tree, s
 pattern as MOD-0190/0192. The DC-01 solicitation is ready at `DC-01-SOLICITATION.md` for the owner's
 `APPROVE DC-01 as written`.
 
+### DC-01 APPROVED 2026-10-18 (ny@gmgroup.ch)
+
+`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`. The **Ownership placement** gate row is
+now **CONCURRED** in both `mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md` and the `mvp6-mod0148` matrix. The
+governance-diff is **prepared, not applied** (`DC-01-GOVERNANCE-DIFF-PREP.md`): exact proposed
+domain-config / DCP-009 / module-id-registry edits placing 0147/0148 in SCE / `Diten.SupplyChainService`
+(MOD-0140 stays Supplier master), for the domain-config/DCP/registry writers to apply. Still blocked for
+`ready-for-dev`: DC-02 + DC-03 (build seams) and DC-04/DC-05 (deferred, no producer capability).
+
 The SUPPLIER-BASE contract (`supplier.openapi.yaml`, FROZEN) exists and answers *who a supplier is*; the
 five DCs decide *who owns the policy, authority and boundary* — and the pack records "SUPPLIER v1 coverage:
 none" for DC-01/DC-04. So a frozen contract does not make these modules buildable.
