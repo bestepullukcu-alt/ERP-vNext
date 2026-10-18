@@ -420,6 +420,48 @@ class InstructionBudget(unittest.TestCase):
         self.assertFalse(sa.on_rule_line("TenantId ile", "2. `sorgu TenantId ile sınırlanır`"))
         self.assertTrue(sa.on_rule_line("ile", "2. `ile` gösterilir; kural ile yazılır"))   # one occurrence outside a span is enough
 
+    def test_the_raw_html_opener_class_is_refused_before_and_in_the_core(self):
+        # İ5B-FIX-09 (v8 audit, both Denetim001): '<![CDATA[' / '<?' before core:start passed; the CommonMark opener class
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        mid = next(l for l in text.split("\n") if l.startswith("6. **"))
+        openers = (("CDATA", "<![CDATA[", "]]>"), ("processing instruction", "<?x", "?>"), ("declaration", "<!DOCTYPE x", ">"),
+                   ("closing tag", "</div>", ""), ("open tag without '>'", "<pre", ""))
+        for label, opening, closing in openers:
+            for where, changed in (("before the core", text.replace(sa.CORE_START, opening + "\n" + sa.CORE_START, 1)
+                                    .replace(sa.CORE_END, sa.CORE_END + "\n" + closing, 1)),
+                                   ("on a rule line", text.replace(mid, mid + " " + opening + " " + closing, 1))):
+                with self.subTest(form=label, where=where):
+                    f.write_text(changed, encoding="utf-8")
+                    self.assertTrue(any(p.startswith("CORE-HTML") for p in sa.check_instruction_budget(self.manifest)[0]), label)
+        for label, changed in (("a comment before the core", text.replace(sa.CORE_START, "<!-- note -->\n" + sa.CORE_START, 1)),
+                               ("a fence before the core", text.replace(sa.CORE_START, "```\n<?x ?> <![CDATA[ ]]>\n```\n" + sa.CORE_START, 1)),
+                               ("an opener in inline code", text.replace(mid, mid + " Örnek: `<![CDATA[` ve `<?x`.", 1)),
+                               ("an opener after the core", text.replace(sa.CORE_END, sa.CORE_END + "\n<![CDATA[ x ]]>", 1)),
+                               ("a less-than sign in prose", text.replace(mid, mid + " (a < b, 3<4)", 1))):
+            with self.subTest(positive=label):
+                f.write_text(changed, encoding="utf-8")
+                self.assertFalse([p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-HTML")], label)
+
+    def test_a_phrase_that_is_a_span_of_its_own_is_lost_and_short_terms_still_count(self):
+        # İ5B-FIX-09 (v8 audit): the exact-span exception held for a whole natural-language phrase and for a rule split in spans
+        self.assertFalse(sa.on_rule_line("gerekçeli ilk kapsam (tek öneri)", "7. x `gerekçeli ilk kapsam (tek öneri)` y"))
+        self.assertFalse(sa.on_rule_line("tüm açık onay/sahiplik kararları (TBD dahil)",
+                                         "7. `````a b`````; `````tüm açık onay/sahiplik kararları (TBD dahil)`````; `````c d`````"))
+        for needle, line in (("`TenantId` ile sınırlanır", "2. sorgu `TenantId` ile sınırlanır."), ("`[HasPermission]`", "3. `[HasPermission]` ile"),
+                             ("`.antigravity/AGENTS-REFERENCE.md`", "11. bkz. `.antigravity/AGENTS-REFERENCE.md`"),
+                             ("verify_module_id.py", "7. `verify_module_id.py` ile")):
+            with self.subTest(short=needle):
+                self.assertTrue(sa.on_rule_line(needle, line))
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        part = "gerekçeli ilk kapsam (tek öneri)"
+        f.write_text(text.replace(part, "`" + part + "`", 1), encoding="utf-8")
+        self.assertTrue(any(p.startswith("CORE-RULE") and part in p and p.endswith("(only inside inline code)")
+                            for p in sa.check_instruction_budget(self.manifest)[0]))
+
     def test_every_required_core_text_is_on_a_numbered_rule_line_today(self):
         core = sa.extract_core("AGENTS.md")
         lines = [l for l in core.split("\n") if sa.CORE_RULE_LINE.match(l)]

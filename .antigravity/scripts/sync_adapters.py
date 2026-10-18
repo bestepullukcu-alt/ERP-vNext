@@ -39,6 +39,9 @@ Rules this script enforces (İ5-A pilot):
   core:end wrapped the whole block); after the core the document is free. A required text inside a larger inline code
   span on its rule line is lost (every rule body inside one five-backtick span passed); a short code term that is the
   span itself (`TenantId`) still counts.
+- İ5B-FIX-09 (v8 audit): raw HTML is read as the CommonMark opener class (an open or closing tag, a comment, a
+  declaration, CDATA, a processing instruction) — '<![CDATA[' and '<?' before core:start wrapped the core too; the
+  short-term exception holds only for one token without whitespace, not for a phrase that is a span of its own.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -262,7 +265,11 @@ def toml_basic(value: str) -> str:
 
 CORE_START, CORE_END = "<!-- core:start -->", "<!-- core:end -->"
 CORE_RULE_LINE = re.compile(r"^\d{1,2}\. \S")   # İ5B-FIX-06: '7. **Modül ve kimlik …' at column 0
-RAW_HTML_TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?/?>")
+# İ5B-FIX-09 (v8 audit): the CommonMark raw-HTML openers as a class, not as listed examples — an open tag '<x', a
+# closing tag '</x', a comment '<!--', a declaration '<!X', CDATA '<![CDATA[' and a processing instruction '<?'; each
+# can also open an HTML block that wraps what follows. Read after comments, fences (before the core) and inline code are
+# taken out, so an HTML comment, a fenced example and a tag shown in code stay allowed.
+RAW_HTML_OPENER = re.compile(r"<(?:[A-Za-z]|/[A-Za-z]|!--|![A-Za-z]|!\[CDATA\[|\?)")
 INLINE_CODE = re.compile(r"(`+)(?!`).*?(?<!`)\1(?!`)", re.S)
 
 
@@ -274,7 +281,10 @@ def on_rule_line(needle: str, line: str) -> bool:
     start = line.find(needle)
     while start != -1:
         end = start + len(needle)
-        if all(not (a <= start and end <= b) or inner == needle.strip("`") for a, b, inner in spans):
+        # İ5B-FIX-09: the short-term exception holds only for one token without whitespace (`TenantId`,
+        # `.antigravity/AGENTS-REFERENCE.md`); a natural-language phrase that is a span of its own is shown, not stated
+        if all(not (a <= start and end <= b) or (inner == needle.strip("`") and not any(c.isspace() for c in inner))
+               for a, b, inner in spans):
             return True
         start = line.find(needle, start + 1)
     return False
@@ -389,14 +399,14 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
             if spans:
                 problems.append(f"CORE-SPAN {core['source']} core block holds an inline code span across lines "
                                 f"({spans[0][:30]!r}…) — a rule inside code is not a rule")
-            tags = RAW_HTML_TAG.findall(INLINE_CODE.sub(" ", visible))
+            tags = [m.group(0) for m in RAW_HTML_OPENER.finditer(INLINE_CODE.sub(" ", visible))]
             if tags:
                 problems.append(f"CORE-HTML {core['source']} core block holds raw HTML outside inline code ({', '.join(t[:20] for t in tags[:3])}) "
                                 "— a rule inside HTML is not a rule")
             # İ5B-FIX-07 (v7 audit): a container opened before core:start wraps the block the check reads — the text
             # from the start of the file to core:start holds no raw HTML either (after the core the document is free)
             intro = read_text(core["source"]).split(CORE_START, 1)[0]
-            outer = RAW_HTML_TAG.findall(INLINE_CODE.sub(" ", outside_fenced_code(HTML_COMMENT.sub("", intro))))
+            outer = [m.group(0) for m in RAW_HTML_OPENER.finditer(INLINE_CODE.sub(" ", outside_fenced_code(HTML_COMMENT.sub("", intro))))]
             if outer:
                 problems.append(f"CORE-HTML {core['source']} before the core block holds raw HTML outside inline code "
                                 f"({', '.join(t[:20] for t in outer[:3])}) — a container around the core hides its rules")
