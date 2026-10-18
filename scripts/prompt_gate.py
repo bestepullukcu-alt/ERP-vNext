@@ -411,7 +411,7 @@ def check_contract(p: dict, repo, commit: str) -> tuple[list[str], list[str], in
     return eng, info, quotes
 
 
-def check_authority(p: dict, repo, commit: str, row: dict | None = None) -> list[str]:
+def check_authority(p: dict, repo, commit: str, row: dict | None = None, row_known: bool = True) -> list[str]:
     path = p["authority"]
     data = repo.file(commit, path)
     if data is None:
@@ -438,8 +438,17 @@ def check_authority(p: dict, repo, commit: str, row: dict | None = None) -> list
     elif status not in PACK_OK:
         eng.append(f"görev sınıfı: paket durumu '{status or 'yok'}' — ready-for-dev ya da approved olmalı ({path})")
     # CT-FIX-04 (İ3): the künye id, the file name's MOD id and the row's module are one identity (shared routine)
-    ids = re.findall(r"MOD-\d{4}(?:-FU\d+)?", row["module"]) if row and row.get("module") else []
-    wrong = pack_identity(path, data.decode("utf-8", errors="replace"), ids)
+    text = data.decode("utf-8", errors="replace")
+    if row_known:
+        ids = re.findall(r"MOD-\d{4}(?:-FU\d+)?", row["module"]) if row and row.get("module") else []
+    else:
+        # CT-FIX-10 (Claude Denetim001 C10-G1): the queue could not be read, so the work's module is unknown — the pack's
+        # own künye and file identity are still checked (its own module given), the relation to the work is 'not measured'
+        fields, bad_id = _SHARED.kunye_fields(text, ("id",))
+        own = _SHARED.pack_module_identity(fields["id"])[0] if not bad_id and fields["id"] else None
+        ids = [own] if own else []
+        eng.append(f"görev sınıfı: kuyruk okunamadı — paketin bu işin modülüne bağı ölçülemedi ({path})")
+    wrong = pack_identity(path, text, ids)
     if wrong:
         eng.append(f"görev sınıfı: {wrong} ({path})")
     return eng
@@ -740,7 +749,7 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
         eng += c_eng
         info += c_info
         info.append(f"sözleşme: {quotes} alıntı Expected HEAD'de birebir denetlendi")
-        eng += check_authority(p, repo, commit, q.get("row"))
+        eng += check_authority(p, repo, commit, q.get("row"), row_known=not q.get("error"))
         eng += check_governance_paths(p, repo, commit)      # CT-FIX-05 (C1)
         a_eng, a_info = check_approval_limit(p, repo, commit, prepare)
         eng += a_eng

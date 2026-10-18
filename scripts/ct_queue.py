@@ -1353,7 +1353,7 @@ def writers(queue: dict, base_ref: str) -> tuple[int, list[str]]:
     base_blob = blob_ids([f"{base_ref}:{path}"])[0]
     if base_blob is None:
         return 2, [f"{base_ref}: '{path}' yok — --base ile başka bir referans verin"]
-    base_table = Table(git_file(base_ref, path).decode("utf-8"))
+    base_table = Table(decode(git_file(base_ref, path), f"{base_ref}:{path}"))   # CT-FIX-10: DUR 2, not a traceback
     refs = list_refs()
     groups = defaultdict(list)
     for (full, short), blob in zip(refs, blob_ids([f"{full}:{path}" for full, _ in refs])):
@@ -1367,9 +1367,10 @@ def writers(queue: dict, base_ref: str) -> tuple[int, list[str]]:
     lines, touched = [], []
     for (blob, mb), members in sorted(groups.items(), key=lambda g: g[1][0][1]):
         full, short = members[0]
-        ref_table = Table(git_file(full, path).decode("utf-8"))
+        ref_table = Table(decode(git_file(full, path), f"{full}:{path}"))
         mb_data = git_file(mb, path) if mb else None
-        rows, added, removed = ref_changes(ref_table, Table(mb_data.decode("utf-8") if mb_data else ""))
+        rows, added, removed = ref_changes(ref_table, Table(decode(mb_data, f"merge-base {mb[:12]} ({base_ref} … {full}):{path}")
+                                                            if mb_data else ""))
         last = git_text("log", "-1", "--format=%h %ad %an", "--date=short", f"{mb}..{full}" if mb else full, "--", path)
         label = ", ".join(name for _, name in members)
         changed = sorted(set(rows) - added)

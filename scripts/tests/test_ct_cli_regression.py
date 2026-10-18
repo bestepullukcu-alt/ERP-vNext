@@ -1770,5 +1770,109 @@ class CTFIX09_GateDiagnosisAndOneLine(CTFIX04):
                 self.assertEqual(len(cq.one_line(raw).splitlines()), 1)
 
 
+
+class CTFIX10_UnknownRowAndWriters(CTFIX04):
+    """CT-FIX-10 (C10 audits, Claude Denetim001 C10-G1 / G2): without the queue row (the queue could not be read) the
+    gate does not invent a module mismatch for a product pack — the relation is 'not measured', the pack's own künye and
+    file identity are still checked; writers names a ref whose queue is not UTF-8 (DUR, exit 2) instead of a traceback."""
+    def product_prompt(self, wp="W1"):
+        prompt = FX.prompt(FX.git("rev-parse", "HEAD")).replace(f"Görev sınıfı: yönetişim · Kapsam kaydı: {AUTHORITY}",
+                                                                 f"Görev sınıfı: ürün · Paket: {PACK}")
+        return prompt.replace("W1", wp) if wp != "W1" else prompt
+
+    def break_registry(self):
+        cells = FX.reg_line.rstrip("\n").split("\t")
+        cells[2] = ""
+        FX.put(REG, FX.reg_head + "\t".join(cells) + "\n")
+
+    def test_a_pack_s_module_relation_is_not_judged_without_the_queue_row(self):
+        unmeasured = "kuyruk okunamadı — paketin bu işin modülüne bağı ölçülemedi"
+        with self.subTest(case="a broken registry, the pack itself sound"):
+            FX.reset(self.mark)
+            self.break_registry()
+            p = self.gate(self.product_prompt())
+            self.assertExit(p, 1, "ENGEL kuyruk: DUR: ")
+            self.assertIn(unmeasured, p.stdout)
+            self.assertNotIn("bu işin modülüne (yok) ait değil", p.stdout)
+        with self.subTest(case="a broken registry, the pack's künye id and file name disagree (still refused by its own check)"):
+            FX.reset(self.mark)
+            FX.put(PACK, (FX.root / PACK).read_text(encoding="utf-8").replace("id: MOD-0288", "id: MOD-0289"))
+            FX.commit("CT-FIX-10: a pack whose künye and file name disagree")
+            self.break_registry()
+            p = self.gate(self.product_prompt())
+            self.assertExit(p, 1, "dosya adındaki kimlikle")
+            self.assertIn(unmeasured, p.stdout)                       # the relation unmeasured, the pack's own identity refused
+        with self.subTest(case="control: an intact queue, a sound pack"):
+            FX.reset(self.mark)
+            self.assertExit(self.gate(self.product_prompt()), 0, "sonuç: geçti")
+        with self.subTest(case="control: an intact queue, a WP not in it — the module mismatch is still refused"):
+            FX.reset(self.mark)
+            p = self.gate(self.product_prompt("W9"))
+            self.assertExit(p, 1, "bu işin modülüne (yok) ait değil")
+            self.assertNotIn(unmeasured, p.stdout)
+        with self.subTest(case="control: an intact queue, another module's pack — still refused"):
+            FX.reset(self.mark)
+            FX.put(OTHER_PACK, (FX.root / PACK).read_text(encoding="utf-8").replace("id: MOD-0288", "id: MOD-0289"))
+            FX.commit("CT-FIX-10: another module's pack")
+            prompt = self.product_prompt().replace(f"Paket: {PACK}", f"Paket: {OTHER_PACK}")
+            self.assertExit(self.gate(prompt), 1, "bu işin modülüne (MOD-0288) ait değil")
+
+    def on_branch(self, name, data, base="HEAD"):
+        """A local branch whose q.tsv holds data; the fixture is back on its own branch afterwards (drop() removes it)."""
+        FX.git("checkout", "-q", "-b", name, base)
+        (FX.root / "q.tsv").write_bytes(data)
+        commit = FX.commit(f"CT-FIX-10: {name}")
+        FX.git("checkout", "-q", BRANCH)
+        return commit
+
+    def drop(self, *names):
+        FX.git("checkout", "-q", BRANCH)
+        for name in names:
+            if FX.git("branch", "--list", name):
+                FX.git("branch", "-D", name)
+
+    def writers(self, *extra):
+        return FX.run("scripts/ct_queue.py", "writers", "--queue", "ct", *extra)
+
+    def test_writers_names_a_ref_whose_queue_is_not_utf8(self):
+        FX.reset(self.mark)
+        good = (FX.root / "q.tsv").read_bytes()
+        bad = good + b"W9\t\xff\xfe\n"
+        self.assertExit(self.writers(), 0, "YAZAN yok")
+        with self.subTest(point="a local ref"):
+            try:
+                self.on_branch("badq", bad)
+                p = self.writers()
+                self.assertExit(p, 2, "DUR: refs/heads/badq:q.tsv UTF-8 değil")
+                self.assertNotIn("Traceback", p.stdout + p.stderr)
+            finally:
+                self.drop("badq")
+            self.assertExit(self.writers(), 0, "YAZAN yok")          # the ref removed: normal again
+        with self.subTest(point="the base"):
+            try:
+                self.on_branch("badbase", bad)
+                p = self.writers("--base", "badbase")
+                self.assertExit(p, 2, "DUR: badbase:q.tsv UTF-8 değil")
+                self.assertNotIn("Traceback", p.stdout + p.stderr)
+            finally:
+                self.drop("badbase")
+        with self.subTest(point="the merge base"):
+            try:
+                a = self.on_branch("mbad", bad)                                   # the merge base: not UTF-8
+                FX.git("checkout", "-q", "-b", "mbase", a)
+                (FX.root / "q.tsv").write_bytes(good)
+                FX.commit("CT-FIX-10: the base fixes the queue")
+                FX.git("checkout", "-q", BRANCH)
+                self.on_branch("mref", good + b"W8\tx\n", base=a)                # a writer after the bad merge base
+                self.drop("mbad")                                                 # only the merge base holds the bad bytes
+                p = self.writers("--base", "mbase")
+                self.assertExit(p, 2, "UTF-8 değil")
+                self.assertIn("merge-base", p.stdout)
+                self.assertNotIn("Traceback", p.stdout + p.stderr)
+            finally:
+                self.drop("mbad", "mbase", "mref")
+        self.assertExit(self.writers(), 0, "YAZAN yok")
+
+
 if __name__ == "__main__":
     unittest.main()
