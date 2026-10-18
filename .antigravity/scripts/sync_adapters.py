@@ -52,6 +52,9 @@ Rules this script enforces (İ5-A pilot):
 - İ5B-FIX-12 (C10 audits): the shape is measured on the source's physical lines (the line before rule 1 really blank, so
   core:start inside or right after a title opener is refused); one range / escape rule for links and images — a '!'
   after an odd number of backslashes is text, and the link after it keeps its visible label.
+- İ5B-FIX-13 (C11 follow-up): core:start stands alone on its line, and nothing is open at the end of that line, read on
+  the whole source by one small scanner (open_context; the shared fence grammar; comments and inline code tracked) —
+  a fence opened before the marker made the rules a code example; outside_code's own policy for imports is unchanged.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -107,15 +110,79 @@ def outside_fenced_code(text: str) -> str:
     fence: str | None = None
     for line in text.split("\n"):
         if fence is not None:
-            if re.match(rf"^[ \t]*{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line):
+            if fence_closes(fence, line):
                 fence = None
             continue
-        m = re.match(r"^[ \t]*(`{3,}|~{3,})", line)
-        if m and (m.group(1)[0] == "~" or "`" not in line[m.end():]):
-            fence = m.group(1)
-            continue
-        out.append(line)
+        fence = fence_opener(line)
+        if fence is None:
+            out.append(line)
     return "\n".join(out)
+
+
+def fence_opener(line: str) -> str | None:
+    """İ5B-FIX-05's fence grammar, shared (İ5B-FIX-13): the fence a line opens — three or more backticks or tildes at any
+    indentation; a backtick fence's opening line holds no other backtick (that is an inline span)."""
+    m = re.match(r"^[ \t]*(`{3,}|~{3,})", line)
+    return m.group(1) if m and (m.group(1)[0] == "~" or "`" not in line[m.end():]) else None
+
+
+def fence_closes(fence: str, line: str) -> bool:
+    """The line closes the open fence: the same character, at least as many, nothing else."""
+    return bool(re.match(rf"^[ \t]*{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$", line))
+
+
+def open_context(text: str) -> str | None:
+    """İ5B-FIX-13 (Codex root, C11 follow-up): the context still open at the end of text, read by one small scanner on
+    the source as it stands — no part is deleted and no pieces are joined. A fenced code block (the shared fence
+    grammar) or an HTML comment; inside a fence '<!--' is literal, inside a comment a fence line is not a fence, and an
+    inline code span (read within its line; a backslash escapes the next character) holds neither. None when nothing is
+    open. Not a CommonMark parser: a code span across lines is not read, so a '<!--' after it may be refused."""
+    fence: str | None = None
+    comment = False
+    for line in text.split("\n"):
+        if fence is not None:
+            if fence_closes(fence, line):
+                fence = None
+            continue
+        if not comment:
+            fence = fence_opener(line)
+            if fence is not None:
+                continue
+        i = 0
+        while i < len(line):
+            if comment:
+                end = line.find("-->", i)
+                if end < 0:
+                    break
+                comment, i = False, end + 3
+            elif line[i] == "\\":
+                i += 2
+            elif line[i] == "`":
+                run = len(line[i:]) - len(line[i:].lstrip("`"))
+                close = re.compile(rf"(?<!`)`{{{run}}}(?!`)").search(line, i + run)
+                i = close.end() if close else i + run
+            elif line.startswith("<!--", i):
+                comment, i = True, i + 4
+            else:
+                i += 1
+    return "a fenced code block" if fence is not None else "an HTML comment" if comment else None
+
+
+CORE_START_LINE = re.compile(r"^ {0,3}<!-- core:start -->[ \t]*$")
+
+
+def core_context_problem(text: str) -> str | None:
+    """İ5B-FIX-13: core:start stands alone on its physical line (at most three spaces before it — four make it code), and
+    nothing is open at the end of that line, read on the whole source (open_context): a fence opened before the marker
+    is still open there. An HTML comment opened before it ends at the marker's own '-->' (HTML reads it so — İ5B-FIX-04's
+    contract, kept), so the rules after it stay visible. A text in front of the marker on its line is refused too (a
+    declared safe refusal; the real file has the marker alone)."""
+    raw = text.split("\n")
+    start = next(i for i, l in enumerate(raw) if CORE_START in l)
+    if not CORE_START_LINE.match(raw[start]):
+        return "core:start is not alone on its physical line"
+    context = open_context("\n".join(raw[:start + 1]))
+    return f"core:start is inside {context} opened before it" if context else None
 
 
 def heading_in_comment(heading: str, text: str) -> bool:
@@ -527,6 +594,9 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
                                 f"({', '.join(t[:20] for t in outer[:3])}) — a container around the core hides its rules")
             rule_lines = [l for l in ruled.split("\n") if CORE_RULE_LINE.match(l)]
             shape = core_shape_problem(read_text(core["source"]))   # İ5B-FIX-12: the source's physical lines
+            context = core_context_problem(read_text(core["source"]))   # İ5B-FIX-13: the context at core:start
+            if context:
+                problems.append(f"CORE-CONTEXT {core['source']} {context} — no required text is verified")
             if shape:
                 problems.append(f"CORE-SHAPE {core['source']} the numbered rule lines are not one consecutive list 1..N after "
                                 f"a blank line ({shape}) — no required text is verified")

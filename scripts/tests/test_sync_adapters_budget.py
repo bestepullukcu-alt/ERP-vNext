@@ -669,6 +669,56 @@ class InstructionBudget(unittest.TestCase):
             found = lost(bs + '![Dil](AGENTS.md "' + phrase + '")')
             self.assertTrue(found and found[0].endswith(sa.METADATA_HIDDEN), found)
 
+    def test_the_core_start_marker_has_no_open_context(self):
+        # İ5B-FIX-13 (Codex root, C11 follow-up): a fence opened right before core:start and closed after core:end (or
+        # inside the core) made the rules a code example in the source, with write / check 0 / 0 — the context at the
+        # marker is read on the whole source by one small scanner (fence, HTML comment, inline code on its line)
+        text = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+        f = Path(self.tmp.name) / "AGENTS.md"
+        self.redirect("AGENTS.md", f)
+        lines = text.split("\n")
+        s = next(i for i, l in enumerate(lines) if sa.CORE_START in l)
+        e = next(i for i, l in enumerate(lines) if sa.CORE_END in l)
+        r11 = next(i for i, l in enumerate(lines) if l.startswith("11. "))
+
+        def context(doc):
+            f.write_text(doc, encoding="utf-8")
+            return [p for p in sa.check_instruction_budget(self.manifest)[0] if p.startswith("CORE-CONTEXT")]
+
+        def around(open_line, close_line, close_at):
+            out = list(lines)
+            out.insert(close_at + 1, close_line)
+            out.insert(s, open_line)
+            return "\n".join(out)
+
+        for label, doc, why in (
+                ("a backtick fence opened before core:start, closed after core:end", around("```", "```", e), "fenced code block"),
+                ("a tilde fence opened before core:start, closed after core:end", around("~~~", "~~~", e), "fenced code block"),
+                ("a four-backtick fence opened before core:start, closed inside the core", around("````", "````", r11), "fenced code block"),
+                ("a tilde fence closed by a longer one after core:end", around("~~~~", "~~~~~", e), "fenced code block"),
+                ("a fence opened before core:start after a comment opener shown in inline code",
+                 around("```", "```", e).replace("\n```\n" + sa.CORE_START, "\nÖrnek: `<!--` işaretidir.\n```\n" + sa.CORE_START, 1),
+                 "fenced code block"),
+                ("core:start after text on its line (a declared safe refusal)", text.replace(sa.CORE_START, "not " + sa.CORE_START, 1), "alone"),
+                ("core:start indented as code (a declared safe refusal)", text.replace(sa.CORE_START, "    " + sa.CORE_START, 1), "alone")):
+            with self.subTest(refused=label):
+                found = context(doc)
+                self.assertTrue(found and why in found[0] and found[0].endswith("— no required text is verified"), found)
+        # the CORE-CONTEXT check only: these inputs raise no CORE-CONTEXT. One of them is still refused end to end by the
+        # global heading reader (a literal '<!--' inside a closed fence: visible_text removes comments before fences) —
+        # an existing, separate false refusal, not this check's
+        for label, ins in (("a closed backtick fence before core:start", ["```", "örnek", "```", ""]),
+                           ("a closed tilde fence before core:start", ["~~~", "örnek", "~~~", ""]),
+                           ("a literal comment opener inside a closed fence (CORE-CONTEXT only)", ["```", "<!-- örnek", "```", ""]),
+                           ("a literal fence inside a closed HTML comment", ["<!--", "```", "-->", ""]),
+                           ("a comment opener inside inline code", ["Örnek: `<!--` işaretidir.", ""]),
+                           ("an unclosed comment before core:start, ended by the marker's own '-->' (İ5B-FIX-04's contract)",
+                            ["<!--", "açık yorum"])):
+            with self.subTest(passes=label):
+                self.assertEqual(context("\n".join(lines[:s] + ins + lines[s:])), [])
+        with self.subTest(passes="the real file"):
+            self.assertEqual(context(text), [])
+
     def test_an_escaped_less_than_or_an_autolink_is_not_raw_html(self):
         # İ5B-FIX-10 (C8 audits, false refusals): an odd number of backslashes escapes '<', and a URI or an e-mail address
         # in angle brackets is an autolink; an even number of backslashes and a real tag stay raw HTML
