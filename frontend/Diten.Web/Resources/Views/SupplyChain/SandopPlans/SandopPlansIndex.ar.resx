@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>فتح الخطة</value></data>
   <data name="PlanId" xml:space="preserve"><value>معرّف الخطة</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>أدخل معرّف UUID الخاص بالخطة.</value></data>
-  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="PlanName" xml:space="preserve"><value>الاسم</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>بداية الأفق</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>نهاية الأفق</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>معرّف خطة الطلب</value></data>
@@ -19,11 +19,11 @@
   <data name="WorkspaceTitle" xml:space="preserve"><value>مساحة عمل الخطة</value></data>
   <data name="CurrentSnapshot" xml:space="preserve"><value>اللقطة الحالية</value></data>
   <data name="CurrentMarker" xml:space="preserve"><value>الحالية</value></data>
-  <data name="Created" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
   <data name="SnapshotsHeader" xml:space="preserve"><value>اللقطات</value></data>
   <data name="CaptureSnapshot" xml:space="preserve"><value>التقاط لقطة</value></data>
   <data name="CapturedAt" xml:space="preserve"><value>وقت الالتقاط</value></data>
-  <data name="Provenance" xml:space="preserve"><value>منشأ البيانات</value></data>
+  <data name="SnapshotProvenance" xml:space="preserve"><value>منشأ البيانات</value></data>
   <data name="SupplyInputRefsCount" xml:space="preserve"><value>مراجع مدخلات التوريد</value></data>
   <data name="SourceCapturedAt" xml:space="preserve"><value>وقت التقاط المصدر</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>المجموع الاختباري للمصدر</value></data>

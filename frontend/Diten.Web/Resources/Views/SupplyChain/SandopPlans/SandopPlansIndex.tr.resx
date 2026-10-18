@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Planı aç</value></data>
   <data name="PlanId" xml:space="preserve"><value>Plan kimliği</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Planın UUID değerini girin.</value></data>
-  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Ad</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Ufuk başlangıcı</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Ufuk bitişi</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Talep planı kimliği</value></data>
@@ -19,11 +19,11 @@
   <data name="WorkspaceTitle" xml:space="preserve"><value>Plan çalışma alanı</value></data>
   <data name="CurrentSnapshot" xml:space="preserve"><value>Geçerli anlık görüntü</value></data>
   <data name="CurrentMarker" xml:space="preserve"><value>Geçerli</value></data>
-  <data name="Created" xml:space="preserve"><value>Oluşturulma zamanı</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma zamanı</value></data>
   <data name="SnapshotsHeader" xml:space="preserve"><value>Anlık görüntüler</value></data>
   <data name="CaptureSnapshot" xml:space="preserve"><value>Anlık görüntü al</value></data>
   <data name="CapturedAt" xml:space="preserve"><value>Alınma zamanı</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Veri kökeni</value></data>
+  <data name="SnapshotProvenance" xml:space="preserve"><value>Veri kökeni</value></data>
   <data name="SupplyInputRefsCount" xml:space="preserve"><value>Tedarik girdi referansları</value></data>
   <data name="SourceCapturedAt" xml:space="preserve"><value>Kaynağın alınma zamanı</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Kaynak sağlama toplamı</value></data>

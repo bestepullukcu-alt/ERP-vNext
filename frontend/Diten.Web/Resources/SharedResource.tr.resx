@@ -1193,6 +1193,8 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Yükler</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Hasar Talebi Yönetimi</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Hasar Talepleri</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>S&amp;OP İş Akışı ve Onaylar</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>S&amp;OP Planları</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Envanter</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stok Defteri</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Lokasyonlar</value></data>

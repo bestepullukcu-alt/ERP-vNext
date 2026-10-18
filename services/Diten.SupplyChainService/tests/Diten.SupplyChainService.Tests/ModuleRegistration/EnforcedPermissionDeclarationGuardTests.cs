@@ -28,7 +28,7 @@ public sealed class EnforcedPermissionDeclarationGuardTests
     private static readonly IReadOnlyDictionary<string, (string ModuleCode, string Reason)> KnownWithoutProvider =
         new Dictionary<string, (string, string)>(StringComparer.Ordinal)
         {
-            ["sandop-plans"] = ("sop-workflow-signoffs", "MOD-0190:552 ship rule — no UI yet; also MediatR-excluded (Q273)"),
+            // sandop-plans removed 2026-10-18 (G6): SopWorkflowSignoffsManifestProvider ships with the S&OP UI.
             ["capacity-plans"] = ("capacity-planning", "MOD-0192:574 ship rule — no UI yet; also uncomposed (Q273)")
         };
 

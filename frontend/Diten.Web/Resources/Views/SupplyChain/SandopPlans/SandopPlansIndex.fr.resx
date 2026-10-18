@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Ouvrir le plan</value></data>
   <data name="PlanId" xml:space="preserve"><value>Identifiant du plan</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Saisissez l’UUID du plan.</value></data>
-  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Nom</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Début de l’horizon</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Fin de l’horizon</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Identifiant du plan de demande</value></data>
@@ -19,11 +19,11 @@
   <data name="WorkspaceTitle" xml:space="preserve"><value>Espace de travail du plan</value></data>
   <data name="CurrentSnapshot" xml:space="preserve"><value>Instantané actuel</value></data>
   <data name="CurrentMarker" xml:space="preserve"><value>Actuel</value></data>
-  <data name="Created" xml:space="preserve"><value>Créé le</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Créé le</value></data>
   <data name="SnapshotsHeader" xml:space="preserve"><value>Instantanés</value></data>
   <data name="CaptureSnapshot" xml:space="preserve"><value>Capturer un instantané</value></data>
   <data name="CapturedAt" xml:space="preserve"><value>Capturé le</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Provenance</value></data>
+  <data name="SnapshotProvenance" xml:space="preserve"><value>Origine des données</value></data>
   <data name="SupplyInputRefsCount" xml:space="preserve"><value>Références des entrées d’approvisionnement</value></data>
   <data name="SourceCapturedAt" xml:space="preserve"><value>Source capturée le</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Somme de contrôle de la source</value></data>
@@ -45,7 +45,7 @@
   <data name="SignOffFinalNote" xml:space="preserve"><value>Une validation enregistrée est définitive et ne peut être ni modifiée ni supprimée.</value></data>
   <data name="RoleDemandPlanning" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="RoleSupplyPlanning" xml:space="preserve"><value>Planification de l’approvisionnement</value></data>
-  <data name="RoleFinance" xml:space="preserve"><value>Finance</value></data>
+  <data name="RoleFinance" xml:space="preserve"><value>Finances</value></data>
   <data name="RoleOperations" xml:space="preserve"><value>Opérations</value></data>
   <data name="RoleExecutive" xml:space="preserve"><value>Direction</value></data>
   <data name="DecisionApproved" xml:space="preserve"><value>Approuvé</value></data>

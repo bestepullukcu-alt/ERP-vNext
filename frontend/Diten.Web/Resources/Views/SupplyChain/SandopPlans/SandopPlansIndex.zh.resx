@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>打开计划</value></data>
   <data name="PlanId" xml:space="preserve"><value>计划 ID</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>请输入计划的 UUID。</value></data>
-  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="PlanName" xml:space="preserve"><value>名称</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>计划期开始</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>计划期结束</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>需求计划 ID</value></data>
@@ -19,11 +19,11 @@
   <data name="WorkspaceTitle" xml:space="preserve"><value>计划工作区</value></data>
   <data name="CurrentSnapshot" xml:space="preserve"><value>当前快照</value></data>
   <data name="CurrentMarker" xml:space="preserve"><value>当前</value></data>
-  <data name="Created" xml:space="preserve"><value>创建时间</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
   <data name="SnapshotsHeader" xml:space="preserve"><value>快照</value></data>
   <data name="CaptureSnapshot" xml:space="preserve"><value>捕获快照</value></data>
   <data name="CapturedAt" xml:space="preserve"><value>捕获时间</value></data>
-  <data name="Provenance" xml:space="preserve"><value>数据溯源</value></data>
+  <data name="SnapshotProvenance" xml:space="preserve"><value>数据溯源</value></data>
   <data name="SupplyInputRefsCount" xml:space="preserve"><value>供应输入引用</value></data>
   <data name="SourceCapturedAt" xml:space="preserve"><value>来源捕获时间</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>来源校验和</value></data>

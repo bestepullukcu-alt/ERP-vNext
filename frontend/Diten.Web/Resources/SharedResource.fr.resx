@@ -1132,6 +1132,8 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Chargements</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestion des réclamations</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Réclamations de transport</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>Flux S&amp;OP et validations</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>Plans S&amp;OP</value></data>
   <data name="Activate" xml:space="preserve"><value>Activer</value></data>
   <data name="Deactivate" xml:space="preserve"><value>Désactiver</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>E-mail ou nom d'utilisateur</value></data>

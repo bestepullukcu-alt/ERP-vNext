@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Abrir plan</value></data>
   <data name="PlanId" xml:space="preserve"><value>ID del plan</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Introduzca el UUID del plan.</value></data>
-  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Nombre</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Inicio del horizonte</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Fin del horizonte</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>ID del plan de demanda</value></data>
@@ -19,11 +19,11 @@
   <data name="WorkspaceTitle" xml:space="preserve"><value>Espacio de trabajo del plan</value></data>
   <data name="CurrentSnapshot" xml:space="preserve"><value>Instantánea actual</value></data>
   <data name="CurrentMarker" xml:space="preserve"><value>Actual</value></data>
-  <data name="Created" xml:space="preserve"><value>Creado el</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
   <data name="SnapshotsHeader" xml:space="preserve"><value>Instantáneas</value></data>
   <data name="CaptureSnapshot" xml:space="preserve"><value>Capturar instantánea</value></data>
   <data name="CapturedAt" xml:space="preserve"><value>Capturada el</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Procedencia</value></data>
+  <data name="SnapshotProvenance" xml:space="preserve"><value>Procedencia</value></data>
   <data name="SupplyInputRefsCount" xml:space="preserve"><value>Referencias de entradas de suministro</value></data>
   <data name="SourceCapturedAt" xml:space="preserve"><value>Origen capturado el</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Suma de verificación del origen</value></data>

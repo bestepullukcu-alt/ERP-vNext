@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Open plan</value></data>
   <data name="PlanId" xml:space="preserve"><value>Plan ID</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Enter the plan’s UUID.</value></data>
-  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Name</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Horizon start</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Horizon end</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Demand plan ID</value></data>
@@ -19,11 +19,11 @@
   <data name="WorkspaceTitle" xml:space="preserve"><value>Plan workspace</value></data>
   <data name="CurrentSnapshot" xml:space="preserve"><value>Current snapshot</value></data>
   <data name="CurrentMarker" xml:space="preserve"><value>Current</value></data>
-  <data name="Created" xml:space="preserve"><value>Created</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Created</value></data>
   <data name="SnapshotsHeader" xml:space="preserve"><value>Snapshots</value></data>
   <data name="CaptureSnapshot" xml:space="preserve"><value>Capture snapshot</value></data>
   <data name="CapturedAt" xml:space="preserve"><value>Captured at</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Provenance</value></data>
+  <data name="SnapshotProvenance" xml:space="preserve"><value>Provenance</value></data>
   <data name="SupplyInputRefsCount" xml:space="preserve"><value>Supply input references</value></data>
   <data name="SourceCapturedAt" xml:space="preserve"><value>Source captured at</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Source checksum</value></data>

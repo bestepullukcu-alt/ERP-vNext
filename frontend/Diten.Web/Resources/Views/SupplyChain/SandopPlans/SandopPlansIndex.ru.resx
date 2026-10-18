@@ -10,7 +10,7 @@
   <data name="OpenPlan" xml:space="preserve"><value>Открыть план</value></data>
   <data name="PlanId" xml:space="preserve"><value>Идентификатор плана</value></data>
   <data name="PlanIdHelp" xml:space="preserve"><value>Введите UUID плана.</value></data>
-  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Название</value></data>
   <data name="HorizonStart" xml:space="preserve"><value>Начало горизонта</value></data>
   <data name="HorizonEnd" xml:space="preserve"><value>Конец горизонта</value></data>
   <data name="DemandPlanId" xml:space="preserve"><value>Идентификатор плана спроса</value></data>
@@ -19,11 +19,11 @@
   <data name="WorkspaceTitle" xml:space="preserve"><value>Рабочая область плана</value></data>
   <data name="CurrentSnapshot" xml:space="preserve"><value>Текущий снимок</value></data>
   <data name="CurrentMarker" xml:space="preserve"><value>Текущий</value></data>
-  <data name="Created" xml:space="preserve"><value>Создан</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создан</value></data>
   <data name="SnapshotsHeader" xml:space="preserve"><value>Снимки</value></data>
   <data name="CaptureSnapshot" xml:space="preserve"><value>Зафиксировать снимок</value></data>
   <data name="CapturedAt" xml:space="preserve"><value>Время фиксации</value></data>
-  <data name="Provenance" xml:space="preserve"><value>Происхождение данных</value></data>
+  <data name="SnapshotProvenance" xml:space="preserve"><value>Происхождение данных</value></data>
   <data name="SupplyInputRefsCount" xml:space="preserve"><value>Ссылки на входные данные по поставкам</value></data>
   <data name="SourceCapturedAt" xml:space="preserve"><value>Время фиксации источника</value></data>
   <data name="SourceChecksum" xml:space="preserve"><value>Контрольная сумма источника</value></data>
