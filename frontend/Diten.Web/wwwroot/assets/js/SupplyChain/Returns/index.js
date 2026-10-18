@@ -345,7 +345,10 @@ const ReturnsList = (function () {
         errorHost?.classList.toggle('d-none', state !== 'error');
         if (state === 'error' && failure) {
             const message = document.getElementById('returns-error-message');
-            if (message) message.textContent = failure.code ? failureText(failure) : t('ListErrorState');
+            // F-R2-5: the list panel is a READ surface; always use the read string, never the write-mutation
+            // wording ("the outcome is not confirmed…") that failureText carries for 5xx. The correlation
+            // reference is still shown below.
+            if (message) message.textContent = t('ListErrorState');
             const referenceRow = document.getElementById('returns-error-reference');
             const referenceValue = document.getElementById('returns-error-reference-value');
             const referenceCopy = document.getElementById('returns-error-reference-copy');
