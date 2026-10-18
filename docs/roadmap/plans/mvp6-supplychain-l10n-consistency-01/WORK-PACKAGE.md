@@ -118,6 +118,25 @@ A measured glance at the whole set:
 - support term: fr "support" (Claims/Returns) vs "assistance" (Carriers/Loads/Shipments); ru three forms.
 - es add verb: "Añadir" (Claims/Returns/Carriers/Shipments) vs "Agregar" (Loads).
 
+## Addendum 4 (DemandPlanning review, 2026-10-18) — the pass is the FIVE shipment-bundle modules; MOD-0188 is separate
+
+DemandPlanning (MOD-0188, Diten.PlanningService) has its **own self-contained l10n family** — `Forecast*`/
+`History*` prefixes, its own permission/session/scope messages, and **none** of the shared infra keys
+(`AccessDenied`, `ValidationError`, `SupportReference`, `IdempotencyKeyReused`, `EmptyState`/`EmptyList`).
+Only `Quantity` is shared (identical to Shipments). So **scope this pass to the five shipment-bundle modules**
+(Shipments, Carriers, Loads, Returns, Claims); DemandPlanning is adjacent and needs only internal consistency
+(done 2026-10-18) plus two parallel calls (session-expired wording "expired" vs "ended"; `Reject` zh 驳回 vs
+拒绝) if the glossary wants them aligned.
+
+## Where the per-module reviews left it (all six done 2026-10-18)
+
+Six l10n reviews ran (Claims, Returns, Carriers, Loads, Shipments, DemandPlanning): **2,958 values reviewed,
+56 fixed in-module, 29 deferred to a human translator, parity full (7 languages) in every module.** Everything
+*within* a module is fixed; what remains is this cross-module pass — one owner-authorised, native-translator
+glossary decision over the five shipment-bundle modules, deciding per key-family (error keys, empty-state,
+status keys incl. Exception/Incident, id-label style, support term, add verb) and touching key names + `en`,
+not only translations.
+
 ## Files
 
 - `DRIFT-INVENTORY.tsv` — the measured raw inventory (53 keys × the languages that drift, with each value

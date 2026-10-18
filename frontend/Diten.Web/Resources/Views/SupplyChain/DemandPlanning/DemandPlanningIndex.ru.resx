@@ -68,7 +68,7 @@
   <data name="HistoryNext" xml:space="preserve"><value>Далее</value></data>
   <data name="HistoryLoading" xml:space="preserve"><value>Загрузка принятой истории...</value></data>
   <data name="ForecastIntro" xml:space="preserve"><value>Оцените принятые данные одной пары SKU × склад и явно выберите метод.</value></data>
-  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Показаны активные компании арендатора в MDM. Авторизация пользователя по компании и проверка серий в реальном окружении ожидаются; без проверки операция блокируется.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Показаны активные компании арендатора в MDM. Авторизация пользователя по компании и проверка рядов в реальном окружении ожидаются; без проверки операция блокируется.</value></data>
   <data name="ForecastLoading" xml:space="preserve"><value>Загрузка проверенных данных…</value></data>
   <data name="ForecastCycleVersion" xml:space="preserve"><value>Ожидаемая версия цикла</value></data>
   <data name="ForecastScopeHelp" xml:space="preserve"><value>Введите существующие идентификаторы цикла, SKU и склада. Сервер проверяет их повторно; сами значения не дают доступа.</value></data>
@@ -81,12 +81,12 @@
   <data name="ForecastCreate" xml:space="preserve"><value>Создать Прогноз И Черновик</value></data>
   <data name="ForecastOpenDraft" xml:space="preserve"><value>Открыть Созданный Черновик</value></data>
   <data name="ForecastCreated" xml:space="preserve"><value>Прогноз и черновик сохранены с обязательными записями аудита.</value></data>
-  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Выберите одну серию, оцените её и явно укажите допустимый метод.</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Выберите один ряд, оцените его и явно укажите допустимый метод.</value></data>
   <data name="ForecastInvalidScope" xml:space="preserve"><value>Введите корректные значения компании, цикла, SKU, склада и версии цикла.</value></data>
   <data name="ForecastUnavailable" xml:space="preserve"><value>Проверка недоступна. Успех операции не подтверждён. Повторите попытку после восстановления источника.</value></data>
   <data name="ForecastSessionExpired" xml:space="preserve"><value>Сеанс истёк. Войдите снова и обновите страницу.</value></data>
   <data name="ForecastPermissionLost" xml:space="preserve"><value>Это действие недоступно вашей учётной записи. Запросите доступ у администратора и обновите страницу.</value></data>
-  <data name="ForecastScopeLost" xml:space="preserve"><value>Выбранная запись или серия недоступна в вашей области доступа. Выберите её заново после проверки доступа.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>Выбранные запись или ряд недоступны в вашей области доступа. Выберите их заново после проверки доступа.</value></data>
   <data name="ForecastConflict" xml:space="preserve"><value>Цикл или запрос изменился. Проверьте текущую версию и повторите оценку.</value></data>
   <data name="ForecastSelectionRejected" xml:space="preserve"><value>Метод или входные данные больше не соответствуют условиям. Повторите оценку и укажите причину.</value></data>
   <data name="ForecastUndefined" xml:space="preserve"><value>Не определено</value></data>
