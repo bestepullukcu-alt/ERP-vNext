@@ -58,6 +58,16 @@ a `APPROVE … as written` / `REJECT …` response line for each.
 `APPROVE DC-01 as written` — it needs no producer seam from any team and opens the governance-diff lane that
 leads to `ready-for-dev`. The ready approval text is in the pack above.
 
+### Owners assigned 2026-10-18 (owner ny@gmgroup.ch)
+
+`docs/records/decisions/2026-10/mvp6-supplier-dc01-dc05-owner-assignment-01.md`: DC-01 → the **project owner
+as Enterprise/domain owner** (sign now, no build); DC-02 → the **MOD-0140 / SupplyChain-Mdm lane** and DC-03
+→ the **Auth/Platform lane** (both owned but **build commitments**, scheduled not closed); **DC-04 and DC-05
+DEFERRED** — no Metric Registry or Risk Register service exists in the tree, so the scoring (0147) and risk
+(0147/0148) slices are out of realistic MVP-6 scope. Net: 0147/0148 become **bounded-developable**, the same
+pattern as MOD-0190/0192. The DC-01 solicitation is ready at `DC-01-SOLICITATION.md` for the owner's
+`APPROVE DC-01 as written`.
+
 The SUPPLIER-BASE contract (`supplier.openapi.yaml`, FROZEN) exists and answers *who a supplier is*; the
 five DCs decide *who owns the policy, authority and boundary* — and the pack records "SUPPLIER v1 coverage:
 none" for DC-01/DC-04. So a frozen contract does not make these modules buildable.
