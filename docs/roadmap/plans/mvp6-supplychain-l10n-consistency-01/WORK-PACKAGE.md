@@ -98,9 +98,29 @@ decision is which camp is canonical** — and converging the {Carriers, Loads} c
 the per-module reviews made. `ModeRoad`/`ModeParcel` are consistent *within* the {Carriers, Loads} camp and
 converge together.
 
+## Addendum 3 (Shipments review, 2026-10-18) — Shipments is the status source, and the camps are not clean
+
+Shipments (MOD-0183) is the **source** of the shared shipment statuses. Only **4 of 8** differ from
+Claims/Returns (`ShipmentStatusX`): Exception (fr "Exception"/"Incident", es "Excepción"/"Incidencia"),
+Closed (tr "Kapatıldı"/"Kapandı"), Delivered (ar "مُسلَّمة"/"تم التسليم"). Treat **Shipments statuses as
+authoritative**; "Exception"/"Excepción" is the likely canonical for `StatusException` (Claims/Returns
+diverged to Incident/Incidencia).
+
+**Refinement to the two-camp model: Shipments straddles both camps**, so "module X is in camp A/B" is too
+simple. Shipments shares `AccessDenied`/`ValidationError`/`InternalError`/`Actions` (no `Err` prefix) with
+**Carriers**, but `EmptyState` with **Claims/Returns**, and bare `StatusX` keys with **Loads**; its values
+mix both camps (es "Añadir", fr "ID"/"assistance"). So the canonical decision is **per key-family**
+(error keys, empty-state key, status keys, the id-label style, the "action/intent" word), not per module.
+A measured glance at the whole set:
+- error keys: `Err*` prefix in Claims/Returns/Loads vs plain in Carriers/Shipments → pick one.
+- empty state: `EmptyState` (Claims/Returns/Shipments) vs `EmptyList` (Carriers/Loads) → pick one.
+- id labels: fr "Identifiant …" (Claims/Returns) vs "ID …" (Carriers/Loads/Shipments); ru likewise.
+- support term: fr "support" (Claims/Returns) vs "assistance" (Carriers/Loads/Shipments); ru three forms.
+- es add verb: "Añadir" (Claims/Returns/Carriers/Shipments) vs "Agregar" (Loads).
+
 ## Files
 
 - `DRIFT-INVENTORY.tsv` — the measured raw inventory (53 keys × the languages that drift, with each value
   and the modules that carry it; a rough `class` column that over-flags and must be human-triaged). Note:
-  same-key-name only; see the addendum for key-name-level drift it does not capture.
+  same-key-name only; see the addenda for key-name-level drift it does not capture.
 - `WORK-PACKAGE.md` — this scope.
