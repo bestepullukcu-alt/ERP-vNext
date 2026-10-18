@@ -648,7 +648,7 @@ def report_summary(info, findings, matched, meta, alias_ids, failure, blueprint=
     """CT-FIX-06 (v7 Employee pilot: a collision in a long report was lost when the interface cut it): the 'ÖZET' lines
     under the header, within SUMMARY_BUDGET UTF-8 bytes and in this order — the counts; for every file id on more than
     one matched pack path (the tool's own file-id reading: a parent and its FU are different ids) a possible identity
-    collision with those packs' künye values right after it; then the other matched packs' künye values; then, in space
+    collision with those packs' künye values right after it (CT-FIX-08: the open-decision line comes before them); then the other matched packs' künye values; then, in space
     kept for them, the omission warning and the limit line. A deprecated alias is said in its own line and does not
     clear the paths it names. Values that differ between blobs are shown as unresolved with blob and ref ids, never one
     last value. The lines start with 'ÖZET': no finding, no decision, no single-line field of the report contract.
@@ -688,8 +688,8 @@ def report_summary(info, findings, matched, meta, alias_ids, failure, blueprint=
         unset = sorted(o for o in owners if o.strip() in ("", "-") or "TBD" in o.upper())
         if unset:
             decisions.append(f"sahibi belirsiz: {os.path.basename(path)} (owner {', '.join(repr(o) for o in unset)[:80]})")
-    if decisions:
-        items.append([_list_capped("ÖZET açık kararlar (bilgi; onay değil): ", decisions, SUMMARY_LINE, "karar")])
+    if decisions:   # CT-FIX-08 (v8 audit): first after the counts, so a wide query's collision groups cannot push it out
+        items.insert(1, [_list_capped("ÖZET açık kararlar (bilgi; onay değil): ", decisions, SUMMARY_LINE, "karar")])
     if blueprint:
         items.append([_list_capped("ÖZET blueprint adayları: ", [f"{i} '{n[:50]}'" for i, n in blueprint], SUMMARY_LINE, "aday")])
     if domain_configs:
@@ -810,8 +810,13 @@ def _discover(root, name, resource=None, sor=None):
             if len(parts) == 2 and parts[1] == "tree":
                 by_tree.setdefault(parts[0], []).append(ref_line.split()[0])
         packs, pack_blobs = {}, {}
+        nul_paths = _shared_reader().nul_paths     # loaded once, not per tree (Codex)
         for tree, ref_names in by_tree.items():
-            for entry in _git(root, "ls-tree", "-r", tree).splitlines():
+            try:   # CT-FIX-08 (v8 audit): '-z' and strict UTF-8 — a quoted path ('ş', '"', '\\') was neither matched nor counted
+                entries = nul_paths(_git(root, "ls-tree", "-r", "-z", tree, raw=True), "ls-tree")
+            except ValueError as e:
+                raise Incomplete(str(e))
+            for entry in entries:
                 meta, path = entry.split("\t", 1)
                 if "/module-packs/" in path and path.endswith(".md") and not path.lower().endswith("readme.md"):
                     packs.setdefault("execution/domains/" + path, set()).update(ref_names)

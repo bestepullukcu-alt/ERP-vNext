@@ -62,6 +62,7 @@ import posixpath
 import re
 import subprocess
 import sys
+import unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -284,6 +285,42 @@ def terminal_exits(snapshots: list[Table], terminal: set[str]) -> list[tuple[str
     return out
 
 
+def _raises(f) -> bool:
+    try:
+        f()
+    except ValueError:
+        return True
+    return False
+
+
+def has_visible_text(value) -> bool:
+    """CT-FIX-08 (v8 audit): a value holds content when it has at least one base character — a letter, number,
+    punctuation or symbol (Unicode L, N, P, S). Marks alone (a combining accent, a variation selector), format characters
+    (U+200B, U+FEFF, U+2060), separators and controls are not content. A defined contract, not a font or meaning
+    guarantee; shared by the registry check and the acceptance list's evidence line."""
+    return any(unicodedata.category(c)[0] in "LNPS" for c in str(value or ""))
+
+
+def nul_paths(raw: bytes, what: str) -> list[str]:
+    """CT-FIX-08 (v8 audit): the entries of a git '-z' listing, each decoded as strict UTF-8 — git's text output quotes a
+    path with a non-ASCII byte, a quote or a backslash; an entry that is not UTF-8 is a ValueError naming it, never a
+    dropped or replaced path. CT-FIX-08 (Codex): b'' is no entry; any other output ends with NUL and holds no empty
+    entry — a missing final NUL or an empty entry inside is a ValueError too."""
+    if raw == b"":
+        return []                                   # an empty listing is a normal, empty answer
+    if not raw.endswith(b"\0"):
+        raise ValueError(f"{what}: git '-z' çıktısı NUL ile bitmiyor — son kayıt kesik, okunmadan geçilmez")
+    out = []
+    for entry in raw[:-1].split(b"\0"):
+        if not entry:
+            raise ValueError(f"{what}: git '-z' çıktısında boş kayıt — bozuk çıktı, okunmadan geçilmez")
+        try:
+            out.append(entry.decode("utf-8"))
+        except UnicodeDecodeError:
+            raise ValueError(f"{what}: git kaydı UTF-8 değil ({entry[:60]!r}) — okunmadan geçilmez")
+    return out
+
+
 def check_registry(registry: list[dict], states: list[dict], commit_exists=None, path_at=None,
                    check_vocab_rows: bool = True) -> list[str]:
     commit_exists = commit_exists or (lambda sha: git("cat-file", "-e", f"{sha}^{{commit}}").returncode == 0)
@@ -292,7 +329,7 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
     for q in registry:
         # CT-FIX-06 (v7 audit EK1-6): every column of the registry contract is filled, on the branch as on main — one
         # check for every consumer (validate, require, in_force_status, ct_route); no new column, no new value
-        empty = [c for c in REGISTRY_COLUMNS if not str(q.get(c) or "").strip()]
+        empty = [c for c in REGISTRY_COLUMNS if not has_visible_text(q.get(c))]     # CT-FIX-08: Cf-only is empty too
         if empty:
             problems.append(f"registry {q.get('queue_id') or '?'}: boş zorunlu alan {', '.join(empty)}")
         # CT-FIX-05 (F1, Codex): a task file path is a normal repo-relative path — './q.tsv', 'q.tsv/', 'x/../q.tsv',
@@ -795,10 +832,10 @@ def load_for_dispatch(queue_filter: str | None) -> tuple[list[dict], list[dict]]
     queues, states = load(queue_filter)
     transitions = read_table(TRANSITIONS, TRANSITION_COLUMNS) if TRANSITIONS.exists() else []
     problems = dispatch_problems(read_table(REGISTRY, REGISTRY_COLUMNS), states, transitions)
-    if problems:
-        raise SystemExit(f"DUR: kayıt, durum sözlüğü ya da geçiş tablosu geçersiz — dağıtım ya da rapor kararı verilmez: "
-                         f"{problems[0]}" + (f" (+{len(problems) - 1})" if len(problems) > 1 else "")
-                         + " · ayrıntı: python3 scripts/ct_queue.py validate")
+    if problems:   # CT-FIX-08 (v8 audit): not measurable (2), never read as 'not READY' (1)
+        fail(f"DUR: kayıt, durum sözlüğü ya da geçiş tablosu geçersiz — dağıtım ya da rapor kararı verilmez: "
+             f"{problems[0]}" + (f" (+{len(problems) - 1})" if len(problems) > 1 else "")
+             + " · ayrıntı: python3 scripts/ct_queue.py validate", 2)
     conflicts = main_profile_problems(queues, main_registry_text())
     if conflicts:
         raise SystemExit(f"DUR: {conflicts[0]}" + (f" (+{len(conflicts) - 1})" if len(conflicts) > 1 else "")
@@ -1769,6 +1806,8 @@ def self_test() -> int:
     # The loader every consumer but validate uses, in memory (no file is written): a real commit and a tracked path, so a
     # single registry row passes and only the duplicate stops it.
     real = dict(reg_row, path="scripts/ct_queue.py", baseline_commit=git_text("rev-parse", "HEAD").strip())
+    import contextlib
+    import io
     saved = {k: globals()[k] for k in ("read_table", "TRANSITIONS", "main_registry_text")}
 
     def loads(rows: list[dict], main_text: str | None = None, table: bool = True) -> str:
@@ -1777,19 +1816,21 @@ def self_test() -> int:
         globals().update(read_table=lambda path, cols: rows if cols == REGISTRY_COLUMNS else t7 if cols == TRANSITION_COLUMNS else s7,
                          TRANSITIONS=saved["TRANSITIONS"] if table else Path("/nonexistent/ct-fix-01/transitions.tsv"),
                          main_registry_text=lambda: main_text)
+        out = io.StringIO()
         try:
-            load_for_dispatch(real["queue_id"])
+            with contextlib.redirect_stdout(out):
+                load_for_dispatch(real["queue_id"])
             return "ok"
-        except SystemExit as e:
-            return str(e)
+        except SystemExit as e:   # CT-FIX-08: the stop prints its DUR line and exits 2 (not measurable)
+            return (f"exit {e.code} " + out.getvalue()) if isinstance(e.code, int) else str(e)
         finally:
             globals().update(saved)
     one, two = loads([real]), loads([real, real])
     cases.append(("CT-FIX-01 05: load_for_dispatch passes one valid row and stops a duplicate with DUR",
-                  one == "ok" and two.startswith("DUR:") and "registered twice" in two))
+                  one == "ok" and two.startswith("exit 2 DUR:") and "registered twice" in two))
     no_table = loads([real], table=False)
     cases.append(("CT-FIX-03 R2 sabotage: load_for_dispatch, a strict queue and no transition table -> DUR (it was a pass)",
-                  no_table.startswith("DUR:") and "no rows" in no_table))
+                  no_table.startswith("exit 2 DUR:") and "no rows" in no_table))
     # CT-FIX-02 (K4): the wiring through main() itself, not a search in this file's text — every command but validate
     # stops on what validate rejects and on a profile origin/main registers differently; validate lists the conflict;
     # a queue main does not register is preparation. Nothing is written: the loader's inputs are replaced in memory and
@@ -1815,9 +1856,9 @@ def self_test() -> int:
             globals().update(saved)
     commands = [["require", "W1", "--queue", "pq"], ["guard", "--queue", "pq"], ["summary", "--queue", "pq"],
                 ["writers", "--queue", "pq"]]
-    dup = [via_main(c, [real, real], None)[0] for c in commands]
-    cases.append(("CT-FIX-02 K4: main() — require, guard, summary and writers each stop on a duplicate registry row (DUR)",
-                  all(r.startswith("DUR:") and "registered twice" in r for r in dup)))
+    dup = [via_main(c, [real, real], None) for c in commands]
+    cases.append(("CT-FIX-02 K4: main() — require, guard, summary and writers each stop on a duplicate registry row (DUR; CT-FIX-08: exit 2)",
+                  all(code == "2" and out.startswith("DUR:") and "registered twice" in out for code, out in dup)))
     clash = [via_main(c, lowered, main_strict)[0] for c in commands]
     cases.append(("CT-FIX-02 K3: main() — origin/main registers the queue strict=yes, the branch strict=no -> every "
                   "command DUR (farklı profil)", all(r.startswith("DUR:") and "farklı profil" in r for r in clash)))
@@ -1831,6 +1872,12 @@ def self_test() -> int:
                   "farklı görev kaynağı" in loads([dict(real, path="scripts/prompt_gate.py")], main_strict)
                   and "kayıt geçersiz" in loads([real], reg_head + "\t".join(dict(real, owner_confirmation="maybe")[c]
                                                                               for c in REGISTRY_COLUMNS) + "\n")))
+    cases.append(("CT-FIX-08: nul_paths — b'' no entry; a missing final NUL, an empty entry, a non-UTF-8 entry -> ValueError",
+                  nul_paths(b"", "t") == [] and nul_paths(b"a\0b\0", "t") == ["a", "b"]
+                  and all(_raises(lambda r=r: nul_paths(r, "t")) for r in (b"a\0b", b"a\0\0b\0", b"\0", b"\xff\0"))))
+    cases.append(("CT-FIX-08: has_visible_text — letters, numbers, symbols yes; U+200B, U+FEFF, U+2060, a lone mark, VS16 no",
+                  all(has_visible_text(v) for v in ("a", "ş", "7", "-", "\u2705\ufe0f", "e\u0301"))
+                  and not any(has_visible_text(v) for v in ("", " ", "\u200b", "\ufeff", "\u2060", "\u0301", "\ufe0f", "\u2028", "\x0c"))))
     cases.append(("CT-FIX-06 EK1-6: an empty required column (scope, evidence, a blank owner_confirmation) -> registry problem; the full row -> none",
                   all(any(f"boş zorunlu alan {c}" in pr for pr in check_registry([dict(reg_row, **{c: v})], [], **yes))
                       for c, v in (("scope", ""), ("evidence", "  "), ("owner_confirmation", "")))
@@ -1896,9 +1943,13 @@ def main() -> int:
         registry = read_table(REGISTRY, REGISTRY_COLUMNS)
         transitions = read_table(TRANSITIONS, TRANSITION_COLUMNS) if TRANSITIONS.exists() else []
         problems = check_registry(registry, states) + profile_problems(registry, states, transitions)
+        broken = bool(problems)
         problems += main_profile_problems(queues, main_registry_text())     # CT-FIX-02 (K3): the stop the others make
         for line in problems:
             print(f"HATA {line}")
+        if broken:   # CT-FIX-08 (v8 audit): a broken registry names no task file to read — no traceback, no false OK
+            print("FAIL kayıt geçersiz — görev dosyaları okunmadı")
+            return 1
         failed = bool(problems)
         for q in queues:
             cur = Table(decode(current_bytes(q, a.ref), q["path"]))

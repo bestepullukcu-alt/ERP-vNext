@@ -1485,8 +1485,9 @@ class CTFIX06_DiscoverySummary(CTFIX04):
         self.assertExit(p, 3)
         out = p.stdout.splitlines()
         self.assertTrue(out[1].startswith("ÖZET bulgular: "), out[1])
-        self.assertTrue(out[2].startswith("ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0288"), out[2])
-        self.assertIn("other/module-packs/MOD-0288-audit-ledger-external.md", out[2])
+        line = next(l for l in out if l.startswith("ÖZET olası kimlik çakışması"))   # CT-FIX-08: after the open decisions
+        self.assertTrue(line.startswith("ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0288"), line)
+        self.assertIn("other/module-packs/MOD-0288-audit-ledger-external.md", line)
         self.assertTrue(any(l.startswith("ÖZET paket künyesi: execution/domains/other/") and "owner other-team" in l for l in out), out[:8])
 
     def test_different_kunye_values_on_another_ref_stay_unresolved(self):
@@ -1533,8 +1534,9 @@ class CTFIX06_EvidenceLineAndRegistry(CTFIX04):
                 cells = FX.reg_line.rstrip("\n").split("\t")
                 cells[index] = ""
                 FX.put(REG, FX.reg_head + "\t".join(cells) + "\n")
-                for args in (CONSUMERS["validate"], CONSUMERS["require"], ["require", "W1", "--queue", "ct", "--in-force"]):
-                    self.assertExit(FX.run("scripts/ct_queue.py", *args), 1, f"boş zorunlu alan {column}")
+                self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]), 1, f"boş zorunlu alan {column}")
+                for args in (CONSUMERS["require"], ["require", "W1", "--queue", "ct", "--in-force"]):   # CT-FIX-08: not measurable, 2
+                    self.assertExit(FX.run("scripts/ct_queue.py", *args), 2, f"boş zorunlu alan {column}")
         FX.reset(self.mark)
         self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]), 0)   # the intact registry
 
@@ -1568,6 +1570,102 @@ class CTFIX07_SummaryDecisions(CTFIX04):
         self.assertIn("sahibi belirsiz: MOD-0288-audit-ledger.md (owner ", line)
         self.assertIn("'audit data owner TBD'", line)       # with the older blob's absent owner '-' on the other refs
         self.assertEqual(sum(l.startswith("BULGU ") for l in out), before)
+
+
+class CTFIX08_VisibleTextAndPaths(CTFIX04):
+    """CT-FIX-08 (v8 audit): one 'visible content' contract for a cited evidence line and a registry field; git path
+    listings read with '-z' and strict UTF-8 in the four consumers; a broken registry stops validate before any task
+    file and makes require answer 2."""
+    def cite(self, n, script, cited):
+        code = FX.git("rev-parse", "HEAD")
+        out = f"docs/records/audits/run-ctfix08-{n}"
+        p = FX.run("scripts/run_record.py", "run", "--out", out, "--", sys.executable, "-c", script)
+        self.assertExit(p, 0, "KOŞU KAYDI")
+        e = FX.commit("CT-FIX-08: a run whose output is cited")
+        FX.put(LIST, FX.list_head + FX.list_row.replace(f"{FX.artifact}@{FX.evidence_commit}:1", f"{out}/stdout.txt@{e}:{cited}"))
+        l = FX.commit("CT-FIX-08: the list citing it")
+        return self.check(FX.write_acceptance(commit=code, evidence=f"{out}/run-record-v1.json@{e}", acceptance_list=f"{LIST}@{l}"))
+
+    def test_a_cited_line_needs_visible_content(self):
+        refused = (("zero-width space", "\\u200b"), ("BOM", "\\ufeff"), ("word joiner", "\\u2060"), ("a mix", "\\u200b\\ufeff\\u2060 "),
+                   ("a combining accent alone", "\\u0301"), ("a variation selector alone", "\\ufe0f"))
+        accepted = (("Turkish text", "Çalışma şöyle ölçüldü"), ("an emoji with its variation selector", "\\u2705\\ufe0f tamam"),
+                    ("a letter with a combining accent", "e\\u0301"), ("Chinese", "测量完成"))
+        for n, (label, line) in enumerate(refused + accepted):
+            with self.subTest(case=label):
+                FX.reset(self.mark)
+                p = self.cite(n, f"print('AC-1 checked'); print('{line}')", 2)
+                if (label, line) in refused:
+                    self.assertExit(p, 1, "kanıt satırı 2 boş")
+                else:
+                    self.assertExit(p, 0, "ACCEPTED'e izin verir")
+        for n, (label, script) in enumerate((("U+2028 inside line 1", "print('AC-1 checked\\u2028devam')"),
+                                             ("a form feed inside line 1", "print('AC-1 checked\\x0cdevam')")), start=20):
+            with self.subTest(case=label):
+                FX.reset(self.mark)
+                self.assertExit(self.cite(n, script, 2), 1, "kanıt satırı 2 dosyada yok (1 satır)")
+
+    def test_a_broken_registry_stops_validate_and_require(self):
+        cells = FX.reg_line.rstrip("\n").split("\t")
+        for column, index, value in (("control_tower", 1, "\u200b"), ("scope", 5, "\ufeff"), ("evidence", 6, "\u2060"), ("path", 2, "")):
+            with self.subTest(column=column):
+                FX.reset(self.mark)
+                broken = list(cells); broken[index] = value
+                FX.put(REG, FX.reg_head + "\t".join(broken) + "\n")
+                v = FX.run("scripts/ct_queue.py", *CONSUMERS["validate"])
+                self.assertExit(v, 1, f"boş zorunlu alan {column}")
+                self.assertIn("FAIL kayıt geçersiz — görev dosyaları okunmadı", v.stdout)
+                self.assertNotIn("Traceback", v.stdout + v.stderr)
+                self.assertFalse([l for l in v.stdout.splitlines() if l.startswith("OK ")], v.stdout)
+                self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["require"]), 2, f"boş zorunlu alan {column}")
+        FX.reset(self.mark)
+        self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["validate"]), 0)
+        self.assertExit(FX.run("scripts/ct_queue.py", *CONSUMERS["require"]), 0)
+
+    NAMES = ("MOD-0288-audit-ledger-şerit.md", 'MOD-0288-audit-ledger "q".md', "MOD-0288-audit-ledger back\\slash.md",
+             "MOD-0288-audit-ledger with space.md")
+
+    def test_quoted_paths_are_listed_by_every_consumer(self):
+        for name in self.NAMES:
+            FX.put(f"execution/domains/audit/module-packs/{name}", "---\nid: MOD-0288\nstatus: draft\n---\n# x\n")
+        FX.put("docs/records/audits/çalışma kaydı.md", "x\n")
+        FX.commit("CT-FIX-08: paths git quotes in its text output")
+        p = FX.run(".antigravity/scripts/verify_module_id.py", str(FX.root), "--discover", "Audit Ledger")
+        self.assertExit(p, 3)
+        for name in self.NAMES:
+            self.assertIn(f"BULGU paket: execution/domains/audit/module-packs/{name} — ", p.stdout)
+        probe = FX.root.parent / "ctfix08-paths.py"
+        probe.write_text(
+            "import importlib.util, json, sys\n"
+            "root = sys.argv[1]\n"
+            "def load(name):\n"
+            "    spec = importlib.util.spec_from_file_location(name, f'{root}/scripts/{name}.py'); m = importlib.util.module_from_spec(spec)\n"
+            "    sys.modules[name] = m; spec.loader.exec_module(m); return m\n"
+            "pg, ar, sr = load('prompt_gate'), load('acceptance_record'), load('status_report_v2')\n"
+            "from pathlib import Path\n"
+            "head = pg.GitRepo(root)._git(root, 'rev-parse', 'HEAD').strip()\n"
+            "print(json.dumps({'gate': pg.GitRepo(root).files(head), 'tracked': ar.Git(Path(root)).tracked(head, 'docs/records'),\n"
+            "                  'packs': sorted(sr.Source('HEAD').files_matching(head, 'execution/domains', '*module-packs/*.md'))}))\n",
+            encoding="utf-8")
+        r = subprocess.run([sys.executable, "-B", str(probe), str(FX.root)], cwd=FX.root, env=ENV, capture_output=True, text=True, timeout=120)
+        self.assertEqual(r.returncode, 0, r.stderr[-800:])
+        got = json.loads(r.stdout)
+        for name in self.NAMES:
+            path = f"execution/domains/audit/module-packs/{name}"
+            self.assertIn(path, got["gate"]); self.assertIn(path, got["packs"])
+        self.assertIn("docs/records/audits/çalışma kaydı.md", got["tracked"])
+
+    def test_the_nul_listing_decoder_refuses_a_broken_listing(self):
+        # CT-FIX-08 (Codex): b'' is no entry; a filled listing ends with NUL and holds no empty entry; strict UTF-8
+        cq = load(FX.root / "scripts" / "ct_queue.py", "ct_queue_ctfix08")
+        self.assertEqual(cq.nul_paths(b"", "t"), [])
+        self.assertEqual(cq.nul_paths("a.md\0çalışma kaydı.md\0".encode("utf-8"), "t"), ["a.md", "çalışma kaydı.md"])
+        for label, raw, why in (("no final NUL", b"a.md\0b.md", "NUL ile bitmiyor"), ("an empty entry inside", b"a.md\0\0b.md\0", "boş kayıt"),
+                                ("only a NUL", b"\0", "boş kayıt"), ("not UTF-8", b"ok.md\0\xff\xfe.md\0", "UTF-8 değil")):
+            with self.subTest(case=label):
+                with self.assertRaises(ValueError) as e:
+                    cq.nul_paths(raw, "t")
+                self.assertIn(why, str(e.exception))
 
 
 if __name__ == "__main__":

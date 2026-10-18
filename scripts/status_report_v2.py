@@ -853,6 +853,17 @@ CLOSED_CLASSES = {"closed", "superseded", "cancelled", "failed", "rework"}
 HEX_ID = re.compile(r"^[0-9a-f]{7,40}$")
 
 
+_NUL_PATHS = None
+
+
+def _nul_paths():
+    """CT-FIX-08: the shared ct_queue.nul_paths, loaded once per process."""
+    global _NUL_PATHS
+    if _NUL_PATHS is None:
+        _NUL_PATHS = _load("ct_queue", ROOT / "scripts" / "ct_queue.py").nul_paths
+    return _NUL_PATHS
+
+
 class Source:
     """Every read of the report at one commit (plus the local origin/main for the in-force line). Read-only."""
 
@@ -905,8 +916,12 @@ class Source:
     def files_matching(self, commit: str, prefix: str, pattern: str) -> dict[str, bytes]:
         """{path: bytes} of every file under prefix at commit whose path matches the glob pattern (one batch read)."""
         import fnmatch
-        listing = self.git("ls-tree", "-r", commit, "--", prefix).stdout.decode("utf-8", errors="replace")
-        items = [(l.split("\t", 1)[1], l.split()[2]) for l in listing.splitlines() if "\t" in l and l.split()[1] == "blob"]
+        # CT-FIX-08 (v8 audit): '-z' and strict UTF-8 entries (the shared ct_queue.nul_paths), never a quoted or replaced path
+        try:
+            listing = _nul_paths()(self.git("ls-tree", "-r", "-z", commit, "--", prefix).stdout, "ls-tree")
+        except ValueError as e:
+            raise Incomplete(str(e))
+        items = [(l.split("\t", 1)[1], l.split()[2]) for l in listing if "\t" in l and l.split()[1] == "blob"]
         items = [(path, b) for path, b in items if fnmatch.fnmatch(path, pattern)]
         if not items:
             return {}

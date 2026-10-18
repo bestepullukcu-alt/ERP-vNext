@@ -123,9 +123,9 @@ class DiscoverySummary(unittest.TestCase):
     def test_a_collision_is_named_with_its_packs_and_parent_and_fu_are_not_one(self):
         out = self.summary([(self.HCM, 500), (self.PSS, 1)], findings=("BULGU paket: x", "BULGU blueprint: y"))
         self.assertTrue(out[0].startswith("ÖZET bulgular: blueprint 1 · sor 0 · registry 0 · paket 1"), out[0])
-        self.assertTrue(out[1].startswith("ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0251"), out[1])
-        self.assertIn(self.PSS, out[1])
-        self.assertTrue(out[2].startswith(f"ÖZET paket künyesi: {self.HCM}") and "owner HCM / HR data owner TBD" in out[2], out[2])
+        c = next(i for i, l in enumerate(out) if l.startswith("ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0251"))
+        self.assertIn(self.PSS, out[c])
+        self.assertTrue(out[c + 1].startswith(f"ÖZET paket künyesi: {self.HCM}") and "owner HCM / HR data owner TBD" in out[c + 1], out[c + 1])
         fu = self.summary([("execution/domains/a/module-packs/MOD-0288-ledger.md", 1),
                            ("execution/domains/a/module-packs/MOD-0288-FU06B-ledger-detail.md", 1)])
         self.assertFalse([l for l in fu if "çakışma —" in l or "kimlik çokluğu" in l], fu)
@@ -174,7 +174,8 @@ class DiscoverySummary(unittest.TestCase):
         self.assertIn("ÖZET EKSİK:", head)
         self.assertIn("ÖZET sınır:", head)
         self.assertTrue(all(len(l.encode("utf-8")) <= vmi.SUMMARY_LINE for l in out))
-        self.assertRegex(out[1], r" · \+\d+ yol$")                      # the count of the paths not shown survives the cut
+        line = next(l for l in out if l.startswith("ÖZET olası kimlik çakışması"))   # CT-FIX-08: found by prefix
+        self.assertRegex(line, r" · \+\d+ yol$")                      # the count of the paths not shown survives the cut
 
     def test_the_open_decisions_follow_the_collisions(self):
         # CT-FIX-07 (v7 C5 pilot): the collision and the owner TBD were visible but not used; they are named as decisions
@@ -188,8 +189,7 @@ class DiscoverySummary(unittest.TestCase):
         self.assertIn("sahibi belirsiz: MOD-0251-core-hr-employee-master.md (owner 'HCM / HR data owner TBD')", line)
         self.assertIn("sahibi belirsiz: CAND-CAP-0001-legacy.md (owner '-')", line)     # an absent owner, not a stop
         self.assertNotIn("hris-external-sor", line)
-        i = out.index(line)
-        self.assertTrue(out[i - 1].startswith("ÖZET paket künyesi: " + self.PSS), out[i - 1])   # right after the collision group
+        self.assertEqual(out.index(line), 1, out[:3])     # CT-FIX-08: right after the counts, before the collision groups
         alias = vmi.report_summary([], [], [(self.HCM, 2), (self.PSS, 1)], meta, {"MOD-0251"}, None)
         self.assertTrue(any("kimlik MOD-0251 — takma ad ilişkisi belirsiz (2 paket yolu)" in l for l in alias), alias)
         none = vmi.report_summary([], [], [(self.PSS, 1)], meta, set(), None)
@@ -233,6 +233,13 @@ class DiscoverySummary(unittest.TestCase):
         line = next(l for l in out if l.startswith("ÖZET domain-config "))
         self.assertIn("execution/domains/a/domain-config.md (HEAD'de ölçülemedi)", line)
         self.assertIn("execution/domains/b/domain-config.md (HEAD'de yok)", line)
+
+    def test_the_open_decisions_survive_a_wide_query(self):
+        # CT-FIX-08 (Claude Denetim001 C7-F): a wide real query's collision groups filled the budget and dropped the decisions
+        many = [(f"execution/domains/d{i:02d}/module-packs/MOD-{i // 2:04d}-{'x' * 90}-{i}.md", 3) for i in range(60)]
+        out = vmi.report_summary([], [], many, None, set(), None, [("MOD-0001", "A")], [])
+        self.assertTrue(out[1].startswith("ÖZET açık kararlar (bilgi; onay değil): kimlik MOD-0000 — olası çakışma"), out[:2])
+        self.assertTrue(any(l.startswith("ÖZET EKSİK: ") for l in out), out[-3:])
 
     def test_an_incomplete_discovery_says_so(self):
         out = vmi.report_summary([], [], [], {}, set(), "Blueprint dosyası yok")

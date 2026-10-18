@@ -71,11 +71,16 @@ REVIEW = re.compile(r"^inceleme bekler\s*[—-]\s*(.*)$")   # CT-FIX-05 (F3): ap
 def evidence_line_problem(content: str, n: int) -> str | None:
     """CT-FIX-06 (v7 audit EK1-2): a cited evidence line is a real, non-blank line of the file — an empty file has no
     line 1 and a final newline adds no line; a line of spaces cites nothing. What the line means is not checked."""
-    lines = content.splitlines()
+    # CT-FIX-08 (v8 audit): lines are LF lines (CRLF read as LF); U+2028 or a form feed starts no line; a line counts when
+    # it holds visible content (ct_queue.has_visible_text) — a zero-width, BOM or word-joiner line cites nothing either
+    text = content.replace("\r\n", "\n")
+    lines = text.split("\n") if text else []
+    if text.endswith("\n"):
+        lines = lines[:-1]
     if not 1 <= n <= len(lines):
         return f"kanıt satırı {n} dosyada yok ({len(lines)} satır)"
-    if not lines[n - 1].strip():
-        return f"kanıt satırı {n} boş — boş satır kanıt değildir"
+    if not shared().has_visible_text(lines[n - 1]):
+        return f"kanıt satırı {n} boş — görünür içeriği olmayan satır kanıt değildir"
     return None
 EVIDENCE_DOCS = "docs/records/audits/"
 WAIVER = re.compile(r"^\s*(waiver|muafiyet)\b", re.I | re.M)
@@ -249,20 +254,26 @@ class Git:
 
     def tracked(self, commit: str, prefix: str) -> list[str]:
         out = self._run("ls-tree", "-r", "--name-only", "-z", commit, "--", prefix, ok_fail=True) if FULL_HEX.match(commit) else None
-        return [p for p in (out or b"").decode("utf-8", errors="replace").split("\0") if p]
+        return self._paths(out or b"", "ls-tree")
+
+    def _paths(self, raw: bytes, what: str) -> list[str]:
+        try:   # CT-FIX-08: strict UTF-8 entries of a '-z' listing; one that is not is a stop, never a replaced path
+            return shared().nul_paths(raw, what)
+        except ValueError as e:
+            raise Incomplete(str(e))
 
     def changed(self, a: str, b: str) -> list[str] | None:
         if not (FULL_HEX.match(a) and FULL_HEX.match(b)):
             return None
         out = self._run("diff", "--name-only", "-z", "--no-renames", a, b, "--", ok_fail=True)
-        return None if out is None else [p for p in out.decode("utf-8", errors="replace").split("\0") if p]
+        return None if out is None else self._paths(out, "diff")
 
     def v2_records(self, ref: str = "HEAD") -> dict[str, str]:
         """{path: text} of every v2 record committed at ref under docs/records/ (the supersedes graph)."""
         if ref.startswith("-") or self.resolve(ref) is None:
             raise Incomplete(f"kayıt dizini için ref '{ref[:40]}' okunamadı")
-        listing = self._run("ls-tree", "-r", ref, "--", "docs/records").decode("utf-8", errors="replace")
-        blobs = [(l.split("\t")[1], l.split()[2]) for l in listing.splitlines() if l.endswith(".md") and "\t" in l]
+        listing = self._paths(self._run("ls-tree", "-r", "-z", ref, "--", "docs/records"), "ls-tree docs/records")   # CT-FIX-08
+        blobs = [(l.split("\t", 1)[1], l.split()[2]) for l in listing if "\t" in l and l.split("\t", 1)[1].endswith(".md")]
         if not blobs:
             return {}
         out = self._run("cat-file", "--batch", stdin=("\n".join(b for _, b in blobs) + "\n").encode())

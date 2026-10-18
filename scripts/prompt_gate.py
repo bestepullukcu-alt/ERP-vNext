@@ -242,7 +242,7 @@ class GitRepo:
     def __init__(self, worktree: str):
         self.worktree = worktree
 
-    def _git(self, where: str, *args: str, ok_fail: bool = False) -> str | None:
+    def _git(self, where: str, *args: str, ok_fail: bool = False, raw: bool = False) -> str | bytes | None:
         if not args or args[0] not in GIT_ALLOWED:
             raise Incomplete(f"git {args[:1]}: salt-okunur izinli komut değil")
         env = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
@@ -251,7 +251,7 @@ class GitRepo:
             if ok_fail:
                 return None
             raise Incomplete(f"git {' '.join(args[:2])} → {done.returncode}")
-        return done.stdout.decode("utf-8", errors="replace")
+        return done.stdout if raw else done.stdout.decode("utf-8", errors="replace")
 
     def is_repo(self, path: str) -> bool:
         return os.path.isdir(path) and self._git(path, "rev-parse", "--git-common-dir", ok_fail=True) is not None
@@ -308,7 +308,12 @@ class GitRepo:
         return done.stdout
 
     def files(self, commit: str) -> list[str]:
-        return self._git(self.worktree, "ls-tree", "-r", "--name-only", commit).splitlines()
+        # CT-FIX-08 (v8 audit): '-z' and strict UTF-8 — the text listing quotes a path with a non-ASCII byte, a quote or
+        # a backslash, and that path would match no allowed glob
+        try:
+            return _SHARED.nul_paths(self._git(self.worktree, "ls-tree", "-r", "--name-only", "-z", commit, raw=True), "ls-tree")
+        except ValueError as e:
+            raise Incomplete(str(e))
 
     def symlinks(self, commit: str, prefix: str) -> list[str]:
         """CT-FIX-05 (C1): the symbolic links at `commit` on the way to `prefix` (every ancestor component, Codex:
