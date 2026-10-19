@@ -217,7 +217,7 @@ public sealed class RecallCaseDetailWebTests : IClassFixture<WebApplicationFacto
         return controller;
     }
 
-    /// <summary>Records path, method, Idempotency-Key, If-Match and body of every request; answers 200 {}.</summary>
+    /// <summary>Records path, method, Idempotency-Key, If-Match and body of every request; answers 200 with the contract-shaped placeholder.</summary>
     internal sealed class Recorder : HttpMessageHandler
     {
         public List<(string Path, string Method, string? Key, string? IfMatch, string? Body)> Sent { get; } = [];
@@ -232,7 +232,8 @@ public sealed class RecallCaseDetailWebTests : IClassFixture<WebApplicationFacto
                     request.Headers.TryGetValues("If-Match", out var m) ? string.Join(",", m) : null, body));
             }
 
-            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}", Encoding.UTF8, "application/json") };
+            // WP-MVP1-FU-CLEAN2 (FU-WEB-CONTRACT-FAKES-RECALL): the placeholder is bound to RECALL 1.9.0 (it may only miss required members)
+            return RecallContractFakes.Placeholder(request);
         }
     }
 }

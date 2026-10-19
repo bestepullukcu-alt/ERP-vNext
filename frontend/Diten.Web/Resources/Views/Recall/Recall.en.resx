@@ -155,29 +155,6 @@
   <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>This lot already has an open recall case.</value></data>
   <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>This request was already sent with different content. Refresh the page.</value></data>
   <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Select a company first.</value></data>
-  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Shows how ready the company is for a recall: open cases, the last drill against its target, lot coverage of outbound movements, untraceable outbound movements and returns of open cases.</value></data>
-  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Quality (recall owner), quality system administrator and management (read-only).</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Choose the company</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Every figure on this page belongs to the selected company only.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Read the cards</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>A red “Target exceeded” on the last drill or a non-zero untraceable count needs attention.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Watch the drill history</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>The chart shows the last 12 completed drills against the target line; the band above warns when the last drill is too old.</value></data>
-  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Traces a lot through the whole genealogy, backward to its inputs and forward to stock, shipments and customers, and shows the gaps where a lot cannot prove where goods went.</value></data>
-  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Quality (recall owner) and the quality system administrator.</value></data>
-  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Pick the lot</value></data>
-  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Search the lot number and choose the direction: backward, forward or both.</value></data>
-  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Read the tree or the table</value></data>
-  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Both views show the same nodes. Red rows are trace gaps; another company’s activity appears only as a count.</value></data>
-  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Export or open a case</value></data>
-  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>“Download CSV” gives the same rows; “Open a recall case with this scope” opens a draft case from this trace.</value></data>
-  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Opening a case creates a draft immediately; nothing is blocked until its scope is approved.</value></data>
-  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Lists the company’s real recall cases and drills together, newest first, with their status and progress.</value></data>
-  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Everyone who follows recalls: quality, warehouse, commercial and management.</value></data>
-  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Filter the list</value></data>
-  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Use type, status, class, product and the opening date. A class filter shows real cases only.</value></data>
-  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Tell drills apart</value></data>
-  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>A drill row says “Drill”, shows its result and duration, and has no class or level.</value></data>
   <data name="Recall.Case.Crumb" xml:space="preserve"><value>Case {0}</value></data>
   <data name="Recall.Case.NotFound" xml:space="preserve"><value>The recall case was not found.</value></data>
   <data name="Recall.Case.Product" xml:space="preserve"><value>Product</value></data>
@@ -385,16 +362,6 @@
   <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>The recall case was not found.</value></data>
   <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>This lot is under recall — outbound movements are blocked.</value></data>
   <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>The e-signature window could not be opened. Try again shortly.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>One recall case from draft to closure: its scope, stock, customers, returns, effectiveness and history.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>Quality (QA), warehouse and customer service users of the company.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>Mark and submit the scope</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>Exclude what is not affected with a reason, then submit the scope for approval.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>Approve with e-signature</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>Another user approves the scope; the lots are blocked and quarantine requests are sent.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>Follow customers and returns</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>Record each notification and consumption, and link each customer return.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Check effectiveness and close</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Complete the effectiveness check with e-signature; another user closes the case.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>The scope waits for approval; to change it, return it to draft.</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>Quarantine requests: {0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>Customers notified: {0} / {1}</value></data>
@@ -528,26 +495,6 @@
   <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>Trace node limit</value></data>
   <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>A setting is out of its allowed range.</value></data>
   <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>Nothing was changed.</value></data>
-  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>Plan recall drills and run them against the clock without touching stock.</value></data>
-  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>Quality assurance and the quality-system administrator.</value></data>
-  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>Plan</value></data>
-  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>Add a plan: frequency, scope and next date.</value></data>
-  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>Run</value></data>
-  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>Start the timer, then complete the three steps in order: trace, scope, customer list.</value></data>
-  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>Sign</value></data>
-  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>Write the result note and save it with the e-signature when the policy asks for one.</value></data>
-  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>Produce the evidence pack of a case, a drill or a period for audits.</value></data>
-  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>Quality assurance, the quality-system administrator and auditors.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>Choose and preview</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>Pick the subject; the preview shows the seven sections of the file.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>Download and verify</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>Download the PDF or CSV; the SHA-256 in the export log is computed from the file’s bytes.</value></data>
-  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>Set the company’s drill target, frequency warning and effectiveness targets.</value></data>
-  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>The quality-system administrator.</value></data>
-  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>Change</value></data>
-  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>Change the values and write a reason of at least 10 characters.</value></data>
-  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>Save</value></data>
-  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>Save; when the policy asks, sign in the e-signature window. Every change is in the history.</value></data>
   <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Summary</value></data>
   <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · Trace result</value></data>
   <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Quarantine requests and outcomes</value></data>

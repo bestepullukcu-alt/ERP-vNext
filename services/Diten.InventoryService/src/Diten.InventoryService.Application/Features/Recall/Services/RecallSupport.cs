@@ -41,6 +41,9 @@ public sealed partial class RecallSupport
 
     public Guid UserId => _tenant.UserId;
 
+    /// <summary>WP-MVP1-FU-CLEAN2: the caller's display name now (the token's; null outside a request) — stored where a background flow needs it later.</summary>
+    public string? ActorName => _actorName?.Current;
+
     public Guid CorrelationId => _correlation.CorrelationId;
 
     public DateTimeOffset Now() => _clock.GetUtcNow();

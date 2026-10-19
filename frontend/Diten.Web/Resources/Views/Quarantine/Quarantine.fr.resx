@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Le lot a dépassé sa date de recontrôle ; inutilisable jusqu’à une décision qualité.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>La période comptable est close.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>L’emplacement est inconnu ou inutilisable.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>utilisateur inconnu</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>SKU global</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>SKU local</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Produit fini</value></data>

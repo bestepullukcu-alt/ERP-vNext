@@ -123,7 +123,10 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
     [InlineData("RECALLSETTINGS")]
     public void The_page_help_texts_follow_the_UXH_001_key_structure(string code)
     {
-        var keys = Diten.Web.Views.Recall.Recall.Keys.Where(k => k.StartsWith($"Help.{code}.", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal);
+        // WP-MVP1-FU-CLEAN2 (FU-0177-HELP-PANEL): the R6 texts moved from the module list to the "?" panel's PageHelpResource — measured there
+        Assert.DoesNotContain(Diten.Web.Views.Recall.Recall.Keys, k => k.StartsWith("Help.", StringComparison.Ordinal));
+        var keys = System.Xml.Linq.XDocument.Load(Path.Combine(TraceViewRenderer.WebRoot, "Resources", "PageHelpResource.en.resx")).Root!.Elements("data")
+            .Select(d => (string)d.Attribute("name")!).Where(k => k.StartsWith($"Help.{code}.", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal);
         Assert.Contains($"Help.{code}.Purpose", keys);
         Assert.Contains($"Help.{code}.Audience", keys);
         var steps = Enumerable.Range(1, 5).TakeWhile(n => keys.Contains($"Help.{code}.Step{n}")).ToList();

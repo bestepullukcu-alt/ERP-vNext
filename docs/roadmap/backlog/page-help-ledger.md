@@ -2,9 +2,10 @@
 
 Kural: `.antigravity/rules/page-help-and-keyboard.md` (UXH-001) · Ölçen test: `frontend/Diten.Web/tests/page-help-ledger.test.js`
 
-**Tavan (yalnız azalır): kiracı 246 · platform 18 · frozen 81**
+**Tavan (yalnız azalır): kiracı 246 · platform 18 · frozen 80**
 
 - Tavan artışı (CT kararı): kiracı 236 → 246 — WP-LANE-UX-GUARDS-01, bir kerelik: main-sync (2026-10-12) ile gelen 11 Tedarik Zinciri / CRM sayfası (sahipleri satırlarında, metin sahiplerinin işi) eklendi; CRM'in kaldırdığı CONTENTSCOPES (WP-SB-1R) çıktı. Kural gevşemedi: bundan sonraki her yeni satır yine kırmızı.
+- WP-MVP1-FU-CLEAN2 (2026-10-19): frozen 81 → 80 — `InventoryGovernance/Index.cshtml` satırı çıktı (görünüm WP-0176-F5 CT-F12 ile kaldırılmıştı, MOD-0176). MVP-1 sayfalarının (MOD-0173…0177, MOD-0022 — 46 kod) yardım metni yazıldı; bu sayfaların defterde satırı yoktu, test içindeki WP-LANE-MAIN-SYNC-02 listesinden çıktılar.
 
 Tavan bu satırdadır, testte değil. UX-COMMON-FIX2: test satır sayısının bu sayılara **EŞİT** olduğunu ölçer; bir satır
 eklemek ya da silmek bu başlığı da düzenletir, böylece her değişiklik PR farkında başlık satırıyla görünür. Sayının bir
@@ -369,7 +370,6 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | `EnterpriseStrategyBusinessPerformance/StrategyPeriods.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
 | `EnterpriseStrategyBusinessPerformance/TargetAllocation.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
 | `EnterpriseStrategyBusinessPerformance/VarianceAnalysis.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `InventoryGovernance/Index.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
 | `ManagementGovernance/Cadence.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
 | `ManagementGovernance/ExecutiveCockpit.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
 | `ManagementGovernance/Favorites.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |

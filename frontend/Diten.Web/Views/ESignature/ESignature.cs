@@ -420,14 +420,6 @@ public sealed class ESignature
         "ESign.Approvals.Log",
         "ESign.Approvals.LogEmpty",
         "ESign.Approvals.Decision.approved",
-        "ESign.Approvals.Decision.rejected",
-        // WP-MVP1-ESIGN-HELP — the page-help note of each of the seven e-signature pages
-        "ESign.Help.Mine",
-        "ESign.Help.Requests",
-        "ESign.Help.Verify",
-        "ESign.Help.Export",
-        "ESign.Help.Policy",
-        "ESign.Help.Meanings",
-        "ESign.Help.Approvals"
+        "ESign.Approvals.Decision.rejected"
     ];
 }

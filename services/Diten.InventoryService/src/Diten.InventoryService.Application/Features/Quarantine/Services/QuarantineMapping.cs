@@ -107,7 +107,7 @@ public static class QuarantineMapping
         => new(Id(t.Id), t.TransactionNumber, WireNames.ToWire(t.MovementType), QuarantineSupport.Wire(t.PostingDate),
             t.FromStockStatus is { } f ? WireNames.ToWire(f) : null, t.ToStockStatus is { } s ? WireNames.ToWire(s) : null,
             t.FromLocationId, t.ToLocationId, t.BaseQuantity,
-            names is not null && names.TryGetValue((t.CorrelationId, t.CreatedBy), out var name) ? name : null);
+            Inventory.InventoryMapping.PostingName(t, names)); // WP-MVP1-FU-CLEAN2: stored name → queue name → none
 
     public static DecisionDto Decision(QuarantineDecision decision, IReadOnlyList<QuarantineDecisionEvent> events)
     {

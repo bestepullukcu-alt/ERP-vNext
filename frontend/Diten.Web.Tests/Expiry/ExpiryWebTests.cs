@@ -57,14 +57,20 @@ public sealed class ExpiryWebTests : IClassFixture<WebApplicationFactory<Program
 
     // ── vocabulary ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-    /// <summary>WP-MVP1-FIX-LIVE2 (NE C): every Expiry page has its UXH-001 help texts (the Recall structure), delivered in 7 languages by the key list.</summary>
+    /// <summary>
+    /// WP-MVP1-FIX-LIVE2 (NE C) wrote the UXH-001 help of every Expiry page into the MODULE list, where the "?" panel never read it (two codes
+    /// were even off the manifest: EXPIRYEXPIRED / EXPIRYFEFOORDER). WP-MVP1-FU-CLEAN2 moved it to the panel's PageHelpResource under the
+    /// manifest codes (EXPIREDSTOCK / FEFOORDER) — Help.MvpOnePageHelpTests measures the text; here: no copy is left in the Expiry list.
+    /// </summary>
     [Fact]
-    public void Every_Expiry_page_has_its_UXH_001_help_texts()
+    public void Every_Expiry_page_has_its_UXH_001_help_in_the_panel_resource_not_in_the_module_list()
     {
         var keys = Diten.Web.Views.Expiry.Expiry.Keys.ToHashSet(StringComparer.Ordinal);
-        foreach (var page in new[] { "EXPIRYDASHBOARD", "EXPIRYAPPROACHING", "EXPIRYEXPIRED", "EXPIRYEXCEPTIONS", "EXPIRYEXCEPTIONDETAILS", "EXPIRYFEFOORDER", "EXPIRYPOLICY", "EXPIRYEVIDENCE" })
+        Assert.DoesNotContain(keys, k => k.StartsWith("Help.", StringComparison.Ordinal));
+        var panel = Resx(Path.Combine(Web, "Resources", "PageHelpResource.en.resx"));
+        foreach (var page in new[] { "EXPIRYDASHBOARD", "EXPIRYAPPROACHING", "EXPIREDSTOCK", "EXPIRYEXCEPTIONS", "EXPIRYEXCEPTIONDETAILS", "FEFOORDER", "EXPIRYPOLICY", "EXPIRYEVIDENCE" })
             foreach (var part in new[] { "Purpose", "Audience", "Step1Title", "Step1", "Step2Title", "Step2" })
-                Assert.Contains($"Help.{page}.{part}", keys);
+                Assert.True(panel.ContainsKey($"Help.{page}.{part}"), $"Help.{page}.{part}");
     }
 
     [Fact]

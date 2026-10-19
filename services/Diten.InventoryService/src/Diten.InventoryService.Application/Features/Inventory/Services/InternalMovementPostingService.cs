@@ -45,6 +45,7 @@ public sealed class InternalMovementPostingService
     private readonly IEnumerable<IPostedMovementObserver> _observers;
     private readonly ILogger<InternalMovementPostingService> _logger;
     private readonly IExpiryPostingPolicy _expiry;
+    private readonly IPostingActorName? _actorName;
 
     public InternalMovementPostingService(
         IInventoryLedgerRepository ledger,
@@ -54,8 +55,10 @@ public sealed class InternalMovementPostingService
         ICorrelationContext correlation,
         IEnumerable<IPostedMovementObserver> observers,
         ILogger<InternalMovementPostingService> logger,
-        IExpiryPostingPolicy? expiry = null)
+        IExpiryPostingPolicy? expiry = null,
+        IPostingActorName? actorName = null)
     {
+        _actorName = actorName; // WP-MVP1-FU-CLEAN2: DI always passes it; a hand-built service stores no name
         _expiry = expiry ?? new AllowAllExpiryPostingPolicy(); // MOD-0176 F2: DI always passes the registered policy
         _ledger = ledger;
         _lots = lots;
@@ -65,6 +68,13 @@ public sealed class InternalMovementPostingService
         _observers = observers;
         _logger = logger;
     }
+
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME): the name stored with the movement — only when the actor IS the resolved scope user (the
+    /// token's, or the user a background flow acts for with its stored name); another actor id never borrows the scope user's name.
+    /// </summary>
+    private string? NameOf(Guid actorUserId)
+        => actorUserId != Guid.Empty && actorUserId == _tenantContext.UserId ? _actorName?.Current : null;
 
     public async Task<Response<MovementResponseDto>> PostAsync(PostMovementCommand request, Guid legalEntityId, Guid actorUserId, CancellationToken cancellationToken)
     {
@@ -100,6 +110,7 @@ public sealed class InternalMovementPostingService
 
             transaction = reversal!;
             transaction.CreatedBy = actorUserId;
+            transaction.CreatedByName = NameOf(actorUserId);
             // WP-0174-P2: the reversal re-runs the serial lifecycle of its original on the serials the registry knows; the
             // lot rules of CT-D4 let a REVERSAL through a Blocked / Expired lot (re-checked in the posting transaction).
             lotContext = LotPostingContext.ForReversal(transaction.SerialIds is { Count: > 0 });
@@ -131,6 +142,7 @@ public sealed class InternalMovementPostingService
             transaction = NewTransaction(movement, fingerprint, movement.Direction!, check.BaseQuantity, check.BaseUomId,
                 movement.LotId, movement.SerialIds?.ToList(), reversesTransactionId: null);
             transaction.CreatedBy = actorUserId;
+            transaction.CreatedByName = NameOf(actorUserId);
         }
 
         var posting = new LedgerPosting(

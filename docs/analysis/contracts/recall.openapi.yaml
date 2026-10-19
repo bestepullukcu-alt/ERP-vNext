@@ -11,11 +11,12 @@ info:
     company from the W-0173-02 scope (X-Legal-Entity-Id validated against MDM); another company → 403 CROSS_LE_FORBIDDEN, another tenant →
     404 — except getLotRecallStatus, which answers for the lot in every company of the tenant (CT-R7). Success bodies are the schemas below
     (unwrapped); failures are the INVENTORY Error schema.
-  version: 1.8.0
+  version: 1.9.0
   x-status: FROZEN
   x-owner: MOD-0177
   x-owner-service: Diten.InventoryService (MOD-0177, in-process with MOD-0173 / MOD-0174 / MOD-0175 / MOD-0176)
   x-changelog:
+    - "1.9.0 — additive, optional (WP-MVP1-FU-CLEAN2, FU-0177-DRILL-STEP-SCHEMA / O-NAMES1-2): the person members the service already sends on additionalProperties are named as UserRef / UserAt — DrillRun.startedBy (UserRef), DrillRun.steps[] {step, completedAtUtc, completedBy (UserRef)}, DrillRun.pendingResult {setBy (UserRef), setAtUtc, expiresAtUtc}, DrillRun.completed (UserAt), DrillRun.cancelled (UserAt), ReturnLink.linkedBy (UserAt). Measured in the service DTOs (RecallDrillRunDto, RecallDrillStepDto, RecallDrillPendingResultDto, RecallReturnLinkDto); their name follows the 1.8.0 rule. No member becomes required, no additionalProperties changes, no existing member, type, enum or status code changed."
     - "1.8.0 — additive, optional (WP-MVP1-NAMES1, owner decision A 2026-10-19: FU-0177-HEAD-NAMES + O-CLEAN1-1): UserRef and UserAt gain the optional member name. For a person who DID the action (opened, submitted, approved, completed, closed, cancelled, recorded, confirmed, prepared, revised, started, exported, changed the settings, the timeline actor) name is the name AT THE TIME of the action — the action record's own ActorName, else the central audit queue ActorDisplayName of the same correlation id and the same user (same tenant and company); absent when neither exists. For an ASSIGNED person (DrillPlan.owner) the service sends no name (a client shows the current account label). A client shows a localized \"unknown user\" when name is absent — never the id as a name. Names of a list are read in one batch. No existing member, type, enum, required list or status code changed."
     - "1.7.0 — WP-0177-R7b (additive only; pack §4.13, §8.6, §11.1 Kanıt Paketi; CT decisions 2026-10-15: D-28 option A, MOD-0175 owner step read-only): the evidence pack is served — previewEvidence (7 sections: 1_summary, 2_trace, 3_quarantine, 4_customers, 5_returnsAndEffectiveness, 6_timeline, 7_signatures for a case; a drill run fills 1, 2 and 7 and marks 3–5 not applicable (read-only rehearsal); a period [from, to] ≤ 366 days lists the drill runs of the company in it), createEvidenceExport (Pdf through PDFsharp-MigraDoc — labels tr / en, the FU-0176-PDF-L10N limit — or Csv; sha256 is the hex SHA-256 of the PRODUCED BYTES, which are stored: the same key answers the same file and hash; the export log row records file name, size, hash, sections, who, when, dmsRef null until MOD-0029), listEvidenceExports, getEvidenceFile (the stored bytes; their SHA-256 equals the logged one; an unknown export → 404 RECALL_EVIDENCE_EXPORT_NOT_FOUND, a new code). Section 7 reads every signatureId of the subject from MOD-0022 at generation time; an unreadable signature is reported as unreadable, never filled in. EvidenceExport gains the optional sections and dmsRef. D-28: ReturnLink gains the optional holdId / holdNumber — the MOD-0175 hold whose intake movement is the linked return (read through the recall port, absent when the movement opened no hold)."
     - "1.6.0 — WP-0177-R7a (additive only; pack §8.6, §11.1 Vaka Detayı; CT decision A 2026-10-15 — D-26, D-27): getCaseCustomers and getCaseEffectiveness are served. getCaseCustomers: one row per customer of the case's effectively included Shipment items (customerRef = shipToReference read at trace time, else DOC:<document>, D-18), each shipment with its ledger movements (net of reversals, the caller's company only) and — for MOD-0183 documents — the shipment re-read live (KR-E degrade NotApplicable / Ok / Forbidden / NotFound / Unavailable; delivered = actualDeliverAt, D-19); the current notification, the notification history and the effective consumption declarations of the customer. New schema CaseCustomerShipment (the shape of CustomerRow.shipments[]); CustomerRow gains the optional notifications and consumptions. getCaseEffectiveness: the LIVE result (the same function prepareCaseAction / completeEffectivenessCheck use) until the check is completed, then the stored result; per (customer, SKU, base unit), totals per SKU + base unit — never summed across units (D-20). Effectiveness gains the optional source (Live | Stored)."
@@ -1563,6 +1564,7 @@ components:
         quantity: { type: number }
         baseUomId: { type: string }
         customerRef: { type: string }
+        linkedBy: { $ref: '#/components/schemas/UserAt', description: "1.9.0 (additive, optional to the contract; the service always sends it) — who linked the return and when" }
         holdId: { type: string, format: uuid, description: "1.7.0 (D-28) — the MOD-0175 hold the return went into (its intake movement = transactionId); absent when none" }
         holdNumber: { type: string, description: "1.7.0 (D-28) — that hold's number (KRN-…)" }
     ReturnCandidate:
@@ -1695,7 +1697,26 @@ components:
         selectionMode: { type: string, enum: [Auto, Manual] }
         lot: { $ref: '#/components/schemas/LotRef' }
         startedAtUtc: { type: string, format: date-time }
-        steps: { type: array, items: { type: object, additionalProperties: true } }
+        startedBy: { $ref: '#/components/schemas/UserRef', description: "1.9.0 (additive) — who started the run" }
+        steps:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            properties:
+              step: { $ref: '#/components/schemas/DrillStep', description: "1.9.0 (additive) — the step done" }
+              completedAtUtc: { type: string, format: date-time, description: "1.9.0 (additive)" }
+              completedBy: { $ref: '#/components/schemas/UserRef', description: "1.9.0 (additive) — who completed the step" }
+        pendingResult:
+          type: object
+          additionalProperties: true
+          description: "1.9.0 (additive) — the prepared result waiting for its signature (absent when none)"
+          properties:
+            setBy: { $ref: '#/components/schemas/UserRef', description: "1.9.0 (additive) — who prepared the result" }
+            setAtUtc: { type: string, format: date-time }
+            expiresAtUtc: { type: string, format: date-time }
+        completed: { $ref: '#/components/schemas/UserAt', description: "1.9.0 (additive) — who completed the run and when (absent until completed)" }
+        cancelled: { $ref: '#/components/schemas/UserAt', description: "1.9.0 (additive) — who cancelled the run and when (absent unless cancelled)" }
         targetHours: { type: integer }
         version: { type: integer }
     DrillRunPage:

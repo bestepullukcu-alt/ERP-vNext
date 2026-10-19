@@ -12,6 +12,8 @@ namespace Diten.InventoryService.Tests.Recall;
 /// WP-MVP1-NAMES1 — RECALL-BUNDLE 1.7.0 → 1.8.0 is ADDITIVE and OPTIONAL (owner decision A, 2026-10-19), measured against the pinned 1.7.0 file
 /// (the git blob at 2452eb7cf): the version, one changelog line, and the member <c>name</c> on <c>UserRef</c> and <c>UserAt</c> — in neither
 /// schema's REQUIRED list. Everything else of 1.7.0 is equal as data.
+/// <para>WP-MVP1-FU-CLEAN2: the live file is 1.9.0 now — this diff is measured between the two PINNED files (1.7.0 → the 1.8.0 fixture, the git
+/// blob at 60f5d2b2f); <see cref="RecallContract190Tests"/> measures 1.8.0 → the live 1.9.0.</para>
 /// </summary>
 public sealed class RecallContract180Tests
 {
@@ -33,7 +35,7 @@ public sealed class RecallContract180Tests
     public void The_1_8_0_change_is_the_optional_name_of_UserRef_and_UserAt_only()
     {
         var before = Load(FixtureV170Path);
-        var after = Load(ContractSchemas.RecallContractPath);
+        var after = Load(RecallContract190Tests.FixtureV180Path);
         Assert.Equal(("1.7.0", "1.8.0"), (before["info"]!["version"]!.GetValue<string>(), after["info"]!["version"]!.GetValue<string>()));
         var oldLog = Strings(before["info"]!["x-changelog"]);
         var newLog = Strings(after["info"]!["x-changelog"]);

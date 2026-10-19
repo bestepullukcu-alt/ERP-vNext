@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Lotun yeniden test tarihi geçti; kalite kararı verilene kadar kullanılamaz.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>Kayıt dönemi kapalı.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Lokasyon bulunamadı ya da kullanılamıyor.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>bilinmeyen kullanıcı</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>Küresel SKU</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>Yerel SKU</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Mamul</value></data>

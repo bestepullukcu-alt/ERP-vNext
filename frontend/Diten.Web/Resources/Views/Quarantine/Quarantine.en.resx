@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>The lot is past its retest date; it cannot be used until a quality decision is made.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>The posting period is closed.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>The location is unknown or cannot be used.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>unknown user</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>Global SKU</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>Local SKU</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Finished good</value></data>

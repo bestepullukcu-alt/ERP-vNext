@@ -5,6 +5,7 @@
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["ESign.Export.Title"].Value;
+    ViewData["PageCode"] = "ESIGNAUDITEXPORT"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 @*
@@ -98,9 +99,6 @@
         <button type="button" class="btn btn-sm btn-label-primary" id="esignExportPdf"><i class="bx bxs-file-pdf me-1"></i>@Localizer["ESign.Export.AsPdf"]</button>
         <button type="button" class="btn btn-sm btn-primary" id="esignExportCsv"><i class="bx bx-spreadsheet me-1"></i>@Localizer["ESign.Export.AsCsv"]</button>
     </div>
-</div>
-<div class="alert alert-info d-flex gap-2 align-items-start" role="note" id="esignPageHelp">
-    <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Help.Export"]</span>
 </div>
 
 <p class="small text-muted mb-3" id="esignExportCount"></p>

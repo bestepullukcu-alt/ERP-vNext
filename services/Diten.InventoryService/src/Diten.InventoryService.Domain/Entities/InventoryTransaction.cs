@@ -84,6 +84,13 @@ public sealed class InventoryTransaction : EntityBase
     /// <summary>JWT <c>sub</c> of the poster.</summary>
     public Guid CreatedBy { get; set; }
 
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME, additive): the poster's display name AT POSTING TIME — the token name in a request, the
+    /// initiating command's stored name in a background flow (the recall approver's). Null = not known then (older records too: no migration);
+    /// the read then uses the central audit queue's name, else none.
+    /// </summary>
+    public string? CreatedByName { get; set; }
+
     /// <summary>The durable result returned to the caller (and replayed verbatim on an idempotent retry).</summary>
     public BalanceSnapshot ResultSnapshot { get; set; } = new();
 

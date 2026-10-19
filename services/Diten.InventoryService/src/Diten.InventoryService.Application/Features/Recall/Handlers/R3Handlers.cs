@@ -184,7 +184,7 @@ public sealed class RequestRecallQuarantineHandler : IRequestHandler<RequestReca
         {
             var b = lines[k];
             var r = RecallQuarantinePlanner.New(c, revision, k, b.LotId, numbers.GetValueOrDefault(b.LotId, b.LotId), b.ItemId, b.SkuId, b.SkuLevel, b.WarehouseId,
-                b.LocationId, b.OnHand, b.BaseUomId, RecallQuarantineRequestStatus.Pending, null, _support.UserId, now);
+                b.LocationId, b.OnHand, b.BaseUomId, RecallQuarantineRequestStatus.Pending, null, _support.UserId, now, _support.ActorName);
             r.CommandKey = request.IdempotencyKey;
             r.CommandFingerprint = fingerprint;
             return r;
@@ -261,6 +261,7 @@ public sealed class RetryRecallQuarantineHandler : IRequestHandler<RetryRecallQu
         r.ErrorMessage = null;
         r.Reservations = [];
         r.RequestedBy = _support.UserId;
+        r.RequestedByName = _support.ActorName; // WP-MVP1-FU-CLEAN2: the retrier acts now — the sweeper names them
         r.CommandKey = request.IdempotencyKey;
         r.CommandFingerprint = fingerprint;
         r.Version = expected + 1;
