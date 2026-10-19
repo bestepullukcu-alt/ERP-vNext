@@ -58,13 +58,14 @@ public sealed class TenantActorTypeRequiredHttpTests
     {
         Host.TenantRoute,
         Host.TenantScopedOrgRoute,
+        Host.OrganizationSeatsRoute,
         Host.PersonalizationRoute
     };
 
     public static TheoryData<string, string> TenantRoutesWithBlankActorTypes()
     {
         var data = new TheoryData<string, string>();
-        foreach (var route in new[] { Host.TenantRoute, Host.TenantScopedOrgRoute, Host.PersonalizationRoute })
+        foreach (var route in new[] { Host.TenantRoute, Host.TenantScopedOrgRoute, Host.OrganizationSeatsRoute, Host.PersonalizationRoute })
         {
             data.Add(route, string.Empty);
             data.Add(route, "   ");
@@ -121,6 +122,17 @@ public sealed class TenantActorTypeRequiredHttpTests
         var hit = Assert.Single(host.Hits);
         Assert.Equal(route, hit.Path);
         Assert.Equal(Tenant, hit.TenantId);
+    }
+
+    [Fact]
+    public async Task The_organization_parent_stays_an_admin_route_for_a_tenant_user()
+    {
+        using var host = new Host();
+
+        var response = await host.SendAsync(Host.OrganizationParentRoute, Host.Token(Tenant, User, TenantUser));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Empty(host.Hits);
     }
 
     [Theory]
@@ -258,6 +270,11 @@ public sealed class TenantActorTypeRequiredHttpTests
     {
         public const string TenantRoute = "/api/users/wp-actor-type-probe";
         public const string TenantScopedOrgRoute = "/api/platform/organization-units/wp-actor-type-probe";
+        // WP-VW-W3L PLT-ORG-SEAT — the seat read is a tenant route in the Platform's own middleware too (live E4 2026-10-19:
+        // only the Gateway list had it, so the Platform answered a tenant user's seat read as an admin endpoint).
+        public const string OrganizationSeatsRoute = "/api/platform/organization/seats/wp-actor-type-probe";
+        // …and only that sub-path: the parent /api/platform/organization stays platform-admin-only.
+        public const string OrganizationParentRoute = "/api/platform/organization/wp-actor-type-probe";
         public const string PersonalizationRoute = "/api/personalization/wp-actor-type-probe";
         public const string AnonymousTenantRoute = "/api/users/wp-actor-type-anonymous-probe";
         public const string InternalRoute = "/api/internal/wp-actor-type-probe";
@@ -312,7 +329,7 @@ public sealed class TenantActorTypeRequiredHttpTests
                     app.UseAuthorization();
                     app.UseEndpoints(endpoints =>
                     {
-                        foreach (var route in new[] { TenantRoute, TenantScopedOrgRoute, PersonalizationRoute })
+                        foreach (var route in new[] { TenantRoute, TenantScopedOrgRoute, OrganizationSeatsRoute, OrganizationParentRoute, PersonalizationRoute })
                         {
                             endpoints.MapGet(route, (HttpContext http, [FromServices] ITenantContext tenant) =>
                                 {

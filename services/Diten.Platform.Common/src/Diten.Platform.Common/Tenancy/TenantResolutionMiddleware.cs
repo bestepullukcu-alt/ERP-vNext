@@ -317,6 +317,10 @@ public sealed class TenantResolutionMiddleware
         return path.StartsWithSegments("/api/platform/organization-units", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/platform/positions", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/platform/position-assignments", StringComparison.OrdinalIgnoreCase)
+               // WP-VW-W3L PLT-ORG-SEAT — a tenant user's current primary seat (own seat, or with
+               // platform.organization-seats.read). Exactly this sub-path: /api/platform/organization itself is not a
+               // tenant group. Mirrors the Gateway's list (both must name it, or the Platform refuses the tenant user).
+               || path.StartsWithSegments("/api/platform/organization/seats", StringComparison.OrdinalIgnoreCase)
                // MOD-0285 — runtime navigation menu is the tenant's own entitled-module nav; same tenant-scoped
                // treatment (tenant resolved from JWT tenant_id, tenant_user required, platform_admin rejected).
                || path.StartsWithSegments("/api/platform/navigation", StringComparison.OrdinalIgnoreCase)
