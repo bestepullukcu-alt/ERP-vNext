@@ -36,6 +36,8 @@ identity_gate: "python3 .antigravity/scripts/verify_module_id.py . --candidate C
 > is separately `approved`/`ready-for-dev` (condition 2). This pack still triggers **no** production
 > implementation, **no** service/frontend/gateway change, and mints **no** Blueprint `MOD-xxxx`. The candidate
 > identity `CAND-CAP-0006` stays `candidate / pending-EA` — charter approval does **not** change it.
+>
+> **Blueprint 8.7 (2026-10-19):** the Master absorbs `CAND-CAP-0006` into `MOD-0024` Task & Checklist Engine as its Work Center page / workspace (Master 8.2 `Main_Reconciliation_v8_2`; MOD-0024 SoR expanded to task templates, checklist templates, task instances, assignments and checklist runs). `CAND-CAP-0006` is now a deprecated alias of `MOD-0024` in the registry; the product name Görev Merkezi / Task Center and the code name `WorkCenterNext` are unchanged. The candidate-identity sentences in this charter are the record before that.
 
 ---
 

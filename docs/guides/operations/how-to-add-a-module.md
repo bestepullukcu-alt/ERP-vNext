@@ -24,9 +24,9 @@
 ## ✅ Checklist (sırayla)
 
 ### Kimlik
-1. **Canonical module ID al.** `MOD-xxxx` satırını `execution/registries/module-id-registry.md`'ye ekle, sonra fail-closed kontrol:
+1. **Canonical module ID al.** Kimlik Blueprint'te (`Blueprint_Data`) olmalı; yoksa dur ve Master'da Module Change Request aç (Master-first kuralı, Blueprint 8.7) — `CAND-CAP` ya da repo-only kimlik açılmaz. `MOD-xxxx` satırını `execution/registries/module-id-registry.md`'ye ekle, sonra fail-closed kontrol:
    `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name"`
-   Non-zero çıkış SENİ BLOKLAR. ID/isim otoritesi: `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx :: Blueprint_Data`. **ID uydurma.**
+   Non-zero çıkış SENİ BLOKLAR. ID/isim otoritesi: `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx :: Blueprint_Data`. **ID uydurma.**
 2. **Module pack hazırla (onaylı).** Alanlar, izin key'leri, gateway route planı, tenant-assigned mı platform-global mı, `form_field_count` + `golden_reference` (slim ≤8 / compact >8), UI shell hedefi. **Status `approved`/`ready-for-dev` olmadan kod yazma.** → `execution/domains/{domain}/module-packs/{ID}.md`
 
 ### Backend
