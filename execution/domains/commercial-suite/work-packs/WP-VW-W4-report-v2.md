@@ -1156,3 +1156,17 @@ KORU/YAPMA: ürün koduna DOKUNMA (yalnız test); mevcut testleri değiştirme /
 DOĞRULA: yeni testler yeşil + 4 sabotaj (.bak + touch, hepsi ürün kodunda, geri al + md5): (1) müsaitlik EffectiveFrom koşulu kaldırılsın (CT'nin 1. sabotajı) → kırmızı; (2) müsaitlik EffectiveTo koşulu kaldırılsın → kırmızı; (3) tercih IsEffectiveAt(now) kaldırılsın (CT'nin 2. sabotajı) → kırmızı; (4) tercih tür süzgecine DoNotContact eklensin → kırmızı. Ayrıca World.Clock geçici olarak 2027-03-01 yapılınca yeni testler yine yeşil (saatten bağımsızlık). CRM Application tam takım (-o repo içi), taban karşılaştırması (taban: 1 bilinen kırmızı — VisitPlanningFix2…shared_pattern -o artefaktı).
 Commit: "test(crm): FU-W4-INSIGHT-WINDOW-TEST — the doctor profile shows only availability and contact preferences effective at the injected now (future / expired / archived / wrong type hidden; window bounds inclusive)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — FU-W4-INSIGHT-WINDOW-TEST E2 ACCEPTED (2026-10-19)
+Test dalına alındı: `615823f42` (ajan `674bed7b1`), çakışmasız. Yalnız test dosyası (+75 satır); ürün kodu aynı.
+
+**Eklenen testler:** iki test, mevcut World ve sabit saat (`w.Clock`); gerçek saat yok.
+- **Müsaitlik (10 kayıt):** beklenen tam olarak `monday@09:00, thursday@09:00, friday@09:00`. Görünmeyenler: gelecek, süresi dolmuş, silinmiş, inactive, archived, ±1 tik dışı.
+- **Tercih (11 kayıt):** beklenen tam olarak `(preferred-channel, email), (preferred-channel, phone), (preferred-visit-window, 09:00-11:00)`. Görünmeyenler: gelecek, süresi dolmuş, arşivlenmiş, silinmiş, ±1 tik dışı, DoNotContact, DoNotVisit.
+- Assertion'lar kayıtları adıyla ve sırasıyla ölçüyor.
+
+**Sonuçlar:**
+- **Ajan:** sınıf 41/41; 4 sabotaj kırmızı. Bunlar: müsaitlik From / To, tercih IsEffectiveAt (CT'nin iki sabotajı artık kırmızı), tür süzgecine DoNotContact. Saat 2027-03-01'de 41/41. CRM Application 2891/3, taban 2891/1; fazladan 2 kırmızı (`PiiMasking…`, `ContactWorkbookImportTests.Import_Audit_Carries_Counts_Only`) tek başına iki kez yeşil → paralel koşu kararsızlığı.
+- **CT sabotajı (sınır):** müsaitlik `now <= EffectiveTo` → `now < EffectiveTo` → `The_profile_shows_only_the_availability_effective_at_the_injected_now_bounds_inclusive` **kırmızı**; md5 ile geri alındı.
+
+**Not:** `ContactWorkbookImportTests.Import_Audit_Carries_Counts_Only` ilk kez kararsız göründü (başka modül, dokunulmadı). Tekrar ederse ayrı iş.
