@@ -42,6 +42,11 @@ public sealed class VwW3AuthoringRouteCoverageTests
     [InlineData("/api/crm/visit-evidence-policy/scopes/legal-entity/" + Id, "DELETE")]
     [InlineData("/api/crm/visit-evidence-policy/scopes/business-unit/alpha", "PUT")]
     [InlineData("/api/crm/visit-evidence-policy/scopes/business-unit/alpha", "DELETE")]
+    // WP-VW-W5 (W5-BE) — the visit notifications: list, preview, settings (W5-BE shipped without its gateway route)
+    [InlineData("/api/crm/visit-notifications", "GET")]
+    [InlineData("/api/crm/visit-notifications/" + Id, "GET")]
+    [InlineData("/api/crm/visit-notifications/settings", "GET")]
+    [InlineData("/api/crm/visit-notifications/settings", "PUT")]
     // the time-boxed exceptions
     [InlineData("/api/crm/visit-evidence-exceptions", "GET")]
     [InlineData("/api/crm/visit-evidence-exceptions", "POST")]

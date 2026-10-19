@@ -3451,6 +3451,39 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/crm/visit-notifications",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-notifications",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-notifications/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-notifications/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/crm/visit-evidence-exceptions",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
