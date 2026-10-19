@@ -9,7 +9,7 @@ WP ID:            WP-SCMM-02
 Prompt ID:        P-SCMM-02 · v1.0
 Task Class:       Inspection / baseline (Profile C — no writes)
 Risk Class:       LOW (read-only)
-Capability:       SCMM (Structured Content & Messaging Management) · owner CAND-CAP-0011 + MOD-0162 (foundation)
+Capability:       SCMM (Structured Content & Messaging Management) · owner MOD-0363 (eski CAND-CAP-0011) + MOD-0162 (foundation)
 Agent Lane:       AL-SCMM-BASELINE (INS)
 Target Agent:     /read-only-audit  (read-only-auditor — yazma aracı yok)
 Branch:           feature/structured-content-messaging

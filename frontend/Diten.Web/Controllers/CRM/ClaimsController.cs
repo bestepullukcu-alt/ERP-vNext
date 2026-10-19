@@ -10,7 +10,7 @@ using Microsoft.Extensions.Localization;
 namespace Diten.Web.Controllers.CRM;
 
 /// <summary>
-/// Claims console (CAND-CAP-0011 / claims v2). Proxy-only: all business traffic is proxied server-side through Gateway
+/// Claims console (MOD-0363, formerly CAND-CAP-0011 / claims v2). Proxy-only: all business traffic is proxied server-side through Gateway
 /// 5000, the browser never sees a service URL or bearer token, and no business rule lives here (CrmService is the
 /// authoritative validation + permission layer). No delete surface — closing a claim is Archive.
 /// <para>WP-CL-FE-3 — Create / Edit are JS-driven pages over the v2 proxy layer (<see cref="ClaimsController"/> V2 part):

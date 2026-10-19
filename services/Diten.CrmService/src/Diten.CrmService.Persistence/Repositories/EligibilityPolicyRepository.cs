@@ -5,7 +5,7 @@ using MongoDB.Driver;
 namespace Diten.CrmService.Persistence.Repositories;
 
 /// <summary>
-/// SCMM-11 (CAND-CAP-0011) eligibility policy persistence. Same rules as the concept-graph repositories: tenant scoped,
+/// SCMM-11 (MOD-0363, formerly CAND-CAP-0011) eligibility policy persistence. Same rules as the concept-graph repositories: tenant scoped,
 /// soft-delete aware, no delete method (closing is the soft archive lifecycle). The active-code guard excludes archived
 /// rows with an <c>ArchivedAt == null</c> equality filter (never <c>$ne</c>, which crash-loops partial indexes).
 /// EffectiveFrom / EffectiveTo / ArchivedAt (DateTimeOffset → BSON array) are never sorted server-side.

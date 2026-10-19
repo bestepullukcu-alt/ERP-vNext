@@ -1,7 +1,7 @@
 namespace Diten.CrmService.Application.Features.CycleCapacity.Read;
 
 /// <summary>
-/// WP-VP-FIX-1 (C3) — the READ-ONLY per-day sibling of <see cref="IWorkingDayCounter"/>: it asks CAND-CAP-0008 (the
+/// WP-VP-FIX-1 (C3) — the READ-ONLY per-day sibling of <see cref="IWorkingDayCounter"/>: it asks MOD-0362 (formerly CAND-CAP-0010 / CAND-CAP-0008; the
 /// platform working calendar) <i>"is this date a working day?"</i> through the SAME tenant-openable door
 /// (<c>/api/platform/working-calendars/overrides/resolve</c>, op <c>is-working-day</c>,
 /// <c>platform.working-calendar.override.read</c>) and the same transport. No new platform operation is involved.

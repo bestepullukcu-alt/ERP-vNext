@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 
-/// <summary>SCMM-11 (CAND-CAP-0011, RM4) — one authored condition: an includes/excludes test of a context dimension.
+/// <summary>SCMM-11 (MOD-0363, formerly CAND-CAP-0011, RM4) — one authored condition: an includes/excludes test of a context dimension.
 /// Values are config / reference strings (sector-neutral).</summary>
 public sealed record EligibilityConditionInput(
     string Dimension,
@@ -11,7 +11,7 @@ public sealed record EligibilityConditionInput(
     string? Match = null,
     bool Required = false);
 
-/// <summary>SCMM-11 (CAND-CAP-0011) eligibility policy write surface. <c>TenantId</c> is server-resolved. No delete —
+/// <summary>SCMM-11 (MOD-0363, formerly CAND-CAP-0011) eligibility policy write surface. <c>TenantId</c> is server-resolved. No delete —
 /// closing a policy is <see cref="ArchiveEligibilityPolicyCommand"/>. A published version freezes its conditions
 /// (change ⇒ new version). <c>PolicyVersion</c> is the business version, not the concurrency token.</summary>
 public sealed record CreateEligibilityPolicyCommand(

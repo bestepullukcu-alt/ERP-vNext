@@ -8,7 +8,7 @@ using MediatR;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Claims;
 
-/// <summary>SCMM-12 (CAND-CAP-0011) shared claim rules: applicability/ref mapping and the governed-body freeze
+/// <summary>SCMM-12 (MOD-0363, formerly CAND-CAP-0011) shared claim rules: applicability/ref mapping and the governed-body freeze
 /// comparison. Self-contained; ref values are never checked against a hardcoded vocabulary (sector-neutral), and
 /// EvidenceRefs are stored opaque (no MOD-0031 contract is invented).</summary>
 internal static class ClaimRules

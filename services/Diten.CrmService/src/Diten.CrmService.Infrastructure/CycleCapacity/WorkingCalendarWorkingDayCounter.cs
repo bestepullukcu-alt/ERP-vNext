@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 namespace Diten.CrmService.Infrastructure.CycleCapacity;
 
 /// <summary>
-/// MOD-0155 FU06 — asks CAND-CAP-0008 (the platform working calendar), through the Gateway, how many working days a
+/// MOD-0155 FU06 — asks MOD-0362 (formerly CAND-CAP-0010 / CAND-CAP-0008; the platform working calendar), through the Gateway, how many working days a
 /// month contains.
 ///
 /// <para><b>Why <c>/overrides/resolve</c> and not <c>/resolve</c>.</b> This is not a preference; it is the only door
@@ -354,7 +354,7 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter, IWork
         }
     }
 
-    /// <summary>The platform's reason code for a half day it treats as a working day (CAND-CAP-0008 contract).</summary>
+    /// <summary>The platform's reason code for a half day it treats as a working day (MOD-0362 contract, formerly CAND-CAP-0010 / CAND-CAP-0008).</summary>
     private const string HalfDayTreatedAsWorking = "half_day_treated_as_working";
 
     /// <summary>WP-VP-3B (MK-9) — the platform's half-day signal, read from what its resolve payload already carries (no

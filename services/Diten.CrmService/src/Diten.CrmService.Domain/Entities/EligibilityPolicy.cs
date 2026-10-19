@@ -1,10 +1,10 @@
 namespace Diten.CrmService.Domain.Entities;
 
 /// <summary>
-/// SCMM-11 (CAND-CAP-0011, RM4) — a versioned eligibility policy: a named set of <see cref="Conditions"/> over CONTEXT
+/// SCMM-11 (MOD-0363, formerly CAND-CAP-0011, RM4) — a versioned eligibility policy: a named set of <see cref="Conditions"/> over CONTEXT
 /// dimensions (audience axes from <c>AudienceProfile.Dimensions</c>, product [MOD-0290 ref], market, channel, language,
 /// period). It is the PERMISSION dimension (DEC-SCMM-03 D3a) — independent of meaning (concept) and presentation
-/// (template). CAND-CAP-0011 owned; it lives in the CrmService deployment (no separate microservice) but in its own
+/// (template). MOD-0363 (formerly CAND-CAP-0011) owned; it lives in the CrmService deployment (no separate microservice) but in its own
 /// capability namespace, distinct from MOD-0162 knowledge.
 /// <para>
 /// <see cref="PolicyCode"/> is the stable business key shared across versions; <see cref="PolicyVersion"/> is the
@@ -51,7 +51,7 @@ public sealed class EligibilityPolicy : EntityBase
 }
 
 /// <summary>
-/// SCMM-11 (CAND-CAP-0011, RM4) — one condition of an eligibility policy: an <see cref="Includes"/>/<see cref="Excludes"/>
+/// SCMM-11 (MOD-0363, formerly CAND-CAP-0011, RM4) — one condition of an eligibility policy: an <see cref="Includes"/>/<see cref="Excludes"/>
 /// test of a CONTEXT <see cref="Dimension"/> against a set of config <see cref="Values"/>. Embedded value object (no
 /// TenantId, no Version, no repository). <see cref="Required"/> marks the dimension as mandatory context: if the context
 /// carries no value for it, the evaluation is <c>Unresolved</c> (fail-closed — the gate cannot decide), never a silent

@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-11-UI · Eligibility policy authoring konsolu + evaluate/preview (frontend)
 
-> **Control Tower kaydı (SoR).** SCMM R1, eligibility (permission ekseni) frontend. Module: **CAND-CAP-0011**. Branch: `feature/scmm-content-studio` (HEAD `cb876c77`). **Ön koşul HAZIR:** SCMM-11-follow-API (CT-ACCEPTED E2, commit cb876c77) — policy CRUD + evaluate uçları gateway'den tüketilebilir, RBAC seed+97c5 grant edildi. **Yalnız frontend** (Diten.Web) + nav (Platform CrmManifestProvider); backend/API/ocelot/RBAC'a **DOKUNMA** (hazır). **Bizim SCMM tarafının SON parçası.**
+> **Control Tower kaydı (SoR).** SCMM R1, eligibility (permission ekseni) frontend. Module: **MOD-0363** (eski CAND-CAP-0011). Branch: `feature/scmm-content-studio` (HEAD `cb876c77`). **Ön koşul HAZIR:** SCMM-11-follow-API (CT-ACCEPTED E2, commit cb876c77) — policy CRUD + evaluate uçları gateway'den tüketilebilir, RBAC seed+97c5 grant edildi. **Yalnız frontend** (Diten.Web) + nav (Platform CrmManifestProvider); backend/API/ocelot/RBAC'a **DOKUNMA** (hazır). **Bizim SCMM tarafının SON parçası.**
 > **Kural:** UI hep aranabilir dropdown/select2 — **ham entity-Id girişi YOK** (D14-e). (Condition/context *değerleri* referans-string'dir, Id değil — tag/multi giriş serbest.)
 
 ## Ölçülmüş girdi (CT, 2026-09-14)

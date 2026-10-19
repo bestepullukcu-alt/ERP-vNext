@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-12 · Reusable components + Claims
 
-> **Control Tower kaydı (SoR).** SCMM R1 content band, gate G2. Bağlı: SCMM-09 ✅ · SCMM-11 ✅ (eligibility/policy deseni) · SCMM-11-AUD ✅. Owner: content domain lead. Module: **CAND-CAP-0011** (Claim) + **MOD-0162** (KnowledgeContent component, reuse).
+> **Control Tower kaydı (SoR).** SCMM R1 content band, gate G2. Bağlı: SCMM-09 ✅ · SCMM-11 ✅ (eligibility/policy deseni) · SCMM-11-AUD ✅. Owner: content domain lead. Module: **MOD-0363** (eski CAND-CAP-0011) (Claim) + **MOD-0162** (KnowledgeContent component, reuse).
 > **Boundary (SCMM-03 D02b/c):** Claim → **CAND-CAP-0011** (ContentComposition namespace, Eligibility'nin yanına); Component = **KnowledgeContent reuse** (MOD-0162, yeniden kurulmaz); shared evidence → **MOD-0031** (ref-only, resolution ertelendi).
 
 ## Metadata

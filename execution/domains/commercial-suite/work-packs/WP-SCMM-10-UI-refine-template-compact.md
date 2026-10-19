@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-10-UI-refine · Chain Template Create/Edit → Golden Compact + Moderator/Audience select2
 
-> **Control Tower kaydı (SoR).** SCMM R1, kavram konsolu UX rötuşu (kullanıcı manuel-test geri bildirimi). Module: **MOD-0162 / CAND-CAP-0011**. Branch: `feature/scmm-content-studio` (HEAD `c09a0814`). **Yalnız frontend** (Diten.Web, KnowledgeConcepts Chain Template yüzeyi); backend/API/RBAC'a **DOKUNMA**. Kaynak: manuel test notları 5-6. **Sıra:** WP-SCMM-09-UI-refine'dan SONRA (çakışmayı önle).
+> **Control Tower kaydı (SoR).** SCMM R1, kavram konsolu UX rötuşu (kullanıcı manuel-test geri bildirimi). Module: **MOD-0162 / MOD-0363** (eski CAND-CAP-0011). Branch: `feature/scmm-content-studio` (HEAD `c09a0814`). **Yalnız frontend** (Diten.Web, KnowledgeConcepts Chain Template yüzeyi); backend/API/RBAC'a **DOKUNMA**. Kaynak: manuel test notları 5-6. **Sıra:** WP-SCMM-09-UI-refine'dan SONRA (çakışmayı önle).
 
 ## Ölçülmüş girdi (CT)
 - **Mevcut Chain Template create/edit:** `Views/CRM/KnowledgeConcepts/_TemplateCreateEditOffcanvas.cshtml` (**Slim offcanvas**) + `wwwroot/assets/js/CRM/KnowledgeConcepts/concept-slim.js` `renderBranches()` (~947) — branch/step builder. Step satırında **Moderator** (`js-step-roles`, ~967) ve **ForWhom** (`js-step-aud`, ~968) = **virgülle ayrılmış text input** (opak string dizileri: `roles[]`, `audiences[]`).

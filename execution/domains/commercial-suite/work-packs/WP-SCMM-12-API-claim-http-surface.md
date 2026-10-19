@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-12-API · Claim HTTP yüzeyi + RBAC (SCMM-12-UI ön koşulu)
 
-> **Control Tower kaydı (SoR).** SCMM R1, gate G2. Module: **CAND-CAP-0011** (Claim). Branch: `feature/scmm-content-studio` (HEAD 11befc07, main tabanlı).
+> **Control Tower kaydı (SoR).** SCMM R1, gate G2. Module: **MOD-0363** (eski CAND-CAP-0011) (Claim). Branch: `feature/scmm-content-studio` (HEAD 11befc07, main tabanlı).
 > **Bağlam:** SCMM-12 Claim aggregate + CQRS main'de (PR #95) AMA **HTTP controller'ı YOK** (DM-2a gibi backend-only). SCMM-12-UI (claim authoring + component picker) bu ucu tüketecek → önce API. UI ayrı WP (SCMM-12-UI, follow).
 
 ## Ölçülmüş girdi (CT, 2026-09-11)

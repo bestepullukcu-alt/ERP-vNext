@@ -1,6 +1,6 @@
 namespace Diten.CrmService.Api.Models.CRM;
 
-// SCMM-12-API (CAND-CAP-0011) claim request models. TenantId is NEVER part of any request body — it is server-resolved
+// SCMM-12-API (MOD-0363, formerly CAND-CAP-0011) claim request models. TenantId is NEVER part of any request body — it is server-resolved
 // from the JWT claim. Route ids (claimId) come from the path, never the body. These map 1:1 onto the ready
 // CreateClaimCommand / UpdateClaimCommand (approve / archive carry only the route id, so they need no body).
 

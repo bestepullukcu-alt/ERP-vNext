@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-09-10-UI-refine-fix · Not 3 (auto-name concept-type) + Not 5 (required-tracker konumu)
 
-> **Control Tower kaydı (SoR).** Kullanıcı manuel-test 2. tur geri bildirimi: 6 nottan 4'ü tam (1,2,4,6 ✓), ikisi düzeltme istiyor. Module: **MOD-0162 / CAND-CAP-0011**. Branch: `feature/scmm-content-studio` (HEAD `a6e1db76`). **Yalnız frontend** (Diten.Web/KnowledgeConcepts); backend'e DOKUNMA.
+> **Control Tower kaydı (SoR).** Kullanıcı manuel-test 2. tur geri bildirimi: 6 nottan 4'ü tam (1,2,4,6 ✓), ikisi düzeltme istiyor. Module: **MOD-0162 / MOD-0363** (eski CAND-CAP-0011). Branch: `feature/scmm-content-studio` (HEAD `a6e1db76`). **Yalnız frontend** (Diten.Web/KnowledgeConcepts); backend'e DOKUNMA.
 
 ## Ölçülmüş girdi (CT)
 - **[Not 3]** `concept-slim.js`: `autoFillRelationshipName` (~101-102) `${labelNode(from)} → ${labelNode(to)}` üretiyor → node etiketi ("CN-2026-… — Ad"). `nodeMap[id]` (~121) `{label, subjectId, isArchived}` tutuyor — **conceptTypeId YOK**. `typeMap[id]` (~631) = `"conceptTypeCode — conceptTypeName"`. Kullanıcı istediği: node'ların **concept-type ADI** ("Hasta Profili → Fayda").

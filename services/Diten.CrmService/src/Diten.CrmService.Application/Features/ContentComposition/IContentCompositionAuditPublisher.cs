@@ -1,9 +1,9 @@
 namespace Diten.CrmService.Application.Features.ContentComposition;
 
 /// <summary>
-/// SCMM-12 (CAND-CAP-0011) — seam for emitting MOD-0021 audit events for ContentComposition (Marketing owner) actions.
+/// SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — seam for emitting MOD-0021 audit events for ContentComposition (Marketing owner) actions.
 /// Mirrors <c>IKnowledgeConceptAuditPublisher</c>: CRM owns NO audit store; the Infrastructure implementation forwards to
-/// the MOD-0021 audit append contract with <c>SourceModule = "CAND-CAP-0011"</c> (the capability that owns claims and
+/// the MOD-0021 audit append contract with <c>SourceModule = "MOD-0363"</c> (formerly CAND-CAP-0011; the capability that owns claims and
 /// composition, NOT the MOD-0162 knowledge module). The event carries actor (via the forwarded principal/header) +
 /// tenant + UTC + object type/id/version + correlation. Emission is fail-soft (an audit outage never breaks the write).
 /// </summary>

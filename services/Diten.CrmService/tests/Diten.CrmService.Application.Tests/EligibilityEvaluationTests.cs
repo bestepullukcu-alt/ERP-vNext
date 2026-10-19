@@ -9,7 +9,7 @@ using Xunit;
 namespace Diten.CrmService.Application.Tests;
 
 /// <summary>
-/// SCMM-11 (CAND-CAP-0011) — eligibility policy + deterministic evaluator tests. In-memory fakes; the resolver reads the
+/// SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility policy + deterministic evaluator tests. In-memory fakes; the resolver reads the
 /// policy and maps a context to a disjoint state, fail-closed. Covers policy versioned CRUD + publish-freeze, the three
 /// disjoint outcomes, missing-required-context ⇒ Unresolved, repo-throws ⇒ propagate, the RM4 eval-log, determinism and
 /// the port == query contract.

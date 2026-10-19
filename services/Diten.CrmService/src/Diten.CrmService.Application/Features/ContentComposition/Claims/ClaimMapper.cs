@@ -2,7 +2,7 @@ using Diten.CrmService.Domain.Entities;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Claims;
 
-/// <summary>SCMM-12 (CAND-CAP-0011) aggregate ↔ DTO projection. Reads never echo TenantId (server-resolved).</summary>
+/// <summary>SCMM-12 (MOD-0363, formerly CAND-CAP-0011) aggregate ↔ DTO projection. Reads never echo TenantId (server-resolved).</summary>
 public static class ClaimMapper
 {
     public static ClaimDto ToDto(Claim c) => ToDto(c, null);

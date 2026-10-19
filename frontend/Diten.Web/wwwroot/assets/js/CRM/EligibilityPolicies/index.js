@@ -1,5 +1,5 @@
 /**
- * SCMM-11-UI (CAND-CAP-0011) EligibilityPolicy console — DataTables Index (Golden aligned, mirrors the ContentScopes
+ * SCMM-11-UI (MOD-0363, formerly CAND-CAP-0011) EligibilityPolicy console — DataTables Index (Golden aligned, mirrors the ContentScopes
  * console). No delete surface — closing a policy is Archive. Publish/freeze is out of scope (view-only when published).
  */
 (function (window, document) {

@@ -9,7 +9,7 @@ using Xunit;
 namespace Diten.CrmService.Application.Tests;
 
 /// <summary>
-/// SCMM-12-API (CAND-CAP-0011) — ClaimsController surface tests (reflection over attributes, mirroring the knowledge
+/// SCMM-12-API (MOD-0363, formerly CAND-CAP-0011) — ClaimsController surface tests (reflection over attributes, mirroring the knowledge
 /// controller attribute tests). Asserts the class is authorized, each action carries the right HTTP verb + canonical
 /// route + HasPermission key (Read / Manage / Approve), and that no delete / patch endpoint exists.
 /// </summary>

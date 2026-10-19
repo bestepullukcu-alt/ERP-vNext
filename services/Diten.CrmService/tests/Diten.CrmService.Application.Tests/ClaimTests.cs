@@ -8,9 +8,9 @@ using Xunit;
 namespace Diten.CrmService.Application.Tests;
 
 /// <summary>
-/// SCMM-12 (CAND-CAP-0011) — Claim aggregate tests. In-memory fakes; handlers mutate the tracked reference in place
+/// SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — Claim aggregate tests. In-memory fakes; handlers mutate the tracked reference in place
 /// (Update is a no-op). Covers versioned CRUD + the approval lifecycle + approval-freeze (an approved claim's governed
-/// body is frozen), duplicate-active-code, opaque evidence-ref round-trip, applicability persist, and the CAND-CAP-0011
+/// body is frozen), duplicate-active-code, opaque evidence-ref round-trip, applicability persist, and the MOD-0363 (formerly CAND-CAP-0011)
 /// audit event.
 /// </summary>
 public sealed class ClaimTests

@@ -10,7 +10,7 @@ Prompt ID:        P-SCMM-S1 · v1.0
 Task Class:       Backend RBAC seed + controller switch (state-changing config)
 Golden-Flow Profile: B
 Risk Class:       HIGH (§9.1 — authorization + seed)
-Capability:       SCMM · MOD-0162 (concept foundation) + CAND-CAP-0011
+Capability:       SCMM · MOD-0162 (concept foundation) + MOD-0363 (eski CAND-CAP-0011)
 Agent Lane:       AL-SCMM-RBAC (DEV)
 Target Agent:     backend-architect  (RBAC deseni security-agent kuralına sadık)
 Branch:           feature/structured-content-messaging · Expected HEAD: 9187b566

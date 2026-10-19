@@ -45,7 +45,7 @@ public static class DependencyInjection
             // SCMM-09 audit bundle — concept graph events forwarded with SourceModule "MOD-0162".
             services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher>(
                 sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
-            // SCMM-12 audit — claim / composition events forwarded with SourceModule "CAND-CAP-0011".
+            // SCMM-12 audit — claim / composition events forwarded with SourceModule "MOD-0363" (formerly CAND-CAP-0011).
             services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher>(
                 sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
             // WP-VW-W3L — the visit evidence scope writes, forwarded with SourceModule "MOD-0155".
@@ -66,7 +66,7 @@ public static class DependencyInjection
             services.AddScoped<Application.Features.VisitEvidence.IVisitEvidenceAuditPublisher, LoggingVisitEvidenceAuditPublisher>();
         }
 
-        // SCMM-11 (CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
+        // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
         // evaluation-log writer (structured-logging default; a durable/audit sink is a follow).
         services.AddScoped<Application.Features.ContentComposition.Eligibility.IEligibilityEvaluationPort,
             Application.Features.ContentComposition.Eligibility.EligibilityEvaluationPort>();
@@ -132,7 +132,7 @@ public static class DependencyInjection
             Application.Features.CyclePeriod.Read.ITerritoryBusinessUnitCatalog,
             CyclePeriod.TerritoryBusinessUnitCatalog>();
 
-        // MOD-0155 FU06 - the READ-ONLY working-day seam onto CAND-CAP-0008. Same fail-closed transport profile as
+        // MOD-0155 FU06 - the READ-ONLY working-day seam onto MOD-0362 (formerly CAND-CAP-0010 / CAND-CAP-0008). Same fail-closed transport profile as
         // the validators above (cacheless, 3s budget, one transient retry, always through the Gateway), but a
         // deliberately different failure MEANING: this is a calculation input rather than a write proof, so an
         // unreachable calendar makes the ESTIMATE unavailable and never blocks authoring a capacity.

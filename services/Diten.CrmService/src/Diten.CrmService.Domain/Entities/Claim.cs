@@ -1,9 +1,9 @@
 namespace Diten.CrmService.Domain.Entities;
 
 /// <summary>
-/// SCMM-12 (CAND-CAP-0011, docx §4) — a Claim: a piece of GOVERNED WORDING (<see cref="ClaimText"/>) with its
+/// SCMM-12 (MOD-0363, formerly CAND-CAP-0011, docx §4) — a Claim: a piece of GOVERNED WORDING (<see cref="ClaimText"/>) with its
 /// qualifiers, applicability and evidence references. It is the content/meaning artifact (DEC-SCMM-03 D3a) — independent
-/// of eligibility (permission) and template (presentation). CAND-CAP-0011 owned; it lives in the CrmService deployment,
+/// of eligibility (permission) and template (presentation). MOD-0363 (formerly CAND-CAP-0011) owned; it lives in the CrmService deployment,
 /// in the ContentComposition namespace next to Eligibility, distinct from MOD-0162 knowledge.
 /// <para>
 /// <see cref="ClaimCode"/> is the stable business key shared across versions; <see cref="ClaimVersion"/> is the business
@@ -141,8 +141,8 @@ public static class ClaimKinds
 }
 
 /// <summary>
-/// SCMM-12 (CAND-CAP-0011) — where a claim applies. Product / market / audience values are OPAQUE config references
-/// (sector-neutral). <see cref="EligibilityPolicyId"/> is an OPTIONAL by-id reference to a CAND-CAP-0011 eligibility
+/// SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — where a claim applies. Product / market / audience values are OPAQUE config references
+/// (sector-neutral). <see cref="EligibilityPolicyId"/> is an OPTIONAL by-id reference to a MOD-0363 (formerly CAND-CAP-0011) eligibility
 /// policy (SCMM-11) — provenance only; this slice performs no eligibility evaluation (that is the resolver, and
 /// assembly-time evaluation is SCMM-14). Embedded value object.
 /// </summary>

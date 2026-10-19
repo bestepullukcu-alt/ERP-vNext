@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-15 · ContentSetRevision: draft→değişmez Revision freeze + in-domain review kararı (backend)
 
-> **CT (SoR).** CAND-CAP-0011 / SCMM-15 (DEC-SCMM-04 **C3**). Branch `feature/crm-scmm-studio`. **Kullanıcı kararı:** SCMM-15/16/17 sırayla; **review bağı = in-domain state** (MOD-0023 partial/blocked → tam workflow routing ERTELENDİ, F-SCMM-15-WORKFLOW). R1 audit fail-closed ATLANDI → not: release gate (SCMM-17) mevzuat açısından audit-blocked kalır; bu WP freeze+review **mekanizmasını** kurar. **CrmService (Domain+Application+Api+Persistence).** ContentSet aggregate DEĞİŞMEZ.
+> **CT (SoR).** MOD-0363 (eski CAND-CAP-0011) / SCMM-15 (DEC-SCMM-04 **C3**). Branch `feature/crm-scmm-studio`. **Kullanıcı kararı:** SCMM-15/16/17 sırayla; **review bağı = in-domain state** (MOD-0023 partial/blocked → tam workflow routing ERTELENDİ, F-SCMM-15-WORKFLOW). R1 audit fail-closed ATLANDI → not: release gate (SCMM-17) mevzuat açısından audit-blocked kalır; bu WP freeze+review **mekanizmasını** kurar. **CrmService (Domain+Application+Api+Persistence).** ContentSet aggregate DEĞİŞMEZ.
 
 ## Kanıt
 - **ContentSet (SCMM-14):** mutable draft — Status draft/inactive/archived, **frozen/approved YOK** (doc açıkça "that is the SCMM-15 Revision"). Alanlar: `Template` (ContentSetTemplateRef), `Scope` (ContentSetScopeRef?), `SelectedComponents` (List<ContentSetComponent> — pinned KnowledgeContent), `SelectedClaims` (List<ContentSetClaim>), `EligibilitySnapshot`, SetCode/Name.

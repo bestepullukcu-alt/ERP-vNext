@@ -120,12 +120,13 @@ public sealed class HttpCrmAuditPublisher
         => AppendAsync(eventName, tenantId, entityType, entityId, detail, cancellationToken,
             sourceModule: "MOD-0162", objectVersion: version);
 
-    // IContentCompositionAuditPublisher (SCMM-12) — claim / composition events tagged SourceModule "CAND-CAP-0011".
+    // IContentCompositionAuditPublisher (SCMM-12) — claim / composition events tagged SourceModule "MOD-0363"
+    // (formerly CAND-CAP-0011; events already written with the old value stay as they are).
     Task IContentCompositionAuditPublisher.PublishAsync(
         string eventName, Guid tenantId, string entityType, Guid entityId, int version, string? detail,
         CancellationToken cancellationToken)
         => AppendAsync(eventName, tenantId, entityType, entityId, detail, cancellationToken,
-            sourceModule: "CAND-CAP-0011", objectVersion: version);
+            sourceModule: "MOD-0363", objectVersion: version);
 
     // IVisitEvidenceAuditPublisher (WP-VW-W3L) — the visit evidence scope writes, tagged SourceModule "MOD-0155".
     Task IVisitEvidenceAuditPublisher.PublishAsync(

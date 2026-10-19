@@ -4,7 +4,7 @@
 > - **Kararlar:** `SCMM-studio-knowledge-bridge-decision.md` §7 (kapsam kalktı) + §8 (set kalktı, her yol MLR'li).
 > - **Mockup:** `mockups/kp-studio/` (analiz: `KP-STUDIO-mockup-analysis.md`; kullanıcı dört öneriyi kabul etti: K1–K4).
 > - **Brief:** `mockups/content-studio-v2/BRIEF-content-studio-v2.md`.
-> - **Modül:** CAND-CAP-0011 + MOD-0162 (Bilgi Yolu), CrmService. Çalışma dalı `test/crm-content-visit-e2e`.
+> - **Modül:** MOD-0363 (eski CAND-CAP-0011) + MOD-0162 (Bilgi Yolu), CrmService. Çalışma dalı `test/crm-content-visit-e2e`.
 > - Bu belge DESIGN-SCMM-14'ün **yerine geçer** (İçerik Seti tasarımı emekli).
 
 ## 1. Ne

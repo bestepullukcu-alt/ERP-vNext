@@ -6,7 +6,7 @@ namespace Diten.CrmService.Domain.Entities;
 /// the answer is an <b>ESTIMATE</b>, never a quota or a commitment.
 /// <para><b>What it is not.</b> It is not a period: <see cref="CyclePeriod"/> (MOD-0165 FU06/FU07) owns which period a
 /// plan belongs to, and this aggregate only PINS one by id. It is not a working calendar: whether a DAY is a working
-/// day belongs to the platform working-calendar capability (CAND-CAP-0008), which this reads over HTTP and never
+/// day belongs to the platform working-calendar capability (MOD-0362, formerly CAND-CAP-0010 / CAND-CAP-0008), which this reads over HTTP and never
 /// writes. It is not a frequency policy: how often a target SHOULD be visited stays
 /// <see cref="VisitFrequencyPolicy"/> (MOD-0165 FU03) — "can" and "should" are different questions. It is not a plan:
 /// MicroTarget rows are MOD-0155 FU05 and are never born here. It is not an HR record: the FTE is an interim

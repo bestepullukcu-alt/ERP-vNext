@@ -1,7 +1,7 @@
 namespace Diten.CrmService.Application.Features.CycleCapacity.Read;
 
 /// <summary>
-/// MOD-0155 FU06 — the READ-ONLY working-day seam. It asks CAND-CAP-0008 (the platform working calendar) one question,
+/// MOD-0155 FU06 — the READ-ONLY working-day seam. It asks MOD-0362 (formerly CAND-CAP-0010 / CAND-CAP-0008; the platform working calendar) one question,
 /// <i>"how many working days lie between these two dates?"</i>, and it is the ONLY door this feature has onto that
 /// capability.
 /// <para><b>It never writes and it never invents.</b> A count is returned only when the calendar actually resolved

@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-14-UI · Content Studio workspace (ContentScope + ContentSet authoring, frontend)
 
-> **Control Tower kaydı (SoR).** SCMM R1, Content Studio ④⑤⑥ frontend. Module: **CAND-CAP-0011**. Branch: `feature/scmm-content-studio` (HEAD 0f918e74). **Ön koşul HAZIR:** SCMM-14 backend+API (CT-ACCEPTED E2+E4-lite) — content-scopes + content-sets uçları gateway'den tüketilebilir. **Yalnız frontend** (Diten.Web); backend'e DOKUNMA.
+> **Control Tower kaydı (SoR).** SCMM R1, Content Studio ④⑤⑥ frontend. Module: **MOD-0363** (eski CAND-CAP-0011). Branch: `feature/scmm-content-studio` (HEAD 0f918e74). **Ön koşul HAZIR:** SCMM-14 backend+API (CT-ACCEPTED E2+E4-lite) — content-scopes + content-sets uçları gateway'den tüketilebilir. **Yalnız frontend** (Diten.Web); backend'e DOKUNMA.
 > **D14-e:** UI hep **aranabilir dropdown/select2** — **ham Id girişi YOK**.
 
 ## Ölçülmüş girdi

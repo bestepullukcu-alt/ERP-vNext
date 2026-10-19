@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 
-// SCMM-11 (CAND-CAP-0011) — the application-layer vocabulary the eligibility resolver (ResolveEligibilityQuery /
+// SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — the application-layer vocabulary the eligibility resolver (ResolveEligibilityQuery /
 // Handler) and its in-process gate (IEligibilityEvaluationPort) both speak. Mirrors the MOD-0029 controlled-document
 // effectiveness contract: a DISJOINT outcome + fail-closed semantics. This slice evaluates a CONTEXT against a policy;
 // it computes no segment membership (MOD-0167) and advances no content (execution).

@@ -1,7 +1,7 @@
 namespace Diten.CrmService.Application.Common.Artifacts;
 
 /// <summary>
-/// SCMM-16B (CAND-CAP-0011, SCMM-16) — stores and reads a rendered content artifact through the MOD-0262-FU01 document
+/// SCMM-16B (MOD-0363, formerly CAND-CAP-0011, SCMM-16) — stores and reads a rendered content artifact through the MOD-0262-FU01 document
 /// repository (Platform), which CrmService consumes over the Gateway. The seam lives in Application so the render handler
 /// depends only on it; the HTTP transport (multipart upload, streamed download, user-token forward) is an Infrastructure
 /// detail.

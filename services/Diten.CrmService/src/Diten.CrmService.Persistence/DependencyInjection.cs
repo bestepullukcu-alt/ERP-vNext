@@ -131,9 +131,9 @@ public static class DependencyInjection
         services.AddScoped<IKnowledgeContentConceptLinkRepository, KnowledgeContentConceptLinkRepository>();
         // SCMM-09 (②) — atomic node+edge combined-write (transaction when supported, else compensation).
         services.AddScoped<IConceptNodeWithRelationshipUnitOfWork, ConceptNodeWithRelationshipUnitOfWork>();
-        // SCMM-11 (CAND-CAP-0011) — eligibility policy master (versioned; publish freezes conditions).
+        // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility policy master (versioned; publish freezes conditions).
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
-        // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
+        // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
         services.AddScoped<IClaimRepository, ClaimRepository>();
         services.AddScoped<IObjectionResponseRepository, ObjectionResponseRepository>(); // WP-VW-W3 (W3-BE-b)
         // WP-CL-BE-1 (claims v2) — claim country versions.
@@ -622,7 +622,7 @@ public static class DependencyInjection
             BsonClassMap.RegisterClassMap<AudienceDimensionAssignment>(map => map.AutoMap());
         }
 
-        // SCMM-11 (CAND-CAP-0011) — eligibility policy. Its only Guids are Id/TenantId (mapped on the EntityBase base
+        // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility policy. Its only Guids are Id/TenantId (mapped on the EntityBase base
         // map, inherited here); the embedded EligibilityCondition carries no Guid but is registered so the driver maps
         // it explicitly rather than treating it as an anonymous document.
         Map<EligibilityPolicy>(_ => { });
@@ -631,7 +631,7 @@ public static class DependencyInjection
             BsonClassMap.RegisterClassMap<EligibilityCondition>(map => map.AutoMap());
         }
 
-        // SCMM-12 (CAND-CAP-0011) — claim. ComponentRefs (List<Guid> → KnowledgeContent) and the embedded applicability's
+        // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim. ComponentRefs (List<Guid> → KnowledgeContent) and the embedded applicability's
         // EligibilityPolicyId take the string-Guid convention; without it those FKs store binary and every ref lookup
         // silently returns nothing (the new-aggregate class-map trap).
         // WP-CL-BE-1 (claims v2) — the new optional Guid members (ProductId, AudienceProfileIds, ResponsibleOrgUnitId,
@@ -1913,14 +1913,14 @@ public static class DependencyInjection
                 Builders<AudienceProfile>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.ProfileCode),
                 new CreateIndexOptions { Name = "ix_knowledge_audience_profiles_tenant_code" }));
 
-            // SCMM-11 (CAND-CAP-0011) — eligibility policy index (tenant scoped). PolicyCode is shared across versions,
+            // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility policy index (tenant scoped). PolicyCode is shared across versions,
             // so this is NOT unique. EffectiveFrom/EffectiveTo are DateTimeOffset (BSON array) — never index keys.
             var eligibilityPolicies = database.GetCollection<EligibilityPolicy>(EligibilityPolicyRepository.CollectionName);
             eligibilityPolicies.Indexes.CreateOne(new CreateIndexModel<EligibilityPolicy>(
                 Builders<EligibilityPolicy>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.PolicyCode),
                 new CreateIndexOptions { Name = "ix_eligibility_policies_tenant_code" }));
 
-            // SCMM-12 (CAND-CAP-0011) — claim index (tenant scoped). ClaimCode is shared across versions ⇒ NOT unique.
+            // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim index (tenant scoped). ClaimCode is shared across versions ⇒ NOT unique.
             var claims = database.GetCollection<Claim>(ClaimRepository.CollectionName);
             claims.Indexes.CreateOne(new CreateIndexModel<Claim>(
                 Builders<Claim>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ClaimCode),

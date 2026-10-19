@@ -1,6 +1,6 @@
 # Yol Haritası — İddialar (Claims): Workflow + WorkCenterNext onayı ve Document Management kanıt bağlantısı
 
-> **Durum:** PLAN (2026-09-28) · **Sahip:** CT · **Kapsam:** CAND-CAP-0011 (SCMM) Claims × MOD-0023 Workflow × WorkCenterNext (WC) × MOD-0029/0028 Document Management × MOD-0031 Evidence Linking.
+> **Durum:** PLAN (2026-09-28) · **Sahip:** CT · **Kapsam:** MOD-0363 (eski CAND-CAP-0011, SCMM) Claims × MOD-0023 Workflow × WorkCenterNext (WC) × MOD-0029/0028 Document Management × MOD-0031 Evidence Linking.
 > **Girdi:** kullanıcı kararı — çok ülkeli şirket: **global çekirdek iddia → ülke sürümleri (yerel dil + yerel onay)**; sahiplik **tenant**, uygulanabilirlik ürün + pazar + dil + kitle, tüzel kişilik ayrı eksen DEĞİL (ContentScope "DESIGN LE" ile aynı). Mockup brief'i sohbette verildi; mockup gelince bu plan WP'lere bölünür.
 
 ## 0. Bugünkü durum (koddan kanıt)
