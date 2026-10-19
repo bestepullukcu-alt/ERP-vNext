@@ -2,8 +2,8 @@
 id: MOD-0189
 name: MRP & Replenishment
 domain: supply-chain-execution
-service: TBD
-service_port: TBD
+service: Diten.PlanningService
+service_port: 5068
 shell: tenant
 golden_reference: none
 entity_base: EntityBase
@@ -16,9 +16,11 @@ target: TBD
 
 # MOD-0189 — MRP & Replenishment
 
-> DCP-002 kimlik kontrolü Blueprint 8.1 `Blueprint_Data` ve registry'de `MOD-0189 / MRP & Replenishment` için geçti. Bu belge karar taslağıdır: kod, servis, port, izin, rota veya canlı tüketim yetkisi vermez. MVP-4 kapsamı MOD-0188, MOD-0189 ve MOD-0191'dir; MOD-0190/0192 MVP-6'ya aittir.
+> DCP-002 kimlik kontrolü Blueprint 8.1 `Blueprint_Data` ve registry'de `MOD-0189 / MRP & Replenishment` için geçti. Bu belge karar taslağıdır: servis/port yerleşimi dışında kod, izin, rota veya canlı tüketim yetkisi vermez. MVP-4 kapsamı MOD-0188, MOD-0189 ve MOD-0191'dir; MOD-0190/0192 MVP-6'ya aittir.
 
 ## 1. Module Summary
+
+Ali'nin servis kararı `Diten.PlanningService` (5068); ayrı servis açılmaz. Pack `draft` kalır. MOD-0188 PlanningService main'e merge edilmeden MOD-0189 kodu başlamaz; MOD-0188 feature dalından kod devralınmaz.
 
 MRP, onaylı talebi stok ve doğrulanmış tedarik girdilerine karşı netleyerek açıklanabilir net ihtiyaç ve ikmal önerisi üretir. Hedef, `MRP Monitor`, istisna kuyruğu ve kanıt paketidir. Ürün kararı olmadan netting formülü, zaman kovası, lot büyüklüğü veya sipariş tetikleyicisi kodlanmaz.
 
@@ -41,7 +43,7 @@ MOD-0189 `MRPRun`, `NetRequirement`, `ReplenishmentProposal` ve MRP istisnaları
 
 ## 5. Repo Scope
 
-Bu taslağın tek yazma kapsamı bu pack dosyasıdır. Olası backend yeri ve port Ali kararıyla belirlenecektir; MOD-0188 dalındaki PlanningService koduna veya onun iç tiplerine bağımlılık kurulmaz. UI, Gateway ve merkezî contract değişiklikleri ayrı sahiplik ve onay gerektirir.
+Bu taslağın tek yazma kapsamı bu pack dosyasıdır. Gelecek backend yeri main'e merge edilmiş `services/Diten.PlanningService/`, port 5068'dir. MOD-0188 dalındaki kod veya iç tipler bugünkü geliştirme bağımlılığı olamaz. UI, Gateway ve merkezî contract değişiklikleri ayrı sahiplik ve onay gerektirir.
 
 ## 6. Protected Paths
 
@@ -54,14 +56,14 @@ Bu taslağın tek yazma kapsamı bu pack dosyasıdır. Olası backend yeri ve po
 | Talep / MOD-0188 | `docs/analysis/contracts/demand.openapi.yaml` v1.0.0 FROZEN, `/plan` ve `/forecast`; MOD-0188 dalında Demand v2 revision/status DRAFT. | Bağlı immutable revision, dört yetkili durum kontrolü, snapshot bütünlüğü, `Superseded` tarihsel okuma kanıtı ve `Invalidated` uzlaştırması v2 onayı olmadan canlı bağlanmaz. v1'e sessiz düşüş yok. |
 | Stok / MOD-0173 | `inventory-bundle.openapi.yaml` v1.2.1 FROZEN, `GET /availability`; `available`, `reserved`, `byStatus`, `baseUomId`, `asOf`. | Anlık görünüm gelecekteki planlanmış giriş veya tarihsel stok yokluğu kanıtı değildir. Kova/asOf tutarlılığı ve kalite/bloke stok kuralı kararlaştırılmalı. |
 | Ürün / MOD-0290 | `product-master-bundle.v1.0.openapi.yaml` FROZEN; v1.1 dosyası DRAFT. | Item/SKU ve temel UoM dönüşümü yalnız onaylı sürümden; taslak alanlara canlı bağımlılık yok. |
-| Açık PO / MOD-0141 | `requisition-po.openapi.yaml` v1.1.0 FROZEN, list/get PO; `poId`, `poLineId`, durum, satır miktarı ve UoM. | PO satırında kalan açık miktar ve beklenen teslim tarihi yok. Hangi durumların ve GRN düşümlerinin netting'e gireceği üreticiyle sözleşmelendirilmeli. |
+| Açık PO / MOD-0141 | Main ProcurementService `requisition-po.openapi.yaml` v1.1.0 FROZEN list/get PO; `poId`, `poLineId`, durum, satır miktarı ve UoM. `needBy` yalnız requisition satırında; runtime `PoLine` da teslim tarihi veya açık bakiye tutmaz. | PO satırında kalan açık miktar ve beklenen teslim tarihi yok. İptal/ters kayıt, GRN düşümü ve asOf kesiti üreticiyle sözleşmelendirilmeli. |
 | Mal kabul / MOD-0142 | `grn-event.openapi.yaml` v1.0.0 FROZEN; GRN, `poId/poLineId` ve alınan miktarı taşır, stok hareketini MOD-0173'e post eder. | PO açık bakiyesinin yetkili hesabı ve çift sayımı önleyen ilişki ayrıca kararlaştırılmalı; GRN tek başına gelecekteki tedarik değildir. |
 | BOM / MOD-0193 | `bom.openapi.yaml` v1.0.0 FROZEN, effective BOM ve `/explode` component ihtiyacı ile `bomVersionId`. | Çok seviyeli patlatma, alternatif, fire/verim, geçerlilik tarihi, döngü ve sürüm sabitleme kuralları açık. Manufacturing yolu dışında BOM zorunlu değil. |
 | Safety stock / MOD-0191 | MOD-0191 ayrı dalda izole Yöntem A ve revision çekirdeği; main'de onaylı canlı politika tüketim sözleşmesi yok. | Hangi etkin policy sürümü ve hangi tarihli miktar netting'e girer kararlaştırılmalı; fixture canlı policy değildir. |
 
 ## 8. Runtime Constraints
 
-Tenant × LegalEntity ve SKU × Warehouse kapsamı sunucuda doğrulanır; claim, form veya MDM lookup kullanıcı yetkisi yerine geçmez. Platform'un yetkili şirketlerim ve seri kapsamı gelene kadar canlı kullanıcı işlemi kabul edilmez. Her run girdilerinin sürüm/asOf bağını korur; eksik veya bozuk girdi sıfıra çevrilmez. Her sorgu tenant filtresi ve soft-delete kuralı taşır. Kısmi snapshot'tan güvenilir öneri üretilmez. Repo kuralları beş katman, CQRS, Mongo, Response<T> ve dört pipeline behavior için geçerlidir; servis kararı henüz yoktur.
+Tenant × LegalEntity ve SKU × Warehouse kapsamı sunucuda doğrulanır; claim, form veya MDM lookup kullanıcı yetkisi yerine geçmez. Platform'un yetkili şirketlerim ve seri kapsamı gelene kadar canlı kullanıcı işlemi kabul edilmez. Her run girdilerinin sürüm/asOf bağını korur; eksik veya bozuk girdi sıfıra çevrilmez. Her sorgu tenant filtresi ve soft-delete kuralı taşır. Kısmi snapshot'tan güvenilir öneri üretilmez. Repo kuralları beş katman, CQRS, Mongo, Response<T> ve dört pipeline behavior için geçerlidir; servis 5068 PlanningService olarak seçilmiştir, bu canlı tüketim izni değildir.
 
 ## 9. Layout & Shell Contract
 
@@ -95,7 +97,7 @@ Taslak izin ayrımı: `mrp.runs.read`, `mrp.runs.create`, `mrp.proposals.read`, 
 
 ## 15. Gateway / API Routing Decision
 
-Servis ve port Ali kararına bırakılmıştır (`TBD`). `PLAN-MRP-BUNDLE` producer sözleşmesi, kesin endpoint/method matrisi, Gateway rotası ve merkezî kayıt ayrı review/freeze gerektirir. Tüketici FROZEN sözleşmelere karşı fixture/mock ile yalnız pack onayı sonrası izole geliştirilebilir; canlı çapraz servis çağrısı bu taslakla açılmaz.
+Servis `Diten.PlanningService`, port 5068 olarak kararlaştırıldı; yeni servis açılmaz. `PLAN-MRP-BUNDLE` producer sözleşmesi, kesin endpoint/method matrisi, Gateway rotası ve merkezî kayıt ayrı review/freeze gerektirir. Tüketici FROZEN sözleşmelere karşı fixture/mock ile yalnız pack onayı ve MOD-0188 main merge sonrası izole geliştirilebilir; canlı çapraz servis çağrısı bu taslakla açılmaz.
 
 ## 16. Acceptance Criteria
 
@@ -115,7 +117,9 @@ Karar sonrası saf netting için sınır/decimal/UoM ve eksik-veri testleri; FRO
 
 ## 18. Ready-for-dev Checklist
 
-- [ ] Ali servis ve portu, kalıcı kayıt yerini ve birleşme maliyetini seçti.
+- [x] Ali servis ve portu `Diten.PlanningService` / 5068 olarak seçti; ayrı servis yok.
+- [ ] MOD-0188 PlanningService main'e merge edildi; MOD-0189 kod kapısı ayrıca açıldı.
+- [ ] Kalıcı kayıt yeri ve servis içi sahiplik sınırı onaylandı.
 - [ ] Netting formülü, zaman kovası, BOM yolu, safety stock ve açık PO bakiyesi ürün/sözleşme sahiplerince netleştirildi.
 - [ ] Demand v2 tüketici sınırı (dört durum kontrolü, bağlı run kanıtı, uzlaştırma) onaylandı; DRAFT v2 canlı girdi sayılmadı.
 - [ ] Platform şirket/seri kapsamı ve izinler ile audit yolu kararlaştırıldı.
@@ -127,6 +131,18 @@ Karar sonrası saf netting için sınır/decimal/UoM ve eksik-veri testleri; FRO
 Blueprint 8.1 `Blueprint_Data`, MOD-0189'u W-4 Planning Execution, SoR `MRP runs, replenishment proposals, exceptions`, min contract `PLAN-MRP-BUNDLE` olarak gösterir. `WP-MVP4-planning.md` golden flow'u forecast → gerekiyorsa BOM explode → availability'ye karşı net → safety-stock/lead-time → requirement → proposal → MOD-0141 handoff olarak verir. Bu sıralama formül, veri tamlığı veya otomatik PO onayı değildir. Main'deki FROZEN Demand v1, MOD-0188 dalındaki DRAFT v2'nin yerine geçmez.
 
 ## 20. Follow-up Items
+
+### Karar secenekleri (onay bekliyor)
+
+| Konu / secenek | Artisi | Eksisi | Bagimli modul / sozlesme | Oneri |
+|---|---|---|---|---|
+| Netting: tek donem toplami | Basit fixture hesabi. | Vadesi sonraki kovada olan tedariki erken sayabilir. | MOD-0188 Demand, MOD-0173 Inventory, MOD-0191 policy. | Yalniz izole karsilastirma. |
+| Netting: SKU x Warehouse icin zaman kovasi ve surumlu girdi kesiti | Ihtiyac, stok ve tedarik sirasi aciklanabilir. | Kova, tahsis sirasi, safety stock, lead time, UoM ve yuvarlama karari gerekir. | MOD-0188 v2, MOD-0173, MOD-0141/0142, MOD-0191; BOM yolunda MOD-0193. | Onerilen yon; kesin formul onaylanmadan kodlanmaz. |
+| Acik PO: mevcut PO ve GRN'den tuketicide bakiye turetme | Mevcut FROZEN yuzeyler okunabilir. | PO satirinda teslim tarihi ve yetkili acik bakiye yok; ters kayit ve kesit tutarliligi kanitlanamaz. | MOD-0141 `requisition-po` v1.1.0; MOD-0142 `grn-event` v1.0.0. | Canli netting icin kullanma. |
+| Acik PO: ureticinin surumlu acik satir gorunumu | Kalan miktar, beklenen tarih ve asOf ureticide dogrulanir. | Yeni/onayli uretici sozlesmesi gerekir. | MOD-0141 PO, MOD-0142 GRN. | Onerilen yon. |
+| Demand: FROZEN v1 `/plan` veya `/forecast` | Main'de yayimli. | Degismez revision, durum surumu ve butunluk bagi yok. | MOD-0188 Demand v1. | V2 yerine sessiz kullanim yok. |
+| Demand: DRAFT v2 fixture | Izole cekirdek testi mumkun. | Canli veya onayli sozlesme kaniti degil. | MOD-0188 owned v2 DRAFT. | Yalniz pack onayli izole test. |
+| Demand: onayli v2 snapshot ve durum sorgusu | Run-revision bagi ve invalidation uzlastirmasi kurulabilir. | Merkezi freeze ve tuketici kabulu bekler. | MOD-0188 / MOD-0189 v2 karari. | Canli tuketim icin onerilen yol. |
 
 MOD-0188 v2 merkezî freeze; MOD-0141 açık PO bakiye/tarih üretici sözleşmesi; MOD-0191 policy tüketici sözleşmesi; Platform yetkili şirketlerim ve seri kapsamı; canlı Inventory/Product/BOM üretici testi; MOD-0141 handoff; Gateway, izin kaydı, UI ve merkezi audit/BL-501 bağlantısı ayrı işlerdir. MOD-0190/0192 MVP-6 işlerine dokunulmaz.
 
