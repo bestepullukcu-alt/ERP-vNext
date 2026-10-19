@@ -94,6 +94,86 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Mover</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Iniciar</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Ver cadena de mando</value></data>
+  <data name="ActionVerb_Allocate" xml:space="preserve"><value>Atribuir</value></data>
+  <data name="ActionVerb_Amend" xml:space="preserve"><value>Enmendar</value></data>
+  <data name="ActionVerb_Append" xml:space="preserve"><value>Añadir</value></data>
+  <data name="ActionVerb_Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="ActionVerb_ApproveExtension" xml:space="preserve"><value>Aprobar prórroga</value></data>
+  <data name="ActionVerb_AttachEvidence" xml:space="preserve"><value>Adjuntar evidencia</value></data>
+  <data name="ActionVerb_Audit" xml:space="preserve"><value>Auditar</value></data>
+  <data name="ActionVerb_AuditView" xml:space="preserve"><value>Ver registro de auditoría</value></data>
+  <data name="ActionVerb_Block" xml:space="preserve"><value>Bloquear</value></data>
+  <data name="ActionVerb_Capture" xml:space="preserve"><value>Capturar</value></data>
+  <data name="ActionVerb_Change" xml:space="preserve"><value>Cambiar</value></data>
+  <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Cambiar estado</value></data>
+  <data name="ActionVerb_Commit" xml:space="preserve"><value>Hacer definitivo</value></data>
+  <data name="ActionVerb_Configure" xml:space="preserve"><value>Configurar</value></data>
+  <data name="ActionVerb_Confirm" xml:space="preserve"><value>Confirmar</value></data>
+  <data name="ActionVerb_Correct" xml:space="preserve"><value>Corregir</value></data>
+  <data name="ActionVerb_CreateDraft" xml:space="preserve"><value>Crear borrador</value></data>
+  <data name="ActionVerb_Deactivate" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="ActionVerb_Decide" xml:space="preserve"><value>Decidir</value></data>
+  <data name="ActionVerb_Dispatch" xml:space="preserve"><value>Despachar</value></data>
+  <data name="ActionVerb_Dispose" xml:space="preserve"><value>Desechar</value></data>
+  <data name="ActionVerb_DryRun" xml:space="preserve"><value>Ejecución de prueba</value></data>
+  <data name="ActionVerb_EditEmployment" xml:space="preserve"><value>Editar datos laborales</value></data>
+  <data name="ActionVerb_EditLegal" xml:space="preserve"><value>Editar perfil legal</value></data>
+  <data name="ActionVerb_End" xml:space="preserve"><value>Finalizar</value></data>
+  <data name="ActionVerb_Generate" xml:space="preserve"><value>Generar</value></data>
+  <data name="ActionVerb_ImpactView" xml:space="preserve"><value>Ver impacto</value></data>
+  <data name="ActionVerb_Instantiate" xml:space="preserve"><value>Instanciar</value></data>
+  <data name="ActionVerb_Invalidate" xml:space="preserve"><value>Invalidar</value></data>
+  <data name="ActionVerb_Investigate" xml:space="preserve"><value>Investigar</value></data>
+  <data name="ActionVerb_Link" xml:space="preserve"><value>Vincular</value></data>
+  <data name="ActionVerb_Lookup" xml:space="preserve"><value>Consultar</value></data>
+  <data name="ActionVerb_LookupValidation" xml:space="preserve"><value>Validar referencia</value></data>
+  <data name="ActionVerb_Migrate" xml:space="preserve"><value>Migrar</value></data>
+  <data name="ActionVerb_MinutesPublish" xml:space="preserve"><value>Publicar acta</value></data>
+  <data name="ActionVerb_MinutesWrite" xml:space="preserve"><value>Redactar acta</value></data>
+  <data name="ActionVerb_Propose" xml:space="preserve"><value>Proponer</value></data>
+  <data name="ActionVerb_PublishOverride" xml:space="preserve"><value>Publicar por excepción</value></data>
+  <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>Ver resumen</value></data>
+  <data name="ActionVerb_Rebase" xml:space="preserve"><value>Realinear</value></data>
+  <data name="ActionVerb_Recover" xml:space="preserve"><value>Recuperar</value></data>
+  <data name="ActionVerb_Release" xml:space="preserve"><value>Liberar</value></data>
+  <data name="ActionVerb_Reopen" xml:space="preserve"><value>Reabrir</value></data>
+  <data name="ActionVerb_Replace" xml:space="preserve"><value>Reemplazar</value></data>
+  <data name="ActionVerb_RequestCorrection" xml:space="preserve"><value>Solicitar corrección</value></data>
+  <data name="ActionVerb_RequestInfo" xml:space="preserve"><value>Solicitar información</value></data>
+  <data name="ActionVerb_RequestRetirement" xml:space="preserve"><value>Solicitar retirada</value></data>
+  <data name="ActionVerb_Reserve" xml:space="preserve"><value>Reservar</value></data>
+  <data name="ActionVerb_Resolve" xml:space="preserve"><value>Resolver</value></data>
+  <data name="ActionVerb_Retire" xml:space="preserve"><value>Retirar</value></data>
+  <data name="ActionVerb_Rollback" xml:space="preserve"><value>Revertir</value></data>
+  <data name="ActionVerb_SeriesManage" xml:space="preserve"><value>Gestionar series</value></data>
+  <data name="ActionVerb_Settle" xml:space="preserve"><value>Liquidar</value></data>
+  <data name="ActionVerb_Sign" xml:space="preserve"><value>Firmar</value></data>
+  <data name="ActionVerb_TemporaryIssue" xml:space="preserve"><value>Emitir temporalmente</value></data>
+  <data name="ActionVerb_ThresholdsManage" xml:space="preserve"><value>Gestionar umbrales</value></data>
+  <data name="ActionVerb_Transition" xml:space="preserve"><value>Avanzar estado</value></data>
+  <data name="ActionVerb_TypesManage" xml:space="preserve"><value>Gestionar tipos</value></data>
+  <data name="ActionVerb_Unblock" xml:space="preserve"><value>Desbloquear</value></data>
+  <data name="ActionVerb_UpdateReleased" xml:space="preserve"><value>Actualizar tras liberación</value></data>
+  <data name="ActionVerb_VersionPublish" xml:space="preserve"><value>Publicar versión</value></data>
+  <data name="ActionVerb_ViewSensitive" xml:space="preserve"><value>Ver datos sensibles</value></data>
+  <data name="ActionVerb_ViewStatusHistory" xml:space="preserve"><value>Ver historial de estados</value></data>
+  <data name="ActionVerb_Withdraw" xml:space="preserve"><value>Retirar solicitud</value></data>
+  <data name="ActionVerb_Write" xml:space="preserve"><value>Escribir</value></data>
+  <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Escribir valor</value></data>
+  <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Todo el inquilino: también permite a este rol planificar, aplicar y replanificar visitas para otros representantes.</value></data>
+  <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Todo el inquilino: extiende a todo el inquilino los permisos de escritura existentes de este rol sobre visitas planificadas e informes de visita.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>Este permiso también permite:
+• editar los campos de la tarea
+• aceptar una solicitud o rechazarla indicando el motivo
+• retirar una solicitud que nadie ha respondido
+• planificar la tarea en el calendario o quitarla
+• iniciar la tarea
+• enviarla a revisión
+• indicar que la tarea está a la espera de alguien
+• devolver el trabajo a quien lo solicitó
+• marcar, añadir, editar, eliminar y reordenar elementos de la lista de verificación
+• añadir y quitar adjuntos
+• añadir y quitar dependencias</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>No se pudo verificar su sesión. Inicie sesión de nuevo y vuelva a intentarlo.</value>
   </data>

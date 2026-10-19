@@ -203,26 +203,30 @@ const RoleAssignments = (function () {
             scopeEl.classList.remove('d-none');
         }
 
+        // WP-WEB-ROLE-PERMISSION-LABELS-01 — a key that grants more than its verb (PermLabel KEY_VERBS: the two CRM
+        // read-all keys also write) says so on the tooltip in EVERY branch below; the title is rewritten in each one.
+        const withHint = (text) => (parts.action.hint ? text + ' — ' + parts.action.hint : text);
+
         const badge = badgeFor(state.badge);
         if (state.locked) {
             chip.querySelector('.ra-chip-lock').classList.remove('d-none');
             chip.disabled = true;
-            chip.title = lockHintFor(state, perm.module || '');
+            chip.title = withHint(lockHintFor(state, perm.module || ''));
         } else if (state.assignable) {
-            chip.title = (L.Assign || 'Assign') + ' — ' + (perm.key || '');
+            chip.title = withHint((L.Assign || 'Assign') + ' — ' + (perm.key || ''));
             chip.addEventListener('click', () => doAssign(perm));
         } else if (state.removable) {
-            chip.title = (L.Delete || L.Remove || 'Remove') + ' — ' + (perm.key || '');
+            chip.title = withHint((L.Delete || L.Remove || 'Remove') + ' — ' + (perm.key || ''));
             chip.addEventListener('click', () => doRevoke(perm));
         } else {
             chip.disabled = true;
-            chip.title = perm.key || '';
+            chip.title = withHint(perm.key || '');
         }
 
         if (badge && state.assigned) {
             // The grant SOURCE (baseline / module entitlement / manual) rides on the chip's own tooltip rather than
             // a fourth pill — with up to a dozen chips on a row, a badge per chip is noise, not information.
-            chip.title = badge.text + ' — ' + (perm.key || '');
+            chip.title = withHint(badge.text + ' — ' + (perm.key || ''));
         }
 
         return { chip, state };

@@ -94,6 +94,86 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Перемещение</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Старт</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Просмотр цепочки руководителей</value></data>
+  <data name="ActionVerb_Allocate" xml:space="preserve"><value>Выделение</value></data>
+  <data name="ActionVerb_Amend" xml:space="preserve"><value>Внесение изменений</value></data>
+  <data name="ActionVerb_Append" xml:space="preserve"><value>Добавление</value></data>
+  <data name="ActionVerb_Apply" xml:space="preserve"><value>Применение</value></data>
+  <data name="ActionVerb_ApproveExtension" xml:space="preserve"><value>Утверждение продления</value></data>
+  <data name="ActionVerb_AttachEvidence" xml:space="preserve"><value>Прикрепление доказательств</value></data>
+  <data name="ActionVerb_Audit" xml:space="preserve"><value>Аудит</value></data>
+  <data name="ActionVerb_AuditView" xml:space="preserve"><value>Просмотр журнала аудита</value></data>
+  <data name="ActionVerb_Block" xml:space="preserve"><value>Блокировка</value></data>
+  <data name="ActionVerb_Capture" xml:space="preserve"><value>Сбор данных</value></data>
+  <data name="ActionVerb_Change" xml:space="preserve"><value>Изменение</value></data>
+  <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Изменение статуса</value></data>
+  <data name="ActionVerb_Commit" xml:space="preserve"><value>Фиксация</value></data>
+  <data name="ActionVerb_Configure" xml:space="preserve"><value>Настройка</value></data>
+  <data name="ActionVerb_Confirm" xml:space="preserve"><value>Подтверждение</value></data>
+  <data name="ActionVerb_Correct" xml:space="preserve"><value>Исправление</value></data>
+  <data name="ActionVerb_CreateDraft" xml:space="preserve"><value>Создание черновика</value></data>
+  <data name="ActionVerb_Deactivate" xml:space="preserve"><value>Деактивация</value></data>
+  <data name="ActionVerb_Decide" xml:space="preserve"><value>Принятие решения</value></data>
+  <data name="ActionVerb_Dispatch" xml:space="preserve"><value>Отгрузка</value></data>
+  <data name="ActionVerb_Dispose" xml:space="preserve"><value>Утилизация</value></data>
+  <data name="ActionVerb_DryRun" xml:space="preserve"><value>Пробный запуск</value></data>
+  <data name="ActionVerb_EditEmployment" xml:space="preserve"><value>Редактирование занятости</value></data>
+  <data name="ActionVerb_EditLegal" xml:space="preserve"><value>Редактирование правового профиля</value></data>
+  <data name="ActionVerb_End" xml:space="preserve"><value>Прекращение</value></data>
+  <data name="ActionVerb_Generate" xml:space="preserve"><value>Генерация</value></data>
+  <data name="ActionVerb_ImpactView" xml:space="preserve"><value>Просмотр влияния</value></data>
+  <data name="ActionVerb_Instantiate" xml:space="preserve"><value>Создание экземпляра</value></data>
+  <data name="ActionVerb_Invalidate" xml:space="preserve"><value>Аннулирование</value></data>
+  <data name="ActionVerb_Investigate" xml:space="preserve"><value>Расследование</value></data>
+  <data name="ActionVerb_Link" xml:space="preserve"><value>Связывание</value></data>
+  <data name="ActionVerb_Lookup" xml:space="preserve"><value>Справочный поиск</value></data>
+  <data name="ActionVerb_LookupValidation" xml:space="preserve"><value>Проверка ссылки</value></data>
+  <data name="ActionVerb_Migrate" xml:space="preserve"><value>Миграция</value></data>
+  <data name="ActionVerb_MinutesPublish" xml:space="preserve"><value>Публикация протокола</value></data>
+  <data name="ActionVerb_MinutesWrite" xml:space="preserve"><value>Ведение протокола</value></data>
+  <data name="ActionVerb_Propose" xml:space="preserve"><value>Предложение</value></data>
+  <data name="ActionVerb_PublishOverride" xml:space="preserve"><value>Публикация в порядке исключения</value></data>
+  <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>Просмотр сводки</value></data>
+  <data name="ActionVerb_Rebase" xml:space="preserve"><value>Перенос на новую версию</value></data>
+  <data name="ActionVerb_Recover" xml:space="preserve"><value>Восстановление</value></data>
+  <data name="ActionVerb_Release" xml:space="preserve"><value>Выпуск</value></data>
+  <data name="ActionVerb_Reopen" xml:space="preserve"><value>Повторное открытие</value></data>
+  <data name="ActionVerb_Replace" xml:space="preserve"><value>Замена</value></data>
+  <data name="ActionVerb_RequestCorrection" xml:space="preserve"><value>Запрос исправления</value></data>
+  <data name="ActionVerb_RequestInfo" xml:space="preserve"><value>Запрос информации</value></data>
+  <data name="ActionVerb_RequestRetirement" xml:space="preserve"><value>Запрос вывода из обращения</value></data>
+  <data name="ActionVerb_Reserve" xml:space="preserve"><value>Резервирование</value></data>
+  <data name="ActionVerb_Resolve" xml:space="preserve"><value>Решение</value></data>
+  <data name="ActionVerb_Retire" xml:space="preserve"><value>Вывод из обращения</value></data>
+  <data name="ActionVerb_Rollback" xml:space="preserve"><value>Откат</value></data>
+  <data name="ActionVerb_SeriesManage" xml:space="preserve"><value>Управление сериями</value></data>
+  <data name="ActionVerb_Settle" xml:space="preserve"><value>Урегулирование</value></data>
+  <data name="ActionVerb_Sign" xml:space="preserve"><value>Подписание</value></data>
+  <data name="ActionVerb_TemporaryIssue" xml:space="preserve"><value>Временная выдача</value></data>
+  <data name="ActionVerb_ThresholdsManage" xml:space="preserve"><value>Управление порогами</value></data>
+  <data name="ActionVerb_Transition" xml:space="preserve"><value>Переход статуса</value></data>
+  <data name="ActionVerb_TypesManage" xml:space="preserve"><value>Управление типами</value></data>
+  <data name="ActionVerb_Unblock" xml:space="preserve"><value>Разблокировка</value></data>
+  <data name="ActionVerb_UpdateReleased" xml:space="preserve"><value>Изменение выпущенного</value></data>
+  <data name="ActionVerb_VersionPublish" xml:space="preserve"><value>Публикация версии</value></data>
+  <data name="ActionVerb_ViewSensitive" xml:space="preserve"><value>Просмотр конфиденциальных данных</value></data>
+  <data name="ActionVerb_ViewStatusHistory" xml:space="preserve"><value>Просмотр истории статусов</value></data>
+  <data name="ActionVerb_Withdraw" xml:space="preserve"><value>Отзыв поданного</value></data>
+  <data name="ActionVerb_Write" xml:space="preserve"><value>Запись</value></data>
+  <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Запись значения</value></data>
+  <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>По всему арендатору: также позволяет этой роли планировать, применять и перепланировать визиты за других представителей.</value></data>
+  <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>По всему арендатору: распространяет существующие права записи этой роли на запланированные визиты и отчёты о визитах в пределах всего арендатора.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>Это разрешение также позволяет:
+• редактировать поля задачи
+• принять запрос или отклонить его с указанием причины
+• отозвать запрос, на который никто не ответил
+• запланировать задачу в календаре или снять её с плана
+• начать задачу
+• отправить её на проверку
+• сообщить, что задача ждёт кого-то
+• вернуть работу тому, кто её поручил
+• отмечать, добавлять, изменять, удалять и упорядочивать пункты чек-листа
+• добавлять и удалять вложения
+• добавлять и удалять зависимости</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>Не удалось подтвердить ваш сеанс. Войдите снова и повторите попытку.</value>
   </data>

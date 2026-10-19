@@ -826,6 +826,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Directorio de personas</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Listas de referencia</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>Tareas</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>Registro de empleados (RR. HH. básicos)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>Cuentas CRM</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>Contactos CRM</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>Composición de contenido CRM</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>Información de médicos CRM</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>Conocimiento CRM</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>Visitas planificadas CRM</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>Territorios CRM</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>Planificación de visitas CRM</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>Informes de visita CRM</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>Aprobaciones</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>Categorías</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>Configuración</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>Hojas de horas</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>Semanas</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>Plantillas de lista de verificación</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>Plantillas</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>Alcance de contenido</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Conjunto de contenidos</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Elegibilidad</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Política de frecuencia de visitas</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Productos</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Cuenta</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaña</value></data>
