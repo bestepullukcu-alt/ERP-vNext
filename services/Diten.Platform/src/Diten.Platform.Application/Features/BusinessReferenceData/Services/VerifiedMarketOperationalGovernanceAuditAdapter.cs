@@ -8,7 +8,6 @@ namespace Diten.Platform.Application.Features.BusinessReferenceData.Services;
 
 public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessReferenceDataGovernanceAuditAdapter
 {
-    private static readonly Guid LockedReferenceTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     internal const string RequestType = "BusinessReferenceData.publish";
     internal const string EntityType = "BusinessReferenceDataVersion";
     internal const string GovernanceEvent = "publish";
@@ -21,22 +20,28 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
 
     private readonly IAuditService _auditService;
     private readonly IVerifiedMarketOperationalPreflight _preflight;
+    private readonly Guid _referenceTenantId;
     private VerifiedMarketOperationalFacts? _facts;
     private PendingOverride? _pendingOverride;
 
+    /// <param name="referenceTenant">The resolved reference tenant (MOD-0048-FU01 amendment 2026-10-15): every bound fact and
+    /// audited version must belong to it. Whether it is allowed is the eligibility's decision, not this adapter's.</param>
     public VerifiedMarketOperationalGovernanceAuditAdapter(
         IAuditService auditService,
-        IVerifiedMarketOperationalPreflight preflight)
+        IVerifiedMarketOperationalPreflight preflight,
+        VerifiedMarketOperationalReferenceTenant referenceTenant)
     {
         _auditService = auditService;
         _preflight = preflight;
+        _referenceTenantId = referenceTenant?.TenantId ?? Guid.Empty;
     }
 
     public void Bind(VerifiedMarketOperationalFacts facts)
     {
         ArgumentNullException.ThrowIfNull(facts);
         if (_facts is not null
-            || facts.ReferenceTenantId != LockedReferenceTenantId
+            || _referenceTenantId == Guid.Empty
+            || facts.ReferenceTenantId != _referenceTenantId
             || !string.Equals(facts.CatalogVersion, LockedCatalogVersion, StringComparison.Ordinal)
             || !string.Equals(facts.CatalogFingerprint, LockedCatalogFingerprint, StringComparison.Ordinal)
             || !string.Equals(facts.ActorId, LockedActorId, StringComparison.Ordinal)
@@ -77,7 +82,7 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
             || !string.Equals(publishMode, "Immediate", StringComparison.OrdinalIgnoreCase)
             || string.IsNullOrWhiteSpace(version.LastPublishIdempotencyKey)
             || !string.Equals(version.LastPublishIdempotencyKey, BuildOperationKey(facts), StringComparison.Ordinal)
-            || version.TenantId != LockedReferenceTenantId
+            || version.TenantId != _referenceTenantId
             || version.BusinessReferenceDataVersionId == Guid.Empty
             || !string.Equals(actorId, LockedActorId, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(publicationCorrelationId)
@@ -190,7 +195,7 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
         var facts = _facts;
         if (facts is null
             || _pendingOverride is not null
-            || version.TenantId != LockedReferenceTenantId
+            || version.TenantId != _referenceTenantId
             || version.BusinessReferenceDataVersionId == Guid.Empty
             || !string.Equals(actorId, LockedActorId, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(correlationId)

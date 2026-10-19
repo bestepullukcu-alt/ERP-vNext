@@ -16,11 +16,13 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 /// (1) the two LOCKED catalogs are LF on disk and their WORKING-TREE bytes hash to the fingerprints pinned in code
 ///     (a Windows CRLF checkout broke this; .gitattributes now pins them to LF);
 /// (2) Platform's appsettings.Development.json, bound as the host binds it, makes the production eligibility classes
-///     answer ELIGIBLE (provisioning, enumeration, market) — reference tenant ≠ consumer tenant (97c5);
+///     answer ELIGIBLE (provisioning, enumeration; market with the dev script's exact process values) — reference tenant ≠
+///     consumer tenant (97c5);
 /// (3) the MDM ↔ Platform credential agrees (identifier, consumer service, audience, ≤ 2 s timeout) and NO secret is
 ///     committed: the secret lives in dotnet user-secrets (scripts/dev/set-verified-reference-dev-credential.ps1);
 /// (4) outside Development the provisioning is refused (the live path is a separate decision — operator guide).
 /// </summary>
+[Collection(VerifiedMarketOperationalEnvironmentCollection.Name)] // the market tests set process environment variables
 public sealed class VerifiedReferenceDevProvisioningConfigTests
 {
     private static readonly Guid DevConsumerTenant = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
@@ -75,7 +77,7 @@ public sealed class VerifiedReferenceDevProvisioningConfigTests
         // environment variables equal to the configuration), never on appsettings alone (lane 6e3013612). The Development
         // configuration is valid; without the process provenance it is refused with that reason, not with "configuration invalid".
         var marketDecision = await new DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility(
-            Environment("Development"), configuration, Options.Create(market), Options.Create(provider)).EvaluateAsync();
+            Environment("Development"), configuration, Options.Create(market), Options.Create(provider), Options.Create(gsku)).EvaluateAsync();
         Assert.False(marketDecision.IsEligible);
         Assert.Equal("VERIFIED_MARKET_OPERATIONAL_PROCESS_PROVENANCE_REQUIRED", marketDecision.ReasonCode);
 
@@ -83,7 +85,88 @@ public sealed class VerifiedReferenceDevProvisioningConfigTests
         Assert.False((await new DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility(
             Environment("Production"), Options.Create(gsku), Options.Create(provider)).EvaluateAsync()).IsEligible);
         Assert.False((await new DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility(
-            Environment("Production"), configuration, Options.Create(market), Options.Create(provider)).EvaluateAsync()).IsEligible);
+            Environment("Production"), configuration, Options.Create(market), Options.Create(provider), Options.Create(gsku)).EvaluateAsync()).IsEligible);
+    }
+
+    /// <summary>
+    /// WP-PLT-MARKET-REFTENANT-01 (BL-645, MOD-0048-FU01 amendment 2026-10-15) — with the process values the dev script sets
+    /// (read from appsettings.Development.json, equal to the configuration the operational mode builds: JSON + environment),
+    /// the Development configuration makes the market provisioning ELIGIBLE again, under the configured reference tenant.
+    /// </summary>
+    [Fact]
+    public async Task Development_config_with_the_scripts_exact_process_values_makes_market_provisioning_eligible()
+    {
+        var json = PlatformDevelopmentConfiguration();
+        var processValues = ScriptProcessValues(json);
+        using var environment = TemporaryProcessEnvironment.Apply(processValues);
+        // As VerifiedMarketOperationalMode builds it: the JSON files, then the process environment over them.
+        var configuration = new ConfigurationBuilder().AddConfiguration(json).AddEnvironmentVariables().Build();
+        var provider = Bind<BusinessReferenceDataProviderOptions>(configuration, BusinessReferenceDataProviderOptions.SectionName);
+        var gsku = Bind<VerifiedGskuOperationalProvisioningOptions>(configuration, VerifiedGskuOperationalProvisioningOptions.SectionName);
+        var market = Bind<VerifiedMarketOperationalProvisioningOptions>(configuration, VerifiedMarketOperationalProvisioningOptions.SectionName);
+        // the command runs from the API project directory: the file check resolves the (unchanged) relative path from there
+        market.CatalogPath = Path.Combine(PlatformApiDirectory(), market.CatalogPath);
+
+        var decision = await new DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility(
+            Environment("Development"), configuration, Options.Create(market), Options.Create(provider), Options.Create(gsku)).EvaluateAsync();
+
+        Assert.True(decision.IsEligible, decision.ReasonCode);
+        Assert.True(provider.TryGetReferenceTenantId(out var referenceTenant));
+        Assert.Equal(referenceTenant, decision.Facts!.ReferenceTenantId);
+        Assert.NotEqual(DevConsumerTenant, referenceTenant);
+        Assert.Equal(VerifiedMarketOperationalProvisioningOptions.LockedActorId, decision.Facts.ActorId);
+    }
+
+    /// <summary>The script names exactly the eight process values the eligibility reads, takes them from
+    /// appsettings.Development.json (never a .local.json) and restores the process environment in a finally block.</summary>
+    [Fact]
+    public void The_dev_script_sets_exactly_the_eligibility_process_values_from_appsettings_and_restores_them()
+    {
+        var source = File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "dev", "run-verified-market-provisioning.ps1"));
+        // the CODE only: the comment-based help block and full-line comments may name what the script does NOT read
+        var script = System.Text.RegularExpressions.Regex.Replace(
+            System.Text.RegularExpressions.Regex.Replace(source, @"<#[\s\S]*?#>", string.Empty),
+            @"(?m)^\s*#.*$", string.Empty);
+        var named = System.Text.RegularExpressions.Regex.Matches(script, @"'(BusinessReferenceData__[A-Za-z_]+)'\s*=")
+            .Select(match => match.Groups[1].Value)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        Assert.Equal(EligibilityProcessKeys.Order(StringComparer.Ordinal).ToArray(), named);
+        Assert.Contains("appsettings.Development.json", script, StringComparison.Ordinal);
+        Assert.DoesNotContain(".local.json", script, StringComparison.Ordinal);
+        Assert.Contains("ConvertFrom-Json", script, StringComparison.Ordinal);
+        Assert.Contains("finally", script, StringComparison.Ordinal);
+        Assert.True(script.IndexOf("--run-verified-market-provisioning", StringComparison.Ordinal)
+                    > script.IndexOf("Set-Item -Path \"env:$name\"", StringComparison.Ordinal)); // values first, then the command
+    }
+
+    private static readonly string[] EligibilityProcessKeys =
+    [
+        VerifiedMarketOperationalProvisioningOptions.EnabledEnvironmentKey,
+        VerifiedMarketOperationalProvisioningOptions.CatalogLoadEnabledEnvironmentKey,
+        VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey,
+        VerifiedMarketOperationalProvisioningOptions.CatalogPathEnvironmentKey,
+        VerifiedMarketOperationalProvisioningOptions.CatalogVersionEnvironmentKey,
+        VerifiedMarketOperationalProvisioningOptions.CatalogFingerprintEnvironmentKey,
+        VerifiedMarketOperationalProvisioningOptions.ActorIdEnvironmentKey,
+        VerifiedMarketOperationalProvisioningOptions.IdempotencyNamespaceEnvironmentKey
+    ];
+
+    // What scripts/dev/run-verified-market-provisioning.ps1 sets: two fixed values and six read from the JSON configuration.
+    private static Dictionary<string, string?> ScriptProcessValues(IConfiguration json)
+    {
+        var market = VerifiedMarketOperationalProvisioningOptions.SectionName;
+        return new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            [VerifiedMarketOperationalProvisioningOptions.EnabledEnvironmentKey] = "true",
+            [VerifiedMarketOperationalProvisioningOptions.CatalogLoadEnabledEnvironmentKey] = "false",
+            [VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey] = json[$"{BusinessReferenceDataProviderOptions.SectionName}:ReferenceTenantId"],
+            [VerifiedMarketOperationalProvisioningOptions.CatalogPathEnvironmentKey] = json[$"{market}:CatalogPath"],
+            [VerifiedMarketOperationalProvisioningOptions.CatalogVersionEnvironmentKey] = json[$"{market}:ExpectedCatalogVersion"],
+            [VerifiedMarketOperationalProvisioningOptions.CatalogFingerprintEnvironmentKey] = json[$"{market}:ExpectedCatalogFingerprint"],
+            [VerifiedMarketOperationalProvisioningOptions.ActorIdEnvironmentKey] = json[$"{market}:ActorId"],
+            [VerifiedMarketOperationalProvisioningOptions.IdempotencyNamespaceEnvironmentKey] = json[$"{market}:IdempotencyNamespace"]
+        };
     }
 
     [Fact]
@@ -121,7 +204,7 @@ public sealed class VerifiedReferenceDevProvisioningConfigTests
 
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────
 
-    private static IConfiguration PlatformDevelopmentConfiguration()
+    private static IConfigurationRoot PlatformDevelopmentConfiguration()
         => new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(PlatformApiDirectory(), "appsettings.json"))
             .AddJsonFile(Path.Combine(PlatformApiDirectory(), "appsettings.Development.json"))
