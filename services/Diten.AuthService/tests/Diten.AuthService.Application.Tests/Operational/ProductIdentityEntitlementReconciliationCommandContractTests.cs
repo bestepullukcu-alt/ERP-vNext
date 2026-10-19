@@ -127,7 +127,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
             .SelectMany(path => AuthorityCalls(Path.GetRelativePath(root.FullName, path).Replace('\\', '/'), File.ReadAllText(path)))
             .GroupBy(row => row, StringComparer.Ordinal).Select(group => group.Key + "|" + group.Count())
             .Order(StringComparer.Ordinal).ToArray();
-        var expected = (FrozenWriterCalls + "\n" + OwnerCorrection20261014WriterCalls + "\n" + OwnerCorrection20261014B1WriterCalls + "\n" + OwnerCorrection20261014TenantAdminWriterCalls + "\n" + OwnerCorrection20261015AdminBootstrapWriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls
+        var expected = (FrozenWriterCalls + "\n" + OwnerCorrection20261014WriterCalls + "\n" + OwnerCorrection20261014B1WriterCalls + "\n" + OwnerCorrection20261014TenantAdminWriterCalls + "\n" + OwnerCorrection20261015AdminBootstrapWriterCalls + "\n" + OwnerCorrection20261020Q358CleanupWriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls
             + "\n" + ApprovedDeclaredServiceClientWriterCalls).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Order(StringComparer.Ordinal).ToArray();
         var unclassified = actual.Where(row => row.Contains("|UNCLASSIFIED|", StringComparison.Ordinal)).ToArray();
@@ -366,6 +366,20 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DevAccountSeed.cs|UserRepository|userRepository.TryWriteChangesAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DevAccountSeed.cs|UserRole|urCol.InsertOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DevAccountSeed.cs|User|userCol.InsertOneAsync|3
+    """;
+    // Owner correction 2026-10-20 (Q358 clean-up, C-13 follow-up; owner approval in chat 2026-10-20, XMC-001 consent 2026-10-19;
+    // by hand, not a regeneration; decision docs/records/decisions/2026-10/mvp6-q358-retraction-owner-decision-01.md,
+    // evidence docs/records/audits/2026-10/mvp6-q358-grant-cleanup-01/):
+    //   ADDED — RolePermissionRepository Collection.UpdateOneAsync: AssignAsync revives a SOFT-DELETED grant on duplicate key
+    //     (only while IsDeleted is true; a live duplicate still throws). Restores a grant the caller is already granting.
+    //   ADDED — Q358ShipmentGrantRetractionRunner (Off unless Q358Retraction:Mode is DryRun/Apply): rpCol.UpdateOneAsync, the
+    //     conditional System → Module conversion or soft delete of a tenant Admin's five supplychain.shipments.* grants (only
+    //     NARROWS or re-labels, never grants); collection.InsertOneAsync, its audit rows (written first); versions.IncrementAsync.
+    private const string OwnerCorrection20261020Q358CleanupWriterCalls = """
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RolePermissionRepository.cs|RolePermission|Collection.UpdateOneAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/Q358ShipmentGrantRetractionRunner.cs|RoleAssignmentVersionRepository|versions.IncrementAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/Q358ShipmentGrantRetractionRunner.cs|RolePermission|rpCol.UpdateOneAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/Q358ShipmentGrantRetractionRunner.cs|T|collection.InsertOneAsync|1
     """;
     private const string OwnerCorrection20261014B1WriterCalls = """
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/RoleProvisioningService.cs|IRoleRepository|_roleRepository.CreateSystemRoleIfMissingAsync|1

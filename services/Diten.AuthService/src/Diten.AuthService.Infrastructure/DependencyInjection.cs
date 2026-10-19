@@ -86,6 +86,8 @@ public static class DependencyInjection
             trustedProxies, sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Security.ClientAddressResolver>>()));
         services.AddHostedService<Security.ClientAddressStartupWarning>();
         services.AddHostedService<Security.SignInTimingWarmup>();
+        // Q358 clean-up (C-13 follow-up) — one-time, audited; does nothing unless Q358Retraction:Mode is DryRun or Apply.
+        services.AddHostedService<Authorization.Q358ShipmentGrantRetractionHostedService>();
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
         // MOD-0022 E1 — e-signature re-authentication tickets and KS-3 windows.
