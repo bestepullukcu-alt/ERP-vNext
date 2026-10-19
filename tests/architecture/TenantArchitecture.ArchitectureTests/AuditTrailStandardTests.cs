@@ -131,6 +131,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.PlanningService", "yayin-izi", "c", "IInternalPublishedRevisionStore.PublishAsync"),
         ("Diten.PlanningService", "gecersiz-kilma-izi", "c", "IInternalRevisionInvalidator.InvalidateAsync"),
         ("Diten.PlanningService", "geri-donus-izi", "c", "IRollbackDraftStore.CreateAsync"),
+        ("Diten.PlanningService", "mrp-lead-time-izi", "c", "ILeadTimeMutationStore.ExecuteAsync"),
         ("Diten.SafetyStockService", "safety-stock-policy-izi", "c", "IPolicyMutationStore.ExecuteAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
