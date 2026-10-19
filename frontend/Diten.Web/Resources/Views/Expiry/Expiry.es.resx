@@ -403,4 +403,52 @@
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder a los datos maestros; inténtelo más tarde.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>No tiene permiso para preparar un cambio de fecha.</value></data>
   <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>Este documento se generó en inglés (el idioma seleccionado no es compatible con el PDF)</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve"><value>Muestra de un vistazo el riesgo de caducidad de la empresa: stock crítico y próximo, stock caducado disponible, excepciones abiertas y cumplimiento FEFO.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve"><value>Aseguramiento de la calidad, responsables de almacén y planificadores de suministro.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve"><value>Lea las tarjetas</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve"><value>Cada tarjeta cuenta lotes y cantidades según los umbrales «Próximo» y «Crítico» de la empresa.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve"><value>Vaya a la lista</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve"><value>Abra una tarjeta o un lote de riesgo para ver los lotes y actuar sobre ellos.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve"><value>Enumera los lotes cuya caducidad se acerca, en orden FEFO (primero la caducidad más próxima).</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve"><value>Usuarios de almacén, ventas y calidad.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve"><value>Filtre</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve"><value>Acote por almacén, artículo o gravedad; el horizonte es un ajuste de la empresa.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve"><value>Actúe a tiempo</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve"><value>Use estos lotes primero o abra una excepción si un lote no puede usarse a tiempo.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Purpose" xml:space="preserve"><value>Enumera los lotes caducados que aún tienen stock.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Audience" xml:space="preserve"><value>Aseguramiento de la calidad y responsables de almacén.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1Title" xml:space="preserve"><value>Revise el stock</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1" xml:space="preserve"><value>Cada fila muestra hace cuánto caducó el lote y cuánto queda disponible.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2Title" xml:space="preserve"><value>Resuelva</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2" xml:space="preserve"><value>Ponga el stock en cuarentena o destrúyalo, o abra una excepción para registrar la decisión.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve"><value>La bandeja de excepciones FEFO: cada desviación de las reglas de caducidad, desde la apertura hasta el cierre.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve"><value>Usuarios de aseguramiento de la calidad que revisan y deciden las excepciones.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve"><value>Tome una</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve"><value>Filtre por tipo o estado; la columna SLA muestra el tiempo restante.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve"><value>Decida con una firma</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve"><value>Acepte con un motivo, registre la corrección o cancele; la decisión se firma electrónicamente si la política lo exige.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve"><value>Una excepción con sus hechos, su historial y su decisión.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve"><value>Usuarios de aseguramiento de la calidad y personas implicadas en la excepción.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve"><value>Revise los hechos</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve"><value>El lote, las fechas y el movimiento que originó la excepción se muestran tal como se registraron.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve"><value>Comente y decida</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve"><value>Añada comentarios, pase el caso a revisión y registre la decisión; cada paso queda en el historial.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Purpose" xml:space="preserve"><value>Muestra qué lote de un artículo debe usarse primero en un almacén, según la caducidad.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Audience" xml:space="preserve"><value>Operarios de almacén y planificadores.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1Title" xml:space="preserve"><value>Elija almacén y artículo</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1" xml:space="preserve"><value>El orden se calcula a partir del stock que puede expedirse ahora.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2Title" xml:space="preserve"><value>Siga el orden</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2" xml:space="preserve"><value>Es una sugerencia de solo lectura; expedir de un lote posterior sigue la regla FEFO de la empresa.</value></data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve"><value>Las reglas de caducidad de la empresa: modo de salida FEFO, vida útil residual mínima en la recepción, cambios de fecha y umbrales.</value></data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve"><value>Responsables de calidad que gestionan la política de caducidad.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve"><value>Cambie con un motivo</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve"><value>Cada guardado pide un motivo y queda en el historial con quién y cuándo.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve"><value>Revise los artículos</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve"><value>Los días de vida útil vienen del maestro de artículos y se corrigen allí.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve"><value>Genera el paquete de evidencias FEFO / caducidad de un período para auditorías.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve"><value>Aseguramiento de la calidad, responsables del sistema de calidad y auditores.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve"><value>Elija y previsualice</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve"><value>Elija el período y el alcance; la vista previa muestra las cuatro secciones del archivo.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve"><value>Descargue y verifique</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve"><value>Descargue el PDF o el CSV; el SHA-256 del registro de exportación se calcula a partir de los bytes del archivo.</value></data>
 </root>

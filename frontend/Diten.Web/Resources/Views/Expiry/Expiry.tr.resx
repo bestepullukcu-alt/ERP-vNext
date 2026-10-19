@@ -403,4 +403,52 @@
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Ürün ana verisine şu an ulaşılamıyor; daha sonra yeniden deneyin.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>Tarih sapması hazırlama yetkiniz yok.</value></data>
   <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>Bu belge İngilizce üretildi (seçilen dil PDF'te desteklenmiyor)</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve"><value>Şirketin son kullanma riskini tek bakışta gösterir: kritik ve yaklaşan stok, süresi dolmuş stok, açık istisnalar ve FEFO uyumu.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve"><value>Kalite güvence, depo yöneticileri ve tedarik planlayıcıları.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve"><value>Kartları okuyun</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve"><value>Her kart lotları ve miktarları şirketin "Yaklaşıyor" ve "Kritik" eşiklerine göre sayar.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve"><value>Listeye gidin</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve"><value>Arkasındaki lotları görmek ve işlem yapmak için bir karta veya riskli lota tıklayın.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve"><value>Son kullanma tarihi yaklaşan lotları FEFO sırasıyla (en erken SKT önce) listeler.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve"><value>Depo, satış ve kalite kullanıcıları.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve"><value>Filtreleyin</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve"><value>Depo, ürün veya önem derecesine göre daraltın; ufuk şirket ayarıdır.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve"><value>Erken harekete geçin</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve"><value>Bu lotları önce kullanın; bir lot zamanında kullanılamayacaksa istisna açın.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Purpose" xml:space="preserve"><value>Süresi dolmuş ve hâlâ stoğu olan lotları listeler.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Audience" xml:space="preserve"><value>Kalite güvence ve depo yöneticileri.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1Title" xml:space="preserve"><value>Stoğu kontrol edin</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1" xml:space="preserve"><value>Her satır lotun ne kadar önce süresinin dolduğunu ve elde ne kadar kaldığını gösterir.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2Title" xml:space="preserve"><value>Çözün</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2" xml:space="preserve"><value>Stoğu karantinaya alın veya imha edin ya da kararı kaydetmek için istisna açın.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve"><value>FEFO istisnalarının gelen kutusu: son kullanma kurallarından her sapma, açılıştan kapanışa.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve"><value>İstisnaları inceleyip karar veren kalite güvence kullanıcıları.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve"><value>Birini alın</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve"><value>Türe veya duruma göre filtreleyin; SLA sütunu kalan süreyi gösterir.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve"><value>İmzayla karar verin</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve"><value>Gerekçeyle kabul edin, düzeltmeyi kaydedin veya iptal edin; politika istiyorsa karar e-imzayla verilir.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve"><value>Tek bir istisna: olguları, geçmişi ve kararı.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve"><value>Kalite güvence kullanıcıları ve istisnayla ilgili kişiler.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve"><value>Olguları inceleyin</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve"><value>Lot, tarihler ve istisnayı doğuran hareket kaydedildiği gibi gösterilir.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve"><value>Yorum yapın ve karar verin</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve"><value>Yorum ekleyin, istisnayı incelemeye alın ve kararı kaydedin; her adım geçmişte kalır.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Purpose" xml:space="preserve"><value>Bir depoda bir ürünün hangi lotunun önce kullanılması gerektiğini SKT'ye göre gösterir.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Audience" xml:space="preserve"><value>Depo operatörleri ve planlayıcılar.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1Title" xml:space="preserve"><value>Depo ve ürün seçin</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1" xml:space="preserve"><value>Sıra, şu anda çıkışa verilebilecek stoktan hesaplanır.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2Title" xml:space="preserve"><value>Sırayı izleyin</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2" xml:space="preserve"><value>Salt okunur bir öneridir; daha geç bir lottan çıkış şirketin FEFO kuralına tabidir.</value></data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve"><value>Şirketin son kullanma kuralları: FEFO çıkış kuralı, mal kabulde minimum kalan raf ömrü, tarih değişiklikleri ve eşikler.</value></data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve"><value>Son kullanma politikasının sahibi kalite yöneticileri.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve"><value>Gerekçeyle değiştirin</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve"><value>Her kayıt gerekçe ister ve kimin ne zaman yaptığıyla geçmişte saklanır.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve"><value>Ürünleri kontrol edin</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve"><value>Raf ömrü günleri ürün ana verisinden gelir ve orada düzeltilir.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve"><value>Denetimler için bir dönemin FEFO / son kullanma kanıt paketini üretir.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve"><value>Kalite güvence, kalite sistem yöneticisi ve denetçiler.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve"><value>Seç ve önizle</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve"><value>Dönemi ve kapsamı seçin; önizleme dosyanın dört bölümünü gösterir.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve"><value>İndir ve doğrula</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve"><value>PDF veya CSV indirin; dışa aktarma günlüğündeki SHA-256 dosyanın baytlarından hesaplanır.</value></data>
 </root>

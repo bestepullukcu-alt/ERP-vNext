@@ -57,6 +57,16 @@ public sealed class ExpiryWebTests : IClassFixture<WebApplicationFactory<Program
 
     // ── vocabulary ──────────────────────────────────────────────────────────────────────────────────────────────────
 
+    /// <summary>WP-MVP1-FIX-LIVE2 (NE C): every Expiry page has its UXH-001 help texts (the Recall structure), delivered in 7 languages by the key list.</summary>
+    [Fact]
+    public void Every_Expiry_page_has_its_UXH_001_help_texts()
+    {
+        var keys = Diten.Web.Views.Expiry.Expiry.Keys.ToHashSet(StringComparer.Ordinal);
+        foreach (var page in new[] { "EXPIRYDASHBOARD", "EXPIRYAPPROACHING", "EXPIRYEXPIRED", "EXPIRYEXCEPTIONS", "EXPIRYEXCEPTIONDETAILS", "EXPIRYFEFOORDER", "EXPIRYPOLICY", "EXPIRYEVIDENCE" })
+            foreach (var part in new[] { "Purpose", "Audience", "Step1Title", "Step1", "Step2Title", "Step2" })
+                Assert.Contains($"Help.{page}.{part}", keys);
+    }
+
     [Fact]
     public void Seven_languages_carry_exactly_the_Expiry_keys_with_real_text()
     {

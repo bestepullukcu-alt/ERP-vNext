@@ -19,7 +19,7 @@ public sealed class ExpiryAuditNames : IExpiryAuditNames
 
     public ExpiryAuditNames(IMongoDatabase database, ITenantContext tenant)
     {
-        _outbox = database.GetCollection<BsonDocument>(CentralAuditOutboxRecord.CollectionName);
+        _outbox = database.GetCollection<BsonDocument>(ExpiryCollections.CentralAuditOutbox);
         _tenant = tenant;
     }
 

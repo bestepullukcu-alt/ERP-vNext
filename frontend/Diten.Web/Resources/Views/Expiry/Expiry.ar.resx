@@ -403,4 +403,52 @@
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>تعذر الوصول إلى البيانات الرئيسية للمنتج الآن؛ حاول لاحقًا.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>ليست لديك صلاحية تحضير استثناء تاريخ.</value></data>
   <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>أُنشئت هذه الوثيقة باللغة الإنجليزية (اللغة المختارة غير مدعومة في ملف PDF)</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve"><value>يعرض مخاطر انتهاء الصلاحية في الشركة بنظرة واحدة: المخزون الحرج والقريب، والمخزون المنتهي الصلاحية، والاستثناءات المفتوحة، والامتثال لـ FEFO.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve"><value>ضمان الجودة ومديرو المستودعات ومخططو الإمداد.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve"><value>اقرأ البطاقات</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve"><value>تحسب كل بطاقة التشغيلات والكميات وفق عتبتي «قريب» و«حرج» في الشركة.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve"><value>انتقل إلى القائمة</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve"><value>افتح بطاقة أو تشغيلة معرّضة للخطر لترى التشغيلات وراءها وتتخذ الإجراء.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve"><value>يسرد التشغيلات التي اقترب انتهاء صلاحيتها بترتيب FEFO (الأقرب انتهاءً أولاً).</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve"><value>مستخدمو المستودعات والمبيعات والجودة.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve"><value>صفِّ النتائج</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve"><value>ضيّق النتائج حسب المستودع أو الصنف أو درجة الخطورة؛ الأفق إعداد خاص بالشركة.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve"><value>تصرّف مبكرًا</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve"><value>استخدم هذه التشغيلات أولًا أو افتح استثناءً إذا تعذّر استخدام تشغيلة في الوقت المناسب.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Purpose" xml:space="preserve"><value>يسرد التشغيلات المنتهية الصلاحية التي لا يزال لها مخزون.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Audience" xml:space="preserve"><value>ضمان الجودة ومديرو المستودعات.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1Title" xml:space="preserve"><value>تحقّق من المخزون</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1" xml:space="preserve"><value>يبيّن كل صف منذ متى انتهت صلاحية التشغيلة وكم تبقّى منها.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2Title" xml:space="preserve"><value>عالج الأمر</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2" xml:space="preserve"><value>ضع المخزون في الحجر أو أتلفه، أو افتح استثناءً لتسجيل القرار.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve"><value>صندوق استثناءات FEFO: كل انحراف عن قواعد انتهاء الصلاحية، من الفتح حتى الإغلاق.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve"><value>مستخدمو ضمان الجودة الذين يراجعون الاستثناءات ويقررون بشأنها.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve"><value>تولَّ أحدها</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve"><value>صفِّ حسب النوع أو الحالة؛ يبيّن عمود SLA الوقت المتبقي.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve"><value>قرّر بتوقيع</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve"><value>اقبل مع ذكر السبب، أو سجّل التصحيح، أو ألغِ؛ يُوقَّع القرار إلكترونيًا إذا تطلبت السياسة ذلك.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve"><value>استثناء واحد بوقائعه وسجله وقراره.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve"><value>مستخدمو ضمان الجودة والأشخاص المعنيون بالاستثناء.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve"><value>راجع الوقائع</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve"><value>تُعرض التشغيلة والتواريخ والحركة التي أطلقت الاستثناء كما سُجّلت.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve"><value>علّق وقرّر</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve"><value>أضف تعليقات، وضع الحالة قيد المراجعة، وسجّل القرار؛ تبقى كل خطوة في السجل.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Purpose" xml:space="preserve"><value>يبيّن أي تشغيلة من الصنف يجب استخدامها أولًا في المستودع، حسب انتهاء الصلاحية.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Audience" xml:space="preserve"><value>مشغّلو المستودعات والمخططون.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1Title" xml:space="preserve"><value>اختر المستودع والصنف</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1" xml:space="preserve"><value>يُحسب الترتيب من المخزون القابل للصرف الآن.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2Title" xml:space="preserve"><value>اتّبع الترتيب</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2" xml:space="preserve"><value>هذا اقتراح للقراءة فقط؛ يخضع الصرف من تشغيلة لاحقة لقاعدة FEFO في الشركة.</value></data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve"><value>قواعد انتهاء الصلاحية في الشركة: نمط الصرف وفق FEFO، والحد الأدنى للعمر المتبقي عند الاستلام، وتغييرات التواريخ، والعتبات.</value></data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve"><value>مديرو الجودة المسؤولون عن سياسة انتهاء الصلاحية.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve"><value>غيّر مع ذكر السبب</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve"><value>يتطلب كل حفظ ذكر سبب، ويُحفظ في السجل مع صاحبه ووقته.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve"><value>تحقّق من الأصناف</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve"><value>تأتي أيام العمر التخزيني من البيانات الرئيسية للأصناف وتُصحَّح هناك.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve"><value>يُنتج حزمة أدلة FEFO / انتهاء الصلاحية لفترة ما لأغراض التدقيق.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve"><value>ضمان الجودة ومديرو نظام الجودة والمدققون.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve"><value>اختر واعرض المعاينة</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve"><value>اختر الفترة والنطاق؛ تعرض المعاينة الأقسام الأربعة للملف.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve"><value>نزّل وتحقّق</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve"><value>نزّل ملف PDF أو CSV؛ يُحسب SHA-256 في سجل التصدير من بايتات الملف.</value></data>
 </root>
