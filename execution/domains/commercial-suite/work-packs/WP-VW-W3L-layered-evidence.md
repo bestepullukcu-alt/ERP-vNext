@@ -109,3 +109,46 @@ Test dalına alındı: `ad254aef3` (ajan `4f3a3c5fe`), çakışmasız. 23 dosya.
 - **AUD-001:** `UpsertVisitEvidencePolicyScopeCommand` ve `ArchiveVisitEvidencePolicyScopeCommand` tabanda zaten kırmızı olan teste "denetimsiz" olarak ekleniyor (CRM'deki tüm izler "aday"; yayıncıya bağlı komut da denetlenmiş sayılmıyor). Borç satırı eklenmedi → Faz 8.
 - **Yetki:** `platform.organization-seats.read` anahtarı PLT-ORG-SEAT gelince katalogda olur; yönetici rolüne verilmezse roster ve başka temsilcinin effective okumasında Platform 403 → platform-unavailable → LE katmanı atlanır (temsilcinin kendi ziyaret başlangıcında self izinli). Betik PLT-ORG-SEAT sonrası kullanıcı tarafından `--apply`.
 - **Gecikme:** LE katmanı varken Platform kapalıysa ziyaret başlangıcı en çok ~3 sn bekleyebilir.
+
+## §37 CT kabul — PLT-ORG-SEAT E2 ACCEPTED (2026-10-19)
+Ajan commit'i `b5d873571` → test dalına cherry-pick (aşağıdaki başlık). Platform + Gateway; CRM / Web dokunulmadı.
+
+**Yapılan:**
+- **Dizin:** `ITaskSeatDirectory.PrimarySeatsAsync(userIds)` — mevcut `ActiveAsync` üstünden tek okuma; yalnız Primary; birden çok Primary → en erken başlangıç (eşitlikte id) + sayı (uyarı kaydı).
+- **Okuyucu:** `Features/OrganizationSeats/OrganizationSeatReader` — tekil + toplu (≤ 100, 3 okuma: atama, pozisyon, birim); her satırda kiracı denetimi; pozisyon / birim okunamazsa `primary: null`.
+- **API:** `OrganizationSeatsController` GET `{userId}` / POST `lookup`; şekil K-L8, `Response` zarfının `data` alanında. Kendi koltuğu anahtarsız; başkası `platform.organization-seats.read` (taleplerden `PermissionClaimEvaluator`, okuyucu okumadan önce 403).
+- **Manifest:** anahtar Organization manifestinde `ApiPermissions`, `Tenant` atanabilir. Seed / grant yok.
+- **Gateway:** `IsTenantScopedOrgPath` + iki Ocelot rotası (tekil yalnız GET, toplu yalnız POST).
+
+**CT kararları:**
+- **`[LoginOnly]` liste değişikliği KABUL:** iki eylem `ExpectedLoginOnly`'ye eklendi; emsal `WorkItemsController.GetTeamAvailability` (kenarda oturum, yetki uygulama katmanında, okumadan önce 403 testli).
+- **CRM uyumu:** W3-BE-d `PlatformOrganizationSeatReader` aynı yolları Gateway üzerinden kullanıcı token'ıyla çağırıyor ve `GatewayEnvelope<T>(Data, StatusCode, IsSuccessful)` ile okuyor → Platform `Response<T>` alanlarıyla uyumlu.
+
+**CT kontrolü:**
+- **Testler (CT, birleşik ağaç acce4549c + iki commit):** seçili Platform takımı (OrganizationSeat + TaskSeatDirectory + manifest + LoginOnly bekçisi) 41/2 — iki kırmızı bekçinin bilinen ESignature satırları (`ESignatureSamplesController.Image`, `ESignatureSettingsController.ListMeanings`, `InternalESignActionsController.Register`); yeni eylemler bekçiden geçiyor. Gateway 265/0.
+- **Ajanın tam takımları:** Platform Application 8671/8 = taban 8650/8 (aynı adlar, +21); BackgroundJobs / CompositionGuard / Eventing / mimari = taban.
+- **CT sabotajı (ajanın yapmadığı kural):** "en erken Primary kazanır" → `OrderByDescending` → `Two_active_primaries_resolve_to_the_earliest_and_are_reported` **kırmızı**; md5 ile geri alındı.
+
+**Açık / dikkat:**
+- Grant: `scripts/rbac/grant_w3l_organization_seats_97c5.py --apply` kullanıcıda (yönetici rolü başka temsilcinin koltuğunu okuyabilsin; yoksa LE katmanı roster'da platform-unavailable ile atlanır).
+- Platform test ortamı: Mongo testleri `DITEN_TEST_MONGOD` ister; `-o` `services/Diten.Platform` içinde olmalı; tam takım ~35 dk, iki takım aynı anda koşturulmaz.
+
+## §37 CT kabul — W3-WEB-e E2 ACCEPTED (2026-10-19 · görsel kanıt E4'te)
+Ajan commit'i `eb90e5d19` → test dalına cherry-pick. Yalnız Web.
+
+**Yapılan:**
+- **Kapsam ağacı:** kiracı varsayılanı + tüzel kişilik + iş birimi katmanları (`ve-tree-layers`), adla sıralı; "ekle" listesi yalnız henüz eklenmemiş kapsamlar (MDM `legal-entities/lookup`, MOD-0048 `business-unit` yayımlanmış değerler; kaynak kapalıysa `available=false`, ad yerine kısaltılmış id).
+- **Alan düzeyi devralma:** katman alanı boş = üstten; kayıt öncesi değişiklik özeti; PUT sürümlü (409), kaldır = onay + DELETE `expectedVersion`.
+- **Etkin kurallar ve temsilci tablosu:** her değerin kaynağı (kiracı / LE / BU / istisna) rozetiyle; zincir ve notlar (no-seat, bu-ambiguous, platform-unavailable…).
+- **Geçmiş / dışa aktarım:** kapsam sütunu + kapsam süzgeci.
+- **L10n:** sayfa kaynağı + PageHelpResource 7 dil; yardım ikonları güncellendi.
+- **Proxy:** `api/policy/scopes[...]` ve `api/scope-options/*`; tanımsız kapsam türü → yetkiliye 400, yetkisize 403, CRM çağrısı yok.
+
+**CT kontrolü:**
+- **Diff:** mevcut test değişiklikleri gevşetme değil (devre dışı "LE ekle" düğmesi beklentisi canlı ağaç beklentisine döndü; tablolara kapsam sütunu; yardım ikonu). Renk sabiti yok (`--bs-primary` / ton sınıfları); veri adları `F.bidi` / `esc` ile.
+- **CT sabotajı:** `addOptions`'tan "zaten eklenmiş kapsamı çıkar" süzgeci kaldırıldı → `VwW3LScopeWebTests.L3_add_opens_an_empty_scope…` **kırmızı**; md5 ile geri alındı.
+- **Testler (CT, birleşik ağaç):** Web 2703/3 — üç kırmızı bilinen taban (2 `ShipmentDetailsDateNode` + `WorkCenterMenu` -o artefaktı); seçili VwW3L + VisitEvidenceSettings 54/54 (sabotaj öncesi). Ajan: Web 2703/3 = taban.
+
+**Açık / dikkat:**
+- Görsel kanıt (W3 mockup ile yan yana) E4'te alınır; ajanın düzeneği `C:\tmp\vw-w3l-web-e\.ct-out\harness\` (commit'e girmedi).
+- E4 ön koşulu: fleet test dalı başından yeniden başlatılır + grant `--apply`.
