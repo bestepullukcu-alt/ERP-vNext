@@ -429,9 +429,9 @@ public sealed class MovementFormTests
         var gateway = new FakeGateway();
         gateway.On("/api/product-master/stockable-items", 200, $$$"""
             {"items":[
-              {"skuId":"{{{gsku}}}","skuLevel":"Gsku","itemId":"{{{Item}}}","canonicalCode":"GS-1","name":"Amox","lifecycleStatus":"Active"},
-              {"skuId":"{{{SkuId}}}","skuLevel":"Lsku","itemId":"{{{Item}}}","canonicalCode":"LS-TR-1","name":"Amox TR","lifecycleStatus":"Active"},
-              {"skuId":"{{{Guid.NewGuid()}}}","skuLevel":"Lsku","itemId":"{{{Guid.NewGuid()}}}","canonicalCode":"LS-X","name":"Other","lifecycleStatus":"Active"}
+              {"skuId":"{{{gsku}}}","skuLevel":"Gsku","itemId":"{{{Item}}}","itemKind":"GlobalProduct","canonicalCode":"GS-1","name":"Amox","lifecycleStatus":"Active"},
+              {"skuId":"{{{SkuId}}}","skuLevel":"Lsku","itemId":"{{{Item}}}","itemKind":"GlobalProduct","canonicalCode":"LS-TR-1","name":"Amox TR","lifecycleStatus":"Active"},
+              {"skuId":"{{{Guid.NewGuid()}}}","skuLevel":"Lsku","itemId":"{{{Guid.NewGuid()}}}","itemKind":"GlobalProduct","canonicalCode":"LS-X","name":"Other","lifecycleStatus":"Active"}
             ],"page":1,"pageSize":100,"totalCount":3,"contractVersion":"v1.1"}
             """);
 
@@ -498,7 +498,9 @@ public sealed class MovementFormTests
     {
         var gateway = new FakeGateway();
         gateway.On("/api/product-master/products", 200, $$"""{"itemId":"{{Item}}","baseUomId":"ADET","lotControlled":true,"serialControlled":false}""");
-        gateway.On("/api/product-master/skus", 200, """{"baseUomId":"ADET","conversions":[{"fromUom":"KOLI","toUom":"ADET","numerator":"12","denominator":"1"}]}""");
+        // FU-WEB-CONTRACT-FAKES: the conversion answer is getSkuUom's (it was registered on the whole /skus prefix, answering getSku too)
+        gateway.On($"/api/product-master/skus/{SkuId}/uom", 200, """{"baseUomId":"ADET","conversions":[{"fromUom":"KOLI","toUom":"ADET","numerator":"12","denominator":"1"}]}""");
+        gateway.On($"/api/product-master/skus/{SkuId}", 200, $$"""{"skuId":"{{SkuId}}","skuLevel":"Lsku","lotControlled":true,"serialControlled":false}""");
         gateway.On("/api/inventory/balance", 200, $$"""{"rows":[{"warehouseId":"{{Wh1}}","locationId":"{{Bin1}}","lotId":"L1","stockStatus":"AVAILABLE","onHand":"30.5","baseUomId":"ADET"}],"total":1}""");
         gateway.On("/api/locations", 404, string.Empty);
 
@@ -514,23 +516,25 @@ public sealed class MovementFormTests
 
     // ── WP-0173-PM1: PRODUCT-MASTER v1.1 flags on the form ─────────────────────────────────────────────────
 
-    private static FakeGateway V11(string skuBody, string? productBody = null)
+    private static FakeGateway V11(string skuBody, string? productBody = null, string? offContract = null)
     {
         var gateway = new FakeGateway();
         gateway.On($"/api/product-master/skus/{SkuId}/uom", 200, """{"baseUomId":"ADET","conversions":[]}""");
-        gateway.On($"/api/product-master/skus/{SkuId}", 200, skuBody);
+        // FU-WEB-CONTRACT-FAKES: a flag of the wrong type is outside the contract ON PURPOSE — only that violation is allowed
+        if (offContract is null) gateway.On($"/api/product-master/skus/{SkuId}", 200, skuBody);
+        else gateway.OnOff($"/api/product-master/skus/{SkuId}", 200, skuBody, offContract);
         if (productBody is not null) gateway.On("/api/product-master/products", 200, productBody);
         return gateway;
     }
 
     [Theory]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":null,"serialControlled":false}""")]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","serialControlled":false}""")]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":"yes","serialControlled":false}""")]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":false,"serialControlled":null}""")]
-    public async Task An_unknown_flag_on_the_sku_blocks_the_form(string skuBody)
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":null,"serialControlled":false}""", null)]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","serialControlled":false}""", null)]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":"yes","serialControlled":false}""", "/lotControlled: type")]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":false,"serialControlled":null}""", null)]
+    public async Task An_unknown_flag_on_the_sku_blocks_the_form(string skuBody, string? offContract)
     {
-        var gateway = V11(skuBody);
+        var gateway = V11(skuBody, offContract: offContract);
         var json = Body(await Movements(gateway, ReadAndCreate, ("itemId", Item), ("sku", Sku)).Lookups("product", null, null, CancellationToken.None));
 
         Assert.True(json.GetProperty("available").GetBoolean());
@@ -681,7 +685,10 @@ public sealed class MovementFormTests
 
         public List<(string Method, string PathAndQuery, string? IdempotencyKey, string Body)> Requests { get; } = [];
 
-        public void On(string prefix, int status, string body) => _routes.Add((prefix, status, body));
+        public void On(string prefix, int status, string body) { Contracts.ContractRoutes.Require(prefix, status, body); _routes.Add((prefix, status, body)); } // FU-WEB-CONTRACT-FAKES
+
+        /// <summary>A deliberate off-contract answer (a negative test): only the named contract violations are allowed.</summary>
+        public void OnOff(string prefix, int status, string body, params string[] allowed) { Contracts.ContractRoutes.RequireOff(prefix, status, body, allowed); _routes.Add((prefix, status, body)); }
 
         /// <summary>POST /api/inventory/movements answered by Idempotency-Key (reversal vs movement).</summary>
         public void OnMovement(Func<string, (int Status, string Body)> answer) => _movements = answer;
@@ -696,6 +703,7 @@ public sealed class MovementFormTests
             if (_movements is not null && request.Method == HttpMethod.Post && pathAndQuery == "/api/inventory/movements")
             {
                 var (status, text) = _movements(key ?? string.Empty);
+                Contracts.ContractRoutes.Require("/api/inventory/movements", status, text); // FU-WEB-CONTRACT-FAKES: the computed answer too
                 return new HttpResponseMessage((HttpStatusCode)status) { Content = new StringContent(text, Encoding.UTF8, "application/json") };
             }
 

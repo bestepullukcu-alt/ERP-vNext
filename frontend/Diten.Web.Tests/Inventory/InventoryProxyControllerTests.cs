@@ -222,14 +222,15 @@ public sealed class InventoryProxyControllerTests
     {
         const string material = "d4e5f6a7-0000-0000-0000-000000000003";
         var gateway = new FakeGateway();
-        gateway.On("/api/product-master/stockable-items", 200, $$"""
+        // FU-WEB-CONTRACT-FAKES: row 4's level is outside the contract ON PURPOSE (the open-enum guard) — the only violation allowed
+        gateway.OnOff("/api/product-master/stockable-items", 200, $$"""
             {"items":[
               {"skuId":"{{Sku}}","skuLevel":"Gsku","itemId":"{{Item}}","itemKind":"GlobalProduct","canonicalCode":"GS-1","name":"Amoxicillin 16","lifecycleStatus":"Active"},
               {"skuId":"{{material}}","skuLevel":"Item","itemId":"{{material}}","itemKind":"Item","canonicalCode":"IT-3","name":"Amoxicillin trihydrate","lifecycleStatus":"Active"},
-              {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Lsku","itemId":"{{Item}}","canonicalCode":"LS-9","name":"Retired one","lifecycleStatus":"Retired"},
-              {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Pallet","itemId":"{{Item}}","canonicalCode":"PL-1","name":"Unknown level","lifecycleStatus":"Active"}
+              {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Lsku","itemId":"{{Item}}","itemKind":"GlobalProduct","canonicalCode":"LS-9","name":"Retired one","lifecycleStatus":"Retired"},
+              {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Pallet","itemId":"{{Item}}","itemKind":"GlobalProduct","canonicalCode":"PL-1","name":"Unknown level","lifecycleStatus":"Active"}
             ],"page":1,"pageSize":20,"totalCount":4,"contractVersion":"v1.1"}
-            """);
+            """, "/items/3/skuLevel: enum");
 
         var products = Body(await Movements(gateway, ReadAndCreate).Lookups("products", "amo", null, CancellationToken.None));
         var skus = Body(await Movements(gateway, ReadAndCreate).Lookups("skus", "amo", null, CancellationToken.None));
@@ -264,7 +265,7 @@ public sealed class InventoryProxyControllerTests
               {"skuId":"{{Guid.NewGuid()}}","skuLevel":"Lsku","itemId":"{{unknown}}","itemKind":"GlobalProduct","canonicalCode":"LS-7","name":"Paracetamol TR","lifecycleStatus":"Active"}
             ],"page":1,"pageSize":20,"totalCount":3,"contractVersion":"v1.1"}
             """);
-        gateway.On(ProductPickerSource.ProductPath + Item, 200, """{"itemId":"x","canonicalCode":"GP-100","name":"Amoxicillin"}""");
+        gateway.On(ProductPickerSource.ProductPath + Item, 200, $$"""{"itemId":"{{Item}}","canonicalCode":"GP-100","name":"Amoxicillin"}"""); // FU-WEB-CONTRACT-FAKES: itemId is the read id (uuid), was "x"
         gateway.On(ProductPickerSource.ProductPath + unknown, 503, string.Empty);
 
         var items = Body(await Movements(gateway, ReadAndCreate).Lookups("products", "a", null, CancellationToken.None)).GetProperty("items");
@@ -517,7 +518,10 @@ public sealed class InventoryProxyControllerTests
 
         public List<(string Method, string PathAndQuery, string? TenantHeader, string? IdempotencyKey, string Body, string? LegalEntity)> Requests { get; } = [];
 
-        public void On(string prefix, int status, string body) => _routes.Add((prefix, status, body));
+        public void On(string prefix, int status, string body) { Contracts.ContractRoutes.Require(prefix, status, body); _routes.Add((prefix, status, body)); } // FU-WEB-CONTRACT-FAKES
+
+        /// <summary>A deliberate off-contract answer (a negative test): only the named contract violations are allowed.</summary>
+        public void OnOff(string prefix, int status, string body, params string[] allowed) { Contracts.ContractRoutes.RequireOff(prefix, status, body, allowed); _routes.Add((prefix, status, body)); }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
