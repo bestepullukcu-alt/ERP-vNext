@@ -472,11 +472,26 @@ def check_approval_limit(p: dict, repo, commit: str, prepare: bool) -> tuple[lis
         return [], []          # check_authority reports the missing pack
     # CT-FIX-05 (E1): the shared decision per mode (ct_queue.pack_approval_decision), not a second reading here
     verdict, message = pack_approval_decision(data.decode("utf-8", errors="replace"), "prepare" if prepare else "dispatch")
-    if verdict == "ok":
-        return [], []
+    eng, info = [], []
     if verdict == "note":
-        return [], [f"görev sınıfı: {message} ({p['authority']})"]
-    return [f"görev sınıfı: {message} ({p['authority']})"], []
+        info.append(f"görev sınıfı: {message} ({p['authority']})")
+    elif verdict != "ok":
+        eng.append(f"görev sınıfı: {message} ({p['authority']})")
+    # CT-APR-01: a pack changed after execution/approvals/POLICY-START.md entered the history needs a version-bound
+    # approval (scripts/pack_approval.py). A dispatch stops without it; --prepare reports it. Unmeasurable = a stop.
+    # A real repository is always asked (a deleted POLICY-START is a refusal there, not "no rule"); a test double
+    # without git access is asked only when the file is in its tree.
+    pa = _load("pack_approval", ROOT / "scripts" / "pack_approval.py")
+    where = getattr(repo, "worktree", None)
+    if where is not None or repo.file(commit, pa.POLICY) is not None:
+        if where is None:
+            code, lines = 2, ["onay ölçülemedi — depo erişimi yok"]
+        else:
+            code, lines = pa.evaluate(where, commit, p["authority"])
+        if code != 0:
+            why = next((l for l in reversed(lines) if l.startswith(("sonuç:", "ENGEL:"))), lines[-1])
+            (info if prepare else eng).append(f"görev sınıfı: sürüme bağlı onay (CT-APR-01) — {why} ({p['authority']})")
+    return eng, info
 
 
 # CT-FIX-05 (C1, v6 audit): a governance work package writes no product code. Its allowed paths are normal repo-relative
@@ -1300,6 +1315,13 @@ Rapor formatı: §22
     cases.append(("CT-FIX-04: conditional approval_status -> dispatch ENGEL ('kapsam türetilmez'); --prepare -> no ENGEL, "
                   "a line that says a new dispatch stops", any("kapsam türetilmez" in e for e in e1) and not i1 and not e2
                   and any("HAZIRLIK" in i and "ENGEL olur" in i for i in i2)))
+    pol = "execution/approvals/POLICY-START.md"
+    e3, i3 = check_approval_limit(dict(pk_p, task_class="ürün"), FakeRepo({pk: "---\nid: MOD-0288\nstatus: approved\n---\n",
+                                                                             pol: "# start\n"}), "a" * 40, False)
+    e4, i4 = check_approval_limit(dict(pk_p, task_class="ürün"), FakeRepo({pk: "---\nid: MOD-0288\nstatus: approved\n---\n",
+                                                                             pol: "# start\n"}), "a" * 40, True)
+    cases.append(("CT-APR-01: with POLICY-START in the tree and no measurable approval -> dispatch ENGEL, --prepare only a line",
+                  any("CT-APR-01" in e for e in e3) and not e4 and any("CT-APR-01" in i for i in i4)))
     cases.append(("CT-FIX-04: no second approval field, or approval_status: approved -> nothing to say",
                   limit("---\nid: MOD-0288\nstatus: approved\n---\n") == ([], [])
                   and limit(cond.replace("conditionally-approved-for-p2-slice", "approved")) == ([], [])))

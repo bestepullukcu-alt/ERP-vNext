@@ -369,7 +369,9 @@ yalnız doğru başlığın altına gider.
 - **İlgili:** DCP-004 OD-WC-02 · §10.4 (A/B binding law) · §17 · WC-1 birleşik WorkItem kontratı.
 
 ### BL-019 — Blueprint canonical MOD-xxxx tahsisi (CAND-CAP-0006 mezuniyeti)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+
+- **Kapanış (2026-10-19):** Blueprint master 8.7 (Master 8.2 `Main_Reconciliation_v8_2`) `CAND-CAP-0006`'yı yeni bir modül açmadan `MOD-0024` Task & Checklist Engine'in Work Center sayfası / çalışma alanı olarak içine aldı. Kayıtta `CAND-CAP-0006` artık `MOD-0024`'ün eski takma adı; WC-1 / WC-1b paketleri `MOD-0024-WC1` / `MOD-0024-WC1B` oldu. Aşağıdaki metin kapanıştan önceki kayıttır.
 
 - **Nedir:** EA, Work Aggregation / Task Center (Görev Merkezi) için Blueprint'e canonical bir `MOD-xxxx` satırı açar ve `CAND-CAP-0006 → MOD-xxxx` deprecated-alias zincirini kaydeder (DCP-002). Blueprint'te bugün karşılık yok (doğrulandı); CAND-CAP-0006 geçici governance kimliğidir.
 - **Yapım tetikleyicisi:** Yetenek **WC-1'de kanıtlanınca** (şimdi değil). CAND-CAP-0006 WC-1 dilimi boyunca kalır; MOD-xxxx tahsisi ayrı bir EA kararıdır.
@@ -10479,3 +10481,40 @@ DURUM: ERTELENDİ · SAHİP: MOD-0187 pack yazarı (kanıt yükleme gibi üç i�
 **Ölçüm komutu:**
 
     grep -n -E 'evidence upload|carrier picker|approved amount history|FUxx' docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md
+
+### BL-655
+
+**MOD-0043 / MOD-0044 / MOD-0046 — Master 8.7'nin eski anlam eşlemesi ile depodaki takip işleri farklı**
+
+DURUM: ERTELENDİ · SAHİP: Enterprise Architect / sahip · KARAR: sahip, 2026-10-19 ("gerek yok, backlog") · KAYIT: 2026-10-19
+
+**Ne:** Blueprint 8.7 `Legacy_ID_Migration_Map` bu üç eski proje kimliğinin anlamını başka yerlere taşıyor: `MOD-0043` → `MOD-0013` + `MOD-0014`
+(yönetişim, çalışan modül değil); `MOD-0044` → nesneye göre `MOD-0009` / `MOD-0360` / `MOD-0361`; `MOD-0046` → Platform Administration çalışma
+alanı + `MOD-0286`. Depo ise bunları aktif takip işleri `MOD-0009-FU01` / `-FU02` / `-FU03`'e bağlıyor (kayıt satırlarında "DIVERGENCE" notu var).
+**Neden ertelendi:** yürüyen işleri yeniden bağlamak paketleri, bağlantıları ve kabul kayıtlarını değiştirir; Master'a uymak mı, depodaki eşlemeyi
+korumak mı bir karar işidir, teknik değil.
+**Yapım tetikleyicisi:** Enterprise Architect ya da sahibin kararı; ya da Blueprint sahibinin eşlemeyi depodaki takip işlerine göre güncellemesi.
+**Gelecek regresyon riski:** 🟢 — kimlik aracı iki eşlemeyi de kabul ediyor; risk yalnız raporlarda iki farklı sahiplik görünmesi.
+
+**Ölçüm komutu:**
+
+    grep -nE '^\| MOD-004[346] \|' execution/registries/module-id-registry.md
+
+### BL-656
+
+**Dev_Readiness aktarımı (CT-DRA-01 §2) — kanıt kaydı olmadığı için ertelendi**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-19 ("önce onay sistemi") · KAYIT: 2026-10-19
+
+**Ne:** Blueprint 8.7 `Dev_Readiness` sayfası için depodan tek yönlü öneri tablosu (önerilen aşama, gerekçe, eksik kanıt,
+kanıt bağlantıları). Sözleşme hazır: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §2 (v2, Codex'in iki
+koşullu görüşü işlendi).
+**Neden ertelendi:** main'de REP-001 v2 kabul kaydı yok (0, ölçüldü 2026-10-19 `01f1080fd`); araç bugün boş tablo üretirdi.
+Eski kayıtlardan aşama çıkarmak, sözleşmenin yasakladığı kanıtsız aşama olur.
+**Yapım tetikleyicisi:** ilk REP-001 v2 modül kaydı (`completion: Module Done`) main'e girince. D1 (Owner kaynağı) o gün
+`execution/approvals/approvers.tsv` ile çözülür; D4 (`verified_at`) aynı işte okuyucuyla birlikte eklenir.
+**Gelecek regresyon riski:** 🟢 — Excel bu arada "Not Started" gösterir; kanıt olmadığı için bu doğru.
+
+**Ölçüm komutu:**
+
+    git grep -l '^format: rep-001-v2' -- docs/records | wc -l
