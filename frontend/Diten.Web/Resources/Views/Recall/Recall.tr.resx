@@ -20,7 +20,7 @@
   <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Hazırlık Paneli</value></data>
   <data name="Recall.Tabs.Trace" xml:space="preserve"><value>İzleme</value></data>
   <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Vakalar</value></data>
-  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Bugün {0} · tatbikat hedefi {1} saat</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Bugün (UTC) {0} · tatbikat hedefi {1} saat</value></data>
   <data name="Recall.Freq.Band" xml:space="preserve"><value>Son tatbikat {0} günden eski.</value></data>
   <data name="Recall.Freq.Detail" xml:space="preserve"><value>Son tatbikat {0} ({1} gün önce). Eşik Ayarlar'dan gelir.</value></data>
   <data name="Recall.Freq.None" xml:space="preserve"><value>Henüz tamamlanmış tatbikat yok. Eşik Ayarlar'dan gelir.</value></data>

@@ -20,7 +20,7 @@
   <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Панель готовности</value></data>
   <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Прослеживание</value></data>
   <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Случаи</value></data>
-  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Сегодня {0} · цель учения {1} ч</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Сегодня (UTC) {0} · цель учения {1} ч</value></data>
   <data name="Recall.Freq.Band" xml:space="preserve"><value>Последнее учение было более {0} дней назад.</value></data>
   <data name="Recall.Freq.Detail" xml:space="preserve"><value>Последнее учение {0} ({1} дн. назад). Порог задаётся в настройках.</value></data>
   <data name="Recall.Freq.None" xml:space="preserve"><value>Ни одно учение ещё не завершено. Порог задаётся в настройках.</value></data>

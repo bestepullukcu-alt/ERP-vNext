@@ -20,7 +20,7 @@
   <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>准备情况面板</value></data>
   <data name="Recall.Tabs.Trace" xml:space="preserve"><value>追溯</value></data>
   <data name="Recall.Tabs.Cases" xml:space="preserve"><value>案例</value></data>
-  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>今天 {0} · 演练目标 {1} 小时</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>今天 (UTC) {0} · 演练目标 {1} 小时</value></data>
   <data name="Recall.Freq.Band" xml:space="preserve"><value>上次演练已超过 {0} 天。</value></data>
   <data name="Recall.Freq.Detail" xml:space="preserve"><value>上次演练 {0}（{1} 天前）。阈值来自设置。</value></data>
   <data name="Recall.Freq.None" xml:space="preserve"><value>尚未完成任何演练。阈值来自设置。</value></data>

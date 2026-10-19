@@ -20,7 +20,7 @@
   <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Tableau de préparation</value></data>
   <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Traçabilité</value></data>
   <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Dossiers</value></data>
-  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Aujourd’hui {0} · objectif d’exercice {1} h</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Aujourd’hui (UTC) {0} · objectif d’exercice {1} h</value></data>
   <data name="Recall.Freq.Band" xml:space="preserve"><value>Le dernier exercice date de plus de {0} jours.</value></data>
   <data name="Recall.Freq.Detail" xml:space="preserve"><value>Dernier exercice le {0} (il y a {1} jours). Le seuil vient des paramètres.</value></data>
   <data name="Recall.Freq.None" xml:space="preserve"><value>Aucun exercice n’a encore été terminé. Le seuil vient des paramètres.</value></data>
