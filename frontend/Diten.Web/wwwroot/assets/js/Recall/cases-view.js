@@ -24,14 +24,16 @@ var RecallCasesView = (function () {
         const t = fmt.t;
         const drill = row.rowKind === 'Drill';
         const lot = drill ? row.lot?.lotNumber : row.rootLot?.lotNumber;
-        const owner = row.owner?.name || row.owner?.userId || '';
+        // WP-MVP1-NAMES1: the person rule is the page's (fmt.person = RecallCaseView.personName); the id is only the hover title
+        const owner = fmt.person ? fmt.person(row.owner) : '';
+        const ownerTitle = row.owner?.userId && !row.owner?.name ? row.owner.userId : '';
         if (drill) {
             const result = row.passed == null
                 ? t('Recall.DrillStatus.' + row.status)
                 : `${row.passed ? t('Recall.Drill.Passed') : t('Recall.Drill.Failed')} · ${fmt.duration(row.durationMinutes)}`;
             return {
                 number: row.number, kind: 'Drill', type: t('Recall.Type.Drill'), product: row.itemLabel || row.item?.itemId || '', lot: lot || '',
-                class: DASH, level: DASH, opened: fmt.date(row.startedAtUtc), owner, progress: result, status: t('Recall.DrillStatus.' + row.status),
+                class: DASH, level: DASH, opened: fmt.date(row.startedAtUtc), owner, ownerTitle, progress: result, status: t('Recall.DrillStatus.' + row.status),
                 statusCode: row.status, ...drillLink(row, fmt)
             };
         }
@@ -39,7 +41,7 @@ var RecallCasesView = (function () {
         const progress = (row.progress || []).map((p) => `${fmt.qty(p.returned)} / ${fmt.qty(p.shipped)} ${p.baseUomId}`).join(' · ') || DASH;
         return {
             number: row.number, kind: 'Case', type: t('Recall.Type.Real'), product: row.itemLabel || row.item?.itemId || '', lot: lot || '',
-            class: t('Recall.Class.N', row.class), level: t('Recall.Level.' + row.level) || row.level, opened: fmt.date(row.openedAtUtc), owner, progress,
+            class: t('Recall.Class.N', row.class), level: t('Recall.Level.' + row.level) || row.level, opened: fmt.date(row.openedAtUtc), owner, ownerTitle, progress,
             status: t('Recall.Status.' + row.status), statusCode: row.status, clickable: true, href: `/Recall/Cases/Details/${encodeURIComponent(row.caseId)}`
         };
     };

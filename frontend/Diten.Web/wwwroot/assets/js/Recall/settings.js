@@ -39,7 +39,7 @@
         Object.entries(FIELDS).forEach(([k, id]) => { if (byId(id)) { byId(id).value = v[k]; byId(id).classList.remove('is-invalid'); } });
         byId('rc-set-meta').textContent = settings.isDefault
             ? t('Recall.Settings.Defaults')
-            : t('Recall.Settings.Updated', settings.updatedBy?.name || settings.updatedBy?.userId || '', settings.updatedAtUtc ? new Date(settings.updatedAtUtc).toLocaleString(language) : '');
+            : t('Recall.Settings.Updated', window.RecallCaseView.personName(settings.updatedBy, t), settings.updatedAtUtc ? new Date(settings.updatedAtUtc).toLocaleString(language) : '');
         dirty();
     };
     const dirty = () => {
@@ -58,7 +58,7 @@
         const items = reply.ok ? reply.json.data?.items || [] : [];
         byId('rc-set-history').innerHTML = items.map((h) => `<li class="list-group-item">`
             + `<div class="d-flex justify-content-between gap-2"><span class="fw-medium small">${esc(fieldName(h.field))}</span>`
-            + `<span class="small text-muted">${esc(h.changedBy?.name || h.changedBy?.userId || '')} · ${esc(new Date(h.changedAtUtc).toLocaleString(language))}</span></div>`
+            + `<span class="small text-muted">${esc(window.RecallCaseView.personName(h.changedBy, t))} · ${esc(new Date(h.changedAtUtc).toLocaleString(language))}</span></div>`
             + `<div class="small"><span class="text-muted text-decoration-line-through">${esc(h.oldValue ?? '—')}</span> <i class="bx bx-right-arrow-alt"></i> <strong>${esc(h.newValue ?? '—')}</strong></div>`
             + `<div class="small text-muted">${esc(t('Recall.Settings.ReasonShown', h.reason))}</div>`
             + (h.signatureId ? `<span class="badge bg-label-success mt-1"><i class="bx bx-pen me-1"></i>${esc(t('Recall.Case.Signature', h.signatureId))}</span>` : '')

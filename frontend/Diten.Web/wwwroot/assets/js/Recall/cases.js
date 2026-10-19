@@ -11,7 +11,8 @@
     const ui = window.RecallUi;
     const { t, esc } = ui;
     const tableEl = document.querySelector('.datatables-recall-cases');
-    const fmt = { t, qty: ui.qty, date: ui.date, duration: ui.duration, canDrills: ui.can('RECALL_DRILLS_VIEW'), canEvidence: ui.can('RECALL_EVIDENCE_VIEW') };
+    const fmt = { t, qty: ui.qty, date: ui.date, duration: ui.duration, canDrills: ui.can('RECALL_DRILLS_VIEW'), canEvidence: ui.can('RECALL_EVIDENCE_VIEW'),
+        person: (u) => window.RecallCaseView.personName(u, t) }; // WP-MVP1-NAMES1: the one person rule
     let list = null;
 
     const filterFields = [
@@ -103,7 +104,7 @@
                         : ui.classBadge(full.class)) },
                     { targets: 5, render: (data, type, full) => esc(cell(full).level) },
                     { targets: 6, render: (data, type, full) => esc(cell(full).opened) },
-                    { targets: 7, render: (data, type, full) => esc(cell(full).owner) },
+                    { targets: 7, render: (data, type, full) => (cell(full).ownerTitle ? `<span title="${esc(cell(full).ownerTitle)}">${esc(cell(full).owner)}</span>` : esc(cell(full).owner)) },
                     { targets: 8, render: (data, type, full) => `<small>${esc(cell(full).progress)}</small>` },
                     { targets: 9, render: (data, type, full) => status(full) }
                 ]

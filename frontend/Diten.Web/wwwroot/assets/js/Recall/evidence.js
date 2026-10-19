@@ -142,7 +142,7 @@
         const items = reply.ok ? reply.json.data?.items || [] : [];
         byId('rc-ev-log').innerHTML = items.map((x) => `<li class="list-group-item">`
             + `<a href="/Recall/export/evidence/${encodeURIComponent(x.exportId)}" class="fw-medium small text-break">${esc(x.fileName)}</a>`
-            + `<div class="small text-muted">${esc(x.exportedBy?.name || x.exportedBy?.userId || '')} · ${esc(new Date(x.exportedBy?.atUtc).toLocaleString(language))}</div>`
+            + `<div class="small text-muted">${esc(window.RecallCaseView.personName(x.exportedBy, t))} · ${esc(new Date(x.exportedBy?.atUtc).toLocaleString(language))}</div>`
             + `<div class="small font-monospace text-break" title="SHA-256">${esc(x.sha256)}</div></li>`).join('')
             || `<li class="list-group-item text-muted small">${esc(t('Recall.Evidence.LogEmpty'))}</li>`;
         if (!reply.ok) ui.showError(byId('rc-error'), ui.errorText(reply));

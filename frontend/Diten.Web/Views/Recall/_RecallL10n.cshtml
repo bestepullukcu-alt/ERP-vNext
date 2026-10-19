@@ -10,4 +10,6 @@
     <script id="recall-l10n" type="application/json">@Json.Serialize(Diten.Web.Views.Recall.Recall.Keys.ToDictionary(k => k, k => Localizer[k].Value))</script>
     <script src="~/assets/js/Recall/recall.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Recall/recall-ui.js" asp-append-version="true"></script>
+    @* WP-MVP1-NAMES1: the ONE person rule (RecallCaseView.personName — a name, else "unknown user", never the id) on every recall page *@
+    <script src="~/assets/js/Recall/case-view.js" asp-append-version="true"></script>
 }
