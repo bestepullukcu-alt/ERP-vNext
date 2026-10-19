@@ -220,7 +220,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Journey", "crm.knowledge.content-engagement-journey.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("PUBLISH", "Publish", "crm.knowledge.content-engagement-journey.publish", "RowAction", 20, false, false, true)
                 ]),
-                // SCMM-12 (CAND-CAP-0011) Claim authoring console. approve is a SEPARATE key from manage (author-vs-
+                // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) Claim authoring console. approve is a SEPARATE key from manage (author-vs-
                 // approver SoD); there is no delete surface (closing a claim is Archive).
                 new ModuleManifestPage("CLAIMS", "Claims", "/CRM/Claims", ClaimRead, null, true, "List", 140,
                 [
@@ -253,7 +253,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 // WP-SB-1R retired the Content Scopes page (CONTENT_SCOPES) and WP-KP-4 the Content Sets page
                 // (CONTENT_SETS): the Knowledge Path Studio (KNOWLEDGE_PATHS) took the content set's job. A re-registration
                 // of this manifest prunes both pages from the live menu.
-                // SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
+                // SCMM-11-UI (MOD-0363, formerly CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
                 // manage (author-vs-evaluator SoD); no delete surface (Archive).
                 new ModuleManifestPage("ELIGIBILITY_POLICIES", "Eligibility Policies", "/CRM/EligibilityPolicies", EligibilityRead, null, true, "List", 170,
                 [

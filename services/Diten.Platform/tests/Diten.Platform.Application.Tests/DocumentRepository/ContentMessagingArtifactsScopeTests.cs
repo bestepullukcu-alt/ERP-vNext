@@ -9,7 +9,7 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.DocumentRepository;
 
 /// <summary>
-/// WP-SCMM-16A (CAND-CAP-0011 / SCMM-16) — the ONLY additive gap over the existing MOD-0262-FU01 document
+/// WP-SCMM-16A (MOD-0363, formerly CAND-CAP-0011 / SCMM-16) — the ONLY additive gap over the existing MOD-0262-FU01 document
 /// repository surface was a new <see cref="ContentStorageScope.ContentMessagingArtifacts"/> value. These tests
 /// pin the two things that make that value safe: (1) it lands in its OWN on-disk partition rather than being
 /// silently aliased into <c>documents</c> by the <c>_ =&gt; "documents"</c> default (the exact MOD-0024 trap the

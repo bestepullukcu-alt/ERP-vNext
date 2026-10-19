@@ -71,7 +71,7 @@ public enum ContentStorageScope
     /// doc comment; the value is projected into the object key by name, never by ordinal.</summary>
     TaskAttachments = 2,
 
-    /// <summary>CAND-CAP-0011 / SCMM-16 (WP-SCMM-16A) — rendered structured-content &amp; messaging artifacts
+    /// <summary>MOD-0363 (formerly CAND-CAP-0011) / SCMM-16 (WP-SCMM-16A) — rendered structured-content &amp; messaging artifacts
     /// (e.g. a composed ContentSetRevision PDF). Additive only, per this enum's own doc comment; the value is
     /// projected into the object key by name (its own <c>content-messaging-artifacts</c> partition), never by
     /// ordinal, so existing persisted keys are unaffected. The render service (SCMM-16B, CrmService) stores and
