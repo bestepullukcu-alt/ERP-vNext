@@ -48,14 +48,16 @@ internal sealed class LoadProbe : ILoadCommitProbe
     public Guid NewId() => Guid.NewGuid();
 }
 
-internal sealed class LoadTestFactory(LoadProbe probe, string referenceUrl) : WebApplicationFactory<Program>
+internal sealed class LoadTestFactory(LoadProbe probe, string referenceUrl, string appName) : WebApplicationFactory<Program>
 {
     public const string DatabaseName = "diten_mod0185_tests";
     public static readonly string Secret = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
     private static string Connection => Environment.GetEnvironmentVariable("MOD0185_TEST_MONGO") ?? throw new InvalidOperationException("Set MOD0185_TEST_MONGO to an isolated replica set.");
-    private static Dictionary<string, string?> Settings(string referenceUrl) => new()
+    // appName rides on the service's own connection string so a fail point can be scoped to this
+    // host alone (Q214 R2). f.Db is this same client, so arming and the commits under test agree.
+    private static Dictionary<string, string?> Settings(string referenceUrl, string appName) => new()
     {
-        ["Mongo:ConnectionString"] = Connection,
+        ["Mongo:ConnectionString"] = new MongoUrlBuilder(Connection) { ApplicationName = appName }.ToMongoUrl().ToString(),
         ["Mongo:DatabaseName"] = DatabaseName,
         ["JwtSettings:Secret"] = Secret,
         ["JwtSettings:Issuer"] = "loads-tests",
@@ -63,11 +65,11 @@ internal sealed class LoadTestFactory(LoadProbe probe, string referenceUrl) : We
         ["Loads:ReferenceBaseUrl"] = referenceUrl
     };
     protected override IHost CreateHost(IHostBuilder builder)
-    { builder.ConfigureHostConfiguration(c => c.AddInMemoryCollection(Settings(referenceUrl))); return base.CreateHost(builder); }
+    { builder.ConfigureHostConfiguration(c => c.AddInMemoryCollection(Settings(referenceUrl, appName))); return base.CreateHost(builder); }
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-        builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings(referenceUrl)));
+        builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings(referenceUrl, appName)));
         builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<ILoadCommitProbe>(probe))
             .StubLegalEntityValidation());
     }
@@ -78,6 +80,7 @@ internal sealed class LoadTestContext : IAsyncDisposable
     public readonly Guid Tenant = Guid.NewGuid(), LegalEntity = Guid.NewGuid(), Actor = Guid.NewGuid();
     public readonly Guid CarrierId = Guid.NewGuid(), ShipmentId = Guid.NewGuid();
     public readonly LoadProbe Probe = new();
+    public readonly string AppName = "mod0185-" + Guid.NewGuid();
     public object? CarrierResponse { get; set; }
     public Func<Guid, object?> ShipmentResponse { get; set; }
     public int CarrierStatusCode { get; set; } = 200;
@@ -123,7 +126,7 @@ internal sealed class LoadTestContext : IAsyncDisposable
         });
         _mock.StartAsync().GetAwaiter().GetResult();
         var address = _mock.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
-        App = new LoadTestFactory(Probe, address);
+        App = new LoadTestFactory(Probe, address, AppName);
         Client = App.CreateClient();
         Db = App.Services.GetRequiredService<IMongoDatabase>();
     }
@@ -131,7 +134,7 @@ internal sealed class LoadTestContext : IAsyncDisposable
     public void RestartApi()
     {
         Client.Dispose(); App.Dispose();
-        App = new LoadTestFactory(Probe, _mock.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single());
+        App = new LoadTestFactory(Probe, _mock.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single(), AppName);
         Client = App.CreateClient();
     }
 

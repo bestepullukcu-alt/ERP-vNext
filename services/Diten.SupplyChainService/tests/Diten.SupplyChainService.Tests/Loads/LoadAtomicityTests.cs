@@ -7,33 +7,38 @@ namespace Diten.SupplyChainService.Tests.Loads;
 
 public sealed class LoadAtomicityTests
 {
-    private static async Task ConfigureCommitFailures(LoadTestContext f, int times)
+    private static async Task<int> ConfigureCommitFailures(LoadTestContext f, int times)
     {
-        await f.Db.Client.GetDatabase("admin").RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument
+        var armed = await f.Db.Client.GetDatabase("admin").RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument
         {
             { "configureFailPoint", "failCommand" },
             { "mode", new MongoDB.Bson.BsonDocument("times", times) },
             { "data", new MongoDB.Bson.BsonDocument
                 {
                     { "failCommands", new MongoDB.Bson.BsonArray { "commitTransaction" } },
-                    { "errorCode", 91 },
+                    { "appName", f.AppName },
+                    { "errorCode", 8 },
                     { "errorLabels", new MongoDB.Bson.BsonArray { "UnknownTransactionCommitResult" } }
                 }
             }
         });
+        return armed.GetValue("count", 0).ToInt32();
     }
 
-    private static async Task DisableCommitFailures(LoadTestContext f) =>
-        await f.Db.Client.GetDatabase("admin").RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument { { "configureFailPoint", "failCommand" }, { "mode", "off" } });
+    private static async Task<int> DisableCommitFailures(LoadTestContext f)
+    {
+        var result = await f.Db.Client.GetDatabase("admin").RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument { { "configureFailPoint", "failCommand" }, { "mode", "off" } });
+        return result.GetValue("count", 0).ToInt32();
+    }
 
     [Fact]
     public async Task UnknownCommitResultRetriesAndCommitsExactlyOnce()
     {
         await using var f = new LoadTestContext();
-        await ConfigureCommitFailures(f, 1);
+        var armed = await ConfigureCommitFailures(f, 1);
         (HttpResponseMessage Response, System.Text.Json.Nodes.JsonNode? Body) response;
         try { response = await f.Send("POST", "/api/shipment-bundle/loads", f.CreateBody(), "unknown-commit-once"); }
-        finally { await DisableCommitFailures(f); }
+        finally { var hits = await DisableCommitFailures(f) - armed; Console.WriteLine($"Loads commit fail point fired {hits} time(s)"); Assert.Equal(1, hits); }
         Assert.Equal(HttpStatusCode.Created, response.Response.StatusCode);
         Assert.Equal(1, await f.Count("loads"));
         Assert.Equal(1, await f.Count("loads_receipts"));
@@ -45,10 +50,10 @@ public sealed class LoadAtomicityTests
     public async Task UnresolvedUnknownCommitReturns503WithoutPretendingRollbackOrSuccess()
     {
         await using var f = new LoadTestContext();
-        await ConfigureCommitFailures(f, 3);
+        var armed = await ConfigureCommitFailures(f, 3);
         (HttpResponseMessage Response, System.Text.Json.Nodes.JsonNode? Body) response;
         try { response = await f.Send("POST", "/api/shipment-bundle/loads", f.CreateBody(), "unknown-commit-exhausted"); }
-        finally { await DisableCommitFailures(f); }
+        finally { var hits = await DisableCommitFailures(f) - armed; Console.WriteLine($"Loads commit fail point fired {hits} time(s)"); Assert.Equal(3, hits); }
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.Response.StatusCode);
         Assert.Equal("PERSISTENCE_UNAVAILABLE", response.Body!["error"]!["code"]!.GetValue<string>());
         Assert.True(await f.Count("loads") is 0 or 1);

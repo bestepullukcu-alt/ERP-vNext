@@ -1,0 +1,110 @@
+using System.Text.Json;
+using Ocelot.Configuration.File;
+using Xunit;
+
+namespace Diten.ApiGateway.Tests;
+
+// OD-7 route-count guard (v9.6 §5 item 5 / gateway explicit-routes re-derivation, owner ruling 2026-10-18:
+// A accepted = catch-all -> 12 explicit shipment-bundle routes; B = reserve the 10 supply-chain routes now,
+// 404-until-composed). The guard asserts the exact explicit set on 5066: no /api/shipment-bundle catch-all
+// survives, every listed operation carries OPTIONS (NET-001 / OD-8), and the method set per route matches the
+// SHIPMENT-BUNDLE 3.3.0 + SANDOP-CAPACITY 3.1.0 contracts (OD-9: sandop-plans collection is POST-only).
+// Decision: docs/roadmap/plans/mvp6-gateway-routes-conversion-01/PREP.md.
+public sealed class Mvp6ExplicitRoutesTests
+{
+    private const int SupplyChainPort = 5066;
+
+    // path (full upstream template) -> the exact UpstreamHttpMethod set expected.
+    private static readonly (string Path, string[] Methods)[] ShipmentBundleRoutes =
+    {
+        ("/api/shipment-bundle/shipments", new[] { "GET", "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/shipments/{shipmentId}", new[] { "GET", "OPTIONS" }),
+        ("/api/shipment-bundle/shipments/{shipmentId}/transition", new[] { "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/shipments/{shipmentId}/pod", new[] { "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/carriers", new[] { "GET", "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/carriers/{carrierId}/status", new[] { "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/loads", new[] { "GET", "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/loads/{loadId}/transition", new[] { "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/returns", new[] { "GET", "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/returns/{returnId}/transition", new[] { "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/claims", new[] { "GET", "POST", "OPTIONS" }),
+        ("/api/shipment-bundle/claims/{claimId}/transition", new[] { "POST", "OPTIONS" }),
+    };
+
+    // Reserved per the owner's B ruling; these 404 at 5066 until S&OP/Capacity are composed (Q292 §22 gate).
+    private static readonly (string Path, string[] Methods)[] SupplyChainRoutes =
+    {
+        ("/api/supply-chain/sandop-plans", new[] { "POST", "OPTIONS" }),
+        ("/api/supply-chain/sandop-plans/{sandopPlanId}", new[] { "GET", "OPTIONS" }),
+        ("/api/supply-chain/sandop-plans/{sandopPlanId}/snapshots", new[] { "GET", "POST", "OPTIONS" }),
+        ("/api/supply-chain/sandop-plans/{sandopPlanId}/sign-offs", new[] { "GET", "POST", "OPTIONS" }),
+        ("/api/supply-chain/capacity-plans", new[] { "POST", "OPTIONS" }),
+        ("/api/supply-chain/capacity-plans/{capacityPlanId}", new[] { "GET", "OPTIONS" }),
+        ("/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios", new[] { "POST", "OPTIONS" }),
+        ("/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}", new[] { "GET", "OPTIONS" }),
+        ("/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations", new[] { "POST", "OPTIONS" }),
+        ("/api/supply-chain/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}", new[] { "GET", "OPTIONS" }),
+    };
+
+    [Fact]
+    public void ShipmentBundle_has_exactly_the_twelve_explicit_routes_and_no_catch_all()
+    {
+        var routes = LoadConfiguration().Routes;
+
+        var catchAll = routes.Where(r =>
+            r.UpstreamPathTemplate.Contains("{everything}", StringComparison.Ordinal) &&
+            r.UpstreamPathTemplate.StartsWith("/api/shipment-bundle", StringComparison.Ordinal)).ToArray();
+        Assert.True(catchAll.Length == 0,
+            "A /api/shipment-bundle catch-all survives; the explicit swap removes it:\n" +
+            string.Join("\n", catchAll.Select(r => r.UpstreamPathTemplate)));
+
+        var explicitRoutes = routes
+            .Where(r => r.UpstreamPathTemplate.StartsWith("/api/shipment-bundle/", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Equal(ShipmentBundleRoutes.Length, explicitRoutes.Length);
+
+        AssertRouteSet(routes, ShipmentBundleRoutes);
+    }
+
+    [Fact]
+    public void SupplyChain_has_exactly_the_ten_reserved_routes_404_until_composed()
+    {
+        var routes = LoadConfiguration().Routes;
+
+        var supplyChain = routes
+            .Where(r => r.UpstreamPathTemplate.StartsWith("/api/supply-chain", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Equal(SupplyChainRoutes.Length, supplyChain.Length);
+
+        AssertRouteSet(routes, SupplyChainRoutes);
+    }
+
+    private static void AssertRouteSet(IEnumerable<FileRoute> routes, (string Path, string[] Methods)[] expected)
+    {
+        foreach (var (path, methods) in expected)
+        {
+            var route = Assert.Single(routes, r => string.Equals(r.UpstreamPathTemplate, path, StringComparison.Ordinal));
+            Assert.Equal(path, route.DownstreamPathTemplate);
+            var dest = Assert.Single(route.DownstreamHostAndPorts);
+            Assert.Equal("localhost", dest.Host);
+            Assert.Equal(SupplyChainPort, dest.Port);
+            Assert.Contains("OPTIONS", route.UpstreamHttpMethod);
+            Assert.True(
+                new HashSet<string>(methods, StringComparer.Ordinal).SetEquals(route.UpstreamHttpMethod),
+                $"{path}: expected [{string.Join(",", methods)}], found [{string.Join(",", route.UpstreamHttpMethod)}]");
+        }
+    }
+
+    private static FileConfiguration LoadConfiguration()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "ocelot.json");
+        Assert.True(File.Exists(path), $"ocelot.json not found at {path} — check the CopyToOutputDirectory link in Diten.ApiGateway.Tests.csproj.");
+
+        var json = File.ReadAllText(path);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var config = JsonSerializer.Deserialize<FileConfiguration>(json, options);
+
+        Assert.NotNull(config);
+        return config!;
+    }
+}

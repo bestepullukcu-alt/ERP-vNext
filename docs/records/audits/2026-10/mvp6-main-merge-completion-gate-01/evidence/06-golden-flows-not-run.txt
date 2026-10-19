@@ -1,0 +1,26 @@
+# item 6 — five SupplyChain golden flows: NOT RUN, and why
+
+Owner decision (2026-10-16, in session): defer, record as NOT RUN.
+
+What a rerun requires, from the lanes' own records:
+  - all six launch.json services LISTENING: gateway 5000, web 5001, auth 5056, platform 5057, mdm 5059, supplychain 5066
+    (supplychain is NOT in launch.json; the Stage R lane started it outside)
+  - a loopback credential helper (5199) and a mongod per data-owning service
+    (mvp6-stage-r-stack-up-01/STACK.tsv ran ONE mongod for all four, database names do not collide)
+  - a tenant on a COMMERCIAL plan; the default tenant answers QUOTA_CONFIGURATION_MISSING
+  - a Platform-admin token minted by Q358's method, then a tenant Admin actor
+    (mvp6-r4a-carriers-ui-01: 'r4a-admin', tenant Admin of STARTER tenant a84ebe0a…, entitled to CARRIER-MANAGEMENT)
+  - a browser session; passwords served by the local helper so none passes through a transcript
+
+CORRECTION recorded here because CT said otherwise earlier in the session: this item is NOT blocked on Q496.
+Q496 is about the Stage R lane ACCOUNT being role Viewer with 0 of 25 supplychain.* keys. The golden flows never
+used that account — they registered their own tenant and admin through Platform's admin API. Two different walls.
+
+Why deferred: free disk was 3.9-4.8 GiB during this gate run. The readiness lane's own warning
+(mvp6-stage-r-readiness-01) is that starting the stack at 2.1 GiB 'would most likely reproduce' the ENOSPC that
+killed a lane mongod silently (Q490, FTDC id 9399800). The volume has filled three times in this programme.
+A stack started without headroom produces a false red, not evidence.
+
+Standing authority on the inherited evidence: the pre-merge golden flows are VALID_PRE_MERGE /
+INTEGRATION_STALE by the owner's own merge decision — diagnostic and reference only, and K18 forbids claiming
+an integrated PASS from them. So this item is open, named, and nothing is claimed in its place.

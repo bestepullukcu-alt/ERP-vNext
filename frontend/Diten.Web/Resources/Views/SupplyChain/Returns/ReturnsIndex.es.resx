@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="ReturnsTitle" xml:space="preserve"><value>Devoluciones</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Solicite, autorice y controle las devoluciones de mercancías enviadas.</value></data>
-  <data name="AddNewReturns" xml:space="preserve"><value>Agregar devolución</value></data>
+  <data name="AddNewReturns" xml:space="preserve"><value>Añadir devolución</value></data>
   <data name="ActionsHeader" xml:space="preserve"><value>Acciones</value></data>
   <data name="RmaNumber" xml:space="preserve"><value>Número RMA</value></data>
   <data name="ReturnId" xml:space="preserve"><value>ID de la devolución</value></data>
@@ -35,7 +35,7 @@
   <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Despachado</value></data>
   <data name="ShipmentStatusInTransit" xml:space="preserve"><value>En tránsito</value></data>
   <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Entregado</value></data>
-  <data name="ShipmentStatusException" xml:space="preserve"><value>Incidencia</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Excepción</value></data>
   <data name="ShipmentStatusClosed" xml:space="preserve"><value>Cerrado</value></data>
   <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Cancelado</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Nueva devolución</value></data>
@@ -73,7 +73,7 @@
   <data name="ActionDisposition" xml:space="preserve"><value>Asignar disposición</value></data>
   <data name="ActionClose" xml:space="preserve"><value>Cerrar</value></data>
   <data name="TargetReceivedLabel" xml:space="preserve"><value>Recibida (declaración manual)</value></data>
-  <data name="ReceivedManualNote" xml:space="preserve"><value>La recepción es solo una declaración manual. No es una recepción de almacén y no registra ningún movimiento de stock.</value></data>
+  <data name="ReceivedManualNote" xml:space="preserve"><value>La recepción es solo una declaración manual. No es una recepción de almacén y no registra ningún movimiento de inventario.</value></data>
   <data name="OccurredAt" xml:space="preserve"><value>Ocurrido el</value></data>
   <data name="OccurredAtHelp" xml:space="preserve"><value>Su fecha y hora locales. Se envían en UTC.</value></data>
   <data name="OccurredAtInvalid" xml:space="preserve">

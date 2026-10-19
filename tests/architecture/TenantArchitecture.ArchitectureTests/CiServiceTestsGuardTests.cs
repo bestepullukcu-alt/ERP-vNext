@@ -66,9 +66,8 @@ public class CiServiceTestsGuardTests
     {
         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
-        // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard.)
-        ["services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj"] =
-            "main (SCE / MVP-6): needs MVP6_MOD0192_MONGO_URI (its own replica set, CapacityTestMongo); SCE's file",
+        // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
+        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
         ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
             "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
         ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
@@ -174,20 +173,32 @@ public class CiServiceTestsGuardTests
         }
     }
 
-    // Main sync FIX1 (CT decision D): no row starts a job-local mongod and no step hands the tests a Mongo address.
-    // Every service test owns its mongod (DITEN_TEST_MONGOD): Platform's PlatformTestMongo, MDM's MdmTestMongo (which
-    // ignores MDM_TEST_MONGO by design), Auth's owned replica set. A returning address variable would point a test at a
-    // server it did not start — the shape BL-595 removed — so any of them is red here. PLATFORM_COMPOSITION_GUARD_MONGO_URI
-    // too (WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 FIX1): the platform-composition-guard row uses its owned mongod.
+    // Main sync FIX1 (CT decision D, revised by BL-650): no row starts a job-local mongod INLINE in the workflow and
+    // no step hands the tests a Mongo address — the three text checks below still bind service-tests.yml itself. A row
+    // MAY start a job-local mongod, but only from a named script under scripts/test-env/ (planning-tests does, via
+    // mod0188-ci-mongo.sh; supplychain-tests via supplychain-ci-mongo.sh), carrying its rationale beside the invocation — and the guard
+    // pins that every such script the workflow runs exists in the tree, so a row cannot point tests at a server through
+    // a script that is not here. Every service test still owns its mongod (DITEN_TEST_MONGOD): Platform's
+    // PlatformTestMongo, MDM's MdmTestMongo (which ignores MDM_TEST_MONGO by design), Auth's owned replica set; a
+    // returning address variable would point a test at a server it did not start (the shape BL-595 removed), so any of
+    // them is red here, PLATFORM_COMPOSITION_GUARD_MONGO_URI included (WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 FIX1).
     [Fact]
-    public void No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address()
+    public void A_job_local_mongod_starts_only_from_a_named_test_env_script_never_inline()
     {
         var code = Code(Workflow());
         foreach (var variable in new[] { "MONGO_TEST_URI", "MDM_TEST_MONGO", "Eventing__MongoDb__ConnectionString",
                      "MongoDbSettings__ConnectionString", "DITEN_PLATFORM_TEST_MONGO_URI", "PLATFORM_COMPOSITION_GUARD_MONGO_URI" })
             Assert.True(!Regex.IsMatch(code, $@"(?i)\b{variable}\b"), $"the workflow names {variable}: a test would be pointed at a server it did not start");
-        Assert.True(!Regex.IsMatch(code, @"(?i)--replSet|--dbpath|mongo_rs_initiate"), "a job-local mongod is started");
+        Assert.True(!Regex.IsMatch(code, @"(?i)--replSet|--dbpath|mongo_rs_initiate"), "the workflow starts a job-local mongod inline; start it from a named scripts/test-env/ script instead");
         Assert.True(!Regex.IsMatch(code, @"(?i)\bmongodb://"), "the workflow carries a Mongo address");
+
+        // BL-650: follow decision D into the script layer instead of stopping at the workflow text — every script the
+        // workflow runs from scripts/test-env/ must exist in the tree.
+        var root = RepoRoot();
+        var referenced = Regex.Matches(code, @"scripts/test-env/[A-Za-z0-9._-]+\.sh")
+            .Select(m => m.Value).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        foreach (var script in referenced)
+            Assert.True(File.Exists(Path.Combine(root, script)), $"the workflow runs {script}, which is not in the tree");
     }
 
     // BL-590: RabbitMQ pinned by tag and digest, a bounded readiness wait with a named failure, no credential written.
@@ -418,8 +429,11 @@ public class CiServiceTestsGuardTests
             "matrix.suite == 'inventory-tests'",
             "startsWith(matrix.suite, 'auth-')",
             "matrix.suite == 'planning-tests'",
+            // MVP-6 plan v9.9: the SupplyChain row's owned replica set, started and stopped like Planning's.
+            "matrix.suite == 'supplychain-tests'",
             "always()",
             "always() && matrix.suite == 'planning-tests'",
+            "always() && matrix.suite == 'supplychain-tests'",
             "always()",
             // CT-CI-MACOS-01: the macOS job (the Auth acceptance host) — its owned-Mongo flag, its skip check, its upload.
             "startsWith(matrix.suite, 'auth-')",

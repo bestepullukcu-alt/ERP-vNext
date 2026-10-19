@@ -1,4 +1,3 @@
-@using System.Text.Json
 @using Diten.Web.Views.SupplyChain.DemandPlanning
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<DemandPlanningIndex> Localizer
@@ -46,7 +45,7 @@ else
         </div>
         <div id="demandPlanningFixtureApp"></div>
     </div>
-    <script id="demandPlanningTranslations" type="application/json">@Html.Raw(JsonSerializer.Serialize(translations))</script>
+    <script id="demandPlanningTranslations" type="application/json">@Json.Serialize(translations)</script>
 }
 @section Scripts {
     @if (canRead && !preview && ViewData["CanCreateRun"] as bool? == true)

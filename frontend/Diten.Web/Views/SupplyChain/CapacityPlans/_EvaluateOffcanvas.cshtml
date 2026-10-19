@@ -1,0 +1,49 @@
+@using Diten.Web.Views.SupplyChain.CapacityPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CapacityPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Details.cshtml states it.
+}
+@* EvaluateCapacityScenarioRequest: evaluationMode (Finite / Infinite) + resourceRefs[] (text, at least one). 202 opens
+   the evaluation panel; one active evaluation per scenario (409 EVALUATION_ALREADY_ACTIVE). *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEvaluate" aria-labelledby="offcanvasEvaluateLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasEvaluateLabel" class="offcanvas-title">@Localizer["EvaluateScenario"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formEvaluateAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+        <form id="formEvaluate" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="evaluationModeInput" class="form-label fw-medium">@Localizer["EvaluationMode"] <span class="text-danger">*</span></label>
+                    <select id="evaluationModeInput" class="form-select">
+                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        <option value="Finite">@Localizer["ModeFinite"]</option>
+                        <option value="Infinite">@Localizer["ModeInfinite"]</option>
+                    </select>
+                    <div class="invalid-feedback" data-for="evaluationModeInput"></div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="form-label fw-medium mb-0">@Localizer["ResourceRefs"] <span class="text-danger">*</span></span>
+                        <button type="button" id="btnAddResourceRef" class="btn btn-sm btn-label-primary"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddResourceRef"]</button>
+                    </div>
+                    <div id="resourceRefRows" class="d-flex flex-column gap-2"></div>
+                    <template id="resourceRefTemplate">
+                        <div class="d-flex gap-2 js-resource-row">
+                            <input type="text" class="form-control form-control-sm js-resource-ref" aria-label="@Localizer["ResourceRefs"]" dir="ltr" autocomplete="off" spellcheck="false" />
+                            <button type="button" class="btn btn-sm btn-icon btn-text-danger js-row-remove" aria-label="@Localizer["RemoveResourceRef"]"><i class="bx bx-trash" aria-hidden="true"></i></button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitEvaluate" class="btn btn-primary">@Localizer["EvaluateScenario"]</button>
+    </div>
+</div>
