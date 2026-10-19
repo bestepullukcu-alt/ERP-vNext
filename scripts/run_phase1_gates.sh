@@ -154,6 +154,10 @@ echo "[phase1] pack nav keys"
 python3 -B scripts/check_pack_nav_keys.py --self-test
 python3 -B scripts/check_pack_nav_keys.py
 
+# CT-APR-01: the version-bound pack approval's own self-test (a throw-away git repository; standard library and git only)
+echo "[phase1] pack approval self-test"
+python3 -B scripts/pack_approval.py --self-test
+
 echo "[phase1] build gateway"
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
 

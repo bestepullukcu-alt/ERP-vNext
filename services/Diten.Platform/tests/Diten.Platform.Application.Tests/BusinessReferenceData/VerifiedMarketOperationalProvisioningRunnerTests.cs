@@ -255,7 +255,8 @@ public sealed class VerifiedMarketOperationalProvisioningRunnerTests
             new TenantContext(),
             new VerifiedMarketOperationalGovernanceAuditAdapter(
                 new Mock<IAuditService>(MockBehavior.Strict).Object,
-                preflight));
+                preflight,
+                new VerifiedMarketOperationalReferenceTenant(Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId))));
 
     private static Mock<IBusinessReferenceDataStewardshipRepository> VerifiedPublicationRepository(
         VerifiedMarketOperationalFacts facts)
@@ -288,7 +289,7 @@ public sealed class VerifiedMarketOperationalProvisioningRunnerTests
         BusinessReferenceDataTestHarness.GetSeedPath(VerifiedMarketOperationalProvisioningOptions.LockedCatalogFileName),
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
-        Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId),
+        Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId),
         VerifiedMarketOperationalProvisioningOptions.LockedActorId,
         "market-run");
 

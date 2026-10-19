@@ -34,7 +34,8 @@ public sealed class RoleErrorCodeContractTests
             [RoleErrorCodes.DisplayNameRequired] = "ErrorRoleDisplayNameRequired",
             [RoleErrorCodes.DisplayNameTooLong] = "ErrorRoleDisplayNameTooLong",
             [RoleErrorCodes.DescriptionTooLong] = "ErrorRoleDescriptionTooLong",
-            [RoleErrorCodes.SystemNotEditable] = "ErrorRoleSystemNotEditable"
+            [RoleErrorCodes.SystemNotEditable] = "ErrorRoleSystemNotEditable",
+            [RoleErrorCodes.DeleteLastSteward] = "ErrorRoleDeleteLastSteward"     // WP-USERS-ROLES-SMALL-02
         }),
         new("RoleAssignments", "RoleAssignmentsIndex", new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -43,13 +44,15 @@ public sealed class RoleErrorCodeContractTests
             [RoleErrorCodes.PermissionNotTenantAssignable] = "ErrorRolePermissionNotTenantAssignable",
             [RoleErrorCodes.PermissionNotForHumanRole] = "ErrorRolePermissionNotForHumanRole",
             [RoleErrorCodes.PermissionAlreadyGranted] = "ErrorRolePermissionAlreadyGranted",
-            [RoleErrorCodes.PermissionGrantManaged] = "ErrorRolePermissionGrantManaged"
+            [RoleErrorCodes.PermissionGrantManaged] = "ErrorRolePermissionGrantManaged",
+            [RoleErrorCodes.PermissionRevokeLastSteward] = "ErrorRolePermissionRevokeLastSteward"     // WP-USERS-ROLES-SMALL-02
         }),
         new("UserRoleAssignments", "UserRoleAssignmentsIndex", new Dictionary<string, string>(StringComparer.Ordinal)
         {
             [RoleErrorCodes.ActorRequired] = "ErrorRoleActorRequired",
             [RoleErrorCodes.NotFound] = "ErrorRoleNotFound",
-            [RoleErrorCodes.UserRoleUserNotFound] = "ErrorUserRoleUserNotFound"
+            [RoleErrorCodes.UserRoleUserNotFound] = "ErrorUserRoleUserNotFound",
+            [RoleErrorCodes.UserRoleRevokeLastSteward] = "ErrorUserRoleRevokeLastSteward"     // WP-USERS-ROLES-SMALL-02
         })
     ];
 
@@ -58,6 +61,16 @@ public sealed class RoleErrorCodeContractTests
         .Where(f => f.IsLiteral && f.FieldType == typeof(string))
         .Select(f => (string)f.GetRawConstantValue()!)
         .ToHashSet(StringComparer.Ordinal);
+
+    // WP-USERS-ROLES-SMALL-02 (CT K2) — the three last-steward codes are a contract with the screens: their VALUES are
+    // pinned here, so renaming one is a breaking change that turns this red, not a silent refactor.
+    [Fact]
+    public void The_three_last_steward_codes_keep_their_values()
+    {
+        Assert.Equal("USER_ROLE_REVOKE_LAST_STEWARD", RoleErrorCodes.UserRoleRevokeLastSteward);
+        Assert.Equal("ROLE_DELETE_LAST_STEWARD", RoleErrorCodes.DeleteLastSteward);
+        Assert.Equal("ROLE_PERMISSION_REVOKE_LAST_STEWARD", RoleErrorCodes.PermissionRevokeLastSteward);
+    }
 
     [Fact]
     public void Every_code_constant_is_mapped_by_at_least_one_screen_and_no_screen_expects_a_code_that_does_not_exist()

@@ -34,6 +34,10 @@ public static class UserErrorCodes
     /// <summary>The caller tried to deactivate the account they are signed in with.</summary>
     public const string DeactivateSelf = "USER_DEACTIVATE_SELF";
 
+    /// <summary>WP-USERS-ROLES-SMALL-02 — deactivating this account (kebab or edit form) would leave no ACTIVE account that
+    /// can create users (<see cref="RecoveryCapabilityGuard"/>).</summary>
+    public const string DeactivateLastSteward = "USER_DEACTIVATE_LAST_STEWARD";
+
     /// <summary>No such user in the caller's tenant (missing, deleted, or another tenant's — never told apart).</summary>
     public const string NotFound = "USER_NOT_FOUND";
 

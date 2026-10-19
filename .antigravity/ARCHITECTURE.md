@@ -126,7 +126,9 @@ Notlar:
     Browser → Gateway (5000) → AuthService (5056)
                                   ├── JWT Access Token (15dk) + Refresh Token (7gün)
                                   ├── Claims: sub, email, tenant_id, roles[], permissions[]
-                                  └── Seed: admin@diten.com / Admin123! (SuperAdmin)
+                                  └── Seed (yalnız Development): admin@diten.com (SuperAdmin) — dev parolası
+                                      yerel kurulum notunda; Development dışında hesap tohumlanmaz, ilk platform
+                                      yöneticisi Diten.AuthService.FirstPlatformAdministrator komutuyla kurulur
 
     Permission Model:
     {module}.{resource}.{action}

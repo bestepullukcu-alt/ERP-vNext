@@ -316,6 +316,13 @@ public static class AccountKindAcceptance
         /// </summary>
         protected virtual string HostEnvironmentName => "Development";
 
+        /// <summary>
+        /// WP-AUTH-ADMIN-BOOTSTRAP-01 v1.1 — additive, test-only: extra configuration a derived host's API starts with (as
+        /// environment variables, e.g. <c>DevSeeds__PlatformAdmin</c>). Empty for every host but one that measures a
+        /// start-up switch; never the Mongo settings, the JWT secret or anything the pre-flight checks guard (those keys win).
+        /// </summary>
+        protected virtual IReadOnlyDictionary<string, string?> AdditionalEnvironment { get; } = new Dictionary<string, string?>();
+
         /// <summary>BL-529 — the test-owned internal API key of a non-Development host (null on a Development host).</summary>
         public string? InternalApiKey { get; private set; }
 
@@ -470,6 +477,11 @@ public static class AccountKindAcceptance
                         // one channel CreateBuilder reads before Program.cs adds that file.
                         ["DevelopmentLocalSettings__Enabled"] = "false"
                     };
+
+                    foreach (var (name, value) in AdditionalEnvironment)
+                    {
+                        overrides.TryAdd(name, value); // a fixture-owned key is never replaced
+                    }
 
                     if (isNonDevelopmentHost)
                     {

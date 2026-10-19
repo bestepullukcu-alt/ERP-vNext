@@ -2687,6 +2687,48 @@ allow-list.
   Staging/Production behavior remain unchanged. This amendment authorizes code/test alignment only; it grants no live
   Market publication, Mongo operation, staging, commit, push or merge authority.
 
+#### Authorized amendment — Market operational reference tenant from configuration (2026-10-15)
+
+Owner decision 2026-10-15 ("uygun"), BL-645, WP-PLT-MARKET-REFTENANT-01. It replaces the 2026-10-14 decision "A" (keep the
+`0000…0001` lock). Measured reason: `00000000-0000-0000-0000-000000000001` is the Platform system tenant
+(`SystemTenantRules.PlatformSystemTenantId`); the verified catalog must not be written into the same tenant, and the
+lock cannot be supplied by configuration in a live environment (K-INFRA-2).
+
+- The REFERENCE TENANT of the Market operational path comes from `BusinessReferenceData:Provider:ReferenceTenantId` —
+  the same source as the verified GSKU path. It is the resolved `BusinessReferenceDataProviderOptions.ReferenceTenantId`.
+- The Platform system tenant `00000000-0000-0000-0000-000000000001` can NOT be the reference tenant, and neither can the
+  GSKU `ConsumerTenantId`. An empty, malformed, system-tenant or consumer-tenant value is refused with exactly
+  `VERIFIED_MARKET_OPERATIONAL_REFERENCE_TENANT_INVALID`. That refusal, and the process-value match below, are made once,
+  in the eligibility; the operational audit adapter, preflight and event publisher only verify that facts, versions,
+  envelopes and audit proof belong to the resolved reference tenant.
+- The actor stays the canonical Platform Administrator `11111111-1111-1111-1111-111111111111` (`LockedActorId`); the actor
+  lock, actor type `PlatformAdministrator` and the 2026-09-24 audit semantics are unchanged.
+- Development only, default-disabled, and the exact process-environment provenance rule are unchanged: the process value
+  `BusinessReferenceData__Provider__ReferenceTenantId` must equal the configured value exactly (no fallback), like every
+  other operational value.
+- This amendment explicitly SUPERSEDES (a) the tenant clause of the 2026-09-24 amendment ("accepts exactly Platform Admin
+  Tenant `00000000-0000-0000-0000-000000000001`") and (b) the locked-contract bullet "The new owner is exactly Platform
+  Admin Tenant `00000000-0000-0000-0000-000000000001`". The process value `BusinessReferenceData__Provider__ReferenceTenantId`
+  in the locked-contract provenance bullet is no longer `00000000-0000-0000-0000-000000000001`; it is the configured
+  reference tenant (Development: `0b7d0048-0290-4000-8000-000000000001`). The historical owner, consumer tenant, tenant
+  assignment and non-`market` invariants remain read-only. The two superseded texts stay in place as history.
+- Allow-list widening — ONLY these paths, in addition to the existing Section 20 allow-list (no other path):
+  - `scripts/dev/run-verified-market-provisioning.ps1` (sets the process values from `appsettings.Development.json` for the
+    child process only, restores them afterwards; no secret);
+  - `services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json` — only
+    `BusinessReferenceData:VerifiedMarketOperationalProvisioning:ActorId` (the dev value becomes the canonical actor
+    `11111111-1111-1111-1111-111111111111`; the lock itself does not change);
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedReferenceDevProvisioningConfigTests.cs`;
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedMarketOperationalModeIsolationTests.cs`;
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs`;
+  - `services/Diten.Platform/src/Diten.Platform.API/Services/BusinessReferenceData/VerifiedMarketOperationalMode.cs` — only
+    the read-only `VerifiedGskuOperationalProvisioningOptions` registration the eligibility needs for the consumer-tenant
+    rule (the GSKU path and its behaviour do not change);
+  - `services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/PlatformApiStartupExecutionModeTests.cs`;
+  - `docs/guides/operations/verified-reference-data-provisioning.md`.
+- Normal Platform host startup, general BRD publishing, the GSKU path and Staging/Production behaviour are unchanged. This
+  amendment grants no live Market publication, Mongo operation, staging, commit, push or merge authority.
+
 #### Acceptance and test gates
 
 - [ ] Normal no-argument Platform behavior is unchanged and the operational service collection is not constructed.

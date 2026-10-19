@@ -17,6 +17,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly IUserAuditRecorder _userAudit;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
     private readonly ILogger<RevokeRoleCommandHandler> _logger;
 
     public RevokeRoleCommandHandler(
@@ -27,8 +28,10 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         IUserAuditRecorder userAudit,
+        IRecoveryCapabilityGuard recoveryGuard,
         ILogger<RevokeRoleCommandHandler> logger)
     {
+        _recoveryGuard = recoveryGuard;
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _userRoleRepository = userRoleRepository;
@@ -56,6 +59,15 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         // the user's effective permissions (no escalation), and AssignRoleCommandHandler is itself unguarded, so
         // the revoke must be symmetric. The role is still loaded for the audit's roleName below.
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
+
+        // WP-USERS-ROLES-SMALL-02 — a revoke only narrows, but it can narrow the tenant's last ACTIVE holder of
+        // auth.users.create to nothing. Refused before the assignment, the version and the sessions are touched.
+        if (await _recoveryGuard.WouldLeaveNoActiveHolderAsync(
+                _tenantContext.TenantId, new RecoveryCapabilityChange.RevokeUserRole(request.UserId, request.RoleId), ct))
+        {
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.UserRoleRevokeLastSteward,
+                "Removing this role would leave the tenant with no active account that can create users.", 409);
+        }
 
         await _userRoleRepository.RevokeAsync(request.UserId, request.RoleId, _tenantContext.TenantId, ct);
 

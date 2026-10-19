@@ -125,7 +125,7 @@ public sealed class UserAdminActionsTests
 
     // ── Builders ──
     private static SetUserActiveStatusCommandHandler StatusHandler(InMemoryUserRepository repo, FakeRefreshTokenRepository refreshTokens) =>
-        new(repo, refreshTokens, TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+        new(repo, refreshTokens, TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), RecoveryGuardForTests.Permits(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
 
     /// <summary>The signed-in administrator is never one of the rows these tests act on (the self-deactivation
     /// refusal has its own file, <c>SetUserActiveStatusGuardTests</c>).</summary>

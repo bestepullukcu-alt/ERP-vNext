@@ -41,6 +41,8 @@ const GATED = {
   // simply not checked, which is why removing the gate from this very view broke nothing until this line existed.
   "Governance/RoleAssignments/Index.cshtml": "auth.roles.assign-permission",
   "Governance/UserRoleAssignments/Index.cshtml": "auth.users.assign-role",
+  // WP-USERS-ROLES-SMALL-01 (BL-617) — the permission catalog, on the key AuthService reads it with.
+  "Governance/Permissions/Index.cshtml": "auth.roles.read",
   // MOD-0357 S3 — the four Meetings screens, each on the key its own data actually needs (create/update stay
   // separate from read: a caller who may read a meeting is not automatically who may write one).
   "Meetings/Index.cshtml": "platform.meetings.read",
