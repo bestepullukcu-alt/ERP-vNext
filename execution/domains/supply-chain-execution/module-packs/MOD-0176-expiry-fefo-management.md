@@ -1111,6 +1111,23 @@ O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owne
 - **FIX-WEBGATES v2 CT-ACCEPTED (2026-10-14).** One new test file, no production change; doors discovered by reflection, keys cross-checked with the source, behaviour (403 + no gateway call / one key reaches the gateway) and completeness. CT trial merge on the MVP-1 tip `4922faa87`: Web **2272/2272**. **CT sabotage (logic, not removal):** `lookups/{kind}` any-of turned into all-of (`&&` → `||`) → 2 red (`With_one_of_its_keys_a_door_reaches_the_gateway(Lookups, …)` ×2) — the behaviour half catches what the source half cannot; restored, porcelain clean. The F5 CT finding (untested Expiry Web gates) is closed. Merged `--no-ff` into MVP-1.
 
 
+### 19.16 WP-MVP1-FIX-LIVE2 — agent result, pending CT (2026-10-19)
+
+Dal `fix/mvp1-live2` (MVP-1 ucu `5decde3fb`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live2-evidence-2026-10-19.md`. CT kararları: yazı tipi A, ad okumaları A, çeviri kaynağı B,
+0176 kişi adları A, dört dosya A + ön izin. Commit'ler: `bd50db68b` owner step MOD-0173 (upstream okumaları), `b757e0381` owner step MOD-0176 (kişi
+adları), `d8d6c13fb` owner step MOD-0176 (kanıt), `da6bc370b` owner step MOD-0173 (makbuz), `663fe6c52` Recall, `10f9e0ab8` owner step MOD-0176
+(kuyruk sabiti + yardım metinleri), `cef1345cc` Recall, `de67eab9a` owner step MOD-0176 + `6edef15e1` Recall (önizleme bulgusu), docs.
+
+- **FEFO Kanıt Paketi (FU-0176-EV-NAMES KAPANDI):** şirket (MDM kod · ad), ürün (kod · ad), SKU kodu, depo (kod · ad), çözüm imzalayanı (MOD-0022
+  `signerNameAtSign`), politika değişikliğini yapan (merkezi denetim kuyruğu, `CorrelationId` + `ChangedBy`); okunamayan → "kimlik (okunamadı)" /
+  "(ad okunamadı)". **Yalnız okuma yolu — Expiry varlıklarına alan EKLENMEDİ** (test yansımayla denetler). `ExpiryEvidencePdfRenderer.Labels` silindi →
+  `ExpiryEvidenceText_{7}` (paylaşılan anahtarlar Web'in Expiry.Type / Status / Resolution / Policy.Field / Policy.Mode + 4 bölüm başlığıyla aynı; parite bekçisi).
+  PDF tr / en / fr / es / ru; zh / ar → İngilizce + not; CSV seçilen dilde, 9 sütun yerinde, ad / değer sütunları sona eklendi (eklemeli, O-LIVE2-2).
+  `ExpiryController` kanıt dili 7 koddan biri; Web `Expiry/evidence.js` sayfa dilini gönderir.
+- **Dil tamlığı:** Expiry Web 447 anahtar × 7 dil, eksik / boş 0; Help.EXPIRY* 48 anahtar (8 sayfa, UXH-001 yapısı) eklendi; tr `Col.Sla`, `Policy.SlaOf`,
+  `Policy.Retest` gerçek Türkçe; izin listesi gözden geçirildi.
+- **CT'ye:** O-LIVE2-1 (zh / ar notu PDF'te seçilen dilde çizilemiyor), O-LIVE2-2 (CSV sütunları sona), O-LIVE2-4 (imzalayan adı için `esign.signatures.read`).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
@@ -1124,6 +1141,8 @@ O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owne
 | FU-0176-DOC-01 | Port drift 5066 → 5067 in DCP-009 `:98`, registry `:272,:275`, 0174 / 0175 frontmatter | CT / docs |
 | FU-0176-TRACE-01 | TRACE `expiryState` fixed 90 days vs company horizon (KF-A) | MOD-0174 (description note) |
 | FU-0176-REG-01 | Registry row `MOD-0176` → `in-progress` when F1 starts (proposal; not changed here) | CT |
+| FU-0176-PDF-L10N | **Daraltıldı (WP-MVP1-FIX-LIVE2, 2026-10-19), açık:** zh / ar PDF: yazı tipi (OFL) + Arapça şekillendirme / sağdan sola dizilim — lisans ve kütüphane kararı. Ölçüm: gömülü Segoe WP (PDFsharp 6.1.1) tr / en / fr / es / ru glifleri tam, zh / ar yok; PDFsharp Arapça shaping / bidi yapmaz. Bugün zh / ar → İngilizce PDF + not; ekran ve CSV seçilen dilde. FEFO ve recall Kanıt Paketi PDF'lerini kapsar | CT / MOD-0176 + MOD-0177 |
+| FU-0176-EV-NAMES | **Kapandı (WP-MVP1-FIX-LIVE2, 2026-10-19):** FEFO Kanıt Paketi PDF / CSV şirket, ürün, SKU, depo, imzalayan ve politika değişikliğini yapanın adlarını gösterir (kimlik yanında); okunamayan → kimlik + "(okunamadı)" | — |
 
 ## 21. UI input — approved mockup ("FEFO / Son Kullanma Yönetimi", 2026-10-12)
 

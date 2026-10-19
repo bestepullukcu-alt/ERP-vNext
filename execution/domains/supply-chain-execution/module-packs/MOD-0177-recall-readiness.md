@@ -1513,6 +1513,27 @@ Dal `feature/sce/mod-0177-r7c` (MVP-1 ucu `55b13fa24`). Kanıt `docs/records/aud
 
 
 
+### 19.21 WP-MVP1-FIX-LIVE2 — agent result, pending CT (2026-10-19)
+
+Dal `fix/mvp1-live2` (MVP-1 ucu `5decde3fb`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live2-evidence-2026-10-19.md`. CT kararları: yazı tipi A, ad okumaları A, çeviri kaynağı B,
+0176 kişi adları A, dört dosya A + ön izin. Commit'ler: `bd50db68b` owner step MOD-0173 (upstream okumaları), `b757e0381` owner step MOD-0176 (kişi
+adları), `d8d6c13fb` owner step MOD-0176 (kanıt), `da6bc370b` owner step MOD-0173 (makbuz), `663fe6c52` Recall, `10f9e0ab8` owner step MOD-0176
+(kuyruk sabiti + yardım metinleri), `cef1345cc` Recall, `de67eab9a` owner step MOD-0176 + `6edef15e1` Recall (önizleme bulgusu), docs.
+
+- **Kanıt Paketi (canlı tur RC-2026-0001 bulguları 1–5):** kişiler ad (imzalayan = MOD-0022 `signerNameAtSign`; olay kişisi = yeni `RecallCaseEvent.ActorName`
+  (ekleme) ya da merkezi denetim kuyruğu `ActorDisplayName`, korelasyon + kişi eşleşmesiyle; yoksa "kimlik (ad okunamadı)"); şirket / ürün / SKU / depo /
+  lokasyon adları (okunamayan → "kimlik (okunamadı)"); tüm değerler seçilen dilde; `RecallEvidenceLabels` silindi → servis resx ailesi
+  `RecallEvidenceText_{7}` + parite bekçisi (`EvidenceTextParityTests`, iki yönlü). Mühürler ölçüldü: rc-v1 `submitted/approvedSnapshotSha256` = kapsam
+  mührü (rs-scope-v1) → "Gönderilen / Onaylanan kapsam mührü (imzalanan)" (e-imza konu satırı, Vaka Detayı, PDF / CSV aynı ad, aynı değer); iz anlık
+  görüntüsü özeti ayrı ad; canlı özet "Şu anki kapsam özeti". Bölüm 5: tamamlanmış kontrolün sonucu (sevkiyat yoksa "Sevkiyat yok — ölçülecek miktar yok").
+  PDF tr / en / fr / es / ru; zh / ar İngilizce + not (FU-0176-PDF-L10N daraltıldı); CSV ve önizleme seçilen dilde.
+- **Ekran:** 6 yeni vaka → Vaka Detayı; 7 kapsamda müşteri yoksa açıklama, bağla düğmesi çizilmez; 8 "Müşteri iadesi gir" itemText / skuText; 9 (0173 sahip
+  adımı) makbuzda lot numarası (TRACE).
+- **Sabotaj a–i** 9 / 9 kırmızı → yeşil; SHA eşit, porcelain aynı. **Sayılar:** Web 2562 → **2575**, Inventory 1250 + 4 (1 bilinen sallantı) → **1278 + 4**
+  (0 kırmızı); mimari aynı 8 (iletiler birebir), gateway 164 / 165, derleme uyarısı aynı.
+- **CT'ye:** O-LIVE2-1 zh / ar notunun seçilen dildeki satırı PDF'te çizilemiyor (glif yok — ölçüldü; ekranda gösterildi); O-LIVE2-3 ortak denetim-ad okuyucusu
+  önerisi; O-LIVE2-6 Vaka Detayı başlığında Açan kimlik (FU-0177-HEAD-NAMES önerisi); O-LIVE2-7 karantina olayının serbest metni kimlik içerir.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
@@ -1532,6 +1553,8 @@ Dal `feature/sce/mod-0177-r7c` (MVP-1 ucu `55b13fa24`). Kanıt `docs/records/aud
 | FU-0177-HELP-PANEL | Bind the Recall pages' UXH-001 help texts (`Help.RECALL*`, delivered in 7 languages by R6) to the page help panel once the rule / component is on the base branch | MOD-0177 / UI |
 | FU-0177-PLAN-OWNER | Drill plan owner picker (R7b: the owner is the user who saves the plan; an edit keeps the owner) — needs a tenant user lookup door (proposal, WP-0177-R7b O-R7b-2) | MOD-0177 / UI |
 | FU-0177-375-BROWSER | A browser-driven 375 px test (scrollWidth per page) — R7c's automated guard is structural; content overflow was found only in the preview (proposal, WP-0177-R7c O-R7c-3) | MOD-0177 / QA |
+| FU-0176-PDF-L10N | **Daraltıldı (WP-MVP1-FIX-LIVE2, 2026-10-19), açık:** zh / ar PDF: yazı tipi (OFL) + Arapça şekillendirme / sağdan sola dizilim — lisans ve kütüphane kararı. Ölçüm: gömülü Segoe WP (PDFsharp 6.1.1) tr / en / fr / es / ru glifleri tam, zh / ar yok; PDFsharp Arapça shaping / bidi yapmaz. Bugün zh / ar → İngilizce PDF + not; ekran ve CSV seçilen dilde. FEFO ve recall Kanıt Paketi PDF'lerini kapsar | CT / MOD-0176 + MOD-0177 |
+| FU-0177-HEAD-NAMES | Vaka Detayı başlığında "Açan" kimlik gösteriyor (ekran başlığı; kanıt paketi ad gösteriyor) — aynı ad yolu (ActorName / denetim kuyruğu) ile (öneri, WP-MVP1-FIX-LIVE2 O-LIVE2-6) | MOD-0177 / UI |
 
 ## 21. UI input — approved mockup ("Geri Çağırma Recall (offline).html", 2026-10-12)
 
