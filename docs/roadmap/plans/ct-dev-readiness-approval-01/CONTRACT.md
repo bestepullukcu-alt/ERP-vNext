@@ -225,7 +225,7 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
   - onaylayıcı listesi ve betiklerin de korunması;
   - PR bağlantısının "türetildi" etiketi;
   - Tested için yayın kapsamının bütün gerekli testleri.
-- **Sahip:** onay sistemi ilk sürümde GitHub hesabı olmadan; CODEOWNERS sonra. MVP-6 kapsam dışı.
+- **Sahip:** onay sistemi ilk sürümde GitHub hesabı olmadan; CODEOWNERS sonra (PR #153 ile eklendi). MVP-6 kapsam dışı.
 
 ## 5. Sahibin kararları
 
@@ -236,7 +236,7 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
 | D3 | Yayın kapsamı | yeni tablo yok: modülün yayını Blueprint 8.7'den okunur; kapsam = modülün ve takip paketlerinin main'deki onaylı paket sürümleri (çok paketli kapsam desteklenir) |
 | D4 | Doğrulama tarihi | REP-001 v2'ye isteğe bağlı `verified_at` alanı; okuyucu tanımsız alanı reddettiği için (`scripts/acceptance_record.py@01f1080fd:181–185`) okuyucu ve öz-test birlikte güncellenir; eski kayıtlar geriye doldurulmaz |
 | D5 | Yürürlük | `execution/approvals/POLICY-START.md`'nin main'e girdiği commit; eski onaylar bozulmaz |
-| D6 | GitHub hesapları ve ayarları | sonra (CODEOWNERS) |
+| D6 | GitHub hesapları ve ayarları | **yapıldı (dosya):** `.github/CODEOWNERS` PR #153 ile main'de (2026-10-19); GitHub `codeowners/errors` boş. **Açık (depo ayarı, ölçüldü 2026-10-19):** squash ve rebase merge hâlâ açık; "Require review from Code Owners" ayarı yönetici yetkisi olmadan okunamadı |
 | D7 | İlk sürümün güven sınırı | beyan tutarlılığı + türetilmiş insan adımı (merge eden ≠ yazan); kimlik doğrulaması GitHub katmanıyla gelir |
 | D8 | Tested–Verified ayrımı | §2.4'teki tanım |
 
