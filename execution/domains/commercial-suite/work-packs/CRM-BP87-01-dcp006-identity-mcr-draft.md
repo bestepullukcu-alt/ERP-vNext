@@ -61,6 +61,8 @@
 
 **Açık nokta (TBD):** DCP-006 intake satırı tek cümle; "proposition routing"in kastedilen anlamı (lead → model yönlendirmesi mi, teklif içeriğinin modele göre seçimi mi) yazılı değil. İkinci anlam çıkarsa en yakın ev MOD-0283 olur. Anlamı kullanıcı / iş sahibi doğrulamalı.
 
+**KARAR (kullanıcı, 2026-10-19):** anlam = gelen talebin doğru ticari modele (distribütör / lisans / co-promotion) yönlendirilmesi → **MOD-0152 Lead Management** (yönlendirme kuralı) + BRD commercial-model sözlüğü + MOD-0153 fırsat alanı. MOD-0283 seçeneği düştü; yeni modül yok. Master'daki eşleme satırını (MCR "approved mapping") CEO / EA girer; `module-id-registry.md`'ye satır Master kararından sonra yazılır (Master-first). Yetenek A (MCR yeni modül) hâlâ CEO / EA kararında.
+
 **MCR taslağı (eşleme):**
 
 | Sütun | Değer |

@@ -89,7 +89,7 @@ MOD-0155 is a **single module**; the following are its FU children, not separate
 | 16c | Cost Model | **MOD-0156-FU01** *Cost Model* (proposed) | needs-identity(FU) | Cost-to-serve / margin basis for discount guardrails → FU of MOD-0156. Gate exit 0. |
 | 17a | Commercial Terms / Approval | **MOD-0284** *Deal Desk & Commercial Approvals* | canonical (reserved) | MOD-0284 SoR = "Deal Exception; Approval Case". MOD-0158 *Quote-to-Contract Handoff* is the downstream handoff (not the approval owner). |
 | 17b | Deviation Register | **MOD-0284-FU01** *Deviation Register* (proposed) | needs-identity(FU) | **Correction:** not MOD-0207 *Deviations/Nonconformances* (that is Quality Operations). Commercial deviation = Deal Exception register → FU of MOD-0284. Gate exit 0. |
-| 24 | Commercial Model / Proposition Routing | ~~**CAND-CAP-0007**~~ *Commercial Model and Proposition Routing* (proposed) — ⚠ **kimlik bekliyor — MCR / eşleme önerisi (CRM-BP87-01)**: MOD-0152 eşlemesi, [CRM-BP87-01 taslağı](../../domains/commercial-suite/work-packs/CRM-BP87-01-dcp006-identity-mcr-draft.md) §3 | needs-identity(CAND) | Rule-2 ambiguous name; no canonical fit (candidate overlaps MOD-0283 Pursuit/Proposal and MOD-0284 routing but matches neither cleanly). Candidate gate **BLOCKED (exit 2)** — identity debt pending EA. |
+| 24 | Commercial Model / Proposition Routing | ~~**CAND-CAP-0007**~~ *Commercial Model and Proposition Routing* (proposed) — ✅ **MOD-0152'ye eşlendi — kullanıcı kararı 2026-10-19** (yönlendirme kuralı MOD-0152; model sözlüğü BRD; seçilen model MOD-0153 fırsat alanı; Master eşleme satırı CEO / EA), [CRM-BP87-01 taslağı](../../domains/commercial-suite/work-packs/CRM-BP87-01-dcp006-identity-mcr-draft.md) §3 | needs-identity(CAND) | Rule-2 ambiguous name; no canonical fit (candidate overlaps MOD-0283 Pursuit/Proposal and MOD-0284 routing but matches neither cleanly). Candidate gate **BLOCKED (exit 2)** — identity debt pending EA. |
 
 ### 2F. CONSUMED DEPENDENCY (CRM builds nothing — API consumer only, boundary-only)
 
@@ -147,7 +147,7 @@ Preflights run 2026-08-25 against Master 7 (Master 8.1 absent). FU-child = `--ch
 | MOD-0284-FU01 | Deviation Register | FU/MOD-0284 | **exit 0 — proven** | idem |
 | MOD-0153-FU01 | Funnel | FU/MOD-0153 | **exit 0 — proven** | Optional; prefer in-module pipeline view first. |
 | ~~CAND-CAP-0006~~ ⚠ **kimlik bekliyor — MCR / eşleme önerisi (CRM-BP87-01)** | Commercial Activity, Interaction and Commitment | candidate | **exit 2 — BLOCKED (fail-closed)** | No registry row / no ledger entry. **Unresolved identity debt** — EA must reserve the row before any ID is used. |
-| ~~CAND-CAP-0007~~ ⚠ **kimlik bekliyor — MCR / eşleme önerisi (CRM-BP87-01)** | Commercial Model and Proposition Routing | candidate | **exit 2 — BLOCKED (fail-closed)** | idem. EA reservation required. |
+| ~~CAND-CAP-0007~~ → MOD-0152 (kullanıcı kararı 2026-10-19; Master eşleme satırı CEO / EA) | Commercial Model and Proposition Routing | candidate | **exit 2 — BLOCKED (fail-closed)** | idem. EA reservation required. |
 
 FU-child preflight passing means the ID is *mintable*, not *minted*. No registry row is written by this pack. CAND-CAP-0006/0007 next free in the `CAND-CAP-####` namespace (0001–0005 taken); reserving them is an EA action recorded in `execution/registries/module-id-registry.md` + `execution/portfolio/blueprint-master-plan-reconciliation.md`. **Tarihçe notu (2026-10-19, CRM-BP87-01):** bu "sıradaki boş numara" varsayımı yanlıştı — kayıtta CAND-CAP-0006 = Görev Merkezi → MOD-0024, CAND-CAP-0007 = Enterprise Strategy → MOD-0352. Blueprint 8.7 Master-first kuralıyla yeni CAND-CAP açılmaz; iki yetenek kimlik bekliyor: [CRM-BP87-01 taslağı](../../domains/commercial-suite/work-packs/CRM-BP87-01-dcp006-identity-mcr-draft.md).
 
@@ -171,7 +171,7 @@ FU-child preflight passing means the ID is *mintable*, not *minted*. No registry
 - **HCP identity SoR** (doctor/pharmacist/hospital identity: CRM MOD-0149 vs MDM master) — EA-TBD (`crm-sor-boundary.md`).
 - **O2C bridge SoR** (MOD-0169/0170/0171/0172 shared with Finance/Order-Mgmt) — EA-TBD. Out of this pack's CRM-owned build scope.
 - **Access Review owner** (#26 tail) — access-governance (DCP-001/MOD-0018 family), not CRM, not MOD-0019. EA-TBD.
-- ~~**CAND-CAP-0006 / CAND-CAP-0007** reservation — EA action (registry + ledger) before any pack authoring.~~ ⚠ **kimlik bekliyor — MCR / eşleme önerisi (CRM-BP87-01)**: A → MCR (yeni modül), B → MOD-0152 eşlemesi; karar CEO / EA, [CRM-BP87-01 taslağı](../../domains/commercial-suite/work-packs/CRM-BP87-01-dcp006-identity-mcr-draft.md).
+- ~~**CAND-CAP-0006 / CAND-CAP-0007** reservation — EA action (registry + ledger) before any pack authoring.~~ ⚠ **kimlik bekliyor — MCR / eşleme önerisi (CRM-BP87-01)**: A → MCR (yeni modül; karar CEO / EA), B → MOD-0152 (kullanıcı kararı 2026-10-19; Master eşleme satırı CEO / EA), [CRM-BP87-01 taslağı](../../domains/commercial-suite/work-packs/CRM-BP87-01-dcp006-identity-mcr-draft.md).
 - **Master 8.1 ingest** — re-verify every binding when 8.1 lands; 8.1 is authoritative over Master-7 bindings here.
 - **Funnel** — decide in-module (MOD-0153) view vs FU01 before authoring.
 
