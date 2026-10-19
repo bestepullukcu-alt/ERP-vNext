@@ -564,7 +564,8 @@ public sealed class RecallEvidenceBuilder
 
     private static string Place(IReadOnlyDictionary<string, Location> places, string? id, string lang)
         => string.IsNullOrWhiteSpace(id) ? string.Empty
-            : places.TryGetValue(id, out var l) ? string.Join(" · ", new[] { l.Code, l.Name }.Where(v => !string.IsNullOrWhiteSpace(v)))
+            // "code · name" — once when the master names a place by its code
+            : places.TryGetValue(id, out var l) ? string.Join(" · ", new[] { l.Code, l.Name }.Where(v => !string.IsNullOrWhiteSpace(v)).Distinct(StringComparer.Ordinal))
             : Unreadable(id, lang);
 
     private static string Unreadable(string id, string lang) => RecallEvidenceText.Format("Recall.Ev.W.unreadable", lang, id);

@@ -105,6 +105,7 @@ public sealed class RecallEvidenceLive2Tests : IClassFixture<RecallApiFactory>
         Assert.Contains(nodes, n => n[0] == "Sevkiyat");
         Assert.All(nodes.Where(n => n[7].Length > 0), n => Assert.DoesNotMatch("^[0-9a-f-]{36}", n[2]));    // a stock node's place is its code · name
         Assert.Contains(nodes, n => n[2].Contains(w.S.Ledger.WarehouseNode.Code, StringComparison.Ordinal));
+        Assert.DoesNotContain(nodes, n => n[2].Contains(w.S.Ledger.WarehouseNode.Code + " · " + w.S.Ledger.WarehouseNode.Code, StringComparison.Ordinal)); // the name once
 
         // finding 4: the two seals rc-v1 signs are the stored SCOPE seals — the same value in the rc-v1 subject, on the case (the screen's data)
         // and in the pack, under the same name; the trace snapshot digest is a different value with its own name
