@@ -95,19 +95,19 @@
                 <form class="m-0" id="filterForm" data-no-tracker>
                     <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                         <div class="filter-chip">
-                            <select id="filterWarehouse" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllWarehouses"]">
+                            <select id="filterWarehouse" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllWarehouses"]" data-placeholder="@Localizer["Quarantine.Filter.AllWarehouses"]">
                                 <option value="">@Localizer["Quarantine.Filter.AllWarehouses"]</option>
                             </select>
                         </div>
                         <div class="filter-chip">
-                            <select id="filterStockStatus" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllStockStatuses"]">
+                            <select id="filterStockStatus" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllStockStatuses"]" data-placeholder="@Localizer["Quarantine.Filter.AllStockStatuses"]">
                                 <option value="">@Localizer["Quarantine.Filter.AllStockStatuses"]</option>
                                 <option value="QUARANTINE">@Localizer["Quarantine.Status.QUARANTINE"]</option>
                                 <option value="QUALITY_INSPECTION">@Localizer["Quarantine.Status.QUALITY_INSPECTION"]</option>
                             </select>
                         </div>
                         <div class="filter-chip">
-                            <select id="filterSource" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllSources"]">
+                            <select id="filterSource" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllSources"]" data-placeholder="@Localizer["Quarantine.Filter.AllSources"]">
                                 <option value="">@Localizer["Quarantine.Filter.AllSources"]</option>
                                 @foreach (var source in new[] { "GoodsReceipt", "Production", "Manual", "CustomerReturn", "Retest", "Rework", "OtherInbound" })
                                 {
@@ -117,7 +117,7 @@
                         </div>
                         <div class="filter-chip">
                             @* A select, not a checkbox: the list factory reads a field's value (Lots _Filter.cshtml note). *@
-                            <select id="filterLate" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.LateOnly"]">
+                            <select id="filterLate" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.LateOnly"]" data-placeholder="@SharedLocalizer["ShowAll"]">
                                 <option value="">@SharedLocalizer["ShowAll"]</option>
                                 <option value="true">@Localizer["Quarantine.Filter.LateOnly"]</option>
                             </select>
