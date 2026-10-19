@@ -226,6 +226,7 @@ public sealed class TaskOrganizationUnitScopeTests
                     seats, positions, unitRepo, scopes,
                     TaskActors.Holding(TaskPermissions.Create, TaskPermissions.Assign),
                     new FakeCurrentUserContext(who)),
+                TaskWriteGateDoubles.Open,
                 new TaskAssignmentDirection(scopes, seats, new FakeCurrentUserContext(who)),
                 Upward);
         }

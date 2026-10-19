@@ -1,0 +1,189 @@
+@model Diten.Web.Models.Items.ItemFormViewModel
+@using Diten.Web.Views.MasterDataManagement.Items
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+}
+
+@*
+    MOD-0290-FU04 §11 (compact): two sections — Identity · Stock behaviour — with the conversion list (add / remove a
+    row). The form is drawn empty and sent as JSON by index.js (never an MVC post); on Edit index.js fills it from the
+    proxy and, on an Active item, keeps only the name and the description writable (the others read-only with the
+    reason shown, ItemRules.LockedFieldChanged). S5b (BL-600): material type, base unit, conversion units and storage
+    conditions are SELECTS filled by index.js from the options read (ItemsController api/options), labelled by stable
+    code; at most one temperature condition (O-2). A list that cannot be loaded leaves these selects passive with the
+    reason beside them (data-item-options-reason) — never a typed-code box. MDM still judges every chosen code.
+*@
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/MasterDataManagement/Items">@Localizer["ItemsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/MasterDataManagement/Items" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="itemForm" id="btnSaveItem" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<form id="itemForm" class="needs-validation" novalidate data-no-tracker
+      data-form-mode="@(isEdit ? "edit" : "create")" data-item-id="@Model?.Id"
+      data-form-attempt="@(ViewData["ItemFormAttemptToken"] as string ?? string.Empty)">
+    @Html.AntiForgeryToken()
+
+    <div id="itemFormAlert" class="alert alert-danger d-none" role="alert"></div>
+    <div id="itemLockedNote" class="alert alert-warning d-none" role="note">@Localizer["ActiveLockedNote"]</div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-id-card"></i>@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-8">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="MaterialType" class="form-label fw-medium">@Localizer["MaterialType"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-category diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="MaterialType" class="form-select" required disabled data-item-locked="always"
+                                        data-item-options="materialTypes" data-placeholder="@Localizer["MaterialTypePlaceholder"]">
+                                    <option value="">@Localizer["MaterialTypePlaceholder"]</option>
+                                </select>
+                            </div>
+                            <div class="form-text text-warning d-none" data-item-options-reason></div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                                <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000" placeholder="@Localizer["DescriptionPlaceholder"]"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-package"></i>@Localizer["StockBehaviourSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="BaseUomCode" class="form-label fw-medium">@Localizer["BaseUomCode"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="BaseUomCode" class="form-select" required disabled data-item-locked="always"
+                                        data-item-options="uoms" data-placeholder="@Localizer["BaseUomPlaceholder"]">
+                                    <option value="">@Localizer["BaseUomPlaceholder"]</option>
+                                </select>
+                            </div>
+                            <div class="form-text">@Localizer["UnitCodeHint"]</div>
+                            <div class="form-text text-warning d-none" data-item-options-reason></div>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label asp-for="StorageConditionCodes" class="form-label fw-medium">@Localizer["StorageConditionCodes"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-snowflake diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="StorageConditionCodes" class="form-select" multiple disabled data-item-locked="filled"
+                                        data-item-options="storageConditions" data-placeholder="@Localizer["StorageConditionPlaceholder"]">
+                                </select>
+                            </div>
+                            <div class="form-text">@Localizer["StorageConditionHint"]</div>
+                            <div class="form-text text-danger d-none" id="itemStorageTemperatureNote" role="alert"></div>
+                            <div class="form-text text-warning d-none" data-item-options-reason></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="ShelfLifeDays" class="form-label fw-medium">@Localizer["ShelfLifeDays"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="ShelfLifeDays" type="number" class="form-control" min="1" max="3650" step="1"
+                                       placeholder="@Localizer["DaysPlaceholder"]" data-item-locked="filled" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="RetestDays" class="form-label fw-medium">@Localizer["RetestDays"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-test-tube diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="RetestDays" type="number" class="form-control" min="1" max="3650" step="1"
+                                       placeholder="@Localizer["DaysPlaceholder"]" data-item-locked="filled" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="MinRemainingShelfLifeDays" class="form-label fw-medium">@Localizer["MinRemainingShelfLifeDays"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-hourglass diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="MinRemainingShelfLifeDays" type="number" class="form-control" min="0" max="3650" step="1"
+                                       placeholder="@Localizer["DaysPlaceholder"]" data-item-locked="filled" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch mt-2">
+                                <input asp-for="LotControlled" class="form-check-input" role="switch" data-item-locked="always" />
+                                <label asp-for="LotControlled" class="form-check-label ms-2">@Localizer["LotControlled"]</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch mt-2">
+                                <input asp-for="Stockable" class="form-check-input" role="switch" data-item-locked="always" />
+                                <label asp-for="Stockable" class="form-check-label ms-2">@Localizer["Stockable"]</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="form-label fw-medium mb-0">@Localizer["UomConversions"]</span>
+                                <button type="button" class="btn btn-sm btn-label-primary" id="btnAddConversion" disabled>
+                                    <i class="bx bx-plus me-1"></i>@Localizer["AddConversion"]
+                                </button>
+                            </div>
+                            <div class="form-text mb-2">@Localizer["ConversionHint"]</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0" id="itemConversionTable">
+                                    <thead>
+                                        <tr>
+                                            <th>@Localizer["ConversionFrom"]</th>
+                                            <th>@Localizer["ConversionTo"]</th>
+                                            <th>@Localizer["ConversionNumerator"]</th>
+                                            <th>@Localizer["ConversionDenominator"]</th>
+                                            <th class="cell-fit"><span class="visually-hidden">@Localizer["Actions"]</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemConversionRows"></tbody>
+                                </table>
+                            </div>
+                            <p class="text-muted small mb-0" id="itemConversionEmpty">@Localizer["NoConversions"]</p>
+                            <div class="form-text text-warning d-none" data-item-options-reason></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
+
+@* One conversion row, cloned by index.js (no markup is built from strings). *@
+<template id="itemConversionRowTemplate">
+    <tr class="js-conversion-row">
+        <td><select class="form-select form-select-sm js-conversion-from" aria-label="@Localizer["ConversionFrom"]"><option value="">@Localizer["BaseUomPlaceholder"]</option></select></td>
+        <td><select class="form-select form-select-sm js-conversion-to" aria-label="@Localizer["ConversionTo"]"><option value="">@Localizer["BaseUomPlaceholder"]</option></select></td>
+        <td><input type="text" inputmode="decimal" class="form-control form-control-sm js-conversion-numerator" maxlength="40" autocomplete="off" aria-label="@Localizer["ConversionNumerator"]" /></td>
+        <td><input type="text" inputmode="decimal" class="form-control form-control-sm js-conversion-denominator" maxlength="40" autocomplete="off" aria-label="@Localizer["ConversionDenominator"]" /></td>
+        <td class="cell-fit">
+            <button type="button" class="btn btn-sm btn-icon btn-label-danger js-conversion-remove" title="@Localizer["RemoveConversion"]" aria-label="@Localizer["RemoveConversion"]">
+                <i class="bx bx-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>

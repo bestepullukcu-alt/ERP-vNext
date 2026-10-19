@@ -33,7 +33,10 @@ namespace Diten.Platform.Application.Tests.Notifications;
 public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifetime
 {
     private const string MeetingTemplateKey = "platform.meetings.invite";
-    private const string NonMeetingTemplateKey = "platform.tasks.assigned";
+    // BL-454 slice 2 — a key of this class's own: the ops counter is process-wide, and other notification tests (the
+    // retry sweep's window close among them) fail permanently under platform.tasks.assigned in parallel, which made
+    // "counter + 1" read +2 now and then.
+    private static readonly string NonMeetingTemplateKey = "platform.tasks.bl406t" + Guid.NewGuid().ToString("N")[..12];
     private const int MaxRetryCount = 5;
 
     private MongoIntegrationHarness _harness = null!;
@@ -91,7 +94,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
         //    already documents.
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -169,7 +172,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
 
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -207,7 +210,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
 
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -391,7 +394,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
 
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -483,7 +486,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
                     dispatches, bus, failedHandlerLogger ?? NullLogger<MarkNotificationDispatchFailedHandler>.Instance,
                     meetings, attendees, userNotifications),
                 new CancelNotificationDispatchHandler(dispatches, bus)),
-            NullLogger<EmailDispatchJob>.Instance, templates, new EmailTemplateRenderer());
+            NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, templates, new EmailTemplateRenderer());
 
     // ── doubles ──────────────────────────────────────────────────────────────
 

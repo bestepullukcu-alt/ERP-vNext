@@ -6,6 +6,16 @@ session that ended in "the feature is broken" when the feature was fine and the 
 There was no dev-setup document in this repository before 2026-08-11; this is a starting point, not a complete
 one. Add what you hit.
 
+## Service-to-service trust (MDM → Auth → Platform)
+
+Submitting a Global Product for approval needs a signing key pair, a service client and three settings files that
+are **not** in the repository. One command creates them (git-ignored, owner-only); until it has been run a submit
+answers 503 and writes nothing. See [service-trust-chain-runbook.md](service-trust-chain-runbook.md).
+
+```bash
+scripts/dev/setup-service-trust.sh --tenant-id <tenant id> --approver-user-id <approver user id>
+```
+
 ## Mail — Mailpit
 
 Dev SMTP is Mailpit on `localhost:1025`, with its web UI on `http://localhost:8025`. `appsettings.Development.json`
@@ -20,7 +30,7 @@ and Mailpit announces no AUTH by default — MailKit then throws `NotSupportedEx
 
 ```
 smtp.provider.send.failure    ExceptionType="NotSupportedException"
-notification.dispatch_failed  ReasonCode="PROVIDER_REJECTED" Status=400
+notification.dispatch_failed  ReasonCode="PROVIDER_REJECTED_RETRY_PENDING" Status=400
 ```
 
 That is an environment mismatch, not a product defect. Run Mailpit with:

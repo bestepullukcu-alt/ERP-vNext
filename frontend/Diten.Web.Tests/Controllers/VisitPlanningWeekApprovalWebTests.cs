@@ -24,7 +24,8 @@ public sealed class VisitPlanningWeekApprovalWebTests
         Assert.Contains("!s.isFixed", details); // the week's own (new) visits are what gets approved
 
         var index = Read("wwwroot", "assets", "js", "CRM", "VisitPlanning", "index.js");
-        Assert.Contains(".filter(r => sStatus(r) !== 'archived')", index);
+        // WP-VP-4J — an archived plan stays out of the list unless the status filter asks for "Archived"
+        Assert.Contains("if (sStatus(r) === 'archived' && !normArr(appliedFilters.sessionStatus).includes('archived')) return false;", index);
         Assert.Contains("!(row.approvedWeekCount > 0)", index);
     }
 

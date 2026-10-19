@@ -8,6 +8,25 @@ public interface IModuleCatalogRepository
     Task<ModuleCatalogItem> CreateAsync(ModuleCatalogItem item, CancellationToken ct = default);
     Task<ModuleCatalogItem?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<ModuleCatalogItem?> GetByCodeAsync(string moduleCode, CancellationToken ct = default);
+    /// <summary>
+    /// BL-500 — the records <see cref="GetByCodeAsync(string, CancellationToken)"/> would return for each code, in ONE
+    /// read; a code with no record is absent from the answer. The default asks one by one so every double of this
+    /// interface keeps working; the Mongo repository answers with a single query.
+    /// </summary>
+    async Task<IReadOnlyDictionary<string, ModuleCatalogItem>> GetByCodesAsync(IReadOnlyCollection<string> moduleCodes, CancellationToken ct = default)
+    {
+        var found = new Dictionary<string, ModuleCatalogItem>(StringComparer.OrdinalIgnoreCase);
+        foreach (var code in moduleCodes.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var item = await GetByCodeAsync(code, ct);
+            if (item is not null)
+            {
+                found[code] = item;
+            }
+        }
+
+        return found;
+    }
     Task<ModuleCatalogItem?> GetByCodeIncludingDeletedAsync(string moduleCode, CancellationToken ct = default) =>
         GetByCodeAsync(moduleCode, ct);
     Task<bool> ExistsByCodeAsync(string moduleCode, Guid? excludeId = null, CancellationToken ct = default);

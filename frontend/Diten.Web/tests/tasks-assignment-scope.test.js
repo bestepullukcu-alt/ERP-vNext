@@ -63,7 +63,10 @@ describe("the four person pickers are NOT all filled from the same list", () => 
      * the two decision pickers must be filled from a DIFFERENT variable than the assignee.
      */
     const source = FORM_PAGE_JS();
-    expect(source, "the decision list is never fetched").toMatch(/decisionMakers\(\)/);
+    // BL-512 — the decision pickers SEARCH the scope-exempt endpoint; they are never filled from a list at all.
+    expect(source, "the decision pickers do not search the scope-exempt list")
+      .toMatch(/searchPeople:\s*\(term\)\s*=>\s*(?:global\.)?TasksApi\.decisionMakers\(\{\s*search:\s*term\s*\}\)/);
+    expect(source, "the whole decision list is fetched again").not.toMatch(/decisionMakers\(\)/);
 
     const rowsFor = (id) => {
       const call = new RegExp(`renderPersonOptions\\(\\s*el\\('${id}'\\),\\s*([A-Za-z0-9_]+)`).exec(source);
@@ -72,10 +75,10 @@ describe("the four person pickers are NOT all filled from the same list", () => 
     };
 
     const assignee = rowsFor("taskAssignee");
-    expect(rowsFor("taskReviewer"), "the reviewer shares the assignee's scoped list")
-      .not.toBe(assignee);
-    expect(rowsFor("taskApprovalManager"), "the approval manager shares the assignee's scoped list")
-      .not.toBe(assignee);
+    ["taskReviewer", "taskApprovalManager"].forEach((id) => {
+      expect(new RegExp(`renderPersonOptions\\(\\s*el\\('${id}'\\)`).test(source),
+        `${id} is filled from a list again (it shares the assignee's scoped rows or fetches everyone)`).toBe(false);
+    });
     // Watchers deliberately DO share it — watching is receiving visibility, not deciding.
     expect(rowsFor("taskWatchers")).toBe(assignee);
   });
@@ -168,7 +171,7 @@ describe("the people lookup answers an OBJECT now, not a bare array", () => {
      */
     const strip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
     expect((strip(API_JS()).match(/res\.data\?\.people/g) || []).length,
-      "TasksApi does not open the envelope once per list").toBe(2);
+      "TasksApi does not open the envelope once per call (assignable, decision search, decision ids)").toBe(3);
     expect(strip(FORM_PAGE_JS()), "the form opens the envelope by hand again").not.toMatch(/\.people\b/);
   });
 

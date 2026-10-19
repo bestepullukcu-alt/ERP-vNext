@@ -54,7 +54,10 @@
 
 <html lang="@currentCulture" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="@layoutDirection"
     data-skin="default" data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light"
-    data-semidark-menu="false" data-shell="platform-admin">
+    data-semidark-menu="false" data-shell="platform-admin"
+    @* BL-520 — the top-bar search box's label in the request's language (main.js fills the shortcut into {0}).
+       A missing resource omits the attribute (never the key). *@
+    data-search-placeholder="@Diten.Web.Services.Navigation.ShellSearchLabel.Template(SharedLocalizer)">
 
 <head>
     <meta charset="utf-8" />
@@ -256,6 +259,8 @@
                         <!-- /Search -->
 
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto gap-2">
+                            @* WP-UX-COMMON-01 (BL-495) — the page help button, first in the bar, at every width. *@
+                            <partial name="~/Views/Shared/_PageHelpButton.cshtml" model="new Diten.Web.Models.Shared.PageHelpModel(Diten.Web.Services.Navigation.CurrentPage.Resolve(Context, ViewData) ?? Diten.Web.Services.Navigation.CurrentPage.ForPlatformView(ViewContext.View?.Path))" />
                             <!-- Language -->
                             <li class="nav-item dropdown-language dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
@@ -432,6 +437,10 @@
         };
     </script>
     <script src="~/assets/js/backbone-shell.js" asp-append-version="true"></script>
+    @* WP-UX-COMMON-01 — the same keyboard layer, page help panel, tour layer and side-panel Enter rule as the tenant
+       shell. A platform admin page's help code is PLATFORM + its Views/Platform folder (CurrentPage.ForPlatformView). *@
+    <partial name="~/Views/Shared/_DitenShortcuts.cshtml" />
+    <partial name="~/Views/Shared/_PageHelpPanel.cshtml" model="new Diten.Web.Models.Shared.PageHelpModel(Diten.Web.Services.Navigation.CurrentPage.Resolve(Context, ViewData) ?? Diten.Web.Services.Navigation.CurrentPage.ForPlatformView(ViewContext.View?.Path))" />
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

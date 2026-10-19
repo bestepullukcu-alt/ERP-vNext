@@ -226,7 +226,7 @@
         if (key === 'approveWeek') page.request('approve-week');
         else if (key === 'saveTargets') page.request('save-targets');
         else if (key === 'generateRoute') page.request('generate-route');
-        else if (key === 'generateWeek') page.request('reload-plan');
+        else if (key === 'generateWeek') page.request('generate-week'); // WP-VP-4J (3) — weeks.js builds it with feedback
         else if (key === 'reopenWeek') openReopen();
         else if (key === 'nextWeek') { const nx = nextOpenWeek(page.state.weekStart); if (nx) page.selectWeek(nx, 'header'); }
     };

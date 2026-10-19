@@ -114,4 +114,16 @@
   <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Une autre version publiée de ce code de parcours (même langue) couvre déjà ces dates. Modifiez les dates d’effet ou archivez l’autre version.</value></data>
   <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Un parcours archivé ne peut pas être publié.</value></data>
   <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Le parcours a été modifié par quelqu’un d’autre entre-temps. Rechargez la page et réessayez.</value></data>
+  <data name="AdoptionStage" xml:space="preserve">
+    <value>Stade d'adoption</value>
+  </data>
+  <data name="AdoptionStageHelp" xml:space="preserve">
+    <value>Le délégué indique le stade d'adoption du médecin ; le parcours passe à la première étape associée qui suit.</value>
+  </data>
+  <data name="AdoptionStageNone" xml:space="preserve">
+    <value>Non associé</value>
+  </data>
+  <data name="AdoptionStageUnavailable" xml:space="preserve">
+    <value>La liste des stades d'adoption n'a pas pu être lue.</value>
+  </data>
 </root>

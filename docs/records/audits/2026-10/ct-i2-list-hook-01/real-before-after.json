@@ -1,0 +1,930 @@
+{
+ "özet": {
+  "ekran": 152,
+  "çıkışlar (eski, yeni)": {
+   "(0, 0)": 152
+  },
+  "eski → yeni": {
+   "sapma → sapma": 88,
+   "sapma yok → DOĞRULANAMADI": 64
+  },
+  "sapma ekranlarında bağlam metni bayt bayt aynı": 88,
+  "yeni nedenler": {
+   "beklenen gaps biçimi gelmedi": 64
+  }
+ },
+ "ekranlar": [
+  {
+   "ekran": "CRM/Accounts",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/Campaigns",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/Claims",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/Contacts",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/ContentEngagementJourneys",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/CycleCapacities",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/CyclePeriods",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/EligibilityPolicies",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/Knowledge",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/KnowledgeConcepts",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/KnowledgePaths",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/LegalProfiles",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/PlannedVisits",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/SafetyTexts",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/Segments",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/StrategyTemplates",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/TerritoryManagement",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/VisitFrequencyPolicies",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "CRM/VisitPlanning",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DevEnablement/GoldenReferenceCompact",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DevEnablement/GoldenReferenceSlim",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DocumentManagement/AccessMatrix",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DocumentManagement/MasterRegister",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DocumentManagement/QmsBaselines",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DocumentManagement/RepositoryAssessments",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DocumentManagement/TemplateMasters",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "DocumentManagement/TemplateVariants",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Governance/Permissions",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Governance/Roles",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Governance/Users",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "HCM/Employees",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "HumanCapital/ApplicantIntake",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/CandidatePipeline",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/CompensationBenefits",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/CompetencySkills",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/DevelopmentPlans",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/EmployeeOnboarding",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/EmployeeProjections",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/EmploymentChanges",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/HeadcountBudget",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/HrCaseManagement",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/HrCompliance",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/HrDocumentation",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/HrKpiAnalytics",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/LearningTraining",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/OffboardingCases",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/OfferManagement",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/PerformanceReviews",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/PositionAssignments",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/SelfService",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/Succession",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/TimeAttendanceLeave",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "HumanCapital/WorkforcePlanning",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "Inventory/Locations",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Inventory/StockLedger",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Inventory/StockMovements",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MDM/ProductAbbreviationRegister",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "ManagementGovernance/ProcessModeling",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 16 tanınmayan satır)"
+  },
+  {
+   "ekran": "Manufacturing/Boms",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterData/Brands",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterData/LegalEntities",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "MasterData/Products",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterDataManagement/FinishedGoods",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterDataManagement/GlobalProducts",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterDataManagement/Gskus",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterDataManagement/Items",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterDataManagement/Lskus",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "MasterDataManagement/ProductLegalEntityScopes",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Meetings/MeetingTypes",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 20 tanınmayan satır)"
+  },
+  {
+   "ekran": "Meetings/Series",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "Organization/FieldDefinitions",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Organization/OrganizationUnits",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 15 tanınmayan satır)"
+  },
+  {
+   "ekran": "Organization/PositionAssignments",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 15 tanınmayan satır)"
+  },
+  {
+   "ekran": "Organization/Positions",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 15 tanınmayan satır)"
+  },
+  {
+   "ekran": "PPM/BenefitCommitments",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "PPM/Initiatives",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "PPM/InvestmentCases",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "PPM/Portfolios",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "PPM/Programs",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "PPM/Projects",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "PPM/Shared",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 18 tanınmayan satır)"
+  },
+  {
+   "ekran": "Pharmacovigilance/CaseIntakeTriage",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/Administrators",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/AuditLog",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/AuditRetention",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 21 tanınmayan satır)"
+  },
+  {
+   "ekran": "Platform/DomainManagement",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/ModuleCatalog",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/NotificationDispatches",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/NotificationEvents",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/NotificationSettings",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/NotificationTemplates",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/ReferenceData",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/ServiceManagement",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/Tenants",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/Workflow",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "Platform/WorkingCalendarImports",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Platform/WorkingCalendars",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Procurement/Contracts",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Procurement/Grn",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Procurement/InvoiceMatch",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Procurement/PurchaseOrders",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Procurement/Requisitions",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Procurement/Sourcing",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Procurement/Suppliers",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "SupplyChain/Carriers",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "SupplyChain/Claims",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "SupplyChain/Loads",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "SupplyChain/Returns",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "SupplyChain/Shipments",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "TalentEcosystem/AssociationMemberships",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/AssociationOperations",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/CandidateCareerPassport",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/CandidateDisputes",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/CandidateProfiles",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/ConsentVisibilityPolicies",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/EarlyWarningSignals",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/ExitReferenceRecords",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/HiringRiskIndicators",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustryKnowledgeNetwork",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustrySkillPassport",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustrySuccessionPool",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustryTalentPool",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/MentorshipRecommendationNetwork",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/PayBenchmarking",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/ProfessionalReputationLedger",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/ReferenceExchange",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/RehireRecommendations",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/RestrictedIntegrityRegistry",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/ReviewBoard",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/SectorMobilityIntelligence",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/SectorTalentTrends",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/SkillsGapHeatmap",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/TalentDataFoundation",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/TalentDevelopmentNetwork",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/TalentSupplyDemandForecasting",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/TepShellMetadata",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/TrustLevels",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/VerifiedCertificationRegistry",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/VerifiedParticipants",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "TalentEcosystem/WorkforceAnalytics",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 19 tanınmayan satır)"
+  },
+  {
+   "ekran": "Tasks/ChecklistTemplates",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Tasks/FieldDefinitions",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Tasks/RecurrenceRules",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Tasks/TaskTypes",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Tasks/Templates",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "TimeEntry/Approvals",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "TimeEntry/Categories",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Traceability/LotMigration",
+   "eski": "sapma yok",
+   "yeni": "DOĞRULANAMADI",
+   "neden": "beklenen gaps biçimi gelmedi (çıkış 1, 14 tanınmayan satır)"
+  },
+  {
+   "ekran": "Traceability/LotMovements",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Traceability/Lots",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "Traceability/Serials",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  },
+  {
+   "ekran": "WorkingCalendar/Overrides",
+   "eski": "sapma",
+   "yeni": "sapma",
+   "neden": ""
+  }
+ ]
+}

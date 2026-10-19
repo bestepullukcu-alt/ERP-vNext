@@ -1,0 +1,417 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Help.Panel.Open" xml:space="preserve">
+    <value>Bu sayfa için yardım</value>
+  </data>
+  <data name="Help.Panel.Title" xml:space="preserve">
+    <value>Yardım</value>
+  </data>
+  <data name="Help.Panel.Close" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="Help.Panel.PurposeHeading" xml:space="preserve">
+    <value>Bu sayfa ne işe yarar</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter (Mac'te ⌘+Enter). Tek başına Enter bu işlemi çalıştırmaz.</value>
+  </data>
+  <data name="Help.Panel.StartTour" xml:space="preserve">
+    <value>Turu başlat</value>
+  </data>
+  <data name="Help.Panel.Preparing" xml:space="preserve">
+    <value>Bu sayfa için yardım metni hazırlanıyor.</value>
+  </data>
+  <data name="Help.Panel.Eyebrow" xml:space="preserve">
+    <value>Sayfa yardımı</value>
+  </data>
+  <data name="Help.Panel.Tabs" xml:space="preserve">
+    <value>Yardım bölümleri</value>
+  </data>
+  <data name="Help.Panel.TabOverview" xml:space="preserve">
+    <value>Genel bakış</value>
+  </data>
+  <data name="Help.Panel.TabSteps" xml:space="preserve">
+    <value>Adım adım</value>
+  </data>
+  <data name="Help.Panel.TabKeys" xml:space="preserve">
+    <value>Klavye</value>
+  </data>
+  <data name="Help.Panel.GeneralCard" xml:space="preserve">
+    <value>Genel bilgi</value>
+  </data>
+  <data name="Help.Panel.RelatedCard" xml:space="preserve">
+    <value>İlgili sayfalar</value>
+  </data>
+  <data name="Help.Panel.AudienceLabel" xml:space="preserve">
+    <value>Kim kullanır</value>
+  </data>
+  <data name="Help.Panel.ImmediateLabel" xml:space="preserve">
+    <value>Hemen geçerli olan işlemler</value>
+  </data>
+  <data name="Help.Panel.StepNumber" xml:space="preserve">
+    <value>Adım {0}</value>
+  </data>
+  <data name="Help.Panel.KeysEverywhere" xml:space="preserve">
+    <value>Her sayfada</value>
+  </data>
+  <data name="Help.Panel.KeysThisPage" xml:space="preserve">
+    <value>Bu sayfada</value>
+  </data>
+  <data name="Help.Panel.KeyHelp" xml:space="preserve">
+    <value>Bu paneli açar</value>
+  </data>
+  <data name="Help.Panel.KeySearch" xml:space="preserve">
+    <value>Sayfa ara, menüye git</value>
+  </data>
+  <data name="Help.Panel.KeyEnter" xml:space="preserve">
+    <value>Yan panelde kaydeder (geri alınabilir işler)</value>
+  </data>
+  <data name="Help.Panel.KeyChord" xml:space="preserve">
+    <value>Geri alınamaz işlemi çalıştırır (gönder, onayla, sil…); çok satırlı alanda kaydeder</value>
+  </data>
+  <data name="Help.Panel.KeyEscape" xml:space="preserve">
+    <value>Açık paneli kapatır</value>
+  </data>
+  <data name="Help.Panel.MacNote" xml:space="preserve">
+    <value>Mac'te Ctrl yerine ⌘ kullanılır.</value>
+  </data>
+  <data name="Tour.Next" xml:space="preserve">
+    <value>İleri</value>
+  </data>
+  <data name="Tour.Previous" xml:space="preserve">
+    <value>Geri</value>
+  </data>
+  <data name="Tour.Done" xml:space="preserve">
+    <value>Bitti</value>
+  </data>
+  <data name="Tour.Progress" xml:space="preserve">
+    <value>{{current}} / {{total}}</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Title" xml:space="preserve">
+    <value>Sekmeler</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Text" xml:space="preserve">
+    <value>Gelen Kutusu size gönderilen işleri ve onay isteklerini, İşlerim üzerinizdeki işleri, Havuz ise ekibinizin alabileceği işleri gösterir.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Title" xml:space="preserve">
+    <value>Arama</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Text" xml:space="preserve">
+    <value>Listeyi daraltmak için başlığın bir kısmını yazın; süzgeç çipleri listeyi tür ve duruma göre daha da daraltır.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Title" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Text" xml:space="preserve">
+    <value>İşi açmak için bir satıra tıklayın: ayrıntıları, kontrol listesi, yorumları ve geçmişi oradadır.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Title" xml:space="preserve">
+    <value>İşlem yapın</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Text" xml:space="preserve">
+    <value>Kabul et, Başlat ve Tamamla satırın üzerindedir. Bir onay isteğini açıp Onayla ya da Reddet'i seçin; işi başkasına vermek için açılan işte Devret'i kullanın.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Title" xml:space="preserve">
+    <value>Yeni</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Text" xml:space="preserve">
+    <value>Yeni görev, not ya da toplantıyı buradan oluşturun.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Title" xml:space="preserve">
+    <value>Hafta</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Text" xml:space="preserve">
+    <value>Haftalar arasında oklarla gezinin; Bugün sizi içinde bulunduğunuz haftaya döndürür.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Title" xml:space="preserve">
+    <value>Satır ekleyin</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Text" xml:space="preserve">
+    <value>Bu hafta üzerinde çalıştığınız işi eklemek için + Görev satırı ya da + Kategori satırı'nı kullanın.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Title" xml:space="preserve">
+    <value>Süre girin</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Text" xml:space="preserve">
+    <value>Her günün hücresine saatleri yazın; toplamlar siz yazdıkça güncellenir.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Title" xml:space="preserve">
+    <value>Haftayı gönderin</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Text" xml:space="preserve">
+    <value>Hafta tamamlanınca Onaya gönder'i seçin; onaycınız haftayı Zaman çizelgesi onayları sayfasında görür.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Title" xml:space="preserve">
+    <value>Sizi bekleyen haftalar</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Text" xml:space="preserve">
+    <value>Ekibinizin onaya gönderdiği haftalar burada listelenir.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Title" xml:space="preserve">
+    <value>Bir haftayı açın</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
+    <value>Haftayı okumak için bir satırı açın; ardından Onayla'yı ya da düzeltilmesi için gerekçesiyle Geri gönder'i seçin.</value>
+  </data>
+  <data name="Help.USERS.Purpose" xml:space="preserve">
+    <value>Kiracınızda oturum açabilen herkesi yönetin: kullanıcı davet edin, bilgilerini düzenleyin, hesabın aktif olup olmadığına karar verin.</value>
+  </data>
+  <data name="Help.USERS.Step1" xml:space="preserve">
+    <value>Listeyi arama kutusuyla daraltın ya da “Filtrele”ye tıklayıp “Durum”, “Roller” veya “Hesap Türü” seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.USERS.Step2" xml:space="preserve">
+    <value>“Kullanıcı Ekle”ye tıklayın, yan panelde “E-posta”, “Ad” ve “Soyad” alanlarını doldurun, ardından “Kaydet”e tıklayın ya da Ctrl+Enter'a (Mac'te ⌘+Enter) basın. Davet e-postası gittiği için tek başına Enter kaydetmez.</value>
+  </data>
+  <data name="Help.USERS.Step3" xml:space="preserve">
+    <value>Yeni kullanıcıdan e-postayla gelen bağlantıdan parolasını belirlemesini isteyin; o zamana kadar durum “Davet edildi” görünür ve satırda “Daveti Yeniden Gönder” yer alır.</value>
+  </data>
+  <data name="Help.USERS.Step4" xml:space="preserve">
+    <value>Satırın işlemlerini açın: “Görüntüle”, “Düzenle”, hesap için “Devre Dışı Bırak” ya da “Etkinleştir”, “Parolayı Sıfırla” bağlantısı veya “Sil”.</value>
+  </data>
+  <data name="Help.USERS.Step5" xml:space="preserve">
+    <value>Kullanıcıya rol vermek için Kullanıcı Rolleri sayfasını açın; buradaki “Roller” sütunu yalnızca atanmış rolleri gösterir.</value>
+  </data>
+  <data name="Help.USERS.Audience" xml:space="preserve">
+    <value>Yöneticiler</value>
+  </data>
+  <data name="Help.USERS.Immediate" xml:space="preserve">
+    <value>Devre dışı bırakma, silme, parola sıfırlama</value>
+  </data>
+  <data name="Help.USERS.Step1Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.USERS.Step2Title" xml:space="preserve">
+    <value>Kullanıcı davet edin</value>
+  </data>
+  <data name="Help.USERS.Step3Title" xml:space="preserve">
+    <value>Davetin tamamlanmasını izleyin</value>
+  </data>
+  <data name="Help.USERS.Step4Title" xml:space="preserve">
+    <value>Hesabı yönetin</value>
+  </data>
+  <data name="Help.USERS.Step5Title" xml:space="preserve">
+    <value>Rol verin</value>
+  </data>
+  <data name="Help.USERS.Related.USERROLES" xml:space="preserve">
+    <value>Kullanıcıya rol vermek için</value>
+  </data>
+  <data name="Help.USERS.Related.ROLES" xml:space="preserve">
+    <value>Rollerin neye izin verdiğini görmek için</value>
+  </data>
+  <data name="Help.ROLES.Purpose" xml:space="preserve">
+    <value>Bu sayfa kiracınızın rollerini listeler: platformla gelen Sistem rolleri ve sizin oluşturduğunuz Özel roller.</value>
+  </data>
+  <data name="Help.ROLES.Step1" xml:space="preserve">
+    <value>Listede arama yapın ya da “Filtrele”ye tıklayıp “Tür” altında “Sistem (yerleşik, kilitli)” veya “Özel (düzenlenebilir)” seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.ROLES.Step2" xml:space="preserve">
+    <value>“Rol Ekle”ye tıklayın, “Ad” ve “Görünen Ad”ı (gerekirse “Açıklama”yı) girin ve “Kaydet”e tıklayın; ad sonradan değiştirilemez.</value>
+  </data>
+  <data name="Help.ROLES.Step3" xml:space="preserve">
+    <value>Bir satırdaki anahtar simgesine (“İzinleri Yönet”) tıklayarak Rol İzinleri sayfasını o rol seçili olarak açın.</value>
+  </data>
+  <data name="Help.ROLES.Step4" xml:space="preserve">
+    <value>Özel bir rolde “Görüntüle”, “Düzenle” veya “Sil”i kullanın; sistem rolleri kilit simgesiyle gösterilir ve yalnızca görüntülenebilir.</value>
+  </data>
+  <data name="Help.ROLES.Audience" xml:space="preserve">
+    <value>Yöneticiler</value>
+  </data>
+  <data name="Help.ROLES.Immediate" xml:space="preserve">
+    <value>Özel bir rolü silme</value>
+  </data>
+  <data name="Help.ROLES.Step1Title" xml:space="preserve">
+    <value>Rol bulun</value>
+  </data>
+  <data name="Help.ROLES.Step2Title" xml:space="preserve">
+    <value>Rol ekleyin</value>
+  </data>
+  <data name="Help.ROLES.Step3Title" xml:space="preserve">
+    <value>İzinlerini yönetin</value>
+  </data>
+  <data name="Help.ROLES.Step4Title" xml:space="preserve">
+    <value>Görüntüleyin, düzenleyin ya da silin</value>
+  </data>
+  <data name="Help.ROLES.Related.ROLEPERMISSIONS" xml:space="preserve">
+    <value>Bir rolün neler yapabileceğini belirlemek için</value>
+  </data>
+  <data name="Help.ROLES.Related.USERROLES" xml:space="preserve">
+    <value>Kullanıcılara rol vermek için</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
+    <value>Bu sayfa bir rolün neler yapabileceğini belirler: modüllere göre gruplanmış izinleri tek bir rol için atar veya kaldırırsınız.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
+    <value>“Rol” kutusundan bir rol seçin; Roller sayfasındaki “İzinleri Yönet” ile gelirseniz rol zaten seçili açılır.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2" xml:space="preserve">
+    <value>İzinleri “Modül”, “İzinlerde ara…” kutusu ya da “Tümü”, “Atanmış” ve “Atanmamış” sekmeleriyle daraltın.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3" xml:space="preserve">
+    <value>Role vermek için atanmamış bir izin etiketine tıklayın; değişiklik hemen kaydedilir.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4" xml:space="preserve">
+    <value>Kaldırmak için atanmış bir etikete tıklayıp onaylayın; kilitli etiketler temel izinlerden veya bir modülden gelir ve buradan değiştirilemez.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
+    <value>Sağdaki “Seçili Rol” kartında “İzin kapsamı”nı ve atanmış, kilitli ve atanmamış izin sayılarını kontrol edin.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Audience" xml:space="preserve">
+    <value>Yöneticiler</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Immediate" xml:space="preserve">
+    <value>İzin verme ve kaldırma; role sahip tüm kullanıcıları etkiler</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1Title" xml:space="preserve">
+    <value>Rol seçin</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2Title" xml:space="preserve">
+    <value>İzinleri daraltın</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3Title" xml:space="preserve">
+    <value>İzin verin</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4Title" xml:space="preserve">
+    <value>İzni kaldırın</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5Title" xml:space="preserve">
+    <value>Kapsamı kontrol edin</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.ROLES" xml:space="preserve">
+    <value>Rol eklemek ya da düzenlemek için</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.USERROLES" xml:space="preserve">
+    <value>Kullanıcılara rol vermek için</value>
+  </data>
+  <data name="Help.USERROLES.Purpose" xml:space="preserve">
+    <value>Bu sayfa kullanıcıları rollerle eşleştirir: bir kullanıcı seçip ona rol atar veya rolünü kaldırırsınız.</value>
+  </data>
+  <data name="Help.USERROLES.Step1" xml:space="preserve">
+    <value>Sahip olduğu ve olmadığı rolleri görmek için “Kullanıcı” kutusundan bir kişi seçin.</value>
+  </data>
+  <data name="Help.USERROLES.Step2" xml:space="preserve">
+    <value>Rolleri “Rollerde Ara” kutusuyla ya da “Tümü”, “Atanmış” ve “Atanmamış” sekmeleriyle daraltın.</value>
+  </data>
+  <data name="Help.USERROLES.Step3" xml:space="preserve">
+    <value>Kullanıcıya vermek için “Atanmamış Roller” altındaki bir rolde “Ata”ya tıklayın; değişiklik hemen kaydedilir.</value>
+  </data>
+  <data name="Help.USERROLES.Step4" xml:space="preserve">
+    <value>Bir rolü geri almak için atanmış roldeki “Kaldır”a ya da “Aktif Roller” altındaki x'e tıklayıp onaylayın.</value>
+  </data>
+  <data name="Help.USERROLES.Audience" xml:space="preserve">
+    <value>Yöneticiler</value>
+  </data>
+  <data name="Help.USERROLES.Immediate" xml:space="preserve">
+    <value>Rol atama ve kaldırma; kullanıcının izinleri tüm rollerinin birleşimidir</value>
+  </data>
+  <data name="Help.USERROLES.Step1Title" xml:space="preserve">
+    <value>Kullanıcı seçin</value>
+  </data>
+  <data name="Help.USERROLES.Step2Title" xml:space="preserve">
+    <value>Rolleri daraltın</value>
+  </data>
+  <data name="Help.USERROLES.Step3Title" xml:space="preserve">
+    <value>Rol atayın</value>
+  </data>
+  <data name="Help.USERROLES.Step4Title" xml:space="preserve">
+    <value>Rolü kaldırın</value>
+  </data>
+  <data name="Help.USERROLES.Related.USERS" xml:space="preserve">
+    <value>Kullanıcı davet etmek ya da yönetmek için</value>
+  </data>
+  <data name="Help.USERROLES.Related.ROLES" xml:space="preserve">
+    <value>Rol eklemek ya da düzenlemek için</value>
+  </data>
+  <data name="Help.ITEMS.Purpose" xml:space="preserve">
+    <value>Bu sayfa kalemleri (stokta tutulan malzemeler: etkin maddeler, yardımcı maddeler, ambalaj, ara ürünler) kimlikleri, malzeme türleri ve stok davranışlarıyla listeler. Her kalem burada oluşturulur ve durumlarından geçirilir: “Taslak”, “Onay bekliyor”, “Etkin”, “Kullanım dışı”, “Emekli”.</value>
+  </data>
+  <data name="Help.ITEMS.Step1" xml:space="preserve">
+    <value>Listeyi arama kutusuyla daraltın ya da “Filtrele”ye tıklayıp “Durum” veya “Malzeme türü” seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.ITEMS.Step2" xml:space="preserve">
+    <value>“Kalem ekle”ye tıklayın, tam sayfa formda kimlik ve stok davranışı alanlarını doldurun, ardından “Kaydet”e tıklayın: kalem “Taslak” olarak kaydedilir. Bu formun tek satırlı bir alanındayken Enter da formu kaydeder (“Açıklama” kutusunda Enter yeni satır açar). Daha sonra, etkin bir kalemde yalnız ad ve açıklama serbestçe değişir; dolu bir stok alanı onaylı bir düzeltme ister.</value>
+  </data>
+  <data name="Help.ITEMS.Step3" xml:space="preserve">
+    <value>Taslağın “İşlemler” menüsünden “Onaya gönder”i seçin: kalem onaylanana kadar “Onay bekliyor” durumunda kalır ve ancak o zaman “Etkin” olur. Kalem onay beklerken isteği gönderen kişi “İşlemler” menüsünden “Onay İsteğini Geri Çek”i seçebilir: kalem önceki durumuna döner.</value>
+  </data>
+  <data name="Help.ITEMS.Step4" xml:space="preserve">
+    <value>“Kullanım dışı bırak” etkin bir kalemi yeni stok girişlerinden çıkarır; “Yeniden etkinleştirme iste” aynı onaydan yeniden geçer; “Emekliye ayır” kesindir, yalnız stoğu sıfır olan kullanım dışı bir kalemde yapılabilir ve kod bir daha kullanılmaz. Her biri bir gerekçe ister.</value>
+  </data>
+  <data name="Help.ITEMS.Step5" xml:space="preserve">
+    <value>Bir metin alanının dışındayken ve açık bir pencere ya da yan panel yokken “?” tuşu, sayfanın kısayollarını da gösteren bu yardımı açar.</value>
+  </data>
+  <data name="Help.ITEMS.Audience" xml:space="preserve">
+    <value>Ana veri ekibi</value>
+  </data>
+  <data name="Help.ITEMS.Step1Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.ITEMS.Step2Title" xml:space="preserve">
+    <value>Kalem ekleyin</value>
+  </data>
+  <data name="Help.ITEMS.Step3Title" xml:space="preserve">
+    <value>Onaya gönderin</value>
+  </data>
+  <data name="Help.ITEMS.Step4Title" xml:space="preserve">
+    <value>Durumunu değiştirin</value>
+  </data>
+  <data name="Help.ITEMS.Step5Title" xml:space="preserve">
+    <value>Klavyeyi kullanın</value>
+  </data>
+</root>

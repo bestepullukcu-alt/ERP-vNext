@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ColProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ColCategory" xml:space="preserve"><value>Categoría</value></data>
+  <data name="ColQuestion" xml:space="preserve"><value>Objeción</value></data>
+  <data name="ColClaims" xml:space="preserve"><value>Afirmaciones vinculadas</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Usada en pasos</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="ColUpdated" xml:space="preserve"><value>Último cambio</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="NewResponse" xml:space="preserve"><value>Nueva respuesta a objeción</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>Ver</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Editar</value></data>
+  <data name="AllProducts" xml:space="preserve"><value>Todos los productos</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>Todas las categorías</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Todos los estados</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Buscar en el texto de la objeción</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Status_in_review" xml:space="preserve"><value>Pendiente de aprobación</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="Status_retired" xml:space="preserve"><value>Retirada</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Editar respuesta a objeción</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Nueva respuesta a objeción</value></data>
+  <data name="SelectProduct" xml:space="preserve"><value>Seleccione un producto</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>Seleccione una categoría</value></data>
+  <data name="ClaimsSelected" xml:space="preserve"><value>{0} seleccionadas (máximo {1})</value></data>
+  <data name="ClaimsMax" xml:space="preserve"><value>Se pueden seleccionar como máximo {0} afirmaciones.</value></data>
+  <data name="ClaimsNone" xml:space="preserve"><value>Este producto no tiene afirmaciones aprobadas.</value></data>
+  <data name="ClaimsPickProduct" xml:space="preserve"><value>Seleccione un producto para ver sus afirmaciones aprobadas.</value></data>
+  <data name="ClaimsUnavailable" xml:space="preserve"><value>No tiene permiso para leer afirmaciones.</value></data>
+  <data name="ProductsUnavailable" xml:space="preserve"><value>No se pudo leer la lista de productos.</value></data>
+  <data name="CategoriesUnavailable" xml:space="preserve"><value>No se pudo leer la lista de categorías; inténtelo de nuevo.</value></data>
+  <data name="PreviewEmptyQuestion" xml:space="preserve"><value>La pregunta del médico aparece aquí.</value></data>
+  <data name="PreviewEmptyAnswer" xml:space="preserve"><value>La respuesta aprobada aparece aquí.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="Saved" xml:space="preserve"><value>Borrador guardado.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Enviada para aprobación.</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Enviar para aprobación</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>Hay cambios sin guardar. ¿Salir de todos modos?</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Creada por</value></data>
+  <data name="LastSaved" xml:space="preserve"><value>Último guardado</value></data>
+  <data name="ProductRequired" xml:space="preserve"><value>Seleccione un producto.</value></data>
+  <data name="PendingLine" xml:space="preserve"><value>Pendiente de aprobación · {0} la envió el {1}.</value></data>
+  <data name="ApprovedNote" xml:space="preserve"><value>Una respuesta aprobada no se puede cambiar. Para cambiarla, retírela y cree una nueva.</value></data>
+  <data name="RetiredLine" xml:space="preserve"><value>Retirada · {0}, {1}. Ya no se muestra en las visitas.</value></data>
+  <data name="DraftReturnedLine" xml:space="preserve"><value>Devuelta a borrador · {0}, {1}: «{2}»</value></data>
+  <data name="DraftReturnedReason" xml:space="preserve"><value>Vuelta a borrador: {0}</value></data>
+  <data name="SodHint" xml:space="preserve"><value>Usted redactó o envió esta respuesta; otro aprobador debe aprobarla.</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Retirar solicitud</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Devolver a borrador</value></data>
+  <data name="RetireButton" xml:space="preserve"><value>Retirar</value></data>
+  <data name="Copy" xml:space="preserve"><value>Nuevo borrador a partir de copia</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Editar</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Devolver a borrador</value></data>
+  <data name="ReturnNoteLabel" xml:space="preserve"><value>Nota para el autor (obligatoria)</value></data>
+  <data name="ReturnNoteRequired" xml:space="preserve"><value>Escriba una nota antes de devolverla a borrador.</value></data>
+  <data name="ReturnConfirm" xml:space="preserve"><value>Devolver</value></data>
+  <data name="RetireTitle" xml:space="preserve"><value>¿Retirar esta respuesta?</value></data>
+  <data name="RetireText" xml:space="preserve"><value>Una respuesta retirada desaparece de inmediato de todas las presentaciones, incluidas las publicadas; no se puede deshacer. Un cambio es una nueva respuesta.</value></data>
+  <data name="RetireUsed" xml:space="preserve"><value>Se usa en {0} paso(s).</value></data>
+  <data name="RetireConfirm" xml:space="preserve"><value>Retirar</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>¿Retirar la solicitud de aprobación? La respuesta vuelve a borrador.</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>¿Enviar esta respuesta para aprobación? Queda bloqueada durante la revisión.</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>¿Aprobar esta respuesta? Los representantes la verán en las visitas.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Aprobada.</value></data>
+  <data name="Returned" xml:space="preserve"><value>Devuelta a borrador.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Solicitud retirada.</value></data>
+  <data name="Retired" xml:space="preserve"><value>Retirada.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Se creó un nuevo borrador a partir de una copia.</value></data>
+  <data name="UsagesNone" xml:space="preserve"><value>Ningún paso de ruta la usa todavía como objeción esperada.</value></data>
+  <data name="UsagePath" xml:space="preserve"><value>Ruta de conocimiento</value></data>
+  <data name="UsageVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="UsageStep" xml:space="preserve"><value>Paso</value></data>
+  <data name="UsageStepLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>{0} paso(s)</value></data>
+  <data name="PathStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="PathStatus_review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="PathStatus_approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="PathStatus_published" xml:space="preserve"><value>Publicado</value></data>
+  <data name="PathStatus_inactive" xml:space="preserve"><value>Inactivo</value></data>
+  <data name="PathStatus_archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historial</value></data>
+  <data name="Event_created" xml:space="preserve"><value>Creada</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>Enviada para aprobación</value></data>
+  <data name="Event_approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="Event_returned" xml:space="preserve"><value>Devuelta a borrador</value></data>
+  <data name="Event_withdrawn" xml:space="preserve"><value>Solicitud retirada</value></data>
+  <data name="Event_timeout" xml:space="preserve"><value>Tiempo agotado</value></data>
+  <data name="Event_retired" xml:space="preserve"><value>Retirada</value></data>
+  <data name="EventLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
+  <data name="ClaimNotApprovedAnymore" xml:space="preserve"><value>Esta afirmación ya no está aprobada.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>No se encontró la respuesta.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar la respuesta; inténtelo de nuevo.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>No se pudo completar la acción.</value></data>
+  <data name="Err_objection_response_incomplete" xml:space="preserve"><value>Complete producto, categoría, pregunta y respuesta antes de enviar.</value></data>
+  <data name="Err_objection_claim_not_approved" xml:space="preserve"><value>Una afirmación seleccionada ya no está aprobada; quítela e inténtelo de nuevo.</value></data>
+  <data name="Err_objection_claim_product_mismatch" xml:space="preserve"><value>Una afirmación seleccionada pertenece a otro producto.</value></data>
+  <data name="Err_objection_response_sod" xml:space="preserve"><value>El aprobador redactó, editó o envió esta respuesta, por lo que volvió a borrador; otro aprobador debe aprobarla.</value></data>
+  <data name="Err_objection_response_in_review" xml:space="preserve"><value>La respuesta está bloqueada durante la revisión.</value></data>
+  <data name="Err_objection_response_not_editable" xml:space="preserve"><value>Solo se puede editar un borrador.</value></data>
+  <data name="Err_objection_response_not_draft" xml:space="preserve"><value>Esta acción solo es posible en un borrador.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>La aprobación solo se realiza mediante la tarea de aprobación.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>No se pudo leer la lista de categorías; no se guardó nada. Inténtelo de nuevo.</value></data>
+  <data name="Err_objection_category_invalid" xml:space="preserve"><value>La categoría no es un valor activo.</value></data>
+  <data name="Err_objection_product_invalid" xml:space="preserve"><value>No se encontró el producto en el maestro de productos.</value></data>
+  <data name="Err_objection_response_invalid" xml:space="preserve"><value>Revise los campos: pregunta ≤ 500, respuesta ≤ 4000 caracteres, máximo 10 afirmaciones.</value></data>
+  <data name="Err_objection_response_not_found" xml:space="preserve"><value>No se encontró la respuesta.</value></data>
+  <data name="Err_decision_comment_required" xml:space="preserve"><value>Devolver a borrador requiere una nota.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Un servicio dependiente no está disponible; inténtelo de nuevo.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Otra persona guardó esta respuesta mientras tanto; recargue la página e inténtelo de nuevo.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>El servicio no está disponible ahora; inténtelo de nuevo.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Biblioteca de objeciones</value></data>
+  <data name="PageGroup" xml:space="preserve"><value>Estudio de contenido</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Respuestas aprobadas a las objeciones de los médicos que ven los representantes en las visitas.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Aún no hay respuestas a objeciones</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Aquí se reúnen las objeciones esperadas y las respuestas aprobadas que los representantes ven durante la presentación. Empiece creando la primera.</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>Objeción y respuesta aprobada</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>Categoría</value></data>
+  <data name="FieldQuestion" xml:space="preserve"><value>Objeción · la pregunta del médico</value></data>
+  <data name="FieldAnswer" xml:space="preserve"><value>Respuesta aprobada</value></data>
+  <data name="FieldClaims" xml:space="preserve"><value>Afirmaciones de respaldo</value></data>
+  <data name="ClaimsHint" xml:space="preserve"><value>Solo se listan las afirmaciones aprobadas del producto seleccionado.</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="PreviewRemote" xml:space="preserve"><value>Control del representante · Notas</value></data>
+  <data name="PreviewObjections" xml:space="preserve"><value>Objeciones esperadas · respuesta aprobada</value></data>
+  <data name="MetaNote" xml:space="preserve"><value>Un registro aprobado no se puede cambiar. La aprobación la da un aprobador distinto del autor.</value></data>
+  <data name="RecordTitle" xml:space="preserve"><value>Respuesta a objeción</value></data>
+  <data name="UsagesTitle" xml:space="preserve"><value>Dónde se usa</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>p. ej. Estoy contento con Tamsulin, ¿por qué cambiar?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>La respuesta que dará el representante. Básese solo en afirmaciones aprobadas.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Aún no guardado</value></data>
+</root>

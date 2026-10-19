@@ -10,6 +10,8 @@ namespace Diten.Platform.Application.Features.PlatformAccount.Handlers.CommandHa
 public sealed class UpdatePlatformAccountSettingsHandler
     : IRequestHandler<UpdatePlatformAccountSettingsCommand, Response<NoContent>>
 {
+    private const string StaleProfileMessage = "The account profile was changed by another user. Reload and try again.";
+
     private readonly IPlatformAdministratorRepository _repository;
     private readonly ICurrentUserContext _currentUser;
 
@@ -40,13 +42,23 @@ public sealed class UpdatePlatformAccountSettingsHandler
             return Response<NoContent>.Fail("Platform account profile not found.", 404);
         }
 
+        // BL-521 FIX4 item 3 — the record is written back whole, so it must be the version the client saw, and the write is
+        // conditional on the version that was read. Before, the client's version was written with whatever this request
+        // had read: naming the NEXT version right after being suspended wrote the pre-suspension snapshot back — an
+        // administrator undoing its own suspension through its account settings.
+        if (administrator.Version != request.Request.Version)
+        {
+            return Response<NoContent>.Fail(StaleProfileMessage, 409);
+        }
+
+        var loadedVersion = administrator.Version;
         administrator.DisplayName = request.Request.DisplayName.Trim();
         administrator.UpdatedBy = _currentUser.ActorName;
 
-        var updated = await _repository.UpdateAsync(administrator, request.Request.Version, ct);
+        var updated = await _repository.UpdateAsync(administrator, loadedVersion, ct);
         if (!updated)
         {
-            return Response<NoContent>.Fail("The account profile was changed by another user. Reload and try again.", 409);
+            return Response<NoContent>.Fail(StaleProfileMessage, 409);
         }
 
         return Response<NoContent>.Success(204);

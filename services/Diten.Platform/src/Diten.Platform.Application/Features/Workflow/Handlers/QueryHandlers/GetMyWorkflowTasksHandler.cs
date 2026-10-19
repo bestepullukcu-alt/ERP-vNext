@@ -6,6 +6,8 @@ using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
+
 namespace Diten.Platform.Application.Features.Workflow.Handlers.QueryHandlers;
 
 public sealed class GetMyWorkflowTasksHandler
@@ -57,30 +59,13 @@ public sealed class GetMyWorkflowTasksHandler
         return Response<IReadOnlyList<WorkflowTaskDto>>.Success(result, correlationId: request.CorrelationId);
     }
 
+    // D1 — the SAME rule as the decision gate (WorkflowTaskTransitionSupport): whoever may decide the task sees it.
+    // The comparison used to be a local OrdinalIgnoreCase copy; it is the engine's one helper now.
     private async Task<bool> IsCandidateAsync(ApprovalTask task, string userId, CancellationToken ct)
     {
-        // The directly resolved assignee always sees the task.
-        if (Matches(task.AssigneeRef, userId))
-        {
-            return true;
-        }
-
-        if (task.AssignmentSnapshotId is not { } snapshotId)
-        {
-            return false;
-        }
-
-        var snapshot = await _snapshots.GetByIdAsync(snapshotId, ct);
-        if (snapshot is null)
-        {
-            return false;
-        }
-
-        return Matches(snapshot.ResolvedPrincipalId, userId)
-               || snapshot.CandidatePrincipalIds.Any(id => Matches(id, userId));
+        var snapshot = task.AssignmentSnapshotId is { } snapshotId
+            ? await _snapshots.GetByIdAsync(snapshotId, ct)
+            : null;
+        return WorkflowTaskTransitionSupport.IsListedFor(task, snapshot, userId);
     }
-
-    private static bool Matches(string? principalId, string userId)
-        => !string.IsNullOrWhiteSpace(principalId)
-           && string.Equals(principalId.Trim(), userId, StringComparison.OrdinalIgnoreCase);
 }

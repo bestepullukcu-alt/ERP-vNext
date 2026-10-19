@@ -23,4 +23,9 @@
     <ProjectReference Include="..\..\src\Diten.Platform.Infrastructure\Diten.Platform.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.BackgroundJobs\Diten.BuildingBlocks.BackgroundJobs.csproj" />
   </ItemGroup>
+  <!-- WP-CT-LANE-MAIN-SYNC-01 (CT decision C): the ONE source of the Platform tests' Mongo, linked into the three
+       Platform test projects (they do not reference each other). -->
+  <ItemGroup>
+    <Compile Include="..\Shared\PlatformTestMongo.cs" Link="Shared\PlatformTestMongo.cs" />
+  </ItemGroup>
 </Project>

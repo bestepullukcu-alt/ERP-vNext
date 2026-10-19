@@ -46,20 +46,31 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         var user = await _userRepository.GetByIdAndTenantAsync(userId, _tenantContext.TenantId, ct);
         if (user == null) return Response<NoContent>.Fail("User not found.", 404);
 
-        if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+        if (!await _passwordHasher.VerifyAsync(request.CurrentPassword, user.PasswordHash, ct))
             return Response<NoContent>.Fail("Current password is incorrect.", 401);
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(_tenantContext.TenantId, user.Id, request.NewPassword, "change_password", ct);
-        var newHashedPassword = _passwordHasher.Hash(request.NewPassword);
+        var newHashedPassword = await _passwordHasher.HashAsync(request.NewPassword, ct);
+        var verifiedHash = user.PasswordHash;
+        var state = _userRepository.CaptureState(user);
         user.UpdatePassword(newHashedPassword);
         user.ClearPasswordChangeRequirement();
 
-        await _userRepository.UpdateAsync(user, ct);
-        await _refreshTokenRepository.RevokeAllByUserAsync(userId, _tenantContext.TenantId, ct);
+        // BL-529 FIX2 — written only while the password is still the one just verified: an administrator's reset that
+        // landed meanwhile (the caller may hold an access token from before it) is never overwritten.
+        if (!await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, new UserWriteCondition(PasswordHash: verifiedHash), ct))
+            return PasswordChangedMeanwhile<NoContent>();
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(userId, _tenantContext.TenantId, SessionRevocationReasons.PasswordChanged, ct);
         if (_eSignTickets is not null) await _eSignTickets.RevokeWindowsAsync(_tenantContext.TenantId, userId, "password_changed", ct);
         await _authAuditService.WriteAsync("tenant_password_changed", user.Id, _tenantContext.TenantId, "{}", ct);
 
         _logger.LogInformation("User changed password. UserId={UserId}", userId);
         return Response<NoContent>.Success(204);
     }
+
+    internal static Response<T> PasswordChangedMeanwhile<T>()
+        => Response<T>.Fail(
+            "The password changed while this request ran (for example an administrator reset it). Sign in again.",
+            [new ResponseError(AuthRefusalCodes.PasswordChangedMeanwhile)],
+            409);
 }

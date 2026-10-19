@@ -116,8 +116,16 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
             var context = instance is not null && contexts.TryGetValue(instance.Id, out var found) ? found : null;
             var step = steps.TryGetValue(task.Id, out var foundStep) ? foundStep : null;
 
+            // D1 — who may decide comes from the snapshot, not from AssigneeRef (the first candidate, kept for display).
+            var snapshot = task.AssignmentSnapshotId is { } snapshotId && snapshotCache.TryGetValue(snapshotId, out var cached)
+                ? cached
+                : null;
             var projected = _projection.Project(
-                task, instance, actor, ProviderCode, ProviderContractVersion, context, step);
+                task, instance, actor, ProviderCode, ProviderContractVersion, context, step,
+                // D1-FIX1 — no readable snapshot: the task stays LISTED for its assignee (IsListedFor), so a stuck
+                // record is seen, but NOBODY may decide it (the gate answers 404) — an empty list, never null: null
+                // would mean "the caller did not say" and leave every button enabled.
+                snapshot is null ? [] : WorkflowTaskTransitionSupport.DecidingPrincipals(snapshot));
             if (projected is not null)
             {
                 items.Add(projected);
@@ -301,7 +309,14 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
     /// The assignment snapshots MOD-0023 writes when a step OPENS — the task is with the step's own candidates.
     /// </summary>
     internal static readonly IReadOnlySet<string> StepOwnResolverSources =
-        new HashSet<string>(StringComparer.Ordinal) { "runtime_candidates", "runtime_next_step_candidates" };
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            "runtime_candidates",
+            "runtime_next_step_candidates",
+            // The trusted start (WorkflowInstanceStartCoordinator — a service starting an approval on a maker's
+            // behalf, e.g. MDM product identity) opens the FIRST step exactly as the ordinary start does.
+            "trusted_runtime_candidates"
+        };
 
     /// <summary>
     /// The snapshots MOD-0023 writes when a task LEAVES its step's candidates: handed to one person (delegation) or
@@ -388,37 +403,18 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
             .ToDictionary(group => group.Key, group => group.First().Name.Trim());
     }
 
-    // Candidate resolution mirrors GetMyWorkflowTasks: the directly resolved assignee always sees the task;
-    // otherwise the caller must be the resolved principal or a candidate in the assignment snapshot.
+    // D1 — the SAME rule as the decision gate and GetMyWorkflowTasks (WorkflowTaskTransitionSupport.IsListedFor): the
+    // Task Center shows an approval to exactly the people who may decide it.
     private async Task<bool> IsCandidateAsync(
         ApprovalTask task, string userId, Dictionary<Guid, RuntimeAssignmentSnapshot?> snapshots, CancellationToken ct)
     {
-        if (Matches(task.AssigneeRef, userId))
-        {
-            return true;
-        }
-
-        if (task.AssignmentSnapshotId is not { } snapshotId)
-        {
-            return false;
-        }
-
-        if (!snapshots.TryGetValue(snapshotId, out var snapshot))
+        RuntimeAssignmentSnapshot? snapshot = null;
+        if (task.AssignmentSnapshotId is { } snapshotId && !snapshots.TryGetValue(snapshotId, out snapshot))
         {
             snapshot = await _snapshots.GetByIdAsync(snapshotId, ct);
             snapshots[snapshotId] = snapshot;
         }
 
-        if (snapshot is null)
-        {
-            return false;
-        }
-
-        return Matches(snapshot.ResolvedPrincipalId, userId)
-               || snapshot.CandidatePrincipalIds.Any(id => Matches(id, userId));
+        return WorkflowTaskTransitionSupport.IsListedFor(task, snapshot, userId);
     }
-
-    private static bool Matches(string? principalId, string userId)
-        => !string.IsNullOrWhiteSpace(principalId)
-           && string.Equals(principalId.Trim(), userId, StringComparison.OrdinalIgnoreCase);
 }

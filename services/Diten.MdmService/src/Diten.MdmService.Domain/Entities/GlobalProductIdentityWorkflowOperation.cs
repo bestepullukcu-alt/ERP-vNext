@@ -1,0 +1,95 @@
+using Diten.MdmService.Domain.Enums;
+
+namespace Diten.MdmService.Domain.Entities;
+
+public sealed class GlobalProductIdentityWorkflowOperation : EntityBase, IProductIdentityWorkflowFaultFields
+{
+    public const int CurrentTemporalStorageVersion = 1;
+
+    public Guid OperationId { get; set; }
+    public Guid GlobalProductId { get; set; }
+    public int ExpectedProductVersion { get; set; }
+    public Guid MakerSubjectId { get; set; }
+    public Guid? WorkflowTemplateId { get; set; }
+    public string? WorkflowTemplateCode { get; set; }
+    public List<Guid> CandidatePrincipalIds { get; set; } = [];
+    public string ReasonCode { get; set; } = string.Empty;
+    public bool CommentRequired { get; set; }
+    public bool EvidenceRequired { get; set; }
+    public long? DueAtUtcTicksV1 { get; set; }
+    public string ObjectType { get; set; } = string.Empty;
+    public string ObjectId { get; set; } = string.Empty;
+    public string ObjectRef { get; set; } = string.Empty;
+    public string StartIdempotencyKey { get; set; } = string.Empty;
+    public string OperationFingerprint { get; set; } = string.Empty;
+    public GlobalProductIdentityWorkflowCheckpoint Checkpoint { get; set; }
+    public ProductIdentityWorkflowRecoveryDisposition RecoveryDisposition { get; set; }
+    public Guid? WorkflowInstanceId { get; set; }
+    public Guid? WorkflowTemplateVersionId { get; set; }
+    public Guid? ApprovalTaskId { get; set; }
+    public Guid? AssignmentSnapshotId { get; set; }
+    public Guid? StartTransitionLogId { get; set; }
+    public long? WorkflowStartedAtUtcTicksV1 { get; set; }
+    public Guid? DecisionTransitionLogId { get; set; }
+    public ProductIdentityDecisionKind? DecisionKind { get; set; }
+    public long? DecisionObservedAtUtcTicksV1 { get; set; }
+    public Guid? DecisionActorSubjectId { get; set; }
+    public string? DecisionReasonCode { get; set; }
+    public string? DecisionObjectType { get; set; }
+    public string? DecisionObjectId { get; set; }
+    public string? DecisionObjectRef { get; set; }
+    public Guid? DecisionWorkflowTemplateId { get; set; }
+    public Guid? DecisionWorkflowTemplateVersionId { get; set; }
+    public string? DecisionTaskStatus { get; set; }
+    public string? DecisionInstanceStatus { get; set; }
+    public long? DecisionTransitionSequence { get; set; }
+    public long? DecisionAtUtcTicksV1 { get; set; }
+    public Guid? WithdrawalCommandId { get; set; }
+    public string? WithdrawalFingerprint { get; set; }
+    public Guid? WithdrawalRequesterSubjectId { get; set; }
+    public int? WithdrawalExpectedProductVersion { get; set; }
+    public string? WithdrawalReasonCode { get; set; }
+    public string? WithdrawalComment { get; set; }
+    public int? WithdrawalExpectedWorkflowInstanceVersion { get; set; }
+    public int? WithdrawalExpectedApprovalTaskVersion { get; set; }
+    public Guid? WithdrawalTransitionLogId { get; set; }
+    public long? WithdrawalObservedAtUtcTicksV1 { get; set; }
+    public long? WithdrawalTransitionSequence { get; set; }
+    public int? WithdrawalResultWorkflowInstanceVersion { get; set; }
+    public int? WithdrawalResultApprovalTaskVersion { get; set; }
+    public string? WithdrawalTaskStatus { get; set; }
+    public string? WithdrawalInstanceStatus { get; set; }
+    public string? WithdrawalObjectRef { get; set; }
+    public string? WithdrawalRefusalCode { get; set; }
+    // When the worker first found the withdrawal landed and waiting for its requester (see WithdrawalRequesterWaitLimit).
+    public long? WithdrawalAwaitingRequesterSinceUtcTicksV1 { get; set; }
+    public long? NextAttemptAtUtcTicksV1 { get; set; }
+    public string? LastFailureCode { get; set; }
+    // Consecutive faults of the SERVICE chain (credential, token, setting, reachability) while this operation
+    // waited, and when the first of them happened. Both are cleared by the first answer the chain gives again.
+    public int ServiceFaultCount { get; set; }
+    // BL-552 (the GSKU FIX3 rule): consecutive worker attempts on an answer about the record (not a service fault) that
+    // ended in a retry; any other write sets it back to 0.
+    public int FailedAttemptCount { get; set; }
+    // BL-552 (the GSKU FIX3 S8 rule): when a start was last sent unanswered — "nothing arrived" is trusted only after
+    // the settle window.
+    public long? LastStartSentAtUtcTicksV1 { get; set; }
+    public long? ServiceFaultSinceUtcTicksV1 { get; set; }
+    public string? LeaseOwner { get; set; }
+    public long? LeaseUntilUtcTicksV1 { get; set; }
+    public long LeaseGeneration { get; set; }
+    public Guid? RecoveryCommandId { get; set; }
+    public Guid? RecoveryOperatorSubjectId { get; set; }
+    public string? RecoveryReasonCode { get; set; }
+    public string? RecoveryComment { get; set; }
+    public Guid? RecoveryWorkflowNotFoundEvidenceId { get; set; }
+    public string? RecoveryWorkflowNotFoundEvidenceFingerprint { get; set; }
+    public long? RecoveryWorkflowNotFoundObservedAtUtcTicksV1 { get; set; }
+    public long? RecoveredAtUtcTicksV1 { get; set; }
+    public Guid? SuccessorOperationId { get; set; }
+    public string? SuccessorStartIdempotencyKey { get; set; }
+    public string? SuccessorOperationFingerprint { get; set; }
+    public int TemporalStorageVersion { get; set; } = CurrentTemporalStorageVersion;
+    public long CreatedAtUtcTicksV1 { get; set; }
+    public long UpdatedAtUtcTicksV1 { get; set; }
+}

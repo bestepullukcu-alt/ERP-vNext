@@ -73,16 +73,16 @@ public sealed class BusinessReferenceDataTestHarnessScopeTests
         // database names while another process is emptying or creating them is exactly the BL-395 window; the lock
         // is taken once per process (Lazy<Task>), so asking again here costs nothing.
         await PlatformMongoTestLock.EnsureHeldAsync();
-        var client = new MongoClient(PlatformMongoTestConnection.RequireConnectionString());
+        var client = new MongoClient(await PlatformMongoTestConnection.RequireConnectionStringAsync());
         var names = await (await client.ListDatabaseNamesAsync()).ToListAsync();
         Assert.DoesNotContain(databaseName, names);
     }
 
     // Every registered scope is a permanent database: the list is the budget, and it is pinned so it cannot grow unseen.
     [Fact]
-    public void The_registered_scopes_are_exactly_the_eight_this_folder_owns()
+    public void The_registered_scopes_are_exactly_the_seven_this_folder_owns()
     {
-        Assert.Equal(8, BusinessReferenceDataTestHarness.RegisteredScopes.Count);
+        Assert.Equal(7, BusinessReferenceDataTestHarness.RegisteredScopes.Count);
         Assert.All(BusinessReferenceDataTestHarness.RegisteredScopes,
             scope => Assert.Matches("^[a-z][a-z0-9_]*$", scope));
         Assert.Contains(Scope, BusinessReferenceDataTestHarness.RegisteredScopes);
@@ -103,7 +103,7 @@ public sealed class BusinessReferenceDataTestHarnessScopeTests
         // The reads below happen AFTER the first harness is disposed, so the harness's own lock no longer covers
         // them — this test asserts what survives release, which is the window BL-395 describes.
         await PlatformMongoTestLock.EnsureHeldAsync();
-        var client = new MongoClient(PlatformMongoTestConnection.RequireConnectionString());
+        var client = new MongoClient(await PlatformMongoTestConnection.RequireConnectionStringAsync());
 
         await using (var first = await BusinessReferenceDataTestHarness.CreateAsync(scope))
         {
@@ -207,7 +207,7 @@ public sealed class BusinessReferenceDataTestHarnessScopeTests
             .SelectMany(file => scopeLiteral.Matches(file.Code).Select(match => (Scope: match.Groups["scope"].Value, file.Path)))
             .GroupBy(x => x.Scope, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Select(x => x.Path).Distinct().ToArray(), StringComparer.Ordinal);
-        Assert.True(owners.Count >= 6, "the scope scan found fewer CreateAsync(\"scope\") calls than this folder is known to make");
+        Assert.True(owners.Count >= 5, "the scope scan found fewer CreateAsync(\"scope\") calls than this folder is known to make");
         Assert.Empty(owners.Where(owner => owner.Value.Length > 1).Select(owner => $"{owner.Key}: {string.Join(", ", owner.Value)}"));
         Assert.Empty(owners.Keys.Where(scope => !BusinessReferenceDataTestHarness.RegisteredScopes.Contains(scope)));
     }

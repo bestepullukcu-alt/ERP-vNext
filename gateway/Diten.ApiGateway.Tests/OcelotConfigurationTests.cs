@@ -10,10 +10,36 @@ namespace Diten.ApiGateway.Tests;
 // integrity — no service is started, no HTTP call is made.
 public sealed class OcelotConfigurationTests
 {
-    // Known downstream services as of this test's authoring: auth(5056), platform(5057), dev-enablement(5058),
-    // mdm(5059), hcm(5060), pvg(5011), crm(5061), ppm(5062), supplychain(5066), inventory(5067 — OD-P1 2026-10-12, WP-MVP1-SYNC1), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
-    // this set — an unrecognized port is far more likely a typo than a new service.
-    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5066, 5067 };
+    [Theory]
+    [InlineData("/api/product-abbreviations")]
+    [InlineData("/api/product-abbreviations/{everything}")]
+    public void Abb_routes_preserve_exact_methods_destination_and_transparent_headers(string template)
+    {
+        var route = Assert.Single(LoadConfiguration().Routes, r => r.UpstreamPathTemplate == template);
+        Assert.Equal(template, route.DownstreamPathTemplate);
+        Assert.Equal(new[] { "GET", "OPTIONS", "PATCH", "POST" }, route.UpstreamHttpMethod.Order().ToArray());
+        var destination = Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal("localhost", destination.Host);
+        Assert.Equal(5059, destination.Port);
+        Assert.DoesNotContain("PUT", route.UpstreamHttpMethod);
+        Assert.DoesNotContain("DELETE", route.UpstreamHttpMethod);
+        foreach (var header in new[] { "Authorization", "X-Tenant-Id", "X-Correlation-Id", "Idempotency-Key" })
+            Assert.False(route.AddHeadersToRequest?.ContainsKey(header) ?? false);
+    }
+
+    // Known downstream services: auth(5056), platform(5057), dev-enablement(5058), mdm(5059), hcm(5060), pvg(5011),
+    // crm(5061), ppm(5062), human-capital(5063), tep(5064), procurement(5065), supplychain(5066), inventory(5067),
+    // manufacturing(5070), esbp/delivery-execution/uploads(5004).
+    // Adding a new backend is a deliberate, reviewed change to this set — an unrecognized port is far more likely a typo
+    // than a new service.
+    // 5063: HumanCapitalService (İnsan Sermayesi), 949dff06d; appsettings + launchSettings 5063 (measured).
+    // 5064: Talent Ecosystem (TEP), f9a68a022 (TalentEcosystemService appsettings + launchSettings measured: 5064).
+    // 5065: Procurement (Satın Alma) — DCP-010, moved from 5062 by OD-5 on 2026-09-17 (AGENTS.md §3, BL-470).
+    // 5066: Supply Chain Execution (main, PR #134 MVP-6).
+    // 5067: Inventory (Stok) — OD-P1 2026-10-12, WP-MVP1-SYNC1 (main, main sync 2026-10-13).
+    // planning(5068 — MOD-0188)
+    // 5070: Manufacturing — MOD-0193 BOM & Routings, MVP-3; moved from 5067 by OD-P1 2026-10-12 (main, main sync 2026-10-13).
+    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5063, 5064, 5065, 5066, 5067, 5068, 5070 };
 
     private static readonly HashSet<string> PpmMethods = new(StringComparer.Ordinal)
     {
@@ -179,6 +205,131 @@ public sealed class OcelotConfigurationTests
         ppmRoutes[0].DownstreamHostAndPorts[0].Port = 5062;
         ppmRoutes[0].UpstreamHttpMethod.Remove("OPTIONS");
         Assert.ThrowsAny<Exception>(() => AssertPpmRoute(ppmRoutes, "/api/v1/ppm"));
+    }
+
+    [Fact]
+    public void GlobalProducts_routes_allow_put_only_on_nested_template()
+    {
+        var config = LoadConfiguration();
+        var rootRoute = Assert.Single(config.Routes, candidate =>
+            string.Equals(candidate.UpstreamPathTemplate, "/api/global-products", StringComparison.Ordinal));
+        var nestedRoute = Assert.Single(config.Routes, candidate =>
+            string.Equals(candidate.UpstreamPathTemplate, "/api/global-products/{everything}", StringComparison.Ordinal));
+
+        Assert.Equal("/api/global-products/{everything}", nestedRoute.DownstreamPathTemplate);
+        Assert.Single(nestedRoute.DownstreamHostAndPorts);
+        Assert.Equal("localhost", nestedRoute.DownstreamHostAndPorts[0].Host);
+        Assert.Equal(5059, nestedRoute.DownstreamHostAndPorts[0].Port);
+        Assert.True(
+            new HashSet<string>(StringComparer.Ordinal) { "GET", "POST", "PUT", "OPTIONS" }.SetEquals(nestedRoute.UpstreamHttpMethod),
+            $"Unexpected Global Product catch-all methods: {string.Join(",", nestedRoute.UpstreamHttpMethod)}");
+        Assert.DoesNotContain("PUT", rootRoute.UpstreamHttpMethod);
+    }
+
+    // MOD-0290-FU04 S5 (CT decision) / S5-FIX1: the LSKU and Finished Good stock-behaviour edits are PUTs on their OWN
+    // narrow routes (PUT only, to 5059, path kept); the {everything} routes carry no PUT, as before S5 — no other sub-path
+    // of /api/lskus or /api/finished-goods is reachable with PUT. The sabotage target "the narrow PUT back on {everything}".
+    [Theory]
+    [InlineData("/api/lskus/{id}/stock-behaviour")]
+    [InlineData("/api/finished-goods/{id}/stock-behaviour")]
+    [InlineData("/api/finished-goods/{id}/gtin")]
+    public void Stock_behaviour_edits_reach_mdm_as_put(string template)
+    {
+        var route = Assert.Single(LoadConfiguration().Routes, r => r.UpstreamPathTemplate == template);
+        Assert.Equal(["PUT"], route.UpstreamHttpMethod);
+        Assert.Equal(template, route.DownstreamPathTemplate);
+        var host = Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal(("localhost", 5059, "http"), (host.Host, host.Port, route.DownstreamScheme));
+    }
+
+    [Fact]
+    public void No_other_lsku_or_finished_good_sub_path_is_routed_for_put()
+    {
+        var put = LoadConfiguration().Routes
+            .Where(r => r.UpstreamPathTemplate.StartsWith("/api/lskus", StringComparison.Ordinal)
+                        || r.UpstreamPathTemplate.StartsWith("/api/finished-goods", StringComparison.Ordinal))
+            .Where(r => r.UpstreamHttpMethod.Contains("PUT", StringComparer.OrdinalIgnoreCase))
+            .Select(r => r.UpstreamPathTemplate).Order(StringComparer.Ordinal);
+        Assert.Equal(["/api/finished-goods/{id}/gtin", "/api/finished-goods/{id}/stock-behaviour", "/api/lskus/{id}/stock-behaviour"], put);
+    }
+
+    // MOD-0290-FU04 S5 (CT decision 2): the Items screen's MDM surface — every ItemsController route reaches 5059 with its
+    // method and path; nothing under /api/internal is opened by it.
+    [Theory]
+    [InlineData("GET", "")]
+    [InlineData("POST", "")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("PUT", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/reactivation-requests")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/deactivate")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retire")]
+    public void Item_routes_preserve_path_methods_and_destination(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var route = suffix.Length == 0
+            ? Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/mdm/items")
+            : Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/mdm/items/{everything}");
+        Assert.Contains(method, route.UpstreamHttpMethod);
+        var downstream = suffix.Length == 0 ? route.DownstreamPathTemplate : route.DownstreamPathTemplate.Replace("{everything}", suffix);
+        Assert.Equal(suffix.Length == 0 ? "/api/mdm/items" : "/api/mdm/items/" + suffix, downstream);
+        var host = Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal(("localhost", 5059, "http"), (host.Host, host.Port, route.DownstreamScheme));
+        Assert.DoesNotContain(config.Routes, r => r.UpstreamPathTemplate.StartsWith("/api/mdm/items", StringComparison.Ordinal)
+                                                  && r.DownstreamPathTemplate.Contains("/internal", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001/edit-options")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001/correction-options")]
+    [InlineData("PUT", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/identity-approval/withdraw")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/correction-requests")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retirement-requests")]
+    public void Gsku_nested_contract_preserves_path_methods_and_destination(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var root = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/gskus");
+        var nested = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/gskus/{everything}");
+        Assert.DoesNotContain("PUT", root.UpstreamHttpMethod);
+        Assert.True(new HashSet<string>(["GET", "POST", "PUT", "OPTIONS"], StringComparer.Ordinal)
+            .SetEquals(nested.UpstreamHttpMethod));
+        Assert.Contains(method, nested.UpstreamHttpMethod);
+        Assert.Equal("/api/gskus/" + suffix, nested.DownstreamPathTemplate.Replace("{everything}", suffix));
+        var host = Assert.Single(nested.DownstreamHostAndPorts);
+        Assert.Equal("localhost", host.Host);
+        Assert.Equal(5059, host.Port);
+        Assert.Equal("http", nested.DownstreamScheme);
+    }
+
+    [Theory]
+    [InlineData("GET", "")]
+    [InlineData("GET", "create-options")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "drafts")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/identity-approval/withdraw")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retirement-requests")]
+    public void Lsku_existing_routes_cover_lifecycle_without_broadening_methods(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var root = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus");
+        var nested = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus/{everything}");
+        foreach (var route in new[] { root, nested })
+        {
+            Assert.True(new HashSet<string>(["GET", "POST", "OPTIONS"], StringComparer.Ordinal)
+                .SetEquals(route.UpstreamHttpMethod));
+            var host = Assert.Single(route.DownstreamHostAndPorts);
+            Assert.Equal("localhost", host.Host);
+            Assert.Equal(5059, host.Port);
+            Assert.Equal("http", route.DownstreamScheme);
+        }
+        var selected = suffix.Length == 0 ? root : nested;
+        Assert.Contains(method, selected.UpstreamHttpMethod);
+        Assert.Equal("/api/lskus" + (suffix.Length == 0 ? "" : "/" + suffix),
+            selected.DownstreamPathTemplate.Replace("{everything}", suffix));
     }
 
     private static void AssertPpmRoute(IReadOnlyCollection<FileRoute> ppmRoutes, string template)

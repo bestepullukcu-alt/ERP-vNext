@@ -76,7 +76,9 @@ public static class NotificationMessagingSettingsSeed
             IsPlatformDefault = true,
             ProviderCode = useSmtp ? MessagingProviderCode.Smtp : MessagingProviderCode.Fake,
             SenderEmail = string.IsNullOrWhiteSpace(smtp.FromEmail) ? "no-reply@diten.local" : smtp.FromEmail.Trim(),
-            SenderName = string.IsNullOrWhiteSpace(smtp.FromName) ? null : smtp.FromName.Trim(),
+            // BL-454 — the product's one name, not a setting: Smtp:FromName said "Diten PPM" here and "Diten ERP" in
+            // AuthService. A tenant's mail is sent under the tenant's name by the sender-name rule regardless.
+            SenderName = Diten.BuildingBlocks.Email.EmailProduct.Name,
             Host = useSmtp ? smtp.Host.Trim() : null,
             Port = useSmtp ? smtp.Port : null,
             UseSsl = smtp.EnableSsl,

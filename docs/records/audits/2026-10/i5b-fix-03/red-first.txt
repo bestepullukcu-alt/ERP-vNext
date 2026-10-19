@@ -1,0 +1,19 @@
+FAIL: test_a_budget_problem_writes_no_adapter
+FAIL: test_a_core_rule_only_inside_an_html_comment_is_lost
+FAIL: test_an_import_shown_as_code_is_not_an_import (form='a closed fence')
+FAIL: test_an_import_shown_as_code_is_not_an_import (form='a longer closing fence')
+FAIL: test_dead_links_in_every_markdown_link_form (form='a titled link')
+FAIL: test_dead_links_in_every_markdown_link_form (form='a single-quoted title')
+FAIL: test_dead_links_in_every_markdown_link_form (form='an angle-bracket destination')
+FAIL: test_dead_links_in_every_markdown_link_form (form='a reference-style link')
+FAIL: test_dead_links_in_every_markdown_link_form (form='a titled reference definition')
+FAIL: test_every_import_form_of_agents_md_outside_code_is_forbidden (form='a line-start import')
+FAIL: test_every_import_form_of_agents_md_outside_code_is_forbidden (form='a ./ path')
+FAIL: test_every_import_form_of_agents_md_outside_code_is_forbidden (form='inside a sentence')
+FAIL: test_every_import_form_of_agents_md_outside_code_is_forbidden (form='another case')
+FAIL: test_every_import_form_of_agents_md_outside_code_is_forbidden (form='a path through a folder')
+FAIL: test_every_import_form_of_agents_md_outside_code_is_forbidden (form='behind an unclosed fence')
+FAIL: test_every_import_form_of_agents_md_outside_code_is_forbidden (form='after a lone backtick (no code span)')
+FAIL: test_oversize_message_names_the_file_it_is_about
+Ran 11 tests in 0.067s
+FAILED (failures=17)

@@ -59,7 +59,7 @@ public sealed partial class UserListQueryTests
         // Every status is actually reachable in this data set, so the comparison below is not vacuous.
         Assert.Equal(3, stored.Select(UserLifecycle.StatusOf).Distinct().Count());
 
-        var reader = new UserListReader(_host.Database);
+        var reader = new UserListReader(_host.Database, new ShowEveryAccount());
         UserListCriteria Criteria(string[] statuses, UserListSortKey key = UserListSortKey.Email)
             => new(0, 500, null, new UserListSort(key, false), statuses, [], null);
 
@@ -131,7 +131,7 @@ public sealed partial class UserListQueryTests
     {
         var tenant = new TenantContext();
         tenant.SetTenant(tenantId);
-        return new GetAllUsersQueryHandler(new UserListReader(database), tenant);
+        return new GetAllUsersQueryHandler(new UserListReader(database, new ShowEveryAccount()), tenant);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public sealed partial class UserListQueryTests
     {
         var tenantId = await TenantWithUsersAsync(50);
         var (database, log) = CountingDatabase();
-        var reader = new UserListReader(database);
+        var reader = new UserListReader(database, new ShowEveryAccount());
         var ids = (await _host.Database.GetCollection<User>("users").Find(u => u.TenantId == tenantId).ToListAsync()).Select(u => u.Id).ToList();
         Assert.Equal(50, ids.Count);
 

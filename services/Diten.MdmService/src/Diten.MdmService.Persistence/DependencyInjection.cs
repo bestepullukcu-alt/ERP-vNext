@@ -13,13 +13,22 @@ public static class DependencyInjection
 {
     private static bool _guidSerializerRegistered;
 
-    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPersistence(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool runStartupMaintenance = true)
     {
         RegisterGuidSerializer();
 
         // MOD-0290-FU02 — explicit Brand/Product class maps. Must run before any collection is resolved so the
         // write path and the query path agree on Guid representation from the very first request.
         Configurations.BrandProductClassMaps.Register();
+        // BL-552 FIX1 item 10 — the Global Product lifecycle request documents read a newer binary's fields.
+        Configurations.GlobalProductLifecycleClassMaps.Register();
+        // MOD-0290-FU04 S1 — the item's maps ignore extra elements (a later slice's fields still read).
+        Configurations.ItemMasterClassMaps.Register();
+        // WP-VW-W4 (W4-BE-b2) — the competitor aggregates.
+        Configurations.CompetitorProductClassMaps.Register();
 
         var connectionString = configuration["Mongo:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing.");
@@ -35,12 +44,21 @@ public static class DependencyInjection
         clientSettings.GuidRepresentation = GuidRepresentation.Standard;
         var client = new MongoClient(clientSettings);
 
-        // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
-        // any request hits the typed repository (matches Platform's synchronous startup-migration convention).
-        Configurations.LegalEntityOperationalStatusMigration
-            .MigrateAsync(client.GetDatabase(databaseName))
-            .GetAwaiter()
-            .GetResult();
+        // WP-MDM-BL576-01 — every stored document ignores extra elements (rollback safety), except the strict-by-design
+        // ones (scope rollout / policy, LegalEntity). Registered here, before any repository or collection is resolved
+        // (FIX1 M1: the start-up migration below reads raw BsonDocuments, so it freezes no map — the placement is simply
+        // "before first typed use").
+        Configurations.MdmDocumentClassMaps.Register();
+
+        if (runStartupMaintenance)
+        {
+            // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
+            // any request hits the typed repository (matches Platform's synchronous startup-migration convention).
+            Configurations.LegalEntityOperationalStatusMigration
+                .MigrateAsync(client.GetDatabase(databaseName))
+                .GetAwaiter()
+                .GetResult();
+        }
 
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
@@ -50,16 +68,71 @@ public static class DependencyInjection
         services.AddScoped<IProductDefinitionRevisionRepository, ProductDefinitionRevisionRepository>();
         services.AddScoped<IGskuRepository, GskuRepository>();
         services.AddScoped<IFinishedGoodRepository, FinishedGoodRepository>();
+        services.AddScoped<IItemRepository, ItemRepository>();
+        services.AddScoped<IProductMasterReadStore, ProductMasterReadStore>();
+        // FU04 S2: the item activation approval's store, its tenant-free discovery / gauges, and the orphan IT- census.
+        services.AddScoped<IItemWorkflowOperationRepository, ItemWorkflowOperationRepository>();
+        services.AddScoped<IItemWorkflowTenantPartitionDiscovery, ItemWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IItemOrphanCodeCensus, ItemOrphanCodeCensus>();
         services.AddScoped<ILskuRepository, LskuRepository>();
+        services.AddScoped<ILskuIdentityWorkflowOperationRepository, LskuIdentityWorkflowOperationRepository>();
+        services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery, LskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IChildCreationAdmissionCensus, ChildCreationAdmissionCensusRepository>();
+        services.AddScoped<ILskuRetirementRequestOperationRepository, LskuRetirementRequestOperationRepository>();
         services.AddScoped<IProductAbbreviationRegisterRepository, ProductAbbreviationRegisterRepository>();
         services.AddScoped<IProductAbbreviationAllocationLedgerRepository, ProductAbbreviationAllocationLedgerRepository>();
         services.AddScoped<IProductAbbreviationHistoryRepository, ProductAbbreviationHistoryRepository>();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAuditIntentDeliveryRepository, AuditIntentDeliveryRepository>();
+        services.AddScoped<IAuditIntentTenantPartitionDiscovery, AuditIntentTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IAuditIntentTemporalMigrationRepository, AuditIntentTemporalMigrationRepository>();
+        services.AddScoped<AuditIntentTemporalMigrationRunner>();
+        services.AddScoped<IProductLegalEntityScopePolicyRepository, ProductLegalEntityScopePolicyRepository>();
+        services.AddScoped<IProductLegalEntityScopeOperationalReadinessRepository,
+            ProductLegalEntityScopeOperationalReadinessRepository>();
+        services.AddScoped<IProductLegalEntityScopeGuardedWriteSession,
+            ProductLegalEntityScopeGuardedWriteSession>();
+        services.AddScoped<IProductLegalEntityScopeRolloutStateRepository, ProductLegalEntityScopeRolloutStateRepository>();
+        services.AddScoped<IProductLegalEntityScopeHoldInventoryRepository, ProductLegalEntityScopeHoldInventoryRepository>();
+        services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository,
+            GlobalProductIdentityWorkflowOperationRepository>();
+        services.AddScoped<IGlobalProductCorrectionOperationRepository,
+            GlobalProductCorrectionOperationRepository>();
+        services.AddScoped<IGlobalProductRetirementRequestOperationRepository,
+            GlobalProductRetirementRequestOperationRepository>();
+        services.AddScoped<IGlobalProductIdentityWorkflowTenantPartitionDiscovery,
+            GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IFirstGskuIdentityWorkflowOperationRepository, FirstGskuIdentityWorkflowOperationRepository>();
+        services.AddScoped<IFirstGskuIdentityRetirementOperationRepository, FirstGskuIdentityRetirementOperationRepository>();
+        services.AddScoped<IFirstGskuIdentityWorkflowTenantPartitionDiscovery, FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IGskuCorrectionWorkflowOperationRepository, GskuCorrectionWorkflowOperationRepository>();
+        services.AddScoped<IGskuCorrectionWorkflowTenantDiscoveryRepository, GskuCorrectionWorkflowTenantDiscoveryRepository>();
+        services.AddScoped<IGskuRetirementRequestOperationRepository, GskuRetirementRequestOperationRepository>();
+        services.AddScoped<IGskuRetirementRequestWorkflowTenantDiscoveryRepository, GskuRetirementRequestWorkflowTenantDiscoveryRepository>();
 
         // MOD-0290-FU02 — Brand/Product master repositories (tenant-scoped, soft archive, no hard delete).
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+
+        // MOD-0290-FU04 S3 — GSKU / LSKU / Finished Good stock-behaviour writes (one conditional write each).
+        services.AddScoped<IProductStockBehaviourRepository, ProductStockBehaviourRepository>();
+
+        // WP-VW-W4 (W4-BE-b1) — the MOD-0023 outcome event inbox (one row per EventId). Approvable kinds use
+        // MongoWorkflowApprovalStore<T> (explicit tenant + CAS); W4-BE-b2 registers the competitor proposal's store.
+        services.AddScoped<IMdmEventInboxRepository, MdmEventInboxRepository>();
+
+        // WP-VW-W4 (W4-BE-b2) — competitor products + the proposal decision (explicit tenant + CAS). The decision is an
+        // approvable kind of the b1 core: its WorkflowApprovalTarget makes the outcome applier / event consumer handle
+        // "mdm.competitor-proposal" (complete / merge / reject applied to the proposal).
+        services.AddScoped<ICompetitorProductRepository, CompetitorProductRepository>();
+        services.AddScoped<CompetitorProposalDecisionRepository>();
+        services.AddScoped<ICompetitorProposalDecisionRepository>(sp => sp.GetRequiredService<CompetitorProposalDecisionRepository>());
+        services.AddScoped<Application.Features.Approvals.IWorkflowApprovalStore<Domain.Entities.CompetitorProposalDecision>>(
+            sp => sp.GetRequiredService<CompetitorProposalDecisionRepository>());
+        services.AddScoped<Application.Features.Approvals.WorkflowApprovalTarget>(sp =>
+            Application.Features.CompetitorProducts.CompetitorProposalApproval.Target(
+                sp.GetRequiredService<Application.Features.Approvals.IWorkflowApprovalStore<Domain.Entities.CompetitorProposalDecision>>(),
+                sp.GetRequiredService<ICompetitorProductRepository>()));
 
         return services;
     }

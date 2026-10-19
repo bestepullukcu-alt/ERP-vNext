@@ -5,6 +5,8 @@ description: "[Canlıya Alım Öncesi Kontrol Listesi — Diten ERP vNext]"
 
 Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmadan önce aşağıdaki kontrollerden geçmek zorundadır. Bu liste, "Sıfır Hata" prensibimizin son kontrol noktasıdır.
 
+> **Bitti tanımı:** Bu liste SOP §29.4 Release Done kapısına kanıt üretir; Done seviyeleri yalnız SOP §29'dadır.
+
 ---
 
 ## 🏗️ 1. Derleme ve Temel Sağlık (Build & Health)
@@ -13,7 +15,7 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 - [ ] **Ocelot Sync:** Yeni route tanımları Gateway (port 5000) üzerinde küçük harf (lowercase) kuralına uygun mu?
 
 ## 🛡️ 2. Güvenlik ve İzolasyon (Security)
-- [ ] **Tenant Enforcement:** Tüm `POST/PUT/DELETE` işlemlerinde `X-Tenant-Id` zorunluluğu ve veri sızıntısı kontrolü yapıldı mı?
+- [ ] **Tenant Enforcement:** Kiracı (tenant) bağlamındaki tüm `POST/PUT/DELETE` işlemlerinde `X-Tenant-Id` zorunluluğu, sunucu tarafı kiracı doğrulaması ve veri sızıntısı (başka kiracının kaydı → `404`) kontrolü yapıldı mı? Platform/admin bağlamındaki işlemlerde `X-Tenant-Id` **gönderilmediği** ve yetkinin RBAC ile sağlandığı doğrulandı mı?
 - [ ] **JWT Validation:** Geçersiz veya süresi dolmuş token ile erişim engelleniyor mu?
 - [ ] **Secret Leak:** `.appsettings` veya kod içinde temizlenmemiş şifre, API key veya bağlantı cümlesi (connection string) var mı?
 - [ ] **Authorize Attribute:** Yeni eklenen Controller'larda `[Authorize]` veya `[HasPermission]` unutuldu mu?

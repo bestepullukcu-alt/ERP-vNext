@@ -12,4 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Diten.MdmService.Domain\Diten.MdmService.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- WP-MDM-BL598-01: the write-fence behavior's direct-coordinator constructor is internal (DI keeps one public). -->
+    <InternalsVisibleTo Include="Diten.MdmService.Application.Tests" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,941 @@
+=== araçlar (5ecd8b3c1, sha256)
+9517b4968547e081636d1382e3aabd090689bd798f7cdf27fc385515855b4993  scripts/ct_queue.py
+2634355411cbdaa435d23fdd531917a0d59a530ae28190d1c864037c864e65cb  scripts/prompt_gate.py
+07b788560ba1cf1ff0a92bbff9cc4c71e4e0fd34d5ced1777dac19bd76c04613  scripts/acceptance_record.py
+f330b32854b5eb6b95ada2818260d5483c46bbdb6953c7ca423914db1fe7e52b  scripts/status_report.py
+fd9f28b80d1d3780563f21106a506d67e5362a14bb47f3bfe77c9d4e0d3bae0b  scripts/status_report_v2.py
+91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341  .antigravity/scripts/verify_module_id.py
+
+=== 1 bağımlılık [olumlu] — python3 -m pip install -r scripts/requirements-tools.txt --no-index
+--- belge: docs/guides/operations/control-tower-operating-card.md:10
+--- beklenen: kurulu; çıkış 0 (ağ yok)
+--- exit 0
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: openpyxl==3.1.5 in __HOME__/Library/Python/3.9/lib/python/site-packages (from -r scripts/requirements-tools.txt (line 3)) (3.1.5)
+Requirement already satisfied: et-xmlfile in __HOME__/Library/Python/3.9/lib/python/site-packages (from openpyxl==3.1.5->-r scripts/requirements-tools.txt (line 3)) (2.0.0)
+
+=== 2 görev kaynağı [olumlu] — python3 scripts/ct_queue.py validate --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:14
+--- beklenen: 0 hata
+--- exit 0
+OK pilot-ct (çalışma ağacı): 0 hata, 0 uyarı; taban b5d9782a7
+
+=== 3 görev kaynağı [engelleyici] — validate — kayıtta olmayan modül MOD-9999
+--- belge: docs/guides/operations/control-tower-operating-card.md:20
+--- beklenen: HATA (module), çıkış ≠ 0
+--- exit 1
+HATA pilot-ct satır 4 P-03: MOD-9999 kayıt dosyasında, Blueprint'te ya da paketlerde yok
+FAIL pilot-ct (çalışma ağacı): 1 hata, 0 uyarı; taban b5d9782a7
+
+=== 4 keşif [olumlu] — verify_module_id.py --discover "Territory Management" > docs/records/audits/2026-10/pilot-ct/kesif-territory-management.txt
+--- belge: docs/guides/operations/control-tower-operating-card.md:29
+--- beklenen: rapor yazıldı; sonuç inceleme gerekli (3)
+--- exit 3
+KEŞİF RAPORU v2
+sorgu: Territory Management | kaynak: - | sor: -
+araç: .antigravity/scripts/verify_module_id.py sha256 91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341 · depo HEAD 6c92e4944464711b8f95db10ad621eea987cecfb
+origin/main: ba271c3959ff8d07a7f2de7926f977512a2a8d8f · son fetch: doğrulanamadı · uzak durum doğrulanmadı
+BULGU blueprint: MOD-0151 'Territory Management' (4) Enterprise Application Ecosystem / CRM Core) — ad benzer; veri nesneleri: territories
+BULGU sor: 'territories' sahibi MOD-0151 (Territory Management)
+BULGU registry: MOD-0151 'Territory Management' (reserved / planned)
+BULGU paket: execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md — 228 ref'te (refs/heads/feature/mg/mod-0357-management-review-cadence, refs/heads/pilot-01, refs/heads/pilot-02, … +225)
+BULGU görev: execution/delivery/pilot-queue.tsv P-01 [DISCOVERED] Territory Management — FU08 territory model XLSX dışa aktarma (senteti
+BULGU görev: execution/delivery/pilot-queue.tsv P-02 [DISCOVERED] Territory Management — FU08 içe aktarma şablonu (sentetik pilot)
+sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı
+çıkış: 3
+rapor-sha256: 57d98a4aebe3294e6645a2f219d891ab21080b2cee8c878e448163b1ec069fed
+
+=== 5 keşif [olumlu] — verify_module_id.py --check-report docs/records/audits/2026-10/pilot-ct/kesif-territory-management.txt
+--- belge: docs/guides/operations/control-tower-operating-card.md:30
+--- beklenen: 0 = geçerli
+--- exit 0
+RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı
+
+=== 6 keşif [engelleyici] — --check-report — tek bayt değişmiş kopya
+--- belge: docs/guides/operations/control-tower-operating-card.md:38
+--- beklenen: 2 = bozuk
+--- exit 2
+RAPOR DEĞİŞTİRİLMİŞ: rapor-sha256 içerikle uyuşmuyor
+
+=== 7 kalite kapısı [olumlu] — prompt_gate.py check docs/records/audits/2026-10/pilot-ct/prompts/P-01.txt --queue pilot-ct --prepare
+--- belge: docs/guides/operations/control-tower-operating-card.md:23
+--- beklenen: geçti; HAZIRLIK — DAĞITIM İZNİ DEĞİL
+--- exit 0
+PQG RAPORU v1
+prompt-sha256: ad0a6708acd619f161775a6407dbc7bdf829408c5f2f2f42cb8f5b2c2ca539cd
+kip: HAZIRLIK — DAĞITIM İZNİ DEĞİL
+wp: P-01 · prompt PR-P-01 v1.0 · risk LOW · sınıf ürün
+kaynak-paketi-sha256: 42cae807a5dc472cb609ac53339d193f5e3e6ead15112762a84dda6429a7668d · 2 dosya
+BİLGİ git: kapsam dışı 1 kirli dosya (envanter; durdurmaz)
+BİLGİ sözleşme: 2 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ kuyruk: DAĞITILABİLİR P-01: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main ba271c3959ff8d07a7f2de7926f977512a2a8d8f — kayıt dosyası yok · HAZIRLIK — DAĞITIM İZNİ DEĞİL
+sonuç: hazırlık geçti — DAĞITIM İZNİ DEĞİL
+çıkış: 0
+rapor-sha256: bc6763e40d905d7ddf85a02454028427ab11aaea70204e815bb98d8841cead99
+
+=== 8 kalite kapısı [engelleyici] — prompt_gate.py check docs/records/audits/2026-10/pilot-ct/prompts/P-01.txt --queue pilot-ct (kayıt yerel origin/main'de değil)
+--- belge: docs/guides/operations/control-tower-operating-card.md:22
+--- beklenen: ENGEL, çıkış 1
+--- exit 1
+PQG RAPORU v1
+prompt-sha256: ad0a6708acd619f161775a6407dbc7bdf829408c5f2f2f42cb8f5b2c2ca539cd
+kip: DAĞITIM DENETİMİ
+wp: P-01 · prompt PR-P-01 v1.0 · risk LOW · sınıf ürün
+kaynak-paketi-sha256: 42cae807a5dc472cb609ac53339d193f5e3e6ead15112762a84dda6429a7668d · 2 dosya
+BİLGİ git: kapsam dışı 1 kirli dosya (envanter; durdurmaz)
+BİLGİ sözleşme: 2 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ kuyruk: DAĞITILABİLİR P-01: READY
+ENGEL YÜRÜRLÜK: yerel origin/main ba271c3959ff8d07a7f2de7926f977512a2a8d8f — kayıt dosyası yok — kayıtlı görev kaynağı yürürlükte değil, dağıtım yok
+sonuç: engel — 1 bulgu
+çıkış: 1
+rapor-sha256: e1a2f80fc0243560fe169c76b4a3ebc2dbfae1cea7cf2b1c7372d0f872c857ef
+
+=== TEST TAKLİDİ: yerel refs/remotes/origin/main ba271c3959ff8d07a7f2de7926f977512a2a8d8f → 51812bad22d7ef365c4c98c4149594747226ae4e (kayıt satırı commit'i). Gerçek yürürlük ya da yayın değildir; push yapılmadı.
+
+=== 9 kalite kapısı [olumlu] — prompt_gate.py check docs/records/audits/2026-10/pilot-ct/prompts/P-01.txt --queue pilot-ct (TEST TAKLİDİ origin/main)
+--- belge: docs/guides/operations/control-tower-operating-card.md:22
+--- beklenen: geçti, çıkış 0
+--- exit 0
+PQG RAPORU v1
+prompt-sha256: ad0a6708acd619f161775a6407dbc7bdf829408c5f2f2f42cb8f5b2c2ca539cd
+kip: DAĞITIM DENETİMİ
+wp: P-01 · prompt PR-P-01 v1.0 · risk LOW · sınıf ürün
+kaynak-paketi-sha256: 42cae807a5dc472cb609ac53339d193f5e3e6ead15112762a84dda6429a7668d · 2 dosya
+BİLGİ git: kapsam dışı 1 kirli dosya (envanter; durdurmaz)
+BİLGİ sözleşme: 2 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ kuyruk: DAĞITILABİLİR P-01: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e — kayıtlı
+sonuç: geçti
+çıkış: 0
+rapor-sha256: 30edd44beff0cac0467f875d4b7294d5c4a3c2d3ce56c21ef77d8abf18556c7a
+
+=== 10 kalite kapısı [engelleyici] — prompt_gate.py check docs/records/audits/2026-10/pilot-ct/prompts/P-01-high.txt --queue pilot-ct (HIGH, --review yok)
+--- belge: docs/guides/operations/control-tower-operating-card.md:22
+--- beklenen: ENGEL, çıkış 1
+--- exit 1
+PQG RAPORU v1
+prompt-sha256: c78a39a84f942fabe746695f5739d8d458047e2ccb31992bb42bd0c575c66311
+kip: DAĞITIM DENETİMİ
+wp: P-01 · prompt PR-P-01 v1.1 · risk HIGH · sınıf ürün
+kaynak-paketi-sha256: 42cae807a5dc472cb609ac53339d193f5e3e6ead15112762a84dda6429a7668d · 2 dosya
+BİLGİ git: kapsam dışı 2 kirli dosya (envanter; durdurmaz)
+BİLGİ sözleşme: 2 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ kuyruk: DAĞITILABİLİR P-01: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e — kayıtlı
+ENGEL inceleme: HIGH prompt için --review <yol>@<commit> ile commit'lenmiş inceleme kaydı gerekli
+sonuç: engel — 1 bulgu
+çıkış: 1
+rapor-sha256: 393dac2b581d2c4bb960c10d4635a97f3c03615094274dd3bdd7a18507647d90
+
+=== 11 kuyruk kontrolü [olumlu] — ct_queue.py require P-01 --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:83
+--- beklenen: DAĞITILABİLİR, çıkış 0
+--- exit 0
+DAĞITILABİLİR P-01: READY
+HAZIRLIK: 'pilot-ct' bu çalışma ağacının kayıt dosyasında kayıtlı
+YÜRÜRLÜK: yerel origin/main referansı 51812bad22d7ef365c4c98c4149594747226ae4e (son fetch: doğrulanamadı) — kayıtlı; uzak durum doğrulanmadı
+
+=== 12 kuyruk kontrolü [engelleyici] — ct_queue.py require P-02 --queue pilot-ct (PLANNED)
+--- belge: docs/guides/operations/control-tower-operating-card.md:83
+--- beklenen: çıkış 1
+--- exit 1
+DUR P-02: PLANNED (planned) dağıtılamaz
+HAZIRLIK: 'pilot-ct' bu çalışma ağacının kayıt dosyasında kayıtlı
+YÜRÜRLÜK: yerel origin/main referansı 51812bad22d7ef365c4c98c4149594747226ae4e (son fetch: doğrulanamadı) — kayıtlı; uzak durum doğrulanmadı
+
+=== 13 kuyruk kontrolü [olumlu] — ct_queue.py guard --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:83
+--- beklenen: sha256=… rows=…, çıkış 0
+--- exit 0
+sha256=82e79baf05c31eb02a91958df1c397ac2f6832b5b820415488ed231c7b5e04ec rows=2
+guard bir dosya kilidi değildir: yalnız okuma anı ile yazma anı arasındaki değişikliği gösterir.
+Yazmadan hemen önce: python3 scripts/ct_queue.py guard --queue pilot-ct --expect-sha256 82e79baf05c31eb02a91958df1c397ac2f6832b5b820415488ed231c7b5e04ec --expect-rows 2
+
+=== 14 kuyruk kontrolü [olumlu] — ct_queue.py guard --queue pilot-ct --expect-sha256 <okunan> --expect-rows 2 (değişmedi)
+--- belge: scripts/ct_queue.py:8
+--- beklenen: çıkış 0
+--- exit 0
+AYNI sha256=82e79baf05c31eb02a91958df1c397ac2f6832b5b820415488ed231c7b5e04ec rows=2
+guard bir dosya kilidi değildir: yalnız okuma anı ile yazma anı arasındaki değişikliği gösterir.
+
+=== 15 kuyruk kontrolü [engelleyici] — ct_queue.py guard --queue pilot-ct --expect-sha256 <önceki> --expect-rows 2 (kuyruk değişti)
+--- belge: scripts/ct_queue.py:8
+--- beklenen: çıkış 1
+--- exit 1
+DEĞİŞTİ sha256 beklenen 82e79baf05c31eb02a91958df1c397ac2f6832b5b820415488ed231c7b5e04ec, şimdi d136ac51b550b1525456fd078285a31a068fab4aba6a84020e7cd47702cd2bf3
+DUR: dosya okunduğundan beri değişti — yeniden okuyun.
+guard bir dosya kilidi değildir: yalnız okuma anı ile yazma anı arasındaki değişikliği gösterir.
+
+=== 16 kalite kapısı [olumlu] — prompt_gate.py check docs/records/audits/2026-10/pilot-ct/prompts/P-02.txt --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:22
+--- beklenen: geçti, çıkış 0
+--- exit 0
+PQG RAPORU v1
+prompt-sha256: 891976f6bf760671d57c8c4fc5e7d10d77bc2f4f13ffbfdbb1b5bb63c8c552c6
+kip: DAĞITIM DENETİMİ
+wp: P-02 · prompt PR-P-02 v1.0 · risk LOW · sınıf ürün
+kaynak-paketi-sha256: 42cae807a5dc472cb609ac53339d193f5e3e6ead15112762a84dda6429a7668d · 2 dosya
+BİLGİ git: kapsam dışı 1 kirli dosya (envanter; durdurmaz)
+BİLGİ sözleşme: 2 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ kuyruk: DAĞITILABİLİR P-02: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e — kayıtlı
+sonuç: geçti
+çıkış: 0
+rapor-sha256: 5c025291020d193009aabedb4105bc12b8431f152109161b16b8c73deafaab37
+
+=== 17 kuyruk kontrolü [olumlu] — ct_queue.py require P-02 --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:83
+--- beklenen: DAĞITILABİLİR, çıkış 0
+--- exit 0
+DAĞITILABİLİR P-02: READY
+HAZIRLIK: 'pilot-ct' bu çalışma ağacının kayıt dosyasında kayıtlı
+YÜRÜRLÜK: yerel origin/main referansı 51812bad22d7ef365c4c98c4149594747226ae4e (son fetch: doğrulanamadı) — kayıtlı; uzak durum doğrulanmadı
+
+=== 18 kabul kaydı [olumlu] — acceptance_record.py check p01-kabul-kaydi.md@587d07877 --queue pilot-ct --wp P-01 --module MOD-0151
+--- belge: docs/guides/operations/control-tower-operating-card.md:143
+--- beklenen: çıkış 0 (ACCEPTED'e izin)
+--- exit 0
+sonuç: ACCEPTED'e izin verir
+çıkış: 0
+
+=== 19 kabul kaydı [engelleyici] — acceptance_record.py check p02-kabul-kaydi.md@587d07877 (conditional)
+--- belge: .antigravity/rules/status-reporting-and-evidence.md:146
+--- beklenen: çıkış 1 — kayıt, kabul değil
+--- exit 1
+sonuç: geçerli kayıt, ACCEPTED'e izin vermez (decision: conditional)
+çıkış: 1
+
+=== 20 kabul kaydı [engelleyici] — validate — P-02 ACCEPTED, kaydı koşullu (yazılmadı)
+--- belge: docs/guides/operations/control-tower-operating-card.md:144
+--- beklenen: HATA, çıkış ≠ 0
+--- exit 1
+HATA pilot-ct satır 3 P-02: kabul kaydı docs/records/audits/2026-10/pilot-ct/p02-kabul-kaydi.md@587d: sonuç: geçerli kayıt, ACCEPTED'e izin vermez (decision: conditional)
+FAIL pilot-ct (çalışma ağacı): 1 hata, 0 uyarı; taban b5d9782a7
+
+=== 21 kabul kaydı [olumlu] — ct_queue.py validate --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:14
+--- beklenen: 0 hata
+--- exit 0
+OK pilot-ct (çalışma ağacı): 0 hata, 0 uyarı; taban b5d9782a7
+
+=== 22 rapor [olumlu] — status_report.py --mode v2 --queue pilot-ct (taban yok)
+--- belge: .antigravity/rules/status-reporting-and-evidence.md:181
+--- beklenen: 4 alanda tam 'Taban yok — hesaplanamadı'
+--- exit 0
+STATUS RAPORU v2
+kuyruk: pilot-ct · Control Tower: Pilot CT (sentetik)
+
+## Kaynak
+- ref HEAD → aced7afc21b4d9fa1ed883de607b38e5b98033db (bütün girdiler bu commit'ten okundu)
+- yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e · YÜRÜRLÜK: kayıtlı
+- yerel origin/main'in atası: hayır — uzak durum doğrulanmadı; yalnız yerelde duran bir rapor yayımlanmış kanıt değildir (REP-001 §3)
+- tamamlık: tam
+
+## TABAN KAPSAMI ilerlemesi (yalnız onaylı efor tabanındaki işler; Control Tower'ın tüm işi değildir)
+- taban: yok
+- yüzde geçerli değil: taban yok
+- Backend: Taban yok — hesaplanamadı
+- Frontend: Taban yok — hesaplanamadı
+- Test: Taban yok — hesaplanamadı
+- Genel: Taban yok — hesaplanamadı
+
+## Kanıt seviyesi (kabul edilen işler)
+- E2: 1
+
+## Tamamlanan işler
+- P-01 MOD-0151 · accepted · WP Done · E2 · kayıt docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · kanıt docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42 · 
+
+## Açık işler
+- active: P-02
+
+## Engeller
+- yok
+
+## Açık koşullar (koşullu kabul kayıtları)
+- yok
+
+## Bağlı karar kayıtları (kuyruk, kabul ve efor tabanından otomatik bulunanlar; liste sınırlıdır)
+- P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted
+
+## Karar bekleyenler (yalnız mekanik olarak bilinenler)
+- yok
+
+## Yeniden işleme nedenleri (`neden:` öneki; yoksa bilinmiyor, tahmin yok)
+- yeniden işleme satırı yok
+
+## REP-001 §2 tablosu
+
+| Modül | Kapsam cümlesi | Kanıt seviyesi | Kanıtın yeri | Karar | Tamamlanma | Sıradaki tek eksik |
+|---|---|---|---|---|---|---|
+| MOD-0151 | Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot) | E2 | `docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42` | accepted | WP Done | P-02 Territory Management — FU08 içe aktarma şablonu (sentetik pilot) |
+
+## Önceki rapordan farklar
+- önceki rapor verilmedi
+
+```json status-report-v2
+{
+ "base": null,
+ "blockers": [],
+ "complete": true,
+ "conditions": [],
+ "control_tower": "Pilot CT (sentetik)",
+ "decisions_linked": [
+  "P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted"
+ ],
+ "decisions_pending": [],
+ "evidence_levels": {
+  "E2": 1
+ },
+ "format": "status-report-v2",
+ "incomplete_reasons": [],
+ "open": {
+  "active": [
+   "P-02"
+  ]
+ },
+ "percentages": {
+  "backend": {
+   "den": null,
+   "num": null,
+   "text": "Taban yok — hesaplanamadı",
+   "value": null
+  },
+  "frontend": {
+   "den": null,
+   "num": null,
+   "text": "Taban yok — hesaplanamadı",
+   "value": null
+  },
+  "overall": {
+   "den": null,
+   "num": null,
+   "text": "Taban yok — hesaplanamadı",
+   "value": null
+  },
+  "test": {
+   "den": null,
+   "num": null,
+   "text": "Taban yok — hesaplanamadı",
+   "value": null
+  }
+ },
+ "percentages_reason": "taban yok",
+ "percentages_valid": false,
+ "previous": null,
+ "queue": "pilot-ct",
+ "rework_causes": {},
+ "rows": [
+  {
+   "accepted": true,
+   "class": "closed",
+   "completion": "WP Done",
+   "counted": false,
+   "decision": "accepted",
+   "evidence": "docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42",
+   "evidence_level": "E2",
+   "id": "P-01",
+   "item": "Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "",
+   "record": "docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701",
+   "state": "ACCEPTED"
+  },
+  {
+   "accepted": false,
+   "class": "active",
+   "completion": "-",
+   "counted": false,
+   "decision": "-",
+   "evidence": "-",
+   "evidence_level": "-",
+   "id": "P-02",
+   "item": "Territory Management — FU08 içe aktarma şablonu (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "",
+   "record": "-",
+   "state": "VERIFIED"
+  }
+ ],
+ "source": {
+  "ancestor": false,
+  "dirty": false,
+  "in_force": "kayıtlı",
+  "origin_main": "51812bad22d7ef365c4c98c4149594747226ae4e",
+  "ref": "HEAD",
+  "remote": "doğrulanmadı",
+  "sha": "aced7afc21b4d9fa1ed883de607b38e5b98033db"
+ },
+ "unestimated": []
+}
+```
+rapor-sha256: f0bd1b64b48116f3238678edecbcca03496bb062c99a4404259b83933420b01f
+
+=== 23 rapor [engelleyici] — status_report.py --mode v2 --queue sce-mvp6
+--- belge: .antigravity/rules/status-reporting-and-evidence.md:188
+--- beklenen: çıkış 2 (katı değil)
+--- exit 2
+STATUS RAPORU v2
+sonuç: tamamlanamadı — 'sce-mvp6' katı (strict=yes) kuyruk değil — yeni kip yalnız katı kuyruklar için
+çıkış: 2
+
+=== taban özeti (REP-001 §7.1 kuralı, belgelenmiş komut yok — operatör tek satırı): grep -v '^approval_record:' execution/delivery/effort/pilot-ct.md | shasum -a 256
+98d0b9d7469ef050d39a52b49d85d30ed5a0187c9e51421584995befc0444d3d
+
+=== 24 rapor [olumlu] — status_report.py --mode v2 --queue pilot-ct --previous rapor-1.md@ffb0dc66b (onaylı taban)
+--- belge: .antigravity/rules/status-reporting-and-evidence.md:216
+--- beklenen: P-01 sayılır (8/12 · 2/6 · 4/6 · Genel 56.7), P-02 koşullu sayılmaz; önceki doğrulandı, taban değişti → karşılaştırılmaz
+--- exit 0
+STATUS RAPORU v2
+kuyruk: pilot-ct · Control Tower: Pilot CT (sentetik)
+
+## Kaynak
+- ref HEAD → d590bb3fedaea51793f1666cebc169ef5db00824 (bütün girdiler bu commit'ten okundu)
+- yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e · YÜRÜRLÜK: kayıtlı
+- yerel origin/main'in atası: hayır — uzak durum doğrulanmadı; yalnız yerelde duran bir rapor yayımlanmış kanıt değildir (REP-001 §3)
+- tamamlık: tam
+
+## TABAN KAPSAMI ilerlemesi (yalnız onaylı efor tabanındaki işler; Control Tower'ın tüm işi değildir)
+- taban: execution/delivery/effort/pilot-ct.md@83a5fdb0f6bf1a010fb85b69e2752e8240cd124d · sürüm 1 · birim saat · onay docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef
+- Backend: %66.7 (8/12 saat)
+- Frontend: %33.3 (2/6 saat)
+- Test: %66.7 (4/6 saat)
+- Genel: %56.7 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+
+## Kanıt seviyesi (kabul edilen işler)
+- E2: 1
+
+## Tamamlanan işler
+- P-01 MOD-0151 · accepted · WP Done · E2 · kayıt docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · kanıt docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42 · sayıldı: P-01
+
+## Açık işler
+- active: P-02
+
+## Engeller
+- yok
+
+## Açık koşullar (koşullu kabul kayıtları)
+- yok
+
+## Bağlı karar kayıtları (kuyruk, kabul ve efor tabanından otomatik bulunanlar; liste sınırlıdır)
+- P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted
+- efor tabanı onayı: docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef · status approved
+
+## Karar bekleyenler (yalnız mekanik olarak bilinenler)
+- yok
+
+## Yeniden işleme nedenleri (`neden:` öneki; yoksa bilinmiyor, tahmin yok)
+- yeniden işleme satırı yok
+
+## REP-001 §2 tablosu
+
+| Modül | Kapsam cümlesi | Kanıt seviyesi | Kanıtın yeri | Karar | Tamamlanma | Sıradaki tek eksik |
+|---|---|---|---|---|---|---|
+| MOD-0151 | Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot) | E2 | `docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42` | accepted | WP Done | P-02 Territory Management — FU08 içe aktarma şablonu (sentetik pilot) |
+
+## Önceki rapordan farklar
+- önceki: docs/records/audits/2026-10/pilot-ct/rapor-1.md@ffb0dc66b58009eec9790343ce0ecc9ee094e9eb — doğrulandı
+- taban değişti (sürüm yok → 1) — yüzde farkı karşılaştırılabilir değil; değerler ayrı:
+- backend: önceki Taban yok — hesaplanamadı · şimdiki %66.7 (8/12 saat)
+- frontend: önceki Taban yok — hesaplanamadı · şimdiki %33.3 (2/6 saat)
+- test: önceki Taban yok — hesaplanamadı · şimdiki %66.7 (4/6 saat)
+- overall: önceki Taban yok — hesaplanamadı · şimdiki %56.7 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+
+```json status-report-v2
+{
+ "base": {
+  "approval_record": "docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef",
+  "baseline_version": "1",
+  "blob": "83a5fdb0f6bf1a010fb85b69e2752e8240cd124d",
+  "content_sha256": "98d0b9d7469ef050d39a52b49d85d30ed5a0187c9e51421584995befc0444d3d",
+  "path": "execution/delivery/effort/pilot-ct.md",
+  "unit": "saat",
+  "weights": "backend=0.5 frontend=0.3 test=0.2"
+ },
+ "blockers": [],
+ "complete": true,
+ "conditions": [],
+ "control_tower": "Pilot CT (sentetik)",
+ "decisions_linked": [
+  "P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted",
+  "efor tabanı onayı: docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef · status approved"
+ ],
+ "decisions_pending": [],
+ "evidence_levels": {
+  "E2": 1
+ },
+ "format": "status-report-v2",
+ "incomplete_reasons": [],
+ "open": {
+  "active": [
+   "P-02"
+  ]
+ },
+ "percentages": {
+  "backend": {
+   "den": "12",
+   "num": "8",
+   "text": "%66.7 (8/12 saat)",
+   "value": "66.7"
+  },
+  "frontend": {
+   "den": "6",
+   "num": "2",
+   "text": "%33.3 (2/6 saat)",
+   "value": "33.3"
+  },
+  "overall": {
+   "den": null,
+   "num": null,
+   "text": "%56.7 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)",
+   "value": "56.7"
+  },
+  "test": {
+   "den": "6",
+   "num": "4",
+   "text": "%66.7 (4/6 saat)",
+   "value": "66.7"
+  }
+ },
+ "percentages_reason": "",
+ "percentages_valid": true,
+ "previous": {
+  "lines": [
+   "taban değişti (sürüm yok → 1) — yüzde farkı karşılaştırılabilir değil; değerler ayrı:",
+   "backend: önceki Taban yok — hesaplanamadı · şimdiki %66.7 (8/12 saat)",
+   "frontend: önceki Taban yok — hesaplanamadı · şimdiki %33.3 (2/6 saat)",
+   "test: önceki Taban yok — hesaplanamadı · şimdiki %66.7 (4/6 saat)",
+   "overall: önceki Taban yok — hesaplanamadı · şimdiki %56.7 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)"
+  ],
+  "spec": "docs/records/audits/2026-10/pilot-ct/rapor-1.md@ffb0dc66b58009eec9790343ce0ecc9ee094e9eb",
+  "status": "doğrulandı"
+ },
+ "queue": "pilot-ct",
+ "rework_causes": {},
+ "rows": [
+  {
+   "accepted": true,
+   "class": "closed",
+   "completion": "WP Done",
+   "counted": true,
+   "decision": "accepted",
+   "evidence": "docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42",
+   "evidence_level": "E2",
+   "id": "P-01",
+   "item": "Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "sayıldı: P-01",
+   "record": "docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701",
+   "state": "ACCEPTED"
+  },
+  {
+   "accepted": false,
+   "class": "active",
+   "completion": "-",
+   "counted": false,
+   "decision": "-",
+   "evidence": "-",
+   "evidence_level": "-",
+   "id": "P-02",
+   "item": "Territory Management — FU08 içe aktarma şablonu (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "yürürlükteki revizyon P-02 VERIFIED",
+   "record": "-",
+   "state": "VERIFIED"
+  }
+ ],
+ "source": {
+  "ancestor": false,
+  "dirty": false,
+  "in_force": "kayıtlı",
+  "origin_main": "51812bad22d7ef365c4c98c4149594747226ae4e",
+  "ref": "HEAD",
+  "remote": "doğrulanmadı",
+  "sha": "d590bb3fedaea51793f1666cebc169ef5db00824"
+ },
+ "unestimated": []
+}
+```
+rapor-sha256: 17880598f36fc2fc799053d563ba7959525f17d80e19e0a6686c3f53c24b10ac
+
+=== 25 rapor [engelleyici] — status_report.py --mode v2 --queue pilot-ct (taban sayısı onaydan sonra değişti)
+--- belge: .antigravity/rules/status-reporting-and-evidence.md:206
+--- beklenen: yüzde basılmaz, gerekçe 'onaydan sonra değişmiş'
+--- exit 0
+STATUS RAPORU v2
+kuyruk: pilot-ct · Control Tower: Pilot CT (sentetik)
+
+## Kaynak
+- ref HEAD → e531192940bb6746208d61875236b716b5cddb2f (bütün girdiler bu commit'ten okundu)
+- yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e · YÜRÜRLÜK: kayıtlı
+- yerel origin/main'in atası: hayır — uzak durum doğrulanmadı; yalnız yerelde duran bir rapor yayımlanmış kanıt değildir (REP-001 §3)
+- tamamlık: tam
+
+## TABAN KAPSAMI ilerlemesi (yalnız onaylı efor tabanındaki işler; Control Tower'ın tüm işi değildir)
+- taban: yok
+- yüzde geçerli değil: taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+- Backend: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+- Frontend: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+- Test: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+- Genel: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+
+## Kanıt seviyesi (kabul edilen işler)
+- E2: 1
+
+## Tamamlanan işler
+- P-01 MOD-0151 · accepted · WP Done · E2 · kayıt docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · kanıt docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42 · 
+
+## Açık işler
+- active: P-02
+
+## Engeller
+- yok
+
+## Açık koşullar (koşullu kabul kayıtları)
+- yok
+
+## Bağlı karar kayıtları (kuyruk, kabul ve efor tabanından otomatik bulunanlar; liste sınırlıdır)
+- P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted
+- efor tabanı onayı: docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef · status approved
+
+## Karar bekleyenler (yalnız mekanik olarak bilinenler)
+- yok
+
+## Yeniden işleme nedenleri (`neden:` öneki; yoksa bilinmiyor, tahmin yok)
+- yeniden işleme satırı yok
+
+## REP-001 §2 tablosu
+
+| Modül | Kapsam cümlesi | Kanıt seviyesi | Kanıtın yeri | Karar | Tamamlanma | Sıradaki tek eksik |
+|---|---|---|---|---|---|---|
+| MOD-0151 | Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot) | E2 | `docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42` | accepted | WP Done | P-02 Territory Management — FU08 içe aktarma şablonu (sentetik pilot) |
+
+## Önceki rapordan farklar
+- önceki rapor verilmedi
+
+```json status-report-v2
+{
+ "base": null,
+ "blockers": [],
+ "complete": true,
+ "conditions": [],
+ "control_tower": "Pilot CT (sentetik)",
+ "decisions_linked": [
+  "P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted",
+  "efor tabanı onayı: docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef · status approved"
+ ],
+ "decisions_pending": [],
+ "evidence_levels": {
+  "E2": 1
+ },
+ "format": "status-report-v2",
+ "incomplete_reasons": [],
+ "open": {
+  "active": [
+   "P-02"
+  ]
+ },
+ "percentages": {
+  "backend": {
+   "den": null,
+   "num": null,
+   "text": "hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor",
+   "value": null
+  },
+  "frontend": {
+   "den": null,
+   "num": null,
+   "text": "hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor",
+   "value": null
+  },
+  "overall": {
+   "den": null,
+   "num": null,
+   "text": "hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor",
+   "value": null
+  },
+  "test": {
+   "den": null,
+   "num": null,
+   "text": "hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor",
+   "value": null
+  }
+ },
+ "percentages_reason": "taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor",
+ "percentages_valid": false,
+ "previous": null,
+ "queue": "pilot-ct",
+ "rework_causes": {},
+ "rows": [
+  {
+   "accepted": true,
+   "class": "closed",
+   "completion": "WP Done",
+   "counted": false,
+   "decision": "accepted",
+   "evidence": "docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42",
+   "evidence_level": "E2",
+   "id": "P-01",
+   "item": "Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "",
+   "record": "docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701",
+   "state": "ACCEPTED"
+  },
+  {
+   "accepted": false,
+   "class": "active",
+   "completion": "-",
+   "counted": false,
+   "decision": "-",
+   "evidence": "-",
+   "evidence_level": "-",
+   "id": "P-02",
+   "item": "Territory Management — FU08 içe aktarma şablonu (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "",
+   "record": "-",
+   "state": "VERIFIED"
+  }
+ ],
+ "source": {
+  "ancestor": false,
+  "dirty": false,
+  "in_force": "kayıtlı",
+  "origin_main": "51812bad22d7ef365c4c98c4149594747226ae4e",
+  "ref": "HEAD",
+  "remote": "doğrulanmadı",
+  "sha": "e531192940bb6746208d61875236b716b5cddb2f"
+ },
+ "unestimated": []
+}
+```
+rapor-sha256: 2f57dec7531bda11e979750b4a66efb1534e02f9a7469eef484acfda3f166f47
+
+=== 26 yeniden işleme [olumlu] — ct_queue.py require P-01-R1 --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:64
+--- beklenen: çıkış 0
+--- exit 0
+DAĞITILABİLİR P-01-R1: READY
+HAZIRLIK: 'pilot-ct' bu çalışma ağacının kayıt dosyasında kayıtlı
+YÜRÜRLÜK: yerel origin/main referansı 51812bad22d7ef365c4c98c4149594747226ae4e (son fetch: doğrulanamadı) — kayıtlı; uzak durum doğrulanmadı
+
+=== 27 yeniden işleme [olumlu] — prompt_gate.py check docs/records/audits/2026-10/pilot-ct/prompts/P-01-R1.txt --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:64
+--- beklenen: geçti, çıkış 0
+--- exit 0
+PQG RAPORU v1
+prompt-sha256: 75185c0c6ed86f8e564f3329c58d19bd5106d3a2d62e7377c510981674afda8f
+kip: DAĞITIM DENETİMİ
+wp: P-01-R1 · prompt PR-P-01-R1 v1.0 · risk LOW · sınıf ürün
+kaynak-paketi-sha256: 42cae807a5dc472cb609ac53339d193f5e3e6ead15112762a84dda6429a7668d · 2 dosya
+BİLGİ git: kapsam dışı 1 kirli dosya (envanter; durdurmaz)
+BİLGİ sözleşme: 2 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ kuyruk: DAĞITILABİLİR P-01-R1: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e — kayıtlı
+sonuç: geçti
+çıkış: 0
+rapor-sha256: 6f4a6cbc7986a2dbf6e9e17f3f90d40fead5b0cffcccbc239d2a1609268f3021
+
+=== 28 yeniden işleme [olumlu] — status_report.py --mode v2 --queue pilot-ct --previous rapor-2.md@940ac74d0
+--- belge: .antigravity/rules/status-reporting-and-evidence.md:211
+--- beklenen: P-01-R1 açık → P-01 sayılmaz (0.0 ×4); önceki doğrulandı, fark -66.7 gösterilir; neden kod 1
+--- exit 0
+STATUS RAPORU v2
+kuyruk: pilot-ct · Control Tower: Pilot CT (sentetik)
+
+## Kaynak
+- ref HEAD → ff5e3deceb044aa1e9b9be2345d048bd72961a85 (bütün girdiler bu commit'ten okundu)
+- yerel origin/main 51812bad22d7ef365c4c98c4149594747226ae4e · YÜRÜRLÜK: kayıtlı
+- yerel origin/main'in atası: hayır — uzak durum doğrulanmadı; yalnız yerelde duran bir rapor yayımlanmış kanıt değildir (REP-001 §3)
+- tamamlık: tam
+
+## TABAN KAPSAMI ilerlemesi (yalnız onaylı efor tabanındaki işler; Control Tower'ın tüm işi değildir)
+- taban: execution/delivery/effort/pilot-ct.md@83a5fdb0f6bf1a010fb85b69e2752e8240cd124d · sürüm 1 · birim saat · onay docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef
+- Backend: %0.0 (0/12 saat)
+- Frontend: %0.0 (0/6 saat)
+- Test: %0.0 (0/6 saat)
+- Genel: %0.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+
+## Kanıt seviyesi (kabul edilen işler)
+- E2: 1
+
+## Tamamlanan işler
+- P-01 MOD-0151 · accepted · WP Done · E2 · kayıt docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · kanıt docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42 · yürürlükteki revizyon P-01-R1 READY
+
+## Açık işler
+- active: P-02
+- dispatchable: P-01-R1
+
+## Engeller
+- yok
+
+## Açık koşullar (koşullu kabul kayıtları)
+- yok
+
+## Bağlı karar kayıtları (kuyruk, kabul ve efor tabanından otomatik bulunanlar; liste sınırlıdır)
+- P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted
+- efor tabanı onayı: docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef · status approved
+
+## Karar bekleyenler (yalnız mekanik olarak bilinenler)
+- yok
+
+## Yeniden işleme nedenleri (`neden:` öneki; yoksa bilinmiyor, tahmin yok)
+- kod: 1
+
+## REP-001 §2 tablosu
+
+| Modül | Kapsam cümlesi | Kanıt seviyesi | Kanıtın yeri | Karar | Tamamlanma | Sıradaki tek eksik |
+|---|---|---|---|---|---|---|
+| MOD-0151 | Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot) | E2 | `docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42` | accepted | WP Done | P-02 Territory Management — FU08 içe aktarma şablonu (sentetik pilot) |
+
+## Önceki rapordan farklar
+- önceki: docs/records/audits/2026-10/pilot-ct/rapor-2.md@940ac74d081e23afff0bbf56c0cbd7f25ff004e6 — doğrulandı
+- backend: %66.7 → %0.0 (-66.7)
+- frontend: %33.3 → %0.0 (-33.3)
+- test: %66.7 → %0.0 (-66.7)
+- overall: %56.7 → %0.0 (-56.7)
+- yeni iş: P-01-R1 (READY)
+
+```json status-report-v2
+{
+ "base": {
+  "approval_record": "docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef",
+  "baseline_version": "1",
+  "blob": "83a5fdb0f6bf1a010fb85b69e2752e8240cd124d",
+  "content_sha256": "98d0b9d7469ef050d39a52b49d85d30ed5a0187c9e51421584995befc0444d3d",
+  "path": "execution/delivery/effort/pilot-ct.md",
+  "unit": "saat",
+  "weights": "backend=0.5 frontend=0.3 test=0.2"
+ },
+ "blockers": [],
+ "complete": true,
+ "conditions": [],
+ "control_tower": "Pilot CT (sentetik)",
+ "decisions_linked": [
+  "P-01 kabul kaydı: docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701 · decision accepted",
+  "efor tabanı onayı: docs/records/decisions/2026-10/pilot-ct-efor-tabani-onayi.md@c6aaf34c6c4b7d5a5afa7ca3a40f31651df128ef · status approved"
+ ],
+ "decisions_pending": [],
+ "evidence_levels": {
+  "E2": 1
+ },
+ "format": "status-report-v2",
+ "incomplete_reasons": [],
+ "open": {
+  "active": [
+   "P-02"
+  ],
+  "dispatchable": [
+   "P-01-R1"
+  ]
+ },
+ "percentages": {
+  "backend": {
+   "den": "12",
+   "num": "0",
+   "text": "%0.0 (0/12 saat)",
+   "value": "0.0"
+  },
+  "frontend": {
+   "den": "6",
+   "num": "0",
+   "text": "%0.0 (0/6 saat)",
+   "value": "0.0"
+  },
+  "overall": {
+   "den": null,
+   "num": null,
+   "text": "%0.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)",
+   "value": "0.0"
+  },
+  "test": {
+   "den": "6",
+   "num": "0",
+   "text": "%0.0 (0/6 saat)",
+   "value": "0.0"
+  }
+ },
+ "percentages_reason": "",
+ "percentages_valid": true,
+ "previous": {
+  "lines": [
+   "backend: %66.7 → %0.0 (-66.7)",
+   "frontend: %33.3 → %0.0 (-33.3)",
+   "test: %66.7 → %0.0 (-66.7)",
+   "overall: %56.7 → %0.0 (-56.7)",
+   "yeni iş: P-01-R1 (READY)"
+  ],
+  "spec": "docs/records/audits/2026-10/pilot-ct/rapor-2.md@940ac74d081e23afff0bbf56c0cbd7f25ff004e6",
+  "status": "doğrulandı"
+ },
+ "queue": "pilot-ct",
+ "rework_causes": {
+  "kod": 1
+ },
+ "rows": [
+  {
+   "accepted": true,
+   "class": "closed",
+   "completion": "WP Done",
+   "counted": false,
+   "decision": "accepted",
+   "evidence": "docs/records/audits/2026-10/pilot-ct/p01-run.log@290e68bbd8de3249df1e9d8425c8ba4e9f2a2e42",
+   "evidence_level": "E2",
+   "id": "P-01",
+   "item": "Territory Management — FU08 territory model XLSX dışa aktarma (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "yürürlükteki revizyon P-01-R1 READY",
+   "record": "docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@587d07877b57ee8a58153339e829d4a173b6e701",
+   "state": "ACCEPTED"
+  },
+  {
+   "accepted": false,
+   "class": "active",
+   "completion": "-",
+   "counted": false,
+   "decision": "-",
+   "evidence": "-",
+   "evidence_level": "-",
+   "id": "P-02",
+   "item": "Territory Management — FU08 içe aktarma şablonu (sentetik pilot)",
+   "module": "MOD-0151",
+   "reason": "yürürlükteki revizyon P-02 VERIFIED",
+   "record": "-",
+   "state": "VERIFIED"
+  },
+  {
+   "accepted": false,
+   "class": "dispatchable",
+   "completion": "-",
+   "counted": false,
+   "decision": "-",
+   "evidence": "-",
+   "evidence_level": "-",
+   "id": "P-01-R1",
+   "item": "neden: kod — dışa aktarma boş model için boş dosya yerine 500 döndürüyor (sentetik)",
+   "module": "MOD-0151",
+   "reason": "",
+   "record": "-",
+   "state": "READY"
+  }
+ ],
+ "source": {
+  "ancestor": false,
+  "dirty": false,
+  "in_force": "kayıtlı",
+  "origin_main": "51812bad22d7ef365c4c98c4149594747226ae4e",
+  "ref": "HEAD",
+  "remote": "doğrulanmadı",
+  "sha": "ff5e3deceb044aa1e9b9be2345d048bd72961a85"
+ },
+ "unestimated": []
+}
+```
+rapor-sha256: a8b70c1fc7371cb8c85115417b868c2e6fb83988cb2df019f36bb81caeb9d6ac
+
+=== 29 kapanış [olumlu] — ct_queue.py validate --queue pilot-ct
+--- belge: docs/guides/operations/control-tower-operating-card.md:14
+--- beklenen: 0 hata
+--- exit 0
+OK pilot-ct (çalışma ağacı): 0 hata, 0 uyarı; taban b5d9782a7

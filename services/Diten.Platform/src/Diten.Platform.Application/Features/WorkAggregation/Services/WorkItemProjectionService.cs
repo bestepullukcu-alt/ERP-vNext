@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.Workflow;
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 
@@ -44,8 +45,14 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         string providerCode,
         string providerContractVersion,
         ApprovalSourceContext? sourceContext = null,
-        ApprovalStepContext? stepContext = null)
+        ApprovalStepContext? stepContext = null,
+        IReadOnlyList<string>? decidingPrincipalIds = null)
     {
+        // D1 — null = the caller did not say (today's behaviour, unchanged). A list = the reader may act only if on it.
+        var readerId = actor.UserId.ToString("D");
+        var mayDecide = decidingPrincipalIds is null
+            || decidingPrincipalIds.Any(id => WorkflowTaskTransitionSupport.PrincipalEquals(id, readerId));
+
         // Delegated → hidden from this actor (a disposition, not active work).
         if (task.Status == ApprovalTaskStatus.Delegated)
         {
@@ -97,7 +104,7 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         // Terminal items are read-only: no enabled inline state-changing action (contract invariant).
         var actions = isTerminal
             ? Array.Empty<WorkItemActionDto>()
-            : BuildActionableActions(task, instance, actor);
+            : BuildActionableActions(task, instance, actor, mayDecide);
 
         var waitingContext = isWaiting
             ? new WorkItemWaitingContextDto(
@@ -119,6 +126,24 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         var escalation = task.Status == ApprovalTaskStatus.Escalated
             ? new WorkItemEscalationDto(Escalated: true, Level: task.EscalationLevel, Since: task.EscalatedAt)
             : null;
+
+        var actorId = actor.UserId.ToString("D");
+        // D1 — "is it with you" follows who may DECIDE. AssigneeRef is only the first candidate: a second holder of
+        // the same seat was shown somebody else's name and "not yours" on a task they can decide.
+        var assignee = decidingPrincipalIds is not null && mayDecide
+            ? new WorkItemPersonDto(actorId, IsCurrentUser: true)
+            : string.IsNullOrWhiteSpace(task.AssigneeRef)
+                ? null
+                : new WorkItemPersonDto(
+                    task.AssigneeRef,
+                    IsCurrentUser: decidingPrincipalIds is null
+                        && string.Equals(task.AssigneeRef, actorId, StringComparison.Ordinal));
+        var requesterId = ResolveRequesterId(instance);
+        var requester = requesterId is null
+            ? null
+            : new WorkItemPersonDto(
+                requesterId,
+                IsCurrentUser: string.Equals(requesterId, actorId, StringComparison.Ordinal));
 
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
@@ -144,6 +169,7 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             WaitingContext: waitingContext,
             Escalation: escalation,
             DueAt: task.DueAt,
+            Assignee: assignee,
             /*
              * BL-046 applies here too, and for the same reason it does in MOD-0024's provider: a decided
              * approval was still being measured against today, so it went on getting later every morning it sat
@@ -155,7 +181,9 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
              */
             SlaState: _sla.Resolve(task.DueAt, (isTerminal ? task.CompletedAt : null) ?? DateTimeOffset.UtcNow),
             ClosedAt: isTerminal ? task.CompletedAt : null,
-            Requester: sourceContext?.Requester,
+            // The source owner's NAMED requester wins (BL-437); the instance's own starter id is the fallback for an
+            // approval whose owner says nothing — the client renders no name rather than a raw id.
+            Requester: sourceContext?.Requester ?? requester,
             ArrivalReason: ArrivalReasonFor(sourceContext),
             // WP-CL-BE-3 — the source's second line and chips (the starter's display context). Omitted when absent, so
             // an approval whose owner says nothing more (MOD-0024 today) serializes exactly as before.
@@ -199,6 +227,29 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
                 new Dictionary<string, string> { ["name"] = name.Trim() });
     }
 
+    private static string? ResolveRequesterId(WorkflowInstance instance)
+    {
+        if (instance.DelegatedMakerUserId is { } makerId && makerId != Guid.Empty)
+        {
+            return makerId.ToString("D");
+        }
+
+        var startedBy = string.IsNullOrWhiteSpace(instance.StartedBy) ? null : instance.StartedBy.Trim();
+        if (startedBy is null)
+        {
+            return null;
+        }
+
+        if (instance.TrustedConsumerClientId is { } clientId &&
+            Guid.TryParse(startedBy, out var startedByClientId) &&
+            startedByClientId == clientId)
+        {
+            return null;
+        }
+
+        return startedBy;
+    }
+
     // Charter §10.1 — raw ApprovalTaskStatus is mapped by the enum, never by parsing status text.
     private static string NormalizeStatus(ApprovalTaskStatus status) => status switch
     {
@@ -216,18 +267,21 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     // The single authoritative actions[] for an actionable approval task. Each action's enabled state is
     // resolved here (permission + evidence blocker); the browser never invents or re-derives eligibility.
     private static IReadOnlyList<WorkItemActionDto> BuildActionableActions(
-        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor)
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool mayDecide)
     {
         var evidencePending = task.Status == ApprovalTaskStatus.WaitingEvidence;
 
         return
         [
-            BuildApprove(task, instance, actor, evidencePending),
-            BuildDecision("reject", ActionRejectKey, WorkflowPermissions.TasksReject, actor,
+            BuildApprove(task, instance, actor, evidencePending, mayDecide),
+            BuildDecision("reject", ActionRejectKey, WorkflowPermissions.TasksReject, actor, mayDecide,
                 requiresConfirmation: true, requiresReason: true, supportsBulk: true, riskLevel: "elevated"),
-            BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor,
+            BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor, mayDecide,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
+            // D2 — the gate refuses a delegation by the person who started the workflow (409): the same rule here, so
+            // a starter still sitting in the seat (an instance started before D2) is not offered the button.
             BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
+                mayDecide && !WorkflowTaskTransitionSupport.IsStarter(instance, actor.UserId.ToString("D")),
                 // BL-491 — a delegation names its person (the dispatcher refuses one that does not), and may carry a
                 // note. The two arrive together: a note box on a window that could not name anybody invited text
                 // that could never be sent.
@@ -245,17 +299,22 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     private static IReadOnlyList<string> DelegationExcludedTargets(WorkflowInstance instance, WorkItemActor actor)
     {
         var excluded = new List<string> { actor.UserId.ToString() };
-        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter != actor.UserId)
+        // D2-FIX1 — the starter in either record: the user id, or (an instance from before D2) StartedBy holding the
+        // starter's id as text. The gate's own IsStarter reads both; reading only the first offered a choice it refuses.
+        Guid? starter = instance.StartedByUserId is { } id && id != Guid.Empty
+            ? id
+            : Guid.TryParse(instance.StartedBy, out var legacy) && legacy != Guid.Empty ? legacy : null;
+        if (starter is { } person && person != actor.UserId)
         {
-            excluded.Add(starter.ToString());
+            excluded.Add(person.ToString());
         }
 
         return excluded;
     }
 
     private static WorkItemActionDto BuildApprove(
-        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending)
-        => WithSignature(task, BuildApproveCore(task, instance, actor, evidencePending));
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending, bool mayDecide)
+        => WithSignature(task, BuildApproveCore(task, instance, actor, evidencePending, mayDecide));
 
     // MOD-0022 E4 — the approve action of a signature-required step says so (ESIGN-BUNDLE x-workflow-addendum); omitted
     // otherwise, so every other projection serializes as before. E5W2 (CT-D19): plus the signable action code, so the
@@ -271,9 +330,11 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             : action;
 
     private static WorkItemActionDto BuildApproveCore(
-        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending)
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending, bool mayDecide)
     {
-        var permitted = actor.Has(WorkflowPermissions.TasksApprove);
+        // D1 — not among the people who may decide = not permitted (the gate would answer 403). Same reason code and
+        // text as a missing permission: no new wording.
+        var permitted = mayDecide && actor.Has(WorkflowPermissions.TasksApprove);
 
         // Permission is the first gate; then a pending-evidence blocker keeps approve visible but disabled.
         if (!permitted)
@@ -284,8 +345,9 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         }
 
         // B2 — the reader STARTED this approval. MOD-0023 refuses a starter's approve, so the button says so up front
-        // instead of being offered and then refused. Only decidable when the instance recorded its starter's id.
-        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter == actor.UserId)
+        // instead of being offered and then refused.
+        // D2-FIX1 — the gate's own question (IsStarter): an instance from before D2 records its starter only in StartedBy.
+        if (WorkflowTaskTransitionSupport.IsStarter(instance, actor.UserId.ToString("D")))
         {
             return Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.SelfApprovalNotAllowed,
                 DisabledSelfApprovalKey, requiresConfirmation: true, requiresReason: task.CommentRequired,
@@ -320,13 +382,13 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     private static bool? AcceptsNoteWhen(bool requiresReason) => requiresReason ? null : true;
 
     private static WorkItemActionDto BuildDecision(
-        string code, string labelKey, string permissionKey, WorkItemActor actor,
+        string code, string labelKey, string permissionKey, WorkItemActor actor, bool mayDecide,
         bool requiresConfirmation, bool requiresReason, bool supportsBulk, string riskLevel,
         bool acceptsNote = false,
         // BL-491 — non-null means "this action names a person"; the list is who must not be offered.
         IReadOnlyList<string>? excludedTargets = null)
     {
-        if (!actor.Has(permissionKey))
+        if (!mayDecide || !actor.Has(permissionKey))
         {
             return Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey,
                 requiresConfirmation, requiresReason, requiresEvidence: false, supportsBulk, riskLevel);

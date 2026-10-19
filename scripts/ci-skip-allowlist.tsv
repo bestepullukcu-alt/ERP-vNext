@@ -1,0 +1,12 @@
+# WP-CI-SERVICE-TESTS-03 FIX1 (CT decision): the ONLY skips the service-tests job accepts. One line per (suite, code):
+# suite<TAB>CODE<TAB>max<TAB>reason. A skip passes only when its TRX reason STARTS with the code and the job's suite matches;
+# more than max skips with one code is red (FIX2: max = the tests carrying the code, measured at 6148288a8: one each).
+# Anything else — no reason, an unknown code, a code listed for another suite (UNIX_ONLY is listed nowhere: on Ubuntu
+# it must not happen) — is red. Adding a line is a Control Tower decision; the reason column says why the test cannot
+# be true on that runner. Source of the codes: BL-570 FIX4 (6148288a8), UnixConditionalFacts.cs.
+auth-app	MACOS_ONLY	1	macOS decides descriptor anonymity differently; Linux is tested by its own /proc/self/fd test
+auth-app	UID_EQUALS_GID	1	in an image where euid = egid a uid offset moved onto the gid reads the same value
+auth-app	RUNS_AS_ROOT	1	root reads a mode-000 file (CAP_DAC_OVERRIDE), so the refusal is not observable
+manufacturing-tests	MANUFACTURING_TEST_MONGO	35	WP-LANE-MAIN-SYNC-02 B3 (owner decision 2026-10-14): owner Üretim (MVP-3) geliştiricisi; MANUFACTURING_TEST_MONGO yok, BL-637; süre 30 gün (2026-11-13); this project only
+platform-app	BL-534	2	WP-CI-SERVICE-TESTS-05 (BL-646 item 3): PlatformAdministratorSeedMeasurementTests, two measurements of the old seed kept as evidence until the owner decided BL-534; owner CT; the decision is made (WP-AUTH-ADMIN-BOOTSTRAP-01, accepted 2026-10-15) and its merge turns both into running rules: remove this line with that merge, at the latest 2026-11-14
+mdm-api	CONTRACT_LINE_ABSENT	1	WP-CI-SERVICE-TESTS-05 (BL-646 item 6): ProductMasterContractFixtureTests.S4_Fixture_v11_is_the_contract_lines_current_file compares the fixture with the contract line worktree next to the checkout (SOURCE.txt), which a CI runner never has; owner CT; review date 2026-12-31 (no open-ended line); hat dosyası CI'a gelirse satır silinir — if the contract line's file (SOURCE.txt) is ever provided in CI, this line is removed

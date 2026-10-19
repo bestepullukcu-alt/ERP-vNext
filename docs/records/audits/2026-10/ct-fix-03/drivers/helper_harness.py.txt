@@ -1,0 +1,42 @@
+"""CT-FIX-03: the phase1 tools-venv step, tested without eval and without a download. The function and the step are
+copied byte for byte from scripts/run_phase1_gates.sh into a script under <work>, with the discover line replaced by a
+marker command (so a failure that reached it would be visible). Cases: success (a venv made with
+--system-site-packages, whose pins are already satisfied — no download), pip failure, venv failure.
+    python3 -I helper_harness.py <run_phase1_gates.sh> <work dir (new)> <out.json>"""
+import json, os, re, subprocess, sys
+from pathlib import Path
+src, work, out = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+if str(work.resolve()).startswith("<REPO>"):
+    raise SystemExit("refused: work dir must be outside the repository")
+work.mkdir(parents=False, exist_ok=False)
+text = src.read_text(encoding="utf-8")
+fn = re.search(r"(?ms)^ct_tools_python\(\) \{\n.*?\n\}\n", text).group(0)
+step = re.search(r"(?ms)^CT_TOOLS_PY=\"\$\(ct_tools_python\)\"\n.*?^PATH=\"\$CT_SAVED_PATH\"\n", text).group(0)
+exact = "python3 -m unittest discover -s scripts/tests -p 'test_*.py'\n"
+assert step.count(exact) == 1
+probe = 'echo "REACHED discover with $(command -v python3)"; python3 -c "import openpyxl; print(\'openpyxl\', openpyxl.__version__)"\n'
+body = "#!/usr/bin/env bash\nset -euo pipefail\n" + fn + step.replace(exact, probe) + 'echo "PATH restored: $([ "$PATH" = "$CT_SAVED_PATH" ] && echo yes)"\n'
+(work / "step.sh").write_text(body, encoding="utf-8")
+(work / "scripts").mkdir()
+(work / "scripts" / "requirements-tools.txt").write_bytes((src.parent / "requirements-tools.txt").read_bytes())
+ok_venv = work / "venv-ok"
+subprocess.run([sys.executable, "-m", "venv", "--system-site-packages", str(ok_venv)], check=True)
+bad_pip = work / "venv-badpip" / "bin"
+bad_pip.mkdir(parents=True)
+(bad_pip / "python3").write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+(bad_pip / "python3").chmod(0o755)
+(work / "a-file").write_text("x", encoding="utf-8")
+cases = [("success", str(ok_venv), 0, "REACHED discover with " + str(ok_venv) + "/bin/python3"),
+         ("pip fails", str(work / "venv-badpip"), "nonzero", "pip install -r scripts/requirements-tools.txt failed"),
+         ("venv cannot be made", str(work / "a-file" / "venv"), "nonzero", "python3 -m venv")]
+results = []
+for name, venv, want, needle in cases:
+    env = dict(os.environ, CT_TOOLS_VENV=venv, PIP_NO_INDEX="1")
+    p = subprocess.run(["bash", str(work / "step.sh")], cwd=work, env=env, capture_output=True, text=True, timeout=300)
+    outp = p.stdout + p.stderr
+    good = (p.returncode == 0 if want == 0 else p.returncode != 0) and needle in outp and (want == 0 or "REACHED" not in outp)
+    results.append({"case": name, "exit": p.returncode, "as_expected": good,
+                    "out": outp.replace(str(work), "$WORK")[-600:]})
+    print(name, "exit", p.returncode, "as expected" if good else "NOT AS EXPECTED")
+out.write_text(json.dumps({"step_sha256_source": __import__("hashlib").sha256(src.read_bytes()).hexdigest(), "cases": results},
+                          ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

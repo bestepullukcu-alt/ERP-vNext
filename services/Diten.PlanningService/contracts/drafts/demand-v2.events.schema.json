@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MOD-0188 Demand v2 revision state event (DRAFT)",
+  "description": "Producer outbox event schema draft. Not frozen or published. Events contain a revision reference, scope and integrity summary, never 52-week rows. A new Published revision requires a separate Superseded outbox intent for the prior current revision in the same state-and-audit transaction. Outbox persistence is not delivery. Delivery may repeat, lag or reorder; the authoritative v2 status API decides current state. MOD-0189 is the bound consumer and owns its MRP work and reconciliation; MOD-0191, S&OP and Capacity are candidate consumers pending confirmation.",
+  "x-status": "DRAFT",
+  "x-owner": "MOD-0188",
+  "x-central-freeze-required": true,
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventVersion",
+    "eventType",
+    "revisionId",
+    "tenantId",
+    "legalEntityId",
+    "planningCycleId",
+    "planningPeriodKey",
+    "newState",
+    "stateVersion",
+    "occurredAt",
+    "scopeSummary",
+    "integritySummary"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventVersion": {
+      "type": "string",
+      "description": "Event schema version; distinct from monotonic stateVersion. Final value set at central freeze."
+    },
+    "eventType": {
+      "type": "string",
+      "enum": [
+        "DemandRevisionPublished",
+        "DemandRevisionSuperseded",
+        "DemandRevisionInvalidated"
+      ]
+    },
+    "revisionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "legalEntityId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "planningCycleId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "planningPeriodKey": {
+      "type": "string",
+      "format": "date"
+    },
+    "newState": {
+      "type": "string",
+      "enum": [
+        "Published",
+        "Superseded",
+        "Invalidated"
+      ]
+    },
+    "stateVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonic revision status version; consumer must not order events by delivery time."
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scopeSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selectedSeriesCount",
+        "excludedSeriesCount",
+        "scopeDefinitionId",
+        "scopeDigest"
+      ],
+      "properties": {
+        "selectedSeriesCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excludedSeriesCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scopeDefinitionId": {
+          "type": "string",
+          "description": "Identifier for a reproducible scope-summary definition; concrete definition is open.",
+          "minLength": 1
+        },
+        "scopeDigest": {
+          "type": "string",
+          "description": "Summary of selected/excluded SKU x Warehouse scope. Full scope is read from the immutable manifest.",
+          "minLength": 1
+        }
+      },
+      "description": "Immutable selected/excluded SKU x Warehouse revision scope; not proof of the caller's current authorization, which must be checked separately."
+    },
+    "integritySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expectedPartCount",
+        "expectedRowCount",
+        "definitionId",
+        "digest",
+        "verificationState"
+      ],
+      "properties": {
+        "expectedPartCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expectedRowCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "definitionId": {
+          "type": "string",
+          "const": "MOD0188-CANONICAL-1/SHA-256",
+          "description": "Whole-snapshot checksum using the exact ordered, length-prefixed UTF-8 canonicalization specified by demand-v2.openapi.yaml x-checksum-canonicalization."
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "verificationState": {
+          "type": "string",
+          "enum": [
+            "Verified",
+            "Failed",
+            "Unknown"
+          ]
+        }
+      }
+    },
+    "invalidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reasonCategory",
+        "reason",
+        "businessImpact",
+        "evidenceReference",
+        "actorId",
+        "occurredAt"
+      ],
+      "properties": {
+        "reasonCategory": {
+          "type": "string",
+          "enum": [
+            "IdentityOrScope",
+            "CalendarUnitOrQuantity",
+            "SourceOrMethod",
+            "MissingDuplicateOrCorruptContent"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "businessImpact": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Material MRP effect; natural forecast deviation alone is insufficient."
+        },
+        "evidenceReference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-recorded invalidation action time; top-level occurredAt is event occurrence time."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "DemandRevisionPublished"
+          }
+        },
+        "required": [
+          "eventType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "newState": {
+            "const": "Published"
+          },
+          "integritySummary": {
+            "properties": {
+              "verificationState": {
+                "const": "Verified"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "DemandRevisionSuperseded"
+          }
+        },
+        "required": [
+          "eventType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "newState": {
+            "const": "Superseded"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "DemandRevisionInvalidated"
+          }
+        },
+        "required": [
+          "eventType"
+        ]
+      },
+      "then": {
+        "required": [
+          "invalidation"
+        ],
+        "properties": {
+          "newState": {
+            "const": "Invalidated"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventType": {
+            "enum": [
+              "DemandRevisionPublished",
+              "DemandRevisionSuperseded"
+            ]
+          }
+        },
+        "required": [
+          "eventType"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "invalidation"
+          ]
+        }
+      }
+    }
+  ],
+  "x-consumer-semantics": [
+    "Same eventId replay has no second business effect.",
+    "Delivery order does not decide state; compare stateVersion and recheck authoritative status.",
+    "Publication occurs only after full part/row/checksum verification; Published and, when replacing a baseline, separate Superseded outbox intents are persisted atomically with both states and audit. Current producer code still lacks the Superseded intent; neither intent proves delivery.",
+    "Invalidation forbids new consumption. MOD-0189 owns stopping or marking its own runs and downstream proposals.",
+    "Tenant, LegalEntity and data scope must match the request context and pinned manifest; failure closes access.",
+    "A separate Superseded event for the replaced revision is required by the approved DRAFT design; event transport, topic and exact retry timing remain open."
+  ]
+}

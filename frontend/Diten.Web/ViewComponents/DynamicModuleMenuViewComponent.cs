@@ -18,17 +18,22 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
     private readonly string _gatewayUrl;
     private readonly ILogger<DynamicModuleMenuViewComponent> _logger;
     private readonly INavNameLocalizer _navLocalizer;
+    private readonly Func<string?, IEnumerable<(string? PageCode, string? RoutePath)>, string?> _pageMatcher;
 
+    // `pageMatcher` is optional and absent from DI (its default is the one production matcher, CurrentPage.Match);
+    // a test hands in one that throws, to prove the help code's failure cannot take the sidebar down.
     public DynamicModuleMenuViewComponent(
         HttpClient httpClient,
         IConfiguration configuration,
         ILogger<DynamicModuleMenuViewComponent> logger,
-        INavNameLocalizer navLocalizer)
+        INavNameLocalizer navLocalizer,
+        Func<string?, IEnumerable<(string? PageCode, string? RoutePath)>, string?>? pageMatcher = null)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000";
         _logger = logger;
         _navLocalizer = navLocalizer;
+        _pageMatcher = pageMatcher ?? CurrentPage.Match;
     }
 
     public async Task<IViewComponentResult> InvokeAsync()
@@ -122,6 +127,8 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
                 return EmptyBecause(EmptyPayloadReason);
             }
 
+            RecordCurrentPage(groups);
+
             // FIX-3 — DATA-DRIVEN: group modules by DOMAIN (display name resolved server-side). Each module is one
             // entry; the view links a single-page module straight to its page, or makes a multi-page module a
             // collapsible group. Grouping/order/visibility come entirely from the response (Domain, SortOrder,
@@ -160,6 +167,33 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
                 + "The tenant's dynamic sidebar rendered NO groups.",
                 GetTenantId() ?? "<none>", HttpContext?.TraceIdentifier ?? "<none>");
             return DynamicModuleMenuViewModel.FailedToLoad;
+        }
+    }
+
+    /// <summary>
+    /// WP-UX-COMMON-01 (BL-495) — the page being drawn, by its stable code, for the top bar's help panel. The menu holds
+    /// every entitled page with its route and renders before the top bar, so it is the one place that can answer
+    /// without a second call (see CurrentPage).
+    /// <para>UX-COMMON-FIX1 — in its OWN try: this is a convenience for the help panel, and a failure here must not
+    /// take the whole sidebar down with it (inside the menu's try it turned the sidebar into "failed to load").</para>
+    /// </summary>
+    private void RecordCurrentPage(IReadOnlyList<NavigationGroup> groups)
+    {
+        try
+        {
+            var items = groups.SelectMany(g => g.Items ?? Array.Empty<NavigationItem>()).ToList();
+            HttpContext.Items[CurrentPage.PageCodeItem] = _pageMatcher(
+                HttpContext.Request.Path.Value,
+                items.Select(i => ((string?)i.PageCode, i.RoutePath)));
+            // WP-UX-HELP-PANEL-02 — the same pages, for the help panel's "Related pages" (address + permission).
+            CurrentPage.RecordMenuPages(HttpContext,
+                items.Select(i => new MenuPage(i.PageCode, i.RoutePath ?? string.Empty, i.RequiredPermission)));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "dynamic_module_menu.page_code_failed CorrelationId={CorrelationId}. "
+                + "The help panel shows its 'being prepared' text; the menu itself is unaffected.",
+                HttpContext?.TraceIdentifier ?? "<none>");
         }
     }
 

@@ -66,7 +66,7 @@ public sealed class AuthServiceTenantActivationNotifier : ITenantActivationNotif
             };
             request.Headers.Add(InternalApiKeyHeader, _options.InternalApiKey);
 
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient(InternalHttpClients.AuthInternal);
             using var response = await client.SendAsync(request, ct);
 
             if (response.IsSuccessStatusCode)

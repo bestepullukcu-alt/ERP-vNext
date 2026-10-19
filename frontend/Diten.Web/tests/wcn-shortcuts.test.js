@@ -204,6 +204,22 @@ describe("the list is the one the layer generates", () => {
     expect(open).toHaveBeenCalledTimes(1);
   });
 
+  it("where the shell drew the page help panel, the keyboard button opens THAT panel — the same one `?` opens", async () => {
+    const button = app().querySelector("[data-wcn-shortcuts]");
+    const list = vi.spyOn(window.DitenShortcuts, "open").mockImplementation(() => null);
+    const helpOpen = vi.fn(() => true);
+    window.DitenHelp = { open: helpOpen };
+    try {
+      button.click();
+      await tick();
+      expect(helpOpen).toHaveBeenCalledTimes(1);
+      expect(list).not.toHaveBeenCalled();
+    } finally {
+      delete window.DitenHelp;
+      list.mockRestore();
+    }
+  });
+
   it("a second boot replaces the scope rather than stacking a second copy", async () => {
     await bootMine();
     const scopes = window.DitenShortcuts.list().filter((group) => group.scope === "workcenter");

@@ -1,0 +1,9 @@
+{
+  "command": "git ls-remote --exit-code --heads origin main",
+  "exit": 0,
+  "remote_ref": "refs/heads/main",
+  "sha": "3912d568b18193f627539a1b27965167ac4077b6",
+  "observed_before_clock_utc": "2026-10-16T09:16:03Z",
+  "fetch": false,
+  "limit": "point-in-time remote SHA only; no local refs changed"
+}

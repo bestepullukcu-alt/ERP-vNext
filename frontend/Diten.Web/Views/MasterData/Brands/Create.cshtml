@@ -2,9 +2,22 @@
 @using Diten.Web.Views.MasterData.Brands
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<BrandsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["BrandsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* WP-MDM-BRAND-ACCEPT-01 FIX1 (item 5, UAS-001) — nothing of the form is drawn without mdm.brands.create; the controller answers
+   403 with this surface. Snapshot OR the controller's own reader, so the page never refuses whom it admitted. *@
+@if (!Perms.Has("mdm.brands.create") && !Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.brands.create"))
+{
+    <partial name="_AccessDenied" model="@Localizer["BrandsTitle"].Value" />
+    return;
+}
+
 @{
     ViewData["Title"] = Localizer["CreateBrand"].Value;
-    Layout = "_LayoutTenantShell";
 }
 <div class="d-flex align-items-center justify-content-between mb-3">
     <div>

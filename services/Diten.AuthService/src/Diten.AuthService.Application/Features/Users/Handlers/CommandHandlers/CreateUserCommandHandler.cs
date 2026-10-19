@@ -56,7 +56,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
     }
 
     // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the stable code the frontend maps; the message is the English fallback.
-    public const string PermissionDeniedCode = "PERM_DENIED";
+    public const string PermissionDeniedCode = UserErrorCodes.AccountKindPermissionDenied;
 
     public async Task<Response<UserDto>> Handle(CreateUserCommand request, CancellationToken ct)
     {
@@ -122,7 +122,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
     private async Task<Response<UserDto>> CreateSelfServiceAsync(CreateUserCommand request, CancellationToken ct)
     {
         await _passwordPolicyService.ValidateTenantPasswordAsync(_tenantContext.TenantId, null, request.Password!, "create_user", ct);
-        var hashedPassword = _passwordHasher.Hash(request.Password!);
+        var hashedPassword = await _passwordHasher.HashAsync(request.Password!, ct);
         var user = new User(request.Email, hashedPassword, request.FirstName, request.LastName, _tenantContext.TenantId);
         user.SetAccountKind(ResolveInitialKind(request));
 
@@ -145,7 +145,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
     {
         // Placeholder hash — the column is non-null. It is never usable for login: the account is
         // inactive + must-change-password until the set-password link is redeemed.
-        var placeholderHash = _passwordHasher.Hash(_tokenService.GenerateRefreshToken());
+        var placeholderHash = await _passwordHasher.HashAsync(_tokenService.GenerateRefreshToken(), ct);
         var user = new User(request.Email, placeholderHash, request.FirstName, request.LastName, _tenantContext.TenantId);
 
         var setupToken = _tokenService.GenerateRefreshToken();

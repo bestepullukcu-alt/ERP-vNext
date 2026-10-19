@@ -330,11 +330,11 @@ public sealed class TaskCommentTrailTests
             var mediator = new DirectMediator(
                 new AddTaskCommentHandler(
                     _tasks, Comments, user, new FakeUserDisplayNameResolver(), tenant,
-                    Watchers, Notifications, readAccess, NullLogger<AddTaskCommentHandler>.Instance),
+                    Watchers, Notifications, readAccess, NullLogger<AddTaskCommentHandler>.Instance, writeGate: TaskWriteGateDoubles.Open),
                 new UpdateTaskCommentHandler(
                     _tasks, Comments, user, readAccess, Notifications,
-                    NullLogger<UpdateTaskCommentHandler>.Instance),
-                new WithdrawTaskCommentHandler(Comments, user));
+                    NullLogger<UpdateTaskCommentHandler>.Instance, writeGate: TaskWriteGateDoubles.Open),
+                new WithdrawTaskCommentHandler(Comments, user, _tasks, TaskWriteGateDoubles.Open));
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

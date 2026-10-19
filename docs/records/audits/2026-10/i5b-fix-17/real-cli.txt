@@ -1,0 +1,34 @@
+İ5B-FIX-17 real CLI — 20 cases (the normal file and this package's negatives and positives), write and --check, each in
+ONE work copy restored before every case; run by the AI session. Driver: drivers/probe_i5b17.py.txt — the tool laid over
+İ5B-FIX-14's frozen base: C15's (before) and the final one (after). One AGENTS.md case passes 22000 bytes and prints WARN.
+
+case                                                                                             expected  before  after
+normal                                                                                           0/0       0/0     0/0
+i5b17 nv: Codex F1, '</div>' in a double-quoted value                                            nonzero   0/0     1/1
+i5b17 nv: Codex F1, '</div>' in a single-quoted value                                            nonzero   0/0     1/1
+i5b17 hidden: a quoted value holding '>' only                                                    nonzero   1/1     1/1
+i5b17 nv: Codex F2, '<script>' in a quoted value                                                 nonzero   1/1     1/1
+i5b17 nv: Claude, '</script>' in indented code                                                   nonzero   0/0     1/1
+i5b17 nv: Claude, '</div>' in indented code                                                      nonzero   0/0     1/1
+i5b17 nv: Claude, '</div>' in tab-indented code                                                  nonzero   0/0     1/1
+i5b17 nv: Claude, '</div>' in indented code in a list item                                       nonzero   0/0     1/1
+i5b17 nv: Claude, '</script>' in a link title                                                    nonzero   0/0     1/1
+i5b17 nv: Claude, '</div>' in a link title                                                       nonzero   0/0     1/1
+i5b17 nv: '</div>' in a possible list continuation                                               nonzero   0/0     1/1
+i5b17 nv: '</div>' on a block quote line                                                         nonzero   0/0     1/1
+i5b17 nv: '</div>' beside link syntax the check cannot read                                      nonzero   1/1     1/1
+i5b17 nv: Claude, an AGENTS.md heading after '</script>' in indented code                        nonzero   0/0     1/1
+i5b17 passes: a closed element whose quoted value holds '>'                                      0/0       0/0     0/0
+i5b17 passes: '</div>' in indented code with nothing open                                        0/0       0/0     0/0
+i5b17 passes: '</div>' in a link title with nothing open                                         0/0       0/0     0/0
+i5b17 passes: a real '</div>' on an indented continuation line                                   0/0       0/0     0/0
+i5b17 passes: a type-7 line whose quoted value holds '>' starts a raw HTML block                 0/0       1/1     0/0
+
+before: tool ['93a51469cd13b434ff982fe013119488fdedbb6283ff9e4189507aa7084c9dfb'], 8 of 20 as expected
+after:  tool ['0e456b0f2ef0e6ba542479a263637d8f2fce6c0841dde63c262df305c4f8b200'], 20 of 20 as expected
+base unchanged before / after: True / True
+results: before ed5f631968ff4be9e112916957d833bb01cbfb3cc8ed3202af12d05dfdb6332f, after e5ad8ce3b35dc5697b047d38523909bacd3b6494177fdd535d16271b272c0c12 (kept outside the repository)
+An exit code alone does not show the reason; the unit test checks that each refusal says 'not verified'.
+The case with link syntax the check cannot read ('[[[x]]](y ...)') exits 1 on C15 already, from DEADLINK — its link
+target 'y' does not exist — not from the visibility reader; it is not a closed false pass. Its new not-verified
+rule is shown by the unit test and by guard G-Z6 (a real assertion red, its control green).

@@ -1,0 +1,93 @@
+"""R1 künye inventory (CT-FIX-03): every front matter ('---' … '---' at the top) that the CT readers consume today —
+decision records (prompt gate governance, -R3 reassessment, effort approval) and module packs (prompt gate pack
+status) — read from a fixed commit's git objects, never the working tree. Classifies every line inside the block by
+shape and reports what the current shared reader (ct_queue.kunye_status) would answer.
+Usage: python3 -I -B kunye_inventory.py <repo> <commit> <ct_queue.py path> <out.json>"""
+import importlib.util
+import json
+import re
+import subprocess
+import sys
+from collections import Counter, defaultdict
+
+REPO, COMMIT, CTQ, OUT = sys.argv[1:5]
+git = lambda *a: subprocess.run(["git", "-C", REPO, *a], capture_output=True, env={"GIT_OPTIONAL_LOCKS": "0", "PATH": "/usr/bin:/bin"})
+spec = importlib.util.spec_from_file_location("ctq_inv", CTQ)
+ctq = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(ctq)
+
+paths = [p for p in git("ls-tree", "-r", "--name-only", COMMIT).stdout.decode().splitlines()
+         if (p.startswith("docs/records/decisions/") and p.endswith(".md"))
+         or (re.search(r"^execution/domains/[^/]+/module-packs/[^/]+\.md$", p) and not p.lower().endswith("readme.md"))]
+SHAPES = [
+    ("blank", re.compile(r"^\s*$")),
+    ("comment", re.compile(r"^\s*#")),
+    ("list-item (indented '- ')", re.compile(r"^\s+-\s")),
+    ("list-item (column 0 '- ')", re.compile(r"^-\s")),
+    ("bold key '**k**:'", re.compile(r"^\*\*[^*]+\*\*\s*:")),
+    ("indented key: value", re.compile(r"^\s+[A-Za-z_][\w.-]*\s*:(\s|$)")),
+    ("key: (empty, block follows)", re.compile(r"^[A-Za-z_][\w.-]*\s*:\s*$")),
+    ("key: | or > (block scalar)", re.compile(r"^[A-Za-z_][\w.-]*\s*:\s*[|>][-+]?\s*$")),
+    ("key: value", re.compile(r"^[A-Za-z_][\w.-]*\s*:\s+\S")),
+]
+shape_count, shape_examples = Counter(), defaultdict(list)
+per_kind = defaultdict(Counter)
+status_forms, status_examples = Counter(), defaultdict(list)
+dup_keys, indented_status, no_block, unclosed = [], [], [], []
+reader = Counter()
+for p in paths:
+    kind = "decision" if p.startswith("docs/") else "module-pack"
+    text = git("show", f"{COMMIT}:{p}").stdout.decode("utf-8", "replace").replace("\r\n", "\n")
+    lines = text.split("\n")
+    if not lines or lines[0].strip() != "---":
+        no_block.append(p); per_kind[kind]["no front matter"] += 1
+        reader[(kind, "no front matter")] += 1
+        continue
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        unclosed.append(p); per_kind[kind]["unclosed"] += 1
+        continue
+    per_kind[kind]["closed front matter"] += 1
+    keys = Counter()
+    for n in range(1, end):
+        l = lines[n]
+        shape = next((name for name, rx in SHAPES if rx.match(l)), "other")
+        shape_count[(kind, shape)] += 1
+        if len(shape_examples[(kind, shape)]) < 3:
+            shape_examples[(kind, shape)].append(f"{p}:{n + 1}: {l[:90]}")
+        m = re.match(r"^\s*\**([A-Za-z_][\w.-]*)\**\s*:", l)
+        if m and not l.startswith((" ", "\t")):
+            keys[m.group(1).lower()] += 1
+        if re.match(r"^\s+\**status\**\s*:", l, re.I):
+            indented_status.append(f"{p}:{n + 1}")
+        sm = re.match(r"^\**status\**\s*:\s*(.*)$", l, re.I)
+        if sm:
+            v = sm.group(1).strip()
+            form = re.sub(r"\(.*?\)", "(…)", v)
+            form = re.sub(r" — .*$", " — …", form)
+            status_forms[(kind, form[:60])] += 1
+    for k, c in keys.items():
+        if c > 1:
+            dup_keys.append(f"{p}: '{k}' ×{c}")
+    st, bad = ctq.kunye_status(text)
+    if kind == "decision":
+        reader[(kind, "approved/decided" if bad is None and ctq.GOV_APPROVED.match(st) else f"not approved: {bad or st[:30]}")] += 1
+    else:
+        reader[(kind, "pack approved/ready-for-dev" if bad is None and st in ("approved", "ready-for-dev") else f"not: {bad or st[:30]}")] += 1
+
+out = {"commit": COMMIT, "files": {"decision": sum(1 for p in paths if p.startswith("docs/")), "module-pack": sum(1 for p in paths if not p.startswith("docs/"))},
+       "front_matter": {k: dict(v) for k, v in per_kind.items()},
+       "line_shapes": [{"kind": k, "shape": s, "count": c, "examples": shape_examples[(k, s)]} for (k, s), c in sorted(shape_count.items())],
+       "status_forms": [{"kind": k, "form": f, "count": c} for (k, f), c in sorted(status_forms.items(), key=lambda x: -x[1])],
+       "indented_status_lines": indented_status, "duplicate_top_level_keys": dup_keys,
+       "no_front_matter": no_block[:50], "no_front_matter_count": len(no_block), "unclosed": unclosed,
+       "current_reader": [{"kind": k, "answer": a, "count": c} for (k, a), c in sorted(reader.items())]}
+open(OUT, "w", encoding="utf-8").write(json.dumps(out, ensure_ascii=False, indent=1) + "\n")
+print(json.dumps({k: out[k] for k in ("files", "front_matter")}, ensure_ascii=False))
+for r in out["line_shapes"]:
+    print(f"  {r['kind']:<11} {r['shape']:<32} {r['count']:>5}  e.g. {r['examples'][0][:110]}")
+print("status forms:"); [print(f"  {r['kind']:<11} {r['count']:>4}  '{r['form']}'") for r in out["status_forms"][:25]]
+print("indented status lines:", len(indented_status), indented_status[:5])
+print("duplicate top-level keys:", len(dup_keys), dup_keys[:8])
+print("no front matter:", len(no_block), "| unclosed:", len(unclosed))
+print("current reader:"); [print(f"  {r['kind']:<11} {r['count']:>4}  {r['answer']}") for r in out["current_reader"]]

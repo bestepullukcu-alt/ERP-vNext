@@ -24,7 +24,11 @@ public enum TaskNotificationOutcome
     NoRecipients = 2,
 
     /// <summary>The notification layer refused or threw. Logged; never the caller's problem.</summary>
-    Failed = 3
+    Failed = 3,
+
+    /// <summary>WP-EMAIL-LANG-01 FIX2 — some language groups were queued and some were not (PARTIAL_RECIPIENT_FAILURE): the
+    /// queued readers have their mail, so a caller keeps its claim (a retry would mail them again). Logged as a Warning.</summary>
+    PartiallyDispatched = 4
 }
 
 /// <summary>
@@ -63,6 +67,23 @@ public interface ITaskNotificationService
 
     /// <summary>Everyone currently holding the task's pool position — the "offered to a pool" audience.</summary>
     Task<IReadOnlyList<Guid>> ResolvePoolHoldersAsync(TaskItem task, CancellationToken ct);
+
+    /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 FIX4 (item 3) — the pool holders of MANY tasks, keyed by task id (a task that is not a pool
+    /// task maps to an empty list). The production service reads the seats ONCE for the whole batch; this default asks
+    /// task by task, so a double that knows only the single form keeps answering the same.
+    /// </summary>
+    async Task<IReadOnlyDictionary<Guid, IReadOnlyList<Guid>>> ResolvePoolHoldersAsync(
+        IReadOnlyCollection<TaskItem> tasks, CancellationToken ct)
+    {
+        var holders = new Dictionary<Guid, IReadOnlyList<Guid>>();
+        foreach (var task in tasks.DistinctBy(t => t.Id))
+        {
+            holders[task.Id] = await ResolvePoolHoldersAsync(task, ct);
+        }
+
+        return holders;
+    }
 
     /// <summary>
     /// Would this task send this event at all, on its own settings? Asked by callers that must do something
@@ -165,6 +186,8 @@ public sealed class TaskNotificationService : ITaskNotificationService
     private readonly IUserNotificationRepository _userNotifications;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<TaskNotificationService> _logger;
+    // BL-454 — trailing and optional: registered in DI; a service built the old way sends no button address.
+    private readonly ITaskWebLinks? _links;
 
     public TaskNotificationService(
         INotificationEventDispatchAdapter notifications,
@@ -173,8 +196,10 @@ public sealed class TaskNotificationService : ITaskNotificationService
         ITaskSeatDirectory seats,
         IUserNotificationRepository userNotifications,
         ITenantContext tenantContext,
-        ILogger<TaskNotificationService> logger)
+        ILogger<TaskNotificationService> logger,
+        ITaskWebLinks? links = null)
     {
+        _links = links;
         _notifications = notifications;
         _localeResolver = localeResolver;
         _recipients = recipients;
@@ -261,9 +286,9 @@ public sealed class TaskNotificationService : ITaskNotificationService
                     TenantId: _tenantContext.TenantId,
                     EventCode: eventCode,
                     To: recipients
-                        .Select(r => new EmailRecipientDto(r.Email, r.DisplayName))
+                        .Select(r => new EmailRecipientDto(r.Email, r.DisplayName, r.PreferredLanguage))
                         .ToList(),
-                    Variables: BuildVariables(task),
+                    Variables: await BuildVariablesAsync(task, eventCode, actingUserId, ct),
                     /*
                      * Stated, not omitted. MOD-0024 does NOT know what language these recipients read: the
                      * resolver seam it added returns id, e-mail and display name, and the AuthService User entity
@@ -306,6 +331,18 @@ public sealed class TaskNotificationService : ITaskNotificationService
                 return TaskNotificationOutcome.Failed;
             }
 
+            // FIX2 — a partly sent mail is not a quiet success: which language groups did not leave, by code (never an
+            // address), and the outcome says so, so a caller can count it.
+            if (string.Equals(response.ReasonCode, NotificationEventDispatchAdapter.ReasonPartialRecipientFailure, StringComparison.Ordinal))
+            {
+                _logger.LogWarning(
+                    "task.notification.partially_dispatched EventCode={EventCode} TaskId={TaskId} Groups={Groups}",
+                    eventCode,
+                    task.Id,
+                    string.Join(" | ", response.Errors));
+                return TaskNotificationOutcome.PartiallyDispatched;
+            }
+
             return TaskNotificationOutcome.Dispatched;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -330,6 +367,33 @@ public sealed class TaskNotificationService : ITaskNotificationService
         }
 
         return await _seats.HoldersOfAsync(new HashSet<Guid> { positionId }, ct);
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<Guid>>> ResolvePoolHoldersAsync(
+        IReadOnlyCollection<TaskItem> tasks, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(tasks);
+
+        var distinct = tasks.DistinctBy(t => t.Id).ToList();
+        var pooled = distinct
+            .Where(t => t.AssignmentTarget == TaskAssignmentTarget.PositionPool && t.PoolPositionId is not null)
+            .ToList();
+
+        // FIX4 (item 3) — ONE read of the seats for the whole batch (it was one per pool task), with the same answer
+        // HoldersOfAsync gives for one position: the active holders, each once.
+        var byPosition = pooled.Count == 0
+            ? new Dictionary<Guid, List<Guid>>()
+            : (await _seats.ActiveAsync(ct))
+                .GroupBy(assignment => assignment.PositionId)
+                .ToDictionary(g => g.Key, g => g.Select(assignment => assignment.UserId).Distinct().ToList());
+
+        return distinct.ToDictionary(
+            t => t.Id,
+            t => t.AssignmentTarget == TaskAssignmentTarget.PositionPool
+                 && t.PoolPositionId is { } position
+                 && byPosition.TryGetValue(position, out var holders)
+                ? (IReadOnlyList<Guid>)holders
+                : []);
     }
 
     /// <summary>
@@ -404,4 +468,45 @@ public sealed class TaskNotificationService : ITaskNotificationService
         ["TaskId"] = task.Id.ToString(),
         ["DueAt"] = task.DueAt?.ToString("yyyy-MM-dd") ?? string.Empty
     };
+
+    /// <summary>
+    /// BL-454 — the three above, plus what the e-mail shell shows: the task's address (the button), its priority in
+    /// the language the mail will be written in, and — for an assignment — who assigned it.
+    ///
+    /// <para><b>Only what the reader may already see.</b> The address is the Task Center page the read rule guards;
+    /// the priority is on that page. Of the assigner only the DISPLAY NAME travels — never the e-mail address, which
+    /// the contact lookup also returns and which a task's reader has no claim to.</para>
+    ///
+    /// <para>Each is optional in the template: an empty value drops its row, an empty address draws no button. So
+    /// nothing here may fail the dispatch — a lookup that throws leaves its variable empty.</para>
+    /// </summary>
+    private async Task<Dictionary<string, object?>> BuildVariablesAsync(
+        TaskItem task, string eventCode, Guid actingUserId, CancellationToken ct)
+    {
+        var variables = BuildVariables(task);
+        variables["TaskUrl"] = _links?.Detail(task.Id) ?? string.Empty;
+
+        var locale = await _localeResolver.ResolveAsync(_tenantContext.TenantId, null, ct);
+        variables["Priority"] = TaskEmailContent.PriorityLabel(task.Priority, locale);
+
+        variables["AssignerName"] = string.Empty;
+        if (eventCode == TaskNotificationEvents.Assigned && actingUserId != Guid.Empty)
+        {
+            try
+            {
+                var actor = (await _recipients.ResolveAsync([actingUserId], ct)).FirstOrDefault(r => r.UserId == actingUserId);
+                variables["AssignerName"] = actor?.DisplayName?.Trim() ?? string.Empty;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "task.notification.assigner_lookup_failed TaskId={TaskId}", task.Id);
+            }
+        }
+
+        return variables;
+    }
 }

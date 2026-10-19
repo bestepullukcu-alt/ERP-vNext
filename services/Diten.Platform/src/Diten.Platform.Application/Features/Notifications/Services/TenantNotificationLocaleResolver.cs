@@ -28,12 +28,11 @@ namespace Diten.Platform.Application.Features.Notifications.Services;
 ///   </description></item>
 /// </list>
 ///
-/// <para><b>What is deliberately NOT a link: the recipient's own preference.</b> It does not exist. Measured:
-/// <c>Diten.AuthService.Domain/Entities/User.cs</c> carries no Locale/Language/Culture field, and the
-/// <c>internal/users/contacts</c> endpoint WC-4 added returns id, display name and email — nothing else. Inventing
-/// a per-user language here would mean guessing, and a guessed language is worse than the tenant's declared one:
-/// the tenant at least chose theirs. When that field is added, it becomes link 1.5 and this is the only class that
-/// changes.</para>
+/// <para><b>The recipient's own preference (WP-EMAIL-LANG-01) arrives as link 1.</b> AuthService's
+/// <c>internal/users/contacts</c> now carries each person's <c>PreferredLanguage</c>; the producer puts it on the recipient
+/// (<c>EmailRecipientDto.Locale</c>), and <see cref="NotificationEventDispatchAdapter"/> groups the recipients by it and asks
+/// this class with that language as the request. A recipient without one is in the group that asks with nothing — the tenant's
+/// language below. So the chain per person is: their preference → the tenant's language → "en".</para>
 ///
 /// <para><b>Known remaining gap, not closed by this ticket.</b> A tenant whose language is one the platform never
 /// seeded a template for (say <c>"de"</c>) resolves to <c>"de"</c>, finds no template, and the queue handler

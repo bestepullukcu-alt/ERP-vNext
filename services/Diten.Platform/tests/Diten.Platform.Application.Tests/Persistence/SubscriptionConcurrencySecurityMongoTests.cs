@@ -269,12 +269,15 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
         public Task<TenantSubscription> CreateAsync(IPlatformTransactionSession s, TenantSubscription x, CancellationToken ct = default) => inner.CreateAsync(s, x, ct);
         public Task<TenantSubscription> CreateAsync(TenantSubscription x, CancellationToken ct = default) => inner.CreateAsync(x, ct);
         public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<TenantSubscription?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) => inner.GetByIdAsync(session, id, ct);
         public async Task<TenantSubscription?> GetByTenantIdAsync(Guid t, Guid id, CancellationToken ct = default)
         { var value = await inner.GetByTenantIdAsync(t, id, ct); if (gateGet) await gate.MeetAsync(); return value; }
         public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(t, ct);
         public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(t, ct);
         public async Task<bool> HasCurrentAsync(Guid t, Guid? exclude = null, CancellationToken ct = default)
         { var value = await inner.HasCurrentAsync(t, exclude, ct); if (gateHasCurrent) await gate.MeetAsync(); return value; }
+        public async Task<bool> HasCurrentAsync(IPlatformTransactionSession s, Guid t, Guid? exclude = null, CancellationToken ct = default)
+        { var value = await inner.HasCurrentAsync(s, t, exclude, ct); if (gateHasCurrent) await gate.MeetAsync(); return value; }
         public Task UpdateAsync(TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(x, row, ct);
         public Task UpdateAsync(IPlatformTransactionSession s, TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(s, x, row, ct);
     }

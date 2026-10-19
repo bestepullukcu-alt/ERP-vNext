@@ -1,0 +1,14 @@
+"""İ5B-FIX-18: whether a CLOSING_TAG match can end elsewhere than HTML_TAG's (seeded random closing-tag strings).
+Usage: same-end-fuzz.py <sync_adapters.py>"""
+import importlib.util, random, sys
+spec = importlib.util.spec_from_file_location("sa", sys.argv[1]); sa = importlib.util.module_from_spec(spec); spec.loader.exec_module(sa)
+alphabet = ["<", "/", "div", "x", " ", "\t", "\n", ">", '"', "'", "=", " ", "`", "a"]
+random.seed(18)
+valid = same = 0
+for n in range(200000):
+    s = "</" + "".join(random.choice(alphabet) for _ in range(random.randint(0, 8)))
+    m, v = sa.HTML_TAG.match(s), sa.CLOSING_TAG.match(s)
+    if v:
+        valid += 1
+        same += bool(m and m.end() == v.end())
+print(f"strings 200000 · CLOSING_TAG matched {valid} · HTML_TAG matched them with the same end {same} · differ {valid - same}")

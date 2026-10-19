@@ -1,6 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
 using Diten.Platform.Application.Common;
-using Diten.Platform.Application.Contracts;
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Models.Workflow;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.TenantOrganization.Queries;
@@ -23,13 +24,11 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
 {
     private readonly IMediator _mediator;
     private readonly ICorrelationContext _correlationContext;
-    private readonly ICurrentUserContext _currentUser;
 
-    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext, ICurrentUserContext currentUser)
+    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext)
     {
         _mediator = mediator;
         _correlationContext = correlationContext;
-        _currentUser = currentUser;
     }
 
     [HttpPost("definitions")]
@@ -198,17 +197,24 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     [HasPermission(WorkflowPermissions.TasksApprove)]
     public async Task<IActionResult> ApproveTask(
         Guid taskId,
-        [FromBody] ApproveWorkflowTaskRequest request,
+        [FromBody] ApproveWorkflowTaskTransportRequest request,
         CancellationToken ct)
     {
-        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
-        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
-        if (refused is not null)
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
         {
-            return CreateActionResultInstance(refused);
+            return refusal!;
         }
 
-        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
+        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(
+            taskId,
+            new ApproveWorkflowTaskRequest(
+                actor,
+                request.ReasonCode,
+                request.IdempotencyKey,
+                request.Comment,
+                request.EvidenceRef,
+                SignatureId: request.SignatureId),
+            CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -216,17 +222,23 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     [HasPermission(WorkflowPermissions.TasksReject)]
     public async Task<IActionResult> RejectTask(
         Guid taskId,
-        [FromBody] RejectWorkflowTaskRequest request,
+        [FromBody] RejectWorkflowTaskTransportRequest request,
         CancellationToken ct)
     {
-        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
-        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
-        if (refused is not null)
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
         {
-            return CreateActionResultInstance(refused);
+            return refusal!;
         }
 
-        var response = await _mediator.Send(new RejectWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
+        var response = await _mediator.Send(new RejectWorkflowTaskCommand(
+            taskId,
+            new RejectWorkflowTaskRequest(
+                actor,
+                request.ReasonCode,
+                request.IdempotencyKey,
+                request.Comment,
+                request.EvidenceRef),
+            CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -237,14 +249,12 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] DelegateWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
-        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
-        if (refused is not null)
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
         {
-            return CreateActionResultInstance(refused);
+            return refusal!;
         }
 
-        var response = await _mediator.Send(new DelegateWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
+        var response = await _mediator.Send(new DelegateWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -255,14 +265,12 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] RequestInfoWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
-        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
-        if (refused is not null)
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
         {
-            return CreateActionResultInstance(refused);
+            return refusal!;
         }
 
-        var response = await _mediator.Send(new RequestInfoWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
+        var response = await _mediator.Send(new RequestInfoWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -273,19 +281,90 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] CancelWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
-        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
-        if (refused is not null)
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
         {
-            return CreateActionResultInstance(refused);
+            return refusal!;
         }
 
-        var response = await _mediator.Send(new CancelWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
+        var response = await _mediator.Send(new CancelWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// B4 — the actor of a task action is ALWAYS the signed-in user: the token's single <c>sub</c>, never the body. A
+    /// token with no subject, a malformed one, or more than one is 401 <c>WORKFLOW_ACTOR_UNAUTHENTICATED</c>. A body may
+    /// omit <c>actorId</c> (the server fills it in) or repeat the caller's own id; naming anybody else is refused with
+    /// 403 <c>WORKFLOW_ACTOR_MISMATCH</c> — before, a person holding the approve permission could type someone else's
+    /// id and decide that person's approval. One rule for all five task actions.
+    /// </summary>
+    private bool TryBindActor(string? claimed, out string actor, out IActionResult? refusal)
+    {
+        refusal = null;
+        if (!TryResolveAuthenticatedActor(out actor))
+        {
+            refusal = CreateActionResultInstance(Response<WorkflowTaskTransitionResponse>.Fail(
+                "WORKFLOW_ACTOR_UNAUTHENTICATED",
+                StatusCodes.Status401Unauthorized,
+                "WORKFLOW_ACTOR_UNAUTHENTICATED",
+                CorrelationId));
+            return false;
+        }
+
+        // Main sync 2026-10-13 — main's WP-0023-FX body rule (WorkflowActorBinding), read from the same token: blank = the
+        // caller; the subject in any GUID spelling (WorkflowPrincipal.Same) or the token's own single e-mail = accepted;
+        // anything else 403 WORKFLOW_ACTOR_MISMATCH. The bound actor is always the token's subject (B4 above).
+        if (!string.IsNullOrWhiteSpace(claimed)
+            && !WorkflowPrincipal.Same(claimed.Trim(), actor)
+            && !(TryResolveAuthenticatedEmail(out var email)
+                 && string.Equals(claimed.Trim(), email, StringComparison.OrdinalIgnoreCase)))
+        {
+            refusal = CreateActionResultInstance(Response<WorkflowTaskTransitionResponse>.Fail(
+                "A task action is always taken as the signed-in user.",
+                403,
+                WorkflowReasonCodes.WorkflowActorMismatch,
+                CorrelationId));
+            return false;
+        }
+
+        return true;
     }
 
     private string CorrelationId =>
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId)
             ? HttpContext.TraceIdentifier
             : _correlationContext.CorrelationId!;
+
+    // The token's one e-mail claim (JWT "email"), for main's "the caller's own e-mail" body rule — none, or more than one, is no e-mail.
+    private bool TryResolveAuthenticatedEmail(out string email)
+    {
+        var emails = User.Claims
+            .Where(claim => string.Equals(claim.Type, JwtRegisteredClaimNames.Email, StringComparison.Ordinal))
+            .Select(claim => claim.Value.Trim())
+            .ToArray();
+        email = emails.Length == 1 && emails[0].Length > 0 ? emails[0] : string.Empty;
+        return email.Length > 0;
+    }
+
+    private bool TryResolveAuthenticatedActor(out string actorId)
+    {
+        actorId = string.Empty;
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return false;
+        }
+
+        var subjects = User.Claims
+            .Where(claim => string.Equals(claim.Type, JwtRegisteredClaimNames.Sub, StringComparison.Ordinal))
+            .Select(claim => claim.Value)
+            .ToArray();
+        if (subjects.Length != 1
+            || !Guid.TryParseExact(subjects[0], "D", out var userId)
+            || userId == Guid.Empty)
+        {
+            return false;
+        }
+
+        actorId = userId.ToString("D");
+        return true;
+    }
 }

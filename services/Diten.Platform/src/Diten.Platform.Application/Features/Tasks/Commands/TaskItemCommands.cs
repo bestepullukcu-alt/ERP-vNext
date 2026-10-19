@@ -38,17 +38,34 @@ public sealed record CreateTaskItemCommand(
     bool IsScheduledGeneration = false)
     : IRequest<Response<Guid>>;
 
+/// <summary>D2-FIX2 (item 2) — answers <see cref="TaskItemEditResultDto"/> so a refusal that comes AFTER the edit landed
+/// can say at which version it landed; a successful edit is still a body-less 204.</summary>
 public sealed record UpdateTaskItemCommand(Guid Id, UpdateTaskItemRequest Request, string CorrelationId)
-    : IRequest<Response<NoContent>>;
+    : IRequest<Response<TaskItemEditResultDto>>;
 
 public sealed record DeleteTaskItemCommand(Guid Id, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
+/// <summary>D2-FIX5 item 4 — answers <see cref="BulkDeleteTaskItemResultDto"/> when it left tasks out (200, their ids); a bulk
+/// delete that left nothing out is still a body-less 204.</summary>
 public sealed record BulkDeleteTaskItemCommand(BulkDeleteTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<BulkDeleteTaskItemResultDto>>;
+
+/// <summary>Accept a task that was assigned to me (the Inbox acceptance gate) — or, BL-509, a request that was
+/// addressed to me, which becomes my task at that moment.</summary>
+public sealed record AcceptTaskItemCommand(Guid Id, TaskTransitionRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
-/// <summary>Accept a task that was assigned to me (the Inbox acceptance gate).</summary>
-public sealed record AcceptTaskItemCommand(Guid Id, TaskTransitionRequest Request, string CorrelationId)
+/// <summary>BL-509 — decline a request addressed to me, saying why. The task goes back to its sender unanswered.</summary>
+public sealed record DeclineTaskOfferCommand(Guid Id, DeclineTaskOfferRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+/// <summary>BL-509 — the sender takes back a request that has not been answered. Refused once it was accepted.</summary>
+public sealed record WithdrawTaskOfferCommand(Guid Id, WithdrawTaskOfferRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+/// <summary>BL-509 — the sender addresses a declined or withdrawn request to somebody else.</summary>
+public sealed record OfferTaskItemCommand(Guid Id, OfferTaskItemRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
 /// <summary>

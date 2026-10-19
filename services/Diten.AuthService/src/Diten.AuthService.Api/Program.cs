@@ -1,4 +1,5 @@
 using Diten.AuthService.Api;
+using Diten.AuthService.Api.Services.ServiceIdentityTokens;
 using Diten.AuthService.Application;
 using Diten.AuthService.Infrastructure;
 using Diten.AuthService.Persistence;
@@ -12,7 +13,24 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
+if (ServiceClientOperationalProvisioningRunner.IsProcessInvocationRequested(args))
+{
+    Environment.ExitCode = await ServiceClientOperationalBootstrap.RunAsync(args, Console.In, Console.Out);
+    return;
+}
+
+if (Diten.AuthService.Api.Operational.EntitlementReconciliationOperationalMode.IsRequested(args))
+{
+    Environment.ExitCode = await Diten.AuthService.Api.Operational.EntitlementReconciliationOperationalMode.RunAsync(args);
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
+
+// MOD-0033-FU02 §F.3 — Development-only, git-ignored local settings (disposable keys, service-client secret); it
+// outranks appsettings.Development.json (and what that file outranks) and nothing the host adds after it — user
+// secrets, environment variables and the command line still win. See Configuration/DevelopmentLocalSettings.cs.
+Diten.AuthService.Api.Configuration.DevelopmentLocalSettings.AddDevelopmentLocalSettings(builder.Configuration, builder.Environment);
 
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04). The access token carries
@@ -66,6 +84,11 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 
 // Port ayarı (launcSettings de olacak ama Program.cs'te de belirtilebilir)
 // builder.WebHost.UseUrls("http://localhost:5056");
+
+// MOD-0033-FU02 §F.1 — declared first-party service clients. Validated HERE, before the persistence layer below seeds
+// anything: an invalid ServiceClientRegistry section stops startup with the entry index and field name (never a
+// value). The validated declarations are applied by a hosted service before the server accepts requests.
+builder.Services.AddServiceClientRegistry(builder.Configuration);
 
 // ── MediatR / Application / Infrastructure / Persistence ───────────────────────
 builder.Services.AddApplication();

@@ -35,6 +35,12 @@ public static class TaskTemplateRules
     public static (string ReasonCode, string Message)? ValidateAssignment(
         TaskAssignmentTarget target, Guid? poolPositionId)
     {
+        // BL-509 — a request is one person asking another; a template has neither.
+        if (target == TaskAssignmentTarget.Offered)
+        {
+            return (TaskReasonCodes.TemplateAssignmentInvalid, TaskAssignmentIntentRules.RequestNotAvailableMessage);
+        }
+
         if (target == TaskAssignmentTarget.Person)
         {
             return (TaskReasonCodes.TemplateAssignmentInvalid,

@@ -1,0 +1,52 @@
+{
+  "reviewer": "Codex independent reviewer",
+  "source_commit": "d2cde88496e0e6dce329595cd2406d984d7764de",
+  "baseline_verifier_sha256": "d146fd0e01079f4ba8921f79b46ac0cc0e28d738a0c2d9de7907a24c97280bc9",
+  "final_verifier_sha256": "670c9cd4788b53f1b841c1e5520c3dd82997bd57f12a39db6201928410a58779",
+  "red_checks": {
+    "reports_152_equal": true,
+    "old_gaps_88_equal": true,
+    "affected_64_exact_expected": false,
+    "affected_64_classification_red_to_green": false,
+    "real_hook_64_pass": false,
+    "three_cli_variants": false,
+    "hook_stderr_still_unknown": true,
+    "hook_unknown_output_still_unknown": true,
+    "verifier_unchanged_during_review": true
+  },
+  "green_checks": {
+    "reports_152_equal": true,
+    "old_gaps_88_equal": true,
+    "affected_64_exact_expected": true,
+    "affected_64_classification_red_to_green": true,
+    "real_hook_64_pass": true,
+    "three_cli_variants": true,
+    "hook_stderr_still_unknown": true,
+    "hook_unknown_output_still_unknown": true,
+    "verifier_unchanged_during_review": true
+  },
+  "helper_cases": [
+    {
+      "case": "empty",
+      "pass": true
+    },
+    {
+      "case": "passed_only",
+      "pass": true
+    },
+    {
+      "case": "mixed",
+      "pass": true
+    }
+  ],
+  "screens": 152,
+  "unchanged_report_outputs": 152,
+  "unchanged_existing_gaps_outputs": 88,
+  "affected_screens_now_exact_numbered_gaps": 64,
+  "affected_real_hook_invocations_now_gap_context": 64,
+  "limits": [
+    "Static verifier and actual hook JSON-stdin entrypoint tested; a live Claude Code PostToolUse event was not observed.",
+    "No product screen was edited or repaired.",
+    "Raw stdout snapshots remain outside the repository because they contain machine paths."
+  ]
+}

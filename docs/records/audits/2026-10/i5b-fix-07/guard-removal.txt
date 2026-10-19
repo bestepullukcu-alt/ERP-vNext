@@ -1,0 +1,16 @@
+İ5B-FIX-07 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness3.py.txt. The copy holds the final sync_adapters.py and test file. The control is
+test_a_dead_link_is_still_a_dead_link.
+Each mutation: the file still parses; the named tests fail; the control test passes in the same copy.
+
+G-H1 HTML before core:start not checked
+    file: .antigravity/scripts/sync_adapters.py · tests: test_a_container_opened_before_the_core_is_refused
+    named: RED — FAILED (failures=3) · control: OK · proven: True
+G-H2 a required text inside a larger span counts
+    file: .antigravity/scripts/sync_adapters.py · tests: test_a_rule_inside_a_larger_code_span_is_lost
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-H3 a short code term no longer counts
+    file: .antigravity/scripts/sync_adapters.py · tests: test_a_rule_inside_a_larger_code_span_is_lost, test_every_required_core_text_is_on_a_numbered_rule_line_today
+    named: RED — FAILED (failures=5) · control: OK · proven: True
+
+proven: 3 of 3

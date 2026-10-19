@@ -1,0 +1,39 @@
+İ5B-FIX-18 red first — this package's test file in the İ5B worktree while sync_adapters.py was still C16's (2de454f49,
+İ5B-FIX-17), before the code was written; run by the AI session.
+
+run 01 (kept: one positive was wrong — see below):
+  .antigravity/scripts/sync_adapters.py             0e456b0f2ef0e6ba542479a263637d8f2fce6c0841dde63c262df305c4f8b200
+  scripts/tests/test_sync_adapters_budget.py        0e6a6b904f84aa4991c56091f28e907e890307133008cb5a62fe8e5bbbc19394
+  Ran 54 tests in 37.872s · FAILED (failures=10)
+  every failure is in the new test: True; the 53 earlier tests pass
+    FAIL  (hidden="Claude: '</div x>' in a paragraph")
+    FAIL  (hidden="Claude: '</div/>' in a paragraph")
+    FAIL  (hidden='Claude: \'</div title="x">\' in a paragraph')
+    FAIL  (hidden="Claude: '</script x>' in a paragraph")
+    FAIL  (hidden='a malformed closing token is read on: its backtick pairs with a later one, and the div after is real')
+    FAIL  (hidden="NBSP: '</div\\u00a0>' in a paragraph is text")
+    FAIL  (hidden="NBSP: '</div\\u00a0>' alone on a line starts no HTML block")
+    FAIL  (declared="NBSP: '</span\\u00a0>' alone after a blank line starts no type-7 block (the declared element model)")
+    FAIL  (passes="a valid closing tag with one line end before '>'")
+    FAIL  (hidden="Claude: an AGENTS.md required heading after '</div x>'")
+
+run 02 (the final test file):
+  .antigravity/scripts/sync_adapters.py             0e456b0f2ef0e6ba542479a263637d8f2fce6c0841dde63c262df305c4f8b200
+  scripts/tests/test_sync_adapters_budget.py        4fc7cd62fe256c419ad6e22ca8c35021e8032425d076f1d4ba0360be2ee348ba
+  Ran 54 tests in 37.336s · FAILED (failures=9)
+  every failure is in the new test: True; the 53 earlier tests pass
+    FAIL  (hidden="Claude: '</div x>' in a paragraph")
+    FAIL  (hidden="Claude: '</div/>' in a paragraph")
+    FAIL  (hidden='Claude: \'</div title="x">\' in a paragraph')
+    FAIL  (hidden="Claude: '</script x>' in a paragraph")
+    FAIL  (hidden='a malformed closing token is read on: its backtick pairs with a later one, and the div after is real')
+    FAIL  (hidden="NBSP: '</div\\u00a0>' in a paragraph is text")
+    FAIL  (hidden="NBSP: '</div\\u00a0>' alone on a line starts no HTML block")
+    FAIL  (declared="NBSP: '</span\\u00a0>' alone after a blank line starts no type-7 block (the declared element model)")
+    FAIL  (hidden="Claude: an AGENTS.md required heading after '</div x>'")
+
+the final test equals the frozen one: True
+
+Run 01 held a mistake in the test, not in the code: its positive '</div\n>' put '>' at the start of the next line,
+and a line that starts with '>' is a block quote in CommonMark, so it ends the paragraph — not a valid closing tag.
+The positive was changed to '</div\n    >' (four spaces: a paragraph continuation) before the code was written.

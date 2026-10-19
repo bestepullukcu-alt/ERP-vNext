@@ -19,7 +19,90 @@ public interface IUserRepository
     Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct);
     Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct);
     Task<User> CreateAsync(User user, CancellationToken ct);
-    Task<User> UpdateAsync(User user, CancellationToken ct);
-    Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct);
+    // BL-529 FIX4 — no whole-document update exists here any more: every write of an existing account is targeted
+    // (TryWriteChangesAsync and the purpose-built writes below), so a stale copy can never be written back.
     Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — what a sign-in attempt writes, and ONLY that: the failed-attempt count, the lockout end and the last
+    /// sign-in time, as a targeted update of the user's own row. A sign-in never rewrites the whole account: a reset that
+    /// lands between the sign-in's read and its write would otherwise be undone (old hash, link and forced change back).
+    /// </summary>
+    Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct);
+
+    /// <summary>
+    /// WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 3 — A SIGN-IN THAT VERIFIED THE RIGHT PASSWORD CLAIMS THE ACCOUNT BEFORE ANYTHING IS
+    /// ISSUED: the failure count and the lockout are cleared ONLY while the STORED account is not locked. A flood of parallel
+    /// guesses all read the account before the fifth failure was written; without this, a right guess among them cleared the
+    /// lock the wrong ones were building (~100 guesses a window instead of 5). FIX5 — "not locked" is enough because the write
+    /// that reaches the threshold sets the lock itself (and resets the count); FIX4's "below the threshold" shut an account for
+    /// good once it had been locked (FIX6 N4: its threshold parameter is gone). False: the stored row is locked — the sign-in
+    /// is refused like a wrong password.
+    /// (No default implementation that answers true: a store or a decorator that forgot it must fail loudly, not let the
+    /// flood through.)
+    /// </summary>
+    Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        => throw new NotSupportedException("This user store does not implement the sign-in claim (WP-USERS-ROLES-CLOSE-FIX1 FIX4).");
+
+    /// <summary>
+    /// BL-529 FIX3 — the state of <paramref name="user"/> as it was read, opaque to the caller; hand it back to
+    /// <see cref="TryWriteChangesAsync"/> after changing the entity.
+    /// </summary>
+    object CaptureState(User user);
+
+    /// <summary>
+    /// BL-529 FIX3 — writes ONLY the fields that changed since <paramref name="capturedState"/> (a targeted <c>$set</c>), and
+    /// only while the stored account still meets <paramref name="condition"/>. A whole-document write from a copy read
+    /// earlier put back whatever another writer changed meanwhile (an administrator's reset, a deactivation); this never
+    /// touches a field the caller did not change. False when the account is gone, deleted, or no longer meets the
+    /// condition — nothing is written then.
+    /// </summary>
+    Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — issues a set-password link by writing ONLY the link fields (hash, expiry, request time). Never the password
+    /// hash: a "forgot password" that read the account before an administrator's reset must not write the old hash back.
+    /// </summary>
+    Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529, WP-USERS-ROLES-CLOSE-FIX1 FIX5 / FIX6 N4 — one failed sign-in, ONE atomic write in the store (never set from
+    /// the copy the attempt read, so parallel wrong passwords each count): while the stored account is locked the attempt is
+    /// not counted (no extension, nothing carried past the lock); otherwise the count goes up by one (a row without the field
+    /// counts from 0), and the write that reaches <paramref name="maxFailedAttempts"/> sets the lock AND starts the count over
+    /// at 0 — exactly one such write per lock (<see cref="LoginFailureOutcome.LockoutStarted"/>). Returns the stored count and
+    /// lockout end after the attempt.
+    /// </summary>
+    Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct);
+
+    // BL-521 FIX7 item 1 - the platform door's maintenance write: sets ONLY the account's platform actor type (and the update
+    // time), by id and tenant. Never the whole document - a replace of an object loaded earlier would undo a concurrent change.
+    // FIX8 item 1 - returns whether the write MATCHED a live account of that id and tenant (false: the account is gone or
+    // was moved since it was read, nothing was written). The caller must treat false as a failed mint.
+    Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct);
+
+    // BL-521 FIX7 item 3 - of these user ids (a role's holders), the ones the CURRENT CALLER may see and act on: for a tenant
+    // actor the platform accounts are not among them, so a role-level action (ending sessions, counting holders) never reaches
+    // them. A caller that is not a tenant actor gets every id back. The concrete Mongo repository applies no caller scope.
+    Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct);
+}
+
+// WP-USERS-ROLES-CLOSE-FIX1 FIX2 — LockoutStarted: THIS failure started a lockout (not one already running).
+public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd, bool LockoutStarted = false);
+
+/// <summary>
+/// BL-529 FIX3 — what the stored account must still look like for a targeted write to land (null = not checked).
+/// </summary>
+public sealed record UserWriteCondition(
+    string? PasswordHash = null,
+    bool? IsActive = null,
+    bool? DeactivatedByAdministrator = null,
+    string? PasswordResetTokenHash = null,
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2); WP-USERS-ROLES-CLOSE-FIX1 item 6 — true: the STORED account must not be a
+    // platform account (the one shared filter, PlatformAccountFilter; never the copy in memory), so a write that a tenant actor
+    // prepared against an ordinary user cannot land on an account Platform made a platform account meanwhile. (The unused
+    // "must BE a platform account" branch of the earlier bool? is gone.)
+    bool ExcludePlatformAccounts = false)
+{
+    public static UserWriteCondition None { get; } = new();
 }

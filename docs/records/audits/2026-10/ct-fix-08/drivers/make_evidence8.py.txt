@@ -1,0 +1,147 @@
+"""CT-FIX-08 / İ5B-FIX-09: the generated evidence texts from the raw outputs (no local paths).
+Usage: make_evidence8.py <scratch ctfix08> <CT evidence dir> <İ5B evidence dir>"""
+import hashlib, json, os, re, shutil, sys
+S, E, I = sys.argv[1:4]
+os.makedirs(os.path.join(E, "drivers"), exist_ok=True)
+os.makedirs(os.path.join(I, "drivers"), exist_ok=True)
+
+
+def sha(p):
+    return hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def write(path, lines):
+    open(path, "w", encoding="utf-8").write("\n".join(l.rstrip() for l in lines) + "\n")
+
+
+def rows_of(text):
+    """(result, test id, subtest) of every verbose unittest line, subtest failures included."""
+    started = re.findall(r"(?:^|(?<=\.\.\. ))(test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\) \.\.\.", text, re.M)   # subtest lines run together
+    fails = re.findall(r"^(FAIL|ERROR): (test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\)(?: (\(.*\)))?$", text, re.M)
+    bad = {}
+    for res, name, mod, cls, _ in fails:
+        bad.setdefault(f"{mod}.{cls}.{name}", res)
+    out = [(bad.get(f"{mod}.{cls}.{name}", "ok"), f"{mod}.{cls}.{name}") for name, mod, cls in started]
+    return out, [(res, f"{mod}.{cls}.{name}", sub) for res, name, mod, cls, sub in fails if sub]
+
+
+def red(src, title, base, expect):
+    text = open(src, encoding="utf-8").read()
+    rows, subs = rows_of(text)
+    out = title + ["", re.search(r"^Ran .*$", text, re.M).group(0) + " · " + re.search(r"^(OK|FAILED).*$", text, re.M).group(0), ""]
+    out += [f"  {res:5s} {tid}" for res, tid in rows]
+    if subs:
+        out += ["", "failed subtests:"] + [f"  {res:5s} {tid.split('.')[-1]} {sub}" for res, tid, sub in subs]
+    return out + [""] + expect
+
+
+# CT red first
+write(os.path.join(E, "red-first.txt"), red(
+    os.path.join(S, "red-ct-final.txt"),
+    ["CT-FIX-08 red first — this package's final test files against the committed sources of 5035a9f28 (SETTINGS-HYGIENE-01",
+     "on CT-FIX-07) in a copy outside the repository; run by the AI session."], "5035a9f28",
+    ["The new tests fail on the base sources: a line with no visible character is accepted as evidence, a broken registry",
+     "lets validate read task files and require answer 1, quoted paths are missed, the base has no nul_paths decoder (the",
+     "error), and the open decisions come after the collision groups. The controls pass."]))
+
+# İ5B red first
+write(os.path.join(I, "red-first.txt"), red(
+    os.path.join(S, "red-i5b.txt"),
+    ["İ5B-FIX-09 red first — this package's final test file against the committed sync_adapters.py of f829ac5fd",
+     "(İ5B-FIX-08) in a copy outside the repository; run by the AI session."], "f829ac5fd",
+    ["The two new tests fail on the base source (8 opener forms not refused, a multi-word phrase that is a span of its",
+     "own still counted); every earlier test passes."]))
+
+# guard removal
+ct_src = {p: sha(os.path.join(S, "guard/ct-final", p)) for p in (
+    "scripts/ct_queue.py", "scripts/acceptance_record.py", "scripts/prompt_gate.py", "scripts/status_report_v2.py",
+    ".antigravity/scripts/verify_module_id.py")}
+freeze = dict(reversed(l.split()) for l in open(os.path.join(S, "ct-freeze.txt"), encoding="utf-8"))
+i5b_freeze = dict(reversed(l.split()) for l in open(os.path.join(S, "i5b-freeze.txt"), encoding="utf-8"))
+same_ct = all(freeze[p] == h for p, h in ct_src.items())
+same_i5b = sha(os.path.join(S, "guard/i5b-final/.antigravity/scripts/sync_adapters.py")) == i5b_freeze[".antigravity/scripts/sync_adapters.py"]
+
+
+def guard(js, title):
+    res = json.load(open(js, encoding="utf-8"))
+    out = list(title) + [""]
+    for r in res:
+        out += [r["mutation"] + f"  ({r['file']})", f"    tests: {', '.join(t.split('.')[-1] for t in r['tests'])}",
+                f"    applied: {r['applied']} · parses: {r['parsed']} · named: {'RED' if r['red'] else 'green'} — {r['summary']}"
+                f" · control: {r['control_summary']} · proven: {r['proven']}"]
+    return out + ["", f"proven: {sum(r['proven'] for r in res)} of {len(res)}"]
+
+
+g = guard(os.path.join(S, "guard/ct-guard-final.json"),
+          ["CT-FIX-08 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+           "Driver: drivers/harness7.py.txt. The copy's five production files equal the final sources byte for byte:",
+           f"{same_ct}. Each mutation: the file still parses; the named tests fail; the control test",
+           "(Controls.test_consumers_on_the_intact_fixture_exit_0) passes."])
+g += ["", "G-V2 note: the mutation also changes how the lines are counted, so its red is broader than the U+2028 case alone",
+      "(10 failed subtests, not 1); it proves the split, not a single character."]
+write(os.path.join(E, "guard-removal.txt"), g)
+write(os.path.join(I, "guard-removal.txt"), guard(
+    os.path.join(S, "guard/i5b-guard-final.json"),
+    ["İ5B-FIX-09 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+     "Driver: drivers/harness7.py.txt. The copy's sync_adapters.py equals the final source byte for byte:",
+     f"{same_i5b}. Each mutation: the file still parses; the named test fails; the control test passes."]))
+
+# real data
+old = open(os.path.join(S, "disc-old.txt"), encoding="utf-8").read().splitlines()
+new = open(os.path.join(S, "disc.txt"), encoding="utf-8").read().splitlines()
+keep = lambda ls: [l for l in ls if not l.startswith(("ÖZET ", "araç: ", "rapor-sha256: "))]
+so, sn = [l for l in old if l.startswith("ÖZET ")], [l for l in new if l.startswith("ÖZET ")]
+R = os.path.join(S, "realdata")
+cmp = lambda n: open(os.path.join(R, n + ".old.n"), "rb").read() == open(os.path.join(R, n + ".new.n"), "rb").read()
+out = ["CT-FIX-08 real data — the base tools (5035a9f28, in a shared sparse clone outside the repository) and this package's",
+       "tools (the CT worktree) on the same commit's data; run by the AI session.", "",
+       "`verify_module_id.py . --discover \"Employee\"` (exit 3 both):",
+       f"  every line except the ÖZET, araç and rapor-sha256 lines identical: {keep(old) == keep(new)}",
+       f"  BULGU lines {sum(l.startswith('BULGU ') for l in old)} -> {sum(l.startswith('BULGU ') for l in new)}",
+       f"  ÖZET lines: the same set {sorted(so) == sorted(sn)}; {len(sn)} lines, {sum(len(l.encode()) + 1 for l in sn)} bytes;"
+       " the only change is the order —",
+       f"  the open decisions now line 2 (was line {[i for i, l in enumerate(so) if l.startswith('ÖZET açık kararlar')][0] + 1})", "",
+       f"`ct_queue.py validate` exit 0 / 0, output identical (paths normalized): {cmp('validate')}",
+       f"`ct_queue.py summary`  exit 0 / 0, output identical (paths normalized): {cmp('summary')}", "",
+       "The new ÖZET order (each line cut at 110 characters here):"] + ["  " + l[:110] for l in sn]
+write(os.path.join(E, "real-data.txt"), out)
+
+# CT checks
+final = open(os.path.join(S, "final-ct.txt"), encoding="utf-8").read().splitlines()
+out = ["CT-FIX-08 — the one final run on the frozen sources; run by the AI session in the CT-FIX-08 worktree (branch",
+       "chore/ct/ct-fix-08 on 5035a9f28 with this package's uncommitted changes). It is NOT a run on a combined candidate:",
+       "İ5B-FIX-09 is a separate branch and its checks are in its own folder.", "",
+       "commands (from the worktree root):",
+       "  python3 -B <tool> --self-test   for ct_queue, prompt_gate, acceptance_record, status_report, ct_route, known_failures, run_record",
+       "  python3 -B -m unittest discover -s scripts/tests -p 'test_*.py'",
+       "environment: Python 3.9.6 · git 2.50.1", "sources (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in freeze.items()]
+out += ["result (the log as written):"] + ["  " + l for l in final if l.strip() and not l.startswith("---")]
+out += [f"log SHA-256 {sha(os.path.join(S, 'final-ct.txt'))} (kept outside the repository)", "",
+        "The log kept the self-test result lines and the last four lines of the unittest run only; warnings were not kept",
+        "and are not reported here. 'dirty-tracked after: 0': no file other than the seven modified ones was changed or",
+        "left behind by the run. The sources' SHA-256 were checked again after the run: unchanged.", "",
+        "Diagnostic only, not evidence of the final sources: an earlier R0 run (r0-1) on the sources before the last edits",
+        "had 3 failures — the CTFIX06 tests still expecting require 1 and the old line positions; they were updated as a",
+        "declared contract change (require exits 2 on a broken registry; the open decisions come second)."]
+write(os.path.join(E, "checks.txt"), out)
+
+# İ5B checks
+fi = open(os.path.join(S, "final-i5b.txt"), encoding="utf-8").read()
+out = ["İ5B-FIX-09 — the final run on the frozen sources; run by the AI session in the İ5B-FIX-09 worktree (branch",
+       "chore/agents/i5b-fix-09 on f829ac5fd with this package's uncommitted changes).", "",
+       "commands (from the worktree root):",
+       "  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget",
+       "  python3 -B .antigravity/scripts/sync_adapters.py --check",
+       "environment: Python 3.9.6", "sources (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in i5b_freeze.items()]
+out += ["result:", "  " + re.search(r"^Ran .*$", fi, re.M).group(0) + " · OK",
+        "  " + re.search(r"^OK \d+ adapter.*$", fi, re.M).group(0) + " · exit 0",
+        f"log SHA-256 {sha(os.path.join(S, 'final-i5b.txt'))} (kept outside the repository)", "",
+        "AGENTS.md, the core, the manifest and the generated adapters are not changed by this package."]
+write(os.path.join(I, "checks.txt"), out)
+
+for dst in (E, I):
+    shutil.copyfile(os.path.join(S, "guard/harness7.py"), os.path.join(dst, "drivers", "harness7.py.txt"))
+    shutil.copyfile(os.path.join(S, "make_evidence8.py"), os.path.join(dst, "drivers", "make_evidence8.py.txt"))
+print("written", same_ct, same_i5b)

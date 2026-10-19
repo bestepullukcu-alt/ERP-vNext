@@ -1,0 +1,27 @@
+İ5B-FIX-18 real CLI — 15 cases (the normal file and this package's negatives and positives), write and --check, each in
+ONE work copy restored before every case; run by the AI session. Driver: drivers/probe_i5b18.py.txt — the tool laid over
+İ5B-FIX-14's frozen base: C16's (before) and the frozen one (after). One AGENTS.md case passes 22000 bytes and prints
+WARN. NBSP follows the normative CommonMark model (it is not CommonMark whitespace); no claim is made about every
+renderer.
+
+case                                                                                             expected  before  after
+normal                                                                                           0/0       0/0     0/0
+i5b18 hidden: '</div x>' in a paragraph                                                          nonzero   0/0     1/1
+i5b18 hidden: '</div/>' in a paragraph                                                           nonzero   0/0     1/1
+i5b18 hidden: '</div title="x">' in a paragraph                                                  nonzero   0/0     1/1
+i5b18 hidden: '</script x>' in a paragraph                                                       nonzero   0/0     1/1
+i5b18 hidden: a malformed token's backtick pairs with a later one; the div after is real         nonzero   0/0     1/1
+i5b18 hidden: NBSP '</div\u00a0>' in a paragraph                                                 nonzero   0/0     1/1
+i5b18 hidden: NBSP '</div\u00a0>' alone on a line                                                nonzero   0/0     1/1
+i5b18 declared model: NBSP '</span\u00a0>' alone after a blank line                              nonzero   0/0     1/1
+i5b18 hidden: an AGENTS.md heading after '</div x>'                                              nonzero   0/0     1/1
+i5b18 passes: '</div x>' with nothing open                                                       0/0       0/0     0/0
+i5b18 passes: '</div x>' on a raw HTML block line                                                0/0       0/0     0/0
+i5b18 passes: '</div/>' alone on a line                                                          0/0       0/0     0/0
+i5b18 passes: a valid closing tag with one line end                                              0/0       0/0     0/0
+i5b18 passes: a valid closing tag with spaces                                                    0/0       0/0     0/0
+
+before: tool ['0e456b0f2ef0e6ba542479a263637d8f2fce6c0841dde63c262df305c4f8b200'], 6 of 15 as expected
+after:  tool ['54c647a2adef2b084cb50cd799bb5118cd02fbf059a08a926863f74f24d840cf'], 15 of 15 as expected
+base unchanged before / after: True / True
+results: before 14411d8cfcac2f22b03dc05972ba15fdb98e8445da77aaa526b2ca1cdf23b2ce, after 3b634c837be0c0a93fdf7352c1e050a662adc481744509cc855b0bf966b7b562 (kept outside the repository)

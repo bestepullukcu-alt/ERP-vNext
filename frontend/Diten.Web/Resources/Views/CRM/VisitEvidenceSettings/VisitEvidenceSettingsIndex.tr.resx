@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Ziyaret kanıtı</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM Ayarlar / Ziyaret</value></data>
+  <data name="Intro" xml:space="preserve"><value>Temsilcinin "Ziyarete başla" kuralları. Kiracı ayarı tüm temsilcilere uygulanır; süreli istisna tek bir temsilci için geçici olarak gevşetir.</value></data>
+  <data name="NewException" xml:space="preserve"><value>Yeni istisna</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>Kapsamlı ayarlar</value></data>
+  <data name="TabExceptions" xml:space="preserve"><value>Süreli istisnalar</value></data>
+  <data name="Retry" xml:space="preserve"><value>Yeniden dene</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Salt okuma yetkiniz var; ayarlar değiştirilemez.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>Kapsamlar</value></data>
+  <data name="ScopesNote" xml:space="preserve"><value>Öncelik: iş birimi › tüzel kişilik › kiracı</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Kiracı varsayılanı</value></data>
+  <data name="Locked" xml:space="preserve"><value>Silinemez</value></data>
+  <data name="AddLegalEntity" xml:space="preserve"><value>Tüzel kişilik ekle</value></data>
+  <data name="AddLegalEntityHint" xml:space="preserve"><value>Tüzel kişilik ve iş birimi katmanları temsilcinin pozisyon ve bölge ataması bağlandığında açılır.</value></data>
+  <data name="LookTitle" xml:space="preserve"><value>Bir temsilcinin etkin ayarını gör</value></data>
+  <data name="LookSearch" xml:space="preserve"><value>Temsilci ara</value></data>
+  <data name="EffectiveTitle" xml:space="preserve"><value>Etkin ayar</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Kapat</value></data>
+  <data name="ColField" xml:space="preserve"><value>Alan</value></data>
+  <data name="ColValue" xml:space="preserve"><value>Etkin değer</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Nereden geliyor</value></data>
+  <data name="Priority" xml:space="preserve"><value>Öncelik:</value></data>
+  <data name="SourceException" xml:space="preserve"><value>İstisna</value></data>
+  <data name="SourceTenant" xml:space="preserve"><value>Kiracı</value></data>
+  <data name="ScopeUnresolved" xml:space="preserve"><value>Tüzel kişilik ve iş birimi katmanları henüz bağlı değil.</value></data>
+  <data name="TypeTenant" xml:space="preserve"><value>Kiracı</value></data>
+  <data name="PaneForm" xml:space="preserve"><value>Ayar formu</value></data>
+  <data name="PaneHistory" xml:space="preserve"><value>Değişiklik geçmişi</value></data>
+  <data name="SoonTitle" xml:space="preserve"><value>Ek kanıtlar</value></data>
+  <data name="SoonText" xml:space="preserve"><value>Kurum QR kodu ve sahte konum denetimi bu bölüme eklenecek.</value></data>
+  <data name="SoonBadge" xml:space="preserve"><value>Yakında</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Bu kapsamdaki temsilci şunu görecek</value></data>
+  <data name="PvStartTitle" xml:space="preserve"><value>Ziyarete başla</value></data>
+  <data name="PvSample" xml:space="preserve"><value>Örnek ziyaret · kurum · saat</value></data>
+  <data name="PvPhoto" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="PvLocation" xml:space="preserve"><value>Konum</value></data>
+  <data name="PvSign" xml:space="preserve"><value>Doktor onayı · ziyaret sonunda istenir</value></data>
+  <data name="PvStart" xml:space="preserve"><value>Sunumu başlat</value></data>
+  <data name="LastChange" xml:space="preserve"><value>Son değişiklik</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>Kaydedilmemiş değişiklik var</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Değişiklik geçmişi · Kiracı varsayılanı</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Denetim kaydı · salt okunur</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Tarih</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Kişi</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Eski → yeni değer</value></data>
+  <data name="ExceptionsInfo" xml:space="preserve"><value>İstisna kalıcı ayar değildir: tek bir temsilci için gerekçeli ve en çok 30 günlük gevşetmedir. Yalnız onaylı ve tarih aralığındaki istisna uygulanır. İstisnayla başlatılan ziyaretler yönetici görünümünde "istisna ile başlatıldı" olarak işaretlenir.</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>Süreli istisnalar</value></data>
+  <data name="XColRep" xml:space="preserve"><value>Temsilci</value></data>
+  <data name="XColRules" xml:space="preserve"><value>Gevşetilen kurallar</value></data>
+  <data name="XColRange" xml:space="preserve"><value>Tarih aralığı</value></data>
+  <data name="XColReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="XColPeople" xml:space="preserve"><value>Oluşturan / onaylayan</value></data>
+  <data name="XColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="OpenRow" xml:space="preserve"><value>Aç</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>Değişiklikler kaydedilsin mi?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Kaydet ve uygula</value></data>
+  <data name="XNewTitle" xml:space="preserve"><value>Yeni süreli istisna</value></data>
+  <data name="XRep" xml:space="preserve"><value>Temsilci</value></data>
+  <data name="XRules" xml:space="preserve"><value>Gevşetilecek kurallar</value></data>
+  <data name="XRulesHint" xml:space="preserve"><value>Eşik değerleri (mesafe, doğruluk, kısa ziyaret) istisnayla değiştirilemez.</value></data>
+  <data name="XFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="XTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="XReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="XReasonPlaceholder" xml:space="preserve"><value>ör. Tablet GPS modülü arızalı; cihaz değişimi bekleniyor (IT talep no).</value></data>
+  <data name="XSodNew" xml:space="preserve"><value>Görev ayrılığı: bu istisnayı siz onaylayamazsınız. Gönderdiğinizde başka biri Görev Merkezi'nde onaylar ve tarih aralığında uygulanır.</value></data>
+  <data name="XSubmit" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="XDetailTitle" xml:space="preserve"><value>İstisna ayrıntısı</value></data>
+  <data name="F_locationMode" xml:space="preserve"><value>Konum kontrolü</value></data>
+  <data name="F_radiusMeters" xml:space="preserve"><value>İzin verilen mesafe</value></data>
+  <data name="F_maxAccuracyMeters" xml:space="preserve"><value>En düşük konum doğruluğu</value></data>
+  <data name="F_accountWithoutLocation" xml:space="preserve"><value>Konumu olmayan kurum</value></data>
+  <data name="F_photoMode" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="F_doctorConfirmation" xml:space="preserve"><value>Doktor onayı (imza)</value></data>
+  <data name="F_durationConsistency" xml:space="preserve"><value>Süre tutarlılığı</value></data>
+  <data name="F_shortVisitSeconds" xml:space="preserve"><value>Kısa ziyaret eşiği</value></data>
+  <data name="D_locationMode_required" xml:space="preserve"><value>Zorunlu: temsilci kuruma yakın değilse ziyareti başlatamaz.</value></data>
+  <data name="D_locationMode_info" xml:space="preserve"><value>Bilgi: konum kaydedilir; ziyaret her durumda başlatılabilir.</value></data>
+  <data name="D_accountWithoutLocation" xml:space="preserve"><value>Kurum kaydında koordinat yoksa</value></data>
+  <data name="D_photoMode" xml:space="preserve"><value>Kurum girişi ya da bekleme alanı; yüz çekilmez (KVKK).</value></data>
+  <data name="D_doctorConfirmation" xml:space="preserve"><value>Ziyaret sonunda tablette imza ya da onay dokunuşu. Numune isteğinde her zaman istenir.</value></data>
+  <data name="Opt_locationMode_required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Opt_locationMode_info" xml:space="preserve"><value>Bilgi</value></data>
+  <data name="Opt_photoMode_required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Opt_photoMode_optional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="Opt_accountWithoutLocation_allow_flagged" xml:space="preserve"><value>Başlatılsın ve işaretlensin</value></data>
+  <data name="Opt_accountWithoutLocation_block" xml:space="preserve"><value>Engellensin</value></data>
+  <data name="R_radiusMeters" xml:space="preserve"><value>50–5000 m · kiracı varsayılanı 300</value></data>
+  <data name="R_maxAccuracyMeters" xml:space="preserve"><value>10–1000 m · kiracı varsayılanı 150</value></data>
+  <data name="R_shortVisitSeconds" xml:space="preserve"><value>30–1800 sn · Bu süreden kısa ziyaret işaretlenir.</value></data>
+  <data name="G_location" xml:space="preserve"><value>Konum</value></data>
+  <data name="G_photo" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="G_approval" xml:space="preserve"><value>Onay ve süre</value></data>
+  <data name="ValueOn" xml:space="preserve"><value>Açık</value></data>
+  <data name="ValueOff" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="UnitSeconds" xml:space="preserve"><value>{0} sn</value></data>
+  <data name="UnitM" xml:space="preserve"><value>m</value></data>
+  <data name="UnitS" xml:space="preserve"><value>sn</value></data>
+  <data name="RangeError" xml:space="preserve"><value>{0}–{1} {2} arasında olmalı.</value></data>
+  <data name="PvRequired" xml:space="preserve"><value>zorunlu</value></data>
+  <data name="PvOptional" xml:space="preserve"><value>isteğe bağlı</value></data>
+  <data name="PvInfo" xml:space="preserve"><value>bilgi</value></data>
+  <data name="PvLocationRequired" xml:space="preserve"><value>Kuruma {0} m'den yakın olmalısınız.</value></data>
+  <data name="PvLocationInfo" xml:space="preserve"><value>Bilgi olarak kaydedilir.</value></data>
+  <data name="PvOpenBoth" xml:space="preserve"><value>"Sunumu başlat", fotoğraf çekildiğinde ve temsilci kuruma {0} m'den yakın olduğunda açılır.</value></data>
+  <data name="PvOpenLocation" xml:space="preserve"><value>"Sunumu başlat", temsilci kuruma {0} m'den yakın olduğunda açılır.</value></data>
+  <data name="PvOpenPhoto" xml:space="preserve"><value>"Sunumu başlat", fotoğraf çekildiğinde açılır.</value></data>
+  <data name="PvOpenNone" xml:space="preserve"><value>"Sunumu başlat" hemen açıktır; konum ve fotoğraf bilgi olarak kaydedilir.</value></data>
+  <data name="PvAccuracy" xml:space="preserve"><value>Konum doğruluğu {0} m'den kötüyse konum geçersiz sayılır.</value></data>
+  <data name="PvNoLocationFlag" xml:space="preserve"><value>Koordinatı olmayan kurumda ziyaret başlatılır ve işaretlenir.</value></data>
+  <data name="PvNoLocationBlock" xml:space="preserve"><value>Koordinatı olmayan kurumda ziyaret başlatılamaz.</value></data>
+  <data name="PvShort" xml:space="preserve"><value>{0} sn'den kısa ziyaretler işaretlenir.</value></data>
+  <data name="Reps" xml:space="preserve"><value>{0} temsilci</value></data>
+  <data name="AllFields" xml:space="preserve"><value>Tüm alanlar dolu</value></data>
+  <data name="DefaultPolicy" xml:space="preserve"><value>Varsayılan değerler · henüz kaydedilmedi</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>Siz</value></data>
+  <data name="WorkflowActor" xml:space="preserve"><value>Onay akışı</value></data>
+  <data name="SaveText" xml:space="preserve"><value>Değişiklik hemen bu kapsamdaki {0} temsilciye uygulanır.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Ayarlar kaydedildi; {0} temsilciye uygulandı.</value></data>
+  <data name="LookPlaceholder" xml:space="preserve"><value>Temsilci seçin</value></data>
+  <data name="ActiveException" xml:space="preserve"><value>Aktif istisna: {0} · {1} tarihine kadar</value></data>
+  <data name="SourceExceptionUntil" xml:space="preserve"><value>İstisna · {0} tarihine kadar</value></data>
+  <data name="HistCreated" xml:space="preserve"><value>Ayar oluşturuldu</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Henüz değişiklik kaydı yok; varsayılanlar geçerli.</value></data>
+  <data name="XFilter_all" xml:space="preserve"><value>Tümü</value></data>
+  <data name="XFilter_active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="XFilter_planned" xml:space="preserve"><value>Planlı</value></data>
+  <data name="XFilter_in_review" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="XFilter_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="XFilter_expired" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="XFilter_cancelled" xml:space="preserve"><value>İptal</value></data>
+  <data name="XFilter_ended_early" xml:space="preserve"><value>Erken bitti</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>Konum kontrolü: Bilgi</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>Fotoğraf: İsteğe bağlı</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>Konumu olmayan kurum: Başlatılsın</value></data>
+  <data name="XSt_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="XSt_in_review" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="XSt_active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="XSt_planned" xml:space="preserve"><value>Planlı</value></data>
+  <data name="XSt_expired" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="XSt_cancelled" xml:space="preserve"><value>İptal</value></data>
+  <data name="XSt_ended_early" xml:space="preserve"><value>Erken bitti</value></data>
+  <data name="XDays" xml:space="preserve"><value>{0} gün</value></data>
+  <data name="XCreatedBy" xml:space="preserve"><value>Oluşturan: {0}</value></data>
+  <data name="XApprovedBy" xml:space="preserve"><value>Onaylayan: {0}</value></data>
+  <data name="XEmpty" xml:space="preserve"><value>Bu görünümde istisna yok.</value></data>
+  <data name="XDetailRules" xml:space="preserve"><value>Gevşetilen kurallar</value></data>
+  <data name="XDetailRange" xml:space="preserve"><value>Tarih aralığı</value></data>
+  <data name="XDetailReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="XInReviewNote" xml:space="preserve"><value>Görev Merkezi'nde onay bekliyor.</value></data>
+  <data name="XSod" xml:space="preserve"><value>Bu istisnayı siz oluşturdunuz, düzenlediniz ya da gönderdiniz; başka biri onaylamalı.</value></data>
+  <data name="XReturnComment" xml:space="preserve"><value>Yazara not</value></data>
+  <data name="XCloseReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="TlCreated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="TlSubmitted" xml:space="preserve"><value>Onaya gönderildi</value></data>
+  <data name="TlApproved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="TlReturned" xml:space="preserve"><value>Taslağa geri gönderildi</value></data>
+  <data name="TlWithdrawn" xml:space="preserve"><value>Geri çekildi</value></data>
+  <data name="TlTimedOut" xml:space="preserve"><value>Onay süresi doldu</value></data>
+  <data name="TlCancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="TlEndedEarly" xml:space="preserve"><value>Erken bitirildi</value></data>
+  <data name="TlRefused_visit_evidence_exception_sod" xml:space="preserve"><value>Geri döndü: onaylayan, oluşturan ya da gönderendi</value></data>
+  <data name="TlRefused_visit_evidence_exception_overlap" xml:space="preserve"><value>Geri döndü: artık başka bir istisnayla çakışıyor</value></data>
+  <data name="XBtnSubmit" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="XBtnWithdraw" xml:space="preserve"><value>Geri çek</value></data>
+  <data name="XBtnApprove" xml:space="preserve"><value>Onayla</value></data>
+  <data name="XBtnReturn" xml:space="preserve"><value>Taslağa geri gönder</value></data>
+  <data name="XBtnCancel" xml:space="preserve"><value>İptal et</value></data>
+  <data name="XBtnEndEarly" xml:space="preserve"><value>Erken bitir</value></data>
+  <data name="XBtnConfirmReturn" xml:space="preserve"><value>Geri göndermeyi onayla</value></data>
+  <data name="XBtnConfirmCancel" xml:space="preserve"><value>İptali onayla</value></data>
+  <data name="XBtnConfirmEndEarly" xml:space="preserve"><value>Erken bitirmeyi onayla</value></data>
+  <data name="XSubmitted" xml:space="preserve"><value>İstisna onaya gönderildi.</value></data>
+  <data name="XWithdrawn" xml:space="preserve"><value>Onay geri çekildi; istisna yeniden taslak.</value></data>
+  <data name="XApprovedToast" xml:space="preserve"><value>Karar gönderildi; akış kapandığında istisna onaylanır.</value></data>
+  <data name="XReturnedToast" xml:space="preserve"><value>Yazara geri gönderildi.</value></data>
+  <data name="XCancelledToast" xml:space="preserve"><value>İstisna iptal edildi.</value></data>
+  <data name="XEndedToast" xml:space="preserve"><value>İstisna erken bitirildi; bugün sona eriyor.</value></data>
+  <data name="XCreatedNotSent" xml:space="preserve"><value>Taslak olarak kaydedildi ama onaya gönderilemedi: {0}</value></data>
+  <data name="XRuleNoRep" xml:space="preserve"><value>Önce temsilci seçin.</value></data>
+  <data name="XRuleAlready" xml:space="preserve"><value>Bu temsilci için zaten {0} ({1}).</value></data>
+  <data name="XRuleNow" xml:space="preserve"><value>Şu an: {0} · {1}</value></data>
+  <data name="XDayCounter" xml:space="preserve"><value>{0} gün · en çok {1} gün</value></data>
+  <data name="XDayCounterEmpty" xml:space="preserve"><value>En çok {0} gün</value></data>
+  <data name="XErrRep" xml:space="preserve"><value>Temsilci seçin.</value></data>
+  <data name="XErrRules" xml:space="preserve"><value>En az bir kural seçin.</value></data>
+  <data name="XErrFrom" xml:space="preserve"><value>Başlangıç tarihi seçin.</value></data>
+  <data name="XErrPast" xml:space="preserve"><value>Başlangıç geçmişte olamaz.</value></data>
+  <data name="XErrToRequired" xml:space="preserve"><value>Bitiş tarihi zorunlu; bitişsiz istisna yok.</value></data>
+  <data name="XErrToBefore" xml:space="preserve"><value>Bitiş, başlangıçtan önce olamaz.</value></data>
+  <data name="XErrTooLong" xml:space="preserve"><value>En çok 30 gün; seçilen aralık {0} gün.</value></data>
+  <data name="XErrWhy" xml:space="preserve"><value>Gerekçe yazın.</value></data>
+  <data name="XErrWhyLong" xml:space="preserve"><value>En çok {0} karakter.</value></data>
+  <data name="Err_visit_evidence_exception_invalid" xml:space="preserve"><value>İstisna geçersiz: kuralları, tarihleri (geçmiş başlangıç yok, en çok 30 gün) ve gerekçeyi kontrol edin.</value></data>
+  <data name="Err_visit_evidence_exception_overlap" xml:space="preserve"><value>Bu temsilcinin aynı kuralı çakışan günlerde gevşeten bir istisnası zaten var.</value></data>
+  <data name="Err_visit_evidence_exception_rep_unknown" xml:space="preserve"><value>Temsilcinin aktif birincil bölge ataması yok.</value></data>
+  <data name="Err_visit_evidence_exception_not_editable" xml:space="preserve"><value>Bu istisna şu anki durumunda değiştirilemez.</value></data>
+  <data name="Err_visit_evidence_exception_sod" xml:space="preserve"><value>Görev ayrılığı: oluşturan ya da gönderen onaylayamaz.</value></data>
+  <data name="Err_visit_evidence_exception_not_found" xml:space="preserve"><value>İstisna bulunamadı.</value></data>
+  <data name="Err_visit_evidence_policy_invalid" xml:space="preserve"><value>Bir değer sınırların dışında; hiçbir şey kaydedilmedi.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>Ayarlar bu arada değişti; sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>Onay akışı şablonu henüz kurulmadı. Yöneticinize başvurun.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Onay akışına ulaşılamıyor; hiçbir şey değişmedi.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Onay akışında bunu yapmaya yetkiniz yok.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Bekleyen bir onay yok (az önce bitmiş olabilir).</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>Onay şu an geri çekilemiyor.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Geri göndermek için yazara not gerekir.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Onay akışı isteği reddetti.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>Kayıt bu arada değişti; yenileyip yeniden deneyin.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Kaydedilemedi. Sunucuya ulaşılamadı; değişiklikleriniz bu ekranda korunuyor.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+</root>

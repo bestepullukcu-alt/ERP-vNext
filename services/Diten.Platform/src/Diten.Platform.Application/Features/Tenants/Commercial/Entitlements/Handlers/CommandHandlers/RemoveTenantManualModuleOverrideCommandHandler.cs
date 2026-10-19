@@ -49,22 +49,17 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
         var entitlement = await _repository.GetByIdAsync(request.TenantId, request.EntitlementId, ct);
         if (entitlement is null)
         {
-            return Response<NoContent>.Fail("Entitlement was not found.", 404);
+            return TenantModuleEntitlementCommandSupport.NotFound();
         }
 
-        if (entitlement.Source != EntitlementSource.ManualOverride)
+        // BL-500 — the list's own rule: only a manual override row is removed, and never one on a core or baseline
+        // module (a stray baseline override must not read as "removing access" to it). Keys off the catalogue record,
+        // not a code list.
+        var refusal = await TenantModuleEntitlementActionGate.RefuseStoredAsync(
+            _moduleRepository, entitlement, TenantModuleEntitlementRowActions.RemoveOverride, ct);
+        if (refusal is not null)
         {
-            return Response<NoContent>.Fail("Only manual overrides can be removed.", 409);
-        }
-
-        // FEAT-BASELINE-MODULES — defense in depth: a baseline module is entitlement-free (every tenant auto-has it).
-        // A baseline override row should never exist (the add/disable paths reject it), but guard the remove path too
-        // so a stray/pre-existing row can't be deleted in a way that reads as "removing access" to a baseline module.
-        // Keys off IsBaseline, not a hardcoded code list.
-        var module = await _moduleRepository.GetByCodeAsync(entitlement.ModuleCode, ct);
-        if (module?.IsBaseline == true)
-        {
-            return Response<NoContent>.Fail("Baseline modules are entitlement-free and cannot be removed.", 409);
+            return refusal;
         }
 
         try
@@ -118,7 +113,8 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
                 transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
                     auditIntentId, nameof(RemoveTenantManualModuleOverrideCommand), AuditOperation.Revoke,
-                    entitlement.Id, entitlement.ModuleCode, transactionCt);
+                    entitlement.Id, entitlement.ModuleCode, transactionCt,
+                    PhysicalEntitlementAuditIntent.StateOf(entitlement), PhysicalEntitlementAuditIntent.Removed());
                 return true;
             }, ct);
 
@@ -127,6 +123,10 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
         catch (PhysicalEntitlementMutationRejectedException exception)
         {
             return Response<NoContent>.Fail(exception.Errors, exception.StatusCode);
+        }
+        catch (TenantModuleEntitlementTenantMismatchException)
+        {
+            return TenantModuleEntitlementCommandSupport.NotFound();
         }
         catch (TenantModuleEntitlementConcurrencyException)
         {

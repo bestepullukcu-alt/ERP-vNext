@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""
+Step 0 before sanitize_trx.py (R1–R4): normalise the test run's own roots in a TRX, deterministically.
+
+    python3 normalize_root.py <raw.trx> <rooted.trx> <test-repo root> <scratch root>
+
+Rules (in this order; no other byte changes):
+  N1  the test repository root (as given, and its /private/tmp <-> /tmp twin)  -> __TEST_REPO__
+  N2  the scratch root that holds it (as given, and its twin)                  -> __SCRATCH__
+Matched case-insensitively (the TRX writes its storage attribute in lower case); longer paths first, so N1 wins inside N2. Prints only counts and SHA-256 values — never the replaced
+values. Saved with the evidence (the 2026-10-17 independent audit noted that an earlier root-normalisation step was not).
+"""
+import hashlib
+import re
+import sys
+import xml.etree.ElementTree as ET
+
+
+def twins(path: str) -> list[str]:
+    out = {path.rstrip("/")}
+    for a, b in (("/private/tmp/", "/tmp/"), ("/tmp/", "/private/tmp/")):
+        if path.startswith(a):
+            out.add((b + path[len(a):]).rstrip("/"))
+    return sorted(out, key=len, reverse=True)
+
+
+def main() -> int:
+    raw_path, out_path, repo_root, scratch_root = sys.argv[1:5]
+    raw = open(raw_path, "rb").read()
+    text = raw.decode("utf-8")
+    counts = {}
+    for label, root, token in (("N1", repo_root, "__TEST_REPO__"), ("N2", scratch_root, "__SCRATCH__")):
+        n = 0
+        for p in twins(root):
+            text, k = re.subn(re.escape(p), token, text, flags=re.IGNORECASE)
+            n += k
+        counts[label] = n
+    ET.fromstring(text)   # must still be valid XML
+    with open(out_path, "x", encoding="utf-8", newline="") as f:
+        f.write(text)
+    print(f"raw_sha256={hashlib.sha256(raw).hexdigest()}")
+    print(f"rooted_sha256={hashlib.sha256(open(out_path, 'rb').read()).hexdigest()}")
+    print("replacements " + " ".join(f"{k}={v}" for k, v in counts.items()))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

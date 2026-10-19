@@ -28,12 +28,16 @@ public sealed record QuotaMutationDto(
     bool Applied,
     string? ErrorCode);
 
+/// <param name="ActorId">IGNORED (BL-521 FIX1 F5): the actor is the caller's token. Kept so an older caller that still
+/// sends it is not refused.</param>
 public sealed record InitializeTenantQuotasRequest(
     string? Reason,
     string? Source,
     string? ActorId,
     string? CorrelationId);
 
+/// <param name="ActorId">IGNORED (BL-521 FIX1 F5): the actor is the caller's token. Kept so an older caller that still
+/// sends it is not refused.</param>
 public sealed record SyncTenantQuotaLimitsRequest(
     string? Reason,
     string? Source,

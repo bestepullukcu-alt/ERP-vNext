@@ -520,6 +520,35 @@
   <data name="Password.Error.NewRequired" xml:space="preserve"><value>Le nouveau mot de passe est obligatoire.</value></data>
   <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>L'adresse e-mail est obligatoire.</value></data>
   <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>Le jeton de réinitialisation est obligatoire.</value></data>
+  <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Trop de demandes. Veuillez patienter quelques minutes puis réessayer.</value></data>
+  <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Votre mot de passe a été modifié entre-temps (par exemple par un administrateur). Veuillez vous reconnecter.</value></data>
+  <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Votre compte a été désactivé par un administrateur. Contactez votre administrateur.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>L'adresse e-mail ou le mot de passe est incorrect, ou le compte est temporairement verrouillé. Veuillez réessayer plus tard.</value></data>
+  <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>La connexion est temporairement indisponible. Veuillez réessayer dans un instant.</value></data>
+  <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>La connexion par e-mail est désactivée pour cette organisation.</value></data>
+  <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Votre mot de passe temporaire a expiré. Veuillez réinitialiser votre mot de passe.</value></data>
+  <data name="Auth.Error.PlatformPrivilegesRequired" xml:space="preserve"><value>Ce compte ne dispose d'aucun rôle d'administration de la plateforme.</value></data>
+  <data name="Auth.Error.InvalidVerificationCode" xml:space="preserve"><value>Le code de vérification est invalide ou a expiré.</value></data>
+  <data name="Auth.Error.CurrentPasswordIncorrect" xml:space="preserve"><value>Votre mot de passe actuel est incorrect.</value></data>
+  <data name="Auth.Error.SessionEnded" xml:space="preserve"><value>Votre session a pris fin. Veuillez vous reconnecter.</value></data>
+  <data name="Auth.Error.LinkInvalid" xml:space="preserve"><value>Ce lien n'est plus valide. Demandez un nouveau lien à votre administrateur.</value></data>
+  <data name="Auth.Error.LoginFailed" xml:space="preserve"><value>Échec de la connexion. Veuillez réessayer.</value></data>
+  <data name="Auth.Error.VerificationFailed" xml:space="preserve"><value>La vérification n'a pas pu être effectuée. Veuillez réessayer.</value></data>
+  <data name="Auth.Error.PasswordChangeFailed" xml:space="preserve"><value>Votre mot de passe n'a pas pu être modifié. Veuillez réessayer.</value></data>
+  <data name="Auth.Error.ServiceUnavailable" xml:space="preserve"><value>Le service de connexion est temporairement indisponible. Veuillez réessayer dans un instant.</value></data>
+  <data name="Auth.Error.RequestInvalid" xml:space="preserve"><value>La demande est incomplète. Veuillez vérifier les champs et réessayer.</value></data>
+  <data name="Auth.Error.TenantMissing" xml:space="preserve"><value>Ce lien de connexion ne contient aucune information sur l'organisation. Veuillez réutiliser votre lien d'invitation.</value></data>
+  <data name="Auth.Error.VerificationCodeRequired" xml:space="preserve"><value>Veuillez saisir le code de vérification.</value></data>
+  <data name="Auth.Error.VerificationChallengeRequired" xml:space="preserve"><value>L'étape de vérification a expiré. Veuillez vous reconnecter.</value></data>
+  <data name="Auth.Dialog.Ok" xml:space="preserve"><value>D'accord</value></data>
+  <data name="Auth.Mfa.Title" xml:space="preserve"><value>Vérification en deux étapes</value></data>
+  <data name="Auth.Mfa.Prompt" xml:space="preserve"><value>Saisissez le code de vérification envoyé à</value></data>
+  <data name="Auth.Mfa.CodeLabel" xml:space="preserve"><value>Code de vérification</value></data>
+  <data name="Auth.Mfa.Resend" xml:space="preserve"><value>Renvoyer le code</value></data>
+  <data name="Auth.Mfa.Verifying" xml:space="preserve"><value>Vérification...</value></data>
+  <data name="Auth.Mfa.Resending" xml:space="preserve"><value>Envoi...</value></data>
+  <data name="Auth.Mfa.ResentTitle" xml:space="preserve"><value>Code envoyé</value></data>
+  <data name="Auth.Mfa.ResentMessage" xml:space="preserve"><value>Un nouveau code de vérification a été envoyé.</value></data>
   <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Administration</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Activation développeur</value></data>
@@ -543,7 +572,7 @@
   <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Feuilles de temps</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Utilisateurs</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Rôles</value></data>
-  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Autorisations de rôle</value></data>
+  <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Autorisations des rôles</value></data>
   <data name="Nav.Page.USERROLES" xml:space="preserve"><value>Rôles des utilisateurs</value></data>
   <data name="Nav.Page.SECURITYSETTINGS" xml:space="preserve"><value>Paramètres de sécurité</value></data>
   <data name="Nav.Page.MENUSETTINGS" xml:space="preserve"><value>Paramètres du menu</value></data>
@@ -626,6 +655,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Modifier la tâche</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Référentiel Marque et Produit</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Référentiel Produit / Article / SKU</value>
   </data>
@@ -634,6 +666,9 @@
   </data>
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU</value>
+  </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>Articles</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Types de tâche</value>
@@ -704,6 +739,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Profils juridiques</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>Espace de visites</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>Planification des visites</value>
   </data>
@@ -748,6 +786,9 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Marques</value>
+  </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>Produits concurrents</value>
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Visites planifiées</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Visites planifiées</value></data>
@@ -1050,8 +1091,35 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accepter Quand Même</value>
   </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>La liste n'a pas pu être chargée.</value>
+  </data>
+  <data name="DtLoadNoPermission" xml:space="preserve">
+    <value>Vous n'avez pas l'autorisation de voir cette liste.</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>Rechercher ({0})</value>
+  </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>Une date saisie n'a pas pu être lue ; elle n'a donc pas été enregistrée. Saisissez-la de nouveau au format du champ ou choisissez-la dans le calendrier.</value>
+  </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Fabrication</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Nomenclatures et gammes</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Nomenclatures</value></data>
   <data name="Loading" xml:space="preserve">
     <value>Chargement...</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>Bibliothèque des objections</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Preuves de visite</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Seuils de potentiel</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
@@ -1064,6 +1132,9 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Chargements</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestion des réclamations</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Réclamations de transport</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activer</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="Login.EmailOrUsername" xml:space="preserve"><value>E-mail ou nom d'utilisateur</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventaire</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Registre des stocks</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Emplacements</value></data>
@@ -1085,4 +1156,6 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Politique de signature</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significations de signature</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Approbation des modèles</value></data>
+  <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
 </root>

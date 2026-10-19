@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Visit report</value></data>
+  <data name="BackLabel" xml:space="preserve"><value>Back</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="StepsLabel" xml:space="preserve"><value>Report steps</value></data>
+  <data name="TitleDoctor" xml:space="preserve"><value>Doctor visit report</value></data>
+  <data name="DeadlineChip" xml:space="preserve"><value>{0} h left for the report</value></data>
+  <data name="MissingChip" xml:space="preserve"><value>{0} fields missing</value></data>
+  <data name="ReadyChip" xml:space="preserve"><value>Ready to send</value></data>
+  <data name="AutoDraft" xml:space="preserve"><value>Automatic draft</value></data>
+  <data name="AutoSaved" xml:space="preserve"><value>Automatic draft · {0}</value></data>
+  <data name="Saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="NoVisitTitle" xml:space="preserve"><value>No visit selected.</value></data>
+  <data name="NoVisitText" xml:space="preserve"><value>Open the report from the visit workspace.</value></data>
+  <data name="NotFoundTitle" xml:space="preserve"><value>The visit was not found.</value></data>
+  <data name="NotFoundText" xml:space="preserve"><value>It may belong to another representative.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>The report could not be loaded.</value></data>
+  <data name="PharmacyTitle" xml:space="preserve"><value>Pharmacy report.</value></data>
+  <data name="PharmacyText" xml:space="preserve"><value>The pharmacy report screen is not available yet.</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Visit workspace</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>Unnamed product</value></data>
+  <data name="UnknownStep" xml:space="preserve"><value>Step</value></data>
+  <data name="SentTitle" xml:space="preserve"><value>Report sent</value></data>
+  <data name="SentText" xml:space="preserve"><value>You can change it for {0} minutes.</value></data>
+  <data name="BackToCalendar" xml:space="preserve"><value>Back to the calendar</value></data>
+  <data name="ViewReport" xml:space="preserve"><value>View the report</value></data>
+  <data name="SubmittedTitle" xml:space="preserve"><value>Report sent.</value></data>
+  <data name="EditableFor" xml:space="preserve"><value>It can be changed for {0} minutes.</value></data>
+  <data name="WindowClosed" xml:space="preserve"><value>60 minutes have passed; a change needs a reasoned amendment.</value></data>
+  <data name="UnlockButton" xml:space="preserve"><value>Change ({0} min)</value></data>
+  <data name="FixButton" xml:space="preserve"><value>Amend</value></data>
+  <data name="FixTitle" xml:space="preserve"><value>Reasoned amendment</value></data>
+  <data name="FixText" xml:space="preserve"><value>60 minutes have passed since the submission. A reason is required; the changed fields (old → new) appear in the report history.</value></data>
+  <data name="FixReasonPlaceholder" xml:space="preserve"><value>Reason (required)</value></data>
+  <data name="WarnProposalPending" xml:space="preserve"><value>The competitor proposal "{0}" will be sent to the reference list later.</value></data>
+  <data name="WarnSideEffect" xml:space="preserve"><value>The report was saved; one follow-up step will run again later.</value></data>
+  <data name="StepGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="StepSafety" xml:space="preserve"><value>Follow-up and safety</value></data>
+  <data name="StepDoctor" xml:space="preserve"><value>Doctor profile</value></data>
+  <data name="StepSummary" xml:space="preserve"><value>Summary and send</value></data>
+  <data name="StepMissing" xml:space="preserve"><value>{0} missing</value></data>
+  <data name="StepReady" xml:space="preserve"><value>ready to send</value></data>
+  <data name="StepDone" xml:space="preserve"><value>done</value></data>
+  <data name="StepProduct" xml:space="preserve"><value>product</value></data>
+  <data name="StepOf" xml:space="preserve"><value>Step {0} / {1}</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Back</value></data>
+  <data name="NextTo" xml:space="preserve"><value>Next: {0}</value></data>
+  <data name="NextShort" xml:space="preserve"><value>Next</value></data>
+  <data name="SaveDraftShort" xml:space="preserve"><value>Draft</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="Submit" xml:space="preserve"><value>Send the report</value></data>
+  <data name="SubmitFix" xml:space="preserve"><value>Send the amendment</value></data>
+  <data name="OutcomeLabel" xml:space="preserve"><value>Outcome</value></data>
+  <data name="OutcomeDone" xml:space="preserve"><value>Done</value></data>
+  <data name="OutcomeHint" xml:space="preserve"><value>Not done / Postpone is entered from the calendar.</value></data>
+  <data name="ActualTime" xml:space="preserve"><value>Actual start / end</value></data>
+  <data name="ServerTime" xml:space="preserve"><value>Server time; cannot be changed.</value></data>
+  <data name="NoExecution" xml:space="preserve"><value>The visit was not recorded in the presentation.</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} min</value></data>
+  <data name="SecondsShort" xml:space="preserve"><value>{0} s</value></data>
+  <data name="VisitKind" xml:space="preserve"><value>Visit type</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>In person</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Remote</value></data>
+  <data name="JointVisit" xml:space="preserve"><value>Joint visit</value></data>
+  <data name="CoVisitorCount" xml:space="preserve"><value>{0} co-visitors</value></data>
+  <data name="NoCoVisitor" xml:space="preserve"><value>No co-visitor</value></data>
+  <data name="MetPerson" xml:space="preserve"><value>Person met</value></data>
+  <data name="PlannedDoctor" xml:space="preserve"><value>The planned doctor</value></data>
+  <data name="GeneralNote" xml:space="preserve"><value>Overall assessment</value></data>
+  <data name="FromPresentation" xml:space="preserve"><value>from the presentation</value></data>
+  <data name="AddUnplanned" xml:space="preserve"><value>Unplanned product presented</value></data>
+  <data name="UnplannedTag" xml:space="preserve"><value>unplanned product</value></data>
+  <data name="UnplannedAdded" xml:space="preserve"><value>{0} was added as an unplanned product; a new step opened.</value></data>
+  <data name="Role_promo" xml:space="preserve"><value>Promotion</value></data>
+  <data name="Role_non_promo" xml:space="preserve"><value>Reminder</value></data>
+  <data name="SwipeHint" xml:space="preserve"><value>3 sections · swipe sideways</value></data>
+  <data name="GroupA" xml:space="preserve"><value>Presentation and interest</value></data>
+  <data name="GroupB" xml:space="preserve"><value>Market and competitor</value></data>
+  <data name="GroupC" xml:space="preserve"><value>Requests and next step</value></data>
+  <data name="GroupDone" xml:space="preserve"><value>complete</value></data>
+  <data name="PresentedSteps" xml:space="preserve"><value>Content presented</value></data>
+  <data name="MatchedPlan" xml:space="preserve"><value>followed the plan</value></data>
+  <data name="Deviation" xml:space="preserve"><value>deviation from the plan</value></data>
+  <data name="NoStepsShown" xml:space="preserve"><value>No slide of this product was shown.</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Time spent on the product (min)</value></data>
+  <data name="MinutesHint" xml:space="preserve"><value>Timer: {0} · you may correct it</value></data>
+  <data name="VisitSuccess" xml:space="preserve"><value>Visit success</value></data>
+  <data name="VisitSuccessHint" xml:space="preserve"><value>was the key message / next stage reached</value></data>
+  <data name="Commitment" xml:space="preserve"><value>Doctor's commitment</value></data>
+  <data name="Interest" xml:space="preserve"><value>Doctor's interest</value></data>
+  <data name="AdoptionStage" xml:space="preserve"><value>Adoption stage</value></data>
+  <data name="PreviousVisit" xml:space="preserve"><value>Previous visit: {0}</value></data>
+  <data name="SameButton" xml:space="preserve"><value>Same</value></data>
+  <data name="IndicationPatients" xml:space="preserve"><value>Patients in the indication (monthly)</value></data>
+  <data name="IndicationHint" xml:space="preserve"><value>Approved indication × patient profile list. Mark only the rows the doctor sees; the numbers are estimates.</value></data>
+  <data name="ThreeMonthHint" xml:space="preserve"><value>Asked every three months; the last value is shown until then.</value></data>
+  <data name="NoIndicationList" xml:space="preserve"><value>No indication list is defined for this product, so its potential is not asked; the doctor's total is in the profile step.</value></data>
+  <data name="PatientsPerMonth" xml:space="preserve"><value>patients / month</value></data>
+  <data name="PreviousValue" xml:space="preserve"><value>Previous: {0}</value></data>
+  <data name="NoPatients" xml:space="preserve"><value>Sees no patients in these indications</value></data>
+  <data name="LastPotential" xml:space="preserve"><value>Last value: {0} patients / month · {1}</value></data>
+  <data name="UpdateNumbers" xml:space="preserve"><value>Update</value></data>
+  <data name="DoctorTotalLine" xml:space="preserve"><value>Doctor's monthly total: {0} (doctor profile step)</value></data>
+  <data name="TotalExceeded" xml:space="preserve"><value>The indications add up to {0}, more than the doctor's total of {1}.</value></data>
+  <data name="ShareBucket" xml:space="preserve"><value>Our share of prescriptions</value></data>
+  <data name="ComputedLabel" xml:space="preserve"><value>Computed</value></data>
+  <data name="PotentialLabel" xml:space="preserve"><value>Potential</value></data>
+  <data name="PatientsCount" xml:space="preserve"><value>{0} patients / month</value></data>
+  <data name="ThresholdLine" xml:space="preserve"><value>Low &lt; {0} · High &gt; {1}</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>Preview; the server's value is recorded on send.</value></data>
+  <data name="Class_low" xml:space="preserve"><value>Low</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>Medium</value></data>
+  <data name="Class_high" xml:space="preserve"><value>High</value></data>
+  <data name="Opp_opportunity" xml:space="preserve"><value>Opportunity</value></data>
+  <data name="Opp_grow" xml:space="preserve"><value>Grow</value></data>
+  <data name="Opp_keep" xml:space="preserve"><value>Keep</value></data>
+  <data name="Opp_low_priority" xml:space="preserve"><value>Low priority</value></data>
+  <data name="Competitors" xml:space="preserve"><value>Competitor the doctor uses</value></data>
+  <data name="CompetitorsUnavailable" xml:space="preserve"><value>The competitor list could not be read; the report can still be sent.</value></data>
+  <data name="NoCompetitor" xml:space="preserve"><value>Uses no competitor</value></data>
+  <data name="ActiveIngredient" xml:space="preserve"><value>Active ingredient</value></data>
+  <data name="FormStrength" xml:space="preserve"><value>Form / strength</value></data>
+  <data name="BoxPrice" xml:space="preserve"><value>Price (box)</value></data>
+  <data name="ReimbursementLabel" xml:space="preserve"><value>Reimbursement</value></data>
+  <data name="ProposalPending" xml:space="preserve"><value>added by the rep · awaiting approval</value></data>
+  <data name="ProposalOnSubmit" xml:space="preserve"><value>added by the rep · sent for approval with the report</value></data>
+  <data name="NotInList" xml:space="preserve"><value>Not in the list, add a competitor</value></data>
+  <data name="CompetitorName" xml:space="preserve"><value>Competitor product name</value></data>
+  <data name="CompetitorCompany" xml:space="preserve"><value>Company</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Add</value></data>
+  <data name="DidYouMean" xml:space="preserve"><value>Already in the list?</value></data>
+  <data name="ProposalNeedsBoth" xml:space="preserve"><value>A proposal needs a name and a company.</value></data>
+  <data name="ProposalLater" xml:space="preserve"><value>The proposal could not be sent now; it will be sent with the report.</value></data>
+  <data name="AdvantageHint" xml:space="preserve"><value>Versus the competitor: one tap our advantage (+), two taps our disadvantage (−) · optional</value></data>
+  <data name="ObjectionsLabel" xml:space="preserve"><value>Objections</value></data>
+  <data name="AddObjection" xml:space="preserve"><value>Add objection</value></data>
+  <data name="NoObjection" xml:space="preserve"><value>No objection</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>Category…</value></data>
+  <data name="LibraryAnswer" xml:space="preserve"><value>Library answer used</value></data>
+  <data name="NoLibraryAnswer" xml:space="preserve"><value>None</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Note</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Resolved?</value></data>
+  <data name="Resolved_yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Resolved_partly" xml:space="preserve"><value>Partly</value></data>
+  <data name="Resolved_no" xml:space="preserve"><value>No</value></data>
+  <data name="RemoveLabel" xml:space="preserve"><value>Remove</value></data>
+  <data name="Requests" xml:space="preserve"><value>Doctor's requests</value></data>
+  <data name="AddRequest" xml:space="preserve"><value>Add request</value></data>
+  <data name="NoRequest" xml:space="preserve"><value>No request</value></data>
+  <data name="SelectRequest" xml:space="preserve"><value>Request…</value></data>
+  <data name="SampleLabel" xml:space="preserve"><value>Sample</value></data>
+  <data name="Choose" xml:space="preserve"><value>Choose…</value></data>
+  <data name="NoSample" xml:space="preserve"><value>No sample given</value></data>
+  <data name="SampleRecorded" xml:space="preserve"><value>Recorded sample</value></data>
+  <data name="NoGskus" xml:space="preserve"><value>No GSKU list for this product.</value></data>
+  <data name="QuantityLabel" xml:space="preserve"><value>Quantity</value></data>
+  <data name="Lot" xml:space="preserve"><value>Lot no · optional</value></data>
+  <data name="SampleSigned" xml:space="preserve"><value>Delivery signature taken · finish summary</value></data>
+  <data name="SampleNotSigned" xml:space="preserve"><value>No delivery signature in the finish summary</value></data>
+  <data name="NextMessage" xml:space="preserve"><value>Message for the next visit</value></data>
+  <data name="NextMessagePlaceholder" xml:space="preserve"><value>Message / target stage for the next visit</value></data>
+  <data name="Suggestion" xml:space="preserve"><value>Suggestion: {0}</value></data>
+  <data name="UseSuggestion" xml:space="preserve"><value>Use the suggestion</value></data>
+  <data name="SuggestStage" xml:space="preserve"><value>Next stage: {0}</value></data>
+  <data name="Suggest_commitment_will_try" xml:space="preserve"><value>How did it go? Ask about the trial patients</value></data>
+  <data name="Suggest_commitment_will_prescribe" xml:space="preserve"><value>Ask how the prescribed patients are doing</value></data>
+  <data name="Suggest_commitment_wants_info" xml:space="preserve"><value>Bring the information the doctor asked for</value></data>
+  <data name="FollowUpRequired" xml:space="preserve"><value>Follow-up needed</value></data>
+  <data name="FollowUpDate" xml:space="preserve"><value>Suggested next visit</value></data>
+  <data name="FollowUpNote" xml:space="preserve"><value>Follow-up note</value></data>
+  <data name="AdverseEventQ" xml:space="preserve"><value>Was a side effect / adverse event reported in the visit?</value></data>
+  <data name="AdverseEventYes" xml:space="preserve"><value>A pharmacovigilance report is required within 24 hours.</value></data>
+  <data name="AdverseEventNote" xml:space="preserve"><value>What was reported</value></data>
+  <data name="OffLabelQ" xml:space="preserve"><value>Did the doctor ask for off-label information?</value></data>
+  <data name="OffLabelYes" xml:space="preserve"><value>The request goes to an MSL; the representative does not answer it.</value></data>
+  <data name="YesOption" xml:space="preserve"><value>Yes</value></data>
+  <data name="NoOption" xml:space="preserve"><value>No</value></data>
+  <data name="ProfileHint" xml:space="preserve"><value>The doctor's record · your suggestions are saved, the previous value is kept</value></data>
+  <data name="Typology" xml:space="preserve"><value>Adoption typology</value></data>
+  <data name="CommunicationStyle" xml:space="preserve"><value>Communication style</value></data>
+  <data name="KolLevel" xml:space="preserve"><value>Influence level (KOL)</value></data>
+  <data name="OnRecord" xml:space="preserve"><value>on record</value></data>
+  <data name="ChangedTag" xml:space="preserve"><value>changed</value></data>
+  <data name="ChangeCount" xml:space="preserve"><value>{0} changes</value></data>
+  <data name="NoChange" xml:space="preserve"><value>no change</value></data>
+  <data name="TotalPatients" xml:space="preserve"><value>Doctor's total patients (monthly)</value></data>
+  <data name="LastTotal" xml:space="preserve"><value>Last value: {0} · {1}</value></data>
+  <data name="TotalHint" xml:space="preserve"><value>Doctor level (not per product), every three months; the indications cannot exceed it.</value></data>
+  <data name="TotalBelowProducts" xml:space="preserve"><value>The new total is below the patients already recorded for a product.</value></data>
+  <data name="BestTime" xml:space="preserve"><value>Best day / time</value></data>
+  <data name="PreferredChannel" xml:space="preserve"><value>Preferred channel</value></data>
+  <data name="ReadOnlyHere" xml:space="preserve"><value>Maintained in the doctor's availability and preferences.</value></data>
+  <data name="ShowHistory" xml:space="preserve"><value>Profile history</value></data>
+  <data name="HideHistory" xml:space="preserve"><value>Hide the history</value></data>
+  <data name="SourceReport" xml:space="preserve"><value>from a report</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>by hand</value></data>
+  <data name="Hist_adoptionTypologyCode" xml:space="preserve"><value>Adoption typology</value></data>
+  <data name="Hist_communicationStyleCode" xml:space="preserve"><value>Communication style</value></data>
+  <data name="Hist_kolLevelCode" xml:space="preserve"><value>KOL level</value></data>
+  <data name="Hist_totalMonthlyPatients" xml:space="preserve"><value>Total patients</value></data>
+  <data name="Hist_shareBucketCode" xml:space="preserve"><value>Our share</value></data>
+  <data name="Hist_noPatientsInIndications" xml:space="preserve"><value>No patients in the indications</value></data>
+  <data name="Day_monday" xml:space="preserve"><value>Monday</value></data>
+  <data name="Day_tuesday" xml:space="preserve"><value>Tuesday</value></data>
+  <data name="Day_wednesday" xml:space="preserve"><value>Wednesday</value></data>
+  <data name="Day_thursday" xml:space="preserve"><value>Thursday</value></data>
+  <data name="Day_friday" xml:space="preserve"><value>Friday</value></data>
+  <data name="Day_saturday" xml:space="preserve"><value>Saturday</value></data>
+  <data name="Day_sunday" xml:space="preserve"><value>Sunday</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Summary</value></data>
+  <data name="JointWith" xml:space="preserve"><value>joint visit: {0}</value></data>
+  <data name="CompetitorTag" xml:space="preserve"><value>Competitor: {0}</value></data>
+  <data name="SampleTag" xml:space="preserve"><value>Sample {0} units</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Edit</value></data>
+  <data name="AdverseEventShort" xml:space="preserve"><value>Adverse event: {0}</value></data>
+  <data name="OffLabelShort" xml:space="preserve"><value>Off-label: {0}</value></data>
+  <data name="NoAnswer" xml:space="preserve"><value>no answer</value></data>
+  <data name="MissingTitle" xml:space="preserve"><value>{0} missing</value></data>
+  <data name="ReadyText" xml:space="preserve"><value>Every required answer is given.</value></data>
+  <data name="ServerMissing" xml:space="preserve"><value>The server found {0} missing answers; they are listed below.</value></data>
+  <data name="MissingToast" xml:space="preserve"><value>{0} fields missing: {1}</value></data>
+  <data name="AmendmentsTitle" xml:space="preserve"><value>Amendments (old → new)</value></data>
+  <data name="SubmitSaved" xml:space="preserve"><value>The report was sent.</value></data>
+  <data name="FixSaved" xml:space="preserve"><value>The amendment was saved.</value></data>
+  <data name="DraftConflict" xml:space="preserve"><value>The report changed elsewhere; it was read again.</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>This list could not be read.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>The action failed. Try again.</value></data>
+  <data name="Field_visitKindCode" xml:space="preserve"><value>visit type</value></data>
+  <data name="Field_metContactId" xml:space="preserve"><value>person met</value></data>
+  <data name="Field_adverseEvent" xml:space="preserve"><value>adverse event question</value></data>
+  <data name="Field_adverseEventNote" xml:space="preserve"><value>adverse event note</value></data>
+  <data name="Field_offLabelRequest" xml:space="preserve"><value>off-label question</value></data>
+  <data name="Field_totalMonthlyPatients" xml:space="preserve"><value>doctor's monthly total</value></data>
+  <data name="Field_section" xml:space="preserve"><value>planned product</value></data>
+  <data name="Field_minutes" xml:space="preserve"><value>time spent</value></data>
+  <data name="Field_visitSuccessCode" xml:space="preserve"><value>visit success</value></data>
+  <data name="Field_commitmentCode" xml:space="preserve"><value>doctor's commitment</value></data>
+  <data name="Field_interestCode" xml:space="preserve"><value>interest</value></data>
+  <data name="Field_adoptionStageCode" xml:space="preserve"><value>adoption stage</value></data>
+  <data name="Field_shareBucketCode" xml:space="preserve"><value>our share</value></data>
+  <data name="Field_potential" xml:space="preserve"><value>patients in the indication</value></data>
+  <data name="Field_potentialExceedsTotal" xml:space="preserve"><value>indications above the doctor's total</value></data>
+  <data name="Field_totalBelowProducts" xml:space="preserve"><value>total below a product</value></data>
+  <data name="Field_competitors" xml:space="preserve"><value>competitor</value></data>
+  <data name="Field_objections" xml:space="preserve"><value>objections</value></data>
+  <data name="Field_objections_categoryCode" xml:space="preserve"><value>objection category</value></data>
+  <data name="Field_objections_resolved" xml:space="preserve"><value>objection resolved?</value></data>
+  <data name="Field_requests" xml:space="preserve"><value>requests</value></data>
+  <data name="Field_requests_typeCode" xml:space="preserve"><value>request type</value></data>
+  <data name="Field_sample" xml:space="preserve"><value>sample</value></data>
+  <data name="Field_nextMessage" xml:space="preserve"><value>next message</value></data>
+  <data name="Field_amendReason" xml:space="preserve"><value>amendment reason</value></data>
+  <data name="Err_report_incomplete" xml:space="preserve"><value>Required answers are missing.</value></data>
+  <data name="Err_report_code_invalid" xml:space="preserve"><value>A chosen value is no longer in its list; choose again.</value></data>
+  <data name="Err_report_v2_invalid" xml:space="preserve"><value>Some values are out of range.</value></data>
+  <data name="Err_report_not_v2" xml:space="preserve"><value>This report is an older version; open it on the visit execution screen.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>A reference list could not be read. Nothing was saved.</value></data>
+  <data name="Err_visit_report_concurrency_conflict" xml:space="preserve"><value>The report changed since it was loaded; it was read again.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>The 60 minutes have passed; use a reasoned amendment.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>The report deadline has passed.</value></data>
+  <data name="Err_visit_execution_not_finished" xml:space="preserve"><value>Finish the visit in the presentation first.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>The visit was cancelled.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>The visit is not due yet.</value></data>
+  <data name="Err_potential_exceeds_total" xml:space="preserve"><value>The indications exceed the doctor's monthly total.</value></data>
+  <data name="Err_visit_report_amendment_reason_required" xml:space="preserve"><value>A reason is required.</value></data>
+  <data name="Err_visit_report_not_finalised" xml:space="preserve"><value>Only a sent report can be amended.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>A report is sent by the signed-in representative only.</value></data>
+  <data name="Err_visit_report_planned_visit_not_found" xml:space="preserve"><value>The visit was not found.</value></data>
+  <data name="Form_tablet" xml:space="preserve"><value>tablet</value></data>
+  <data name="Form_capsule" xml:space="preserve"><value>capsule</value></data>
+  <data name="Form_syrup" xml:space="preserve"><value>syrup</value></data>
+  <data name="Form_injection" xml:space="preserve"><value>injection</value></data>
+  <data name="Form_ointment" xml:space="preserve"><value>ointment</value></data>
+  <data name="Form_cream" xml:space="preserve"><value>cream</value></data>
+  <data name="Form_drops" xml:space="preserve"><value>drops</value></data>
+  <data name="Form_inhaler" xml:space="preserve"><value>inhaler</value></data>
+  <data name="Form_patch" xml:space="preserve"><value>patch</value></data>
+  <data name="Form_other" xml:space="preserve"><value>other form</value></data>
+  <data name="Form_film_coated_tablet" xml:space="preserve"><value>film-coated tablet</value></data>
+  <data name="Form_modified_release_tablet" xml:space="preserve"><value>modified-release tablet</value></data>
+  <data name="Form_extended_release_tablet" xml:space="preserve"><value>extended-release tablet</value></data>
+  <data name="Form_modified_release_capsule" xml:space="preserve"><value>modified-release capsule</value></data>
+  <data name="Form_ampoule" xml:space="preserve"><value>ampoule</value></data>
+</root>

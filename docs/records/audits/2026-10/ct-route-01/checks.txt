@@ -1,0 +1,183 @@
+=== pinned sources (SHA-256) — worktree, pinned-source clone A, merged-tree clone B
+scripts/ct_route.py  W 8cd2b2f7ded7c59f045b00890d6408c87f11d894ba212fc4455f4f304644ae17  A same  B same
+.antigravity/rules/capability-pack-standard.md  W ee5241de42f5a571b2d57996beef020e5473a24f67c4fc4aef7b00c496012a73  A same  B same
+docs/guides/operations/control-tower-operating-card.md  W dcc25aad29fef64899b438d650ba9a859e51665c000b1a0f4d23f3df1543e990  A same  B same
+execution/delivery/ct-contacts-template.tsv  W b17d9b5aa4d6025d9c6aac0927b0a49bd98839478ff9c70c87d35eb791e5b5ea  A same  B same
+
+=== merged tree
+X=181714f12634612616e586501556cae06f1ce689 MAIN=3912d568b18193f627539a1b27965167ac4077b6 T=0a62a475b1bda39bb3138d4d0e63227e051336b6
+merge-tree exit 0 · B index tree before the run 0a62a475b1bda39bb3138d4d0e63227e051336b6 · after the run: the same; diff-files 0 · HEAD = X (single parent b0faa372b), not a merge commit
+
+=== self-tests in A and B (each output identical A vs B)
+A .antigravity_scripts_list_screen_touch_hook.py: self-test: 21/21 passed
+A scripts_acceptance_record.py: self-test: 100/100 passed
+A scripts_ct_queue.py: self-test: 69/69 passed
+A scripts_ct_route.py: self-test: 167/167 passed
+A scripts_known_failures.py: self-test: 24/24 passed
+A scripts_prompt_gate.py: self-test: 71/71 passed
+A scripts_status_report.py: self-test: 75/75 passed
+B .antigravity_scripts_list_screen_touch_hook.py: self-test: 21/21 passed
+B scripts_acceptance_record.py: self-test: 100/100 passed
+B scripts_ct_queue.py: self-test: 69/69 passed
+B scripts_ct_route.py: self-test: 167/167 passed
+B scripts_known_failures.py: self-test: 24/24 passed
+B scripts_prompt_gate.py: self-test: 71/71 passed
+B scripts_status_report.py: self-test: 75/75 passed
+
+=== sabotage of ct_route.py (sab_route.py) — summary
+guards 115 · each line names the red tests (sabotage.txt) · no red 0 · crashed 0
+
+=== real-git end to end (e2e_route.py), from the worktree's HEAD
+PASS 38 · FAIL 0 · result: 0 failed
+
+=== the same driver from the merged tree's single-parent fixture base
+PASS 38 · FAIL 0 · result: 0 failed
+
+=== wiring sabotage at real git (sab_e2e.py)
+[e2e wiring] 1 removed: reads at the fixed SHA, never the working tree -> exit 1; result: 17 failed — ['prep', 'prep in-force', 'ref C1', 'working tree ignored', 'rival module', 'main baseline_commit', 'main vocabulary', 'main strict', 'main control_tower', 'main path', 'main wp the WP renamed', "main wp the WP's module changed", 'main wp the WP twice', 'main no registry', 'main no registry in-force', 'ref registry', 'prefix']
+[e2e wiring] 2 removed: in force on origin/main, not on the ref -> exit 1; result: 15 failed — ['prep', 'prep in-force', 'rival module', 'main baseline_commit', 'main vocabulary', 'main strict', 'main control_tower', 'main path', 'main wp the WP renamed', "main wp the WP's module changed", 'main wp the WP twice', 'main no registry', 'main no registry in-force', 'no main in-force', 'no main']
+[e2e wiring] 3 removed: the registry contract at every snapshot -> exit 1; result: 6 failed — ['main baseline_commit', 'main vocabulary', 'main strict', 'main control_tower', 'main path', 'ref registry']
+[e2e wiring] 4 removed: a main without a registry is 'no mapping', not unmeasurable -> exit 1; result: 2 failed — ['main no registry', 'main no registry in-force']
+[e2e wiring] 5 removed: packs read by the strict künye reader -> exit 1; result: 2 failed — ['dup id MOD-0151', 'dup id MOD-0150']
+[e2e wiring] 6 removed: every worktree and the git directory are roots -> exit 1; result: 1 failed — ['contacts in worktree']
+
+=== the real repository at HEAD, read only (scripts/ct_route.py)
+$ python3 scripts/ct_route.py --kind delivery --module MOD-0151
+CT YÖNLENDİRME — teslimat · MOD-0151
+kaynak: ref b0faa372bf290752ba4d63851b3453b75665e1d1 · yerel origin/main 3912d568b18193f627539a1b27965167ac4077b6 — uzak durum doğrulanmadı (fetch yapılmadı)
+aday: yok
+sonuç: tek hedef yok — MOD-0151 hiçbir Control Tower'a atanmış bir dilimde yok; koordinatöre sorulur, tahmin edilmez
+koordinatör: atanmış bir dilimde yok — sahibe ya da kapanış Control Tower'ına sorulur (kart §8)
+SORU TASLAĞI — otomatik gönderim yok; bu araç hiçbir şey göndermez, kanalı ve gönderimi siz seçersiniz:
+  Kime: koordinatör — sahip / kapanış Control Tower'ı
+  Konu: MOD-0151
+  Soru: MOD-0151 hiçbir Control Tower'a atanmış bir dilimde yok. Hangi Control Tower sorumlu?
+  Dayanak: ref b0faa372bf290752ba4d63851b3453b75665e1d1
+kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+çıkış: 1
+(exit 1)
+
+$ python3 scripts/ct_route.py --kind contract --module MOD-0151
+CT YÖNLENDİRME — sözleşme · MOD-0151
+kaynak: ref b0faa372bf290752ba4d63851b3453b75665e1d1 · yerel origin/main 3912d568b18193f627539a1b27965167ac4077b6 — uzak durum doğrulanmadı (fetch yapılmadı)
+önce oku: execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md@b0faa372bf290752ba4d63851b3453b75665e1d1 · status ready-for-dev
+aday: yok
+sonuç: tek hedef yok — MOD-0151 hiçbir Control Tower'a atanmış bir dilimde yok; koordinatöre sorulur, tahmin edilmez
+koordinatör: atanmış bir dilimde yok — sahibe ya da kapanış Control Tower'ına sorulur (kart §8)
+SORU TASLAĞI — otomatik gönderim yok; bu araç hiçbir şey göndermez, kanalı ve gönderimi siz seçersiniz:
+  Kime: koordinatör — sahip / kapanış Control Tower'ı
+  Konu: MOD-0151
+  Soru: MOD-0151 hiçbir Control Tower'a atanmış bir dilimde yok. Hangi Control Tower sorumlu?
+  Dayanak: ref b0faa372bf290752ba4d63851b3453b75665e1d1
+kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+çıkış: 1
+(exit 1)
+
+$ python3 scripts/ct_route.py --kind delivery --wp Q01 --queue sce-mvp6
+CT YÖNLENDİRME — teslimat · Q01 @ sce-mvp6
+kaynak: ref b0faa372bf290752ba4d63851b3453b75665e1d1 · yerel origin/main 3912d568b18193f627539a1b27965167ac4077b6 — uzak durum doğrulanmadı (fetch yapılmadı)
+sonuç: tek hedef yok — 'sce-mvp6' kaydının kapsamı 'dcp:' önekiyle başlamıyor — serbest metin, yönlendirme verisi değil; koordinatöre sorulur, tahmin edilmez
+koordinatör: atanmış bir dilimde yok — sahibe ya da kapanış Control Tower'ına sorulur (kart §8)
+SORU TASLAĞI — otomatik gönderim yok; bu araç hiçbir şey göndermez, kanalı ve gönderimi siz seçersiniz:
+  Kime: koordinatör — sahip / kapanış Control Tower'ı
+  Konu: Q01 (sce-mvp6)
+  Soru: 'sce-mvp6' kaydının kapsamı 'dcp:' önekiyle başlamıyor — serbest metin, yönlendirme verisi değil. Hangi Control Tower sorumlu?
+  Dayanak: ref b0faa372bf290752ba4d63851b3453b75665e1d1
+kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+çıkış: 1
+(exit 1)
+
+$ python3 scripts/ct_route.py --kind delivery --module MOD-0151 --in-force
+CT YÖNLENDİRME — teslimat · MOD-0151
+kaynak: ref b0faa372bf290752ba4d63851b3453b75665e1d1 · yerel origin/main 3912d568b18193f627539a1b27965167ac4077b6 — uzak durum doğrulanmadı (fetch yapılmadı)
+aday: yok
+sonuç: tek hedef yok — MOD-0151 hiçbir Control Tower'a atanmış bir dilimde yok; koordinatöre sorulur, tahmin edilmez
+koordinatör: atanmış bir dilimde yok — sahibe ya da kapanış Control Tower'ına sorulur (kart §8)
+SORU TASLAĞI — otomatik gönderim yok; bu araç hiçbir şey göndermez, kanalı ve gönderimi siz seçersiniz:
+  Kime: koordinatör — sahip / kapanış Control Tower'ı
+  Konu: MOD-0151
+  Soru: MOD-0151 hiçbir Control Tower'a atanmış bir dilimde yok. Hangi Control Tower sorumlu?
+  Dayanak: ref b0faa372bf290752ba4d63851b3453b75665e1d1
+kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+çıkış: 1
+(exit 1)
+
+$ python3 scripts/ct_route.py --kind delivery --module MOD-0151 --contacts __HOME__/ERP-vNext/AGENTS.md
+sonuç: ÖLÇÜLEMEZ — contacts dosyası bu deponun bir checkout'unda (ana checkout, bir worktree ya da git dizini) — depo dışında olmalı
+tek hedef tahmin edilmedi
+çıkış: 2
+(exit 2)
+
+$ python3 scripts/ct_route.py --kind delivery --module MOD-0151 --ref=--output=x
+sonuç: ÖLÇÜLEMEZ — ref '--output=x' geçersiz
+tek hedef tahmin edilmedi
+çıkış: 2
+(exit 2)
+
+=== Codex's probes, run by the AI session on the pinned code (own scratch fixture)
+code sha256 (fixture): 8cd2b2f7ded7c59f045b00890d6408c87f11d894ba212fc4455f4f304644ae17
+cli_probe: 14/14
+  PASS exit 0 (expected 0) MVP3 lookup
+  PASS exit 0 (expected 0) WP lookup
+  PASS exit 0 (expected 0) provider contract lookup
+  PASS exit 2 (expected 2) consumer WP is not contract provider
+  PASS exit 0 (expected 0) in-force confirmed baseline
+  PASS exit 2 (expected 2) unknown ref
+  PASS exit 2 (expected 2) option-like ref
+  PASS exit 0 (expected 0) contacts keyed by queue despite shared CT label
+  PASS exit 2 (expected 2) in-repo contacts are refused
+  PASS exit 0 (expected 0) dirty working tree does not alter fixed commit lookup
+  PASS exit 1 (expected 1) main-only competing assignment blocks in-force old-source target
+  PASS exit 0 (expected 0) WP context stays valid despite another CT delivering the same module
+  PASS exit 0 (expected 0) local-only scope has a target for preparation
+  PASS exit 1 (expected 1) same queue with a local-only different scope is not in force
+main_registry_probe: 5/5
+  PASS exit 2 invalid baseline
+  PASS exit 2 invalid vocabulary
+  PASS exit 2 invalid strict
+  PASS exit 2 empty CT name
+  PASS exit 2 different task source
+parser_probe: 14/14
+
+=== real files read by the new readers (working tree, nothing changed)
+DCPs with a slice table added in memory: 16 read · 3 not:
+  DCP-001-access-governance.md: read, DCP-001 status approved
+  DCP-002-module-identity-canonicalization.md: read, DCP-002 status approved
+  DCP-003-ppm-work-management.md: read, DCP-003 status draft
+  DCP-004-corporate-collection-controlled-document-registration-scope.md: read, DCP-004 status approved
+  DCP-004-mod-0290-sku-coding-foundation-readiness.md: read, DCP-004 status approved
+  DCP-004-open-decision-records-2026-08-09.md: read, DCP-004-ODR status approved
+  DCP-004-pvg-urgent-w3-development-block.md: read, DCP-004 status approved
+  DCP-004-work-aggregation-task-center.md: read, DCP-004 status approved
+  DCP-005-management-governance-core.md: read, DCP-005 status approved
+  DCP-006-crm-commercial-delivery-capability-pack.md: read, DCP-006 status draft
+  DCP-006-portfolio-delivery-process-core.md: read, DCP-006 status approved
+  DCP-007-qms-baseline-import-completion-visibility-consumer-guardrails.md: read, DCP-007 status under-review
+  DCP-008-internal-document-repository-service.md: read, DCP-008 status approved
+  DCP-009-supply-chain-inventory.md: read, DCP-009 status approved
+  DCP-010-procurement-p2p.md: read, DCP-010 status approved
+  UNASSIGNED-product-regulatory-pharmacovigilance-traceability-readiness.md: read, UNASSIGNED status draft
+  DCP-004-provider-action-dispatch.md: DCP künyesi: künye '---' ile başlamıyor
+  DCP-004-provider-onboarding-note.md: DCP künyesi: künye '---' ile başlamıyor
+  DCP-005-task-document-reference.md: DCP künyesi: künye '---' ile başlamıyor
+module packs with an id: 159 · read as the old reader read them: 159 · packs without an id (no künye): 4
+
+=== architecture suite on the merged tree (one run)
+Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 39 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+downloads in the log: 0
+B-run-raw.trx: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0 (exit 0)
+B-run.sanitized.trx: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0 (exit 0)
+fingerprints: sanitised = raw
+fingerprints: = the previous merged-tree run (ct-final-local-01)
+raw sha256 132f71a374300b215b03405cb933e6e558ed91d2d6525cfe4974bfe22873a7d7 · sanitised sha256 0af9f12b93d0d38d9f0baa2c83b012064eec97e1662e78f5cb4ba7de0a7cb42e
+normalised roots: __TEST_REPO__ 168 + 138 (mixed and lower case) · sanitiser R1=0 R2=145 R3=1 R4=1 · leftover home 0, user 0, clone root 0, scratch root 0; computerName fields sanitised (the raw three-digit value's digits also occur by chance in a GUID and a numeric table cell — not an identity remnant; Codex checked field by field)
+
+=== protected files and SOP from §36.2
+unchanged execution/delivery/ct-queue-registry.tsv
+unchanged execution/delivery/ct-queue-template.tsv
+unchanged docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv
+unchanged execution/domains/supply-chain-execution/work-packs/CT-QUEUE.tsv (absent before and now)
+unchanged scripts/ct_queue.py
+unchanged scripts/prompt_gate.py
+unchanged scripts/acceptance_record.py
+SOP from §36.2: sha256 905cccd6ecd048a8dfb3bcc5f02615322a76232edbf49383d926039d55a6d06b (= the baseline)

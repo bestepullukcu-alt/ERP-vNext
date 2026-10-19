@@ -1,0 +1,78 @@
+"""CT-FIX-08 / İ5B-FIX-09 guard removal: each guard undone in its own copy outside the repository; the named tests must
+fail (or time out — a hang is a failure). Usage: python3 harness2.py <fixed-src> <work dir> <ct|i5b> <out.json>"""
+import json, shutil, subprocess, sys, os, time
+SRC, WORK, LINE, OUT = sys.argv[1:5]
+T = "scripts.tests.test_ct_cli_regression."
+D = "scripts.tests.test_verify_module_id_discover.DiscoverySummary."
+V = T + "CTFIX08_VisibleTextAndPaths."
+CT = [
+ ("G-V1 visible content read as strip()", "scripts/ct_queue.py",
+  '    return any(unicodedata.category(c)[0] in "LNPS" for c in str(value or ""))',
+  '    return bool(str(value or "").strip())', [V + "test_a_cited_line_needs_visible_content", V + "test_a_broken_registry_stops_validate_and_require"]),
+ ("G-V2 evidence lines split by splitlines() again", "scripts/acceptance_record.py",
+  '    lines = text.split("\\n") if text else []\n', '    lines = text.splitlines(True) and text.splitlines()\n', [V + "test_a_cited_line_needs_visible_content"]),
+ ("G-Z1 discovery reads the text listing", ".antigravity/scripts/verify_module_id.py",
+  '                entries = nul_paths(_git(root, "ls-tree", "-r", "-z", tree, raw=True), "ls-tree")',
+  '                entries = _git(root, "ls-tree", "-r", tree).splitlines()', [V + "test_quoted_paths_are_listed_by_every_consumer"]),
+ ("G-Z2 the gate reads the text listing", "scripts/prompt_gate.py",
+  '            return _SHARED.nul_paths(self._git(self.worktree, "ls-tree", "-r", "--name-only", "-z", commit, raw=True), "ls-tree")',
+  '            return self._git(self.worktree, "ls-tree", "-r", "--name-only", commit).splitlines()', [V + "test_quoted_paths_are_listed_by_every_consumer"]),
+ ("G-Z3 the report reads the text listing", "scripts/status_report_v2.py",
+  '            listing = _nul_paths()(self.git("ls-tree", "-r", "-z", commit, "--", prefix).stdout, "ls-tree")',
+  '            listing = self.git("ls-tree", "-r", commit, "--", prefix).stdout.decode("utf-8", errors="replace").splitlines()',
+  [V + "test_quoted_paths_are_listed_by_every_consumer"]),
+ ("G-Z4 a non-UTF-8 entry is replaced, not refused", "scripts/ct_queue.py",
+  '            out.append(entry.decode("utf-8"))', '            out.append(entry.decode("utf-8", errors="replace"))', [V + "test_the_nul_listing_decoder_refuses_a_broken_listing"]),
+ ("G-Z5 a listing without its final NUL accepted", "scripts/ct_queue.py",
+  '    if not raw.endswith(b"\\0"):\n', '    if False:\n', [V + "test_the_nul_listing_decoder_refuses_a_broken_listing"]),
+ ("G-Z6 an empty entry inside skipped", "scripts/ct_queue.py",
+  '        if not entry:\n            raise ValueError(', '        if not entry and False:\n            raise ValueError(', [V + "test_the_nul_listing_decoder_refuses_a_broken_listing"]),
+ ("G-R2 validate reads task files after a broken registry", "scripts/ct_queue.py",
+  '        if broken:   # CT-FIX-08', '        if False:   # CT-FIX-08', [V + "test_a_broken_registry_stops_validate_and_require"]),
+ ("G-R3 require answers 1 for a broken registry", "scripts/ct_queue.py",
+  '             + " · ayrıntı: python3 scripts/ct_queue.py validate", 2)', '             + " · ayrıntı: python3 scripts/ct_queue.py validate", 1)',
+  [V + "test_a_broken_registry_stops_validate_and_require"]),
+ ("G-O1 the open decisions after the collision groups again", ".antigravity/scripts/verify_module_id.py",
+  '        items.insert(1, [_list_capped("ÖZET açık kararlar', '        items.insert(len(items), [_list_capped("ÖZET açık kararlar',
+  [D + "test_the_open_decisions_survive_a_wide_query", D + "test_the_open_decisions_follow_the_collisions"]),
+]
+B = "scripts.tests.test_sync_adapters_budget.InstructionBudget."
+I5B = [
+ ("G-H4 the opener class narrowed to complete tags", ".antigravity/scripts/sync_adapters.py",
+  'RAW_HTML_OPENER = re.compile(r"<(?:[A-Za-z]|/[A-Za-z]|!--|![A-Za-z]|!\\[CDATA\\[|\\?)")',
+  'RAW_HTML_OPENER = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\\s[^<>]*)?/?>")', [B + "test_the_raw_html_opener_class_is_refused_before_and_in_the_core"]),
+ ("G-H5 the short-term exception for any exact span", ".antigravity/scripts/sync_adapters.py",
+  ' and not any(c.isspace() for c in inner))', ')', [B + "test_a_phrase_that_is_a_span_of_its_own_is_lost_and_short_terms_still_count"]),
+]
+mod_prefix = ""
+CONTROL = (T + "Controls.test_consumers_on_the_intact_fixture_exit_0") if LINE == "ct" else (B + "test_a_dead_link_is_still_a_dead_link")
+results = []
+for i, (label, path, old, new, tests) in enumerate(CT if LINE == "ct" else I5B):
+    d = os.path.join(WORK, f"g{i:02d}")
+    shutil.copytree(SRC, d)
+    f = os.path.join(d, path)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    compiled = True
+    if path.endswith(".py"):   # a mutation that breaks the file proves nothing
+        compiled = subprocess.run([sys.executable, "-B", "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())", f]).returncode == 0
+    t0 = time.time()
+    def unit(names):
+        try:
+            p = subprocess.run([sys.executable, "-B", "-m", "unittest", *[mod_prefix + t for t in names]], cwd=d,
+                               capture_output=True, text=True, timeout=240)
+            return p.returncode, (p.stderr.strip().splitlines() or [""])[-1]
+        except subprocess.TimeoutExpired:
+            return "timeout", "the test did not finish in 240 s (a hang is a failure)"
+    code, tail = unit(tests)
+    ccode, ctail = unit([CONTROL])   # the intact path still works in the same copy: the red is the guard, not a crash
+    proven = compiled and code != 0 and ccode == 0
+    results.append({"mutation": label, "applied": True, "file": path, "tests": tests, "exit": code, "red": code != 0,
+                    "summary": tail, "parsed": compiled, "control": CONTROL, "control_exit": ccode, "control_summary": ctail,
+                    "proven": proven, "seconds": round(time.time() - t0)})
+    print(label, "PROVEN" if proven else "NOT PROVEN", "| named:", tail, "| control:", ctail, flush=True)
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("proven", sum(r.get("proven", False) for r in results), "of", len(results))

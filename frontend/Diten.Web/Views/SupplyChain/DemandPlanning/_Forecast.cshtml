@@ -1,0 +1,75 @@
+@using Diten.Web.Views.SupplyChain.DemandPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DemandPlanningIndex> Localizer
+@{
+    var canCreateDraft = ViewData["CanCreateDraft"] as bool? == true;
+}
+<main id="demandForecast" data-can-create-draft="@(canCreateDraft ? "true" : "false")">
+    <header class="mb-3">
+        <h1 class="h5 mb-1">@Localizer["Title"]</h1>
+        <p class="text-muted mb-0">@Localizer["ForecastIntro"]</p>
+    </header>
+    <p class="alert alert-info">@Localizer["ForecastAuthorityPending"]</p>
+    <p id="forecastStatus" role="status" aria-live="polite">@Localizer["ForecastLoading"]</p>
+    <form id="forecastScope" novalidate class="card card-body mb-3" hidden>
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <label for="forecastCompany" class="form-label">@Localizer["Company"] <span class="text-danger">*</span></label>
+                <div class="diten-field"><i class="bx bx-building-house diten-field-icon" aria-hidden="true"></i><select id="forecastCompany" class="form-select" required disabled></select></div>
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="forecastCycle" class="form-label">@Localizer["Cycle"] <span class="text-danger">*</span></label>
+                <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input id="forecastCycle" class="form-control" required maxlength="36" /></div>
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="forecastSku" class="form-label">@Localizer["HistorySku"] <span class="text-danger">*</span></label>
+                <div class="diten-field"><i class="bx bx-package diten-field-icon" aria-hidden="true"></i><input id="forecastSku" class="form-control" required maxlength="36" /></div>
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="forecastWarehouse" class="form-label">@Localizer["HistoryWarehouse"] <span class="text-danger">*</span></label>
+                <div class="diten-field"><i class="bx bx-building diten-field-icon" aria-hidden="true"></i><input id="forecastWarehouse" class="form-control" required maxlength="200" /></div>
+            </div>
+            @if (canCreateDraft)
+            {
+                <div class="col-12 col-md-6">
+                    <label for="forecastVersion" class="form-label">@Localizer["ForecastCycleVersion"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-revision diten-field-icon" aria-hidden="true"></i><input id="forecastVersion" type="number" class="form-control" required min="0" step="1" /></div>
+                </div>
+            }
+        </div>
+        <p class="text-muted mt-3">@Localizer["ForecastScopeHelp"]</p>
+        <div><button class="btn btn-primary" type="submit">@Localizer["ForecastEvaluate"]</button></div>
+    </form>
+    <section id="forecastEvaluation" class="card card-body mb-3" hidden aria-labelledby="forecastEvaluationTitle">
+        <h2 id="forecastEvaluationTitle" class="h5">@Localizer["ForecastCandidates"]</h2>
+        <p>@Localizer["ForecastComparisonHelp"]</p>
+        <p id="forecastPolicy"></p>
+        <div id="forecastCandidates" class="row g-3"></div>
+        @if (canCreateDraft)
+        {
+            <form id="forecastCommand" novalidate class="mt-4">
+                @Html.AntiForgeryToken()
+                <label for="forecastMethod" class="form-label">@Localizer["ForecastMethod"] <span class="text-danger">*</span></label>
+                <div class="diten-field"><i class="bx bx-line-chart diten-field-icon" aria-hidden="true"></i><select id="forecastMethod" class="form-select mb-3" required></select></div>
+                <label for="forecastReason" class="form-label">@Localizer["Reason"] <span class="text-danger">*</span></label>
+                <div class="diten-field"><i class="bx bx-message-detail diten-field-icon diten-field-icon--top" aria-hidden="true"></i><textarea id="forecastReason" class="form-control mb-3" required maxlength="2000" rows="3"></textarea></div>
+                <button id="forecastCreate" type="submit" class="btn btn-primary">@Localizer["ForecastCreate"]</button>
+            </form>
+        }
+    </section>
+    <div id="forecastCreated" class="mb-3" hidden>
+        <p id="forecastCreatedInfo" class="alert alert-success"></p>
+        <button id="forecastOpenDraft" type="button" class="btn btn-outline-primary">@Localizer["ForecastOpenDraft"]</button>
+    </div>
+    <section id="forecastDraft" class="card card-body" hidden aria-labelledby="forecastDraftTitle">
+        <h2 id="forecastDraftTitle" class="h5">@Localizer["Draft"]</h2>
+        <p id="forecastDraftInfo"></p>
+        <p id="forecastDraftUnit" class="alert alert-warning" hidden>@Localizer["HistoryUnitPending"]</p>
+        <button id="forecastAllWeeks" type="button" class="btn btn-outline-secondary mb-3">@Localizer["ShowAllWeeks"]</button>
+        <div class="table-responsive">
+            <table class="table"><thead><tr>
+                <th>@Localizer["Week"]</th><th>@Localizer["Quantity"]</th><th>@Localizer["HistoryUnit"]</th>
+            </tr></thead><tbody id="forecastDraftWeeks"></tbody></table>
+        </div>
+    </section>
+</main>

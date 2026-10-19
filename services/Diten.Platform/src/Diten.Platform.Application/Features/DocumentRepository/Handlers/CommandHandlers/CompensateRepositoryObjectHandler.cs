@@ -14,5 +14,5 @@ public sealed class CompensateRepositoryObjectHandler
     public CompensateRepositoryObjectHandler(DocumentRepositoryService service) => _service = service;
 
     public Task<Response<NoContent>> Handle(CompensateRepositoryObjectCommand request, CancellationToken cancellationToken) =>
-        _service.CompensateAsync(request.ContentId, request.CorrelationId, cancellationToken);
+        _service.CompensateForCallerAsync(request.ContentId, request.CorrelationId, cancellationToken);
 }

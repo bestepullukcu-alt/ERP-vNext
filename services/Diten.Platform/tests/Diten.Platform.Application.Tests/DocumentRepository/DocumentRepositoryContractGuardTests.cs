@@ -124,8 +124,10 @@ public sealed class DocumentRepositoryContractGuardTests
 
     // AD-7: purge.execute is segregated and must NOT be defined by FU01 — defining it would let an
     // implementer wire a destruction path before MOD-0030 owns the retention decision.
+    // WP-VW-W3-PLT — the set is pinned on purpose; the only addition is the three scope-bound visit-evidence keys
+    // (§2.1 of WP-VW-W3), none of which is a purge or a general key.
     [Fact]
-    public void FU01_defines_only_read_and_manage_and_never_a_purge_permission()
+    public void Defines_read_manage_and_the_visit_evidence_keys_and_never_a_purge_permission()
     {
         var keys = typeof(DocumentRepositoryPermissions)
             .GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -134,7 +136,13 @@ public sealed class DocumentRepositoryContractGuardTests
             .ToArray();
 
         Assert.Equal(
-            ["platform.document-repository.manage", "platform.document-repository.read"],
+            [
+                "platform.document-repository.manage",
+                "platform.document-repository.read",
+                "platform.document-repository.visit-evidence.read",
+                "platform.document-repository.visit-evidence.read-all",
+                "platform.document-repository.visit-evidence.write"
+            ],
             keys.OrderBy(k => k, StringComparer.Ordinal).ToArray());
 
         Assert.DoesNotContain(keys, k => k.Contains("purge", StringComparison.OrdinalIgnoreCase));

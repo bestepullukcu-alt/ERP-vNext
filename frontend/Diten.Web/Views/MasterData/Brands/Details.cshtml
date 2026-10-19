@@ -1,4 +1,5 @@
 @model Diten.Web.Models.MasterData.BrandPageViewModel
+@using System.Globalization
 @using System.Text.Json
 @using Diten.Web.Views.MasterData.Brands
 @using Microsoft.AspNetCore.Mvc.Localization
@@ -7,10 +8,26 @@
 @{
     ViewData["Title"] = Localizer["BrandDetail"].Value;
     Layout = "_LayoutTenantShell";
+}
+
+@* WP-MDM-BRAND-ACCEPT-01 FIX1 (item 5, UAS-001) — nothing of the brand is drawn without mdm.brands.read; the controller
+   answers 403 with this surface. Snapshot OR the controller's own reader, so the page never refuses whom it admitted. *@
+@if (!Perms.Has("mdm.brands.read") && !Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.brands.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["BrandsTitle"].Value" />
+    return;
+}
+
+@{
     var b = Model.Brand;
-    var canUpdate = Model.CanManage && Perms.Has("mdm.brands.update");
-    var canArchive = Model.CanManage && Perms.Has("mdm.brands.archive");
+    // FIX1 (item 13) — decided by the controller through PermissionClaims, the same gate the proxies use.
+    var canUpdate = Model.CanUpdate;
+    var canArchive = Model.CanArchive;
+    var liveProducts = b.LiveProductCount ?? 0;
     string Show(object? value) => value?.ToString() is { Length: > 0 } text ? text : "—";
+    // FIX1 (item 13) — dates and times in the interface language.
+    string When(DateTimeOffset? value) => value?.ToString("g", CultureInfo.CurrentUICulture) ?? "—";
+    string Day(DateTimeOffset? value) => value?.ToString("d", CultureInfo.CurrentUICulture) ?? "—";
 }
 <div id="brandDetailsPage" data-brand-id="@b.BrandId" data-archived="@b.IsArchived.ToString().ToLowerInvariant()">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -25,9 +42,20 @@
         </div>
     </div>
 
+    @* FIX1 (item 11) — the archive proxy validates this token. *@
+    <form id="brandDetailToken" class="d-none" data-no-tracker>
+        @Html.AntiForgeryToken()
+    </form>
+
     @if (b.IsArchived)
     {
-        <div class="alert alert-warning"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedBrandReadOnly"]</div>
+        <div class="alert alert-warning"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedBrandReadOnly"]
+            @* FIX1 (item 3) — an archived brand whose products are still in use says so. *@
+            @if (liveProducts > 0)
+            {
+                <div class="mt-1">@Localizer["ArchivedBrandLiveProducts", liveProducts]</div>
+            }
+        </div>
     }
 
     <div class="row g-3 mb-3">
@@ -37,8 +65,9 @@
                 <dt class="col-sm-5">@Localizer["BrandCode"]</dt><dd class="col-sm-7">@b.BrandCode</dd>
                 <dt class="col-sm-5">@Localizer["BrandName"]</dt><dd class="col-sm-7">@b.BrandName</dd>
                 <dt class="col-sm-5">@Localizer["BrandStatus"]</dt><dd class="col-sm-7"><span class="badge bg-label-primary">@Localizer[$"Status_{b.BrandStatus}"]</span></dd>
-                <dt class="col-sm-5">@Localizer["EffectiveFrom"]</dt><dd class="col-sm-7">@b.EffectiveFrom.ToString("yyyy-MM-dd")</dd>
-                <dt class="col-sm-5">@Localizer["EffectiveTo"]</dt><dd class="col-sm-7">@(b.EffectiveTo?.ToString("yyyy-MM-dd") ?? "—")</dd>
+                <dt class="col-sm-5">@Localizer["EffectiveFrom"]</dt><dd class="col-sm-7">@Day(b.EffectiveFrom)</dd>
+                <dt class="col-sm-5">@Localizer["EffectiveTo"]</dt><dd class="col-sm-7">@Day(b.EffectiveTo)</dd>
+                <dt class="col-sm-5">@Localizer["LiveProductCount"]</dt><dd class="col-sm-7" id="brandLiveProducts">@liveProducts</dd>
                 <dt class="col-sm-5">@Localizer["Description"]</dt><dd class="col-sm-7 text-break">@Show(b.Description)</dd>
             </dl></div>
         </section></div>
@@ -46,11 +75,14 @@
         <div class="col-lg-6"><section class="card h-100">
             <div class="card-header"><h6 class="mb-0">@Localizer["ReferencesSection"]</h6></div>
             <div class="card-body"><dl class="row mb-0">
-                <dt class="col-sm-5">@Localizer["OwnerCompanyId"]</dt><dd class="col-sm-7 text-break">@Show(b.OwnerCompanyId)</dd>
-                <dt class="col-sm-5">@Localizer["BusinessUnitId"]</dt><dd class="col-sm-7 text-break">@Show(b.BusinessUnitId)</dd>
-                <dt class="col-sm-5">@Localizer["TherapeuticAreaId"]</dt><dd class="col-sm-7 text-break">@Show(b.TherapeuticAreaId)</dd>
+                @* FIX1 (item 8) — references by name; one that cannot be resolved says so, never as its id. *@
+                <dt class="col-sm-5">@Localizer["OwnerCompanyId"]</dt>
+                <dd class="col-sm-7 text-break"><partial name="~/Views/MasterData/Brands/_Reference.cshtml" model="@(b.OwnerCompanyId is null ? null : Model.OwnerCompanyName ?? string.Empty)" /></dd>
+                <dt class="col-sm-5">@Localizer["BusinessUnitId"]</dt>
+                <dd class="col-sm-7 text-break"><partial name="~/Views/MasterData/Brands/_Reference.cshtml" model="@(b.BusinessUnitId is null ? null : string.Empty)" /></dd>
+                <dt class="col-sm-5">@Localizer["TherapeuticAreaId"]</dt>
+                <dd class="col-sm-7 text-break"><partial name="~/Views/MasterData/Brands/_Reference.cshtml" model="@(b.TherapeuticAreaId is null ? null : string.Empty)" /></dd>
             </dl>
-            @* No master runtime resolves these ids yet — they are shown verbatim rather than faked. *@
             <small class="text-muted d-block mt-2">@Localizer["ReferenceIdsOnlyHelp"]</small>
             <small class="text-muted d-block" id="therapeuticAreaHelp">@Localizer["TherapeuticAreaHelp"]</small>
             </div>
@@ -77,7 +109,7 @@
                             <tr>
                                 <td>@x.SourceSystem</td><td class="text-break">@x.ExternalId</td>
                                 <td>@Show(x.ExternalCode)</td><td>@Show(x.ExternalName)</td>
-                                <td>@(x.ImportedAt?.ToString("u") ?? "—")</td>
+                                <td>@When(x.ImportedAt)</td>
                                 <td>@(x.IsPrimary ? Localizer["Yes"] : Localizer["No"])</td>
                             </tr>
                         }
@@ -91,13 +123,14 @@
         <div class="col-lg-6"><div class="card h-100">
             <div class="card-header"><h6 class="mb-0">@Localizer["AuditSection"]</h6></div>
             <div class="card-body"><dl class="row mb-0">
-                <dt class="col-sm-5">@Localizer["CreatedAt"]</dt><dd class="col-sm-7">@b.CreatedAt.ToString("u")</dd>
-                <dt class="col-sm-5">@Localizer["CreatedBy"]</dt><dd class="col-sm-7 text-break">@Show(b.CreatedBy)</dd>
-                <dt class="col-sm-5">@Localizer["UpdatedAt"]</dt><dd class="col-sm-7">@(b.UpdatedAt?.ToString("u") ?? "—")</dd>
-                <dt class="col-sm-5">@Localizer["UpdatedBy"]</dt><dd class="col-sm-7 text-break">@Show(b.UpdatedBy)</dd>
+                @* FIX1 (item 8) — the people are user ids no lookup resolves here: they read "could not be resolved". *@
+                <dt class="col-sm-5">@Localizer["CreatedAt"]</dt><dd class="col-sm-7">@When(b.CreatedAt)</dd>
+                <dt class="col-sm-5">@Localizer["CreatedBy"]</dt><dd class="col-sm-7 text-break"><partial name="~/Views/MasterData/Brands/_Reference.cshtml" model="@(string.IsNullOrEmpty(b.CreatedBy) ? null : string.Empty)" /></dd>
+                <dt class="col-sm-5">@Localizer["UpdatedAt"]</dt><dd class="col-sm-7">@When(b.UpdatedAt)</dd>
+                <dt class="col-sm-5">@Localizer["UpdatedBy"]</dt><dd class="col-sm-7 text-break"><partial name="~/Views/MasterData/Brands/_Reference.cshtml" model="@(string.IsNullOrEmpty(b.UpdatedBy) ? null : string.Empty)" /></dd>
                 <dt class="col-sm-5">@Localizer["Archived"]</dt><dd class="col-sm-7">@(b.IsArchived ? Localizer["Yes"] : Localizer["No"])</dd>
-                <dt class="col-sm-5">@Localizer["ArchivedAt"]</dt><dd class="col-sm-7">@(b.ArchivedAt?.ToString("u") ?? "—")</dd>
-                <dt class="col-sm-5">@Localizer["ArchivedBy"]</dt><dd class="col-sm-7 text-break">@Show(b.ArchivedBy)</dd>
+                <dt class="col-sm-5">@Localizer["ArchivedAt"]</dt><dd class="col-sm-7">@When(b.ArchivedAt)</dd>
+                <dt class="col-sm-5">@Localizer["ArchivedBy"]</dt><dd class="col-sm-7 text-break"><partial name="~/Views/MasterData/Brands/_Reference.cshtml" model="@(string.IsNullOrEmpty(b.ArchivedBy) ? null : string.Empty)" /></dd>
             </dl></div>
         </div></div>
     </div>
@@ -125,7 +158,9 @@
         brandId = b.BrandId,
         isArchived = b.IsArchived,
         canReadProducts = Model.CanReadProducts,
-        canManage = Model.CanManage
+        canManage = Model.CanManage,
+        canArchive = Model.CanArchive,
+        liveProductCount = liveProducts
     }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));</script>
     <script src="~/assets/js/MasterData/Brands/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/MasterData/Brands/details.js" asp-append-version="true"></script>

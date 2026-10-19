@@ -1,0 +1,129 @@
+"""CT-FIX-02 real-data comparison: the same real files read by the old tools (OLD worktree) and the new ones (NEW
+worktree, same data). Nothing is written to either worktree (-B, no file output except the report on stdout).
+Usage: python3 -B real_data_compare.py <OLD worktree> <NEW worktree>"""
+import contextlib
+import importlib.util
+import io
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+OLD, NEW = Path(sys.argv[1]), Path(sys.argv[2])
+
+
+def load(root, name, rel):
+    spec = importlib.util.spec_from_file_location(f"{name}_{root.name}", root / rel)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+oq, nq = load(OLD, "ct_queue", "scripts/ct_queue.py"), load(NEW, "ct_queue", "scripts/ct_queue.py")
+og, ng = load(OLD, "prompt_gate", "scripts/prompt_gate.py"), load(NEW, "prompt_gate", "scripts/prompt_gate.py")
+o2, n2 = load(OLD, "status_report_v2", "scripts/status_report_v2.py"), load(NEW, "status_report_v2", "scripts/status_report_v2.py")
+same_data = subprocess.run(["git", "-C", str(NEW), "diff", "--quiet", "HEAD", "--", "docs", "execution", "tests"]).returncode == 0
+print(f"data in NEW unchanged from its HEAD (docs, execution, tests): {same_data}")
+
+# 1. every decision record, read by the three approval readers, old vs new
+recs = sorted(p for p in (NEW / "docs/records/decisions").rglob("*.md"))
+rows, diff = [], []
+for p in recs:
+    text = p.read_text(encoding="utf-8", errors="replace")
+    o_r, n_r = oq.decision_resolved_text(text), nq.decision_resolved_text(text)
+    os_, ob = og.kunye_status(text)
+    ns_, nb = ng.kunye_status(text)
+    o_g = ob is None and og.GOV_APPROVED.match(os_) is not None
+    n_g = nb is None and ng.GOV_APPROVED.match(ns_) is not None
+    fields, _, _ = o2._header(text.replace("\r\n", "\n").split("\n"))
+    st = [v for _, k, v in fields if k == "status"]
+    o_p = len(st) == 1 and re.match(r"^(approved|decided)\b", st[0], re.I) is not None
+    n_p = n_g      # the report now reads with the gate's reader
+    rows.append((o_r, n_r, o_g, n_g, o_p, n_p))
+    if (o_r, o_g, o_p) != (n_r, n_g, n_p):
+        diff.append((p.relative_to(NEW).as_posix(), (o_r, n_r), (o_g, n_g), (o_p, n_p), (ns_ or nb or "")[:60]))
+cnt = lambda i: sum(r[i] for r in rows)
+print(f"\n1. decision records: {len(recs)}")
+print(f"   -R3 reader   approved/decided: old {cnt(0)}  new {cnt(1)}")
+print(f"   gate reader  approved/decided: old {cnt(2)}  new {cnt(3)}")
+print(f"   report reader (effort approval) as if each were one: old {cnt(4)}  new {cnt(5)}")
+print(f"   records whose reading changed in any reader: {len(diff)}")
+for d in diff:
+    print(f"     {d[0]}  -R3 {d[1][0]}->{d[1][1]}  gate {d[2][0]}->{d[2][1]}  report {d[3][0]}->{d[3][1]}  status '{d[4]}'")
+
+# 2. module packs through the gate's pack reading (whole value in PACK_OK)
+packs = sorted(p for p in (NEW / "execution/domains").rglob("module-packs/*.md") if p.name.lower() != "readme.md")
+pc, pdiff = [0, 0], []
+for p in packs:
+    text = p.read_text(encoding="utf-8", errors="replace")
+    o = (lambda s, b: b is None and s in og.PACK_OK)(*og.kunye_status(text))
+    n = (lambda s, b: b is None and s in ng.PACK_OK)(*ng.kunye_status(text))
+    pc[0] += o; pc[1] += n
+    if o != n:
+        pdiff.append(p.relative_to(NEW).as_posix())
+print(f"\n2. module packs: {len(packs)}; approved / ready-for-dev: old {pc[0]}  new {pc[1]}; changed: {pdiff or 'none'}")
+
+# 3. the real registry: validate's problems and the loader, old vs new
+def problems(m):
+    reg = m.read_table(m.REGISTRY, m.REGISTRY_COLUMNS)
+    st = m.read_table(m.STATES, m.STATE_COLUMNS)
+    tr = m.read_table(m.TRANSITIONS, m.TRANSITION_COLUMNS) if m.TRANSITIONS.exists() else []
+    return m.dispatch_problems(reg, st, tr), reg
+
+
+po, reg = problems(oq)
+pn, _ = problems(nq)
+main_text = nq.main_registry_text()
+print(f"\n3. registry rows {len(reg)}: dispatch problems old {po}  new {pn}; origin/main registry: "
+      f"{'present' if main_text is not None else 'absent'}; new profile conflicts: {nq.main_profile_problems(reg, main_text)}")
+for q in reg:
+    print(f"   {q['queue_id']}: strict={q['strict']} vocabulary={q['vocabulary']} in force on origin/main: "
+          f"old {oq.in_force_status(q, main_text)[0]} / new {nq.in_force_status(q, main_text)[0]}")
+
+# 4. SCE: the require decision of every id, old vs new (the command line's own functions)
+def decisions(m):
+    queues, states = m.load_for_dispatch("sce-mvp6")
+    q = queues[0]
+    vocab = m.vocabulary(states, q["vocabulary"])
+    cur = m.Table(m.decode(m.current_bytes(q, None), q["path"]))
+    base = m.baseline(q)
+    profile = m.build_profile(q, vocab, states)
+    ids = sorted({r[cur.index("id")] for r in cur.rows if len(r) == len(cur.header)})
+    out = {}
+    for wid in ids:
+        code, line, _ = m.require_decision(q, vocab, cur, base, wid, False, profile, None, history=lambda: m.history_errors(q, profile, None))
+        out[wid] = (code, line)
+    return out
+
+
+do, dn = decisions(oq), decisions(nq)
+changed = [w for w in do if do[w] != dn.get(w)]
+print(f"\n4. SCE require decisions: {len(do)} ids; dispatchable old {sum(c == 0 for c, _ in do.values())} "
+      f"new {sum(c == 0 for c, _ in dn.values())}; changed: {changed or 'none'}")
+
+
+def run_main(m, argv):
+    saved, out = sys.argv, io.StringIO()
+    sys.argv = ["ct_queue.py", *argv]
+    try:
+        with contextlib.redirect_stdout(out):
+            code = m.main()
+    except SystemExit as e:
+        code = f"SystemExit({e})"
+    finally:
+        sys.argv = saved
+    return code, out.getvalue()
+
+
+so, sn = run_main(oq, ["summary", "--queue", "sce-mvp6", "--json"]), run_main(nq, ["summary", "--queue", "sce-mvp6", "--json"])
+vo, vn = run_main(oq, ["validate"]), run_main(nq, ["validate"])
+print(f"   summary --json identical: {so == sn} (exit {sn[0]}); validate output identical: {vo == vn} (exit {vn[0]})")
+
+# 5. known failures: validate and the committed architecture TRX, old vs new command line
+trx = NEW / "docs/records/audits/2026-10/ct-fix-01/run.sanitized.trx"
+for args in (["validate"], ["check", str(trx), "--suite", "TenantArchitecture.ArchitectureTests"], ["check", str(trx)]):
+    r = [subprocess.run([sys.executable, "-B", str(w / "scripts/known_failures.py"), *args], capture_output=True, text=True, cwd=w)
+         for w in (OLD, NEW)]
+    print(f"\n5. known_failures {args[0]}{' --suite' if '--suite' in args else ''}: exit old {r[0].returncode} new {r[1].returncode}; "
+          f"output identical: {r[0].stdout == r[1].stdout}; {next((l for l in r[1].stdout.splitlines() if l.startswith(('ÖZET', 'OK', 'FAIL'))), '')}")

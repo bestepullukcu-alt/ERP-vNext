@@ -1,0 +1,38 @@
+@using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+<script id="product-legal-entity-scopes-l10n" type="application/json">
+@Json.Serialize(new {
+    Actions = Localizer["Actions"].Value, AddNew = Localizer["AddNewProductLegalEntityScope"].Value,
+    Apply = SharedLocalizer["Apply"].Value, Cancel = SharedLocalizer["Cancel"].Value,
+    Configure = Localizer["Configure"].Value, ConfigureTitle = Localizer["ConfigureTitle"].Value,
+    Replace = Localizer["Replace"].Value, ReplaceTitle = Localizer["ReplaceTitle"].Value,
+    End = Localizer["End"].Value, EndConfirmation = Localizer["EndConfirmation"].Value,
+    Export = SharedLocalizer["Export"].Value, Filter = SharedLocalizer["Filter"].Value,
+    ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value, Status = SharedLocalizer["Status"].Value,
+    Save = SharedLocalizer["Save"].Value, SaveView = SharedLocalizer["SaveView"].Value,
+    QuickView = Localizer["QuickView"].Value, ViewDetails = Localizer["ViewDetails"].Value,
+    Reset = SharedLocalizer["Reset"].Value, Search = SharedLocalizer["Search"].Value,
+    GroupWide = Localizer["GroupWide"].Value, Scoped = Localizer["Scoped"].Value,
+    LegacyUnclassified = Localizer["LegacyUnclassified"].Value, Configured = Localizer["Configured"].Value,
+    Unknown = Localizer["Unknown"].Value, ErrorGateway = Localizer["ErrorGateway"].Value,
+    ErrorValidation = Localizer["ErrorValidation"].Value, ErrorConflict = Localizer["ErrorConflict"].Value,
+    ErrorNotFound = Localizer["ErrorNotFound"].Value, ErrorForbidden = Localizer["ErrorForbidden"].Value,
+    Saved = Localizer["Saved"].Value, ReconciliationPending = Localizer["ReconciliationPending"].Value,
+    // WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440): the list vocabulary every v2 list carries (shared keys, seven languages).
+    Active = SharedLocalizer["Active"].Value, Passive = SharedLocalizer["Passive"].Value,
+    Edit = SharedLocalizer["Edit"].Value, AreYouSure = SharedLocalizer["AreYouSure"].Value,
+    Import = SharedLocalizer["Import"].Value, ShowAll = SharedLocalizer["ShowAll"].Value,
+    RecordSaved = SharedLocalizer["RecordSaved"].Value,
+    ErrorProviderUnavailable = Localizer["ErrorProviderUnavailable"].Value,
+    ErrorProviderTimeout = Localizer["ErrorProviderTimeout"].Value,
+    LifecycleDraft = Localizer["LifecycleDraft"].Value,
+    LifecyclePendingIdentityApproval = Localizer["LifecyclePendingIdentityApproval"].Value,
+    LifecycleIdentityApproved = Localizer["LifecycleIdentityApproved"].Value,
+    LifecycleRetired = Localizer["LifecycleRetired"].Value,
+    // WP-MDM-SCOPE-ACCEPT-01 FIX2 (10): the hidden companies. (BL-598 FIX2: the refusal sentences come from the
+    // controller — ProductLegalEntityScopesController.RefusalKeys — not from this page.)
+    OtherLegalEntities = Localizer["OtherLegalEntities"].Value
+})
+</script>

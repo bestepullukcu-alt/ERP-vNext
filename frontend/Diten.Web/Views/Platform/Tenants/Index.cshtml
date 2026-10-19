@@ -9,6 +9,9 @@
 
 <partial name="_Filter" />
 
+@* BL-521 — creating a tenant is a platform administrator's act (a partner administrator is refused 403 by the API). *@
+<input type="hidden" id="tenantsCanCreate" value="@(string.Equals(User.FindFirst("actor_type")?.Value, "platform_admin", StringComparison.OrdinalIgnoreCase) ? "true" : "false")" />
+
 <div class="mb-3">
     <h5 class="mb-0">@Localizer["TenantsTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>

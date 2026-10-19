@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Отчёт о визите</value></data>
+  <data name="BackLabel" xml:space="preserve"><value>Назад</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="StepsLabel" xml:space="preserve"><value>Шаги отчёта</value></data>
+  <data name="TitleDoctor" xml:space="preserve"><value>Отчёт о визите к врачу</value></data>
+  <data name="DeadlineChip" xml:space="preserve"><value>До отчёта осталось {0} ч</value></data>
+  <data name="MissingChip" xml:space="preserve"><value>Не заполнено полей: {0}</value></data>
+  <data name="ReadyChip" xml:space="preserve"><value>Готово к отправке</value></data>
+  <data name="AutoDraft" xml:space="preserve"><value>Автоматический черновик</value></data>
+  <data name="AutoSaved" xml:space="preserve"><value>Автоматический черновик · {0}</value></data>
+  <data name="Saving" xml:space="preserve"><value>Сохранение…</value></data>
+  <data name="NoVisitTitle" xml:space="preserve"><value>Визит не выбран.</value></data>
+  <data name="NoVisitText" xml:space="preserve"><value>Откройте отчёт из рабочей области визитов.</value></data>
+  <data name="NotFoundTitle" xml:space="preserve"><value>Визит не найден.</value></data>
+  <data name="NotFoundText" xml:space="preserve"><value>Возможно, он принадлежит другому представителю.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить отчёт.</value></data>
+  <data name="PharmacyTitle" xml:space="preserve"><value>Отчёт по аптеке.</value></data>
+  <data name="PharmacyText" xml:space="preserve"><value>Экран отчёта по аптеке пока недоступен.</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Рабочая область визитов</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>Продукт без названия</value></data>
+  <data name="UnknownStep" xml:space="preserve"><value>Шаг</value></data>
+  <data name="SentTitle" xml:space="preserve"><value>Отчёт отправлен</value></data>
+  <data name="SentText" xml:space="preserve"><value>Изменить можно в течение {0} мин.</value></data>
+  <data name="BackToCalendar" xml:space="preserve"><value>Вернуться к календарю</value></data>
+  <data name="ViewReport" xml:space="preserve"><value>Посмотреть отчёт</value></data>
+  <data name="SubmittedTitle" xml:space="preserve"><value>Отчёт отправлен.</value></data>
+  <data name="EditableFor" xml:space="preserve"><value>Изменить можно ещё {0} мин.</value></data>
+  <data name="WindowClosed" xml:space="preserve"><value>Прошло 60 минут; для изменения нужна обоснованная правка.</value></data>
+  <data name="UnlockButton" xml:space="preserve"><value>Изменить ({0} мин)</value></data>
+  <data name="FixButton" xml:space="preserve"><value>Исправить</value></data>
+  <data name="FixTitle" xml:space="preserve"><value>Обоснованная правка</value></data>
+  <data name="FixText" xml:space="preserve"><value>С момента отправки прошло 60 минут. Причина обязательна; изменённые поля (было → стало) видны в истории отчёта.</value></data>
+  <data name="FixReasonPlaceholder" xml:space="preserve"><value>Причина (обязательно)</value></data>
+  <data name="WarnProposalPending" xml:space="preserve"><value>Предложение конкурента «{0}» будет отправлено в справочник позже.</value></data>
+  <data name="WarnSideEffect" xml:space="preserve"><value>Отчёт сохранён; один последующий шаг будет повторён позже.</value></data>
+  <data name="StepGeneral" xml:space="preserve"><value>Общее</value></data>
+  <data name="StepSafety" xml:space="preserve"><value>Последующие шаги и безопасность</value></data>
+  <data name="StepDoctor" xml:space="preserve"><value>Профиль врача</value></data>
+  <data name="StepSummary" xml:space="preserve"><value>Итог и отправка</value></data>
+  <data name="StepMissing" xml:space="preserve"><value>Не хватает: {0}</value></data>
+  <data name="StepReady" xml:space="preserve"><value>готово к отправке</value></data>
+  <data name="StepDone" xml:space="preserve"><value>готово</value></data>
+  <data name="StepProduct" xml:space="preserve"><value>продукт</value></data>
+  <data name="StepOf" xml:space="preserve"><value>Шаг {0} / {1}</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Назад</value></data>
+  <data name="NextTo" xml:space="preserve"><value>Далее: {0}</value></data>
+  <data name="NextShort" xml:space="preserve"><value>Далее</value></data>
+  <data name="SaveDraftShort" xml:space="preserve"><value>Черновик</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="Submit" xml:space="preserve"><value>Отправить отчёт</value></data>
+  <data name="SubmitFix" xml:space="preserve"><value>Отправить правку</value></data>
+  <data name="OutcomeLabel" xml:space="preserve"><value>Результат</value></data>
+  <data name="OutcomeDone" xml:space="preserve"><value>Состоялся</value></data>
+  <data name="OutcomeHint" xml:space="preserve"><value>«Не состоялся / Перенести» вводится в календаре.</value></data>
+  <data name="ActualTime" xml:space="preserve"><value>Фактическое начало / конец</value></data>
+  <data name="ServerTime" xml:space="preserve"><value>Время сервера; изменить нельзя.</value></data>
+  <data name="NoExecution" xml:space="preserve"><value>Визит не был записан в презентации.</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="SecondsShort" xml:space="preserve"><value>{0} с</value></data>
+  <data name="VisitKind" xml:space="preserve"><value>Тип визита</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>Очно</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Дистанционно</value></data>
+  <data name="JointVisit" xml:space="preserve"><value>Совместный визит</value></data>
+  <data name="CoVisitorCount" xml:space="preserve"><value>Сопровождающих: {0}</value></data>
+  <data name="NoCoVisitor" xml:space="preserve"><value>Без сопровождающих</value></data>
+  <data name="MetPerson" xml:space="preserve"><value>С кем встретились</value></data>
+  <data name="PlannedDoctor" xml:space="preserve"><value>Запланированный врач</value></data>
+  <data name="GeneralNote" xml:space="preserve"><value>Общая оценка</value></data>
+  <data name="FromPresentation" xml:space="preserve"><value>из презентации</value></data>
+  <data name="AddUnplanned" xml:space="preserve"><value>Показан незапланированный продукт</value></data>
+  <data name="UnplannedTag" xml:space="preserve"><value>незапланированный продукт</value></data>
+  <data name="UnplannedAdded" xml:space="preserve"><value>{0} добавлен как незапланированный продукт; открыт новый шаг.</value></data>
+  <data name="Role_promo" xml:space="preserve"><value>Промо</value></data>
+  <data name="Role_non_promo" xml:space="preserve"><value>Напоминание</value></data>
+  <data name="SwipeHint" xml:space="preserve"><value>3 раздела · листайте вбок</value></data>
+  <data name="GroupA" xml:space="preserve"><value>Презентация и интерес</value></data>
+  <data name="GroupB" xml:space="preserve"><value>Рынок и конкурент</value></data>
+  <data name="GroupC" xml:space="preserve"><value>Запросы и следующий шаг</value></data>
+  <data name="GroupDone" xml:space="preserve"><value>заполнено</value></data>
+  <data name="PresentedSteps" xml:space="preserve"><value>Показанный материал</value></data>
+  <data name="MatchedPlan" xml:space="preserve"><value>по плану</value></data>
+  <data name="Deviation" xml:space="preserve"><value>отклонение от плана</value></data>
+  <data name="NoStepsShown" xml:space="preserve"><value>Слайды этого продукта не показывались.</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Время на продукт (мин)</value></data>
+  <data name="MinutesHint" xml:space="preserve"><value>Таймер: {0} · можно исправить</value></data>
+  <data name="VisitSuccess" xml:space="preserve"><value>Успешность визита</value></data>
+  <data name="VisitSuccessHint" xml:space="preserve"><value>достигнуто ли ключевое сообщение / следующий этап</value></data>
+  <data name="Commitment" xml:space="preserve"><value>Обязательство врача</value></data>
+  <data name="Interest" xml:space="preserve"><value>Интерес врача</value></data>
+  <data name="AdoptionStage" xml:space="preserve"><value>Стадия принятия</value></data>
+  <data name="PreviousVisit" xml:space="preserve"><value>Прошлый визит: {0}</value></data>
+  <data name="SameButton" xml:space="preserve"><value>То же</value></data>
+  <data name="IndicationPatients" xml:space="preserve"><value>Пациенты по показанию (в месяц)</value></data>
+  <data name="IndicationHint" xml:space="preserve"><value>Утверждённый список «показание × профиль пациента». Отмечайте только строки, которые видит врач; числа приблизительные.</value></data>
+  <data name="ThreeMonthHint" xml:space="preserve"><value>Спрашивается раз в три месяца; до этого показано последнее значение.</value></data>
+  <data name="NoIndicationList" xml:space="preserve"><value>Для этого продукта список показаний не задан, поэтому его потенциал не спрашивается; общее число у врача — на шаге профиля.</value></data>
+  <data name="PatientsPerMonth" xml:space="preserve"><value>пациентов / мес</value></data>
+  <data name="PreviousValue" xml:space="preserve"><value>Ранее: {0}</value></data>
+  <data name="NoPatients" xml:space="preserve"><value>Не видит пациентов по этим показаниям</value></data>
+  <data name="LastPotential" xml:space="preserve"><value>Последнее значение: {0} пациентов / мес · {1}</value></data>
+  <data name="UpdateNumbers" xml:space="preserve"><value>Обновить</value></data>
+  <data name="DoctorTotalLine" xml:space="preserve"><value>Всего у врача в месяц: {0} (шаг «Профиль врача»)</value></data>
+  <data name="TotalExceeded" xml:space="preserve"><value>Сумма по показаниям {0} больше общего числа у врача ({1}).</value></data>
+  <data name="ShareBucket" xml:space="preserve"><value>Наша доля назначений</value></data>
+  <data name="ComputedLabel" xml:space="preserve"><value>Расчёт</value></data>
+  <data name="PotentialLabel" xml:space="preserve"><value>Потенциал</value></data>
+  <data name="PatientsCount" xml:space="preserve"><value>{0} пациентов / мес</value></data>
+  <data name="ThresholdLine" xml:space="preserve"><value>Низкий &lt; {0} · Высокий &gt; {1}</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>Предпросмотр; при отправке сохраняется значение сервера.</value></data>
+  <data name="Class_low" xml:space="preserve"><value>Низкий</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>Средний</value></data>
+  <data name="Class_high" xml:space="preserve"><value>Высокий</value></data>
+  <data name="Opp_opportunity" xml:space="preserve"><value>Возможность</value></data>
+  <data name="Opp_grow" xml:space="preserve"><value>Наращивать</value></data>
+  <data name="Opp_keep" xml:space="preserve"><value>Удерживать</value></data>
+  <data name="Opp_low_priority" xml:space="preserve"><value>Низкий приоритет</value></data>
+  <data name="Competitors" xml:space="preserve"><value>Конкурент, которого использует врач</value></data>
+  <data name="CompetitorsUnavailable" xml:space="preserve"><value>Не удалось прочитать список конкурентов; отчёт всё равно можно отправить.</value></data>
+  <data name="NoCompetitor" xml:space="preserve"><value>Не использует конкурентов</value></data>
+  <data name="ActiveIngredient" xml:space="preserve"><value>Действующее вещество</value></data>
+  <data name="FormStrength" xml:space="preserve"><value>Форма / дозировка</value></data>
+  <data name="BoxPrice" xml:space="preserve"><value>Цена (упаковка)</value></data>
+  <data name="ReimbursementLabel" xml:space="preserve"><value>Возмещение</value></data>
+  <data name="ProposalPending" xml:space="preserve"><value>добавлен представителем · ждёт одобрения</value></data>
+  <data name="ProposalOnSubmit" xml:space="preserve"><value>добавлен представителем · уйдёт на одобрение вместе с отчётом</value></data>
+  <data name="NotInList" xml:space="preserve"><value>Нет в списке — добавить конкурента</value></data>
+  <data name="CompetitorName" xml:space="preserve"><value>Название продукта конкурента</value></data>
+  <data name="CompetitorCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Добавить</value></data>
+  <data name="DidYouMean" xml:space="preserve"><value>Уже есть в списке?</value></data>
+  <data name="ProposalNeedsBoth" xml:space="preserve"><value>Для предложения нужны название и компания.</value></data>
+  <data name="ProposalLater" xml:space="preserve"><value>Предложение сейчас не отправлено; оно уйдёт вместе с отчётом.</value></data>
+  <data name="AdvantageHint" xml:space="preserve"><value>Против конкурента: одно касание — наше преимущество (+), два — недостаток (−) · необязательно</value></data>
+  <data name="ObjectionsLabel" xml:space="preserve"><value>Возражения</value></data>
+  <data name="AddObjection" xml:space="preserve"><value>Добавить возражение</value></data>
+  <data name="NoObjection" xml:space="preserve"><value>Возражений нет</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>Категория…</value></data>
+  <data name="LibraryAnswer" xml:space="preserve"><value>Использованный ответ из библиотеки</value></data>
+  <data name="NoLibraryAnswer" xml:space="preserve"><value>Нет</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Заметка</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Снято?</value></data>
+  <data name="Resolved_yes" xml:space="preserve"><value>Да</value></data>
+  <data name="Resolved_partly" xml:space="preserve"><value>Частично</value></data>
+  <data name="Resolved_no" xml:space="preserve"><value>Нет</value></data>
+  <data name="RemoveLabel" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Requests" xml:space="preserve"><value>Запросы врача</value></data>
+  <data name="AddRequest" xml:space="preserve"><value>Добавить запрос</value></data>
+  <data name="NoRequest" xml:space="preserve"><value>Запросов нет</value></data>
+  <data name="SelectRequest" xml:space="preserve"><value>Запрос…</value></data>
+  <data name="SampleLabel" xml:space="preserve"><value>Образец</value></data>
+  <data name="Choose" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="NoSample" xml:space="preserve"><value>Образец не выдан</value></data>
+  <data name="SampleRecorded" xml:space="preserve"><value>Записанный образец</value></data>
+  <data name="NoGskus" xml:space="preserve"><value>Для этого продукта нет списка GSKU.</value></data>
+  <data name="QuantityLabel" xml:space="preserve"><value>Количество</value></data>
+  <data name="Lot" xml:space="preserve"><value>Номер партии · необязательно</value></data>
+  <data name="SampleSigned" xml:space="preserve"><value>Подпись о получении есть · итог завершения</value></data>
+  <data name="SampleNotSigned" xml:space="preserve"><value>В итоге завершения нет подписи о получении</value></data>
+  <data name="NextMessage" xml:space="preserve"><value>Сообщение на следующий визит</value></data>
+  <data name="NextMessagePlaceholder" xml:space="preserve"><value>Сообщение / целевая стадия на следующий визит</value></data>
+  <data name="Suggestion" xml:space="preserve"><value>Подсказка: {0}</value></data>
+  <data name="UseSuggestion" xml:space="preserve"><value>Использовать подсказку</value></data>
+  <data name="SuggestStage" xml:space="preserve"><value>Следующая стадия: {0}</value></data>
+  <data name="Suggest_commitment_will_try" xml:space="preserve"><value>Как прошло? Спросите о пробных пациентах</value></data>
+  <data name="Suggest_commitment_will_prescribe" xml:space="preserve"><value>Спросите о самочувствии пациентов, которым назначен препарат</value></data>
+  <data name="Suggest_commitment_wants_info" xml:space="preserve"><value>Принесите информацию, которую просил врач</value></data>
+  <data name="FollowUpRequired" xml:space="preserve"><value>Нужно последующее действие</value></data>
+  <data name="FollowUpDate" xml:space="preserve"><value>Предлагаемый следующий визит</value></data>
+  <data name="FollowUpNote" xml:space="preserve"><value>Заметка о последующих шагах</value></data>
+  <data name="AdverseEventQ" xml:space="preserve"><value>Сообщалось ли во время визита о побочном / нежелательном явлении?</value></data>
+  <data name="AdverseEventYes" xml:space="preserve"><value>Сообщение в фармаконадзор обязательно в течение 24 часов.</value></data>
+  <data name="AdverseEventNote" xml:space="preserve"><value>О чём сообщили</value></data>
+  <data name="OffLabelQ" xml:space="preserve"><value>Запрашивал ли врач информацию вне показаний?</value></data>
+  <data name="OffLabelYes" xml:space="preserve"><value>Запрос передаётся MSL; представитель не отвечает.</value></data>
+  <data name="YesOption" xml:space="preserve"><value>Да</value></data>
+  <data name="NoOption" xml:space="preserve"><value>Нет</value></data>
+  <data name="ProfileHint" xml:space="preserve"><value>Карточка врача · ваши предложения сохраняются, прежнее значение хранится</value></data>
+  <data name="Typology" xml:space="preserve"><value>Тип принятия</value></data>
+  <data name="CommunicationStyle" xml:space="preserve"><value>Стиль общения</value></data>
+  <data name="KolLevel" xml:space="preserve"><value>Уровень влияния (KOL)</value></data>
+  <data name="OnRecord" xml:space="preserve"><value>в карточке</value></data>
+  <data name="ChangedTag" xml:space="preserve"><value>изменено</value></data>
+  <data name="ChangeCount" xml:space="preserve"><value>Изменений: {0}</value></data>
+  <data name="NoChange" xml:space="preserve"><value>без изменений</value></data>
+  <data name="TotalPatients" xml:space="preserve"><value>Всего пациентов у врача (в месяц)</value></data>
+  <data name="LastTotal" xml:space="preserve"><value>Последнее значение: {0} · {1}</value></data>
+  <data name="TotalHint" xml:space="preserve"><value>На уровне врача (не по продукту), раз в три месяца; сумма по показаниям не может его превышать.</value></data>
+  <data name="TotalBelowProducts" xml:space="preserve"><value>Новое общее число меньше уже записанного числа пациентов по продукту.</value></data>
+  <data name="BestTime" xml:space="preserve"><value>Удобный день / время</value></data>
+  <data name="PreferredChannel" xml:space="preserve"><value>Предпочтительный канал</value></data>
+  <data name="ReadOnlyHere" xml:space="preserve"><value>Ведётся в доступности и предпочтениях врача.</value></data>
+  <data name="ShowHistory" xml:space="preserve"><value>История профиля</value></data>
+  <data name="HideHistory" xml:space="preserve"><value>Скрыть историю</value></data>
+  <data name="SourceReport" xml:space="preserve"><value>из отчёта</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>вручную</value></data>
+  <data name="Hist_adoptionTypologyCode" xml:space="preserve"><value>Тип принятия</value></data>
+  <data name="Hist_communicationStyleCode" xml:space="preserve"><value>Стиль общения</value></data>
+  <data name="Hist_kolLevelCode" xml:space="preserve"><value>Уровень KOL</value></data>
+  <data name="Hist_totalMonthlyPatients" xml:space="preserve"><value>Всего пациентов</value></data>
+  <data name="Hist_shareBucketCode" xml:space="preserve"><value>Наша доля</value></data>
+  <data name="Hist_noPatientsInIndications" xml:space="preserve"><value>Нет пациентов по показаниям</value></data>
+  <data name="Day_monday" xml:space="preserve"><value>Понедельник</value></data>
+  <data name="Day_tuesday" xml:space="preserve"><value>Вторник</value></data>
+  <data name="Day_wednesday" xml:space="preserve"><value>Среда</value></data>
+  <data name="Day_thursday" xml:space="preserve"><value>Четверг</value></data>
+  <data name="Day_friday" xml:space="preserve"><value>Пятница</value></data>
+  <data name="Day_saturday" xml:space="preserve"><value>Суббота</value></data>
+  <data name="Day_sunday" xml:space="preserve"><value>Воскресенье</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Итог</value></data>
+  <data name="JointWith" xml:space="preserve"><value>совместный визит: {0}</value></data>
+  <data name="CompetitorTag" xml:space="preserve"><value>Конкурент: {0}</value></data>
+  <data name="SampleTag" xml:space="preserve"><value>Образец: {0} шт.</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Изменить</value></data>
+  <data name="AdverseEventShort" xml:space="preserve"><value>Нежелательное явление: {0}</value></data>
+  <data name="OffLabelShort" xml:space="preserve"><value>Вне показаний: {0}</value></data>
+  <data name="NoAnswer" xml:space="preserve"><value>нет ответа</value></data>
+  <data name="MissingTitle" xml:space="preserve"><value>Не хватает: {0}</value></data>
+  <data name="ReadyText" xml:space="preserve"><value>Все обязательные ответы даны.</value></data>
+  <data name="ServerMissing" xml:space="preserve"><value>Сервер нашёл незаполненных ответов: {0}; они перечислены ниже.</value></data>
+  <data name="MissingToast" xml:space="preserve"><value>Не заполнено полей: {0}: {1}</value></data>
+  <data name="AmendmentsTitle" xml:space="preserve"><value>Правки (было → стало)</value></data>
+  <data name="SubmitSaved" xml:space="preserve"><value>Отчёт отправлен.</value></data>
+  <data name="FixSaved" xml:space="preserve"><value>Правка сохранена.</value></data>
+  <data name="DraftConflict" xml:space="preserve"><value>Отчёт изменился в другом месте; он перечитан.</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>Не удалось прочитать этот список.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>Действие не выполнено. Повторите попытку.</value></data>
+  <data name="Field_visitKindCode" xml:space="preserve"><value>тип визита</value></data>
+  <data name="Field_metContactId" xml:space="preserve"><value>с кем встретились</value></data>
+  <data name="Field_adverseEvent" xml:space="preserve"><value>вопрос о нежелательном явлении</value></data>
+  <data name="Field_adverseEventNote" xml:space="preserve"><value>описание нежелательного явления</value></data>
+  <data name="Field_offLabelRequest" xml:space="preserve"><value>вопрос о применении вне показаний</value></data>
+  <data name="Field_totalMonthlyPatients" xml:space="preserve"><value>общее число пациентов в месяц</value></data>
+  <data name="Field_section" xml:space="preserve"><value>запланированный продукт</value></data>
+  <data name="Field_minutes" xml:space="preserve"><value>время</value></data>
+  <data name="Field_visitSuccessCode" xml:space="preserve"><value>успешность визита</value></data>
+  <data name="Field_commitmentCode" xml:space="preserve"><value>обязательство врача</value></data>
+  <data name="Field_interestCode" xml:space="preserve"><value>интерес</value></data>
+  <data name="Field_adoptionStageCode" xml:space="preserve"><value>стадия принятия</value></data>
+  <data name="Field_shareBucketCode" xml:space="preserve"><value>наша доля</value></data>
+  <data name="Field_potential" xml:space="preserve"><value>пациенты по показанию</value></data>
+  <data name="Field_potentialExceedsTotal" xml:space="preserve"><value>показания превышают общее число</value></data>
+  <data name="Field_totalBelowProducts" xml:space="preserve"><value>общее число меньше, чем по продукту</value></data>
+  <data name="Field_competitors" xml:space="preserve"><value>конкурент</value></data>
+  <data name="Field_objections" xml:space="preserve"><value>возражения</value></data>
+  <data name="Field_objections_categoryCode" xml:space="preserve"><value>категория возражения</value></data>
+  <data name="Field_objections_resolved" xml:space="preserve"><value>снято ли возражение</value></data>
+  <data name="Field_requests" xml:space="preserve"><value>запросы</value></data>
+  <data name="Field_requests_typeCode" xml:space="preserve"><value>тип запроса</value></data>
+  <data name="Field_sample" xml:space="preserve"><value>образец</value></data>
+  <data name="Field_nextMessage" xml:space="preserve"><value>следующее сообщение</value></data>
+  <data name="Field_amendReason" xml:space="preserve"><value>причина правки</value></data>
+  <data name="Err_report_incomplete" xml:space="preserve"><value>Не хватает обязательных ответов.</value></data>
+  <data name="Err_report_code_invalid" xml:space="preserve"><value>Выбранного значения больше нет в списке; выберите снова.</value></data>
+  <data name="Err_report_v2_invalid" xml:space="preserve"><value>Некоторые значения вне допустимых пределов.</value></data>
+  <data name="Err_report_not_v2" xml:space="preserve"><value>Это отчёт старой версии; откройте его на экране выполнения визитов.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Не удалось прочитать справочник. Ничего не сохранено.</value></data>
+  <data name="Err_visit_report_concurrency_conflict" xml:space="preserve"><value>Отчёт изменился после загрузки; он перечитан.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>60 минут прошло; используйте обоснованную правку.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>Срок отчёта истёк.</value></data>
+  <data name="Err_visit_execution_not_finished" xml:space="preserve"><value>Сначала завершите визит в презентации.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>Визит отменён.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>Дата визита ещё не наступила.</value></data>
+  <data name="Err_potential_exceeds_total" xml:space="preserve"><value>Сумма по показаниям превышает общее число пациентов в месяц.</value></data>
+  <data name="Err_visit_report_amendment_reason_required" xml:space="preserve"><value>Причина обязательна.</value></data>
+  <data name="Err_visit_report_not_finalised" xml:space="preserve"><value>Исправить можно только отправленный отчёт.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>Отчёт отправляет только вошедший представитель.</value></data>
+  <data name="Err_visit_report_planned_visit_not_found" xml:space="preserve"><value>Визит не найден.</value></data>
+  <data name="Form_tablet" xml:space="preserve"><value>таблетка</value></data>
+  <data name="Form_capsule" xml:space="preserve"><value>капсула</value></data>
+  <data name="Form_syrup" xml:space="preserve"><value>сироп</value></data>
+  <data name="Form_injection" xml:space="preserve"><value>инъекция</value></data>
+  <data name="Form_ointment" xml:space="preserve"><value>мазь</value></data>
+  <data name="Form_cream" xml:space="preserve"><value>крем</value></data>
+  <data name="Form_drops" xml:space="preserve"><value>капли</value></data>
+  <data name="Form_inhaler" xml:space="preserve"><value>ингалятор</value></data>
+  <data name="Form_patch" xml:space="preserve"><value>пластырь</value></data>
+  <data name="Form_other" xml:space="preserve"><value>другая форма</value></data>
+  <data name="Form_film_coated_tablet" xml:space="preserve"><value>таблетка, покрытая оболочкой</value></data>
+  <data name="Form_modified_release_tablet" xml:space="preserve"><value>таблетка с модифицированным высвобождением</value></data>
+  <data name="Form_extended_release_tablet" xml:space="preserve"><value>таблетка пролонгированного действия</value></data>
+  <data name="Form_modified_release_capsule" xml:space="preserve"><value>капсула с модифицированным высвобождением</value></data>
+  <data name="Form_ampoule" xml:space="preserve"><value>ампула</value></data>
+</root>

@@ -24,6 +24,17 @@ const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const APP = fs.readFileSync(web("wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
 // WP-WC-SHARED-UI-01 M2b (2026-09-11) — bindDialogSelect2's mechanism now lives here; app.js delegates to it.
 const SHARED = fs.readFileSync(web("wwwroot", "assets", "js", "shared", "diten-dialog.js"), "utf8");
+
+// FIX7 (item 4) — the WHOLE binder, up to its closing `return true;` — a fixed-length slice stopped reading it once the
+// function outgrew the number (3038 characters at FIX6) and a negative guard then passed on a part it never saw.
+const bindDialogSelect2Body = () => {
+  const start = SHARED.indexOf("const bindDialogSelect2 =");
+  const close = "return true;\n    };";
+  const end = SHARED.indexOf(close, start);
+  expect(start, "bindDialogSelect2 not found").toBeGreaterThanOrEqual(0);
+  expect(end, "the binder's closing return was not found").toBeGreaterThan(start);
+  return SHARED.slice(start, end + close.length);
+};
 const CSS = fs.readFileSync(web("wwwroot", "assets", "css", "backbone-custom.css"), "utf8");
 
 /** The declaration block for a selector, so an assertion reads the rule and not the whole file. */
@@ -122,11 +133,11 @@ describe("one action, one icon", () => {
     expect(APP).toContain("dialogIcon('info', inboxActionIcon(action))");
   });
 
-  it("leaves the two dialogs that no action opens with their own glyph", () => {
-    // The snooze is a personal overlay, the module picker is a create menu — neither is an action's dialog,
-    // so neither has a dictionary entry to read.
+  // WP-WCN-FIX-01 (BL-589) — ONE now: the module picker (`bx-cube`) was deleted with the mock create-in-source entry.
+  it("leaves the one dialog that no action opens with its own glyph", () => {
+    // The snooze is a personal overlay — not an action's dialog, so it has no dictionary entry to read.
     expect(APP).toContain("icon: 'bx-moon'");
-    expect(APP).toContain("icon: 'bx-cube'");
+    expect(APP, "the deleted create-in-source picker came back").not.toContain("icon: 'bx-cube'");
   });
 });
 
@@ -154,7 +165,7 @@ describe("the dialog's select2 is a field like the others", () => {
    */
   it("hooks the control with a class that actually lands, and styles it in CSS", () => {
     // The mechanism (and the no-op option it must never regain) lives in shared/diten-dialog.js now.
-    const fn = SHARED.slice(SHARED.indexOf("const bindDialogSelect2 ="), SHARED.indexOf("const bindDialogSelect2 =") + 2200);
+    const fn = bindDialogSelect2Body();
     const code = fn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
     expect(code, "the option that does nothing came back").not.toContain("selectionCssClass");
     // app.js still asks for its OWN pinned class name, as the option it hands the shared binder.

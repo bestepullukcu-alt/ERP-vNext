@@ -1,0 +1,24 @@
+@using Diten.Web.Views.CRM.ObjectionResponses
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ObjectionResponsesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-VW-W3 (W3-WEB-c) — the ONE bridge of the three library pages: window.ObjectionL10n = exactly ObjectionResponsesIndex.ScriptKeys
+   (the tests check that list in seven languages); window.L10n gets the shared words the list factory (DitenDataTable) reads. *@
+<script>
+    window.ObjectionL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        ObjectionResponsesIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    window.L10n = Object.assign({}, window.L10n || {}, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        new[] { "Active", "Passive", "Unknown", "Delete", "ViewDetails", "Details", "AreYouSure", "Cancel", "Search", "Export",
+                "Import", "Filter", "Apply", "Reset", "ShowAll", "SaveView", "ColumnVisibility", "Status", "RecordSaved",
+                "ErrorOccurred", "Save" }
+            .ToDictionary(k => k, k => SharedLocalizer[k].Value)
+            .Concat(new Dictionary<string, string>
+            {
+                ["Actions"] = Localizer["ColActions"].Value,
+                ["Edit"] = Localizer["EditRecord"].Value,
+                ["QuickView"] = Localizer["ViewRecord"].Value,
+                ["AddNew"] = Localizer["NewResponse"].Value
+            })
+            .ToDictionary(kv => kv.Key, kv => kv.Value))));
+</script>

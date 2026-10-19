@@ -1,0 +1,25 @@
+CT-FIX-08 real data — the base tools (5035a9f28, in a shared sparse clone outside the repository) and this package's
+tools (the CT worktree) on the same commit's data; run by the AI session.
+
+`verify_module_id.py . --discover "Employee"` (exit 3 both):
+  every line except the ÖZET, araç and rapor-sha256 lines identical: True
+  BULGU lines 15 -> 15
+  ÖZET lines: the same set True; 12 lines, 3089 bytes; the only change is the order —
+  the open decisions now line 2 (was line 5)
+
+`ct_queue.py validate` exit 0 / 0, output identical (paths normalized): True
+`ct_queue.py summary`  exit 0 / 0, output identical (paths normalized): True
+
+The new ÖZET order (each line cut at 110 characters here):
+  ÖZET bulgular: blueprint 5 · sor 3 · registry 0 · paket 7 · gateway 0 · görev 0 · BİLGİ 1 (eski takma ad; çakı
+  ÖZET açık kararlar (bilgi; onay değil): kimlik MOD-0251 — olası çakışma (2 paket yolu) · sahibi belirsiz: MOD-
+  ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0251 dosya kimliği 2 pak
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/MOD-0251-core-hr-employee-master.m
+  ÖZET paket künyesi: execution/domains/platform-shared-services/module-packs/MOD-0251-hris-external-sor.md — st
+  ÖZET blueprint adayları: MOD-0251 'Core HR / Employee Master' · MOD-0298 'Employee Profile Workspace' · MOD-03
+  ÖZET domain-config (eşleşen paketlerin klasörü; varlık yalnız HEAD ağacında ölçüldü, paketin kendi ref'indeki
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0007-employee-profile-emp
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0025-employee-onboarding.
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0038-employee-manager-sel
+  ÖZET EKSİK: 2 madde bayt sınırı (3500) nedeniyle gösterilmedi — tam rapora bakılmalı
+  ÖZET sınır: tam rapor 625 satır; bu özet bilgidir, onay ya da karar değildir; rapor bir arayüzde kesilirse kes

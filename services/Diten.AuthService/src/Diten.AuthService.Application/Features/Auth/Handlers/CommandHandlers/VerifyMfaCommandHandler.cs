@@ -1,9 +1,12 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
@@ -22,6 +25,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IAuthAuditService _authAuditService;
+    private readonly ILogger<VerifyMfaCommandHandler> _logger;
 
     public VerifyMfaCommandHandler(
         IMfaChallengeService mfaChallengeService,
@@ -34,7 +38,8 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         ITokenService tokenService,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
-        IAuthAuditService authAuditService)
+        IAuthAuditService authAuditService,
+        ILogger<VerifyMfaCommandHandler> logger)
     {
         _mfaChallengeService = mfaChallengeService;
         _tenantLoginSettingsClient = tenantLoginSettingsClient;
@@ -47,6 +52,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
         _authAuditService = authAuditService;
+        _logger = logger;
     }
 
     public async Task<Response<AuthResponse>> Handle(VerifyMfaCommand request, CancellationToken ct)
@@ -58,18 +64,31 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         }
         catch
         {
-            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
         }
 
         var settings = await _tenantLoginSettingsClient.GetAsync(challenge.TenantId, ct);
         var user = await _userRepository.GetByIdAndTenantAsync(challenge.UserId, challenge.TenantId, ct);
-        if (user is null || !user.IsActive)
+        // BL-521 FIX6 item 13 (A') — a platform account is not given a tenant token here either (see LoginCommandHandler): a
+        // challenge of one — created before the tenant door refused such accounts — is answered like a wrong code.
+        if (user is { IsPlatformAccount: true })
         {
-            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.MfaVerifyDoor, challenge.TenantId);
         }
 
-        user.RecordLoginSuccess();
-        await _userRepository.UpdateAsync(user, ct);
+        if (user is null || !user.IsActive || user.IsPlatformAccount)
+        {
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
+        }
+
+        // BL-529 FIX2 — the code proves the second factor, not the password: if the password changed since the password
+        // step (an administrator's reset), the sign-in that began with the old password ends here.
+        if (!_mfaChallengeService.IsBoundToCurrentPassword(challenge, user))
+        {
+            await _authAuditService.WriteAsync("tenant_login_mfa_password_changed", user.Id, challenge.TenantId, "{}", ct);
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
+        }
 
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, challenge.TenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -97,7 +116,19 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             challenge.TenantId,
             TenantActorType,
             request.UserAgent);
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
+
+        // BL-529 — the same rule as the password sign-in: a reset that landed meanwhile revokes the token just written,
+        // and only the sign-in's own fields are written (never the whole account, which could undo that reset).
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, challenge.TenantId, user.PasswordHash, refreshTokenStr, ct))
+        {
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
+        }
+
+        user.RecordLoginSuccess();
+        await _userRepository.RecordLoginOutcomeAsync(user, challenge.TenantId, ct);
         await _authAuditService.WriteAsync("tenant_login_mfa_challenge_consumed", user.Id, challenge.TenantId, "{\"channel\":\"email\"}", ct);
         await _authAuditService.WriteAsync("tenant_login_success", user.Id, challenge.TenantId, "{\"mfa\":true}", ct);
 

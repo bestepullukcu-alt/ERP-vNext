@@ -178,37 +178,55 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
     {
         var starter = Guid.NewGuid();
         var definitionId = await PlainDefinitionAsync(starter);
-        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
-        Assert.Equal(starter, (await InstanceAsync(instance.InstanceId)).StartedByUserId);
+        var objectId = Guid.NewGuid();
 
-        var approve = await DecideAsync(starter, instance.InstanceId, "approve");
+        // D2 — the refusal moved from the approve to the START: the starter is dropped from the candidates, nobody is
+        // left, and nothing is created (before D2 the instance was created with the starter as its only candidate and
+        // the approve was refused 409 SOD_VIOLATION — an approval nobody could ever give).
+        var started = await _host.PostAsync("/api/v1/workflow/instances", Designer(starter), new
+        {
+            templateId = definitionId, objectType = "task", objectId = objectId.ToString(),
+            candidatePrincipalIds = new[] { starter.ToString() }, idempotencyKey = Guid.NewGuid().ToString("N"),
+            commentRequired = false, evidenceRequired = false
+        });
 
-        Assert.Equal(HttpStatusCode.Conflict, approve.Status);
-        Assert.Equal(WorkflowReasonCodes.SodViolation, approve.ReasonCode);
-        Assert.Equal(WorkflowInstanceStatus.Active, (await InstanceAsync(instance.InstanceId)).Status);
+        Assert.Equal(HttpStatusCode.BadRequest, started.Status);
+        Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, started.ReasonCode);
+        Assert.Equal(0, await _fixture.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances)
+            .CountDocumentsAsync(i => i.ObjectId == objectId.ToString()));
     }
 
     [Fact]
     public async Task A_task_approval_the_creator_routed_to_themselves_cannot_be_approved_by_them()
     {
         var task = await SeedApprovalTaskAsync(manager: _holder);
-        var instanceId = await StartTaskApprovalAsync(task, startedBy: _holder);
 
-        var approve = await DecideAsync(_holder, instanceId, "approve");
-
-        Assert.Equal(HttpStatusCode.Conflict, approve.Status);
-        Assert.Equal(WorkflowReasonCodes.SodViolation, approve.ReasonCode);
+        // D2 — no approval is opened at all (the creator is the only candidate: WORKFLOW_NO_ELIGIBLE_APPROVER). The
+        // task is KEPT with its start still gated (TaskApprovalService's fail-closed path), never closed unapproved.
+        Assert.Null(await TryStartTaskApprovalAsync(task, startedBy: _holder));
+        Assert.Equal(0, await _fixture.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances)
+            .CountDocumentsAsync(i => i.ObjectId == task.Id.ToString()));
+        var kept = await _fixture.Database.GetCollection<TaskItem>(PlatformCollections.TaskItems)
+            .Find(t => t.Id == task.Id).SingleAsync();
+        Assert.Null(kept.WorkflowInstanceId);
+        Assert.Equal(task.Lifecycle, kept.Lifecycle);
     }
 
     [Fact]
     public async Task An_instance_from_before_the_field_keeps_the_old_comparison()
     {
         var starter = Guid.NewGuid();
+        var other = Guid.NewGuid();
         var definitionId = await PlainDefinitionAsync(starter);
-        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
+        // D2 — a start no longer lets the starter be a candidate, so the legacy shape is staged: the starter's own
+        // start (recording their actor NAME) lends its StartedBy to an instance on which the starter IS a candidate,
+        // and the user id field is removed, as on an instance from before it existed.
+        var own = await StartInstanceAsync(definitionId, starter, other, "task", Guid.NewGuid());
+        var starterName = (await InstanceAsync(own.InstanceId)).StartedBy;
+        var instance = await StartInstanceAsync(definitionId, other, starter, "task", Guid.NewGuid());
         await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
             Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instance.InstanceId, GuidRepresentation.Standard)),
-            Builders<BsonDocument>.Update.Unset("StartedByUserId"));
+            Builders<BsonDocument>.Update.Unset("StartedByUserId").Set("StartedBy", starterName));
 
         // The legacy check compared the starter's NAME with the approver's id — it never matched, and still does not.
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
@@ -223,16 +241,11 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
     {
         var starter = Guid.NewGuid();
         var definitionId = await PlainDefinitionAsync(starter);
-        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
-        var raw = await WriteStarterIdAsTextAsync(instance.InstanceId, starter);
-        Assert.Equal(BsonType.String, raw["StartedByUserId"].BsonType);
-
-        Assert.Equal(starter, (await InstanceAsync(instance.InstanceId)).StartedByUserId);
-        var approve = await DecideAsync(starter, instance.InstanceId, "approve");
-
-        Assert.Equal(HttpStatusCode.Conflict, approve.Status);
-        Assert.Equal(WorkflowReasonCodes.SodViolation, approve.ReasonCode);
-        Assert.Equal(WorkflowInstanceStatus.Active, (await InstanceAsync(instance.InstanceId)).Status);
+        // WP-LANE-MAIN-SYNC-02 P2a (owner decision 2026-10-14): the lane's rule stays — a workflow whose every candidate is the
+        // starter is refused AT START (400 WORKFLOW_NO_ELIGIBLE_APPROVER), so no task exists for the starter to approve.
+        // Main expected the start to pass and the approval to be refused (409 WORKFLOW_SOD_VIOLATION).
+        // The text-starter read itself stays measured by the next test (another approver decides a text-starter instance).
+        await AssertStartRefusedAsync(definitionId, starter);
     }
 
     [Fact]
@@ -262,13 +275,11 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
     {
         var starter = Guid.NewGuid();
         var definitionId = await PlainDefinitionAsync(starter);
-        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
-        await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
-            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instance.InstanceId, GuidRepresentation.Standard)),
-            Builders<BsonDocument>.Update.Set("StartedByUserId", "not-a-user-id"));
-
-        Assert.Null((await InstanceAsync(instance.InstanceId)).StartedByUserId);
-        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
+        // WP-LANE-MAIN-SYNC-02 P2a (owner decision 2026-10-14): the lane's rule stays — a workflow whose every candidate is the
+        // starter is refused AT START (400 WORKFLOW_NO_ELIGIBLE_APPROVER), so no task exists for the starter to approve.
+        // Main expected the start to pass and the approval to be refused (409 WORKFLOW_SOD_VIOLATION).
+        // The starter cannot be the only candidate any more, so no such instance is started; the start is refused.
+        await AssertStartRefusedAsync(definitionId, starter);
     }
 
     private async Task<BsonDocument> WriteStarterIdAsTextAsync(Guid instanceId, Guid starter)
@@ -389,6 +400,21 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
     }
 
     /// <summary>MOD-0024's own approval start, run as the given user (so MOD-0023 records who started it).</summary>
+    private async Task<Guid?> TryStartTaskApprovalAsync(TaskItem task, Guid startedBy)
+    {
+        await using var scope = _host.Services.CreateAsyncScope();
+        scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(JwtRegisteredClaimNames.Sub, startedBy.ToString()), new Claim(JwtRegisteredClaimNames.Email, $"{startedBy:N}@x.example")],
+                "test"))
+        };
+        using (TenantScope.Begin(scope.ServiceProvider.GetRequiredService<ITenantContext>(), _tenant))
+        {
+            return await scope.ServiceProvider.GetRequiredService<ITaskApprovalService>().TryStartApprovalAsync(task, default);
+        }
+    }
+
     private async Task<Guid> StartTaskApprovalAsync(TaskItem task, Guid startedBy)
     {
         await using var scope = _host.Services.CreateAsyncScope();
@@ -440,6 +466,19 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         Assert.True(published.Status == HttpStatusCode.OK, published.ToString());
     }
 
+    // WP-LANE-MAIN-SYNC-02 P2a — a start whose only candidate is the starter: refused, nothing created.
+    private async Task AssertStartRefusedAsync(Guid definitionId, Guid starter)
+    {
+        var refused = await _host.PostAsync("/api/v1/workflow/instances", Designer(starter), new
+        {
+            templateId = definitionId, objectType = "task", objectId = Guid.NewGuid().ToString(),
+            candidatePrincipalIds = new[] { starter.ToString() }, idempotencyKey = Guid.NewGuid().ToString("N"),
+            commentRequired = false, evidenceRequired = false
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, refused.Status);
+        Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, refused.ReasonCode);
+    }
+
     private async Task<(Guid InstanceId, Guid ApprovalTaskId)> StartInstanceAsync(
         Guid definitionId, Guid starter, Guid candidate, string objectType, Guid objectId)
     {
@@ -460,11 +499,27 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         var token = _host.Token(caller, _tenant,
             WorkflowPermissions.TasksApprove, WorkflowPermissions.TasksReject, WorkflowPermissions.TasksDelegate,
             WorkflowPermissions.TasksRequestInfo, WorkflowPermissions.TasksCancel);
+        // Each action gets the body its own client sends: the approve/reject transport refuses a field it does not
+        // know, so the delegate's and the request-info's fields travel only with those actions.
         var body = new Dictionary<string, object?>
         {
-            ["reasonCode"] = "OK", ["idempotencyKey"] = Guid.NewGuid().ToString("N"), ["comment"] = "c",
-            ["delegatePrincipalId"] = Guid.NewGuid().ToString(), ["targetPrincipalId"] = null, ["evidenceRef"] = null
+            ["reasonCode"] = "OK", ["idempotencyKey"] = Guid.NewGuid().ToString("N"), ["comment"] = "c"
         };
+        if (action is "approve" or "reject" or "request-info")
+        {
+            body["evidenceRef"] = null;
+        }
+
+        if (action == "delegate")
+        {
+            body["delegatePrincipalId"] = Guid.NewGuid().ToString();
+        }
+
+        if (action == "request-info")
+        {
+            body["targetPrincipalId"] = null;
+        }
+
         if (claimedActor is { } actor)
         {
             body["actorId"] = actor.ToString();
@@ -573,6 +628,8 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
                     services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
                     services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();
                     services.AddScoped<IWorkflowInstanceRepository, WorkflowInstanceRepository>();
+                    // FIX3 item 2 — a standalone mongod has no transactions: the start writes sequentially here, asked for by name.
+                    services.AddSingleton(new Diten.Platform.Application.Features.Workflow.SequentialWorkflowStartWritesForTests());
                     services.AddScoped<IApprovalTaskRepository, ApprovalTaskRepository>();
                     services.AddScoped<IRuntimeAssignmentSnapshotRepository, RuntimeAssignmentSnapshotRepository>();
                     services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();

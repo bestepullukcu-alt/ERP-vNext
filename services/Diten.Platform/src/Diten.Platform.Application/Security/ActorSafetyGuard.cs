@@ -1,5 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.PlatformAdministrators.Handlers.CommandHandlers;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Security;
@@ -11,6 +13,9 @@ namespace Diten.Platform.Application.Security;
 /// </summary>
 public sealed class ActorSafetyGuard : IActorSafetyGuard
 {
+    /// <summary>BL-529 FIX2 — the reason code of "Send setup link" on one's own account.</summary>
+    public const string SelfResendInviteCode = "PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN";
+
     private readonly ICurrentUserContext _currentUser;
     private readonly IPlatformAdministratorRepository _administrators;
 
@@ -22,15 +27,25 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
         _administrators = administrators;
     }
 
+    public async Task<bool> IsSelfAsync(Guid targetActorId, CancellationToken ct = default) =>
+        targetActorId == await ResolveCurrentPlatformAdministratorIdAsync(ct);
+
     public async Task<Response<NoContent>?> EnsureNotSelfAsync(
         Guid targetActorId,
         AdminSafetyAction action,
         CancellationToken ct = default)
     {
-        var currentPlatformAdministratorId = await ResolveCurrentPlatformAdministratorIdAsync(ct);
-        if (targetActorId != currentPlatformAdministratorId)
+        if (!await IsSelfAsync(targetActorId, ct))
         {
             return null;
+        }
+
+        if (action == AdminSafetyAction.ResendInvite)
+        {
+            return Response<NoContent>.Fail(
+                "You cannot send a setup link to your own account — it would end your own password and sessions. Use Change password.",
+                409,
+                SelfResendInviteCode);
         }
 
         var message = action switch
@@ -59,19 +74,50 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
             return null;
         }
 
-        // Only block when the target IS an active SuperAdmin — otherwise the count
-        // would be unchanged and there is nothing to protect against.
+        // Only block when the target IS a live, active PLATFORM administrator holding SuperAdmin — otherwise the count
+        // would be unchanged and there is nothing to protect against. BL-521 FIX2 item 5: a PartnerAdmin record with the
+        // SuperAdmin role is not one (the count leaves it out too).
         var target = await _administrators.GetByIdAsync(targetActorId, ct);
         if (target is null
+            || target.IsDeleted
             || target.Status != Domain.Enums.AdministratorStatus.Active
+            || target.ActorType != Domain.Enums.ActorType.PlatformAdmin
             || !target.Roles.Contains(Domain.Enums.AdministratorRole.SuperAdmin))
         {
             return null;
         }
 
         return Response<NoContent>.Fail(
-            "At least one active Super Admin must remain in the system.",
-            409);
+            AdminSafetyMessages.LastActiveSuperAdmin,
+            409,
+            AdminSafetyReasonCodes.LastActiveSuperAdmin);
+    }
+
+    public async Task<Response<NoContent>?> EnsureNotLastActiveSuperAdminsAsync(
+        IReadOnlyCollection<PlatformAdministrator> targets,
+        AdminSafetyAction action,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(targets);
+
+        // Only live, active PLATFORM administrators holding SuperAdmin are in the count; taking none of them out changes
+        // nothing there is to protect.
+        var leaving = targets.Where(PlatformAdministratorMutationSupport.IsActivePlatformSuperAdmin).Select(target => target.Id).Distinct().Count();
+        if (leaving == 0)
+        {
+            return null;
+        }
+
+        var activeNow = await _administrators.CountActiveSuperAdminsAsync(excludeId: null, ct);
+        if (activeNow - leaving > 0)
+        {
+            return null;
+        }
+
+        return Response<NoContent>.Fail(
+            AdminSafetyMessages.LastActiveSuperAdmin,
+            409,
+            AdminSafetyReasonCodes.LastActiveSuperAdmin);
     }
 
     public async Task<BulkSafetyResult> FilterSelfFromBulkAsync(

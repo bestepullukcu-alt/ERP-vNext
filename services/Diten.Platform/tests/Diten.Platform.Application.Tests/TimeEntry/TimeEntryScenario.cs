@@ -275,6 +275,19 @@ public abstract class TimeEntryScenario : IAsyncLifetime
             new { actorId = approver.ToString(), reasonCode = approve ? "OK" : "NOT_OK", idempotencyKey = Guid.NewGuid().ToString("N"), comment, evidenceRef = (string?)null });
     }
 
+    /// <summary>D1-FIX1 — a REAL delegation of the week's open approval task, on MOD-0023's own route.</summary>
+    protected async Task<ApiResult> DelegateAsync(Guid from, Guid weekId, Guid to)
+    {
+        var week = await StoredWeekAsync(weekId);
+        var task = await Collection<ApprovalTask>(PlatformCollections.ApprovalTasks)
+            .Find(t => t.WorkflowInstanceId == week.WorkflowInstanceId!.Value && t.Status == ApprovalTaskStatus.WaitingApproval)
+            .SingleAsync();
+        return await Host.PostAsync(
+            $"/api/v1/workflow/tasks/{task.Id}/delegate",
+            Host.Token(from, Tenant, WorkflowPermissions.TasksDelegate),
+            new { actorId = from.ToString(), delegatePrincipalId = to.ToString(), reasonCode = "HANDOVER", idempotencyKey = Guid.NewGuid().ToString("N"), comment = (string?)null });
+    }
+
     /// <summary>F4 — a time admin reopens (person, week); 0 when the week has no revision yet.</summary>
     protected Task<ApiResult> ReopenAsync(Guid person, string weekKey, int expectedVersion, string? reason, string? token = null)
         => Host.PostAsync("/api/v1/time-entry/admin/weeks/reopen", token ?? AdminToken(),

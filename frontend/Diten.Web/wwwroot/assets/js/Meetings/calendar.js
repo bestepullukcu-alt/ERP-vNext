@@ -87,7 +87,8 @@
      */
     const fetchListSet = async (fromUtc, toUtc, isStale = () => false) => {
         const filters = global.MeetingsList.getAppliedFilters();
-        const params = { fromUtc, toUtc, pageSize: PAGE_SIZE };
+        // ATT-FIX1 — the calendar names no organizer on its events, so it asks for no names (includeNames=false).
+        const params = { fromUtc, toUtc, pageSize: PAGE_SIZE, includeNames: false };
         // What the API can narrow by itself, it does; the predicate below still decides (one rule, not two).
         if (filters.meetingType.length === 1) { params.meetingTypeId = filters.meetingType[0]; }
         if (filters.organizer.length === 1) { params.organizerUserId = filters.organizer[0]; }

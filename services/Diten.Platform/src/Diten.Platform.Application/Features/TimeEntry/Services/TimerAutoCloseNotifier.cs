@@ -52,7 +52,7 @@ public sealed class TimerAutoCloseNotifier : ITimerAutoCloseNotifier
             var result = await _dispatch.DispatchByEventCodeAsync(new NotificationEventDispatchRequest(
                 segment.TenantId,
                 TimeEntryNotificationEvents.TimerAutoClosed,
-                [new EmailRecipientDto(recipient.Email, recipient.DisplayName)],
+                [new EmailRecipientDto(recipient.Email, recipient.DisplayName, recipient.PreferredLanguage)],
                 new Dictionary<string, object?>
                 {
                     [TimeEntryNotificationVariables.LocalDate] = segment.LocalDate.ToString("yyyy-MM-dd"),

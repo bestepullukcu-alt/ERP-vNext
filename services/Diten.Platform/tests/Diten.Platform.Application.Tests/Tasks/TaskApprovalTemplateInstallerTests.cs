@@ -418,6 +418,10 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
     /// <summary>The workflow module is unreachable — every command throws.</summary>
     public bool Throws { get; set; }
 
+    /// <summary>D2-FIX4 item 5 — the status the engine reports for the instance a start answers with (a replayed key can
+    /// answer a round that is long closed).</summary>
+    public WorkflowInstanceStatus StartedAs { get; set; } = WorkflowInstanceStatus.Active;
+
     public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
     {
         if (Throws)
@@ -574,7 +578,7 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
                 ApprovalTaskId: Guid.NewGuid(),
                 AssignmentSnapshotId: Guid.NewGuid(),
                 ObjectRef: command.Request.ObjectRef ?? string.Empty,
-                Status: nameof(WorkflowInstanceStatus.Active),
+                Status: StartedAs.ToString(),
                 CurrentStage: "approve",
                 CurrentStep: "approve",
                 StartedAt: DateTimeOffset.UtcNow,
@@ -601,7 +605,11 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
         where TNotification : INotification => throw new NotSupportedException();
 }
 
-/// <summary>Installing a template must not read workflow instances; a read here is a failing test, not silence.</summary>
+/// <summary>
+/// Installing a template must not read workflow instances; a read here is a failing test, not silence. The ONE read a START makes
+/// is answered: the object's latest instance (D2-FIX5 item 3 — the start's key names the closed round it replaces), and for the
+/// installer's tasks there is none, so the first approval's key is the task's own.
+/// </summary>
 internal sealed class UnreadWorkflowInstanceRepository : IWorkflowInstanceRepository
 {
     public Task<WorkflowInstance> CreateAsync(WorkflowInstance instance, CancellationToken ct = default)
@@ -615,7 +623,7 @@ internal sealed class UnreadWorkflowInstanceRepository : IWorkflowInstanceReposi
 
     public Task<WorkflowInstance?> GetLatestByObjectRefAsync(
         string objectRef, string objectType, string objectId, CancellationToken ct = default)
-        => throw new NotSupportedException("The template installer must not read instances.");
+        => Task.FromResult<WorkflowInstance?>(null);
 
     public Task<IReadOnlyList<WorkflowInstance>> GetAllForTenantAsync(CancellationToken ct = default)
         => throw new NotSupportedException("The template installer must not read instances.");

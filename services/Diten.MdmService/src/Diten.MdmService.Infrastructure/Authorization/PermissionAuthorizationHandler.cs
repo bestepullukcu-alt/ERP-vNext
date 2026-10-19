@@ -15,7 +15,7 @@ public sealed class PermissionAuthorizationHandler : AuthorizationHandler<Permis
 
         var hasPermission = context.User.Claims.Any(claim =>
             string.Equals(claim.Type, "permission", StringComparison.OrdinalIgnoreCase)
-            && string.Equals(claim.Value, requirement.Permission, StringComparison.OrdinalIgnoreCase));
+            && requirement.AnyOf.Contains(claim.Value, StringComparer.OrdinalIgnoreCase));
 
         if (hasPermission)
         {

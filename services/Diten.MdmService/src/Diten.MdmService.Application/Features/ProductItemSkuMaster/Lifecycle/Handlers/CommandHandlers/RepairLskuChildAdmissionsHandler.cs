@@ -1,0 +1,212 @@
+using System.Security.Cryptography;
+using System.Text;
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
+using Diten.Shared.Core;
+using MediatR;
+
+namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Handlers.CommandHandlers;
+
+/*
+ * LSKU FIX1 B1 (c): before FIX1 every LSKU creation that failed after its admission left the admission on the parent
+ * GSKU for good (the GSKU could then not retire or be corrected, and after 32 could not take a child). This finds the
+ * admissions older than the cutoff whose LSKU row never came, releases each and keeps an audit intent on the GSKU.
+ * A row with the admission's command — even a deleted one — means the creation reached the store: it is left alone.
+ * The cutoff keeps a creation still in flight out of reach. A repeat finds nothing new; a released one replays.
+ *
+ * WP-MDM-SCOPE-INT-01 FIX1 item 1 (CT decision a): the repair is a non-human actor and follows the background workers'
+ * scope rule (LskuBackgroundScope → ProductIdentityBackgroundScope): no rollout / Preparation → every orphan; Enforced →
+ * only orphans whose GSKU's product is in scope (the others are skipped and only counted — their admissions and codes
+ * are untouched, their ids never returned); FailClosedSuspended, a fence, or a rollout that cannot be read → refused by
+ * name. Before, every orphan carries a GskuId (GSKU → revision → product) and the repair released, burned and returned
+ * them all in an Enforced tenant.
+ */
+public sealed class RepairLskuChildAdmissionsHandler
+    : IRequestHandler<RepairLskuChildAdmissionsCommand, Response<LskuChildAdmissionRepairResult>>
+{
+    public const int MinimumAgeFloorMinutes = 5;
+    public const string BurnRefused = "LSKU_ADMISSION_REPAIR_BURN_REFUSED";
+    public const int MaximumLimit = 500;
+    public const string RequestInvalid = "LSKU_ADMISSION_REPAIR_REQUEST_INVALID";
+    public const string ScopeClosed = "LSKU_ADMISSION_REPAIR_SCOPE_CLOSED";
+    private readonly IGskuRepository _gskus;
+    private readonly ICodeReservationRepository _reservations;
+    private readonly ITenantContext _tenantContext;
+    private readonly IProductIdentityActorContext _actorContext;
+    private readonly TimeProvider _time;
+    private readonly LskuBackgroundScope _scope;
+
+    public RepairLskuChildAdmissionsHandler(
+        IGskuRepository gskus,
+        ICodeReservationRepository reservations,
+        ITenantContext tenantContext,
+        IProductIdentityActorContext actorContext,
+        TimeProvider time,
+        LskuBackgroundScope scope)
+    {
+        _scope = scope;
+        _gskus = gskus;
+        _reservations = reservations;
+        _tenantContext = tenantContext;
+        _actorContext = actorContext;
+        _time = time;
+    }
+
+    public async Task<Response<LskuChildAdmissionRepairResult>> Handle(
+        RepairLskuChildAdmissionsCommand request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (_tenantContext.TenantId == Guid.Empty || string.IsNullOrWhiteSpace(_actorContext.ActorId))
+        {
+            return Response<LskuChildAdmissionRepairResult>.Fail("TENANT_CONTEXT_REQUIRED", 403);
+        }
+
+        if (request.Limit is < 1 or > MaximumLimit || request.MinimumAgeMinutes < MinimumAgeFloorMinutes
+            || request.ChildKind is not (GskuChildIdentityKind.Lsku or GskuChildIdentityKind.FinishedGood))
+        {
+            // Normally refused before the fence by RepairLskuChildAdmissionsValidator (FIX1 M1); kept for a direct call.
+            return Response<LskuChildAdmissionRepairResult>.Fail(RequestInvalid, 400);
+        }
+
+        var mode = await _scope.ResolveAsync(cancellationToken);
+        if (mode == ProductIdentityBackgroundScope.TenantMode.Nothing)
+        {
+            return Response<LskuChildAdmissionRepairResult>.Fail(ScopeClosed, 409);
+        }
+
+        var now = _time.GetUtcNow().ToUniversalTime();
+        // WP-MDM-SCOPE-INT-01 FIX2 item 1: the walk goes ON past what it may not touch. Before, one bounded read took the
+        // first Limit orphans (GSKU id order) and the scope was filtered AFTER it: out-of-scope orphans are never repaired,
+        // so they stayed in front, and once they filled the read every run got the same page — the in-scope orphans
+        // behind them were never reached and their GSKUs kept the leaked admission (LSKU FIX1 B1's own bug, back).
+        // Now: page by page after a cursor, until Limit in-scope orphans, the end, or MaximumPages (then Truncated).
+        var cutoff = now.AddMinutes(-request.MinimumAgeMinutes);
+        var orphans = new List<GskuOrphanChildAdmission>(request.Limit);
+        var outOfScope = 0;
+        var truncated = false;
+        Guid? after = null;
+        for (var page = 0; ; page++)
+        {
+            if (page == GskuOrphanAdmissionPage.MaximumPages)
+            {
+                truncated = true;
+                break;
+            }
+            var walked = await _gskus.FindOrphanChildCreationAdmissionPageAsync(
+                request.ChildKind, cutoff, after, cancellationToken);
+            foreach (var orphan in walked.Orphans)
+            {
+                if (!await _scope.InScopeForGskuAsync(mode, orphan.GskuId, cancellationToken)) outOfScope++;
+                else if (orphans.Count < request.Limit) orphans.Add(orphan);
+            }
+            after = walked.NextAfterGskuId;
+            if (after is null || orphans.Count >= request.Limit) break;
+        }
+        var items = new List<LskuChildAdmissionRepairItem>(orphans.Count);
+        // Each release moves the GSKU's version, so a second orphan on the same GSKU is re-read before its write.
+        var versions = new Dictionary<Guid, int>();
+        foreach (var orphan in orphans)
+        {
+            var current = versions.TryGetValue(orphan.GskuId, out var version) ? orphan with { GskuVersion = version } : orphan;
+            // LSKU FIX2 item 5: an admission held only by a code consumed for an identity whose row never came — the
+            // code is burned first (its own audited write on the reservation); a refused burn keeps the admission.
+            // FIX3 M6: a code reserved long ago and never consumed — consumed now for no identity (a fresh one no row
+            // will ever carry) so it can be burned like the others; a refused step keeps the admission.
+            if (current is { ReservationNeverConsumed: true, ReservationToBurnId: { } neverConsumedId,
+                             ReservationVersion: { } neverConsumedVersion })
+            {
+                var consumed = await _reservations.ConsumeForIdentityAsync(neverConsumedId,
+                    // FG FIX1 part B item 7: the code's own kind (an FG code is consumed as an FG code — the LSKU
+                    // kind was fixed here, so a never-consumed FG code could not be swept).
+                    request.ChildKind == GskuChildIdentityKind.FinishedGood
+                        ? CodeBearingEntityType.FinishedGood : CodeBearingEntityType.Lsku,
+                    Guid.NewGuid(), neverConsumedVersion, $"admission-repair-consume:{neverConsumedId:N}",
+                    _actorContext.ActorId, current.CreationCommandId, cancellationToken);
+                if (!consumed.Succeeded || consumed.Reservation is not { ConsumedEntityId: { } noIdentity } taken)
+                {
+                    items.Add(new(orphan.GskuId, orphan.CreationCommandId, orphan.AcquiredAtUtc, false,
+                        BurnRefused + ":" + (consumed.ErrorCode ?? "UNKNOWN")));
+                    continue;
+                }
+                current = current with { ReservationIdentityId = noIdentity, ReservationVersion = taken.Version };
+            }
+            if (current.ReservationToBurnId is { } reservationId
+                && current.ReservationIdentityId is { } identityId && current.ReservationVersion is { } reservationVersion)
+            {
+                var burned = await _reservations.BurnIdentityBindingAsync(reservationId, identityId, reservationVersion,
+                    $"admission-repair-burn:{reservationId:N}", _actorContext.ActorId, current.CreationCommandId,
+                    current.ReservationNeverConsumed ? "ADMISSION_REPAIR_CODE_NEVER_CONSUMED"
+                        : "ADMISSION_REPAIR_IDENTITY_NEVER_WRITTEN", cancellationToken);
+                if (!burned.Succeeded)
+                {
+                    items.Add(new(orphan.GskuId, orphan.CreationCommandId, orphan.AcquiredAtUtc, false,
+                        BurnRefused + ":" + (burned.ErrorCode ?? "UNKNOWN")));
+                    continue;
+                }
+            }
+            var result = await _gskus.RepairOrphanChildCreationAdmissionAsync(
+                current, CreateIntent(current, now), cancellationToken);
+            if (result.Gsku is not null)
+            {
+                versions[orphan.GskuId] = result.Gsku.Version;
+            }
+
+            items.Add(new(orphan.GskuId, orphan.CreationCommandId, orphan.AcquiredAtUtc,
+                result.Succeeded, result.Succeeded ? null : result.ErrorCode));
+        }
+
+        return Response<LskuChildAdmissionRepairResult>.Success(
+            new(orphans.Count, items.Count(x => x.Released), items, outOfScope, truncated), 200);
+    }
+
+    private LocalAuditIntent CreateIntent(GskuOrphanChildAdmission orphan, DateTimeOffset now)
+    {
+        var tenantId = _tenantContext.TenantId;
+        var facts = $"{tenantId:D}|{orphan.GskuId:D}|{(int)orphan.ChildKind}|{orphan.CreationCommandId}|{orphan.RequestFingerprint}|{orphan.AcquiredAtUtc:O}";
+        // LSKU FIX2 item 9: keyed by the admission INSTANCE (its acquisition time), not only by its command — a second
+        // leak of the same command (Acquire does not renew an existing admission's time; a new one follows a release)
+        // is a second repair with its own intent, never the first one's id with another evidence.
+        var key = "admission-repair:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"{tenantId:D}|{orphan.GskuId:D}|{(int)orphan.ChildKind}|{orphan.CreationCommandId}|{orphan.AcquiredAtUtc.UtcTicks}"))).ToLowerInvariant();
+        var postVersion = checked(orphan.GskuVersion + 1);
+        return new LocalAuditIntent
+        {
+            IntentId = DeterministicGuid($"{tenantId:D}|{orphan.GskuId:D}|{ProductAuditOperation.GskuChildCreationAdmissionReleased}|{key}"),
+            TenantId = tenantId,
+            AggregateType = AuditAggregateType.Gsku,
+            AggregateId = orphan.GskuId,
+            PreVersion = orphan.GskuVersion,
+            PostVersion = postVersion,
+            Operation = ProductAuditOperation.GskuChildCreationAdmissionReleased,
+            ActorId = _actorContext.ActorId,
+            CorrelationId = key,
+            CausationId = orphan.CreationCommandId,
+            CommandId = key,
+            Sequence = postVersion,
+            TimestampUtc = now,
+            TimestampUtcTicksV1 = now.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
+            EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(facts))),
+            SnapshotReference = $"Gsku/{orphan.GskuId:N}/{postVersion}",
+            DeliveryState = AuditIntentDeliveryState.Pending,
+            IdempotencyKey = key
+        };
+    }
+
+    private static Guid DeterministicGuid(string value)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        Span<byte> guidBytes = stackalloc byte[16];
+        bytes.AsSpan(0, 16).CopyTo(guidBytes);
+        guidBytes[7] = (byte)((guidBytes[7] & 0x0F) | 0x50);
+        guidBytes[8] = (byte)((guidBytes[8] & 0x3F) | 0x80);
+        return new Guid(guidBytes);
+    }
+}

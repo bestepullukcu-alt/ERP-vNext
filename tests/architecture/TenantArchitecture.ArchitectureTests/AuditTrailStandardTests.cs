@@ -55,15 +55,26 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
     private static readonly Dictionary<string, Pinned> PinnedCounts = new(StringComparer.Ordinal)
     {
         // measured 2026-10-02 — see docs/records/audits/2026-10/
-        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 0, K2Debt: 8),
+        // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): IssueServiceIdentityTokenCommand (İ5) — WP-GP-AUDIT-TRAIL-01 D3.
+        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 1, K2Debt: 8),
+        // Main sync (2026-10-11): the Crm ledger shrank to 169 on main (the CT line never touched it).
         ["Diten.CrmService"] = new(Debt: 169, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
+        // measured 2026-10-06 — new service (MOD-0193, MVP-3): every command audited through bom-surum-gecmisi, no debt.
+        ["Diten.ManufacturingService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
-        ["Diten.MdmService"] = new(Debt: 13, Exceptions: 0, Indirect: 8),
-        ["Diten.Platform"] = new(Debt: 164, Exceptions: 5, K2Debt: 192, WritingQueries: 3),
+        // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): iz mdm-guvenilir-kaynak-niyeti (b) + 11 dolaylı (akışa özgü işlemci)
+        // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
+        ["Diten.MdmService"] = new(Debt: 10, Exceptions: 2, Indirect: 19),
+        // Birleştirme WP-CT-LANE-TKO-MERGE-01: hattın WP-PLATFORM-AUDIT-INTX-01'i 25 borcu kapattı (164 → 139); takeover'ın
+        // 3 dolaylı işleyicisi (Indirect: 3) aşağıdaki CT kararıyla kalır.
+        // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
+        // RunWorkflowEscalationsCommand — WP-WF-ENGINE-CANDIDATES-01 (zaman aşımı / yükseltme WorkflowTransitionLog yazar).
+        ["Diten.Platform"] = new(Debt: 139, Exceptions: 5, K2Debt: 192, WritingQueries: 3, Indirect: 3),
+        ["Diten.PlanningService"] = new(Debt: 2, Exceptions: 0, Indirect: 5),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
@@ -76,12 +87,53 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
     /// </summary>
     private static readonly (string Service, string Name, string Path, string Token)[] AcceptedTrails =
     [
-        ("Diten.AuthService", "auth-kullanici-iletimi", "b", "IUserAuditRecorder.RecordAsync"),
+        // BL-529 (2026-10-04) — every administrator password reset writes the same user audit row from inside the shared
+        // AdminPasswordReset.ResetAsync (in a finally); a handler that calls it is audited through it.
+        ("Diten.AuthService", "auth-kullanici-iletimi", "b", "IUserAuditRecorder.RecordAsync/AdminPasswordReset.ResetAsync"),
         ("Diten.MdmService", "mdm-merkezi-iletim", "b", "IAuditableCommand+IAuditMetadataProvider"),
         ("Diten.MdmService", "mdm-kisaltma-gecmisi", "c", "IProductAbbreviationHistoryRepository.AppendIfAbsentAsync"),
+        // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): niyet durum değişikliğiyle aynı yazımda / işlemde, Platform'a iletilir.
+        ("Diten.MdmService", "mdm-guvenilir-kaynak-niyeti", "b",
+            "IProductLegalEntityScopePolicyRepository.CreateAsync"
+            + "/IProductLegalEntityScopePolicyRepository.ReplaceAsync"
+            + "/IProductLegalEntityScopePolicyRepository.UpdateAsync"
+            + "/IGlobalProductRepository.UpdateDraftAsync"
+            + "/IGlobalProductRepository.RetireIdentityAsync"
+            + "/IGlobalProductRepository.SubmitIdentityAsync"
+            + "/IGlobalProductRepository.AcquireLifecycleOperationAsync"
+            + "/IGlobalProductRepository.WithdrawIdentityApprovalAsync"
+            + "/IGskuRepository.MarkIdentityPendingAsync"
+            + "/IGskuRepository.AcquireCorrectionAsync"
+            + "/IGskuRepository.AcquireRetirementRequestAsync"
+            + "/IProductDefinitionRevisionRepository.MarkIdentityPendingAsync"
+            + "/ILskuRepository.SubmitIdentityAsync"
+            + "/ILskuRepository.AcquireLifecycleOperationAsync"
+            + "/IFirstGskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
+            + "/ILskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
+            + "/IProductAbbreviationRegisterRepository.AppendAuditIntentIfAbsentAsync"),
+        // CT acceptance 2026-10-06 (MVP-3 lane, MOD-0193 pack §21): the BOM version history is written in the SAME Mongo
+        // transaction as the BOM (K2 fail-closed), has no update/delete member, and is read on the BOM's own screen.
+        ("Diten.ManufacturingService", "bom-surum-gecmisi", "c", "IBomHistoryJournal.CommitAsync"),
+        // Ali/CT 2026-10-14: temporary local Mongo traces, not the BL-501 central audit.
+        ("Diten.PlanningService", "batch-inceleme-izi", "c", "IHistoryImportBatchStore.TryDecideAsync"),
+        ("Diten.PlanningService", "satir-kabul-izi", "c", "IAcceptedDemandHistoryStore.AcceptAsync"),
+        ("Diten.PlanningService", "draft-olusturma-izi", "c", "IManualDraftStore.CreateAsync"),
+        ("Diten.PlanningService", "forecast-secim-izi", "c", "IForecastDraftStore.CreateForecastAsync"),
+        ("Diten.PlanningService", "draft-duzenleme-izi", "c", "IManualDraftStore.EditWeekAsync"),
+        ("Diten.PlanningService", "draft-dislama-izi", "c", "IManualDraftStore.ExcludeSeriesAsync"),
+        ("Diten.PlanningService", "draft-inceleme-izi", "c", "IManualDraftStore.TransitionReviewAsync"),
+        ("Diten.PlanningService", "yayin-izi", "c", "IInternalPublishedRevisionStore.PublishAsync"),
+        ("Diten.PlanningService", "gecersiz-kilma-izi", "c", "IInternalRevisionInvalidator.InvalidateAsync"),
+        ("Diten.PlanningService", "geri-donus-izi", "c", "IRollbackDraftStore.CreateAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),
+        // WP-PLATFORM-AUDIT-INTX-01 (2026-10-02) — the in-transaction door, proven end to end; the token is the CALL,
+        // not the ITransactionOwnedAuditCommand marker (a marked command that calls none of these is unaudited).
+        ("Diten.Platform", "platform-islem-ici", "a",
+            "PhysicalEntitlementAuditIntent.EnqueueAsync/TenantSubscriptionTransactionWriter.UpdateAsync"
+            + "/TenantSubscriptionCommandSupport.CreateAsync/IGlobalApplicabilityTransactionCoordinator.ExecuteAsync"
+            + "/IGlobalApplicabilityTransactionCoordinator.ExecuteBatchAsync"),
         ("Diten.Platform", "gorev-etkinlik-akisi", "c", "TaskItem.Declare"),
         ("Diten.Platform", "is-akisi-gecis-gunlugu", "c",
             "IWorkflowTransitionLogRepository.CreateAsync/IWorkflowTransitionLogRepository.AppendAsync"

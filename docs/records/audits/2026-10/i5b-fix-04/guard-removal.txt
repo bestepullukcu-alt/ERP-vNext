@@ -1,0 +1,20 @@
+İ5B-FIX-04 guard removal — one guard of sync_adapters.py undone at a time in its own copy outside the repository
+(the fixed sources, SHA-256 equal to Codex's candidate3 set); the named tests run against it. Driver: drivers/harness.py.txt
+
+M19 İ6 headings read with comments
+    tests: InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost
+    result: RED — FAILED (failures=2)
+M20 İ6 fences not code
+    tests: InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost, InstructionBudget.test_a_heading_only_inside_a_comment_or_in_code_is_lost
+    result: RED — FAILED (failures=3)
+M21 İ6 anchors not checked
+    tests: InstructionBudget.test_padding_without_anchors_fails, InstructionBudget.test_one_anchor_removed_fails_by_name
+    result: RED — FAILED (failures=2)
+M22 İ6 visible content not required
+    tests: InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+    result: RED — FAILED (failures=3)
+M23 İ6 comments not removed
+    tests: InstructionBudget.test_an_unclosed_comment_at_the_top_hides_the_rest, InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+    result: RED — FAILED (failures=3)
+
+red: 5 of 5

@@ -1,0 +1,34 @@
+namespace Diten.Web.Models.CRM;
+
+/// <summary>
+/// WP-VW-W2 (WEB-a) — the Visit Workspace page flags. <see cref="CanRead"/> false ⇒ the page draws ONLY the access
+/// notice (UAS-001: no heading, no calendar, no buttons). The action flags mirror the CRM endpoints' keys; the CRM
+/// stays the authority (a hidden button is a display decision, not the boundary).
+/// </summary>
+public sealed class VisitWorkspaceIndexViewModel
+{
+    public bool CanRead { get; set; }
+
+    /// <summary>WP-VW-W2 (WEB-b) — Plan mode (Targets panel, drag to day / time): crm.visit-plan.read AND
+    /// crm.visit-plan.generate (the Visit Planning session update).</summary>
+    public bool CanPlan { get; set; }
+
+    /// <summary>Cancel a visit / create an unplanned one: crm.planned-visit.manage.</summary>
+    public bool CanManageVisits { get; set; }
+
+    /// <summary>Not done / reschedule (outcome + submit): crm.visit-report.record AND crm.planned-visit.manage.</summary>
+    public bool CanRecord { get; set; }
+
+    /// <summary>Approve / reopen a week: crm.visit-plan.apply AND crm.planned-visit.manage.</summary>
+    public bool CanApplyWeek { get; set; }
+
+    /// <summary>The doctor search of the unplanned-visit dialog: crm.contact.read.</summary>
+    public bool CanSearchContacts { get; set; }
+
+    /// <summary>W4-FIX-c (G-3) — crm.account.read: the unplanned visit may target a pharmacy.</summary>
+    public bool CanSearchPharmacies { get; set; }
+
+    /// <summary>WP-VW-W3 (WEB-a) — start a visit (E3) and go back to its presentation: crm.visit-execution.read AND
+    /// crm.visit-execution.record. Without them the panel keeps the W2 actions and E3 is not drawn.</summary>
+    public bool CanExecute { get; set; }
+}

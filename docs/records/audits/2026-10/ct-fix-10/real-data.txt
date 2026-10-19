@@ -1,0 +1,7 @@
+CT-FIX-10 real data — run by the AI session in the CT worktree, on the real repository's refs.
+
+`python3 -B scripts/ct_queue.py writers --queue sce-mvp6` with this package's tool: exit 1
+  2 YAZAN lines, 6 ÇAKIŞMA groups; no DUR line, no traceback
+  exit 1 is the existing meaning of writers: collisions found (the real queue's rows written on two branches).
+  Not compared byte for byte with CT-FIX-09's tool: the tool reads its root from its own location, so a second copy
+  outside the worktree would not read these refs. For valid UTF-8 the new decode() returns the same text as before.

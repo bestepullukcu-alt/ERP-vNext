@@ -27,8 +27,11 @@ public static class BrandProductVocabulary
     public static readonly IReadOnlyList<string> ProductTypes =
         ["medicine", "medical-device", "service", "training-material", "other"];
 
+    // WP-VW-W4 (W4-BE-b2, design gap G4) — the competitor products use THIS dictionary (no separate list); the forms the
+    // competitor brief needs are APPENDED (additive: every existing value keeps its meaning and position).
     public static readonly IReadOnlyList<string> DosageForms =
-        ["tablet", "capsule", "syrup", "injection", "ointment", "cream", "drops", "inhaler", "patch", "other"];
+        ["tablet", "capsule", "syrup", "injection", "ointment", "cream", "drops", "inhaler", "patch", "other",
+         "film-coated-tablet", "modified-release-tablet", "extended-release-tablet", "modified-release-capsule", "ampoule"];
 
     public static readonly IReadOnlyList<string> UnitsOfMeasure =
         ["mg", "g", "ml", "l", "iu", "piece", "box", "vial", "ampoule", "other"];

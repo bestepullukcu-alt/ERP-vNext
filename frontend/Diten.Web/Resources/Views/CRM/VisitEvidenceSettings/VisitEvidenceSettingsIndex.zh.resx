@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>拜访证据</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM 设置 / 拜访</value></data>
+  <data name="Intro" xml:space="preserve"><value>代表“开始拜访”的规则。租户设置适用于所有代表；限时例外可在一段时间内为单个代表放宽规则。</value></data>
+  <data name="NewException" xml:space="preserve"><value>新建例外</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>分范围设置</value></data>
+  <data name="TabExceptions" xml:space="preserve"><value>限时例外</value></data>
+  <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>您只有只读权限；无法更改设置。</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopesNote" xml:space="preserve"><value>优先级：业务单元 › 法人实体 › 租户</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>租户默认值</value></data>
+  <data name="Locked" xml:space="preserve"><value>无法删除</value></data>
+  <data name="AddLegalEntity" xml:space="preserve"><value>添加法人实体</value></data>
+  <data name="AddLegalEntityHint" xml:space="preserve"><value>当代表的职位和区域分配关联后，将开放法人实体和业务单元层级。</value></data>
+  <data name="LookTitle" xml:space="preserve"><value>查看代表的生效设置</value></data>
+  <data name="LookSearch" xml:space="preserve"><value>搜索代表</value></data>
+  <data name="EffectiveTitle" xml:space="preserve"><value>生效设置</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="ColField" xml:space="preserve"><value>字段</value></data>
+  <data name="ColValue" xml:space="preserve"><value>生效值</value></data>
+  <data name="ColSource" xml:space="preserve"><value>来源</value></data>
+  <data name="Priority" xml:space="preserve"><value>优先级：</value></data>
+  <data name="SourceException" xml:space="preserve"><value>例外</value></data>
+  <data name="SourceTenant" xml:space="preserve"><value>租户</value></data>
+  <data name="ScopeUnresolved" xml:space="preserve"><value>法人实体和业务单元层级尚未关联。</value></data>
+  <data name="TypeTenant" xml:space="preserve"><value>租户</value></data>
+  <data name="PaneForm" xml:space="preserve"><value>设置表单</value></data>
+  <data name="PaneHistory" xml:space="preserve"><value>变更历史</value></data>
+  <data name="SoonTitle" xml:space="preserve"><value>附加证据</value></data>
+  <data name="SoonText" xml:space="preserve"><value>机构二维码和虚假定位检查将添加在此处。</value></data>
+  <data name="SoonBadge" xml:space="preserve"><value>即将推出</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>此范围内的代表将看到</value></data>
+  <data name="PvStartTitle" xml:space="preserve"><value>开始拜访</value></data>
+  <data name="PvSample" xml:space="preserve"><value>示例拜访 · 机构 · 时间</value></data>
+  <data name="PvPhoto" xml:space="preserve"><value>照片</value></data>
+  <data name="PvLocation" xml:space="preserve"><value>位置</value></data>
+  <data name="PvSign" xml:space="preserve"><value>医生确认 · 拜访结束时需要</value></data>
+  <data name="PvStart" xml:space="preserve"><value>开始演示</value></data>
+  <data name="LastChange" xml:space="preserve"><value>最近更改</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>有未保存的更改</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>取消</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>保存</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>变更历史 · 租户默认值</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>审计记录 · 只读</value></data>
+  <data name="ColDate" xml:space="preserve"><value>日期</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>人员</value></data>
+  <data name="ColChange" xml:space="preserve"><value>旧值 → 新值</value></data>
+  <data name="ExceptionsInfo" xml:space="preserve"><value>例外不是永久设置：它为单个代表放宽规则，须说明理由，最长 30 天。只有已批准且在日期范围内的例外才会生效。使用例外开始的拜访在经理视图中标记为“例外开始”。</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>限时例外</value></data>
+  <data name="XColRep" xml:space="preserve"><value>代表</value></data>
+  <data name="XColRules" xml:space="preserve"><value>放宽的规则</value></data>
+  <data name="XColRange" xml:space="preserve"><value>日期范围</value></data>
+  <data name="XColReason" xml:space="preserve"><value>理由</value></data>
+  <data name="XColPeople" xml:space="preserve"><value>创建人 / 批准人</value></data>
+  <data name="XColStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="OpenRow" xml:space="preserve"><value>打开</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>保存更改？</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>保存并应用</value></data>
+  <data name="XNewTitle" xml:space="preserve"><value>新建限时例外</value></data>
+  <data name="XRep" xml:space="preserve"><value>代表</value></data>
+  <data name="XRules" xml:space="preserve"><value>要放宽的规则</value></data>
+  <data name="XRulesHint" xml:space="preserve"><value>阈值（距离、精度、短拜访）不能通过例外更改。</value></data>
+  <data name="XFrom" xml:space="preserve"><value>开始</value></data>
+  <data name="XTo" xml:space="preserve"><value>结束</value></data>
+  <data name="XReason" xml:space="preserve"><value>理由</value></data>
+  <data name="XReasonPlaceholder" xml:space="preserve"><value>例如：平板 GPS 模块故障，等待更换设备（IT 工单号）。</value></data>
+  <data name="XSodNew" xml:space="preserve"><value>职责分离：您不能自行批准此例外。提交后，由他人在任务中心批准，并在日期范围内生效。</value></data>
+  <data name="XSubmit" xml:space="preserve"><value>提交审批</value></data>
+  <data name="XDetailTitle" xml:space="preserve"><value>例外详情</value></data>
+  <data name="F_locationMode" xml:space="preserve"><value>位置检查</value></data>
+  <data name="F_radiusMeters" xml:space="preserve"><value>允许距离</value></data>
+  <data name="F_maxAccuracyMeters" xml:space="preserve"><value>最低定位精度</value></data>
+  <data name="F_accountWithoutLocation" xml:space="preserve"><value>无位置的机构</value></data>
+  <data name="F_photoMode" xml:space="preserve"><value>照片</value></data>
+  <data name="F_doctorConfirmation" xml:space="preserve"><value>医生确认（签名）</value></data>
+  <data name="F_durationConsistency" xml:space="preserve"><value>时长一致性</value></data>
+  <data name="F_shortVisitSeconds" xml:space="preserve"><value>短拜访阈值</value></data>
+  <data name="D_locationMode_required" xml:space="preserve"><value>必需：代表不在机构附近时无法开始拜访。</value></data>
+  <data name="D_locationMode_info" xml:space="preserve"><value>仅记录：记录位置；拜访始终可以开始。</value></data>
+  <data name="D_accountWithoutLocation" xml:space="preserve"><value>当机构记录没有坐标时</value></data>
+  <data name="D_photoMode" xml:space="preserve"><value>机构入口或候诊区；不拍摄人脸（数据保护）。</value></data>
+  <data name="D_doctorConfirmation" xml:space="preserve"><value>拜访结束时在平板上签名或点按确认。申请样品时始终需要。</value></data>
+  <data name="Opt_locationMode_required" xml:space="preserve"><value>必需</value></data>
+  <data name="Opt_locationMode_info" xml:space="preserve"><value>仅记录</value></data>
+  <data name="Opt_photoMode_required" xml:space="preserve"><value>必需</value></data>
+  <data name="Opt_photoMode_optional" xml:space="preserve"><value>可选</value></data>
+  <data name="Opt_accountWithoutLocation_allow_flagged" xml:space="preserve"><value>开始并标记</value></data>
+  <data name="Opt_accountWithoutLocation_block" xml:space="preserve"><value>阻止</value></data>
+  <data name="R_radiusMeters" xml:space="preserve"><value>50–5000 米 · 租户默认 300</value></data>
+  <data name="R_maxAccuracyMeters" xml:space="preserve"><value>10–1000 米 · 租户默认 150</value></data>
+  <data name="R_shortVisitSeconds" xml:space="preserve"><value>30–1800 秒 · 短于此时长的拜访会被标记。</value></data>
+  <data name="G_location" xml:space="preserve"><value>位置</value></data>
+  <data name="G_photo" xml:space="preserve"><value>照片</value></data>
+  <data name="G_approval" xml:space="preserve"><value>确认与时长</value></data>
+  <data name="ValueOn" xml:space="preserve"><value>开启</value></data>
+  <data name="ValueOff" xml:space="preserve"><value>关闭</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} 米</value></data>
+  <data name="UnitSeconds" xml:space="preserve"><value>{0} 秒</value></data>
+  <data name="UnitM" xml:space="preserve"><value>米</value></data>
+  <data name="UnitS" xml:space="preserve"><value>秒</value></data>
+  <data name="RangeError" xml:space="preserve"><value>必须介于 {0} 和 {1} {2} 之间。</value></data>
+  <data name="PvRequired" xml:space="preserve"><value>必需</value></data>
+  <data name="PvOptional" xml:space="preserve"><value>可选</value></data>
+  <data name="PvInfo" xml:space="preserve"><value>仅记录</value></data>
+  <data name="PvLocationRequired" xml:space="preserve"><value>您必须距离机构 {0} 米以内。</value></data>
+  <data name="PvLocationInfo" xml:space="preserve"><value>仅作记录。</value></data>
+  <data name="PvOpenBoth" xml:space="preserve"><value>拍照且代表距离机构 {0} 米以内后，“开始演示”才可用。</value></data>
+  <data name="PvOpenLocation" xml:space="preserve"><value>代表距离机构 {0} 米以内时，“开始演示”才可用。</value></data>
+  <data name="PvOpenPhoto" xml:space="preserve"><value>拍照后，“开始演示”才可用。</value></data>
+  <data name="PvOpenNone" xml:space="preserve"><value>“开始演示”立即可用；位置和照片仅作记录。</value></data>
+  <data name="PvAccuracy" xml:space="preserve"><value>定位精度低于 {0} 米时视为无效。</value></data>
+  <data name="PvNoLocationFlag" xml:space="preserve"><value>在无坐标的机构，拜访可开始并会被标记。</value></data>
+  <data name="PvNoLocationBlock" xml:space="preserve"><value>在无坐标的机构，无法开始拜访。</value></data>
+  <data name="PvShort" xml:space="preserve"><value>短于 {0} 秒的拜访会被标记。</value></data>
+  <data name="Reps" xml:space="preserve"><value>{0} 名代表</value></data>
+  <data name="AllFields" xml:space="preserve"><value>所有字段均已填写</value></data>
+  <data name="DefaultPolicy" xml:space="preserve"><value>默认值 · 尚未保存</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>您</value></data>
+  <data name="WorkflowActor" xml:space="preserve"><value>审批流程</value></data>
+  <data name="SaveText" xml:space="preserve"><value>更改将立即应用于此范围内的 {0} 名代表。</value></data>
+  <data name="Saved" xml:space="preserve"><value>设置已保存；已应用于 {0} 名代表。</value></data>
+  <data name="LookPlaceholder" xml:space="preserve"><value>选择代表</value></data>
+  <data name="ActiveException" xml:space="preserve"><value>有效例外：{0} · 至 {1}</value></data>
+  <data name="SourceExceptionUntil" xml:space="preserve"><value>例外 · 至 {0}</value></data>
+  <data name="HistCreated" xml:space="preserve"><value>设置已创建</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>尚无变更记录；适用默认值。</value></data>
+  <data name="XFilter_all" xml:space="preserve"><value>全部</value></data>
+  <data name="XFilter_active" xml:space="preserve"><value>生效中</value></data>
+  <data name="XFilter_planned" xml:space="preserve"><value>已计划</value></data>
+  <data name="XFilter_in_review" xml:space="preserve"><value>待审批</value></data>
+  <data name="XFilter_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="XFilter_expired" xml:space="preserve"><value>已过期</value></data>
+  <data name="XFilter_cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="XFilter_ended_early" xml:space="preserve"><value>提前结束</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>位置检查：仅记录</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>照片：可选</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>无位置的机构：允许开始</value></data>
+  <data name="XSt_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="XSt_in_review" xml:space="preserve"><value>待审批</value></data>
+  <data name="XSt_active" xml:space="preserve"><value>生效中</value></data>
+  <data name="XSt_planned" xml:space="preserve"><value>已计划</value></data>
+  <data name="XSt_expired" xml:space="preserve"><value>已过期</value></data>
+  <data name="XSt_cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="XSt_ended_early" xml:space="preserve"><value>提前结束</value></data>
+  <data name="XDays" xml:space="preserve"><value>{0} 天</value></data>
+  <data name="XCreatedBy" xml:space="preserve"><value>创建人：{0}</value></data>
+  <data name="XApprovedBy" xml:space="preserve"><value>批准人：{0}</value></data>
+  <data name="XEmpty" xml:space="preserve"><value>此视图中没有例外。</value></data>
+  <data name="XDetailRules" xml:space="preserve"><value>放宽的规则</value></data>
+  <data name="XDetailRange" xml:space="preserve"><value>日期范围</value></data>
+  <data name="XDetailReason" xml:space="preserve"><value>理由</value></data>
+  <data name="XInReviewNote" xml:space="preserve"><value>正在任务中心等待审批。</value></data>
+  <data name="XSod" xml:space="preserve"><value>此例外由您创建、编辑或提交；必须由他人批准。</value></data>
+  <data name="XReturnComment" xml:space="preserve"><value>给创建人的备注</value></data>
+  <data name="XCloseReason" xml:space="preserve"><value>理由</value></data>
+  <data name="TlCreated" xml:space="preserve"><value>已创建</value></data>
+  <data name="TlSubmitted" xml:space="preserve"><value>已提交审批</value></data>
+  <data name="TlApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="TlReturned" xml:space="preserve"><value>已退回草稿</value></data>
+  <data name="TlWithdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="TlTimedOut" xml:space="preserve"><value>审批超时</value></data>
+  <data name="TlCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="TlEndedEarly" xml:space="preserve"><value>已提前结束</value></data>
+  <data name="TlRefused_visit_evidence_exception_sod" xml:space="preserve"><value>已退回：批准人是创建人或提交人</value></data>
+  <data name="TlRefused_visit_evidence_exception_overlap" xml:space="preserve"><value>已退回：与另一例外重叠</value></data>
+  <data name="XBtnSubmit" xml:space="preserve"><value>提交审批</value></data>
+  <data name="XBtnWithdraw" xml:space="preserve"><value>撤回</value></data>
+  <data name="XBtnApprove" xml:space="preserve"><value>批准</value></data>
+  <data name="XBtnReturn" xml:space="preserve"><value>退回草稿</value></data>
+  <data name="XBtnCancel" xml:space="preserve"><value>取消例外</value></data>
+  <data name="XBtnEndEarly" xml:space="preserve"><value>提前结束</value></data>
+  <data name="XBtnConfirmReturn" xml:space="preserve"><value>确认退回</value></data>
+  <data name="XBtnConfirmCancel" xml:space="preserve"><value>确认取消</value></data>
+  <data name="XBtnConfirmEndEarly" xml:space="preserve"><value>确认提前结束</value></data>
+  <data name="XSubmitted" xml:space="preserve"><value>例外已提交审批。</value></data>
+  <data name="XWithdrawn" xml:space="preserve"><value>审批已撤回；例外恢复为草稿。</value></data>
+  <data name="XApprovedToast" xml:space="preserve"><value>决定已提交；流程结束后例外即被批准。</value></data>
+  <data name="XReturnedToast" xml:space="preserve"><value>已退回创建人。</value></data>
+  <data name="XCancelledToast" xml:space="preserve"><value>例外已取消。</value></data>
+  <data name="XEndedToast" xml:space="preserve"><value>例外已提前结束；今天到期。</value></data>
+  <data name="XCreatedNotSent" xml:space="preserve"><value>已保存为草稿，但未能提交审批：{0}</value></data>
+  <data name="XRuleNoRep" xml:space="preserve"><value>请先选择代表。</value></data>
+  <data name="XRuleAlready" xml:space="preserve"><value>该代表已是 {0}（{1}）。</value></data>
+  <data name="XRuleNow" xml:space="preserve"><value>当前：{0} · {1}</value></data>
+  <data name="XDayCounter" xml:space="preserve"><value>{0} 天 · 最多 {1} 天</value></data>
+  <data name="XDayCounterEmpty" xml:space="preserve"><value>最多 {0} 天</value></data>
+  <data name="XErrRep" xml:space="preserve"><value>请选择代表。</value></data>
+  <data name="XErrRules" xml:space="preserve"><value>请至少选择一条规则。</value></data>
+  <data name="XErrFrom" xml:space="preserve"><value>请选择开始日期。</value></data>
+  <data name="XErrPast" xml:space="preserve"><value>开始日期不能早于今天。</value></data>
+  <data name="XErrToRequired" xml:space="preserve"><value>必须填写结束日期；不存在无期限的例外。</value></data>
+  <data name="XErrToBefore" xml:space="preserve"><value>结束日期不能早于开始日期。</value></data>
+  <data name="XErrTooLong" xml:space="preserve"><value>最多 30 天；所选范围为 {0} 天。</value></data>
+  <data name="XErrWhy" xml:space="preserve"><value>请填写理由。</value></data>
+  <data name="XErrWhyLong" xml:space="preserve"><value>最多 {0} 个字符。</value></data>
+  <data name="Err_visit_evidence_exception_invalid" xml:space="preserve"><value>例外无效：请检查规则、日期（开始不能早于今天，最多 30 天）和理由。</value></data>
+  <data name="Err_visit_evidence_exception_overlap" xml:space="preserve"><value>该代表已有在重叠日期放宽同一规则的例外。</value></data>
+  <data name="Err_visit_evidence_exception_rep_unknown" xml:space="preserve"><value>该代表没有有效的主要区域分配。</value></data>
+  <data name="Err_visit_evidence_exception_not_editable" xml:space="preserve"><value>此例外在当前状态下无法更改。</value></data>
+  <data name="Err_visit_evidence_exception_sod" xml:space="preserve"><value>职责分离：创建人或提交人不能批准。</value></data>
+  <data name="Err_visit_evidence_exception_not_found" xml:space="preserve"><value>未找到该例外。</value></data>
+  <data name="Err_visit_evidence_policy_invalid" xml:space="preserve"><value>有值超出范围；未保存任何内容。</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>设置已被他人修改；请刷新后重试。</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>审批流程模板尚未配置。请联系管理员。</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>无法连接审批流程；未做任何更改。</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>您无权在审批流程中执行此操作。</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>没有待处理的审批（可能刚刚结束）。</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>审批当前无法撤回。</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>退回时需要给创建人填写备注。</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>审批流程拒绝了该请求。</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>记录已被修改；请刷新后重试。</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>无法保存。无法连接服务器；您的更改保留在此页面。</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>操作未能完成。</value></data>
+</root>

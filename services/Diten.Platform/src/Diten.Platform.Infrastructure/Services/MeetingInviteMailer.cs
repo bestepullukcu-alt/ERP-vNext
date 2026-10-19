@@ -242,7 +242,7 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
                 new NotificationEventDispatchRequest(
                     TenantId: _tenantContext.TenantId,
                     EventCode: eventCode,
-                    To: [new EmailRecipientDto(recipient.Email, recipient.DisplayName)],
+                    To: [new EmailRecipientDto(recipient.Email, recipient.DisplayName, recipient.PreferredLanguage)],
                     Variables: variables,
                     // Same posture as TaskNotificationService: the reader's own language is not known here, so
                     // the adapter resolves the TENANT's configured language rather than guessing at the actor's.

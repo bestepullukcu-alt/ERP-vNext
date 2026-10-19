@@ -10,6 +10,8 @@ const { loadScript } = require("./load-script");
 const ROOT = path.resolve(__dirname, "..");
 const VIEW = fs.readFileSync(path.join(ROOT, "Views/Tasks/Details.cshtml"), "utf8");
 const FORM_VIEWS = ["Create", "Edit"].map((name) => [name, fs.readFileSync(path.join(ROOT, `Views/Tasks/${name}.cshtml`), "utf8")]);
+const SHELL = fs.readFileSync(path.join(ROOT, "Views/Shared/_LayoutTenantShell.cshtml"), "utf8");
+const SHORTCUTS_PARTIAL = '<partial name="~/Views/Shared/_DitenShortcuts.cshtml" />';
 const TASK_ID = "98d1f94e-1848-4539-8a99-774e72651b8a";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -78,7 +80,10 @@ describe("the task detail page's shortcuts", () => {
   it("the Razor header carries the hooks the script presses", () => {
     expect(VIEW).toMatch(/href="\/Tasks" class="btn btn-label-secondary" data-task-back/);
     expect(VIEW).toMatch(/href="\/Tasks\/@taskId\/Edit" class="btn btn-primary" data-task-edit/);
-    expect(VIEW).toContain('<partial name="~/Views/Shared/_DitenShortcuts.cshtml" />');
+    // WP-UX-COMMON-01 — the tenant shell loads the shared layer for every page; the page does not load it again.
+    expect(VIEW).toContain('Layout = "_LayoutTenantShell"');
+    expect(SHELL).toContain(SHORTCUTS_PARTIAL);
+    expect(VIEW).not.toContain(SHORTCUTS_PARTIAL);
   });
 });
 
@@ -88,8 +93,10 @@ describe("the task form pages get the list and nothing else", () => {
    * half-filled form — and Cancel, which leaves the page and discards what was typed; the page has no dirty
    * tracking to guard it. `?` still opens the list there, as everywhere.
    */
-  it.each(FORM_VIEWS)("%s loads the shared layer", (_name, view) => {
-    expect(view).toContain('<partial name="~/Views/Shared/_DitenShortcuts.cshtml" />');
+  it.each(FORM_VIEWS)("%s gets the shared layer from the tenant shell, not a second copy of its own", (_name, view) => {
+    expect(view).toContain('Layout = "_LayoutTenantShell"');
+    expect(SHELL).toContain(SHORTCUTS_PARTIAL);
+    expect(view).not.toContain(SHORTCUTS_PARTIAL);
   });
 
   it("form-page.js registers no shortcut", () => {

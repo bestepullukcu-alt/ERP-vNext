@@ -352,7 +352,12 @@ internal static class AuditTrailMeasurement
         var typeName = token[..dot];
         var method = Regex.Escape(token[(dot + 1)..]);
 
-        if (Regex.IsMatch(text, $@"(?<![\w.]){Regex.Escape(typeName)}\s*\.\s*{method}\s*\("))
+        // A call with EXPLICIT type arguments is the same call: `_transaction.ExecuteAsync<Response<NoContent>>(…)`.
+        // Measured 2026-10-02 (WP-PLATFORM-AUDIT-INTX-01): eight Platform handlers call the coordinator that way and
+        // were read as "calls nothing". Only the two typed forms accept it; the weak (name-only) form below does not.
+        const string TypeArguments = @"(?:<[^;(){}]*>)?";
+
+        if (Regex.IsMatch(text, $@"(?<![\w.]){Regex.Escape(typeName)}\s*\.\s*{method}\s*{TypeArguments}\s*\("))
         {
             return true;
         }
@@ -363,7 +368,7 @@ internal static class AuditTrailMeasurement
             .ToList();
         if (variables.Count > 0)
         {
-            return variables.Any(variable => Regex.IsMatch(text, $@"(?<![\w.]){Regex.Escape(variable)}\s*[?!]?\s*\.\s*{method}\s*\("));
+            return variables.Any(variable => Regex.IsMatch(text, $@"(?<![\w.]){Regex.Escape(variable)}\s*[?!]?\s*\.\s*{method}\s*{TypeArguments}\s*\("));
         }
 
         var isInterface = pool.Any(t => t.Name == typeName && t.Kind == "interface");

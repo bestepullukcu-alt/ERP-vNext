@@ -19,7 +19,7 @@ Bu komut; yeni testler oluşturur, mevcut testleri çalıştırır veya test kap
 ## 🛡️ Diten Test Standartları (Kurallar)
 
 1. **AAA Deseni:** Testler mutlaka "Arrange (Hazırla) - Act (Çalıştır) - Assert (Doğrula)" yapısında olmalıdır.
-2. **Mocking:** Veritabanı (MongoDB) ve dış servisler mutlaka `Moq` veya `NSubstitute` ile taklit edilmelidir.
+2. **Test çiftleri (mock / fake):** Veritabanı (MongoDB) ve dış servisler, test projesinin mevcut yaklaşımıyla taklit edilir: `Moq` referansı olan projelerde Moq, diğerlerinde projedeki elle yazılmış fake / stub sınıfları. Doğrulama xUnit `Assert.*` ile yapılır (FluentAssertions kullanılmaz). Yeni test paketi (NuGet) eklenmez. Ön yüz JS testleri Vitest ile `frontend/Diten.Web/tests/` altında yazılır.
 3. **Multi-Tenancy Check:** Her test senaryosu mutlaka "Farklı TenantId" durumunu test etmelidir.
 4. **Dil Check:** Hata mesajlarının `SharedLocalizer` üzerinden modül türüne göre doğru Key ile dönüp dönmediği kontrol edilmelidir.
 

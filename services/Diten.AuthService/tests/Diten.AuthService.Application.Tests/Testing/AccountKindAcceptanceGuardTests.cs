@@ -2,6 +2,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Diten.AuthService.Application.Tests.Testing;
 
@@ -129,7 +132,8 @@ public sealed class AccountKindAcceptanceGuardTests
         "TenantResolution__DevBypassEnabled",
         "Observability__Metrics__Enabled",
         "ASPNETCORE_ENVIRONMENT",
-        "JwtSettings__Secret"
+        "JwtSettings__Secret",
+        "DevelopmentLocalSettings__Enabled"
     };
 
     [Fact]
@@ -366,6 +370,38 @@ public sealed class AccountKindAcceptanceGuardTests
             var response = await client.GetAsync($"api/users/{host.Seeded.Human.Id}/account-assertion");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        finally
+        {
+            await host.DisposeAsync();
+        }
+    }
+
+    // MOD-0033-FU02 §F.3 — this host runs the real Program under "Development" with the API project directory as its
+    // content root, which is exactly where scripts/dev/setup-service-trust.* puts a developer's git-ignored
+    // appsettings.Development.local.json (issuer key, service-client registry). The fixture switches that file off;
+    // without the switch the host would load it and apply the developer's registry to the test database. No such file
+    // is created here (never in a real service directory): Program.cs adds the SOURCE whether or not the file exists,
+    // so the source's absence from the built host's configuration is the proof.
+    [Fact]
+    public async Task The_development_host_does_not_load_the_developers_local_settings_file()
+    {
+        var host = new AccountKindAcceptance.AuthTestHost();
+        await host.InitializeAsync();
+        try
+        {
+            var environment = host.Factory.Services.GetRequiredService<IHostEnvironment>();
+            var configuration = (IConfigurationRoot)host.Factory.Services.GetRequiredService<IConfiguration>();
+            var jsonFiles = configuration.Providers.OfType<JsonConfigurationProvider>()
+                .Select(provider => provider.Source.Path).ToArray();
+
+            // Not vacuous: this IS a Development host that reads the tracked Development file — the one situation
+            // in which Program.cs would add the local file right behind it.
+            Assert.True(environment.IsDevelopment());
+            Assert.Contains("appsettings.Development.json", jsonFiles);
+            Assert.Equal("false", configuration[Diten.AuthService.Api.Configuration.DevelopmentLocalSettings.EnabledKey]);
+
+            Assert.DoesNotContain(Diten.AuthService.Api.Configuration.DevelopmentLocalSettings.FileName, jsonFiles);
         }
         finally
         {

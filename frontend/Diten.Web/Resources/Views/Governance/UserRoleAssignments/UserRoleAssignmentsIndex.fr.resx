@@ -4,14 +4,14 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="Title" xml:space="preserve"><value>User Roles</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Assign or remove roles for a user.</value></data>
-  <data name="SelectUser" xml:space="preserve"><value>User</value></data>
+  <data name="Title" xml:space="preserve"><value>Rôles des utilisateurs</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Attribuez des rôles à un utilisateur ou retirez-les.</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Utilisateur</value></data>
   <data name="SearchRoles" xml:space="preserve"><value>Nom ou code du rôle…</value></data>
-  <data name="SelectUserPrompt" xml:space="preserve"><value>Select a user to manage their roles.</value></data>
-  <data name="NoRoles" xml:space="preserve"><value>No roles are available.</value></data>
-  <data name="Assign" xml:space="preserve"><value>Assign</value></data>
-  <data name="Assigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="SelectUserPrompt" xml:space="preserve"><value>Sélectionnez un utilisateur pour gérer ses rôles.</value></data>
+  <data name="NoRoles" xml:space="preserve"><value>Aucun rôle disponible.</value></data>
+  <data name="Assign" xml:space="preserve"><value>Attribuer</value></data>
+  <data name="Assigned" xml:space="preserve"><value>Attribué</value></data>
   <data name="SearchRolesLabel" xml:space="preserve"><value>Rechercher des rôles</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Tous</value></data>
   <data name="FilterAssigned" xml:space="preserve"><value>Attribués</value></data>
@@ -29,4 +29,13 @@
   <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
   <data name="PermissionCountFormat" xml:space="preserve"><value>{0} autorisations</value></data>
   <data name="RolesShownFormat" xml:space="preserve"><value>{0} rôles affichés</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Votre session n'a pas pu être vérifiée. Reconnectez-vous puis réessayez.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Ce rôle n'existe plus. Actualisez la page.</value>
+  </data>
+  <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
+    <value>Cet utilisateur n'existe plus. Actualisez la page.</value>
+  </data>
 </root>

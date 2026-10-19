@@ -20,8 +20,120 @@ internal sealed class InMemoryBrandRepository : IBrandRepository
 
     public IReadOnlyList<Brand> Entities => _entities;
 
+    public List<BrandHistoryEntry> History { get; } = [];
+
+    /// <summary>FIX4 (F2) — when set, every brand write answers this outcome and changes nothing (e.g. Ambiguous).</summary>
+    public BrandWriteOutcome? ForcedOutcome { get; set; }
+
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 — a COPY, like a read from a real store: a handler that changes what it read must not
+    // change the stored brand before its (conditional) write lands.
     public Task<Brand?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => Task.FromResult(_entities.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted));
+        => Task.FromResult(_entities.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted) is { } stored
+            ? Clone(stored)
+            : null);
+
+    public Task<BrandWriteOutcome> CreateWithHistoryAsync(Brand brand, BrandHistoryEntry history, CancellationToken cancellationToken = default)
+    {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
+        if (_entities.Any(x => x.TenantId == _tenantId && string.Equals(x.BrandCode, brand.BrandCode, StringComparison.OrdinalIgnoreCase)))
+        {
+            return Task.FromResult(BrandWriteOutcome.DuplicateCode);
+        }
+
+        CreateAsync(brand);
+        Record(history, brand.Id, brand.Version);
+        return Task.FromResult(BrandWriteOutcome.Written);
+    }
+
+    // FIX2 (item 6) — the reservation itself is the store's (measured in BrandFix2HttpTests); the double keeps the edit.
+    public Task<BrandWriteOutcome> UpdateEditableFieldsWithHistoryAsync(
+        Brand proposed, int expectedVersion, BrandHistoryEntry history,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default)
+    {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
+        var stored = Writable(proposed.Id, expectedVersion);
+        if (stored is null)
+        {
+            return Task.FromResult(BrandWriteOutcome.Stale);
+        }
+
+        stored.BrandName = proposed.BrandName;
+        stored.BrandStatus = proposed.BrandStatus;
+        stored.Description = proposed.Description;
+        stored.OwnerCompanyId = proposed.OwnerCompanyId;
+        stored.BusinessUnitId = proposed.BusinessUnitId;
+        stored.TherapeuticAreaId = proposed.TherapeuticAreaId;
+        stored.EffectiveFrom = proposed.EffectiveFrom;
+        stored.EffectiveTo = proposed.EffectiveTo;
+        stored.ExternalReferences = proposed.ExternalReferences;
+        stored.UpdatedBy = proposed.UpdatedBy;
+        stored.UpdatedAt = DateTimeOffset.UtcNow;
+        stored.Version++;
+        Record(history, stored.Id, stored.Version);
+        return Task.FromResult(BrandWriteOutcome.Written);
+    }
+
+    public Task<BrandWriteOutcome> ArchiveWithHistoryAsync(
+        Brand archived, int expectedVersion, BrandHistoryEntry history, CancellationToken cancellationToken = default)
+    {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
+        var stored = Writable(archived.Id, expectedVersion);
+        if (stored is null)
+        {
+            return Task.FromResult(BrandWriteOutcome.Stale);
+        }
+
+        stored.IsArchived = true;
+        stored.BrandStatus = archived.BrandStatus;
+        stored.ArchivedAt = archived.ArchivedAt;
+        stored.ArchivedBy = archived.ArchivedBy;
+        stored.UpdatedBy = archived.UpdatedBy;
+        stored.UpdatedAt = DateTimeOffset.UtcNow;
+        stored.Version++;
+        Record(history, stored.Id, stored.Version);
+        return Task.FromResult(BrandWriteOutcome.Written);
+    }
+
+    public Task<IReadOnlyList<BrandHistoryEntry>> GetHistoryAsync(Guid brandId, CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<BrandHistoryEntry>>(History.Where(x => x.BrandId == brandId).ToList());
+
+    public Task<Brand?> FindByExternalReferenceAsync(
+        string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default)
+        => Task.FromResult(_entities
+            .Where(x => x.TenantId == _tenantId && !x.IsDeleted && x.Id != excludeId
+                        && x.ExternalReferences.Any(r =>
+                            string.Equals(r.SourceSystem, sourceSystem, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(r.ExternalId, externalId, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(x => x.BrandCode, StringComparer.Ordinal)
+            .FirstOrDefault());
+
+    private Brand? Writable(Guid id, int expectedVersion)
+        => _entities.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted && !x.IsArchived
+                                         && x.Version == expectedVersion);
+
+    private void Record(BrandHistoryEntry history, Guid brandId, int resultVersion)
+    {
+        history.TenantId = _tenantId;
+        history.BrandId = brandId;
+        history.ResultVersion = resultVersion;
+        History.Add(history);
+    }
+
+    private static Brand Clone(Brand x) => new()
+    {
+        Id = x.Id, TenantId = x.TenantId, IsDeleted = x.IsDeleted, DeletedAt = x.DeletedAt, CreatedAt = x.CreatedAt,
+        UpdatedAt = x.UpdatedAt, Version = x.Version, BrandCode = x.BrandCode, BrandName = x.BrandName,
+        BrandStatus = x.BrandStatus, Description = x.Description, OwnerCompanyId = x.OwnerCompanyId,
+        BusinessUnitId = x.BusinessUnitId, TherapeuticAreaId = x.TherapeuticAreaId, EffectiveFrom = x.EffectiveFrom,
+        EffectiveTo = x.EffectiveTo, IsArchived = x.IsArchived, ArchivedAt = x.ArchivedAt, ArchivedBy = x.ArchivedBy,
+        CreatedBy = x.CreatedBy, UpdatedBy = x.UpdatedBy,
+        ExternalReferences = x.ExternalReferences.Select(r => new BrandProductExternalReference
+        {
+            SourceSystem = r.SourceSystem, ExternalId = r.ExternalId, ExternalCode = r.ExternalCode,
+            ExternalName = r.ExternalName, ImportedAt = r.ImportedAt, IsPrimary = r.IsPrimary
+        }).ToList()
+    };
 
     public Task<Brand> CreateAsync(Brand entity, CancellationToken cancellationToken = default)
     {
@@ -82,6 +194,9 @@ internal sealed class InMemoryProductRepository : IProductRepository
 
     public IReadOnlyList<Product> Entities => _entities;
 
+    /// <summary>FIX4 (F2) — when set, every product write answers this outcome and changes nothing (e.g. Ambiguous).</summary>
+    public BrandWriteOutcome? ForcedOutcome { get; set; }
+
     public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => Task.FromResult(_entities.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted));
 
@@ -127,6 +242,71 @@ internal sealed class InMemoryProductRepository : IProductRepository
             .ToList();
         return Task.FromResult(items);
     }
+
+    public Task<bool> TryCreateAsync(Product product, CancellationToken cancellationToken = default)
+    {
+        if (_entities.Any(x => x.TenantId == _tenantId && string.Equals(x.ProductCode, product.ProductCode, StringComparison.OrdinalIgnoreCase)))
+        {
+            return Task.FromResult(false);
+        }
+
+        CreateAsync(product);
+        return Task.FromResult(true);
+    }
+
+    // FIX2 (item 6) — the reservation itself is the store's (measured in BrandFix2HttpTests); the double keeps the write.
+    public Task<BrandWriteOutcome> CreateWithReservationsAsync(Product product, CancellationToken cancellationToken = default)
+        => ForcedOutcome is { } forced ? Task.FromResult(forced) : TryCreateAsync(product, cancellationToken)
+            .ContinueWith(x => x.Result ? BrandWriteOutcome.Written : BrandWriteOutcome.DuplicateCode, cancellationToken);
+
+    // FIX3 (R-3) — conditional on the version, as the store is (measured over HTTP in BrandFix3HttpTests).
+    public Task<BrandWriteOutcome> UpdateWithReservationsAsync(
+        Product product, int expectedVersion,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default)
+    {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
+        var index = _entities.FindIndex(x => x.Id == product.Id && x.TenantId == _tenantId && !x.IsDeleted && !x.IsArchived
+                                             && x.Version == expectedVersion);
+        if (index < 0)
+        {
+            return Task.FromResult(BrandWriteOutcome.Stale);
+        }
+
+        product.UpdatedAt = DateTimeOffset.UtcNow;
+        product.Version = expectedVersion + 1;
+        _entities[index] = product;
+        return Task.FromResult(BrandWriteOutcome.Written);
+    }
+
+    public Task<BrandWriteOutcome> ArchiveWithReservationsAsync(Product archived, int expectedVersion, CancellationToken cancellationToken = default)
+    {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
+        var stored = _entities.FirstOrDefault(x => x.Id == archived.Id && x.TenantId == _tenantId && !x.IsDeleted && !x.IsArchived
+                                                   && x.Version == expectedVersion);
+        if (stored is null)
+        {
+            return Task.FromResult(BrandWriteOutcome.Stale);
+        }
+
+        stored.IsArchived = true;
+        stored.ProductStatus = archived.ProductStatus;
+        stored.ArchivedAt = archived.ArchivedAt;
+        stored.ArchivedBy = archived.ArchivedBy;
+        stored.UpdatedBy = archived.UpdatedBy;
+        stored.Version++;
+        return Task.FromResult(BrandWriteOutcome.Written);
+    }
+
+    public Task<Product?> FindByExternalReferenceAsync(
+        string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default)
+        => Task.FromResult(_entities
+            .Where(x => x.TenantId == _tenantId && !x.IsDeleted && x.Id != excludeId
+                        && x.ExternalReferences.Any(r =>
+                            string.Equals(r.SourceSystem, sourceSystem, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(r.ExternalId, externalId, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(x => x.ProductCode, StringComparer.Ordinal)
+            .FirstOrDefault());
 
     public Task<IReadOnlyList<Product>> GetByBrandAsync(Guid brandId, CancellationToken cancellationToken = default)
     {

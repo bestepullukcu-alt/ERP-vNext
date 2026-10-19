@@ -1,0 +1,52 @@
+"""İ5B-FIX-16 guard removal, run 05: the earlier guards of İ5B-FIX-14 and -15 whose anchors are still in the final source once each, on the final source (their entries copied from harness13 / harness15 by repr): one ONE work copy, restored before every mutation (rsync from the base, then the two frozen
+files laid over it and checked by SHA-256) — no copy per mutation. Each guard is undone alone; the named test must fail
+(a crash or a hang is not counted) and a control test must pass in the same copy.
+Usage: python3 harness15.py <base src> <frozen sync_adapters.py> <frozen test> <freeze list> <work dir> <out.json>"""
+import hashlib, json, os, shutil, subprocess, sys, time
+BASE, TOOL, TEST, FREEZE, W, OUT = sys.argv[1:7]
+FROZEN = dict(reversed(l.split()) for l in open(FREEZE, encoding="utf-8") if l.strip())
+F = ".antigravity/scripts/sync_adapters.py"
+B = "scripts.tests.test_sync_adapters_budget.InstructionBudget."
+M = [("G-M1 a link's destination and title counted", '    return known_spans(masked)\n', '    return []\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_required_text_only_in_link_metadata_is_lost']), ('G-M2 a numbered reference definition counted', '    if marker and RULE_REFERENCE_DEF.match(', '    if False and RULE_REFERENCE_DEF.match(', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_required_text_only_in_link_metadata_is_lost']), ("G-M3 an image's alt text counted", '        out.append((m.start(), m.end()) if m.group(1) and before % 2 == 0 else (m.start(2), m.end(2)))', '        out.append((m.start(2), m.end(2)))', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_required_text_only_in_link_metadata_is_lost']), ('G-N1 a rule line with link syntax the check cannot read still proves its text', '    if needle in line and unreadable_link(line):\n        return False\n', '', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_link_syntax_the_check_cannot_read_is_not_verified']), ("G-S1 the rule list's shape not checked", '            if shape:\n', '            if False:\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_rule_list_has_one_supported_shape']), ('G-S2 a gap between numbered lines ignored', '    gaps = [i for i, j in zip(at, at[1:]) if j != i + 1]', '    gaps = []', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_rule_list_has_one_supported_shape']), ('G-S4 the numbering 1..N not checked', '    if numbers != list(range(1, len(at) + 1)):', '    if False:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_rule_list_has_one_supported_shape']), ('G-I1 an image opener left on the line not searched', '(?:\\\\\\\\)*(?:!\\[|\\]\\()")', '(?:\\\\\\\\)*(?:\\]\\()")', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_reference_image_proves_no_required_text']), ('G-I2 a known link masked whole (its visible label lost)', '        out.append((m.start(), m.end()) if m.group(1) and before % 2 == 0 else (m.start(2), m.end(2)))', '        out.append((m.start(), m.end()))', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_reference_image_proves_no_required_text']), ('G-I3 an escaped opener read as an opener', 'UNESCAPED_LINK_OPENER = re.compile(r"(?<!\\\\)(?:\\\\\\\\)*(?:', 'UNESCAPED_LINK_OPENER = re.compile(r"(?:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_reference_image_proves_no_required_text']), ('G-P1 the line before rule 1 not judged when it is the marker line (the old block view)', '    if raw[at[0] - 1].strip():\n', '    if at[0] - 1 != start and raw[at[0] - 1].strip():\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_core_markers_keep_their_physical_context']), ('G-P2 no blank physical line needed before rule 1', '    if raw[at[0] - 1].strip():\n', '    if False:\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_core_markers_keep_their_physical_context', 'scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_rule_list_has_one_supported_shape']), ('G-B1 an escaped bang read as an image', '        out.append((m.start(), m.end()) if m.group(1) and before % 2 == 0 else (m.start(2), m.end(2)))', '        out.append((m.start(), m.end()) if m.group(1) else (m.start(2), m.end(2)))', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_an_escaped_bang_before_a_link_is_text']), ('G-C3 core:start not required alone on its line', '    if not CORE_START_LINE.match(raw[start]):\n', '    if False:\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_core_start_marker_has_no_open_context']), ('G-H2 comments deleted and the pieces joined, not masked in place', '            if masked[k] != "\\n":\n                masked[k] = " "\n', '            if masked[k] != "\\n":\n                masked[k] = ""\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_heading_reader_reads_comments_and_fences_in_order']), ('G-H5 the comment diagnosis read with the old regex', '    return any(pattern.search(text[a:b]) for a, b in scan_comments(text, heading_fence_opener, heading_fence_closes)[1])\n', '    return any(pattern.search(m.group(0)) for m in re.finditer(r"<!--.*?(?:-->|\\Z)", text, re.S))\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_the_heading_reader_reads_comments_and_fences_in_order']), ("G-X1 raw HTML not masked in the heading reader's view", '    return "".join(c if block[k] == c and element[k] == c else " " for k, c in enumerate(plain))', '    return plain', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it']), ('G-X2 the HTML blocks ignored (elements only)', 'if block[k] == c and element[k] == c else', 'if element[k] == c else', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it']), ('G-X3 the elements ignored (HTML blocks only)', 'if block[k] == c and element[k] == c else', 'if block[k] == c else', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it'])]
+CONTROL = B + "test_a_dead_link_is_still_a_dead_link"
+sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def restore():
+    subprocess.run(["rsync", "-a", "--delete", "--checksum", BASE + "/", W + "/"], check=True)
+    shutil.copyfile(TOOL, os.path.join(W, F)); shutil.copyfile(TEST, os.path.join(W, "scripts/tests/test_sync_adapters_budget.py"))
+    for p, h in FROZEN.items():
+        assert sha(os.path.join(W, p)) == h, p
+
+
+def run(names):
+    try:
+        p = subprocess.run([sys.executable, "-B", "-m", "unittest", *names], cwd=W, capture_output=True, text=True, timeout=600)
+    except subprocess.TimeoutExpired:
+        return "timeout", "the test did not finish in time"
+    crashed = "Traceback" in p.stderr and "AssertionError" not in p.stderr
+    return (99 if crashed else p.returncode), (p.stderr.strip().splitlines() or [""])[-1]
+
+
+os.makedirs(W, exist_ok=True)
+results = []
+for label, old, new, tests in M:
+    restore()
+    f = os.path.join(W, F)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    parsed = subprocess.run([sys.executable, "-B", "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())", f]).returncode == 0
+    t0 = time.time()
+    code, tail = run(tests)
+    ccode, ctail = run([CONTROL])
+    proven = parsed and code not in (0, 99, "timeout") and ccode == 0
+    results.append({"mutation": label, "applied": True, "file": F, "tests": tests, "exit": code, "red": code != 0, "summary": tail,
+                    "parsed": parsed, "control": CONTROL, "control_exit": ccode, "control_summary": ctail, "proven": proven,
+                    "seconds": round(time.time() - t0)})
+    print(label, "PROVEN" if proven else "NOT PROVEN", "| named:", tail, "| control:", ctail, flush=True)
+restore()
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("proven", sum(r.get("proven", False) for r in results), "of", len(results), "· the copy restored to the frozen sources")

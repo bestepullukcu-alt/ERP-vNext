@@ -13,15 +13,18 @@ public sealed class UpdateTenantCommandHandler : IRequestHandler<UpdateTenantCom
     private readonly ITenantRegistryRepository _repository;
     private readonly ICurrentUserContext _currentUser;
     private readonly IMapper _mapper;
+    private readonly IPlatformActorTenantScope _scope;
 
     public UpdateTenantCommandHandler(
         ITenantRegistryRepository repository,
         ICurrentUserContext currentUser,
-        IMapper mapper)
+        IMapper mapper,
+        IPlatformActorTenantScope scope)
     {
         _repository = repository;
         _currentUser = currentUser;
         _mapper = mapper;
+        _scope = scope;
     }
 
     public async Task<Response<TenantDetailDto>> Handle(UpdateTenantCommand request, CancellationToken cancellationToken)
@@ -30,6 +33,15 @@ public sealed class UpdateTenantCommandHandler : IRequestHandler<UpdateTenantCom
         if (tenant == null)
         {
             return Response<TenantDetailDto>.Fail("Tenant not found.", 404);
+        }
+
+        // BL-521 FIX1 F3 — the tenant TYPE is a platform administrator's decision. Internal tenants cannot be suspended
+        // or deleted, so a partner that could set Internal would make its own tenant untouchable. Sending the type the
+        // tenant already has is not a change (and is what the edit form does).
+        var tenantType = request.Request.TenantType ?? TenantType.Customer;
+        if (tenantType != tenant.TenantType && !(await _scope.GetAsync(cancellationToken)).IsUnrestricted)
+        {
+            return Response<TenantDetailDto>.Fail(TenantTypeChangeRefused, 403);
         }
 
         var normalizedDomain = NormalizeDomain(request.Request.Domain, request.Request.Subdomain);
@@ -62,7 +74,7 @@ public sealed class UpdateTenantCommandHandler : IRequestHandler<UpdateTenantCom
         tenant.DisplayName = request.Request.DisplayName.Trim();
         tenant.Slug = normalizedSlug;
         tenant.Domain = normalizedDomain;
-        tenant.TenantType = request.Request.TenantType ?? TenantType.Customer;
+        tenant.TenantType = tenantType;
         tenant.Country = string.IsNullOrWhiteSpace(request.Request.Country)
             ? null
             : request.Request.Country.Trim().ToUpperInvariant();
@@ -99,6 +111,8 @@ public sealed class UpdateTenantCommandHandler : IRequestHandler<UpdateTenantCom
 
         return Response<TenantDetailDto>.Success(_mapper.Map<TenantDetailDto>(tenant));
     }
+
+    public const string TenantTypeChangeRefused = "Only a platform administrator can change the tenant type.";
 
     private static string NormalizeSlug(string value)
     {

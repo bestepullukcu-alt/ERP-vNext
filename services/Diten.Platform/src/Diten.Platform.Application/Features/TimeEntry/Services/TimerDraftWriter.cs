@@ -189,7 +189,10 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
                 row.DurationMinutes = minutes;
                 row.OutsideWorkingMinutes = outside;
                 row.UpdatedBy = userId.ToString();
-                await _entries.UpdateAsync(row, ct);
+                if (!await _entries.UpdateAsync(row, row.Version, ct))
+                {
+                    continue; // the row moved after it was read — read the week and its rows again, like a lost claim
+                }
             }
 
             return TimerDraftOutcome.Written;

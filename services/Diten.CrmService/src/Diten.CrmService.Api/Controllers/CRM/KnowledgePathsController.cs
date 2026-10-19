@@ -120,7 +120,8 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, request.StepOrder, request.StepCode, request.StepTitle, request.StepType, request.ContentId,
                 request.IsRequired, request.VersionPinPolicy, request.CompletionRule, request.PrerequisiteStepId,
                 request.ConceptNodeId, request.EstimatedDurationMinutes, request.Notes,
-                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement)),
+                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement),
+                MapPresentation(request.Presentation)),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}")]
@@ -132,7 +133,8 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, stepId, request.StepOrder, request.StepCode, request.StepTitle, request.StepType,
                 request.ContentId, request.IsRequired, request.VersionPinPolicy, request.CompletionRule,
                 request.PrerequisiteStepId, request.ConceptNodeId, request.EstimatedDurationMinutes, request.Notes,
-                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement)),
+                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement),
+                MapPresentation(request.Presentation)),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}/archive")]
@@ -265,6 +267,15 @@ public sealed class KnowledgePathsController : CustomBaseController
     [HasPermission(Perms.Read)]
     public async Task<IActionResult> Usage(Guid pathId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathUsageQuery(pathId), cancellationToken));
+
+    /// <summary>WP-VW-W3 (W3-BE-b) — absent stays null (on update: keep the stored notes).</summary>
+    private static Application.Features.Knowledge.Path.KnowledgePathStepPresentationInput? MapPresentation(
+        KnowledgePathStepPresentationRequest? presentation)
+        => presentation is null
+            ? null
+            : new Application.Features.Knowledge.Path.KnowledgePathStepPresentationInput(
+                presentation.KeyMessage, presentation.TalkTrack, presentation.TargetSeconds, presentation.Transition,
+                presentation.ObjectionResponseIds);
 
     private static KnowledgePathArrangementInput? MapArrangement(KnowledgePathArrangementRequest? arrangement)
         => arrangement is null

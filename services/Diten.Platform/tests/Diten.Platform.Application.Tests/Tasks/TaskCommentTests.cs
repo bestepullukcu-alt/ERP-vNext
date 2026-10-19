@@ -278,7 +278,7 @@ public sealed class TaskCommentTests
     {
         var controller = File.ReadAllText(Path.Combine(
             RepositoryRoot(),
-            "services/Diten.Platform/src/Diten.Platform.Api/Controllers/TasksController.cs"));
+            "services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs"));
 
         Assert.Contains("HttpPut(\"{id:guid}/comments/{commentId:guid}", controller, StringComparison.Ordinal);
         Assert.Contains("HttpDelete(\"{id:guid}/comments/{commentId:guid}", controller, StringComparison.Ordinal);
@@ -358,7 +358,7 @@ public sealed class TaskCommentTests
                 // Mentions are out of scope for this file (TaskMentionTests owns them) — no request here ever
                 // carries MentionedUserIds, so this policy's answer is never consulted.
                 new AlwaysAdmitReadAccessPolicy(),
-                Microsoft.Extensions.Logging.Abstractions.NullLogger<AddTaskCommentHandler>.Instance);
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<AddTaskCommentHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>The task is yours.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Someone else took this task first.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have permission to do this.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Type a name or position…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Type at least 2 characters to search.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>No one found for this search.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Searching…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Person not found</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Too many searches in a short time. Wait a moment and try again.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>The search could not be done. Please try again shortly.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>No records found.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>Person details could not be loaded right now</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Search by name or by stored people, not both at once.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Too many people were requested at once.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>A stored person reference is not valid.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>The people directory is unavailable right now. Please try again shortly.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The task service could not be reached. Try again.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>No tasks yet</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Create your first task to see it here and in the Task Center.</value></data>
@@ -123,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>You cannot be the approver of an approval you request. Choose someone else as the approval manager.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>You cannot review your own submission. Ask someone else to review this task.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>Nobody other than you can review this task. Choose another reviewer.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can decide the next step of this approval. Ask your administrator to adjust the workflow's approvers.</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>Your changes are saved, but the running approval could not be withdrawn. Save again to retry.</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>Your changes are saved, but the running review could not be withdrawn. Save again to retry.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>The linked approval or review could not be withdrawn, so nothing was done. Try again shortly.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>This task already has an open review.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>A title is required.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>The title may be at most 200 characters.</value></data>

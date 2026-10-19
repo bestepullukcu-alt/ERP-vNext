@@ -23,13 +23,17 @@ public sealed class SetChecklistItemStateHandler
     private readonly ICurrentUserContext _currentUser;
     private readonly ITaskAttachmentRepository _attachments;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public SetChecklistItemStateHandler(
         ITaskItemRepository tasks,
         IChecklistRunRepository runs,
         ITaskChecklistService checklists,
         ICurrentUserContext currentUser,
-        ITaskAttachmentRepository attachments)
+        ITaskAttachmentRepository attachments,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _runs = runs;
         _checklists = checklists;
@@ -41,9 +45,9 @@ public sealed class SetChecklistItemStateHandler
     {
         // The tenant-scoped repository is the cross-tenant guard: another tenant's task does not resolve.
         var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
-        if (task is null)
+        if (await ChecklistWriteGuards.GateAsync(_writeGate, task, command.CorrelationId, ct) is { } refused)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused;
         }
 
         var run = await _runs.GetByTaskIdAsync(command.TaskItemId, ct);
@@ -61,7 +65,7 @@ public sealed class SetChecklistItemStateHandler
         }
 
         // A finished task's checklist is history — reopening an item would rewrite it.
-        if (task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        if (task!.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
         {
             return Response<NoContent>.Fail(
                 "A closed task's checklist cannot be changed.",
@@ -114,13 +118,17 @@ public sealed class AddChecklistItemHandler : IRequestHandler<AddChecklistItemCo
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public AddChecklistItemHandler(
         ITaskItemRepository tasks,
         IChecklistRunRepository runs,
         ITaskChecklistService checklists,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _runs = runs;
         _checklists = checklists;
@@ -130,17 +138,10 @@ public sealed class AddChecklistItemHandler : IRequestHandler<AddChecklistItemCo
 
     public async Task<Response<NoContent>> Handle(AddChecklistItemCommand command, CancellationToken ct)
     {
-        var text = command.Request.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return Response<NoContent>.Fail(
-                "Checklist item text is required.", 400, TaskReasonCodes.ValidationFailed, command.CorrelationId);
-        }
-
         var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
-        if (task is null)
+        if (await ChecklistWriteGuards.GateAsync(_writeGate, task, command.CorrelationId, ct) is { } refused)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused;
         }
 
         /*
@@ -151,11 +152,18 @@ public sealed class AddChecklistItemHandler : IRequestHandler<AddChecklistItemCo
          * because this verb legitimately runs when there is NO run yet — the resolver's "this task has no
          * checklist" 404 is correct for the other four and wrong for the one that creates it.
          */
-        if (task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        if (task!.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
         {
             return Response<NoContent>.Fail(
                 "A closed task's checklist cannot be changed.",
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        var text = command.Request.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Response<NoContent>.Fail(
+                "Checklist item text is required.", 400, TaskReasonCodes.ValidationFailed, command.CorrelationId);
         }
 
         var run = await _runs.GetByTaskIdAsync(command.TaskItemId, ct);
@@ -243,12 +251,16 @@ public sealed class UpdateChecklistItemHandler : IRequestHandler<UpdateChecklist
     private readonly ITaskChecklistService _checklists;
     private readonly ICurrentUserContext _currentUser;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public UpdateChecklistItemHandler(
         ITaskItemRepository tasks,
         IChecklistRunRepository runs,
         ITaskChecklistService checklists,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _runs = runs;
         _checklists = checklists;
@@ -258,7 +270,7 @@ public sealed class UpdateChecklistItemHandler : IRequestHandler<UpdateChecklist
     public async Task<Response<NoContent>> Handle(UpdateChecklistItemCommand command, CancellationToken ct)
     {
         var found = await ChecklistWriteGuards.ResolveAsync(
-            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct);
+            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct, _writeGate);
         if (found.Failure is not null) { return found.Failure; }
         var (run, item) = (found.Run!, found.Item!);
 
@@ -312,12 +324,16 @@ public sealed class RemoveChecklistItemHandler : IRequestHandler<RemoveChecklist
     private readonly ITaskChecklistService _checklists;
     private readonly ICurrentUserContext _currentUser;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public RemoveChecklistItemHandler(
         ITaskItemRepository tasks,
         IChecklistRunRepository runs,
         ITaskChecklistService checklists,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _runs = runs;
         _checklists = checklists;
@@ -327,7 +343,7 @@ public sealed class RemoveChecklistItemHandler : IRequestHandler<RemoveChecklist
     public async Task<Response<NoContent>> Handle(RemoveChecklistItemCommand command, CancellationToken ct)
     {
         var found = await ChecklistWriteGuards.ResolveAsync(
-            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct);
+            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct, _writeGate);
         if (found.Failure is not null) { return found.Failure; }
         var (run, item) = (found.Run!, found.Item!);
 
@@ -360,9 +376,13 @@ public sealed class ReorderChecklistHandler : IRequestHandler<ReorderChecklistCo
     private readonly IChecklistRunRepository _runs;
     private readonly ICurrentUserContext _currentUser;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public ReorderChecklistHandler(
-        ITaskItemRepository tasks, IChecklistRunRepository runs, ICurrentUserContext currentUser)
+        ITaskItemRepository tasks, IChecklistRunRepository runs, ICurrentUserContext currentUser,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _runs = runs;
         _currentUser = currentUser;
@@ -371,7 +391,7 @@ public sealed class ReorderChecklistHandler : IRequestHandler<ReorderChecklistCo
     public async Task<Response<NoContent>> Handle(ReorderChecklistCommand command, CancellationToken ct)
     {
         var found = await ChecklistWriteGuards.ResolveAsync(
-            _tasks, _runs, command.TaskItemId, itemCode: null, command.CorrelationId, ct);
+            _tasks, _runs, command.TaskItemId, itemCode: null, command.CorrelationId, ct, _writeGate);
         if (found.Failure is not null) { return found.Failure; }
         var run = found.Run!;
 
@@ -424,13 +444,13 @@ internal static class ChecklistWriteGuards
         Guid taskItemId,
         string? itemCode,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        ITaskWriteGate writeGate)
     {
         var task = await tasks.GetByIdAsync(taskItemId, ct);
-        if (task is null)
+        if (await GateAsync(writeGate, task, correlationId, ct) is { } refused)
         {
-            return new(Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, correlationId),
-                null, null);
+            return new(refused, null, null);
         }
 
         var run = await runs.GetByTaskIdAsync(taskItemId, ct);
@@ -442,7 +462,7 @@ internal static class ChecklistWriteGuards
 
         // The front end disables these controls on a closed task. That is a courtesy to the reader, not a
         // guard: it is JavaScript on the caller's machine, and the endpoint is reachable without it.
-        if (task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        if (task!.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
         {
             return new(Response<NoContent>.Fail(
                 "A closed task's checklist cannot be changed.",
@@ -460,6 +480,17 @@ internal static class ChecklistWriteGuards
 
         return new(null, run, item);
     }
+
+    /// <summary>
+    /// FIX2 — the task's write gate (read 404 → relationship). BL-509 (decision 3) — the sender of an accepted request
+    /// writes nothing on this list: a blocking step holds the holder's completion, and ticking, adding, rewording or
+    /// reordering is directing their work; the person a request waits on answers it first.
+    /// </summary>
+    internal static async Task<Response<NoContent>?> GateAsync(
+        ITaskWriteGate writeGate, TaskItem? task, string correlationId, CancellationToken ct)
+        => await writeGate.CheckAsync(task, TaskWriteKind.Change, ct) is { } refused
+            ? refused.ToResponse<NoContent>(correlationId)
+            : null;
 
     /// <summary>
     /// May this caller CHANGE this item — reword it, re-level it, re-flag it, remove it?
