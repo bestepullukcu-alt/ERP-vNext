@@ -1134,3 +1134,25 @@ Test dalına alındı: `f6cae237f` (ajan `0785004a3`), çakışmasız.
   - (2) satır 174 tercih `IsEffectiveAt(now)` kaldırıldı → 95/95 **yeşil kaldı**.
   - Yani "henüz başlamamış (ya da süresi dolmuş) müsaitlik / tercih doktor profilinde görünmez" kuralı testsiz. Eski test bu kurala saat hatası yüzünden tesadüfen çarpıyordu.
   - → **FU-W4-INSIGHT-WINDOW-TEST:** gelecek tarihli ve süresi dolmuş müsaitlik + tercih kayıtları profilde görünmez (sabit saatle). Her iki sabotaj bu testle kırmızı olmalı.
+
+
+## §36.1 Agent Prompt — FU-W4-INSIGHT-WINDOW-TEST (paste-ready · yalnız CRM testi)
+**CT ölçümü (2026-10-19):** `DoctorInsightsHandlers` doktor profilinde müsaitliği (satır ~166-168) ve iletişim tercihini (satır ~173-175) yürürlük penceresine göre süzüyor. İki koşul da CT sabotajında kaldırıldı, DoctorInsight + VwW4 95/95 yeşil kaldı → kural testsiz.
+- Müsaitlik: `(EffectiveFrom is null || EffectiveFrom <= now) && (EffectiveTo is null || now <= EffectiveTo)`; ayrıca `!IsDeleted`, `!AvailabilityLifecycle.IsClosed(Status)`.
+- Tercih: `PreferenceRecord.IsEffectiveAt(now)` = `EffectiveFrom <= at && (EffectiveTo is null || at <= EffectiveTo)` (`ConsentRecord.cs:146`); ayrıca `!IsDeleted`, `!IsArchived()`, tür yalnız PreferredChannel / PreferredVisitWindow.
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · FU-W4-INSIGHT-WINDOW-TEST — doktor profilinin müsaitlik ve iletişim tercihi okumasında yürürlük penceresi (gelecek tarihli / süresi dolmuş kayıt görünmez) testle korunur; yalnız test eklenir
+Repository: C:\tmp\fu-w4-insight-window (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/fu-w4-insight-window · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "§37 CT kabul — FU-W4-DOCINSIGHT-DATE" (CT sabotajları) ve bu istemin üstündeki "CT ölçümü".
+MEVCUT: services/Diten.CrmService/src/Diten.CrmService.Application/Features/DoctorInsights/DoctorInsightsHandlers.cs ~166-177 (GetDoctorProfileQuery okuması) · Domain/Entities/ConsentRecord.cs:146 PreferenceRecord.IsEffectiveAt · tests/Diten.CrmService.Application.Tests/VisitWorkspace/VwW4DoctorInsightsTests.cs (World: sabit TestClock 2026-10-13 09:00Z, w.Availability / w.Preferences, w.Queries(...).Handle(new GetDoctorProfileQuery(doctor))) — mevcut "A_manual_profile_edit…" testi yalnız yürürlükteki kayıtları kullanıyor.
+NE: VwW4DoctorInsightsTests'e (ya da aynı World'ü kullanan yeni bir test sınıfına) yürürlük penceresi testleri ekle; TÜM zamanlar w.Clock'tan türetilir (gerçek saat YOK — FU-W4-DOCINSIGHT-DATE dersi):
+(1) Müsaitlik: yürürlükte (from = now-1g, to = null) GÖRÜNÜR; gelecek (from = now+1g) GÖRÜNMEZ; süresi dolmuş (to = now-1g) GÖRÜNMEZ; sınır dahil (from = now ve to = now) GÖRÜNÜR; from ve to null GÖRÜNÜR; silinmiş / kapalı durum GÖRÜNMEZ.
+(2) Tercih: PreferredChannel yürürlükte GÖRÜNÜR; gelecek (EffectiveFrom = now+1g) GÖRÜNMEZ; süresi dolmuş (EffectiveTo = now-1g) GÖRÜNMEZ; sınır dahil (from = now, to = now) GÖRÜNÜR; arşivlenmiş GÖRÜNMEZ; tür süzgeci — DoNotContact yürürlükte olsa bile GÖRÜNMEZ, PreferredVisitWindow GÖRÜNÜR.
+(3) Her kontrol sonucu görünen kayıtları değeriyle ölçer (yalnız sayı değil: hangi gün / hangi tercih), böylece yanlış kaydın görünmesi de yakalanır.
+KORU/YAPMA: ürün koduna DOKUNMA (yalnız test); mevcut testleri değiştirme / gevşetme; yeni muafiyet yok; localhost:27017'ye BAĞLANMA.
+DOĞRULA: yeni testler yeşil + 4 sabotaj (.bak + touch, hepsi ürün kodunda, geri al + md5): (1) müsaitlik EffectiveFrom koşulu kaldırılsın (CT'nin 1. sabotajı) → kırmızı; (2) müsaitlik EffectiveTo koşulu kaldırılsın → kırmızı; (3) tercih IsEffectiveAt(now) kaldırılsın (CT'nin 2. sabotajı) → kırmızı; (4) tercih tür süzgecine DoNotContact eklensin → kırmızı. Ayrıca World.Clock geçici olarak 2027-03-01 yapılınca yeni testler yine yeşil (saatten bağımsızlık). CRM Application tam takım (-o repo içi), taban karşılaştırması (taban: 1 bilinen kırmızı — VisitPlanningFix2…shared_pattern -o artefaktı).
+Commit: "test(crm): FU-W4-INSIGHT-WINDOW-TEST — the doctor profile shows only availability and contact preferences effective at the injected now (future / expired / archived / wrong type hidden; window bounds inclusive)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
