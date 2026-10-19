@@ -307,9 +307,9 @@ Katman SOP'undan (v2.1) sapmalar ve kimlik formatları: `.antigravity/AGENTS-REF
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. **Never invent a MOD / PSS / NEW identity:** Blueprint lookup → existing MOD or FU when available → otherwise `CAND-CAP-####` only (governance identity, never a runtime literal). Before creating or reserving any ID run the fail-closed preflight — a non-zero exit BLOCKS pack creation:
+The Blueprint (`Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. **Never invent a MOD / PSS / NEW identity:** Blueprint lookup → existing MOD or FU when available → otherwise a Module Change Request in the Master (Master-first rule, Blueprint 8.7; no new `CAND-CAP`). Before creating or reserving any ID run the fail-closed preflight — a non-zero exit BLOCKS pack creation:
 
 `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`
 `python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
 
-The six gate steps, repo-only reservation and the CAND-CAP lifecycle: `.antigravity/AGENTS-REFERENCE.md` (DCP-002). Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
+The six gate steps and the Master-first rule: `.antigravity/AGENTS-REFERENCE.md` (DCP-002). Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
