@@ -98,6 +98,7 @@ Each **namespace** (first segment) is owned by **exactly one** module/service. T
 | `platform.*` | `Diten.Platform` — platform-admin surfaces (administrators, audit, tenants, subscription plans/features, notifications, interface-registry, lookups, org master data, module catalog) | Platform / MOD-0018 enforcement |
 | `strategy.*` | `Diten.EnterpriseStrategyService` | Enterprise Strategy |
 | `time-entry.*` | `Diten.Platform` — MOD-0280-FU01 Time Entry & Weekly Timesheet (placement: ADR-004; the namespace moves with the module if it is extracted to the HCM service) | MOD-0280 (Time, Attendance & Leave) |
+| `commercial.*` | `Diten.CrmService` — commercial-suite CPQ / O2C / Service / BizDev (e.g. `commercial.pre-orders.*`, `commercial.price-lists.*`, `commercial.pricing-rules.*`, `commercial.fx-rates.*`); distinct from `crm.*` (user decision 2026-10-19, WP-VW-W6 K-O2) | MOD-0156…0163, MOD-0168…0172, MOD-0282…0284 |
 | *(future business domains)* `crm.*`, `hr.*`, `ppm.*`, … | the respective business-domain module | Blueprint-selected (per AG-STEP-022) |
 
 **Legacy prefixes pending remap (AG-STEP-004B):**
