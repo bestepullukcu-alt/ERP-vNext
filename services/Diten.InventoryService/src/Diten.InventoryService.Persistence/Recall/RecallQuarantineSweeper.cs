@@ -5,9 +5,19 @@ using Diten.InventoryService.Domain.Recall.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Diten.InventoryService.Persistence.Recall;
+
+/// <summary>WP-MVP1-FU-CLEAN1 (FU-0177-SWEEP-01) — configuration section <c>Inventory:Recall:QuarantineSweep</c>.</summary>
+public sealed class RecallQuarantineSweepOptions
+{
+    public const string SectionName = "Inventory:Recall:QuarantineSweep";
+
+    /// <summary>Sweeps without an answer after which a Pending request turns Failed (default 10 ≈ 20+ minutes at the 2-minute age).</summary>
+    public int MaxDeferredAttempts { get; set; } = 10;
+}
 
 /// <summary>
 /// Pack §8.4 — the retry sweeper of KR-B: every <c>Pending</c> request whose last attempt (or creation) is older than 2 minutes is handed to the SAME
@@ -16,6 +26,9 @@ namespace Diten.InventoryService.Persistence.Recall;
 /// 0175 before a crash replays (200) instead of posting twice. No bus (RabbitMQ is off on this machine).
 /// WP-0177-FIX-R3T: one request that throws (outside the dispatcher's own catch — the scope, the re-read, a row without a company) is logged with
 /// its tenant, company and id and stays Pending for the next sweep; the rest of the sweep is still sent.
+/// WP-MVP1-FU-CLEAN1 (FU-0177-SWEEP-01): every sweep that ends without an answer for a request is COUNTED; at
+/// <see cref="RecallQuarantineSweepOptions.MaxDeferredAttempts"/> the request turns Failed with its reason (the dispatcher writes it with its
+/// event and audit; a row that cannot even get a scope is marked here) and is never taken again.
 /// </summary>
 public sealed class RecallQuarantineSweeper
 {
@@ -24,14 +37,18 @@ public sealed class RecallQuarantineSweeper
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMongoCollection<RecallQuarantineRequest> _requests;
     private readonly ILogger<RecallQuarantineSweeper> _logger;
+    private readonly IOptions<RecallQuarantineSweepOptions> _options;
 
     public RecallQuarantineSweeper(IServiceScopeFactory scopeFactory, IMongoClient client, Microsoft.Extensions.Configuration.IConfiguration configuration,
-        ILogger<RecallQuarantineSweeper> logger)
+        ILogger<RecallQuarantineSweeper> logger, IOptions<RecallQuarantineSweepOptions>? options = null)
     {
         _scopeFactory = scopeFactory;
         _requests = client.GetDatabase(configuration["Mongo:DatabaseName"]).GetCollection<RecallQuarantineRequest>(RecallCollections.QuarantineRequests);
         _logger = logger;
+        _options = options ?? Options.Create(new RecallQuarantineSweepOptions());
     }
+
+    public int MaxDeferredAttempts => Math.Max(1, _options.Value.MaxDeferredAttempts);
 
     /// <summary>Returns how many requests left Pending in this sweep.</summary>
     public Task<int> SweepAsync(DateTimeOffset now, CancellationToken ct, Guid? onlyTenant = null)
@@ -55,18 +72,50 @@ public sealed class RecallQuarantineSweeper
                 using var scope = _scopeFactory.CreateScope();
                 scope.ServiceProvider.GetRequiredService<ITenantContext>().SetScope(request.TenantId!.Value, request.LegalEntityId!.Value, request.RequestedBy);
                 scope.ServiceProvider.GetRequiredService<ICorrelationContext>().Set(Guid.NewGuid());
-                var after = await scope.ServiceProvider.GetRequiredService<RecallQuarantineDispatcher>().DispatchAsync([request.Id], ct);
+                var dispatcher = scope.ServiceProvider.GetRequiredService<RecallQuarantineDispatcher>();
+                var after = await dispatcher.DispatchAsync([request.Id], ct);
                 if (after.Any(r => r.Status != RecallQuarantineRequestStatus.Pending)) moved++;
+                else if (dispatcher.DeferralOf(request.Id) is { } reason) await dispatcher.DeferAsync(request.Id, reason, MaxDeferredAttempts, ct); // counted
             }
             catch (Exception ex) when (!(ex is OperationCanceledException && ct.IsCancellationRequested))
             {
                 // stays Pending (nothing is written here): the next sweep retries it; the others of this sweep are still sent
                 _logger.LogError(ex, "recall.quarantine.sweep_request_failed {RequestId} tenant {TenantId} company {LegalEntityId}",
                     request.Id, request.TenantId, request.LegalEntityId);
+                await CountBrokenAsync(request, RecallQuarantineDispatcher.Reason(ex), now, ct);
             }
         }
 
         return moved;
+    }
+
+    /// <summary>
+    /// A row that could not get a scope (no company, …) — the dispatcher cannot write it, so the count (and, at the limit, the Failed state with
+    /// its reason) is written here, version-guarded, Pending only. Never throws: the sweep goes on.
+    /// </summary>
+    private async Task CountBrokenAsync(RecallQuarantineRequest request, string reason, DateTimeOffset now, CancellationToken ct)
+    {
+        try
+        {
+            var count = request.DeferredAttempts + 1;
+            var f = Builders<RecallQuarantineRequest>.Filter;
+            var u = Builders<RecallQuarantineRequest>.Update.Set(x => x.DeferredAttempts, count).Set(x => x.LastAttemptAtUtc, now).Set(x => x.UpdatedAt, now)
+                .Set(x => x.Version, request.Version + 1);
+            if (count >= MaxDeferredAttempts)
+            {
+                u = u.Set(x => x.Status, RecallQuarantineRequestStatus.Failed).Set(x => x.ErrorCode, RecallQuarantineDispatcher.RetryLimitReached)
+                    .Set(x => x.ErrorMessage, $"No answer after {count} sweeps (limit {MaxDeferredAttempts}); last: {reason}");
+                _logger.LogWarning("recall.quarantine.retry_limit {RequestId} tenant {TenantId} company {LegalEntityId} after {Count} sweeps", request.Id,
+                    request.TenantId, request.LegalEntityId, count);
+            }
+
+            await _requests.UpdateOneAsync(f.Eq(x => x.Id, request.Id) & f.Eq(x => x.Version, request.Version)
+                                           & f.Eq(x => x.Status, RecallQuarantineRequestStatus.Pending), u, cancellationToken: ct);
+        }
+        catch (Exception ex) when (!(ex is OperationCanceledException && ct.IsCancellationRequested))
+        {
+            _logger.LogError(ex, "recall.quarantine.sweep_count_failed {RequestId} tenant {TenantId}", request.Id, request.TenantId);
+        }
     }
 }
 

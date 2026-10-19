@@ -69,6 +69,8 @@ public static class RecallServiceCollectionExtensions
         services.AddScoped<IRecallLotStatusReader>(sp => sp.GetRequiredService<RecallPostingGate>());
         services.AddScoped<IRecallLedgerReader, RecallLedgerReads>();
         services.AddScoped<Application.Features.Recall.Quarantine.RecallQuarantineDispatcher>();
+        // WP-MVP1-FU-CLEAN1 (FU-0177-SWEEP-01): the retry limit of the sweeper (Inventory:Recall:QuarantineSweep:MaxDeferredAttempts, default 10)
+        services.Configure<RecallQuarantineSweepOptions>(configuration.GetSection(RecallQuarantineSweepOptions.SectionName));
         services.AddSingleton<RecallQuarantineSweeper>();
         services.AddHostedService<RecallQuarantineSweeperHostedService>();
 
