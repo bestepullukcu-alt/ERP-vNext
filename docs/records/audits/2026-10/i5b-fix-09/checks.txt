@@ -1,0 +1,16 @@
+İ5B-FIX-09 — the final run on the frozen sources; run by the AI session in the İ5B-FIX-09 worktree (branch
+chore/agents/i5b-fix-09 on f829ac5fd with this package's uncommitted changes).
+
+commands (from the worktree root):
+  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget
+  python3 -B .antigravity/scripts/sync_adapters.py --check
+environment: Python 3.9.6
+sources (SHA-256):
+  .antigravity/scripts/sync_adapters.py             c236273aa24ca009011fb53eeed355f6f6bd8ef90cf6eb45960c9929aeba8552
+  scripts/tests/test_sync_adapters_budget.py        2bc3f9ea3b1856c9c17a345069692e038257489f1c8c2c9f727640c0d2750d41
+result:
+  Ran 35 tests in 0.498s · OK
+  OK 9 adapter(s) match their sources · exit 0
+log SHA-256 83aa6efd3d5924456704094eac7a39e06a684960aa60cdd5c3fffb41272c60b4 (kept outside the repository)
+
+AGENTS.md, the core, the manifest and the generated adapters are not changed by this package.

@@ -1,0 +1,28 @@
+İ5B-FIX-17 red first — this package's final test file in the İ5B worktree while sync_adapters.py was still C15's
+(eca57404d, İ5B-FIX-16), before the code was written; run by the AI session. The two files run (SHA-256):
+  .antigravity/scripts/sync_adapters.py             93a51469cd13b434ff982fe013119488fdedbb6283ff9e4189507aa7084c9dfb
+  scripts/tests/test_sync_adapters_budget.py        e1a57d60acaf9699a07286462a04250fc7db69d601920398ac97f837a0778895
+  the test equals the frozen one: True
+
+Ran 53 tests in 32.908s · FAILED (failures=14)
+  every failure is in the new test test_a_tag_ends_outside_quotes_and_a_close_needs_evidence: True; the 52 earlier tests pass
+
+failed cases:
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Codex F1: a '</div>' in a double-quoted value")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Codex F1: a '</div>' in a single-quoted value")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Claude: a '</script>' in indented code")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Claude: a '</div>' in indented code")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Claude: a '</div>' in tab-indented code")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Claude: a '</div>' in indented code inside a list item")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Claude: a '</script>' in a link title")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Claude: a '</div>' in a link title")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="a '</div>' in a paragraph that may continue a list item")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="a '</div>' on a block quote line")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="a '</div>' in a paragraph with link syntax the check cannot read")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Codex F2: a '<script>' in a quoted value is a tag the check cannot read, not a script")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (passes="a type-7 line whose quoted value holds '>' starts an HTML block, read raw")
+  FAIL  test_a_tag_ends_outside_quotes_and_a_close_needs_evidence (not_verified="Claude: an AGENTS.md required heading after a '</script>' in indented code")
+
+Read: on C15 the quote, indented-code, link-title, container and unreadable-link cases are 0 / 0 or refused without
+'not verified'; Codex F2 is refused as a script never closed; the type-7 line with a quoted '>' is a false refusal. The
+quoted '>'-only hidden case and the four harmless controls already pass on C15 and guard this package's own rules.

@@ -1,0 +1,76 @@
+old_line	entry_sha256	category	why
+6	ef3928e57b35c525a672fdd4e90625da137f0d6516f133a3cc40715b49abdcb8	remove	machine-specific absolute path (one user's checkout)
+7	adf136bb9246b899bc62dee4a6f7b03c4aa833963a28cb7348e4fe4bae1307c8	remove	machine-specific absolute path (one user's checkout)
+8	5ba69d5b43d5718ea1497353b412d9bc08b10061a79a576dad679e35b5666598	remove	machine-specific absolute path (one user's checkout)
+10	e130ec55bfbcda38ce0bd16cd86dac1ba4f906aad3b7067d7540fbb139c5f291	remove	a long one-off command line (pipes, substitutions) of a past session
+11	c6e55478b9073cb402d0888871e79b324883ef893a67a7aefec5123c104b0947	remove	an unbounded path / argument scope (xargs, awk with a wildcard)
+12	ac8ca76700c8224c89e0bb3c212a02165c2503a43a5efc48467a750c7b587cf4	remove	a destructive git command with an unbounded path scope (git rm *, git mv *)
+13	d794531a6c1589700e661770fc9c4198a68f28585384db7c85fa74034dd6b681	remove	a destructive git command with an unbounded path scope (git rm *, git mv *)
+15	c27e6f7d7ede3f254e3a5ef68a5cdb7c7705a8ca58f9df0506be370715f48b51	remove	an unbounded path / argument scope (xargs, awk with a wildcard)
+16	33707337adef7b365b158cfec027751d906a05e8d89a60813acd9c9d5885e610	remove	a long one-off command line (pipes, substitutions) of a past session
+17	838e02886a85d113e91f825a48dca5f20291de769e098274b87405e329f07206	remove	a long one-off command line (pipes, substitutions) of a past session
+19	a4b98cc37793b4b44cacc3b72135fc93f2d2c1e64c0b6716cc012551a5b9a52b	remove	a long one-off command line (pipes, substitutions) of a past session
+20	3728ddcbc3fb5895ea901f87494698060a08a3d95eb7e5bbc0ce21024515ff12	remove	a long one-off command line (pipes, substitutions) of a past session
+21	a25d55ad01aa36f449b19fb188b3eb55dc6f153eb97d08ddeaf0618b5460f8ae	remove	an unbounded path / argument scope (xargs, awk with a wildcard)
+22	079501251924a02b2d55f30e522471357d483b0a1ef67654af224e7b7251abaf	remove	a long one-off command line (pipes, substitutions) of a past session
+23	a753d6874957093441238b21c1fa3eeb3e9eab7bbebc5f375d28dd3a27e0894a	remove	an unbounded path / argument scope (xargs, awk with a wildcard)
+24	d9bf2823a9b2313c1f729b53286cfae2286260e564fe7e3c02d1fbf54a30192e	remove	machine-specific absolute path (one user's checkout)
+25	911ecc4d1110aaa02d6f697da8acff27190b4a0f9b59ad93e77cebe48f535cb8	remove	machine-specific absolute path (one user's checkout)
+26	17a7ee3b9fab9f9ca73f116f7d5aaf7f76460482726202ac1b3a128385a78e87	remove	machine-specific absolute path (one user's checkout)
+27	229b894e689602d739b11199d1eba5cbdb808e911697a70175a9d6a08b0df831	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+28	c4887944e403debe75c6884a9c1d9420e1917b6aa901ae2284ea93e8054c63a4	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+29	f61894ba793156de151e6f3c5fd07f39158e7f27509fc526300aeaa2c9cce90f	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+30	77a5919ec087dd2f9c2b7c6a9af90752ffe72b2e78253b76f819986f124f05fd	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+31	3e1be528d889ef0a84003e958667cec05b98ba5fd7b7b526c0368e6b282b8d8a	remove	a long one-off command line (pipes, substitutions) of a past session
+32	af95897750b688f10092d9c7e0cf9093216a64bf5faa19e8110dbd508be83df9	remove	a long one-off command line (pipes, substitutions) of a past session
+33	d45e923860bb6d668c4102917848bd6d60ae862faec379e02d10d2b42af353eb	remove	an unbounded path / argument scope (xargs, awk with a wildcard)
+34	42c4b143928b949e6f515970fda71a899a493b8f7c160c494710c0ccfa39e180	remove	a long one-off command line (pipes, substitutions) of a past session
+35	7d8d4f166333df4af54254828f13bd5f0276e127b7cd77919c02aae62d777e98	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+36	ee5535d70b9902993569b1182fe4067dc5cd1c97b3fae83fde9886cd2954bd07	remove	one-off localhost probe of a past session
+37	bf70151b745097146d4a5d176d7cd05ca0b65b010e62fee2e56eec203959c8b5	remove	a one-off read of one past file; reading needs no allow entry for the Read tool
+38	28f1377f259cb55a6cbb5305f9240ebde2682c4e297a1fdf4145066aa8c5f65b	remove	a one-off read of one past file; reading needs no allow entry for the Read tool
+39	9357265db143bf33fc7d4680b85bb596d50764013fb010b2b4905fff03ca534b	remove	one-off localhost probe of a past session
+40	c9e68f2c1ea2ff4c2115640b14d2288c3c568ba92892cc1bb21d4d7ef8866d9d	remove	one-off localhost probe of a past session
+41	23acff1ccd721270a1f050c6922803e3fe6dc1bc0bfd6d7ba5cac62c419cc37d	remove	one-off localhost probe of a past session
+42	707f1f526651a4876ae4e52782840fe507d7f836108e6a07b7c8801b8d444c93	remove	one-off localhost probe of a past session
+43	206878f78731bb367292d4634567b4bb354571a19163a8bdc6bcaaef237b271a	remove	one-off localhost probe of a past session
+44	09ae66a3ea65bfe24e074850942cba6f4c48eaef0106fbc3c9a99aa1555fd2df	remove	one-off localhost probe of a past session
+45	f103758345c72a898ef3f1597643269eb177b856e6190de1e932261d8a0585d4	remove	a one-off read of one past file; reading needs no allow entry for the Read tool
+46	8c6e8a8b5a3ced77482b460c75bfdff9890d1f0b701752c9264df1633f3ac505	remove	a one-off read of one past file; reading needs no allow entry for the Read tool
+47	97e599acd3612fe11c1650388ee7de8087ec3e289f283940c5cf3909b2746fc2	remove	a long one-off command line (pipes, substitutions) of a past session
+48	d50254d77d1ab6e553e167c10af5629c492cb5df67cc6bf0e49217dc66016eda	remove	a one-off read of one past file; reading needs no allow entry for the Read tool
+49	a44967d2353c70049d01568ab0f3dbf6966ceaa7d55af6938116a96c6ba6bf83	remove	a one-off read of one past file; reading needs no allow entry for the Read tool
+50	e9f938d682f56fff56b9e0a9923265d8b0ed3243017f0338c64bda2926ecf322	remove	a one-off syntax check of one file; a scoped 'node --check frontend/…' entry can be decided apart
+51	26ee602230dad98420af19ac7ec66cda7f0f87604a4a9efb3c0e154e8132e115	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+52	a3398ba35075f3430ff8242fe188e11ec794fd27f845dc0f04b17308aa4452fa	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+53	1c3442785e4eed8d65867206dfc89ee824dcf42b57bfe77b9710cc692261ed55	remove	a long one-off command line (pipes, substitutions) of a past session
+54	847d09ac332d9001a307256e243fee97d043a2d7ec1ee9df30f4c06347125aaf	remove	a one-off echo of a past session
+55	7d7169baf307f12374ccaf720d824b60fd13cc7b8a7c5ae4d780fa83a67e81e0	remove	a long one-off command line (pipes, substitutions) of a past session
+56	10576a00d8157af20dad78a900095ad4b2fb2f3bb0134ec7dc365ee54590dd9b	remove	a one-off echo of a past session
+57	45599bf00188af4637392ae594191315807fa07c9a6c63e7c71334f60515fac6	remove	a long one-off command line (pipes, substitutions) of a past session
+58	5837ac3c08163f08e7a0182bce09b1b98b9a3094bdf17519fc14dbd0f4a5ca3b	remove	a long one-off command line (pipes, substitutions) of a past session
+60	3705bccbca0984482a2f1446630465204f08a81e5404d8b44e0348bd6b4cbf1d	remove	a long one-off command line (pipes, substitutions) of a past session
+61	09239884e2cee8e118e850f50554c1ab9a4b664987c099672870d3ed2bf25c03	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+62	d09d5889ac55a855fa38bdcac3d20d506f66ac9043d562d53386606f17b12d71	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+63	81a6340da7f42572c0777edd7c45ef4201e6427942f4e088dcc9284aa4b43e7a	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+64	9ed2d6d1e6d1c29a6326dd609c6d65e23039f6aed652672d4f92d12585181f3f	remove	a one-off generator that writes files
+65	ded8e242616d6badeaed9d13188f364439a68cc19bddbadf077e099651790afd	remove	a one-off generator that writes files
+66	bd6088d4ebc16f25f83526f39f15056534fff49957220c13b808baf3b3c7def0	remove	a one-off generator that writes files
+67	00dc2246311b033e17dfc9c5f64a3752ba9d2fd509c88f2a56c0f4fe8b6c7bc4	remove	a one-off generator that writes files
+68	2ceb75c810159caa7475f020220708c1a8061fb31e19165e08894dd0051e11ef	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+69	7f7a903991ef71a67cb51a61f420c6c9d03d2034cfc8b26174d4cf09778f825f	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+70	de0efe5e018ca58fa2c9b7888078f69147ff99235ec56db6b791be6482179a34	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+71	56deff63c247404bdf6ae21455d16da33bbae1304d39d2a6a0dd4fbed6ea32c8	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+72	98dbb31bb8dbde3b7c4042a9caeb250948c075e3d2378f9c5dd15a8120e3f767	remove	a long one-off command line (pipes, substitutions) of a past session
+73	8d1dd4f72982cc19e21e86509e22430cfc66f088fe975ec1b96267789803a711	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+74	9c23f8c7b857a2cef037889effee3e14dc96b530a955762bece0848e14f05b4c	remove	a long one-off command line (pipes, substitutions) of a past session
+75	1e73d5176b5c89292b19c8ffe2676b5eec75d9a8b3189fe06199078ee737fdf1	remove	network / package install
+76	4a2524d2155686e79106aef83838c11225debcbf264a2ded7c5f96f5e0f6c8c3	remove	network / package install
+77	dc0ed027b641ad6a12101b47cb4477a4affc0420690b23fd3bd0d9d5b7b7c18a	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+78	d5221923575a809a2edc7d30bc33d9887f1f4ffdb52ab323a437dbbc401c69fc	remove	a one-off syntax check of one file; a scoped 'node --check frontend/…' entry can be decided apart
+79	5a3f57b2c70539d41572bb55ac00b9d348c156c0e1f5485bae81c1e63c84a079	remove	a one-off syntax check of one file; a scoped 'node --check frontend/…' entry can be decided apart
+80	a6ecf1a63b4d7196ac9ae32556f6115c8c9a8c65c596bfd27a2135d12f50245a	remove	a one-off syntax check of one file; a scoped 'node --check frontend/…' entry can be decided apart
+81	3cf3d9e3f5602734a65853c75f6c9252864d0b936e86f1dc990eeaf74503e80c	remove	a one-off syntax check of one file; a scoped 'node --check frontend/…' entry can be decided apart
+82	1af5e1dad3d981665d976b362fe3dcea96bacf7999abb77a875b2fb3b0892214	remove	Windows path or shell — stale on this team's macOS setup, effect unmeasured
+83	c24597cb74e9154866d94de9587f6c2327cb522f26a3876132a31bdece9bfb51	remove	a one-off syntax check of one file; a scoped 'node --check frontend/…' entry can be decided apart
+84	272b0660d3cf03b09cdd51fd63c7fc918e4dbb8c2995771c10063ea1f92af420	remove	a one-off syntax check of one file; a scoped 'node --check frontend/…' entry can be decided apart

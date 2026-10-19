@@ -1,0 +1,68 @@
+"""R1 sabotage driver (CT-FIX-03): each sabotage puts one shared-reader part back to its old behaviour in the worktree
+file, runs the named checks, restores the file byte-for-byte (sha-256 verified) in a finally block."""
+import hashlib, json, re, subprocess, sys
+from pathlib import Path
+WT = Path(sys.argv[1]).resolve(); OUT = Path(sys.argv[2])
+if str(WT).startswith("<REPO>"):
+    raise SystemExit("refused: sabotage runs only in a scratch clone outside the repository (Codex, 2026-10-17)")
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def run(cmd):
+    r = subprocess.run(cmd, cwd=WT, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    fails = sorted(set(re.findall(r"^(?:FAIL|ERROR):? (.*)$", out, re.M)))
+    summary = [l for l in out.splitlines() if re.search(r"self-test: \d+/\d+|^Ran |^OK|^FAILED", l)]
+    return {"cmd": " ".join(cmd[2:]), "exit": r.returncode, "summary": summary, "fails": fails[:40]}
+SELF = lambda f: [sys.executable, "-B", f, "--self-test"]
+R0 = lambda *k: [sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_ct_cli_regression.py", *sum((["-k", x] for x in k), [])]
+SAB = [
+ ("R3a the normal check does not read the bound pack", "scripts/acceptance_record.py",
+  '''    if f.get("module_pack"):
+        mp = MODULE_PACK.match(f["module_pack"])''', '''    if False:
+        mp = MODULE_PACK.match(f["module_pack"])''', [R0("V4A_F5"), SELF("scripts/acceptance_record.py")]),
+ ("R3b the limit line is gone", "scripts/acceptance_record.py", '''        "SINIR bu denetim''', '''        "NOT bu denetim''',
+  [SELF("scripts/acceptance_record.py")]),
+ ("R4a an empty task row is skipped again", ".antigravity/scripts/verify_module_id.py",
+  '''                    if not any(cells[c].strip() for c in ("item", "module") if c in cells):''', '''                    if False:''', [R0("V4A_F4")]),
+ ("R4b the task-source registry bytes are not named", ".antigravity/scripts/verify_module_id.py",
+  '''            lines.append(f"kaynak görev-kaynak-kaydı:''', '''            (lambda *_: None)(f"kaynak görev-kaynak-kaydı:''', [R0("V4A_F8")]),
+ ("R4c the saved report's CR is stripped", ".antigravity/scripts/verify_module_id.py",
+  '''    if "\\r" in text:''', '''    text = text.replace("\\r", "")
+    if False:''', [R0("V4A_F8")]),
+ ("R4d pack id conflicts ignored", ".antigravity/scripts/verify_module_id.py",
+  '''        conflicts = pack_id_conflicts(root, pack_blobs)''', '''        conflicts = {}''', [R0("V4A_F4")]),
+ ("R5a counters and summary not reconciled", "scripts/known_failures.py",
+  '''    reconcile(raw, summaries, counters)''', '''    pass''', [R0("V4A_F6"), SELF("scripts/known_failures.py")]),
+ ("R5b an unknown outcome accepted", "scripts/known_failures.py", '''    if unknown:''', '''    if False:''',
+  [R0("V4A_F6"), SELF("scripts/known_failures.py")]),
+ ("R5c any notExecuted counter accepted", "scripts/known_failures.py",
+  '''    if "notExecuted" in values and values["notExecuted"] not in (0, count.get("NotExecuted", 0)):''', '''    if False:''',
+  [R0("V4A_F6"), SELF("scripts/known_failures.py")]),
+ ("R6a exit 0 is clean without the success line", ".antigravity/scripts/list_screen_touch_hook.py",
+  '''        if oks == [len(lines) - 1]:
+            return "clean", []''', '''        return "clean", []''', [R0("V4A_F7"), SELF(".antigravity/scripts/list_screen_touch_hook.py")]),
+ ("B8a a pending row measured as in force", "scripts/ct_route.py",
+  '''    if pending:
+        ok, why = False,''', '''    if False:
+        ok, why = False,''', [R0("V4B_B8"), SELF("scripts/ct_route.py")]),
+ ("B8b --in-force accepts a pending row", "scripts/ct_route.py", '''    if in_force and pending:''', '''    if False:''',
+  [R0("V4B_B8"), SELF("scripts/ct_route.py")]),
+]
+results = []
+ONLY = sys.argv[3:]
+for name, rel, old, new, cmds in SAB:
+    if ONLY and name.split()[0] not in ONLY:
+        continue
+    p = WT / rel; orig = p.read_bytes(); before = sha(p)
+    text = orig.decode("utf-8")
+    if text.count(old) != 1:
+        results.append({"sabotage": name, "applied": False, "anchor_count": text.count(old)}); continue
+    try:
+        mutated = text.replace(old, new)
+        p.write_bytes(mutated.encode("utf-8"))
+        res = [run(c) for c in cmds]
+    finally:
+        p.write_bytes(orig)
+    assert sha(p) == before, name
+    results.append({"sabotage": name, "file": rel, "applied": True, "restored_sha256": before, "runs": res})
+    print(name); [print("   ", r["cmd"][-60:], "exit", r["exit"], r["summary"][-1:], "|", "; ".join(f[:90] for f in r["fails"][:12])) for r in res]
+OUT.write_text(json.dumps(results, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

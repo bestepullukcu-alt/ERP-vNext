@@ -1,0 +1,13 @@
+"""Freeze repo-relative files from a worktree into a NEW snapshot dir with MANIFEST.sha256 (never overwrites)."""
+import hashlib, shutil, sys
+from pathlib import Path
+src, snap, files = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3:]
+if snap.exists():
+    raise SystemExit(f"{snap} exists — use a new name")
+lines = []
+for f in files:
+    (snap / f).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src / f, snap / f)
+    lines.append(f"{hashlib.sha256((snap / f).read_bytes()).hexdigest()}  {f}")
+(snap / "MANIFEST.sha256").write_text("\n".join(lines) + "\n", encoding="utf-8")
+print("\n".join(lines))

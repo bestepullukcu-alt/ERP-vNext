@@ -1,0 +1,218 @@
+=== Context
+HEAD=2481004b15d25f60f239643657102e9b5a8377fc + uncommitted CT-PQG-01 files (pinned: pin-before.txt)
+Pinned before the architecture run (sha256  path):
+0c3de634b3880b577fa4f557e32cd36734a34c8348f021ed4f3ab61423400bc2  scripts/prompt_gate.py
+93777eaf58699b3322e8b7f069c288843c27ef7658601eea2165d70f5c6a28c0  docs/records/decisions/2026-10/ct-completion-delegation-owner-decision-01.md
+659495407e280027dedded0627284aa12a25e900c3dd1efe1632c606bf8044d9  docs/guides/operations/control-tower-sop.md
+62f830f303ad0ac3826dbfe271d068bca3c0b6d9f42c9fa97e52932b54808381  docs/guides/operations/control-tower-operating-card.md
+Diff of the SOP and the card against HEAD, sha256: 1a9d8cd07cdfefbd8d9208545eb3db2d10a4c739ccb4eaf8f72b10f40e659b45
+After the run (sha256  path):
+0c3de634b3880b577fa4f557e32cd36734a34c8348f021ed4f3ab61423400bc2  scripts/prompt_gate.py
+93777eaf58699b3322e8b7f069c288843c27ef7658601eea2165d70f5c6a28c0  docs/records/decisions/2026-10/ct-completion-delegation-owner-decision-01.md
+659495407e280027dedded0627284aa12a25e900c3dd1efe1632c606bf8044d9  docs/guides/operations/control-tower-sop.md
+62f830f303ad0ac3826dbfe271d068bca3c0b6d9f42c9fa97e52932b54808381  docs/guides/operations/control-tower-operating-card.md
+
+=== prompt_gate.py --self-test (final)
+PASS a complete LOW prompt -> exit 0
+PASS sabotage: NE section missing -> format ENGEL
+PASS sabotage (fu2): an empty NE: section -> format ENGEL
+PASS sabotage (fu2): two NE: lines -> format ENGEL
+PASS a multi-line NE: section -> accepted
+PASS sabotage: Risk line missing -> format ENGEL
+PASS sabotage: Worktree 'ana checkout' (not a measured path) -> ENGEL
+PASS sabotage: Repository from another machine -> ENGEL
+PASS sabotage: Expected HEAD not the worktree HEAD -> ENGEL
+PASS sabotage (fu2): the prompt targets another git repository than the gate's own -> ENGEL
+PASS sabotage: wrong branch -> ENGEL
+PASS dirty file in the allowed paths -> ENGEL; an unrelated one is only inventory
+PASS sabotage: a dirty source file -> ENGEL
+PASS sabotage (fu): a dirty file matched by an 'Önce oku' glob -> ENGEL
+PASS sabotage (fu2): a NEW untracked file matched by an 'Önce oku' glob -> ENGEL
+PASS sabotage (fu): a file matched by an 'Önce oku' glob changes -> the source pack digest changes
+PASS sabotage: a shortened 'Önce oku' path -> ENGEL
+PASS sabotage: a missing 'Önce oku' path -> ENGEL
+PASS sabotage: a quote not verbatim at its line -> ENGEL
+PASS sabotage: a quote at the wrong line -> ENGEL
+PASS sabotage: a paraphrased surface (no quote) -> ENGEL
+PASS sabotage: comment text next to a quote -> ENGEL
+PASS sabotage: a surface missing -> ENGEL
+PASS sabotage: N/A without a reason -> ENGEL
+PASS all surfaces N/A (LOW) -> passes but says 'no contract verified', never 'verified'
+PASS sabotage: pack status draft -> ENGEL
+PASS sabotage: the named pack belongs to another module than the queue row -> ENGEL
+PASS governance work with an approved scope record -> no pack needed
+PASS sabotage (fu): governance scope record with status draft -> ENGEL
+PASS sabotage (fu): approved scope record that names neither this WP nor is the queue row's record -> ENGEL
+PASS approved scope record named by the queue row's record column -> passes
+PASS sabotage: governance scope record outside docs/records/decisions -> ENGEL
+PASS sabotage: a §9.1 signal with Risk LOW -> ENGEL
+PASS sabotage: an unknown signal -> ENGEL
+PASS sabotage: allowed path in Migrations without the signal -> ENGEL
+PASS sabotage: queue says DUR -> ENGEL
+PASS not registered on origin/main: dispatch check -> ENGEL; --prepare -> 0 with 'DAĞITIM İZNİ DEĞİL'
+PASS sabotage: strict queue without a 'Keşif:' line -> ENGEL
+PASS strict queue, discovery 'inceleme gerekli' with a decision and reason per BULGU -> 0
+PASS sabotage: one BULGU without its decision -> ENGEL
+PASS sabotage: a decision with an empty reason -> ENGEL
+PASS sabotage: a decision choice outside parent/FU/child/yeni -> ENGEL
+PASS a well-formed 'eşleşme bulunamadı' report with no BULGU -> passes
+PASS sabotage (fu): a v2 report saying 'no match' with an unresolved BULGU and no çıkış line -> ENGEL
+PASS sabotage (fu): a well-formed 'no match' report (çıkış 0) that carries a BULGU -> ENGEL
+PASS sabotage (fu): an 'inceleme gerekli' report without any BULGU -> ENGEL
+PASS sabotage (fu): çıkış not matching the result -> ENGEL
+PASS sabotage (fu): a result outside the producer's vocabulary -> ENGEL
+PASS sabotage (fu): the ref count does not match the ref lines -> ENGEL
+PASS sabotage (fu): the tool sha256 is not the committed tool at the report's HEAD -> ENGEL
+PASS sabotage (fu): a required source line missing -> ENGEL
+PASS sabotage (fu): a second sonuç line -> ENGEL
+PASS sabotage (fu): the report's producer commit cannot be read -> exit 2 (tamamlanamadı), never a pass
+PASS sabotage: the report changed after hashing -> ENGEL
+PASS sabotage: discovery for another name -> ENGEL
+PASS sabotage: discovery 'tamamlanamadı' -> ENGEL
+PASS sabotage: a v1 discovery report (no ref identities) -> ENGEL
+PASS sabotage: discovery report not committed -> ENGEL
+PASS HIGH with a valid committed review record -> 0
+PASS sabotage: HIGH without a review record -> ENGEL
+PASS sabotage: the prompt changed after review -> stale (ENGEL)
+PASS sabotage: a source changed after review -> stale (ENGEL)
+PASS sabotage: author = reviewer -> ENGEL
+PASS sabotage: a fake '0 kritik' with an open critical finding -> ENGEL
+PASS sabotage: an open blocking finding declared honestly -> still ENGEL
+PASS sabotage: checklist evidence that names no source of the pack -> ENGEL
+PASS sabotage: a HIGH prompt with no quote at all -> ENGEL
+PASS the printed gate report verifies with verify_module_id --check-report's rule; an altered one does not
+PASS sabotage: an unreadable prompt -> exit 2, never a pass
+PASS read-only: no write call in this script
+self-test: 70/70 passed
+
+=== Codex review round 1 — the tests written first, on the code before the fix (red)
+FAIL sabotage (fu): a dirty file matched by an 'Önce oku' glob -> ENGEL
+FAIL sabotage (fu): a file matched by an 'Önce oku' glob changes -> the source pack digest changes
+FAIL sabotage (fu): governance scope record with status draft -> ENGEL
+FAIL sabotage (fu): approved scope record that names neither this WP nor is the queue row's record -> ENGEL
+FAIL sabotage (fu): a v2 report saying 'no match' with an unresolved BULGU and no çıkış line -> ENGEL
+FAIL sabotage (fu): çıkış not matching the result -> ENGEL
+FAIL sabotage (fu): a result outside the producer's vocabulary -> ENGEL
+FAIL sabotage (fu): the ref count does not match the ref lines -> ENGEL
+FAIL sabotage (fu): the tool sha256 is not the committed tool at the report's HEAD -> ENGEL
+FAIL sabotage (fu): a required source line missing -> ENGEL
+FAIL sabotage (fu): a second sonuç line -> ENGEL
+self-test: 51/62 passed
+
+=== Codex review round 1 — after the fix (green)
+self-test: 63/63 passed
+
+=== Codex review round 2 — the tests written first, on the code before the fix (red)
+FAIL sabotage (fu2): an empty NE: section -> format ENGEL
+FAIL sabotage (fu2): two NE: lines -> format ENGEL
+FAIL sabotage (fu2): the prompt targets another git repository than the gate's own -> ENGEL
+FAIL sabotage (fu2): a NEW untracked file matched by an 'Önce oku' glob -> ENGEL
+self-test: 66/70 passed
+
+=== Codex review round 2 — after the fix (green)
+self-test: 70/70 passed
+
+=== Sabotage — each guard removed in a scratch copy of the final gate, the self-test re-run
+guard removed: required section exactly once with content (count) -> self-test: 69/70 passed; red: sabotage (fu2): two NE: lines -> format ENGEL
+guard removed: required section has content -> self-test: 69/70 passed; red: sabotage (fu2): an empty NE: section -> format ENGEL
+guard removed: prompt repository is the gate's own -> self-test: 69/70 passed; red: sabotage (fu2): the prompt targets another git repository than the gate's own -> ENGEL
+guard removed: 'Önce oku' patterns in the dirty check -> self-test: 69/70 passed; red: sabotage (fu2): a NEW untracked file matched by an 'Önce oku' glob -> ENGEL
+guard removed: quote verbatim at its line -> self-test: 68/70 passed; red: sabotage: a quote not verbatim at its line -> ENGEL | sabotage: a quote at the wrong line -> ENGEL
+guard removed: paraphrase refused -> self-test: 69/70 passed; red: sabotage: a paraphrased surface (no quote) -> ENGEL
+guard removed: dirty overlap -> self-test: 66/70 passed; red: dirty file in the allowed paths -> ENGEL; an unrelated one is only inventory | sabotage: a dirty source file -> ENGEL | sabotage (fu): a dirty file matched by an 'Önce oku' glob -> ENGEL | sabotage (fu2): a NEW untracked file matched by an 'Önce oku' glob -> ENGEL
+guard removed: globs enter the source pack -> self-test: 69/70 passed; red: sabotage (fu): a file matched by an 'Önce oku' glob changes -> the source pack digest changes
+guard removed: signal means HIGH -> self-test: 69/70 passed; red: sabotage: a §9.1 signal with Risk LOW -> ENGEL
+guard removed: pack belongs to the row's module -> self-test: 69/70 passed; red: sabotage: the named pack belongs to another module than the queue row -> ENGEL
+guard removed: scope record approved -> self-test: 69/70 passed; red: sabotage (fu): governance scope record with status draft -> ENGEL
+guard removed: scope record bound to this work -> self-test: 69/70 passed; red: sabotage (fu): approved scope record that names neither this WP nor is the queue row's record -> ENGEL
+guard removed: in-force on origin/main -> self-test: 69/70 passed; red: not registered on origin/main: dispatch check -> ENGEL; --prepare -> 0 with 'DAĞITIM İZNİ DEĞİL'
+guard removed: a decision per BULGU -> self-test: 69/70 passed; red: sabotage: one BULGU without its decision -> ENGEL
+guard removed: discovery bound to this work -> self-test: 69/70 passed; red: sabotage: discovery for another name -> ENGEL
+guard removed: report: producer tool sha256 -> self-test: 69/70 passed; red: sabotage (fu): the tool sha256 is not the committed tool at the report's HEAD -> ENGEL
+guard removed: report: result vocabulary and exit code -> self-test: 69/70 passed; red: sabotage (fu): çıkış not matching the result -> ENGEL
+guard removed: report: 'no match' has no BULGU -> self-test: 69/70 passed; red: sabotage (fu): a well-formed 'no match' report (çıkış 0) that carries a BULGU -> ENGEL
+guard removed: report: 'inceleme gerekli' has a BULGU -> self-test: 69/70 passed; red: sabotage (fu): an 'inceleme gerekli' report without any BULGU -> ENGEL
+guard removed: report: ref count -> self-test: 69/70 passed; red: sabotage (fu): the ref count does not match the ref lines -> ENGEL
+guard removed: report: single required lines -> self-test: 69/70 passed; red: sabotage (fu): a required source line missing -> ENGEL
+guard removed: review bound to the prompt sha256 -> self-test: 69/70 passed; red: sabotage: the prompt changed after review -> stale (ENGEL)
+guard removed: review bound to the source pack -> self-test: 69/70 passed; red: sabotage: a source changed after review -> stale (ENGEL)
+guard removed: author differs from reviewer -> self-test: 69/70 passed; red: sabotage: author = reviewer -> ENGEL
+guard removed: declared open counts match the finding lines -> self-test: 69/70 passed; red: sabotage: a fake '0 kritik' with an open critical finding -> ENGEL
+
+=== End to end — scratch clone with real git; the clone runs the same gate (sha256 above), committed at its lane HEAD. Strict queue pqg-ct, row W7 'Territory Management' MOD-0151; discovery report, registry commit and review record committed on a separate records branch
+clone gate == AI worktree gate, committed at lane HEAD e9a703d20
+gate sha256 0c3de634b3880b577fa4f557e32cd36734a34c8348f021ed4f3ab61423400bc2
+## 1 LOW, --prepare — exit 0 · sonuç: hazırlık geçti — DAĞITIM İZNİ DEĞİL
+## 2 LOW, dispatch, queue not registered on origin/main — exit 1 · sonuç: engel — 1 bulgu
+ENGEL YÜRÜRLÜK: yerel origin/main ba271c3959ff8d07a7f2de7926f977512a2a8d8f — kayıt dosyası yok — kayıtlı görev kaynağı yürürlükte değil, dağıtım yok
+## 3 LOW, dispatch, registry on origin/main — exit 0 · sonuç: geçti
+## 4 HIGH with its committed review — exit 0 · sonuç: hazırlık geçti — DAĞITIM İZNİ DEĞİL
+## 5 HIGH without a review — exit 1 · sonuç: engel — 1 bulgu
+ENGEL inceleme: HIGH prompt için --review <yol>@<commit> ile commit'lenmiş inceleme kaydı gerekli
+## 6 HIGH, prompt changed after review — exit 1 · sonuç: engel — 1 bulgu
+ENGEL inceleme: prompt değişmiş — kayıttaki prompt-sha256 bu promptun değil (inceleme bayat)
+## 7 HIGH, unrelated later records commits do not stale the review — exit 0 · sonuç: hazırlık geçti — DAĞITIM İZNİ DEĞİL
+## 8 LOW with a dirty source file — exit 1 · sonuç: engel — 1 bulgu
+ENGEL git: kirli dosya kapsamla ya da bir kaynakla çakışıyor: execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md
+## 9 pack of another module, status done — exit 1 · sonuç: engel — 2 bulgu
+ENGEL görev sınıfı: paket durumu 'done' — ready-for-dev ya da approved olmalı (execution/domains/platform-shared-services/module-packs/MOD-0288-organization-person-position-directory.md)
+ENGEL görev sınıfı: paket MOD-0288 bu işin modülüne (MOD-0151) ait değil
+## 10 Expected HEAD behind the worktree — exit 1 · sonuç: engel — 1 bulgu
+ENGEL git: Worktree HEAD e9a703d208ac ≠ Expected HEAD 3b17ceca3856
+## 11 the old report made by an uncommitted tool copy — exit 1 · sonuç: engel — 1 bulgu
+ENGEL keşif: rapordaki araç sha256 8a5e7c7d338c üretici commit'indeki aracın değil (53a9f71d80b6)
+## 12 the same prompt checked by another repository's gate — exit 1 · sonuç: engel — 3 bulgu
+ENGEL git: prompt bu deponun dışındaki bir depoyu hedefliyor — kuyruk, rapor ve inceleme bu depodan okunur, başka deponun işini bu deponun kuyruğu onaylayamaz
+ENGEL kuyruk: DUR W7: kuyrukta satır yok — kayıt yoksa dağıtım yok (SOP §20.1, R8)
+ENGEL keşif: rapor docs/records/pqg-e2e/kesif.txt@b2c0e31440c8998c22e2f5e6d6559c013d575fac commit'te yok
+## 13 'Önce oku' glob with a NEW untracked file it matches — exit 1 · sonuç: engel — 1 bulgu
+ENGEL git: kirli dosya kapsamla ya da bir kaynakla çakışıyor: .antigravity/rules/zz-e2e-new.md
+
+=== Retro dry run (information only; the old Control Tower is not stopped) — WP-SCMM-05-S1's §36.1 prompt as written
+ENGEL biçim: 'Repository:' satırı okunamadı (Repository · Branch · Expected HEAD · Worktree)
+ENGEL biçim: 'Risk:' satırı 0 kez var, 1 olmalı (Risk · §9.1 sinyalleri)
+ENGEL biçim: 'Görev sınıfı:' satırı 0 kez var, 1 olmalı (ürün · Paket: yol | yönetişim · Kapsam kaydı: yol)
+ENGEL biçim: 'İzinli yollar:' satırı 0 kez var, 1 olmalı (virgülle ayrılmış yollar)
+ENGEL biçim: 'Korunan yollar:' satırı 0 kez var, 1 olmalı (virgülle ayrılmış yollar ya da 'yok')
+ENGEL biçim: 'NEDEN:' bölümü yok
+ENGEL biçim: 'DOĞRULA:' bölümü yok
+ENGEL biçim: 'Rapor formatı:' bölümü yok
+ENGEL biçim: 'Sözleşme yüzeyleri:' bölümü 0 kez var, 1 olmalı
+sonuç: engel — biçim
+çıkış: 1
+
+=== Retro dry run — the same prompt after a format-only conversion (the header lines joined, the new mandatory lines added from the WP's own metadata, its own wording kept)
+ENGEL git: Repository 'C:\Users\user\Desktop\ERP-vNext' bu makinede ölçülmüş bir depo yolu değil
+ENGEL git: Worktree 'ana checkout' bu makinede ölçülmüş bir çalışma ağacı yolu değil
+ENGEL kaynak: 'Önce oku' yolu kısaltılmış: services/Diten.CrmService/.../Features/Knowledge/Concept/ConceptPermissions.cs
+ENGEL kaynak: 'Önce oku' yolu kısaltılmış: services/Diten.AuthService/.../Seed/DataSeeder.cs
+ENGEL sözleşme: 'API' yüzeyi yok (alıntı ya da 'N/A — gerekçe' gerekli)
+ENGEL sözleşme: 'İzin' alıntısız ifade — kaynaktan birebir alıntı «…» (yol:satır) gerekli
+ENGEL sözleşme: 'Test' yüzeyi yok (alıntı ya da 'N/A — gerekçe' gerekli)
+ENGEL sözleşme: 'Sabotaj' yüzeyi yok (alıntı ya da 'N/A — gerekçe' gerekli)
+ENGEL sözleşme: HIGH promptta hiç alıntı yok — doğrulanmış sözleşme yüzeyi olmadan HIGH iş dağıtılmaz
+ENGEL görev sınıfı: paket durumu 'yok' — ready-for-dev ya da approved olmalı (execution/domains/commercial-suite/work-packs/WP-SCMM-05-authz-audit-readiness-gate.md)
+ENGEL kuyruk: DUR WP-SCMM-05-S1: kuyrukta satır yok — kayıt yoksa dağıtım yok (SOP §20.1, R8)
+ENGEL inceleme: HIGH prompt için --review <yol>@<commit> ile commit'lenmiş inceleme kaydı gerekli
+sonuç: engel — 12 bulgu
+çıkış: 1
+
+=== Dependency check by Codex (dependency-check-codex.txt), verified read-only by the AI session
+dependency-check.txt sha256 b9cca77765d93fc5427414158ff016515a9403079f2d75a8ae8c5dd3fc6a983d (copied unchanged as dependency-check-codex.txt)
+venv pyvenv.cfg: include-system-site-packages = false
+import in the venv (python -I): openpyxl 3.1.5 · et_xmlfile 2.0.0 · loaded from the venv: True
+discovery.txt (Codex, in the clean venv) sha256 5e0ebd6bc760c9eb93762cf0847df064a8836c5dc55b18bdf29a5a65f07f1660: verify_module_id.py --check-report exit 0
+Limit: install.log holds only the first, failed attempt (no network); the successful retry's log was not kept. The installed versions above are measured in the venv itself.
+
+=== Architecture suite (one run)
+Command (under the shared test lock ct-heavy.py): DOTNET_CLI_UI_LANGUAGE=en dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj --logger "trx;LogFileName=<raw>"
+Code: HEAD 2481004b1 + the four CT-PQG-01 files; the pinned files (Context) were unchanged after the run.
+dotnet: Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 13 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Raw TRX sha256 (kept outside the repository): 27f52ed1f466e3a6d79de2e2edcafaf3a637ae0d5a017e9769a9c106354a3dc7
+run.sanitized.trx sha256: 574f956a515d0db0fa0417f718d38466fc01e79edc11b4bfb34974e04a180c36
+Sanitiser sha256 b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72 (step 1): R1 306 · R2 145 · R3 1 · R4 1; left: home 0 · user 0 · unsanitised computerName 0 · full host name 0
+Raw against sanitised: 138 results; test names, outcomes and failure messages identical; the sanitised copy parses as XML.
+known_failures.py check <raw>: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+known_failures.py check run.sanitized.trx: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+Failure fingerprints identical to step 2 follow-up 02's run3.sanitized.trx (7 of 7).
+An earlier run with only the gate and the record (before the single-writer agreement for the SOP and card) gave the same 131/138; it is superseded by this run.

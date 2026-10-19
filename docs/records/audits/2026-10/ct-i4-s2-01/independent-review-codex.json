@@ -1,0 +1,238 @@
+{
+  "reviewer": "Codex independent verifier",
+  "base": "96b500788c72210901b4361d9f533670e051a6d9",
+  "pack_boundaries": {
+    "source": "working-tree",
+    "tests": "independently authored pack boundaries",
+    "cases": [
+      {
+        "case": "valid flat",
+        "pass": true,
+        "criteria": [
+          1,
+          2
+        ],
+        "problems": [],
+        "old_format": false
+      },
+      {
+        "case": "unclosed backtick fence",
+        "pass": true,
+        "criteria": [],
+        "problems": [
+          "paket: satır 8'de açılan kod çiti kapanmıyor — sonrası okunamaz"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "unclosed tilde fence",
+        "pass": true,
+        "criteria": [],
+        "problems": [
+          "paket: satır 8'de açılan kod çiti kapanmıyor — sonrası okunamaz"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "mixed fence terminator",
+        "pass": true,
+        "criteria": [],
+        "problems": [
+          "paket: satır 8'de açılan kod çiti kapanmıyor — sonrası okunamaz"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "short fence terminator",
+        "pass": true,
+        "criteria": [],
+        "problems": [
+          "paket: satır 8'de açılan kod çiti kapanmıyor — sonrası okunamaz"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "nested H3 cannot drop AC2",
+        "pass": true,
+        "criteria": [
+          1,
+          2
+        ],
+        "problems": [],
+        "old_format": false
+      },
+      {
+        "case": "unidentified ordered item cannot disappear",
+        "pass": true,
+        "criteria": [
+          1
+        ],
+        "problems": [
+          "paket: AC biçimine uymayan madde var: '1. tenant isolation must pass'"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "unidentified plus item cannot disappear",
+        "pass": true,
+        "criteria": [
+          1
+        ],
+        "problems": [
+          "paket: AC biçimine uymayan madde var: '+ tenant isolation must pass'"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "unclosed header cannot pass",
+        "pass": true,
+        "criteria": [],
+        "problems": [
+          "paket: künye kapanmıyor"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "negative AC id",
+        "pass": true,
+        "criteria": [
+          1
+        ],
+        "problems": [
+          "paket: AC biçimine uymayan madde var: '- [ ] AC--2 (zorunlu) — isolates tenant data'"
+        ],
+        "old_format": false
+      },
+      {
+        "case": "fake heading inside fenced code",
+        "pass": true,
+        "criteria": [
+          1
+        ],
+        "problems": [],
+        "old_format": false
+      },
+      {
+        "case": "criterion after real next section excluded",
+        "pass": true,
+        "criteria": [
+          1
+        ],
+        "problems": [],
+        "old_format": false
+      }
+    ],
+    "all_pass": true
+  },
+  "legacy_acceptance_records": {
+    "basis": "independently authored in-memory Git fixture; no claim of real Git integration",
+    "source_without_module_pack": true,
+    "cases": [
+      {
+        "case": "accepted",
+        "old_exit": 0,
+        "new_exit": 0,
+        "identical": true
+      },
+      {
+        "case": "conditional",
+        "old_exit": 1,
+        "new_exit": 1,
+        "identical": true
+      },
+      {
+        "case": "rejected",
+        "old_exit": 1,
+        "new_exit": 1,
+        "identical": true
+      },
+      {
+        "case": "superseded",
+        "old_exit": 1,
+        "new_exit": 1,
+        "identical": true
+      },
+      {
+        "case": "authoritative replacement",
+        "old_exit": 0,
+        "new_exit": 0,
+        "identical": true
+      },
+      {
+        "case": "duplicate heads",
+        "old_exit": 1,
+        "new_exit": 1,
+        "identical": true
+      },
+      {
+        "case": "missing evidence",
+        "old_exit": 1,
+        "new_exit": 1,
+        "identical": true
+      },
+      {
+        "case": "failed criterion",
+        "old_exit": 1,
+        "new_exit": 1,
+        "identical": true
+      }
+    ],
+    "all_pass": true
+  },
+  "revision_selection": {
+    "seed": 41,
+    "cases": 256,
+    "mismatches": [],
+    "all_pass": true,
+    "scope": "current_revision extraction parity only, independently generated inputs"
+  },
+  "existing_packs": {
+    "source": "96b500788c72210901b4361d9f533670e051a6d9",
+    "reader": "current working tree",
+    "pack_count": 163,
+    "measurable_count": 0
+  },
+  "git_e2e_replay": {
+    "base": "96b500788",
+    "driver_sha256": "afd2ecbf6d6b9582dbf8ac8d46aa324ef334c0194847bba55fbf92a3f357b4ad",
+    "method": "independent replay of reviewed Claude driver in separate clone; independently authored extra checks recorded separately",
+    "exit": 0,
+    "expected_pass_count": 17,
+    "has_failure": false,
+    "source_before": {
+      "scripts/acceptance_record.py": "1ac95e9ae9fdc72f27fa0cbc6ff33629b0d54c68a3daf2c7fc6a603b9cfc2822",
+      "scripts/status_report_v2.py": "c570e2d38a04c4242c0d6aa3cc43cce54d214999ce1879ec6cfcbe8976347931"
+    },
+    "source_after": {
+      "scripts/acceptance_record.py": "1ac95e9ae9fdc72f27fa0cbc6ff33629b0d54c68a3daf2c7fc6a603b9cfc2822",
+      "scripts/status_report_v2.py": "c570e2d38a04c4242c0d6aa3cc43cce54d214999ce1879ec6cfcbe8976347931"
+    },
+    "source_unchanged": true
+  },
+  "ref_freeze": {
+    "head_branch": "mc-compat",
+    "cases": [
+      {
+        "case": "explicit old ref while HEAD is compatibility branch",
+        "expected": 0,
+        "exit": 0,
+        "pass": true,
+        "full_sha_reported": true
+      },
+      {
+        "case": "HEAD remains empty queue",
+        "expected": 1,
+        "exit": 1,
+        "pass": true,
+        "full_sha_reported": true
+      }
+    ],
+    "all_pass": true
+  },
+  "limits": [
+    "In-memory legacy-record fixture is not real Git integration.",
+    "Git e2e is a replay of the reviewed Claude driver in a separate Codex clone, not a separately authored e2e driver.",
+    "The boundary, legacy-record, revision-selection and ref-freeze checks are independently authored.",
+    "Architecture run, documentation diff and final commit reviewed separately."
+  ]
+}

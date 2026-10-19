@@ -1,0 +1,20 @@
+İ5B-FIX-08 — the production adapter command line on a complete copy (AGENTS.md, .antigravity, .claude, .agents, .codex
+as at this package); run by the AI session.
+
+normal: sync_adapters.py --check -> 'OK 9 adapter(s) match their sources', exit 0
+
+each contract part removed, or moved into an HTML comment, in AGENTS.md; then sync_adapters.py (write) and --check:
+  okunan kaynaklar (çıkarım ayrı) — removed: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  okunan kaynaklar (çıkarım ayrı) — inside an HTML comment: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  koşmayan ya da eksik keşif ve nedeni ("kısmi inceleme") — removed: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  koşmayan ya da eksik keşif ve nedeni ("kısmi inceleme") — inside an HTML comment: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  gerekçeli ilk kapsam (tek öneri) — removed: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  gerekçeli ilk kapsam (tek öneri) — inside an HTML comment: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  tüm açık onay/sahiplik kararları (TBD dahil) — removed: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  tüm açık onay/sahiplik kararları (TBD dahil) — inside an HTML comment: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  Belirsizde sor, salt-okunur adım öner — removed: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+  Belirsizde sor, salt-okunur adım öner — inside an HTML comment: write exit 1 (the budget problem stops the write), --check exit 1, one CORE-RULE line naming it
+
+10 of 10 refused by name. A first copy lacked the generated .codex/, .agents/ and .claude/agents|skills adapters, so its
+normal state failed too; it was completed and the 10 cases rerun — the first copy's results are not used.
+Limit: this protects the instruction source against loss; it does not show that a model follows the contract.

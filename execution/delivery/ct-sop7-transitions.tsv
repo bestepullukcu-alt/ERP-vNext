@@ -1,0 +1,59 @@
+vocabulary	from_state	to_state	evidence	source	kind
+sop7	DISCOVERED	INSPECTION_REQUIRED	Keşif satırı + araç raporu (rapor yol@commit, rapor-sha256)	§7 + İ3	sop
+sop7	INSPECTION_REQUIRED	INSPECTED	İnceleme notu yol@commit (kod ve çalışma gerçeği ölçüldü)	§7	sop
+sop7	INSPECTED	PLANNED	Plan: kapsam, bağımlılıklar, izinli/korunan yollar	§7	sop
+sop7	PLANNED	READY	DoR kontrol listesi geçti (kart §1)	§7.1, §8.1	sop
+sop7	READY	DISPATCHED	§20 ön kontrol bloğu + görev kaynağı satırı + CT-PQG-01 sonucu (yeni CT'nin ilk geliştirme dağıtımından önce hazır)	§20, R8	sop
+sop7	DISPATCHED	IN_PROGRESS	Şerit başladı (dal/worktree); rapor gerekmez	§7	sop
+sop7	IN_PROGRESS	REPORTED	Yapılandırılmış ajan raporu yol@commit	§7.1, §17	sop
+sop7	REPORTED	VERIFYING	Bağımsız doğrulayıcı atandı (yazandan farklı)	§7	sop
+sop7	VERIFYING	VERIFIED	Doğrulama raporu PASS; testli işte known_failures.py check çıkış 0 (TRX)	§7.1, §23	sop
+sop7	VERIFIED	INTEGRATION_READY	Entegrasyon gerektiği yazılı; bağımlılıklar karşılanmış	§7	sop
+sop7	INTEGRATION_READY	INTEGRATED	Entegrasyon kapısı raporu PASS	§7.1	sop
+sop7	INTEGRATED	ACCEPTED	Künyeli CT kabul kaydı (künye CT-OPS-03)	§7.1, §29.1	sop
+sop7	VERIFIED	ACCEPTED	Entegrasyon gerekmediği yazılı + künyeli CT kabul kaydı	§7, §29.1	sop
+sop7	PLANNED	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	READY	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	DISPATCHED	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	IN_PROGRESS	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	REPORTED	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	VERIFYING	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	VERIFIED	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	INTEGRATION_READY	BLOCKED	Adı konmuş durdurma koşulu (§20.1 maddesi) + tarih	§20.1	öneri
+sop7	BLOCKED	PLANNED	Engelin kalktığının kanıtı	-	öneri
+sop7	BLOCKED	READY	Engelin kalktığının kanıtı + DoR yeniden geçti	§8.1	öneri
+sop7	PLANNED	DEFERRED	CT kararı kaydı	§28.1	öneri
+sop7	READY	DEFERRED	CT kararı kaydı	§28.1	öneri
+sop7	DEFERRED	PLANNED	Yeniden planlama kararı	-	öneri
+sop7	VERIFYING	FAILED	Doğrulama raporu FAIL; yeni deneme <id>-R<n> ile	§19.2	öneri
+sop7	REPORTED	REWORK	Hata/kanıt bulgusu kaydı; devam <id>-R<n> (READY)	§19.2	sop
+sop7	VERIFYING	REWORK	Hata/kanıt bulgusu kaydı; devam <id>-R<n> (READY)	§19.2	sop
+sop7	VERIFIED	REWORK	Hata/kanıt bulgusu kaydı; devam <id>-R<n> (READY)	§19.2	sop
+sop7	DISCOVERED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	INSPECTION_REQUIRED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	INSPECTED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	PLANNED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	READY	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	DISPATCHED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	IN_PROGRESS	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	REPORTED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	VERIFYING	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	VERIFIED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	INTEGRATION_READY	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	INTEGRATED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	BLOCKED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	DEFERRED	SUPERSEDED	Yerine geçen iş paketinin kimliği	§19.1, §19.3	sop
+sop7	DISCOVERED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	INSPECTION_REQUIRED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	INSPECTED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	PLANNED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	READY	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	DISPATCHED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	IN_PROGRESS	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	REPORTED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	VERIFYING	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	VERIFIED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	INTEGRATION_READY	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	INTEGRATED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	BLOCKED	CANCELLED	Sahip kararı kaydı	-	öneri
+sop7	DEFERRED	CANCELLED	Sahip kararı kaydı	-	öneri

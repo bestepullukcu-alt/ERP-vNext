@@ -1,0 +1,21 @@
+--- a/.antigravity/scripts/sync_adapters.py (16a11a3a)
++++ b/.antigravity/scripts/sync_adapters.py (0e456b0f)
+@@ -446,5 +445,0 @@
+-    maybe_code = [False] * len(lines)                        # indented code, or a line the reader cannot tell from it
+-    for k, l in enumerate(lines):
+-        maybe_code[k] = (not in_block[k] and not in_fence[k] and bool(l.strip()) and width(l) >= 4
+-                         and (k == 0 or ends_paragraph(k - 1) or maybe_code[k - 1]))
+-
+@@ -453,5 +448,4 @@
+-        on a proven plain paragraph line: not possible indented code, no block quote or list line in its paragraph, a
+-        paragraph that does not start indented two or more columns (it may continue a list item), not inside a link's
+-        destination or title, an image or a reference definition, and no link syntax the check cannot read."""
+-        if maybe_code[n]:
+-            return True
++        on a proven plain paragraph line: a paragraph that does not start indented two or more columns (indented code,
++        or a possible list continuation — a paragraph right after indented code is read with it, so it is refused too),
++        no block quote or list line in it, not inside a link's destination or title, an image or a reference
++        definition, and no link syntax the check cannot read."""
+@@ -459 +453 @@
+-        while first > 0 and not ends_paragraph(first - 1) and not maybe_code[first - 1]:
++        while first > 0 and not ends_paragraph(first - 1):

@@ -1,0 +1,217 @@
+"""İ4 S2 end to end, real git, a scratch clone: module-check scenarios and the backward compatibility of check.
+Usage: e2e_mc.py <clone> <ai worktree> <old acceptance_record.py> <out>"""
+from __future__ import annotations
+
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+C, W, OLD, OUT = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4])
+ENV = dict(os.environ, GIT_AUTHOR_NAME="e2e", GIT_AUTHOR_EMAIL="e2e@example.invalid", GIT_COMMITTER_NAME="e2e",
+           GIT_COMMITTER_EMAIL="e2e@example.invalid", PYTHONDONTWRITEBYTECODE="1")
+log, failures = [], []
+Q, M = "mc-ct", "MOD-0151"
+PACK = "execution/domains/commercial-suite/module-packs/MOD-0151-ac-e2e.md"
+QPATH = "execution/delivery/mc-queue.tsv"
+
+
+def git(*a) -> str:
+    return subprocess.run(["git", "-C", str(C), *a], capture_output=True, text=True, env=ENV, check=True).stdout.strip()
+
+
+def write(rel: str, text: str):
+    p = C / rel
+    p.parent.mkdir(parents=True, exist_ok=True)  # inside the scratch clone only
+    p.write_text(text, encoding="utf-8")
+
+
+def commit(msg: str, *paths: str) -> str:
+    git("add", "--", *paths)
+    git("commit", "-q", "-m", msg)
+    return git("rev-parse", "HEAD")
+
+
+def expect(cond: bool, what: str):
+    log.append(f"   {'PASS' if cond else 'FAIL'} expected: {what}")
+    if not cond:
+        failures.append(what)
+
+
+def run(*args: str, script: str = "scripts/acceptance_record.py") -> tuple[int, str]:
+    done = subprocess.run([sys.executable, script, *args], cwd=C, capture_output=True, text=True, env=ENV)
+    return done.returncode, done.stdout + (("\n[stderr]\n" + done.stderr) if done.stderr.strip() else "")
+
+
+def mc(label: str, pack: str, *extra: str, module: str = M, queue: str = Q) -> tuple[int, str]:
+    code, out = run("module-check", "--queue", queue, "--module", module, "--pack", pack, *extra)
+    log.append(f"## {label} — exit {code}")
+    log.extend("   " + l[:200] for l in out.splitlines() if l.startswith(("İŞ", "AC-", "sonuç", "paket:")))
+    return code, out
+
+
+# ---------------------------------------------------------------- base
+base_commit = git("rev-parse", "HEAD")
+tools = ["scripts/acceptance_record.py", "scripts/status_report_v2.py", "scripts/status_report.py", "scripts/ct_queue.py",
+         "scripts/prompt_gate.py", ".antigravity/scripts/verify_module_id.py", "execution/delivery/ct-queue-template.tsv"]
+for f in tools:
+    shutil.copyfile(W / f, C / f)
+shutil.copyfile(OLD, C / "scripts/acceptance_record_old.py")
+TOOLS = commit("e2e: the İ4 S2 tools (and the old acceptance_record.py for the comparison)", *tools, "scripts/acceptance_record_old.py")
+
+
+def pack_text(status: str, ac3: str) -> str:
+    return ("---\nid: MOD-0151\nname: Territory Management\nstatus: " + status + "\n---\n\n# MOD-0151 (e2e pack, synthetic)\n\n"
+            "## Acceptance Criteria\n- [ ] AC-1 (zorunlu) — model listesi açılır\n- [ ] AC-2 (zorunlu) — yetkisiz kullanıcı 403 alır\n"
+            f"- [ ] AC-3 (zorunlu) — {ac3}\n- [ ] AC-4 (isteğe bağlı) — sıralama hatırlanır\n\n## Test Expectations\n- unit\n")
+
+
+write(PACK, pack_text("draft", "dışa aktarma XLSX verir"))
+PV0 = commit("e2e: pack v0 (draft)", PACK)
+write(PACK, pack_text("ready-for-dev", "dışa aktarma XLSX verir"))
+PV1 = commit("e2e: pack v1 (ready-for-dev)", PACK)
+write(PACK, pack_text("ready-for-dev", "dışa aktarma CSV verir (anlam değişti)"))
+PV2 = commit("e2e: pack v2 — AC-3 means something else", PACK)
+LEGACY = "execution/domains/commercial-suite/module-packs/MOD-0151-ac-legacy.md"
+write(LEGACY, "---\nid: MOD-0151\nstatus: ready-for-dev\n---\n\n## Acceptance Criteria\n- [ ] liste açılır\n- [ ] 403\n")
+PL = commit("e2e: an old-format pack (the exact heading, no ids)", LEGACY)
+spec = lambda c: f"{PACK}@{c}"
+
+COLS = "| ID | Ne kontrol edilir | Neden | Nasıl | Beklenen sonuç | Ekran mı | Zorunlu | Gerçek sonuç | Sonuç | Kanıt |\n|" + "---|" * 10 + "\n"
+for wp, mod in (("W1", M), ("W2", M), ("W3", M), ("W4", M), ("W5", "MOD-0150"), ("W6", M)):
+    write(f"docs/wp/{wp}.md", f"---\nstatus: approved\nwork_package: {wp}\nmodule: {mod}\n---\nEvidence hedefi: E3 (runtime smoke)\n")
+write("docs/records/audits/2026-10/mc-e2e/run.log", "AC-1 liste 200\nAC-2 403\nAC-3 dışa aktarma\n")
+CE = commit("e2e: work-package files and the run log", "docs/wp", "docs/records/audits/2026-10/mc-e2e/run.log")
+LOG = f"docs/records/audits/2026-10/mc-e2e/run.log@{CE}"
+row = lambda i, real, line: f"| {i} | {i} ölçütü | paket {i} | e2e | beklenen | evet | evet | {real} | geçti | `{LOG}:{line}` |\n"
+write("docs/records/audits/2026-10/mc-e2e/l1.md", COLS + row("AC-1", "200", 1)
+      + "| AC-2 | AC-2 ölçütü | paket AC-2 | e2e | 403 | hayır | evet | - | N/A — bu dilimde yetki ayrı işte ölçüldü | - |\n")
+write("docs/records/audits/2026-10/mc-e2e/l2.md", COLS + row("AC-3", "xlsx", 3))
+CL = commit("e2e: acceptance lists with AC ids", "docs/records/audits/2026-10/mc-e2e/l1.md", "docs/records/audits/2026-10/mc-e2e/l2.md")
+LIST = lambda n: f"docs/records/audits/2026-10/mc-e2e/{n}@{CL}"
+
+
+def record(wp: str, lst: str, module: str = M, decision="accepted", completion="WP Done", conditions="-", supersedes="-",
+           module_pack: str | None = None) -> str:
+    return ("---\nformat: rep-001-v2\n" f"module: {module}\nwork_package: {wp}\nqueue: {Q}\nevidence_level: E3\nrequired_evidence_level: E3\n"
+            f"required_evidence_source: docs/wp/{wp}.md@{CE}:6\ndecision: {decision}\ncompletion: {completion}\nconditions: {conditions}\n"
+            f"commit: {TOOLS}\nevidence: {LOG}\nacceptance_list: {LIST(lst)}\ndate: 2026-10-16\nsupersedes: {supersedes}\n"
+            "verifier: bağımsız doğrulayıcı (e2e)\nimplementer: geliştirme ajanı (e2e)\n"
+            + (f"module_pack: {module_pack}\n" if module_pack else "") + "---\n\n# Kabul kaydı (e2e)\n")
+
+
+tpl = (C / "execution/delivery/ct-queue-template.tsv").read_text(encoding="utf-8")
+write(QPATH, tpl)
+QB = commit("e2e: mc-ct queue (header only)", QPATH)
+reg = (C / "execution/delivery/ct-queue-registry.tsv").read_text(encoding="utf-8")
+write("execution/delivery/ct-queue-registry.tsv", reg + f"{Q}\tMC Test CT\t{QPATH}\t{QB}\tconfirmed\ttest only\te2e\tyes\tsop7\n")
+BASE = commit("e2e: registry row mc-ct (strict)", "execution/delivery/ct-queue-registry.tsv")
+log.append(f"base {BASE[:9]} · packs v0 {PV0[:9]} v1 {PV1[:9]} v2 {PV2[:9]} · lists {CL[:9]}")
+
+
+def scenario(name: str, records: dict[str, str], rows: list[tuple]) -> str:
+    """A branch from BASE: commit the records, then the queue rows that point at them."""
+    git("checkout", "-q", "-B", f"mc-{name}", BASE)
+    for path, text in records.items():
+        write(path, text)
+    cr = commit(f"e2e {name}: records", *records) if records else BASE
+    body = "".join("\t".join([wid, "AC işi", mod, state, "CT-X", dep, "-", "2026-10-16",
+                              (f"{rec}@{cr}" if rec != "-" else "-"), "-"]) + "\n" for wid, mod, state, dep, rec in rows)
+    write(QPATH, tpl + body)
+    return commit(f"e2e {name}: queue", QPATH)
+
+
+R = "docs/records/audits/2026-10/mc-e2e/"
+w1 = {R + "w1.md": record("W1", "l1.md", module_pack=spec(PV1))}
+rows_ok = [("W1", M, "ACCEPTED", "-", R + "w1.md"), ("W2", M, "ACCEPTED", "-", R + "w2.md")]
+
+scenario("all", {**w1, R + "w2.md": record("W2", "l2.md", module_pack=spec(PV1))}, rows_ok)
+code, out = mc("1 W1 (AC-1, N/A AC-2) and W2 (AC-3) bound to v1; --pack v1", spec(PV1))
+expect(code == 0 and "Module Done değildir" in out, "every mandatory AC covered -> 0, not Module Done")
+code, out = mc("2 the same queue; --pack v2", spec(PV2))
+expect(code == 1 and "başka paket sürümüne bağlı" in out, "records bound to v1 do not cover v2 (same AC ids, another meaning) -> 1")
+code, out = mc("3 --pack v0 (draft)", spec(PV0))
+expect(code == 2 and "status" in out, "a draft pack version -> 2")
+real = "execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md"
+code, out = mc("4 --pack the real MOD-0151 pack (no AC ids)", f"{real}@{BASE}")
+expect(code == 2 and "ölçülemez" in out, "an old pack (numbered heading, no AC ids) -> 2 (not measurable)")
+code, out = mc("4b --pack an old-format pack (exact heading, no AC ids)", f"{LEGACY}@{PL}")
+expect(code == 2 and "eski biçim" in out, "an old-format pack -> 2, named as the old format")
+code, out = mc("5 --pack with a short SHA", f"{PACK}@{PV1[:9]}")
+expect(code == 2, "a short pack SHA -> 2")
+code, out = mc("6 a non-strict queue (sce-mvp6)", spec(PV1), queue="sce-mvp6")
+expect(code == 2 and "katı" in out and re.search(r"^kaynak: [0-9a-f]{40} ", out, re.M) is not None,
+       "a non-strict queue -> 2, and the resolved source SHA is still named")
+code, out = mc("6b an unknown --ref", spec(PV1), "--ref", "refs/heads/does-not-exist")
+expect(code == 2 and "kaynak:" not in out, "an unresolved ref -> 2, and no source SHA is claimed")
+
+scenario("v2bound", {**w1, R + "w2.md": record("W2", "l2.md", module_pack=spec(PV2))}, rows_ok)
+code, out = mc("7 W2 bound to v2; --pack v1", spec(PV1))
+expect(code == 1 and "AC-3 (zorunlu): AÇIK" in out, "AC-3 from a record bound to another version -> open, 1")
+
+scenario("nobind", {**w1, R + "w2.md": record("W2", "l2.md")}, rows_ok)
+code, out = mc("8 W2 without module_pack; --pack v1", spec(PV1))
+expect(code == 1 and "module_pack yok" in out, "a record without module_pack is never matched implicitly -> 1")
+
+scenario("openrev", {**w1, R + "w2.md": record("W2", "l2.md", module_pack=spec(PV1))},
+         rows_ok + [("W2-R1", M, "READY", "W2", "-")])
+code, out = mc("9 W2-R1 READY over the accepted W2", spec(PV1))
+expect(code == 1 and "W2-R1 READY" in out, "a newer open revision: the older acceptance does not count -> 1")
+
+scenario("conditional", {**w1, R + "w3.md": record("W3", "l2.md", decision="conditional", completion="yok",
+                                                    conditions="şablon · ürün sahibi · 2026-10-30", module_pack=spec(PV1))},
+         [("W1", M, "ACCEPTED", "-", R + "w1.md"), ("W3", M, "VERIFIED", "-", R + "w3.md")])
+code, out = mc("10 W3 VERIFIED with a conditional record covering AC-3", spec(PV1))
+expect(code == 1 and "AC-3 (zorunlu): AÇIK" in out, "a conditional record (row not ACCEPTED) does not cover -> 1")
+
+scenario("othermod", {**w1, R + "w5.md": record("W5", "l2.md", module="MOD-0150", module_pack=spec(PV1))},
+         [("W1", M, "ACCEPTED", "-", R + "w1.md"), ("W5", "MOD-0150", "ACCEPTED", "-", R + "w5.md")])
+code, out = mc("11 AC-3 only from MOD-0150's record bound to the MOD-0151 pack", spec(PV1))
+expect(code == 1 and "AC-3 (zorunlu): AÇIK" in out and "W5" not in "".join(l for l in out.splitlines() if l.startswith("İŞ")),
+       "another module's record is not considered -> 1")
+code, out = mc("12 --module MOD-0150 with the MOD-0151 pack", spec(PV1), module="MOD-0150")
+expect(code == 2 and "id" in out, "the pack's id is not the module -> 2")
+
+scenario("cond-accepted", {**w1, R + "w3.md": record("W3", "l2.md", decision="conditional", completion="yok",
+                                                      conditions="şablon · ürün sahibi · 2026-10-30", module_pack=spec(PV1))},
+         [("W1", M, "ACCEPTED", "-", R + "w1.md"), ("W3", M, "ACCEPTED", "-", R + "w3.md")])
+code, out = mc("13 W3 ACCEPTED with a conditional record (the queue itself is invalid)", spec(PV1))
+expect(code == 2 and "geçersiz" in out, "a queue whose ACCEPTED row's record does not allow it -> 2 (fail closed)")
+
+# ---------------------------------------------------------------- backward compatibility of check (no module_pack)
+git("checkout", "-q", "-B", "mc-compat", BASE)
+compat = {R + "c-w1.md": record("W1", "l1.md"),
+          R + "c-w3.md": record("W3", "l2.md", decision="conditional", completion="yok", conditions="şablon · ürün sahibi · 2026-10-30"),
+          R + "c-w4.md": record("W4", "l2.md", decision="rejected", completion="yok"),
+          R + "c-w6-old.md": record("W6", "l2.md")}
+for p, t in compat.items():
+    write(p, t)
+c1 = commit("e2e compat: records without module_pack", *compat)
+write(R + "c-w6-new.md", record("W6", "l2.md", supersedes=R + "c-w6-old.md"))
+c2 = commit("e2e compat: W6 superseded by a newer record", R + "c-w6-new.md")
+same = 0
+cases = [("W1 accepted", f"{R}c-w1.md@{c1}", "W1"), ("W3 conditional", f"{R}c-w3.md@{c1}", "W3"),
+         ("W4 rejected", f"{R}c-w4.md@{c1}", "W4"), ("W6 old (superseded)", f"{R}c-w6-old.md@{c1}", "W6"),
+         ("W6 new (head)", f"{R}c-w6-new.md@{c2}", "W6"), ("W1 for the wrong module", f"{R}c-w1.md@{c1}", "W1")]
+log.append("## 14 backward compatibility: check, old and new, records without module_pack")
+for label, rec, wp in cases:
+    mod = "MOD-0150" if "wrong module" in label else M
+    args = ("check", rec, "--queue", Q, "--wp", wp, "--module", mod)
+    a, b = run(*args, script="scripts/acceptance_record_old.py"), run(*args)
+    ok = a == b
+    same += ok
+    log.append(f"   {label}: old exit {a[0]} · new exit {b[0]} · output identical {ok}")
+expect(same == len(cases), f"check: old and new give the same exit and output on {len(cases)} records without module_pack")
+codes = {label: run("check", rec, "--queue", Q, "--wp", wp, "--module", "MOD-0150" if "wrong" in label else M)[0]
+         for label, rec, wp in cases}
+expect(codes["W1 accepted"] == 0 and codes["W3 conditional"] == 1 and codes["W4 rejected"] == 1
+       and codes["W6 old (superseded)"] != 0 and codes["W6 new (head)"] == 0 and codes["W1 for the wrong module"] != 0,
+       "and the expected meaning: accepted 0; conditional, rejected, superseded, wrong module not 0")
+
+OUT.write_text("\n".join(log) + "\n", encoding="utf-8")
+print("\n".join(log))
+print(f"expectations failed: {len(failures)}")
+sys.exit(1 if failures else 0)

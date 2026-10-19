@@ -1,0 +1,347 @@
+=== Context
+HEAD=96b500788c72210901b4361d9f533670e051a6d9 + uncommitted İ4 S2 files (pinned: pin-before.txt)
+Pinned before the architecture run (sha256  path):
+b50b4802d3f29b5299942ed5e30dec4edbf9735a6e2f2e8f3c3fea42f280f47d  scripts/acceptance_record.py
+c570e2d38a04c4242c0d6aa3cc43cce54d214999ce1879ec6cfcbe8976347931  scripts/status_report_v2.py
+fa478ac23c77ece8ec4d8c9c389b0e76908dd9a585de1e41193411bff86b3b62  .antigravity/rules/module-pack-standard.md
+367a782f3c2e817f125b6e5d3c1aa30bf87a8fc2c02c2ac55002691b115a24af  .antigravity/workflows/prepare-module-pack.md
+ec3c3d7969cce0596fda3f661a43b8d6c0f1d64cf606a28115e66675f7511fe1  .antigravity/rules/status-reporting-and-evidence.md
+75f8cf2ba0008f9b95f4d0d66d80363bafc950bba43d6334cd5d77f996f9983c  docs/guides/operations/control-tower-sop.md
+5b570973c96b0f9fb982595d443db6c1e059083b8f9fea68bb6a784044c83146  docs/records/decisions/2026-10/ct-i4-s2-joint-decision-01.md
+Diff of the tracked files against HEAD (96b500788), sha256: 116b94316ca8531d0d083f3a0412cfcc0525f3a1ac861907b25ad5cfbb66fac7
+After the run (sha256  path):
+b50b4802d3f29b5299942ed5e30dec4edbf9735a6e2f2e8f3c3fea42f280f47d  scripts/acceptance_record.py
+c570e2d38a04c4242c0d6aa3cc43cce54d214999ce1879ec6cfcbe8976347931  scripts/status_report_v2.py
+fa478ac23c77ece8ec4d8c9c389b0e76908dd9a585de1e41193411bff86b3b62  .antigravity/rules/module-pack-standard.md
+367a782f3c2e817f125b6e5d3c1aa30bf87a8fc2c02c2ac55002691b115a24af  .antigravity/workflows/prepare-module-pack.md
+ec3c3d7969cce0596fda3f661a43b8d6c0f1d64cf606a28115e66675f7511fe1  .antigravity/rules/status-reporting-and-evidence.md
+75f8cf2ba0008f9b95f4d0d66d80363bafc950bba43d6334cd5d77f996f9983c  docs/guides/operations/control-tower-sop.md
+5b570973c96b0f9fb982595d443db6c1e059083b8f9fea68bb6a784044c83146  docs/records/decisions/2026-10/ct-i4-s2-joint-decision-01.md
+SOP from '## 36.2' onward, sha256 prefix: 905cccd6ecd0 at HEAD and after the edit (unchanged)
+
+=== acceptance_record.py --self-test (final)
+PASS a complete accepted v2 record -> allows ACCEPTED (exit 0)
+PASS a legacy v1 künye -> exit 1 as a v1 künye, stays valid where it is
+PASS sabotage: a field missing -> ENGEL
+PASS sabotage: a field twice -> ENGEL
+PASS sabotage: record for another work package -> ENGEL
+PASS sabotage: module folded to the base id (FU lost) -> ENGEL against the row
+PASS sabotage (1): evidence below the required level -> ENGEL
+PASS sabotage (1): required level not stated on the source line -> ENGEL (stop)
+PASS sabotage (1): required level source without a line number -> ENGEL
+PASS sabotage (fu1): the level source is a draft -> ENGEL
+PASS sabotage (fu1): the level source belongs to another work package -> ENGEL
+PASS sabotage (fu1): the level source has no status -> ENGEL
+PASS sabotage (fu1): two different levels on the source line -> ambiguous, ENGEL
+PASS sabotage (1): required level E0 -> ENGEL
+PASS (2) a valid conditional record -> exit 1, never ACCEPTED
+PASS sabotage (2): conditional with completion WP Done -> ENGEL
+PASS sabotage (2): conditional without owner / date -> ENGEL
+PASS sabotage (2): a waiver line -> ENGEL, no automatic acceptance
+PASS (2) rejected with completion yok -> exit 1, never ACCEPTED
+PASS sabotage (fu1): no separator line, the first mandatory criterion failed -> ENGEL, not skipped
+PASS sabotage (fu1): a criterion row after a blank line -> ENGEL, not lost
+PASS sabotage (3): an empty acceptance list -> ENGEL
+PASS sabotage (3): a mandatory criterion not tried -> ENGEL
+PASS sabotage (3): a mandatory criterion failed -> ENGEL
+PASS sabotage (3): a bare PASS (geçti, no actual result) -> ENGEL
+PASS sabotage (3): evidence not bound to the criterion (no line, ID absent) -> ENGEL
+PASS sabotage (3): expected result empty -> ENGEL
+PASS (3) a mandatory criterion N/A with a reason -> allowed
+PASS sabotage (3): N/A without a reason -> ENGEL
+PASS (4) a record superseding the earlier one for the same work -> the head, exit 0
+PASS sabotage (4): two active heads for one work package -> ENGEL
+PASS sabotage (4): the superseded record checked -> not authoritative, ENGEL
+PASS sabotage (fu1): an older version of a path whose HEAD version is a rejection -> not authoritative, ENGEL
+PASS sabotage (fu1): a v2 format line written late in the header is still indexed
+PASS (fu2) a broken v2 record clearly of another queue + WP does not block this work
+PASS sabotage (fu2): a broken v2 record of the same queue + WP -> ENGEL (fail-closed)
+PASS sabotage (fu2): a broken v2 record whose identity is unclear -> ENGEL (fail-closed)
+PASS sabotage (fu2): the level source repeats status (draft, then approved) -> ENGEL, not the last value
+PASS sabotage (fu2): the level source names another module -> ENGEL
+PASS sabotage (4): superseding another work package's record -> ENGEL
+PASS sabotage (4): a supersedes cycle -> ENGEL
+PASS sabotage (5): the verified commit is not in the repository -> ENGEL
+PASS sabotage (reader): two decision lines (the legacy reader keeps the last) -> ENGEL, not a silent pick
+PASS sabotage (reader): a malformed künye line -> ENGEL
+PASS sabotage (reader): a multi-line value -> ENGEL
+PASS sabotage (reader): an unknown field (a typo) -> ENGEL
+PASS sabotage (reader): '#' inside a value -> ENGEL
+PASS sabotage (reader): an unclosed künye -> ENGEL
+PASS sabotage: evidence not committed -> ENGEL
+PASS sabotage: verifier = implementer -> ENGEL
+PASS sabotage: decision outside the vocabulary -> ENGEL
+PASS sabotage: a malformed record spec -> exit 2, never a pass
+PASS REP-001 §6.1 example künye, copied as it is, passes the strict v2 reader (no comments, all fields)
+PASS İ4 S2: a record with a well-formed module_pack -> the strict reader accepts it and reads the value
+PASS İ4 S2: a record with a module_pack -> check still allows ACCEPTED (exit 0)
+PASS İ4 S2 (backward compatible): a record without module_pack -> no künye problem
+PASS sabotage İ4 S2: module_pack twice -> refused by the strict reader for that reason (not as an unknown field)
+PASS sabotage İ4 S2: module_pack a short SHA -> refused by the strict reader for that reason (not as an unknown field)
+PASS sabotage İ4 S2: module_pack a path outside module-packs -> refused by the strict reader for that reason (not as an unknown field)
+PASS sabotage İ4 S2: module_pack a path with '..' -> refused by the strict reader for that reason (not as an unknown field)
+PASS sabotage İ4 S2: module_pack no commit -> refused by the strict reader for that reason (not as an unknown field)
+PASS İ4 S2: a well-formed pack -> AC-1..4 read, AC-1..3 mandatory, the fenced example not counted, no problem
+PASS İ4 S2: an AC-like line in another section is not a criterion
+PASS İ4 S2: an old pack without identities -> not measurable (old format), no criteria
+PASS sabotage İ4 S2: a pack with the pack's id is another module (FU) -> not measurable (tek id), never an empty success
+PASS sabotage İ4 S2: a pack with no id -> not measurable (tek id), never an empty success
+PASS sabotage İ4 S2: a pack with two ids -> not measurable (tek id), never an empty success
+PASS sabotage İ4 S2: a pack with two statuses -> not measurable (tek status), never an empty success
+PASS sabotage İ4 S2: a pack with status draft -> not measurable (tek status), never an empty success
+PASS sabotage İ4 S2: a pack with no Acceptance Criteria section -> not measurable (bölümü olmalı), never an empty success
+PASS sabotage İ4 S2: a pack with two Acceptance Criteria sections -> not measurable (bölümü olmalı), never an empty success
+PASS sabotage İ4 S2: a pack with the section at another heading level -> not measurable (bölümü olmalı), never an empty success
+PASS sabotage İ4 S2: a pack with an unidentified item beside identified ones -> not measurable (uymayan madde), never an empty success
+PASS sabotage İ4 S2: a pack with an AC line outside the item form -> not measurable (uymayan madde), never an empty success
+PASS sabotage İ4 S2: a pack with AC-0 -> not measurable (uymayan madde), never an empty success
+PASS sabotage İ4 S2: a pack with an empty criterion -> not measurable (uymayan madde), never an empty success
+PASS sabotage İ4 S2: a pack with a repeated AC-2 -> not measurable (iki kez), never an empty success
+PASS sabotage İ4 S2: a pack with no mandatory criterion -> not measurable (zorunlu AC yok), never an empty success
+PASS sabotage İ4 S2 (Codex): a pack with an unclosed künye -> not measurable (künye kapanmıyor), never a partial success
+PASS sabotage İ4 S2 (Codex): a pack with an unclosed fence that hides AC-2 -> not measurable (kod çiti), never a partial success
+PASS sabotage İ4 S2 (Codex): a pack with a backtick fence 'closed' by tildes -> not measurable (kod çiti), never a partial success
+PASS sabotage İ4 S2 (Codex): a pack with a four-backtick fence 'closed' by three -> not measurable (kod çiti), never a partial success
+PASS İ4 S2 (Codex): a heading inside a closed fence elsewhere is not a second section
+PASS İ4 S2 (Codex): a heading inside a closed fence in the section does not end it
+PASS İ4 S2 (Codex): a longer fence closes only with as many marks; the item after it is read
+PASS İ4 S2: every mandatory AC covered (geçti or a reasoned N/A) -> exit 0, said to be AC coverage only, not Module Done
+PASS İ4 S2: AC-3 not covered -> exit 1, AC-3 named open
+PASS sabotage İ4 S2: AC-3 only from a work with no module_pack (no implicit match on the same AC id) -> not counted (module_pack yok), exit 1
+PASS sabotage İ4 S2: AC-3 only from a work with bound to another version of the same pack (v1/v2: the same AC id may mean something else) -> not counted (başka paket sürümüne), exit 1
+PASS sabotage İ4 S2: AC-3 only from a work with a record that does not allow ACCEPTED (conditional, rejected, superseded) -> not counted (izin vermiyor), exit 1
+PASS sabotage İ4 S2: AC-3 only from a work with a newer open revision W2-R1 -> not counted (W2-R1 READY), exit 1
+PASS sabotage İ4 S2: AC-3 only from a work with an invalid revision chain -> not counted (zincir geçersiz), exit 1
+PASS sabotage İ4 S2: AC-3 only from a work with AC-3 'kaldı' -> not counted (kapadığı: yok), exit 1
+PASS sabotage İ4 S2: AC-3 only from a work with AC-3 'denenmedi' -> not counted (kapadığı: yok), exit 1
+PASS sabotage İ4 S2: AC-3 only from a work with AC-3 twice in its list -> not counted (kapadığı: yok), exit 1
+PASS sabotage İ4 S2: no criteria at all -> not measurable (2), never an empty success
+PASS sabotage İ4 S2: only optional criteria -> not measurable (2), never an empty success
+PASS İ4 S2: no output line claims Module Done
+PASS İ4 S2: the standard's own example pack, its Acceptance Criteria block as written, reads AC-1 mandatory and AC-2 optional
+PASS read-only: no write call in this script
+self-test: 100/100 passed
+
+=== status_report_v2.py: the two helpers moved out — the self-test before and after, byte-identical
+before: self-test: 75/75 passed
+after:  self-test: 75/75 passed
+cmp: identical; CT-OPS-04's real-git end to end after the move: 18/18 (expectations failed: 0)
+
+=== Tests first — the new cases against stubs (module_pack cases tightened to their real reason) — red
+FAIL İ4 S2: a record with a well-formed module_pack -> the strict reader accepts it and reads the value
+FAIL İ4 S2: a record with a module_pack -> check still allows ACCEPTED (exit 0)
+FAIL sabotage İ4 S2: module_pack twice -> refused by the strict reader for that reason (not as an unknown field)
+FAIL sabotage İ4 S2: module_pack a short SHA -> refused by the strict reader for that reason (not as an unknown field)
+FAIL sabotage İ4 S2: module_pack a path outside module-packs -> refused by the strict reader for that reason (not as an unknown field)
+FAIL sabotage İ4 S2: module_pack a path with '..' -> refused by the strict reader for that reason (not as an unknown field)
+FAIL sabotage İ4 S2: module_pack no commit -> refused by the strict reader for that reason (not as an unknown field)
+FAIL İ4 S2: a well-formed pack -> AC-1..4 read, AC-1..3 mandatory, the fenced example not counted, no problem
+FAIL İ4 S2: an AC-like line in another section is not a criterion
+FAIL İ4 S2: an old pack without identities -> not measurable (old format), no criteria
+FAIL sabotage İ4 S2: a pack with the pack's id is another module (FU) -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with no id -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with two ids -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with two statuses -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with status draft -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with no Acceptance Criteria section -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with two Acceptance Criteria sections -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with the section at another heading level -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with an unidentified item beside identified ones -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with an AC line outside the item form -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with AC-0 -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with an empty criterion -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with a repeated AC-2 -> not measurable, never an empty success
+FAIL sabotage İ4 S2: a pack with no mandatory criterion -> not measurable, never an empty success
+FAIL İ4 S2: every mandatory AC covered (geçti or a reasoned N/A) -> exit 0, said to be AC coverage only, not Module Done
+FAIL İ4 S2: AC-3 not covered -> exit 1, AC-3 named open
+FAIL sabotage İ4 S2: AC-3 only from a work with no module_pack (no implicit match on the same AC id) -> not counted, exit 1
+FAIL sabotage İ4 S2: AC-3 only from a work with bound to another version of the same pack (v1/v2: the same AC id may mean something else) -> not counted, exit 1
+FAIL sabotage İ4 S2: AC-3 only from a work with a record that does not allow ACCEPTED (conditional, rejected, superseded) -> not counted, exit 1
+FAIL sabotage İ4 S2: AC-3 only from a work with a newer open revision W2-R1 -> not counted, exit 1
+FAIL sabotage İ4 S2: AC-3 only from a work with an invalid revision chain -> not counted, exit 1
+FAIL sabotage İ4 S2: AC-3 only from a work with AC-3 'kaldı' -> not counted, exit 1
+FAIL sabotage İ4 S2: AC-3 only from a work with AC-3 'denenmedi' -> not counted, exit 1
+FAIL sabotage İ4 S2: AC-3 only from a work with AC-3 twice in its list -> not counted, exit 1
+FAIL İ4 S2: no output line claims Module Done
+self-test: 55/90 passed
+
+=== Codex's boundary review (unclosed künye; unclosed, mismatched or short fences; headings inside fences) — red
+FAIL sabotage İ4 S2 (Codex): a pack with an unclosed künye -> not measurable, never a partial success
+FAIL sabotage İ4 S2 (Codex): a pack with an unclosed fence that hides AC-2 -> not measurable, never a partial success
+FAIL sabotage İ4 S2 (Codex): a pack with a backtick fence 'closed' by tildes -> not measurable, never a partial success
+FAIL sabotage İ4 S2 (Codex): a pack with a four-backtick fence 'closed' by three -> not measurable, never a partial success
+FAIL İ4 S2 (Codex): a heading inside a closed fence elsewhere is not a second section
+FAIL İ4 S2 (Codex): a heading inside a closed fence in the section does not end it
+FAIL İ4 S2 (Codex): a longer fence closes only with as many marks; the item after it is read
+self-test: 90/97 passed
+
+=== No criteria / only optional criteria in coverage — red
+FAIL sabotage İ4 S2: no criteria at all -> not measurable (2), never an empty success
+FAIL sabotage İ4 S2: only optional criteria -> not measurable (2), never an empty success
+self-test: 97/99 passed
+
+=== Sabotage — each guard of acceptance_record.py removed in turn, on the final code
+[acceptance_record] guard removed: strict reader allows the optional field -> self-test: 93/100 passed; red: İ4 S2: a record with a well-formed module_pack -> the strict reader accepts it and reads t | İ4 S2: a record with a module_pack -> check still allows ACCEPTED (exit 0) | sabotage İ4 S2: module_pack twice -> refused by the strict reader for that reason (not as  | sabotage İ4 S2: module_pack a short SHA -> refused by the strict reader for that reason (n | sabotage İ4 S2: module_pack a path outside module-packs -> refused by the strict reader fo | sabotage İ4 S2: module_pack a path with '..' -> refused by the strict reader for that reas | sabotage İ4 S2: module_pack no commit -> refused by the strict reader for that reason (not
+[acceptance_record] guard removed: module_pack format -> self-test: 96/100 passed; red: sabotage İ4 S2: module_pack a short SHA -> refused by the strict reader for that reason (n | sabotage İ4 S2: module_pack a path outside module-packs -> refused by the strict reader fo | sabotage İ4 S2: module_pack a path with '..' -> refused by the strict reader for that reas | sabotage İ4 S2: module_pack no commit -> refused by the strict reader for that reason (not
+[acceptance_record] guard removed: pack künye closed -> self-test: 99/100 passed; red: sabotage İ4 S2 (Codex): a pack with an unclosed künye -> not measurable (künye kapanmıyor)
+[acceptance_record] guard removed: pack id = module -> self-test: 97/100 passed; red: sabotage İ4 S2: a pack with the pack's id is another module (FU) -> not measurable (tek id | sabotage İ4 S2: a pack with no id -> not measurable (tek id), never an empty success | sabotage İ4 S2: a pack with two ids -> not measurable (tek id), never an empty success
+[acceptance_record] guard removed: pack status approved/ready-for-dev -> self-test: 98/100 passed; red: sabotage İ4 S2: a pack with two statuses -> not measurable (tek status), never an empty su | sabotage İ4 S2: a pack with status draft -> not measurable (tek status), never an empty su
+[acceptance_record] guard removed: unclosed fence refused -> self-test: 97/100 passed; red: sabotage İ4 S2 (Codex): a pack with an unclosed fence that hides AC-2 -> not measurable (k | sabotage İ4 S2 (Codex): a pack with a backtick fence 'closed' by tildes -> not measurable  | sabotage İ4 S2 (Codex): a pack with a four-backtick fence 'closed' by three -> not measura
+[acceptance_record] guard removed: fence closes only with the same mark, as long -> self-test: 97/100 passed; red: sabotage İ4 S2 (Codex): a pack with a backtick fence 'closed' by tildes -> not measurable  | sabotage İ4 S2 (Codex): a pack with a four-backtick fence 'closed' by three -> not measura | İ4 S2 (Codex): a longer fence closes only with as many marks; the item after it is read
+[acceptance_record] guard removed: headings only outside fences -> self-test: 99/100 passed; red: İ4 S2 (Codex): a heading inside a closed fence elsewhere is not a second section
+[acceptance_record] guard removed: the exact '## Acceptance Criteria' heading -> self-test: 99/100 passed; red: sabotage İ4 S2: a pack with the section at another heading level -> not measurable (bölümü
+[acceptance_record] guard removed: the section ends at the next level 1-2 heading -> self-test: 94/100 passed; red: İ4 S2: a well-formed pack -> AC-1..4 read, AC-1..3 mandatory, the fenced example not count | İ4 S2: an AC-like line in another section is not a criterion | İ4 S2 (Codex): a heading inside a closed fence elsewhere is not a second section | İ4 S2 (Codex): a heading inside a closed fence in the section does not end it | İ4 S2 (Codex): a longer fence closes only with as many marks; the item after it is read | İ4 S2: the standard's own example pack, its Acceptance Criteria block as written, reads AC
+[acceptance_record] guard removed: a repeated AC id refused -> self-test: 99/100 passed; red: sabotage İ4 S2: a pack with a repeated AC-2 -> not measurable (iki kez), never an empty su
+[acceptance_record] guard removed: no unidentified item beside identified ones -> self-test: 96/100 passed; red: sabotage İ4 S2: a pack with an unidentified item beside identified ones -> not measurable  | sabotage İ4 S2: a pack with an AC line outside the item form -> not measurable (uymayan ma | sabotage İ4 S2: a pack with AC-0 -> not measurable (uymayan madde), never an empty success | sabotage İ4 S2: a pack with an empty criterion -> not measurable (uymayan madde), never an
+[acceptance_record] guard removed: parse_pack: at least one mandatory -> self-test: 99/100 passed; red: sabotage İ4 S2: a pack with no mandatory criterion -> not measurable (zorunlu AC yok), nev
+[acceptance_record] guard removed: AC ids start at 1 -> self-test: 99/100 passed; red: sabotage İ4 S2: a pack with AC-0 -> not measurable (uymayan madde), never an empty success
+[acceptance_record] guard removed: coverage: no criteria / no mandatory -> 2 -> self-test: 98/100 passed; red: sabotage İ4 S2: no criteria at all -> not measurable (2), never an empty success | sabotage İ4 S2: only optional criteria -> not measurable (2), never an empty success
+[acceptance_record] guard removed: coverage: an invalid chain is not counted -> self-test: 99/100 passed; red: sabotage İ4 S2: AC-3 only from a work with an invalid revision chain -> not counted (zinci
+[acceptance_record] guard removed: coverage: the current revision is ACCEPTED -> self-test: 99/100 passed; red: sabotage İ4 S2: AC-3 only from a work with a newer open revision W2-R1 -> not counted (W2-
+[acceptance_record] guard removed: coverage: the record allows ACCEPTED -> self-test: 99/100 passed; red: sabotage İ4 S2: AC-3 only from a work with a record that does not allow ACCEPTED (conditio
+[acceptance_record] guard removed: coverage: a record without module_pack is not matched -> self-test: 99/100 passed; red: sabotage İ4 S2: AC-3 only from a work with no module_pack (no implicit match on the same A
+[acceptance_record] guard removed: coverage: only the exact pack version -> self-test: 99/100 passed; red: sabotage İ4 S2: AC-3 only from a work with bound to another version of the same pack (v1/v
+[acceptance_record] guard removed: coverage: an AC id twice in one list does not cover -> self-test: 99/100 passed; red: sabotage İ4 S2: AC-3 only from a work with AC-3 twice in its list -> not counted (kapadığı
+[acceptance_record] guard removed: coverage: only geçti or a reasoned N/A covers -> self-test: 98/100 passed; red: sabotage İ4 S2: AC-3 only from a work with AC-3 'kaldı' -> not counted (kapadığı: yok), ex | sabotage İ4 S2: AC-3 only from a work with AC-3 'denenmedi' -> not counted (kapadığı: yok)
+[acceptance_record] guard removed: coverage: exit 1 when a mandatory AC is open -> self-test: 91/100 passed; red: İ4 S2: AC-3 not covered -> exit 1, AC-3 named open | sabotage İ4 S2: AC-3 only from a work with no module_pack (no implicit match on the same A | sabotage İ4 S2: AC-3 only from a work with bound to another version of the same pack (v1/v | sabotage İ4 S2: AC-3 only from a work with a record that does not allow ACCEPTED (conditio | sabotage İ4 S2: AC-3 only from a work with a newer open revision W2-R1 -> not counted (W2- | sabotage İ4 S2: AC-3 only from a work with an invalid revision chain -> not counted (zinci | sabotage İ4 S2: AC-3 only from a work with AC-3 'kaldı' -> not counted (kapadığı: yok), ex | sabotage İ4 S2: AC-3 only from a work with AC-3 'denenmedi' -> not counted (kapadığı: yok) | sabotage İ4 S2: AC-3 only from a work with AC-3 twice in its list -> not counted (kapadığı
+
+=== Sabotage — status_report_v2.py's moved revision-chain guards
+[status_report_v2] guard removed: count: ambiguous chain (now in current_revision) -> self-test: 74/75 passed; red: sabotage (1): an ambiguous chain (a revision twice) -> not counted
+[status_report_v2] guard removed: count: chain valid — module, depends_on (now in current_revision) -> self-test: 73/75 passed; red: sabotage (1): the current revision is of another module -> not counted | sabotage (1): the current revision does not name its root in depends_on -> not c
+[status_report_v2] guard removed: count: current revision accepted -> self-test: 73/75 passed; red: sabotage (1): an accepted work with a newer open rework -> not counted, with the | sabotage (1): a newer failed revision over an accepted one -> not counted
+[status_report_v2] guard removed: count: record allows ACCEPTED -> self-test: 74/75 passed; red: count: W9 accepted counts, W10 (conditional record) does not
+[status_report_v2, re-run] guard removed: count: an invalid chain is never counted -> self-test: 72/75 passed; red: sabotage (1): the current revision is of another module -> not counted | sabotage (1): the current revision does not name its root in depends_on -> not c | sabotage (1): an ambiguous chain (a revision twice) -> not counted
+(the first attempt at this guard replaced the row with an incomplete dict and crashed with KeyError — a harness error, not a red; superseded by this run)
+
+=== Sabotage — the four wires of run_module_check removed in turn, real-git end to end
+[module-check wire A: the queue must be valid at the fixed SHA] removed -> expectations failed: 1; red: a queue whose ACCEPTED row's record does not allow it -> 2 (fail closed)
+[module-check wire B: only the module's own rows] removed -> expectations failed: 1; red: another module's record is not considered -> 1
+[module-check wire C: an old-format pack is named and refused] removed -> expectations failed: 1; red: an old-format pack -> 2, named as the old format
+[module-check wire D: the resolved source SHA is named before the queue is read] removed -> expectations failed: 1; red: a non-strict queue -> 2, and the resolved source SHA is still named
+
+=== The drift test: the standard's example block, as at HEAD (before the edit) — red
+FAIL İ4 S2: the standard's own example pack, its Acceptance Criteria block as written, reads AC-1 mandatory and AC-2 optional
+
+=== Real-git end to end on the pinned code (driver e2e_mc.py.txt, sha256 afd2ecbf…), incl. the backward compatibility of check
+base cb92cbea4 · packs v0 5e70b0c26 v1 c9a26e2fe v2 bd0bc37be · lists 5e9d14ac7
+## 1 W1 (AC-1, N/A AC-2) and W2 (AC-3) bound to v1; --pack v1 — exit 0
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@ce82002dfa1d417929b499ee09d84ea838d55b24 · kapadığı: AC-1, AC-2
+   İŞ W2 → W2: sayıldı · docs/records/audits/2026-10/mc-e2e/w2.md@ce82002dfa1d417929b499ee09d84ea838d55b24 · kapadığı: AC-3
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@ce82002dfa1d417929b499ee09d84ea838d55b24
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@ce82002dfa1d417929b499ee09d84ea838d55b24
+   AC-3 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w2.md@ce82002dfa1d417929b499ee09d84ea838d55b24
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: seçilen paket sürümünün 3 zorunlu AC'si kapalı — yalnız AC kapsamı; Module Done değildir (SOP §29.2'nin diğer koşulları denetlenmez)
+   PASS expected: every mandatory AC covered -> 0, not Module Done
+## 2 the same queue; --pack v2 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayılmadı — başka paket sürümüne bağlı (execution/domains/commercial-suite/module-packs/MOD-0151-ac-e2e.md@c9a26e2fe9837530cf9aa6652c54d590769de710) — seçilen sürümün ölçütü kapanmaz
+   İŞ W2 → W2: sayılmadı — başka paket sürümüne bağlı (execution/domains/commercial-suite/module-packs/MOD-0151-ac-e2e.md@c9a26e2fe9837530cf9aa6652c54d590769de710) — seçilen sürümün ölçütü kapanmaz
+   AC-1 (zorunlu): AÇIK
+   AC-2 (zorunlu): AÇIK
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 3/3 açık; bu Module Done değildir
+   PASS expected: records bound to v1 do not cover v2 (same AC ids, another meaning) -> 1
+## 3 --pack v0 (draft) — exit 2
+   sonuç: ölçülemez — paket: künyede tek status approved ya da ready-for-dev olmalı (bulunan: ['draft'])
+   PASS expected: a draft pack version -> 2
+## 4 --pack the real MOD-0151 pack (no AC ids) — exit 2
+   sonuç: ölçülemez — paket: tek '## Acceptance Criteria' bölümü olmalı (0 başlık)
+   PASS expected: an old pack (numbered heading, no AC ids) -> 2 (not measurable)
+## 4b --pack an old-format pack (exact heading, no AC ids) — exit 2
+   sonuç: ölçülemez — pakette AC kimliği yok (eski biçim) — AC kapsamı mekanik olarak ölçülemez
+   PASS expected: an old-format pack -> 2, named as the old format
+## 5 --pack with a short SHA — exit 2
+   sonuç: ölçülemez — paket execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit> biçiminde verilir
+   PASS expected: a short pack SHA -> 2
+## 6 a non-strict queue (sce-mvp6) — exit 2
+   sonuç: ölçülemez — 'sce-mvp6' katı (strict=yes) kuyruk değil — yeni kip yalnız katı kuyruklar için
+   PASS expected: a non-strict queue -> 2, and the resolved source SHA is still named
+## 6b an unknown --ref — exit 2
+   sonuç: ölçülemez — ref 'refs/heads/does-not-exist' bu depoda yok
+   PASS expected: an unresolved ref -> 2, and no source SHA is claimed
+## 7 W2 bound to v2; --pack v1 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@4b11ed962ea754abf61d59590d8cc6258f897215 · kapadığı: AC-1, AC-2
+   İŞ W2 → W2: sayılmadı — başka paket sürümüne bağlı (execution/domains/commercial-suite/module-packs/MOD-0151-ac-e2e.md@bd0bc37be8e68873bcb3b83a06bd935f0b58cbe3) — seçilen sürümün ölçütü kapanmaz
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@4b11ed962ea754abf61d59590d8cc6258f897215
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@4b11ed962ea754abf61d59590d8cc6258f897215
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: AC-3 from a record bound to another version -> open, 1
+## 8 W2 without module_pack; --pack v1 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@2c42682c0c857d6211afbb81020e67c29262accc · kapadığı: AC-1, AC-2
+   İŞ W2 → W2: sayılmadı — künyede module_pack yok — aynı AC kimliğiyle örtük eşleştirme yapılmaz
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@2c42682c0c857d6211afbb81020e67c29262accc
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@2c42682c0c857d6211afbb81020e67c29262accc
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: a record without module_pack is never matched implicitly -> 1
+## 9 W2-R1 READY over the accepted W2 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@3c9f17b3079030150da49d9c4fb47ca2501f4b33 · kapadığı: AC-1, AC-2
+   İŞ W2 → W2-R1: sayılmadı — yürürlükteki revizyon W2-R1 READY
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@3c9f17b3079030150da49d9c4fb47ca2501f4b33
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@3c9f17b3079030150da49d9c4fb47ca2501f4b33
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: a newer open revision: the older acceptance does not count -> 1
+## 10 W3 VERIFIED with a conditional record covering AC-3 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@bddcab32058832452fd03b661158ec1d6d63a340 · kapadığı: AC-1, AC-2
+   İŞ W3 → W3: sayılmadı — yürürlükteki revizyon W3 VERIFIED
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@bddcab32058832452fd03b661158ec1d6d63a340
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@bddcab32058832452fd03b661158ec1d6d63a340
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: a conditional record (row not ACCEPTED) does not cover -> 1
+## 11 AC-3 only from MOD-0150's record bound to the MOD-0151 pack — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@aa9b479e9c615f266c03fe51ad24c776ada73243 · kapadığı: AC-1, AC-2
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@aa9b479e9c615f266c03fe51ad24c776ada73243
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@aa9b479e9c615f266c03fe51ad24c776ada73243
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: another module's record is not considered -> 1
+## 12 --module MOD-0150 with the MOD-0151 pack — exit 2
+   sonuç: ölçülemez — paket: künyede tek id 'MOD-0150' olmalı (bulunan: ['MOD-0151'])
+   PASS expected: the pack's id is not the module -> 2
+## 13 W3 ACCEPTED with a conditional record (the queue itself is invalid) — exit 2
+   sonuç: ölçülemez — kuyruk 2bbdf4e13ed5'de geçersiz — kuyruk doğrulaması: 1 hata — ilk: satır 3 W3: kabul kaydı docs/records/audits/2026-10/mc-e2e/w3.md@0f662947c18d9c109a1: sonuç: geçerli kayıt, ACCEP
+   PASS expected: a queue whose ACCEPTED row's record does not allow it -> 2 (fail closed)
+## 14 backward compatibility: check, old and new, records without module_pack
+   W1 accepted: old exit 0 · new exit 0 · output identical True
+   W3 conditional: old exit 1 · new exit 1 · output identical True
+   W4 rejected: old exit 1 · new exit 1 · output identical True
+   W6 old (superseded): old exit 1 · new exit 1 · output identical True
+   W6 new (head): old exit 0 · new exit 0 · output identical True
+   W1 for the wrong module: old exit 1 · new exit 1 · output identical True
+   PASS expected: check: old and new give the same exit and output on 6 records without module_pack
+   PASS expected: and the expected meaning: accepted 0; conditional, rejected, superseded, wrong module not 0
+
+=== The 163 module packs at 96b500788, read by parse_pack (measured; nothing changed)
+source 96b500788 · module packs (README excluded): 163 · measurable by parse_pack: 0
+   134  paket: tek '## Acceptance Criteria' bölümü olmalı
+    25  old format (no AC identity)
+     4  paket: künye '---' ile başlamıyor
+no pack file was changed
+
+=== Architecture suite (one run)
+Command (under the shared test lock ct-heavy.py): DOTNET_CLI_UI_LANGUAGE=en dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj --logger "trx;LogFileName=<raw>"
+Code: HEAD 96b500788 + the İ4 S2 files; the pinned files (Context) and the tracked diff were unchanged after the run.
+dotnet: Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 8 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Raw TRX sha256 (kept outside the repository): 8fd15f1237e4e2e818afd357d26745e6701cb47569038861035287c324d82ae0
+run.sanitized.trx sha256: 618da72139939e54be795903d50cdfebb9efd0d3d8089c1097463758dfda4f03
+Sanitiser sha256 b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72 (step 1): R1 306 · R2 145 · R3 1 · R4 1; left: home 0 · user 0 · unsanitised computerName 0 · full host name 0
+Raw against sanitised: 138 results; test names, outcomes and failure messages identical; the sanitised copy parses as XML.
+known_failures.py check <raw> --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+known_failures.py check run.sanitized.trx --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+Failure fingerprints identical to the 6188349c8 run (7 of 7).

@@ -1,0 +1,552 @@
+=== Context
+HEAD=7597f364c9496364dec0a6a291cbeebf248e8dd4 + uncommitted CT-OPS-04 files (pinned: pin-before.txt)
+Pinned before the architecture run (sha256  path):
+fd9f28b80d1d3780563f21106a506d67e5362a14bb47f3bfe77c9d4e0d3bae0b  scripts/status_report_v2.py
+f330b32854b5eb6b95ada2818260d5483c46bbdb6953c7ca423914db1fe7e52b  scripts/status_report.py
+9517b4968547e081636d1382e3aabd090689bd798f7cdf27fc385515855b4993  scripts/ct_queue.py
+91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341  .antigravity/scripts/verify_module_id.py
+7f2be3a6b9921d4bf021827184ca19e1bf646288c7ef2dda6e5fb743daba63e5  execution/delivery/effort-ledger-template.md
+735005bb9a4d92752bc554d3d2b58389c4c30c6c517c6556b7a5f964f5608a87  .antigravity/rules/status-reporting-and-evidence.md
+4b35dd282e0f5ec5931061f95f93b61e9001e922ca558b84a399f0b017c151b4  docs/guides/operations/control-tower-operating-card.md
+e01f48ff75297ba6df7277a987fe9ff9340aeeae7a0ccb4c2f21ba0f160a87d0  docs/records/decisions/2026-10/ct-ops-04-reporting-joint-decision-01.md
+Diff of the tracked files against HEAD (7597f364c), sha256: 09c49d42ee007a76cd7821d55606e77727dd8407d7fa2723143829524b6aa449
+After the run (sha256  path):
+fd9f28b80d1d3780563f21106a506d67e5362a14bb47f3bfe77c9d4e0d3bae0b  scripts/status_report_v2.py
+f330b32854b5eb6b95ada2818260d5483c46bbdb6953c7ca423914db1fe7e52b  scripts/status_report.py
+9517b4968547e081636d1382e3aabd090689bd798f7cdf27fc385515855b4993  scripts/ct_queue.py
+91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341  .antigravity/scripts/verify_module_id.py
+7f2be3a6b9921d4bf021827184ca19e1bf646288c7ef2dda6e5fb743daba63e5  execution/delivery/effort-ledger-template.md
+735005bb9a4d92752bc554d3d2b58389c4c30c6c517c6556b7a5f964f5608a87  .antigravity/rules/status-reporting-and-evidence.md
+4b35dd282e0f5ec5931061f95f93b61e9001e922ca558b84a399f0b017c151b4  docs/guides/operations/control-tower-operating-card.md
+e01f48ff75297ba6df7277a987fe9ff9340aeeae7a0ccb4c2f21ba0f160a87d0  docs/records/decisions/2026-10/ct-ops-04-reporting-joint-decision-01.md
+
+=== status_report.py --self-test (final; the new mode)
+PASS ledger: a well-formed ledger parses
+PASS sabotage: ledger with NaN -> refused
+PASS sabotage: ledger with Infinity -> refused
+PASS sabotage: ledger with an exponent -> refused
+PASS sabotage: ledger with a negative number -> refused
+PASS sabotage: ledger with an overflowing number -> refused
+PASS sabotage: ledger with a repeated work id -> refused
+PASS sabotage: ledger with a repeated field -> refused
+PASS sabotage: ledger with weights that do not sum to 1 -> refused
+PASS sabotage: ledger with a repeated weight -> refused
+PASS sabotage: ledger with no separator line -> refused
+PASS sabotage: ledger with a row outside the table -> refused
+PASS sabotage: ledger with a row hidden before the table header -> refused
+PASS sabotage: ledger with a CR at the end of one table row only -> refused
+PASS sabotage: ledger with no final newline -> refused
+PASS sabotage: ledger with two final newlines -> refused
+PASS sabotage: ledger with weights with a foreign key that still sum to 1 -> refused
+PASS approval: bound to the exact path, version and content -> no problem
+PASS sabotage: a number changed after approval -> the approval does not hold
+PASS sabotage: the weights line changed after approval -> the approval does not hold
+PASS sabotage: approval with draft status -> refused
+PASS sabotage: approval with another ledger path -> refused
+PASS sabotage: approval with another baseline version -> refused
+PASS sabotage: approval with no content hash -> refused
+PASS sabotage: approval with two statuses -> refused
+PASS sabotage: approval with missing -> refused
+PASS sabotage: approval outside docs/records/decisions -> refused
+PASS sabotage (Codex 1): the approval withdrawn (status draft) at the selected commit; the ledger still points at the approved commit -> refused
+PASS sabotage (Codex 1): the approval removed at the selected commit; the ledger still points at the approved commit -> refused
+PASS sabotage (Codex 1): the approval edited after the approval commit, still approved; the ledger still points at the approved commit -> refused
+PASS count: W9 accepted counts, W10 (conditional record) does not
+PASS sabotage (1): an accepted work with a newer open rework -> not counted, with the reason
+PASS (1) the current revision -R1 accepted, linked to the root, same module -> the root counts once
+PASS sabotage (1): the current revision is of another module -> not counted
+PASS sabotage (1): the current revision does not name its root in depends_on -> not counted
+PASS sabotage (1): an ambiguous chain (a revision twice) -> not counted
+PASS sabotage (1): a newer failed revision over an accepted one -> not counted
+PASS percent: backend 8/16 = 50.0, frontend 4/4 = 100.0, test 4/8 = 50.0, overall by the approved weights
+PASS sabotage: a given but invalid baseline is never shown as 'no baseline'
+PASS no baseline -> exactly 'Taban yok — hesaplanamadı' everywhere
+PASS sabotage (3): an invalid queue or acceptance source -> no silent percentage, the reason shown
+PASS a zero denominator -> 'Taban yok — hesaplanamadı' for that discipline
+PASS no approved weights -> overall 'Taban yok — hesaplanamadı', disciplines computed
+PASS sabotage: an ACCEPTED row whose record does not allow it is not listed as done, nor in the REP-001 table
+PASS previous: a report read back is the same data (machine block = visible report)
+PASS sabotage (5): only the hash line is wrong (content consistent) -> refused by the hash gate
+PASS sabotage (5): the visible report changed (hash recomputed or not) -> refused
+PASS sabotage (5): visible text and machine block differ even with a valid hash -> refused
+PASS sabotage (5): a report of another queue -> refused
+PASS control: a forged report of the unchanged data is accepted (the forging itself is correct)
+PASS sabotage (5): an extra key, hash and visible part regenerated -> refused by the schema gate
+PASS sabotage (5): a wrong type (complete as text), hash regenerated -> refused by the schema gate
+PASS sabotage (5): a wrong nested type (source.ancestor), hash regenerated -> refused by the schema gate
+PASS sabotage (5): a row missing its keys, hash regenerated -> refused by the schema gate
+PASS sabotage (5): a percentage that is not a number, hash regenerated -> refused by the schema gate
+PASS sabotage (5): a percentage above 100 / numerator above denominator, hash regenerated -> refused by the schema gate
+PASS sabotage (5): a percentage that does not follow from its numerator and denominator -> refused by the schema gate
+PASS sabotage (5): the source SHA missing, hash regenerated -> refused by the schema gate
+PASS sabotage (5): a short source SHA, hash regenerated -> refused by the schema gate
+PASS sabotage (5): a negative evidence-level count, hash regenerated -> refused by the schema gate
+PASS sabotage (5): an evidence level outside E0–E5, hash regenerated -> refused by the schema gate
+PASS sabotage (5): a repeated JSON key, hash regenerated -> refused
+PASS sabotage (5): the baseline changed -> the percentage difference is not shown as progress
+PASS queue columns: the strict queue template has every column the report reads
+PASS sabotage (Codex 2): a queue without its 'id' column -> named as missing
+PASS sabotage (Codex 2): a queue without its 'state' column -> named as missing
+PASS sabotage (Codex 2): a queue without its 'module' column -> named as missing
+PASS sabotage (Codex 2): a queue without its 'depends_on' column -> named as missing
+PASS sabotage (Codex 2): a queue without its 'record' column -> named as missing
+PASS previous (Codex 3): the observed source fields and the previous link are not business data
+PASS sabotage (Codex 3): a previous report that differs in its numbers -> not the same business data
+PASS sabotage (Codex 3): a previous report that differs in its source SHA -> not the same business data
+PASS sabotage (Codex 3): a previous report that differs in its rows -> not the same business data
+PASS sabotage (Codex 3): a previous report that differs in its completeness -> not the same business data
+PASS the effort ledger template, its placeholders filled, passes the strict ledger reader
+self-test: 75/75 passed
+
+=== ct_queue.py --self-test (final)
+DUR: geçersiz ref '--output=/dev/null'
+PASS CRLF and LF read the same rows
+PASS baseline: 0 HATA, legacy duplicate is only UYARI
+PASS sabotage: deleted row -> veri kaybı HATA
+PASS sabotage: third copy of a legacy duplicate -> HATA
+PASS sabotage: new id twice -> HATA
+PASS sabotage: wrong column count -> HATA
+PASS sabotage: header changed -> HATA
+PASS new row with undefined state and bad date -> UYARI, not HATA
+PASS require: READY 0; DONE, IN-PROGRESS, HELD, DECISION-REQUIRED, undefined, missing, ambiguous 1; REWORK only with --new-version
+PASS guard: unchanged 0, changed 1, says it is not a lock
+PASS collision: same id, different content on two refs -> ÇAKIŞMA; identical rows -> none
+PASS collision: a ref adds an id the base now holds differently -> ÇAKIŞMA
+PASS summary: undefined states are unverified, never closed; module derived; no percentages
+PASS read-only: no write call in this script; a planted write is caught; git fetch is refused
+PASS sabotage: bad registry/vocabulary values -> problems
+PASS sabotage: the other row of a repeated id deleted -> require DUR for that id
+PASS sabotage: DONE reopened in place as READY -> HATA and require DUR
+PASS sabotage: an unverified state turned READY in place -> HATA
+PASS HELD -> READY with the same trigger -> UYARI, not HATA
+PASS sabotage: id with a trailing space -> HATA
+PASS sabotage: state 'READY ' with a trailing space -> not dispatchable
+PASS sabotage: a blank line -> structural error
+PASS sabotage: a ref starting with '-' is refused before git runs
+PASS merge check: rows lost against another version are reported
+PASS strict queue: an undefined state is an error on any row
+PASS tolerant queue: the same undefined state is only a warning
+PASS in force: a valid single row for the same task source -> kayıtlı
+PASS sabotage: header and id only -> kayıt geçersiz, not kayıtlı
+PASS sabotage: the queue registered twice -> kayıt geçersiz
+PASS sabotage: a required field empty -> kayıt geçersiz
+PASS sabotage: an invalid strict value -> kayıt geçersiz
+PASS sabotage: the same id pointing at another task source -> farklı görev kaynağı
+PASS no registry file / not registered are told apart
+PASS sop7: terminal states are the states without an outgoing transition
+PASS module: MOD-0288-FU01 and ortak: with a MOD list or a scope record are accepted
+PASS sabotage: bare 'ortak', an invented FU, a deprecated alias and a free-text value -> refused
+PASS sabotage: Blueprint unreadable -> module existence not proved (fail-closed)
+PASS sabotage: module registry unreadable -> module existence not proved (fail-closed)
+PASS sabotage: ACCEPTED in one version, READY in the next -> terminal exit
+PASS a version whose row lost its state column is bridged: ACCEPTED, short row, READY -> terminal exit
+PASS READY then VERIFIED then ACCEPTED -> no error (skipped steps are not inferred)
+PASS sabotage: a version without a state column -> history not checkable, reported
+PASS a -R1 row naming its original in depends_on -> accepted
+PASS sabotage: -R1 without its original, or without depends_on -> refused
+PASS sabotage: -R3 without a reassessment record -> refused (SOP §28.2)
+PASS -R3 naming an existing decision record -> accepted; a path escaping docs/records/decisions/ -> refused
+PASS CT-OPS-03: an ACCEPTED row whose acceptance record does not allow ACCEPTED -> HATA on that row
+PASS Y3 + CT-OPS-03: a -R3 READY row with its reassessment in reassessment_record -> no error
+PASS Y3 + CT-OPS-03: a -R3 ACCEPTED row (acceptance in record, reassessment in its own column) -> no error
+PASS sabotage (Y3): a -R3 ACCEPTED row without a reassessment decision -> refused (SOP §28.2)
+PASS sabotage (Y3): a reassessment record that is not an approved / decided decision -> refused (SOP §28.2)
+PASS fixed source: a -R3 decision that exists only in the fixed commit, approved -> no error
+PASS sabotage (fixed source): approved in the working tree but a draft in the fixed commit -> refused (SOP §28.2)
+PASS sabotage (fixed source): the decision missing in the fixed commit (present in the working tree) -> refused
+PASS known_modules_from: active from registry, Blueprint and packs; deprecated apart; path check passed in
+PASS sabotage: known_modules_from without a readable Blueprint or registry -> fail-closed flags
+PASS CT-OPS-03: a strict profile without the acceptance check -> ACCEPTED not silently accepted
+PASS CT-OPS-03: the real checker refuses an ACCEPTED row without a path@commit record
+PASS sabotage: a strict queue without a module column -> refused
+PASS sabotage: strict queue, transition table missing -> ProfileError, not a silent skip
+PASS sabotage: strict queue, no transition rows for its vocabulary -> ProfileError
+PASS sabotage: strict queue, a transition to a state outside the vocabulary -> ProfileError
+PASS a tolerant queue needs no profile; a strict one checked without a profile -> error, not silence
+PASS decision: strict queue, clean rows and history -> DAĞITILABİLİR, exit 0
+PASS sabotage (decision): strict queue, a history version without a state column -> require DUR, exit 1
+PASS sabotage (decision): strict queue without a module column -> require DUR, exit 1
+PASS decision: tolerant queue, the same id-less history error -> unchanged, DAĞITILABİLİR (SCE behaviour)
+PASS decision: a profile error or a structural error -> DUR, exit 1, nothing else checked
+PASS registry: a vocabulary without rows in the states file -> problem
+self-test: 69/69 passed
+
+=== ct_queue.py validate
+UYARI sce-mvp6 eski kimlik tekrarı (tabanda vardı, korunur): 62 kimlik — Q116×2, Q121×2, Q121c×2, Q127×2, Q129×2, Q130×2, Q131×3, Q131a×2, Q136×2, Q138×3, Q141×3, Q142×2, Q143×2, Q144×2, Q145×2, Q146×2, Q147×2, Q15×2, Q150×2, Q152×2, Q154×2, Q157×2, Q158×4, Q159×4, Q160×4, Q161×2, Q162×2, Q163×2, Q164×3, Q165×2, Q166×2, Q167×2, Q168×2, Q170×2, Q171×2, Q172×2, Q173×2, Q174×2, Q175×2, Q176×2, Q177×2, Q179×2, Q180×2, Q183×2, Q184×2, Q185×3, Q187×2, Q188×2, Q189×2, Q19×3, Q190×2, Q191×2, Q198×2, Q21×2, Q262×2, Q265×2, Q64f×2, Q65b×3, Q84b×4, Q88b×4, Q88c×2, Q99×2
+OK sce-mvp6 (çalışma ağacı): 0 hata, 1 uyarı; taban 6b8a62d5a
+
+=== acceptance_record.py --self-test (unchanged)
+self-test: 54/54 passed
+
+=== prompt_gate.py --self-test (unchanged)
+self-test: 71/71 passed
+
+=== Tests first — the first self-test against stubs — red
+FAIL ledger: a well-formed ledger parses
+FAIL sabotage: ledger with NaN -> refused
+FAIL sabotage: ledger with Infinity -> refused
+FAIL sabotage: ledger with an exponent -> refused
+FAIL sabotage: ledger with a negative number -> refused
+FAIL sabotage: ledger with an overflowing number -> refused
+FAIL sabotage: ledger with a repeated work id -> refused
+FAIL sabotage: ledger with a repeated field -> refused
+FAIL sabotage: ledger with weights that do not sum to 1 -> refused
+FAIL sabotage: ledger with a repeated weight -> refused
+FAIL sabotage: ledger with no separator line -> refused
+FAIL sabotage: ledger with a row outside the table -> refused
+FAIL approval: bound to the exact path, version and content -> no problem
+FAIL sabotage: a number changed after approval -> the approval does not hold
+FAIL sabotage: the weights line changed after approval -> the approval does not hold
+FAIL sabotage: approval with draft status -> refused
+FAIL sabotage: approval with another ledger path -> refused
+FAIL sabotage: approval with another baseline version -> refused
+FAIL sabotage: approval with no content hash -> refused
+FAIL sabotage: approval with two statuses -> refused
+FAIL sabotage: approval with missing -> refused
+FAIL sabotage: approval outside docs/records/decisions -> refused
+FAIL count: W9 accepted counts, W10 (conditional record) does not
+FAIL sabotage (1): an accepted work with a newer open rework -> not counted, with the reason
+FAIL (1) the current revision -R1 accepted, linked to the root, same module -> the root counts once
+FAIL sabotage (1): the current revision is of another module -> not counted
+FAIL sabotage (1): the current revision does not name its root in depends_on -> not counted
+FAIL sabotage (1): an ambiguous chain (a revision twice) -> not counted
+FAIL sabotage (1): a newer failed revision over an accepted one -> not counted
+FAIL percent: backend 8/16 = 50.0, frontend 4/4 = 100.0, test 4/8 = 50.0, overall by the approved weights
+FAIL no baseline -> exactly 'Taban yok — hesaplanamadı' everywhere
+FAIL sabotage (3): an invalid queue or acceptance source -> no silent percentage, the reason shown
+FAIL a zero denominator -> 'Taban yok — hesaplanamadı' for that discipline
+FAIL no approved weights -> overall 'Taban yok — hesaplanamadı', disciplines computed
+FAIL previous: a report read back is the same data (machine block = visible report)
+FAIL sabotage (5): the baseline changed -> the percentage difference is not shown as progress
+self-test: 4/40 passed
+
+=== Closed schema, repeated JSON keys, hash regenerated (Codex) — red
+FAIL approval: bound to the exact path, version and content -> no problem
+FAIL sabotage (5): a wrong type (complete as text), hash regenerated -> refused by the schema gate
+FAIL sabotage (5): a wrong nested type (source.ancestor), hash regenerated -> refused by the schema gate
+FAIL sabotage (5): a row missing its keys, hash regenerated -> refused by the schema gate
+FAIL sabotage (5): a repeated JSON key, hash regenerated -> refused
+self-test: 40/45 passed
+
+=== Closed schema, repeated JSON keys, hash regenerated (Codex) — green
+self-test: 45/45 passed
+
+=== Hidden row before the ledger header; invalid before missing; refused row in done (Codex) — red
+FAIL sabotage: ledger with a row hidden before the table header -> refused
+FAIL sabotage: a given but invalid baseline is never shown as 'no baseline'
+FAIL sabotage: an ACCEPTED row whose record does not allow it is not listed as done, nor in the REP-001 table
+self-test: 45/48 passed
+
+=== Hidden row before the ledger header; invalid before missing; refused row in done (Codex) — green
+self-test: 48/48 passed
+
+=== Value-level schema: percentages, SHAs, level counts (Codex) — red
+FAIL sabotage (5): a percentage that is not a number, hash regenerated -> refused by the schema gate
+FAIL sabotage (5): a percentage above 100 / numerator above denominator, hash regenerated -> refused by the schema gate
+FAIL sabotage (5): a percentage that does not follow from its numerator and denominator -> refused by the schema gate
+FAIL sabotage (5): the source SHA missing, hash regenerated -> refused by the schema gate
+FAIL sabotage (5): a short source SHA, hash regenerated -> refused by the schema gate
+FAIL sabotage (5): a negative evidence-level count, hash regenerated -> refused by the schema gate
+FAIL sabotage (5): an evidence level outside E0–E5, hash regenerated -> refused by the schema gate
+self-test: 48/55 passed
+
+=== Value-level schema: percentages, SHAs, level counts (Codex) — green
+self-test: 55/55 passed
+
+=== Fixed-source reader for -R3 decisions (ct_queue, Codex) — red
+FAIL fixed source: a -R3 decision that exists only in the fixed commit, approved -> no error
+FAIL sabotage (fixed source): approved in the working tree but a draft in the fixed commit -> refused (SOP §28.2)
+FAIL sabotage (fixed source): the decision missing in the fixed commit (present in the working tree) -> refused
+self-test: 66/69 passed
+
+=== Fixed-source reader for -R3 decisions (ct_queue, Codex) — green
+self-test: 69/69 passed
+
+=== Three real-git findings: approval at the selected SHA, required columns, previous rebuilt from its source (Codex) — red
+FAIL sabotage (Codex 1): the approval withdrawn (status draft) at the selected commit; the ledger still points at the approved commit -> refused
+FAIL sabotage (Codex 1): the approval removed at the selected commit; the ledger still points at the approved commit -> refused
+FAIL sabotage (Codex 1): the approval edited after the approval commit, still approved; the ledger still points at the approved commit -> refused
+FAIL queue columns: the strict queue template has every column the report reads
+FAIL sabotage (Codex 2): a queue without its 'id' column -> named as missing
+FAIL sabotage (Codex 2): a queue without its 'state' column -> named as missing
+FAIL sabotage (Codex 2): a queue without its 'module' column -> named as missing
+FAIL sabotage (Codex 2): a queue without its 'depends_on' column -> named as missing
+FAIL sabotage (Codex 2): a queue without its 'record' column -> named as missing
+FAIL previous (Codex 3): the observed source fields and the previous link are not business data
+FAIL sabotage (Codex 3): a previous report that differs in its numbers -> not the same business data
+FAIL sabotage (Codex 3): a previous report that differs in its source SHA -> not the same business data
+FAIL sabotage (Codex 3): a previous report that differs in its rows -> not the same business data
+FAIL sabotage (Codex 3): a previous report that differs in its completeness -> not the same business data
+self-test: 61/75 passed
+
+=== Three real-git findings: approval at the selected SHA, required columns, previous rebuilt from its source (Codex) — green
+self-test: 75/75 passed
+
+=== The three findings reproduced first in the real-git end to end — red
+## 8 previous report with forged numbers, same source SHA and baseline blob — exit 0
+   FAIL expected: forged previous numbers refused (re-derived from the previous source SHA)
+## 9 approval withdrawn at the selected SHA; the ledger still points at the old approval commit — exit 0
+   FAIL expected: a withdrawn approval suppresses the percentages
+## 10 queue without its state column — exit 1
+   FAIL expected: a queue without a required column -> exit 2 with the reason, no crash
+expectations failed: 3
+
+=== Sabotage — each guard removed in a scratch copy of the final script, the self-test re-run; the three build() wirings removed in the real-git end to end
+[status_report_v2] guard removed: ledger: LF only -> self-test: 74/75 passed; red: sabotage: ledger with a CR at the end of one table row only -> refused
+[status_report_v2] guard removed: ledger: unknown or repeated field -> self-test: 74/75 passed; red: sabotage: ledger with a repeated field -> refused
+[status_report_v2] guard removed: ledger: weights keys and range -> self-test: 74/75 passed; red: sabotage: ledger with weights with a foreign key that still sum to 1 -> refused
+[status_report_v2] guard removed: ledger: weights sum to 1 -> self-test: 74/75 passed; red: sabotage: ledger with weights that do not sum to 1 -> refused
+[status_report_v2] guard removed: ledger: separator line -> self-test: 74/75 passed; red: sabotage: ledger with no separator line -> refused
+[status_report_v2] guard removed: ledger: rows outside the table -> self-test: 73/75 passed; red: sabotage: ledger with a row outside the table -> refused | sabotage: ledger with a row hidden before the table header -> refused
+[status_report_v2] guard removed: ledger: repeated work id -> self-test: 74/75 passed; red: sabotage: ledger with a repeated work id -> refused
+[status_report_v2] guard removed: ledger: number format -> self-test: 70/75 passed; red: sabotage: ledger with NaN -> refused | sabotage: ledger with Infinity -> refused | sabotage: ledger with an exponent -> refused | sabotage: ledger with a negative number -> refused | sabotage: ledger with an overflowing number -> refused
+[status_report_v2] guard removed: approval: under docs/records/decisions -> self-test: 74/75 passed; red: sabotage: approval outside docs/records/decisions -> refused
+[status_report_v2] guard removed: approval: approved status -> self-test: 74/75 passed; red: sabotage: approval with draft status -> refused
+[status_report_v2] guard removed: approval: the same ledger path -> self-test: 74/75 passed; red: sabotage: approval with another ledger path -> refused
+[status_report_v2] guard removed: approval: the same baseline version -> self-test: 74/75 passed; red: sabotage: approval with another baseline version -> refused
+[status_report_v2] guard removed: approval: content hash -> self-test: 72/75 passed; red: sabotage: a number changed after approval -> the approval does not hold | sabotage: the weights line changed after approval -> the approval does not hold | sabotage: approval with no content hash -> refused
+[status_report_v2] guard removed: approval: repeated field -> self-test: 74/75 passed; red: sabotage: approval with two statuses -> refused
+[status_report_v2] guard removed: count: ambiguous chain -> self-test: 74/75 passed; red: sabotage (1): an ambiguous chain (a revision twice) -> not counted
+[status_report_v2] guard removed: count: chain valid (module, depends_on) -> self-test: 73/75 passed; red: sabotage (1): the current revision is of another module -> not counted | sabotage (1): the current revision does not name its root in depends_on -> not counted
+[status_report_v2] guard removed: count: current revision accepted -> self-test: 73/75 passed; red: sabotage (1): an accepted work with a newer open rework -> not counted, with the reason | sabotage (1): a newer failed revision over an accepted one -> not counted
+[status_report_v2] guard removed: count: record allows ACCEPTED -> self-test: 74/75 passed; red: count: W9 accepted counts, W10 (conditional record) does not
+[status_report_v2] guard removed: percent: invalid before missing -> self-test: 73/75 passed; red: sabotage: a given but invalid baseline is never shown as 'no baseline' | sabotage (3): an invalid queue or acceptance source -> no silent percentage, the reason shown
+[status_report_v2] guard removed: percent: zero denominator -> self-test: 74/75 passed; red: a zero denominator -> 'Taban yok — hesaplanamadı' for that discipline
+[status_report_v2] guard removed: percent: overall only with weights -> self-test: 74/75 passed; red: no approved weights -> overall 'Taban yok — hesaplanamadı', disciplines computed
+[status_report_v2] guard removed: previous: hash -> self-test: 74/75 passed; red: sabotage (5): only the hash line is wrong (content consistent) -> refused by the hash gate
+[status_report_v2] guard removed: previous: repeated JSON key -> self-test: 74/75 passed; red: sabotage (5): a repeated JSON key, hash regenerated -> refused
+[status_report_v2] guard removed: previous: closed schema -> self-test: 64/75 passed; red: sabotage (5): an extra key, hash and visible part regenerated -> refused by the schema gate | sabotage (5): a wrong type (complete as text), hash regenerated -> refused by the schema gate | sabotage (5): a wrong nested type (source.ancestor), hash regenerated -> refused by the schema gate | sabotage (5): a row missing its keys, hash regenerated -> refused by the schema gate | sabotage (5): a percentage that is not a number, hash regenerated -> refused by the schema gate | sabotage (5): a percentage above 100 / numerator above denominator, hash regenerated -> refused by the schema gate | sabotage (5): a percentage that does not follow from its numerator and denominator -> refused by the schema gate | sabotage (5): the source SHA missing, hash regenerated -> refused by the schema gate | sabotage (5): a short source SHA, hash regenerated -> refused by the schema gate | sabotage (5): a negative evidence-level count, hash regenerated -> refused by the schema gate | sabotage (5): an evidence level outside E0–E5, hash regenerated -> refused by the schema gate
+[status_report_v2] guard removed: previous: same queue -> self-test: 74/75 passed; red: sabotage (5): a report of another queue -> refused
+[status_report_v2] guard removed: previous: visible = rendered machine data -> self-test: 74/75 passed; red: sabotage (5): visible text and machine block differ even with a valid hash -> refused
+[status_report_v2] guard removed: schema: percentages follow from num/den -> self-test: 72/75 passed; red: sabotage (5): a percentage that is not a number, hash regenerated -> refused by the schema gate | sabotage (5): a percentage above 100 / numerator above denominator, hash regenerated -> refused by the schema gate | sabotage (5): a percentage that does not follow from its numerator and denominator -> refused by the schema gate
+[status_report_v2] guard removed: schema: 40-hex source SHA -> self-test: 74/75 passed; red: sabotage (5): a short source SHA, hash regenerated -> refused by the schema gate
+[status_report_v2] guard removed: schema: evidence levels E0–E5, non-negative -> self-test: 73/75 passed; red: sabotage (5): a negative evidence-level count, hash regenerated -> refused by the schema gate | sabotage (5): an evidence level outside E0–E5, hash regenerated -> refused by the schema gate
+[status_report_v2] guard removed: diff: a changed baseline is not compared -> self-test: 74/75 passed; red: sabotage (5): the baseline changed -> the percentage difference is not shown as progress
+[status_report_v2] guard removed: ledger: single final newline -> self-test: 73/75 passed; red: sabotage: ledger with no final newline -> refused | sabotage: ledger with two final newlines -> refused
+[status_report_v2] guard removed: approval (Codex 1): the record at the selected commit is the approved record -> self-test: 72/75 passed; red: sabotage (Codex 1): the approval withdrawn (status draft) at the selected commit; the ledger still points at the approved commit -> refused | sabotage (Codex 1): the approval removed at the selected commit; the ledger still points at the approved commit -> refused | sabotage (Codex 1): the approval edited after the approval commit, still approved; the ledger still points at the approved commit -> refused
+[status_report_v2] guard removed: queue (Codex 2): required columns named -> self-test: 70/75 passed; red: sabotage (Codex 2): a queue without its 'id' column -> named as missing | sabotage (Codex 2): a queue without its 'state' column -> named as missing | sabotage (Codex 2): a queue without its 'module' column -> named as missing | sabotage (Codex 2): a queue without its 'depends_on' column -> named as missing | sabotage (Codex 2): a queue without its 'record' column -> named as missing
+[status_report_v2] guard removed: previous (Codex 3): the previous link is not business data -> self-test: 74/75 passed; red: previous (Codex 3): the observed source fields and the previous link are not business data
+[status_report_v2] guard removed: previous (Codex 3): observed source fields are not business data -> self-test: 74/75 passed; red: previous (Codex 3): the observed source fields and the previous link are not business data
+[status_report_v2] guard removed: render: done only when the record allows ACCEPTED -> self-test: 74/75 passed; red: sabotage: an ACCEPTED row whose record does not allow it is not listed as done, nor in the REP-001 table
+[status_report_v2, build wire A, real git e2e] ## 9 approval withdrawn at the selected SHA; the ledger still points at the old approval commit — exit 0    FAIL expected: a withdrawn approval suppresses the percentages 
+[status_report_v2, build wire C, real git e2e] ## 10 queue without its state column — exit 1    FAIL expected: a queue without a required column -> exit 2 with the reason, no crash 
+[status_report_v2, build wire F, real git e2e] ## 8 previous report with forged numbers, same source SHA and baseline blob — exit 0    FAIL expected: forged previous numbers refused (re-derived from the previous source SHA)
+
+=== End to end — scratch clone, real git, fresh branch, strict sop7 queue ops3-ct
+branch ops04-e2e-4 from 3f97f9bcb
+## 1 no effort baseline (HEAD = S1) — exit 0
+   complete=True [] · percentages_valid=False taban yok
+   backend: Taban yok — hesaplanamadı
+   frontend: Taban yok — hesaplanamadı
+   test: Taban yok — hesaplanamadı
+   overall: Taban yok — hesaplanamadı
+   row W9 ACCEPTED accepted=True counted=False 
+   row W10 VERIFIED accepted=False counted=False 
+   PASS expected: report produced, complete, percentages not valid
+   PASS expected: exactly 'Taban yok — hesaplanamadı' in all four
+   PASS expected: W9 accepted, W10 (conditional record) not
+## 2 approved baseline (HEAD = S3), previous = report 1 (no baseline then) — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %50.0 (8/16 saat)
+   frontend: %100.0 (4/4 saat)
+   test: %50.0 (4/8 saat)
+   overall: %65.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=True sayıldı: W9
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+   previous: doğrulandı
+     taban değişti (sürüm yok → 1) — yüzde farkı karşılaştırılabilir değil; değerler ayrı:
+     backend: önceki Taban yok — hesaplanamadı · şimdiki %50.0 (8/16 saat)
+     frontend: önceki Taban yok — hesaplanamadı · şimdiki %100.0 (4/4 saat)
+     test: önceki Taban yok — hesaplanamadı · şimdiki %50.0 (4/8 saat)
+     overall: önceki Taban yok — hesaplanamadı · şimdiki %65.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   PASS expected: backend 8/16 50.0, frontend 4/4 100.0, test 4/8 50.0, overall 65.0
+   PASS expected: previous verified; baseline changed, not compared
+## 3 same baseline, previous = report 2 (comparable) — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %50.0 (8/16 saat)
+   frontend: %100.0 (4/4 saat)
+   test: %50.0 (4/8 saat)
+   overall: %65.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=True sayıldı: W9
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+   previous: doğrulandı
+     backend: %50.0 → %50.0 (+0.0)
+     frontend: %100.0 → %100.0 (+0.0)
+     test: %50.0 → %50.0 (+0.0)
+     overall: %65.0 → %65.0 (+0.0)
+   PASS expected: previous verified; same baseline, deltas shown
+## 4 baseline number changed after approval — exit 0
+   complete=True [] · percentages_valid=False taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+   backend: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+   frontend: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+   test: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+   overall: hesaplanamadı — taban geçersiz — taban onaydan sonra değişmiş — ledger_content_sha256 tutmuyor
+   row W9 ACCEPTED accepted=True counted=False 
+   row W10 VERIFIED accepted=False counted=False 
+   PASS expected: percentages suppressed with the reason; never 'no baseline'
+## 5 W9-R1 open over the accepted W9 (HEAD = S5) — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %0.0 (0/16 saat)
+   frontend: %0.0 (0/4 saat)
+   test: %0.0 (0/8 saat)
+   overall: %0.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=False yürürlükteki revizyon W9-R1 READY
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+   row W9-R1 READY accepted=False counted=False 
+   PASS expected: W9 not counted while W9-R1 is open; the reason names W9-R1
+   PASS expected: rework cause read from the 'neden:' prefix
+## 6a historical report --ref S3 (HEAD is S5) — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %50.0 (8/16 saat)
+   frontend: %100.0 (4/4 saat)
+   test: %50.0 (4/8 saat)
+   overall: %65.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=True sayıldı: W9
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+## 6b the same --ref S3 with a dirty working copy (registry, approval record, an untracked pack) — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %50.0 (8/16 saat)
+   frontend: %100.0 (4/4 saat)
+   test: %50.0 (4/8 saat)
+   overall: %65.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=True sayıldı: W9
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+   PASS expected: historical report: business data and percentages identical with a dirty working copy
+   PASS expected: historical report: source identical but the dirty note; S3's percentages
+## 6c HEAD (S5) with the same dirty working copy — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %0.0 (0/16 saat)
+   frontend: %0.0 (0/4 saat)
+   test: %0.0 (0/8 saat)
+   overall: %0.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=False yürürlükteki revizyon W9-R1 READY
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+   row W9-R1 READY accepted=False counted=False 
+   PASS expected: HEAD report: identical data, complete, dirty note shown
+## 7 previous report altered after it was written — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %0.0 (0/16 saat)
+   frontend: %0.0 (0/4 saat)
+   test: %0.0 (0/8 saat)
+   overall: %0.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=False yürürlükteki revizyon W9-R1 READY
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+   row W9-R1 READY accepted=False counted=False 
+   previous: hesaplanamadı — rapor-sha256 içerikle uyuşmuyor
+   PASS expected: an altered previous report is refused
+   PASS expected: a report at S1 (before the baseline) is produced
+   PASS expected: a non-strict queue (SCE) -> exit 2
+## 8 previous report with forged numbers, same source SHA and baseline blob — exit 0
+   complete=True [] · percentages_valid=True 
+   backend: %50.0 (8/16 saat)
+   frontend: %100.0 (4/4 saat)
+   test: %50.0 (4/8 saat)
+   overall: %65.0 (onaylı ağırlıklar: backend=0.5 frontend=0.3 test=0.2)
+   row W9 ACCEPTED accepted=True counted=True sayıldı: W9
+   row W10 VERIFIED accepted=False counted=False yürürlükteki revizyon W10 VERIFIED
+   previous: hesaplanamadı — önceki rapor kendi kaynağından (8102243c509b) yeniden üretilemedi — iş verisi ya da 
+   PASS expected: forged previous numbers refused (re-derived from the previous source SHA)
+## 9 approval withdrawn at the selected SHA; the ledger still points at the old approval commit — exit 0
+   complete=True [] · percentages_valid=False taban geçersiz — taban onay kaydı seçilen commit'te onay commit'indekinden farklı — onay g
+   backend: hesaplanamadı — taban geçersiz — taban onay kaydı seçilen commit'te onay commit'indekinden farklı — onay geri çekilmiş ya da değişmiş sayılır
+   frontend: hesaplanamadı — taban geçersiz — taban onay kaydı seçilen commit'te onay commit'indekinden farklı — onay geri çekilmiş ya da değişmiş sayılır
+   test: hesaplanamadı — taban geçersiz — taban onay kaydı seçilen commit'te onay commit'indekinden farklı — onay geri çekilmiş ya da değişmiş sayılır
+   overall: hesaplanamadı — taban geçersiz — taban onay kaydı seçilen commit'te onay commit'indekinden farklı — onay geri çekilmiş ya da değişmiş sayılır
+   row W9 ACCEPTED accepted=True counted=False 
+   row W10 VERIFIED accepted=False counted=False 
+   row W9-R1 READY accepted=False counted=False 
+   PASS expected: a withdrawn approval suppresses the percentages
+## 10 queue without its state column — exit 2
+   STATUS RAPORU v2
+   sonuç: tamamlanamadı — kuyruk execution/delivery/ops3-queue.tsv 138364897aeb'de zorunlu sütun yok: state
+   çıkış: 2
+   PASS expected: a queue without a required column -> exit 2 with the reason, no crash
+S1 d0af22bc5f91b866d674a286ccaa74b6a15f852a · S3 8102243c509ba809450d579102133ba0530afc92 · S5 770afd6326ae9afa9e03699a0ae0b622959fb58b · forged 7fe887111c5a8823b5474893a243088c2bcb1aa0 · withdrawn 0971a548e86b95df7eee9dcf0170bcdfc14e16fc · no-state 138364897aebd0af2c3df407645aade2b89a630d
+expectations failed: 0
+
+=== Old mode — byte-identical to 7597f364c's status_report.py
+same (exit 0,       77 lines): this repository, default arguments
+same (exit 0,       78 lines): this repository, --ref origin/main
+same (exit 0,       20 lines): this repository, SCE packs
+same (exit 0,       78 lines): scratch clone with v2 records, deeper record glob
+
+=== verify_module_id.py — HEAD's version against this one (loaders on real data, every active id, discovery)
+loaders equal on real data — registry: True · blueprint: True · packs: True
+active MOD ids: 172 · check-id comparisons: 344 · check-all + 3 candidates · differences: 0
+old discover exit=3
+new discover exit=3
+discovery: findings, sources, gaps, result and exit identical (only the tool's own sha256 line differs)
+RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı
+check-report exit=0
+
+=== SCE / MVP6 — 7597f364c's ct_queue.py against this one (sha256 9517b4968547e081636d1382e3aabd090689bd798f7cdf27fc385515855b4993)
+56 refs; per ref the queue validated with both versions: differences 0 (table below; Codex's independent comparison: sce-comparison-codex.json)
+ref	ref_sha	queue_blob	old_errors	new_errors	changed_ids
+refs/heads/chore/agents/i1a1-instruction-fixes	7c7b08eecb35	cdbfad0ce397	0	0	-
+refs/heads/chore/agents/i5a-agent-loading-pilot	e66404988c81	cdbfad0ce397	0	0	-
+refs/heads/chore/agents/i5b-agents-md-budget	88205c3d6561	cdbfad0ce397	0	0	-
+refs/heads/chore/ci/service-tests-05	19027236a751	cdbfad0ce397	0	0	-
+refs/heads/chore/ct-round-2	c418ca8b3923	cdbfad0ce397	0	0	-
+refs/heads/chore/ct-round-2-main-sync	ffb4af8a8b9f	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/audit-fixes-01	e07df6bf1a8f	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/ct-ops-01-card-approvals-known-failures	a6082e24815f	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/ct-ops-02-queue-validator	849f9847ad5c	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/decision-records-01	93a6ab85152c	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/pqg-01	7597f364c949	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/pre-merge-fixes-01	0b392cb9e86b	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/r8-registered-task-source-01	e121aef81f96	cdbfad0ce397	0	0	-
+refs/heads/chore/ct/step2-starter-kit-01	2481004b15d2	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/driverjs-vendor	05e4736cc4ad	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/guards-02	62a371b90822	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/help-panel-v2	e806bf9f0469	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/items-help-withdraw	489c4ded84b7	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/main-sync-2	c6de533f97d0	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/main-sync-3	a7a65ed20d03	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/main-sync-4	13fa4e8e9bc7	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/tenant-admin-seed	b649941c0d93	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/ux-guards	077aa914058e	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/ux-guards-fix1	83132f5b3d5f	cdbfad0ce397	0	0	-
+refs/heads/chore/lane/uxh001-help-rule	fc89e85f8f40	cdbfad0ce397	0	0	-
+refs/heads/chore/mdm/s2-lane-merge	5661cb5a3a3f	cdbfad0ce397	0	0	-
+refs/heads/chore/platform/composition-guard-fix1	5bf3ba4bb1e5	cdbfad0ce397	0	0	-
+refs/heads/chore/platform/composition-guard-owned	139c6020312f	cdbfad0ce397	0	0	-
+refs/heads/chore/web/bl-619-remove-old-workcenter	e103706008e5	cdbfad0ce397	0	0	-
+refs/heads/feature/mdm/mod-0290-fu05-brand-global-product-link	fb7bd0f67fd1	cdbfad0ce397	0	0	-
+refs/heads/feature/pss/workflow-templates-01	6d0366beacc3	cdbfad0ce397	0	0	-
+refs/heads/fix/auth/admin-bootstrap-01	8273a46dafac	cdbfad0ce397	0	0	-
+refs/heads/fix/auth/users-roles-small-01	20de583418a5	cdbfad0ce397	0	0	-
+refs/heads/fix/mdm/product-identity-no-eligible-approver	78ec7c7422a8	cdbfad0ce397	0	0	-
+refs/heads/fix/platform/market-reference-tenant-01	56aeaae9ec2c	cdbfad0ce397	0	0	-
+refs/heads/fix/web/role-permission-labels-01	27d42f490861	cdbfad0ce397	0	0	-
+refs/remotes/origin/chore/agents/i1a1-instruction-fixes	7c7b08eecb35	cdbfad0ce397	0	0	-
+refs/remotes/origin/chore/agents/i5a-agent-loading-pilot	e66404988c81	cdbfad0ce397	0	0	-
+refs/remotes/origin/chore/ct-round-2	b7ba78de717d	cdbfad0ce397	0	0	-
+refs/remotes/origin/contracts/shipment-bundle-3.3-demand-history	4b4722eceff5	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/fin/treasury-intake-prep	8d79f7dc09e9	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/mvp3-bom-routings	f0829f37b979	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/mvp3-bom-version-event	624f1037a17e	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/mvp6-logistics	2acce233bc19	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/sce/contract-example-walker	3e86c47600c9	8490c0074157	0	0	-
+refs/remotes/origin/feature/sce/mod-0173-inventory-ledger-valuation	6b03b4874bcc	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/sce/mod-0188-demand-planning	9bd834404de9	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/sce/mod-0188-product-master-uom	9ca337e483e6	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/sce/mod-0189-mrp-replenishment	5aa50cc5d45d	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/sce/mod-0190-0192-bounded-slice	15f9cb9b6c4d	1ef99f7872f7	0	0	-
+refs/remotes/origin/feature/sce/mod-0191-safety-stock-optimization	fc7c4683e04c	cdbfad0ce397	0	0	-
+refs/remotes/origin/feature/sce/mvp6-g5-logistics-golden-flow	16e657977c0f	8490c0074157	0	0	-
+refs/remotes/origin/fix/bl-470-procurement-gateway-port	05380a0fbb17	cdbfad0ce397	0	0	-
+refs/remotes/origin/fix/mvp1-sec-esign1	bc258528fb71	cdbfad0ce397	0	0	-
+refs/remotes/origin/main	3912d568b181	cdbfad0ce397	0	0	-
+refs/remotes/origin/test/crm-content-visit-e2e	08c9ccb06724	cdbfad0ce397	0	0	-
+
+=== Architecture suite (one run)
+Command (under the shared test lock ct-heavy.py): DOTNET_CLI_UI_LANGUAGE=en dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj --logger "trx;LogFileName=<raw>"
+Code: HEAD 7597f364c + the CT-OPS-04 files; the pinned files (Context) and the tracked diff were unchanged after the run.
+dotnet: Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 9 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Raw TRX sha256 (kept outside the repository): 845a5d93fbc12b1507d20ad9d01d3ac6fb4e4917f813278e3b6e9ffc1fb266d2
+run.sanitized.trx sha256: 044b7cc51481c437a9577ec1680539486b85a30a37a65001c1cd6fe1fb1d1d73
+Sanitiser sha256 b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72 (step 1): R1 306 · R2 145 · R3 1 · R4 1; left: home 0 · user 0 · unsanitised computerName 0 · full host name 0
+Raw against sanitised: 138 results; test names, outcomes and failure messages identical; the sanitised copy parses as XML.
+known_failures.py check <raw> --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+known_failures.py check run.sanitized.trx --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+Failure fingerprints identical to CT-OPS-03's run (7 of 7).

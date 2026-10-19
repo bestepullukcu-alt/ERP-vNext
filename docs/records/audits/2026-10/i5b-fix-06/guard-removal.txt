@@ -1,0 +1,20 @@
+İ5B-FIX-06 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+The copy's files are byte for byte the candidate's (candidate 4, 3d4f0f405). The control is
+test_a_dead_link_is_still_a_dead_link.
+Driver: drivers/harness2.py.txt. Each mutation: the file still parses; the named tests fail (a hang
+past 240 s counts as a failure); the control test passes in the same copy (the red is the guard, not a crash).
+
+G-F5a a rule counts off its numbered line
+    file: .antigravity/scripts/sync_adapters.py · tests: test_a_core_rule_off_its_numbered_line_is_lost
+    named: RED — FAILED (failures=4) · control test_a_dead_link_is_still_a_dead_link: OK · parsed: True · proven: True
+G-F5b raw HTML in the core passes
+    file: .antigravity/scripts/sync_adapters.py · tests: test_raw_html_in_the_core_is_refused
+    named: RED — FAILED (failures=5) · control test_a_dead_link_is_still_a_dead_link: OK · parsed: True · proven: True
+G-F5c a code span across lines passes
+    file: .antigravity/scripts/sync_adapters.py · tests: test_a_code_span_across_lines_in_the_core_is_refused
+    named: RED — FAILED (failures=2) · control test_a_dead_link_is_still_a_dead_link: OK · parsed: True · proven: True
+G-EMP the final answer's four parts removed from the rule
+    file: AGENTS.md · tests: test_the_module_request_rule_is_a_required_core_text_once
+    named: RED — FAILED (failures=1) · control test_a_dead_link_is_still_a_dead_link: OK · parsed: True · proven: True
+
+proven: 4 of 4

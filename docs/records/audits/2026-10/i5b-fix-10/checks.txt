@@ -1,0 +1,22 @@
+İ5B-FIX-10 — the final run on the frozen sources; run by the AI session in the İ5B worktree (branch
+chore/agents/i5b-fix-10 on c909fe7a3 with this package's uncommitted changes).
+
+commands (from the worktree root):
+  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget
+  python3 -B .antigravity/scripts/sync_adapters.py --check
+sources (SHA-256):
+  .antigravity/scripts/sync_adapters.py             491fed3e0d93d87acfd20a2d7d11bf493ffac20980acfeded14dbf586e282657
+  scripts/tests/test_sync_adapters_budget.py        338db3eaf48fdc3c724181c01e696315993b1563f03a3175df98a62a6292ed46
+result (from the full log):
+  start 2026-10-18T08:17:12Z
+  Python 3.9.6
+  Ran 38 tests in 0.906s
+  OK
+  ### exit 0
+  OK 9 adapter(s) match their sources
+  ### exit 0
+  end 2026-10-18T08:17:13Z
+before / after (HEAD, branch, status, the two SHA-256): True
+full log SHA-256 5db1543726fa4bbfc5df9ae38a3ed1d1db709a0562e8f6d7c92c36c8350d8562 (kept outside the repository)
+
+These are unit / API checks. The real write / check CLI counter-examples were run by Codex (listed in README).

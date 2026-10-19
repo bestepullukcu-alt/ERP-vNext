@@ -1,0 +1,108 @@
+"""CT-FIX-02 sabotage: undo one fix at a time in a scratch clone (the tools under test copied from CODE), run the named
+self-test, require that the named case FAILs, restore the file to its bytes. Never touches CODE or the real repository.
+Usage: python3 -I -B sabotage_fix02.py <CODE dir> <real repo> <data commit> <new scratch clone dir>"""
+import hashlib
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+CODE, REAL, DATA, FIX = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], Path(sys.argv[4])
+TOOLS = ["scripts/ct_queue.py", "scripts/prompt_gate.py", "scripts/status_report.py", "scripts/status_report_v2.py",
+         "scripts/known_failures.py", "scripts/acceptance_record.py", ".antigravity/scripts/verify_module_id.py"]
+ENV = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_AUTHOR_NAME="fixture", GIT_AUTHOR_EMAIL="fixture@invalid",
+           GIT_COMMITTER_NAME="fixture", GIT_COMMITTER_EMAIL="fixture@invalid",
+           GIT_AUTHOR_DATE="2026-10-17T12:00:00Z", GIT_COMMITTER_DATE="2026-10-17T12:00:00Z")
+git = lambda *a: subprocess.run(["git", "-C", str(FIX), "-c", "commit.gpgsign=false", *a], check=True, capture_output=True, env=ENV)
+subprocess.run(["git", "clone", "-q", "--shared", "--no-checkout", str(REAL), str(FIX)], check=True, env=ENV)
+git("checkout", "-q", "--detach", DATA)
+for rel in TOOLS:
+    shutil.copyfile(CODE / rel, FIX / rel)
+git("add", "--", *TOOLS)
+git("commit", "-q", "--allow-empty", "-m", "fixture: tools under test")
+
+S = [  # (id, file, old, new, self-test file, named case substring)
+    ("B01 K1 GOV_APPROVED loosened back to a prefix match", "scripts/ct_queue.py",
+     'GOV_APPROVED = re.compile(r"^(approved|decided)(?: \\([^()]*\\))?(?: — \\S.*)?$")',
+     'GOV_APPROVED = re.compile(r"^(approved|decided)\\b")', "scripts/ct_queue.py",
+     "CT-FIX-02 K1: -R3 record — approved / decided"),
+    ("B02 K1 decision_resolved_text: the old first-status reader", "scripts/ct_queue.py",
+     '    status, bad = kunye_status(text)\n    return bad is None and GOV_APPROVED.match(status) is not None\n',
+     '    m = re.search(r"(?m)^status\\s*:\\s*(\\S+)", text)\n    return bool(m) and re.match(r"^(approved|decided)\\b", m.group(1)) is not None\n',
+     "scripts/ct_queue.py", "CT-FIX-02 K1: -R3 record — an unclosed künye"),
+    ("B03 K1 kunye_status: quotes stripped again", "scripts/ct_queue.py",
+     '    if value[:1] in ("\\"", "\'") or value[-1:] in ("\\"", "\'"):\n',
+     '    value = value.strip("\\"\'")\n    if value[:1] in ("\\"", "\'") or value[-1:] in ("\\"", "\'"):\n',
+     "scripts/ct_queue.py", "CT-FIX-02 K1: one balanced pair of the same quote"),
+    ("B04 K1 report: the old approval regex", "scripts/status_report_v2.py",
+     '    elif not shared.GOV_APPROVED.match(status):\n',
+     '    elif not re.match(r"^(approved|decided)\\b", status, re.I):\n',
+     "scripts/status_report_v2.py", "CT-FIX-02 K1: the effort approval is read by the prompt gate's reader"),
+    ("B05 K1 prompt gate: a local loose copy instead of the shared reader", "scripts/prompt_gate.py",
+     'GOV_APPROVED, kunye_status = _SHARED.GOV_APPROVED, _SHARED.kunye_status\n',
+     'GOV_APPROVED, kunye_status = re.compile(r"^(approved|decided)\\b"), _SHARED.kunye_status\n',
+     "scripts/prompt_gate.py", "CT-FIX-01 11: governance unknown suffixes"),
+    ("B17 K1 prompt gate: a local reader that strips quotes again", "scripts/prompt_gate.py",
+     'GOV_APPROVED, kunye_status = _SHARED.GOV_APPROVED, _SHARED.kunye_status\n',
+     'GOV_APPROVED, kunye_status = _SHARED.GOV_APPROVED, (lambda t: (lambda s, b: (s.strip("\\"\'") if s else s, b))(*_SHARED.kunye_status(t.replace(\'"\', "").replace("\'", ""))))\n',
+     "scripts/prompt_gate.py", "CT-FIX-02 K1: the gate reads one balanced quote"),
+    ("B06 K3 load_for_dispatch: no main profile check", "scripts/ct_queue.py",
+     '    conflicts = main_profile_problems(queues, main_registry_text())\n', '    conflicts = []\n',
+     "scripts/ct_queue.py", "CT-FIX-02 K3: main() — origin/main registers the queue strict=yes"),
+    ("B07 K3 validate: the conflict not listed", "scripts/ct_queue.py",
+     '        problems += main_profile_problems(queues, main_registry_text())     # CT-FIX-02 (K3): the stop the others make\n', '',
+     "scripts/ct_queue.py", "CT-FIX-02 K3: validate lists the same conflict"),
+    ("B08 K3 'kayıt geçersiz' dropped from PROFILE_CONFLICT", "scripts/ct_queue.py",
+     'PROFILE_CONFLICT = ("farklı profil", "farklı görev kaynağı", "kayıt geçersiz")',
+     'PROFILE_CONFLICT = ("farklı profil", "farklı görev kaynağı")', "scripts/ct_queue.py",
+     "CT-FIX-02 K3: main registers another path or an invalid row"),
+    ("B09 K3 strict=yes may name any vocabulary again", "scripts/ct_queue.py",
+     '            if q.get("strict") == "yes" and q["vocabulary"] != SOP7:\n', '            if False:\n',
+     "scripts/ct_queue.py", "CT-FIX-02 K3: strict=yes with a vocabulary other than sop7"),
+    ("B10 K3 report: the conflict gives no reason", "scripts/status_report_v2.py",
+     '    if in_force[0] in ctq.PROFILE_CONFLICT:\n', '    if False:\n',
+     "scripts/status_report_v2.py", "CT-FIX-02 K3: read_strict_queue — origin/main registers the queue strict=no"),
+    ("B11 K4 summary wired around load_for_dispatch, the old text kept in a comment", "scripts/ct_queue.py",
+     'queues, states = load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)\n',
+     '# load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)\n'
+     '    queues, states = load(a.queue) if a.cmd in ("validate", "summary") else load_for_dispatch(a.queue)\n',
+     "scripts/ct_queue.py", "CT-FIX-02 K4: main() — require, guard, summary and writers"),
+    ("B12 K4 report drops the registry problems, the call kept", "scripts/status_report_v2.py",
+     '    if reg_problems:\n', '    reg_problems = []\n    if reg_problems:\n', "scripts/status_report_v2.py",
+     "CT-FIX-02 K4: read_strict_queue — a vocabulary that makes FAILED dispatchable"),
+    ("B13 K2 check / should-rerun: the registry check not called", "scripts/known_failures.py",
+     '            stop = registry_stop(rows, item_problems, a.suite, git("ls-files", "-z").split("\\0"))\n', '            stop = []\n',
+     "scripts/known_failures.py", "CT-FIX-02 K2: main() check — a duplicate (suite, test)"),
+    ("B14 K2 the two-suite name check removed", "scripts/known_failures.py",
+     '            if len(suites) > 1:\n', '            if False:\n', "scripts/known_failures.py",
+     "CT-FIX-02 K2: main() check without --suite"),
+    ("B15 K2 should-rerun left out", "scripts/known_failures.py",
+     '    if a.cmd in ("check", "should-rerun"):\n', '    if a.cmd in ("check",):\n', "scripts/known_failures.py",
+     "CT-FIX-02 K2: main() should-rerun"),
+    ("B16 a missing table file: the traceback again", "scripts/ct_queue.py",
+     '    except (OSError, UnicodeDecodeError) as e:\n        # CT-FIX-02: a missing or unreadable registry',
+     '    except (UnicodeDecodeError,) as e:\n        # CT-FIX-02: a missing or unreadable registry',
+     "scripts/ct_queue.py", "CT-FIX-02: a missing states/registry/transition file"),
+]
+ok_all = True
+for sid, rel, old, new, test, name in S:
+    path = FIX / rel
+    raw = path.read_bytes()
+    text = raw.decode("utf-8")
+    if text.count(old) != 1:
+        print(f"VACUOUS {sid}: anchor found {text.count(old)} times"); ok_all = False; continue
+    path.write_bytes(text.replace(old, new).encode("utf-8"))
+    try:
+        r = subprocess.run([sys.executable, "-B", test, "--self-test"], cwd=FIX, capture_output=True, text=True, env=ENV, timeout=900)
+    finally:
+        path.write_bytes(raw)
+    restored = hashlib.sha256(path.read_bytes()).hexdigest() == hashlib.sha256(raw).hexdigest()
+    fails = [l for l in r.stdout.splitlines() if l.startswith("FAIL")]
+    named = [l for l in fails if name in l]
+    red = r.returncode != 0 and bool(named)
+    ok_all = ok_all and red and restored
+    summary = next((l for l in r.stdout.splitlines() if l.startswith("self-test:")), r.stderr.strip()[-120:])
+    print(f"{'RED ' if red else 'MISS'} {sid}\n      {test} exit {r.returncode}; {summary}; named FAIL: {named[0][5:110] if named else '-'}"
+          f"; other FAILs {len(fails) - len(named)}; restored {restored}")
+print(f"\n{sum(1 for _ in S)} sabotages; all named tests red and every file restored: {ok_all}")

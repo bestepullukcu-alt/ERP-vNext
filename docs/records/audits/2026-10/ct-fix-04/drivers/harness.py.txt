@@ -1,0 +1,91 @@
+"""CT-FIX-04 guard removal: each relation's guard removed in its own out-of-repo copy; the named R0 / unit tests must fail.
+Usage: python3 harness.py <fixed-src dir> <work dir> <ct|i5b> <out.json>"""
+import json, shutil, subprocess, sys, os, time
+SRC, WORK, LINE, OUT = sys.argv[1:5]
+CT = [
+ ("M1a İ1 owner_confirmation not compared", "scripts/ct_queue.py",
+  'for key in ("strict", "vocabulary", "baseline_commit", "owner_confirmation"):', 'for key in ("strict", "vocabulary", "baseline_commit"):',
+  ["CTFIX04_I1_InForce.test_every_consumer_on_every_registry_relation", "CTFIX04_I1_Route.test_relations"]),
+ ("M1b İ1 main pending read as in force", "scripts/ct_queue.py",
+  'if row["owner_confirmation"] != "confirmed":\n        return "onaysız"', 'if False:\n        return "onaysız"',
+  ["CTFIX04_I1_InForce.test_every_consumer_on_every_registry_relation"]),
+ ("M2 İ1 ct_route conflict not checked", "scripts/ct_route.py",
+  "    conflict = _main_conflict(row, data)\n", "    conflict = None\n", ["CTFIX04_I1_Route.test_relations"]),
+ ("M3 İ1 ct_route profile_problems skipped", "scripts/ct_route.py",
+  "    problems += ctq.profile_problems(registry, states, transitions)\n", "", ["CTFIX04_I1_Route.test_relations"]),
+ ("M4 İ2 a mention binds again", "scripts/ct_queue.py",
+  '    if by_row:\n        return None\n    return (f"kapsam kaydı {wp}', '    if by_row or (wp and wp in text):\n        return None\n    return (f"kapsam kaydı {wp}',
+  ["CTFIX04_I2_Binding.test_no_explicit_binding_stops"]),
+ ("M5 İ2 record version not checked", "scripts/ct_queue.py",
+  "    if by_row and at:\n", "    if False:\n", ["CTFIX04_I2_Binding.test_a_broken_record_version_stops_and_work_packages_does_not_mask_it"]),
+ ("M6 İ2 version not required to be a commit", "scripts/ct_queue.py",
+  "        full = commit_id(version)\n", "        full = version\n", ["CTFIX04_I2_Binding.test_a_broken_record_version_stops_and_work_packages_does_not_mask_it"]),
+ ("M7 İ2 explicit list not required to name the WP", "scripts/ct_queue.py",
+  "        if wp not in items:\n", "        if False:\n",
+  ["CTFIX04_I2_Binding.test_no_explicit_binding_stops", "CTFIX04_I2_Binding.test_the_explicit_list_is_not_overridden_by_the_row_s_record"]),
+ ("M8 künye HTML comment read", "scripts/ct_queue.py",
+  '    if any("<!--" in l or "-->" in l for l in block):\n', '    if False:\n', ["CTFIX04_I2_Binding.test_no_explicit_binding_stops"]),
+ ("M9 İ3 file-name id without a boundary", "scripts/ct_queue.py",
+  'PACK_FILE_ID = re.compile(r"^(MOD-\\d{4}(?:-FU\\d+)?)(?=-|\\.md$)")', 'PACK_FILE_ID = re.compile(r"^(MOD-\\d{4}(?:-FU\\d+)?)")',
+  ["CTFIX04_I3_PackIdentity.test_product_gate", "CTFIX04_I3_PackIdentity.test_acceptance_reader_checks_the_file_name"]),
+ ("M10 İ3 gate skips pack identity", "scripts/prompt_gate.py",
+  '    wrong = pack_identity(path, data.decode("utf-8", errors="replace"), ids)\n', "    wrong = None\n",
+  ["CTFIX04_I3_PackIdentity.test_product_gate"]),
+ ("M11 İ3 acceptance reader skips pack identity", "scripts/acceptance_record.py",
+  "    wrong = shared().pack_identity(path, text, [module])\n", "    wrong = None\n",
+  ["CTFIX04_I3_PackIdentity.test_acceptance_reader_checks_the_file_name"]),
+ ("M12 İ3 evidence pack with a work_package skips identity", "scripts/acceptance_record.py",
+  '            if is_pack or not sf.get("work_package"):\n', '            if not sf.get("work_package"):\n',
+  ["CTFIX04_I3_PackIdentity.test_evidence_level_source_pack_identity_with_or_without_a_work_package"]),
+ ("M13 İ4 helper rows skipped", "scripts/acceptance_record.py",
+  "                    if not m:\n                        eng.append(f\"kabul listesi: {r['ID'][:24] or '?'} bağlı paketin bir AC-<n> ölçütü değil",
+  "                    if not m:\n                        continue\n                        eng.append(f\"kabul listesi: {r['ID'][:24] or '?'} bağlı paketin bir AC-<n> ölçütü değil",
+  ["CTFIX04_I4_BoundList.test_broken_lists"]),
+ ("M14 İ4 criterion text not compared", "scripts/acceptance_record.py",
+  '                    if criteria[n][1] != r.get("Ne kontrol edilir"):\n', "                    if False:\n",
+  ["CTFIX04_I4_BoundList.test_broken_lists"]),
+ ("M15 İ5 incomplete report exits 0", "scripts/status_report_v2.py",
+  '        if not data["complete"]:', '        if False:', ["CTFIX04_I5_ReportExit.test_exit_codes", "CTFIX04_I4_BoundList.test_broken_lists"]),
+ ("M16 İ5 baseline problems not incomplete", "scripts/status_report_v2.py",
+  '            reasons.append(f"efor tabanı {lpath}: {p_reason}")', '            pass', ["CTFIX04_I5_ReportExit.test_exit_codes"]),
+ ("M17 conditional approval not read", "scripts/prompt_gate.py",
+  '    limit, stop = pack_approval_limit(data.decode("utf-8", errors="replace"))\n', "    limit, stop = None, None\n",
+  ["CTFIX04_ConditionalApproval.test_matrix"]),
+ ("M18 rejected treated as conditional", "scripts/ct_queue.py",
+  "        if CONDITIONAL_APPROVAL.match(value):\n", "        if True:\n", ["CTFIX04_ConditionalApproval.test_matrix"]),
+]
+I5B = [
+ ("M19 İ6 headings read with comments", ".antigravity/scripts/sync_adapters.py",
+  "        heads = list(level2_sections(visible_text(text)))\n", "        heads = [l[3:].strip() for l in text.split(chr(10)) if l.startswith('## ')]\n",
+  ["InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost"]),
+ ("M20 İ6 fences not code", ".antigravity/scripts/sync_adapters.py",
+  "        m = FENCE_OPEN.match(line)\n        if m:\n            fence = m.group(1)", "        m = None\n        if m:\n            fence = m.group(1)",
+  ["InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost", "InstructionBudget.test_a_heading_only_inside_a_comment_or_in_code_is_lost"]),
+ ("M21 İ6 anchors not checked", ".antigravity/scripts/sync_adapters.py",
+  '        for anchor in spec.get("anchors", []):\n', '        for anchor in []:\n',
+  ["InstructionBudget.test_padding_without_anchors_fails", "InstructionBudget.test_one_anchor_removed_fails_by_name"]),
+ ("M22 İ6 visible content not required", ".antigravity/scripts/sync_adapters.py",
+  "        if not content:\n", "        if False:\n", ["InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail"]),
+ ("M23 İ6 comments not removed", ".antigravity/scripts/sync_adapters.py",
+  '    return HTML_COMMENT.sub("", text)\n', "    return text\n",
+  ["InstructionBudget.test_an_unclosed_comment_at_the_top_hides_the_rest", "InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail"]),
+]
+mod = "scripts.tests.test_ct_cli_regression" if LINE == "ct" else "scripts.tests.test_sync_adapters_budget"
+results = []
+for i, (label, path, old, new, tests) in enumerate(CT if LINE == "ct" else I5B):
+    d = os.path.join(WORK, f"m{i:02d}")
+    shutil.copytree(SRC, d)
+    f = os.path.join(d, path)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    t0 = time.time()
+    p = subprocess.run([sys.executable, "-B", "-m", "unittest", *[f"{mod}.{t}" for t in tests]], cwd=d, capture_output=True, text=True)
+    fails = sorted({l.split(" (")[0] + " " + l.split("(")[1].split(")")[0].split(".")[-1] for l in p.stderr.splitlines() if l.startswith(("FAIL:", "ERROR:"))})
+    results.append({"mutation": label, "applied": True, "file": path, "tests": tests, "exit": p.returncode,
+                    "red": p.returncode != 0, "failing": fails, "summary": p.stderr.strip().splitlines()[-1] if p.stderr.strip() else "", "seconds": round(time.time() - t0)})
+    print(label, "RED" if p.returncode else "GREEN (guard not proven)", results[-1]["summary"], flush=True)
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("red", sum(r.get("red", False) for r in results), "of", len(results))

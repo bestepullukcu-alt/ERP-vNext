@@ -1,0 +1,218 @@
+=== Context
+HEAD=0b392cb9e86bc8834dff0518e8313951edcaa648 + uncommitted step-2 changes (pinned: pin-before.txt)
+Pinned before the architecture run (sha256  path):
+53a9f71d80b612c606e637552efbbcf72c2e4ee4c099dbaa23bdb647f3ed217b  .antigravity/scripts/verify_module_id.py
+7a15923d6df4860a018077b1c6724fe11e828626cc9f7a3b481a209c1748eeb2  docs/guides/operations/control-tower-operating-card.md
+c899e81e695fb667555442157e620896d27620ca63a7feab945be53f561c7673  execution/delivery/ct-queue-registry.tsv
+e25ae9a27916646a82a5e757a92d7b1b38d10b33b01e764b8a8fbcf57787e566  execution/delivery/ct-queue-states.tsv
+ebeeca5a81b6597df8579318077034ed95062eb0ee3d3a4abc34540717e8280f  scripts/ct_queue.py
+037f6b602934d43aa3203e28045a2e11f8271fbed2bb6c3e0d34f5743139e453  execution/delivery/ct-queue-template.tsv
+563a1c10853ea1b9b72f31e2d2d6ac3ec26b02066aa331a99e8e9cd473c0e5ae  execution/delivery/ct-sop7-transitions.tsv
+9078b8f313898031d4de19106ee492a2631649cbd77b0af5057ec5aee641e841  scripts/requirements-tools.txt
+ffb90af604eaccce4e7b5db07bc8a03b6ae452a3a3ace6dc9bfadd9debb664f6  docs/records/decisions/2026-10/ct-step2-starter-kit-owner-decision-01.md
+Diff of the tracked files against HEAD, sha256: b21704d3eb15e5a212334d6e3e8c267f7af3162e40b304ccd7469f1fe1d52360
+
+After the run (sha256  path):
+53a9f71d80b612c606e637552efbbcf72c2e4ee4c099dbaa23bdb647f3ed217b  .antigravity/scripts/verify_module_id.py
+7a15923d6df4860a018077b1c6724fe11e828626cc9f7a3b481a209c1748eeb2  docs/guides/operations/control-tower-operating-card.md
+c899e81e695fb667555442157e620896d27620ca63a7feab945be53f561c7673  execution/delivery/ct-queue-registry.tsv
+e25ae9a27916646a82a5e757a92d7b1b38d10b33b01e764b8a8fbcf57787e566  execution/delivery/ct-queue-states.tsv
+ebeeca5a81b6597df8579318077034ed95062eb0ee3d3a4abc34540717e8280f  scripts/ct_queue.py
+037f6b602934d43aa3203e28045a2e11f8271fbed2bb6c3e0d34f5743139e453  execution/delivery/ct-queue-template.tsv
+563a1c10853ea1b9b72f31e2d2d6ac3ec26b02066aa331a99e8e9cd473c0e5ae  execution/delivery/ct-sop7-transitions.tsv
+9078b8f313898031d4de19106ee492a2631649cbd77b0af5057ec5aee641e841  scripts/requirements-tools.txt
+ffb90af604eaccce4e7b5db07bc8a03b6ae452a3a3ace6dc9bfadd9debb664f6  docs/records/decisions/2026-10/ct-step2-starter-kit-owner-decision-01.md
+
+=== verify_module_id.py — existing modes, old (origin/main 3912d568b) against new
+The new file is byte-identical to the copy these comparisons ran on (cmp).
+In-process, one cached Blueprint for both: every active MOD id in the module registry, --check-id with the registry name
+and with the Blueprint name; --check-all; --candidate x3. Rows: verify-module-id-noregression.tsv.
+active MOD ids: 172 · check-id comparisons: 344 · check-all + 3 candidates · differences: 0
+
+CLI, stdout+stderr and exit code compared byte for byte:
+same, exit 2: . --check-id MOD-0190 --name S&OP Workflow
+same, exit 0: . --check-id MOD-0299 --name Position & Organization Assignment
+same, exit 2: . --check-id MOD-9999 --name X
+same, exit 0: . --candidate CAND-CAP-0005 --name SaaS Billing & Invoicing
+same, exit 0: . --check-all
+DIFFERENT (old exit 2, new exit 2): . — 16 changed lines
+  No arguments: both print usage and exit 2. With the program name aligned, the whole difference is the usage block
+  re-wrapped to include the four new options, plus their help entries:
+  1,3c1,6
+  < usage: verify_module_id.py [-h] [--check-id CHECK_ID] [--name NAME] [--parent PARENT]
+  <                    [--repo-only] [--candidate CANDIDATE] [--check-all]
+  <                    [root]
+  ---
+  > usage: verify_module_id.py [-h] [--check-id CHECK_ID] [--name NAME]
+  >                            [--parent PARENT] [--repo-only]
+  >                            [--candidate CANDIDATE] [--check-all]
+  >                            [--discover DISCOVER] [--resource RESOURCE]
+  >                            [--sor SOR] [--check-report CHECK_REPORT]
+  >                            [root]
+  17a21,27
+  >   --discover DISCOVER   look for existing or in-flight work a new module /
+  >                         work package could duplicate
+  >   --resource RESOURCE   with --discover: a gateway resource name, e.g.
+  >                         position-assignments
+  >   --sor SOR             with --discover: a SoR primary object text
+  >   --check-report CHECK_REPORT
+  >                         recompute rapor-sha256 of a saved --discover report
+
+=== Discovery — 'Position & Organization Assignment' + resource position-assignments (exit 3 expected)
+KEŞİF RAPORU v1
+sorgu: Position & Organization Assignment | kaynak: position-assignments | sor: -
+araç: .antigravity/scripts/verify_module_id.py sha256 53a9f71d80b612c606e637552efbbcf72c2e4ee4c099dbaa23bdb647f3ed217b · depo HEAD 0b392cb9e86bc8834dff0518e8313951edcaa648
+origin/main: 3912d568b18193f627539a1b27965167ac4077b6 · son fetch: 2026-10-15T20:53 · uzak durum doğrulanmadı
+kaynak blueprint: docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx sha256 f37120b0b0edfefe97a8baf6232da6a6bb47629ca7d285097d26993f1ee2c98c · Blueprint_Data 1005 satır · SoR_Map 322 satır
+kaynak registry: execution/registries/module-id-registry.md sha256 b0f2c73b1aab4c4712eac66177cb2efca9f7afc9193eed8320ddeb62c6251b0e · 249 satır
+kaynak paketler: 550 ref · 220 farklı execution/domains ağacı · 354 paket yolu · ref-listesi-sha256 f4c1083411c651d4fa0a1e505f64c2ef6b099b1111597f9d805838c501c58024
+kaynak gateway: origin/main 3912d568b:gateway/Diten.ApiGateway/ocelot.json sha256 52b98ae2b7ce7d3526f4ccd631b8807b22e31769ab9e5de59a01740f74feb100 · 132 kaynak
+kaynak görev-kaynağı: docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv sha256 ea74b4f8a6aa601802994d8d5f6824059bba3f773e305c3dee2c5c1473118cba
+BİLGİ registry: MOD-0040-FU01 'Position Assignment User Reference Validation' eski takma ad/kullanımdan kalkmış — çakışma sayılmaz
+BİLGİ registry: MOD-0299 'SaaS Billing & Invoicing' eski takma ad/kullanımdan kalkmış — çakışma sayılmaz
+BULGU blueprint: MOD-0288 'Organization, Person & Position Directory' (1) Platform & Shared Services / Organization, Person & Position Directory) — ad benzer; veri nesneleri: Platform person directory records; position assignments; organization unit mappi
+BULGU blueprint: MOD-0299 'Position & Organization Assignment' (4) Enterprise Application Ecosystem / Foundation / Platform) — ad benzer; veri nesneleri: HR assignment context; assignment validations; manager/position binding referenc
+BULGU sor: 'Platform person directory records; position assignments; organization unit mappi' sahibi MOD-0288 (Organization, Person & Position Directory)
+BULGU sor: 'HR assignment context; assignment validations; manager/position binding referenc' sahibi MOD-0299 (Position & Organization Assignment)
+BULGU registry: MOD-0288 'Organization, Person & Position Directory' (done)
+BULGU registry: MOD-0288-FU01 'Position Assignment User Reference Validation' (done)
+BULGU paket: execution/domains/human-capital-management/module-packs/CAND-CAP-0009-position-organization-assignment.md — 1 ref'te (refs/remotes/origin/hr-future)
+BULGU paket: execution/domains/platform-shared-services/module-packs/MOD-0288-FU01-position-assignment-user-reference-validation.md — 513 ref'te (refs/heads/chore/agents/i1a1-instruction-fixes, refs/heads/chore/agents/i5a-agent-loading-pilot, refs/heads/chore/agents/i5b-agents-md-budget, … +510)
+BULGU paket: execution/domains/platform-shared-services/module-packs/MOD-0288-organization-person-position-directory.md — 513 ref'te (refs/heads/chore/agents/i1a1-instruction-fixes, refs/heads/chore/agents/i5a-agent-loading-pilot, refs/heads/chore/agents/i5b-agents-md-budget, … +510)
+BULGU gateway: 'position-assignments' → servis port(lar)ı 5057, 5063 — AYNI KAYNAK BİRDEN ÇOK SERVİSTE
+olası açıklamalar: üretici-tüketici ilişkisi · eski takma ad · onaylı devir · eski dal
+EKSİK: bu makinede bulunmayan ya da son fetch'ten sonra itilen dallar görülmedi
+EKSİK: commit edilmemiş ya da başka makinedeki işler görülmedi
+EKSİK: kayıtlı olmayan görev kaynakları (sohbetler, notlar) görülmedi
+sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı
+çıkış: 3
+rapor-sha256: 4d64cffa661a4d22f4791bf971eb9f21aa59b0f12f94f9b40bd68691d5ebbdd8
+
+=== Discovery — unknown name (exit 0 expected)
+KEŞİF RAPORU v1
+sorgu: Zeta Quantum Widget Ledger | kaynak: - | sor: -
+araç: .antigravity/scripts/verify_module_id.py sha256 53a9f71d80b612c606e637552efbbcf72c2e4ee4c099dbaa23bdb647f3ed217b · depo HEAD 0b392cb9e86bc8834dff0518e8313951edcaa648
+origin/main: 3912d568b18193f627539a1b27965167ac4077b6 · son fetch: 2026-10-15T20:53 · uzak durum doğrulanmadı
+kaynak blueprint: docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx sha256 f37120b0b0edfefe97a8baf6232da6a6bb47629ca7d285097d26993f1ee2c98c · Blueprint_Data 1005 satır · SoR_Map 322 satır
+kaynak registry: execution/registries/module-id-registry.md sha256 b0f2c73b1aab4c4712eac66177cb2efca9f7afc9193eed8320ddeb62c6251b0e · 249 satır
+kaynak paketler: 550 ref · 220 farklı execution/domains ağacı · 354 paket yolu · ref-listesi-sha256 f4c1083411c651d4fa0a1e505f64c2ef6b099b1111597f9d805838c501c58024
+kaynak gateway: origin/main 3912d568b:gateway/Diten.ApiGateway/ocelot.json sha256 52b98ae2b7ce7d3526f4ccd631b8807b22e31769ab9e5de59a01740f74feb100 · 132 kaynak
+kaynak görev-kaynağı: docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv sha256 ea74b4f8a6aa601802994d8d5f6824059bba3f773e305c3dee2c5c1473118cba
+EKSİK: bu makinede bulunmayan ya da son fetch'ten sonra itilen dallar görülmedi
+EKSİK: commit edilmemiş ya da başka makinedeki işler görülmedi
+EKSİK: kayıtlı olmayan görev kaynakları (sohbetler, notlar) görülmedi
+sonuç: incelenen kaynaklarda eşleşme bulunamadı
+çıkış: 0
+rapor-sha256: dfb9b5232cebfff9917a30bd95b9ff8a93c1d02c6e0ca9cfed1121c6b445650b
+
+=== --check-report
+valid report:   exit 0 — RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı
+one line changed: exit 2 — RAPOR DEĞİŞTİRİLMİŞ: rapor-sha256 içerikle uyuşmuyor
+hash line removed: exit 2 — RAPOR BOZUK: son satır 'rapor-sha256: <hex>' değil
+
+=== Fail-closed (never 'bulunamadı')
+openpyxl forced missing (sys.modules['openpyxl'] = None): exit 2 — sonuç: tamamlanamadı — openpyxl yok — python3 -m pip install -r scripts/requirements-tools.txt
+root outside a git repository: exit 2 — sonuç: tamamlanamadı — git rev-parse HEAD → 128
+function level:
+PASS broken workbook: Incomplete — Blueprint okunamadı (BadZipFile)
+PASS missing columns: Incomplete — 'Blueprint_Data' sayfasında sütun yok: Domain / Landscape, Capability Group, SoR Primary O
+PASS malformed gateway JSON: Incomplete — gateway dosyası geçerli JSON değil
+PASS gateway without routes: Incomplete — gateway dosyasında rota yok
+
+=== Dependency file in a clean venv (no system site-packages), offline
+import openpyxl: ModuleNotFoundError
+--discover: exit 2 — sonuç: tamamlanamadı — openpyxl yok — python3 -m pip install -r scripts/requirements-tools.txt
+pip install --no-index -r scripts/requirements-tools.txt: exit 1 — ERROR: No matching distribution found for openpyxl==3.1.5
+Installing from PyPI: NOT VERIFIED (a download; none was made).
+
+=== ct_queue.py --self-test
+DUR: geçersiz ref '--output=/dev/null'
+PASS CRLF and LF read the same rows
+PASS baseline: 0 HATA, legacy duplicate is only UYARI
+PASS sabotage: deleted row -> veri kaybı HATA
+PASS sabotage: third copy of a legacy duplicate -> HATA
+PASS sabotage: new id twice -> HATA
+PASS sabotage: wrong column count -> HATA
+PASS sabotage: header changed -> HATA
+PASS new row with undefined state and bad date -> UYARI, not HATA
+PASS require: READY 0; DONE, IN-PROGRESS, HELD, DECISION-REQUIRED, undefined, missing, ambiguous 1; REWORK only with --new-version
+PASS guard: unchanged 0, changed 1, says it is not a lock
+PASS collision: same id, different content on two refs -> ÇAKIŞMA; identical rows -> none
+PASS collision: a ref adds an id the base now holds differently -> ÇAKIŞMA
+PASS summary: undefined states are unverified, never closed; module derived; no percentages
+PASS read-only: no write call in this script; a planted write is caught; git fetch is refused
+PASS sabotage: bad registry/vocabulary values -> problems
+PASS sabotage: the other row of a repeated id deleted -> require DUR for that id
+PASS sabotage: DONE reopened in place as READY -> HATA and require DUR
+PASS sabotage: an unverified state turned READY in place -> HATA
+PASS HELD -> READY with the same trigger -> UYARI, not HATA
+PASS sabotage: id with a trailing space -> HATA
+PASS sabotage: state 'READY ' with a trailing space -> not dispatchable
+PASS sabotage: a blank line -> structural error
+PASS sabotage: a ref starting with '-' is refused before git runs
+PASS merge check: rows lost against another version are reported
+PASS strict queue: an undefined state is an error on any row
+PASS tolerant queue: the same undefined state is only a warning
+PASS in force: a valid single row for the same task source -> kayıtlı
+PASS sabotage: header and id only -> kayıt geçersiz, not kayıtlı
+PASS sabotage: the queue registered twice -> kayıt geçersiz
+PASS sabotage: a required field empty -> kayıt geçersiz
+PASS sabotage: an invalid strict value -> kayıt geçersiz
+PASS sabotage: the same id pointing at another task source -> farklı görev kaynağı
+PASS no registry file / not registered are told apart
+PASS sop7: terminal states are the states without an outgoing transition
+PASS module: MOD-0288-FU01 and ortak: with a MOD list or a scope record are accepted
+PASS sabotage: bare 'ortak', an invented FU, a deprecated alias and a free-text value -> refused
+PASS sabotage: Blueprint unreadable -> module existence not proved (fail-closed)
+PASS sabotage: ACCEPTED in one version, READY in the next -> terminal exit
+PASS READY then VERIFIED then ACCEPTED -> no error (skipped steps are not inferred)
+PASS sabotage: a version without a state column -> history not checkable, reported
+PASS a -R1 row naming its original in depends_on -> accepted
+PASS sabotage: -R1 without its original, or without depends_on -> refused
+PASS sabotage: -R3 without a reassessment record -> refused (SOP §28.2)
+PASS -R3 naming an existing decision record -> accepted; a path escaping docs/records/decisions/ -> refused
+PASS sabotage: a strict queue without a module column -> refused
+PASS registry: a vocabulary without rows in the states file -> problem
+self-test: 46/46 passed
+
+=== ct_queue.py — sabotage of the new -R3 record path guard
+The guard (no '..', must be a file) removed in a scratch copy, same data files: self-test 45/46, the failing case is
+'-R3 naming an existing decision record -> accepted; a path escaping docs/records/decisions/ -> refused'. With the guard: 46/46.
+
+=== ct_queue.py validate
+UYARI sce-mvp6 eski kimlik tekrarı (tabanda vardı, korunur): 62 kimlik — Q116×2, Q121×2, Q121c×2, Q127×2, Q129×2, Q130×2, Q131×3, Q131a×2, Q136×2, Q138×3, Q141×3, Q142×2, Q143×2, Q144×2, Q145×2, Q146×2, Q147×2, Q15×2, Q150×2, Q152×2, Q154×2, Q157×2, Q158×4, Q159×4, Q160×4, Q161×2, Q162×2, Q163×2, Q164×3, Q165×2, Q166×2, Q167×2, Q168×2, Q170×2, Q171×2, Q172×2, Q173×2, Q174×2, Q175×2, Q176×2, Q177×2, Q179×2, Q180×2, Q183×2, Q184×2, Q185×3, Q187×2, Q188×2, Q189×2, Q19×3, Q190×2, Q191×2, Q198×2, Q21×2, Q262×2, Q265×2, Q64f×2, Q65b×3, Q84b×4, Q88b×4, Q88c×2, Q99×2
+OK sce-mvp6 (çalışma ağacı): 0 hata, 1 uyarı; taban 6b8a62d5a
+
+=== Template, sop7 vocabulary, transition table
+template header == spec: True
+queue from template (3 rows): errors 0 []
+sop7 states: 19 | terminal: ['ACCEPTED', 'CANCELLED', 'FAILED', 'REWORK', 'SUPERSEDED'] | dispatchable: ['READY']
+transition table problems: []
+
+=== SCE / MVP6 — step-1 ct_queue.py (0b392cb9e) against this package's, every ref holding the queue
+refs with the queue: 53 | id comparisons: 26528 | refs with any difference: 0 | strict for sce-mvp6: False
+validate errors and require decisions equal for every ref and id; 40 dispatchable ids on each ref.
+docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv sha256 ea74b4f8a6aa601802994d8d5f6824059bba3f773e305c3dee2c5c1473118cba, unchanged against 0b392cb9e.
+The SCE rows of ct-queue-states.tsv: 0 lines removed or changed (19 sop7 rows added).
+
+=== Operating card v1.6
+Written by the patch script; byte-identical to the dry run. Relative links: 11, broken: 0.
+
+=== Architecture suite (one run)
+Command (under the shared test lock ct-heavy.py): DOTNET_CLI_UI_LANGUAGE=en dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj --logger "trx;LogFileName=<raw>"
+Code: HEAD 0b392cb9e + the step-2 changes; the pinned files (Context) were unchanged after the run.
+dotnet: Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 7 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Raw TRX sha256 (kept outside the repository): 4e3dc37c52593ceeaa0d3bd7d00fca598f087d6dc9ada04b2b63283d53b8dce7
+run.sanitized.trx sha256: 323e6f2eab15505bfec2059df392795a01f8df6f4c532ffc94e07e1d17dceffe
+Sanitiser sha256 b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72 (step 1): R1 306 · R2 145 · R3 1 · R4 1; left: home 0 · user 0 · unsanitised computerName 0 · full host name 0
+Raw against sanitised: 138 results; test names, outcomes and failure messages identical; the sanitised copy parses as XML.
+known_failures.py check <raw> --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+known_failures.py check run.sanitized.trx --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+Failure fingerprints: identical to ../ct-pre-merge-fixes-01/run3.sanitized.trx (7 of 7):
+items:7:91c2aeedb50ba165	Failed	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+items:60:a361d62e5f5a5d84	Failed	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+msg:0ccead97965e9e24	Failed	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance
+msg:231a05cc92dd7954	Failed	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool")
+msg:231a05cc92dd7954	Failed	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor")
+msg:231a05cc92dd7954	Failed	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash")
+msg:0ccead97965e9e24	Failed	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders

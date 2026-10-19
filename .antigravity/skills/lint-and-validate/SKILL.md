@@ -10,6 +10,13 @@ allowed-tools: Read, Glob, Grep, Bash
 
 ### Procedures by Ecosystem
 
+#### C# / .NET (this repository's services)
+1. **Build:** the affected project only — `dotnet build <project>.csproj -c Debug` (AGENTS.md §5).
+2. **Tests:** the tests of that service or project — `dotnet test <service or test project>` (AGENTS.md §5).
+
+#### JavaScript in `frontend/Diten.Web`
+1. **Tests:** `npm test`, with `frontend/Diten.Web` as the working directory (vitest). Its `package.json` defines no `lint` script and the repository has no `tsconfig.json`.
+
 #### Node.js / TypeScript
 1. **Lint/Fix:** `npm run lint` or `npx eslint "path" --fix`
 2. **Types:** `npx tsc --noEmit`
@@ -22,14 +29,14 @@ allowed-tools: Read, Glob, Grep, Bash
 
 ## The Quality Loop
 1. **Write/Edit Code**
-2. **Run Audit:** `npm run lint && npx tsc --noEmit`
+2. **Run Audit:** the checks of the stack you changed (above). A command the project does not define is neither run nor invented — the report says it was not available.
 3. **Analyze Report:** Check the "FINAL AUDIT REPORT" section.
 4. **Fix & Repeat:** Submitting code with "FINAL AUDIT" failures is NOT allowed.
 
 ## Error Handling
 - If `lint` fails: Fix the style or syntax issues immediately.
 - If `tsc` fails: Correct type mismatches before proceeding.
-- If no tool is configured: Check the project root for `.eslintrc`, `tsconfig.json`, `pyproject.toml` and suggest creating one.
+- If no tool is configured: say so in the report; do not install a toolchain or add a tool configuration inside the task.
 
 ---
 **Strict Rule:** No code should be committed or reported as "done" without passing these checks.

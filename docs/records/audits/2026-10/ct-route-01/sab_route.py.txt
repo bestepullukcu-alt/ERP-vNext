@@ -1,0 +1,165 @@
+"""CT routing sabotage: each guard of scripts/ct_route.py removed in a scratch copy, the self-test re-run.
+Usage: sab_route.py <worktree> <out dir>. Writes only into <out dir>."""
+import contextlib, importlib.util, io, sys
+from pathlib import Path
+W, OUT = Path(sys.argv[1]), Path(sys.argv[2])
+src = (W / "scripts/ct_route.py").read_text(encoding="utf-8")
+G = [
+    # parse_route_scope
+    ("scope: a near-miss prefix is a problem", '        if scope.lstrip().lower().startswith(ROUTE_PREFIX):\n            return [], [f"yönlendirme öneki', '        if False:\n            return [], [f"yönlendirme öneki'),
+    ("scope: nothing after the prefix", '''    if not body:\n        return [], ["'dcp:' önekinden sonra dilim yok"]''', '''    if False:\n        return [], ["'dcp:' önekinden sonra dilim yok"]'''),
+    ("scope: <path>#<slice> form", '''        if not sep or not path or not sl:\n            problems.append(f"'{item[:60]}\'''', '''        if False:\n            problems.append(f"'{item[:60]}\''''),
+    ("scope: a normalized DCP path", '        elif not DCP_PATH.fullmatch(path):', '        elif False:'),
+    ("scope: a slice name", '        elif not SLICE_ID.fullmatch(sl):', '        elif False:'),
+    ("scope: a repeated slice", '        elif (path, sl) in pairs:', '        elif False:'),
+    # front_matter
+    ("künye: starts with ---", '''    if not lines or lines[0].rstrip() != "---":\n        return {}, None, ["künye '---' ile başlamıyor"]''', '''    if not lines:\n        return {}, None, ["künye '---' ile başlamıyor"]'''),
+    ("künye: closed", '''    if end is None:\n        return {}, None, ["künye kapanmıyor"]''', '''    if end is None:\n        end = len(lines)'''),
+    ("künye: keys only at the top level", '''FRONT_KEY = re.compile(r"^([A-Za-z_]''', '''FRONT_KEY = re.compile(r"^\\s*([A-Za-z_]'''),
+    ("künye: a continued value is marked", '            found[current][-1][1] = True', '            pass'),
+    ("künye: a comment line is not a continuation", '''        elif line.strip() and not line.lstrip().startswith("#") and current in keys:''', '''        elif line.strip() and current in keys:'''),
+    ("künye: a named key once", '''        if len(got) > 1:\n            problems.append(f"'{key}' {len(got)} kez")''', '''        if False:\n            problems.append(f"'{key}' {len(got)} kez")'''),
+    ("künye: a one-line value", '''            if continued or not value or value[0] in "|>[{&*!":''', '''            if continued:'''),
+    ("künye: no '#' in a named value", '''            elif "#" in value:''', '''            elif False:'''),
+    # pack_entries
+    ("pack: verify_module_id agrees on the id", '''    if not bad and front.get("id") and front.get("status") and vmi_id == front["id"]:''', '''    if not bad and front.get("id") and front.get("status"):'''),
+    ("pack: every id the künye names", '''        seen |= {(m.group(2) or "").strip().strip("\\"'") for m in (FRONT_KEY.match(l) for l in lines[1:end]) if m and m.group(1) == "id"}''', '''        pass'''),
+    # parse_slices
+    ("DCP: künye problems kept", '''    problems = [f"DCP künyesi: {b}" for b in bad]''', '''    problems = []'''),
+    ("DCP: an id", '''        problems.append("DCP künyesi: id yok")''', '''        pass'''),
+    ("DCP: a status", '''            problems.append("DCP künyesi: tek status yok")''', '''            pass'''),
+    ("DCP: a CAP-001 §5 status", '''        problems.append(f"DCP künyesi: tanımsız status '{status[:30]}' (CAP-001 §5)")''', '''        pass'''),
+    ("DCP: a fence closes only with its mark, as long", '''        elif m and s == m.group(1) and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:''', '''        elif m:'''),
+    ("DCP: an unclosed fence", '''    if fence is not None:\n        return front, {}, problems + [f"DCP: satır''', '''    if False:\n        return front, {}, problems + [f"DCP: satır'''),
+    ("DCP: headings only outside fences", '''    heads = [i for i in outside if lines[i].strip() == SLICE_HEADING]''', '''    heads = [i for i in range(end + 1, len(lines)) if lines[i].strip() == SLICE_HEADING]'''),
+    ("DCP: exactly one slice section", '''    if len(heads) != 1:''', '''    if not heads:'''),
+    ("DCP: the section stops at the next heading", '''    stop = next((i for i in outside if i > heads[0] and HEADING.match(lines[i])), len(lines))''', '''    stop = len(lines)'''),
+    ("DCP: blank lines before the table", '''    while i < stop and not lines[i].strip():\n        i += 1''', '''    while False:\n        i += 1'''),
+    ("DCP: no split table", '''        problems.append("DCP: dilim tablosundan sonra yine tablo satırı var (tablo bölünmüş)")''', '''        pass'''),
+    ("DCP: a fenced table is not a split table", '''    if any(j in out_set and lines[j].strip().startswith("|") for j in range(i, stop)):''', '''    if any(lines[j].strip().startswith("|") for j in range(i, stop)):'''),
+    ("DCP: the table header", '''    if len(rows) < 2 or cells(rows[0]) != SLICE_COLUMNS:''', '''    if len(rows) < 2:'''),
+    ("DCP: a separator row", '''        problems.append("DCP: tablonun ikinci satırı ayırıcı değil")''', '''        pass'''),
+    ("DCP: at least one row", '''        problems.append("DCP: dilim tablosunda satır yok")''', '''        pass'''),
+    ("DCP: three cells", '''            problems.append(f"DCP: dilim satırı {n} {len(SLICE_COLUMNS)} hücreli değil")''', '''            pass'''),
+    ("DCP: a slice name in the table", '''            problems.append(f"DCP: '{sl[:30]}' dilim adı değil")''', '''            pass'''),
+    ("DCP: a slice once", '''            problems.append(f"DCP: dilim {sl} iki kez")''', '''            pass'''),
+    ("DCP: a non-empty scope", '''            problems.append(f"DCP: {sl} kapsamı boş ya da boş öğe içeriyor")''', '''            pass'''),
+    ("DCP: module ids only", '''                problems.append(f"DCP: {sl} kapsamında '{m[:30]}' modül kimliği değil (WP değil, MOD-nnnn[-FUn])")''', '''                pass'''),
+    ("DCP: known modules only", '''                problems.append(f"DCP: {sl} kapsamındaki {m} kayıt dosyasında, Blueprint'te ya da paketlerde yok")''', '''                pass'''),
+    ("DCP: a module once in a slice", '''            problems.append(f"DCP: {sl} kapsamında aynı modül iki kez")''', '''            pass'''),
+    # covers
+    ("covers: an FU by its base", '''        return module in slice_modules or base in slice_modules''', '''        return module in slice_modules'''),
+    ("covers: a base by its FUs", '''    return any(m == module or m.startswith(module + "-FU") for m in slice_modules)''', '''    return module in slice_modules'''),
+    ("covers: only '-FU' extends a base", '''    return any(m == module or m.startswith(module + "-FU") for m in slice_modules)''', '''    return any(m == module or m.startswith(module) for m in slice_modules)'''),
+    # contacts
+    ("contacts: the header keyed by queue_id", '''    if not lines or lines[0].split("\\t") != CONTACT_COLUMNS:''', '''    if not lines:'''),
+    ("contacts: three columns", '''            problems.append(f"contacts satır {n}: {len(c)} sütun, beklenen {len(CONTACT_COLUMNS)}")''', '''            pass'''),
+    ("contacts: no empty field", '''            problems.append(f"contacts satır {n}: boş alan")''', '''            pass'''),
+    ("contacts: a queue_id once", '''            problems.append(f"contacts satır {n}: '{c[0]}' iki kez")''', '''            pass'''),
+    ("contacts: an option-like path", '''    if not given or given.startswith("-") or "\\0" in given:''', '''    if not given:'''),
+    ("contacts: inside a root", '''        if real == root or real.is_relative_to(root):''', '''        if real == root:'''),
+    ("contacts: the given path resolved", '''    real = Path(realpath(given))''', '''    real = Path(given)'''),
+    ("contacts: the roots resolved", '''        root = Path(realpath(r))''', '''        root = Path(r)'''),
+    ("contacts: a regular file", '''    if not is_file(str(real)):''', '''    if False:'''),
+    ("roots: every worktree and the git directory", '''    return [str(ROOT)] + roots + [common.stdout.decode("utf-8", "replace").strip()]''', '''    return [str(ROOT)]'''),
+    # registry contract
+    ("registry: no empty field", '''            problems.append(f"registry {r.get('queue_id') or '?'}: boş alan {', '.join(empty)}")''', '''            pass'''),
+    ("registry: check_registry", '''    return problems + ctq.check_registry(rows, states, commit_exists=commit_exists, path_at=path_at)''', '''    return problems'''),
+    # coordinator
+    ("coordinator: an e-mail never printed", '''    shown = EMAIL.sub("<iletişim gösterilmedi>", owner) if owner else "owner alanı yok"''', '''    shown = owner or "owner alanı yok"'''),
+    ("coordinator: a pending owner is a role candidate", '''    if not owner or PENDING.search(owner) or all(ROLE.fullmatch(p) for p in parts if p):''', '''    if not owner or all(ROLE.fullmatch(p) for p in parts if p):'''),
+    ("coordinator: role names are a role candidate", '''    if not owner or PENDING.search(owner) or all(ROLE.fullmatch(p) for p in parts if p):''', '''    if not owner or PENDING.search(owner):'''),
+    ("coordinator: a person-like owner is not a role candidate", '''    if not owner or PENDING.search(owner) or all(ROLE.fullmatch(p) for p in parts if p):''', '''    if True:'''),
+    # _Dcps
+    ("DCP read: a missing DCP", '''            if text is None:\n                raise Incomplete(f"{path} sabit SHA'da yok")''', '''            if text is None:\n                text = ""'''),
+    ("DCP read: a malformed DCP", '''            if problems:\n                raise Incomplete(f"{path}: {problems[0]}")''', '''            if False:\n                raise Incomplete(f"{path}: {problems[0]}")'''),
+    # _check_module
+    ("module: the id form", '''    if not MODULE_ID.fullmatch(module or ""):''', '''    if False:'''),
+    ("module: a deprecated alias", '''    if module in data.get("deprecated", set()):''', '''    if False:'''),
+    ("module: known", '''    if module not in data["known"]:''', '''    if False:'''),
+    # _find
+    ("find: a malformed opted-in row", '''    if broken:\n        raise Incomplete(f"yönlendirme önekli''', '''    if False:\n        raise Incomplete(f"yönlendirme önekli'''),
+    ("find: the slice in the DCP's table", '''            if sl not in slices:\n                raise Incomplete(f"{qid}: {path}#{sl} DCP'nin '{SLICE_HEADING}' tablosunda yok")\n            if covers(slices[sl], module):''',
+     '''            if sl not in slices:\n                continue\n            if covers(slices[sl], module):'''),
+    ("find: every opted-in row's DCP read", '''            front, slices = dcps.get(path)\n            if sl not in slices:\n                raise Incomplete(f"{qid}''', '''            try:\n                front, slices = dcps.get(path)\n            except Incomplete:\n                continue\n            if sl not in slices:\n                raise Incomplete(f"{qid}'''),
+    # _in_force
+    ("in force: a local origin/main", '''    if not data.get("main_sha"):\n        return None, "yerel origin/main yok"''', '''    if False:\n        return None, "yerel origin/main yok"'''),
+    ("in force: an unmeasurable main is not 'not in force'", '''    except Incomplete as e:\n        return None, f"origin/main ölçülemedi — {e}"\n    if M["registry"] is None:''', '''    except Incomplete as e:\n        return False, f"origin/main ölçülemedi — {e}"\n    if M["registry"] is None:'''),
+    ("in force: no registry on main", '''    if M["registry"] is None:\n        return False, "origin/main'de kayıt dosyası yok"''', '''    if M["registry"] is None:\n        return True, ""'''),
+    ("in force: the queue's row on main", '''    rows = [r for r in M["registry"] if r["queue_id"] == qid]''', '''    rows = [r for r in M["registry"] if r["queue_id"] == qid] or [row]'''),
+    ("in force: the same task file", '''    if mrow["path"] != row["path"]:''', '''    if False:'''),
+    ("in force: confirmed", '''    if mrow["owner_confirmation"] != "confirmed":''', '''    if False:'''),
+    ("in force: the same dcp: assignment", '''    if main_pairs is None or problems or set(main_pairs) != set(parse_route_scope(row["scope"])[0]):''', '''    if main_pairs is None or problems:'''),
+    ("in force: the module known on main", '''        _check_module(q["module"], M)\n        dcps = _Dcps(M["dcp"], M["known"])''', '''        dcps = _Dcps(M["dcp"], M["known"])'''),
+    ("in force: main's queue file", '''            if main_rows is None:\n                raise Incomplete(f"'{qid}' kuyruk dosyası sabit SHA'da yok")''', '''            if main_rows is None:\n                main_rows = []'''),
+    ("in force: the WP once on main", '''            if len(mine) > 1:\n                raise Incomplete(f"{q['wp']}''', '''            if False:\n                raise Incomplete(f"{q['wp']}'''),
+    ("in force: the WP on main", '''            if not mine:\n                return False, f"origin/main'deki''', '''            if not mine:\n                mine = [{"module": q["module"]}]\n            if False:\n                return False, f"origin/main'deki'''),
+    ("in force: the WP's module on main", '''            if (mine[0].get("module") or "").strip() != q["module"]:''', '''            if False:'''),
+    ("in force: the slice in main's DCP table", '''                if sl not in slices:\n                    raise Incomplete(f"{qid}: {path}#{sl}''', '''                if sl not in slices:\n                    continue\n                if False:\n                    raise Incomplete(f"{qid}: {path}#{sl}'''),
+    ("in force: one candidate on main", '''    if queues != [qid]:''', '''    if qid not in queues:'''),
+    ("in force: authoritative DCPs on main", '''    if any(c[3].get("status") not in DCP_AUTHORITY for c in found):\n        return False, "origin/main'de DCP onay öncesi durumda"''', '''    if False:\n        return False, "origin/main'de DCP onay öncesi durumda"'''),
+    ("in force: the same slice scope on main", '''    if {(c[1], c[2], tuple(c[4])) for c in found} != {(c[1], c[2], tuple(c[4])) for c in covering}:''', '''    if False:'''),
+    ("in force: a readable pack on main", '''        if any(st not in PACK_STATUSES for _, st in mp):''', '''        if False:'''),
+    ("in force: the same single pack on main", '''        if len(mp) != 1 or mp[0][0] != pack[0]:''', '''        if not mp:'''),
+    ("in force: an authoritative pack on main", '''        if mp[0][1] not in PACK_AUTHORITY:''', '''        if False:'''),
+    # _success
+    ("success: --in-force unmeasurable is exit 2", '''    if in_force and ok is None:\n        raise Incomplete''', '''    if False:\n        raise Incomplete'''),
+    ("success: --in-force not in force is exit 1", '''    if in_force and not ok:''', '''    if False:'''),
+    ("success: not a dispatch permission", '''    lines.append(NOT_A_PERMISSION)''', '''    pass'''),
+    ("success: the CT is not a decision authority", '''karar otoritesi değildir — sözleşmenin dayanağı''', '''karar otoritesidir — sözleşmenin dayanağı'''),
+    ("success: a question draft", '''    lines += _draft(f"{to} — teknik temas" if kind == "contract" else to, subject, question, basis)''', '''    pass'''),
+    # _by_module
+    ("module: an authoritative DCP", '''    if len(queues) == 1 and all(c[3].get("status") in DCP_AUTHORITY for c in found):''', '''    if len(queues) == 1:'''),
+    ("module: one candidate", '''    if len(queues) == 1 and all(c[3].get("status") in DCP_AUTHORITY for c in found):''', '''    if queues and all(c[3].get("status") in DCP_AUTHORITY for c in found):'''),
+    # _by_wp
+    ("wp: the queue registered", '''        raise Incomplete(f"'{queue}' kayıt dosyasında yok")''', '''        row = {"scope": ""}'''),
+    ("wp: a free-text queue is not routing", '''    if pairs is None:\n        return _unresolved(subject, f"'{queue}' kaydının''', '''    if pairs is None:\n        pairs = []\n    if False:\n        return _unresolved(subject, f"'{queue}' kaydının'''),
+    ("wp: the queue's own prefix", '''    if problems:\n        raise Incomplete(f"'{queue}' satırının''', '''    if False:\n        raise Incomplete(f"'{queue}' satırının'''),
+    ("wp: the queue file", '''    if rows is None:\n        raise Incomplete(f"'{queue}' kuyruk dosyası''', '''    if rows is None:\n        rows = []\n    if False:\n        raise Incomplete(f"'{queue}' kuyruk dosyası'''),
+    ("wp: the WP once", '''    if len(mine) != 1:\n        raise Incomplete(f"{wp} '{queue}' kuyruğunda''', '''    if not mine:\n        raise Incomplete(f"{wp} '{queue}' kuyruğunda'''),
+    ("wp: the WP's module checked", '''    if not shared:\n        _check_module(module, data)''', '''    if False:\n        _check_module(module, data)'''),
+    ("wp: the slice in the DCP's table", '''            raise Incomplete(f"{queue}: {path}#{sl} DCP'nin '{SLICE_HEADING}' tablosunda yok")''', '''            continue'''),
+    ("wp: an 'ortak:' WP is never one slice", '''    if shared:\n        return _unresolved(subject, f"{wp} ortak iş''', '''    if False:\n        return _unresolved(subject, f"{wp} ortak iş'''),
+    ("wp: covered by the queue's slices", '''    if not covering:\n        return _unresolved(subject, f"{wp}'nin modülü''', '''    if False:\n        return _unresolved(subject, f"{wp}'nin modülü'''),
+    ("wp: an authoritative DCP", '''    if any(c[3].get("status") not in DCP_AUTHORITY for c in covering):\n        return _unresolved(subject, "kuyruğun DCP'si''', '''    if False:\n        return _unresolved(subject, "kuyruğun DCP'si'''),
+    # _contract
+    ("contract: the FU's own pack", '''    packs = [(p, s) for p, mid, s in data["packs"] if mid == module]''', '''    packs = [(p, s) for p, mid, s in data["packs"] if mid == module.split("-FU")[0]]'''),
+    ("contract: an unreadable pack", '''    if unreadable:\n        raise Incomplete(f"paket {unreadable[0][0]}''', '''    if False:\n        raise Incomplete(f"paket {unreadable[0][0]}'''),
+    ("contract: a pack exists", '''    if not packs:\n        return _unresolved(module, f"{module} için sözleşme paketi yok''', '''    if not packs:\n        return _by_module("contract", module, reg, dcps, data, in_force, lines, ("(paket yok)", "approved"))\n    if False:\n        return _unresolved(module, f"{module} için sözleşme paketi yok'''),
+    ("contract: one pack", '''    if len(packs) > 1:''', '''    if False:'''),
+    ("contract: an authoritative pack", '''    if status not in PACK_AUTHORITY:\n        return _unresolved(module, f"paket status''', '''    if False:\n        return _unresolved(module, f"paket status'''),
+    # route
+    ("route: the kind", '''        if kind not in ("delivery", "contract"):''', '''        if False:'''),
+    ("route: a queue_id once", '''            if r["queue_id"] in reg:\n                raise Incomplete(f"kayıt dosyasında''', '''            if False:\n                raise Incomplete(f"kayıt dosyasında'''),
+    ("route: a contract never from a WP", '''            if kind == "contract":\n                raise Incomplete("sözleşme sorusu''', '''            if False:\n                raise Incomplete("sözleşme sorusu'''),
+    ("route: --wp/--queue without --module", '''            if module is not None or not wp or not queue:''', '''            if not wp or not queue:'''),
+    ("route: --wp needs --queue", '''            if module is not None or not wp or not queue:''', '''            if module is not None:'''),
+    ("route: a question", '''            if module is None:\n                raise Incomplete("--module ya da''', '''            if False:\n                raise Incomplete("--module ya da'''),
+    ("route: the module checked", '''            _check_module(module, data)\n            if kind == "delivery":''', '''            if kind == "delivery":'''),
+    # statuses
+    ("status: every CAP-001 §5 status from approved on", '''DCP_AUTHORITY = set(DCP_LIFECYCLE[DCP_LIFECYCLE.index("approved"):])''', '''DCP_AUTHORITY = {"approved"}'''),
+    ("status: every pack status from approved to done", '''PACK_AUTHORITY = {"approved", "ready-for-dev", "in-progress", "review", "done"}''', '''PACK_AUTHORITY = {"approved", "ready-for-dev"}'''),
+]
+lines = []
+for n, (name, old, new) in enumerate(G, 1):
+    c = src.count(old)
+    if c != 1:
+        lines.append(f"[ct_route] {n:03d} HARNESS: anchor for '{name}' found {c} times")
+        continue
+    path = OUT / f"sab_{n:03d}.py"
+    path.write_text(src.replace(old, new), encoding="utf-8")  # scratch copy written by this harness
+    spec = importlib.util.spec_from_file_location(f"sab{n}", path); m = importlib.util.module_from_spec(spec)
+    buf = io.StringIO()
+    try:
+        spec.loader.exec_module(m)
+        m.ROOT = W
+        with contextlib.redirect_stdout(buf):
+            m.self_test()
+        last = buf.getvalue().splitlines()[-1]
+    except Exception as e:
+        last = f"self-test crashed ({type(e).__name__})"
+    fails = [l[5:] for l in buf.getvalue().splitlines() if l.startswith("FAIL ")]
+    lines.append(f"[ct_route] {n:03d} guard removed: {name} -> {last}; red: {' | '.join(f[:100] for f in fails) or 'NONE'}")
+(OUT / "sabotage.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+print("\n".join(l[:240] for l in lines if "red: NONE" in l or "crashed" in l or "HARNESS" in l) or "(every guard turned a named test red)")
+print(f"guards {len(G)} · no red {sum('red: NONE' in l for l in lines)} · crashed {sum('crashed' in l for l in lines)} · harness {sum('HARNESS' in l for l in lines)}")

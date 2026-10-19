@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# CT-FIX-05 / İ5B-FIX-06: the one architecture run, on candidate 4, under the machine lock (locked_run.py);
+# restore from the local package cache only, build output of the same scratch clone reused. Before it: the real-data
+# parity commands at the candidate; after it: the combined tree's Python tests once. Writes next to this script.
+set -u
+S="$1"; [ -n "${2:-}" ] || exit 2; A="$S/ctfix02/arch-fixture-03"; OUT="$S/ctfix05"; LOCK="$S/ctfix-red/locked_run.py"; C="$2"
+P="tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj"
+cd "$A" || exit 2
+export DOTNET_CLI_UI_LANGUAGE=en DOTNET_CLI_TELEMETRY_OPTOUT=1 GIT_OPTIONAL_LOCKS=0
+[ -z "$(git status --porcelain --untracked-files=no)" ] || { echo "fixture dirty before checkout" > "$OUT/arch-08.meta.txt"; exit 2; }
+git checkout -q --detach "$C" || exit 2
+python3 -B "$OUT/parity/parity2.py" "$A" "$OUT/parity/after-c4.json" > "$OUT/parity/after-c4.log" 2>&1
+{
+  echo "fixture: HEAD $(git rev-parse HEAD) tree $(git rev-parse 'HEAD^{tree}') parent $(git rev-parse 'HEAD^')"
+  echo "dotnet: $(dotnet --version)"
+  echo "lock: locked_run.py (sha256 $(shasum -a 256 "$LOCK" | cut -c1-64); flock on ct-heavy.lock)"
+  echo "started: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} > "$OUT/arch-08.meta.txt"
+python3 "$LOCK" -- dotnet restore "$P" --source "$HOME/.nuget/packages" > "$OUT/arch-08.restore.log" 2>&1
+echo "restore exit: $?" >> "$OUT/arch-08.meta.txt"
+python3 "$LOCK" -- dotnet test "$P" --no-restore --logger "trx;LogFileName=$OUT/arch-08.raw.trx" > "$OUT/arch-08.log" 2>&1
+echo "dotnet exit: $?" >> "$OUT/arch-08.meta.txt"
+grep -E "^(Failed|Passed)!" "$OUT/arch-08.log" | tail -1 >> "$OUT/arch-08.meta.txt"
+echo "finished: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$OUT/arch-08.meta.txt"
+echo "dirty after: $(git status --porcelain --untracked-files=no | wc -l | tr -d ' ')" >> "$OUT/arch-08.meta.txt"
+# the combined tree's Python tests and tool self-tests, once (the phase1 Python part)
+{
+  for t in scripts/ct_queue.py scripts/prompt_gate.py scripts/acceptance_record.py scripts/status_report.py scripts/ct_route.py scripts/known_failures.py scripts/run_record.py; do
+    printf '%s: ' "$t"; python3 -B "$t" --self-test 2>&1 | tail -1
+  done
+  python3 -B -m unittest discover -s scripts/tests -p 'test_*.py' 2>&1 | tail -4
+  python3 -B .antigravity/scripts/sync_adapters.py --check 2>&1 | tail -1
+  echo "dirty after python: $(git status --porcelain --untracked-files=no | wc -l | tr -d ' ')"
+} > "$OUT/python-08.txt" 2>&1

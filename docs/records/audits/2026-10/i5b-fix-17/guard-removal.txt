@@ -1,0 +1,112 @@
+İ5B-FIX-17 guard removal — one guard undone at a time in ONE work copy outside the repository, restored before every
+mutation (rsync from the İ5B-FIX-14 base, the two frozen files laid over it, checked by SHA-256); run by the AI session.
+Each mutation: the file still parses; the named test fails without a crash; the control test
+(test_a_dead_link_is_still_a_dead_link) passes. The guards run are this package's new ones (G-Z) and the İ5B-FIX-16
+guards whose line lies in mask_html or unreadable_html (the code this package changed); the other İ5B-FIX-16 guards'
+anchors are all still once in the final source and their code is untouched, so they are not run again.
+
+run 01 — on the first frozen source 16a11a3a (with the indented-code check) (drivers/harness17.py.txt): proven 24 of 25
+  G-Z1 a tag ends at the first '>', even inside a quoted value
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-Z2 a closing tag in possible indented code counts
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: green — OK · control: OK · proven: False
+  G-Z3 a block quote or list line in the paragraph is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Z4 a paragraph that starts indented (a possible list continuation) is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Z5 a closing tag in a link's destination or title counts
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Z6 link syntax the check cannot read is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Z7 every closing tag needs evidence, even one that closes nothing
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Z8 a raw-text close needs no evidence
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Z9 an HTML block start line ends at the first '>', even inside a quoted value
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y1 the HTML reader reads no escape
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y6 HTML block lines read as Markdown
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y7 fences read on the comment view, not where no HTML block masks a line
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y8 a raw-text element counts the tags inside it
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y9 in a paragraph a raw-text close shown in code counts
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y13 an element never closed is not reported (nor masked)
+      tests: test_what_the_reader_cannot_read_is_said_to_be_not_verified · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X5' nesting of the same element not counted (a closing tag closes the outermost)
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X6' a non-void self-closed tag masks only itself
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-X7' an element left open stops at the paragraph's end
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=7) · control: OK · proven: True
+  G-X8' the raw-text rule: a nested '<script>' text counted as an opening
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X9' tags searched inside fences
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X10' tags searched inside inline code
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X11' a backslash-escaped '<' read as a tag
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X12' a tag the reader cannot read skipped as text
+      tests: test_an_html_opener_the_check_cannot_read_is_not_verified · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-X13' the 'not verified' reason not written
+      tests: test_an_html_opener_the_check_cannot_read_is_not_verified · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-X14' an autolink read as a tag the reader cannot read
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=2) · control: OK · proven: True
+
+run 02 — on the final source 0e456b0f (the indented-code check removed as redundant) (drivers/harness17b.py.txt): proven 24 of 24
+  G-Z1 a tag ends at the first '>', even inside a quoted value
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-Z3 a block quote or list line in the paragraph is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Z4 a paragraph that starts indented (a possible list continuation) is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=6) · control: OK · proven: True
+  G-Z5 a closing tag in a link's destination or title counts
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Z6 link syntax the check cannot read is not checked
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Z7 every closing tag needs evidence, even one that closes nothing
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Z8 a raw-text close needs no evidence
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Z9 an HTML block start line ends at the first '>', even inside a quoted value
+      tests: test_a_tag_ends_outside_quotes_and_a_close_needs_evidence · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y1 the HTML reader reads no escape
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y6 HTML block lines read as Markdown
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y7 fences read on the comment view, not where no HTML block masks a line
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y8 a raw-text element counts the tags inside it
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y9 in a paragraph a raw-text close shown in code counts
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y13 an element never closed is not reported (nor masked)
+      tests: test_what_the_reader_cannot_read_is_said_to_be_not_verified · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X5' nesting of the same element not counted (a closing tag closes the outermost)
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X6' a non-void self-closed tag masks only itself
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-X7' an element left open stops at the paragraph's end
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=7) · control: OK · proven: True
+  G-X8' the raw-text rule: a nested '<script>' text counted as an opening
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X9' tags searched inside fences
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X10' tags searched inside inline code
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X11' a backslash-escaped '<' read as a tag
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X12' a tag the reader cannot read skipped as text
+      tests: test_an_html_opener_the_check_cannot_read_is_not_verified · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-X13' the 'not verified' reason not written
+      tests: test_an_html_opener_the_check_cannot_read_is_not_verified · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-X14' an autolink read as a tag the reader cannot read
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=2) · control: OK · proven: True
+
+Run 01 (24 of 25, kept as history): G-Z2 — the separate indented-code check — stayed green, because a closing tag
+in indented code is also on a paragraph that starts indented two or more columns, which G-Z4's rule refuses. The
+check was redundant and was removed; run 02 is on the final source: 24 of 24 (8 new, 16 affected earlier).

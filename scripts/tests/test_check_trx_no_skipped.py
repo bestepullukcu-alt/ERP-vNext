@@ -109,11 +109,36 @@ class SkipAllowListTests(unittest.TestCase):
             self.assertIn("allow-list line 1", out.getvalue())
 
     # WP-LANE-MAIN-SYNC-02 B3 (owner decision 2026-10-14, BL-637): one Manufacturing line, its own suite only, 35 = the tests
-    # that carry the code (measured). Anything else added is still red here.
-    def test_the_repository_allowlist_holds_exactly_the_three_auth_codes_and_the_manufacturing_mongo_line(self):
+    # that carry the code (measured). WP-CI-SERVICE-TESTS-05 (CT decision A, BL-646 items 3 and 6): the platform-app BL-534
+    # line (2, removed with the WP-AUTH-ADMIN-BOOTSTRAP-01 merge) and the mdm-api CONTRACT_LINE_ABSENT line (1, review
+    # 2026-12-31). The pin stays EXACT: anything else added is still red here.
+    def test_the_repository_allowlist_holds_exactly_the_auth_manufacturing_bl534_and_contract_line_entries(self):
         self.assertEqual({("auth-app", "MACOS_ONLY"): 1, ("auth-app", "UID_EQUALS_GID"): 1, ("auth-app", "RUNS_AS_ROOT"): 1,
-                          ("manufacturing-tests", "MANUFACTURING_TEST_MONGO"): 35},
+                          ("manufacturing-tests", "MANUFACTURING_TEST_MONGO"): 35,
+                          ("platform-app", "BL-534"): 2, ("mdm-api", "CONTRACT_LINE_ABSENT"): 1},
                          script.load_allowlist(ALLOWLIST))
+
+    # WP-CI-SERVICE-TESTS-05 (CT decision A): the code pattern accepts a backlog item code (BL-534) as ONE code — never a
+    # prefix of one ("BL", "BL-", "BL-534x", "BL-abc") and never an empty reason.
+    def test_a_backlog_item_code_is_read_whole(self):
+        self.assertEqual("BL-534", script.CODE.match("BL-534: two measurements of the old seed").group(1))
+        self.assertEqual("BL-534", script.CODE.match("BL-534").group(1))
+        for reason in ("BL", "BL-", "BL-534x", "BL-abc", "BL-534x: almost", "bl-534: lower case"):
+            with self.subTest(reason=reason):
+                match = script.CODE.match(reason)
+                self.assertNotEqual("BL-534", match.group(1) if match else None)
+        self.assertIsNone(script.CODE.match(""))
+
+    def test_only_the_whole_backlog_code_is_an_allowed_skip(self):
+        allowed = "BL-534: PlatformAdministratorSeedMeasurementTests, a measurement of the old seed."
+        code, out = self.run_script(trx(("P.Seed", "NotExecuted", allowed)), "--suite", "platform-app")
+        self.assertEqual(0, code, out)
+        self.assertIn("allowed skips for suite platform-app: 1 (BL-534 x1)", out)
+        for reason in ("BL", "BL-", "BL-534x", "BL-abc", "BL-535: another item", ""):
+            with self.subTest(reason=reason):
+                code, out = self.run_script(trx(("P.Seed", "NotExecuted", reason)), "--suite", "platform-app")
+                self.assertEqual(1, code, out)
+                self.assertIn("P.Seed", out)
 
     # FIX2: a code has a maximum — a second test borrowing RUNS_AS_ROOT is red, and named.
     def test_more_skips_with_a_code_than_its_maximum_is_red(self):

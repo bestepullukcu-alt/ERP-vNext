@@ -5,6 +5,8 @@ description: "[Canlıya Alım Öncesi Kontrol Listesi — Diten ERP vNext]"
 
 Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmadan önce aşağıdaki kontrollerden geçmek zorundadır. Bu liste, "Sıfır Hata" prensibimizin son kontrol noktasıdır.
 
+> **Bitti tanımı:** Bu liste SOP §29.4 Release Done kapısına kanıt üretir; Done seviyeleri yalnız SOP §29'dadır.
+
 ---
 
 ## 🏗️ 1. Derleme ve Temel Sağlık (Build & Health)

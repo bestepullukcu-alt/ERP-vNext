@@ -1,0 +1,34 @@
+{
+  "source_sha256": "cbd8ef64e9d50fe233036b51b745698025602f2723e8a91b5a9bf53b18122e7d",
+  "unchanged": true,
+  "results": [
+    {
+      "screen": "HumanCapital/ApplicantIntake",
+      "old": "clean",
+      "new": "unverified",
+      "exit0_both": true,
+      "gap_text_identical": null
+    },
+    {
+      "screen": "DevEnablement/GoldenReferenceSlim",
+      "old": "gaps",
+      "new": "gaps",
+      "exit0_both": true,
+      "gap_text_identical": true
+    },
+    {
+      "screen": "CRM/Accounts",
+      "old": "gaps",
+      "new": "gaps",
+      "exit0_both": true,
+      "gap_text_identical": true
+    },
+    {
+      "screen": "Organization/Positions",
+      "old": "clean",
+      "new": "unverified",
+      "exit0_both": true,
+      "gap_text_identical": null
+    }
+  ]
+}

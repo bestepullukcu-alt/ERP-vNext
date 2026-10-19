@@ -1,0 +1,62 @@
+İ5B-FIX-15 guard removal — one guard undone at a time in ONE work copy outside the repository, restored before every
+mutation (rsync from the İ5B-FIX-14 base, the two frozen files laid over it, checked by SHA-256); run by the AI session.
+Driver: drivers/harness15.py.txt. The frozen files used equal the final sources: True. Each mutation: the file
+still parses; the named test fails without a crash; the control test (test_a_dead_link_is_still_a_dead_link) passes.
+
+G-X1 raw HTML not masked in the heading reader's view
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=20) · control: OK · proven: True
+G-X2 the HTML blocks ignored (elements only)
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-X3 the elements ignored (HTML blocks only)
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=13) · control: OK · proven: True
+G-X4 an HTML block ends with its first line
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-X5 nesting of the same element not counted
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-X6 a non-void self-closed tag masks only itself
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-X7 an element left open stops at the paragraph's end
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=11) · control: OK · proven: True
+G-X8 the raw-text rule removed (a nested '<script>' text counted as an opening)
+    tests: test_unrelated_or_shown_html_keeps_the_required_text
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-X9 tags searched inside fences
+    tests: test_unrelated_or_shown_html_keeps_the_required_text
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-X10 tags searched inside inline code
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-X11 a backslash-escaped '<' read as a tag
+    tests: test_raw_html_around_a_required_text_hides_it
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-X12 a tag the reader cannot read skipped as text
+    tests: test_an_html_opener_the_check_cannot_read_is_not_verified
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-X13 the 'not verified' reason not written
+    tests: test_an_html_opener_the_check_cannot_read_is_not_verified
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-X14 an autolink read as a tag the reader cannot read
+    tests: test_unrelated_or_shown_html_keeps_the_required_text
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+
+proven: 14 of 14
+
+Run 01 (kept as history, not replaced): 12 of 14. Two harness mistakes, corrected in
+the harness, not in the code: G-X12's mutation left an empty 'if' body (it did not parse, so it proved nothing), and
+G-X9 named the hiding test, whose code-example case stays hidden for another reason (the masked opening fence makes
+the closing fence an opener). G-X9 guards the positive side — an unreadable tag shown in a closed code example — and
+now names the positives test.
+
+Run 03 — İ5B-FIX-15 changed the line İ5B-FIX-14's G-H1 undid (visible_text's comment-masked view), so that guard
+had no anchor left; the other 24 İ5B-FIX-14 anchors are still in the final source once each. The same mutation on the
+new anchor (drivers/harness15-gh1.py.txt, the same single restored copy):
+G-H1' İ5B-FIX-14's G-H1 on its new anchor: the heading reader's text read with comments deleted before fences again
+    tests: test_the_heading_reader_reads_comments_and_fences_in_order
+    applied: True · parses: True · named: RED — FAILED (failures=6) · control: OK · proven: True

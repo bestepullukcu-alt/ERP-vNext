@@ -1,0 +1,89 @@
+"""İ5B-FIX-15 guard removal: one ONE work copy, restored before every mutation (rsync from the base, then the two frozen
+files laid over it and checked by SHA-256) — no copy per mutation. Each guard is undone alone; the named test must fail
+(a crash or a hang is not counted) and a control test must pass in the same copy.
+Usage: python3 harness15.py <base src> <frozen sync_adapters.py> <frozen test> <freeze list> <work dir> <out.json>"""
+import hashlib, json, os, shutil, subprocess, sys, time
+BASE, TOOL, TEST, FREEZE, W, OUT = sys.argv[1:7]
+FROZEN = dict(reversed(l.split()) for l in open(FREEZE, encoding="utf-8") if l.strip())
+F = ".antigravity/scripts/sync_adapters.py"
+B = "scripts.tests.test_sync_adapters_budget.InstructionBudget."
+HIDE, SHOWN, UNREAD = B + "test_raw_html_around_a_required_text_hides_it", B + "test_unrelated_or_shown_html_keeps_the_required_text", B + "test_an_html_opener_the_check_cannot_read_is_not_verified"
+M = [
+ ("G-X1 raw HTML not masked in the heading reader's view",
+  '    return "".join(c if block[k] == c and element[k] == c else " " for k, c in enumerate(plain))', "    return plain", [HIDE]),
+ ("G-X2 the HTML blocks ignored (elements only)",
+  "if block[k] == c and element[k] == c else", "if element[k] == c else", [HIDE]),
+ ("G-X3 the elements ignored (HTML blocks only)",
+  "if block[k] == c and element[k] == c else", "if block[k] == c else", [HIDE]),
+ ("G-X4 an HTML block ends with its first line",
+  "            html_end = None if (end(line) and not HTML_TYPE6.match(line) and not HTML_TYPE7.match(line)) else end",
+  "            html_end = None", [HIDE]),
+ ("G-X5 nesting of the same element not counted",
+  "                depth += -1 if t.group(1) else 1     #", "                depth += -1 if t.group(1) else 0     #", [HIDE]),
+ ("G-X6 a non-void self-closed tag masks only itself",
+  "            if closing or name in VOID_ELEMENTS:", "            if closing or selfclose or name in VOID_ELEMENTS:", [HIDE]),
+ ("G-X7 an element left open stops at the paragraph's end",
+  "            depth, end = 1, len(view)\n            for t in pair.finditer(plain, m.end()):",
+  '            stop = plain.find("\\n\\n", m.end()) % (len(plain) + 1)\n            depth, end = 1, stop\n            for t in pair.finditer(plain, m.end(), stop):', [HIDE]),
+ ("G-X8 the raw-text rule removed (a nested '<script>' text counted as an opening)",
+  "                if name in (\"script\", \"style\", \"textarea\", \"title\") and not t.group(1):\n                    continue",
+  "                if False:\n                    continue", [SHOWN]),
+ ("G-X9 tags searched inside fences",
+  "            for k in range(at, at + len(line)):\n                plain[k] = \" \"\n        else:\n            for m in INLINE_CODE.finditer(line):",
+  "            pass\n        else:\n            for m in INLINE_CODE.finditer(line):", [SHOWN]),
+ ("G-X10 tags searched inside inline code",
+  "            for m in INLINE_CODE.finditer(line):\n                for k in range(at + m.start(), at + m.end()):\n                    plain[k] = \" \"\n            for m in re.finditer(",
+  "            for m in re.finditer(", [HIDE]),
+ ("G-X11 a backslash-escaped '<' read as a tag",
+  "            for m in re.finditer(r\"\\\\.\", line):\n                for k in range(at + m.start(), at + m.end()):\n                    plain[k] = \" \"\n",
+  "", [HIDE]),
+ ("G-X12 a tag the reader cannot read skipped as text",
+  "            mask(lt, len(view))                # an opener the reader cannot read: nothing after it is evidence\n            return \"\".join(out), lt\n",
+  "            pass\n", [UNREAD]),
+ ("G-X13 the 'not verified' reason not written",
+  '    return "" if at is None else f" (after', '    return "" if True else f" (after', [UNREAD]),
+ ("G-X14 an autolink read as a tag the reader cannot read",
+  "        if RAW_HTML_OPENER.match(plain, lt) and not AUTOLINK.match(plain, lt):", "        if RAW_HTML_OPENER.match(plain, lt):", [SHOWN]),
+]
+CONTROL = B + "test_a_dead_link_is_still_a_dead_link"
+sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def restore():
+    subprocess.run(["rsync", "-a", "--delete", "--checksum", BASE + "/", W + "/"], check=True)
+    shutil.copyfile(TOOL, os.path.join(W, F)); shutil.copyfile(TEST, os.path.join(W, "scripts/tests/test_sync_adapters_budget.py"))
+    for p, h in FROZEN.items():
+        assert sha(os.path.join(W, p)) == h, p
+
+
+def run(names):
+    try:
+        p = subprocess.run([sys.executable, "-B", "-m", "unittest", *names], cwd=W, capture_output=True, text=True, timeout=600)
+    except subprocess.TimeoutExpired:
+        return "timeout", "the test did not finish in time"
+    crashed = "Traceback" in p.stderr and "AssertionError" not in p.stderr
+    return (99 if crashed else p.returncode), (p.stderr.strip().splitlines() or [""])[-1]
+
+
+os.makedirs(W, exist_ok=True)
+results = []
+for label, old, new, tests in M:
+    restore()
+    f = os.path.join(W, F)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    parsed = subprocess.run([sys.executable, "-B", "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())", f]).returncode == 0
+    t0 = time.time()
+    code, tail = run(tests)
+    ccode, ctail = run([CONTROL])
+    proven = parsed and code not in (0, 99, "timeout") and ccode == 0
+    results.append({"mutation": label, "applied": True, "file": F, "tests": tests, "exit": code, "red": code != 0, "summary": tail,
+                    "parsed": parsed, "control": CONTROL, "control_exit": ccode, "control_summary": ctail, "proven": proven,
+                    "seconds": round(time.time() - t0)})
+    print(label, "PROVEN" if proven else "NOT PROVEN", "| named:", tail, "| control:", ctail, flush=True)
+restore()
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("proven", sum(r.get("proven", False) for r in results), "of", len(results), "· the copy restored to the frozen sources")

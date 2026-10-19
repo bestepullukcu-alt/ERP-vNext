@@ -1,0 +1,774 @@
+{
+ "özet": {
+  "ekran": 152,
+  "kanca çıkışları": {
+   "0": 152
+  },
+  "geçiş": {
+   "sapma → sapma": 88,
+   "DOĞRULANAMADI → sapma": 64
+  }
+ },
+ "ekranlar": [
+  {
+   "ekran": "CRM/Accounts",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/Campaigns",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/Claims",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/Contacts",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/ContentEngagementJourneys",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/CycleCapacities",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/CyclePeriods",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/EligibilityPolicies",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/Knowledge",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/KnowledgeConcepts",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/KnowledgePaths",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/LegalProfiles",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/PlannedVisits",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/SafetyTexts",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/Segments",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/StrategyTemplates",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/TerritoryManagement",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/VisitFrequencyPolicies",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "CRM/VisitPlanning",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DevEnablement/GoldenReferenceCompact",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DevEnablement/GoldenReferenceSlim",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DocumentManagement/AccessMatrix",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DocumentManagement/MasterRegister",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DocumentManagement/QmsBaselines",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DocumentManagement/RepositoryAssessments",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DocumentManagement/TemplateMasters",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "DocumentManagement/TemplateVariants",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Governance/Permissions",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Governance/Roles",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Governance/Users",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HCM/Employees",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/ApplicantIntake",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/CandidatePipeline",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/CompensationBenefits",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/CompetencySkills",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/DevelopmentPlans",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/EmployeeOnboarding",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/EmployeeProjections",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/EmploymentChanges",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/HeadcountBudget",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/HrCaseManagement",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/HrCompliance",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/HrDocumentation",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/HrKpiAnalytics",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/LearningTraining",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/OffboardingCases",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/OfferManagement",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/PerformanceReviews",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/PositionAssignments",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/SelfService",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/Succession",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/TimeAttendanceLeave",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "HumanCapital/WorkforcePlanning",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Inventory/Locations",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Inventory/StockLedger",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Inventory/StockMovements",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MDM/ProductAbbreviationRegister",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "ManagementGovernance/ProcessModeling",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Manufacturing/Boms",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterData/Brands",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterData/LegalEntities",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterData/Products",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterDataManagement/FinishedGoods",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterDataManagement/GlobalProducts",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterDataManagement/Gskus",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterDataManagement/Items",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterDataManagement/Lskus",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "MasterDataManagement/ProductLegalEntityScopes",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Meetings/MeetingTypes",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Meetings/Series",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Organization/FieldDefinitions",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Organization/OrganizationUnits",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Organization/PositionAssignments",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Organization/Positions",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "PPM/BenefitCommitments",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "PPM/Initiatives",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "PPM/InvestmentCases",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "PPM/Portfolios",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "PPM/Programs",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "PPM/Projects",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "PPM/Shared",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Pharmacovigilance/CaseIntakeTriage",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/Administrators",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/AuditLog",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/AuditRetention",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/DomainManagement",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/ModuleCatalog",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/NotificationDispatches",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/NotificationEvents",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/NotificationSettings",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/NotificationTemplates",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/ReferenceData",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/ServiceManagement",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/Tenants",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/Workflow",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/WorkingCalendarImports",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Platform/WorkingCalendars",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Procurement/Contracts",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Procurement/Grn",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Procurement/InvoiceMatch",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Procurement/PurchaseOrders",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Procurement/Requisitions",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Procurement/Sourcing",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Procurement/Suppliers",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "SupplyChain/Carriers",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "SupplyChain/Claims",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "SupplyChain/Loads",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "SupplyChain/Returns",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "SupplyChain/Shipments",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/AssociationMemberships",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/AssociationOperations",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/CandidateCareerPassport",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/CandidateDisputes",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/CandidateProfiles",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/ConsentVisibilityPolicies",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/EarlyWarningSignals",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/ExitReferenceRecords",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/HiringRiskIndicators",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustryKnowledgeNetwork",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustrySkillPassport",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustrySuccessionPool",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/IndustryTalentPool",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/MentorshipRecommendationNetwork",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/PayBenchmarking",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/ProfessionalReputationLedger",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/ReferenceExchange",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/RehireRecommendations",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/RestrictedIntegrityRegistry",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/ReviewBoard",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/SectorMobilityIntelligence",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/SectorTalentTrends",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/SkillsGapHeatmap",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/TalentDataFoundation",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/TalentDevelopmentNetwork",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/TalentSupplyDemandForecasting",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/TepShellMetadata",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/TrustLevels",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/VerifiedCertificationRegistry",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/VerifiedParticipants",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TalentEcosystem/WorkforceAnalytics",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Tasks/ChecklistTemplates",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Tasks/FieldDefinitions",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Tasks/RecurrenceRules",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Tasks/TaskTypes",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Tasks/Templates",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TimeEntry/Approvals",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "TimeEntry/Categories",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Traceability/LotMigration",
+   "afb5beeca+eski doğrulayıcı": "DOĞRULANAMADI",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Traceability/LotMovements",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Traceability/Lots",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "Traceability/Serials",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  },
+  {
+   "ekran": "WorkingCalendar/Overrides",
+   "afb5beeca+eski doğrulayıcı": "sapma",
+   "afb5beeca+yeni doğrulayıcı": "sapma"
+  }
+ ]
+}

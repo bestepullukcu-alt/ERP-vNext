@@ -1,0 +1,5 @@
+# Python packages used by the Control Tower tools (scripts/ and .antigravity/scripts/).
+# Install: python3 -m pip install -r scripts/requirements-tools.txt
+openpyxl==3.1.5
+# openpyxl's only dependency, pinned too (measured by Codex 2026-10-17: a clean macOS Python 3.9.6 venv installs 2.0.0)
+et-xmlfile==2.0.0
