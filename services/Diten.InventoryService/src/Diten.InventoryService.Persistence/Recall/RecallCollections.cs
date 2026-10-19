@@ -13,10 +13,6 @@ public static class RecallCollections
     /// <summary>Insert-only.</summary>
     public const string SettingsHistory = "recall_settings_history";
 
-    /// <summary>WP-MVP1-FIX-LIVE2: the BL-501 central audit queue — READ ONLY by <see cref="RecallAuditNames"/> (person names); not a recall
-    /// record, so in none of the declared sets.</summary>
-    public const string CentralAuditOutbox = Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord.CollectionName;
-
     public const string Cases = "recall_cases";
 
     /// <summary>Insert-only.</summary>

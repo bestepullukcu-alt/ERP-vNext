@@ -132,13 +132,13 @@ public sealed class RecallEvidenceBuilder
     private readonly IRecallESignClient _esign;
     private readonly RecallSubjectFacts _facts;
     private readonly RecallSupport _support;
-    private readonly IRecallAuditNames _auditNames;
+    private readonly Common.IAuditActorNames _auditNames;
     private readonly IProductMasterClient _products;
     private readonly ILegalEntityMasterClient _companies;
     private readonly ILocationRepository _locations;
 
     public RecallEvidenceBuilder(IRecallRepository repository, IRecallDrillRepository drills, IRecallTraceSource ledger, IRecallQuarantineRequester quarantine,
-        IRecallESignClient esign, RecallSubjectFacts facts, RecallSupport support, IRecallAuditNames auditNames, IProductMasterClient products,
+        IRecallESignClient esign, RecallSubjectFacts facts, RecallSupport support, Common.IAuditActorNames auditNames, IProductMasterClient products,
         ILegalEntityMasterClient companies, ILocationRepository locations)
     {
         _repository = repository;
