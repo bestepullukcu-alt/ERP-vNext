@@ -1,7 +1,8 @@
 ---
 id: CAND-CAP-0008-FU02
 name: Working Calendar Public Holiday Auto-Fetch
-parent: CAND-CAP-0008
+parent: MOD-0362
+formerly_parent: CAND-CAP-0008 (working-calendar meaning; later CAND-CAP-0010)
 runtime_slug: working-calendar-import
 domain: platform-shared-services
 service: Diten.Platform + frontend/Diten.Web

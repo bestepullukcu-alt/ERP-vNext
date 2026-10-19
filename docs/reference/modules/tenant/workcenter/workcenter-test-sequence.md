@@ -1,4 +1,4 @@
-# Görev Merkezi — Test Sırası (CAND-CAP-0006 / MOD-0024)
+# Görev Merkezi — Test Sırası (MOD-0024, formerly CAND-CAP-0006)
 
 **Hazırlayan:** CONTROL TOWER · **Tarih:** 2026-07-26 · **Branch:** `feature/pss/candcap0006-wc1-work-item-projection`
 

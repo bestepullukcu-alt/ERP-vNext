@@ -179,7 +179,7 @@ The integration milestones above (FU13/FU14/FU15 runtime, BME-001 Parts I/II, PK
 | F-02 | Tenant authorization context | MOD-0018-FU12 | `done` | `JwtTenantAuthorizationContext.cs` | No |
 | F-03 | Entitlement audit sink | MOD-0018 → MOD-0021 | runtime real | `PlatformEntitlementAuditSink.cs`; DI 113 | No |
 | F-04 | AuthService RBAC primitives | RBAC = MOD-0018 (no own pack/ID) | runtime real | Role/Permission/UserRole/RolePermission CRUD | **Yes — governance** |
-| F-05 | Tenant User lookup-validation | CAND-CAP-0001 (alias MOD-0047) | `done` | `GET /api/users/{id}/lookup-validation`, 15 tests | No |
+| F-05 | Tenant User lookup-validation | MOD-0360 (formerly CAND-CAP-0001, alias MOD-0047) | `done` | `GET /api/users/{id}/lookup-validation`, 15 tests | No |
 | F-06 | Org/Person/Position directory | MOD-0288 (alias MOD-0040) | `done` | entities/controllers/repos; governance reconciled (PR #25) | No |
 | F-07 | PositionAssignment.UserId validation | MOD-0288-FU01 | `done` | PR #24, fail-closed, 510 tests; governance reconciled (PR #25) | No |
 | F-08 | Action-aware enforcement (Platform) | MOD-0018 | runtime real | distinct `[HasPermission]`, 87+ keys | partial (universalize) |

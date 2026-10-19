@@ -1,6 +1,6 @@
 # Tenant Management API
 
-Module: MOD-0043 / MOD-0044 / MOD-0046  
+Module: MOD-0009-FU01 / MOD-0009-FU02 / MOD-0009-FU03 (formerly MOD-0043 / MOD-0044 / MOD-0046)  
 Gateway base path: `/api/admin/tenants`  
 Frontend surface: `/Platform/Tenants`
 

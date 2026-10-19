@@ -1,7 +1,8 @@
 ---
 id: CAND-CAP-0008-FU03
 name: Working Calendar Legal-Entity Scope Extension
-parent: CAND-CAP-0008
+parent: MOD-0362
+formerly_parent: CAND-CAP-0008 (working-calendar meaning; later CAND-CAP-0010)
 runtime_slug: working-calendar
 domain: platform-shared-services
 service: Diten.Platform + frontend/Diten.Web

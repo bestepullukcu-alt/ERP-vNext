@@ -1,7 +1,8 @@
 ---
-id: CAND-CAP-0006
+id: MOD-0024
+formerly_id: CAND-CAP-0006
 name: WC-1b — Frontend Wiring & Tenant Module Manifest (Görev Merkezi)
-governance_identity: CAND-CAP-0006
+governance_identity: MOD-0024
 charter: DCP-004
 slice: WC-1b
 domain: platform-shared-services

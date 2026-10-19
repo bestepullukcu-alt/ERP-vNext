@@ -894,8 +894,8 @@ Trial expiry, subscription renewal, quota reset, email dispatch, provisioning re
 **Standard jobs (initial set):**
 | Job | Schedule | Modül |
 |---|---|---|
-| TrialExpiryScanJob | Daily 02:00 UTC | MOD-0297 |
-| SubscriptionRenewalJob | Daily 03:00 UTC | MOD-0297, MOD-0299 |
+| TrialExpiryScanJob | Daily 02:00 UTC | MOD-0361 (formerly MOD-0297) |
+| SubscriptionRenewalJob | Daily 03:00 UTC | MOD-0361, MOD-0364 (formerly MOD-0297, MOD-0299) |
 | QuotaResetJob | Monthly | MOD-0033 |
 | EntitlementCacheRefreshJob | Hourly | MOD-0018 |
 | WebhookRetryJob | Every 5min | MOD-0034 |

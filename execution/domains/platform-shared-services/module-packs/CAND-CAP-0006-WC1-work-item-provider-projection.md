@@ -1,7 +1,8 @@
 ---
-id: CAND-CAP-0006
+id: MOD-0024
+formerly_id: CAND-CAP-0006
 name: WC-1 — Unified Work-Item Provider Contract & Projection
-governance_identity: CAND-CAP-0006
+governance_identity: MOD-0024
 charter: DCP-004
 slice: WC-1
 domain: platform-shared-services
@@ -18,7 +19,7 @@ status_changed: draft -> ready-for-dev on 2026-07-24 (EA/user-approved; conditio
 form_field_count: 0
 ---
 
-# WC-1 — Unified Work-Item Provider Contract & Projection (CAND-CAP-0006 / DCP-004)
+# WC-1 — Unified Work-Item Provider Contract & Projection (MOD-0024, formerly CAND-CAP-0006 / DCP-004)
 
 > **Identity (DCP-002):** governance identity is **`CAND-CAP-0006`** (temporary candidate; no Blueprint
 > `MOD-xxxx` yet). This is the **first executable slice of the approved charter

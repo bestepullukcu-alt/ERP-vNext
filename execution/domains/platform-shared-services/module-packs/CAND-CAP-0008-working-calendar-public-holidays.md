@@ -1,5 +1,6 @@
 ---
-id: CAND-CAP-0008
+id: MOD-0362
+formerly_id: CAND-CAP-0008 (working-calendar meaning; later CAND-CAP-0010)
 name: Working Calendar & Public Holidays
 runtime_slug: working-calendar
 domain: platform-shared-services
@@ -33,7 +34,7 @@ consumers:
   - PPM / Finance scheduler'ları (gelecek)
 ---
 
-# CAND-CAP-0008 — Working Calendar & Public Holidays
+# MOD-0362 (formerly CAND-CAP-0008 / CAND-CAP-0010) — Working Calendar & Public Holidays
 
 > **⛔ DRAFT — KOD YETKİSİ YOKTUR (`runtime_code_allowed: false`).**
 > Bu pack **yeni bir shared foundation capability**'nin hazırlık dokümanıdır. `status: ready-for-dev` +

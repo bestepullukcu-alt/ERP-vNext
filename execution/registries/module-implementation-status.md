@@ -58,7 +58,7 @@ This file is **separate from** [`module-id-registry.md`](module-id-registry.md) 
 | MOD-0018-FU14 Effective Access Explain | Backend+Frontend | 80 | SelfAccessExplainService + SelfAccess UI (two-observation, no combined verdict by design); tested | Cross-user explain deferred |
 | MOD-0018-FU15 Real DataScopeResolver | Sadece-backend | 90 | OrgDataScopeResolver (OrgUnit/Position/ManagerChain/LegalEntity from MOD-0288); tests | **No frontend** (org-scope browser); gated by MOD-0288 UI (C2) |
 | MOD-0017-FU01 Tenant Login Security Settings | Backend+Frontend | 85 | TenantLoginSettings client/policy; used in handlers | **No tenant-admin config UI** (MFA/session/password policy not self-service) |
-| CAND-CAP-0001 Tenant User / Identity Foundation | Backend+Frontend | 90 | User/Membership/Role/Permission entities; invitation+set-password flow; Users CRUD; ~15 tests | No bulk user import/export |
+| MOD-0360 (formerly CAND-CAP-0001) Tenant User / Identity Foundation | Backend+Frontend | 90 | User/Membership/Role/Permission entities; invitation+set-password flow; Users CRUD; ~15 tests | No bulk user import/export |
 
 ## Other services
 
