@@ -291,3 +291,6 @@ Master 8.7 (`docs/reference/blueprint/…master 8.7.xlsx`, PR #150) 8.2'nin yeri
 - CT kontrolü: FU03 künyesi eski kimliğe döndürülünce `check-all` filename/id uyarısı geri geliyor (sabotaj); mimari = taban sınıfları. BL-474 kapandı (kapalı arşive taşındı).
 - **MOD-0043 / 0044 / 0046 (kullanıcı 2026-10-19): KAPANDI** — kayıttaki MOD-0009-FU01 / FU02 / FU03 kalır (Tenant / Environment Management alt işleri); 16 Ekim üçüncü öneri (0013 / 0014 / bileşen / çalışma alanı) uygulanmaz.
 - **Kalan (CRM-BP87-05 adayı, kullanıcı onayı bekliyor):** MOD-0009 paket dosyası `MOD-0009-tenant-lifecycle-events.md` → `MOD-0009-tenant-environment-management.md`; FU01..03 başlıkları "Tenant / Environment Management — … (FU0n)"; bütün paket dosya adlarında slug ↔ 8.7 adı ölçümü (yalnız rapor).
+
+## §17 CT kabul — CRM-BP87-05 (2026-10-19)
+Ajan `639dbee10` → test dalı: `MOD-0009-tenant-lifecycle-events.md` → `MOD-0009-tenant-environment-management.md` (bağlantılarla; kayıt slug'ı 8.7'den, eski slug "formerly"); FU01..03 adları "Tenant / Environment Management — Architecture Foundation / Manager Backend / Core UI (FU0n)". `check-all` 0 hard, mimari = taban. Slug ölçümü (yalnız rapor): 8 belirgin fark (MOD-0220, 0023, 0027, 0028, 0033, 0263, 0140, 0190), 9 yakın fark — yeniden adlandırma kullanıcı kararında. Açık: MOD-0009 künyesinde `name:` hâlâ eski ad.

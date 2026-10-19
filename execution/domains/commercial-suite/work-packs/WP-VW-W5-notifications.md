@@ -18,6 +18,18 @@
 | K-N8 | **Asla iş akışını bozmaz.** Rapor gönderimi e-posta başarısız olsa da tamamlanır. Bildirim, rapor kaydedildikten sonra denenir; hata kayda `failed` olarak yazılır ve zamanlayıcı yeniden dener. Platform çağrısı 3 sn sınırlıdır, 1 kez yeniden denenir, istisna fırlatmaz (W3L koltuk istemcisi deseni) | CT |
 | K-N9 | **Görünürlük ve yetki.** "Gönderilen e-postalar" listesinde temsilci kendi ziyaretlerini, yönetici ekibini görür (K-W7 deseni), bildirim ayarı yetkilisi hepsini görür. Yeni anahtarlar: `crm.visit-notifications.read`, `crm.visit-notifications.settings.manage`. Ayar değişikliği denetim kaydına yazılır (`IVisitEvidenceAuditPublisher` deseni). AUD-001 listesine eklenirse Faz 8'e gider | CT |
 
+## Sözleşme eki (W5-BE'den sabitlendi, 2026-10-19) — PLT-NOTIFY bunlara uyar
+
+- **Şablon değişkenleri** (adlar CRM'in gönderdiği; şablonlar ve RequiredVariables bunlarla):
+  - ortak: `repName`, `doctorName`, `institutionName`, `visitDate` (yyyy-MM-dd), `reportUrl`;
+  - `crm.visit-report.submitted`: + `products`, `note`, `adverseEvent`, `offLabelRequest`, `followUpDate`;
+  - `crm.visit-report.adverse-event`: + `products`, `adverseEventNote`;
+  - `crm.visit-report.off-label-request`: + `products`;
+  - `crm.visit-report.overdue`: + `deadline` (ISO-8601, Z).
+  `products` şimdilik ürün kodu listesi (MDM adı okunmuyor); şablon boş değerde bölümü gizler.
+- **Yanıt adresi:** iç uç gövdesine isteğe bağlı `replyTo: { userId }` (K-N4: rapor özeti, advers, MSL ve süre doldu e-postalarında yanıt temsilciye gider); Platform adresi Auth'tan çözer, yanıtta adres dönmez. CRM bu alanı PLT-NOTIFY kabul edilince gönderir (W5-BE-FU).
+- **Gateway:** `api/crm/visit-notifications` için ocelot rotası W5-BE'de yok → CT düzeltmesi (`/api/crm/visit-notifications` GET; `/{everything}` GET + PUT) + rota kapsama satırları.
+
 ---
 
 ## §36.1 Agent Prompt — PLT-NOTIFY (paste-ready · Platform; W5-BE ile paralel)
@@ -36,7 +48,7 @@ MEVCUT (CT ölçümü):
 - İç uç deseni: Internal/InternalTenantEmailIdentityController.cs (X-Internal-Api-Key ↔ AuthService:InternalApiKey). LoginOnlyEndpointGuardTests iç izin listesi (AllowAnonymous iç denetleyiciler listede olmalı).
 NE:
 (1) ILineManagerResolver (Application, paylaşılan): ResolveAsync(tenantId, userId) → { userIds, resolution: LineManager | ManagerChain | None, positionId? }; ApproverResolver'ın zincir yürüyüşü buraya taşınır; ApproverResolver bunu çağırır + KENDİ havuz yedeğini korur (timesheet davranışı ve testleri DEĞİŞMEZ).
-(2) İç uç: POST api/internal/notifications/events/dispatch (X-Internal-Api-Key; iç izin listesine eklenir). Gövde: { tenantId, eventCode, sourceModule, recipients: { to: [ {userId} | {lineManagerOf: userId} | {email, displayName?, locale?} ], cc: [aynı biçim] }, variables, correlationId, causationId? }. Kurallar: kiracı var ve aktif değilse 404; olay kodu katalogda Active ve sahibi sourceModule değilse 403; userId / lineManagerOf yalnız o kiracıda çözülür (kiracı bağlamı gövdeden kurulur — repository'ler ITenantContext ile süzüyor); hiç alıcı çözülmezse gönderim yok, yanıt status=no-recipient. Yanıt: { dispatches: [{ dispatchId, locale, status }], resolved: { to: [{ userId?, via: direct|line-manager|manager-chain|email }], cc: [...] }, status } — e-posta adresleri yanıtta YOK.
+(2) İç uç: POST api/internal/notifications/events/dispatch (X-Internal-Api-Key; iç izin listesine eklenir). Gövde: { tenantId, eventCode, sourceModule, recipients: { to: [ {userId} | {lineManagerOf: userId} | {email, displayName?, locale?} ], cc: [aynı biçim] }, replyTo?: { userId }, variables, correlationId, causationId? } — değişken adları ve replyTo için belgedeki "Sözleşme eki" bölümüne uy. Kurallar: kiracı var ve aktif değilse 404; olay kodu katalogda Active ve sahibi sourceModule değilse 403; userId / lineManagerOf yalnız o kiracıda çözülür (kiracı bağlamı gövdeden kurulur — repository'ler ITenantContext ile süzüyor); hiç alıcı çözülmezse gönderim yok, yanıt status=no-recipient. Yanıt: { dispatches: [{ dispatchId, locale, status }], resolved: { to: [{ userId?, via: direct|line-manager|manager-chain|email }], cc: [...] }, status } — e-posta adresleri yanıtta YOK.
 (3) NotificationDispatch'e SourceModule (isteğe bağlı alan; eski kayıtlar null) + yönetici listesinde süzgeç olarak (GetNotificationDispatchListQuery'ye sourceModule).
 (4) CRM olayları (K-N4): crm.visit-report.submitted, crm.visit-report.adverse-event, crm.visit-report.off-label-request, crm.visit-report.overdue — RequiredVariables, sahip modül MOD-0155; şablonlar platform varsayılanı olarak 7 dilde (konu + gövde; 06 mockup'ındaki alanlar: doktor / kurum, ziyaret tarihi, temsilci, ürünler, özet / not, "Raporu görüntüle" bağlantısı; advers için "ACİL" + "24 saat" + "Temsilci tıbbi değerlendirme yapmaz" notu; altbilgide KVKK notu). Hasta kimliği değişkeni YOK.
 KORU/YAPMA: mevcut uçlar ve QueueEmail davranışı aynı; timesheet onaycı davranışı aynı (mevcut testler yeşil kalır, gevşetilmez); Gateway / ocelot DEĞİŞMEZ (iç uç gateway'den geçmez); localhost:27017'ye BAĞLANMA; gerçek e-posta GÖNDERME (Fake sağlayıcı).
@@ -88,3 +100,24 @@ KORU/YAPMA: mevcut sayfalar aynı; mock / harness kullanıcının oturum sekmesi
 DOĞRULA: xUnit + RunNode (vitest çalışmıyor): liste kolonları / süzgeçler / rozetler, önizleme e-posta adresi içermez, ayar kartı yetkisizde yok, 409 mesajı, 7 dil anahtarları eksiksiz (resx 7 dosya), yardım metni 7 dil, rota / proxy testleri; 2 sabotaj (önizlemede e-posta adresi sızsın → kırmızı; ayar kartı yetki denetimi kaldır → kırmızı). Diten.Web.Tests tam takım (taban: aynı başta 3 bilinen kırmızı — 2 ShipmentDetailsDateNode + WorkCenterMenu -o) + verify_datatable_page.py (proxy sayfa: --api-profile proxy). Görsel kanıt E4'te (06 mockup'ı ile yan yana).
 Commit: "feat(web): WP-VW-W5 W5-WEB — sent visit notification list with email preview and notification settings" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W5-BE E2 ACCEPTED (2026-10-19 · Gateway rotası ve canlı E4 bekliyor)
+Ajan commit'i `34c19673d` → test dalına cherry-pick. CRM + Platform `CrmManifestProvider` (2 ApiPermission).
+
+**Yapılan:**
+- **Platform istemcisi** doğrudan `PlatformService:BaseUrl`, `X-Internal-Api-Key`, kullanıcı token'ı yok, 3 sn + 1 deneme, istisna yok.
+- **`crm_visit_notifications`**: tekil (TenantId, EventCode, SubjectId), durumlar, alıcı "tarif" olarak (adres yok).
+- **Olaylar:** V2 + eski Submit yolu (dış sarmalayıcıda tek nokta) → özet / advers / MSL; amend e-posta yok; e-posta hatası raporu düşürmez.
+- **Zamanlayıcı:** `BackgroundService` + `PeriodicTimer`; overdue = iş durumu `expired`, son 7 gün, yalnız ayarı açık kiracılar (yayın günü toplu e-posta yok); yeniden deneme 5 / 10 / 20 / 40 dk, en çok 5; atomik claim (gerçek mongod'da 8 eşzamanlı claim → 1).
+- **Ayar** GET / PUT (409, e-posta doğrulaması, denetim — adres değil set / unset); **liste + önizleme API'si** (temsilci kendi, yönetici ekip, ayar yetkilisi tümü; dışı 404); izinler ApiPermission.
+
+**CT kontrolü:**
+- **CT sabotajı (ajanın yapmadığı):** overdue taramasında iş durumu denetimi kaldırıldı (`if (true)`) → `N1_an_expired_visit_reminds_the_line_manager_once…` **kırmızı**; md5 ile geri.
+- **Testler (CT, birleşik ağaç):** CRM 2924/2 — `VisitPlanningFix2…` (-o) + `PiiMasking_Redacts…` (kararsız: rastgele GUID'de 10+ rakam telefon diye maskeleniyor — test kusuru, takip FU-CRM-PII-GUID-FLAKE). Mimari 127/17 = taban sınıfları; AUD-001'e +1 komut (`UpdateVisitNotificationSettingsCommand`) → Faz 8.
+- **Ajan:** yeni + etkilenen 65/65; Platform manifest 236/236; Web nav koruyucusu 7/7.
+
+**Açık / dikkat:**
+- **Gateway rotası yok** (`api/crm/visit-notifications`) → CT düzeltmesi kullanıcı onayıyla.
+- **PLT-NOTIFY** değişken adları + `replyTo` → "Sözleşme eki"; CRM `replyTo` gönderimi PLT-NOTIFY sonrası (W5-BE-FU).
+- **Canlı yapılandırma:** `PlatformService:BaseUrl`, `Crm:Notifications:WebBaseUrl` (yerel varsayılan 5057 / 5001).
+- Rapor gönderimi e-posta denemesini aynı istekte bekliyor (en kötü ~3 sn × olay sayısı) — canlı E4'te ölçülecek.
