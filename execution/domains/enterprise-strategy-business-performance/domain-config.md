@@ -40,7 +40,7 @@ allocation'ı DCP-002 ve Enterprise Architect kararıyla yapılır.
 - MOD-0117'e ait Demand/idea, portfolio, project, benefit ve capacity lifecycle
 - MOD-0024'e ait generic task/checklist lifecycle
 - MOD-0023'e ait workflow run, approval decision, eligibility/delegation, SLA ve escalation
-- DCP-004 / CAND-CAP-0006'ya ait WorkCenter aggregation/projection
+- DCP-004 / MOD-0024'e ait WorkCenter aggregation/projection (Blueprint 8.7: CAND-CAP-0006, MOD-0024'ün Work Center sayfası olarak katıldı)
 - MOD-0288'e ait person/position/organization master records
 - Shared document/evidence modüllerine ait payload ve binary ownership
 - DWS Wave 1 node execution lifecycle, task assignment/actions ve local approval authority
@@ -102,7 +102,7 @@ module pack'leri `_LayoutTenantShell` kullanır ve `_Layout.cshtml` değiştiril
 - **Generic task/checklist:** MOD-0024. DWS node veya ES `TaskAggregate` ikinci task SoR olamaz.
 - **Workflow/approval:** MOD-0023 workflow run, approval task/decision, eligibility/delegation, SLA ve
   escalation sahibidir.
-- **WorkCenter:** DCP-004 / CAND-CAP-0006 yalnız aggregation/projection sahibidir; business lifecycle
+- **WorkCenter:** DCP-004 / MOD-0024 (eski CAND-CAP-0006; Blueprint 8.7) yalnız aggregation/projection sahibidir; business lifecycle
   gerçeğini taşımaz.
 - **Person/position/org:** MOD-0288 canonical master sahibidir; ESBP typed reference tüketir.
 - **Document/evidence:** İlgili shared modüller payload ve provenance sahibidir; ESBP typed link tüketir.

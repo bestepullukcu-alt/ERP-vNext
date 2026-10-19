@@ -48,7 +48,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 - Bulguları parent / FU / yeni / aday olarak ayır. Kimlik uydurma; kaynak Blueprint'tir.
 - Blueprint'te var ama pack yoksa: kod değil, taslak module pack hazırlama adımını öner. Blueprint'te de yoksa: parent /
-  FU uygunluğunu araştır, uymuyorsa mevcut `CAND-CAP` kapısına yönlendir (`AGENTS-REFERENCE.md`); ID uydurma.
+  FU uygunluğunu araştır; uymuyorsa dur ve Master'da Module Change Request öner (Master-first kuralı, Blueprint 8.7); yeni
+  `CAND-CAP` ya da ID uydurma.
 - Gerekçeli tek bir ilk kapsam öner ve "öneri — onay değil" diye işaretle. Tek modül için Delivery Capability Pack
   oluşturma.
 

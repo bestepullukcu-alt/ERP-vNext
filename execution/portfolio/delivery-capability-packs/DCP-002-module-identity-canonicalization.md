@@ -9,7 +9,7 @@ owner_domain: platform-shared-services
 owner: enterprise-architect / platform-team
 branch: feature/governance/blueprint-module-id-reconciliation
 created: 2026-06-04
-canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data"
+canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx#Blueprint_Data"
 inputs:
   - "docs/records/audits/2026-06/blueprint-module-id-reconciliation-2026-06-03.md"
 status_note: "Promoted draft → approved by AG-STEP-002 after read-only verification (verify_module_id.py --check-all exit 0, 0 hard violations; deprecated-alias chains resolve; CAND-CAP-0001…0005 recorded)."
@@ -70,11 +70,11 @@ Audit (read-only) → DCP-002 canonicalization (docs-only) → [blocked] EA rese
 
 ## 10. Architecture decisions
 - **Blueprint is canonical** for MOD-ID and canonical name.
-- **Single active namespace**: no permanent second repository-local `MOD-xxxx` namespace; legacy/`PSS-`/`NEW-` and repo-only IDs converge to canonical MOD IDs via explicit EA reservation.
+- **Single active namespace**: no permanent second repository-local `MOD-xxxx` namespace; legacy/`PSS-`/`NEW-` and repo-only IDs converge to canonical MOD IDs via explicit EA reservation (before 2026-10-16) or, since the Master-first rule, via the Master itself (Module Change Request).
 - **Deprecated-alias policy**: a superseded ID keeps a registry row with `status: deprecated`, `Deprecated Alias = self`, `Replacement ID = canonical`; it is never deleted (traceability).
 - **Targeted rename policy**: active module-pack filenames must equal their canonical frontmatter `id`; renames are targeted and evidence-based (AGENTS §12 forbids only uncontrolled mass rename). Historical audit files, PR references, and branch names remain unchanged.
 - **Runtime-sensitive separation**: runtime literals already on a correct canonical ID are never modified; ID renumbering that touches runtime literals is a separate migration.
-- **No-guess reservation**: new canonical IDs for repo-only/legacy capabilities require an explicit exact EA allocation; no placeholder, no next-free scan.
+- **No-guess reservation**: new canonical IDs for repo-only/legacy capabilities require an explicit exact allocation — since 2026-10-16 by the Master (Module Change Request); no placeholder, no next-free scan.
 
 ## 11. Scope (applied this pass — documentation-only)
 The Blueprint↔Repo canonicalization ledger and the rename/alias entries are authoritatively recorded in [blueprint-master-plan-reconciliation.md](../blueprint-master-plan-reconciliation.md#blueprint--repo-canonicalization-ledger-dcp-002-applied) and [module-id-registry.md](../../registries/module-id-registry.md). Active packs renamed: `MOD-0288`, `MOD-0288-FU01`, `MOD-0009-FU01/FU02/FU03`.
@@ -135,6 +135,8 @@ The §16 items have been resolved in a second governance pass and are no longer 
 None at runtime. Documentation consumers (master plan, DCP-001, domain configs) updated or annotated; old IDs resolve via aliases.
 
 ## 19. Open decisions
+**Resolved 2026-10-19 by Blueprint master 8.7** (§20, last paragraph): the Master allocated `MOD-0360`, `MOD-0361` and `MOD-0364` to `CAND-CAP-0001`, `-0002` and `-0005`, absorbed `-0003` / `-0004`, and gave `-0006`, `-0010` and `-0011` their targets. The text below is the record before that.
+
 **Single remaining decision, owned by the Enterprise Architect:** the future allocation of canonical `MOD-xxxx` for the temporary candidates `CAND-CAP-0001…0005` (§16a). This is a **separate downstream decision** and does **not** block DCP-002 approval — the candidates are recorded with deprecated-alias chains and governed by the prevention gate today. PR-2 (runtime-sensitive migration) stays blocked until any runtime-bearing ID receives an exact new allocation; runtime literals `MOD-0297` / `MOD-0299` remain legacy compatibility literals until then.
 
 ## 20. Audit and reconciliation notes
@@ -150,7 +152,11 @@ Master 8.1 resolves the former base candidates `CAND-CAP-0007`, `CAND-CAP-0008` 
 the canonical `MOD-0352 — Enterprise Strategy Management`. `CAND-CAP-0007-FU01` remains a
 temporary candidate pending a separate exact FU allocation.
 
+**Master 8.7 (applied 2026-10-19).** `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx` (official Master SHA-256 `917373c949b8944031b9980a80c0235b8d406a44d8a4a6c96ed686abe9a7606e`, equal to its change note; the repository copy replaces the CEO's personal name with the role in 201 cells outside `Blueprint_Data` / `SoR_Map` — owner decision, public repository — SHA-256 `b71853e36cfd9c01d2e6c12a637217c8d30c5e487ddff7a4a2adeda6f7853046`) replaces 8.1 as the canonical source; 8.1 stays as the historical predecessor. It carries the Master 8.2 reconciliation of main (`Main_Reconciliation_v8_2`) and the `Legacy_ID_Migration_Map`; the mapping is applied in the registry and in `blueprint-master-plan-reconciliation.md` § Master 8.7 resolution. It also adds the **Master-first rule** (CEO, 2026-10-16): no new `CAND-CAP` identity; a missing capability is a Module Change Request in the Master. Correction measured on 2026-10-19: `verify_module_id.py` records the workbook's SHA-256 in its discovery report but does **not** compare it with a pinned value before opening the workbook — the sentence above about enforcement did not hold for 8.1 either.
+
 ## Prevention gate design (transition rules)
+
+> **Master-first update (2026-10-19, Blueprint 8.7).** `--candidate` refuses a CAND-CAP that is not one of the 19 identities the registry held on main `37530d190` (`FROZEN_CANDIDATES`), one without a registry row, and one whose row is a deprecated alias (it names the canonical target). `--check-id --repo-only` passes only the reservations recorded before the rule (`FROZEN_REPO_ONLY` = `NEW-MOD-0041`). Guarded by `scripts/tests/test_verify_module_id_gates.py`.
 
 Validation script (added in this pass): `.antigravity/scripts/verify_module_id.py`.
 
