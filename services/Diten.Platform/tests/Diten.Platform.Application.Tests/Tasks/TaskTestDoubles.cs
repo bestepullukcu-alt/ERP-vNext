@@ -626,6 +626,9 @@ internal sealed class FakePositionAssignmentRepository(params PositionAssignment
     public Task<IReadOnlySet<Guid>> EverAssignedUserIdsAsync(CancellationToken ct)
         => Directory.EverAssignedUserIdsAsync(ct);
 
+    public Task<IReadOnlyDictionary<Guid, PrimarySeat>> PrimarySeatsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+        => Directory.PrimarySeatsAsync(userIds, ct);
+
     // Mirrors the tenant execution filter: another tenant's row is invisible, exactly as TenantRepository<T> makes it.
     public Task<IReadOnlyList<PositionAssignment>> GetAllAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<PositionAssignment>>(

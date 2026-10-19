@@ -28,7 +28,8 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 ///
 /// <para><b>The members are DERIVED from the call sites</b>, not invented. Reading the nine consumers produced
 /// four distinct questions plus one that only BL-072 asks; each member below is one of them, and there is no
-/// sixth "just in case".</para>
+/// sixth "just in case". WP-VW-W3L PLT-ORG-SEAT added one more, from its own call site (the organization seat read):
+/// <see cref="ITaskSeatDirectory.PrimarySeatsAsync"/>.</para>
 ///
 /// <para><b>Not addressed here, deliberately.</b> Every read is still <c>GetAllAsync</c> + an in-memory filter,
 /// exactly as before — this round changes no behaviour. Turning these into indexed queries is now POSSIBLE for
@@ -71,7 +72,22 @@ public interface ITaskSeatDirectory
     /// position" and "their assignment ended" stop being the same silent empty answer.</para>
     /// </summary>
     Task<IReadOnlySet<Guid>> EverAssignedUserIdsAsync(CancellationToken ct);
+
+    /// <summary>
+    /// The PRIMARY seat each of these users holds right now — one read of the active seats for the whole set.
+    ///
+    /// <para>WP-VW-W3L PLT-ORG-SEAT (K-L3): the organization seat read asks it. A seventh question, derived from that
+    /// call site like the others: "which seat is this person's home?" is the same PRIMARY-first rule the create handler
+    /// already relies on through <see cref="ActiveForUserAsync"/>, asked for many users at once and for the Primary row
+    /// only. A user without an active Primary row is absent from the answer. Several active Primary rows (an overlap the
+    /// assignment form does not prevent across positions) resolve to the EARLIEST start, ties by id, and the count says
+    /// how many there were so the caller can report it.</para>
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, PrimarySeat>> PrimarySeatsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
 }
+
+/// <summary>A user's current PRIMARY seat, and how many active Primary rows the user had (more than one is reported).</summary>
+public sealed record PrimarySeat(PositionAssignment Assignment, int PrimaryCount);
 
 /// <inheritdoc cref="ITaskSeatDirectory"/>
 public sealed class TaskSeatDirectory : ITaskSeatDirectory
@@ -124,4 +140,19 @@ public sealed class TaskSeatDirectory : ITaskSeatDirectory
 
     public async Task<IReadOnlySet<Guid>> EverAssignedUserIdsAsync(CancellationToken ct)
         => (await _assignments.GetAllAsync(ct)).Select(assignment => assignment.UserId).ToHashSet();
+
+    public async Task<IReadOnlyDictionary<Guid, PrimarySeat>> PrimarySeatsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        if (userIds is null || userIds.Count == 0) { return new Dictionary<Guid, PrimarySeat>(); }
+
+        var wanted = userIds.ToHashSet();
+        return (await ActiveAsync(ct))
+            .Where(assignment => assignment.AssignmentType == AssignmentType.Primary && wanted.Contains(assignment.UserId))
+            .GroupBy(assignment => assignment.UserId)
+            .ToDictionary(
+                group => group.Key,
+                group => new PrimarySeat(
+                    group.OrderBy(assignment => assignment.EffectiveFrom).ThenBy(assignment => assignment.Id).First(),
+                    group.Count()));
+    }
 }

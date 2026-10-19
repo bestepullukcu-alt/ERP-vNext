@@ -42,6 +42,11 @@ public sealed class LoginOnlyEndpointGuardTests
         "MyNotificationsController.MarkAllRead",
         "MyNotificationsController.MarkRead",
         "NavigationController.GetMenu",
+        // WP-VW-W3L PLT-ORG-SEAT — the caller's OWN current primary seat with no key; anybody else's seat needs
+        // platform.organization-seats.read, enforced by OrganizationSeatReader before it reads (the GetTeamAvailability
+        // posture: login-only at the edge, the authority decided in the application layer).
+        "OrganizationSeatsController.Get",
+        "OrganizationSeatsController.Lookup",
         "SavedViewsController.Create",
         "SavedViewsController.Delete",
         "SavedViewsController.GetViews",

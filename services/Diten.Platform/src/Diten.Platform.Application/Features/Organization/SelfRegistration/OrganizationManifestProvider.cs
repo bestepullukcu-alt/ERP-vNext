@@ -37,6 +37,10 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
     private const string AssignmentsUpdate = "platform.position-assignments.update";
     private const string AssignmentsDelete = "platform.position-assignments.delete";
 
+    // WP-VW-W3L PLT-ORG-SEAT (K-L8) — read ANOTHER user's current primary seat (OrganizationSeatsController; a user's own
+    // seat needs no key). API-only: no page or button carries it, so it is an ApiPermission, tenant-assignable.
+    private const string OrganizationSeatsRead = Diten.Platform.Application.Features.OrganizationSeats.OrganizationSeatPermissions.Read;
+
     public ModuleManifestDocument GetManifest() =>
         new(
             ModuleCode: "organization",
@@ -306,5 +310,12 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
                     [
                         new ModuleManifestAction("DELETE", "Delete", AssignmentsDelete, "Toolbar", 10, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
                     ])
+            ],
+            ApiPermissions:
+            [
+                new ModuleManifestPermission(
+                    OrganizationSeatsRead,
+                    "Read another user's current primary seat (position, organization unit, legal entity) — e.g. CRM resolving a rep's legal entity for layered visit evidence settings",
+                    "Tenant")
             ]);
 }
