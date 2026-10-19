@@ -38,7 +38,10 @@ public sealed class AccountKindCreationPathsGuardTests
         "Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/RegisterCommandHandler.cs",
         "Diten.AuthService.Api/Controllers/InternalEventsController.cs",
         "Diten.AuthService.Api/Controllers/PlatformAuthController.cs",
-        "Diten.AuthService.Persistence/Seed/DataSeeder.cs"
+        // WP-AUTH-ADMIN-BOOTSTRAP-01 — the seed's account creation moved out of DataSeeder (the system seed creates no account
+        // any more) into the Development-only DevAccountSeed; the first platform administrator command is a new automatic path.
+        "Diten.AuthService.Persistence/Seed/DevAccountSeed.cs",
+        "Diten.AuthService.Persistence/Operations/FirstPlatformAdministratorAccount.cs"
     };
 
     private static readonly Regex ClassifyingLiteral = new(@"\bAccountKind\.(Human|Service)\b", RegexOptions.Compiled);

@@ -451,7 +451,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
 
         var stepFailed = false;
-        await DataSeeder.SeedAsync(_host.Database, false, null, () =>
+        await DataSeeder.SeedAsync(_host.Database, null, () =>
         {
             stepFailed = true;
             throw new InvalidOperationException("a seed step failed");
@@ -532,7 +532,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         await OldRoleAsync(tenant, "Readers", ExportGrantBackfill.Users.ReadKey);
         var logs = new CapturingLoggerProvider();
 
-        await DataSeeder.SeedAsync(_host.Database, false, logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        await DataSeeder.SeedAsync(_host.Database, logs.CreateLogger<ExportGrantBackfillScenarioTests>());
 
         Assert.Contains(logs.Entries, e => e.Level == LogLevel.Information && e.Message.StartsWith("Export backfill:", StringComparison.Ordinal));
     }
@@ -1406,7 +1406,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Console.SetOut(output);
         try
         {
-            await DataSeeder.SeedAsync(_host.Database, false, null,
+            await DataSeeder.SeedAsync(_host.Database, null,
                 () => throw new InvalidOperationException("SECRET-outer", new FormatException("SECRET-inner")));
         }
         finally
