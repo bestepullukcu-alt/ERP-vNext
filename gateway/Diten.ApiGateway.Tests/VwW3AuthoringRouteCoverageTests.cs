@@ -33,6 +33,15 @@ public sealed class VwW3AuthoringRouteCoverageTests
     [InlineData("/api/crm/visit-evidence-policy/history", "GET")]
     [InlineData("/api/crm/visit-evidence-policy/effective", "GET")]
     [InlineData("/api/crm/visit-evidence-policy/reps", "GET")]
+    [InlineData("/api/crm/visit-evidence-policy/reps/roster", "GET")]
+    // WP-VW-W3L (W3-BE-d) — the legal entity / business unit layers: the route allowed GET only, so saving and
+    // removing a scope died at the gateway with 404 (live E4, 2026-10-19)
+    [InlineData("/api/crm/visit-evidence-policy/scopes", "GET")]
+    [InlineData("/api/crm/visit-evidence-policy/scopes/legal-entity/" + Id, "GET")]
+    [InlineData("/api/crm/visit-evidence-policy/scopes/legal-entity/" + Id, "PUT")]
+    [InlineData("/api/crm/visit-evidence-policy/scopes/legal-entity/" + Id, "DELETE")]
+    [InlineData("/api/crm/visit-evidence-policy/scopes/business-unit/alpha", "PUT")]
+    [InlineData("/api/crm/visit-evidence-policy/scopes/business-unit/alpha", "DELETE")]
     // the time-boxed exceptions
     [InlineData("/api/crm/visit-evidence-exceptions", "GET")]
     [InlineData("/api/crm/visit-evidence-exceptions", "POST")]

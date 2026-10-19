@@ -3444,6 +3444,8 @@
       "UpstreamPathTemplate": "/api/crm/visit-evidence-policy/{everything}",
       "UpstreamHttpMethod": [
         "GET",
+        "PUT",
+        "DELETE",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
