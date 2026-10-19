@@ -57,9 +57,17 @@ public sealed class ClaimSettlementBoundaryTests
                 var envelope = d["Envelope"].AsBsonDocument;
                 Assert.Equal(f.Root.ToString(), envelope["correlationId"].AsString);
                 types.Add(envelope["eventType"].AsString);
+                Assert.Empty(EnvelopeErrors(envelope));
             }
         }
         Assert.Equal(new[] { "ClaimApproved", "ClaimClosed", "ClaimInvestigating", "ClaimOpened", "ClaimRejected", "ClaimSettled", "ClaimWithdrawn" },
             types.Order(StringComparer.Ordinal).ToArray());
     }
+
+    // Contract fidelity for events: each stored envelope validates against the frozen LifecycleEventEnvelope schema.
+    private static IEnumerable<string> EnvelopeErrors(BsonDocument envelope) =>
+        Diten.SupplyChainService.Tests.Common.ShipmentBundleContract.Validate(
+            Diten.SupplyChainService.Tests.Common.ShipmentBundleContract.Pointer("#/components/schemas/LifecycleEventEnvelope"),
+            System.Text.Json.Nodes.JsonNode.Parse(envelope.ToJson(new MongoDB.Bson.IO.JsonWriterSettings { OutputMode = MongoDB.Bson.IO.JsonOutputMode.RelaxedExtendedJson })));
+
 }

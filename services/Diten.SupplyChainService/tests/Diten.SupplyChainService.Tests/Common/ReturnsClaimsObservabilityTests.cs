@@ -22,6 +22,33 @@ public sealed class ReturnsClaimsObservabilityTests(ReturnsClaimsHttpHost host)
     private const string Returns = "/api/shipment-bundle/returns";
     private const string Claims = "/api/shipment-bundle/claims";
 
+    // MOD-0186/0187 §16 (contract fidelity): live answers of both modules — success and error — validate against the
+    // frozen OpenAPI.
+    [Fact]
+    public async Task Live_responses_match_the_frozen_contract()
+    {
+        var errors = new List<string>();
+        void Check(string path, string method, ReturnsClaimsHttpHost.Reply r) =>
+            errors.AddRange(ShipmentBundleContract.ValidateResponse(path, method, r.Status, r.Json).Select(e => $"{method} {path} {r.Status}: {e}"));
+        var root = Guid.NewGuid().ToString();
+        // Its own shipment: the shared one carries a return-quantity cap the other facts of this collection rely on.
+        var returnBody = host.ReturnBody("1"); returnBody["shipmentId"] = Guid.NewGuid().ToString();
+        var ret = await host.Send("POST", Returns, returnBody, host.Token(), "contract-return-" + Guid.NewGuid(), root); Check("/returns", "POST", ret);
+        var returnId = ret.Json!["returnId"]!.GetValue<string>();
+        Check("/returns/{returnId}/transition", "POST", await host.Send("POST", Returns + "/" + returnId + "/transition",
+            new System.Text.Json.Nodes.JsonObject { ["targetStatus"] = "Authorized", ["occurredAt"] = "2026-09-20T09:00:00Z" }, host.Token(), "contract-rt-" + Guid.NewGuid(), root));
+        Check("/returns", "GET", await host.Send("GET", Returns, null, host.Token(), null));
+        var claimBody = host.ClaimBody(); claimBody["shipmentId"] = Guid.NewGuid().ToString();
+        var claim = await host.Send("POST", Claims, claimBody, host.Token(), "contract-claim-" + Guid.NewGuid(), root); Check("/claims", "POST", claim);
+        var claimId = claim.Json!["claimId"]!.GetValue<string>();
+        Check("/claims/{claimId}/transition", "POST", await host.Send("POST", Claims + "/" + claimId + "/transition",
+            new System.Text.Json.Nodes.JsonObject { ["targetStatus"] = "Investigating", ["occurredAt"] = "2026-09-20T09:00:00Z" }, host.Token(), "contract-ct-" + Guid.NewGuid(), root));
+        Check("/claims", "GET", await host.Send("GET", Claims, null, host.Token(), null));
+        Check("/claims/{claimId}/transition", "POST", await host.Send("POST", Claims + "/" + Guid.NewGuid() + "/transition",
+            new System.Text.Json.Nodes.JsonObject { ["targetStatus"] = "Investigating", ["occurredAt"] = "2026-09-20T09:00:00Z" }, host.Token(), "contract-404-" + Guid.NewGuid(), root));
+        Assert.Empty(errors);
+    }
+
     [Fact]
     public async Task Return_create_replay_transition_and_query_all_answer_over_http()
     {

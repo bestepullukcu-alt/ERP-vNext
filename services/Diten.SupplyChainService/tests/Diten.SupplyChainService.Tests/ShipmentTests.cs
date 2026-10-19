@@ -332,6 +332,30 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         await AssertUnchangedAsync(app, before, "cross-scope mutations");
     }
 
+    // MOD-0183 §16 #10 (contract fidelity): every live answer of the bound operations — success and error — validates
+    // against the FROZEN shipment-bundle OpenAPI (Common/ShipmentBundleContract reads the YAML from the repository).
+    [Fact]
+    public async Task Live_responses_match_the_frozen_contract()
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient();
+        var errors = new List<string>();
+        void Check(string path, string method, (int Status, JsonObject Body) r) =>
+            errors.AddRange(Diten.SupplyChainService.Tests.Common.ShipmentBundleContract.ValidateResponse(path, method, r.Status, r.Body).Select(e => $"{method} {path} {r.Status}: {e}"));
+        var created = await Send(c, "POST", "", CreateBody(), "contract-create"); Check("/shipments", "POST", created);
+        var id = created.Body["shipmentId"]!.GetValue<string>();
+        Check("/shipments/{shipmentId}", "GET", await Send(c, "GET", "/" + id));
+        Check("/shipments", "GET", await Send(c, "GET", ""));
+        foreach (var status in new[] { "Planned", "Dispatched", "InTransit" })
+            Check("/shipments/{shipmentId}/transition", "POST", await Send(c, "POST", $"/{id}/transition", Transition(status), "contract-" + status));
+        Check("/shipments/{shipmentId}/pod", "POST", await Send(c, "POST", $"/{id}/pod", Pod(), "contract-pod"));
+        Check("/shipments/{shipmentId}", "GET", await Send(c, "GET", "/" + id));
+        Check("/shipments/{shipmentId}", "GET", await Send(c, "GET", "/" + Guid.NewGuid()));                              // 404
+        var bad = CreateBody(); bad.Remove("plannedShipAt"); Check("/shipments", "POST", await Send(c, "POST", "", bad, "contract-bad")); // 400
+        Check("/shipments/{shipmentId}/transition", "POST", await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "contract-422")); // 422
+        foreach (var e in errors) output.WriteLine(e);
+        Assert.Empty(errors);
+    }
+
     private static readonly string[] StateCollections =
         ["sce_shipments", "sce_shipment_receipts", "sce_shipment_history", "sce_shipment_audit", "sce_shipment_outbox"];
 

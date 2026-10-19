@@ -116,7 +116,7 @@ Desired family is the frozen `SHIPMENT-BUNDLE` carrier surface. Only `integratio
 ## 16. Acceptance Criteria
 
 - [ ] Runtime remains absent while status is `draft`. — **⊘ SUPERSEDED** (pack :391 supersedes draft-status statements; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
-- [ ] Future implementation matches all Carrier schemas, examples, headers and deterministic errors in v1. — **⚠ PARTIAL** (contract tests in tree; schema-checked runtime runs only outside the repo; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Future implementation matches all Carrier schemas, examples, headers and deterministic errors in v1. — **✅ MET** (examples + live answers incl. deterministic errors validate (`CarrierContractTests.Live_responses_match_the_frozen_contract`); headers `OrderedHeaderBodyAndReplayValidation` — 2026-10-19; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [ ] Carrier status and idempotency tests prove no duplicate write/audit; no Carrier event is invented (the frozen event enum excludes Carrier). — **⚠ PARTIAL** (idempotency MET (`CarrierContractTests.*Replay*`, `AfterCommitFailure…`); "no event" asserted by no test; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Cross-tenant/cross-LE access returns 404. — **✅ MET** (`CarrierContractTests.TwoByTwoScopes…`, `OrderedHeaderBodyAndReplayValidation`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] MOD-0185 consumes carrier by contract/reference without internal database/type sharing. — **✅ MET** (`LoadReferenceTests.*`; Q151-02 and G5 runs (load 201 with this carrier); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)

@@ -40,6 +40,21 @@ Remaining PARTIALs are one theme in four packs — **no test validates responses
 examples** (0183 #10, 0184 #2, 0185 #3, 0187 #2) — plus 0183 composition items (#1, #8, #9), 0184 #3 "no carrier
 event" assertion, and 0186 #2 (B-04 type coupling, awaiting a CT ruling).
 
+## Contract fidelity closed the same day (second pass)
+
+`Common/ShipmentBundleContract` reads the FROZEN `shipment-bundle.openapi.yaml` (OpenAPI 3.1) at test time — no copy —
+and validates against exactly the keywords it uses. Non-vacuous: a published example broken six ways is refused.
+- all **247** published examples validate against their own schemas (`ShipmentBundleContractExampleTests`);
+- live success + error answers of every bound operation validate, per module (`*.Live_responses_match_the_frozen_contract`
+  in ShipmentTests, CarrierContractTests, LoadEventCorrelationTests, ReturnsClaimsObservabilityTests);
+- every stored Load / Return / Claim event envelope (7 + 8 + 7 types) validates against `LifecycleEventEnvelope`.
+→ 0183 #10, 0184 #2, 0185 #3, 0187 #2 promoted to MET. **Updated coverage: 0183 8/11 · 0184 3/5 · 0185 4/5 ·
+0186 3/5 · 0187 5/6** (in scope, i.e. without the superseded draft boxes: 8/11 · 3/4 · 4/4 · 3/4 · 5/5).
+
+Contract looseness found while proving the validator (recorded, not changed — the contract is FROZEN):
+`ShipmentSummary` publishes no `required` list, so `shipmentId`/`status` are formally optional in list and detail
+responses; and `ShipmentDetail` is open to extra properties. A future contract version should tighten both.
+
 ## MOD-0188 Demand Planning — not ticked
 
 Auditor: 1 MET (D04) / 25 PARTIAL / 1 NOT MET (D26) / 2 out of scope (D05, D06). Cause is structural, not missing tests:

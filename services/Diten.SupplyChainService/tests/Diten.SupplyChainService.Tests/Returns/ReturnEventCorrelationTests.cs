@@ -39,6 +39,7 @@ public sealed class ReturnEventCorrelationTests
             {
                 Assert.Equal(f.Root.ToString(), d["Envelope"]["correlationId"].AsString);
                 types.Add(d["Envelope"]["eventType"].AsString);
+                Assert.Empty(EnvelopeErrors(d["Envelope"].AsBsonDocument));
             }
         }
         Assert.Equal(new[] { "ReturnAuthorized", "ReturnCancelled", "ReturnClosed", "ReturnDispositioned", "ReturnInTransit",
@@ -59,4 +60,11 @@ public sealed class ReturnEventCorrelationTests
         Assert.All(names, name => Assert.StartsWith("return", name, StringComparison.Ordinal));
         Assert.DoesNotContain(names, name => Stock.IsMatch(name));
     }
+
+    // Contract fidelity for events: each stored envelope validates against the frozen LifecycleEventEnvelope schema.
+    private static IEnumerable<string> EnvelopeErrors(BsonDocument envelope) =>
+        Diten.SupplyChainService.Tests.Common.ShipmentBundleContract.Validate(
+            Diten.SupplyChainService.Tests.Common.ShipmentBundleContract.Pointer("#/components/schemas/LifecycleEventEnvelope"),
+            System.Text.Json.Nodes.JsonNode.Parse(envelope.ToJson(new MongoDB.Bson.IO.JsonWriterSettings { OutputMode = MongoDB.Bson.IO.JsonOutputMode.RelaxedExtendedJson })));
+
 }
