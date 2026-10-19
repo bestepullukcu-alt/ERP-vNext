@@ -164,7 +164,12 @@
             return;
         }
         window.bootstrap.Modal.getOrCreateInstance(byId('rc-open-case-modal')).hide();
-        window.showToast?.(t('Recall.OpenCase.Done', reply.json?.number || ''), 'success');
+        // WP-MVP1-FIX-LIVE2 (finding 6): the new Draft case opens in its Vaka Detayı — the next step (scope review / submit) is there; a toast
+        // alone left the user on İzleme with no way to the case. The reply is the service envelope ({ data: case }).
+        const created = reply.json?.data || reply.json || {};
+        const href = view.caseHref(created.caseId);
+        if (href) { window.location.assign(href); return; }
+        window.showToast?.(t('Recall.OpenCase.Done', created.number || ''), 'success');
     };
 
     const initLotPicker = () => {

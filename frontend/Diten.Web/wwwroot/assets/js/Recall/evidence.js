@@ -1,7 +1,9 @@
 /**
  * MOD-0177 R7b — Kanıt Paketi (pack §11.1, §4.13; mockup "isEv"). Draws what the doors answer; the subject check, the section order and the
  * export → download → hash comparison are RecallEvidenceView's (evidence-view.js, measured by Node). The table words are the screen's
- * (Recall.Ev.W.{key}, 7 languages); the values are the records' own. The PDF / CSV labels follow the page language when it is tr, else en.
+ * (Recall.Ev.W.{key}, 7 languages). WP-MVP1-FIX-LIVE2: the preview, the CSV and the PDF are asked in the PAGE language (Accept-Language, one
+ * of the 7) — values (status, event, node …) and names come worded by the service; a zh / ar PDF is produced in English (its font has no such
+ * glyphs) and the page says so in the page language.
  */
 'use strict';
 
@@ -16,6 +18,9 @@
     const show = (el, on) => el?.classList.toggle('d-none', !on);
     const word = (key) => t('Recall.Ev.W.' + key) || key;
     const language = document.documentElement.lang || 'en';
+    const LANGS = ['en', 'tr', 'fr', 'es', 'zh', 'ar', 'ru'];
+    const pageLanguage = LANGS.includes(language.split('-')[0].toLowerCase()) ? language.split('-')[0].toLowerCase() : 'en';
+    const PDF_LANGS = ['en', 'tr', 'fr', 'es', 'ru'];
 
     const antiforgery = () => document.querySelector('#rc-antiforgery input[name="__RequestVerificationToken"]')?.value || '';
     const deps = {
@@ -41,6 +46,15 @@
         },
         sha256: async (bytes) => view.hex(await crypto.subtle.digest('SHA-256', bytes))
     };
+    // the preview in the page language (the service words values and names in it)
+    const readIn = async (url) => {
+        try {
+            const res = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json', 'Accept-Language': pageLanguage } });
+            return { ok: res.ok, status: res.status, json: await res.json().catch(() => null) };
+        } catch (error) {
+            return { ok: false, status: 0, json: null };
+        }
+    };
 
     // ── the subject ──────────────────────────────────────────────────────────────────────────────────────────────
     const fillPick = () => {
@@ -61,6 +75,7 @@
     root.querySelectorAll('[data-ev-kind]').forEach((b) => b.addEventListener('click', () => setKind(b.dataset.evKind)));
 
     // ── the preview ──────────────────────────────────────────────────────────────────────────────────────────────
+    // a table whose first column is "field" names a field per row: its first cell is a word key
     const table = (tbl, summary) => {
         if (!tbl.rows?.length) return `<p class="small text-muted mb-2">${esc(word('none'))}</p>`;
         const head = tbl.columns.map((c) => `<th>${esc(word(c))}</th>`).join('');
@@ -75,8 +90,8 @@
         byId('rc-ev-sections').innerHTML = view.sections(preview).map(({ key, section }) => {
             if (!section) return `<section class="mb-4"><h6>${esc(word(key))}</h6><p class="small text-danger mb-0">${esc(t('Recall.Evidence.Missing'))}</p></section>`;
             const note = section.note ? `<p class="small text-muted mb-2">${esc(word(section.note))}</p>` : '';
-            const body = section.applicable ? (section.tables || []).map((tbl) => ((section.tables.length > 1 ? `<div class="small fw-medium mb-1">${esc(word(tbl.key))}</div>` : '') + table(tbl, tbl.key === 'summary'))).join('') : '';
-            const signatures = key === '7_signatures' && (section.tables?.[0]?.rows || []).some((r) => String(r[5] || '').startsWith('Unreadable'))
+            const body = section.applicable ? (section.tables || []).map((tbl) => ((section.tables.length > 1 ? `<div class="small fw-medium mb-1">${esc(word(tbl.key))}</div>` : '') + table(tbl, tbl.columns?.[0] === 'field'))).join('') : '';
+            const signatures = key === '7_signatures' && (section.tables?.[0]?.rows || []).some((r) => r[1] && !r[2])
                 ? `<p class="small text-warning mb-0">${esc(t('Recall.Evidence.Unreadable'))}</p>` : '';
             return `<section class="mb-4"><h6 class="mb-2">${esc(word(key))}</h6>${note}${body}${signatures}</section>`;
         }).join('');
@@ -88,7 +103,7 @@
         if (!picked.ok) { ui.showError(byId('rc-error'), t(picked.error)); return; }
         state.subject = current();
         root.querySelectorAll('[data-ev-format]').forEach((b) => { b.disabled = true; });
-        const reply = await ui.get(`/Recall/data/evidence/preview?${view.query(picked.params)}`);
+        const reply = await readIn(`/Recall/data/evidence/preview?${view.query(picked.params)}`);
         if (!reply.ok) { ui.showError(byId('rc-error'), ui.errorText(reply)); return; }
         drawPreview(reply.json.data || {});
     };
@@ -108,7 +123,7 @@
     root.querySelectorAll('[data-ev-format]').forEach((b) => b.addEventListener('click', async () => {
         ui.hideError(byId('rc-error'));
         b.disabled = true;
-        const result = await view.exportFile(deps, state.subject || current(), b.dataset.evFormat, language.startsWith('tr') ? 'tr' : 'en');
+        const result = await view.exportFile(deps, state.subject || current(), b.dataset.evFormat, pageLanguage);
         b.disabled = false;
         const box = byId('rc-exported');
         if (!result.ok) { ui.showError(byId('rc-error'), result.error ? t(result.error) : ui.errorText(result.reply)); return; }
@@ -116,7 +131,8 @@
         box.className = `alert ${result.verified ? 'alert-success' : 'alert-danger'}`;
         box.innerHTML = `${esc(t(result.verified ? 'Recall.Evidence.Verified' : 'Recall.Evidence.NotVerified', result.exported.fileName))}`
             + `<div class="small font-monospace mt-1" id="rc-ev-sha">SHA-256 ${esc(result.exported.sha256)}</div>`
-            + `<div class="small font-monospace" id="rc-ev-sha-local">${esc(t('Recall.Evidence.LocalHash', result.computed))}</div>`;
+            + `<div class="small font-monospace" id="rc-ev-sha-local">${esc(t('Recall.Evidence.LocalHash', result.computed))}</div>`
+            + (b.dataset.evFormat === 'Pdf' && !PDF_LANGS.includes(pageLanguage) ? `<div class="small mt-1" id="rc-ev-english">${esc(t('Recall.Ev.W.englishFallback'))}</div>` : '');
         await loadLog();
     }));
 

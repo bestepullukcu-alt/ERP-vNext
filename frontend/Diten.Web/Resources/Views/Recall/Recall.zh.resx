@@ -215,7 +215,7 @@
   <data name="Recall.Scope.New" xml:space="preserve"><value>新</value></data>
   <data name="Recall.Scope.EditHint" xml:space="preserve"><value>包含 / 排除只能在范围批准前更改；排除某项会同时排除其下所有内容。</value></data>
   <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>范围已批准；如需更改须进行范围修订。</value></data>
-  <data name="Recall.Scope.Seal" xml:space="preserve"><value>封印 (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>当前范围摘要（SHA-256）{0}</value></data>
   <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>实时重新追溯与已批准范围对比</value></data>
   <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>无差异：实时追溯与已批准范围一致。</value></data>
   <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>{0} 项范围外发现：现在发现，不在已批准范围内。它们本身不会改变任何内容。</value></data>
@@ -615,15 +615,15 @@
   <data name="Recall.Ev.W.number" xml:space="preserve"><value>编号</value></data>
   <data name="Recall.Ev.W.class" xml:space="preserve"><value>等级</value></data>
   <data name="Recall.Ev.W.level" xml:space="preserve"><value>层级</value></data>
-  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>物料</value></data>
-  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>物料标识</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU 标识</value></data>
   <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>根批次</value></data>
   <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>原因参考</value></data>
   <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>开立人</value></data>
   <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>开立时间</value></data>
   <data name="Recall.Ev.W.direction" xml:space="preserve"><value>方向</value></data>
   <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>范围修订</value></data>
-  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>追溯封印（SHA-256）</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>追溯快照摘要</value></data>
   <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>范围审批人</value></data>
   <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>范围审批时间</value></data>
   <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>有效性完成人</value></data>
@@ -651,4 +651,37 @@
   <data name="Recall.Band.Release" xml:space="preserve"><value>该批次正在召回（{0}）；放行不会解除出库阻止。</value></data>
   <data name="Recall.Band.HoldSource" xml:space="preserve"><value>来源：召回 {0}</value></data>
   <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>录入客户退货</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>物料</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>SKU 代码</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>公司</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>公司标识</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>已提交范围封签（已签署）</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>已批准范围封签（已签署）</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>开立人（标识）</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>范围批准人（标识）</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>有效性核查完成人（标识）</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>关闭人（标识）</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>取消人（标识）</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>用户标识</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>签署人标识</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>仓库标识</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>库位标识</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0}（姓名无法读取）</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0}（无法读取）</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>是</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>否</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>通过</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>未通过</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>有效</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>已作废</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>无法读取（{0}）</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>有效性核查结果</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>无发运 — 无可计量数量</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>尚未完成 — 当前数据</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>批准</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>本文件以英文生成（PDF 不支持所选语言）</value></data>
+  <data name="Recall.Scope.SubmittedSeal" xml:space="preserve"><value>已提交范围封签（已签署）{0}</value></data>
+  <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>已批准范围封签（已签署）{0}</value></data>
+  <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>当前范围摘要与最近的封签不一致 — 范围在封签后发生了变化。</value></data>
+  <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>范围内没有客户；退货只能关联到已批准范围内的客户。客户来自销售发运。</value></data>
 </root>

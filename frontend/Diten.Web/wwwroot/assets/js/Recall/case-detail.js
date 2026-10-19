@@ -121,8 +121,12 @@
     // ── tabs ─────────────────────────────────────────────────────────────────────────────────────────────────────
     const drawScope = (scope) => {
         const items = scope.items || [];
+        // WP-MVP1-FIX-LIVE2 (finding 4): the STORED seals rc-v1 signs, by the names the e-sign dialog and the evidence pack use; the live digest
+        // of the current items under its own name, with a warning when it is not the last seal
+        const seals = view.seals(state.detail, scope);
         byId('rc-scope-summary').innerHTML = esc(t('Recall.Scope.Summary', items.length, scope.excludedCount, scope.revision))
-            + (scope.sha256 ? ` · <span class="font-monospace" title="${esc(scope.sha256)}">${esc(t('Recall.Scope.Seal', scope.sha256.slice(0, 12)))}</span>` : '');
+            + seals.lines.map((s) => `<div class="small"><span class="font-monospace" data-seal="${esc(s.kind)}" data-hash="${esc(s.hash)}" title="${esc(s.hash)}">${esc(t(s.key, s.hash.slice(0, 12)))}</span></div>`).join('')
+            + (seals.differs ? `<div class="small text-warning" id="rc-scope-differs">${esc(t('Recall.Scope.SealDiffers'))}</div>` : '');
         byId('rc-scope-hint').textContent = scope.editable ? t('Recall.Scope.EditHint')
             : state.detail?.approvedScope ? t('Recall.Scope.LockedHint') : t('Recall.Scope.PendingHint');
         const editable = scope.editable && state.offers.mark;
@@ -398,6 +402,10 @@
         const customers = state.data.customers || (await read('customers')).json?.data || [];
         state.data.customers = customers;
         byId('rc-link-customer').replaceChildren(...customers.map((c) => new Option(c.label || c.customerRef, c.customerRef)));
+        // WP-MVP1-FIX-LIVE2 (finding 7): no customer in the scope → say why; the fields and the bind button are not drawn (not merely disabled)
+        const none = view.linkable(customers) === false;
+        ['rc-link-fields', 'rc-link-reference-box', 'rc-link-submit'].forEach((id) => byId(id)?.classList.toggle('d-none', none));
+        byId('rc-link-none')?.classList.toggle('d-none', !none);
         byId('rc-link-reference').value = '';
         ui.hideError(byId('rc-link-error'));
         modal('rc-link-modal').show();

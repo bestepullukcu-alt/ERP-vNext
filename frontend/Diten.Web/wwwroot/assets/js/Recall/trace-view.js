@@ -90,8 +90,11 @@ var RecallTraceView = (function () {
     };
 
     const isLot = (n) => LOT_KINDS.includes(n.kind);
+    /** WP-MVP1-FIX-LIVE2 (finding 6): where a newly opened case is shown — its Vaka Detayı; null for anything but a case id. */
+    const caseHref = (caseId) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(caseId || ''))
+        ? `/Recall/Cases/Details/${encodeURIComponent(caseId)}` : null);
 
-    return { describe, tableRows, treeRows, summary, isLot };
+    return { describe, tableRows, treeRows, summary, isLot, caseHref };
 })();
 
 if (typeof window !== 'undefined') window.RecallTraceView = RecallTraceView;

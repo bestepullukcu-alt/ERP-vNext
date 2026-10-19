@@ -215,7 +215,7 @@
   <data name="Recall.Scope.New" xml:space="preserve"><value>nuevo</value></data>
   <data name="Recall.Scope.EditHint" xml:space="preserve"><value>Incluido / excluido solo se puede cambiar antes de aprobar el alcance; excluir un elemento excluye todo lo que hay debajo.</value></data>
   <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>El alcance está aprobado; un cambio requiere una revisión del alcance.</value></data>
-  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Sello (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Resumen actual del alcance (SHA-256) {0}</value></data>
   <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>Nueva trazabilidad en vivo frente al alcance aprobado</value></data>
   <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>Sin diferencias: la trazabilidad en vivo coincide con el alcance aprobado.</value></data>
   <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>{0} hallazgo(s) fuera de alcance: encontrado(s) ahora, no están en el alcance aprobado. Por sí solos no cambian nada.</value></data>
@@ -615,15 +615,15 @@
   <data name="Recall.Ev.W.number" xml:space="preserve"><value>Número</value></data>
   <data name="Recall.Ev.W.class" xml:space="preserve"><value>Clase</value></data>
   <data name="Recall.Ev.W.level" xml:space="preserve"><value>Nivel</value></data>
-  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Artículo</value></data>
-  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Id. del artículo</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>Id. de SKU</value></data>
   <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>Lote raíz</value></data>
   <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>Referencia del motivo</value></data>
   <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>Abierto por</value></data>
   <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>Abierto el</value></data>
   <data name="Recall.Ev.W.direction" xml:space="preserve"><value>Sentido</value></data>
   <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>Revisión del alcance</value></data>
-  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Sello de trazabilidad (SHA-256)</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Resumen de la instantánea de trazabilidad</value></data>
   <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>Alcance aprobado por</value></data>
   <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>Alcance aprobado el</value></data>
   <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>Eficacia completada por</value></data>
@@ -651,4 +651,37 @@
   <data name="Recall.Band.Release" xml:space="preserve"><value>Este lote está en retirada ({0}); liberarlo no levanta el bloqueo de salidas.</value></data>
   <data name="Recall.Band.HoldSource" xml:space="preserve"><value>Origen: retirada {0}</value></data>
   <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>Registrar devolución de cliente</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>Artículo</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>Código SKU</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>Empresa</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>Id. de la empresa</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>Sello del alcance enviado (firmado)</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>Sello del alcance aprobado (firmado)</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>Abierto por (id.)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>Alcance aprobado por (id.)</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>Eficacia completada por (id.)</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>Cerrado por (id.)</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>Cancelado por (id.)</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>Id. del usuario</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>Id. del firmante</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>Id. del almacén</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>Id. de la ubicación</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0} (nombre ilegible)</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0} (ilegible)</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>No</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>Superado</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>No superado</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>Válida</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>Invalidada</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>Ilegible ({0})</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>Resultado de la verificación de eficacia</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>Sin envíos: no hay cantidad que medir</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>Aún no completada: cifras actuales</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>Aprobación</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>Este documento se generó en inglés (el idioma seleccionado no es compatible con el PDF)</value></data>
+  <data name="Recall.Scope.SubmittedSeal" xml:space="preserve"><value>Sello del alcance enviado (firmado) {0}</value></data>
+  <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>Sello del alcance aprobado (firmado) {0}</value></data>
+  <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>El resumen actual del alcance difiere del último sello: el alcance cambió después de sellarse.</value></data>
+  <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>No hay clientes en el alcance; una devolución solo puede vincularse a un cliente del alcance aprobado. Los clientes proceden de los envíos de venta.</value></data>
 </root>

@@ -215,7 +215,7 @@
   <data name="Recall.Scope.New" xml:space="preserve"><value>جديد</value></data>
   <data name="Recall.Scope.EditHint" xml:space="preserve"><value>لا يمكن تغيير الشمول / الاستبعاد إلا قبل الموافقة على النطاق؛ استبعاد عنصر يستبعد كل ما تحته.</value></data>
   <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>تمت الموافقة على النطاق؛ يتطلب التغيير مراجعة للنطاق.</value></data>
-  <data name="Recall.Scope.Seal" xml:space="preserve"><value>الختم (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>ملخص النطاق الحالي (SHA-256) {0}</value></data>
   <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>إعادة التتبّع الحيّة مقابل النطاق المعتمد</value></data>
   <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>لا فرق: التتبّع الحيّ يطابق النطاق المعتمد.</value></data>
   <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>{0} اكتشاف خارج النطاق: وُجد الآن وليس في النطاق المعتمد. لا يغيّر شيئًا بمفرده.</value></data>
@@ -615,15 +615,15 @@
   <data name="Recall.Ev.W.number" xml:space="preserve"><value>الرقم</value></data>
   <data name="Recall.Ev.W.class" xml:space="preserve"><value>الفئة</value></data>
   <data name="Recall.Ev.W.level" xml:space="preserve"><value>المستوى</value></data>
-  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>الصنف</value></data>
-  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>معرّف الصنف</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>معرّف SKU</value></data>
   <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>التشغيلة الجذرية</value></data>
   <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>مرجع السبب</value></data>
   <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>فتحها</value></data>
   <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>وقت الفتح</value></data>
   <data name="Recall.Ev.W.direction" xml:space="preserve"><value>الاتجاه</value></data>
   <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>مراجعة النطاق</value></data>
-  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>ختم التتبّع (SHA-256)</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>ملخص لقطة التتبع</value></data>
   <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>اعتمد النطاق</value></data>
   <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>وقت اعتماد النطاق</value></data>
   <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>أكمل الفعالية</value></data>
@@ -651,4 +651,37 @@
   <data name="Recall.Band.Release" xml:space="preserve"><value>هذه التشغيلة قيد الاستدعاء ({0})؛ الإفراج عنها لا يرفع حظر الإخراج.</value></data>
   <data name="Recall.Band.HoldSource" xml:space="preserve"><value>المصدر: استدعاء {0}</value></data>
   <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>إدخال مرتجع عميل</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>الصنف</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>رمز SKU</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>معرّف الشركة</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>ختم النطاق المُرسَل (مُوقَّع)</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>ختم النطاق المعتمد (مُوقَّع)</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>فتحه (المعرّف)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>اعتمد النطاق (المعرّف)</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>أكمل فحص الفعالية (المعرّف)</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>أغلقه (المعرّف)</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>ألغاه (المعرّف)</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>معرّف المستخدم</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>معرّف الموقّع</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>معرّف المستودع</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>معرّف الموقع</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0} (تعذّرت قراءة الاسم)</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0} (تعذّرت القراءة)</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>لا</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>ناجح</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>غير ناجح</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>صالح</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>أُبطل</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>تعذّرت القراءة ({0})</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>نتيجة فحص الفعالية</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>لا توجد شحنات — لا توجد كمية للقياس</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>لم يكتمل بعد — الأرقام الحالية</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>أُنشئت هذه الوثيقة باللغة الإنجليزية (اللغة المختارة غير مدعومة في ملف PDF)</value></data>
+  <data name="Recall.Scope.SubmittedSeal" xml:space="preserve"><value>ختم النطاق المُرسَل (مُوقَّع) {0}</value></data>
+  <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>ختم النطاق المعتمد (مُوقَّع) {0}</value></data>
+  <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>يختلف ملخص النطاق الحالي عن آخر ختم — تغيّر النطاق بعد ختمه.</value></data>
+  <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>لا يوجد عملاء في النطاق؛ لا يمكن ربط المرتجع إلا بعميل ضمن النطاق المعتمد. يأتي العملاء من شحنات المبيعات.</value></data>
 </root>

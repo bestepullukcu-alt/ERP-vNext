@@ -28,8 +28,10 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
         // R7a — the same word in the language: es / fr "Total {0}", "Fax"; fr "Lot", "Source"
         "Recall.Stock.Totals", "Recall.Channel.Fax", "Recall.StCol.Lot", "Recall.RCol.Source",
         // R7b — a code or the same word: SKU everywhere; tr / fr / es "Plan", tr / fr "Lot"; fr "Signature(s)", "Document", "Date"
-        "Recall.Ev.W.sku", "Recall.Ev.W.skuId", "Recall.Drills.Plan", "Recall.Ev.W.planCode", "Recall.Drills.Lot", "Recall.Ev.W.lot", "Recall.Ev.W.7_signatures",
-        "Recall.Ev.W.signatures", "Recall.Ev.W.signatureId", "Recall.Ev.W.document", "Recall.Ev.W.date"
+        "Recall.Ev.W.sku", "Recall.Drills.Plan", "Recall.Ev.W.planCode", "Recall.Drills.Lot", "Recall.Ev.W.lot", "Recall.Ev.W.7_signatures",
+        "Recall.Ev.W.signatures", "Recall.Ev.W.signatureId", "Recall.Ev.W.document", "Recall.Ev.W.date",
+        // WP-MVP1-FIX-LIVE2 review: es "No" is Spanish (Recall.Ev.W.no); Recall.Ev.W.skuId is now "Identifiant SKU" … (left the list)
+        "Recall.Ev.W.no"
     };
 
     public static readonly TheoryData<string, string, string> Pages = new()

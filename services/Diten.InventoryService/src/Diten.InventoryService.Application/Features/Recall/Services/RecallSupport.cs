@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
+using Diten.InventoryService.Application.Features.Recall.Ports;
 using Diten.InventoryService.Domain.Recall.Entities;
 using Diten.InventoryService.Domain.Recall.Enums;
 using Diten.InventoryService.Domain.Recall.Rules;
@@ -24,12 +25,14 @@ public sealed partial class RecallSupport
     private readonly ITenantContext _tenant;
     private readonly ICorrelationContext _correlation;
     private readonly TimeProvider _clock;
+    private readonly IRecallActorName? _actorName;
 
-    public RecallSupport(ITenantContext tenant, ICorrelationContext correlation, TimeProvider clock)
+    public RecallSupport(ITenantContext tenant, ICorrelationContext correlation, TimeProvider clock, IRecallActorName? actorName = null)
     {
         _tenant = tenant;
         _correlation = correlation;
         _clock = clock;
+        _actorName = actorName;
     }
 
     public Guid TenantId => _tenant.TenantId;
@@ -155,6 +158,7 @@ public sealed partial class RecallSupport
         Sequence = NextSequence(),
         Kind = kind,
         ActorUserId = _tenant.UserId,
+        ActorName = _actorName?.Current, // WP-MVP1-FIX-LIVE2: the name at event time (additive)
         AtUtc = at,
         Text = text,
         Refs = refs is null ? [] : new Dictionary<string, string?>(refs, StringComparer.Ordinal),

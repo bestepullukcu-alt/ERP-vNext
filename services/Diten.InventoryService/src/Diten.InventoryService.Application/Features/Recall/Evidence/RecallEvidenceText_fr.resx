@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Class.N" xml:space="preserve"><value>Classe {0}</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>Approbation du périmètre en attente</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>Contrôle d’efficacité</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>Clôturé</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>Exercice en cours</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>Exercice terminé</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>Exercice annulé</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>Grossiste</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>Pharmacie</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>Patient</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>En amont</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>En aval</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>Les deux</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>Lot de matière première</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>Lot de produit fini</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>Intrant</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>Stock d’entrepôt</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>Expédition</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>Client</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>Écart de traçabilité</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>Destruction / retour fournisseur</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>Sortie sans lot</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>Texte de lot saisi non relié à un lot</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>Lien généalogique manquant</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>Consommé en production sans lien de sortie</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>Expédition sans référence client</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>Limite de traçabilité atteinte</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>Mouvements dans une autre société (nombre seulement)</value></data>
+  <data name="Recall.ReqStatus.Pending" xml:space="preserve"><value>En attente d’envoi</value></data>
+  <data name="Recall.ReqStatus.Held" xml:space="preserve"><value>En quarantaine</value></data>
+  <data name="Recall.ReqStatus.PartiallyHeld" xml:space="preserve"><value>Partiellement en quarantaine</value></data>
+  <data name="Recall.ReqStatus.BlockedByReservation" xml:space="preserve"><value>Bloqué par une réservation</value></data>
+  <data name="Recall.ReqStatus.NothingAvailable" xml:space="preserve"><value>Rien de disponible</value></data>
+  <data name="Recall.ReqStatus.Failed" xml:space="preserve"><value>Échec</value></data>
+  <data name="Recall.ReqStatus.NotNeeded" xml:space="preserve"><value>Inutile</value></data>
+  <data name="Recall.NotNeeded.AlreadyQuarantined" xml:space="preserve"><value>déjà en quarantaine</value></data>
+  <data name="Recall.NotNeeded.AlreadyBlocked" xml:space="preserve"><value>déjà bloqué</value></data>
+  <data name="Recall.NotNeeded.LotBlocked" xml:space="preserve"><value>lot bloqué</value></data>
+  <data name="Recall.NotNeeded.LotExpired" xml:space="preserve"><value>lot périmé</value></data>
+  <data name="Recall.NotNeeded.Excluded" xml:space="preserve"><value>exclu du périmètre</value></data>
+  <data name="Recall.Channel.Phone" xml:space="preserve"><value>Téléphone</value></data>
+  <data name="Recall.Channel.ExternalEmail" xml:space="preserve"><value>E-mail (hors système)</value></data>
+  <data name="Recall.Channel.Fax" xml:space="preserve"><value>Fax</value></data>
+  <data name="Recall.Channel.InPerson" xml:space="preserve"><value>En personne</value></data>
+  <data name="Recall.Channel.Other" xml:space="preserve"><value>Autre</value></data>
+  <data name="Recall.Event.Opened" xml:space="preserve"><value>Dossier ouvert</value></data>
+  <data name="Recall.Event.ScopeItemsAdded" xml:space="preserve"><value>Éléments ajoutés au périmètre</value></data>
+  <data name="Recall.Event.ScopeMarked" xml:space="preserve"><value>Inclus / exclus modifié</value></data>
+  <data name="Recall.Event.ScopeSubmitted" xml:space="preserve"><value>Soumis à l’approbation du périmètre</value></data>
+  <data name="Recall.Event.ScopeReturned" xml:space="preserve"><value>Périmètre renvoyé en brouillon</value></data>
+  <data name="Recall.Event.ScopeApproved" xml:space="preserve"><value>Périmètre approuvé</value></data>
+  <data name="Recall.Event.SegregationConfirmed" xml:space="preserve"><value>Séparation physique confirmée</value></data>
+  <data name="Recall.Event.CustomerNotified" xml:space="preserve"><value>Client informé</value></data>
+  <data name="Recall.Event.ConsumptionDeclared" xml:space="preserve"><value>Consommation déclarée</value></data>
+  <data name="Recall.Event.EffectivenessStarted" xml:space="preserve"><value>Contrôle d’efficacité démarré</value></data>
+  <data name="Recall.Event.EffectivenessCompleted" xml:space="preserve"><value>Contrôle d’efficacité terminé</value></data>
+  <data name="Recall.Event.Closed" xml:space="preserve"><value>Dossier clôturé</value></data>
+  <data name="Recall.Event.Cancelled" xml:space="preserve"><value>Dossier annulé</value></data>
+  <data name="Recall.Event.TraceRun" xml:space="preserve"><value>Traçabilité exécutée</value></data>
+  <data name="Recall.Event.OutOfScopeFinding" xml:space="preserve"><value>Constat hors périmètre</value></data>
+  <data name="Recall.Event.QuarantineRequested" xml:space="preserve"><value>Quarantaine demandée</value></data>
+  <data name="Recall.Event.QuarantineFailed" xml:space="preserve"><value>Échec de la demande de quarantaine</value></data>
+  <data name="Recall.Event.QuarantineRetried" xml:space="preserve"><value>Demande de quarantaine relancée</value></data>
+  <data name="Recall.Event.ExitRefused" xml:space="preserve"><value>Sortie refusée (lot en rappel)</value></data>
+  <data name="Recall.Event.ReturnLinked" xml:space="preserve"><value>Retour lié</value></data>
+  <data name="Recall.Event.ScopeRevised" xml:space="preserve"><value>Révision du périmètre soumise</value></data>
+  <data name="Recall.Drills.ModeAuto" xml:space="preserve"><value>Le système choisit</value></data>
+  <data name="Recall.Drills.ModeManual" xml:space="preserve"><value>Je choisis</value></data>
+  <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Résumé</value></data>
+  <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · Résultat de traçabilité</value></data>
+  <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Demandes de quarantaine et résultats</value></data>
+  <data name="Recall.Ev.W.4_customers" xml:space="preserve"><value>4 · Clients et information</value></data>
+  <data name="Recall.Ev.W.5_returnsAndEffectiveness" xml:space="preserve"><value>5 · Retours et contrôle d’efficacité</value></data>
+  <data name="Recall.Ev.W.6_timeline" xml:space="preserve"><value>6 · Chronologie</value></data>
+  <data name="Recall.Ev.W.7_signatures" xml:space="preserve"><value>7 · Signatures</value></data>
+  <data name="Recall.Ev.W.notApplicable" xml:space="preserve"><value>Sans objet</value></data>
+  <data name="Recall.Ev.W.notApplicableDrill" xml:space="preserve"><value>Sans objet — un exercice est une répétition en lecture seule</value></data>
+  <data name="Recall.Ev.W.notApplicablePeriod" xml:space="preserve"><value>Sans objet — un rapport de période ne liste que les exercices</value></data>
+  <data name="Recall.Ev.W.notSealed" xml:space="preserve"><value>Le périmètre n’est pas scellé ; pas d’instantané de traçabilité</value></data>
+  <data name="Recall.Ev.W.none" xml:space="preserve"><value>Aucun enregistrement</value></data>
+  <data name="Recall.Ev.W.field" xml:space="preserve"><value>Champ</value></data>
+  <data name="Recall.Ev.W.value" xml:space="preserve"><value>Valeur</value></data>
+  <data name="Recall.Ev.W.nodeKind" xml:space="preserve"><value>Nœud</value></data>
+  <data name="Recall.Ev.W.lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.Ev.W.place" xml:space="preserve"><value>Entrepôt / client</value></data>
+  <data name="Recall.Ev.W.quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Recall.Ev.W.unit" xml:space="preserve"><value>Unité</value></data>
+  <data name="Recall.Ev.W.document" xml:space="preserve"><value>Document</value></data>
+  <data name="Recall.Ev.W.date" xml:space="preserve"><value>Date</value></data>
+  <data name="Recall.Ev.W.warehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="Recall.Ev.W.location" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="Recall.Ev.W.status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Recall.Ev.W.reason" xml:space="preserve"><value>Motif</value></data>
+  <data name="Recall.Ev.W.held" xml:space="preserve"><value>Retenu</value></data>
+  <data name="Recall.Ev.W.holds" xml:space="preserve"><value>Fiche de quarantaine</value></data>
+  <data name="Recall.Ev.W.customer" xml:space="preserve"><value>Client</value></data>
+  <data name="Recall.Ev.W.notifiedOn" xml:space="preserve"><value>Informé le</value></data>
+  <data name="Recall.Ev.W.channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="Recall.Ev.W.note" xml:space="preserve"><value>Remarque</value></data>
+  <data name="Recall.Ev.W.transaction" xml:space="preserve"><value>Mouvement</value></data>
+  <data name="Recall.Ev.W.sku" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.shipped" xml:space="preserve"><value>Expédié</value></data>
+  <data name="Recall.Ev.W.returned" xml:space="preserve"><value>Retourné</value></data>
+  <data name="Recall.Ev.W.consumed" xml:space="preserve"><value>Consommé</value></data>
+  <data name="Recall.Ev.W.open" xml:space="preserve"><value>Ouvert</value></data>
+  <data name="Recall.Ev.W.percent" xml:space="preserve"><value>Efficacité %</value></data>
+  <data name="Recall.Ev.W.target" xml:space="preserve"><value>Objectif %</value></data>
+  <data name="Recall.Ev.W.met" xml:space="preserve"><value>Objectif atteint</value></data>
+  <data name="Recall.Ev.W.seq" xml:space="preserve"><value>N°</value></data>
+  <data name="Recall.Ev.W.at" xml:space="preserve"><value>Heure</value></data>
+  <data name="Recall.Ev.W.event" xml:space="preserve"><value>Événement</value></data>
+  <data name="Recall.Ev.W.actor" xml:space="preserve"><value>Utilisateur</value></data>
+  <data name="Recall.Ev.W.text" xml:space="preserve"><value>Texte</value></data>
+  <data name="Recall.Ev.W.signatureId" xml:space="preserve"><value>Signature</value></data>
+  <data name="Recall.Ev.W.action" xml:space="preserve"><value>Opération</value></data>
+  <data name="Recall.Ev.W.signer" xml:space="preserve"><value>Signataire</value></data>
+  <data name="Recall.Ev.W.meaning" xml:space="preserve"><value>Signification</value></data>
+  <data name="Recall.Ev.W.signedAt" xml:space="preserve"><value>Signé le</value></data>
+  <data name="Recall.Ev.W.run" xml:space="preserve"><value>Exercice</value></data>
+  <data name="Recall.Ev.W.started" xml:space="preserve"><value>Début</value></data>
+  <data name="Recall.Ev.W.duration" xml:space="preserve"><value>Durée (min)</value></data>
+  <data name="Recall.Ev.W.targetHours" xml:space="preserve"><value>Cible (h)</value></data>
+  <data name="Recall.Ev.W.passed" xml:space="preserve"><value>Résultat</value></data>
+  <data name="Recall.Ev.W.returns" xml:space="preserve"><value>Retours</value></data>
+  <data name="Recall.Ev.W.effectiveness" xml:space="preserve"><value>Efficacité</value></data>
+  <data name="Recall.Ev.W.summary" xml:space="preserve"><value>Résumé</value></data>
+  <data name="Recall.Ev.W.runs" xml:space="preserve"><value>Exercices</value></data>
+  <data name="Recall.Ev.W.trace" xml:space="preserve"><value>Traçabilité</value></data>
+  <data name="Recall.Ev.W.requests" xml:space="preserve"><value>Demandes</value></data>
+  <data name="Recall.Ev.W.customers" xml:space="preserve"><value>Clients</value></data>
+  <data name="Recall.Ev.W.timeline" xml:space="preserve"><value>Événements</value></data>
+  <data name="Recall.Ev.W.signatures" xml:space="preserve"><value>Signatures</value></data>
+  <data name="Recall.Ev.W.number" xml:space="preserve"><value>Numéro</value></data>
+  <data name="Recall.Ev.W.class" xml:space="preserve"><value>Classe</value></data>
+  <data name="Recall.Ev.W.level" xml:space="preserve"><value>Niveau</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Identifiant de l'article</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>Identifiant SKU</value></data>
+  <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>Lot racine</value></data>
+  <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>Référence du motif</value></data>
+  <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>Ouvert par</value></data>
+  <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>Ouvert le</value></data>
+  <data name="Recall.Ev.W.direction" xml:space="preserve"><value>Sens</value></data>
+  <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>Révision du périmètre</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Empreinte de l'instantané de traçabilité</value></data>
+  <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>Périmètre approuvé par</value></data>
+  <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>Périmètre approuvé le</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>Efficacité clôturée par</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedAtUtc" xml:space="preserve"><value>Efficacité clôturée le</value></data>
+  <data name="Recall.Ev.W.closedBy" xml:space="preserve"><value>Clôturé par</value></data>
+  <data name="Recall.Ev.W.closedAtUtc" xml:space="preserve"><value>Clôturé le</value></data>
+  <data name="Recall.Ev.W.closureSummary" xml:space="preserve"><value>Résumé de clôture</value></data>
+  <data name="Recall.Ev.W.openQuantityAcceptance" xml:space="preserve"><value>Acceptation de la quantité ouverte</value></data>
+  <data name="Recall.Ev.W.cancelledBy" xml:space="preserve"><value>Annulé par</value></data>
+  <data name="Recall.Ev.W.cancelReason" xml:space="preserve"><value>Motif d’annulation</value></data>
+  <data name="Recall.Ev.W.planCode" xml:space="preserve"><value>Plan</value></data>
+  <data name="Recall.Ev.W.selectionMode" xml:space="preserve"><value>Choix du lot</value></data>
+  <data name="Recall.Ev.W.startedAtUtc" xml:space="preserve"><value>Débuté le</value></data>
+  <data name="Recall.Ev.W.endedAtUtc" xml:space="preserve"><value>Terminé le</value></data>
+  <data name="Recall.Ev.W.durationMinutes" xml:space="preserve"><value>Durée (min)</value></data>
+  <data name="Recall.Ev.W.gapCount" xml:space="preserve"><value>Écarts de traçabilité</value></data>
+  <data name="Recall.Ev.W.resultNote" xml:space="preserve"><value>Note de résultat</value></data>
+  <data name="Recall.Ev.W.from" xml:space="preserve"><value>Du</value></data>
+  <data name="Recall.Ev.W.to" xml:space="preserve"><value>Au</value></data>
+  <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>Nombre d’exercices</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>Article</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>Code SKU</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>Société</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>Identifiant de la société</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>Sceau du périmètre soumis (signé)</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>Sceau du périmètre approuvé (signé)</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>Ouvert par (identifiant)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>Périmètre approuvé par (identifiant)</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>Efficacité terminée par (identifiant)</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>Clôturé par (identifiant)</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>Annulé par (identifiant)</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>Identifiant de l'utilisateur</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>Identifiant du signataire</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>Identifiant de l'entrepôt</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>Identifiant de l'emplacement</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0} (nom illisible)</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0} (illisible)</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>Non</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>Réussi</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>Échoué</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>Valide</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>Invalidée</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>Illisible ({0})</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>Résultat du contrôle d’efficacité</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>Aucune expédition — aucune quantité à mesurer</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>Pas encore terminé — chiffres actuels</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>Approbation</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>Ce document a été produit en anglais (la langue choisie n’est pas prise en charge dans le PDF)</value></data>
+  <data name="RecallPdf.Title" xml:space="preserve"><value>Dossier de preuves du rappel</value></data>
+  <data name="RecallPdf.Subject" xml:space="preserve"><value>Objet</value></data>
+  <data name="RecallPdf.Generated" xml:space="preserve"><value>Généré le</value></data>
+  <data name="RecallPdf.Page" xml:space="preserve"><value>Page</value></data>
+  <data name="RecallPdf.RequestedLanguage" xml:space="preserve"><value>Langue demandée : {0}</value></data>
+  <data name="RecallPdf.Kind.Case" xml:space="preserve"><value>Dossier de rappel</value></data>
+  <data name="RecallPdf.Kind.DrillRun" xml:space="preserve"><value>Exercice</value></data>
+  <data name="RecallPdf.Kind.Period" xml:space="preserve"><value>Période</value></data>
+</root>

@@ -192,13 +192,13 @@ public sealed class RecallR7bWebTests : IClassFixture<WebApplicationFactory<Prog
     public void Every_word_the_evidence_preview_can_send_and_every_runtime_prefix_is_delivered()
     {
         var keys = Diten.Web.Views.Recall.Recall.Keys.ToHashSet(StringComparer.Ordinal);
-        var labels = File.ReadAllText(Path.Combine(TraceViewRenderer.RepoRoot(), "services", "Diten.InventoryService", "src", "Diten.InventoryService.Application",
-            "Features", "Recall", "Evidence", "RecallEvidence.cs"));
-        var words = Regex.Matches(labels, @"\[""(?<k>[A-Za-z0-9_.]+)""\]\s*=\s*\(").Select(m => m.Groups["k"].Value)
-            .Concat(["1_summary", "2_trace", "3_quarantine", "4_customers", "5_returnsAndEffectiveness", "6_timeline", "7_signatures"])
-            .Where(k => k is not ("title" or "subject" or "company" or "generated" or "page") && !k.StartsWith("kind.", StringComparison.Ordinal)).Distinct().ToList();
-        Assert.True(words.Count > 90, string.Join(",", words));
-        Assert.All(words, w => Assert.Contains("Recall.Ev.W." + w, keys));
+        // WP-MVP1-FIX-LIVE2: the service words the pack from its own resx family (CT "çeviri kaynağı B"); every Recall.Ev.W word it can send is
+        // delivered to the page (values: EvidenceTextParityTests)
+        var service = System.Xml.Linq.XDocument.Load(Path.Combine(TraceViewRenderer.RepoRoot(), "services", "Diten.InventoryService", "src",
+            "Diten.InventoryService.Application", "Features", "Recall", "Evidence", "RecallEvidenceText_en.resx"));
+        var words = service.Root!.Elements("data").Select(d => (string)d.Attribute("name")!).Where(k => k.StartsWith("Recall.Ev.W.", StringComparison.Ordinal)).ToList();
+        Assert.True(words.Count > 120, string.Join(",", words));
+        Assert.All(words, w => Assert.Contains(w, keys));
 
         foreach (var step in new[] { "Trace", "Scope", "CustomerList" })
             foreach (var prefix in new[] { "Recall.Drills.Step.", "Recall.Drills.StepInfo.", "Recall.Drills.StepButton." }) Assert.Contains(prefix + step, keys);

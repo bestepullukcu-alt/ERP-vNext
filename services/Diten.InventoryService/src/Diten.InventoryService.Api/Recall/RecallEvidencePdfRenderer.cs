@@ -15,8 +15,10 @@ namespace Diten.InventoryService.Api.Recall;
 /// <item>every value is a literal text run (never MigraDoc DDL / RTF / HTML) — record content cannot inject markup; no links, no scripts;</item>
 /// <item>the seven sections of the preview in its order; a not-applicable section says so; every page's footer names the company, the subject,
 /// the generation time and "page n / m";</item>
-/// <item>labels tr or en (<see cref="RecallEvidenceLabels"/>; any other language → en — the FU-0176-PDF-L10N limit); values stay the records'
-/// codes / ids (as in the 0176 pack).</item>
+/// <item>WP-MVP1-FIX-LIVE2: words from <see cref="RecallEvidenceText"/> (the service resx, shared keys = the screen's); the document is already
+/// worded in the PDF's language — tr / en / fr / es / ru (the font's glyphs, measured); a zh / ar selection is drawn in English with a note
+/// at the top (FU-0176-PDF-L10N: font + Arabic shaping / right-to-left). The id columns beside a name (<see cref="RecallEvidenceTable.PdfHidden"/>)
+/// stay in the CSV and on the screen.</item>
 /// </list>
 /// A render carries a creation time and a document id, so two renders differ — the export stores THE bytes it hashed.
 /// </summary>
@@ -26,10 +28,11 @@ public sealed class RecallEvidencePdfRenderer : IRecallEvidencePdfRenderer
     {
         ExpiryEvidencePdfFontResolver.EnsureInstalled();
         var l = d.Language;
-        string L(string key) => RecallEvidenceLabels.Of(key, l);
+        string L(string key) => RecallEvidenceText.Word(key, l);
+        string P(string key) => RecallEvidenceText.Of("RecallPdf." + key, l);
 
         var pdf = new Document();
-        pdf.Info.Title = $"{L("title")} {d.SubjectLabel}";
+        pdf.Info.Title = $"{P("Title")} {d.SubjectLabel}";
         pdf.Info.Author = "Diten Inventory Service (MOD-0177)";
         var normal = pdf.Styles[StyleNames.Normal]!;
         normal.Font.Name = ExpiryEvidencePdfFontResolver.FamilyName;
@@ -44,7 +47,7 @@ public sealed class RecallEvidencePdfRenderer : IRecallEvidencePdfRenderer
 
         var footer = section.Footers.Primary.AddParagraph();
         footer.Format.Font.Size = 7;
-        footer.AddText($"{L("company")}: {d.LegalEntityId:D} · {L("subject")}: {d.SubjectLabel} · {L("generated")}: {Utc(d.GeneratedAtUtc)} · {L("page")} ");
+        footer.AddText($"{L("company")}: {d.Company} · {P("Subject")}: {d.SubjectLabel} · {P("Generated")}: {Utc(d.GeneratedAtUtc)} · {P("Page")} ");
         footer.AddPageField();
         footer.AddText(" / ");
         footer.AddNumPagesField();
@@ -52,13 +55,24 @@ public sealed class RecallEvidencePdfRenderer : IRecallEvidencePdfRenderer
         var title = section.AddParagraph();
         title.Format.Font.Size = 14;
         title.Format.Font.Bold = true;
-        title.AddText(L("title"));
+        title.AddText(P("Title"));
+
+        if (d.EnglishFallback)
+        {
+            // the selected language is not drawable with the embedded font (zh / ar — measured): say so, in English, with the requested code
+            var note = section.AddParagraph();
+            note.Format.Font.Bold = true;
+            note.Format.SpaceAfter = Unit.FromPoint(4);
+            note.AddText(L("englishFallback"));
+            note.AddLineBreak();
+            note.AddText(RecallEvidenceText.Format("RecallPdf.RequestedLanguage", l, d.RequestedLanguage));
+        }
 
         var meta = section.AddParagraph();
         meta.Format.SpaceAfter = Unit.FromPoint(8);
-        meta.AddText($"{L("subject")}: {L("kind." + d.SubjectKind)} · {d.SubjectLabel} · {L("company")}: {d.LegalEntityId:D}");
+        meta.AddText($"{P("Subject")}: {P("Kind." + d.SubjectKind)} · {d.SubjectLabel} · {L("company")}: {d.Company}");
         meta.AddLineBreak();
-        meta.AddText($"{L("generated")}: {Utc(d.GeneratedAtUtc)}");
+        meta.AddText($"{P("Generated")}: {Utc(d.GeneratedAtUtc)}");
 
         foreach (var s in d.Sections)
         {
@@ -91,29 +105,31 @@ public sealed class RecallEvidencePdfRenderer : IRecallEvidencePdfRenderer
                     continue;
                 }
 
+                // the id columns beside a name stay in the CSV / on the screen; the PDF prints the names
+                var shown = Enumerable.Range(0, t.Columns.Count).Where(i => t.PdfHidden?.Contains(t.Columns[i]) != true).ToList();
                 var table = section.AddTable();
                 table.Borders.Width = 0.4;
                 table.Borders.Color = Colors.Gray;
-                var width = 26.0 / t.Columns.Count; // landscape A4 minus margins ≈ 26.9 cm
-                foreach (var _ in t.Columns) table.AddColumn(Unit.FromCentimeter(width));
+                var width = 26.0 / shown.Count; // landscape A4 minus margins ≈ 26.9 cm
+                foreach (var _ in shown) table.AddColumn(Unit.FromCentimeter(width));
                 var head = table.AddRow();
                 head.HeadingFormat = true;
                 head.Shading.Color = Colors.WhiteSmoke;
-                for (var i = 0; i < t.Columns.Count; i++)
+                for (var c = 0; c < shown.Count; c++)
                 {
-                    var p = head.Cells[i].AddParagraph();
+                    var p = head.Cells[c].AddParagraph();
                     p.Format.Font.Bold = true;
-                    p.AddText(L(t.Columns[i]));
+                    p.AddText(L(t.Columns[shown[c]]));
                 }
 
                 foreach (var values in t.Rows)
                 {
                     var row = table.AddRow();
-                    for (var i = 0; i < t.Columns.Count && i < values.Count; i++)
+                    for (var c = 0; c < shown.Count && shown[c] < values.Count; c++)
                     {
-                        // a summary row names a field: its label in the reader's language; every other cell is the record's own value
-                        var cell = t.Key == "summary" && i == 0 ? L(values[i]) : values[i];
-                        row.Cells[i].AddParagraph().AddText(cell);
+                        // a field row names its field: the word in the pack's language; every other cell is already worded
+                        var cell = t.IsFieldTable && shown[c] == 0 ? L(values[0]) : values[shown[c]];
+                        row.Cells[c].AddParagraph().AddText(cell);
                     }
                 }
             }

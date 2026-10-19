@@ -218,7 +218,7 @@ public sealed class RecallController : CustomBaseController
     private string EvidenceLanguage()
     {
         var language = Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(l => l.Quality ?? 1).Select(l => l.Value.Value).FirstOrDefault();
-        return language is not null && language.StartsWith("tr", StringComparison.OrdinalIgnoreCase) ? "tr" : "en";
+        return Application.Features.Recall.Evidence.RecallEvidenceText.Normal(language); // WP-MVP1-FIX-LIVE2: one of the 7, else en
     }
 
     /// <summary>A case / run of ANOTHER company of the tenant is not found by the company-bound reads; the answer then says 403, never its data.</summary>
