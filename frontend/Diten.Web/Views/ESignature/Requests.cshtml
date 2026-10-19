@@ -5,6 +5,7 @@
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["ESign.Requests.Title"].Value;
+    ViewData["PageCode"] = "ESIGNREQUESTS"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 @*
@@ -87,9 +88,6 @@
     <span class="text-muted small" id="esignRequestsCount"></span>
 </div>
 
-<div class="alert alert-info d-flex gap-2 align-items-start" role="note" id="esignPageHelp">
-    <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Help.Requests"]</span>
-</div>
 
 <div class="alert alert-info d-flex gap-2 align-items-start" role="note">
     <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Requests.Info"]</span>

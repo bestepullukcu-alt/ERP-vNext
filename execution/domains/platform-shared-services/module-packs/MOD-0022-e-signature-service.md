@@ -1801,6 +1801,12 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
 - **O-ESIGN1-1 kapandı** (karar B uygulandı).
 - **ESIGN-HELP CT-ACCEPTED (2026-10-14).** Read the seven views (existing `bx-info-circle` note markup, `id=esignPageHelp`, no new component) and the texts (owner-readable, rules checked against code). 7 languages instead of 2 accepted: the existing `ESignatureWebTests` pins all seven `ESignature.*.resx` to one key set. CT run: Web **2220/2220**. **CT sabotage:** the note block removed from `Verification.cshtml` → `The_rendered_page_draws_the_help_note_with_its_text(Verification)` red; restored, porcelain clean. Merged `--no-ff` into MVP-1. SEC-ESIGN1 item 6 closed.
 
+**WP-MVP1-FU-CLEAN2 — e-İmza sayfa açıklamaları "?" paneline (agent result, pending CT, 2026-10-19; yalnız Web görünümleri, e-İmza servisi değişmedi).** Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fu-clean2-evidence-2026-10-19.md`.
+- ESIGN-HELP'in 7 sayfa içi notu (`#esignPageHelp`, `ESign.Help.*`) UXH-001 yapısında panele taşındı (kiracı kabuğu, 7 dil); sayfadaki not ve anahtarları kaldırıldı (aynı metin iki kez yok). Notlardaki yanlışlar sayfaya karşı düzeltildi (ör. "Onay bekliyor" etiketi, iki adımlı geçersiz kılma, anlamın kodu kullanılana kadar değişebilir).
+- `ESignaturePageHelpWebTests` taşımayı ölçecek biçimde yeniden yazıldı.
+- **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
