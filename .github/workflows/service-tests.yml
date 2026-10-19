@@ -101,6 +101,13 @@ jobs:
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           - suite: planning-tests
             project: services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj
+          # SafetyStock's Mongo tests start and stop their own replica set from DITEN_TEST_MONGOD.
+          - suite: safety-stock-calculation
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Calculation.Tests/Diten.SafetyStockService.Calculation.Tests.csproj
+          - suite: safety-stock-policy-state
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.PolicyState.Tests/Diten.SafetyStockService.PolicyState.Tests.csproj
+          - suite: safety-stock-read
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Read.Tests/Diten.SafetyStockService.Read.Tests.csproj
           # Main sync (CI follow-up 3 review): the gateway's own tests (route table, ports, headers). No Mongo, no broker.
           - suite: gateway
             project: gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj
