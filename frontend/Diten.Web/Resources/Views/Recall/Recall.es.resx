@@ -688,4 +688,8 @@
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Liberación</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Autoría</value></data>
   <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>Responsable del plan</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>Buscar una persona por nombre</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>Ningún usuario activo coincide con este nombre.</value></data>
 </root>

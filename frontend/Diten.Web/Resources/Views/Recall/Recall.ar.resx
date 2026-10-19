@@ -688,4 +688,8 @@
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>إفراج</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>إعداد</value></data>
   <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>مسؤول الخطة</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>ابحث عن شخص بالاسم</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>بحث</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>لا يوجد مستخدم نشط يطابق هذا الاسم.</value></data>
 </root>

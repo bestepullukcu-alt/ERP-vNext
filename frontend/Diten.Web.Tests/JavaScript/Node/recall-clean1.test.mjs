@@ -32,3 +32,25 @@ test('the case page draws every person of the head through that rule (opener, cl
     assert.match(page, /t\('Recall\.Case\.CancelledInfo', view\.personName\(c\.cancellation\.cancelledBy, t\)/);
     assert.doesNotMatch(page, /closedBy\?\.name \|\| c\.closure\.closedBy\?\.userId/);
 });
+
+// FU-0177-PLAN-OWNER — the plan owner picker (drill-view.js rules; drills.js wires them)
+const { RecallDrillView: drill } = vm.runInContext(`${js('drill-view.js')}\n;({ RecallDrillView })`, vm.createContext({ window: {}, console, URLSearchParams }));
+const ME = '11111111-1111-4111-8111-111111111111';
+const OWNER = '22222222-2222-4222-8222-222222222222';
+
+test('FU-0177-PLAN-OWNER: the search door names only the text (cut at 100), the options are the current owner then uuid + label people, the saved owner is the picked one', () => {
+    assert.equal(drill.ownerSearch('  Ayşe '), '/Recall/lookups/users?q=Ay%C5%9Fe');
+    assert.equal(drill.ownerSearch('x'.repeat(300)), `/Recall/lookups/users?q=${'x'.repeat(100)}`);
+    const current = { value: OWNER, text: 'Mevcut Sorumlu' };
+    const options = JSON.parse(JSON.stringify(drill.ownerOptions([{ value: ID, text: 'Ayşe Demir' }, { value: 'nope', text: 'X' }, { value: ID.toUpperCase(), text: 'Ayşe' },
+        { value: OWNER, text: 'again' }, { value: ME, text: '' }], current)));
+    assert.deepEqual(options, [current, { value: ID, text: 'Ayşe Demir' }]);
+    assert.deepEqual(JSON.parse(JSON.stringify(drill.ownerOptions(null, current))), [current]);
+    assert.equal(drill.ownerOf(ID, { owner: { userId: OWNER } }, ME), ID);
+    assert.equal(drill.ownerOf('', { owner: { userId: OWNER } }, ME), OWNER);
+    assert.equal(drill.ownerOf('not-a-uuid', null, ME), ME);
+    const page = js('drills.js');
+    assert.match(page, /ownerUserId: view\.ownerOf\(byId\('rc-plan-owner-select'\)\?\.value, state\.plan, me\)/);
+    assert.match(page, /const reply = await ui\.get\(view\.ownerSearch\(byId\('rc-plan-owner-search'\)\.value\)\);/);
+    assert.match(page, /if \(event\.key === 'Enter'\) \{ event\.preventDefault\(\); findOwner\(\); \}/);
+});

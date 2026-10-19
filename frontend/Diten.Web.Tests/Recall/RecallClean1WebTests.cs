@@ -14,6 +14,7 @@ public sealed class RecallClean1NodeTests
     public async Task The_case_page_person_rule_holds_against_the_shipped_files()
     {
         Assert.Contains("Recall.Case.UnknownUser", Diten.Web.Views.Recall.Recall.Keys);
+        foreach (var key in new[] { "Recall.Drills.OwnerPick", "Recall.Drills.OwnerSearch", "Recall.Drills.OwnerFind", "Recall.Drills.OwnerNone" }) Assert.Contains(key, Diten.Web.Views.Recall.Recall.Keys); // FU-0177-PLAN-OWNER
         var start = new System.Diagnostics.ProcessStartInfo("node") { WorkingDirectory = TraceViewRenderer.RepoRoot(), RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         start.ArgumentList.Add("--test");
         start.ArgumentList.Add("--test-reporter=tap");
@@ -23,7 +24,7 @@ public sealed class RecallClean1NodeTests
         var output = await node.StandardOutput.ReadToEndAsync();
         await node.WaitForExitAsync();
         Assert.True(node.ExitCode == 0, $"{output}\n{await error}");
-        Assert.Matches(new Regex(@"^# pass 2$", RegexOptions.Multiline), output);
+        Assert.Matches(new Regex(@"^# pass 3$", RegexOptions.Multiline), output);
         Assert.Matches(new Regex(@"^# fail 0$", RegexOptions.Multiline), output);
     }
 }

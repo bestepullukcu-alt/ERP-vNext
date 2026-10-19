@@ -571,6 +571,20 @@ public sealed class RecallController : Controller
         return Json(new JsonObject { ["items"] = LotItems(reply.Body) });
     }
 
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN1 (FU-0177-PLAN-OWNER) — the plan owner picker: active users of the CALLER's tenant by name (AuthService lookup through
+    /// <see cref="Diten.Web.Models.Quarantine.QuarantinePeople.SearchPath"/>; the caller's token, never a tenant of the query). This door needs
+    /// recall.drills.manage (the form it serves); AuthService's own key auth.users.lookup decides at the service.
+    /// </summary>
+    [HttpGet("lookups/users")]
+    public async Task<IActionResult> UserLookup([FromQuery] string? q, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsManage)) return Refuse(403, null);
+        var reply = await SendAsync(HttpMethod.Get, Diten.Web.Models.Quarantine.QuarantinePeople.SearchPath(q), null, null, ct);
+        if (!reply.IsSuccess) return Failed("lookups.users", reply);
+        return Json(new JsonObject { ["items"] = Diten.Web.Models.Quarantine.QuarantinePeople.Options(reply.Body) });
+    }
+
     /// <summary>createDrillPlan — "Plan ekle".</summary>
     [HttpPost("cmd/drill-plans")]
     [ValidateAntiForgeryToken]

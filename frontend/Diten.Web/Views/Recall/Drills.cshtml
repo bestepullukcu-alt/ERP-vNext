@@ -208,6 +208,18 @@
                             <div class="invalid-feedback">@Localizer["Recall.Common.Required"]</div>
                         </div>
                         <p class="small text-muted mb-2" id="rc-plan-owner"></p>
+                        @* WP-MVP1-FU-CLEAN1 (FU-0177-PLAN-OWNER): the owner picker — active users of the caller's tenant (/Recall/lookups/users) *@
+                        <div class="mb-3">
+                            <label class="form-label" for="rc-plan-owner-select">@Localizer["Recall.Drills.OwnerPick"]</label>
+                            <div class="input-group">
+                                <input type="search" class="form-control" id="rc-plan-owner-search" maxlength="100" autocomplete="off"
+                                       placeholder="@Localizer["Recall.Drills.OwnerSearch"]" aria-label="@Localizer["Recall.Drills.OwnerSearch"]" />
+                                <button type="button" class="btn btn-outline-secondary" id="rc-plan-owner-find" title="@Localizer["Recall.Drills.OwnerFind"]"
+                                        aria-label="@Localizer["Recall.Drills.OwnerFind"]"><i class="bx bx-search"></i></button>
+                            </div>
+                            <select class="form-select mt-2" id="rc-plan-owner-select"></select>
+                            <div class="form-text d-none" id="rc-plan-owner-none">@Localizer["Recall.Drills.OwnerNone"]</div>
+                        </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="rc-plan-active" checked />
                             <label class="form-check-label" for="rc-plan-active">@Localizer["Recall.Drills.Active"]</label>

@@ -92,6 +92,21 @@ var RecallDrillView = (function () {
         return body;
     };
 
+    // ── WP-MVP1-FU-CLEAN1 (FU-0177-PLAN-OWNER): the plan owner picker ─────────────────────────────────────────────────
+    /** The search door: active users of the caller's tenant by name (the Web names no tenant; the text is cut at 100 like AuthService). */
+    const ownerSearch = (q) => `/Recall/lookups/users?${new URLSearchParams({ q: text(q).slice(0, 100) })}`;
+    /** The options: the current owner first (the choice never goes empty), then the found people — uuid + label only, distinct. */
+    const ownerOptions = (items, current) => {
+        const list = [];
+        const seen = new Set();
+        const add = (o) => { const v = text(o?.value).toLowerCase(); if (GUID.test(v) && text(o?.text) && !seen.has(v)) { seen.add(v); list.push({ value: text(o.value), text: text(o.text) }); } };
+        add(current);
+        (Array.isArray(items) ? items : []).forEach(add);
+        return list;
+    };
+    /** The owner the plan is saved with: the picked person, else the plan's owner, else the user saving it. */
+    const ownerOf = (picked, plan, me) => (GUID.test(text(picked)) ? text(picked) : (plan?.owner?.userId || me));
+
     /** deps: { write(path, body, { ifMatch }) → { ok, status, json }, newKey(), sign(subject) → { signatureId } | null }. */
     const savePlan = async (deps, plan, input) => {
         const errors = validatePlan(input);
@@ -159,7 +174,7 @@ var RecallDrillView = (function () {
         return reply.ok ? { ok: true, step: 'commit', run: reply.json, signatureId } : { ok: false, step: 'commit', reply };
     };
 
-    return { MIN, STEPS, FREQUENCIES, SCOPES, clock, steps, finished, offers, validatePlan, planBody, savePlan, start, step, cancel, needsSignature, prepareResult, signResult, etag };
+    return { MIN, STEPS, FREQUENCIES, SCOPES, clock, steps, finished, offers, validatePlan, planBody, savePlan, ownerSearch, ownerOptions, ownerOf, start, step, cancel, needsSignature, prepareResult, signResult, etag };
 })();
 
 if (typeof window !== 'undefined') window.RecallDrillView = RecallDrillView;

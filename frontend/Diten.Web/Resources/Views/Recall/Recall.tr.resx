@@ -688,4 +688,8 @@
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Serbest bırakma</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Hazırlayan</value></data>
   <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>Plan sorumlusu</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>Kişiyi adıyla ara</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>Bul</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>Bu adla eşleşen etkin kullanıcı yok.</value></data>
 </root>
