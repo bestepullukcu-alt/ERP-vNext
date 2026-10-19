@@ -117,6 +117,22 @@ public sealed class MovementPagesSurfaceTests : IClassFixture<WebApplicationFact
     }
 
     [Fact]
+    public async Task The_receipt_prints_the_lot_number_and_an_unresolved_lot_as_its_id_with_the_hint()
+    {
+        // WP-MVP1-FIX-LIVE2 (finding 9)
+        const string lot = "d4e5f6a7-0000-4000-8000-000000000042";
+        var named = await RenderAsync(Details, new MovementReceiptViewModel { TransactionNumber = "INV-1", LotId = lot, LotNumber = "LOT-2026-042", BalanceLotId = lot, BalanceLotNumber = "LOT-2026-042" }, PostPermission);
+        Assert.Contains("LOT-2026-042", named, StringComparison.Ordinal);
+        Assert.DoesNotContain(lot, named, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-lot-unresolved", named, StringComparison.Ordinal);
+
+        var bare = await RenderAsync(Details, new MovementReceiptViewModel { TransactionNumber = "INV-1", LotId = lot, LotUnresolved = true }, PostPermission);
+        Assert.Contains(lot, bare, StringComparison.Ordinal);
+        Assert.Contains("data-lot-unresolved", bare, StringComparison.Ordinal);
+        Assert.Matches("(lot number could not be read|lot numarası okunamadı)", bare);
+    }
+
+    [Fact]
     public async Task The_receipt_shows_the_number_the_balance_and_the_replay_banner_and_an_empty_one_says_so()
     {
         var empty = await RenderAsync(Details, new MovementReceiptViewModel(), PostPermission);

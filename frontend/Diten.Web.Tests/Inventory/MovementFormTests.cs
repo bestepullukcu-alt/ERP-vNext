@@ -188,6 +188,39 @@ public sealed class MovementFormTests
         Assert.Equal("QUALITY_INSPECTION", receipt.BalanceStatus);
     }
 
+    // WP-MVP1-FIX-LIVE2 (finding 9, owner step MOD-0173 makbuz): the receipt names a registered lot by its NUMBER (TRACE listLots of the SKU,
+    // the caller's own trace.lots.read — FIX-LIVE1 pattern); without the key or when TRACE cannot say, the id with a hint (sabotage g)
+    [Fact]
+    public async Task The_receipt_names_a_registered_lot_by_its_number_and_an_unreadable_one_by_its_id_with_a_hint()
+    {
+        const string lot = "d4e5f6a7-0000-4000-8000-000000000042";
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/movements", 201, $$$"""{"transactionId":"t-9","transactionNumber":"INV-2026-0000042","idempotentReplay":false,"balanceSnapshot":{"lotId":"{{{lot}}}","onHand":"7.5","available":"7.5","stockStatus":"QUALITY_INSPECTION","baseUomId":"ADET","baseQuantity":"7.5"}}""");
+        gateway.On("/api/trace/lots", 200, $$$"""{"items":[{"lotId":"{{{lot}}}","lotNumber":"LOT-2026-042"}],"total":1}""");
+        var form = Form("OPENING_BALANCE") with { LotId = lot };
+
+        var named = Movements(gateway, [.. ReadAndCreate, "trace.lots.read"]);
+        await named.PostMovement(form.ToModel(), CancellationToken.None);
+        var receipt = MovementReceiptViewModel.From(named.TempData);
+        Assert.Equal(("LOT-2026-042", false, lot), (receipt.LotNumber, receipt.LotUnresolved, receipt.LotId));
+        Assert.Equal(("LOT-2026-042", false), (receipt.BalanceLotNumber, receipt.BalanceLotUnresolved));
+        var trace = Assert.Single(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/trace/lots?", StringComparison.Ordinal)); // ONE listLots for the SKU
+        Assert.Contains($"skuId={SkuId}", trace.PathAndQuery, StringComparison.Ordinal);
+
+        // without the caller's own trace.lots.read: no TRACE call, the id stays with the hint — never a number made up
+        gateway.Requests.Clear();
+        var plain = Movements(gateway, ReadAndCreate);
+        await plain.PostMovement((form with { IdempotencyKey = Guid.NewGuid().ToString() }).ToModel(), CancellationToken.None);
+        var bare = MovementReceiptViewModel.From(plain.TempData);
+        Assert.Equal((null, true, lot), (bare.LotNumber, bare.LotUnresolved, bare.LotId));
+        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/trace/lots?", StringComparison.Ordinal));
+
+        // a typed lot text (pre-MOD-0174) is not "unresolved"
+        var typed = Movements(gateway, [.. ReadAndCreate, "trace.lots.read"]);
+        await typed.PostMovement((Form("OPENING_BALANCE") with { LotId = "lot-1" }).ToModel(), CancellationToken.None);
+        Assert.False(MovementReceiptViewModel.From(typed.TempData).LotUnresolved);
+    }
+
     [Fact]
     public async Task Without_the_create_permission_or_with_a_malformed_form_nothing_reaches_the_gateway()
     {

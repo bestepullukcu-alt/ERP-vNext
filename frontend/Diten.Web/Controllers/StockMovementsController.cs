@@ -577,8 +577,12 @@ public sealed partial class StockMovementsController : Controller
         return kept;
     }
 
-    /// <summary>The receipt (UI-10): what was posted, the service's number and the balance row it left (balanceSnapshot).</summary>
-    private static async Task<MovementReceiptViewModel> ReceiptAsync(InventoryGatewayClient gateway, MovementSubmitViewModel model,
+    /// <summary>
+    /// The receipt (UI-10): what was posted, the service's number and the balance row it left (balanceSnapshot). WP-MVP1-FIX-LIVE2 (finding 9):
+    /// the lot is shown by its NUMBER — one TRACE listLots for the movement's SKU, only with the caller's own trace.lots.read (the FIX-LIVE1
+    /// LotNumberResolver pattern); unreadable → the id with a hint. The product / SKU text is the form's (ForCreate reads itemText / skuText).
+    /// </summary>
+    private async Task<MovementReceiptViewModel> ReceiptAsync(InventoryGatewayClient gateway, MovementSubmitViewModel model,
         MovementRules.Checked check, PostedMovementDto posted, CancellationToken cancellationToken)
     {
         var payload = check.Payload!;
@@ -589,6 +593,11 @@ public sealed partial class StockMovementsController : Controller
             cancellationToken);
         string? Place(string? warehouse, string? location) =>
             warehouse is null ? null : $"{labels.Location(warehouse) ?? warehouse} / {labels.Location(location) ?? location}";
+        var lots = await LotNumberResolver.ResolveAsync(
+            _permissions.Has(LotNumberResolver.ReadKey) ? TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User) : null,
+            [new LotNumberResolver.Row(Field("lotId"), Field("skuId"), Field("skuLevel")), new LotNumberResolver.Row(snapshot?.LotId, Field("skuId"), Field("skuLevel"))],
+            cancellationToken);
+        string? Number(string? lotId) => lotId is not null && lots.TryGetValue(lotId, out var number) ? number : null;
 
         return new MovementReceiptViewModel
         {
@@ -605,12 +614,16 @@ public sealed partial class StockMovementsController : Controller
             ToText = Place(Field("toWarehouseId"), Field("toLocationId")),
             ToStockStatus = Field("toStockStatus") ?? Field("fromStockStatus"),
             LotId = Field("lotId"),
+            LotNumber = Number(Field("lotId")),
+            LotUnresolved = LotNumberResolver.Unresolved(Field("lotId"), lots),
             SerialCount = payload.TryGetValue("serialIds", out var serials) && serials is IReadOnlyList<string> list ? list.Count : 0,
             DocumentNo = Field("sourceDocumentId"),
             TransactionDate = Field("transactionDate"),
             PostingDate = Field("postingDate"),
             BalanceLocationText = Place(snapshot?.WarehouseId, snapshot?.LocationId),
             BalanceLotId = snapshot?.LotId,
+            BalanceLotNumber = Number(snapshot?.LotId),
+            BalanceLotUnresolved = LotNumberResolver.Unresolved(snapshot?.LotId, lots),
             BalanceStatus = snapshot?.StockStatus,
             BalanceOnHand = snapshot?.OnHand,
             BalanceAvailable = snapshot?.Available,

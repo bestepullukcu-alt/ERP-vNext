@@ -145,7 +145,12 @@
                         <div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div>
                             <div class="backbone-preview-label">@Localizer["FieldLot"]</div>
                             <div class="backbone-preview-value mt-1">
-                                @Dash(Model.LotId)
+                                @* WP-MVP1-FIX-LIVE2 (finding 9): the lot NUMBER (TRACE); a registered lot whose number could not be read: the id + a hint *@
+                                @Dash(Model.LotNumber ?? Model.LotId)
+                                @if (Model.LotUnresolved)
+                                {
+                                    <span class="small text-muted ms-1" data-lot-unresolved>(@Localizer["LotUnresolvedHint"])</span>
+                                }
                                 @* W-UI-02: a TYPED lot text only (a registered lot id is not "unregistered"), until the P4 migration closes typing. *@
                                 @if (!string.IsNullOrWhiteSpace(Model.LotId) && !Diten.Web.Models.Inventory.MovementRules.IsRegisteredLotId(Model.LotId)
                                      && !await Diten.Web.Models.Traceability.TraceMigrationStatus.IsClosedAsync(Http, Configuration["GatewayUrl"] ?? string.Empty,
@@ -241,7 +246,8 @@
                     <div class="col-6">
                         <div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div>
                             <div class="backbone-preview-label">@Localizer["FieldLot"]</div>
-                            <div class="backbone-preview-value mt-1">@Dash(Model.BalanceLotId)</div>
+                            <div class="backbone-preview-value mt-1">@Dash(Model.BalanceLotNumber ?? Model.BalanceLotId)@if (Model.BalanceLotUnresolved)
+                                {<span class="small text-muted ms-1" data-lot-unresolved>(@Localizer["LotUnresolvedHint"])</span>}</div>
                         </div></div>
                     </div>
                 </div>
