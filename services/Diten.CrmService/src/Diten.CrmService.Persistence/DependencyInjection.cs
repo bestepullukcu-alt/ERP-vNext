@@ -278,6 +278,9 @@ public static class DependencyInjection
         // WP-VW-W3 (W3-BE-c) — the evidence policy history and the time-boxed exceptions.
         services.AddScoped<IVisitEvidencePolicyChangeRepository, VisitEvidencePolicyChangeRepository>();
         services.AddScoped<IVisitEvidenceExceptionRepository, VisitEvidenceExceptionRepository>();
+        // WP-VW-W5 (K-N6 / K-N5) — the visit notification log (once per subject) and the tenant notification settings.
+        services.AddScoped<IVisitNotificationRepository, VisitNotificationRepository>();
+        services.AddScoped<IVisitNotificationSettingsRepository, VisitNotificationSettingsRepository>();
         // WP-VW-W3L (W3-BE-d) — the legal entity / business unit layers of the evidence rules (archive, never delete).
         services.AddScoped<IVisitEvidencePolicyLayerRepository, VisitEvidencePolicyLayerRepository>();
         // WP-VW-W4 (W4-BE-c) — doctor profile + potential + thresholds and their append-only histories.
@@ -1383,6 +1386,20 @@ public static class DependencyInjection
         });
         Map<VisitEvidencePolicyChange>(_ => { });
 
+        // WP-VW-W5 (K-N6) - the notification log: every Guid a string (the GUID trap: a binary Guid makes the list's /
+        // the claim's filters come back EMPTY silently), the visit date a sortable "yyyy-MM-dd" string; the recipients
+        // carry user ids as strings already. The settings document has no Guid beyond the base Id / TenantId.
+        Map<VisitNotification>(map =>
+        {
+            map.GetMemberMap(n => n.SubjectId).SetSerializer(stringGuid);
+            map.GetMemberMap(n => n.PlannedVisitId).SetSerializer(stringGuid);
+            map.GetMemberMap(n => n.VisitReportId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(n => n.VisitDate).SetSerializer(dateOnlyString);
+        });
+        Map<VisitNotificationRecipient>(_ => { });
+        Map<VisitNotificationResolvedRecipient>(_ => { });
+        Map<VisitNotificationSettings>(_ => { });
+
         // WP-VW-W3L (W3-BE-d) - the evidence layers (no Guid of their own beyond the base Id / TenantId: the legal entity
         // id is the ScopeRef STRING) and the scope chain stored with a visit start (its legal entity a string-Guid).
         Map<VisitEvidencePolicyLayer>(_ => { });
@@ -2201,6 +2218,29 @@ public static class DependencyInjection
                     PartialFilterExpression = Builders<VisitEvidencePolicyLayer>.Filter.And(
                         Builders<VisitEvidencePolicyLayer>.Filter.Eq(l => l.Status, VisitEvidencePolicyLayerStatuses.Active),
                         Builders<VisitEvidencePolicyLayer>.Filter.Eq(l => l.IsDeleted, false))
+                }));
+
+            // WP-VW-W5 (K-N6) - crm_visit_notifications: ONE row per (tenant, event, subject) - the same report never sends
+            // the same e-mail twice (a concurrent second insert loses); the list reads (tenant, created) newest first; the
+            // scheduler's claim reads (status, claimed-until). Scalar keys only.
+            var visitNotifications = database.GetCollection<VisitNotification>(VisitNotificationRepository.CollectionName);
+            visitNotifications.Indexes.CreateOne(new CreateIndexModel<VisitNotification>(
+                Builders<VisitNotification>.IndexKeys.Ascending(n => n.TenantId).Ascending(n => n.EventCode).Ascending(n => n.SubjectId),
+                new CreateIndexOptions { Name = "ux_crm_visit_notifications_tenant_event_subject", Unique = true }));
+            visitNotifications.Indexes.CreateOne(new CreateIndexModel<VisitNotification>(
+                Builders<VisitNotification>.IndexKeys.Ascending(n => n.TenantId).Descending(n => n.CreatedTicks),
+                new CreateIndexOptions { Name = "ix_crm_visit_notifications_tenant_created" }));
+            visitNotifications.Indexes.CreateOne(new CreateIndexModel<VisitNotification>(
+                Builders<VisitNotification>.IndexKeys.Ascending(n => n.Status).Ascending(n => n.ClaimedUntilTicks),
+                new CreateIndexOptions { Name = "ix_crm_visit_notifications_status_claim" }));
+            var notificationSettings = database.GetCollection<VisitNotificationSettings>(VisitNotificationSettingsRepository.CollectionName);
+            notificationSettings.Indexes.CreateOne(new CreateIndexModel<VisitNotificationSettings>(
+                Builders<VisitNotificationSettings>.IndexKeys.Ascending(s => s.TenantId),
+                new CreateIndexOptions<VisitNotificationSettings>
+                {
+                    Name = "ux_crm_visit_notification_settings_tenant",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitNotificationSettings>.Filter.Eq(s => s.IsDeleted, false)
                 }));
 
             // WP-VW-W3E (W3E-BE-a) - crm_institution_qr_codes: ONE ACTIVE code per institution, guaranteed by the database

@@ -87,6 +87,15 @@ public sealed class PlannedVisitRepository : IPlannedVisitRepository
             .Project(x => x.Id)
             .ToListAsync(cancellationToken);
 
+    /// <summary>WP-VW-W5 (K-N7) — the plans of a day window (the overdue sweep), on the (TenantId, PlannedDate) index.</summary>
+    public async Task<IReadOnlyList<PlannedVisit>> ListByDateRangeAsync(
+        Guid tenantId, DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken)
+        => await _collection
+            .Find(Tenant(tenantId)
+                  & Builders<PlannedVisit>.Filter.Gte(x => x.PlannedDate, fromDate)
+                  & Builders<PlannedVisit>.Filter.Lte(x => x.PlannedDate, toDate))
+            .ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<PlannedVisit>> ListByTargetAndDateAsync(
         Guid tenantId, Guid targetId, DateOnly plannedDate, CancellationToken cancellationToken)
     {

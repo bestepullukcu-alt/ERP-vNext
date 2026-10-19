@@ -118,14 +118,18 @@ public sealed class VisitReportV2Service
     private readonly IMdmCompetitorClient _competitors;
     private readonly IReferenceDataCatalogReader? _catalog;
     private readonly TimeProvider _clock;
+    private readonly Features.VisitNotifications.IVisitReportNotifier? _notifier;
 
     public VisitReportV2Service(ITenantContext tenant, IActorContext actor, ICallerScope caller, IVisitReportRepository reports,
         IPlannedVisitRepository plans, IVisitExecutionRepository executions, IReferenceDataValidator codes,
         IDoctorProfileRepository profiles, IDoctorProductPotentialRepository potentials, IProductPotentialThresholdRepository thresholds,
         ProductIndicationProfileReader indications, IDoctorInsightsRecorder recorder, IJourneyProgressRepository progress,
         IContentEngagementJourneyRepository journeys, IContactRepository contacts, IAccountRepository accounts,
-        IMdmCompetitorClient? competitors = null, IReferenceDataCatalogReader? catalog = null, TimeProvider? clock = null)
+        IMdmCompetitorClient? competitors = null, IReferenceDataCatalogReader? catalog = null, TimeProvider? clock = null,
+        // WP-VW-W5 (K-N4 / K-N8) — the report's e-mails after the submit (never part of it)
+        Features.VisitNotifications.IVisitReportNotifier? notifier = null)
     {
+        _notifier = notifier;
         _tenant = tenant;
         _actor = actor;
         _caller = caller;
@@ -152,6 +156,11 @@ public sealed class VisitReportV2Service
     public DateTimeOffset Now => _clock.GetUtcNow();
 
     public static Response<T> Fail<T>(string code, string message, int status) => Response<T>.Fail(new[] { message, code }, status);
+
+    /// <summary>WP-VW-W5 — the summary / adverse event / off-label e-mails, after the report is stored. The notifier never
+    /// throws (K-N8): a failure is a logged "failed" row the scheduler retries.</summary>
+    public Task NotifySubmittedAsync(Guid tenantId, Domain.Entities.PlannedVisit plan, VisitReportEntity report, CancellationToken ct)
+        => _notifier is null ? Task.CompletedTask : _notifier.ReportSubmittedAsync(tenantId, plan, report, ct);
 
     /// <summary>The caller's planned visit, else null (another rep's plan is as absent as a missing one).</summary>
     public async Task<Domain.Entities.PlannedVisit?> PlanAsync(Guid tenantId, Guid plannedVisitId, CancellationToken ct)
@@ -685,6 +694,9 @@ public sealed class VisitReportV2Handlers :
             if (!recorded.Ok) warnings.Add("doctor_insights:" + recorded.Code);
             warnings.AddRange(await _s.AdvanceJourneysAsync(tenantId, plan, report, ct));
         }
+
+        // WP-VW-W5 — the e-mails, once per subject (a re-submit inside the window sends nothing new)
+        await _s.NotifySubmittedAsync(tenantId, plan, report, ct);
 
         return Response<VisitReportV2SaveResultDto>.Success(
             new VisitReportV2SaveResultDto(report.Id, report.Version, report.ReportStatus, NoMissing, warnings), existing is null ? 201 : 200);

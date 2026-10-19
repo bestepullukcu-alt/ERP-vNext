@@ -91,6 +91,13 @@ public interface IPlannedVisitRepository
             .Where(p => (p.AccountId == accountId || p.TargetId == accountId) && p.PlannedDate >= fromDate && p.PlannedDate <= toDate)
             .Select(p => p.Id).ToList();
 
+    /// <summary>WP-VW-W5 (K-N7) — the plans between two days, both included (the overdue sweep's window). The default
+    /// narrows <see cref="ListAsync"/>; the Mongo repository answers on the (TenantId, PlannedDate, …) index.</summary>
+    async Task<IReadOnlyList<PlannedVisit>> ListByDateRangeAsync(
+        Guid tenantId, DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken)
+        => (await ListAsync(tenantId, cancellationToken))
+            .Where(p => p.PlannedDate >= fromDate && p.PlannedDate <= toDate).ToList();
+
     Task InsertAsync(PlannedVisit entity, CancellationToken cancellationToken);
 
     /// <summary>Optimistic replace: matches on (Id, TenantId, Version == expectedVersion) and bumps the token. Returns

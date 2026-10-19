@@ -46,9 +46,13 @@ public sealed class VisitEvidenceFlagScopeResolver
         _assignments = assignments;
     }
 
-    public async Task<VisitEvidenceFlagScope> ResolveAsync(Guid tenantId, DateTimeOffset now, CancellationToken ct)
+    public Task<VisitEvidenceFlagScope> ResolveAsync(Guid tenantId, DateTimeOffset now, CancellationToken ct)
+        => ResolveAsync(tenantId, now, _caller.HasPermission(VisitEvidenceFlagsPermissions.ReadAll), ct);
+
+    /// <summary>WP-VW-W5 (K-N9) — the same team rule with the caller's "sees all" decided by the reader (the visit
+    /// notifications list: the notification settings key sees the tenant).</summary>
+    public async Task<VisitEvidenceFlagScope> ResolveAsync(Guid tenantId, DateTimeOffset now, bool all, CancellationToken ct)
     {
-        var all = _caller.HasPermission(VisitEvidenceFlagsPermissions.ReadAll);
         var me = _caller.CallerResourceId;
         HashSet<Guid> teamNodes = new();
         if (!all && me is not null)

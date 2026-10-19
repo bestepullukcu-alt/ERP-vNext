@@ -276,5 +276,13 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("FLAGS_READ_ALL", "Read All Visit Evidence Flags (Tenant-Wide)", "crm.visit-evidence-flags.read-all", "Toolbar", 10, false, true, false)
                 ])
+            ],
+            // WP-VW-W5 (W5-BE, K-N9) — the visit notification keys. API-only until W5-WEB ships the "sent e-mails" page
+            // (then they become a page + action above): .read = the caller's own + team's visit e-mails; .settings.manage =
+            // the tenant's PV / MSL mailboxes and switches, and every visit e-mail of the tenant.
+            ApiPermissions:
+            [
+                new ModuleManifestPermission("crm.visit-notifications.read", "Read Visit Notifications"),
+                new ModuleManifestPermission("crm.visit-notifications.settings.manage", "Manage Visit Notification Settings")
             ]);
 }

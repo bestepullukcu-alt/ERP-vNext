@@ -132,6 +132,11 @@ public static class DependencyInjection
         services.AddScoped<Features.VisitEvidence.IEvidenceBusinessUnitReader, Features.VisitEvidence.EvidenceBusinessUnitReader>();
         services.AddScoped<Features.VisitEvidence.IEvidenceScopeChainResolver, Features.VisitEvidence.EvidenceScopeChainResolver>();
         services.AddScoped<Features.VisitEvidence.VisitEvidenceExceptionService>();
+        // WP-VW-W5 (W5-BE) — the visit notifications: the sender (once per subject), the report notifier (both submit
+        // paths), the scheduler's tick (the hosted service is Infrastructure's)
+        services.AddScoped<Features.VisitNotifications.VisitNotificationSender>();
+        services.AddScoped<Features.VisitNotifications.IVisitReportNotifier, Features.VisitNotifications.VisitReportNotifier>();
+        services.AddScoped<Features.VisitNotifications.VisitNotificationWorker>();
         // WP-VW-W4 (W4-BE-c) — doctor insights: the team scope (subtree assignments), the visibility (own / team /
         // read-all, 404 outside), the Concept Graph indication × profile reader, the ONE writer (manual edit + the report's
         // recorder seam for BE-a) and the shared read plumbing.

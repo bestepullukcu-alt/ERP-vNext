@@ -148,6 +148,15 @@ public static class DependencyInjection
             Application.Features.VisitEvidence.IOrganizationSeatReader,
             VisitEvidence.PlatformOrganizationSeatReader>();
 
+        // WP-VW-W5 (K-N1 / K-N7) - the Platform internal event dispatch (directly to the Platform with the internal API key,
+        // no user token: the scheduler sends without a request), the e-mail links, and the CRM notification scheduler
+        // (Crm:Notifications:Enabled=false turns it off).
+        services.AddHttpClient<
+            Application.Features.VisitNotifications.IPlatformNotificationClient,
+            VisitNotifications.PlatformNotificationClient>();
+        services.AddSingleton<Application.Features.VisitNotifications.IVisitNotificationLinks, VisitNotifications.ConfigurationVisitNotificationLinks>();
+        services.AddHostedService<VisitNotifications.VisitNotificationHostedService>();
+
         // WP-VP-FIX-1 - the same door + transport, per-day op is-working-day: the visit planner's non-working days.
         services.AddHttpClient<
             Application.Features.CycleCapacity.Read.IWorkingDayChecker,
