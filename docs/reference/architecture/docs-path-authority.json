@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "status": "APPROVED",
   "decision": {
-    "path": "docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json",
-    "sha256": "64db811693d3a25143ebe94435114739ac8016d289c8d26a296c12d516491234"
+    "path": "docs/records/decisions/2026-10/mod0183-docs-path-shipment-bundle-330-repin-owner-decision-01.json",
+    "sha256": "74f15a1699b88a193afc42baae1bfa6e2e9805ee57898490157d157f5a931168"
   },
   "canonicalTargets": [
     {
       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
-      "sha256": "6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2"
+      "sha256": "c59bb4803a2d7e55eff0ce1e5aeb126df7b4eb3fbffb251e999bc0c069d43ef2"
     },
     {
       "path": "docs/analysis/contracts/carrier-semantics-v1.1.0.md",
