@@ -58,7 +58,8 @@
    - **Fiyatlı mod:** şirketin yürürlükte fiyat listesi varsa fiyat, MF, iskonto, toplam ve bütün kurallar gösterilir.
    - **Adetli mod:** liste yoksa yalnız ürün, adet ve MF girilir. Fiyat ve toplam alanları görünmez; "Fiyatı depo uygular" notu çıkar. Kurallar MF ve adet üzerinden çalışır.
    - Mockup A ekranının iki hâlini de çizsin. Örnek: Türkiye (TRY, fiyatlı) ve Kırgızistan RO (KGS, adetli). D ekranındaki fiyat listesinde "Satan şirket", "Ülke" ve "Para birimi" sütunları ile kademeler (depo fiyatı, eczacı alış, halka satış) görünsün.
-10. **Görünürlük:**
+10. **Para birimi** (K-W10 g): sipariş tutarı fiyat listesinin para biriminde durur (şirket EUR / USD ile çalışır; Türkiye resmî listesi TRY). Yanında ülkenin para birimiyle karşılığı küçük harfle gösterilir: "≈ 1.245.300 KGS · kur 92,15 · 19.10.2026". Kur siparişe yazılır; sonradan değişmez. Kur yoksa bu satır görünmez. B listesinde toplam sütunu sipariş para biriminde, isteğe bağlı "yerel karşılık" sütunu; E belgesinde ikisi birlikte.
+11. **Görünürlük:**
    - Temsilci kendi siparişlerini görür.
    - Yönetici ekibinin siparişlerini görür.
    - Satış operasyonu tümünü görür.
