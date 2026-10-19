@@ -19,8 +19,11 @@
 - **MOD-0188 DemandPlanning** — UI + fixture-proven slice; production authorities are post-MVP-6 (owner decision).
 
 ## Tests (measured on the branch)
-- Diten.Web.Tests 2621/2621 · SupplyChain 584/585 (the one is the recorded `ClaimReplayTests…DurableRecovery`,
+- Diten.Web.Tests 2621/2621 · SupplyChain 590/591 (the one is the recorded `ClaimReplayTests…DurableRecovery`,
   restart-mode only) · Auth Roles 848/0/7.
+- Contract fidelity: all 247 published examples, live success+error answers of every bound operation, and every
+  Load/Return/Claim event envelope validate against the frozen `shipment-bundle.openapi.yaml`.
+- Pack §16 (in scope): 0183 8/11 · 0184 3/4 · 0185 4/4 · 0186 3/4 · 0187 5/5 · 0190 8/9 · 0192 8/10.
 - Not in CI today: SupplyChain, Diten.Web and PlanningService suites (`service-tests.yml` covers Auth/MDM/Platform).
 
 ## Deploy requirements

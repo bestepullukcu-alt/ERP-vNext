@@ -25,10 +25,10 @@ v9.7's risk was "preparation without application". This window applied, ran and 
 | | value |
 |---|---|
 | Web tests | 2621/2621 |
-| SupplyChain tests | 584/585 (recorded `ClaimReplay` restart-mode only) |
+| SupplyChain tests | 590/591 (recorded `ClaimReplay` restart-mode only) |
 | Auth Roles | 848 / 0 / 7 skipped |
 | Independent VERs | 6-UI PASS · G8 PASS (+ delta PASS) |
-| Pack §16 (shipment bundle) | 0183 7/11 · 0184 2/5 · 0185 3/5 · 0186 3/5 · 0187 4/6 (superseded draft boxes stay open) |
+| Pack §16 (shipment bundle) | 0183 8/11 · 0184 3/5 · 0185 4/5 · 0186 3/5 · 0187 5/6 — in scope 8/11 · 3/4 · 4/4 · 3/4 · 5/5 |
 | 0190 / 0192 §16 | 8/9 · 8/10 |
 | Branch vs main | 110 ahead / 77 behind; merge-tree clean |
 
@@ -41,8 +41,9 @@ v9.7's risk was "preparation without application". This window applied, ran and 
 | 1 | Open and merge the PR (`docs/roadmap/plans/mvp6-pr-to-main-01/PR.md`) | owner | **ready** |
 | 2 | Apply BL-652 v2 (Admin baseline for Carrier/Load/Return/Claim) | owner | ready (`…-v2-after-g7.patch`) |
 | 3 | Gateway `SigningKey` in dev/live config | owner | open |
-| 4 | OpenAPI response validation helper → closes the remaining PARTIAL theme (0183 #10, 0184 #2, 0185 #3, 0187 #2) | CT | next (NJsonSchema + YamlDotNet are in the local cache) |
+| 4 | OpenAPI response/example/event validation (0183 #10, 0184 #2, 0185 #3, 0187 #2) | CT | **done** `e5b01cc0c` |
 | 5 | SupplyChain + Web (+ Planning) suites into CI | CT / CI owner | open — today every green number is local |
+| 7 | Free disk on the dev machine (lane runs hit 183 MB free; MongoDB needs ≥ 500 MB) | owner | 1.7 GiB after freeing 3 GB of scratch copies |
 | 6 | Temporary Admin widenings expire **2026-11-03** (Q358, BL-652, G7) | owner | re-approve or replace by entitlements before then |
 
 ## 4. Post-MVP-6 (named, not in the finish line)
