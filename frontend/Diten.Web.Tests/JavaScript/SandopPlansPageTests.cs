@@ -150,7 +150,10 @@ public sealed class SandopPlansPageTests
         Assert.Contains("<table id=\"dt-sandop-snapshots\" data-dt-standard=\"v2\"", _detailsView);
         Assert.Contains("<table id=\"dt-sandop-signoffs\" data-dt-standard=\"v2\"", _detailsView);
         Assert.Contains("window.DtDefaults.create({", _details);
-        Assert.Contains("data: [], columns, order, stateSave: false, serverSide: false, language: { emptyTable: t('EmptyState') }", _details);
+        Assert.Contains("data: [], columns, order, stateSave: false, serverSide: false,", _details);
+        Assert.Contains("config.language.emptyTable = t('EmptyState');", _details);   // after create() (G8 NL-1)
+        Assert.Contains("topEnd: { features: [{ search:", _details);                    // explicit layout, no toolbar (NL-2)
+        Assert.DoesNotContain("buttons:", _details);
         Assert.Contains(".replaceAll('&', '&amp;').replaceAll('<', '&lt;')", _details);
         Assert.Contains("isText(row.comment) && row.comment !== '' ? esc(row.comment) : missingHtml()", _details);
     }

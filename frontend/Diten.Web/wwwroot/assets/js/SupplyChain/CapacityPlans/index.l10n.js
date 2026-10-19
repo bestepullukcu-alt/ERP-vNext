@@ -24,6 +24,7 @@
         'ErrorOccurred',
         'RecordSaved',
         'AreYouSure',
+        'Search',
         'BackToList',
         'FieldRequired',
         'CapacityPlansTitle',

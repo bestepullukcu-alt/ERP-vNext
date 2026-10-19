@@ -301,11 +301,21 @@
     const tables = {};
     const fillTable = (id, columns, order, rows) => {
         if (!tables[id]) {
-            tables[id] = new DataTable(document.getElementById(id), window.DtDefaults.create({
-                // No buttons: pack §23.5 allows no export, column visibility or saved view (an empty group overrides the
-                // default Action/colvis toolbar).
-                data: [], columns, order, stateSave: false, serverSide: false, language: { emptyTable: t('EmptyState') }, buttons: [{ buttons: [] }]
-            }));
+            // Pack §23.5: no export, column visibility or saved view — an explicit layout skips DtDefaults' toolbar entirely
+            // (G8 NL-2: an empty button group still left a phantom gap). The page's empty text is set AFTER create(),
+            // which otherwise replaces it with the shared DtEmptyTable (G8 NL-1).
+            const config = window.DtDefaults.create({
+                data: [], columns, order, stateSave: false, serverSide: false,
+                layout: {
+                    topStart: { features: [{ pageLength: { menu: [10, 25, 50, 100], text: '_MENU_' } }] },
+                    topEnd: { features: [{ search: { placeholder: t('Search'), text: '_INPUT_' } }] },
+                    bottomStart: { features: ['info'] },
+                    bottomEnd: { features: [{ paging: { firstLast: false } }] }
+                }
+            });
+            config.language.emptyTable = t('EmptyState');
+            config.language.searchPlaceholder = t('Search');
+            tables[id] = new DataTable(document.getElementById(id), config);
         }
         tables[id].clear();
         tables[id].rows.add(rows);

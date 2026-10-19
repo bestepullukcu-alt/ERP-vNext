@@ -11,7 +11,8 @@ const ShipmentDetails = (function () {
     let permissions = { canDispatch: false, canCancel: false, canCapturePod: false };
     let shipment = null;
     const intents = new Map();
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    // Any canonical UUID, as the adapter and service accept (G8 NL-3: the RFC version/variant check refused valid IDs).
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const transitions = { Draft: ['Planned', 'Cancelled'], Planned: ['Dispatched', 'Cancelled'],
         Dispatched: ['InTransit', 'Delivered', 'Exception'], InTransit: ['Delivered', 'Exception'],
         Exception: ['InTransit', 'Cancelled'], Delivered: ['Closed'], Closed: [], Cancelled: [] };

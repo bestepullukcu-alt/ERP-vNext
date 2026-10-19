@@ -391,12 +391,22 @@
     const fillBottlenecks = (rows) => {
         if (!bottleneckTable) {
             const text = (key, className) => ({ data: null, className, render: (_d, _t, row) => ltrHtml(row[key], className === 'text-end' ? 'font-monospace' : '') });
-            bottleneckTable = new DataTable(document.getElementById('dt-capacity-bottlenecks'), window.DtDefaults.create({
-                // No buttons: pack §23.5 allows no export, column visibility or saved view.
-                data: [], order: [[1, 'asc']], stateSave: false, serverSide: false, language: { emptyTable: t('NoBottlenecks') }, buttons: [{ buttons: [] }],
+            // Pack §23.5: no export, column visibility or saved view (explicit layout, G8 NL-2); the page's empty text is
+            // set after create(), which would otherwise replace it with the shared DtEmptyTable (G8 NL-1).
+            const config = window.DtDefaults.create({
+                data: [], order: [[1, 'asc']], stateSave: false, serverSide: false,
+                layout: {
+                    topStart: { features: [{ pageLength: { menu: [10, 25, 50, 100], text: '_MENU_' } }] },
+                    topEnd: { features: [{ search: { placeholder: t('Search'), text: '_INPUT_' } }] },
+                    bottomStart: { features: ['info'] },
+                    bottomEnd: { features: [{ paging: { firstLast: false } }] }
+                },
                 columns: [text('resourceRef'), text('period'), text('requiredCapacity', 'text-end'), text('availableCapacity', 'text-end'),
                     text('shortfall', 'text-end'), text('uomId')]
-            }));
+            });
+            config.language.emptyTable = t('NoBottlenecks');
+            config.language.searchPlaceholder = t('Search');
+            bottleneckTable = new DataTable(document.getElementById('dt-capacity-bottlenecks'), config);
         }
         bottleneckTable.clear();
         bottleneckTable.rows.add(rows);

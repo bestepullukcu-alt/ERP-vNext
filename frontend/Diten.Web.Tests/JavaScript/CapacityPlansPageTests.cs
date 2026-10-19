@@ -159,7 +159,9 @@ public sealed class CapacityPlansPageTests
         var panel = Read("frontend/Diten.Web/Views/SupplyChain/CapacityPlans/_EvaluationPanel.cshtml");
         Assert.Contains("<table id=\"dt-capacity-bottlenecks\" data-dt-standard=\"v2\"", panel);
         Assert.Contains("window.DtDefaults.create({", _details);
-        Assert.Contains("stateSave: false, serverSide: false, language: { emptyTable: t('NoBottlenecks') }", _details);
+        Assert.Contains("data: [], order: [[1, 'asc']], stateSave: false, serverSide: false,", _details);
+        Assert.Contains("config.language.emptyTable = t('NoBottlenecks');", _details);   // after create() (G8 NL-1)
+        Assert.DoesNotContain("buttons:", _details);
     }
 
     // G8 M2: no "Loading…" title survives a failed or denied first load.
