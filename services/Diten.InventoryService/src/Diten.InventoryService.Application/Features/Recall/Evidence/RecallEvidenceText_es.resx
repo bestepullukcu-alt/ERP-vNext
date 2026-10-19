@@ -209,4 +209,7 @@
   <data name="RecallPdf.Kind.Case" xml:space="preserve"><value>Caso de retirada</value></data>
   <data name="RecallPdf.Kind.DrillRun" xml:space="preserve"><value>Simulacro</value></data>
   <data name="RecallPdf.Kind.Period" xml:space="preserve"><value>Período</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>Revisión</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Liberación</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Autoría</value></data>
 </root>

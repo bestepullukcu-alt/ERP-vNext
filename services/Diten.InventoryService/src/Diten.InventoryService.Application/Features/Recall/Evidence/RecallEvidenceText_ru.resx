@@ -209,4 +209,7 @@
   <data name="RecallPdf.Kind.Case" xml:space="preserve"><value>Дело об отзыве</value></data>
   <data name="RecallPdf.Kind.DrillRun" xml:space="preserve"><value>Учения</value></data>
   <data name="RecallPdf.Kind.Period" xml:space="preserve"><value>Период</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>Проверка</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Выпуск</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Авторство</value></data>
 </root>

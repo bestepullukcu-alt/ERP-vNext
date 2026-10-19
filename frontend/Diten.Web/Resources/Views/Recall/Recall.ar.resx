@@ -684,4 +684,7 @@
   <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>ختم النطاق المعتمد (مُوقَّع) {0}</value></data>
   <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>يختلف ملخص النطاق الحالي عن آخر ختم — تغيّر النطاق بعد ختمه.</value></data>
   <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>لا يوجد عملاء في النطاق؛ لا يمكن ربط المرتجع إلا بعميل ضمن النطاق المعتمد. يأتي العملاء من شحنات المبيعات.</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>إفراج</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>إعداد</value></data>
 </root>
