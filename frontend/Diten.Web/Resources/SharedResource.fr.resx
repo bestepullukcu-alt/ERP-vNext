@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>Plateforme</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Centre de travail</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Référentiel des articles</value>
   </data>

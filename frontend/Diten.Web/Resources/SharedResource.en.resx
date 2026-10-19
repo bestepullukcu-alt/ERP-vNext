@@ -378,9 +378,6 @@
   <data name="ServiceCodeInUse" xml:space="preserve">
     <value>Service code is already in use.</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Work Center</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Item Master</value>
   </data>
