@@ -62,6 +62,9 @@
         </div>
     </div>
 </div>
+@* the queue page had no write before: QuarantineUi.write reads its antiforgery token from #qr-antiforgery (found in the preview: without it
+   the POST was refused 400 by [ValidateAntiForgeryToken]) — drawn here, so only with quarantine.holds.create *@
+<form id="qr-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
 @* the confirmation body (constant markup; the line is set through textContent) *@
 <template id="qr-manual-confirm-template">
     <div class="text-start">

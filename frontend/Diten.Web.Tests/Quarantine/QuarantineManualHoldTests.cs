@@ -23,6 +23,17 @@ public sealed class QuarantineManualHoldTests : IClassFixture<WebApplicationFact
         Assert.DoesNotContain("id=\"qr-manual-modal\"", html, StringComparison.Ordinal);
         Assert.DoesNotContain("manual-hold.js", html, StringComparison.Ordinal);
         Assert.DoesNotContain("qr-manual-confirm-template", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("id=\"qr-antiforgery\"", html, StringComparison.Ordinal);
+    }
+
+    /// <summary>The write needs the page's antiforgery token (QuarantineUi.write reads #qr-antiforgery) — found missing in the CLEAN1 preview (400).</summary>
+    [Fact]
+    public async Task With_the_create_key_the_page_carries_the_antiforgery_token_the_write_sends()
+    {
+        var html = await TraceViewRenderer.RenderAsync(_factory, "/Views/Quarantine/Index.cshtml", null, "quarantine.holds.read", "quarantine.holds.create");
+        Assert.Matches(new Regex(@"<form id=""qr-antiforgery"" class=""d-none""><input name=""__RequestVerificationToken"" type=""hidden"" value=""[^""]+"""), html);
+        var ui = File.ReadAllText(Path.Combine(TraceViewRenderer.WebRoot, "wwwroot", "assets", "js", "Quarantine", "quarantine-ui.js"));
+        Assert.Contains("document.querySelector('#qr-antiforgery input[name=\"__RequestVerificationToken\"]')", ui, StringComparison.Ordinal);
     }
 
     [Fact]
