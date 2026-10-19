@@ -100,3 +100,12 @@
 - **W6-WEB-a:** A + B + C (+ bağlantı ekranı).
 - **W6-WEB-b:** D (fiyat listeleri, kurallar, deneme, geçmiş, kurlar) + E önizlemesi.
 - Gateway rotaları ve rota kapsama testleri her BE isteminin içinde (W3L / W5 dersi).
+
+## 7. KARAR (kullanıcı, 2026-10-19)
+- **D1–D16:** CT önerileri olduğu gibi kabul edildi.
+- **D17 (yer): "Blueprint'te nerede olması gerekiyorsa orada."** CT ölçümü:
+  - 8.7'de MOD-0156 Price Lists & Discount Guardrails = Commercial Suite (CRM + O2C), CPQ & Pricing; MOD-0168 Order Capture = Commercial Suite, Order-to-Cash (Bridge).
+  - Kayıt tablosunda ikisinin sahip domain'i commercial-suite; o domain'in servisi `Diten.CrmService` (domain-config).
+  - **Sonuç:** ikisi de CrmService içinde, CRM modüllerinden ayrı sınırlarla (kendi klasör / koleksiyon / izin ad alanı) yaşar. MOD-0168 kaydındaki "SoR boundary with Finance / Order-Mgmt = EA-TBD" notu Program T3'e kalır.
+- **Ön şart (AGENTS çekirdek kural 7):** kod yalnız `approved` / `ready-for-dev` module pack ile yazılır. MOD-0156 ve MOD-0168 için paket yok → **W6-PACK** (iki paket: MOD-0168-FU01 eczane ön siparişi, MOD-0156-FU01 fiyat listesi + iskonto / MF kuralları ilk dilimi) önce yazılır ve onaylanır.
+- **İzin ad alanı:** crm-rbac-integration-plan §2 `commercial.pricing.*` / `commercial.order.*` (PKS-001'de yok; sahip onayı gerekli) — kullanıcı kararı bekleniyor.
