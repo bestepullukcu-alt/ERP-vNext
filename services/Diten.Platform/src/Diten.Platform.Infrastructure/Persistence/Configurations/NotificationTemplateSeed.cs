@@ -416,7 +416,13 @@ public static class NotificationTemplateSeed
             TimeEntryMinutesConflict("es"),
             TimeEntryMinutesConflict("zh"),
             TimeEntryMinutesConflict("ar"),
-            TimeEntryMinutesConflict("ru")
+            TimeEntryMinutesConflict("ru"),
+
+            // WP-VW-W5 PLT-NOTIFY (K-N3) — the CRM visit report e-mails, seven languages each.
+            .. TenantLocales.Select(VisitReportSubmitted),
+            .. TenantLocales.Select(VisitReportAdverseEvent),
+            .. TenantLocales.Select(VisitReportOffLabelRequest),
+            .. TenantLocales.Select(VisitReportOverdue)
         ];
     }
 
@@ -1132,6 +1138,188 @@ public static class NotificationTemplateSeed
         };
 
         return Create("timeentry.meeting.minutesconflict", locale, subject, html, text, ["MeetingTitle", "MeetingDate", "TimesheetUrl"]);
+    }
+
+    /*
+     * WP-VW-W5 PLT-NOTIFY (K-N3, K-N4) — the four visit report e-mails CRM (MOD-0155) sends through the internal event
+     * dispatch, in all seven tenant languages, in the shell form (heading, information table, one action, footnote) the
+     * 06 mockup draws. The variables are CrmManifestProvider's declaration, named as CRM sends them (the package's contract
+     * annex): display text CRM formats — dates as yyyy-MM-dd, the deadline as ISO-8601 UTC; a row whose value is empty is left out
+     * by the shell. adverseEvent / offLabelRequest (true / false) are declared but not shown: a template cannot word a flag in
+     * the reader's language, and each one has its own e-mail. No variable carries a patient's identity, and the footnote says so.
+     */
+
+    /// <summary>The words every visit report e-mail shares, per language.</summary>
+    private sealed record VisitReportWords(
+        string Rep, string Doctor, string Institution, string Visit, string Products, string Note, string View, string Footnote);
+
+    private static VisitReportWords VisitWords(string locale) => locale switch
+    {
+        "en" => new("Representative", "Doctor", "Institution", "Visit", "Products", "Note", "View the report", "Sent automatically by CRM. This e-mail contains no patient-identifying information (data protection)."),
+        "tr" => new("Temsilci", "Hekim", "Kurum", "Ziyaret", "Ürünler", "Not", "Raporu görüntüle", "CRM tarafından otomatik gönderildi. Bu e-posta hasta kimlik bilgisi içermez (KVKK)."),
+        "fr" => new("Délégué", "Médecin", "Établissement", "Visite", "Produits", "Note", "Voir le rapport", "Envoyé automatiquement par le CRM. Cet e-mail ne contient aucune donnée permettant d'identifier un patient (protection des données)."),
+        "es" => new("Representante", "Médico", "Institución", "Visita", "Productos", "Nota", "Ver el informe", "Enviado automáticamente por el CRM. Este correo no contiene datos que identifiquen a ningún paciente (protección de datos)."),
+        "zh" => new("代表", "医生", "机构", "拜访", "产品", "备注", "查看报告", "由 CRM 自动发送。本邮件不含任何可识别患者身份的信息（数据保护）。"),
+        "ar" => new("المندوب", "الطبيب", "المؤسسة", "الزيارة", "المنتجات", "ملاحظة", "عرض التقرير", "أُرسلت تلقائيًا من نظام CRM. لا تتضمن هذه الرسالة أي معلومات تعرّف بهوية المريض (حماية البيانات)."),
+        "ru" => new("Представитель", "Врач", "Учреждение", "Визит", "Препараты", "Примечание", "Открыть отчёт", "Отправлено автоматически системой CRM. Письмо не содержит данных, позволяющих установить личность пациента (защита данных)."),
+        _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported visit report template locale.")
+    };
+
+    /// <summary><c>crm.visitreport.submitted</c> — the report summary, to the representative's line manager (06 <c>rapor</c>).</summary>
+    private static NotificationTemplate VisitReportSubmitted(string locale)
+    {
+        var w = VisitWords(locale);
+        var (subject, heading, intro, followUp) = locale switch
+        {
+            "en" => ("Visit report · {{doctorName}} · {{visitDate}}", "Visit report: {{doctorName}}", "{{repName}} has submitted the visit report. The summary is below; the details are in CRM.", "Suggested next visit"),
+            "tr" => ("Ziyaret raporu · {{doctorName}} · {{visitDate}}", "{{doctorName}} ziyaret raporu", "{{repName}} ziyaret raporunu gönderdi. Özet aşağıda; ayrıntılar CRM'de.", "Önerilen sonraki ziyaret"),
+            "fr" => ("Rapport de visite · {{doctorName}} · {{visitDate}}", "Rapport de visite : {{doctorName}}", "{{repName}} a envoyé le rapport de visite. Le résumé figure ci-dessous ; le détail est dans le CRM.", "Prochaine visite suggérée"),
+            "es" => ("Informe de visita · {{doctorName}} · {{visitDate}}", "Informe de visita: {{doctorName}}", "{{repName}} ha enviado el informe de la visita. El resumen está abajo; los detalles, en el CRM.", "Próxima visita sugerida"),
+            "zh" => ("拜访报告 · {{doctorName}} · {{visitDate}}", "{{doctorName}} 拜访报告", "{{repName}} 已提交拜访报告。摘要如下，详情请见 CRM。", "建议下次拜访"),
+            "ar" => ("تقرير زيارة · {{doctorName}} · {{visitDate}}", "تقرير زيارة: {{doctorName}}", "تم إرسال تقرير الزيارة من قِبل {{repName}}. الملخص أدناه، والتفاصيل في نظام CRM.", "الزيارة التالية المقترحة"),
+            "ru" => ("Отчёт о визите · {{doctorName}} · {{visitDate}}", "Отчёт о визите: {{doctorName}}", "{{repName}}: отчёт о визите отправлен. Краткое содержание ниже, подробности — в CRM.", "Рекомендуемый следующий визит"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported visit report template locale.")
+        };
+
+        return VisitReportTemplate(
+            Diten.Platform.Application.Features.Crm.SelfRegistration.CrmManifestProvider.VisitReportSubmittedEvent,
+            locale, subject, heading, intro, notice: null,
+            [
+                (w.Rep, "{{repName}}"),
+                (w.Doctor, "{{doctorName}}"),
+                (w.Institution, "{{institutionName}}"),
+                (w.Visit, "{{visitDate}}"),
+                (w.Products, "{{products}}"),
+                (w.Note, "{{note}}"),
+                (followUp, "{{followUpDate}}")
+            ],
+            w.View, w.Footnote);
+    }
+
+    /// <summary><c>crm.visitreport.adverseevent</c> — URGENT, to pharmacovigilance with the line manager in copy; the
+    /// 24-hour rule and "the representative makes no medical assessment" (06 <c>advers</c>).</summary>
+    private static NotificationTemplate VisitReportAdverseEvent(string locale)
+    {
+        var w = VisitWords(locale);
+        var (subject, heading, intro, notice, reportedBy, source, product, repNote) = locale switch
+        {
+            "en" => ("URGENT · Adverse event report · {{doctorName}} · 24 hours", "An adverse event was reported in a visit", "During a field visit, the doctor reported a side effect / adverse event. The report must be assessed within 24 hours.", "The representative makes no medical assessment; they only pass the information on.", "Reported by", "Source doctor", "Suspected product", "Representative's note"),
+            "tr" => ("ACİL · Advers olay bildirimi · {{doctorName}} · 24 saat", "Ziyarette advers olay bildirildi", "Saha ziyaretinde hekim tarafından bir yan etki / advers olay aktarıldı. Bildirimin 24 saat içinde değerlendirilmesi gerekir.", "Temsilci tıbbi değerlendirme yapmaz; yalnız bilgiyi iletir.", "Bildiren", "Kaynak hekim", "Şüpheli ürün", "Temsilcinin notu"),
+            "fr" => ("URGENT · Signalement d'événement indésirable · {{doctorName}} · 24 heures", "Un événement indésirable a été signalé lors d'une visite", "Lors d'une visite terrain, le médecin a signalé un effet indésirable / événement indésirable. Le signalement doit être évalué dans les 24 heures.", "Le délégué ne fait aucune évaluation médicale ; il transmet seulement l'information.", "Signalé par", "Médecin source", "Produit suspecté", "Note du délégué"),
+            "es" => ("URGENTE · Notificación de acontecimiento adverso · {{doctorName}} · 24 horas", "Se notificó un acontecimiento adverso en una visita", "Durante una visita de campo, el médico comunicó un efecto secundario / acontecimiento adverso. La notificación debe evaluarse en un plazo de 24 horas.", "El representante no realiza ninguna valoración médica; solo transmite la información.", "Notificado por", "Médico de origen", "Producto sospechoso", "Nota del representante"),
+            "zh" => ("紧急 · 不良事件报告 · {{doctorName}} · 24 小时", "拜访中报告了不良事件", "在一次现场拜访中，医生反映了一项副作用/不良事件。须在 24 小时内对该报告进行评估。", "代表不作任何医学评估，仅转达信息。", "报告人", "来源医生", "可疑产品", "代表备注"),
+            "ar" => ("عاجل · إبلاغ عن حدث ضائر · {{doctorName}} · 24 ساعة", "تم الإبلاغ عن حدث ضائر خلال زيارة", "خلال زيارة ميدانية، أبلغ الطبيب عن أثر جانبي / حدث ضائر. يجب تقييم البلاغ خلال 24 ساعة.", "لا يُجري المندوب أي تقييم طبي؛ بل ينقل المعلومات فقط.", "المُبلِّغ", "الطبيب المصدر", "المنتج المشتبه به", "ملاحظة المندوب"),
+            "ru" => ("СРОЧНО · Сообщение о нежелательном явлении · {{doctorName}} · 24 часа", "Во время визита сообщено о нежелательном явлении", "Во время визита врач сообщил о побочном эффекте / нежелательном явлении. Сообщение необходимо оценить в течение 24 часов.", "Представитель не даёт медицинской оценки, а только передаёт информацию.", "Сообщил", "Врач-источник", "Подозреваемый препарат", "Примечание представителя"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported visit report template locale.")
+        };
+
+        return VisitReportTemplate(
+            Diten.Platform.Application.Features.Crm.SelfRegistration.CrmManifestProvider.VisitReportAdverseEventEvent,
+            locale, subject, heading, intro, notice,
+            [
+                (reportedBy, "{{repName}}"),
+                (source, "{{doctorName}}"),
+                (w.Institution, "{{institutionName}}"),
+                (w.Visit, "{{visitDate}}"),
+                (product, "{{products}}"),
+                (repNote, "{{adverseEventNote}}")
+            ],
+            w.View, w.Footnote);
+    }
+
+    /// <summary><c>crm.visitreport.offlabelrequest</c> — to the medical science liaison with the line manager in copy;
+    /// the representative did not answer (06 <c>msl</c>).</summary>
+    private static NotificationTemplate VisitReportOffLabelRequest(string locale)
+    {
+        var w = VisitWords(locale);
+        var (subject, heading, intro, product) = locale switch
+        {
+            "en" => ("Off-label information request · {{doctorName}}", "A doctor asked for off-label information", "During the visit, the doctor asked for information outside the approved indication. The representative did not answer and forwarded the request to you.", "Product"),
+            "tr" => ("Endikasyon dışı bilgi talebi · {{doctorName}}", "Hekim endikasyon dışı bilgi istedi", "Ziyaret sırasında hekim, onaylı endikasyon dışında bilgi talep etti. Temsilci yanıt vermedi ve talebi size yönlendirdi.", "Ürün"),
+            "fr" => ("Demande d'information hors AMM · {{doctorName}}", "Un médecin a demandé une information hors AMM", "Pendant la visite, le médecin a demandé une information en dehors de l'indication approuvée. Le délégué n'a pas répondu et vous a transmis la demande.", "Produit"),
+            "es" => ("Solicitud de información fuera de indicación · {{doctorName}}", "Un médico pidió información fuera de indicación", "Durante la visita, el médico solicitó información fuera de la indicación aprobada. El representante no respondió y le ha remitido la solicitud.", "Producto"),
+            "zh" => ("超说明书信息请求 · {{doctorName}}", "医生请求了超说明书信息", "拜访期间，医生请求了已批准适应症以外的信息。代表未作答复，并已将该请求转交给您。", "产品"),
+            "ar" => ("طلب معلومات خارج دواعي الاستعمال المعتمدة · {{doctorName}}", "طلب طبيب معلومات خارج دواعي الاستعمال المعتمدة", "خلال الزيارة، طلب الطبيب معلومات خارج دواعي الاستعمال المعتمدة. لم يُجب المندوب وأحال الطلب إليك.", "المنتج"),
+            "ru" => ("Запрос информации о применении вне инструкции · {{doctorName}}", "Врач запросил информацию о применении вне инструкции", "Во время визита врач запросил информацию за пределами одобренных показаний. Представитель не ответил и передал запрос вам.", "Препарат"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported visit report template locale.")
+        };
+
+        return VisitReportTemplate(
+            Diten.Platform.Application.Features.Crm.SelfRegistration.CrmManifestProvider.VisitReportOffLabelRequestEvent,
+            locale, subject, heading, intro, notice: null,
+            [
+                (w.Doctor, "{{doctorName}}"),
+                (w.Institution, "{{institutionName}}"),
+                (product, "{{products}}"),
+                (w.Rep, "{{repName}}"),
+                (w.Visit, "{{visitDate}}")
+            ],
+            w.View, w.Footnote);
+    }
+
+    /// <summary><c>crm.visitreport.overdue</c> — to the representative's line manager when a visit's report deadline passed
+    /// with no report (06 <c>sure</c>).</summary>
+    private static NotificationTemplate VisitReportOverdue(string locale)
+    {
+        var w = VisitWords(locale);
+        var (subject, heading, intro, deadline, statusLabel, status, review) = locale switch
+        {
+            "en" => ("Visit report overdue · {{doctorName}} · {{visitDate}}", "A visit's report was not entered", "{{repName}} did not enter the report of the visit on {{visitDate}} before its deadline. The record is locked.", "Deadline", "Status", "Locked · no report", "Review the record"),
+            "tr" => ("Rapor süresi doldu · {{doctorName}} · {{visitDate}}", "Yapılan bir ziyaretin raporu girilmedi", "{{repName}}, {{visitDate}} tarihinde yapılan ziyaretin raporunu süresi içinde girmedi. Kayıt kilitlendi.", "Son tarih", "Durum", "Kilitli · rapor yok", "Kaydı incele"),
+            "fr" => ("Délai du rapport dépassé · {{doctorName}} · {{visitDate}}", "Le rapport d'une visite effectuée n'a pas été saisi", "{{repName}} n'a pas saisi le rapport de la visite du {{visitDate}} dans le délai. L'enregistrement est verrouillé.", "Échéance", "Statut", "Verrouillé · aucun rapport", "Examiner l'enregistrement"),
+            "es" => ("Plazo del informe vencido · {{doctorName}} · {{visitDate}}", "No se registró el informe de una visita realizada", "{{repName}} no registró el informe de la visita del {{visitDate}} dentro del plazo. El registro está bloqueado.", "Fecha límite", "Estado", "Bloqueado · sin informe", "Revisar el registro"),
+            "zh" => ("报告已逾期 · {{doctorName}} · {{visitDate}}", "一次已完成拜访的报告未录入", "{{repName}} 未在截止时间前录入 {{visitDate}} 拜访的报告。该记录已锁定。", "截止时间", "状态", "已锁定 · 无报告", "查看记录"),
+            "ar" => ("انقضت مهلة التقرير · {{doctorName}} · {{visitDate}}", "لم يُدخَل تقرير زيارة تمّت", "لم يُدخل {{repName}} تقرير زيارة {{visitDate}} ضمن المهلة. تم قفل السجل.", "الموعد النهائي", "الحالة", "مقفل · لا يوجد تقرير", "مراجعة السجل"),
+            "ru" => ("Срок отчёта истёк · {{doctorName}} · {{visitDate}}", "Отчёт о проведённом визите не внесён", "{{repName}}: отчёт о визите {{visitDate}} не внесён в срок. Запись заблокирована.", "Срок", "Статус", "Заблокировано · отчёта нет", "Проверить запись"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported visit report template locale.")
+        };
+
+        return VisitReportTemplate(
+            Diten.Platform.Application.Features.Crm.SelfRegistration.CrmManifestProvider.VisitReportOverdueEvent,
+            locale, subject, heading, intro, notice: null,
+            [
+                (w.Rep, "{{repName}}"),
+                (w.Doctor, "{{doctorName}}"),
+                (w.Institution, "{{institutionName}}"),
+                (w.Visit, "{{visitDate}}"),
+                (deadline, "{{deadline}}"),
+                (statusLabel, status)
+            ],
+            review, w.Footnote,
+            requiredExtra: ["deadline"]);
+    }
+
+    private static NotificationTemplate VisitReportTemplate(
+        string templateKey,
+        string locale,
+        string subject,
+        string heading,
+        string intro,
+        string? notice,
+        IReadOnlyList<(string Label, string Value)> rows,
+        string action,
+        string footnote,
+        IReadOnlyList<string>? requiredExtra = null)
+    {
+        // The plain-text part writes the link out: a reader without HTML still reaches the report.
+        var template = Create(
+            templateKey,
+            locale,
+            subject,
+            notice is null ? $"<p>{intro}</p>" : $"<p>{intro}</p><p><strong>{notice}</strong></p>",
+            (notice is null ? intro : $"{intro} {notice}") + $" {action}: {{{{reportUrl}}}}",
+            Diten.Platform.Application.Features.Crm.SelfRegistration.CrmManifestProvider.VisitReportRequiredVariables
+                .Concat(requiredExtra ?? [])
+                .ToList());
+        template.Shell = new NotificationTemplateShell
+        {
+            HeadingTemplate = heading,
+            InfoRows = rows.Select(row => new NotificationTemplateShellRow { Label = row.Label, ValueTemplate = row.Value }).ToList(),
+            ActionLabel = action,
+            ActionUrlVariable = "reportUrl",
+            FootnoteTemplate = footnote
+        };
+        return template;
     }
 
     private static NotificationTemplate Create(

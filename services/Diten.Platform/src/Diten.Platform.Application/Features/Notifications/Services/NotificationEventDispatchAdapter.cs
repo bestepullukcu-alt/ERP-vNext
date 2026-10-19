@@ -44,7 +44,15 @@ public sealed record NotificationEventDispatchRequest(
     /// (and only when) this dispatch is for exactly one meeting attendee; forwarded unchanged into
     /// <see cref="QueueEmailNotificationRequest.MeetingAttendeeUserId"/> and never inspected here (source-agnostic
     /// resolver, per this type's own doc comment).</summary>
-    Guid? MeetingAttendeeUserId = null);
+    Guid? MeetingAttendeeUserId = null,
+    /// <summary>WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY. Set by the internal event dispatch to the module that asked
+    /// (the owner check is done there, before this adapter); forwarded unchanged into
+    /// <see cref="QueueEmailNotificationRequest.SourceModule"/> and never inspected here.</summary>
+    string? SourceModule = null,
+    /// <summary>WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY. The reply address of THIS message (the representative's, resolved
+    /// by the internal event dispatch); forwarded unchanged into <see cref="QueueEmailNotificationRequest.ReplyToEmail"/>.
+    /// Null: the tenant's own reply address, exactly as before.</summary>
+    string? ReplyToEmail = null);
 
 public interface INotificationEventDispatchAdapter
 {
@@ -297,7 +305,9 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
             Bcc: bcc,
             CausationId: request.CausationId,
             Attachments: request.Attachments,
-            MeetingAttendeeUserId: request.MeetingAttendeeUserId);
+            MeetingAttendeeUserId: request.MeetingAttendeeUserId,
+            SourceModule: request.SourceModule,
+            ReplyToEmail: request.ReplyToEmail);
 
         var command = new QueueEmailNotificationCommand(request.TenantId, queueRequest, request.CorrelationId);
         Response<NotificationDispatchDto> response;

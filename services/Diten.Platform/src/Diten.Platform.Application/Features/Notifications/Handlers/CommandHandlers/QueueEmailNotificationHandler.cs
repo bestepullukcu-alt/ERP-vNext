@@ -161,11 +161,22 @@ public sealed class QueueEmailNotificationHandler
         // cut, or carrying a tab, a double space or a soft hyphen the cleaning would change, is still found whole.
         var subject = EmailHeaderText.CleanSubject(renderResponse.Data.Subject);
         var storedSubject = EmailHeaderText.CleanSubject(MaskSensitiveValues(renderResponse.Data.Subject, variables, secretNames));
+        // WP-VW-W5 PLT-NOTIFY — a reply address of this message's own is ONE plain address or it is not used.
+        var replyToEmail = Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(request.Request.ReplyToEmail?.Trim())
+            ? request.Request.ReplyToEmail!.Trim()
+            : null;
+        if (replyToEmail is null && !string.IsNullOrWhiteSpace(request.Request.ReplyToEmail))
+        {
+            _logger.LogWarning(
+                "notification.reply_to_refused TenantId={TenantId} TemplateKey={TemplateKey}. Not a single valid address; the tenant's reply address applies.",
+                request.TenantId, template.TemplateKey);
+        }
+
         var composed = _shellComposer is null
             ? null
             : await _shellComposer.ComposeAsync(
                 request.TenantId, template, template.Locale, subject,
-                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, variables, ct);
+                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, variables, replyToEmail, ct);
 
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? Guid.NewGuid().ToString("N")
@@ -206,7 +217,9 @@ public sealed class QueueEmailNotificationHandler
             RetryCount = 0,
             CorrelationId = correlationId,
             CausationId = request.Request.CausationId,
-            MeetingAttendeeUserId = request.Request.MeetingAttendeeUserId
+            MeetingAttendeeUserId = request.Request.MeetingAttendeeUserId,
+            SourceModule = string.IsNullOrWhiteSpace(request.Request.SourceModule) ? null : request.Request.SourceModule.Trim(),
+            ReplyToEmail = replyToEmail
         };
 
         await _dispatchRepository.CreateAsync(dispatch, ct);
@@ -253,7 +266,8 @@ public sealed class QueueEmailNotificationHandler
                 // no attachment column, and none is added here — see MessagingProviderEmailRequest's own doc
                 // comment on why a later retry already cannot have one anyway).
                 request.Request.Attachments,
-                composed?.SenderName),
+                composed?.SenderName,
+                replyToEmail),
             ct);
 
         if (providerResult.Accepted)

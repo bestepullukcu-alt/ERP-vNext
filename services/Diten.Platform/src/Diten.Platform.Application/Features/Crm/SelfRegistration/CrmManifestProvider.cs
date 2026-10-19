@@ -277,6 +277,26 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("FLAGS_READ_ALL", "Read All Visit Evidence Flags (Tenant-Wide)", "crm.visit-evidence-flags.read-all", "Toolbar", 10, false, true, false)
                 ])
             ],
+            // WP-VW-W5 PLT-NOTIFY (K-N3, K-N4) — the visit report e-mails, sent by MOD-0155 through the internal event dispatch
+            // (POST api/internal/notifications/events/dispatch, sourceModule MOD-0155 — InternalEventDispatchService lists it as
+            // speaking for this manifest). Email only; the templates are platform defaults in all seven tenant languages
+            // (NotificationTemplateSeed, 06 mockup). The variables are the package's contract annex (W5-BE, 2026-10-19), named as
+            // CRM sends them. No variable carries a patient's identity — there is none to carry.
+            NotificationEvents:
+            [
+                VisitReportEvent(VisitReportSubmittedEvent, "NotificationEvent_CrmVisitReportSubmitted", "Visit report submitted",
+                    "Sent to the representative's line manager when a visit report is submitted. An amendment sends nothing.",
+                    "Info", ["products", "note", "adverseEvent", "offLabelRequest", "followUpDate"]),
+                VisitReportEvent(VisitReportAdverseEventEvent, "NotificationEvent_CrmVisitReportAdverseEvent", "Adverse event reported in a visit",
+                    "Sent to pharmacovigilance (line manager in copy) when a visit report records an adverse event: 24-hour rule.",
+                    "Critical", ["products", "adverseEventNote"]),
+                VisitReportEvent(VisitReportOffLabelRequestEvent, "NotificationEvent_CrmVisitReportOffLabelRequest", "Off-label information request",
+                    "Sent to the medical science liaison (line manager in copy) when a doctor asked for off-label information.",
+                    "Warning", ["products"]),
+                VisitReportEvent(VisitReportOverdueEvent, "NotificationEvent_CrmVisitReportOverdue", "Visit report overdue",
+                    "Sent to the representative's line manager when a visit's report was not entered within its deadline.",
+                    "Warning", [], requiredExtra: ["deadline"])
+            ],
             // WP-VW-W5 (W5-BE, K-N9) — the visit notification keys. API-only until W5-WEB ships the "sent e-mails" page
             // (then they become a page + action above): .read = the caller's own + team's visit e-mails; .settings.manage =
             // the tenant's PV / MSL mailboxes and switches, and every visit e-mail of the tenant.
@@ -285,4 +305,45 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission("crm.visit-notifications.read", "Read Visit Notifications"),
                 new ModuleManifestPermission("crm.visit-notifications.settings.manage", "Manage Visit Notification Settings")
             ]);
+
+    // WP-VW-W5 PLT-NOTIFY — the four visit report events (K-N4). Template key = event code. No hyphen in a code: the
+    // notification catalogue accepts lowercase dotted segments of letters and digits only (NotificationParsing), so the
+    // package's crm.visit-report.* names are written crm.visitreport.* (user decision 2026-10-19).
+    public const string VisitReportSubmittedEvent = "crm.visitreport.submitted";
+    public const string VisitReportAdverseEventEvent = "crm.visitreport.adverseevent";
+    public const string VisitReportOffLabelRequestEvent = "crm.visitreport.offlabelrequest";
+    public const string VisitReportOverdueEvent = "crm.visitreport.overdue";
+
+    /// <summary>What every visit report e-mail must carry (contract annex): the representative, the visit date
+    /// (yyyy-MM-dd) and the link to the report — CRM always has them. A required variable that arrives empty is refused by
+    /// the dispatch adapter, so a value CRM may leave empty is never required.</summary>
+    public static readonly IReadOnlyList<string> VisitReportRequiredVariables = ["repName", "visitDate", "reportUrl"];
+
+    /// <summary>Shown when CRM has them (an empty one hides its row): the doctor and the institution — empty when the visit
+    /// has no contact or account.</summary>
+    public static readonly IReadOnlyList<string> VisitReportOptionalVariables = ["doctorName", "institutionName"];
+
+    private static ModuleManifestNotificationEvent VisitReportEvent(
+        string eventCode, string displayNameKey, string fallbackDisplayName, string description, string severity,
+        IReadOnlyList<string> optionalExtra, IReadOnlyList<string>? requiredExtra = null) =>
+        new(
+            EventCode: eventCode,
+            Channel: "Email",
+            DefaultTemplateKey: eventCode,
+            DisplayNameKey: displayNameKey,
+            FallbackDisplayName: fallbackDisplayName,
+            Description: description,
+            RequiredVariables: VisitReportRequiredVariables.Concat(requiredExtra ?? [])
+                .Select(name => new ModuleManifestNotificationVariable(name))
+                .ToList(),
+            OptionalVariables: VisitReportOptionalVariables.Concat(optionalExtra)
+                .Select(name => new ModuleManifestNotificationVariable(name, IsRequired: false))
+                .ToList(),
+            TargetPageCode: "VISIT_WORKSPACE",
+            RequiredPermissionKey: VisitReportRead,
+            CanTenantOverride: true,
+            UsageType: "SystemEvent",
+            SeverityDefault: severity,
+            LinkPolicy: "TargetPage",
+            Status: "Active");
 }

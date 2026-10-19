@@ -51,6 +51,13 @@ public sealed class NotificationDispatch : BaseEntity
     // attendee this particular dispatch was for, since a dispatch's own `To` list on its own cannot be resolved
     // back to a MeetingAttendee row (no email is stored on MeetingAttendee). Never set for non-meeting mail.
     public Guid? MeetingAttendeeUserId { get; set; }
+    // WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY: the module that asked for this mail through the internal event dispatch
+    // (e.g. MOD-0155, a CRM visit report). Null on every row written before this field existed and on every dispatch a
+    // platform producer starts itself; the operator's dispatch list can filter by it.
+    public string? SourceModule { get; set; }
+    // WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY: this message's own reply address (the representative's for a visit report
+    // mail), over the tenant's settings. Kept so a retry replies to the same person; null = the tenant's, as before.
+    public string? ReplyToEmail { get; set; }
 
     // BL-406 — set exactly once, at the moment this dispatch's failure is first recognised as PERMANENT (no
     // further retry will occur — see EmailDispatchJob/MarkNotificationDispatchFailedHandler). Idempotency guard:

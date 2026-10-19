@@ -26,6 +26,7 @@ using FluentValidation;
 using MediatR;
 using Diten.Platform.Application.Features.TimeEntry;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 
 namespace Diten.Platform.Application;
@@ -315,6 +316,11 @@ public static class DependencyInjection
         // MOD-0027-FU04B — eventCode → dispatch adapter (resolves Active event + validates, delegates to the existing
         // QueueEmailNotificationCommand). Producers wiring it is a separate follow-up (FU04B-Tenant / FU04D).
         services.AddScoped<Features.Notifications.Services.INotificationEventDispatchAdapter, Features.Notifications.Services.NotificationEventDispatchAdapter>();
+        // WP-VW-W5 PLT-NOTIFY — the internal event dispatch (services and schedulers; tenant from the body, owner-module
+        // check, readers by user / line manager / address) and the shared line-manager resolver it reads (K-N2). TryAdd for
+        // the resolver: AddTimeEntryModule registers the same one for hosts that compose only that module.
+        services.TryAddScoped<Contracts.ILineManagerResolver, Features.OrganizationSeats.LineManagerResolver>();
+        services.AddScoped<Features.Notifications.Services.IInternalEventDispatchService, Features.Notifications.Services.InternalEventDispatchService>();
         services.AddScoped<TenantSuspendedV1NotificationMapper>();
         services.AddScoped<TenantReactivatedV1NotificationMapper>();
         services.AddScoped<INotificationEventMapper<TenantSuspendedV1>>(sp => sp.GetRequiredService<TenantSuspendedV1NotificationMapper>());

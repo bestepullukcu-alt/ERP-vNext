@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.OrganizationSeats;
 using Diten.Platform.Application.Features.TimeEntry.Adapters;
 using Diten.Platform.Application.Features.TimeEntry.BackgroundJobs;
 using Diten.Platform.Application.Features.TimeEntry.Providers;
@@ -28,6 +29,9 @@ public static class TimeEntryModuleRegistration
 
         services.AddScoped<ITimesheetWeekReader, TimesheetWeekReader>();
         services.AddScoped<IApproverResolver, ApproverResolver>();
+        // WP-VW-W5 PLT-NOTIFY — the approver's manager walk is the platform's shared line-manager resolver now. AddApplication
+        // registers it too; TryAdd, so a host that composes only this module still has it and nobody registers it twice.
+        services.TryAddScoped<ILineManagerResolver, LineManagerResolver>();
         services.AddScoped<ITimesheetApprovalService, TimesheetApprovalService>();
         services.AddScoped<ITimesheetFinalizer, TimesheetFinalizer>();
         services.AddScoped<ITimesheetDecisionPuller, TimesheetDecisionPuller>();

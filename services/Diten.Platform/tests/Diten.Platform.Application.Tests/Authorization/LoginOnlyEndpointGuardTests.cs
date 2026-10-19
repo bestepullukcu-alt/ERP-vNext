@@ -84,6 +84,9 @@ public sealed class LoginOnlyEndpointGuardTests
         "InternalAuditController",
         "InternalBusinessReferenceDataController",
         "InternalModuleRegistrationController",
+        // WP-VW-W5 PLT-NOTIFY — services and schedulers start a catalogued notification: the internal API key is checked
+        // before anything is read; tenant from the body, owner-module check (InternalNotificationEventDispatchTests).
+        "InternalNotificationEventDispatchController",
         "InternalPlatformAdministratorsController",
         "InternalPpmEntitlementDecisionController",
         "InternalQuotasController",

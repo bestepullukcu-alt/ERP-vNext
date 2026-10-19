@@ -243,6 +243,7 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                 bodyHtml ?? dispatch.BodyHtmlPreview,
                 bodyText ?? dispatch.BodyTextPreview,
                 variables,
+                dispatch.ReplyToEmail,
                 cancellationToken);
             bodyHtml = composed.BodyHtml;
             bodyText = composed.BodyText;
@@ -267,7 +268,9 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                 bodyHtml,
                 bodyText,
                 attachments,
-                senderName),
+                senderName,
+                // WP-VW-W5 PLT-NOTIFY — a retry replies to the same person the first send did.
+                dispatch.ReplyToEmail),
             cancellationToken);
         return (sent, degradedReason);
     }

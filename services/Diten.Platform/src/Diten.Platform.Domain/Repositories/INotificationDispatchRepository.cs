@@ -16,6 +16,26 @@ public interface INotificationDispatchRepository
         DateTimeOffset? queuedTo = null,
         string? templateKey = null,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// WP-VW-W5 PLT-NOTIFY — the same list, also filtered by <see cref="NotificationDispatch.SourceModule"/> (exact
+    /// match) when <paramref name="sourceModule"/> is given. Default body: with no source module it is the list above, so
+    /// a double that never stored the field still answers; a source module it cannot filter is refused, never ignored.
+    /// </summary>
+    Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
+        Guid tenantId,
+        int skip,
+        int take,
+        NotificationDispatchStatus? status,
+        DateTimeOffset? queuedFrom,
+        DateTimeOffset? queuedTo,
+        string? templateKey,
+        string? sourceModule,
+        CancellationToken ct = default) =>
+        sourceModule is null
+            ? ListByTenantAsync(tenantId, skip, take, status, queuedFrom, queuedTo, templateKey, ct)
+            : throw new NotSupportedException("This repository cannot filter dispatches by source module.");
+
     Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default);
 
     /// <summary>

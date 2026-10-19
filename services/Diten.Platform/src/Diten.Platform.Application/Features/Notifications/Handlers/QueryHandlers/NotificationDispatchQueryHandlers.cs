@@ -50,6 +50,8 @@ public sealed class GetNotificationDispatchListHandler
             ? null
             : NotificationParsing.NormalizeTemplateKey(request.TemplateKey);
 
+        var sourceModule = string.IsNullOrWhiteSpace(request.SourceModule) ? null : request.SourceModule.Trim();
+
         var items = await _repository.ListByTenantAsync(
             request.TenantId,
             (page - 1) * pageSize,
@@ -58,6 +60,7 @@ public sealed class GetNotificationDispatchListHandler
             request.QueuedFrom,
             request.QueuedTo,
             templateKey,
+            sourceModule,
             ct);
         return Response<IReadOnlyList<NotificationDispatchListItemDto>>.Success(items.Select(x => x.ToListItemDto()).ToArray());
     }

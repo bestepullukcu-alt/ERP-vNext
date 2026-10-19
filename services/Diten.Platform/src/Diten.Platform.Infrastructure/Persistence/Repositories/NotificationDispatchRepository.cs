@@ -32,7 +32,7 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
+    public Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
         Guid tenantId,
         int skip = 0,
         int take = 50,
@@ -40,6 +40,18 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         DateTimeOffset? queuedFrom = null,
         DateTimeOffset? queuedTo = null,
         string? templateKey = null,
+        CancellationToken ct = default) =>
+        ListByTenantAsync(tenantId, skip, take, status, queuedFrom, queuedTo, templateKey, sourceModule: null, ct);
+
+    public async Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
+        Guid tenantId,
+        int skip,
+        int take,
+        NotificationDispatchStatus? status,
+        DateTimeOffset? queuedFrom,
+        DateTimeOffset? queuedTo,
+        string? templateKey,
+        string? sourceModule,
         CancellationToken ct = default)
     {
         var filters = new List<FilterDefinition<NotificationDispatch>>
@@ -66,6 +78,11 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         if (!string.IsNullOrWhiteSpace(templateKey))
         {
             filters.Add(Builders<NotificationDispatch>.Filter.Eq(x => x.TemplateKey, templateKey));
+        }
+
+        if (!string.IsNullOrWhiteSpace(sourceModule))
+        {
+            filters.Add(Builders<NotificationDispatch>.Filter.Eq(x => x.SourceModule, sourceModule));
         }
 
         return await _collection.Find(Builders<NotificationDispatch>.Filter.And(filters))

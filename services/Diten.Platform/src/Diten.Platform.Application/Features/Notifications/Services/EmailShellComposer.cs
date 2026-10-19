@@ -38,6 +38,19 @@ public interface IEmailShellComposer
         IReadOnlyDictionary<string, object?>? variables,
         CancellationToken ct = default);
 
+    /// <summary>WP-VW-W5 PLT-NOTIFY — the same, for a message with a reply address of its own (ONE plain address, over the
+    /// tenant's): the shell's footer names the address a reply actually goes to.</summary>
+    Task<ComposedEmail> ComposeAsync(
+        Guid tenantId,
+        NotificationTemplate? template,
+        string? locale,
+        string subject,
+        string? bodyHtml,
+        string? bodyText,
+        IReadOnlyDictionary<string, object?>? variables,
+        string? replyToEmail,
+        CancellationToken ct = default);
+
     /// <summary>The same framing with a caller-supplied identity — the template editor's preview has no tenant.</summary>
     ComposedEmail Compose(
         TenantEmailIdentity identity,
@@ -62,6 +75,17 @@ public sealed class EmailShellComposer : IEmailShellComposer
         _logger = logger;
     }
 
+    public Task<ComposedEmail> ComposeAsync(
+        Guid tenantId,
+        NotificationTemplate? template,
+        string? locale,
+        string subject,
+        string? bodyHtml,
+        string? bodyText,
+        IReadOnlyDictionary<string, object?>? variables,
+        CancellationToken ct = default) =>
+        ComposeAsync(tenantId, template, locale, subject, bodyHtml, bodyText, variables, replyToEmail: null, ct);
+
     public async Task<ComposedEmail> ComposeAsync(
         Guid tenantId,
         NotificationTemplate? template,
@@ -70,6 +94,7 @@ public sealed class EmailShellComposer : IEmailShellComposer
         string? bodyHtml,
         string? bodyText,
         IReadOnlyDictionary<string, object?>? variables,
+        string? replyToEmail,
         CancellationToken ct = default)
     {
         TenantEmailIdentity identity;
@@ -86,6 +111,11 @@ public sealed class EmailShellComposer : IEmailShellComposer
             // The frame must never cost the message: an unreadable tenant record sends under the product's name.
             _logger.LogWarning(ex, "email.shell.identity_unavailable TenantId={TenantId}. Sending under the product name.", tenantId);
             identity = TenantEmailIdentity.Platform;
+        }
+
+        if (EmailAddressText.IsSingleAddress(replyToEmail?.Trim()))
+        {
+            identity = identity with { ReplyToEmail = replyToEmail!.Trim() };
         }
 
         return Compose(identity, template, locale, subject, bodyHtml, bodyText, variables);

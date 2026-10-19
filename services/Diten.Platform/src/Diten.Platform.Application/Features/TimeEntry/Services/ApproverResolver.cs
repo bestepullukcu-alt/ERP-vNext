@@ -1,3 +1,5 @@
+using Diten.Platform.Application.Contracts;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
 
@@ -27,51 +29,48 @@ public interface IApproverResolver
 /// <item>Pool empty or not configured → null. Never the person, never automatic.</item>
 /// </list>
 ///
+/// <para>Steps 1–2 are the platform's shared <see cref="ILineManagerResolver"/> (WP-VW-W5 PLT-NOTIFY moved the walk
+/// there, unchanged, so a visit notification finds the same manager a timesheet does). Step 3, the pool, is the
+/// timesheet's own and stays here: a notification has no such fallback.</para>
+///
 /// <para>The person is removed from EVERY candidate list, including the pool's: a time admin submitting their own
 /// week is approved by another time admin, never by themselves.</para>
 /// </summary>
 public sealed class ApproverResolver : IApproverResolver
 {
-    /// <summary>The same depth guard MOD-0288's own manager-chain query uses.</summary>
-    private const int MaxChainDepth = 32;
-
     private readonly ITimeEntryOrgGateway _org;
+    private readonly ILineManagerResolver _lineManagers;
+    private readonly ITenantContext _tenant;
     private readonly ITimeEntrySettingsRepository _settings;
 
-    public ApproverResolver(ITimeEntryOrgGateway org, ITimeEntrySettingsRepository settings)
+    public ApproverResolver(
+        ITimeEntryOrgGateway org,
+        ILineManagerResolver lineManagers,
+        ITenantContext tenant,
+        ITimeEntrySettingsRepository settings)
     {
         _org = org;
+        _lineManagers = lineManagers;
+        _tenant = tenant;
         _settings = settings;
     }
 
     public async Task<TimesheetApprovers?> ResolveAsync(Guid userId, CancellationToken ct = default)
     {
+        // The seat is still read here for its legal entity, which the week stores whichever step found the approver.
         var seat = await _org.PrimarySeatAsync(userId, ct);
 
         if (seat is not null)
         {
-            var origin = await _org.PositionAsync(seat.PositionId, ct);
-            var visited = new HashSet<Guid> { seat.PositionId };
-            var cursor = origin?.ReportsToPositionId;
-
-            for (var depth = 1; cursor is { } positionId && depth <= MaxChainDepth; depth++)
+            var managers = await _lineManagers.ResolveAsync(_tenant.IsResolved ? _tenant.TenantId : Guid.Empty, userId, ct);
+            if (managers.UserIds.Count > 0)
             {
-                if (!visited.Add(positionId))
-                {
-                    break; // a cycle in the org chart: stop walking and fall back to the pool
-                }
-
-                var holders = (await _org.HoldersOfAsync(positionId, ct)).Where(id => id != userId).Distinct().ToList();
-                if (holders.Count > 0)
-                {
-                    return new TimesheetApprovers(
-                        holders,
-                        depth == 1 ? TimesheetApproverResolution.LineManager : TimesheetApproverResolution.ManagerChain,
-                        seat.LegalEntityId);
-                }
-
-                var position = await _org.PositionAsync(positionId, ct);
-                cursor = position?.ReportsToPositionId;
+                return new TimesheetApprovers(
+                    managers.UserIds,
+                    managers.Resolution == LineManagerResolution.LineManager
+                        ? TimesheetApproverResolution.LineManager
+                        : TimesheetApproverResolution.ManagerChain,
+                    seat.LegalEntityId);
             }
         }
 
