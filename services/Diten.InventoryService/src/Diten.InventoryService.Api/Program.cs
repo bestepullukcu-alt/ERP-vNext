@@ -47,6 +47,8 @@ builder.Services.AddSingleton<IModuleManifestProvider, LotSerialTrackingManifest
 builder.Services.AddTraceability(builder.Configuration); // MOD-0174 slice P1
 // MOD-0173 posting path shared by postMovement and the MOD-0175 apply engine (MOD-0175 pack §5 Q1 seam).
 builder.Services.AddScoped<Diten.InventoryService.Application.Features.Inventory.Services.InternalMovementPostingService>();
+// WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME): the name stored on each new movement (token name, or a background flow's stored name)
+builder.Services.AddScoped<Diten.InventoryService.Application.Common.IPostingActorName, Diten.InventoryService.Api.CentralAudit.PostingActorName>();
 builder.Services.AddSingleton<IModuleManifestProvider, QuarantineBlockedStockManifestProvider>(); // MOD-0175 (pack §14)
 builder.Services.AddQuarantine(builder.Configuration); // MOD-0175 slice Q1
 builder.Services.AddSingleton<IModuleManifestProvider, ExpiryFefoManifestProvider>(); // MOD-0176 (pack §14.4)

@@ -38,6 +38,8 @@ const StockMovementsList = (function () {
         .catch(() => { /* not answered: the badge keeps today's rule */ });
 
     const tableEl = document.querySelector('.datatables-stockmovements');
+    // WP-MVP1-FU-CLEAN2 (f): the list factory's ONE header rule (the same headers its own ajax sends) for every call of this page.
+    const getAuthHeaders = (includeJson = false) => window.DitenDataTable?.getAuthHeaders?.(includeJson) || {};
     const L = () => window.L10n || {};
     const byId = (id) => document.getElementById(id);
     const can = (key) => window.Permissions?.has?.(key) === true;
@@ -110,7 +112,7 @@ const StockMovementsList = (function () {
         if (!select) return;
         if (!warehouseId) { fillSelect(select, [], { showAllText: L().ShowAll || '' }); return; }
         try {
-            const res = await fetch(`/StockMovements/lookups/locations?warehouseId=${encodeURIComponent(warehouseId)}`, { credentials: 'same-origin' });
+            const res = await fetch(`/StockMovements/lookups/locations?warehouseId=${encodeURIComponent(warehouseId)}`, { credentials: 'same-origin', headers: getAuthHeaders() });
             const data = res.ok ? await res.json() : null;
             pickerNotice(!!data && data.available !== false);
             fillSelect(select, data?.items || [], { showAllText: L().ShowAll || '' });
@@ -150,7 +152,7 @@ const StockMovementsList = (function () {
         const warehouse = byId('filterWarehouseId');
         if (warehouse) {
             try {
-                const res = await fetch('/StockMovements/lookups/warehouses', { credentials: 'same-origin' });
+                const res = await fetch('/StockMovements/lookups/warehouses', { credentials: 'same-origin', headers: getAuthHeaders() });
                 const data = res.ok ? await res.json() : null;
                 pickerNotice(!!data && data.available !== false);
                 fillSelect(warehouse, data?.items || [], { showAllText: L().ShowAll || '' });
@@ -177,9 +179,10 @@ const StockMovementsList = (function () {
             box.classList.remove('d-none');
         }
         // A failed FIRST load never reaches initComplete, where the export menu is removed: remove it here too.
+        // WP-MVP1-FU-CLEAN2 (f): the DataTables v2 API of the list (the handle, else the v2 Api of the table) — never the jQuery plugin.
         try {
-            const api = window.jQuery(tableEl).DataTable();
-            api.buttons('.dt-export-collection-btn').remove();
+            const api = list?.dt || (window.DataTable?.isDataTable?.(tableEl) ? new window.DataTable.Api(tableEl) : null);
+            api?.buttons('.dt-export-collection-btn').remove();
         } catch (error) { /* table not built yet */ }
     };
 
@@ -198,7 +201,7 @@ const StockMovementsList = (function () {
             const res = await fetch(`/StockMovements/reverse/${encodeURIComponent(row.id)}`, {
                 method: 'POST',
                 credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': antiforgeryToken() },
+                headers: Object.assign(getAuthHeaders(true), { 'RequestVerificationToken': antiforgeryToken() }),
                 body: JSON.stringify({
                     idempotencyKey: idempotencyKey,
                     itemId: row.itemId,

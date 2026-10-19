@@ -784,6 +784,12 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
 - **`45e1f524d` + `4cf4f0f23` INVENTORY 1.5.0 (yalnız ekleme, isteğe bağlı):** `TransactionItem.createdBy { userId, name? }` — `userId` = kaydeden, `name` = kayıt anındaki ad (kuyruğun hareket correlation'ı + kaydeden, aynı kiracı ve şirket); kayıt yoksa `name` yok; sayfa başına TEK okuma. SCE dışı tüketici yok (ölçüldü).
 - **`d448114f2` Web:** S-2 "Kaydeden" sütunu (BG-05 "Recorded by" kapandı) — ad, yoksa 7 dilde "Bilinmeyen kullanıcı", kimlik yalnız `title`'da (`people.js`); makbuzda "Kaydeden" = kaydı yapan oturumun token adı (servisin denetim kuyruğu kuralı).
 
+**WP-MVP1-FU-CLEAN2 — FU-0173-MOV-ACTORNAME, StockMovements DataTable, yardım paneli (agent result, pending CT, 2026-10-19).** Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fu-clean2-evidence-2026-10-19.md`.
+- **Hareket kaydına kayıt anındaki ad:** `InventoryTransaction.CreatedByName` (eklemeli; göç yok). İstekte token adı; arka planda başlatan komutun saklı adı (`IPostingActorName.Use` — recall onaylayanı, karantina girişinin kaydedeni); Auth çağrılmaz. Okuma sırası tek yerde (`InventoryMapping.PostingName`): saklı ad → denetim kuyruğu adı (NAMES1) → yok. INVENTORY sözleşmesi değişmedi.
+- **DataTable (doğrulayıcı 22 → 19 satır):** jQuery eklentisi → DataTables v2 API (`onListError`), `getAuthHeaders()` (fabrikanın başlık kuralı). Kalan 16 açığın gerekçesi kanıtta: ortak dosya (satır eylemi delegasyonu), BL-452 dışa aktarma (servis ucu yok, DUR-SOR), hızlı görünüm / kullanılmayan sözlük / alan önekli uç (uymuyor).
+- **Yardım paneli:** 8 stok sayfasının metni (7 dil); `#offcanvasLocationForm` Enter ile kaydeder (`data-dt-primary="enter"`, istisna satırı çıktı).
+- **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+
 
 ## 20. Follow-up Items
 

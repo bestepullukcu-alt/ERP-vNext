@@ -78,16 +78,29 @@ public static class InventoryMapping
         => ToTransactionItem(transaction, null);
 
     /// <summary>
-    /// INVENTORY 1.5.0 (WP-MVP1-NAMES1): the row with its <c>createdBy</c> — <c>userId</c> = the posting user, <c>name</c> = the entry of
-    /// <paramref name="names"/> for (posting correlation, posting user), else omitted. A posting without a user carries no <c>createdBy</c>.
+    /// WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME) — the ONE read order of a movement's poster name: the name stored with the movement, else the
+    /// central audit queue's name for (posting correlation, posting user), else none. Every screen that names a poster reads it here.
+    /// </summary>
+    public static string? PostingName(InventoryTransaction transaction, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names)
+        => !string.IsNullOrWhiteSpace(transaction.CreatedByName) ? transaction.CreatedByName
+            : names is not null && names.TryGetValue((transaction.CorrelationId, transaction.CreatedBy), out var name) ? name : null;
+
+    /// <summary>The (correlation, user) pairs the queue is asked for: only rows with a user, a correlation and NO stored name.</summary>
+    public static List<(Guid CorrelationId, Guid ActorId)> QueueKeys(IEnumerable<InventoryTransaction> transactions)
+        => transactions.Where(t => t.CorrelationId != Guid.Empty && t.CreatedBy != Guid.Empty && string.IsNullOrWhiteSpace(t.CreatedByName))
+            .Select(t => (t.CorrelationId, t.CreatedBy)).Distinct().ToList();
+
+    /// <summary>
+    /// INVENTORY 1.5.0 (WP-MVP1-NAMES1): the row with its <c>createdBy</c> — <c>userId</c> = the posting user, <c>name</c> = the name STORED
+    /// at posting time (WP-MVP1-FU-CLEAN2, <c>CreatedByName</c>), else the entry of <paramref name="names"/> for (posting correlation, posting
+    /// user), else omitted. A posting without a user carries no <c>createdBy</c>.
     /// </summary>
     public static TransactionItemDto ToTransactionItem(InventoryTransaction transaction, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names)
         => new()
         {
             CreatedBy = names is null || transaction.CreatedBy == Guid.Empty
                 ? null
-                : new TransactionCreatedByDto(transaction.CreatedBy.ToString("D"),
-                    names.TryGetValue((transaction.CorrelationId, transaction.CreatedBy), out var name) ? name : null),
+                : new TransactionCreatedByDto(transaction.CreatedBy.ToString("D"), PostingName(transaction, names)),
             TransactionId = transaction.Id.ToString(),
             TransactionNumber = transaction.TransactionNumber,
             MovementType = WireNames.ToWire(transaction.MovementType),

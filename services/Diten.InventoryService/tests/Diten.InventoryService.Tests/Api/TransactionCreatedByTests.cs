@@ -31,6 +31,13 @@ public sealed class TransactionCreatedByTests : IClassFixture<InventoryApiFactor
 
     private BsonDocument Filter(InventoryScenario s) => new("TenantId", s.Tenant.ToString("D"));
 
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN2: a movement posted before FU-0173-MOV-ACTORNAME has no stored <c>CreatedByName</c> (no migration) — the queue
+    /// fallback tests make their movements such "older" ones; the stored name is tested on its own below.
+    /// </summary>
+    private void ForgetStoredNames(InventoryScenario s)
+        => _factory.Collection("inventory_transactions").UpdateMany(Filter(s), new BsonDocument("$unset", new BsonDocument("CreatedByName", "")));
+
     [Fact]
     public async Task A_posting_answers_its_poster_and_the_name_at_the_time_of_the_posting()
     {
@@ -50,6 +57,7 @@ public sealed class TransactionCreatedByTests : IClassFixture<InventoryApiFactor
         using (var named = await s.PostAsync(s.Receipt("2"), token: Named(s, "Ayşe", "Demir"))) Assert.Equal(201, (int)named.StatusCode);
         // the named movement becomes an "older" one: its queue row is gone (written before BL-501 / delivered and pruned)
         _factory.Collection(CentralAudit).DeleteMany(Filter(s).Add("ActorDisplayName", "Ayşe Demir"));
+        ForgetStoredNames(s); // WP-MVP1-FU-CLEAN2: an older movement has no stored name either
 
         var rows = await RowsAsync(s);
         Assert.Equal(2, rows.Count);
@@ -73,6 +81,7 @@ public sealed class TransactionCreatedByTests : IClassFixture<InventoryApiFactor
         if (field == "TenantId") _factory.TrackTenant(other);
         var moved = _factory.Collection(CentralAudit).UpdateMany(Filter(s), new BsonDocument("$set", new BsonDocument(field, other.ToString("D"))));
         Assert.True(moved.ModifiedCount >= 1);
+        ForgetStoredNames(s); // WP-MVP1-FU-CLEAN2: the QUEUE fallback is under test (an older movement)
 
         var by = Assert.Single(await RowsAsync(s)).GetProperty("createdBy");
         Assert.Equal(s.User.ToString("D"), by.GetProperty("userId").GetString());
@@ -89,6 +98,7 @@ public sealed class TransactionCreatedByTests : IClassFixture<InventoryApiFactor
             Assert.Equal(201, (int)posted.StatusCode);
         }
 
+        ForgetStoredNames(s); // WP-MVP1-FU-CLEAN2: older movements — the page's names come from the queue
         var before = _factory.AuditNameReads.Count(r => r.Tenant == s.Tenant);
         var rows = await RowsAsync(s);
         Assert.Equal(4, rows.Count);
@@ -96,5 +106,55 @@ public sealed class TransactionCreatedByTests : IClassFixture<InventoryApiFactor
         var reads = _factory.AuditNameReads.Where(r => r.Tenant == s.Tenant).Skip(before).ToList();
         var read = Assert.Single(reads);                 // ONE read for the page, not one per row
         Assert.Equal((4, (Guid?)s.LegalEntity), (read.Keys, read.Company));
+    }
+
+    // ── WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME): the name stored at posting time ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_posting_stores_the_token_name_on_the_movement()
+    {
+        var s = new InventoryScenario(_factory);
+        using (var posted = await s.PostAsync(s.Receipt("5"), token: Named(s, "Ayşe", "Demir"))) Assert.Equal(201, (int)posted.StatusCode);
+        using (var unnamed = await s.PostAsync(s.Receipt("6"))) Assert.Equal(201, (int)unnamed.StatusCode);
+
+        var stored = s.Persisted("inventory_transactions");
+        Assert.Equal(2, stored.Count);
+        Assert.Single(stored, d => d.Contains("CreatedByName") && d["CreatedByName"] == "Ayşe Demir");
+        Assert.Single(stored, d => !d.Contains("CreatedByName") || d["CreatedByName"].IsBsonNull);    // no claims → nothing invented
+    }
+
+    [Fact]
+    public async Task The_stored_name_wins_over_the_queue_name_and_asks_the_queue_nothing()
+    {
+        var s = new InventoryScenario(_factory);
+        using (var posted = await s.PostAsync(s.Receipt("5"), token: Named(s, "Ayşe", "Demir"))) Assert.Equal(201, (int)posted.StatusCode);
+        // the queue now says another name for the same correlation and user: the stored one is the record of the posting
+        var renamed = _factory.Collection(CentralAudit).UpdateMany(Filter(s), new BsonDocument("$set", new BsonDocument("ActorDisplayName", "Kuyruk Adı")));
+        Assert.True(renamed.ModifiedCount >= 1);
+
+        var before = _factory.AuditNameReads.Count(r => r.Tenant == s.Tenant);
+        var by = Assert.Single(await RowsAsync(s)).GetProperty("createdBy");
+        Assert.Equal("Ayşe Demir", by.GetProperty("name").GetString());
+        Assert.All(_factory.AuditNameReads.Where(r => r.Tenant == s.Tenant).Skip(before), r => Assert.Equal(0, r.Keys));
+    }
+
+    [Fact]
+    public async Task Another_tenants_or_companys_token_never_sees_a_stored_name()
+    {
+        var s = new InventoryScenario(_factory);
+        using (var posted = await s.PostAsync(s.Receipt("5"), token: Named(s, "Ayşe", "Demir"))) Assert.Equal(201, (int)posted.StatusCode);
+        var otherTenant = Guid.NewGuid();
+        _factory.TrackTenant(otherTenant);
+        foreach (var token in new[]
+                 {
+                     TestTokens.Mint(s.Tenant, Guid.NewGuid(), s.User, TestTokens.AllPermissions),       // same tenant, another company
+                     TestTokens.Mint(otherTenant, s.LegalEntity, s.User, TestTokens.AllPermissions)    // another tenant
+                 })
+        {
+            using var response = await s.GetAsync($"/api/inventory/transactions?itemId={s.Item}&pageSize=50", token);
+            if ((int)response.StatusCode != 200) continue;                                              // refused outright: nothing shown
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("Ayşe Demir", body, StringComparison.Ordinal);
+        }
     }
 }
