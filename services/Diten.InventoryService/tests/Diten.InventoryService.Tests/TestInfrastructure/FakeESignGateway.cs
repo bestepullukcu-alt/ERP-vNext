@@ -22,7 +22,7 @@ public sealed class FakeESignHandler(FakeESignGateway gateway) : HttpMessageHand
 public sealed class FakeESignGateway
 {
     public sealed record Record(Guid Tenant, string Id, Guid Signer, string Module, string SubjectType, string SubjectId, string Meaning, string SubjectHash,
-        string? ActionCode = null, DateTimeOffset? SignedAtUtc = null, Guid? LegalEntityId = null)
+        string? ActionCode = null, DateTimeOffset? SignedAtUtc = null, Guid? LegalEntityId = null, string? SignerName = null, string? MeaningText = null)
     {
         public bool Invalidated { get; set; }
     }
@@ -38,11 +38,11 @@ public sealed class FakeESignGateway
 
     public string Sign(Guid tenant, Guid signer, string subjectId, string meaning, string subjectHash,
         string module = "quarantine", string subjectType = "quarantine.decision", string? actionCode = null, DateTimeOffset? signedAtUtc = null,
-        Guid? legalEntityId = null)
+        Guid? legalEntityId = null, string? signerName = null, string? meaningText = null)
     {
         var id = Guid.NewGuid().ToString("D");
         _records[id] = new Record(tenant, id, signer, module, subjectType, subjectId, meaning, subjectHash, actionCode,
-            signedAtUtc ?? DateTimeOffset.UtcNow, legalEntityId);
+            signedAtUtc ?? DateTimeOffset.UtcNow, legalEntityId, signerName, meaningText);
         return id;
     }
 
@@ -76,8 +76,9 @@ public sealed class FakeESignGateway
                 ["legalEntityId"] = r.LegalEntityId?.ToString("D"),
                 ["actionCode"] = r.ActionCode,
                 ["meaningCode"] = r.Meaning,
+                ["meaningText"] = r.MeaningText,
                 ["signedAtUtc"] = r.SignedAtUtc?.UtcDateTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
-                ["signer"] = new JsonObject { ["userId"] = r.Signer.ToString("D"), ["login"] = "signer", ["name"] = "Signer" },
+                ["signer"] = new JsonObject { ["userId"] = r.Signer.ToString("D"), ["login"] = "signer", ["name"] = r.SignerName ?? "Signer" },
                 ["subjectHashAlgorithm"] = "CanonicalJsonSha256",
                 ["subjectHash"] = r.SubjectHash,
                 ["signatureDigest"] = "d",

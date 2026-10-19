@@ -73,7 +73,10 @@ public sealed class GatewayExpiryESignClient : IExpiryESignClient
             Text(d, "meaningCode"),
             Text(d, "subjectHash"),
             signedAt,
-            invalidated));
+            invalidated,
+            // WP-MVP1-FIX-LIVE2: the name MOD-0022 recorded at signing (signerNameAtSign) and the meaning text as signed — display only
+            signer.ValueKind == JsonValueKind.Object ? Text(signer, "name") : null,
+            Text(d, "meaningText")));
     }
 
     private async Task<(ExpiryESignOutcome Outcome, JsonElement? Data)> GetAsync(string path, CancellationToken ct)
