@@ -87,4 +87,4 @@ tasarlanır. Bu bir governance scaffold'dur; hiçbir runtime servis/entity/endpo
 
 - Teknik standartlar AGENTS.md ve `.antigravity/rules/`'dan devralınır — burada tekrarlanmaz.
 - Modül kimliği: registry-controlled `MOD-NNNN-{slug}`; her ID DCP-002 gate'inden geçer; yeni MOD uydurulmaz.
-- Blueprint'te olmayan bir yetenek gerekirse `CAND-CAP-####` governance candidate kullanılır; runtime literal'a yazılmaz.
+- Blueprint'te olmayan bir yetenek gerekirse iş durur ve Master'da Module Change Request açılır (Master-first kuralı, CEO 2026-10-16, Blueprint 8.7); yeni `CAND-CAP-####` açılmaz. Mevcut `CAND-CAP` kimlikleri tarihsel takma addır (registry); runtime literal'a yazılmaz.

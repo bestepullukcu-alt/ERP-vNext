@@ -60,7 +60,7 @@ pack'leri `_LayoutTenantShell` kullanır; `_Layout.cshtml` değiştirilmez.
 
 - PPM/initiative/program/project/portfolio: `MOD-0117`
 - Strategy: ESBP / `MOD-0352`; typed Demand transition: `MOD-0117`. Demand implementation bu domain dışında
-- WorkCenter aggregation/projection: DCP-004 / `CAND-CAP-0006`
+- WorkCenter aggregation/projection: DCP-004 / `MOD-0024` (eski `CAND-CAP-0006`; Blueprint 8.7)
 - Generic task/checklist: `MOD-0024`
 - Workflow/approval: `MOD-0023`
 - Evidence: `MOD-0031`
