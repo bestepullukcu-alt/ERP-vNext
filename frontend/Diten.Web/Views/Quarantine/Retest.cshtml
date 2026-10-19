@@ -6,6 +6,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["Quarantine.Retest.Title"].Value;
+    ViewData["PageCode"] = "RETESTQUEUE"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 

@@ -23,16 +23,16 @@
     let editing = null;
 
     // ── settings ────────────────────────────────────────────────────────────────────────────────────────────────
+    /** The candidate chip's MARKUP. D-KAR-1: a user candidate by name (lookups/users), else "unknown user" with the id only as the title. */
     const candidateLabel = (value) => {
         const [kind, id] = value.split(':');
-        // FU-0175-Q5-02: a user candidate by name (lookups/users), else the short id + "unknown user"
-        const text = kind === 'position' ? (labels.positions[id] || id) : (labels.users[id] || ui.unknownPerson(id));
-        return `${t(kind === 'position' ? 'Quarantine.Settings.Approvers.Position' : 'Quarantine.Settings.Approvers.User')}: ${text}`;
+        const who = kind === 'position' ? esc(labels.positions[id] || id) : ui.personHtml({ userId: id, name: labels.users[id] });
+        return `${esc(t(kind === 'position' ? 'Quarantine.Settings.Approvers.Position' : 'Quarantine.Settings.Approvers.User'))}: ${who}`;
     };
     const renderCandidates = () => {
         const box = ui.byId('qr-s-candidates');
         box.innerHTML = candidates.length
-            ? candidates.map((c, i) => `<span class="badge bg-label-primary d-inline-flex align-items-center gap-1">${esc(candidateLabel(c))}<button type="button" class="btn-close btn-close-sm ms-1" data-cand="${i}" aria-label="${esc(t('Quarantine.Settings.Remove'))}"></button></span>`).join('')
+            ? candidates.map((c, i) => `<span class="badge bg-label-primary d-inline-flex align-items-center gap-1">${candidateLabel(c)}<button type="button" class="btn-close btn-close-sm ms-1" data-cand="${i}" aria-label="${esc(t('Quarantine.Settings.Remove'))}"></button></span>`).join('')
             : `<span class="text-muted small">${esc(t('Quarantine.Settings.Approvers.Empty'))}</span>`;
     };
     const renderSamples = () => {

@@ -1616,6 +1616,12 @@ now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU
 - **`72a36e273`:** tutma ve bloke ayrıntısının hareket izi `MovementLink.byUserName` (var olan isteğe bağlı QUARANTINE alanı; bugüne dek hiç dolmuyordu) = kayıt anındaki ad (merkezi denetim kuyruğu, aynı correlation + kişi + şirket), iz başına tek okuma. QUARANTINE sözleşmesi değişmedi.
 - **`f1f2d990a` Web:** ad yoksa hücre 7 dilde "Bilinmeyen kullanıcı" (`Quarantine.Details.Moves.UnknownUser`). O-ITEM-3 / FU-0173-UI-USER-01 kapandı (MOD-0173-FU01 notu).
 
+**WP-MVP1-FU-CLEAN2 — kişi kuralı ve yardım paneli (agent result, pending CT, 2026-10-19).** Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fu-clean2-evidence-2026-10-19.md`.
+- **Sahip kararı D-KAR-1 (2026-10-19) → A:** Karantina'da bilinmeyen kişi 7 dilde "Bilinmeyen kullanıcı"; kimlik yalnız `title`'da; kısa kimlik gösterimi (FU-0175-Q5-02) kaldırıldı; tüm ekranlarda tek kural — `QuarantineUi.person / personHtml`, ortak `StockMovementPeople` kuralının (people.js) üstünde, kopya yok.
+- Hareket izi `MovementLink.byUserName` artık saklı adı önce okur (FU-0173-MOV-ACTORNAME); karantina giriş süpürücüsünün kaydettiği hareket girişin kaydedeninin adını taşır.
+- Yardım paneli: 8 sayfanın metni (7 dil), her görünüm kendi kodunu söyler. "Stoğu karantinaya al" modal yardımı (CLEAN1 g) modalda kaldı.
+- **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+
 
 ## 20. Follow-up Items
 

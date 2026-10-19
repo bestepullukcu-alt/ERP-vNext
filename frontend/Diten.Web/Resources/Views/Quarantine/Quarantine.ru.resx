@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Дата повторного контроля партии истекла; использовать нельзя до решения по качеству.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>Учётный период закрыт.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Место неизвестно или недоступно.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>неизвестный пользователь</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>Глобальный SKU</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>Локальный SKU</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Готовая продукция</value></data>

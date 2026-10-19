@@ -35,7 +35,7 @@ public sealed class QuarantineReads
     /// </summary>
     public Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> PostingNamesAsync(
         IReadOnlyList<Diten.InventoryService.Domain.Entities.InventoryTransaction> movements, CancellationToken ct)
-        => _names.NamesAsync(movements.Where(t => t.CorrelationId != Guid.Empty && t.CreatedBy != Guid.Empty).Select(t => (t.CorrelationId, t.CreatedBy)).Distinct().ToList(),
+        => _names.NamesAsync(Inventory.InventoryMapping.QueueKeys(movements),
             _tenant.LegalEntityId, ct);
 
     public async Task<IReadOnlyDictionary<Guid, (QuarantineDecision Decision, DecisionState State)>> ActiveAsync(
