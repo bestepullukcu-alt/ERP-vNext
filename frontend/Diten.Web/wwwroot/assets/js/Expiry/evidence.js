@@ -2,12 +2,28 @@
  * MOD-0176 F5 — Kanıt Paketi (pack §4.7; mockup "ev" + "logs"). The preview is the server's (previewEvidence, four sections); a download
  * creates the export (createEvidenceExport — the server hashes the produced bytes) and then fetches THE stored file; the log shows each
  * export's hash shortened ("sha256:41d07f…e9b3"), the full value in a copy button. No figure is computed here.
+ * WP-MVP1-FIX-LIVE2: the export is asked in the PAGE language (Accept-Language, one of the 7 — the Recall evidence pattern); a zh / ar PDF is
+ * produced in English (its font has no such glyphs) and the page says so.
  */
 'use strict';
 
 (function () {
     const ui = window.ExpiryUi;
     const { t, esc } = ui;
+    const LANGS = ['en', 'tr', 'fr', 'es', 'zh', 'ar', 'ru'];
+    const primary = (document.documentElement.lang || 'en').split('-')[0].toLowerCase();
+    const pageLanguage = LANGS.includes(primary) ? primary : 'en';
+    const PDF_LANGS = ['en', 'tr', 'fr', 'es', 'ru'];
+    const exportIn = async (body, key) => {
+        const headers = { Accept: 'application/json', 'Content-Type': 'application/json', 'Idempotency-Key': key, 'Accept-Language': pageLanguage,
+            RequestVerificationToken: document.querySelector('#ex-antiforgery input[name="__RequestVerificationToken"]')?.value || '' };
+        try {
+            const res = await fetch('/Expiry/api/evidence/exports', { method: 'POST', credentials: 'same-origin', headers, body: JSON.stringify(body) });
+            return { ok: res.ok, status: res.status, json: await res.json().catch(() => null) };
+        } catch (error) {
+            return { ok: false, status: 0, json: null };
+        }
+    };
 
     const scope = () => {
         const preset = ui.byId('ex-ev-preset').value;
@@ -91,9 +107,10 @@
     const download = async (format) => {
         ui.hideError(ui.byId('ex-error'));
         const key = ui.newKey();
-        const reply = await ui.call('POST', '/Expiry/api/evidence/exports', { idempotencyKey: key, format, ...scope() }, { idempotencyKey: key });
+        const reply = await exportIn({ idempotencyKey: key, format, ...scope() }, key);
         if (!reply.ok) { ui.showError(ui.byId('ex-error'), reply); return; }
         window.showToast?.(t('Expiry.Evidence.Exported', reply.json.fileName, shortHash(reply.json.sha256)), 'success');
+        if (format === 'Pdf' && !PDF_LANGS.includes(pageLanguage)) window.showToast?.(t('Expiry.Evidence.EnglishFallback'), 'info');
         window.location.href = `/Expiry/evidence/file/${encodeURIComponent(reply.json.exportId)}`;
         await log();
     };

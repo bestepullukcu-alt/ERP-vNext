@@ -251,11 +251,12 @@ public sealed class ExpiryController : CustomBaseController
         }, ct);
         if (read.Value is not { } body) return Invalid(read.Error);
         if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
-        // the PDF labels follow the reader's language (tr | en; any other → en) — the Web forwards its UI culture
+        // the file follows the reader's language — WP-MVP1-FIX-LIVE2: one of the 7 (the recall pack's rule, ExpiryEvidenceText.Normal), else en;
+        // the Web sends its page language
         var language = Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(l => l.Quality ?? 1).Select(l => l.Value.Value).FirstOrDefault();
         return CreateActionResultInstance(await _mediator.Send(new CreateExpiryEvidenceExportCommand(
             body.Preset, body.From, body.To, body.WarehouseIds, body.Types, body.Format, key,
-            language is not null && language.StartsWith("tr", StringComparison.OrdinalIgnoreCase) ? "tr" : "en"), ct));
+            Application.Features.Expiry.ExpiryEvidenceText.Normal(language)), ct));
     }
 
     [HttpGet("evidence/exports/{exportId}/file")]

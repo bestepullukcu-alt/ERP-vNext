@@ -18,7 +18,9 @@ namespace Diten.InventoryService.Api.Expiry;
 /// (K3 sabotage (h): the resolver stops serving the font → the Turkish-text test is red).</item>
 /// <item>Every value is a literal text run (never MigraDoc DDL / RTF / HTML): record content cannot inject markup. No links, no scripts.</item>
 /// <item>The four sections of the preview, in its order; the footer of every page names the company, the period, the generation time and
-/// "page n / m". Labels in Turkish or English (the reader's language; other languages → English — evidence open point).</item>
+/// "page n / m". WP-MVP1-FIX-LIVE2: words from <see cref="ExpiryEvidenceText"/> (the service resx; shared keys = the screen's) in tr / en / fr /
+/// es / ru (the font's glyphs, measured); a zh / ar selection is drawn in English with a note (FU-0176-PDF-L10N). Names beside the ids
+/// (company, product, warehouse, signer, policy-change user); unreadable → the id + "(okunamadı)".</item>
 /// <item>A render carries a creation time and a random document id: two renders are not byte-identical, which is why the export stores
 /// THE bytes it hashed (the same key answers the same file).</item>
 /// </list>
@@ -30,10 +32,14 @@ public sealed class ExpiryEvidencePdfRenderer : IExpiryEvidencePdfRenderer
     public byte[] Render(ExpiryEvidenceDocument d)
     {
         ExpiryEvidencePdfFontResolver.EnsureInstalled();
-        var l = Labels.For(d.Language);
+        var lang = d.Language;
+        string P(string key) => ExpiryEvidenceText.Of("ExpiryPdf." + key, lang);
+        string S(string key) => ExpiryEvidenceText.Of(key, lang);
+        string Type(string code) => ExpiryEvidenceText.Value("Expiry.Type.", code, lang);
+        string Status(string code) => ExpiryEvidenceText.Value("Expiry.Status.", code, lang);
 
         var pdf = new Document();
-        pdf.Info.Title = $"{l.Title} {Day(d.From)} – {Day(d.To)}";
+        pdf.Info.Title = $"{P("Title")} {Day(d.From)} – {Day(d.To)}";
         pdf.Info.Author = "Diten Inventory Service (MOD-0176)";
         var normal = pdf.Styles[StyleNames.Normal]!;
         normal.Font.Name = FontFamily;
@@ -48,7 +54,7 @@ public sealed class ExpiryEvidencePdfRenderer : IExpiryEvidencePdfRenderer
 
         var footer = section.Footers.Primary.AddParagraph();
         footer.Format.Font.Size = 7;
-        footer.AddText($"{l.Company}: {d.LegalEntityId} · {l.Period}: {Day(d.From)} – {Day(d.To)} · {l.Generated}: {Utc(d.GeneratedAtUtc)} · {l.Page} ");
+        footer.AddText($"{P("Company")}: {d.Company} · {P("Period")}: {Day(d.From)} – {Day(d.To)} · {P("Generated")}: {Utc(d.GeneratedAtUtc)} · {P("Page")} ");
         footer.AddPageField();
         footer.AddText(" / ");
         footer.AddNumPagesField();
@@ -56,49 +62,68 @@ public sealed class ExpiryEvidencePdfRenderer : IExpiryEvidencePdfRenderer
         var title = section.AddParagraph();
         title.Format.Font.Size = 14;
         title.Format.Font.Bold = true;
-        title.AddText(l.Title);
+        title.AddText(P("Title"));
+
+        if (d.EnglishFallback)
+        {
+            // the selected language is not drawable with the embedded font (zh / ar — measured): say so, in English, with the requested code
+            var note = section.AddParagraph();
+            note.Format.Font.Bold = true;
+            note.Format.SpaceAfter = Unit.FromPoint(4);
+            note.AddText(P("EnglishFallback"));
+            note.AddLineBreak();
+            note.AddText(ExpiryEvidenceText.Format("ExpiryPdf.RequestedLanguage", lang, d.RequestedLanguage));
+        }
 
         var meta = section.AddParagraph();
         meta.Format.SpaceAfter = Unit.FromPoint(8);
-        meta.AddText($"{l.Period}: {Day(d.From)} – {Day(d.To)} ({d.Preset}) · {l.Company}: {d.LegalEntityId}");
+        meta.AddText($"{P("Period")}: {Day(d.From)} – {Day(d.To)} ({d.Preset}) · {P("Company")}: {d.Company}");
         meta.AddLineBreak();
-        meta.AddText($"{l.Warehouses}: {(d.WarehouseIds.Count == 0 ? l.All : string.Join(", ", d.WarehouseIds))} · {l.Types}: "
-                     + (d.Types.Count == 0 ? l.All : string.Join(", ", d.Types.Select(l.Type))));
+        var warehouses = d.WarehouseTexts is { Count: > 0 } texts ? texts : d.WarehouseIds;
+        meta.AddText($"{P("Warehouses")}: {(warehouses.Count == 0 ? P("All") : string.Join(", ", warehouses))} · {P("Types")}: "
+                     + (d.Types.Count == 0 ? P("All") : string.Join(", ", d.Types.Select(Type))));
         meta.AddLineBreak();
-        meta.AddText($"{l.Generated}: {Utc(d.GeneratedAtUtc)}");
+        meta.AddText($"{P("Generated")}: {Utc(d.GeneratedAtUtc)}");
 
-        Heading(section, "1. " + l.Summary);
+        Heading(section, "1. " + S("Expiry.Evidence.Summary"));
         var k = d.Summary;
-        Table(section, [8, 6], [l.Kpi, l.Value],
+        Table(section, [8, 6], [P("Kpi"), P("Value")],
         [
-            [l.Compliance, k.FefoCompliancePct is { } pct ? "%" + pct.ToString("0.0", CultureInfo.InvariantCulture) : "—"],
-            [l.Issues, $"{k.FefoIssues} ({l.Bypasses}: {k.FefoBypasses})"],
-            [l.Critical, $"{k.Critical.Lots} · {l.Available} {Q(k.Critical.Available)} · {l.Held} {Q(k.Critical.Held)}"],
-            [l.Approaching, $"{k.Approaching.Lots} · {l.Available} {Q(k.Approaching.Available)} · {l.Held} {Q(k.Approaching.Held)}"],
-            [l.Expired, $"{k.ExpiredOnHand.Lots} · {Q(k.ExpiredOnHand.Quantity)}"],
-            [l.Open, $"{k.OpenExceptions} ({l.Late}: {k.LateExceptions})"],
-            [l.AvgResolution, k.AvgResolutionHours is { } h ? h.ToString("0.0", CultureInfo.InvariantCulture) + " h" : "—"]
+            [P("Compliance"), k.FefoCompliancePct is { } pct ? "%" + pct.ToString("0.0", CultureInfo.InvariantCulture) : "—"],
+            [P("Issues"), $"{k.FefoIssues} ({P("Bypassed")}: {k.FefoBypasses})"],
+            [P("Critical"), $"{k.Critical.Lots} · {P("Available")} {Q(k.Critical.Available)} · {P("Held")} {Q(k.Critical.Held)}"],
+            [P("Approaching"), $"{k.Approaching.Lots} · {P("Available")} {Q(k.Approaching.Available)} · {P("Held")} {Q(k.Approaching.Held)}"],
+            [P("Expired"), $"{k.ExpiredOnHand.Lots} · {Q(k.ExpiredOnHand.Quantity)}"],
+            [P("Open"), $"{k.OpenExceptions} ({P("Late")}: {k.LateExceptions})"],
+            [P("AvgResolution"), k.AvgResolutionHours is { } h ? h.ToString("0.0", CultureInfo.InvariantCulture) + " " + P("Hours") : "—"]
         ]);
 
-        Heading(section, $"2. {l.Exceptions} ({d.Exceptions.Count})");
-        if (d.Exceptions.Count == 0) Empty(section, l.None);
+        Heading(section, $"2. {S("Expiry.Evidence.Exceptions")} ({d.Exceptions.Count})");
+        if (d.Exceptions.Count == 0) Empty(section, P("None"));
         else
-            Table(section, [2.4, 2.6, 2.6, 2.0, 2.8, 1.8, 2.4, 5.4, 4.0], [l.No, l.TypeColumn, l.Lot, l.Warehouse, l.Opened, l.StatusColumn, l.Resolution, l.Reason, l.Signature],
-                d.Exceptions.Select(r => new[] { r.Number, l.Type(r.Type), r.LotNumber, r.Warehouse ?? "—", r.OpenedAtUtc, l.Status(r.Status),
-                    r.Resolution is null ? "—" : l.Resolutions(r.Resolution), r.ResolutionReason ?? "—", r.SignatureId ?? "—" }).ToList());
+            Table(section, [2.2, 2.4, 3.6, 2.0, 2.6, 2.4, 1.8, 2.2, 3.4, 3.4],
+                [P("No"), P("Type"), P("Item"), P("Lot"), P("Warehouse"), P("Opened"), P("Status"), P("Resolution"), P("Reason"), P("Signature")],
+                d.Exceptions.Select(r => new[] { r.Number, Type(r.Type), r.ItemText ?? r.ItemId, r.LotNumber, r.WarehouseName ?? r.Warehouse ?? "—", r.OpenedAtUtc,
+                    Status(r.Status), r.Resolution is null ? "—" : ExpiryEvidenceText.Value("Expiry.Resolution.", r.Resolution, lang), r.ResolutionReason ?? "—",
+                    Signature(r) }).ToList());
 
-        Heading(section, $"3. {l.PolicyChanges} ({d.PolicyChanges.Count})");
-        if (d.PolicyChanges.Count == 0) Empty(section, l.None);
+        Heading(section, $"3. {S("Expiry.Evidence.PolicyChanges")} ({d.PolicyChanges.Count})");
+        if (d.PolicyChanges.Count == 0) Empty(section, P("None"));
         else
-            Table(section, [3.4, 3.0, 3.0, 9.0, 4.0, 3.6], [l.Field, l.Old, l.New, l.Reason, l.By, l.When],
-                d.PolicyChanges.Select(p => new[] { p.Field, p.OldValue ?? "—", p.NewValue ?? "—", p.Reason, p.ChangedBy.UserId, p.ChangedAtUtc }).ToList());
+            Table(section, [3.4, 3.0, 3.0, 9.0, 4.0, 3.6], [P("Field"), P("Old"), P("New"), P("Reason"), P("By"), P("When")],
+                d.PolicyChanges.Select((p, i) => new[]
+                {
+                    ExpiryEvidenceText.Value("Expiry.Policy.Field.", p.Field, lang), Mode(p.OldValue, lang), Mode(p.NewValue, lang), p.Reason,
+                    d.PolicyChangedByNames is { } names && i < names.Count ? names[i] : p.ChangedBy.UserId, p.ChangedAtUtc
+                }).ToList());
 
-        Heading(section, $"4. {l.FefoBypasses} ({d.Bypasses.Count})");
-        if (d.Bypasses.Count == 0) Empty(section, l.None);
+        Heading(section, $"4. {S("Expiry.Evidence.Bypasses")} ({d.Bypasses.Count})");
+        if (d.Bypasses.Count == 0) Empty(section, P("None"));
         else
-            Table(section, [2.4, 2.8, 2.2, 3.0, 2.8, 7.2, 2.4, 3.2], [l.No, l.Lot, l.Warehouse, l.Opened, l.FirstEligible, l.Reason, l.StatusColumn, l.Signature],
-                d.Bypasses.Select(r => new[] { r.Number, r.LotNumber, r.Warehouse ?? "—", r.OpenedAtUtc, r.FirstEligibleLot ?? "—", r.BypassReason ?? "—",
-                    l.Status(r.Status), r.SignatureId ?? "—" }).ToList());
+            Table(section, [2.4, 3.6, 2.2, 2.6, 2.8, 2.6, 5.6, 2.0, 2.2], [P("No"), P("Item"), P("Lot"), P("Warehouse"), P("Opened"), P("FirstEligible"), P("Reason"),
+                    P("Status"), P("Signature")],
+                d.Bypasses.Select(r => new[] { r.Number, r.ItemText ?? r.ItemId, r.LotNumber, r.WarehouseName ?? r.Warehouse ?? "—", r.OpenedAtUtc,
+                    r.FirstEligibleLot ?? "—", r.BypassReason ?? "—", Status(r.Status), Signature(r) }).ToList());
 
         var renderer = new PdfDocumentRenderer { Document = pdf };
         renderer.RenderDocument();
@@ -106,6 +131,16 @@ public sealed class ExpiryEvidencePdfRenderer : IExpiryEvidencePdfRenderer
         renderer.PdfDocument.Save(stream, false);
         return stream.ToArray();
     }
+
+    /// <summary>The signature cell: the signer's name at signing (or the id + "(ad okunamadı)") and the signature id.</summary>
+    private static string Signature(ExpiryEvidenceCaseRow r)
+        => r.SignatureId is null ? "—"
+            : r.SignerName is { } name ? (name.Contains(r.SignatureId, StringComparison.Ordinal) ? name : $"{name} · {r.SignatureId}")
+            : r.SignatureId;
+
+    /// <summary>A policy value: a mode code worded by the screen's key, any other value (days, hours) as stored.</summary>
+    private static string Mode(string? value, string lang)
+        => value is null ? "—" : ExpiryEvidenceText.Find("Expiry.Policy.Mode." + value, lang) ?? value;
 
     private static void Heading(Section section, string text)
     {
@@ -147,63 +182,6 @@ public sealed class ExpiryEvidencePdfRenderer : IExpiryEvidencePdfRenderer
     private static string Utc(DateTimeOffset value) => value.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + " UTC";
 
     private static string Q(decimal value) => value.ToString("0.###", CultureInfo.InvariantCulture);
-
-    /// <summary>The PDF's own words (tr / en). The wire codes stay codes in the CSV; the PDF names them.</summary>
-    private sealed record Labels(
-        string Title, string Company, string Period, string Generated, string Page, string Warehouses, string Types, string All, string Summary,
-        string Kpi, string Value, string Compliance, string Issues, string Bypasses, string Critical, string Approaching, string Expired, string Open,
-        string Late, string AvgResolution, string Available, string Held, string Exceptions, string PolicyChanges, string FefoBypasses, string None,
-        string No, string TypeCol, string Lot, string Warehouse, string Opened, string Status_, string Resolution, string Reason, string Signature,
-        string Field, string Old, string New, string By, string When, string FirstEligible,
-        IReadOnlyDictionary<string, string> TypeNames, IReadOnlyDictionary<string, string> StatusNames, IReadOnlyDictionary<string, string> ResolutionNames)
-    {
-        public string Status(string code) => StatusNames.GetValueOrDefault(code, code);
-
-        public string Type(string code) => TypeNames.GetValueOrDefault(code, code);
-
-        public string Resolutions(string code) => ResolutionNames.GetValueOrDefault(code, code);
-
-        public static Labels For(string language) => language == "tr" ? Tr : En;
-
-        private static readonly Labels Tr = new(
-            "FEFO / Son Kullanma — Kanıt Paketi", "Şirket", "Dönem", "Oluşturulma", "Sayfa", "Depolar", "Türler", "Tümü", "Özet göstergeler",
-            "Gösterge", "Değer", "FEFO uyum oranı", "FEFO kapsamındaki çıkışlar", "FEFO dışı", "Kritik (kullanılabilir stok)", "Yaklaşıyor (kullanılabilir stok)",
-            "Süresi dolmuş stok", "Açık istisnalar", "SLA'yı geçen", "Ortalama çözüm süresi", "Kullanılabilir", "Bekleyen", "Dönemin istisnaları",
-            "Dönemdeki politika değişiklikleri", "FEFO dışı çıkışlar", "Kayıt yok.", "No", "Tür", "Lot", "Depo", "Açılış (UTC)", "Durum", "Çözüm",
-            "Gerekçe", "İmza kimliği", "Alan", "Eski", "Yeni", "Değiştiren", "Zaman (UTC)", "İlk uygun lot",
-            new Dictionary<string, string>
-            {
-                ["FEFO_BYPASS"] = "FEFO dışı çıkış", ["BELOW_MIN_REMAINING"] = "Min. kalan raf ömrü altı giriş",
-                ["EXPIRY_DATE_OVERRIDE"] = "SKT sapması", ["EXPIRED_ON_HAND"] = "Süresi dolmuş stok"
-            },
-            new Dictionary<string, string>
-            {
-                ["Open"] = "Açık", ["InReview"] = "İncelemede", ["Accepted"] = "Kabul edildi", ["Fixed"] = "Düzeltildi", ["Closed"] = "Kapandı",
-                ["Cancelled"] = "İptal"
-            },
-            new Dictionary<string, string> { ["AcceptedWithReason"] = "Gerekçeyle kabul", ["Fixed"] = "Düzeltildi", ["Cancelled"] = "İptal" });
-
-        private static readonly Labels En = new(
-            "FEFO / Expiry — Evidence Pack", "Company", "Period", "Generated", "Page", "Warehouses", "Types", "All", "Summary indicators",
-            "Indicator", "Value", "FEFO compliance", "Issues in FEFO scope", "bypassed", "Critical (available stock)", "Approaching (available stock)",
-            "Expired stock on hand", "Open exceptions", "past SLA", "Mean resolution time", "Available", "Held", "Exceptions of the period",
-            "Policy changes in the period", "FEFO bypasses", "No records.", "No", "Type", "Lot", "Warehouse", "Opened (UTC)", "Status", "Resolution",
-            "Reason", "Signature id", "Field", "Old", "New", "Changed by", "Time (UTC)", "First eligible lot",
-            new Dictionary<string, string>
-            {
-                ["FEFO_BYPASS"] = "FEFO bypass", ["BELOW_MIN_REMAINING"] = "Receipt below minimum remaining shelf life",
-                ["EXPIRY_DATE_OVERRIDE"] = "Expiry date override", ["EXPIRED_ON_HAND"] = "Expired stock on hand"
-            },
-            new Dictionary<string, string>
-            {
-                ["Open"] = "Open", ["InReview"] = "In review", ["Accepted"] = "Accepted", ["Fixed"] = "Fixed", ["Closed"] = "Closed", ["Cancelled"] = "Cancelled"
-            },
-            new Dictionary<string, string> { ["AcceptedWithReason"] = "Accepted with reason", ["Fixed"] = "Fixed", ["Cancelled"] = "Cancelled" });
-
-        public string TypeColumn => TypeCol;
-
-        public string StatusColumn => Status_;
-    }
 }
 
 /// <summary>

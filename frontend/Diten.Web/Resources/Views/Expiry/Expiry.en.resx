@@ -402,4 +402,5 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>The reason must be at least 10 characters.</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>The product master cannot be reached now; try again later.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>You may not prepare a date override.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>This document was produced in English (the selected language is not supported in the PDF)</value></data>
 </root>

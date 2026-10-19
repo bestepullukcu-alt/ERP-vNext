@@ -402,4 +402,5 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>La justification doit comporter au moins 10 caractères.</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Les données produit sont inaccessibles ; réessayez plus tard.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>Vous n'êtes pas autorisé à préparer une dérogation de date.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>Ce document a été produit en anglais (la langue choisie n’est pas prise en charge dans le PDF)</value></data>
 </root>

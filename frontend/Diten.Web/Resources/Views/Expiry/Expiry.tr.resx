@@ -144,7 +144,7 @@
   <data name="Expiry.Col.LotWarehouse" xml:space="preserve"><value>Lot · Depo</value></data>
   <data name="Expiry.Col.Opened" xml:space="preserve"><value>Açılış</value></data>
   <data name="Expiry.Col.Signature" xml:space="preserve"><value>İmza</value></data>
-  <data name="Expiry.Col.Sla" xml:space="preserve"><value>SLA</value></data>
+  <data name="Expiry.Col.Sla" xml:space="preserve"><value>Süre (SLA)</value></data>
   <data name="Expiry.Col.Type" xml:space="preserve"><value>Tür</value></data>
   <data name="Expiry.Common.Close" xml:space="preserve"><value>Kapat</value></data>
   <data name="Expiry.Common.System" xml:space="preserve"><value>Sistem</value></data>
@@ -305,7 +305,7 @@
   <data name="Expiry.Policy.UnitDays" xml:space="preserve"><value>gün</value></data>
   <data name="Expiry.Policy.UnitHours" xml:space="preserve"><value>saat</value></data>
   <data name="Expiry.Policy.Hours" xml:space="preserve"><value>{0} saat</value></data>
-  <data name="Expiry.Policy.SlaOf" xml:space="preserve"><value>SLA · {0}</value></data>
+  <data name="Expiry.Policy.SlaOf" xml:space="preserve"><value>Süre · {0}</value></data>
   <data name="Expiry.Policy.Dirty" xml:space="preserve"><value>Kaydedilmemiş değişiklik var</value></data>
   <data name="Expiry.Policy.Save" xml:space="preserve"><value>Değişiklikleri kaydet</value></data>
   <data name="Expiry.Policy.SaveTitle" xml:space="preserve"><value>Ayar değişikliklerini kaydet</value></data>
@@ -322,7 +322,7 @@
   <data name="Expiry.Policy.ProductsFooter" xml:space="preserve"><value>"Tanımsız" değerler için kural uygulanmaz; değer MDM'de ürün kartında düzeltilir.</value></data>
   <data name="Expiry.Policy.ProductsEmpty" xml:space="preserve"><value>Şirkette lotlu stok tutan ürün yok.</value></data>
   <data name="Expiry.Policy.ShelfLife" xml:space="preserve"><value>Raf ömrü</value></data>
-  <data name="Expiry.Policy.Retest" xml:space="preserve"><value>Retest</value></data>
+  <data name="Expiry.Policy.Retest" xml:space="preserve"><value>Yeniden test</value></data>
   <data name="Expiry.Policy.MinRemaining" xml:space="preserve"><value>Min. kalan</value></data>
   <data name="Expiry.Policy.Undefined" xml:space="preserve"><value>Tanımsız</value></data>
   <data name="Expiry.Evidence.Subtitle" xml:space="preserve"><value>Denetim için dönem bazında istisnalar, imzalar, politika değişiklikleri ve uyum özeti</value></data>
@@ -402,4 +402,5 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>Gerekçe en az 10 karakter olmalı.</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Ürün ana verisine şu an ulaşılamıyor; daha sonra yeniden deneyin.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>Tarih sapması hazırlama yetkiniz yok.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>Bu belge İngilizce üretildi (seçilen dil PDF'te desteklenmiyor)</value></data>
 </root>

@@ -402,4 +402,5 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>Обоснование должно содержать не менее 10 символов.</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Мастер-данные товара сейчас недоступны; повторите позже.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>У вас нет права готовить отклонение даты.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>Этот документ создан на английском языке (выбранный язык не поддерживается в PDF)</value></data>
 </root>

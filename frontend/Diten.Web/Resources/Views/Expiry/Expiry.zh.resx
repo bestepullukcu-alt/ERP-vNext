@@ -402,4 +402,5 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>理由至少需要 10 个字符。</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>暂时无法访问产品主数据，请稍后重试。</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>您无权准备日期变更。</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>本文件以英文生成（PDF 不支持所选语言）</value></data>
 </root>

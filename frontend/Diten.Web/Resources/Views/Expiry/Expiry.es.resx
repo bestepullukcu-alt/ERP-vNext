@@ -402,4 +402,5 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>La justificación debe tener al menos 10 caracteres.</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder a los datos maestros; inténtelo más tarde.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>No tiene permiso para preparar un cambio de fecha.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>Este documento se generó en inglés (el idioma seleccionado no es compatible con el PDF)</value></data>
 </root>

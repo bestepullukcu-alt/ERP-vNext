@@ -402,4 +402,5 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>يجب ألا يقل المبرر عن 10 أحرف.</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>تعذر الوصول إلى البيانات الرئيسية للمنتج الآن؛ حاول لاحقًا.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>ليست لديك صلاحية تحضير استثناء تاريخ.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>أُنشئت هذه الوثيقة باللغة الإنجليزية (اللغة المختارة غير مدعومة في ملف PDF)</value></data>
 </root>

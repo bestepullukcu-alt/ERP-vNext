@@ -363,6 +363,7 @@ public sealed class Expiry
         "Expiry.Evidence.CopyHash",
         "Expiry.Evidence.Copied",
         "Expiry.Evidence.Exported",
+        "Expiry.Evidence.EnglishFallback",
         "Expiry.Band.FefoOkTitle",
         "Expiry.Band.FefoOkText",
         "Expiry.Band.FefoFirst",
