@@ -10,7 +10,7 @@
 > **Kapsam:** yalnız Control Tower araçları ve `.antigravity` kuralları. Ürün kodu, başka ekiplerin modülleri ve
 > MVP-6 yok.
 > **Ölçüm tabanı:** main `01f1080fd` (2026-10-19).
-> **Dayanaklar:** Blueprint master 8.7 `Dev_Readiness` sayfası (CEO kuralı, 2026-10-16); REP-001 v2 kabul kaydı
+> **Dayanaklar:** Blueprint master 8.7 / 8.8 `Dev_Readiness` sayfası (8.8'de depo içe aktarma sütunları Z–AD) (CEO kuralı, 2026-10-16); REP-001 v2 kabul kaydı
 > (`scripts/acceptance_record.py`); paket onay okuyucusu (`scripts/ct_queue.py` `pack_approval_limit`); sahip ve Codex
 > görüşü (2026-10-19, bu belgenin §4'ünde).
 
@@ -81,11 +81,22 @@ kayıtlar "Kaynak kayıtlar" sütununda listelenir. `verifier` bir beyandır, ki
 
 AC kimliği olmayan eski biçimli paket "ölçülemez" diye hata listesine girer, aşama önerilmez.
 
-### 2.5 Çıktı
+### 2.5 Çıktı (Master 8.8'in içe aktarma sözleşmesine göre)
 
-TSV sütunları: `Module ID`, `Önerilen aşama`, `Gerekçe`, `Eksik kanıt`, `Excel'de doldurulmalı`, `Code link`, `PR link (türetilmiş)`,
-`Test evidence`, `Verification evidence`, `Verified By`, `Verified Date`, `Kaynak kayıtlar (yol@commit)`.
-Hata listesi ayrı bir dosyadır. Çıktının başında main commit'i ve üretim zamanı yazar.
+Master 8.8, `Dev_Readiness` sayfasına depo için beş giriş sütunu ekledi; AE sütunu insanın seçtiği `Stage` ile öneriyi
+karşılaştırır (`MATCH` ya da `REVIEW: repo suggests …`). Araç yalnız bu beş sütunu, `Module ID` anahtarıyla üretir:
+
+| Excel | Sütun | Araçtaki karşılığı |
+|---|---|---|
+| A | `Module ID` | anahtar (yapıştırma için; Excel'de zaten var) |
+| Z | `Repo Suggested Stage` | §2.4'teki önerilen aşama (Excel'in aşama listesindeki yazımla) |
+| AA | `Suggested At` | üretim tarihi |
+| AB | `Source Commit` | çıktının üretildiği main commit'i (40 hane) |
+| AC | `Suggested Evidence` | kanıt bağlantıları: modül kaydı, test kanıtı (yol@commit), commit; PR bağlantısı "türetildi" etiketiyle |
+| AD | `Suggestion Reason` | gerekçe ve eksik kanıt; Excel'de doldurulması gerekenler (Owner, Last Updated, Change Note) |
+
+`Stage` (G) ve insanın doldurduğu hiçbir sütun üretilmez. Hata listesi ayrı bir dosyadır. Çıktının başında main commit'i ve
+üretim zamanı yazar.
 
 ### 2.6 Koruyucular (sabotajla gösterilecek)
 

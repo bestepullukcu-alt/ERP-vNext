@@ -10494,6 +10494,9 @@ alanı + `MOD-0286`. Depo ise bunları aktif takip işleri `MOD-0009-FU01` / `-F
 **Neden ertelendi:** yürüyen işleri yeniden bağlamak paketleri, bağlantıları ve kabul kayıtlarını değiştirir; Master'a uymak mı, depodaki eşlemeyi
 korumak mı bir karar işidir, teknik değil.
 **Yapım tetikleyicisi:** Enterprise Architect ya da sahibin kararı; ya da Blueprint sahibinin eşlemeyi depodaki takip işlerine göre güncellemesi.
+**Master 8.8 (2026-10-19):** Master bunu **ADR-8.8-001 (açık)** olarak kaydetti ve A seçeneğini öneriyor: `Legacy_ID_Migration_Map`
+son hedef kalır; `MOD-0009-FU01/02/03` geçici uygulama takma adlarıdır; her FU'nun yetenek kapsamı ölçülmeden birleştirme ya da
+emekliye ayırma yapılmaz. Karar açık; A seçilirse ilk adım üç FU'nun kapsam ölçümüdür.
 **Gelecek regresyon riski:** 🟢 — kimlik aracı iki eşlemeyi de kabul ediyor; risk yalnız raporlarda iki farklı sahiplik görünmesi.
 
 **Ölçüm komutu:**
@@ -10511,6 +10514,10 @@ kanıt bağlantıları). Sözleşme hazır: `docs/roadmap/plans/ct-dev-readiness
 koşullu görüşü işlendi).
 **Neden ertelendi:** main'de REP-001 v2 kabul kaydı yok (0, ölçüldü 2026-10-19 `01f1080fd`); araç bugün boş tablo üretirdi.
 Eski kayıtlardan aşama çıkarmak, sözleşmenin yasakladığı kanıtsız aşama olur.
+**Master 8.8 (2026-10-19):** Blueprint `Dev_Readiness` sayfasına depo içe aktarma sütunları eklendi: Z `Repo Suggested Stage`,
+AA `Suggested At`, AB `Source Commit`, AC `Suggested Evidence`, AD `Suggestion Reason`; AE `MATCH` / `REVIEW`. Depo yalnız Z–AD'yi
+yazar, `Stage` (G) ya da insanın seçtiği hiçbir sütunu yazmaz — sözleşmemizle aynı yön (CONTRACT §2.5 bu sütunlara göre
+güncellendi).
 **Yapım tetikleyicisi:** ilk REP-001 v2 modül kaydı (`completion: Module Done`) main'e girince. D1 (Owner kaynağı) o gün
 `execution/approvals/approvers.tsv` ile çözülür; D4 (`verified_at`) aynı işte okuyucuyla birlikte eklenir.
 **Gelecek regresyon riski:** 🟢 — Excel bu arada "Not Started" gösterir; kanıt olmadığı için bu doğru.
