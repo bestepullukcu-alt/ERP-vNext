@@ -312,7 +312,10 @@ public sealed class ExpiryEvidenceTests : IClassFixture<ExpiryApiFactory>
         Assert.Contains("GP-0099·Parasetamol500mg", pdf, StringComparison.Ordinal);                           // product
         Assert.Contains("AyşeDemir·" + signature, pdf, StringComparison.Ordinal);                             // signer at signing + the id
         Assert.Contains("ZeynepAksoy", pdf, StringComparison.Ordinal);                                        // the policy change's user (audit queue)
-        Assert.Contains(Flat(w.S.Ledger.WarehouseNode.Code + " · " + w.S.Ledger.WarehouseNode.Name), pdf, StringComparison.Ordinal);
+        // "code · name", the name once when it equals the code (the seeded nodes are named by their codes)
+        var place = string.Join(" · ", new[] { w.S.Ledger.WarehouseNode.Code, w.S.Ledger.WarehouseNode.Name }.Distinct(StringComparer.Ordinal));
+        Assert.Contains(Flat(place), pdf, StringComparison.Ordinal);
+        Assert.DoesNotContain(Flat(w.S.Ledger.WarehouseNode.Code + " · " + w.S.Ledger.WarehouseNode.Code), pdf, StringComparison.Ordinal);
         Assert.Contains("Gerekçeylekabul", pdf, StringComparison.Ordinal);                                    // values worded
         Assert.Contains(Flat(ExpiryEvidenceText.Of("Expiry.Policy.Field.approachingDays", "tr")), pdf, StringComparison.Ordinal);
         Assert.DoesNotContain(Flat($"{w.S.Admin:D} (ad okunamadı)"), pdf, StringComparison.Ordinal);

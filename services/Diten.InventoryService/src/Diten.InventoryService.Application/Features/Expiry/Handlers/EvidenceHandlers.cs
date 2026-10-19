@@ -256,7 +256,7 @@ public sealed class ExpiryEvidenceBuilder
         return read.IsOk ? (read.Value!.SignerUserId, string.IsNullOrWhiteSpace(read.Value.SignerNameAtSign) ? null : read.Value.SignerNameAtSign) : (null, null);
     }
 
-    private static string Place(Location l) => string.Join(" · ", new[] { l.Code, l.Name }.Where(v => !string.IsNullOrWhiteSpace(v)));
+    private static string Place(Location l) => string.Join(" · ", new[] { l.Code, l.Name }.Where(v => !string.IsNullOrWhiteSpace(v)).Distinct(StringComparer.Ordinal));
 
     private static ExpiryExceptionRefDto Ref(FefoExceptionCase c, IReadOnlyDictionary<Guid, Location> warehouses, DateTimeOffset now)
         => ExpiryMapping.Ref(c, warehouses, now) with
