@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:6f4b6d3e0719` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:a68022d3ca75` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -50,7 +50,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 - Bulguları parent / FU / yeni / aday olarak ayır. Kimlik uydurma; kaynak Blueprint'tir.
 - Blueprint'te var ama pack yoksa: kod değil, taslak module pack hazırlama adımını öner. Blueprint'te de yoksa: parent /
-  FU uygunluğunu araştır, uymuyorsa mevcut `CAND-CAP` kapısına yönlendir (`AGENTS-REFERENCE.md`); ID uydurma.
+  FU uygunluğunu araştır; uymuyorsa dur ve Master'da Module Change Request öner (Master-first kuralı, Blueprint 8.7); yeni
+  `CAND-CAP` ya da ID uydurma.
 - Gerekçeli tek bir ilk kapsam öner ve "öneri — onay değil" diye işaretle. Tek modül için Delivery Capability Pack
   oluşturma.
 
