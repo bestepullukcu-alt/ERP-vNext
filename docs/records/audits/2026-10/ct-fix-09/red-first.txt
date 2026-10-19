@@ -1,0 +1,38 @@
+CT-FIX-09 red first — this package's final test file against the committed sources of 65c53153e (CT-FIX-08) in a
+copy outside the repository; run by the AI session.
+
+Ran 6 tests in 12.146s · FAILED (failures=9, errors=12)
+
+  FAIL  test_ct_cli_regression.CTFIX09_GateDiagnosisAndOneLine.test_a_control_character_in_a_changed_file_stays_on_one_check_line
+  FAIL  test_ct_cli_regression.CTFIX09_GateDiagnosisAndOneLine.test_a_control_character_in_a_pack_name_stays_on_one_report_line
+  FAIL  test_ct_cli_regression.CTFIX09_GateDiagnosisAndOneLine.test_a_queue_that_cannot_be_read_is_named_in_the_hashed_report
+  ERROR test_ct_cli_regression.CTFIX09_GateDiagnosisAndOneLine.test_one_line_shows_line_structure_and_keeps_normal_text
+  ok    test_ct_cli_regression.Controls.test_consumers_on_the_intact_fixture_exit_0
+  ok    test_ct_cli_regression.Controls.test_full_prompt_cli_normal_exit_0
+
+failed subtests:
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (normal='MOD-0288-audit-ledger-şerit.md')
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (normal='a "q" b')
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (normal='back\\slash')
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (normal='测量 ✅️')
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (normal='x\u200by')
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (raw="'a\\nb'")
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (raw="'a\\rb'")
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (raw="'a\\tb'")
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (raw="'a\\x0bb\\x0cc'")
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (raw="'a\\x85b'")
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (raw="'a\\u2028b\\u2029c'")
+  ERROR test_one_line_shows_line_structure_and_keeps_normal_text (raw="'a\\x1bb\\x00c'")
+  FAIL  test_a_control_character_in_a_changed_file_stays_on_one_check_line (name='a line feed and a fake result')
+  FAIL  test_a_control_character_in_a_pack_name_stays_on_one_report_line (name='a line feed and a fake result')
+  FAIL  test_a_control_character_in_a_pack_name_stays_on_one_report_line (name='a carriage return')
+  FAIL  test_a_control_character_in_a_pack_name_stays_on_one_report_line (name='a tab')
+  FAIL  test_a_control_character_in_a_pack_name_stays_on_one_report_line (name='a line separator')
+  FAIL  test_a_control_character_in_a_pack_name_stays_on_one_report_line (name='a long run of line feeds')
+  FAIL  test_a_queue_that_cannot_be_read_is_named_in_the_hashed_report (case='an empty path')
+  FAIL  test_a_queue_that_cannot_be_read_is_named_in_the_hashed_report (case='a Cf-only control_tower')
+  FAIL  test_a_queue_that_cannot_be_read_is_named_in_the_hashed_report (case='a queue file that is not UTF-8')
+
+The new tests fail on the base sources: the gate prints the queue's stop before its report and keeps only '2', the
+discovery binding is judged without the queue row, a control character in a file name adds lines to the discovery
+report and to the acceptance check, and the base has no one_line (the errors). The controls pass.

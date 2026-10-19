@@ -1,0 +1,62 @@
+"""İ5B-FIX-17 guard removal (harness16b with its list replaced: the 9 new guards and the 16 İ5B-FIX-16 guards whose line is in mask_html or unreadable_html, entries by repr) — derived from İ5B-FIX-16 run 02 (harness16 + G-Y0, the cursor hang, with a targeted time limit: a timeout is its red, and the control is the same test on the intact copy): one ONE work copy, restored before every mutation (rsync from the base, then the two frozen
+files laid over it and checked by SHA-256) — no copy per mutation. Each guard is undone alone; the named test must fail
+(a crash or a hang is not counted) and a control test must pass in the same copy.
+Usage: python3 harness15.py <base src> <frozen sync_adapters.py> <frozen test> <freeze list> <work dir> <out.json>"""
+import hashlib, json, os, shutil, subprocess, sys, time
+BASE, TOOL, TEST, FREEZE, W, OUT = sys.argv[1:7]
+FROZEN = dict(reversed(l.split()) for l in open(FREEZE, encoding="utf-8") if l.strip())
+F = ".antigravity/scripts/sync_adapters.py"
+B = "scripts.tests.test_sync_adapters_budget.InstructionBudget."
+ONE, CORE, NV = B + "test_one_context_reader_for_comments_code_and_html", B + "test_the_same_reader_holds_for_agents_md_and_the_core", B + "test_what_the_reader_cannot_read_is_said_to_be_not_verified"
+RULE, SPAN = B + "test_the_rule_line_readers_use_the_same_lexer", B + "test_a_code_span_across_lines_in_the_core_is_refused"
+HIDE, SHOWN, UNREAD = B + 'test_raw_html_around_a_required_text_hides_it', B + 'test_unrelated_or_shown_html_keeps_the_required_text', B + 'test_an_html_opener_the_check_cannot_read_is_not_verified'
+M = [("G-Z1 a tag ends at the first '>', even inside a quoted value", 'TAG_ATTRS = r"""(?:\\s(?:[^<>"\']|"[^"<]*"|\'[^\'<]*\')*)?"""', 'TAG_ATTRS = r"""(?:\\s[^<>]*)?"""', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ('G-Z2 a closing tag in possible indented code counts', '        if maybe_code[n]:\n            return True\n', '', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ('G-Z3 a block quote or list line in the paragraph is not checked', '        if width(lines[first]) >= 2 or any(CONTAINER_LINE.match(lines[k]) for k in range(first, last + 1)):', '        if width(lines[first]) >= 2:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ('G-Z4 a paragraph that starts indented (a possible list continuation) is not checked', '        if width(lines[first]) >= 2 or any(CONTAINER_LINE.match(lines[k]) for k in range(first, last + 1)):', '        if any(CONTAINER_LINE.match(lines[k]) for k in range(first, last + 1)):', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ("G-Z5 a closing tag in a link's destination or title counts", '        return any(a <= at < b for a, b in known_spans(mask_code(para)))', '        return False', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ('G-Z6 link syntax the check cannot read is not checked', ' or unreadable_link(para):', ':', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ('G-Z7 every closing tag needs evidence, even one that closes nothing', '                if at is not None and not block and close_unproven(n, i):', '                if not block and close_unproven(n, i):', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ('G-Z8 a raw-text close needs no evidence', '                if not block and close_unproven(n, i):\n                    nv = (i, "close")\n                    break\n                if not stack:', '                if not stack:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ("G-Z9 an HTML block start line ends at the first '>', even inside a quoted value", 'HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*{TAG_ATTRS}/?>', 'HTML_TYPE7 = re.compile(rf"^ {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*(?:\\s[^<>]*)?/?>', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_a_tag_ends_outside_quotes_and_a_close_needs_evidence']), ('G-Y1 the HTML reader reads no escape', '        if not block and c == "\\\\" and i + 1 < size and view[i + 1] in ESCAPABLE:', '        if False:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_one_context_reader_for_comments_code_and_html']), ('G-Y6 HTML block lines read as Markdown', '        block = in_block[n]', '        block = False', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_one_context_reader_for_comments_code_and_html']), ('G-Y7 fences read on the comment view, not where no HTML block masks a line', '    block_view = view if block_view is None else block_view', '    block_view = view', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_one_context_reader_for_comments_code_and_html']), ('G-Y8 a raw-text element counts the tags inside it', '            elif name in ("script", "style", "textarea", "title"):', '            elif False:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_one_context_reader_for_comments_code_and_html']), ('G-Y9 in a paragraph a raw-text close shown in code counts', '        if not block and c == "`":', '        if not block and raw is None and c == "`":', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_one_context_reader_for_comments_code_and_html']), ('G-Y13 an element never closed is not reported (nor masked)', '    if nv is None and (stack or raw):', '    if False:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_what_the_reader_cannot_read_is_said_to_be_not_verified']), ("G-X5' nesting of the same element not counted (a closing tag closes the outermost)", '                at = next((k for k in range(len(stack) - 1, -1, -1) if stack[k][0] == name), None)', '                at = 0 if any(x[0] == name for x in stack) else None', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it']), ("G-X6' a non-void self-closed tag masks only itself", '            elif name in VOID_ELEMENTS:', '            elif name in VOID_ELEMENTS or m.group(3):', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it']), ("G-X7' an element left open stops at the paragraph's end", '        block = in_block[n]\n', '        block = in_block[n]\n        if i == offs[n] and not lines[n].strip() and stack and not block:\n            mask(stack[0][1], i)\n            stack.clear()\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it']), ("G-X8' the raw-text rule: a nested '<script>' text counted as an opening", '            if m and m.group(1) and m.group(2).lower() == raw[0]:', '            if m and not m.group(1) and m.group(2).lower() == raw[0]:\n                raw = ("never", raw[1])\n            if m and m.group(1) and m.group(2).lower() == raw[0]:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_unrelated_or_shown_html_keeps_the_required_text']), ("G-X9' tags searched inside fences", '        if i == offs[n] and not block and n in fence_to:', '        if False:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_unrelated_or_shown_html_keeps_the_required_text']), ("G-X10' tags searched inside inline code", '        if not block and c == "`":', '        if False:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it']), ("G-X11' a backslash-escaped '<' read as a tag", '        if not block and c == "\\\\" and i + 1 < size and view[i + 1] in ESCAPABLE:', '        if False:', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_raw_html_around_a_required_text_hides_it']), ("G-X12' a tag the reader cannot read skipped as text", '            nv = (i, "tag")                                  # an opener the reader cannot read: nothing after it is evidence\n            break\n', '            pass\n', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_an_html_opener_the_check_cannot_read_is_not_verified']), ("G-X13' the 'not verified' reason not written", '    if not found:\n        return ""', '    if True:\n        return ""', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_an_html_opener_the_check_cannot_read_is_not_verified']), ("G-X14' an autolink read as a tag the reader cannot read", '            link = AUTOLINK.match(view, i)', '            link = None', ['scripts.tests.test_sync_adapters_budget.InstructionBudget.test_unrelated_or_shown_html_keeps_the_required_text'])]
+CONTROL = B + "test_a_dead_link_is_still_a_dead_link"
+sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def restore():
+    subprocess.run(["rsync", "-a", "--delete", "--checksum", BASE + "/", W + "/"], check=True)
+    shutil.copyfile(TOOL, os.path.join(W, F)); shutil.copyfile(TEST, os.path.join(W, "scripts/tests/test_sync_adapters_budget.py"))
+    for p, h in FROZEN.items():
+        assert sha(os.path.join(W, p)) == h, p
+
+
+def run(names, limit=600):
+    try:
+        p = subprocess.run([sys.executable, "-B", "-m", "unittest", *names], cwd=W, capture_output=True, text=True, timeout=limit)
+    except subprocess.TimeoutExpired:
+        return "timeout", f"the test did not finish in {limit} s (a hang)"
+    crashed = "Traceback" in p.stderr and "AssertionError" not in p.stderr
+    return (99 if crashed else p.returncode), (p.stderr.strip().splitlines() or [""])[-1]
+
+
+os.makedirs(W, exist_ok=True)
+results = []
+for label, old, new, tests, *opt in M:
+    opt = opt[0] if opt else {}
+    restore()
+    f = os.path.join(W, F)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    parsed = subprocess.run([sys.executable, "-B", "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())", f]).returncode == 0
+    t0 = time.time()
+    if opt.get("timeout"):     # a hang is this guard's red: a targeted limit; the control is the same test on the intact copy
+        code, tail = run(tests, opt["timeout"])
+        restore()
+        ccode, ctail = run(tests)
+        proven = parsed and code == "timeout" and ccode == 0
+    else:
+        code, tail = run(tests)
+        ccode, ctail = run([CONTROL])
+        proven = parsed and code not in (0, 99, "timeout") and ccode == 0
+    results.append({"mutation": label, "applied": True, "file": F, "tests": tests, "exit": code, "red": code != 0, "summary": tail,
+                    "parsed": parsed, "control": (tests if opt.get("control_intact") else CONTROL), "control_exit": ccode, "control_summary": ctail, "proven": proven,
+                    "seconds": round(time.time() - t0)})
+    print(label, "PROVEN" if proven else "NOT PROVEN", "| named:", tail, "| control:", ctail, flush=True)
+restore()
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("proven", sum(r.get("proven", False) for r in results), "of", len(results), "· the copy restored to the frozen sources")

@@ -1,0 +1,36 @@
+RED  B01 K1 GOV_APPROVED loosened back to a prefix match
+      scripts/ct_queue.py exit 1; self-test: 89/90 passed; named FAIL: CT-FIX-02 K1: -R3 record — approved / decided and the two annotation forms resolve; approved-but-draft, a; other FAILs 0; restored True
+RED  B02 K1 decision_resolved_text: the old first-status reader
+      scripts/ct_queue.py exit 1; self-test: 87/90 passed; named FAIL: CT-FIX-02 K1: -R3 record — an unclosed künye, two status lines or no künye do not resolve; other FAILs 2; restored True
+RED  B03 K1 kunye_status: quotes stripped again
+      scripts/ct_queue.py exit 1; self-test: 89/90 passed; named FAIL: CT-FIX-02 K1: one balanced pair of the same quote is read; a missing, mixed or doubled quote is refused; other FAILs 0; restored True
+RED  B04 K1 report: the old approval regex
+      scripts/status_report_v2.py exit 1; self-test: 78/79 passed; named FAIL: CT-FIX-02 K1: the effort approval is read by the prompt gate's reader — approved / decided forms and one ; other FAILs 0; restored True
+RED  B05 K1 prompt gate: a local loose copy instead of the shared reader
+      scripts/prompt_gate.py exit 1; self-test: 85/86 passed; named FAIL: CT-FIX-01 11: governance unknown suffixes -> ENGEL ('approved-but-draft', 'approved draft', '(…) + F-1: …; other FAILs 0; restored True
+RED  B17 K1 prompt gate: a local reader that strips quotes again
+      scripts/prompt_gate.py exit 1; self-test: 85/86 passed; named FAIL: CT-FIX-02 K1: the gate reads one balanced quote ('"approved"') and refuses a missing, mixed or doubled qu; other FAILs 0; restored True
+RED  B06 K3 load_for_dispatch: no main profile check
+      scripts/ct_queue.py exit 1; self-test: 88/90 passed; named FAIL: CT-FIX-02 K3: main() — origin/main registers the queue strict=yes, the branch strict=no -> every command ; other FAILs 1; restored True
+RED  B07 K3 validate: the conflict not listed
+      scripts/ct_queue.py exit 1; self-test: 89/90 passed; named FAIL: CT-FIX-02 K3: validate lists the same conflict as HATA and exits 1; other FAILs 0; restored True
+RED  B08 K3 'kayıt geçersiz' dropped from PROFILE_CONFLICT
+      scripts/ct_queue.py exit 1; self-test: 89/90 passed; named FAIL: CT-FIX-02 K3: main registers another path or an invalid row -> farklı görev kaynağı / kayıt geçersiz stop; other FAILs 0; restored True
+RED  B09 K3 strict=yes may name any vocabulary again
+      scripts/ct_queue.py exit 1; self-test: 89/90 passed; named FAIL: CT-FIX-02 K3: strict=yes with a vocabulary other than sop7 (a copied 'sop7x') -> registry problem; other FAILs 0; restored True
+RED  B10 K3 report: the conflict gives no reason
+      scripts/status_report_v2.py exit 1; self-test: 78/79 passed; named FAIL: CT-FIX-02 K3: read_strict_queue — origin/main registers the queue strict=no -> 'çelişiyor — farklı profil; other FAILs 0; restored True
+RED  B11 K4 summary wired around load_for_dispatch, the old text kept in a comment
+      scripts/ct_queue.py exit 1; self-test: 88/90 passed; named FAIL: CT-FIX-02 K4: main() — require, guard, summary and writers each stop on a duplicate registry row (DUR); other FAILs 1; restored True
+RED  B12 K4 report drops the registry problems, the call kept
+      scripts/status_report_v2.py exit 1; self-test: 78/79 passed; named FAIL: CT-FIX-02 K4: read_strict_queue — a vocabulary that makes FAILED dispatchable -> 'kayıt, durum sözlüğü ya; other FAILs 0; restored True
+RED  B13 K2 check / should-rerun: the registry check not called
+      scripts/known_failures.py exit 1; self-test: 25/28 passed; named FAIL: CT-FIX-02 K2: main() check — a duplicate (suite, test) stops before the run is read, exit 2; other FAILs 2; restored True
+RED  B14 K2 the two-suite name check removed
+      scripts/known_failures.py exit 1; self-test: 27/28 passed; named FAIL: CT-FIX-02 K2: main() check without --suite — one name open in two suites -> exit 2, never guessed; other FAILs 0; restored True
+RED  B15 K2 should-rerun left out
+      scripts/known_failures.py exit 1; self-test: 27/28 passed; named FAIL: CT-FIX-02 K2: main() should-rerun — a duplicate (suite, test) -> exit 2, no KOŞ / ATLA line; other FAILs 0; restored True
+RED  B16 a missing table file: the traceback again
+      scripts/ct_queue.py exit 1; self-test: 89/90 passed; named FAIL: CT-FIX-02: a missing states/registry/transition file -> DUR line, not a traceback; other FAILs 0; restored True
+
+17 sabotages; all named tests red and every file restored: True

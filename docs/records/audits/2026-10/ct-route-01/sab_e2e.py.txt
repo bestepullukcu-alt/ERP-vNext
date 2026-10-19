@@ -1,0 +1,29 @@
+"""The wiring of ct_route.py at real git (the snapshot reader, origin/main, packs, roots): each removed in a scratch copy,
+the end-to-end driver re-run in a new clone. Usage: sab_e2e.py <worktree> <scratch dir> <tag>"""
+import subprocess, sys
+from pathlib import Path
+W, S, TAG = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+src = (W / "scripts/ct_route.py").read_text(encoding="utf-8")
+G = [
+    ("reads at the fixed SHA, never the working tree", "        try:\n            return src.read(commit, path)\n",
+     "        try:\n            p = ROOT / path\n            return p.read_text(encoding=\"utf-8\") if p.exists() else None\n"),
+    ("in force on origin/main, not on the ref", "    main_sha = src.resolve(ctq.MAIN_REF)", "    main_sha = src.sha"),
+    ("the registry contract at every snapshot", "    if problems:\n        raise Incomplete(f\"kayıt dosyası {where}'de sorunlu", "    if False:\n        raise Incomplete(f\"kayıt dosyası {where}'de sorunlu"),
+    ("a main without a registry is 'no mapping', not unmeasurable", "            cache[\"m\"] = _snapshot(src, main_sha, required=False)", "            cache[\"m\"] = _snapshot(src, main_sha, required=True)"),
+    ("packs read by the strict künye reader", "        packs += pack_entries(path, t, vmi.pack_id_from_lines(t.splitlines(True)))",
+     "        packs.append((path, vmi.pack_id_from_lines(t.splitlines(True)), sr2._status_of(t)))"),
+    ("every worktree and the git directory are roots", "    return [str(ROOT)] + roots + [common.stdout.decode(\"utf-8\", \"replace\").strip()]", "    return [str(ROOT)]"),
+]
+out = []
+for n, (name, old, new) in enumerate(G, 1):
+    assert src.count(old) == 1, (name, src.count(old))
+    mut = S / f"sabw-{TAG}-{n}.py"
+    mut.write_text(src.replace(old, new), encoding="utf-8")  # scratch copy written by this harness
+    res = S / f"e2e-sabw-{TAG}-{n}.txt"
+    done = subprocess.run([sys.executable, "-I", str(S / "e2e_route.py"), str(S / f"e2e-sabw-{TAG}-{n}"), str(W), str(res), str(mut)],
+                          capture_output=True, text=True)
+    text = res.read_text(encoding="utf-8") if res.exists() else done.stdout + done.stderr
+    tail = [l for l in text.splitlines() if l.startswith("result:")]
+    out.append(f"[e2e wiring] {n} removed: {name} -> exit {done.returncode}; {tail[0] if tail else 'NO RESULT (driver crashed)'}")
+(S / f"sabotage-e2e-{TAG}.txt").write_text("\n".join(out) + "\n", encoding="utf-8")
+print("\n".join(out))

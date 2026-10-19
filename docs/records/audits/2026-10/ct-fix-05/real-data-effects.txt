@@ -1,0 +1,26 @@
+CT-FIX-05 real-data effects — every tracked *module-packs/*.md at the candidate's HEAD through the repository's own
+shared routines (pack_identity; pack_approval_decision per mode at candidate 4, pack_approval_limit at candidate 3).
+Driver: drivers/probe_packs.py.txt (read-only, git show HEAD:path). Run by the AI session.
+
+candidate 3 (0609bc588):
+  packs 168
+  1 identity-ok v6=conditional
+  139 identity-ok v6=ok
+  20 identity-refused v6=ok
+  8 identity-refused v6=stop
+
+candidate 4 (3d4f0f405):
+  packs 168
+  138 identity-ok dispatch=ok prepare=ok accept=ok draft=ok
+  1 identity-ok dispatch=stop prepare=note accept=review draft=note
+  21 identity-refused dispatch=ok prepare=ok accept=ok draft=ok
+  8 identity-refused dispatch=stop prepare=stop accept=stop draft=stop
+
+identity verdicts that changed (C2):
+  now refused: execution/domains/platform-shared-services/module-packs/MOD-0021-all-phases-implementation-plan.md id=MOD-0021-PLAN identity=paketin künye id'si MOD-0021-PLAN dosya adındaki kimlikle (MOD-0021) aynı değil — MOD-0021-all-phases-implementation-plan.md
+
+approval per mode at candidate 4 for the one pack with a second approval field (E1):
+  execution/domains/human-capital-management/module-packs/MOD-0251-core-hr-employee-master.md id=MOD-0251 identity=ok approval={'dispatch': 'stop', 'prepare': 'note', 'accept': 'review', 'draft': 'note'}
+
+files counted as packs include READMEs and non-MOD ids (CAND-CAP-, DEV-, PSS-): the gate refuses those as product
+authorities before and after; the counts above are the probe's, not a statement about which files are packs.

@@ -1,0 +1,19 @@
+CT-FIX-11 red first — this package's final test file in the CT worktree while scripts/prompt_gate.py was still
+0afba1bf5's (CT-FIX-10), before the code was written; run by the AI session. The test file was not changed after
+this run (its SHA-256 is the frozen one).
+
+Ran 3 tests in 9.671s · FAILED (failures=2)
+
+  FAIL  test_ct_cli_regression.CTFIX11_GovernanceUnknownRow.test_only_the_row_bound_relation_is_unmeasured
+  ok    test_ct_cli_regression.Controls.test_consumers_on_the_intact_fixture_exit_0
+  ok    test_ct_cli_regression.Controls.test_full_prompt_cli_normal_exit_0
+
+failed subtests:
+  FAIL  test_only_the_row_bound_relation_is_unmeasured (case="bound only by the row's record, the queue unreadable")
+  FAIL  test_only_the_row_bound_relation_is_unmeasured (case="status draft, bound only by the row's record, the queue unreadable")
+
+On the base source, with the queue unreadable: a governance record bound only by the queue row's record gets the
+false 'kuyruk satırının record sütunu bu kaydı göstermiyor' and no 'ölçülemedi' — with status approved (1) and with
+status draft, where the draft refusal itself is right (1). The other cases of the same test pass there: an explicit
+W1 (no unmeasured line), an explicit W10 and a broken field (their own refusals), and the two intact-queue controls.
+Controls.* pass.

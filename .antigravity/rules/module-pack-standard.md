@@ -290,6 +290,8 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 - DataTable modulunde `verify_datatable_page.py` ve `quality-gate-datatable` atiflari zorunludur
 - Layout zorunlulugu test edilebilir madde olarak yer alir (ornek: "Tum `Views/Platform/Administrators/*.cshtml` dosyalarinda `Layout = \"_LayoutPlatformAdmin\"` ACIKCA yazili")
 - Platform/Admin modul lookup kullaniyorsa AC icinde endpoint/proxy path, `LookupOptionDto` response shape, unauthorized davranis ve hardcoded fallback olmamasi test edilebilir yazilir. Yeni Platform lookup key gerekiyorsa bu key PSS lookup scope'u olarak acik onaylanir.
+- Yalniz yeni Control Tower'larin yeni paketlerinde (CT-I4 S2, 2026-10-16; eski Control Tower'lara yeni yuk gelmez) her madde sabit kimlik ve zorunluluk tasir: `- [ ] AC-<n> (zorunlu) — <kriter>` ya da `- [ ] AC-<n> (isteğe bağlı) — <kriter>`. `n` pozitif tam sayidir ve tekildir; madde silinmez, yeniden numaralanmaz. Bolum tek `## Acceptance Criteria` basligidir; icinde bu bicime uymayan madde olmaz ve en az bir madde zorunludur.
+- Mevcut paketler donusturulmez. Kimliksiz pakette AC kapsami mekanik olarak olculemez: `python3 scripts/acceptance_record.py module-check` cikis 2 verir (REP-001 §6.2).
 
 ---
 
@@ -608,7 +610,8 @@ Slim partial seti:
 - ...
 
 ## Acceptance Criteria
-- [ ] ...
+- [ ] AC-1 (zorunlu) — ...
+- [ ] AC-2 (isteğe bağlı) — ...
 
 ## Test Expectations
 - ...

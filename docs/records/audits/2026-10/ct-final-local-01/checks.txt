@@ -1,0 +1,160 @@
+=== Sources
+This branch 2121420dd · the local origin/main 3912d568b (the remote main read as the same SHA at 2026-10-16T09:16:03Z by Codex; no fetch) · merge base 6b8a62d5a · git merge-tree --write-tree 3912d568b 2121420dd -> exit 0, tree 499ffb0ae7ed67f5252815a6e366e6d3448df9ca. No merge commit; no branch or worktree of the repository changed.
+
+=== Scratch clones (outside the repository; push URL disabled; refs/remotes/origin/main pinned to 3912d568b — a local test copy)
+A: HEAD 2121420dd (detached), worktree = that commit
+B: HEAD 2121420dd (detached, not a merge commit); index and worktree = tree 499ffb0a (read-tree + checkout-index; index refreshed with update-index --refresh — the first diff-files exit 1 was stat data only)
+E: a one-parent fixture base commit 7e70faa01 whose tree is 499ffb0a (parent 2121420dd; not a merge), built in E's own object store (the first attempt could not find the tree written in B's store); the end-to-end scenarios are normal git commits on top of it
+
+=== The chain's files, A against B
+CT files: 120 · same blob A/B: 118 · differ: .antigravity/agents/orchestrator.md .antigravity/workflows/add-module.md
+
+=== main's e66404988 fixes and our lines, in the merged tree
+pack path {ID}.md lines: 0
+ITenantDocument lines: 0
+GetAccessToken in add-module.md:107 / frontend-ui-ux.md:58: 1 / 1
+our two-round limit kept in add-module.md: 1 · our SOP §29 line kept in orchestrator.md: 1
+
+=== Six self-tests, A and B (case lines compared)
+scripts/ct_queue.py: A exit 0 · self-test: 69/69 passed | B exit 0 · self-test: 69/69 passed | case lines identical: True
+scripts/acceptance_record.py: A exit 0 · self-test: 100/100 passed | B exit 0 · self-test: 100/100 passed | case lines identical: True
+scripts/prompt_gate.py: A exit 0 · self-test: 71/71 passed | B exit 0 · self-test: 71/71 passed | case lines identical: True
+scripts/status_report.py: A exit 0 · self-test: 75/75 passed | B exit 0 · self-test: 75/75 passed | case lines identical: True
+.antigravity/scripts/list_screen_touch_hook.py: A exit 0 · self-test: 21/21 passed | B exit 0 · self-test: 21/21 passed | case lines identical: True
+scripts/known_failures.py: A exit 0 · self-test: 24/24 passed | B exit 0 · self-test: 24/24 passed | case lines identical: True
+
+=== module-check end to end, on the merged fixture base (driver e2e_mc.py, sha256 afd2ecbf…; tools from the merged tree B)
+base 206ad9c13 · packs v0 576a97968 v1 5ac7b7f22 v2 bfe4557ee · lists 6de5f766c
+## 1 W1 (AC-1, N/A AC-2) and W2 (AC-3) bound to v1; --pack v1 — exit 0
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@05b8f3911fa27fb94ee91d319d0971c44d33c21b · kapadığı: AC-1, AC-2
+   İŞ W2 → W2: sayıldı · docs/records/audits/2026-10/mc-e2e/w2.md@05b8f3911fa27fb94ee91d319d0971c44d33c21b · kapadığı: AC-3
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@05b8f3911fa27fb94ee91d319d0971c44d33c21b
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@05b8f3911fa27fb94ee91d319d0971c44d33c21b
+   AC-3 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w2.md@05b8f3911fa27fb94ee91d319d0971c44d33c21b
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: seçilen paket sürümünün 3 zorunlu AC'si kapalı — yalnız AC kapsamı; Module Done değildir (SOP §29.2'nin diğer koşulları denetlenmez)
+   PASS expected: every mandatory AC covered -> 0, not Module Done
+## 2 the same queue; --pack v2 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayılmadı — başka paket sürümüne bağlı (execution/domains/commercial-suite/module-packs/MOD-0151-ac-e2e.md@5ac7b7f22b611c70c790d608ce817d4a0c9ea99f) — seçilen sürümün ölçütü kapanmaz
+   İŞ W2 → W2: sayılmadı — başka paket sürümüne bağlı (execution/domains/commercial-suite/module-packs/MOD-0151-ac-e2e.md@5ac7b7f22b611c70c790d608ce817d4a0c9ea99f) — seçilen sürümün ölçütü kapanmaz
+   AC-1 (zorunlu): AÇIK
+   AC-2 (zorunlu): AÇIK
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 3/3 açık; bu Module Done değildir
+   PASS expected: records bound to v1 do not cover v2 (same AC ids, another meaning) -> 1
+## 3 --pack v0 (draft) — exit 2
+   sonuç: ölçülemez — paket: künyede tek status approved ya da ready-for-dev olmalı (bulunan: ['draft'])
+   PASS expected: a draft pack version -> 2
+## 4 --pack the real MOD-0151 pack (no AC ids) — exit 2
+   sonuç: ölçülemez — paket: tek '## Acceptance Criteria' bölümü olmalı (0 başlık)
+   PASS expected: an old pack (numbered heading, no AC ids) -> 2 (not measurable)
+## 4b --pack an old-format pack (exact heading, no AC ids) — exit 2
+   sonuç: ölçülemez — pakette AC kimliği yok (eski biçim) — AC kapsamı mekanik olarak ölçülemez
+   PASS expected: an old-format pack -> 2, named as the old format
+## 5 --pack with a short SHA — exit 2
+   sonuç: ölçülemez — paket execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit> biçiminde verilir
+   PASS expected: a short pack SHA -> 2
+## 6 a non-strict queue (sce-mvp6) — exit 2
+   sonuç: ölçülemez — 'sce-mvp6' katı (strict=yes) kuyruk değil — yeni kip yalnız katı kuyruklar için
+   PASS expected: a non-strict queue -> 2, and the resolved source SHA is still named
+## 6b an unknown --ref — exit 2
+   sonuç: ölçülemez — ref 'refs/heads/does-not-exist' bu depoda yok
+   PASS expected: an unresolved ref -> 2, and no source SHA is claimed
+## 7 W2 bound to v2; --pack v1 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@2e9c8a5a6abd46c0c6d33880547867df5bcfb0ac · kapadığı: AC-1, AC-2
+   İŞ W2 → W2: sayılmadı — başka paket sürümüne bağlı (execution/domains/commercial-suite/module-packs/MOD-0151-ac-e2e.md@bfe4557eed534be15ccaeede5c84d59705d1560f) — seçilen sürümün ölçütü kapanmaz
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@2e9c8a5a6abd46c0c6d33880547867df5bcfb0ac
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@2e9c8a5a6abd46c0c6d33880547867df5bcfb0ac
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: AC-3 from a record bound to another version -> open, 1
+## 8 W2 without module_pack; --pack v1 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@97a0679a69ea175bb9b5fe5b4dbdb5e18991dbdf · kapadığı: AC-1, AC-2
+   İŞ W2 → W2: sayılmadı — künyede module_pack yok — aynı AC kimliğiyle örtük eşleştirme yapılmaz
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@97a0679a69ea175bb9b5fe5b4dbdb5e18991dbdf
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@97a0679a69ea175bb9b5fe5b4dbdb5e18991dbdf
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: a record without module_pack is never matched implicitly -> 1
+## 9 W2-R1 READY over the accepted W2 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@25bfc50ba2aaf34921bb7bd8a92ee23455dd61eb · kapadığı: AC-1, AC-2
+   İŞ W2 → W2-R1: sayılmadı — yürürlükteki revizyon W2-R1 READY
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@25bfc50ba2aaf34921bb7bd8a92ee23455dd61eb
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@25bfc50ba2aaf34921bb7bd8a92ee23455dd61eb
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: a newer open revision: the older acceptance does not count -> 1
+## 10 W3 VERIFIED with a conditional record covering AC-3 — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@95c9c3ccd8596386e908f7f31d0c65a88c0726d9 · kapadığı: AC-1, AC-2
+   İŞ W3 → W3: sayılmadı — yürürlükteki revizyon W3 VERIFIED
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@95c9c3ccd8596386e908f7f31d0c65a88c0726d9
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@95c9c3ccd8596386e908f7f31d0c65a88c0726d9
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: a conditional record (row not ACCEPTED) does not cover -> 1
+## 11 AC-3 only from MOD-0150's record bound to the MOD-0151 pack — exit 1
+   paket: 4 AC, 3 zorunlu
+   İŞ W1 → W1: sayıldı · docs/records/audits/2026-10/mc-e2e/w1.md@0fd2bf33de3b14808a0bef79bc1db73dff9ba87f · kapadığı: AC-1, AC-2
+   AC-1 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@0fd2bf33de3b14808a0bef79bc1db73dff9ba87f
+   AC-2 (zorunlu): kapalı — docs/records/audits/2026-10/mc-e2e/w1.md@0fd2bf33de3b14808a0bef79bc1db73dff9ba87f
+   AC-3 (zorunlu): AÇIK
+   AC-4 (isteğe bağlı): kapsanmadı
+   sonuç: zorunlu AC kapsamı eksik — 1/3 açık; bu Module Done değildir
+   PASS expected: another module's record is not considered -> 1
+## 12 --module MOD-0150 with the MOD-0151 pack — exit 2
+   sonuç: ölçülemez — paket: künyede tek id 'MOD-0150' olmalı (bulunan: ['MOD-0151'])
+   PASS expected: the pack's id is not the module -> 2
+## 13 W3 ACCEPTED with a conditional record (the queue itself is invalid) — exit 2
+   sonuç: ölçülemez — kuyruk 9350ead8b298'de geçersiz — kuyruk doğrulaması: 1 hata — ilk: satır 3 W3: kabul kaydı docs/records/audits/2026-10/mc-e2e/w3.md@ef11e5b00763651976a: sonuç: geçerli kayıt, ACCEP
+   PASS expected: a queue whose ACCEPTED row's record does not allow it -> 2 (fail closed)
+## 14 backward compatibility: check, old and new, records without module_pack
+   W1 accepted: old exit 0 · new exit 0 · output identical True
+   W3 conditional: old exit 1 · new exit 1 · output identical True
+   W4 rejected: old exit 1 · new exit 1 · output identical True
+   W6 old (superseded): old exit 1 · new exit 1 · output identical True
+   W6 new (head): old exit 0 · new exit 0 · output identical True
+   W1 for the wrong module: old exit 1 · new exit 1 · output identical True
+   PASS expected: check: old and new give the same exit and output on 6 records without module_pack
+   PASS expected: and the expected meaning: accepted 0; conditional, rejected, superseded, wrong module not 0
+
+=== Architecture suite on B (one run)
+Command (shared test lock ct-heavy.py, restore from the local NuGet folder): dotnet restore <csproj> --source <local NuGet folder> && dotnet test <csproj> --no-restore --logger "trx;LogFileName=<raw>"
+Tree: B, index and worktree = 499ffb0ae7ed67f5252815a6e366e6d3448df9ca, HEAD 2121420dd (not a merge commit); tracked worktree = index before and after (diff-files exit 0 after update-index --refresh); index tree unchanged
+dotnet: Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 10 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Raw TRX sha256 (outside the repository): 660dd7a0d9b1f33d51cd7fd19dc60fd2530cf9b8ed01e7bc820cd1eda539a624
+Step 1 — path roots (normalize_trx_roots.py, see ct-merge-preflight-01): the clone root, 4 forms -> __TEST_REPO__: 168 + 138 + 0 + 0; the scratch root: 0; intermediate 611cfa4ce84a8af6c1110faf776ff88af2fdc5582f9f5130b35084da6be8389d
+Step 2 — sanitize_trx.py R1–R4: R1 0 · R2 145 · R3 1 · R4 1; leftover home 0, user 0, computerName 0; exit 0
+run.sanitized.trx sha256: 9bd6c571be7043d4b7400f172501fb0298536c3f1481392b6c6e364f557741a1
+Final file: XML valid; 138 results (131 Passed, 7 Failed); names, outcomes and the 7 failure messages as raw; no user name, home, host name or path root left
+known_failures.py check raw: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0 · sanitised: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+Failure fingerprints: sanitised = raw = the 2121420dd CT-tree run
+
+=== Pre-publication scan of the added lines
+added lines merge-base 6b8a62d5a..2121420dd: 31779
+0 · a home-directory path
+0 · the local user name
+0 · a private temp path
+0 · a macOS per-user temp path
+0 · the user's mail domain
+0 · a private key block
+0 · a password assignment
+0 · an API or secret key assignment
+0 · a bearer token
+0 · a JWT
+0 · an AWS access key id
+0 · a GitHub token
+(no match in the scanned patterns; not a guarantee that no secret exists)
+
+=== Tool dependency
+scripts/requirements-tools.txt sha256 9078b8f31389… unchanged since Codex's clean-venv PyPI install of 2026-10-15 (ct-pqg-01/dependency-check-codex.txt); not reinstalled

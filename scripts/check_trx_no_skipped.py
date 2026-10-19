@@ -31,7 +31,9 @@ NS = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}"
 PREFIX = "[skipped=0]"
 DEFAULT_ALLOWLIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ci-skip-allowlist.tsv")
 # A reason code: capitals, digits and underscores at the very start of the skip reason (BL-570: "MACOS_ONLY: …").
-CODE = re.compile(r"^([A-Z][A-Z0-9_]*)\b")
+# WP-CI-SERVICE-TESTS-05: optionally followed by "-<number>", so a backlog item is ONE code ("BL-534: …" is BL-534, not
+# BL): an allow-list line can then name exactly that item, never every "BL-…" skip.
+CODE = re.compile(r"^([A-Z][A-Z0-9_]*(?:-[0-9]+)?)\b")
 
 
 class AllowlistError(Exception):

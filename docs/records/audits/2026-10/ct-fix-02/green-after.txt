@@ -1,0 +1,168 @@
+ok   C-01 main has no row for the queue -> require W1 (preparation)
+      expected: exit 0, DAĞITILABİLİR
+      observed: exit 0; DAĞITILABİLİR W1: READY
+ok   C-02 main has no row -> report on an approved baseline
+      expected: complete=true, percentages_valid=true
+      observed: complete=True percentages_valid=True in_force=kayıtlı değil
+ok   C-08 main has no row -> guard
+      expected: exit 0
+      observed: exit 0; sha256=864425524b695165446a2dec83db5c325b846081ede59879c4d8f51b101ba4a3 rows=6
+ok   C-08 main has no row -> summary
+      expected: exit 0
+      observed: exit 0; KUYRUK ctf2 (Fixture CT) — 6 satır; sınıflandırma geçici — sahip onayı bekliyor
+ok   C-08 main has no row -> writers
+      expected: exit 0
+      observed: exit 0; KUYRUK ctf2 (execution/delivery/ctf2-queue.tsv)
+ok   C-03 main registers the same profile -> require --in-force W1
+      expected: exit 0
+      observed: exit 0; DAĞITILABİLİR W1: READY
+ok   C-04 -R3 record 'approved' -> require W2-R3
+      expected: exit 0
+      observed: exit 0; DAĞITILABİLİR W2-R3: READY
+ok   C-05 -R3 record 'decided — note' (a form the records use) -> require W2-R3
+      expected: exit 0
+      observed: exit 0; DAĞITILABİLİR W2-R3: READY
+ok   C-05 -R3 record 'approved (scope)' (a form the records use) -> require W2-R3
+      expected: exit 0
+      observed: exit 0; DAĞITILABİLİR W2-R3: READY
+ok   C-06 -R3 record with two status lines -> require W2-R3
+      expected: exit 1
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-R -R3 record 'approved-but-draft' -> require W2-R3
+      expected: exit 1, DUR (not resolved)
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-R -R3 record 'approved draft' -> require W2-R3
+      expected: exit 1, DUR (not resolved)
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-R -R3 record 'decided-but-draft' -> require W2-R3
+      expected: exit 1, DUR (not resolved)
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-R -R3 record 'unclosed künye' -> require W2-R3
+      expected: exit 1, DUR (not resolved)
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-Rq -R3 record status "approved (unbalanced / mixed / doubled quote) -> require W2-R3
+      expected: exit 1, DUR
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-Rq -R3 record status approved' (unbalanced / mixed / doubled quote) -> require W2-R3
+      expected: exit 1, DUR
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-Rq -R3 record status 'approved" (unbalanced / mixed / doubled quote) -> require W2-R3
+      expected: exit 1, DUR
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+ok   K1-Rq -R3 record status "'approved'" (unbalanced / mixed / doubled quote) -> require W2-R3
+      expected: exit 1, DUR
+      observed: exit 1; DUR W2-R3: bu kimlikte doğrulama hatası var — satır 6 W2-R3: -R3 yeniden değerlendirme kaydı onaylı ya da karara bağlanmış değil (künyede tek 'status: approved|
+info D-01 balanced quote -> exit 0
+ok   K1-P effort approval 'approved-but-draft' -> report
+      expected: percentages_valid=false
+      observed: complete=True percentages_valid=False in_force=kayıtlı
+ok   K1-P effort approval 'approved draft' -> report
+      expected: percentages_valid=false
+      observed: complete=True percentages_valid=False in_force=kayıtlı
+ok   K1-P effort approval 'decided-but-draft' -> report
+      expected: percentages_valid=false
+      observed: complete=True percentages_valid=False in_force=kayıtlı
+ok   K1-Pq effort approval status "approved -> report
+      expected: percentages_valid=false
+      observed: complete=True percentages_valid=False in_force=kayıtlı
+ok   K1-Pq effort approval status approved' -> report
+      expected: percentages_valid=false
+      observed: complete=True percentages_valid=False in_force=kayıtlı
+ok   K1-Gq prompt gate check_authority (yönetişim) status "approved
+      expected: an ENGEL (künye/status refused)
+      observed: 1 engel: görev sınıfı: kapsam kaydının künyesi geçersiz — künyedeki status değeri dengesiz ya da iç içe tırnaklı: "approved — doc
+ok   K1-Gq prompt gate check_authority (yönetişim) status approved'
+      expected: an ENGEL (künye/status refused)
+      observed: 1 engel: görev sınıfı: kapsam kaydının künyesi geçersiz — künyedeki status değeri dengesiz ya da iç içe tırnaklı: approved' — doc
+ok   K1-Gq prompt gate check_authority (yönetişim) status 'approved"
+      expected: an ENGEL (künye/status refused)
+      observed: 1 engel: görev sınıfı: kapsam kaydının künyesi geçersiz — künyedeki status değeri dengesiz ya da iç içe tırnaklı: 'approved" — do
+ok   K1-Gq prompt gate check_authority (yönetişim) status "'approved'"
+      expected: an ENGEL (künye/status refused)
+      observed: 1 engel: görev sınıfı: kapsam kaydının künyesi geçersiz — künyedeki status değeri dengesiz ya da iç içe tırnaklı: "'approved'" — 
+ok   K1-Gq prompt gate check_authority (geliştirme) status "approved
+      expected: an ENGEL (künye/status refused)
+      observed: 1 engel: görev sınıfı: paketin künyesi geçersiz — künyedeki status değeri dengesiz ya da iç içe tırnaklı: "approved (execution/do
+ok   K1-Gq prompt gate check_authority (geliştirme) status approved'
+      expected: an ENGEL (künye/status refused)
+      observed: 1 engel: görev sınıfı: paketin künyesi geçersiz — künyedeki status değeri dengesiz ya da iç içe tırnaklı: approved' (execution/do
+ok   C-09 prompt gate check_authority (yönetişim) status "approved" (balanced: kept)
+      expected: no engel
+      observed: 0 engel: -
+ok   C-09 prompt gate check_authority (geliştirme) status "approved" (balanced: kept)
+      expected: no engel
+      observed: 0 engel: -
+ok   K3-baseline main row differs (baseline) -> require
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı profil (baseline_commit: orada '07a9e638a674c9f6f8a166168c4bff5410258d7a', burada '035b389fe8b430170eb45
+ok   K3-baseline main row differs (baseline) -> guard
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı profil (baseline_commit: orada '07a9e638a674c9f6f8a166168c4bff5410258d7a', burada '035b389fe8b430170eb45
+ok   K3-baseline main row differs (baseline) -> summary
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı profil (baseline_commit: orada '07a9e638a674c9f6f8a166168c4bff5410258d7a', burada '035b389fe8b430170eb45
+ok   K3-baseline main row differs (baseline) -> writers
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı profil (baseline_commit: orada '07a9e638a674c9f6f8a166168c4bff5410258d7a', burada '035b389fe8b430170eb45
+ok   K3-baseline main row differs (baseline) -> report
+      expected: complete=false, percentages_valid=false
+      observed: complete=False percentages_valid=False in_force=farklı profil (baseline_commit: orada '07a9e638a674c9f6f8a166168c4bff5410258d7a', burada '035b389fe8b430170eb450f28fd97dbc79605c36')
+ok   K3-path main row differs (path) -> require
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı görev kaynağı (orada 'execution/delivery/ct-queue-states.tsv') — profil değişikliği önce main'e girer; d
+ok   K3-path main row differs (path) -> guard
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı görev kaynağı (orada 'execution/delivery/ct-queue-states.tsv') — profil değişikliği önce main'e girer; d
+ok   K3-path main row differs (path) -> summary
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı görev kaynağı (orada 'execution/delivery/ct-queue-states.tsv') — profil değişikliği önce main'e girer; d
+ok   K3-path main row differs (path) -> writers
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — farklı görev kaynağı (orada 'execution/delivery/ct-queue-states.tsv') — profil değişikliği önce main'e girer; d
+ok   K3-path main row differs (path) -> report
+      expected: complete=false, percentages_valid=false
+      observed: complete=False percentages_valid=False in_force=farklı görev kaynağı (orada 'execution/delivery/ct-queue-states.tsv')
+ok   K3-invalid main row differs (invalid) -> require
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — kayıt geçersiz (registry ctf2: owner_confirmation must be pending or confirmed) — profil değişikliği önce main'
+ok   K3-invalid main row differs (invalid) -> guard
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — kayıt geçersiz (registry ctf2: owner_confirmation must be pending or confirmed) — profil değişikliği önce main'
+ok   K3-invalid main row differs (invalid) -> summary
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — kayıt geçersiz (registry ctf2: owner_confirmation must be pending or confirmed) — profil değişikliği önce main'
+ok   K3-invalid main row differs (invalid) -> writers
+      expected: exit != 0, DUR
+      observed: exit 1; DUR: 'ctf2' origin/main'deki kayıtla çelişiyor — kayıt geçersiz (registry ctf2: owner_confirmation must be pending or confirmed) — profil değişikliği önce main'
+ok   K3-invalid main row differs (invalid) -> report
+      expected: complete=false, percentages_valid=false
+      observed: complete=False percentages_valid=False in_force=kayıt geçersiz (registry ctf2: owner_confirmation must be pending or confirmed)
+ok   K3-sop7x strict=yes, vocabulary sop7x with FAILED dispatchable -> validate
+      expected: exit 1
+      observed: exit 1; HATA registry ctf2: strict=yes requires vocabulary 'sop7' (not 'sop7x')
+ok   K3-sop7x the same -> require W3 (FAILED)
+      expected: exit 1, DUR
+      observed: exit 1; 
+ok   C-07 one row, the message changed -> check
+      expected: C-07: exit 1 YENİ-AYRINTI; K2: exit 2, DUR (registry not trusted / name ambiguous)
+      observed: exit 1; ÖZET BİLİNEN=0 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=1 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+ok   K2-dup the same (suite, test) twice, the second with the new fingerprint -> check
+      expected: C-07: exit 1 YENİ-AYRINTI; K2: exit 2, DUR (registry not trusted / name ambiguous)
+      observed: exit 2; DUR: tests/known-failures.tsv / tests/known-failures-items.json geçersiz ya da belirsiz — sınıflandırma ve tekrar önerisi yapılmaz (python3 scripts/known_failur
+ok   K2-cross the same test name in two suites, no --suite -> check
+      expected: C-07: exit 1 YENİ-AYRINTI; K2: exit 2, DUR (registry not trusted / name ambiguous)
+      observed: exit 2; DUR: tests/known-failures.tsv / tests/known-failures-items.json geçersiz ya da belirsiz — sınıflandırma ve tekrar önerisi yapılmaz (python3 scripts/known_failur
+ok   K2-rerun duplicate (suite, test) -> should-rerun
+      expected: exit 2, DUR
+      observed: exit 2; DUR: tests/known-failures.tsv / tests/known-failures-items.json geçersiz ya da belirsiz — sınıflandırma ve tekrar önerisi yapılmaz (python3 scripts/known_failur
+ok   S-01 states file missing -> require W1
+      expected: exit != 0 with a DUR line, no traceback
+      observed: exit 1; DUR: execution/delivery/ct-queue-states.tsv okunamadı (FileNotFoundError) — kayıt, durum sözlüğü ya da geçiş tablosu olmadan dağıtım ya da rapor kararı verilmez
+ok   K4-ct summary wired around load_for_dispatch (string kept) -> ct_queue --self-test
+      expected: self-test exit 1 (a behaviour test catches the broken wiring)
+      observed: anchor True; summary with a duplicate row exit 0; self-test exit 1: self-test: 88/90 passed
+ok   K4-sr2 report drops the registry problems (string kept) -> status_report_v2 --self-test
+      expected: self-test exit 1 (a behaviour test catches the broken wiring)
+      observed: anchor True; report on a duplicate registry: complete=True percentages_valid=True in_force=kayıtlı değil; self-test exit 1: self-test: 78/79 passed
+
+0 / 56 RED

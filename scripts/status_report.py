@@ -154,6 +154,12 @@ def cell(value: str) -> str:
 
 
 def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] in ("--mode", "--self-test"):  # CT-OPS-04: the new mode lives in its own file
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("status_report_v2", Path(__file__).with_name("status_report_v2.py"))
+        v2 = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(v2)
+        return v2.self_test() if sys.argv[1] == "--self-test" else v2.main_v2(sys.argv[1:])
     parser = argparse.ArgumentParser(description="REP-001 durum tablosu")
     parser.add_argument("--packs", default="execution/domains/*/module-packs/*.md",
                         help="module pack glob'u (varsayılan: tüm domain paketleri)")

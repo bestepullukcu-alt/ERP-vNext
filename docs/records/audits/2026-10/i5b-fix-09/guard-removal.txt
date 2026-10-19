@@ -1,0 +1,12 @@
+İ5B-FIX-09 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness7.py.txt. The copy's sync_adapters.py equals the final source byte for byte:
+True. Each mutation: the file still parses; the named test fails; the control test passes.
+
+G-H4 the opener class narrowed to complete tags  (.antigravity/scripts/sync_adapters.py)
+    tests: test_the_raw_html_opener_class_is_refused_before_and_in_the_core
+    applied: True · parses: True · named: RED — FAILED (failures=8) · control: OK · proven: True
+G-H5 the short-term exception for any exact span  (.antigravity/scripts/sync_adapters.py)
+    tests: test_a_phrase_that_is_a_span_of_its_own_is_lost_and_short_terms_still_count
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+
+proven: 2 of 2

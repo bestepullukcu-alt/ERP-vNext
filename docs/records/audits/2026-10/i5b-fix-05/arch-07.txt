@@ -1,0 +1,27 @@
+İ5B-FIX-05 — the one architecture run (arch-07) on candidate 3, driver drivers/run_arch_07.sh.txt
+
+fixture: HEAD 0609bc5882380580201e21a89fcbc2302cff884d tree 6ca563a0034e290ec2417ecddef93248d391507c parent ff219eb75b951a64aec9af4b5ffe33dbc4e95ceb
+dotnet: 8.0.416
+lock: locked_run.py (sha256 9fa85857fee462256751518a7a8ebab9d63e69348b834e43a09ea08bd68728e5; flock on ct-heavy.lock)
+started: 2026-10-17T18:15:34Z
+restore exit: 0
+dotnet exit: 1
+Failed!  - Failed:     7, Passed:   137, Skipped:     0, Total:   144, Duration: 11 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+finished: 2026-10-17T18:15:49Z
+dirty after: 0
+
+known_failures.py check <rooted TRX> --suite TenantArchitecture.ArchitectureTests (the candidate's tool and registry):
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+
+raw TRX SHA-256 9113c255d7a86420c419762ecaa7c67d08b0260b1adff63c1994158ff5c5b39f (not in Git: it holds local paths)
+rooted (../ct-fix-01/normalize_root.py.txt on the Control Tower line, N1 = 318, N2 = 0) 8607ef5a49a9427a21771323ce657de08812b272b793e9ef64a379d0deab04b5
+sanitised (../ct-pre-merge-fixes-01/sanitize_trx.py.txt, R1 = 0, R2 = 151, R3 = 1, R4 = 1; leftover home 0, user 0) -> run.sanitized.trx d7168fc09f591d60fa5829a818312f8abdfd01ec614eae37ae690e9fe4576241
+the 7 failures are by name the 7 of arch-06 (candidate 2); the raw TRX gives the same BİLİNEN=7 YENİ=0
+real-data parity at candidate 3 (the 14 command lines of ../../ct-fix-04/parity.txt on the Control Tower line): 14 of 14 identical

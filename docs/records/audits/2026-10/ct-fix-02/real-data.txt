@@ -1,0 +1,22 @@
+data in NEW unchanged from its HEAD (docs, execution, tests): True
+
+1. decision records: 80
+   -R3 reader   approved/decided: old 39  new 38
+   gate reader  approved/decided: old 38  new 38
+   report reader (effort approval) as if each were one: old 39  new 38
+   records whose reading changed in any reader: 1
+     docs/records/decisions/2026-09/mvp6-loads-uptake-ph15-owner-decision-01.md  -R3 True->False  gate False->False  report True->False  status 'approved (PH15-185-UPTAKE) + F-1: fix together with the upta'
+
+2. module packs: 163; approved / ready-for-dev: old 92  new 92; changed: none
+
+3. registry rows 1: dispatch problems old []  new []; origin/main registry: absent; new profile conflicts: []
+   sce-mvp6: strict=no vocabulary=sce-mvp6 in force on origin/main: old kayıt dosyası yok / new kayıt dosyası yok
+
+4. SCE require decisions: 500 ids; dispatchable old 40 new 40; changed: none
+   summary --json identical: True (exit 0); validate output identical: True (exit 0)
+
+5. known_failures validate: exit old 0 new 0; output identical: True; OK registry
+
+5. known_failures check --suite: exit old 0 new 0; output identical: True; ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+
+5. known_failures check: exit old 0 new 0; output identical: True; ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0

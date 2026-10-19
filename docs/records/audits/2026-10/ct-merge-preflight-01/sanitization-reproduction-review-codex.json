@@ -1,0 +1,13 @@
+{
+  "normalization_exit": 0,
+  "sanitizer_exit": 0,
+  "normalized_sha256": "4cf1007e762aeb5782367bfdbbe1b283ecede198da3e5477fb92c69d3ef70380",
+  "sanitized_sha256": "179d2aa21c5caf328211ed50be816b968d8c7d3f4a8c28274e7dffdda70896a8",
+  "matches_claude_final_bytes": true,
+  "known_failures_exit": 0,
+  "known_failures_summary": [
+    "ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0"
+  ],
+  "normalizer_stdout": "in_sha256=daf2b5dad475a157b7a67d41faa3aec978c19f540a5dd26bbdaa81168d26234e\nout_sha256=4cf1007e762aeb5782367bfdbbe1b283ecede198da3e5477fb92c69d3ef70380\nreplacements __TEST_REPO__=168 (root length 110) · __TEST_REPO__=138 (root length 110) · __SCRATCH__=0 (root length 108) · __SCRATCH__=0 (root length 108) · __TEST_REPO__=0 (root length 102) · __TEST_REPO__=0 (root length 102) · __SCRATCH__=0 (root length 100) · __SCRATCH__=0 (root length 100)\n",
+  "sanitizer_stdout": "raw_sha256=4cf1007e762aeb5782367bfdbbe1b283ecede198da3e5477fb92c69d3ef70380\nsanitized_sha256=179d2aa21c5caf328211ed50be816b968d8c7d3f4a8c28274e7dffdda70896a8\nreplacements R1=0 R2=145 R3=1 R4=1\nleftover home=0 user=0 unsanitised computerName=0\n"
+}

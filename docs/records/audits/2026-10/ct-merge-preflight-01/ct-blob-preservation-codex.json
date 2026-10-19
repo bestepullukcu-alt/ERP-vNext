@@ -1,0 +1,9 @@
+{
+  "ct_files": 100,
+  "same_blob": 98,
+  "different_blob_files": [
+    ".antigravity/agents/orchestrator.md",
+    ".antigravity/workflows/add-module.md"
+  ],
+  "method": "git blob ids, frozen CT commit versus computed merged tree"
+}
