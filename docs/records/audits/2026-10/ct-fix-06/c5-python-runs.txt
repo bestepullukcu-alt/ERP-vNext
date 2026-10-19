@@ -1,0 +1,33 @@
+CT-FIX-06 / İ5B-FIX-07 — the Python checks on candidate 5 (89eab8a450c6298dbcdcee1b33ec00761f581b88), on its sparse
+copy; run by the AI session. Two runs, both kept.
+
+First run (sparse set: scripts, .antigravity, execution, docs, .claude, gateway, tests, AGENTS.md, CLAUDE.md, .gitignore, .gitattributes):
+the driver kept only the last lines of each step, so the failing test's name is not in this log:
+  scripts/ct_queue.py: self-test: 138/138 passed
+  scripts/prompt_gate.py: self-test: 103/103 passed
+  scripts/acceptance_record.py: self-test: 149/149 passed
+  scripts/status_report.py: self-test: 80/80 passed
+  scripts/ct_route.py: self-test: 197/197 passed
+  scripts/known_failures.py: self-test: 51/51 passed
+  scripts/run_record.py: self-test: 29/29 passed
+  ----------------------------------------------------------------------
+  Ran 165 tests in 363.685s
+
+  FAILED (failures=1)
+  FAIL 4 adapter problem(s)
+  dirty after: 0
+
+The 4 adapter problems, measured: the generated adapters in .codex/ and .agents/ were outside the sparse set.
+
+Second run (the set widened with .agents/, .codex/, .github/; the full unittest log kept outside the repository):
+  sync_adapters.py --check: OK 9 adapter(s) match their sources
+  Ran 165 tests in 352.021s
+  FAILED (failures=1)
+  FAIL: test_the_repository_passes (test_check_cross_db_enforcement.CrossDbGateTests)
+  the tree clean after the run
+
+The one failure: the Cross-DB gate scans services/, which the sparse copy does not hold; it fails closed
+('grep: services: No such file or directory'). On Codex's full copy of candidate 5 the same test passed (Codex,
+c5-sparse-cross-db-diagnosis-01.json, SHA-256 1e9951fd270a498f0326360faaaa21674fa55f5c76c82c83ba7715497d17203a).
+That the first run's failure was the same test is an inference from its position, not from its log.
+Not claimed: 165 / 165 in one run.

@@ -1,0 +1,18 @@
+Clean venv dependency verification by Codex
+Source HEAD: 2481004b15d25f60f239643657102e9b5a8377fc
+requirements-tools.txt sha256: 9078b8f313898031d4de19106ee492a2631649cbd77b0af5057ec5aee641e841
+verify_module_id.py sha256: 8a5e7c7d338c5d2b3599df662718c212f8389371dab4f64e4189279ecc9d8486
+Install source: https://pypi.org/simple
+Install: python -m pip --isolated --disable-pip-version-check install --no-cache-dir --no-input -r scripts/requirements-tools.txt
+Initial sandbox attempt: DNS/network unavailable; install exit 1.
+Network-enabled retry in the same clean venv: exit 0; installed openpyxl 3.1.5 and et-xmlfile 2.0.0.
+Installed versions:
+et_xmlfile==2.0.0
+openpyxl==3.1.5
+
+Discovery exit: 3
+sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı
+çıkış: 3
+rapor-sha256: 47a007f8fe08dd14461a656e3089751066b43164560327a5c31d1ae3dab56770
+Report verification exit: 0
+RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı

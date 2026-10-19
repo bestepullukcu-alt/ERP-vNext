@@ -1,0 +1,12 @@
+İ5B-FIX-06 red first — this package's scripts/tests/test_sync_adapters_budget.py run against the unchanged
+base code a7cb60992fbf355e6bcf947a3abe4f778bcefbc1 (İ5B-FIX-05: AGENTS.md, the generated core, adapters.json, sync_adapters.py) (exported with git archive outside the repository; this package's test file copied in).
+The error is the new test that reads sync_adapters.CORE_RULE_LINE, which the base code does not have. Every method not
+listed passed, among them test_the_generated_core_carries_the_rule (the base already carries the İ5B-FIX-05 sentence).
+
+ran: 30 tests · failed subtests: 13 in 5 test methods
+
+     2  InstructionBudget.test_a_code_span_across_lines_in_the_core_is_refused
+     4  InstructionBudget.test_a_core_rule_off_its_numbered_line_is_lost
+     1  InstructionBudget.test_every_required_core_text_is_on_a_numbered_rule_line_today (error)
+     5  InstructionBudget.test_raw_html_in_the_core_is_refused
+     1  InstructionBudget.test_the_module_request_rule_is_a_required_core_text_once

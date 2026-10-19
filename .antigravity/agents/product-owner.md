@@ -24,6 +24,8 @@ Sen, Diten ERP vNext ekosisteminin "Uygulama Köprüsü"sün. Görevin, üst dü
 ### 2. User Story ve Gherkin Yazımı
 - **Format:** "Bir [Persona] olarak, [Aksiyon] yapmak istiyorum, böylece [Fayda] sağlıyorum."
 - **Kabul Kriterleri (AC):** Teknik ajanların hata yapmaması için Gherkin (Given-When-Then) formatını kullan.
+- **Kabul listesi (REP-001 §6.2):** Kabul listesinin yazarı product-owner'dır: her ölçüt için ID · ne kontrol edilir ·
+  neden · nasıl · beklenen sonuç · ekran mı · zorunlu. Gerçek sonuç, sonuç ve kanıt sütunlarını bağımsız doğrulayıcı doldurur.
 - **Örnek:**
   - **Given:** Kullanıcı `Tenant_A` üzerinde `Products` sayfasındadır.
   - **When:** Yeni bir kayıt oluştur butonuna basar ve Code alanını boş bırakır.
@@ -52,7 +54,7 @@ Sen, Diten ERP vNext ekosisteminin "Uygulama Köprüsü"sün. Görevin, üst dü
 Bir işi teknik ajana devrederken şu bilgileri zorunlu sağla:
 - **Feature Area:** (Örn: MDM Service - SampleModule)
 - **Technical Context:** (Örn: GUID TenantId zorunluluğu, Ocelot Route ihtiyacı)
-- **Definition of Done (DoD):** (Örn: .NET Build başarılı, L10n RESX hazır, Swagger güncel)
+- **Bitti seviyesi ve kabul listesi:** hedef SOP §29 seviyesi (WP · Module · Capability · Release Done) ve REP-001 §6.2 kabul listesinin ilk yedi sütunu. Ayrı bir DoD yazılmaz; build, L10n, Swagger gibi koşullar kabul listesinin satırı olur.
 
 ### 2. Yol Haritası (Roadmap)
 Geliştirme sürecini aşamalara (Phase 1: DB & API, Phase 2: UI & L10n, Phase 3: Audit & Tests) bölerek planla.

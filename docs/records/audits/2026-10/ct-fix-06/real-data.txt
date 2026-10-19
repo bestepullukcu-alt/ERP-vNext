@@ -1,0 +1,20 @@
+CT-FIX-06 real data — `verify_module_id.py . --discover "Employee"` on the repository at c203303ce, once with the
+committed tool (CT-FIX-05) and once with this package's tool; run by the AI session.
+
+exit 3 -> 3; lines 608 -> 618; every line other than ÖZET, araç and rapor-sha256 identical: True
+BULGU lines 15 -> 15 (the gate's decision count is unchanged)
+ÖZET block: 10 lines, 2874 bytes, right under the header; the MOD-0251
+PSS collision is inside the first 4 KB
+--check-report: the new report 0, the committed tool's report 0 (a saved report keeps its own tool identity)
+
+The ÖZET block of the new report (each line cut at 200 characters here):
+  ÖZET bulgular: blueprint 5 · sor 3 · registry 0 · paket 7 · gateway 0 · görev 0 · BİLGİ 1 (eski takma ad; çakışma sayılmaz)
+  ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0251 dosya kimliği 2 paket yolunda: execution/domains/human-capital-management/module-packs/MOD-0251-core-hr-emplo
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/MOD-0251-core-hr-employee-master.md — status approved · approval_status conditionally-approved-for-draft-reference-validatio
+  ÖZET paket künyesi: execution/domains/platform-shared-services/module-packs/MOD-0251-hris-external-sor.md — status ready-for-dev · approval_status - · owner enterprise-architect / platform-team (blob
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0007-employee-profile-employment-record-projection.md — status done · approval_status - · owner enterprise-architec
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0025-employee-onboarding.md — status done · approval_status - · owner enterprise-architect / hcm-domain-owner / pla
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0038-employee-manager-self-service-channel.md — status draft · approval_status - · owner enterprise-architect / hcm
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0039-employee-relations-hr-case-management.md — status draft · approval_status - · owner enterprise-architect / hcm
+  ÖZET paket künyesi: execution/domains/platform-shared-services/module-packs/MOD-0298-tenant-module-entitlements.md — status approved · approval_status - · owner platform-team (blob 59cb0bd55: refs/hea
+  ÖZET sınır: tam rapor 618 satır; bu özet bilgidir, onay ya da karar değildir; rapor bir arayüzde kesilirse kesilen kısım okunmamıştır ve inceleme kısmidir

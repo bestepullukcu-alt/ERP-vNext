@@ -31,6 +31,7 @@
 // in the protocol text instead, evidence deferred to the real 7-state run).
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -1245,9 +1246,73 @@ internal sealed class PlatformLoginSettingsStub : IDisposable
 /// the Stage 2 report: offset 0 for start time, offset 560 for parent PID, neither a textbook struct offset).</summary>
 internal static class ProcessTiming
 {
-    public static long GetStartTimeUnixMs(int pid) => ReadKinfoInt64(pid, offset: 0) is { } sec
-        ? sec * 1000 + (ReadKinfoInt64(pid, offset: 8) ?? 0) / 1000
-        : throw new InvalidOperationException($"pid {pid} not found.");
+    public static long GetStartTimeUnixMs(int pid)
+    {
+        if (OperatingSystem.IsLinux())
+        {
+            return GetLinuxStartTimeUnixMs(pid);
+        }
+
+        return ReadKinfoInt64(pid, offset: 0) is { } sec
+            ? sec * 1000 + (ReadKinfoInt64(pid, offset: 8) ?? 0) / 1000
+            : throw new InvalidOperationException($"pid {pid} not found.");
+    }
+
+    // WP-CI-SERVICE-TESTS-05 (BL-646 item C) — Linux branch: sysctl(KERN_PROC) does not exist in glibc, so the
+    // start time comes from /proc/<pid>/stat field 22 (clock ticks since boot) plus /proc/stat "btime" (boot time,
+    // Unix seconds). The resolution is one clock tick, not 1 µs; every caller compares a value with another value
+    // read the same way, so equality and "+1" stay meaningful. Peer verification itself stays macOS-only (G6(b)).
+    private static long GetLinuxStartTimeUnixMs(int pid)
+    {
+        string stat;
+        try
+        {
+            stat = File.ReadAllText($"/proc/{pid}/stat");
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            throw new InvalidOperationException($"pid {pid} not found.");
+        }
+
+        var bootLine = File.ReadLines("/proc/stat").FirstOrDefault(l => l.StartsWith("btime ", StringComparison.Ordinal))
+            ?? throw new InvalidOperationException("/proc/stat has no btime line.");
+        var bootTimeSec = long.Parse(bootLine["btime ".Length..].Trim(), CultureInfo.InvariantCulture);
+        var clockTicks = sysconf(SC_CLK_TCK);
+        return ParseLinuxStartTimeUnixMs(stat, bootTimeSec, clockTicks);
+
+        [DllImport("libc", SetLastError = true)]
+        static extern long sysconf(int name);
+    }
+
+    // glibc <bits/confname.h>: _SC_CLK_TCK is 2.
+    private const int SC_CLK_TCK = 2;
+
+    /// <summary>Pure parser for one /proc/&lt;pid&gt;/stat line. Field 2 (comm) is in parentheses and may itself
+    /// contain spaces or ')', so the fields are counted from the LAST ')': field 3 is the first after it, field 22
+    /// (starttime) is the 20th.</summary>
+    internal static long ParseLinuxStartTimeUnixMs(string stat, long bootTimeSec, long clockTicks)
+    {
+        if (clockTicks <= 0)
+        {
+            throw new InvalidOperationException($"invalid clock tick rate {clockTicks}.");
+        }
+
+        var close = stat.LastIndexOf(')');
+        if (close < 0)
+        {
+            throw new FormatException("/proc/<pid>/stat has no comm field.");
+        }
+
+        var fields = stat[(close + 1)..].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        const int StartTimeIndexAfterComm = 22 - 3;
+        if (fields.Length <= StartTimeIndexAfterComm)
+        {
+            throw new FormatException("/proc/<pid>/stat has too few fields.");
+        }
+
+        var startTicks = long.Parse(fields[StartTimeIndexAfterComm], CultureInfo.InvariantCulture);
+        return bootTimeSec * 1000 + startTicks * 1000 / clockTicks;
+    }
 
     public static int GetParentPid(int pid) => (int)(ReadKinfoInt64(pid, offset: 560, readAsInt32: true)
         ?? throw new InvalidOperationException($"pid {pid} not found."));

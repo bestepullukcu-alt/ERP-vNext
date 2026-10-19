@@ -1,0 +1,88 @@
+"""CT-FIX-10: the generated evidence texts from the raw outputs (no local paths).
+Usage: make_evidence12.py <scratch ctfix10> <CT-FIX-10 evidence dir>"""
+import hashlib, json, os, re, shutil, sys
+S, E = sys.argv[1:3]
+os.makedirs(os.path.join(E, "drivers"), exist_ok=True)
+
+
+def sha(p):
+    return hashlib.sha256(open(os.path.join(S, p), "rb").read()).hexdigest()
+
+
+def write(name, lines):
+    open(os.path.join(E, name), "w", encoding="utf-8").write("\n".join(l.rstrip() for l in lines) + "\n")
+
+
+def rows_of(text):
+    started = re.findall(r"(?:^|(?<=\.\.\. ))(test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\) \.\.\.", text, re.M)   # subtest lines run together
+    fails = re.findall(r"^(FAIL|ERROR): (test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\)(?: (\(.*\)))?$", text, re.M)
+    bad = {}
+    for res, name, mod, cls, _ in fails:
+        bad.setdefault(f"{mod}.{cls}.{name}", res)
+    return ([(bad.get(f"{mod}.{cls}.{name}", "ok"), f"{mod}.{cls}.{name}") for name, mod, cls in started],
+            [(res, name, sub) for res, name, mod, cls, sub in fails if sub])
+
+
+freeze = dict(reversed(l.split()) for l in open(os.path.join(S, "ct10-freeze-01.txt"), encoding="utf-8") if l.strip())
+text = open(os.path.join(S, "red-ct10-final.txt"), encoding="utf-8").read()
+rows, subs = rows_of(text)
+out = ["CT-FIX-10 red first — this package's final test file against the committed sources of 56166f107 (CT-FIX-09) in a",
+       "copy outside the repository; run by the AI session.", "",
+       re.search(r"^Ran .*$", text, re.M).group(0) + " · " + re.search(r"^(OK|FAILED).*$", text, re.M).group(0), ""]
+out += [f"  {res:5s} {tid}" for res, tid in rows]
+out += ["", "failed subtests:"] + [f"  {res:5s} {name} {sub}" for res, name, sub in subs]
+out += ["", "On the base sources, under a broken registry: a sound product pack gets a false 'paket … bu işin modülüne (yok) ait",
+        "değil' and no 'ölçülemedi' (1); a pack whose künye id and file name disagree is already refused by its own identity",
+        "check there, and only the 'ölçülemedi' line is missing (1). writers crashes with a traceback (exit 1) when a local ref,",
+        "the base or only the merge base holds a queue that is not UTF-8 (3). The controls in the same tests pass there: an intact queue with a sound",
+        "pack (0), a WP not in the queue (still refused as a module mismatch), another module's pack (still refused), and",
+        "writers on the normal fixture (0). Controls.* pass.", "",
+        "Earlier, not replaced: the tests first ran red before the code was written (4 failures). Two test mistakes found",
+        "afterwards were corrected in the test, not in the code: the künye / file-name case expected no 'ölçülemedi' line (the",
+        "gate rightly writes both), and the merge-base case kept an earlier subtest's branch (each subtest now drops its own)."]
+write("red-first.txt", out)
+
+res = json.load(open(os.path.join(S, "guard/ct-guard-01.json"), encoding="utf-8"))
+same = all(hashlib.sha256(open(os.path.join(S, "guard/ct-src", p), "rb").read()).hexdigest() == h for p, h in freeze.items())
+out = ["CT-FIX-10 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+       "Driver: drivers/harness11.py.txt (harness10 with its CT list replaced). The copy's three files equal the final",
+       f"sources byte for byte: {same}. Each mutation: the file still parses; the named test fails; the control test",
+       "(Controls.test_consumers_on_the_intact_fixture_exit_0) passes.", ""]
+for r in res:
+    out += [r["mutation"] + f"  ({r['file']})", f"    tests: {', '.join(t.split('.')[-1] for t in r['tests'])}",
+            f"    applied: {r['applied']} · parses: {r['parsed']} · named: {'RED' if r['red'] else 'green'} — {r['summary']}"
+            f" · control: {r['control_summary']} · proven: {r['proven']}"]
+out += ["", f"proven: {sum(r['proven'] for r in res)} of {len(res)}"]
+write("guard-removal.txt", out)
+
+log = open(os.path.join(S, "ct10-run.log"), encoding="utf-8").read()
+same_id = open(os.path.join(S, "ct10-pre.txt"), "rb").read() == open(os.path.join(S, "ct10-post.txt"), "rb").read()
+out = ["CT-FIX-10 — the narrow component run agreed for this package, on the CT branch's three frozen files in the CT",
+       "worktree (branch chore/ct/ct-fix-10 on 56166f107 with this package's uncommitted changes). Not a full scripts/tests",
+       "run, not a run on a combined candidate.", "",
+       "commands (from the worktree root):",
+       "  python3 -B scripts/ct_queue.py --self-test",
+       "  python3 -B scripts/prompt_gate.py --self-test",
+       "  python3 -B -m unittest -v scripts.tests.test_ct_cli_regression.CTFIX10_UnknownRowAndWriters"
+       " scripts.tests.test_ct_cli_regression.CTFIX09_GateDiagnosisAndOneLine"
+       " scripts.tests.test_ct_cli_regression.CTFIX08_VisibleTextAndPaths"
+       " scripts.tests.test_ct_cli_regression.CTFIX04_I3_PackIdentity"
+       " scripts.tests.test_ct_cli_regression.Controls", "sources (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in freeze.items()]
+out += ["result (from the full log):"] + ["  " + l for l in log.splitlines()
+                                          if l.startswith(("### exit", "Ran ", "OK", "FAILED", "start ", "end ", "Python")) or "self-test:" in l]
+out += [f"before = after (HEAD, branch, status, the three SHA-256): {same_id}",
+        f"full log SHA-256 {sha('ct10-run.log')} (kept outside the repository)"]
+write("checks.txt", out)
+
+w = open(os.path.join(S, "realdata-writers.txt"), encoding="utf-8").read().splitlines()
+out = ["CT-FIX-10 real data — run by the AI session in the CT worktree, on the real repository's refs.", "",
+       "`python3 -B scripts/ct_queue.py writers --queue sce-mvp6` with this package's tool: exit 1",
+       f"  {sum(l.startswith('YAZAN') for l in w)} YAZAN lines, {sum(l.startswith('ÇAKIŞMA') for l in w)} ÇAKIŞMA groups; no DUR line, no traceback",
+       "  exit 1 is the existing meaning of writers: collisions found (the real queue's rows written on two branches).",
+       "  Not compared byte for byte with CT-FIX-09's tool: the tool reads its root from its own location, so a second copy",
+       "  outside the worktree would not read these refs. For valid UTF-8 the new decode() returns the same text as before."]
+write("real-data.txt", out)
+shutil.copyfile(os.path.join(S, "guard/harness11.py"), os.path.join(E, "drivers", "harness11.py.txt"))
+shutil.copyfile(os.path.join(S, "make_evidence12.py"), os.path.join(E, "drivers", "make_evidence12.py.txt"))
+print("written", same, same_id)

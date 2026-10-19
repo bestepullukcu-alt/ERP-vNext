@@ -1,0 +1,63 @@
+CT-FIX-05 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+The copy's scripts are byte for byte the candidate's (candidate 4, 3d4f0f405). G-F3f left the hung runner of its test
+(blocked on the FIFO in the test's temporary repository) behind; it was ended by its PID after its start time and
+command line were checked. The control is Controls.test_consumers_on_the_intact_fixture_exit_0.
+Driver: drivers/harness2.py.txt. Each mutation: the file still parses; the named tests fail (a hang
+past 240 s counts as a failure); the control test passes in the same copy (the red is the guard, not a crash).
+
+G-F1a main registry not validated as a whole
+    file: scripts/ct_queue.py · tests: CTFIX05_F1_MainRegistryWhole.test_every_consumer_stops
+    named: RED — FAILED (failures=9) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F1b registry paths not required to be normal
+    file: scripts/ct_queue.py · tests: CTFIX05_F1_MainRegistryWhole.test_the_same_task_file_under_a_non_normal_path
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F2a reassessment not bound to the retry
+    file: scripts/ct_queue.py · tests: CTFIX05_F2_Reassessment.test_not_bound_to_the_retry
+    named: RED — FAILED (failures=6) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F2b reassessment version not checked
+    file: scripts/ct_queue.py · tests: CTFIX05_F2_Reassessment.test_a_broken_version_stops
+    named: RED — FAILED (failures=4) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F2c summary counts without require's checks
+    file: scripts/ct_queue.py · tests: CTFIX05_F2_Reassessment.test_summary_counts_what_require_accepts
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F4 a Timeout row is a known failure again
+    file: scripts/known_failures.py · tests: CTFIX05_F4_Timeout.test_outcomes
+    named: RED — FAILED (failures=3) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F6 an unverifiable --previous leaves the report complete
+    file: scripts/status_report_v2.py · tests: CTFIX05_F6_Previous.test_previous
+    named: RED — FAILED (failures=3) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F3a run record for another code commit accepted
+    file: scripts/run_record.py · tests: CTFIX05_F3_RunRecord.test_old_evidence_does_not_accept_changed_code
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F3b a non-zero raw exit accepted
+    file: scripts/acceptance_record.py · tests: CTFIX05_F3_RunRecord.test_normal_and_the_raw_exit_code
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F3c the evidence commit may change code
+    file: scripts/acceptance_record.py · tests: CTFIX05_F3_RunRecord.test_the_evidence_commit_is_not_code_and_rows_cite_artifacts
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F3d rows may cite files the run did not produce
+    file: scripts/acceptance_record.py · tests: CTFIX05_F3_RunRecord.test_the_evidence_commit_is_not_code_and_rows_cite_artifacts
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F3e the runner records on a dirty tree
+    file: scripts/run_record.py · tests: CTFIX05_F3_RunRecord.test_the_runner_refuses
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-F3f the runner hashes a non-regular file
+    file: scripts/run_record.py · tests: CTFIX05_F3_RunRecord.test_the_runner_refuses
+    named: RED — the test did not finish in 240 s (a hang is a failure) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-C1a governance paths not bounded
+    file: scripts/prompt_gate.py · tests: CTFIX05_C1_GovernanceScope.test_scope
+    named: RED — FAILED (failures=6) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-C1b ancestor components not checked for links
+    file: scripts/prompt_gate.py · tests: CTFIX05_C1_GovernanceScope.test_a_symbolic_link_on_the_way
+    named: RED — FAILED (failures=2) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-C2a only the base of the file's id compared
+    file: scripts/ct_queue.py · tests: CTFIX05_C2_E1_PackIdentityAndApproval.test_a_lettered_child_pack
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-C2b the acceptance reader wants the id to be the module
+    file: scripts/acceptance_record.py · tests: CTFIX05_C2_E1_PackIdentityAndApproval.test_a_lettered_child_pack
+    named: RED — FAILED (failures=1) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+G-E1 the acceptance reader ignores approval_status
+    file: scripts/acceptance_record.py · tests: CTFIX05_C2_E1_PackIdentityAndApproval.test_a_conditional_or_rejected_pack_in_acceptance
+    named: RED — FAILED (failures=2) · control Controls.test_consumers_on_the_intact_fixture_exit_0: OK · parsed: True · proven: True
+
+proven: 18 of 18

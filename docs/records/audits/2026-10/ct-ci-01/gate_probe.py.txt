@@ -1,0 +1,125 @@
+"""CT-CI-01: the real scripts/run_phase1_gates.sh in a new depth-1 scratch clone, a package-free Python first on PATH and
+a `dotnet` spy that records each call. Usage: gate_probe.py <new clone dir> <ai worktree> <bare python bin dir> <out>
+Writes only into the clone and <out>; the worktree is read."""
+from __future__ import annotations
+
+import os
+import re
+import stat
+import subprocess
+import sys
+from pathlib import Path
+
+C, W, BARE, OUT = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4])
+GATE, CARD = "scripts/run_phase1_gates.sh", "docs/guides/operations/control-tower-operating-card.md"
+TOOLS = {"ct_queue": "scripts/ct_queue.py", "acceptance_record": "scripts/acceptance_record.py", "prompt_gate": "scripts/prompt_gate.py",
+         "status_report (its self-test is status_report_v2's)": "scripts/status_report_v2.py",
+         "list_screen_touch_hook": ".antigravity/scripts/list_screen_touch_hook.py", "known_failures": "scripts/known_failures.py",
+         "ct_route": "scripts/ct_route.py"}
+ENV0 = dict(os.environ, GIT_AUTHOR_NAME="probe", GIT_AUTHOR_EMAIL="probe@example.invalid", GIT_COMMITTER_NAME="probe",
+            GIT_COMMITTER_EMAIL="probe@example.invalid", GIT_OPTIONAL_LOCKS="0")
+for k in ("GITHUB_BASE_REF", "AUDIT_LEDGER_BASE", "PAGE_HELP_LEDGER_BASE", "PYTHONDONTWRITEBYTECODE"):
+    ENV0.pop(k, None)
+log, failures = [], []
+
+
+def git(*a):
+    return subprocess.run(["git", "-C", str(C), *a], capture_output=True, text=True, env=ENV0, check=True).stdout.strip()
+
+
+def expect(label, ok, detail=""):
+    log.append(f"   {'PASS' if ok else 'FAIL'} {label}" + (f" — {detail}" if detail else ""))
+    if not ok:
+        failures.append(label)
+
+
+# Optional: PROBE_URL + PROBE_BRANCH clone a tree that already holds the files under test (the merged tree's fixture
+# base); PROBE_OLD_GATE names the gate to compare with (the merged tree without the block). Default: the branch + worktree.
+common = subprocess.run(["git", "-C", str(W), "rev-parse", "--path-format=absolute", "--git-common-dir"], capture_output=True, text=True,
+                        env=ENV0, check=True).stdout.strip()
+subprocess.run(["git", "clone", "-q", "--depth", "1", "--branch", os.environ.get("PROBE_BRANCH", "chore/ct/pqg-01"),
+                os.environ.get("PROBE_URL", "file://" + common), str(C)], check=True, env=ENV0)
+head = git("rev-parse", "HEAD")
+if os.environ.get("PROBE_OLD_GATE"):
+    old_gate = Path(os.environ["PROBE_OLD_GATE"]).read_text(encoding="utf-8")
+    log.append(f"clone: depth 1 at {head} ({os.environ.get('PROBE_BRANCH')}); the old gate from the given file")
+else:
+    old_gate = (C / GATE).read_text(encoding="utf-8")
+    for f in (GATE, CARD):
+        (C / f).write_text((W / f).read_text(encoding="utf-8"), encoding="utf-8")
+    git("add", "--", GATE, CARD)
+    git("commit", "-q", "-m", "probe: the gate and card under test (scratch only)")
+    log.append(f"clone: depth 1 at {head}; the two files under test committed on top in the scratch clone only")
+new_gate = (C / GATE).read_text(encoding="utf-8")
+log.append(f"gate under test sha256 {__import__('hashlib').sha256(new_gate.encode()).hexdigest()} · mode {oct((C / GATE).stat().st_mode & 0o777)}")
+
+spy = C.parent / (C.name + "-spy")
+spy.mkdir()
+(spy / "dotnet").write_text('#!/bin/bash\necho "SPY dotnet $*"\necho "$*" >> "$SPY_LOG"\nexit "${SPY_RC:-0}"\n', encoding="utf-8")
+(spy / "dotnet").chmod(0o755)
+ENV = dict(ENV0, PATH=f"{spy}:{BARE}:{ENV0['PATH']}")
+pv = subprocess.run(["python3", "-c", "import sys, importlib.util as u; print(sys.executable, u.find_spec('openpyxl') is not None)"],
+                    capture_output=True, text=True, env=ENV).stdout.strip()
+log.append(f"python3 on PATH: {pv.split()[0].replace(str(Path.home()), '__HOME__')} · openpyxl visible: {pv.split()[1]}")
+
+
+def gate(label, *args, rc_spy=0):
+    spy_log = C.parent / (C.name + f"-spy-{len(log)}.log")
+    done = subprocess.run(["bash", GATE, *args], cwd=C, capture_output=True, text=True, env=dict(ENV, SPY_LOG=str(spy_log), SPY_RC=str(rc_spy)))
+    calls = spy_log.read_text().splitlines() if spy_log.exists() else []
+    out = done.stdout + done.stderr
+    log.append(f"## {label} — exit {done.returncode}, dotnet calls {len(calls)}")
+    log.extend("   | " + l[:160] for l in out.splitlines() if l.startswith(("[phase1]", "self-test:", "SPY dotnet")) and "SPY" not in l[:0])
+    return done.returncode, out, calls
+
+
+# R0 the old gate (HEAD's) and R1 the new one, dotnet spy exits 0
+(C / GATE).write_text(old_gate, encoding="utf-8")
+r0, o0, c0 = gate("R0 old gate (HEAD), dotnet spy exits 0")
+git("checkout", "-q", "--", GATE)
+r1, o1, c1 = gate("R1 new gate, dotnet spy exits 0")
+expect("R0 old gate completes", r0 == 0 and "[phase1] gates passed" in o0)
+expect("R1 new gate completes", r1 == 0 and "[phase1] gates passed" in o1)
+block = re.findall(r"self-test: (\d+)/(\d+) passed", o1)
+expect("R1 the seven self-tests run and pass", len(block) == 7 and all(a == b for a, b in block), str(block))
+expect("R1 the block runs before the first dotnet call", o1.index("[phase1] CT tool self-tests") < o1.index("SPY dotnet")
+       and o1.rindex("self-test:") < o1.index("SPY dotnet"))
+expect("R1 the dotnet calls are exactly the old gate's (same commands, same order)", c0 == c1 and len(c1) > 0, f"{len(c1)} calls")
+expect("R0 the old gate runs no self-test", "self-test:" not in o0)
+# R2 fail-fast kept: the first dotnet call fails
+r2, o2, c2 = gate("R2 new gate, dotnet spy exits 1", rc_spy=1)
+expect("R2 a failing build still stops the gate at once", r2 != 0 and len(c2) == 1 and "[phase1] gates passed" not in o2)
+# R3 each self-test broken in turn
+for name, path in TOOLS.items():
+    src = (C / path).read_text(encoding="utf-8")
+    anchor = '/{len(cases)} passed")\n    return 1 if failed else 0\n'
+    assert src.count(anchor) == 1, (path, src.count(anchor))
+    (C / path).write_text(src.replace(anchor, '/{len(cases)} passed")\n    return 1\n'), encoding="utf-8")
+    r3, o3, c3 = gate(f"R3 {name}'s self-test exits 1")
+    git("checkout", "-q", "--", path)
+    expect(f"R3 {name}: the gate stops non-zero before any build", r3 != 0 and not c3 and "[phase1] build gateway" not in o3, f"exit {r3}")
+# R4 the audit-ledger-only path is unchanged
+(C / GATE).write_text(old_gate, encoding="utf-8")
+r4o, o4o, _ = gate("R4 old gate --audit-ledger-only", "--audit-ledger-only")
+git("checkout", "-q", "--", GATE)
+r4n, o4n, _ = gate("R4 new gate --audit-ledger-only", "--audit-ledger-only")
+expect("R4 --audit-ledger-only: same exit and output as the old gate", r4o == r4n and o4o == o4n, f"exit {r4n}")
+expect("R4 --audit-ledger-only runs no self-test", "self-test:" not in o4n)
+# R5 the hardening the guard test pins, measured on the new gate; the change is insertion only
+expect("R5 '||' count is still 2", len(re.findall(r"\|\|", new_gate)) == 2)
+expect("R5 no exit 0, trap, set +, --filter", not re.search(r"(?i)\bexit\s+0\b|\btrap\b|\bset\s+\+|--filter\b", new_gate))
+for p in ("tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj",
+          "tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj",
+          "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj"):
+    expect(f"R5 exactly one 'dotnet test {p.split('/')[-1]} -c Debug' line", len(re.findall(rf"(?m)^dotnet test {re.escape(p)} -c Debug$", new_gate)) == 1)
+old_lines, new_lines = old_gate.split("\n"), new_gate.split("\n")
+i = next(n for n, (a, b) in enumerate(zip(old_lines, new_lines)) if a != b)
+added = len(new_lines) - len(old_lines)
+expect("R5 the change is insertion only (every old line kept, in order)", new_lines[:i] == old_lines[:i] and new_lines[i + added:] == old_lines[i:],
+       f"{added} lines inserted at line {i + 1}")
+expect("R5 first line and set -euo pipefail unchanged", new_lines[0] == "#!/usr/bin/env bash" and "set -euo pipefail" in new_lines[1:3])
+expect("R5 the clone is clean after the probe", git("status", "--porcelain") == "")
+text = "\n".join(log) + f"\n\nresult: {len(failures)} failed" + (f" — {failures}" if failures else "") + "\n"
+OUT.write_text(text, encoding="utf-8")
+print(text[-2500:])
+sys.exit(1 if failures else 0)

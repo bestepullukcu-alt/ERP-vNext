@@ -1,0 +1,25 @@
+CT-FIX-05 red first — the R0 set of this package (scripts/tests/test_ct_cli_regression.py) run against the unchanged
+base code f23455d278ee65b4e25ddb892bad3567c3ce7e4c (CT-FIX-04) (exported with git archive outside the repository; this package's test file copied in).
+scripts/run_record.py is new in this package; it was copied in as well, so that the fixture can build its run record and
+the consumers are measured as they were. Every method not listed passed: all the earlier classes, and of the new ones
+the three positive controls (CTFIX05_F1 a valid main registry with another queue, CTFIX05_F2 normal and the row's
+version at a commit holding the same record) and CTFIX05_F3.test_the_runner_refuses, which measures the new runner
+itself (no base to be red against; its guards are in guard-removal.txt).
+
+ran: 74 tests · failed subtests: 56 in 15 test methods
+
+     4  CTFIX05_C1_GovernanceScope.test_a_symbolic_link_on_the_way
+     6  CTFIX05_C1_GovernanceScope.test_scope
+     2  CTFIX05_C2_E1_PackIdentityAndApproval.test_a_conditional_or_rejected_pack_in_acceptance
+     1  CTFIX05_C2_E1_PackIdentityAndApproval.test_a_lettered_child_pack
+    18  CTFIX05_F1_MainRegistryWhole.test_every_consumer_stops
+     1  CTFIX05_F1_MainRegistryWhole.test_the_branch_registry_refuses_a_non_normal_path
+     4  CTFIX05_F1_MainRegistryWhole.test_the_same_task_file_under_a_non_normal_path
+     4  CTFIX05_F2_Reassessment.test_a_broken_version_stops
+     6  CTFIX05_F2_Reassessment.test_not_bound_to_the_retry
+     1  CTFIX05_F2_Reassessment.test_summary_counts_what_require_accepts
+     1  CTFIX05_F3_RunRecord.test_normal_and_the_raw_exit_code
+     1  CTFIX05_F3_RunRecord.test_old_evidence_does_not_accept_changed_code
+     1  CTFIX05_F3_RunRecord.test_the_evidence_commit_is_not_code_and_rows_cite_artifacts
+     3  CTFIX05_F4_Timeout.test_outcomes
+     3  CTFIX05_F6_Previous.test_previous

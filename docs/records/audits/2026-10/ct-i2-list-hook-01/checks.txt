@@ -1,0 +1,109 @@
+=== Context
+HEAD=f324e8711fa8649b6037b209ad41da6ac2e2375d + uncommitted İ2 files (pinned: pin-before.txt)
+Pinned before the architecture run (sha256  path):
+cbd8ef64e9d50fe233036b51b745698025602f2723e8a91b5a9bf53b18122e7d  .antigravity/scripts/list_screen_touch_hook.py
+3c9eb561e40d7ffac74800d4dfcc034672af36932157632a5bf3c768d5c90530  docs/records/decisions/2026-10/ct-i2-list-hook-joint-decision-01.md
+Diff of the tracked files against HEAD, sha256: 0c46fefcdc7a44f078149346012375b7b72044a67455a06b4f4452f610c13418
+After the run (sha256  path):
+cbd8ef64e9d50fe233036b51b745698025602f2723e8a91b5a9bf53b18122e7d  .antigravity/scripts/list_screen_touch_hook.py
+3c9eb561e40d7ffac74800d4dfcc034672af36932157632a5bf3c768d5c90530  docs/records/decisions/2026-10/ct-i2-list-hook-joint-decision-01.md
+
+=== list_screen_touch_hook.py --self-test (final)
+PASS a file that is not a list file -> no context
+PASS exit 0, empty output -> no deviation
+PASS exit 0, only the verifier's own info lines -> no deviation
+PASS exit 1, numbered gaps -> the deviation list
+PASS exit 1, info lines and a numbered gap -> the deviation list
+PASS 13 gaps -> 12 shown and '… ve 1 sapma daha'
+PASS sabotage: exit 1, empty output -> DOĞRULANAMADI, not 'no deviation'
+PASS sabotage: exit 2, empty output -> DOĞRULANAMADI
+PASS sabotage: the verifier times out -> DOĞRULANAMADI with the timeout, never silent
+PASS sabotage: the full report instead of the gaps format (early return) -> DOĞRULANAMADI
+PASS sabotage: exit 0 with a numbered gap (contradiction) -> DOĞRULANAMADI
+PASS sabotage: output on stderr (Traceback) -> DOĞRULANAMADI, the raw stderr not printed
+PASS sabotage: an unknown [shell] line (not the producer's format) -> DOĞRULANAMADI
+PASS sabotage: gap numbers not 1..n -> DOĞRULANAMADI
+PASS sabotage: an exit code outside the contract with gaps -> DOĞRULANAMADI
+PASS sabotage: no verifier -> DOĞRULANAMADI 'doğrulayıcı bulunamadı'
+PASS sabotage (Codex): exit 0 with the shell WARNING and no gap (the producer pairs it with red checks) -> DOĞRULANAMADI
+PASS exit 1 with the shell WARNING and its numbered gap -> the deviation list
+PASS sabotage (Codex): an error after the match (root lookup raises) -> DOĞRULANAMADI, the exception text not printed
+PASS the manual command survives a root with a space (shlex.join): it splits back to the same root
+PASS every path: main() returns 0 and the temporary repository is unchanged (the hook writes nothing)
+self-test: 21/21 passed
+
+=== Tests first — HEAD's main() with the final self-test (scaffolding names only) — red
+PASS a file that is not a list file -> no context
+PASS exit 0, empty output -> no deviation
+PASS exit 0, only the verifier's own info lines -> no deviation
+PASS exit 1, numbered gaps -> the deviation list
+PASS exit 1, info lines and a numbered gap -> the deviation list
+PASS 13 gaps -> 12 shown and '… ve 1 sapma daha'
+FAIL sabotage: exit 1, empty output -> DOĞRULANAMADI, not 'no deviation'
+FAIL sabotage: exit 2, empty output -> DOĞRULANAMADI
+FAIL sabotage: the verifier times out -> DOĞRULANAMADI with the timeout, never silent
+FAIL sabotage: the full report instead of the gaps format (early return) -> DOĞRULANAMADI
+FAIL sabotage: exit 0 with a numbered gap (contradiction) -> DOĞRULANAMADI
+FAIL sabotage: output on stderr (Traceback) -> DOĞRULANAMADI, the raw stderr not printed
+FAIL sabotage: an unknown [shell] line (not the producer's format) -> DOĞRULANAMADI
+FAIL sabotage: gap numbers not 1..n -> DOĞRULANAMADI
+FAIL sabotage: an exit code outside the contract with gaps -> DOĞRULANAMADI
+FAIL sabotage: no verifier -> DOĞRULANAMADI 'doğrulayıcı bulunamadı'
+FAIL sabotage (Codex): exit 0 with the shell WARNING and no gap (the producer pairs it with red checks) -> DOĞRULANAMADI
+PASS exit 1 with the shell WARNING and its numbered gap -> the deviation list
+FAIL sabotage (Codex): an error after the match (root lookup raises) -> DOĞRULANAMADI, the exception text not printed
+FAIL the manual command survives a root with a space (shlex.join): it splits back to the same root
+PASS every path: main() returns 0 and the temporary repository is unchanged (the hook writes nothing)
+self-test: 8/21 passed
+
+=== Codex's two boundaries (WARNING without a gap, an error after the match) and the manual command — red on the first draft
+FAIL sabotage (Codex): exit 0 with the shell WARNING and no gap (the producer pairs it with red checks) -> DOĞRULANAMADI
+FAIL sabotage (Codex): an error after the match (root lookup raises) -> DOĞRULANAMADI, the exception text not printed
+FAIL the manual command survives a root with a space (shlex.join): it splits back to the same root
+self-test: 18/21 passed
+
+=== The same — green
+self-test: 21/21 passed
+
+=== Sabotage — each guard removed in a scratch copy of the final hook, the self-test re-run
+[list_screen_touch_hook] guard removed: stderr → doğrulanamadı -> self-test: 20/21 passed (exit 1); red: sabotage: output on stderr (Traceback) -> DOĞRULANAMADI, the raw stderr not printed
+[list_screen_touch_hook] guard removed: unrecognised lines → doğrulanamadı -> self-test: 19/21 passed (exit 1); red: sabotage: the full report instead of the gaps format (early return) -> DOĞRULANAMADI | sabotage: an unknown [shell] line (not the producer's format) -> DOĞRULANAMADI
+[list_screen_touch_hook] guard removed: info lines limited to the producer's [shell] format -> self-test: 20/21 passed (exit 1); red: sabotage: an unknown [shell] line (not the producer's format) -> DOĞRULANAMADI
+[list_screen_touch_hook] guard removed: shell WARNING without a numbered gap → doğrulanamadı -> self-test: 20/21 passed (exit 1); red: sabotage (Codex): exit 0 with the shell WARNING and no gap (the producer pairs it with red checks) -> DOĞRULANAMADI
+[list_screen_touch_hook] guard removed: clean only on exit 0 -> self-test: 18/21 passed (exit 1); red: sabotage: exit 1, empty output -> DOĞRULANAMADI, not 'no deviation' | sabotage: exit 2, empty output -> DOĞRULANAMADI | the manual command survives a root with a space (shlex.join): it splits back to the same root
+[list_screen_touch_hook] guard removed: deviation only on exit 1 -> self-test: 19/21 passed (exit 1); red: sabotage: exit 0 with a numbered gap (contradiction) -> DOĞRULANAMADI | sabotage: an exit code outside the contract with gaps -> DOĞRULANAMADI
+[list_screen_touch_hook] guard removed: gap numbers 1..n -> self-test: 20/21 passed (exit 1); red: sabotage: gap numbers not 1..n -> DOĞRULANAMADI
+[list_screen_touch_hook] guard removed: timeout named -> self-test: 20/21 passed (exit 1); red: sabotage: the verifier times out -> DOĞRULANAMADI with the timeout, never silent
+[list_screen_touch_hook] guard removed: missing verifier named -> self-test: 20/21 passed (exit 1); red: sabotage: no verifier -> DOĞRULANAMADI 'doğrulayıcı bulunamadı'
+[list_screen_touch_hook] guard removed: an error after the match is said, not silent -> self-test: 20/21 passed (exit 1); red: sabotage (Codex): an error after the match (root lookup raises) -> DOĞRULANAMADI, the exception text not printed
+[list_screen_touch_hook] guard removed: manual command by shlex.join -> self-test: 20/21 passed (exit 1); red: the manual command survives a root with a space (shlex.join): it splits back to the same root
+[list_screen_touch_hook] guard removed: raw stderr never printed -> self-test: 20/21 passed (exit 1); red: sabotage: output on stderr (Traceback) -> DOĞRULANAMADI, the raw stderr not printed
+[list_screen_touch_hook] guard removed: normal mode always exit 0 -> self-test: 19/21 passed (exit 1); red: sabotage (Codex): an error after the match (root lookup raises) -> DOĞRULANAMADI, the exception text not printed | every path: main() returns 0 and the temporary repository is unchanged (the hook writes nothing)
+
+=== Real data — HEAD's hook against the new one on every list screen of this repository (real-before-after.json)
+{
+ "ekran": 152,
+ "çıkışlar (eski, yeni)": {
+  "(0, 0)": 152
+ },
+ "eski → yeni": {
+  "sapma → sapma": 88,
+  "sapma yok → DOĞRULANAMADI": 64
+ },
+ "sapma ekranlarında bağlam metni bayt bayt aynı": 88,
+ "yeni nedenler": {
+  "beklenen gaps biçimi gelmedi": 64
+ }
+}
+
+=== Architecture suite (one run)
+Command (under the shared test lock ct-heavy.py): DOTNET_CLI_UI_LANGUAGE=en dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj --logger "trx;LogFileName=<raw>"
+Code: HEAD f324e8711 + the İ2 files; the pinned files (Context) and the tracked diff were unchanged after the run.
+dotnet: Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 9 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Raw TRX sha256 (kept outside the repository): c13eb038346943d783ba4e2eee697e5dcc37a7dfe44a3badc55d6374a91ad3b0
+run.sanitized.trx sha256: 5f25dbf31f772097a83c62edf5565ea0d9308ee400873f79008ee2f11a79df79
+Sanitiser sha256 b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72 (step 1): R1 306 · R2 145 · R3 1 · R4 1; left: home 0 · user 0 · unsanitised computerName 0 · full host name 0
+Raw against sanitised: 138 results; test names, outcomes and failure messages identical; the sanitised copy parses as XML.
+known_failures.py check <raw> --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+known_failures.py check run.sanitized.trx --suite TenantArchitecture.ArchitectureTests: exit 0 · ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+Failure fingerprints identical to CT-OPS-04's run (7 of 7).

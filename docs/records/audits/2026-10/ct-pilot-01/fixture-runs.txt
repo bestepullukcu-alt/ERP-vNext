@@ -1,0 +1,16 @@
+=== Run 1 (branch pilot-01) — stopped by the driver's own guard: a discovery finding without a decision
+STOP: undecided discovery finding 5: BULGU görev: execution/delivery/pilot-queue.tsv P-01 [DISCOVERED] Territory Management — FU08 territory model XLSX dışa aktarma (senteti
+
+=== Run 2 (branch pilot-02) — fixture errors (not tool findings), its summary as printed
+steps 28 · UYDU 22 · findings 11
+BULGU-PILOT: §36.1 şablonunda doldurulmamış yer tutucu: ['{id}']
+BULGU-PILOT: §36.1 şablonunda doldurulmamış yer tutucu: ['{id}']
+BULGU-PILOT: §36.1 şablonunda doldurulmamış yer tutucu: ['{id}']
+BULGU-PILOT: adım 18 (kabul kaydı): beklenen «çıkış 0 (ACCEPTED'e izin)», gerçekleşen «exit 1 · ENGEL künye: kaynak satırı 6 gerekli seviyeyi (E2) söylemiyor — belirsiz, dur | ENGEL künye: evidence 'docs/records/audits/2026-10/pilot-ct/p-01-run.log@' commit'lenmiş yol@commit değil | ENGEL künye: kabul listesi docs/records/audits/2026-10/pilot-ct/p-01-kabul-listesi.md@640a3c328da0de227f5f1729»
+BULGU-PILOT: adım 21 (kabul kaydı): beklenen «0 hata», gerçekleşen «exit 1 · HATA pilot-ct satır 2 P-01: kabul kaydı docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@1688: ENGEL kü | FAIL pilot-ct (çalışma ağacı): 1 hata, 0 uyarı; taban 013e25811»
+BULGU-PILOT: adım 22 (rapor): beklenen «4 alanda tam 'Taban yok — hesaplanamadı'», gerçekleşen «exit 0»
+BULGU-PILOT: belgede komut yok: REP-001 §7.1 ledger_content_sha256'nın kuralını yazıyor, hesaplayan komutu yazmıyor (pilot: grep -v '^approval_record:' <taban> | shasum -a 256)
+BULGU-PILOT: adım 24 (rapor): beklenen «P-01 sayılır (8/12 · 2/6 · 4/6 · Genel 56.7), P-02 koşullu sayılmaz; önceki doğrulandı, taban değişti → karşılaştırılmaz», gerçekleşen «exit 0»
+BULGU-PILOT: §36.1 şablonunda doldurulmamış yer tutucu: ['{id}']
+BULGU-PILOT: adım 27 (yeniden işleme): beklenen «P-01-R1 açık → P-01 sayılmaz (0.0 ×4); önceki doğrulandı, fark -66.7 gösterilir; neden kod 1», gerçekleşen «exit 0»
+BULGU-PILOT: adım 28 (kapanış): beklenen «0 hata», gerçekleşen «exit 1 · HATA pilot-ct satır 2 P-01: kabul kaydı docs/records/audits/2026-10/pilot-ct/p01-kabul-kaydi.md@1688: ENGEL kü | FAIL pilot-ct (çalışma ağacı): 1 hata, 0 uyarı; taban 013e25811»

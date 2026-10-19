@@ -1,0 +1,20 @@
+CT-FIX-07 real data — `verify_module_id.py . --discover "Employee"` at 70c3561d5, the committed CT-FIX-06 tool and
+this package's tool; run by the AI session.
+
+every line except the ÖZET, araç and rapor-sha256 lines identical: True
+BULGU lines 15 -> 15
+ÖZET block: 12 lines, 3089 bytes; the open-decision, Blueprint and domain-config lines inside the first 4 KB
+
+The ÖZET block (each line cut at 200 characters here):
+  ÖZET bulgular: blueprint 5 · sor 3 · registry 0 · paket 7 · gateway 0 · görev 0 · BİLGİ 1 (eski takma ad; çakışma sayılmaz)
+  ÖZET olası kimlik çakışması — inceleme gerekli (tek başına kesin mükerrer değil): MOD-0251 dosya kimliği 2 paket yolunda: execution/domains/human-capital-management/module-packs/MOD-0251-core-hr-emplo
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/MOD-0251-core-hr-employee-master.md — status approved · approval_status conditionally-approved-for-draft-reference-validatio
+  ÖZET paket künyesi: execution/domains/platform-shared-services/module-packs/MOD-0251-hris-external-sor.md — status ready-for-dev · approval_status - · owner enterprise-architect / platform-team (blob
+  ÖZET açık kararlar (bilgi; onay değil): kimlik MOD-0251 — olası çakışma (2 paket yolu) · sahibi belirsiz: MOD-0251-core-hr-employee-master.md (owner 'HCM / HR data owner TBD')
+  ÖZET blueprint adayları: MOD-0251 'Core HR / Employee Master' · MOD-0298 'Employee Profile Workspace' · MOD-0303 'Employee Onboarding' · MOD-0317 'Employee Relations & HR Case Management' · MOD-0319 '
+  ÖZET domain-config (eşleşen paketlerin klasörü; varlık yalnız HEAD ağacında ölçüldü, paketin kendi ref'indeki durum belirsiz; bu keşif komutu içeriğini incelemedi): execution/domains/human-capital-man
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0007-employee-profile-employment-record-projection.md — status done · approval_status - · owner enterprise-architec
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0025-employee-onboarding.md — status done · approval_status - · owner enterprise-architect / hcm-domain-owner / pla
+  ÖZET paket künyesi: execution/domains/human-capital-management/module-packs/CAND-CAP-0038-employee-manager-self-service-channel.md — status draft · approval_status - · owner enterprise-architect / hcm
+  ÖZET EKSİK: 2 madde bayt sınırı (3500) nedeniyle gösterilmedi — tam rapora bakılmalı
+  ÖZET sınır: tam rapor 621 satır; bu özet bilgidir, onay ya da karar değildir; rapor bir arayüzde kesilirse kesilen kısım okunmamıştır ve inceleme kısmidir

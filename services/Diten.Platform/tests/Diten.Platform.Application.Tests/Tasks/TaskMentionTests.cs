@@ -406,7 +406,7 @@ public sealed class TaskMentionTests
     public void The_comment_and_candidate_endpoints_are_guarded_by_the_existing_READ_permission_only()
     {
         var controller = File.ReadAllText(Path.Combine(
-            RepoPaths.Root(), "services/Diten.Platform/src/Diten.Platform.Api/Controllers/TasksController.cs"));
+            RepoPaths.Root(), "services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs"));
 
         var start = controller.IndexOf("mention-candidates", StringComparison.Ordinal);
         Assert.True(start >= 0, "mention-candidates route not found in TasksController.");

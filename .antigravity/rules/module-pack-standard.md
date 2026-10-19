@@ -290,6 +290,10 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 - DataTable modulunde `verify_datatable_page.py` ve `quality-gate-datatable` atiflari zorunludur
 - Layout zorunlulugu test edilebilir madde olarak yer alir (ornek: "Tum `Views/Platform/Administrators/*.cshtml` dosyalarinda `Layout = \"_LayoutPlatformAdmin\"` ACIKCA yazili")
 - Platform/Admin modul lookup kullaniyorsa AC icinde endpoint/proxy path, `LookupOptionDto` response shape, unauthorized davranis ve hardcoded fallback olmamasi test edilebilir yazilir. Yeni Platform lookup key gerekiyorsa bu key PSS lookup scope'u olarak acik onaylanir.
+- Yalniz yeni Control Tower'larin yeni paketlerinde (CT-I4 S2, 2026-10-16; eski Control Tower'lara yeni yuk gelmez) her madde sabit kimlik ve zorunluluk tasir: `- [ ] AC-<n> (zorunlu) — <kriter>` ya da `- [ ] AC-<n> (isteğe bağlı) — <kriter>`. `n` pozitif tam sayidir ve tekildir; madde silinmez, yeniden numaralanmaz. Bolum tek `## Acceptance Criteria` ya da numarali `## <n>. Acceptance Criteria` basligidir (ikinci seviye, herhangi bir pozitif `n`; ornek `## 16. Acceptance Criteria`); herhangi bir seviyede ikinci bir Acceptance Criteria basligi ya da baska bir bicim paketi olculemez yapar; icinde bu bicime uymayan madde olmaz ve en az bir madde zorunludur.
+- Mevcut paketler donusturulmez. Kimliksiz pakette AC kapsami mekanik olarak olculemez: `python3 scripts/acceptance_record.py module-check` cikis 2 verir (REP-001 §6.2).
+- Pakette yazilan nav anahtari runtime'in okudugu bicimdedir: `Nav.Domain.` / `Nav.Module.` / `Nav.Page.` + buyuk harf, yalniz harf ve rakam (`NavNameLocalizer.Normalize`; ornek `Nav.Page.SANDOPPLANS`, `Nav.Page.SANDOP_PLANS` degil). `python3 scripts/check_pack_nav_keys.py` olcer (phase1); bu kuraldan once yazilmis anahtarlar betikteki listededir ve liste yalniz kisalir (paket yeniden adlandirilirsa girdisi tasinir).
+- Acceptance Criteria maddesinin kutucugunun isaretli olup olmamasi ilerleme ya da kabul olcusu degildir (AUDIT-FU-01): kabul, REP-001 kabul kaydi ve kimlikli pakette `module-check` ile olculur; kutucuk kanit yerine gecmez. §12 Ready-for-dev Checklist bu kuralin disindadir.
 
 ---
 
@@ -426,6 +430,10 @@ Karar: Gateway degisikligi {gerekli | gereksiz}.
 - En az `.antigravity/**` ve domain-disi servis yollarini icermeli
 - `gateway/Diten.ApiGateway/**/ocelot.json` integration-agent owned (gerekirse pack'ten cikarilan ayri task)
 - Platform/Admin lookup kararlarinda ERP Account, General Reference, Financial Reference, Territory Reference ve tenant-side ERP reference module path'leri protected/out-of-scope olarak acik yazilir.
+
+Sik degisen dosya sabitlenmez (AUDIT-FU-01):
+- Paket, her kompozisyon adiminda degisen bir dosyanin (`Program.cs`, DI / composition root, rol sablonu) SHA-256'sini kapsam ya da kabul kosulu olarak sabitlemez: dosya her degistiginde paket yeniden yazilir, kontrol degil is uretir. Bu dosyalarin kontrolu PR incelemesidir (sahibi belli bir inceleyici; CODEOWNERS kurulursa oradan).
+- SHA-256 kanitin kendisini baglar: kabul kaydi, kosu kaydi ve dogrulanan commit (REP-001). Bu kural onlari degistirmez.
 
 ---
 
@@ -608,7 +616,8 @@ Slim partial seti:
 - ...
 
 ## Acceptance Criteria
-- [ ] ...
+- [ ] AC-1 (zorunlu) — ...
+- [ ] AC-2 (isteğe bağlı) — ...
 
 ## Test Expectations
 - ...

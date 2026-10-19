@@ -1,0 +1,65 @@
+CT-FIX-04 red first — the R0 set of this package (scripts/tests/test_ct_cli_regression.py) run against the unchanged
+base code 79cd8c6f1e20f70cd6c86c92765c160002cc973a (tools exported with git archive outside the repository; the R0
+file of this package copied in). Failed subtests per test method; every other method passed.
+The version case was strengthened after this run (M6: a tree and a branch that hold the same bytes); its final form,
+run alone on the same base code, fails 14 subtests as well.
+
+ran: 55 tests · failed subtests: 101 in 13 test methods
+
+    10  CTFIX04_ConditionalApproval.test_matrix
+    23  CTFIX04_I1_InForce.test_every_consumer_on_every_registry_relation
+     8  CTFIX04_I1_Route.test_relations
+    14  CTFIX04_I2_Binding.test_a_broken_record_version_stops_and_work_packages_does_not_mask_it
+    10  CTFIX04_I2_Binding.test_no_explicit_binding_stops
+     1  CTFIX04_I2_Binding.test_the_explicit_list_is_not_overridden_by_the_row_s_record
+     2  CTFIX04_I3_PackIdentity.test_acceptance_reader_checks_the_file_name
+     2  CTFIX04_I3_PackIdentity.test_evidence_level_source_pack_identity_with_or_without_a_work_package
+     7  CTFIX04_I3_PackIdentity.test_product_gate
+    16  CTFIX04_I4_BoundList.test_broken_lists
+     4  CTFIX04_I5_ReportExit.test_exit_codes
+     2  V4A_F5_Acceptance.test_report_counts_only_an_acceptance_the_check_allows
+     2  V4B_B8_Route.test_a_pending_row_against_main_s_confirmed_row_is_a_conflict
+
+passed on the base code (controls and the cases CT-FIX-04 does not change):
+        Controls.test_consumers_on_the_intact_fixture_exit_0
+        Controls.test_full_prompt_cli_normal_exit_0
+        V4A_F2_StrictProfile.test_missing_transition_table_stops_every_consumer
+        V4A_F2_StrictProfile.test_missing_transition_table_stops_the_full_prompt_gate
+        V4A_F2_StrictProfile.test_a_main_flow_step_removed_stops_every_consumer
+        V4A_F2_StrictProfile.test_a_state_the_sop_does_not_list_stops_every_consumer
+        V4A_F2_StrictProfile.test_every_sop7_state_removed_with_its_edges_stops_every_consumer
+        V4A_F3_Kunye.test_reassessment_valid_forms_dispatch
+        V4A_F3_Kunye.test_reassessment_unrecognised_or_conflicting_forms_stop
+        V4A_F3_Kunye.test_full_prompt_gate_valid_forms_pass
+        V4A_F3_Kunye.test_full_prompt_gate_unrecognised_or_conflicting_forms_stop
+        V4A_F4_Discovery.test_task_row_with_empty_item_and_module_is_incomplete_not_no_match
+        V4A_F4_Discovery.test_a_pack_with_a_repeated_or_disguised_id_is_incomplete
+        V4A_F4_Discovery.test_a_pack_without_a_kunye_is_still_matched_by_name
+        V4A_F8_V4B_B6_Report.test_report_names_the_task_registry_bytes
+        V4A_F8_V4B_B6_Report.test_check_report_reads_the_bytes_as_they_are
+        V4A_F5_Acceptance.test_normal_acceptance_passes
+        V4A_F5_Acceptance.test_nonexistent_pack_is_refused
+        V4A_F5_Acceptance.test_ac_not_in_the_pack_is_refused
+        V4A_F5_Acceptance.test_unbalanced_quote_in_a_field_is_refused
+        V4A_F5_Acceptance.test_disguised_second_field_in_level_source_or_pack_is_refused
+        V4A_F6_KnownFailures.test_registered_failure_known
+        V4A_F6_KnownFailures.test_counters_say_failed_but_every_row_passed_is_untrusted
+        V4A_F6_KnownFailures.test_counters_count_result_rows_before_names_are_merged
+        V4A_F6_KnownFailures.test_counters_with_fewer_rows_than_total_is_untrusted
+        V4A_F6_KnownFailures.test_vstest_skipped_test_form_is_trusted
+        V4A_F6_KnownFailures.test_untrustworthy_summary_or_counters_stop
+        U2_PromptDraft.test_the_five_measured_values_are_the_gate_s_own_and_the_draft_is_refused
+        U2_PromptDraft.test_a_wp_not_in_the_queue_is_not_measurable
+        U2_PromptDraft.test_a_malformed_queue_row_is_never_skipped
+        U3_AcceptanceDraft.test_record_draft_fills_identity_only_and_check_refuses_it
+        U3_AcceptanceDraft.test_list_draft_copies_the_pack_and_a_filled_one_passes
+        U3_AcceptanceDraft.test_a_malformed_queue_row_is_never_skipped
+        U3_AcceptanceDraft.test_list_needs_an_approved_pack_version
+        V4B_B8_Route.test_a_confirmed_row_is_the_single_target_without_a_stamp
+        V4B_B8_Route.test_a_pending_row_is_stamped_and_refused_in_force
+        V4A_F7_Hook.test_an_empty_verifier_is_unverified_not_clean
+        V4A_F7_Hook.test_a_verifier_success_line_is_clean_only_when_asked_and_given
+        CTFIX04_I2_Binding.test_explicit_bindings_pass
+        CTFIX04_I2_Binding.test_the_row_s_record_at_an_older_commit_with_the_same_bytes_passes
+        CTFIX04_I3_PackIdentity.test_evidence_level_source_this_module_s_pack_passes
+        CTFIX04_I4_BoundList.test_normal_and_subset

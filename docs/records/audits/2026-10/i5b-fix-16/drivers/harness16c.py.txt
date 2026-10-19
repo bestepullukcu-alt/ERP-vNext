@@ -1,0 +1,95 @@
+"""İ5B-FIX-16 guard removal, run 03 (harness16 with its list replaced: the 21 earlier guards of İ5B-FIX-14 and -15 whose code this package rewrote, on their new anchors, with their own named tests): one ONE work copy, restored before every mutation (rsync from the base, then the two frozen
+files laid over it and checked by SHA-256) — no copy per mutation. Each guard is undone alone; the named test must fail
+(a crash or a hang is not counted) and a control test must pass in the same copy.
+Usage: python3 harness15.py <base src> <frozen sync_adapters.py> <frozen test> <freeze list> <work dir> <out.json>"""
+import hashlib, json, os, shutil, subprocess, sys, time
+BASE, TOOL, TEST, FREEZE, W, OUT = sys.argv[1:7]
+FROZEN = dict(reversed(l.split()) for l in open(FREEZE, encoding="utf-8") if l.strip())
+F = ".antigravity/scripts/sync_adapters.py"
+B = "scripts.tests.test_sync_adapters_budget.InstructionBudget."
+HIDE, SHOWN, UNREAD = B + "test_raw_html_around_a_required_text_hides_it", B + "test_unrelated_or_shown_html_keeps_the_required_text", B + "test_an_html_opener_the_check_cannot_read_is_not_verified"
+ESC, CTX, ORDER, CVIEW = (B + "test_an_escaped_less_than_or_an_autolink_is_not_raw_html", B + "test_the_core_start_marker_has_no_open_context",
+                          B + "test_the_heading_reader_reads_comments_and_fences_in_order", B + "test_the_core_view_masks_comments_outside_fences")
+DEL = 'plain = re.sub(r"<!--.*?(?:-->|\\Z)", "", text, flags=re.S)'
+M = [
+ # İ5B-FIX-14's guards whose code İ5B-FIX-16 rewrote, on their new anchors (the same protection, the same named test)
+ ("G-E1' an escaped '<' read as raw HTML (html_scan reads no escape)", '        if text[i] == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:' + "\n            out[i] = out[i + 1] = \" \"", "        if False:\n            out[i] = out[i + 1] = \" \"", [ESC]),
+ ("G-E2' any backslash escapes '<' (parity ignored: one character skipped)", '            out[i] = out[i + 1] = " "\n            i += 2', '            out[i] = out[i + 1] = " "\n            i += 1', [ESC]),
+ ("G-A1' an autolink read as raw HTML", '            link = AUTOLINK.match(text, i) if text[i] == "<" else None', "            link = None", [ESC]),
+ ("G-C1' a fence open at core:start not reported", '                    state, pos = "a fenced code block", size', "                    state, pos = None, size", [CTX]),
+ ("G-C2' an HTML comment not tracked (a fence line inside it opens a fence)", '            if re.match(r"^ {0,3}<!--", line):              # a block comment', "            if False:", [CTX]),
+ ("G-C4' inline code not read (a comment opener shown in it opens a comment)", '            elif c == "`":\n                kind, e = code_span_end(text, pos, opener)', '            elif False:\n                kind, e = code_span_end(text, pos, opener)', [CTX]),
+ ("G-H1' the heading reader's text read with comments deleted before fences again",
+  "    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)\n    block = scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0]\n",
+  "    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)\n    " + DEL + "\n    block = plain\n", [ORDER]),
+ ("G-H3' a fence line inside a comment opens a fence (the comment's later lines classified)",
+  "                nv = raw_comments(e + 3, block_end)\n                pos, prev_blank = block_end + 1, False",
+  "                nv = raw_comments(e + 3, block_end)\n                pos, prev_blank = offs[n] + len(line) + 1, False", [ORDER]),
+ ("G-H4' the core view read with comments deleted before fences again",
+  "            visible, comments, _, core_scan = scan_comments(block)",
+  "            visible, comments, _, core_scan = scan_comments(block)\n            visible = re.sub(r\"<!--.*?(?:-->|\\Z)\", \"\", block, flags=re.S)", [CVIEW]),
+ # İ5B-FIX-15's guards whose code İ5B-FIX-16 rewrote, on their new anchors
+ ("G-X4' an HTML block ends with its first line", "                m = html_block_end(lines, n, end)", "                m = n", [HIDE]),
+ ("G-X5' nesting of the same element not counted (a closing tag closes the outermost)",
+  "                at = next((k for k in range(len(stack) - 1, -1, -1) if stack[k][0] == name), None)",
+  "                at = 0 if any(x[0] == name for x in stack) else None", [HIDE]),
+ ("G-X6' a non-void self-closed tag masks only itself", "            elif name in VOID_ELEMENTS:", "            elif name in VOID_ELEMENTS or m.group(3):", [HIDE]),
+ ("G-X7' an element left open stops at the paragraph's end", "        block = in_block[n]\n",
+  "        block = in_block[n]\n        if i == offs[n] and not lines[n].strip() and stack and not block:\n            mask(stack[0][1], i)\n            stack.clear()\n", [HIDE]),
+ ("G-X8' the raw-text rule: a nested '<script>' text counted as an opening",
+  "            if m and m.group(1) and m.group(2).lower() == raw[0]:",
+  "            if m and not m.group(1) and m.group(2).lower() == raw[0]:\n                raw = (\"never\", raw[1])\n            if m and m.group(1) and m.group(2).lower() == raw[0]:", [SHOWN]),
+ ("G-X9' tags searched inside fences", "        if i == offs[n] and not block and n in fence_to:", "        if False:", [SHOWN]),
+ ("G-X10' tags searched inside inline code", '        if not block and c == "`":', "        if False:", [HIDE]),
+ ("G-X11' a backslash-escaped '<' read as a tag", r'        if not block and c == "\\" and i + 1 < size and view[i + 1] in ESCAPABLE:', "        if False:", [HIDE]),
+ ("G-X12' a tag the reader cannot read skipped as text",
+  '            nv = (i, "tag")                                  # an opener the reader cannot read: nothing after it is evidence\n            break\n',
+  "            pass\n", [UNREAD]),
+ ("G-X13' the 'not verified' reason not written", "    if not found:\n        return \"\"", "    if True:\n        return \"\"", [UNREAD]),
+ ("G-X14' an autolink read as a tag the reader cannot read", "            link = AUTOLINK.match(view, i)", "            link = None", [SHOWN]),
+ ("G-H1'' (İ5B-FIX-15's G-H1') the same deletion on İ5B-FIX-16's anchor, against the comment-order test",
+  "    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)\n    block = scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0]\n",
+  "    plain, _, _, info = scan_comments(text, heading_fence_opener, heading_fence_closes)\n    " + DEL + "\n    block = scan_comments(text, heading_fence_opener, heading_fence_closes, html_blocks=True)[0][:len(plain)]\n", [ORDER]),
+]
+CONTROL = B + "test_a_dead_link_is_still_a_dead_link"
+sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def restore():
+    subprocess.run(["rsync", "-a", "--delete", "--checksum", BASE + "/", W + "/"], check=True)
+    shutil.copyfile(TOOL, os.path.join(W, F)); shutil.copyfile(TEST, os.path.join(W, "scripts/tests/test_sync_adapters_budget.py"))
+    for p, h in FROZEN.items():
+        assert sha(os.path.join(W, p)) == h, p
+
+
+def run(names):
+    try:
+        p = subprocess.run([sys.executable, "-B", "-m", "unittest", *names], cwd=W, capture_output=True, text=True, timeout=600)
+    except subprocess.TimeoutExpired:
+        return "timeout", "the test did not finish in time"
+    crashed = "Traceback" in p.stderr and "AssertionError" not in p.stderr
+    return (99 if crashed else p.returncode), (p.stderr.strip().splitlines() or [""])[-1]
+
+
+os.makedirs(W, exist_ok=True)
+results = []
+for label, old, new, tests in M:
+    restore()
+    f = os.path.join(W, F)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    parsed = subprocess.run([sys.executable, "-B", "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())", f]).returncode == 0
+    t0 = time.time()
+    code, tail = run(tests)
+    ccode, ctail = run([CONTROL])
+    proven = parsed and code not in (0, 99, "timeout") and ccode == 0
+    results.append({"mutation": label, "applied": True, "file": F, "tests": tests, "exit": code, "red": code != 0, "summary": tail,
+                    "parsed": parsed, "control": CONTROL, "control_exit": ccode, "control_summary": ctail, "proven": proven,
+                    "seconds": round(time.time() - t0)})
+    print(label, "PROVEN" if proven else "NOT PROVEN", "| named:", tail, "| control:", ctail, flush=True)
+restore()
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("proven", sum(r.get("proven", False) for r in results), "of", len(results), "· the copy restored to the frozen sources")

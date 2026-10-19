@@ -1,0 +1,73 @@
+"""CT-FIX-07 guard removal: each guard undone in its own copy outside the repository; the named tests must
+fail (or time out — a hang is a failure). Usage: python3 harness2.py <fixed-src> <work dir> <ct|i5b> <out.json>"""
+import json, shutil, subprocess, sys, os, time
+SRC, WORK, LINE, OUT = sys.argv[1:5]
+T = "scripts.tests.test_ct_cli_regression."
+T = "scripts.tests.test_ct_cli_regression."
+D = "scripts.tests.test_verify_module_id_discover.DiscoverySummary."
+D = "scripts.tests.test_verify_module_id_discover.DiscoverySummary."
+CT = [
+ ("G-D1 the open decisions are not written", ".antigravity/scripts/verify_module_id.py",
+  "    if decisions:\n        items.append(", "    if False:\n        items.append(",
+  [D + "test_the_open_decisions_follow_the_collisions",
+   T + "CTFIX07_SummaryDecisions.test_an_unset_owner_is_an_open_decision_and_the_count_is_unchanged"]),
+ ("G-D2 an unset owner is not noticed", ".antigravity/scripts/verify_module_id.py",
+  "        unset = sorted(o for o in owners if", "        unset = [] and sorted(o for o in owners if",
+  [D + "test_the_open_decisions_follow_the_collisions"]),
+ ("G-B1 the Blueprint candidates are not listed", ".antigravity/scripts/verify_module_id.py",
+  "    if blueprint:\n        items.append(", "    if False:\n        items.append(",
+  [D + "test_blueprint_candidates_and_domain_configs_are_listed_and_bounded",
+   T + "CTFIX07_SummaryDecisions.test_blueprint_ids_and_domain_config_at_head"]),
+ ("G-C1 presence read from the working tree, not HEAD", ".antigravity/scripts/verify_module_id.py",
+  "    paths = domain_config_paths(pack_paths)\n    if not paths:\n        return []\n",
+  "    paths = domain_config_paths(pack_paths)\n    if not paths:\n        return []\n    return [(d, os.path.exists(os.path.join(root, d))) for d in paths]\n",
+  [D + "test_domain_config_presence_is_read_from_head_s_tree",
+   T + "CTFIX07_SummaryDecisions.test_blueprint_ids_and_domain_config_at_head"]),
+ ("G-C2 a failed measurement reads as absent", ".antigravity/scripts/verify_module_id.py",
+  "    except (Incomplete, OSError, ValueError):\n        return [(d, None) for d in paths]\n",
+  "    except (Incomplete, OSError, ValueError):\n        return [(d, False) for d in paths]\n",
+  [D + "test_domain_config_presence_is_read_from_head_s_tree"]),
+]
+B = "scripts.tests.test_sync_adapters_budget.InstructionBudget."
+I5B = [] and [
+ ("G-H1 HTML before core:start not checked", ".antigravity/scripts/sync_adapters.py",
+  "            if outer:\n", "            if False:\n", [B + "test_a_container_opened_before_the_core_is_refused"]),
+ ("G-H2 a required text inside a larger span counts", ".antigravity/scripts/sync_adapters.py",
+  "        if all(not (a <= start and end <= b) or inner == needle.strip(\"`\") for a, b, inner in spans):\n",
+  "        if True:\n", [B + "test_a_rule_inside_a_larger_code_span_is_lost"]),
+ ("G-H3 a short code term no longer counts", ".antigravity/scripts/sync_adapters.py",
+  " or inner == needle.strip(\"`\") for a, b, inner in spans):\n", " for a, b, inner in spans):\n",
+  [B + "test_a_rule_inside_a_larger_code_span_is_lost", B + "test_every_required_core_text_is_on_a_numbered_rule_line_today"]),
+]
+mod_prefix = ""
+CONTROL = (T + "Controls.test_consumers_on_the_intact_fixture_exit_0") if LINE == "ct" else (B + "test_a_dead_link_is_still_a_dead_link")
+results = []
+for i, (label, path, old, new, tests) in enumerate(CT if LINE == "ct" else I5B):
+    d = os.path.join(WORK, f"g{i:02d}")
+    shutil.copytree(SRC, d)
+    f = os.path.join(d, path)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    compiled = True
+    if path.endswith(".py"):   # a mutation that breaks the file proves nothing
+        compiled = subprocess.run([sys.executable, "-B", "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())", f]).returncode == 0
+    t0 = time.time()
+    def unit(names):
+        try:
+            p = subprocess.run([sys.executable, "-B", "-m", "unittest", *[mod_prefix + t for t in names]], cwd=d,
+                               capture_output=True, text=True, timeout=240)
+            return p.returncode, (p.stderr.strip().splitlines() or [""])[-1]
+        except subprocess.TimeoutExpired:
+            return "timeout", "the test did not finish in 240 s (a hang is a failure)"
+    code, tail = unit(tests)
+    ccode, ctail = unit([CONTROL])   # the intact path still works in the same copy: the red is the guard, not a crash
+    proven = compiled and code != 0 and ccode == 0
+    results.append({"mutation": label, "applied": True, "file": path, "tests": tests, "exit": code, "red": code != 0,
+                    "summary": tail, "parsed": compiled, "control": CONTROL, "control_exit": ccode, "control_summary": ctail,
+                    "proven": proven, "seconds": round(time.time() - t0)})
+    print(label, "PROVEN" if proven else "NOT PROVEN", "| named:", tail, "| control:", ctail, flush=True)
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("proven", sum(r.get("proven", False) for r in results), "of", len(results))

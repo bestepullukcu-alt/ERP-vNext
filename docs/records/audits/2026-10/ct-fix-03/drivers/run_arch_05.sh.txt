@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# CT-FIX-03: the second architecture run (after the arch-04 CI-guard regression), on the second combined candidate, under the machine lock (locked_run.py), restore from the
+# local package cache only, build output of the same scratch clone reused. Writes arch-05.* next to this script.
+set -u
+S="$1"; A="$S/ctfix02/arch-fixture-03"; OUT="$S/ctfix03"; LOCK="$S/ctfix-red/locked_run.py"
+P="tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj"
+cd "$A" || exit 2
+export DOTNET_CLI_UI_LANGUAGE=en DOTNET_CLI_TELEMETRY_OPTOUT=1 GIT_OPTIONAL_LOCKS=0
+{
+  echo "fixture: HEAD $(git rev-parse HEAD) tree $(git rev-parse 'HEAD^{tree}') parent $(git rev-parse 'HEAD^')"
+  echo "dotnet: $(dotnet --version)"
+  echo "lock: locked_run.py (sha256 $(shasum -a 256 "$LOCK" | cut -c1-64); flock on ct-heavy.lock)"
+  echo "started: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} > "$OUT/arch-05.meta.txt"
+python3 "$LOCK" -- dotnet restore "$P" --source "$HOME/.nuget/packages" > "$OUT/arch-05.restore.log" 2>&1
+echo "restore exit: $?" >> "$OUT/arch-05.meta.txt"
+python3 "$LOCK" -- dotnet test "$P" --no-restore --logger "trx;LogFileName=$OUT/arch-05.raw.trx" > "$OUT/arch-05.log" 2>&1
+echo "dotnet exit: $?" >> "$OUT/arch-05.meta.txt"
+grep -E "^(Failed|Passed)!" "$OUT/arch-05.log" | tail -1 >> "$OUT/arch-05.meta.txt"
+echo "finished: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$OUT/arch-05.meta.txt"
+echo "dirty after: $(git status --porcelain --untracked-files=no | wc -l | tr -d ' ')" >> "$OUT/arch-05.meta.txt"

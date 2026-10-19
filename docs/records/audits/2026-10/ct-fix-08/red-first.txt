@@ -1,0 +1,31 @@
+CT-FIX-08 red first — this package's final test files against the committed sources of 5035a9f28 (SETTINGS-HYGIENE-01
+on CT-FIX-07) in a copy outside the repository; run by the AI session.
+
+Ran 8 tests in 21.590s · FAILED (failures=15, errors=1)
+
+  FAIL  test_ct_cli_regression.CTFIX08_VisibleTextAndPaths.test_a_broken_registry_stops_validate_and_require
+  FAIL  test_ct_cli_regression.CTFIX08_VisibleTextAndPaths.test_a_cited_line_needs_visible_content
+  FAIL  test_ct_cli_regression.CTFIX08_VisibleTextAndPaths.test_quoted_paths_are_listed_by_every_consumer
+  ERROR test_ct_cli_regression.CTFIX08_VisibleTextAndPaths.test_the_nul_listing_decoder_refuses_a_broken_listing
+  FAIL  test_verify_module_id_discover.DiscoverySummary.test_the_open_decisions_survive_a_wide_query
+  FAIL  test_verify_module_id_discover.DiscoverySummary.test_the_open_decisions_follow_the_collisions
+  ok    test_ct_cli_regression.Controls.test_consumers_on_the_intact_fixture_exit_0
+  ok    test_ct_cli_regression.Controls.test_full_prompt_cli_normal_exit_0
+
+failed subtests:
+  FAIL  test_a_broken_registry_stops_validate_and_require (column='control_tower')
+  FAIL  test_a_broken_registry_stops_validate_and_require (column='scope')
+  FAIL  test_a_broken_registry_stops_validate_and_require (column='evidence')
+  FAIL  test_a_broken_registry_stops_validate_and_require (column='path')
+  FAIL  test_a_cited_line_needs_visible_content (case='zero-width space')
+  FAIL  test_a_cited_line_needs_visible_content (case='BOM')
+  FAIL  test_a_cited_line_needs_visible_content (case='word joiner')
+  FAIL  test_a_cited_line_needs_visible_content (case='a mix')
+  FAIL  test_a_cited_line_needs_visible_content (case='a combining accent alone')
+  FAIL  test_a_cited_line_needs_visible_content (case='a variation selector alone')
+  FAIL  test_a_cited_line_needs_visible_content (case='U+2028 inside line 1')
+  FAIL  test_a_cited_line_needs_visible_content (case='a form feed inside line 1')
+
+The new tests fail on the base sources: a line with no visible character is accepted as evidence, a broken registry
+lets validate read task files and require answer 1, quoted paths are missed, the base has no nul_paths decoder (the
+error), and the open decisions come after the collision groups. The controls pass.

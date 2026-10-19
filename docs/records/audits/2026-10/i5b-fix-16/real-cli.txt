@@ -1,0 +1,87 @@
+İ5B-FIX-16 real CLI — the same 73 cases, write and --check, each in ONE work copy restored before every case; run by the
+AI session. Driver: drivers/probe_i5b16.py.txt — İ5B-FIX-15's 42 cases and this package's 31 (the reports' negatives and
+positives, N1-N4), the tool laid over İ5B-FIX-14's frozen base: C14's (before) and the frozen one (after). Only
+AGENTS.md or AGENTS-REFERENCE.md changes per case. The AGENTS.md cases pass 22000 bytes and print WARN (the AI
+session's own heading and core cases).
+
+case                                                                                                     expected  before  after
+normal                                                                                                   0/0       0/0     0/0
+block: REF section 2 inside <script>                                                                     nonzero   1/1     1/1
+block: REF section 2 inside <pre>                                                                        nonzero   1/1     1/1
+block: REF section 2 inside <style>                                                                      nonzero   1/1     1/1
+block: REF section 2 inside <textarea>                                                                   nonzero   1/1     1/1
+block: AGENTS.md required heading after the core inside <pre>                                            nonzero   1/1     1/1
+block: REF heading inside <div> (no blank line)                                                          nonzero   1/1     1/1
+inline: Codex's anchor inside a mid-paragraph <script type=text/plain>                                   nonzero   1/1     1/1
+inline: <script> opened mid-line in the paragraph before section 2, closed after it                      nonzero   1/1     1/1
+inline: an unclosed mid-line <script> before section 2                                                   nonzero   1/1     1/1
+inline: the anchor inside <span hidden>                                                                  nonzero   1/1     1/1
+control: unrelated <div>Example</div> appended to the last section                                       0/0       0/0     0/0
+control: unrelated <div>Example</div>, a blank line, then the real section                               0/0       0/0     0/0
+control: unrelated inline HTML in section 2's body, not around its anchor                                0/0       0/0     0/0
+control: an unrelated closed <details> block                                                             0/0       0/0     0/0
+control: HTML shown in a closed code example                                                             0/0       0/0     0/0
+control: HTML in inline code inside section 2                                                            0/0       0/0     0/0
+control: inline HTML at a paragraph start, heading right after                                           0/0       0/0     0/0
+codex-p02-A: <script type=text/plain> holding </pre> and a blank line, then section 2, then </script>    nonzero   1/1     1/1
+codex-p02-B: 'Visible prefix <span hidden>' in the previous paragraph, a blank line, section 2, then </s nonzero   1/1     1/1
+codex-p03-A: <div>example</div> right before section 2's heading, no blank line                          nonzero   1/1     1/1
+codex-p03-B: <script/>, a blank line, section 2, then </script>                                          nonzero   1/1     1/1
+own: nested same-name <div> — the inner close does not end the outer                                     nonzero   1/1     1/1
+own: a </span> inside a closed code example does not close <span hidden>                                 nonzero   1/1     1/1
+own: a </span> in inline code does not close <span hidden>                                               nonzero   1/1     1/1
+own: an escaped \</span> does not close <span hidden>                                                    nonzero   1/1     1/1
+own: <span/> never closed before section 2 (declared safe refusal)                                       nonzero   1/1     1/1
+own: the AGENTS.md required heading after the core inside a mid-line <span hidden> across a blank line   nonzero   1/1     1/1
+control: a void <br/> and a blank line before section 2                                                  0/0       0/0     0/0
+control: a closed nested <div><div>x</div></div>, a blank line, section 2                                0/0       0/0     0/0
+control: an escaped \<span hidden> before section 2                                                      0/0       0/0     0/0
+control: <script/> shown in inline code before section 2                                                 0/0       0/0     0/0
+codex-p04: the anchor inside a mid-paragraph <script data-example="<"> … </script>                       nonzero   1/1     1/1
+own: a '<' in an attribute of a tag before section 2 ('<span title="a<b">')                              nonzero   1/1     1/1
+own: a bare 'a<b' in prose before section 2 (an opener the reader cannot read)                           nonzero   1/1     1/1
+own: a tag left open at the end of the file's last line                                                  0/0       0/0     0/0
+control: a URI autolink before section 2                                                                 0/0       0/0     0/0
+control: an e-mail autolink before section 2                                                             0/0       0/0     0/0
+control: an escaped \<b in prose before section 2                                                        0/0       0/0     0/0
+control: 'a<b' in inline code before section 2                                                           0/0       0/0     0/0
+control: 'a < b' with spaces before section 2                                                            0/0       0/0     0/0
+control: '<script data-example="<">' in a closed code example before section 2                           0/0       0/0     0/0
+i5b16 hidden: Codex F1, a '</div>' in a script inside a div                                              nonzero   0/0     1/1
+i5b16 hidden: Codex F1, a '</div>' in a textarea inside a div                                            nonzero   0/0     1/1
+i5b16 hidden: Codex F1, a '</span>' in a script inside a span                                            nonzero   0/0     1/1
+i5b16 hidden: Claude, escaped backtick around a script                                                   nonzero   0/0     1/1
+i5b16 hidden: Claude, escaped backtick around a div hidden                                               nonzero   0/0     1/1
+i5b16 hidden: Claude, an unpaired double backtick                                                        nonzero   0/0     1/1
+i5b16 hidden: Claude, a code span across two lines holds the '</div>'                                    nonzero   0/0     1/1
+i5b16 hidden: Codex render, an inline script not closed by a '</script>' in code                         nonzero   1/1     1/1
+i5b16 hidden: N1c, a code span across two lines holds '<!--'; the div hidden is real                     nonzero   0/0     1/1
+i5b16 hidden: N2, backticks inside an HTML block are raw                                                 nonzero   0/0     1/1
+i5b16 hidden: N3, a fence line inside an HTML block is raw                                               nonzero   0/0     1/1
+i5b16 hidden: N4, an inline '<!--' not closed in its paragraph is text                                   nonzero   0/0     1/1
+i5b16 hidden: a fence-looking line in an HTML block does not pair with a real example after it           nonzero   1/1     1/1
+i5b16 not verified: a '<!--' left open in an HTML block                                                  nonzero   1/1     1/1
+i5b16 declared model: the span form of N1c                                                               nonzero   0/0     1/1
+i5b16 not verified: a code span whose pair lies past a block quote line                                  nonzero   1/1     1/1
+i5b16 hidden: an AGENTS.md heading after the core inside an escaped-backtick script                      nonzero   0/0     1/1
+i5b16 core: an escaped-backtick script around the core rules                                             nonzero   0/0     1/1
+i5b16 core: an unpaired double backtick around the core rules                                            nonzero   0/0     1/1
+i5b16 not verified: 'List<T>' as text under '## 1.'                                                      nonzero   1/1     1/1
+i5b16 passes: Codex F2, a block-level script closed by its '</script>' between backticks                 0/0       1/1     0/0
+i5b16 passes: Codex render, an inline script closed by a bare '</script>'                                0/0       0/0     0/0
+i5b16 passes: a fence-looking line inside a block-level script                                           0/0       1/1     0/0
+i5b16 passes: a tilde line inside a block-level style                                                    0/0       1/1     0/0
+i5b16 passes: N1, a '<!--' line ends the paragraph; the comment is real                                  0/0       0/0     0/0
+i5b16 passes: N4c, a block comment closed on the next line                                               0/0       0/0     0/0
+i5b16 passes: Claude reverse, an escaped backtick then a real code span showing a tag                    0/0       1/1     0/0
+i5b16 passes: an inline comment closed in its paragraph                                                  0/0       0/0     0/0
+i5b16 passes: a block comment holding a blank line                                                       0/0       0/0     0/0
+i5b16 passes: an escaped backtick before a real inline comment                                           0/0       0/0     0/0
+i5b16 passes: an escaped backtick then a code span showing a tag on a core rule line                     0/0       1/1     0/0
+
+before: tool ['31aaf12a2c33a5cc70014f56d41fdb6669898daf970175552d25bc4de60e414f'], 53 of 73 as expected
+after:  tool ['93a51469cd13b434ff982fe013119488fdedbb6283ff9e4189507aa7084c9dfb'], 73 of 73 as expected
+the 42 earlier cases as expected before / after: True / True
+base unchanged before / after: True / True
+results: before 16e8d9cb7f789c2c004169cfd498e6a814a48a6f2181f58260783b7630af0331, after f39b9ca122ffea5c4796585d796db848b94397917e36c37226940bcd1556df75 (kept outside the repository)
+'List<T>' exits 1 on both; its message is what changed (the unit test checks it).

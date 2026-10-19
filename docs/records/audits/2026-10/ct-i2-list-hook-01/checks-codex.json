@@ -1,0 +1,105 @@
+{
+  "source_sha256": "cbd8ef64e9d50fe233036b51b745698025602f2723e8a91b5a9bf53b18122e7d",
+  "unchanged": true,
+  "results": [
+    {
+      "case": "clean",
+      "expected": "clean",
+      "actual": "clean",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "gaps",
+      "expected": "gaps",
+      "actual": "gaps",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "crash",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "argerror",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "timeout",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "warning without gaps",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "warning with gap",
+      "expected": "gaps",
+      "actual": "gaps",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "unknown info",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "stderr",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "wrong code with gap",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "missing verifier",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "root exception",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "nonsequential",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    },
+    {
+      "case": "classified error",
+      "expected": "unknown",
+      "actual": "unknown",
+      "exit": 0,
+      "pass": true
+    }
+  ],
+  "all_pass": true
+}

@@ -1,0 +1,27 @@
+CT-FIX-10 red first — this package's final test file against the committed sources of 56166f107 (CT-FIX-09) in a
+copy outside the repository; run by the AI session.
+
+Ran 4 tests in 16.224s · FAILED (failures=5)
+
+  FAIL  test_ct_cli_regression.CTFIX10_UnknownRowAndWriters.test_a_pack_s_module_relation_is_not_judged_without_the_queue_row
+  FAIL  test_ct_cli_regression.CTFIX10_UnknownRowAndWriters.test_writers_names_a_ref_whose_queue_is_not_utf8
+  ok    test_ct_cli_regression.Controls.test_consumers_on_the_intact_fixture_exit_0
+  ok    test_ct_cli_regression.Controls.test_full_prompt_cli_normal_exit_0
+
+failed subtests:
+  FAIL  test_a_pack_s_module_relation_is_not_judged_without_the_queue_row (case='a broken registry, the pack itself sound')
+  FAIL  test_a_pack_s_module_relation_is_not_judged_without_the_queue_row (case="a broken registry, the pack's künye id and file name disagree (still refused by its own check)")
+  FAIL  test_writers_names_a_ref_whose_queue_is_not_utf8 (point='a local ref')
+  FAIL  test_writers_names_a_ref_whose_queue_is_not_utf8 (point='the base')
+  FAIL  test_writers_names_a_ref_whose_queue_is_not_utf8 (point='the merge base')
+
+On the base sources, under a broken registry: a sound product pack gets a false 'paket … bu işin modülüne (yok) ait
+değil' and no 'ölçülemedi' (1); a pack whose künye id and file name disagree is already refused by its own identity
+check there, and only the 'ölçülemedi' line is missing (1). writers crashes with a traceback (exit 1) when a local ref,
+the base or only the merge base holds a queue that is not UTF-8 (3). The controls in the same tests pass there: an intact queue with a sound
+pack (0), a WP not in the queue (still refused as a module mismatch), another module's pack (still refused), and
+writers on the normal fixture (0). Controls.* pass.
+
+Earlier, not replaced: the tests first ran red before the code was written (4 failures). Two test mistakes found
+afterwards were corrected in the test, not in the code: the künye / file-name case expected no 'ölçülemedi' line (the
+gate rightly writes both), and the merge-base case kept an earlier subtest's branch (each subtest now drops its own).

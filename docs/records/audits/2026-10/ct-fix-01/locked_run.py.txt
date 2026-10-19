@@ -1,0 +1,26 @@
+"""One heavy run under the Control Tower machine lock, following the documented contract of the (now deleted) shared
+wrapper ct-heavy.py: an exclusive fcntl.flock on ct-heavy.lock next to where the wrapper lived; after acquiring, the
+path must still name the locked inode (else reopen and queue again); MSBUILDDISABLENODEREUSE=1; exit = the command's.
+Usage: python3 locked_run.py -- <command> [args...]"""
+import fcntl
+import os
+import subprocess
+import sys
+
+LOCK = "<SHARED-TMP>/ct-heavy.lock"   # the machine lock's path, replaced by a placeholder in this record copy
+cmd = sys.argv[sys.argv.index("--") + 1:]
+while True:
+    fd = os.open(LOCK, os.O_RDWR | os.O_CREAT, 0o600)
+    fcntl.flock(fd, fcntl.LOCK_EX)
+    try:
+        same = os.stat(LOCK).st_ino == os.fstat(fd).st_ino
+    except FileNotFoundError:
+        same = False
+    if same:
+        break
+    os.close(fd)
+try:
+    sys.exit(subprocess.call(cmd, env=dict(os.environ, MSBUILDDISABLENODEREUSE="1")))
+finally:
+    fcntl.flock(fd, fcntl.LOCK_UN)
+    os.close(fd)

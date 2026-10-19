@@ -1,0 +1,10 @@
+İ5B-FIX-05 guard removal — one guard undone at a time in a copy outside the repository (the İ5B-FIX-05 sources);
+the named tests run against it.
+
+RED  G1 the rule's anchor not a required core text — FAILED (failures=3)
+RED  G2 the generated core not regenerated — FAILED (failures=1)
+RED  G3 the rule outside item 7 — FAILED (failures=1)
+RED  G4 core rules read with fenced code — FAILED (failures=5)
+RED  G5 an unclosed fence hides nothing — FAILED (failures=1)
+
+red: 5 of 5

@@ -1,0 +1,43 @@
+CT-FIX-08 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness7.py.txt. The copy's five production files equal the final sources byte for byte:
+True. Each mutation: the file still parses; the named tests fail; the control test
+(Controls.test_consumers_on_the_intact_fixture_exit_0) passes.
+
+G-V1 visible content read as strip()  (scripts/ct_queue.py)
+    tests: test_a_cited_line_needs_visible_content, test_a_broken_registry_stops_validate_and_require
+    applied: True · parses: True · named: RED — FAILED (failures=9) · control: OK · proven: True
+G-V2 evidence lines split by splitlines() again  (scripts/acceptance_record.py)
+    tests: test_a_cited_line_needs_visible_content
+    applied: True · parses: True · named: RED — FAILED (failures=10) · control: OK · proven: True
+G-Z1 discovery reads the text listing  (.antigravity/scripts/verify_module_id.py)
+    tests: test_quoted_paths_are_listed_by_every_consumer
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-Z2 the gate reads the text listing  (scripts/prompt_gate.py)
+    tests: test_quoted_paths_are_listed_by_every_consumer
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-Z3 the report reads the text listing  (scripts/status_report_v2.py)
+    tests: test_quoted_paths_are_listed_by_every_consumer
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-Z4 a non-UTF-8 entry is replaced, not refused  (scripts/ct_queue.py)
+    tests: test_the_nul_listing_decoder_refuses_a_broken_listing
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-Z5 a listing without its final NUL accepted  (scripts/ct_queue.py)
+    tests: test_the_nul_listing_decoder_refuses_a_broken_listing
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-Z6 an empty entry inside skipped  (scripts/ct_queue.py)
+    tests: test_the_nul_listing_decoder_refuses_a_broken_listing
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-R2 validate reads task files after a broken registry  (scripts/ct_queue.py)
+    tests: test_a_broken_registry_stops_validate_and_require
+    applied: True · parses: True · named: RED — FAILED (failures=4) · control: OK · proven: True
+G-R3 require answers 1 for a broken registry  (scripts/ct_queue.py)
+    tests: test_a_broken_registry_stops_validate_and_require
+    applied: True · parses: True · named: RED — FAILED (failures=4) · control: OK · proven: True
+G-O1 the open decisions after the collision groups again  (.antigravity/scripts/verify_module_id.py)
+    tests: test_the_open_decisions_survive_a_wide_query, test_the_open_decisions_follow_the_collisions
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+
+proven: 11 of 11
+
+G-V2 note: the mutation also changes how the lines are counted, so its red is broader than the U+2028 case alone
+(10 failed subtests, not 1); it proves the split, not a single character.

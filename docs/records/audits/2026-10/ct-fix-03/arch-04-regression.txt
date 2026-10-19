@@ -1,0 +1,15 @@
+fixture: HEAD da488263ecd7ab8aa38ab6e0a5a62e5437e51a07 tree 616a3bcf684a2bb5732cdfee91ccdbff2d9e5106 parent ca2bf5891f3e3cea642ea53f2c6f05075a7c76ab
+dotnet: 8.0.416
+lock: locked_run.py (sha256 9fa85857fee462256751518a7a8ebab9d63e69348b834e43a09ea08bd68728e5; flock on ct-heavy.lock)
+started: 2026-10-17T12:18:39Z
+restore exit: 0
+dotnet exit: 1
+Failed!  - Failed:    10, Passed:   134, Skipped:     0, Total:   144, Duration: 12 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+finished: 2026-10-17T12:18:56Z
+dirty after: 0
+
+known_failures check (raw TRX):
+BİLİNEN=7 YENİ=3 — CiServiceTestsGuardTests: Every_job_has_a_timeout_and_every_test_run_a_hang_timeout_and_a_result_file, Nothing_can_turn_a_red_test_or_build_green, The_page_help_ceiling_check_is_called_with_the_base
+cause: the first phase1 tools-venv step added two double-pipe operators (the guard pins exactly 2) and replaced the exact
+'python3 -m unittest discover -s scripts/tests -p ...' line the guard pins. Fixed in scripts/run_phase1_gates.sh only; the
+guard tests were not changed.

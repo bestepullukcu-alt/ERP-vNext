@@ -1,0 +1,36 @@
+"""CT-FIX-07: the generated evidence texts from the raw outputs (no local paths). Usage: make_evidence7.py <scratch ctfix07> <evidence dir>"""
+import json, re, sys, os, shutil, collections
+S, E = sys.argv[1:3]
+os.makedirs(os.path.join(E, "drivers"), exist_ok=True)
+text = open(os.path.join(S, "red-first/ct-red.txt"), encoding="utf-8").read()
+rows = re.findall(r"^(test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\) \.\.\. (ok|FAIL|ERROR)$", text, re.M)
+out = ["CT-FIX-07 red first — the new tests against the committed CT-FIX-06 sources (70c3561d5) in a copy outside the",
+       "repository, this package's test files copied in; run by the AI session.", "",
+       re.search(r"^Ran .*$", text, re.M).group(0), ""]
+out += [f"  {res:5s} {mod}.{cls}.{name}" for name, mod, cls, res in rows]
+out += ["", "The new tests fail or error (no open-decision, Blueprint or domain-config line; no domain_config_at_head); the",
+        "earlier summary tests and the controls pass."]
+open(os.path.join(E, "red-first.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+res = json.load(open(os.path.join(S, "guard/ct-guard.json"), encoding="utf-8"))
+out = ["CT-FIX-07 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+       "Driver: drivers/harness5.py.txt. The copy holds the final verify_module_id.py (a63ea76b…). Each mutation: the file still",
+       "parses; the named tests fail (G-D1 by an error: the line they look for is absent); the control test passes.", ""]
+for r in res:
+    out += [r["mutation"], f"    tests: {', '.join(t.split('.')[-1] for t in r['tests'])}",
+            f"    named: {'RED' if r['red'] else 'green'} — {r['summary']} · control: {r['control_summary']} · proven: {r['proven']}"]
+out += ["", f"proven: {sum(r['proven'] for r in res)} of {len(res)}"]
+open(os.path.join(E, "guard-removal.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+old = open(os.path.join(S, "disc-old.txt"), encoding="utf-8").read().splitlines()
+new = open(os.path.join(S, "disc.txt"), encoding="utf-8").read().splitlines()
+keep = lambda ls: [l for l in ls if not l.startswith(("ÖZET ", "araç: ", "rapor-sha256: "))]
+summ = [l for l in new if l.startswith("ÖZET ")]
+out = ["CT-FIX-07 real data — `verify_module_id.py . --discover \"Employee\"` at 70c3561d5, the committed CT-FIX-06 tool and",
+       "this package's tool; run by the AI session.", "",
+       f"every line except the ÖZET, araç and rapor-sha256 lines identical: {keep(old) == keep(new)}",
+       f"BULGU lines {sum(l.startswith('BULGU ') for l in old)} -> {sum(l.startswith('BULGU ') for l in new)}",
+       f"ÖZET block: {len(summ)} lines, {sum(len(l.encode()) + 1 for l in summ)} bytes; the open-decision, Blueprint and domain-config lines inside the first 4 KB",
+       "", "The ÖZET block (each line cut at 200 characters here):"] + ["  " + l[:200].rstrip() for l in summ]
+open(os.path.join(E, "real-data.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+for src, dst in (("guard/harness5.py", "harness5.py.txt"), ("make_evidence7.py", "make_evidence7.py.txt")):
+    shutil.copyfile(os.path.join(S, src), os.path.join(E, "drivers", dst))
+print("written")

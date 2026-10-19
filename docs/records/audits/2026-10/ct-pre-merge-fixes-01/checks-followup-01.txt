@@ -1,0 +1,60 @@
+# Checks — step 1 follow-up 01, measured 2026-10-15T18:42+0300
+
+## origin/main (local ref; remote not fetched)
+local origin/main: 3912d568b18193f627539a1b27965167ac4077b6
+last fetch (FETCH_HEAD mtime): 2026-10-15T17:54+0300
+
+## code pinned before run 3
+base commit: 47059c69455a5f3c619a2d488553a254d7e14cc7
+changed files: scripts/ct_queue.py scripts/known_failures.py 
+scripts/known_failures.py sha256: 55d73dd5321e4fb0bacbf9adf08091f002d3fd6007740529472ccecea17446fe
+scripts/ct_queue.py sha256: da739e51c9f130b7ac862e4b07a9fd7b9ca7fd4cfbd3d3f5a11d8eced060c21e
+diff (47059c694 → working tree, the two files) sha256: c486bbdae604dbaf581b8f522d578c9bbedf6e5cd1eb6d2233bf20bec604e0c1
+
+## identity of the known_failures.py used in run 2 (run 2's full source tree: NOT VERIFIED)
+run2 known_failures.py sha256: df4eef97b4a6abfb16f34292e2dc47dc59faf878c5bad9bfd57952fe9b04e245
+run2 file lacks the duplicate-name fix: True
+committed 47059c694 file contains the duplicate-name fix: True
+
+## run 3 (pinned code)
+Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 8 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+raw_sha256=1f77bad5150365e59d40558a27b5dab9fc4ececb227675d7779c0b01d80e9a36
+sanitized_sha256=05a58fcdf3fa2e9f9a883c8f801446a584c3321bb43fb54d25f3a43f522d49f0
+replacements R1=306 R2=145 R3=1 R4=1
+leftover home=0 user=0 unsanitised computerName=0
+code after run 3 — known_failures.py: 55d73dd5321e4fb0bacbf9adf08091f002d3fd6007740529472ccecea17446fe
+code after run 3 — ct_queue.py: da739e51c9f130b7ac862e4b07a9fd7b9ca7fd4cfbd3d3f5a11d8eced060c21e
+
+## known_failures.py check (pinned tool) — compared files
+run1.sanitized.trx: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+run2.sanitized.trx: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+run3 raw (outside the repository): ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+run3.sanitized.trx: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+fingerprint sets equal across these four files: 1 distinct set(s)
+
+## the two findings: 47059c694 vs follow-up (in memory, run 2 raw TRX)
+47059c694 (before) | finding 1 (list lost): KISMEN=1 YENİ-AYRINTI=0 exit=0
+47059c694 (before) | finding 2 (header + id only): registered_in -> True
+follow-up (after) | finding 1 (list lost): KISMEN=0 YENİ-AYRINTI=1 exit=1
+follow-up (after) | finding 2 (header + id only): kayıt geçersiz
+follow-up (after) | this tree's own registry read as if it were main (real git checks): ('kayıtlı', '')
+
+## self-tests and validators
+self-test: 24/24 passed
+OK registry
+self-test: 33/33 passed
+OK sce-mvp6 (çalışma ağacı): 0 hata, 1 uyarı; taban 6b8a62d5a
+
+## require (sce-mvp6, Q124)
+DAĞITILABİLİR Q124: READY
+HAZIRLIK: 'sce-mvp6' bu çalışma ağacının kayıt dosyasında kayıtlı
+YÜRÜRLÜK: yerel origin/main referansı 3912d568b18193f627539a1b27965167ac4077b6 (son fetch: 2026-10-15T17:54) — kayıt dosyası yok; uzak durum doğrulanmadı
+DUR: --in-force — 'sce-mvp6' origin/main'de kayıtlı değil; R8 r3'e göre yürürlükte bir kayıtlı kaynak yok
+exit (--in-force)=1
+
+## SCE / MVP6
+SCE non-regression (e07df6bf1 ct_queue.py vs follow-up): refs=50 id comparisons=25028 refs with any difference=0 strict(sce-mvp6)=False
+
+## tools
+Python 3.9.6
+sanitize_trx.py sha256: b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72
