@@ -9,9 +9,9 @@ golden_reference: compact
 data_mode: server
 entity_base: EntityBase
 form_field_count: 14
-runtime_code_allowed: false
-flip_approved_by: ""
-status: draft
+runtime_code_allowed: true
+flip_approved_by: "user via Control Tower — 2026-10-20 (D1–D17 + §20.3 AÇIK kararları; WP-VW-W6 K-O1…K-O5; F8-a ve PLT-W6 önkoşul)"
+status: ready-for-dev
 owner: module-pack-author
 branch: feature/crm/mod-0156-price-lists-discount-guardrails
 started: 2026-10-19
@@ -707,7 +707,7 @@ GET  /api/commercial/pricing-history                     price-lists.read | pric
 - [x] Kabul ölçütleri (§16) + sabotajlı testler (§17); denetlenen olaylar (§21); yardım kodları, tur yok (§11)
 - [x] D7, D8, D11, D12, D13, D14 + K-O1…K-O5 KİLİTLİ (§19, §20.1)
 - [x] **§20.2 AÇIK-1…AÇIK-5** cevapları — §20.3 (kullanıcı 2026-10-20) + EK-1 elle liste; önkoşul F8-a
-- [ ] **Ayrı karar:** `ready-for-dev` + `runtime_code_allowed: true` + `flip_approved_by` — kullanıcı onayıyla CT
+- [x] **Ayrı karar:** `ready-for-dev` + `runtime_code_allowed: true` + `flip_approved_by` — kullanıcı onayıyla CT — **YAPILDI 2026-10-20 (kullanıcı onayı)**
 
 ---
 

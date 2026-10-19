@@ -9,9 +9,9 @@ golden_reference: compact
 data_mode: server
 entity_base: EntityBase
 form_field_count: 9
-runtime_code_allowed: false
-flip_approved_by: ""
-status: draft
+runtime_code_allowed: true
+flip_approved_by: "user via Control Tower — 2026-10-20 (D1–D17 + §20.3 AÇIK kararları; WP-VW-W6 K-O1…K-O5; F8-a ve PLT-W6 önkoşul)"
+status: ready-for-dev
 owner: module-pack-author
 branch: feature/crm/mod-0168-order-capture
 started: 2026-10-19
@@ -739,7 +739,7 @@ GET    /api/commercial/pre-order-approval-links/{token}  (oturum açtıktan sonr
 - [x] Sayfa yardım kodları yazılı; tur yok (§11)
 - [x] D1–D16 + K-O1…K-O5 KİLİTLİ (§19, §20.1)
 - [x] **§20.2 AÇIK-2 / AÇIK-3 / AÇIK-4 / AÇIK-6 kararları** — §20.3 (kullanıcı 2026-10-20); önkoşullar PLT-W6 + F8-a
-- [ ] **Ayrı karar:** `status: ready-for-dev` + `runtime_code_allowed: true` + `flip_approved_by` — kullanıcı onayıyla CT yapar
+- [x] **Ayrı karar:** `status: ready-for-dev` + `runtime_code_allowed: true` + `flip_approved_by` — kullanıcı onayıyla CT yapar — **YAPILDI 2026-10-20 (kullanıcı onayı)**
 
 ---
 
