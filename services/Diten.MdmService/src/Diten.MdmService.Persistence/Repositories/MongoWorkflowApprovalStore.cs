@@ -9,7 +9,8 @@ namespace Diten.MdmService.Persistence.Repositories;
 /// event consumer run without an HTTP request, so the tenant can never come from <c>ITenantContext</c>).
 /// <list type="bullet">
 /// <item><b>Load</b> filters on the GIVEN tenant + id + not deleted: another tenant's record is not found.</item>
-/// <item><b>Replace</b> matches tenant + id + the EXPECTED version and writes version + 1; a lost race matches nothing and
+/// <item><b>Replace</b> matches tenant + id + the EXPECTED version and writes version + 1 (BL-640: as a field-level <c>$set</c>
+/// of the mapped members, so a later binary's field survives); a lost race matches nothing and
 /// leaves the in-memory version as it was (the caller reloads / answers 409).</item>
 /// </list>
 /// Added beside <see cref="RepositoryBase{TEntity}"/> on purpose: the HTTP-tenant base and its version-blind
@@ -48,7 +49,9 @@ public sealed class MongoWorkflowApprovalStore<T> : IWorkflowApprovalStore<T> wh
             Builders<T>.Filter.Eq(x => x.Id, record.Id),
             Builders<T>.Filter.Eq(x => x.Version, expectedVersion));
         record.Version = expectedVersion + 1;
-        var result = await _collection.ReplaceOneAsync(filter, record, cancellationToken: ct);
+        // BL-640 — a field-level $set of the mapped members (FieldLevelUpdate), never a whole replace: a field a later
+        // binary added to the stored record survives this update. The compare-and-swap filter above is unchanged.
+        var result = await _collection.UpdateOneAsync(filter, FieldLevelUpdate.SetMappedFields(record), cancellationToken: ct);
         if (result.MatchedCount == 1)
         {
             return true;

@@ -27,8 +27,6 @@ public static class DependencyInjection
         Configurations.GlobalProductLifecycleClassMaps.Register();
         // MOD-0290-FU04 S1 — the item's maps ignore extra elements (a later slice's fields still read).
         Configurations.ItemMasterClassMaps.Register();
-        // WP-VW-W4 (W4-BE-b2) — the competitor aggregates.
-        Configurations.CompetitorProductClassMaps.Register();
 
         var connectionString = configuration["Mongo:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing.");
