@@ -152,3 +152,24 @@ Ajan commit'i `eb90e5d19` → test dalına cherry-pick. Yalnız Web.
 **Açık / dikkat:**
 - Görsel kanıt (W3 mockup ile yan yana) E4'te alınır; ajanın düzeneği `C:\tmp\vw-w3l-web-e\.ct-out\harness\` (commit'e girmedi).
 - E4 ön koşulu: fleet test dalı başından yeniden başlatılır + grant `--apply`.
+
+## §37 CT — W3L canlı E4 (2026-10-19, CT yürüttü · yerel fleet, kiracı 97c5, Admin User)
+**Senaryo:** GMG-GRAND MEDICAL ILACLARI LTD STI tüzel kişilik katmanı ekle → "İzin verilen mesafe" 300 → 500 → kaydet → Admin User etkin ayar → Temsilciler → Geçmiş → kapsamı kaldır. Admin User'ın koltuğu: CEO → HQ (Genel Merkez) → LE 1754b820 (GMG).
+
+**Canlıda bulunan iki hata (birim testleri yakalamadı; ikisi de düzeltildi, test dalında):**
+1. **Gateway** — `/api/crm/visit-evidence-policy/{everything}` yalnız GET → kapsam PUT / DELETE 404. Düzeltme `c26fb9baa`: PUT + DELETE; `VwW3AuthoringRouteCoverageTests` kapsam uçlarını sabitler (sabotaj: PUT çıkar → 2 kırmızı).
+2. **Platform** — `Platform.Common` `TenantResolutionMiddleware.IsTenantScopedOrgPath` listesinde `/api/platform/organization/seats` yoktu (PLT-ORG-SEAT yalnız Gateway listesine ekledi) → Platform kiracı kullanıcısının koltuk okumasını yönetici ucu sayıp reddetti → CRM `platform-unavailable` ile LE katmanını atladı. Düzeltme `cb6158695`: satır + `TenantActorTypeRequiredHttpTests` (seats rotası kiracı; üst `/api/platform/organization` yönetici kalır) — düzeltmeden önce kırmızı, sonra 61/61.
+
+**Ders:** yeni bir Platform kiracı yolu İKİ listeye girer (Gateway + Platform.Common); CRM'in yeni uçları Gateway rota kapsama testine yazılır. WP kabulünde canlı yol (gerçek ara katman) testi aranır.
+
+**Sonuç (düzeltmelerden sonra) — GEÇTİ:**
+- Kayıt: özet "Üstten: 300 m → 500 m", "Kapsam oluşturuldu"; ağaçta GMG "1 alan farklı · 1 temsilci".
+- Etkin ayar (Admin User): mesafe 500 m — kaynak "Tüzel kişilik: GMG…"; diğer alanlar "Kiracı"; zincir GMG + not "Birden çok iş birimi — iş birimi katmanı atlandı" (K-L4 / K-L5).
+- Temsilciler: Admin User kapsamı GMG (dar ekranda ayrıntı penceresinde).
+- Geçmiş: kapsam süzgeci GMG → "Kapsam oluşturuldu" + "Üstten → 500 m".
+- Kaldır: onay penceresi ("1 temsilci hemen üst ayara döner") → DELETE 200 → etkin mesafe 300 / Kiracı, LE notu `no-layer`. Veri ilk hâline döndü (kapsam arşivde, geçmiş duruyor).
+
+**Küçük bulgular (takip):**
+- **FU-W3L-REPS-TITLE:** GMG kapsamı seçiliyken Temsilciler sekmesinin başlığı "Temsilciler · Kiracı varsayılanı" kalıyor.
+- Fleet yeniden başlatıldıktan hemen sonraki ilk yüklemelerde (ısınma) kapsam listesi ~40 sn sürdü ve koltuk okuması düşünce GMG "en az 0 temsilci" gösterdi (zarif düşüş); ısındıktan sonra tüm uçlar < 120 ms.
+- W3 mockup ile yan yana görsel karşılaştırma bu turda YAPILMADI.
