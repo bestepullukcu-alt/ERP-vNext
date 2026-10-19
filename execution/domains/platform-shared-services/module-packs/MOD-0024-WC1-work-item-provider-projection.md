@@ -1,7 +1,7 @@
 ---
-id: CAND-CAP-0006
+id: MOD-0024-WC1
 name: WC-1 — Unified Work-Item Provider Contract & Projection
-governance_identity: CAND-CAP-0006
+governance_identity: MOD-0024 (was CAND-CAP-0006; Blueprint 8.7)
 charter: DCP-004
 slice: WC-1
 domain: platform-shared-services
@@ -19,6 +19,8 @@ form_field_count: 0
 ---
 
 # WC-1 — Unified Work-Item Provider Contract & Projection (CAND-CAP-0006 / DCP-004)
+
+> **Blueprint 8.7 (2026-10-19):** the Master absorbs `CAND-CAP-0006` into `MOD-0024` Task & Checklist Engine as its Work Center page / workspace. This pack's identity is now `MOD-0024-WC1` (child of `MOD-0024`; file renamed from `CAND-CAP-0006-WC1-work-item-provider-projection.md`). The `CAND-CAP-0006` sentences below are the record before that; runtime code, slugs and the product name Görev Merkezi / Task Center are unchanged.
 
 > **Identity (DCP-002):** governance identity is **`CAND-CAP-0006`** (temporary candidate; no Blueprint
 > `MOD-xxxx` yet). This is the **first executable slice of the approved charter
