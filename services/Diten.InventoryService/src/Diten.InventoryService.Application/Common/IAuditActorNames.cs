@@ -11,4 +11,12 @@ public interface IAuditActorNames
 {
     Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> NamesAsync(
         IReadOnlyCollection<(Guid CorrelationId, Guid ActorId)> keys, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// WP-MVP1-NAMES1 (RECALL 1.8.0 / INVENTORY 1.5.0) — the same read bounded to ONE company of the caller's tenant: a queue row counts only
+    /// when its <c>CompanyId</c> is <paramref name="companyId"/> (the queue writes the request's legal entity), so another company's row of the
+    /// same tenant never names anyone on this company's screens. ONE read for all <paramref name="keys"/> (callers pass a whole page at once).
+    /// </summary>
+    Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> NamesAsync(
+        IReadOnlyCollection<(Guid CorrelationId, Guid ActorId)> keys, Guid companyId, CancellationToken cancellationToken = default);
 }

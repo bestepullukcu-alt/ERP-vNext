@@ -89,8 +89,17 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
                 LegalEntities.HttpContextAccessor = sp.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>();
                 return LegalEntities;
             });
+
+            // WP-MVP1-NAMES1: the production name reader, counted (AuditNameReads) — pass-through, it reads exactly what production reads.
+            services.AddScoped<Diten.InventoryService.Persistence.CentralAuditActorNames>();
+            services.AddScoped<Diten.InventoryService.Application.Common.IAuditActorNames>(sp => new CountingAuditActorNames(
+                sp.GetRequiredService<Diten.InventoryService.Persistence.CentralAuditActorNames>(),
+                sp.GetRequiredService<Diten.InventoryService.Application.Common.ITenantContext>(), AuditNameReads));
         });
     }
+
+    /// <summary>WP-MVP1-NAMES1 — every name read of this host (tenant, pairs asked, company): a test filters by its own tenant.</summary>
+    public ConcurrentQueue<AuditNameRead> AuditNameReads { get; } = new();
 
     protected override void Dispose(bool disposing)
     {

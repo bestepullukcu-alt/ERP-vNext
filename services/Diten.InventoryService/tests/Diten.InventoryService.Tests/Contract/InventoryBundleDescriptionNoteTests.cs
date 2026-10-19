@@ -55,8 +55,13 @@ public sealed class InventoryBundleDescriptionNoteTests
         // 1.3.0 (WP-0176-F2)
         .. V130Additions,
         // 1.4.0 (WP-0177-R3)
-        UnprocessableExamples + "lotUnderRecall."
+        UnprocessableExamples + "lotUnderRecall.",
+        // 1.5.0 (WP-MVP1-NAMES1)
+        CreatedBy
     ];
+
+    /// <summary>The 1.5.0 addition (WP-MVP1-NAMES1): the optional <c>TransactionItem.createdBy</c> subtree only.</summary>
+    private const string CreatedBy = "components.schemas.TransactionItem.properties.createdBy.";
 
     private const string UnprocessableExamples = "components.responses.UnprocessableMovement.content.application/json.examples.";
     private const string PostMovementDescription = "paths./movements.post.description";
@@ -81,7 +86,7 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version", SkuLevelDescription], changed);
-        Assert.Equal("1.4.0", current["info.version"]);
+        Assert.Equal("1.5.0", current["info.version"]); // WP-MVP1-NAMES1: 1.4.0 → 1.5.0 (the createdBy subtree is in AdditivePrefixes)
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
                                            || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
                                            || k == "components.schemas.SkuLevel.enum[3]" || k == PostMovementDescription
@@ -163,6 +168,42 @@ public sealed class InventoryBundleDescriptionNoteTests
 
     private static string FixtureV130Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.3.0.openapi.yaml");
 
+    /// <summary>WP-MVP1-NAMES1: the 1.4.0 file as frozen by WP-0177-R3, kept byte for byte (LF-normalised; git blob at 2452eb7cf).</summary>
+    private const string FrozenV140Sha256 = "3374dbf5e9cbd735035fa18b27778d53d1d787c5f0b8de77bb18e22cf0b9f146";
+
+    private static string FixtureV140Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.4.0.openapi.yaml");
+
+    [Fact]
+    public void The_1_4_0_fixture_is_the_frozen_1_4_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV140Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV140Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// WP-MVP1-NAMES1 — 1.4.0 → 1.5.0 is ADDITIVE and OPTIONAL (owner decision A on FU-0173-UI-USER-01): nothing of 1.4.0 changes but the version;
+    /// the additions are one changelog line and the <c>TransactionItem.createdBy</c> subtree — an object { userId (uuid, required in it), name }
+    /// that is itself NOT in any required list (TransactionItem has none; a consumer that ignores it is unchanged).
+    /// </summary>
+    [Fact]
+    public void The_1_5_0_change_is_the_optional_createdBy_of_TransactionItem_only()
+    {
+        var frozen = Flatten(Load(FixtureV140Path));
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
+        var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
+        Assert.Equal(["info.version"], changed);
+        Assert.Equal(("1.4.0", "1.5.0"), (frozen["info.version"], current["info.version"]));
+        var lines = added.Where(k => k.StartsWith("info.x-changelog[", StringComparison.Ordinal)).ToList();
+        Assert.StartsWith("1.5.0 — additive, optional (WP-MVP1-NAMES1", current[Assert.Single(lines)]);
+        Assert.All(added.Except(lines), k => Assert.StartsWith(CreatedBy, k, StringComparison.Ordinal));
+        Assert.Equal("object", current[CreatedBy + "type"]);
+        Assert.Equal("userId", current[CreatedBy + "required[0]"]);
+        Assert.False(current.ContainsKey(CreatedBy + "required[1]"), "only userId is required inside createdBy");
+        Assert.Equal(("uuid", "string"), (current[CreatedBy + "properties.userId.format"], current[CreatedBy + "properties.name.type"]));
+        Assert.DoesNotContain(current.Keys, k => k.StartsWith("components.schemas.TransactionItem.required", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void The_1_3_0_fixture_is_the_frozen_1_3_0_file_byte_for_byte()
     {
@@ -179,7 +220,7 @@ public sealed class InventoryBundleDescriptionNoteTests
     public void The_1_4_0_change_is_additive_lot_under_recall_and_the_CT_R10_note()
     {
         var frozen = Flatten(Load(FixtureV130Path));
-        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var current = Flatten(Load(FixtureV140Path)); // WP-MVP1-NAMES1: the 1.4.0 file as frozen (the live file is 1.5.0)
         var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
         Assert.Equal(["info.version", PostMovementDescription], changed);

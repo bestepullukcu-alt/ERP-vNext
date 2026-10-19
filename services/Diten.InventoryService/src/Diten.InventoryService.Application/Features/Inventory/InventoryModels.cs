@@ -112,7 +112,16 @@ public sealed class TransactionItemDto
     public string? SourceLineId { get; init; }
     public string TransactionDate { get; init; } = string.Empty;
     public string PostingDate { get; init; } = string.Empty;
+
+    /// <summary>INVENTORY 1.5.0 (WP-MVP1-NAMES1, additive, optional) — who posted it; absent for a posting without a user.</summary>
+    public TransactionCreatedByDto? CreatedBy { get; init; }
 }
+
+/// <summary>
+/// INVENTORY 1.5.0 <c>TransactionItem.createdBy</c>: the posting user and the name AT THE TIME of the posting (the central audit queue's
+/// display name of the posting correlation, same company) — <c>Name</c> is null (omitted) when none was recorded; never the live label.
+/// </summary>
+public sealed record TransactionCreatedByDto(string UserId, string? Name = null);
 
 /// <summary>
 /// Contract <c>ReservationResponse</c>. createReservation fills every member; releaseReservation answers the contract

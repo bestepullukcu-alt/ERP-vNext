@@ -6,7 +6,7 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.4.0
+  version: 1.5.0
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
@@ -19,6 +19,7 @@ info:
     - "1.2.1 — description only (WP-0174-ITEM, O-PM1-3): SKU_LEVEL_NOT_STOCKABLE also covers a SKU that PRODUCT-MASTER publishes stockable: false (every movement except REVERSAL). Nothing else changed."
     - "1.3.0 — additive (WP-0176-F2, MOD-0176 KF-B / KF-C, CT-F1): postMovement accepts the optional fefoBypassReason (10–1000, the reason of an issue that is not from the first eligible FEFO lot of the same company + warehouse + SKU) and answers the optional expiryChecks (fefo Compliant | Bypassed, minRemaining Ok | NotDefined | Warned | NotApplicable, the ids of the expiry exceptions it opened); three 422 codes under the existing UnprocessableMovement response — FEFO_BYPASS_REASON_REQUIRED, FEFO_ORDER_VIOLATION, LOT_BELOW_MIN_REMAINING_SHELF_LIFE (details.requiredToStockStatus = QUARANTINE when the company quarantines such receipts: the caller resubmits into QUARANTINE; the ledger never changes the requested status — CT-F1); two description-only examples of the existing LOT_EXPIRED and LOT_BLOCKED refusals. A request without fefoBypassReason keeps its idempotency fingerprint. No existing path, parameter, property, type, required list, status code or enum value changed."
     - "1.4.0 — additive (WP-0177-R3, MOD-0177 KR-C / KR-H, CT-R4 / CT-R7 / CT-R10 / CT-R11; owner step MOD-0173 + MOD-0174): postMovement may answer 422 LOT_UNDER_RECALL (details lotId, lotNumber, recallCaseId, recallCaseNumber, movementType) under the existing UnprocessableMovement response — a lot under an active recall (RECALL-BUNDLE getLotRecallStatus; by lot id in every company of the tenant, CT-R7) refuses GOODS_ISSUE_SALES, GOODS_ISSUE_PROD and WAREHOUSE_TRANSFER (MVP-6 shipment issues included); every other type is exempt; the exemption is decided by movement type only — sourceModule is never read; no reason or signature overrides it. A typed lot text equal to a recalled lot number of the same SKU is refused the same way. Checked after the lot rules and before the expiry hooks (a refused posting writes no FEFO snapshot or exception); re-checked inside the posting transaction. CT-R10 (lot rule, narrow): a CUSTOMER_RETURN of a Blocked / Expired lot is accepted only into QUARANTINE, QUALITY_INSPECTION or BLOCKED (into AVAILABLE it stays 422 LOT_BLOCKED / LOT_EXPIRED). New example lotUnderRecall. No existing path, parameter, property, type, required list, status code or enum value changed."
+    - "1.5.0 — additive, optional (WP-MVP1-NAMES1, owner decision 2026-10-19 on FU-0173-UI-USER-01, option A): TransactionItem (getTransactions) gains the optional member createdBy { userId (uuid, required inside the object), name (optional) } — userId = the user who posted the movement; name = the display name AT THE TIME of the posting, read from the central audit queue (ActorDisplayName) of the posting's correlation id and the same user, the same tenant and company; absent when none was recorded (older movements) and never the live account label. A posting without a user carries no createdBy. No existing path, parameter, property, type, enum, required list or status code changed."
 servers:
   - url: /api/inventory
 security:
@@ -430,6 +431,13 @@ components:
         sourceLineId: { type: string, nullable: true }
         transactionDate: { type: string, format: date-time }
         postingDate: { type: string, format: date-time }
+        createdBy:
+          type: object
+          description: "1.5.0 (additive, optional) — who posted the movement: userId = the posting user; name = the name at the time of the posting (central audit queue ActorDisplayName of the posting correlation, same user, tenant and company), absent when not recorded. A client shows a localized \"unknown user\" when name is absent — never the id as a name."
+          required: [userId]
+          properties:
+            userId: { type: string, format: uuid }
+            name: { type: string }
     MovementResponse:
       type: object
       properties:

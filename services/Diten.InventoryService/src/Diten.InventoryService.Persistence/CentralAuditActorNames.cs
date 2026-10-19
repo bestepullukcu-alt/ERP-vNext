@@ -22,8 +22,16 @@ public sealed class CentralAuditActorNames : IAuditActorNames
         _tenant = tenant;
     }
 
-    public async Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> NamesAsync(
+    public Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> NamesAsync(
         IReadOnlyCollection<(Guid CorrelationId, Guid ActorId)> keys, CancellationToken cancellationToken = default)
+        => ReadAsync(keys, null, cancellationToken);
+
+    public Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> NamesAsync(
+        IReadOnlyCollection<(Guid CorrelationId, Guid ActorId)> keys, Guid companyId, CancellationToken cancellationToken = default)
+        => ReadAsync(keys, companyId, cancellationToken);
+
+    private async Task<IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>> ReadAsync(
+        IReadOnlyCollection<(Guid CorrelationId, Guid ActorId)> keys, Guid? companyId, CancellationToken cancellationToken)
     {
         var names = new Dictionary<(Guid, Guid), string>();
         if (keys.Count == 0 || !_tenant.IsResolved) return names;
@@ -33,6 +41,7 @@ public sealed class CentralAuditActorNames : IAuditActorNames
                      & f.In(nameof(CentralAuditOutboxRecord.CorrelationId), asked.Select(k => k.CorrelationId.ToString("D")).Distinct())
                      & f.In(nameof(CentralAuditOutboxRecord.ActorId), asked.Select(k => k.ActorId.ToString("D")).Distinct())
                      & f.Type(nameof(CentralAuditOutboxRecord.ActorDisplayName), BsonType.String);
+        if (companyId is { } company) filter &= f.Eq(nameof(CentralAuditOutboxRecord.CompanyId), company.ToString("D"));
         var rows = await _outbox.Find(filter)
             .Project(Builders<BsonDocument>.Projection.Include(nameof(CentralAuditOutboxRecord.CorrelationId))
                 .Include(nameof(CentralAuditOutboxRecord.ActorId)).Include(nameof(CentralAuditOutboxRecord.ActorDisplayName)))
