@@ -687,4 +687,5 @@
   <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>Revue</value></data>
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Libération</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Auteur</value></data>
+  <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
 </root>

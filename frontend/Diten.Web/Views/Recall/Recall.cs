@@ -682,6 +682,7 @@ public sealed class Recall
         "Recall.Band.Exit",
         "Recall.Band.Release",
         "Recall.Band.HoldSource",
+        "Recall.Case.UnknownUser",
         "Recall.Ev.W.meaning.REVIEW",
         "Recall.Ev.W.meaning.RELEASE",
         "Recall.Ev.W.meaning.AUTHOR",
