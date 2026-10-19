@@ -118,12 +118,12 @@ Use frozen `SHIPMENT-BUNDLE` `/claims**`; only a separate integration-agent WP m
 
 ## 16. Acceptance Criteria
 
-- [ ] No runtime implementation exists while status is `draft`.
-- [ ] Future payloads, responses, errors and events match frozen v1.
-- [ ] Shipment/POD is consumed through MOD-0183 contract/reference only.
-- [ ] Amount precision and lifecycle transitions are deterministic and atomic.
-- [ ] Settled status does not create a payment/AP/AR record.
-- [ ] Correlation ID remains unchanged through all claim events.
+- [ ] No runtime implementation exists while status is `draft`. — **⊘ SUPERSEDED** (status ready-for-dev (PACK-ACTIVATE-01); draft condition lapsed; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] Future payloads, responses, errors and events match frozen v1. — **⚠ PARTIAL** (component level; no response/OpenAPI validation; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Shipment/POD is consumed through MOD-0183 contract/reference only. — **✅ MET** (`ClaimReferenceTests`; BOUNDARY-REFS 0 namespace refs; Q151-02 and G5 runs; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Amount precision and lifecycle transitions are deterministic and atomic. — **✅ MET** (`ClaimAmountTests.*`, `ClaimLifecycleTests.CanTransition_All49Pairs…`, `ClaimAtomicityTests`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Settled status does not create a payment/AP/AR record. — **✅ MET** (`ClaimSettlementBoundaryTests.Settled_and_closed_write_only_claim_collections…` (2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Correlation ID remains unchanged through all claim events. — **✅ MET** (`ClaimSettlementBoundaryTests.Every_claim_event_type_carries_the_shipment_root` (7/7, 2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 
 ## 17. Test Expectations
 

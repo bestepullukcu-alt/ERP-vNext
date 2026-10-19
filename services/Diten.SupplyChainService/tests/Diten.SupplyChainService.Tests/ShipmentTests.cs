@@ -288,6 +288,50 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         using var options = new HttpRequestMessage(HttpMethod.Options, "/api/shipment-bundle/shipments");
         Assert.Equal(HttpStatusCode.MethodNotAllowed, (await c.SendAsync(options)).StatusCode);
     }
+    // MOD-0183 §16 (evidence audit 2026-10-19): "same create/transition key → same result, no second write or event" had a
+    // create and a POD replay test but no TRANSITION replay. Same key + same body → the same answer and no new history,
+    // audit or outbox row; same key + a different body → 409, still nothing written.
+    [Fact]
+    public async Task SameKeyTransitionReplayIsOneWriteAndADifferentBodyIsRefused()
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient(); var id = await Create(app, c);
+        var first = await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "plan-once");
+        Assert.Equal(200, first.Status);
+        var before = await StateSnapshotAsync(app);
+        var replay = await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "plan-once");
+        Assert.Equal(200, replay.Status);
+        Assert.Equal(first.Body["status"]?.GetValue<string>(), replay.Body["status"]?.GetValue<string>());
+        Assert.Equal(first.Body["shipmentId"]?.GetValue<string>(), replay.Body["shipmentId"]?.GetValue<string>());
+        await AssertUnchangedAsync(app, before, "transition replay");
+        var changed = await Send(c, "POST", $"/{id}/transition", Transition("Cancelled"), "plan-once");
+        Assert.Equal(409, changed.Status);
+        await AssertUnchangedAsync(app, before, "same key, different body");
+        Assert.Equal(2, await Count(app, "sce_shipment_history"));
+        Assert.Equal(2, await Count(app, "sce_shipment_outbox"));
+    }
+
+    // MOD-0183 §16: cross-tenant / cross-legal-entity MUTATIONS (only reads were tested) answer 404 and write nothing —
+    // neither in the owner's scope nor in the caller's. Token and headers move together, so this is the repository's
+    // answer, not a header mismatch.
+    [Fact]
+    public async Task CrossScopeMutationsAre404AndWriteNothingAnywhere()
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient(); var id = await Create(app, c);
+        Assert.Equal(200, (await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "own-plan")).Status);
+        Assert.Equal(200, (await Send(c, "POST", $"/{id}/transition", Transition("Dispatched"), "own-dispatch")).Status);
+        var before = await StateSnapshotAsync(app);
+        var otherTenant = Guid.NewGuid(); var otherLe = Guid.NewGuid();
+        foreach (var (tenant, le, label) in new[] { (otherTenant, _le, "tenant"), (_tenant, otherLe, "legal-entity") })
+        {
+            Assert.Equal(404, (await Send(c, "POST", $"/{id}/transition", Transition("InTransit"), "x-" + label, tenant: tenant, le: le)).Status);
+            Assert.Equal(404, (await Send(c, "POST", $"/{id}/pod", Pod(), "pod-" + label, tenant: tenant, le: le)).Status);
+            var foreign = new BsonDocument { { "TenantId", tenant.ToString() }, { "LegalEntityId", le.ToString() } };
+            foreach (var name in StateCollections)
+                Assert.Equal(0, await Db(app).GetCollection<BsonDocument>(name).CountDocumentsAsync(foreign));
+        }
+        await AssertUnchangedAsync(app, before, "cross-scope mutations");
+    }
+
     private static readonly string[] StateCollections =
         ["sce_shipments", "sce_shipment_receipts", "sce_shipment_history", "sce_shipment_audit", "sce_shipment_outbox"];
 

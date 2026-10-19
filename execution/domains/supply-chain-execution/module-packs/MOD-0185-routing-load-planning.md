@@ -120,11 +120,11 @@ Use the `SHIPMENT-BUNDLE` `/loads**` surface. Gateway changes belong only to a l
 
 ## 16. Acceptance Criteria
 
-- [ ] No runtime code exists while this pack is `draft`.
-- [ ] Future implementation consumes verified MOD-0184 and MOD-0183 seams by contract.
-- [ ] Load commands/responses/events match frozen v1 examples and schemas.
-- [ ] Invalid transitions and duplicate assignment are atomic failures.
-- [ ] Correlation UUID is preserved from command through all load events.
+- [ ] No runtime code exists while this pack is `draft`. — **⊘ SUPERSEDED** (pack :474 supersedes draft language; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Future implementation consumes verified MOD-0184 and MOD-0183 seams by contract. — **✅ MET** (`LoadReferenceTests.*`; Q151-02; G5 run; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] Load commands/responses/events match frozen v1 examples and schemas. — **⚠ PARTIAL** (requests/responses tested; no event-schema or example validation; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Invalid transitions and duplicate assignment are atomic failures. — **✅ MET** (`LoadLifecycleTests.EverySourceTargetPair…`, `LoadConcurrencyTests.CompetingCreates…`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Correlation UUID is preserved from command through all load events. — **✅ MET** (`LoadEventCorrelationTests.Every_load_event_type_carries_the_root` (7/7 types, 2026-10-19); G5 run 6/6; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 
 ## 17. Test Expectations
 

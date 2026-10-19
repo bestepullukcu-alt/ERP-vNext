@@ -421,17 +421,17 @@ The canonical contract family is `/api/shipment-bundle/**` to service port 5061,
 
 ## 16. Acceptance Criteria
 
-- [ ] `Diten.SupplyChainService` builds with the mandated five layers, four pipeline behaviors and base controller.
-- [ ] Create shipment persists exactly one tenant/legal-entity scoped shipment and one lifecycle/outbox entry.
-- [ ] Repeating the same create/transition idempotency key returns the same result without a second write/event.
-- [ ] Allowed transitions match `SHIPMENT-BUNDLE` v1 and invalid transitions fail without partial state.
-- [ ] Capturing POD transitions the shipment to Delivered atomically and emits the specified events once.
-- [ ] A command's UUID correlation ID is preserved across shipment lifecycle and POD events.
-- [ ] Cross-tenant/cross-LE reads and mutations return 404; missing permissions return 403.
-- [ ] Inventory data is read only through `INVENTORY-BUNDLE` v1 mock/client; no stock collection or balance exists locally.
-- [ ] Warehouse intake uses the recorded v1 map; incompatible correlation, missing trusted scope and source drift are explicit blocked/reconciliation states, never fabricated shipments.
-- [ ] Contract examples pass a live mock smoke test and implementation payloads match the frozen OpenAPI.
-- [ ] G5 evidence plan covers shipment→carrier/load→POD→return/claim, source reconciliation and regression; module
+- [ ] `Diten.SupplyChainService` builds with the mandated five layers, four pipeline behaviors and base controller. — **⚠ PARTIAL** (build measured (Q335); layers/behaviors/base controller structural, no test; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Create shipment persists exactly one tenant/legal-entity scoped shipment and one lifecycle/outbox entry. — **✅ MET** (`ShipmentTests.EveryForbiddenTransitionLeavesPersistenceUnchanged`, `FailureBeforeCommitRollsBack…`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Repeating the same create/transition idempotency key returns the same result without a second write/event. — **✅ MET** (create/POD replay `ShipmentTests.GoldenFlow_Replay…`; transition replay `SameKeyTransitionReplayIsOneWrite…` (2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Allowed transitions match `SHIPMENT-BUNDLE` v1 and invalid transitions fail without partial state. — **✅ MET** (`ShipmentTests.EveryForbiddenTransitionLeavesPersistenceUnchanged` (8×8), `AllowedBranches…`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Capturing POD transitions the shipment to Delivered atomically and emits the specified events once. — **✅ MET** (`ShipmentTests.AllowedBranchesAndPodFailureHaveAtomicHistory`; G5 run: POD 201 → Delivered, PodCaptured once; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] A command's UUID correlation ID is preserved across shipment lifecycle and POD events. — **✅ MET** (`ShipmentTests.GoldenFlow_…`; G5 run: 6/6 shipment events carry the root; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] Cross-tenant/cross-LE reads and mutations return 404; missing permissions return 403. — **✅ MET** (reads `Scope_Rbac_Schema_AndCorrelationFailClosed`; mutations `CrossScopeMutationsAre404AndWriteNothingAnywhere` (2026-10-19); 403 `CancelPermissionIsRequired…`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] Inventory data is read only through `INVENTORY-BUNDLE` v1 mock/client; no stock collection or balance exists locally. — **⚠ PARTIAL** (client tested (`SourceClientTests.InventoryReadOnly…`) but not composed; no absent-stock guard; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] Warehouse intake uses the recorded v1 map; incompatible correlation, missing trusted scope and source drift are explicit blocked/reconciliation states, never fabricated shipments. — **⚠ PARTIAL** (component level (`SourceIntakeTests`); coordinator not composed; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] Contract examples pass a live mock smoke test and implementation payloads match the frozen OpenAPI. — **⚠ PARTIAL** (error-code parity only; no response validation against the OpenAPI/examples; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] G5 evidence plan covers shipment→carrier/load→POD→return/claim, source reconciliation and regression; module — **✅ MET** (`mvp6-g5-e2e-chain-01` — full chain through the gateway, reconciled (2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
       completion remains open until downstream modules and central contracts pass E5 integration.
 
 ## 17. Test Expectations
