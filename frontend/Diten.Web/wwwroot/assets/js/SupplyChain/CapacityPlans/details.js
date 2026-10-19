@@ -157,20 +157,37 @@
         document.getElementById('planName').textContent = t('WorkspaceTitle');
         showAlert('workspaceAlert', failure);
     };
-    // A 403 on the read is the denied card inside the shell, never an error toast (MODULE-RECIPE 3.6).
+    // A 403 on the read is the denied card inside the shell, never an error toast (MODULE-RECIPE 3.6) — and nothing of the
+    // page above it: no "Loading…" title, breadcrumb or Back (UAS-001 §1; G8 M2).
     const renderDenied = () => {
         hideSkeleton();
         closeOffcanvases();
+        setVisible(document.getElementById('workspaceHeader'), false);
         setVisible(document.getElementById('workspaceSurface'), false);
         hideAlert('workspaceAlert');
         document.getElementById('workspaceDenied').hidden = false;
     };
 
+    // Any other first-load failure: the skeleton and the "Loading…" title both go, the error takes their place (G8 M2).
+    const showLoadFailure = (failure) => {
+        hideSkeleton();
+        document.getElementById('planName').textContent = t('WorkspaceTitle');
+        showAlert('workspaceAlert', failure);
+    };
+
     // ─── State in the URL (reload and shared links show the same view) ───────
+    // A present but malformed ID is ignored with a localized message and sends no request (pack §23.4; G8 L5d).
     const urlState = (() => {
         const params = new URLSearchParams(window.location.search);
-        const pick = (key) => { const v = params.get(key) || ''; return UUID_PATTERN.test(v) ? v : ''; };
-        return { scenarioId: pick('scenarioId'), evaluationId: pick('evaluationId') };
+        let invalid = false;
+        const pick = (key) => {
+            const v = params.get(key);
+            if (v === null || v === '') return '';
+            if (UUID_PATTERN.test(v)) return v;
+            invalid = true;
+            return '';
+        };
+        return { scenarioId: pick('scenarioId'), evaluationId: pick('evaluationId'), invalid };
     })();
     const writeUrl = () => {
         const params = new URLSearchParams({ legalEntityId });
@@ -193,7 +210,7 @@
         const version = ++planVersion;
         let response;
         try { response = await get(`${endpoint}/${planId}`); }
-        catch (_) { if (version !== planVersion) return; hideSkeleton(); showAlert('workspaceAlert', networkFailure()); return; }
+        catch (_) { if (version !== planVersion) return; showLoadFailure(networkFailure()); return; }
         if (version !== planVersion) return;
         if (response.status === 401) { handleUnauthorized(); return; }
         if (response.status === 403) { renderDenied(); return; }
@@ -201,15 +218,14 @@
             const failure = await readFailure(response, 'UNKNOWN_CAPACITY_PLAN');
             if (version !== planVersion) return;
             if (response.status === 404) { renderSafeNotFound(failure); return; }
-            hideSkeleton();
-            showAlert('workspaceAlert', failure);
+            showLoadFailure(failure);
             return;
         }
         const body = await readJson(response);
         if (version !== planVersion) return;
-        if (!body || body.capacityPlanId !== planId) { hideSkeleton(); showAlert('workspaceAlert', { status: 502, code: 'INTERNAL_ERROR', reference: '' }); return; }
+        if (!body || body.capacityPlanId !== planId) { showLoadFailure({ status: 502, code: 'INTERNAL_ERROR', reference: '' }); return; }
         plan = body;
-        hideAlert('workspaceAlert');
+        if (urlState.invalid) showAlert('workspaceAlert', t('InvalidLinkId')); else hideAlert('workspaceAlert');
         renderPlan();
         hideSkeleton();
         setVisible(document.getElementById('workspaceSurface'), true);
@@ -278,9 +294,18 @@
         renderEvaluation();
         writeUrl();
     };
+    // An evaluation that cannot be shown leaves nothing of a previous one behind (pack §23.8: panel content removed; G8 L5c).
     const showEvaluationFailure = (failure) => {
+        evaluation = null;
         document.getElementById('evaluationSection').hidden = false;
+        ['evaluationId', 'evaluationStatus', 'evaluationMode', 'evaluationSubmitted', 'evaluationCompleted']
+            .forEach((id) => document.getElementById(id)?.replaceChildren());
+        document.getElementById('btnRefreshEvaluation').hidden = true;
+        document.getElementById('evaluationPending').classList.add('d-none');
+        document.getElementById('bottlenecksHost').classList.add('d-none');
         showAlert('evaluationAlert', failure);
+        renderEvaluateAction();
+        writeUrl();
     };
 
     // ─── Render ──────────────────────────────────────────────────────────────
@@ -324,7 +349,7 @@
         document.getElementById('adjustmentsEmpty').classList.toggle('d-none', adjustments.length > 0);
         document.getElementById('adjustmentsHost').classList.toggle('d-none', adjustments.length === 0);
         const evaluate = document.getElementById('btnEvaluate');
-        if (evaluate) evaluate.hidden = !permissions.canEvaluate;
+        renderEvaluateAction();
     };
 
     const renderEvaluation = () => {
@@ -339,15 +364,43 @@
         document.getElementById('btnRefreshEvaluation').hidden = !open;
         document.getElementById('evaluationPending').classList.toggle('d-none', !open);
         const bottlenecks = Array.isArray(evaluation.bottlenecks) ? evaluation.bottlenecks.filter((b) => b && typeof b === 'object') : [];
-        document.getElementById('bottlenecksBody').replaceChildren(...bottlenecks.map((b) => {
-            const row = document.createElement('tr');
-            row.append(cell(textOrMissing(b.resourceRef)), cell(textOrMissing(b.period)), cell(decimal(b.requiredCapacity), 'text-end'),
-                cell(decimal(b.availableCapacity), 'text-end'), cell(decimal(b.shortfall), 'text-end'), cell(textOrMissing(b.uomId)));
-            return row;
-        }));
-        // An open evaluation has no result yet: no "no bottlenecks" claim until it has completed.
-        document.getElementById('bottlenecksEmpty').classList.toggle('d-none', open || bottlenecks.length > 0);
-        document.getElementById('bottlenecksHost').classList.toggle('d-none', bottlenecks.length === 0);
+        // An open evaluation has no result yet: no table and no "no bottlenecks" claim until it has completed.
+        document.getElementById('bottlenecksHost').classList.toggle('d-none', open);
+        if (!open) fillBottlenecks(bottlenecks);
+        renderEvaluateAction();
+    };
+
+    // Evaluate is offered for a loaded scenario unless an evaluation of it is shown as Accepted/Running (pack §23.7; G8 L5a),
+    // or the service said one is already active (EVALUATION_ALREADY_ACTIVE: no second submit).
+    let evaluationActiveFor = '';
+    const renderEvaluateAction = () => {
+        const evaluate = document.getElementById('btnEvaluate');
+        if (!evaluate) return;
+        const open = evaluation && evaluation.scenarioId === scenario?.scenarioId && OPEN_EVALUATION.has(evaluation.status);
+        evaluate.hidden = !permissions.canEvaluate || !scenario || open || evaluationActiveFor === scenario.scenarioId;
+    };
+
+    // Bottlenecks — the bounded DataTables v2 profile of pack §23.5 (G8 M1): DtDefaults.create(), client-side, no saved state.
+    // DataTables renders cell strings as HTML, so every value is escaped; decimals stay the returned strings (sorted as text).
+    const esc = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+    const ltrHtml = (text, className) => (isText(text) && text !== ''
+        ? `<bdi dir="ltr"${className ? ` class="${className}"` : ''}>${esc(text)}</bdi>`
+        : `<span class="text-muted">${esc(t('NotProvided'))}</span>`);
+    let bottleneckTable = null;
+    const fillBottlenecks = (rows) => {
+        if (!bottleneckTable) {
+            const text = (key, className) => ({ data: null, className, render: (_d, _t, row) => ltrHtml(row[key], className === 'text-end' ? 'font-monospace' : '') });
+            bottleneckTable = new DataTable(document.getElementById('dt-capacity-bottlenecks'), window.DtDefaults.create({
+                // No buttons: pack §23.5 allows no export, column visibility or saved view.
+                data: [], order: [[1, 'asc']], stateSave: false, serverSide: false, language: { emptyTable: t('NoBottlenecks') }, buttons: [{ buttons: [] }],
+                columns: [text('resourceRef'), text('period'), text('requiredCapacity', 'text-end'), text('availableCapacity', 'text-end'),
+                    text('shortfall', 'text-end'), text('uomId')]
+            }));
+        }
+        bottleneckTable.clear();
+        bottleneckTable.rows.add(rows);
+        bottleneckTable.draw();
     };
 
     // ─── Repeaters ───────────────────────────────────────────────────────────
@@ -397,8 +450,29 @@
                 return;
             }
             const failure = await readFailure(response, kind === 'scenario' ? 'UNKNOWN_CAPACITY_PLAN' : 'UNKNOWN_CAPACITY_SCENARIO');
+            const panel = kind === 'scenario' ? 'offcanvasScenario' : 'offcanvasEvaluate';
+            // Denied action: close it and take the button away, with the localized denial (pack §23.8).
+            if (response.status === 403) {
+                intents[kind] = null;
+                offcanvas(panel)?.hide();
+                const button = document.getElementById(kind === 'scenario' ? 'btnCreateScenario' : 'btnEvaluate');
+                if (button) button.hidden = true;
+                showAlert('workspaceAlert', failure);
+                return;
+            }
+            // The target is gone (or never was the caller's): its content goes with it (pack §23.8).
+            if (response.status === 404) {
+                intents[kind] = null;
+                offcanvas(panel)?.hide();
+                if (kind === 'scenario') renderSafeNotFound(failure); else showScenarioFailure(failure);
+                return;
+            }
             if (failure.code === 'IDEMPOTENCY_KEY_REUSED') intent.blocked = true;
+            // One active evaluation per scenario: no second submit from this page (pack §23.8).
+            if (failure.code === 'EVALUATION_ALREADY_ACTIVE') { intent.blocked = true; evaluationActiveFor = scenario?.scenarioId || ''; renderEvaluateAction(); }
             showAlert(alertId, failure);
+            // Stale state: the message says so, and the plan reloads (pack §23.8; G8 L5b).
+            if (failure.code === 'CAPACITY_PLAN_STATE_CONFLICT') await loadPlan();
         } catch (_) {
             // Outcome unknown: the same intent (same key, same body) may be retried.
             showAlert(alertId, networkFailure());
@@ -428,6 +502,16 @@
         const constraints = readRows('#constraintRefRows .js-constraint-row', ['.js-constraint-id', '.js-constraint-source', '.js-constraint-version'], ['constraintId', 'source', 'sourceVersion']);
         const adjustments = readRows('#adjustmentRows .js-adjustment-row', ['.js-adj-resource', '.js-adj-period', '.js-adj-delta', '.js-adj-uom'], ['resourceRef', 'period', 'availableCapacityDelta', 'uomId']);
         if (name === '' || !constraints.valid || !adjustments.valid) { showAlert('formScenarioAlert', t('FieldRequired')); return; }
+        // Contract mirror, no tightening (pack §23.6): availableCapacityDelta is a decimal string ^-?\d+(\.\d+)?$.
+        const DECIMAL = /^-?\d+(\.\d+)?$/;
+        let decimalsValid = true;
+        document.querySelectorAll('#adjustmentRows .js-adj-delta').forEach((input) => {
+            const bad = !DECIMAL.test(String(input.value));
+            input.classList.toggle('is-invalid', bad);
+            input.setAttribute('aria-invalid', bad ? 'true' : 'false');
+            if (bad) decimalsValid = false;
+        });
+        if (!decimalsValid) { showAlert('formScenarioAlert', t('DecimalHelp')); return; }
         const body = JSON.stringify({ name, constraintRefs: constraints.rows, adjustments: adjustments.rows });
         void send('scenario', `${endpoint}/${planId}/scenarios`, body, 'formScenarioAlert', 'btnSubmitScenario', async (created) => {
             window.showToast?.(t('ScenarioCreated'), 'success');

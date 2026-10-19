@@ -97,4 +97,5 @@
   <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>由于请求的跟踪标识符无效，无法处理该请求。请重试。</value></data>
   <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>无法确认请求的结果。请重试同一请求。</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>发生意外错误。</value></data>
+  <data name="InvalidLinkId" xml:space="preserve"><value>链接中包含无效的 ID，已忽略。</value></data>
 </root>

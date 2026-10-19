@@ -139,6 +139,15 @@ public sealed class SupplyChainSandopPlansControllerTests
         Assert.DoesNotContain("SHIPMENT_THING", json);
     }
 
+    // G8 L3: the service's own enveloped 500 INTERNAL_ERROR keeps its status and code — not a 503 "retry".
+    [Fact]
+    public async Task The_service_internal_error_is_relayed_as_500_INTERNAL_ERROR()
+    {
+        var handler = new CaptureHandler(_ => Json(HttpStatusCode.InternalServerError,
+            "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"x\"},\"contractVersion\":\"v1\"}"));
+        AssertFailure(await CreateController(handler, [Read]).Get(Plan, CancellationToken.None), StatusCodes.Status500InternalServerError, "INTERNAL_ERROR");
+    }
+
     [Fact]
     public async Task An_unreachable_gateway_is_503_DEPENDENCY_UNAVAILABLE()
     {

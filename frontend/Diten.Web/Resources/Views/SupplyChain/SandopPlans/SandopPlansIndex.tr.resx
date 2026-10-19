@@ -79,4 +79,5 @@
   <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>İstek, izleme tanımlayıcısı geçersiz olduğu için işlenemedi. Yeniden deneyin.</value></data>
   <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>İsteğin sonucu doğrulanamadı. Aynı isteği yeniden deneyin.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu.</value></data>
+  <data name="ValidationCommentLength" xml:space="preserve"><value>Yorum en fazla 2.000 karakter olabilir.</value></data>
 </root>

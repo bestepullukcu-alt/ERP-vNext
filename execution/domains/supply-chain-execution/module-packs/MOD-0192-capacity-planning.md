@@ -447,6 +447,8 @@ Owned: `frontend/Diten.Web/Controllers/SupplyChainCapacityPlansController.cs`; `
 `frontend/Diten.Web.Tests/{Controllers/SupplyChainCapacityPlansControllerTests.cs, Forms/CapacityPlanFormContractTests.cs, JavaScript/CapacityPlanDetailsBehaviorTests.cs}`.
 These are separate from, and add nothing to, the 43 backend owned paths of §22.
 
+> **As built (amended 2026-10-18, G8 L7; owner go "continue development").** The G6 build uses one localizer marker for both pages, so there is no `*Details.cs` marker, `*Details.*.resx`, `_DetailsL10n.cshtml` or `details.l10n.js`: the workspace reuses `_IndexL10n.cshtml` + `index.l10n.js` and `CapacityPlansIndex.{7}.resx`. Owned as built: views `Index.cshtml`, `Details.cshtml`, `_CreateEditOffcanvas.cshtml`, `_CreateScenarioOffcanvas.cshtml`, `_EvaluateOffcanvas.cshtml`, `_EvaluationPanel.cshtml`, `_IndexL10n.cshtml`, `CapacityPlansIndex.cs`; scripts `index.js`, `index.l10n.js`, `details.js`; model `Models/SupplyChain/CapacityPlans/CapacityPlanPermissions.cs`; tests `Controllers/SupplyChainCapacityPlansControllerTests.cs`, `JavaScript/CapacityPlansPageTests.cs`, `Lists/CapacityPlansPageRenderTests.cs`. The create offcanvas keeps the shared `_CreateEditOffcanvas.cshtml` name (create-only). Same surface and behaviour; the independent VER audited exactly this set (`docs/roadmap/plans/mvp6-0190-0192-g8-ver-01/REPORT.md`).
+
 Protected for the UI writer: all backend source (including `Features/CapacityPlans/**` and service `Program.cs`), contracts/annexes,
 `gateway/**`, shared layouts/partials/JS/CSS, `SharedResource.*.resx`, frontend `Program.cs`/DI, navigation/module/permission catalogues,
 `frontend/Diten.Web/tests/diten-field-icons.test.js`, other modules' UI files (including MOD-0190), Golden Slim (read only), packs,
@@ -565,7 +567,7 @@ Existing keys only: `CapacityPermissions` constants `Read`, `Create`, `ScenarioC
 | Key | Required languages | Ships with |
 |---|---|---|
 | `Nav.Module.CAPACITYPLANNING` | en, tr, fr, es, zh, ar, ru | this provider |
-| `Nav.Page.CAPACITY_PLANS` | en, tr, fr, es, zh, ar, ru | this provider |
+| `Nav.Page.CAPACITYPLANS` (amended 2026-10-18, G8 L2: the runtime looks up `Nav.Page.` + `NavNameLocalizer.Normalize(PageCode)`, which drops `_`; `Nav.Page.CAPACITY_PLANS` never resolves) | en, tr, fr, es, zh, ar, ru | this provider |
 
 Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by the integration owner and reviewed by the l10n agent (no empty value, no English placeholder, no key echoing its own name). This pack does not supply or approve values.
 

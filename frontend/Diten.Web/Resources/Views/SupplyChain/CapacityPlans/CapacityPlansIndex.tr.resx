@@ -97,4 +97,5 @@
   <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>İstek, izleme tanımlayıcısı geçersiz olduğu için işlenemedi. Yeniden deneyin.</value></data>
   <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>İsteğin sonucu doğrulanamadı. Aynı isteği yeniden deneyin.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu.</value></data>
+  <data name="InvalidLinkId" xml:space="preserve"><value>Bağlantı geçersiz bir kimlik içeriyordu; yok sayıldı.</value></data>
 </root>

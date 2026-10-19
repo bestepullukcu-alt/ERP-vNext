@@ -79,4 +79,5 @@
   <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>The request could not be processed because its tracking identifier is invalid. Try again.</value></data>
   <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>The outcome of the request could not be confirmed. Try the same request again.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>An unexpected error occurred.</value></data>
+  <data name="ValidationCommentLength" xml:space="preserve"><value>The comment can be at most 2,000 characters.</value></data>
 </root>

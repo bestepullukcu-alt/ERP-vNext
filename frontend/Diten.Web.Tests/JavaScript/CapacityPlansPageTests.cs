@@ -89,8 +89,11 @@ public sealed class CapacityPlansPageTests
     public void Decimals_stay_strings_and_there_is_no_polling()
     {
         Assert.Contains("const decimal = (text) => (isText(text) && text !== '' ? ltr(text, 'font-monospace') : notProvided());", _details);
-        Assert.Contains("cell(decimal(b.requiredCapacity), 'text-end')", _details);
-        Assert.Contains("cell(decimal(b.shortfall), 'text-end')", _details);
+        // Bottlenecks (DataTables v2, G8 M1): each measure is the escaped returned string, right-aligned, never converted.
+        Assert.Contains("text('requiredCapacity', 'text-end'), text('availableCapacity', 'text-end'),", _details);
+        Assert.Contains("text('shortfall', 'text-end')", _details);
+        Assert.Contains("render: (_d, _t, row) => ltrHtml(row[key], className === 'text-end' ? 'font-monospace' : '')", _details);
+        Assert.Contains("cell(decimal(a.availableCapacityDelta), 'text-end')", _details);
         foreach (var forbidden in new[] { "parseFloat", "Number(", "toFixed", "setInterval", "setTimeout" })
             Assert.DoesNotContain(forbidden, _details);
         Assert.Contains("document.getElementById('btnRefreshEvaluation')?.addEventListener('click'", _details);
@@ -147,6 +150,37 @@ public sealed class CapacityPlansPageTests
             // Nothing of the page (skeleton, surface, script) precedes the gate.
             Assert.DoesNotContain("<div", view[..gate]);
         }
+    }
+
+    // G8 M1: the Bottlenecks table is the bounded DataTables v2 profile of pack §23.5.
+    [Fact]
+    public void Bottlenecks_are_the_bounded_DataTables_v2_profile()
+    {
+        var panel = Read("frontend/Diten.Web/Views/SupplyChain/CapacityPlans/_EvaluationPanel.cshtml");
+        Assert.Contains("<table id=\"dt-capacity-bottlenecks\" data-dt-standard=\"v2\"", panel);
+        Assert.Contains("window.DtDefaults.create({", _details);
+        Assert.Contains("stateSave: false, serverSide: false, language: { emptyTable: t('NoBottlenecks') }", _details);
+    }
+
+    // G8 M2: no "Loading…" title survives a failed or denied first load.
+    [Fact]
+    public void A_failed_or_denied_first_load_leaves_no_loading_title()
+    {
+        Assert.Contains("<div id=\"workspaceHeader\"", _detailsView);
+        Assert.Contains("setVisible(document.getElementById('workspaceHeader'), false);", _details);
+        Assert.Contains("document.getElementById('planName').textContent = t('WorkspaceTitle');\n        showAlert('workspaceAlert', failure);", _details);
+    }
+
+    // G8 L5a–d / L6 / §23.4/§23.7/§23.8.
+    [Fact]
+    public void State_gates_link_ids_and_form_mirrors_follow_the_pack()
+    {
+        Assert.Contains("evaluate.hidden = !permissions.canEvaluate || !scenario || open || evaluationActiveFor === scenario.scenarioId;", _details);
+        Assert.Contains("if (failure.code === 'EVALUATION_ALREADY_ACTIVE') { intent.blocked = true;", _details);
+        Assert.Contains("if (failure.code === 'CAPACITY_PLAN_STATE_CONFLICT') await loadPlan();", _details);
+        Assert.Contains("if (urlState.invalid) showAlert('workspaceAlert', t('InvalidLinkId'));", _details);
+        Assert.Contains("['evaluationId', 'evaluationStatus', 'evaluationMode', 'evaluationSubmitted', 'evaluationCompleted']", _details);
+        Assert.Contains("const DECIMAL = /^-?\\d+(\\.\\d+)?$/;", _details);
     }
 
     private static Dictionary<string, string> Resx(string language) =>

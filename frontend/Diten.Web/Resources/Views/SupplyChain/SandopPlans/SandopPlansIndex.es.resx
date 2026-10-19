@@ -79,4 +79,5 @@
   <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>No se pudo procesar la solicitud porque su identificador de seguimiento no es válido. Inténtelo de nuevo.</value></data>
   <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>No se pudo confirmar el resultado de la solicitud. Vuelva a intentar la misma solicitud.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Se produjo un error inesperado.</value></data>
+  <data name="ValidationCommentLength" xml:space="preserve"><value>El comentario puede tener como máximo 2.000 caracteres.</value></data>
 </root>

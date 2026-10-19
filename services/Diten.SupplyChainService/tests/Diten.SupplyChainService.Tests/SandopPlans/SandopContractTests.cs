@@ -40,6 +40,13 @@ public sealed class SandopContractTests
  [Fact]public async Task Module_request_gate_without_a_legal_entity_header_is_400_and_asks_MDM_nothing()
  {var stub=Diten.SupplyChainService.Tests.Common.StubLegalEntityScopeValidator.Valid;var http=Gate(stub);Authorized(http,Guid.NewGuid());http.Request.Headers.Remove("X-Legal-Entity-Id");
  var r=await Diten.SupplyChainService.Api.Features.SandopPlans.SandopContextMiddleware.ResolveAsync(http,Diten.SupplyChainService.Infrastructure.Features.SandopPlans.SandopPermissions.Read,false);Assert.Equal(400,r.Status);Assert.Equal("INVALID_REQUEST",r.ErrorCode);Assert.Empty(stub.Calls);}
+ // G8 L4: the gate hands the resolved scope and correlation to the pipeline's logging context (it left them all-zero).
+ [Fact]public async Task Module_request_gate_fills_the_logging_context()
+ {var logging=new Diten.SupplyChainService.Application.Common.RequestContext();var tenant=Guid.NewGuid();
+ var http=new Microsoft.AspNetCore.Http.DefaultHttpContext{RequestServices=new ServiceCollection().AddSingleton<Diten.SupplyChainService.Application.Common.ILegalEntityScopeValidator>(Diten.SupplyChainService.Tests.Common.StubLegalEntityScopeValidator.Valid).AddSingleton(logging).BuildServiceProvider()};
+ Authorized(http,tenant);var le=Guid.Parse(http.Request.Headers["X-Legal-Entity-Id"].ToString());
+ var r=await Diten.SupplyChainService.Api.Features.SandopPlans.SandopContextMiddleware.ResolveAsync(http,Diten.SupplyChainService.Infrastructure.Features.SandopPlans.SandopPermissions.Read,false);
+ Assert.Equal(0,r.Status);Assert.Equal(tenant,logging.Scope.TenantId);Assert.Equal(le,logging.Scope.LegalEntityId);Assert.Equal(r.Correlation,logging.CorrelationId);}
  static Microsoft.AspNetCore.Http.DefaultHttpContext Gate(Diten.SupplyChainService.Application.Common.ILegalEntityScopeValidator validator)=>new(){RequestServices=new Microsoft.Extensions.DependencyInjection.ServiceCollection().AddSingleton(validator).BuildServiceProvider()};
  static void Authorized(Microsoft.AspNetCore.Http.DefaultHttpContext http,Guid tenant)
  {http.User=new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(new[]{new System.Security.Claims.Claim("tenant_id",tenant.ToString()),new System.Security.Claims.Claim("sub",Guid.NewGuid().ToString()),new System.Security.Claims.Claim("permission",Diten.SupplyChainService.Infrastructure.Features.SandopPlans.SandopPermissions.Read)},"test"));

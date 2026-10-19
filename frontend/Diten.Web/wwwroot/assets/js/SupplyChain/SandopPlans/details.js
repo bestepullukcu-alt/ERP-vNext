@@ -33,8 +33,8 @@
     const STATUS_FALLBACK_CODE = Object.freeze({
         400: 'INVALID_REQUEST', 401: 'UNAUTHENTICATED', 403: 'FORBIDDEN', 404: 'UNKNOWN_SANDOP_PLAN', 503: 'DEPENDENCY_UNAVAILABLE'
     });
-    // The 409s whose resx text says "the plan has been reloaded" — the page keeps that promise.
-    const RELOAD_CODES = new Set(['SANDOP_PLAN_STATE_CONFLICT', 'SANDOP_SIGN_OFF_STATE_CONFLICT']);
+    // The 409s whose resx text says the plan was reloaded, and the one whose rule says the sign-offs reload (pack §23.8).
+    const RELOAD_CODES = new Set(['SANDOP_PLAN_STATE_CONFLICT', 'SANDOP_SIGN_OFF_STATE_CONFLICT', 'SIGN_OFF_ALREADY_RECORDED']);
     const STATUS_KEY = Object.freeze({
         Draft: 'StatusDraft', InReview: 'StatusInReview', Approved: 'StatusApproved', Rejected: 'StatusRejected', Archived: 'StatusArchived'
     });
@@ -94,7 +94,6 @@
     };
     const badge = (text, css) => { const el = document.createElement('span'); el.className = `badge bg-label-${css}`; el.textContent = text; return el; };
     const setCell = (id, node) => document.getElementById(id)?.replaceChildren(node);
-    const cell = (node) => { const td = document.createElement('td'); td.appendChild(node); return td; };
 
     // ─── Failure envelope → localized message + support reference ────────────
     const readFailure = async (response) => {
@@ -155,13 +154,21 @@
         document.getElementById('planName').textContent = t('WorkspaceTitle');
         showAlert('workspaceAlert', failure);
     };
-    // A 403 on the read is the denied card inside the shell, never an error toast (MODULE-RECIPE 3.6).
+    // A 403 on the read is the denied card inside the shell, never an error toast (MODULE-RECIPE 3.6) — and nothing of the
+    // page above it: no "Loading…" title, breadcrumb or Back (UAS-001 §1; G8 M2).
     const renderDenied = () => {
         hideSkeleton();
         closeOffcanvases();
+        setVisible(document.getElementById('workspaceHeader'), false);
         setVisible(document.getElementById('workspaceSurface'), false);
         hideAlert('workspaceAlert');
         document.getElementById('workspaceDenied').hidden = false;
+    };
+    // Any other first-load failure: the skeleton and the "Loading…" title both go, the error takes their place (G8 M2).
+    const showLoadFailure = (failure) => {
+        hideSkeleton();
+        document.getElementById('planName').textContent = t('WorkspaceTitle');
+        showAlert('workspaceAlert', failure);
     };
 
     // ─── Load (versioned: a late answer never overwrites a newer one) ────────
@@ -184,8 +191,7 @@
             planResponse = await fetchJson(`${endpoint}/${planId}`);
         } catch (_) {
             if (version !== loadVersion) return;
-            hideSkeleton();
-            showAlert('workspaceAlert', { status: 0, code: 'DEPENDENCY_UNAVAILABLE', reference: '' });
+            showLoadFailure({ status: 0, code: 'DEPENDENCY_UNAVAILABLE', reference: '' });
             return;
         }
         if (version !== loadVersion) return;
@@ -195,16 +201,14 @@
             const failure = await readFailure(planResponse);
             if (version !== loadVersion) return;
             if (failure.code === 'UNKNOWN_SANDOP_PLAN' || planResponse.status === 404) { renderSafeNotFound(failure); return; }
-            hideSkeleton();
-            showAlert('workspaceAlert', failure);
+            showLoadFailure(failure);
             return;
         }
         let body = null;
         try { body = await planResponse.json(); } catch (_) { body = null; }
         if (version !== loadVersion) return;
         if (!body || body.sandopPlanId !== planId) {
-            hideSkeleton();
-            showAlert('workspaceAlert', { status: 502, code: 'INTERNAL_ERROR', reference: '' });
+            showLoadFailure({ status: 502, code: 'INTERNAL_ERROR', reference: '' });
             return;
         }
         plan = body;
@@ -278,41 +282,68 @@
         setCell('detailCreated', dateTime(plan.createdAt));
     };
 
+    // Workspace tables — the bounded DataTables v2 profile of pack §23.5 (G8 M1): DtDefaults.create(), client-side only,
+    // no saved state, search/sort/paging over the returned set. DataTables renders cell strings as HTML, so every server
+    // value is escaped here; the sort value of a date is its ISO text, so ordering never depends on the display locale.
+    const esc = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+    const missingHtml = () => `<span class="text-muted">${esc(t('NotProvided'))}</span>`;
+    const ltrHtml = (text, className) => (isText(text) && text !== ''
+        ? `<bdi dir="ltr"${className ? ` class="${className}"` : ''}>${esc(text)}</bdi>` : missingHtml());
+    const badgeHtml = (text, css) => `<span class="badge bg-label-${css}">${esc(text)}</span>`;
+    const dateHtml = (text) => {
+        if (!isText(text) || text === '') return missingHtml();
+        const parsed = new Date(text);
+        return Number.isNaN(parsed.getTime()) ? ltrHtml(text)
+            : `<bdi dir="auto" title="${esc(text)}">${esc(parsed.toLocaleString(document.documentElement.lang || undefined))}</bdi>`;
+    };
+    const dateColumn = (pick) => ({ data: null, render: (_d, type, row) => (type === 'display' ? dateHtml(pick(row)) : String(pick(row) || '')) });
+    const tables = {};
+    const fillTable = (id, columns, order, rows) => {
+        if (!tables[id]) {
+            tables[id] = new DataTable(document.getElementById(id), window.DtDefaults.create({
+                // No buttons: pack §23.5 allows no export, column visibility or saved view (an empty group overrides the
+                // default Action/colvis toolbar).
+                data: [], columns, order, stateSave: false, serverSide: false, language: { emptyTable: t('EmptyState') }, buttons: [{ buttons: [] }]
+            }));
+        }
+        tables[id].clear();
+        tables[id].rows.add(rows);
+        tables[id].draw();
+    };
+    // A list that failed shows its error instead of a table — never an empty table (pack §23.5).
+    const showList = (hostId, visible) => document.getElementById(hostId)?.classList.toggle('d-none', !visible);
+
     const renderSnapshots = (loaded) => {
-        const body = document.getElementById('snapshotsBody');
-        body.replaceChildren();
-        snapshots.forEach((snapshot) => {
-            const row = document.createElement('tr');
-            const provenance = snapshot.provenance && typeof snapshot.provenance === 'object' ? snapshot.provenance : {};
-            const reference = document.createElement('span');
-            reference.append(textOrMissing(provenance.demandPlanId), document.createTextNode(' · '), textOrMissing(provenance.demandPlanVersion));
-            const refs = Array.isArray(snapshot.supplyInputRefs) ? snapshot.supplyInputRefs.length : 0;
-            const current = snapshot.snapshotId === plan?.currentSnapshotId ? badge(t('CurrentMarker'), 'primary') : document.createTextNode('');
-            row.append(cell(dateTime(snapshot.capturedAt)), cell(reference), cell(dateTime(provenance.sourceCapturedAt)),
-                cell(textOrMissing(provenance.sourceChecksum, 'font-monospace small text-break')), cell(ltr(String(refs))), cell(current));
-            body.appendChild(row);
-        });
-        document.getElementById('snapshotsEmpty').classList.toggle('d-none', !loaded || snapshots.length > 0);
-        document.getElementById('snapshotsTableHost').classList.toggle('d-none', snapshots.length === 0);
+        showList('snapshotsTableHost', loaded);
+        if (!loaded) return;
+        const provenanceOf = (row) => (row.provenance && typeof row.provenance === 'object' ? row.provenance : {});
+        fillTable('dt-sandop-snapshots', [
+            dateColumn((row) => row.capturedAt),
+            { data: null, render: (_d, _t, row) => `${ltrHtml(provenanceOf(row).demandPlanId)} · ${ltrHtml(provenanceOf(row).demandPlanVersion)}` },
+            dateColumn((row) => provenanceOf(row).sourceCapturedAt),
+            { data: null, render: (_d, _t, row) => ltrHtml(provenanceOf(row).sourceChecksum, 'font-monospace small text-break') },
+            { data: null, render: (_d, type, row) => {
+                const count = Array.isArray(row.supplyInputRefs) ? row.supplyInputRefs.length : 0;
+                return type === 'display' ? ltrHtml(String(count)) : count;
+            } },
+            { data: null, orderable: false, render: (_d, _t, row) => (row.snapshotId === plan?.currentSnapshotId ? badgeHtml(t('CurrentMarker'), 'primary') : '') }
+        ], [[0, 'desc']], snapshots);
     };
 
     const renderSignOffs = (loaded) => {
-        const body = document.getElementById('signOffsBody');
-        body.replaceChildren();
-        signOffs.forEach((signOff) => {
-            const row = document.createElement('tr');
-            const role = isText(signOff.role) && ROLE_KEY[signOff.role] ? document.createTextNode(t(ROLE_KEY[signOff.role])) : textOrMissing(signOff.role);
-            const decision = isText(signOff.decision) && DECISION_KEY[signOff.decision]
-                ? badge(t(DECISION_KEY[signOff.decision]), signOff.decision === 'Approved' ? 'success' : 'danger')
-                : textOrMissing(signOff.decision);
-            const comment = isText(signOff.comment) && signOff.comment !== '' ? document.createTextNode(signOff.comment) : notProvided();
+        showList('signOffsTableHost', loaded);
+        if (!loaded) return;
+        fillTable('dt-sandop-signoffs', [
+            { data: null, render: (_d, _t, row) => ltrHtml(row.snapshotId, 'font-monospace small') },
+            { data: null, render: (_d, _t, row) => (isText(row.role) && ROLE_KEY[row.role] ? esc(t(ROLE_KEY[row.role])) : ltrHtml(row.role)) },
+            { data: null, render: (_d, _t, row) => (isText(row.decision) && DECISION_KEY[row.decision]
+                ? badgeHtml(t(DECISION_KEY[row.decision]), row.decision === 'Approved' ? 'success' : 'danger') : ltrHtml(row.decision)) },
+            { data: null, render: (_d, _t, row) => (isText(row.comment) && row.comment !== '' ? esc(row.comment) : missingHtml()) },
             // decidedBy is a UUID; a person's name needs a user lookup that is not in scope (UI-SCOPE-0190 §9.5).
-            row.append(cell(textOrMissing(signOff.snapshotId, 'font-monospace small')), cell(role), cell(decision), cell(comment),
-                cell(textOrMissing(signOff.decidedBy, 'font-monospace small')), cell(dateTime(signOff.decidedAt)));
-            body.appendChild(row);
-        });
-        document.getElementById('signOffsEmpty').classList.toggle('d-none', !loaded || signOffs.length > 0);
-        document.getElementById('signOffsTableHost').classList.toggle('d-none', signOffs.length === 0);
+            { data: null, render: (_d, _t, row) => ltrHtml(row.decidedBy, 'font-monospace small') },
+            dateColumn((row) => row.decidedAt)
+        ], [[5, 'desc']], signOffs);
     };
 
     // Display decision only: the service re-checks state (409) and permission (403).
@@ -351,6 +382,17 @@
                 return;
             }
             const failure = await readFailure(response);
+            // The plan is gone (or never was the caller's): the workspace content goes with it (pack §23.8).
+            if (response.status === 404) { intents[kind] = null; renderSafeNotFound(failure); return; }
+            // Denied action: close it and take the button away, with the localized denial (pack §23.8).
+            if (response.status === 403) {
+                intents[kind] = null;
+                offcanvas(kind === 'capture' ? 'offcanvasCapture' : 'offcanvasSignOff')?.hide();
+                const button = document.getElementById(kind === 'capture' ? 'btnCaptureSnapshot' : 'btnRecordSignOff');
+                if (button) button.hidden = true;
+                showAlert('workspaceAlert', failure);
+                return;
+            }
             if (failure.code === 'IDEMPOTENCY_KEY_REUSED') intent.blocked = true;
             showAlert(alertId, failure);
             if (RELOAD_CODES.has(failure.code) || failure.code === 'INVALID_SNAPSHOT_REFERENCE') await load();
@@ -446,6 +488,11 @@
             setInvalid(document.getElementById(id), missing ? t('FieldRequired') : '');
             if (missing) valid = false;
         });
+        // Contract mirror, no tightening (pack §23.6): comment maxLength 2000.
+        const commentInput = document.getElementById('signOffComment');
+        const tooLong = value('signOffComment').length > 2000;
+        setInvalid(commentInput, tooLong ? t('ValidationCommentLength') : '');
+        if (tooLong) valid = false;
         if (!valid) return;
         const payload = { snapshotId: value('signOffSnapshot'), role: value('signOffRole'), decision: value('signOffDecision') };
         const comment = value('signOffComment');

@@ -38,6 +38,7 @@
         'DemandPlanId',
         'DemandPlanVersion',
         'ValidationHorizonOrder',
+        'InvalidLinkId',
         'SourceCapturedAt',
         'SourceChecksum',
         'WorkspaceTitle',

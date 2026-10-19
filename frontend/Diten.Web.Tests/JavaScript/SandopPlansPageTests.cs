@@ -142,6 +142,41 @@ public sealed class SandopPlansPageTests
         }
     }
 
+    // G8 M1: the workspace tables are the bounded DataTables v2 profile of pack §23.5, values escaped before DataTables
+    // renders them, the empty text from the resx.
+    [Fact]
+    public void Workspace_tables_are_the_bounded_DataTables_v2_profile()
+    {
+        Assert.Contains("<table id=\"dt-sandop-snapshots\" data-dt-standard=\"v2\"", _detailsView);
+        Assert.Contains("<table id=\"dt-sandop-signoffs\" data-dt-standard=\"v2\"", _detailsView);
+        Assert.Contains("window.DtDefaults.create({", _details);
+        Assert.Contains("data: [], columns, order, stateSave: false, serverSide: false, language: { emptyTable: t('EmptyState') }", _details);
+        Assert.Contains(".replaceAll('&', '&amp;').replaceAll('<', '&lt;')", _details);
+        Assert.Contains("isText(row.comment) && row.comment !== '' ? esc(row.comment) : missingHtml()", _details);
+    }
+
+    // G8 M2: no "Loading…" title survives a failed or denied first load; a denied page shows only the denied card.
+    [Fact]
+    public void A_failed_or_denied_first_load_leaves_no_loading_title()
+    {
+        Assert.Contains("<div id=\"workspaceHeader\"", _detailsView);
+        Assert.Contains("setVisible(document.getElementById('workspaceHeader'), false);", _details);
+        Assert.Contains("document.getElementById('planName').textContent = t('WorkspaceTitle');\n        showAlert('workspaceAlert', failure);", _details);
+        // network failure, non-404 failure, malformed body — all three replace the title.
+        Assert.Equal(3, Regex.Matches(_details, @"showLoadFailure\(").Count);
+    }
+
+    // G8 L5e / L6 / §23.8: a mutation's 404 removes the workspace, its 403 closes and hides the action, the duplicate
+    // sign-off reloads the list, and the comment mirrors maxLength 2000.
+    [Fact]
+    public void Mutation_outcomes_and_form_mirrors_follow_the_pack()
+    {
+        Assert.Contains("if (response.status === 404) { intents[kind] = null; renderSafeNotFound(failure); return; }", _details);
+        Assert.Contains("if (button) button.hidden = true;", _details);
+        Assert.Contains("'SANDOP_PLAN_STATE_CONFLICT', 'SANDOP_SIGN_OFF_STATE_CONFLICT', 'SIGN_OFF_ALREADY_RECORDED'", _details);
+        Assert.Contains("const tooLong = value('signOffComment').length > 2000;", _details);
+    }
+
     private static Dictionary<string, string> Resx(string language) =>
         XDocument.Load(Path.Combine(Root(), $"frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.{language}.resx"))
             .Root!.Elements("data").ToDictionary(d => (string)d.Attribute("name")!, d => (string?)d.Element("value") ?? string.Empty, StringComparer.Ordinal);

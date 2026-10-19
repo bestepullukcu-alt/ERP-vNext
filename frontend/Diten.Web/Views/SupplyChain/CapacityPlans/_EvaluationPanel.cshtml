@@ -23,11 +23,10 @@
         </dl>
         <div id="evaluationPending" class="alert alert-info small d-none" role="status">@Localizer["EvaluationPending"]</div>
         <h6 class="mb-2">@Localizer["BottlenecksHeader"]</h6>
-        <div id="bottlenecksEmpty" class="text-muted d-none">@Localizer["NoBottlenecks"]</div>
-        <div class="table-responsive" id="bottlenecksHost">
-            <table class="table" id="bottlenecksTable">
+        @* Pack §23.5: bounded DataTables v2 profile (client-side; "no bottlenecks" via language.emptyTable, only once completed). *@
+        <div class="card-datatable table-responsive d-none" id="bottlenecksHost">
+            <table id="dt-capacity-bottlenecks" data-dt-standard="v2" class="table border-top">
                 <thead><tr><th>@Localizer["BottleneckResource"]</th><th>@Localizer["BottleneckPeriod"]</th><th class="text-end">@Localizer["BottleneckRequired"]</th><th class="text-end">@Localizer["BottleneckAvailable"]</th><th class="text-end">@Localizer["BottleneckShortfall"]</th><th>@Localizer["BottleneckUom"]</th></tr></thead>
-                <tbody id="bottlenecksBody"></tbody>
             </table>
         </div>
     </section>

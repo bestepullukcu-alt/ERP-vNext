@@ -25,6 +25,10 @@ public static class SandopContextMiddleware
  switch(await http.RequestServices.GetRequiredService<ILegalEntityScopeValidator>().ValidateAsync(tenant,le,http.Request.Headers.Authorization.ToString(),correlation,http.RequestAborted))
  { case LegalEntityScopeOutcome.NotReferenceable:return new(default,"",correlation,404,"UNKNOWN_SANDOP_PLAN");
    case LegalEntityScopeOutcome.Unavailable:return new(default,"",correlation,503,"DEPENDENCY_UNAVAILABLE"); }
+ // G8 L4: the pipeline's logging context gets the resolved scope and correlation, as the Capacity gate does — without it
+ // every S&OP log line carried an all-zero CorrelationId/TenantId/LegalEntityId.
+ var logging=http.RequestServices.GetService<RequestContext>();
+ if(logging is not null){logging.Scope=new(tenant,le,actor);logging.CorrelationId=correlation;}
  string key="";
  if(mutation){var keys=http.Request.Headers["Idempotency-Key"];if(keys.Count!=1||string.IsNullOrEmpty(keys[0]))return new(default,"",correlation,400,"INVALID_REQUEST");key=keys[0]!;}
  return new(new SandopScope(tenant,le,actor),key,correlation,0,null);

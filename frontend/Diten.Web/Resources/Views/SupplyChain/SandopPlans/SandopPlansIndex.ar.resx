@@ -79,4 +79,5 @@
   <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>تعذّرت معالجة الطلب لأن معرّف التتبع الخاص به غير صالح. حاول مرة أخرى.</value></data>
   <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>تعذّر تأكيد نتيجة الطلب. أعد محاولة الطلب نفسه.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>حدث خطأ غير متوقع.</value></data>
+  <data name="ValidationCommentLength" xml:space="preserve"><value>يمكن أن يتكون التعليق من 2000 حرف كحد أقصى.</value></data>
 </root>

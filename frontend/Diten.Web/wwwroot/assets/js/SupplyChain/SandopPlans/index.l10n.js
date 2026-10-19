@@ -38,6 +38,7 @@
         'DemandPlanId',
         'DemandPlanVersion',
         'ValidationHorizonOrder',
+        'ValidationCommentLength',
         'WorkspaceTitle',
         'CurrentSnapshot',
         'CurrentMarker',

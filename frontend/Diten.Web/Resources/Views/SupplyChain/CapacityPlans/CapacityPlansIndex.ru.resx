@@ -97,4 +97,5 @@
   <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>Не удалось обработать запрос: его идентификатор отслеживания недействителен. Повторите попытку.</value></data>
   <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>Не удалось подтвердить результат запроса. Повторите тот же запрос.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка.</value></data>
+  <data name="InvalidLinkId" xml:space="preserve"><value>Ссылка содержала недопустимый идентификатор; он был проигнорирован.</value></data>
 </root>

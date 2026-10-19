@@ -14,9 +14,9 @@ namespace Diten.Web.Controllers;
 // the Gateway or holds a token. Bound operations only: createSandopPlan, getSandopPlan, captureSandopSnapshot,
 // listSandopSnapshots, recordSandopSignOff, listSandopSignOffs. No plan list (F190-LIST), no edit/delete/status change.
 //
-// Header policy (SandopContextMiddleware): Authorization (server-side) + X-Tenant-Id (from the tenant_id claim) +
-// X-Legal-Entity-Id (from ?legalEntityId=, the page's choice; the service checks it against the token) + the browser's
-// X-Correlation-Id (exactly one UUID) + Idempotency-Key on POSTs (exactly one, forwarded as sent).
+// Header policy (SandopContextMiddleware, R-2 aligned 2026-10-18): Authorization (server-side) + X-Tenant-Id (from the
+// tenant_id claim) + X-Legal-Entity-Id (from ?legalEntityId=, the page's choice; the service has MDM validate it) + the
+// browser's X-Correlation-Id (exactly one UUID) + Idempotency-Key on POSTs (exactly one, forwarded as sent).
 // Request bodies are forwarded as the browser sent them: the contract is the validator, the adapter adds no rule.
 [Authorize]
 [Route("SupplyChain/SandopPlans")]
@@ -28,9 +28,12 @@ public sealed class SupplyChainSandopPlansController : Controller
     private const string IdempotencyHeader = "Idempotency-Key";
     private const string PlansPath = "/api/supply-chain/sandop-plans";
 
-    // The published S&OP codes (SandopContractError.cs, UI-SCOPE-0190 §5). The adapter never relays a code outside this set.
+    // The published S&OP codes (SandopContractError.cs, UI-SCOPE-0190 §5) plus the service's own enveloped 500
+    // INTERNAL_ERROR (SandopRepository, after an aborted transaction) — relayed with its status, not remapped to a 503
+    // "retry" (G8 L3). The adapter never relays a code outside this set.
     private static readonly HashSet<string> PublishedCodes = new(StringComparer.Ordinal)
     {
+        "INTERNAL_ERROR",
         "INVALID_REQUEST", "INVALID_CORRELATION_ID", "UNAUTHENTICATED", "FORBIDDEN", "UNKNOWN_SANDOP_PLAN",
         "SANDOP_PLAN_ALREADY_EXISTS", "SANDOP_PLAN_STATE_CONFLICT", "SANDOP_SIGN_OFF_STATE_CONFLICT",
         "SIGN_OFF_ALREADY_RECORDED", "IDEMPOTENCY_KEY_REUSED", "INVALID_DEMAND_REFERENCE", "INVALID_SNAPSHOT_REFERENCE",
