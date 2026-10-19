@@ -16,6 +16,8 @@ namespace Diten.InventoryService.Persistence.Recall;
 /// posted on / after <c>since</c>;</item>
 /// <item>raw material = the company received it by <c>GOODS_RECEIPT_PO</c> and it is the parent of a genealogy link (it has children).</item>
 /// </list>
+/// WP-MVP1-FU-CLEAN1 (O-R5-5): ONE lot kind per lot, at the source — a lot the company also received by <c>GOODS_RECEIPT_PROD</c> is a finished
+/// good (pack §8.2), never a raw-material candidate as well; the two lists never share a lot.
 /// Ordered by lot id (ordinal): the same data + the same seed gives the same pick.
 /// </summary>
 public sealed class RecallDrillCandidates : IRecallDrillCandidates
@@ -57,7 +59,11 @@ public sealed class RecallDrillCandidates : IRecallDrillCandidates
         if (parents.Count == 0) return [];
         var f = Builders<InventoryTransaction>.Filter;
         var received = await LotIdsAsync(Company & f.Eq(x => x.MovementType, MovementType.GoodsReceiptPo) & f.In(x => x.LotId, parents), cancellationToken);
-        return await NamedAsync(received, cancellationToken);
+        if (received.Count == 0) return [];
+        // a produced lot is a finished good (pack §8.2 lot kind) — it is not offered as a raw material too (O-R5-5)
+        var produced = (await LotIdsAsync(Company & f.Eq(x => x.MovementType, MovementType.GoodsReceiptProd) & f.In(x => x.LotId, received), cancellationToken))
+            .ToHashSet(StringComparer.Ordinal);
+        return await NamedAsync(received.Where(id => !produced.Contains(id)).ToList(), cancellationToken);
     }
 
     public async Task<RecallDrillLot?> LotAsync(Guid lotId, CancellationToken cancellationToken = default)
