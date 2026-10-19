@@ -164,6 +164,10 @@ else
   echo "[phase1] skip mdm: services/Diten.MdmService/Diten.MdmService.sln not found"
 fi
 
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Calculation.Tests/Diten.SafetyStockService.Calculation.Tests.csproj -c Debug
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.PolicyState.Tests/Diten.SafetyStockService.PolicyState.Tests.csproj -c Debug
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Read.Tests/Diten.SafetyStockService.Read.Tests.csproj -c Debug
+
 # CT-FIX-03 (R0, Codex): the Control Tower CLI regression set (scripts/tests/test_ct_cli_regression.py) builds a
 # synthetic Blueprint workbook and needs openpyxl. It is installed from the repository's own pins
 # (scripts/requirements-tools.txt) into an isolated virtual environment under the runner's temp folder — never into the
