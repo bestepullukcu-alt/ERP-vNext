@@ -199,7 +199,7 @@ Bu pack yeni persistence entity tanımlamaz. Outbox/inbox kayıt yapısı MOD-00
 ## 5. Repo Scope
 
 ### Batch 1 (event contracts + producer emit + handler emit tests)
-- `execution/domains/platform-shared-services/module-packs/MOD-0009-tenant-lifecycle-events.md` (bu dosya)
+- `execution/domains/platform-shared-services/module-packs/MOD-0009-tenant-environment-management.md` (bu dosya)
 - `services/Diten.Platform.Contracts/Events/TenantCreatedV1.cs` (yeni)
 - `services/Diten.Platform.Contracts/Events/TenantSuspendedV1.cs` (yeni)
 - `services/Diten.Platform.Contracts/Events/TenantReactivatedV1.cs` (yeni)
@@ -231,7 +231,7 @@ Bu pack yeni persistence entity tanımlamaz. Outbox/inbox kayıt yapısı MOD-00
 
 ### Batch 4 (reconciliation/documentation, kod değişikliği yok)
 - `docs/reference/modules/platform/master-plan.md` §9.4 MOD-0009 satır güncellemesi
-- `execution/domains/platform-shared-services/module-packs/MOD-0009-tenant-lifecycle-events.md` `status: done` + Implementation Report eklenmesi
+- `execution/domains/platform-shared-services/module-packs/MOD-0009-tenant-environment-management.md` `status: done` + Implementation Report eklenmesi
 
 ## 6. Protected Paths
 

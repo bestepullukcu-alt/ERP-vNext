@@ -11,7 +11,7 @@ started: 2026-04-16
 target: 2026-08-06
 ---
 
-# MOD-0009-FU01 — Tenant Architecture Foundation
+# MOD-0009-FU01 — Tenant / Environment Management — Architecture Foundation (FU01) (formerly titled: Tenant Architecture Foundation)
 
 > **Canonicalization (DCP-002):** Canonical ID is now **MOD-0009-FU01**, repositioned as a child/FU of **MOD-0009 Tenant / Environment Management** (Blueprint canonical). Prior repo ID **MOD-0043** is a deprecated alias retained for traceability; repo MOD-0043 had drifted onto a Blueprint ID reserved for an SRE module ("SLO/SLA Monitoring"). Body text below predates canonicalization and may reference MOD-0043; scope and meaning are unchanged. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 

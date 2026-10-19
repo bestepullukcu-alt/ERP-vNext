@@ -11,7 +11,7 @@ started: 2026-04-17
 target: 2026-08-15
 ---
 
-# MOD-0009-FU02 — Tenant Manager (Backend-Only)
+# MOD-0009-FU02 — Tenant / Environment Management — Manager Backend (FU02) (formerly titled: Tenant Manager (Backend-Only))
 
 > **Canonicalization (DCP-002):** Canonical ID is now **MOD-0009-FU02**, a child/FU of **MOD-0009 Tenant / Environment Management** (Blueprint canonical). Prior repo ID **MOD-0044** is a deprecated alias retained for traceability; repo MOD-0044 had drifted onto a Blueprint ID reserved for "Backup & Restore". Body text below predates canonicalization and may reference MOD-0044; scope and meaning are unchanged. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 
