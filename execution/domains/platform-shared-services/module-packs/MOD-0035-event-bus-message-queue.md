@@ -14,7 +14,7 @@ target: 2026-05-30
 form_field_count: 0
 ---
 
-# MOD-0035 — Event Bus / Internal Events
+# MOD-0035 — Event Bus / Message Queue (formerly titled: Event Bus / Internal Events)
 
 ## 1. Module Summary
 - **Purpose:** Platform & Shared Services domain owns the central event bus capability for ERP-vNext. Platform modules publish domain/integration events through a shared eventing standard; other ERP domains consume/produce through the same standard and must not fork their own broker infrastructure.

@@ -1,6 +1,7 @@
 ---
 id: CAND-CAP-0003
 name: Platform Administration & Operations
+split_into: MOD-0009 + MOD-0018 + MOD-0360 + MOD-0361
 domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin

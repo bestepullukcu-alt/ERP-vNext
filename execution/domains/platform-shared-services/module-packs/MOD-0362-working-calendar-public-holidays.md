@@ -432,7 +432,7 @@ Views/Shared/_LayoutTenantShell.cshtml                             (YALNIZ permi
 **Bu pack (bugün geçerli olan tek yazma alanı):**
 
 ```text
-execution/domains/platform-shared-services/module-packs/CAND-CAP-0008-working-calendar-public-holidays.md
+execution/domains/platform-shared-services/module-packs/MOD-0362-working-calendar-public-holidays.md
 ```
 
 ---
@@ -1615,7 +1615,7 @@ değişiklik. **Önerim Compact kalması**: iki yüzey aynı aggregate'i, aynı 
 paylaşıyor; birini Compact diğerini Slim yapmak aynı varlık için iki farklı form idiomu demektir.
 
 Geliştirme için status `approved` veya `ready-for-dev` olmalı **ve** `runtime_code_allowed: true`
-yapılmalıdır; sonra `@orchestrator CAND-CAP-0008-working-calendar-public-holidays` çağrılır.
+yapılmalıdır; sonra `@orchestrator MOD-0362-working-calendar-public-holidays` çağrılır.
 
 Hazırlık sırasında **Golden Reference Compact (DEV-0001)** şablon olarak alındı — naming'de sapma yok; iki
 yapısal sapma (`Delete`/`BulkDelete` yokluğu, `Provider/` klasörü) §10'da, `entity_base` sapması §4.1'de

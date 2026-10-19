@@ -15,7 +15,7 @@ target: 2026-06-15
 form_field_count: 0
 ---
 
-# MOD-0263 - External Messaging Provider
+# MOD-0263 — Messaging Provider (Twilio/Infobip/SendGrid) [External Provider] (formerly titled: External Messaging Provider)
 
 ## 1. Module Summary
 - **Purpose:** Implement production-ready external messaging provider adapters behind the existing MOD-0027 `IMessagingProvider` boundary so production email can leave the system. MOD-0027 already owns orchestration, templates, queue/dispatch, retry, audit, lifecycle events, and the fake/development provider; MOD-0263 adds only the concrete transport-level adapters.

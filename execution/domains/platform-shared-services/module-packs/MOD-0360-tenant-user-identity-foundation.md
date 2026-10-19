@@ -143,7 +143,7 @@ TenantId is validated server-side through the resolved tenant context and must n
 Governance authoring scope:
 
 ```text
-execution/domains/platform-shared-services/module-packs/CAND-CAP-0001-tenant-user-identity-foundation.md
+execution/domains/platform-shared-services/module-packs/MOD-0360-tenant-user-identity-foundation.md
 execution/registries/module-id-registry.md
 execution/portfolio/master-development-plan.md
 execution/portfolio/delivery-capability-packs/DCP-001-access-governance.md

@@ -15,7 +15,7 @@ target: 2026-06-05
 form_field_count: 0
 ---
 
-# MOD-0027 - Central Tenant Email / Notification Service
+# MOD-0027 — Notification Service (Email/SMS/WhatsApp) (formerly titled: Central Tenant Email / Notification Service)
 
 ## 1. Module Summary
 - **Purpose:** Provide the central tenant-aware notification and email orchestration foundation for ERP-vNext.

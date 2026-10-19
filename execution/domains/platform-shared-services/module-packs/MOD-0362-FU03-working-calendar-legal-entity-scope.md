@@ -1,5 +1,6 @@
 ---
-id: CAND-CAP-0008-FU03
+id: MOD-0362-FU03
+formerly_id: CAND-CAP-0008-FU03
 name: Working Calendar Legal-Entity Scope Extension
 parent: MOD-0362
 formerly_parent: CAND-CAP-0008 (working-calendar meaning; later CAND-CAP-0010)
@@ -18,15 +19,15 @@ started: 2026-08-27
 target: TBD (ayrı ready-for-dev + runtime flip kararı sonrası)
 form_field_count: 10
 dependencies:
-  - CAND-CAP-0008 (FU01 — shipped aggregate, write guard, provider seam ve tenant Overrides yüzeyi; additive genişletilir)
-  - CAND-CAP-0008-FU02 (draft auto-fetch; yalnız ülke katmanı, legal-entity override yazmaz)
+  - MOD-0362 (formerly CAND-CAP-0008; FU01 — shipped aggregate, write guard, provider seam ve tenant Overrides yüzeyi; additive genişletilir)
+  - MOD-0362-FU02 (formerly CAND-CAP-0008-FU02; draft auto-fetch; yalnız ülke katmanı, legal-entity override yazmaz)
   - MOD-0220 (MDM Legal Entity — tenant-scoped lookup + lookup-validation SoR)
   - MOD-0018 (mevcut working-calendar override izinleri; yeni anahtar yok)
   - MOD-0032 (mevcut /api/legal-entities ve /api/legal-entities/{everything} Gateway rotaları; config deltası yok)
   - DEV-0001 (Golden Reference Compact)
 ---
 
-# CAND-CAP-0008-FU03 — Working Calendar Legal-Entity Scope Extension
+# MOD-0362-FU03 (formerly CAND-CAP-0008-FU03) — Working Calendar Legal-Entity Scope Extension
 
 > **READY-FOR-DEV — KOD YETKİSİ AÇIK (flip 2026-08-27 kullanıcı kararı).** `status: ready-for-dev` ve
 > `runtime_code_allowed: true`. Kapsam yalnızca yukarıdaki `runtime_code_scope` ile sınırlıdır; oradaki YASAK

@@ -38,7 +38,7 @@
 ### 3.1 CAND-CAP-0008 iki anlamda kullanılıyor ❗
 - Kayıtta 0008 = **Decomposition** (→ MOD-0354); Çalışma Takvimi = **0010** (→ MOD-0362).
 - Ama Çalışma Takvimi modül paketleri ve CRM kodu Çalışma Takvimi'ni **"CAND-CAP-0008"** diye anıyor:
-  - `execution/domains/platform-shared-services/module-packs/CAND-CAP-0008-FU02-working-calendar-public-holiday-auto-fetch.md` (+ FU01 / FU03 referansları);
+  - `execution/domains/platform-shared-services/module-packs/MOD-0362-FU02-working-calendar-public-holiday-auto-fetch.md` (+ FU01 / FU03 referansları);
   - `MOD-0155-FU06-cycle-capacity.md`, `MOD-0165-FU06-cycle-period.md`, `MOD-0165-FU07-…`;
   - CRM: `Features/CycleCapacity/Contract/CycleCapacityFeatureFlags.cs`, `Read/IWorkingDayChecker.cs`, `Read/IWorkingDayCounter.cs`, `Domain/Entities/CycleCapacity.cs` (+ toplam 7 kod dosyası, 18 belge).
 - **Risk:** "0008 → MOD-0354" göçü yapılırsa Çalışma Takvimi referansları yanlış modüle (Decomposition) bağlanır.

@@ -16,7 +16,7 @@ completed: 2026-05-15
 form_field_count: 0
 ---
 
-# MOD-0026 - Background Job Scheduler
+# MOD-0026 — Scheduler / Job Orchestration (formerly titled: Background Job Scheduler)
 
 ## 1. Module Summary
 - **Purpose:** Provide the central background job scheduler foundation for ERP-vNext. Platform and future ERP services should register fire-and-forget, delayed, and recurring jobs through shared abstractions instead of binding directly to Hangfire APIs.

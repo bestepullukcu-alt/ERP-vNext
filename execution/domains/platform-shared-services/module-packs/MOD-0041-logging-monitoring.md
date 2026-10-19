@@ -16,7 +16,7 @@ completed: false
 form_field_count: 0
 ---
 
-# MOD-0041 - Logging / Monitoring
+# MOD-0041 — Logging & Monitoring (formerly titled: Logging / Monitoring)
 
 ## 1. Module Summary
 - **Purpose:** Define the full central observability scope for ERP-vNext and deliver it through explicit implementation batches.

@@ -14,7 +14,7 @@ target: 2026-06-16
 form_field_count: 0
 ---
 
-# MOD-0009 — Tenant Registry Lifecycle Events
+# MOD-0009 — Tenant / Environment Management (formerly titled: Tenant Registry Lifecycle Events)
 
 ## 0. Pre-dev Blocker Decisions
 

@@ -1,5 +1,6 @@
 ---
-id: CAND-CAP-0008-FU02
+id: MOD-0362-FU02
+formerly_id: CAND-CAP-0008-FU02
 name: Working Calendar Public Holiday Auto-Fetch
 parent: MOD-0362
 formerly_parent: CAND-CAP-0008 (working-calendar meaning; later CAND-CAP-0010)
@@ -19,7 +20,7 @@ revised: 2026-08-27            # D-F02 = MANUEL + ZAMANLANMIŞ · D-F10 kesinle�
 target: TBD (ready-for-dev flip sonrası)
 form_field_count: 5            # fetch tetikleme formu — §11.1 türetmesi
 dependencies:
-  - CAND-CAP-0008 (FU01 — PARENT; aggregate, write path, vokabüler, provider seam. DEĞİŞTİRİLMEZ, yalnız TÜKETİLİR + additive genişletilir)
+  - MOD-0362 (formerly CAND-CAP-0008; FU01 — PARENT; aggregate, write path, vokabüler, provider seam. DEĞİŞTİRİLMEZ, yalnız TÜKETİLİR + additive genişletilir)
   - MOD-0048 (read-only — `countries` lookup; `IPlatformLookupProvider`, HTTP self-call YOK)
   - MOD-0018 (RBAC — gerçek `[HasPermission]`; katalog/grant bu pack'te YOK → F02-RBAC)
   - MOD-0021 (audit — fetch/decision/apply olayları → F02-AUDIT)
@@ -31,7 +32,7 @@ consumers:
   - (yeni tüketici YOK) — FU02 `IWorkingCalendarProvider` okuma yüzeyini DEĞİŞTİRMEZ; tüketiciler FU02'yi görmez
 ---
 
-# CAND-CAP-0008-FU02 — Working Calendar Public Holiday Auto-Fetch
+# MOD-0362-FU02 (formerly CAND-CAP-0008-FU02) — Working Calendar Public Holiday Auto-Fetch
 
 > **✅ READY-FOR-DEV — KOD YETKİSİ AÇIK (flip 2026-08-27 kullanıcı kararı).** `status: ready-for-dev` ve
 > `runtime_code_allowed: true`. `@orchestrator` bu pack ile kod yazabilir; kapsam yalnızca yukarıdaki
@@ -607,7 +608,7 @@ Navigation/PlatformNavigationCatalog.cs                            (YALNIZ tek k
 **Bu pack (bugün geçerli olan TEK yazma alanı):**
 
 ```text
-execution/domains/platform-shared-services/module-packs/CAND-CAP-0008-FU02-working-calendar-public-holiday-auto-fetch.md
+execution/domains/platform-shared-services/module-packs/MOD-0362-FU02-working-calendar-public-holiday-auto-fetch.md
 ```
 
 ---
@@ -1604,7 +1605,7 @@ yapar; çünkü maker artık **hiçbir zaman** checker olamayan bir sistem kimli
 (**ayrı kullanıcı kararı**). Ops tarafında ayrıca `date.nager.at` egress'inin açık olması gerekir.
 
 Geliştirme için status `approved` veya `ready-for-dev` olmalı **ve** `runtime_code_allowed: true` yapılmalıdır;
-sonra `@orchestrator CAND-CAP-0008-FU02-working-calendar-public-holiday-auto-fetch` çağrılır.
+sonra `@orchestrator MOD-0362-FU02-working-calendar-public-holiday-auto-fetch` çağrılır.
 
 Hazırlık sırasında **Golden Reference Slim (DEV-0000)** şablon olarak alındı — naming'de sapma yok; üç yapısal
 sapma (`Delete`/`BulkDelete` yokluğu, `Update` yokluğu, `Provider/`+`Mapping/` klasörleri) §10'da, bir frontend
