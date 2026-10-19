@@ -79,6 +79,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.PlanningService"] = new(Debt: 2, Exceptions: 0, Indirect: 5),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
+        ["Diten.SafetyStockService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
         ["Diten.TalentEcosystemService"] = new(Debt: 106, Exceptions: 0),
     };
@@ -130,6 +131,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.PlanningService", "yayin-izi", "c", "IInternalPublishedRevisionStore.PublishAsync"),
         ("Diten.PlanningService", "gecersiz-kilma-izi", "c", "IInternalRevisionInvalidator.InvalidateAsync"),
         ("Diten.PlanningService", "geri-donus-izi", "c", "IRollbackDraftStore.CreateAsync"),
+        ("Diten.SafetyStockService", "safety-stock-policy-izi", "c", "IPolicyMutationStore.ExecuteAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),
