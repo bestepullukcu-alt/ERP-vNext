@@ -205,12 +205,16 @@ public sealed class DecisionMakerSearchHttpMongoTests
     {
         await using var host = await Host.StartAsync();
         host.NameSource.Hang = true;
-        var clock = System.Diagnostics.Stopwatch.StartNew();
 
-        var (status, code, _) = await host.GetAsync("?search=il");
+        // BL-661 (was BL-649 on the MVP-6 branch): the HTTP contract this test owns is "a hanging name source surfaces as a 503, end to end" — not
+        // "the wall clock reads under N seconds". Measuring the 2 s BoundedDisplayNames.Timeout on a shared CI box
+        // turned a correct product red at 4.84 s under load (green 3/3 alone). That the hang is BOUNDED — the token
+        // is cancelled, the answer is incomplete — is pinned deterministically, with no wall clock, by
+        // BoundedDisplayNamesTests; here we assert only the surfaced status and reason code. WaitAsync keeps a
+        // deadline far above the 2 s bound yet far below the 5-minute hang, so a lost-bound regression still fails
+        // fast and clearly while load no longer does.
+        var (status, code, _) = await host.GetAsync("?search=il").WaitAsync(TimeSpan.FromSeconds(30));
 
-        clock.Stop();
-        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"took {clock.Elapsed}");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, status);
         Assert.Equal(DecisionMakerLookup.ReasonCodes.DirectoryUnavailable, code);
     }

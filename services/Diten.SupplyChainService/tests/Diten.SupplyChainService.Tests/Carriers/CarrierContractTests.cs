@@ -96,6 +96,23 @@ public sealed class CarrierContractTests
         }
         return ((int)response.StatusCode, parsed, trace);
     }
+    // MOD-0184 §16 #2 (contract fidelity): live answers — success and error — validate against the frozen OpenAPI.
+    [Fact]
+    public async Task Live_responses_match_the_frozen_contract()
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient();
+        var errors = new List<string>();
+        void Check(string path, string method, (int Status, JsonObject Body, string Correlation) r) =>
+            errors.AddRange(Diten.SupplyChainService.Tests.Common.ShipmentBundleContract.ValidateResponse(path, method, r.Status, r.Body).Select(e => $"{method} {path} {r.Status}: {e}"));
+        var created = await Send(c, body: Body("CONTRACT"), key: "contract-create"); Check("/carriers", "POST", created);
+        var id = created.Body["carrierId"]!.GetValue<string>();
+        Check("/carriers", "GET", await Send(c, "GET"));
+        Check("/carriers/{carrierId}/status", "POST", await Send(c, path: $"/{id}/status", body: Change("Suspended"), key: "contract-status"));
+        Check("/carriers/{carrierId}/status", "POST", await Send(c, path: $"/{Guid.NewGuid()}/status", body: Change("Suspended"), key: "contract-404"));
+        var bad = Body("BAD"); bad.Remove("displayName"); Check("/carriers", "POST", await Send(c, body: bad, key: "contract-400"));
+        Assert.Empty(errors);
+    }
+
     private static IMongoDatabase Db(Factory f) => f.Services.GetRequiredService<IMongoDatabase>();
     private BsonDocument Scope() => new() { { "TenantId", _tenant.ToString() }, { "LegalEntityId", _le.ToString() } };
     private async Task<long> Count(Factory f, string collection) => await Db(f).GetCollection<BsonDocument>(collection).CountDocumentsAsync(Scope());

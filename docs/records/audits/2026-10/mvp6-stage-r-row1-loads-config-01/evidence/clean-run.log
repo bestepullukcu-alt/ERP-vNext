@@ -1,0 +1,21 @@
+Test run for /Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+/Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.63]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.89]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.90]   Starting:    Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.98]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Common.TrackedConfigurationGuardTests.The_legal_entity_root_is_set_and_is_NOT_this_service [13 ms]
+  Passed Diten.SupplyChainService.Tests.Common.TrackedConfigurationGuardTests.Each_module_reference_root_is_set_and_is_the_services_own_origin(section: "Returns") [1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.TrackedConfigurationGuardTests.Each_module_reference_root_is_set_and_is_the_services_own_origin(section: "Claims") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.TrackedConfigurationGuardTests.Each_module_reference_root_is_set_and_is_the_services_own_origin(section: "Loads") [< 1 ms]
+  Passed Diten.SupplyChainService.Tests.Common.TrackedConfigurationGuardTests.The_three_module_roots_agree_with_each_other [1 ms]
+
+Test Run Successful.
+Total tests: 5
+     Passed: 5
+ Total time: 3.1147 Seconds

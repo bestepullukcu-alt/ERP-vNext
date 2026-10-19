@@ -1150,6 +1150,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Cargas</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestión de reclamaciones</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Reclamaciones de transporte</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>Flujo de trabajo S&amp;OP y validaciones</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>Planes S&amp;OP</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Planificación de capacidad</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>Planes de capacidad</value></data>
   <data name="Activate" xml:space="preserve"><value>Activar</value></data>
   <data name="Deactivate" xml:space="preserve"><value>Desactivar</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>Correo electrónico o nombre de usuario</value></data>

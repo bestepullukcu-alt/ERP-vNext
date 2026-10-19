@@ -9979,6 +9979,19 @@ alandan yapılabilir). Önerilen çözüm: ağ geçidi ürettiği kimliği imzal
 imzaladığı kimliği benimser; servisler kimliği olduğu gibi iletir. Gizli anahtar yönetimi gerektirir (dev betiği + canlı ayar; değer hiçbir yere
 yazılmaz). Gelecek regresyon riski: 🟡 (her servisin korelasyon akışına dokunur).
 
+**İLERLEME KAYDI — 2026-10-18 · `1ace4f30e` (mekanizma teslim edildi; madde AÇIK kalır).** Q151 entegre koşusu bu tasarımın
+SupplyChain tarafındaki karşılığını buldu: ağ geçidi her istekte yeni kimlik ürettiği için sevkiyat yaşam döngüsü kökü (geçişler,
+iade, talep) ağ geçidinden taşınamıyordu (`mvp6-q151-integrated-run-01`, D2). **Yapılan:** imza kimliğin İÇİNDE —
+`Observability:Correlation:SigningKey` verilince (yalnız ağ geçidi, çalışma anında; değer hiçbir yere yazılmaz) uç, ilk yarısı
+rastgele, ikinci yarısı ilk yarının HMAC-SHA256'sı olan kanonik UUID üretir ve gelen kimliği YALNIZ kendi geçerli imzasını
+taşıyorsa benimser (`SignedCorrelation`); aynı commit uçta "N" biçimini "D"ye çevirdi (D1). **Kararlar:** ayrı başlık yerine
+kimlik içi imza seçildi — yeni başlık, CORS açılımı ve servis değişikliği gerekmiyor, her alıcı yine kanonik UUID görüyor.
+Anahtar yoksa davranış INTX FIX2 ile birebir aynı. **Kanıt:** ağ geçidi testleri 254/254 (sahte, kurcalanmış ve başka anahtarla
+imzalanmış kimliğin reddi dahil), canlı koşu `mvp6-q151-integrated-run-02` PASS. **Kasten yapılmayan:** HCM/CRM istemcilerinin
+(`GovernedHcmAuditAppendClient`, `HttpCrmAuditPublisher`) gelen `X-Correlation-Id`'yi Platform çağrısına aynen iletip iletmediği
+ölçülmedi — bu maddenin asıl sorunu o yarı; ölçülene kadar madde kapanmaz. Anahtar yokken ağ geçidinin canlıda hızlı-düşmesi
+(JWT gizlisindeki gibi) önerildi, eklenmedi.
+
 ---
 
 ### BL-527
@@ -10176,6 +10189,270 @@ Mongo'suna dokunabilir. SYNC-03 koşularında bu sınıf filtreyle dışarıda b
 etkilenmedi. Plan `FIX-CRM-SCAFFOLD-MONGO` (dal `fix/crm-scaffold-smoke-no-mongo` → PR → main), ziyaret çalışma alanı paketlerinden sonra:
 `AddPersistence`'a varsayılanı açık `Mongo:EnsureIndexesOnStartup`; test kapatır. CT eki: sürücü istemci oluşunca izleme bağlantısı açar —
 testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod günlüğünde 0 bağlantı. İstisna CRM'in PR'ı main'e girene kadar hatta kalır.
+
+---
+
+### BL-653
+
+**Ağ geçidi `X-Correlation-Id`'yi SİLMEDEN kendisini ekliyor: beş modülün dördü "exactly one UUID" kontrolüyle 400 veriyor — sözleşme ise o başlığı zorunlu kılıyor**
+
+DURUM: AÇIK · SAHİP: integration owner (ağ geçidi) · BULAN: WP-LANE-MAIN-SYNC-05 canlı yığın, beş golden flow (2026-10-17) · KAYIT: 2026-10-17 · İLGİLİ: BL-651'i genişletir
+
+**Ne:** Ağ geçidinden `POST /carriers`, `/loads`, `/returns` → **400 `INVALID_REQUEST`**,
+*"X-Correlation-Id must contain exactly one UUID value."* Aynı istek doğrudan 5066'da kabul ediliyor.
+Yani `AddEdgeCorrelation()` çağıranın değerini kaldırmadan kendi değerini **ekliyor**; middleware'lerin
+`Count != 1` kontrolü ateşliyor.
+
+**Neden ciddi:** sözleşme `X-Correlation-Id`'yi **required** parametre olarak bildiriyor. Yani sözleşmenin
+söylediğini yapan bir çağıran, beş modülün dördünü kamuya açık sınırdan **hiç** kullanamıyor — ilk çağrı
+bile başarısız. `POST /shipments` bunu tolere ediyor; beşte bir modülün farklı davranması, bunun bugüne
+kadar görülmemesinin sebebi.
+
+**BL-651'den farkı:** BL-651 kenarın correlation'ı *değiştirip* replay'i kırdığını kaydediyor. Bu daha
+kötü: dört modül için ilk çağrı da düşüyor.
+
+**Yapılacak:** kenar kendi değerini eklerken çağıranınkini kaldırır (ya da BL-651'in 3. seçeneği gibi
+ayrı başlıkta taşır). Düzeltme ağ geçidinde; modüllerin `Count != 1` kuralı doğru.
+
+**Gelecek regresyon riski:** 🔴 (API çağıranları için dört modül kamuya açık sınırdan kullanılamaz).
+
+---
+
+### BL-652
+
+**25 `supplychain.*` anahtarı yetmiyor: doğrulayıcı çağıranın token'ını MDM'e iletiyor, bu yüzden 26. izin (`mdm.legal-entities.read`) şart — yokluğu 503 "schema validation failed" diye görünüyor**
+
+DURUM: AÇIK · SAHİP: SCE / MVP-6 (kuplaj) + CT (Q496 önermesi) · BULAN: WP-LANE-MAIN-SYNC-05 canlı yığın (2026-10-17) · KAYIT: 2026-10-17
+
+**Ne:** `MdmLegalEntityReferenceValidator:111-115` çağıranın `Authorization` başlığını MDM'in
+`GET /api/legal-entities/{id}/lookup-validation` ucuna **iletiyor**; o uç
+`[HasPermission("mdm.legal-entities.read")]` taşıyor. Dolayısıyla 25 `supplychain.*` anahtarının hepsini
+tutup bunu tutmayan bir çağıran her create'te **503 `DEPENDENCY_UNAVAILABLE`** alıyor.
+
+**İki yönlü ölçüldü:** yalnız 25 anahtarla `POST /carriers` → 503. Aynı token'a `mdm.legal-entities.read`
+eklenince, aynı gövdeyle → **201**.
+
+**Q496'nın önermesini düzeltiyor:** 25 modül anahtarını vermek modülleri kullanılabilir yapmıyor; 25
+**artı bir** MDM izni gerekiyor. Kuplaj R-2b'nin iç service-identity yolunu kaldırmasından geliyor —
+geriye tek yol olarak kamuya açık `lookup-validation` kaldı, yani artık çağıranın kendi izinleri kapıyı
+tutuyor. Bu sonucu hiçbir kayıt yazmamış.
+
+**İkinci kusur, aynı yerde:** `CarrierContractError.cs:12` durum→mesaj eşlemesinde **503 vakası yok**, bu
+yüzden `_ =>` varsayılanı uyguluyor: *"Request schema validation failed."* Bağımlılık hatası çağırana
+**şema** hatası olarak görünüyor; geçerli bir gövdeyi kontrol etmeye yönlendiriyor. CT tam buna zaman
+kaybetti.
+
+**Yapılacak:** (a) kuplaj kararı — ya rol şablonuna `mdm.legal-entities.read` eklenir ya doğrulama
+servis kimliğine döner (R-2b'yi tersine çevirir, sahip kararı); (b) `CarrierContractError`'a 503 vakası
+eklenir. (b) küçük ve bağımsız.
+
+**Gelecek regresyon riski:** 🟠 ((a) yetki şablonu düzeltilene kadar her yeni kiracı aynı duvara çarpar;
+(b) yanlış mesaj her 503'te yanlış yere baktırır).
+
+---
+
+### BL-651
+
+**Idempotent replay imkânsız: ağ geçidi çağıranın `X-Correlation-Id`'sini kasten değiştiriyor, sevkiyat makbuz kontrolü ise eşleşmesini kasten şart koşuyor — ikisi bir arada tutamaz**
+
+DURUM: AÇIK · SAHİP: integration owner (ağ geçidi) + SCE / MVP-6 (makbuz kontrolü) — karar sahibin · BULAN: WP-LANE-MAIN-SYNC-05 canlı lane yığını, gate 6. madde (2026-10-17) · KAYIT: 2026-10-17
+
+**Ne:** Aynı gövde, aynı `Idempotency-Key`, aynı `X-Correlation-Id` ile iki kez POST:
+
+| yol | 1. çağrı | 2. çağrı |
+|---|---|---|
+| doğrudan 5066 | 201 `idempotentReplay:false` | **200 `idempotentReplay:true`, aynı `shipmentId`** |
+| ağ geçidi 5000 | 201 | **400 `INVALID_REQUEST`** |
+
+Dört kez yeniden üretildi; opaque ve UUID biçimli anahtarla, correlation sabit ve değişken tutularak.
+
+**Neden, ve iki taraf da tek başına doğru:**
+* `gateway/Diten.ApiGateway/Program.cs:97-98` — *"INTX FIX2 — the edge does not adopt a caller's
+  `X-Correlation-Id` (EdgeCorrelation)."* Kenar kendi correlation'ını basıyor, bilerek.
+* `ShipmentRepository.cs:70` — makbuz bulunduğunda `receipt["CorrelationId"] != correlationId` ise
+  **400 `INVALID_REQUEST`**. Yalnız *fingerprint* farkı 409 `IDEMPOTENCY_KEY_REUSED` veriyor (`:69`).
+
+Yani kenardan gelen her yeniden deneme yeni bir correlation'la geliyor, makbuz kontrolü asla geçemiyor,
+`:70` her replay'de ateşliyor.
+
+**Maliyeti:** idempotency anahtarının bütün amacı belirsiz sonuçtan sonra güvenli yeniden denemedir —
+kaybolan cevap, timeout. Kenarda o deneme artık saklanmış orijinal yerine 400 dönüyor; çağıran
+"zaten uygulandı" ile "reddedildi"yi ayırt edemiyor ve anahtar hiçbir şey satın almıyor.
+
+**Q497'yi daraltıyor:** Q497 catch-all'ı *"shipment-bundle familyası için şeffaf"* bulmuştu — beş yolda
+doğrudan ve ağ geçidinden **birebir aynı** cevap ölçerek. Bu **ilk** çağrı için doğru; **replay** için
+değil, çünkü şeffaflık durum ve gövde üzerinde ölçüldü, idempotency sözleşmesinin dayandığı o tek
+başlık üzerinde değil. Q497 yanlış değil; cümlesi kapsamından geniş.
+
+**Yapılacak (sahip kararı), üç seçenek:**
+1. Kenar, geçerli bir UUID gelirse çağıranın correlation'ını kabul eder (INTX FIX2'nin gerekçesi
+   yeniden değerlendirilir).
+2. Makbuz kontrolü correlation eşitliği şartını bırakır: aynı fingerprint + aynı anahtar = replay,
+   correlation ne olursa olsun (annex'in *"farklı correlation ama aynı gövde orijinal gövdeyi alır"*
+   cümlesi bunu zaten söylüyor — `:70` o cümleyle çelişiyor).
+3. Kenar correlation'ı ayrı bir başlıkta (örn. `X-Edge-Correlation-Id`) taşır ve çağıranınkini bozmaz.
+
+**Not:** annex'in kendi ifadesi 2. seçeneği destekliyor gibi: *"A retry with a different correlation but
+identical payload therefore gets original business body and current header."* Bu cümle ile
+`ShipmentRepository.cs:70` arasındaki çelişki de bu maddenin parçası.
+
+**Gelecek regresyon riski:** 🔴 (kenar üzerinden her idempotent yeniden deneme 400 alıyor; sessiz değil
+ama yanlış).
+
+---
+
+### BL-650
+
+**CT kararı D'nin niyeti ile guard'ın ölçtüğü şey ayrışmış: "hiçbir satır job-local mongod başlatmaz" kuralı workflow metnine bakıyor, script'ten başlatan satır kontrolü geçiyor**
+
+DURUM: AÇIK · SAHİP: CT (karar D'nin sahibi) · BULAN: WP-LANE-MAIN-SYNC-05 SupplyChain CI satırı hazırlığı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs`
+`No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address` kuralı **workflow dosyasının metninde**
+`--replSet`, `--dbpath` ve `mongodb://` arıyor. Niyeti yorumunda yazılı: *"Main sync FIX1 (CT decision D): no row starts
+a job-local mongod and no step hands the tests a Mongo address. Every service test owns its mongod."*
+
+Ama mongod'u bir **script'ten** başlatan satır bu metin kontrolünü geçerken kararın yasakladığı şeyi yapıyor.
+`origin/main` 2026-10-16'da `planning-tests` satırını tam böyle ekledi: `scripts/test-env/mod0188-ci-mongo.sh start`
+içinde `--replSet` ve `--dbpath` var, workflow'da yok.
+
+**Neden şimdi kaydediliyor:** SupplyChain CI satırı aynı deseni izleyecek (sahip kararı 2026-10-16, gerekçesi
+`docs/roadmap/plans/mvp6-supplychain-ci-row-01/README.md`'de). Yani karar D'nin niyeti ikinci kez delinmiş olacak.
+CT bunu gizlemek yerine kaydediyor — niyetine uyan alternatif, Q131a'nın bilinçli "varsayılan yok, eksik URI
+fail-closed" tasarımını yedi çağrı noktası artı üç çocuk-süreç testinde tersine çevirmek, ve bu kendi iş paketini
+hak ediyor.
+
+**Yapılacak (karar D'nin sahibinin kararı), üç seçenek:**
+1. Niyet güncellenir: "job-local mongod, yalnız `scripts/test-env/` altındaki adlandırılmış bir script'ten ve her
+   satır için gerekçesiyle" — guard metni buna göre ölçer (script'lerin varlığını pinler).
+2. Niyet korunur ve guard script'leri de okur — o zaman `planning-tests` ve SupplyChain satırı kırmızıya düşer ve
+   ikisinin de testleri kendi mongod'unu başlatacak şekilde yeniden tasarlanır.
+3. Olduğu gibi bırakılır; o hâlde guard'ın yorumu "workflow metninde job-local mongod yoktur" demeli, "hiçbir satır
+   job-local mongod başlatmaz" dememeli — çünkü ikincisi artık doğru değil.
+
+**Gelecek regresyon riski:** 🟡 (guard yanlış güvence veriyor: okuyan "her test kendi mongod'unu başlatıyor" sanıyor,
+iki satır başlatmıyor).
+
+---
+
+### BL-661
+
+> **Eski numara: BL-649.** Bu madde MVP-6 dalında BL-649 adıyla yazıldı (2026-10-17); main aynı numarayı daha önce
+> başka bir maddeye verdiği için birleşmede BL-661 oldu. `docs/records/` ve eski planlardaki "BL-649" atıfları
+> (MVP-6 bağlamında) bu maddeyi gösterir.
+
+**`A_hanging_name_source_costs_the_search_at_most_the_bound` duvar saati sınırını yüklü makinede aşıyor — ürün aynı davranırken test kırmızıya dönüyor**
+
+DURUM: AÇIK · SAHİP: Platform / Tasks (test sahibi) · BULAN: WP-LANE-MAIN-SYNC-05 merge tamamlama kapısı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tasks/DecisionMakerSearchHttpMongoTests.cs:213`
+`Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"took {clock.Elapsed}")` ile **geçen gerçek süreyi** ölçüyor.
+8650 testlik tam suite koşusunda `took 00:00:04.8444922` ile kırmızı; **tek başına, aynı ağaç ve aynı derlemelerle 3/3 yeşil**
+(yeniden koşuda yük ortalaması hâlâ 10.44'tü, yani tertemiz bir makine sonucu da değil).
+
+**Sınıflandırma:** yüke duyarlı duvar saati sınırı. Merge regresyonu değil (merge bu dosyaya dokunmadı) ve ürün kusuru değil —
+makineyi paylaşan başka iş varken 4 saniyelik tavan, ürün birebir aynı davranırken aşılabiliyor.
+
+**CT'nin iddia ETMEDİĞİ şey:** ürünün yük altında yeterince hızlı olduğu. Testin kendi konusu — asılı bir ad kaynağının aramaya
+en çok sınır kadar maliyet çıkarması ve ardından 503 dönmesi — aynı testte doğrulanıyor ve üç izole koşunun hepsinde 503 dahil geçti.
+
+**Yapılacak (sahibin kararı):** ya sınır yük payıyla yükseltilir, ya ölçüm duvar saatinden çıkarılıp sahte saatle/iptal jetonuyla
+yapılır (asılı kaynağın iptal edildiğini davranışsal olarak ölçmek), ya da test CI'da seri koşan bir kümeye alınır. Bugünkü hâliyle
+CI'da sebepsiz kırmızı üretip birinin saatini harcar.
+
+**Gelecek regresyon riski:** 🟡 (yanlış pozitif; gerçek bir yavaşlamayı da maskeleyebilir çünkü aşım "yük" diye okunur).
+
+---
+
+### BL-660
+
+> **Eski numara: BL-648.** Bu madde MVP-6 dalında BL-648 adıyla yazıldı (2026-10-17); main aynı numarayı daha önce
+> başka bir maddeye verdiği için birleşmede BL-660 oldu. `docs/records/` ve eski planlardaki "BL-648" atıfları
+> (MVP-6 bağlamında) bu maddeyi gösterir.
+
+**Platform yetki guard'ı üç E-imza eylemini kırmızı gösteriyor: biri `[AllowAnonymous]` ve iç allow-list'te değil, ikisi hiç kapıda değil**
+
+DURUM: AÇIK · SAHİP: E-imza / MOD-0022 — düzeltme sahibin işi · BULAN: WP-LANE-MAIN-SYNC-05 merge tamamlama kapısı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `Diten.Platform.Application.Tests` içindeki `Authorization/LoginOnlyEndpointGuardTests` iki testle kırmızı:
+
+1. `InternalESignActionsController.Register` **`[AllowAnonymous]`** taşıyor ama controller'ı iç API-anahtarı allow-list'inde değil
+   (`services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalESignActionsController.cs`).
+2. `ESignatureSamplesController.Image` ve `ESignatureSettingsController.ListMeanings` **izin anahtarı, platform policy ve `[LoginOnly]`
+   üçünü de taşımıyor** — guard'ın kendi ifadesiyle "gate them, or mark them `[LoginOnly("why")]` and add them to the reviewed list".
+
+**Merge'e ait değil, ölçüldü:** merge (`681bb44d3` → `1b3408c2b`) ne bu controller'lara ne guard'ın kendisine dokundu; ikisi de merge
+öncesi HEAD'de (`681bb44d3`) vardı ve `origin/main`'de de var. Değişmemiş girdi + değişmemiş guard = değişmemiş verdikt, yani guard
+merge öncesinde de kırmızıydı. Bu kapı onu bulmuş oldu, üretmedi.
+
+**Neden önemli:** birincisi kimliksiz erişime açık bir uç ve guard'ın tam olarak yakalamak için var olduğu şey; ikincisi iki eylemin
+hiçbir yetki kapısından geçmemesi. CT bunları değerlendirmedi — yalnız guard'ın söylediğini aktarıyor; gerçek etkiyi (uçların ne
+döndürdüğünü, kiracı izolasyonunu) sahibi ölçmeli.
+
+**Yapılacak:** MOD-0022 sahibi üç eylemi kapıya alır ya da gerekçesiyle allow-list / reviewed list'e yazar; guard yeşile dönünce
+Platform regresyonu bu iki testte temizlenir. CT dokunmadı (XMC-001: başka modülün üretim kodu).
+
+**Gelecek regresyon riski:** 🔴 (kimliksiz uç; sahibi ölçene kadar etkisi bilinmiyor).
+
+---
+
+### BL-659
+
+> **Eski numara: BL-647.** Bu madde MVP-6 dalında BL-647 adıyla yazıldı (2026-10-17); main aynı numarayı daha önce
+> başka bir maddeye verdiği için birleşmede BL-659 oldu. `docs/records/` ve eski planlardaki "BL-647" atıfları
+> (MVP-6 bağlamında) bu maddeyi gösterir.
+
+**`openNew` guard'ı ağaç-geneli bir listede genel bir ad tutuyor ve CRM'in canlı fonksiyonuyla çakışıyor — merge'den önce de kırmızıydı**
+
+DURUM: AÇIK · SAHİP: WorkCenterNext (guard sahibi) + CRM (çakışan ad) — karar sahibin · BULAN: WP-LANE-MAIN-SYNC-05 merge kapısı (2026-10-16) · KAYIT: 2026-10-16
+
+**Ne:** `frontend/Diten.Web/tests/wcn-dead-code-and-timer.test.js:59` `openNew` adını ağaç-geneli `DELETED` listesinde tutuyor; guard
+`wwwroot` ve `Views` altındaki her dosyada bu adı arıyor ve `wwwroot/assets/js/CRM/VisitEvidenceSettings/visit-evidence-settings.js:373`
+kendi `openNew()` fonksiyonunu tanımlayıp `:497`'de bağlıyor. İkisi alakasız; ad çakışması.
+
+**Merge'e ait değil, ölçüldü:** CRM dosyası merge öncesi HEAD'de (`681bb44d3`) de vardı, iki `openNew` geçişiyle ve **birebir aynıydı**;
+guard da birebir aynıydı. Dolayısıyla bu guard merge öncesinde de kırmızıydı. Dosya `origin/main`'de de aynı (`0ef1f0591` main'de).
+
+**Çözüm deseni dosyanın kendisinde var:** guard `bulkBar` için "genel bir ad yalnız WorkCenterNext içinde aranır, ayırt edici bir ad
+ağaç genelinde" diyor ve `DELETED_IN_THIS_MODULE` listesini bunun için tutuyor; vendor `renderCalendar` için de aynı istisnayı yapıyor.
+`openNew` o listeye taşınırsa çakışma kalkar ve guard WorkCenterNext için işini yapmaya devam eder.
+
+**Yapılacak:** guard sahibi `openNew`'ü `DELETED` yerine `DELETED_IN_THIS_MODULE`'a taşır (küçük, testle doğrulanabilir), ya da CRM
+fonksiyonunu yeniden adlandırır (başka modülün canlı kodu — XMC-001 gereği sahibinin kararı). CT bu turda dokunmadı.
+
+**Gelecek regresyon riski:** 🟡 (guard kırmızı kaldığı sürece gerçek bir ölü-kod dönüşünü de maskeler — yanlış pozitifle birlikte yanlış negatif riski).
+
+---
+
+### BL-658
+
+> **Eski numara: BL-646.** Bu madde MVP-6 dalında BL-646 adıyla yazıldı (2026-10-17); main aynı numarayı daha önce
+> başka bir maddeye verdiği için birleşmede BL-658 oldu. `docs/records/` ve eski planlardaki "BL-646" atıfları
+> (MVP-6 bağlamında) bu maddeyi gösterir.
+
+**MOD-0188 Demand Planning sayfası 7 kiracı dilinde yardım metni olmadan geldi — `DEMANDPLANNING`**
+
+DURUM: AÇIK · SAHİP: Planlama / MOD-0188 (Diten.PlanningService) — metin sahibinin işi · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-05 · KAYIT: 2026-10-16 · SÜRE: 30 gün (2026-11-15)
+
+**Ne:** `services/Diten.PlanningService/src/Diten.PlanningService.Api/ModuleRegistration/DemandPlanningManifestProvider.cs`
+`PageCode: "DEMANDPLANNING"` (`RoutePath: "/SupplyChain/DemandPlanning"`) bildiriyor; `Help.DEMANDPLANNING.Purpose`
+**yedi dilin hiçbirinde yok** — ölçüldü, en/tr/fr/es/zh/ar/ru hepsinde 0.
+
+**Neden defter satırı değil:** `docs/roadmap/backlog/page-help-ledger.md` tavanı ("kiracı 246 · platform 18 · frozen 99") kendi
+sözleriyle WP-LANE-UX-GUARDS-01'den sonraki her yeni satırın yine kırmızı olduğunu söylüyor; oraya satır yazmak CT tavan kararı.
+Bu yüzden sayfa, önceki iki main senkronizasyonunun deseniyle `MAIN_SYNC_4_PAGES`'e sahibi ve gerekçesiyle yazıldı
+(`frontend/Diten.Web/tests/page-help-ledger.test.js`), anahtarları pinlenmiş ve liste yalnız azalır.
+
+**Neden metni CT yazmadı:** sayfa MOD-0188'in; kullanıcıya görünen ifadesi sahibinin seçimi (XMC-001).
+
+⚠ Sayfa `Views/SupplyChain/DemandPlanning` altında duruyor, yani `OWNER_BY_PATH`'in `SupplyChain/` → SCE eşlemesi onu bize
+atardı. Değil: MOD-0188 aynı alandaki ayrı bir modül, kendi servisi ve kendi sahibi var. `ownerOf` bilerek değiştirilmedi
+(önek gerçekten paylaşımlı; daraltmak kendi yedi lojistik modülümüzü yanlış atardı), guard bunun yerine `PLANNING`'i doğrudan kontrol ediyor.
+
+**Yapılacak:** MOD-0188 sahibi `Help.DEMANDPLANNING.Purpose` metnini yedi dilde yazar; yazıldığı anda satır `MAIN_SYNC_4_PAGES`'ten
+çıkar (liste yalnız azalır, satır kalırsa guard kırmızı).
+
+**Gelecek regresyon riski:** 🟢 (yalnız yardım metni; sayfanın işleyişi etkilenmiyor).
 
 ---
 

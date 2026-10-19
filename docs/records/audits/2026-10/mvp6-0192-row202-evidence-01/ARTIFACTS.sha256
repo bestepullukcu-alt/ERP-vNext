@@ -1,0 +1,9 @@
+# mvp6-0192-row202-evidence-01 — sealed 2026-10-12T14:47:16Z
+# tree: 3c69ba7a2   sealed files: committed artefacts only (.trx excluded by .gitignore:26)
+787c314542dc300c7bc52be1ea38874a0003dd9f406c931659ce34b233b7e06c  REPORT.md
+952df9325489a01903d003a456e2807d730567d2e599fc3cbac6318a31d7d537  evidence/clean-run-1.log
+031af037f8202ebcdc726569b17c809b3be425e572f30fbe18cae84ac64f7aaf  evidence/clean-run-2.log
+25bd4330d24a1f434d6aef45f4d46b77cb32ff57bce8612612f77e721132c666  evidence/clean-run-3.log
+c049563fb56ccba64a150f9a8285a66d3a2fba0bcdcc0b5885912459e374ccc5  evidence/sabotage-run.log
+d614d3f49a6ae191faa7f6a291e9d0c338a1b24e001362e9fd58ea112c261a67  evidence/restored-run.log
+916f3b18dac0e9f9ee28b6e358571795a427a9343359c917a64d7ecf6243c04f  evidence/outcomes.tsv

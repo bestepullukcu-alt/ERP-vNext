@@ -5,6 +5,11 @@ namespace Diten.SupplyChainService.Infrastructure.Features.CapacityPlans;
 public sealed class CapacityEvaluationExecutor(ICapacityLeaseStore leases, ILogger<CapacityEvaluationExecutor> logger) : BackgroundService
 {
     public const string OracleId = "CAPACITY-EVAL-FIXTURE-192-01@1";
+    // G4 (Wave 6.1): the oracle accepts the same explicit scope as the fixture readers — a configured non-production
+    // seed when the composed host registers one, otherwise the bounded constants (the module tests).
+    private readonly CapacityDemandFixture _fixture = DemandFixtureReader.Bounded;
+    public CapacityEvaluationExecutor(ICapacityLeaseStore leases, ILogger<CapacityEvaluationExecutor> logger, CapacityDemandFixture fixture)
+        : this(leases, logger) => _fixture = fixture;
     private static readonly CapacityBottleneck FiniteResult = new("line-4","2027-W03","520.000","480.000","40.000","HOUR");
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -24,7 +29,7 @@ public sealed class CapacityEvaluationExecutor(ICapacityLeaseStore leases, ILogg
                 {
                     // This is a literal fixture oracle. Repeated computation is allowed; the fence
                     // and transaction, rather than computation count, guard the durable effect.
-                    var valid=scope.TenantId==DemandFixtureReader.Tenant && scope.LegalEntityId==DemandFixtureReader.LegalEntity &&
+                    var valid=scope.TenantId==_fixture.TenantId && scope.LegalEntityId==_fixture.LegalEntityId &&
                         lease.ResourceRefs.Count==1 && lease.ResourceRefs[0]=="line-4" &&
                         lease.EvaluationMode is "Finite" or "Infinite";
                     var result=valid && lease.EvaluationMode=="Finite" ? new[]{FiniteResult} : Array.Empty<CapacityBottleneck>();

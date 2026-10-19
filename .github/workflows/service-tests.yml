@@ -101,6 +101,13 @@ jobs:
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           - suite: planning-tests
             project: services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj
+          # WP-LANE-MAIN-SYNC-05 (owner decision 2026-10-16) / MVP-6 plan v9.9: SCE / MVP-6's own suite. It needs a
+          # single-member REPLICA SET with enableTestCommands=1 (ShipmentSchema refuses a standalone; the CapacityPlans /
+          # SandopPlans tests set fail points) and reads eight fail-closed variables (Q131a: no fallback port), all
+          # provided by supplychain-ci-mongo.sh below. Its one skip, the Claims restart child, is allow-listed: its
+          # parent test runs it twice in this job.
+          - suite: supplychain-tests
+            project: services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj
           # SafetyStock's Mongo tests start and stop their own replica set from DITEN_TEST_MONGOD.
           - suite: safety-stock-calculation
             project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Calculation.Tests/Diten.SafetyStockService.Calculation.Tests.csproj
@@ -225,6 +232,10 @@ jobs:
         if: matrix.suite == 'planning-tests'
         run: bash scripts/test-env/mod0188-ci-mongo.sh start
 
+      - name: Start owned Mongo (SupplyChain)
+        if: matrix.suite == 'supplychain-tests'
+        run: bash scripts/test-env/supplychain-ci-mongo.sh start
+
       # A hung test must not hold the job until its timeout: --blame-hang-timeout aborts and names it (lesson 8).
       - name: Test
         run: |
@@ -240,6 +251,10 @@ jobs:
       - name: Stop owned Mongo (Planning)
         if: always() && matrix.suite == 'planning-tests'
         run: bash scripts/test-env/mod0188-ci-mongo.sh stop
+
+      - name: Stop owned Mongo (SupplyChain)
+        if: always() && matrix.suite == 'supplychain-tests'
+        run: bash scripts/test-env/supplychain-ci-mongo.sh stop
 
       - name: Upload test results
         if: always()

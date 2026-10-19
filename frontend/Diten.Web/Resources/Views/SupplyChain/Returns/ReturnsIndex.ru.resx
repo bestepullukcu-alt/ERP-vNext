@@ -9,7 +9,7 @@
   <data name="AddNewReturns" xml:space="preserve"><value>Добавить возврат</value></data>
   <data name="ActionsHeader" xml:space="preserve"><value>Действия</value></data>
   <data name="RmaNumber" xml:space="preserve"><value>Номер RMA</value></data>
-  <data name="ReturnId" xml:space="preserve"><value>ID возврата</value></data>
+  <data name="ReturnId" xml:space="preserve"><value>Идентификатор возврата</value></data>
   <data name="ShipmentId" xml:space="preserve"><value>Идентификатор отгрузки</value></data>
   <data name="ShipmentIdHelp" xml:space="preserve"><value>Введите UUID отгрузки.</value></data>
   <data name="ReturnSummary" xml:space="preserve"><value>Сводка по возврату</value></data>
