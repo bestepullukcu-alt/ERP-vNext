@@ -15,6 +15,24 @@ public interface IBrandRepository : IRepository<Brand>
     Task<IReadOnlyList<Brand>> GetAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// MOD-0290-FU05 — the tenant's brands among <paramref name="ids"/> (soft-deleted ones are not returned), read at once:
+    /// a Global Product page resolves its brands' codes and names with one read, never one per row.
+    /// </summary>
+    async Task<IReadOnlyList<Brand>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        var results = new List<Brand>();
+        foreach (var id in ids.Distinct())
+        {
+            if (await GetByIdAsync(id, cancellationToken) is { } brand)
+            {
+                results.Add(brand);
+            }
+        }
+
+        return results;
+    }
+
+    /// <summary>
     /// WP-MDM-BRAND-ACCEPT-01 FIX1 (items 1, 9) — inserts the brand and its <see cref="BrandHistoryEntry"/> together (one
     /// transaction where the server supports one). A second brand with the same code — including one written by a
     /// concurrent request after the pre-check — is <see cref="BrandWriteOutcome.DuplicateCode"/>, never an exception.

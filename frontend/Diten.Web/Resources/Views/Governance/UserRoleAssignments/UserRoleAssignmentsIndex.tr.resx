@@ -38,4 +38,5 @@
   <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
     <value>Bu kullanıcı artık yok. Sayfayı yenileyin.</value>
   </data>
+  <data name="ErrorUserRoleRevokeLastSteward" xml:space="preserve"><value>Bu rolü kaldırmak, kullanıcı ekleyebilen başka etkin hesap bırakmaz. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
 </root>

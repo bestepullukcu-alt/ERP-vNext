@@ -80,7 +80,7 @@ public sealed class SetUserActiveStatusGuardTests
         var tenant = new FakeTenantContext();
         tenant.SetTenant(TenantA);
         return new SetUserActiveStatusCommandHandler(
-            users, tokens, tenant, new FakeCurrentUser(actor), UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+            users, tokens, tenant, new FakeCurrentUser(actor), UserAuditForTests.None(), new RecordingUserQuotaClient(), RecoveryGuardForTests.Permits(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
     }
 
     private sealed class FakeTenantContext : ITenantContext

@@ -12,7 +12,7 @@ namespace Diten.Web.Controllers;
 ///
 /// <para>The browser never addresses a service port: it calls <c>/Tasks/api/*</c> on this app, and the JWT is read
 /// server-side from the HTTP-only auth cookie (never exposed to JS). The proxy path deliberately avoids
-/// <c>api/tasks</c>, which the frozen legacy <c>TaskApiController</c> owns.</para>
+/// <c>api/tasks</c>, which the legacy <c>TaskApiController</c> owned (removed by BL-619).</para>
 /// </summary>
 [Authorize]
 [Route("Tasks")]

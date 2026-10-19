@@ -1341,13 +1341,14 @@ public sealed class EntitlementPermissionSyncServiceTests
     }
 
     [Fact]
-    public async Task Product_identity_lifecycle_profile_composes_exact_twenty_seven_eleven_roles_with_ABB_and_scope()
+    public async Task Product_identity_lifecycle_profile_composes_exact_twenty_eight_eleven_roles_with_ABB_and_scope()
     {
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var (svc, roles, rolePerms) = BuildWith(catalog);
         var declaredKeys = ProductIdentityDeclaredKeys(catalog);
         // FIX2 (item 1, CT model A) — 41: the product descriptor no longer carries mdm.brands.read.
-        Assert.Equal(41, declaredKeys.Length);
+        // MOD-0290-FU05 slice 2: 41 → 42 (+ mdm.global-products.update-brand).
+        Assert.Equal(42, declaredKeys.Length);
         Assert.DoesNotContain(declaredKeys, key => key.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase));
 
         await svc.GrantModuleWithKeysAsync(
@@ -1356,7 +1357,8 @@ public sealed class EntitlementPermissionSyncServiceTests
             declaredKeys,
             Actor);
 
-        Assert.Equal(20, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
+        // MOD-0290-FU05 slice 2: 20 → 21 — update-brand on the Steward only.
+        Assert.Equal(21, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
         Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
         // FG FIX1 item 9 (CT decision B): 10 → 9 — no direct FG retire for the steward.
         Assert.Equal(9, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
@@ -1381,6 +1383,11 @@ public sealed class EntitlementPermissionSyncServiceTests
                 ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover,
                 ProductRoleKeys(roles, rolePerms, catalog, template.RoleName)));
         Assert.Equal(8 + 1 + 1, admin.Count);
+        // MOD-0290-FU05 slice 2: the approved product's brand key — the Steward's, never Admin's or Viewer's.
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand,
+            ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand, admin);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand, viewer);
         Assert.Equal(4 + 1, viewer.Count);
 
         Assert.All(ProductAbbreviationEntitlementGrantProfile.DedicatedRoles,

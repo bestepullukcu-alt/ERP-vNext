@@ -43,4 +43,6 @@
   <data name="RefusalStockNotEditable" xml:space="preserve"><value>该记录的状态不允许更改库存行为。</value></data>
   <data name="RefusalStockFieldLocked" xml:space="preserve"><value>已批准记录中已填写的值不能在此更改——只能通过更正来更改。列表只能添加新行。</value></data>
   <data name="RefusalStockGtinConflict" xml:space="preserve"><value>另一个成品已使用此 GTIN。</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalNoEligibleApprover" xml:space="preserve"><value>除您之外没有人可以审批您提交的记录。请联系管理员调整审批人，之后您可以重新提交。</value></data>
 </root>

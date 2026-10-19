@@ -61,4 +61,5 @@
   <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
     <value>لا يمكن تعديل أدوار النظام.</value>
   </data>
+  <data name="ErrorRoleDeleteLastSteward" xml:space="preserve"><value>حذف هذا الدور لن يترك أي حساب نشط آخر يمكنه إضافة المستخدمين. امنح هذا الحق لمستخدم آخر أولاً.</value></data>
 </root>

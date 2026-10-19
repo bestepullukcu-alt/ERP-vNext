@@ -56,7 +56,7 @@ Bir kaydın "Salt Okunur Detaylarını" oluştururken veya düzenlerken, aşağ�
 
 ## KURAL #7: Details İçinde Tab / Navbar Standardı
 - Details sayfasında birden fazla içerik grubu tab ile ayrılacaksa düz Bootstrap `nav-tabs` kullanılmaz.
-- Zorunlu referans WorkCenter tab bar'dır: `Views/WorkCenter/WorkCenterTabs.cshtml`.
+- Görünüm aşağıdaki sınıflarla tanımlıdır; ayrı bir örnek dosya yoktur (eski örnek `Views/WorkCenter/WorkCenterTabs.cshtml` BL-619 ile 2026-10-16'da kaldırıldı).
 - Tab bar dış yüzeyi `card mb-4`, içi `card-header p-3` ve `nav-align-top` olmalıdır.
 - Tab listesi `nav nav-pills d-inline-flex gap-2 flex-wrap` olmalıdır.
 - Her tab butonu `nav-link small border shadow-none wc-tab-compact` sınıflarını taşımalıdır.

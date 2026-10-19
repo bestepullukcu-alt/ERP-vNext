@@ -400,6 +400,28 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         Assert.DoesNotContain("unmapped", text);
     }
 
+    // WP-MDM-NO-ELIGIBLE-APPROVER-01: nobody but the maker may approve (segregation of duties) — its own approval
+    // sentence in the reader's language (not the generic conflict), and the code stays behind.
+    [Fact]
+    public async Task An_activation_with_no_eligible_approver_is_its_own_sentence()
+    {
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
+        var wire = new RecordingHandler(HttpStatusCode.Conflict,
+            "{\"isSuccessful\":false,\"statusCode\":409,\"errors\":[\"PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER\"]}");
+        using var scope = factory.Services.CreateScope();
+        var controller = Controller(wire, ["mdm.items.submit"], "",
+            scope.ServiceProvider.GetRequiredService<IStringLocalizer<ItemsIndex>>(),
+            scope.ServiceProvider.GetRequiredService<IStringLocalizer<ItemRefusals>>());
+
+        var result = Assert.IsType<ObjectResult>(await controller.Submit(ItemId, 1, CancellationToken.None));
+
+        Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+        var text = JsonSerializer.Serialize(result.Value);
+        Assert.Contains("Nobody other than you can approve the record you submitted", text);
+        Assert.DoesNotContain("PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER", text);
+        Assert.DoesNotContain("unmapped", text);
+    }
+
     [Theory]
     [InlineData(422, "[\"UOM_CONVERSION_INVALID\",\"SAME_UOM\"]", "RefusalUomConversionSameUnit")]
     [InlineData(422, "[\"ITEM_STORAGE_CONDITION_CONFLICT\",\"MORE_THAN_ONE_TEMPERATURE\"]", "RefusalStorageTwoTemperatures")]

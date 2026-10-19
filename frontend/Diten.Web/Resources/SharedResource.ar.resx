@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>المنصة</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>مركز العمل</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>سجل العناصر</value>
   </data>
@@ -828,6 +825,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>دليل الأشخاص</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>قوائم المراجع</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>المهام</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>سجل الموظفين (الموارد البشرية الأساسية)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>حسابات العملاء في CRM</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>جهات الاتصال في CRM</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>تركيب المحتوى في CRM</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>رؤى الأطباء في CRM</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>المعرفة في CRM</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>الزيارات المخططة في CRM</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>مناطق CRM</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>تخطيط الزيارات في CRM</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>تقارير الزيارات في CRM</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>الموافقات</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>الفئات</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>سجلات الساعات</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>الأسابيع</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>قوالب قوائم التحقق</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>القوالب</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>نطاق المحتوى</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>مجموعة المحتوى</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>الأهلية</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>سياسة تكرار الزيارات</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>المنتجات</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>الحساب</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>الحملة</value></data>

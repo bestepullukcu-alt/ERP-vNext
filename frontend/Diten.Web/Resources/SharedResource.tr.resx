@@ -378,9 +378,6 @@
   <data name="ServiceCodeInUse" xml:space="preserve">
     <value>Servis kodu zaten kullanımda.</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Görev Merkezi</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Kalem Kartı</value>
   </data>
@@ -894,6 +891,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Kişi Rehberi</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Referans Listeleri</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>Görevler</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>Çalışan Kaydı (Temel İK)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>CRM Müşteri Hesapları</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>CRM Kişileri</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>CRM İçerik Kurgusu</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>CRM Hekim İçgörüleri</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>CRM Bilgi Yönetimi</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>CRM Planlanan Ziyaretler</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>CRM Bölgeleri</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>CRM Ziyaret Planlama</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>CRM Ziyaret Raporları</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>Onaylar</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>Kategoriler</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>Zaman Çizelgeleri</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>Haftalar</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>Kontrol Listesi Şablonları</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>Şablonlar</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>İçerik Kapsamı</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>İçerik Seti</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Uygunluk</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Ziyaret Sıklığı Politikası</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Ürünler</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Müşteri Hesabı</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Kampanya</value></data>

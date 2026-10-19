@@ -43,4 +43,6 @@
   <data name="RefusalStockNotEditable" xml:space="preserve"><value>Статус этой записи не позволяет менять складское поведение.</value></data>
   <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Заполненное значение утверждённой записи здесь изменить нельзя — только через исправление. В списки можно лишь добавлять новые строки.</value></data>
   <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Этот GTIN уже используется другим готовым продуктом.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalNoEligibleApprover" xml:space="preserve"><value>Никто, кроме вас, не может утвердить отправленную вами запись. Попросите администратора изменить согласующих, после этого вы сможете отправить её снова.</value></data>
 </root>
