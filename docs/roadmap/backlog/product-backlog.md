@@ -10177,6 +10177,71 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-647
+
+**Referans kiracı herhangi bir müşteri kiracısı olarak ayarlanabiliyor — "özel olarak işaretlenmiş referans kiracı" kuralı yok (Market ve GSKU)**
+
+DURUM: AÇIK · SAHİP: CT (Platform / referans veri) · BULAN: WP-PLT-MARKET-REFTENANT-01 bağımsız incelemesi (2026-10-15) · KAYIT: 2026-10-15
+
+**Ne:** Market operasyonel yüklemesi referans kiracıyı ayardan okuyor (BL-645 düzeltmesi) ve yalnız boş / sistem kiracısı / GSKU tüketicisini
+reddediyor (DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility.cs:66-67). GSKU yolu yalnız "referans ≠ tüketici" diyor
+(DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility.cs:134-136), sistem kiracısını reddetmiyor. Ayar sıradan bir müşteri kiracısına
+verilirse referans verisi o kiracının kullanıcılarına ait olur. Bugün yalnız Development + açık ayar + aktör kilidiyle sınırlı.
+**Yapılacak (canlı K-INFRA-2'den ÖNCE):** referans kiracı yalnız işaretli bir kiracı olabilir (Platform kiracı kaydında bayrak ya da kayıt defteri); Market
+ve GSKU aynı kuralı paylaşır; Market tüketicisi (74355e70-…) ile karşılaştırma eklenir. Ayrıca not: ayar sırası nedeniyle gerçek sunucuda
+"ortam değişkeni = yapılandırma" kontrolü yalnız değişkenin varlığını kanıtlar (VerifiedMarketOperationalMode.cs:27-32) — mevcut desen.
+**Gelecek regresyon riski:** 🟡 (canlıda yanlış ayar → referans verisi müşteri kiracısına).
+
+---
+
+### BL-649
+
+**Aralıklı Auth testleri: `ProductIdentityEntitlementReconciliationMongoTests` sınıfında her koşuda FARKLI bir senaryo `QUIESCENCE_DRIFT` ile düşüyor (1/2817)**
+
+DURUM: AÇIK · SAHİP: CT (Legacy; MDM ürün devralma hattı) · BULAN: AI001 (PR #147 service-tests ölçümü, 2026-10-16) · KAYIT: 2026-10-16
+
+Ölçüldü (test adı düzeyinde, Codex okuması; AI001 düzeltmesiyle): üç koşuda farklı senaryo, hepsinde `QUIESCENCE_DRIFT`, her seferinde 1/2817 — PR #147 (38902043508) `Commit_WhenAcknowledgementIsLostAfterRealCommit_ClassifiesByReadbackWithoutRetry(readbackUnavailable: False)`; main 22b056c8c (38718582375) `ReadReceipt_WhenEvidenceIsInvalid_FailsClosed(mutation: duplicate)`; main 6b8a62d5a (38622593452) `Commit_WhenWriterAppearsAfterSnapshot_CannotFinalizeSuccess(drift: versionless-protected-row)`; main 3912d568b'de geçmiş. Aynı sınıfta önceden var olan bir kararsızlığa işaret ediyor; kök neden DOĞRULANMADI.
+**Hipotezler (ölçülmedi):** (1) paralel yazım — DESTEKLENMİYOR: sınıf `DisposableAuthMongoReplicaSet` koleksiyonunda (`DisableParallelization = true`, :16) ve kendi replika setini açıyor (AI001 / Codex okuması). (2) yazımsız kayma — `EntitlementReconciliationOperationStore.ObserveQuiescenceAsync` (~:464) `$currentOp`'u allUsers + idleConnections + idleSessions + localOps ile okuyup kendi ApplicationName'i dışındaki istemcilerden parmak izi kuruyor; okumalar arasında boşta bağlantı / oturum kümesi değişirse (testin başka MongoClient'ları, sürücü havuzu) iz yazım olmadan kayabilir. Ürün bekçisinin reddi doğru davranış; düzeltme önce ölçümle, test tarafında. Önceki iz: `docs/records/audits/2026-09/product-five-cross-branch-delivery-audit-2026-09-29.md:944`, `:969` ("değiştirilmemiş tekil tekrar geçti", istemci-sessizlik / test yaşam döngüsü teşhisi sürüyordu).
+**Yapılacak:** testin sessizlik (quiescence) koşulunun hangi eşzamanlı yazımla kaydığını ölçmek; düzeltme testin kendi bekleme sözleşmesinde (ürün kuralı gevşetilmez); düzeltilene kadar CI'da bu testin kırmızısı "bilinen aralıklı" olarak adıyla anılır, toplu yeniden deneme yok.
+**Gelecek regresyon riski:** 🟡 (aralıklı kırmızı gerçek gerilemeyi gizleyebilir).
+
+---
+
+### BL-648
+
+**Auth DataSeeder tek bir 97c5 kullanıcısına (e-postayla) HER ortamda rol veriyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-AUTH-ADMIN-BOOTSTRAP-01 güvenlik incelemesi (2026-10-15) · KAYIT: 2026-10-15
+
+**Ne:** `DataSeeder` dev tenant-97c5'teki sabit bir kullanıcıya, e-posta ile bulup, BRD / CRM izinleri veriyor (DataSeeder.cs ~:1741, :1822, :1900, :1975,
+:2069 — admin-bootstrap dalındaki satırlar). Ortam kapısı yok: o kiracı ve kullanıcı bir canlı / test ortamında varsa açılışta yeniden rol alır.
+Yönetici tohumu işinden önce de vardı; o iş hesap tohumlarını kapattı, bu rol tohumlarını değil.
+**Yapılacak:** bu hibeler DevAccountSeed'e (Development + açık ayar) taşınır ya da tamamen kalkar; test: Production açılışında bu kullanıcının rolleri değişmez.
+**Gelecek regresyon riski:** 🟡
+
+---
+
+### BL-646
+
+**service-tests iş akışının ilk tam CI koşusu (PR #144): kırmızıların çoğu CI ortamı — Mongo yolu değişkeni, RabbitMQ, Prism, Linux yolları**
+
+DURUM: AÇIK · SAHİP: CT (CI) · BULAN: PR #144 CI (2026-10-14, b7ba78de7) · KAYIT: 2026-10-14
+
+Ölçüldü (GitHub check-runs + iş günlükleri): 24 işin 16'sı yeşil.
+- platform-app 337 kırmızı: 325'i `AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED` — CI `DITEN_FU02_MONGOD_PATH` (ya da replika ayarı) vermiyor; 2 `DirectoryNotFound`
+  (Linux büyük/küçük harf ya da yol); `InternalESignActionsController.Register` iç izin listesi (main'in kendi kırmızısı, e-imza sahibine bildirildi);
+  2 `PlatformAdministratorSeedMeasurementTests` NotExecuted ("Skipped = 0" adımı).
+- platform-eventing: RabbitMQ 120 sn'de hazır olmadı (`RABBITMQ_NOT_READY`), test koşmadı.
+- inventory-tests: 16 `PrismConsumedContractSmokeTests` (Prism CI'da çalışmıyor; yerelde de aynı 16).
+- platform-bgjobs 1 (sağlık kontrolü zamanlaması), mdm-api 1 NotExecuted (`ProductMasterContractFixtureTests` SOURCE.txt), auth-acceptance-host 3
+  (`LoginPeerVerificationTests` Linux'ta süreç doğrulama / BrokenPipe).
+- phase1 ×2: main'in bilinen 7 mimari kırmızısı.
+**Yapılacak:** iş akışına doğru mongod değişkenleri; RabbitMQ başlatma bekleme / servis konteyneri; Prism kurulumunun doğrulanması; Linux yol düzeltmeleri;
+NotExecuted testler ya gerçek koşar ya adlı izin listesinde; her adım için CI'da yeşil kanıt.
+**Gelecek regresyon riski:** 🟡 (CI kırmızıyken gerçek gerileme gürültüde kaybolur).
+
+---
+
 ### BL-645
 
 **Dev referans kiracısı iki yerde farklı: Pazar (market) operasyonel yüklemesi hattın kilidiyle `0000…0001` istiyor, main'in dev ayarı `0b7d0048-…` diyor — CRM'in yerel Pazar betiği reddediliyor**
