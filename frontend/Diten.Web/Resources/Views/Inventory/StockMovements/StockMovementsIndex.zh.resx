@@ -200,4 +200,6 @@
   <data name="ErrItemNotActive" xml:space="preserve"><value>该产品的状态不允许此移动类型（草稿、已停用或已退役）。未做任何更改。</value></data>
   <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>该产品可能按序列号管理：库存不能在全局 SKU 级别移动。请选择本地 SKU 或成品级别。</value></data>
   <data name="LotUnresolvedHint" xml:space="preserve"><value>无法读取批次号</value></data>
+  <data name="ColRecordedBy" xml:space="preserve"><value>记录人</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>未知用户</value></data>
 </root>

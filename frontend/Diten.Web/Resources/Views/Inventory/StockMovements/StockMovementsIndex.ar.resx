@@ -200,4 +200,6 @@
   <data name="ErrItemNotActive" xml:space="preserve"><value>حالة المنتج لا تسمح بنوع الحركة هذا (مسودة أو معطّل أو متقاعد). لم يتم تغيير أي شيء.</value></data>
   <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>قد يكون هذا المنتج متتبعًا بالرقم التسلسلي: لا يمكن نقل المخزون على مستوى الصنف العام. اختر مستوى الصنف المحلي أو المنتج النهائي.</value></data>
   <data name="LotUnresolvedHint" xml:space="preserve"><value>تعذّرت قراءة رقم التشغيلة</value></data>
+  <data name="ColRecordedBy" xml:space="preserve"><value>سجّله</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
 </root>
