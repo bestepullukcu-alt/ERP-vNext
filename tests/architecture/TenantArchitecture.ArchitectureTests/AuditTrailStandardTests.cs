@@ -68,7 +68,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
         // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): iz mdm-guvenilir-kaynak-niyeti (b) + 11 dolaylı (akışa özgü işlemci)
         // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
-        ["Diten.MdmService"] = new(Debt: 10, Exceptions: 2, Indirect: 19),
+        // CT kararı 2026-10-15 (MOD-0290-FU05 T-3): CreateGlobalProductDraftCommand borçtan çıktı (10 → 9) — oluşturma niyeti
+        // GlobalProductDraftCreated ürünle aynı ekleme yazımında; belirteçe IGlobalProductRepository.CreateDraftAsync girdi.
+        ["Diten.MdmService"] = new(Debt: 9, Exceptions: 2, Indirect: 19),
         // Birleştirme WP-CT-LANE-TKO-MERGE-01: hattın WP-PLATFORM-AUDIT-INTX-01'i 25 borcu kapattı (164 → 139); takeover'ın
         // 3 dolaylı işleyicisi (Indirect: 3) aşağıdaki CT kararıyla kalır.
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
@@ -77,6 +79,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.PlanningService"] = new(Debt: 2, Exceptions: 0, Indirect: 5),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
+        ["Diten.SafetyStockService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
         ["Diten.TalentEcosystemService"] = new(Debt: 106, Exceptions: 0),
     };
@@ -97,7 +100,10 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
             "IProductLegalEntityScopePolicyRepository.CreateAsync"
             + "/IProductLegalEntityScopePolicyRepository.ReplaceAsync"
             + "/IProductLegalEntityScopePolicyRepository.UpdateAsync"
+            + "/IGlobalProductRepository.CreateDraftAsync"
             + "/IGlobalProductRepository.UpdateDraftAsync"
+            // CT kararı 2026-10-15 (MOD-0290-FU05 T-2): onaylı ürün marka değişikliği, niyet aynı koşullu yazımda.
+            + "/IGlobalProductRepository.ChangeBrandAsync"
             + "/IGlobalProductRepository.RetireIdentityAsync"
             + "/IGlobalProductRepository.SubmitIdentityAsync"
             + "/IGlobalProductRepository.AcquireLifecycleOperationAsync"
@@ -125,6 +131,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.PlanningService", "yayin-izi", "c", "IInternalPublishedRevisionStore.PublishAsync"),
         ("Diten.PlanningService", "gecersiz-kilma-izi", "c", "IInternalRevisionInvalidator.InvalidateAsync"),
         ("Diten.PlanningService", "geri-donus-izi", "c", "IRollbackDraftStore.CreateAsync"),
+        ("Diten.SafetyStockService", "safety-stock-policy-izi", "c", "IPolicyMutationStore.ExecuteAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),

@@ -194,7 +194,7 @@ public sealed class TaskManifestProviderTests
     [Fact]
     public void The_legacy_api_tasks_route_is_never_reused()
     {
-        // frontend TaskApiController owns api/tasks and is frozen.
+        // api/tasks belonged to the legacy frontend TaskApiController (removed by BL-619); it stays unused.
         Assert.All(Manifest.Pages, p =>
             Assert.False(p.RoutePath.StartsWith("/api/tasks", StringComparison.OrdinalIgnoreCase)));
     }

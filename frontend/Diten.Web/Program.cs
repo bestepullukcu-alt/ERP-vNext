@@ -6,7 +6,6 @@ using Diten.Web.Services;
 using Diten.Web.Services.Auth;
 using Diten.Web.Services.EnterpriseStrategy;
 using Diten.Web.Services.ManagementGovernance;
-using Diten.Web.Services.WorkCenter;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
@@ -140,7 +139,6 @@ builder.Services.AddScoped<Diten.Web.Services.IPermissionSnapshot, Diten.Web.Ser
 // FEAT-NAV-L10N — generic code→resx localization for the tenant nav (sidebar + Ctrl+K).
 builder.Services.AddScoped<Diten.Web.Services.Navigation.INavNameLocalizer, Diten.Web.Services.Navigation.NavNameLocalizer>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
-builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
 builder.Services.AddScoped<IEnterpriseStrategyFrontendAdapter, MockEnterpriseStrategyFrontendAdapter>();
 // FE-A-harden (A4): trust forwarded scheme/host/ip from the TLS-terminating reverse proxy.
@@ -291,6 +289,20 @@ else
 // Only triggers for empty-body error responses (JSON API/proxy responses carry a body → unaffected).
 app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
+// BL-619: the old mock Task Center (/WorkCenter) is removed; /WorkCenterNext is the only Task Center. Every old URL
+// (bookmarks, mails, history) answers a permanent redirect to it. StartsWithSegments matches whole segments only, so
+// /WorkCenterNext is never caught. The query string is dropped on purpose: the old page honoured a user override.
+app.Use(async (context, next) =>
+{
+    if (IsLegacyWorkCenterPath(context.Request.Path))
+    {
+        context.Response.Redirect("/WorkCenterNext", permanent: true);
+        return;
+    }
+
+    await next();
+});
+
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -362,10 +374,8 @@ app.MapGet("/", (HttpContext context) =>
 {
     var host = context.Request.Host.Host;
     var isAdminHost = host.StartsWith("admin.", StringComparison.OrdinalIgnoreCase);
-    // WorkCenterNext, not WorkCenter: the older surface loads mock-work-items.js for its list while its detail
-    // page calls the real /api/tasks endpoints — so it shows invented tasks whose ids the engine has never heard
-    // of. A pure mock announces itself; a half-real one does not. WorkCenterNext loads its list from the WC-1
-    // projection through the same-origin proxy (WorkCenterNextController), with no mock branch on that path.
+    // WorkCenterNext is the only Task Center: the old mock /WorkCenter surface was removed (BL-619). It loads its
+    // list from the WC-1 projection through the same-origin proxy (WorkCenterNextController), with no mock branch.
     return Results.Redirect(isAdminHost ? "/Platform/Tenants" : "/WorkCenterNext");
 });
 
@@ -373,7 +383,7 @@ app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=WorkCenter}/{action=Index}/{id?}");
+    pattern: "{controller=WorkCenterNext}/{action=Index}/{id?}");
 
 // Vanity tenant slug entry point. Runs ONLY when no controller/route matched (lowest priority),
 // so it never shadows real routes/static files. A single-segment GET like "/gmg" is treated as a
@@ -403,6 +413,9 @@ app.Run();
 // A vanity-slug candidate is a single path segment of slug-safe characters (letters, digits, dash)
 // with no file extension — e.g. "/gmg". Anything multi-segment, dotted (static file), or oversized
 // is rejected so we never make a Platform lookup for junk or asset paths.
+static bool IsLegacyWorkCenterPath(PathString path) =>
+    path.StartsWithSegments("/WorkCenter", StringComparison.OrdinalIgnoreCase);
+
 static bool TryGetSlugCandidate(PathString path, out string slug)
 {
     slug = string.Empty;

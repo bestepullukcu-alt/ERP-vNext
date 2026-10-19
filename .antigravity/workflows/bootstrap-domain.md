@@ -84,7 +84,7 @@ Eğer bu işlemi dış bir AI'a (ChatGPT/Gemini/Claude) yaptıracaksanız, şu p
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

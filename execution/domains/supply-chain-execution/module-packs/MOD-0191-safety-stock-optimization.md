@@ -1,0 +1,269 @@
+---
+id: MOD-0191
+name: Safety Stock Optimization
+domain: supply-chain-execution
+service: Diten.SafetyStockService
+service_port: 5069
+service_status: temporary
+shell: tenant
+golden_reference: none
+entity_base: EntityBase
+status: ready-for-dev
+owner: "Supply Chain Execution / Control Tower"
+branch: feature/sce/mod-0191-safety-stock-optimization
+started: 2026-10-09
+target: TBD
+---
+
+# MOD-0191 — Safety Stock Optimization
+
+> `ready-for-dev` izni iki izole çekirdeği, dört salt okunur ucu ve aşağıdaki beş dar kalıcı policy/revision komutunu kapsar. Tenant ve seçili aktif LegalEntity her yazmada MDM lookup-validation ile doğrulanır; MDM yoksa 503. Kullanıcının o şirkete ve SKU × Warehouse serisine yetkisi henüz doğrulanmaz; "yetkili şirketlerim" açık güvenlik borcudur. Gateway, etkinleştirme, override, evaluation yazımı, MRP aktarımı ve canlı tüketici entegrasyonu kapsam dışıdır. BL-501 gelene kadar yalnız işlem-içi geçici `c` yolu audit kabul edilir; merkezi audit tamamlanmış sayılmaz.
+
+## 1. Module Summary
+
+MOD-0191, yetkili planlayıcının Tenant × LegalEntity × SKU × Warehouse kapsamındaki güvenlik stoğu politikasını tanımlaması, girdileri ve sürümüyle açıklanabilir bir aday sonucu incelemesi, gerekçeli manuel değişikliği kaydetmesi ve yetkili onaydan sonra politikanın MRP tarafından tüketilmesi için sözleşme hazırlar. MVP-4 iş sonucu, güvenlik stoğu kararı ile stok gerçeği, brüt talep ve ikmal önerisi arasındaki sahiplik çizgisini korumaktır. Hedef aktörler planlayıcı, onaylayıcı ve yetkili denetçidir. **Onaylanan ilk izole dilim** yalnız tamlığı doğrulanmış, gün bazlı, sürümlü fixture üzerinden takvim günü başına ortalama talep × açıkça verilen pozitif kapsama günü ile salt okunur ham decimal aday önizlemesidir; kalıcı kayıt veya canlı çağrı yoktur. Diğer yöntemler, hedef hizmet seviyesi, sayısal üst eşik, nihai stok/sipariş birimi yuvarlaması ve otomatik çalışma kararı TBD'dir.
+
+## 2. Ownership and Boundaries
+
+- **Sahip:** SafetyStockPolicy ve onun onaylı politika sürümü, aday hesap sonucu, kullanılan girdi kaynağı/snapshot kimliği, gerekçeli manuel değişiklik ve karar izi. Policy, stok bakiyesi değildir.
+- **Tüketir:** MOD-0173 availability; MOD-0290 ürün/SKU/UoM kimliği; MOD-0193 BOM yalnız üretim senaryosu kararlaştırılırsa; MOD-0188 yetkili Demand v2 snapshot'ı ancak tüketici kuralı ve sözleşme onaylanırsa; MOD-0189 ile güvenlik stoğu girdisi/çıktısı için ayrı entegrasyon kararı.
+- **Sahiplenmez:** MOD-0173 stok hareketi/balance, MOD-0188 forecast veya yayın, MOD-0189 MRPRun/NetRequirement/ReplenishmentProposal, MOD-0141 PO, MOD-0193 BOM, MOD-0290 master, LegalEntity yetki kaynağı. Otomatik PO, stok rezervasyonu, stok değişikliği, v1 Demand'i v2 yerine kullanma ve MVP-6 servis scaffold'u bu pack'in dışındadır.
+- Blueprint bağımlılık sırası 0188 → 0189 → 0191; Scenario Modeling ayrıca backbone kapısıdır. WP-MVP4 yalnız 0191 için SafetyStockPolicy SoR yazar; ayrıntılı algoritma tanımlamaz.
+
+## 3. Owned Objects
+
+| Nesne / yüzey | Taslak sözleşme ve karar kapısı |
+|---|---|
+| SafetyStockPolicy | Tenant ve sunucuda doğrulanan LegalEntity kapsamında SKU × Warehouse için sürümlü politika. Çakışma/etkinlik kuralı TBD; ikinci etkin politika otomatik seçilemez. |
+| SafetyStockPolicyRevision | Önceki politikanın üzerine sessiz yazmadan, girdiler/yöntem/parametre kararı ve aktör-zaman-gerekçe içeren iş sürümü. Teknik EntityBase.Version ile karıştırılmaz. |
+| SafetyStockEvaluation | İleride seçilmiş policy revision ve yetkili kaynak sürümlerine bağlı kalıcı aday sonucu için taslak nesne; ilk dilimde kayıt oluşturulmaz. İlk dilimin geçici çıktısı Yöntem A'nın temel UoM cinsinden ham decimal miktarını, Tenant × LegalEntity × SKU × Warehouse kapsamını, takvim günü penceresini, fixture sürümünü, girdilerini, hesap adımlarını ve varsa neden aday üretilmediğini açıklar. |
+| SafetyStockOverride / ApprovalDecision | Aday ile manuel sonucun ayrı tutulması; önceki/yeni değer, neden, aktör, zaman, onay/ret ve görev ayrılığı. Beş onaylı policy komutunun onay/ret kararı kalıcıdır; override ve evaluation onayı kapsam dışıdır. |
+| Komut niyetleri | Ali'nin beş onaylı komutu: taslak oluştur, yeni revision oluştur, incelemeye gönder, bağımsız onayla, gerekçeyle reddet. Diğer komutlar TBD'dir; etkinleştirme, override, evaluation yazımı ve MRP aktarımı açılmaz. |
+| Sorgu/DTO niyetleri | Yetkili politikaları, revision ve aday ayrıntısını, girdi-lineage'ını ve karar geçmişini görüntüle. Tenant/LE/kapsam süzgeci sunucudadır. |
+| API/route/permission | §3'teki dört GET ve iki ayrı okuma izni onaylıdır; servis doğrudan 5069'da test edilir. `/api/v1/safety-stock` önekinin merkezî kaydı ve Gateway eşlemesi ayrı sahiplikte, onay bekler. |
+
+**Onaylı dar okuma API dilimi:** Aşağıdaki yollar yalnız kalıcı ve bütünlüğü doğrulanmış MOD-0191 kayıtlarını okuyabilir; fixture sonucu veya bellek içi revision üretim verisi olarak sunulmaz. Doğrudan servis testi 5069'da yapılır; önekin merkezî kaydı ve Gateway rotası ayrı iştir.
+
+| Uç | Ne gösterir | Kim görebilir (izin) | Hangi şirketin verisi | "Yetkili şirketlerim" ucu gelene kadar nasıl çalışır |
+|---|---|---|---|---|
+| `GET /api/v1/safety-stock/policies` | Policy özetleri; filtre ve sayfalama kapsamı genişletmez. | `safety-stock.policies.read` sahibi. | Token Tenant'ındaki, MDM-geçerli seçilmiş tek LegalEntity'nin tüm serileri (geçici istisna). | Platform kullanıcı/şirket ve seri kapsamı açık borçtur; Mongo policy kayıtları okunur. |
+| `GET /api/v1/safety-stock/policies/{policyId}` | Kimlikle policy özeti; başka Tenant/LegalEntity 404. | `safety-stock.policies.read` sahibi. | Kayıt Tenant/LegalEntity'si seçilmiş şirketle eşleşmeli; seri kapsamı geçici olarak tüm şirkettir. | MDM kontrolü zorunlu; Mongo policy kaydı okunur. |
+| `GET /api/v1/safety-stock/policies/{policyId}/revisions/{revisionId}` | Bütünlüğü doğrulanmış iş revision'ı; teknik sürüm yetki kanıtı değildir. | `safety-stock.policies.read` sahibi. | Revision aynı Tenant/LegalEntity ve policy'ye bağlı olmalı; seri kapsamı geçici olarak tüm şirkettir. | MDM kontrolü zorunlu; Mongo revision ve audit kaydı doğrulanır. |
+| `GET /api/v1/safety-stock/policies/{policyId}/evaluations/{evaluationId}` | Kalıcı aday, yöntem ve girdi-lineage özeti; tam dış kaynak payload'ı değil. | `safety-stock.evaluations.read` sahibi. | Evaluation aynı Tenant/LegalEntity ve policy'ye bağlı olmalı; seri kapsamı geçici olarak tüm şirkettir. | MDM kontrolü zorunlu; kalıcı okuma kaynağı bağlanana kadar 503. |
+
+Tenant kimliği sunucu tarafından doğrulanmış oturumdan gelir. Sayfada tekli şirket seçimi hedeflenir; Gateway ve gerçek seçenek kaynağı gelmeden çalışan sayfa yoktur. `X-Legal-Entity-Id` yalnız seçim ipucudur, iş payload'ından şirket alınmaz. Servis bu kimliği her istekte MDM `lookup-validation` ile doğrular; MDM erişilemiyorsa 503 ve sıfır veri. **Geçici SEC-002 kapsam istisnası (Ali kararı):** ayrı kullanıcı/şirket veya SKU × Warehouse veri kapsamı uygulanmaz; `safety-stock.*.read` izni olan kişi kendi Tenant'ındaki herhangi bir MDM-geçerli seçilmiş şirketin tüm serilerini okuyabilir. JWT claim'i veya MDM sonucu kullanıcıya şirket yetkisi kanıtı sayılmaz; bu risk görünür kalır. Platform'un dışlamaları ve iptalleri kapsayan "yetkili şirketlerim" sözleşmesi ile yetkili SKU × Warehouse kümesinin üreticisi/sözleşmesi **açık maddedir**; Inventory availability veya Product Master lookup otomatik veri kapsamı sayılmaz. Kalıcı policy/revision kaydı için Mongo okuyucu vardır; evaluation kaydı henüz yoktur ve o uç 503 döner. İşlem izni yoksa 403; başka Tenant/LegalEntity kaydı 404/boş; MDM veya kayıt bütünlüğü doğrulanamıyorsa kapalı hata verilir. Frontend Gateway üzerinden çalışmalıdır; merkezî route gelmeden tarayıcıdan 5069'a doğrudan çağrı yapılmaz.
+
+**Ali onaylı dar yazma dilimi:** Dört çoğul izin anahtarı manifest ve Platform self-registration içinde API-only olarak kayıtlı olmalıdır; Admin rol şablonuna eklenmez. Kimlik ve kapsam JWT'den/sunucudan çözülür, payload'dan Tenant/LegalEntity alınmaz. Aynı Tenant × LegalEntity × SKU × Warehouse için tek policy kimliği, revision için ayrı iş kimliği, beklenen teknik sürüm, tekrar istek ve yarış koruması zorunludur. Onaylı revision etkin policy değildir.
+
+| Komut | İzin | Şirket kapsamı | Geçiş |
+|---|---|---|---|
+| Taslak oluştur | `safety-stock.policies.create` | Token Tenant'ı + MDM'de aktif seçili LegalEntity | Yok → Draft |
+| Yeni revision oluştur | `safety-stock.policies.update` | Aynı policy, Tenant ve LegalEntity | Önceki revision değişmez; yeni Draft |
+| İncelemeye gönder | `safety-stock.policies.submit` | Aynı policy, Tenant ve LegalEntity | Draft → InReview |
+| Onayla | `safety-stock.policies.review` | Aynı policy, Tenant ve LegalEntity | InReview → Approved; hazırlayan ve önemli editör kendi revision'ını onaylayamaz |
+| Gerekçeyle reddet | `safety-stock.policies.review` | Aynı policy, Tenant ve LegalEntity | InReview → Rejected |
+
+Yazma da MDM `lookup-validation` başarısızsa 503 ile kapanır. MDM'nin aktif şirket doğrulaması kullanıcıya şirket yetkisi sağlamaz; bu geçici risk açık kalır. Her başarılı komut ile değişmez yerel audit **aynı Mongo transaction'ında** yazılır; audit yazısı hata verirse komutun hiçbir iş etkisi kalmaz. `c` yolu yalnız geçici izdir ve BL-501 merkezi kaydının yerine geçmez.
+
+## 4. Entity Fields
+
+Aşağıdakiler iş sözleşmesi için önerilen asgari veri kategorileridir; tip/uzunluk/index ve hesap semantiği onay gerektirir. Tenant-owned policy ve revision kayıtları Id, TenantId, IsDeleted, DeletedAt, CreatedAt, UpdatedAt ve teknik Version alanlarını taşır. TenantId ve aktör istemciden alınmaz; aktör sunucuda çözülür. RevisionId iş sürümünün ayrı kimliğidir; Version ise yarış denetimi için teknik sürümdür. Audit kaydı append-only olup silme yolu açılmaz.
+
+| Alan / kategori | Tip | Kural / açık karar |
+|---|---|---|
+| LegalEntityId | canonical ID (tip TBD) | Sunucuda yetkili kümeden doğrulanır; MDM referans doğrulaması tek başına yetki değildir. |
+| ItemId, SkuId, SkuLevel, WarehouseId | canonical ID / enum | PRODUCT-MASTER ve Location/Inventory kimlikleriyle eşleştirme ve SKU×Warehouse uygunluğu TBD; kopya master yok. |
+| PolicyRevision, state, effective interval | sürüm/durum/tarih | İkinci dilimde bellek içi Draft/InReview/Approved/Rejected, beklenen sürüm ve değişmez terminal revision onaylıdır; teknik Version'dan ayrı iş revision kimliği taşınır. Geçerlilik ve tek etkin policy çakışması TBD. |
+| MethodId, ParameterSet, ServiceObjective | sürümlü referans / değer | İlk salt okunur fixture diliminde yalnız Yöntem A ve istekle açıkça verilen, sıfırdan büyük kapsama günü onaylıdır; kalıcı policy parametresi, diğer yöntemler, hizmet hedefi, üst eşik ve nihai stok/sipariş birimi yuvarlaması TBD. Örtük kapsama günü yok. |
+| DemandRevisionId, demand state/integrity | kaynak kimliği/kanıtı | Demand v2 tüketici kararı gelmeden üretimde boş/kapalı; v1 otomatik ikame edilmez. |
+| Availability snapshot/asOf, product/UoM, BOM version, lead-time source | kaynak kimliği, tarih, ölçü | Hangi kaynakların hesap için zorunlu olduğu ve snapshot tutarlılığı TBD; eksik/eski kaynakla sessiz öneri yok. |
+| CandidateQuantity, FinalQuantity, BaseUomId | decimal / unit | İlk dilimin geçici ham decimal aday miktarı yalnız fixture içinde tutarlı temel UoM ile döner; canlı MDM doğrulaması, nihai stok/sipariş birimi yuvarlaması, FinalQuantity, override ve onaylı değer üretilmez. Kalıcı aday ve manuel/onaylı değerler ileride ayrı tutulur. |
+| Explanation, warnings, override reason, approval record | yapılandırılmış kanıt | Etken girdiler ve kaynak sürümleri, veri yeterliliği, önceki/yeni değer, aktör/zaman/gerekçe; birleşik belirsiz güven puanı yok. |
+
+Tenant-first indeksler ve IsDeleted filtresi gerekir. Olası sorgu anahtarları TenantId + LegalEntityId + SkuId + WarehouseId + state; unique/partial index, revizyon geçerlilik çakışması ve retention politikası TBD. Hesap kaynağı snapshot'ları ikinci stok/talep SoR'u oluşturmaz.
+
+## 5. Repo Scope
+
+- **Bu onay kaydı:** yalnız execution/domains/supply-chain-execution/module-packs/MOD-0191-safety-stock-optimization.md.
+- **İzinli ilk geliştirme dilimi:** services/Diten.SafetyStockService/** altında yalnız kalıcı kayıt yapmayan Yöntem A hesaplama çekirdeği, sözleşmeli gün bazlı fixture doğrulaması, derleme için gereken en küçük proje yapısı ve odaklı testler. API/host, Persistence, canlı servis çağrısı, endpoint, Gateway ve UI bu izin kapsamında değildir.
+- **Ali onaylı ikinci izole geliştirme dilimi:** Aynı servis klasöründe, ilk hesaplayıcıdan ayrı saf bellek içi policy revision durum çekirdeği ve odaklı testleri. Draft → InReview → Approved veya gerekçeli Rejected; önemli değişiklik ve reddedilenden tekrar deneme aynı policy kapsamına bağlı yeni kimlikli Draft revision üretir. Beklenen sürüm, geçersiz geçiş, hazırlayan/önemli editörün kendi revision'ını onaylamaması, terminal revision değişmezliği ve bellek içi karar izi doğrulanır. Bu, runtime policy yazma veya gerçek izin/audit yolu değildir.
+- **Ali onaylı okuma dilimi:** services/Diten.SafetyStockService/** altında dört GET için API/host, CQRS okuma sözleşmeleri, MDM şirket referansı adaptörü ve odaklı testler. Geçici kapsam §3'teki izin + Tenant + MDM-geçerli LegalEntity düzeyindedir; gerçek kullanıcı/şirket ve SKU × Warehouse kapsamı açık risk olarak kaydedilir. Kalıcı policy/evaluation kaynağı bağlanmadığından fixture üretim kaydı sunulmaz ve mevcut host 503 ile kapalıdır. Frontend'deki tekli şirket seçimi yalnız Gateway bağlandıktan sonra işlevsel olabilir; Gateway route ve merkezî önek kaydı bu kapsamın dışındadır.
+- **Ali onaylı kalıcı yazma dilimi:** services/Diten.SafetyStockService/** içinde beş §3 komutu için API, uygulama, Mongo policy/revision ve işlem-içi audit, gerçek okuma kaynağı, manifest/self-registration ve testler. Etkinleştirme, override, evaluation yazımı ve MRP aktarımı kapsam dışıdır. Gelecekteki ekran ayrı onay gerektirir.
+- Gateway, ortak izin kaydı, merkezî kontrat ve DCP uzlaştırması bu pack'in yazma kapsamı değildir; sahipleriyle ayrı görev gerektirir.
+
+## 6. Protected Paths
+
+Bu pack onayı yalnız §5'teki MOD-0191 servis ve pack kapsamını açar. AGENTS.md, .antigravity/**, domain-config.md, DCP-009, registry, merkezî contracts, gateway route, frontend, MOD-0188 ve diğer servislerin kodu korunur. MOD-0191'in kendi audit defteri, onaylanan geçici yolun kaydı için dar istisnadır.
+
+## 7. Dependencies
+
+| Kaynak | Belgelenen durum | Taslakta izinli kullanım | Üretim kapısı |
+|---|---|---|---|
+| INVENTORY availability, MOD-0173 | inventory-bundle.openapi.yaml v1 **FROZEN**; dosya açıkça Prism mock kaynağıdır. GET /availability Item/SKU/Warehouse, LegalEntity, baseUom, asOf döndürür. | Sonraki dilimde sözleşmeye karşı fixture/mock ve salt okuma; ilk çekirdek çağırmaz. | Gerçek MOD-0173 producer ve yetki/snapshot tutarlılığı doğrulanmadan canlı hesap/etkin policy tüketimi kapalı. Stok hareketi veya balance yazımı yok. |
+| PRODUCT-MASTER, MOD-0290 | product-master-bundle.openapi.yaml v1 **FROZEN**, mock örneği var; kimlik/UoM MDM SoR'dur. | Sonraki dilimde fixture/mock ile SKU, item, UoM doğrulaması; ilk çekirdek yalnız fixture içindeki temel UoM beyanı ve tutarlılığını doğrular, producer çağırmaz. | Gerçek producer, SKU/LegalEntity uygunluğu ve tarihsel UoM doğrulanmadan canlı tüketim kapalı. |
+| BOM, MOD-0193 | bom.openapi.yaml v1 **FROZEN** contract; WP-MVP4 BOM'u **mock** diye niteler. | Sonraki üretim senaryosu onaylanırsa fixture/mock; ilk çekirdek kullanmaz. Olmayan BOM'u sıfır bileşen sayma. | Gerçek effective BOM producer/versiyon/LE sözleşmesi ve ürün kararı olmadan canlı manufacturing etkisi kapalı. |
+| Demand, MOD-0188 | demand.openapi.yaml **v1 FROZEN**. Açık MOD-0188 pack'i v2 producer semantiğini tarif eder; v2 merkezi freeze/yayın **DRAFT/açık kapı**, origin/main'de v2 contract yoktur. | V2 için yalnız ayrı etiketli taslak fixture; v1 ikame değil. | MOD-0191'in v2 tüketici kuralı, revision/status/integrity/asOf/invalidated davranışı ve ortak testleri CT/Ali tarafından onaylanmadan canlı tüketim kapalı; v2'yi bu pack dondurmaz. |
+| İlk dilim hesap fixture'ı | Fixture sürümü, Tenant × LegalEntity × SKU × Warehouse kapsamı, temel UoM, başlangıç ve bitiş tarihini açıkça taşır. Boş olmayan aralıktaki her takvim günü için tam bir kayıt gerekir; canlı Demand v2 sözleşmesi veya üreticisi değildir. | Yalnız salt okunur Yöntem A çekirdeğine girdi; yinelenen gün ve kapsam/birim uyuşmazlığı reddedilir. Fixture içi UoM tutarlılığı canlı MDM doğrulaması değildir. | Fixture başarısı canlı Demand v2, Inventory, Product veya BOM kabulü değildir. |
+| MOD-0189 ve Scenario Modeling | Blueprint 0191 için 0189 + Scenario Modeling bağımlılığı yazar; main'de 0189 pack/üretim entegrasyonu ve Scenario Modeling tüketici kontratı bu incelemede kanıtlanmadı. | Bağımsız sözleşme taslağı ve mock sınırı. | MRP politika tüketim noktası, idempotency ve senaryo sahipliği onayı olmadan otomatik netting/proposal etkisi kapalı. |
+| Platform LegalEntity kapsamı | Tam yetkili şirket kümesi + dışlamalar ve atama iptali açık canlı kapıdır. MDM `lookup-validation` yalnız seçilen şirket referansını doğrular. | Ali'nin geçici okuma/yazma istisnasıyla izin + Tenant + MDM-geçerli seçilmiş LE; bu, kullanıcı/şirket yetkisi değildir. | Platform kullanıcı/şirket ve SKU × Warehouse kapsam kaynağı kabul edilmeden kapsamlı AC kapanmaz. |
+| Audit altyapısı | Ali'nin yeni kararı: beş onaylı komut için AUD-001 geçici `c` yolu; iş kaydı ve değişmez yerel audit aynı Mongo işleminde. | Audit yazılamazsa komut da yazılmaz; her komut için sabotaj kanıtı ve servis audit defterinde geçici iz ile "BL-501 bekliyor" kaydı gerekir. | Yerel iz merkezi denetim günlüğü değildir. BL-501 gelince merkezi kayıt yanına eklenir; yerel iz kaldırılmaz. |
+
+## 8. Runtime Constraints
+
+İkinci saf çekirdekte `ContentKey` yalnız sentetik önemli içerik sürümü belirtecidir; yöntem/parametre/policy veri modeli veya canlı kaynak kimliği değildir. Successor, aynı lineage içindeki revision kimliğini yeniden kullanamaz; küresel benzersizlik ve eşzamanlı çoklu politika bütünlüğü kalıcı depolama kapısına aittir. İçerik önceki revision'dan türediği için hazırlayan ve önceki önemli editörler yeni revision'ın öz onay engelinde korunur.
+
+**İkinci izole dilim (Ali onayı):** Policy kapsamı Tenant × LegalEntity × SKU × Warehouse olarak yalnız sentetik bellek içi veriyle taşınır; gerçek yetki doğrulaması değildir. Revision Draft → InReview → Approved veya gerekçeli Rejected olur. Önemli değişiklik ve reddedilenden tekrar deneme, önceki revision'ı değiştirmeden aynı policy/kapsam için yeni kimlikli Draft revision üretir. Her geçiş beklenen sürümü kontrol eder; eski sürüm ve geçersiz durum açık çatışmadır. Hazırlayan veya önemli editör kendi revision'ını onaylayamaz; onaylanmış/reddedilmiş revision değişmez kalır. Ret gerekçesi ve karar izi yalnız sonuç nesnesindedir, kalıcı AUD-001 kaydı değildir. Active/tek etkin policy, geçerlilik tarihleri, override, Mongo, audit/outbox, Gateway, UI, canlı kaynaklar ve MOD-0189 aktarımı bu izne dahil değildir. Ayrı onaylı okuma API dilimi §3 ve §5 ile sınırlıdır.
+
+Sonraki kalıcı policy/evaluation ve kullanıcı yüzeyi için MongoDB tek DB/tenant izolasyonu; her kayıtta TenantId, soft delete ve LegalEntity/data-scope sunucu doğrulaması gerekir. Başka tenant kaydı 404, kimlikle istenen kapsam dışı kayıt 404/boş; izin yoksa 403. Kaynak yok/bozuk, eşleşmeyen birim, geçersiz veya invalidated Demand revision, aynı politika için sürüm çatışması ve audit yazma hatası güvenli şekilde durur. Yanlış/yetersiz veriden sessiz sayısal politika üretilmez. Beş katman, CQRS/MediatR, Response<T>, CustomBaseController, Validation/Logging/Exception/Performance ve denetim davranışı seçilen serviste doğrulanır. Gateway 5000, frontend 5001; browser mikroservis portuna doğrudan gitmez. İlk saf fixture çekirdeği Mongo veya kullanıcı isteği açmaz.
+
+**İlk izole dilimin hesap kuralı (Ali onayı; yalnız §5'teki çekirdek için uygulama izni):** `ortalama günlük talep = tamlığı doğrulanmış penceredeki günlük talep toplamı / penceredeki takvim günü sayısı`; `ham aday = ortalama günlük talep × istekle açıkça verilen kapsama günü`. Fixture sürümü, Tenant × LegalEntity × SKU × Warehouse kapsamı, temel UoM, başlangıç ve bitiş tarihlerini taşır. Başlangıç ve bitiş dahil tarih aralığı boş olamaz; her takvim günü için tam bir kayıt bulunur. Yinelenen gün, günlük kaydın fixture kapsamı/temel UoM'siyle uyuşmaması, eksik/bilinmeyen gün, negatif talep veya boş/bozuk dönem sayısal aday üretmez. Doğrulanmış günlük `0` geçerlidir; eksik gün sıfıra dönüştürülmez. Kapsama günü istekle açıkça verilir ve sıfırdan büyüktür; sabit/örtük varsayılan yoktur. Günlük talep ve ham aday fixture içinde tutarlı temel UoM miktarıdır; bu kontrol canlı MDM doğrulaması değildir. Çekirdek ham decimal hesap sonucunu ve kapsamı, pencereyi, fixture sürümünü, günlük girdileri, toplamı, böleni, kapsama gününü ve hesap adımlarını içeren izi döndürür; nihai stok/sipariş birimine yuvarlamaz. Decimal toplam/bölme/çarpma taşması veya temsil edilemeyen sonuçta aday üretmez, hata nedenini açıklar; sessiz clamp/truncation yoktur. Haftalık Demand v2'nin günlere dağıtımı TBD'dir ve ilk dilimde kullanılmaz. Çekirdek yalnız bellek içi salt okunur hesap yapar; değerlendirme/policy veya audit kaydı oluşturmaz.
+
+**Kapı ayrımı:** İlk çekirdek için Yöntem A, takvim günü, fixture tamlığı, pozitif kapsama günü ve ham decimal çıktı; ikinci çekirdek için yalnız bellek içi revision durumları kararlaştırıldı. Bunlar §18 A'da dar karar kaydıdır, canlı uygulama/AC kanıtı değildir. Çekirdeklerin kullanıcıya veya canlı kaynağa açılması ayrı izin/veri kapsamı kapısıdır; sonraki kalıcı yazma/gerçek onay dilimi için audit ve gerçek görev ayrılığı ayrıca zorunludur. Kararsız hesaplama veya etkinleştirme davranışı kodlanmaz. Fixture veya sentetik aktör sonucu canlı producer, yetkili LegalEntity kaynağı, Demand v2, Gateway veya audit kabulünün kanıtı değildir; bu yüzeyler §18 B'ye kadar kapalı kalır. Gerçek secret kaynak dosyası, fixture, log veya pack içine konmaz.
+
+### Geçici servis kararı ve port sınırı
+
+Ali'nin kararı: MOD-0191 ayrı geçici Diten.SafetyStockService içinde, güncel main tabanından bağımsız geliştirme adayıdır. Bugün MOD-0188 dalına veya Diten.PlanningService koduna bağlanmaz; MOD-0188'in dalı/kodu değişmez. 5069 Ali tarafından onaylandı. Bu oturumdaki ölçümde 5069 için dinleyici yoktu ve loopback bind testi başarılıydı. Bu, yalnız ölçüm anındaki kullanılabilirliktir; kalıcı port tahsisi, servis scaffold'u veya üretim izni değildir. AGENTS.md ile .antigravity/rules/ports.md kayıtları merkezî sahiplerin **bekleyen ayrı işi**; Gateway rotası integration-agent'ın **bekleyen ayrı işi**dir. Hiçbiri bu pack ile yapılmış sayılmaz.
+
+Birleşme **bugün yapılmaz ve hedefi bugün seçilmez**. Geçici servis sınırı korunur; aşağıdaki göreli maliyetler gün/para tahmini değil, henüz uygulanmamış taşıma etkisidir.
+
+| Taşınacak etki | PlanningService — ancak uygun kod main'e geldikten ve sahipleri onayladıktan sonra | Nihai SupplyChainService — DCP-009 hedefi |
+|---|---|---|
+| MOD-0191 feature | **Orta:** aynı planlama bağlamı olası uyum sağlar; ayrı servis namespace ve bağımlılıkları yeniden bağlanır. | **Orta:** feature tek sahibinde kalır; 5061 hedefinin servis yapısına taşınır. |
+| DI/config ve servis sınırı | **Orta:** PlanningService'in main'deki gerçek DI/config'iyle uyuşma ve geçici servisi kapatma gerekir. Bugünkü açık dal kanıt sayılmaz. | **Yüksek:** origin/main'de SupplyChainService scaffold'u yok; MVP-6 sırası, DI/config ve geçici servisi kaldırma ayrıca yönetilir. |
+| İzin/entitlement | **Orta:** permission anahtarları ve tenant/LE/data-scope bağları yeni hostta yeniden doğrulanır. | **Orta:** aynı güvenlik sınırı 5061 hostuna taşınır; scope ve rol testleri yeniden çalışır. |
+| Mongo koleksiyonları | **Yüksek:** tenant-first index, collection sahipliği, veri taşıma/geri dönüş ve audit lineage bütünlüğü ayrı migration ister. | **Yüksek:** aynı fiziksel veri ve audit lineage taşıma/uzlaştırma yükü vardır; ikinci stok SoR'u açılamaz. |
+| Gateway route | **Orta:** geçici 5069 downstream'i yeni hosta yönlendirme, OPTIONS/auth/header ve eski rota kapatma gerekir; integration-agent işi. | **Orta:** 5061 downstream ve geçici rota kapatma aynı ayrı integration-agent kontrolünü ister. |
+| Test/kanıt | **Yüksek:** fixture, tenant/LE, audit, Demand/stock ve handoff regresyonu yeni hostta tekrarlanır. | **Yüksek:** aynı testlere MVP-6/SupplyChainService regresyonu ve birleşme kabulü eklenir. |
+
+PlanningService seçeneği MOD-0188 dalından kod kopyalama veya ona bugünkü bağımlılık kurma izni değildir. SupplyChainService seçeneği MVP-6 scaffold sırasını öne çekmez. Taşıma ve hedef kararı Ali/Control Tower ile servis sahiplerinin sonraki ayrı kapısıdır.
+
+## 9. Layout & Shell Contract
+
+shell: tenant. Önerilen ana yüzey politika, girdi kaynakları, aday açıklaması, manuel değişiklik ve karar geçmişini birlikte gösteren özel çalışma alanıdır; salt CRUD/DataTable varsayılmaz. Her Razor sayfası açıkça Layout = "_LayoutTenantShell" seçer; Views/SupplyChain/SafetyStockOptimization/ önerilen klasördür. Tenant dilleri en, tr, fr, es, zh, ar, ru; .resx ve window.L10n bridge gerekir. İzinsiz kullanıcıya başlık/kart/boş tablo çizilmez, tek açıklama gösterilir. Canlı LegalEntity seçici Platform'un yetkili tam kümesi/dışlamalar sözleşmesine bağlıdır; boş/doğrulanamayan kapsamda iş yüzeyi açılmaz.
+
+## 10. Backend File Convention
+
+İlk izinli dilim geçici Diten.SafetyStockService altında saf Yöntem A hesaplama/fixture doğrulama çekirdeği ve odaklı testlerdir. İkinci izinli dilim bunun dışında saf bellek içi policy revision durum çekirdeği ve odaklı testlerdir; ikisi de command, handler, API, Mongo veya dış kontrat istemcisi açmaz. Sonraki ayrı onayla MOD-0191 feature'ı Commands/, Queries/, Handlers/CommandHandlers/, Handlers/QueryHandlers/, Validators/ ve SafetyStockOptimizationModels.cs düzeninde tasarlanır. Her command/query/handler/validator ayrı dosya; handler adında Command/Query/Request suffix yok. Dış kontrat istemcileri Application arayüzü, Infrastructure uygulaması üzerinden çalışır; handler doğrudan HTTP/DB kodu taşımaz. GoldenReferenceSlim/Compact gerçek kodu ve pack'leri okundu; bunların DataTable CRUD yüzeyi bu özel çalışma alanına otomatik kopyalanmaz. Geçici servisteki gerçek base/repository/audit altyapısı ayrıca doğrulanmadan sonraki uygulama dosya listesi tamamlanmış sayılamaz.
+
+## 11. Frontend File Contract
+
+Özel tenant çalışma alanı için beklenen yüzeyler: kapsamlı policy seçimi; revision/girdi kaynağı/uyarı ayrıntısı; aday ile manuel değerin yan yana açıklaması; gerekçe ve onay geçmişi. Ekran listesi, create/edit form alan sayısı ve etkileşim tasarımı ürün sahibiyle TBD. Bu nedenle golden_reference: none ve data_mode/form_field_count yoktur. DataTable liste ekranı sonradan onaylanırsa kullanıcı form alanları sayılır; ≤8 Slim, >8 Compact, veri modu ve gerçek Golden Reference dosya seti ekran bazında pack'e eklenir. Yüklenen her veri yüzeyinde içeriğin biçimine uygun skeleton; yükleme, boş, hata ve yetkisiz durumlar ayrıdır. Browser yalnız Gateway 5000 veya yetkili aynı-origin MVC proxy kullanır.
+
+## 12. Validation Rules
+
+| Alan / işlem | Zorunlu ön koşul | Hata / açık karar |
+|---|---|---|
+| Tenant/LegalEntity (sonraki kullanıcı yüzeyi) | Tenant sunucuda çözümlenir; seçilen tek LE Platform tam yetkili küme ve dışlamalar içinde her istekte yeniden doğrulanır. İlk saf fixture çekirdeğinde kullanıcı seçimi/Platform çağrısı yoktur. MDM lookup yalnız kimlik doğrular. | Kapsam belirsizse kapalı; başka tenant 404; aynı tenant yetkisiz LE create 403 / sıfır kayıt ancak yetkili sonuç sözleşmesi bu ayrımı doğrulayınca. |
+| SKU/Warehouse/UoM | Canonical kimlikler ve birim eşleşir; payload master veya stok yetkisi sağlamaz. | Geçersiz/eksik kaynakla etkin sonuç yok. |
+| İkinci dilim bellek içi revision | Draft → InReview → Approved veya gerekçeli Rejected; önemli edit/retry yeni kimlikli Draft revision; her geçişte beklenen sürüm; hazırlayan/önemli editör onaylayamaz; terminal revision değişmez. | Eski sürüm, yinelenen kimlik, geçersiz geçiş, öz onay veya gerekçesiz ret açık hata/çatışma döndürür; HTTP kodu uygulanmaz. |
+| Gelecekteki kalıcı policy revision | Zorunlu alanlar, sürüm token'ı ve geçerlilik çakışması onaylı iş kuralına uyar. | Eksik 400, duplicate/çakışma 409; etkinlik ve kalıcı çakışma ayrıntısı TBD. |
+| İlk dilim günlük fixture | Sürüm, Tenant × LegalEntity × SKU × Warehouse, temel UoM, başlangıç ve bitiş tarihi zorunlu; başlangıç ≤ bitiş, sınırlar dahil her takvim gününde tam bir kayıt gerekir. Günlük kayıt kapsamı/birimi fixture başlığıyla eşleşir; gerçek sıfır talep geçerlidir. | Eksik/bilinmeyen veya yinelenen gün, kapsam/birim uyuşmazlığı, negatif talep ve boş/bozuk dönem aday üretmez. Fixture içi tutarlılık canlı MDM yetkisi/doğrulaması değildir. |
+| İlk dilim Yöntem A / kapsama günü | Ortalama günlük talep × istekle açıkça verilen sıfırdan büyük takvim günü kapsaması; ham decimal sonuç ve hesap izi döner. | Eksik, sıfır veya negatif kapsama günü aday üretmez; örtük/sabit varsayılan yok. Decimal taşması/temsil hatası aday üretmez. Nihai stok/sipariş birimi yuvarlaması yapılmaz; Yöntem B onaylı değil. |
+| Canlı hesap girdisi | Kaynak asOf/sürüm/bütünlük, onaylı Demand v2 durumu, availability, ürün ve gerekiyorsa BOM ayrı canlı dilimde bağlanır. | Kaynak eksik/stale/invalidated ise açıklamalı kapalı sonuç; v1 fallback yok. İlk fixture çekirdeği bu çağrıları yapmaz. |
+| Manuel değişiklik/onay | Gerekçe, önceki/yeni değer, aktör, zaman ve bağımsız karar izi; onay yetkisi/SoD TBD. | Eksik gerekçe/izin, eski sürüm veya audit başarısızlığında etki yok. |
+
+## 13. Failure Path to Verify
+
+- **Aynı kapsam/etkin dönem için çakışan policy:** İkinci kayıt/etkinleştirme 409; tek geçerli sürüm kuralı CT tarafından tanımlanana dek etkinleştirme kapalı.
+- **Eksik yöntem veya kaynak:** 400 ya da kaynağa uygun kapalı hata; sayısal aday üretilmez, stok hareketi ve MRP etkisi oluşmaz. Doğrulanmış sıfır talebin sıfır adayı bu hata durumundan ayrıdır.
+- **İlk dilim geçersiz girdi/taşma:** Eksik/bilinmeyen veya yinelenen takvim günü, negatif günlük talep, boş/bozuk pencere, fixture sürümü/kapsamı/temel UoM'si eksikliği veya günlük kayıt uyuşmazlığı, eksik/sıfır/negatif kapsama günü ve decimal taşması/temsil hatası sayısal aday üretmez; neden açıklanır. Gerçek sıfır gün geçerlidir; hiçbir sonuç clamp edilmez veya nihai stok/sipariş birimine yuvarlanmaz.
+- **Yetkisiz kullanıcı/LE:** İzin yok 403; başka tenant veya kapsam dışı mevcut policy ID 404/boş; kapsam kaynağı arızası erişim açmaz.
+- **Eşzamanlı revizyon/onay:** Eski teknik Version/state token 409; onay veya override sessiz overwrite yapmaz.
+- **Demand v2 invalidated/eksik parça:** Aday ve henüz uygulanmamış tüketim bloke; v1'e veya eski revision'a sessiz dönüş yok; kesin yeniden değerlendirme protokolü TBD.
+- **Audit yazma hatası:** GxP/K2 sınıfıysa politika değişikliği/onay durur; seçilen serviste doğrulanmış fail-closed yol yoksa komut uygulanmaz.
+
+## 14. Authorization Convention
+
+[Authorize] ve action bazlı [HasPermission] gerekir. Öneri namespace'i safety-stock.policy.read/create/update/submit/approve/activate ve safety-stock.evaluation.read/run, safety-stock.override.create; kesin anahtarlar, ModuleCode/entitlement ve rol matrisi CT/EA onayına bağlı TBD'dir. Policy yazma, değerlendirme, onay, Demand okuma ve inventory availability okuma izinleri birbirinin yerine geçmez. Actor type tenant_user; servis hesabı için ayrı teknik kimlik ve aynı Tenant/LE/data-scope sınırı gerekir. Veri kapsamı hangi alanlara çevrilecek (en az LegalEntity; SKU/Warehouse alt kapsamı TBD), dışlamalar ve tenant-wide izni/anahtarı Platform sözleşmesiyle kararlaştırılır. JWT claim'i ya da MDM lookup-validation kullanıcının şirket yetkisi değildir. Politika onaylayanı kendi değişikliğini onaylayabilir mi: TBD, onaylanmadan izin açılmaz.
+
+## 15. Gateway / API Routing Decision
+
+Karar TBD. MOD-0191 API resource adı, endpoint/method matrisi, mevcut catch-all ve Gateway güvenlik profili CT/integration-agent tarafından doğrulanmadan rota eklenmez. Geçici servis 5069 kararı Gateway route'unun eklenmiş veya merkezî port kaydının yapılmış olduğu anlamına gelmez. Gerekirse integration-agent explicit base ve /{everything} rotalarını PATCH/OPTIONS dahil ayrı görevle ekler. Frontend Gateway 5000'den geçer; ocelot.json protected path'tir. Demand/Inventory/Product/BOM tüketimi published contract üzerinden olur; başka modülün DB koleksiyonunu veya iç tipini paylaşmaz.
+
+## 16. Acceptance Criteria
+
+- [ ] AC-S01: SafetyStockPolicy dışındaki stok balance, forecast, MRP proposal ve PO kayıtlarında MOD-0191 yazıcısı yok; contract testinde inventory erişimi yalnız availability read'dir.
+- [ ] AC-S02: Her policy/revision/aday/manuel karar Tenant ve sunucuda doğrulanmış LE ile sorgulanır; iki tenant ve iki LE verisi birbirine görünmez; kapsam daralınca eski UI seçimi doğrudan API'de erişim sağlamaz.
+- [ ] AC-S03: İlk dilim yalnız Yöntem A'yı sürüm/kapsam/temel UoM/tarihleri açık fixture ile değerlendirir; başlangıç ve bitiş dahil her takvim gününde tam bir kayıt bulunur. Eksik/bilinmeyen veya yinelenen gün, kapsam/birim uyuşmazlığı, negatif talep, boş/bozuk dönem ve eksik/sıfır/negatif kapsama günü sayısal aday vermez. Doğrulanmış sıfır gün geçerlidir. Canlı run/activate ve aşağı akış etkisi kapalıdır.
+- [ ] AC-S04: Aynı tam fixture sürümü, Tenant × LegalEntity × SKU × Warehouse kapsamı, pencere, temel UoM ve pozitif kapsama günü aynı ham decimal aday miktarını ve hesap izini verir; testler günlük toplam / takvim günü sayısı × kapsama gününü sabit örneklerle ölçer. İz kapsamı, pencereyi, sürümü, girdileri, toplamı, böleni, kapsama gününü ve hata nedenini taşır. Decimal taşmasında aday yoktur; clamp/truncation, nihai stok/sipariş birimi yuvarlaması veya kalıcı evaluation/policy kaydı yoktur. Fixture kanıtı canlı kaynak veya AC kapanışı sayılmaz.
+- [ ] AC-S05: Aday, manuel değişiklik ve onaylı son değer ayrıdır; her manuel değişiklikte eski/yeni değer, gerekçe, aktör, zaman ve revision görünür; eksik gerekçede kayıt yoktur.
+- [ ] AC-S06: Revizyon/onay/eşzamanlılık çatışmasında 409 ve sıfır kısmi değişiklik; policy iş sürümü teknik Version'dan ayrı kalır.
+- [ ] AC-S07: Demand v1 hiç çağrılmaz; v2 tüketici onayı gelince Published, Superseded, Invalidated, eksik sayfa/checksum, gecikmiş olay ve servis arızası için kapalı davranış ortak testle kanıtlanır.
+- [ ] AC-S08: BOM gereken onaylı üretim senaryosunda yalnız effective BOM/version tüketilir; senaryo kararı yoksa BOM etkisi üretim kapalıdır.
+- [ ] AC-S09: Tenant ekranları açıkça _LayoutTenantShell seçer; yedi dil RESX paritesi, yükleme/boş/hata/izinsiz yüzeyleri ve yalnız Gateway akışı browser smoke ile doğrulanır.
+- [ ] AC-S10: Beş onaylı komut ve değişmez geçici `c` audit'i aynı Mongo işlemindedir; audit arızasında sıfır iş etkisi gerçek replica set ve sabotaj testleriyle gösterilir. BL-501 merkezi bağlantısı ayrıca açık kalır; geçici iz merkezi audit sayılmaz.
+- [ ] AC-S11: MOD-0189'a güvenlik stoğu aktarımı yalnız onaylı, geçerli policy revision'ı ve kaynak bütünlük bilgisini kullanır; idempotency ve invalidation etkisi iki taraflı sözleşme ile test edilir. Sözleşme onaylanana kadar aktarım kapalıdır.
+
+## 17. Test Expectations
+
+**İlk salt okunur çekirdeğin izole test beklentisi:** fixture sürümü, Tenant × LegalEntity × SKU × Warehouse, temel UoM ve başlangıç/bitiş tarihleri zorunluluğu; sınırlar dahil gün sayısı ile kayıt sayısı/eşsiz tarihlerin eşleşmesi; tek günlük ve çok günlük geçerli pencere; doğrulanmış `0`; eksik/bilinmeyen veya yinelenen gün; günlük kapsam/birim uyuşmazlığı; negatif talep; ters/boş dönem; eksik/sıfır/negatif kapsama günü. Sabit örnekler ham decimal formülü ve açıklama izini ölçer; aynı girdi aynı çıktıyı verir. Decimal toplam, bölme ve çarpma sınırı/taşması, büyük fakat temsil edilebilir değer ve temsil edilemeyen sonuçta aday üretmeme sınanır; sessiz clamp/truncation ve nihai stok/sipariş birimi yuvarlaması yoktur. Fixture içi UoM doğrulaması canlı MDM testi değildir. Kalıcı kayıt ile canlı Demand v2/Inventory/Product/BOM/Platform çağrısının yokluğu kanıtlanır. Haftalık Demand v2 dağıtımı ve ürün adına yeni hizmet hedefi/üst eşik seçilmez. Gerçek secret fixture, kaynak dosyası veya logda kullanılmaz.
+
+**İkinci izole dilimin testleri:** Draft → InReview → Approved ve gerekçeli Rejected; yeni kimlikli, aynı policy/kapsamlı Draft successor ve reddedilenden tekrar deneme; önceki nesnenin değişmemesi; her geçişte eski sürüm ve geçersiz durum çatışması; hazırlayan veya önemli editörün öz onayının reddi; terminal revision değişmezliği; gerekçenin ve karar izinin yalnız bellek içi sonuçta görünmesi. Sentetik aktör ve kapsam testleri gerçek RBAC/LegalEntity yetkisi, kalıcı audit veya AC kabulü değildir. İlk Yöntem A çekirdeğinin mevcut testleri ayrıca korunur.
+
+**Onaylı beş yazma komutunun izole kanıtı:** tenant-first Mongo filtre/indeks/eşzamanlılığı; iki tenant ve iki LE ayrımı; dört onaylı izin, bağımsız inceleme, MDM aktif şirket kontrolü ve fail-closed testleri gerekir. Audit yazısı kasıtlı bozulduğunda her komutta sıfır iş etkisi gösterilir. Merkezi BL-501 ve gerçek kullanıcı/şirket yetkisi ayrı açık kapılardır. Override ve etkinleştirme bu dilimin dışındadır.
+
+**Canlı kabul/AC kapanışı kanıtı** ayrıca gerçek Platform yetkili şirket tam kümesi/dışlama ve iptal sonrası erişim kesilmesini; onaylı Demand v2 producer ve MOD-0191 tüketici davranışını; gerçek Inventory/Product ve kapsamdaysa BOM üreticilerini; MOD-0189 handoff/fencing/idempotency'yi; Gateway'den geçen API'yi; yedi dil RESX, kullanıcı ekranı ve browser smoke'u; seçilen servisin gerçek audit pipeline'ında başarılı/reddedilmiş yazıların aktör/tenant/nesne/sonuç kaydını ve GxP/K2 audit arızasında işlemin durduğunu ölçer. Servis, frontend, gateway build ve architecture testleri bu aşamada raporlanır. Mock/fixture sonuçları bu canlı kanıtların hiçbirini tamamlamaz. DataTable verifier yalnız onaylı DataTable ekranı eklenirse çalışır.
+
+## 18. Ready-for-dev Checklist
+
+Bu iki grup farklı kapılardır. Ali/Control Tower A grubunda iki saf çekirdeği, dört salt okunur ucu ve §3'teki beş yazma komutunu onayladı. Okuma ve yazma için geçici kapsam işlem izni + Tenant + MDM-geçerli seçili LegalEntity'dir; kullanıcı/şirket ve seri yetkisi açık güvenlik borcudur. `c` yolu işlem-içi audit yalnız geçici kanıttır; BL-501 ve canlı kabul kapanmaz. **B grubu** gerçek entegrasyon ve ilgili AC kapanışı içindir. `target: TBD` idari kararı açık kalır; tarih uydurulmaz.
+
+### A — İzole geliştirmeye başlama kapısı
+
+- [x] DCP-002 MOD-0191 / Safety Stock Optimization preflight exit 0; MOD-0188'den ayrı Blueprint modülü.
+- [x] MVP-4 SafetyStockPolicy SoR ve dar ready-for-dev sınırı kaydedildi.
+- [x] Ali ayrı geçici Diten.SafetyStockService:5069 ve güncel main'den bağımsız MOD-0191 yerleşimini kararlaştırdı; frontmatter service/service_port/service_status güncellendi. MOD-0188 dalı/PlanningService kodu bugünkü bağımlılık değildir.
+- [x] Ali ilk izole dilimi kalıcı kayıt yapmayan, salt okunur Yöntem A çekirdeğiyle sınırladı: tamlığı doğrulanmış gün bazlı sürümlü fixture, takvim günü, açık kapsama günü; canlı çağrı, Gateway, UI, MOD-0189 handoff ve yazma dışarıda. Yöntem B onaylı değil. 5069'un AGENTS.md/ports.md kaydı ve Gateway route'u bekleyen ayrı işlerdir.
+- [x] Ali ikinci izole dilimi yalnız bellek içi Draft → InReview → Approved/gerekçeli Rejected revision kuralları, yeni kimlikli successor/retry, beklenen sürüm, değişmez terminal revision ve sentetik aktörlerle öz onay yasağına açtı. Kalıcı yazma, gerçek yetki/audit, Active, override ve entegrasyon kapalıdır; bu karar test/AC kabulü değildir.
+- [x] Ekip sahipliği frontmatter'da kayıtlıdır. Ali/Control Tower zorunlu `target` tarihi için yalnız ilk Yöntem A ve ikinci bellek içi revision çekirdeklerine dar istisna verdi; `target: TBD` korunur. Sonraki dilimlerin tarih ve birleşme kararları ayrıdır.
+- [x] Ali ilk dilimin fixture şemasını ve sınırlarını kararlaştırdı: sürüm, Tenant × LegalEntity × SKU × Warehouse, temel UoM, başlangıç/bitiş; boş olmayan aralıkta başlangıç ve bitiş dahil her gün tek tam kayıt; sıfır geçerli, eksik/bilinmeyen/yinelenen gün, kapsam/birim uyuşmazlığı ve negatif talep kapalı. Açık pozitif kapsama günü zorunlu; ham decimal sonuç/iz döner, nihai stok/sipariş birimi yuvarlanmaz. Bu karar kaydı test veya AC kabulü değildir.
+- [x] Ali/Control Tower salt okunur çekirdeğin sınırlı giriş/çıkış sözleşmesini ve §17 doğrulama beklentisini inceledi; veri veya kapsam belirsizse aday üretilmez. Haftalık Demand v2'yi günlere dağıtma kuralı bu dilimin dışındadır.
+- [ ] **Sonraki canlı kaynak/kullanıcı yüzeyi için:** INVENTORY, PRODUCT-MASTER, koşullu BOM ve Demand v2 tüketici sözleşmeleri; Platform yetkili kümesine bağlı Tenant/LegalEntity veri kapsamı ve ayrı policy/Demand/stock işlem izinleri tasarlandı. JWT claim'i veya MDM lookup kullanıcıya şirket yetkisi vermez. Bu madde saf hesap çekirdeğinin ön koşulu değildir.
+- [x] §3'teki dört salt okunur uç ve `safety-stock.policies.read` / `safety-stock.evaluations.read` izinleri Ali/CT tarafından 5069'da doğrudan test için onaylandı; API/host geliştirme izni açıldı. MDM `lookup-validation` seçilen şirket referansını fail-closed doğrular. Geçici okuma kapsamı yalnız izin + Tenant + MDM-geçerli LE'dir; kullanıcı/şirket ve SKU × Warehouse yetkisi açık güvenlik borcudur. Policy/revision Mongo kaynağı bu dilimde bağlanır; evaluation kaynağı, merkezî önek/Gateway ve okuma diliminin tarih kararı açıktır.
+- [x] **Beş kalıcı yazma komutu kararı:** §3 ve §21'deki izinler, geçici MDM kapsamı, işlem-içi `c` audit ve BL-501 borcu Ali tarafından onaylandı. Bu kutu yalnız karar kaydıdır; kod/test/AC kanıtı değildir. Override, etkinleştirme, evaluation yazımı ve MRP aktarımı ayrıca kapalıdır. Gerçek secret hiçbir kaynak, fixture, log veya pack'e konmaz.
+- [x] Scenario Modeling, endpoint, Gateway ve UI iki izole çekirdeğin kapsamı dışındadır; sonraki dilimde sözleşme/ekran kararı gerekir. DataTable çıkarsa Slim/Compact ve data_mode ayrıca seçilir.
+- [x] Ali/Control Tower pack'i yalnız bu izole başlangıç kapsamında inceledi ve `ready-for-dev` kararını verdi. Bu karar AC kabulü değildir.
+
+### B — Canlı kabul ve AC kapanışı kapısı
+
+- [ ] Platform'un gerçek yetkili LegalEntity tam kümesi/dışlamaları ve pozisyon ataması iptalinden sonra erişimin kesilmesi testle kanıtlandı; MDM referans güven modeli ve SKU/Warehouse veri kapsamı kabul edildi.
+- [ ] Demand v2 producer sözleşmesi merkezce onaylanıp yayımlandı; MOD-0191 dönem/revision/status/bütünlük/invalidation tüketici kuralı ve ortak testleri kabul edildi. Demand v1 fallback yok.
+- [ ] Gerçek MOD-0173 INVENTORY availability ve MOD-0290 PRODUCT-MASTER üreticileri; üretim senaryosu kapsamdaysa gerçek MOD-0193 BOM üreticisi, birim/snapshot ve hata yollarıyla doğrulandı. Fixture bu maddeyi kapatmaz.
+- [ ] MOD-0189'a yalnız onaylı/geçerli policy revision'ı devreden handoff, idempotency ve invalidation davranışı iki taraflı sözleşme ve gerçek entegrasyonla kanıtlandı.
+- [ ] Gateway rota/izin davranışı, tenant kullanıcı ekranı, yedi dil RESX, yetkisiz yüzey, doğrudan API/data-scope ve browser smoke gerçek yol üzerinden doğrulandı.
+- [ ] Seçilen servisin canlı audit pipeline'ı başarılı ve reddedilmiş yazıları kalıcı kaydetti; görev ayrılığı ve GxP/K2 audit arızasında işlemin durması ölçüldü. Mock audit veya yalnız işaret testi kabul değildir.
+- [ ] İlgili servis/frontend/gateway build, architecture ve sözleşme testleri geçti; AC-S01–S11 gerçek kaynak gerektiren maddeleriyle kapandı. Ali/CT canlı kabulü ayrıca kaydetti.
+
+## 19. Implementation Notes
+
+Kaynaklar: WP-MVP4-planning; DCP-009; supply-chain domain-config; inventory capability report §14.8/15/21; dört OpenAPI sözleşmesi; açık MOD-0188 dalındaki pack (salt okunur). Ali MOD-0191 için ayrı geçici Diten.SafetyStockService:5069'u onayladı; DCP-009 SupplyChainService/5061'i nihai servis olarak kaydeder, MOD-0188 pack'i geçici PlanningService/5068 anlatır. MOD-0191 bugün bu iki servisten birine bağlanmaz; sonraki birleşme hedefi ayrı karardır. Main senkronuyla SupplyChainService kaynakları repoya geldi; bu, MOD-0191'in servis yerleşimini veya birleşme kararını kendiliğinden değiştirmez. PlanningService'in MOD-0188 dalındaki koduna bu çalışma bağlanmaz.
+
+Üretici kalite karşılaştırması, tasarım ilkesi düzeyindedir: [SAP IBP Inventory Optimization](https://help.sap.com/docs/SAP_INTEGRATED_BUSINESS_PLANNING/252c83bbf8184915a56d4cdd0917ef06/cdbbdf46dc8d4212b97d0255f0af93a9.html) demand/supply değişkenliği, lead time ve hizmet hedefini ayrı sürücüler olarak ele alır; [Oracle Safety Stock Planning Methods](https://docs.oracle.com/en/cloud/saas/supply-chain-and-manufacturing/25d/faspf/safety-stock-planning-methods.html) yöntem seçimi ile kullanıcı override'ını ayırır. [Oracle'ın gün kapsamı açıklaması](https://docs.oracle.com/en/cloud/saas/readiness/scm/25c/scp25c/25C-sc-planning-wn-f38227.htm) günlük ortalama × açık kapsamayı doğrular; MOD-0191'de ilk fixture dilimi için yöntem ve takvim günü seçimi Ali'nindir, Oracle'ın ürün davranışı veya varsayılanları devralınmaz. Çok kademeli optimizasyon, istatistiksel Yöntem B, hizmet seviyesi, varsayılan eşik, yuvarlama veya otomatik override kararlaştırılmış değildir.
+
+## 20. Follow-up Items
+
+**İzole geliştirme başlangıcı için:**
+
+1. Ali'nin ayrı geçici Diten.SafetyStockService:5069, MOD-0188'den bağımsız main tabanı, ilk Yöntem A fixture çekirdeği ve ikinci bellek içi revision durum çekirdeği için dar `ready-for-dev` kararları kaydedildi. Ekip sahipliği yeterlidir; Ali/Control Tower `target: TBD` istisnasını yalnız bu iki izole çekirdek için onayladı, tarih uydurulmaz. Sonraki dilimlerin tarih kararı ve birleşme hedefi açık kalır. 5069'un AGENTS.md/ports.md kalıcı kaydı merkezî sahiplerin; Gateway route'u integration-agent'ın bekleyen ayrı işidir.
+2. İlk dilimde fixture sürümü/kapsam/temel UoM/tarih ve gün bütünlüğü, pozitif açık kapsama günü, ham decimal sonuç ve hesap izi kararlaştırıldı. Fixture içi UoM tutarlılığı canlı MDM doğrulaması değildir; nihai stok/sipariş birimi yuvarlaması, hizmet hedefi, üst eşik ve haftalık Demand v2 dağıtımı sonraki ürün/entegrasyon kararlarıdır. İkinci dilimin bellek içi sürüm ve öz onay koruması, kalıcı politika yazma/override/gerçek onay için audit yolu, yetki, etkinlik/retention ve veri bütünlüğü kararlarını kapatmaz.
+
+**Canlı kabul ve AC kapanışı için:**
+
+3. Demand sahibi ve MOD-0189 tüketicisi: MOD-0191 v2'de hangi dönem/revision'ı seçecek; Published/Superseded/Invalidated geçişi, tam snapshot/checksum, olay gecikmesi ve yeniden hesaplama nasıl işleyecek?
+4. Platform/MDM sahipleri: yetkili şirket tam kümesi/dışlama/iptal, referans doğrulama güven sınırı, Warehouse–LE ve SKU kapsamı.
+5. Inventory/Product/BOM sahipleri: gerçek producer ve birim/snapshot doğrulaması; Scenario Modeling sahibi: bağımlılık sözleşmesi.
+6. Security/audit sahibi: izole başlangıç için permission/veri kapsamı ve audit tasarımını; canlı kabul için gerçek audit iletici, görev ayrılığı ve GxP/K2 arıza kanıtını tamamlasın. UI sahibi: ekran alanları ve Golden Reference kararını verip canlı kullanıcı ekranını doğrulasın. Gerçek secret hiçbir aşamada kaynak/fixture/log içine girmez.
+
+## 21. Audited Events
+
+Bütün onaylı komutlarda kim, neyi, ne zaman, hangi Tenant/LegalEntity kapsamında değiştirdiği değişmez yerel audit'e eklenir. Audit ve iş yazısı tek Mongo transaction'ındadır; audit hata verirse iş yazısı geri alınır ve kullanıcı kontrollü hata görür. Her komutun sabotaj testi gerekir. Bu AUD-001 `c` yolu **geçici**dir; Platform merkezi denetim günlüğü değildir. BL-501 merkezi ekipçe teslim edildiğinde merkezi kayıt yerel izin yanına eklenir; yerel iz silinmez. Her komut servis audit defterinde hem "c yolu — geçici" hem "BL-501 bekliyor" olarak görünür.
+
+| Planlanan komut niyeti | Olay | Nesne | Yol | Kaydedilecek değişim | Açık kapı |
+|---|---|---|---|---|---|
+| CreatePolicyDraft | safety-stock.policy-draft-created | SafetyStockPolicy | geçici `c`; BL-501 bekliyor | kapsam, aktör, zaman | aynı işlem, audit sabotajı |
+| RevisePolicyDraft | safety-stock.policy-revised | SafetyStockPolicyRevision | geçici `c`; BL-501 bekliyor | önceki/yeni revision, aktör, gerekçe | aynı işlem, audit sabotajı |
+| SubmitPolicy | safety-stock.policy-submitted | SafetyStockPolicyRevision | geçici `c`; BL-501 bekliyor | Draft → InReview, aktör | aynı işlem, audit sabotajı |
+| ApprovePolicy | safety-stock.policy-approved | SafetyStockPolicyRevision | geçici `c`; BL-501 bekliyor | InReview → Approved, bağımsız inceleyici | aynı işlem, audit sabotajı |
+| RejectPolicy | safety-stock.policy-rejected | SafetyStockPolicyRevision | geçici `c`; BL-501 bekliyor | InReview → Rejected, aktör, gerekçe | aynı işlem, audit sabotajı |
+
+Parola, token, gereksiz kişisel veri veya tam kaynak payload'ı audit metadata'sına yazılmaz. Etkinleştirme, override, evaluation yazımı ve MRP aktarımı bu dilimde yoktur.

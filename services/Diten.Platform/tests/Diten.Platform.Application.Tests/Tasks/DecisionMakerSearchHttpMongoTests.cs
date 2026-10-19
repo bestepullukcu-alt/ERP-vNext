@@ -206,7 +206,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
         await using var host = await Host.StartAsync();
         host.NameSource.Hang = true;
 
-        // BL-649: the HTTP contract this test owns is "a hanging name source surfaces as a 503, end to end" — not
+        // BL-661 (was BL-649 on the MVP-6 branch): the HTTP contract this test owns is "a hanging name source surfaces as a 503, end to end" — not
         // "the wall clock reads under N seconds". Measuring the 2 s BoundedDisplayNames.Timeout on a shared CI box
         // turned a correct product red at 4.84 s under load (green 3/3 alone). That the hang is BOUNDED — the token
         // is cancelled, the answer is incomplete — is pinned deterministically, with no wall clock, by

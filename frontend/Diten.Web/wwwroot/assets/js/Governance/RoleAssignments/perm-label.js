@@ -47,14 +47,14 @@
      * "not on the list", which is a much smaller and self-limiting set.
      */
     const ACTION_FAMILIES = [
-        { tone: 'info',      icon: 'bx-show',         words: ['read', 'view', 'list', 'search', 'preview', 'compare', 'audit', 'review', 'verify', 'validate', 'lookup'] },
-        { tone: 'primary',   icon: 'bx-plus',         words: ['create', 'instantiate', 'register', 'append', 'record', 'request', 'upload', 'attach', 'issue'] },
-        { tone: 'warning',   icon: 'bx-edit',         words: ['update', 'edit', 'manage', 'configure', 'move', 'correct', 'rebase', 'change', 'reconcile', 'apply', 'link', 'write'] },
-        { tone: 'danger',    icon: 'bx-trash',        words: ['delete', 'redact', 'invalidate', 'purge'] },
-        { tone: 'success',   icon: 'bx-check-circle', words: ['approve', 'publish', 'activate', 'reactivate', 'release', 'complete', 'confirm', 'sign', 'submit', 'start', 'renew', 'resolve', 'commit'] },
-        { tone: 'secondary', icon: 'bx-undo',         words: ['cancel', 'reject', 'suspend', 'deprecate', 'retire', 'expire', 'archive', 'revoke', 'deactivate'] },
+        { tone: 'info',      icon: 'bx-show',         words: ['read', 'view', 'list', 'search', 'preview', 'compare', 'audit', 'review', 'verify', 'validate', 'lookup', 'investigate'] },
+        { tone: 'primary',   icon: 'bx-plus',         words: ['create', 'instantiate', 'register', 'append', 'record', 'request', 'upload', 'attach', 'issue', 'capture', 'generate', 'propose'] },
+        { tone: 'warning',   icon: 'bx-edit',         words: ['update', 'edit', 'manage', 'configure', 'move', 'correct', 'rebase', 'change', 'reconcile', 'apply', 'link', 'write', 'amend', 'replace', 'transition', 'migrate'] },
+        { tone: 'danger',    icon: 'bx-trash',        words: ['delete', 'redact', 'invalidate', 'purge', 'dispose'] },
+        { tone: 'success',   icon: 'bx-check-circle', words: ['approve', 'publish', 'activate', 'reactivate', 'release', 'complete', 'confirm', 'sign', 'submit', 'start', 'renew', 'resolve', 'commit', 'decide', 'settle', 'dispatch', 'unblock'] },
+        { tone: 'secondary', icon: 'bx-undo',         words: ['cancel', 'reject', 'suspend', 'deprecate', 'retire', 'expire', 'archive', 'revoke', 'deactivate', 'withdraw', 'rollback', 'reopen', 'block', 'end'] },
         { tone: 'dark',      icon: 'bx-user-check',   words: ['assign', 'claim', 'delegate', 'allocate', 'reserve', 'share'] },
-        { tone: 'primary',   icon: 'bx-play-circle',  words: ['run', 'execute', 'retry', 'initialize', 'evaluate', 'queue'] }
+        { tone: 'primary',   icon: 'bx-play-circle',  words: ['run', 'execute', 'retry', 'initialize', 'evaluate', 'queue', 'recover'] }
     ];
 
     /*
@@ -76,7 +76,11 @@
      * The last additions (lookup, attach, issue, apply, link, write, renew, resolve, commit, deactivate, queue) are
      * WORDS, not verbs: each was reached through one live key, but every one of them generalises -- a future
      * attach-*, lookup-*, *-write or *-issue lands in the same family without a further edit. That is the line this
-     * map holds. `publishoverride` is deliberately NOT here: it reaches us as one word only because it was seeded
+     * map holds. WP-WEB-ROLE-PERMISSION-LABELS-01 (BL-508) added the nineteen words its newly translated verbs needed,
+     * by the same line: investigate reads; capture / generate / propose bring something new; amend / replace /
+     * transition / migrate change; dispose destroys; decide / settle / dispatch / unblock advance; withdraw /
+     * rollback / reopen / block / end step back; recover sets something going again.
+     * `publishoverride` is deliberately NOT here: it reaches us as one word only because it was seeded
      * as PascalCase (BL-344), and adding it would bless the misspelling instead of fixing it. It keeps the cog
      * until the seed is normalised, and then it is `publish` and needs nothing.
      */
@@ -115,6 +119,34 @@
      * shown as its own chip; everything else stays part of the verb.
      */
     const SCOPE_SUFFIXES = ['tenant-wide'];
+
+    /*
+     * WP-WEB-ROLE-PERMISSION-LABELS-01 (BL-508 (1)) — WHOLE actions that carry a reach. `read-all` is the read action
+     * across the whole tenant (ICallerScope), and it used to stand beside "Görüntüle" as one more plain English verb,
+     * "Read All": the owner granted it in place of the plain read. It now reads as the same verb with the SAME
+     * "Tüm kiracı" chip read-tenant-wide carries.
+     *
+     * A whole action, NOT an `-all` suffix: SCOPE_SUFFIXES is matched with endsWith('-' + suffix), so 'all' there
+     * would also split `run-all` (a sweep group key in the document-governance namespace, not a reach). The chip's
+     * scope code is `all`, and the bridge names it with the same ScopeLabel_TenantWide as `tenant-wide`.
+     */
+    const SCOPE_ACTIONS = { 'read-all': { action: 'read', scope: 'all' } };
+
+    /*
+     * Per-KEY precedence (BL-508, CT decision 2026-10-06 delegation): two `read-all` keys grant more than reading.
+     * crm.visit-plan.read-all also plans, applies and re-plans for another representative; crm.planned-visit.read-all
+     * widens the role's existing write permissions to the whole tenant (Auth DataSeeder descriptions). For them the
+     * chip says the verb they really grant (`manage`, its tone and glyph) and carries a hint (l10n KeyHints) that
+     * says the write reach. DISPLAY ONLY: action.code stays `read` and the assignment still posts the key.
+     */
+    const KEY_VERBS = {
+        'crm.visit-plan.read-all': 'manage',
+        'crm.planned-visit.read-all': 'manage',
+        // WP-WEB-TASK-UPDATE-HINT-01 (BL-341 step 1) — the verb stays "update"; the key is here for its HINT: 19 Platform
+        // TasksController endpoints (accept, plan, start, submit for review, return, checklist, attachments,
+        // dependencies …) all ride on this one chip. role-assignments-task-update-hint.test.js pins the count.
+        'platform.tasks.update': 'update'
+    };
 
     const humanize = (value) => String(value ?? '')
         .split(/[-._\s]+/)
@@ -197,6 +229,9 @@
 
     const splitAction = (action) => {
         const raw = normalizeAction(action);
+        if (Object.prototype.hasOwnProperty.call(SCOPE_ACTIONS, raw)) {
+            return { action: SCOPE_ACTIONS[raw].action, scope: SCOPE_ACTIONS[raw].scope };
+        }
         for (const suffix of SCOPE_SUFFIXES) {
             if (raw.endsWith('-' + suffix)) {
                 return { action: raw.slice(0, -(suffix.length + 1)), scope: suffix };
@@ -207,28 +242,43 @@
 
     /**
      * perm  { module, resource, action, key } — the catalog row, verbatim.
-     * l10n  { ActionVerbs:{code:label}, EntityNames:{CODE:label}, ScopeLabels:{code:label} } — any part may be absent.
+     * l10n  { ActionVerbs:{code:label}, EntityNames:{CODE:label}, PermEntityNames:{CODE:label}, ScopeLabels:{code:label},
+     *         KeyHints:{key:text} } — any part may be absent.
+     *
+     * Row names come from two layers: Perm.Entity.* (PermEntityNames, this screen's own names) OVER Nav.Page.*
+     * (EntityNames, the sidebar's). A code both name is said the way this screen says it — the same precedence
+     * ModuleLabel.buildMap gives Perm.Module over Nav.Module, and it is decided here, not by resource file order.
      */
+    const entityLabel = (L, code) => {
+        const own = L.PermEntityNames && (L.PermEntityNames[code] ?? L.PermEntityNames[normalize(code)]);
+        return typeof own === 'string' && own.trim().length > 0 ? own.trim() : lookup(L.EntityNames, code);
+    };
+
     const split = (perm, l10n) => {
         const L = l10n || {};
         const p = perm || {};
         const parts = splitAction(p.action);
         const code = entityCode(p.module, p.resource);
+        const key = String(p.key ?? '').trim().toLowerCase();
+        const verb = Object.prototype.hasOwnProperty.call(KEY_VERBS, key) ? KEY_VERBS[key] : null;
+        const hint = verb && L.KeyHints && typeof L.KeyHints[key] === 'string' ? L.KeyHints[key].trim() : '';
 
         return {
             entity: {
                 code,
                 // '' means "this row IS the module" — the caller supplies the module's own label there, because
                 // only the caller knows it (it comes from the nav/resx module map).
-                label: code ? lookup(L.EntityNames, code) : ''
+                label: code ? entityLabel(L, code) : ''
             },
             action: (() => {
-                const family = resolveFamily(parts.action) || UNFAMILIAR;
+                const family = resolveFamily(verb || parts.action) || UNFAMILIAR;
                 return {
                     code: parts.action,
-                    label: lookup(L.ActionVerbs, parts.action),
+                    label: lookup(L.ActionVerbs, verb || parts.action),
                     tone: family.tone,
-                    icon: family.icon
+                    icon: family.icon,
+                    // what the key grants beyond its verb, for the chip's tooltip ('' when nothing more)
+                    hint
                 };
             })(),
             scope: parts.scope
@@ -237,5 +287,5 @@
         };
     };
 
-    global.PermLabel = { split, humanize, normalize, normalizeAction, resolveFamily, ACTION_FAMILIES, ACTION_ICON_EXCEPTIONS, UNFAMILIAR, SCOPE_SUFFIXES };
+    global.PermLabel = { split, humanize, normalize, normalizeAction, resolveFamily, ACTION_FAMILIES, ACTION_ICON_EXCEPTIONS, UNFAMILIAR, SCOPE_SUFFIXES, SCOPE_ACTIONS, KEY_VERBS };
 })(typeof window !== 'undefined' ? window : globalThis);

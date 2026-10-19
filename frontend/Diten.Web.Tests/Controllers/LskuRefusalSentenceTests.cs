@@ -30,7 +30,9 @@ public sealed class LskuRefusalSentenceTests
         // S5b-FIX3: the submit-during-withdrawal sentence.
         "ErrorSubmitDuringWithdrawal",
         // MOD-0290-FU04 S3b FIX1 (R5): the stock-flag gate's sentence, its flag labels and the action list's reason.
-        "ErrorStockFlagsRequired", "StockFlagSerialControlled", "StockFlagGskuLotControlled", "SubmitNeedsStockFlags"
+        "ErrorStockFlagsRequired", "StockFlagSerialControlled", "StockFlagGskuLotControlled", "SubmitNeedsStockFlags",
+        // WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes that reach this screen as a 409.
+        "ErrorApprovalSetupIncomplete", "ErrorApprovalResubmit", "ErrorApprovalChanging", "ErrorNoEligibleApprover"
     ];
 
     [Fact]
@@ -59,6 +61,28 @@ public sealed class LskuRefusalSentenceTests
         var result = await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None);
 
         Assert.Equal("ErrorSubmitAbandoned", FirstError(result, 409));
+    }
+
+    // WP-MDM-NO-ELIGIBLE-APPROVER-01: nobody but the maker may approve (segregation of duties) — its own sentence, first.
+    [Theory]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER", "ErrorNoEligibleApprover")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED", "ErrorApprovalSetupIncomplete")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY", "ErrorApprovalSetupIncomplete")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", "ErrorApprovalResubmit")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING", "ErrorApprovalChanging")]
+    public async Task A_maker_code_refusal_is_said_in_its_own_sentence(string code, string key)
+    {
+        var controller = Controller(Conflict(code));
+        controller.ControllerContext.HttpContext.Request.ContentType = "application/x-www-form-urlencoded";
+        controller.ControllerContext.HttpContext.Request.Form = new FormCollection(new()
+        {
+            ["ExpectedVersion"] = "0",
+            ["__RequestVerificationToken"] = "x"
+        });
+
+        var result = await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None);
+
+        Assert.Equal(key, FirstError(result, 409));
     }
 
     // FIX2 item 12: a submit that ended because its DRAFT changed is not "the approval service refused" — its own sentence.

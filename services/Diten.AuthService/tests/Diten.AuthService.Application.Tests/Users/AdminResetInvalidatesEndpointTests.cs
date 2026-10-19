@@ -2357,6 +2357,15 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
         Assert.False((await documents.Find(byId).SingleAsync()).Contains(field), $"{field} is still on the document");
     }
 
+    // WP-AUTH-ADMIN-BOOTSTRAP-01 — the two start-up seed steps as AddPersistence runs them in Development: the system seed,
+    // then the account step (the seeded admin is a Development account since then).
+    private static async Task SeedDevelopmentAsync(IMongoDatabase database, Microsoft.Extensions.Logging.ILogger? logger = null)
+    {
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, logger);
+        await Diten.AuthService.Persistence.Seed.AdminAccountSeed.RunAsync(
+            database, new Diten.AuthService.Persistence.Seed.AdminAccountSeed.Settings(Development: true, PlatformAdmin: true), logger);
+    }
+
     // ── FIX8 item 2: the seeder does not switch a marked admin back on ──────────────────────────────────────────────
 
     [Fact]
@@ -2366,14 +2375,14 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
         const string seedDatabase = "bl529_fix8_seed";
         await _host.Database.Client.DropDatabaseAsync(seedDatabase);
         var database = _host.Database.Client.GetDatabase(seedDatabase);
-        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+        await SeedDevelopmentAsync(database);
         var users = database.GetCollection<User>("users");
         var admin = await users.Find(u => u.Email == "admin@diten.com").SingleAsync();
         Assert.True(admin.IsActive); // non-vacuity: seeded on
         await users.UpdateOneAsync(u => u.Id == admin.Id, Builders<User>.Update
             .Set(u => u.IsActive, false).Set(u => u.DeactivatedByAdministrator, true));
 
-        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+        await SeedDevelopmentAsync(database);
 
         var after = await users.Find(u => u.Id == admin.Id).SingleAsync();
         Assert.False(after.IsActive);
@@ -2829,7 +2838,7 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
         var before = await raw.Find(ById(adminId)).SingleAsync();
         var logger = new WarningCapture();
 
-        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: logger, beforeSeedSteps: null);
+        await SeedDevelopmentAsync(database, logger);
 
         Assert.Equal(before, await raw.Find(ById(adminId)).SingleAsync());
         Assert.Contains(logger.Warnings, w => w.Contains("seeded admin changed", StringComparison.Ordinal));
@@ -2896,7 +2905,7 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
         const string seedDatabase = "bl529_fix9_seed";
         await _host.Database.Client.DropDatabaseAsync(seedDatabase);
         var database = _host.Database.Client.GetDatabase(seedDatabase);
-        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+        await SeedDevelopmentAsync(database);
         var admin = await database.GetCollection<User>("users").Find(u => u.Email == "admin@diten.com").SingleAsync();
         return (database, admin.Id);
     }
@@ -2916,7 +2925,7 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
             .Unset(nameof(User.PlatformActorType))
             .Set(nameof(User.EmailConfirmed), false));
 
-        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+        await SeedDevelopmentAsync(database);
 
         var document = await raw.Find(ById(adminId)).SingleAsync();
         Assert.Equal(BsonType.Int64, document[nameof(User.FailedLoginAttempts)].BsonType);
@@ -2935,7 +2944,7 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
             .Set(nameof(User.IsActive), false).Set(nameof(User.DeactivatedByAdministrator), true)
             .Unset(nameof(User.PlatformActorType)).Set(nameof(User.EmailConfirmed), false));
 
-        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+        await SeedDevelopmentAsync(database);
 
         var admin = await database.GetCollection<User>("users").Find(u => u.Id == adminId).SingleAsync();
         Assert.False(admin.IsActive);

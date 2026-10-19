@@ -154,6 +154,10 @@ echo "[phase1] pack nav keys"
 python3 -B scripts/check_pack_nav_keys.py --self-test
 python3 -B scripts/check_pack_nav_keys.py
 
+# CT-APR-01: the version-bound pack approval's own self-test (a throw-away git repository; standard library and git only)
+echo "[phase1] pack approval self-test"
+python3 -B scripts/pack_approval.py --self-test
+
 echo "[phase1] build gateway"
 dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
 
@@ -169,6 +173,10 @@ if [ -f "services/Diten.MdmService/Diten.MdmService.sln" ]; then
 else
   echo "[phase1] skip mdm: services/Diten.MdmService/Diten.MdmService.sln not found"
 fi
+
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Calculation.Tests/Diten.SafetyStockService.Calculation.Tests.csproj -c Debug
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.PolicyState.Tests/Diten.SafetyStockService.PolicyState.Tests.csproj -c Debug
+dotnet build services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Read.Tests/Diten.SafetyStockService.Read.Tests.csproj -c Debug
 
 # CT-FIX-03 (R0, Codex): the Control Tower CLI regression set (scripts/tests/test_ct_cli_regression.py) builds a
 # synthetic Blueprint workbook and needs openpyxl. It is installed from the repository's own pins

@@ -18,6 +18,10 @@ public sealed class CreateGlobalProductDraftValidator : AbstractValidator<Create
             RuleFor(x => x.Request.ReservationId).NotEmpty();
             RuleFor(x => x.Request.ExpectedReservationVersion).GreaterThanOrEqualTo(0);
             RuleFor(x => x.Request.IdempotencyKey).NotEmpty().MaximumLength(128);
+            RuleFor(x => x.Request.BrandId)
+                .Must(brandId => brandId != Guid.Empty)
+                .When(x => x.Request.BrandId.HasValue)
+                .WithMessage("GLOBAL_PRODUCT_BRAND_ID_INVALID");
             RuleFor(x => x.Request.UnmappedFields)
                 .Must(fields => fields is null || !Contains(fields, "TenantId"))
                 .WithMessage("TENANT_ID_CLIENT_INPUT_FORBIDDEN");

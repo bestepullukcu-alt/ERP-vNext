@@ -9,7 +9,7 @@ owner_domain: platform-shared-services
 owner: enterprise-architect / platform-team
 branch: feature/governance/blueprint-module-id-reconciliation
 created: 2026-06-04
-canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx#Blueprint_Data"
+canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx#Blueprint_Data"
 inputs:
   - "docs/records/audits/2026-06/blueprint-module-id-reconciliation-2026-06-03.md"
 status_note: "Promoted draft → approved by AG-STEP-002 after read-only verification (verify_module_id.py --check-all exit 0, 0 hard violations; deprecated-alias chains resolve; CAND-CAP-0001…0005 recorded)."
@@ -153,6 +153,8 @@ the canonical `MOD-0352 — Enterprise Strategy Management`. `CAND-CAP-0007-FU01
 temporary candidate pending a separate exact FU allocation.
 
 **Master 8.7 (applied 2026-10-19).** `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx` (official Master SHA-256 `917373c949b8944031b9980a80c0235b8d406a44d8a4a6c96ed686abe9a7606e`, equal to its change note; the repository copy replaces the CEO's personal name with the role in 201 cells outside `Blueprint_Data` / `SoR_Map` — owner decision, public repository — SHA-256 `b71853e36cfd9c01d2e6c12a637217c8d30c5e487ddff7a4a2adeda6f7853046`) replaces 8.1 as the canonical source; 8.1 stays as the historical predecessor. It carries the Master 8.2 reconciliation of main (`Main_Reconciliation_v8_2`) and the `Legacy_ID_Migration_Map`; the mapping is applied in the registry and in `blueprint-master-plan-reconciliation.md` § Master 8.7 resolution. It also adds the **Master-first rule** (CEO, 2026-10-16): no new `CAND-CAP` identity; a missing capability is a Module Change Request in the Master. Correction measured on 2026-10-19: `verify_module_id.py` records the workbook's SHA-256 in its discovery report but does **not** compare it with a pinned value before opening the workbook — the sentence above about enforcement did not hold for 8.1 either.
+
+**Master 8.8 (applied 2026-10-19).** An integrity release replaces 8.7 as the canonical source (official SHA-256 `7a48092849ff4962ba53d69ff2dee338a49b529b429e36c06561046db9b8fcef`; repository copy without the CEO's personal name `edbcb725848f7fe5ee3f143eee3285fd798d9204b4a013c27f704d69fc1a5939`). `Blueprint_Data` and `SoR_Map` are unchanged; the four open workbook correction requests (EA-BP-001/002/003/005) are resolved and EA-BP-006 is closed by the `MOD-0030` registry row. ADR-8.8-001 (MOD-0009-FU01/02/03, option A recommended) stays open in BL-655.
 
 ## Prevention gate design (transition rules)
 
