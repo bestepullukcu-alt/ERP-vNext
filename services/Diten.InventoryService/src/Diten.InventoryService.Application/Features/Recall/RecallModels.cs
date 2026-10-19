@@ -6,9 +6,12 @@ namespace Diten.InventoryService.Application.Features.Recall;
 // RECALL-BUNDLE v1.0.0 wire shapes served by R1. Null members are omitted on the wire (Program.cs JSON options). Times are UTC
 // "yyyy-MM-ddTHH:mm:ssZ", dates "yyyy-MM-dd"; quantities and percents are JSON numbers.
 
-public sealed record RecallUserRefDto(string UserId);
+/// <summary>RECALL 1.8.0 (WP-MVP1-NAMES1, additive, optional): <c>Name</c> = the name at the time of the action for the person who did it
+/// (<see cref="Services.RecallActorNames"/>); null — omitted — when not recorded and for an assigned person (DrillPlan.owner).</summary>
+public sealed record RecallUserRefDto(string UserId, string? Name = null);
 
-public sealed record RecallUserAtDto(string UserId, string AtUtc);
+/// <summary>RECALL 1.8.0: as <see cref="RecallUserRefDto"/>, with the time of the action.</summary>
+public sealed record RecallUserAtDto(string UserId, string AtUtc, string? Name = null);
 
 public sealed record RecallSettingsDto(
     string LegalEntityId,

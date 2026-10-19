@@ -25,6 +25,9 @@ public static class RecallServiceCollectionExtensions
         services.AddScoped<RecallSupport>();
         services.AddScoped<RecallReads>();
         services.AddScoped<IRecallRepository, RecallRepository>();
+        services.AddScoped<IRecallActorRecords, RecallActorRecords>(); // WP-MVP1-NAMES1: who did an action (events / audit rows), batch reads
+        services.AddScoped<RecallActorNames>();
+        services.AddTransient(typeof(MediatR.IPipelineBehavior<,>), typeof(RecallPersonNamesBehavior<,>)); // RECALL 1.8.0: every recall answer named in one place
         // R4 — MOD-0022 (CT decision F3-A: getSignature + the local rc-v1 / rs-v1 hash from the provider's own function); FailClosedRecallSignature
         // (R1) stays as the fallback type. Registration of the five recall actions rides the shared hosted service (one call per module).
         services.AddScoped<IRecallSignature, ESignRecallSignature>();
