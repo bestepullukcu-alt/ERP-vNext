@@ -16,13 +16,18 @@ public sealed record LeadTimeResult(LeadTimeStatus Status, LeadTimeReceipt? Rece
 
 public interface ILeadTimeAuthority
 {
-    Task<bool> CanExecuteAsync(LeadTimeCommand command, string permission, CancellationToken cancellationToken);
+    Task<LeadTimeAuthorityResult> CanExecuteAsync(LeadTimeCommand command, string permission, CancellationToken cancellationToken);
 }
 
-public sealed class UnavailableLeadTimeAuthority : ILeadTimeAuthority
+public enum LeadTimeAuthorityResult { Allowed, Forbidden, Unavailable }
+
+public enum LegalEntityReferenceResult { Active, NotFound, Unavailable }
+
+public interface ILegalEntityScopeReader
 {
-    public Task<bool> CanExecuteAsync(LeadTimeCommand command, string permission, CancellationToken cancellationToken) =>
-        Task.FromResult(false);
+    Task<LegalEntityReferenceResult> ValidateAsync(Guid tenantId, Guid legalEntityId,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<Guid>?> ListActiveAsync(Guid tenantId, CancellationToken cancellationToken);
 }
 
 public interface ILeadTimeMutationStore
@@ -49,9 +54,12 @@ public sealed class LeadTimeCommandHandler(ILeadTimeAuthority authority, ILeadTi
         };
         try
         {
-            return await authority.CanExecuteAsync(command, permission, cancellationToken)
-                ? await store.ExecuteAsync(command, cancellationToken)
-                : new(LeadTimeStatus.Forbidden);
+            return await authority.CanExecuteAsync(command, permission, cancellationToken) switch
+            {
+                LeadTimeAuthorityResult.Allowed => await store.ExecuteAsync(command, cancellationToken),
+                LeadTimeAuthorityResult.Forbidden => new(LeadTimeStatus.Forbidden),
+                _ => new(LeadTimeStatus.Unavailable)
+            };
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

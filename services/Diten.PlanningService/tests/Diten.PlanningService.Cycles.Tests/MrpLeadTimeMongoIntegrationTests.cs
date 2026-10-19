@@ -52,11 +52,45 @@ public sealed class MrpLeadTimeMongoIntegrationTests
     [Fact]
     public async Task ProductionDefaultAuthority_DeniesWithoutTouchingStore()
     {
-        var handler = new LeadTimeCommandHandler(new UnavailableLeadTimeAuthority(), new NeverStore());
+        var handler = new LeadTimeCommandHandler(new DenyingAuthority(), new NeverStore());
         var command = Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
         Assert.Equal(LeadTimeStatus.Forbidden, (await handler.HandleAsync(command)).Status);
         Assert.Equal(LeadTimeStatus.Invalid,
             (await handler.HandleAsync(command with { Operation = (LeadTimeOperation)999 })).Status);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task ApprovedLeadTimeReader_RequiresApprovedRevisionAndMatchingScope()
+    {
+        var (context, handler) = Open();
+        var tenant = Guid.NewGuid();
+        var company = Guid.NewGuid();
+        var sku = Guid.NewGuid();
+        var warehouse = Guid.NewGuid();
+        var seed = Create(tenant, company, sku, warehouse, Guid.NewGuid());
+        var reader = new MrpApprovedLeadTimeReader(context);
+
+        var created = await handler.HandleAsync(seed);
+        Assert.Equal(LeadTimeStatus.Created, created.Status);
+        Assert.Null(await reader.ReadAsync(tenant, company, sku, warehouse,
+            From, From.AddDays(6), CancellationToken.None));
+
+        var submitted = await handler.HandleAsync(Next(seed, created.Receipt!,
+            LeadTimeOperation.Submit, seed.ActorId));
+        Assert.Equal(LeadTimeStatus.Updated, submitted.Status);
+        var approved = await handler.HandleAsync(Next(seed, submitted.Receipt!,
+            LeadTimeOperation.Approve, Guid.NewGuid()));
+        Assert.Equal(LeadTimeStatus.Updated, approved.Status);
+
+        var found = await reader.ReadAsync(tenant, company, sku, warehouse,
+            From, From.AddDays(363), CancellationToken.None);
+        Assert.NotNull(found);
+        Assert.Equal(created.Receipt!.RevisionId.ToString("D"), found.RevisionId);
+        Assert.Equal(9, found.Days);
+        Assert.Null(await reader.ReadAsync(tenant, Guid.NewGuid(), sku, warehouse,
+            From, From.AddDays(363), CancellationToken.None));
+        Assert.Null(await reader.ReadAsync(tenant, company, sku, Guid.NewGuid(),
+            From, From.AddDays(363), CancellationToken.None));
     }
 
     [ManualDraftMongoFact]
@@ -150,6 +184,27 @@ public sealed class MrpLeadTimeMongoIntegrationTests
     }
 
     [ManualDraftMongoFact]
+    public async Task AuditWrittenThenFailure_RollsBackPolicyAuditAndReceipt()
+    {
+        var (context, normal) = Open();
+        var command = Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            Guid.NewGuid(), Guid.NewGuid());
+        var failing = new LeadTimeCommandHandler(new FixtureAuthority(),
+            new LeadTimeMongoStore(context, new WriteThenFailAudit(context)));
+
+        Assert.Equal(LeadTimeStatus.Unavailable, (await failing.HandleAsync(command)).Status);
+        var tenant = command.TenantId.ToString("D");
+        Assert.Equal(0, await context.Policies.CountDocumentsAsync(x => x.TenantId == tenant));
+        Assert.Equal(0, await context.Audit.CountDocumentsAsync(x => x.TenantId == tenant));
+        Assert.Equal(0, await context.Receipts.CountDocumentsAsync(x => x.TenantId == tenant));
+
+        Assert.Equal(LeadTimeStatus.Created, (await normal.HandleAsync(command)).Status);
+        Assert.Equal(1, await context.Policies.CountDocumentsAsync(x => x.TenantId == tenant));
+        Assert.Equal(1, await context.Audit.CountDocumentsAsync(x => x.TenantId == tenant));
+        Assert.Equal(1, await context.Receipts.CountDocumentsAsync(x => x.TenantId == tenant));
+    }
+
+    [ManualDraftMongoFact]
     public async Task DifferentTenantCannotReadOrMutateAnotherPolicy()
     {
         var (context, handler) = Open();
@@ -205,10 +260,27 @@ public sealed class MrpLeadTimeMongoIntegrationTests
 
     private sealed class FixtureAuthority : ILeadTimeAuthority
     {
-        public Task<bool> CanExecuteAsync(LeadTimeCommand command, string permission, CancellationToken cancellationToken) =>
+        public Task<LeadTimeAuthorityResult> CanExecuteAsync(LeadTimeCommand command, string permission, CancellationToken cancellationToken) =>
             Task.FromResult(command.ActorId != Guid.Empty && command.TenantId != Guid.Empty &&
                 command.LegalEntityId != Guid.Empty && command.SkuId != Guid.Empty &&
-                command.WarehouseId != Guid.Empty && permission.StartsWith("mrp.lead-times.", StringComparison.Ordinal));
+                command.WarehouseId != Guid.Empty && permission.StartsWith("mrp.lead-times.", StringComparison.Ordinal)
+                ? LeadTimeAuthorityResult.Allowed : LeadTimeAuthorityResult.Forbidden);
+    }
+
+    private sealed class DenyingAuthority : ILeadTimeAuthority
+    {
+        public Task<LeadTimeAuthorityResult> CanExecuteAsync(LeadTimeCommand command, string permission,
+            CancellationToken cancellationToken) => Task.FromResult(LeadTimeAuthorityResult.Forbidden);
+    }
+
+    private sealed class WriteThenFailAudit(LeadTimeMongoContext context) : ILeadTimeAuditAppender
+    {
+        public async Task AppendAsync(MongoDB.Driver.IClientSessionHandle session,
+            LeadTimeAuditDocument audit, CancellationToken cancellationToken)
+        {
+            await context.Audit.InsertOneAsync(session, audit, cancellationToken: cancellationToken);
+            throw new InvalidOperationException("Injected failure after the audit insert.");
+        }
     }
 
     private sealed class FailingAudit : ILeadTimeAuditAppender

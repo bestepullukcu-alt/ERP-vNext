@@ -16,11 +16,11 @@ target: TBD
 
 # MOD-0189 — MRP & Replenishment
 
-> DCP-002 kimlik kontrolü Blueprint 8.1 `Blueprint_Data` ve registry'de `MOD-0189 / MRP & Replenishment` için geçti. `ready-for-dev` yalnız §18'deki izole dilim içindir; canlı tüketim, dışa aktarım, rota ve kullanıcı ucu izni değildir. MVP-4 kapsamı MOD-0188, MOD-0189 ve MOD-0191'dir; MOD-0190/0192 MVP-6'ya aittir.
+> DCP-002 kimlik kontrolü Blueprint 8.1 `Blueprint_Data` ve registry'de `MOD-0189 / MRP & Replenishment` için geçti. `ready-for-dev` §18'deki izole dilimi ve PR #160 icin onayli canli MDM/Published Demand/Inventory takip dilimini kapsar; tam modul kabulunu, dis aktarimi veya Gateway/UI isini kapsamaz. MVP-4 kapsamı MOD-0188, MOD-0189 ve MOD-0191'dir; MOD-0190/0192 MVP-6'ya aittir.
 
 ## 1. Module Summary
 
-Ali'nin servis kararı `Diten.PlanningService` (5068); ayrı servis açılmaz. MOD-0188 PlanningService main'dedir. Yalnız §18'deki izole dilim açılmıştır; canlı kaynaklar ve tam modül kabulü açık kalır.
+Ali'nin servis kararı `Diten.PlanningService` (5068); ayrı servis açılmaz. MOD-0188 PlanningService main'dedir. §18'deki onayli takip diliminde canli MDM, Published Demand ve Inventory okumalari acilir; tam modul kabulu acik kalir.
 
 MRP, onaylı talebi stok ve doğrulanmış tedarik girdilerine karşı netleyerek açıklanabilir net ihtiyaç ve ikmal önerisi üretir. Hedef, `MRP Monitor`, istisna kuyruğu ve kanıt paketidir. İlk sürüm SKU × Warehouse × ISO haftası ve lot-for-lot hesabıdır; MOQ/koli yuvarlaması ve sipariş tetikleyicisi açık kalır.
 
@@ -44,7 +44,7 @@ MOD-0189 `MRPRun`, `NetRequirement`, `ReplenishmentProposal` ve MRP istisnaları
 
 ## 5. Repo Scope
 
-Bu dar dilimin yazma kapsamı bu pack, main'e merge edilmiş `services/Diten.PlanningService/` içindeki yalnız MOD-0189'a ait `Features/Mrp` kodu ve odaklı testleri, `DemandPlanningServiceCollectionExtensions.cs` içindeki yalnız MOD-0189 bağımlılık kayıtları, kendi servisinin audit defterindeki MOD-0189 satırları ve `tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs` içindeki yalnız MOD-0189 c-yolu izi sabitlemesidir. Servis portu 5068'dir. MOD-0188 iç tipleri geliştirme bağımlılığı olamaz. HTTP/UI, Gateway ve merkezî contract değişiklikleri ayrı sahiplik ve onay gerektirir.
+Bu dilimin yazma kapsamı bu pack, main'e merge edilmiş `services/Diten.PlanningService/` içindeki MOD-0189 `Features/Mrp` kodu ve testleri, PlanningService API bagimlilik/izin/manifest kayitlarindaki yalniz MOD-0189 satirlari, kendi servisinin audit defterindeki MOD-0189 satirlari ve `tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs` icindeki yalniz MOD-0189 c-yolu izi sabitlemesidir. Servis portu 5068'dir. MOD-0188'in mevcut Published okuma tipleri degistirilmez; ayni servis icinde butunlugu dogrulanmis snapshot okumasindan yararlanilir. Gateway, UI ve merkezî contract degisiklikleri ayri sahiplik ve onay gerektirir.
 
 ## 6. Protected Paths
 
@@ -54,7 +54,7 @@ Bu dar dilimin yazma kapsamı bu pack, main'e merge edilmiş `services/Diten.Pla
 
 | Girdi / sahip | Bugünkü sözleşme kanıtı | MRP için eksik karar veya sınır |
 |---|---|---|
-| Talep / MOD-0188 | PlanningService main'de; owned Demand v2 revision/status sözleşmesi DRAFT. Demand v1 FROZEN ama bu akışın girdisi değil. | Yalnız onaylanıp Published olmuş v2 revision kullanılır. DRAFT'a karşı Prism taklidi izole geliştirme içindir; v2 dondurulmadan canlı tüketim yok, v1'e sessiz düşüş yok. Dört yetkili durum kontrolü, snapshot bütünlüğü ve `Invalidated` uzlaştırması açık. |
+| Talep / MOD-0188 | PlanningService main'de; owned Demand v2 revision/status sözleşmesi DRAFT. Demand v1 FROZEN ama bu akışın girdisi değil. | Takip dilimi ayni servis icindeki butunlugu dogrulanmis guncel Published snapshot'i okur; v1'e sessiz dusus yoktur. DRAFT v2'nin dis servis tuketimi dondurulana kadar kapali; dort yetkili durum kontrolu ve `Invalidated` uzlastirmasi tam modul icin acik. |
 | Stok / MOD-0173 | `inventory-bundle.openapi.yaml` v1.2.1 FROZEN, `GET /availability`; `available`, `reserved`, `byStatus`, `baseUomId`, `asOf`. | Anlık görünüm gelecekteki planlanmış giriş veya tarihsel stok yokluğu kanıtı değildir. Kova/asOf tutarlılığı ve kalite/bloke stok kuralı kararlaştırılmalı. |
 | Ürün / MOD-0290 | `product-master-bundle.v1.0.openapi.yaml` FROZEN; v1.1 dosyası DRAFT. | Item/SKU ve temel UoM dönüşümü yalnız onaylı sürümden; taslak alanlara canlı bağımlılık yok. |
 | Açık PO / MOD-0141 | Main ProcurementService `requisition-po.openapi.yaml` v1.1.0 FROZEN list/get PO; `poId`, `poLineId`, durum, satır miktarı ve UoM. `needBy` yalnız requisition satırında; runtime `PoLine` da teslim tarihi veya açık bakiye tutmaz. | Üreticiden sürümlü açık satır görünümü (kalan miktar, beklenen teslim tarihi, asOf) istenir. Tüketicide `PO - GRN` hesaplanmaz. Görünüm gelene kadar açık sipariş terimi uygulanmaz; her plan görünür `DEGRADED: açık siparişler hesaba katılmadı` işareti taşır. |
@@ -117,7 +117,7 @@ kanıtı değildir; Platform `yetkili şirketlerim` bağı merkezi ekip gelene k
 
 ## 15. Gateway / API Routing Decision
 
-Servis `Diten.PlanningService`, port 5068 olarak kararlaştırıldı; yeni servis açılmaz. `PLAN-MRP-BUNDLE` producer sözleşmesi, kesin endpoint/method matrisi, Gateway rotası ve merkezî kayıt ayrı review/freeze gerektirir. Tüketici FROZEN sözleşmelere ve Demand v2 DRAFT'a karşı Prism taklidiyle yalnız §18'deki izole kapsamda geliştirilebilir; canlı çapraz servis çağrısı bu pack ile açılmaz.
+Servis `Diten.PlanningService`, port 5068 olarak kararlaştırıldı; yeni servis açılmaz. `PLAN-MRP-BUNDLE` producer sözleşmesi, Gateway rotası ve merkezî kayıt ayrı review/freeze gerektirir. PR #160 takip diliminde servis portunda dogrudan HTTP ile MDM aktif sirket ve Inventory availability okunur; Demand ayni servisin dogrulanmis Published snapshot'idir. Demand v2 DRAFT dis tuketimi ve MOD-0141 aktarimi acilmaz.
 
 ## 16. Acceptance Criteria
 
@@ -158,9 +158,13 @@ Onaylı dar dilim: test verisi / Prism taklidiyle SKU × Warehouse × ISO haftas
 fazla stok devri, lot-for-lot, açık PO olmadan görünür DEGRADED hesap ve öneri;
 ayrıca tarihli/sürümlü SKU × Warehouse lead time parametresinin planlamacı tarafından
 hazırlanması, bağımsız onayı ve işlem-içi audit ile kalıcı yazımı. Lead time komutlarının
-izinleri §14'te onaylandı. Bunun dışında kalıcı MRPRun/öneri yazımı, HTTP/UI,
-canlı Demand v2/PO/Inventory/BOM tüketimi ve MOD-0141'e otomatik ya da gerekçeli manuel
+izinleri §14'te onaylandı. Bunun dışında kalıcı MRPRun/öneri yazımı, UI,
+canlı Demand v2/PO/BOM tüketimi ve MOD-0141'e otomatik ya da gerekçeli manuel
 aktarım kapalıdır. Açık PO üretici sözleşmesi, canlı kaynaklar ve tam modül kabulü ayrı kapıdır.
+
+Ali'nin PR #160 Request Changes karariyla acilan takip dilimi: lead-time komutlari icin gercek JWT izinleri ve tek `ILegalEntityScopeReader` arkasinda MDM aktif sirket listesi/`lookup-validation` (MDM kesintisinde 503); kullanici-sirket atama yetkisi acik borctur. MRP hesabi ayni PlanningService'teki yalniz `Published`, butunlugu dogrulanmis Demand revision satirlarini ve InventoryService'in canli `availability` yanitini tuketir; herhangi biri okunamaz veya kapsam/birim uyusmazsa kapali hata verir. Acik PO yoktur ve her basarili hesap gorunur `DEGRADED` kalir. Test verisi yalniz testtedir. Gercek Mongo + MDM + Inventory HTTP kaniti, audit rollback testi ve main karsilastirmali test kapisi gerekir. Bu ek, tum modulu veya Demand v2 sozlesmesini dondurmaz; MOD-0141 aktarimi, BL-501 ve ekranlar acik kalir.
+
+Ali karari: MOD-0191'in bugunku okuma sozlesmesi onayli safety-stock miktari sunmadigindan bu etki hesapta kullanilmaz; dogrulanmis sifir gibi sunulmaz. Basarili her hesap iki ayri gorunur neden tasir: acik PO hesaba katilmadi ve onayli safety-stock hesaba katilmadi. Yetkili miktar baglanincaya kadar tam netting kabulu aciktir.
 
 ## 19. Implementation Notes
 
