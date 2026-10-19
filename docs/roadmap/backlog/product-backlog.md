@@ -10194,6 +10194,18 @@ ve GSKU aynı kuralı paylaşır; Market tüketicisi (74355e70-…) ile karşıl
 
 ---
 
+### BL-654
+
+**Platform yöneticileri için iki adımlı giriş (MFA) ve platform girişinde hesap kilitleme yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: CT kapsam ölçümü (2026-10-15) · KAYIT: 2026-10-19 · ERTELEME: sahip kararı 2026-10-19 ("backloga alalım, sonra yapalım")
+
+Ölçüldü (origin/main 3912d568b): kiracı kullanıcılarında e-posta kodlu ikinci adım var (`MfaChallenge`, `MfaChallengeService`, `/account/login/mfa`); platform girişinde (`PlatformLoginCommandHandler`) ikinci adım YOK ve başarısız denemeler sayılmıyor (hesap kilitleme yok; yalnız istek sınırı, BL-626). Taslak paket: CAND-CAP-0003-FU02 (2026-05, güncellenmeli). Karar taslağı (9 madde, öneriler): CT scratchpad `mfa-platform-admin-owner-decisions.md` — öneri: ilk sürüm e-posta kodu (hazır kod), bütün platform hesaplarına zorunlu, platform girişine hesap kilitleme; TOTP sonraki dilim. SAP / Oracle'da yönetici MFA'sı zorunlu tutulur.
+**Ne zaman:** canlıya ikinci bir platform yöneticisi (ya da partner yöneticisi) açılmadan ÖNCE.
+**Gelecek regresyon riski:** 🔴 (o koşul gerçekleşirse); bugün 🟡 — canlıda tek platform yöneticisi sahip.
+
+---
+
 ### BL-649
 
 **Aralıklı Auth testleri: `ProductIdentityEntitlementReconciliationMongoTests` sınıfında her koşuda FARKLI bir senaryo `QUIESCENCE_DRIFT` ile düşüyor (1/2817)**
@@ -10225,7 +10237,7 @@ Yönetici tohumu işinden önce de vardı; o iş hesap tohumlarını kapattı, b
 
 **service-tests iş akışının ilk tam CI koşusu (PR #144): kırmızıların çoğu CI ortamı — Mongo yolu değişkeni, RabbitMQ, Prism, Linux yolları**
 
-DURUM: AÇIK · SAHİP: CT (CI) · BULAN: PR #144 CI (2026-10-14, b7ba78de7) · KAYIT: 2026-10-14
+DURUM: KAPANDI (PR #148, WP-CI-SERVICE-TESTS-05, main'de) · SAHİP: CT (CI) · BULAN: PR #144 CI (2026-10-14, b7ba78de7) · KAYIT: 2026-10-14
 
 Ölçüldü (GitHub check-runs + iş günlükleri): 24 işin 16'sı yeşil.
 - platform-app 337 kırmızı: 325'i `AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED` — CI `DITEN_FU02_MONGOD_PATH` (ya da replika ayarı) vermiyor; 2 `DirectoryNotFound`
