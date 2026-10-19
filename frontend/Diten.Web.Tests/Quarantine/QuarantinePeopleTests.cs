@@ -84,12 +84,20 @@ public sealed class QuarantinePeopleTests
     public async Task The_hold_page_data_carries_names_and_an_unresolved_person_stays_an_id()
     {
         var gateway = People();
+        // FU-WEB-CONTRACT-FAKES: a whole HoldDetail and a whole Settings of quarantine.openapi.yaml (the number is KRN-YYYY-NNNN)
         gateway.On($"/api/quarantine/holds/{HoldId}", 200, $$"""
-            { "holdId": "{{HoldId}}", "holdNumber": "QH-2026-0001", "createdBy": { "userId": "{{Named}}" },
+            { "holdId": "{{HoldId}}", "holdNumber": "KRN-2026-0001", "legalEntityId": "eeeeeeee-5555-4555-8555-000000000005",
+              "item": { "itemId": "eeeeeeee-6666-4666-8666-000000000006", "skuId": "eeeeeeee-7777-4777-8777-000000000007", "skuLevel": "Lsku" },
+              "warehouse": { "id": "eeeeeeee-8888-4888-8888-000000000008" }, "location": { "id": "eeeeeeee-9999-4999-8999-000000000009" },
+              "stockStatus": "QUARANTINE", "quantity": 5, "baseUom": { "id": "EA" }, "source": "Manual", "enteredAtUtc": "2026-10-09T10:00:00Z",
+              "createdBy": { "userId": "{{Named}}" }, "reviewState": "InReview", "status": "Open", "waitDays": 1, "targetDays": 7, "late": false, "version": 2,
+              "attachments": [], "movements": [], "decisions": [],
               "history": [ { "atUtc": "2026-10-09T10:00:00Z", "action": "Quarantined", "by": { "userId": "{{Named}}" } },
                            { "atUtc": "2026-10-09T11:00:00Z", "action": "ReviewStarted", "by": { "userId": "{{Missing}}" } } ] }
             """);
-        gateway.On("/api/quarantine/settings", 200, "{}");
+        gateway.On("/api/quarantine/settings", 200, """
+            { "waitTargetDays": 7, "fourEyes": false, "approverCandidates": [], "sampleLocations": {}, "lotReleaseRequiresApproval": false, "reconcileAfterSeconds": 300, "version": 1 }
+            """);
 
         var result = await Controller(gateway).HoldData(HoldId, CancellationToken.None);
         var hold = Body(result).GetProperty("hold");
@@ -204,7 +212,7 @@ public sealed class QuarantinePeopleTests
 
         public List<(string Path, string? Authorization)> Requests { get; } = [];
 
-        public void On(string path, int status, string body) => _routes.Add((path, status, body));
+        public void On(string path, int status, string body) { Contracts.ContractRoutes.Require(path, status, body); _routes.Add((path, status, body)); } // FU-WEB-CONTRACT-FAKES
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

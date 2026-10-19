@@ -684,4 +684,12 @@
   <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>Sello del alcance aprobado (firmado) {0}</value></data>
   <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>El resumen actual del alcance difiere del último sello: el alcance cambió después de sellarse.</value></data>
   <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>No hay clientes en el alcance; una devolución solo puede vincularse a un cliente del alcance aprobado. Los clientes proceden de los envíos de venta.</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>Revisión</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Liberación</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Autoría</value></data>
+  <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>Responsable del plan</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>Buscar una persona por nombre</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>Ningún usuario activo coincide con este nombre.</value></data>
 </root>

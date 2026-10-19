@@ -440,4 +440,16 @@
   <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Closed</value></data>
   <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Sample retained</value></data>
   <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>All</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Quarantine stock</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>The chosen available stock moves to QUARANTINE and waits for a decision in the quarantine queue.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Continue</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>Quarantine this stock?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Quarantine record opened: {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Help</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Quarantines hand-picked available stock for a quality decision (return, suspect product, complaint).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Quality assurance and warehouse leads.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Choose the stock</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Search the lot, pick its available row and the quantity; the quantity cannot exceed the row's stock.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Confirm with a reason</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>The confirmation asks for a reason of at least 10 characters; the record then waits for a decision in the queue.</value></data>
 </root>

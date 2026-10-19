@@ -440,4 +440,16 @@
   <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
   <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Numune saklandı</value></data>
   <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>Tümü</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Stoğu karantinaya al</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>Seçilen kullanılabilir stok KARANTİNA durumuna geçer ve karantina kuyruğunda karar bekler.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Devam</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>Bu stok karantinaya alınsın mı?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Karantina kaydı açıldı: {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Yardım</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Elle seçilen kullanılabilir stoğu bir kalite kararı için karantinaya alır (iade, şüpheli ürün, şikâyet).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Kalite güvence ve depo sorumluları.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Stoğu seçin</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Lotu arayın, kullanılabilir satırı ve miktarı seçin; miktar satırdaki stoğu aşamaz.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Gerekçeyle onaylayın</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>Onay penceresinde en az 10 karakterlik gerekçe zorunludur; kayıt ardından kuyrukta karar bekler.</value></data>
 </root>

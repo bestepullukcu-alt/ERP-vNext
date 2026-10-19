@@ -1129,6 +1129,11 @@ adları), `d8d6c13fb` owner step MOD-0176 (kanıt), `da6bc370b` owner step MOD-0
 - **CT'ye:** O-LIVE2-1 (zh / ar notu PDF'te seçilen dilde çizilemiyor), O-LIVE2-2 (CSV sütunları sona), O-LIVE2-4 (imzalayan adı için `esign.signatures.read`).
 **FIX-LIVE2 CT-ACCEPTED (2026-10-19).** Live-round findings 1–9 (2026-10-16, RC-2026-0001) closed; owner steps MOD-0173 (upstream reads, receipt) / MOD-0176 (names, evidence, help texts) in separate commits; CT decisions: font A (PDF tr / en / fr / es / ru; zh / ar English + note — O-LIVE2-1 accepted: the selected-language line cannot be drawn without glyphs, shown on screen instead), translation source B (service-owned resx, two-way parity guard, no frontend dependency), names A (signer = MOD-0022 signerNameAtSign; actor = central-audit ActorDisplayName by correlation, new events ActorName). CT run on the branch tip (contains 5decde3fb): Inventory **1278 + 4**, Web **2575/2575** all green. **CT sabotage (Web side of the parity guard, the agent changed only the service side):** Recall.tr.resx Recall.Status.Closed Kapandı → Kapatıldı → Every_shared_word_is_the_screens_word_both_ways_in_seven_languages(Recall) red; restored. O-LIVE2-2 accepted (FEFO CSV name columns appended); O-LIVE2-3 → FU-EVIDENCE-AUDIT-NAMES (one shared reader, no Expiry↔Recall link); O-LIVE2-4 accepted (signer name needs esign.signatures.read); O-LIVE2-5 → FU (meaning codes beyond APPROVE); O-LIVE2-6 → FU-0177-HEAD-NAMES (FU cleanup WP); O-LIVE2-7 accepted (historic free text is not rewritten). Merged --no-ff into MVP-1; PDF visual re-check in the next owner live round.
 
+### 19.17 WP-MVP1-FU-CLEAN1 — agent result, pending CT (2026-10-19)
+
+Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
+- **`d0159c924` FU-EVIDENCE-AUDIT-NAMES (kapandı):** FEFO kanıtı ortak `IAuditActorNames` okuyucusunu kullanır; Expiry kopyası (`IExpiryAuditNames`) silindi; Expiry ↔ Recall bağı yok (mimari kural, MOD-0177 commit'i).
+- **`b19a322af` FU-WEB-CONTRACT-FAKES (kapandı, dört modülde):** `ExpiryF5WebTests` sahtesi fefo sözleşmesine bağlandı — uyumsuzluk yok.
 
 ## 20. Follow-up Items
 

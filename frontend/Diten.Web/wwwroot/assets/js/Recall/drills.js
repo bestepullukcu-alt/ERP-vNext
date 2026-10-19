@@ -284,6 +284,23 @@
     });
 
     // ── the plan form ────────────────────────────────────────────────────────────────────────────────────────────
+    // FU-0177-PLAN-OWNER: the current owner (or "me") is the first option; a search adds the active users of the caller's tenant.
+    const ownerNow = () => ({ value: state.plan?.owner?.userId || me, text: state.plan ? person(state.plan.owner) : t('Recall.Drills.OwnerMe') });
+    const ownerPicker = (options) => {
+        const select = byId('rc-plan-owner-select');
+        if (!select) return;
+        select.innerHTML = options.map((o) => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('');
+    };
+    const findOwner = async () => {
+        const reply = await ui.get(view.ownerSearch(byId('rc-plan-owner-search').value));
+        const options = view.ownerOptions(reply.ok ? reply.json?.items : [], ownerNow());
+        ownerPicker(options);
+        if (options.length > 1) byId('rc-plan-owner-select').value = options[1].value;
+        show(byId('rc-plan-owner-none'), reply.ok && options.length < 2);
+        if (!reply.ok) ui.showError(byId('rc-plan-error'), sentence(reply));
+    };
+    byId('rc-plan-owner-find')?.addEventListener('click', findOwner);
+    byId('rc-plan-owner-search')?.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); findOwner(); } });
     const openPlan = (plan) => {
         state.plan = plan || null;
         byId('rc-plan-title').textContent = t(plan ? 'Recall.Drills.EditPlan' : 'Recall.Drills.AddPlan');
@@ -294,6 +311,8 @@
         byId('rc-plan-next').value = plan?.nextDueOn || '';
         byId('rc-plan-active').checked = plan ? plan.active : true;
         byId('rc-plan-owner').textContent = t('Recall.Drills.Owner', plan ? person(plan.owner) : t('Recall.Drills.OwnerMe'));
+        ownerPicker(view.ownerOptions([], ownerNow()));
+        if (byId('rc-plan-owner-search')) byId('rc-plan-owner-search').value = '';
         show(byId('rc-plan-days-box'), byId('rc-plan-frequency').value === 'CustomDays');
         ['rc-plan-name', 'rc-plan-days', 'rc-plan-next'].forEach((id) => byId(id).classList.remove('is-invalid'));
         ui.hideError(byId('rc-plan-error'));
@@ -306,7 +325,7 @@
         const input = {
             name: byId('rc-plan-name').value, frequency: byId('rc-plan-frequency').value, customDays: byId('rc-plan-days').value,
             scopeKind: byId('rc-plan-scope').value, nextDueOn: byId('rc-plan-next').value, active: byId('rc-plan-active').checked,
-            ownerUserId: state.plan?.owner?.userId || me
+            ownerUserId: view.ownerOf(byId('rc-plan-owner-select')?.value, state.plan, me)
         };
         const result = await view.savePlan(deps, state.plan, input);
         byId('rc-plan-name').classList.toggle('is-invalid', !!result.errors?.name);

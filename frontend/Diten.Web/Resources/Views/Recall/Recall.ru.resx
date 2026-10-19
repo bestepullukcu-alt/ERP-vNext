@@ -684,4 +684,12 @@
   <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>Печать утверждённого объёма (подписана) {0}</value></data>
   <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>Текущий дайджест объёма отличается от последней печати — объём изменился после опечатывания.</value></data>
   <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>В объёме нет клиентов; возврат можно привязать только к клиенту из утверждённого объёма. Клиенты берутся из отгрузок продаж.</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>Проверка</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Выпуск</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Авторство</value></data>
+  <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>Ответственный за план</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>Найти человека по имени</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>Найти</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>Нет активного пользователя с таким именем.</value></data>
 </root>

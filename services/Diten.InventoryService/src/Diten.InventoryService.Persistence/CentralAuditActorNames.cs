@@ -1,25 +1,24 @@
 using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common;
-using Diten.InventoryService.Application.Features.Expiry.Ports;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace Diten.InventoryService.Persistence.Expiry;
+namespace Diten.InventoryService.Persistence;
 
 /// <summary>
-/// <see cref="IExpiryAuditNames"/> over the central audit queue (<see cref="CentralAuditOutboxRecord.CollectionName"/>), read as BSON (the
+/// WP-MVP1-FU-CLEAN1 (FU-EVIDENCE-AUDIT-NAMES) — the ONE <see cref="IAuditActorNames"/> of the service (it replaced the Expiry and the Recall
+/// copies of WP-MVP1-FIX-LIVE2), over the central audit queue (<see cref="CentralAuditOutboxRecord.CollectionName"/>), read as BSON (the
 /// queue's own class map stores ids as strings): tenant = the caller's, correlation id and actor id both in the asked pairs; a row counts
-/// only for the pair it names (its own correlation AND its own actor). The first non-empty <c>ActorDisplayName</c> of a pair wins. Read
-/// only — the queue is never written or updated here.
+/// only for the pair it names. The first non-empty <c>ActorDisplayName</c> of a pair wins. Read only.
 /// </summary>
-public sealed class ExpiryAuditNames : IExpiryAuditNames
+public sealed class CentralAuditActorNames : IAuditActorNames
 {
     private readonly IMongoCollection<BsonDocument> _outbox;
     private readonly ITenantContext _tenant;
 
-    public ExpiryAuditNames(IMongoDatabase database, ITenantContext tenant)
+    public CentralAuditActorNames(IMongoDatabase database, ITenantContext tenant)
     {
-        _outbox = database.GetCollection<BsonDocument>(ExpiryCollections.CentralAuditOutbox);
+        _outbox = database.GetCollection<BsonDocument>(InventoryCollections.CentralAuditOutbox);
         _tenant = tenant;
     }
 

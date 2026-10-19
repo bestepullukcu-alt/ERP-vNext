@@ -1027,6 +1027,10 @@ F-3 shell "Search" → central layout owner. FU-0174-P5 CLOSED.
 **ITEM — CT acceptance (2026-10-10):** TRACE 1.3.0 FROZEN (`SkuLevel` + `Item`; `createLot` + `PRODUCT_MASTER_DATA_INCOMPLETE`,
 `SKU_LEVEL_NOT_STOCKABLE`). Lot-controlled `Item` materials get lots and post; details and decisions in the MOD-0175 pack §19 ITEM CT note.
 
+**WP-MVP1-FU-CLEAN1 — agent result, pending CT (2026-10-19).** Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
+- **`089467b8b` FU-QUI1-LOTSTATUS (kapandı):** lot durum / göç onayının form gövdesi `subtextHtml` (sabit şablon, değerler `textContent`); üç `ui.esc` kaldırıldı. Bekçi: `web-scripts-guard.test.mjs` + `global-confirm-text-is-text.test.js` pin listesi.
+- **`359532230` FU-WEB-CONTRACT-FAKES:** `TraceProxyControllerTests` ve `LotMigrationWebTests` sahteleri trace sözleşmesine bağlandı — uyumsuzluk yok.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).

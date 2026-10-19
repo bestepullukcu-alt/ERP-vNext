@@ -112,8 +112,11 @@ public sealed class RecallQuarantineDispatcher
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    // stays Pending: the sweeper retries it (never a Failed by an exception we did not understand)
-                    _logger.LogWarning(ex, "recall.quarantine.dispatch_deferred {RequestId}", request.Id);
+                    // stays Pending: the sweeper retries it (never a Failed by an exception we did not understand); FU-0177-SWEEP-01: the sweeper
+                    // counts it (DeferAsync) and stops at the limit. FU-0177-SWEEP-02 (OBS-001): the warning names the tenant and company.
+                    _deferrals[request.Id] = Reason(ex);
+                    _logger.LogWarning(ex, "recall.quarantine.dispatch_deferred {RequestId} tenant {TenantId} company {LegalEntityId}", request.Id, request.TenantId,
+                        request.LegalEntityId);
                 }
             }
 
@@ -121,6 +124,54 @@ public sealed class RecallQuarantineDispatcher
         }
 
         return result;
+    }
+
+    /// <summary>The error code of a request the sweeper stopped retrying (FU-0177-SWEEP-01).</summary>
+    public const string RetryLimitReached = RecallContract.QuarantineRetryLimit;
+
+    private readonly Dictionary<Guid, string> _deferrals = [];
+
+    /// <summary>Why the last <see cref="DispatchAsync"/> of this request ended without an answer (null = it did not).</summary>
+    public string? DeferralOf(Guid requestId) => _deferrals.GetValueOrDefault(requestId);
+
+    /// <summary>The reason text of a deferral: the exception TYPE and its message (no request body, no user data), at most 300 characters.</summary>
+    public static string Reason(Exception ex)
+    {
+        var text = $"{ex.GetType().Name}: {ex.Message}";
+        return text.Length > 300 ? text[..300] : text;
+    }
+
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN1 (FU-0177-SWEEP-01) — one sweep ended without an answer for this Pending request: the deferral is counted
+    /// (<see cref="RecallQuarantineRequest.DeferredAttempts"/>, the next sweep waits the usual age again). At <paramref name="maxDeferredAttempts"/>
+    /// the request turns <c>Failed</c> with <see cref="RetryLimitReached"/> and the reason, written with its case event and audit row like every
+    /// other outcome — the sweeper takes Pending only, so it is never taken again ("Yeniden dene" still can, CT-R2).
+    /// </summary>
+    public async Task<RecallQuarantineRequest?> DeferAsync(Guid requestId, string reason, int maxDeferredAttempts, CancellationToken ct)
+    {
+        var request = await _repository.FindQuarantineRequestAsync(requestId, ct);
+        if (request is null || request.Status != RecallQuarantineRequestStatus.Pending) return request;
+        var now = _support.Now();
+        var count = request.DeferredAttempts + 1;
+        if (count < Math.Max(1, maxDeferredAttempts))
+        {
+            return await SaveAsync(request, r =>
+            {
+                r.DeferredAttempts = count;
+                r.LastAttemptAtUtc = now;
+            }, now, ct, silent: true);
+        }
+
+        _logger.LogWarning("recall.quarantine.retry_limit {RequestId} tenant {TenantId} company {LegalEntityId} after {Count} sweeps", request.Id, request.TenantId,
+            request.LegalEntityId, count);
+        return await SaveAsync(request, r =>
+        {
+            r.DeferredAttempts = count;
+            r.LastAttemptAtUtc = now;
+            r.Status = RecallQuarantineRequestStatus.Failed;
+            r.ErrorCode = RetryLimitReached;
+            r.ErrorMessage = $"No answer after {count} sweeps (limit {maxDeferredAttempts}); last: {reason}";
+        }, now, ct);
     }
 
     private async Task<RecallQuarantineRequest?> SendAsync(RecallQuarantineRequest request, CancellationToken ct)

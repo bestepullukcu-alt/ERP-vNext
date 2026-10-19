@@ -684,4 +684,12 @@
   <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>Approved scope seal (signed) {0}</value></data>
   <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>The current scope digest differs from the last seal — the scope changed after it was sealed.</value></data>
   <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>There are no customers in the scope; a return can be linked only to a customer in the approved scope. Customers come from sales shipments.</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>Review</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Release</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Authorship</value></data>
+  <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>Plan owner</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>Search a person by name</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>Find</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>No active user matches this name.</value></data>
 </root>

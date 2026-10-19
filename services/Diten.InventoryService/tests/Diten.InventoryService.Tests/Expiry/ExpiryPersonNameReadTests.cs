@@ -72,7 +72,7 @@ public sealed class ExpiryPersonNameReadTests : IClassFixture<ExpiryApiFactory>
     {
         using var scope = _factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<ITenantContext>().SetScope(tenant, Guid.NewGuid(), Guid.NewGuid());
-        return await scope.ServiceProvider.GetRequiredService<IExpiryAuditNames>().NamesAsync(keys);
+        return await scope.ServiceProvider.GetRequiredService<IAuditActorNames>() /* FU-CLEAN1: the shared reader */.NamesAsync(keys);
     }
 
     private static CentralAuditOutboxRecord Row(Guid tenant, Guid correlation, Guid actor, string? name) => new()

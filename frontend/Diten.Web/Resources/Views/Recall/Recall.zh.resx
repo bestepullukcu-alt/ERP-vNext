@@ -684,4 +684,12 @@
   <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>已批准范围封签（已签署）{0}</value></data>
   <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>当前范围摘要与最近的封签不一致 — 范围在封签后发生了变化。</value></data>
   <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>范围内没有客户；退货只能关联到已批准范围内的客户。客户来自销售发运。</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>审核</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>放行</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>编写</value></data>
+  <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>未知用户</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>计划负责人</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>按姓名搜索人员</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>查找</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>没有与此姓名匹配的活跃用户。</value></data>
 </root>

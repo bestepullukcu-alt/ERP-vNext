@@ -232,8 +232,9 @@ const StockMovementsList = (function () {
 
         window.showConfirm?.(L().ReversalConfirmTitle || '', null, {
             type: 'danger',
-            subtext: esc(sentence),
-            entityName: `${esc(movementText(row.movementType))} · ${esc(formatQuantity(row.quantity))} ${esc(row.uomId || '')}`,
+            // FU-QUI1-ESC-TEST: subtext / entityName are TEXT — the dialog escapes them (escaping here showed &amp; etc.)
+            subtext: sentence,
+            entityName: `${movementText(row.movementType)} · ${formatQuantity(row.quantity)} ${row.uomId || ''}`,
             confirmButtonText: L().ReversalConfirmButton || '',
             cancelButtonText: L().Cancel || '',
             didOpen: (popup, swal) => {

@@ -440,4 +440,16 @@
   <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Закрыт</value></data>
   <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Образец сохранён</value></data>
   <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>Все</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Поместить запас в карантин</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>Выбранный доступный запас переходит в КАРАНТИН и ожидает решения в очереди карантина.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Далее</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>Поместить этот запас в карантин?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Открыта запись карантина: {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Справка</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Помещает выбранный вручную доступный запас в карантин для решения по качеству (возврат, подозрительный товар, жалоба).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Обеспечение качества и руководители складов.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Выберите запас</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Найдите партию, выберите доступную строку и количество; количество не может превышать запас строки.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Подтвердите с обоснованием</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>Подтверждение требует обоснования не короче 10 символов; затем запись ожидает решения в очереди.</value></data>
 </root>

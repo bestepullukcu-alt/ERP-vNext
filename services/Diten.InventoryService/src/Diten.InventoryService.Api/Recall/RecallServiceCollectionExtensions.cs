@@ -33,7 +33,7 @@ public static class RecallServiceCollectionExtensions
         services.AddSingleton<Application.Features.Recall.Ports.IRecallEvidencePdfRenderer, RecallEvidencePdfRenderer>();
         // WP-MVP1-FIX-LIVE2: person names of the pack — the event actor's name at event time, and the central audit queue's name (read only)
         services.AddScoped<Application.Features.Recall.Ports.IRecallActorName, RecallActorName>();
-        services.AddScoped<Application.Features.Recall.Ports.IRecallAuditNames, Persistence.Recall.RecallAuditNames>();
+        services.TryAddScoped<Application.Common.IAuditActorNames, Diten.InventoryService.Persistence.CentralAuditActorNames>(); // FU-CLEAN1: the shared reader
         services.AddScoped<IRecallSubjectDirectory, RecallSubjectDirectory>();
 
         // R2: the trace engine over in-process reads (pack §8.2) and the MVP-6 shipment read through the Gateway with the caller's
@@ -69,6 +69,8 @@ public static class RecallServiceCollectionExtensions
         services.AddScoped<IRecallLotStatusReader>(sp => sp.GetRequiredService<RecallPostingGate>());
         services.AddScoped<IRecallLedgerReader, RecallLedgerReads>();
         services.AddScoped<Application.Features.Recall.Quarantine.RecallQuarantineDispatcher>();
+        // WP-MVP1-FU-CLEAN1 (FU-0177-SWEEP-01): the retry limit of the sweeper (Inventory:Recall:QuarantineSweep:MaxDeferredAttempts, default 10)
+        services.Configure<RecallQuarantineSweepOptions>(configuration.GetSection(RecallQuarantineSweepOptions.SectionName));
         services.AddSingleton<RecallQuarantineSweeper>();
         services.AddHostedService<RecallQuarantineSweeperHostedService>();
 

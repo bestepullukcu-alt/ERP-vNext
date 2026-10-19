@@ -50,7 +50,8 @@
 
     // ── formatting ───────────────────────────────────────────────────────────────────────────────────────────────
     const qty = (n, unit) => `${ui.qty(n)}${unit ? ' ' + esc(unit) : ''}`;
-    const person = (u) => esc(u?.name || u?.userId || '');
+    // FU-0177-HEAD-NAMES: the name, else "unknown user" (the id only in the title, never as the name)
+    const person = (u) => (u?.userId && !u?.name ? `<span title="${esc(u.userId)}">${esc(view.personName(u, t))}</span>` : esc(view.personName(u, t)));
     const when = (wire) => {
         if (!wire) return '';
         const d = new Date(wire);
@@ -80,10 +81,10 @@
         byId('rc-h-opened').innerHTML = `${person(c.owner)} · ${when(c.openedAtUtc)}`;
         const final = byId('rc-h-final');
         if (c.closure) {
-            final.innerHTML = esc(t('Recall.Case.ClosedInfo', c.closure.closedBy?.name || c.closure.closedBy?.userId, ui.date(c.closure.closedBy?.atUtc)))
+            final.innerHTML = esc(t('Recall.Case.ClosedInfo', view.personName(c.closure.closedBy, t), ui.date(c.closure.closedBy?.atUtc)))
                 + (c.closure.signatureId ? ` · <span class="font-monospace">${esc(t('Recall.Case.Signature', c.closure.signatureId))}</span>` : '');
         } else if (c.cancellation) {
-            final.textContent = t('Recall.Case.CancelledInfo', c.cancellation.cancelledBy?.name || c.cancellation.cancelledBy?.userId, c.cancellation.reason);
+            final.textContent = t('Recall.Case.CancelledInfo', view.personName(c.cancellation.cancelledBy, t), c.cancellation.reason);
         }
         show(final, !!(c.closure || c.cancellation));
 

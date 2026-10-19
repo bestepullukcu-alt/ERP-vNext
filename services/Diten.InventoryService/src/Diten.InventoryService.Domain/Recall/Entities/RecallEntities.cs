@@ -569,6 +569,13 @@ public sealed class RecallQuarantineRequest : EntityBase
 
     public int Attempts { get; set; }
 
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN1 (FU-0177-SWEEP-01, additive): the sweeps that ended WITHOUT an answer for this request (the 0175 call threw, or the row
+    /// itself could not be dispatched). At the configured limit the request turns <c>Failed</c> with the reason; the sweeper never takes it again
+    /// ("Yeniden dene" still can). <see cref="Attempts"/> stays the count of 0175 calls that were made.
+    /// </summary>
+    public int DeferredAttempts { get; set; }
+
     /// <summary>0 = the base key; n = "Yeniden dene" n (key suffix <c>:a{n}</c>).</summary>
     public int RetryNumber { get; set; }
 

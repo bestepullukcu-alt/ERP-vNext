@@ -62,6 +62,7 @@ public sealed class RecallDataGateTests
         ["DrillRuns"] = [RecallKeys.DrillsRead],
         ["DrillRun"] = [RecallKeys.DrillsRead],
         ["DrillLotLookup"] = [RecallKeys.DrillsRun],
+        ["UserLookup"] = [RecallKeys.DrillsManage], // WP-MVP1-FU-CLEAN1 (FU-0177-PLAN-OWNER) — the plan owner picker
         ["CreateDrillPlan"] = [RecallKeys.DrillsManage],
         ["UpdateDrillPlan"] = [RecallKeys.DrillsManage],
         ["StartDrill"] = [RecallKeys.DrillsRun],

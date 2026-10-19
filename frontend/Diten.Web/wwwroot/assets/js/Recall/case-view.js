@@ -124,7 +124,13 @@ var RecallCaseView = (function () {
     /** WP-MVP1-FIX-LIVE2 (finding 7): a return can be linked only to a customer of the scope — none → false (explain, no button). */
     const linkable = (customers) => Array.isArray(customers) && customers.length > 0;
 
-    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, treeOrder, errorKey, customerReturnHref, seals, linkable };
+    /**
+     * WP-MVP1-FU-CLEAN1 (FU-0177-HEAD-NAMES) — a person on the case page: the name the Web read (the existing display-label read), else the
+     * localized "unknown user" — never the id as a name (the id stays in the element's title only). No user → empty.
+     */
+    const personName = (u, t) => (u?.name ? String(u.name) : u?.userId ? t('Recall.Case.UnknownUser') : '');
+
+    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, treeOrder, errorKey, customerReturnHref, seals, linkable, personName };
 })();
 
 if (typeof window !== 'undefined') window.RecallCaseView = RecallCaseView;

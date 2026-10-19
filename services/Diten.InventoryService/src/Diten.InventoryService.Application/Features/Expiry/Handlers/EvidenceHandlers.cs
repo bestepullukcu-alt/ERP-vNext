@@ -118,13 +118,13 @@ public sealed class ExpiryEvidenceBuilder
     private readonly ExpiryReads _cases;
     private readonly ExpirySupport _support;
     private readonly IExpiryESignClient _esign;
-    private readonly IExpiryAuditNames _auditNames;
+    private readonly Common.IAuditActorNames _auditNames;
     private readonly IProductMasterClient _products;
     private readonly ILegalEntityMasterClient _companies;
     private readonly ILocationRepository _locations;
 
     public ExpiryEvidenceBuilder(IExpiryRepository repository, IExpiryReadModel reads, ExpiryLotView view, ExpiryReads cases, ExpirySupport support,
-        IExpiryESignClient esign, IExpiryAuditNames auditNames, IProductMasterClient products, ILegalEntityMasterClient companies, ILocationRepository locations)
+        IExpiryESignClient esign, Common.IAuditActorNames auditNames, IProductMasterClient products, ILegalEntityMasterClient companies, ILocationRepository locations)
     {
         _repository = repository;
         _reads = reads;

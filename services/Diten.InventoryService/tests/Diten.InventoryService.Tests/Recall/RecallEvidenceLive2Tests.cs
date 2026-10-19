@@ -280,6 +280,23 @@ public sealed class RecallEvidenceLive2Tests : IClassFixture<RecallApiFactory>
         }
     }
 
+    /// <summary>WP-MVP1-FU-CLEAN1 (O-LIVE2-5): a meaning code beside APPROVE (the MOD-0022 seed: REVIEW, RELEASE, AUTHOR) is worded too.</summary>
+    [Fact]
+    public async Task A_signature_meaning_beside_APPROVE_is_worded_in_the_asked_language()
+    {
+        var (w, caseId, token, _) = await ClosedCaseAsync();
+        var real = _factory.ESign.Sign(w.S.Tenant, w.S.Qa2, caseId, "RELEASE", new string('a', 64), "recall", RecallSignableActions.CaseSubjectType,
+            "recall.case.close", DateTimeOffset.UtcNow, w.S.Ledger.LegalEntity, signerName: Mehmet, meaningText: "Serbest bırakma yetkisi");
+        await _factory.Database.GetCollection<BsonDocument>(RecallCollections.Cases)
+            .UpdateOneAsync(new BsonDocument("_id", caseId), new BsonDocument("$set", new BsonDocument("ClosureSignatureId", real)));
+        foreach (var (lang, word) in new[] { ("tr", "Serbest bırakma"), ("en", "Release"), ("zh", "放行") })
+        {
+            var row = Assert.Single(RecallEvidence.Rows(RecallEvidence.Section(await PreviewAsync(w.S, token, caseId, lang), "7_signatures")), r => r[1] == real);
+            Assert.Equal(word, row[4]);
+            Assert.Equal(RecallEvidenceText.Of("Recall.Ev.W.meaning.RELEASE", lang), row[4]);
+        }
+    }
+
     [Fact]
     public void Every_stored_code_the_pack_words_has_its_key_in_all_seven_languages()
     {
@@ -293,7 +310,7 @@ public sealed class RecallEvidenceLive2Tests : IClassFixture<RecallApiFactory>
             .Concat(Enum.GetNames<RecallDrillRunStatus>().Select(v => "Recall.DrillStatus." + v))
             .Concat(Enum.GetNames<RecallDrillSelectionMode>().Select(v => "Recall.Drills.Mode" + v))
             .Concat(Enum.GetNames<RecallScopeItemKind>().Select(v => "Recall.Kind." + v))
-            .Concat(["Recall.Class.N", "Recall.Ev.W.meaning.APPROVE", "Recall.Ev.W.nameUnreadable", "Recall.Ev.W.unreadable", "Recall.Ev.W.noShipments"]);
+            .Concat(["Recall.Class.N", "Recall.Ev.W.meaning.APPROVE", "Recall.Ev.W.meaning.REVIEW", "Recall.Ev.W.meaning.RELEASE", "Recall.Ev.W.meaning.AUTHOR", "Recall.Ev.W.nameUnreadable", "Recall.Ev.W.unreadable", "Recall.Ev.W.noShipments"]);
         foreach (var key in codes)
             foreach (var lang in RecallEvidenceText.Languages)
                 Assert.False(string.IsNullOrWhiteSpace(RecallEvidenceText.Find(key, lang)), $"{key} [{lang}]");
