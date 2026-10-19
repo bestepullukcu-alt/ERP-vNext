@@ -66,9 +66,8 @@ public class CiServiceTestsGuardTests
     {
         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
-        // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard.)
-        ["services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj"] =
-            "main (SCE / MVP-6): needs MVP6_MOD0192_MONGO_URI (its own replica set, CapacityTestMongo); SCE's file",
+        // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
+        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
         ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
             "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
         ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
@@ -177,7 +176,7 @@ public class CiServiceTestsGuardTests
     // Main sync FIX1 (CT decision D, revised by BL-650): no row starts a job-local mongod INLINE in the workflow and
     // no step hands the tests a Mongo address — the three text checks below still bind service-tests.yml itself. A row
     // MAY start a job-local mongod, but only from a named script under scripts/test-env/ (planning-tests does, via
-    // mod0188-ci-mongo.sh; the SupplyChain CI row will), carrying its rationale beside the invocation — and the guard
+    // mod0188-ci-mongo.sh; supplychain-tests via supplychain-ci-mongo.sh), carrying its rationale beside the invocation — and the guard
     // pins that every such script the workflow runs exists in the tree, so a row cannot point tests at a server through
     // a script that is not here. Every service test still owns its mongod (DITEN_TEST_MONGOD): Platform's
     // PlatformTestMongo, MDM's MdmTestMongo (which ignores MDM_TEST_MONGO by design), Auth's owned replica set; a
@@ -430,8 +429,11 @@ public class CiServiceTestsGuardTests
             "matrix.suite == 'inventory-tests'",
             "startsWith(matrix.suite, 'auth-')",
             "matrix.suite == 'planning-tests'",
+            // MVP-6 plan v9.9: the SupplyChain row's owned replica set, started and stopped like Planning's.
+            "matrix.suite == 'supplychain-tests'",
             "always()",
             "always() && matrix.suite == 'planning-tests'",
+            "always() && matrix.suite == 'supplychain-tests'",
             "always()",
             // CT-CI-MACOS-01: the macOS job (the Auth acceptance host) — its owned-Mongo flag, its skip check, its upload.
             "startsWith(matrix.suite, 'auth-')",
