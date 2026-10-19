@@ -5386,3 +5386,19 @@ eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests`
 **Kapanış (2026-10-19, CT):** WP-SYNC-144 BL-640 (test dalı `93171f288`; ajan `16fef0d6a`). CompetitorProduct, CompetitorProposalDecision ve ProcessedEvent `MdmDocumentClassMaps` köklerinde (alt tipler kayıt gezintisiyle); `CompetitorProductClassMaps` silindi (iki kökü hiç kaydetmiyormuş — MapIdMember istisnası yutuluyordu, türler katı AutoMap'teydi). `CompetitorProductRepository` ve `MongoWorkflowApprovalStore<T>` alan düzeyi `$set` (`FieldLevelUpdate`), kiracı + kimlik + sürüm CAS aynı; `MainSyncUncoveredTypes` / `MainSyncLenientWholeWrites` boşaldı. Kalan bilinen sınır: liste elemanlarının alt alanları (fiyatlar, onay turları…) güncellemede yine bütün yazılır.
 
 ---
+
+### BL-474
+
+**Çalışma takvimi paketinin kimliği eski: dosya adı CAND-CAP-0008, kayıt CAND-CAP-0010**
+
+DURUM: KAPANDI · SAHİP: CT · BULAN: MOD-0280-FU01 paket ajanı · KAYIT: 2026-09-29
+
+`execution/domains/platform-shared-services/module-packs/MOD-0362-working-calendar-public-holidays.md` (ve FU02) dosya adı ve ön
+bilgisi eski kimliği taşıyor; kayıt defteri CAND-CAP-0010 diyor, CAND-CAP-0008 artık MOD-0354'ün eski takma adı. İş: dosya adı + ön bilgi +
+içeriden bağlantılar tek committe; kimlik denetim betiği (`verify_module_id.py --check-all`) yeşil kalır. Gelecek regresyon riski: 🟢.
+
+2026-10-19 · CRM-BP87-04: paket `MOD-0362-working-calendar-public-holidays.md`, FU02 / FU03 `MOD-0362-FU02-…` / `MOD-0362-FU03-…` adına taşındı (yukarıdaki yol yeni ad); künye `id: MOD-0362` / `MOD-0362-FU02` / `MOD-0362-FU03` + `formerly_id`; bağlantılar güncellendi; `check-all` 0 hard. Kapanış CT'de.
+
+**Kapanış (2026-10-19, CT):** CRM-BP87-04 (test dalı; ajan `76c0b2fd3`). Çalışma takvimi paketi ve FU02 / FU03 kanonik MOD-0362 adlarıyla taşındı, künye `id` + `formerly_id`, bağlantılar güncellendi; kayıtta MOD-0362-FU02 / FU03 satırları; `check-all` 0 hard, filename/id uyarısı kalmadı (CT sabotajı: FU03 künyesi eski kimliğe döndürülünce uyarı geri geliyor). Mühürlü `mod-0183-root-uptake-recovery-01/baseline.json` ve docs/records manifestleri eski yolları tarihli kanıt olarak tutar.
+
+---

@@ -7006,20 +7006,6 @@ DURUM: AÇIK · SAHİP: CT (Platform çalışma saatleri) · BULAN: MOD-0280-FU0
 kiracıda yerel gün ve gece yarısı tek bölgeden gelir (takvim motoru ve MOD-0280-FU01). Öneri: tüzel kişi halkası (sıra 40) bir bölge de
 döndürür; tüketiciler değişmez. Gelecek regresyon riski: 🟡 saklanan satırlar yakaladıkları `TimeZoneId`'yi korur, yeniden hesaplanmaz.
 
-### BL-474
-
-**Çalışma takvimi paketinin kimliği eski: dosya adı CAND-CAP-0008, kayıt CAND-CAP-0010**
-
-DURUM: AÇIK · SAHİP: CT · BULAN: MOD-0280-FU01 paket ajanı · KAYIT: 2026-09-29
-
-`execution/domains/platform-shared-services/module-packs/MOD-0362-working-calendar-public-holidays.md` (ve FU02) dosya adı ve ön
-bilgisi eski kimliği taşıyor; kayıt defteri CAND-CAP-0010 diyor, CAND-CAP-0008 artık MOD-0354'ün eski takma adı. İş: dosya adı + ön bilgi +
-içeriden bağlantılar tek committe; kimlik denetim betiği (`verify_module_id.py --check-all`) yeşil kalır. Gelecek regresyon riski: 🟢.
-
-2026-10-19 · CRM-BP87-04: paket `MOD-0362-working-calendar-public-holidays.md`, FU02 / FU03 `MOD-0362-FU02-…` / `MOD-0362-FU03-…` adına taşındı (yukarıdaki yol yeni ad); künye `id: MOD-0362` / `MOD-0362-FU02` / `MOD-0362-FU03` + `formerly_id`; bağlantılar güncellendi; `check-all` 0 hard. Kapanış CT'de.
-
----
-
 ### BL-475
 
 **MOD-0023 tek atanan: çok adaylı onay, üstlenme ve vekâlet yok**
