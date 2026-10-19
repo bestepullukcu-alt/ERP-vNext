@@ -591,6 +591,12 @@ public sealed class RecallQuarantineRequest : EntityBase
     /// <summary>The approver / the QA user who asked — the actor of the 0175 call (CT-R2), also for the sweeper.</summary>
     public Guid RequestedBy { get; set; }
 
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME, additive): <see cref="RequestedBy"/>'s display name at approval / retry time (the token name).
+    /// The sweeper has no token: it hands this stored name to the posting, so the quarantine movement names the approver. Null = unknown.
+    /// </summary>
+    public string? RequestedByName { get; set; }
+
     public DateTimeOffset RequestedAtUtc { get; set; }
 
     public DateTimeOffset? LastAttemptAtUtc { get; set; }

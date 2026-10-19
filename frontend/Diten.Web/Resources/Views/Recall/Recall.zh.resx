@@ -155,29 +155,6 @@
   <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>该批次已有未结的召回案例。</value></data>
   <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>此请求已以不同内容发送，请刷新页面。</value></data>
   <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>请先选择公司。</value></data>
-  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>显示公司对召回的准备程度：未结案例、上次演练与目标对比、出库的批次覆盖率、无法追溯的出库以及未结案例的退货。</value></data>
-  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>质量（召回负责人）、质量体系管理员和管理层（只读）。</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>选择公司</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>本页每个数字仅属于所选公司。</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>查看卡片</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>上次演练显示红色“超出目标”，或无法追溯的出库数不为零时需要关注。</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>查看演练历史</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>图表显示最近 12 次已完成演练与目标线的对比；上方横幅在上次演练过久时发出提醒。</value></data>
-  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>沿完整谱系追溯批次：向后到投入，向前到库存、发货和客户，并显示无法通过批次证明货物去向的缺口。</value></data>
-  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>质量（召回负责人）和质量体系管理员。</value></data>
-  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>选择批次</value></data>
-  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>搜索批次号并选择方向：向后、向前或双向。</value></data>
-  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>查看树形或表格</value></data>
-  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>两种视图显示相同的节点。红色行是追溯缺口；其他公司的活动仅以数量显示。</value></data>
-  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>导出或开启案例</value></data>
-  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>“下载 CSV”提供相同的行；“以此范围开启召回案例”会根据本次追溯开启草稿案例。</value></data>
-  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>开启案例会立即创建草稿；在范围获批前不会冻结任何内容。</value></data>
-  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>按从新到旧一并列出公司的真实召回案例和演练，并显示状态和进度。</value></data>
-  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>所有关注召回的人：质量、仓库、商务和管理层。</value></data>
-  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>筛选列表</value></data>
-  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>使用类型、状态、级别、产品和开启日期。级别筛选仅显示真实案例。</value></data>
-  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>区分演练</value></data>
-  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>演练行标注“演练”，显示结果和时长，没有级别或层级。</value></data>
   <data name="Recall.Case.Crumb" xml:space="preserve"><value>案例 {0}</value></data>
   <data name="Recall.Case.NotFound" xml:space="preserve"><value>未找到召回案例。</value></data>
   <data name="Recall.Case.Product" xml:space="preserve"><value>产品</value></data>
@@ -385,16 +362,6 @@
   <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>未找到召回案例。</value></data>
   <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>该批次正在召回——出库已被阻止。</value></data>
   <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>无法打开电子签名窗口，请稍后重试。</value></data>
-  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>从草稿到关闭处理一个召回案例：范围、库存、客户、退货、有效性和历史。</value></data>
-  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>公司的质量（QA）、仓库和客户服务用户。</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>标记并提交范围</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>用理由排除不受影响的项目，然后提交范围审批。</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>以电子签名批准</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>由另一位用户批准范围；批次被锁定并发送隔离请求。</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>跟进客户和退货</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>记录每次通知和消耗，并关联每笔客户退货。</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>检查有效性并关闭</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>以电子签名完成有效性检查；由另一位用户关闭案例。</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>范围正在等待批准；如需更改，请退回草稿。</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>隔离请求：{0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>已通知客户：{0} / {1}</value></data>
@@ -528,26 +495,6 @@
   <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>追溯节点上限</value></data>
   <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>某项设置超出允许范围。</value></data>
   <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>没有任何更改。</value></data>
-  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>计划召回演练，并在不触碰库存的情况下计时执行。</value></data>
-  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>质量保证人员和质量体系管理员。</value></data>
-  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>计划</value></data>
-  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>添加计划：频率、范围和下次日期。</value></data>
-  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>执行</value></data>
-  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>开始计时，然后按顺序完成三个步骤：追溯、范围、客户清单。</value></data>
-  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>签署</value></data>
-  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>填写结果说明；如策略要求，以电子签名保存。</value></data>
-  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>为审计生成案例、演练或期间的证据包。</value></data>
-  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>质量保证人员、质量体系管理员和审计员。</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>选择并预览</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>选择对象；预览显示文件的七个部分。</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>下载并核验</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>下载 PDF 或 CSV；导出日志中的 SHA-256 由文件字节计算。</value></data>
-  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>设置公司的演练目标、频率提醒和有效性目标。</value></data>
-  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>质量体系管理员。</value></data>
-  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>修改</value></data>
-  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>修改数值并填写至少 10 个字符的原因。</value></data>
-  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>保存</value></data>
-  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>保存；如策略要求，在电子签名窗口签署。每项变更都记录在历史中。</value></data>
   <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · 摘要</value></data>
   <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · 追溯结果</value></data>
   <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · 隔离请求及结果</value></data>

@@ -42,11 +42,11 @@ public sealed class RecallDoorTests
         var gateway = new FakeGateway
         {
             Answer = r => Json(r.RequestUri!.AbsolutePath == "/api/recall/cases" ? """
-                {"items":[{"caseId":"c1","number":"RC-2026-0002","type":"Real","status":"Active","class":2,"level":"Pharmacy","item":{"itemId":"i1","skuId":"s1","skuLevel":"Lsku"},
-                           "rootLot":{"lotId":"l1","lotNumber":"L-1"},"openedAtUtc":"2026-10-02T08:00:00Z","owner":{"userId":"u1"},"affectedQuantity":[],"progress":[],"version":1,
+                {"items":[{"caseId":"00000001-0000-4000-8000-000000000001","number":"RC-2026-0002","type":"Real","status":"Active","class":2,"level":"Pharmacy","item":{"itemId":"00000002-0000-4000-8000-000000000002","skuId":"00000003-0000-4000-8000-000000000003","skuLevel":"Lsku"},
+                           "rootLot":{"lotId":"l1","lotNumber":"L-1"},"openedAtUtc":"2026-10-02T08:00:00Z","owner":{"userId":"00000004-0000-4000-8000-000000000004"},"affectedQuantity":[],"progress":[],"version":1,
                            "sortAt":"2026-10-02T08:00:00Z","position":1}],
-                 "drillRows":[{"runId":"d1","number":"RC-2026-D001","type":"Drill","status":"Completed","lot":{"lotId":"l2","lotNumber":"L-2"},"startedAtUtc":"2026-10-03T08:00:00Z",
-                               "owner":{"userId":"u2"},"durationMinutes":100,"targetHours":4,"passed":true,"sortAt":"2026-10-03T08:00:00Z","position":0,"version":3}],
+                 "drillRows":[{"runId":"00000005-0000-4000-8000-000000000005","number":"RC-2026-D001","type":"Drill","status":"Completed","lot":{"lotId":"l2","lotNumber":"L-2"},"startedAtUtc":"2026-10-03T08:00:00Z",
+                               "owner":{"userId":"00000006-0000-4000-8000-000000000006"},"durationMinutes":100,"targetHours":4,"passed":true,"sortAt":"2026-10-03T08:00:00Z","position":0,"version":3}],
                  "total":2,"page":1,"pageSize":10,"statusCounts":{"Active":1},"drillStatusCounts":{"Completed":1}}
                 """ : "{}")
         };
@@ -94,7 +94,13 @@ public sealed class RecallDoorTests
             {
                 key = r.Headers.TryGetValues("Idempotency-Key", out var v) ? v.Single() : null;
                 sentBody = r.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
-                return Json("{\"caseId\":\"c9\",\"number\":\"RC-2026-0009\",\"status\":\"Draft\"}", HttpStatusCode.Created);
+                // FU-CLEAN2 (FU-WEB-CONTRACT-FAKES-RECALL): a whole CaseDetail of RECALL 1.9.0 (was a 3-member fragment with a non-uuid id)
+                return Json("""
+                    {"caseId":"00000009-0000-4000-8000-000000000009","number":"RC-2026-0009","type":"Real","status":"Draft","class":2,"level":"Pharmacy",
+                     "item":{"itemId":"00000002-0000-4000-8000-000000000002","skuId":"00000003-0000-4000-8000-000000000003","skuLevel":"Lsku"},"rootLot":{"lotId":"0b6c2f1e-3d4a-4c5b-9e8f-7a6b5c4d3e2f","lotNumber":"L-1"},
+                     "openedAtUtc":"2026-10-02T08:00:00Z","owner":{"userId":"00000004-0000-4000-8000-000000000004"},"affectedQuantity":[],"progress":[],"version":1,"reason":"Kalite şikâyeti",
+                     "direction":"Both","scopeRevision":1,"counts":{"scopeItems":0,"excludedItems":0,"customers":0,"notified":0,"consumptionDeclarations":0,"segregations":0}}
+                    """, HttpStatusCode.Created);
             }
         };
         var result = await Invoke("OpenCase", gateway, All);

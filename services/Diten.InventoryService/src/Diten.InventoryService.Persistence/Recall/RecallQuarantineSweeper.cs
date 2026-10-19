@@ -71,6 +71,8 @@ public sealed class RecallQuarantineSweeper
             {
                 using var scope = _scopeFactory.CreateScope();
                 scope.ServiceProvider.GetRequiredService<ITenantContext>().SetScope(request.TenantId!.Value, request.LegalEntityId!.Value, request.RequestedBy);
+                // WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME): no token here — the posting stores the approver's name kept on the request
+                scope.ServiceProvider.GetService<IPostingActorName>()?.Use(request.RequestedByName);
                 scope.ServiceProvider.GetRequiredService<ICorrelationContext>().Set(Guid.NewGuid());
                 var dispatcher = scope.ServiceProvider.GetRequiredService<RecallQuarantineDispatcher>();
                 var after = await dispatcher.DispatchAsync([request.Id], ct);

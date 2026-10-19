@@ -250,11 +250,13 @@ public sealed class RecallDataGateTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             lock (Requests) Requests.Add(request.RequestUri!.PathAndQuery);
-            if (Answer is not null) return Task.FromResult(Answer(request));
+            // WP-MVP1-FU-CLEAN2 (FU-WEB-CONTRACT-FAKES-RECALL): every answer is bound to RECALL 1.9.0
+            if (Answer is not null) return Task.FromResult(RecallContractFakes.Bound(request, Answer(request)));
             var path = request.RequestUri!.AbsolutePath;
+            if (!path.EndsWith("/trace/export", StringComparison.Ordinal)) return Task.FromResult(RecallContractFakes.Placeholder(request)); // contract-shaped
             var body = path.EndsWith("/trace/export", StringComparison.Ordinal) ? "﻿\"Düğüm türü\"\r\n" : "{}";
             var type = path.EndsWith("/trace/export", StringComparison.Ordinal) ? "text/csv" : "application/json";
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, type) });
+            return Task.FromResult(RecallContractFakes.Bound(request, new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, type) }));
         }
     }
 }

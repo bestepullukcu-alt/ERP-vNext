@@ -155,29 +155,6 @@
   <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Bu lot için zaten açık bir geri çağırma vakası var.</value></data>
   <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek farklı içerikle zaten gönderildi. Sayfayı yenileyin.</value></data>
   <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce bir şirket seçin.</value></data>
-  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Şirketin bir geri çağırmaya ne kadar hazır olduğunu gösterir: açık vakalar, hedefine göre son tatbikat, çıkışların lot kapsamı, izlenemeyen çıkışlar ve açık vakaların iadeleri.</value></data>
-  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Kalite (geri çağırma sorumlusu), kalite sistem yöneticisi ve yönetim (salt okunur).</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Şirketi seçin</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Bu sayfadaki her rakam yalnız seçili şirkete aittir.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Kartları okuyun</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Son tatbikatta kırmızı “Hedef aşıldı” ya da sıfırdan büyük izlenemeyen çıkış sayısı ilgi ister.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Tatbikat geçmişine bakın</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>Grafik son 12 tamamlanmış tatbikatı hedef çizgisine göre gösterir; üstteki bant son tatbikat çok eskiyse uyarır.</value></data>
-  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Bir lotu tüm soy ağacı boyunca izler: geriye girdilerine, ileriye stoğa, sevkiyatlara ve müşterilere; malın nereye gittiğinin lotla kanıtlanamadığı boşlukları gösterir.</value></data>
-  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Kalite (geri çağırma sorumlusu) ve kalite sistem yöneticisi.</value></data>
-  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Lotu seçin</value></data>
-  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Lot numarasını arayın ve yönü seçin: geriye, ileriye ya da ikisi.</value></data>
-  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Ağacı ya da tabloyu okuyun</value></data>
-  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>İki görünüm aynı düğümleri gösterir. Kırmızı satırlar izleme boşluğudur; başka şirketin hareketi yalnız sayı olarak görünür.</value></data>
-  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Dışa aktarın ya da vaka açın</value></data>
-  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>“CSV indir” aynı satırları verir; “Bu kapsamla geri çağırma vakası aç” bu izlemeden taslak bir vaka açar.</value></data>
-  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Vaka açmak hemen bir taslak oluşturur; kapsam onaylanana kadar hiçbir şey engellenmez.</value></data>
-  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Şirketin gerçek geri çağırma vakalarını ve tatbikatlarını birlikte, en yeniden eskiye, durum ve ilerlemeleriyle listeler.</value></data>
-  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Geri çağırmaları izleyen herkes: kalite, depo, ticari ve yönetim.</value></data>
-  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Listeyi süzün</value></data>
-  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Tür, durum, sınıf, ürün ve açılış tarihini kullanın. Sınıf süzgeci yalnız gerçek vakaları gösterir.</value></data>
-  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Tatbikatları ayırt edin</value></data>
-  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Tatbikat satırı “Tatbikat” der, sonucunu ve süresini gösterir; sınıfı ve düzeyi yoktur.</value></data>
   <data name="Recall.Case.Crumb" xml:space="preserve"><value>Vaka {0}</value></data>
   <data name="Recall.Case.NotFound" xml:space="preserve"><value>Geri çağırma vakası bulunamadı.</value></data>
   <data name="Recall.Case.Product" xml:space="preserve"><value>Ürün</value></data>
@@ -385,16 +362,6 @@
   <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>Geri çağırma vakası bulunamadı.</value></data>
   <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>Bu lot geri çağırmada — çıkış hareketleri engelli.</value></data>
   <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>E-imza penceresi açılamadı. Biraz sonra yeniden deneyin.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>Bir geri çağırma vakasını taslaktan kapanışa yürütür: kapsamı, stoğu, müşterileri, iadeleri, etkinliği ve geçmişi.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>Şirketin kalite (QA), depo ve müşteri hizmetleri kullanıcıları.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>Kapsamı işaretleyip gönderin</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>Etkilenmeyeni gerekçesiyle hariç tutun, sonra kapsamı onaya gönderin.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>E-imzayla onaylayın</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>Kapsamı başka bir kullanıcı onaylar; lotlar engellenir ve karantina istekleri gönderilir.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>Müşterileri ve iadeleri izleyin</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>Her bilgilendirmeyi ve tüketimi kaydedin, her müşteri iadesini bağlayın.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Etkinliği kontrol edip kapatın</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Etkinlik kontrolünü e-imzayla tamamlayın; vakayı başka bir kullanıcı kapatır.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>Kapsam onay bekliyor; değiştirmek için taslağa geri gönderilmelidir.</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>Karantina istekleri: {0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>Müşteri bilgilendirme: {0} / {1}</value></data>
@@ -528,26 +495,6 @@
   <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>İzleme düğüm sınırı</value></data>
   <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>Bir ayar izin verilen aralığın dışında.</value></data>
   <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>Hiçbir şey değiştirilmedi.</value></data>
-  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>Geri çağırma tatbikatlarını planlayın ve stoğa dokunmadan süreye karşı yürütün.</value></data>
-  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>Kalite güvence ve kalite sistem yöneticisi.</value></data>
-  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>Planla</value></data>
-  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>Plan ekleyin: sıklık, kapsam ve sonraki tarih.</value></data>
-  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>Yürüt</value></data>
-  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>Sayacı başlatın, ardından üç adımı sırayla tamamlayın: izleme, kapsam, müşteri listesi.</value></data>
-  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>İmzala</value></data>
-  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>Sonuç notunu yazın; politika isterse e-imzayla kaydedin.</value></data>
-  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>Denetimler için bir vakanın, tatbikatın veya dönemin kanıt paketini üretin.</value></data>
-  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>Kalite güvence, kalite sistem yöneticisi ve denetçiler.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>Seç ve önizle</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>Konuyu seçin; önizleme dosyanın yedi bölümünü gösterir.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>İndir ve doğrula</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>PDF veya CSV indirin; dışa aktarma günlüğündeki SHA-256 dosyanın baytlarından hesaplanır.</value></data>
-  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>Şirketin tatbikat hedefini, sıklık uyarısını ve etkinlik hedeflerini belirleyin.</value></data>
-  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>Kalite sistem yöneticisi.</value></data>
-  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>Değiştir</value></data>
-  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>Değerleri değiştirin ve en az 10 karakterlik bir gerekçe yazın.</value></data>
-  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>Kaydet</value></data>
-  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>Kaydedin; politika isterse e-imza penceresinde imzalayın. Her değişiklik geçmişte görünür.</value></data>
   <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Özet</value></data>
   <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · İzleme sonucu</value></data>
   <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Karantina istekleri ve sonuçları</value></data>

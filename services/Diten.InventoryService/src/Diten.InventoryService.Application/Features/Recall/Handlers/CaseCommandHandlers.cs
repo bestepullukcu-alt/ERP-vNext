@@ -822,7 +822,7 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
         var lotsById = (await _lots.FindManyAsync(stock.Select(i => Guid.TryParse(i.LotId, out var g) ? g : Guid.Empty).Where(g => g != Guid.Empty).Distinct().ToList(), ct))
             .ToDictionary(l => l.Id.ToString("D"), StringComparer.Ordinal);
         var requests = stock.Select(i => Quarantine.RecallQuarantinePlanner.Plan(c, c.ScopeRevision, i, RecallScopeRules.EffectivelyIncluded(i, byKey),
-            lotsById.GetValueOrDefault(i.LotId), Support.UserId, now)).ToList();
+            lotsById.GetValueOrDefault(i.LotId), Support.UserId, now, Support.ActorName)).ToList();
 
         var approvedSnapshot = live is null ? null : _trace.Snapshot(live, c, RecallSnapshotPurpose.Approved, now);
         c.ApprovedSnapshotId = approvedSnapshot?.Id ?? c.ApprovedSnapshotId;

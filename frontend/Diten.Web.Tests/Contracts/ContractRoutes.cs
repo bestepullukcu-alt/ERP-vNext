@@ -11,7 +11,7 @@ namespace Diten.Web.Tests.Contracts;
 /// WP-MVP1-FU-CLEAN1 (FU-WEB-CONTRACT-FAKES, O-LIVE1-1) — binds the OLDER fake gateways (their <c>On(prefix, status, body)</c>) to the contract
 /// files, the way <see cref="ContractGateway"/> binds the newer ones: a 2xx body a fake registers must be a valid 2xx response of an operation of
 /// the contract that owns the path (its <c>servers</c> base: /api/inventory, /api/locations, /api/trace, /api/quarantine, /api/product-master,
-/// /api/expiry), compiled with the same rules as <see cref="WebContractSchemas"/> (OpenAPI → JSON Schema 2020-12, nullable, CLOSED objects,
+/// /api/expiry, /api/recall), compiled with the same rules as <see cref="WebContractSchemas"/> (OpenAPI → JSON Schema 2020-12, nullable, CLOSED objects,
 /// formats). A route the contract has no operation for is a violation too. Paths of services that have NO contract file in
 /// docs/analysis/contracts (AuthService users, Platform organisation units, the legacy /api/gskus · /api/global-products) are named in
 /// <see cref="Unbound"/> with the reason — never silently skipped.
@@ -25,7 +25,8 @@ public static class ContractRoutes
         ("/api/trace", "trace.openapi.yaml"),
         ("/api/quarantine", "quarantine.openapi.yaml"),
         ("/api/product-master", "product-master-bundle.openapi.yaml"),
-        ("/api/expiry", "fefo.openapi.yaml")
+        ("/api/expiry", "fefo.openapi.yaml"),
+        ("/api/recall", "recall.openapi.yaml") // WP-MVP1-FU-CLEAN2 (FU-WEB-CONTRACT-FAKES-RECALL)
     ];
 
     /// <summary>Path bases with no contract file in this repository (the reason is the record).</summary>
@@ -54,9 +55,12 @@ public static class ContractRoutes
     /// A DELIBERATE off-contract body (a negative test of the Web's own guard, e.g. an unknown enum value): it must break the contract, and
     /// ONLY by the named violations — any other mismatch, or a body the contract accepts, is a violation again.
     /// </summary>
-    public static void RequireOff(string prefix, int status, string body, params string[] allowed)
+    public static void RequireOff(string prefix, int status, string body, params string[] allowed) => RequireOff(prefix, null, status, body, allowed);
+
+    /// <summary>As <see cref="RequireOff(string, int, string, string[])"/>, measured against <paramref name="method"/>'s operations only.</summary>
+    public static void RequireOff(string prefix, string? method, int status, string body, params string[] allowed)
     {
-        var errors = Check(prefix, status, body);
+        var errors = Check(prefix, status, body, method);
         var file = OwnerOf(prefix)?.File ?? "(no contract)";
         if (errors.Count == 0) throw new ContractViolationException(file, prefix, ["registered as off-contract, but the contract accepts the body"]);
         var other = errors.Where(e => !allowed.Any(a => e.Contains(a, StringComparison.Ordinal))).ToList();
@@ -64,7 +68,9 @@ public static class ContractRoutes
     }
 
     /// <summary>The violations of one registration (empty = bound and valid, or a non-2xx, or an <see cref="Unbound"/> base).</summary>
-    public static IReadOnlyList<string> Check(string prefix, int status, string body)
+    /// <para>WP-MVP1-FU-CLEAN2: <paramref name="method"/> (when given) keeps only that method's operations — a POST answer is never measured
+    /// against the GET of the same path.</para>
+    public static IReadOnlyList<string> Check(string prefix, int status, string body, string? method = null)
     {
         if (status is < 200 or >= 300) return [];
         var path = prefix.Split('?')[0];
@@ -74,6 +80,7 @@ public static class ContractRoutes
         var (ops, _) = Load(owner.Value.File);
         var rel = path.Length > owner.Value.Base.Length ? path[owner.Value.Base.Length..] : "/";
         var candidates = Candidates(ops, rel);
+        if (method is not null) candidates = candidates.Where(c => string.Equals(c.Method, method, StringComparison.OrdinalIgnoreCase)).ToList();
         if (candidates.Count == 0) return [$"{path}: {owner.Value.File} has no operation for {rel}"];
         if (string.IsNullOrWhiteSpace(body)) return candidates.Any(c => c.DefName.Length == 0 && c.Example is null) ? [] : [$"{path}: empty body, the contract answers a JSON body"];
         JsonNode? instance;

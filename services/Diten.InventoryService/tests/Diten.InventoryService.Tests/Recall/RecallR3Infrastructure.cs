@@ -20,10 +20,13 @@ public static class RecallR3
     public static readonly string[] DepoKeys = [.. RecallScenario.DepoKeys, "recall.returns.link"];
 
     /// <summary>Open (Forward) on <paramref name="rootLot"/> as Qa1 of <paramref name="company"/>, submit, approve as Qa2 — the case is Active.</summary>
-    public static async Task<(string Id, JsonElement Case)> ApproveAsync(RecallScenario s, string rootLot, Guid? company = null)
+    /// <para>WP-MVP1-FU-CLEAN2: <paramref name="approverName"/> = the approver's token <c>name</c> claim (none = an unnamed token).</para>
+    public static async Task<(string Id, JsonElement Case)> ApproveAsync(RecallScenario s, string rootLot, Guid? company = null, string? approverName = null)
     {
         var qa1 = s.Mint(s.Qa1, QaKeys, company);
-        var qa2 = s.Mint(s.Qa2, QaKeys, company);
+        var qa2 = approverName is null
+            ? s.Mint(s.Qa2, QaKeys, company)
+            : TestTokens.Mint(s.Tenant, company ?? s.Ledger.LegalEntity, s.Qa2, QaKeys, [new System.Security.Claims.Claim("name", approverName)]);
         var body = RecallScenario.Open(rootLot);
         body["direction"] = "Forward";
         var (so, opened, _) = await s.PostOpenAsync(qa1, body);

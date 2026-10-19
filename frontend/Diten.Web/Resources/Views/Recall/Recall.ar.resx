@@ -155,29 +155,6 @@
   <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>لهذه التشغيلة حالة استدعاء مفتوحة بالفعل.</value></data>
   <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>أُرسل هذا الطلب سابقًا بمحتوى مختلف. حدّث الصفحة.</value></data>
   <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>اختر شركة أولًا.</value></data>
-  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>يعرض مدى جاهزية الشركة للاستدعاء: الحالات المفتوحة، وآخر تمرين مقارنة بهدفه، وتغطية التشغيلات لحركات الصرف، وحركات الصرف غير القابلة للتتبّع، ومرتجعات الحالات المفتوحة.</value></data>
-  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>الجودة (مسؤول الاستدعاء)، ومدير نظام الجودة، والإدارة (قراءة فقط).</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>اختر الشركة</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>كل رقم في هذه الصفحة يخص الشركة المختارة فقط.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>اقرأ البطاقات</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>يتطلب الانتباه ظهور «تجاوز الهدف» باللون الأحمر لآخر تمرين أو عدد غير صفري لحركات الصرف غير القابلة للتتبّع.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>راقب سجل التمارين</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>يعرض الرسم آخر 12 تمرينًا مكتملًا مقارنة بخط الهدف؛ ويحذّر الشريط العلوي عندما يكون آخر تمرين قديمًا جدًا.</value></data>
-  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>يتتبّع التشغيلة عبر سلسلة النسب كاملة، إلى الخلف حتى مدخلاتها وإلى الأمام حتى المخزون والشحنات والعملاء، ويعرض الفجوات التي لا تثبت فيها التشغيلة وجهة البضاعة.</value></data>
-  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>الجودة (مسؤول الاستدعاء) ومدير نظام الجودة.</value></data>
-  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>اختر التشغيلة</value></data>
-  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>ابحث عن رقم التشغيلة واختر الاتجاه: إلى الخلف أو إلى الأمام أو كلاهما.</value></data>
-  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>اقرأ الشجرة أو الجدول</value></data>
-  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>تعرض الطريقتان العقد نفسها. الصفوف الحمراء فجوات تتبّع؛ ويظهر نشاط شركة أخرى كعدد فقط.</value></data>
-  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>صدّر أو افتح حالة</value></data>
-  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>يعطي «تنزيل CSV» الصفوف نفسها؛ ويفتح «افتح حالة استدعاء بهذا النطاق» حالة مسودة من هذا التتبّع.</value></data>
-  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>يُنشئ فتح الحالة مسودة فورًا؛ ولا يُحظر شيء حتى يُعتمد النطاق.</value></data>
-  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>يسرد حالات الاستدعاء الحقيقية والتمارين للشركة معًا، من الأحدث إلى الأقدم، مع حالتها وتقدّمها.</value></data>
-  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>كل من يتابع الاستدعاءات: الجودة والمستودع والتجاري والإدارة.</value></data>
-  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>صفِّ القائمة</value></data>
-  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>استخدم النوع والحالة والفئة والمنتج وتاريخ الفتح. يعرض عامل تصفية الفئة الحالات الحقيقية فقط.</value></data>
-  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>ميّز التمارين</value></data>
-  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>يحمل صف التمرين كلمة «تمرين»، ويعرض نتيجته ومدته، وليس له فئة أو مستوى.</value></data>
   <data name="Recall.Case.Crumb" xml:space="preserve"><value>الحالة {0}</value></data>
   <data name="Recall.Case.NotFound" xml:space="preserve"><value>لم يتم العثور على حالة الاستدعاء.</value></data>
   <data name="Recall.Case.Product" xml:space="preserve"><value>المنتج</value></data>
@@ -385,16 +362,6 @@
   <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على حالة الاستدعاء.</value></data>
   <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>هذه التشغيلة قيد الاستدعاء — حركات الإخراج محظورة.</value></data>
   <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>تعذّر فتح نافذة التوقيع الإلكتروني. حاول مجددًا بعد قليل.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>حالة استدعاء واحدة من المسودة حتى الإغلاق: نطاقها ومخزونها وعملاؤها ومرتجعاتها وفعاليتها وسجلها.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>مستخدمو الجودة والمستودع وخدمة العملاء في الشركة.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>حدّد النطاق وأرسله</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>استبعد غير المتأثر مع ذكر السبب، ثم أرسل النطاق للموافقة.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>وافق بالتوقيع الإلكتروني</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>يوافق مستخدم آخر على النطاق؛ تُحظر التشغيلات وتُرسل طلبات الحجر.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>تابع العملاء والمرتجعات</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>سجّل كل إبلاغ واستهلاك واربط كل مرتجع عميل.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>افحص الفعالية وأغلق</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>أكمل فحص الفعالية بالتوقيع الإلكتروني؛ يغلق الحالة مستخدم آخر.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>النطاق بانتظار الموافقة؛ لتغييره أعده إلى المسودة.</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>طلبات الحجر: {0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>العملاء المُبلَّغون: {0} / {1}</value></data>
@@ -528,26 +495,6 @@
   <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>حد عقد التتبّع</value></data>
   <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>أحد الإعدادات خارج النطاق المسموح.</value></data>
   <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>لم يتم تغيير أي شيء.</value></data>
-  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>خطّط تمارين الاستدعاء ونفّذها مقابل الوقت دون المساس بالمخزون.</value></data>
-  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>ضمان الجودة ومسؤول نظام الجودة.</value></data>
-  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>خطّط</value></data>
-  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>أضف خطة: التكرار والنطاق والتاريخ التالي.</value></data>
-  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>نفّذ</value></data>
-  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>ابدأ المؤقت ثم أكمل الخطوات الثلاث بالترتيب: التتبّع، النطاق، قائمة العملاء.</value></data>
-  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>وقّع</value></data>
-  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>اكتب ملاحظة النتيجة واحفظها بالتوقيع الإلكتروني إذا طلبت السياسة ذلك.</value></data>
-  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>أنتج حزمة أدلة لحالة أو تمرين أو فترة لأغراض التدقيق.</value></data>
-  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>ضمان الجودة ومسؤول نظام الجودة والمدققون.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>اختر وعاين</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>اختر الموضوع؛ تعرض المعاينة أقسام الملف السبعة.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>نزّل وتحقّق</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>نزّل PDF أو CSV؛ تُحسب بصمة SHA-256 في السجل من بايتات الملف.</value></data>
-  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>حدّد هدف التمرين وتنبيه التكرار وأهداف الفعالية للشركة.</value></data>
-  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>مسؤول نظام الجودة.</value></data>
-  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>غيّر</value></data>
-  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>غيّر القيم واكتب سبباً من 10 أحرف على الأقل.</value></data>
-  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>احفظ</value></data>
-  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>احفظ؛ وإذا طلبت السياسة، وقّع في نافذة التوقيع. يظهر كل تغيير في السجل.</value></data>
   <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · الملخص</value></data>
   <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · نتيجة التتبّع</value></data>
   <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · طلبات الحجر ونتائجها</value></data>

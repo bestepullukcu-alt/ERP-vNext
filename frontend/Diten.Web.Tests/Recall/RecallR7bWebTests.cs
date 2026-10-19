@@ -97,11 +97,18 @@ public sealed class RecallR7bWebTests : IClassFixture<WebApplicationFactory<Prog
         var serviceTime = new DateTimeOffset(2026, 10, 15, 9, 30, 0, TimeSpan.Zero);
         var gateway = new FakeGateway
         {
-            Answer = _ =>
+            Answer = r =>
             {
+                // FU-CLEAN2 (FU-WEB-CONTRACT-FAKES-RECALL): a whole RECALL 1.9.0 DrillRun (was a 3-member fragment), and the list door gets a DrillRunPage
+                var drill = $$"""
+                    {"runId":"{{RunId}}","number":"RC-2026-D001","planId":"00000007-0000-4000-8000-000000000007","status":"Running","selectionMode":"Manual",
+                     "lot":{"lotId":"l1","lotNumber":"L-1"},"startedAtUtc":"2026-10-15T08:00:00Z","steps":[],"targetHours":4,"version":3}
+                    """;
+                var json = r.RequestUri!.AbsolutePath.EndsWith("/drill-runs", StringComparison.Ordinal)
+                    ? $$"""{"items":[{{drill}}],"total":1,"page":1,"pageSize":10}""" : drill;
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent($"{{\"runId\":\"{RunId}\",\"startedAtUtc\":\"2026-10-15T08:00:00Z\",\"version\":3}}", Encoding.UTF8, "application/json")
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
                 };
                 response.Headers.Date = serviceTime;
                 return response;

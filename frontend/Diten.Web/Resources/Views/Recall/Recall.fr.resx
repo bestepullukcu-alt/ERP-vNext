@@ -155,29 +155,6 @@
   <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Ce lot a déjà un dossier de rappel ouvert.</value></data>
   <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Cette demande a déjà été envoyée avec un autre contenu. Actualisez la page.</value></data>
   <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Sélectionnez d’abord une société.</value></data>
-  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Montre dans quelle mesure la société est prête pour un rappel : dossiers ouverts, dernier exercice par rapport à son objectif, couverture par lot des sorties, sorties non traçables et retours des dossiers ouverts.</value></data>
-  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Qualité (responsable des rappels), administrateur du système qualité et direction (lecture seule).</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Choisissez la société</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Chaque chiffre de cette page concerne uniquement la société sélectionnée.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Lisez les cartes</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Un « Objectif dépassé » rouge sur le dernier exercice ou un nombre de sorties non traçables supérieur à zéro demande attention.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Suivez l’historique des exercices</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>Le graphique montre les 12 derniers exercices terminés par rapport à la ligne d’objectif ; le bandeau du haut avertit lorsque le dernier exercice est trop ancien.</value></data>
-  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Trace un lot dans toute sa généalogie, en amont jusqu’à ses intrants et en aval jusqu’au stock, aux expéditions et aux clients, et montre les écarts où le lot ne prouve pas la destination des marchandises.</value></data>
-  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Qualité (responsable des rappels) et administrateur du système qualité.</value></data>
-  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Choisissez le lot</value></data>
-  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Recherchez le numéro de lot et choisissez le sens : en amont, en aval ou les deux.</value></data>
-  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Lisez l’arbre ou le tableau</value></data>
-  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Les deux vues montrent les mêmes nœuds. Les lignes rouges sont des écarts ; l’activité d’une autre société n’apparaît que comme un nombre.</value></data>
-  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Exportez ou ouvrez un dossier</value></data>
-  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>« Télécharger le CSV » donne les mêmes lignes ; « Ouvrir un dossier de rappel avec ce périmètre » ouvre un dossier brouillon à partir de cette traçabilité.</value></data>
-  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>L’ouverture d’un dossier crée immédiatement un brouillon ; rien n’est bloqué avant l’approbation du périmètre.</value></data>
-  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Liste ensemble les dossiers de rappel réels et les exercices de la société, du plus récent au plus ancien, avec leur statut et leur avancement.</value></data>
-  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Tous ceux qui suivent les rappels : qualité, entrepôt, commercial et direction.</value></data>
-  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Filtrez la liste</value></data>
-  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Utilisez le type, le statut, la classe, le produit et la date d’ouverture. Un filtre de classe n’affiche que les dossiers réels.</value></data>
-  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Distinguez les exercices</value></data>
-  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Une ligne d’exercice indique « Exercice », montre son résultat et sa durée, et n’a ni classe ni niveau.</value></data>
   <data name="Recall.Case.Crumb" xml:space="preserve"><value>Dossier {0}</value></data>
   <data name="Recall.Case.NotFound" xml:space="preserve"><value>Le dossier de rappel est introuvable.</value></data>
   <data name="Recall.Case.Product" xml:space="preserve"><value>Produit</value></data>
@@ -385,16 +362,6 @@
   <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>Le dossier de rappel est introuvable.</value></data>
   <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>Ce lot est en rappel — les sorties sont bloquées.</value></data>
   <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>La fenêtre de signature n’a pas pu s’ouvrir. Réessayez plus tard.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>Un dossier de rappel du brouillon à la clôture : périmètre, stock, clients, retours, efficacité et historique.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>Utilisateurs qualité (QA), entrepôt et service client de la société.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>Marquez et soumettez le périmètre</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>Excluez ce qui n’est pas concerné avec un motif, puis soumettez le périmètre à l’approbation.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>Approuvez avec signature électronique</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>Un autre utilisateur approuve le périmètre ; les lots sont bloqués et les demandes de quarantaine envoyées.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>Suivez clients et retours</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>Enregistrez chaque information et consommation, et liez chaque retour client.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Contrôlez l’efficacité et clôturez</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Terminez le contrôle d’efficacité avec signature ; un autre utilisateur clôture le dossier.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>Le périmètre attend l’approbation ; pour le modifier, renvoyez-le en brouillon.</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>Demandes de quarantaine : {0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>Clients informés : {0} / {1}</value></data>
@@ -528,26 +495,6 @@
   <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>Nombre maximal de nœuds de traçabilité</value></data>
   <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>Un paramètre est hors de sa plage autorisée.</value></data>
   <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>Rien n’a été modifié.</value></data>
-  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>Planifier des exercices de rappel et les dérouler contre la montre sans toucher au stock.</value></data>
-  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>Assurance qualité et administrateur du système qualité.</value></data>
-  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>Planifier</value></data>
-  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>Ajoutez un plan : fréquence, périmètre et prochaine date.</value></data>
-  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>Dérouler</value></data>
-  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>Démarrez le chronomètre puis terminez les trois étapes dans l’ordre : traçabilité, périmètre, liste des clients.</value></data>
-  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>Signer</value></data>
-  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>Rédigez la note de résultat et enregistrez-la avec la signature électronique si la politique l’exige.</value></data>
-  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>Produire le dossier de preuves d’un cas, d’un exercice ou d’une période pour les audits.</value></data>
-  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>Assurance qualité, administrateur du système qualité et auditeurs.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>Choisir et prévisualiser</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>Choisissez l’objet ; l’aperçu montre les sept sections du fichier.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>Télécharger et vérifier</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>Téléchargez le PDF ou le CSV ; le SHA-256 du journal est calculé à partir des octets du fichier.</value></data>
-  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>Définir la cible d’exercice, l’alerte de fréquence et les objectifs d’efficacité de la société.</value></data>
-  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>L’administrateur du système qualité.</value></data>
-  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>Modifier</value></data>
-  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>Modifiez les valeurs et saisissez un motif d’au moins 10 caractères.</value></data>
-  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>Enregistrer</value></data>
-  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>Enregistrez ; si la politique l’exige, signez dans la fenêtre de signature. Chaque modification figure dans l’historique.</value></data>
   <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Résumé</value></data>
   <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · Résultat de traçabilité</value></data>
   <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Demandes de quarantaine et résultats</value></data>

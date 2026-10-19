@@ -155,29 +155,6 @@
   <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Este lote ya tiene un caso de retirada abierto.</value></data>
   <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otro contenido. Actualice la página.</value></data>
   <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Seleccione primero una empresa.</value></data>
-  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Muestra lo preparada que está la empresa para una retirada: casos abiertos, el último simulacro frente a su objetivo, la cobertura por lote de las salidas, las salidas no trazables y las devoluciones de los casos abiertos.</value></data>
-  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Calidad (responsable de retiradas), administrador del sistema de calidad y dirección (solo lectura).</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Elija la empresa</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Cada cifra de esta página pertenece solo a la empresa seleccionada.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Lea las tarjetas</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Un «Objetivo superado» en rojo en el último simulacro o un número de salidas no trazables mayor que cero requiere atención.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Revise el historial de simulacros</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>El gráfico muestra los últimos 12 simulacros completados frente a la línea de objetivo; la banda superior avisa cuando el último simulacro es demasiado antiguo.</value></data>
-  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Traza un lote en toda la genealogía, hacia atrás hasta sus insumos y hacia adelante hasta el stock, los envíos y los clientes, y muestra las brechas en las que el lote no prueba adónde fue la mercancía.</value></data>
-  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Calidad (responsable de retiradas) y el administrador del sistema de calidad.</value></data>
-  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Elija el lote</value></data>
-  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Busque el número de lote y elija la dirección: hacia atrás, hacia adelante o ambas.</value></data>
-  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Lea el árbol o la tabla</value></data>
-  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Ambas vistas muestran los mismos nodos. Las filas rojas son brechas; la actividad de otra empresa aparece solo como un número.</value></data>
-  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Exporte o abra un caso</value></data>
-  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>«Descargar CSV» da las mismas filas; «Abrir un caso de retirada con este alcance» abre un caso en borrador a partir de esta trazabilidad.</value></data>
-  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Abrir un caso crea un borrador de inmediato; nada se bloquea hasta que se aprueba el alcance.</value></data>
-  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Muestra juntos los casos de retirada reales y los simulacros de la empresa, del más reciente al más antiguo, con su estado y avance.</value></data>
-  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Todos los que siguen las retiradas: calidad, almacén, comercial y dirección.</value></data>
-  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Filtre la lista</value></data>
-  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Use el tipo, el estado, la clase, el producto y la fecha de apertura. Un filtro de clase muestra solo casos reales.</value></data>
-  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Distinga los simulacros</value></data>
-  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Una fila de simulacro indica «Simulacro», muestra su resultado y duración, y no tiene clase ni nivel.</value></data>
   <data name="Recall.Case.Crumb" xml:space="preserve"><value>Caso {0}</value></data>
   <data name="Recall.Case.NotFound" xml:space="preserve"><value>No se encontró el caso de retirada.</value></data>
   <data name="Recall.Case.Product" xml:space="preserve"><value>Producto</value></data>
@@ -385,16 +362,6 @@
   <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>No se encontró el caso de retirada.</value></data>
   <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>Este lote está en retirada: las salidas están bloqueadas.</value></data>
   <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>No se pudo abrir la ventana de firma. Inténtelo de nuevo en breve.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>Un caso de retirada desde el borrador hasta el cierre: alcance, stock, clientes, devoluciones, eficacia e historial.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>Usuarios de calidad (QA), almacén y atención al cliente de la empresa.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>Marque y envíe el alcance</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>Excluya lo no afectado con un motivo y envíe el alcance a aprobación.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>Apruebe con firma electrónica</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>Otro usuario aprueba el alcance; los lotes se bloquean y se envían las solicitudes de cuarentena.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>Siga clientes y devoluciones</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>Registre cada notificación y consumo, y vincule cada devolución.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Controle la eficacia y cierre</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Complete el control de eficacia con firma; otro usuario cierra el caso.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>El alcance espera aprobación; para cambiarlo, devuélvalo a borrador.</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>Solicitudes de cuarentena: {0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>Clientes informados: {0} / {1}</value></data>
@@ -528,26 +495,6 @@
   <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>Límite de nodos de trazabilidad</value></data>
   <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>Un valor de configuración está fuera de su rango permitido.</value></data>
   <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>No se cambió nada.</value></data>
-  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>Planificar simulacros de retirada y ejecutarlos contra reloj sin tocar el stock.</value></data>
-  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>Aseguramiento de la calidad y administrador del sistema de calidad.</value></data>
-  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>Planificar</value></data>
-  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>Añada un plan: frecuencia, alcance y próxima fecha.</value></data>
-  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>Ejecutar</value></data>
-  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>Inicie el cronómetro y complete los tres pasos en orden: trazabilidad, alcance, lista de clientes.</value></data>
-  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>Firmar</value></data>
-  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>Escriba la nota de resultado y guárdela con firma electrónica si la política lo exige.</value></data>
-  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>Generar el paquete de evidencias de un caso, un simulacro o un periodo para auditorías.</value></data>
-  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>Aseguramiento de la calidad, administrador del sistema de calidad y auditores.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>Elegir y previsualizar</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>Elija el asunto; la vista previa muestra las siete secciones del archivo.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>Descargar y verificar</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>Descargue el PDF o el CSV; el SHA-256 del registro se calcula a partir de los bytes del archivo.</value></data>
-  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>Definir el objetivo de simulacro, el aviso de frecuencia y los objetivos de eficacia de la empresa.</value></data>
-  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>El administrador del sistema de calidad.</value></data>
-  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>Cambiar</value></data>
-  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>Cambie los valores y escriba un motivo de al menos 10 caracteres.</value></data>
-  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>Guardar</value></data>
-  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>Guarde; si la política lo exige, firme en la ventana de firma. Cada cambio queda en el historial.</value></data>
   <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Resumen</value></data>
   <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · Resultado de trazabilidad</value></data>
   <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Solicitudes de cuarentena y resultados</value></data>

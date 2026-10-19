@@ -26,7 +26,7 @@ namespace Diten.InventoryService.Application.Features.Recall.Quarantine;
 public static class RecallQuarantinePlanner
 {
     public static RecallQuarantineRequest Plan(RecallCase c, int revision, RecallScopeItem stock, bool effectivelyIncluded, Lot? lot, Guid requestedBy,
-        DateTimeOffset now)
+        DateTimeOffset now, string? requestedByName = null)
     {
         var (status, reason) = !effectivelyIncluded ? (RecallQuarantineRequestStatus.NotNeeded, RecallNotNeededReason.Excluded)
             : lot is { Status: LotStatus.Blocked } ? (RecallQuarantineRequestStatus.NotNeeded, RecallNotNeededReason.LotBlocked)
@@ -35,12 +35,12 @@ public static class RecallQuarantinePlanner
             : stock.StockStatus is StockStatus.Blocked or StockStatus.Damaged or StockStatus.Expired ? (RecallQuarantineRequestStatus.NotNeeded, RecallNotNeededReason.AlreadyBlocked)
             : (RecallQuarantineRequestStatus.Pending, (RecallNotNeededReason?)null);
         return New(c, revision, stock.NodeKey, stock.LotId, stock.LotNumber, stock.ItemId, stock.SkuId, stock.SkuLevel, stock.WarehouseId, stock.LocationId,
-            stock.Quantity ?? 0m, stock.BaseUomId, status, reason, requestedBy, now);
+            stock.Quantity ?? 0m, stock.BaseUomId, status, reason, requestedBy, now, requestedByName);
     }
 
     public static RecallQuarantineRequest New(RecallCase c, int revision, string nodeKey, string lotId, string lotNumber, Guid itemId, Guid skuId, SkuLevel level,
         string? warehouseId, string? locationId, decimal quantity, string? baseUomId, RecallQuarantineRequestStatus status, RecallNotNeededReason? reason,
-        Guid requestedBy, DateTimeOffset now) => new()
+        Guid requestedBy, DateTimeOffset now, string? requestedByName = null) => new()
     {
         Id = Guid.NewGuid(),
         CreatedAt = now,
@@ -61,6 +61,7 @@ public static class RecallQuarantinePlanner
         NotNeededReason = reason,
         QuarantineKey = RecallContract.QuarantineKey(c.Id, revision, nodeKey, 0),
         RequestedBy = requestedBy,
+        RequestedByName = requestedByName, // WP-MVP1-FU-CLEAN2: the sweeper hands it to the posting
         RequestedAtUtc = now
     };
 

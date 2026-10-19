@@ -155,29 +155,6 @@
   <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Для этой партии уже есть открытый случай отзыва.</value></data>
   <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Этот запрос уже отправлен с другим содержимым. Обновите страницу.</value></data>
   <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Сначала выберите компанию.</value></data>
-  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Показывает готовность компании к отзыву: открытые случаи, последнее учение относительно цели, охват отгрузок партиями, непрослеживаемые отгрузки и возвраты по открытым случаям.</value></data>
-  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Качество (ответственный за отзыв), администратор системы качества и руководство (только чтение).</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Выберите компанию</value></data>
-  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Все показатели на странице относятся только к выбранной компании.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Изучите карточки</value></data>
-  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Красная отметка «Цель превышена» у последнего учения или ненулевое число непрослеживаемых отгрузок требуют внимания.</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Следите за историей учений</value></data>
-  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>График показывает 12 последних завершённых учений относительно линии цели; полоса сверху предупреждает, если последнее учение слишком давнее.</value></data>
-  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Прослеживает партию по всей генеалогии: назад до входов и вперёд до запасов, отгрузок и клиентов, и показывает пробелы, где партия не доказывает, куда ушёл товар.</value></data>
-  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Качество (ответственный за отзыв) и администратор системы качества.</value></data>
-  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Выберите партию</value></data>
-  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Найдите номер партии и выберите направление: назад, вперёд или оба.</value></data>
-  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Изучите дерево или таблицу</value></data>
-  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Оба вида показывают одни и те же узлы. Красные строки — пробелы; активность другой компании видна только как число.</value></data>
-  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Экспортируйте или откройте случай</value></data>
-  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>«Скачать CSV» даёт те же строки; «Открыть случай отзыва с этим объёмом» открывает черновик случая по этому прослеживанию.</value></data>
-  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Открытие случая сразу создаёт черновик; до утверждения объёма ничего не блокируется.</value></data>
-  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Показывает реальные случаи отзыва и учения компании вместе, от новых к старым, со статусом и ходом.</value></data>
-  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Все, кто следит за отзывами: качество, склад, коммерция и руководство.</value></data>
-  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Отфильтруйте список</value></data>
-  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Используйте тип, статус, класс, товар и дату открытия. Фильтр по классу показывает только реальные случаи.</value></data>
-  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Отличайте учения</value></data>
-  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Строка учения помечена «Учение», показывает результат и длительность и не имеет класса и уровня.</value></data>
   <data name="Recall.Case.Crumb" xml:space="preserve"><value>Случай {0}</value></data>
   <data name="Recall.Case.NotFound" xml:space="preserve"><value>Случай отзыва не найден.</value></data>
   <data name="Recall.Case.Product" xml:space="preserve"><value>Товар</value></data>
@@ -385,16 +362,6 @@
   <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>Случай отзыва не найден.</value></data>
   <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>Партия на отзыве — отпуск заблокирован.</value></data>
   <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>Не удалось открыть окно электронной подписи. Повторите позже.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>Один случай отзыва от черновика до закрытия: объём, запасы, клиенты, возвраты, эффективность и история.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>Сотрудники качества (QA), склада и клиентской службы компании.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>Отметьте и отправьте объём</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>Исключите незатронутое с причиной и отправьте объём на утверждение.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>Утвердите с электронной подписью</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>Объём утверждает другой пользователь; партии блокируются, отправляются запросы карантина.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>Отслеживайте клиентов и возвраты</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>Записывайте каждое уведомление и потребление и привязывайте каждый возврат.</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Проверьте эффективность и закройте</value></data>
-  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Завершите проверку эффективности с подписью; случай закрывает другой пользователь.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>Объём ожидает утверждения; чтобы изменить его, верните в черновик.</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>Запросы карантина: {0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>Уведомлено клиентов: {0} / {1}</value></data>
@@ -528,26 +495,6 @@
   <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>Предел узлов прослеживания</value></data>
   <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>Значение настройки вне допустимого диапазона.</value></data>
   <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>Ничего не изменено.</value></data>
-  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>Планируйте учения по отзыву и проводите их на время, не затрагивая запасы.</value></data>
-  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>Служба обеспечения качества и администратор системы качества.</value></data>
-  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>Запланируйте</value></data>
-  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>Добавьте план: периодичность, охват и следующую дату.</value></data>
-  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>Проведите</value></data>
-  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>Запустите таймер и выполните три шага по порядку: прослеживание, охват, список клиентов.</value></data>
-  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>Подпишите</value></data>
-  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>Напишите примечание к результату и сохраните его с электронной подписью, если этого требует политика.</value></data>
-  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>Формируйте пакет доказательств по случаю, учению или периоду для аудитов.</value></data>
-  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>Служба качества, администратор системы качества и аудиторы.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>Выберите и просмотрите</value></data>
-  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>Выберите объект; предпросмотр показывает семь разделов файла.</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>Скачайте и проверьте</value></data>
-  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>Скачайте PDF или CSV; SHA-256 в журнале вычисляется по байтам файла.</value></data>
-  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>Задайте для компании цель учения, предупреждение о частоте и цели эффективности.</value></data>
-  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>Администратор системы качества.</value></data>
-  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>Измените</value></data>
-  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>Измените значения и укажите причину не короче 10 символов.</value></data>
-  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>Сохраните</value></data>
-  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>Сохраните; если требует политика, подпишите в окне подписи. Каждое изменение попадает в историю.</value></data>
   <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Сводка</value></data>
   <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · Результат прослеживания</value></data>
   <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Запросы карантина и результаты</value></data>

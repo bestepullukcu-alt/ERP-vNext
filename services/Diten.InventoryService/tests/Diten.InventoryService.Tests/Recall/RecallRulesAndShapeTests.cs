@@ -190,10 +190,10 @@ public sealed class RecallContractTests
     private static List<string> Strings(JsonNode? node) => node!.AsArray().Select(v => v!.GetValue<string>()).ToList();
 
     [Fact]
-    public void The_contract_is_frozen_1_8_0_owned_by_MOD_0177_with_the_CT_additions()
+    public void The_contract_is_frozen_1_9_0_owned_by_MOD_0177_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.8.0", info["version"]!.GetValue<string>()); // WP-MVP1-NAMES1: 1.7.0 → 1.8.0 (additive optional names)
+        Assert.Equal("1.9.0", info["version"]!.GetValue<string>()); // WP-MVP1-FU-CLEAN2: 1.8.0 → 1.9.0 (the drill / return-link person members named)
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0177", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/recall", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -217,6 +217,9 @@ public sealed class RecallContractTests
             "RECALL_EVIDENCE_EXPORT_NOT_FOUND" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         // NAMES1 (1.8.0): UserRef / UserAt name, the name at the time of the action, never for an assigned person
         Assert.All(new[] { "1.8.0", "WP-MVP1-NAMES1", "UserRef and UserAt gain the optional member name", "AT THE TIME", "DrillPlan.owner", "one batch" },
+            t => Assert.Contains(t, changelog, StringComparison.Ordinal));
+        // FU-CLEAN2 (1.9.0): the person members of DrillRun / ReturnLink named, nothing required, additionalProperties kept
+        Assert.All(new[] { "1.9.0", "WP-MVP1-FU-CLEAN2", "FU-0177-DRILL-STEP-SCHEMA", "DrillRun.startedBy", "ReturnLink.linkedBy", "No member becomes required" },
             t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         Assert.Equal(RecallPermissions.All.OrderBy(k => k), Strings(Yaml.Value["x-permissions"]!["owned"]).OrderBy(k => k));
         Assert.Equal("APPROVE", Yaml.Value["x-signable-actions"]!["defaultMeaningCode"]!.GetValue<string>());
