@@ -76,4 +76,5 @@
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>El apellido es demasiado largo. Acórtelo e inténtelo de nuevo.</value></data>
   <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>La dirección de correo electrónico es demasiado larga. Acórtela e inténtelo de nuevo.</value></data>
   <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>Hay un problema más; revise lo que ha introducido e inténtelo de nuevo.</value></data>
+  <data name="ErrorUserDeactivateLastSteward" xml:space="preserve"><value>Desactivar esta cuenta no dejaría ninguna otra cuenta activa que pueda agregar usuarios. Primero conceda ese derecho a otro usuario.</value></data>
 </root>
