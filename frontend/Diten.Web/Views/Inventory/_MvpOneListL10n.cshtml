@@ -1,0 +1,33 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    WP-MVP1-FIX-LIVE3 (live finding 2: "Search..." in English on Recall Vakaları and Karantina) — the list component's shared words for the
+    MVP-1 list pages (Inventory, Traceability, Quarantine, Expiry, Recall). The shell's bridge and _DataTableL10n do not carry them, so a
+    page without its own bridge fell to the English (or empty) fallbacks of dt-defaults.js / diten-datatable.js. From SharedResource
+    (localization-standard: toolbar words are shared, 7 languages); mvp1-list-l10n.js fills ONLY the keys the page did not set itself (a
+    page that chose its own sentence keeps it — dt-defaults' per-key rule). Rendered once per request, before the page's list script.
+*@
+@if (Context.Items["MvpOneListL10nRendered"] is not true)
+{
+    Context.Items["MvpOneListL10nRendered"] = true;
+    <script id="mvp1-list-l10n" type="application/json">
+        @Json.Serialize(new Dictionary<string, string>
+        {
+            ["Search"] = SharedLocalizer["Search"].Value,
+            ["Filter"] = SharedLocalizer["Filter"].Value,
+            ["Apply"] = SharedLocalizer["Apply"].Value,
+            ["Reset"] = SharedLocalizer["Reset"].Value,
+            ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
+            ["SaveView"] = SharedLocalizer["SaveView"].Value,
+            ["ColumnVisibility"] = SharedLocalizer["ColumnVisibility"].Value,
+            ["Import"] = SharedLocalizer["Import"].Value,
+            ["Export"] = SharedLocalizer["Export"].Value,
+            ["Cancel"] = SharedLocalizer["Cancel"].Value,
+            ["Close"] = SharedLocalizer["Close"].Value,
+            ["Unknown"] = SharedLocalizer["Unknown"].Value,
+            ["RecordSaved"] = SharedLocalizer["RecordSaved"].Value,
+            ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value
+        })
+    </script>
+    <script src="~/assets/js/Inventory/mvp1-list-l10n.js" asp-append-version="true"></script>
+}

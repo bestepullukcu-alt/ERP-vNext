@@ -222,12 +222,19 @@ public sealed partial class StockMovementsController : Controller
             items.SelectMany(t => new[] { t.ToWarehouseId, t.ToLocationId }),
             cancellationToken);
 
+        // WP-MVP1-FIX-LIVE3: the LOT column shows the lot number (the S-1 FIX-LIVE1 rule) — one TRACE listLots per SKU of the page (never per
+        // row), only with the caller's own trace.lots.read; a registered lot that cannot be read stays unresolved (the page says "unknown lot").
+        var lotNumbers = await LotNumberResolver.ResolveAsync(
+            _permissions.Has(LotNumberResolver.ReadKey) ? TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User) : null,
+            items.Select(t => new LotNumberResolver.Row(t.LotId, t.SkuId, t.SkuLevel)),
+            cancellationToken);
+
         var total = page.Total ?? items.Count;
         return Json(new
         {
             data = new
             {
-                items = InventoryListAdapter.MapTransactions(items, labels),
+                items = InventoryListAdapter.MapTransactions(items, labels, lotNumbers),
                 total,
                 filteredTotal = total
             },

@@ -790,6 +790,12 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
 - **Yardım paneli:** 8 stok sayfasının metni (7 dil); `#offcanvasLocationForm` Enter ile kaydeder (`data-dt-primary="enter"`, istisna satırı çıktı).
 - **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
 
+**WP-MVP1-FIX-LIVE3 — kapanış canlı turu: lot numarası, arama ipucu, sekme büyük harfi (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (MVP-1 ucu `03c697e1a`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md`.
+- **S-2 lot sütunu (bulgu 1):** kayıtlı lot için TRACE lot numarası (`LotNumberResolver`, sayfa başına SKU başına tek `listLots`, okuyanın kendi `trace.lots.read`'i); okuyana Lot bağlantısı; okunamayan kayıtlı lotta 7 dilde "Bilinmeyen lot", kimlik yalnız `title`'da; yazılmış lot metni değişmedi. Filtre / S-1 "Geçmiş" / "Düzelt" kimlikle.
+- **Liste sözcükleri (bulgu 2):** MVP-1 liste sayfaları ortak sözcükleri (`Search`, `Filter`, `Apply`, `Reset`, `ShowAll`, `SaveView`, `ColumnVisibility`, `Import`…) `SharedResource`'tan `_MvpOneListL10n` ile alır; sayfanın kendi sözcüğü kazanır. `dt-defaults.js` değişmedi.
+- **Sekmeler (bulgu 3):** tema `nav-link`'i `capitalize` yapıyor (core.css, ortak); MVP-1 sekmeleri temanın `.text-none`'unu taşır.
+- **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
+
 
 ## 20. Follow-up Items
 

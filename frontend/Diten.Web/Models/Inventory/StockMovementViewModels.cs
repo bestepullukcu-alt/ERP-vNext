@@ -73,6 +73,10 @@ public sealed class StockMovementRowViewModel
     public string? ToLocationId { get; init; }
     public string? ToLocationLabel { get; init; }
     public string? LotId { get; init; }
+    /// <summary>WP-MVP1-FIX-LIVE3: the TRACE lot number of a registered <see cref="LotId"/> (LotNumberResolver, one read per SKU of the page).</summary>
+    public string? LotNumber { get; init; }
+    /// <summary>A registered lot whose number could not be read — the cell says "unknown lot", the id only as the title.</summary>
+    public bool LotUnresolved { get; init; }
     public string? FromStockStatus { get; init; }
     public string? ToStockStatus { get; init; }
     public string? SourceModule { get; init; }
