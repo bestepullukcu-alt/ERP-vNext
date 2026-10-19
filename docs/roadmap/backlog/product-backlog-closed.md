@@ -5369,3 +5369,20 @@ satır girmedi (tavan değişmedi); `page-help-ledger.test.js` içinde `MAIN_SYN
 **Kapanış (2026-10-19, CT):** WP-SYNC-144 W-UXH (`4b88fed8a`, test dalı). 5 sayfa + W3E'nin 2 sayfası (CRMVISITQRCODES, CRMVISITEVIDENCEFLAGS) için `PageHelpResource` 7 dilde (Purpose / Audience / Immediate / Step1..5 + Title) + `PageHelpCatalog` adım ikonları; `MAIN_SYNC_3_PAGES` boşaldığı için nesnesi ve testi kaldırıldı. Node 16'da ledger taraması: taban 1 kırmızı (CRMVISIT* + DEMANDPLANNING) → yalnız DEMANDPLANNING (MOD-0188, başka modül).
 
 ---
+
+### BL-640
+
+**Rakip ürünler (WP-VW-W4) MDM belge eşleme kaydında yok; iki belge bütün olarak yazılıyor**
+
+DURUM: KAPANDI · SAHİP: WP-VW-W4 (rakip ürün / ziyaret raporu) geliştiricisi · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** main-sync 2026-10-14 ile gelen `CompetitorProduct`, `CompetitorProposalDecision` ve MOD-0023 sonuç kutusu `ProcessedEvent`
+kendi `CompetitorProductClassMaps`'iyle geliyor; hattın `MdmDocumentClassMaps` kaydında değiller. `CompetitorProductRepository`
+ve `MongoWorkflowApprovalStore<T>` kaydı bütün olarak değiştiriyor (`ReplaceOneAsync`) ve okuma esnek — sonraki bir sürümün
+eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests` iki testte adlı, sahipli istisna.
+**Yapılacak:** türler `MdmDocumentClassMaps`'e alınır; bütün yazılar alan düzeyine iner ya da eşleme katı olur; satırlar çıkar.
+**Gelecek regresyon riski:** 🟡
+
+**Kapanış (2026-10-19, CT):** WP-SYNC-144 BL-640 (test dalı `93171f288`; ajan `16fef0d6a`). CompetitorProduct, CompetitorProposalDecision ve ProcessedEvent `MdmDocumentClassMaps` köklerinde (alt tipler kayıt gezintisiyle); `CompetitorProductClassMaps` silindi (iki kökü hiç kaydetmiyormuş — MapIdMember istisnası yutuluyordu, türler katı AutoMap'teydi). `CompetitorProductRepository` ve `MongoWorkflowApprovalStore<T>` alan düzeyi `$set` (`FieldLevelUpdate`), kiracı + kimlik + sürüm CAS aynı; `MainSyncUncoveredTypes` / `MainSyncLenientWholeWrites` boşaldı. Kalan bilinen sınır: liste elemanlarının alt alanları (fiyatlar, onay turları…) güncellemede yine bütün yazılır.
+
+---

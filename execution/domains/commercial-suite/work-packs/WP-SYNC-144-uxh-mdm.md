@@ -93,3 +93,25 @@ KORU/YAPMA: rakip ürün / öneri API sözleşmeleri, Workflow onay akışı (So
 DOĞRULA: MDM testleri — (a) Verify üç türü ve alt tiplerini kapsar; (b) eski biçimde (bugünkü CompetitorProductClassMaps ile) yazılmış bir CompetitorProduct / CompetitorProposalDecision / ProcessedEvent belgesi yeni eşlemeyle okunur (gerçek mongod; BsonDocument ile hazırlanmış eski şekil); (c) bilinmeyen bir alan taşıyan belge güncellenince o alan KORUNUR (BL-640'ın asıl riski); (d) CAS çakışması ve kiracı izolasyonu aynen (başka kiracının kaydı güncellenmez); (e) GUID alanları sorguda eşleşir. MdmDocumentClassMapsTests + IsolationTests yeşil, BL-640 satırları yok + 3 sabotaj (.bak + touch): (1) CompetitorProduct Roots'tan çıkarılsın → kırmızı; (2) CompetitorProductRepository yeniden ReplaceOneAsync'e dönsün → (c) kırmızı; (3) muafiyet satırı geri eklensin → "yalnız küçülür" kırmızı. MDM tam takım (-o repo içi) + mimari, taban karşılaştırması.
 Commit: "fix(mdm): WP-SYNC-144 BL-640 — competitor product, proposal decision and processed event types on MdmDocumentClassMaps; field-level writes keep unknown fields; BL-640 exemption rows removed" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — BL-640 E2 ACCEPTED (2026-10-19) — SYNC-144 KAPANDI
+Test dalına alındı: `93171f288` (ajan `16fef0d6a`), çakışmasız. BL-640 `DURUM: KAPANDI` yapılıp arşive taşındı.
+
+**Ne geldi:**
+- CompetitorProduct, CompetitorProposalDecision ve ProcessedEvent (`NestedDocument`) `MdmDocumentClassMaps` köklerinde; 7 alt tip kayıt gezintisiyle kapsanıyor.
+- `CompetitorProductClassMaps.cs` ve DI çağrısı silindi; eşlemenin tek kaynağı kayıt.
+- Yeni `FieldLevelUpdate.SetMappedFields`: eşlenmiş üyelerin `$set`'i, `_id` hariç. `CompetitorProductRepository` ve `MongoWorkflowApprovalStore<T>` artık `ReplaceOne` yerine bunu kullanıyor. Kiracı + kimlik + beklenen sürüm koşulu ve yarış kaybında davranış aynı.
+- `MainSyncUncoveredTypes` ve `MainSyncLenientWholeWrites` boşaldı ve kaldırıldı.
+
+**Ajanın ölçümü (önemli):** Eski `CompetitorProductClassMaps` iki kök türü HİÇ kaydetmemiş. Inherited `Id` üzerindeki `MapIdMember` `ArgumentOutOfRangeException` attı ve `TryRegister` bunu "yarış" sanıp yuttu. Türler bugüne kadar sürücünün katı AutoMap'iyle çalışmış: yeni alan taşıyan belge okunamazdı. Saklı şekil (`_id`, Guid alt tür 04, `IsSelectable` yazılmıyor) kaydın eşlemesiyle birebir aynı → **veri göçü gerekmedi**.
+
+**CT kontrolü:**
+- **Diff:** yalnız MDM Persistence + testler; API, Workflow ve diğer MDM türleri aynı.
+- **Testler** (CT `-o`, kendi geçici mongod'u): ilgili sınıflar (class map, rakip ürün, BL-640, onay) 181/181, 0 atlanan.
+  - Ajanın tam takımı: Application 2927/53 (taban 2902/51; fark zamanlama kaynaklı, tek başına 59/59), Api 1144/3, mimari 125/13; Api ve mimaride aynı adlarla tabanla eşit.
+  - Ajan kendi testinin yorumundaki "localhost:27017" ifadesini BL595 bekçisinin yakaladığını gördü ve düzeltti.
+- **CT sabotajı (ajanın dokunmadığı kural):** `MongoWorkflowApprovalStore` güncelleme filtresinden kiracı koşulu kaldırıldı (`Filter.Empty`) → `WorkflowApprovalInfrastructureTests…loads_with_the_given_tenant_only…` **kırmızı**; md5 ile geri alındı.
+
+**Bilinen sınır (kabul, takip):** **FU-MDM-LIST-ELEMENT-FIELDS.** Alan düzeyi yazı üst düzeydeki bilinmeyen alanları koruyor, ama `$set` edilen listeler (fiyatlar, fiyat geçmişi, onay turları…) bütün yazılıyor. Sonraki bir sürümün liste elemanına eklediği alt alan, eski sürümün güncellemesinde kaybolur (Item'ın iki listesiyle aynı bilinen durum). Bekçinin "bütün dizi `$set`" taraması `BsonDocument` ile yapılan `$set`'i görmüyor. Ajan muafiyet eklemek yerine raporladı; tarama genişletilirse bu alt tipler adlı borç olur (Kapanış / MDM sahibi kararı).
+
+**SYNC-144 sonucu:** (1) main senkronu ✅ · (2) W-UXH ✅ (BL-641 + BL-642) · (3) BL-640 ✅. Üç borç da 13 Kasım sınırından önce kapandı. BL-645 (referans kiracı) kullanıcı ve Kapanış kararı olarak açık.

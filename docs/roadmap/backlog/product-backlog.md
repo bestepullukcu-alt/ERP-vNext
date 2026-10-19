@@ -10110,20 +10110,6 @@ türü farklı aynı adla bir sıralamayı kaçırabilir.
 
 ---
 
-### BL-640
-
-**Rakip ürünler (WP-VW-W4) MDM belge eşleme kaydında yok; iki belge bütün olarak yazılıyor**
-
-DURUM: AÇIK · SAHİP: WP-VW-W4 (rakip ürün / ziyaret raporu) geliştiricisi · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
-
-**Ne:** main-sync 2026-10-14 ile gelen `CompetitorProduct`, `CompetitorProposalDecision` ve MOD-0023 sonuç kutusu `ProcessedEvent`
-kendi `CompetitorProductClassMaps`'iyle geliyor; hattın `MdmDocumentClassMaps` kaydında değiller. `CompetitorProductRepository`
-ve `MongoWorkflowApprovalStore<T>` kaydı bütün olarak değiştiriyor (`ReplaceOneAsync`) ve okuma esnek — sonraki bir sürümün
-eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests` iki testte adlı, sahipli istisna.
-**Yapılacak:** türler `MdmDocumentClassMaps`'e alınır; bütün yazılar alan düzeyine iner ya da eşleme katı olur; satırlar çıkar.
-**Gelecek regresyon riski:** 🟡
-
----
 
 
 
