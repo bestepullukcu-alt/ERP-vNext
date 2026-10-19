@@ -105,6 +105,7 @@
   <data name="ActionVerb_Block" xml:space="preserve"><value>Блокировка</value></data>
   <data name="ActionVerb_Capture" xml:space="preserve"><value>Сбор данных</value></data>
   <data name="ActionVerb_Change" xml:space="preserve"><value>Изменение</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Изменить бренд</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Изменение статуса</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>Фиксация</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>Настройка</value></data>

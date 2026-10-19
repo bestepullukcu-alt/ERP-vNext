@@ -105,6 +105,7 @@
   <data name="ActionVerb_Block" xml:space="preserve"><value>حظر</value></data>
   <data name="ActionVerb_Capture" xml:space="preserve"><value>إدخال</value></data>
   <data name="ActionVerb_Change" xml:space="preserve"><value>تغيير</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>تغيير العلامة التجارية</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>تغيير الحالة</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>تثبيت</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>ضبط</value></data>

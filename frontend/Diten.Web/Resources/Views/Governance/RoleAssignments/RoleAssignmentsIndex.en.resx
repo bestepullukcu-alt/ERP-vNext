@@ -105,6 +105,7 @@
   <data name="ActionVerb_Block" xml:space="preserve"><value>Block</value></data>
   <data name="ActionVerb_Capture" xml:space="preserve"><value>Capture</value></data>
   <data name="ActionVerb_Change" xml:space="preserve"><value>Change</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Change Brand</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Change Status</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>Commit</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>Configure</value></data>

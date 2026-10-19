@@ -105,6 +105,7 @@
   <data name="ActionVerb_Block" xml:space="preserve"><value>Bloquear</value></data>
   <data name="ActionVerb_Capture" xml:space="preserve"><value>Capturar</value></data>
   <data name="ActionVerb_Change" xml:space="preserve"><value>Cambiar</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Cambiar marca</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Cambiar estado</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>Hacer definitivo</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>Configurar</value></data>

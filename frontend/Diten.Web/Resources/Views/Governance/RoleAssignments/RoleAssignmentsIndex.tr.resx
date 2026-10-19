@@ -105,6 +105,7 @@
   <data name="ActionVerb_Block" xml:space="preserve"><value>Blokla</value></data>
   <data name="ActionVerb_Capture" xml:space="preserve"><value>Kayda Geçir</value></data>
   <data name="ActionVerb_Change" xml:space="preserve"><value>Değiştir</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Markayı Değiştir</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Durumu Değiştir</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>Kesinleştir</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>Yapılandır</value></data>
