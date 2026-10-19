@@ -7,6 +7,10 @@ namespace Diten.InventoryService.Persistence.Expiry;
 /// </summary>
 public static class ExpiryCollections
 {
+    /// <summary>WP-MVP1-FIX-LIVE2: the BL-501 central audit queue — READ ONLY by <see cref="ExpiryAuditNames"/> (person names); not an Expiry
+    /// record, so not in <see cref="All"/>.</summary>
+    public const string CentralAuditOutbox = Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord.CollectionName;
+
     public const string Policies = "expiry_policies";
 
     /// <summary>Insert-only.</summary>

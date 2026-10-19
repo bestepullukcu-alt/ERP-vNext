@@ -215,7 +215,7 @@
   <data name="Recall.Scope.New" xml:space="preserve"><value>new</value></data>
   <data name="Recall.Scope.EditHint" xml:space="preserve"><value>Include / exclude can be changed only before the scope approval; excluding an item excludes everything under it.</value></data>
   <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>The scope is approved; a change needs a scope revision.</value></data>
-  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Seal (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Current scope digest (SHA-256) {0}</value></data>
   <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>Live re-trace vs the approved scope</value></data>
   <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>No difference: the live trace equals the approved scope.</value></data>
   <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>{0} out-of-scope finding(s): found now, not in the approved scope. They change nothing by themselves.</value></data>
@@ -615,15 +615,15 @@
   <data name="Recall.Ev.W.number" xml:space="preserve"><value>Number</value></data>
   <data name="Recall.Ev.W.class" xml:space="preserve"><value>Class</value></data>
   <data name="Recall.Ev.W.level" xml:space="preserve"><value>Level</value></data>
-  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Item</value></data>
-  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Item id</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU id</value></data>
   <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>Root lot</value></data>
   <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>Reason reference</value></data>
   <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>Opened by</value></data>
   <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>Opened at</value></data>
   <data name="Recall.Ev.W.direction" xml:space="preserve"><value>Direction</value></data>
   <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>Scope revision</value></data>
-  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Trace seal (SHA-256)</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Trace snapshot digest</value></data>
   <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>Scope approved by</value></data>
   <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>Scope approved at</value></data>
   <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>Effectiveness completed by</value></data>
@@ -651,4 +651,37 @@
   <data name="Recall.Band.Release" xml:space="preserve"><value>This lot is under recall ({0}); releasing it does not lift the exit block.</value></data>
   <data name="Recall.Band.HoldSource" xml:space="preserve"><value>Source: recall {0}</value></data>
   <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>Enter customer return</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>Item</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>SKU code</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>Company</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>Company id</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>Submitted scope seal (signed)</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>Approved scope seal (signed)</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>Opened by (id)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>Scope approved by (id)</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>Effectiveness completed by (id)</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>Closed by (id)</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>Cancelled by (id)</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>User id</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>Signer id</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>Warehouse id</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>Location id</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0} (name unreadable)</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0} (unreadable)</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>No</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>Passed</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>Failed</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>Valid</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>Invalidated</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>Unreadable ({0})</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>Effectiveness check result</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>No shipments — no quantity to measure</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>Not completed yet — current figures</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>Approval</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>This document was produced in English (the selected language is not supported in the PDF)</value></data>
+  <data name="Recall.Scope.SubmittedSeal" xml:space="preserve"><value>Submitted scope seal (signed) {0}</value></data>
+  <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>Approved scope seal (signed) {0}</value></data>
+  <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>The current scope digest differs from the last seal — the scope changed after it was sealed.</value></data>
+  <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>There are no customers in the scope; a return can be linked only to a customer in the approved scope. Customers come from sales shipments.</value></data>
 </root>

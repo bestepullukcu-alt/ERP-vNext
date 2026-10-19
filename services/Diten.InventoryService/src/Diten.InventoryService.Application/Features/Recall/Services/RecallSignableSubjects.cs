@@ -40,8 +40,9 @@ public sealed record RecallDrillRunSubjectFacts(
 /// (<c>GET /api/recall/esign-subjects/…</c>) and the signature verification (<see cref="ESignRecallSignature"/>) call the same field functions and
 /// <see cref="Hash"/> (CT decision F3-A: 0177 compares the signed <c>subjectHash</c> with this hash of the CURRENT record).
 /// <list type="bullet">
-/// <item><c>recall.case</c> — <c>rc-v1</c>. <c>submittedSnapshotSha256</c> / <c>approvedSnapshotSha256</c> are the trace seals: signing the scope
-/// signs exactly the frozen trace. <c>pendingAction</c> + <c>pendingActionPayloadSha256</c> are the PREPARED decision.</item>
+/// <item><c>recall.case</c> — <c>rc-v1</c>. <c>submittedSnapshotSha256</c> / <c>approvedSnapshotSha256</c> carry the SCOPE seals
+/// (<see cref="RecallScopeSeal.Sha256"/>, rs-scope-v1 — measured in WP-MVP1-FIX-LIVE2; the field names are frozen by rc-v1): signing the
+/// scope signs exactly the sealed scope items. The trace snapshot digest is not signed. <c>pendingAction</c> + <c>pendingActionPayloadSha256</c> are the PREPARED decision.</item>
 /// <item><c>recall.drill-run</c> — <c>dr-v1</c> (R5).</item>
 /// <item><c>recall.settings-change</c> — <c>rs-v1</c>, the prepared change (<see cref="RecallSettingsChange"/>).</item>
 /// </list>
@@ -177,8 +178,9 @@ public static class RecallSignableSubjects
             new("Sınıf / Class", fields["class"]!),
             new("Kök lot / Root lot", c.RootLotNumber),
             new("Kapsam revizyonu / Scope revision", fields["scopeRevision"]!),
-            new("Gönderilen iz / Submitted trace", fields["submittedSnapshotSha256"] ?? "—"),
-            new("Onaylanan iz / Approved trace", fields["approvedSnapshotSha256"] ?? "—"),
+            // WP-MVP1-FIX-LIVE2: these two are the rs-scope-v1 SCOPE seals (not a trace digest) — the same names as the screen and the evidence pack
+            new("Gönderilen kapsam mührü / Submitted scope seal", fields["submittedSnapshotSha256"] ?? "—"),
+            new("Onaylanan kapsam mührü / Approved scope seal", fields["approvedSnapshotSha256"] ?? "—"),
             new("Hariç / Excluded", fields["excludedCount"]!),
             new("Stok · Sevkiyat / Stock · Shipments", $"{fields["includedStockCount"]} · {fields["includedShipmentCount"]}"),
             new("Karar / Decision", decision)

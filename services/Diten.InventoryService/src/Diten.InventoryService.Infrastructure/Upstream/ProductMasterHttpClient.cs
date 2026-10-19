@@ -77,7 +77,9 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                 // WP-0176-F1 (v1.1 SkuRef :729-732): the shelf-life days — unknown stays null ("Tanımsız"), never 0.
                 NullableDays(root, "shelfLifeDays"),
                 NullableDays(root, "retestDays"),
-                NullableDays(root, "minRemainingShelfLifeDays")),
+                NullableDays(root, "minRemainingShelfLifeDays"),
+                // WP-MVP1-FIX-LIVE2: the SKU code for display (evidence packs); absent stays null.
+                UpstreamHttp.OptionalString(root, "canonicalCode")),
             Unavailable,
             cancellationToken);
 

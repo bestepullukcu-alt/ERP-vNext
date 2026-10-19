@@ -93,7 +93,9 @@ public sealed class CreateRecallEvidenceExportHandler : IRequestHandler<CreateRe
                 : RecallSupport.KeyReused<RecallEvidenceExportDto>();
         }
 
-        var (document, code, error, status) = await _builder.BuildAsync(request.CaseId, request.RunId, request.From, request.To, request.Language, ct);
+        // WP-MVP1-FIX-LIVE2: a PDF is worded in a language its font draws (zh / ar → en + note); the CSV in the selected one
+        var (document, code, error, status) = await _builder.BuildAsync(request.CaseId, request.RunId, request.From, request.To, request.Language, ct,
+            forPdf: format == RecallEvidenceFormat.Pdf);
         if (document is null) return Response<RecallEvidenceExportDto>.Fail(code!, error!, status);
 
         var bytes = format == RecallEvidenceFormat.Csv ? RecallEvidenceCsv.Render(document) : _pdf.Render(document);

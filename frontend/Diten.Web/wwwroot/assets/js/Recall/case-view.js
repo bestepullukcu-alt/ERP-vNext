@@ -98,12 +98,33 @@ var RecallCaseView = (function () {
         const query = new URLSearchParams({ type: 'CUSTOMER_RETURN' });
         if (c.item?.itemId) query.set('itemId', c.item.itemId);
         if (c.item?.skuId && c.item?.skuLevel) query.set('sku', `${c.item.skuLevel}:${c.item.skuId}`);
+        // WP-MVP1-FIX-LIVE2 (finding 8): the product / SKU as the case shows them, for the form's display only (never an id as a name)
+        if (c.itemLabel && c.itemLabel !== c.item?.itemId) query.set('itemText', c.itemLabel);
+        if (c.skuLabel && c.skuLabel !== c.item?.skuId) query.set('skuText', c.skuLabel);
         query.set('lotId', lotId);
         query.set('toStatus', 'QUARANTINE');
         return `/StockMovements/Create?${query}`;
     };
 
-    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, treeOrder, errorKey, customerReturnHref };
+    /**
+     * WP-MVP1-FIX-LIVE2 (finding 4) — the seal lines of the scope tab: the stored submitted / approved scope seals (what rc-v1 signs as
+     * submittedSnapshotSha256 / approvedSnapshotSha256), then the live digest of the current items; differs = the live digest is not the last
+     * stored seal (the scope changed after sealing).
+     */
+    const seals = (c, scope) => {
+        const lines = [];
+        if (c?.submittedScope?.sha256) lines.push({ kind: 'submitted', key: 'Recall.Scope.SubmittedSeal', hash: c.submittedScope.sha256 });
+        if (c?.approvedScope?.sha256) lines.push({ kind: 'approved', key: 'Recall.Scope.ApprovedSeal', hash: c.approvedScope.sha256 });
+        if (scope?.sha256) lines.push({ kind: 'current', key: 'Recall.Scope.Seal', hash: scope.sha256 });
+        // the last seal = the one of the highest revision (a revision under approval is newer than the approved one)
+        const last = [c?.approvedScope, c?.submittedScope].filter((s) => s?.sha256).sort((a, b) => (b.revision || 0) - (a.revision || 0))[0]?.sha256 || null;
+        return { lines, differs: !!(last && scope?.sha256 && scope.sha256 !== last) };
+    };
+
+    /** WP-MVP1-FIX-LIVE2 (finding 7): a return can be linked only to a customer of the scope — none → false (explain, no button). */
+    const linkable = (customers) => Array.isArray(customers) && customers.length > 0;
+
+    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, treeOrder, errorKey, customerReturnHref, seals, linkable };
 })();
 
 if (typeof window !== 'undefined') window.RecallCaseView = RecallCaseView;

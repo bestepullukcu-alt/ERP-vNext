@@ -28,6 +28,7 @@ public static class ExpiryServiceCollectionExtensions
         // F3 — MOD-0022 (CT decision F3-A: getSignature + the local fx-v1 / do-v1 hash); F1 / F2 fail-closed classes stay as fallbacks.
         services.AddScoped<IExpiryResolutionSignature, ESignExpiryResolutionSignature>();
         services.AddScoped<IExpirySubjectDirectory, ExpirySubjectDirectory>();
+        services.AddScoped<IExpiryAuditNames, ExpiryAuditNames>(); // WP-MVP1-FIX-LIVE2: evidence person names (central audit queue, read only)
         var gateway = configuration.GetSection(GatewayOptions.SectionName).Get<GatewayOptions>() ?? new GatewayOptions();
         var gatewayUri = Uri.TryCreate(gateway.BaseUrl, UriKind.Absolute, out var parsed)
             ? parsed

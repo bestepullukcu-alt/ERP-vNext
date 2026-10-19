@@ -7,6 +7,8 @@ namespace Diten.InventoryService.Application.Common.Upstream;
 /// open enum: carried as text, decided by <c>ProductMasterStockRules</c>). WP-0174-ITEM: <see cref="Stockable"/> (null = not stated).
 /// WP-0176-F1 (v1.1 <c>SkuRef</c>, days): <see cref="ShelfLifeDays"/>, <see cref="RetestDays"/>, <see cref="MinRemainingShelfLifeDays"/> —
 /// absent or null = null ("Tanımsız"), never 0 (KF-C: a null minimum is not applied).
+/// WP-MVP1-FIX-LIVE2 (additive): <see cref="CanonicalCode"/> — <c>SkuRef.canonicalCode</c>, read for display only (evidence packs);
+/// absent = null, never invented.
 /// </summary>
 public sealed record SkuReference(
     string SkuId,
@@ -18,4 +20,5 @@ public sealed record SkuReference(
     bool? Stockable = null,
     int? ShelfLifeDays = null,
     int? RetestDays = null,
-    int? MinRemainingShelfLifeDays = null);
+    int? MinRemainingShelfLifeDays = null,
+    string? CanonicalCode = null);

@@ -258,6 +258,10 @@ public sealed class MovementReceiptViewModel
     public string? ToText { get; set; }
     public string? ToStockStatus { get; set; }
     public string? LotId { get; set; }
+    /// <summary>WP-MVP1-FIX-LIVE2 (finding 9): the lot NUMBER of a registered lot (TRACE, the caller's own trace.lots.read — the FIX-LIVE1
+    /// LotNumberResolver pattern); <see cref="LotUnresolved"/> = a registered lot whose number could not be read (the id is shown with a hint).</summary>
+    public string? LotNumber { get; set; }
+    public bool LotUnresolved { get; set; }
     public int SerialCount { get; set; }
     public string? DocumentNo { get; set; }
     public string? TransactionDate { get; set; }
@@ -265,6 +269,8 @@ public sealed class MovementReceiptViewModel
     /// <summary>The balance row the movement left (MovementResponse.balanceSnapshot).</summary>
     public string? BalanceLocationText { get; set; }
     public string? BalanceLotId { get; set; }
+    public string? BalanceLotNumber { get; set; }
+    public bool BalanceLotUnresolved { get; set; }
     public string? BalanceStatus { get; set; }
     public string? BalanceOnHand { get; set; }
     public string? BalanceAvailable { get; set; }

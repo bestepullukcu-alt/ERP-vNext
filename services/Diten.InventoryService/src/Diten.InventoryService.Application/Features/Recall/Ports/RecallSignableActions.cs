@@ -67,6 +67,8 @@ public sealed record RecallESignPolicy(bool Required, string? MeaningCode, strin
 /// <summary>
 /// The parts of a MOD-0022 <c>SignatureRecord</c> (ESIGN-BUNDLE §4.5, <c>esign.openapi.yaml:654-684</c>) 0177 checks (CT decision F3-A, the
 /// 0176 F3 pattern). 0177 keeps none of it — only the id.
+/// WP-MVP1-FIX-LIVE2 (additive, display only): <see cref="SignerNameAtSign"/> — <c>signer.name</c>, the name MOD-0022 recorded at signing
+/// (<c>signerNameAtSign</c> of the digest); <see cref="MeaningText"/> — <c>meaningText</c> as signed. Absent = null, never invented.
 /// </summary>
 public sealed record RecallESignSignature(
     string Id,
@@ -78,7 +80,9 @@ public sealed record RecallESignSignature(
     string? MeaningCode,
     string? SubjectHash,
     DateTimeOffset? SignedAtUtc,
-    bool Invalidated);
+    bool Invalidated,
+    string? SignerNameAtSign = null,
+    string? MeaningText = null);
 
 public enum RecallESignOutcome
 {

@@ -433,6 +433,10 @@ public sealed class RecallCaseEvent : EntityBase
     /// <summary>null = the system.</summary>
     public Guid? ActorUserId { get; set; }
 
+    /// <summary>WP-MVP1-FIX-LIVE2 (additive): the actor's display name at the time of the event (the token's name claims, as the central audit
+    /// queue records it); null for the system, for events written before this field, or when the token carried no name.</summary>
+    public string? ActorName { get; set; }
+
     public DateTimeOffset AtUtc { get; set; }
 
     public string? Text { get; set; }

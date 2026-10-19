@@ -31,7 +31,11 @@ public sealed record ExpiryEvidenceExportPageDto(IReadOnlyList<ExpiryEvidenceExp
 /// <summary>getEvidenceExportFile — the stored bytes of one export (the controller answers them as the file).</summary>
 public sealed record ExpiryEvidenceFileDto(byte[] Content, string ContentType, string FileName, string Sha256);
 
-/// <summary>One case as the CSV / PDF prints it (identifiers only: the service holds no product names — evidence open point O-F5-2).</summary>
+/// <summary>
+/// One case as the CSV / PDF prints it. WP-MVP1-FIX-LIVE2 (FU-0176-EV-NAMES, additive): the names beside the ids, read at generation time —
+/// <see cref="ItemText"/> (PRODUCT-MASTER code · name), <see cref="SkuCode"/>, <see cref="WarehouseName"/> (code · name), <see cref="SignerName"/>
+/// (MOD-0022 <c>signerNameAtSign</c>) with <see cref="SignerUserId"/>; an unreadable one is the id + "(okunamadı)" / "(ad okunamadı)".
+/// </summary>
 public sealed record ExpiryEvidenceCaseRow(
     string Number,
     string Type,
@@ -45,9 +49,19 @@ public sealed record ExpiryEvidenceCaseRow(
     string? ResolutionReason,
     string? SignatureId,
     string? FirstEligibleLot,
-    string? BypassReason);
+    string? BypassReason,
+    string? ItemText = null,
+    string? SkuCode = null,
+    string? WarehouseName = null,
+    string? SignerName = null,
+    string? SignerUserId = null);
 
-/// <summary>Everything one evidence file shows; the renderers add no data of their own.</summary>
+/// <summary>
+/// Everything one evidence file shows; the renderers add no data of their own. WP-MVP1-FIX-LIVE2 (additive): <see cref="CompanyText"/> (MDM code ·
+/// name), <see cref="WarehouseTexts"/> (the scope's warehouses, code · name), <see cref="PolicyChangedByNames"/> (one per policy change, the
+/// central audit queue's name for that change's correlation id and user), <see cref="RequestedLanguage"/> (the selected language when the PDF is
+/// drawn in English — zh / ar). No Expiry entity gained a field: every name is read back from where it was recorded.
+/// </summary>
 public sealed record ExpiryEvidenceDocument(
     string LegalEntityId,
     string Preset,
@@ -60,4 +74,13 @@ public sealed record ExpiryEvidenceDocument(
     ExpiryDashboardKpisDto Summary,
     IReadOnlyList<ExpiryEvidenceCaseRow> Exceptions,
     IReadOnlyList<ExpiryPolicyHistoryEntryDto> PolicyChanges,
-    IReadOnlyList<ExpiryEvidenceCaseRow> Bypasses);
+    IReadOnlyList<ExpiryEvidenceCaseRow> Bypasses,
+    string? CompanyText = null,
+    IReadOnlyList<string>? WarehouseTexts = null,
+    IReadOnlyList<string>? PolicyChangedByNames = null,
+    string? RequestedLanguage = null)
+{
+    public string Company => string.IsNullOrEmpty(CompanyText) ? LegalEntityId : CompanyText;
+
+    public bool EnglishFallback => RequestedLanguage is { } r && r != Language;
+}

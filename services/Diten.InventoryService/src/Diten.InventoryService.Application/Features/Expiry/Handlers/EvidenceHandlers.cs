@@ -2,15 +2,18 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Diten.InventoryService.Application.Common.Models;
+using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.Expiry.Commands;
 using Diten.InventoryService.Application.Features.Expiry.Ports;
 using Diten.InventoryService.Application.Features.Expiry.Queries;
 using Diten.InventoryService.Application.Features.Expiry.Services;
 using Diten.InventoryService.Domain.Entities;
+using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Expiry.Entities;
 using Diten.InventoryService.Domain.Expiry.Enums;
 using Diten.InventoryService.Domain.Expiry.Repositories;
 using Diten.InventoryService.Domain.Expiry.Rules;
+using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
 using MediatR;
 
@@ -114,20 +117,40 @@ public sealed class ExpiryEvidenceBuilder
     private readonly ExpiryLotView _view;
     private readonly ExpiryReads _cases;
     private readonly ExpirySupport _support;
+    private readonly IExpiryESignClient _esign;
+    private readonly IExpiryAuditNames _auditNames;
+    private readonly IProductMasterClient _products;
+    private readonly ILegalEntityMasterClient _companies;
+    private readonly ILocationRepository _locations;
 
-    public ExpiryEvidenceBuilder(IExpiryRepository repository, IExpiryReadModel reads, ExpiryLotView view, ExpiryReads cases, ExpirySupport support)
+    public ExpiryEvidenceBuilder(IExpiryRepository repository, IExpiryReadModel reads, ExpiryLotView view, ExpiryReads cases, ExpirySupport support,
+        IExpiryESignClient esign, IExpiryAuditNames auditNames, IProductMasterClient products, ILegalEntityMasterClient companies, ILocationRepository locations)
     {
         _repository = repository;
         _reads = reads;
         _view = view;
         _cases = cases;
         _support = support;
+        _esign = esign;
+        _auditNames = auditNames;
+        _products = products;
+        _companies = companies;
+        _locations = locations;
     }
 
+    /// <summary>
+    /// The preview and the file document. WP-MVP1-FIX-LIVE2 (FU-0176-EV-NAMES): the document carries names beside the ids — company (MDM),
+    /// product / SKU (PRODUCT-MASTER), warehouses (MOD-0173 master), the signer of each resolution (MOD-0022 <c>signerNameAtSign</c>) and the
+    /// user of each policy change (the central audit queue's name for that change's correlation id and user) — read now with the caller's
+    /// token; an unreadable one is the id + "(okunamadı)". <paramref name="forPdf"/>: worded in a language the PDF font draws (zh / ar → en).
+    /// The preview (wire) is unchanged.
+    /// </summary>
     public async Task<(ExpiryEvidencePreviewDto Preview, ExpiryEvidenceDocument Document)> BuildAsync(
         ExpiryEvidencePeriod.Resolved period, IReadOnlyList<string> warehouseIds, IReadOnlyList<ExpiryExceptionType> types, string language,
-        CancellationToken ct)
+        CancellationToken ct, bool forPdf = false)
     {
+        var requested = ExpiryEvidenceText.Normal(language);
+        language = forPdf ? ExpiryEvidenceText.PdfLanguage(requested) : requested;
         var now = _support.Now();
         var context = await _view.LoadAsync(null, null, ct);
         var rows = warehouseIds.Count == 0 ? context.Rows : context.Rows.Where(r => warehouseIds.Contains(r.WarehouseId, StringComparer.Ordinal)).ToList();
@@ -140,7 +163,25 @@ public sealed class ExpiryEvidenceBuilder
         var warehouses = await _cases.WarehousesAsync(cases, ct);
         var listed = types.Count == 0 ? cases : cases.Where(c => types.Contains(c.Type)).ToList();
         var bypasses = cases.Where(c => c.Type == ExpiryExceptionType.FefoBypass).ToList();
-        var history = (await _repository.PolicyHistoryBetweenAsync(period.FromUtc, period.ToExclusiveUtc, ct)).Select(ExpiryMapping.History).ToList();
+        var changes = await _repository.PolicyHistoryBetweenAsync(period.FromUtc, period.ToExclusiveUtc, ct);
+        var history = changes.Select(ExpiryMapping.History).ToList();
+
+        // ── names (read now; unreadable → id + "(okunamadı)") ──
+        var audit = await _auditNames.NamesAsync(changes.Select(h => (h.CorrelationId, h.ChangedBy)).Distinct().ToList(), ct);
+        var changedBy = changes.Select(h => audit.TryGetValue((h.CorrelationId, h.ChangedBy), out var n) ? n
+            : ExpiryEvidenceText.Format("ExpiryPdf.NameUnreadable", language, h.ChangedBy.ToString("D"))).ToList();
+        var names = new Names(language);
+        foreach (var c in listed.Concat(bypasses).DistinctBy(c => c.Id))
+        {
+            if (!names.Items.ContainsKey(c.ItemId)) names.Items[c.ItemId] = await ItemTextAsync(c.ItemId, language, ct);
+            if (!names.Skus.ContainsKey((c.SkuId, c.SkuLevel))) names.Skus[(c.SkuId, c.SkuLevel)] = await SkuCodeAsync(c.SkuId, c.SkuLevel, language, ct);
+            if (c.ResolutionSignatureId is { } sid && !names.Signers.ContainsKey(sid)) names.Signers[sid] = await SignerAsync(sid, ct);
+        }
+
+        var scopeWarehouses = warehouseIds.Count == 0 ? []
+            : (await _locations.FindManyAsync(warehouseIds.Select(Guid.Parse).ToList(), ct)).ToDictionary(l => l.Id.ToString("D"), StringComparer.OrdinalIgnoreCase);
+        var warehouseTexts = warehouseIds.Select(id => scopeWarehouses.TryGetValue(id, out var l) ? Place(l)
+            : ExpiryEvidenceText.Format("ExpiryPdf.Unreadable", language, id)).ToList();
 
         var typeCodes = types.Select(ExpiryWire.Code).ToList();
         var preview = new ExpiryEvidencePreviewDto(
@@ -151,9 +192,71 @@ public sealed class ExpiryEvidenceBuilder
             bypasses.Select(c => Ref(c, warehouses, now)).ToList());
         var document = new ExpiryEvidenceDocument(
             _support.LegalEntityId.ToString("D"), period.Preset, period.From, period.To, warehouseIds, typeCodes, now, language, summary,
-            listed.Select(c => Row(c, warehouses)).ToList(), history, bypasses.Select(c => Row(c, warehouses)).ToList());
+            listed.Select(c => Row(c, warehouses, names)).ToList(), history, bypasses.Select(c => Row(c, warehouses, names)).ToList(),
+            await CompanyTextAsync(_support.LegalEntityId, language, ct), warehouseTexts, changedBy, requested);
         return (preview, document);
     }
+
+    /// <summary>The names read for one document (per distinct product, SKU, signature).</summary>
+    private sealed class Names(string language)
+    {
+        public string Language { get; } = language;
+        public Dictionary<Guid, string> Items { get; } = [];
+        public Dictionary<(Guid, SkuLevel), string> Skus { get; } = [];
+        public Dictionary<string, (string? UserId, string? Name)> Signers { get; } = new(StringComparer.Ordinal);
+    }
+
+    private async Task<string> CompanyTextAsync(Guid legalEntityId, string language, CancellationToken ct)
+    {
+        try
+        {
+            if (await _companies.GetLegalEntityNameAsync(legalEntityId, ct) is { } name) return $"{name.Code} · {name.Name}";
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // fall through: unreadable
+        }
+
+        return ExpiryEvidenceText.Format("ExpiryPdf.Unreadable", language, legalEntityId.ToString("D"));
+    }
+
+    private async Task<string> ItemTextAsync(Guid itemId, string language, CancellationToken ct)
+    {
+        try
+        {
+            if (await _products.GetProductAsync(itemId, ct) is { } p && (!string.IsNullOrWhiteSpace(p.CanonicalCode) || !string.IsNullOrWhiteSpace(p.Name)))
+                return string.Join(" · ", new[] { p.CanonicalCode, p.Name }.Where(v => !string.IsNullOrWhiteSpace(v)));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // fall through: unreadable
+        }
+
+        return ExpiryEvidenceText.Format("ExpiryPdf.Unreadable", language, itemId.ToString("D"));
+    }
+
+    private async Task<string> SkuCodeAsync(Guid skuId, SkuLevel level, string language, CancellationToken ct)
+    {
+        try
+        {
+            if (await _products.GetSkuAsync(skuId, level, ct) is { CanonicalCode: { Length: > 0 } code }) return code;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // fall through: unreadable
+        }
+
+        return ExpiryEvidenceText.Format("ExpiryPdf.Unreadable", language, skuId.ToString("D"));
+    }
+
+    /// <summary>The signer of a resolution as MOD-0022 recorded it (<c>signerNameAtSign</c>); unreadable → (null, null).</summary>
+    private async Task<(string? UserId, string? Name)> SignerAsync(string signatureId, CancellationToken ct)
+    {
+        var read = await _esign.SignatureAsync(signatureId, ct);
+        return read.IsOk ? (read.Value!.SignerUserId, string.IsNullOrWhiteSpace(read.Value.SignerNameAtSign) ? null : read.Value.SignerNameAtSign) : (null, null);
+    }
+
+    private static string Place(Location l) => string.Join(" · ", new[] { l.Code, l.Name }.Where(v => !string.IsNullOrWhiteSpace(v)).Distinct(StringComparer.Ordinal));
 
     private static ExpiryExceptionRefDto Ref(FefoExceptionCase c, IReadOnlyDictionary<Guid, Location> warehouses, DateTimeOffset now)
         => ExpiryMapping.Ref(c, warehouses, now) with
@@ -162,6 +265,25 @@ public sealed class ExpiryEvidenceBuilder
             ResolutionSignatureId = c.ResolutionSignatureId,
             ResolvedAtUtc = ExpirySupport.Wire(c.ResolvedAtUtc)
         };
+
+    private static ExpiryEvidenceCaseRow Row(FefoExceptionCase c, IReadOnlyDictionary<Guid, Location> warehouses, Names names)
+    {
+        var (signerId, signerName) = c.ResolutionSignatureId is { } sid && names.Signers.TryGetValue(sid, out var s) ? s : (null, null);
+        // the signer's name at signing; unreadable → the signer id (or, when MOD-0022 did not answer, the signature id) + "(ad okunamadı)"
+        var unread = signerId ?? c.ResolutionSignatureId;
+        var signer = signerName ?? (unread is null ? null : ExpiryEvidenceText.Format("ExpiryPdf.NameUnreadable", names.Language, unread));
+        var warehouseName = c.WarehouseId is null ? null
+            : Guid.TryParse(c.WarehouseId, out var wid) && warehouses.TryGetValue(wid, out var w) ? Place(w)
+            : ExpiryEvidenceText.Format("ExpiryPdf.Unreadable", names.Language, c.WarehouseId);
+        return Row(c, warehouses) with
+        {
+            ItemText = names.Items.GetValueOrDefault(c.ItemId),
+            SkuCode = names.Skus.GetValueOrDefault((c.SkuId, c.SkuLevel)),
+            WarehouseName = warehouseName,
+            SignerName = signer,
+            SignerUserId = signerId
+        };
+    }
 
     private static ExpiryEvidenceCaseRow Row(FefoExceptionCase c, IReadOnlyDictionary<Guid, Location> warehouses) => new(
         c.Number,
@@ -185,18 +307,28 @@ public sealed class ExpiryEvidenceBuilder
 /// The CSV of the Kanıt Paketi (FEFO-BUNDLE createEvidenceExport): <c>istisna_no;tur;urun;lot;depo;acilis;durum;cozum;imza</c>, one line
 /// per case of the period, UTF-8 with BOM, CRLF, <c>;</c> separator, RFC 4180 quoting; a cell that starts with = + - @ is prefixed with
 /// <c>'</c> (spreadsheet formula injection).
+/// <para>WP-MVP1-FIX-LIVE2 (additive): the nine columns stay where they were (codes and ids); the names and the worded values follow them —
+/// <c>urun_adi;sku_kodu;depo_adi;tur_adi;durum_adi;cozum_adi;imzalayan;imzalayan_kimlik</c>, in the document's language.</para>
 /// </summary>
 public static class ExpiryEvidenceCsv
 {
     public const string Header = "istisna_no;tur;urun;lot;depo;acilis;durum;cozum;imza";
 
+    /// <summary>The columns appended by WP-MVP1-FIX-LIVE2 (names / worded values beside the codes).</summary>
+    public const string NameColumns = "urun_adi;sku_kodu;depo_adi;tur_adi;durum_adi;cozum_adi;imzalayan;imzalayan_kimlik";
+
     public static byte[] Render(ExpiryEvidenceDocument document)
     {
-        var text = new StringBuilder().Append(Header).Append("\r\n");
+        var l = document.Language;
+        var text = new StringBuilder().Append(Header).Append(';').Append(NameColumns).Append("\r\n");
         foreach (var r in document.Exceptions)
         {
-            text.Append(string.Join(';', new[] { r.Number, r.Type, r.ItemId, r.LotNumber, r.Warehouse, r.OpenedAtUtc, r.Status, r.Resolution, r.SignatureId }
-                .Select(Cell))).Append("\r\n");
+            text.Append(string.Join(';', new[]
+                {
+                    r.Number, r.Type, r.ItemId, r.LotNumber, r.Warehouse, r.OpenedAtUtc, r.Status, r.Resolution, r.SignatureId,
+                    r.ItemText, r.SkuCode, r.WarehouseName, ExpiryEvidenceText.Value("Expiry.Type.", r.Type, l), ExpiryEvidenceText.Value("Expiry.Status.", r.Status, l),
+                    r.Resolution is null ? null : ExpiryEvidenceText.Value("Expiry.Resolution.", r.Resolution, l), r.SignerName, r.SignerUserId
+                }.Select(Cell))).Append("\r\n");
         }
 
         return [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(text.ToString())];
@@ -273,7 +405,8 @@ public sealed class CreateExpiryEvidenceExportHandler : IRequestHandler<CreateEx
         var (period, error) = ExpiryEvidencePeriod.Resolve(request.Preset, request.From, request.To, ExpiryLotView.Today(now));
         if (period is null) return ExpirySupport.Invalid<ExpiryEvidenceExportDto>(error!);
 
-        var (_, document) = await _builder.BuildAsync(period, warehouses, types, request.Language, ct);
+        // WP-MVP1-FIX-LIVE2: a PDF is worded in a language its font draws (zh / ar → en + note); the CSV in the selected one
+        var (_, document) = await _builder.BuildAsync(period, warehouses, types, request.Language, ct, forPdf: format == ExpiryEvidenceFormat.Pdf);
         var bytes = format == ExpiryEvidenceFormat.Csv ? ExpiryEvidenceCsv.Render(document) : _pdf.Render(document);
         var id = Guid.NewGuid();
         var export = new ExpiryEvidenceExport

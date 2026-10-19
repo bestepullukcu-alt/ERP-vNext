@@ -93,9 +93,9 @@ public sealed class RecallEvidenceTests : IClassFixture<RecallApiFactory>
             if (format == "Csv")
             {
                 var text = Encoding.UTF8.GetString(bytes);
-                Assert.StartsWith("﻿" + RecallEvidenceLabels.Of("title", "en") + ";" + Str(await w.S.GetAsync(caseId), "number"), text, StringComparison.Ordinal);
-                Assert.Contains("\n" + RecallEvidenceLabels.Of("number", "en") + ";", text, StringComparison.Ordinal); // the summary field worded, as in the PDF
-                Assert.All(RecallEvidenceSections.All, k => Assert.Contains("\r\n" + RecallEvidenceLabels.Of(k, "en") + "\r\n", text, StringComparison.Ordinal));
+                Assert.StartsWith("﻿" + RecallEvidenceText.Of("RecallPdf.Title", "en") + ";" + Str(await w.S.GetAsync(caseId), "number"), text, StringComparison.Ordinal);
+                Assert.Contains("\n" + RecallEvidenceText.Word("number", "en") + ";", text, StringComparison.Ordinal); // the summary field worded, as in the PDF
+                Assert.All(RecallEvidenceSections.All, k => Assert.Contains("\r\n" + RecallEvidenceText.Word(k, "en") + "\r\n", text, StringComparison.Ordinal));
             }
 
             // the same key + body → the same export (200), the same bytes and hash — never a re-render
@@ -143,11 +143,12 @@ public sealed class RecallEvidenceTests : IClassFixture<RecallApiFactory>
         Assert.Contains(RecallEvidence.Rows(RecallEvidence.Section(preview, "2_trace")), r => (r[0], r[2], r[3]) == ("Shipment", ShipmentBundleDouble.ShipTo(w.Shipment), "4"));
         Assert.Contains(RecallEvidence.Rows(RecallEvidence.Section(preview, "4_customers")), r => r.Contains(ShipmentBundleDouble.ShipTo(w.Shipment)));
 
-        // section 7: the test signature gate issues ids MOD-0022 does not know → every row "Unreadable:<outcome>", signer / meaning / time EMPTY
+        // section 7: the test signature gate issues ids MOD-0022 does not know → every row "Unreadable (<outcome>)", signer / meaning / time EMPTY
+        // (WP-MVP1-FIX-LIVE2 columns: action, signatureId, signer, signerId, meaning, signedAt, status — the status worded)
         var signatures = RecallEvidence.Rows(RecallEvidence.Section(preview, "7_signatures"));
         Assert.True(signatures.Count >= 3, string.Join(" | ", signatures.Select(r => string.Join(",", r))));
-        Assert.All(signatures, r => Assert.StartsWith("Unreadable:", r[5]));
-        Assert.All(signatures, r => Assert.Equal(("", "", ""), (r[2], r[3], r[4])));
+        Assert.All(signatures, r => Assert.StartsWith("Unreadable (", r[6]));
+        Assert.All(signatures, r => Assert.Equal(("", "", "", ""), (r[2], r[3], r[4], r[5])));
 
         // a signature MOD-0022 does know is read as recorded (signer, meaning, time) — never copied from the case
         var signedAt = new DateTimeOffset(2026, 10, 14, 9, 30, 0, TimeSpan.Zero);
@@ -157,8 +158,8 @@ public sealed class RecallEvidenceTests : IClassFixture<RecallApiFactory>
             .UpdateOneAsync(new BsonDocument("_id", caseId), new BsonDocument("$set", new BsonDocument("ClosureSignatureId", real)));
         var reread = RecallEvidence.Rows(RecallEvidence.Section(await PreviewAsync(w.S, token, caseId), "7_signatures"));
         var row = Assert.Single(reread, r => r[1] == real);
-        Assert.Equal((w.S.Qa2.ToString("D"), "APPROVE", "Ok"), (row[2], row[3], row[5]));
-        Assert.StartsWith("2026-10-14T09:30:00", row[4]);
+        Assert.Equal(("Signer", w.S.Qa2.ToString("D"), "Approval", "Valid"), (row[2], row[3], row[4], row[6]));
+        Assert.StartsWith("2026-10-14T09:30:00", row[5]);
 
         // MOD-0022 itself down → that row too is unreadable, still nothing invented
         _factory.ESign.Down = true;
@@ -166,8 +167,8 @@ public sealed class RecallEvidenceTests : IClassFixture<RecallApiFactory>
         {
             var down = RecallEvidence.Rows(RecallEvidence.Section(await PreviewAsync(w.S, token, caseId), "7_signatures"));
             var unreadable = Assert.Single(down, r => r[1] == real);
-            Assert.Equal(("", "", ""), (unreadable[2], unreadable[3], unreadable[4]));
-            Assert.StartsWith("Unreadable:", unreadable[5]);
+            Assert.Equal(("", "", "", ""), (unreadable[2], unreadable[3], unreadable[4], unreadable[5]));
+            Assert.StartsWith("Unreadable (", unreadable[6]);
         }
         finally
         {
@@ -243,7 +244,8 @@ public sealed class RecallDrillEvidenceTests : IClassFixture<RecallDrillApiFacto
         }
 
         var sign = Assert.Single(RecallEvidence.Rows(RecallEvidence.Section(run, "7_signatures")));
-        Assert.Equal((signature, w.S.Qa1.ToString("D"), "APPROVE", "Ok"), (sign[1], sign[2], sign[3], sign[5]));
+        // WP-MVP1-FIX-LIVE2 columns: action, signatureId, signer (name at signing), signerId, meaning (worded), signedAt, status (worded)
+        Assert.Equal((signature, "Signer", w.S.Qa1.ToString("D"), "Approval", "Valid"), (sign[1], sign[2], sign[3], sign[4], sign[6]));
 
         var (es, export, _) = await RecallEvidence.ExportAsync(w.S, token, RecallEvidence.Body("Pdf", runId: runId));
         Assert.True(es == 201, export.ToString());

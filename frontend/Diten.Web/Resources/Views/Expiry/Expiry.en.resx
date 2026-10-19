@@ -402,4 +402,53 @@
   <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>The reason must be at least 10 characters.</value></data>
   <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>The product master cannot be reached now; try again later.</value></data>
   <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>You may not prepare a date override.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>This document was produced in English (the selected language is not supported in the PDF)</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve"><value>Shows the company's expiry risk at a glance: critical and approaching stock, expired stock on hand, open exceptions and FEFO compliance.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve"><value>Quality assurance, warehouse managers and supply planners.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve"><value>Read the cards</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve"><value>Each card counts lots and quantities against the company's "Approaching" and "Critical" thresholds.</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve"><value>Go to the list</value></data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve"><value>Open a card or a risk lot to see the lots behind it and act on them.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve"><value>Lists the lots whose expiry is near, in FEFO order (earliest expiry first).</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve"><value>Warehouse, sales and quality users.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve"><value>Filter</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve"><value>Narrow by warehouse, product or severity; the horizon is the company's setting.</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve"><value>Act early</value></data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve"><value>Use these lots first or open an exception when a lot cannot be used in time.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Purpose" xml:space="preserve"><value>Lists expired lots that still have stock.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Audience" xml:space="preserve"><value>Quality assurance and warehouse managers.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1Title" xml:space="preserve"><value>Check the stock</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step1" xml:space="preserve"><value>Each row shows how long ago the lot expired and how much is still on hand.</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2Title" xml:space="preserve"><value>Resolve</value></data>
+  <data name="Help.EXPIRYEXPIRED.Step2" xml:space="preserve"><value>Quarantine or scrap the stock, or open an exception to record the decision.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve"><value>The inbox of FEFO exceptions: each deviation from the expiry rules, from opening to closing.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve"><value>Quality assurance users who review and decide exceptions.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve"><value>Take one</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve"><value>Filter by type or status; the SLA column shows the time left.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve"><value>Decide with a signature</value></data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve"><value>Accept with a reason, record the fix or cancel; the decision is signed electronically when the policy asks for it.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve"><value>One exception with its facts, history and decision.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve"><value>Quality assurance users and the people involved in the exception.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve"><value>Review the facts</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve"><value>The lot, the dates and the movement that raised the exception are shown as recorded.</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve"><value>Comment and decide</value></data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve"><value>Add comments, take the case into review and record the decision; every step stays in the history.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Purpose" xml:space="preserve"><value>Shows which lot of a product should be used first in a warehouse, by expiry.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Audience" xml:space="preserve"><value>Warehouse operators and planners.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1Title" xml:space="preserve"><value>Choose warehouse and product</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step1" xml:space="preserve"><value>The order is computed from the stock that can be issued now.</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2Title" xml:space="preserve"><value>Follow the order</value></data>
+  <data name="Help.EXPIRYFEFOORDER.Step2" xml:space="preserve"><value>It is a read-only suggestion; issuing from a later lot follows the company's FEFO rule.</value></data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve"><value>The company's expiry rules: FEFO outbound mode, minimum remaining shelf life at receipt, date changes and thresholds.</value></data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve"><value>Quality managers who own the expiry policy.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve"><value>Change with a reason</value></data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve"><value>Every save asks for a reason and is kept in the history with who and when.</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve"><value>Check the products</value></data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve"><value>Shelf-life days come from the product master and are corrected there.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve"><value>Produces the FEFO / expiry evidence pack of a period for audits.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve"><value>Quality assurance, quality system managers and auditors.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve"><value>Choose and preview</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve"><value>Pick the period and scope; the preview shows the four sections of the file.</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve"><value>Download and verify</value></data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve"><value>Download PDF or CSV; the SHA-256 in the export log is computed from the file's bytes.</value></data>
 </root>

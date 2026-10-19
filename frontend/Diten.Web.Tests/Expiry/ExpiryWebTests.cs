@@ -30,11 +30,11 @@ public sealed class ExpiryWebTests : IClassFixture<WebApplicationFactory<Program
     private static readonly HashSet<string> SameAsEnglishAllowed = new(StringComparer.Ordinal)
     {
         "Expiry.Col.Actions", "Expiry.Col.Exception", "Expiry.Severity.Ok", "Expiry.Modal.Description", "Expiry.Approaching.Horizon",
-        "Expiry.Kpi.Lots", "Expiry.Col.Unit", "Expiry.Modal.Type.FEFO_BYPASS", "Expiry.Modal.Type.BELOW_MIN_REMAINING",
-        "Expiry.Modal.Type.EXPIRY_DATE_OVERRIDE", "Expiry.Modal.Type.EXPIRED_ON_HAND", "Expiry.Order.SeeQuarantine",
-        // F5: the same word in French ("Signature", "Type", "Exception"), the acronym SLA / the loanword "Retest" in Turkish, number-only templates
-        "Expiry.Col.Signature", "Expiry.Col.Type", "Expiry.Detail.Heading", "Expiry.Evidence.LotsQuantity", "Expiry.Col.Sla", "Expiry.Policy.Retest",
-        "Expiry.Policy.SlaOf", "Expiry.Evidence.PeriodLine"
+        "Expiry.Kpi.Lots",
+        // F5: the same word in French ("Signature", "Type", "Exception"), number-only templates
+        "Expiry.Col.Signature", "Expiry.Col.Type", "Expiry.Detail.Heading", "Expiry.Evidence.LotsQuantity", "Expiry.Evidence.PeriodLine"
+        // WP-MVP1-FIX-LIVE2 review: Col.Unit, Order.SeeQuarantine, Modal.Type.* no longer copy English (removed); tr Col.Sla / Policy.SlaOf /
+        // Policy.Retest got real Turkish ("Süre (SLA)", "Süre · {0}", "Yeniden test") and left the list
     };
 
     /// <summary>The 4 pages of pack §11.1: view, page key (UAS-001), a marker the page must NOT draw without that key.</summary>
@@ -56,6 +56,16 @@ public sealed class ExpiryWebTests : IClassFixture<WebApplicationFactory<Program
     private static string Read(params string[] parts) => File.ReadAllText(Path.Combine(parts));
 
     // ── vocabulary ──────────────────────────────────────────────────────────────────────────────────────────────────
+
+    /// <summary>WP-MVP1-FIX-LIVE2 (NE C): every Expiry page has its UXH-001 help texts (the Recall structure), delivered in 7 languages by the key list.</summary>
+    [Fact]
+    public void Every_Expiry_page_has_its_UXH_001_help_texts()
+    {
+        var keys = Diten.Web.Views.Expiry.Expiry.Keys.ToHashSet(StringComparer.Ordinal);
+        foreach (var page in new[] { "EXPIRYDASHBOARD", "EXPIRYAPPROACHING", "EXPIRYEXPIRED", "EXPIRYEXCEPTIONS", "EXPIRYEXCEPTIONDETAILS", "EXPIRYFEFOORDER", "EXPIRYPOLICY", "EXPIRYEVIDENCE" })
+            foreach (var part in new[] { "Purpose", "Audience", "Step1Title", "Step1", "Step2Title", "Step2" })
+                Assert.Contains($"Help.{page}.{part}", keys);
+    }
 
     [Fact]
     public void Seven_languages_carry_exactly_the_Expiry_keys_with_real_text()

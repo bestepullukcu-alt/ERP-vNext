@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Diten.InventoryService.Application.Features.Expiry;
 using Diten.InventoryService.Infrastructure.Authorization;
 using Diten.InventoryService.Tests.TestInfrastructure;
 using PdfSharp.Pdf;
@@ -206,7 +207,9 @@ public sealed class ExpiryEvidenceTests : IClassFixture<ExpiryApiFactory>
         Assert.Matches("^[0-9a-f]{64}$", export.GetProperty("sha256").GetString()!);
 
         var text = Encoding.UTF8.GetString(bytes);
-        Assert.StartsWith("﻿istisna_no;tur;urun;lot;depo;acilis;durum;cozum;imza\r\n", text, StringComparison.Ordinal);
+        // the nine columns where they were; WP-MVP1-FIX-LIVE2 appends the names / worded values after them
+        Assert.StartsWith("﻿istisna_no;tur;urun;lot;depo;acilis;durum;cozum;imza;urun_adi;sku_kodu;depo_adi;tur_adi;durum_adi;cozum_adi;imzalayan;imzalayan_kimlik\r\n",
+            text, StringComparison.Ordinal);
         var lines = text.TrimStart('﻿').Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(3, lines.Length - 1);
         Assert.Equal(lines.Length - 1, export.GetProperty("rowCount").GetInt32());
@@ -249,7 +252,7 @@ public sealed class ExpiryEvidenceTests : IClassFixture<ExpiryApiFactory>
         var text = Regex.Replace(pdf.Text, @"\s", string.Empty);
         // K3 sabotage (h): without the embedded font the Turkish letters do not survive (or the render fails)
         Assert.True(pdf.EmbeddedFonts > 0, "the PDF embeds no font file");
-        foreach (var word in new[] { "Kanıt Paketi", "Şirket", "Değiştiren", "İmza kimliği", "Dönemin istisnaları", "Gerekçeyle kabul", "İç denetim", "genişletildi" })
+        foreach (var word in new[] { "Kanıt Paketi", "Şirket", "Değiştiren", "İmza kimliği", "Dönem içi istisnalar ve çözümleri","Gerekçeyle kabul", "İç denetim", "genişletildi" })
         {
             Assert.Contains(word.Replace(" ", string.Empty, StringComparison.Ordinal), text, StringComparison.Ordinal);
         }
@@ -263,11 +266,106 @@ public sealed class ExpiryEvidenceTests : IClassFixture<ExpiryApiFactory>
         Assert.Contains("EvidencePack", Regex.Replace(englishText, @"\s", string.Empty), StringComparison.Ordinal);
     }
 
+    // ── WP-MVP1-FIX-LIVE2 (FU-0176-EV-NAMES, CT decision "yazı tipi A") ─────────────────────────────────────
+
+    private static string Letters(string text) => Regex.Replace(text, @"[^\p{L}\p{N}]", string.Empty);
+
+    private static string Flat(string text) => Regex.Replace(text, @"\s", string.Empty);
+
+    private async Task<string> ExportTextAsync(Seeded w, string token, string format, string language)
+    {
+        var (status, export) = await PostExportAsync(w.S, token, Export(format, D(Today.AddDays(-1)), D(Today)), language);
+        Assert.True(status == 201, export.ToString());
+        var (fileStatus, bytes, _) = await FileAsync(w.S, token, export.GetProperty("exportId").GetString()!);
+        Assert.Equal(200, fileStatus);
+        Assert.Equal(Sha256(bytes), export.GetProperty("sha256").GetString());   // still the hash of THE delivered bytes
+        return format == "Pdf" ? PdfText.Read(bytes).Text : Encoding.UTF8.GetString(bytes);
+    }
+
+    [Fact]
+    public async Task The_FEFO_pack_prints_names_beside_the_ids_and_never_invents_an_unreadable_one()
+    {
+        var w = await SeedAsync();
+        // the caller reads the signatures with their own token (MOD-0022 esign.signatures.read), as on the Kanıt Paketi page
+        var token = w.S.Mint(w.S.Admin, [ExpiryPermissions.EvidenceExport, "esign.signatures.read"]);
+
+        // nothing known yet: company / product / SKU / signer / policy user are the id + "(okunamadı)" / "(ad okunamadı)"
+        var bare = Flat(await ExportTextAsync(w, token, "Pdf", "tr"));
+        Assert.Contains(Flat($"{w.S.Ledger.LegalEntity:D} (okunamadı)"), bare, StringComparison.Ordinal);
+        Assert.Contains(Flat($"{w.S.Admin:D} (ad okunamadı)"), bare, StringComparison.Ordinal);       // sabotage (b): an invented name → red
+        Assert.Contains(Flat($"{w.S.Ledger.Item:D} (okunamadı)"), bare, StringComparison.Ordinal);
+
+        // what the masters / MOD-0022 / the central audit queue recorded
+        _factory.LegalEntities.RegisterName(w.S.Ledger.LegalEntity, "GM-EU", "Grand Medical EU");
+        _factory.Products.SetDisplay(w.S.Ledger.Item, "GP-0099", "Parasetamol 500 mg");
+        _factory.Products.SetDisplay(w.S.Ledger.Sku, "LS-0099");
+        var signature = _factory.ESign.Sign(w.S.Tenant, w.S.Qa, w.ResolvedCase, "APPROVE", new string('c', 64), "expiry", "expiry.exception",
+            "expiry.exception.resolve", DateTimeOffset.UtcNow, w.S.Ledger.LegalEntity, signerName: "Ayşe Demir");
+        await _factory.Database.GetCollection<MongoDB.Bson.BsonDocument>("expiry_exceptions").UpdateOneAsync(
+            new MongoDB.Bson.BsonDocument("_id", w.ResolvedCase), new MongoDB.Bson.BsonDocument("$set", new MongoDB.Bson.BsonDocument("ResolutionSignatureId", signature)));
+        var outbox = Diten.InventoryService.Tests.CentralAudit.CentralAuditInventoryTests.Outbox(_factory);
+        await outbox.UpdateManyAsync(MongoDB.Driver.Builders<Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord>.Filter.Where(x => x.TenantId == w.S.Tenant && x.ActorId == w.S.Admin),
+            MongoDB.Driver.Builders<Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord>.Update.Set(x => x.ActorDisplayName, "Zeynep Aksoy"));
+
+        var pdf = Flat(await ExportTextAsync(w, token, "Pdf", "tr"));
+        Assert.Contains("GM-EU·GrandMedicalEU", pdf, StringComparison.Ordinal);                               // header / footer company
+        Assert.Contains("GP-0099·Parasetamol500mg", pdf, StringComparison.Ordinal);                           // product
+        Assert.Contains("AyşeDemir·" + signature, pdf, StringComparison.Ordinal);                             // signer at signing + the id
+        Assert.Contains("ZeynepAksoy", pdf, StringComparison.Ordinal);                                        // the policy change's user (audit queue)
+        // "code · name", the name once when it equals the code (the seeded nodes are named by their codes)
+        var place = string.Join(" · ", new[] { w.S.Ledger.WarehouseNode.Code, w.S.Ledger.WarehouseNode.Name }.Distinct(StringComparer.Ordinal));
+        Assert.Contains(Flat(place), pdf, StringComparison.Ordinal);
+        Assert.DoesNotContain(Flat(w.S.Ledger.WarehouseNode.Code + " · " + w.S.Ledger.WarehouseNode.Code), pdf, StringComparison.Ordinal);
+        Assert.Contains("Gerekçeylekabul", pdf, StringComparison.Ordinal);                                    // values worded
+        Assert.Contains(Flat(ExpiryEvidenceText.Of("Expiry.Policy.Field.approachingDays", "tr")), pdf, StringComparison.Ordinal);
+        Assert.DoesNotContain(Flat($"{w.S.Admin:D} (ad okunamadı)"), pdf, StringComparison.Ordinal);
+
+        // the CSV keeps its nine columns (ids, codes) and carries the names / worded values after them, in the asked language
+        var csv = await ExportTextAsync(w, token, "Csv", "en");
+        var line = Assert.Single(csv.Split("\r\n"), l => l.Contains(signature, StringComparison.Ordinal));
+        var cells = line.Split(';');
+        Assert.Equal(17, cells.Length);
+        Assert.Equal(("BELOW_MIN_REMAINING", w.S.Ledger.Item.ToString("D"), "AcceptedWithReason", signature), (cells[1], cells[2], cells[7], cells[8]));
+        Assert.Equal(("GP-0099 · Parasetamol 500 mg", "LS-0099"), (cells[9], cells[10]));
+        Assert.Equal((ExpiryEvidenceText.Of("Expiry.Resolution.AcceptedWithReason", "en"), "Ayşe Demir", w.S.Qa.ToString("D")), (cells[14], cells[15], cells[16]));
+        Assert.Equal(ExpiryEvidenceText.Of("Expiry.Type.BELOW_MIN_REMAINING", "en"), cells[12]);
+
+        // FU-0176-EV-NAMES: read paths only — no Expiry entity carries a name of its own
+        foreach (var type in new[] { typeof(Diten.InventoryService.Domain.Expiry.Entities.FefoExceptionCase), typeof(Diten.InventoryService.Domain.Expiry.Entities.ExpiryPolicyHistoryEntry) })
+            Assert.DoesNotContain(type.GetProperties(), p => p.Name.EndsWith("Name", StringComparison.Ordinal) || p.Name.Contains("NameAt", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Every_language_has_a_FEFO_PDF_and_zh_or_ar_is_English_with_the_note()
+    {
+        var w = await SeedAsync();
+        foreach (var lang in ExpiryEvidenceText.Languages)
+        {
+            // letters and digits only: the minimal test reader extracts the title's em dash differently (the font has U+2014 — measured)
+            var pdf = Letters(await ExportTextAsync(w, w.Exporter, "Pdf", lang));
+            if (ExpiryEvidenceText.PdfLanguages.Contains(lang))
+            {
+                Assert.Contains(Letters(ExpiryEvidenceText.Of("ExpiryPdf.Title", lang)), pdf, StringComparison.Ordinal);
+                Assert.Contains(Letters(ExpiryEvidenceText.Of("Expiry.Status.Open", lang)), pdf, StringComparison.Ordinal);
+                Assert.DoesNotContain(Letters(ExpiryEvidenceText.Of("ExpiryPdf.EnglishFallback", "en")), pdf, StringComparison.Ordinal);
+            }
+            else
+            {
+                Assert.Contains(Letters(ExpiryEvidenceText.Of("ExpiryPdf.Title", "en")), pdf, StringComparison.Ordinal);
+                Assert.Contains(Letters(ExpiryEvidenceText.Of("ExpiryPdf.EnglishFallback", "en")), pdf, StringComparison.Ordinal);
+                Assert.Contains($"Requestedlanguage{lang}", pdf, StringComparison.Ordinal);
+            }
+
+            var csv = await ExportTextAsync(w, w.Exporter, "Csv", lang);
+            Assert.Contains(";" + ExpiryEvidenceText.Of("Expiry.Status.Open", lang) + ";", csv, StringComparison.Ordinal);
+        }
+    }
+
     /// <summary>
     /// A minimal, independent PDF text reader for the test: the content stream's Tj / TJ strings of each Tf font, mapped through that
     /// font's ToUnicode CMap (bfchar + bfrange) — what a PDF viewer's "copy text" gives. Counts the embedded font files (FontFile2 / FontFile3).
     /// </summary>
-    private static class PdfText
+    internal static class PdfText
     {
         public sealed record Result(string Text, int EmbeddedFonts);
 

@@ -215,7 +215,7 @@
   <data name="Recall.Scope.New" xml:space="preserve"><value>новое</value></data>
   <data name="Recall.Scope.EditHint" xml:space="preserve"><value>Включение / исключение меняется только до утверждения объёма; исключение позиции исключает всё, что под ней.</value></data>
   <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>Объём утверждён; для изменения нужна ревизия объёма.</value></data>
-  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Печать (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Текущий дайджест объёма (SHA-256) {0}</value></data>
   <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>Повторное прослеживание и утверждённый объём</value></data>
   <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>Различий нет: текущее прослеживание совпадает с утверждённым объёмом.</value></data>
   <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>Находок вне объёма: {0} — найдены сейчас, их нет в утверждённом объёме. Сами по себе ничего не меняют.</value></data>
@@ -615,15 +615,15 @@
   <data name="Recall.Ev.W.number" xml:space="preserve"><value>Номер</value></data>
   <data name="Recall.Ev.W.class" xml:space="preserve"><value>Класс</value></data>
   <data name="Recall.Ev.W.level" xml:space="preserve"><value>Уровень</value></data>
-  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Номенклатура</value></data>
-  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Идентификатор товара</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>Идентификатор SKU</value></data>
   <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>Исходная партия</value></data>
   <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>Ссылка на причину</value></data>
   <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>Открыл</value></data>
   <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>Открыт</value></data>
   <data name="Recall.Ev.W.direction" xml:space="preserve"><value>Направление</value></data>
   <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>Редакция охвата</value></data>
-  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Печать прослеживания (SHA-256)</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Дайджест снимка прослеживания</value></data>
   <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>Охват утвердил</value></data>
   <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>Охват утверждён</value></data>
   <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>Эффективность завершил</value></data>
@@ -651,4 +651,37 @@
   <data name="Recall.Band.Release" xml:space="preserve"><value>Партия на отзыве ({0}); снятие карантина не снимает запрет отпуска.</value></data>
   <data name="Recall.Band.HoldSource" xml:space="preserve"><value>Источник: отзыв {0}</value></data>
   <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>Оформить возврат клиента</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>Товар</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>Код SKU</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>Компания</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>Идентификатор компании</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>Печать отправленного объёма (подписана)</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>Печать утверждённого объёма (подписана)</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>Открыл (идентификатор)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>Объём утвердил (идентификатор)</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>Проверку эффективности завершил (идентификатор)</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>Закрыл (идентификатор)</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>Отменил (идентификатор)</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>Идентификатор пользователя</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>Идентификатор подписанта</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>Идентификатор склада</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>Идентификатор места хранения</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0} (имя не прочитано)</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0} (не прочитано)</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>Да</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>Нет</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>Пройден</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>Не пройден</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>Действительна</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>Аннулирована</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>Не прочитана ({0})</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>Результат проверки эффективности</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>Отгрузок нет — нечего измерять</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>Ещё не завершена — текущие значения</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>Этот документ создан на английском языке (выбранный язык не поддерживается в PDF)</value></data>
+  <data name="Recall.Scope.SubmittedSeal" xml:space="preserve"><value>Печать отправленного объёма (подписана) {0}</value></data>
+  <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>Печать утверждённого объёма (подписана) {0}</value></data>
+  <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>Текущий дайджест объёма отличается от последней печати — объём изменился после опечатывания.</value></data>
+  <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>В объёме нет клиентов; возврат можно привязать только к клиенту из утверждённого объёма. Клиенты берутся из отгрузок продаж.</value></data>
 </root>

@@ -31,6 +31,9 @@ public static class RecallServiceCollectionExtensions
         services.AddScoped<RecallSubjectFacts>();
         services.AddScoped<Application.Features.Recall.Evidence.RecallEvidenceBuilder>(); // R7b Kanıt Paketi (preview + files)
         services.AddSingleton<Application.Features.Recall.Ports.IRecallEvidencePdfRenderer, RecallEvidencePdfRenderer>();
+        // WP-MVP1-FIX-LIVE2: person names of the pack — the event actor's name at event time, and the central audit queue's name (read only)
+        services.AddScoped<Application.Features.Recall.Ports.IRecallActorName, RecallActorName>();
+        services.AddScoped<Application.Features.Recall.Ports.IRecallAuditNames, Persistence.Recall.RecallAuditNames>();
         services.AddScoped<IRecallSubjectDirectory, RecallSubjectDirectory>();
 
         // R2: the trace engine over in-process reads (pack §8.2) and the MVP-6 shipment read through the Gateway with the caller's

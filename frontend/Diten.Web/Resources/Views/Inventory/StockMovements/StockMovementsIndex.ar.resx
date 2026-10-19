@@ -199,4 +199,5 @@
   <data name="ErrProductDataIncomplete" xml:space="preserve"><value>لا تحدد البيانات الرئيسية للمنتج تتبع التشغيلات أو الأرقام التسلسلية لهذا الصنف، لذلك لا يمكن حفظ الحركة. أعد المحاولة بعد استكمال سجل البيانات الرئيسية.</value></data>
   <data name="ErrItemNotActive" xml:space="preserve"><value>حالة المنتج لا تسمح بنوع الحركة هذا (مسودة أو معطّل أو متقاعد). لم يتم تغيير أي شيء.</value></data>
   <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>قد يكون هذا المنتج متتبعًا بالرقم التسلسلي: لا يمكن نقل المخزون على مستوى الصنف العام. اختر مستوى الصنف المحلي أو المنتج النهائي.</value></data>
+  <data name="LotUnresolvedHint" xml:space="preserve"><value>تعذّرت قراءة رقم التشغيلة</value></data>
 </root>
