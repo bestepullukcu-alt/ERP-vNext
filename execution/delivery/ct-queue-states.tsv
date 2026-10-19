@@ -1,0 +1,27 @@
+queue_id	state	class	dispatch	source	confirmation
+sce-mvp6	READY	dispatchable	yes	docs/guides/operations/mvp6-development-process-v1.0.md §2 @6b8a62d5a	pending
+sce-mvp6	IN-PROGRESS	active	no	docs/guides/operations/mvp6-development-process-v1.0.md §2 @6b8a62d5a ("—"); not re-dispatchable: owner decision CT-OPS-02, 2026-10-15	pending
+sce-mvp6	DECISION-REQUIRED	waiting-decision	no	docs/guides/operations/mvp6-development-process-v1.0.md §2 @6b8a62d5a	pending
+sce-mvp6	HELD	held	no	docs/guides/operations/mvp6-development-process-v1.0.md §2 @6b8a62d5a	pending
+sce-mvp6	BLOCKED	blocked	no	docs/guides/operations/mvp6-development-process-v1.0.md §2 @6b8a62d5a	pending
+sce-mvp6	REWORK	rework	new-version	docs/guides/operations/mvp6-development-process-v1.0.md §2 @6b8a62d5a; SOP §19.2 (separate execution, -R1)	pending
+sce-mvp6	DONE	closed	no	docs/guides/operations/mvp6-development-process-v1.0.md §2 @6b8a62d5a ("—"); not re-dispatchable: owner decision CT-OPS-02, 2026-10-15	pending
+sop7	DISCOVERED	planned	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	INSPECTION_REQUIRED	planned	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	INSPECTED	planned	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	PLANNED	planned	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	READY	dispatchable	yes	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	DISPATCHED	active	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	IN_PROGRESS	active	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	REPORTED	active	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	VERIFYING	active	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	VERIFIED	active	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	INTEGRATION_READY	active	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	INTEGRATED	active	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	ACCEPTED	closed	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	BLOCKED	blocked	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	REWORK	rework	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	DEFERRED	held	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	SUPERSEDED	superseded	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	CANCELLED	cancelled	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed
+sop7	FAILED	failed	no	docs/guides/operations/control-tower-sop.md §7 @6b8a62d5a; owner approval 2026-10-15 (CT-STEP2-STARTER-KIT-OWNER-DECISION-01)	confirmed

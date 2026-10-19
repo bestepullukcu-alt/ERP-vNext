@@ -1,0 +1,194 @@
+"""CT-FIX-03 U1–U3 pilot driver — three flows on the R0 synthetic fixture (scripts/tests/test_ct_cli_regression.py),
+before (the tools without drafts) and after (with U1–U3), measured by the units agreed with Codex on 2026-10-17:
+
+  * a "manual value" is one value a person types or copies: a prompt / record / list field, or one CLI argument value
+    (--queue, --wp, --pack, --part, --worktree, a path); draft calls are counted on their own line, never hidden;
+  * the agreed acceptance: the five measured prompt values are filled correctly and not retyped; AC ID / text /
+    mandatory copied by hand = 0; wrong passes and wrong stops in the pilot cases = 0; no additional mandatory
+    verification command. A percentage reduction is reported as an observation, not as a success criterion;
+  * the time measured is the tools' run time on this machine — not a person's time and not a token count;
+  * the "before" counts are a computed model (a person typing every field by hand), not a measured person's work.
+
+The three flows: P1 ilk dağıtım (first dispatch), P2 MVP'ler arası soru (a question to another MVP), P3 kabul ve kuyruk
+doğrulama (acceptance and queue validation: acceptance_record check + ct_queue validate; no status report is run).
+Exit 0 only when every agreed acceptance item holds and every case gave its expected exit; even then read summary.json
+(agreed_acceptance) and every case in runs.json — the exit code alone is not the result (Codex).
+
+The pilot is run by Claude in the Control Tower role on a synthetic fixture, not by a person; real usability needs a
+person's trial. Nothing is written into the repository: the fixture is a temporary git repository, the output goes to
+<out dir>, which must be outside the repository, and paths are replaced by $FIXTURE before they are written.
+
+    python3 -B docs/records/audits/2026-10/ct-fix-03/pilot/pilot_driver.py.txt <repository root> <out dir>
+"""
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import os
+import re
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+REPO = Path(sys.argv[1]).resolve()
+OUT = Path(sys.argv[2]).resolve()
+if str(OUT).startswith(str(REPO)):
+    raise SystemExit("refused: the output directory must be outside the repository")
+OUT.mkdir(parents=True, exist_ok=False)
+spec = importlib.util.spec_from_file_location("r0", REPO / "scripts" / "tests" / "test_ct_cli_regression.py")
+r0 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(r0)
+MARK = "<<DOLDUR"
+FX = r0.Fixture()
+FX.build()
+ROOTS = (str(FX.root), os.path.realpath(FX.root), str(FX.root.parent), os.path.realpath(FX.root.parent))
+runs: list[dict] = []
+
+
+def clean(text: str) -> str:
+    for r in sorted(ROOTS, key=len, reverse=True):
+        text = text.replace(r, "$FIXTURE")
+    return text
+
+
+def run(pilot: str, phase: str, label: str, script: str, *args: str, expect: int, kind: str, cli_values: int,
+        stdin: str | None = None) -> object:
+    """kind: 'mandatory' (a verification the flow needs), 'draft' (U2/U3, counted apart), 'optional', 'setup'."""
+    utc = lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    start, t0 = utc(), time.perf_counter()
+    p = FX.run(script, *args, stdin=stdin)
+    seconds, end = round(time.perf_counter() - t0, 3), utc()
+    result = next((l for l in reversed((p.stdout + p.stderr).splitlines()) if l.startswith(("sonuç:", "DUR", "TASLAK", "OK", "FAIL",
+                                                                                              "DAĞITILABİLİR"))), "")
+    runs.append({"pilot": pilot, "phase": phase, "case": label, "command": clean(" ".join([Path(script).name, *args])),
+                 "kind": kind, "cli_values": cli_values, "expected_exit": expect, "exit": p.returncode,
+                 "utc_start": start, "utc_end": end,
+                 "as_expected": p.returncode == expect, "seconds": seconds, "result_line": clean(result)[:200]})
+    return p
+
+
+def markers(text: str) -> int:
+    return sum(1 for line in text.split("\n") if MARK in line)
+
+
+summary: dict = {"unit": "manual value = one typed or copied field value or CLI argument value; draft calls apart",
+                 "before_counts": "a computed model of typing every field by hand — not a measured person's work",
+                 "pilots": {"P1": "ilk dağıtım", "P2": "MVP'ler arası soru", "P3": "kabul ve kuyruk doğrulama (no status report run)"}}
+
+# ---------------------------------------------------------------------------- pilot 1: first dispatch (U1 + U2)
+FX.reset("acceptance-inputs")
+head = FX.git("rev-parse", "HEAD")
+prompt_path = FX.root.parent / "prompt.txt"
+reference = FX.prompt(head)                                # the prompt a person writes by hand today (before)
+run("P1", "before", "optional early check", "scripts/ct_queue.py", "require", "W1", "--queue", "ct", expect=0, kind="optional", cli_values=2)
+prompt_path.write_text(reference, encoding="utf-8")
+run("P1", "before", "hand-written prompt", "scripts/prompt_gate.py", "check", str(prompt_path), "--queue", "ct", expect=0, kind="mandatory", cli_values=2)
+d = run("P1", "after", "prompt draft", "scripts/prompt_gate.py", "draft", "--queue", "ct", "--wp", "W1", "--worktree", str(FX.root),
+        expect=0, kind="draft", cli_values=3)
+draft = d.stdout
+measured = next(l for l in draft.split("\n") if l.startswith("Repository:"))
+real = os.path.realpath(FX.root)
+five_ok = measured == f"Repository: {real} · Branch: {r0.BRANCH} · Expected HEAD: {head} · Worktree: {real}" \
+    and any(l.startswith("WP: W1 · ") for l in draft.split("\n"))
+prompt_path.write_text(draft, encoding="utf-8")
+run("P1", "after", "draft as printed", "scripts/prompt_gate.py", "check", str(prompt_path), "--queue", "ct", expect=1, kind="mandatory", cli_values=2)
+filled = "\n".join(measured if l.startswith("Repository:") else l for l in reference.split("\n"))   # measured line kept
+prompt_path.write_text(filled, encoding="utf-8")
+run("P1", "after", "draft filled, measured line kept", "scripts/prompt_gate.py", "check", str(prompt_path), "--queue", "ct",
+    expect=0, kind="mandatory", cli_values=2)
+FX.put("notes.txt", "a later commit\n")
+FX.commit("a commit after the draft")
+run("P1", "after", "HEAD moved after the draft (stale)", "scripts/prompt_gate.py", "check", str(prompt_path), "--queue", "ct",
+    expect=1, kind="mandatory", cli_values=2)
+FX.reset("acceptance-inputs")
+FX.put("q.tsv", FX.qh + FX.qrow + "W1\tshort\n")
+run("P1", "after", "a malformed queue row", "scripts/prompt_gate.py", "draft", "--queue", "ct", "--wp", "W1", "--worktree", str(FX.root),
+    expect=2, kind="draft", cli_values=3)
+FX.reset("acceptance-inputs")
+m = markers(draft)
+summary["P1"] = {"draft_markers_filled_by_hand": m, "measured_values_filled_by_the_draft": 5, "five_measured_values_correct": five_ok,
+                 "prompt_values_typed_before": m + 5, "prompt_values_typed_after": m, "draft_cli_values": 3,
+                 "mandatory_commands_before": ["verify_module_id --discover", "prompt_gate check"],
+                 "mandatory_commands_after": ["verify_module_id --discover", "prompt_gate check"], "draft_calls": 1}
+
+# ---------------------------------------------------------------------------- pilot 2: a question to another MVP (U1)
+card = (REPO / "docs/guides/operations/control-tower-operating-card.md").read_text(encoding="utf-8")
+table = card.split("## Bugün hangi komut", 1)[1].split("\n## ", 1)[0]
+route_cmd = re.search(r"`(python3 scripts/ct_route\.py [^`]+)`", table)
+dcp = "execution/portfolio/delivery-capability-packs/DCP-091-routing-test.md"
+FX.put(dcp, "---\nid: DCP-091\nstatus: approved\nowner: audit-coordinator\n---\n\n## 8.1 Delivery slices\n\n"
+            "| Slice | Kapsam | Not |\n|---|---|---|\n| MVP1 | MOD-0288 | synthetic |\n")
+line = lambda c: FX.reg_head + FX.reg_line.replace("\tconfirmed\taudit\t", f"\t{c}\tdcp:{dcp}#MVP1\t")
+FX.put(r0.REG, line("confirmed"))
+FX.git("update-ref", "refs/remotes/origin/main", FX.commit("routing on main"))
+p = run("P2", "after", "confirmed row", "scripts/ct_route.py", "--kind", "delivery", "--module", "MOD-0288", expect=0, kind="mandatory", cli_values=2)
+no_message = "otomatik gönderim yok" in p.stdout or "hiçbir şey göndermez" in p.stdout
+FX.put(r0.REG, line("pending"))
+FX.commit("branch row pending")
+p = run("P2", "after", "pending row (stamped)", "scripts/ct_route.py", "--kind", "delivery", "--module", "MOD-0288", expect=0, kind="mandatory", cli_values=2)
+stamped = "sahip teyidi bekliyor" in p.stdout and "yürürlük: yürürlükte" not in p.stdout
+run("P2", "after", "pending row --in-force", "scripts/ct_route.py", "--kind", "delivery", "--module", "MOD-0288", "--in-force",
+    expect=1, kind="mandatory", cli_values=2)
+FX.git("update-ref", "refs/remotes/origin/main", FX.marks["registered"])
+FX.reset("acceptance-inputs")
+summary["P2"] = {"card_names_the_command": bool(route_cmd), "commands_before": 1, "commands_after": 1,
+                 "no_automatic_message": no_message, "pending_stamped_one_truth": stamped}
+
+# ---------------------------------------------------------------------------- pilot 3: kabul ve kuyruk doğrulama (U3)
+pack_spec = f"{r0.PACK}@{FX.evidence_commit}"
+rec = run("P3", "after", "record draft", "scripts/acceptance_record.py", "draft", "--part", "record", "--queue", "ct", "--wp", "W1",
+          "--pack", pack_spec, expect=0, kind="draft", cli_values=4).stdout
+lst = run("P3", "after", "list draft", "scripts/acceptance_record.py", "draft", "--part", "list", "--queue", "ct", "--wp", "W1",
+          "--pack", pack_spec, expect=0, kind="draft", cli_values=4).stdout
+ac_rows = [l for l in lst.split("\n") if l.startswith("| AC-")]
+pack_text = (FX.root / r0.PACK).read_text(encoding="utf-8")
+pack_acs = re.findall(r"^- \[[ xX]\] AC-(\d+) \((zorunlu|isteğe bağlı)\) — (.+)$", pack_text, re.M)
+copied = [tuple(c.strip() for c in r.strip().strip("|").split("|")) for r in ac_rows]
+exact = [(c[0], c[1], c[6]) for c in copied] == [(f"AC-{n}", t, "evet" if f == "zorunlu" else "hayır") for n, f, t in pack_acs]
+FX.put(r0.ACCEPT, rec)
+h = FX.commit("record draft as printed")
+run("P3", "after", "record draft as printed", "scripts/acceptance_record.py", "check", f"{r0.ACCEPT}@{h}", "--queue", "ct", "--wp", "W1",
+    "--module", "MOD-0288", expect=1, kind="mandatory", cli_values=4)
+cells = list(copied[0])
+cells[2:6] = ["Safety", "CLI test", "Expected observed", "hayır"]
+cells[7:10] = ["Expected observed", "geçti", f"evidence.txt@{FX.evidence_commit}:1"]
+FX.put("acceptance-list.md", "\n".join(lst.split("\n")[:2] + ["| " + " | ".join(cells) + " |"]) + "\n")
+FX.list_commit = FX.commit("list from the draft, filled")
+h = FX.write_acceptance()
+run("P3", "after", "record and list filled", "scripts/acceptance_record.py", "check", f"{r0.ACCEPT}@{h}", "--queue", "ct", "--wp", "W1",
+    "--module", "MOD-0288", expect=0, kind="mandatory", cli_values=4)
+FX.put("q.tsv", FX.qh + FX.qrow.replace("\tREADY\t", "\tACCEPTED\t").replace("\t-\t-\n", f"\t{r0.ACCEPT}@{h}\t-\n"))
+FX.commit("accepted")
+run("P3", "after", "queue with the acceptance", "scripts/ct_queue.py", "validate", "--queue", "ct", expect=0, kind="mandatory", cli_values=1)
+FX.list_commit = FX.marks["acceptance-inputs"]
+record_markers, list_markers = markers(rec), sum(1 for r in ac_rows for c in r.split("|") if MARK in c)
+summary["P3"] = {"ac_rows": len(ac_rows), "ac_id_text_mandatory_copied_exactly": exact,
+                 "ac_values_copied_by_hand_before": 3 * len(ac_rows), "ac_values_copied_by_hand_after": 0,
+                 "record_values_typed_before": len(r0.load(REPO / "scripts" / "acceptance_record.py", "ar_p").FIELDS) + 1,
+                 "record_markers_filled_by_hand_after": record_markers, "list_cells_typed_before": 10 * len(ac_rows),
+                 "list_markers_filled_by_hand_after": list_markers, "draft_cli_values": 8, "draft_calls": 2,
+                 "mandatory_commands_before": ["acceptance_record check", "ct_queue validate"],
+                 "mandatory_commands_after": ["acceptance_record check", "ct_queue validate"]}
+
+wrong = [r for r in runs if not r["as_expected"]]
+summary["cases"] = len(runs)
+summary["wrong_pass"] = sum(1 for r in wrong if r["exit"] == 0)
+summary["wrong_stop"] = sum(1 for r in wrong if r["exit"] != 0)
+summary["agreed_acceptance"] = {
+    "five_measured_prompt_values_correct_not_retyped": summary["P1"]["five_measured_values_correct"],
+    "ac_manual_copy_zero": summary["P3"]["ac_values_copied_by_hand_after"] == 0 and summary["P3"]["ac_id_text_mandatory_copied_exactly"],
+    "wrong_pass_and_stop_zero": not wrong,
+    "no_additional_mandatory_command": summary["P1"]["mandatory_commands_before"] == summary["P1"]["mandatory_commands_after"]
+    and summary["P3"]["mandatory_commands_before"] == summary["P3"]["mandatory_commands_after"]}
+summary["tool_seconds_total"] = round(sum(r["seconds"] for r in runs), 3)
+summary["boundary"] = ("Claude in the Control Tower role on a synthetic fixture; not a person's trial. Tool run time is not "
+                       "human time; no token counter was available, no saving is claimed.")
+driver = Path(__file__).read_bytes()
+summary["driver_sha256"] = hashlib.sha256(driver).hexdigest()
+(OUT / "runs.json").write_text(json.dumps(runs, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+(OUT / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+FX._tmp.cleanup()
+print(json.dumps(summary["agreed_acceptance"], ensure_ascii=False), "| cases", summary["cases"], "| wrong", len(wrong))
+sys.exit(0 if all(summary["agreed_acceptance"].values()) and not wrong else 1)

@@ -1,0 +1,18 @@
+== the combined candidate 75cf72304 (tree f61c33b5d), fast checks before the architecture run
+clone <SCRATCH>/ctfix02/arch-fixture-03 · HEAD 75cf72304ad48f27562c759264277a7bf5e9be57 · python 3.9.6
+scripts/ct_queue.py: self-test: 127/127 passed
+scripts/acceptance_record.py: self-test: 123/123 passed
+scripts/prompt_gate.py: self-test: 91/91 passed
+scripts/status_report.py: self-test: 80/80 passed
+.antigravity/scripts/list_screen_touch_hook.py: self-test: 28/28 passed
+scripts/known_failures.py: self-test: 46/46 passed
+scripts/ct_route.py: self-test: 189/189 passed
+--- scripts/tests (all)
+Ran 97 tests in 131.653s
+OK
+done
+OK 9 adapter(s) match their sources
+
+== the two R4 pack-id cases added after the architecture run, on snap-ct-final-05 (test file only)
+Ran 2 tests in 3.936s
+OK

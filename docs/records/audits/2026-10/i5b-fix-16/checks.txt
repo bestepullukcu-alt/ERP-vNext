@@ -1,0 +1,29 @@
+İ5B-FIX-16 — the narrow run agreed for this package, on the branch's two frozen files in the İ5B worktree (branch
+chore/agents/i5b-fix-16 on 1199d23a8 with this package's uncommitted changes). Not a full scripts/tests run, not a
+run on a combined candidate.
+
+commands (from the worktree root):
+  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget
+  python3 -B .antigravity/scripts/sync_adapters.py --check
+sources (SHA-256):
+  .antigravity/scripts/sync_adapters.py             93a51469cd13b434ff982fe013119488fdedbb6283ff9e4189507aa7084c9dfb
+  scripts/tests/test_sync_adapters_budget.py        e6a6939b206bcbe8a9348784be1976d3ba8a1c8d816dcf32ccaceaaa813a6641
+result (from the full log):
+  start 2026-10-18T14:46:30Z
+  Python 3.9.6
+  Ran 52 tests in 33.560s
+  OK
+  ### exit 0
+  OK 9 adapter(s) match their sources
+  ### exit 0
+  end 2026-10-18T14:47:04Z
+before = after (HEAD, branch, status, the two SHA-256): True
+full log SHA-256 c4b3e2155e69d736c80a9c6737158e354dd41fbcb022184f33d341e50dbdef68 (kept outside the repository)
+
+The real files, C14's reader against this one (real-data.txt in this folder's terms):
+  AGENTS.md: visible text equal True · level-2 sections equal True · comment view equal True · not verified None · diagnosis ''
+  CLAUDE.md: visible text equal True · level-2 sections equal True · comment view equal True · not verified None · diagnosis ''
+  .antigravity/AGENTS-REFERENCE.md: visible text equal True · level-2 sections equal True · comment view equal True · not verified None · diagnosis ''
+  core view equal True · raw-HTML openers C14 [] / new [] · before the core C14 [] / new []
+  rule-line decisions equal True (30 required texts x 11 rule lines)
+  check_instruction_budget on the real files: ([], [])

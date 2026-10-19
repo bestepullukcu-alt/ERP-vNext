@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""
+Replace given absolute path roots in a TRX with fixed tokens, longest root first; nothing else changes.
+
+    python3 normalize_trx_roots.py <in.trx> <out.trx> --root <absolute path>=<TOKEN> [--root ...]
+
+The roots are run-time parameters only (this file holds no machine path). Each root is matched as an exact,
+case-sensitive character sequence. The output must be new (never overwrites) and must stay valid XML.
+Prints only tokens, counts and SHA-256 values — never the replaced paths.
+"""
+import hashlib
+import sys
+import xml.etree.ElementTree as ET
+
+
+def main() -> int:
+    src, dst, rest = sys.argv[1], sys.argv[2], sys.argv[3:]
+    roots = []
+    while rest:
+        flag, spec, rest = rest[0], rest[1], rest[2:]
+        assert flag == "--root" and "=" in spec, "usage: --root <path>=<TOKEN>"
+        path, token = spec.rsplit("=", 1)
+        assert path.startswith("/") and token.startswith("__") and token.endswith("__"), "absolute path and __TOKEN__"
+        roots.append((path, token))
+    raw = open(src, "rb").read()
+    text = raw.decode("utf-8")
+    counts = []
+    for path, token in sorted(roots, key=lambda r: len(r[0]), reverse=True):
+        n = text.count(path)
+        text = text.replace(path, token)
+        counts.append(f"{token}={n} (root length {len(path)})")
+    ET.fromstring(text)
+    with open(dst, "x", encoding="utf-8", newline="") as f:
+        f.write(text)
+    print(f"in_sha256={hashlib.sha256(raw).hexdigest()}")
+    print(f"out_sha256={hashlib.sha256(open(dst, 'rb').read()).hexdigest()}")
+    print("replacements " + " · ".join(counts))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

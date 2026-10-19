@@ -1,0 +1,154 @@
+"""CT-FIX-09 / İ5B-FIX-10: the generated evidence texts from the raw outputs (no local paths).
+Usage: make_evidence9.py <scratch ctfix09> <CT evidence dir> <İ5B evidence dir>"""
+import hashlib, json, os, re, shutil, sys
+S, E, I = sys.argv[1:4]
+for d in (E, I):
+    os.makedirs(os.path.join(d, "drivers"), exist_ok=True)
+
+
+def sha(p):
+    return hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def write(path, lines):
+    open(path, "w", encoding="utf-8").write("\n".join(l.rstrip() for l in lines) + "\n")
+
+
+def rows_of(text):
+    started = re.findall(r"(?:^|(?<=\.\.\. ))(test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\) \.\.\.", text, re.M)   # subtest lines run together
+    fails = re.findall(r"^(FAIL|ERROR): (test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\)(?: (\(.*\)))?$", text, re.M)
+    bad = {}
+    for res, name, mod, cls, _ in fails:
+        bad.setdefault(f"{mod}.{cls}.{name}", res)
+    out = [(bad.get(f"{mod}.{cls}.{name}", "ok"), f"{mod}.{cls}.{name}") for name, mod, cls in started]
+    return out, [(res, f"{mod}.{cls}.{name}", sub) for res, name, mod, cls, sub in fails if sub]
+
+
+def red(src, title, expect):
+    text = open(src, encoding="utf-8").read()
+    rows, subs = rows_of(text)
+    out = title + ["", re.search(r"^Ran .*$", text, re.M).group(0) + " · " + re.search(r"^(OK|FAILED).*$", text, re.M).group(0), ""]
+    out += [f"  {res:5s} {tid}" for res, tid in rows]
+    if subs:
+        out += ["", "failed subtests:"] + [f"  {res:5s} {tid.split('.')[-1]} {sub}" for res, tid, sub in subs]
+    return out + [""] + expect
+
+
+def frozen(path):
+    return dict(reversed(l.split()) for l in open(os.path.join(S, path), encoding="utf-8") if l.strip())
+
+
+ct_freeze, i5b_freeze = frozen("ct09-interim-freeze.txt"), frozen("i5b10-freeze-02.txt")
+
+write(os.path.join(E, "red-first.txt"), red(
+    os.path.join(S, "red-ct09.txt"),
+    ["CT-FIX-09 red first — this package's final test file against the committed sources of 65c53153e (CT-FIX-08) in a",
+     "copy outside the repository; run by the AI session."],
+    ["The new tests fail on the base sources: the gate prints the queue's stop before its report and keeps only '2', the",
+     "discovery binding is judged without the queue row, a control character in a file name adds lines to the discovery",
+     "report and to the acceptance check, and the base has no one_line (the errors). The controls pass."]))
+write(os.path.join(I, "red-first.txt"), red(
+    os.path.join(S, "red-i5b10-final.txt"),
+    ["İ5B-FIX-10 red first — this package's final test file (the whole suite) against the committed sync_adapters.py of",
+     "c909fe7a3 (İ5B-FIX-09) in a copy outside the repository; run by the AI session. Unit / API level",
+     "(check_instruction_budget), not the write / check CLI."],
+    ["The three new tests fail on the base source: a required text only in a link's destination or title, an image or a",
+     "numbered reference definition still counts (8); an escaped '<' or an autolink is refused as raw HTML (8); a rule",
+     "hidden behind deeper nesting than the check reads still counts, and the one-level message is absent (5). The 35",
+     "earlier tests pass in the same run.", "",
+     "Historical, not replaced: the depth test alone first ran red against the interim source d65dd0cd (4 failures:",
+     "the label three deep, the destination two deep, the image three deep, the deep visible label)."]))
+
+
+def guard(js, title):
+    res = json.load(open(js, encoding="utf-8"))
+    out = list(title) + [""]
+    for r in res:
+        out += [r["mutation"] + f"  ({r['file']})", f"    tests: {', '.join(t if t.startswith('self-test:') else t.split('.')[-1] for t in r['tests'])}",
+                f"    applied: {r['applied']} · parses: {r['parsed']} · named: {'RED' if r['red'] else 'green'} — {r['summary']}"
+                f" · control: {r['control_summary']} · proven: {r['proven']}"]
+    return out + ["", f"proven: {sum(r['proven'] for r in res)} of {len(res)}"]
+
+
+def copy_equal(src, frz):
+    return all(sha(os.path.join(S, "guard", src, p)) == h for p, h in frz.items())
+
+
+g = guard(os.path.join(S, "guard/ct-guard-02.json"),
+          ["CT-FIX-09 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+           "Driver: drivers/harness8.py.txt. The copy's five files equal the frozen sources byte for byte:",
+           f"{copy_equal('ct-src', ct_freeze)}. Each mutation: the file still parses; the named tests fail; the control test",
+           "(Controls.test_consumers_on_the_intact_fixture_exit_0) passes. A 'self-test:' name is red only when that named",
+           "case reports FAIL without a crash."])
+g += ["", "A first run is not counted: its copy lacked docs/guides, so G-Q3's self-test crashed (a FileNotFoundError) and",
+      "the driver read the crash as red. The copy was completed, the driver made to require the named case, and every",
+      "mutation run again in a new directory."]
+write(os.path.join(E, "guard-removal.txt"), g)
+write(os.path.join(I, "guard-removal.txt"), guard(
+    os.path.join(S, "guard/i5b-guard-03.json"),
+    ["İ5B-FIX-10 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+     "Driver: drivers/harness8.py.txt — CT-FIX-09's driver with one more mutation (G-N1), so its bytes differ from the",
+     f"copy in CT-FIX-09's folder. The copy's two files equal the final sources byte for byte: {copy_equal('i5b-src2', i5b_freeze)}.",
+     "Each mutation: the file still parses; the named test fails; the control test (test_a_dead_link_is_still_a_dead_link)",
+     "passes. Earlier runs on the interim source d65dd0cd (6 / 6) are not counted for these sources."]))
+
+old = open(os.path.join(S, "disc-old.txt"), encoding="utf-8").read().split("\n")
+new = open(os.path.join(S, "disc.txt"), encoding="utf-8").read().split("\n")
+differ = [new[i].split(":", 1)[0] for i in range(min(len(old), len(new))) if old[i] != new[i]]
+out = ["CT-FIX-09 real data — run by the AI session on the CT worktree's own data.", "",
+       "`verify_module_id.py . --discover \"Employee\"` with CT-FIX-08's tool (65c53153e) and this package's (exit 3 both):",
+       f"  lines {len(old) - 1} -> {len(new) - 1}; BULGU {sum(l.startswith('BULGU ') for l in old)} -> {sum(l.startswith('BULGU ') for l in new)}",
+       f"  differing lines: {', '.join(differ)} — the tool's own identity and the report hash, as expected; no real path holds a",
+       "  control character, so every other line is unchanged. This is not a claim that the new report equals the old one.", "",
+       "The gate's queue reader (`prompt_gate.real_queue`) on the real registry, in process, with ct_queue's output captured:"]
+out += ["  " + l for l in open(os.path.join(S, "realdata-queue.txt"), encoding="utf-8").read().splitlines()]
+out += ["  No real queue read printed anything, so no 'unexpected output' error: a closed or unverified row answers 1, a",
+        "  dispatchable row 0, as before."]
+write(os.path.join(E, "real-data.txt"), out)
+
+
+def run_lines(log, pre, post):
+    text = open(os.path.join(S, log), encoding="utf-8").read()
+    res = [l for l in text.splitlines() if l.startswith(("### exit", "Ran ", "OK", "FAILED", "start ", "end ")) or "self-test:" in l
+           or l.startswith("OK ") or l.startswith("Python")]
+    warn = len(re.findall(r"ResourceWarning: unclosed", text))
+    a, b = open(os.path.join(S, pre), encoding="utf-8").read().splitlines(), open(os.path.join(S, post), encoding="utf-8").read().splitlines()
+    added, removed = [l for l in b if l not in a], [l for l in a if l not in b]
+    same = "True" if not added and not removed else (
+        f"the same HEAD, branch, modified files and SHA-256; status differs only by {', '.join(x.strip() for x in added + removed)}"
+        if all(x.startswith("?? docs/records/decisions/") for x in added) and not removed else f"False ({added} / {removed})")
+    return res, warn, same
+
+
+res, warn, same = run_lines("ct09-run.log", "ct09-pre.txt", "ct09-post.txt")
+out = ["CT-FIX-09 — the one final run on the frozen sources; run by the AI session in the CT worktree (branch",
+       "chore/ct/ct-fix-09 on 65c53153e with this package's uncommitted changes). Not a run on a combined candidate.", "",
+       "commands (from the worktree root):",
+       "  python3 -B <tool> --self-test   for ct_queue, prompt_gate, acceptance_record, status_report, ct_route, known_failures, run_record",
+       "  python3 -B -m unittest discover -v -s scripts/tests -p 'test_*.py'", "sources (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in ct_freeze.items()]
+out += ["result (from the full log):"] + ["  " + l for l in res]
+out += [f"ResourceWarning lines: {warn} (the existing unclosed open() of verify_module_id.py's araç line; not a failure, not changed)",
+        f"before / after (HEAD, branch, status, the five SHA-256): {same}"
+        + (" — the decision record written while the run went on; the tests do not read docs/records/decisions" if same.startswith("the same") else ""),
+        f"full log SHA-256 {sha(os.path.join(S, 'ct09-run.log'))} · before {sha(os.path.join(S, 'ct09-pre.txt'))} · after "
+        f"{sha(os.path.join(S, 'ct09-post.txt'))} (kept outside the repository: they hold local paths)"]
+write(os.path.join(E, "checks.txt"), out)
+
+res, warn, same = run_lines("i5b10-run-02.log", "i5b10-pre-02.txt", "i5b10-post-02.txt")
+out = ["İ5B-FIX-10 — the final run on the frozen sources; run by the AI session in the İ5B worktree (branch",
+       "chore/agents/i5b-fix-10 on c909fe7a3 with this package's uncommitted changes).", "",
+       "commands (from the worktree root):",
+       "  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget",
+       "  python3 -B .antigravity/scripts/sync_adapters.py --check", "sources (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in i5b_freeze.items()]
+out += ["result (from the full log):"] + ["  " + l for l in res]
+out += [f"before / after (HEAD, branch, status, the two SHA-256): {same}",
+        f"full log SHA-256 {sha(os.path.join(S, 'i5b10-run-02.log'))} (kept outside the repository)", "",
+        "These are unit / API checks. The real write / check CLI counter-examples were run by Codex (listed in README)."]
+write(os.path.join(I, "checks.txt"), out)
+
+for dst in (E, I):
+    shutil.copyfile(os.path.join(S, "guard/harness8.py"), os.path.join(dst, "drivers", "harness8.py.txt"))
+    shutil.copyfile(os.path.join(S, "make_evidence9.py"), os.path.join(dst, "drivers", "make_evidence9.py.txt"))
+print("written", copy_equal("ct-src", ct_freeze), copy_equal("i5b-src2", i5b_freeze))

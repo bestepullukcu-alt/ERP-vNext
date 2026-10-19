@@ -90,24 +90,45 @@ public sealed class PrismMockFixture : IAsyncLifetime
 
     private static string? FindCachedEntryPoint()
     {
-        var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "npm-cache", "_npx");
-        if (!Directory.Exists(cache))
+        foreach (var cache in NpxCacheRoots().Where(Directory.Exists))
         {
-            return null;
-        }
-
-        foreach (var dir in Directory.EnumerateDirectories(cache))
-        {
-            var package = Path.Combine(dir, "node_modules", "@stoplight", "prism-cli", "package.json");
-            var entry = Path.Combine(dir, "node_modules", "@stoplight", "prism-cli", "dist", "index.js");
-            if (File.Exists(package) && File.Exists(entry)
-                && JsonDocument.Parse(File.ReadAllText(package)).RootElement.GetProperty("version").GetString() == PrismVersion)
+            foreach (var dir in Directory.EnumerateDirectories(cache))
             {
-                return entry;
+                var package = Path.Combine(dir, "node_modules", "@stoplight", "prism-cli", "package.json");
+                var entry = Path.Combine(dir, "node_modules", "@stoplight", "prism-cli", "dist", "index.js");
+                if (File.Exists(package) && File.Exists(entry)
+                    && JsonDocument.Parse(File.ReadAllText(package)).RootElement.GetProperty("version").GetString() == PrismVersion)
+                {
+                    return entry;
+                }
             }
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// WP-CI-SERVICE-TESTS-05 (BL-646 item 5) — where npx keeps its cache, per npm's own rules: <c>npm_config_cache</c> when
+    /// set; otherwise <c>%LocalAppData%\npm-cache</c> on Windows and <c>~/.npm</c> on macOS and Linux. The fixture used to look
+    /// only at the Windows place, so on macOS and on the Linux runner it never found the Prism npx had just installed (16
+    /// smoke tests red, measured locally and in PR #144).
+    /// </summary>
+    private static IEnumerable<string> NpxCacheRoots()
+    {
+        var configured = Environment.GetEnvironmentVariable("npm_config_cache");
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            yield return Path.Combine(configured, "_npx");
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            yield return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "npm-cache", "_npx");
+        }
+        else
+        {
+            yield return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".npm", "_npx");
+        }
     }
 
     private async Task<Uri> StartAsync(string entryPoint, string spec)

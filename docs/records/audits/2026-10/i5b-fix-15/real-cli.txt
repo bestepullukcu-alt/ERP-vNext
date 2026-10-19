@@ -1,0 +1,54 @@
+İ5B-FIX-15 real CLI — the same 42 cases, write and --check, each in ONE work copy restored before every case;
+run by the AI session. Drivers: drivers/probe_html_single.py.txt (before) and drivers/probe_html_single2.py.txt (after:
+the same cases, the frozen sync_adapters.py laid over the same base). The base is İ5B-FIX-14's frozen copy; only
+AGENTS.md or AGENTS-REFERENCE.md changes per case. Two AGENTS.md cases pass 22000 bytes and print WARN (the AI session's
+own heading cases).
+
+case                                                                                                 expected  before  after
+normal                                                                                               0/0       0/0     0/0
+block: REF section 2 inside <script>                                                                 nonzero   0/0     1/1
+block: REF section 2 inside <pre>                                                                    nonzero   0/0     1/1
+block: REF section 2 inside <style>                                                                  nonzero   0/0     1/1
+block: REF section 2 inside <textarea>                                                               nonzero   0/0     1/1
+block: AGENTS.md required heading after the core inside <pre>                                        nonzero   0/0     1/1
+block: REF heading inside <div> (no blank line)                                                      nonzero   0/0     1/1
+inline: Codex's anchor inside a mid-paragraph <script type=text/plain>                               nonzero   0/0     1/1
+inline: <script> opened mid-line in the paragraph before section 2, closed after it                  nonzero   0/0     1/1
+inline: an unclosed mid-line <script> before section 2                                               nonzero   0/0     1/1
+inline: the anchor inside <span hidden>                                                              nonzero   0/0     1/1
+control: unrelated <div>Example</div> appended to the last section                                   0/0       0/0     0/0
+control: unrelated <div>Example</div>, a blank line, then the real section                           0/0       0/0     0/0
+control: unrelated inline HTML in section 2's body, not around its anchor                            0/0       0/0     0/0
+control: an unrelated closed <details> block                                                         0/0       0/0     0/0
+control: HTML shown in a closed code example                                                         0/0       0/0     0/0
+control: HTML in inline code inside section 2                                                        0/0       0/0     0/0
+control: inline HTML at a paragraph start, heading right after                                       0/0       0/0     0/0
+codex-p02-A: <script type=text/plain> holding </pre> and a blank line, then section 2, then </script nonzero   0/0     1/1
+codex-p02-B: 'Visible prefix <span hidden>' in the previous paragraph, a blank line, section 2, then nonzero   0/0     1/1
+codex-p03-A: <div>example</div> right before section 2's heading, no blank line                      nonzero   0/0     1/1
+codex-p03-B: <script/>, a blank line, section 2, then </script>                                      nonzero   0/0     1/1
+own: nested same-name <div> — the inner close does not end the outer                                 nonzero   0/0     1/1
+own: a </span> inside a closed code example does not close <span hidden>                             nonzero   0/0     1/1
+own: a </span> in inline code does not close <span hidden>                                           nonzero   0/0     1/1
+own: an escaped \</span> does not close <span hidden>                                                nonzero   0/0     1/1
+own: <span/> never closed before section 2 (declared safe refusal)                                   nonzero   0/0     1/1
+own: the AGENTS.md required heading after the core inside a mid-line <span hidden> across a blank li nonzero   0/0     1/1
+control: a void <br/> and a blank line before section 2                                              0/0       0/0     0/0
+control: a closed nested <div><div>x</div></div>, a blank line, section 2                            0/0       0/0     0/0
+control: an escaped \<span hidden> before section 2                                                  0/0       0/0     0/0
+control: <script/> shown in inline code before section 2                                             0/0       0/0     0/0
+codex-p04: the anchor inside a mid-paragraph <script data-example="<"> … </script>                   nonzero   0/0     1/1
+own: a '<' in an attribute of a tag before section 2 ('<span title="a<b">')                          nonzero   0/0     1/1
+own: a bare 'a<b' in prose before section 2 (an opener the reader cannot read)                       nonzero   0/0     1/1
+own: a tag left open at the end of the file's last line                                              0/0       0/0     0/0
+control: a URI autolink before section 2                                                             0/0       0/0     0/0
+control: an e-mail autolink before section 2                                                         0/0       0/0     0/0
+control: an escaped \<b in prose before section 2                                                    0/0       0/0     0/0
+control: 'a<b' in inline code before section 2                                                       0/0       0/0     0/0
+control: 'a < b' with spaces before section 2                                                        0/0       0/0     0/0
+control: '<script data-example="<">' in a closed code example before section 2                       0/0       0/0     0/0
+
+before: tool ['e5b55f888c1f9520cc2f40997024f216fb0f25fdef902af94f163f51fe2cb8e6'], 19 of 42 as expected — every hidden or unreadable case 0/0
+after:  tool ['31aaf12a2c33a5cc70014f56d41fdb6669898daf970175552d25bc4de60e414f'], 42 of 42 as expected
+base unchanged before / after: True / True
+results: before bb0e140369fc2d190ec5503038c9236378d03f2d491bb232041e05ac10039808, after baeb3ea8720ff5205da0e2f1064b864e9f0c80974d2414fb8bce15ddfc0a7e9d (kept outside the repository)

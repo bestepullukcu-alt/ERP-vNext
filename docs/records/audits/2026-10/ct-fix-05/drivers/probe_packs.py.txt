@@ -1,0 +1,31 @@
+"""Real-data probe (read-only): every tracked module pack at HEAD through the repository's own shared routines —
+pack_identity (file id vs künye id, C2) and, where the tool has it, pack_approval_decision per mode (E1); the v6 tool's
+pack_approval_limit otherwise. Prints one line per pack whose verdict is not plain 'ok', then the counts."""
+import importlib.util, json, os, re, subprocess, sys
+REPO = sys.argv[1]
+spec = importlib.util.spec_from_file_location("ct_queue_probe", os.path.join(REPO, "scripts", "ct_queue.py"))
+cq = importlib.util.module_from_spec(spec); sys.modules["ct_queue_probe"] = cq; spec.loader.exec_module(cq)
+env = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
+def git(*a):
+    return subprocess.run(["git", *a], cwd=REPO, capture_output=True, env=env, check=True).stdout
+paths = [p for p in git("ls-files", "-z", "--", "*module-packs/*.md").decode().split("\0") if p]
+counts, lines = {}, []
+for p in sorted(paths):
+    text = git("show", f"HEAD:{p}").decode("utf-8", errors="replace")
+    m = re.search(r"(?m)^id:\s*(\S+)", text)
+    pid = m.group(1) if m else ""
+    base = re.match(r"MOD-\d{4}", pid)
+    ids = [x for x in {pid, base.group(0) if base else ""} if x]
+    ident = cq.pack_identity(p, text, ids) if ids else "künyede id yok"
+    if hasattr(cq, "pack_approval_decision"):
+        appr = {mode: cq.pack_approval_decision(text, mode)[0] for mode in cq.APPROVAL_MODES}
+    else:
+        lim, prob = cq.pack_approval_limit(text)
+        appr = {"v6": "stop" if prob else ("conditional" if lim else "ok")}
+    key = ("identity-refused" if ident else "identity-ok") + " " + " ".join(f"{k}={v}" for k, v in appr.items())
+    counts[key] = counts.get(key, 0) + 1
+    if ident or any(v != "ok" for v in appr.values()):
+        lines.append(f"{p} id={pid or '-'} identity={'ok' if not ident else ident[:140]} approval={appr}")
+print("\n".join(lines))
+print("packs", len(paths))
+for k in sorted(counts): print(counts[k], k)

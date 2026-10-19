@@ -191,7 +191,8 @@ Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialis
 - [x] L10n standartları, Altın HTML Şablonu ve DtDefaults.create() uygulandı.
 - [x] Platform/Admin ise Ctrl+K registry + `en/tr` search localization tamamlandı veya N/A/blocker gerekçesi yazıldı.
 > ⚠ **İşe başlamadan önce kural haritasını oku:** `.antigravity/rules/GEMINI.md` §KURAL HARİTASI.
-> 39 kural var ve hangisinin bu işi ilgilendirdiğini o tablo söyler. Ölçüldü 2026-09-07:
+> Kural sayısı tarihlidir (2026-09-07: 39; 2026-10-17: `.antigravity/rules/` altında 46 dosya, GEMINI.md dahil) —
+> hangisinin bu işi ilgilendirdiğini o tablo söyler. Ölçüldü 2026-09-07:
 > 20 ajandan yalnız 3'ü bu dosyayı anıyordu — kural, atıf verildiği kadar görünürdür.
 
 - [x] Quality Gate Datatable checklist işaretlendi (`verify_datatable_page.py --reference slim|compact` PASS).
@@ -207,6 +208,8 @@ Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialis
       ADR (karar alındıysa) → `docs/records/decisions/<yyyy-mm>/` ✓ — yol yazılmadan bu madde işaretlenemez.
 - [x] **Backlog kapanış kaydı (demir kural #10):** `git diff --name-only <base>..HEAD -- docs/roadmap/backlog/product-backlog.md` çıktısı buraya yapıştırılır. Boş çıktı = madde işaretlenemez.
 - [x] **Kapanışın derecesi (demir kural #10):** Kayıt **✅** mi **⚠️ KISMİ** mi olarak yazıldı? ⚠️ ise **doğrulanacak davranışların adım adım listesi** kayda kondu mu? Canlı doğrulama yapılmadan ✅ yazmak **ihlaldir** — kod bitti + testler yeşil, kapanış için yetmez.
+- [x] **Done seviyesi (SOP §29):** Rapor "tamamlandı" derken hangi SOP §29 seviyesini kastettiğini yazar; bu liste
+      o seviyeye kanıt üretir, kendi başına "bitti" demez.
 
 > ⛔ Yukarıdaki Mimari Onay, Runtime Smoke Test, CRUD, Dokümantasyon ve **Backlog kapanış kaydı** maddeleri işaretlenmeden rapor "tamamlandı" olarak gönderilemez. "Smoke test yapıldı" denirken Kanal C kullanıldıysa kullanıcı yanıtı alıntılanır.
 >

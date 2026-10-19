@@ -1,0 +1,27 @@
+İ5B-FIX-04 red first — this package's scripts/tests/test_sync_adapters_budget.py against the unchanged tool of
+97fec6a4159c4cc558bfe6d6452e57c906848977 (exported with git archive outside the repository).
+
+with this package's manifest (.antigravity/adapters.json: required_sections): ran 21 tests, FAILED (failures=14)
+    2  FAIL InstructionBudget.test_a_heading_only_inside_a_comment_or_in_code_is_lost
+    1  FAIL InstructionBudget.test_a_section_written_twice_fails
+    3  FAIL InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost
+    1  FAIL InstructionBudget.test_an_emptied_reference_file_fails
+    1  FAIL InstructionBudget.test_an_unclosed_comment_at_the_top_hides_the_rest
+    3  FAIL InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+    1  FAIL InstructionBudget.test_headings_kept_bodies_removed_fails
+    1  FAIL InstructionBudget.test_one_anchor_removed_fails_by_name
+    1  FAIL InstructionBudget.test_padding_without_anchors_fails
+
+with the base manifest (no required_sections: the section test cannot find its contract): ran 21 tests, FAILED (failures=14, errors=1)
+    1  ERROR InstructionBudget.test_the_reference_file_has_required_sections_with_anchors
+    2  FAIL InstructionBudget.test_a_heading_only_inside_a_comment_or_in_code_is_lost
+    1  FAIL InstructionBudget.test_a_section_written_twice_fails
+    3  FAIL InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost
+    1  FAIL InstructionBudget.test_an_emptied_reference_file_fails
+    1  FAIL InstructionBudget.test_an_unclosed_comment_at_the_top_hides_the_rest
+    3  FAIL InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+    1  FAIL InstructionBudget.test_headings_kept_bodies_removed_fails
+    1  FAIL InstructionBudget.test_one_anchor_removed_fails_by_name
+    1  FAIL InstructionBudget.test_padding_without_anchors_fails
+
+the 11 tests of İ5B-FIX-03 stay green on the base code in both runs

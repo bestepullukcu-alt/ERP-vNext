@@ -1,0 +1,16 @@
+İ5B-FIX-18 — what was run on this branch's two frozen files, and what was not.
+
+sources (SHA-256):
+  .antigravity/scripts/sync_adapters.py             54c647a2adef2b084cb50cd799bb5118cd02fbf059a08a926863f74f24d840cf
+  scripts/tests/test_sync_adapters_budget.py        4fc7cd62fe256c419ad6e22ca8c35021e8032425d076f1d4ba0360be2ee348ba
+
+As agreed, the 54 budget tests and --check are not recorded here as a separate bound run: the one recorded run is
+the combined candidate's, after the commit (C17). During the work the suite passed 54 / 54 and --check reported 9
+adapters; that is not a recorded run.
+
+The real files, C16's reader against this one:
+  AGENTS.md: visible text equal True · level-2 sections equal True · html blocks equal True · diagnosis ''
+  CLAUDE.md: visible text equal True · level-2 sections equal True · html blocks equal True · diagnosis ''
+  .antigravity/AGENTS-REFERENCE.md: visible text equal True · level-2 sections equal True · html blocks equal True · diagnosis ''
+  core view equal True · rule-line decisions equal True
+  check_instruction_budget on the real files: ([], [])

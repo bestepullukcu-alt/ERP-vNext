@@ -1,0 +1,50 @@
+== İ5B-FIX-03 guard removal on snap-i5b-03, clone outside the repository (source sha256 dabd05c6421e2a3b97de03e48b16743e60f540925793696d96a0f049c7d7c8ef)
+baseline: st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 0 ['OK']; -B .antigravity/scripts/sync_adapters.py --check -> exit 0 ['OK 9 adapter(s) match their sources']
+I1 link grammar back to the bare inline form
+    st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 1 ['FAILED (failures=5)']
+      red: test_dead_links_in_every_markdown_link_form (test_sync_adapters_budget.InstructionBudget) (form='a reference-style link')
+      red: test_dead_links_in_every_markdown_link_form (test_sync_adapters_budget.InstructionBudget) (form='a single-quoted title')
+      red: test_dead_links_in_every_markdown_link_form (test_sync_adapters_budget.InstructionBudget) (form='a titled link')
+      red: test_dead_links_in_every_markdown_link_form (test_sync_adapters_budget.InstructionBudget) (form='a titled reference definition')
+      red: test_dead_links_in_every_markdown_link_form (test_sync_adapters_budget.InstructionBudget) (form='an angle-bracket destination')
+    -B .antigravity/scripts/sync_adapters.py --check -> exit 0 ['OK 9 adapter(s) match their sources']
+I2 forbidden import check off
+    st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 1 ['FAILED (failures=7)']
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='a ./ path')
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='a line-start import')
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='a path through a folder')
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='after a lone backtick (no
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='another case')
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='behind an unclosed fence'
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='inside a sentence')
+    -B .antigravity/scripts/sync_adapters.py --check -> exit 0 ['OK 9 adapter(s) match their sources']
+I3 code spans and fences not skipped
+    st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 1 ['FAILED (failures=6)']
+      red: test_an_import_shown_as_code_is_not_an_import (test_sync_adapters_budget.InstructionBudget) (form='a closed fence')
+      red: test_an_import_shown_as_code_is_not_an_import (test_sync_adapters_budget.InstructionBudget) (form='a code span with text before the import')
+      red: test_an_import_shown_as_code_is_not_an_import (test_sync_adapters_budget.InstructionBudget) (form='a code span')
+      red: test_an_import_shown_as_code_is_not_an_import (test_sync_adapters_budget.InstructionBudget) (form='a double-backtick code span')
+      red: test_an_import_shown_as_code_is_not_an_import (test_sync_adapters_budget.InstructionBudget) (form='a longer closing fence')
+      red: test_the_real_instruction_files_pass (test_sync_adapters_budget.InstructionBudget)
+    -B .antigravity/scripts/sync_adapters.py --check -> exit 1 ['FAIL 1 adapter problem(s)']
+I4 an unclosed fence hides the rest
+    st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 1 ['FAILED (failures=1)']
+      red: test_every_import_form_of_agents_md_outside_code_is_forbidden (test_sync_adapters_budget.InstructionBudget) (form='behind an unclosed fence'
+    -B .antigravity/scripts/sync_adapters.py --check -> exit 0 ['OK 9 adapter(s) match their sources']
+I5 a core rule inside an HTML comment counts
+    st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 1 ['FAILED (failures=1)']
+      red: test_a_core_rule_only_inside_an_html_comment_is_lost (test_sync_adapters_budget.InstructionBudget)
+    -B .antigravity/scripts/sync_adapters.py --check -> exit 0 ['OK 9 adapter(s) match their sources']
+I6 the write happens before the budget
+    st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 1 ['FAILED (failures=1)']
+      red: test_a_budget_problem_writes_no_adapter (test_sync_adapters_budget.InstructionBudget)
+    -B .antigravity/scripts/sync_adapters.py --check -> exit 0 ['OK 9 adapter(s) match their sources']
+I7 OVERSIZE names Antigravity for every file
+    st discover -s scripts/tests -p test_sync_adapters_budget.py -> exit 1 ['FAILED (failures=1)']
+      red: test_oversize_message_names_the_file_it_is_about (test_sync_adapters_budget.InstructionBudget)
+    -B .antigravity/scripts/sync_adapters.py --check -> exit 0 ['OK 9 adapter(s) match their sources']
+
+Earlier runs on snap-i5b-01 / -02 (superseded): on snap-i5b-01 I3 stayed green — IMPORT's look-behind excluded a
+backtick, so the code-span blanking was never exercised and a lone backtick before @AGENTS.md was missed; the
+look-behind was removed and two cases were added; snap-i5b-02 was never built (a word-splitting error in the shell
+command, nothing written into the worktree); snap-i5b-03 is the run above.

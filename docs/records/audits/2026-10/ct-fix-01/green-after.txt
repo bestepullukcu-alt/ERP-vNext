@@ -1,0 +1,46 @@
+ok   05a duplicate registry row
+      expected (safe): the dispatch loader (require/guard/writers/summary/prompt gate) stops: DUR
+      observed       : load_for_dispatch() stopped: DUR: kayıt, durum sözlüğü ya da geçiş tablosu geçersiz — dağıtım ya da rapor kararı verilm; dispatch_problems: ["registry: 'sce-mvp6' or its path is registered twice"]; validate says: ["registry: 'sce-mvp6' or its path is registered twice"]
+ok   05b main strict=yes, branch strict=no
+      expected (safe): in_force_status: not 'kayıtlı' (profile mismatch)
+      observed       : 'farklı profil' strict: orada 'yes', burada 'no'
+ok   06a FAILED listed twice, second row dispatch=yes
+      expected (safe): the vocabulary is refused (DUR) before any dispatch decision
+      observed       : dispatch_problems: ["states: 'FAILED' is listed twice for sop7", "states sop7: dispatchable states are ['FAILED', 'READY'], the SOP allows only ['READY']"]
+ok   06b transition table gains CANCELLED->READY
+      expected (safe): CANCELLED stays terminal (card §0: ACCEPTED, REWORK, FAILED, SUPERSEDED, CANCELLED)
+      observed       : terminal before ['ACCEPTED', 'CANCELLED', 'FAILED', 'REWORK', 'SUPERSEDED']; after ['(ProfileError: geçiş tablosu son durumdan çıkış tanımlıyor: CANCELLED→READY)', 'ACCEPTED', 'CANCELLED', 'FAILED', 'REWORK', 'SUPERSEDED']; exit errors before 1, after 1
+ok   09a MOD-0009-FU02 row cut to 5 columns
+      expected (safe): discovery: 2 (tamamlanamadı) naming the bad line
+      observed       : intact registry exit 3; cut registry exit 2; last line: çıkış: 2
+ok   09b MOD-0009-FU02 row with an empty id cell (9 columns)
+      expected (safe): discovery: 2 (tamamlanamadı) naming the bad line
+      observed       : exit 2; last line: çıkış: 2
+ok   11a pack: status approved then draft
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: ["görev sınıfı: paketin künyesi geçersiz — künyede 2 'status' satırı var, 1 olmalı (execution/domains/x/module-packs/MOD-0001-x.md)"]
+ok   11b pack: status only outside a front matter
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: ["görev sınıfı: paketin künyesi geçersiz — künye yok (dosya '---' ile başlamıyor) (execution/domains/x/module-packs/MOD-0001-x.md)"]
+ok   11c pack: front matter never closed
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: ["görev sınıfı: paketin künyesi geçersiz — künye kapanmamış (kapanış '---' yok) (execution/domains/x/module-packs/MOD-0001-x.md)"]
+ok   11d governance: approved then draft
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: ["görev sınıfı: kapsam kaydının künyesi geçersiz — künyede 2 'status' satırı var, 1 olmalı — docs/records/decisions/2026-10/x.md"]
+ok   11e governance: approval only in prose
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: ["görev sınıfı: kapsam kaydının künyesi geçersiz — künye yok (dosya '---' ile başlamıyor) — docs/records/decisions/2026-10/x.md"]
+ok   13 acceptance_record: branch 'deadbee' (commit b7bd04cd7)
+      expected (safe): None (a hex id must be a commit with that prefix)
+      observed       : resolved to None
+ok   13 prompt_gate: branch 'deadbee' (commit b7bd04cd7)
+      expected (safe): None (a hex id must be a commit with that prefix)
+      observed       : resolved to None
+ok   13 status_report_v2: branch 'deadbee' (commit b7bd04cd7)
+      expected (safe): None (a hex id must be a commit with that prefix)
+      observed       : resolved to None
+ok   B link_check file .antigravity/AGENTS-REFERENCE.md missing
+      expected (safe): a MISSING problem for that file
+      observed       : problems ['MISSING .antigravity/AGENTS-REFERENCE.md (link_check)'] (with the file present: [])
+RED 0 / 15

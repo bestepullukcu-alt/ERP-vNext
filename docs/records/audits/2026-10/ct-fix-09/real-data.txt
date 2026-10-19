@@ -1,0 +1,15 @@
+CT-FIX-09 real data — run by the AI session on the CT worktree's own data.
+
+`verify_module_id.py . --discover "Employee"` with CT-FIX-08's tool (65c53153e) and this package's (exit 3 both):
+  lines 627 -> 627; BULGU 15 -> 15
+  differing lines: araç, rapor-sha256 — the tool's own identity and the report hash, as expected; no real path holds a
+  control character, so every other line is unchanged. This is not a claim that the new report equals the old one.
+
+The gate's queue reader (`prompt_gate.real_queue`) on the real registry, in process, with ct_queue's output captured:
+  sce-mvp6 Q01: error=None code=1 line='DUR Q01: DONE (closed) dağıtılamaz'
+  sce-mvp6 Q02: error=None code=1 line="DUR Q02: durum 'DONE (owner: whole project copied to external disk, 20"
+  sce-mvp6 Q03: error=None code=1 line="DUR Q03: durum 'DECIDED C (no commit for now)' doğrulanmadı — dağıtıla"
+  sce-mvp6 NO-SUCH-ID: error=None code=1 line='DUR NO-SUCH-ID: kuyrukta satır yok — kayıt yoksa dağıtım yok (SOP §20.'
+  sce-mvp6 Q62 (first dispatchable): error=None code=0 line='DAĞITILABİLİR Q62: READY'
+  No real queue read printed anything, so no 'unexpected output' error: a closed or unverified row answers 1, a
+  dispatchable row 0, as before.

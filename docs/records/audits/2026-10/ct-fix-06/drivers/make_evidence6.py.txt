@@ -1,0 +1,75 @@
+"""CT-FIX-06 / İ5B-FIX-07: the generated evidence texts from the raw outputs (no local paths in the output).
+Usage: make_evidence6.py <scratch ctfix06> <CT evidence dir> <İ5B evidence dir>"""
+import json, re, sys, os, shutil, collections
+S, ECT, EI = sys.argv[1:4]
+for d in (ECT, EI, os.path.join(ECT, "drivers"), os.path.join(EI, "drivers")):
+    os.makedirs(d, exist_ok=True)
+
+def red(raw, prefix):
+    text = open(raw, encoding="utf-8").read()
+    ran = re.search(r"^Ran (\d+) tests", text, re.M).group(1)
+    per = collections.Counter()
+    for m in re.finditer(r"^(FAIL|ERROR): (test_\w+) \(scripts\.tests\.(\w+)\.(\w+)\)", text, re.M):
+        per[f"{m.group(3)}.{m.group(4)}.{m.group(2)}" + (" (error)" if m.group(1) == "ERROR" else "")] += 1
+    return ran, per
+
+def block(title, parts):
+    out = [title, ""]
+    for label, (ran, per) in parts:
+        out += [f"{label}: ran {ran} tests · failed subtests {sum(per.values())} in {len(per)} test methods"]
+        out += [f"  {n:4d}  {k}" for k, n in sorted(per.items())] + [""]
+    return "\n".join(out)
+
+ct_note = ("Base: the committed sources of c203303ce (CT-FIX-05) in a copy outside the repository, this package's test files\n"
+           "copied in; run by the AI session. Every method not listed passed. The two errors of the real-registry tests in the\n"
+           "first run are the copy's environment (it holds no execution/registries), not a red of this package.")
+open(os.path.join(ECT, "red-first.txt"), "w", encoding="utf-8").write(block(
+    "CT-FIX-06 red first — the new tests against the unchanged base code.\n" + ct_note,
+    [("discovery summary (test_verify_module_id_discover + R0 CTFIX06_DiscoverySummary + Controls)", red(os.path.join(S, "red-first/ct-red.txt"), "")),
+     ("evidence lines and required registry columns (R0 CTFIX06_EvidenceLineAndRegistry)", red(os.path.join(S, "red-first/ct-red-2.txt"), ""))]))
+open(os.path.join(EI, "red-first.txt"), "w", encoding="utf-8").write(block(
+    "İ5B-FIX-07 red first — this package's test_sync_adapters_budget.py against the unchanged base code 5cd4cc527\n"
+    "(İ5B-FIX-06) in a copy outside the repository; run by the AI session. The 25 errors are the real-file measurement,\n"
+    "which now calls sync_adapters.on_rule_line (absent in the base). Every method not listed passed.",
+    [("test_sync_adapters_budget", red(os.path.join(S, "red-first/i5b-red.txt"), ""))]))
+
+def guards(files, title, note):
+    out = [title, note, "Each mutation: the file still parses; the named tests fail; the control test passes in the same copy.", ""]
+    total = proven = 0
+    for js in files:
+        for r in json.load(open(js, encoding="utf-8")):
+            total += 1; proven += r["proven"]
+            out += [r["mutation"], f"    file: {r['file']} · tests: {', '.join(t.split('.')[-1] for t in r['tests'])}",
+                    f"    named: {'RED' if r['red'] else 'green'} — {r['summary']} · control: {r['control_summary']} · proven: {r['proven']}"]
+    return "\n".join(out + ["", f"proven: {proven} of {total}"]) + "\n"
+
+open(os.path.join(ECT, "guard-removal.txt"), "w", encoding="utf-8").write(guards(
+    [os.path.join(S, "guard/ct-guard.json"), os.path.join(S, "guard/ct-guard-4.json")],
+    "CT-FIX-06 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+    "Drivers: drivers/harness3.py.txt (the summary, G-S1…S7) and drivers/harness4.py.txt (evidence lines and registry\n"
+    "columns, G-L1, G-L2, G-R1). Each copy holds the final bytes of the file its mutations change (verify_module_id.py\n"
+    "57555e59…; acceptance_record.py cb017a3c…, ct_queue.py ee8b7eef…). The control is\n"
+    "Controls.test_consumers_on_the_intact_fixture_exit_0."))
+open(os.path.join(EI, "guard-removal.txt"), "w", encoding="utf-8").write(guards(
+    [os.path.join(S, "guard/i5b-guard.json")],
+    "İ5B-FIX-07 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+    "Driver: drivers/harness3.py.txt. The copy holds the final sync_adapters.py and test file. The control is\n"
+    "test_a_dead_link_is_still_a_dead_link."))
+
+old = open(os.path.join(S, "disc-old-final.txt"), encoding="utf-8").read().splitlines()
+new = open(os.path.join(S, "disc-final.txt"), encoding="utf-8").read().splitlines()
+keep = lambda ls: [l for l in ls if not l.startswith(("ÖZET ", "araç: ", "rapor-sha256: "))]
+summ = [l for l in new if l.startswith("ÖZET ")]
+out = ["CT-FIX-06 real data — `verify_module_id.py . --discover \"Employee\"` on the repository at c203303ce, once with the",
+       "committed tool (CT-FIX-05) and once with this package's tool; run by the AI session.", "",
+       f"exit 3 -> 3; lines {len(old)} -> {len(new)}; every line other than ÖZET, araç and rapor-sha256 identical: {keep(old) == keep(new)}",
+       f"BULGU lines {sum(l.startswith('BULGU ') for l in old)} -> {sum(l.startswith('BULGU ') for l in new)} (the gate's decision count is unchanged)",
+       f"ÖZET block: {len(summ)} lines, {sum(len(l.encode()) + 1 for l in summ)} bytes, right under the header; the MOD-0251",
+       "PSS collision is inside the first 4 KB", "--check-report: the new report 0, the committed tool's report 0 (a saved report keeps its own tool identity)",
+       "", "The ÖZET block of the new report (each line cut at 200 characters here):"] + ["  " + l[:200].rstrip() for l in summ]
+open(os.path.join(ECT, "real-data.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+for src, dst in (("guard/harness3.py", "harness3.py.txt"), ("guard/harness4.py", "harness4.py.txt"), ("build_c5.py", "build_c5.py.txt"),
+                 ("make_evidence6.py", "make_evidence6.py.txt")):
+    shutil.copyfile(os.path.join(S, src), os.path.join(ECT, "drivers", dst))
+shutil.copyfile(os.path.join(S, "guard/harness3.py"), os.path.join(EI, "drivers", "harness3.py.txt"))
+print("written")

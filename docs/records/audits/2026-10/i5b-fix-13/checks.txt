@@ -1,0 +1,23 @@
+İ5B-FIX-13 — the final run on this branch's two frozen source files, in the İ5B worktree (branch
+chore/agents/i5b-fix-13 on 98bf161b8 with this package's uncommitted changes). Not a measurement of a complete final
+Git tree, not a run on a combined candidate.
+
+commands (from the worktree root):
+  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget
+  python3 -B .antigravity/scripts/sync_adapters.py --check
+sources (SHA-256):
+  .antigravity/scripts/sync_adapters.py             7f9c54e9a51813609d266371b5fd0749a2308833c44304c042af9ec601aca920
+  scripts/tests/test_sync_adapters_budget.py        3b63f54403655263aceff8c372346c518ef6bfe321f994eb66ce53947d1ed3b6
+result (from the full log):
+  start 2026-10-18T11:33:23Z
+  Python 3.9.6
+  Ran 43 tests in 2.975s
+  OK
+  ### exit 0
+  OK 9 adapter(s) match their sources
+  ### exit 0
+  end 2026-10-18T11:33:26Z
+before = after (HEAD, branch, status, the two SHA-256): True
+full log SHA-256 5094aae95e693cc4e83e2b2b6c5858261e816957954138dc8446f821b488a8e7 (kept outside the repository)
+
+These are unit / API checks. The real write / check CLI counter-examples are Codex's (listed in README).

@@ -1,0 +1,10 @@
+İ5B-FIX-08 — the green run of the adapter tests, recorded as Codex ran it independently (Codex's run, not the AI session's).
+
+command (from the worktree root): python3 -B -m unittest discover -s scripts/tests -p test_sync_adapters_budget.py
+environment: Python 3.9.6
+result: exit 0 · Ran 33 tests in 0.436s · OK
+the 4 source files' SHA-256 the same before and after the run
+stdout: empty, SHA-256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+stderr: 132 bytes, SHA-256 b4eefbc78d986f2584d176036de8b5b2319cde1d86a570fe6aac8d14d3fb13c4
+
+The AI session's own 33 / 33 run of the same file is stated in the README; it is not this record.

@@ -1,0 +1,25 @@
+CT-FIX-10 — the narrow component run agreed for this package, on the CT branch's three frozen files in the CT
+worktree (branch chore/ct/ct-fix-10 on 56166f107 with this package's uncommitted changes). Not a full scripts/tests
+run, not a run on a combined candidate.
+
+commands (from the worktree root):
+  python3 -B scripts/ct_queue.py --self-test
+  python3 -B scripts/prompt_gate.py --self-test
+  python3 -B -m unittest -v scripts.tests.test_ct_cli_regression.CTFIX10_UnknownRowAndWriters scripts.tests.test_ct_cli_regression.CTFIX09_GateDiagnosisAndOneLine scripts.tests.test_ct_cli_regression.CTFIX08_VisibleTextAndPaths scripts.tests.test_ct_cli_regression.CTFIX04_I3_PackIdentity scripts.tests.test_ct_cli_regression.Controls
+sources (SHA-256):
+  scripts/ct_queue.py                               e27c7a89e4c9b9226da105b7d8876dc4f8686939ab80a4820304e856e87052d3
+  scripts/prompt_gate.py                            dd1bb6e60eba04eb45cdeb156f51c1c5b122f20c7b3104784e8b863af17d0d36
+  scripts/tests/test_ct_cli_regression.py           1547b2c1b8d8a85811103ab1471c895d6622bcf6077c0c1499865d6e0c4b655b
+result (from the full log):
+  start 2026-10-18T11:05:40Z
+  Python 3.9.6
+  self-test: 141/141 passed
+  ### exit 0
+  self-test: 105/105 passed
+  ### exit 0
+  Ran 16 tests in 83.151s
+  OK
+  ### exit 0
+  end 2026-10-18T11:07:06Z
+before = after (HEAD, branch, status, the three SHA-256): True
+full log SHA-256 53c24f78c67c8c7009686df3b303ac650742ac74a8fecf4adaf4a3d0c863f13e (kept outside the repository)

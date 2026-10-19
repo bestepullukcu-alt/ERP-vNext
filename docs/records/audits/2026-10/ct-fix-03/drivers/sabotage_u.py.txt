@@ -1,0 +1,77 @@
+"""R1 sabotage driver (CT-FIX-03): each sabotage puts one shared-reader part back to its old behaviour in the worktree
+file, runs the named checks, restores the file byte-for-byte (sha-256 verified) in a finally block."""
+import hashlib, json, re, subprocess, sys
+from pathlib import Path
+WT = Path(sys.argv[1]).resolve(); OUT = Path(sys.argv[2])
+if str(WT).startswith("<REPO>"):
+    raise SystemExit("refused: sabotage runs only in a scratch clone outside the repository (Codex, 2026-10-17)")
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def run(cmd):
+    r = subprocess.run(cmd, cwd=WT, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    fails = sorted(set(re.findall(r"^(?:FAIL|ERROR):? (.*)$", out, re.M)))
+    summary = [l for l in out.splitlines() if re.search(r"self-test: \d+/\d+|^Ran |^OK|^FAILED", l)]
+    return {"cmd": " ".join(cmd[2:]), "exit": r.returncode, "summary": summary, "fails": fails[:40]}
+SELF = lambda f: [sys.executable, "-B", f, "--self-test"]
+R0 = lambda *k: [sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_ct_cli_regression.py", *sum((["-k", x] for x in k), [])]
+SAB = [
+ ("U1a the card names a flag the tool does not have", "docs/guides/operations/control-tower-operating-card.md",
+  "`python3 scripts/prompt_gate.py draft --queue <kuyruk> --wp <WP>`", "`python3 scripts/prompt_gate.py draft --queue <kuyruk> --wpx <WP>`",
+  [[sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_ct_card_commands.py"]]),
+ ("U1b the card names a subcommand the tool does not have", "docs/guides/operations/control-tower-operating-card.md",
+  "`python3 scripts/ct_queue.py guard --queue <kuyruk>`", "`python3 scripts/ct_queue.py lock --queue <kuyruk>`",
+  [[sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_ct_card_commands.py"]]),
+ ("U2a the gate ignores an unfilled marker", "scripts/prompt_gate.py",
+  '''    unfilled = [n for n, l in enumerate(text.replace("\\r\\n", "\\n").split("\\n"), start=1) if DRAFT_MARK in l]
+    if unfilled:''',
+  '''    unfilled = []
+    if unfilled:''',
+  [R0("U2_"), SELF("scripts/prompt_gate.py")]),
+ ("U2b the prompt draft skips a malformed row", "scripts/prompt_gate.py",
+  '''    broken = cq.structure_errors(cur, cq.baseline(qd))''', '''    broken = []''',
+  [R0("U2_")]),
+ ("U3a the record check ignores an unfilled marker", "scripts/acceptance_record.py",
+  '''    unfilled = [n for n, l in enumerate(text.replace("\\r\\n", "\\n").split("\\n"), start=1) if DRAFT_MARK in l]
+    if unfilled:
+        return 1,''',
+  '''    unfilled = []
+    if unfilled:
+        return 1,''',
+  [R0("U3_"), SELF("scripts/acceptance_record.py")]),
+ ("U3b the list check ignores an unfilled marker", "scripts/acceptance_record.py",
+  '''    unfilled = [n for n, l in enumerate(lines, start=1) if DRAFT_MARK in l]''', '''    unfilled = []''',
+  [SELF("scripts/acceptance_record.py")]),
+ ("U3c the list hint holds a pipe again and the cell guard is off", "scripts/acceptance_record.py",
+  '''        if row.count("|") != len(LIST_COLUMNS) + 1:''', '''        if False:''',
+  []),
+ ("U3d the acceptance draft skips a malformed row", "scripts/acceptance_record.py",
+  '''    broken = ctq.structure_errors(cur, ctq.baseline(queues[0]))''', '''    broken = []''',
+  [R0("U3_")]),
+ ("U3e a list draft without --pack", "scripts/acceptance_record.py",
+  '''    if pack_spec is None:
+        raise Incomplete("--part list için --pack gerekli''', '''    if False:
+        raise Incomplete("--part list için --pack gerekli''',
+  [R0("U3_")]),
+]
+results = []
+ONLY = sys.argv[3:]
+for name, rel, old, new, cmds in SAB:
+    if ONLY and name.split()[0] not in ONLY:
+        continue
+    p = WT / rel; orig = p.read_bytes(); before = sha(p)
+    text = orig.decode("utf-8")
+    if text.count(old) != 1:
+        results.append({"sabotage": name, "applied": False, "anchor_count": text.count(old)}); continue
+    try:
+        mutated = text.replace(old, new)
+        if name.startswith("U3c"):
+            mutated = mutated.replace('d("evet veya hayır")', 'd("evet | hayır")')
+            cmds = [R0("U3_"), SELF("scripts/acceptance_record.py")]
+        p.write_bytes(mutated.encode("utf-8"))
+        res = [run(c) for c in cmds]
+    finally:
+        p.write_bytes(orig)
+    assert sha(p) == before, name
+    results.append({"sabotage": name, "file": rel, "applied": True, "restored_sha256": before, "runs": res})
+    print(name); [print("   ", r["cmd"][-60:], "exit", r["exit"], r["summary"][-1:], "|", "; ".join(f[:90] for f in r["fails"][:12])) for r in res]
+OUT.write_text(json.dumps(results, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
