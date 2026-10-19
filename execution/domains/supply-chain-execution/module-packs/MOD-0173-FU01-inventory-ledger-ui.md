@@ -576,6 +576,7 @@ label in the tenant nav. Nothing in this pack depends on it.
   MOD-0173 against PRODUCT-MASTER (fail-closed). Owner: Ali. Expiry: when PRODUCT-MASTER-BUNDLE gains an additive
   search operation (v1.1, MOD-0290 owner = single writer), and in any case **before G1 sign-off**. Request to the
   MDM owner is a follow-up (§20).
+  **Status (2026-10-20, G1 re-measure): CLOSED in code** by WP-0173-PM1 (pickers read `/stockable-items`, `ProductPickerSource.cs`; no Model A selector call left in Inventory Web) — live data still on the 4010 bridge until PM-LIVE (O-FUB1-2).
 - **W-UI-02 (OD-UI-2, waiver — K19).** Until MOD-0174 exposes lots, a lot-controlled inbound movement takes a
   **typed lot number**. This supersedes, for lots only, the MOD-0173 pack §21 rule "lots selected from masters,
   never typed". Compensating controls: trim + upper-case normalisation; format 1–40 chars `[A-Z0-9./-]`; the
@@ -592,6 +593,7 @@ label in the tenant nav. Nothing in this pack depends on it.
   the migration**: the owner's working tenant has 0 typed groups and the owner decided to keep typing open for now
   (2026-10-06); the seed tenant `…0001` keeps its 6 G1 test groups (36 transactions) unmigrated. W-UI-02 stays OPEN
   until the owner closes it per tenant; MVP-1 closure must record each tenant's state.
+  **Owner decision G1-D4 (2026-10-20) = A:** the seed tenant `…0001` (6 typed-lot groups / 36 transactions not migrated) is a TEST tenant only; it is reset by the PM-LIVE data rebuild (data option A), not migrated. Per-tenant closure for real tenants stays the rule.
 - **OD-UI-3.** As proposed above: InventoryGovernance untouched until FU01 ships, then retired (separate WP).
 - **KD-1 / KD-2 — deviations not accepted; compliant mapping chosen (owner, 2026-10-01).** This supersedes the
   KD-1/KD-2 deviation text in §11/§16: the full Compact file set is delivered and the verifier runs with

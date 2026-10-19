@@ -1621,6 +1621,8 @@ now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU
 - Hareket izi `MovementLink.byUserName` artık saklı adı önce okur (FU-0173-MOV-ACTORNAME); karantina giriş süpürücüsünün kaydettiği hareket girişin kaydedeninin adını taşır.
 - Yardım paneli: 8 sayfanın metni (7 dil), her görünüm kendi kodunu söyler. "Stoğu karantinaya al" modal yardımı (CLEAN1 g) modalda kaldı.
 - **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+**DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0175 --name "Quarantine & Blocked Stock"` → OK (proven against Blueprint/registry) → **W-0175-01 closed**.
+
 
 
 ## 20. Follow-up Items

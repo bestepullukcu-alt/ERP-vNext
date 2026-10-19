@@ -1139,6 +1139,8 @@ Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
 - 8 sayfanın UXH-001 metni modül resx'inden (panelin okumadığı yer; iki kod manifest dışıydı: EXPIRYEXPIRED / EXPIRYFEFOORDER) panelin kaynağına, manifest kodlarıyla (EXPIREDSTOCK / FEFOORDER) taşındı; adımlar sayfaya karşı düzeltildi; modüldeki 48 anahtar kaldırıldı. Ayrıntı sayfası kendi kodunu söyler (EXPIRYEXCEPTIONDETAILS).
 - `#ex-drawer` "Devam" / "İmzala ve kaydet" `data-dt-primary="chord"` (Enter kuralı R4 tabanda kırmızıydı). Kaldırılan InventoryGovernance görünümünün (F5 CT-F12) donuk defter satırı çıktı.
 - **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+**DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0176 --name "Expiry / FEFO Management"` → OK (proven against Blueprint/registry) → **W-0176-01 closed**.
+
 
 
 ## 20. Follow-up Items
