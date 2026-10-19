@@ -54,10 +54,8 @@ public static class DefaultRolePermissionTemplate
     // Adding it here grants the tenant Admin role the full crm.account.* baseline via the standard SelectFor breadth clause.
     // MOD-0022 CT-D10 — "esign" (the e-Signature manifest's ModuleCode): the tenant Admin holds the whole esign.* namespace,
     // incl. esign.samples.approve (CT-D5 "tenant Admin by default"), policy and meanings management.
-    // Q358 — TEMPORARY, EXPIRES 2026-11-03. "shipment-tracking-pod" (MOD-0183) gives every tenant's Admin the five
-    // supplychain.shipments.* keys WITHOUT a Shipments entitlement, so MVP-6 can open now. It suspends the curated-list
-    // decision above for this one module only. Remove it once the entitlement path is measured granting Admin the same
-    // keys; by the expiry it is re-approved in writing or removed. Decision:
+    // Q358 retracted (C-13): "shipment-tracking-pod" (MOD-0183) is no longer in the Admin baseline — the tenant Admin gets
+    // the five supplychain.shipments.* keys only through a Shipments entitlement (measured over the broker path). Decision:
     // docs/records/decisions/2026-10/mvp6-shipment-admin-baseline-temporary-widening-owner-decision-01.md
     // G7 (Wave 6.1) — TEMPORARY, EXPIRES 2026-11-03 (aligned with Q358/BL-652). The S&OP (MOD-0190) and Capacity
     // (MOD-0192) manifest ModuleCodes join the Admin baseline so every tenant Admin holds all eight
@@ -65,7 +63,7 @@ public static class DefaultRolePermissionTemplate
     // keys through the read rule below. Their keys enter the catalog only where the modules are composed (non-production
     // demand seed), so this grants nothing elsewhere. Remove when the entitlement path grants them. Decision:
     // docs/records/decisions/2026-10/mvp6-0190-0192-g7-role-grants-owner-decision-01.md
-    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign", "shipment-tracking-pod", "sop-workflow-signoffs", "capacity-planning" };
+    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign", "sop-workflow-signoffs", "capacity-planning" };
 
     /// <summary>
     /// MOD-0022 CT-D10 — the e-signature keys EVERY default tenant role holds: signing, keeping one's own signature sample
