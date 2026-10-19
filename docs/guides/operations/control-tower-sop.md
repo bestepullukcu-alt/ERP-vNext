@@ -18,23 +18,52 @@ Measurement (Q139 `METRICS.tsv`): 12 CT-QUEUE rows were missing at dispatch or a
 build recipes instead of one declared stack; 7 WPs needed a re-issued prompt, and 6 of the 11 recorded STOP/BLOCKED
 events happened at the lane-placement gate (C9, C10).
 
-1. **Ledger-row gate (R8):** §17.1 and the §36 record carry `CT-QUEUE Row (exact text)`. The §20 preflight checks that
-   the WP row exists in CT-QUEUE; if it does not, the WP stops (§20.1).
+1. **Ledger-row gate (R8; changed in r3 below):** §17.1 and the §36 record carry the WP's row from the dispatching
+   Control Tower's registered task source (`docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` for SCE / MVP6). The §20 preflight checks that the row exists;
+   if it does not, the WP stops (§20.1).
 2. **Base-stack field (R9):** §17.1 and the §36 record carry `Base Stack` (BASE-STACK record path + SHA256). It is
    required for every Mac build/test/runtime WP.
 3. **Lane-typed prompt templates (R11):** §36.2 adds four v1 templates: T1 LANE writer, T2 Mac build/test, T3 VER and
    T4 ledger writer. Each starts with NEREDE / NE İLE and the placement gate, and carries pre-filled §17.1, §17.3 and
    §17.4 blocks.
-4. **Dispatch workflow:** `.antigravity/workflows/dispatch-wp.md` selects the template and runs the dispatch gates
-   before CT issues a prompt.
+4. **Dispatch workflow:** CT picks the template from the §36.2 table and runs the dispatch gates in the §20 preflight
+   before it issues a prompt. (The separate dispatch workflow file was withdrawn in `63fa9cd59`: shared workflows are
+   not added without owner approval.) Since r3: the §36.2 templates T1–T4 belong to the SCE / MVP6 Control Tower; every
+   other Control Tower uses the §36.1 skeleton and names it in the prompt.
 
 Revision r2 (WP Q162, findings of the independent VER Q142):
 
-- **F-Q142-1:** the Mac place name in T2 NEREDE, in the runtime branch of T3 NEREDE and in dispatch-wp G2 follows OD-PLACE:
+- **F-Q142-1:** the Mac place name in T2 NEREDE and in the runtime branch of T3 NEREDE follows OD-PLACE:
   "Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code)"; Terminal is not required.
 - **F-Q142-2:** no BASE-STACK version is fixed in the SOP. The §17.1 "Current at v2.5" pointer and the fixed layer chain in T2
   are removed. T2 takes the record path, SHA256 and layer chain as written in the cited record. The rule is unchanged: one
   versioned BASE-STACK record + SHA256 (K4).
+
+Revision r3 (owner decisions `CT-R8-REGISTERED-TASK-SOURCE-OWNER-DECISION-01` and `CT-R8-TRANSITION-PERIOD-OWNER-DECISION-01`, 2026-10-15;
+records in `docs/records/decisions/2026-10/`):
+
+- **R8 — registered task source.** Every Control Tower uses the verified work row in its own registered task source.
+  Registered means a valid, verifiable row for that Control Tower in `execution/delivery/ct-queue-registry.tsv` on
+  `main`. A similar file name, or another file named `CT-QUEUE.tsv`, is not a registration. The SCE / MVP6 Control
+  Tower's source is `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` (row `sce-mvp6`); no other Control Tower writes it.
+- **Field names.** §17.1 and §36: `CT-QUEUE Row (exact text)` becomes `Task Source Row (exact text)`. §20:
+  `CT-QUEUE row present` becomes `Task source row present`. The §36.2 templates T1–T4 belong to SCE / MVP6 and are not
+  changed; there the old names keep meaning the SCE / MVP6 source.
+- **Templates.** T1–T4 in §36.2 belong to SCE / MVP6. Every other Control Tower uses the §36.1 skeleton.
+- **No registered task source.**
+  - During the transition period the Control Tower dispatches only under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01`, on that record's terms: confirmed
+    receipt, an approved work package or Module Pack, the separate transition reference and the report line.
+  - After the period, work packages explicitly approved before its end continue and may be dispatched within their
+    approved scope. A new work package under an existing capability is not approved in advance by that capability.
+  - A work package approved after the end needs a registered task source or a time-limited exception the owner
+    approved explicitly, naming the Control Tower, the reason, the scope, and a start and end date.
+  - Otherwise no new dispatch (§20.1). Running work is never stopped by this rule, and no capability gets a time limit.
+    No new scope is released by this revision.
+- **Transition period.** 30 calendar days from the day r3 is merged to `main` (`CT-R8-TRANSITION-PERIOD-OWNER-DECISION-01`). After it, every REP-001 report
+  of a Control Tower without a registered task source carries the line
+  `Kayıtlı görev kaynağı yok (R8 geçiş süresi <bitiş tarihi> bitti)`.
+- **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
+  Control Towers that confirmed it.
 
 ### 0.2 v2.4'te eklenen dispatch-adresleme kontrolleri
 
@@ -836,7 +865,7 @@ Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli deği
 Work Package ID:
 Prompt ID:
 Prompt Version:
-CT-QUEUE Row (exact text):   # v2.5 R8 — row as in CT-QUEUE.tsv; no row → no dispatch (§20.1)
+Task Source Row (exact text): # R8 (r3) — row as in the CT's registered task source; SCE / MVP6: docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv; no row → §0.1 r3 rules, else no dispatch (§20.1)
 
 Capability Block:
 Module:
@@ -873,8 +902,14 @@ A | B | C
 
 **v2.5 rules for the two new fields**
 
-- `CT-QUEUE Row (exact text)` is copied from `CT-QUEUE.tsv` at dispatch. The single ledger writer appends the row
-  before the WP starts. CT does not dispatch a WP whose row does not exist (R8; §20.1).
+- `Task Source Row (exact text)` (until r3: `CT-QUEUE Row (exact text)`) is copied at dispatch from the dispatching
+  Control Tower's registered task source (`execution/delivery/ct-queue-registry.tsv`). That source's single writer adds
+  the row before the WP starts; for SCE / MVP6 the source is `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` and the writer is T4 (§36.2),
+  unchanged.
+  CT does not dispatch a WP whose row does not exist (R8; §20.1).
+- A Control Tower with no registered task source follows the §0.1 r3 rules. Under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` it leaves the field empty and
+  adds the separate line `R8 geçiş referansı (CT-QUEUE satırı değildir): …` that the record prescribes; under an
+  owner-approved exception the separate line names the exception instead.
 - `Base Stack` names one versioned BASE-STACK record and its SHA256 (K4: a changed stack is a new file, never an edit).
   It is required for Mac build/test/runtime WPs; other WPs write `n/a`. The Mac lane checks the record folder's
   `SHA256SUMS` and the quoted hash before composing, and writes any deviation in its report (R9).
@@ -1154,7 +1189,7 @@ Staged files:
 Unstaged relevant files:
 Untracked relevant files:
 Unrelated dirty inventory:
-CT-QUEUE row present:        # v2.5 R8 — yes / no (the WP ID at line start in CT-QUEUE.tsv)
+Task source row present:     # R8 (r3) — yes / no (the WP ID in the CT's registered task source; SCE / MVP6: docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv). "no" stops, unless a §0.1 r3 rule applies
 ```
 
 ## 20.1 Stop conditions
@@ -1167,7 +1202,8 @@ Aşağıdakilerde fail-closed:
 - overlapping dirty files,
 - protected path değişikliği gerekiyor ama approval yok,
 - dependency unsatisfied,
-- WP row missing in CT-QUEUE (v2.5 R8),
+- WP row missing in the dispatching Control Tower's registered task source, and no §0.1 r3 rule applies (transition
+  decision within the period, work package approved before the period ended, owner-approved exception) (R8),
 - pack draft,
 - missing/ambiguous contract,
 - ownership conflict,
@@ -1177,6 +1213,100 @@ Aşağıdakilerde fail-closed:
 Git operasyonları repo `GIT-002` kurallarına tabidir.
 
 **Commit ≠ acceptance.**
+
+## 20.2 Prompt kalite kapısı (CT-PQG-01)
+
+> Kararlar: `ct-operating-model-owner-decisions-01.md` §3 (10 madde) ve `ct-completion-delegation-owner-decision-01.md`.
+> **Zorunlu:** yeni Control Tower'ların (kayıtta `strict=yes`) her uygulama promptu. Eski Control Tower'lar aracı isteğe
+> bağlı kullanır; onaylı işleri geriye dönük durdurulmaz. §36.2 T1–T4 değişmez.
+
+```text
+python3 scripts/prompt_gate.py check <prompt dosyası> --queue <kuyruk> [--review <kayıt yolu>@<commit>] [--prepare]
+python3 scripts/prompt_gate.py pack <prompt dosyası>
+```
+
+- **Prompt dosyası** ajana yapıştırılacak §36.1 bloğudur, bayt bayt.
+- **Çıkış:** 0 geçti · 1 engel · 2 tamamlanamadı. 2 hiçbir zaman geçiş sayılmaz.
+- **Kip:** Varsayılan kip dağıtım denetimidir. Kuyruk, yerel `origin/main`'deki kayıt dosyasında kayıtlı olmalıdır;
+  ölçülen SHA rapora yazılır, fetch yapılmaz. `--prepare` yalnız hazırlığı denetler ve "DAĞITIM İZNİ DEĞİL" der.
+- **Rapor:** Kapının raporu keşif raporunun özet kuralını taşır (`rapor-sha256`); `verify_module_id.py --check-report`
+  onu da doğrular. İş paketi kaydına `PQG: <sonuç> · rapor <yol>@<commit> · sha256 <…>` satırı yazılır. Bu satır
+  promptun içine yazılmaz.
+
+**Mekanik denetimler** (her biri tutmazsa ENGEL):
+
+| Denetim | Kural |
+|---|---|
+| Biçim | §36.1 alanları ve yeni alanlar var; `NE:`, `NEDEN:`, `NASIL:`, `YAPMA:`, `DOĞRULA:`, `Durma koşulları:`, `Rapor formatı:` birer kez ve altında içerikle |
+| Git | `Repository` ve `Worktree` bu makinede ölçülmüş yollar ve kapının çalıştığı depoyla aynı depo; `Worktree` HEAD'i = `Expected HEAD`; dal; izinli yollara, korunan yollara, kaynak dosyalara ya da "Önce oku" desenlerine dokunan kirli dosya (diğer kirli dosyalar yalnız envanter) |
+| Kaynak | Her "Önce oku" yolu `Expected HEAD`'de var; kısaltılmış (`...`) yol yok; desen en az bir dosyayla eşleşir |
+| Sözleşme | `API`, `İzin`, `Test`, `Sabotaj` yüzeylerinin her biri ya `«birebir metin» (yol:satır)` alıntısı — metin o satırda `Expected HEAD`'de aynen var — ya da `N/A — <gerekçe>`. Alıntısız ifade yorumdur ve reddedilir. HIGH promptta en az bir alıntı gerekir; bütün yüzeyler N/A ise rapor "doğrulanan sözleşme yok" der |
+| Görev sınıfı | `ürün`: onaylı Module Pack, tek kimlik, koşulsuz onay; `yönetişim`: onaylı kapsam kaydı ve açık WP bağı — kurallar tablonun hemen altında (**Görev sınıfı kuralı**) |
+| Risk | §9.1 sinyalleri aşağıdaki sabit listeden; herhangi bir sinyal varsa `Risk: HIGH`. İzinli yollar migrasyon, gateway ya da yetki dosyalarına dokunuyorsa ilgili sinyal beyan edilmiş olmalı |
+| Kuyruk | WP satırı var ve `ct_queue.py`'nin kendi `require` kararı dağıtılabilir diyor |
+| Keşif | Katı kuyrukta `Keşif:` satırı zorunlu. Rapor v2, commit'lenmiş, özeti geçerli; üreticinin biçiminde (sonuç sözlüğü ve çıkış kodu, tekil satırlar, EKSİK satırları, ref sayısı = ref satırları, "eşleşme yok" ⇒ BULGU yok); `araç:` satırındaki sha256, raporun ilan ettiği commit'teki `verify_module_id.py`'nin sha256'sı (commit okunamazsa tamamlanamadı); sorgu bu işin adı ya da modülünün kayıtlı adı; "tamamlanamadı" engeldir; "inceleme gerekli" ise her BULGU için `Keşif kararı <n>: <parent\|FU\|child\|yeni> — <gerekçe>` |
+| İnceleme | HIGH promptta aşağıdaki kayıt |
+
+**Görev sınıfı kuralı** (CT-FIX-04). Yürürlük: bu metin `main`'e girdiğinde, yalnız prompt kapısının denetlediği yeni
+§36.1 promptları için; eski kayıtlar, paketler ve yürüyen işler değişmez.
+
+- `ürün`
+  - Adı geçen Module Pack `ready-for-dev` ya da `approved`.
+  - Künyesinde ortak okuyucuyla okunan tek bir `id` var ve dosya adının başındaki **tam** pack kimliği (küçük harfli
+    slug'dan önceki büyük harfli kimlik bölümleri) bu `id`'yle birebir aynı (`MOD-0155-FU06B` ≠ `MOD-0155-FU07B`;
+    `MOD-02880-…`, `MOD-0288X-…` kimlik değildir). Ardından kimliğin modülü (`MOD-nnnn`, `MOD-nnnn-FUn`; child kimlikte
+    mevcut `split_id` tabanı, ör. `MOD-0155-FU06B` → `MOD-0155`) kuyruk satırının modülüyle aynı (CT-FIX-05 C2; dil
+    bilgisi genişlemez).
+  - Künyede `approval_status` varsa ve tam `approved` değilse `status` tek başına yetki değildir:
+    `conditionally-approved…` yalnız hazırlıkta (`--prepare`) bildirilir, yeni dağıtımda ENGEL — paketin kapsamı ve
+    onayı önce pakette netleşir; başka her değer ya da okunamayan alan her kipte ENGEL; hiçbir kayıt bunu aşmaz.
+- `yönetişim`
+  - `docs/records/decisions/` altında künyesi `status: approved` (ya da `decided`) olan bir kapsam kaydı.
+  - Şu iki açık bağdan biri: (a) kuyruk satırının `record` sütunu kaydı tam yoluyla gösterir — `yol@commit` ise o
+    kimlik bir commit nesnesidir ve kayıt orada Expected HEAD'deki baytlarla aynıdır; (b) kaydın künyesindeki tek
+    `work_packages:` satırı WP kimliğini tam üye olarak listeler (virgülle ayrılmış kimlikler, boş eleman yok).
+  - Kayıt metninde ya da başka bir alanda WP kimliğinin anılması bağ değildir; açık liste WP'yi içermiyorsa `record`
+    bağı onu aşmaz; künyesinde HTML yorumu olan kayıt okunmaz.
+  - Yönetişim işi ürün kodu yazmaz: her "İzinli yol" normal bir depo-içi glob'dur (`/`, `./`, `//`, `..`, `\` yok); sabit
+    öneki (ilk glob karakterinden önceki bölümler) boş değildir ve `services/`, `frontend/`, `gateway/` altında değildir;
+    Expected HEAD'de önekin üst bileşenlerinden birinde ya da altında sembolik bağ yoktur. Bu yalnız ilan edilen yazma
+    kapsamıdır; okumayı sınırlamaz, bir komutun sonradan bağ yaratmayacağını kanıtlamaz (CT-FIX-05 C1).
+
+**§9.1 sinyal adları:** `sözleşme` (paylaşılan sözleşme / olay şeması), `migrasyon`, `yetki` (yetkilendirme /
+kimlik doğrulama), `kiracı`, `denetim` (denetim / kanıt temeli), `finansal`, `uyum`, `gateway`,
+`modüller-arası-yazma`, `silme` (silme / saklama), `kaldırma` (kullanımdan kaldırma).
+
+**HIGH — bağımsız inceleme kaydı.** Ayrı bir dosyadır, commit'lenir ve `--review <yol>@<commit>` ile verilir. Promptun
+içine yazılmaz; böylece ajana giden metin incelenen metinle bayt bayt aynı kalır.
+
+```text
+PROMPT İNCELEME KAYDI v1
+wp: <WP ID>
+prompt: <Prompt ID> v<sürüm>
+prompt-sha256: <prompt dosyasının sha256'sı>
+kaynak-paketi-sha256: <pack komutunun verdiği özet>
+yazar: <kimlik>
+inceleyen: <kimlik — yazardan farklı>
+kontrol sözleşme: tamam — <kaynak paketindeki en az bir yolu gösteren kanıt>
+kontrol dosyalar: tamam — <…>
+kontrol ct-onayı: tamam — <…>
+kontrol kabul: tamam — <…>
+kontrol durma: tamam — <…>
+kontrol risk: tamam — <…>
+bulgu: <kritik|engelleyici|diğer> · <açık|kapandı> · <açıklama>        (sıfır ya da daha çok satır)
+kritik-açık: <sayı>
+engelleyici-açık: <sayı>
+```
+
+- İnceleyen yalnız `pack` çıktısındaki sınırlı kaynak paketini alır (madde 7).
+- **Bayatlık:** Prompt, komutu, kapsamı ya da kaynaklarından biri değişirse kayıt bayatlar. Kayıt
+  `prompt-sha256` ve `kaynak-paketi-sha256` ile promptun kendisine ve `Expected HEAD`'deki kaynak blob'larına bağlıdır.
+  Kritik bir düzeltmeden sonra yeniden inceleme bütün sözleşme yüzeyini kapsar, yalnız farkı değil (madde 6).
+- **Karar ölçütü:** Puan değil, açık kritik ve engelleyici bulgu sayısıdır (madde 5). Kapı, beyan edilen sayıyı bulgu
+  satırlarından yeniden sayar.
+- **Sınır:** Kapının kayıt denetimi mekaniktir; incelemenin kendisinin yerine geçmez (madde 8).
+- **Prompt kaynaklı yeniden iş (madde 9):** `-R<n>` satırının iş metni `neden: prompt|kod|ortam|kapsam` ile başlar.
+  Sayımı CT-OPS-04 yapar.
 
 ---
 
@@ -1256,7 +1386,8 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 `.antigravity/rules/status-reporting-and-evidence.md` (REP-001) ile sabittir. Özet:
 
 - Tek tablo, sabit sütunlar: modül · kapsam cümlesi · kanıt seviyesi (§23) · kanıtın yeri (`yol@commit`) ·
-  CT kararı (§29'daki Done seviyesi) · sıradaki tek eksik.
+  karar (`accepted` · `rejected` · `conditional` ya da `karar yok`) · tamamlanma (§29'daki Done seviyesi ya da
+  `yok`; karardan türetilmez, §29.5) · sıradaki tek eksik.
 - Yüzde tek başına yazılmaz; ancak altındaki satır listesiyle birlikte anlam taşır.
 - Kanıt depoda durur ve gönderilmiş olur. Kişisel makine yolu, `/tmp` ve yerelde kalmış dal kanıt değildir.
 - Kanıt koşusundan önce dal ana dalla senkronlanır; rapor kaç commit geride olduğunu yazar.
@@ -1492,6 +1623,9 @@ Module:
 
 ile done olur.
 
+Yeni Control Tower'da ilk madde (zorunlu paket AC'leri) `python3 scripts/acceptance_record.py module-check` ile ölçülür
+(REP-001 §6.2); çıkış 0 yalnız AC kapsamıdır, Module Done değildir.
+
 ## 29.3 Capability Done
 
 Capability:
@@ -1523,6 +1657,36 @@ gerektiriyorsa ayrı gate'tir.
 ```text
 WP ACCEPTED ≠ MERGED ≠ MODULE DONE ≠ CAPABILITY DONE ≠ RELEASE VERIFIED
 ```
+
+## 29.5 Kabul kaydı ve Done seviyesi (CT-OPS-03)
+
+> Karar: `ct-ops-03-acceptance-contract-joint-decision-01.md`. **Zorunlu:** yeni (katı kuyruklu) Control Tower'lar.
+> Eski kayıtlar ve eski Control Tower'ların işleri değişmez.
+
+Üç alan ayrıdır ve birbirine otomatik çevrilmez:
+
+| Alan | Değer | Nerede |
+|---|---|---|
+| Karar | `accepted` · `rejected` · `conditional` | REP-001 §6.1 künyesi, `decision` |
+| Kuyruk durumu | §7 durumları (ACCEPTED dahil) | görev kaynağı, `state` |
+| Tamamlanma | WP · Module · Capability · Release Done · `yok` | künye, `completion`; yalnız §29.1–29.4 koşullarıyla |
+
+İlişki yazılıdır, otomatik değildir:
+
+- **ACCEPTED:** Satırın `record` sütunu aynı kuyruk + WP + modülün yetkili, `decision: accepted` kaydını `yol@commit`
+  ile gösterir ve kayıt REP-001 §6.1–6.2'ye uyar. `ct_queue.py validate` bunu denetler.
+- **conditional:** Koşullar (ne · sahip · son tarih) kapanana kadar satır ACCEPTED olmaz; tamamlanma `yok`'tur ve
+  tamamlanan efora sayılmaz. Koşullar kapanınca aynı iş için `supersedes` ile yeni bir `accepted` kaydı yazılır.
+- **rejected:** Satır ACCEPTED olmaz; devam `-R<n>` satırıyladır (kart Y1).
+- **Muafiyet (K19)** otomatik kabul değildir; sahip, son tarih ve kanıtla ayrı değerlendirilir.
+- **Gerekli kanıt seviyesi (§23.1):** Kayıt onaylı bir WP ya da paket satırına bağlıdır. Yoksa ya da belirsizse kabul
+  durur.
+- **`-R3` ve sonrası (§28.2):** Yeniden değerlendirme kararı `reassessment_record` sütunundadır, kabul kaydı
+  `record`'dadır. Kararın künyesinde tek `status: approved` ya da `decided` ve tek `work_packages:` satırı gerekir; bu
+  satır tekrarın kimliğini tam listeler (`W2-R3`; `W2` ya da başka bir WP değil). Sütun `yol@commit` yazıyorsa o kimlik
+  aynı kaydı taşıyan bir commit nesnesidir; `@`'den sonrası atılmaz (CT-FIX-05 F2). Dosyanın varlığı kararın çözüldüğünü
+  kanıtlamaz; çözümü CT doğrular. Karar çözülmeden `-R3` açılmaz ve dağıtılmaz.
+- **Sınır:** Betikler kaydın ve kanıtın bütünlüğünü denetler; anlamca kabul bağımsız doğrulayıcının ve CT'nindir.
 
 ---
 
@@ -1858,7 +2022,7 @@ WORK PACKAGE
 WP ID:
 Prompt ID:
 Prompt Version:
-CT-QUEUE Row (exact text):
+Task Source Row (exact text):     # R8 (r3); under the R8 transition decision: empty + the separate transition reference
 Task Class:
 Golden-Flow Profile:
 Risk Class:
@@ -1972,9 +2136,22 @@ dispatch edilemez.
 WP: {WP ID} · Prompt {Prompt ID} v{version}
 
 Repository: {path} · Branch: {branch} · Expected HEAD: {sha} · Worktree: {path}
+Risk: {LOW|MEDIUM|HIGH} · §9.1 sinyalleri: {§20.2 listesinden, virgülle | yok}
+Görev sınıfı: {ürün · Paket: <pack yolu> | yönetişim · Kapsam kaydı: <docs/records/decisions/… yolu>}
+İzinli yollar: {virgülle ayrılmış yollar / desenler}
+Korunan yollar: {virgülle ayrılmış yollar / desenler | yok}
 
 Önce oku (sırayla):
 {authority paths — module pack, domain-config, AGENTS.md, ilgili .antigravity/rules/**}
+
+Sözleşme yüzeyleri:
+- API: «birebir metin» (yol:satır) | N/A — {gerekçe}
+- İzin: «…» (yol:satır) | N/A — {gerekçe}
+- Test: «…» (yol:satır) | N/A — {gerekçe}
+- Sabotaj: «…» (yol:satır) | N/A — {gerekçe}
+
+Keşif: {sonuç} · rapor {yol}@{commit} · sha256 {rapor-sha256}
+Keşif kararı {n}: {parent|FU|child|yeni} — {gerekçe}
 
 {§17.4 tablosundan hedef ajanın zorunlu giriş alanları — doldurulmuş halde}
 
@@ -1992,11 +2169,15 @@ Senin PASS'in kapanış değildir (K13).
 ```
 
 `Repository:` alanı **ölçülmüş** değerdir; başka makineden kalan mutlak yol kopyalanmaz (§20 preflight).
+Yeni alanlar ve kapı: §20.2. `PQG:` sonucu ve HIGH inceleme kaydı promptun içine değil, iş paketi kaydına yazılır.
+Kapının okuduğu satırlara açıklama (`# …`) eklenmez; satır olduğu gibi okunur. `Sözleşme yüzeyleri` her yüzey için
+alıntı ya da gerekçeli N/A taşır. `Keşif:` katı kuyrukta zorunludur (kart §0.1); `Keşif kararı` satırları sonuç
+"inceleme gerekli" olduğunda her BULGU için birer tanedir.
 
 ## 36.2 Lane-typed prompt templates (v1)
 
-§36.1 is the prompt skeleton. §36.2 adds one ready template per lane type (R11). CT picks the template with
-`.antigravity/workflows/dispatch-wp.md`, fills the `{…}` fields and pastes the block as the prompt. A prompt names its
+§36.1 is the prompt skeleton. §36.2 adds one ready template per lane type (R11). CT picks the template from the
+table below, runs the §20 preflight, fills the `{…}` fields and pastes the block as the prompt. A prompt names its
 template and version (`Template T1 v1`). A template change is a new version, recorded in §0.
 
 | Template | Lane type | Where it runs | Writes |

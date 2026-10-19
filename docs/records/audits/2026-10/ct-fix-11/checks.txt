@@ -1,0 +1,24 @@
+CT-FIX-11 — the narrow component run agreed for this package, on the CT branch's two frozen files in the CT
+worktree (branch chore/ct/ct-fix-11 on 0afba1bf5 with this package's uncommitted changes). Not a full scripts/tests
+run, not a run on a combined candidate.
+
+commands (from the worktree root):
+  python3 -B scripts/ct_queue.py --self-test
+  python3 -B scripts/prompt_gate.py --self-test
+  python3 -B -m unittest -v scripts.tests.test_ct_cli_regression.CTFIX11_GovernanceUnknownRow scripts.tests.test_ct_cli_regression.CTFIX10_UnknownRowAndWriters scripts.tests.test_ct_cli_regression.CTFIX09_GateDiagnosisAndOneLine scripts.tests.test_ct_cli_regression.CTFIX04_I2_Binding scripts.tests.test_ct_cli_regression.CTFIX04_I3_PackIdentity scripts.tests.test_ct_cli_regression.Controls
+sources (SHA-256):
+  scripts/prompt_gate.py                            d74b5e56cd55275cb7f620871898cec97b457ef75c70a3d41d369b08a82fbcb8
+  scripts/tests/test_ct_cli_regression.py           a49c5ab13447b30319a79a99ea2c802817ca6da0b5144b433c78a83ec811b5c2
+result (from the full log):
+  start 2026-10-18T12:45:25Z
+  Python 3.9.6
+  self-test: 141/141 passed
+  ### exit 0
+  self-test: 105/105 passed
+  ### exit 0
+  Ran 18 tests in 88.783s
+  OK
+  ### exit 0
+  end 2026-10-18T12:46:56Z
+before = after (HEAD, branch, status, the two SHA-256): True
+full log SHA-256 975157f0bbb1383c1859beb425001d5698b7a4423543bd7a3ca811590bf4c5f2 (kept outside the repository)

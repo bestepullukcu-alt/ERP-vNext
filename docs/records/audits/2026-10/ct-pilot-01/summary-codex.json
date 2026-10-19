@@ -1,0 +1,72 @@
+{
+ "steps": 29,
+ "uydu": 29,
+ "findings": [
+  "belgede komut yok: REP-001 §7.1 ledger_content_sha256'nın kuralını yazıyor, hesaplayan komutu yazmıyor (pilot: grep -v '^approval_record:' <taban> | shasum -a 256)"
+ ],
+ "commits": {
+  "queue_base": "5948af20365017f0d0df4e4a2ede7615b6675930",
+  "registry": "7ff818be84104b576fd6d88d2cac53cdd7b25900",
+  "discovery": "0cfe0cba13fe7c47562436bdfe237b16233bbaec",
+  "wp_records": "a5b987e4b04a20c58a61852078b94dfb1303969b",
+  "verified": "5990402d8c8becadd1c3f038c85af9a05f70436e",
+  "evidence": "fb5b7184853ec0b65e6f0651305e411c7d34d6ae",
+  "lists": "8eb47347690267b217a01dd2133cadd91e9bb096",
+  "records": "ce367f88868511139e143f7de9d187316233acdb",
+  "accepted": "8a13c105a234ec63b21f676d66d9b1cf6fc96d6e",
+  "report1": "c548c81e1e6197dae1be8f2ba364e4d25c2f24ce",
+  "approval": "5a3c75ee1b003a722cce41cb684390d14ca2161f",
+  "ledger": "e8b8bf51aa6ecacb5263ad2606efffbb3337aac2",
+  "report2": "40359f1f66b2080334bacfbc4e6e420efe71c47b",
+  "baseline_changed": "a932cd07e89f59779f1a3879ab3eca99ecc97b77",
+  "baseline_restored": "b46420aeafca451d8aabfd3dbd0dda22ed5e7f0f",
+  "rework": "2a8e6396bf97e8d5f0034355cf471313fa47df6f",
+  "report3": "89b189a6de6e51306e7faf2c303a970089abc450"
+ },
+ "origin_main_test_imitation": {
+  "real": "ba271c3959ff8d07a7f2de7926f977512a2a8d8f",
+  "set_to": "7ff818be84104b576fd6d88d2cac53cdd7b25900"
+ },
+ "tools_sha256": {
+  "scripts/ct_queue.py": "9517b4968547e081636d1382e3aabd090689bd798f7cdf27fc385515855b4993",
+  "scripts/prompt_gate.py": "2634355411cbdaa435d23fdd531917a0d59a530ae28190d1c864037c864e65cb",
+  "scripts/acceptance_record.py": "07b788560ba1cf1ff0a92bbff9cc4c71e4e0fd34d5ced1777dac19bd76c04613",
+  "scripts/status_report.py": "f330b32854b5eb6b95ada2818260d5483c46bbdb6953c7ca423914db1fe7e52b",
+  "scripts/status_report_v2.py": "fd9f28b80d1d3780563f21106a506d67e5362a14bb47f3bfe77c9d4e0d3bae0b",
+  ".antigravity/scripts/verify_module_id.py": "91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341"
+ },
+ "decisions": {
+  "P-01": [
+   "Keşif kararı 1: FU — iş MOD-0151'in paketteki FU08 (Import/export hardening) kapsamındadır; yeni modül açılmaz",
+   "Keşif kararı 2: parent — iş territories nesnesini yalnız dışa aktarır (salt-okunur); kayıt sahibi MOD-0151 olarak kalır",
+   "Keşif kararı 3: parent — kuyruk satırının kimliği MOD-0151; FU08 kayıt dosyasında ayrı kimlik değildir, dilim iş metninde adlandırılır",
+   "Keşif kararı 4: FU — bu işin onaylı paketi (status ready-for-dev); FU08 runtime_code_scope'ta, ayrı paket yazılmaz",
+   "Keşif kararı 5: yeni — bu iş paketinin kendi görev satırıdır (keşif kendini buldu); çakışma değil",
+   "Keşif kararı 6: yeni — P-02 aynı FU08 içinde ayrı bir dilimdir (içe aktarma şablonu); kapsam örtüşmez, kendi satırı var"
+  ],
+  "P-02": [
+   "Keşif kararı 1: FU — iş MOD-0151'in paketteki FU08 (Import/export hardening) kapsamındadır; yeni modül açılmaz",
+   "Keşif kararı 2: parent — iş territories nesnesini yalnız dışa aktarır (salt-okunur); kayıt sahibi MOD-0151 olarak kalır",
+   "Keşif kararı 3: parent — kuyruk satırının kimliği MOD-0151; FU08 kayıt dosyasında ayrı kimlik değildir, dilim iş metninde adlandırılır",
+   "Keşif kararı 4: FU — bu işin onaylı paketi (status ready-for-dev); FU08 runtime_code_scope'ta, ayrı paket yazılmaz",
+   "Keşif kararı 5: yeni — P-01 aynı FU08 içinde ayrı bir dilimdir (dışa aktarma); kapsam örtüşmez, kendi satırı var",
+   "Keşif kararı 6: yeni — bu iş paketinin kendi görev satırıdır (keşif kendini buldu); çakışma değil"
+  ],
+  "P-01-R1": [
+   "Keşif kararı 1: FU — iş MOD-0151'in paketteki FU08 (Import/export hardening) kapsamındadır; yeni modül açılmaz",
+   "Keşif kararı 2: parent — iş territories nesnesini yalnız dışa aktarır (salt-okunur); kayıt sahibi MOD-0151 olarak kalır",
+   "Keşif kararı 3: parent — kuyruk satırının kimliği MOD-0151; FU08 kayıt dosyasında ayrı kimlik değildir, dilim iş metninde adlandırılır",
+   "Keşif kararı 4: FU — bu işin onaylı paketi (status ready-for-dev); FU08 runtime_code_scope'ta, ayrı paket yazılmaz",
+   "Keşif kararı 5: parent — P-01 bu -R satırının asıl işidir (kart §0.2 Y1); P-01 ACCEPTED kalır",
+   "Keşif kararı 6: yeni — P-02 aynı FU08 içinde ayrı bir dilimdir (içe aktarma şablonu); kapsam örtüşmez"
+  ]
+ },
+ "discovery_findings": [
+  "BULGU blueprint: MOD-0151 'Territory Management' (4) Enterprise Application Ecosystem / CRM Core) — ad benzer; veri nesneleri: territories",
+  "BULGU sor: 'territories' sahibi MOD-0151 (Territory Management)",
+  "BULGU registry: MOD-0151 'Territory Management' (reserved / planned)",
+  "BULGU paket: execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md — 226 ref'te (refs/heads/feature/mg/mod-0357-management-review-cadence, refs/heads/pilot-codex, refs/remotes/origin/chore/agents/i1a1-instruction-fixes, … +223)",
+  "BULGU görev: execution/delivery/pilot-queue.tsv P-01 [DISCOVERED] Territory Management — FU08 territory model XLSX dışa aktarma (senteti",
+  "BULGU görev: execution/delivery/pilot-queue.tsv P-02 [DISCOVERED] Territory Management — FU08 içe aktarma şablonu (sentetik pilot)"
+ ]
+}

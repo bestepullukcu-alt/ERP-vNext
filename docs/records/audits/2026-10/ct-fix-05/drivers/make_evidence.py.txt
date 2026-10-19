@@ -1,0 +1,133 @@
+"""CT-FIX-05 / İ5B-FIX-06: write the generated evidence texts from the raw outputs (no local paths in the output).
+Usage: make_evidence.py <scratch ctfix05> <CT evidence dir> <İ5B evidence dir>"""
+import json, re, sys, os, shutil, collections, hashlib
+S, ECT, EI = sys.argv[1:4]
+for d in (ECT, EI, os.path.join(ECT, "drivers"), os.path.join(EI, "drivers")):
+    os.makedirs(d, exist_ok=True)
+sha = lambda f: hashlib.sha256(open(f, "rb").read()).hexdigest()
+
+def red_first(raw, title, base, note, prefix):
+    text = open(raw, encoding="utf-8").read()
+    ran = re.search(r"^Ran (\d+) tests", text, re.M).group(1)
+    per = collections.Counter()
+    for m in re.finditer(r"^(FAIL|ERROR): (test_\w+) \(scripts\.tests\.\w+\.(\w+)\)", text, re.M):
+        per[f"{m.group(3)}.{m.group(2)}" + (" (error)" if m.group(1) == "ERROR" else "")] += 1
+    out = [title, f"base code {base} (exported with git archive outside the repository; this package's test file copied in).",
+           note, "", f"ran: {ran} tests · failed subtests: {sum(per.values())} in {len(per)} test methods", ""]
+    out += [f"  {n:4d}  {k.replace(prefix, '')}" for k, n in sorted(per.items())]
+    return "\n".join(out) + "\n"
+
+open(os.path.join(ECT, "red-first.txt"), "w", encoding="utf-8").write(red_first(
+    os.path.join(S, "red-first/ct-red-a.txt"),
+    "CT-FIX-05 red first — the R0 set of this package (scripts/tests/test_ct_cli_regression.py) run against the unchanged",
+    "f23455d278ee65b4e25ddb892bad3567c3ce7e4c (CT-FIX-04)",
+    "scripts/run_record.py is new in this package; it was copied in as well, so that the fixture can build its run record and\n"
+    "the consumers are measured as they were. Every method not listed passed: all the earlier classes, and of the new ones\n"
+    "the three positive controls (CTFIX05_F1 a valid main registry with another queue, CTFIX05_F2 normal and the row's\n"
+    "version at a commit holding the same record) and CTFIX05_F3.test_the_runner_refuses, which measures the new runner\n"
+    "itself (no base to be red against; its guards are in guard-removal.txt).", "scripts.tests.test_ct_cli_regression."))
+open(os.path.join(EI, "red-first.txt"), "w", encoding="utf-8").write(red_first(
+    os.path.join(S, "red-first/i5b-red-a.txt"),
+    "İ5B-FIX-06 red first — this package's scripts/tests/test_sync_adapters_budget.py run against the unchanged",
+    "a7cb60992fbf355e6bcf947a3abe4f778bcefbc1 (İ5B-FIX-05: AGENTS.md, the generated core, adapters.json, sync_adapters.py)",
+    "The error is the new test that reads sync_adapters.CORE_RULE_LINE, which the base code does not have. Every method not\n"
+    "listed passed, among them test_the_generated_core_carries_the_rule (the base already carries the İ5B-FIX-05 sentence).",
+    "scripts.tests.test_sync_adapters_budget."))
+
+def guards(js, title, line_note):
+    res = json.load(open(js, encoding="utf-8"))
+    out = [title, line_note, "Driver: drivers/harness2.py.txt. Each mutation: the file still parses; the named tests fail (a hang",
+           "past 240 s counts as a failure); the control test passes in the same copy (the red is the guard, not a crash).", ""]
+    for r in res:
+        out.append(r["mutation"])
+        out.append(f"    file: {r['file']} · tests: {', '.join(r['tests'])}")
+        out.append(f"    named: {'RED' if r['red'] else 'green'} — {r['summary']} · control {r['control']}: {r['control_summary']}"
+                   f" · parsed: {r['parsed']} · proven: {r['proven']}")
+    out += ["", f"proven: {sum(r['proven'] for r in res)} of {len(res)}"]
+    return "\n".join(out) + "\n"
+
+open(os.path.join(ECT, "guard-removal.txt"), "w", encoding="utf-8").write(guards(
+    os.path.join(S, "guard/ct-guard.json"),
+    "CT-FIX-05 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+    "The copy's scripts are byte for byte the candidate's (candidate 4, 3d4f0f405). G-F3f left the hung runner of its test\n"
+    "(blocked on the FIFO in the test's temporary repository) behind; it was ended by its PID after its start time and\n"
+    "command line were checked. The control is Controls.test_consumers_on_the_intact_fixture_exit_0."))
+open(os.path.join(EI, "guard-removal.txt"), "w", encoding="utf-8").write(guards(
+    os.path.join(S, "guard/i5b-guard.json"),
+    "İ5B-FIX-06 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.",
+    "The copy's files are byte for byte the candidate's (candidate 4, 3d4f0f405). The control is\n"
+    "test_a_dead_link_is_still_a_dead_link."))
+
+# parity: before at candidate 3, after at candidate 4, the same fixture folder (reused; see the README)
+b = json.load(open(os.path.join(S, "parity/before-c3.json"))); a = json.load(open(os.path.join(S, "parity/after-c4.json")))
+def norm(t):
+    for h in (b["head"], a["head"]):
+        for k in (40, 12, 9, 7):
+            t = t.replace(h[:k], "<H>")
+    return t
+EXPECTED = {
+    "scripts/ct_queue.py summary --queue sce-mvp6": "expected (F2): the count line names the queue check; the count is the same (40), none refused",
+    "probe_packs.py .": "expected (C2, E1): see real-data-effects.txt",
+    ".antigravity/scripts/verify_module_id.py . --discover Employee": "expected: only the report's own SHA-256 line, which covers the HEAD line",
+}
+out = ["CT-FIX-05 real-data parity — 16 read-only command lines on the repository's own data, in the combined scratch clone,",
+       "first at 0609bc588 (candidate 3), then at 3d4f0f405 (candidate 4). Exit codes, stdout and stderr compared byte for",
+       "byte after replacing the HEAD SHA itself. Lines 1–14 are CT-FIX-04's; 15 is the pack probe (drivers/probe_packs.py.txt),",
+       "16 the Employee discovery. Driver: drivers/parity2.py.txt. Run by the AI session.", ""]
+same_n = 0
+for x, y in zip(b["runs"], a["runs"]):
+    cmd = y["cmd"]; cmd = "probe_packs.py ." if cmd.endswith("probe_packs.py .") else cmd
+    same = x["exit"] == y["exit"] and norm(x["stdout"]) == norm(y["stdout"]) and norm(x["stderr"]) == norm(y["stderr"])
+    same_n += same
+    out.append(f"  {'same' if same else 'diff'}  exit {x['exit']} -> {y['exit']}  {cmd}" + ("" if same else f"   — {EXPECTED.get(cmd, 'UNEXPECTED')}"))
+out += ["", f"identical: {same_n} of {len(a['runs'])}; the 3 differences are the expected ones named above; the tracked tree clean after both runs",
+        "(git status --untracked-files=no, as the driver records it)"]
+summ = [r for r in a["runs"] if r["cmd"].endswith("summary --queue sce-mvp6")][0]
+line_b = [l for l in [r for r in b["runs"] if r["cmd"].endswith("summary --queue sce-mvp6")][0]["stdout"].splitlines() if l.startswith("DAĞITILABİLİR")]
+line_a = [l for l in summ["stdout"].splitlines() if l.startswith("DAĞITILABİLİR")]
+out += ["", "summary, the changed line:", "  before: " + line_b[0], "  after:  " + line_a[0]]
+open(os.path.join(ECT, "parity.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+
+# real-data effects from the probe
+def probe(r):
+    return [l for l in r["stdout"].splitlines()]
+pb = probe([r for r in b["runs"] if r["cmd"].endswith("probe_packs.py .")][0])
+pa = probe([r for r in a["runs"] if r["cmd"].endswith("probe_packs.py .")][0])
+strip = lambda l: re.sub(r" approval=.*", "", l)
+ib = {strip(l) for l in pb if l.startswith("execution/")}; ia = {strip(l) for l in pa if l.startswith("execution/")}
+out = ["CT-FIX-05 real-data effects — every tracked *module-packs/*.md at the candidate's HEAD through the repository's own",
+       "shared routines (pack_identity; pack_approval_decision per mode at candidate 4, pack_approval_limit at candidate 3).",
+       "Driver: drivers/probe_packs.py.txt (read-only, git show HEAD:path). Run by the AI session.", "",
+       "candidate 3 (0609bc588):"] + ["  " + l for l in pb if not l.startswith("execution/")] + ["", "candidate 4 (3d4f0f405):"] + \
+      ["  " + l for l in pa if not l.startswith("execution/")] + ["", "identity verdicts that changed (C2):"]
+out += ["  now refused: " + l for l in sorted(ia - ib)] + ["  no longer refused: " + l for l in sorted(ib - ia)] or ["  none"]
+out += ["", "approval per mode at candidate 4 for the one pack with a second approval field (E1):"]
+out += ["  " + l for l in pa if "MOD-0251" in l]
+out += ["", "files counted as packs include READMEs and non-MOD ids (CAND-CAP-, DEV-, PSS-): the gate refuses those as product",
+        "authorities before and after; the counts above are the probe's, not a statement about which files are packs."]
+open(os.path.join(ECT, "real-data-effects.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+
+# the architecture run
+meta = open(os.path.join(S, "arch-08.meta.txt"), encoding="utf-8").read().strip()
+kf = open(os.path.join(S, "arch-08.kf.txt"), encoding="utf-8").read().strip()
+out = ["CT-FIX-05 / İ5B-FIX-06 — the one architecture run (arch-08) on candidate 4, driver drivers/run_arch_08.sh.txt; run by",
+       "the AI session.", "", meta, "",
+       "known_failures.py check <rooted TRX> --suite TenantArchitecture.ArchitectureTests (the candidate's tool and registry):", kf, "",
+       f"raw TRX SHA-256 {sha(os.path.join(S, 'arch-08.raw.trx'))} (not in Git: it holds local paths)",
+       f"rooted (../ct-fix-01/normalize_root.py.txt, N1 = 318, N2 = 0) {sha(os.path.join(S, 'arch-08.rooted.trx'))}",
+       f"sanitised (../ct-pre-merge-fixes-01/sanitize_trx.py.txt, R1 = 0, R2 = 151, R3 = 1, R4 = 1; leftover home 0, user 0) -> run.sanitized.trx {sha(os.path.join(S, 'arch-08.sanitized.trx'))}",
+       "the 7 failures are by name the 7 of arch-07 (candidate 3); the raw TRX gives the same BİLİNEN=7 YENİ=0",
+       "",
+       "Limits of this record (named by Codex): the driver checked the TRACKED tree only (git status --untracked-files=no) before the",
+       "checkout and after the run — the untracked state before the run was not recorded, so this is not evidence of a fully",
+       "clean tree before the run. The scratch clone's folder was reused: its HEAD moved from candidate 3 to candidate 4 for",
+       "this run, so its working copy is no longer candidate 3's; candidate 3's commit and tree stay in its object store (the",
+       "parent of candidate 4) and the earlier manifests are read with git show <commit>:<path>."]
+open(os.path.join(ECT, "arch-08.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+shutil.copyfile(os.path.join(S, "arch-08.sanitized.trx"), os.path.join(ECT, "run.sanitized.trx"))
+for src, dst in (("guard/harness2.py", "harness2.py.txt"), ("parity/parity2.py", "parity2.py.txt"),
+                 ("parity/probe_packs.py", "probe_packs.py.txt"), ("run_arch_08.sh", "run_arch_08.sh.txt"),
+                 ("candidate-4/build.py", "build.py.txt")):
+    shutil.copyfile(os.path.join(S, src), os.path.join(ECT, "drivers", dst))
+shutil.copyfile(os.path.join(S, "guard/harness2.py"), os.path.join(EI, "drivers", "harness2.py.txt"))
+print("written")

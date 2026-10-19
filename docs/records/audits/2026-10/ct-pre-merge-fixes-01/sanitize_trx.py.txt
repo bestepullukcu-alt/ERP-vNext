@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+"""
+Sanitise a .NET TRX file for a public repository, deterministically.
+
+    python3 sanitize_trx.py <raw.trx> <sanitized.trx>
+
+Rules (applied in this order; no other byte changes):
+  R1  the running user's home directory (os.path.expanduser("~")), matched case-insensitively  -> __HOME__
+  R2  the value of every computerName="…" attribute                                            -> __HOST__
+  R3  the host after '@' in the TestRun name attribute (name="…@<host> <timestamp>")           -> __HOST__
+  R4  the host between underscores in Deployment runDeploymentRoot="…_<host>_<timestamp>"      -> __HOST__
+The same character sequence anywhere else (for example inside a test's output) is data and is left unchanged.
+The placeholders contain no XML special characters, so no escaping is needed and the XML stays valid.
+Prints only counts and SHA-256 values — never the replaced values.
+"""
+import hashlib
+import os
+import re
+import sys
+import xml.etree.ElementTree as ET
+
+
+def main() -> int:
+    raw_path, out_path = sys.argv[1], sys.argv[2]
+    raw = open(raw_path, "rb").read()
+    text = raw.decode("utf-8")
+    host_match = re.search(r'computerName="([^"]+)"', text)
+    if not host_match:
+        print("no computerName attribute found"); return 2
+    host = host_match.group(1)
+    home = os.path.expanduser("~")
+    counts = {}
+    text, counts["R1"] = re.subn(re.escape(home), "__HOME__", text, flags=re.IGNORECASE)
+    text, counts["R2"] = re.subn(r'computerName="' + re.escape(host) + '"', 'computerName="__HOST__"', text)
+    text, counts["R3"] = re.subn(r'(<TestRun [^>]*name="[^"]*@)' + re.escape(host) + r'(\s)', r"\1__HOST__\2", text)
+    text, counts["R4"] = re.subn(r'(runDeploymentRoot="[^"]*_)' + re.escape(host) + r'(_)', r"\1__HOST__\2", text)
+    ET.fromstring(text)   # must still be valid XML
+    user = os.path.basename(home)
+    leftover_home = len(re.findall(re.escape(home), text, flags=re.IGNORECASE))
+    leftover_user = text.count(user)
+    leftover_host_attr = len(re.findall(r'computerName="(?!__HOST__")', text))
+    with open(out_path, "x", encoding="utf-8", newline="") as f:
+        f.write(text)
+    out = open(out_path, "rb").read()
+    print(f"raw_sha256={hashlib.sha256(raw).hexdigest()}")
+    print(f"sanitized_sha256={hashlib.sha256(out).hexdigest()}")
+    print("replacements " + " ".join(f"{k}={v}" for k, v in counts.items()))
+    print(f"leftover home={leftover_home} user={leftover_user} unsanitised computerName={leftover_host_attr}")
+    return 0 if leftover_home == 0 and leftover_user == 0 and leftover_host_attr == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

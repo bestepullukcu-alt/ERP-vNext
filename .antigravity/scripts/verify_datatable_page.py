@@ -819,6 +819,18 @@ def print_report(checks: List[Check]) -> None:
         print("\nResult: PASS")
 
 
+def print_gaps(checks: List[Check], ok_line: bool = False) -> int:
+    """The gaps format: one numbered line per failed check, in check order; exit 0 when none failed, else 1. CT-FIX-03
+    (R6, V4A-F7): with ok_line (--ok-line, what the list-screen hook asks for) a clean run ends with the explicit success
+    line 'GAPS-OK: <n> kontrol, 0 sapma', so an empty or broken verifier can never be read as "no deviation"."""
+    gaps = [c for c in checks if not c.ok]
+    for i, c in enumerate(gaps, 1):
+        print(f"{i}) {c.name}" + (f" — {c.details}" if c.details else ""))
+    if ok_line and not gaps:
+        print(f"GAPS-OK: {len(checks)} kontrol, 0 sapma")
+    return 0 if not gaps else 1
+
+
 def compile_required_l10n_keys(is_v2: bool, has_bulk_surface: bool = True) -> List[Tuple[str, Pattern[str]]]:
     """
     Required L10n bridge keys for DataTable pages.
@@ -899,6 +911,11 @@ def main() -> int:
         help="report = full pass/fail list; gaps = only the failing checks, one per line (what the touch protocol quotes).",
     )
     parser.add_argument(
+        "--ok-line",
+        action="store_true",
+        help="with --format gaps: end a clean run with 'GAPS-OK: <n> kontrol, 0 sapma' (the list-screen hook's success signal).",
+    )
+    parser.add_argument(
         "--api-profile",
         choices=["proxy", "direct-gateway"],
         default=None,
@@ -952,6 +969,8 @@ def main() -> int:
 
     # Stop early if core files missing (avoid confusing follow-up errors).
     if any(not c.ok for c in checks[:8]):
+        if args.format == "gaps":
+            return print_gaps(checks, args.ok_line)
         print_report(checks)
         return 1
 
@@ -1599,10 +1618,7 @@ def main() -> int:
         )
 
     if args.format == "gaps":
-        gaps = [c for c in checks if not c.ok]
-        for i, c in enumerate(gaps, 1):
-            print(f"{i}) {c.name}" + (f" — {c.details}" if c.details else ""))
-        return 0 if not gaps else 1
+        return print_gaps(checks, args.ok_line)
     print_report(checks)
     return 1 if any(not c.ok for c in checks) else 0
 

@@ -1,0 +1,46 @@
+RED  05a duplicate registry row
+      expected (safe): load() (used by require/guard/prompt gate) stops: DUR
+      observed       : load() returned 2 queue rows, no stop; require would use queues[0]; validate says: ["registry: 'sce-mvp6' or its path is registered twice"]
+RED  05b main strict=yes, branch strict=no
+      expected (safe): in_force_status: not 'kayıtlı' (profile mismatch)
+      observed       : 'kayıtlı' 
+RED  06a FAILED listed twice, second row dispatch=yes
+      expected (safe): the vocabulary is refused (DUR) before any dispatch decision
+      observed       : vocabulary()['FAILED']['dispatch'] = 'yes'; validate says: ["states: 'FAILED' is listed twice for sop7"]
+RED  06b transition table gains CANCELLED->READY
+      expected (safe): CANCELLED stays terminal (card §0: ACCEPTED, REWORK, FAILED, SUPERSEDED, CANCELLED)
+      observed       : terminal before ['ACCEPTED', 'CANCELLED', 'FAILED', 'REWORK', 'SUPERSEDED']; after ['ACCEPTED', 'FAILED', 'REWORK', 'SUPERSEDED']; exit errors before 1, after 0
+RED  09a MOD-0009-FU02 row cut to 5 columns
+      expected (safe): discovery: 2 (tamamlanamadı) naming the bad line
+      observed       : intact registry exit 3; cut registry exit 0; last line: çıkış: 0
+RED  09b MOD-0009-FU02 row with an empty id cell (9 columns)
+      expected (safe): discovery: 2 (tamamlanamadı) naming the bad line
+      observed       : exit 0; last line: çıkış: 0
+RED  11a pack: status approved then draft
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: []
+RED  11b pack: status only outside a front matter
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: []
+RED  11c pack: front matter never closed
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: []
+RED  11d governance: approved then draft
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: []
+RED  11e governance: approval only in prose
+      expected (safe): ENGEL (one closed front matter with exactly one status)
+      observed       : engels: []
+RED  13 acceptance_record: branch 'deadbee' (commit b7bd04cd7)
+      expected (safe): None (a hex id must be a commit with that prefix)
+      observed       : resolved to b7bd04cd75d6c56450460de51a27d9ba45886d05
+RED  13 prompt_gate: branch 'deadbee' (commit b7bd04cd7)
+      expected (safe): None (a hex id must be a commit with that prefix)
+      observed       : resolved to b7bd04cd75d6c56450460de51a27d9ba45886d05
+RED  13 status_report_v2: branch 'deadbee' (commit b7bd04cd7)
+      expected (safe): None (a hex id must be a commit with that prefix)
+      observed       : resolved to b7bd04cd75d6c56450460de51a27d9ba45886d05
+RED  B link_check file .antigravity/AGENTS-REFERENCE.md missing
+      expected (safe): a MISSING problem for that file
+      observed       : problems [] (with the file present: [])
+RED 15 / 15

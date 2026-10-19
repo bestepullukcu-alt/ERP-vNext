@@ -1,0 +1,84 @@
+"""CT-FIX-01 / İ5B-FIX-01 sabotage round: undo ONE fix at a time (exact anchor, count 1), run the test that guards it,
+require the NAMED test to fail, restore the file's bytes. Usage: sabotage_fix.py <worktree A> <worktree B>"""
+import hashlib
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+A, B = Path(sys.argv[1]), Path(sys.argv[2])
+ENV = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
+SELF = {"ct_queue": ["python3", "-B", "scripts/ct_queue.py", "--self-test"],
+        "prompt_gate": ["python3", "-B", "scripts/prompt_gate.py", "--self-test"],
+        "acceptance_record": ["python3", "-B", "scripts/acceptance_record.py", "--self-test"],
+        "status_report": ["python3", "-B", "scripts/status_report.py", "--self-test"]}
+
+
+def unit(name):
+    return ["python3", "-B", "-W", "ignore::ResourceWarning", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", name, "-v"]
+
+
+C = "scripts/ct_queue.py"; V = ".antigravity/scripts/verify_module_id.py"; P = "scripts/prompt_gate.py"
+R = "scripts/acceptance_record.py"; S2 = "scripts/status_report_v2.py"; SA = ".antigravity/scripts/sync_adapters.py"
+CID = ("        full = self.resolve(ref) if HEX_ID.match(ref) else None\n"
+       "        return full if full is not None and full.startswith(ref) else None\n")
+CASES = [
+    ("A01", A, C, "    if problems:\n        raise SystemExit(f\"DUR: kayıt, durum", "    if False:\n        raise SystemExit(f\"DUR: kayıt, durum",
+     SELF["ct_queue"], "load_for_dispatch passes one valid row"),
+    ("A02", A, C, '    queues, states = load(a.queue) if a.cmd == "validate" else load_for_dispatch(a.queue)\n', "    queues, states = load(a.queue)\n",
+     SELF["ct_queue"], "main uses load_for_dispatch"),
+    ("A03", A, C, 'for key in ("strict", "vocabulary", "baseline_commit"):', "for key in ():", SELF["ct_queue"], "main strict=yes, branch strict=no"),
+    ("A04", A, C, 'if not FULL_SHA.match(q["baseline_commit"]):', "if False:", SELF["ct_queue"], "short hex baseline_commit"),
+    ("A05", A, C, "if dispatchable != SOP7_DISPATCHABLE:", "if False:", SELF["ct_queue"], "FAILED made dispatchable"),
+    ("A06", A, C, "return terminal | SOP7_TERMINAL", "return terminal", SELF["ct_queue"], "terminal states always include"),
+    ("A07", A, C, "    if exits:\n        raise ProfileError", "    if False:\n        raise ProfileError", SELF["ct_queue"], "CANCELLED -> READY"),
+    ("A08", A, C, 'if r["vocabulary"] == SOP7 and r["from_state"] in SOP7_TERMINAL:', "if False:", SELF["ct_queue"], "CANCELLED -> READY"),
+    ("A09", A, V, "            if broken:\n", "            if False:\n", unit("test_verify_module_id_discover.py"),
+     "test_a_cut_row_stops_discovery_with_its_line"),
+    ("A10", A, V, "if c == REGISTRY_HEADER:", 'if c[:1] == ["Canonical ID"]:', unit("test_verify_module_id_discover.py"),
+     "test_a_cut_header_with_its_row_is_refused_even_beside_an_intact_table"),
+    ("A11", A, V, 'elif not c[0] or set(c[0]) <= set("-"):', "elif False:", unit("test_verify_module_id_discover.py"),
+     "test_an_empty_id_cell_is_refused"),
+    ("A12", A, P, "if len(found) != 1:", "if not found:", SELF["prompt_gate"], "approved then draft -> ENGEL (two status lines)"),
+    ("A13", A, P, 'GOV_APPROVED = re.compile(r"^(approved|decided)(?: \\([^()]*\\))?(?: — \\S.*)?$")',
+     'GOV_APPROVED = re.compile(r"^(approved|decided)\\b")', SELF["prompt_gate"], "governance unknown suffixes"),
+    ("A14", A, P, "    status, bad = kunye_status(data.decode(\"utf-8\", errors=\"replace\"))   # the whole value: 'approved | draft' is not approved\n",
+     "    status, bad = kunye_status(data.decode(\"utf-8\", errors=\"replace\")); status = (status or \"\").split(\" \")[0] or None\n",
+     SELF["prompt_gate"], "a pack status with a suffix"),
+    ("A15", A, P, CID, "        return self.resolve(ref)\n", SELF["prompt_gate"], "GitRepo.commit_id refuses a hex-named branch"),
+    ("A16", A, P, "    if not full.startswith(commit):\n        return None\n    return cq.git_file(full, path)",
+     "    if not full:\n        return None\n    return cq.git_file(full, path)", SELF["prompt_gate"], "real_report (discovery report, --review)"),
+    ("A17", A, P, "queues, states = cq.load_for_dispatch(queue_id)", "queues, states = cq.load(queue_id)", SELF["prompt_gate"],
+     "the gate reads its queue through load_for_dispatch"),
+    ("A18", A, R, CID, "        return self.resolve(ref)\n", SELF["acceptance_record"], "evidence @<hex>"),
+    ("A19", A, S2, CID, "        return self.resolve(ref)\n", SELF["status_report"], "Source — a hex-named branch"),
+    ("A20", A, S2, "reg_problems = ctq.dispatch_problems(registry, states, all_trans, commit_exists=", "reg_problems = ctq.check_registry(registry, states, commit_exists=",
+     SELF["status_report"], "the report checks registry, vocabulary and transitions"),
+    ("B01", B, SA, '            problems.append(f"MISSING {path} (link_check)")\n            continue', "            continue",
+     unit("test_sync_adapters_budget.py"), "test_a_missing_link_check_file_is_missing_not_skipped"),
+]
+
+ok_all = True
+for cid, root, rel, old, new, cmd, expect in CASES:
+    f = root / rel
+    saved = f.read_bytes()
+    text = saved.decode("utf-8")
+    if text.count(old) != 1:
+        print(f"ANCHOR {cid}: {text.count(old)} matches"); ok_all = False; continue
+    f.write_text(text.replace(old, new), encoding="utf-8")
+    try:
+        out = subprocess.run(cmd, cwd=root, capture_output=True, text=True, env=ENV)
+        lines = (out.stdout + out.stderr).splitlines()
+        failed = [l for l in lines if (l.startswith("FAIL ") or l.rstrip().endswith(("FAIL", "ERROR"))) and expect in l]
+        others = [l for l in lines if (l.startswith("FAIL ") or l.rstrip().endswith(("FAIL", "ERROR"))) and expect not in l]
+    finally:
+        f.write_bytes(saved)
+    restored = hashlib.sha256(f.read_bytes()).hexdigest() == hashlib.sha256(saved).hexdigest()
+    hit = bool(failed) and restored
+    ok_all &= hit
+    print(f"{'RED ' if hit else 'MISS'} {cid} {rel}: named '{expect}' {'failed' if failed else 'did NOT fail'}"
+          f"{f' (+{len(others)} other)' if others else ''}; restored {restored}")
+print("ALL NAMED TESTS RED:", ok_all)
+for root in (A, B):
+    st = subprocess.run(["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"], capture_output=True, text=True, env=ENV).stdout
+    print(f"{root.name} status after the round:\n{st}")

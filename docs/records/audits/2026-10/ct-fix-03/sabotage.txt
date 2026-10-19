@@ -1,0 +1,268 @@
+== R1 and R2 (S1–S14) on snap-ct-r2 (R1b + R2)  (source: sabotage-ct-r2-01.json)
+S1 any-form key count off (old column-0 grammar)  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -> exit 1 ['FAILED (failures=16)']
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a status in a multi-line flow mapping (limit
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a status under another scalar key (owned by
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a tab-indented status under an object')
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='bold second status')
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='capitalised second status')
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='disguised first status, canonical second')
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 180/186 passed']
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a bold status key -> not measurable ('status' tek satırlık)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a capitalised status key -> not measurable ('status' tek satırlık)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a quoted second status -> not measurable ('status' 2 kez)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a status under another scalar key -> not measurable ('status' 2 kez)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a tab-indented status under an object -> not measurable ('status' 2 kez)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with an indented second status -> not measurable ('status' 2 kez)
+    scripts/acceptance_record.py --self-test -> exit 1 ['self-test: 103/104 passed']
+      red: CT-FIX-03 R1 sabotage: a broken v2 record with a quoted second work package -> identity unclear, ENGEL (never 'another work')
+S2 body status rule off  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -> exit 1 ['FAILED (failures=12)']
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='plain status outside the künye')
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='quoted status line outside the künye')
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='single-quoted status line outside the künye'
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='status hidden behind a fence closed by a sho
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='status hidden behind a fence closed by the o
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='status hidden behind an unclosed fence')
+    scripts/prompt_gate.py --self-test -> exit 1 ['self-test: 85/86 passed']
+      red: CT-FIX-01 11 / CT-FIX-03 R1: pack front matter draft, 'status: approved' in the body -> ENGEL (the body line is a contradiction; the approval is never
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 183/186 passed']
+      red: CT-FIX-03 R1 sabotage: a column-0 'status:' line in the DCP body -> not measurable, the contradiction is not settled
+      red: sabotage: a pack künye with CT-FIX-03 R1: a status line in the body -> unreadable for every id it names
+      red: sabotage: contract on a pack with CT-FIX-03 R1: a status line in the body -> exit 2, never a single target
+S3 unbalanced quote stripped (old .strip)  [scripts/ct_queue.py]
+    ttest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -k V4A_F5 -> exit 1 ['FAILED (failures=11)']
+      red: test_ac_not_in_the_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance)
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='id', form='indented')
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='id', form='quoted')
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='status', form='indented
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='status', form='quoted')
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='mixed quote pair')
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 183/186 passed']
+      red: CT-FIX-03 R1 sabotage: a DCP künye with an unbalanced quote -> not measurable ('status' tek satırlık)
+      red: sabotage: a pack künye with CT-FIX-03 R1: an unbalanced quote -> unreadable for every id it names
+      red: sabotage: contract on a pack with CT-FIX-03 R1: an unbalanced quote -> exit 2, never a single target
+S4 continuation looks at the next line only  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -> exit 1 ['FAILED (failures=6)']
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='continuation after a blank line')
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='continuation after a comment line')
+      red: test_full_prompt_gate_valid_forms_pass (test_ct_cli_regression.V4A_F3_Kunye) (form='an indented comment line under status')
+      red: test_reassessment_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='continuation after a blank line')
+      red: test_reassessment_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='continuation after a comment line')
+      red: test_reassessment_valid_forms_dispatch (test_ct_cli_regression.V4A_F3_Kunye) (form='an indented comment line under status')
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 185/186 passed']
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a status continued after a blank line -> not measurable ('status' tek satırlık)
+S5 fence closed by any fence mark  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -> exit 1 ['FAILED (failures=4)']
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='status hidden behind a fence closed by a sho
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='status hidden behind a fence closed by the o
+      red: test_reassessment_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='status hidden behind a fence closed by a shorter
+      red: test_reassessment_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='status hidden behind a fence closed by the other
+S6 chain check back to the column-0 identity  [scripts/acceptance_record.py]
+    scripts/acceptance_record.py --self-test -> exit 1 ['self-test: 101/104 passed']
+      red: CT-FIX-03 R1 sabotage: a broken v2 record with a commented identity -> identity unclear, ENGEL (never 'another work')
+      red: CT-FIX-03 R1 sabotage: a broken v2 record with a quoted second work package -> identity unclear, ENGEL (never 'another work')
+      red: CT-FIX-03 R1 sabotage: a broken v2 record with an indented second queue -> identity unclear, ENGEL (never 'another work')
+S8 nested-object rule off (every indented key counts)  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -> exit 1 ['FAILED (failures=8)']
+      red: test_full_prompt_gate_valid_forms_pass (test_ct_cli_regression.V4A_F3_Kunye) (form='a column-0 list item holding its own status')
+      red: test_full_prompt_gate_valid_forms_pass (test_ct_cli_regression.V4A_F3_Kunye) (form='a metadata object holding its own status')
+      red: test_full_prompt_gate_valid_forms_pass (test_ct_cli_regression.V4A_F3_Kunye) (form='an anchored object holding a status')
+      red: test_full_prompt_gate_valid_forms_pass (test_ct_cli_regression.V4A_F3_Kunye) (form='block text mentioning a status')
+      red: test_reassessment_valid_forms_dispatch (test_ct_cli_regression.V4A_F3_Kunye) (form='a column-0 list item holding its own status')
+      red: test_reassessment_valid_forms_dispatch (test_ct_cli_regression.V4A_F3_Kunye) (form='a metadata object holding its own status')
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 184/186 passed']
+      red: künye: a nested status / id in another key's object is not the DCP's own (CT-FIX-03 R1 keeps it, Codex)
+      red: künye: a status inside another key's list item or block text is that key's data
+S9 every space-indented line owned (also under a scalar key)  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -> exit 1 ['FAILED (failures=4)']
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a status in a multi-line flow mapping (limit
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a status under another scalar key (owned by
+      red: test_reassessment_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a status in a multi-line flow mapping (limited c
+      red: test_reassessment_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a status under another scalar key (owned by nobo
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 185/186 passed']
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a status under another scalar key -> not measurable ('status' 2 kez)
+S10 tab-indented lines owned like spaces  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F3 -> exit 1 ['FAILED (failures=2)']
+      red: test_full_prompt_gate_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a tab-indented status under an object')
+      red: test_reassessment_unrecognised_or_conflicting_forms_stop (test_ct_cli_regression.V4A_F3_Kunye) (form='a tab-indented status under an object')
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 185/186 passed']
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a tab-indented status under an object -> not measurable ('status' 2 kez)
+S11 R2 full SOP §7 state set off  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F2 -> exit 1 ['FAILED (failures=10)']
+      red: test_every_sop7_state_removed_with_its_edges_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (state='BLOCKED', consumer='guard')
+      red: test_every_sop7_state_removed_with_its_edges_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (state='BLOCKED', consumer='require')
+      red: test_every_sop7_state_removed_with_its_edges_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (state='BLOCKED', consumer='summary')
+      red: test_every_sop7_state_removed_with_its_edges_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (state='BLOCKED', consumer='validate')
+      red: test_every_sop7_state_removed_with_its_edges_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (state='BLOCKED', consumer='writers')
+      red: test_every_sop7_state_removed_with_its_edges_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (state='DEFERRED', consumer='guard')
+    scripts/ct_queue.py --self-test -> exit 1 ['self-test: 108/127 passed']
+      red: CT-FIX-03 R2 sabotage: ACCEPTED removed with its transitions -> dispatch problem (every consumer stops)
+      red: CT-FIX-03 R2 sabotage: BLOCKED removed with its transitions -> dispatch problem (every consumer stops)
+      red: CT-FIX-03 R2 sabotage: CANCELLED removed with its transitions -> dispatch problem (every consumer stops)
+      red: CT-FIX-03 R2 sabotage: DEFERRED removed with its transitions -> dispatch problem (every consumer stops)
+      red: CT-FIX-03 R2 sabotage: DISCOVERED removed with its transitions -> dispatch problem (every consumer stops)
+      red: CT-FIX-03 R2 sabotage: DISPATCHED removed with its transitions -> dispatch problem (every consumer stops)
+    scripts/status_report_v2.py --self-test -> exit 1 ['self-test: 79/80 passed']
+      red: CT-FIX-03 R2: read_strict_queue — the vocabulary lost DEFERRED (a SOP §7 state) -> 'kayıt, durum sözlüğü ya da geçiş tablosu sorunlu' reason, no perce
+S12 R2 main-flow steps off  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F2 -> exit 1 ['FAILED (failures=15)']
+      red: test_a_main_flow_step_removed_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (step='INSPECTED->PLANNED', consumer='guard')
+      red: test_a_main_flow_step_removed_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (step='INSPECTED->PLANNED', consumer='require')
+      red: test_a_main_flow_step_removed_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (step='INSPECTED->PLANNED', consumer='summary')
+      red: test_a_main_flow_step_removed_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (step='INSPECTED->PLANNED', consumer='validate')
+      red: test_a_main_flow_step_removed_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (step='INSPECTED->PLANNED', consumer='writers')
+      red: test_a_main_flow_step_removed_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (step='READY->DISPATCHED', consumer='guard')
+    scripts/ct_queue.py --self-test -> exit 1 ['self-test: 114/127 passed']
+      red: CT-FIX-03 R2 sabotage: the main-flow step DISCOVERED → INSPECTION_REQUIRED removed -> dispatch problem
+      red: CT-FIX-03 R2 sabotage: the main-flow step DISPATCHED → IN_PROGRESS removed -> dispatch problem
+      red: CT-FIX-03 R2 sabotage: the main-flow step INSPECTED → PLANNED removed -> dispatch problem
+      red: CT-FIX-03 R2 sabotage: the main-flow step INSPECTION_REQUIRED → INSPECTED removed -> dispatch problem
+      red: CT-FIX-03 R2 sabotage: the main-flow step INTEGRATED → ACCEPTED removed -> dispatch problem
+      red: CT-FIX-03 R2 sabotage: the main-flow step INTEGRATION_READY → INTEGRATED removed -> dispatch problem
+S13 R2 missing table tolerated (strict flag ignored)  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F2 -> exit 1 ['FAILED (failures=3)']
+      red: test_missing_transition_table_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='guard')
+      red: test_missing_transition_table_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='summary')
+      red: test_missing_transition_table_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='writers')
+    scripts/ct_queue.py --self-test -> exit 1 ['self-test: 125/127 passed']
+      red: CT-FIX-03 R2 sabotage: a strict queue registered, the transition table missing (no rows) -> dispatch problem
+      red: CT-FIX-03 R2 sabotage: load_for_dispatch, a strict queue and no transition table -> DUR (it was a pass)
+S14 R2 states the SOP does not list tolerated  [scripts/ct_queue.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F2 -> exit 1 ['FAILED (failures=5)']
+      red: test_a_state_the_sop_does_not_list_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='guard')
+      red: test_a_state_the_sop_does_not_list_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='require')
+      red: test_a_state_the_sop_does_not_list_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='summary')
+      red: test_a_state_the_sop_does_not_list_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='validate')
+      red: test_a_state_the_sop_does_not_list_stops_every_consumer (test_ct_cli_regression.V4A_F2_StrictProfile) (consumer='writers')
+    scripts/ct_queue.py --self-test -> exit 1 ['self-test: 126/127 passed']
+      red: CT-FIX-03 R2 sabotage: a state the SOP does not list -> dispatch problem
+S7 ct_route ignores the shared reader (old front_matter: column 0 only)  [scripts/ct_route.py]
+    scripts/ct_route.py --self-test -> exit 1 ['self-test: 177/186 passed']
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a bold status key -> not measurable ('status' tek satırlık)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a quoted second status -> not measurable ('status' 2 kez)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a status continued after a blank line -> not measurable ('status' tek satırlık)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a status under another scalar key -> not measurable ('status' 2 kez)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with a tab-indented status under an object -> not measurable ('status' 2 kez)
+      red: CT-FIX-03 R1 sabotage: a DCP künye with an indented second status -> not measurable ('status' 2 kez)
+
+== U1–U3 (U1a–U3e) on snap-ct-final-02  (source: sabotage-u-01.json)
+U1a the card names a flag the tool does not have  [docs/guides/operations/control-tower-operating-card.md]
+    -m unittest discover -s scripts/tests -p test_ct_card_commands.py -> exit 1 ['FAILED (failures=1)']
+      red: test_every_command_matches_its_tool (test_ct_card_commands.CardCommands) (command='python3 scripts/prompt_gate.py draft --queue <kuyruk> --wpx <WP>')
+U1b the card names a subcommand the tool does not have  [docs/guides/operations/control-tower-operating-card.md]
+    -m unittest discover -s scripts/tests -p test_ct_card_commands.py -> exit 1 ['FAILED (failures=1)']
+      red: test_every_command_matches_its_tool (test_ct_card_commands.CardCommands) (command='python3 scripts/ct_queue.py lock --queue <kuyruk>')
+U2a the gate ignores an unfilled marker  [scripts/prompt_gate.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k U2_ -> exit 1 ['FAILED (failures=1)']
+      red: test_the_five_measured_values_are_the_gate_s_own_and_the_draft_is_refused (test_ct_cli_regression.U2_PromptDraft)
+    scripts/prompt_gate.py --self-test -> exit 1 ['self-test: 89/91 passed']
+      red: CT-FIX-03 U2 sabotage: one marker left anywhere (inside NASIL) in an otherwise good prompt -> ENGEL
+      red: CT-FIX-03 U2 sabotage: the draft itself -> ENGEL 'doldurulmamış', exit 1
+U2b the prompt draft skips a malformed row  [scripts/prompt_gate.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k U2_ -> exit 1 ['FAILED (failures=2)']
+      red: test_a_malformed_queue_row_is_never_skipped (test_ct_cli_regression.U2_PromptDraft) (form='a short W2 row')
+      red: test_a_malformed_queue_row_is_never_skipped (test_ct_cli_regression.U2_PromptDraft) (form='a short second W1 row')
+U3a the record check ignores an unfilled marker  [scripts/acceptance_record.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k U3_ -> exit 1 ['FAILED (failures=1)']
+      red: test_record_draft_fills_identity_only_and_check_refuses_it (test_ct_cli_regression.U3_AcceptanceDraft)
+    scripts/acceptance_record.py --self-test -> exit 1 ['self-test: 122/123 passed']
+      red: CT-FIX-03 U3 sabotage: the record draft as printed -> ENGEL 'doldurulmamış', never an acceptance
+U3b the list check ignores an unfilled marker  [scripts/acceptance_record.py]
+    scripts/acceptance_record.py --self-test -> exit 1 ['self-test: 122/123 passed']
+      red: CT-FIX-03 U3 sabotage: a filled record with the list draft as printed -> ENGEL 'doldurulmamış'
+U3c the list hint holds a pipe again and the cell guard is off  [scripts/acceptance_record.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k U3_ -> exit 1 ['FAILED (failures=1)']
+      red: test_list_draft_copies_the_pack_and_a_filled_one_passes (test_ct_cli_regression.U3_AcceptanceDraft)
+    scripts/acceptance_record.py --self-test -> exit 1 ['self-test: 120/123 passed']
+      red: CT-FIX-03 U3 (Codex): every line of the list draft has exactly the §6.2 column count (no '|' inside a hint)
+      red: CT-FIX-03 U3 (Codex): the record and list drafts, their markers filled, pass the ordinary check (exit 0)
+      red: CT-FIX-03 U3: the list draft has one row per pack AC, ID / text / mandatory flag exactly, result 'denenmedi'
+U3d the acceptance draft skips a malformed row  [scripts/acceptance_record.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k U3_ -> exit 1 ['FAILED (failures=4)']
+      red: test_a_malformed_queue_row_is_never_skipped (test_ct_cli_regression.U3_AcceptanceDraft) (form='a short W2 row', part='list')
+      red: test_a_malformed_queue_row_is_never_skipped (test_ct_cli_regression.U3_AcceptanceDraft) (form='a short W2 row', part='record')
+      red: test_a_malformed_queue_row_is_never_skipped (test_ct_cli_regression.U3_AcceptanceDraft) (form='a short second W1 row', part='list')
+      red: test_a_malformed_queue_row_is_never_skipped (test_ct_cli_regression.U3_AcceptanceDraft) (form='a short second W1 row', part='record')
+U3e a list draft without --pack  [scripts/acceptance_record.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k U3_ -> exit 1 ['FAILED (failures=1)']
+      red: test_list_needs_an_approved_pack_version (test_ct_cli_regression.U3_AcceptanceDraft)
+
+== R3–R6 and B8 (R3a–B8b) on snap-ct-final-05  (source: sabotage-rest-01.json)
+R3a the normal check does not read the bound pack  [scripts/acceptance_record.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F5 -> exit 1 ['FAILED (failures=7)']
+      red: test_ac_not_in_the_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance)
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='id', form='indented')
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='id', form='quoted')
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='status', form='indented
+      red: test_disguised_second_field_in_level_source_or_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance) (target='pack', key='status', form='quoted')
+      red: test_nonexistent_pack_is_refused (test_ct_cli_regression.V4A_F5_Acceptance)
+    scripts/acceptance_record.py --self-test -> exit 1 ['self-test: 114/123 passed']
+      red: CT-FIX-03 R3 sabotage: a mandatory pack AC marked optional in the list -> ENGEL (zorunluluğu paketle aynı değil)
+      red: CT-FIX-03 R3 sabotage: an AC row the pack does not have (AC-9) -> ENGEL (bağlı paketin ölçütü değil)
+      red: CT-FIX-03 R3 sabotage: an old-format pack without AC ids -> ENGEL (eski biçim)
+      red: CT-FIX-03 R3 sabotage: an optional pack AC marked mandatory in the list -> ENGEL (zorunluluğu paketle aynı değil)
+      red: CT-FIX-03 R3 sabotage: the bound pack has a quoted second status -> ENGEL (tek status)
+      red: CT-FIX-03 R3 sabotage: the bound pack has an indented second id -> ENGEL (tek id)
+R3b the limit line is gone  [scripts/acceptance_record.py]
+    scripts/acceptance_record.py --self-test -> exit 1 ['self-test: 121/123 passed']
+      red: CT-FIX-03 F5n (Codex): a code commit that is not in the repository -> ENGEL 'bu depoda yok', and the SINIR line does not claim it exists
+      red: CT-FIX-03 F5n: every answer after the künye is read (a pass, an ENGEL) prints that the check does not prove the tests ran on that commit
+R4a an empty task row is skipped again  [.antigravity/scripts/verify_module_id.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F4 -> exit 1 ['FAILED (failures=1)']
+      red: test_task_row_with_empty_item_and_module_is_incomplete_not_no_match (test_ct_cli_regression.V4A_F4_Discovery)
+R4b the task-source registry bytes are not named  [.antigravity/scripts/verify_module_id.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F8 -> exit 1 ['FAILED (failures=1)']
+      red: test_report_names_the_task_registry_bytes (test_ct_cli_regression.V4A_F8_V4B_B6_Report)
+R4c the saved report's CR is stripped  [.antigravity/scripts/verify_module_id.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F8 -> exit 1 ['FAILED (failures=1)']
+      red: test_check_report_reads_the_bytes_as_they_are (test_ct_cli_regression.V4A_F8_V4B_B6_Report) (form='CRLF')
+R4d pack id conflicts ignored  [.antigravity/scripts/verify_module_id.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F4 -> exit 1 ['FAILED (failures=3)']
+      red: test_a_pack_with_a_repeated_or_disguised_id_is_incomplete (test_ct_cli_regression.V4A_F4_Discovery) (form='a quoted second id')
+      red: test_a_pack_with_a_repeated_or_disguised_id_is_incomplete (test_ct_cli_regression.V4A_F4_Discovery) (form='an indented second id')
+      red: test_a_pack_with_a_repeated_or_disguised_id_is_incomplete (test_ct_cli_regression.V4A_F4_Discovery) (form='two ids')
+R5a counters and summary not reconciled  [scripts/known_failures.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F6 -> exit 1 ['FAILED (failures=12)']
+      red: test_counters_say_failed_but_every_row_passed_is_untrusted (test_ct_cli_regression.V4A_F6_KnownFailures)
+      red: test_counters_with_fewer_rows_than_total_is_untrusted (test_ct_cli_regression.V4A_F6_KnownFailures)
+      red: test_untrustworthy_summary_or_counters_stop (test_ct_cli_regression.V4A_F6_KnownFailures) (form='a negative counter')
+      red: test_untrustworthy_summary_or_counters_stop (test_ct_cli_regression.V4A_F6_KnownFailures) (form='a text counter')
+      red: test_untrustworthy_summary_or_counters_stop (test_ct_cli_regression.V4A_F6_KnownFailures) (form='an arbitrary notExecuted')
+      red: test_untrustworthy_summary_or_counters_stop (test_ct_cli_regression.V4A_F6_KnownFailures) (form='an unknown outcome with the registered message')
+    scripts/known_failures.py --self-test -> exit 1 ['self-test: 31/46 passed']
+      red: CT-FIX-03 R5 sabotage: a negative counter -> not trusted (exit 2; red never turns green)
+      red: CT-FIX-03 R5 sabotage: a text counter -> not trusted (exit 2; red never turns green)
+      red: CT-FIX-03 R5 sabotage: an arbitrary notExecuted -> not trusted (exit 2; red never turns green)
+      red: CT-FIX-03 R5 sabotage: an unknown outcome on a registered test with its known message (Codex) -> not trusted (exit 2; red never turns green)
+      red: CT-FIX-03 R5 sabotage: every row passed, counters say failed -> not trusted (exit 2; red never turns green)
+      red: CT-FIX-03 R5 sabotage: executed not the rows that ran -> not trusted (exit 2; red never turns green)
+R5b an unknown outcome accepted  [scripts/known_failures.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F6 -> exit 1 ['FAILED (failures=1)']
+      red: test_untrustworthy_summary_or_counters_stop (test_ct_cli_regression.V4A_F6_KnownFailures) (form='an unknown outcome with the registered message')
+    scripts/known_failures.py --self-test -> exit 1 ['self-test: 45/46 passed']
+      red: CT-FIX-03 R5 sabotage: an unknown outcome on a registered test with its known message (Codex) -> not trusted (exit 2; red never turns green)
+R5c any notExecuted counter accepted  [scripts/known_failures.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F6 -> exit 1 ['FAILED (failures=1)']
+      red: test_untrustworthy_summary_or_counters_stop (test_ct_cli_regression.V4A_F6_KnownFailures) (form='an arbitrary notExecuted')
+    scripts/known_failures.py --self-test -> exit 1 ['self-test: 45/46 passed']
+      red: CT-FIX-03 R5 sabotage: an arbitrary notExecuted -> not trusted (exit 2; red never turns green)
+R6a exit 0 is clean without the success line  [.antigravity/scripts/list_screen_touch_hook.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4A_F7 -> exit 1 ['FAILED (failures=2)']
+      red: test_a_verifier_success_line_is_clean_only_when_asked_and_given (test_ct_cli_regression.V4A_F7_Hook)
+      red: test_an_empty_verifier_is_unverified_not_clean (test_ct_cli_regression.V4A_F7_Hook)
+    .antigravity/scripts/list_screen_touch_hook.py --self-test -> exit 1 ['self-test: 24/28 passed']
+      red: CT-FIX-03 R6 sabotage (V4A-F7): exit 0, empty output (a 0-byte verifier) -> DOĞRULANAMADI, not 'no deviation' (this case said 'no deviation' before CT
+      red: CT-FIX-03 R6 sabotage: exit 0, info lines but no success line -> DOĞRULANAMADI
+      red: CT-FIX-03 R6 sabotage: the success line not last -> DOĞRULANAMADI
+      red: CT-FIX-03 R6 sabotage: the success line twice -> DOĞRULANAMADI
+B8a a pending row measured as in force  [scripts/ct_route.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4B_B8 -> exit 1 ['FAILED (failures=1)']
+      red: test_a_pending_row_is_stamped_and_refused_in_force (test_ct_cli_regression.V4B_B8_Route)
+    scripts/ct_route.py --self-test -> exit 0 ['self-test: 189/189 passed']
+B8b --in-force accepts a pending row  [scripts/ct_route.py]
+    -m unittest discover -s scripts/tests -p test_ct_cli_regression.py -k V4B_B8 -> exit 0 ['OK']
+    scripts/ct_route.py --self-test -> exit 0 ['self-test: 189/189 passed']
+
+EXCLUDED (not evidence): sabotage-r1/results-r1b.json and run-r1b.log — the driver ran in the writing worktree while
+R2 was written into scripts/ct_queue.py; which file version a run read is not reliable (Codex process correction).

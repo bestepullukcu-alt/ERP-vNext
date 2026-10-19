@@ -1,0 +1,33 @@
+CT-FIX-09 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness8.py.txt. The copy's five files equal the frozen sources byte for byte:
+True. Each mutation: the file still parses; the named tests fail; the control test
+(Controls.test_consumers_on_the_intact_fixture_exit_0) passes. A 'self-test:' name is red only when that named
+case reports FAIL without a crash.
+
+G-Q1 the gate reads the queue without capturing ct_queue's output  (scripts/prompt_gate.py)
+    tests: test_a_queue_that_cannot_be_read_is_named_in_the_hashed_report
+    applied: True · parses: True · named: RED — FAILED (failures=3) · control: OK · proven: True
+G-Q2 the discovery binding judged without the queue row  (scripts/prompt_gate.py)
+    tests: test_a_queue_that_cannot_be_read_is_named_in_the_hashed_report
+    applied: True · parses: True · named: RED — FAILED (failures=3) · control: OK · proven: True
+G-Q3 output on a successful load swallowed  (scripts/prompt_gate.py)
+    tests: self-test:scripts/prompt_gate.py::CT-FIX-09: output printed while the queue loads
+    applied: True · parses: True · named: RED — FAIL CT-FIX-09: output printed while the queue loads · control: OK · proven: True
+G-L1 one_line returns the text unchanged  (scripts/ct_queue.py)
+    tests: test_one_line_shows_line_structure_and_keeps_normal_text, test_a_control_character_in_a_pack_name_stays_on_one_report_line, test_a_control_character_in_a_changed_file_stays_on_one_check_line
+    applied: True · parses: True · named: RED — FAILED (failures=13) · control: OK · proven: True
+G-L2 the summary line shown on one line after its byte cap  (.antigravity/scripts/verify_module_id.py)
+    tests: test_a_control_character_in_a_pack_name_stays_on_one_report_line
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-L3 the report lines written raw  (.antigravity/scripts/verify_module_id.py)
+    tests: test_a_control_character_in_a_pack_name_stays_on_one_report_line
+    applied: True · parses: True · named: RED — FAILED (failures=5) · control: OK · proven: True
+G-L4 the acceptance check printed raw  (scripts/acceptance_record.py)
+    tests: test_a_control_character_in_a_changed_file_stays_on_one_check_line
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+
+proven: 7 of 7
+
+A first run is not counted: its copy lacked docs/guides, so G-Q3's self-test crashed (a FileNotFoundError) and
+the driver read the crash as red. The copy was completed, the driver made to require the named case, and every
+mutation run again in a new directory.

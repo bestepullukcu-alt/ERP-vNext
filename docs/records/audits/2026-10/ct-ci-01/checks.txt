@@ -1,0 +1,194 @@
+=== sources (worktree, uncommitted at the time of the runs)
+scripts/run_phase1_gates.sh  sha256 63424ce4c914ca8dbae61a7c41ea4579cac49dffcddf940e57484a3aa5eac3a4  mode 0o755
+docs/guides/operations/control-tower-operating-card.md  sha256 2a8d3fc32243c78555e53a3350721f6a48b663018430e57c32836f25542d12e9
+git diff --stat:
+docs/guides/operations/control-tower-operating-card.md |  1 +
+ scripts/run_phase1_gates.sh                            | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
+git diff --summary (a mode change would show here): none
+files changed against HEAD: docs/guides/operations/control-tower-operating-card.md, scripts/run_phase1_gates.sh
+
+=== merged test tree (scratch clones, no merge commit)
+Y=138ba38af15b095bf7593eaceb7c5e01e906cb5d T2=429dcf1516a9da32998051b951e20920f9121245 T1=66156815141dd112ae130ff6c799bb847f4f8cc2 E2=972dfa2b099c48086e2c74171c6a2d1c2f3043d0 E1=3e9cc7fd8a610ba81627d6b84e14b9002008082f MAIN=3912d568b18193f627539a1b27965167ac4077b6
+Y = HEAD + the two sources (file modes kept as in HEAD; the gate is 100755); T2 = git merge-tree --write-tree MAIN Y, exit 0 —
+the tree Codex computed independently (429dcf15…). T1 = merge-tree MAIN HEAD (the merged tree without the block).
+merged gate sha256 aaf6a755b42a77bfc0ed47352ee1b295e5396054d96a8b6209d0a3df1304634e (main's PlanningService.Cycles.Tests build line kept) · card 2a8d3fc32243c78555e53a3350721f6a48b663018430e57c32836f25542d12e9
+Harness note: the first scratch build put the gate into the index as 100644 and produced tree d9671043…; rebuilt with
+HEAD's mode → 429dcf15…. The worktree file never changed mode.
+
+=== the seven self-tests, system Python without venv and without site-packages (ControlTower condition 2)
+clone: depth 1 at ddafb1e9125106ea5a6d4f6da70d998b5d28cba2 (the seven tools are byte-identical in the branch and in the merged tree)
+interpreter: system python 3.9.6 · venv: False · site-packages disabled (-E -S) · openpyxl visible: False
+exit 0 · python3 -E -S -B scripts/ct_queue.py --self-test · self-test: 69/69 passed
+exit 0 · python3 -E -S -B scripts/acceptance_record.py --self-test · self-test: 100/100 passed
+exit 0 · python3 -E -S -B scripts/prompt_gate.py --self-test · self-test: 71/71 passed
+exit 0 · python3 -E -S -B scripts/status_report.py --self-test · self-test: 75/75 passed
+exit 0 · python3 -E -S -B .antigravity/scripts/list_screen_touch_hook.py --self-test · self-test: 21/21 passed
+exit 0 · python3 -E -S -B scripts/known_failures.py --self-test · self-test: 24/24 passed
+exit 0 · python3 -E -S -B scripts/ct_route.py --self-test · self-test: 167/167 passed
+working tree after the runs: 0 changed paths
+same in the merged tree 429dcf15: scripts/ct_queue.py 9517b4968547e081636d1382e3aabd090689bd798f7cdf27fc385515855b4993
+same in the merged tree 429dcf15: scripts/acceptance_record.py b50b4802d3f29b5299942ed5e30dec4edbf9735a6e2f2e8f3c3fea42f280f47d
+same in the merged tree 429dcf15: scripts/prompt_gate.py 2634355411cbdaa435d23fdd531917a0d59a530ae28190d1c864037c864e65cb
+same in the merged tree 429dcf15: scripts/status_report.py f330b32854b5eb6b95ada2818260d5483c46bbdb6953c7ca423914db1fe7e52b
+same in the merged tree 429dcf15: scripts/status_report_v2.py c570e2d38a04c4242c0d6aa3cc43cce54d214999ce1879ec6cfcbe8976347931
+same in the merged tree 429dcf15: .antigravity/scripts/list_screen_touch_hook.py cbd8ef64e9d50fe233036b51b745698025602f2723e8a91b5a9bf53b18122e7d
+same in the merged tree 429dcf15: .antigravity/scripts/verify_module_id.py 91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341
+same in the merged tree 429dcf15: scripts/known_failures.py 55d73dd5321e4fb0bacbf9adf08091f002d3fd6007740529472ccecea17446fe
+same in the merged tree 429dcf15: scripts/ct_route.py 8cd2b2f7ded7c59f045b00890d6408c87f11d894ba212fc4455f4f304644ae17
+
+=== the real gate in a depth-1 clone of the branch, a package-free Python first on PATH, a dotnet spy (gate_probe.py)
+clone: depth 1 at ddafb1e9125106ea5a6d4f6da70d998b5d28cba2; the two files under test committed on top in the scratch clone only
+gate under test sha256 63424ce4c914ca8dbae61a7c41ea4579cac49dffcddf940e57484a3aa5eac3a4 · mode 0o755
+python3 on PATH: __SCRATCH__/ci/venv-bare/bin/python3 · openpyxl visible: False
+## R0 old gate (HEAD), dotnet spy exits 0 — exit 0, dotnet calls 18
+## R1 new gate, dotnet spy exits 0 — exit 0, dotnet calls 18
+   PASS R0 old gate completes
+   PASS R1 new gate completes
+   PASS R1 the seven self-tests run and pass — [('69', '69'), ('100', '100'), ('71', '71'), ('75', '75'), ('21', '21'), ('24', '24'), ('167', '167')]
+   PASS R1 the block runs before the first dotnet call
+   PASS R1 the dotnet calls are exactly the old gate's (same commands, same order) — 18 calls
+   PASS R0 the old gate runs no self-test
+## R2 new gate, dotnet spy exits 1 — exit 1, dotnet calls 1
+   PASS R2 a failing build still stops the gate at once
+## R3 ct_queue's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 ct_queue: the gate stops non-zero before any build — exit 1
+## R3 acceptance_record's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 acceptance_record: the gate stops non-zero before any build — exit 1
+## R3 prompt_gate's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 prompt_gate: the gate stops non-zero before any build — exit 1
+## R3 status_report (its self-test is status_report_v2's)'s self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 status_report (its self-test is status_report_v2's): the gate stops non-zero before any build — exit 1
+## R3 list_screen_touch_hook's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 list_screen_touch_hook: the gate stops non-zero before any build — exit 1
+## R3 known_failures's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 known_failures: the gate stops non-zero before any build — exit 1
+## R3 ct_route's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 ct_route: the gate stops non-zero before any build — exit 1
+## R4 old gate --audit-ledger-only — exit 0, dotnet calls 0
+## R4 new gate --audit-ledger-only — exit 0, dotnet calls 0
+   PASS R4 --audit-ledger-only: same exit and output as the old gate — exit 0
+   PASS R4 --audit-ledger-only runs no self-test
+   PASS R5 '||' count is still 2
+   PASS R5 no exit 0, trap, set +, --filter
+   PASS R5 exactly one 'dotnet test TenantArchitecture.TenancyTests.csproj -c Debug' line
+   PASS R5 exactly one 'dotnet test TenantArchitecture.ArchitectureTests.csproj -c Debug' line
+   PASS R5 exactly one 'dotnet test Diten.Web.Tests.csproj -c Debug' line
+   PASS R5 the change is insertion only (every old line kept, in order) — 12 lines inserted at line 139
+   PASS R5 first line and set -euo pipefail unchanged
+   PASS R5 the clone is clean after the probe
+result: 0 failed
+
+=== the same probe on the merged tree's gate (main's Planning build line kept)
+clone: depth 1 at 972dfa2b099c48086e2c74171c6a2d1c2f3043d0 (gate-merged-new); the old gate from the given file
+gate under test sha256 aaf6a755b42a77bfc0ed47352ee1b295e5396054d96a8b6209d0a3df1304634e · mode 0o755
+python3 on PATH: __SCRATCH__/ci/venv-bare/bin/python3 · openpyxl visible: False
+## R0 old gate (HEAD), dotnet spy exits 0 — exit 0, dotnet calls 19
+## R1 new gate, dotnet spy exits 0 — exit 0, dotnet calls 19
+   PASS R0 old gate completes
+   PASS R1 new gate completes
+   PASS R1 the seven self-tests run and pass — [('69', '69'), ('100', '100'), ('71', '71'), ('75', '75'), ('21', '21'), ('24', '24'), ('167', '167')]
+   PASS R1 the block runs before the first dotnet call
+   PASS R1 the dotnet calls are exactly the old gate's (same commands, same order) — 19 calls
+   PASS R0 the old gate runs no self-test
+## R2 new gate, dotnet spy exits 1 — exit 1, dotnet calls 1
+   PASS R2 a failing build still stops the gate at once
+## R3 ct_queue's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 ct_queue: the gate stops non-zero before any build — exit 1
+## R3 acceptance_record's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 acceptance_record: the gate stops non-zero before any build — exit 1
+## R3 prompt_gate's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 prompt_gate: the gate stops non-zero before any build — exit 1
+## R3 status_report (its self-test is status_report_v2's)'s self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 status_report (its self-test is status_report_v2's): the gate stops non-zero before any build — exit 1
+## R3 list_screen_touch_hook's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 list_screen_touch_hook: the gate stops non-zero before any build — exit 1
+## R3 known_failures's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 known_failures: the gate stops non-zero before any build — exit 1
+## R3 ct_route's self-test exits 1 — exit 1, dotnet calls 0
+   PASS R3 ct_route: the gate stops non-zero before any build — exit 1
+## R4 old gate --audit-ledger-only — exit 0, dotnet calls 0
+## R4 new gate --audit-ledger-only — exit 0, dotnet calls 0
+   PASS R4 --audit-ledger-only: same exit and output as the old gate — exit 0
+   PASS R4 --audit-ledger-only runs no self-test
+   PASS R5 '||' count is still 2
+   PASS R5 no exit 0, trap, set +, --filter
+   PASS R5 exactly one 'dotnet test TenantArchitecture.TenancyTests.csproj -c Debug' line
+   PASS R5 exactly one 'dotnet test TenantArchitecture.ArchitectureTests.csproj -c Debug' line
+   PASS R5 exactly one 'dotnet test Diten.Web.Tests.csproj -c Debug' line
+   PASS R5 the change is insertion only (every old line kept, in order) — 12 lines inserted at line 139
+   PASS R5 first line and set -euo pipefail unchanged
+   PASS R5 the clone is clean after the probe
+result: 0 failed
+
+=== the probe driver as recorded
+gate_probe.py sha256 2022753137373159f54256fb1c31cd568e60205e4715cf33455c31006c0af995
+After the two runs above, one change only: env=ENV0 on its git common-dir call (every git call now carries
+GIT_OPTIONAL_LOCKS=0). The call returns the same directory with or without ENV0 (checked read-only); the probe was not re-run.
+
+=== architecture suite on the merged tree 429dcf15, one run (ct-heavy lock)
+Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 9 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+results 138 · {'Passed': 131, 'Failed': 7}
+known_failures check (raw): ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0 · exit 0
+known_failures check (sanitised): ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0 · exit 0
+fingerprints: sanitised = raw: True · = the CT-ROUTE-01 merged-tree run: True
+raw sha256 a39d8484d34b379e8041b1258fe5e962279fb0fb3918915b052d0ef772f9ac1e · sanitised sha256 277c0abdcdfba5489a56cd96b184c907f254560a45dd279430d0a6aa700ef02f
+the tree before and after the run: 429dcf1516a9da32998051b951e20920f9121245 (unchanged; diff-files 0)
+CiServiceTestsGuardTests (it reads the gate script): 44 results, {'Passed': 44}
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "    internal static class A { void M() { x.UsingRa"···, problems: 1)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "// [Collection(LiveRabbitMqCollection.Name)]\npubl"···, problems: 1)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "[Collection(LiveRabbitMqCollection.Name)]\npublic "···, problems: 0)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "[Collection(LiveRabbitMqCollection.Name)]\npublic "···, problems: 0)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "[Collection(LiveRabbitMqCollection.Name)]\npublic "···, problems: 1)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "public abstract partial class A { void M() { Bus.F"···, problems: 1)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "public class A { [Collection(LiveRabbitMqCollectio"···, problems: 1)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_live_broker_call_is_checked_against_its_outermost_class(source: "public sealed record A { void M() { new Connection"···, problems: 1)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_new_service_test_project_without_a_matrix_row_is_named_even_with_an_empty_exclusion_list
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "- suite: bb-secrets", reference: False)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "T: ${{ Secrets['X'] }}", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "T: ${{ github.token }}", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "T: ${{ github['token'] }}", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "TOKEN: ${{ SECRETS.X }}", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "TOKEN: ${{secrets.X}}", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "TOKEN: \"#${{ secrets.X }}\"", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "X: ${{ toJSON(secrets) }}", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "project: services/Diten.Building.Blocks/Diten.Buil"···, reference: False)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.A_secret_reference_is_recognised_and_a_project_name_is_not(line: "secrets: inherit", reference: True)
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Auth_rows_require_an_owned_mongo
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Every_action_in_every_workflow_is_at_its_one_recorded_commit
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Every_class_that_opens_a_live_broker_runs_in_the_live_rabbitmq_collection
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Every_job_has_a_timeout_and_every_test_run_a_hang_timeout_and_a_result_file
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Every_matrix_suite_name_is_unique
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Every_service_test_project_is_a_matrix_row_or_named_with_its_reason
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Every_service_test_project_outside_its_solution_is_built_by_phase1
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Every_workflow_has_one_read_only_token_and_no_job_or_step_permissions
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Mongod_is_pinned_by_version_and_digest_and_the_tests_are_told_where_it_is
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.No_workflow_uses_a_privileged_trigger_or_reads_a_secret
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Nothing_can_turn_a_red_test_or_build_green
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Only_the_named_workflow_files_exist
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Phase1_has_a_read_only_token_and_every_action_pinned_to_a_commit
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Phase1_triggers_are_push_and_pull_request
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.RabbitMq_is_pinned_and_waited_for_and_writes_no_credential
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_mongod_variables_are_set_by_the_install_step_and_never_overridden
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_page_help_ceiling_check_is_called_with_the_base
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_release_prerequisite_steps_are_pinned_to_their_rows
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_skip_check_fails_on_a_malformed_result_file
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_skip_check_fails_on_a_result_file_without_results
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_skip_check_fails_on_one_skipped_test_and_names_it
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_skip_check_fails_when_the_result_file_is_missing
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.The_skip_check_passes_a_result_file_where_every_test_ran
+  Passed  TenantArchitecture.ArchitectureTests.CiServiceTestsGuardTests.Triggers_permissions_and_actions_are_the_decided_ones
+
+=== protected and untouched files
+unchanged execution/delivery/ct-queue-registry.tsv
+unchanged execution/delivery/ct-queue-template.tsv
+unchanged docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv
+unchanged execution/domains/supply-chain-execution/work-packs/CT-QUEUE.tsv
+unchanged scripts/ct_queue.py
+unchanged scripts/prompt_gate.py
+unchanged scripts/acceptance_record.py
+SOP from §36.2: unchanged
+.github/workflows/phase1-gates.yml: unchanged against HEAD
+.github/workflows/service-tests.yml: unchanged against HEAD
+tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs: unchanged against HEAD

@@ -1,0 +1,36 @@
+CT-FIX-08 — the one final run on the frozen sources; run by the AI session in the CT-FIX-08 worktree (branch
+chore/ct/ct-fix-08 on 5035a9f28 with this package's uncommitted changes). It is NOT a run on a combined candidate:
+İ5B-FIX-09 is a separate branch and its checks are in its own folder.
+
+commands (from the worktree root):
+  python3 -B <tool> --self-test   for ct_queue, prompt_gate, acceptance_record, status_report, ct_route, known_failures, run_record
+  python3 -B -m unittest discover -s scripts/tests -p 'test_*.py'
+environment: Python 3.9.6 · git 2.50.1
+sources (SHA-256):
+  .antigravity/scripts/verify_module_id.py          79baf4cc36607530380e5eb025d82f775469e77fff73509619d119cc38875b1f
+  scripts/acceptance_record.py                      45cad5095725cfa3a1339f0c3602a8e9684995a9ffd245909f3e692814c394d6
+  scripts/ct_queue.py                               39d1e5af109e448bc8d151362ea75f2fdfe48201443d4b25caccde3b4dc869f9
+  scripts/prompt_gate.py                            763c0ebfc16b33612cde0d373d822d62b330635c1d449c3aa3385e96bbd95f5b
+  scripts/status_report_v2.py                       f63b1203c7c36e14e65238e51532237545e12a5357cc8b2bd0151d8ea2c851c8
+  scripts/tests/test_ct_cli_regression.py           c1d87d54a8c2bf2e40eb842bc455ea7b3673ae1a30eb27300ec9c0374b0158bc
+  scripts/tests/test_verify_module_id_discover.py   8ce30d634d958b88b7f127d7c2df8974fa0780bb0333620bc0a9ebd54b1e6293
+result (the log as written):
+  scripts/ct_queue.py: self-test: 140/140 passed
+  scripts/prompt_gate.py: self-test: 103/103 passed
+  scripts/acceptance_record.py: self-test: 149/149 passed
+  scripts/status_report.py: self-test: 80/80 passed
+  scripts/ct_route.py: self-test: 197/197 passed
+  scripts/known_failures.py: self-test: 51/51 passed
+  scripts/run_record.py: self-test: 29/29 passed
+  Ran 141 tests in 397.315s
+  OK
+  dirty-tracked after: 0
+log SHA-256 037dd6fe555545186515c18ae903547f400c9c0d37431ce0d6e9f8c56aff1d74 (kept outside the repository)
+
+The log kept the self-test result lines and the last four lines of the unittest run only; warnings were not kept
+and are not reported here. 'dirty-tracked after: 0': no file other than the seven modified ones was changed or
+left behind by the run. The sources' SHA-256 were checked again after the run: unchanged.
+
+Diagnostic only, not evidence of the final sources: an earlier R0 run (r0-1) on the sources before the last edits
+had 3 failures — the CTFIX06 tests still expecting require 1 and the old line positions; they were updated as a
+declared contract change (require exits 2 on a broken registry; the open decisions come second).

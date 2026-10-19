@@ -1,0 +1,33 @@
+CT-FIX-05 / İ5B-FIX-06 — the one architecture run (arch-08) on candidate 4, driver drivers/run_arch_08.sh.txt; run by
+the AI session.
+
+fixture: HEAD 3d4f0f4050b1b162555277f2296f42648c299eb7 tree 5df69f6d0c45f41af9b6d6716753cea09b7dc98e parent 0609bc5882380580201e21a89fcbc2302cff884d
+dotnet: 8.0.416
+lock: locked_run.py (sha256 9fa85857fee462256751518a7a8ebab9d63e69348b834e43a09ea08bd68728e5; flock on ct-heavy.lock)
+started: 2026-10-17T20:07:57Z
+restore exit: 0
+dotnet exit: 1
+Failed!  - Failed:     7, Passed:   137, Skipped:     0, Total:   144, Duration: 11 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+finished: 2026-10-17T20:08:13Z
+dirty after: 0
+
+known_failures.py check <rooted TRX> --suite TenantArchitecture.ArchitectureTests (the candidate's tool and registry):
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+
+raw TRX SHA-256 207b1083b831edf31c5aa4fd82acf96918450a015daf484f459f0a02daf2ced3 (not in Git: it holds local paths)
+rooted (../ct-fix-01/normalize_root.py.txt, N1 = 318, N2 = 0) abc3714ff3507d73f0101588857c25ef8f94ebae9c67e3f6663e7a73051ae942
+sanitised (../ct-pre-merge-fixes-01/sanitize_trx.py.txt, R1 = 0, R2 = 151, R3 = 1, R4 = 1; leftover home 0, user 0) -> run.sanitized.trx 2cf33faae9398786614601a0a0b8cecf044927925efc75311b24bc303009b874
+the 7 failures are by name the 7 of arch-07 (candidate 3); the raw TRX gives the same BİLİNEN=7 YENİ=0
+
+Limits of this record (named by Codex): the driver checked the TRACKED tree only (git status --untracked-files=no) before the
+checkout and after the run — the untracked state before the run was not recorded, so this is not evidence of a fully
+clean tree before the run. The scratch clone's folder was reused: its HEAD moved from candidate 3 to candidate 4 for
+this run, so its working copy is no longer candidate 3's; candidate 3's commit and tree stay in its object store (the
+parent of candidate 4) and the earlier manifests are read with git show <commit>:<path>.

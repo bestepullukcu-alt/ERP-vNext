@@ -1,0 +1,28 @@
+CT-FIX-04 — the one architecture run (arch-06), driver drivers/run_arch_06.sh.txt
+
+fixture: HEAD ff219eb75b951a64aec9af4b5ffe33dbc4e95ceb tree 4022be91e1fe0f83ddba636f18f1e5f52cef2cce parent 75cf72304ad48f27562c759264277a7bf5e9be57
+dotnet: 8.0.416
+lock: locked_run.py (sha256 9fa85857fee462256751518a7a8ebab9d63e69348b834e43a09ea08bd68728e5; flock on ct-heavy.lock)
+started: 2026-10-17T15:24:58Z
+restore exit: 0
+dotnet exit: 1
+Failed!  - Failed:     7, Passed:   137, Skipped:     0, Total:   144, Duration: 10 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+finished: 2026-10-17T15:25:12Z
+dirty after: 0
+
+known_failures.py check <rooted TRX> --suite TenantArchitecture.ArchitectureTests (the candidate's tool and registry):
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+BİLİNEN	TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash")
+BİLİNEN	TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+
+raw TRX SHA-256 689d3785df603c8c13accde3f19325b42a1023f675c066dcb5c8d4add783b688 (not in Git: it holds local paths)
+rooted (../ct-fix-01/normalize_root.py.txt, N1 = 318, N2 = 0) c6b5b6d666a01c9d79721975b856512af7c9b0e57e4e2983a74fb37603343df0
+sanitised (../ct-pre-merge-fixes-01/sanitize_trx.py.txt, R1 = 0, R2 = 151, R3 = 1, R4 = 1; leftover home 0, user 0) -> run.sanitized.trx 904d40149a1856912ad0c630f4fe8049c6ddd3b3e9e4dbdda9b1469789edf4f8
+the 7 failures are by name the 7 of arch-05 (CT-FIX-03); on the raw TRX the check gives the same BİLİNEN=7 YENİ=0
+operator note: a first check call named the suite 'TenantArchitecture' (not the registry's suite) and so listed all 7 as
+YENİ; with the registry's suite name the result is the one above. No code or registry was changed between the two calls.
