@@ -14,7 +14,9 @@ public static class VisitEvidenceExceptionPermissions
     public static readonly IReadOnlyList<string> All = new[] { Read, Manage };
 }
 
-/// <summary>One policy field as it applies to a rep, and where its value came from.</summary>
+/// <summary>One policy field as it applies to a rep, and where its value came from: <c>tenant</c>,
+/// <c>legal-entity:&lt;id&gt;</c>, <c>business-unit:&lt;code&gt;</c> (WP-VW-W3L) or <c>exception</c> (its id in
+/// <paramref name="ExceptionId"/> — the shape the settings page already reads).</summary>
 public sealed record EffectiveEvidenceField(string Field, string Value, string Source, Guid? ExceptionId);
 
 public static class EvidenceFieldSources
@@ -23,11 +25,15 @@ public static class EvidenceFieldSources
     public const string Exception = "exception";
 }
 
-/// <summary>The layers above the tenant. This round they are never resolved (the seam is ready; the legal entity is the
-/// Platform primary seat, the business unit the CRM territory assignment — a later package).</summary>
+/// <summary>The layers above the tenant (WP-VW-W3L): the rep's legal entity (Platform primary seat) and business unit
+/// (primary territory assignment), each null when skipped; <c>Note</c> = <c>resolved</c> or the skipped layers' reasons
+/// (<see cref="EvidenceScopeNotes"/>), the per-layer reasons beside it. <see cref="Unresolved"/> = no chain resolver.</summary>
 public sealed record EvidenceScopeChain(Guid? LegalEntity, string? BusinessUnit, string Note)
 {
     public static EvidenceScopeChain Unresolved { get; } = new(null, null, "unresolved");
+
+    public string? LegalEntityNote { get; init; }
+    public string? BusinessUnitNote { get; init; }
 }
 
 /// <summary>
@@ -40,7 +46,9 @@ public sealed record EffectiveEvidencePolicy(
     IReadOnlyList<EffectiveEvidenceField> Fields,
     IReadOnlyList<VisitEvidenceException> ActiveExceptions,
     IReadOnlyList<string> RelaxedRules,
-    EvidenceScopeChain ScopeChain)
+    EvidenceScopeChain ScopeChain,
+    // WP-VW-W3L — the layers that applied (lowest first: legal entity, then business unit)
+    IReadOnlyList<VisitEvidencePolicyLayer>? AppliedLayers = null)
 {
     /// <summary>The exception the start runs under (the earliest-starting active one), or null.</summary>
     public VisitEvidenceException? PrimaryException => ActiveExceptions.OrderBy(e => e.StartDate).ThenBy(e => e.CreatedAt).FirstOrDefault();
@@ -48,8 +56,8 @@ public sealed record EffectiveEvidencePolicy(
 
 /// <summary>
 /// WP-VW-W3 (W3-BE-c, §2.2) — the ONE place the visit evidence rules of a rep are decided: the visit start and the
-/// execution contract read it. Layers: tenant ⊕ active approved exception; the legal entity / business unit layers return
-/// "unresolved" until their package (the seam).
+/// execution contract read it. WP-VW-W3L (K-L1): tenant ⊕ legal entity ⊕ business unit (field by field, the business unit
+/// wins) ⊕ the active approved exception (still on top).
 /// </summary>
 public interface IVisitEvidencePolicyResolver
 {
@@ -60,17 +68,29 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
 {
     private readonly IVisitEvidencePolicyRepository _policies;
     private readonly IVisitEvidenceExceptionRepository? _exceptions;
+    private readonly IVisitEvidencePolicyLayerRepository? _layers;
+    private readonly IEvidenceScopeChainResolver? _chains;
 
-    public VisitEvidencePolicyResolver(IVisitEvidencePolicyRepository policies, IVisitEvidenceExceptionRepository? exceptions = null)
+    public VisitEvidencePolicyResolver(IVisitEvidencePolicyRepository policies, IVisitEvidenceExceptionRepository? exceptions = null,
+        IVisitEvidencePolicyLayerRepository? layers = null, IEvidenceScopeChainResolver? chains = null)
     {
         _policies = policies;
         _exceptions = exceptions;
+        _layers = layers;
+        _chains = chains;
     }
 
     public async Task<EffectiveEvidencePolicy> ResolveAsync(Guid tenantId, string? resourceId, DateTimeOffset at, CancellationToken ct)
     {
         var stored = await _policies.GetAsync(tenantId, ct);
         var tenantPolicy = stored ?? VisitExecutionRules.Defaults(tenantId);
+        // WP-VW-W3L — the rep's chain (the seat is read only when the tenant has a legal entity layer) and its layers
+        var layers = _layers is null
+            ? new List<VisitEvidencePolicyLayer>()
+            : (await _layers.ListActiveAsync(tenantId, ct)).Where(l => l.TenantId == tenantId && l.IsActive()).ToList();
+        var chain = _chains is null || string.IsNullOrWhiteSpace(resourceId)
+            ? EvidenceScopeChain.Unresolved
+            : await _chains.ResolveAsync(tenantId, resourceId, layers.Any(l => l.ScopeType == VisitEvidencePolicyScopeTypes.LegalEntity), at, ct);
         var today = DateOnly.FromDateTime(at.UtcDateTime);
         var active = _exceptions is null || string.IsNullOrWhiteSpace(resourceId)
             ? new List<VisitEvidenceException>()
@@ -79,15 +99,30 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
                             && string.Equals(e.ResourceId, resourceId, StringComparison.Ordinal)
                             && e.PhaseOn(today) == VisitEvidenceExceptionPhases.Active)
                 .ToList();
-        return Combine(tenantPolicy, stored is null, active);
+        return Combine(tenantPolicy, stored is null, VisitEvidencePolicyLayerRules.ApplicableLayers(layers, chain), active, chain);
     }
 
-    /// <summary>Pure: the tenant policy with the active exceptions' relaxations applied (a copy — the stored policy is never
-    /// changed), field by field with its source.</summary>
+    /// <summary>Pure: the tenant policy with the active exceptions' relaxations applied (no layers).</summary>
     public static EffectiveEvidencePolicy Combine(
         VisitEvidencePolicy tenantPolicy, bool isDefault, IReadOnlyList<VisitEvidenceException> active)
+        => Combine(tenantPolicy, isDefault, [], active, EvidenceScopeChain.Unresolved);
+
+    /// <summary>
+    /// Pure (K-L1 / K-L2): the tenant policy, then each applicable layer's OVERRIDDEN fields in order (legal entity, then
+    /// business unit — the later one wins; a field a layer leaves empty is inherited), then the active exceptions'
+    /// relaxations — a copy (no stored document is changed), field by field with its source.
+    /// </summary>
+    public static EffectiveEvidencePolicy Combine(
+        VisitEvidencePolicy tenantPolicy, bool isDefault, IReadOnlyList<VisitEvidencePolicyLayer> layers,
+        IReadOnlyList<VisitEvidenceException> active, EvidenceScopeChain chain)
     {
         var effective = Copy(tenantPolicy);
+        var layerSources = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var layer in layers)
+        {
+            VisitEvidencePolicyLayerRules.ApplyOnto(effective, layer, layerSources);
+        }
+
         var bySource = new Dictionary<string, Guid>(StringComparer.Ordinal);
         foreach (var exception in active.OrderBy(e => e.StartDate).ThenBy(e => e.CreatedAt))
         {
@@ -123,11 +158,11 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
         var fields = Values(effective)
             .Select(f => bySource.TryGetValue(f.Field, out var id)
                 ? new EffectiveEvidenceField(f.Field, f.Value, EvidenceFieldSources.Exception, id)
-                : new EffectiveEvidenceField(f.Field, f.Value, EvidenceFieldSources.Tenant, null))
+                : new EffectiveEvidenceField(f.Field, f.Value, layerSources.GetValueOrDefault(f.Field) ?? EvidenceFieldSources.Tenant, null))
             .ToList();
         var relaxed = active.SelectMany(e => e.Rules).Distinct(StringComparer.Ordinal)
             .Where(r => VisitEvidenceExceptionRules.All.Contains(r)).ToList();
-        return new EffectiveEvidencePolicy(effective, isDefault, fields, active, relaxed, EvidenceScopeChain.Unresolved);
+        return new EffectiveEvidencePolicy(effective, isDefault, fields, active, relaxed, chain, layers);
     }
 
     /// <summary>The eight fields as wire name + invariant string value (the history uses the same rendering).</summary>
@@ -157,7 +192,9 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
 }
 
 /// <summary>A rep (an active primary territory assignment) on the wire.</summary>
-public sealed record EvidenceRepDto(string ResourceId, string DisplayName);
+public sealed record EvidenceRepDto(string ResourceId, string DisplayName,
+    // WP-VW-W3L (additive) — the rep's resolved scope chain on the roster rows (null on the picker read)
+    EvidenceScopeChainDto? ScopeChain = null);
 
 /// <summary>
 /// WP-VW-W3 (W3-BE-c, §2.2) — the reps the evidence rules apply to: resources with an ACTIVE PRIMARY territory assignment

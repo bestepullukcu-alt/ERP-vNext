@@ -48,6 +48,9 @@ public static class DependencyInjection
             // SCMM-12 audit — claim / composition events forwarded with SourceModule "CAND-CAP-0011".
             services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher>(
                 sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
+            // WP-VW-W3L — the visit evidence scope writes, forwarded with SourceModule "MOD-0155".
+            services.AddScoped<Application.Features.VisitEvidence.IVisitEvidenceAuditPublisher>(
+                sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
         }
         else
         {
@@ -59,6 +62,8 @@ public static class DependencyInjection
             // SCMM-12 audit — structured-logging fallback for claim / composition events.
             services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher,
                 LoggingContentCompositionAuditPublisher>();
+            // WP-VW-W3L — structured-logging fallback for the visit evidence scope writes.
+            services.AddScoped<Application.Features.VisitEvidence.IVisitEvidenceAuditPublisher, LoggingVisitEvidenceAuditPublisher>();
         }
 
         // SCMM-11 (CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
@@ -136,6 +141,12 @@ public static class DependencyInjection
         services.AddHttpClient<
             Application.Features.CycleCapacity.Read.IWorkingDayCounter,
             CycleCapacity.WorkingCalendarWorkingDayCounter>();
+
+        // WP-VW-W3L (K-L8) - the reps' Platform primary seats (legal entity layer): the same fail-soft transport profile,
+        // through the Gateway with the caller's token; every failure = "platform-unavailable", never a blocked start.
+        services.AddHttpClient<
+            Application.Features.VisitEvidence.IOrganizationSeatReader,
+            VisitEvidence.PlatformOrganizationSeatReader>();
 
         // WP-VP-FIX-1 - the same door + transport, per-day op is-working-day: the visit planner's non-working days.
         services.AddHttpClient<

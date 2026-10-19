@@ -278,6 +278,8 @@ public static class DependencyInjection
         // WP-VW-W3 (W3-BE-c) — the evidence policy history and the time-boxed exceptions.
         services.AddScoped<IVisitEvidencePolicyChangeRepository, VisitEvidencePolicyChangeRepository>();
         services.AddScoped<IVisitEvidenceExceptionRepository, VisitEvidenceExceptionRepository>();
+        // WP-VW-W3L (W3-BE-d) — the legal entity / business unit layers of the evidence rules (archive, never delete).
+        services.AddScoped<IVisitEvidencePolicyLayerRepository, VisitEvidencePolicyLayerRepository>();
         // WP-VW-W4 (W4-BE-c) — doctor profile + potential + thresholds and their append-only histories.
         services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
         services.AddScoped<IDoctorProfileChangeRepository, DoctorProfileChangeRepository>();
@@ -1381,6 +1383,11 @@ public static class DependencyInjection
         });
         Map<VisitEvidencePolicyChange>(_ => { });
 
+        // WP-VW-W3L (W3-BE-d) - the evidence layers (no Guid of their own beyond the base Id / TenantId: the legal entity
+        // id is the ScopeRef STRING) and the scope chain stored with a visit start (its legal entity a string-Guid).
+        Map<VisitEvidencePolicyLayer>(_ => { });
+        Map<VisitExecutionEvidenceScope>(map => map.GetMemberMap(s => s.LegalEntityId).SetSerializer(new NullableSerializer<Guid>(stringGuid)));
+
         // WP-VW-W3E (W3E-BE-a) - the institution QR codes, their events and the QR evidence embedded in VisitExecution:
         // every Guid as a string (the GUID trap: an unmapped Guid is written binary and the by-account / Qr.AccountId
         // filters come back EMPTY silently).
@@ -2180,6 +2187,20 @@ public static class DependencyInjection
                     Name = "ux_visit_evidence_policies_tenant",
                     Unique = true,
                     PartialFilterExpression = Builders<VisitEvidencePolicy>.Filter.Eq(p => p.IsDeleted, false)
+                }));
+
+            // WP-VW-W3L (W3-BE-d) - visit_evidence_policy_layers: ONE ACTIVE layer per (tenant, scope type, scope ref).
+            // Equality-only partial filter (Status "active", IsDeleted false): an archived layer keeps its row.
+            var evidenceLayers = database.GetCollection<VisitEvidencePolicyLayer>(VisitEvidencePolicyLayerRepository.CollectionName);
+            evidenceLayers.Indexes.CreateOne(new CreateIndexModel<VisitEvidencePolicyLayer>(
+                Builders<VisitEvidencePolicyLayer>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.ScopeType).Ascending(l => l.ScopeRef),
+                new CreateIndexOptions<VisitEvidencePolicyLayer>
+                {
+                    Name = "ux_visit_evidence_policy_layers_tenant_scope_active",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitEvidencePolicyLayer>.Filter.And(
+                        Builders<VisitEvidencePolicyLayer>.Filter.Eq(l => l.Status, VisitEvidencePolicyLayerStatuses.Active),
+                        Builders<VisitEvidencePolicyLayer>.Filter.Eq(l => l.IsDeleted, false))
                 }));
 
             // WP-VW-W3E (W3E-BE-a) - crm_institution_qr_codes: ONE ACTIVE code per institution, guaranteed by the database

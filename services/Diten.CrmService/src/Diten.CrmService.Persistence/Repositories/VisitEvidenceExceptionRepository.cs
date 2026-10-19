@@ -78,4 +78,76 @@ public sealed class VisitEvidencePolicyChangeRepository : IVisitEvidencePolicyCh
         var ordered = rows.OrderByDescending(x => x.At).ThenByDescending(x => x.CreatedAt).ToList();
         return (ordered.Skip(skip).Take(take).ToList(), ordered.Count);
     }
+
+    /// <summary>WP-VW-W3L — one scope's history, filtered in the database (the ref case-insensitively in memory: a scope
+    /// has few rows).</summary>
+    public async Task<(IReadOnlyList<VisitEvidencePolicyChange> Items, long Total)> ListAsync(
+        Guid tenantId, string scope, string? scopeRef, int skip, int take, CancellationToken cancellationToken)
+    {
+        var rows = await _collection.Find(Builders<VisitEvidencePolicyChange>.Filter.Where(
+                x => x.TenantId == tenantId && !x.IsDeleted && x.Scope == scope))
+            .ToListAsync(cancellationToken);
+        var ordered = rows.Where(x => VisitEvidencePolicyChangeFilter.Matches(x, scope, scopeRef))
+            .OrderByDescending(x => x.At).ThenByDescending(x => x.CreatedAt).ToList();
+        return (ordered.Skip(skip).Take(take).ToList(), ordered.Count);
+    }
+}
+
+/// <summary>
+/// WP-VW-W3L (W3-BE-d) — <c>visit_evidence_policy_layers</c>: the legal entity / business unit layers. One ACTIVE layer per
+/// (TenantId, ScopeType, ScopeRef) — a unique index with an equality-only partial filter (Status "active", IsDeleted
+/// false); an archived layer stays as history and a new one may take its key.
+/// </summary>
+public sealed class VisitEvidencePolicyLayerRepository : IVisitEvidencePolicyLayerRepository
+{
+    public const string CollectionName = "visit_evidence_policy_layers";
+
+    private readonly IMongoCollection<VisitEvidencePolicyLayer> _collection;
+
+    public VisitEvidencePolicyLayerRepository(IMongoDatabase database)
+        => _collection = database.GetCollection<VisitEvidencePolicyLayer>(CollectionName);
+
+    public async Task<IReadOnlyList<VisitEvidencePolicyLayer>> ListActiveAsync(Guid tenantId, CancellationToken cancellationToken)
+        => await _collection.Find(Builders<VisitEvidencePolicyLayer>.Filter.Where(
+                x => x.TenantId == tenantId && !x.IsDeleted && x.Status == VisitEvidencePolicyLayerStatuses.Active))
+            .ToListAsync(cancellationToken);
+
+    public async Task<VisitEvidencePolicyLayer?> GetActiveAsync(
+        Guid tenantId, string scopeType, string scopeRef, CancellationToken cancellationToken)
+    {
+        var rows = await _collection.Find(Builders<VisitEvidencePolicyLayer>.Filter.Where(
+                x => x.TenantId == tenantId && !x.IsDeleted && x.Status == VisitEvidencePolicyLayerStatuses.Active
+                     && x.ScopeType == scopeType))
+            .ToListAsync(cancellationToken);
+        return rows.FirstOrDefault(x => string.Equals(x.ScopeRef, scopeRef, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public async Task<bool> InsertAsync(VisitEvidencePolicyLayer entity, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
+            return true;
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> ReplaceAsync(VisitEvidencePolicyLayer entity, int expectedVersion, CancellationToken cancellationToken)
+    {
+        entity.Version = expectedVersion + 1;
+        var result = await _collection.ReplaceOneAsync(
+            Builders<VisitEvidencePolicyLayer>.Filter.Where(
+                x => x.Id == entity.Id && x.TenantId == entity.TenantId && x.Version == expectedVersion),
+            entity, cancellationToken: cancellationToken);
+        if (result.IsAcknowledged && result.MatchedCount == 1)
+        {
+            return true;
+        }
+
+        entity.Version = expectedVersion;
+        return false;
+    }
 }

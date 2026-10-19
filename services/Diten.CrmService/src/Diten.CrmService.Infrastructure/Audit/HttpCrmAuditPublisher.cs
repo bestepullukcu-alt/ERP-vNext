@@ -3,6 +3,7 @@ using Diten.CrmService.Application.Features.Account;
 using Diten.CrmService.Application.Features.Contact;
 using Diten.CrmService.Application.Features.ContentComposition;
 using Diten.CrmService.Application.Features.Knowledge.Concept;
+using Diten.CrmService.Application.Features.VisitEvidence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,8 @@ namespace Diten.CrmService.Infrastructure.Audit;
 /// Opt-in: registered only when <c>Crm:Audit:Mode=http</c>; the default logging seam stays otherwise.
 /// </summary>
 public sealed class HttpCrmAuditPublisher
-    : IContactAuditPublisher, IAccountAuditPublisher, IKnowledgeConceptAuditPublisher, IContentCompositionAuditPublisher
+    : IContactAuditPublisher, IAccountAuditPublisher, IKnowledgeConceptAuditPublisher, IContentCompositionAuditPublisher,
+        IVisitEvidenceAuditPublisher
 {
     private const string AppendPath = "/api/v1/platform/audit/events";
     private const string TenantHeaderName = "X-Tenant-Id";
@@ -124,6 +126,13 @@ public sealed class HttpCrmAuditPublisher
         CancellationToken cancellationToken)
         => AppendAsync(eventName, tenantId, entityType, entityId, detail, cancellationToken,
             sourceModule: "CAND-CAP-0011", objectVersion: version);
+
+    // IVisitEvidenceAuditPublisher (WP-VW-W3L) — the visit evidence scope writes, tagged SourceModule "MOD-0155".
+    Task IVisitEvidenceAuditPublisher.PublishAsync(
+        string eventName, Guid tenantId, string entityType, Guid entityId, int version, string? detail,
+        CancellationToken cancellationToken)
+        => AppendAsync(eventName, tenantId, entityType, entityId, detail, cancellationToken,
+            sourceModule: "MOD-0155", objectVersion: version);
 
     private void ForwardContextHeaders(HttpRequestMessage message, Guid correlationId)
     {

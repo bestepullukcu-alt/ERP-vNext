@@ -204,6 +204,15 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
         }
 
         execution.Flags.AddRange(device.Flags);
+        // WP-VW-W3L (K-L5) — the layers the rules came through, kept with the start ("which rule applied", later)
+        execution.EvidenceScope = new VisitExecutionEvidenceScope
+        {
+            LegalEntityId = effective.ScopeChain.LegalEntity,
+            BusinessUnit = effective.ScopeChain.BusinessUnit,
+            Note = effective.ScopeChain.Note,
+            LegalEntityNote = effective.ScopeChain.LegalEntityNote,
+            BusinessUnitNote = effective.ScopeChain.BusinessUnitNote
+        };
         if (effective.PrimaryException is { } exception)
         {
             execution.ExceptionId = exception.Id;

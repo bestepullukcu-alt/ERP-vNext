@@ -115,6 +115,10 @@ public sealed partial class VisitExecutionW3Tests
         services.AddSingleton<TimeProvider>(_clock);
         services.AddSingleton<IInstitutionQrCodeRepository>(_qrCodes);
         services.AddSingleton<IVisitQrKeyRing>(_qrKeys);
+        // WP-VW-W3L — the resolver now reads the evidence layers and the rep's territory (business unit) too
+        services.AddSingleton<IVisitEvidencePolicyLayerRepository>(new VisitWorkspace.FakeLayerRepository());
+        services.AddSingleton<ITerritoryModelRepository>(new Territory.FakeTerritoryModelRepo());
+        services.AddSingleton<ITerritoryResourceAssignmentRepository>(new Territory.FakeTerritoryResourceAssignmentRepo());
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
         using var scope = provider.CreateScope();
 

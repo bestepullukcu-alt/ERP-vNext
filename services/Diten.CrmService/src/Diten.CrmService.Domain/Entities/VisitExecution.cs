@@ -56,6 +56,11 @@ public sealed class VisitExecution : EntityBase
     public Guid? ExceptionId { get; set; }
     public List<string> RelaxedRules { get; set; } = new();
 
+    /// <summary>WP-VW-W3L (W3-BE-d, K-L5) — the evidence layers the start's rules were resolved through: the legal entity
+    /// and the business unit that applied (null = that layer was skipped) and why (<c>Note</c>). Null on a start before
+    /// W3L. Answers "which rule applied" later.</summary>
+    public VisitExecutionEvidenceScope? EvidenceScope { get; set; }
+
     /// <summary>WP-VW-W3E (W3E-BE-a, §2.4) — the institution QR code at the start (null on a start before W3E).</summary>
     public VisitExecutionQr? Qr { get; set; }
 
@@ -68,6 +73,19 @@ public sealed class VisitExecution : EntityBase
 
     public bool IsStarted() => string.Equals(Status, VisitExecutionStatus.Started, StringComparison.Ordinal);
     public bool IsFinished() => string.Equals(Status, VisitExecutionStatus.Finished, StringComparison.Ordinal);
+}
+
+/// <summary>WP-VW-W3L (K-L5) — the scope chain stored with a visit start.</summary>
+public sealed class VisitExecutionEvidenceScope
+{
+    public Guid? LegalEntityId { get; set; }
+    public string? BusinessUnit { get; set; }
+
+    /// <summary><c>resolved</c>, or the skipped layers' reasons joined by a comma (see EvidenceScopeNotes).</summary>
+    public string Note { get; set; } = string.Empty;
+
+    public string? LegalEntityNote { get; set; }
+    public string? BusinessUnitNote { get; set; }
 }
 
 /// <summary>Where the rep was at the start, measured against the institution (Haversine).</summary>

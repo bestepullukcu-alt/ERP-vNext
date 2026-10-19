@@ -14,6 +14,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 | crm-content-yayinci | aday | yazıcı | IContentCompositionAuditPublisher.PublishAsync |
 | crm-knowledge-yayinci | aday | yazıcı | IKnowledgeConceptAuditPublisher.PublishAsync |
 | crm-territory-yayinci | aday | yazıcı | ITerritoryLifecycleAuditPublisher.PublishAsync |
+| crm-visit-evidence-yayinci | aday | yazıcı | IVisitEvidenceAuditPublisher.PublishAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
@@ -22,6 +23,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 > **crm-content-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
 > **crm-knowledge-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
 > **crm-territory-yayinci** — Yalnız uygulama günlüğü; HTTP uygulaması yok.
+> **crm-visit-evidence-yayinci** — (WP-VW-W3L, kapsam yaz / kaldır) Aynı: varsayılan yalnız uygulama günlüğü; `Crm:Audit:Mode=http` ile `HttpCrmAuditPublisher` (SourceModule MOD-0155).
 
 ## İstisnalar
 

@@ -128,6 +128,9 @@ public static class DependencyInjection
         services.AddScoped<Features.Knowledge.Path.IKnowledgePathProductResolver, Features.Knowledge.Path.ChainKnowledgePathProductResolver>();
         services.AddScoped<Features.VisitEvidence.IVisitEvidencePolicyResolver, Features.VisitEvidence.VisitEvidencePolicyResolver>();
         services.AddScoped<Features.VisitEvidence.IVisitEvidenceRepRoster, Features.VisitEvidence.VisitEvidenceRepRoster>();
+        // WP-VW-W3L (W3-BE-d) — the business unit of a rep (K-L4) and the rep's scope chain (+ the Platform seat, K-L3)
+        services.AddScoped<Features.VisitEvidence.IEvidenceBusinessUnitReader, Features.VisitEvidence.EvidenceBusinessUnitReader>();
+        services.AddScoped<Features.VisitEvidence.IEvidenceScopeChainResolver, Features.VisitEvidence.EvidenceScopeChainResolver>();
         services.AddScoped<Features.VisitEvidence.VisitEvidenceExceptionService>();
         // WP-VW-W4 (W4-BE-c) — doctor insights: the team scope (subtree assignments), the visibility (own / team /
         // read-all, 404 outside), the Concept Graph indication × profile reader, the ONE writer (manual edit + the report's
