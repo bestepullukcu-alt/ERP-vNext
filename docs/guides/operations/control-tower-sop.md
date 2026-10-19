@@ -65,6 +65,10 @@ records in `docs/records/decisions/2026-10/`):
 - **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
   Control Towers that confirmed it.
 
+Revision r4 (2026-10-19, yöneticinin hız notu; sahip onayı): §20.3 eklendi — test planı ilk build'den önce donar,
+test bütçesinden önce tek ortam ön kontrolü, kademeli test ve geniş takımın gereksiz yeniden koşulmaması, üst sınırlı yedek
+kapsam ya da ilk hatada dur. Başka bir kural değişmedi.
+
 ### 0.2 v2.4'te eklenen dispatch-adresleme kontrolleri
 
 v2.3 korunmuş; prompt üretiminin **hedef ajanı adreslememesi** boşluğu kapatılmıştır.
@@ -1307,6 +1311,41 @@ engelleyici-açık: <sayı>
 - **Sınır:** Kapının kayıt denetimi mekaniktir; incelemenin kendisinin yerine geçmez (madde 8).
 - **Prompt kaynaklı yeniden iş (madde 9):** `-R<n>` satırının iş metni `neden: prompt|kod|ortam|kapsam` ile başlar.
   Sayımı CT-OPS-04 yapar.
+
+
+## 20.3 Test planı dondurma ve kademeli test (hız notu, r4)
+
+> Kaynak: yöneticinin hız notu (2026-10-19). Çoğu SOP'de zaten vardı: paralel iş ve tek yazıcı §16.3–§16.5, sözleşme
+> donmadan aşağı akış iş başlamaz §16.4, kapsam değişince dur §19.4, git ön kontrolü §20. Bu bölüm yalnız eksik kalanı
+> ekler. Amaç: aynı onay paketiyle yeniden başlatma döngüsünü azaltmak; onay sınırlarını genişletmez.
+
+**1. Test planı ilk build'den önce donar.** Build ya da test yürüten bir WP'nin prompt'u (§17.1) şunları sayar:
+dokunulacak dosya listesi, koşulacak test projeleri ve filtreleri, ortam kurulumu (Mongo, HTTP host, kuyruk, port),
+her kademenin beklenen sonucu ve durma koşulları. Koşu sırasında kapsam ya da test seçimi eklenmez; ihtiyaç doğarsa
+§19.4 uygulanır.
+
+**2. Test bütçesinden önce tek bir ortam ön kontrolü.** İlk test koşusundan önce bir kez: test bağımlılıkları (paketler,
+`scripts/requirements-tools.txt`), yapılandırma, veri tabanı ve bağlantılar ölçülür. Eksik bağımlılık ya da yanlış
+yapılandırma burada durur; onaylı test bütçesi harcanmadan.
+
+**3. Kademeli test.**
+
+| Kademe | Ne | Ne zaman geçilir |
+|---|---|---|
+| 1 | Etkilenen projelerin build'i | hata yoksa |
+| 2 | Odaklı testler (değişen davranışın testleri) | hepsi geçerse |
+| 3 | Onaylı entegrasyon / geniş koşu | yalnız 1 ve 2 geçtiyse |
+
+Bir değişiklik geniş takımı etkilemiyorsa geniş takım yeniden koşulmaz. Her kademenin çıktısı ve kaynak özetleri
+(`scripts/run_record.py`) partiyle saklanır; bir hata, başarılı kademeler yeniden koşulmadan teşhis edilir.
+
+**4. Onay döngüsünü kapsam genişletmeden azaltmak.** İki seçenekten biri prompt'ta yazılı seçilir:
+(a) olası test fikstürü onarımları önceden sayılır ve **üst sınırı yazılı** küçük bir yedek kapsam olarak onaylanır;
+(b) **ilk hatada dur** kuralı geçerlidir; CT, yakalanan hatadan bir sonraki onarım isteğini hazırlar. Yedek kapsam
+yazılı değilse (b) geçerlidir.
+
+**5. Bağımlılık sırası.** Bağımsız belge işleri paralel hazırlanabilir. Bitmemiş bir sözleşmeye bağlı aşağı akış
+geliştirmesi başlamaz (§16.4).
 
 ---
 

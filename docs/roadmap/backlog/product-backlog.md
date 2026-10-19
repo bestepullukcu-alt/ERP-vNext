@@ -10518,3 +10518,22 @@ Eski kayıtlardan aşama çıkarmak, sözleşmenin yasakladığı kanıtsız aş
 **Ölçüm komutu:**
 
     git grep -l '^format: rep-001-v2' -- docs/records | wc -l
+
+### BL-657
+
+**Yazılı kuralları depo genelinde otomatik teste çevirmek (yetkisiz sayfa, 7 dil, menü anahtarı, kiracı sınırı, gizli bilgi)**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-19 ("backlog'a ekleyelim") · KAYIT: 2026-10-19
+
+**Ne:** MVP-6 denetiminin önerisi: en çok ihlal edilen yazılı kuralları bütün depoyu tarayan mimari testlere çevirmek.
+Adaylar: UAS-001 (yetkisiz kullanıcıya sayfa iskeleti yok), kiracı modülünde 7 dil eşliği, hata anahtarı kapsamı, menü
+anahtarı biçimi (paket metni için `scripts/check_pack_nav_keys.py` var; çalışma kodu için `NavManifestL10nGuardTests`),
+her çağrıda kiracı sınırı, depoda gizli bilgi. Bugün bunlar sayfa sayfa testlerle korunuyor.
+**Neden ertelendi:** büyük iş (kural başına 1–3 gün, toplam 1–2 hafta). Her kural mevcut ihlalleri de ortaya çıkarır;
+bunlar başka ekiplerin modüllerinde olduğu için bilinen-borç listesiyle başlanmalı (`check_pack_nav_keys.py` deseni).
+**Yapım tetikleyicisi:** sahibin önceliklendirmesi; ya da aynı kuralın bir modülde ikinci kez canlıda ihlal edilmesi.
+**Gelecek regresyon riski:** 🟡 — yeni sayfa ya da modül bu kuralları ihlal ederse yalnız inceleme ya da canlı yakalar.
+
+**Ölçüm komutu:**
+
+    git ls-tree -r --name-only HEAD tests/architecture | grep -E 'Tests\.cs$'

@@ -1,6 +1,6 @@
 # CONTROL TOWER — Daily Operating Card v1.8
 
-> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
+> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r4).
 
 ## Bugün hangi komut
 
