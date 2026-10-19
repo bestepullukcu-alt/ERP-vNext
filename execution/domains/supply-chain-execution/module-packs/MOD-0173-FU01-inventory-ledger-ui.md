@@ -778,6 +778,8 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
   - A typed lot text keeps the "kayıtsız" badge.
 - **Tests.** (c) ×3; sabotage s4 → red.
 - **O-LIVE1-2.** More than 200 lots of one SKU → the rest show "unresolved".
+**Owner decision (2026-10-19): FU-0173-UI-USER-01 → A.** INVENTORY 1.5.0 additive optional `TransactionItem.createdBy: { userId, name? }` (the name at the time of the posting: central-audit `ActorDisplayName` of the posting correlation via the shared `IAuditActorNames`; absent → the Web shows the localized "unknown user", never an id) → WP-MVP1-NAMES1. Consumers outside SCE get an additive optional field only.
+
 
 ## 20. Follow-up Items
 
