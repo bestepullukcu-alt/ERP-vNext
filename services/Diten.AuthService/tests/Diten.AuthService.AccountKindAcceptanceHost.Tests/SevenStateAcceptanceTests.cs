@@ -597,6 +597,10 @@ internal sealed class SupervisorTestHarness
 
     public static long GetStartTimeUnixMs(int pid)
     {
+        // WP-CI-SERVICE-TESTS-05 (BL-646 item C): glibc has no sysctl(KERN_PROC); on Linux the start time is the
+        // host's own /proc reading, so a value read here and one read by the host compare the same way.
+        if (OperatingSystem.IsLinux()) return ProcessTiming.GetStartTimeUnixMs(pid);
+
         const int CTL_KERN = 1, KERN_PROC = 14, KERN_PROC_PID = 1;
         int[] mib = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
         nuint size = 0;
