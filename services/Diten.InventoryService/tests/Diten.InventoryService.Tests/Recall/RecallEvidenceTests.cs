@@ -244,7 +244,8 @@ public sealed class RecallDrillEvidenceTests : IClassFixture<RecallDrillApiFacto
         }
 
         var sign = Assert.Single(RecallEvidence.Rows(RecallEvidence.Section(run, "7_signatures")));
-        Assert.Equal((signature, w.S.Qa1.ToString("D"), "APPROVE", "Ok"), (sign[1], sign[2], sign[3], sign[5]));
+        // WP-MVP1-FIX-LIVE2 columns: action, signatureId, signer (name at signing), signerId, meaning (worded), signedAt, status (worded)
+        Assert.Equal((signature, "Signer", w.S.Qa1.ToString("D"), "Approval", "Valid"), (sign[1], sign[2], sign[3], sign[4], sign[6]));
 
         var (es, export, _) = await RecallEvidence.ExportAsync(w.S, token, RecallEvidence.Body("Pdf", runId: runId));
         Assert.True(es == 201, export.ToString());

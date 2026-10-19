@@ -18,7 +18,7 @@ public sealed class RecallAuditNames : IRecallAuditNames
 
     public RecallAuditNames(IMongoDatabase database, ITenantContext tenant)
     {
-        _outbox = database.GetCollection<BsonDocument>(CentralAuditOutboxRecord.CollectionName);
+        _outbox = database.GetCollection<BsonDocument>(RecallCollections.CentralAuditOutbox);
         _tenant = tenant;
     }
 
