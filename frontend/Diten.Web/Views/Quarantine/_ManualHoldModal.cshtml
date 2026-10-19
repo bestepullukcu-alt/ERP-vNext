@@ -1,0 +1,71 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@*
+    WP-MVP1-FU-CLEAN1 (FU-0175-UI-MANUALHOLD-01) — "Stoğu karantinaya al": QUARANTINE-BUNDLE quarantineStock, mode Manual, ONE bucket of the
+    chosen AVAILABLE stock row (quarantine.holds.create). Drawn only for that key (the page includes it under Perms.Has — UAS-001). Lot → its
+    AVAILABLE rows (ledger balance, the "Stoğu bloke et" lookups) → quantity; "Devam" opens the global confirmation whose body is the constant
+    template below (markup → subtextHtml; the chosen line goes in through textContent) and whose reason (≥ 10) is required.
+    The "?" opens the UXH-001 help (Help.QUARANTINEMANUALHOLD.*, 7 languages).
+*@
+<div class="modal fade" id="qr-manual-modal" tabindex="-1" aria-labelledby="qr-manual-title" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2" id="qr-manual-title">
+                    <span>@Localizer["Quarantine.ManualHold.Action"]</span>
+                    <button type="button" class="btn btn-icon btn-sm btn-text-secondary rounded-pill" id="qr-manual-help-toggle" data-bs-toggle="collapse"
+                            data-bs-target="#qr-manual-help" aria-expanded="false" aria-controls="qr-manual-help" aria-label="@Localizer["Quarantine.ManualHold.Help"]"
+                            title="@Localizer["Quarantine.ManualHold.Help"]"><i class="bx bx-help-circle"></i></button>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Quarantine.Common.Close"]"></button>
+            </div>
+            <form id="qr-manual-form" novalidate>
+                <div class="modal-body">
+                    <div class="collapse mb-3" id="qr-manual-help" data-help="QUARANTINEMANUALHOLD">
+                        <div class="border rounded p-3 small">
+                            <p class="mb-1">@Localizer["Help.QUARANTINEMANUALHOLD.Purpose"]</p>
+                            <p class="text-muted mb-2">@Localizer["Help.QUARANTINEMANUALHOLD.Audience"]</p>
+                            <p class="fw-medium mb-0">1 · @Localizer["Help.QUARANTINEMANUALHOLD.Step1Title"]</p>
+                            <p class="mb-2">@Localizer["Help.QUARANTINEMANUALHOLD.Step1"]</p>
+                            <p class="fw-medium mb-0">2 · @Localizer["Help.QUARANTINEMANUALHOLD.Step2Title"]</p>
+                            <p class="mb-0">@Localizer["Help.QUARANTINEMANUALHOLD.Step2"]</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning d-flex gap-2 py-2 small" role="note"><i class="bx bx-error mt-1"></i><span>@Localizer["Quarantine.ManualHold.Warn"]</span></div>
+                    <div class="alert alert-danger d-none" id="qr-manual-error" role="alert"></div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-manual-lot">@Localizer["Quarantine.BlockStock.Lot"] <span class="text-danger">*</span></label>
+                            <select id="qr-manual-lot" class="form-select" data-placeholder="@Localizer["Quarantine.BlockStock.LotSearch"]"><option value=""></option></select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-manual-row">@Localizer["Quarantine.BlockStock.Row"] <span class="text-danger">*</span></label>
+                            <select id="qr-manual-row" class="form-select" disabled><option value=""></option></select>
+                            <div class="form-text d-none" id="qr-manual-norows">@Localizer["Quarantine.BlockStock.NoRows"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="qr-manual-qty">@Localizer["Quarantine.BlockStock.Quantity"] <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" min="0" step="any" id="qr-manual-qty" class="form-control" inputmode="decimal" />
+                                <span class="input-group-text" id="qr-manual-uom"></span>
+                            </div>
+                            <div class="form-text" id="qr-manual-available" dir="auto"></div>
+                            <div class="invalid-feedback d-block" data-err="qty"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Quarantine.Common.Cancel"]</button>
+                    <button type="submit" class="btn btn-warning" id="qr-manual-next"><i class="bx bx-shield-quarter me-1"></i>@Localizer["Quarantine.ManualHold.Next"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@* the confirmation body (constant markup; the line is set through textContent) *@
+<template id="qr-manual-confirm-template">
+    <div class="text-start">
+        <p class="small text-muted mb-1">@Localizer["Quarantine.ManualHold.Warn"]</p>
+        <p class="fw-medium mb-0" data-manual-line></p>
+    </div>
+</template>

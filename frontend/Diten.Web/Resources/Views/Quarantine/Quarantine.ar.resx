@@ -440,4 +440,16 @@
   <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>مغلق</value></data>
   <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>تم الاحتفاظ بعينة</value></data>
   <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>الكل</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>وضع المخزون في الحجر</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>ينتقل المخزون المتاح المختار إلى الحجر وينتظر قرارًا في قائمة الحجر.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>متابعة</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>هل تريد وضع هذا المخزون في الحجر؟</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>تم فتح سجل الحجر: {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>مساعدة</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>يضع مخزونًا متاحًا مختارًا يدويًا في الحجر لاتخاذ قرار جودة (مرتجع، منتج مشتبه به، شكوى).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>ضمان الجودة ومسؤولو المستودعات.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>اختر المخزون</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>ابحث عن التشغيلة، واختر صفها المتاح والكمية؛ لا يمكن أن تتجاوز الكمية مخزون الصف.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>أكّد مع ذكر السبب</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>يطلب التأكيد سببًا لا يقل عن 10 أحرف؛ ثم ينتظر السجل قرارًا في القائمة.</value></data>
 </root>

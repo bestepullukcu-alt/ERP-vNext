@@ -440,4 +440,16 @@
   <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Clôturé</value></data>
   <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Échantillon conservé</value></data>
   <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>Tous</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Mettre du stock en quarantaine</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>Le stock disponible choisi passe en QUARANTAINE et attend une décision dans la file de quarantaine.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Continuer</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>Mettre ce stock en quarantaine ?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Enregistrement de quarantaine ouvert : {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Aide</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Met en quarantaine un stock disponible choisi à la main, pour une décision qualité (retour, produit suspect, réclamation).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Assurance qualité et responsables d’entrepôt.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Choisissez le stock</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Cherchez le lot, choisissez sa ligne disponible et la quantité ; la quantité ne peut dépasser le stock de la ligne.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Confirmez avec un motif</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>La confirmation demande un motif d’au moins 10 caractères ; l’enregistrement attend ensuite une décision dans la file.</value></data>
 </root>

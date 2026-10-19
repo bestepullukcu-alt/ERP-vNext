@@ -138,6 +138,12 @@
     @* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table data-dt-standard="v2" data-dt-data-mode="server"> *@
     <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
 
+    @* WP-MVP1-FU-CLEAN1 (FU-0175-UI-MANUALHOLD-01): the manual hold is drawn only for quarantine.holds.create (UAS-001) *@
+    @if (Perms.Has("quarantine.holds.create"))
+    {
+        <partial name="~/Views/Quarantine/_ManualHoldModal.cshtml" />
+    }
+
     <div class="d-flex flex-wrap align-items-center gap-4 mt-3 small text-muted">
         <span id="qr-footer"></span>
         <span class="d-flex align-items-center gap-1"><span class="d-inline-block rounded" style="width:.75rem;height:.75rem;background:#fff2d6"></span>@Localizer["Quarantine.Queue.Legend.Late"]</span>
@@ -152,5 +158,10 @@
     @if (company.Ready)
     {
         <script src="~/assets/js/Quarantine/queue.js" asp-append-version="true"></script>
+        @if (Perms.Has("quarantine.holds.create"))
+        {
+            <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+            <script src="~/assets/js/Quarantine/manual-hold.js" asp-append-version="true"></script>
+        }
     }
 }
