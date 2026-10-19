@@ -38,3 +38,10 @@ DOĞRULA: `py -3 .antigravity/scripts/verify_module_id.py . --check-all` → 0 h
 Commit: "docs(crm): WP-VW-W6 W6-PACK — MOD-0168 Order Capture (pharmacy pre-order first scope) and MOD-0156 Price Lists & Discount Guardrails (price lists, MF / discount rules, evaluation API, interim FX) module packs, decisions locked; commercial.* namespace recorded in PKS-001 §4" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>.
 TESLİM (Türkçe, kısa, §22): Biten · Açık · Sizden istenen; her paket için bölüm listesi + kilitli D-soruları + varsa AÇIK noktalar; izin anahtarları tablosu; doğrulama çıktıları. K13.
 ```
+
+## §37 CT kabul — W6-PACK (2026-10-20) + kullanıcı kararları
+Ajan commit'i `c7d3251df` → test dalı. İki paket (MOD-0168 878 satır, MOD-0156 816 satır), PKS-001 §4 `commercial.*` satırı, kayıt tablosu paket yolları.
+- **CT kontrolü:** `check-all` 0 hard; `check_pack_nav_keys` 0 yeni; mimari = taban sınıfları. Paket bölümleri MOD-0155-FU02 düzeninde (§0–§22); D1–D16 + K-O1…K-O5 kilitli; §21 denetlenen olay tabloları her yazma komutunu içeriyor.
+- **Kullanıcı kararları (2026-10-20) → paketlerde §20.3:** onaycı okuma ucu (PLT-W6) ✔ · numara CRM içi `ORD` sayacı + RCS-001 §3 `ORD` satırı ✔ (bu commit, kullanıcı onaylı korunan yol) · PDF eki iç uca (PLT-W6) ✔ · ilk sürüm segmentsiz ✔ · **denetim: W6 komutları denetimli yazılır → önkoşul F8-a (AUD-001 K4 ortak iletici, CRM yol `b`)** · tek yürürlükte liste ✔ · öncelik segment+dönem > segment > dönem > genel ✔ · GTIN eşleştirme v1.1 ile ✔ · **EK-1: fiyat listesi elle de eklenebilir.**
+- **Durum:** paketler `draft` — `ready-for-dev` çevirisi kullanıcının ayrı onayıyla (kontrol listesinin son maddesi).
+- **Sıra:** PLT-W6 ∥ F8-a → W6-BE-a → W6-BE-b ∥ W6-BE-c → W6-WEB-a ∥ W6-WEB-b.

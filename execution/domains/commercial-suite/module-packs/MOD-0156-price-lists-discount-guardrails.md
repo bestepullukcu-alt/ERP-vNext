@@ -706,7 +706,7 @@ GET  /api/commercial/pricing-history                     price-lists.read | pric
 - [x] Backend / ön yüz dosya düzeni (§10, §11); doğrulama + hata yolları (§13); yetki (§14); Gateway + kapsama şartı (§15)
 - [x] Kabul ölçütleri (§16) + sabotajlı testler (§17); denetlenen olaylar (§21); yardım kodları, tur yok (§11)
 - [x] D7, D8, D11, D12, D13, D14 + K-O1…K-O5 KİLİTLİ (§19, §20.1)
-- [ ] **§20.2 AÇIK-1…AÇIK-4** cevapları
+- [x] **§20.2 AÇIK-1…AÇIK-5** cevapları — §20.3 (kullanıcı 2026-10-20) + EK-1 elle liste; önkoşul F8-a
 - [ ] **Ayrı karar:** `ready-for-dev` + `runtime_code_allowed: true` + `flip_approved_by` — kullanıcı onayıyla CT
 
 ---
@@ -775,6 +775,16 @@ D1–D6, D9, D10, D15, D16 MOD-0168'e aittir (o paketin §19.b'si).
 - **F-MOBILE** — mobil yalnız MOD-0168 üzerinden sonuç görür (W8 notu MOD-0168 §22).
 
 ---
+
+### 20.3 KARARLAR — kullanıcı 2026-10-20 (§20.2'yi geçersiz kılar)
+| AÇIK | Karar |
+|---|---|
+| AÇIK-1 | **EVET.** Belirli bir tarihte (tüzel kişilik, ülke) başına en çok bir yürürlükte liste; yenisi yürürlüğe girince öncekini bitirir. |
+| AÇIK-2 | **Kullanıcı: "denetim kayıtlarını yapalım."** MOD-0156 yazma komutları denetimli yazılır (Faz 8 borcu yok); önkoşul **F8-a** (MOD-0168 §20.3 AÇIK-6 ile aynı). |
+| AÇIK-3 | **EVET — ilk sürüm segmentsiz** (MOD-0168 AÇIK-5 ile aynı). Kural formunda segment alanı gizli; veri modeli alanı taşıyabilir ama değerlendirme yalnız dönem / genel. |
+| AÇIK-4 | **EVET.** Öncelik: segment + dönem (3) > segment (2) > dönem (1) > genel (0); ilk sürümde fiilen dönem > genel. |
+| AÇIK-5 | **EVET.** Eşleştirme ürün kodu (LS- / FG-) + FinishedGood GTIN toplu okuma ile; eşleşmeyen satır önizlemede kalır, yayımlanmaz; GTIN araması ihtiyacı MDM sahibine (BL-584 W-04) bildirilir. |
+| **EK-1 (yeni kapsam)** | **Fiyat listesi elle de eklenebilir (kullanıcı 2026-10-20).** Excel / CSV içe aktarmaya ek olarak: "Yeni liste" (şirket, ülke, para birimi, tür, geçerlilik) → taslak listede satır ekle / düzenle / sil (SKU seçici product-master `searchStockableItems` / `getSku`; kademeler + KDV; Retired seçilemez) → dört göz yayımlama (D13) aynı akış. İçe aktarılmış taslak da elle düzeltilebilir. Yayımlanmış liste düzenlenmez — yeni sürüm (kopyala → taslak). Yetki: `commercial.price-lists.manage` (taslak yazma), yayımlama onayı ayrı anahtar (§14). Kabul ölçütü + sabotajlı test: elle eklenen satır içe aktarılanla aynı doğrulamadan geçer (Retired, kademe ≥ 0, KDV 0–100, aynı SKU iki kez yok). |
 
 ## 21. Denetlenen olaylar (AUD-001)
 

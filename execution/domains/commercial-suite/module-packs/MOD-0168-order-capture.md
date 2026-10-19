@@ -738,7 +738,7 @@ GET    /api/commercial/pre-order-approval-links/{token}  (oturum açtıktan sonr
 - [x] Denetlenen olaylar tablosu her yazma komutunu bir kez içeriyor (§21)
 - [x] Sayfa yardım kodları yazılı; tur yok (§11)
 - [x] D1–D16 + K-O1…K-O5 KİLİTLİ (§19, §20.1)
-- [ ] **§20.2 AÇIK-2 / AÇIK-3 / AÇIK-4 / AÇIK-6 kararları** (kod öncesi kullanıcı / sahip cevabı)
+- [x] **§20.2 AÇIK-2 / AÇIK-3 / AÇIK-4 / AÇIK-6 kararları** — §20.3 (kullanıcı 2026-10-20); önkoşullar PLT-W6 + F8-a
 - [ ] **Ayrı karar:** `status: ready-for-dev` + `runtime_code_allowed: true` + `flip_approved_by` — kullanıcı onayıyla CT yapar
 
 ---
@@ -826,6 +826,18 @@ GET    /api/commercial/pre-order-approval-links/{token}  (oturum açtıktan sonr
 - **F-W10** — marka gösterimi MDM'den (W10, en sonda).
 
 ---
+
+### 20.3 KARARLAR — kullanıcı 2026-10-20 (§20.2'yi geçersiz kılar)
+| AÇIK | Karar |
+|---|---|
+| AÇIK-1 | Bilgi: Finance / Order-Mgmt SoR sınırı Program T3'e kalır (değişiklik yok). |
+| AÇIK-2 | **EVET.** Platform'a "kullanıcının yöneticileri" okuma ucu: `GET api/platform/organization/seats/{userId}/line-managers` (K-L8 koltuk ucunun eki, aynı yetki kuralı: kendisi ya da `platform.organization-seats.read`); yanıt: kimlik + ad + pozisyon + çözüm biçimi (LineManager / ManagerChain / None), e-posta yok. **PLT-W6** işi, W6-BE-a'dan ÖNCE. Gateway + Platform.Common kiracı yolu listeleri (W3L dersi). |
+| AÇIK-3 | **(b) EVET.** Numara CRM içinde RCS-001 §5.8 desenli sayaçla: kiracı × şirket öneki × `ORD` (en az 6 hane, sıfırlanmaz, taslakta verilir — D15); ortak üretici (RCS-001 §5.12) gelince ona geçer. RCS-001 §3 tablosuna `ORD` satırı kullanıcı onayıyla eklendi (2026-10-20). Şirket öneki MDM tüzel kişilik kısa kodundan; alan yoksa W6-BE-a raporlar ve DUR. |
+| AÇIK-4 | **EVET.** PLT-W6: iç olay ucuna isteğe bağlı `attachments[]` (dosya adı, tür, MOD-0262 belge referansı ya da içerik; Platform'un mevcut `NotificationDispatchAttachment` sınırlarıyla). W6-BE-c'den ÖNCE. |
+| AÇIK-5 | **EVET — ilk sürüm segmentsiz.** Kurallar segment alanı olmadan çalışır; segment desteği (Account alanı + BRD `pharmacy-segment`) sonraki dilim. |
+| AÇIK-6 | **Kullanıcı: "denetim kayıtlarını yapalım."** MOD-0168 yazma komutları Faz 8 borcuna GİRMEZ; denetimli yazılır. Önkoşul **F8-a** (AUD-001 K4 ortak iletici + işaret `Diten.Building.Blocks` içinde, CRM benimsemesi, yol `b`: `POST /api/internal/audit/append`, Platform'da CRM kategori / işlem tanımları, anahtar boşsa sessiz değil — K8). §21'deki `aday` yolları F8-a ile `b` olur; W6-BE komutları işareti taşır. F8-a W6-BE-a'dan ÖNCE kabul edilir. |
+
+Sıra: **PLT-W6 ∥ F8-a → W6-BE-a → W6-BE-b ∥ W6-BE-c → W6-WEB-a ∥ W6-WEB-b.**
 
 ## 21. Denetlenen olaylar (AUD-001)
 
