@@ -4,7 +4,7 @@
 >
 > **Dayanaklar:**
 > - [Yol haritası](../../ROADMAP-visit-workspace.md):
->   - **K-W10** (CT önerisi, onay bekliyor): sipariş = **MOD-0168 Order Capture**; fiyat ve MF / iskonto kuralları = **MOD-0156 Price Lists & Discount Guardrails**. Ön sipariş bizim satış siparişimize dönüşmez; depoya iletilen bir transfer siparişidir, faturayı depo keser.
+>   - **K-W10** (KARAR, kullanıcı 2026-10-19): sipariş = **MOD-0168 Order Capture**; fiyat ve MF / iskonto kuralları = **MOD-0156 Price Lists & Discount Guardrails**. Ön sipariş bizim satış siparişimize dönüşmez; depoya iletilen bir transfer siparişidir, faturayı depo keser.
 >   - **K-W9:** onaycı ve e-posta alıcısı = temsilcinin pozisyonunun "Reports to" pozisyonundaki kişi.
 >   - **K-W13:** depo = CRM kurumu (Account, tür distribütör / ecza deposu).
 > - **Mevcut mockup (çizilmiş — yeniden çizme, yalnız eksikleri ekle):**
@@ -59,7 +59,8 @@
    - **Adetli mod:** liste yoksa yalnız ürün, adet ve MF girilir. Fiyat ve toplam alanları görünmez; "Fiyatı depo uygular" notu çıkar. Kurallar MF ve adet üzerinden çalışır.
    - Mockup A ekranının iki hâlini de çizsin. Örnek: Türkiye (TRY, fiyatlı) ve Kırgızistan RO (KGS, adetli). D ekranındaki fiyat listesinde "Satan şirket", "Ülke" ve "Para birimi" sütunları ile kademeler (depo fiyatı, eczacı alış, halka satış) görünsün.
 10. **Para birimi** (K-W10 g): sipariş tutarı fiyat listesinin para biriminde durur (şirket EUR / USD ile çalışır; Türkiye resmî listesi TRY). Yanında ülkenin para birimiyle karşılığı küçük harfle gösterilir: "≈ 1.245.300 KGS · kur 92,15 · 19.10.2026". Kur siparişe yazılır; sonradan değişmez. Kur yoksa bu satır görünmez. B listesinde toplam sütunu sipariş para biriminde, isteğe bağlı "yerel karşılık" sütunu; E belgesinde ikisi birlikte.
-11. **Görünürlük:**
+11. **Ürün kimliği (tedarik zinciri ile ortak dil):** satırdaki ürün MDM ürün ana verisi sözleşmesindeki SKU'dur (`product-master-bundle` v1.1: `skuId` + çözülen `skuLevel`, pazar ürünü LSKU / satış kutusu; barkod = satış kutusu GTIN'i). `Retired` ürün seçilemez. Seçicide ürün adı, form, kutu adedi ve barkod görünsün.
+12. **Görünürlük:**
    - Temsilci kendi siparişlerini görür.
    - Yönetici ekibinin siparişlerini görür.
    - Satış operasyonu tümünü görür.
