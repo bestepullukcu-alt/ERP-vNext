@@ -7,7 +7,7 @@ service_port: 5068
 shell: tenant
 golden_reference: none
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: supply-chain-execution / control-tower (human owner TBD)
 branch: feature/sce/mod-0189-mrp-replenishment
 started: TBD
@@ -16,11 +16,11 @@ target: TBD
 
 # MOD-0189 — MRP & Replenishment
 
-> DCP-002 kimlik kontrolü Blueprint 8.1 `Blueprint_Data` ve registry'de `MOD-0189 / MRP & Replenishment` için geçti. Bu belge karar taslağıdır: aşağıdaki netting/tüketim kararları kod, izin, rota veya canlı tüketim yetkisi vermez. MVP-4 kapsamı MOD-0188, MOD-0189 ve MOD-0191'dir; MOD-0190/0192 MVP-6'ya aittir.
+> DCP-002 kimlik kontrolü Blueprint 8.1 `Blueprint_Data` ve registry'de `MOD-0189 / MRP & Replenishment` için geçti. `ready-for-dev` yalnız §18'deki izole dilim içindir; canlı tüketim, dışa aktarım, rota ve kullanıcı ucu izni değildir. MVP-4 kapsamı MOD-0188, MOD-0189 ve MOD-0191'dir; MOD-0190/0192 MVP-6'ya aittir.
 
 ## 1. Module Summary
 
-Ali'nin servis kararı `Diten.PlanningService` (5068); ayrı servis açılmaz. MOD-0188 PlanningService main'dedir. Pack `draft` kalır; açık PO ve lead time kaynağı ile diğer ready-for-dev kapıları karara bağlanmadan MOD-0189 kodu başlamaz.
+Ali'nin servis kararı `Diten.PlanningService` (5068); ayrı servis açılmaz. MOD-0188 PlanningService main'dedir. Yalnız §18'deki izole dilim açılmıştır; canlı kaynaklar ve tam modül kabulü açık kalır.
 
 MRP, onaylı talebi stok ve doğrulanmış tedarik girdilerine karşı netleyerek açıklanabilir net ihtiyaç ve ikmal önerisi üretir. Hedef, `MRP Monitor`, istisna kuyruğu ve kanıt paketidir. İlk sürüm SKU × Warehouse × ISO haftası ve lot-for-lot hesabıdır; MOQ/koli yuvarlaması ve sipariş tetikleyicisi açık kalır.
 
@@ -110,7 +110,7 @@ Taslak izin ayrımı: `mrp.runs.read`, `mrp.runs.create`, `mrp.proposals.read`, 
 
 ## 15. Gateway / API Routing Decision
 
-Servis `Diten.PlanningService`, port 5068 olarak kararlaştırıldı; yeni servis açılmaz. `PLAN-MRP-BUNDLE` producer sözleşmesi, kesin endpoint/method matrisi, Gateway rotası ve merkezî kayıt ayrı review/freeze gerektirir. Tüketici FROZEN sözleşmelere ve Demand v2 DRAFT'a karşı Prism taklidiyle yalnız ayrıca onaylanmış izole kapsamda geliştirilebilir; canlı çapraz servis çağrısı bu taslakla açılmaz.
+Servis `Diten.PlanningService`, port 5068 olarak kararlaştırıldı; yeni servis açılmaz. `PLAN-MRP-BUNDLE` producer sözleşmesi, kesin endpoint/method matrisi, Gateway rotası ve merkezî kayıt ayrı review/freeze gerektirir. Tüketici FROZEN sözleşmelere ve Demand v2 DRAFT'a karşı Prism taklidiyle yalnız §18'deki izole kapsamda geliştirilebilir; canlı çapraz servis çağrısı bu pack ile açılmaz.
 
 ## 16. Acceptance Criteria
 
@@ -130,27 +130,29 @@ Bu maddeler önerilen kabul kapsamıdır; Ali/CT incelemesi olmadan tamamlanmı�
 
 ## 17. Test Expectations
 
-Karar sonrası saf netting için sınır/decimal/UoM ve eksik-veri testleri; FROZEN sözleşmelere karşı mock/fixture testleri; idempotency ve yarış için geçici loopback Mongo replica set testleri; tenant/şirket/seri izolasyonu; JWT/HTTP izin hattı; audit ve durum-kaybı sabotajı; yedi dil ve ekran testi gerekir. 27017–27021 test için kullanılmaz. CI başarısı ve canlı üretici kanıtı ayrı tutulur. Bu taslak için yalnız belge ve DCP-002 doğrulaması yapılır.
+Karar sonrası saf netting için sınır/decimal/UoM ve eksik-veri testleri; FROZEN sözleşmelere karşı mock/fixture testleri; idempotency ve yarış için geçici loopback Mongo replica set testleri; tenant/şirket/seri izolasyonu; JWT/HTTP izin hattı; audit ve durum-kaybı sabotajı; yedi dil ve ekran testi gerekir. 27017–27021 test için kullanılmaz. CI başarısı ve canlı üretici kanıtı ayrı tutulur. İzole lead time yazımı için gerçek Mongo'da işlem-içi audit sabotajı gerekir; fixture başarısı canlı üretici kanıtı değildir.
 
 ## 18. Ready-for-dev Checklist
 
 - [x] Ali servis ve portu `Diten.PlanningService` / 5068 olarak seçti; ayrı servis yok.
-- [x] MOD-0188 PlanningService main'e merge edildi; MOD-0189 kod kapısı ayrıca açılmadı.
-- [ ] Kalıcı kayıt yeri ve servis içi sahiplik sınırı onaylandı.
+- [x] MOD-0188 PlanningService main'e merge edildi; yalnız aşağıdaki dar MOD-0189 kod kapısı açıldı.
+- [x] İzole lead time parametresi PlanningService'te MOD-0189 sahipliğinde kalır; başka modülün iç deposuna yazılmaz.
 - [x] Ali, SKU × Warehouse × ISO hafta netting formülü, lot-for-lot, onaylı MOD-0191 policy ve BOM olayının kontrol işareti olmasını kararlaştırdı.
-- [ ] MOD-0141 sürümlü açık PO satırı ve beklenen teslim tarihi sözleşmesi; yokluğunda DEGRADED planın manuel devri onaylı olsa da üretici bağımlılığı açık.
+- [ ] MOD-0141 sürümlü açık PO satırı ve beklenen teslim tarihi sözleşmesi; yokluğunda her izole sonuç DEGRADED, hiçbir aktarım bu dilimde açık değil.
 - [x] Ali, ilk lead time kaynağını MOD-0189'un tarihli/sürümlü SKU × Warehouse planlama parametresi ve bağımsız onayı olarak seçti.
 - [ ] Demand v2 tüketici sınırı (dört durum kontrolü, bağlı run kanıtı, uzlaştırma) onaylandı; DRAFT v2 canlı girdi sayılmadı.
-- [ ] Platform şirket/seri kapsamı ve izinler ile audit yolu kararlaştırıldı.
-- [ ] İzole fixture dilimi ve canlı kabul kapısı ayrıldı; CT/Ali `ready-for-dev` kapsamını açıkça onayladı.
+- [ ] Platform şirket/seri kapsamı ve lead time komut izinleri onaylandı; izin önerisi kodlamadan önce Ali'ye sunulur.
+- [x] Lead time yazma ve yerel audit aynı Mongo işlemindedir; audit arızasında sıfır iş etkisi sabotaj testiyle kanıtlanır. Bu geçici `c` yolu merkezi audit değildir; BL-501 açık borçtur.
+- [x] İzole fixture dilimi ve canlı kabul kapısı ayrıldı; Ali dar `ready-for-dev` kapsamını onayladı.
 - [ ] Owner ve hedef tarih idari olarak belirlendi; `TBD` değerleri onaylı kararla değiştirildi.
 
-Dar ready-for-dev adayı (henüz izin değil): Prism girdili saf ISO-hafta netting, fazla stok devri,
-lot-for-lot, onaylı safety-stock/lead-time sürüm referansları, açık PO yokken DEGRADED işareti ve
-BOM olayından sonra `current`/`explode` doğrulama kuralının fixture testleri. Bunun dışında
-kalıcı MRPRun/parametre yazımı, audit, HTTP/UI, MOD-0141 devri ve canlı Demand/PO/BOM tüketimi
-bu `draft` pack ile açılmaz. Açık PO üretici sözleşmesi ve full-pack onayı gelmeden frontmatter
-`ready-for-dev` yapılmaz; dar dilim için de Ali/CT'nin ayrı açık onayı gerekir.
+Onaylı dar dilim: test verisi / Prism taklidiyle SKU × Warehouse × ISO haftası netting,
+fazla stok devri, lot-for-lot, açık PO olmadan görünür DEGRADED hesap ve öneri;
+ayrıca tarihli/sürümlü SKU × Warehouse lead time parametresinin planlamacı tarafından
+hazırlanması, bağımsız onayı ve işlem-içi audit ile kalıcı yazımı. Lead time komutlarının
+izinleri Ali onayından önce kodlanmaz. Bunun dışında kalıcı MRPRun/öneri yazımı, HTTP/UI,
+canlı Demand v2/PO/Inventory/BOM tüketimi ve MOD-0141'e otomatik ya da gerekçeli manuel
+aktarım kapalıdır. Açık PO üretici sözleşmesi, canlı kaynaklar ve tam modül kabulü ayrı kapıdır.
 
 ## 19. Implementation Notes
 
@@ -165,7 +167,7 @@ Blueprint 8.1 `Blueprint_Data`, MOD-0189'u W-4 Planning Execution, SoR `MRP runs
 | ISO hafta netting | SKU × Warehouse; sürümlü kesit; `max(0, brüt talep + onaylı safety stock − kullanılabilir stok − varsa açık sipariş)`; fazla tahmini stok devreder, ilk sürüm lot-for-lot. | Ürün kuralı onaylı; UoM ve kova içi tarih tahsisi teknik tasarımda açık. |
 | Demand | Yalnız onaylı ve Published v2 revision; v1 fallback yok. | Ali: v2 şimdi dondurulmaz. Prism taklidi izole geliştirme adayı; canlı tüketici kabulü açık. |
 | BOM | v1.2.0 olayları kontrol işareti; `current` / `explode` ile güncel effective sürüm ayrıca doğrulanır. | Tüketici kuralı onaylı; canlı test ve çok seviyeli hesap sınırı açık. |
-| Açık PO | Tüketicide `PO - GRN` yapılmaz; görünüm yokken her plan DEGRADED. Hesap/inceleme/öneri serbest; MOD-0141'e otomatik devir yok, bağımsız onaylayıcı gerekçeli/auditli manuel devir yapabilir. | MOD-0141 üretici sözleşmesi açık; tüm pack için ready-for-dev engeli. |
+| Açık PO | Tüketicide `PO - GRN` yapılmaz; görünüm yokken her plan DEGRADED. Hesap/inceleme/öneri serbest; MOD-0141'e otomatik devir yok. Gerekçeli manuel devir kararı yalnız sonraki dilim içindir. | MOD-0141 üretici sözleşmesi açık; canlı kabul engeli. |
 | Lead time | MOD-0189 SKU × Warehouse başına gün; tarihli/sürümlü; planlamacı girer, bağımsız kişi onaylar. Sourcing teklif alanı yetkili değildir. | Ürün kararı onaylı; kalıcı komut/audit tasarımı ve gelecekteki satın alma kaynağı geçişi açık. |
 | MOQ / koli | İlk sürüm lot-for-lot. | Daha sonraki ürün kararı; ilk sürümü engellemez. |
 
@@ -203,4 +205,4 @@ MOD-0188 v2 merkezî freeze; MOD-0141 açık PO bakiye/tarih üretici sözleşme
 
 ## 21. Audited Events
 
-Yazma komutları henüz taslak niyettir ve bu pack runtime komut açmaz. Olası `RunCreated`, `RunStopped`, `ProposalApproved`, `ProposalHandedOff` için aktör, kapsam, önce/sonra durum, girdi sürümleri, alındı ve korelasyon gerekir. Kesin komut–olay–AUD-001 yolu (a/b/c veya gerekçeli istisna) CT kararı ve ortak iletici takvimiyle ayrıca doldurulmadan hiçbir yazma komutu kodlanmaz; yerel audit koleksiyonu veya uydurma BL-501 arayüzü açılmaz.
+Dar dilimdeki lead time oluşturma, yeni sürüm, incelemeye gönderme, bağımsız onay ve gerekçeli ret komutları; aktör, Tenant/LegalEntity, SKU × Warehouse, geçerlilik, önce/sonra sürüm ve kararı işlem-içi değiştirilemez yerel izde tutar (`c` yolu, geçici). Audit yazılamazsa parametre/karar yazılmaz; her komut için sabotaj kanıtı gerekir. Bu merkezi audit değildir: `BL-501 bekliyor`, geldiğinde yerel iz kaldırılmaz. İzin anahtarları Ali onayına sunulmadan komut API'si açılmaz. `RunCreated`, `RunStopped`, `ProposalApproved`, `ProposalHandedOff` bu dilimde yetkili yazma komutu değildir; bunların audit ve canlı sözleşme kararı ayrıca gerekir. MDM iletici kodu kopyalanmaz, BL-501 arayüzü uydurulmaz.
