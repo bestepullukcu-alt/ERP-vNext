@@ -42,8 +42,13 @@ the security owner restores the S2S identity; at that point the Q358 + BL-652 wi
 ## On apply (Option 1) — owner / authorized hand runs this
 
 ```
-git apply docs/roadmap/plans/mvp6-bl652-coupling-decision-01/patches/option1-adminmodules-widen.patch
+git apply docs/roadmap/plans/mvp6-bl652-coupling-decision-01/patches/option1-adminmodules-widen-v2-after-g7.patch
 ```
+
+> **Re-cut 2026-10-18 (v2).** The G7 grant (`mvp6-0190-0192-g7-role-grants-owner-decision-01`, commit 40eac559c) changed
+> the same `AdminModules` line, so the original `option1-adminmodules-widen.patch` no longer applies. `…-v2-after-g7.patch`
+> carries the identical BL-652 comment and the same four ModuleCodes, appended after the G7 codes; it applies cleanly at
+> HEAD (`git apply --check`). Use v2; the original is kept unchanged as the record of what was ruled.
 
 Then run `Diten.AuthService.Application.Tests` (the `Roles/` suite) in CI to confirm. CT verified by
 inspection that no role test breaks (`AdminModules_are_the_new_manifest_codes_only` is `Contains`-based;
