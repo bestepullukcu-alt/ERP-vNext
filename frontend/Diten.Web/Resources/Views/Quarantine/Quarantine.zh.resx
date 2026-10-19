@@ -452,4 +452,5 @@
   <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>搜索批次，选择其可用行和数量；数量不得超过该行库存。</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>附理由确认</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>确认时须填写至少 10 个字符的理由；记录随后在队列中等待决定。</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>未知用户</value></data>
 </root>

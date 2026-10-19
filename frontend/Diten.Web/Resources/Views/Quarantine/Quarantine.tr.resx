@@ -452,4 +452,5 @@
   <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Lotu arayın, kullanılabilir satırı ve miktarı seçin; miktar satırdaki stoğu aşamaz.</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Gerekçeyle onaylayın</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>Onay penceresinde en az 10 karakterlik gerekçe zorunludur; kayıt ardından kuyrukta karar bekler.</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
 </root>

@@ -187,6 +187,7 @@ public sealed class Quarantine
         "Quarantine.Details.Moves.Title",
         "Quarantine.Details.Moves.Subtitle",
         "Quarantine.Details.Moves.Empty",
+        "Quarantine.Details.Moves.UnknownUser",
         "Quarantine.Details.StartReview",
         "Quarantine.Details.StartReviewText",
         "Quarantine.Details.ReviewNote",

@@ -452,4 +452,5 @@
   <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>ابحث عن التشغيلة، واختر صفها المتاح والكمية؛ لا يمكن أن تتجاوز الكمية مخزون الصف.</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>أكّد مع ذكر السبب</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>يطلب التأكيد سببًا لا يقل عن 10 أحرف؛ ثم ينتظر السجل قرارًا في القائمة.</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
 </root>

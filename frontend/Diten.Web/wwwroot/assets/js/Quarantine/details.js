@@ -66,7 +66,7 @@
             <td class="small">${esc(t('Quarantine.MovementType.' + m.movementType) || m.movementType)}</td>
             <td>${m.fromStockStatus || m.toStockStatus ? `${ui.stockBadge(m.fromStockStatus)} <i class="bx bx-right-arrow-alt text-muted"></i> ${ui.stockBadge(m.toStockStatus)}` : '—'}</td>
             <td class="text-end" dir="ltr">${esc(qty(m.quantity))}</td>
-            <td class="small">${esc(m.byUserName || '')}</td>
+            <td class="small">${esc(m.byUserName || t('Quarantine.Details.Moves.UnknownUser'))}</td>
         </tr>`).join('');
     };
 

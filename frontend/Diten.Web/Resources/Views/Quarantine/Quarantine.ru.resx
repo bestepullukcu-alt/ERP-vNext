@@ -452,4 +452,5 @@
   <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Найдите партию, выберите доступную строку и количество; количество не может превышать запас строки.</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Подтвердите с обоснованием</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>Подтверждение требует обоснования не короче 10 символов; затем запись ожидает решения в очереди.</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
 </root>
