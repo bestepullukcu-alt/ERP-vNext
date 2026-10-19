@@ -414,4 +414,1622 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>استخدام لوحة المفاتيح</value>
   </data>
+  <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
+  <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
+    <value>اطّلع على كمية كل منتج لديك حسب المستودع والموقع والتشغيلة وحالة المخزون. القائمة للقراءة فقط: لا يتغير المخزون إلا من خلال الحركات.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Audience" xml:space="preserve">
+    <value>موظفو المستودعات، مراقبو المخزون، المشتريات ومخططو الإنتاج</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1" xml:space="preserve">
+    <value>إذا طلبت الصفحة ذلك، اختر الشركة من «الشركة». ثم انقر أيقونة التصفية («تصفية»)، واختر «المنتج» أو «SKU (وحدة التخزين)» أو «المستودع» أو «الموقع» أو «رقم التشغيلة» أو «حالة المخزون»، ثم انقر «تطبيق»؛ ويمسح «إعادة تعيين» عوامل التصفية.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2" xml:space="preserve">
+    <value>صفِّ حسب منتج أو SKU، فتعرض البطاقات أعلى القائمة «إجمالي الموجود» و«المتاح» و«قيد فحص الجودة» و«حجر / موقوف» لهذا الاختيار. بدون تصفية حسب المنتج تبقى البطاقات فارغة عن قصد.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2Title" xml:space="preserve">
+    <value>اقرأ الإجماليات</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3" xml:space="preserve">
+    <value>كل سطر هو منتج واحد في مكان وتشغيلة وحالة محددة. «الموجود» هو ما يوجد فعليًا، و«المحجوز» ما حُجز مسبقًا، و«المتاح» ما يمكنك استخدامه بعد.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3Title" xml:space="preserve">
+    <value>اقرأ سطر المخزون</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4" xml:space="preserve">
+    <value>من إجراءات السطر، يفتح «السجل» سجل الحركات مصفّى على هذا المنتج والتشغيلة؛ ويفتح «حركة» حركة جديدة بعد تعيين هذا السطر مصدرًا لها.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4Title" xml:space="preserve">
+    <value>تتبّع السطر أو انقله</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5" xml:space="preserve">
+    <value>لإضافة مخزون (رصيد افتتاحي أو زيادة جرد)، انقر «إدخال مخزون جديد». وتعرض علامة التبويب «سجل الحركات» كل الحركات التي يقوم عليها الرصيد.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5Title" xml:space="preserve">
+    <value>سجّل مخزونًا واردًا</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Purpose" xml:space="preserve">
+    <value>سجّل مخزونًا يصل خارج مسار المستندات: رصيد افتتاحي أو زيادة جرد. لا تُعدَّل قائمة المخزون مباشرة أبدًا؛ هذه الصفحة ترحّل حركة واردة.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Audience" xml:space="preserve">
+    <value>مراقبو المخزون، مشرفو المستودعات</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Immediate" xml:space="preserve">
+    <value>يرحّل «ترحيل الحركة» المخزون فورًا ودون تأكيد. لا يمكن تعديل حركة مرحّلة؛ يُصحَّح الخطأ في سجل الحركات عبر «عكس الحركة» أو «تصحيح».</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1" xml:space="preserve">
+    <value>في «نوع الحركة»، اختر «رصيد افتتاحي» أو «زيادة جرد». يحدد النوع حقول الوجهة التي تظهر أدناه.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1Title" xml:space="preserve">
+    <value>اختر نوع الإدخال</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2" xml:space="preserve">
+    <value>اختر «المنتج» أولًا ثم «وحدة التخزين (SKU)» الخاصة به؛ لا تُعرض إلا وحدات هذا المنتج.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2Title" xml:space="preserve">
+    <value>اختر المنتج وSKU</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3" xml:space="preserve">
+    <value>املأ «المستودع الهدف» و«الموقع الهدف» و«حالة المخزون الهدف»، واختر «التشغيلة» إذا كانت الوحدة تُتتبَّع بالتشغيلات.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3Title" xml:space="preserve">
+    <value>حدّد الوجهة</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4" xml:space="preserve">
+    <value>أدخل «الكمية» و«الوحدة» (والأرقام التسلسلية إذا طلبتها الوحدة)، ثم «رقم المستند» و«تاريخ العملية» و«تاريخ الترحيل».</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4Title" xml:space="preserve">
+    <value>أدخل الكمية والتواريخ</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5" xml:space="preserve">
+    <value>راجع القيم قبل وبعد في «الأثر على المخزون»، ثم انقر «ترحيل الحركة». يعيدك «إلغاء» إلى قائمة المخزون دون ترحيل أي شيء.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5Title" xml:space="preserve">
+    <value>راجع ثم رحّل</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Purpose" xml:space="preserve">
+    <value>كل حركات مخزون الشركة، الأحدث أولًا. لا تُعدَّل الحركات أبدًا: يُلغى الخطأ بحركة عكسية، ويُستبدل عند الحاجة بحركة جديدة.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Audience" xml:space="preserve">
+    <value>مراقبو المخزون، مشرفو المستودعات، المدققون</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1" xml:space="preserve">
+    <value>إذا طلبت الصفحة ذلك، اختر الشركة من «الشركة». انقر أيقونة التصفية («تصفية»)، وحدّد «المنتج» أو «رقم التشغيلة» أو «المستودع» أو «الموقع» أو «من تاريخ» أو «إلى تاريخ»، ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>ضيّق السجل</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2" xml:space="preserve">
+    <value>يعرض كل سطر «رقم الحركة» و«نوع الحركة» والمنتج والكميات ووجهة المخزون و«سجّله»: الشخص الذي رحّل الحركة.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>اقرأ الحركة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3" xml:space="preserve">
+    <value>في الحركة اليدوية، يفتح «عكس الحركة» نافذة تأكيد؛ ويرحّل «اعكس الحركة» حركة معاكسة تلغيها. ويبقى السطر الأصلي في السجل.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>اعكس حركة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4" xml:space="preserve">
+    <value>يفتح «تصحيح» صفحة التصحيح مملوءة بقيم الحركة. وهي ترحّل حركة عكسية ثم الحركة المصححة، فيبقى السجلّان ظاهرين.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>صحّح حركة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5" xml:space="preserve">
+    <value>انقر «حركة جديدة» لتسجيل نقص جرد أو إتلاف أو شطب أو تحويل. وتعرض علامة التبويب «قائمة المخزون» الرصيد الناتج عن هذه الحركات.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>رحّل حركة جديدة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Purpose" xml:space="preserve">
+    <value>رحّل حركة مخزون يدوية: رصيد افتتاحي، أو زيادة أو نقص جرد، أو إتلاف، أو شطب، أو تحويل، أو مرتجع عميل. تُحفظ كل حركة بشكل دائم وتغيّر المخزون لحظة ترحيلها.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Audience" xml:space="preserve">
+    <value>مراقبو المخزون، موظفو المستودعات</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Immediate" xml:space="preserve">
+    <value>يغيّر «ترحيل الحركة» المخزون فورًا ودون تأكيد. لا يمكن تعديل حركة مرحّلة؛ يُصحَّح الخطأ في سجل الحركات عبر «عكس الحركة» أو «تصحيح».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1" xml:space="preserve">
+    <value>ابدأ بـ«نوع الحركة». يحدد النوع هل تحتاج إلى مصدر أم وجهة أم كليهما، ولا يعرض النموذج إلا هذه الحقول.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1Title" xml:space="preserve">
+    <value>اختر نوع الحركة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2" xml:space="preserve">
+    <value>اختر «المنتج» أولًا ثم «وحدة التخزين (SKU)» الخاصة به؛ لا تُعرض إلا وحدات هذا المنتج.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2Title" xml:space="preserve">
+    <value>اختر المنتج وSKU</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3" xml:space="preserve">
+    <value>في الصرف والتحويل، اختر سطر المخزون من «المصدر (التشغيلة / الموقع)». وفي الاستلام والتحويل، املأ «المستودع الهدف» و«الموقع الهدف»، وعند الطلب «حالة المخزون الهدف» و«التشغيلة».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3Title" xml:space="preserve">
+    <value>حدّد المصدر والوجهة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4" xml:space="preserve">
+    <value>أدخل «الكمية» و«الوحدة» (والأرقام التسلسلية إذا طلبتها الوحدة)، ثم «رقم المستند» و«تاريخ العملية» و«تاريخ الترحيل».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4Title" xml:space="preserve">
+    <value>أدخل الكمية والتواريخ</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5" xml:space="preserve">
+    <value>راجع القيم قبل وبعد في «الأثر على المخزون»، ثم انقر «ترحيل الحركة»؛ فيُفتح الإيصال. يعيدك «إلغاء» إلى سجل الحركات دون ترحيل.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5Title" xml:space="preserve">
+    <value>راجع ثم رحّل</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Purpose" xml:space="preserve">
+    <value>صحّح حركة يدوية رُحّلت خطأً. لا تتغير الحركة الأصلية أبدًا: ترحّل هذه الصفحة حركة عكسية تلغيها ثم الحركة المصححة، فيبقى السجلّان في السجل.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Audience" xml:space="preserve">
+    <value>مراقبو المخزون، مشرفو المستودعات</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1" xml:space="preserve">
+    <value>تعرض بطاقة «الحركة قيد التصحيح» «رقم الحركة» و«نوع الحركة» والمنتج والكمية والتشغيلة للحركة الأصلية.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1Title" xml:space="preserve">
+    <value>راجع الحركة الأصلية</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2" xml:space="preserve">
+    <value>يُفتح النموذج بالقيم الأصلية. غيّر ما كان خطأً، مثل «الكمية» أو «الموقع الهدف» أو «التشغيلة»، وراجع التواريخ.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2Title" xml:space="preserve">
+    <value>صحّح القيم</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3" xml:space="preserve">
+    <value>اطّلع على القيم قبل وبعد في «الأثر على المخزون» قبل الترحيل.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3Title" xml:space="preserve">
+    <value>راجع الأثر على المخزون</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4" xml:space="preserve">
+    <value>انقر «تصحيح». تشرح نافذة التأكيد السجلّين؛ ويرحّل «عكس وترحيل» الحركة العكسية والحركة المصححة، ثم يُفتح الإيصال.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4Title" xml:space="preserve">
+    <value>أكّد التصحيح</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5" xml:space="preserve">
+    <value>إذا رُحّلت الحركة العكسية ورُفضت الحركة المصححة، يبقى تحذير على الصفحة. صحّح الحقل الذي يذكره وانقر «ترحيل الحركة المصححة»؛ لا يُرحَّل شيء مرتين.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5Title" xml:space="preserve">
+    <value>أكمل تصحيحًا جزئيًا</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Purpose" xml:space="preserve">
+    <value>إيصال الحركة التي رحّلتها للتو: ما الذي سُجّل، وأين ذهب المخزون، والرصيد الذي نتج عنها. يُعرض مرة واحدة بعد الترحيل مباشرة.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Audience" xml:space="preserve">
+    <value>مراقبو المخزون، موظفو المستودعات</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1" xml:space="preserve">
+    <value>يعرض الشريط الأخضر رقم الحركة المرحّلة. وبعد التصحيح، يذكر شريط ثانٍ الحركة العكسية والحركة المصححة.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1Title" xml:space="preserve">
+    <value>تحقق من النتيجة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2" xml:space="preserve">
+    <value>تكرر البطاقات ما أدخلته: «نوع الحركة» و«المنتج» و«وحدة التخزين (SKU)» و«من» و«إلى» و«التشغيلة» و«الكمية» و«رقم المستند» والتواريخ.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2Title" xml:space="preserve">
+    <value>راجع الحركة</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3" xml:space="preserve">
+    <value>يعرض «سجّله» الشخص الذي رحّل الحركة.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3Title" xml:space="preserve">
+    <value>اعرف من سجّلها</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4" xml:space="preserve">
+    <value>يعرض «الرصيد الحالي» المخزون المتبقي في ذلك الموقع بعد الحركة: الموجود والمتاح والحالة والتشغيلة.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4Title" xml:space="preserve">
+    <value>اقرأ الرصيد الجديد</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5" xml:space="preserve">
+    <value>انقر «سجل الحركات» للعودة إلى قائمة الحركات، أو «قائمة المخزون» بعد إدخال مخزون.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5Title" xml:space="preserve">
+    <value>ارجع</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Purpose" xml:space="preserve">
+    <value>احتفظ بأماكن الشركة الفعلية في شجرة واحدة: منشأة، مستودع، منطقة تخزين، نطاق، رف/خانة. يقرأ المخزون والمشتريات والإنتاج من هذه القائمة.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Audience" xml:space="preserve">
+    <value>مديرو المستودعات، مسؤولو الخدمات اللوجستية</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1" xml:space="preserve">
+    <value>إذا طلبت الصفحة ذلك، اختر الشركة من «الشركة». في «التسلسل الهرمي للمواقع»، افتح منشأة لترى مستودعاتها، ثم مناطق التخزين والنطاقات والرفوف. فعّل «إظهار المؤرشفة» لرؤية الأماكن المؤرشفة أيضًا.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1Title" xml:space="preserve">
+    <value>تصفّح التسلسل الهرمي</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2" xml:space="preserve">
+    <value>انقر موقعًا لترى «البيانات»، وهل يوجد مخزون عليه أو تحته في «المخزون»، و«السجلات الفرعية» و«سجل التغييرات».</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2Title" xml:space="preserve">
+    <value>افتح موقعًا</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3" xml:space="preserve">
+    <value>انقر «منشأة جديدة» للمستوى الأعلى، أو «إضافة سجل فرعي» على الموقع المحدد. املأ «الرمز» و«الاسم» و«النوع» و«يمكن حفظ مخزون» في اللوحة الجانبية وانقر «حفظ»؛ ومفتاح Enter يحفظ أيضًا.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3Title" xml:space="preserve">
+    <value>أضف منشأة أو سجلًا فرعيًا</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4" xml:space="preserve">
+    <value>استخدم «تعديل» لتغيير موقع. وعلى نطاق أو منطقة تخزين، ينشئ «إنشاء رفوف جماعيًا» رفوفًا كثيرة دفعة واحدة: حدّد النطاقات، وانقر «معاينة»، ثم أكّد بزر الإنشاء.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4Title" xml:space="preserve">
+    <value>عدّل أو أنشئ رفوفًا</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5" xml:space="preserve">
+    <value>يطلب كل من «تنشيط» و«إلغاء التنشيط» و«أرشفة» تأكيدًا أولًا؛ ولا يمكن التراجع عن الأرشفة. ويفتح «عرض في قائمة المخزون» المخزون الموجود في ذلك الموقع.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5Title" xml:space="preserve">
+    <value>غيّر الحالة أو اعرض المخزون</value>
+  </data>
+  <data name="Help.LOCATIONS.Purpose" xml:space="preserve">
+    <value>المواقع نفسها الموجودة في التسلسل الهرمي، في قائمة مسطحة يمكنك البحث فيها وتصفيتها وفرزها. استخدمها للعثور على مكان بسرعة أو للعمل على مواقع كثيرة من النوع نفسه.</value>
+  </data>
+  <data name="Help.LOCATIONS.Audience" xml:space="preserve">
+    <value>مديرو المستودعات، مسؤولو الخدمات اللوجستية</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1" xml:space="preserve">
+    <value>إذا طلبت الصفحة ذلك، اختر الشركة من «الشركة». اكتب في مربع البحث، أو انقر أيقونة التصفية («تصفية») واختر «النوع» أو «الحالة» أو «يمكن حفظ مخزون» أو «السجل الأعلى»، ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1Title" xml:space="preserve">
+    <value>ابحث عن المواقع</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2" xml:space="preserve">
+    <value>يعرض كل سطر «الرمز» و«الاسم» و«النوع» و«مسار السجل الأعلى» و«الحالة»، وهل يمكنه حفظ مخزون. انقر «التسلسل الهرمي» لرؤية الأماكن نفسها كشجرة.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2Title" xml:space="preserve">
+    <value>اقرأ القائمة</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3" xml:space="preserve">
+    <value>انقر «موقع جديد»، واملأ «الرمز» و«الاسم» و«النوع» و«السجل الأعلى» و«يمكن حفظ مخزون» في اللوحة الجانبية، ثم انقر «حفظ»؛ ومفتاح Enter يحفظ أيضًا.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3Title" xml:space="preserve">
+    <value>أضف موقعًا</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4" xml:space="preserve">
+    <value>من إجراءات السطر، يفتح «تعديل» اللوحة الجانبية نفسها؛ وينشئ «إضافة سجل فرعي» موقعًا تحت هذا الموقع. لا يمكن تغيير موقع مؤرشف.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4Title" xml:space="preserve">
+    <value>عدّل أو أضف تحته</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5" xml:space="preserve">
+    <value>يطلب كل من «تنشيط» و«إلغاء التنشيط» و«أرشفة» تأكيدًا أولًا؛ ولا يمكن التراجع عن الأرشفة. يفتح «السجل» سجل التغييرات في التسلسل الهرمي، ويعرض «عرض في قائمة المخزون» المخزون الموجود هناك.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5Title" xml:space="preserve">
+    <value>الحالة والسجل والمخزون</value>
+  </data>
+  <data name="Help.LOTS.Purpose" xml:space="preserve">
+    <value>اطّلع على جميع تشغيلات منتجات الشركة في قائمة واحدة: تواريخها وحالتها والكمية المتوفرة منها. من هنا تفتح تشغيلة أو تغيّر حالتها أو تبدأ تشغيلة جديدة.</value>
+  </data>
+  <data name="Help.LOTS.Audience" xml:space="preserve">
+    <value>فرق المستودع والجودة والتخطيط</value>
+  </data>
+  <data name="Help.LOTS.Step1" xml:space="preserve">
+    <value>اكتب رقم تشغيلة أو تشغيلة الشركة المصنّعة / المورّد في مربع البحث، أو انقر على أيقونة التصفية واختر «المنتج» أو «الحالة» أو «انتهاء الصلاحية قبل» أو «التشغيلات التي عليها تحذير فقط» ثم انقر على «تطبيق». يفرّغ «مسح» عوامل التصفية.</value>
+  </data>
+  <data name="Help.LOTS.Step1Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.LOTS.Step2" xml:space="preserve">
+    <value>يعرض عمود «الحالة» مسودة أو مُفرج عنه أو محظور أو منتهي الصلاحية؛ ويُنبّه «انتهاء الصلاحية» عندما يقترب التاريخ أو يمضي، و«الكمية المتوفرة» هي مخزون التشغيلة في الشركة المختارة.</value>
+  </data>
+  <data name="Help.LOTS.Step2Title" xml:space="preserve">
+    <value>اقرأ الحالة والصلاحية</value>
+  </data>
+  <data name="Help.LOTS.Step3" xml:space="preserve">
+    <value>انقر على صف أو على «تفاصيل التشغيلة» لرؤية التشغيلة كاملة. تحتوي قائمة الصف أيضًا على «تعديل» و«سجل الحركات» و«التتبع».</value>
+  </data>
+  <data name="Help.LOTS.Step3Title" xml:space="preserve">
+    <value>افتح تشغيلة</value>
+  </data>
+  <data name="Help.LOTS.Step4" xml:space="preserve">
+    <value>اختر «تغيير الحالة» من قائمة الصف، وحدّد الحالة الجديدة، واكتب سببًا لا يقل عن 10 أحرف. الحظر يجعل كل مخزون التشغيلة غير قابل للاستخدام، لذا عليك أولًا تحديد «أدرك الأثر.». حالة منتهي الصلاحية يضعها النظام فقط.</value>
+  </data>
+  <data name="Help.LOTS.Step4Title" xml:space="preserve">
+    <value>غيّر الحالة</value>
+  </data>
+  <data name="Help.LOTS.Step5" xml:space="preserve">
+    <value>انقر على «تشغيلة جديدة» لتسجيل تشغيلة يدويًا؛ تُحفظ كمسودة.</value>
+  </data>
+  <data name="Help.LOTS.Step5Title" xml:space="preserve">
+    <value>أضف تشغيلة</value>
+  </data>
+  <data name="Help.LOTDETAILS.Purpose" xml:space="preserve">
+    <value>كل ما يخص تشغيلة واحدة في صفحة واحدة: حالتها وتحذيراتها، والكمية المتوفرة، ومكان المخزون، وأرقامها التسلسلية، ومن غيّر ماذا ولماذا.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Audience" xml:space="preserve">
+    <value>فرق المستودع والجودة والتخطيط</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1" xml:space="preserve">
+    <value>تظهر شارة الحالة والتحذيرات بجانب رقم التشغيلة. يعرض «الكمية المتوفرة» الكمية، و«معلومات التشغيلة» تواريخ التشغيلة ومنشأها ومصدرها.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1Title" xml:space="preserve">
+    <value>تحقّق من التشغيلة</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2" xml:space="preserve">
+    <value>يسرد «توزيع المخزون» كل «المستودع» و«الموقع» و«حالة المخزون» و«الكمية» لهذه التشغيلة في الشركة المختارة.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2Title" xml:space="preserve">
+    <value>اعرف مكان المخزون</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3" xml:space="preserve">
+    <value>يعرض «سجل التغييرات» من غيّر أي حقل، القديم ← الجديد، والسبب. استخدم ‹ و› للتنقل بين الصفحات؛ لا يمكن حذف السجلات.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3Title" xml:space="preserve">
+    <value>اقرأ السجل</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4" xml:space="preserve">
+    <value>انقر على «تعديل» لتصحيح حقول التشغيلة، أو على «تغيير الحالة» للإفراج عنها أو حظرها مع سبب لا يقل عن 10 أحرف.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4Title" xml:space="preserve">
+    <value>عدّل أو غيّر الحالة</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5" xml:space="preserve">
+    <value>افتح «سجل الحركات» أو «التتبع» أو «فتح في دفتر المخزون» في الأعلى؛ وفي التشغيلة المتتبعة بالأرقام التسلسلية يفتح «جميع الأرقام التسلسلية» في بطاقة «الأرقام التسلسلية» مستكشف الأرقام التسلسلية.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5Title" xml:space="preserve">
+    <value>تابع</value>
+  </data>
+  <data name="Help.LOTCREATE.Purpose" xml:space="preserve">
+    <value>سجّل يدويًا تشغيلة لمنتج يُتتبَّع بالتشغيلات، مع تواريخها ومنشئها. تُحفظ التشغيلة الجديدة كمسودة.</value>
+  </data>
+  <data name="Help.LOTCREATE.Audience" xml:space="preserve">
+    <value>فرق المستودع والجودة</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1" xml:space="preserve">
+    <value>اختر «المنتج» ثم «وحدة التخزين (SKU)» التي تنتمي إليها التشغيلة. لا يمكن إنشاء تشغيلة إلا للمنتجات المتتبعة بالتشغيلات.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1Title" xml:space="preserve">
+    <value>اختر المنتج</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2" xml:space="preserve">
+    <value>اكتب «رقم التشغيلة»: من 1 إلى 40 حرفًا، A–Z و0–9 و. / -. لا يمكن تغييره بعد الحفظ، ويجب أن يكون فريدًا للمنتج.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2Title" xml:space="preserve">
+    <value>أدخل رقم التشغيلة</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3" xml:space="preserve">
+    <value>أدخل «تاريخ التصنيع» و«تاريخ انتهاء الصلاحية» و، عند الحاجة، «تاريخ إعادة الاختبار»: التصنيع اليوم أو قبله، والانتهاء بعد التصنيع، وإعادة الاختبار بينهما.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3Title" xml:space="preserve">
+    <value>املأ التواريخ</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4" xml:space="preserve">
+    <value>املأ اختياريًا «تشغيلة المصنّع» و«تشغيلة المورّد» و«بلد المنشأ» و«مرجع شهادة التحليل (CoA)».</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4Title" xml:space="preserve">
+    <value>أضف المنشأ</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5" xml:space="preserve">
+    <value>راجع بطاقة «الملخص» وانقر على «حفظ». يعيدك «إلغاء» إلى مستكشف التشغيلات دون حفظ.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5Title" xml:space="preserve">
+    <value>احفظ</value>
+  </data>
+  <data name="Help.LOTEDIT.Purpose" xml:space="preserve">
+    <value>صحّح بيانات تشغيلة موجودة: التواريخ والمنشأ والمراجع. يُحفظ كل تغيير في سجل تغييرات التشغيلة.</value>
+  </data>
+  <data name="Help.LOTEDIT.Audience" xml:space="preserve">
+    <value>فرق المستودع والجودة</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1" xml:space="preserve">
+    <value>لا يمكن تغيير «المنتج» و«وحدة التخزين (SKU)» و«رقم التشغيلة» بعد حفظ التشغيلة؛ وتظهر للقراءة فقط.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1Title" xml:space="preserve">
+    <value>اعرف الحقول الثابتة</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2" xml:space="preserve">
+    <value>إذا لم تكن التشغيلة مسودة، تبقى الحقول مقفلة حتى تكتب 10 أحرف على الأقل في «سبب التغيير». يُحفظ السبب في سجل التغييرات.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2Title" xml:space="preserve">
+    <value>اكتب سببًا</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3" xml:space="preserve">
+    <value>صحّح «تاريخ التصنيع» أو «تاريخ انتهاء الصلاحية» أو «تاريخ إعادة الاختبار» أو «تشغيلة المصنّع» أو «تشغيلة المورّد» أو «بلد المنشأ» أو «مرجع شهادة التحليل (CoA)».</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3Title" xml:space="preserve">
+    <value>غيّر الحقول</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4" xml:space="preserve">
+    <value>يسرد «التغييرات المطلوب حفظها» كل حقل غيّرته، القديم ← الجديد، قبل الحفظ.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4Title" xml:space="preserve">
+    <value>راجع التغييرات</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5" xml:space="preserve">
+    <value>انقر على «حفظ». يعيدك «إلغاء» إلى تفاصيل التشغيلة دون حفظ.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5Title" xml:space="preserve">
+    <value>احفظ</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Purpose" xml:space="preserve">
+    <value>اطّلع على جميع حركات دفتر المخزون لتشغيلة واحدة: ما دخل وما خرج وإلى أين ذهب وبأي حالة مخزون.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Audience" xml:space="preserve">
+    <value>فرق المستودع والجودة والتخطيط</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1" xml:space="preserve">
+    <value>ابحث عن التشغيلة واخترها في محدّد «التشغيلة» فوق الجدول. إذا أتيت من تشغيلة فهي مختارة مسبقًا.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>اختر التشغيلة</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2" xml:space="preserve">
+    <value>انقر على أيقونة التصفية، وأدخل «من تاريخ» و«إلى تاريخ»، ثم انقر على «تطبيق». يزيل «إعادة تعيين» التواريخ.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>حدّد التواريخ</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3" xml:space="preserve">
+    <value>يعرض كل صف «رقم الحركة» و«نوع الحركة» و«الكمية» (+ بالأخضر للوارد، − بالأحمر للصادر) و«إلى» و«الحالة» و«المصدر» و«تاريخ الحركة».</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>اقرأ الحركات</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4" xml:space="preserve">
+    <value>انقر على صف أو على «إيصال الحركة» لرؤية الحركة كما سجّلها الدفتر؛ ينقلك «فتح في دفتر المخزون» إلى الدفتر.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>افتح الإيصال</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5" xml:space="preserve">
+    <value>عندما تأتي من مستكشف الأرقام التسلسلية، تُظهر شارة «الرقم التسلسلي …» الرقم، وتُبرَز آخر حركة له في القائمة.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>تتبّع رقمًا تسلسليًا</value>
+  </data>
+  <data name="Help.SERIALS.Purpose" xml:space="preserve">
+    <value>اعثر على أي رقم تسلسلي: أين هو الآن، وإلى أي تشغيلة ينتمي، وهل يمكن استخدامه. هذه الصفحة للقراءة فقط.</value>
+  </data>
+  <data name="Help.SERIALS.Audience" xml:space="preserve">
+    <value>فرق المستودع والجودة والخدمة</value>
+  </data>
+  <data name="Help.SERIALS.Step1" xml:space="preserve">
+    <value>اكتب الرقم التسلسلي في مربع البحث فوق القائمة.</value>
+  </data>
+  <data name="Help.SERIALS.Step1Title" xml:space="preserve">
+    <value>اعثر على رقم</value>
+  </data>
+  <data name="Help.SERIALS.Step2" xml:space="preserve">
+    <value>انقر على أيقونة التصفية، واختر «المنتج» ثم «التشغيلة» و«الحالة» (نشط، محظور، مستهلك)، وانقر على «تطبيق». يمسح «إعادة تعيين» عوامل التصفية.</value>
+  </data>
+  <data name="Help.SERIALS.Step2Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.SERIALS.Step3" xml:space="preserve">
+    <value>يُظهر «المستودع / الموقع» مكان الرقم، و«آخر حركة» متى تحرّك آخر مرة، و«الحالة» هل يمكن استخدامه؛ ويظهر الرقم محظورًا عندما تكون تشغيلته محظورة.</value>
+  </data>
+  <data name="Help.SERIALS.Step3Title" xml:space="preserve">
+    <value>اعرف مكانه</value>
+  </data>
+  <data name="Help.SERIALS.Step4" xml:space="preserve">
+    <value>اختر «تفاصيل التشغيلة» من قائمة الصف لفتح التشغيلة التي ينتمي إليها الرقم.</value>
+  </data>
+  <data name="Help.SERIALS.Step4Title" xml:space="preserve">
+    <value>افتح تشغيلته</value>
+  </data>
+  <data name="Help.SERIALS.Step5" xml:space="preserve">
+    <value>اختر «سجل الحركات» من قائمة الصف: تُفتح حركات التشغيلة مع إبراز آخر حركة لهذا الرقم.</value>
+  </data>
+  <data name="Help.SERIALS.Step5Title" xml:space="preserve">
+    <value>اعرض حركاته</value>
+  </data>
+  <data name="Help.LOTTRACE.Purpose" xml:space="preserve">
+    <value>تتبّع التشغيلة إلى الخلف حتى مصدرها وإلى الأمام حتى وجهتها، مستويين في كل اتجاه، واعرف حجم الكمية المتأثرة.</value>
+  </data>
+  <data name="Help.LOTTRACE.Audience" xml:space="preserve">
+    <value>فرق الجودة والاستدعاء والمستودع</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1" xml:space="preserve">
+    <value>ابحث عن التشغيلة واخترها في محدّد «التشغيلة». إذا أتيت من تشغيلة فهي مختارة مسبقًا.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1Title" xml:space="preserve">
+    <value>اختر التشغيلة</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2" xml:space="preserve">
+    <value>يجمع «إجمالي الكمية المتأثرة» المتوفر والمشحون لكل وحدة قياس (لا تُجمع الوحدات المختلفة أبدًا)؛ وتعرض البطاقات «في المخزن» و«المشحون» و«التشغيلات المتأثرة».</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2Title" xml:space="preserve">
+    <value>اعرف الكمية المتأثرة</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3" xml:space="preserve">
+    <value>تقع «التشغيلة المختارة» في المركز، وعلى جانب «خلفي · المستوى 1» و«خلفي · المستوى 2» وعلى الجانب الآخر «أمامي · المستوى 1» و«أمامي · المستوى 2». حاليًا يعرض التتبع الخلفي مصدر استلام التشغيلة، ويعرض الأمامي أرقام مستندات الصرف فقط.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3Title" xml:space="preserve">
+    <value>اقرأ التدفق</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4" xml:space="preserve">
+    <value>انقر على بطاقة تشغيلة لوضعها في المركز والتتبع منها؛ يفتح «تفاصيل التشغيلة» في التشغيلة المختارة صفحتها الكاملة.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4Title" xml:space="preserve">
+    <value>تنقّل في السلسلة</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5" xml:space="preserve">
+    <value>إذا كانت لديك صلاحية الاستدعاء، يفتح «تتبّع كامل (استدعاء)» تتبع الاستدعاء لهذه التشغيلة.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5Title" xml:space="preserve">
+    <value>ابدأ تتبعًا كاملًا</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Purpose" xml:space="preserve">
+    <value>اربط نصوص التشغيلات التي كُتبت يدويًا في حركات قديمة بدفتر المخزون، قبل تسجيل التشغيلات، بتشغيلات مسجّلة. لا يغيّر الترحيل الحركات السابقة؛ بل يضيف الربط بالتشغيلة فقط.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Audience" xml:space="preserve">
+    <value>مديرو المخزون والجودة</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1" xml:space="preserve">
+    <value>تعرض البطاقات «إجمالي الصفوف» و«مطابَقة» و«معلّقة». استخدم علامات التبويب «الكل» و«معلّقة» و«مطابَقة» لعرض الصفوف التي تحتاجها فقط؛ كل صف هو منتج + «تشغيلة مُدخلة يدويًا».</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1Title" xml:space="preserve">
+    <value>اعرف ما تبقّى</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2" xml:space="preserve">
+    <value>حين يعرض «المطابقة المقترحة» تشغيلة، اختر «تطبيق الاقتراح» من قائمة الصف، أو انقر على «تطبيق جميع الاقتراحات» لأخذها كلها دفعة واحدة.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2Title" xml:space="preserve">
+    <value>خذ الاقتراحات</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3" xml:space="preserve">
+    <value>اختر «ربط بتشغيلة موجودة» لاختيار تشغيلة مسجّلة من وحدة التخزين نفسها، أو «خطأ كتابي — ربط بتشغيلة أخرى» لضم الصف إلى تشغيلة مكتوبة أخرى، ثم انقر على «ربط».</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3Title" xml:space="preserve">
+    <value>اربط يدويًا</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4" xml:space="preserve">
+    <value>اختر «إنشاء كتشغيلة جديدة»، وراجع رقم التشغيلة والتواريخ، وانقر على «استخدام كقرار». لا تُنشأ التشغيلة كمسودة إلا عند تأكيد الترحيل.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4Title" xml:space="preserve">
+    <value>أنشئ تشغيلة</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5" xml:space="preserve">
+    <value>تبقى القرارات في هذه الصفحة حتى التأكيد؛ ويعيد «تغيير» فتح صف. عندما لا يبقى صف معلّق، انقر على «تأكيد الترحيل» واكتب سببًا لا يقل عن 10 أحرف. لا يمكن التراجع عن ذلك: بعده لن يمكن إدخال التشغيلة يدويًا في دفتر المخزون.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5Title" xml:space="preserve">
+    <value>أكّد الترحيل</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Purpose" xml:space="preserve">
+    <value>تابع كل سطر مخزون في الحجر ينتظر قرار الجودة: اطّلع على المتأخر، وضع المخزون في الحجر يدويًا، وافتح كل سجل لاتخاذ القرار.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومسؤولو المستودعات</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1" xml:space="preserve">
+    <value>اختر «الشركة». تعرض البطاقات الأسطر التي تنتظر قرارًا، والكمية الإجمالية لكل وحدة، والسجلات التي تجاوزت هدف الانتظار؛ وتظهر الأسطر المتأخرة مميزة في القائمة.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1Title" xml:space="preserve">
+    <value>اختر الشركة</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2" xml:space="preserve">
+    <value>اكتب في مربع البحث أو انقر زر التصفية («تصفية»)، واختر مستودعًا أو حالة مخزون أو مصدرًا أو «المتأخرة فقط»، ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3" xml:space="preserve">
+    <value>انقر «وضع المخزون في الحجر»، واختر التشغيلة وسطرها المتاح والكمية، ثم انقر «متابعة» وأكّد بمبرر لا يقل عن 10 أحرف. ينتظر السجل بعدها في هذه القائمة.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3Title" xml:space="preserve">
+    <value>ضع المخزون في الحجر يدويًا</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4" xml:space="preserve">
+    <value>انقر سطرًا أو «التفاصيل» لعرض معلومات الجودة وسجل القرارات وحركات المخزون.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4Title" xml:space="preserve">
+    <value>افتح سجلًا</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
+    <value>انقر «اتخاذ القرار» على سجل مفتوح للإفراج عن المخزون أو رفضه أو حظره. لا يتحرك المخزون إلا بعد الموافقة على القرار.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
+    <value>اتخذ القرار</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Purpose" xml:space="preserve">
+    <value>اطّلع على كل ما يخص سجل حجر واحدًا — التشغيلة والكمية ومعلومات الجودة وسجل القرارات وحركات المخزون — وانقله نحو القرار.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومسؤولو المستودعات</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Immediate" xml:space="preserve">
+    <value>حفظ ملاحظة التحليل</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
+    <value>راجع البيانات في الأعلى وبطاقة «معلومات الجودة» وحركات المخزون التي أنشأها السجل؛ يظهر شريط أصفر عند تجاوز هدف الانتظار.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
+    <value>اقرأ السجل</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2" xml:space="preserve">
+    <value>انقر «بدء المراجعة» لنقل السجل إلى قيد المراجعة. لا يتحرك أي مخزون.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2Title" xml:space="preserve">
+    <value>ابدأ المراجعة</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3" xml:space="preserve">
+    <value>انقر «تعديل الملاحظة» واكتب نتيجة التحليل ثم انقر «حفظ». تُقفل الملاحظة ما دام قرار ينتظر الموافقة.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3Title" xml:space="preserve">
+    <value>اكتب ملاحظة التحليل</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4" xml:space="preserve">
+    <value>انقر «اتخاذ القرار» لفتح صفحة القرار والإفراج عن المخزون أو رفضه أو حظره.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4Title" xml:space="preserve">
+    <value>اتخذ القرار</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5" xml:space="preserve">
+    <value>في مربع سير العمل استخدم «تحديث الحالة»، و«وقّع وأرسل» للمسودة، و«سحب القرار»، أو «إعادة التطبيق» إذا تعذّر تطبيق القرار. تظهر التواقيع في «سجل القرارات».</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5Title" xml:space="preserve">
+    <value>تابع الموافقة</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Purpose" xml:space="preserve">
+    <value>اتخذ قرار الجودة لسجل الحجر — إفراج أو رفض أو حظر — ووقّعه وأرسله للموافقة. لا يتحرك شيء قبل الموافقة.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Audience" xml:space="preserve">
+    <value>متخذو قرارات ضمان الجودة</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1" xml:space="preserve">
+    <value>اختر «إفراج» أو «رفض» أو «حظر». لتقسيم الكمية فعّل «قرار جزئي» وأدخل سطرين بقرارين مختلفين مجموعهما يساوي كمية السجل.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1Title" xml:space="preserve">
+    <value>اختر القرار</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2" xml:space="preserve">
+    <value>للرفض أو الحظر اختر «سبب الحظر». للإفراج ضع علامة على «تم التحقق من شهادة التحليل / نتيجة التحليل»؛ والتشغيلة التي تجاوزت تاريخ إعادة الاختبار تحتاج أيضًا «تاريخ إعادة الاختبار الجديد».</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2Title" xml:space="preserve">
+    <value>أكمل التفاصيل</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3" xml:space="preserve">
+    <value>اكتب «المبرر» بما لا يقل عن 10 أحرف. توضح الملاحظة في الأعلى هل تفرض قاعدة الأعين الأربع موافقة مستخدم جودة آخر.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3Title" xml:space="preserve">
+    <value>اكتب المبرر</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4" xml:space="preserve">
+    <value>انقر «التالي: التوقيع الإلكتروني». تُنشأ مسودة (لا يتحرك المخزون) وتظهر في «القرار المراد توقيعه»؛ استخدم «رجوع» لتغييرها.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4Title" xml:space="preserve">
+    <value>انتقل إلى التوقيع</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5" xml:space="preserve">
+    <value>انقر «وقّع وأرسل» ووقّع في نافذة التوقيع الإلكتروني (أو «إرسال للموافقة» إذا لم تطلب السياسة توقيعًا). يتحرك المخزون بعد موافقة المعتمِد.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5Title" xml:space="preserve">
+    <value>وقّع وأرسل</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Purpose" xml:space="preserve">
+    <value>وقّع وأرسل قرارًا في حالة مسودة لم يُنشأ من نموذج هنا — مثل طلب الإفراج عن تشغيلة أو قرار تعذّر إرساله. يتحرك المخزون بعد الموافقة.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Audience" xml:space="preserve">
+    <value>متخذو قرارات ضمان الجودة</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1" xml:space="preserve">
+    <value>اقرأ «القرار المراد توقيعه»: الأسطر وحالتها المستهدفة وحركة المخزون المخططة والمبرر كما أنشأها الخادم.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1Title" xml:space="preserve">
+    <value>راجع القرار</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2" xml:space="preserve">
+    <value>انقر «وقّع وأرسل» ووقّع في نافذة التوقيع الإلكتروني (أو «إرسال للموافقة» إذا لم تطلب السياسة توقيعًا). ينتظر القرار بعدها الموافقة.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2Title" xml:space="preserve">
+    <value>وقّع وأرسل</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3" xml:space="preserve">
+    <value>انقر «إلغاء» للعودة إلى القائمة؛ لا يُرسل أي شيء.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3Title" xml:space="preserve">
+    <value>اخرج دون إرسال</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Purpose" xml:space="preserve">
+    <value>أدِر المخزون المحظور: احظر مخزونًا فورًا عند الحاجة، وأكمل المراجعة، وقرّر مصيره — تصرّف أو رفع الحظر.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومسؤولو المستودعات</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Immediate" xml:space="preserve">
+    <value>«حظر المخزون» ← «حظر»: يصبح المخزون المختار محظورًا فورًا دون سير عمل موافقة</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
+    <value>اكتب في مربع البحث أو انقر زر التصفية («تصفية»)، واختر سبب حظر أو «بانتظار التصرف فقط» أو «الحالة»، ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2" xml:space="preserve">
+    <value>انقر «حظر المخزون»، واختر التشغيلة وسطرها المتاح والكمية و«سبب الحظر»، واكتب مبررًا لا يقل عن 10 أحرف ثم انقر «حظر».</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2Title" xml:space="preserve">
+    <value>احظر المخزون</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3" xml:space="preserve">
+    <value>عند انتهاء التحقيق انقر «إكمال المراجعة» في السطر واكتب مبررًا. بذلك يُتاح رفع الحظر.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3Title" xml:space="preserve">
+    <value>أكمل المراجعة</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4" xml:space="preserve">
+    <value>انقر «قرار التصرف» لإتلاف المخزون أو إرجاعه إلى المورد أو إعادة معالجته أو الاحتفاظ به كعينة.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4Title" xml:space="preserve">
+    <value>قرّر التصرف</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5" xml:space="preserve">
+    <value>انقر «رفع الحظر» على سجل اكتملت مراجعته واكتب مبررًا. يُوقَّع القرار ويُرسل للموافقة؛ ولا يصبح المخزون متاحًا إلا بعد الموافقة.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5Title" xml:space="preserve">
+    <value>ارفع الحظر</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Purpose" xml:space="preserve">
+    <value>قرّر مصير سجل مخزون محظور — إتلاف أو إرجاع إلى المورد أو إعادة معالجة أو الاحتفاظ كعينة — وأرسل القرار للتوقيع والموافقة.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Audience" xml:space="preserve">
+    <value>متخذو قرارات ضمان الجودة</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1" xml:space="preserve">
+    <value>اختر «إتلاف» أو «إرجاع إلى المورد» أو «إعادة المعالجة» أو «الاحتفاظ كعينة / مرجع»؛ تعرض كل بطاقة حركة المخزون التي تنشئها.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1Title" xml:space="preserve">
+    <value>اختر التصرف</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2" xml:space="preserve">
+    <value>أدخل «الكمية» (بحد أقصى الكمية المحظورة؛ ويبقى الباقي محظورًا). يحتاج الإرجاع إلى «المورد» و«رقم مستند الإرجاع»، ويحتاج الإتلاف إلى «طريقة الإتلاف» و«تاريخ الإتلاف». وتحتاج العينة إلى موقع عينات محدد في إعدادات الحجر.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2Title" xml:space="preserve">
+    <value>أدخل الكمية والتفاصيل</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3" xml:space="preserve">
+    <value>اكتب «المبرر» بما لا يقل عن 10 أحرف وراجع مربع «الحركة التي ستُنشأ في دفتر المخزون عند الموافقة».</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3Title" xml:space="preserve">
+    <value>اكتب المبرر</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4" xml:space="preserve">
+    <value>انقر «التالي: التوقيع الإلكتروني»، وراجع الملخص، ثم انقر «وقّع وأرسل» (أو «إرسال للموافقة»). يتحرك المخزون بعد الموافقة.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4Title" xml:space="preserve">
+    <value>وقّع وأرسل</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Purpose" xml:space="preserve">
+    <value>اطّلع على التشغيلات التي تجاوزت تاريخ إعادة الاختبار أو اقترب موعدها، وأرسلها إلى الحجر لاتخاذ قرار الجودة.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومسؤولو المستودعات</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1" xml:space="preserve">
+    <value>تعرض القائمة التشغيلات التي تجاوزت تاريخ إعادة الاختبار أو يحين موعدها خلال 30 يومًا مع حالتها: قادمة، أو متأخرة ومغلقة للاستخدام، أو في الحجر بالفعل. لا يمكن بيع التشغيلة المتأخرة أو حجزها أو صرفها حتى يُتخذ قرار الجودة.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1Title" xml:space="preserve">
+    <value>اقرأ القائمة</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2" xml:space="preserve">
+    <value>اكتب منتجًا أو تشغيلة في مربع البحث لتضييق القائمة.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2Title" xml:space="preserve">
+    <value>ابحث عن تشغيلة</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3" xml:space="preserve">
+    <value>انقر «وضع في الحجر» في السطر وأكّد بمبرر لا يقل عن 10 أحرف. ينتقل المخزون المتاح للتشغيلة إلى الحجر ويُضاف سجل إلى قائمة الحجر.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3Title" xml:space="preserve">
+    <value>ضع التشغيلة في الحجر</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4" xml:space="preserve">
+    <value>للتشغيلة الموجودة في الحجر بالفعل انقر «فتح سجل الحجر» لمتابعة قرارها.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4Title" xml:space="preserve">
+    <value>افتح السجل الموجود</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Purpose" xml:space="preserve">
+    <value>حدّد قواعد الحجر في شركتك: هدف الانتظار، والأعين الأربع والموافقة على الإفراج عن التشغيلة، ومن يحق له الموافقة، وأين تُحفظ العينات، وما أسباب الحظر المتاحة.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Audience" xml:space="preserve">
+    <value>مديرو الجودة والمسؤولون</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Immediate" xml:space="preserve">
+    <value>«حفظ» للإعدادات وحفظ سبب الحظر يسريان فورًا</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1" xml:space="preserve">
+    <value>أدخل «هدف الانتظار (أيام)» (1–60) و«فاصل إعادة القراءة (ثوانٍ)»، وشغّل أو أوقف «الأعين الأربع» و«الموافقة على الإفراج عن التشغيلة».</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1Title" xml:space="preserve">
+    <value>حدّد القواعد العامة</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2" xml:space="preserve">
+    <value>تحت «المعتمِدون المرشحون» اختر منصبًا أو مستخدمًا وانقر «إضافة» (10 كحد أقصى). بلا مرشح لا يمكن إرسال أي قرار للموافقة.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2Title" xml:space="preserve">
+    <value>اختر المعتمِدين</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3" xml:space="preserve">
+    <value>تحت «مواقع العينات» اختر مستودعًا وموقع العينات فيه ثم انقر «إضافة»؛ موقع واحد لكل مستودع.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3Title" xml:space="preserve">
+    <value>حدّد مواقع العينات</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4" xml:space="preserve">
+    <value>انقر «حفظ» في الأعلى. إذا ظهر قالب الموافقة مفقودًا فانقر مرة واحدة «إعداد قالب الموافقة».</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4Title" xml:space="preserve">
+    <value>احفظ وجهّز القالب</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5" xml:space="preserve">
+    <value>انقر «إضافة سبب حظر»، وأدخل رمزًا واسمًا باللغات السبع كلها ثم احفظ؛ واستخدم إجراء السطر لتعديل سبب موجود.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5Title" xml:space="preserve">
+    <value>أدِر أسباب الحظر</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve">
+    <value>اطّلع بنظرة واحدة على مخاطر انتهاء الصلاحية في شركتك: المخزون المنتهي الذي ما زال في اليد، والتشغيلات الحرجة والقريبة، والاستلامات الأقل من الحد الأدنى للصلاحية المتبقية، والاستثناءات المفتوحة، والامتثال لـ FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومديرو المستودعات ومخططو الإمداد</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve">
+    <value>اختر شركتك من «الشركة» إذا طُلب منك ذلك، ثم ضيّق الأرقام باستخدام «جميع المستودعات» و«الفترة» الخاصة ببطاقة الامتثال؛ تتحدث الصفحة فور تغييرها.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve">
+    <value>اختر النطاق</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve">
+    <value>تَعُدّ بطاقات المنتهي والحرج والقريب التشغيلات والكميات وفق عتبات شركتك المذكورة في العنوان الفرعي؛ وتخبرك بطاقة الاستثناءات بعدد الحالات التي تجاوزت المهلة.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve">
+    <value>اقرأ البطاقات</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3" xml:space="preserve">
+    <value>انقر بطاقة «مخزون منتهي الصلاحية» أو البطاقة الحرجة أو القريبة لفتح القائمة المقابلة مُصفّاة مسبقًا حسب مستودعك.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3Title" xml:space="preserve">
+    <value>افتح التشغيلات خلف البطاقة</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4" xml:space="preserve">
+    <value>يعرض المخطط شهرًا بشهر كمية المخزون «متاح» و«محتجز» التي ستنتهي صلاحيتها.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4Title" xml:space="preserve">
+    <value>انظر إلى الأشهر الـ 12 القادمة</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5" xml:space="preserve">
+    <value>في «أعلى 10 تشغيلات خطورة» استخدم أيقونات الصف «عرض ترتيب FEFO» أو «وضع في الحجر (MOD-0175)» (تفتح وحدة الحجر) أو «فتح استثناء»؛ ويفتح «عرض الكل» القائمة الكاملة.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5Title" xml:space="preserve">
+    <value>تصرّف في التشغيلات الأعلى خطورة</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve">
+    <value>اعرض التشغيلات التي تقترب صلاحيتها من الانتهاء، الأقرب انتهاءً أولًا (ترتيب FEFO)، مع المخزون المتاح والمحتجز في عمودين منفصلين، لتستخدمها أو تعالجها في الوقت المناسب.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve">
+    <value>مستخدمو المستودع والمبيعات والجودة</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve">
+    <value>اختر «جميع المستودعات» و«جميع الحالات» و«الأفق» و«يشمل المخزون المحتجز» أو «المخزون المتاح فقط»، ثم انقر «تطبيق»؛ ويعيد «مسح» ضبط عوامل التصفية. دون أفق يُطبَّق إعداد شركتك.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve">
+    <value>يُظهر «الأيام المتبقية» و«العمر المتبقي» مدى إلحاح التشغيلة، ويُظهر «متاح» و«محتجز» ما يمكن استخدامه بعد. انقر رقم التشغيلة لفتح «تفاصيل التشغيلة (MOD-0174)».</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve">
+    <value>اقرأ الصف</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3" xml:space="preserve">
+    <value>استخدم أيقونات الصف: «عرض ترتيب FEFO» يبيّن أي تشغيلة تُستخدم أولًا، و«وضع في الحجر (MOD-0175)» يفتح وحدة الحجر، و«فتح استثناء» يسجّل حالة إذا تعذّر استخدام التشغيلة في الوقت المناسب.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3Title" xml:space="preserve">
+    <value>تصرّف في التشغيلة</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4" xml:space="preserve">
+    <value>يُنزّل «تصدير (CSV)» القائمة بعوامل التصفية التي طبّقتها.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4Title" xml:space="preserve">
+    <value>صدّر القائمة</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Purpose" xml:space="preserve">
+    <value>اعرض التشغيلات المنتهية الصلاحية التي ما زال لها مخزون. تُغلق التشغيلة المنتهية تلقائيًا عن الاستخدام؛ ولا يُتخذ أي قرار هنا، إذ يُتخذ قرار الإتلاف أو الإرجاع في وحدة الحجر.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومديرو المستودعات</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1" xml:space="preserve">
+    <value>اختر مستودعًا من «جميع المستودعات» وانقر «تطبيق»؛ ويعيد «مسح» عرض كل المستودعات.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1Title" xml:space="preserve">
+    <value>اختر المستودع</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2" xml:space="preserve">
+    <value>يُظهر «منذ الانتهاء» عدد الأيام منذ انتهاء صلاحية التشغيلة، ويُظهر «متاح» و«محتجز» ما بقي في اليد. انقر رقم التشغيلة لفتح «تفاصيل التشغيلة (MOD-0174)».</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2Title" xml:space="preserve">
+    <value>تحقق من المخزون</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3" xml:space="preserve">
+    <value>إذا كانت هناك حالة مفتوحة فإن عمود «الاستثناء» يربطك بها؛ وإلا فاستخدم «فتح استثناء» في الصف لتسجيل الحالة.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3Title" xml:space="preserve">
+    <value>تابع استثناءً أو افتحه</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4" xml:space="preserve">
+    <value>يفتح «وضع في الحجر (MOD-0175)» في الصف وحدة الحجر، حيث تقرر إتلاف المخزون أو إرجاعه.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4Title" xml:space="preserve">
+    <value>قرّر في الحجر</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5" xml:space="preserve">
+    <value>يُنزّل «تصدير (CSV)» قائمة المستودع المحدد.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5Title" xml:space="preserve">
+    <value>صدّر القائمة</value>
+  </data>
+  <data name="Help.FEFOORDER.Purpose" xml:space="preserve">
+    <value>اعرف أي تشغيلة من منتج ما يجب استخدامها أولًا في مستودع، حسب تاريخ الانتهاء. إنه اقتراح للقراءة فقط: لا يُحجز ولا يُصرف شيء هنا، والصرف من تشغيلة أحدث يخضع لقاعدة صرف FEFO في شركتك.</value>
+  </data>
+  <data name="Help.FEFOORDER.Audience" xml:space="preserve">
+    <value>مشغّلو المستودعات والمخططون</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1" xml:space="preserve">
+    <value>اختر «المستودع» ثم «المنتج (SKU)»؛ تُعرض فقط المنتجات التي لها مخزون تشغيلات في ذلك المستودع.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1Title" xml:space="preserve">
+    <value>اختر المستودع والمنتج</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2" xml:space="preserve">
+    <value>إذا احتجت كمية محددة فاكتبها في «الكمية المطلوبة (اختياري)»، ثم انقر «احسب الترتيب».</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2Title" xml:space="preserve">
+    <value>احسب الترتيب</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3" xml:space="preserve">
+    <value>يرتّب «التشغيلات المرتبة · حسب تاريخ الانتهاء» التشغيلات التي يمكنك صرفها الآن؛ ومع إدخال كمية يُظهر «لهذه الكمية» ما تأخذه من كل تشغيلة وما لا يمكن تغطيته.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3Title" xml:space="preserve">
+    <value>اتبع الترتيب</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4" xml:space="preserve">
+    <value>يسرد «التشغيلات المستبعدة» التشغيلات غير القابلة للاستخدام الآن مع السبب؛ وتنقلك الروابط إلى المخزون المنتهي أو إلى وحدة الحجر.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4Title" xml:space="preserve">
+    <value>اطّلع على المستبعد</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>عالج استثناءات FEFO في شركتك: كل انحراف عن قواعد الصلاحية، من الفتح حتى الإغلاق (مفتوحة، قيد المراجعة، مقبولة أو مصححة، مغلقة).</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve">
+    <value>مستخدمو ضمان الجودة الذين يراجعون الاستثناءات ويقررون فيها</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve">
+    <value>استخدم علامات التبويب «الكل» و«مفتوحة + قيد المراجعة» و«تجاوزت المهلة» و«المنتهية»؛ يعرض كل تبويب عدده.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>اختر عرضًا</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve">
+    <value>اختر «جميع الأنواع» أو «جميع الحالات» أو «جميع المستودعات» أو «المكلَّفة لي»، ثم انقر «تطبيق»؛ ويعيد «مسح» ضبط عوامل التصفية.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3" xml:space="preserve">
+    <value>يعرض عمود «مهلة الخدمة (SLA)» الوقت المتبقي أو مقدار تأخر الحالة، ويعرض «المكلَّف» من يتولاها.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3Title" xml:space="preserve">
+    <value>راقب المهلة</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4" xml:space="preserve">
+    <value>انقر السهم في نهاية الصف («فتح الاستثناء») لرؤية وقائعها وخطها الزمني وقرارها.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4Title" xml:space="preserve">
+    <value>افتح حالة</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5" xml:space="preserve">
+    <value>انقر «فتح استثناء»، واختر المستودع والمنتج والتشغيلة، ثم «نوع الاستثناء»، واكتب «الوصف» من 10 أحرف على الأقل، وانقر «فتح استثناء» مرة أخرى؛ تُفتح الحالة الجديدة في صفحة تفاصيلها.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5Title" xml:space="preserve">
+    <value>افتح استثناءً جديدًا</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve">
+    <value>عالج استثناءً واحدًا: راجع وقائعه وما حدث، وتابع خطه الزمني، وسجّل القرار.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve">
+    <value>مستخدمو ضمان الجودة والأشخاص المعنيون بالاستثناء</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Immediate" xml:space="preserve">
+    <value>تسري «إرسال» و«تولَّ وابدأ المراجعة» و«أغلق الاستثناء» فور النقر؛ دون طلب تأكيد.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve">
+    <value>يُظهر «الوقائع» و«ماذا حدث» التشغيلة والتواريخ والحركة التي أدت إلى الاستثناء كما سُجّلت؛ ويفتح «تفاصيل التشغيلة (MOD-0174)» و«وضع في الحجر (MOD-0175)» الوحدات المرتبطة.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve">
+    <value>راجع الوقائع</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve">
+    <value>يسرد «الخط الزمني» كل خطوة في الحالة؛ اكتب في مربع التعليق وانقر «إرسال».</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve">
+    <value>ناقش في الخط الزمني</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3" xml:space="preserve">
+    <value>ما دام الاستثناء مفتوحًا، انقر «تولَّ وابدأ المراجعة» في «القرار» لتتولاه.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3Title" xml:space="preserve">
+    <value>تولَّ المراجعة</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4" xml:space="preserve">
+    <value>انقر «اتخذ القرار»، واختر «قبول مع مبرر» أو «تم التصحيح» أو «ملغى»، واكتب «المبرر» (10 أحرف على الأقل) وانقر «متابعة»؛ وإذا طلبت سياسة التوقيع الإلكتروني في شركتك ذلك فأنهِ بـ«وقِّع واحفظ»، وإلا يُحفظ القرار فورًا.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4Title" xml:space="preserve">
+    <value>اتخذ القرار</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5" xml:space="preserve">
+    <value>بعد قرار بالقبول أو التصحيح، انقر «أغلق الاستثناء».</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5Title" xml:space="preserve">
+    <value>أغلق الاستثناء</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve">
+    <value>حدّد قواعد الصلاحية في شركتك: أفقا الاقتراب والحرج، وقاعدة صرف FEFO، وما يحدث عند استلام أقل من الحد الأدنى للصلاحية المتبقية، وتغييرات تاريخ الانتهاء، ومهل الاستثناءات، وعتبة المخزون المنتهي.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve">
+    <value>مديرو الجودة المسؤولون عن سياسة الصلاحية</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve">
+    <value>في «إعدادات الشركة» أدخل أفق «اقتراب» وعتبة «حرج» بالأيام؛ ويجب أن تكون العتبة الحرجة أقل من أفق الاقتراب.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve">
+    <value>حدّد الآفاق</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve">
+    <value>اختر خيارًا واحدًا لكل من «قاعدة صرف FEFO» و«استلام أقل من الحد الأدنى لمدة الصلاحية المتبقية» و«تغيير تاريخ الانتهاء / إعادة الفحص»؛ وحدّد الساعات لكل نوع في «مهل الاستثناءات» وعتبة «مخزون منتهي الصلاحية في اليد» بالأيام.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve">
+    <value>اختر القواعد</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3" xml:space="preserve">
+    <value>انقر «حفظ التغييرات»، وراجع الحقول المتغيرة، واكتب «سبب التغيير» (10 أحرف على الأقل) وأكّد بـ«حفظ التغييرات»؛ ويتجاهل «إلغاء» تعديلاتك. دون صلاحية إدارة السياسة يكون النموذج للقراءة فقط.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3Title" xml:space="preserve">
+    <value>احفظ مع سبب</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4" xml:space="preserve">
+    <value>يعرض «عرض حسب المنتج» مدة الصلاحية وإعادة الفحص والحد الأدنى المتبقي من البيانات الرئيسية للمنتج؛ وتُصحَّح القيم «غير محدد» في بطاقة المنتج في MDM لا هنا.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4Title" xml:space="preserve">
+    <value>تحقق من المنتجات</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5" xml:space="preserve">
+    <value>يعرض «سجل التغييرات» كل تغيير مع وقته ومن أجراه والقيمة القديمة والجديدة والسبب.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5Title" xml:space="preserve">
+    <value>راجع السجل</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve">
+    <value>أنشئ حزمة أدلة FEFO / الصلاحية لفترة ما لأغراض التدقيق: ملخص الامتثال، والاستثناءات مع حلولها وتواقيعها، وتغييرات السياسة، وتجاوزات FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومديرو نظام الجودة والمدققون</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve">
+    <value>اختر «الفترة» أو «نطاق تاريخ» واملأ «من» و«إلى»؛ وضيّقها عند الحاجة باستخدام «المستودع» و«النوع».</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve">
+    <value>اختر الفترة والنطاق</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve">
+    <value>انقر «معاينة» لرؤية أقسام الحزمة الأربعة: مؤشرات الملخص، والاستثناءات وحلولها، وتغييرات السياسة، وتجاوزات FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve">
+    <value>عاين</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3" xml:space="preserve">
+    <value>انقر «تنزيل PDF» أو «تنزيل CSV»؛ يُنشأ الملف على الخادم ويُنزَّل ويُسجَّل في سجل التصدير.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3Title" xml:space="preserve">
+    <value>نزّل</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4" xml:space="preserve">
+    <value>يسرد «سجل التصدير» كل عملية تصدير مع من قام بها ومتى وقيمة SHA-256 المحسوبة من بايتات الملف؛ أعد فتح الملف من اسمه، واستخدم «نسخ قيمة SHA-256» للمقارنة.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4Title" xml:space="preserve">
+    <value>تحقق من الملف</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve">
+    <value>اعرف بنظرة واحدة مدى جاهزية شركتك للاستدعاء: الحالات المفتوحة، وآخر تمرين مقارنةً بهدفه، وتغطية التشغيلات في عمليات الصرف، وعمليات الصرف غير القابلة للتتبّع، ومرتجعات الحالات المفتوحة.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve">
+    <value>الجودة (مسؤول الاستدعاء)، ومدير نظام الجودة، والإدارة (قراءة فقط).</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve">
+    <value>إذا طلبت الصفحة ذلك، اختر الشركة من «الشركة». كل رقم في هذه الصفحة يخص تلك الشركة وحدها.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve">
+    <value>اختر الشركة</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve">
+    <value>راجع البطاقات الخمس: «حالات الاستدعاء المفتوحة» و«مدة آخر تمرين» و«نسبة تغطية التتبّع» و«صرف بدون تشغيلة (غير قابل للتتبّع)» و«المُعاد (الحالات المفتوحة)». ظهور «تجاوز الهدف» بالأحمر على آخر تمرين أو عدد غير صفري من عمليات الصرف غير القابلة للتتبّع يستدعي انتباهك.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve">
+    <value>اقرأ البطاقات</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve">
+    <value>يعرض «سجل التمارين · آخر 12» آخر التمارين المكتملة مقارنةً بخط الهدف؛ العمود الأحمر تمرين تجاوز الهدف.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve">
+    <value>تابع سجل التمارين</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4" xml:space="preserve">
+    <value>عندما يشير الشريط الأصفر إلى أن آخر تمرين قديم جدًا، انقر «تخطيط تمرين» لفتح مخطِّط التمارين.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4Title" xml:space="preserve">
+    <value>تصرّف عند التنبيه</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5" xml:space="preserve">
+    <value>يعرض جدول «الحالات المفتوحة» كل حالة بفئتها والكمية المتأثرة ونسبة المُعاد؛ انقر «كل الحالات ←» لفتح القائمة الكاملة.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5Title" xml:space="preserve">
+    <value>تابع الحالات المفتوحة</value>
+  </data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve">
+    <value>تتبّع تشغيلة عبر سلسلتها الكاملة: إلى الخلف حتى مدخلاتها، وإلى الأمام حتى المخزون والشحنات والعملاء، واكتشف الفجوات التي لا تستطيع فيها التشغيلة إثبات وجهة البضاعة.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve">
+    <value>الجودة (مسؤول الاستدعاء) ومدير نظام الجودة.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve">
+    <value>«فتح حالة كمسودة» يُنشئ الحالة كمسودة فورًا؛ ولا يُحظر شيء حتى يُعتمد النطاق في صفحة الحالة.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve">
+    <value>ابحث عن التشغيلة في «رقم التشغيلة» أو انقر إحدى «آخر التشغيلات:». يُملأ المنتج تلقائيًا.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve">
+    <value>اختر التشغيلة</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve">
+    <value>اختر «إلى الخلف» أو «إلى الأمام» أو «كلاهما» ثم انقر «تتبّع». يعدّ الملخص أعلى النتيجة التشغيلات وسطور المخزون والشحنات والفجوات.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve">
+    <value>اختر الاتجاه وتتبّع</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve">
+    <value>بدّل بين «شجرة» و«جدول»؛ كلاهما يعرض العُقد نفسها، و«توسيع الكل» يفتح كل فرع. الصفوف الحمراء فجوات تتبّع؛ ونشاط شركة أخرى يظهر عددًا فقط.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve">
+    <value>اقرأ الشجرة أو الجدول</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4" xml:space="preserve">
+    <value>«تنزيل CSV» يعطي الصفوف نفسها. «افتح حالة استدعاء بهذا النطاق» يطلب «الفئة» و«المستوى» و«السبب» و«رقم الانحراف / الشكوى» إن وُجد؛ ثم انقر «فتح حالة كمسودة».</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4Title" xml:space="preserve">
+    <value>صدّر أو افتح حالة</value>
+  </data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve">
+    <value>تابع حالات الاستدعاء الحقيقية والتمارين في شركتك في قائمة واحدة، من الأحدث إلى الأقدم، مع حالتها وتقدّمها.</value>
+  </data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve">
+    <value>كل من يتابع الاستدعاءات: الجودة والمستودع والتجاري والإدارة.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve">
+    <value>انقر زر حالة أعلى القائمة مثل «مسودة» أو «بانتظار اعتماد النطاق» أو «نشطة»؛ الرقم عليه هو عدد الحالات في تلك الحالة.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve">
+    <value>اختر حالة</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve">
+    <value>اكتب في مربع البحث، أو انقر «تصفية» واختر «كل الأنواع» أو «كل الحالات» أو «حالات التمرين» أو «كل الفئات» أو «كل المنتجات» أو «تاريخ الفتح من»، ثم انقر «تطبيق»؛ و«مسح» يعيد الضبط. مرشّح الفئة يعرض الحالات الحقيقية فقط.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3" xml:space="preserve">
+    <value>صف التمرين يقول «تمرين» في «النوع»، ويعرض نتيجته ومدته مكان التقدّم، وتظهر الفئة والمستوى «—».</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3Title" xml:space="preserve">
+    <value>ميّز التمارين</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4" xml:space="preserve">
+    <value>انقر رقمًا لفتحه: الحالة الحقيقية تفتح صفحتها، والتمرين الجاري يفتح مخطِّط التمارين، والتمرين المنتهي يفتح حزمة أدلته.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4Title" xml:space="preserve">
+    <value>افتح صفًا</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve">
+    <value>أدِر حالة استدعاء واحدة من المسودة حتى الإغلاق: نطاقها ومخزونها وعملاؤها ومرتجعاتها وفحص فعاليتها وسجلها.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve">
+    <value>مستخدمو الجودة والمستودع وخدمة العملاء في الشركة.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Immediate" xml:space="preserve">
+    <value>«حفظ الشمول / الاستبعاد» و«إرسال النطاق للموافقة» و«حجر المحدد» و«بدء فحص الفعالية» تسري فورًا دون نافذة تأكيد.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve">
+    <value>في «النطاق»، أوقف ما لم يتأثر واكتب «سبب الاستبعاد»، وانقر «حفظ الشمول / الاستبعاد» ثم «إرسال النطاق للموافقة». يعرض «إعادة التتبّع» العُقد الجديدة، وتضيفها بسبب عبر «مراجعة النطاق».</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve">
+    <value>علّم النطاق وأرسله</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve">
+    <value>ينقر مستخدم آخر «الموافقة على النطاق» (أو «إعادة إلى المسودة» مع سبب)، ويراجع الملخص، وينقر «متابعة»، ويوقّع في نافذة التوقيع الإلكتروني إذا طلبت السياسة ذلك. بعدها تُحظر التشغيلات وتُرسل طلبات الحجر.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve">
+    <value>اعتمد النطاق</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve">
+    <value>في «المخزون المتوفر»، حدّد السطور وانقر «حجر المحدد»؛ استخدم «إعادة المحاولة» للطلب الفاشل و«تأكيد الفصل» عند فصل البضاعة فعليًا.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve">
+    <value>احجر المخزون</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
+    <value>في «العملاء والشحنات»، استخدم «تسجيل كمُبلَّغ» و«إضافة إقرار استهلاك». في «المرتجعات»، يفتح «إدخال مرتجع عميل» نموذج حركة المخزون؛ ثم انقر «ربط المرتجع» على أحد المرشحات.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
+    <value>تابع العملاء والمرتجعات</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5" xml:space="preserve">
+    <value>في «فحص الفعالية»، انقر «بدء فحص الفعالية» ثم «إكمال فحص الفعالية» بالتوقيع الإلكتروني؛ وينقر مستخدم آخر «إغلاق الحالة». يحفظ «حزمة الأدلة» و«الخط الزمني» السجل.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5Title" xml:space="preserve">
+    <value>افحص الفعالية وأغلق</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve">
+    <value>خطّط لتمارين الاستدعاء ونفّذها مقابل الوقت دون المساس بالمخزون.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومسؤول نظام الجودة.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Immediate" xml:space="preserve">
+    <value>«بدء المؤقت» وكل زر خطوة تسري فورًا دون نافذة تأكيد؛ ولا يُمسّ المخزون أبدًا.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve">
+    <value>انقر «إضافة خطة»، واملأ «اسم الخطة» و«التكرار» و«النطاق» و«التاريخ التالي»، ثم انقر «حفظ الخطة». عدّل خطة قائمة بـ«تعديل».</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve">
+    <value>أضف خطة</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve">
+    <value>تحت «مسؤول الخطة»، اكتب اسمًا في مربع البحث وانقر «بحث» واختر الشخص من القائمة. إن لم تبحث يبقى المسؤول كما هو (أنت في الخطة الجديدة).</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve">
+    <value>اختر مسؤول الخطة</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve">
+    <value>في صف خطة، انقر «بدء التمرين»، واختر «يختار النظام» أو «سأختار بنفسي» للتشغيلة، ثم انقر «بدء المؤقت».</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve">
+    <value>ابدأ التمرين</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4" xml:space="preserve">
+    <value>انقر بالترتيب «تشغيل التتبّع» و«التحقق من النطاق» و«إكمال قائمة العملاء · إيقاف المؤقت»؛ الساعة هي ساعة الخادم. «إلغاء التمرين» يطلب سببًا ويحتفظ بالتمرين.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4Title" xml:space="preserve">
+    <value>أكمل الخطوات الثلاث</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5" xml:space="preserve">
+    <value>انقر «حفظ النتيجة بالتوقيع الإلكتروني»، واكتب ملاحظة النتيجة ووقّع إذا طلبت السياسة ذلك. تعرض «نتائج التمارين الأخيرة» كل تمرين؛ انقر رقمًا لفتحه مجددًا.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5Title" xml:space="preserve">
+    <value>احفظ النتيجة</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve">
+    <value>أنشئ حزمة أدلة لحالة أو تمرين أو فترة لأغراض التدقيق، وأثبت أن الملف الذي تسلّمه هو الملف المسجَّل.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve">
+    <value>ضمان الجودة ومسؤول نظام الجودة والمدققون.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Immediate" xml:space="preserve">
+    <value>يُسجَّل كل تنزيل في «سجل التصدير» فورًا.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve">
+    <value>تحت «الموضوع»، انقر «حقيقية» أو «تمرين» أو «الفترة»؛ ثم اختر الحالة أو التمرين في «الحالة أو التمرين»، أو حدّد «من» و«إلى» للفترة.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve">
+    <value>اختر الموضوع</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve">
+    <value>انقر «معاينة»؛ تعرض الأقسام السبعة كما يحملها الملف تمامًا. لا تُفعَّل أزرار التنزيل إلا بعد المعاينة.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve">
+    <value>عاين الحزمة</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3" xml:space="preserve">
+    <value>انقر «تنزيل PDF» أو «تنزيل CSV». تحسب الصفحة بصمة الملف المُنزَّل وتخبرك هل تطابق بصمة SHA-256 سجل التصدير. تسميات الملف بالتركية أو الإنجليزية.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3Title" xml:space="preserve">
+    <value>نزّل وتحقّق</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4" xml:space="preserve">
+    <value>يعرض «سجل التصدير» كل ملف مع المستخدم والوقت وبصمة SHA-256؛ انقر اسم الملف لتنزيله مجددًا.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4Title" xml:space="preserve">
+    <value>استخدم سجل التصدير</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve">
+    <value>حدّد الوقت المستهدف للتمرين وتنبيه تكرار التمارين وهدف الفعالية لكل فئة في شركتك.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve">
+    <value>مسؤول نظام الجودة.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve">
+    <value>غيّر «الوقت المستهدف للتمرين (ساعات)» (1–72) و«تنبيه تكرار التمارين (أيام)» (30–730) وقيم الفئات تحت «هدف الفعالية (%) · لكل فئة» (0–100). من دون صلاحية التغيير تكون الحقول للقراءة فقط.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve">
+    <value>غيّر القيم</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve">
+    <value>اكتب «السبب (10 أحرف على الأقل)» وانقر «حفظ»؛ و«تراجع» يعيد القيم المحفوظة. إذا طلبت السياسة ذلك، انقر «التوقيع والحفظ» ووقّع في نافذة التوقيع الإلكتروني.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve">
+    <value>اكتب السبب واحفظ</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3" xml:space="preserve">
+    <value>يعرض «سجل التغييرات» كل تغيير مع سببه وتوقيعه. لا تُحدَّد سياسة التوقيع الإلكتروني هنا، بل تُدار في MOD-0022.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3Title" xml:space="preserve">
+    <value>راجع السجل</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Purpose" xml:space="preserve">
+    <value>وقّع على أعمال التوقيع التي أسندتها إليك الوحدات أو ارفضها. يأتي أقرب تاريخ استحقاق أولًا، وعند تساوي التاريخ يأتي الطلب الأحدث أولًا.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Audience" xml:space="preserve">
+    <value>كل من يُطلب منه توقيع سجل</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Immediate" xml:space="preserve">
+    <value>توقيع الطلب ورفضه؛ بعد أيّ منهما يُغلق الطلب</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1" xml:space="preserve">
+    <value>انقر «تصفية»، واختر «الوحدة» أو «الحالة» أو نطاق «تاريخ الطلب»، ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2" xml:space="preserve">
+    <value>راجع عمود «تاريخ الاستحقاق»: الطلب المنتظر الذي يستحق اليوم يحمل وسم «اليوم»، ويبيّن العدّاد أعلى القائمة عدد الطلبات المنتظرة.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2Title" xml:space="preserve">
+    <value>اعرف العمل العاجل</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3" xml:space="preserve">
+    <value>انقر «توقيع» في صف منتظر؛ تُفتح نافذة التوقيع بالمعنى المحدد في الطلب. أدخل «كلمة المرور» (وخلال مدة صلاحية كلمة المرور اكتب اسم المستخدم بدلًا منها)، ثم انقر «توقيع».</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3Title" xml:space="preserve">
+    <value>وقّع</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4" xml:space="preserve">
+    <value>انقر «رفض»، واكتب «السبب» في 10 أحرف على الأقل، ثم أكّد بـ«رفض»؛ يُبلَّغ صاحب الطلب.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4Title" xml:space="preserve">
+    <value>ارفض</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5" xml:space="preserve">
+    <value>انقر «توقيعات السجل» لفتح السجل في صفحة التحقق.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5Title" xml:space="preserve">
+    <value>اطّلع على توقيعات السجل</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Purpose" xml:space="preserve">
+    <value>اطّلع على التوقيعات الموجودة على سجل وعلى ما إذا كان كل منها لا يزال صالحًا اليوم: صالح، تغيّر السجل، تم العبث به أو مُبطل. يقارن التحقق ما تم توقيعه بالسجل كما هو الآن؛ ولا يتغير سجل التوقيع نفسه أبدًا.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Audience" xml:space="preserve">
+    <value>مسؤولو الجودة والتدقيق ومسؤولو التوقيع الإلكتروني</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Immediate" xml:space="preserve">
+    <value>إبطال التوقيع: يظهر غير صالح في كل مكان يُستخدم فيه ولا يمكن التراجع عنه</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1" xml:space="preserve">
+    <value>اختر «الوحدة»، وأدخل «نوع السجل» و«معرّف السجل»، ثم انقر «عرض»، أو اختر سجلًا من «السجلات الموقعة مؤخرًا» (تظهر فقط مع صلاحية التصدير). يفتح رابط «توقيعات السجل» السجل مباشرة.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1Title" xml:space="preserve">
+    <value>اختر السجل</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2" xml:space="preserve">
+    <value>تبيّن العدّادات عدد التوقيعات «صالح» و«تغيّر السجل» و«تم العبث به» و«مُبطل»؛ وتعرض كل بطاقة الموقّع والمعنى والمظهر والملخص وقت التوقيع. لا تظهر سجلات الشركات إلا للشركات ضمن نطاق بياناتك؛ أما توقيعاتك فتظهر دائمًا.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2Title" xml:space="preserve">
+    <value>اقرأ النتيجة</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3" xml:space="preserve">
+    <value>انقر «إعادة التحقق» لمقارنة كل توقيع بالسجل الحالي مرة أخرى؛ لا يتغير أي شيء.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3Title" xml:space="preserve">
+    <value>تحقّق مجددًا</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4" xml:space="preserve">
+    <value>انقر «إبطال التوقيع» في بطاقة، واكتب «السبب» في 10 أحرف على الأقل وانقر «متابعة»، ثم أدخل «كلمة المرور» وانقر «إبطال التوقيع». لا يمكن التراجع عن ذلك؛ ويُحفظ الإبطال كقيد منفصل ودائم.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4Title" xml:space="preserve">
+    <value>أبطِل توقيعًا</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Purpose" xml:space="preserve">
+    <value>صفِّ سجلات التوقيع ونزّلها بصيغة PDF أو CSV لأغراض التدقيق والتفتيش. يحصل كل تصدير على رقم ويُسجَّل بشكل دائم مع من قام به والمرشّح وعدد السجلات وملخص SHA-256 للملف.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Audience" xml:space="preserve">
+    <value>مسؤولو التدقيق والجودة والامتثال</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Immediate" xml:space="preserve">
+    <value>«تصدير بصيغة PDF» و«تصدير بصيغة CSV»: يُسجَّل التصدير لحظة النقر حتى لو لم تحتفظ بالملف</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1" xml:space="preserve">
+    <value>انقر «تصفية»، وحدّد «من» و«إلى»، واختر «الوحدة» أو «الموقّع» أو «معنى التوقيع» أو «الشركة»، ثم انقر «تطبيق»؛ تقتصر سجلات الشركات على نطاق بياناتك.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1Title" xml:space="preserve">
+    <value>صفِّ السجلات</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2" xml:space="preserve">
+    <value>بدّل بين «جدول» و«معاينة PDF» لرؤية الصفوف المعروضة على شكل كتل توقيع في التقرير.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2Title" xml:space="preserve">
+    <value>عاين</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3" xml:space="preserve">
+    <value>انقر «تصدير بصيغة PDF» أو «تصدير بصيغة CSV»؛ يُنتج الخادم الملف ويطبع التواريخ بتوقيت UTC.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3Title" xml:space="preserve">
+    <value>نزّل الملف</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4" xml:space="preserve">
+    <value>يعرض «سجل تدقيق التصدير» كل تصدير برقمه وتاريخه والشخص والصيغة وعدد السجلات والمرشّح وملخص الملف.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4Title" xml:space="preserve">
+    <value>راجع السجل</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Purpose" xml:space="preserve">
+    <value>احفظ عينة التوقيع التي يمكنك استخدامها عند التوقيع الإلكتروني وتابع سجل عيناتك. لديك عينة نشطة واحدة فقط في كل مرة، ويُطلب منك إدخال كلمة المرور دائمًا عند حفظ عينة جديدة.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Audience" xml:space="preserve">
+    <value>كل من يوقّع إلكترونيًا</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Immediate" xml:space="preserve">
+    <value>تعطيل العينة وحذفها؛ وبدون قاعدة الموافقة تصبح العينة المحفوظة نشطة فورًا</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1" xml:space="preserve">
+    <value>يعرض قسم «عينة توقيعي» عينتك النشطة ووقت إضافتها ومن وافق عليها وعدد التوقيعات التي استخدمتها؛ انقر الصورة لتكبيرها.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1Title" xml:space="preserve">
+    <value>اطّلع على عينتك</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2" xml:space="preserve">
+    <value>تحت «عينة توقيع جديدة» ارسم في تبويب «رسم» (اضبط «السُمك» و«اللون»، أو استخدم «ملء الشاشة (أفقي)» على الهاتف)، أو في تبويب «رفع صورة» اختر صورة PNG أو JPG حتى 1 ميغابايت واقتصّها، وفعّل «إزالة الخلفية» عند الحاجة.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2Title" xml:space="preserve">
+    <value>ارسم أو ارفع</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3" xml:space="preserve">
+    <value>انقر «حفظ بكلمة المرور»، وأدخل «كلمة المرور»، ثم انقر «تحقّق واحفظ».</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3Title" xml:space="preserve">
+    <value>احفظ بكلمة المرور</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4" xml:space="preserve">
+    <value>إذا اشترطت السياسة الموافقة، تظهر العينة الجديدة «بانتظار الموافقة» حتى يوافق عليها مسؤول توقيع إلكتروني آخر؛ وحتى ذلك الحين تبقى عينتك الحالية مستخدمة. لا يمكنك أبدًا الموافقة على عينتك.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4Title" xml:space="preserve">
+    <value>انتظر الموافقة</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5" xml:space="preserve">
+    <value>في «سجل عينات التوقيع» استخدم «تعطيل» للعينة النشطة أو «حذف» لعينة لم تُستخدم قط؛ العينة المستخدمة في توقيع لا يمكن حذفها، بل تعطيلها فقط.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5Title" xml:space="preserve">
+    <value>أدِر العينات القديمة</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Purpose" xml:space="preserve">
+    <value>حدّد الإجراءات التي تتطلب توقيعًا إلكترونيًا، وبأي معنى وأي قاعدة للتوقيع المرئي، وكم مرة تُطلب كلمة المرور. تُطبَّق التغييرات على التوقيعات الجديدة؛ ويتطلب كل تغيير سببًا ويُكتب في سجل التغييرات.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Audience" xml:space="preserve">
+    <value>مسؤولو التوقيع الإلكتروني</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Immediate" xml:space="preserve">
+    <value>حفظ السياسة وإعادة شركة إلى الإعداد الافتراضي؛ كلاهما يُطبَّق فورًا على التوقيعات الجديدة</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1" xml:space="preserve">
+    <value>انقر «الافتراضي للمستأجر» للسياسة التي تستخدمها كل شركة ليست لها سياسة خاصة، أو «حسب الشركة» واختر الشركة.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1Title" xml:space="preserve">
+    <value>اختر النطاق</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2" xml:space="preserve">
+    <value>إذا كانت الشركة تستخدم الإعداد الافتراضي، انقر «سياسة مختلفة لهذه الشركة» للبدء من نسخة؛ وتحمل الصفوف المختلفة وسم «مختلف». ويزيل «العودة إلى الإعداد الافتراضي» سياسة الشركة بعد إدخال سبب.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2Title" xml:space="preserve">
+    <value>امنح شركة سياسة خاصة</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3" xml:space="preserve">
+    <value>في «قواعد التوقيع حسب الإجراء» اجعل كل إجراء «إلزامي» أو «معطّل»، واختر «معنى التوقيع» و«التوقيع المرئي»؛ ويظهر «العامل الثاني» بعبارة «قريبًا».</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3Title" xml:space="preserve">
+    <value>اضبط قواعد كل إجراء</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4" xml:space="preserve">
+    <value>تحت «الإعدادات العامة» اختر «طلب كلمة المرور عند كل توقيع» أو «مرة واحدة خلال مدة»، وحدّد «مدة صلاحية إعادة التحقق من كلمة المرور» (1–60 دقيقة). ويُعد «اشتراط موافقة المسؤول قبل استخدام نموذج التوقيع» إعدادًا على مستوى المستأجر كله.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4Title" xml:space="preserve">
+    <value>اضبط قاعدة كلمة المرور</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5" xml:space="preserve">
+    <value>انقر «الحفظ مع ذكر السبب»، واكتب سببًا من 10 أحرف على الأقل، ثم انقر «حفظ»؛ يظهر التغيير في «سجل التغييرات». بدون صلاحية إدارة السياسة تكون الصفحة للقراءة فقط.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5Title" xml:space="preserve">
+    <value>احفظ مع ذكر السبب</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Purpose" xml:space="preserve">
+    <value>حدّد ما يُقرّ به التوقيع، مثل أوافق أو راجعت؛ وتعرض نافذة التوقيع المعاني النشطة. بمجرد استخدام المعنى يُقفل رمزه، ويحتفظ كل توقيع بنص المعنى كما كان لحظة التوقيع.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Audience" xml:space="preserve">
+    <value>مسؤولو التوقيع الإلكتروني</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Immediate" xml:space="preserve">
+    <value>حفظ المعنى وتفعيله وإلغاء تفعيله</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1" xml:space="preserve">
+    <value>انقر «تصفية»، واختر «الحالة» أو «الاستخدام»، ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1Title" xml:space="preserve">
+    <value>ابحث عن معنى</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2" xml:space="preserve">
+    <value>انقر «معنى جديد»، وأدخل «الرمز» (من 2 إلى 32 حرفًا يبدأ بحرف لاتيني كبير: A–Z و0–9 و_)، و«الاسم الظاهر» باللغات السبع كلها، و«الوصف» إن شئت، ثم انقر «حفظ».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2Title" xml:space="preserve">
+    <value>أضف معنى</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3" xml:space="preserve">
+    <value>انقر «تعديل» في الصف؛ يحتفظ المعنى المستخدم برمزه، ولا يؤثر تغيير الاسم إلا في التوقيعات الجديدة. بدون صلاحية إدارة المعاني يعرض الصف «عرض».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3Title" xml:space="preserve">
+    <value>عدّل معنى</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4" xml:space="preserve">
+    <value>استخدم المفتاح في عمود «الحالة» وأكّد بـ«تفعيل» أو «إلغاء التفعيل». لا يمكن اختيار المعنى غير المفعّل للتوقيعات الجديدة، ولا يمكن إلغاء تفعيل معنى يستخدمه صف في السياسة.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4Title" xml:space="preserve">
+    <value>فعّل أو ألغِ التفعيل</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Purpose" xml:space="preserve">
+    <value>راجع عينات التوقيع الجديدة التي تنتظر الموافقة عندما تشترط السياسة ذلك. تصبح العينة الموافق عليها العينة النشطة الوحيدة لصاحبها، ويُحفظ كل قرار بشكل دائم في سجل القرارات.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Audience" xml:space="preserve">
+    <value>مسؤولو التوقيع الإلكتروني</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Immediate" xml:space="preserve">
+    <value>الموافقة على العينة ورفضها</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1" xml:space="preserve">
+    <value>انقر «تصفية»، واختر «طريقة الإضافة»، ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1Title" xml:space="preserve">
+    <value>ضيّق قائمة الانتظار</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2" xml:space="preserve">
+    <value>انقر الصورة في عمود «الصورة» لتكبيرها مع صاحبها وتاريخها وملخصها.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2Title" xml:space="preserve">
+    <value>افحص الصورة</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3" xml:space="preserve">
+    <value>انقر «موافقة» وأكّد بـ«موافقة»؛ تصبح العينة النشطة السابقة للمستخدم غير نشطة.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3Title" xml:space="preserve">
+    <value>وافق</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4" xml:space="preserve">
+    <value>انقر «رفض»، واكتب «السبب» في 10 أحرف على الأقل، ثم أكّد بـ«رفض»؛ يرى المستخدم السبب في صفحة توقيعي.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4Title" xml:space="preserve">
+    <value>ارفض</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5" xml:space="preserve">
+    <value>في صف عينتك أنت يظهر «يقرر مسؤول آخر» بدل الأزرار. ويظهر كل قرار في «سجل القرارات» أدناه.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
+    <value>اترك عينتك لغيرك</value>
+  </data>
 </root>

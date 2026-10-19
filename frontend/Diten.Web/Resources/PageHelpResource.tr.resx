@@ -414,4 +414,1622 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Klavyeyi kullanın</value>
   </data>
+  <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
+  <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
+    <value>Her üründen ne kadar stokunuz olduğunu depo, lokasyon, lot ve stok durumuna göre görün. Liste salt okunurdur: stok yalnız hareketlerle değişir.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Audience" xml:space="preserve">
+    <value>Depo sorumluları, stok kontrolörleri, satın alma ve üretim planlamacıları</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1" xml:space="preserve">
+    <value>Sayfa sorarsa “Şirket” alanından şirketi seçin. Ardından filtre simgesine (“Filtrele”) tıklayın, “Ürün”, “SKU (stok kodu)”, “Depo”, “Lokasyon”, “Lot numarası” veya “Stok durumu” seçin ve “Uygula”ya tıklayın; “Sıfırla” filtreleri temizler.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2" xml:space="preserve">
+    <value>Bir ürüne ya da SKU’ya göre süzdüğünüzde listenin üstündeki kartlar o seçim için “Toplam eldeki stok”, “Kullanılabilir”, “Kalite kontrolde” ve “Karantina / bloke” değerlerini gösterir. Ürün filtresi yoksa kartlar bilerek boş kalır.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2Title" xml:space="preserve">
+    <value>Toplamları okuyun</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3" xml:space="preserve">
+    <value>Her satır, bir ürünün tek bir yer, lot ve durumdaki stokudur. “Eldeki” fiziksel olarak orada olanı, “Rezerve” ayrılmış olanı, “Kullanılabilir” hâlâ kullanabileceğiniz miktarı gösterir.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3Title" xml:space="preserve">
+    <value>Stok satırını okuyun</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4" xml:space="preserve">
+    <value>Satır işlemlerinde “Geçmiş”, o ürün ve lotla süzülmüş hareket geçmişini açar; “Hareket”, bu satır kaynak olarak seçilmiş hâlde yeni bir hareket açar.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4Title" xml:space="preserve">
+    <value>Satırı izleyin ya da taşıyın</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5" xml:space="preserve">
+    <value>Stok eklemek için (açılış bakiyesi ya da sayım fazlası) “Yeni stok girişi”ne tıklayın. Bakiyenin arkasındaki bütün hareketleri “Hareket geçmişi” sekmesinde görürsünüz.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5Title" xml:space="preserve">
+    <value>Gelen stoku kaydedin</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Purpose" xml:space="preserve">
+    <value>Bir belge akışı dışında gelen stoku kaydedin: açılış bakiyesi ya da sayım fazlası. Stok listesi doğrudan düzenlenmez; bu sayfa bir giriş hareketi kaydeder.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Audience" xml:space="preserve">
+    <value>Stok kontrolörleri, depo sorumluları</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Immediate" xml:space="preserve">
+    <value>“Hareketi kaydet” stoku onay sormadan hemen işler. Kaydedilen hareket düzenlenemez; hata, hareket geçmişinde “Ters kayıt” ya da “Düzelt” ile giderilir.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1" xml:space="preserve">
+    <value>“Hareket türü” alanında “Açılış bakiyesi” ya da “Sayım fazlası” seçin. Aşağıda hangi hedef alanlarının görüneceğini tür belirler.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1Title" xml:space="preserve">
+    <value>Giriş türünü seçin</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2" xml:space="preserve">
+    <value>Önce “Ürün”ü, sonra “Stok kodu (SKU)”yu seçin; yalnız o ürünün SKU’ları listelenir.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2Title" xml:space="preserve">
+    <value>Ürünü ve SKU’yu seçin</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3" xml:space="preserve">
+    <value>“Hedef depo”, “Hedef lokasyon” ve “Hedef stok durumu” alanlarını doldurun; SKU lot takipliyse “Lot numarası”nı seçin.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3Title" xml:space="preserve">
+    <value>Nereye gireceğini belirtin</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4" xml:space="preserve">
+    <value>“Miktar” ve “Birim”i (SKU istiyorsa seri numaralarını da) girin; ardından “Belge no.”, “İşlem tarihi” ve “Kayıt tarihi”ni doldurun.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4Title" xml:space="preserve">
+    <value>Miktarı ve tarihleri girin</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5" xml:space="preserve">
+    <value>“Stok etkisi” kartında önceki ve sonraki değerlere bakın, sonra “Hareketi kaydet”e tıklayın. “İptal” hiçbir şey kaydetmeden stok listesine döner.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5Title" xml:space="preserve">
+    <value>Kontrol edip kaydedin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Purpose" xml:space="preserve">
+    <value>Şirketin bütün stok hareketleri, en yenisi üstte. Hareketler hiç düzenlenmez: hata, ters kayıtla iptal edilir ve gerekirse yeni bir hareketle yerine konur.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Audience" xml:space="preserve">
+    <value>Stok kontrolörleri, depo sorumluları, denetçiler</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1" xml:space="preserve">
+    <value>Sayfa sorarsa “Şirket” alanından şirketi seçin. Filtre simgesine (“Filtrele”) tıklayın, “Ürün”, “Lot numarası”, “Depo”, “Lokasyon”, “Başlangıç tarihi” ya da “Bitiş tarihi” belirleyip “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>Geçmişi daraltın</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2" xml:space="preserve">
+    <value>Her satır “Hareket no.”, “Hareket tipi”, ürün ve miktarlar, stokun nereye gittiği ve “Kaydeden” bilgisini, yani hareketi kimin kaydettiğini gösterir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>Hareketi okuyun</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3" xml:space="preserve">
+    <value>Elle girilmiş bir harekette “Ters kayıt” bir onay penceresi açar; “Ters kaydı yap”, hareketi iptal eden karşı bir hareket kaydeder. Asıl satır geçmişte kalır.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>Ters kayıt yapın</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4" xml:space="preserve">
+    <value>“Düzelt”, hareketin değerleriyle dolu düzeltme sayfasını açar. Sayfa bir ters kayıt ile düzeltilmiş hareketi kaydeder; iki kayıt da görünür kalır.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>Hareketi düzeltin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5" xml:space="preserve">
+    <value>Sayım eksiği, hurda, zayi ya da transfer için “Yeni hareket”e tıklayın. Bu hareketlerin oluşturduğu bakiyeyi “Stok listesi” sekmesinde görürsünüz.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>Yeni hareket girin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Purpose" xml:space="preserve">
+    <value>Elle bir stok hareketi kaydedin: açılış bakiyesi, sayım fazlası ya da eksiği, hurda, zayi, transfer veya müşteri iadesi. Her hareket kalıcı olarak saklanır ve kaydedildiği anda stoku değiştirir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Audience" xml:space="preserve">
+    <value>Stok kontrolörleri, depo çalışanları</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Immediate" xml:space="preserve">
+    <value>“Hareketi kaydet” stoku onay sormadan hemen değiştirir. Kaydedilen hareket düzenlenemez; hata, hareket geçmişinde “Ters kayıt” ya da “Düzelt” ile giderilir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1" xml:space="preserve">
+    <value>İşe “Hareket türü” ile başlayın. Kaynak mı, hedef mi, yoksa ikisi birden mi gerektiğine tür karar verir; form yalnız o alanları gösterir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1Title" xml:space="preserve">
+    <value>Hareket türünü seçin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2" xml:space="preserve">
+    <value>Önce “Ürün”ü, sonra “Stok kodu (SKU)”yu seçin; yalnız o ürünün SKU’ları listelenir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2Title" xml:space="preserve">
+    <value>Ürünü ve SKU’yu seçin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3" xml:space="preserve">
+    <value>Çıkış ve transferlerde “Kaynak (lot / lokasyon)” alanından stok satırını seçin. Giriş ve transferlerde “Hedef depo”, “Hedef lokasyon” ve istenirse “Hedef stok durumu” ile “Lot numarası”nı doldurun.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3Title" xml:space="preserve">
+    <value>Kaynağı ve hedefi belirleyin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4" xml:space="preserve">
+    <value>“Miktar” ve “Birim”i (SKU istiyorsa seri numaralarını da) girin; ardından “Belge no.”, “İşlem tarihi” ve “Kayıt tarihi”ni doldurun.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4Title" xml:space="preserve">
+    <value>Miktarı ve tarihleri girin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5" xml:space="preserve">
+    <value>“Stok etkisi” kartında önceki ve sonraki değerlere bakın, sonra “Hareketi kaydet”e tıklayın; makbuz açılır. “İptal” hiçbir şey kaydetmeden hareket geçmişine döner.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5Title" xml:space="preserve">
+    <value>Kontrol edip kaydedin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Purpose" xml:space="preserve">
+    <value>Yanlış kaydedilmiş elle girilen bir hareketi düzeltin. Asıl hareket hiç değişmez: bu sayfa önce onu iptal eden bir ters kayıt, sonra düzeltilmiş hareketi kaydeder; ikisi de geçmişte kalır.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Audience" xml:space="preserve">
+    <value>Stok kontrolörleri, depo sorumluları</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1" xml:space="preserve">
+    <value>“Düzeltilen hareket” kartı asıl hareketin “Hareket no.”, “Hareket tipi”, ürün, miktar ve lot bilgisini gösterir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1Title" xml:space="preserve">
+    <value>Neyi düzelttiğinize bakın</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2" xml:space="preserve">
+    <value>Form asıl hareketin değerleriyle açılır. Yanlış olanı değiştirin, örneğin “Miktar”, “Hedef lokasyon” ya da “Lot numarası”; tarihleri de kontrol edin.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2Title" xml:space="preserve">
+    <value>Değerleri düzeltin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3" xml:space="preserve">
+    <value>Kaydetmeden önce “Stok etkisi” kartındaki önceki ve sonraki değerlere bakın.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3Title" xml:space="preserve">
+    <value>Stok etkisine bakın</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4" xml:space="preserve">
+    <value>“Düzelt”e tıklayın. Açılan onay iki kaydı açıklar; “Ters kayıt yap ve kaydet” ters kaydı ve düzeltilmiş hareketi kaydeder, ardından makbuz açılır.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4Title" xml:space="preserve">
+    <value>Düzeltmeyi onaylayın</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5" xml:space="preserve">
+    <value>Ters kayıt geçip düzeltilmiş hareket reddedildiyse sayfada bir uyarı kalır. Uyarının gösterdiği alanı düzeltip “Düzeltilmiş hareketi kaydet”e tıklayın; hiçbir şey iki kez kaydedilmez.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5Title" xml:space="preserve">
+    <value>Yarım kalan düzeltmeyi bitirin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Purpose" xml:space="preserve">
+    <value>Az önce kaydettiğiniz hareketin makbuzu: neyin işlendiği, stokun nereye gittiği ve geride bıraktığı bakiye. Kayıttan hemen sonra bir kez gösterilir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Audience" xml:space="preserve">
+    <value>Stok kontrolörleri, depo çalışanları</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1" xml:space="preserve">
+    <value>Yeşil şerit kaydedilen hareketin numarasını verir. Düzeltmeden sonra ikinci bir şerit ters kaydı ve düzeltilmiş hareketi adıyla söyler.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1Title" xml:space="preserve">
+    <value>Sonuca bakın</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2" xml:space="preserve">
+    <value>Kartlar girdiğiniz bilgileri tekrarlar: “Hareket türü”, “Ürün”, “Stok kodu (SKU)”, “Nereden”, “Nereye”, “Lot numarası”, “Miktar”, “Belge no.” ve tarihler.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2Title" xml:space="preserve">
+    <value>Hareketi gözden geçirin</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3" xml:space="preserve">
+    <value>“Kaydeden”, hareketi kaydeden kişiyi gösterir.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3Title" xml:space="preserve">
+    <value>Kimin kaydettiğini görün</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4" xml:space="preserve">
+    <value>“Güncel bakiye”, hareketten sonra o lokasyonda kalan stoku gösterir: eldeki, kullanılabilir, durum ve lot.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4Title" xml:space="preserve">
+    <value>Yeni bakiyeyi okuyun</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5" xml:space="preserve">
+    <value>Hareket listesine dönmek için “Hareket geçmişi”ne, stok girişinden sonra ise “Stok listesi”ne tıklayın.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5Title" xml:space="preserve">
+    <value>Geri dönün</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Purpose" xml:space="preserve">
+    <value>Şirketin fiziksel yerlerini tek bir ağaçta tutun: tesis, depo, depolama alanı, bölge ve raf/göz. Stok, satın alma ve üretim bu listeden okur.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Audience" xml:space="preserve">
+    <value>Depo yöneticileri, lojistik yöneticileri</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1" xml:space="preserve">
+    <value>Sayfa sorarsa “Şirket” alanından şirketi seçin. “Lokasyon hiyerarşisi” içinde bir tesisi açıp depolarını, ardından depolama alanlarını, bölgeleri ve rafları görün. Arşivlenmiş yerleri de görmek için “Arşivlenenleri göster”i açın.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1Title" xml:space="preserve">
+    <value>Hiyerarşide gezinin</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2" xml:space="preserve">
+    <value>Bir lokasyona tıklayın: “Bilgiler”, “Stok” altında üzerinde ya da altında stok olup olmadığı, “Alt kayıtlar” ve “Değişiklik geçmişi” görünür.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2Title" xml:space="preserve">
+    <value>Bir lokasyonu açın</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3" xml:space="preserve">
+    <value>En üst düzey için “Yeni tesis”e, seçili lokasyonun altına eklemek için “Alt kayıt ekle”ye tıklayın. Yan panelde “Kod”, “Ad”, “Tür” ve “Stok tutulabilir” alanlarını doldurup “Kaydet”e tıklayın; Enter da kaydeder.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3Title" xml:space="preserve">
+    <value>Tesis ya da alt kayıt ekleyin</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4" xml:space="preserve">
+    <value>Bir lokasyonu değiştirmek için “Düzenle”yi kullanın. Bölge ya da depolama alanında “Toplu raf üret” birçok rafı bir kerede oluşturur: aralıkları girin, “Önizleme”ye tıklayın, sonra oluşturma düğmesiyle onaylayın.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4Title" xml:space="preserve">
+    <value>Düzenleyin ya da toplu raf üretin</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5" xml:space="preserve">
+    <value>“Aktife al”, “Pasife al” ve “Arşivle” önce onay ister; arşivleme geri alınamaz. “Stok listesinde gör”, o lokasyondaki stoku açar.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5Title" xml:space="preserve">
+    <value>Durumu değiştirin ya da stoku görün</value>
+  </data>
+  <data name="Help.LOCATIONS.Purpose" xml:space="preserve">
+    <value>Hiyerarşideki lokasyonların aynısı; arayabileceğiniz, süzebileceğiniz ve sıralayabileceğiniz düz bir liste olarak. Bir yeri hızla bulmak ya da aynı türden çok sayıda lokasyonla çalışmak için kullanın.</value>
+  </data>
+  <data name="Help.LOCATIONS.Audience" xml:space="preserve">
+    <value>Depo yöneticileri, lojistik yöneticileri</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1" xml:space="preserve">
+    <value>Sayfa sorarsa “Şirket” alanından şirketi seçin. Arama kutusuna yazın ya da filtre simgesine (“Filtrele”) tıklayıp “Tür”, “Durum”, “Stok tutulabilir” veya “Üst kayıt” seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1Title" xml:space="preserve">
+    <value>Lokasyonları bulun</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2" xml:space="preserve">
+    <value>Her satır “Kod”, “Ad”, “Tür”, “Üst kayıt yolu”, “Durum” bilgisini ve stok tutup tutamayacağını gösterir. Aynı yerleri ağaç olarak görmek için “Hiyerarşi”ye tıklayın.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2Title" xml:space="preserve">
+    <value>Listeyi okuyun</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3" xml:space="preserve">
+    <value>“Yeni lokasyon”a tıklayın, yan panelde “Kod”, “Ad”, “Tür”, “Üst kayıt” ve “Stok tutulabilir” alanlarını doldurup “Kaydet”e tıklayın; Enter da kaydeder.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3Title" xml:space="preserve">
+    <value>Lokasyon ekleyin</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4" xml:space="preserve">
+    <value>Satır işlemlerinde “Düzenle” aynı yan paneli açar; “Alt kayıt ekle” bu lokasyonun altına yeni bir lokasyon açar. Arşivlenmiş lokasyon değiştirilemez.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4Title" xml:space="preserve">
+    <value>Düzenleyin ya da alta ekleyin</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5" xml:space="preserve">
+    <value>“Aktife al”, “Pasife al” ve “Arşivle” önce onay ister; arşivleme geri alınamaz. “Geçmiş” hiyerarşideki değişiklik geçmişini açar, “Stok listesinde gör” oradaki stoku gösterir.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5Title" xml:space="preserve">
+    <value>Durum, geçmiş ve stok</value>
+  </data>
+  <data name="Help.LOTS.Purpose" xml:space="preserve">
+    <value>Şirket ürünlerinin tüm lotlarını tek listede görün: tarihleri, durumu ve elde ne kadar kaldığı. Buradan bir lotu açar, durumunu değiştirir ya da yeni lot başlatırsınız.</value>
+  </data>
+  <data name="Help.LOTS.Audience" xml:space="preserve">
+    <value>Depo, kalite ve planlama ekipleri</value>
+  </data>
+  <data name="Help.LOTS.Step1" xml:space="preserve">
+    <value>Arama kutusuna lot numarası ya da üretici / tedarikçi lotu yazın veya filtre simgesine tıklayıp “Ürün”, “Durum”, “SKT şu tarihten önce” ya da “Yalnız uyarısı olanlar” seçin ve “Uygula”ya tıklayın. “Temizle” filtreleri boşaltır.</value>
+  </data>
+  <data name="Help.LOTS.Step1Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.LOTS.Step2" xml:space="preserve">
+    <value>“Durum” sütunu Taslak, Serbest, Bloke ya da Süresi Dolmuş gösterir; “SKT” tarih yaklaştığında ya da geçtiğinde uyarır, “Eldeki Stok” lotun seçili şirketteki stoğudur.</value>
+  </data>
+  <data name="Help.LOTS.Step2Title" xml:space="preserve">
+    <value>Durumu ve SKT'yi okuyun</value>
+  </data>
+  <data name="Help.LOTS.Step3" xml:space="preserve">
+    <value>Lotun tamamını görmek için satıra ya da “Lot Detayı”na tıklayın. Satır menüsünde “Düzenle”, “Hareket Geçmişi” ve “İzlenebilirlik” de vardır.</value>
+  </data>
+  <data name="Help.LOTS.Step3Title" xml:space="preserve">
+    <value>Bir lotu açın</value>
+  </data>
+  <data name="Help.LOTS.Step4" xml:space="preserve">
+    <value>Satır menüsünden “Durum Değiştir”i seçin, yeni durumu işaretleyin ve en az 10 karakterlik bir gerekçe yazın. Bloke etmek lotun tüm stoğunu kullanılamaz yapar; bu yüzden önce “Etkisini anlıyorum.” kutusunu işaretlemeniz gerekir. Süresi Dolmuş durumunu yalnız sistem verir.</value>
+  </data>
+  <data name="Help.LOTS.Step4Title" xml:space="preserve">
+    <value>Durumu değiştirin</value>
+  </data>
+  <data name="Help.LOTS.Step5" xml:space="preserve">
+    <value>Bir lotu elle kaydetmek için “Yeni Lot”a tıklayın; lot Taslak olarak kaydedilir.</value>
+  </data>
+  <data name="Help.LOTS.Step5Title" xml:space="preserve">
+    <value>Lot ekleyin</value>
+  </data>
+  <data name="Help.LOTDETAILS.Purpose" xml:space="preserve">
+    <value>Bir lotla ilgili her şey tek sayfada: durumu ve uyarıları, eldeki stok, stoğun nerede olduğu, seri numaraları ve kimin neyi neden değiştirdiği.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Audience" xml:space="preserve">
+    <value>Depo, kalite ve planlama ekipleri</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1" xml:space="preserve">
+    <value>Durum rozeti ve uyarılar lot numarasının yanındadır. “Eldeki stok” miktarı, “Lot bilgileri” lotun tarihlerini, menşeini ve kaynağını gösterir.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1Title" xml:space="preserve">
+    <value>Lotu kontrol edin</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2" xml:space="preserve">
+    <value>“Stok dağılımı” bu lotun seçili şirketteki her “Depo”, “Lokasyon”, “Stok durumu” ve “Miktar” satırını listeler.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2Title" xml:space="preserve">
+    <value>Stoğun yerini görün</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3" xml:space="preserve">
+    <value>“Değişiklik geçmişi” kimin hangi alanı değiştirdiğini, eski → yeni değeri ve gerekçeyi gösterir. Sayfalar arasında ‹ ve › ile gezin; kayıtlar silinemez.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3Title" xml:space="preserve">
+    <value>Geçmişi okuyun</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4" xml:space="preserve">
+    <value>Lotun alanlarını düzeltmek için “Düzenle”ye, en az 10 karakterlik gerekçeyle serbest bırakmak ya da bloke etmek için “Durum Değiştir”e tıklayın.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4Title" xml:space="preserve">
+    <value>Düzenleyin ya da durumu değiştirin</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5" xml:space="preserve">
+    <value>Üstteki “Hareket Geçmişi”, “İzlenebilirlik” ya da “Stok Defteri'nde aç” ile devam edin; seri takipli lotta “Seri numaraları” kartındaki “Seri Gezgini'nde tümü” Seri Gezgini'ni açar.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5Title" xml:space="preserve">
+    <value>Devam edin</value>
+  </data>
+  <data name="Help.LOTCREATE.Purpose" xml:space="preserve">
+    <value>Lot takipli bir ürün için lotu tarihleri ve menşeiyle elle kaydedin. Yeni lot Taslak olarak kaydedilir.</value>
+  </data>
+  <data name="Help.LOTCREATE.Audience" xml:space="preserve">
+    <value>Depo ve kalite ekipleri</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1" xml:space="preserve">
+    <value>Önce “Ürün”ü, sonra lotun ait olduğu “SKU”yu seçin. Yalnız lot takipli ürünlere lot açılabilir.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1Title" xml:space="preserve">
+    <value>Ürünü seçin</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2" xml:space="preserve">
+    <value>“Lot No”yu yazın: 1–40 karakter, A–Z, 0–9 ve . / -. Kaydettikten sonra değiştirilemez ve ürün için tekil olmalıdır.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2Title" xml:space="preserve">
+    <value>Lot numarasını girin</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3" xml:space="preserve">
+    <value>“Üretim Tarihi”, “Son Kullanma (SKT)” ve gerekiyorsa “Yeniden Test Tarihi” girin: üretim bugün ya da daha önce, SKT üretimden sonra, yeniden test ikisinin arasında olmalıdır.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3Title" xml:space="preserve">
+    <value>Tarihleri doldurun</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4" xml:space="preserve">
+    <value>İsterseniz “Üretici Lotu”, “Tedarikçi Lotu”, “Menşe Ülke” ve “CoA Referansı” alanlarını doldurun.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4Title" xml:space="preserve">
+    <value>Menşei ekleyin</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5" xml:space="preserve">
+    <value>“Özet” kartını kontrol edip “Kaydet”e tıklayın. “İptal” kaydetmeden Lot Gezgini'ne döner.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5Title" xml:space="preserve">
+    <value>Kaydedin</value>
+  </data>
+  <data name="Help.LOTEDIT.Purpose" xml:space="preserve">
+    <value>Var olan bir lotun bilgilerini düzeltin: tarihler, menşe ve referanslar. Her değişiklik lotun değişiklik geçmişinde saklanır.</value>
+  </data>
+  <data name="Help.LOTEDIT.Audience" xml:space="preserve">
+    <value>Depo ve kalite ekipleri</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1" xml:space="preserve">
+    <value>“Ürün”, “SKU” ve “Lot No” lot kaydedildikten sonra değiştirilemez; salt okunur gösterilir.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1Title" xml:space="preserve">
+    <value>Sabit alanları bilin</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2" xml:space="preserve">
+    <value>Lot taslak değilse, “Değişiklik gerekçesi”ne en az 10 karakter yazana kadar alanlar kilitli kalır. Gerekçe değişiklik geçmişinde saklanır.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2Title" xml:space="preserve">
+    <value>Gerekçe yazın</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3" xml:space="preserve">
+    <value>“Üretim Tarihi”, “Son Kullanma (SKT)”, “Yeniden Test Tarihi”, “Üretici Lotu”, “Tedarikçi Lotu”, “Menşe Ülke” ya da “CoA Referansı” alanını düzeltin.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3Title" xml:space="preserve">
+    <value>Alanları değiştirin</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4" xml:space="preserve">
+    <value>“Kaydedilecek değişiklikler” kaydetmeden önce değiştirdiğiniz her alanı eski → yeni olarak listeler.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4Title" xml:space="preserve">
+    <value>Değişiklikleri kontrol edin</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5" xml:space="preserve">
+    <value>“Kaydet”e tıklayın. “İptal” kaydetmeden lot detayına döner.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5Title" xml:space="preserve">
+    <value>Kaydedin</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Purpose" xml:space="preserve">
+    <value>Bir lotun tüm Stok Defteri hareketlerini görün: ne girdi, ne çıktı, nereye gitti ve hangi stok durumunda.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Audience" xml:space="preserve">
+    <value>Depo, kalite ve planlama ekipleri</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1" xml:space="preserve">
+    <value>Tablonun üstündeki “Lot” seçicisinde lotu arayıp seçin. Bir lottan geldiyseniz lot zaten seçilidir.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>Lotu seçin</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2" xml:space="preserve">
+    <value>Filtre simgesine tıklayın, “Başlangıç tarihi” ve “Bitiş tarihi”ni girin, ardından “Uygula”ya tıklayın. “Sıfırla” tarihleri kaldırır.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>Tarihleri sınırlayın</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3" xml:space="preserve">
+    <value>Her satır “İşlem no”, “Hareket türü”, “Miktar” (girişte yeşil +, çıkışta kırmızı −), “Nereye”, “Durum”, “Kaynak” ve “İşlem tarihi”ni gösterir.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>Hareketleri okuyun</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4" xml:space="preserve">
+    <value>Hareketi defterin kaydettiği hâliyle görmek için satıra ya da “Hareket fişi”ne tıklayın; “Stok Defteri'nde aç” sizi deftere götürür.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>Fişi açın</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5" xml:space="preserve">
+    <value>Seri Gezgini'nden geldiğinizde “Seri …” etiketi seriyi adlandırır ve serinin son hareketi listede vurgulanır.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>Bir seriyi izleyin</value>
+  </data>
+  <data name="Help.SERIALS.Purpose" xml:space="preserve">
+    <value>Herhangi bir seri numarasını bulun: şu an nerede olduğu, hangi lota ait olduğu ve kullanılabilir olup olmadığı. Bu sayfa salt okunurdur.</value>
+  </data>
+  <data name="Help.SERIALS.Audience" xml:space="preserve">
+    <value>Depo, kalite ve servis ekipleri</value>
+  </data>
+  <data name="Help.SERIALS.Step1" xml:space="preserve">
+    <value>Listenin üstündeki arama kutusuna seri numarasını yazın.</value>
+  </data>
+  <data name="Help.SERIALS.Step1Title" xml:space="preserve">
+    <value>Seriyi bulun</value>
+  </data>
+  <data name="Help.SERIALS.Step2" xml:space="preserve">
+    <value>Filtre simgesine tıklayın, “Ürün”ü, ardından “Lot” ve “Durum”u (Aktif, Bloke, Tüketildi) seçin ve “Uygula”ya tıklayın. “Sıfırla” filtreleri temizler.</value>
+  </data>
+  <data name="Help.SERIALS.Step2Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.SERIALS.Step3" xml:space="preserve">
+    <value>“Depo / Lokasyon” serinin nerede olduğunu, “Son Hareket” en son ne zaman hareket ettiğini, “Durum” kullanılabilir olup olmadığını gösterir; lotu bloke olan seri Bloke görünür.</value>
+  </data>
+  <data name="Help.SERIALS.Step3Title" xml:space="preserve">
+    <value>Yerini okuyun</value>
+  </data>
+  <data name="Help.SERIALS.Step4" xml:space="preserve">
+    <value>Serinin ait olduğu lotu açmak için satır menüsünden “Lot Detayı”nı seçin.</value>
+  </data>
+  <data name="Help.SERIALS.Step4Title" xml:space="preserve">
+    <value>Lotunu açın</value>
+  </data>
+  <data name="Help.SERIALS.Step5" xml:space="preserve">
+    <value>Satır menüsünden “Hareket Geçmişi”ni seçin: lotun hareketleri açılır ve bu serinin son hareketi vurgulanır.</value>
+  </data>
+  <data name="Help.SERIALS.Step5Title" xml:space="preserve">
+    <value>Hareketlerini görün</value>
+  </data>
+  <data name="Help.LOTTRACE.Purpose" xml:space="preserve">
+    <value>Bir lotu geriye doğru nereden geldiğine, ileriye doğru nereye gittiğine kadar, her yönde iki seviye izleyin ve ne kadar miktarın etkilendiğini görün.</value>
+  </data>
+  <data name="Help.LOTTRACE.Audience" xml:space="preserve">
+    <value>Kalite, geri çağırma ve depo ekipleri</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1" xml:space="preserve">
+    <value>“Lot” seçicisinde lotu arayıp seçin. Bir lottan geldiyseniz lot zaten seçilidir.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1Title" xml:space="preserve">
+    <value>Lotu seçin</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2" xml:space="preserve">
+    <value>“Etkilenen toplam miktar” eldeki ve sevk edilmiş miktarı birim başına toplar (birimler asla birbirine eklenmez); kartlar “Depoda”, “Sevk edilmiş” ve “Etkilenen lot” sayılarını gösterir.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2Title" xml:space="preserve">
+    <value>Etkilenen miktarı görün</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3" xml:space="preserve">
+    <value>Ortada “Seçili lot”, bir yanda “Geri · 1. seviye” ve “Geri · 2. seviye”, öbür yanda “İleri · 1. seviye” ve “İleri · 2. seviye” durur. Şimdilik geriye doğru lotun giriş kaynağı, ileriye doğru yalnız çıkış belge numaraları gösterilir.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3Title" xml:space="preserve">
+    <value>Akışı okuyun</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4" xml:space="preserve">
+    <value>Bir lot kartını merkeze almak ve oradan izlemek için karta tıklayın; seçili lottaki “Lot Detayı” lotun tam sayfasını açar.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4Title" xml:space="preserve">
+    <value>Zincirde ilerleyin</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5" xml:space="preserve">
+    <value>Geri çağırma yetkiniz varsa “Tam izleme (geri çağırma)” bu lot için geri çağırma izlemesini açar.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5Title" xml:space="preserve">
+    <value>Tam izleme başlatın</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Purpose" xml:space="preserve">
+    <value>Lot kaydı gelmeden önce eski Stok Defteri hareketlerine elle yazılmış lot metinlerini kayıtlı lotlara bağlayın. Aktarım geçmiş hareketleri değiştirmez; yalnız lot bağlantısını ekler.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Audience" xml:space="preserve">
+    <value>Stok ve kalite yöneticileri</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1" xml:space="preserve">
+    <value>Kartlar “Toplam satır”, “Eşleşen” ve “Bekleyen” sayılarını gösterir. Yalnız gereken satırları görmek için “Tümü”, “Bekleyen” ve “Eşleşen” sekmelerini kullanın; her satır bir ürün + “Elle Yazılan Lot”tur.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1Title" xml:space="preserve">
+    <value>Kalanı görün</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2" xml:space="preserve">
+    <value>“Önerilen Eşleşme” bir lot gösteriyorsa satır menüsünden “Öneriyi uygula”yı seçin ya da tüm önerileri bir kerede almak için “Tüm önerileri uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2Title" xml:space="preserve">
+    <value>Önerileri alın</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3" xml:space="preserve">
+    <value>Aynı SKU'nun kayıtlı bir lotunu seçmek için “Mevcut lota bağla”yı, satırı elle yazılmış başka bir lota katmak için “Yazım hatası — başka lota bağla”yı seçin ve “Bağla”ya tıklayın.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3Title" xml:space="preserve">
+    <value>Elle bağlayın</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4" xml:space="preserve">
+    <value>“Yeni lot olarak oluştur”u seçin, lot numarasını ve tarihleri kontrol edin ve “Karar olarak kullan”a tıklayın. Lot, ancak aktarımı onayladığınızda Taslak olarak oluşturulur.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4Title" xml:space="preserve">
+    <value>Lot oluşturun</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5" xml:space="preserve">
+    <value>Kararlar onaylayana kadar bu sayfada kalır; “Değiştir” bir satırı yeniden açar. Bekleyen satır kalmadığında “Aktarımı Onayla”ya tıklayın ve en az 10 karakterlik gerekçe yazın. Bu işlem geri alınamaz: sonrasında Stok Defteri'nde elle lot yazma kapanır.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5Title" xml:space="preserve">
+    <value>Aktarımı onaylayın</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Purpose" xml:space="preserve">
+    <value>Kalite kararı bekleyen her karantina satırını izleyin: geciken kayıtları görün, stoğu elle karantinaya alın ve karar vermek için kaydı açın.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Audience" xml:space="preserve">
+    <value>Kalite güvence ve depo sorumluları</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1" xml:space="preserve">
+    <value>“Şirket” seçin. Kartlar karar bekleyen satırları, birime göre toplam miktarı ve bekleme hedefini aşan kayıtları gösterir; geciken satırlar listede renkli görünür.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1Title" xml:space="preserve">
+    <value>Şirketi seçin</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2" xml:space="preserve">
+    <value>Arama kutusuna yazın ya da filtre düğmesine (“Filtrele”) tıklayıp depo, stok durumu, kaynak veya “Yalnız gecikenler” seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3" xml:space="preserve">
+    <value>“Stoğu karantinaya al”a tıklayın; lotu, kullanılabilir stok satırını ve miktarı seçin, “Devam”a tıklayıp en az 10 karakterlik gerekçeyle onaylayın. Kayıt bu kuyrukta karar bekler.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3Title" xml:space="preserve">
+    <value>Stoğu elle karantinaya alın</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4" xml:space="preserve">
+    <value>Kaydın kalite bilgilerini, karar geçmişini ve stok hareketlerini görmek için satıra ya da “Detay”a tıklayın.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4Title" xml:space="preserve">
+    <value>Kaydı açın</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
+    <value>Açık bir kayıtta “Karar Ver”e tıklayıp stoğu serbest bırakın, reddedin ya da bloke edin. Stok ancak karar onaylandıktan sonra hareket eder.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
+    <value>Karar verin</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Purpose" xml:space="preserve">
+    <value>Bir karantina kaydının tamamını görün — lot, miktar, kalite bilgileri, karar geçmişi ve stok hareketleri — ve kaydı karara taşıyın.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Audience" xml:space="preserve">
+    <value>Kalite güvence ve depo sorumluları</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Immediate" xml:space="preserve">
+    <value>Analiz notunun kaydedilmesi</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
+    <value>Üstteki bilgileri, “Kalite bilgileri” kartını ve kaydın oluşturduğu stok hareketlerini kontrol edin; bekleme hedefi aşıldıysa sarı bir uyarı görünür.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
+    <value>Kaydı okuyun</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2" xml:space="preserve">
+    <value>Kaydı İncelemede durumuna almak için “İncelemeye al”a tıklayın. Stok hareket etmez.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2Title" xml:space="preserve">
+    <value>İncelemeyi başlatın</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3" xml:space="preserve">
+    <value>“Notu düzenle”ye tıklayın, analiz sonucunu yazıp “Kaydet”e tıklayın. Bir karar onay beklerken not kilitlidir.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3Title" xml:space="preserve">
+    <value>Analiz notunu yazın</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4" xml:space="preserve">
+    <value>Karar sayfasını açıp stoğu serbest bırakmak, reddetmek ya da bloke etmek için “Karar Ver”e tıklayın.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4Title" xml:space="preserve">
+    <value>Karar verin</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5" xml:space="preserve">
+    <value>İş akışı kutusunda “Durumu yenile”yi, taslak için “İmzala ve gönder”i, “Kararı geri çek”i ya da uygulanamayan kararda “Yeniden uygula”yı kullanın. İmzalar “Karar geçmişi”nde görünür.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5Title" xml:space="preserve">
+    <value>Onayı izleyin</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Purpose" xml:space="preserve">
+    <value>Karantina kaydı için kalite kararını verin — serbest bırakma, red ya da bloke — imzalayıp onaya gönderin. Onaylanana kadar stok hareket etmez.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Audience" xml:space="preserve">
+    <value>Kalite güvence karar vericileri</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1" xml:space="preserve">
+    <value>“Serbest Bırak”, “Reddet” ya da “Bloke Et” seçin. Miktarı bölmek için “Kısmi karar”ı açın ve toplamı kaydın miktarına eşit, kararları farklı iki satır girin.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1Title" xml:space="preserve">
+    <value>Kararı seçin</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2" xml:space="preserve">
+    <value>Red ya da bloke için “Bloke nedeni” seçin. Serbest bırakmada “CoA / analiz sonucu kontrol edildi”yi işaretleyin; yeniden test tarihi geçmiş lot ayrıca “Yeni yeniden test tarihi” ister.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2Title" xml:space="preserve">
+    <value>Ayrıntıları tamamlayın</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3" xml:space="preserve">
+    <value>En az 10 karakterlik “Gerekçe” yazın. Üstteki not, dört göz kuralı gereği kararı başka bir kalite kullanıcısının onaylayıp onaylamayacağını söyler.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3Title" xml:space="preserve">
+    <value>Gerekçeyi yazın</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4" xml:space="preserve">
+    <value>“İleri: Elektronik imza”ya tıklayın. Taslak oluşur (stok hareket etmez) ve “İmzalanacak karar”da görünür; değiştirmek için “Geri”ye tıklayın.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4Title" xml:space="preserve">
+    <value>İmza adımına geçin</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5" xml:space="preserve">
+    <value>“İmzala ve gönder”e tıklayıp e-imza penceresinde imzalayın (politika imza istemiyorsa “Onaya gönder”). Stok, onaylayıcı onayladıktan sonra hareket eder.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5Title" xml:space="preserve">
+    <value>İmzalayıp gönderin</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Purpose" xml:space="preserve">
+    <value>Burada bir formla oluşturulmamış taslak kararı imzalayıp gönderin — örneğin bir lot serbest bırakma talebi ya da gönderimi başarısız olmuş bir karar. Stok onaydan sonra hareket eder.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Audience" xml:space="preserve">
+    <value>Kalite güvence karar vericileri</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1" xml:space="preserve">
+    <value>“İmzalanacak karar”ı okuyun: satırlar ve hedef durumları, planlanan stok hareketi ve gerekçe, sunucunun oluşturduğu biçimiyle görünür.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1Title" xml:space="preserve">
+    <value>Kararı kontrol edin</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2" xml:space="preserve">
+    <value>“İmzala ve gönder”e tıklayıp e-imza penceresinde imzalayın (politika imza istemiyorsa “Onaya gönder”). Karar ardından onay bekler.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2Title" xml:space="preserve">
+    <value>İmzalayıp gönderin</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3" xml:space="preserve">
+    <value>Kuyruğa dönmek için “Vazgeç”e tıklayın; hiçbir şey gönderilmez.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3Title" xml:space="preserve">
+    <value>Göndermeden çıkın</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Purpose" xml:space="preserve">
+    <value>Bloke stoğu yönetin: gerektiğinde stoğu hemen bloke edin, incelemeyi tamamlayın ve stoğa ne olacağına karar verin — disposition ya da blokeyi kaldırma.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Audience" xml:space="preserve">
+    <value>Kalite güvence ve depo sorumluları</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Immediate" xml:space="preserve">
+    <value>“Stoğu bloke et” → “Bloke et”: seçilen stok onay akışı olmadan hemen Bloke olur</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
+    <value>Arama kutusuna yazın ya da filtre düğmesine (“Filtrele”) tıklayıp bloke nedeni, “Yalnız disposition bekleyenler” veya “Durum” seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2" xml:space="preserve">
+    <value>“Stoğu bloke et”e tıklayın; lotu, kullanılabilir stok satırını, miktarı ve “Bloke nedeni”ni seçin, en az 10 karakterlik gerekçe yazıp “Bloke et”e tıklayın.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2Title" xml:space="preserve">
+    <value>Stoğu bloke edin</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3" xml:space="preserve">
+    <value>İnceleme bittiğinde satırda “İncelemeyi tamamla”ya tıklayıp gerekçe yazın. Böylece blokeyi kaldırma açılır.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3Title" xml:space="preserve">
+    <value>İncelemeyi tamamlayın</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4" xml:space="preserve">
+    <value>Stoğu imha etmek, tedarikçiye iade etmek, yeniden işlemek ya da numune olarak ayırmak için “Disposition Kararı”na tıklayın.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4Title" xml:space="preserve">
+    <value>Disposition kararını verin</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5" xml:space="preserve">
+    <value>İncelemesi tamamlanmış kayıtta “Blokeyi Kaldır”a tıklayıp gerekçe yazın. Karar imzalanır ve onaya gider; stok ancak onaydan sonra Kullanılabilir olur.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5Title" xml:space="preserve">
+    <value>Blokeyi kaldırın</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Purpose" xml:space="preserve">
+    <value>Bloke stok kaydına ne olacağına karar verin — imha, tedarikçiye iade, yeniden işleme ya da numune olarak ayırma — ve kararı imzaya ve onaya gönderin.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Audience" xml:space="preserve">
+    <value>Kalite güvence karar vericileri</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1" xml:space="preserve">
+    <value>“İmha”, “Tedarikçiye İade”, “Yeniden İşleme” ya da “Numune / Referans olarak ayır” seçin; her kart oluşturacağı stok hareketini gösterir.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1Title" xml:space="preserve">
+    <value>Disposition seçin</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2" xml:space="preserve">
+    <value>“Miktar” girin (en çok bloke miktar; kalan Bloke kalır). İade için “Tedarikçi” ve “İade belge no”, imha için “İmha yöntemi” ve “İmha tarihi” gerekir. Numune için Karantina ayarlarında numune lokasyonu tanımlı olmalıdır.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2Title" xml:space="preserve">
+    <value>Miktarı ve ayrıntıları girin</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3" xml:space="preserve">
+    <value>En az 10 karakterlik “Gerekçe” yazın ve “Onaylanınca Stok Defteri'nde oluşacak hareket” kutusunu kontrol edin.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3Title" xml:space="preserve">
+    <value>Gerekçeyi yazın</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4" xml:space="preserve">
+    <value>“İleri: Elektronik imza”ya tıklayın, özeti kontrol edin, ardından “İmzala ve gönder”e (ya da “Onaya gönder”e) tıklayın. Stok onaydan sonra hareket eder.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4Title" xml:space="preserve">
+    <value>İmzalayıp gönderin</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Purpose" xml:space="preserve">
+    <value>Yeniden test tarihi geçmiş ya da yaklaşan lotları görün ve kalite kararı için karantinaya gönderin.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Audience" xml:space="preserve">
+    <value>Kalite güvence ve depo sorumluları</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1" xml:space="preserve">
+    <value>Liste, yeniden test tarihi geçmiş ya da 30 gün içinde gelecek lotları durumuyla gösterir: yaklaşan, tarihi geçmiş ve kullanıma kapalı ya da zaten karantinada. Tarihi geçmiş lot, kalite kararı verilene kadar satışa, rezervasyona ve çıkışa kapalıdır.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1Title" xml:space="preserve">
+    <value>Listeyi okuyun</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2" xml:space="preserve">
+    <value>Listeyi daraltmak için arama kutusuna ürün ya da lot yazın.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2Title" xml:space="preserve">
+    <value>Lotu bulun</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3" xml:space="preserve">
+    <value>Satırda “Karantinaya Al”a tıklayıp en az 10 karakterlik gerekçeyle onaylayın. Lotun kullanılabilir stoğu Karantina'ya geçer ve karantina kuyruğuna bir kayıt eklenir.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3Title" xml:space="preserve">
+    <value>Lotu karantinaya alın</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4" xml:space="preserve">
+    <value>Zaten karantinada olan lotun kararını izlemek için “Karantina kaydını aç”a tıklayın.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4Title" xml:space="preserve">
+    <value>Var olan kaydı açın</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Purpose" xml:space="preserve">
+    <value>Şirketinizin karantina kurallarını belirleyin: bekleme hedefi, dört göz ve lot serbest bırakma onayı, kimin onaylayacağı, numunelerin nerede tutulacağı ve hangi bloke nedenlerinin olduğu.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Audience" xml:space="preserve">
+    <value>Kalite yöneticileri ve yöneticiler</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Immediate" xml:space="preserve">
+    <value>Ayarlar için “Kaydet” ve bloke nedeninin kaydedilmesi hemen geçerli olur</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1" xml:space="preserve">
+    <value>“Bekleme hedefi (gün)” (1–60) ve “Yeniden okuma aralığı (saniye)” girin; “Dört göz” ve “Lot serbest bırakma onayı”nı açın ya da kapatın.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1Title" xml:space="preserve">
+    <value>Genel kuralları belirleyin</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2" xml:space="preserve">
+    <value>“Onaylayıcı adaylar” altında bir pozisyon ya da kullanıcı seçip “Ekle”ye tıklayın (en çok 10). Aday yoksa hiçbir karar onaya gönderilemez.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2Title" xml:space="preserve">
+    <value>Onaylayıcıları seçin</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3" xml:space="preserve">
+    <value>“Numune lokasyonları” altında depo ve numune lokasyonunu seçip “Ekle”ye tıklayın; her depo için bir lokasyon.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3Title" xml:space="preserve">
+    <value>Numune lokasyonlarını belirleyin</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4" xml:space="preserve">
+    <value>Üstteki “Kaydet”e tıklayın. Onay şablonu eksik görünüyorsa bir kez “Onay şablonunu hazırla”ya tıklayın.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4Title" xml:space="preserve">
+    <value>Kaydedin ve şablonu hazırlayın</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5" xml:space="preserve">
+    <value>“Bloke nedeni ekle”ye tıklayın, kodu ve yedi dilin hepsinde adı girip kaydedin; var olanı düzenlemek için satır işlemini kullanın.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5Title" xml:space="preserve">
+    <value>Bloke nedenlerini yönetin</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve">
+    <value>Şirketinizin son kullanma riskini tek bakışta görün: elde kalan süresi dolmuş stok, kritik ve yaklaşan lotlar, minimum kalan raf ömrünün altındaki mal kabuller, açık istisnalar ve FEFO uyumu.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve">
+    <value>Kalite güvence, depo yöneticileri ve tedarik planlayıcıları</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve">
+    <value>İstenirse “Şirket” alanından şirketinizi seçin; ardından rakamları “Tüm depolar” ve uyum kartının “Dönem” seçimiyle daraltın. Seçimi değiştirdiğiniz anda sayfa yenilenir.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve">
+    <value>Kapsamı seçin</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve">
+    <value>Süresi dolmuş, kritik ve yaklaşan kartları lotları ve miktarları alt başlıkta yazan şirket eşiklerine göre sayar; istisna kartı kaç vakanın SLA'yı geçtiğini söyler.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve">
+    <value>Kartları okuyun</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3" xml:space="preserve">
+    <value>“Süresi dolmuş stok” kartına ya da kritik veya yaklaşan kartına tıklayın; ilgili liste deponuza göre süzülmüş olarak açılır.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3Title" xml:space="preserve">
+    <value>Kartın arkasındaki lotları açın</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4" xml:space="preserve">
+    <value>Grafik, ay ay ne kadar “Kullanılabilir” ve “Bekleyen” stoğun süresinin dolacağını gösterir.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4Title" xml:space="preserve">
+    <value>12 ay ileriye bakın</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5" xml:space="preserve">
+    <value>“En riskli 10 lot” tablosunda satır simgelerini kullanın: “FEFO sırasını gör”, “Karantinaya al (MOD-0175)” (Karantina modülünü açar) ya da “İstisna aç”. “Tümünü gör” tam yaklaşanlar listesini açar.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5Title" xml:space="preserve">
+    <value>En riskli lotlarda harekete geçin</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve">
+    <value>Son kullanma tarihi yaklaşan lotları en erken SKT önce (FEFO sırası) listeleyin; kullanılabilir ve bekleyen stok ayrı sütunlardadır, böylece lotları zamanında kullanır ya da ele alırsınız.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve">
+    <value>Depo, satış ve kalite kullanıcıları</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve">
+    <value>“Tüm depolar”, “Tüm durumlar”, “Ufuk” ve “Bekleyen stok dahil” ya da “Yalnız kullanılabilir stok” seçip “Uygula”ya tıklayın; “Temizle” süzgeçleri sıfırlar. Ufuk seçmezseniz şirket ayarınız geçerlidir.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve">
+    <value>“Kalan gün” ve “Kalan raf ömrü” lotun ne kadar acil olduğunu, “Kullanılabilir” ve “Bekleyen” hâlâ ne kullanılabileceğini gösterir. “Lot detayı (MOD-0174)” için lot numarasına tıklayın.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve">
+    <value>Satırı okuyun</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3" xml:space="preserve">
+    <value>Satır simgelerini kullanın: “FEFO sırasını gör” önce hangi lotun kullanılacağını gösterir, “Karantinaya al (MOD-0175)” Karantina modülünü açar, “İstisna aç” lot zamanında kullanılamayacaksa vaka kaydeder.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3Title" xml:space="preserve">
+    <value>Lot için harekete geçin</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4" xml:space="preserve">
+    <value>“Dışa aktar (CSV)” listeyi uyguladığınız süzgeçlerle indirir.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4Title" xml:space="preserve">
+    <value>Listeyi dışa aktarın</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Purpose" xml:space="preserve">
+    <value>Süresi dolmuş ve hâlâ stoğu olan lotları görün. Süresi dolan lot otomatik olarak kullanıma kapatılır; bu ekranda karar verilmez, imha ya da iade kararı Karantina modülünde verilir.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Audience" xml:space="preserve">
+    <value>Kalite güvence ve depo yöneticileri</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1" xml:space="preserve">
+    <value>“Tüm depolar” listesinden bir depo seçip “Uygula”ya tıklayın; “Temizle” bütün depoları yeniden gösterir.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1Title" xml:space="preserve">
+    <value>Depoyu seçin</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2" xml:space="preserve">
+    <value>“Dolduğundan beri” lotun kaç gün önce dolduğunu, “Kullanılabilir” ve “Bekleyen” elde ne kadar kaldığını gösterir. “Lot detayı (MOD-0174)” için lot numarasına tıklayın.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2Title" xml:space="preserve">
+    <value>Stoğu kontrol edin</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3" xml:space="preserve">
+    <value>Açık bir vaka varsa “İstisna” sütunu ona bağlanır; yoksa vakayı kaydetmek için satırdaki “İstisna aç”ı kullanın.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3Title" xml:space="preserve">
+    <value>İstisnayı izleyin ya da açın</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4" xml:space="preserve">
+    <value>Satırdaki “Karantinaya al (MOD-0175)” Karantina modülünü açar; stoğu imha mı iade mi edeceğinize orada karar verirsiniz.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4Title" xml:space="preserve">
+    <value>Kararı Karantina'da verin</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5" xml:space="preserve">
+    <value>“Dışa aktar (CSV)” seçili deponun listesini indirir.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5Title" xml:space="preserve">
+    <value>Listeyi dışa aktarın</value>
+  </data>
+  <data name="Help.FEFOORDER.Purpose" xml:space="preserve">
+    <value>Bir depoda bir ürünün hangi lotunun önce kullanılması gerektiğini SKT'ye göre görün. Salt okunur bir öneridir: burada rezervasyon ya da çıkış yapılmaz; daha geç bir lottan çıkış şirketinizin FEFO çıkış kuralına tabidir.</value>
+  </data>
+  <data name="Help.FEFOORDER.Audience" xml:space="preserve">
+    <value>Depo operatörleri ve planlayıcılar</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1" xml:space="preserve">
+    <value>Önce “Depo”yu, sonra “Ürün (SKU)”yu seçin; yalnız o depoda lot stoğu olan ürünler listelenir.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1Title" xml:space="preserve">
+    <value>Depo ve ürün seçin</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2" xml:space="preserve">
+    <value>Belirli bir miktar gerekiyorsa “İstenen miktar (isteğe bağlı)” alanına yazın, ardından “Sırayı hesapla”ya tıklayın.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2Title" xml:space="preserve">
+    <value>Sırayı hesaplayın</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3" xml:space="preserve">
+    <value>“Sıraya alınan lotlar · SKT'ye göre” şu an çıkışa verilebilecek lotları sıralar; miktar girdiyseniz “Bu miktar için” her lottan ne kadar alınacağını ve karşılanamayan miktarı gösterir.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3Title" xml:space="preserve">
+    <value>Sırayı izleyin</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4" xml:space="preserve">
+    <value>“Sıraya alınmayan lotlar” şu an kullanılamayan lotları nedeniyle listeler; bağlantılar sizi süresi dolmuş stoğa ya da Karantina modülüne götürür.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4Title" xml:space="preserve">
+    <value>Dışarıda kalanlara bakın</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>Şirketinizin FEFO istisnalarını yönetin: son kullanma kurallarından her sapma, açılıştan kapanışa (Açık, İnceleniyor, Kabul ya da Düzeltildi, Kapalı).</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve">
+    <value>İstisnaları inceleyip karar veren kalite güvence kullanıcıları</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve">
+    <value>“Tümü”, “Açık + İnceleniyor”, “SLA geçti” ve “Sonuçlanan” sekmelerini kullanın; her sekme kendi sayısını gösterir.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>Görünümü seçin</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve">
+    <value>“Tüm türler”, “Tüm durumlar”, “Tüm depolar” ya da “Bana atananlar” seçip “Uygula”ya tıklayın; “Temizle” süzgeçleri sıfırlar.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3" xml:space="preserve">
+    <value>“Süre (SLA)” sütunu kalan süreyi ya da vakanın ne kadar geciktiğini, “Atanan” vakayı kimin yürüttüğünü gösterir.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3Title" xml:space="preserve">
+    <value>SLA'yı izleyin</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4" xml:space="preserve">
+    <value>Olguları, zaman çizelgesini ve kararı görmek için satır sonundaki oka (“İstisna detayını aç”) tıklayın.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4Title" xml:space="preserve">
+    <value>Vakayı açın</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5" xml:space="preserve">
+    <value>“İstisna aç”a tıklayın; depo, ürün ve lotu seçin, “İstisna türü”nü belirleyin, en az 10 karakterlik “Açıklama” yazın ve yeniden “İstisna aç”a tıklayın. Yeni vaka detay sayfasında açılır.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5Title" xml:space="preserve">
+    <value>Yeni istisna açın</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve">
+    <value>Tek bir istisnayı yürütün: olgularını ve ne olduğunu inceleyin, zaman çizelgesini izleyin ve kararı kaydedin.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve">
+    <value>Kalite güvence kullanıcıları ve istisnayla ilgili kişiler</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Immediate" xml:space="preserve">
+    <value>“Gönder”, “Üstlen ve incelemeye al” ve “İstisnayı kapat” tıkladığınız anda geçerli olur; onay sorulmaz.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve">
+    <value>“Olgular” ve “Ne oldu” lotu, tarihleri ve istisnayı doğuran hareketi kaydedildiği gibi gösterir; “Lot detayı (MOD-0174)” ve “Karantinaya al (MOD-0175)” ilgili modülleri açar.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve">
+    <value>Olguları inceleyin</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve">
+    <value>“Zaman çizelgesi” vakanın her adımını listeler; yorum kutusuna yazıp “Gönder”e tıklayın.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve">
+    <value>Zaman çizelgesinde konuşun</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3" xml:space="preserve">
+    <value>İstisna açıkken üstlenmek için “Karar” kartındaki “Üstlen ve incelemeye al”a tıklayın.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3Title" xml:space="preserve">
+    <value>İncelemeye alın</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4" xml:space="preserve">
+    <value>“Karar ver”e tıklayın; “Gerekçeyle kabul”, “Düzeltildi” ya da “İptal” seçin, en az 10 karakterlik “Gerekçe” yazın ve “Devam”a tıklayın. Şirketinizin e-imza politikası istiyorsa “İmzala ve kaydet” ile bitirin; istemiyorsa karar hemen kaydedilir.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4Title" xml:space="preserve">
+    <value>Karar verin</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5" xml:space="preserve">
+    <value>Kabul ya da düzeltildi kararından sonra “İstisnayı kapat”a tıklayın.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5Title" xml:space="preserve">
+    <value>İstisnayı kapatın</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve">
+    <value>Şirketinizin son kullanma kurallarını belirleyin: yaklaşan ve kritik ufuklar, FEFO çıkış kuralı, minimum kalan raf ömrünün altındaki mal kabulde ne olacağı, SKT değişiklikleri, istisna SLA'ları ve süresi dolmuş stok eşiği.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve">
+    <value>Son kullanma politikasının sahibi kalite yöneticileri</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve">
+    <value>“Şirket ayarları”nda “Yaklaşıyor” ufkunu ve “Kritik” eşiğini gün olarak girin; kritik eşik yaklaşan ufkundan küçük olmalıdır.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve">
+    <value>Ufukları belirleyin</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve">
+    <value>“FEFO çıkış kuralı”, “Mal kabulde minimum kalan raf ömrü altı” ve “SKT / retest değişikliği” için birer seçenek seçin; “İstisna SLA'ları”nda tür başına saati, “Süresi dolmuş stok elde” eşiğini de gün olarak girin.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve">
+    <value>Kuralları seçin</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3" xml:space="preserve">
+    <value>“Değişiklikleri kaydet”e tıklayın, değişen alanları kontrol edin, en az 10 karakterlik “Değişiklik gerekçesi” yazın ve “Değişiklikleri kaydet” ile onaylayın; “Vazgeç” düzenlemelerinizi geri alır. Politikayı yönetme yetkiniz yoksa form salt okunurdur.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3Title" xml:space="preserve">
+    <value>Gerekçeyle kaydedin</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4" xml:space="preserve">
+    <value>“Ürün bazında görünüm” raf ömrü, yeniden test ve minimum kalan günleri ürün ana verisinden gösterir; “Tanımsız” değerler burada değil, MDM'deki ürün kartında düzeltilir.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4Title" xml:space="preserve">
+    <value>Ürünleri kontrol edin</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5" xml:space="preserve">
+    <value>“Değişiklik geçmişi” her değişikliği ne zaman ve kimin yaptığıyla, eski ve yeni değeri ve gerekçesiyle gösterir.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5Title" xml:space="preserve">
+    <value>Geçmişi inceleyin</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve">
+    <value>Denetimler için bir dönemin FEFO / son kullanma kanıt paketini üretin: uyum özeti, çözümleri ve imzalarıyla istisnalar, politika değişiklikleri ve FEFO dışı çıkışlar.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve">
+    <value>Kalite güvence, kalite sistem yöneticisi ve denetçiler</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve">
+    <value>Bir “Dönem” seçin ya da “Tarih aralığı” seçip “Başlangıç” ve “Bitiş”i doldurun; gerekirse “Depo” ve “Tür” ile daraltın.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Dönemi ve kapsamı seçin</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve">
+    <value>Paketin dört bölümünü görmek için “Önizle”ye tıklayın: özet göstergeler, çözümleriyle istisnalar, politika değişiklikleri ve FEFO dışı çıkışlar.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Önizleyin</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3" xml:space="preserve">
+    <value>“PDF indir” ya da “CSV indir”e tıklayın; dosya sunucuda üretilir, indirilir ve dışa aktarma günlüğüne yazılır.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3Title" xml:space="preserve">
+    <value>İndirin</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4" xml:space="preserve">
+    <value>“Dışa aktarma günlüğü” her dışa aktarmayı kim ve ne zaman bilgisiyle ve dosyanın baytlarından hesaplanan SHA-256 ile listeler; dosyayı adından yeniden açın, karşılaştırmak için “SHA-256 değerini kopyala”yı kullanın.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4Title" xml:space="preserve">
+    <value>Dosyayı doğrulayın</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve">
+    <value>Şirketinizin bir geri çağırmaya ne kadar hazır olduğunu tek bakışta görün: açık vakalar, hedefine göre son tatbikat, çıkışların lot kapsamı, izlenemeyen çıkışlar ve açık vakaların iadeleri.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve">
+    <value>Kalite (geri çağırma sorumlusu), kalite sistem yöneticisi ve yönetim (salt okunur).</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve">
+    <value>Sayfa isterse “Şirket” alanından şirketi seçin. Bu sayfadaki her rakam yalnız o şirkete aittir.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve">
+    <value>Şirketi seçin</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve">
+    <value>Beş karta bakın: “Açık geri çağırma vakası”, “Son tatbikat süresi”, “İzlenebilirlik kapsama oranı”, “Lotsuz çıkış (izlenemeyen)” ve “Geri dönen (açık vakalar)”. Son tatbikatta kırmızı “Hedef aşıldı” ya da sıfırdan büyük izlenemeyen çıkış sayısı ilginizi ister.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve">
+    <value>Kartları okuyun</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve">
+    <value>“Tatbikat geçmişi · son 12” son tamamlanan tatbikatları hedef çizgisine göre gösterir; kırmızı çubuk hedefi aşan tatbikattır.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve">
+    <value>Tatbikat geçmişine bakın</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4" xml:space="preserve">
+    <value>Sarı bant son tatbikatın çok eski olduğunu söylüyorsa tatbikat planlayıcısını açmak için “Tatbikat planla”ya tıklayın.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4Title" xml:space="preserve">
+    <value>Uyarıya göre davranın</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5" xml:space="preserve">
+    <value>“Açık vakalar” tablosu her vakayı sınıfı, etkilenen miktarı ve geri dönen oranıyla gösterir; tam liste için “Tüm vakalar →”a tıklayın.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5Title" xml:space="preserve">
+    <value>Açık vakaları izleyin</value>
+  </data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve">
+    <value>Bir lotu tüm soy ağacı boyunca izleyin: geriye girdilerine, ileriye stoğa, sevkiyatlara ve müşterilere; malın nereye gittiğinin lotla kanıtlanamadığı boşlukları görün.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve">
+    <value>Kalite (geri çağırma sorumlusu) ve kalite sistem yöneticisi.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve">
+    <value>“Taslak vaka aç” taslak vakayı hemen oluşturur; kapsam vaka sayfasında onaylanana kadar hiçbir şey engellenmez.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve">
+    <value>Lotu “Lot no” alanında arayın ya da “Son lotlar:” altındaki bir lota tıklayın. Ürün kendiliğinden dolar.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve">
+    <value>Lotu seçin</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve">
+    <value>“Geriye”, “İleriye” ya da “İkisi”ni seçin ve “İzle”ye tıklayın. Sonucun üstündeki özet lotları, stok satırlarını, sevkiyatları ve boşlukları sayar.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve">
+    <value>Yönü seçip izleyin</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve">
+    <value>“Ağaç” ile “Tablo” arasında geçin; ikisi aynı düğümleri gösterir, “Tümünü aç” her dalı açar. Kırmızı satırlar izleme boşluğudur; başka şirketin hareketi yalnız sayı olarak görünür.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve">
+    <value>Ağacı ya da tabloyu okuyun</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4" xml:space="preserve">
+    <value>“CSV indir” aynı satırları verir. “Bu kapsamla geri çağırma vakası aç” sizden “Sınıf”, “Düzey”, “Neden” ve varsa “Sapma / şikâyet no” ister; ardından “Taslak vaka aç”a tıklayın.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4Title" xml:space="preserve">
+    <value>Dışa aktarın ya da vaka açın</value>
+  </data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve">
+    <value>Şirketinizin gerçek geri çağırma vakalarını ve tatbikatlarını tek listede, en yeniden eskiye, durum ve ilerlemeleriyle izleyin.</value>
+  </data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve">
+    <value>Geri çağırmaları izleyen herkes: kalite, depo, ticari ve yönetim.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve">
+    <value>Listenin üstündeki “Taslak”, “Kapsam onayı bekliyor” ya da “Aktif” gibi bir durum düğmesine tıklayın; üzerindeki sayı o durumdaki vaka sayısıdır.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve">
+    <value>Bir durum seçin</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve">
+    <value>Arama kutusuna yazın ya da “Filtrele”ye tıklayıp “Tüm türler”, “Tüm durumlar”, “Tatbikat durumları”, “Tüm sınıflar”, “Tüm ürünler” veya “Açılış ≥” seçin ve “Uygula”ya tıklayın; “Temizle” sıfırlar. Sınıf süzgeci yalnız gerçek vakaları gösterir.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3" xml:space="preserve">
+    <value>Tatbikat satırında “Tür” sütunu “Tatbikat” der, ilerleme yerine sonucunu ve süresini gösterir; sınıf ve düzey “—” olur.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3Title" xml:space="preserve">
+    <value>Tatbikatları ayırt edin</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4" xml:space="preserve">
+    <value>Açmak için numaraya tıklayın: gerçek vaka kendi vaka sayfasını, süren tatbikat tatbikat planlayıcısını, biten tatbikat kanıt paketini açar.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4Title" xml:space="preserve">
+    <value>Bir satırı açın</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve">
+    <value>Bir geri çağırma vakasını taslaktan kapanışa yürütün: kapsamı, stoğu, müşterileri, iadeleri, etkinlik kontrolü ve geçmişi.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve">
+    <value>Şirketin kalite (QA), depo ve müşteri hizmetleri kullanıcıları.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Immediate" xml:space="preserve">
+    <value>“Dahil / hariç kaydet”, “Kapsam onayına gönder”, “Seçilenleri karantinaya al” ve “Etkinlik kontrolüne geç” onay penceresi açmadan hemen geçerli olur.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve">
+    <value>“Kapsam” sekmesinde etkilenmeyeni kapatıp “Hariç tutma gerekçesi”ni yazın, “Dahil / hariç kaydet”e, ardından “Kapsam onayına gönder”e tıklayın. “Yeniden izle” yeni düğümleri gösterir; onları gerekçeyle “Kapsam revizyonu” ile eklersiniz.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve">
+    <value>Kapsamı işaretleyip gönderin</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve">
+    <value>Başka bir kullanıcı “Kapsamı onayla”ya (ya da gerekçeyle “Geri gönder”e) tıklar, özeti kontrol eder, “Devam”a tıklar ve politika isterse e-imza penceresinde imzalar. Ardından lotlar engellenir ve karantina istekleri gönderilir.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve">
+    <value>Kapsamı onaylayın</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve">
+    <value>“Eldeki stok” sekmesinde satırları işaretleyip “Seçilenleri karantinaya al”a tıklayın; başarısız istek için “Yeniden dene”yi, mal fiziksel olarak ayrılınca “Ayırmayı teyit et”i kullanın.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve">
+    <value>Stoğu karantinaya alın</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
+    <value>“Müşteriler ve sevkiyatlar” sekmesinde “Bilgilendirildi olarak kaydet” ve “Tüketim beyanı ekle”yi kullanın. “Geri dönüşler” sekmesinde “Müşteri iadesi gir” stok hareketi formunu açar; ardından adaydaki “İadeyi bağla”ya tıklayın.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
+    <value>Müşterileri ve iadeleri izleyin</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5" xml:space="preserve">
+    <value>“Etkinlik kontrolü” sekmesinde “Etkinlik kontrolüne geç”e, ardından e-imzayla “Etkinlik kontrolünü tamamla”ya tıklayın; vakayı başka bir kullanıcı “Vakayı kapat” ile kapatır. “Kanıt paketi” ve “Zaman çizelgesi” kaydı tutar.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5Title" xml:space="preserve">
+    <value>Etkinliği kontrol edip kapatın</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve">
+    <value>Geri çağırma tatbikatlarını planlayın ve stoğa dokunmadan süreye karşı yürütün.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve">
+    <value>Kalite güvence ve kalite sistem yöneticisi.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Immediate" xml:space="preserve">
+    <value>“Sayacı başlat” ve her adım düğmesi onay penceresi açmadan hemen geçerli olur; stoğa hiç dokunulmaz.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve">
+    <value>“Plan ekle”ye tıklayın, “Plan adı”, “Sıklık”, “Kapsam” ve “Sonraki tarih”i doldurun ve “Planı kaydet”e tıklayın. Var olan planı “Düzenle” ile değiştirin.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve">
+    <value>Plan ekleyin</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve">
+    <value>“Plan sorumlusu” altında arama kutusuna bir ad yazın, “Bul”a tıklayın ve listeden kişiyi seçin. Arama yapmazsanız sorumlu olduğu gibi kalır (yeni planda siz).</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve">
+    <value>Plan sorumlusunu seçin</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve">
+    <value>Bir plan satırında “Tatbikatı başlat”a tıklayın, lot için “Sistem seçsin” ya da “Ben seçeyim”i seçin ve “Sayacı başlat”a tıklayın.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve">
+    <value>Tatbikatı başlatın</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4" xml:space="preserve">
+    <value>Sırayla “İzlemeyi çalıştır”, “Kapsamı doğrula” ve “Müşteri listesini tamamla · sayacı durdur”a tıklayın; saat sunucunun saatidir. “Tatbikatı iptal et” gerekçe ister ve tatbikatı kayıtta tutar.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4Title" xml:space="preserve">
+    <value>Üç adımı tamamlayın</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5" xml:space="preserve">
+    <value>“Sonucu e-imzayla kaydet”e tıklayın, sonuç notunu yazın ve politika isterse imzalayın. “Son tatbikat sonuçları” her tatbikatı listeler; yeniden açmak için numaraya tıklayın.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5Title" xml:space="preserve">
+    <value>Sonucu kaydedin</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve">
+    <value>Denetimler için bir vakanın, tatbikatın veya dönemin kanıt paketini üretin ve teslim ettiğiniz dosyanın kayda geçen dosya olduğunu kanıtlayın.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve">
+    <value>Kalite güvence, kalite sistem yöneticisi ve denetçiler.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Immediate" xml:space="preserve">
+    <value>Her indirme “Dışa aktarma günlüğü”ne hemen kaydedilir.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve">
+    <value>“Konu” altında “Gerçek”, “Tatbikat” ya da “Dönem”e tıklayın; ardından “Vaka veya tatbikat” alanından vakayı ya da tatbikatı seçin veya dönem için “Başlangıç” ve “Bitiş”i girin.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Konuyu seçin</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve">
+    <value>“Önizle”ye tıklayın; dosyanın yedi bölümünü dosyada olduğu gibi gösterir. İndirme düğmeleri ancak önizlemeden sonra açılır.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Paketi önizleyin</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3" xml:space="preserve">
+    <value>“PDF indir” ya da “CSV indir”e tıklayın. Sayfa indirilen dosyanın özetini hesaplar ve SHA-256’nın dışa aktarma günlüğüyle eşleşip eşleşmediğini söyler. Dosya etiketleri Türkçe ya da İngilizcedir.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3Title" xml:space="preserve">
+    <value>İndirip doğrulayın</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4" xml:space="preserve">
+    <value>“Dışa aktarma günlüğü” her dosyayı kullanıcı, zaman ve SHA-256 ile listeler; yeniden indirmek için dosya adına tıklayın.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4Title" xml:space="preserve">
+    <value>Dışa aktarma günlüğünü kullanın</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve">
+    <value>Şirketinizin tatbikat hedef süresini, tatbikat sıklığı uyarısını ve sınıf bazında etkinlik hedefini belirleyin.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve">
+    <value>Kalite sistem yöneticisi.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve">
+    <value>“Tatbikat hedef süresi (saat)” (1–72), “Tatbikat sıklığı uyarısı (gün)” (30–730) ve “Etkinlik hedefi (%) · sınıf bazında” altındaki sınıf değerlerini (0–100) değiştirin. Değiştirme yetkiniz yoksa alanlar salt okunurdur.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve">
+    <value>Değerleri değiştirin</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve">
+    <value>“Gerekçe (en az 10 karakter)” alanını doldurup “Kaydet”e tıklayın; “Geri al” kayıtlı değerleri geri getirir. Politika isterse “İmzala ve kaydet”e tıklayıp e-imza penceresinde imzalayın.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve">
+    <value>Gerekçe yazıp kaydedin</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3" xml:space="preserve">
+    <value>“Değişiklik geçmişi” her değişikliği gerekçesi ve imzasıyla gösterir. E-imza politikası burada belirlenmez; MOD-0022’de yönetilir.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3Title" xml:space="preserve">
+    <value>Geçmişe bakın</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Purpose" xml:space="preserve">
+    <value>Modüllerin size atadığı imza işlerini imzalayın ya da reddedin. Son tarihi en yakın olan üstte durur; aynı son tarihte daha yeni talep önce gelir.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Audience" xml:space="preserve">
+    <value>Bir kaydı imzalaması istenen herkes</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Immediate" xml:space="preserve">
+    <value>Talebi imzalama ve reddetme; ikisinden sonra talep kapanır</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1" xml:space="preserve">
+    <value>“Filtrele”ye tıklayın, “Modül”, “Durum” ya da “Talep tarihi” aralığını seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2" xml:space="preserve">
+    <value>“Son tarih” sütununa bakın: bugün dolan bekleyen talepte “Bugün” etiketi vardır; listenin üstündeki sayaç kaç talebin beklediğini gösterir.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2Title" xml:space="preserve">
+    <value>Acil işi görün</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3" xml:space="preserve">
+    <value>Bekleyen satırda “İmzala”ya tıklayın; imza penceresi talepte belirtilen anlamla açılır. “Şifre”nizi girin (şifre süresi içindeyseniz kullanıcı adınızı yazın) ve “İmzala”ya tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3Title" xml:space="preserve">
+    <value>İmzalayın</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4" xml:space="preserve">
+    <value>“Reddet”e tıklayın, en az 10 karakterlik bir “Gerekçe” yazın ve “Reddet” ile onaylayın; talep eden bilgilendirilir.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4Title" xml:space="preserve">
+    <value>Reddedin</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5" xml:space="preserve">
+    <value>Kaydı doğrulama sayfasında açmak için “Kaydın imzaları”na tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5Title" xml:space="preserve">
+    <value>Kaydın imzalarına bakın</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Purpose" xml:space="preserve">
+    <value>Bir kaydın üzerindeki imzaları ve her birinin bugün hâlâ geçerli olup olmadığını görün: geçerli, kayıt değişti, bozulmuş ya da geçersiz kılındı. Doğrulama, imzalanan içeriği kaydın bugünkü hâliyle karşılaştırır; imza kaydının kendisi hiç değişmez.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Audience" xml:space="preserve">
+    <value>Kalite, denetim ve e-imza yöneticileri</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Immediate" xml:space="preserve">
+    <value>İmzayı geçersiz kılma: imza kullanıldığı her yerde geçersiz görünür ve geri alınamaz</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1" xml:space="preserve">
+    <value>“Modül”ü seçin, “Kayıt türü” ve “Kayıt kimliği”ni girip “Göster”e tıklayın ya da “Son imzalanan kayıtlar”dan birini seçin (yalnız dışa aktarım yetkisiyle görünür). “Kaydın imzaları” bağlantısı kaydı doğrudan açar.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1Title" xml:space="preserve">
+    <value>Kaydı seçin</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2" xml:space="preserve">
+    <value>Sayaçlar kaç imzanın “Geçerli”, “Kayıt değişti”, “Bozulmuş” ya da “Geçersiz kılındı” olduğunu gösterir; her kartta imzalayan, anlam, görünüm ve imza anındaki özet yer alır. Şirkete bağlı kayıtlar yalnız veri kapsamınızdaki şirketler için görünür; kendi imzalarınız her zaman görünür.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2Title" xml:space="preserve">
+    <value>Sonucu okuyun</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3" xml:space="preserve">
+    <value>Her imzayı kaydın bugünkü hâliyle bir kez daha karşılaştırmak için “Yeniden doğrula”ya tıklayın; hiçbir şey değişmez.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3Title" xml:space="preserve">
+    <value>Yeniden doğrulayın</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4" xml:space="preserve">
+    <value>Kartta “İmzayı geçersiz kıl”a tıklayın, en az 10 karakterlik bir “Gerekçe” yazıp “Devam et”e tıklayın, ardından “Şifre”nizi girip “İmzayı geçersiz kıl”a tıklayın. Bu geri alınamaz; geçersiz kılma ayrı ve kalıcı bir kayıt olarak saklanır.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4Title" xml:space="preserve">
+    <value>İmzayı geçersiz kılın</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Purpose" xml:space="preserve">
+    <value>İmza kayıtlarını filtreleyin ve denetim ile teftişler için PDF ya da CSV olarak indirin. Her dışa aktarım bir numara alır; kimin indirdiği, filtre, kayıt sayısı ve dosyanın SHA-256 özeti kalıcı olarak kaydedilir.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Audience" xml:space="preserve">
+    <value>Denetim, kalite ve uyum sorumluları</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Immediate" xml:space="preserve">
+    <value>“PDF olarak dışa aktar” ve “CSV olarak dışa aktar”: dosyayı saklamasanız bile dışa aktarım tıkladığınız anda kaydedilir</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1" xml:space="preserve">
+    <value>“Filtrele”ye tıklayın, “Başlangıç” ve “Bitiş”i girin, “Modül”, “İmzalayan”, “İmza anlamı” ya da “Şirket” seçin ve “Uygula”ya tıklayın; şirkete bağlı kayıtlar veri kapsamınızla sınırlıdır.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1Title" xml:space="preserve">
+    <value>Kayıtları filtreleyin</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2" xml:space="preserve">
+    <value>Ekrandaki satırları raporun imza blokları olarak görmek için “Tablo” ile “PDF önizleme” arasında geçin.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2Title" xml:space="preserve">
+    <value>Önizleyin</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3" xml:space="preserve">
+    <value>“PDF olarak dışa aktar” ya da “CSV olarak dışa aktar”a tıklayın; dosyayı sunucu üretir ve tarihleri UTC olarak basar.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3Title" xml:space="preserve">
+    <value>Dosyayı indirin</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4" xml:space="preserve">
+    <value>“Dışa aktarım denetim kaydı” her dışa aktarımı numarası, tarihi, kişisi, biçimi, kayıt sayısı, filtresi ve dosya özetiyle listeler.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4Title" xml:space="preserve">
+    <value>Kaydı kontrol edin</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Purpose" xml:space="preserve">
+    <value>Elektronik imza atarken kullanabileceğiniz imza örneğinizi saklayın ve örneklerinizin geçmişini izleyin. Aynı anda tek bir etkin örneğiniz olur; yenisini kaydederken şifreniz her zaman sorulur.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Audience" xml:space="preserve">
+    <value>Elektronik imza atan herkes</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Immediate" xml:space="preserve">
+    <value>Örneği pasif yapma ve silme; onay kuralı yoksa kaydedilen örnek hemen etkin olur</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1" xml:space="preserve">
+    <value>“İmza örneğim” etkin örneğinizi, ne zaman eklendiğini, kimin onayladığını ve kaç imzada kullanıldığını gösterir; büyütmek için resme tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1Title" xml:space="preserve">
+    <value>Örneğinizi görün</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2" xml:space="preserve">
+    <value>“Yeni imza örneği” altında “Çiz” sekmesinde çizin (“Kalınlık” ve “Renk” seçin ya da telefonda “Tam ekran (yatay)” kullanın) veya “Resim yükle” sekmesinde en fazla 1 MB'lık bir PNG ya da JPG seçip kırpın, gerekirse “Arka planı temizle”yi açın.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2Title" xml:space="preserve">
+    <value>Çizin ya da yükleyin</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3" xml:space="preserve">
+    <value>“Şifreyle kaydet”e tıklayın, “Şifre”nizi girin ve “Doğrula ve kaydet”e tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3Title" xml:space="preserve">
+    <value>Şifrenizle kaydedin</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4" xml:space="preserve">
+    <value>Politika onay istiyorsa yeni örnek, başka bir e-imza yöneticisi onaylayana kadar “Onay bekliyor” görünür; o zamana kadar mevcut örneğiniz kullanılır. Kendi örneğinizi hiçbir zaman onaylayamazsınız.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4Title" xml:space="preserve">
+    <value>Onayı bekleyin</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5" xml:space="preserve">
+    <value>“İmza örneği geçmişi”nde etkin örnek için “Pasif yap”ı, hiç kullanılmamış bir örnek için “Sil”i kullanın; bir imzada kullanılmış örnek silinemez, yalnız pasif yapılır.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5Title" xml:space="preserve">
+    <value>Eski örnekleri yönetin</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Purpose" xml:space="preserve">
+    <value>Hangi işlemin elektronik imza istediğine, hangi anlam ve görsel imza kuralıyla imzalanacağına ve şifrenin ne sıklıkla sorulacağına karar verin. Değişiklikler yeni imzalara uygulanır; her biri gerekçe ister ve değişiklik geçmişine yazılır.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Audience" xml:space="preserve">
+    <value>e-İmza yöneticileri</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Immediate" xml:space="preserve">
+    <value>Politikayı kaydetme ve şirketi tenant varsayılanına döndürme; ikisi de yeni imzalara hemen uygulanır</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1" xml:space="preserve">
+    <value>Kendi politikası olmayan her şirketin kullandığı politika için “Tenant varsayılanı”na, tek bir şirket için “Şirket bazında”ya tıklayıp şirketi seçin.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1Title" xml:space="preserve">
+    <value>Kapsamı seçin</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2" xml:space="preserve">
+    <value>Şirket tenant varsayılanını kullanıyorsa bir kopyadan başlamak için “Bu şirket için farklı politika”ya tıklayın; farklı satırlar “Farklı” etiketi taşır. “Tenant varsayılanına dön”, gerekçe girdikten sonra şirket politikasını kaldırır.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2Title" xml:space="preserve">
+    <value>Şirkete ayrı politika verin</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3" xml:space="preserve">
+    <value>“İşlem bazında imza kuralları” tablosunda her işlemi “Zorunlu” ya da “Kapalı” yapın, “İmza anlamı” ve “Görsel imza” seçin; “İkinci faktör” için “Yakında” yazar.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3Title" xml:space="preserve">
+    <value>İşlem kurallarını ayarlayın</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4" xml:space="preserve">
+    <value>“Genel ayarlar” altında “Her imzada şifre istensin” ya da “Süre içinde bir kez”i seçin ve “Şifre yeniden doğrulamanın geçerlilik süresi”ni (1–60 dk) girin. “İmza örneği kullanılmadan önce yönetici onayı gereksin” tenant genelinde bir ayardır.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4Title" xml:space="preserve">
+    <value>Şifre kuralını ayarlayın</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5" xml:space="preserve">
+    <value>“Gerekçe girip kaydet”e tıklayın, en az 10 karakterlik bir gerekçe yazın ve “Kaydet”e tıklayın; değişiklik “Değişiklik geçmişi”nde görünür. Politikayı yönetme yetkiniz yoksa sayfa salt okunurdur.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5Title" xml:space="preserve">
+    <value>Gerekçeyle kaydedin</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Purpose" xml:space="preserve">
+    <value>İmzanın neyi beyan ettiğini tanımlayın, örneğin Onaylıyorum ya da İnceledim; imza penceresi etkin anlamları sunar. Bir anlam kullanıldığında kodu kilitlenir ve her imza, imzalandığı andaki anlam metnini saklar.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Audience" xml:space="preserve">
+    <value>e-İmza yöneticileri</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Immediate" xml:space="preserve">
+    <value>Anlamı kaydetme, etkinleştirme ve pasifleştirme</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1" xml:space="preserve">
+    <value>“Filtrele”ye tıklayın, “Durum” ya da “Kullanım” seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1Title" xml:space="preserve">
+    <value>Anlam bulun</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2" xml:space="preserve">
+    <value>“Yeni anlam”a tıklayın; “Kod”u (büyük harfle başlayan 2–32 karakter: A–Z, 0–9, _), 7 dilin hepsinde “Görünen ad”ı ve isterseniz “Açıklama”yı girip “Kaydet”e tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2Title" xml:space="preserve">
+    <value>Anlam ekleyin</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3" xml:space="preserve">
+    <value>Satırda “Düzenle”ye tıklayın; kullanılmış bir anlamın kodu değişmez ve ad değişikliği yalnız yeni imzaları etkiler. Anlamları yönetme yetkiniz yoksa satırda “Görüntüle” bulunur.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3Title" xml:space="preserve">
+    <value>Anlamı düzenleyin</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4" xml:space="preserve">
+    <value>“Durum” sütunundaki anahtarı kullanıp “Etkinleştir” ya da “Pasifleştir” ile onaylayın. Pasif anlam yeni imzalarda seçilemez; bir politika satırının kullandığı anlam pasifleştirilemez.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4Title" xml:space="preserve">
+    <value>Etkinleştirin ya da pasifleştirin</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Purpose" xml:space="preserve">
+    <value>Politika onay istediğinde onay bekleyen yeni imza örneklerini inceleyin. Onaylanan örnek sahibinin tek etkin örneği olur; her karar karar geçmişinde kalıcı olarak saklanır.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Audience" xml:space="preserve">
+    <value>e-İmza yöneticileri</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Immediate" xml:space="preserve">
+    <value>Örneği onaylama ve reddetme</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1" xml:space="preserve">
+    <value>“Filtrele”ye tıklayın, “Nasıl eklendi”yi seçin ve “Uygula”ya tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1Title" xml:space="preserve">
+    <value>Kuyruğu daraltın</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2" xml:space="preserve">
+    <value>Sahibi, tarihi ve özetiyle büyütmek için “Görüntü” sütunundaki resme tıklayın.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2Title" xml:space="preserve">
+    <value>Resmi inceleyin</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3" xml:space="preserve">
+    <value>“Onayla”ya tıklayın ve “Onayla” ile onaylayın; kullanıcının önceki etkin örneği pasif olur.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3Title" xml:space="preserve">
+    <value>Onaylayın</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4" xml:space="preserve">
+    <value>“Reddet”e tıklayın, en az 10 karakterlik bir “Gerekçe” yazın ve “Reddet” ile onaylayın; kullanıcı gerekçeyi İmzam sayfasında görür.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4Title" xml:space="preserve">
+    <value>Reddedin</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5" xml:space="preserve">
+    <value>Kendi örneğinizin satırında düğmeler yerine “Başka bir yönetici onaylar” yazar. Her karar aşağıdaki “Karar geçmişi”nde görünür.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
+    <value>Kendi örneğinizi bırakın</value>
+  </data>
 </root>
