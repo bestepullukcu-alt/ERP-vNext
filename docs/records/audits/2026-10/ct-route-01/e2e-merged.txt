@@ -1,0 +1,220 @@
+base 58c8f32c5d50b512556fc362bdc30ee649a0e8b7 · B0 changes: none
+tool run: sha256 8cd2b2f7ded7c59f045b00890d6408c87f11d894ba212fc4455f4f304644ae17
+B0 23e2b23811351c378c240cd3e136acf969e48b31 · C1 e223b8a672300869aa32bc2229c872a295591f55 · C2 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7
+## C2, main = B0 (no assignment there): --module MOD-0151 — exit 0
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: hazırlık — yürürlükte değil: origin/main'de 'e2e-b' satırı 0 kez
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-b', 'hazırlık — yürürlükte değil', 'satırı 0 kez', 'dağıtım izni değildir', 'uzak durum doğrulanmadı']
+## same with --in-force — exit 1
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: hazırlık — yürürlükte değil: origin/main'de 'e2e-b' satırı 0 kez
+   sonuç: tek hedef yok — --in-force: eşleme yürürlükte değil (origin/main'de 'e2e-b' satırı 0 kez); koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — enterprise-architect — rol adayı; kişi atanmamış
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['yürürlükte değil']
+## main = C2: --module MOD-0151 --in-force — exit 0
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-b', 'yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)']
+## --ref C1 (before the assignments) — exit 1
+   aday: yok
+   sonuç: tek hedef yok — MOD-0151 hiçbir Control Tower'a atanmış bir dilimde yok; koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — sahip / kapanış Control Tower'ı
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['atanmış bir dilimde yok']
+## a broken uncommitted registry in the working tree, --ref HEAD — exit 0
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-b']
+## --wp WP-B1 --queue e2e-b --in-force — exit 0
+   iş: WP-B1 · modül MOD-0151 · kayıtlı kuyruk e2e-b korunur; başka CT'lerdeki aynı modül bunu belirsizleştirmez
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-b', 'kayıtlı kuyruk e2e-b korunur']
+## contract --module MOD-0151 — exit 0
+   önce oku: execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md@2e8d633537f8931d04df0b839f2ee9bff1a4b1f7 · status ready-for-dev
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — sorumlu CT / teknik temas: e2e-b (E2E CT e2e-b); karar otoritesi değildir — sözleşmenin dayanağı paket ve onu onaylayan sahiptir
+     Kime: e2e-b (E2E CT e2e-b) — teknik temas
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['önce oku: execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md@', 'status ready-for-dev', 'teknik temas', 'karar otoritesi değildir']
+## FU: --module MOD-0029-FU36 — exit 0
+   aday: e2e-c (E2E CT e2e-c) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP3 [MOD-0029-FU36] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-c (E2E CT e2e-c)
+     Kime: e2e-c (E2E CT e2e-c)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-c']
+## base: --module MOD-0029 (its FU36 is in MVP3) — exit 0
+   aday: e2e-c (E2E CT e2e-c) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP3 [MOD-0029-FU36] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-c (E2E CT e2e-c)
+     Kime: e2e-c (E2E CT e2e-c)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-c']
+## the real DCP-009 künye copied into a synthetic DCP: --module MOD-0149 — exit 0
+   aday: e2e-d (E2E CT e2e-d) ← execution/portfolio/delivery-capability-packs/DCP-092-dcp009-kunye-e2e.md#MVP9 [MOD-0149] · DCP-009 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-d (E2E CT e2e-d)
+     Kime: e2e-d (E2E CT e2e-d)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-d', 'execution/portfolio/delivery-capability-packs/DCP-092-dcp009-kunye-e2e.md', 'DCP-009 status approved']
+## contract --module MOD-0148 (its real pack is a draft) — exit 1
+   önce oku: execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md@2e8d633537f8931d04df0b839f2ee9bff1a4b1f7 · status draft
+   sonuç: tek hedef yok — paket status draft: sözleşme dayanağı değil (draft ya da blocked); koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — sahip / kapanış Control Tower'ı
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['sözleşme dayanağı değil']
+## the free-text SCE row: --wp Q01 --queue sce-mvp6 — exit 1
+   sonuç: tek hedef yok — 'sce-mvp6' kaydının kapsamı 'dcp:' önekiyle başlamıyor — serbest metin, yönlendirme verisi değil; koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — sahip / kapanış Control Tower'ı
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['serbest metin']
+## an option-like --ref — exit 2
+   sonuç: ÖLÇÜLEMEZ — ref '--output=x' geçersiz
+   PASS expected: exit 2, contains ['geçersiz']
+## an unknown --ref — exit 2
+   sonuç: ÖLÇÜLEMEZ — ref 'no-such-ref' bu depoda yok
+   PASS expected: exit 2, contains ['bu depoda yok']
+## main has a rival for MOD-0151: --ref C2 --module --in-force — exit 1
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: hazırlık — yürürlükte değil: origin/main'de teslimat adayı tek değil ya da farklı (e2e-b, e2e-r)
+   sonuç: tek hedef yok — --in-force: eşleme yürürlükte değil (origin/main'de teslimat adayı tek değil ya da farklı (e2e-b, e2e-r)); koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — enterprise-architect — rol adayı; kişi atanmamış
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['teslimat adayı tek değil', 'e2e-r']
+## main has a rival: --ref C2 --wp WP-B1 --queue e2e-b --in-force — exit 0
+   iş: WP-B1 · modül MOD-0151 · kayıtlı kuyruk e2e-b korunur; başka CT'lerdeki aynı modül bunu belirsizleştirmez
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 56127313a1ad9c8293cc8e8224acc0f74e027415)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['yürürlükte (']
+## main's e2e-b row has a baseline that is not a commit: --ref C2 --in-force — exit 2
+   sonuç: ÖLÇÜLEMEZ — --in-force ölçülemedi: origin/main ölçülemedi — kayıt dosyası ce9a27f6b3bc'de sorunlu: registry e2e-b: baseline_commit 'not-a-commit' is not a commit here
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['ölçülemedi', 'is not a commit here']
+## main's e2e-b row has a vocabulary without states: --ref C2 --in-force — exit 2
+   sonuç: ÖLÇÜLEMEZ — --in-force ölçülemedi: origin/main ölçülemedi — kayıt dosyası 5ca1389a4abb'de sorunlu: registry e2e-b: vocabulary 'missing-vocabulary' has no rows in the states file
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['ölçülemedi', 'has no rows in the states file']
+## main's e2e-b row has strict=maybe: --ref C2 --in-force — exit 2
+   sonuç: ÖLÇÜLEMEZ — --in-force ölçülemedi: origin/main ölçülemedi — kayıt dosyası 47c50182c683'de sorunlu: registry e2e-b: strict must be yes or no
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['ölçülemedi', 'strict must be yes or no']
+## main's e2e-b row has an empty control_tower: --ref C2 --in-force — exit 2
+   sonuç: ÖLÇÜLEMEZ — --in-force ölçülemedi: origin/main ölçülemedi — kayıt dosyası d0a9022eeb93'de sorunlu: registry e2e-b: boş alan control_tower
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['ölçülemedi', 'boş alan control_tower']
+## main's e2e-b row has another queue's task file: --ref C2 --in-force — exit 2
+   sonuç: ÖLÇÜLEMEZ — --in-force ölçülemedi: origin/main ölçülemedi — kayıt dosyası 8b3b4f4de722'de sorunlu: registry: 'e2e-b' or its path is registered twice
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['ölçülemedi', 'registered twice']
+## main: the WP renamed: --ref C2 --wp WP-B1 --queue e2e-b --in-force — exit 1
+   iş: WP-B1 · modül MOD-0151 · kayıtlı kuyruk e2e-b korunur; başka CT'lerdeki aynı modül bunu belirsizleştirmez
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: hazırlık — yürürlükte değil: origin/main'deki 'e2e-b' kuyruğunda WP-B1 yok
+   sonuç: tek hedef yok — --in-force: eşleme yürürlükte değil (origin/main'deki 'e2e-b' kuyruğunda WP-B1 yok); koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — enterprise-architect — rol adayı; kişi atanmamış
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['kuyruğunda WP-B1 yok']
+## main: the WP's module changed: --ref C2 --wp WP-B1 --queue e2e-b --in-force — exit 1
+   iş: WP-B1 · modül MOD-0151 · kayıtlı kuyruk e2e-b korunur; başka CT'lerdeki aynı modül bunu belirsizleştirmez
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: hazırlık — yürürlükte değil: origin/main'de WP-B1'nin modülü farklı (MOD-0150)
+   sonuç: tek hedef yok — --in-force: eşleme yürürlükte değil (origin/main'de WP-B1'nin modülü farklı (MOD-0150)); koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — enterprise-architect — rol adayı; kişi atanmamış
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['modülü farklı']
+## main: the WP twice: --ref C2 --wp WP-B1 --queue e2e-b --in-force — exit 2
+   sonuç: ÖLÇÜLEMEZ — --in-force ölçülemedi: origin/main ölçülemedi — WP-B1 'e2e-b' kuyruğunda 2 kez
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['kuyruğunda 2 kez']
+## main without a registry: --ref C2 — exit 0
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: hazırlık — yürürlükte değil: origin/main'de kayıt dosyası yok
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ["hazırlık — yürürlükte değil: origin/main'de kayıt dosyası yok"]
+## main without a registry: --ref C2 --in-force — exit 1
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: hazırlık — yürürlükte değil: origin/main'de kayıt dosyası yok
+   sonuç: tek hedef yok — --in-force: eşleme yürürlükte değil (origin/main'de kayıt dosyası yok); koordinatöre sorulur, tahmin edilmez
+     Kime: koordinatör — enterprise-architect — rol adayı; kişi atanmamış
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 1, contains ['yürürlükte değil']
+## no local origin/main: --in-force — exit 2
+   sonuç: ÖLÇÜLEMEZ — --in-force ölçülemedi: yerel origin/main yok
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['yerel origin/main yok']
+## no local origin/main: without --in-force — exit 0
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: ölçülemedi — yerel origin/main yok
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['yürürlük: ölçülemedi']
+## a pack with two ids: contract --module MOD-0151 — exit 2
+   sonuç: ÖLÇÜLEMEZ — paket execution/domains/commercial-suite/module-packs/MOD-0151-dup-e2e.md: tanımsız ya da bozuk status ya da künye ('künye okunamıyor ('id' 2 kez)') — kimliği ve durumu tek değil
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['kimliği ve durumu tek değil']
+## a pack with two ids: contract --module MOD-0150 — exit 2
+   sonuç: ÖLÇÜLEMEZ — paket execution/domains/commercial-suite/module-packs/MOD-0151-dup-e2e.md: tanımsız ya da bozuk status ya da künye ('künye okunamıyor ('id' 2 kez)') — kimliği ve durumu tek değil
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['kimliği ve durumu tek değil']
+## the ref's registry broken: --ref — exit 2
+   sonuç: ÖLÇÜLEMEZ — kayıt dosyası ccb4ea0438dc'de sorunlu: registry e2e-a: baseline_commit 'not-a-commit' is not a commit here
+   PASS expected: exit 2, contains ['sorunlu', 'is not a commit here']
+## another row's malformed prefix: --module MOD-0151 — exit 2
+   sonuç: ÖLÇÜLEMEZ — yönlendirme önekli bir kayıt satırı bozuk — e2e-a: 'DCP-091' DCP klasöründe repo-göreli, normalize bir .md yolu değil (DCP kimliği değil, yol); bir adayı gizleyebilir
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 2, contains ['bir adayı gizleyebilir']
+## the same, --wp WP-B1 --queue e2e-b (the unrelated row does not matter) — exit 0
+   iş: WP-B1 · modül MOD-0151 · kayıtlı kuyruk e2e-b korunur; başka CT'lerdeki aynı modül bunu belirsizleştirmez
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['e2e-b']
+## contacts outside the repository — exit 0
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   contacts: sha256 44926d4fd27406dcc2810dc6a456dbc2dad2ce12635c03e5b1a93f66cd53eb36 · depo dışında (çözülmüş yol; ana checkout, worktree'ler ve git dizini denetlendi)
+   kişi (e2e-b, contacts dosyasından; doğrulanmadı): Sentetik Kişi · sentetik@example.invalid
+   PASS expected: exit 0, contains ['Sentetik Kişi · sentetik@example.invalid', '44926d4fd27406dcc2810dc6a456dbc2dad2ce12635c03e5b1a93f66cd53eb36']
+## no --contacts: no person shown — exit 0
+   aday: e2e-b (E2E CT e2e-b) ← execution/portfolio/delivery-capability-packs/DCP-091-routing-e2e.md#MVP2 [MOD-0151] · DCP-091 status approved
+   yürürlük: yürürlükte (yerel origin/main 2e8d633537f8931d04df0b839f2ee9bff1a4b1f7)
+   sonuç: tek hedef — teslimattan sorumlu CT: e2e-b (E2E CT e2e-b)
+     Kime: e2e-b (E2E CT e2e-b)
+   kişi/iletişim: gösterilmez — depo kişi tutmaz (isteğe bağlı: --contacts <depo dışı dosya>)
+   PASS expected: exit 0, contains ['kişi/iletişim: gösterilmez'], absent ['Sentetik Kişi']
+## contacts inside the clone — exit 2
+   sonuç: ÖLÇÜLEMEZ — contacts dosyası bu deponun bir checkout'unda (ana checkout, bir worktree ya da git dizini) — depo dışında olmalı
+   PASS expected: exit 2, contains ["checkout'unda"]
+## contacts inside another worktree of the clone — exit 2
+   sonuç: ÖLÇÜLEMEZ — contacts dosyası bu deponun bir checkout'unda (ana checkout, bir worktree ya da git dizini) — depo dışında olmalı
+   PASS expected: exit 2, contains ["checkout'unda"]
+## a symlink outside that resolves into the clone — exit 2
+   sonuç: ÖLÇÜLEMEZ — contacts dosyası bu deponun bir checkout'unda (ana checkout, bir worktree ya da git dizini) — depo dışında olmalı
+   PASS expected: exit 2, contains ["checkout'unda"]
+
+result: 0 failed

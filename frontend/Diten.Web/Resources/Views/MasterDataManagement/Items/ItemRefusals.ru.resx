@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>Эту позицию пока нельзя активировать: заполните перечисленные ниже складские поля и отправьте её снова.</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>Учёт по партиям</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>Базовая единица</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>Условия хранения (хотя бы одно)</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>Пересчёт единиц (каждая единица не более чем в четырёх шагах от базовой)</value></data>
+  <data name="RefusalApprovalForbidden" xml:space="preserve"><value>У вас нет прав отправлять, запрашивать или отзывать активацию этой позиции.</value></data>
+  <data name="RefusalApprovalNotRequester" xml:space="preserve"><value>Отозвать запрос на активацию этой позиции может только тот, кто его отправил.</value></data>
+  <data name="RefusalApprovalChanged" xml:space="preserve"><value>Пока вы работали, согласование этой позиции изменилось. Перезагрузите позицию и попробуйте снова.</value></data>
+  <data name="RefusalApprovalBusy" xml:space="preserve"><value>Согласование этой позиции сейчас обрабатывается. Попробуйте снова через минуту.</value></data>
+  <data name="RefusalApprovalSubmitInFlight" xml:space="preserve"><value>Запрос на активацию этой позиции ещё обрабатывается. Попробуйте снова через минуту.</value></data>
+  <data name="RefusalApprovalRepeatDiffers" xml:space="preserve"><value>Этот запрос уже был отправлен с другими данными. Откройте позицию заново и начните сначала.</value></data>
+  <data name="RefusalApprovalWithdrawalInvalid" xml:space="preserve"><value>Не удалось прочитать запрос на отзыв. Откройте позицию заново и попробуйте снова.</value></data>
+  <data name="RefusalApprovalWithdrawalRefused" xml:space="preserve"><value>Не удалось отозвать согласование. Возможно, решение по нему уже принято. Перезагрузите позицию.</value></data>
+  <data name="RefusalApprovalUnavailable" xml:space="preserve"><value>Служба согласования сейчас недоступна. Попробуйте снова через минуту.</value></data>
+  <data name="RefusalApprovalNeedsCheck" xml:space="preserve"><value>Согласование этой позиции должен проверить администратор. Ваш запрос не был применён.</value></data>
+  <data name="RefusalApprovalStartRefused" xml:space="preserve"><value>Не удалось запустить согласование. Попросите администратора проверить настройки согласования.</value></data>
+  <data name="RefusalApprovalSelf" xml:space="preserve"><value>Нельзя согласовать собственный запрос. Решение должен принять другой согласующий.</value></data>
+  <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>Значение списка, используемое этой позицией, было удалено или изменено. Исправьте позицию и отправьте её снова.</value></data>
+  <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>Списки позиции сейчас нельзя проверить. Попробуйте снова через минуту.</value></data>
+  <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>Запрос на исправление кода недействителен.</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>Служба утверждения не приняла ваш сеанс. Войдите снова и повторите действие.</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>Настройка утверждения для этого действия не завершена. Сообщите администратору.</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>Запрос не дошёл до службы утверждения. Отправьте тот же запрос ещё раз.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalApprovalNoEligibleApprover" xml:space="preserve"><value>Никто, кроме вас, не может утвердить отправленную вами запись. Попросите администратора изменить согласующих, после этого вы сможете отправить её снова.</value></data>
+</root>

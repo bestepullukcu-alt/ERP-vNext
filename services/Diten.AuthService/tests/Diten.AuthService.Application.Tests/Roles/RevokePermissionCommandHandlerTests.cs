@@ -1,3 +1,5 @@
+using Diten.AuthService.Application.Tests.Testing;
+using Diten.AuthService.Application.Tests.Users;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
@@ -301,12 +303,50 @@ public sealed class RevokePermissionCommandHandlerTests
         Assert.Equal(0, version.IncrementCount); // 409 baseline-protected → no change
     }
 
+    // BL-521 FIX7 item 3 - a tenant actor's revoke ends the ORDINARY holders' sessions and leaves a platform account's alone.
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_tenant_actors_revoke_does_not_end_the_sessions_of_a_platform_account_holding_the_role(string actorType)
+    {
+        var ordinary = new User("holder.ordinary@bl521.test", "hash:x", "Holder", "Ordinary", TenantId);
+        var platform = new User("holder.platform@bl521.test", "hash:x", "Holder", "Platform", TenantId);
+        platform.SetPlatformActorType(actorType);
+        var users = new InMemoryUserRepository([ordinary, platform]) { HidesPlatformAccounts = true };
+        var refreshTokens = new FakeRefreshTokenRepository();
+        var handler = CreateHandler(role: null, new FakeRolePermissionRepository(),
+            new FakeUserRoleRepository { Holders = [ordinary.Id, platform.Id] }, refreshTokens, users: users);
+
+        var result = await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(new[] { ordinary.Id }, refreshTokens.RevokedUsers);
+    }
+
+    // The control: a caller that is not a tenant actor (platform door, internal call) ends every holder's sessions, as before.
+    [Fact]
+    public async Task A_caller_that_is_not_a_tenant_actor_still_ends_every_holders_sessions()
+    {
+        var ordinary = new User("holder.ordinary@bl521.test", "hash:x", "Holder", "Ordinary", TenantId);
+        var platform = new User("holder.platform@bl521.test", "hash:x", "Holder", "Platform", TenantId);
+        platform.SetPlatformActorType("platform_admin");
+        var refreshTokens = new FakeRefreshTokenRepository();
+        var handler = CreateHandler(role: null, new FakeRolePermissionRepository(),
+            new FakeUserRoleRepository { Holders = [ordinary.Id, platform.Id] }, refreshTokens,
+            users: new InMemoryUserRepository([ordinary, platform]));
+
+        await handler.Handle(new RevokePermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.Equal(new[] { ordinary.Id, platform.Id }, refreshTokens.RevokedUsers);
+    }
+
     private static RevokePermissionCommandHandler CreateHandler(
         Role? role,
         FakeRolePermissionRepository rolePerms,
         FakeUserRoleRepository userRoles,
         FakeRefreshTokenRepository refreshTokens,
-        FakeRoleAssignmentVersionService? version = null)
+        FakeRoleAssignmentVersionService? version = null,
+        IUserRepository? users = null)
     {
         var tenantContext = new TestTenantContext();
         tenantContext.SetTenant(TenantId);
@@ -314,11 +354,13 @@ public sealed class RevokePermissionCommandHandlerTests
             new FakeRoleRepository(role),
             rolePerms,
             userRoles,
+            users ?? new InMemoryUserRepository([]), // hides nothing: every holder id is visible
             refreshTokens,
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
             new FakePermissionRepository(),
-            new NoOpRbacAuditRecorder());
+            RoleAuditForTests.Over(new NoOpRbacAuditRecorder()),
+            RecoveryGuardForTests.Permits());
     }
 
     // FEAT-AUDIT-RBAC — permission lookup is best-effort (for the audit key); audit itself asserted in
@@ -417,13 +459,16 @@ public sealed class RevokePermissionCommandHandlerTests
         public List<CancellationToken> RevokeTokens { get; } = [];
         public IReadOnlyList<Guid> RevokedUsers => RevokeCalls.Select(c => c.userId).ToList();
 
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             if (ThrowForUser == userId) throw new InvalidOperationException("refresh-token revoke failed");
             RevokeCalls.Add((userId, tenantId));
             RevokeTokens.Add(ct);
             callLog?.Add("token-revoke");
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
 
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();

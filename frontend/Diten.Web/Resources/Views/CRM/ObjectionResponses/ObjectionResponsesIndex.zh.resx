@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ColProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ColCategory" xml:space="preserve"><value>类别</value></data>
+  <data name="ColQuestion" xml:space="preserve"><value>异议</value></data>
+  <data name="ColClaims" xml:space="preserve"><value>关联声明</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>使用的步骤</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="ColUpdated" xml:space="preserve"><value>最后修改</value></data>
+  <data name="ColActions" xml:space="preserve"><value>操作</value></data>
+  <data name="NewResponse" xml:space="preserve"><value>新建异议回应</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>查看</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>编辑</value></data>
+  <data name="AllProducts" xml:space="preserve"><value>全部产品</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>全部类别</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>全部状态</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>在异议文本中搜索</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Status_in_review" xml:space="preserve"><value>待审批</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="Status_retired" xml:space="preserve"><value>已停用</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>编辑异议回应</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>新建异议回应</value></data>
+  <data name="SelectProduct" xml:space="preserve"><value>选择产品</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>选择类别</value></data>
+  <data name="ClaimsSelected" xml:space="preserve"><value>已选 {0}（最多 {1}）</value></data>
+  <data name="ClaimsMax" xml:space="preserve"><value>最多可选择 {0} 条声明。</value></data>
+  <data name="ClaimsNone" xml:space="preserve"><value>该产品没有已批准的声明。</value></data>
+  <data name="ClaimsPickProduct" xml:space="preserve"><value>选择产品以查看其已批准的声明。</value></data>
+  <data name="ClaimsUnavailable" xml:space="preserve"><value>您无权读取声明。</value></data>
+  <data name="ProductsUnavailable" xml:space="preserve"><value>无法读取产品列表。</value></data>
+  <data name="CategoriesUnavailable" xml:space="preserve"><value>无法读取类别列表，请重试。</value></data>
+  <data name="PreviewEmptyQuestion" xml:space="preserve"><value>医生的问题显示在这里。</value></data>
+  <data name="PreviewEmptyAnswer" xml:space="preserve"><value>已批准的回应显示在这里。</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="Saved" xml:space="preserve"><value>草稿已保存。</value></data>
+  <data name="Submitted" xml:space="preserve"><value>已提交审批。</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>提交审批</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>取消</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>有未保存的更改。仍要离开吗？</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>创建人</value></data>
+  <data name="LastSaved" xml:space="preserve"><value>最后保存</value></data>
+  <data name="ProductRequired" xml:space="preserve"><value>请选择产品。</value></data>
+  <data name="PendingLine" xml:space="preserve"><value>待审批 · {0} 于 {1} 提交审批。</value></data>
+  <data name="ApprovedNote" xml:space="preserve"><value>已批准的回应不能修改。如需修改，请停用后新建。</value></data>
+  <data name="RetiredLine" xml:space="preserve"><value>已停用 · {0}，{1}。不再在拜访中显示。</value></data>
+  <data name="DraftReturnedLine" xml:space="preserve"><value>已退回草稿 · {0}，{1}：“{2}”</value></data>
+  <data name="DraftReturnedReason" xml:space="preserve"><value>退回草稿：{0}</value></data>
+  <data name="SodHint" xml:space="preserve"><value>此回应由您撰写或提交，须由其他审批人批准。</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>撤回</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>批准</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>退回草稿</value></data>
+  <data name="RetireButton" xml:space="preserve"><value>停用</value></data>
+  <data name="Copy" xml:space="preserve"><value>从副本新建草稿</value></data>
+  <data name="EditButton" xml:space="preserve"><value>编辑</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>退回草稿</value></data>
+  <data name="ReturnNoteLabel" xml:space="preserve"><value>给作者的说明（必填）</value></data>
+  <data name="ReturnNoteRequired" xml:space="preserve"><value>退回草稿前请填写说明。</value></data>
+  <data name="ReturnConfirm" xml:space="preserve"><value>退回</value></data>
+  <data name="RetireTitle" xml:space="preserve"><value>停用此回应？</value></data>
+  <data name="RetireText" xml:space="preserve"><value>停用的回应将立即从所有演示（包括已发布的）中移除，且不可撤销。修改即为新建回应。</value></data>
+  <data name="RetireUsed" xml:space="preserve"><value>已在 {0} 个步骤中使用。</value></data>
+  <data name="RetireConfirm" xml:space="preserve"><value>停用</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>撤回审批请求？回应将退回草稿。</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>提交此回应审批？审核期间将被锁定。</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>批准此回应？代表将在拜访中看到它。</value></data>
+  <data name="Approved" xml:space="preserve"><value>已批准。</value></data>
+  <data name="Returned" xml:space="preserve"><value>已退回草稿。</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>请求已撤回。</value></data>
+  <data name="Retired" xml:space="preserve"><value>已停用。</value></data>
+  <data name="Copied" xml:space="preserve"><value>已从副本创建新草稿。</value></data>
+  <data name="UsagesNone" xml:space="preserve"><value>尚无知识路径步骤将此回应选为预期异议。</value></data>
+  <data name="UsagePath" xml:space="preserve"><value>知识路径</value></data>
+  <data name="UsageVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="UsageStep" xml:space="preserve"><value>步骤</value></data>
+  <data name="UsageStepLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>{0} 个步骤</value></data>
+  <data name="PathStatus_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="PathStatus_review" xml:space="preserve"><value>审核中</value></data>
+  <data name="PathStatus_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="PathStatus_published" xml:space="preserve"><value>已发布</value></data>
+  <data name="PathStatus_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="PathStatus_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>历史</value></data>
+  <data name="Event_created" xml:space="preserve"><value>已创建</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>已提交审批</value></data>
+  <data name="Event_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="Event_returned" xml:space="preserve"><value>已退回草稿</value></data>
+  <data name="Event_withdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="Event_timeout" xml:space="preserve"><value>已超时</value></data>
+  <data name="Event_retired" xml:space="preserve"><value>已停用</value></data>
+  <data name="EventLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>未知用户</value></data>
+  <data name="ClaimNotApprovedAnymore" xml:space="preserve"><value>此声明已不再处于批准状态。</value></data>
+  <data name="NotFound" xml:space="preserve"><value>未找到该回应。</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载回应，请重试。</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>操作未能完成。</value></data>
+  <data name="Err_objection_response_incomplete" xml:space="preserve"><value>提交审批前请填写产品、类别、问题和回应。</value></data>
+  <data name="Err_objection_claim_not_approved" xml:space="preserve"><value>所选声明已不再获批，请移除后重试。</value></data>
+  <data name="Err_objection_claim_product_mismatch" xml:space="preserve"><value>所选声明属于其他产品。</value></data>
+  <data name="Err_objection_response_sod" xml:space="preserve"><value>审批人撰写、编辑或提交了此回应，因此已退回草稿，须由其他审批人批准。</value></data>
+  <data name="Err_objection_response_in_review" xml:space="preserve"><value>审核期间回应已锁定。</value></data>
+  <data name="Err_objection_response_not_editable" xml:space="preserve"><value>只能编辑草稿。</value></data>
+  <data name="Err_objection_response_not_draft" xml:space="preserve"><value>此操作仅适用于草稿。</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>只能通过审批任务进行批准。</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>无法读取类别列表，未保存任何内容。请重试。</value></data>
+  <data name="Err_objection_category_invalid" xml:space="preserve"><value>该类别不是有效值。</value></data>
+  <data name="Err_objection_product_invalid" xml:space="preserve"><value>在产品主数据中未找到该产品。</value></data>
+  <data name="Err_objection_response_invalid" xml:space="preserve"><value>请检查：问题 ≤ 500、回应 ≤ 4000 字符、最多 10 条声明。</value></data>
+  <data name="Err_objection_response_not_found" xml:space="preserve"><value>未找到该回应。</value></data>
+  <data name="Err_decision_comment_required" xml:space="preserve"><value>退回草稿需要填写说明。</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>依赖服务不可用，请重试。</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>其他人已同时保存了此回应，请刷新页面后重试。</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>服务当前不可用，请重试。</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>异议库</value></data>
+  <data name="PageGroup" xml:space="preserve"><value>内容工作室</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>代表在拜访中看到的、对医生异议的已批准回应。</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>暂无异议回应</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>代表在演示中看到的预期异议和已批准回应汇集于此。请先创建第一条。</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>异议与已批准回应</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>类别</value></data>
+  <data name="FieldQuestion" xml:space="preserve"><value>异议 · 医生的问题</value></data>
+  <data name="FieldAnswer" xml:space="preserve"><value>已批准回应</value></data>
+  <data name="FieldClaims" xml:space="preserve"><value>支持声明</value></data>
+  <data name="ClaimsHint" xml:space="preserve"><value>仅列出所选产品的已批准声明。</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>预览</value></data>
+  <data name="PreviewRemote" xml:space="preserve"><value>代表遥控 · 备注</value></data>
+  <data name="PreviewObjections" xml:space="preserve"><value>预期异议 · 已批准回应</value></data>
+  <data name="MetaNote" xml:space="preserve"><value>已批准的记录不能修改。批准须由作者以外的审批人给出。</value></data>
+  <data name="RecordTitle" xml:space="preserve"><value>异议回应</value></data>
+  <data name="UsagesTitle" xml:space="preserve"><value>使用位置</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>例如：我用 Tamsulin 很满意，为什么要换？</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>代表将给出的回应。仅依据已批准的声明。</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>尚未保存</value></data>
+</root>

@@ -28,7 +28,9 @@ public static class VisitReportMapper
         r.ReportedByResourceId, r.ExecutedAt, r.SubmittedAt, r.AmendedAt,
         r.Amendments.Select(ToAmendment).ToList(),
         r.IsDraft(), r.IsSubmitted(), r.IsAmended(),
-        r.Version, r.CreatedAt, r.CreatedBy, r.UpdatedAt, r.UpdatedBy);
+        r.Version, r.CreatedAt, r.CreatedBy, r.UpdatedAt, r.UpdatedBy,
+        r.SchemaVersion < 1 ? 1 : r.SchemaVersion, r.ReportKind, r.General,
+        r.IsV2() ? r.ProductSections : null, r.Doctor, r.Pharmacy, r.Safety, r.FollowUp);
 
     public static VisitReportContentActualsDto? ToContent(VisitReportContentActuals? c)
         => c is null
@@ -43,7 +45,7 @@ public static class VisitReportMapper
         => f is null ? null : new(f.DoctorFeedback, f.OutcomeCode, f.FollowUpRequired, f.FollowUpNotes);
 
     private static VisitReportAmendmentDto ToAmendment(VisitReportAmendment a)
-        => new(a.At, a.ByResourceId, a.Reason, a.ChangedFields);
+        => new(a.At, a.ByResourceId, a.Reason, a.ChangedFields, a.Changes);
 
     // ── write-path input → entity converters (shared by Submit + Amend so the two paths can never diverge) ─────────
 

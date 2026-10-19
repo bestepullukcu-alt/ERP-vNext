@@ -2,6 +2,7 @@ using Diten.Platform.API.Controllers.Internal;
 using Diten.Platform.API.Models.BusinessReferenceData;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.BusinessReferenceData.Models;
 using Diten.Platform.Application.Features.BusinessReferenceData.Queries;
 using Diten.Platform.Common.Tenancy;
@@ -90,17 +91,50 @@ public sealed class BusinessReferenceDataVerifiedMarketAuthorizationTests
         Assert.Equal(previousTenantId, context.TenantId);
     }
 
+    [Theory]
+    [InlineData("resolve", 200)]
+    [InlineData("enumerate", 403)]
+    [InlineData("ambiguous", 403)]
+    [InlineData("unauthorized-service", 403)]
+    public async Task Background_service_resolve_is_tenant_bound_and_never_enumerates(string variant, int status)
+    {
+        var tenant = Guid.NewGuid();
+        var previous = Guid.NewGuid();
+        var context = new TenantContext();
+        context.SetTenant(previous);
+        var mediator = new Mock<IMediator>(MockBehavior.Strict);
+        if (variant == "resolve")
+            mediator.Setup(x => x.Send(It.IsAny<ResolveVerifiedMarketReferenceDataQuery>(), It.IsAny<CancellationToken>()))
+                .Callback(() => Assert.Equal(tenant, context.TenantId))
+                .ReturnsAsync(Response<BusinessReferenceDataVerifiedMarketResolveResult>.Success(new BusinessReferenceDataVerifiedMarketResolveResult(null!)));
+        var interactive = new Mock<IVerifiedGskuResolverJwtTenantContext>(MockBehavior.Strict);
+        interactive.Setup(x => x.ResolveAsync(It.IsAny<HttpContext>())).ReturnsAsync(
+            variant == "ambiguous" ? new(true, true, tenant) : VerifiedGskuResolverJwtTenantResult.Unauthenticated);
+        var service = new Mock<IVerifiedReferenceDataServiceTenantContext>(MockBehavior.Strict);
+        service.Setup(x => x.ResolveAsync(It.IsAny<HttpContext>())).ReturnsAsync(
+            new VerifiedGskuResolverJwtTenantResult(true, variant != "unauthorized-service", tenant));
+        var controller = Controller(mediator, AuthenticatedCredential(), interactive, context, service.Object);
+        var result = variant == "enumerate"
+            ? await controller.EnumerateActive(default)
+            : await controller.Resolve(new() { MarketCode = "TR" }, default);
+        Assert.Equal(status, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        Assert.Equal(previous, context.TenantId);
+        if (variant != "resolve") mediator.VerifyNoOtherCalls();
+    }
+
     private static InternalVerifiedMarketReferenceDataController Controller(
         Mock<IMediator> mediator,
         Mock<IVerifiedGskuResolverCredentialAuthenticator> credential,
         Mock<IVerifiedGskuResolverJwtTenantContext> jwt,
-        TenantContext context)
+        TenantContext context,
+        IVerifiedReferenceDataServiceTenantContext? service = null)
     {
         var controller = new InternalVerifiedMarketReferenceDataController(
             mediator.Object,
             credential.Object,
             jwt.Object,
-            context);
+            context,
+            service);
         var http = new DefaultHttpContext();
         http.Request.Headers[VerifiedReferenceDataRequestExecutor.CredentialIdHeader] = "id";
         http.Request.Headers[VerifiedReferenceDataRequestExecutor.CredentialSecretHeader] = "secret";

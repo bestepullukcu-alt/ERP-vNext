@@ -3,7 +3,15 @@ using Diten.AuthService.Domain.Entities;
 namespace Diten.AuthService.Domain.Authorization;
 
 /// <summary>
-/// BL-411 (CT benchmark D3, 2026-09-15) — the ONLY sanctioned PlatformAdmin → Tenant scope correction in AuthService.
+/// BL-411 (CT benchmark D3, 2026-09-15) — the ONLY sanctioned ROUTE-sourced PlatformAdmin → Tenant scope correction
+/// in AuthService.
+///
+/// <para><b>Where this sits (owner + CT, 2026-10-01).</b> This class is the only ROUTE-sourced lowering, and it exists
+/// for SYNCED-ONLY keys: rows the seed has no literal for, which the seed reconcile therefore cannot reach. A SEEDED
+/// key's scope is its seed literal, and the startup seed reconcile lowers (or raises) an existing row to it — the gate
+/// on that is <c>permission-scope-baseline.csv</c>. <see cref="SeedOwnedTenantScopeKeys"/> is a third, different thing:
+/// it lowers nothing; it is the one exception to the catalog sync's tie-break, so that three Workflow execution keys
+/// the seed declares Tenant are not promoted back. The list below (the two BL-411 keys) is unchanged by that decision.</para>
 ///
 /// <para><b>Why it exists.</b> <c>platform.tasks.checklist-templates.manage</c> and <c>platform.tasks.templates.manage</c>
 /// are tenant configuration (Blueprint MOD-0024 system of record "Task templates, checklist templates"; tenant-scoped
@@ -20,16 +28,18 @@ namespace Diten.AuthService.Domain.Authorization;
 /// registers, and three gates that must ALL hold before a row changes: the key is on the list; the row is currently
 /// PlatformAdmin (so a second run changes nothing); the registered route is a tenant route (the same rule as Platform's
 /// <c>ModulePageDescriptorNormalizer.ScopeFromRoute</c>). It never raises a scope, and the correction run itself adds or
-/// removes no grant. <c>TenantRouteScopeCorrectionTests</c> cross-checks each entry against the production Tasks
-/// manifest and Platform's route rule, and pins the list to exactly these two keys.</para>
+/// removes no grant. <c>TenantRouteScopeCorrectionTests</c> cross-checks each entry against the production Tasks and
+/// CRM manifests and Platform's route rule, and pins the list to exactly these five keys (the two BL-411 template keys
+/// and, since WP-VW-W3-AUTH, the three document-repository visit-evidence keys).</para>
 ///
 /// <para><b>What changes for grants afterwards (CT decision 2026-09-15, accepted as intended).</b> Once the keys are
 /// Tenant, the next entitlement sync for a tenant entitled to <c>tasks</c> gives that tenant's Admin role both keys
 /// (Admin receives the module's full permission set), and Viewer neither (Viewer receives read actions only); a tenant
 /// administrator may also grant them to any tenant role through AssignPermission. MOD-0024 templates are tenant
-/// configuration maintained by the tenant's administrators.</para>
+/// configuration maintained by the tenant's administrators. WP-VW-W3-AUTH: the same path is expected for a tenant entitled to
+/// <c>crm</c> and the three visit-evidence keys (the CRM manifest declares them on /CRM/VisitWorkspace).</para>
 ///
-/// <para><b>Gate 3 today.</b> Both allowlisted routes are tenant routes (proven from the production manifest), so the
+/// <para><b>Gate 3 today.</b> Every allowlisted route is a tenant route (proven from the production manifest), so the
 /// route gate cannot reject anything with the current list; it stays as a fail-closed guard for a future entry.</para>
 ///
 /// <para><b>WP-0023-FX (owner decision 2026-10-07).</b> Seven workflow RUNTIME keys were added (start, view, act on a
@@ -80,6 +90,15 @@ public static class TenantRouteScopeCorrections
         new("platform.tasks.checklist-templates.manage", "/Tasks/ChecklistTemplates"),
         new("platform.tasks.templates.manage", "/Tasks/Templates"),
 
+        // WP-VW-W3-AUTH (CT decision 2026-10-12, WP-VW-W3 §37, open blocker "permission scope") — the document repository's
+        // scope-bound visit-evidence keys (W3-PLT). They open ONLY the CrmVisitEvidence scope (a rep's own photo and
+        // signature; read-all = the tenant's evidence for a manager), so by nature they are tenant permissions. Platform's
+        // scopeless A1 auto-registration can create them before the CRM manifest reaches Auth, which stamps them
+        // PlatformAdmin, and the sync tie-break never lowers that. Their page home is the CRM Visit Workspace.
+        // The GENERAL platform.document-repository.read / .manage are deliberately NOT here: they stay PlatformAdmin.
+        new("platform.document-repository.visit-evidence.write", "/CRM/VisitWorkspace"),
+        new("platform.document-repository.visit-evidence.read", "/CRM/VisitWorkspace"),
+        new("platform.document-repository.visit-evidence.read-all", "/CRM/VisitWorkspace"),
         // WP-0023-FX (owner decision 2026-10-07) — workflow RUNTIME keys. They were PlatformAdmin only because the
         // Workflow manifest declared them on /Platform/Workflow pages; a QA role must be able to start, see and act
         // on approvals. The Workflow manifest now declares exactly these seven as Tenant API permissions and none of

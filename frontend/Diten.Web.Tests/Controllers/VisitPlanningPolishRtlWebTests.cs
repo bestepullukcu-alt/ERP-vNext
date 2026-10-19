@@ -57,10 +57,12 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.Contains("VPF.ratio(day.slots.length, day.cap)", weeks);
         Assert.Contains("VPF.ratio(status.done, status.remaining != null ? status.remaining : '—')", weeks);
         var details = Script("details.js");
-        Assert.Contains("esc(VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—'))", details);
+        Assert.Contains("esc(VPF.ratio(st.done || 0, st.requiredVisitCount))", details); // 4M (3): done / required
         Assert.Contains("const head = VPF.isolateRatios(", details);
-        // a data name in plain text (the Targets subtitle) is isolated too (FSI…PDI)
-        Assert.Contains("setText('vp-targets-subtitle', (acc ? VPF.isolate(acc.name) + ' · ' : '')", details);
+        // WP-VP-4J — the Targets subtitle carries no data name any more ("41. Hafta · 12 doktor, 2 eczane seçili"); the
+        // institution's name sits in its own card, direction from its own text
+        Assert.Contains("setText('vp-targets-subtitle', fmt(L.TargetsWeekSubtitle", details); // 4L: visits this week · doctors in the period
+        Assert.Contains("id=\"vp-contacts-for\" dir=\"auto\"", View("Details.cshtml"));
         Assert.Contains("VPF.ratio(v.trim().length, REOPEN_MIN)", Script("header.js"));
         Assert.Contains("window.VisitPlanningFormat.isolateRatios(fmt(L.ProductLimitLine", Script("targets.js"));
 
@@ -155,9 +157,14 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.Contains("style=\"border:1px dashed #b4bdc6\"", button);
         Assert.Contains("id=\"vp-out-territory-open\" data-bs-toggle=\"modal\" data-bs-target=\"#vp-out-territory-modal\"><i class=\"bx bx-plus\"></i>", button);
         Assert.DoesNotContain("btn-label-warning w-100\" id=\"vp-out-territory-open\"", view);
-        // the list box: bordered, ≤ 560px, rows divided (list-group-flush)
+        // the list box: bordered, rows divided (list-group-flush). CT (user, 2026-10-08): no fixed 560px any more — the three
+        // Targets columns stretch to one height and the list fills the rest of its card, scrolling inside it.
         Assert.Contains("class=\"list-group list-group-flush border rounded overflow-auto\" id=\"vp-acc-list\" role=\"listbox\"", view);
-        Assert.Contains("style=\"max-height:560px\"", view);
+        Assert.DoesNotContain("style=\"max-height:560px\"", view);
+        Assert.Contains("class=\"d-flex flex-wrap gap-3 align-items-stretch vp-targets-row\"", view);
+        var css = File.ReadAllText(Path.Combine(RepoRoot(), "frontend", "Diten.Web", "wwwroot", "assets", "css", "visit-planning.css"));
+        Assert.Contains("#vp-accounts-col #vp-acc-list { flex: 1 1 0; min-height: 320px; overflow: auto; }", css);
+        Assert.Contains(".vp-fill-card .vp-doc-scroll { flex: 1 1 0; min-height: 320px; }", css);
     }
 
     // ── 5 · bidi: every data name of Visit Planning goes into the page inside <bdi> ─────────────────────────────

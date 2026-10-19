@@ -53,6 +53,7 @@ public sealed class RejectWorkflowTaskHandler
             request.Request.ActorId ?? string.Empty,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
+            request.Request.ExpectedVersion,
             request.Request.Comment,
             request.Request.EvidenceRef,
             request.CorrelationId,

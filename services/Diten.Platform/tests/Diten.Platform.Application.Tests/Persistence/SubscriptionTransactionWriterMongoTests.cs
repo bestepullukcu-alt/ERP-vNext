@@ -43,7 +43,7 @@ public sealed class SubscriptionTransactionWriterMongoTests
         currentUser.SetupGet(x => x.UserId).Returns(Guid.NewGuid());
         currentUser.SetupGet(x => x.ActorName).Returns("evidence-operator");
         var writer = new TenantSubscriptionTransactionWriter(new PlatformTransactionExecutor(context), subscriptions,
-            tenants, plans.Object, new EntitlementStateVersionRepository(context),
+            tenants, Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions.SessionlessPlanReads.Over(plans.Object), new EntitlementStateVersionRepository(context),
             new MongoIntentWriter(context), new MongoAuditWriter(context), currentUser.Object);
         var tenant = Tenant(tenantId);
         await database.GetCollection<Tenant>("tenants").InsertOneAsync(tenant);

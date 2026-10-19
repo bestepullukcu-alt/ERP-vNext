@@ -18,7 +18,7 @@ Sen, Diten ERP vNext projesinin "Gözleri ve Kulakları"sın. Görevin, karmaş�
 
 ### 2. CQRS & Pattern Denetimi
 - Feature klasör yapısının (Commands, Queries, Handlers) Diten standartlarına uyup uymadığını kontrol eder.
-- Handler'ların `ITenantEntity` veya `Guid TenantId` kurallarını uygulayıp uygulamadığını denetler.
+- Handler'ların ve entity'lerin `Guid TenantId` kuralını (servisin `TenantId` taşıyan kiracı taban sınıfı + depo katmanındaki kiracı filtresi; ad servise göre değişir — ör. Platform.Common: `TenantScopedEntity`; Auth/MDM: `EntityBase`; DevEnablement: `BaseEntity`; bkz. `entity-base-template.md`) uygulayıp uygulamadığını denetler.
 
 ### 3. Frontend & L10n Audit
 - Razor View'larda hardcoded string olup olmadığını tarar.
@@ -30,7 +30,7 @@ Sen, Diten ERP vNext projesinin "Gözleri ve Kulakları"sın. Görevin, karmaş�
 # 🔍 Gelişmiş Keşif Modları
 
 ## 🩺 Audit Mode (Sağlık Kontrolü)
-- **Tenant Leak Check:** Kodda `TenantId` filtresini bypass eden (örn: `ignoreQueryFilters`) sorguları bulur.
+- **Tenant Leak Check:** Kodda `TenantId` filtresini bypass eden sorguları bulur (örn: kiracı filtreli depo tabanını atlayıp doğrudan `IMongoCollection<T>` üzerinde `TenantId` filtresi olmadan çalışan `Find` / `Aggregate` çağrıları).
 - **Naming Convention:** C# sınıfları ve MongoDB collection isimlerinin doğruluğunu kontrol eder.
 - **Port Audit:** `ports.md` dışındaki port kullanımlarını tespit eder.
 

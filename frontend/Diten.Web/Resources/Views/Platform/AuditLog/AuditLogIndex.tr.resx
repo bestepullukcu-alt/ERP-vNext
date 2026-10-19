@@ -202,4 +202,9 @@
   <data name="AuditLog.Event.user_esign_reauthenticated" xml:space="preserve"><value>E-imza için yeniden kimlik doğrulandı</value></data>
   <data name="AuditLog.Event.user_esign_window_ticket_issued" xml:space="preserve"><value>İmza penceresinden e-imza bileti verildi</value></data>
   <data name="AuditLog.Event.user_esign_ticket_consumed" xml:space="preserve"><value>E-imza bileti kullanıldı</value></data>
+  <data name="AuditLog.Event.role_created" xml:space="preserve"><value>Rol oluşturuldu</value></data>
+  <data name="AuditLog.Event.role_updated" xml:space="preserve"><value>Rol güncellendi</value></data>
+  <data name="AuditLog.Event.role_deleted" xml:space="preserve"><value>Rol silindi</value></data>
+  <data name="AuditLog.Event.role_permission_granted" xml:space="preserve"><value>Role izin verildi</value></data>
+  <data name="AuditLog.Event.role_permission_revoked" xml:space="preserve"><value>Rolden izin kaldırıldı</value></data>
 </root>

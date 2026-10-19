@@ -1,0 +1,19 @@
+"""Copy a frozen snapshot (MANIFEST.sha256) onto an existing scratch clone outside the repository and verify every
+file's sha-256 there. Refuses a clone path inside the repository. Prints the clone's HEAD and the manifest."""
+import hashlib, shutil, subprocess, sys, os
+from pathlib import Path
+clone, snap = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve()
+if str(clone).startswith("<REPO>"):
+    raise SystemExit("refused: overlay only onto a scratch clone outside the repository")
+manifest = [l.split("  ", 1) for l in (snap / "MANIFEST.sha256").read_text(encoding="utf-8").splitlines() if l.strip()]
+for want, rel in manifest:
+    if hashlib.sha256((snap / rel).read_bytes()).hexdigest() != want:
+        raise SystemExit(f"snapshot {rel}: sha-256 differs from its manifest")
+    (clone / rel).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(snap / rel, clone / rel)
+bad = [rel for want, rel in manifest if hashlib.sha256((clone / rel).read_bytes()).hexdigest() != want]
+if bad:
+    raise SystemExit(f"overlay: sha-256 differs: {bad}")
+head = subprocess.run(["git", "-C", str(clone), "rev-parse", "HEAD"], capture_output=True, text=True,
+                      env=dict(os.environ, GIT_OPTIONAL_LOCKS="0")).stdout.strip()
+print(f"overlay {snap.name} -> {clone.name} · HEAD {head} · {len(manifest)} files verified")

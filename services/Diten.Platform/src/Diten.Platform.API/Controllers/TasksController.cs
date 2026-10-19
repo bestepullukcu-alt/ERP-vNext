@@ -19,8 +19,8 @@ namespace Diten.Platform.API.Controllers;
 /// MOD-0024 — thin task engine controller. Version-explicit route under <c>api/v1/tasks</c>; gateway routing is a
 /// separate integration-agent task.
 ///
-/// <para>The route deliberately avoids <c>api/tasks</c>, which is already owned by the frozen legacy
-/// <c>TaskApiController</c> in Diten.Web (it serves the legacy /WorkCenter surface).</para>
+/// <para>The route deliberately avoids <c>api/tasks</c>, which the legacy <c>TaskApiController</c> in Diten.Web
+/// owned for the old /WorkCenter surface (both removed by BL-619; the prefix stays unused).</para>
 ///
 /// <para>Every action is permission-gated with keys the module MANIFEST declares, so their Module/Scope attribution
 /// is authored by the manifest sync rather than the reflection worker (which would stamp them PlatformAdmin and
@@ -94,6 +94,41 @@ public sealed class TasksController : CustomBaseController
     public async Task<IActionResult> Accept(Guid id, [FromBody] TaskTransitionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new AcceptTaskItemCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// BL-509 — decline a request addressed to me, saying why. Route segment MUST match the projected action code.
+    /// UPDATE, like <c>accept</c>: the rule that matters is "this was asked of you", which the handler enforces.
+    /// </summary>
+    [HttpPost("{id:guid}/decline")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> Decline(
+        Guid id, [FromBody] DeclineTaskOfferRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DeclineTaskOfferCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>BL-509 — the sender takes back a request nobody has answered. Refused once it was accepted.</summary>
+    [HttpPost("{id:guid}/withdraw")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> Withdraw(
+        Guid id, [FromBody] WithdrawTaskOfferRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new WithdrawTaskOfferCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// BL-509 — the sender addresses a declined or withdrawn request to somebody else. Guarded by the SENDING key:
+    /// this is sending a request, the same authority the first one needed.
+    /// </summary>
+    [HttpPost("{id:guid}/offer")]
+    [HasPermission(TaskPermissions.RequestsCreate)]
+    public async Task<IActionResult> Offer(Guid id, [FromBody] OfferTaskItemRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new OfferTaskItemCommand(id, request, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -1200,12 +1235,17 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// BL-512 — the approver / reviewer picker, SEARCH-ONLY: <c>?search=</c> (≥ 2 characters, ≤ 20 rows) or
+    /// <c>?ids=</c> (≤ 10, to turn stored ids back into names). Never the whole list; four fields per person; bounded
+    /// per user by the <c>people-search</c> rate limit. See <see cref="DecisionMakerLookup"/>.
+    /// </summary>
     [HttpGet("lookups/decision-makers")]
     [HasPermission(TaskPermissions.Create)]
-    public async Task<IActionResult> GetDecisionMakers(CancellationToken ct)
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting(PeopleSearchRateLimit.PolicyName)]
+    public async Task<IActionResult> GetDecisionMakers([FromQuery] string? search, [FromQuery] string? ids, CancellationToken ct)
     {
-        var response = await _mediator.Send(
-            new GetTaskAssignmentPersonLookupQuery(CorrelationId, TaskPersonLookupPurpose.Decision), ct);
+        var response = await _mediator.Send(new GetTaskDecisionMakerLookupQuery(CorrelationId, search, ids), ct);
         return CreateActionResultInstance(response);
     }
 

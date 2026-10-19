@@ -127,15 +127,11 @@ const UsersList = (function () {
     // select2 inside an offcanvas needs `dropdownParent` = that panel, or the list opens BEHIND it (appended to <body>).
     const initOffcanvasSelect2 = () => {
         if (!window.jQuery || !$.fn.select2) return;
-        [
-            { panel: '#offcanvasCreateEdit', select: '#userAccountKind', width: '100%', selectionCssClass: 'form-select' }
-        ].forEach(({ panel, select, width, selectionCssClass }) => {
-            const $panel = $(panel);
-            const $el = $panel.find(select);
-            if (!$el.length) return; // Razor draws the select only with auth.users.account-kind.manage.
-            if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
-            $el.select2({ dropdownParent: $panel, width, selectionCssClass, minimumResultsForSearch: Infinity });
-        });
+        const $panel = $('#offcanvasCreateEdit');
+        const $el = $panel.find('#userAccountKind');
+        if (!$el.length) return; // Razor draws the select only with auth.users.account-kind.manage.
+        if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
+        $el.select2({ dropdownParent: $panel, width: '100%', selectionCssClass: 'form-select', minimumResultsForSearch: Infinity });
     };
     // select2 paints its own box: a bare `.value` write leaves it showing the previous choice. Every write goes here.
     const setSelectValue = (el, value) => {
@@ -232,24 +228,56 @@ const UsersList = (function () {
         const currentKind = normalizeAccountKind(d.accountKind);
         setSelectValue(byId('userAccountKind'), currentKind === 'Unknown' ? '' : currentKind);
     };
-    // A refusal tagged with a stable code (the proxy's `errorCode`) is shown in the reader's language.
-    const ERROR_CODE_KEYS = { USER_EMAIL_TAKEN: 'ErrorUserEmailTaken', USER_INVITATION_PENDING: 'ErrorUserInvitationPending', USER_QUOTA_EXCEEDED: 'ErrorUserQuotaExceeded' };
-    // BL-459 — a code whose params carry numbers adds a second, numbered sentence; without the numbers it is left out
-    // (never a raw "{max}" on the screen).
-    const ERROR_PARAM_KEYS = { USER_QUOTA_EXCEEDED: { key: 'ErrorUserQuotaUsage', params: ['current', 'max'] } };
-    const localizedErrors = (json) => {
-        const key = ERROR_CODE_KEYS[(json || {}).errorCode];
-        if (key && L()[key]) {
-            const detail = ERROR_PARAM_KEYS[json.errorCode];
-            const values = json.errorParams || {};
-            if (detail && L()[detail.key] && detail.params.every(p => values[p] != null && values[p] !== '')) {
-                const numbered = detail.params.reduce((text, p) => text.split('{' + p + '}').join(String(values[p])), L()[detail.key]);
-                return [L()[key] + ' ' + numbered];
-            }
-            return [L()[key]];
-        }
-        return (json && Array.isArray(json.errors) && json.errors.length) ? json.errors : [L().ErrorOccurred];
+    // WP-USERS-ERROR-CODES-01 (BL-450) — a refusal's stable code → its sentence. One entry per AuthService
+    // UserErrorCodes constant; UserErrorCodeBridgeGuardTests reads THIS object (a code, key or language missing = red).
+    // ⚠ PERM_DENIED is a GENERAL name bound here to ONE refusal: the account-kind right on create/edit, the only
+    // PERM_DENIED these endpoints send. Any other PERM_DENIED reaching this screen would be read as that sentence.
+    const ERROR_CODE_KEYS = {
+        USER_EMAIL_TAKEN: 'ErrorUserEmailTaken', USER_INVITATION_PENDING: 'ErrorUserInvitationPending', USER_QUOTA_EXCEEDED: 'ErrorUserQuotaExceeded',
+        USER_DELETE_SELF: 'ErrorUserDeleteSelf', USER_DELETE_LAST_STEWARD: 'ErrorUserDeleteLastSteward', USER_DEACTIVATE_SELF: 'ErrorUserDeactivateSelf',
+        USER_DEACTIVATE_LAST_STEWARD: 'ErrorUserDeactivateLastSteward',
+        USER_NOT_FOUND: 'ErrorUserNotFound', USER_ACCOUNT_KIND_INVALID: 'ErrorUserAccountKindInvalid', USER_SETUP_ALREADY_COMPLETED: 'ErrorUserSetupAlreadyCompleted',
+        USER_PASSWORD_SETUP_PENDING: 'ErrorUserPasswordSetupPending', PERM_DENIED: 'ErrorUserAccountKindPermissionDenied', USER_EMAIL_REQUIRED: 'ErrorUserEmailRequired',
+        USER_EMAIL_INVALID: 'ErrorUserEmailInvalid', USER_EMAIL_TOO_LONG: 'ErrorUserEmailTooLong', USER_FIRST_NAME_REQUIRED: 'ErrorUserFirstNameRequired', USER_FIRST_NAME_TOO_LONG: 'ErrorUserFirstNameTooLong',
+        USER_LAST_NAME_REQUIRED: 'ErrorUserLastNameRequired', USER_LAST_NAME_TOO_LONG: 'ErrorUserLastNameTooLong',
+        USER_RESET_SELF: 'ErrorUserResetSelf', USER_RESET_CONFLICT: 'ErrorUserResetConflict'
     };
+    // BL-459 — a code with numbered params adds a second sentence; without the numbers it is left out (no raw "{max}").
+    const ERROR_PARAM_KEYS = { USER_QUOTA_EXCEEDED: { key: 'ErrorUserQuotaUsage', params: ['current', 'max'] } };
+    // Every code: the proxy's { errorCodes, uncoded, status } or, for the delete, AuthService's own envelope.
+    const refusalsOf = (body) => {
+        const all = Array.isArray(body.errorCodes) ? body.errorCodes.filter(c => c && c.code) : [];
+        return all.length ? all : (body.errorCode ? [{ code: body.errorCode, params: body.errorParams }] : []);
+    };
+    const localizedErrors = (json) => {
+        const body = json || {};
+        // Read: the codes, and `ownMessages` — the proxy's OWN localized sentences. NEVER `errors`: in AuthService's
+        // envelope that is the service's English text, and it reaches neither the screen nor the console.
+        const own = Array.isArray(body.ownMessages) ? body.ownMessages.filter(Boolean) : [];
+        const said = [], unknown = [];
+        refusalsOf(body).forEach(({ code, params }) => {
+            const key = ERROR_CODE_KEYS[code];
+            if (!key || !L()[key]) { unknown.push(code); return; }
+            const detail = ERROR_PARAM_KEYS[code];
+            const values = params || {};
+            const numbered = detail && L()[detail.key] && detail.params.every(p => values[p] != null && values[p] !== '')
+                ? ' ' + detail.params.reduce((text, p) => text.split('{' + p + '}').join(String(values[p])), L()[detail.key]) : '';
+            said.push(L()[key] + numbered);
+        });
+        const out = own.concat(said);
+        // Nothing is dropped in silence: a failure without a code (or with one this screen does not know) is said too
+        // — "one more problem" next to the coded sentences, the general sentence when it stands alone — and the
+        // console names the gap by code and HTTP status only.
+        if (!out.length || unknown.length || body.uncoded === true) {
+            console.warn('[Users] Refusal without a mapped error code.', { codes: unknown, status: body.status ?? body.statusCode ?? null });
+            out.push((said.length && L().ErrorUserOneMoreProblem) || L().ErrorOccurred);
+        }
+        return out;
+    };
+    // A refusal is thrown TAGGED; whatever else lands in the same catch (a rejected fetch speaks the browser's own
+    // English: "Failed to fetch", "Load failed") is shown as the screen's general sentence, never as its message.
+    const refusal = (json) => Object.assign(new Error(localizedErrors(json).join(' ')), { isRefusal: true });
+    const sayFailure = (error) => window.showToast?.(error && error.isRefusal ? error.message : L().ErrorOccurred, 'error');
     const submitForm = async (formData, isEdit, { editingId, headers }) => {
         const url = isEdit ? `/Users/edit/${editingId}` : '/Users/create';
         const res = await fetch(url, { method: 'POST', credentials: 'same-origin', headers, body: formData });
@@ -259,7 +287,6 @@ const UsersList = (function () {
         if (!isEdit && json.setupUrl) window.setTimeout(() => showInviteLink(json.setupUrl), 0);
         return json;
     };
-
 
     /*
      * Dev-only: the copyable set-password link (setupUrl is null in prod). ⚠ IT WEARS THE PRODUCT'S DIALOG: a raw
@@ -300,7 +327,8 @@ const UsersList = (function () {
         disable: { className: 'js-user-disable text-warning', icon: 'bx-minus-circle', text: 'Disable', url: (id) => `/Users/disable/${id}`, toast: 'UserDisabled', type: 'warning' },
         enable: { className: 'js-user-enable text-success', icon: 'bx-check-circle', text: 'Enable', url: (id) => `/Users/enable/${id}`, toast: 'UserEnabled', type: 'primary' },
         resend: { className: 'js-user-resend', icon: 'bx-mail-send', text: 'ResendInvitation', url: (id) => `/Users/resend-invite/${id}`, toast: 'InvitationResent', type: 'primary' },
-        reset: { className: 'js-user-reset', icon: 'bx-key', text: 'ResetPassword', url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', type: 'warning' }
+        // BL-529 — the reset INVALIDATES: the confirm says so (the old password stops working, the sessions end).
+        reset: { className: 'js-user-reset', icon: 'bx-key', text: 'ResetPassword', url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', type: 'warning', subtext: 'ResetPasswordConfirmText' }
     };
     const runAdminAction = (cfg) => ({ id, row }) => {
         if (!id) return;
@@ -308,7 +336,8 @@ const UsersList = (function () {
             try {
                 const res = await fetch(cfg.url(id), { method: 'POST', credentials: 'same-origin', headers: postHeaders() });
                 const json = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(localizedErrors(json)[0] || L().ErrorOccurred);
+                // Only { success: true } succeeds: a refusal is 200 { success: false }; so is a 200 that is not JSON.
+                if (!res.ok || json.success !== true) throw refusal(json);
                 // Dev-only: resend/reset return a copyable set-password link → the dialog, not the toast.
                 if (json.setupUrl) {
                     list.dt.ajax.reload(null, false);
@@ -318,9 +347,9 @@ const UsersList = (function () {
                 }
             } catch (error) {
                 console.error('[Users] Admin action failed.', error);
-                window.showToast?.(error.message || L().ErrorOccurred, 'error');
+                sayFailure(error);
             }
-        }, { entityName: row?.email, type: cfg.type, icon: cfg.icon, confirmButtonText: L()[cfg.text] || '' });
+        }, { entityName: row?.email, subtext: cfg.subtext ? L()[cfg.subtext] : undefined, type: cfg.type, icon: cfg.icon, confirmButtonText: L()[cfg.text] || '' });
     };
     const adminAction = (key, full, rowJson, extraAttrs) => {
         const cfg = adminActions[key];
@@ -332,11 +361,11 @@ const UsersList = (function () {
         window.showConfirm?.(L().AreYouSure, async () => {
             try {
                 const res = await fetch(`${apiUrl}/api/users/${row.id}`, { method: 'DELETE', credentials: 'include', headers: getAuthHeaders() });
-                if (!res.ok) throw new Error('Delete failed.');
+                if (!res.ok) throw refusal(await res.json().catch(() => ({})));
                 list.reload('RecordDeleted');
             } catch (error) {
-                console.error(error);
-                window.showToast?.(L().ErrorOccurred, 'error');
+                console.error('[Users] Delete failed.', error);
+                sayFailure(error);
             }
         }, { entityName: row.email, subtext: L().DeleteUserConfirmText, type: 'danger', icon: 'bx-trash', confirmButtonText: L().Delete });
     };
@@ -350,10 +379,12 @@ const UsersList = (function () {
         // activates itself when the person redeems the link.
         if (canUpdate() && !full.isActive && userStatusOf(full) !== 'Invited') actions.push(adminAction('enable', full, rowJson));
         // For an invited account resend is the ONLY way forward; the tooltip says why reset and activate are absent.
-        if (canCreate() && full.mustChangePassword) {
+        // BL-529 — nor reset yourself: a reset (and a resend to an account that is not a pending invitation, which IS a
+        // reset) ends your own password and sessions; AuthService refuses it (USER_RESET_SELF). Your own row offers neither.
+        if (canCreate() && full.mustChangePassword && !isCurrentUser(full)) {
             actions.push(adminAction('resend', full, rowJson, userStatusOf(full) === 'Invited' ? { title: L().InvitationPendingHint || '' } : null));
         }
-        if (canUpdate() && full.isActive && !full.mustChangePassword) actions.push(adminAction('reset', full, rowJson));
+        if (canUpdate() && full.isActive && !full.mustChangePassword && !isCurrentUser(full)) actions.push(adminAction('reset', full, rowJson));
         // Your own row offers no Delete (owner, 2026-09-24): the server refuses it anyway (BL-450), and a menu item that
         // only ever fails is not an action. The last-steward rule stays server-side — the list cannot know it.
         if (canDelete() && !isCurrentUser(full)) actions.push({ key: 'delete', className: 'delete-record text-danger', icon: 'bx bx-trash', text: L().Delete, attrs: { 'data-json': rowJson } });

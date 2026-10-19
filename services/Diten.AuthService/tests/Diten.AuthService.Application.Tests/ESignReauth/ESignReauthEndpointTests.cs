@@ -101,7 +101,11 @@ public sealed class ESignReauthEndpointTests : IClassFixture<ESignReauthEndpoint
         using var anonymous = _host.Client(tenantHeader: user.TenantId);
         var login = await anonymous.PostAsJsonAsync("api/tenant-auth/login", new { email = user.Email, password = user.Password });
         Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
-        Assert.Contains("locked", await login.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
+        // Main sync 2026-10-13: the lane's sign-in door gives ONE answer for every refusal (WP-USERS-ROLES-CLOSE-FIX1 item 2,
+        // BL-496) — a locked account is not told apart from a wrong password. The lock is proven by the door's own audit row.
+        Assert.Equal("AUTH_INVALID_CREDENTIALS", (await FirstErrorAsync(login)).Code);
+        Assert.DoesNotContain("locked", await login.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(1, await AuditCountAsync(user, "tenant_login_blocked_by_lockout"));
 
         // Every attempt is one audit event.
         Assert.Equal(5, await AuditCountAsync(user, "tenant_esign_reauth_password_failed"));

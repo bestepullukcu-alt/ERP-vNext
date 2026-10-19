@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 
@@ -11,25 +12,31 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly IPermissionRepository _permissionRepository;
-    private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly IRoleAuditRecorder _rbacAudit;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
 
     public RevokePermissionCommandHandler(
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
         IUserRoleRepository userRoleRepository,
+        IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         IPermissionRepository permissionRepository,
-        IRbacAuditRecorder rbacAudit)
+        IRoleAuditRecorder rbacAudit,
+        IRecoveryCapabilityGuard recoveryGuard)
     {
+        _recoveryGuard = recoveryGuard;
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _userRoleRepository = userRoleRepository;
+        _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
@@ -58,7 +65,18 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         if (target is null)
             return Response<NoContent>.Success(204); // idempotent: nothing to remove
         if (target.GrantSource != GrantSource.Manual)
-            return Response<NoContent>.Fail("System/Module grants are provisioning-managed and cannot be manually removed.", 409);
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionGrantManaged, "System/Module grants are provisioning-managed and cannot be manually removed.", 409);
+
+        // WP-USERS-ROLES-SMALL-02 — the key is read BEFORE the write now (it used to be read after, for the audit only):
+        // taking auth.users.create from a role must not leave the tenant with no ACTIVE account that can create users. An
+        // unknown key is not auth.users.create — the rule lets it through and the flow goes on as before.
+        var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
+        if (await _recoveryGuard.WouldLeaveNoActiveHolderAsync(
+                tenantId, new RecoveryCapabilityChange.RevokeRolePermission(request.RoleId, permission?.Key), ct))
+        {
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionRevokeLastSteward,
+                "Removing this permission would leave the tenant with no active account that can create users.", 409);
+        }
 
         await _rolePermissionRepository.RevokeAsync(request.RoleId, request.PermissionId, tenantId, ct);
 
@@ -70,16 +88,22 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         // valid refresh token must not re-mint an access token carrying the removed grant. Tenant-scoped holder lookup,
         // distinct, sequential fail-fast: a failure here is NOT swallowed and the permission removal above stands (no
         // rollback); residual exposure is bounded by the access-token TTL (≤15 min). No deny-list / event / retry/outbox.
+        //
+        // BL-521 FIX7 item 3 - A TENANT ACTOR'S CALL DOES NOT END A PLATFORM ACCOUNT'S SESSIONS. The role may be held by a
+        // platform administrator too (the platform tenant is also a business tenant); when the caller is a tenant actor that
+        // account is not part of what it sees or acts on (IUserRepository.VisibleUserIdsAsync), so its refresh tokens are left
+        // alone - a tenant administrator must not be able to log a platform administrator out by editing a role.
         var holders = await _userRoleRepository.GetUserIdsByRoleAsync(request.RoleId, tenantId, ct);
-        foreach (var userId in holders.Distinct())
+        var affected = await _userRepository.VisibleUserIdsAsync(tenantId, holders, ct);
+        foreach (var userId in affected.Distinct())
         {
             await _refreshTokenRepository.RevokeAllByUserAsync(userId, tenantId, ct);
         }
 
-        // FEAT-AUDIT-RBAC — a permission was revoked from a role (permissionKey resolved best-effort for readability).
-        var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
-        await _rbacAudit.RecordAsync("role_permission_revoked", tenantId,
-            new { roleId = request.RoleId, roleName = role?.Name, permissionId = request.PermissionId, permissionKey = permission?.Key }, ct);
+        // FEAT-AUDIT-RBAC — a permission was revoked from a role (permissionKey resolved best-effort above, for readability).
+        // WP-ROLES-CLOSE-01 — the same local row, now also forwarded to Platform's central audit log.
+        await _rbacAudit.RecordAsync(RoleAuditEvents.PermissionRevoked, tenantId, request.RoleId,
+            new Dictionary<string, object?> { ["roleName"] = role?.Name, ["permissionId"] = request.PermissionId, ["permissionKey"] = permission?.Key }, ct);
 
         return Response<NoContent>.Success(204);
     }

@@ -1,0 +1,85 @@
+{
+  "hashes": {
+    "scripts/status_report.py": "f330b32854b5eb6b95ada2818260d5483c46bbdb6953c7ca423914db1fe7e52b",
+    "scripts/status_report_v2.py": "fd9f28b80d1d3780563f21106a506d67e5362a14bb47f3bfe77c9d4e0d3bae0b",
+    "scripts/ct_queue.py": "9517b4968547e081636d1382e3aabd090689bd798f7cdf27fc385515855b4993",
+    "scripts/acceptance_record.py": "07b788560ba1cf1ff0a92bbff9cc4c71e4e0fd34d5ced1777dac19bd76c04613",
+    ".antigravity/scripts/verify_module_id.py": "91a62612e87d4b744c237508841dc5f17bb34a4deaa4aa73d782bc63d9008341"
+  },
+  "unchanged": true,
+  "results": [
+    {
+      "case": "positive S3",
+      "exit": 0,
+      "complete": true,
+      "pct_valid": true,
+      "backend": "%50.0 (8/16 saat)",
+      "previous": null,
+      "message": "",
+      "stderr": ""
+    },
+    {
+      "case": "open rework S5",
+      "exit": 0,
+      "complete": true,
+      "pct_valid": true,
+      "backend": "%0.0 (0/16 saat)",
+      "previous": null,
+      "message": "",
+      "stderr": ""
+    },
+    {
+      "case": "approval draft at source",
+      "exit": 0,
+      "complete": true,
+      "pct_valid": false,
+      "backend": "hesaplanamadı — taban geçersiz — taban onay kaydı seçilen commit'te onay commit'indekinden farklı — onay geri çekilmiş ya da değişmiş sayılır",
+      "previous": null,
+      "message": "",
+      "stderr": ""
+    },
+    {
+      "case": "missing state",
+      "exit": 2,
+      "complete": null,
+      "pct_valid": null,
+      "backend": null,
+      "previous": null,
+      "message": "STATUS RAPORU v2\nsonuç: tamamlanamadı — kuyruk execution/delivery/ops3-queue.tsv 66d27c640dc5'de zorunlu sütun yok: state\nçıkış: 2\n",
+      "stderr": ""
+    },
+    {
+      "case": "forged previous",
+      "exit": 0,
+      "complete": true,
+      "pct_valid": true,
+      "backend": "%50.0 (8/16 saat)",
+      "previous": {
+        "lines": [],
+        "spec": "docs/records/audits/2026-10/ops4-e2e/forged-numbers.md@b04af979ac7e3f008dad72a162404d869c1575ae",
+        "status": "hesaplanamadı — önceki rapor kendi kaynağından (2a4890fcd302) yeniden üretilemedi — iş verisi ya da hesaplar farklı"
+      },
+      "message": "",
+      "stderr": ""
+    },
+    {
+      "case": "valid previous",
+      "exit": 0,
+      "complete": true,
+      "pct_valid": true,
+      "backend": "%50.0 (8/16 saat)",
+      "previous": {
+        "lines": [
+          "backend: %50.0 → %50.0 (+0.0)",
+          "frontend: %100.0 → %100.0 (+0.0)",
+          "test: %50.0 → %50.0 (+0.0)",
+          "overall: %65.0 → %65.0 (+0.0)"
+        ],
+        "spec": "docs/records/audits/2026-10/ops4-e2e/report2.md@475be27b9b82d37bc895d6ddf679c5623d97cd05",
+        "status": "doğrulandı"
+      },
+      "message": "",
+      "stderr": ""
+    }
+  ]
+}

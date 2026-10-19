@@ -22,4 +22,8 @@ public sealed record SubmitVisitReportCommand(
     /// <summary>Optional ISO-8601 execution instant; defaults to now (or the recorded value) when omitted.</summary>
     string? ExecutedAt,
     string? ReportedByResourceId,
-    int? ExpectedVersion) : IRequest<Response<Guid>>;
+    int? ExpectedVersion,
+    /// <summary>WP-VW-W2 — what is submitted. Empty / <c>completed</c> = the completed visit's report (unchanged).
+    /// <c>missed</c> / <c>rescheduled</c> FINALISES the draft outcome recorded before (reason + date come from that
+    /// draft; no report content is required); a submitted <c>rescheduled</c> creates the new planned visit (K-W1 = A).</summary>
+    string? ExecutionOutcome = null) : IRequest<Response<Guid>>;

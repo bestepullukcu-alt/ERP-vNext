@@ -520,6 +520,13 @@ public sealed class VisitPlanningEngine
                 targetWeeks = draftWeekIndexes;
             }
 
+            // WP-VP-4L (1) — the weekly default (unknown cadence) is ONE visit a week: never more than one per draft week
+            // (the period's past weeks are not caught up twice in a later week).
+            if (requirement.IsWeeklyDefault)
+            {
+                remaining = Math.Min(remaining, targetWeeks.Count);
+            }
+
             perCandidateWeeks[candidate.TargetId] = FrequencyExtendPlanner
                 .Distribute(remaining, targetWeeks.Count)
                 .Select(k => targetWeeks[k])
@@ -560,6 +567,32 @@ public sealed class VisitPlanningEngine
                     .Repeat(c, perCandidateWeeks.TryGetValue(c.TargetId, out var w) ? w.Count(x => x == weekIndex) : 0)
                     .Select(x => new WeekItem(x, weekIndex, null))))
                 .ToList();
+            // WP-VP-4L (2) — the rep's EXTRA visits of this week join it (same day rules, the day pins apply). A target that
+            // already has a visit this week (frequency, a carried one, or a kept fixed one) takes no extra — said on the
+            // preview, never a silent second visit; a target no longer planned (left the selection, consent blocked) is
+            // not a candidate and is skipped.
+            foreach (var extra in session.WeekExtras.Where(e => string.Equals(e.WeekStart, span.WeekStart, StringComparison.Ordinal)))
+            {
+                var candidate = candidates.FirstOrDefault(c =>
+                    string.Equals(c.TargetType, extra.TargetType, StringComparison.Ordinal) && c.TargetId == extra.TargetId);
+                if (candidate is null)
+                {
+                    continue;
+                }
+
+                var already = items.Any(i => i.Candidate.TargetId == candidate.TargetId)
+                              || fixedVisits.Any(v => TargetKeyOf(v) == candidate.TargetId
+                                                      && PlanningWeekCalendar.MondayOf(v.PlannedDate) == span.Monday);
+                if (already)
+                {
+                    pinWarnings.Add(new PinWarningPreview(
+                        span.WeekStart, candidate.TargetType, candidate.TargetId, string.Empty, PlanningWeekExtras.ExtraAlreadyPlanned));
+                    continue;
+                }
+
+                items.Add(new WeekItem(candidate, weekIndex, null, IsExtra: true));
+            }
+
             if (items.Count == 0)
             {
                 continue;
@@ -577,7 +610,9 @@ public sealed class VisitPlanningEngine
                 p.Item.Candidate, weekIndex, p.Date, p.Start, p.End, p.Sequence,
                 IsPinned: week.Pinned.TryGetValue(p.Item, out var auto),
                 AutoPinned: week.Pinned.ContainsKey(p.Item) && auto,
-                GroupKey: GroupKeyOf(groupOf, p.Item.Candidate))));
+                GroupKey: GroupKeyOf(groupOf, p.Item.Candidate),
+                IsExtra: p.Item.IsExtra,
+                PinnedTime: week.PinnedTimes.TryGetValue(p.Item, out var pinTime) ? pinTime : null)));
             foreach (var p in week.Placed)
             {
                 if (p.Item.Shift is { } placedTrack)
@@ -600,6 +635,27 @@ public sealed class VisitPlanningEngine
             var reasonForWeek = ShiftReason(from, span.To, calendar);
             foreach (var item in week.Overflow)
             {
+                // WP-VP-4L (2) — an extra visit belongs to ITS week: it never moves to another one.
+                if (item.IsExtra)
+                {
+                    unscheduled.Add(new UnscheduledPreview(
+                        item.FromWeek, item.Candidate.TargetType, item.Candidate.TargetId, item.Candidate.ContactId,
+                        PlanningWeekExtras.ExtraNoRoom));
+                    continue;
+                }
+
+                // WP-VP-4L (1) — a weekly default visit that did not fit its week is SKIPPED, not shifted: every later week
+                // already has its own visit, so a shift would only start a chain (CT advice). A pinned visit that left its
+                // week keeps the 4E rule.
+                if (item.Shift is null && !week.PinOverflow.Contains(item)
+                    && frequencyByTarget.TryGetValue(item.Candidate.TargetId, out var itemFrequency) && itemFrequency.IsWeeklyDefault)
+                {
+                    unscheduled.Add(new UnscheduledPreview(
+                        item.FromWeek, item.Candidate.TargetType, item.Candidate.TargetId, item.Candidate.ContactId,
+                        FrequencyDefaults.WeekFullSkipped));
+                    continue;
+                }
+
                 var next = draftWeekIndexes
                     .Where(i => i > weekIndex
                                 && !(perCandidateWeeks.TryGetValue(item.Candidate.TargetId, out var owned) && owned.Contains(i))
@@ -670,7 +726,7 @@ public sealed class VisitPlanningEngine
         // WP-VP-3A — the doctor's cadence travels on the candidate preview too (3D shows it).
         var contentWithFrequency = contentPreviews
             .Select(c => frequencyByTarget.TryGetValue(c.ContactId, out var f)
-                ? c with { FrequencyStatus = f.FrequencyStatus, RequiredVisitCount = f.RequiredInPeriod }
+                ? c with { FrequencyStatus = f.FrequencyStatus, RequiredVisitCount = f.RequiredInPeriod, FrequencyDefault = f.FrequencyDefault }
                 : c)
             .ToList();
 
@@ -748,8 +804,12 @@ public sealed class VisitPlanningEngine
         var pinWarnings = new List<PinWarningPreview>();
         var pinMoves = new List<PinMove>();
         var pinOverflow = new HashSet<WeekItem>(ReferenceEqualityComparer.Instance);
+        // WP-VW-W2 (BE-b) — a visit pin's start time (minutes) and which pin came first (a tie of two times).
+        var timePins = new Dictionary<WeekItem, (int Minute, int Order)>(ReferenceEqualityComparer.Instance);
+        var pinOrder = 0;
         foreach (var pin in pins.OrderBy(p => p.Scope == PlanningDayPinScopes.Institution ? 0 : 1))
         {
+            pinOrder++;
             if (!DateOnly.TryParseExact(pin.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
                 || date < from || date > to || BudgetOf(date) <= 0)
             {
@@ -768,6 +828,14 @@ public sealed class VisitPlanningEngine
             {
                 pinned[m] = false;
                 pinDay[m] = date;
+                if (pin.Scope != PlanningDayPinScopes.Institution && DayTimePins.ParseGridTime(pin.StartTime) is { } minute)
+                {
+                    timePins[m] = (minute, pinOrder);
+                }
+                else
+                {
+                    timePins.Remove(m);
+                }
             }
         }
 
@@ -787,7 +855,7 @@ public sealed class VisitPlanningEngine
             var date = queue.Keys.First();
             var list = queue[date];
             queue.Remove(date);
-            var (ok, missed) = RouteDay(date, calendar.KindOf(date), list, budget, routeDay, buffer, startLocation, manualOrder);
+            var (ok, missed) = RouteDay(date, calendar.KindOf(date), list, budget, routeDay, buffer, startLocation, manualOrder, timePins, travel);
             var room = BudgetOf(date) - fixedLoad.GetValueOrDefault(date);
             var kept = new List<WeekItem>();
             var moved = new List<(WeekItem Item, string Reason)>();
@@ -809,6 +877,7 @@ public sealed class VisitPlanningEngine
             dayPinned[date] = kept;
             foreach (var (item, reason) in moved)
             {
+                timePins.Remove(item); // a time belongs to its day: a pinned visit moved on is a day pin there
                 var next = weekDays
                     .Where(w => w.Date > date && w.Budget > 0 && PinnedLoad(w.Date) + Cost(item) <= w.Budget)
                     .Select(w => (DateOnly?)w.Date)
@@ -891,11 +960,11 @@ public sealed class VisitPlanningEngine
             {
                 // Pinned first (they fit alone), then each other visit only if the day still routes without a miss.
                 var current = new List<WeekItem>(keptPins);
-                var (ok, _) = RouteDay(date, calendar.KindOf(date), current, budget, routeDay, buffer, startLocation, manualOrder);
+                var (ok, _) = RouteDay(date, calendar.KindOf(date), current, budget, routeDay, buffer, startLocation, manualOrder, timePins, travel);
                 foreach (var item in others)
                 {
                     var trial = current.Append(item).ToList();
-                    var (trialOk, trialMissed) = RouteDay(date, calendar.KindOf(date), trial, budget, routeDay, buffer, startLocation, manualOrder);
+                    var (trialOk, trialMissed) = RouteDay(date, calendar.KindOf(date), trial, budget, routeDay, buffer, startLocation, manualOrder, timePins, travel);
                     if (trialMissed.Count == 0)
                     {
                         current = trial;
@@ -914,7 +983,7 @@ public sealed class VisitPlanningEngine
                 continue;
             }
 
-            var (dayOk, dayMissed) = RouteDay(date, calendar.KindOf(date), others, budget, routeDay, buffer, startLocation, manualOrder);
+            var (dayOk, dayMissed) = RouteDay(date, calendar.KindOf(date), others, budget, routeDay, buffer, startLocation, manualOrder, timePins, travel);
             routed[date] = dayOk;
             foreach (var (item, reason) in dayMissed)
             {
@@ -940,7 +1009,7 @@ public sealed class VisitPlanningEngine
                          .ThenBy(d => d.Date))
             {
                 var trial = (members.TryGetValue(day.Date, out var list) ? list : new List<WeekItem>()).Append(item).ToList();
-                var (ok, missed) = RouteDay(day.Date, calendar.KindOf(day.Date), trial, budget, routeDay, buffer, startLocation, manualOrder);
+                var (ok, missed) = RouteDay(day.Date, calendar.KindOf(day.Date), trial, budget, routeDay, buffer, startLocation, manualOrder, timePins, travel);
                 if (missed.Count == 0)
                 {
                     members[day.Date] = trial;
@@ -990,9 +1059,29 @@ public sealed class VisitPlanningEngine
             stillPinned[p.Item] = pinned[p.Item];
         }
 
+        // WP-VW-W2 (BE-b) — each placed time-pinned visit carries its pinned time; one that could not keep it (another time
+        // pin had it) is said as a move on its own day: pin_time_conflict.
+        var pinnedTimes = new Dictionary<WeekItem, string>(ReferenceEqualityComparer.Instance);
+        foreach (var p in placed)
+        {
+            if (timePins.TryGetValue(p.Item, out var tp))
+            {
+                pinnedTimes[p.Item] = RouteTime.Format(tp.Minute);
+                if (RouteTime.ParseMinutes(p.Start) != tp.Minute)
+                {
+                    // the user asked (2026-10-09) to tell "ends after the working day" apart from "another pin had it"
+                    var dayEnd = RouteTime.ParseMinutes(budget.WindowFor(calendar.KindOf(p.Date), routeDay).End) ?? 18 * 60;
+                    var pastDayEnd = tp.Minute + Math.Max(1, p.Item.Candidate.DurationMinutes) > dayEnd;
+                    pinMoves.Add(new PinMove(p.Item, p.Date, p.Date,
+                        pastDayEnd ? PlanningDayPins.PinTimePastDayEnd : PlanningDayPins.PinTimeConflict));
+                }
+            }
+        }
+
         return new WeekPlan(placed, unscheduled, overflow, stillPinned, pinMoves, pinOverflow, pinWarnings, dayPreviews)
         {
-            NoNearDay = noNearDay
+            NoNearDay = noNearDay,
+            PinnedTimes = pinnedTimes
         };
     }
 
@@ -1029,13 +1118,18 @@ public sealed class VisitPlanningEngine
         WorkingDayHours routeDay,
         int buffer,
         GeoPoint? startLocation,
-        IReadOnlyList<Guid>? manualOrder)
+        IReadOnlyList<Guid>? manualOrder,
+        IReadOnlyDictionary<WeekItem, (int Minute, int Order)>? timePins = null,
+        ITravelModel? travel = null)
     {
         var refs = new Dictionary<Guid, WeekItem>();
         var visits = new List<RouteVisitInput>(items.Count);
         foreach (var item in items)
         {
-            var visitRef = Guid.NewGuid();
+            // WP-VW-W2 (BE-b) — a DETERMINISTIC ref (the item's place in the day's list): the optimizer breaks ties (equal
+            // whole travel minutes — common between near doctors) by this id, so a random one made the same day come out
+            // in a different order from run to run.
+            var visitRef = new Guid(refs.Count + 1, 0, 0, new byte[8]);
             refs[visitRef] = item;
             visits.Add(new RouteVisitInput(
                 visitRef, item.Candidate.Lat, item.Candidate.Long, Math.Max(1, item.Candidate.DurationMinutes),
@@ -1059,7 +1153,50 @@ public sealed class VisitPlanningEngine
             .Where(u => refs.ContainsKey(u.VisitId))
             .Select(u => (refs[u.VisitId], u.Reason))
             .ToList();
+
+        // WP-VW-W2 (BE-b) — a day with time-pinned visits: re-timed around them, the route's (geographic) order kept for
+        // the others (DayTimePins). What no longer fits is a route miss, tried on another day like any other.
+        if (timePins is { Count: > 0 } && travel is not null && placed.Any(p => timePins.ContainsKey(p.Item)))
+        {
+            var window = budget.WindowFor(kind, routeDay);
+            var order = placed.OrderBy(p => p.Sequence).Select(p => p.Item).ToList();
+            var weekday = RouteTime.WeekdayFromDate(date);
+            var stops = order.Select((item, i) => new DayTimePins.Stop(
+                    i, Math.Max(1, item.Candidate.DurationMinutes), item.Candidate.Lat, item.Candidate.Long,
+                    timePins.TryGetValue(item, out var tp) ? tp.Minute : null,
+                    timePins.TryGetValue(item, out var tpOrder) ? tpOrder.Order : 0,
+                    WindowsOn(item.Candidate.Windows, weekday)))
+                .ToList();
+            int Travel(DayTimePins.Stop a, DayTimePins.Stop b)
+                => (int)Math.Ceiling(travel.TravelMinutes(new GeoPoint(a.Lat, a.Long), new GeoPoint(b.Lat, b.Long)));
+            var timed = DayTimePins.Place(
+                stops,
+                RouteTime.ParseMinutes(window.Start) ?? 9 * 60,
+                RouteTime.ParseMinutes(window.End) ?? 18 * 60,
+                RouteTime.ParseMinutes(window.LunchStart) ?? 0,
+                RouteTime.ParseMinutes(window.LunchEnd) ?? 0,
+                buffer,
+                Travel);
+            placed = timed.Placed
+                .Select((s, i) => new DayPlaced(order[s.Key], date, RouteTime.Format(s.Start), RouteTime.Format(s.End), i + 1))
+                .ToList();
+            missed.AddRange(timed.DayFull.Select(k => (order[k], RouteUnscheduledReasonCodes.PeriodExhausted)));
+            missed.AddRange(timed.NoWindow.Select(k => (order[k], RouteUnscheduledReasonCodes.NoFeasibleAvailabilityWindow)));
+        }
+
         return (placed, missed);
+    }
+
+    /// <summary>WP-VW-W2 (BE-b) — a visit's availability windows on one weekday, in minutes (null = none that day).</summary>
+    private static IReadOnlyList<(int From, int To)>? WindowsOn(IReadOnlyList<AvailabilityWindow> windows, string weekday)
+    {
+        var on = windows
+            .Where(w => string.Equals(w.Day, weekday, StringComparison.OrdinalIgnoreCase))
+            .Select(w => (From: RouteTime.ParseMinutes(w.Start), To: RouteTime.ParseMinutes(w.End)))
+            .Where(w => w.From is not null && w.To is not null && w.To > w.From)
+            .Select(w => (w.From!.Value, w.To!.Value))
+            .ToList();
+        return on.Count > 0 ? on : null;
     }
 
     /// <summary>WP-VP-3B — the institution group of every candidate: a doctor → its account; a bare account → itself; a
@@ -1307,7 +1444,8 @@ public sealed class VisitPlanningEngine
                 StrategyTemplateId = play.StrategyTemplateId,
                 SelectionMode = PlannedVisitSelectionMode.Recommended, // FU05 motor selection (FU01 reserves this)
                 DecidedAt = now,
-                DecidedBy = actor
+                DecidedBy = actor,
+                Extra = placed.IsExtra // WP-VP-4L (2) — the rep's per-week extra visit
             },
             CreatedAt = now,
             CreatedBy = actor
@@ -1545,7 +1683,7 @@ public sealed class VisitPlanningEngine
 
     /// <summary>WP-VP-3B — one visit a week has to place: its first week (<see cref="FromWeek"/>) and, once moved, its
     /// shift record.</summary>
-    private sealed record WeekItem(Candidate Candidate, int FromWeek, ShiftTrack? Shift);
+    private sealed record WeekItem(Candidate Candidate, int FromWeek, ShiftTrack? Shift, bool IsExtra = false);
 
     /// <summary>WP-VP-3B — a visit moved to a later week (mutable target week while it keeps moving).</summary>
     private sealed class ShiftTrack(Candidate candidate, int fromWeek, string reason)
@@ -1572,6 +1710,9 @@ public sealed class VisitPlanningEngine
     {
         /// <summary>WP-VP-4G (F4-1) - overflow visits a day still had room for (no near / light day): no_near_day.</summary>
         public IReadOnlySet<WeekItem> NoNearDay { get; init; } = new HashSet<WeekItem>();
+
+        /// <summary>WP-VW-W2 (BE-b) — the placed time-pinned visits and their pinned time ("HH:mm").</summary>
+        public IReadOnlyDictionary<WeekItem, string> PinnedTimes { get; init; } = new Dictionary<WeekItem, string>();
     }
 
     /// <summary>WP-VP-4E — a pinned visit that did not fit its day: moved to <see cref="To"/> in the week, or (To null) out
@@ -1621,7 +1762,11 @@ public sealed class VisitPlanningEngine
         // WP-VP-4E — on a pinned day (auto = moved there from a full pinned day) and the institution group.
         bool IsPinned = false,
         bool AutoPinned = false,
-        string? GroupKey = null);
+        string? GroupKey = null,
+        // WP-VP-4L (2) — the rep's per-week extra visit.
+        bool IsExtra = false,
+        // WP-VW-W2 (BE-b) — the rep's pinned start time ("HH:mm") of a time-pinned visit.
+        string? PinnedTime = null);
 
     private sealed record GenerationOutput(
         PlanningSession Session,
@@ -1800,7 +1945,10 @@ public sealed class VisitPlanningEngine
                 ProductWarnings: ProductWarningsOf(p.Candidate.TargetType, p.Content ?? p.Candidate.Content),
                 IsPinned: p.IsPinned,
                 AutoPinned: p.AutoPinned,
-                GroupKey: p.GroupKey))
+                GroupKey: p.GroupKey,
+                IsExtra: p.IsExtra,
+                FrequencyDefault: g.Frequency.TryGetValue(p.Candidate.TargetId, out var f5) ? f5.FrequencyDefault : null,
+                PinnedTime: p.PinnedTime))
             .ToList();
 
         // WP-VP-3A (S-1) — the already-written visits of the stored weeks, shown as they are (IsFixed): never re-generated.
@@ -1822,7 +1970,9 @@ public sealed class VisitPlanningEngine
                 WeekStart: g.PeriodWeeks[x.Week].WeekStart,
                 IsFixed: true,
                 FrequencyStatus: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f3) ? f3.FrequencyStatus : null,
-                RequiredVisitCount: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f4) ? f4.RequiredInPeriod : null))
+                RequiredVisitCount: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f4) ? f4.RequiredInPeriod : null,
+                IsExtra: x.Visit.Selection?.Extra == true,
+                FrequencyDefault: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f6) ? f6.FrequencyDefault : null))
             .ToList();
 
         var allSlots = scheduled.Concat(fixedSlots)
@@ -1837,7 +1987,8 @@ public sealed class VisitPlanningEngine
                 var stored = LegacyCommittedPlan.WeekOf(
                     g.Session, w, LegacyCommittedPlan.IsLegacy(g.Session) ? g.Fixed : Array.Empty<PlannedVisitEntity>());
                 var count = allSlots.Count(s => s.WeekNumber == i);
-                return PlanningWeekCalendar.ToDto(w, PlanningWeekCalendar.Derive(w, g.Today, stored, count), count, stored);
+                return PlanningWeekCalendar.ToDto(w, PlanningWeekCalendar.Derive(w, g.Today, stored, count), count, stored)
+                    with { ExtraTargets = PlanningSessionMapper.ExtraTargetsOf(g.Session, w.WeekStart) }; // WP-VP-4L (2)
             })
             .ToList();
 

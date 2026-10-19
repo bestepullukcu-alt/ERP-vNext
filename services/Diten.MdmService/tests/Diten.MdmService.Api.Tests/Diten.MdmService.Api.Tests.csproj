@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- WP-MDM-GSKU-ACCEPT-01 item 12 — the first MDM HTTP tests. Mvc.Testing hosts the REAL MDM Api (Program.cs) in
+         process: JWT validation, tenant resolution, [HasPermission], controllers, MediatR, the real Mongo repositories.
+         EphemeralMongo.Core starts a test-owned throwaway mongod (own process, random port, temp data directory,
+         single-node replica set for the transactions) — never the shared localhost:27017. 1.1.3, not 3.x: 3.x needs
+         MongoDB.Driver >= 2.28.0 (strong-named) while src pins 2.27.0 (same reason as DevEnablement's Api.Tests). -->
+    <PackageReference Include="EphemeralMongo.Core" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Diten.MdmService.Api\Diten.MdmService.Api.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- MOD-0290-FU04 S3b FIX1 — one IL reader for both test projects (guards measured on compiled code, not text). -->
+    <Compile Include="..\Diten.MdmService.Application.Tests\IlReferences.cs" Link="Shared\IlReferences.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- MOD-0290-FU04 S4 — product-master-bundle v1.1 (1.1.0-draft.13) copied from the contract line, byte for byte (the
+         YAML), with its JSON rendering and the v1.0 rendering; ProductMasterContractFixtureTests pins every SHA-256. -->
+    <None Include="Fixtures\ProductMasterBundle\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -35,4 +35,64 @@
   <data name="ErrorProviderTimeout"><value>Le fournisseur de référence a expiré.</value></data>
   <data name="ErrorForbidden"><value>Vous n'avez pas l'autorisation.</value></data>
   <data name="ErrorGateway"><value>La demande n'a pas pu être traitée.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Identité approuvée</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Approbation d’identité en attente</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retiré</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Soumettre pour approbation</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Soumettre cette identité LSKU pour approbation ?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Motif du retrait</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>Le motif du retrait est obligatoire.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>Le motif du retrait ne peut pas dépasser 128 caractères.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>L’identité LSKU a été soumise et attend son approbation.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>L’état du cycle de vie a changé. Le dernier enregistrement a été chargé.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Votre session a expiré. Veuillez vous reconnecter.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>Le service de cycle de vie est indisponible. Réessayez plus tard.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>La demande de cycle de vie a expiré. Réessayez.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Retirer l’approbation</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Retirer la demande d’approbation ?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Le retrait est encore en cours.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Demande d’approbation retirée.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Demander le retrait</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Soumettre une demande de retrait ?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>La demande de retrait attend une décision.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Demande de retrait soumise.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>Ce GSKU possède déjà un LSKU pour ce marché. Ouvrez le LSKU existant au lieu d'en créer un nouveau.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>Le service d'approbation a refusé cette soumission avant de démarrer une approbation. Le LSKU est toujours un brouillon ; vous pouvez le soumettre à nouveau.</value>
+  </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Avant d'envoyer ce LSKU pour approbation, définissez dans le comportement de stock : {0}.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>L'approbation n'a pas pu être appliquée à ce LSKU, par exemple parce que son marché ou son parent n'est plus utilisable. Le LSKU est de nouveau un brouillon ; corrigez la cause et soumettez-le à nouveau.</value>
+  </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>Ce LSKU a été modifié ou annulé après le début de la soumission ; rien n'a donc été envoyé en approbation. Rouvrez le LSKU et soumettez-le s'il est toujours nécessaire.</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>Un retrait de cette soumission est en cours ; renvoyez le retrait pour le terminer avant de soumettre à nouveau.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>le suivi par numéro de série (ce LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>le suivi par lot de son GSKU — à définir par une personne autorisée à modifier le GSKU</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Le comportement de stock est incomplet ou incohérent ; l'envoi en approbation n'est pas encore possible. Complétez-le dans Comportement de stock.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} et {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>La configuration d'approbation de cette action est incomplète. Veuillez en informer votre administrateur.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>La demande n'a pas atteint le service d'approbation. Renvoyez la même demande.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>L'approbation est en cours de modification. Réessayez dans un instant.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Personne d'autre que vous ne peut approuver l'enregistrement que vous avez soumis. Demandez à votre administrateur d'ajuster les approbateurs ; vous pourrez ensuite le soumettre de nouveau.</value></data>
 </root>

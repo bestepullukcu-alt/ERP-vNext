@@ -49,6 +49,11 @@ public static class TaskTransitionCodes
             // WP-TASK-CALENDAR-ENGINE-01 — the plan day and block were cleared (POST {id}/unplan).
             [TaskTransitionKind.Unplanned] = "unplanned",
 
+            // BL-509 — the task request: addressed again, declined by the person asked, taken back by the sender.
+            [TaskTransitionKind.Offered] = "offered",
+            [TaskTransitionKind.Declined] = "declined",
+            [TaskTransitionKind.Withdrawn] = "withdrawn",
+
             [TaskTransitionKind.Unknown] = "unknown"
         };
 

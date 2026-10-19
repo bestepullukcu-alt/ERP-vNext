@@ -14,6 +14,12 @@ namespace Diten.AuthService.Application.Tests.Users;
 // (d) self-service (password) create regression, plus tenant isolation.
 public sealed class TenantUserInvitationTests
 {
+    // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 5 — a link this service issues (64 random bytes, standard Base64): the door now
+    // refuses anything else before it reads, so the redemption scenarios carry a real-shaped token.
+    private static readonly string Token1 = Convert.ToBase64String(Enumerable.Range(1, 64).Select(i => (byte)i).ToArray());
+    private static readonly string TokenA = Convert.ToBase64String(Enumerable.Range(100, 64).Select(i => (byte)i).ToArray());
+    private static readonly string TokenB = Convert.ToBase64String(Enumerable.Range(110, 64).Select(i => (byte)i).ToArray());
+
     private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
@@ -138,12 +144,12 @@ public sealed class TenantUserInvitationTests
     public async Task SetPassword_redeems_token_activates_user_and_clears_token()
     {
         var hasher = new FakeRefreshTokenHasher();
-        var invited = NewInvitedUser("redeem@acme.test", TenantA, hasher.Hash("token-1"), DateTime.UtcNow.AddDays(3));
+        var invited = NewInvitedUser("redeem@acme.test", TenantA, hasher.Hash(Token1), DateTime.UtcNow.AddDays(3));
         var repo = new InMemoryUserRepository([invited]);
         var refreshTokens = new FakeRefreshTokenRepository();
         var handler = SetPasswordHandler(repo, refreshTokens, hasher);
 
-        var result = await handler.Handle(new SetTenantPasswordCommand("redeem@acme.test", "token-1", "BrandN3w!"), CancellationToken.None);
+        var result = await handler.Handle(new SetTenantPasswordCommand("redeem@acme.test", Token1, "BrandN3w!"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
         Assert.Equal(204, result.StatusCode);
@@ -159,10 +165,10 @@ public sealed class TenantUserInvitationTests
     public async Task SetPassword_with_expired_token_fails()
     {
         var hasher = new FakeRefreshTokenHasher();
-        var invited = NewInvitedUser("expired@acme.test", TenantA, hasher.Hash("token-1"), DateTime.UtcNow.AddMinutes(-1));
+        var invited = NewInvitedUser("expired@acme.test", TenantA, hasher.Hash(Token1), DateTime.UtcNow.AddMinutes(-1));
         var handler = SetPasswordHandler(new InMemoryUserRepository([invited]), new FakeRefreshTokenRepository(), hasher);
 
-        var result = await handler.Handle(new SetTenantPasswordCommand("expired@acme.test", "token-1", "BrandN3w!"), CancellationToken.None);
+        var result = await handler.Handle(new SetTenantPasswordCommand("expired@acme.test", Token1, "BrandN3w!"), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(400, result.StatusCode);
@@ -173,11 +179,11 @@ public sealed class TenantUserInvitationTests
     public async Task SetPassword_with_mismatched_email_fails()
     {
         var hasher = new FakeRefreshTokenHasher();
-        var invited = NewInvitedUser("owner@acme.test", TenantA, hasher.Hash("token-1"), DateTime.UtcNow.AddDays(3));
+        var invited = NewInvitedUser("owner@acme.test", TenantA, hasher.Hash(Token1), DateTime.UtcNow.AddDays(3));
         var handler = SetPasswordHandler(new InMemoryUserRepository([invited]), new FakeRefreshTokenRepository(), hasher);
 
         // Valid token but a different email than the token owner → rejected (defense in depth).
-        var result = await handler.Handle(new SetTenantPasswordCommand("attacker@acme.test", "token-1", "BrandN3w!"), CancellationToken.None);
+        var result = await handler.Handle(new SetTenantPasswordCommand("attacker@acme.test", Token1, "BrandN3w!"), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(400, result.StatusCode);
@@ -187,14 +193,14 @@ public sealed class TenantUserInvitationTests
     public async Task SetPassword_resolves_correct_user_across_tenants()
     {
         var hasher = new FakeRefreshTokenHasher();
-        var userA = NewInvitedUser("a@acme.test", TenantA, hasher.Hash("token-A"), DateTime.UtcNow.AddDays(3));
-        var userB = NewInvitedUser("b@acme.test", TenantB, hasher.Hash("token-B"), DateTime.UtcNow.AddDays(3));
+        var userA = NewInvitedUser("a@acme.test", TenantA, hasher.Hash(TokenA), DateTime.UtcNow.AddDays(3));
+        var userB = NewInvitedUser("b@acme.test", TenantB, hasher.Hash(TokenB), DateTime.UtcNow.AddDays(3));
         var policy = new FakePasswordPolicyService();
         var refreshTokens = new FakeRefreshTokenRepository();
         var handler = SetPasswordHandler(new InMemoryUserRepository([userA, userB]), refreshTokens, hasher, policy);
 
         // token-B belongs to tenant B; redemption must operate strictly on tenant B.
-        var result = await handler.Handle(new SetTenantPasswordCommand("b@acme.test", "token-B", "BrandN3w!"), CancellationToken.None);
+        var result = await handler.Handle(new SetTenantPasswordCommand("b@acme.test", TokenB, "BrandN3w!"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
         Assert.True(userB.IsActive);
@@ -310,7 +316,15 @@ public sealed class TenantUserInvitationTests
             email,
             new FakeHostEnvironment(isDevelopment: true),
             UserAuditForTests.None(),
-            NullLogger<ResendUserInvitationCommandHandler>.Instance);
+            NullLogger<ResendUserInvitationCommandHandler>.Instance,
+            new FakePasswordHasher(),
+            new FakeRefreshTokenRepository(),
+            new NobodySignedIn());
+    }
+
+    private sealed class NobodySignedIn : ICurrentUserAccessor
+    {
+        public Guid? UserId => null;
     }
 
     private static TestTenantContext TenantContextFor(Guid tenantId)
@@ -363,6 +377,9 @@ public sealed class TenantUserInvitationTests
         public List<(string email, string token)> Sends { get; } = [];
         public string BuildTenantSetPasswordUrl(string email, string setupToken) =>
             $"http://localhost:5001/account/set-password?email={email}&token={setupToken}";
+        // BL-454 — no default on the interface any more: this double records a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
         {
             if (ThrowOnSend) throw new InvalidOperationException("smtp down");
@@ -374,10 +391,13 @@ public sealed class TenantUserInvitationTests
     private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
     {
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             RevokeAllCall = (userId, tenantId);
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();

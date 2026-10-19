@@ -22,10 +22,10 @@ public sealed class BrandProductContractController : CustomBaseController
         _mediator = mediator;
     }
 
-    // Guarded by the brand read permission. Products-only operators reach the same contract through the
-    // frontend proxy, which accepts either read permission (pack §14).
+    // Pack §14 — the contract is read by either module's reader: a products-only operator needs the same vocabulary and
+    // capability flags as a brand reader. WP-MDM-BRAND-ACCEPT-01 FIX1 (item 11): enforced HERE, not only by the web proxy.
     [HttpGet("contract")]
-    [HasPermission("mdm.brands.read")]
+    [HasPermission("mdm.brands.read", "mdm.products.read")]
     public async Task<IActionResult> GetContract(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetBrandProductContractQuery(), cancellationToken);

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>此物料尚不能激活：请填写下列库存字段，然后重新提交。</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>批次管理</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>基本单位</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>储存条件（至少一项）</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>单位换算（每个单位与基本单位相距不超过四步）</value></data>
+  <data name="RefusalApprovalForbidden" xml:space="preserve"><value>您无权提交、申请或撤回此物料的激活。</value></data>
+  <data name="RefusalApprovalNotRequester" xml:space="preserve"><value>只有提交此物料激活申请的人才能撤回。</value></data>
+  <data name="RefusalApprovalChanged" xml:space="preserve"><value>在您操作期间，此物料的审批已发生变化。请重新加载物料后再试。</value></data>
+  <data name="RefusalApprovalBusy" xml:space="preserve"><value>此物料的审批正在处理中。请稍后再试。</value></data>
+  <data name="RefusalApprovalSubmitInFlight" xml:space="preserve"><value>此物料的激活申请仍在处理中。请稍后再试。</value></data>
+  <data name="RefusalApprovalRepeatDiffers" xml:space="preserve"><value>此申请已以不同的内容提交过。请重新打开物料并从头开始。</value></data>
+  <data name="RefusalApprovalWithdrawalInvalid" xml:space="preserve"><value>无法读取撤回请求。请重新打开物料后再试。</value></data>
+  <data name="RefusalApprovalWithdrawalRefused" xml:space="preserve"><value>无法撤回审批。该审批可能已有决定。请重新加载物料。</value></data>
+  <data name="RefusalApprovalUnavailable" xml:space="preserve"><value>目前无法连接审批服务。请稍后再试。</value></data>
+  <data name="RefusalApprovalNeedsCheck" xml:space="preserve"><value>此物料的审批需要由管理员检查。您的请求未被执行。</value></data>
+  <data name="RefusalApprovalStartRefused" xml:space="preserve"><value>无法启动审批。请联系您的管理员检查审批设置。</value></data>
+  <data name="RefusalApprovalSelf" xml:space="preserve"><value>您不能审批自己的申请。须由其他审批人决定。</value></data>
+  <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>此物料使用的某个列表值已被删除或更改。请更正物料，然后重新提交。</value></data>
+  <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>目前无法检查物料列表。请稍后再试。</value></data>
+  <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>代码修复请求无效。</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>审批服务未接受您的会话。请重新登录并重复该操作。</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>此操作的审批设置不完整。请通知您的管理员。</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>请求未到达审批服务。请再次发送相同的请求。</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalApprovalNoEligibleApprover" xml:space="preserve"><value>除您之外没有人可以审批您提交的记录。请联系管理员调整审批人，之后您可以重新提交。</value></data>
+</root>

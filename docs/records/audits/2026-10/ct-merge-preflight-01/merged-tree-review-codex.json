@@ -1,0 +1,28 @@
+{
+  "tree": "136e5fa1be9508a2d4ae7efb65cb7f5c9c318ca0",
+  "checks": {
+    "main_e664_cookie_helper_in_workflow": true,
+    "main_e664_cookie_helper_in_frontend_agent": true,
+    "main_e664_pack_slug_in_agents": true,
+    "main_e664_pack_slug_in_orchestrator": true,
+    "main_e664_pack_slug_in_workflow": true,
+    "main_e664_nonexistent_tenant_type_gone": true,
+    "main_e664_route_writer_preserved": true,
+    "new_ct_rework_limit_present": true,
+    "ops03_done_single_authority_present": true,
+    "sop36_2_matches_ct_head": true,
+    "vdp_final_blob_preserved": true,
+    "both_doc_alignment_skill_blobs_preserved": true
+  },
+  "passed": 12,
+  "total": 12,
+  "chain_files_from_merge_base": 100,
+  "product_files_changed_by_ct": [],
+  "machine_path_hits_in_changed_files": [
+    {
+      "file": ".antigravity/rules/status-reporting-and-evidence.md",
+      "line": 59,
+      "kind": "machine-path"
+    }
+  ]
+}

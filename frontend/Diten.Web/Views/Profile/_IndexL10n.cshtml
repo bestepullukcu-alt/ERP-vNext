@@ -1,0 +1,16 @@
+@using Diten.Web.Views.Profile
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProfileIndex> Localizer
+@* WP-EMAIL-LANG-01 delivery 2 — My profile's words for its script, 7 languages. ErrorCodes maps a server code to a key. *@
+@{
+    var payload = new Dictionary<string, object>
+    {
+        ["Saved"] = Localizer["Saved"].Value,
+        ["Cleared"] = Localizer["Cleared"].Value,
+        ["LoadFailed"] = Localizer["LoadFailed"].Value,
+        ["SaveFailed"] = Localizer["SaveFailed"].Value,
+        ["ErrorLanguageInvalid"] = Localizer["ErrorLanguageInvalid"].Value,
+        ["ErrorCodes"] = new Dictionary<string, string> { ["USER_PREFERRED_LANGUAGE_INVALID"] = "ErrorLanguageInvalid" }
+    };
+}
+<script id="profile-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(payload))</script>

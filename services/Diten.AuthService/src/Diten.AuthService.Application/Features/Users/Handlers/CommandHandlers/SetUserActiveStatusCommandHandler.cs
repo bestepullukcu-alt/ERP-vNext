@@ -16,9 +16,14 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     /// way back in from that seat. Same shape as <see cref="DeleteUserCommandHandler.SelfDeleteCode"/>: refused with a
     /// code the screen can translate, before anything is written. SAP (SU01) and Oracle Fusion refuse the same act.
     /// </summary>
-    public const string SelfDeactivateCode = "USER_DEACTIVATE_SELF";
+    public const string SelfDeactivateCode = UserErrorCodes.DeactivateSelf;
+
+    /// <summary>WP-USERS-ROLES-SMALL-02 — switching off the last ACTIVE account that can create users (shared rule:
+    /// <see cref="IRecoveryCapabilityGuard"/>). The edit form's Active switch answers with the same code.</summary>
+    public const string LastStewardCode = UserErrorCodes.DeactivateLastSteward;
 
     private readonly IUserRepository _userRepository;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserAccessor _currentUser;
@@ -33,9 +38,11 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
         ICurrentUserAccessor currentUser,
         IUserAuditRecorder audit,
         IUserQuotaClient quota,
+        IRecoveryCapabilityGuard recoveryGuard,
         ILogger<SetUserActiveStatusCommandHandler> logger)
     {
         _userRepository = userRepository;
+        _recoveryGuard = recoveryGuard;
         _refreshTokenRepository = refreshTokenRepository;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
@@ -47,7 +54,7 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     public async Task<Response<NoContent>> Handle(SetUserActiveStatusCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (user is null) return Response<NoContent>.Fail("User not found.", 404);
+        if (user is null) return UserErrorCodes.NotFoundRefusal<NoContent>();
 
         if (!request.IsActive && _currentUser.UserId == request.Id)
         {
@@ -66,6 +73,15 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
 
         var wasActive = user.IsActive;
 
+        // WP-USERS-ROLES-SMALL-02 — only a REAL active → inactive switch can take the capability away: disabling an account
+        // that is already off stays the 204 it was, and switching one ON is never refused here. Before anything is written.
+        if (!request.IsActive && wasActive
+            && await _recoveryGuard.WouldLeaveNoActiveHolderAsync(
+                _tenantContext.TenantId, new RecoveryCapabilityChange.DeactivateUser(user.Id), ct))
+        {
+            return LastStewardRefusal<NoContent>();
+        }
+
         // BL-459 F1 — an Inactive account holds no seat (users.max counts Active + Invited), so switching one back on
         // takes a seat and asks first; otherwise deactivate → add someone → reactivate would walk past the plan's limit.
         if (request.IsActive && !wasActive)
@@ -77,16 +93,22 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
             }
         }
 
+        var state = _userRepository.CaptureState(user);
         if (request.IsActive)
         {
-            user.Activate();
+            // BL-529 FIX3 — the mark moves only on a real switch: enabling an account that is already on changes nothing.
+            if (!wasActive) user.ActivateByAdministrator();
         }
         else
         {
-            user.Deactivate();
+            // The kebab's "Disable" is an explicit act, also on a pending invitation (FIX2 item 8): it marks the account,
+            // and a pending reset link goes with it (User.DeactivateByAdministrator).
+            user.DeactivateByAdministrator();
         }
 
-        await _userRepository.UpdateAsync(user, ct);
+        // BL-529 FIX3 — the switch, the mark and the link fields only; never a whole-document write from the copy read
+        // before the Platform seat call (which put back a password an administrator's reset replaced meanwhile).
+        await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, UserWriteCondition.None, ct);
 
         // Disabling must terminate active sessions immediately.
         if (!request.IsActive)
@@ -106,4 +128,10 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
         }
         return Response<NoContent>.Success(204);
     }
+
+    /// <summary>The refusal both deactivation doors (this kebab and the edit form) answer with.</summary>
+    internal static Response<T> LastStewardRefusal<T>() => Response<T>.Fail(
+        "Deactivating this account would leave the tenant with no active account that can create users.",
+        [new ResponseError(LastStewardCode)],
+        409);
 }

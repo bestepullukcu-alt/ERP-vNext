@@ -6,16 +6,14 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     // Map the request culture's .NET short-date pattern to flatpickr tokens (stored value stays ISO Y-m-d).
-    static string ToFlatpickr(string net) =>
-        net.Replace("dd", "\x01").Replace("d", "\x02")
-           .Replace("MM", "\x03").Replace("M", "\x04")
-           .Replace("yyyy", "Y").Replace("yy", "y")
-           .Replace("\x01", "d").Replace("\x02", "j").Replace("\x03", "m").Replace("\x04", "n");
+    // WCN-FIX-04 — one conversion for every view (FlatpickrDateFormat: drops the bidi marks Arabic's pattern carries).
 
     var payload = new
     {
         RequiredField = Localizer["RequiredField"].Value,
-        DateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
+        // WCN-FIX-04 — a typed date the shared guard refused: the save stops and says why (SharedResource, 7 languages).
+        DateNotRecognized = SharedLocalizer["DateNotRecognized"].Value,
+        DateFormat = Diten.Web.Services.Localization.FlatpickrDateFormat.ForCurrentCulture(),
         RecordCreated = SharedLocalizer["RecordCreated"].Value,
         RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
         ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value

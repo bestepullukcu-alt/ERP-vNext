@@ -126,7 +126,9 @@ Notlar:
     Browser → Gateway (5000) → AuthService (5056)
                                   ├── JWT Access Token (15dk) + Refresh Token (7gün)
                                   ├── Claims: sub, email, tenant_id, roles[], permissions[]
-                                  └── Seed: admin@diten.com / Admin123! (SuperAdmin)
+                                  └── Seed (yalnız Development): admin@diten.com (SuperAdmin) — dev parolası
+                                      yerel kurulum notunda; Development dışında hesap tohumlanmaz, ilk platform
+                                      yöneticisi Diten.AuthService.FirstPlatformAdministrator komutuyla kurulur
 
     Permission Model:
     {module}.{resource}.{action}
@@ -154,7 +156,7 @@ Canonical roster: **20 agent file** = 1 `orchestrator` + 19 specialist / auxilia
 | 4 | **security-agent** | Zero Trust, JWT, RBAC, HasPermission, Tenant Shield |
 | 5 | **data-agent** | MongoDB index, collection tasarımı, idempotent seed data |
 | 6 | **l10n-agent** | Platform/Tenant ayrımına göre `.resx` senkronizasyonu, `window.L10n` bridge |
-| 7 | **testing-agent** | xUnit, Moq, FluentAssertions, tenant isolation testleri |
+| 7 | **testing-agent** | xUnit (`Assert`), mevcut test çiftleri (Moq / fake), Vitest (ön yüz JS), tenant isolation testleri |
 | 8 | **integration-agent** | Ocelot Gateway routing, JWT pass-through, servis iletişimi |
 | 9 | **devops-agent** | Docker, CI/CD, local runbook, deployment senaryoları |
 | 10 | **code-quality-agent** | Naming, complexity, linting, refactor hygiene |
@@ -203,7 +205,7 @@ Canonical roster: **20 agent file** = 1 `orchestrator` + 19 specialist / auxilia
 - **Handler Ayrımı**: Handler sınıfları **ASLA** `Commands` veya `Queries` içinde olmayacaktır. Modül altında `Handlers/CommandHandlers` ve `Handlers/QueryHandlers` olarak ayrılmalıdır.
 - **Layout Kuralı**: Admin modülleri `_LayoutPlatformAdmin.cshtml`, tenant modülleri `_LayoutTenantShell.cshtml` kullanmalıdır. `_Layout.cshtml` sadece Archive içindir.
 - **Tenant Güvenliği**:
-  - `X-Tenant-Id` header kullanımı zorunludur (GUID formatında: `00000000-0000-0000-0000-000000000001`).
+  - Kiracı (tenant) bağlamında `X-Tenant-Id` header kullanımı zorunludur (GUID formatında). Platform/admin bağlamında gönderilmez. Koda sabit kiracı kimliği yazılmaz (`multi-tenancy.md`).
   - DTO'lar `TenantId` alanı içeremez; TenantId sunucu tarafında middleware ile çözülür.
   - Veri silme işlemleri **Soft Delete** (`IsDeleted = true`) olarak yapılmalıdır.
   - Başka bir kiracıya ait ID ile erişim denemesinde `404 Not Found` dönülmelidir.

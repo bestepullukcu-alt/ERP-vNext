@@ -59,10 +59,12 @@ START: What's your MAIN concern?
 
 ## Red Flags (Anti-patterns)
 
+> **Diten ERP vNext:** Bu tablo ve bu dosyadaki karar ağaçları genel amaçlıdır. Projede sabitlenmiş desenler (mikroservis, 5 katman, CQRS, repository) için geçerli değildir — bkz. `SKILL.md` → Proje Bağlamı.
+
 | Pattern | Anti-pattern | Simpler Alternative |
 |---------|-------------|-------------------|
-| Microservices | Premature splitting | Start monolith, extract later |
-| Clean/Hexagonal | Over-abstraction | Concrete first, interfaces later |
+| Microservices | Premature splitting | Start monolith, extract later — **Diten'de uygulanmaz: mikroservis mimarisi zorunlu (`AGENTS.md` §2–§3, `erp-architecture.md`)** |
+| Clean/Hexagonal | Over-abstraction | Concrete first, interfaces later — **Diten'de uygulanmaz: 5 katmanlı yapı zorunlu (`AGENTS.md` §6)** |
 | Event Sourcing | Over-engineering | Append-only audit log |
-| CQRS | Unnecessary complexity | Single model |
-| Repository | YAGNI for simple CRUD | ORM direct access |
+| CQRS | Unnecessary complexity | Single model — **Diten'de uygulanmaz: CQRS (MediatR) zorunlu (`AGENTS.md` §6)** |
+| Repository | YAGNI for simple CRUD | ORM direct access — **Diten'de uygulanmaz: repository + depo katmanında kiracı filtresi zorunlu (`erp-architecture.md`, `repository-standard.md`, `multi-tenancy.md`)** |

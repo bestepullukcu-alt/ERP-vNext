@@ -1,0 +1,21 @@
+CT-FIX-07 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness5.py.txt. The copy holds the final verify_module_id.py (a63ea76b…). Each mutation: the file still
+parses; the named tests fail (G-D1 by an error: the line they look for is absent); the control test passes.
+
+G-D1 the open decisions are not written
+    tests: test_the_open_decisions_follow_the_collisions, test_an_unset_owner_is_an_open_decision_and_the_count_is_unchanged
+    named: RED — FAILED (errors=2) · control: OK · proven: True
+G-D2 an unset owner is not noticed
+    tests: test_the_open_decisions_follow_the_collisions
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-B1 the Blueprint candidates are not listed
+    tests: test_blueprint_candidates_and_domain_configs_are_listed_and_bounded, test_blueprint_ids_and_domain_config_at_head
+    named: RED — FAILED (failures=2) · control: OK · proven: True
+G-C1 presence read from the working tree, not HEAD
+    tests: test_domain_config_presence_is_read_from_head_s_tree, test_blueprint_ids_and_domain_config_at_head
+    named: RED — FAILED (failures=2) · control: OK · proven: True
+G-C2 a failed measurement reads as absent
+    tests: test_domain_config_presence_is_read_from_head_s_tree
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+
+proven: 5 of 5

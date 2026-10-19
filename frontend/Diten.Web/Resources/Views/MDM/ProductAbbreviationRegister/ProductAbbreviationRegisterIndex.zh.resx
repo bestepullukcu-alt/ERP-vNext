@@ -9,4 +9,9 @@
   <data name="ErrorForbidden" xml:space="preserve"><value>您无权执行此 ABB 操作。</value></data><data name="ErrorNotFound" xml:space="preserve"><value>找不到 ABB 记录。</value></data><data name="ErrorConflict" xml:space="preserve"><value>ABB 记录已更改，请刷新后重试。</value></data><data name="ErrorValidation" xml:space="preserve"><value>请检查输入的 ABB 值。</value></data><data name="ErrorGateway" xml:space="preserve"><value>ABB 服务当前不可用。</value></data>
   <data name="LifecycleRequested" xml:space="preserve"><value>已申请</value></data><data name="LifecycleActive" xml:space="preserve"><value>有效</value></data><data name="LifecycleRejected" xml:space="preserve"><value>已拒绝</value></data><data name="LifecycleCancelled" xml:space="preserve"><value>已取消</value></data><data name="LifecycleRetired" xml:space="preserve"><value>已退役</value></data><data name="Yes" xml:space="preserve"><value>是</value></data><data name="No" xml:space="preserve"><value>否</value></data>
   <data name="AuditActor" xml:space="preserve"><value>规范主体</value></data><data name="AuditBefore" xml:space="preserve"><value>之前状态</value></data><data name="AuditAfter" xml:space="preserve"><value>之后状态</value></data><data name="AuditCorrelation" xml:space="preserve"><value>关联标识</value></data><data name="AuditIdempotency" xml:space="preserve"><value>幂等标识</value></data><data name="AuditEvidenceHash" xml:space="preserve"><value>证据哈希</value></data>
+<data name="SelectorPermissionRequired" xml:space="preserve"><value>选择产品并申请 ABB 需要全球产品读取权限。现有 ABB 链接和已保存的产品视图无需选择器即可访问。</value></data>
+<data name="RequestCorrection" xml:space="preserve"><value>申请更正</value></data>
+<data name="ReplacementAbbreviation" xml:space="preserve"><value>替代 ABB</value></data>
+<data name="Reason" xml:space="preserve"><value>原因</value></data>
+<data name="ErrorReconciliation" xml:space="preserve"><value>证据核对尚未完成。请重新加载后再试。</value></data>
 </root>

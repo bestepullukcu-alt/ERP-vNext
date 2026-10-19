@@ -35,4 +35,64 @@
   <data name="ErrorProviderTimeout"><value>Reference provider timed out.</value></data>
   <data name="ErrorForbidden"><value>You do not have permission.</value></data>
   <data name="ErrorGateway"><value>Request could not be completed.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Identity Approved</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Pending Identity Approval</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retired</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Submit for Approval</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Submit this LSKU identity for approval?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Retirement reason</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>A retirement reason is required.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>The retirement reason cannot exceed 128 characters.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>The LSKU identity was submitted and is pending approval.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>The lifecycle state changed. The latest record has been loaded.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Your session has expired. Please sign in again.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>The lifecycle service is unavailable. Try again later.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>The lifecycle request timed out. Try again.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Withdraw Approval</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Withdraw the approval request?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Withdrawal is still being processed.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Approval request withdrawn.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Request Retirement</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Submit a retirement request?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>Retirement request is awaiting a decision.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Retirement request submitted.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>This GSKU already has an LSKU for this market. Open the existing LSKU instead of creating a new one.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>The approval service refused this submission before starting an approval. The LSKU is still a draft; you can submit it again.</value>
+  </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Before sending this LSKU for approval, set in stock behaviour: {0}.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>The approval could not be applied to this LSKU, for example because its market or parent is no longer usable. The LSKU is a draft again; correct the cause and submit it again.</value>
+  </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>This LSKU changed or was cancelled after the submission started, so nothing was sent for approval. Open the LSKU again and submit it if it is still needed.</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>A withdrawal of this submit is under way; re-send the withdrawal to finish it before submitting again.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>serial control (this LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>lot control of its GSKU — someone allowed to edit the GSKU must set it</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Stock behaviour is incomplete or inconsistent, so this cannot be sent for approval yet. Complete it in Stock behaviour.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} and {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>The approval setup for this action is incomplete. Please inform your administrator.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>The request did not reach the approval service. Send the same request again.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>The approval is being changed right now. Try again in a moment.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can approve the record you submitted. Ask your administrator to adjust the approvers; you can submit it again after that.</value></data>
 </root>

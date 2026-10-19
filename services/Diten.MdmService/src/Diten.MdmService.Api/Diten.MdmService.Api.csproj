@@ -4,6 +4,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Diten.MdmService.Api</RootNamespace>
+    <!-- WP-VW-W4-INFRA: the dev verified-reference credential secret lives in dotnet user-secrets, never in appsettings -->
+    <UserSecretsId>6a1f0d2e-9c4b-4f7e-8b52-3d0e7a4c1f90</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.3.0" />
@@ -17,5 +19,16 @@
     <ProjectReference Include="..\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.MdmService.Persistence\Diten.MdmService.Persistence.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
+    <!-- WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1) — BL-452's shared list-export contract, for the brand register's server export. -->
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ListExport\Diten.BuildingBlocks.ListExport.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- MOD-0033-FU02 §F.3 — the git-ignored Development local settings hold a private key / a client secret. The Web
+         SDK treats every *.json beside the project as Content; this keeps the file out of build and publish output
+         (and out of every project that references this one). It is read from the project directory only. -->
+    <Content Remove="appsettings.Development.local.json" />
+    <None Remove="appsettings.Development.local.json" />
+  </ItemGroup>
+
 </Project>

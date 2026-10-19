@@ -1,0 +1,74 @@
+İ5B-FIX-11 red first — this package's final test file (the whole suite) against the committed sync_adapters.py of
+214c12db5 (İ5B-FIX-10) in a copy outside the repository; run by the AI session. Unit / API level
+(check_instruction_budget), not the write / check CLI.
+
+Ran 40 tests in 1.741s · FAILED (failures=16)
+
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_budget_problem_writes_no_adapter
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_code_span_across_lines_in_the_core_is_refused
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_container_opened_before_the_core_is_refused
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_core_rule_off_its_numbered_line_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_core_rule_only_inside_a_code_block_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_core_rule_only_inside_an_html_comment_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_dead_link_is_still_a_dead_link
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_heading_only_inside_a_comment_or_in_code_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_missing_instruction_file_is_still_missing
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_missing_link_check_file_is_missing_not_skipped
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_phrase_that_is_a_span_of_its_own_is_lost_and_short_terms_still_count
+  FAIL  test_sync_adapters_budget.InstructionBudget.test_a_reference_image_proves_no_required_text
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_required_text_only_in_link_metadata_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_rule_inside_a_larger_code_span_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_a_section_written_twice_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_agents_md_heading_only_inside_a_comment_or_a_code_block_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_emptied_reference_file_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_escaped_less_than_or_an_autolink_is_not_raw_html
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_import_shown_as_code_is_not_an_import
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_unclosed_comment_at_the_top_hides_the_rest
+  ok    test_sync_adapters_budget.InstructionBudget.test_an_unclosed_fence_in_the_core_hides_the_rules_after_it
+  ok    test_sync_adapters_budget.InstructionBudget.test_bodies_inside_html_comments_or_only_blank_fail
+  ok    test_sync_adapters_budget.InstructionBudget.test_dead_links_in_every_markdown_link_form
+  ok    test_sync_adapters_budget.InstructionBudget.test_each_contract_part_removed_or_hidden_in_a_comment_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_every_import_form_of_agents_md_outside_code_is_forbidden
+  ok    test_sync_adapters_budget.InstructionBudget.test_every_required_core_text_is_on_a_numbered_rule_line_today
+  ok    test_sync_adapters_budget.InstructionBudget.test_headings_kept_bodies_removed_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_link_check_lists_the_reference_file
+  ok    test_sync_adapters_budget.InstructionBudget.test_link_syntax_the_check_cannot_read_is_not_verified
+  ok    test_sync_adapters_budget.InstructionBudget.test_one_anchor_removed_fails_by_name
+  ok    test_sync_adapters_budget.InstructionBudget.test_oversize_message_names_the_file_it_is_about
+  ok    test_sync_adapters_budget.InstructionBudget.test_padding_without_anchors_fails
+  ok    test_sync_adapters_budget.InstructionBudget.test_raw_html_in_the_core_is_refused
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_generated_core_carries_the_rule
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_module_request_rule_hidden_in_a_comment_or_removed_is_lost
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_module_request_rule_is_a_required_core_text_once
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_raw_html_opener_class_is_refused_before_and_in_the_core
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_real_instruction_files_pass
+  ok    test_sync_adapters_budget.InstructionBudget.test_the_reference_file_has_required_sections_with_anchors
+  FAIL  test_sync_adapters_budget.InstructionBudget.test_the_rule_list_has_one_supported_shape
+
+failed subtests:
+  FAIL  test_a_reference_image_proves_no_required_text (refused='a full reference image')
+  FAIL  test_a_reference_image_proves_no_required_text (refused='a collapsed reference image')
+  FAIL  test_a_reference_image_proves_no_required_text (refused='a shortcut reference image')
+  FAIL  test_a_reference_image_proves_no_required_text (refused='a reference image inside a visible link label')
+  FAIL  test_a_reference_image_proves_no_required_text (refused="an undefined literal '![...]' (a declared false refusal)")
+  FAIL  test_a_reference_image_proves_no_required_text (visible='plain text with an escaped link tail')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='a reference title, directly')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='a reference title through an indented bridge')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='an inline title, directly')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='an inline title through an indented bridge')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='a plain paragraph before a rule (not a list item)')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='a loose list: a blank line between two rules (a declared false refusal)')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='a continuation line between two numbered rules (a declared false refusal)')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='a second numbered list in the core (a declared false refusal)')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='a rule number out of order')
+  FAIL  test_the_rule_list_has_one_supported_shape (refused='rule 1 right after a paragraph line')
+
+The two new tests fail on the base source: every shape case (the hidden titles, the declared false refusals and the
+real-shape breaks) passes there (10), every reference-image case passes (5), and the escaped link tail 'a\](b)' is
+refused there (1) — İ5B-FIX-10 read any '](' as unreadable; İ5B-FIX-11 lets an escaped one through. The 38 other tests
+pass in the same run.
+
+Earlier, not replaced: the two tests first ran red against the unchanged İ5B-FIX-10 source before the code was
+written (15 failures; the escaped link-tail control was added afterwards). The first freeze (fb65dbfd / 1a49310b)
+had the same results; the final files differ from it only by narrower wording (a docstring, a test label) and one
+more passing control (a continuation line after the last rule).

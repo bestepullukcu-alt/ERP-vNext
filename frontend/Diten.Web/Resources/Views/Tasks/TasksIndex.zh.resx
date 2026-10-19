@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>任务已归你所有。</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>其他人已先领取该任务。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您没有执行此操作的权限。</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>输入姓名或职位…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>请至少输入 2 个字符进行搜索。</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>没有找到符合此搜索的人员。</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>正在搜索…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>未找到此人</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>无法完成搜索，请稍后重试。</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>未找到记录。</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>暂时无法加载人员信息</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>请按姓名或按已保存的人员查找，不能同时使用两者。</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>一次请求的人员过多。</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>某个已保存的人员引用无效。</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>人员目录暂时不可用，请稍后重试。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>无法连接任务服务，请重试。</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>暂无任务</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>创建第一个任务后，它将显示在此处和任务中心。</value></data>
@@ -123,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>您不能审批自己发起的审批。请选择其他人作为审批负责人。</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>您不能审阅自己提交的工作。请让其他人审阅此任务。</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>除您之外没有人可以审阅此任务。请选择其他审阅人。</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>除您之外没有人可以决定此审批的下一步。请联系管理员调整工作流的审批人。</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>您的更改已保存，但无法撤回正在进行的审批。请再次保存以重试。</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>您的更改已保存，但无法撤回正在进行的审阅。请再次保存以重试。</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>无法撤回关联的审批或审阅，因此未执行任何操作。请稍后重试。</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>此任务已有一个进行中的审阅。</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>请说明该任务在等待什么。</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>请填写标题。</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>标题最多 200 个字符。</value></data>

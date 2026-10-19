@@ -1,30 +1,40 @@
 @using Diten.Web.Views.MasterData.Brands
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<BrandsIndex> Localizer
+@{
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 6) — the table card is the shared component (BL-440): the page describes it,
+    // _ListShell renders it, with the shared shaped skeleton. Every header is localized HERE; the shell produces no text.
+    //
+    // SERVER data: MDM pages, searches, filters and sorts (orderBy whitelist: brandCode, brandName, brandStatus,
+    // effectiveFrom, effectiveTo, isArchived, updatedAt); index.js declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately: brands are never bulk-deleted or bulk-changed (there is no delete at all, and
+    // archive is one irreversible decision per brand), so a checkbox would select into nothing.
+    //
+    // FIX1 (item 8) — the business unit and therapeutic area columns stay (no column is removed); with no master to
+    // resolve them yet, a stored reference reads "could not be resolved", never as its id.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-brands",
+        DataMode = "server",
+        Slug = "brands",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["BrandCode"].Value },
+            new DataTableColumnViewModel { Header = Localizer["BrandName"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["BrandStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["BusinessUnitId"].Value },
+            new DataTableColumnViewModel { Header = Localizer["TherapeuticAreaId"].Value },
+            new DataTableColumnViewModel { Header = Localizer["EffectiveFrom"].Value },
+            new DataTableColumnViewModel { Header = Localizer["EffectiveTo"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Archived"].Value },
+            new DataTableColumnViewModel { Header = Localizer["UpdatedAt"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
 
-<div class="card">
-    <div id="brandContractError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-    </div>
-    <div class="card-datatable table-responsive">
-        <table id="dt-brands" data-dt-standard="v2" class="datatables-brands table border-top w-100">
-            <thead><tr>
-                <th></th>
-                <th>@Localizer["BrandCode"]</th>
-                <th class="all">@Localizer["BrandName"]</th>
-                <th>@Localizer["BrandStatus"]</th>
-                <th>@Localizer["BusinessUnitId"]</th>
-                <th>@Localizer["TherapeuticAreaId"]</th>
-                <th>@Localizer["EffectiveFrom"]</th>
-                <th>@Localizer["EffectiveTo"]</th>
-                <th>@Localizer["Archived"]</th>
-                <th>@Localizer["UpdatedAt"]</th>
-                <th class="all text-end">@Localizer["Actions"]</th>
-            </tr></thead>
-        </table>
-    </div>
-</div>
+<div id="brandContractError" class="alert alert-danger d-none" role="alert"></div>
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

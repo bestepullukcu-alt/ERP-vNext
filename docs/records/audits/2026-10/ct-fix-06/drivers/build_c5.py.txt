@@ -1,0 +1,44 @@
+"""Candidate 5 (scratch, no ref, own repository whose objects borrow C4's store read-only): C4 (3d4f0f405) + the
+CT-FIX-06 files (worktree on chore/ct/ct-fix-06, base c203303ce) + the İ5B-FIX-07 files (chore/agents/i5b-fix-07, base
+5cd4cc527). Clean overlay only: each branch's base blob is C4's. Usage: build_c5.py <c5 repo> <ct wt> <i5b wt> <out dir>"""
+import subprocess, sys, os, json, hashlib
+R, CTW, IW, D = sys.argv[1:5]
+BASE = "3d4f0f4050b1b162555277f2296f42648c299eb7"
+LINES = {CTW: ("c203303ce2b9b4e10156dfcde3b4897e172fe8cb",
+               [".antigravity/scripts/verify_module_id.py", "scripts/acceptance_record.py", "scripts/ct_queue.py",
+                "scripts/tests/test_ct_cli_regression.py", "scripts/tests/test_verify_module_id_discover.py"]),
+         IW: ("5cd4cc527783880176f2f72fa1d488d92ce3aa9f",
+              [".antigravity/scripts/sync_adapters.py", "scripts/tests/test_sync_adapters_budget.py"])}
+os.makedirs(D, exist_ok=True)
+env = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_INDEX_FILE=os.path.join(D, "index"),
+           GIT_AUTHOR_NAME="CT-FIX-06 candidate", GIT_AUTHOR_EMAIL="candidate@example.invalid",
+           GIT_COMMITTER_NAME="CT-FIX-06 candidate", GIT_COMMITTER_EMAIL="candidate@example.invalid",
+           GIT_AUTHOR_DATE="2026-10-18T09:00:00Z", GIT_COMMITTER_DATE="2026-10-18T09:00:00Z")
+WENV = {k: v for k, v in env.items() if k != "GIT_INDEX_FILE"}
+def git(*a, cwd=R, ok=False):
+    p = subprocess.run(["git", *a], cwd=cwd, capture_output=True, text=True, env=env if cwd == R else WENV)
+    if p.returncode and not ok: raise SystemExit(f"git {a}: {p.stderr}")
+    return p.stdout.strip() if not p.returncode else None
+for W, (WBASE, files) in LINES.items():
+    changed = sorted(set(git("diff", "--name-only", WBASE, cwd=W).splitlines()) | set(git("ls-files", "--others", "--exclude-standard", cwd=W).splitlines()))
+    if changed != sorted(files): raise SystemExit(f"stop: {W} changes {changed} != {sorted(files)}")
+    for f in files:
+        b1, b2 = git("rev-parse", f"{WBASE}:{f}", cwd=W, ok=True), git("rev-parse", f"{BASE}:{f}", ok=True)
+        print("base blob", "same" if b1 == b2 else "DIFFERENT", f)
+        if b1 != b2: raise SystemExit("stop: not a clean overlay")
+git("read-tree", BASE)
+manifest = {}
+for W, (WBASE, files) in LINES.items():
+    for f in files:
+        blob = git("hash-object", "-w", "--path", f, os.path.join(W, f))
+        mode = "100755" if os.access(os.path.join(W, f), os.X_OK) else "100644"
+        git("update-index", "--add", "--cacheinfo", f"{mode},{blob},{f}")
+        manifest[f] = {"line": "CT-FIX-06" if W == CTW else "İ5B-FIX-07", "base": WBASE, "mode": mode, "blob": blob,
+                       "sha256": hashlib.sha256(open(os.path.join(W, f), "rb").read()).hexdigest()}
+tree = git("write-tree")
+commit = git("commit-tree", tree, "-p", BASE, "-m", "CT-FIX-06 / İ5B-FIX-07 candidate 5 (scratch, no ref): C4 + the v7 audit "
+             "fixes (core HTML before the block, a rule inside a larger span; the discovery summary; evidence lines; required registry columns)")
+names = git("diff", "--name-status", "--no-renames", BASE, commit).splitlines()
+json.dump({"base": BASE, "tree": tree, "commit": commit, "diff_vs_base": names, "files": manifest},
+          open(os.path.join(D, "candidate.json"), "w"), indent=1, ensure_ascii=False)
+print(commit, tree); print("\n".join(names))

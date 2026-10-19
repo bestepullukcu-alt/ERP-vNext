@@ -100,7 +100,12 @@ public sealed record PlannedVisitDetailDto(
     string? TargetDisplayName = null,
     string? AccountDisplayName = null,
     string? ContactDisplayName = null,
-    bool TargetInactive = false);
+    bool TargetInactive = false,
+    // WP-VW-W1 (additive) — the derived work status (read time, never stored), the report deadline (UTC, last reportable
+    // second) and the "lock + notify manager" flag. Same derivation as the execution calendar (VisitWorkStatus).
+    string? WorkStatus = null,
+    DateTimeOffset? ReportDeadline = null,
+    bool ManagerAttention = false);
 
 /// <summary>WP-SB-3b — one product of a planned visit, as frozen at plan time. No play / campaign id (ARCH GATE).</summary>
 public sealed record PlannedVisitContentItemDto(

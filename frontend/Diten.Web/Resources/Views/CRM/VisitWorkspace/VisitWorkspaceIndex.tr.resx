@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Ziyaret Çalışma Alanı</value></data>
+  <data name="PageSubtitle" xml:space="preserve"><value>Planlayın, ziyaret edin, raporlayın: hepsi tek takvimde.</value></data>
+  <data name="TodayButton" xml:space="preserve"><value>Bugün</value></data>
+  <data name="PreviousWeek" xml:space="preserve"><value>Önceki hafta</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Sonraki hafta</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Haftayı onayla</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Haftayı yeniden aç</value></data>
+  <data name="UnplannedVisit" xml:space="preserve"><value>Plan dışı ziyaret</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="FilterAccount" xml:space="preserve"><value>Kurum</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FilterAllAccounts" xml:space="preserve"><value>Tüm kurumlar</value></data>
+  <data name="FilterAllProducts" xml:space="preserve"><value>Tüm ürünler</value></data>
+  <data name="NoPlanWeek" xml:space="preserve"><value>Bu hafta için plan yok.</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Ziyaret</value></data>
+  <data name="WhatToPresent" xml:space="preserve"><value>Ne sunacağım</value></data>
+  <data name="PreviousVisit" xml:space="preserve"><value>Önceki ziyaretten</value></data>
+  <data name="FrequencyTitle" xml:space="preserve"><value>Sıklık</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Kapat</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Neden</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="NoteRequired" xml:space="preserve"><value>bu neden için zorunlu</value></data>
+  <data name="NewDate" xml:space="preserve"><value>Yeni tarih</value></data>
+  <data name="ReopenReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="ReopenHint" xml:space="preserve"><value>En az 10 karakter; haftanın geçmişinde saklanır.</value></data>
+  <data name="UnplacedTitle" xml:space="preserve"><value>Bu haftaya sığmayan ziyaretler</value></data>
+  <data name="UnplacedHint" xml:space="preserve"><value>Bir ziyareti bu haftada tutmak için Planla modunda bir güne sabitleyin.</value></data>
+  <data name="UnplannedTitle" xml:space="preserve"><value>Plan dışı ziyaret</value></data>
+  <data name="UnplannedHint" xml:space="preserve"><value>Bugün için elle tek ziyaret ekleyin. İleri tarihli ziyaretleri Planla modunda hedef olarak ekleyin.</value></data>
+  <data name="DoctorLabel" xml:space="preserve"><value>Doktor</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>Ada göre arayın (en az 2 harf)</value></data>
+  <data name="TimeLabel" xml:space="preserve"><value>Saat</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Ekle</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>{0}. Hafta</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>Taslak · otomatik</value></data>
+  <data name="WeekStateApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="WeekStatePast" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="WeekStateNone" xml:space="preserve"><value>Plan yok</value></data>
+  <data name="CapacityLabel" xml:space="preserve"><value>{0} / {1} planlandı</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>{0} sa</value></data>
+  <data name="Unplaced" xml:space="preserve"><value>⚠ {0} ziyaret sığmadı</value></data>
+  <data name="UnplacedDetail" xml:space="preserve"><value>Bu haftanın {0} ziyareti çalışma günlerine yerleştirilemedi (kapasite ya da tatil).</value></data>
+  <data name="HolidayLabel" xml:space="preserve"><value>Tatil</value></data>
+  <data name="DayLoad" xml:space="preserve"><value>{0} ziyaret · boş {1}</value></data>
+  <data name="NoVisitDay" xml:space="preserve"><value>Bu gün ziyaret yok.</value></data>
+  <data name="Status_cancelled" xml:space="preserve"><value>İptal</value></data>
+  <data name="Status_not_done" xml:space="preserve"><value>Yapılamadı</value></data>
+  <data name="Status_rescheduled" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="Status_reported" xml:space="preserve"><value>Raporlandı</value></data>
+  <data name="Status_expired" xml:space="preserve"><value>Süre doldu</value></data>
+  <data name="Status_report_missing" xml:space="preserve"><value>Rapor eksik</value></data>
+  <data name="Status_missed" xml:space="preserve"><value>Kaçırıldı</value></data>
+  <data name="Status_today" xml:space="preserve"><value>Bugün</value></data>
+  <data name="Status_planned" xml:space="preserve"><value>Planlı</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Icon_Pinned" xml:space="preserve"><value>Sabit</value></data>
+  <data name="Icon_Unplanned" xml:space="preserve"><value>Plan dışı</value></data>
+  <data name="Icon_Rescheduled" xml:space="preserve"><value>Ertelemeden geldi</value></data>
+  <data name="CountdownLeft" xml:space="preserve"><value>{0} sa {1} dk kaldı</value></data>
+  <data name="CountdownPassed" xml:space="preserve"><value>Raporlama süresi doldu</value></data>
+  <data name="BandMissed" xml:space="preserve"><value>Kaçırıldı: 48 saat içinde yapılamadı ya da ertele.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Kilitli: 48 saat rapor olmadan geçti; yöneticiniz için işaretlendi.</value></data>
+  <data name="BandReportMissing" xml:space="preserve"><value>Ziyaret yapıldı; raporunu gönderin.</value></data>
+  <data name="BandDraft" xml:space="preserve"><value>Taslak hafta: plan hâlâ değişebilir.</value></data>
+  <data name="BandCancelled" xml:space="preserve"><value>Bu ziyaret iptal edildi.</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>tanıtım</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>hatırlatma</value></data>
+  <data name="NoContent" xml:space="preserve"><value>Planlanmış ürün yok.</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Yapılan {0} / {1} · planlı {2}</value></data>
+  <data name="Outcome_completed" xml:space="preserve"><value>Yapıldı</value></data>
+  <data name="Outcome_missed" xml:space="preserve"><value>Yapılamadı</value></data>
+  <data name="Outcome_rescheduled" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="Action_cancel" xml:space="preserve"><value>Ziyareti iptal et</value></data>
+  <data name="Action_result" xml:space="preserve"><value>Sonuç gir</value></data>
+  <data name="Action_notDone" xml:space="preserve"><value>Yapılamadı</value></data>
+  <data name="Action_reschedule" xml:space="preserve"><value>Ertele</value></data>
+  <data name="Action_sendReport" xml:space="preserve"><value>Raporu gönder</value></data>
+  <data name="Action_plan" xml:space="preserve"><value>Planı aç</value></data>
+  <data name="LockedInfo" xml:space="preserve"><value>Salt okunur kayıt. Düzenleme ve rapor girişi kapalı.</value></data>
+  <data name="DlgCancelTitle" xml:space="preserve"><value>Ziyareti iptal et</value></data>
+  <data name="DlgNotDoneTitle" xml:space="preserve"><value>Ziyaret yapılamadı</value></data>
+  <data name="DlgRescheduleTitle" xml:space="preserve"><value>Ziyareti ertele</value></data>
+  <data name="RescheduleDayLoad" xml:space="preserve"><value>{0} ziyaret · {1} / {2}</value></data>
+  <data name="RescheduleNoDays" xml:space="preserve"><value>Önümüzdeki haftalarda açık çalışma günü yok.</value></data>
+  <data name="ReasonsUnavailable" xml:space="preserve"><value>Neden listesi okunamadı. Lütfen tekrar deneyin.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="Saved" xml:space="preserve"><value>Kaydedildi.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>Takvim yüklenemedi.</value></data>
+  <data name="ApproveDone" xml:space="preserve"><value>Hafta onaylandı.</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>Hafta yeniden açıldı.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>Yeniden aç: {0}</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>Doktor bulunamadı.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>48 saatlik raporlama süresi doldu; ziyaret kilitli.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>Bu ziyaret iptal edildi; üzerine kayıt girilemez.</value></data>
+  <data name="Err_visit_reason_invalid" xml:space="preserve"><value>Listeden bir neden seçin.</value></data>
+  <data name="Err_visit_reason_note_required" xml:space="preserve"><value>Bu neden için açıklama gerekli.</value></data>
+  <data name="Err_visit_reason_note_too_long" xml:space="preserve"><value>Açıklama çok uzun (en çok 500 karakter).</value></data>
+  <data name="Err_visit_reschedule_date_invalid" xml:space="preserve"><value>Bugünden sonra, etkin dönem içinde bir çalışma günü seçin.</value></data>
+  <data name="Err_visit_report_reschedule_date_invalid" xml:space="preserve"><value>Yeni tarih geçerli bir tarih değil.</value></data>
+  <data name="Err_visit_reschedule_already_applied" xml:space="preserve"><value>Yeni ziyaret oluştu; tarihi artık değiştirilemez.</value></data>
+  <data name="Err_visit_cancel_past_day" xml:space="preserve"><value>Geçmiş ziyaret iptal edilmez; yapılamadı ya da ertele.</value></data>
+  <data name="Err_unplanned_visit_today_only" xml:space="preserve"><value>Plan dışı ziyaret yalnız bugün için eklenebilir.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Neden listesi okunamadı, tekrar deneyin.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>60 dakikalık düzeltme süresi doldu; düzeltme kaydıyla değiştirin.</value></data>
+  <data name="Err_visit_report_invalid_transition" xml:space="preserve"><value>Ziyaretin durumu bu adıma izin vermiyor. Yenileyip tekrar deneyin.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>Yalnız kendi ziyaretleriniz üzerinde işlem yapabilirsiniz.</value></data>
+  <data name="Err_visit_reason_applies_to_invalid" xml:space="preserve"><value>Bu işlem için neden listesi okunamadı.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>Ziyaretin günü henüz gelmedi.</value></data>
+  <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>Bu ziyaret artık değiştirilemez.</value></data>
+  <data name="Err_planned_visit_overlap" xml:space="preserve"><value>Bu saatte başka bir ziyaret planlı.</value></data>
+  <data name="TargetsTitle" xml:space="preserve"><value>Hedefler · {0} — sürükleyip güne bırakın</value></data>
+  <data name="TargetsNoPlan" xml:space="preserve"><value>Bu hafta için plan yok.</value></data>
+  <data name="PlanReadOnlyWeek" xml:space="preserve"><value>{0} onaylı — değiştirmek için Haftayı yeniden aç.</value></data>
+  <data name="PlanReadOnlyPast" xml:space="preserve"><value>{0} geçti — salt okunur.</value></data>
+  <data name="QuickDue" xml:space="preserve"><value>Bu hafta görülmeli</value></data>
+  <data name="QuickNever" xml:space="preserve"><value>Hiç görülmemiş</value></data>
+  <data name="QuickAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="FrequencyPerPeriod" xml:space="preserve"><value>dönemde {0}</value></data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve"><value>haftada 1 (varsayılan)</value></data>
+  <data name="DueThisWeek" xml:space="preserve"><value>Bu hafta görülmeli</value></data>
+  <data name="PlanDoctorsHeading" xml:space="preserve"><value>Planda ({0})</value></data>
+  <data name="OtherDoctorsHeading" xml:space="preserve"><value>Diğer doktorlar</value></data>
+  <data name="NoDoctors" xml:space="preserve"><value>Bu süzgece uyan doktor yok.</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tümünü seç ({0})</value></data>
+  <data name="ApplyProducts" xml:space="preserve"><value>Ürün uygula ({0})</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>{0} doktor · {1} eczane · {2} hesap</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>Plan güncellendi.</value></data>
+  <data name="PinSaved" xml:space="preserve"><value>Ziyaret sabitlendi.</value></data>
+  <data name="ProductsApplied" xml:space="preserve"><value>Ürünler uygulandı.</value></data>
+  <data name="NoProductPicked" xml:space="preserve"><value>Henüz ürün seçilmedi.</value></data>
+  <data name="RemoveProduct" xml:space="preserve"><value>Ürünü çıkar</value></data>
+  <data name="UnplacedReasonOther" xml:space="preserve"><value>Bu haftaya yerleştirilemedi.</value></data>
+  <data name="Pin_pin_time_invalid" xml:space="preserve"><value>Saat 15 dakikalık adımda olmalı; saate yalnız tek bir ziyaret sabitlenebilir.</value></data>
+  <data name="Pin_pin_time_outside_hours" xml:space="preserve"><value>Saat mesai dışında (ya da öğle arasında).</value></data>
+  <data name="Pin_pin_time_conflict" xml:space="preserve"><value>Bu saat dolu; ziyaret en yakın boş saate alındı.</value></data>
+  <data name="Pin_pin_time_past_day_end" xml:space="preserve"><value>Ziyaret mesai bitişini aşıyor, erkene alındı</value></data>
+  <data name="Pin_pin_overflow" xml:space="preserve"><value>Haftada yer kalmadı; sabitlenen ziyaret sonraki haftaya kaydı.</value></data>
+  <data name="Pin_pin_day_full" xml:space="preserve"><value>Sabitlenen gün dolu; ziyaret sonraki iş gününe alındı.</value></data>
+  <data name="Pin_week_already_approved" xml:space="preserve"><value>Hafta onaylı — değiştirmek için yeniden açın.</value></data>
+  <data name="Reason_capacity_full" xml:space="preserve"><value>Hafta dolu.</value></data>
+  <data name="Reason_no_near_day" xml:space="preserve"><value>Yakın bir günde yer yok.</value></data>
+  <data name="Reason_period_exhausted" xml:space="preserve"><value>Dönemde yer kalmadı.</value></data>
+  <data name="Reason_missing_location" xml:space="preserve"><value>Kurumun konumu yok.</value></data>
+  <data name="Reason_consent_blocked" xml:space="preserve"><value>Onam ziyareti engelliyor.</value></data>
+  <data name="Reason_week_full_skipped" xml:space="preserve"><value>Haftalık varsayılan ziyaret atlandı: hafta dolu.</value></data>
+  <data name="Reason_extra_no_room" xml:space="preserve"><value>Ek ziyarete bu hafta yer yok.</value></data>
+  <data name="Reason_no_feasible_availability_window" xml:space="preserve"><value>Doktorun müsaitliği uymuyor.</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>Mod</value></data>
+  <data name="ModeExecute" xml:space="preserve"><value>Yürüt</value></data>
+  <data name="ModePlan" xml:space="preserve"><value>Planla</value></data>
+  <data name="DragHint" xml:space="preserve"><value>Doktoru güne ya da saate sürükleyip bırakın.</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Kurum</value></data>
+  <data name="QuickFiltersLabel" xml:space="preserve"><value>Hızlı süzgeçler</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>Ürün uygula</value></data>
+  <data name="ProductsHint" xml:space="preserve"><value>Bu kurumun plandaki doktorlarına eklenir: ilk ürün tanıtım, diğerleri hatırlatma.</value></data>
+  <data name="PickedProducts" xml:space="preserve"><value>Seçilen ürünler</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>Ürün ara…</value></data>
+  <data name="ApplyButton" xml:space="preserve"><value>Uygula</value></data>
+  <data name="TodayBadge" xml:space="preserve"><value>Bugün</value></data>
+  <data name="CapacityWeekLine" xml:space="preserve"><value>Bu hafta {0} kapasite · {1} planlı</value></data>
+  <data name="FilterAllStatuses" xml:space="preserve"><value>Tüm durumlar</value></data>
+  <data name="FilterStatusCount" xml:space="preserve"><value>{0} durum</value></data>
+  <data name="CardReportLeft" xml:space="preserve"><value>Rapor için {0} sa kaldı</value></data>
+  <data name="CardMarkLeft" xml:space="preserve"><value>İşaretlemek için {0} sa</value></data>
+  <data name="CardLocked" xml:space="preserve"><value>Kilitli</value></data>
+  <data name="CardMovedTo" xml:space="preserve"><value>→ {0}</value></data>
+  <data name="MonthVisits" xml:space="preserve"><value>{0} ziyaret</value></data>
+  <data name="LegendPinned" xml:space="preserve"><value>sabit</value></data>
+  <data name="LegendUnplanned" xml:space="preserve"><value>plan dışı</value></data>
+  <data name="LegendProduct" xml:space="preserve"><value>ÜRÜN</value></data>
+  <data name="DetailPinned" xml:space="preserve"><value>Güne sabit</value></data>
+  <data name="DetailUnplanned" xml:space="preserve"><value>Plan dışı</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="ContentSteps" xml:space="preserve"><value>{0} içerik adımı</value></data>
+  <data name="AboutMinutes" xml:space="preserve"><value>≈ {0} dk</value></data>
+  <data name="EstimateLine" xml:space="preserve"><value>{0} tanıtım + {1} hatırlatma + rapor ≈ {2} dk</value></data>
+  <data name="EstimateLineNoReminder" xml:space="preserve"><value>{0} tanıtım + rapor ≈ {1} dk</value></data>
+  <data name="DetailFrequency" xml:space="preserve"><value>Sıklık: dönemde {0} · {1}</value></data>
+  <data name="AlertTitle_draft" xml:space="preserve"><value>Taslak hafta</value></data>
+  <data name="AlertText_draft" xml:space="preserve"><value>Sıklığa göre otomatik oluşturuldu. Takvimde sürükleyerek güne sabitleyebilirsiniz.</value></data>
+  <data name="AlertTitle_planned" xml:space="preserve"><value>Hafta onaylı</value></data>
+  <data name="AlertText_planned" xml:space="preserve"><value>Güne taşımak için haftayı yeniden açın. Sonuç girişi ziyaret günü açılır.</value></data>
+  <data name="AlertTitle_today" xml:space="preserve"><value>Bugün · {1}</value></data>
+  <data name="AlertText_today" xml:space="preserve"><value>Kuruma vardığınızda ziyarete başlayın.</value></data>
+  <data name="AlertTitle_report_missing" xml:space="preserve"><value>Rapor için {0} sa kaldı</value></data>
+  <data name="AlertText_report_missing" xml:space="preserve"><value>Süre dolunca kayıt kilitlenir.</value></data>
+  <data name="AlertTitle_reported" xml:space="preserve"><value>Rapor gönderildi</value></data>
+  <data name="AlertText_reported" xml:space="preserve"><value>Değişiklik için gerekçeli düzeltme gerekir.</value></data>
+  <data name="AlertTitle_missed" xml:space="preserve"><value>Kaçırıldı</value></data>
+  <data name="AlertText_missed" xml:space="preserve"><value>Ziyaret başlatılmadı. "Yapılamadı" ya da "Ertele" için {0} sa kaldı.</value></data>
+  <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Kaçırıldı · kilitli</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>48 saat içinde işaretlenmedi. Kayıt kilitlendi, yöneticiniz için işaretlendi.</value></data>
+  <data name="AlertTitle_expired" xml:space="preserve"><value>Rapor süresi doldu</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>Kayıt kilitli, yöneticiniz için işaretlendi.</value></data>
+  <data name="DlgTab_cancel" xml:space="preserve"><value>İptal et</value></data>
+  <data name="DlgTab_notDone" xml:space="preserve"><value>Yapılamadı</value></data>
+  <data name="DlgTab_reschedule" xml:space="preserve"><value>Ertele</value></data>
+  <data name="DlgMean_cancel" xml:space="preserve"><value>Ziyaret yapılmayacak (plan iptali; gün gelmeden de olur).</value></data>
+  <data name="DlgMean_notDone" xml:space="preserve"><value>Gün geldi ama ziyaret olmadı.</value></data>
+  <data name="DlgMean_reschedule" xml:space="preserve"><value>Başka güne kaydırın; yeni tarih seçin.</value></data>
+  <data name="DlgConfirm_cancel" xml:space="preserve"><value>Ziyareti iptal et</value></data>
+  <data name="DlgConfirm_notDone" xml:space="preserve"><value>Yapılamadı olarak işaretle</value></data>
+  <data name="DlgConfirm_reschedule" xml:space="preserve"><value>Ziyareti ertele</value></data>
+  <data name="TargetsSub" xml:space="preserve"><value>{0} · sürükleyip güne bırakın</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Seçim özeti · {0}</value></data>
+  <data name="SummaryDoctors" xml:space="preserve"><value>doktor</value></data>
+  <data name="SummaryPharmacies" xml:space="preserve"><value>eczane</value></data>
+  <data name="SummaryAccounts" xml:space="preserve"><value>hesap</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>Seçim yok</value></data>
+  <data name="ViewLabel" xml:space="preserve"><value>Görünüm</value></data>
+  <data name="ViewDay" xml:space="preserve"><value>Gün</value></data>
+  <data name="ViewWeek" xml:space="preserve"><value>Hafta</value></data>
+  <data name="ViewMonth" xml:space="preserve"><value>Ay</value></data>
+  <data name="TargetsHeading" xml:space="preserve"><value>Hedefler</value></data>
+  <data name="MapPlaceholder" xml:space="preserve"><value>harita önizlemesi</value></data>
+  <!-- WP-VW-W3 (WEB-a) — start the visit (E3), in_progress -->
+  <data name="Status_in_progress" xml:space="preserve"><value>Devam ediyor</value></data>
+  <data name="AlertTitle_in_progress" xml:space="preserve"><value>Devam ediyor · {0} dk</value></data>
+  <data name="AlertText_in_progress" xml:space="preserve"><value>Başlangıç {1} (sunucu saati).</value></data>
+  <data name="AlertText_today_start" xml:space="preserve"><value>Kuruma vardığınızda ziyarete başlayın; kanıt adımından sonra sunum açılır.</value></data>
+  <data name="CardLiveMinutes" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="Action_start" xml:space="preserve"><value>Ziyarete başla</value></data>
+  <data name="Action_presentation" xml:space="preserve"><value>Sunuma dön</value></data>
+  <data name="Action_finish" xml:space="preserve"><value>Ziyareti bitir</value></data>
+  <data name="E3Required" xml:space="preserve"><value>zorunlu</value></data>
+  <data name="E3Optional" xml:space="preserve"><value>isteğe bağlı</value></data>
+  <data name="E3Webcam" xml:space="preserve"><value>Web kamerası</value></data>
+  <data name="E3CameraPhone" xml:space="preserve"><value>Kamera</value></data>
+  <data name="E3Missing" xml:space="preserve"><value>Eksik: {0}</value></data>
+  <data name="E3Missing_photo" xml:space="preserve"><value>fotoğraf</value></data>
+  <data name="E3Missing_location" xml:space="preserve"><value>konum</value></data>
+  <data name="E3HintReady" xml:space="preserve"><value>Başlangıç saati sunucudan alınır.</value></data>
+  <data name="Loc_pending" xml:space="preserve"><value>Konum alınıyor…</value></data>
+  <data name="Loc_ok" xml:space="preserve"><value>Konum alındı</value></data>
+  <data name="Loc_okDetail" xml:space="preserve"><value>Doğruluk ±{0} m · kuruma uzaklığı sunucu ölçer.</value></data>
+  <data name="Loc_inaccurate" xml:space="preserve"><value>Doğruluk düşük</value></data>
+  <data name="Loc_inaccurateDetail" xml:space="preserve"><value>±{0} m; en çok {1} m kabul edilir. Açık alanda yeniden deneyin.</value></data>
+  <data name="Loc_denied" xml:space="preserve"><value>İzin verilmedi</value></data>
+  <data name="Loc_deniedDetail" xml:space="preserve"><value>Tarayıcı konum iznini reddetti. Adres çubuğundan izin verip yeniden deneyin.</value></data>
+  <data name="Loc_unavailable" xml:space="preserve"><value>Konum alınamadı</value></data>
+  <data name="Loc_unavailableDetail" xml:space="preserve"><value>Cihaz konumunu belirleyemedi. Konum hizmetinin açık olduğunu kontrol edip yeniden deneyin.</value></data>
+  <data name="Loc_timeout" xml:space="preserve"><value>Zaman aşımı</value></data>
+  <data name="Loc_timeoutDetail" xml:space="preserve"><value>Konum zamanında gelmedi. Yeniden deneyin.</value></data>
+  <data name="Loc_requiredNote" xml:space="preserve"><value>Konum zorunlu: kuruma yaklaşınca başlatabilirsiniz.</value></data>
+  <data name="Loc_requiredMissing" xml:space="preserve"><value>Konum zorunlu: konum alınmadan ziyaret başlatılamaz.</value></data>
+  <data name="Loc_infoNote" xml:space="preserve"><value>Bilgi olarak kaydedilir; yöneticiniz görür.</value></data>
+  <data name="Cam_denied" xml:space="preserve"><value>Kamera izni verilmedi. Adres çubuğundan izin verin ya da Dosya yükle'yi kullanın.</value></data>
+  <data name="Cam_unavailable" xml:space="preserve"><value>Kamera bulunamadı. Dosya yükle'yi kullanın.</value></data>
+  <data name="Cam_failed" xml:space="preserve"><value>Kamera açılamadı. Dosya yükle'yi kullanın.</value></data>
+  <data name="Photo_invalid" xml:space="preserve"><value>Fotoğraf okunamadı. JPEG ya da PNG seçin.</value></data>
+  <data name="Photo_tooLarge" xml:space="preserve"><value>Fotoğraf çok büyük. Başka bir fotoğraf seçin.</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>Gönderilemedi. Bağlantınızı kontrol edip yeniden deneyin.</value></data>
+  <data name="DistanceMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="DistanceKm" xml:space="preserve"><value>{0} km</value></data>
+  <data name="StartErr_visit_not_today" xml:space="preserve"><value>Bu ziyaret yalnız kendi gününde başlatılabilir.</value></data>
+  <data name="StartErr_visit_not_confirmed" xml:space="preserve"><value>Hafta henüz onaylanmadı; önce haftayı onaylayın.</value></data>
+  <data name="StartErr_visit_already_started" xml:space="preserve"><value>Bu ziyaret zaten başlatılmış.</value></data>
+  <data name="StartErr_visit_already_reported" xml:space="preserve"><value>Bu ziyaretin raporu zaten var.</value></data>
+  <data name="StartErr_visit_location_required" xml:space="preserve"><value>Konum zorunlu: konum izni verip yeniden deneyin.</value></data>
+  <data name="StartErr_visit_location_too_far" xml:space="preserve"><value>Kurumdan {0} uzaktasınız.</value></data>
+  <data name="StartErr_visit_location_inaccurate" xml:space="preserve"><value>Konumunuz yeterince doğru değil. Açık alanda yeniden deneyin.</value></data>
+  <data name="StartErr_visit_account_location_unknown" xml:space="preserve"><value>Kurumun konumu bilinmiyor; ziyaret doğrulanamıyor. Yöneticinize bildirin.</value></data>
+  <data name="StartErr_visit_photo_required" xml:space="preserve"><value>Başlatmak için fotoğraf zorunlu.</value></data>
+  <data name="StartErr_visit_photo_invalid" xml:space="preserve"><value>Fotoğraf kabul edilmedi. Yeni bir fotoğraf çekin.</value></data>
+  <data name="StartErr_visit_capture_invalid" xml:space="preserve"><value>Başlatma bilgileri geçersiz. Pencereyi kapatıp yeniden deneyin.</value></data>
+  <data name="StartErr_visit_evidence_store_unavailable" xml:space="preserve"><value>Kanıt deposuna şu an ulaşılamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="StartErr_visit_execution_not_found" xml:space="preserve"><value>Bu ziyaret bulunamadı.</value></data>
+  <data name="StartErr_visit_execution_concurrency_conflict" xml:space="preserve"><value>Ziyaret bu arada değişti. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="E3Title" xml:space="preserve"><value>Ziyarete başla</value></data>
+  <data name="E3Photo" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="E3Upload" xml:space="preserve"><value>Dosya yükle</value></data>
+  <data name="E3Shutter" xml:space="preserve"><value>Fotoğraf çek</value></data>
+  <data name="E3PhotoTaken" xml:space="preserve"><value>Fotoğraf alındı</value></data>
+  <data name="E3Retake" xml:space="preserve"><value>Yeniden çek</value></data>
+  <data name="E3Kvkk" xml:space="preserve"><value>Kurum girişi ya da bekleme alanı. Doktorun ya da hastaların yüzü çekilmez (KVKK).</value></data>
+  <data name="E3LocationTime" xml:space="preserve"><value>Konum ve saat</value></data>
+  <data name="E3Location" xml:space="preserve"><value>Konum</value></data>
+  <data name="E3Retry" xml:space="preserve"><value>Yeniden dene</value></data>
+  <data name="E3StartLabel" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="E3StartValue" xml:space="preserve"><value>başlatınca · sunucu saati</value></data>
+  <data name="E3Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="E3Begin" xml:space="preserve"><value>Sunumu başlat</value></data>
+  <data name="UnpTargetType" xml:space="preserve"><value>Ziyaret edilen</value></data>
+  <data name="UnpTargetDoctor" xml:space="preserve"><value>Doktor</value></data>
+  <data name="UnpTargetPharmacy" xml:space="preserve"><value>Eczane</value></data>
+  <data name="UnpDoctorLabel" xml:space="preserve"><value>Doktor</value></data>
+  <data name="UnpDoctorSearch" xml:space="preserve"><value>Doktoru ada göre arayın (en az 2 harf)</value></data>
+  <data name="UnpPharmacyLabel" xml:space="preserve"><value>Eczane</value></data>
+  <data name="UnpPharmacySearch" xml:space="preserve"><value>Eczaneyi ada göre arayın (en az 2 harf)</value></data>
+  <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>Bu hedefe bugün aynı türde bir ziyaret zaten var.</value></data>
+  <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>Ziyaret saati geçersiz; başka bir başlangıç saati seçin.</value></data>
+</root>

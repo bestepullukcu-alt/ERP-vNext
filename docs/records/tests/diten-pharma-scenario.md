@@ -9,7 +9,8 @@ created: 2026-10-02
 
 **Kural (sahip, 2026-09-23; yinelendi 2026-10-02):** modüller boş veriyle değil **bu senaryoyla** kontrol edilir. Bir modülde
 girilen veri sonraki modülde aynen kullanılır; bu yüzden sıra bağlayıcıdır. Bir modüle girildi mi, çok büyük iş değilse
-bitirilip çıkılır. Bir satır ancak sahip "ok" dedikten sonra ✅ olur; düzeltilen bulgu yeniden test edilmeden ✅ sayılmaz.
+bitirilip çıkılır. Bir satır ancak sahip "ok" dedikten sonra ✅ olur; düzeltilen bulgu yeniden test edilmeden ✅ sayılmaz. İşaretleme yeri ve
+kimlikli liste: aşağıda "Sahip kontrol listesi".
 
 Kiracı: dev'de **Platform Admin Tenant** (`00000000-…-0001`); "Diten Pharma" bu kiracının içindeki tüzel kişi (DP-CH).
 İlk tur kaydı: [governance-users/2026-09-23.md](governance-users/2026-09-23.md).
@@ -36,9 +37,9 @@ Task-User, Viewer, deneme.
 
 | # | Modül | Bu modülde girilen | Sonraki modülün kullandığı | Kayıt |
 |---|---|---|---|---|
-| 1 | Kullanıcılar | Kadrodaki 8 hesap | Herkes | governance-users/2026-09-23.md ✅ |
-| 2 | Roller | `Çalışan`, `Ekip Lideri`, `Bölüm Yöneticisi`, `İK Yöneticisi`; `deneme` silme denemesi | Rol İzinleri | — |
-| 3 | Rol İzinleri | Dört role izinler (görev, zaman çizelgesi, onay) | Kullanıcı Rolleri, her ekran | — |
+| 1 | Kullanıcılar | Kadrodaki 8 hesap; sıradan kiracı yöneticisi `yonetici@diten.com` (9 Ekim) | Herkes | ✅ BİTTİ — governance-users/2026-09-23.md; yönetici hesabı kontrolü 9 Ekim |
+| 2 | Roller | `Çalışan`, `Ekip Lideri`, `Bölüm Yöneticisi`, `İK Yöneticisi`; `deneme` silme denemesi | Rol İzinleri | ✅ BİTTİ — sahip kontrol etti (5 Ekim), kapandı (9 Ekim) |
+| 3 | Rol İzinleri | Dört role izinler (görev, zaman çizelgesi, onay) | Kullanıcı Rolleri, her ekran | ✅ BİTTİ — veri girildi, ölçüldü (2 Ekim), kapandı (9 Ekim) |
 | 4 | Kullanıcı Rolleri | Kadro tablosundaki rol atamaları; pasif hesapların aktifleşmesi | Organizasyon, Görev Merkezi | — |
 | 5 | Organizasyon | Pozisyon bağlılıkları (kim kime bağlı) ve koltuklar | Görev atama kapsamı, haftanın onaycısı | — |
 | 6 | Görev Merkezi | Burak → Ayşe / Deniz görevleri; onaylı görev; Devret | Zaman çizelgesi (süre görevden gelir) | task-center/ |
@@ -94,6 +95,112 @@ görünüyor; değişiklikler Denetim Günlüğü'nde.
 3. Burak (`/TimeEntry/Approvals`): Ayşe'nin haftasını görür, bir haftayı onaylar, birini gerekçeyle reddeder.
 4. Ayşe: reddedilen haftayı düzeltip yeniden gönderir; onaylanan haftada görevin "harcanan süre"si güncellendi mi.
 5. Elif: haftasını göndermeyi dener (onaycısı yok → ne diyor?).
+
+## Sahip kontrol listesi (2026-10-09)
+
+**Kural (sahip, 2026-10-09):** sahibin kontrol edeceği her şey tek yerde durur. İşaretlenen yer, sahibin yan menüsüne
+sabitli senaryo sayfasıdır: https://claude.ai/artifact/1H4gCCJWsf1EbFJWPBrFVr. Her satırda "Tamam" / "Sorun var" + not;
+işaretler sayfanın veritabanında (`checks/<kimlik>`) tutulur, CT okur. Bu bölüm o listenin depodaki kopyasıdır. CT kilometre
+taşlarında işaretleri buraya aktarır. Yeni kontrol önce sayfaya YENİ kimlikle eklenir (kimlik yeniden kullanılmaz), sonra buraya.
+Dağınık test listesi verilmez.
+
+Durum anahtarı: `[x]` sahip "Tamam" dedi · `[ ]` bekliyor · ⏳ kod henüz dev'de değil.
+
+### Sahibin ekran dışı işleri
+- [x] `is-stok-mesaj` Stok ekibine ve kalite birimine Control Tower'ın hazırladığı mesajı gönderin (stok: yazılı onay + 8 soru; kalite: IU birimi + kalem onaycısı).
+- [x] `is-stok-onay` Stok ekibinin yazılı onayı geldi (Global Ürün okumasında stok alanları dönmez; SKU'dan okunur). Gelince Control Tower'a iletin — bu onay olmadan kalem okuma bağlantıları canlıya çıkmaz.
+- [x] `is-kalite-cevap` Kalite biriminin cevabı geldi: IU birimi (HIU mı, kendi kodumuz mu) ve kalem etkinleştirmesini onaylayacak pozisyon.
+- [ ] `is-push-hat` Ana çalışma dalını GitHub'a gönderin (PR değil): `git -C /Users/alitufanoglu/ERP-vNext/.claude/worktrees/kanban-preview push origin chore/ct-round-2`.
+- [ ] `is-stok-cevap-2` Push'tan sonra stok ekibine ikinci cevabı gönderin (kabul edilenler, üç çekince, R-12 beklentisi, bütün MVP'ler cevabı).
+- [ ] `is-crm-mesaj` CRM ekibine Marka değişiklikleri mesajını gönderin.
+- [ ] `is-qa-pozisyon` S2 kabul + dev yeniden başlatmadan SONRA: dev'de "QA Müdürü" pozisyonu (aktif, kalemi oluşturan OLMAYAN iki kişi), `ITEM-ACTIVATION` tanımı tek onay adımıyla yayımlanır, pozisyon kimliği CT'ye (yerel ayar dosyası). Ayrıntı: `docs/guides/operations/service-trust-chain-runbook.md` §11 (S2 dalı `b2bd59538`).
+- [x] `is-canli-kalem-isci` (2026-10-10, sahip: ilke olarak EVET) Canlıda kalem onayı açılacak ve kalem işçisi çalışacak. Canlı QA Müdürü pozisyonu ve canlı yapılandırma yazımı dağıtım günü ayrıca sorulur (canlıya her yazım ayrı 'evet'; BL-536).
+- [x] `is-driverjs-indir` (2026-10-10, sahip: EVET) Driver.js 1.8.0 (MIT, npm registry, ~156 KB) indirilir; integrity karşılaştırması + SHA testi; Hazır sohbetinde (UX-COMMON).
+- [ ] `is-canli-hesap` Canlı sorusunu cevaplayın: ekibiniz canlıda kiracı ekranlarına platform hesabıyla mı giriyor? (Evetse canlıda da sıradan yönetici hesabı önceden açılmalı.)
+- [ ] `is-rol-onerisi` Canlı rol önerisini inceleyin: 13 rol, görev ayrımı kuralları (kendi üretim, fason, satış). Dosya: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`. Hangi rollerin canlıda açılacağını söyleyin.
+- [ ] `is-ik-viewer` Canlı sorusu (güvenlik): canlıda İnsan Sermayesi modülü açık mı, "Viewer" rolü kimlerde? Açıksa Viewer ücret / yan hak ekranlarını görebiliyor (BL-581).
+- [ ] `is-mod0290-sorular` MOD-0290 ürün yapısı için 5 soru (tek ürün kaydı, Lokal SKU ekseni, fason ürünler, ülkeye özel ambalaj, canlı onaycı). Harita: `docs/reference/modules/tenant/MOD-0290-urun-kalem-sku-haritasi.md`.
+- [ ] `is-marka-plan` MDM ürün ekranları dev'e gelince: Platform → Planlar → ürün ana verisini içeren her plana "Marka" modülünü ekleyin (dev'de siz; canlıda onayınızla).
+- [ ] `is-canli-url` Canlıya çıkarken: e-posta bağlantı adresi (AuthService:FrontendBaseUrl) canlı adresle girilir. Girilmezse yeni kiracının ilk yönetici daveti reddedilir.
+- [ ] `is-pr` En sonda: tek PR'ı ana dala açın (Control Tower hazır olduğunu söyleyince).
+
+### Yönetici hesabı — ✅ BİTTİ (9 Ekim, sahip)
+- [x] `yh-1` Yeni kullanıcı oluştu ve Mailpit'e parola belirleme e-postası geldi mi?
+- [x] `yh-2` Bağlantıyla parola belirleyip yonetici@diten.com ile giriş yapabildiniz mi?
+- [x] `yh-3` Yeni hesapla Kullanıcılar ve Roller sayfaları açılıyor, bir kullanıcıyı düzenleyip kaydedebiliyor musunuz?
+
+### Kullanıcılar + Roller — ✅ BİTTİ (kontrol 5 Ekim, kapanış 9 Ekim)
+- [x] `r-1` Ad alanına yalnız boşluk yazınca Türkçe uyarı çıkıyor ve kullanıcı oluşmuyor mu?
+- [x] `r-2` Kendi hesabınızı pasife alma / silme sunulmuyor mu?
+- [x] `r-3` Davet aşamasındaki birine "Parolayı Sıfırla" deyince doğru Türkçe cümle çıkıyor mu?
+- [x] `r-4` Rol oluşturup silince Denetim Günlüğü'nde iki satır sizin adınızla görünüyor mu?
+- [x] `r-5` Viewer rolünden "Dışa aktar" iznini kaldırınca kaydoluyor mu?
+- [x] `r-6` Admin (sistem rolü) satırında kilit var, izinleri değiştirilemiyor mu?
+
+### Rol İzinleri — ✅ BİTTİ (veri 2 Ekim, kapanış 9 Ekim)
+- [ ] `ri-1` İzni verip kaydedince doğru görünüyor, sayfayı yenileyince kalıyor mu?
+- [ ] `ri-2` Yukarıdaki izinlerin hepsi ekranda bulunuyor mu?
+- [ ] `ri-3` Sistem rolünün (Admin) izinleri değiştirilemiyor mu?
+
+### Kullanıcı Rolleri — Yönetici hesabından sonra
+- [ ] `kr-1` Rolsüz Elif yalnız kendi işini görüyor, yetki isteyen düğmeler çizilmiyor mu?
+- [ ] `kr-2` Bir kişiye iki rol verilebiliyor, rol kaldırma çalışıyor mu?
+- [ ] `kr-3` Servis hesabı (Entegrasyon Servisi) listede nasıl görünüyor? (notta yazın)
+- [ ] `kr-4` Ayşe yeniden giriş yapınca yeni rolünün izinleri geçerli mi?
+- [ ] `kr-5` "Parolayı Sıfırla" → Mailpit'e "parola sıfırlama" e-postası geliyor (davet değil) ve bağlantıyla yeni parola konabiliyor mu?
+- [ ] `kr-6` Sıfırlanan kişinin başka tarayıcıdaki açık oturumu, sayfa yenilenince düşüyor mu?
+- [x] `kr-7` Pasife alınan kişinin eski sıfırlama bağlantısı hesabı AÇMIYOR; etkinleştirince de eski bağlantı çalışmıyor (tasarım: pasife alma bekleyen bağlantıyı siler, yönetici yeni bağlantı gönderir). Bekleyen davette bağlantı korunur. — ✅ sahip 2026-10-09 (iki yarı da ölçüldü; ileti İngilizce ve genel → BL-496 / KR4 düzeltme turunda)
+- [ ] `kr-8` "Daveti yeniden gönder" → "parola sıfırlama" e-postası geliyor ve eski parola artık giriş yapmıyor mu?
+
+### Bildirim Şablonları — İstediğiniz zaman (5 dk)
+- [ ] `bs-1` İkinci sekme "başkası değiştirdi" anlamında bir uyarı veriyor ve birincinin değişikliğini ezmiyor mu?
+
+### Organizasyon — Sırada
+- [ ] `o-1` Bir pozisyona iki kişi atanabiliyor mu?
+- [ ] `o-2` Koltuğu sonlandırma çalışıyor mu?
+- [ ] `o-3` Ağaç görünümü bağlılıkları doğru gösteriyor mu?
+- [ ] `o-4` Sistemde olmayan kullanıcının koltuğu nasıl görünüyor? (notta yazın)
+
+### Görev Merkezi — Sırada
+- [ ] `g-1` Burak "Onayla"ya basınca sayfa listeye dönüp bildirim gösteriyor mu?
+- [ ] `g-2` "Devret" kişi soruyor; listede kendisi ve işi başlatan kişi YOK mu?
+- [ ] `g-3` Elif kişi seçicide çıkmıyor mu?
+- [ ] `g-4` Ayşe'nin yetkisi olmayan işlemde ekran Türkçe ve anlaşılır bir cümle söylüyor mu?
+
+### Zaman Çizelgesi — Sırada
+- [ ] `z-1` Sayaç düğmesi görev detayında tek yerde mi (süre kartında)?
+- [ ] `z-2` Onaylanan haftadan sonra görevdeki "harcanan süre" güncellendi mi?
+- [ ] `z-3` Reddetme gerekçesi Ayşe'ye görünüyor mu?
+- [ ] `z-4` Elif'e ekran anlaşılır bir cümle söylüyor mu?
+
+### Toplantı — Sırada
+- [ ] `t-1` Davet Ayşe'ye ulaştı mı (ekranda ve Mailpit'te)?
+- [ ] `t-2` Takip görevi Görev Merkezi'nde doğru kişide görünüyor mu?
+
+### Global Ürün — Dev'e gelmedi ⏳
+- [ ] `gp-1` Onay Metin'in Görev Merkezi'ne düştü, başlığı anlaşılır mı?
+- [ ] `gp-2` Onaydan sonra ürünün durumu değişti mi?
+- [ ] `gp-3` Hazırlayan kendi taslağını onaylayamıyor mu?
+
+### GSKU + Lokal SKU — Dev'e gelmedi ⏳
+- [ ] `sku-1` GSKU onaydan sonra etkin oluyor mu?
+- [ ] `sku-2` Lokal SKU yalnız kapsamı olan şirkette açılabiliyor mu?
+
+### Marka — Dev'e gelmedi ⏳
+- [ ] `m-1` Etkin marka bağlanıyor; süresi geçmiş marka seçilemiyor mu?
+- [ ] `m-2` Arşivlemeden önce "geri alınamaz" uyarısı çıkıyor mu?
+
+### Bitmiş Ürün — Dev'e gelmedi ⏳
+- [ ] `fg-1` Taslak oluşturma ve iptal anlaşılır cümlelerle çalışıyor mu?
+
+### Tüzel Kişi Kapsamı — Dev'e gelmedi ⏳
+- [ ] `k-1` Kapsam dışındaki şirket ürünü görmüyor mu?
+
+### Kalem / Malzeme — Ekranı yapılıyor ⏳
+- (adımlar kod dev'e gelince eklenecek)
+
+### Profilim + E-posta dili — Yapılıyor ⏳
+- (adımlar kod dev'e gelince eklenecek)
 
 ## Bulguların yazımı
 

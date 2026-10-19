@@ -94,4 +94,104 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Move</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Start</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>View Manager Chain</value></data>
+  <data name="ActionVerb_Allocate" xml:space="preserve"><value>Allocate</value></data>
+  <data name="ActionVerb_Amend" xml:space="preserve"><value>Amend</value></data>
+  <data name="ActionVerb_Append" xml:space="preserve"><value>Append</value></data>
+  <data name="ActionVerb_Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="ActionVerb_ApproveExtension" xml:space="preserve"><value>Approve Extension</value></data>
+  <data name="ActionVerb_AttachEvidence" xml:space="preserve"><value>Attach Evidence</value></data>
+  <data name="ActionVerb_Audit" xml:space="preserve"><value>Audit</value></data>
+  <data name="ActionVerb_AuditView" xml:space="preserve"><value>View Audit Trail</value></data>
+  <data name="ActionVerb_Block" xml:space="preserve"><value>Block</value></data>
+  <data name="ActionVerb_Capture" xml:space="preserve"><value>Capture</value></data>
+  <data name="ActionVerb_Change" xml:space="preserve"><value>Change</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Change Brand</value></data>
+  <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Change Status</value></data>
+  <data name="ActionVerb_Commit" xml:space="preserve"><value>Commit</value></data>
+  <data name="ActionVerb_Configure" xml:space="preserve"><value>Configure</value></data>
+  <data name="ActionVerb_Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="ActionVerb_Correct" xml:space="preserve"><value>Correct</value></data>
+  <data name="ActionVerb_CreateDraft" xml:space="preserve"><value>Create Draft</value></data>
+  <data name="ActionVerb_Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="ActionVerb_Decide" xml:space="preserve"><value>Decide</value></data>
+  <data name="ActionVerb_Dispatch" xml:space="preserve"><value>Dispatch</value></data>
+  <data name="ActionVerb_Dispose" xml:space="preserve"><value>Dispose</value></data>
+  <data name="ActionVerb_DryRun" xml:space="preserve"><value>Dry Run</value></data>
+  <data name="ActionVerb_EditEmployment" xml:space="preserve"><value>Edit Employment</value></data>
+  <data name="ActionVerb_EditLegal" xml:space="preserve"><value>Edit Legal Profile</value></data>
+  <data name="ActionVerb_End" xml:space="preserve"><value>End</value></data>
+  <data name="ActionVerb_Generate" xml:space="preserve"><value>Generate</value></data>
+  <data name="ActionVerb_ImpactView" xml:space="preserve"><value>View Impact</value></data>
+  <data name="ActionVerb_Instantiate" xml:space="preserve"><value>Instantiate</value></data>
+  <data name="ActionVerb_Invalidate" xml:space="preserve"><value>Invalidate</value></data>
+  <data name="ActionVerb_Investigate" xml:space="preserve"><value>Investigate</value></data>
+  <data name="ActionVerb_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="ActionVerb_Lookup" xml:space="preserve"><value>Look Up</value></data>
+  <data name="ActionVerb_LookupValidation" xml:space="preserve"><value>Validate Reference</value></data>
+  <data name="ActionVerb_Migrate" xml:space="preserve"><value>Migrate</value></data>
+  <data name="ActionVerb_MinutesPublish" xml:space="preserve"><value>Publish Minutes</value></data>
+  <data name="ActionVerb_MinutesWrite" xml:space="preserve"><value>Write Minutes</value></data>
+  <data name="ActionVerb_Propose" xml:space="preserve"><value>Propose</value></data>
+  <data name="ActionVerb_PublishOverride" xml:space="preserve"><value>Publish by Exception</value></data>
+  <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>View Summary</value></data>
+  <data name="ActionVerb_Rebase" xml:space="preserve"><value>Rebase</value></data>
+  <data name="ActionVerb_Recover" xml:space="preserve"><value>Recover</value></data>
+  <data name="ActionVerb_Release" xml:space="preserve"><value>Release</value></data>
+  <data name="ActionVerb_Reopen" xml:space="preserve"><value>Reopen</value></data>
+  <data name="ActionVerb_Replace" xml:space="preserve"><value>Replace</value></data>
+  <data name="ActionVerb_RequestCorrection" xml:space="preserve"><value>Request Correction</value></data>
+  <data name="ActionVerb_RequestInfo" xml:space="preserve"><value>Request Information</value></data>
+  <data name="ActionVerb_RequestRetirement" xml:space="preserve"><value>Request Retirement</value></data>
+  <data name="ActionVerb_Reserve" xml:space="preserve"><value>Reserve</value></data>
+  <data name="ActionVerb_Resolve" xml:space="preserve"><value>Resolve</value></data>
+  <data name="ActionVerb_Retire" xml:space="preserve"><value>Retire</value></data>
+  <data name="ActionVerb_Rollback" xml:space="preserve"><value>Roll Back</value></data>
+  <data name="ActionVerb_SeriesManage" xml:space="preserve"><value>Manage Series</value></data>
+  <data name="ActionVerb_Settle" xml:space="preserve"><value>Settle</value></data>
+  <data name="ActionVerb_Sign" xml:space="preserve"><value>Sign</value></data>
+  <data name="ActionVerb_TemporaryIssue" xml:space="preserve"><value>Issue Temporarily</value></data>
+  <data name="ActionVerb_ThresholdsManage" xml:space="preserve"><value>Manage Thresholds</value></data>
+  <data name="ActionVerb_Transition" xml:space="preserve"><value>Transition</value></data>
+  <data name="ActionVerb_TypesManage" xml:space="preserve"><value>Manage Types</value></data>
+  <data name="ActionVerb_Unblock" xml:space="preserve"><value>Unblock</value></data>
+  <data name="ActionVerb_UpdateReleased" xml:space="preserve"><value>Update After Release</value></data>
+  <data name="ActionVerb_VersionPublish" xml:space="preserve"><value>Publish Version</value></data>
+  <data name="ActionVerb_ViewSensitive" xml:space="preserve"><value>View Sensitive Data</value></data>
+  <data name="ActionVerb_ViewStatusHistory" xml:space="preserve"><value>View Status History</value></data>
+  <data name="ActionVerb_Withdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="ActionVerb_Write" xml:space="preserve"><value>Write</value></data>
+  <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Write Value</value></data>
+  <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Tenant-wide: also lets this role plan, apply and re-plan visits for other representatives.</value></data>
+  <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Tenant-wide: extends this role's existing write permissions on planned visits and visit reports to the whole tenant.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>This permission also grants:
+• edit the task's fields
+• accept a request, or decline it with a reason
+• take back a request nobody has answered
+• plan the task on the calendar, or take it off
+• start the task
+• send it for review
+• say the task is waiting on someone
+• give the work back to whoever asked for it
+• tick, add, edit, delete and reorder checklist items
+• add and remove attachments
+• add and remove dependencies</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Your session could not be verified. Sign in again and retry.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>This role no longer exists. Refresh the page.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>This permission is reserved for platform administration and cannot be given to a role.</value>
+  </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>This permission is reserved for automated system processes and cannot be given to a role.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>This permission comes with the role or with a module of your subscription, so it cannot be removed here.</value>
+  </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>The role already has this permission. Refresh the page.</value>
+  </data>
+  <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Removing this permission would leave no other active account that can add users. Give another user that right first.</value></data>
 </root>

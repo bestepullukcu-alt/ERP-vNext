@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>This item cannot be activated yet: fill in the stock fields listed below, then submit it again.</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>Lot controlled</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>Base unit</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>Storage conditions (at least one)</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>Unit conversions (each unit within four steps of the base unit)</value></data>
+  <data name="RefusalApprovalForbidden" xml:space="preserve"><value>You are not allowed to submit, request or withdraw this item's activation.</value></data>
+  <data name="RefusalApprovalNotRequester" xml:space="preserve"><value>Only the person who submitted this item for activation can withdraw it.</value></data>
+  <data name="RefusalApprovalChanged" xml:space="preserve"><value>This item's approval changed while you were working. Reload the item and try again.</value></data>
+  <data name="RefusalApprovalBusy" xml:space="preserve"><value>This item's approval is being processed. Try again in a moment.</value></data>
+  <data name="RefusalApprovalSubmitInFlight" xml:space="preserve"><value>This item's activation request is still being processed. Try again in a moment.</value></data>
+  <data name="RefusalApprovalRepeatDiffers" xml:space="preserve"><value>This request was already sent with different details. Open the item again and start over.</value></data>
+  <data name="RefusalApprovalWithdrawalInvalid" xml:space="preserve"><value>The withdrawal could not be read. Open the item again and try again.</value></data>
+  <data name="RefusalApprovalWithdrawalRefused" xml:space="preserve"><value>The approval could not be withdrawn. It may already have been decided. Reload the item.</value></data>
+  <data name="RefusalApprovalUnavailable" xml:space="preserve"><value>The approval service cannot be reached right now. Try again in a moment.</value></data>
+  <data name="RefusalApprovalNeedsCheck" xml:space="preserve"><value>This item's approval needs to be checked by an administrator. Your request was not applied.</value></data>
+  <data name="RefusalApprovalStartRefused" xml:space="preserve"><value>The approval could not be started. Ask your administrator to check the approval setup.</value></data>
+  <data name="RefusalApprovalSelf" xml:space="preserve"><value>You cannot approve your own request. Another approver has to decide.</value></data>
+  <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>A list value this item uses was removed or changed. Correct the item, then submit it again.</value></data>
+  <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>The item lists cannot be checked right now. Try again in a moment.</value></data>
+  <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>The code repair request is not valid.</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>Your session was not accepted by the approval service. Sign in again and repeat the action.</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>The approval setup for this action is incomplete. Please inform your administrator.</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>The request did not reach the approval service. Send the same request again.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalApprovalNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can approve the record you submitted. Ask your administrator to adjust the approvers; you can submit it again after that.</value></data>
+</root>

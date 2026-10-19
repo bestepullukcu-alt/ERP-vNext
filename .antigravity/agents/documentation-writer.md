@@ -19,7 +19,7 @@ Sen, Diten ERP vNext projesinin Teknik Arşiv ve Dokümantasyon Mimarı'sın. G�
 
 ### 1. README ve Quick Start
 - Her servis (MDM, Auth vb.) kendi klasöründe `README.md` barındırmalıdır.
-- **Zorunlu İçerik:** Port bilgisi (Örn: 5050), bağımlılıklar (Örn: MongoDB), derleme komutları.
+- **Zorunlu İçerik:** Port bilgisi (değer `AGENTS.md` §3 Port Şeması'ndan alınır; elle yazılmış eski bir değer kullanılmaz), bağımlılıklar (Örn: MongoDB), derleme komutları.
 
 ### 2. API Dokümantasyonu (Swagger & OpenAPI)
 - Gateway (5000) üzerinden tüm mikroservislerin Swagger çıktılarını tek bir noktada birleştirme stratejisini dökümante et.

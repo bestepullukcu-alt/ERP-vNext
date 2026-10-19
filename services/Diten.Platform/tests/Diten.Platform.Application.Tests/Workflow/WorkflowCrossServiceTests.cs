@@ -259,7 +259,8 @@ public sealed class WorkflowCrossServiceTests
         Assert.True(r.IsSuccessful, string.Join(",", r.Errors));
         Assert.Equal("Active", r.Data!.NewInstanceStatus);
         Assert.Empty(f.Events.Events);
-        Assert.Equal(0, f.Transactions.Calls);
+        // D1 — an intermediate approval is ONE transaction now (two candidates can decide at once); still no event.
+        Assert.Equal(1, f.Transactions.Calls);
     }
 
     [Fact]
@@ -400,8 +401,35 @@ public sealed class WorkflowCrossServiceTests
         var template = f.SeedTemplate("T-FROZEN");
         var r = await f.Start().Handle(new StartWorkflowInstanceCommand(
             StartRequest(template.Id, ["position:" + frozen.Id]), Correlation), default);
-        Assert.Equal(400, r.StatusCode);
+        // D2-FIX4 item 7 — a seat that resolves to nobody is a wait, not an invalid request: the same 503 and the same
+        // contract code the trusted start answers (D2-FIX3 item 7). Nothing was written, so the retry is a fresh start.
+        Assert.Equal(503, r.StatusCode);
         Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, r.ReasonCode);
+        Assert.Empty(f.Store.Instances);
+        Assert.Empty(f.Store.Tasks);
+    }
+
+    [Fact]
+    public async Task A_start_that_declares_a_seat_nobody_holds_answers_503_and_one_that_declares_nobody_answers_400()
+    {
+        // The seat is empty: transient. Declaring no candidate at all stays a malformed request (400, unchanged).
+        var f = new Fx(TenantA);
+        var vacant = new Position
+        {
+            TenantId = TenantA, Code = "VAC", Name = "VAC", OrganizationUnitId = Guid.NewGuid(), Status = PositionStatus.Active
+        };
+        f.Store.Positions.Add(vacant);
+        var template = f.SeedTemplate("T-VACANT");
+
+        var emptySeat = await f.Start().Handle(new StartWorkflowInstanceCommand(
+            StartRequest(template.Id, ["position:" + vacant.Id]), Correlation), default);
+        var declaredNobody = await f.Start().Handle(new StartWorkflowInstanceCommand(
+            StartRequest(template.Id, []), Correlation), default);
+
+        Assert.Equal(503, emptySeat.StatusCode);
+        Assert.Equal(400, declaredNobody.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, emptySeat.ReasonCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, declaredNobody.ReasonCode);
     }
 
     // ============================================================ batch read
@@ -631,15 +659,15 @@ public sealed class WorkflowCrossServiceTests
         var template = f.SeedTemplate("CLAIM-APPROVAL");
         var start = await f.Start().Handle(new StartWorkflowInstanceCommand(
             StartRequest(template.Id, ["user:" + FxStarter]), Correlation), default);
-        Assert.True(start.IsSuccessful, string.Join(",", start.Errors));
 
-        var r = await f.Approve().Handle(new ApproveWorkflowTaskCommand(start.Data!.ApprovalTaskId,
-            new ApproveWorkflowTaskRequest(FxStarter.ToString(), "APPROVED", "fx-sod-1", null, null), Correlation), default);
-
-        Assert.Equal(409, r.StatusCode);
-        Assert.Equal(WorkflowReasonCodes.SodViolation, r.ReasonCode);
-        Assert.Equal(ApprovalTaskStatus.WaitingApproval, f.Store.Tasks.Single().Status);
-        Assert.Equal(WorkflowInstanceStatus.Active, f.Store.Instances.Single().Status);
+        // WP-LANE-MAIN-SYNC-02 P2a (owner decision 2026-10-14): the lane's rule stays — a workflow whose every candidate is the
+        // starter is refused AT START (400 WORKFLOW_NO_ELIGIBLE_APPROVER), so no task exists for the starter to approve.
+        // Main expected the start to pass and the approval to be refused (409 WORKFLOW_SOD_VIOLATION).
+        Assert.False(start.IsSuccessful);
+        Assert.Equal(400, start.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, start.ReasonCode);
+        Assert.Empty(f.Store.Tasks);
+        Assert.Empty(f.Store.Instances);
     }
 
     [Fact]
@@ -670,6 +698,9 @@ public sealed class WorkflowCrossServiceTests
         var f = new Fx(TenantA);
         var run = f.SeedRuntime(startedBy: FxStarter.ToString().ToUpperInvariant());
         f.Store.Snapshots.Single().ResolvedPrincipalId = FxOther.ToString().ToUpperInvariant();
+        // WP-LANE-MAIN-SYNC-02 P2b — on the lane the candidate list decides who may act (MayDecide); it is written in the
+        // template's spelling too, as a resolver writes it.
+        f.Store.Snapshots.Single().CandidatePrincipalIds = [FxOther.ToString().ToUpperInvariant()];
 
         var approved = await f.Approve().Handle(new ApproveWorkflowTaskCommand(run.Task.Id,
             new ApproveWorkflowTaskRequest(FxOther.ToString(), "APPROVED", "fx-case-1", null, null), Correlation), default);
@@ -681,6 +712,7 @@ public sealed class WorkflowCrossServiceTests
         var own = g.SeedRuntime(startedBy: FxStarter.ToString().ToUpperInvariant());
         own.Instance.StartedByUserId = FxStarter;
         g.Store.Snapshots.Single().ResolvedPrincipalId = FxStarter.ToString().ToUpperInvariant();
+        g.Store.Snapshots.Single().CandidatePrincipalIds = [FxStarter.ToString().ToUpperInvariant()];
         var refused = await g.Approve().Handle(new ApproveWorkflowTaskCommand(own.Task.Id,
             new ApproveWorkflowTaskRequest(FxStarter.ToString(), "APPROVED", "fx-case-2", null, null), Correlation), default);
         Assert.Equal(WorkflowReasonCodes.SodViolation, refused.ReasonCode);
@@ -762,7 +794,7 @@ public sealed class WorkflowCrossServiceTests
         private AssignmentRepo? _assignments;
 
         public StartWorkflowInstanceHandler Start() => new(TemplateRepo, VersionRepo, InstanceRepo, TaskRepo, SnapshotRepo,
-            LogRepo, Tenant, _user, AssignmentRepo, null, PositionRepo);
+            LogRepo, Tenant, _user, [], AssignmentRepo, null, PositionRepo, Transactions);
 
         public ApproveWorkflowTaskHandler Approve() => new(TaskRepo, InstanceRepo, SnapshotRepo, LogRepo, VersionRepo,
             AssignmentRepo, PositionRepo, Transactions, Events, TemplateRepo);

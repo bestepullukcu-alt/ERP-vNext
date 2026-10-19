@@ -50,16 +50,19 @@ public sealed class ConsumableReferenceDataHttpMongoTests : IAsyncLifetime
     private MongoIntegrationHarness _tenantA = null!;
     private MongoIntegrationHarness _tenantB = null!;
     private MongoIntegrationHarness _reference = null!;
+    private MongoIntegrationHarness _provider = null!;      // W4-FIX-d (G-2): the verified provider tenant
 
     private Guid TenantA => _tenantA.TenantId;
     private Guid TenantB => _tenantB.TenantId;
     private Guid ReferenceTenant => _reference.TenantId;
+    private Guid ProviderTenant => _provider.TenantId;
 
     public async Task InitializeAsync()
     {
         _tenantA = await MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData);
         _tenantB = await MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData);
         _reference = await MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData);
+        _provider = await MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData);
     }
 
     public async Task DisposeAsync()
@@ -67,6 +70,7 @@ public sealed class ConsumableReferenceDataHttpMongoTests : IAsyncLifetime
         await _tenantA.DisposeAsync();
         await _tenantB.DisposeAsync();
         await _reference.DisposeAsync();
+        await _provider.DisposeAsync();
     }
 
     // ---- §9 1-5 + 6: the five mobile sets, read by a user WITHOUT the Platform permission, from the caller's tenant ----
@@ -157,6 +161,53 @@ public sealed class ConsumableReferenceDataHttpMongoTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, asA.StatusCode);
         Assert.Equal(new[] { "TR", "AZ" }, Codes(await Body(asA)));
         Assert.Equal(new[] { "TR", "AZ" }, Codes(await Body(asB)));
+    }
+
+    // ---- W4-FIX-d (G-2): the VERIFIED global catalogs come from the verified provider tenant ---------------------
+
+    [Fact]
+    public async Task FixD_G2_a_verified_global_catalog_only_the_provider_tenant_holds_is_read_from_it()
+    {
+        await PublishAsync(ProviderTenant, "market", "global", Value("TR", 10), Value("AZ", 20));
+
+        using var host = Host(provider: ProviderTenant);
+        var asA = await host.GetAsync(ConsumablePath("market"), Token(TenantA));
+        Assert.Equal(HttpStatusCode.OK, asA.StatusCode);
+        Assert.Equal(new[] { "TR", "AZ" }, Codes(await Body(asA)));
+
+        // the local shape: the catalog reference tenant IS the caller (CatalogLoad:TenantId = 97c5) — still served
+        using var local = Host(provider: ProviderTenant, catalogTenant: TenantA);
+        Assert.Equal(new[] { "TR", "AZ" }, Codes(await Body(await local.GetAsync(ConsumablePath("market"), Token(TenantA)))));
+    }
+
+    [Fact]
+    public async Task FixD_G2_the_provider_fallback_never_serves_a_tenant_scoped_set_nor_a_non_verified_set()
+    {
+        // isolation: a tenant-scoped "market" of the provider tenant is the provider tenant's alone
+        await PublishAsync(ProviderTenant, "market", "tenant", Value("SECRET", 10));
+        // a global set that is NOT a verified catalog is never read from the provider tenant
+        await PublishAsync(ProviderTenant, "country", "global", Value("provider-only", 10));
+
+        using var host = Host(provider: ProviderTenant);
+        await AssertRefusalAsync(await host.GetAsync(ConsumablePath("market"), Token(TenantA)), HttpStatusCode.NotFound, "reference_set_not_published");
+        await AssertRefusalAsync(await host.GetAsync(ConsumablePath("country"), Token(TenantA)), HttpStatusCode.NotFound, "reference_set_not_published");
+    }
+
+    [Fact]
+    public async Task FixD_G2_without_a_provider_tenant_nothing_changes_and_the_caller_or_catalog_tenant_still_wins()
+    {
+        await PublishAsync(ProviderTenant, "market", "global", Value("PROVIDER", 10));
+
+        using (var unconfigured = Host())
+        {
+            await AssertRefusalAsync(await unconfigured.GetAsync(ConsumablePath("market"), Token(TenantA)), HttpStatusCode.NotFound, "reference_set_not_published");
+        }
+
+        await PublishAsync(ReferenceTenant, "market", "global", Value("CATALOG", 10));
+        await PublishAsync(TenantB, "market", "global", Value("OWN-B", 10));
+        using var host = Host(provider: ProviderTenant);
+        Assert.Equal(new[] { "CATALOG" }, Codes(await Body(await host.GetAsync(ConsumablePath("market"), Token(TenantA)))));  // catalog tenant first
+        Assert.Equal(new[] { "OWN-B" }, Codes(await Body(await host.GetAsync(ConsumablePath("market"), Token(TenantB)))));   // the caller's own first
     }
 
     // ---- KORU: same values the Platform consumer path gives an administrator ------------------------------------
@@ -341,10 +392,10 @@ public sealed class ConsumableReferenceDataHttpMongoTests : IAsyncLifetime
     private static string Token(Guid tenant, params string[] permissions)
         => SignedTenantTokenHttpHost.TenantUserToken(tenant, User, permissions);
 
-    private SignedTenantTokenHttpHost Host(IReadOnlyList<string>? configured = null)
+    private SignedTenantTokenHttpHost Host(IReadOnlyList<string>? configured = null, Guid? provider = null, Guid? catalogTenant = null)
     {
         var dbContext = _tenantA.DbContext;
-        var referenceTenant = ReferenceTenant;
+        var referenceTenant = catalogTenant ?? ReferenceTenant;
         return new SignedTenantTokenHttpHost(services =>
         {
             services.AddSingleton(dbContext);
@@ -359,6 +410,9 @@ public sealed class ConsumableReferenceDataHttpMongoTests : IAsyncLifetime
             {
                 services.Configure<BusinessReferenceDataConsumableSetsOptions>(o => o.ConsumableSets = configured.ToList());
             }
+
+            // W4-FIX-d (G-2): the verified provider tenant (null = not configured, the pre-G-2 behaviour)
+            services.Configure<BusinessReferenceDataProviderOptions>(o => o.ReferenceTenantId = provider);
         });
     }
 

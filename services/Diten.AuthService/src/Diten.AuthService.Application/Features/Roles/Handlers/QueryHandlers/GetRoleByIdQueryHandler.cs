@@ -25,7 +25,7 @@ public sealed class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, 
     public async Task<Response<RoleDto>> Handle(GetRoleByIdQuery request, CancellationToken ct)
     {
         var role = await _roleRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (role == null) return Response<RoleDto>.Fail("Role not found.", 404);
+        if (role == null) return RoleErrorCodes.Refuse<RoleDto>(RoleErrorCodes.NotFound, "Role not found.", 404);
 
         var perms = await _rolePermissionRepository.GetPermissionsByRoleAsync(role.Id, _tenantContext.TenantId, ct);
 

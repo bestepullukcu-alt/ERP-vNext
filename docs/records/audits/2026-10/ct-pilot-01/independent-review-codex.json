@@ -1,0 +1,20 @@
+{
+  "driver_sha256": "262bfb5927a6d8f685c333615870f03e7aab8b381138d828eb5f8212e2f2fd56",
+  "checks": {
+    "29_steps_pass": true,
+    "tools_equal_fixed_commit": true,
+    "all_report_hashes_valid": true,
+    "no_baseline_exact": true,
+    "positive_percentages": true,
+    "conditional_not_accepted": true,
+    "open_rework_all_zero": true,
+    "previous_verified": true,
+    "own_clone_clean": true
+  },
+  "limits": [
+    "synthetic data, no actual product execution",
+    "origin/main test imitation only",
+    "same reviewed driver reproduced in a separate clone; direct output/hash checks independently added",
+    "documentation hash-command omission remains until companion fix"
+  ]
+}

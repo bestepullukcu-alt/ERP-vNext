@@ -305,21 +305,23 @@ python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checke
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.
 3. **Canonical-name validation** — the pack `name` must match the Blueprint canonical name (or an approved alias).
 4. **Parent/FU/child decision** — decide explicitly whether the work is a new module or an FU/child of an existing module before minting an ID.
-5. **Repo-only reservation** — a capability absent from the Blueprint requires an explicit Enterprise Architect reservation recorded in the registry; no placeholder or next-free ID may be invented.
+5. **No repo-only identity (Master-first)** — a capability absent from the Blueprint goes to a Module Change Request in the Master; no placeholder, next-free or repo-only ID may be invented. Enterprise Architect reservations recorded in the registry before 2026-10-16 stay as recorded (`--repo-only` proves them).
 6. **Preflight (fail-closed)** — run `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS pack creation.
 
-Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases pending Enterprise Architect reservation.
+Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases of a canonical MOD id; a missing canonical id is a Module Change Request in the Master (Master-first rule), not a repository reservation.
 
-### CAND-CAP candidate namespace (DCP-002)
+### Master-first rule and the closed CAND-CAP namespace (DCP-002, Blueprint 8.7)
 
-When the Blueprint has no capability and no existing MOD/FU fits, use a temporary candidate identity `CAND-CAP-####` — a governance/documentation identity ONLY, never written into runtime literals. Validate with the fail-closed candidate gate:
+**Master-first rule (CEO, 2026-10-16; Blueprint 8.7 `Module_Change_Requests`):** no module may be created, coded or registered outside the Master. When the Blueprint has no capability and no existing MOD/FU fits, **stop**: raise a Module Change Request in the Master's `Module_Change_Requests` sheet (through the Blueprint owner) and continue only after the Master gives a new MOD-ID or an approved mapping. Code, routes, permissions and data objects carry a MOD-ID that exists in `Blueprint_Data`.
+
+`CAND-CAP-####` is a closed, historical namespace: no new candidate identity is opened. The existing ones are deprecated aliases of the canonical targets Master 8.2 / 8.7 gave them (`execution/portfolio/blueprint-master-plan-reconciliation.md` § Master 8.7 resolution). The candidate gate refuses a new or a deprecated candidate and names its canonical target:
 
 `python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
 
-Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**
+New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise a Module Change Request in the Master → never invent a MOD / PSS / NEW identity, and open no new CAND-CAP.**

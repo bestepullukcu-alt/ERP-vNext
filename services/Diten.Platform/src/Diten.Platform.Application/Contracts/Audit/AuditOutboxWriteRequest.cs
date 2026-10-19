@@ -16,6 +16,13 @@ public sealed class AuditOutboxWriteRequest
     public Guid? EntityId { get; init; }
     public IReadOnlyDictionary<string, object?> Payload { get; init; } = new Dictionary<string, object?>();
 
+    /// <summary>
+    /// WP-PLATFORM-AUDIT-INTX-01 — what an in-transaction caller says about its change. The in-transaction writer
+    /// builds <see cref="Payload"/> from it; the central pipeline (<c>AuditService</c>) leaves it null and supplies the
+    /// payload itself, built by the same builder.
+    /// </summary>
+    public TransactionOwnedAuditIntent? Intent { get; init; }
+
     public void Validate()
     {
         if (TenantId == Guid.Empty)

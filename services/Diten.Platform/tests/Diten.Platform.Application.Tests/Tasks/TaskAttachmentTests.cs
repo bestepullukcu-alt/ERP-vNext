@@ -123,12 +123,12 @@ public sealed class TaskAttachmentTests : IDisposable
             ChecklistRuns = runs,
             Attachments = attachments,
             DocumentRepository = documentRepository,
-            Add = new AddTaskAttachmentHandler(tasksRepo, runs, attachments, documentRepository, tenant, currentUser),
-            Remove = new RemoveTaskAttachmentHandler(tasksRepo, attachments, currentUser),
+            Add = new AddTaskAttachmentHandler(tasksRepo, runs, attachments, documentRepository, tenant, currentUser, writeGate: TaskWriteGateDoubles.Open),
+            Remove = new RemoveTaskAttachmentHandler(tasksRepo, attachments, currentUser, writeGate: TaskWriteGateDoubles.Open),
             List = new ListTaskAttachmentsHandler(tasksRepo, attachments, readAccess, currentUser),
             Open = new OpenTaskAttachmentHandler(tasksRepo, attachments, documentRepository, readAccess, currentUser),
             SetChecklistState = new SetChecklistItemStateHandler(
-                tasksRepo, runs, new TaskChecklistService(), currentUser, attachments)
+                tasksRepo, runs, new TaskChecklistService(), currentUser, attachments, writeGate: TaskWriteGateDoubles.Open)
         };
     }
 

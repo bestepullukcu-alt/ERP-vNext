@@ -133,21 +133,44 @@ public sealed class RevokeRoleCommandHandlerTests
         Assert.Contains(TenantId, version.IncrementedTenants);
     }
 
+    // BL-521 FIX6 item 13 (D') — the revoke asks for the user FIRST: an id that is no user of the tenant (and, for a tenant
+    // actor, a platform account — the repository does not show one) is 404 like any absent user, and NOTHING is revoked,
+    // bumped or closed (it used to answer 204 for any id and end the sessions of an account the caller cannot see).
+    [Fact]
+    public async Task An_absent_user_is_404_and_nothing_is_revoked_or_closed()
+    {
+        var userRoles = new FakeUserRoleRepository();
+        var refreshTokens = new FakeRefreshTokenRepository();
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(role: null, userRoles, refreshTokens, version, userExists: false);
+
+        var result = await handler.Handle(new RevokeRoleCommand(UserId, RoleId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(404, result.StatusCode);
+        Assert.Null(userRoles.RevokedCall);
+        Assert.Null(refreshTokens.RevokeAllCall);
+        Assert.Equal(0, version.IncrementCount);
+    }
+
     private static RevokeRoleCommandHandler CreateHandler(
         Role? role,
         FakeUserRoleRepository userRoles,
         FakeRefreshTokenRepository refreshTokens,
-        FakeRoleAssignmentVersionService? version = null)
+        FakeRoleAssignmentVersionService? version = null,
+        bool userExists = true)
     {
         var tenantContext = new TestTenantContext();
         tenantContext.SetTenant(TenantId);
         return new RevokeRoleCommandHandler(
+            new KnownUsers(userExists),
             new FakeRoleRepository(role),
             userRoles,
             refreshTokens,
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
             UserAuditForTests.None(),
+            RecoveryGuardForTests.Permits(),
             NullLogger<RevokeRoleCommandHandler>.Instance);
     }
 
@@ -158,6 +181,30 @@ public sealed class RevokeRoleCommandHandlerTests
     }
 
     // ── Minimal inline fakes (codebase convention: hand-written, no Moq) ──
+
+    /// <summary>The user store as the handler asks it: the user is there (or not); nothing else is asked.</summary>
+    private sealed class KnownUsers(bool exists) : IUserRepository
+    {
+        public Task<User?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) =>
+            Task.FromResult<User?>(exists ? new User("revoke.probe@bl521.test", "hash:x", "Revoke", "Probe", tenantId) : null);
+
+        public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<User?> GetByUserNameAndTenantAsync(string normalizedUserName, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<User?> GetByPasswordResetTokenHashAsync(string tokenHash, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct) => throw new NotSupportedException();
+        public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<User> CreateAsync(User user, CancellationToken ct) => throw new NotSupportedException();
+        // Merge WP-CT-LANE-BL521-MERGE-01 — BL-529 FIX4 removed the whole-document UpdateAsync / UpdateForTenantAsync; its targeted writes take their place.
+        public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public object CaptureState(User user) => throw new NotSupportedException();
+        public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) => throw new NotSupportedException();
+        public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => throw new NotSupportedException();
+        public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => throw new NotSupportedException();
+        public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => throw new NotSupportedException();
+    }
 
     private sealed class FakeRoleRepository(Role? role) : IRoleRepository
     {
@@ -195,14 +242,17 @@ public sealed class RevokeRoleCommandHandlerTests
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
         public CancellationToken RevokeAllToken { get; private set; }
 
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             if (ThrowOnRevokeAll)
                 throw new InvalidOperationException("refresh-token revoke failed");
             RevokeAllCall = (userId, tenantId);
             RevokeAllToken = ct;
             callLog?.Add("refresh-token-revoke-all");
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
 
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();

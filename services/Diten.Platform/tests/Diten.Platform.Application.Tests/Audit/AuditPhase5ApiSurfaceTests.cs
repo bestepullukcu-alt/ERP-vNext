@@ -501,6 +501,9 @@ public sealed class AuditPhase5ApiSurfaceTests
             return Task.FromResult(new AuditEventSearchResult(filtered, filtered.Count));
         }
 
+        public Task<bool> ExistsByOutboxIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default) =>
+            Task.FromResult(false);
+
         public Task<IReadOnlyList<AuditEvent>> GetByCorrelationIdAsync(Guid correlationId, CancellationToken ct = default)
         {
             var items = _events.Where(item => item.CorrelationId == correlationId).ToList();

@@ -369,7 +369,9 @@ yalnız doğru başlığın altına gider.
 - **İlgili:** DCP-004 OD-WC-02 · §10.4 (A/B binding law) · §17 · WC-1 birleşik WorkItem kontratı.
 
 ### BL-019 — Blueprint canonical MOD-xxxx tahsisi (CAND-CAP-0006 mezuniyeti)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+
+- **Kapanış (2026-10-19):** Blueprint master 8.7 (Master 8.2 `Main_Reconciliation_v8_2`) `CAND-CAP-0006`'yı yeni bir modül açmadan `MOD-0024` Task & Checklist Engine'in Work Center sayfası / çalışma alanı olarak içine aldı. Kayıtta `CAND-CAP-0006` artık `MOD-0024`'ün eski takma adı; WC-1 / WC-1b paketleri `MOD-0024-WC1` / `MOD-0024-WC1B` oldu. Aşağıdaki metin kapanıştan önceki kayıttır.
 
 - **Nedir:** EA, Work Aggregation / Task Center (Görev Merkezi) için Blueprint'e canonical bir `MOD-xxxx` satırı açar ve `CAND-CAP-0006 → MOD-xxxx` deprecated-alias zincirini kaydeder (DCP-002). Blueprint'te bugün karşılık yok (doğrulandı); CAND-CAP-0006 geçici governance kimliğidir.
 - **Yapım tetikleyicisi:** Yetenek **WC-1'de kanıtlanınca** (şimdi değil). CAND-CAP-0006 WC-1 dilimi boyunca kalır; MOD-xxxx tahsisi ayrı bir EA kararıdır.
@@ -5614,6 +5616,14 @@ DURUM: KISMEN KAPANDI — Auth'un 3 kırmızısı `d9d7b90e` (2026-09-15): izin 
 
 `run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. **2026-09-15 (BL-395 ajanı):** İş Referans Verisi'nin 49 Mongo testi tek süreçte de kırmızı; sebep ölçüldü: yerel mongod bir replica set (`rs0`) ve `RunCommandAsync<object>("{ ping: 1 }")` cevaptaki Timestamp türünü `ObjectSerializer` ile okuyamıyor (GSKU `:363`, TenantAssignment `:28`, PublishOperation `:29`); ardından dispose "database is currently being dropped" ile düşüyor. İş Referans Verisi kulvarının işi. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
 
+**Ek 2026-10-04 (WP-MDM-GSKU-ACCEPT-01 FIX1 ve WP-EMAIL-SHELL-01 FIX1 raporları):** (1) kapı MDM çözümünü yalnız DERLİYOR, MDM testlerinin
+hiçbirini koşmuyor (Application.Tests ve yeni `Diten.MdmService.Api.Tests` dahil); koşturmak runner'da mongod ister (BL-527'nin geçici mongod
+düzeniyle birlikte çözülür). (2) `Diten.BuildingBlocks.Email.Tests` `Diten.Platform.sln`'e girdi, kapıda derleniyor ama koşmuyor (86 test,
+20 ms: kapıya eklemek ucuz). (3) Auth Application'da 59 test macOS'ta hiç koşamıyor: 48'i `OperationalMongoFixture`'daki Windows'a sabit
+`C:\Program Files\MongoDB\…\mongod.exe` yolu, 9'u Windows API (6 adlı semafor, 2 kernel32, 1 boru), 2'si açık test URI'si istiyor. Bu kırmızılar
+her teslimde "ortam kaynaklı" diye geçiyor ve gerçek bir kırmızıyı gizleyebilir. Düzeltme: mongod yolu `DITEN_TEST_MONGOD` / PATH'ten,
+Windows'a bağlı testler `[SkippableFact]` + işletim sistemi koşulu.
+
 ---
 
 ### BL-406
@@ -6293,6 +6303,21 @@ sütunlar (dt-defaults, sunucu modunda yalnız sayfa — tam dışa aktarma sunu
 `hideQuickView`/suppress, form başarı kancası (davet diyaloğu), antiforgery yardımcısı, kayıtlı filtre eşanlamı, dışa aktarma seçenekleri.
 **Kanca:** ana checkout'un dalında yok (integration main'e girene kadar oradan açılan sohbetlerde koşmaz); kök artık düzenlenen dosyanın
 worktree'sinden (a5af7f7bb).
+
+**Ek 2026-10-04 — ürün listeleri (sahip yakaladı; sahip onayı "evet hepsi").** Global Ürün kabul edildi ama liste ekranı ortak kabuğa / fabrikaya
+taşınmadı (dokunma protokolü GP turlarında koşmadı). Ölçüm (`verify_datatable_page.py --data-mode server --api-profile proxy --format gaps`): GSKU 1
+(yalnız BL-452; FIX3 taşıdı) · Global Ürün 11 · ABB kayıt 18 · LSKU 18 · Tüzel Kişi Kapsamı 17 · FG 17 — beşi de kabuk / fabrika dışında. Toplu silme
+sapmaları GxP ana veride `_ListShell` `HasSelection=false` ile düşer. Plan: WP-MDM-GP-LIST-01 (MDM sohbeti, GSKU-FIX4'ten sonra) · WP-MDM-ABB-LIST-01
+(Roller, ABB-FIX4 kabulünden sonra) · LSKU FIX2 / Kapsam FIX1 / FG FIX1'de zorunlu madde. Kural: bir modülün kabul turu listelerinin `--format gaps`
+çıktısını ister.
+
+**Ek 2026-10-05 — liste taşımalarının ortak tuzakları (ABB-LIST ve GP-LIST gözden geçirmeleri).** (1) **Sessiz kısmi dışa aktarma yok (GxP):**
+sunucu modundaki listede DataTables yalnız sayfayı tutar; Yazdır / CSV / Excel / PDF ya bütün satırları yazar (sunucu dışa aktarma, BL-452) ya da her
+öğe açıkça "yalnız bu sayfa" der — GP eski etiketini kaybetmişti, ABB eskiden ürünün bütün kayıtlarını yazıyordu. (2) **Kayıtlı görünüm sütun
+kayması:** seçim sütunu kalkınca dizinler kayar; eski görünüm ya taşınır ya sürümlenip bir kez bilgiyle sıfırlanır. (3) **Derin bağlantı yarışı:**
+fabrika tutamacı sunucu modunda `initComplete`'ten önce döner; sayfa süzgeci init'ten SONRA uygulanmalı. (4) Liste okuma hataları sayfanın kendi 7 dil
+cümlesine eşlenir (`onListError`). (5) Yetkisiz yüz testi sayfayı gerçek düzenle çizer (aksi halde "betik yok" ölçülmez). Kural: her liste taşıma
+promptuna bu beş madde konur.
 
 ---
 ### BL-441
@@ -7300,7 +7325,7 @@ yetki kapsamına dokunur).
 
 **Bağlamsal yardım: "bu sayfa nasıl kullanılır" + klavye kısayolları her sayfada tek girişten**
 
-DURUM: KARAR VERİLDİ (sahip, 2026-10-02: "ok, yapalım; .antigravity kuralına da eklensin ki yeni modüllerde de olsun") — prompt denetim standardı (borç defteri yöntemi) hatta girince yazılacak · SAHİP: CT (ortak ön yüz) · BULAN: sahip (canlı kullanıcılar "sayfayı nasıl kullanacağız" bilgisi istiyor) · KAYIT: 2026-10-02
+DURUM: KARAR VERİLDİ (sahip, 2026-10-02: "ok, yapalım; .antigravity kuralına da eklensin ki yeni modüllerde de olsun") — prompt denetim standardı (borç defteri yöntemi) hatta girince yazılacak · **2026-10-09:** sahip canlıdan aynı talebi yineledi ("kullanıcılar sayfaları kullanmayı bilmiyor; başlıkta öğretici bir modül") → CT sıraya aldı, boşalan ilk sohbete; ilk paket ortak "?" paneli + Kullanıcılar + Roller; adım adım tur sonraki aşama; örnek veri ve rol önerisi BL-580 · SAHİP: CT (ortak ön yüz) · BULAN: sahip (canlı kullanıcılar "sayfayı nasıl kullanacağız" bilgisi istiyor) · KAYIT: 2026-10-02
 
 **Karar:** (1) üst çubukta tek "?" düğmesi, her sayfada aynı yerde; (2) içerik: bu sayfa ne işe yarar (2 cümle) + nasıl kullanılır (3–5 adım) + varsa sayfanın klavye kısayolları; (3) metni sayfayı yapan ekip yazar — modül paketinin zorunlu bölümü, kiracı ekranında 7 dil; yeni sayfa yardım metni olmadan teslim edilemez (kural dosyası + ajan kapıları + borç defteri: eski sayfalar listeye yazılır, liste yalnız küçülür). İlk paket: ortak panel + Kullanıcılar ve Roller metinleri. İlk kullanım turu sonraya.
 
@@ -7311,6 +7336,25 @@ ekranında 7 dil; (b) klavye kısayolları: kısayolu olmayan sayfada satır ç�
 konuşmasında ölçülerek yapılacak (SAP Web Assistant / Enable Now, Oracle Guided Learning — bu kayıttaki adlar hafızadan, doğrulanmadı).
 Modül paketi şablonuna "sayfa yardım metni" satırı eklenmesi aynı işin parçası. Gelecek regresyon riski: 🟢 (ek).
 
+
+**SAHİP KARARI 2026-10-09 (tartışma sonucu, dört öneri kabul):** ortak paket **WP-UX-COMMON-01** = BL-495 ("?" yardım) + BL-586 (Enter) + kısayol katmanının bütün kiracı sayfalarına yüklenmesi (BL-438'in kalanı) + adım adım tur motoru.
+- (1) Tur yalnız beş akışta: Görev Merkezi, Zaman Çizelgesi, Global Ürün / kalem onaya gönderme, kullanıcı + rol kurulumu, Toplantı. Diğer sayfalarda yalnız "?" metni.
+- (2) "Turu gördüm" ilk sürümde tarayıcıda; Profilim gelince kullanıcı kaydına taşınır.
+- (3) Diğer ekiplerin sayfaları eksik listesine girer (liste yalnız küçülür), o ekipler dokununca yazar.
+- (4) Sıra: ortak paket ilk boşalan sohbete; arka uç işleri (S3b, S2, IU) paralel devam eder.
+
+Aşamalar:
+- A ortak altyapı;
+- B kapanmış modüllere içerik (Kullanıcılar, Roller, Rol İzinleri, Kullanıcı Rolleri metinleri + Görev Merkezi ve Zaman Çizelgesi turları);
+- C her modül turunun kontrol listesine üç satır (Enter, "?", tur).
+
+Kütüphane: **Driver.js (MIT)**:
+- tek sürüm sabit, depoya kopyalanır, parmak izi kayıtlı, canlıdan yüklenmez;
+- sayfalar kütüphaneyi değil `DitenTour` ara katmanını çağırır;
+- metin yalnız dil dosyalarından ve düz metin;
+- ağ çağrısı yapmadığı ve CSP ile çakışmadığı ölçülür; çakışırsa kendi motor.
+
+Shepherd.js (v14+ ticari lisans) ve Intro.js (AGPL / ticari) KULLANILMAZ.
 ---
 
 ### BL-496
@@ -7427,6 +7471,22 @@ yükseltilmiş (Escalated) görev:** MDM istemcisi ön kontrolde yalnız Active 
 tarafından geri çekilemiyor. İstemciyle birlikte değişmeli. (3) **Zaman çizelgesi onay sayfası adaylara göre (D5):** hafta, motorun ilk
 adayını `AssignedApproverUserId` olarak saklıyor ve sayfa buna göre süzüyor; motor paketinden sonra ikinci koltuk sahibi haftayı Görev
 Merkezi'nden onaylayabilir ama `/TimeEntry/Approvals` sayfasında göremez. Bozulma değil, tutarsızlık. Gelecek regresyon riski: 🟢 (üçü de eklemeli).
+
+**Ek (2026-10-02, D1 gözden geçirmesi):** madde (3) D1 düzeltme turuna ÇEKİLDİ (ikinci koltuk sahibi haftayı açamadan onaylayabiliyordu).
+Listeye eklenenler: (4) **Yürütücü beklemesi:** işlem yürütücüsü üç commit denemesinden sonra beklemeden vazgeçiyor; geri çekilme süresi ayrı
+iş. (5) **Yükseltilmiş durumun devirle silinmesi:** devir ve bilgi isteme görevi yeniden bekleme durumuna alıyor; ondan sonra iptal yeniden
+kabul ediliyor. Görevde "yükseltildi" olgusu kalıcı tutulmuyor; ölçüm ve öneri D1 düzeltme turunun raporunda.
+
+**Ek 2 (2026-10-03, D1 düzeltme turu gözden geçirmesi):** (6) **Onay listesi bütün gönderilmiş haftaları okuyor:** zaman çizelgesi onay
+listesi kiracının gönderilmiş bütün haftalarını okuyup aday kontrolünü bellekte yapıyor. Şimdilik kalır; çözüm yönü motor tarafında "adayı X
+olan açık görev" sorgusu + çok anahtarlı dizin (kopya liste yok). Kullanılmayan `ix_time_entry_weeks_tenant_status_approver` dizini o işe kadar
+silinmez. (7) **Süresi geçen görev taraması tıkanabilir (doğrulanmalı):** `ListOverdueTasksAsync` (`WorkflowRepositories.cs:521-541`)
+Escalated ve TimedOut görevleri de alıyor, en eski `DueAt`'ten sıralayıp `Limit(maxItems)` uyguluyor ve hiçbir şey `DueAt`'i ileri almıyor;
+100'den fazla böyle görev birikirse yeni süresi geçenlere hiç sıra gelmeyebilir. (8) **Commit aşamasında etiketsiz Mongo istisnası 500:**
+`UnknownTransactionCommitResult` etiketi olmayan bir commit hatası yürütücüden sarılmadan çıkıyor (`PlatformTransactionExecutor.cs:79-91`) →
+500. (9) **Bildirim alıcıları eski:** zaman çizelgesi bildirimleri `week.ApproverCandidateUserIds`'e gidiyor (`TimeEntryNotifier.cs:107,121`);
+devir ya da yükseltmeden sonra eski kişiler (erişim için kullanılmıyor). (10) Yükseltilmiş haftanın satırında karar verilecek görev kimliği yok
+(`ApprovalWeekFacts` `ActiveStatuses` kullanıyor, Escalated dışarıda) — D5 ile.
 
 ---
 
@@ -7551,7 +7611,2416 @@ Gelecek regresyon riski: 🟢 (yalnız etiket), ama yetki yanlış verilmesine y
 
 ### BL-509
 
+**Şirketler arası iş: aynı kiracıda, farklı tüzel kişilerdeki iki meslektaş birbirine görev atayamıyor — "görev talebi" ve "çalışma grubu"**
+
+DURUM: AÇIK — SAHİP KARARI BEKLİYOR (Görev Merkezi turunda, senaryo adım 6) · SAHİP: CT (Görev Merkezi / MOD-0024) · BULAN: sahip (kullanıcı
+ihtiyacı: aynı pozisyonda, farklı şirketlerde iki kişi) · KAYIT: 2026-10-02
+
+Ölçüldü (`TaskAssignmentScopeResolver`, BL-057): bir kişi (1) kendi tüzel kişisindeki herkese, (2) pozisyon zincirinde altındaki herkese,
+(3) kendisine ayrıca verilmiş birim / pozisyon kapsamına görev atayabilir. Farklı şirketteki eşit düzey meslektaş üçüne de girmez; ret kodu
+`TASK_ASSIGNEE_NOT_ASSIGNABLE`. Sınır bilerek kondu: önceden Miguel Garriga'daki kullanıcı Polonya ve Türkiye şirketlerinin bütün çalışanlarını
+görüp iş atayabiliyordu (GDPR sınırı). (3) için kapsam verecek ekran YOK; kapsamlar yalnız organizasyon verisinden türüyor.
+**Öneri (iki ayrı özellik, ikisi de "ata"dan ayrı):**
+(a) **Görev talebi** — kapsam dışındaki birine "şunu yapar mısın": karşı taraf kabul ederse kendi görevi olur, reddederse gerekçe yazar; talep
+eden emir veremez. Motorun "Kabul et / Reddet" adımı var; eksik olan kapsam dışındaki kişiyi adresleyebilmek. Hukuki nokta: talep gönderebilmek
+için başka şirketteki kişinin en az adının, şirketinin ve pozisyonunun görünmesi gerekir → yönetim kararları belgesine eklenir.
+(b) **Çalışma grubu** — farklı şirketlerden kişiler bir gruba alınır, grup içinde atama serbesttir (kuralın 3. bacağına ekran).
+Karşılaştırma: SAP'de (yapısal yetki) ve Oracle'da (güvenlik profili) doğrudan iş verme organizasyon yapısına bağlıdır; şirketler arası iş
+talep / bildirim olarak gider ve karşı taraf ya da yöneticisi üstlenir; sürekli ortak çalışma matris / proje ekibiyle tanımlanır.
+Kod yazmadan bugün: iki kişinin üstünde ortak bir grup pozisyonu varsa o yönetici ikisine de atayabilir. İkinci koltuk vermek çalışır ama
+önerilmez (onay zincirini ve zaman çizelgesi onaycısını da değiştirir). Gelecek regresyon riski: 🟡 (atama kapsamı, kişisel veri görünürlüğü).
+
+**Ek 2026-10-05 — (a) GÖREV TALEBİ CT KABULÜ (kod): dal `feature/platform/task-request` `f748673cb` (WP-WCN-TASK-REQUEST-01 D1, FIX1–FIX7).** FIX7 bağımsız
+gözden geçirmesi engelleyici ve zorunlu bulmadı; CT sabotajı (vitest) 2/3 — J2 eşdeğer mutasyon (her hata cümleyi `failure()`'dan önce yeniden yazdığı için başarıda
+sıfırlama gözlenemez). **Birleştirme bekliyor:** motor (D2 + BL-547) takeover dalında; görev talebi dalı oraya birleştirilirken CT `TaskItemWriteHandlers` /
+`TaskItemTransitionHandlers` uzlaştırmasını ve gönderimde açık inceleme kodunu düzeltir (motor PendingReview + açık incelemede `TASK_INVALID_STATE` dönüyor →
+`REVIEW_PENDING` olmalı; görev talebinin `errorReviewAlreadyOpen` eşlemesi buna bağlı). Takeover'da GSKU FIX7 sürdüğü için birleştirme o teslimden sonra.
+Kabulde kalan küçükler: `inputTooShort` cümlesi ölü (select2 `minimumInputLength` 0) · açılış çağrısında try/catch yok (gerçek istemciyle ulaşılamaz) · AgendaItemDto
+tarayıcısı blok gövdeli eşleyiciyi ve `global::` adı görmüyor · 403 ve 500 aynı "yeniden deneyin" cümlesi.
+
+---
+
+### BL-510
+
+**Ürün modüllerinin denetim izinde iki bilinen eksik: değişen alan adları (sözleşme v2) ve reddedilen denemeler**
+
+DURUM: AÇIK · SAHİP: CT (MDM ürün modülleri + denetim standardı) · BULAN: WP-GP-AUDIT-TRAIL-01 Aşama 1 / 1b ölçümü · KAYIT: 2026-10-02
+
+Global Product ve kardeş modüller kaydı iş verisiyle aynı belgeye "niyet" olarak yazıyor (işlem içi outbox); iz `mdm-urun-niyeti` olarak kabul
+edilecek (BL-503). İki eksik bu paketin dışında bırakıldı: (1) **Değişen alan adları:** niyet sürüm numarası + özet + anlık görüntü referansı
+taşıyor, hangi alanların değiştiğini taşımıyor (kural §3). Eklemek MDM ↔ Platform tel sözleşmesinin sürümünü değiştirir (Platform tek sürüm
+kabul ediyor): üretici, ayrıştırıcı, parmak izi, makbuz doğrulaması ve iki servisin testleri; bekleyen eski sürümlü niyetler için iki sürümün
+birlikte kabulü. (2) **Reddedilen / başarısız denemeler** üç serviste de yazılmıyor (MDM niyeti yalnız başarılı yazımda oluşur; Platform'un
+güvenilir başlat / iptal komutları reddi kaydetmiyor; Auth belirteç reddi BL-503 D3'te ele alınıyor). Kural §3 "reddedilen komut da kaydedilir"
+diyor; hiçbir test bunu ölçmüyor. Karşılaştırma: Veeva ve MasterControl'de başarısız imza / onay denemesi de denetim izine düşer.
+Gelecek regresyon riski: 🟡 (iki servis arası sözleşme).
+
+---
+
+### BL-511
+
+**Görevde "kabul" kapısı yalnız ekranda: sunucu kabul edilmemiş işte başlat / tamamla / planla isteğini geri çevirmiyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+`start` / `complete` / `plan` sunucuda yalnız "çağıran atanan mı" diye bakıyor (`TaskItemTransitionHandlers.cs:317-323`, `:1099-1110`);
+`AcceptedByUserId` okunmuyor. İş raporu, takvim, zaman çizelgesi seçicisi ve son tarih hatırlatması da kabul edilmemiş işi ilk andan atananın
+işi sayıyor. Ekran düğmeyi göstermediği için kullanıcı fark etmiyor; uç doğrudan çağrılırsa kabul adımı atlanır. Görev talebi (BL-509) bu
+kusuru tekrarlamıyor (teklif edilmiş işte atanan boş). Düzeltme: kabul kuralı sunucuda tek yerde; diğer yüzeylerin "kabul edilmemiş"i nasıl
+sayacağı ayrı karar (iş raporunda yaşlanma oluşturma anından mı kabulden mi). Karşılaştırma: SAP ve Oracle iş listelerinde "rezerve et / üstlen"
+sunucu durumudur. Gelecek regresyon riski: 🟡 (beş yüzey aynı kuralı okuyacak).
+
+---
+
+### BL-512
+
+**Onaycı seçicisi kiracıdaki herkesi döküyor: `lookups/decision-makers` aramasız ve sınırsız**
+
+DURUM: KAPANDI (şeritte; canlı denetim sahip girişiyle) · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+`TasksController.cs:1203-1209` (izin `platform.tasks.create`) pozisyonu olan herkesi ad + pozisyon + birim + tüzel kişi kimliğiyle tek
+istekte döndürüyor (`GetTaskAssignmentPersonLookupHandler.cs:80-81`); BL-057 atama kapsamını daraltırken bu ucu bilerek muaf tutmuştu
+(onaycı başka şirkette olabilir). Sonuç: görev açabilen her kullanıcı, öbür ülke şirketlerinin çalışan listesini alabiliyor: BL-057'nin
+kapattığı kapının yan penceresi. Görev talebi için yazılan arama ucu (en az 3 harf, en çok 10 sonuç, hız sınırı, yalnız ad + şirket +
+pozisyon) bu ucun da yerini almalı. Hukuk kararları belgesine girer (şirketler arası ad görünürlüğü). Gelecek regresyon riski: 🟡.
+
+**Ek 2026-10-04 — yalnız sunucu değişikliği iki akışı kırar; paket ayrıldı.** WP-PLATFORM-SCOPE-SMALL-01 madde B olarak gönderildi;
+yürütme sohbeti kod yazmadan durdu, CT kodda doğruladı (lookup-scope @605f37d68). Ucu açılışta tüm listeyle dolduran iki çağıran var:
+(1) görev formu `Tasks/form-page.js:844-848`: gözden geçiren ve onay yöneticisi seçicileri tüm listeyle çiziliyor, düzenlemede kayıtlı
+kimlik var olan seçenek seçilerek gösteriliyor. Arama ucunda açılışta seçenek olmaz: kayıtlı onaycı boş görünür, düzenleme kaydı onu
+silebilir. (2) Görev Merkezi devretme penceresi `WorkCenterNext/app.js:10215-10240`: liste boşsa eylem `DelegateNoEligiblePeople` ile
+reddediliyor; aramasız istek boş dönerse onay devretme tamamen kırılır. Paket birlikte gitmeli: (a) sunucu `?search=` (en az 2–3 harf,
+en çok 10–20, yalnız ad + pozisyon + birim) + kayıtlı kimlikleri ada çeviren `?ids=` çözme ucu, (b) form seçicileri select2 ajax arama
+(aynı formdaki `resolveStoredRecords` kalıbı), (c) devret penceresinde arama kutusu; "boş liste → reddet" kuralı "aramada kimse yok"
+mesajına döner. Hız sınırı: Platform'da istek başına sınırlayıcı ölçülmedi, paketin ilk ölçümü. Ayrı paket olarak açılacak
+(WP-PLATFORM-DECISION-MAKERS-SEARCH-01), dokunulan dizgiler 7 dil (kiracı ekranı).
+
+**Kapanış 2026-10-04 — dal `fix/platform/decision-makers-search` @37b05a216, şeritte 0f1f30cdd.** Uç yalnız `?search=` (en az 2 harf, en çok
+20 sonuç, ad ve pozisyon adında aksan duyarsız) ya da `?ids=` (en çok 10) cevaplıyor; kullanıcı başına "people-search" hız sınırı
+(dakikada 60). Rehber 60 sn, eksik rehber 10 sn önbellekte; ad çözümü sınırlı çağrılardan ve adlı, zaman aşımlı istemciden geçiyor. Form
+seçicileri ve devret penceresi ortak `shared/diten-people-search.js` select2 taşıyıcısını kullanıyor; kayıtlı onaycı `?ids=` ile adına
+çevriliyor. Aynı dalda BL-531 (toplantı katılımcıları) kapandı. Üç tur bağımsız gözden geçirme; CT sabotajı 3/3 adı yazılı testle kırmızı.
+Canlı (dev, 2026-10-04, sahip oturumu, şerit `7d9d8009d` yapısı): aramasız / tek harf → 400 `PEOPLE_SEARCH_TOO_SHORT`; "ad" → 2 kişi,
+yalnız userId + ad + pozisyon + birim; toplantı katılımcı ucu aynı kural; görev formundaki onay yöneticisi seçicisi "en az 2 karakter" diyor, "ad"
+yazınca iki aday. Bulunan veri açığı → BL-542 (silinmiş kullanıcı pozisyonda "Bulunamayan kişi" olarak). Kalan: Görev Merkezi devret penceresi.
+
+---
+
+### BL-513
+
+**Üste atanan iş ("yukarı yön talebi") görev talebiyle aynı düzene taşınsın: bugün yarım**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+Üste atanan iş bir iş akışı örneği açıyor (`TaskUpwardRequestService.cs:65`, nesne tipi `task-request`); cevabı kimse okumuyor, ret görevi
+iptal etmiyor (BL-023'ün açık kalanı). Görev talebi (BL-509) teklif / kabul / ret / geri çekme düzenini kuruyor; yukarı yön de aynı kavram
+olmalı (tek "talep"). Taşıma, görev talebinin sunucu ve ekran dilimleri kabul edildikten sonra. Gelecek regresyon riski: 🟡 (mevcut açık
+örneklerin geçişi).
+
+---
+
+### BL-514
+
+**Platform'da işlem içi yazılan denetim kaydı merkezi günlüğe hiç ulaşmıyor (25 komut); abonelik uçları bir aydır boru hattında düşüyor**
+
+DURUM: AÇIK — düzeltme yazılıyor (WP-PLATFORM-AUDIT-INTX-01, dal `feature/platform/audit-in-transaction`) · SAHİP: CT (denetim standardı) · BULAN: WP-PLATFORM-TENANT-MODULES-01 K1 ölçümü + CT dev ölçümü · KAYIT: 2026-10-02
+
+Kiracı modül yetkilendirmesi, kiracı aboneliği ve genel uygulanabilirlik (modül kataloğu, abonelik planları, modül kaydı) komutları kaydı iş
+verisiyle aynı işlemde `audit_outbox`'a yazıyor ama yük, taşıyıcının zorunlu alanlarını (kiracı, aktör, kategori, kaynak servis) taşımıyor:
+satır kalıcı hataya düşüyor, `audit_events`'e geçmiyor, aktör hiçbir yerde yok. Uçtan uca testle ve dev verisiyle kanıtlı (7 satırın 7'si
+ölü, hepsi modül kaydı). Defterde `platform-islem-ici` izi bu yüzden "aday"dı. İkinci bulgu: 8 abonelik komutu `AuditBehavior`'ın izin
+listesine hiç eklenmemiş (261f99105, 2026-08-31); boru hattından geçen abonelik uçları istisnayla bitiyor. Kapı: kiracı modülleri ekranı
+(BL-500) bu düzeltme kabul edilmeden ana dala gitmez (K2). Paket dışında kalan: var olan ölü satırların onarımı (canlıda sayı bilinmiyor;
+aktör bilgisi satırda yok). Karşılaştırma: SAP ve Oracle'da lisans / abonelik değişikliği değişiklik belgesi olmadan yazılamaz.
+Gelecek regresyon riski: 🟡 (merkezi yolla ortak kurucu).
+
+---
+
+### BL-515
+
+**Liste yüklenemediğinde ekran tarayıcının İngilizce uyarı kutusunu gösteriyor ya da hiçbir şey göstermiyor (ortak liste bileşeni)**
+
+DURUM: AÇIK · SAHİP: CT (BL-440 liste bileşeni) · BULAN: Kullanıcılar ekranı FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+Ortak liste bileşeninde ve varsayılanlarda liste isteğinin reddi için bir işleyici yok; DataTables'ın kendi varsayılanı (`errMode: "alert"`)
+çalışıyor. Liste isteği 401 / 403 / 5xx dönerse tarayıcı `DataTables warning: table id=… - Ajax error` diye İngilizce bir uyarı kutusu açıyor;
+ağ kesikse hiçbir şey görünmüyor (boş tablo). Yalnız üç sayfa kendi işleyicisini yazmış (PPM, Referans Veri, Farmakovijilans vaka girişi).
+Sayfa standardının "hata hali" maddesi her liste sayfasında bu yüzden eksik. Düzeltme tek yerde: bileşen uyarı kutusunu kapatır, tablonun
+içinde okuyanın dilinde "Liste yüklenemedi" cümlesi ve "Yeniden dene" düğmesi gösterir; oturum düşmüşse girişe yönlendirme kuralı aynen.
+Ortak tarayıcı dosyası olduğu için canlı sayfa bakışı zorunlu. Karşılaştırma: SAP Fiori ve Oracle Redwood listelerinde yükleme hatası
+tablonun içinde mesaj + yeniden dene olarak gösterilir. Gelecek regresyon riski: 🟢 (eklemeli; üç sayfanın kendi işleyicisi bileşene taşınır).
+
+---
+
+### BL-516
+
+**Auth servisi 500 hatasında istisnanın kendi mesajını yanıta yazıyor**
+
+DURUM: AÇIK — Kullanıcılar dalının kabulünde CT düzeltiyor · SAHİP: CT (Auth) · BULAN: Kullanıcılar ekranı FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+`GlobalExceptionHandler` her durumda `detail = exception.Message` yazıyor; 500'de bu, veritabanı sürücüsünün ya da bir kütüphanenin iç
+mesajıdır (sunucu adı ve portu içerebilir). Liste, dışa aktarma ve silme istekleri tarayıcıdan doğrudan gateway'e gittiği için yanıt
+gövdesi ağ sekmesinde okunabilir (ekran ve konsol okumuyor). Düzeltme: 5xx'te sabit, içerik taşımayan bir cümle + izleme numarası; istisna
+yalnız sunucu günlüğüne. 4xx'teki uygulama cümleleri değişmez. Aynı kalıp öbür servislerin istisna işleyicilerinde de aranmalı (ayrı ölçüm).
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-517
+
+**Web uygulamasının günlüğüne arama terimleri düşüyor (istek adresinin sorgu kısmı)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · BULAN: Kullanıcılar ekranı FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+`Logging:LogLevel` hem `Default` hem `Microsoft.AspNetCore` için `Information`; HTTP istemci fabrikası giden her isteğin tam adresini,
+ASP.NET de gelen isteğin yolunu sorgu dizgisiyle yazıyor. Kişi arama uçlarında (`…/lookup?search=…`) yazılan ad parçaları günlüğe giriyor.
+Kullanıcılar vekili kendi hata satırında yalnız yolu yazıyor ama fabrikanın ve sunucunun satırları aynı adresi tam yazıyor. Karar gerekir:
+üretimde bu iki kategori `Warning`'e mi alınır, yoksa sorgu dizgisi günlükten süzülür mü. Hukuk kararları belgesine girer (günlüklerde
+kişisel veri). Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-518
+
+**MOD-0290 (Ürün, Kalem ve SKU Ana Verisi) tamamlama programı: yazılmış sekiz parçanın dışında on bir eksik**
+
+DURUM: AÇIK — sahip kararı 2026-10-02: "eksikleri çıkarıp hepsini yapmalıyız" · SAHİP: CT (MDM ürün modülleri) · BULAN: sahip + CT ölçümü (devralma dalı `feature/mdm/product-five-takeover`) · KAYIT: 2026-10-02
+
+Blueprint bu modül için ürün kaydı, KALEM kaydı, SKU, ölçü birimi eşlemesi, ürün tanımlayıcıları ve yaşam döngüsü sayıyor. Yazılmış ve
+kabul bekleyen: Global Ürün, GSKU, LSKU, Bitmiş Ürün, Kısaltma Kaydı, Şirket Kapsamı, Marka, Ürünler (CRM tarafı). Eksikler (ölçüldü; kodda
+dosyası yok): (1) **malzeme / kalem kaydı** (hammadde, ambalaj malzemesi): Blueprint'te var, modül tanımında ve kodda hiç yok; stok ekibi
+(MOD-0173, dal `feature/sce/mod-0173-inventory-ledger-valuation`, henüz kodu gönderilmedi) buna bağlanmak zorunda; (2) ölçü birimi eşlemesi
+ve çevrimi; (3) ürün tanımlayıcıları (GTIN); (4) Ürün Tanımı Sürümünün alanları (form, veriliş yolu, güç: tasarımda var, kodda yalnız
+kimlik); (5) ikinci sürüm kuralı (REV-002: bugün sürüm yalnız ilk GSKU ile birlikte doğuyor); (6) madde + bileşim (bileşim Ürün Tanımı
+Sürümüne bağlanır; bugün istekte bileşim alanı reddediliyor); (7) pazar ticari adı (LSKU'ya bağlı; tasarımda var, kod yok); (8) Marka ↔
+Global Ürün bağı ve marka tescilleri (Marka bugün yalnız CRM tarafındaki Ürünler ekranına bağlı); (9) ambalaj hiyerarşisi; (10) eski sistem
+kodları ve toplu veri taşıma; (11) Global Ürün adını değiştirme ve geçmişi. Modülün dışında ayrı modül olanlar: ruhsat (RIM), pazar arz
+ataması, etiket / prospektüs, üretim reçetesi, dış sistem beslemeleri. Tahmin: yaklaşık 13 paket (≈ 50 prompt; iki sohbet paralel 3–4 hafta).
+Önerilen sıra: Global Ürün kabulü → malzeme / kalem + ölçü birimi → tanım alanları + ikinci sürüm → madde + bileşim → tanımlayıcılar,
+pazar ticari adı, marka bağı, ambalaj → veri taşıma. Karşılaştırma: SAP'de tek malzeme kaydının görünümleri; Oracle'da kalem ana verisi +
+ürün merkezi; ilaç tarafında IDMP / Veeva ürün tanımı + madde. Gelecek regresyon riski: 🟡 (ikinci sürüm kuralı ve stok ekibiyle ortak kimlik).
+
+---
+
+### BL-519
+
+**Onaylarda elektronik imza: parolayı yeniden doğrulama kanıtı + ortak imza servisi + onay motoruna bağlama**
+
+DURUM: AÇIK — sahip konuşmak istiyor (2026-10-02) · SAHİP: CT (Auth + MOD-0023 onay motoru) · BULAN: sahip · KAYIT: 2026-10-02
+
+Ölçüm: Doküman Yönetimi'nde imza temeli var (MOD-0029-FU23: kim, neyi, hangi anlamla, kaydın hangi parmak izine karşı), ama "yeniden
+doğrulama yapıldı" bilgisi çağıranın beyanı (`ReAuthenticationPerformed = authContext is not null`); Auth'ta işlem anında parola doğrulayan
+bir uç yok; onay motorunda imza kavramı yok (onay = izin + aday). Kodun kendi notu: nitelikli e-imza değildir, 21 CFR Part 11 / Annex 11
+uyum iddiası yoktur. Kararlar: hangi onaylar imza ister (öneri: Global Ürün kimlik onayı için onay + denetim kaydı yeter; bileşim, ürün
+tanımı, ruhsat verisi, kalite kayıtları imza ister) · imza anında parola + anlam + kayıtta ad / tarih / anlam · tek ortak servis · sistem
+doğrulaması (validasyon) ayrı iş. Dilimler: tasarım → Auth imza kanıtı → ortak imza servisi → motor adım kuralı → ekran (7 dil) → ilk
+kullanan modül → doğrulama kanıt paketi; tahmin ≈ 12 prompt, 5–7 iş günü. Karşılaştırma: Veeva ve MasterControl'de onay anında kullanıcı
+adı + parola yeniden girilir ve imzanın anlamı kayıtta görünür. Gelecek regresyon riski: 🟡 (onay kapısına yeni şart).
+
+---
+
+### BL-520
+
+**Üst çubuktaki arama kutusu her dilde İngilizce yazıyor: "Search [CTRL + K]"**
+
+DURUM: AÇIK · SAHİP: CT (kabuk) · BULAN: CT canlı sayfa kontrolü (Kullanıcılar kabulü, 2026-10-03) · KAYIT: 2026-10-03
+
+Etiket `wwwroot/assets/js/main.js:213`'te sabit (`placeholder: 'Search [CTRL + K]'`); Türkçe arayüzde de İngilizce görünüyor. Aramanın kendisi
+yerelleştirilmiş çalışıyor (sonuçlar "YÖNETİM → Kullanıcılar, Kullanıcı Rolleri"). Düzeltme: etiket kabuğun dil sözlüğünden okunur (kiracı kabuğu
+7 dil, platform kabuğu en + tr); kısayol tuşu adı da dile göre (macOS'ta ⌘K). Ortak tarayıcı dosyası olduğu için canlı sayfa bakışı. Küçük; "?"
+sayfa yardımı (BL-495) ile aynı pakette yapılabilir. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-521
+
+**İş ortağı yöneticisi (partner_admin) bütün kiracıları görüp değiştirebiliyor: "izin verilen kiracılar" hiçbir yerde okunmuyor**
+
+DURUM: KAPANDI — hatta `404685da0` (iş `87f82f164`, 8 düzeltme turu; artıkları BL-550) · SAHİP: CT (Platform yetki) · BULAN: WP-PLATFORM-TENANT-MODULES-01 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+`PlatformActor` politikası platform_admin ile partner_admin'i aynı sayıyor (`Infrastructure/DependencyInjection.cs:99-101`); `[HasPermission]`
+her platform aktörünü her anahtarda geçiriyor (`API/Security/HasPermissionAttribute.cs:36-38`); kiracı çözümleme ara katmanı yönetim yolunda
+yalnız aktör tipine bakıyor (`TenantResolutionMiddleware`: Common 347-351, gateway 426-430). `PlatformAdministrator.PartnerId` ve
+`AllowedTenantIds` yalnız yönetici kaydında yazılıyor; JWT'de yok (`TokenService.cs:107-113`), sorgu filtresinde ve denetleyicilerde
+okunmuyor; `EntitlementDenyReason.PartnerScopeViolation` tanımlı ama kullanılmıyor; `Tenant` varlığında iş ortağı alanı yok. Sonuç: bir
+iş ortağı yöneticisi kiracı listesini, ayrıntısını, düzenleme / askıya alma / silme uçlarını, abonelik ve modül uçlarını BÜTÜN kiracılar
+için kullanabiliyor. Bir test (`HasPermissionAttributeDualReadTests:86`) sınırsız geçişi sabitliyor. Kapalı olan iki yer: denetim uçları
+(`PlatformAdminOnly`) ve kiracı tarafı yetki işleyicileri. Düzeltme dört aile birlikte: izin verilen kiracılar ya belirtece girer ya
+sunucuda okunur; liste süzülür, kimlikle erişimde kapsam dışı = bulunamadı; denetim kaydı. Karşılaştırma: SAP'de iş ortağı erişimi
+organizasyon birimi / şirket koduyla, Oracle'da veri erişim kümeleriyle sınırlanır. Önce sahibe: canlıda partner_admin hesabı var mı?
+Gelecek regresyon riski: 🟡 (yetki katmanına dokunur).
+
+**Ölçüm (2026-10-03, tam liste — WP-PLATFORM-TENANT-MODULES-01 FIX1 raporu):** kapılar `Infrastructure/DependencyInjection.cs:91-103`
+(PlatformActor), `API/Security/HasPermissionAttribute.cs:37-38` + `~:75`, `API/Security/ClaimsActorPermissionContext.cs:38-45,57`,
+`Platform.Common/Tenancy/TenantResolutionMiddleware.cs:113-130,347-351`, gateway `Middleware/TenantResolutionMiddleware.cs:151-165,426-430`,
+`WorkItemsController.cs:302-306`, `PlatformActorDashboardAuthorization.cs:25` (Hangfire panosu partner'a açık),
+`SelfAccessExplainService.cs:23,182-184`. Veri: `PlatformAdministrator.cs:14-15` (`PartnerId`, `AllowedTenantIds`) yalnız yönetici
+CRUD'unda yazılıyor; `PartnerId` süzgeci yalnız YÖNETİCİ listesinde (`GetPlatformAdministratorsHandler.cs:24-36`); belirteçte kapsam yok
+(`Auth TokenService.cs:107-113`, `RefreshTokenCommandHandler.cs:136-141,192-195`); `EntitlementDenyReason.PartnerScopeViolation` kullanılmıyor.
+Aileler: kiracı listesi / istatistik (`Admin/TenantsController.cs:14-56`, `TenantRegistryRepository.cs:92-123`), kiracı `{id}` yolları
+(`:65-212`: düzenle, marka, askıya al, sil, toplu sil, modüller, kullanıcılar, ayarlar), abonelik (`TenantCommercialSubscriptionsController.cs`),
+modüller (`TenantModuleEntitlementsController.cs`). Testler: `HasPermissionAttributeDualReadTests.cs:86-88` sınırsız geçişi SABİTLİYOR (bu iş onu
+değiştirir); kapalılığı doğrulayanlar `TenantModuleAuthorizationHandlerTests.cs:189`, `TenantFeatureAuthorizationHandlerTests.cs:189`.
+**Şart:** bir iş ortağına Platform yönetici hesabı açılmadan önce bitmeli (sahip 2026-10-03: canlıyı yalnız kendi ekibi kullanıyor).
+
+**İlerleme 2026-10-04 (dal `fix/platform/partner-admin-scope`, henüz hatta değil):** d12add3d5 (kapsam, varsayılan kapalı) → c857e0b12 FIX1
+(iş ortaklığı kayıttan; yenileme türü kayıttan; anahtarsız eylem kapalı; tür / askıdan çıkarma / ticari / kota yazmaları yalnız platform
+yöneticisi; sistem kiracısı kapsama girmez) → FIX2 yazılıyor: giriş ve zorunlu parola değişimi türü hâlâ Auth'un kopyasından basıyor ve
+`NormalizeActorType` `partner_admin`'ı `platform_admin` yapıyor (iş ortağı kendine platform_admin belirteci bastırabilir; Platform kayda
+baktığı için güvende, MDM ve Hangfire panosu değil), tel sözleşmesi testsiz, geçici hata oturumları iptal ediyor, son platform yöneticisi
+korumasız. CT sabotajı d12add3d5'te P1–P3 yeşil kalmıştı (FIX1 testleri kapattı). Dağıtım sırası: Platform Auth'tan önce.
+**Sahip kararı bekleyen (iş ortağı hesabı açılmadan önce):** (1) iş ortağı kendi kiracılarında ticari işlem yapsın mı (plan ata, modül aç,
+iptal; varsayılan HAYIR yazıldı) · (2) var olan kullanıcının e-postasıyla yönetici daveti o kullanıcının parolasını sıfırlayıp Admin veriyor:
+iş ortağına açık kalsın mı · (3) iş ortağının yazdığı alan adı platformun davet e-postası bağlantısına giriyor (oltalama yolu) · (4) giriş
+ayarlarıyla MFA kapatma / IP kilidi / denetim saklama süresini kısaltma iş ortağına açık mı · (5) askıya alma açık, askıdan çıkarma kapalı:
+böyle kalsın mı · (6) admin@diten.com tohum hesabı her açılışta PlatformAdmin + etkin yapılıyor (kalıcı düşürülemez); canlıda da → BL-534 ·
+(7) Platform'da onaylı HER platform yöneticisi her izin anahtarını geçiyor (`HasPermissionAttribute.cs:93`, a2445b8f2'den beri): ReadOnly / SupportAdmin
+rolleri Platform içinde fiilen SuperAdmin; roller yalnız belirteçle diğer servislere gidince anlam kazanıyor. Platform yöneticileri yalnız rollerinin izinlerini
+alsın mı? (Canlıdaki platform yöneticilerinin davranışını değiştirir; önce rol / izin eşlemesinin tam olduğu ölçülmeli.) FIX3 kendi rolünü değiştirmeyi kapatıyor.
+
+**Ek 2026-10-04 — kiracı giriş kapısı platform kiracısına açık (FIX5 ölçümü, CT kodda doğruladı; main ve origin/main'de de aynı).** `POST
+api/tenant-auth/login` + `X-Tenant-Id` = platform sistem kiracısı + bir platform yöneticisinin parolası → 200, `actor_type=tenant_user`, 274 izin
+talebi (175'i `platform.*`, ayrıca `auth.users.read` / `update`). Bu belirteçle başka bir platform yöneticisinin Auth hesabına `disable`, `enable`,
+`reset-password`, rol atama açılıyor; `LoginCommandHandler` platform kiracısını ayırmıyor, `PermissionAuthorizationHandler` yalnız `permission` talebine
+bakıyor, Platform yönetici kaydına (askı, iş ortağı, silinme) hiç sorulmuyor. Platform tarafı `actor_type` ilkeleriyle kapalı. CT kararı A + D (FIX5):
+kiracı kapısı platform kiracısına belirteç basmaz (genel 401) + Auth platform kiracısının `tenant_user` belirtecini platform dışı yollarda 403 ile keser.
+Verilmiş belirteçler `SessionTimeoutMinutes` (vars. 60) dolana kadar geçerli. Canlıda da açık olabilir (canlı ölçülmedi; giriş ayarları platform kiracısı
+için döner — kod okuması). Gelecek regresyon riski: 🟢 (kapı kapatma; platform kapısı değişmez).
+
+**Ek 2026-10-05 — CT KABULÜ (kod): dal `fix/platform/partner-admin-scope` `6dea5a0c4` (FIX6 kararı A' + D' platform HESABINA daraltılmış, FIX7 işaret onarımı +
+Mongo süzgeci + rol düzeyi, FIX8 fail-closed işaret yazımı + tersine görünürlük + boşluk farkında tek süzgeç).** FIX8 bağımsız gözden geçirmesi: engelleyici
+ve zorunlu yok; CT sabotajı 4/4 KIRMIZI (FIX6'da NOT RED olan P1 FIX7'de, FIX7'de NOT RED olan Q2 FIX8'de kızardı). **Şeride birleştirme BEKLİYOR:** dev'deki tek
+platform hesabı (`a***@diten.com`) kiracı tarafında 74 oturum açmış — birleşince bu hesapla kiracı girişi kapanır; sahip için sıradan bir kiracı yöneticisi
+hesabı gerekir (canlı ekip için de aynı soru açık). Birleştirmede uzlaştırılacaklar: e-posta dalının `PlatformAdministratorProvisioningService.cs:90` satırı,
+admin-reset dalının PlatformAuthController / LoginCommandHandler / RefreshTokenCommandHandler değişiklikleri. Kabulde kalan küçükler (BL-550'ye eklendi):
+platform zorunlu değişiminde rol yakınsaması işaret yazımından önce (`PlatformAuthController.cs:307-314`; giriş ve yenilemede tersi) · süzgeç yorumunda
+var olmayan test adı (`PlatformAccountFilterParityTests`) · parite testi `char.IsWhiteSpace`'in ~25 karakterinin yalnız birkaçını deniyor · bir test kâhini
+emekli kuralı (`!= null`) kullanıyor.
+
+---
+
+### BL-522
+
+**Ana dalda CRM'in derleme çıktıları izleniyor: 324 dosya, 301 MB**
+
+DURUM: AÇIK · SAHİP: CT (depo düzeni) · BULAN: kalem kaydı (P1) tasarım ölçümü, CT doğruladı (2026-10-03) · KAYIT: 2026-10-03
+
+`origin/main`'de `services/Diten.CrmService/src/Diten.CrmService.Api/.tmp-*/Debug/…` altında 324 dosya (toplam 301,0 MB) izleniyor;
+2026-08-28 tarihli bir ara kayıt commit'iyle (`0f71a237c`) girmiş, o günden beri her dalda ve her klonda var. `.gitignore` yalnız `tmp/` ve
+`.tmp/` içeriyor, `.tmp-*` kalıbını yakalamıyor. Düzeltme: dosyalar ayrı bir dalda `git rm -r --cached` ile izlemeden çıkarılır, `.gitignore`'a
+`.tmp-*/` eklenir, PR ile main'e. Geçmişteki 301 MB yerinde kalır (geçmişi yeniden yazmak bütün dalları kırar; yapılmaz). CRM'in dosyası
+değil derleme artığı olduğu için CRM ekibine yalnız bilgi verilir. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-523
+
+**Global Ürün onayı: iptal kanıtı servis kimliğiyle okunamıyor; inmiş ama talep edeni dönmeyen geri çekme süresiz bekliyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 iş akışı motoru + MOD-0290 Global Ürün) · BULAN: WP-GP-1B-A-RESILIENCE-01 FIX3 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+Geri çekmede Platform'a giden iptal inmiş olabilir ama cevabı kaybolmuşsa, MDM ürünü Taslak'a çevirmek için iptal kanıtı (günlük kimliği,
+sıra, sürümler) ister. Bu kanıtı bugün yalnız iptal ucu veriyor ve o da kullanıcı belirteci istiyor; servis kimliğiyle okunabilen
+`terminal-decision-evidence` iptal edilmiş örnekte 409 INCONSISTENT dönüyor (`GetTrustedWorkflowTerminalDecisionEvidenceHandler.cs:66-77,
+213-219`), `start-result` yalnız "Cancelled" diyor (`GetTrustedWorkflowStartResultHandler.cs:97`). Sonuç: talep eden aynı kimlikle hiç dönmezse
+kayıt süresiz `WithdrawalOutcomeUnknown`'da kalır. İş: (1) Platform'da servis kimliğiyle, idempotency anahtarına göre iptal kanıtı dönen uç;
+(2) MDM'de unutulan geri çekmenin izi + karar yoklaması 409 aldığında `start-result` "Cancelled" ise karantina yerine "motor iptal etti,
+talep edeni bekliyor" durumu (kanıt gelince Taslak); (3) GP canlıya çıkmadan önce keşif dizini: eski park edilmiş `AwaitingMakerReplay`
+satırları bir kez taşınır ya da yeni adla kısmi dizin kurulur (aynı adla anahtar değişirse depo kurucusu `IndexKeySpecsConflict` ile MDM'yi
+açtırmaz; dev'de bu koleksiyonda 0 belge, 2026-10-03 salt okunur sayım); (4) yükseltilmiş (Escalated / TimedOut) onay: GP şablonuna SLA
+kuralı kurulursa ön kontrol 404 → geri çekme "kapandı", karar yoklaması 409 → karantina (BL-502 ile birlikte). Gelecek regresyon riski: 🟡.
+
+**Ek (2026-10-03, FIX3 gözden geçirmesi — GP'nin sonraki turu):** (5) "kapandı" reddi kapanma nedeni okunmadan saklanıyor
+(`GlobalProductIdentityWorkflowProcessor.cs:325-328, 467-472`): yükseltilmiş onayda ön kontrol NotFound der ama onay hâlâ karar verilebilir; ya da
+Platform iptali commit edip 409 `WORKFLOW_TRUSTED_CANCEL_INCOHERENT` dönebilir → kayıt kalıcı "kapandı", karar yoklaması karantina. Düzeltme:
+reddi saklamadan önce terminal kanıtı oku (`ResolveAbandonedWithdrawalAsync` gibi); kararsız kapanma WithdrawalOutcomeUnknown kalır. (6) Aynı komutla
+iki eşzamanlı istekte tekrar "ilk deneme" görünebiliyor (bellekteki bayrak + kontrol noktası; kira kuşağı karşılaştırılmalı). (7) Ekranda
+Platform'un açık uçlu ham kodları yerine tek sabit MDM kodu (Platform kodu yalnız günlükte) — 7 dile çevrilebilir küme. (8) `Completed` +
+`WithdrawalCommandId` belirsiz: onay kazandığında `…WITHDRAWAL_REPLAY_DRIFT` yanıltıcı. (9) Testsiz kurallar: proc:665 kontrol noktası şartı,
+:753 / :624 dizi alanları, :328 eski satır cevabı, :1821 sınır (129) ve kontrol karakteri, policy:88 `ApprovalChanging`, :749-751 alarm cümleleri.
+Sahiplenmenin sınırsız beklemesi (A3) ve park edilen geri çekmenin alarmı (A1) GSKU FIX1'de ortak desen olarak düzeltiliyor.
+
+---
+
+### BL-525
+
+**Görevlerin yazma uçları görevin okunabilirliğini sormuyor: yorum, düzenleme, kontrol listesi, bağımlılık, alt görev, zaman girişi**
+
+DURUM: AÇIK — düzeltme WP-WCN-TASK-REQUEST-01 D1 FIX2'de (`scratchpad/treq-fix2-prompt.md`) · SAHİP: CT (Görev Merkezi / görevler) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 ölçümü + bağımsız gözden geçirme (2026-10-03) · KAYIT: 2026-10-03
+
+**Genişletme (gözden geçirme, CT doğruladı):** açık yalnız yorumda değil. `UpdateTaskItemHandler` görevi yalnız kimlikle buluyor
+(`TaskItemWriteHandlers.cs:54-102`, okuma kontrolü yok); kontrol listesi (`ChecklistHandlers.cs:40-52, 136-155`), bağımlılık
+(`TaskDependencyHandlers.cs:40-59`), alt görevde üst görev (`CreateTaskItemHandler.cs:334-360`) ve zaman girişi (`SaveTimeEntriesHandler.cs:144`)
+aynı. `tasks.update` taşıyan herhangi bir kiracı kullanıcısı, kimliğini bildiği HER görevi değiştirebiliyor; kimlikler `lookups/link-candidates`
+ile listelenebiliyor. Bu açık talep paketinden önce de vardı → canlıdaki Görev Merkezi'nde de olmalı. CT kararı: okuma kuralı her görev
+yazımının tabanı (okuyamayan 404), ilişki kuralları onun içinde daraltır.
+
+`AddTaskComment` işleyicisi yorumu yazmadan önce çağıranın o görevi okuyup okuyamadığını sormuyor; görev kimliğini bilen ya da tahmin eden,
+okuma anahtarı olan herhangi bir kiracı kullanıcısı başka birimin, başka şirketin görevine yorum yazabiliyor (yorum o görevin etkinlik akışına
+ve bildirimlerine girer). Düzeltme: yorum, okuma kuralıyla (`TaskReadAccessPolicy`) aynı kapıdan geçer; okuyamayan 404 (varlık sızdırılmaz);
+görev talebindeki "sorulan kişi yanıtlamadan yorum yazamaz" kuralı korunur. HTTP testi: başka birimin görevine yorum → 404, yorum yok.
+Karşılaştırma: SAP / Oracle'da not ve yorum, nesnenin okuma yetkisine bağlıdır. Görev talebi paketinin bir sonraki turunda. Gelecek regresyon
+riski: 🟢 (yalnız daraltır).
+
+---
+
+### BL-526
+
+**Organizasyon: koltuğa ikinci bir tarih yazımı Mongo'da "cannot index parallel arrays" ile reddediliyor (doğrulanmalı)**
+
+DURUM: KAPANDI — `a292033fb`, hat `2ca3d05ef` (2026-10-03; hata GERÇEKTİ: ekrandan koltuk bitirme ve iki tarihli koltuk oluşturma 500 veriyordu) · SAHİP: CT (MOD-0288 organizasyon) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 testi (2026-10-03) · KAYIT: 2026-10-03
+
+Görev talebi testinde koltuğu sona eren bir alıcı kurulmak istendi; koltuğu tarihle bitirmek için yapılan ikinci tarih yazımı Mongo'da
+"cannot index parallel arrays" hatası verdi (DateTimeOffset'in `[ticks, ofset]` dizisi olarak saklanması + aynı belgede dizinli ikinci dizi —
+BL-030 ailesi). Testte koltuk silinerek geçildi. Organizasyon deposunda gerçek bir hata olabilir: canlıda bir koltuğun bitiş tarihini yazmak
+düşüyor olabilir. İş: depoda ve şemadaki dizinlerde ölç; gerçekse koltuk bitişi için hangi alanın dizinli dizi oluşturduğunu bul, düzelt,
+gerçek Mongo testi. Gelecek regresyon riski: 🟡 (dizin değişikliği gerekebilir — yeni adla).
+
+**Kapanış (2026-10-03):** kök neden `position_assignments` üzerindeki iki bileşik dizin (`…_position_interval`, `…_user_interval`) aynı
+belgede iki dizi alanını (`EffectiveFrom`, `EffectiveTo`) birlikte içeriyordu. Yeni dizinler `EffectiveTo` olmadan, yeni adla (`…_position_from`,
+`…_user_from`); eski iki ad servis açılışında şema bildiriminden önce düşürülüyor (mevcut emekli dizin deseni) — canlıda elle iş gerekmez;
+doğrulama: `getIndexes`'te `*_interval` yok, `*_from` var, ekrandan bir koltuk bitirilir. Koruma testi: şema bildirimindeki hiçbir dizin dizi
+olarak saklanan iki alan taşıyamaz (bugün yalnız bu ikisini yakaladı). Açık kalan (BL-030 ailesi): `HasOverlapAsync` `Lt`/`Gt`'yi dizi olarak
+saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı ölçülmeli.
+
+---
+
+### BL-540
+
+**Yetim onay / inceleme / yukarı yön talebi örnekleri: düzeltmelerden önce oluşanlar hiç taranmıyor; yukarı yön talebi bağı hiçbir yolda geri çekilmiyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 · MOD-0024) · BULAN: WP-WF-ENGINE-CANDIDATES-01 D2-FIX3 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+D2-FIX2 / FIX3 / FIX4 (dal `feature/platform/wf-engine-candidates`) görevi kapatan / silen / devreden yolların bağlı onay ve incelemeyi önce geri çekmesini sağladı. İki açık kalıyor:
+(1) bu düzeltmelerden ÖNCE silinmiş görevlerin ve devirlerde üzerine yazılmış 1. tur incelemelerin örnekleri canlı ve karar verilebilir duruyor (yükseltiliyor, kimse okumuyor): bir kerelik
+salt okunur sayım + kontrollü süpürme (motorun kendi iptal komutuyla, kayıtlı); (2) yukarı yön talebinin bağı (`RequestWorkflowInstanceId`, BL-023, `CreateTaskItemHandler.cs:393-397`) için kapı ve geri
+çekme yok: görev iptal / silme / devirde yöneticinin "task-request" kararı açık kalıyor. BL-513 (yukarı yön talebinin görev talebi düzenine taşınması) ile birlikte çözülmesi doğal.
+Gelecek regresyon riski: 🟢 (süpürme kuru koşuyla).
+
+---
+
+### BL-539
+
+**Onay motoru tamamlanmamış güvenilir başlatmayı kendisi bitirmiyor ya da temizlemiyor: tüketici başlatmayı terk ederse motorda karar verilemeyen bir görev kalıyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX3 ölçümü (MDM sohbeti) · KAYIT: 2026-10-04
+
+MDM bir gönderimi motorun "tamamlanmamış başlatma" (WORKFLOW_START_NOT_COMPLETED) cevabında park edip taslak düzenlenince terk edebiliyor; motor tamamlanmamış başlatmayı
+kendiliğinden bitirmiyor, temizlemiyor da: Görev Merkezi'nde karar verilemeyen bir görev kalıyor. Düzeltme: motor tarafında süresi dolan tamamlanmamış başlatmaları kapatan
+(ya da tüketicinin iptal edebildiği) bir yol; tüketiciler terk etmeden önce iptal ister. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-538
+
+**Görev Merkezi'nden "aç" derin bağlantısı yalnız görevleri çözüyor: ABB (ve diğer sağlayıcıların) öğesi için `GET work-items/{id}` 404**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-MDM-ABB-ACCEPT-01 FIX2 DUR'u · KAYIT: 2026-10-04
+
+`WorkItemsController.GetById` → `GetTaskWorkItemByIdQuery`: yalnız Tasks sağlayıcısı. MDM'nin ABB onay öğesi (ve HttpWorkItemProvider üzerinden gelen diğer
+sağlayıcılar) için derin bağlantı 404; ABB ekranındaki düğme bugün kök sayfayı açıyor. Düzeltme: kimliğin önekinden sağlayıcıyı seçen tek çözümleyici
+(sağlayıcı sözleşmesine "tek öğe oku" eklenir). Aynı turda ABB emeklilik talebini geri çekme (yeni `ProductAuditOperation` + Platform
+`TrustedSourceAuditIntentOperationMap` satırı) ayrı iş olarak bekliyor. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-537
+
+**MDM, CRM, DevEnablement ve Procurement'ın iç anahtarlı / kimlik başlıklı istemcileri yönlendirme izliyor**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · BULAN: WP-EMAIL-SHELL-01 FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+Bağlayıcı kural: kimlik bilgisi başka hedefe / yönlendirme üzerinden taşınmaz. Auth'un 7 istemcisi (FIX1–FIX2) ve Platform / Web istemcileri (FIX3) kapatılıyor.
+Kalanlar: MDM `PlatformAuditForwarder.cs:92`, `ModuleRegistrationHostedService.cs:108-111` (kimlik sırrı başlığı); CRM `AuthUserDisplayNameClient`; DevEnablement ve
+Procurement modül kayıt servisleri. Düzeltme: her serviste tek yardımcı (`AllowAutoRedirect = false`) + üretim kaydından test. MDM, devralma dalı kabul edilince.
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-536
+
+**Üretim temel yapılandırmasında arka plan işleri tamamen kapalı ve olay taşıyıcı bellek içi: e-posta yeniden denemesi, yinelenen görevler, hatırlatmalar, yükseltme, toplantı serisi ve zaman çizelgesi işleri hiç koşmuyor**
+
+DURUM: AÇIK — SAHİP KONTROLÜ GEREKİYOR (canlı ortam değişkenleri) · SAHİP: CT (altyapı) · BULAN: WP-EMAIL-SHELL-01 FIX2 ölçümü + bağımsız gözden geçirme · KAYIT: 2026-10-04
+
+`Platform.API/appsettings.json:54` `BackgroundJobs.Enabled: false`, `:62` `EnabledJobs: {}`; `Infrastructure/DependencyInjection.cs:795-798` Hangfire'ı hiç kurmuyor;
+ayrıca her iş `EnabledJobs[id] == true` istiyor (yalnız `Enabled`'ı açmak yetmez). Depoda `appsettings.Production.json`, docker-compose, helm ya da `BackgroundJobs__`
+geçersiz kılması yok. Koşmayan işler: e-posta tarama (MOD-0027), iş akışı yükseltme (MOD-0023), görev yineleme ve yaklaşan bitiş (MOD-0024), toplantı serisi (MOD-0357),
+zaman çizelgesi karar taraması / gece yarısı kapatma / hatırlatma (MOD-0280), tatil çekme; yer tutucu abonelik / kota işleri. Hosted service'ler (denetim outbox işçisi,
+olay yayıncısı) koşuyor, ama temel yapılandırmada `Eventing` bölümü yok → taşıyıcı `InMemory`: olaylar servisler arasında geçmiyor (kiracı açılışının Auth'a gitmesi
+gibi). Canlı ortam değişkenleriyle açılmış olabilir: SAHİP canlıda `BackgroundJobs__Enabled`, `BackgroundJobs__EnabledJobs__*` ve `Eventing__Transport` değerlerini
+kontrol etmeli (1 Ekim'deki yinelenen kayıt görevinin "son üretim" sorusu buna bağlı). Düzeltme: canlı için açık bir `EnabledJobs` kümesi ve RabbitMQ yapılandırması
+(sahip kararı + dağıtım), açılış günlüğüne "kapalı işler" satırı. Gelecek regresyon riski: 🟡 (işleri açmak birikmiş işleri birden çalıştırır: önce kuru koşu).
+
+---
+
+### BL-535
+
+**Platform'un üretim başlangıcını (Program.cs ara katman sırası) koşturan bir test altyapısı yok: `WebApplicationFactory<Program>` bu projede çalışmıyor**
+
+DURUM: AÇIK · SAHİP: CT (test altyapısı) · BULAN: BL-512 FIX1 DUR'u · KAYIT: 2026-10-04
+
+`PlatformContainerValidationTests` özetinde ölçülmüş üç neden: minimal hosting'de fabrikanın yapılandırması `Build()` sırasında uygulanıyor ama
+`AddInfrastructure` yapılandırmayı daha önce okuyor; `AddInfrastructure` süreç geneli BSON serileştirici kaydı yapıyor (Application.Tests
+`[ModuleInitializer]`'da zaten yaptığı için ikinci kayıt atıyor); göçler ve tohumlar satır içi, `AllowStartupWithoutDatabase` dışında koşuyor.
+Sonuç: ara katman sırası (kimlik doğrulama → kiracı → yetki → hız sınırı) yalnız elle kurulan test hatlarıyla ölçülüyor; BL-512 FIX1 dörtlüyü tek
+uzantıya taşıdı (`UsePlatformAccessPipeline`), uzantı çağrısının Program.cs'ten silinmesi yine metin denetimiyle yakalanıyor. Düzeltme: başlangıcı
+yapılandırılabilir yapan (serileştirici kaydı idempotent, tohumlar bayrakla) ve WAF'ı çalıştıran tek bir test düzeneği. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-534
+
+**`admin@diten.com` tohumu her ortamda (canlı dahil) her açılışta çalışıyor: kaynak kodda sabit parola özeti, kalıcı düşürülemez, e-postası değişirse Platform açılmıyor**
+
+DURUM: AÇIK — SAHİP KARARI BEKLİYOR · SAHİP: CT (Auth / Platform) · BULAN: BL-521 FIX2 ölçümü (2026-10-04) · KAYIT: 2026-10-04
+
+Platform `PlatformAdministratorSeed` (`DependencyInjection.cs:549` ortam koşulsuz) her açılışta bu kaydı PlatformAdmin + Active + yalnız SuperAdmin +
+silinmemiş yapıyor: hesap kalıcı olarak düşürülemiyor / askıya alınamıyor. Auth `DataSeeder.SeedUsersAsync` her açılışta: kullanıcı yoksa ya da aynı
+e-postayla başka Id'li bir kullanıcı varsa onu ve rollerini fiziksel olarak SİLİP kaynak koddaki sabit bir parola özetiyle yeniden yaratıyor
+(`DataSeeder.cs:1055-1062`); Id'si sabit kullanıcı varsa parolasına dokunmuyor. Kayıt e-postası değiştirilirse sonraki açılışta aynı sabit Id ile ekleme
+DuplicateKey alıyor ve Platform açılmıyor (ölçüldü). Risk: canlıda bu hesap silinir / yeniden yaratılırsa kaynak koda erişen herkesin bildiği parolayla
+SuperAdmin doğar. Öneri: tohum yalnız Development'ta; canlı ilk kurulum tek seferlik bir komutla rastgele parola + zorunlu değişim; e-posta değişikliği
+bu kayıtta yasak; tohum açılışı asla çökertmez. Karşılaştırma: SAP ve Oracle'da ilk yönetici kurulum sırasında, rastgele / kurulumcunun verdiği parolayla
+bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: 🟡 (canlı ilk kurulum yolu).
+
+**2026-10-14 · CT güvenlik değerlendirmesi (salt okuma) + sahip kararı.** BL-556 bu maddeyle birlikte yürür; tek iş paketi
+`WP-AUTH-ADMIN-BOOTSTRAP-01`, kapanış PR'ından sonra. Yeni BL açılmadı.
+- Hatta yeniden doğrulandı: Auth tohumu ortam koşulsuz (`Persistence/DependencyInjection.cs` → `DataSeeder.SeedAsync`); aynı e-postada farklı
+  Id'li kaydı siliyor; Platform `PlatformAdministratorSeed` iki çağrı yerinde (`Infrastructure/DependencyInjection.cs:606, 820`) ortam koşulsuz ve
+  her açılışta Active + SuperAdmin + silinmemiş olarak zorla güncelliyor. Auth'un yeniden etkinleştirmesi hatta yumuşatıldı (BL-529 FIX8:
+  yönetici pasifleştirmesi korunur); main'de koşulsuz.
+- **Depo herkese açık** (GitHub API, anonim ölçüm 2026-10-14). Varsayılan parola iki belgede düz metin: `.antigravity/ARCHITECTURE.md`,
+  `.antigravity/rules/dev-runbook.md`. Git geçmişinde kalıcı; belgeden silmek tek başına yetmez. Depo görünürlüğü kararı depo sahibine iletildi.
+- **Canlı:** sahip 2026-10-14'te canlıda bilinen parolayla platform girişini denedi → reddedildi ("Invalid email or password"); canlı parola
+  daha önce değiştirilmiş (en olası açıklama; hata mesajı kasıtlı olarak genel). Acil durum yok.
+- **Kalan risk 🟡 (bu maddenin kapattığı):** canlıda bu hesap silinir ya da e-postası değiştirilirse sonraki açılışta Auth tohumu hesabı
+  **bilinen parolayla** yeniden yaratır. **Geçici kural (iş paketi gelene kadar): canlıda `admin@diten.com` silinmez, e-postası değiştirilmez.**
+- Çözüm (CT önerisi): hesap tohumu sistem tohumundan (izin / rol / şablon — her ortamda kalır) ayrılır; canlıda otomatik hesap yok, ilk platform
+  yöneticisi tek seferlik komutla ve mevcut **tek kullanımlık şifre belirleme bağlantısıyla** (kiracı yöneticisi davetindeki mekanizma) kurulur,
+  komut Auth + Platform kaydını aynı kimlikle yazar; hiçbir ortamda silme / yeniden yaratma / zorla etkinleştirme yok; dev hesapları (platform
+  yöneticisi, kiracı yöneticisi, sahte kullanıcılar) tek "yalnız dev" sınıfında; platform yöneticisine MFA (sahip kararı); belgelerden parola kalkar.
+- Zorunlu testler: Production boş veritabanı → yönetici yok, izin / rol var · Development → dev hesapları var · farklı Id'li kayıt silinmez ·
+  pasif / askıdaki yönetici açılıştan sonra pasif kalır (Auth + Platform) · ilk yönetici komutu çıktıda / günlükte parola yok, bağlantı tek kullanımlık ·
+  sabit bcrypt özeti yalnız dev sınıfında · belgelerde bilinen parola yok · sabotaj: ortam kapısı kaldırılınca ve silme dalı geri konunca KIRMIZI.
+
+---
+
+### BL-579
+
+**MDM'in kalıtsal iki etkileşimli referans istemcisi (doğrulanmış GSKU ve pazar çözümleyicileri) yönlendirme izliyor ve kimlik bilgisi başlıklarını günlükte maskelemiyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM / altyapı) · BULAN: WP-PLT-ITEM-LISTS-01 güvenlik incelemesi (R1, önceden var) · KAYIT: 2026-10-08
+
+Yer: MDM `Infrastructure/DependencyInjection.cs:37` ve `:48` — `AddHttpClient<…>()` işleyici ayarı olmadan. Aynı dosyadaki diğer kimlik bilgisi taşıyan istemciler `AllowAutoRedirect = false` + `RedactLoggedHeaders([...])` kullanıyor (`TrustedLegalEntityScopeProviderDependencyInjectionTests.cs:49-62` sabitliyor). Kalem listeleri istemcisi FIX1'de düzeltiliyor; bu ikisi kalıyor.
+
+Risk: Platform tabanı ya da önündeki giriş 307 / 308 dönerse özel `X-Verified-Gsku-Credential` sır başlığı ve gövde hedef sunucuya yeniden gönderilir; gelen cevap Platform'unmuş gibi işlenir. Trace günlüğünde başlık değerleri (JWT dahil) yazılır.
+
+Yapılacak: iki istemciye aynı işleyici ayarı + maskeleme; kaynak-grep kural testi bütün `AddHttpClient` kayıtlarını kapsar; 307 davranış testi.
+
+Karşılaştırma: SAP RFC / HTTP hedeflerinde yönlendirme izleme hedef bazında açıkça yapılandırılır, varsayılan kapalıdır; Oracle Integration bağlantıları da kimlik bilgisini yalnız tanımlı uç noktaya gönderir.
+
+Gelecek regresyon riski: 🟡 (ağ yapılandırması hatasında servis sırrı başka sunucuya gidebilir).
+
+---
+
+### BL-580
+
+**Canlı kullanıcılar ekranları kullanmayı bilmiyor: üç iş koluna göre canlı rol önerisi + gerçekçi örnek veri seti (eğitim / tanıtım)**
+
+DURUM: AÇIK · SAHİP: CT (ürün) · BULAN: sahip (canlıdan talep, 2026-10-09) · KAYIT: 2026-10-09
+
+Sahibin iki fikri var (2026-10-09). Şirket üç iş kolunu birlikte yürütüyor: kendi üretimi, başkası için fason üretim, satış / dağıtım.
+
+1. **Canlı rol önerisi.** Modüller koddan taranır: hangi rol gerekir, hangi izni alır, kim hangi iki izni birlikte tutamaz (GxP görev ayrımı, hazırlayan ≠ onaylayan).
+   - CT analizi başlattı (2026-10-09, alt ajan); çıktı sahibe tablo olarak gider.
+   - Canlıya rol girişi sahibin kayıt başına "evet"iyle olur (canlı yazma kuralı).
+   - Eksik izin anahtarı ya da adı olmayan izin bulunursa ayrı BL.
+2. **Örnek veri seti.** Diten Pharma senaryosu (`docs/records/tests/diten-pharma-scenario.md`) gerçekçi veriyle her modüle girilir: kişiler, pozisyonlar, roller, görevler, haftalar, ürünler; her rol için bir örnek kişi ve yaptığı iş.
+   - Yeri: ayrı bir tanıtım / eğitim kiracısı. Canlı kiracının gerçek verisine ve DefaultTenant'a yazılmaz.
+   - Tohumlayıcı tanıtım kiracısı dışında çalışmayı REDDEDER (test edilir).
+   - Kullanım: yeni kullanıcı eğitimi, ekran tanıtımı, BL-495 yardım panelindeki örnekler.
+
+Karşılaştırma:
+- SAP: Best Practices paketleri hazır örnek veri ve iş rolü şablonlarıyla (SAP_BR_*) gelir.
+- Oracle: Fusion hazır iş / görev rolleri ve tanıtım ortamı sunar.
+- (Şablon adları hafızadan, doğrulanmadı.)
+
+Gelecek regresyon riski: 🟢 ayrı kiracıda. 🔴 tohumlayıcı yanlış kiracıya yazarsa; koruması bu işin kabul ölçütüdür.
+
+---
+
+### BL-581
+
+**Varsayılan Viewer rolü, açılan modülün bütün "read" izinlerini alıyor: İK'nın ücret / yan hak ve hassas erişim ekranları da dahil**
+
+DURUM: AÇIK · SAHİP: CT (Auth yetki) · BULAN: canlı rol analizi (2026-10-09, alt ajan; CT kodu okuyarak doğruladı) · KAYIT: 2026-10-09
+
+Kural (`origin/main`):
+- `EntitlementPermissionSyncService.SelectForRole`, Viewer'a modülün eylemi tam `read` olan her iznini veriyor (`:367-375`).
+- `DefaultRolePermissionTemplate` Viewer süzgeci yalnız kiracı ayarları ve ürün okumalarını dışarıda bırakıyor (`:73-92, 127-132`).
+
+Sonuç:
+- İnsan Sermayesi modülü açık bir kiracıda Viewer rolündeki herkes `hcm.compensation-benefits.read` (ücret / yan hak) ve `hcm.sensitive-access.read` ekranlarını açabilir.
+- Yetenek Ekosistemi açıksa `tep.salary-benchmarking.read` için de aynısı geçerli.
+- `platform.meetings.read-all` "yalnız elle" listesinde değil, `platform.tasks.read-all` ise listede. Admin, toplantıların hepsini modül açılınca otomatik alıyor.
+
+Düzeltme:
+- Hassas okuma anahtarları `ExplicitGrantOnlyPermissions`'a girer ya da Viewer süzgecinde açıkça dışlanır.
+- Var olan Viewer atamalarının geri alınması ayrı karar: geri alma denetim satırıyla yapılır.
+
+Sahibe soru: canlıda İnsan Sermayesi modülü açık mı, Viewer rolü kimlerde?
+
+Karşılaştırma:
+- SAP: HR bilgi tipleri ayrı yetki nesnesiyle korunur (P_ORGIN); genel görüntüleme rolüne girmez.
+- Oracle: hassas kişi verisi ayrı veri güvenlik politikasıyla korunur.
+
+Gelecek regresyon riski: 🔴 (kişisel ve ücret verisi geniş bir role açık).
+
+---
+
+### BL-582
+
+**Canlı rol analizinin bulduğu rol kurma boşlukları: QA / onaycı rolü kiracı ekranından kurulamıyor, bazı izinler katalogda yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth yetki + ilgili modül sahipleri, XMC) · BULAN: canlı rol analizi (2026-10-09) · KAYIT: 2026-10-09
+
+Kayıt: `docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md` §8 (her biri dosya:satır kanıtlı). Özet:
+
+- **G1:** Doküman Yönetimi'nin 124 izninden 123'ü platform kapsamlı; kiracı yöneticisi SOP okumayı bile bir role veremez. QA rolü kurulamaz.
+- **G2:** İş akışı başlat / onayla / reddet platform kapsamlı. Takeover dalı düzeltiyor (`SeedOwnedTenantScopeKeys.cs:58-65`); tek PR'la gelir.
+- **G3:** Viewer yalnız eylemi `read` olanı alıyor; `view` / `search` kullanan modüller okuyucuya hiçbir şey vermiyor.
+- **G5:** Modülle Admin'e gelen izin kaldırılamıyor. Admin'i 1–2 BT kişisiyle sınırlama önerisi.
+- **G8 / G9:** Satın alma ve denetim okuma izinleri kodda zorunlu ama katalogda yok; kimseye verilemez.
+- **G10:** Kiracının denetim izi ekranı yok.
+- **G13:** `platform.workflow.instances.*` ekranda "Doküman Örnekleri" diye görünüyor.
+- **G16:** CAPA kapatma onayı için ayrı izin yok.
+- **G18:** GQD / QADocumentation rolleri yalnız test kiracısında ve izinsiz.
+
+Her madde ayrı WP olarak sınıflanır; başka modülün dosyası gerekiyorsa XMC-001 ile sahibe sorulur.
+
+Gelecek regresyon riski: 🟡 (GxP görev ayrımı canlıda rol ile kurulamıyor).
+
+---
+
+### BL-583
+
+**Ürün ana verisi okuma sözleşmesi servis kimliğiyle okunamıyor: Auth yalnız MDM'ye ve yalnız Platform hedef kitlelerine servis belirteci veriyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth + MDM) · BULAN: FU04 S4 ölçümü (2026-10-09) · KAYIT: 2026-10-09
+
+`/api/product-master` (S4) bugün yalnız kullanıcı belirteciyle (`mdm.product-master.read`) okunuyor. Stok servisi çağıranın belirtecini iletiyor (istek belgesi R-01), bu yüzden MVP-1 için yeterli. Ancak:
+- arka plan işleri (gece uzlaştırması, Satın Alma'nın otomatik GRN denetimi, BOM doğrulaması) kullanıcısız okur;
+- Auth'un servis belirteci yolu yalnız `Diten.MDM` istemcisine ve yalnız Platform hedef kitlelerine açık.
+
+Yapılacak:
+- tüketici servis istemcisi kaydı;
+- `mdm` hedef kitlesi;
+- salt okuma kapsamı;
+- kiracı izni (servis istemcisi kayıt deseni).
+Yeni güven yolu olduğu için güvenlik incelemesiyle.
+
+Karşılaştırma:
+- SAP: sistemler arası okuma teknik kullanıcı + yetki rolüyle yapılır.
+- Oracle: entegrasyon kullanıcısı + veri erişim kümesiyle yapılır.
+
+Gelecek regresyon riski: 🟡 (ilk kullanıcısız tüketici geldiğinde gerekecek).
+
+---
+
+### BL-584
+
+**Ürün ana verisi okuma sözleşmesi v1.2: MVP-2 … MVP-5'in ek okuma istekleri (bütün MVP'ler belgesi, 2026-10-09)**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: MVP-1 kontrol kulesinin "bütün MVP'ler" istek belgesi (sahip iletti) · KAYIT: 2026-10-09
+
+Kaynak: `mod-0290-product-master-requirements-all-mvps-2026-10-09.md`.
+
+P0 maddeleri v1.1'e girdi:
+- X-01 durum satır başına;
+- X-02 boş olabilir bayraklar;
+- X-08 seviye kuralı (draft.6).
+
+v1.2'ye (yalnız ekleme) kalanlar ve CT önerisi:
+
+| # | İstek | Öncelik | CT önerisi |
+|---|---|---|---|
+| X-03 | Global Ürün / SKU araması (seçiciler) | P1 (MVP-2 / 3) | `/stockable-items` SKU ve kalemi zaten arar; Global Ürün (BOM üst ürünü) için `GET /products?q=` |
+| X-04 | Kalemsiz birim denetimi | P1 | Kalem için `getSkuUom(itemId)` yeterli (draft.6 notu); `validateRefs` satırına isteğe bağlı `uomId` |
+| X-05 | Kalemin SKU'ları (`GET /products/{itemId}/skus`) | P2 (MRP, geri çağırma) | Ekle |
+| X-07 | Olaylar `ProductLifecycleChanged`, `SkuPublished` | P2 | MDM'nin olay yayını yok; denetim çıkışı (outbox) deseniyle ayrı paket |
+| L-03 | Tarihli çevrim: `conversionId`, `asOf` | P2 (MVP-4) | Çevrimler etkin kayıtta yalnız eklenir, değişmez. Sürüm gerekmez; kararlı `conversionId` + `asOf` parametresi yeter (D-C) |
+| W-04 | GTIN ile SKU arama | P2 (MVP-5) | Ürün planı P6 (barkod) ile |
+| W-05 | Ambalaj hiyerarşisi ve düzey başına GTIN | P2 | Ürün planı P9; MVP-5 başlamadan önce (D-A) |
+| L-06 | ABC sınıfı | P2 | MDM'de DEĞİL: tüketimden hesaplanır, planlama / stok sahibi (SAP'de MRP görünümünde ama hesapla dolar) |
+| D-D | SKU × depo uygunluğu | — | MDM'de değil (konum / planlama sahibi) |
+
+D-B (saklama koşulu kod listesi) v1.1'de var (`StorageConditionCode`, `storageConditions`).
+
+Gelecek regresyon riski: 🟢 (ekleme; MVP-2 … MVP-5 canlıya çıkmadan önce).
+
+---
+
+### BL-585
+
+**MDM'in stok varlığı istemcisi gerçek uca bağlı değil: kalem emekliye ayırma her zaman "stok servisi yok" ile reddediliyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: FU04 S1 (bilinçli: `UnavailableInventoryStockAvailabilityClient`) + stok ekibinin INVENTORY-BUNDLE 1.1.0 önerisi (2026-10-09) · KAYIT: 2026-10-09
+
+Bugünkü durum:
+- `IInventoryStockAvailabilityClient` var; üretimde kayıtlı uygulama "Unavailable" döner. Bu yüzden emekliye ayırma 503 ile reddedilir (kapalı başarısız, doğru).
+- Stok ekibi `GET /api/internal/inventory/stock-presence` önerisini yazdı. CT iki güvenlik şartıyla kabul etti (FU04 §25.1 R-12 satırı).
+
+Yapılacak (stok sözleşmesi dondurulunca):
+- HTTP istemcisi: doğrudan InventoryService; yönlendirme kapalı; gizli başlıklar maskeli; 2 sn; `coverage: PARTIAL` / 5xx / zaman aşımı / okunamayan cevap → Unavailable.
+- Ayrı anahtar çifti (`ditenmdmservice`) ayarı; canlıda https dışı taban reddedilir.
+- Dev'de anahtar üretim betiği (sır yazdırmadan).
+- Açılış uyarısı.
+- Testler: sözleşme fikstürüyle istek / cevap bağlama; sabotaj.
+
+**2026-10-09 stok ekibinin cevabı:** iki güvenlik şartı bağlayıcı olarak kabul edildi.
+- Yalnız bu uca açık ayrı anahtar (`ditenmdmservice`).
+- Sabit süreli karşılaştırma, sır günlüğe yazılmaz, canlıda https, tek tip 401, geçersiz `X-Tenant-Id` 400.
+- Döndürme için aynı kimliğe iki geçerli sır.
+- `skuLevel` zorunlu: Item / Gsku / Lsku / FinishedGood.
+- Dev anahtar betiği stok ekibinde; sır iki tarafa ekibin parola yöneticisiyle gider; canlı sırrı ortam yöneticisi girer.
+
+Zamanlama: uç, stok ekibinin karantina ekranları işi kabul edildikten sonra ilk iş. Sonra INVENTORY-BUNDLE 1.1.0 dondurulur ve "hazır" bildirilir; bu iş o zaman başlar.
+
+Gelecek regresyon riski: 🟢 bugün kapalı başarısız. Bağlanmazsa canlıda hiçbir kalem emekliye ayrılamaz (işlevsel eksik).
+
+---
+
+### BL-586
+
+**Yan panel (offcanvas) formlarında Enter kaydetmiyor; kullanıcı Kaydet / Tamam düğmesine tıklamak zorunda**
+
+DURUM: AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: sahip (YH1, 2026-10-09, Kullanıcılar → Yeni) · KAYIT: 2026-10-09
+
+Ölçüm:
+- Kaydet düğmeleri formun gönder düğmesi değil, `type="button"`: ör. `Views/Governance/Users/_CreateEditOffcanvas.cshtml:109` `btnSaveUser`.
+- Bu yüzden tarayıcının Enter ile gönderme davranışı çalışmıyor.
+- Ortak bir yan panel davranışı yok; her sayfa kendi düğmesini bağlıyor.
+
+CT önerisi (ortak bileşende TEK yerde, bütün yan panel formları için):
+- Tek satırlık alanda Enter = birincil işlem (Kaydet / Tamam).
+- İstisnalar:
+  - çok satırlı alanda (textarea) Enter yeni satırdır; Ctrl / Cmd + Enter kaydeder;
+  - açık açılır liste / select2 / tarih seçicide Enter seçimi yapar;
+  - IME (Çince vb.) yazım sırasında Enter yok sayılır.
+- Kaydetme sürerken düğme pasif (çift gönderim yok).
+- Esc paneli kapatır, değişiklik varsa sorar (var olan davranış ölçülür).
+- Kısayol katmanına (`diten-shortcuts.js`, BL-495 yardım paneli) yazılır.
+- Kural dosyasına eklenir: yeni sayfa bu davranışı ortak bileşenden alır.
+
+Karşılaştırma:
+- HTML'in kendi kuralı: bir gönder düğmesi olan formda Enter formu gönderir. Kullanıcı bunu bekler.
+- SAP Fiori ve Oracle Redwood iletişim kutularında birincil işlem vurgulanır; Enter davranışı alan türüne göre değişir (doğrulanmadı).
+
+Gelecek regresyon riski: 🟡 (bütün formlara dokunur). Sayfa başına değil ortak bileşende yapılmalı; yanlışlıkla erken kaydetmeye karşı yukarıdaki istisnalar şart.
+
+---
+
+### BL-587
+
+**Pasife alınan ya da parolası sıfırlanan kullanıcının açık oturumu 2 saate kadar çalışmaya devam ediyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth + ağ geçidi + Web) · BULAN: sahip (KR2, 2026-10-09: Elif pasife alındı / parolası sıfırlandı, açık Görev Merkezi sayfası yenilemede hâlâ açılıyor) · KAYIT: 2026-10-09 · ÖNCELİK: 🔴
+
+Ölçüm (CT, hat `ce61c597c`):
+- Erişim belirtecinin ömrü 120 dakika (`Diten.AuthService.Api/appsettings.json:49` `AccessTokenExpirationMinutes`).
+- Auth, ağ geçidi ve Web'de kullanıcı başına oturum sürümü / güvenlik damgası denetimi YOK (arama: `SessionVersion`, `SecurityStamp`, `TokenVersion` — hiç).
+- BL-529 sıfırlamada yalnız yenileme belirteçlerini iptal ediyor. Elde kalan erişim belirteci süresi dolana kadar geçerli.
+- Pasife almada da aynı durum.
+
+Sonuç: işten çıkarılan ya da hesabı ele geçirildiği için kapatılan bir kullanıcı, açık oturumuyla 2 saate kadar bütün ekranları ve API'leri kullanabilir. Test listesindeki "sıfırlanan kişinin oturumu yenilemede düşer" beklentisi gerçekleşmiyor.
+
+Düzeltme önerisi (iki adım):
+1. **Hemen:** erişim belirteci ömrünü kısaltmak (ör. 15 dk; yenileme belirteci zaten iptal ediliyor), en kötü pencere 15 dk olur.
+   - Canlı ayar değişikliği sahibin "evet"iyle.
+   - Web'in sessiz yenileme akışı ölçülür (kullanıcı 15 dk'da bir atılmamalı).
+2. **Kalıcı:** kullanıcı başına oturum sürümü (`session_version` iddiası).
+   - Pasife alma, parola sıfırlama, parola değişimi ve (karar) rol değişiminde artar.
+   - Ağ geçidi her istekte kısa önbellekli (ör. 30 sn) karşılaştırma yapar; eşleşmezse 401.
+   - Web 401'de oturumu kapatır.
+   - BL-532 (yetki değişikliği yeniden girişte geçerli) ile birlikte ele alınabilir.
+
+Karşılaştırma: SAP'de kullanıcı kilitlemek yeni girişi engeller, açık oturum yönetici aracıyla sonlandırılır; Oracle'da kullanıcı devre dışı bırakılınca oturumlar geçersiz kılınır (ayrıntı doğrulanmadı).
+
+**SAHİP ONAYI 2026-10-09:** canlıda erişim belirteci ömrü 15 dakika ("ok 15 dk"). 1. adım Kullanıcılar + Roller düzeltme turunda; şart: Web'in sessiz yenilemesi ölçülür, kullanıcı çalışırken atılmaz.
+
+Gelecek regresyon riski: 🔴 (yetkisiz erişim penceresi canlıda var).
+
+---
+
+### BL-588
+
+**Canlı: Görev Merkezi'nde bitiş tarihi ilk seçimde alana gelmiyor; aynı tarih ikinci kez seçilince geliyor**
+
+DURUM: AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: canlı kullanıcılar (sahip iletti, 2026-10-09) · KAYIT: 2026-10-09
+
+Hangi ekran: **Görev Merkezi** (sahip teyit etti, 2026-10-09; muhtemelen "+ Yeni ▸ Görev" hızlı oluşturma paneli). Görev Merkezi düzeltme turunda BL-589 ile birlikte ele alınır (sahip: "oraya gelince başka buglar da var").
+
+**Sahibin kesin tarifi (2026-10-09):** Görev Merkezi'nde bitiş tarihi seçiliyor; ilk seçimde seçilen tarih alana GELMİYOR, seçici yeniden açılıp tarih ikinci kez seçilince geliyor. Kusur "açılmama" değil, ilk seçimin alana yazılmaması. **Görev Merkezi düzeltme turunda yapılacak** (sahip kararı).
+
+Ortak tarih alanı `assets/js/shared/diten-datefield.js` + flatpickr (`_LayoutTenantShell`). Olası sebep: seçicinin ilk tıklamada kurulup açılmaması (tembel bağlama) ya da yan panel / iletişim kutusu içinde ilk odakta konum hesaplaması. Ölç, canlı sürümüyle aynı dalda yeniden üret, düzelt. Bütün tarih alanlarına ortak bileşende tek düzeltme.
+
+Gelecek regresyon riski: 🟢 (kullanım kolaylığı; her tarih alanında aynı kusur olabilir).
+
+---
+
+### BL-589
+
+**Görev Merkezi "+ Yeni ▸ Kaynak modülde oluştur" her kullanıcıya görünüyor ama işlevsiz (taklit)**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: sahip (KR1, 2026-10-09, rolsüz Elif) · KAYIT: 2026-10-09
+
+Ölçüm:
+- `WorkCenterNext/app.js:1045` öğe izin bakılmadan çiziliyor ("Görev" öğesi `platform.tasks.create` ile doğru gizleniyor).
+- `openCreateInSource` (`:~11210`) modül listesini kullanıcının listedeki işlerinden türetiyor. İşi olmayan kullanıcıda liste boş, seçim yapılamıyor.
+- Seçilse bile yalnız "(mock)" bildirimi gösteriyor; kaynak modülün oluşturma adresi projeksiyonda yok.
+- Sonuç: rolsüz kullanıcı "+ Yeni" görüyor, tıklıyor, kullanamıyor (BL-208: açıklamasız ölü düğme).
+
+Düzeltme: sağlayıcı oluşturma adresi verene kadar "Kaynak modülde oluştur" öğesi gizlenir; menüde öğe kalmazsa "+ Yeni" düğmesi çizilmez (UAS-001 §6). Sağlayıcılar adres verince öğe yalnız kullanıcının oluşturma izni olan modülleri listeler.
+
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-590
+
+**CI servis testleri: Platform.Eventing test projesi işin dışında (RabbitMQ ister)**
+
+DURUM: AÇIK · SAHİP: CT (CI) · BULAN: BL-577 (2026-10-09) · KAYIT: 2026-10-09
+
+`service-tests.yml` bekçisi `Platform.Eventing` testlerini "işin dışında, gerekçesiyle" listesinde tutuyor; testler gerçek RabbitMQ bekliyor.
+
+Yapılacak:
+- GitHub Actions servis konteyneri (`rabbitmq:3`, sürüm sabit) ile ayrı matris satırı;
+- atlanan = 0;
+- bekçi listesinden çıkar.
+
+**Ek (CT kararı, BL-577 kabulü 2026-10-09):** `AccountKindAcceptanceHost.Tests` da bugün "işin dışında" listesinde. Yerelde 68 / 68 koşuyor ve `DITEN_ITEST_MONGOD_BIN_DIR` işte zaten var. Bu işte matris satırı olarak eklenir ve listeden çıkar.
+
+Gelecek regresyon riski: 🟡 (olay yayını / tüketicileri CI'da ölçülmüyor).
+
+---
+
+### BL-591
+
+**Zaman Çizelgesi: `TimerHttpMongoTests.Twenty_parallel_starts_leave_exactly_one_running_segment` kararsız**
+
+DURUM: AÇIK · SAHİP: CT (Zaman Çizelgesi, MOD-0280) · BULAN: BL-577 yerel ölçümü (2026-10-09) · KAYIT: 2026-10-09
+
+Ölçüm (CI bunu ilk günden kırmızı gösterecek):
+- tam Platform koşusunda 20 paralel başlatmanın 3'ü 400 aldı;
+- tek başına 3 / 3 yeşil.
+
+Olası sebepler: testin paylaşılan Mongo / zaman kaynağıyla yarışı ya da gerçek bir eşzamanlılık açığı (iki çalışan bölüm). Ölç: hangisi? Gerçek açıksa "tek çalışan bölüm" değişmezi depoda tekil dizinle korunmalı.
+
+Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
+
+---
+
+### BL-631
+
+**Kalemler sayfası: üç küçük S2 artığı (oturum cümlesi gölgede, motorun geri çekme reddi eşlenmemiş, liste ucunda geri çek testi yok)**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: S2 FIX1 bağımsız incelemesi (2026-10-13) · KAYIT: 2026-10-13 · 🟢
+
+Ölçüm (`5661cb5a3`, hatta `a126b132f`):
+1. `Items/index.js:85` 401'de gövdeyi okumadan genel "oturumunuz sona erdi" cümlesini veriyor; yeni `SESSION_EXPIRED` cümlesi ekrana hiç ulaşmıyor. Anlamı aynı, zararsız.
+2. Motor bir geri çekmeyi kendi koduyla reddederse (`ItemActivationWorkflowProcessor.cs:364`) kod eşlenmemiş. Okuyan genel çakışma cümlesini görür, günlükte "unmapped" uyarısı çıkar; ham kod ekrana gelmez.
+3. MDM'de `WITHDRAW_APPROVAL` eylemi yalnız ayrıntı ucunda testli, liste ucunda değil.
+
+Ayrıca geri çekmede 202 kabulü şu an ulaşılmaz (MDM geri çekmeyi yalnız tamamlanınca başarı sayıyor); zararsız.
+
+Yapılacak: 2 ve 3 için eşleme + test. 1 için gövdeyi okuyup kodlu cümleyi tercih etmek isteğe bağlı. Küçük.
+
+Gelecek regresyon riski: 🟢
+
+---
+
+### BL-630
+
+**Organizasyon birimi: idari (matris) üst birim aynı şirket grubundaki başka bir şirketten seçilebilsin**
+
+DURUM: AÇIK (CT önerisi; sahip kararı bekliyor) · SAHİP: CT (MOD-0288) · BULAN: İK / organizasyon kullanıcısı sorusu (2026-10-13) · KAYIT: 2026-10-13 · 🟢
+
+Ölçüm (hat):
+- Birim oluşturma / güncellemede ana ve idari üst birim aynı tüzel kişilikte olmak zorunda (`Create/UpdateOrganizationUnitCommandHandler`, 409 "Parent Organization Unit must belong to the same Legal Entity").
+- Veri erişim kapsamı yalnız ANA üst birim ağacından türüyor (`OrgDataScopeResolver.BuildChildrenMap`, `ParentOrganizationUnitId`). İdari hat kapsam üretmiyor.
+- Görev atama kapsamı tüzel kişilik / pozisyon zinciri / açık izinle sınırlı (`TaskAssignmentScopeResolver`, "the boundary is legal, not cosmetic").
+- Pozisyon hattı şirketler arası olabiliyor.
+
+Öneri (seçenek a + grup sınırı):
+- ana üst birim aynı şirkette kalır (işveren, maliyet merkezi, veri kapsamı);
+- yalnız idari / matris hat, MDM'de aynı grupta olan (`ParentLegalEntityId` zinciri) başka bir şirketin birimine bağlanabilir; grup dışı yine reddedilir;
+- gerçek raporlama ve onay pozisyon hattıyla gösterilir (zaten destekli).
+
+SAP / Oracle'da da tüzel kişilik ile organizasyon yapısı ayrıdır. Şirketler arası bağlılık yönetici / pozisyon hattı ve matris ("dotted line") ilişkisiyle gösterilir.
+
+Etki:
+- veri kapsamı ve görev atama kapsamı değişmez (ana hattan türüyor);
+- organizasyon şemasında kesikli çizgi;
+- döngü bekçisi şirketler arası idari hattı kapsamalı;
+- seçici şirket grubuna göre gruplanır (7 dil);
+- MDM grup bilgisi okunmalı.
+
+Küçük–orta.
+
+Gelecek regresyon riski: 🟢 ana hat değişmediği sürece kapsam sızıntısı yok; ana hatta gevşetme yapılırsa 🔴 (alt ağaç kapsamı şirket sınırını aşar).
+
+---
+
+### BL-629
+
+**Tüzel kişilikte mali yıl varyantı serbest metin; planlama ve finans bunu anlamlandıramıyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0220) · BULAN: MOD-0188 (Talep Planlama) sorusu (2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (hat): `LegalEntity.FiscalYearVariant`, 64 karakterlik serbest metin; değer listesi ya da yapı yok (testte örnek "K4", SAP adlandırması). Okuma: MDM `GET api/legal-entities/{id}` (`mdm.legal-entities.read`).
+
+Yapılacak: yapılandırılmış mali yıl tanımı: başlangıç ayı (1–12) + varyant kodu (takvim yılı, Nisan–Mart, 4-4-5 gibi; kapalı liste ya da BRD seti). Okuma sözleşmesine eklenir. SAP'de mali yıl varyantı ayrı bir yapılandırma nesnesidir (dönem sayısı, özel dönemler, başlangıç). Küçük–orta.
+
+Gelecek regresyon riski: 🟡 tüketiciler serbest metni kendi yorumlarsa şirketler arası tutarsız dönem sınırları.
+
+---
+
+### BL-628
+
+**Tüzel kişilikte saat dilimi yok (yalnız kiracı düzeyinde); farklı ülkelerdeki şirketler için hafta ve gün sınırları yanlış**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0220) · BULAN: MOD-0188 (Talep Planlama) sorusu (2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (hat): saat dilimi yalnız kiracıda (`Tenant.DefaultTimezone`). `LegalEntity`'de alan yok. Aynı kiracıda Polonya (CET) ve Türkiye (TRT) şirketleri olduğunda haftalık plan sınırı, kesim saatleri ve "bugün" tek saat dilimine göre hesaplanır.
+
+Yapılacak: tüzel kişiliğe isteğe bağlı IANA saat dilimi (`TimeZoneId`; boşsa kiracınınki), tüzel kişilik ekranı (7 dil) ve okuma sözleşmesi. Tüketiciler (planlama, zaman çizelgesi, takvim) şirket saat dilimini okur. SAP'de saat dilimi tesis / adres düzeyinde, Oracle'da konum / tüzel kişilik düzeyinde tutulur. Küçük.
+
+Gelecek regresyon riski: 🟡 çok ülkeli kiracıda hafta sınırları bir şirket için kayık.
+
+---
+
+### BL-627
+
+**SMTP'de tek bir hatalı alıcı adresi bütün iletiyi reddettiriyor; yeniden deneme hakları biterse Cc / Bcc hiç gitmiyor**
+
+DURUM: AÇIK · SAHİP: CT (Bildirimler) + sahip (ürün kararı) · BULAN: WP-EMAIL-LANG-01 FIX3 raporu (E-posta sohbeti, 2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (`b11ec563b`):
+- MailKit varsayılanıyla SMTP sunucusu tek bir geçersiz "Kime" adresi yüzünden iletinin tamamını reddediyor; kod bunu ezmiyor.
+- Dil grubu yeniden denemeye düşer ve denemeler tükenirse, o satırla kalan Cc / Bcc alıcılarına ileti hiç gitmez.
+- Operatör notu eklendi (post-deploy-steps §5: "Partial > 0 → elle bak").
+
+Yapılacak, ürün kararı:
+- (a) hatalı alıcıyı ayıklayıp kalanlara gönderme (alıcı başına RCPT sonucu);
+- (b) her alıcıya ayrı ileti;
+- (c) bugünkü gibi + uyarı.
+SAP / Oracle bildirim servisleri genellikle alıcı başına teslim kaydı tutar. Orta iş.
+
+Gelecek regresyon riski: 🟡 yazım hatalı tek bir adres bir grubun bütün bildirimini düşürebilir.
+
+---
+
+### BL-626
+
+**İstemci ayırt edilemeyen modda (canlıda `TrustedProxies` boşsa) giriş kotaları atlatılabiliyor ya da tek kovaya düşüyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) + sahip (canlı yapılandırma) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX4 bağımsız güvenlik incelemesi (2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (`4a8b0367e`): istemci kimliği ayırt edilemiyorsa (Auth önündeki vekil adresleri `TrustedProxies`'te yoksa) giriş kotası kiracı başına kaba bir kovaya düşüyor (dakikada 300). Üç zayıflık:
+1. **Kiracı kimliğini saldırgan seçiyor.** `X-Tenant-Id` başlığı doğrulanmadan anahtara giriyor (Auth `TenantResolutionMiddleware.cs:124-132`, ağ geçidi :281). Her istekte yeni bir GUID yeni bir kova demek, tavan aşılıyor. CPU'yu eşzamanlılık yuvası koruyor, ama her bilinmeyen kiracı önbelleksiz bir Platform çağrısına mal oluyor.
+2. **MFA tek kovada.** Web MFA isteklerini kiracısız gönderiyor (`AuthGateway.cs:194-212`); bütün kiracılar tek bir `tenant-mfa|tenant:none` kovasında.
+3. **Platform giriş ve parola unutma kapıları tek kova.** Saniyede ~5 çöp istek yönetici girişini ve parola kurtarmayı kapatır.
+
+Yapılacak:
+- **canlı şartı (sahip):** Auth'un önündeki Web ve ağ geçidi adresleri `Security:TrustedProxies`'e yazılmalı; o zaman istemci başına sınırlar devreye girer ve bu yollar kullanılmaz. Canlıya geçiş kontrol listesine eklenir.
+- **kod:** bilinen kiracı / negatif önbellek (bilinmeyen kimlikler tek kovaya iner), yüksek genel tavan, MFA'nın kiracıyı taşıması, platform kapılarına istemci ayrımı olmadan da çalışan ikinci bir sınır. Orta.
+
+Gelecek regresyon riski: 🟡 yanlış yapılandırılmış canlıda giriş hizmet dışı bırakılabilir. Doğru yapılandırmada etkisiz.
+
+---
+
+### BL-625
+
+**MDM'de iki "en eski açık onay" göstergesi yan yana: LSKU onayı (BL-607) ve kalem etkinleştirme onayı (S2)**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: S2 Aşama B raporu §6 ("MDM onay akışı dayanıklılığı" sohbeti, 2026-10-13) · KAYIT: 2026-10-13 · 🟢
+
+S2'nin hatla birleşiminde iki gösterge bilerek ayrı kaldı: BL-607'nin LSKU onayı bekleme göstergesi ve S2'nin kalem etkinleştirme onayı göstergesi. Aynı soruyu ("en eski açık onay ne kadar bekliyor") iki ayrı yerden cevaplıyorlar.
+
+Yapılacak: önce ölç (kim okuyor, uyarı eşikleri aynı mı); sonra tek ortak göstergeye (onay türü boyutuyla) geçiş. Küçük–orta.
+
+Gelecek regresyon riski: 🟢 iki gösterge tutarlı kaldığı sürece yalnız bakım yükü; eşikler ayrışırsa çelişen uyarı.
+
+---
+
+### BL-624
+
+**Eski parola bağlantısı dizini (`ix_users_password_reset_token_hash`, seyrek) artık oluşturulmuyor ama veritabanlarında duruyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX3 (2026-10-12) · KAYIT: 2026-10-12 · 🟢
+
+FIX3 yerine kısmi `ix_users_password_reset_token_hash_v2` dizinini koydu ($type string; aramanın süzgeci aynı koşulu taşıyor). Eski seyrek dizin bilerek SİLİNMEDİ: aynı adla farklı seçenekli dizin çakışırdı ve canlı veritabanında dizin silmek sahip onayı ister.
+
+Yapılacak: v2 her ortama ulaştıktan sonra eski dizinin kontrollü kaldırılması. Küçük; canlı için sahip onayı gerekli.
+
+Gelecek regresyon riski: 🟢 eski dizin yalnız yazma maliyeti ve disk.
+
+---
+
+### BL-623
+
+**Platform giriş kapısında hesap kilidi yok (yalnız hız sınırı var)**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX3 ölçümü (2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`68c62688d`): kiracı kapısında N yanlış denemeden sonra hesap kilitleniyor. Platform kapısında (`api/platform-auth/login`, platform yöneticileri) kilit eskiden beri yok. FIX3 ile iki kapıya da istemci başına hız sınırı geldi (100 / 15 dk; istemci ayırt edilemiyorsa kapı başına dakikada 300), ama hesap başına kilit yok.
+
+Yapılacak: platform hesaplarına kiracı kapısıyla aynı kural. N yanlış denemede süreli kilit; kilitliyken her parolaya aynı cevap; deneme sayılır, kilit uzamaz. SAP / Oracle'da yönetici hesapları da kilit politikasına tabidir, çoğunlukla daha sıkı. Orta iş.
+
+Gelecek regresyon riski: 🟡 en yetkili hesaplarda kaba kuvvet yalnız hız sınırıyla yavaşlatılıyor.
+
+---
+
+### BL-622
+
+**Giriş ve parola bağlantısı hız sınırı sayacı süreç belleğinde: yeniden başlatmada sıfırlanıyor, birden çok kopyada sınır kopya sayısıyla çarpılıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX2 raporu, madde 4 ("Onay motoru aday kuralları" sohbeti, 2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`ab94fa8fe`): `PasswordDoorRateLimiter` tek örnek (singleton), sayaçlar bellekte. Parola bağlantısının denetimi ve kaydı, platform parola sıfırlama ve giriş kapıları bu sayaçla sınırlanıyor. Servis yeniden başlayınca sayaç sıfırlanır; servis N kopya çalışırsa saldırgan N katı deneme yapar. Asıl koruma belirteç entropisi (64 rastgele bayt); sayaç ikincil koruma.
+
+Yapılacak: ortak bir sayaç deposu (Redis ya da Mongo TTL koleksiyonu) ile kopyalar arası tek sayaç. Canlı ortam tek kopya çalıştığı sürece acil değil; ölçeklendirmeden önce yapılmalı.
+
+Gelecek regresyon riski: 🟡 yatay ölçeklendirmede kaba kuvvet sınırı sessizce gevşer.
+
+---
+
+### BL-621
+
+**Kiracı kayıt ucu (`POST api/tenant-auth/register`) ağ geçidinden anonim erişilebilir ve 409 "Email is already in use." cevabıyla adresin var olup olmadığını söylüyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth + ağ geçidi) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX2 raporu, madde 3 ("Onay motoru aday kuralları" sohbeti, 2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`ab94fa8fe`): Web bu ucu çağırmıyor. Ama ocelot `/api/tenant-auth/{everything}` rotası ve ağ geçidinin `IsPublicEndpoint` listesi ucu anonim açıyor. Giriş kapısı artık her durumda tek cevap veriyor (FIX2), kayıt ucu ise adres kâhini olarak kalıyor. `SelfRegistrationActorEndpointTests` ucun bilerek korunduğunu gösteriyor.
+
+Yapılacak: önce karar. Kayıt ucu kullanılıyor mu (davet akışı dışında)? Kullanılmıyorsa ağ geçidinde kapatılır. Kullanılıyorsa cevap tekleştirilir: her durumda "e-posta gönderildi", var olan adrese bilgilendirme e-postası. SAP / Oracle'da kendi kendine kayıt aynı tek cevabı verir.
+
+Gelecek regresyon riski: 🟡 adres listesi toplanabilir (kimlik avı hazırlığı).
+
+---
+
+### BL-620
+
+**İş ortağı kaydı yok: iş ortağı yöneticisi açılırken iş ortağı kimliği ve izinli kiracılar elle GUID olarak yazılıyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform) + sahip (iş ortağı modeli kararı) · BULAN: sahip sorusu "iş ortağı nasıl ekleniyor?" (2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`cfc03da74`): Platform → Yöneticiler → yeni yönetici, rol "İş Ortağı Yöneticisi" seçilince iki alan çıkıyor: `PartnerId` (serbest metin) ve `AllowedTenantIds` (GUID'lerin elle yazıldığı metin kutusu; `Views/Platform/Administrators/_CreateEditOffcanvas.cshtml:76-89`). Ayrı bir iş ortağı varlığı / ekranı yok; kiracı kaydında iş ortağı alanı yok. Erişim sınırı çalışıyor (BL-521), ama kurulumu elle ve hataya açık.
+
+Yapılacak: sahip kararı. İş ortağı modeli (iş ortağı kaydı + kiracıya iş ortağı bağı + izinli kiracıların seçiciyle atanması) mı, yoksa iş ortağı rolü kullanılmayacaksa ekrandan kaldırılması mı. Karşılaştırma: SAP Partner / Oracle Partner Relationship Management'ta iş ortağı ayrı ana veridir.
+
+Gelecek regresyon riski: 🟡 elle yazılan GUID hatası bir iş ortağına yanlış kiracı açabilir.
+
+---
+
+### BL-619
+
+**Eski Görev Merkezi (`/WorkCenter`, taklit veri) hâlâ duruyor; kullanılmayan / yarım sayfaların denetimi**
+
+DURUM: AÇIK · SAHİP: CT · BULAN: sahip (2026-10-12) · KAYIT: 2026-10-12 · 🟢
+
+Gerçek Görev Merkezi `/WorkCenterNext`. Eski `/WorkCenter` taklit veriyle çalışan ilk taslak; menüden kaldırılmamış ve dondurulmuş eski çerçeveyi kullanıyor (ortak klavye katmanını da almıyor: UXH-001 ölçümü, 18 görünüm).
+
+Yapılacak:
+1. Eski Görev Merkezi'nin bütün görünüm, denetleyici, betik, resx, menü ve test kalıntılarıyla kaldırılması. Önce ölç: kim bağlanıyor, hangi testler okuyor.
+2. Aynı denetimle sistemde kullanılmayan ya da yarım kalmış sayfaların listesi (menüde olmayan, taklit veri kullanan, eski çerçevedeki 99 görünüm). Her biri için kaldır / tamamla / sahibine sor.
+
+Gelecek regresyon riski: 🟢 eski sayfa kullanılmıyor; risk yanlış sayfanın açılması ve bakım yükü.
+
+> **2026-10-16 (CT):** Parça 1 yapıldı — eski `/WorkCenter` kaldırıldı (dal `chore/web/bl-619-remove-old-workcenter`, 0e28f845e + e10370600). Parça 2 denetimi: dondurulmuş eski çerçevede 96 sayfa, hiçbir eylemin çizmediği 22 ölü sayfa, taklit veriyle 4 alan (Yönetim/Yönetişim, Teslimat yürütme, Envanter yönetişimi, Strateji kütüphanesi). **Sahip kararı (2026-10-16):** bunlar şimdi elle kaldırılmaz / tamamlanmaz; zamanı gelince kendi modülleriyle taşınacak. Kalan açık: `.antigravity/workflows/details-page-rules.md:59` silinen `WorkCenterTabs.cshtml`'i örnek gösteriyor (sahip onayı bekliyor).
+
+---
+
+### BL-618
+
+**Parola belirleme / sıfırlama bağlantısı e-posta adresi olmayan kullanıcıya ulaşamıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth / Kullanıcılar) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 raporu §6 (WF sohbeti, 2026-10-12) · KAYIT: 2026-10-12 · 🟢
+
+Ölçüm (`eba8648a4`): bağlantı yalnız e-postayla gidiyor; e-postası olmayan bir kiracı kullanıcısı için yöneticinin bağlantıyı başka yolla (ekranda bir kez göster / kopyala) vermesinin yolu yok.
+
+Yapılacak: ürün kararı (yönetici ekranında tek kullanımlık bağlantıyı bir kez gösterme + denetim kaydı) → küçük iş.
+
+Gelecek regresyon riski: 🟢 yalnız e-postasız kullanıcılar.
+
+---
+
+### BL-617
+
+**İzinler ekranı (`PermissionsController`) UAS-001 kapısı taşımıyor: Index ve sunucu tarafı `Lookups` çağrısı anahtarsız kullanıcıya açık**
+
+DURUM: AÇIK · SAHİP: CT (Yönetişim ekranları) · BULAN: URA FIX1 bağımsız incelemesi (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`158f35ad9`):
+- Kullanıcı Rolleri ve Rol Atamaları artık 403 + erişim yok yüzü veriyor (URA FIX1).
+- Aynı ailedeki `PermissionsController` Index ve `Lookups` (ağ geçidini sunucu tarafında çağırıyor) anahtar denetimi yapmıyor. Okuma yetkisi AuthService'te (`[HasPermission]`), ama sayfa iskeleti yetkisize çiziliyor.
+
+Yapılacak: URA deseni (denetleyici + görünüm aynı okuyucu, Index 403, sunucu çağrısından önce ret, HTTP testi); UAS bekçisinin GATED listesine.
+
+Gelecek regresyon riski: 🟡 yetkisiz kullanıcı sayfa iskeletini görür (UAS-001); veri sızıntısı yok (AuthService kapısı).
+
+---
+
+### BL-616
+
+**İTS karekod / seri numarası bildirimi ve barkod etiketi basımı için modül yok (MOD-0290 yalnız GTIN numarasını tutar)**
+
+DURUM: AÇIK — sahip kararı bekliyor (kapsam ve sıra) · SAHİP: sahip + CT · BULAN: sahip sorusu "GTIN / barkod yapılmayacak mı?" (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`fbe8b47d6`):
+- MOD-0290'da GTIN bugün yalnız Bitmiş Ürün satış kutusu düzeyinde. Stok davranışı panelinde alan, kontrol hanesi denetimi ve tekillik var (`FG_GTIN_INVALID`, `FG_GTIN_CONFLICT`; stock-gate S3 / S5).
+- Planlı (ürün ana verisi tamamlama planı, BL-518):
+  - P6 Tanımlayıcılar: GSKU / LSKU / kalem düzeyinde GTIN ve diğer kodlar, yaşam döngüsü ve geçmişiyle;
+  - P9 Ambalaj hiyerarşisi: kutu → koli → palet, her düzeyin adedi ve GTIN'i; MOD-0178 depo dalgasıyla.
+- Modül kataloğunda OLMAYAN: İTS'ye (İlaç Takip Sistemi) üretim / satış / iade bildirimi, karekod (GS1 DataMatrix: (01) GTIN + (21) seri + (10) lot + (17) son kullanma), seri numarası havuzu, etiket / barkod basımı ve el terminaliyle okuma. Planda "seri takibi pazara bağlı (İTS)" notu var, modül yok.
+
+Karşılaştırma: SAP'de GTIN malzeme kaydında birim başına (EAN / UPC), serileştirme ve ülke bildirimi ayrı üründe (SAP ATTP). Oracle'da GTIN kalem çapraz başvurusu (PIM / GDSN), serileştirme ayrı bulut ürününde (Serialization and Traceability).
+
+Yapılacak: sahip kapsamı ve sırayı seçer. Öneri: MOD-0290 P6 + P9 önce, İTS / etiket ayrı modül (stok ve depo sevkiyatına bağlanır).
+
+Gelecek regresyon riski: 🟡 Türkiye'de beşeri ilaç satışı İTS bildirimi olmadan yapılamaz; modül geç başlarsa stok / sevkiyat akışlarına sonradan seri numarası eklemek gerekir.
+
+---
+
+### BL-615
+
+**origin/main'in kendi phase1 mimari testi kırmızı (8): CRM ve SCE / MVP-6 denetimsiz yazma komutları, SCE defteri yok, shipment-bundle sözleşme pin'i bayat**
+
+DURUM: AÇIK · SAHİP: CRM ekibi + SCE / MVP-6 ekibi (XMC-001; ileti sahip üzerinden) · BULAN: main-sync (Roller sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🔴
+
+Ölçüm (git arşivi, `a814bad0f`): TenantArchitecture 69/77, 8 kırmızı. `run_phase1_gates.sh:180` mimariyi koşuyor, yani main'in CI'ı da kırmızı.
+- `AuditTrailStandardTests` ×2:
+  - 44 yeni yazma komutu denetimsiz ve deftersiz. CRM 27: Knowledge Path, Regulatory (CountryLegalProfile, SafetyText), ReopenPlanningWeek. SupplyChainService 17: Carrier, Shipment, Load, Return, Claim, Capacity, S&OP.
+  - `EveryServiceWithWriteCommands_HasALedger`: SupplyChainService'in defteri yok.
+- `DocsPathGuardTests` ×5: `docs/analysis/contracts/shipment-bundle.openapi.yaml` main'de 3.2.0 (`1ccbc49b7`), pin hâlâ 3.1.0.
+- `MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest`: main'in düzelttiği iki dosya listede bayat kalmıştı. CT hattı main-sync'te listeyi küçülttü (kural gevşemedi).
+
+CT KARARI (2026-10-11): CT bu borcu üstlenmez. phase1'in defter adımı satır EKLEYEN PR'ı zaten kırmızı yapıyor. Hat bu kırmızılarla birleşir; tek PR'ın CI'ı main düzelene kadar bu 8 kırmızıyı gösterir.
+
+Yapılacak:
+- CRM: 27 komuta denetim ya da adlı defter kararı;
+- SCE / MVP-6: 17 komut + defter + pin 3.2.0;
+- ileti `ekiplere-ci-test-mesaji.md`.
+
+Gelecek regresyon riski: 🔴 main'in phase1'i kırmızı kaldıkça her PR kırmızı görünür ve yeni bir kırmızı fark edilmez.
+
+---
+
+### BL-614
+
+**CT hattında 32 vitest kırmızısı (11'i CT alanı); CI'da vitest satırı yok, bu yüzden büyümeleri görünmüyor**
+
+DURUM: AÇIK · SAHİP: CT (11 CT alanı) + CRM / Enterprise Strategy / PVG ekipleri (21, XMC-001) · BULAN: CT hat doğrulaması (2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`afedcdeb9`, tam `npx vitest run`: 32 kırmızı / 4633 geçti; taban `a980dbf74` 32 / 4586):
+- **Ad listesi aynı, içerik değil.** Stock-gate birleşimi (`38da7cf52`) zaten kırmızı iki teste yeni ihlal ekledi:
+  - `diten-field-icons` "no NEW offcanvas ships without the wrapper": +3 (`MasterDataManagement/{FinishedGoods,Gskus,Lskus}/_StockBehaviourOffcanvas.cshtml`);
+  - `global-confirm-input-type` hesap dışı `showInput` çağıranı 20 → 21.
+  Kırmızı bir test, yeni ihlali saklıyor.
+- CT alanı (11):
+  - `diten-field-icons` ×2 (4 sarmalayıcısız form + 2 bayat `KNOWN_NO_ICONS` girdisi);
+  - `diten-tags` (SharedResource açığı 39 > 33);
+  - `global-confirm-input-type`;
+  - `global-products-register` (`DtDefaults`'ta `extend: 'print'` aranıyor);
+  - `governance-users-error-codes-ct` (harita 20, tablo 18: `USER_RESET_CONFLICT`, `USER_RESET_SELF`);
+  - `governance-users-list-component` (`Users/index.js` 453 > 450 satır);
+  - `wcn-dialog-one-language` (adsız `inputOptions` çağıranı);
+  - `workcenter-next-provider-labels` ×2 (21 anahtar 7 dilde eksik; ham eylem adları `WorkAggregation_Action_{Decline,Offer,Withdraw}`);
+  - `workcenter-next-l10n-key-guard` (b) (3 sunucu anahtarı cümlesiz).
+- Diğer ekipler (21): CRM kampanya ×7 + rıza ×4; Enterprise Strategy ×9 (strategy-apis ×4, planning / periods / objectives); PVG ×1.
+
+Yapılacak:
+1. Açık dallar (WCN FIX6, URA FIX1, UX-COMMON, kr-fix1; hepsi bu dosyalara dokunuyor) hatta birleşince yeniden ölçüm, AYRINTI düzeyinde (ad değil, ihlal listesi).
+2. Kalanlar için tek CT iş paketi: bilinen listeye eklemek yok, düzeltme var; 7 dil.
+3. 21'i ekip mesajına (`ekiplere-ci-test-mesaji.md`).
+4. CI'ya vitest satırı: yalnız küçülebilen adlı kırmızı listesiyle (test adı + ihlal sayısı).
+
+Gelecek regresyon riski: 🟡 CI vitest koşmadığı sürece her birleşim kırmızı testlere sessizce yeni ihlal ekleyebilir (stock-gate'te oldu).
+
+---
+
+### BL-613
+
+**MDM ürün kimlik akışları: yedi akış açık onayı düz `now + retryDelay` ile yokluyor (BL-607'nin geri çekilmesi yalnız LSKU kimlikte)**
+
+DURUM: AÇIK · SAHİP: CT (MDM ürün devralma, MOD-0290) · BULAN: BL-607 raporu §1 (WF sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🟡
+
+Ölçüm (`b650e4589`): GSKU kimlik (`GlobalProductIdentityWorkflowProcessor.cs:1572`), ilk GSKU kimlik (`FirstGskuIdentityWorkflowProcessor.cs:1296`), GSKU düzeltme (`:415`), GSKU emeklilik talebi (`:381`), LSKU emeklilik talebi (`:393`), global ürün düzeltme (`:507`), global ürün emeklilik (`:489`). Hiçbiri açık onayı deneme sınırına SAYMIYOR (doğru), ama hepsi her `retryDelay`'de (30 sn) yeniden soruyor.
+
+Yapılacak: aynı `ProductIdentityOpenApprovalBackoff` (BL-607, `54b9562a0`) yedi akışa; akış başına açık onay yaşı göstergesi; HTTP testi + sabotaj. S5b / stock-gate dosyalarına çarpmaz.
+
+Gelecek regresyon riski: 🟡 canlıda binlerce açık onay olursa motor her 30 sn'de sorgulanır ve karara bağlanmış onaylar sırada geride kalır.
+
+---
+
+### BL-612
+
+**Enterprise Strategy izin denetimi varsayılanda AÇIK başarısız: iki ortam değişkeni tanımsızsa her izin, kimlik denetiminden önce, kimliksiz kullanıcıya veriliyor (güvenlik)**
+
+DURUM: AÇIK · SAHİP: Enterprise Strategy ekibi (XMC-001) + sahip (canlı ölçüm) · BULAN: BL-604 B sınıfı notları (Roller sohbeti, 2026-10-11) · KAYIT: 2026-10-11 · 🔴
+
+Ölçüm (kaynak `61b860012`):
+- `EnterpriseStrategyPlatform.cs:218-255`: `DITEN_ESBP_ENFORCE_PERMISSIONS` ve `DITEN_ESBP_DEV_PERMISSION_BOOTSTRAP` ikisi de tanımsızsa geliştirme izin önyüklemesi AÇIK.
+- ES testlerindeki 3 RBAC kırmızısı bunun sonucu (yetkisiz istek reddedilmiyor).
+- Hafıza notu: ES'de genel olarak kimlik doğrulama / TenantId yok.
+
+Yapılacak:
+- sahip: canlı ES ortam değişkenlerini ölçer (kontrol listesi `is-es-canli-izin`);
+- ES ekibi: varsayılan kapalı başarısız (değişken yoksa izin yok), RBAC testleri yeşil;
+- ekip mesajı sahip üzerinden (`ekiplere-ci-test-mesaji.md`).
+
+Gelecek regresyon riski: 🔴 canlıda değişken unutulursa ES uçları herkese açık.
+
+---
+
+### BL-611
+
+**Auth: `OperationalSingleInstanceLockTests.An_abandoned_lock_is_taken_over_by_the_next_run_by_name` tam süitte ara sıra kırmızı**
+
+DURUM: AÇIK · SAHİP: CT (Auth, BL-570 hattı) · BULAN: hat doğrulaması BL-521 sonrası (2026-10-11) · KAYIT: 2026-10-11
+
+Ölçüm:
+- Hat `404685da0`'da tam Auth App 2591 / 2592: tek kırmızı bu test (mesaj günlüğe düşmedi). Aynı sınıf tek başına 6 / 6 yeşil.
+- Test, sahibi iş parçacığı bitince adlı mutex'in "terk edildi" işaretine dayanıyor. Olası sebep: yük altında GC / sonlandırıcı tutamağı iş parçacığı bitmeden kapatıyor ve terk işareti oluşmuyor.
+
+Yapılacak:
+- mutex nesnesini iş parçacığı bitene kadar canlı tut (`GC.KeepAlive`) ya da terk durumunu belirlenimci kur;
+- başarısızlık mesajı iddia metnine (hangi iddia kızardı).
+
+Gelecek regresyon riski: 🟡 CI'da (auth-app) ara sıra kırmızı.
+
+---
+
+### BL-610
+
+**Modal pencerelerde Enter yerel form gönderimi yapıyor: ortak klavye katmanı (UXH-001) yalnız yan panelleri kapsıyor**
+
+DURUM: AÇIK · SAHİP: CT (Web kabuğu) + ekran sahipleri · BULAN: UX-COMMON FIX1 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `diten-enter-primary.js` yalnız offcanvas yan panellerinde çalışıyor. `.modal` içindeki formlarda Enter tarayıcının örtük gönderimini tetikliyor.
+- Adlı örnekler: `gateEvidenceModal`, Platform Administrators `suspendModal` (askıya alma: sonuçlu işlem).
+
+Yapılacak:
+- modal içi sonuçlu birincillerin envanteri (yan panel sınıflandırmasının deseni);
+- modallara da chord / enter işareti, ya da modal formlarında örtük gönderimin kapatılması;
+- UXH-001'e satır.
+
+Gelecek regresyon riski: 🟡 modal içinde yanlışlıkla Enter, onay sorusu olmayan sonuçlu bir işlemi gönderebilir.
+
+---
+
+### BL-609
+
+**Sayfa yardım defteri mandalı: tavan defterin kendi başlığında; bir PR tavanı sessizce yükseltebilir (ana dala karşı CI denetimi yok)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) · BULAN: UX-COMMON FIX1 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `page-help-ledger.test.js` satır sayısını defter başlığındaki tavanla karşılaştırıyor (FIX2 ile eşitlik). Aynı dosya hem bekçi hem tavan; PR ikisini birlikte yükseltirse test yeşil kalır.
+
+Yapılacak:
+- phase1'de (`run_phase1_gates.sh`, PR'da taban dalı zaten çekiliyor) defter başlığını `git show origin/$GITHUB_BASE_REF:docs/roadmap/backlog/page-help-ledger.md` ile karşılaştır; tavan artışı kırmızı (bilinçli artış için adlı istisna satırı).
+- ci-followup2 hatta girdikten sonra (aynı betik).
+
+Gelecek regresyon riski: 🟢 yardım metni borcu sessizce büyüyebilir.
+
+---
+
+### BL-608
+
+**İş akışı şablonu kendi adaylarını tanımlarsa tüketicinin (MDM) verdiği onaycı adayını eziyor; tüketici bunu göremiyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform iş akışı motoru) · BULAN: FU04 S2 incelemesi + FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- MDM kalem onayı başlatmada aday olarak `position:{ApproverPositionId}` (QA Müdürü) gönderiyor. Yayımlanmış şablonun adımı kendi adaylarını taşıyorsa motor onları kullanıyor.
+- `TrustedWorkflowStartResult` etkin adayları ya da aday kaynağını taşımıyor; MDM başlatmada doğrulayamıyor (S2 FIX1: UYGULANAMAZ).
+- Bugünkü önlem yalnız runbook: "`ITEM-ACTIVATION` tanımı aday TANIMLAMAZ".
+
+Yapılacak (seç, SAP / Oracle karşılaştırmasıyla):
+- (a) güvenilir tüketici aday verdiyse ve şablon adımı da aday taşıyorsa başlatmayı adlı kodla reddet;
+- (b) başlatma sonucunda aday kaynağı (`consumer` / `template`) ve etkin aday kümesi; tüketici kendisi karar verir.
+- Tüketiciler: MDM kalem, GSKU, LSKU, Global Ürün onayları.
+
+Gelecek regresyon riski: 🟡 yanlış yayımlanmış bir şablon, QA dışı birinin GMP onayını vermesine yol açar (yönetici hatası gerekir; sızıntı yok).
+
+---
+
+### BL-607
+
+**LSKU kimlik onayı: yalnız insan kararını bekleyen açık onay deneme sınırına sayılıyor; ~6,5 saat sonra "takılı" görünüyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM, LSKU) · BULAN: FU04 S2 FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10 · CANLI ÖN KOŞULU (LSKU onayı canlıda kullanılacaksa)
+
+Ölçüm:
+- `LskuIdentityWorkflowProcessor.cs:959`: motor "henüz karar yok" (NonTerminal) dediğinde `ScheduleRetryAsync(counted)` çağrılıyor. 30 denemede `RETRY_LIMIT_REACHED` → işlem takılı / el ile uzlaştırma göstergesine düşüyor.
+- 15 dk geri çekilme tavanıyla ~6,5 saat. Onaycı aynı gün içinde karar vermezse sağlıklı bir onay "takılı" olur.
+- S2 (kalem) FIX1'de düzeltildi: GSKU düzeltme akışının kabul edilmiş kuralı ("açık onay başarısızlık değildir"; yeniden deneme gecikmesiyle tekrar sorulur, seri sıfırlanır, sınıra sayılmaz). LSKU'ya dokunulmadı.
+
+Yapılacak:
+- aynı kural LSKU'ya; uçtan uca test (30+ "karar yok" cevabı → takılı değil);
+- çok eski açık onay için ayrı gösterge (S2'nin `ITEM_ACTIVATION_UNPROCESSED` deseni);
+- GSKU kimlik akışı ve FG'de de ölç.
+
+Gelecek regresyon riski: 🔴 canlıda LSKU onayı açılırsa her yavaş onay operatör alarmı üretir ve el ile uzlaştırma ister.
+
+---
+
+### BL-606
+
+**Güvenilir iş akışı başlatma sözleşmesinde serbest metin gerekçe yok: onaycı, yeniden etkinleştirme gerekçesini Görev Merkezi'nde göremiyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform iş akışı motoru + Görev Merkezi) · BULAN: FU04 S2 FIX1 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `TrustedWorkflowStartTransportRequest` (`Platform.API/Models/Workflow/TrustedWorkflowConsumerRequestModels.cs:3`) ve `TrustedWorkflowStartRequest` (`WorkflowModels.cs:315`) yalnız şablon, nesne, aday kimlikleri, `ReasonCode` (yapılandırılmış kod), yorum / kanıt bayrakları ve son tarih taşıyor. Serbest metin yok.
+- S2 FIX1 kararı (A): kalem yeniden etkinleştirme gerekçesi MDM işlemine yazılıyor ve kalem detayında görünüyor; onaycı MDM sayfasında okuyor.
+
+Yapılacak:
+- başlatma sözleşmesine isteğe bağlı `requestComment` (uzunluk sınırı, kontrol karakteri reddi; denetime metin değil "verildi + uzunluk");
+- Görev Merkezi görev detayında gösterim (7 dil etiket);
+- tüketiciler: MDM kalem / LSKU / GSKU yeniden etkinleştirme ve emeklilik talepleri.
+
+Gelecek regresyon riski: 🟡 onaycı bağlamı ayrı ekranda arar; veri riski yok.
+
+---
+
+### BL-605
+
+**Kalem onayı (S2): onaycı pozisyonu tek küresel yapılandırma değeri; ikinci kiracıda kalem onayı kapalı başarısız**
+
+DURUM: AÇIK · SAHİP: CT (MDM, kalem onayı) · BULAN: FU04 S2 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10 · ÇOK KİRACILI CANLIDAN ÖNCE
+
+Ölçüm:
+- `ItemActivationWorkflow:ApproverPositionId` servis yapılandırmasında tek değer. Aday `position:{id}` olarak motora gidiyor; motor pozisyonu kiracı başına çözüyor.
+- Başka kiracıda o kimlikte pozisyon yok → başlatma reddi (kapalı başarısız; sızıntı yok). Yani bugün kalem onayı yalnız bir kiracıda çalışabilir.
+- GP-1b (Global Ürün) aynı desende mi? Ölç; aynıysa bu satır onu da kapsar.
+
+Yapılacak:
+- kiracı başına onaycı pozisyonu: kiracı ayarı (Platform iş ayarları ya da MDM kiracı yapılandırması; SAP / Oracle karşılaştırmasıyla seç);
+- yoksa adlı ret (`ITEM_ACTIVATION_APPROVER_NOT_CONFIGURED`), 7 dilde cümle.
+
+Gelecek regresyon riski: 🟡 ikinci kiracı canlıya çıkınca kalem onayı çalışmaz (kapalı başarısız, veri riski yok).
+
+---
+
+### BL-604
+
+**CI: Platform / Auth / MDM dışındaki servislerin testleri ne derleniyor ne koşuluyor (Crm, Hcm, DevEnablement, ManagementGovernance, Ppm, Pvg, Procurement)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) + servis sahipleri · BULAN: WP-CI-SERVICE-TESTS-03 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10 · TEK PR'DAN ÖNCE KARAR
+
+Ölçüm:
+- BL-577 / BL-590 / CI takibi 2 yalnız Platform, Auth ve MDM test projelerini `service-tests.yml`'a ve phase1 derlemesine aldı.
+- Test projesi sayıları (`*Tests.csproj`):
+  - CrmService 1, DevEnablementService 1, HcmService 1, ProcurementService 1;
+  - ManagementGovernanceService 3, PpmService 2, PvgService 5;
+  - EnterpriseStrategyService 2, Building.Blocks 2.
+- İnceleme: Crm, Hcm, DevEnablement, ManagementGovernance, Ppm, Pvg ve Procurement testleri CI'da ne derleniyor ne koşuluyor. EnterpriseStrategy ve Building.Blocks: ölç (çözümde olabilirler).
+- Bu servislerin sahibi başka ekipler; CT onların test kırmızılarını düzeltmez (XMC-001).
+
+Yapılacak:
+- her servis için: çözümde mi (phase1 derliyor mu), testleri yerelde yeşil mi, dış bağımlılığı (mongod, RabbitMQ) ne?;
+- yeşil olanlar `service-tests.yml` matrisine satır; kırmızı olanlar sahibine iş (XMC-001: "bunu da düzeltelim mi?");
+- PPM: kendi ekibinin onayı (PPM dosyalarına CT dokunmaz).
+
+Gelecek regresyon riski: 🟡 bu servislerde kırılan test CI'da görünmez; tek PR'da main'e kırmızı test girebilir.
+
+Ölçüm sonucu (2026-10-10, WP-CI-COVERAGE-MEASURE-01, 26 test projesi; rapor WF sohbeti scratchpad `ci-coverage-report.md`):
+- **A, yeşil → satır:** Building.Blocks Secrets 5/5 + Email 109/109 · DevEnablement 92/92 · ManagementGovernance Tests 87/87 · Procurement 147/147 · PVG ×5 (36 / 23 / 40 / 88 / 43) · PPM Tests 381/381 (PPM ekibinin onayıyla). Çözüm dışındakiler (Secrets, Crm, Procurement, PVG ×5) phase1 "yalnız derle" adımı da ister. Satırlar ci-followup2 hatta girdikten sonra (Roller).
+- **B, kırmızı → sahibine (XMC-001):** Crm 1 (PdfSharp sistem fontu yok) · EnterpriseStrategy 8 (RBAC iddiaları: yetkisiz istek reddedilmiyor; hafıza: ES'de güvenlik yok) · ManagementGovernance Architecture 2 · PPM Integration 10 (9'u `ppm.audit-intent.submitted.v1` olay adı Building.Blocks kuralından geçmiyor, 1'i 503 yerine 401).
+- **C, altyapı:** HCM `EmployeeDraftSessionRepositoryMongoTests` ORTAK `localhost:27017` kullanıyor (koşulmadı; HCM'nin kalanı 59/59) · MG ve PPM entegrasyon testleri mongod yolunu sabit `/opt/homebrew/bin/mongod` yazmış (Linux CI'da yok; MG Integration 95/95 dahil).
+- Eventing hatta derlenmiyor (CS0246); ci-followup2 `fd8acd7d4` düzeltiyor.
+- Ekiplere giden mesaj sahip üzerinden (CT taslağı).
+
+---
+
+### BL-603
+
+**S4 okuma sözleşmesi: okunamayan satır yer tutucusunun BSON tür sırası — MinKey / Symbol kolları ve tür başına teori testi eksik (FIX4 küçükleri)**
+
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (MDM, product-master) · BULAN: FU04 S4 FIX4 bağımsız incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- S4 FIX4 (`75c128b33`, hatta `717775d59`) yer tutucuyu deponun BSON tür sırasına göre diziyor: eksik / null / sayı, sonra dize, sonra diğer; diziler en küçük öğeyle (en iyi çaba).
+- MinKey (her şeyden önce) ve Symbol (dizeyle aynı sınıf) kolları açıkça ele alınmıyor. Bozuk bir kod alanı bu türlerden biriyse yer tutucunun yeri Mongo'nun sırasından sapabilir.
+- Tür başına sıra tek bir teoriyle sabitlenmemiş (her tür için "yer tutucu, depo sırasıyla aynı yerde").
+
+Yapılacak:
+- MinKey / MaxKey / Symbol kolları;
+- `BsonType` değerleri üzerinden tek teori: gerçek Mongo sıralamasıyla yer tutucu sırası aynı.
+
+Gelecek regresyon riski: 🟢 yalnız bozuk (tür dışı) kod alanında sayfa kayması; sızıntı yok.
+
+---
+
+### BL-602
+
+**MDM kapsam yazımı: `A_replace_under_constant_lease_traffic_on_other_products_succeeds` makine yükünde kararsız**
+
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (MDM kapsam, MOD-0021-FU02 hattı) · BULAN: CT S4 FIX4 sabotaj tabanı (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `ProductLegalEntityScopeWriteAdmissionMongoTests.cs:387`. S4 FIX4 (`75c128b33`) sabotaj tabanında MDM Application 336 / 337: tek kırmızı bu test. Test S4 dosyası değil; kapsam yazımı FIX3 / FIX4'ten (hat).
+- Olasılıksal: arka planda başka ürünlere sürekli kira alan bir döngü varken bir Replace'in başarmasını bekliyor. Belirlenimci eşi `A_replace_aborted_as_a_transient_write_conflict_is_run_again_not_answered_409` (kancalı WriteConflict) yeşil.
+- Makine yükü yüksekti (ct-heavy kuyruğunda 7 iş, dev sunucuları açık).
+
+Yapılacak:
+- ölç: başarısızlık mesajı `conflict` mı, `retain` mı (yeniden deneme bütçesi mi tükeniyor, gerçek açlık mı?);
+- açlıksa: bütçe / geri çekilme kuralı; değilse test belirlenimci hâle (döngü sayısı sınırlı, kanca ile çakışma) ya da adlı `[Trait("Category","Probabilistic")]` + CI süzgeci.
+
+Gelecek regresyon riski: 🟡 CI ara sıra kırmızı; gerçek açlıksa yoğun kapsam yazımında 503.
+
+---
+
+### BL-601
+
+**E-posta / ekran dili: yeni tarayıcıda girişte dil çerezi kullanıcının tercihinden dolsun; Ctrl+K'da "Profilim"**
+
+DURUM: AÇIK · SAHİP: CT (kiracı kabuğu) · BULAN: WP-EMAIL-LANG-01 Teslim 1–2 (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `/Profile`'da kaydedilen dil `.AspNetCore.Culture` çerezini yalnız KAYDEDEN tarayıcıda yazıyor. Kullanıcı başka bir tarayıcıda giriş yapınca ekran kuruluş dilinde açılıyor, e-postalar ise tercih edilen dilde gidiyor (tutarsız).
+- Ctrl+K yalnız gezinme menüsünden besleniyor; "Profilim" kullanıcı menüsünde, Ctrl+K'da yok (Platform manifesti gerekir).
+
+Yapılacak:
+- girişte (tenant_user) çerez yoksa tercihten doldur; tercih yoksa dokunma;
+- Ctrl+K'ya "Profilim" (manifest ya da kabuk girişi; ölç).
+
+Gelecek regresyon riski: 🟢 kullanım kolaylığı.
+
+---
+
+### BL-600
+
+**Kalem birim / saklama koşulu seçenek listesi: Platform'da item-universal listeleme ucu yok (S5'te geçici kod girişi)**
+
+DURUM: AÇIK · SAHİP: CT (Platform + MDM) · BULAN: FU04 S5 ön koşul ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (S5 sohbeti):
+- GSKU `uom` listesi Platform'un özel ucundan geliyor: `api/internal/v1/reference-data/verified-gsku/enumerate-uom` (5 sabit kod).
+- item-universal için Platform'da YALNIZ çözüm ucu var (`InternalItemUniversalReferenceDataController` `POST resolve`). Küme listeleme yok.
+- Genel ekran liste ucunun (`api/lookups/reference-data/consumable-sets/{setCode}/published-values`) izin listesinde `item-uom` / `storage-condition` / `material-type` yok. Ayrıca o uç BRD yayınlı değerleri içindir, kod sahipli katalog için değil.
+- Sonuç: kalem formu ve GSKU / FG "Stok davranışı" formu birim (XBX, XCS, MGM, IU …) ve saklama koşulunu listeden seçtiremiyor. S5 geçici olarak kod alanı + MDM doğrulaması (`STOCK_UOM_INVALID` / `STOCK_STORAGE_CONDITION_INVALID`) kullanıyor; malzeme tipi sabit 6 kod.
+
+Yapılacak:
+- Platform: iç `enumerate-item-universal` ucu (kiracıdan bağımsız, salt okur, aynı güven yolu, sürüm kimliği / numarası ile);
+- MDM: `GET api/mdm/items/options` (material-type, item-uom kod + sıra + boyut + hassasiyet + `CodeStandard`, storage-condition + `ConditionKind`), kesinti = ret;
+- Web: kalem ve stok formlarında seçim listesi (seçim yine tam-kod çözümüyle doğrulanır).
+
+Gelecek regresyon riski: 🟡 kullanım kolaylığı; yanlış kod MDM'de reddedilir (veri riski yok).
+
+---
+
+### BL-599
+
+**Sessiz tarih yanlış ayrıştırma koruması olmayan ~10 ekran (31.02 → 03.03 uyarısız kaydedilir)**
+
+DURUM: AÇIK · SAHİP: CT (ortak bileşen) + ekran sahipleri (XMC-001) · BULAN: WP-WCN-FIX-01 FIX3 incelemesi (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (FIX3 incelemesi, `487bc7998`):
+- `allowInput: true` ile flatpickr kullanan ve paylaşılan BL-391 korumasını (`DitenDateField.guardAgainstSilentMisparse`) çağırmayan ekranlar. Örnekler:
+  - `CRM/Claims/country-version.js:144`, `CRM/Knowledge/form.js:120` (CRM ekibi);
+  - `Platform/Tenants/details.js:1929` (Platform, CT hattı);
+  - `esbp-horizon-dates.js:100`;
+  - diğerleri.
+- Korunanlar (WCN-FIX-01): ortak `diten-datefield` alanları, PositionAssignments, Organizasyon Birimleri, Pozisyonlar, Tüzel Kişi sihirbazı ve liste süzgeci.
+
+Yapılacak:
+- tam liste (`git grep allowInput`);
+- CT hattı ekranları (Platform Tenants) WCN-FIX-01 kabulünden sonra mekanik olarak bağlanır (koruma + görünüm betiği + korumasızsa `allowInput: false` + ekran başına test + isteğe bağlı tarih reddinde kayıt durur);
+- CRM / diğer ekiplerin ekranları için sahiplerine sorulur.
+
+Gelecek regresyon riski: 🟡 GxP tarihleri (yürürlük, fesih, hasar) uyarısız yanlış kaydedilebilir.
+
+---
+
+### BL-598
+
+**MDM depoları kurucuda eşzamanlı Mongo çağrısı yapıyor (dizin oluşturma): Mongo kapalıyken istek 503 yerine 500**
+
+DURUM: AÇIK · SAHİP: CT (MDM altyapı) · BULAN: FU04 S4 FIX2 incelemesi + FIX3 ölçümü (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm (S4 FIX3, `3c71bb496`):
+- `ProductLegalEntityScopePolicyRepository` kurucusu `Indexes.CreateMany`'yi eşzamanlı çağırıyor. Depo scoped; isteğin DI çözümü sırasında Mongo'ya gidiliyor. Mongo kapalıysa `TimeoutException` → 500 (işleyicinin 503 eşlemesine varılmıyor). Veri riski yok.
+- İki dizin UNIQUE (ürün başına bir politika). Barındırılan başlatıcıya taşımak, dizin yokken çift politika yazma penceresi açar (🔴); bu yüzden taşınmadı.
+- Benzer desen yaklaşık 29 MDM deposunda var.
+
+Öneri (S4 FIX3 raporu §5): süreç başına `Lazy<Task>` ile dizin hazırlığı; yazmalar hazırlığı bekler ve hazır değilse 503 ile kapanır; okumalar DI'da Mongo'ya gitmez. Önce tek depo (politika), ölç, sonra diğerleri.
+
+Gelecek regresyon riski: 🟡 Mongo kesintisinde tüketiciler kodsuz 500 görür (stok "cevap yok" sayar, kapalı başarısız).
+
+---
+
+### BL-597
+
+**Zaman Çizelgesi onay listesi deposunun kiracı süzgeci testle sabitlenmemiş (takeover kodu, savunma katmanı)**
+
+DURUM: KAPANDI (2026-10-10, hatta `6a2511fe3`, WP-CT-LANE-DEBT-01) · SAHİP: CT (Zaman Çizelgesi) · BULAN: hat birleşmesi CT sabotajı M5 (2026-10-10) · KAYIT: 2026-10-10
+
+Ölçüm:
+- `TimeEntryRepositories.ListSubmittedInApprovalAsync`'ten `ExecutionFilter` (TenantId + IsDeleted) kaldırıldığında 353 Zaman Çizelgesi testinin hepsi yeşil kaldı.
+- Bugün sızıntı yok: `GetApprovalListHandler` sonucu MOD-0023 `DecidableInstanceIdsAsync` ile süzüyor; başka kiracının iş akışı kimliği bu kümede olmaz.
+- Ama "her sorgu TenantId ile sınırlanır" kuralının depo düzeyinde testi yok. Takeover'ın D1-FIX1 kodu; birleşmenin yarattığı bir boşluk değil.
+
+Yapılacak:
+- Depo testi: iki kiracıda Submitted haftalar → A'nın çağrısı yalnız A'nınkileri döner (weekIds null ve dolu iki yol);
+- sabotaj: `ExecutionFilter` kalkar → test kızarır.
+- Zaman Çizelgesi'nin bir sonraki turuna ya da küçük bir CT işine.
+
+Gelecek regresyon riski: 🟡 işleyici süzgeci değişirse depo düzeyinde koruma kalmaz.
+
+---
+
+### BL-596
+
+**S3b stok kapısı ile S5 Web "Stok davranışı" bölümü aynı sürümde çıkmalı; Bitmiş Ürün kimlik gönderimi yok (canlı ön koşulu)**
+
+DURUM: AÇIK · SAHİP: CT (sıralama) · BULAN: FU04 S3b bağımsız incelemesi (2026-10-09) · KAYIT: 2026-10-09 · CANLI ÖN KOŞULU
+
+Ölçüm:
+- S3b (`7611c62e9`) lot / seri bayrağı eksik GSKU / LSKU taslağının onaya gönderimini 409 `STOCK_FLAGS_REQUIRED_FOR_APPROVAL` ile reddediyor (stok ekibinin R-04 şartı).
+- Bayrakları girecek Web kapısı yok (`git grep -i stock-behaviour -- frontend` boş; S5 işi).
+- S5'siz sürümde ekrandan yaratılan her GSKU / LSKU taslağı gönderilemez.
+- Bitmiş Ürün için kimlik gönderimi / onayı bugün yok. Kural (`StockFlagGate.MissingForFinishedGood`) hazır, bağlanacak yer yok.
+
+CT kararı (2026-10-09):
+- kapı açık kalır, anahtar yok;
+- S3b FIX1'de bayraksız taslakta SUBMIT eylemi gizlenir ya da nedenli pasif olur;
+- S5 aynı sohbetin bir sonraki işi;
+- S3b ve S5 birlikte canlıya çıkar.
+- FG kimlik gönderimi yazıldığında kapı çağrısı tarama testiyle zorunlu (S3b FIX1 R4).
+
+Gelecek regresyon riski: 🔴 S5'siz canlıya çıkarsa ürün SKU onayı ekrandan yapılamaz.
+
+---
+
+### BL-595
+
+**Ortak dev Mongo'da 79 eski test veritabanı; yerel test betikleri ortak Mongo'ya düşebiliyor**
+
+DURUM: AÇIK · SAHİP: sahip (temizlik kararı) + CT (betik kuralı) · BULAN: WP-CI-SERVICE-TESTS-02 olayı (2026-10-09) · KAYIT: 2026-10-09
+
+**İLERLEME (2026-10-12):**
+- **MDM KAPANDI.** `086a48a4b` (iş `86cd96f47`, 3 düzeltme turu). MDM testleri teste ait mongod başlatıyor; `MDM_TEST_MONGO` ortamdan okunmuyor; "şüphede Keep" süpürmesi; bekçi.
+- Kalan MDM ikinci tur: `MdmHttpHost.cs` ve `MdmDocumentClassMapsTests.cs` (`NotYetMoved`, yalnız port reddi; S2 / BL-598 birleşince).
+- CI: `service-tests.yml:145` mdm-* satırları için hâlâ `MDM_TEST_MONGO` dışa aktarıyor ve 27017'de iş yerel mongod başlatıyor (artık etkisiz; Eventing için gerekli olabilir). `CiServiceTestsGuardTests.cs:182` satırı sabitliyor. CT, main-sync kabulünden sonra.
+- Platform kısmı: main-sync'te karar C (Roller sohbeti).
+- 79 eski veritabanının silinmesi sahipte.
+
+Olay (2026-10-09 ~20:50):
+- BL-590 işçisinin yerel betiğinde iş-yerel mongod başlamadı (port meşgul). URI'ler boş kaldı; MDM App testleri ~3 dk varsayılan `localhost:27017`'ye, yani ortak dev Mongo'ya bağlandı. İşçi kendisi bildirdi.
+- CT salt okunur ölçtü: dev veritabanlarında (`DitenERP_Dev`, `diten_platform`, `diten_auth_v3`, `DitenEnterpriseDb`) pencerede test kaynaklı yazı yok. MDM testleri kendi adlı DB'lerini kullanır.
+- Betik düzeltildi: URI'ler kapalı porta, adım başarısızsa test yok.
+
+Ölçüm (salt okunur): ortak Mongo'da 96 veritabanı, 79'u test artığı (`*_itest*`, `*_Test_*`; çoğu `diten_platform_brd_itest_*`).
+
+Yapılacak:
+- (a) Sahip: test artığı DB'lerin silinmesine karar (dev verisi değil; ad desenleri listelenir, onaylı tek komut).
+- (b) CT kuralı: test fikstürlerinin varsayılanı `localhost:27017` OLMASIN; boş URI → test adlı atlama ya da kırmızı, ortak Mongo'ya asla bağlanmaz. Ölç ve iş aç.
+
+Ek ölçüm (2026-10-10, BL-598 + BL-604):
+- MDM Application Mongo testleri (`ProductScopeMongoScope` ve kardeşleri) varsayılan olarak ORTAK `localhost:27017` + `*_itest` veritabanlarını kullanıyor. 79 test veritabanının kaynağı bu; her yerel MDM App koşusu ortak dev Mongo'ya yazıyor.
+- HCM `EmployeeDraftSessionRepositoryMongoTests` de ortak 27017'ye bağlanıyor (BL-604).
+- Yapılacak: Auth deseni (`DITEN_TEST_MONGOD` → teste ait mongod; değişken verilmiş ama geçersizse kırmızı); CI'da mdm-app satırı aynı yolu kullanır. MDM için CT işi; HCM için sahibine (XMC-001).
+
+- Platform: uykudan uyanınca 8 Platform testi `localhost:27017` zaman aşımına düştü (2026-10-11) → Platform test sınıflarının bir kısmı da ortak Mongo kullanıyor; iş Roller sohbetinde (`platform-owned-mongo`).
+
+Gelecek regresyon riski: 🟡 bir sonraki boş URI ortak dev verisine yazabilir.
+
+---
+
+### BL-594
+
+**Depoda izlenen derleme çıktısı: `.tmp-*/Debug` altında 797 dosya (dll, pdb, exe, appsettings kopyaları) ana dalda**
+
+DURUM: AÇIK · SAHİP: CT (depo hijyeni) + CRM ekibi (kendi klasörleri, XMC-001) · BULAN: WP-WCN-FIX-01 AŞAMA 0 (2026-10-09) · KAYIT: 2026-10-09
+
+Ölçüm (`git ls-files`, origin/main'de de 797):
+- `services/Diten.CrmService/src` 456, `services/Diten.CrmService/tests` 284;
+- `frontend/Diten.Web/.tmp-fu07w` 27, `.tmp-fu11` 27;
+- `Diten.BuildingBlocks.Security.Secrets/.tmp-fu11` 3 (derlenmiş kütüphane; sır değeri değil).
+- İlk ekleme: `0f71a237c` (2026-08-28, "checkpoint: CRM Campaign…") ve `1cca77a8f` (2026-05-13).
+- Web klasörlerinde `appsettings*.json` kopyaları var: kaynak dosyalarla aynı (ölçülmeli: kaynakta olmayan bir değer var mı?).
+
+Yapılacak:
+- `git rm --cached` (dosyalar diskte kalır) + `.gitignore`'a `**/.tmp-*/`;
+- CRM klasörleri için CRM ekibine sor (XMC-001);
+- appsettings kopyalarını kaynakla karşılaştır.
+- Tek PR'a ayrı commit olarak.
+
+Gelecek regresyon riski: 🟡 depo şişiyor; derleme çıktısı yanlışlıkla kaynakmış gibi aranıyor (git grep isabetleri); kopya ayar dosyası kaynaktan ayrışırsa yanıltır.
+
+---
+
+### BL-593
+
+**Görev Merkezi: `WorkAggregation_Action_Decline` dil anahtarı 7 dilde yok (takeover'dan devralınan, 2 vitest kırmızısı)**
+
+DURUM: AÇIK · SAHİP: WCN düzeltme turu (l10n-agent) · BULAN: WP-CT-LANE-TKO-MERGE-01 (2026-10-09) · KAYIT: 2026-10-09
+
+Ölçüm:
+- Takeover ağacında (`07bcdbd8b`) ve birleşik ağaçta aynı 2 vitest kırmızısı.
+- Görev sağlayıcısı (`TaskWorkItemProvider`) "reddet" eylemini yayıyor. Web'de `WorkAggregation_Action_Decline` anahtarı hiçbir dilde yok; yalnız toplantının `WorkAggregation_Action_DeclineInvite`'ı var (`WorkCenterNextIndex.*.resx`).
+- Ekranda düğme etiketi ham kod olarak görünebilir.
+
+Yapılacak:
+- 7 dilde anahtar;
+- eylem kodu → anahtar eşleme testi (her yayılan eylem kodunun anahtarı var);
+- ekranda ölçüm.
+- WCN düzeltme turuna (BL-588 / BL-589 ile) girer.
+
+Gelecek regresyon riski: 🟡 yeni eylem kodu yine anahtarsız kalabilir; eşleme testi bunu kapatır.
+
+---
+
+### BL-592
+
+**`mdm.product-master.read` hiçbir yerde sağlanmıyor: Enforced kiracıda okuma sözleşmesinin her ürün satırı 403 (canlı ön koşulu)**
+
+DURUM: AÇIK · SAHİP: CT (Auth + Platform + MDM) · BULAN: FU04 S4 bağımsız incelemesi (2026-10-09) · KAYIT: 2026-10-09 · CANLI ÖN KOŞULU
+
+Ölçüm:
+- `git log --all -S"mdm.product-master.read" -- services` yalnız S4 commit'i (`af5cad3eb`).
+- İzin Auth tohumunda, rol şablonlarında ve MDM modül manifestinde yok; hiçbir kiracı rolü bu izni tutamaz.
+- Enforced yayılımda `ResolveContextAsync` anahtarı Platform'a sorar. Platform'un izin listesi sabit 37 anahtar (`TrustedLegalEntityScopeCredentialAuthenticator.cs:13` `MaxAllowedPairs`, `:33` `FirstConsumerPermissions`, `:92-96` `AllowsPair`). Bu anahtarı reddeder → 403 `LEGAL_ENTITY_SCOPE_FORBIDDEN`.
+- Kalem satırları çalışır; ürün satırları herkese 403 (kapalı başarısız, sızıntı değil).
+- Testler göremiyor: `FakeLegalEntityScopes` her anahtarı kabul ediyor.
+
+Yapılacak (tek iş, üç servis):
+- MDM manifestine izin (S5 ile ya da önce);
+- Auth ürün kimliği profilinde isteğe bağlı anahtar (BL-573 deseni) ve hangi rollerin alacağı (öneri: Viewer okuma; stok servisinin çağıranı olan kullanıcı rolleri);
+- Platform izin listesi + kimlik bilgisi bağlaması + `MaxAllowedPairs`;
+- gerçek doğrulayıcıya karşı test;
+- MDM testlerinde sahte nesnenin anahtar listesi Platform'unkine bağlanır.
+
+Gelecek regresyon riski: 🔴 canlı ön koşulu. Okuma sözleşmesi Enforced kiracıda ürün satırı veremez.
+
+Kardeş canlı ön koşulu (2026-10-09, stok ekibinin R-02 hatırlatması): ağ geçidinde `/api/product-master` rotası yoktu. S4 FIX1'e eklendi (FU04 §25.1 R-02). İkisi birlikte kapanmadan stoğun üretimdeki ürün seçicisi çalışmaz.
+
+Kapsam genişledi (2026-10-10, FU04 S5 ön koşul ölçümü): aynı iş `mdm.items.*` izinlerini de sağlar — Auth `DefaultRolePermissionTemplate` / `EntitlementOnlyViewerPermissions`'ta `mdm.items.*` yok (`:92-130`); paket §23 #7 "S5 ön koşulu". Ayrıca GSKU / LSKU / FG "stok davranışı düzenleme" eylemi bugün mevcut anahtarlarla (`mdm.gskus.update`, `mdm.finished-goods.create`, `mdm.lskus.create`) bağlı; kendi anahtarları Auth ürün kimliği profilinin tam-küme denetimiyle birlikte bu işte. Tek iş: Auth (şablon + Viewer + profil) + Platform izin listesi + MDM manifest.
+
+CT kararı (2026-10-10, Roller ölçümü üzerine): Auth'a MDM anahtarları TOHUMLA girmez; mevcut yol manifest → Platform kataloğu → Auth `/internal/permissions/sync`. Entitlement eşitlemesi yalnız modülün BEYAN ettiği anahtarları verir. Bu yüzden iş ikiye bölündü:
+- **BL-592 (Roller, `feature/auth/mdm-perms`):** Auth profili (6 kalem anahtarı hepsi-ya-hiçbiri; `mdm.product-master.read` tekil isteğe bağlı), Viewer'ın hak gerektiren okuma kümesine `mdm.items.read` + `mdm.product-master.read`, Platform izin listesi 37 → 38 + gerçek doğrulayıcı testi + post-deploy yapılandırma satırı. `mdm.items.reactivate` yok (yeniden etkinleştirme `submit`). Tohum yok.
+- **BL-592 ilerleme (2026-10-10):** Auth / Platform işi `0fefface3` (mdm-perms). Platform listesi artık 38 anahtar (`mdm.product-master.read` eklendi; yukarıdaki "sabit 37" ölçümü o günün durumu). İnceleme 0 / 3 gerekli → FIX1:
+  - S2'nin `mdm.items.withdraw`'ı için profil {altı} ya da {altı + withdraw} kabul eder, yoksa S2 birleşince modülün rol eşitlemesi durur;
+  - post-deploy sırası: önce Platform kodu, sonra 38 çift; Auth BL-592, kalem anahtarlarını ilk beyan eden manifestten ÖNCE.
+- **BL-592 Auth / Platform KABUL (2026-10-11):** hatta `7f8dba829` (`432c639ac`). Kalan: manifest adımı. Manifest adımına taşınan küçükler: post-deploy §7'de adım 3'e "Auth ≥ 432c639ac", adım 1'e "bütün Platform kopyaları", Viewer denetimi adım 4'ten sonra (hak almayan kiracıda Viewer ve Admin); "Duplicated:" iddiası; tek başına bilinmeyen `mdm.product-master.*` eylemi testi.
+- **MDM manifest adımı (S4 ve stock-gate hatta birleştikten SONRA, tek küçük iş):** (1) `mdm.product-master.read` sayfasız API eylemi olarak beyan (`ACTIVATE_ROLLOUT` deseni; "enforced" listesine `ProductMasterController`); (2) BL-573 ikinci yarısı: `mdm.{gskus,lskus,finished-goods}.edit-stock-behaviour` beyan + kontrolcülerin bağlanması. Bu üç anahtar Platform güvenilir kapsam listesine de girer (38 → 41). S4 / S5b'ye eklenmedi: iki dal aynı manifest dosyasını değiştirse birleştirmede çakışırdı.
+- Stok ekibine "hazır" haberi manifest adımından SONRA gider. Gelecek regresyon riski: 🟡 adım unutulursa anahtar beyan edilmez, rol verimi sessizce boş kalır, stok ekibi canlıda 403 alır.
+
+Stok ekibine söz (2026-10-09, yazılı cevapları): iki ön koşul kapanıp CT yazılı haber verene kadar canlı bağ kurulmaz; stok yerel taklitle sürer. Kapanış haberinde izni **varsayılan olarak hangi rollerin aldığı** da yazılır (stok kullanıcı rollerini buna göre planlayacak). Rol seçimi canlı rol önerisiyle (`docs/records/analysis/roles/2026-10-09-canli-rol-onerisi.md`) hizalanır.
+
+---
+
+### BL-577
+
+**CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) · BULAN: BL-570 FIX1 ölçümü + CT · KAYIT: 2026-10-08 · TEK PR'DAN ÖNCE KARAR
+
+`scripts/run_phase1_gates.sh` bugün yalnız şunları koşuyor:
+- `TenantArchitecture.TenancyTests`
+- `TenantArchitecture.ArchitectureTests`
+- `Diten.Web.Tests`
+
+Auth çözümü yalnız derleniyor (`:119`). Platform Application (~7000 test), Auth Application (~1680), MDM Application / Api (~2200 / ~750) CI'da hiç koşmuyor. Bu yüzden BL-570'in Unix sır kanalı ve kilidi Linux'ta hiç ölçülmüyor. Koşucu ubuntu 24.04, glibc 2.39.
+
+Yapılacak:
+- Servis test adımları: Mongo kullanan testler kendi geçici mongod'larını açıyor. Koşucuya mongod ikilisi kurulur (MongoDB topluluk tarball'ı, sürüm sabit) ve `DITEN_TEST_MONGOD` verilir.
+- Her adımda "atlanan = 0" iddiası. Sessiz atlama yok; `[UnixFact]` / `[OwnedMongoFact]` Linux'ta koşar.
+- Süre bütçesi: Platform tam koşu ~13 dk. Ayrı iş (job) ya da paralel matris.
+- İlk koşuda Linux'a özgü kırmızılar beklenir (BL-570). Ayrı ayrı sınıflanır.
+
+Karşılaştırma: SAP'de CI/CD (Cloud ALM / CTS+) aktarım öncesi birim ve entegrasyon testlerini zorunlu koşar. Oracle'ın sürüm boru hattı da her yamada tam regresyon paketini çalıştırır.
+
+Gelecek regresyon riski: 🔴 (servis testleri yalnız geliştiricinin makinesinde; Linux davranışı hiç ölçülmüyor).
+
+---
+
+### BL-578
+
+**Auth işletim komutlarının tek örnek kilidi makine yerel (`Global\` adlı mutex, `/tmp/.dotnet`); sunucular arası dışlama ve kilit dosyası bütünlüğü yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: BL-570 FIX1 R4 ölçümü · KAYIT: 2026-10-08
+
+BL-570 FIX1'de CT kararı A: `Global\` önekli adlı mutex. macOS'ta ölçüldü: oturumlar arası dışlıyor. Kullanıcılar arası ölçülmedi.
+
+Kalan maruziyetler:
+- `/tmp/.dotnet/shm/global` ve `lockfiles/global` 0777 ve sticky bit yok. Yerel bir kullanıcı kilit dosyasını silerek dışlamayı kırabilir. Bu öneksiz adda da aynıydı.
+- Yerel bir kullanıcı kilidi tutarsa komut `OPERATION_ALREADY_RUNNING` ile çalışmaz. Kapalı başarısızlık, yalnız erişilebilirlik.
+- İki ayrı sunucuda aynı anda çalıştırma dışlanmaz.
+
+Yapılacak: Mongo'da kira kaydı (sahip, süre, saat; ortak Auth veritabanı), sunucular arası. Kira süresi dolunca devralma adlı olur.
+
+Karşılaştırma: SAP'de arka plan işleri merkezi kuyruk sunucusunda (enqueue server) kilitlenir. Oracle ESS'te de çakışma denetimi veritabanındaki istek tablosundadır. İkisi de işletim sistemi yerel nesnesine bağlı değildir.
+
+Gelecek regresyon riski: 🟡 (çok sunuculu kurulumda iki operatör aynı anda uzlaştırma çalıştırabilir).
+
+---
+
+### BL-576
+
+**MDM ürün varlıklarında (GSKU / LSKU / Bitmiş Ürün …) IgnoreExtraElements sınıf haritası yok: yeni bir alan yazıldıktan sonra eski ikiliye geri dönülürse o kayıtların okunması fırlar**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: FU04 S3 ölçümü · KAYIT: 2026-10-07 · TEK PR'DAN ÖNCE, CANLIDA İLK STOK YAZIMINDAN ÖNCE KAPANMALI
+
+Yalnız Marka / Ürün ve üç GP yaşam döngüsü işleminin `IgnoreExtraElements` haritası var (`GlobalProductLifecycleClassMaps`). S3 ilk stok alanını yazdıktan sonra S3 öncesi ikili o GSKU / LSKU / FG'yi okurken "Element 'BaseUomCode' does not match" ile fırlar. Yani geri alma o kayıtların okunmasını bozar.
+
+S3 haritayı kendisi eklemedi, çünkü:
+- aynı süreçte daha önce yapılan bir okuma haritayı kendiliğinden kaydederse açılıştaki `Verify` deseni düşer (BL-569 ile aynı kök);
+- haritanın eklenmesi kimlik varlıklarının eşlemesini değiştirir, S3'ün kapsamı değil.
+
+Yapılacak:
+- GP desenindeki harita, MDM'in bütün ürün kimliği varlıkları için (GSKU, LSKU, FG, ürün tanımı revizyonu, iş akışı işlemleri; ölçülür).
+- Test sırası koruması (modül başlatıcı).
+- Ek alanlı belgeyle eski ikili simülasyonu testi.
+
+Bağlam: ürün modülleri henüz canlıda değil, bugün "eski ikili" canlıda koşmuyor. Risk, gelecek ek alanlar ve geri almalar için yapısal.
+
+Karşılaştırma: SAP'de tablo genişletmeleri (append structure) eski programların okumasını bozmaz. Oracle'da da esnek alanlar (DFF) eski sürüm okumasında yok sayılır. İkisinde de ileri uyumluluk şemanın özelliğidir.
+
+Gelecek regresyon riski: 🔴 geri almada (kayıt okunamaz); kapanana kadar.
+
+---
+
+### BL-575
+
+**Denetim defteri: İ5 istisnasındaki komuta iz dışı bir yazım eklenirse mimari kural yakalamıyor; merkezi eşleme bekleme kesimi (≥ 79) sürüm çıkınca ileri alınmazsa her yeni işlem bir gün bekler**
+
+DURUM: AÇIK · SAHİP: CT (mimari kural / MDM devralma) · BULAN: WP-MDM-SETTLE-CAP-01 raporu (SC-3e ölçüm sınırı + madde 2 notu) · KAYIT: 2026-10-07
+
+(1) **İ5 ölçüm sınırı.** `AuditTrailStandardTests`, İ5 ("hiçbir kalıcı kaydı değiştirmez") komutunun gerçekten yazmadığını, yalnız bildirilmiş iz üyeleri üzerinden ölçüyor. İz dışı bir depo yazımı eklenirse istisna geçerli görünmeye devam eder. Bugün etkilenen: `RetireGskuIdentityPairCommand`, `RetireLskuIdentityCommand` (her ikisi yalnız 403).
+Öneri: İ5 komutunun işleyicisi hiçbir depo yazma üyesini (`*Async` yazma adları, `IMongoCollection` yazımları) çağırmaz; kaynak taramasıyla ölçülür.
+
+(2) **Kesimin ileri alınması.** `CentralMappingRollout.FirstOperationOfThisRelease = 79`: 79 ve sonrası Platform haritası gelene kadar ~1 gün bekler. Sürüm canlıya çıkıp Platform haritası dağıtıldıktan sonra kesim ileri alınmazsa, sonraki her yeni işlem (Platform'un bilerek eşlemediği dahil) gerçek bir 409 yerine bir gün yeniden dener.
+Öneri: sürüm notu adımı ("Platform haritası canlıda → kesimi bir sonraki ilk işleme al") ve kesimin Platform'un dağıtılmış harita sürümünden türetilmesi.
+
+Karşılaştırma: SAP'de değişiklik belgesi nesnesi tanımı ile uygulama aynı aktarımda taşınır, sürüm boşluğu bekletilmez. Oracle'da da denetim politikası değişikliği yamayla birlikte uygulanır.
+
+Gelecek regresyon riski: (1) 🟡 (istisnalı komuta ileride yazım eklenirse denetimsiz kalır); (2) 🟢 (yalnız gecikme, kayıp yok).
+
+---
+
+### BL-574
+
+**MDM yol b denetim kayıtları değişen alanları, önce / sonra değerlerini ve ret nedenini taşımıyor (AUD-001 §3 madde 10); Platform ucu bunları zaten alıyor, eksik MDM'in iletim isteğinde**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: FU04 S1 bağımsız incelemesi (R3) · KAYIT: 2026-10-07
+
+`AuditForwardRequest` (`IPlatformAuditForwarder.cs:16`) yalnız şunları taşıyor: Operation, EntityType, EntityId, Outcome, RequestType, Category, SourceModule, CorrelationId. Platform'un `api/internal/audit/append` ucu (`AuditAppendRequest`) ise `BeforeState`, `AfterState` ve `Metadata`'yı da kabul ediyor.
+
+Sonuç: MDM'in bütün yol b komutlarında (Marka, ürün komutları, kısaltmalar) kayıt "neyin değiştiğini" ve "neden reddedildiğini" söylemiyor. GMP açısından ana veri değişikliğinin önce / sonra değeri beklenir (Annex 11 / 21 CFR Part 11 denetim izi).
+
+FU04 S1-FIX1 mekanizmayı ekliyor: isteğe bağlı alanlar, geriye uyumlu. Kalem komutları bunları dolduruyor.
+
+Yapılacak:
+- Diğer yol b komutları (Marka, GP / GSKU / LSKU / FG yol b komutları, kısaltma, S3 stok davranışı) aynı alanları doldurur.
+- Bir mimari kural, "değişiklik yapan komut değişen alanları taşır" kuralını ölçer.
+
+Karşılaştırma: SAP'de malzeme ana verisi değişiklik belgeleri (CDHDR / CDPOS) alan bazında eski ve yeni değeri tutar. Oracle'da da öğe denetimi (Audit Trail) öznitelik bazında önce / sonra kaydeder.
+
+Gelecek regresyon riski: 🔴 GMP kullanımında (değişiklik izi eksik); kalem canlıya çıkmadan önce kalem için kapanıyor, diğerleri için açık.
+
+**Ek (CT 2026-10-07, S1-FIX1):** neden alanı bugün serbest metin; denetim kaydına yazılmaz (AUD-001 §3, kişisel veri riski), kayıtta yalnız `reasonProvided`. **S5:** kullanım dışı bırakma / emekliye ayırma için kodlu neden listesi (MOD-0048 ya da kalem modülü listesi); gelince `Metadata.reasonCode` liste kodu olarak döner.
+
+---
+
+### BL-573
+
+**Ürün stok davranışı izinleri (O-12) Auth'ta yok: üç `edit-stock-behaviour` anahtarı ürün yaşam döngüsü profilinin tam küme denetimini fırlatıyor; S3 geçici olarak kimlik anahtarlarını kullanıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: FU04 S3 DUR ölçümü · KAYIT: 2026-10-07 · S5'TEN ÖNCE KAPANMALI
+
+`ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet`, `mdm.gskus.*`, `mdm.lskus.*` ve `mdm.finished-goods.*` ile başlayan her anahtarı yaşam döngüsü adayı sayıyor. Bu küme `PermissionKeys` ile birebir eşit olmalı ("exact eight base, eighteen lifecycle and one non-human recovery key"). Manifeste üç yeni anahtar girerse ürün modülünün Auth uzlaştırması tümüyle fırlar.
+
+CT kararı (S3, b): bu dilimde geçici olarak `mdm.gskus.update`, `mdm.lskus.create` ve `mdm.finished-goods.create` kullanılıyor (FG taslak iptali emsali). Komut ve izin sabiti ayrı; yalnız değer geçici.
+
+Yapılacak:
+- Üç anahtar profilin `PermissionKeys`'ine ve ProductDataSteward rolüne eklenir; hata metnindeki sayı güncellenir.
+- S3 sabitlerinin değeri kendi anahtarına çevrilir.
+- FG taslak iptali için de kendi anahtarı değerlendirilir.
+- Plan eşitlemesi ve rol matrisi testleri.
+
+Karşılaştırma: SAP'de malzeme ana verisinin görünümleri (temel veri, depo, MRP) ayrı yetki nesneleriyle (M_MATE_STA) korunur. Oracle'da da kalem öznitelik grupları ayrı rol ayrıcalığıyla düzenlenir. İkisinde de stok görünümü kimlik düzenleyiciden ayrı yetkidir.
+
+Gelecek regresyon riski: 🟡 (geçici dönemde stok davranışını kimlik düzenleyicisi düzenler; ayrı veri sorumlusu rolü yok).
+
+**Ek (CT 2026-10-08, BL-573 Auth turu DUR):** tam küme kuralı her tek taraflı sırayı kırıyor: Auth önce gelirse manifest 18 bildirir, Auth 21 bekler; manifest önce gelirse tersi. CT kararı A: Auth üç anahtarı "ya hepsi ya hiçbiri" isteğe bağlı küme olarak kabul eder (geçerli: 18 ya da 18 + tam bu 3; kısmi ya da yabancı anahtar ret); Steward'a verme yalnız katalog üçünü taşıyorsa. **İkinci yarı (açık):** S5 manifesti her kiracıda canlıya çıktıktan sonra üçlü zorunlu yapılır (tek küme 21). Karşılaştırma: SAP'de yetki nesnesi profil üretecinde bildirilmeden role girmez; Oracle'da da bildirilmemiş fonksiyona yetki verilemez.
+
+---
+
+### BL-571
+
+**Onay motoru kurtarma: kiracı başına tarama sınırı ilerlemiyor; 5000'den fazla yaşlı bekleyen onayı olan kiracıda sınırın dışında kalan yarım başlangıç hiç sayılmıyor, hiç kapatılmıyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform / onay motoru) · BULAN: WP-WF-ENGINE-RECOVERY-01 FIX2 bağımsız incelemesi (gerekli 3) · KAYIT: 2026-10-07
+
+`WorkflowStartRecoveryStore.cs` `$limit`'i görevsiz süzgecinden önce uyguluyor. FIX3 dizinden `$sort` (en eski önce), kapatma kipinde Warning ("süpürme bir alt kümeyi görüyor") ve runbook cümlesi ekliyor.
+
+Kalıcı çözüm: kiracı başına ilerleyen imleç. Her döngü son baktığı noktadan devam eder; tur bitince başa döner. Böylece her yarım başlangıç sonlu sürede görülür.
+
+Karşılaştırma: SAP'de arka plan iş yönetimi büyük kümeleri paketlere bölüp kaldığı paketten devam eder. Oracle ESS de toplu işleri "chunk" ve devam noktasıyla koşar.
+
+Gelecek regresyon riski: 🟡 (yalnız çok büyük kiracıda; sayaç "≥ N" ve Warning ile görünür).
+
+**Ek (CT 2026-10-07, WF FIX3 madde 3 DUR):** dizinden `$sort` bugün yapılamıyor. `LastTransitionAt` bir `[ticks, offset]` dizisi; K3 dizini çok anahtarlı (isMultiKey), plan bellek içi SORT yapıyor ve artan sıralama en küçük öğeyi (offset) kullanıyor. İşçi ölçtü: `(TenantId, Status, LastTransitionAt.0)` konumsal dizini çok anahtarlı değil; tick süzgeci + `LastTransitionAt.0` sıralamasıyla plan IXSCAN → FETCH → LIMIT, SORT yok, totalDocsExamined = 10 ("tick ya da null" `$or` biçimi de aynı plan). CT kararı: WF FIX3'te sırasız tarama + Warning + runbook; konumsal dizin + tick süzgeci bu BL'nin ilerleyen imleç işinin temeli olur (aynı iş).
+
+---
+
+### BL-572
+
+**Onay motoru kurtarma: kapat-ve-yeniden-başlat (supersede) yalnız onay ve inceleme servislerinde; üst talep ve zaman çizelgesi onayı sabit anahtarla kilitli kalabilir**
+
+DURUM: AÇIK · SAHİP: CT (Platform / onay motoru) · BULAN: WP-WF-ENGINE-RECOVERY-01 FIX2 bağımsız incelemesi (küçük 8) · KAYIT: 2026-10-07
+
+`TaskUpwardRequestService.cs:119` sabit, görev başına bir anahtar kullanıyor (`task-request:{tenant}:{task}`). `TimesheetApprovalService.cs:164` için de aynı soru açık.
+
+Başarısız bir başlangıçtan sonra atanan değişirse ya da süpürme yarım başlangıcı kapatırsa, sonraki her deneme 409 alır. FIX2'nin "tekrar yaşı tazelemez" değişikliği bu etkiyi büyütüyor. FIX3 açıkta kalan tüketicileri runbook'a yazıyor.
+
+Yapılacak: bu tüketicilere de `SupersedeWorkflowHalfStartCommand` ile kapat-ve-yeniden-başlat; testli.
+
+Karşılaştırma: SAP Business Workflow'da başlamış ama ilerlemeyen iş öğesi yönetici tarafından mantıksal olarak silinip yeniden başlatılır. Oracle BPM'de de "withdraw + resubmit" aynı kaydı yeni örnekle sürdürür.
+
+Gelecek regresyon riski: 🟡 (atanan değişiminde kullanıcı talebi 409'da takılır).
+
+---
+
+### BL-570
+
+**MDM devralma dalındaki Auth işletim kodu Windows'a bağlı: adlı semafor ve `kernel32` / `ntdll` boruları macOS ve Linux'ta çalışmıyor; 59 Auth testi bu yüzden Windows dışında kırmızı**
+
+DURUM: AÇIK · SAHİP: CT (Auth / MDM devralma) · BULAN: CT, takeover ← fg-accept birleştirme doğrulaması (`314d8db2d`) · KAYIT: 2026-10-07 · TEK PR'DAN ÖNCE KAPANMALI
+
+Yalnız `feature/mdm/product-five-takeover`'da var; main ve CT hattında yok (ölçüldü).
+- `EntitlementReconciliationOperationalRunner.cs:33`: `new Semaphore(1, 1, "Diten.Auth.ProductIdentityEntitlementReconciliation")`. Adlı semafor Windows dışında `PlatformNotSupportedException` atar.
+- `ServiceClientSecretOutputSink.cs:122-129`: `DllImport("ntdll.dll")` ve `DllImport("kernel32.dll")`.
+
+Takeover'da Auth Application testi 1591/1650:
+- 51 `ServiceIdentityTokens` (kernel32);
+- 6 `ProductIdentityEntitlementReconciliationCommandContractTests` (adlı semafor);
+- 2 `ProductAbbreviationPermissionOnboardingMongoTests` ("explicit owned-test Mongo URI" ister).
+
+Birleştirmenin dokunduğu dosyalardan hiçbiri bu testlerde yok, kırmızı önceden var. Canlı sunucu Linux ise iki operatör komutu ilk çalıştırmada çöker. CI Linux koşucusunda da 57 test kızarır.
+
+Yapılacak:
+- Tek-örnek kilidi için taşınabilir yol: Mongo kira kaydı ya da dosya kilidi.
+- Sır çıkışı için `PipeStream` / anonim boru gibi .NET'in çapraz platform API'si. Windows'a özgü sertleştirme gerekiyorsa `OperatingSystem.IsWindows()` arkasında, eşdeğer Unix yoluyla.
+- Mongo testleri için sahipli test veritabanı fikstürü: mevcut `DITEN_TEST_MONGOD` deseni, ortak Mongo yok.
+- macOS + Linux'ta 1650/1650.
+
+Karşılaştırma: SAP'de arka plan iş kilidi uygulama sunucusundan bağımsız, veritabanında (ENQUEUE) tutulur. Oracle'da eşzamanlı yönetici kilidi de veritabanı tablosundadır. İkisi de işletim sistemi adlı nesnesine bağlı değildir.
+
+Gelecek regresyon riski: 🔴 (Linux canlıda operatör komutları çöker; CI kırmızı).
+
+---
+
+### BL-567
+
+**Ürün okumalarında kapsam koruması yalnız `InvalidOperationException`'ı eşliyor: okunamayan rollout kaydı (BSON eşleme / Mongo okuma hatası) ürün listesinde 500, yazımda ve tamlıkta 503**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma, SCOPE-INT-01) · BULAN: WP-MDM-SCOPE-ACCEPT-01 FIX3 raporu + bağımsız inceleme · KAYIT: 2026-10-07
+
+Kapsam işi FIX3'te yazım ve tamlık yollarına `ProductLegalEntityScopeWriteFenceCoordinator.IsRolloutUnreadable` korumasını koydu (IOE, Format, Bson*, Mongo* → kodlu 503). GP ürün okuması (`GetGlobalProductsHandler.cs:135`) hâlâ yalnız IOE eşliyor; okunamayan bir rollout kaydı ürün ekranında 500 verir. GP dosyası o sırada son kabul turundaydı, bu yüzden entegrasyon turuna (SCOPE-INT-01) kaldı. Yapılacak: aynı korumayı ürün okumalarına uygula (GP, GSKU, LSKU, FG okuma işleyicileri), bir test ile sabitle. Karşılaştırma: SAP'de yetki kontrolü (AUTHORITY-CHECK) okunamazsa kayıt gösterilmez, kodlu mesaj verilir; Oracle Fusion veri güvenliği de "kapsam okunamadı" durumunu ayrı hata olarak döner. Gelecek regresyon riski: 🟡 (Enforced kiracıda bozuk rollout kaydı ürün ekranını 500 yapar).
+
+---
+
+### BL-568
+
+**Onay motoru: tamamlanmamış güvenilir rezervasyonun başlangıç görevi Görev Merkezi'nde görünüyor ama karar reddediliyor; ayrı operatör servis kimliği yok**
+
+DURUM: AÇIK · SAHİP: CT (Platform / onay motoru) · BULAN: WP-WF-ENGINE-RECOVERY-01 raporu (kural 5 ölçümü) + FIX1 madde 1 DUR · KAYIT: 2026-10-07
+
+(1) Bir güvenilir başlatmanın rezervasyonu tamamlanmadan kalırsa (MDM başlangıç cevabını almadan düşerse) başlangıç görevi adayın Görev Merkezi listesinde görünür, ama karar reddedilir (rezervasyon Completed değil). Süpürme 30 dk sonra kapatır (iş varsayılan KAPALI). Öneri: Görev Merkezi listesi tamamlanmamış rezervasyonun görevini göstermez ya da "hazırlanıyor" durumuyla, karar düğmesi kapalı gösterir. (2) Platform'un güvenilir servis şemaları tam 10 talep istiyor ve yalnız `Diten.MDM` servis adını kabul ediyor; operatör araçları için ayrı bir servis kimliği yok. WF FIX1'de yetim kurtarma bu yüzden HTTP ucu yerine tek atımlık komut oldu (CT kararı D). Kalıcı çözüm: Auth'ta ayrı bir operatör servis kimliği + hedef kitle (ör. `TRUSTED_PLATFORM_OPERATOR`), izin taşıyabilen belirteç modeli. Karşılaştırma: SAP'de arka plan işleri kendi teknik kullanıcısıyla (RFC / sistem kullanıcısı) koşar; Oracle'da entegrasyon kullanıcısına iş rolü verilir — ikisi de kimlik başına. Gelecek regresyon riski: 🟢 (1: kullanıcı karar veremeyeceği görevi görür, kafa karışıklığı; 2: operatör uçları açılınca gerekir).
+
+---
+
+### BL-569
+
+**MDM test serileştirici sırası: Guid Standard serileştiricisinden önce bir yaşam döngüsü deposu kuran test, sınıf eşlemelerini erken dondurur (Api.Tests'te modül başlatıcı koruması yok)**
+
+DURUM: AÇIK · SAHİP: CT (MDM test altyapısı) · BULAN: WP-MDM-GP-BL552 akış 3 FIX2 incelemesi (🟢 4) · KAYIT: 2026-10-07
+
+GP FIX2 beş yaşam döngüsü deposuna statik `Register()` ekledi; kayıt kilitli ve tekrarlanabilir. Ama bir süreç Guid Standard serileştiricisini kaydetmeden önce bu depolardan birini kurarsa sürücü varsayılan Guid serileştiricisini önbelleğe alır (BL-280 şekli: boş okumalar); `Verify` statik kurucuda fırlarsa tür o süreç için kalıcı `TypeInitializationException` olur. Üretim ve bugünkü testler güvenli (Application.Tests `MdmTestSerializers` sırayı kuruyor). Öneri: Api.Tests'e de modül başlatıcı (Guid → Register) ve "önce depo kur, sonra Guid Standard mı" testi. Gelecek regresyon riski: 🟢 (yalnız yeni bir testin sırasına bağlı).
+
+---
+
+### BL-566
+
+**Ürün denetim niyetleri: ölü mektuba düşen niyeti yeniden sürecek bir araç yok; "Platform bu işlemi henüz eşlemiyor" beklemesi yalnız GP'nin üç işlemini kapsıyor (LSKU 82–86 ve FG 87+ aynı dağıtım sırası boşluğuna düşer)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: WP-MDM-GP-BL552 akış 3 FIX1 raporu (risk 🟡) + CT · KAYIT: 2026-10-07
+
+GP akış 3 FIX1 (`1204887c3`) `AuditIntentDeliveryProcessor`'a sınırlı bir bekleme ekledi: Platform 409 + `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` derse, YALNIZ GP'nin üç yeni işlemi (79/80/81) 2880 deneme (~1 gün, sayılı `AwaitingCentralMapping`) bekler; geri kalan her işlem ve her 409 eskisi gibi ölü mektup olur. İki açık: (1) **tekrar aracı yok** — MDM, Platform'dan önce dağıtılır ve bekleme süresi aşılırsa ya da bir operatör hatasıyla niyet ölü mektuba düşerse onu yeniden kuyruğa koyacak denetimli bir yol (CLI / iç uç, kiracı sınırlı, kuru koşu, denetim satırı) yok; kayıt kaybolmaz ama merkezi denetim izinde eksik kalır. (2) **bekleme listesi sabit kodlu** — LSKU'nun 82–86 ve FG'nin 87+ yeni işlemleri birleşince aynı dağıtım sırası boşluğuna düşer ve beklemeden ölü mektup olur. Öneri: liste "bu sürümün eklediği işlemler" tanımına bağlanır (tek kaynak: işlem eklerken aynı yerde işaretlenir, test eşitliği), LSKU / FG kabulünde genişletilir; tekrar aracı salt ölü mektup → bekliyor geçişi yapar, içeriği değiştirmez. Karşılaştırma: SAP'de qRFC / bgRFC kuyruğundaki hatalı birim SMQ1/SBGRFCMON'dan yeniden başlatılır; Oracle Integration'da hatalı örnek "resubmit" edilir — ikisinde de operatör yeniden sürer, içerik değişmez. Gelecek regresyon riski: 🟡 (LSKU / FG birleşince boşluk büyür; Platform önce dağıtılırsa yok).
+
+**Ek (CT 2026-10-07, S1 madde 6 kararı A):** (3) **seçili yeniden iletim FG ve Kalem'i almıyor** — `SelectedAuditIntentDeliveryRequest.IsAllowed` FinishedGood / Item kümesini içermiyor ve `SelectedAuditIntentDeliveryMongoTests.Reservation_scope_never_promotes_FG_unproven_or_wrong_command_evidence` FG reddini bilinçli sabitliyor (P5 seçili denetim tasarımı). FG / IT niyetleri olağan iletimden gider; seçili yola alınmaları ayrı kapsam genişletmesidir: önce FG / IT kanıt modeli ölçülür (rezervasyon kanıtı, komut kanıtı), sonra izinli listeye eklenir ve FG testi bilinçli değişir. Bugünkü durum: (1)'deki tekrar aracı yazılırken FG / IT de kapsanmalı. Risk: 🟢 (olağan iletim çalışıyor; yalnız operatörün seçili yeniden sürme aracı FG / IT'yi kapsamıyor).
+
+---
+
+### BL-565
+
+**Kayıt kodu standardı (RCS-001) mevcut modüllerde uygulanmıyor: Organizasyon Birimi, Pozisyon, Tüzel Kişilik, Görev Türü, Abonelik Planı ve PPM kodları elle ve gerekçesiz; ortak kod üretici yok**
+
+DURUM: AÇIK · SAHİP: CT (Platform + MDM; PPM kısmı PPM sahibinde / Codex) · BULAN: sahibin paylaştığı yönetim karar notu (Kodlama Standardı v1.0, 2026-09-04) ile kod karşılaştırması · KAYIT: 2026-10-07
+
+Yönetim kararı (RCS-001 §1–§4): `{ŞİRKET}-{TÜR}-{6+ hane, hiç sıfırlanmayan}` (`MG-ORG-000042`). Organizasyon Birimi + Pozisyon OTOMATİK (değiştirilemez). Tüzel Kişilik, Görev Türü, PPM Portföy / Program / Proje,
+Girişim / Yatırım Dosyası ve Abonelik Planı İKİSİ DE (öneri + gerekçeli değişiklik, denetimli). Müşteri, Kampanya, Ürün ve Doküman KALSIN. Mevcut kodlar değişmez; yalnız yeni kayıtlar.
+Ölçüm (2026-10-07, `chore/ct-round-2`): hiçbiri uygulanmıyor. Kodlar elle; OrgUnit / Position / LE / Plan / PPM serbestçe ve gerekçesiz değiştirilebiliyor; Görev Türü değişmez ama öneri yok; ortak üretici yok
+(dört ayrı sayaç: CRM hesap, CRM kampanya, MDM ürün, Doküman); hiçbir yerde `MG-` yok; normalleştirici Türkçe harf bırakıyor (`SATI-BÖLÜMÜ-1`).
+Yapılacak: (1) ~~yönetim teyidi~~ sahip 2026-10-07'de RCS-001 §5'teki 12 öneriyi ONAYLADI (Türkçe harf yok; `MG` yalnız örnek) — sahipten kalan tek girdi: şirketlerin kısa kod listesi; (2) ortak kod üretme servisi
+(önek ayarı, atomik sayaç, öneri, gerekçe + denetim); (3) Tüzel Kişiliğe kısa kod alanı; (4) türlerin bağlanması: önce Organizasyon Birimi + Pozisyon (organizasyon verisi girişi buna bağlı),
+sonra Tüzel Kişilik / Görev Türü / Abonelik Planı, en son PPM (Codex sahibiyle). Ayrıca notta sayılmayan elle kodlu türler (Marka, MDM marka ürünü vb.) için sınıf kararı. Karşılaştırma: SAP'de
+numara aralıkları (SNRO) nesne + şirket kodu başına tanımlanır, iç / dış numaralama seçilir; Oracle Fusion'da "Document Sequences" kategori + iş birimi başına. Gelecek regresyon riski: 🟡 (her yeni
+kayıt eski elle düzene ekleniyor; geç başladıkça "yeni kayıtlar" penceresi büyüyor).
+
+---
+
+### BL-564
+
+**`verify_module_id.py` yalnız bulunduğu dalın registry'sini okuyor: başka dalda alınmış bir modül kimliğine "OK" diyor (Marka ve kalem işinde iki kez)**
+
+DURUM: AÇIK · SAHİP: CT (belge / araç) · BULAN: WP-MDM-ITEM-MASTER-G0 (MDM sohbeti) · KAYIT: 2026-10-06
+
+MOD-0290-FU03 "Product Legal Entity Scope Assignment" paketi kapsam dalında duruyor, CT şeridinin registry'sinde satırı yoktu; araç FU03'ü kalem işi için de "OK" saydı. Aynı tuzak Marka paketlerinde
+(FU01 = ABB, FU02 = Market Supply ile çakışan adlandırma) çıkmıştı. Geçici önlem: şerit registry'sine FU03 AYRILMIŞ satır (`4f9c63309`). Düzeltme: `--check-id` aday kimliği `git log --all -S` ile
+tüm dallarda arar; başka paket izi varsa BLOCKED. Ayrıca sözleşme dosyası `docs/analysis/contracts/product-master-bundle.openapi.yaml` beş klasör kuralının dışında — §4 protokolüyle
+`docs/reference/architecture/contracts/`'a taşınmalı (ayrı küçük iş). Gelecek regresyon riski: 🔴 (kimlik çakışması sessiz).
+
+---
+
+### BL-563
+
+**Ürün kimliği denetim niyetleri canlıda merkeze ulaşmıyor: teslim işçisi kapalı, temporal cutover kapalı, niyetlerde sözleşme sürümü boş ve korelasyon GUID değil — FG taslak iptali bu yüzden canlıda sonuçlanamaz (BL-559 canlıda açık kalır)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) + sahip (canlı ayar kararı, BL-536) · BULAN: WP-MDM-FG-ACCEPT-01 FIX1 madde 1 ölçümü · KAYIT: 2026-10-06
+
+MOD-0290 s21 FG taslak iptalini ancak doğrulanmış merkezi G4 makbuzuyla kesinleştiriyor ("PendingAudit is not final and does not free the parent"). Ölçüm: (a) `AuditIntentDeliveryWorker` varsayılan kapalı;
+(b) temporal-storage scalar cutover etkin değilken depo talep edilen yükü vermiyor (testte 14 keşif / 14 talep / 0 kabul); (c) FG oluşturma, LSKU ve GSKU dahil hiçbir ürün kimliği niyeti genel yoldan
+teslim edilemiyor (`ContractVersion` boş, `CorrelationId` GUID değil — MOD-0290 madde 10 bilinen borç). Sonuç: canlıda iptal edilen taslak FG PendingAudit kalır ve GSKU'yu engellemeye devam eder (güvenli,
+görünür, gösterge sayar; bugünle aynı). Düzeltme: ürün kimliği niyetlerinin sözleşme / korelasyon borcu kapanır, temporal cutover açılır, teslim işçisi canlıda açılır (sahip kararı). Ayrıca:
+FG / LSKU taslak iptali için tam `cancel-draft` izin anahtarları (v1 oluşturma anahtarıyla) ve sonuçlandırıcının "güncel kiracı Active" koşulu (yeni Platform okuması). Karşılaştırma: SAP'de
+değişiklik belgesi (CDHDR) işlemle aynı LUW'da yazılır, ayrı teslim beklemez; Oracle Fusion denetimi de işlem içi. Gelecek regresyon riski: 🟡 (FG canlıda kullanılmıyor; API açık).
+
+---
+
+### BL-561
+
+**Depolarda ortak `IsDeleted == false` koşulu, alanı hiç yazılmamış çok eski belgeyle eşleşmez (eksik alan ≠ false)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma; genel kural) · BULAN: GP BL-552 akış 1 FIX1 eski belge denetimi (MDM sohbeti) · KAYIT: 2026-10-06
+
+BL-529 FIX6'da gerçek hata olarak çıkan sınıf: Mongo'da `Eq(field, false)` alanı OLMAYAN belgeyle eşleşmez. MDM depolarının neredeyse hepsi etkin kayıt süzgecinde `IsDeleted == false` kullanıyor;
+`EntityBase.IsDeleted` sürücü varsayılanıyla hep yazıldığından bugünkü belgelerde alan var, ama betikle içe aktarılmış ya da çok eski bir belgede yoksa kayıt sessizce "yok" sayılır (okunmaz, kilit
+alamaz, liste dışı kalır). Düzeltme: ortak süzgeç `Ne(IsDeleted, true)` olur ya da bir kerelik salt-okunur sayım ile alanı eksik belge olmadığı kanıtlanır (dev + canlı, sahip onayıyla).
+Karşılaştırma: SAP'de silme işareti (LVORM) boş = silinmemiş, karakter alanı hep var; Oracle'da `DELETED_FLAG` NULL = 'N' sayılır. Gelecek regresyon riski: 🟢 (bugün ölçülmüş belge yok; içe aktarma olursa 🟡).
+
+---
+
+### BL-562
+
+**Marka v2 ertelenenleri: arşivi geri alma, Global Ürün ↔ Marka bağı, marka değişikliğinde ikinci onay, tescil listesi**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: WP-MDM-BRAND-ACCEPT-01 FIX1 sahip kararı olguları · KAYIT: 2026-10-06 (sahip kararları CT'ye devretti)
+
+v1'de arşiv geri alınamaz (onayda uyarı var); geri alma ayrı izinli, denetimli bir komut olarak gelir (SAP silme işareti kaldırılabilir; Oracle öğe durumu Etkin'e dönebilir). Global Ürün'e isteğe bağlı Marka
+başvurusu (yalnız bağlanabilir markaya) sonraki bir GP turunda. Marka yazımlarında maker-checker v1'de yok (denetim izi var). Tescil (marka tescil) listesi Marka'nın değil, ileride RIM modülünün işi.
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-560
+
+**Tamamlanmamış güvenilir başlatmayı tüketici kimliksiz iptal edemiyor; kapatıldığını da kendi koduyla öğrenemiyor (anahtarla iptal + "kapatıldı" cevabı + MDM bağlantısı)**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru + MDM devralma) · BULAN: WP-WF-ENGINE-RECOVERY-01 ölçümü (motor sohbeti) · KAYIT: 2026-10-06
+
+Tamamlanmamış güvenilir başlatmada start-result yalnız 409 WORKFLOW_START_NOT_COMPLETED dönüyor; örnek / görev kimliği ve sürüm yok (`GetTrustedWorkflowStartResultHandler.cs:44-51`).
+Mevcut iptal sözleşmesi (`TrustedWorkflowCancellationRequest`, `WorkflowModels.cs:356`) örnek + görev kimliği, iki sürüm ve Active örnek / Waiting* görev istiyor (`TrustedWorkflowCancellationCoordinator.cs:115-122`).
+Bu yüzden tüketici, terk etmeden önce tamamlanmamış başlatmayı iptal edemiyor. Bugünkü yol (WF-RECOVERY'de ölçülüp belgelenen A): yeniden oynat (koordinatör tamamlar) → preflight → cancel. Bedeli: tamamlanma ile
+iptal arasındaki kısa pencerede görev onaylayanlara görünür. WF-RECOVERY'nin süpürmesi süresi dolmuş rezervasyonu kapatır; start-result o anahtara bilinmeyen anahtarla aynı 404'ü verir. Tüketicinin "pencere
+sonrası NotFound → bitir + bırak" kuralı böylece doğru sonucu verir (ilke A), ama tüketici kapatıldığını adıyla öğrenmez. Düzeltme: Platform'da idempotency anahtarıyla iptal ucu (rezervasyonu motorun kendi
+kapatma yolu kapatır, görev yazılmışsa geri çekilir) + kapatılmış rezervasyon için start-result'ta adlı bir kod + MDM'nin bu kodu sonlandırmaya bağlaması (`PlatformProductIdentityWorkflowClient.cs:278`), birlikte.
+Karşılaştırma: SAP Business Workflow'da başlatılamamış iş akışı SWPR / SWIA ile mantıksal silinir; Oracle BPM'de örnek kimliği olmadan "abort by correlation key" yolu var. Gelecek regresyon riski: 🟢 (süpürme kapatıyor, tüketici kuralı doğru sonuç veriyor).
+
+---
+
+### BL-559
+
+**Taslak bir Bitmiş Ürün (FG) bağlı olduğu GSKU'yu düzeltmeye ve emekliye ayırmaya kalıcı kapatıyor: FG'nin çıkışı yok, GSKU onu engel sayıyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) — ara önlem kararı sahibin · BULAN: FG salt-okunur ön incelemesi (75c286f7d) · KAYIT: 2026-10-06
+
+FG bugün yalnız taslak temeli: iptal / gönder / emekli ucu yok (`FinishedGoodsController.cs:20-44`). `GskuRepository.FindRetirementBlockerAsync` (:745-762) Taslak dahil Emekli olmayan her FG'yi engel sayıyor →
+GSKU düzeltme başlatması (`GskuCorrectionWorkflowProcessor.cs:47`, karar anı :490) ve emeklilik talebi (`GskuRetirementRequestWorkflowProcessor.cs:42`) 409. FG ekranı menüde gizli ama API açık ve kiracı Admin
+şablonu `mdm.finished-goods.create` alıyor (`DefaultRolePermissionTemplate.cs:91-92`). Tek bir FG taslağı → o GSKU'da yanlış paket / ölçü kalıcı. Düzeltme: FG FIX1 (`scratchpad/fg-fix1-prompt.md` — denetimli taslak
+iptali, engel sorgusu yalnız sonuçlanmış iptali dışlar), LSKU FIX1 kabulünden sonra. **Ara önlem (sahip kararı):** FIX1 gelene kadar `mdm.finished-goods.create`'i varsayılan Admin şablonundan çıkarmak (Auth).
+Ayrıca: FG'nin P1A işlem deposu (bağlı değil) GSKU'nun FIX3–FIX7'de kaldırdığı kalıcı kilit kalıbını yeniden kuruyor — yaşam döngüsü turundan önce yeniden işlenmeli. Karşılaştırma: SAP MDG'de
+taslak alt nesne üst nesnenin değişikliğini engellemez (taslak kendi değişiklik talebinde yaşar); Oracle PIM'de taslak öğe üst öğeyi kilitlemez. Gelecek regresyon riski: 🔴 (API açık).
+
+---
+
+### BL-558
+
+**"Son yönetici" koruması silinen kişi yönetici değilken de reddediyor (KR1)**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: sahibin Kullanıcı Rolleri canlı kontrolü · KAYIT: 2026-10-05
+
+Kiracıda `auth.users.create` taşıyan aktif hesap kalmayınca (o gün yönetici hesabı silinmişti — BL-521 olayı) rolsüz yeni bir "deneme" kullanıcısını silmek "Bu, kullanıcı
+ekleyebilen son hesap olduğu için silinemez" ile reddedildi. Koruma "silinince kalan yönetici sayısı 0 mı" diye bakıyor, "silinen kişi yönetici mi" diye değil → yönetici
+kalmamış kiracıda HİÇBİR kullanıcı silinemez ve cümle yanlış kişiyi suçlar. Düzeltme: yalnız hedef kendisi yöneticiyse ve ondan başka aktif yönetici yoksa reddet; yöneticisiz
+kiracı durumu ayrı bir uyarı / kurtarma yolu ister (platform yöneticisi kurtarır). Karşılaştırma: SAP'de son SAP_ALL kullanıcısının kilitlenmesi uyarıyla korunur, diğer
+kullanıcılar etkilenmez; Oracle'da son IDCS yöneticisi korunur. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-557
+
+**Parola sıfırlama belirteci özetinde dizin yok ve kiracı `set-password` kapısı sınırsız**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: BL-529 FIX4 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+Anonim kiracı `api/users/set-password` kapısı kullanıcıyı `PasswordResetTokenHash` ile arıyor; `MongoDbIndexConfigurations`'ta bu alanda dizin yok (her deneme koleksiyon taraması)
+ve kapı hız sınırsız. Belirteç tahmin edilemez (64 bayt), ama sınırsız tarama bir yük kaldıracı. Düzeltme: seyrek dizin + BL-529 FIX5'teki kural (önce belirteç, yalnız geçersizler
+sayılır). Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-556
+
+**Auth tohumlayıcısı `admin@diten.com`'u sabit bir bcrypt özetiyle HER ortamda oluşturuyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) — canlı hesap kararı sahibin · BULAN: BL-529 FIX4 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+`Persistence/DependencyInjection.cs:90-92` yalnız sahte kullanıcıları Development'a bağlıyor; `DataSeeder.cs:1062-1070` platform yöneticisini depoda yazılı sabit bir parola özetiyle
+her ortamda oluşturuyor (bulunamazsa). Kaynak koduna erişen herkes yeni kurulan bir ortamda bu hesabın parolasını bilir. Düzeltme: üretimde tohum yok — ilk yönetici kurulum
+komutuyla / tek kullanımlık kurulum bağlantısıyla oluşturulur (`MustChangePassword` + MFA zorunlu); var olan canlı hesapların parolası bu özetle eşleşiyor mu ölçülür (sahip kararı).
+Karşılaştırma: SAP'de kurulumda varsayılan parolalar (SAP*, DDIC) kurulum sonrası değiştirilmek ZORUNDA ve denetimde raporlanır; Oracle Cloud'da ilk yönetici etkinleştirme
+e-postasıyla gelir. Gelecek regresyon riski: 🔴 (yeni ortam kurulumunda bilinen parolalı yönetici).
+
+---
+
+### BL-555
+
+**MDM denetim defteri: takeover'da 19 yazma komutu ne denetimli ne beyanlı istisna ne borç (`EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt` kırmızı)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: görev talebi → takeover birleştirmesi (main'in sıkı AuditTrailStandardTests'i) · KAYIT: 2026-10-05
+
+Takeover dalında mimari testi 18 MDM komutuyla zaten kırmızıydı (ABB / GSKU turlarının raporlarında "önceden var"). Main'den gelen sıkı sürüm bir ad daha yakaladı:
+`DispatchProductAbbreviationWorkItemActionCommand` — onay / ret / iptal / emeklilik için denetlenen komutlara `_mediator.Send` ile yönlendiriyor ve bir yolda denetim niyetini
+kendisi yazıyor (`AppendAuditIntentIfAbsentAsync`), ama `audit-ledger/Diten.MdmService.md`'de satırı yok. Düzeltme: 19 komutun her biri için defter satırı — doğrudan
+denetimli, dolaylı (ispat testinin kabul ettiği "üzerinden" türüyle) ya da beyanlı istisna; hiçbiri sessiz borç kalmaz; sabit sayılar CT kararıyla güncellenir.
+Bu, birleştirmelerde her seferinde "bilinen kırmızı" satırı doğuruyor ve yeni bir denetimsiz MDM komutunu gizleyebilir. Karşılaştırma: SAP'de değişiklik belgesi
+(CDHDR/CDPOS) nesne sınıfı bazında zorunludur; Oracle Fusion'da denetim politikası iş nesnesi bazında açılır — ikisinde de "denetimsiz yazma" yapılandırma kararıdır,
+sessiz durum değil. Gelecek regresyon riski: 🟡.
+
+---
+
+### BL-554
+
+**Organizasyon birimi üst değişikliği yük altında iki eşzamanlı değişikliğin ikisini de yazabiliyor: yapı sayacı kenar yazılmadan ÖNCE ilerliyor (ağaçta döngü riski)**
+
+DURUM: AÇIK · SAHİP: Organizasyon (MOD-0288) sahibi; CT yönlendirir · BULAN: WP-WCN-TASK-REQUEST-01 FIX7 tam koşusu (`OrganizationMatrixReportingTests.Two_concurrent_reparentings_cannot_both_land`
+"round 5: both re-parentings landed") + bağımsız gözden geçirme, CT kodda doğruladı · KAYIT: 2026-10-05
+
+`UpdateOrganizationUnitCommandHandler.cs` yapı belirtecini doğrulamadan önce okuyor (:36, doğru), doğruluyor, `TryAdvanceStructureTokenAsync` ile koşullu ilerletiyor (:137) ve
+KENARI ANCAK SONRA yazıyor (:152, düz ReplaceOne). Koşullu ilerletme sağlam, ama ilerletme ile yazım arasında pencere var: ikinci yazan belirteci birincinin ilerletmesinden
+SONRA, ağacı birincinin yazımından ÖNCE okursa taze belirteç + bayat ağaçla döngü denetimini geçer, kendi ilerletmesini kazanır ve kenarını yazar → iki kenar birden (çapraz iki
+değişiklikte döngü). Testin güvenlik iddiası (`landed <= 1`) tam takımın yükünde bir kez kırmızı; tek başına 3/3 yeşil — kararsız test DEĞİL, yükle açılan gerçek yarış
+(çıkarım; yeniden üretilmedi). Düzeltme sırayı değiştirmekle bitmez (yazım önce olursa kaybedenin kenarı zaten yazılmış olur): ya kenar ile belirteç tek işlemde (Mongo
+işlemi), ya "bekleyen" durumu okuyucuların reddettiği iki aşamalı yazım, ya yazımdan sonra yeniden denetim + geri alma. Karşılaştırma: SAP HCM'de (PP01 / OM) yapı değişikliği
+nesne kilidiyle (ENQUEUE) seri hâle getirilir; Oracle HCM'de hiyerarşi değişikliği sürümlenir ve tek işlemde yazılır. Gelecek regresyon riski: 🔴 (organizasyon ağacında döngü;
+onay zincirleri ve kapsam çözümü ağaca dayanıyor).
+
+---
+
+### BL-553
+
+**Liste standardı artıkları (ABB turlarından): 413 için paylaşılan cümle "50.000 satır" diyor; dışa aktarma URL'si yalnız-yerel alanı taşıyor; görünüm taşımasında "bitti" işareti yok**
+
+DURUM: AÇIK · SAHİP: CT (liste bileşeni — BL-440) · BULAN: WP-MDM-ABB-LIST-01 FIX1 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+(a) Fabrikanın 413 tostu paylaşılan `ExportTooLarge` anahtarını kullanıyor ("50.000'den fazla satır, süzgeci daraltın"); MDM'nin tek ürün okuması 500'de kesilen ABB gibi
+listelerde eşik başka ve daraltmak işe yaramıyor → fabrika sunucunun 413 gövdesindeki kodu / eşiği okuyup sayfaya özgü cümleye izin vermeli. (b) Fabrika dışa aktarma URL'sini
+kendisi kurarken süzgeç alanlarının hepsini ekliyor; ABB'nin görüntü metni alanı (`globalProductText`) sunucuya gidiyor (sunucu yok sayıyor) → alan için "yalnız yerel"
+seçeneği. (c) Sürümlenmiş sayfa anahtarına görünüm taşımasında "bitti" işareti yok: görünümü olmayan kullanıcı her açılışta fazladan `getViews` yapıyor, iki sekme iki v2
+varsayılanı yazabiliyor, kalıcı depo hatasında uyarı her açılışta çıkıyor. (d) İlk ajax başarısızsa DataTables initComplete'i tetiklemiyor → fabrikaya bağlı süzgeç / derin
+bağlantı akışı ölü kalıyor (fabrika bir "init başarısız" kancası sunmalı). Karşılaştırma: SAP Fiori List Report'ta dışa aktarma sınırı ve mesajı uygulama bazında
+yapılandırılır; Oracle VBCS tablolarında da. Gelecek regresyon riski: 🟡 (her yeni sunucu modlu listede tekrarlanır).
+
+**Ek 2026-10-05 — ABB LİSTESİ CT KABULÜ (kod): `feature/mdm/abb-accept` `9020e844f` (WP-MDM-ABB-LIST-01, FIX1–FIX3).** FIX3 gözden geçirmesi engelleyici / zorunlu yok;
+CT sabotajı 2/2. Paylaşılan fabrikada tek geriye uyumlu satır: `data-dt-describe="false"` olan alan kontrollü kopyanın süzgeç satırına yazılmaz (CT izni; BL-440 sahibi
+CT). Takeover'a birleştirme bekliyor (takeover worktree'sinde GP işi sürüyor). Kabulden kalan küçükler: (e) ürün etiketi okuması sütun gizlense de yapılıyor — kapsam
+dışı üründe (GP okuma 404) dışa aktarma 502 · ürün okumasının 401'i de 502 ve günlüksüz · izinli okuyucunun DataTables Copy düğmesi derin bağlantıdan sonra GUID kopyalıyor ·
+derin bağlantıdan sonra süzgeç satırı "Yok" diyor ("Global Ürün: —" daha doğru) · FIX1/FIX2 derlemelerinin kaydettiği görünümlerde metin = GUID (yalnız dev) · süzgeç
+satırı istemci metninden — ad değişince eski ad. (f) ABB izin denetimi `PermissionClaims`'i kullanmıyor ("*" yetkisini tanımaz; güvenli yöne düşer).
+
+---
+
+### BL-552
+
+**Global Ürün onay akışları BL-547'nin üç cevabını hâlâ karantinaya çeviriyor: Görev Merkezi'nde iptal edilen bir GP onayı ürünü kalıcı kilitleyebilir**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX5 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+GSKU FIX5 COR / RRP'de üç cevabı ayırdı (kararsız kapandı → biter + kilit bırakılır; tutarsız → takılı + talep edenin komutu çıkış; bitmedi → bekler). Global Ürün işlemcileri
+(`GlobalProductCorrectionWorkflowProcessor.cs:259, :98`, `GlobalProductRetirementRequestWorkflowProcessor.cs:205, :77`, `GlobalProductIdentityWorkflowProcessor.cs:1205`)
+CLOSED_WITHOUT_DECISION, INCONSISTENT ve 401/403 ServiceWait'i hep ManualAsync / QuarantineAsync'e gönderiyor; kontrol noktası uç, 409, tekrar yolu yok → iptal edilmiş bir
+GP onayı ya da bir servis kimliği arızası ürünü kalıcı kilitler (çıkarım: işlemciler bırakmıyor ve uzlaştırmıyor). Düzeltme: GSKU FIX6 kabul edildikten sonra ayrı WP —
+aynı durum ⇔ çıkış tablosu GP'ye uygulanır, başlatma araması ile başlatma cevabı ayrılır (GSKU FIX6 madde 1), testler gerçek istemci cevaplarıyla. Karşılaştırma: SAP MDG'de
+iptal edilen değişiklik talebi nesneyi kilitten çıkarır (USMD_CREQUEST iptali); Oracle PIM'de reddedilen / geri çekilen onay öğeyi düzenlenebilir duruma döndürür.
+Gelecek regresyon riski: 🔴 (canlıda tek bir iptal kalıcı kilit doğurur).
+
+**Ek 2026-10-05 — GSKU CT KABULÜ ve GP işinin başlaması.** GSKU (WP-MDM-GSKU-ACCEPT-01) takeover `75c286f7d`'de kabul edildi (FIX7; gözden geçirme engelleyici / zorunlu
+yok; CT sabotajı 4/4). GP işi WP-MDM-GP-WF-ANSWERS-01 olarak MDM sohbetine verildi (`gp-bl552-prompt.md`). GSKU kabulünden kalan küçükler (GP işiyle ya da sonra): depo
+değişmezi sessiz `return false` (koşucu `deferred++`, günlük yok) · bekleme saati yedeği her talepte yenileniyor (`UpdatedAt`) · kalıcı RELEASE_CONFLICT'te tekrar sonrası gösterge
+inip çıkıyor · runbook'ta FIX7 öncesi cümleler (`service-trust-chain-runbook.md:390, :402-404, :442-443`) · bir başvuru verisi 500 / 502'si artık kişiye düşüyor (yalnız 503 / 504 /
+401 / 403 geçici sayılıyor; `ApplyAsync`) · FIX6 derlemesinin yazdığı Manual + Retryable satırları için onarım yok (yalnız dev) · `GSKU_LIFECYCLE_RELEASE_CONFLICT` dört yerde
+çıplak dizgi.
+
+---
+
+### BL-551
+
+**İki kararsız test gerçek kırmızıyı gölgeliyor: `DocumentDowntimeTemporaryIssueTests.Close_downtime_after_all_issues_reconciled_succeeds` saate bağlı, `TimesheetNotificationHttpMongoTests.T3_04` aralıklı**
+
+DURUM: AÇIK · SAHİP: CT (altyapı; testlerin sahipleri: belge yönetimi, Zaman Çizelgesi) · BULAN: WP-WCN-TASK-REQUEST-01 FIX5 ÖNCE/SONRA ölçümü · KAYIT: 2026-10-05
+
+Belge kesintisi testi kesintiyi "şimdi − 2 saat"te başlatıp `DurationWorkingDays == 0` bekliyor; gece yarısına yakın koşunca 1 çıkıyor (9fd968d97 arşivinde
+de aynı anda kırmızı — dalın işi değil). T3_04 aynı ağaçta bir koşuda kırmızı, sonrakinde yeşil. İkisi de her ÖNCE/SONRA tablosunda "bilinen kırmızı" satırı
+doğuruyor ve sabotaj tabanını bozuyor. Düzeltme: belge testi sabit bir saatle (`TimeProvider` / sahte saat) kurulur; T3_04'ün yarışı bulunur (büyük olasılıkla
+bildirim yazımının beklenmeden okunması) ve bariyerle sabitlenir. Karşılaştırma: SAP ve Oracle CI'larında kararsız test karantina listesine alınır ve sahibine
+bilet açılır; karantina süresiz değildir. Gelecek regresyon riski: 🟡 (gürültü gerçek bir kırmızıyı "bilinen" diye geçirebilir).
+
+---
+
+### BL-550
+
+**BL-521 artıkları: kiracı aktörünün sistem dışı rol işlemleri platform hesabının yetkisini daraltabiliyor; somut depo açık; işaret onarımı yarışta geri alınabiliyor; tek seferlik işaret doldurma yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-PLATFORM-PARTNER-SCOPE-01 FIX7 bağımsız gözden geçirmesi + alt ajan raporu · KAYIT: 2026-10-05
+
+FIX7–FIX8 kapsamı dışında kalanlar: (a) `DeleteRoleCommandHandler.cs:44-46` / `UpdateRoleCommandHandler.cs:46` yalnız sistem rollerini koruyor; kiracı aktörü,
+bir platform kapısı aktörünün platform hesabına verdiği sistem dışı bir rolü silebilir ya da `RevokePermissionCommandHandler` ile izin kaldırabilir —
+oturum sonlanmaz ama hesabın bir sonraki basımda yetkisi daralır. (b) Somut `UserRepository` DI'da açık kayıtlı (`Persistence/DependencyInjection.cs:71`);
+`VisibleUserIdsAsync` orada no-op — somut türü enjekte eden her şey kapsamı atlar; mimari testi: işleyiciler somut depoyu istemez. (c) İşaret onarımı hedefli
+`$set`, ama işaretten önce yüklenmiş bir kiracı isteğinin (girişi, parola değişimi) bütün belge yazımı onu geri alır; bir sonraki platform basımı yeniden onarır.
+(d) Kiracı giriş kapısının ret satırı anonim tekrarla çoğaltılabilir (sayaç / örnekleme yok). (e) Platform kapısından hiç geçmemiş, kopyası eksik hesap işaretsiz
+kalır; tek seferlik doldurma (Platform kayıtlarından Auth'a) gerekir — o zamana dek o hesabın kiracı oturumu SessionTimeoutMinutes'ı aşarak yenilenebilir.
+(f) BL-521 FIX8 kabulünden kalan küçükler: platform zorunlu değişiminde rol yakınsaması işaret yazımından ÖNCE (`PlatformAuthController.cs:307-314`) — işaret
+yazılamazsa değişim yapılmaz ama roller yeniden yazılmış olur; süzgeç yorumunda var olmayan test adı; parite testi bütün `char.IsWhiteSpace` üyelerini denemiyor;
+bir test kâhini emekli `!= null` kuralını kullanıyor.
+Karşılaştırma: SAP'de platform (BASIS) kullanıcıları iş istemcisinden ayrı istemcide tutulur; Oracle Fusion'da yönetici kimlikleri IDCS'de ayrı alan adı ile
+ayrılır — ikisi de "aynı kiracıda işaretle ayır" yolunu kullanmaz (uzun vadeli öneri: platform hesaplarını ayrı kiracıya taşımak, sahip kararı).
+Gelecek regresyon riski: 🟡.
+
+---
+
+### BL-549
+
+**Yarım kalmış genel başlatma (örnek var, motor görevi yok) görevin onayını / incelemesini süresiz kilitliyor; motorda kurtarma yolu yok**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: WP-WF-ENGINE-CANDIDATES-01 D2-FIX5 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+Genel başlatma örneği, görevi ve anlık görüntüyü ayrı yazımlarla yazıyor (`StartWorkflowInstanceHandler.cs:~230`); ilkinden sonra çöküş görevsiz Active
+örnek bırakır. D2-FIX5 böyle bir örneği benimsemiyor (doğru: kimsenin karar veremeyeceği bir incelemeye gitmez), ama yerine bir şey de açmıyor: gönderim
+409 `REVIEW_START_FAILED`'da, onay `TaskApprovalService.cs:206-209`'da süresiz kalır. Kapat / aç yardım etmez (en son örnek hâlâ açık);
+`CancelWorkflowTaskCommand` görev ister; güvenilir iptal `TrustedConsumerClientId` ister. FIX5 öncesi de anahtar tekrarı 409 veriyordu (gerileme değil).
+Düzeltme motor tarafında: anahtar tekrarında eksik görev + anlık görüntü tamamlanır, ya da görevsiz Active örnekleri kapatan süpürme (BL-540 ile birlikte).
+Aynı kayıtta küçük not: rakip yazım bir devirse (gereksinim açık, görev açık) 1. tur yeni sahibe kalıyor (FIX3 "yeni sahip incelemeyi devralmaz"
+ilkesine aykırı; düşük). Karşılaştırma: SAP Business Workflow'da yarım kalan iş akışı SWPR ile yeniden başlatılır; Oracle BPM'de hatalı örnek
+kurtarma kuyruğuna düşer. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-548
+
+**Test dosyalarında sır biçimli sabitler (`password=hunter2`, `user:…@` bağlantı dizgileri, AKIA / ghp_ biçimleri): dış gizli tarayıcılar ve GitHub push koruması tetiklenebilir**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · BULAN: WP-WF-ENGINE-CANDIDATES-01 D2-FIX4 ve WP-EMAIL-SHELL-01 FIX3 gözden geçirmeleri · KAYIT: 2026-10-04
+
+`Eventing.Tests/TenantLifecycleEventContractTests.cs:133, 138` (`password=hunter2`) ve en az altı başka test dosyasında benzer dizgiler var; depo içi
+tarayıcı yalnız `appsettings.json` okuyor. E-posta FIX4 kendi dosyalarını çalışma anında birleştirmeye çeviriyor; motor D2-FIX4 kendi bağlantı dizgisini
+`TEST-ONLY-NOT-A-SECRET@example.invalid` yaptı. Düzeltme: depo çapında tarama (gitleaks varsayılan kuralları), bulunan test sabitleri çalışma anında
+birleştirilir ya da açıkça sahte biçime çevrilir; tarayıcı `tests/**`'ı da okur (sahte biçim izin listesi ile). Karşılaştırma: GitHub push protection ve
+gitleaks CI adımı bu sınıfı commit anında durdurur. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-547
+
+**Onay motorunun güvenilir kanıt ucu kararsız kapanışı (Cancelled / TimedOut) ayırt etmiyor: MDM her kararsız kapanışı karantinaya alıyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX3 E1 DUR'u · KAYIT: 2026-10-04
+
+GSKU FIX3 (CT kararı 3) çifti yalnız motorun `WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION` kodunda taslağa döndürüyor; başka her çakışma karantina. Platform'un
+güvenilir kanıt ucu ise Cancelled / TimedOut için de `WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT` dönüyor ve ön uçuş yalnız Active'i tanıyor: bu kod
+yayılana kadar canlıda her kararsız kapanış karantinaya düşer (güvenli; ekran doğru söylüyor ama insan uzlaştırması gerekir). Düzeltme: kanıt ucu
+kararsız kapanışı kendi koduyla döndürür (Cancelled / TimedOut / Withdrawn ayrı alt nedenle), sözleşme testi + MDM tarafında uçtan uca. Motor şeridinde
+(WP-WF-ENGINE-CANDIDATES-01 D2 kabulünden sonra). Karşılaştırma: SAP Flexible Workflow ve Oracle BPM iş akışı sonucu "onaylandı / reddedildi / geri
+çekildi / süresi doldu" olarak ayrı döndürür. Gelecek regresyon riski: 🟢 (yeni kod; eski kod karantinayı korur).
+
+**İlerleme 2026-10-05 — Platform tarafı yapıldı (dal `feature/platform/wf-engine-candidates`, e2e9dc0eb + FIX1 82ed16c0d).** Yükseltilmiş açık onay →
+`WORKFLOW_DECISION_NOT_TERMINAL`; kanıtı tutarlı iptal / zaman aşımı → yeni `WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION`; çelişkili kanıt `INCONSISTENT`;
+çalışan örnek okunurken karar işlenirse bir kez yeniden okuma; günlüğü olmayan onaylı görev `INCONSISTENT`. MDM tüketici daraltması GSKU-FIX5'te.
+Kalan küçük sertleştirmeler: (a) yeniden okuma kararını "tutarsız" sezgisi yerine örnek sürümünün iki okuma arasında değişip değişmediğine bağlamak
+(iki ardışık milisaniyelik pencere bugün INCONSISTENT verebilir); (b) "onaylı görev sayısı = onay günlüğü sayısı" kuralını görev başına birebir
+eşleşmeye çevirmek (yalnız bozuk veride fark eder).
+
+---
+
+### BL-546
+
+**Ürün çocuk kabulü (GP → GSKU, GSKU çocukları) denetim niyeti yazmıyor**
+
+DURUM: AÇIK (GSKU kabulünden sonra, denetim D2 ile) · SAHİP: CT (MDM ürün modülleri devralma · Denetim standardı) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX3
+madde 5 DUR'u · KAYIT: 2026-10-04
+
+Çocuk kabulü (`ChildCreationAdmissions` Acquire / Complete) yalnız kabul kaydını itiyor / çekiyor; denetim defterine niyet düşmüyor: GxP açısından
+"kim, neyi, ne zaman kabul etti" izi yok. Gerekenler: (a) `ProductAuditOperation.GskuChildAdmitted` (sona eklenir, 79) · (b) MDM
+`AuditIntentDeliveryRepository.IsSelectedOperationAllowed` kolu · (c) Platform `TrustedSourceAuditIntentOperationMap` satırı + sözleşme testi · (d)
+kabul `Version` artırmıyor → niyetin sıra / sürüm kararı (Version artışı emeklilik çitiyle yarışır). GP → GSKU kabulünde aynı boşluk; ikisi birlikte.
+Karşılaştırma: SAP'de ana veri değişiklik belgeleri (CDHDR / CDPOS) her kabulde yazılır; Oracle PIM'de onay geçmişi denetim tablosunda tutulur.
+Gelecek regresyon riski: 🟢 (ekleme).
+
+---
+
+### BL-545
+
+**E-posta yeniden deneme kapıları süreçler arasında ayrışabilir; değişkenleri yalnız tarama siler**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0027 Bildirimler) · BULAN: WP-EMAIL-SHELL-01 FIX3 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+FIX3'te sıraya alma, kayıtçının üç kapısını (zamanlayıcı açık, standart işler kayıtlı, işin kendi bayrağı) okuyor; tek süreçte ikisi aynı seçenekten
+okuduğu için ayrışmıyor. Ayrışma birden çok kopyada olur: API kopyalarında işler kapalı, bir işçi kopyasında açıksa her hata kalıcı işaretlenir ve
+işçinin taraması hiç yeniden denemez. İş bayrağı sıraya alındıktan SONRA kapatılırsa ya da tarama hiç koşmazsa o satırların `VariablesJson`'ı süresiz
+kalır. Düzeltme: işletim notu (bütün kopyalarda aynı `BackgroundJobs` yapılandırması; bkz. BL-536) + bayrak kapanınca bekleyen satırları kapatan tek
+seferlik adım. Karşılaştırma: SAP'de arka plan işi sunucu grubuna bağlanır (SM36 hedef sunucu), Oracle ESS'te iş tanımı tek merkezden çalışır.
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-544
+
+**Bildirim şablonu kaydında sürüm denetimi okuma-sonra-yazma: milisaniyelik pencerede son yazan kazanır**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0027 Bildirimler) · BULAN: WP-EMAIL-SHELL-01 FIX3 sapması (CT kabul etti) · KAYIT: 2026-10-04
+
+FIX3 şablon kaydına `RowVersion` ekledi; eski okumadan yapılan kayıt 409 TEMPLATE_CHANGED alıyor. Denetim işleyicide taze okumaya karşı yapılıyor;
+okuma ile `ReplaceOne` arasındaki milisaniyelik pencerede iki kayıt hâlâ son-yazan-kazanır. Paket şablon deposuna dokunamadığı için atomik yazım
+yapılmadı. Düzeltme: depoda `ReplaceOne` süzgecine sürüm (BL-533 deseni, `ReadVersionWrites`). Karşılaştırma: SAP'de belge kilidi (enqueue), Oracle'da
+OBJECT_VERSION_NUMBER. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-543
+
+**ABB okuma yolundaki `PendingSinceUtcTicks` doldurması geçicidir; kaldırılmalı**
+
+DURUM: AÇIK (ABB kabulünden sonra) · SAHİP: CT (MDM ürün modülleri devralma) · BULAN: WP-MDM-ABB-ACCEPT-01 FIX3 madde 9 kararı · KAYIT: 2026-10-04
+
+ABB bekleyen işleri sıralamak için `PendingSinceUtcTicks` alanını kullanıyor; FIX3 öncesi satırlarda alan yok. CT kararıyla (FIX4) ilk sayfa okunmadan
+önce kiracı sınırı içinde, süreç başına kiracı başına bir kez, hata okumayı düşürmeyecek biçimde dolduruluyor. ABB hiç yayınlanmadı; eski satırlar
+yalnız dev verisinde. Kaldırma: dev verisi bir kez dolduktan (ya da sıfırlandıktan) sonra doldurma kodu ve testleri silinir; okuma yolunda yazım kalmaz.
+Karşılaştırma: SAP ve Oracle bu tür alan doldurmayı sürüm geçiş programında (XPRA / upgrade script) bir kez yapar, okuma yolunda yapmaz.
+Gelecek regresyon riski: 🟢 (silme).
+
+---
+
+### BL-542
+
+**Auth'ta silinmiş kullanıcı Platform'da pozisyonunu tutmaya devam ediyor; onaycı seçicisinde adsız aday olarak görünüyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi · Organizasyon) · BULAN: BL-512 canlı denetimi (dev, 2026-10-04) · KAYIT: 2026-10-04
+
+Dev'de "Development Team Lead" pozisyonunun sahibi Auth'ta `IsDeleted=true`; Platform'daki pozisyon ataması açık kaldı. Kişi araması bu sahibi aday
+olarak döndürüyor, Auth adı vermediği için ad boş; adıyla aranamıyor, pozisyon adıyla ("lead") bulunuyor. Silinmiş kişi onay veremez: seçilirse onay
+sahipsiz kalır. Düzeltme: (a) rehber, Auth'un tam cevabında adı olmayan (silinmiş / yok) kişiyi aday saymaz (Auth erişilemiyorsa bugünkü "eksik
+rehber" kuralı geçerli); (b) kullanıcı silinince / devre dışı kalınca pozisyon atamaları biter (işten ayrılış akışı, HCM ile birlikte). Karşılaştırma:
+SAP HCM'de ayrılış eylemi pozisyon atamasını sonlandırır (PA40), Oracle HCM'de sonlandırma atamayı kapatır ve onay hiyerarşisinden düşürür.
+Gelecek regresyon riski: 🟡 (onay zinciri çözümü).
+
+---
+
+### BL-541
+
+**Toplantı raporu ve dışa aktarımı, toplantıdan doğan görevlerin başlığını, sorumlusunu ve bitiş tarihini görev okuma kuralına sormadan gösteriyor; ters yönde görev okuru toplantı başlığını görüyor**
+
+DURUM: AÇIK · SAHİP: CT (Toplantılar · MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 FIX3/FIX4 bağımsız gözden geçirmeleri · KAYIT: 2026-10-04
+
+Görev talebi dalı (FIX3–FIX5) toplantı yüzeylerinde görev başlığını okuma kuralına bağladı: bağlı görev listesi (`TaskRelatedRecordResolver`), taşınan
+gündem satırı (okuma anında kod). Aksiyon kaydı ise dışarıda kaldı: `MeetingReportQueryHandlers.cs:~149` toplantıyı görebilen herkese o toplantıdan
+doğan görevlerin `Title`, `AssigneeUserId`, `DueAt` ve yaşam döngüsünü veriyor; rapor ekranı ve dışa aktarım aynı satırları kullanıyor.
+`ITaskReadAccessPolicy` hiç sorulmuyor. Ters yönde `MeetingRelatedRecordResolver` görev okuruna bağlı toplantının başlığını, toplantı görünürlüğüne
+bakmadan veriyor olabilir (ölçülmedi). Düzeltme: aksiyon satırları okuyanın okuma kuralından toplu geçer (`ReadableTaskIdsAsync`); okunamayan satır kalır
+(karar var) ama başlık / sorumlu / tarih gitmez, ekranda 7 dilde yer tutucu; dışa aktarım aynı kuralla. Ters yön: toplantı görünürlük kuralıyla aynı
+desen. Karşılaştırma: SAP'de rapor satırı yetki nesnesiyle süzülür (S_TCODE + nesne yetkisi), Oracle'da veri güvenliği (data security policy)
+raporlara da uygulanır. Gelecek regresyon riski: 🟢 (okuma süzgeci ekleme; yazım yok).
+
+---
+
+### BL-533
+
+**Sürümsüz bütün belge değiştirme: toplantı, tutanak, zaman çizelgesi, iş akışı ve görev yorumu depoları eski okumayla yeni belgenin üzerine yazabiliyor**
+
+DURUM: AÇIK · SAHİP: CT (Toplantılar · Zaman Çizelgesi · MOD-0023 · MOD-0024) · BULAN: WP-WCN-TASK-REQUEST-01 FIX3 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+Görev deposunda (ve altı sürümlü görev deposunda) FIX3 merkezi denetimi kurdu: yazım yalnız okunan sürüme iner (`TaskStoreVersioning.IsTheDocumentRead`).
+Aynı kusur sınıfı başka depolarda duruyor: `MeetingRepositories.cs:169, 370, 407, 485, 545` (toplantı, gündem, toplantı türü, tutanak, seri),
+`TimeEntryRepositories.cs:68…`, `WorkflowRepositories.cs:35, 250, 375`, görev yorum deposu (`TaskRepositories.cs:477-485`; FIX4'te). Tutanak
+yayımlama GxP açısından önemli: iki eşzamanlı yazımdan biri sessizce kaybolur. Ayrıca bir görev kararı başka belgelere yazımı (kontrol listesi koşusu,
+ek, bağımlılık, kayıt bağı) görev sürümüne bağlamıyor. Düzeltme: her depoda "okunan duruma koşullu yazım" (sürüm alanı yoksa önce alan), depo başına
+yarış testi. Karşılaştırma: SAP'de belge kilidi (enqueue), Oracle'da satır sürümü (OBJECT_VERSION_NUMBER) her yazımda zorunlu. Gelecek regresyon riski: 🟡.
+
+**İlerleme 2026-10-04 — toplantı + zaman çizelgesi kapandı (şeritte `01ed9c811`, dal @37f1261ed).** Toplantı, gündem, toplantı türü, tutanak, seri ve
+zaman çizelgesi depoları yalnız okunan sürüme yazıyor (`ReadVersionWrites`); tutanak yayımlama (tutanak + katılım + Completed) ve haftalık kayıt (hafta
++ satırlar + düzeltmeler) birer Platform işlemi; yeniden denenen işlem gövdesi okunan sürümlerden başlıyor (`ReadVersionSnapshot`; CT iki yeniden
+deneme testi ekledi, sabotaj V1–V4 kırmızı). Görev yorumları görev talebi dalında (FIX4, kabul bekliyor). AÇIK KALAN: (1) iş akışı depoları
+(`WorkflowRepositories.cs:35, 250, 375`) · (2) aynı kısmi-yazım sınıfı `AcceptTimeSuggestion`, `RequestTimesheetCorrection`, `DiscardCorrectionDraft`,
+`TimerDraftWriter`'da (birden çok belge, işlemsiz) · (3) denetim kaydı işlemin dışında yazılıyor (yazım geri alınırsa denetim satırı kalabilir) · (4)
+işlem desteklemeyen Mongo'da bu yollar 500 dönüyor (ABB'deki gibi 503 + açılış uyarısı olmalı).
+
+---
+
+### BL-532
+
+**Parola sıfırlama / rütbe düşürme sonrası açık erişim belirteci süresi dolana kadar çalışıyor (kiracıda 1440 dakikaya kadar); ağ geçidi `pwd_change_required`'ı uygulamıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: BL-529 ve BL-521 gözden geçirmeleri · KAYIT: 2026-10-04
+
+BL-529 sıfırlamada parola özetini değiştirip yenileme belirteçlerini iptal ediyor; BL-521 iş ortaklığını kayıttan belirliyor. İkisi de daha önce basılmış
+ERİŞİM belirtecini durduramıyor: kiracıda `SessionTimeoutMinutes` (varsayılan 60, en çok 1440), platformda 15 dakika. Ağ geçidi `pwd_change_required`'ı
+uygulamıyor (yalnız Web `Program.cs:491-507`): ele geçirilmiş bir yöneticinin belirteci bu pencerede arka kapı kullanıcı açabilir. Düzeltme: kullanıcı
+başına güvenlik damgası (parola / rol / tür değişiminde artar), belirteçte taşınır, Auth / ağ geçidi / servisler kısa önbellekle doğrular; ağ geçidi
+`pwd_change_required` taşıyan belirteçle yalnız parola değişim uçlarına izin verir. Karşılaştırma: ASP.NET Identity `SecurityStamp`, Oracle IDCS
+oturum iptali. Gelecek regresyon riski: 🟡 (her istekte doğrulama).
+
+**Ek 2026-10-05 — SAHİP KARARI: şimdi öne alınmıyor.** Canlı kontrolde görüldü: Rol İzinleri'nde kaldırılan izin sayfa yenilemede duruyor, çıkış / girişte
+gidiyor (beklenen; izinler oturum belirtecinde). Erteleme riski: bugün 🟡 (canlıyı yalnız sahibin ekibi kullanıyor; davranış yeni değil, kötüleşmiyor) · iş ortağı
+hesabı, dış kullanıcı ya da GxP doğrulamasından ÖNCE 🔴 — işten ayrılan / pasife alınan kişi belirteç süresi bitene kadar (kiracıda en çok 24 saat) erişir,
+BL-529'un sıfırlaması ve BL-521'in kapısı açık erişim belirtecini durdurmaz. Ara önlem (kod gerektirmez): canlı kiracıların `SessionTimeoutMinutes`'ı 60 ya da
+altında tutulur. Geri dönüş maliyeti: izin denetimi ağ geçidinde ve her serviste belirteçten okunuyor — damga doğrulaması ağ geçidinde tek noktada yapılırsa
+sonradan eklemek orta maliyet; servis sayısı arttıkça artar. Ön koşul olarak işaretlendi: BL-521 iş ortağı hesabı açılmadan önce.
+
+---
+
+### BL-531
+
+**Toplantı katılımcı seçicisi kiracıdaki herkesi döküyor: `meetings/lookups/attendees` aramasız ve sınırsız (BL-512'nin kardeşi)**
+
+DURUM: KAPANDI 2026-10-04 (WP-MEETINGS-ATTENDEE-SEARCH-01, dal `fix/platform/decision-makers-search` @37b05a216, şeritte 0f1f30cdd; ayrıntı BL-512 kapanış notunda; canlı denetim sahip girişiyle) · SAHİP: CT (Toplantılar)
+· BULAN: WP-PLATFORM-DECISION-MAKERS-SEARCH-01 ölçümü · KAYIT: 2026-10-04
+
+`MeetingsController.cs:254-260` (izin `meetings.create`) `GetMeetingAttendeeLookupHandler` ile görevlerin karar listesini
+(`GetTaskAssignmentPersonLookupQuery(Decision)`) TAM döndürüyor: toplantı açabilen her kullanıcı öbür şirketlerin çalışan listesini alabiliyor.
+Altı ön yüz çağıranı (oluşturma, düzenleme, seri, tutanak editörü, liste ve rapor süzgeçleri). Düzeltme: BL-512 ile aynı arama sözleşmesi ve
+aynı hız sınırı kovası; rehber gerekmeyen çağıran toplantının kendi katılımcılarını kullanır. Gelecek regresyon riski: 🟡 (toplantı formları).
+
+---
+
+### BL-530
+
+**Ürün kimliği onayında "elle uzlaştırma" çıkışı yalnız gönderende: gönderen ayrılırsa GSKU taslağı donuk kalır**
+
+DURUM: AÇIK (D2'den sonra) · SAHİP: CT (MDM ürün modülleri devralma) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX2 DUR'u · KAYIT: 2026-10-04
+
+GSKU FIX2'de son olmayan her işlem durumuna bir çıkış konuyor. `ManualReconciliationRequired`'da (motor başlamış olabilir, sonuç bilinmiyor)
+insan çıkışı gönderenin aynı gönderimi yeniden oynatması (var olan `mdm.gskus.submit`): motor yeniden okunur, kanıt varsa karar uygulanır,
+motorda bir şey yoksa taslak açılır. Açık: gönderen şirketten ayrıldıysa ya da yetkisi alındıysa kimse çıkaramaz. Global Ürün'ün uzlaştırma
+işleyicisi D1'de göndericisiz olduğu için silinmişti (a248dc1ef), örnek uç yok. Düzeltme: `POST /api/gskus/{id}/identity-reconciliation`
++ yeni anahtar `mdm.gskus.reconcile-identity` (önerilen sahipler ProductIdentityApprover, Retirement Steward / Lead); yeni MediatR yazma komutu
+denetim D2 (MDM niyet izinin teslimi) kapanmadan mimari listesini 18 → 19 yapacağı için D2'den sonra. Aynı ihtiyaç Global Ürün ve LSKU için de
+geçerli. Gelecek regresyon riski: 🟢 (ekleme).
+
+---
+
+### BL-529
+
+**Yöneticinin "Parolayı Sıfırla"sı eski parolayı geçersiz kılmıyor, açık oturumları da düşürmüyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-EMAIL-SHELL-01 FIX1 bağımsız gözden geçirmesi, CT kodda doğruladı · KAYIT: 2026-10-04
+
+`AdminResetPasswordCommandHandler` yalnız sıfırlama belirteci yazıp `RequirePasswordChange` diyor; parola özetine dokunmuyor, yenileme
+belirteçlerini iptal etmiyor (dosyada `Revoke` yok). `LoginCommandHandler.cs:90` eski parolayı kabul ediyor; giriş "parolayı değiştir"
+adımına düşüyor ve eski parolayı bilen kişi yeni parolayı kendisi belirliyor. Senaryo: yönetici hesap ele geçirildi diye sıfırlar, kullanıcı
+hiçbir şey yapmaz, saldırgan eski parolayla girip hesabı kendine alır. Ek: e-posta FIX1 sıfırlama metnine "eski parolanız artık geçerli
+değil" yazmıştı (7 dil); doğru olmadığı için FIX2'de kalkıyor, bu kayıt kapanınca geri gelebilir. Düzeltme: sıfırlama anında parola özeti
+rastgele bir değere çevrilir (davetteki gibi) ve kullanıcının bütün yenileme belirteçleri iptal edilir; denetim kaydı ve güvenlik olayı
+yazılır. Karşılaştırma: SAP'de (SU01 "parola sıfırla") ve Oracle'da yönetici sıfırlaması eski parolayı anında geçersiz kılar, kullanıcı ilk
+girişte yeni parola belirler. Dikkat: dev'de "Parolayı Sıfırla" parola dağıtma yolu olarak kullanılıyor; düzeltmeden sonra kullanıcı bağlantıyı
+kullanana kadar giremez (istenen davranış). Gelecek regresyon riski: 🟡 (giriş akışına dokunur).
+
+---
+
+### BL-528
+
+**Ağ geçidinden geçen servis çağrıları (HCM, CRM) denetim kaydında asıl isteğin korelasyonunu taşımıyor — imzalı korelasyon kimliği**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / ağ geçidi) · BULAN: WP-PLATFORM-AUDIT-INTX-01 FIX2 gözden geçirmesi + FIX3 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+INTX FIX2 ağ geçidinde dışarıdan gelen korelasyona güveni kapattı (istemci başka bir isteğin korelasyonunu seçemesin diye); ağ geçidi kendi
+kimliğini üretiyor, istemcinin değerini `X-Client-Correlation-Id` ile iletiyor. HCM denetim eki (`GovernedHcmAuditAppendClient`), CRM denetimi
+(`HttpCrmAuditPublisher`), HCM iş akışı başlatma ve CRM ağ geçidi istemcileri Platform'a ağ geçidi üzerinden SON KULLANICININ belirteciyle gidiyor;
+Platform'da "doğrulanmış servis çağıranı" kavramı yok (Auth yalnız üç insan aktör türü veriyor, iç anahtar yolu ağ geçidinden geçmiyor). Sonuç: bu
+kayıtların korelasyon alanı ağ geçidinin yeni kimliği; asıl isteğin korelasyonu yalnız `Metadata.ClientCorrelation`'da (veri kaybı yok, gruplama o
+alandan yapılabilir). Önerilen çözüm: ağ geçidi ürettiği kimliği imzalar (HMAC, kimliğin içinde ya da ayrı başlıkta) ve gelen istekte yalnız KENDİ
+imzaladığı kimliği benimser; servisler kimliği olduğu gibi iletir. Gizli anahtar yönetimi gerektirir (dev betiği + canlı ayar; değer hiçbir yere
+yazılmaz). Gelecek regresyon riski: 🟡 (her servisin korelasyon akışına dokunur).
+
+---
+
+### BL-527
+
+**MDM testleri dev Mongo'nun koştuğu sunucuda sabit adlı bir test veritabanını paylaşıyor: bir dalın koşusu başka dalların testlerini kırıyor**
+
+DURUM: AÇIK · SAHİP: CT (test altyapısı) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+Birçok MDM test sınıfı depoları `localhost:27017` üzerindeki sabit adlı `diten_mdm_product_scope_itest` veritabanıyla kuruyor; depo kurucuları
+dizinleri `CreateMany` ile oraya yazıyor. Sonuç: GSKU turunun eklediği yeni dizin (`ix_mdm_first_gsku_identity_workflow_gsku_unfinished`) o ortak
+veritabanında kaldı ve eski koddaki dallarda "tam dört dizin" testi (`FirstGskuIdentityWorkflowOperationMongoTests…`) kırmızıya döndü (onay motoru
+ve denetim izi sohbetleri aynı tabanda kırmızı, MDM sohbeti yeşil ölçtü — sıraya bağlı). Aynı sunucuda geliştirme veritabanı (`DitenERP_Dev`) da
+duruyor: test ile dev aynı süreçte. Düzeltme: MDM test düzenekleri geçici bir mongod (Platform'daki `DITEN_TEST_MONGOD` / EphemeralMongo deseni)
+ve koşu başına benzersiz veritabanı kullanır, sonunda siler; Platform'daki `MongoTestDatabaseGuardTests` benzeri bir koruma testi 27017'ye ve sabit
+veritabanı adlarına bağlanan testi kırmızıya çevirir. Ortak test veritabanındaki fazladan dizin elle düşürülmez (testler yeniden kurar).
+Gelecek regresyon riski: 🟢 (yalnız testler).
+
+---
+
+### BL-524
+
+**Platform modül kaydı ve abonelik: işlem dışında kalan iki yazım**
+
+DURUM: AÇIK · SAHİP: CT (Platform) · BULAN: WP-PLATFORM-AUDIT-INTX-01 FIX1 (ajan DUR önerisi + gözden geçirme, 2026-10-03) · KAYIT: 2026-10-03
+
+(1) **Sayfa / eylem yazımları katalog işleminden sonra:** modül kendini kaydederken katalog satırı ve denetim kaydı tek işlemde, ama sayfa ve
+eylem tanımları (`IModulePageDescriptorRepository`, `IModulePageActionDescriptorRepository`) işlemden sonra yazılıyor; bunlardan biri çift anahtar
+dışında bir hatayla düşerse denetim kaydı (Outcome=Succeeded) olmamış değişiklikleri anlatır. İş: oturumlu depo üyeleri + çakışmaları önceden
+eleyen plan (FIX1'deki `PlanSurfaceChangeAsync`'in genişletilmişi) + tek işlem; Auth izin eşitlemesi dış çağrı olduğu için işlemden sonra kalır.
+(2) **Abonelik tekil dizini:** `(TenantId, Status)` üzerinde, Current kümesine kısmi; Trialing ile Active'in yan yana durmasına izin veriyor.
+FIX1 + FIX2 işlem içi iki koruma koydu; dizinin "kiracı başına tek canlı abonelik" olarak yeniden kurulması canlıda düşür / yeniden kur demek
+— ayrı karar, canlıdaki veri önce sayılır. Gelecek regresyon riski: 🟡.
+
+---
+
+### BL-632
+
+**Numara:** main'de BL-509 olarak açıldı; hattın BL-509'u başka bir kayıt olduğu için main birleşimi 2026-10-13 (WP-LANE-MAIN-SYNC-02) ile BL-632 oldu. Eski numarayı anan kayıtlar bu maddedir.
+
 **Ağ geçidi port testi 5063 ve 5064 rotalarında da kırmızı: HumanCapital ve TalentEcosystem port kaydında yok**
+
+**Ek 2026-10-13 (main birleşimi):** hattın `OcelotConfigurationTests.KnownDownstreamPorts` kümesi 5063 ve 5064'ü gerekçeleriyle içeriyordu; birleşik küme 5063–5067 ve 5070'i taşır. Kapanış, birleşik ağaçta ağ geçidi koşusunun ölçümüyle (sahibi karar verir).
 
 DURUM: AÇIK · SAHİP: HumanCapital (5063) ve TalentEcosystem (5064) domain sahipleri + EA (port tahsisi); CT bilgi verir · BULAN: Procurement CT (BL-470 kapanışı) · KAYIT: 2026-10-06
 
@@ -7559,7 +10028,9 @@ DURUM: AÇIK · SAHİP: HumanCapital (5063) ve TalentEcosystem (5064) domain sah
 
 ---
 
-### BL-510
+### BL-633
+
+**Numara:** main'de BL-510 olarak açıldı; hattın BL-510'u başka bir kayıt olduğu için main birleşimi 2026-10-13 (WP-LANE-MAIN-SYNC-02) ile BL-633 oldu. Eski numarayı anan kayıtlar bu maddedir.
 
 **Erişim reddi kartı HTTP 200 ile dönüyor: ortak `_AccessDenied` parçası UAS-001'in istediği 403'ü vermiyor**
 
@@ -7579,6 +10050,294 @@ Gelecek regresyon riski: 🟢 (görünen ekran değişmez), ama yanıt kodu değ
 
 ---
 
+### BL-634
+
+**E-imza (MOD-0022) denetim kaydı, işlem içi denetim kapısına niyetsiz (elle yazılmış) yükle gidiyor — adlı, süreli muafiyet**
+
+DURUM: AÇIK · SAHİP: MOD-0022 e-imza geliştiricisi · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P1) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** main-sync 2026-10-14 ile gelen 17 e-imza komutu (ve `RegisterSignableActionsCommand`) denetim kaydını
+`ESignatureAuditIntent.EnqueueAsync` ile kendi yazdığı `audit_events` biçimli yükle, niyet (`TransactionOwnedAuditIntent`)
+taşımadan yazıyor. Hattın işlem içi denetim kapısı (`CanonicalTransactionalAuditOutboxWriter`, WP-PLATFORM-AUDIT-INTX-01)
+niyetsiz yükü reddeder; muafiyet 18 olay adıyla tek tek yazılır (`TransactionOwnedAuditPayloadExemptions`, önek / joker yok),
+bekçi `TransactionOwnedAuditCommandGuardTests` 17 + 1 komutu adlı satırla taşır.
+**Yapılacak:** e-imza işleyicileri niyetle yazsın (aktör kapıda çözülür, yük ortak oluşturucudan); her taşınan olayın satırı
+listeden çıkar. Süre dolunca liste boş olmalı.
+**Gelecek regresyon riski:** 🟡 — muafiyetteki olaylarda aktör kapıda doğrulanmaz (yükü yazan e-imza kodu doğrular); listeye
+olay eklemek yeniden CT kararıdır.
+
+---
+
+### BL-635
+
+**E-imza bilet tüketicisi (servisler arası iç çağrı, e-posta değil) iç anahtarı yönlendirmeye açık istemciyle gönderiyor — `EmailShellDispatchTests` adlı istisnası**
+
+DURUM: AÇIK · SAHİP: MOD-0022 e-imza geliştiricisi · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P4) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** e-posta değil, servisler arası iç çağrı: `ESignatureInfrastructure.cs:39-75` içindeki `AuthServiceESignTicketConsumer`
+Auth'un `internal/esign-tickets/consume` ucuna tek kullanımlık imza biletini tüketmek için gider ve `X-Internal-Api-Key` başlığını
+`services.AddHttpClient<IESignTicketConsumer, AuthServiceESignTicketConsumer>()` ile kurulan, yönlendirmesi KAPATILMAMIŞ tipli
+istemciyle gönderiyor (ölçüldü 2026-10-14, `Infrastructure/DependencyInjection.cs`). Hattın kuralı: iç anahtar yalnız
+`InternalHttpClients` üzerinden, yönlendirmesiz istemciyle gider. Bekçide adlı istisna, gerekçe: "servisler arası iç çağrı — e-posta değil" (bekçinin bu tür çağrılar için ayrı bir sınıfı yok: listesi zaten iç-anahtar gönderenlerin listesi ve her biri yönlendirmesiz istemcide).
+**Yapılacak:** tüketici iç istemci yardımcısına (`InternalHttpClients`, yönlendirmesiz) taşınır; istisna satırı çıkar.
+**Gelecek regresyon riski:** 🔴 — bir yönlendirme cevabı iç anahtarı başka bir hedefe taşıyabilir.
+
+---
+
+### BL-636
+
+**`DateTimeOffsetSortGuardTests` e-imza deposunu yakalıyor — yanlış pozitif (ad eşleşmesi, tür DateTime)**
+
+DURUM: AÇIK · SAHİP: MOD-0022 e-imza geliştiricisi (satır) · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P4; e-imza sahibi ölçtü, CT doğruladı) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `ESignatureRepositories.cs` `SortBy(DueAtUtc).ThenByDescending(RequestedAtUtc)`. "Canlı hata adayı" DEĞİL: `DueAtUtc` /
+`RequestedAtUtc` / `SignedAtUtc` düz `DateTime` (`ESignatureCatalog.cs:124/126`, `ESignatureRecord.cs:37`) — BSON tarih,
+skaler; sunucu sıralamayı reddetmez. Bekçi DateTimeOffset ADLARINI bütün servislerden topluyor; MDM'de aynı adlı DateTimeOffset
+alanlar var. Bekçide adlı istisna, gerekçe: "yanlış pozitif — ad eşleşmesi, tür DateTime; sahip ölçtü 2026-10-14".
+**Yapılacak:** bekçi türü eşleştirdiğinde (BL-639) satır kendiliğinden gereksizleşir ve çıkar.
+**Gelecek regresyon riski:** 🟢 (önceki 🔴 etiketi ölçümle düştü).
+
+---
+
+### BL-639
+
+**DateTimeOffsetSortGuard adı değil türü eşlesin (varlık + alan)**
+
+DURUM: AÇIK · SAHİP: CT · KARAR: CT, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P4 açıklaması) · KAYIT: 2026-10-14
+
+**Ne:** `DateTimeOffsetSortGuardTests` DateTimeOffset özellik ADLARINI bütün servislerden tek kümede topluyor ve sıralama
+zincirindeki alan adını bu kümeyle karşılaştırıyor. Aynı ad başka bir varlıkta DateTimeOffset ise yanlış pozitif (BL-636),
+aynı ad başka bir varlıkta DateTime ise yanlış negatif olabilir. Yapılacak: zincirin hangi varlığın koleksiyonunda koştuğunu
+çözüp (varlık + alan) türü o varlıkta ölçmek; BL-636 satırı bununla çıkar.
+**Gelecek regresyon riski:** 🟡 — bugünkü tarama gerçek bir iki-DateTimeOffset sıralamasını ad çakışmasında da yakalar ama
+türü farklı aynı adla bir sıralamayı kaçırabilir.
+
+---
+
+### BL-640
+
+**Rakip ürünler (WP-VW-W4) MDM belge eşleme kaydında yok; iki belge bütün olarak yazılıyor**
+
+DURUM: AÇIK · SAHİP: WP-VW-W4 (rakip ürün / ziyaret raporu) geliştiricisi · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** main-sync 2026-10-14 ile gelen `CompetitorProduct`, `CompetitorProposalDecision` ve MOD-0023 sonuç kutusu `ProcessedEvent`
+kendi `CompetitorProductClassMaps`'iyle geliyor; hattın `MdmDocumentClassMaps` kaydında değiller. `CompetitorProductRepository`
+ve `MongoWorkflowApprovalStore<T>` kaydı bütün olarak değiştiriyor (`ReplaceOneAsync`) ve okuma esnek — sonraki bir sürümün
+eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests` iki testte adlı, sahipli istisna.
+**Yapılacak:** türler `MdmDocumentClassMaps`'e alınır; bütün yazılar alan düzeyine iner ya da eşleme katı olur; satırlar çıkar.
+**Gelecek regresyon riski:** 🟡
+
+---
+
+### BL-641
+
+**CRM W4 ziyaret raporu v2: üç yan panelin birincil eylemi işaretsiz (Enter / chord)**
+
+DURUM: AÇIK · SAHİP: CRM · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `CRM/KnowledgePaths/_PresentationNotes.cshtml`, `CRM/PotentialThresholds/Index.cshtml`,
+`CRM/VisitEvidenceSettings/Index.cshtml` `data-dt-primary` taşımıyor (UX-COMMON-FIX2 R4). `diten-enter-primary.test.js` içinde adlı satır.
+**Yapılacak:** her panelin birincil düğmesi `enter` ya da `chord` ile işaretlenir; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+---
+
+### BL-642
+
+**CRM W4 ile gelen 5 kiracı sayfasının "?" yardım metni yok**
+
+DURUM: AÇIK · SAHİP: CRM (COMPETITORPRODUCTS dahil — W4 rakip ürün listesi) · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** COMPETITORPRODUCTS, CRMDOCTORINSIGHTTHRESHOLDS, OBJECTIONRESPONSES, VISITEVIDENCESETTINGS, VISITWORKSPACE. Yardım defterine
+satır girmedi (tavan değişmedi); `page-help-ledger.test.js` içinde `MAIN_SYNC_3_PAGES` adlı listesi, anahtarlar sabit, yalnız küçülür.
+**Yapılacak:** `PageHelpResource` içinde 7 dilde metin; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+---
+
+### BL-643
+
+**CRM `ScaffoldSmokeTests` DI'yi paylaşılan `mongodb://localhost:27017` yapılandırmasıyla kuruyor**
+
+DURUM: AÇIK · SAHİP: CRM · KARAR: — (WP-LANE-MAIN-SYNC-03 bulgusu) · KAYIT: 2026-10-14
+
+**Ne:** `services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/ScaffoldSmokeTests.cs:26` bellek içi yapılandırmaya
+`Mongo:ConnectionString = mongodb://localhost:27017` koyup `AddPersistence` ile kabı kuruyor; bir `MongoClient` oluşursa sürücü
+arka planda 27017'ye izleme bağlantısı açar. CI'da CRM projesi koşmuyor (NotInThisJob); yerel koşularda geliştiricinin ortak
+Mongo'suna dokunabilir. SYNC-03 koşularında bu sınıf filtreyle dışarıda bırakıldı.
+**Yapılacak:** testin kendi mongod'u ya da yalnız DI çözümü için açık bir "bağlanma" yapılandırması; BL-595 desenindeki bekçi CRM'e.
+**Gelecek regresyon riski:** 🟡
+
+**2026-10-14 CT ölçümü:** test yalnız bağlanmıyor, yazıyor da — CRM `AddPersistence` kurulumda `TryEnsureIndexes` çalıştırıyor
+(`Persistence/DependencyInjection.cs:289`), ortak `DitenERP_Test` veritabanında indeks. mongod bağlantı günlüğünde koşu anlarında
+(14:47:46, 15:39:37) bağlantı var. CRM'e bildirildi (sahip iletti).
+
+**2026-10-14 CRM cevabı:** doğrulandı; yazılan yalnız `DitenERP_Test`'te boş koleksiyon indeksleri, geliştirici verisi (`DitenERP_Dev`)
+etkilenmedi. Plan `FIX-CRM-SCAFFOLD-MONGO` (dal `fix/crm-scaffold-smoke-no-mongo` → PR → main), ziyaret çalışma alanı paketlerinden sonra:
+`AddPersistence`'a varsayılanı açık `Mongo:EnsureIndexesOnStartup`; test kapatır. CT eki: sürücü istemci oluşunca izleme bağlantısı açar —
+testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod günlüğünde 0 bağlantı. İstisna CRM'in PR'ı main'e girene kadar hatta kalır.
+
+---
+
+### BL-647
+
+**Referans kiracı herhangi bir müşteri kiracısı olarak ayarlanabiliyor — "özel olarak işaretlenmiş referans kiracı" kuralı yok (Market ve GSKU)**
+
+DURUM: AÇIK · SAHİP: CT (Platform / referans veri) · BULAN: WP-PLT-MARKET-REFTENANT-01 bağımsız incelemesi (2026-10-15) · KAYIT: 2026-10-15
+
+**Ne:** Market operasyonel yüklemesi referans kiracıyı ayardan okuyor (BL-645 düzeltmesi) ve yalnız boş / sistem kiracısı / GSKU tüketicisini
+reddediyor (DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility.cs:66-67). GSKU yolu yalnız "referans ≠ tüketici" diyor
+(DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility.cs:134-136), sistem kiracısını reddetmiyor. Ayar sıradan bir müşteri kiracısına
+verilirse referans verisi o kiracının kullanıcılarına ait olur. Bugün yalnız Development + açık ayar + aktör kilidiyle sınırlı.
+**Yapılacak (canlı K-INFRA-2'den ÖNCE):** referans kiracı yalnız işaretli bir kiracı olabilir (Platform kiracı kaydında bayrak ya da kayıt defteri); Market
+ve GSKU aynı kuralı paylaşır; Market tüketicisi (74355e70-…) ile karşılaştırma eklenir. Ayrıca not: ayar sırası nedeniyle gerçek sunucuda
+"ortam değişkeni = yapılandırma" kontrolü yalnız değişkenin varlığını kanıtlar (VerifiedMarketOperationalMode.cs:27-32) — mevcut desen.
+**Gelecek regresyon riski:** 🟡 (canlıda yanlış ayar → referans verisi müşteri kiracısına).
+
+---
+
+### BL-654
+
+**Platform yöneticileri için iki adımlı giriş (MFA) ve platform girişinde hesap kilitleme yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: CT kapsam ölçümü (2026-10-15) · KAYIT: 2026-10-19 · ERTELEME: sahip kararı 2026-10-19 ("backloga alalım, sonra yapalım")
+
+Ölçüldü (origin/main 3912d568b): kiracı kullanıcılarında e-posta kodlu ikinci adım var (`MfaChallenge`, `MfaChallengeService`, `/account/login/mfa`); platform girişinde (`PlatformLoginCommandHandler`) ikinci adım YOK ve başarısız denemeler sayılmıyor (hesap kilitleme yok; yalnız istek sınırı, BL-626). Taslak paket: CAND-CAP-0003-FU02 (2026-05, güncellenmeli). Karar taslağı (9 madde, öneriler): CT scratchpad `mfa-platform-admin-owner-decisions.md` — öneri: ilk sürüm e-posta kodu (hazır kod), bütün platform hesaplarına zorunlu, platform girişine hesap kilitleme; TOTP sonraki dilim. SAP / Oracle'da yönetici MFA'sı zorunlu tutulur.
+**Ne zaman:** canlıya ikinci bir platform yöneticisi (ya da partner yöneticisi) açılmadan ÖNCE.
+**Gelecek regresyon riski:** 🔴 (o koşul gerçekleşirse); bugün 🟡 — canlıda tek platform yöneticisi sahip.
+
+---
+
+### BL-649
+
+**Aralıklı Auth testleri: `ProductIdentityEntitlementReconciliationMongoTests` sınıfında her koşuda FARKLI bir senaryo `QUIESCENCE_DRIFT` ile düşüyor (1/2817)**
+
+DURUM: AÇIK · SAHİP: CT (Legacy; MDM ürün devralma hattı) · BULAN: AI001 (PR #147 service-tests ölçümü, 2026-10-16) · KAYIT: 2026-10-16
+
+Ölçüldü (test adı düzeyinde, Codex okuması; AI001 düzeltmesiyle): üç koşuda farklı senaryo, hepsinde `QUIESCENCE_DRIFT`, her seferinde 1/2817 — PR #147 (38902043508) `Commit_WhenAcknowledgementIsLostAfterRealCommit_ClassifiesByReadbackWithoutRetry(readbackUnavailable: False)`; main 22b056c8c (38718582375) `ReadReceipt_WhenEvidenceIsInvalid_FailsClosed(mutation: duplicate)`; main 6b8a62d5a (38622593452) `Commit_WhenWriterAppearsAfterSnapshot_CannotFinalizeSuccess(drift: versionless-protected-row)`; main 3912d568b'de geçmiş. Aynı sınıfta önceden var olan bir kararsızlığa işaret ediyor; kök neden DOĞRULANMADI.
+**Hipotezler (ölçülmedi):** (1) paralel yazım — DESTEKLENMİYOR: sınıf `DisposableAuthMongoReplicaSet` koleksiyonunda (`DisableParallelization = true`, :16) ve kendi replika setini açıyor (AI001 / Codex okuması). (2) yazımsız kayma — `EntitlementReconciliationOperationStore.ObserveQuiescenceAsync` (~:464) `$currentOp`'u allUsers + idleConnections + idleSessions + localOps ile okuyup kendi ApplicationName'i dışındaki istemcilerden parmak izi kuruyor; okumalar arasında boşta bağlantı / oturum kümesi değişirse (testin başka MongoClient'ları, sürücü havuzu) iz yazım olmadan kayabilir. Ürün bekçisinin reddi doğru davranış; düzeltme önce ölçümle, test tarafında. Önceki iz: `docs/records/audits/2026-09/product-five-cross-branch-delivery-audit-2026-09-29.md:944`, `:969` ("değiştirilmemiş tekil tekrar geçti", istemci-sessizlik / test yaşam döngüsü teşhisi sürüyordu).
+**Yapılacak:** testin sessizlik (quiescence) koşulunun hangi eşzamanlı yazımla kaydığını ölçmek; düzeltme testin kendi bekleme sözleşmesinde (ürün kuralı gevşetilmez); düzeltilene kadar CI'da bu testin kırmızısı "bilinen aralıklı" olarak adıyla anılır, toplu yeniden deneme yok.
+**Gelecek regresyon riski:** 🟡 (aralıklı kırmızı gerçek gerilemeyi gizleyebilir).
+
+---
+
+### BL-648
+
+**Auth DataSeeder tek bir 97c5 kullanıcısına (e-postayla) HER ortamda rol veriyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-AUTH-ADMIN-BOOTSTRAP-01 güvenlik incelemesi (2026-10-15) · KAYIT: 2026-10-15
+
+**Ne:** `DataSeeder` dev tenant-97c5'teki sabit bir kullanıcıya, e-posta ile bulup, BRD / CRM izinleri veriyor (DataSeeder.cs ~:1741, :1822, :1900, :1975,
+:2069 — admin-bootstrap dalındaki satırlar). Ortam kapısı yok: o kiracı ve kullanıcı bir canlı / test ortamında varsa açılışta yeniden rol alır.
+Yönetici tohumu işinden önce de vardı; o iş hesap tohumlarını kapattı, bu rol tohumlarını değil.
+**Yapılacak:** bu hibeler DevAccountSeed'e (Development + açık ayar) taşınır ya da tamamen kalkar; test: Production açılışında bu kullanıcının rolleri değişmez.
+**Gelecek regresyon riski:** 🟡
+
+---
+
+### BL-646
+
+**service-tests iş akışının ilk tam CI koşusu (PR #144): kırmızıların çoğu CI ortamı — Mongo yolu değişkeni, RabbitMQ, Prism, Linux yolları**
+
+DURUM: KAPANDI (PR #148, WP-CI-SERVICE-TESTS-05, main'de) · SAHİP: CT (CI) · BULAN: PR #144 CI (2026-10-14, b7ba78de7) · KAYIT: 2026-10-14
+
+Ölçüldü (GitHub check-runs + iş günlükleri): 24 işin 16'sı yeşil.
+- platform-app 337 kırmızı: 325'i `AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED` — CI `DITEN_FU02_MONGOD_PATH` (ya da replika ayarı) vermiyor; 2 `DirectoryNotFound`
+  (Linux büyük/küçük harf ya da yol); `InternalESignActionsController.Register` iç izin listesi (main'in kendi kırmızısı, e-imza sahibine bildirildi);
+  2 `PlatformAdministratorSeedMeasurementTests` NotExecuted ("Skipped = 0" adımı).
+- platform-eventing: RabbitMQ 120 sn'de hazır olmadı (`RABBITMQ_NOT_READY`), test koşmadı.
+- inventory-tests: 16 `PrismConsumedContractSmokeTests` (Prism CI'da çalışmıyor; yerelde de aynı 16).
+- platform-bgjobs 1 (sağlık kontrolü zamanlaması), mdm-api 1 NotExecuted (`ProductMasterContractFixtureTests` SOURCE.txt), auth-acceptance-host 3
+  (`LoginPeerVerificationTests` Linux'ta süreç doğrulama / BrokenPipe).
+- phase1 ×2: main'in bilinen 7 mimari kırmızısı.
+**Yapılacak:** iş akışına doğru mongod değişkenleri; RabbitMQ başlatma bekleme / servis konteyneri; Prism kurulumunun doğrulanması; Linux yol düzeltmeleri;
+NotExecuted testler ya gerçek koşar ya adlı izin listesinde; her adım için CI'da yeşil kanıt.
+**Gelecek regresyon riski:** 🟡 (CI kırmızıyken gerçek gerileme gürültüde kaybolur).
+
+---
+
+### BL-645
+
+**Dev referans kiracısı iki yerde farklı: Pazar (market) operasyonel yüklemesi hattın kilidiyle `0000…0001` istiyor, main'in dev ayarı `0b7d0048-…` diyor — CRM'in yerel Pazar betiği reddediliyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform / referans veri) + CRM (W4-INFRA) — karar sahibin · BULAN: WP-LANE-MAIN-SYNC-04 · KAYIT: 2026-10-14
+
+**Ne:** Hattın kuralı (`6e3013612`, MDM devralma) Pazar kataloğunun tek seferlik yüklemesini yalnız Development'ta ve yalnız işlem ortam
+değişkenleri yapılandırmayla birebir eşleşirse açıyor; referans kiracıyı `VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId`
+(`00000000-0000-0000-0000-000000000001`) olarak kilitliyor. Main'in W4-INFRA dev ayarı (`Platform API appsettings.Development.json`,
+`BusinessReferenceData:Provider:ReferenceTenantId`) `0b7d0048-0290-4000-8000-000000000001`; betiği `scripts/dev/run-verified-market-provisioning.ps1`
+ortam değişkeni koymuyor. Sahip kararı A (2026-10-14): hattın kuralı kalır; main'in dev yapılandırma testi `PROCESS_PROVENANCE_REQUIRED` bekliyor.
+**Sonuç:** CRM geliştiricilerinin yerel Pazar kataloğu yüklemesi reddediliyor (yanlış kiracıya yazmıyor; canlı etkisi yok — komut yalnız Development).
+GSKU doğrulanmış yüklemesi etkilenmiyor ama dev'de iki katalog farklı referans kiracı görebilir.
+**Yapılacak:** dev ortamında TEK referans kiracı kararı (sahip + CRM): ya kilit `0b7d…`'ye taşınır ya dev ayarı `0001`'e döner; ardından betik ortam
+değişkenlerini koyar (Enabled=true, CatalogLoad__Enabled=false, ReferenceTenantId ve beş değer yapılandırmayla birebir) ve test yeniden "uygun" bekler.
+SAP'de referans veri tek bir istemcide (client 000 benzeri) tutulur; Oracle'da ortak "Common Set". Tek kiracı doğru yön, hangisi olacağı veri kararı.
+**Gelecek regresyon riski:** 🟡 (yerel CRM geliştirmesi; iki referans kiracıyla dev verisi tutarsızlaşabilir).
+
+---
+
+### BL-644
+
+**Ctrl+K arama: kural ile kod ayrışmış — platform kaydı yanlış dosyayı gösteriyor, izin süzmesi yalnız Web katmanında, yedek JSON bayat, sabit metinler, yanlış test adı, davranış testi yok**
+
+DURUM: AÇIK · SAHİP: CT (Platform / UI) — belge düzeltmeleri kural sohbetine (İ1), kapanış PR'ından sonra · BULAN: CT salt okuma denetimi (sahip isteği, 2026-10-14) · KAYIT: 2026-10-14
+
+İlgili ama farklı: BL-455 (Ctrl+K'de komutlar / hızlı eylemler), BL-601 (Ctrl+K'de "Profilim"). Bu madde onları kapsamaz.
+
+1. 🟡 **Platform kaydı yanlış dosyayı gösteriyor.** `.antigravity/rules/platform-global-search-registry.md:28-63` iki statik JSON'u
+   (`platform-search.{en,tr}.json`) düzenlemeyi söylüyor; gerçek kaynak `frontend/Diten.Web/Navigation/PlatformNavigationCatalog.cs`
+   (`PlatformSearchController.cs` onu okuyor; kenar menüsü de). Aynı eski bilgi `module-self-registration-standard.md:149` ve
+   `workflows/add-module.md:113-114, 156`'da. Kurala uyan geliştiricinin eklediği platform sayfası Ctrl+K'de görünmez.
+   Kiracı tarafı otomatik (modül manifesti → `GetTenantNavigationMenuQueryHandler`); geliştirici yalnız manifest + `Nav.Page.{KOD}` (7 dil) yazar.
+2. 🟡 **İzin süzmesi yalnız Web katmanında.** Platform `NavigationController` `[LoginOnly]` ve `RequiredPermission`'ı süzmeden döndürüyor
+   (`GetTenantNavigationMenuQueryHandler.cs:105`); süzme `TenantSearchController.CanAccess`'te ("UX-only"). Platform paletinde kullanıcı başına
+   süzme yok. Sızan: sayfa adı ve adresi (sayfalar ayrıca korumalı). `module-self-registration-standard.md:144` "izinle süzülmüş menü" diyor —
+   sunucuda yarı doğru. SAP Fiori / Oracle'da menü sunucuda rolle süzülür.
+3. 🟢 **Yedek JSON bayat.** Dinamik uç düşerse `main.js:299-303` statik JSON'a düşüyor; içinde kuralın dışladığı `/Platform/Account/*`
+   sayfaları var, ~10 katalog sayfası yok.
+4. 🟢 **Sabit metinler.** "No results found" (`main.js:447`), "Create " öneki (`TenantSearchController.cs:237`), sabit Türkçe anahtar
+   kelimeler ("yeni", "ekle", "tatil": `TenantSearchController.cs:238`, `PlatformNavigationCatalog.cs:49`); kural 7 dil istiyor.
+5. 🟢 **Yanlış test adı.** `add-module.md:112` `NavL10nContractTests` diyor; gerçek bekçi `NavManifestL10nGuardTests`.
+6. 🟢 **Davranış testi yok.** Ctrl / ⌘ + K açılışı (`main.js:571-575`), `PlatformSearchController` ve `PlatformNavigationCatalog` için test yok.
+
+**Yapılacak:** 1, 3, 5 belge / temizlik (kural sohbeti, kapanış PR'ından sonra — `add-module.md` hatta değişiyor). 2 sunucu tarafı süzme
+(Platform, ayrı iş). 4 metinler 7 dilde. 6 bir vitest (gerçek `main.js`, `shell-search-label.test.js` deseni) + `PlatformSearchController` testi.
+**Gelecek regresyon riski:** 🟡 (yeni platform sayfası Ctrl+K'de görünmez; izin süzmesi istemciye bağlı).
+
+---
+
+### BL-637
+
+**Üretim (MVP-3) testleri CI'da: Mongo replika seti ve canlı kuyruk koleksiyonu yok**
+
+DURUM: AÇIK · SAHİP: Üretim (MVP-3) geliştiricisi · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 M1) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `manufacturing-tests` matris satırı eklendi. 35 test `MANUFACTURING_TEST_MONGO` yokken atlanıyor (ölçüldü, yerel koşu);
+CI'ın "Skipped = 0" adımı bu atlamaları kabul etmez (`scripts/ci-skip-allowlist.tsv` satırı CT kararıdır) — satır, sahip
+kendi replika setini açana ya da CT izin listesine alana kadar CI'da kırmızı kalır. `BomEventBrokerDeliveryTests`
+`LiveRabbitMqCollection` dışında canlı kuyruk açıyor: bekçide adlı istisna.
+**Yapılacak:** testler kendi mongod'unu `DITEN_TEST_MONGOD`'dan açsın (Stok'un `TestMongo` deseni); kuyruk sınıfı
+`LiveRabbitMqCollection`'a girsin; istisna satırı çıkar.
+**Gelecek regresyon riski:** 🟡 — CI'da koşmayan Mongo testleri sessizce bozulabilir.
+
+---
+
+### BL-638
+
+**main-sync 2026-10-14 ile gelen 32 kiracı sayfasının "?" yardım metni yok**
+
+DURUM: AÇIK · SAHİP: Stok / MVP-1 (24 sayfa), E-imza / MOD-0022 (7 sayfa), Üretim / MVP-3 (1 sayfa: BOMS) · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02, defter) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** sayfalar yardım defterine satır olarak girmedi (tavan 246'da kaldı); `page-help-ledger.test.js` içinde adlı liste
+(`MAIN_SYNC_2_PAGES`, sahip + gerekçe), anahtarları sabit — yalnız küçülür. Liste: BLOCKEDDISPOSITION, BLOCKEDSTOCK, BOMS,
+DECISIONSUBMIT, ESIGNAUDITEXPORT, ESIGNMEANINGS, ESIGNMYSIGNATURE, ESIGNPOLICY, ESIGNREQUESTS, ESIGNSAMPLEAPPROVALS,
+ESIGNVERIFICATION, LOCATIONS, LOCATIONTREE, LOTCREATE, LOTDETAILS, LOTEDIT, LOTMIGRATION, LOTMOVEMENTS, LOTS, LOTTRACE,
+QUARANTINEDECIDE, QUARANTINEDETAILS, QUARANTINEQUEUE, QUARANTINESETTINGS, RETESTQUEUE, SERIALS, STOCKLEDGER, STOCKLEDGERCREATE,
+STOCKMOVEMENTCREATE, STOCKMOVEMENTDETAILS, STOCKMOVEMENTEDIT, STOCKMOVEMENTS.
+**Yapılacak:** her sahip `PageHelpResource` içinde `Help.{KOD}.Purpose` + adımları 7 dilde yazar; satırı listeden çıkar.
+**Gelecek regresyon riski:** 🟢 — kullanıcı "?" panelinde yalnız kısayolları görür.
+
+---
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
@@ -7801,3 +10560,66 @@ DURUM: ERTELENDİ · SAHİP: MOD-0187 pack yazarı (kanıt yükleme gibi üç i�
 **Ölçüm komutu:**
 
     grep -n -E 'evidence upload|carrier picker|approved amount history|FUxx' docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md
+
+### BL-655
+
+**MOD-0043 / MOD-0044 / MOD-0046 — Master 8.7'nin eski anlam eşlemesi ile depodaki takip işleri farklı**
+
+DURUM: ERTELENDİ · SAHİP: Enterprise Architect / sahip · KARAR: sahip, 2026-10-19 ("gerek yok, backlog") · KAYIT: 2026-10-19
+
+**Ne:** Blueprint 8.7 `Legacy_ID_Migration_Map` bu üç eski proje kimliğinin anlamını başka yerlere taşıyor: `MOD-0043` → `MOD-0013` + `MOD-0014`
+(yönetişim, çalışan modül değil); `MOD-0044` → nesneye göre `MOD-0009` / `MOD-0360` / `MOD-0361`; `MOD-0046` → Platform Administration çalışma
+alanı + `MOD-0286`. Depo ise bunları aktif takip işleri `MOD-0009-FU01` / `-FU02` / `-FU03`'e bağlıyor (kayıt satırlarında "DIVERGENCE" notu var).
+**Neden ertelendi:** yürüyen işleri yeniden bağlamak paketleri, bağlantıları ve kabul kayıtlarını değiştirir; Master'a uymak mı, depodaki eşlemeyi
+korumak mı bir karar işidir, teknik değil.
+**Yapım tetikleyicisi:** Enterprise Architect ya da sahibin kararı; ya da Blueprint sahibinin eşlemeyi depodaki takip işlerine göre güncellemesi.
+**Master 8.8 (2026-10-19):** Master bunu **ADR-8.8-001 (açık)** olarak kaydetti ve A seçeneğini öneriyor: `Legacy_ID_Migration_Map`
+son hedef kalır; `MOD-0009-FU01/02/03` geçici uygulama takma adlarıdır; her FU'nun yetenek kapsamı ölçülmeden birleştirme ya da
+emekliye ayırma yapılmaz. Karar açık; A seçilirse ilk adım üç FU'nun kapsam ölçümüdür.
+**Gelecek regresyon riski:** 🟢 — kimlik aracı iki eşlemeyi de kabul ediyor; risk yalnız raporlarda iki farklı sahiplik görünmesi.
+
+**Ölçüm komutu:**
+
+    grep -nE '^\| MOD-004[346] \|' execution/registries/module-id-registry.md
+
+### BL-656
+
+**Dev_Readiness aktarımı (CT-DRA-01 §2) — kanıt kaydı olmadığı için ertelendi**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-19 ("önce onay sistemi") · KAYIT: 2026-10-19
+
+**Ne:** Blueprint 8.7 `Dev_Readiness` sayfası için depodan tek yönlü öneri tablosu (önerilen aşama, gerekçe, eksik kanıt,
+kanıt bağlantıları). Sözleşme hazır: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §2 (v2, Codex'in iki
+koşullu görüşü işlendi).
+**Neden ertelendi:** main'de REP-001 v2 kabul kaydı yok (0, ölçüldü 2026-10-19 `01f1080fd`); araç bugün boş tablo üretirdi.
+Eski kayıtlardan aşama çıkarmak, sözleşmenin yasakladığı kanıtsız aşama olur.
+**Master 8.8 (2026-10-19):** Blueprint `Dev_Readiness` sayfasına depo içe aktarma sütunları eklendi: Z `Repo Suggested Stage`,
+AA `Suggested At`, AB `Source Commit`, AC `Suggested Evidence`, AD `Suggestion Reason`; AE `MATCH` / `REVIEW`. Depo yalnız Z–AD'yi
+yazar, `Stage` (G) ya da insanın seçtiği hiçbir sütunu yazmaz — sözleşmemizle aynı yön (CONTRACT §2.5 bu sütunlara göre
+güncellendi).
+**Yapım tetikleyicisi:** ilk REP-001 v2 modül kaydı (`completion: Module Done`) main'e girince. D1 (Owner kaynağı) o gün
+`execution/approvals/approvers.tsv` ile çözülür; D4 (`verified_at`) aynı işte okuyucuyla birlikte eklenir.
+**Gelecek regresyon riski:** 🟢 — Excel bu arada "Not Started" gösterir; kanıt olmadığı için bu doğru.
+
+**Ölçüm komutu:**
+
+    git grep -l '^format: rep-001-v2' -- docs/records | wc -l
+
+### BL-657
+
+**Yazılı kuralları depo genelinde otomatik teste çevirmek (yetkisiz sayfa, 7 dil, menü anahtarı, kiracı sınırı, gizli bilgi)**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-19 ("backlog'a ekleyelim") · KAYIT: 2026-10-19
+
+**Ne:** MVP-6 denetiminin önerisi: en çok ihlal edilen yazılı kuralları bütün depoyu tarayan mimari testlere çevirmek.
+Adaylar: UAS-001 (yetkisiz kullanıcıya sayfa iskeleti yok), kiracı modülünde 7 dil eşliği, hata anahtarı kapsamı, menü
+anahtarı biçimi (paket metni için `scripts/check_pack_nav_keys.py` var; çalışma kodu için `NavManifestL10nGuardTests`),
+her çağrıda kiracı sınırı, depoda gizli bilgi. Bugün bunlar sayfa sayfa testlerle korunuyor.
+**Neden ertelendi:** büyük iş (kural başına 1–3 gün, toplam 1–2 hafta). Her kural mevcut ihlalleri de ortaya çıkarır;
+bunlar başka ekiplerin modüllerinde olduğu için bilinen-borç listesiyle başlanmalı (`check_pack_nav_keys.py` deseni).
+**Yapım tetikleyicisi:** sahibin önceliklendirmesi; ya da aynı kuralın bir modülde ikinci kez canlıda ihlal edilmesi.
+**Gelecek regresyon riski:** 🟡 — yeni sayfa ya da modül bu kuralları ihlal ederse yalnız inceleme ya da canlı yakalar.
+
+**Ölçüm komutu:**
+
+    git ls-tree -r --name-only HEAD tests/architecture | grep -E 'Tests\.cs$'

@@ -11,7 +11,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 0. **Phase 0: Onaylı Module Pack Kapısı (ORKESTRATOR)**
    - `AGENTS.md` dosyasını oku ve repo-level guardrail'leri uygula.
    - İlgili domain'i tespit et ve `execution/domains/{domain}/domain-config.md` dosyasını oku.
-   - Hedef modül için module pack var mı kontrol et: `execution/domains/{domain}/module-packs/{ID}.md`
+   - Hedef modül için module pack var mı kontrol et: `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
    - Module pack yoksa kod yazma; kullanıcıya önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlatmasını söyle.
    - Module pack status `draft` ise kod yazma; kullanıcı incelemesi ve `approved` veya `ready-for-dev` status beklenir.
    - DataTable modülü ise module pack içinde `form_field_count` ve `golden_reference: slim|compact` kararını kontrol et.
@@ -42,17 +42,19 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      | 8 | Required alan kontratı Backend Validator + Web ViewModel + Razor + tracker için aynı mı? | Evet/Hayır + required alan listesi + opsiyonel nullable alan listesi + ilk açılış progress beklentisi |
      | 9 | Platform lookup dependency checked mi? Dropdown/filter/select/default alanları PSS `/api/lookups/{key}` kullanıyor mu, yeni lookup key pack'te açık mı, MDM/reference boundary korunuyor mu? | Evet/Hayır/Yok + endpoint listesi veya gerekçe |
      | 10 | **Denetim kaydı (AUD-001):** Paketin `Audited Events` tablosu her yazma komutunu içeriyor mu; servisin denetim altyapısı var mı? | Evet/Hayır + komut → yol (a/b/c) ya da istisna sınıfı listesi + altyapının adı (yoksa: ENGEL) |
+     | 11 | **Kayıt kodu (RCS-001):** Kullanıcıya görünen kodu olan her kayıt türünün sınıfı (OTOMATİK / İKİSİ DE / KALSIN) ve öneki pakette yazılı mı; kod ortak hizmetten mi üretiliyor; İKİSİ DE türünde değişiklik gerekçesi denetim kaydına düşüyor mu? | Evet/Hayır + tür → sınıf · önek · üretici |
+     | 12 | **Başka modül (XMC-001):** Plan kapsam dışı bir modülde değişiklik gerektiriyor mu? Gerektiriyorsa kullanıcıya soruldu mu, cevap ne? | Yok / modül + cevap (a/b/c) |
 
    - **Onay Mekaniği:** Orchestrator, doldurulmuş tabloyu kullanıcıya `AskUserQuestion` ile (ya da CLI'da düz mesaj olarak) sunar ve "Onaylıyor musunuz?" sorusuyla bekler. **Kullanıcıdan açık `evet/onay/approved` cevabı alınmadan Phase 2'ye geçilemez.**
    - **Sapma Halinde:** Tek bir madde "Hayır" ise Phase 1'e dön, module pack ya da plan üzerinde düzelt; tabloyu yeniden doldur.
 
 2. **Phase 2: Veri Mimarisi (data-agent & backend-architect)**
-   - MongoDB koleksiyonunu tasarla. Varsayılan model tenant-owned `ITenantDocument`/`BaseEntity` tabanıdır.
+   - MongoDB koleksiyonunu tasarla. Varsayılan model, servisin `TenantId` taşıyan kiracı taban sınıfıdır (ad servise göre değişir — ör. Platform.Common: `TenantScopedEntity`; Auth/MDM: `EntityBase`; DevEnablement: `BaseEntity`; bkz. `/add-mongo-collection`).
    - Domain Entity ve Repository katmanını oluştur. Tenant-owned veride Soft Delete ve TenantId ZORUNLUDUR. Yalnızca module pack'te açıkça gerekçelendirilmiş Platform global kataloglarında `GlobalEntity` kullanılabilir; bu durumda repository `IsDeleted=false`, global unique index ve RBAC kontrollerini belgelemek zorundadır.
 
 3. **Phase 3: İş Mantığı & Yerelleştirme (backend-architect & l10n-agent)**
    - `/add-endpoint-cqrs` akışını başlat (Request, Command, Handler, Validator).
-   - API Controller'ı oluştur ve Ocelot Gateway rotasını ekle.
+   - API Controller'ı oluştur. Gateway rotasını kendin ekleme; rota ihtiyacını Phase 3.5'te `integration-agent`'a devret (`ocelot.json`'un tek yazarı).
    - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre modül tipine uygun (Platform: 2 dil, Tenant: 7 dil) `.resx` senkronizasyonunu tamamla.
    - Sadece projede desteklenen dillerde `.resx` dosyalarını oluştur.
    - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `GoldenReferenceSlimIndex` ise dosya adı `GoldenReferenceSlimIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
@@ -102,7 +104,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - **Frontend Proxy Contract (ZORUNLU):**
      - Platform/admin MVC modüllerinde API profili `proxy-profile`dır. JS endpoint'i `/{AreaName}/{ModuleName}/api` olur; browser JS `window.API.platform`, `window.ApiBaseUrl`, `document.cookie`, `access_token` veya `Authorization: Bearer` kullanmaz.
      - Frontend controller route'u ve JS endpoint'i birlikte tasarlanır. Controller en az `GET api`, `DELETE api/{id}`, `DELETE api/bulk` proxy action'larını içerir; module pack'te varsa `activate/deactivate` gibi action'lar da eklenir.
-     - Proxy action'ları `Request.Cookies["access_token"]` değerini server-side okuyup Gateway çağrısına `Authorization: Bearer` olarak ekler ve `X-Tenant-Id` header'ını Platform/admin context'te göndermez.
+     - Proxy action'ları HttpOnly token'ı server-side `AuthTokenCookies.GetAccessToken(Request)` ile okuyup Gateway çağrısına `Authorization: Bearer` olarak ekler (doğrudan `Request.Cookies["access_token"]` okunmaz: parçalı token bozulur; bkz. `.antigravity/rules/routes.md`) ve `X-Tenant-Id` header'ını Platform/admin context'te göndermez.
      - Tenant/public shell modüllerinde `direct-gateway-profile` kullanılacaksa bu karar module pack veya orchestration report'ta açık yazılır ve `window.API.{service}` kullanılır.
    - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
    - Shell tipine göre `_LayoutPlatformAdmin` veya `_LayoutTenantShell` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.
@@ -153,7 +155,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - [ ] Bulk delete onayı + silme akışı çalışıyor mu?
      - [ ] Platform/Admin modülü ise Ctrl+K `en` ve `tr` kültürlerinde açılıyor mu, yeni modül adı/grup/keyword araması sonuç döndürüyor mu ve sonuç doğru `/Platform/...` route'una gidiyor mu?
    - **Kanal A/B otomasyon başarısız ya da kullanılamıyorsa Kanal C zorunludur — orchestrator, browser kontrolünü uydurarak "yapıldı" diyemez.**
-   - Herhangi bir madde başarısızsa → Phase 4'e geri dön ve düzelt.
+   - Herhangi bir madde başarısızsa → Phase 4'e geri dön ve düzelt. Yeni Control Tower işlerinde aynı kök neden iki ardışık turda kapanmazsa üçüncü tura girme: dur ve raporla; yeniden değerlendirme kararı (kart §0.2 Y3, SOP §28.2) çözülmeden yeni uygulama yok.
 
 5. **Phase 5: Kalite & Güvenlik (testing-agent & security-agent & code-quality-agent)**
    - xUnit testlerini yaz (Tenant isolation check).
@@ -162,6 +164,8 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - **Denetim kaydı kapısı (AUD-001 — ZORUNLU):** `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard` yeşil; `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ | grep -E '^\+- '` çıktısı boş (`+- ` ile başlayan satır = deftere eklenmiş borç); modülün bir oluşturma, bir güncelleme ve bir silme komutu **dev ortamında** çalıştırılıp üç kaydı `.antigravity/rules/audit-trail-standard.md` §8'deki salt-okunur sorguyla gösterildi. Üçü olmadan Phase 6'ya geçilmez.
 
 6. **Phase 6: Dokümantasyon ve Denetim (documentation-writer & user-manual-generator)**
+   - **Bitti tanımı (SOP §29):** Done seviyeleri yalnız SOP §29'dadır (WP · Module · Capability · Release Done).
+     Bu faz o seviyelerden birine kanıt üretir; kendi başına "bitti" demez.
    - `documentation-writer` → Yeni modülün API dokümanlarını güncelle. **Yol zorunlu:**
      servis README → `services/<servis>/README.md` · API anlatısı → `docs/reference/architecture/api/` ·
      karar alındıysa ADR → `docs/records/decisions/{yyyy-mm}/` (bkz. `rules/docs-organization.md` §3.1).
@@ -183,21 +187,23 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.
 3. **Canonical-name validation** — the pack `name` must match the Blueprint canonical name (or an approved alias).
 4. **Parent/FU/child decision** — decide explicitly whether the work is a new module or an FU/child of an existing module before minting an ID.
-5. **Repo-only reservation** — a capability absent from the Blueprint requires an explicit Enterprise Architect reservation recorded in the registry; no placeholder or next-free ID may be invented.
+5. **No repo-only identity (Master-first)** — a capability absent from the Blueprint goes to a Module Change Request in the Master; no placeholder, next-free or repo-only ID may be invented. Enterprise Architect reservations recorded in the registry before 2026-10-16 stay as recorded (`--repo-only` proves them).
 6. **Preflight (fail-closed)** — run `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS pack creation.
 
-Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases pending Enterprise Architect reservation.
+Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases of a canonical MOD id; a missing canonical id is a Module Change Request in the Master (Master-first rule), not a repository reservation.
 
-### CAND-CAP candidate namespace (DCP-002)
+### Master-first rule and the closed CAND-CAP namespace (DCP-002, Blueprint 8.7)
 
-When the Blueprint has no capability and no existing MOD/FU fits, use a temporary candidate identity `CAND-CAP-####` — a governance/documentation identity ONLY, never written into runtime literals. Validate with the fail-closed candidate gate:
+**Master-first rule (CEO, 2026-10-16; Blueprint 8.7 `Module_Change_Requests`):** no module may be created, coded or registered outside the Master. When the Blueprint has no capability and no existing MOD/FU fits, **stop**: raise a Module Change Request in the Master's `Module_Change_Requests` sheet (through the Blueprint owner) and continue only after the Master gives a new MOD-ID or an approved mapping. Code, routes, permissions and data objects carry a MOD-ID that exists in `Blueprint_Data`.
+
+`CAND-CAP-####` is a closed, historical namespace: no new candidate identity is opened. The existing ones are deprecated aliases of the canonical targets Master 8.2 / 8.7 gave them (`execution/portfolio/blueprint-master-plan-reconciliation.md` § Master 8.7 resolution). The candidate gate refuses a new or a deprecated candidate and names its canonical target:
 
 `python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
 
-Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**
+New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise a Module Change Request in the Master → never invent a MOD / PSS / NEW identity, and open no new CAND-CAP.**

@@ -23,5 +23,9 @@ public sealed record UserDto(
     string AccountKind = "Unknown",
     // WP-AUTH-INVITED-LIFECYCLE-01 — the derived lifecycle status for the Users screen: "Invited" | "Inactive" |
     // "Active" (UserLifecycle.StatusOf). Null on the auth-flow constructions, which never show a user list.
-    string? Status = null
+    string? Status = null,
+    // WP-EMAIL-LANG-01 — the user's mail language (null = the tenant's applies). Filled wherever GetUserByIdQuery answers:
+    // the user's own read (api/auth/me) AND an administrator's read of one user (api/users/{id}, auth.users.read) — an
+    // administrator may see which language a colleague's mail goes in; it is a language code, not personal data.
+    string? PreferredLanguage = null
 );

@@ -12,7 +12,7 @@ namespace Diten.Web.Controllers;
 ///
 /// <para>The browser never addresses a service port: it calls <c>/Tasks/api/*</c> on this app, and the JWT is read
 /// server-side from the HTTP-only auth cookie (never exposed to JS). The proxy path deliberately avoids
-/// <c>api/tasks</c>, which the frozen legacy <c>TaskApiController</c> owns.</para>
+/// <c>api/tasks</c>, which the legacy <c>TaskApiController</c> owned (removed by BL-619).</para>
 /// </summary>
 [Authorize]
 [Route("Tasks")]
@@ -144,7 +144,7 @@ public sealed class TasksController : Controller
     /// <para>The route parameter is named <c>transition</c>, not <c>action</c>: <c>action</c> is reserved by MVC
     /// routing and combining it with a constraint fails endpoint construction at startup.</para>
     /// </summary>
-    [HttpPost("api/{id:guid}/{transition:regex(^(accept|claim|release|plan|start|inquire|answer|submitReview|return|reassign|complete|cancel)$)}")]
+    [HttpPost("api/{id:guid}/{transition:regex(^(accept|decline|withdraw|offer|claim|release|plan|start|inquire|answer|submitReview|return|reassign|complete|cancel)$)}")]
     public Task<IActionResult> ApiTransition(Guid id, string transition)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/{transition}", readBody: true);
 
@@ -607,11 +607,24 @@ public sealed class TasksController : Controller
         => ProxyAsync(HttpMethod.Get,
             $"{_gatewayUrl}/api/v1/tasks/lookups/assignment-direction/{userId}", readBody: false);
 
+    /// <summary>
+    /// BL-512 — the picker is search-only: <c>search</c> OR <c>ids</c>, and ONLY those two travel upstream (each value
+    /// URL-encoded); nothing else on the query string is forwarded.
+    /// </summary>
     [HttpGet("api/decision-makers")]
-    public Task<IActionResult> ApiDecisionMakers()
-        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);
+    public Task<IActionResult> ApiDecisionMakers([FromQuery] string? search, [FromQuery] string? ids)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers{DecisionMakersQuery(search, ids)}", readBody: false);
 
-    /// <summary>MOD-0357 S4 — the "link an existing task" dialog's own search box (term, limit).</summary>
+    public static string DecisionMakersQuery(string? search, string? ids)
+    {
+        var parts = new List<string>(2);
+        if (search is not null) parts.Add("search=" + Uri.EscapeDataString(search));
+        if (ids is not null) parts.Add("ids=" + Uri.EscapeDataString(ids));
+        return parts.Count == 0 ? string.Empty : "?" + string.Join("&", parts);
+    }
+
+    /// <summary>MOD-0357 S4 — the "link an existing task" picker's server search (term, limit): the term the reader types
+    /// in the dialog's search box is sent here (FIX6), and the answer is <c>{ items, truncated }</c> (FIX5).</summary>
     [HttpGet("api/link-candidates")]
     public Task<IActionResult> ApiLinkCandidates()
         => ProxyAsync(

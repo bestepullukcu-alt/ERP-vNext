@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>平台</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>工作中心</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>物料主数据</value>
   </data>
@@ -520,6 +517,35 @@
   <data name="Password.Error.NewRequired" xml:space="preserve"><value>新密码为必填项。</value></data>
   <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>电子邮件为必填项。</value></data>
   <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>重置令牌为必填项。</value></data>
+  <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>请求过多。请等待几分钟后重试。</value></data>
+  <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>您的密码已在此期间被更改（例如由管理员更改）。请重新登录。</value></data>
+  <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>您的账户已被管理员停用。请联系您的管理员。</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>电子邮件或密码不正确，或账户已被暂时锁定。请稍后重试。</value></data>
+  <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>登录暂时不可用。请稍后重试。</value></data>
+  <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>此组织已关闭电子邮件登录。</value></data>
+  <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>您的临时密码已过期。请重置您的密码。</value></data>
+  <data name="Auth.Error.PlatformPrivilegesRequired" xml:space="preserve"><value>此账户没有平台管理角色。</value></data>
+  <data name="Auth.Error.InvalidVerificationCode" xml:space="preserve"><value>验证码无效或已过期。</value></data>
+  <data name="Auth.Error.CurrentPasswordIncorrect" xml:space="preserve"><value>您的当前密码不正确。</value></data>
+  <data name="Auth.Error.SessionEnded" xml:space="preserve"><value>您的会话已结束。请重新登录。</value></data>
+  <data name="Auth.Error.LinkInvalid" xml:space="preserve"><value>此链接已失效。请向您的管理员索取新链接。</value></data>
+  <data name="Auth.Error.LoginFailed" xml:space="preserve"><value>登录失败。请重试。</value></data>
+  <data name="Auth.Error.VerificationFailed" xml:space="preserve"><value>无法完成验证。请重试。</value></data>
+  <data name="Auth.Error.PasswordChangeFailed" xml:space="preserve"><value>无法更改您的密码。请重试。</value></data>
+  <data name="Auth.Error.ServiceUnavailable" xml:space="preserve"><value>登录服务暂时不可用。请稍后重试。</value></data>
+  <data name="Auth.Error.RequestInvalid" xml:space="preserve"><value>请求不完整。请检查各字段后重试。</value></data>
+  <data name="Auth.Error.TenantMissing" xml:space="preserve"><value>此登录链接不包含组织信息。请重新使用您的邀请链接。</value></data>
+  <data name="Auth.Error.VerificationCodeRequired" xml:space="preserve"><value>请输入验证码。</value></data>
+  <data name="Auth.Error.VerificationChallengeRequired" xml:space="preserve"><value>验证步骤已过期。请重新登录。</value></data>
+  <data name="Auth.Dialog.Ok" xml:space="preserve"><value>确定</value></data>
+  <data name="Auth.Mfa.Title" xml:space="preserve"><value>两步验证</value></data>
+  <data name="Auth.Mfa.Prompt" xml:space="preserve"><value>请输入发送至以下地址的验证码：</value></data>
+  <data name="Auth.Mfa.CodeLabel" xml:space="preserve"><value>验证码</value></data>
+  <data name="Auth.Mfa.Resend" xml:space="preserve"><value>重新发送验证码</value></data>
+  <data name="Auth.Mfa.Verifying" xml:space="preserve"><value>正在验证...</value></data>
+  <data name="Auth.Mfa.Resending" xml:space="preserve"><value>正在发送...</value></data>
+  <data name="Auth.Mfa.ResentTitle" xml:space="preserve"><value>验证码已发送</value></data>
+  <data name="Auth.Mfa.ResentMessage" xml:space="preserve"><value>新的验证码已发送。</value></data>
   <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>管理</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>开发者赋能</value></data>
@@ -625,6 +651,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>编辑任务</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>品牌与产品主数据</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>产品／物料／SKU 主数据</value>
   </data>
@@ -633,6 +662,9 @@
   </data>
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU</value>
+  </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>物料</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>任务类型</value>
@@ -703,6 +735,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>法律概况</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>拜访工作台</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>拜访计划</value>
   </data>
@@ -748,8 +783,11 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>品牌</value>
   </data>
-  <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划访问</value></data>
-  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划访问</value></data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>竞品</value>
+  </data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划拜访</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划拜访</value></data>
   <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
     <value>项目组合交付</value>
   </data>
@@ -787,6 +825,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>人员目录</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>参照列表</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>任务</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>员工登记（核心人力资源）</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>CRM 客户账户</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>CRM 联系人</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>CRM 内容编排</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>CRM 医生洞察</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>CRM 知识</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>CRM 计划拜访</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>CRM 区域</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>CRM 拜访计划</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>CRM 拜访报告</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>审批</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>类别</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>设置</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>工时表</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>周</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>检查清单模板</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>模板</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>内容范围</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>内容集</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>资格</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>访问频率策略</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>产品</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>客户</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>营销活动</value></data>
@@ -800,7 +859,7 @@
   <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>内容互动旅程</value></data>
   <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>知识路径</value></data>
   <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>知识主题</value></data>
-  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>计划访问</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>计划拜访</value></data>
   <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>偏好</value></data>
   <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>细分</value></data>
   <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>策略模板</value></data>
@@ -1049,11 +1108,35 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>仍然接受</value>
   </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>无法加载列表。</value>
+  </data>
+  <data name="DtLoadNoPermission" xml:space="preserve">
+    <value>您无权查看此列表。</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>搜索 ({0})</value>
+  </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>您输入的日期无法识别，因此未保存。请按字段格式重新输入，或从日历中选择。</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>生产制造</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>物料清单与工艺路线</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>物料清单</value></data>
   <data name="Loading" xml:space="preserve">
     <value>加载中...</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>异议库</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>拜访证据</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>潜力阈值</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
@@ -1066,6 +1149,9 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>装载计划</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>索赔管理</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>运输索赔</value></data>
+  <data name="Activate" xml:space="preserve"><value>启用</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="Login.EmailOrUsername" xml:space="preserve"><value>电子邮件或用户名</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>库存管理</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>库存台账</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>库位</value></data>
@@ -1104,4 +1190,6 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>召回演练计划</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>召回证据包</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>召回设置</value></data>
+  <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
+  <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
 </root>

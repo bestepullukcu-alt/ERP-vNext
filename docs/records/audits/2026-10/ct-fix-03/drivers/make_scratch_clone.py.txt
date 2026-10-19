@@ -1,0 +1,47 @@
+"""CT-FIX-03 test isolation (Codex, 2026-10-17): every sabotage / mutation run happens in a full clone OUTSIDE the
+repository, never in the writing worktree. The clone is built from a fixed commit, the fixed source files are copied in
+from a frozen snapshot directory, and every file's sha-256 is checked against the snapshot manifest before anything runs.
+local origin/main of the clone is set to the same commit as the repository's local origin/main (no fetch).
+
+    python3 -I make_scratch_clone.py <repo> <base commit> <snapshot dir> <new clone dir>
+
+<snapshot dir> holds MANIFEST.sha256 ('<sha256>  <repo-relative path>' lines) and the files under the same paths.
+The new clone dir must not exist (a new name per run; nothing is ever removed)."""
+import hashlib
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+repo, base, snap, dest = sys.argv[1], sys.argv[2], Path(sys.argv[3]), Path(sys.argv[4])
+env = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
+
+
+def git(*args, cwd=None):
+    p = subprocess.run(["git", *args], cwd=cwd, env=env, capture_output=True, text=True)
+    if p.returncode != 0:
+        raise SystemExit(f"git {' '.join(args)}: {p.stderr.strip()}")
+    return p.stdout.strip()
+
+
+if dest.exists():
+    raise SystemExit(f"{dest} exists — use a new name")
+main_sha = git("-C", repo, "rev-parse", "refs/remotes/origin/main")
+git("clone", "-q", "--no-local", "--no-checkout", repo, str(dest))
+git("-C", str(dest), "checkout", "-q", "--detach", base)
+git("-C", str(dest), "update-ref", "refs/remotes/origin/main", main_sha)
+manifest = [l.split("  ", 1) for l in (snap / "MANIFEST.sha256").read_text(encoding="utf-8").splitlines() if l.strip()]
+for want, rel in manifest:
+    src = snap / rel
+    if hashlib.sha256(src.read_bytes()).hexdigest() != want:
+        raise SystemExit(f"snapshot {rel}: sha-256 differs from its manifest")
+    (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src, dest / rel)
+bad = [rel for want, rel in manifest if hashlib.sha256((dest / rel).read_bytes()).hexdigest() != want]
+if bad:
+    raise SystemExit(f"clone: sha-256 differs after copy: {bad}")
+print(f"clone {dest}")
+print(f"base {git('-C', str(dest), 'rev-parse', 'HEAD')} · local origin/main {main_sha}")
+for want, rel in manifest:
+    print(f"{want}  {rel}")

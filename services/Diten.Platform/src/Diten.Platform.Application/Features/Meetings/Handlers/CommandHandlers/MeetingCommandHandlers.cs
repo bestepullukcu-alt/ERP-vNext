@@ -49,7 +49,8 @@ internal static class MeetingEligibility
             .ToList(),
         AgendaItems: agendaItems
             .OrderBy(a => a.SortOrder)
-            .Select(a => new AgendaItemDto(a.Id, a.Text, a.SortOrder, a.Version, a.RecordLinkId, a.CarriedFromMeetingId))
+            .Select(a => new AgendaItemDto(
+                a.Id, MeetingAgendaCodes.TextFor(a), a.SortOrder, a.Version, a.RecordLinkId, a.CarriedFromMeetingId))
             .ToList(),
         InviteDelivery: delivery is null
             ? null

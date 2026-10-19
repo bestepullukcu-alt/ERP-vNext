@@ -19,5 +19,5 @@ description: .NET 8 Web API (CQRS/MediatR), MongoDB, X-Tenant-Id ile multi-tenan
 - Açıkça istenmeden destructive komut çalıştırma.
 
 ## Çıktı beklentisi
-- X-Tenant-Id ve Authorization içeren örnek curl ver.
+- Gateway üzerinden örnek curl ver: `Authorization: Bearer <token>`; `X-Tenant-Id` yalnız kiracı (tenant) bağlamındaki uç noktalarda eklenir, platform/admin uç noktalarında gönderilmez. Örnekte gerçek token ya da sabit kiracı kimliği yazma.
 - Ne değişti/niye değişti: 5-10 maddeyle açıkla.

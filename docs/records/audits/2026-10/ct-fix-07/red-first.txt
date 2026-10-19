@@ -1,0 +1,20 @@
+CT-FIX-07 red first — the new tests against the committed CT-FIX-06 sources (70c3561d5) in a copy outside the
+repository, this package's test files copied in; run by the AI session.
+
+Ran 12 tests in 5.587s
+
+  ok    test_verify_module_id_discover.DiscoverySummary.test_a_collision_is_named_with_its_packs_and_parent_and_fu_are_not_one
+  ok    test_verify_module_id_discover.DiscoverySummary.test_a_deprecated_alias_is_said_apart_and_does_not_clear_its_paths
+  ok    test_verify_module_id_discover.DiscoverySummary.test_an_incomplete_discovery_says_so
+  ERROR test_verify_module_id_discover.DiscoverySummary.test_blueprint_candidates_and_domain_configs_are_listed_and_bounded
+  ERROR test_verify_module_id_discover.DiscoverySummary.test_domain_config_presence_is_read_from_head_s_tree
+  ok    test_verify_module_id_discover.DiscoverySummary.test_kunye_values_keep_their_blob_and_ref_ids
+  ok    test_verify_module_id_discover.DiscoverySummary.test_the_block_stays_within_its_byte_budget_and_says_what_it_left_out
+  ERROR test_verify_module_id_discover.DiscoverySummary.test_the_open_decisions_follow_the_collisions
+  ERROR test_ct_cli_regression.CTFIX07_SummaryDecisions.test_an_unset_owner_is_an_open_decision_and_the_count_is_unchanged
+  FAIL  test_ct_cli_regression.CTFIX07_SummaryDecisions.test_blueprint_ids_and_domain_config_at_head
+  ok    test_ct_cli_regression.Controls.test_consumers_on_the_intact_fixture_exit_0
+  ok    test_ct_cli_regression.Controls.test_full_prompt_cli_normal_exit_0
+
+The new tests fail or error (no open-decision, Blueprint or domain-config line; no domain_config_at_head); the
+earlier summary tests and the controls pass.

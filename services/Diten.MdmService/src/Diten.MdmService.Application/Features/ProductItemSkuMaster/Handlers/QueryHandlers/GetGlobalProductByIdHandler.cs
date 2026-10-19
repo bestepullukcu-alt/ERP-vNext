@@ -1,3 +1,8 @@
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
@@ -8,23 +13,118 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.Qu
 public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProductByIdQuery, Response<ProductItemSkuMasterModels.GlobalProductDetailDto>>
 {
     private readonly IGlobalProductRepository _repository;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IProductIdentityLifecycleActorContext _actorContext;
+    private readonly IBrandRepository? _brands;
 
-    public GetGlobalProductByIdHandler(IGlobalProductRepository repository) => _repository = repository;
+    public GetGlobalProductByIdHandler(
+        IGlobalProductRepository repository,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext,
+        IProductIdentityLifecycleActorContext? actorContext = null,
+        IBrandRepository? brands = null)
+    {
+        _repository = repository;
+        _brands = brands;
+        _scopeGuard = new ProductLegalEntityScopeConsumerGuard(
+            rolloutStates,
+            policies,
+            candidates,
+            tenantContext);
+        _actorContext = actorContext ?? NoActorContext.Instance;
+    }
 
     public async Task<Response<ProductItemSkuMasterModels.GlobalProductDetailDto>> Handle(
         GetGlobalProductByIdQuery request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var scope = await _scopeGuard.ResolveContextAsync(
+            ProductLegalEntityScopeConsumerGuard.GlobalProductReadPermission,
+            cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Fail(
+                scope.FailureCode!,
+                scope.StatusCode);
+        }
         var product = await _repository.GetByIdAsync(request.Id, cancellationToken);
-        return product is null
-            ? Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Fail("GLOBAL_PRODUCT_NOT_FOUND", 404)
-            : Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Success(new(
-                product.Id,
-                product.CanonicalCode,
-                product.GlobalProductName,
-                product.LifecycleStatus,
-                product.Version,
-                product.CreatedAt,
-                product.UpdatedAt));
+        if (product is null)
+        {
+            return Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Fail(
+                "GLOBAL_PRODUCT_NOT_FOUND",
+                404);
+        }
+        var decision = await _scopeGuard.EvaluateAsync(
+            scope.Context!,
+            product.Id,
+            cancellationToken);
+        if (!decision.Allowed)
+        {
+            return Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Fail(
+                "GLOBAL_PRODUCT_NOT_FOUND",
+                404);
+        }
+
+        var actions = BuildAvailableActions(product, _actorContext);
+        // MOD-0290-FU05 (Karar b): the brand's code and name as the brand says them now (a rename shows at once).
+        var brand = GlobalProductBrands.Describe(
+            product.BrandId,
+            await GlobalProductBrands.ReadAsync(_brands, [product.BrandId], cancellationToken));
+
+        return Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Success(new(
+            product.Id,
+            product.CanonicalCode,
+            product.GlobalProductName,
+            product.LifecycleStatus,
+            product.Version,
+            product.CreatedAt,
+            product.UpdatedAt,
+            actions,
+            brand.Id,
+            brand.Code,
+            brand.Name));
+    }
+
+    internal static IReadOnlyList<string> BuildAvailableActions(
+        Diten.MdmService.Domain.Entities.GlobalProduct product,
+        IProductIdentityLifecycleActorContext actorContext)
+    {
+        var actions = new List<string> { "DETAILS" };
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.Draft)
+        {
+            if (actorContext.HasPermission("mdm.global-products.update")) actions.Add("EDIT");
+            if (actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductSubmit))
+                actions.Add("SUBMIT");
+        }
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && product.WorkflowBinding is { } binding
+            && actorContext.TryResolveCanonicalHumanSubject(out var subjectId)
+            && subjectId == binding.SubmitterSubjectId
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductWithdraw))
+            actions.Add("WITHDRAW_APPROVAL");
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && product.ActiveLifecycleOperation is null
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductRequestCorrection))
+            actions.Add("REQUEST_CORRECTION");
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && product.ActiveLifecycleOperation is null
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductRequestRetirement))
+            actions.Add("REQUEST_RETIREMENT");
+        // MOD-0290-FU05 slice 2: the approved product's brand — by its own key, only with no lifecycle operation running.
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && product.ActiveLifecycleOperation is null
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductUpdateBrand))
+            actions.Add("CHANGE_BRAND");
+        return actions;
+    }
+
+    private sealed class NoActorContext : IProductIdentityLifecycleActorContext
+    {
+        public static readonly NoActorContext Instance = new();
+        public bool TryResolveCanonicalHumanSubject(out Guid subjectId) { subjectId = Guid.Empty; return false; }
+        public bool HasPermission(string permission) => false;
     }
 }

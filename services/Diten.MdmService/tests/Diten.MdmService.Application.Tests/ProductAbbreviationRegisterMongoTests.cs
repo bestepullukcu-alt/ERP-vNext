@@ -12,12 +12,13 @@ using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
 
-public sealed class ProductAbbreviationRegisterMongoTests
+public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Application.Tests.Audit.AuditIntentTemporalMongoFixture mongo)
+    : IClassFixture<Diten.MdmService.Application.Tests.Audit.AuditIntentTemporalMongoFixture>
 {
     [Fact]
     public async Task Required_ledger_and_active_binding_indexes_exist_with_correct_partiality()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         _ = scope.Ledger(scope.TenantA);
         _ = scope.Register(scope.TenantA);
 
@@ -46,7 +47,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Tenant_isolation_allows_same_ABB_in_another_tenant_and_hides_cross_tenant_entry()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var productA = Guid.NewGuid();
         var productB = Guid.NewGuid();
         var entryA = await CreateRequestedAsync(scope, scope.TenantA, productA, "ABC", "tenant-a");
@@ -60,7 +61,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Concurrent_same_tenant_ABB_allocation_has_one_durable_winner()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var repository = scope.Ledger(scope.TenantA);
         var results = await Task.WhenAll(Enumerable.Range(0, 12).Select(index =>
         {
@@ -87,7 +88,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Partial_unique_index_allows_at_most_one_active_ABB_per_product()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var productId = Guid.NewGuid();
         var first = await CreateRequestedAsync(scope, scope.TenantA, productId, "AAA", "first");
         var second = await CreateRequestedAsync(scope, scope.TenantA, productId, "BBB", "second");
@@ -108,7 +109,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Durable_ledger_tombstone_is_idempotent_and_never_reusable()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var repository = scope.Ledger(scope.TenantA);
         var original = Allocation("NVR", "no-reuse", Guid.NewGuid(), Guid.NewGuid());
         var created = await repository.AllocateAsync(original);
@@ -131,7 +132,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Request_owner_can_cancel_requested_entry_without_releasing_durable_ABB()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var owner = Guid.NewGuid().ToString("D");
         var entry = await CreateRequestedAsync(
             scope, scope.TenantA, Guid.NewGuid(), "OWN", "owner-request", requestedBy: owner);
@@ -147,6 +148,49 @@ public sealed class ProductAbbreviationRegisterMongoTests
         Assert.Equal(1, persisted.Version);
         Assert.NotNull(await scope.Ledger(scope.TenantA).GetByIdAsync(entry.AllocationLedgerId));
         Assert.Single(await scope.History(scope.TenantA).GetForRegisterEntryAsync(entry.Id));
+        var intent = Assert.Single(persisted.AuditIntents);
+        Assert.Equal(AuditAggregateType.ProductAbbreviation, intent.AggregateType);
+        Assert.Equal(ProductAuditOperation.ProductAbbreviationAllocationCancelled, intent.Operation);
+        Assert.Equal(0, intent.PreVersion);
+        Assert.Equal(1, intent.PostVersion);
+        Assert.False(await scope.Register(scope.TenantB).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
+        Assert.True(await scope.Register(scope.TenantA).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
+        Assert.Single((await scope.Register(scope.TenantA).GetByIdAsync(entry.Id))!.AuditIntents);
+
+        var delivery = new AuditIntentDeliveryRepository(
+            scope.Database,
+            scope.Context(scope.TenantA),
+            TimeProvider.System);
+        var workItem = Assert.Single(
+            await delivery.DiscoverEligibleAsync(10),
+            item => item.Locator.IntentId == intent.IntentId);
+        Assert.Equal(AuditAggregateType.ProductAbbreviation, workItem.Locator.AggregateType);
+        var claim = Assert.IsType<AuditIntentClaim>(await delivery.TryClaimAsync(
+            workItem.Locator,
+            workItem.ClaimGeneration,
+            "abb-audit-worker",
+            TimeSpan.FromMinutes(1)));
+        var acceptedAt = DateTimeOffset.UtcNow;
+        const string contractVersion = "mod-0290.audit-intent.v1";
+        var acknowledgement = new AuditIntentAcknowledgement(
+            "abb-central-receipt",
+            AuditIntentContract.BuildCentralIdempotencyKey(tenantId: scope.TenantA, intentId: intent.IntentId,
+                contractVersion),
+            contractVersion,
+            acceptedAt);
+        Assert.True(await delivery.MarkDeliveredAsync(claim, acknowledgement));
+        Assert.True(await delivery.CompactDeliveredAsync(claim, "abb-compact-receipt"));
+        var delivered = await scope.Register(scope.TenantA).GetByIdAsync(entry.Id);
+        Assert.Empty(delivered!.AuditIntents);
+        Assert.Single(delivered.AuditIntentReceipts);
+        Assert.Equal(1, delivered.Version);
+        Assert.Empty(await delivery.DiscoverEligibleAsync(10));
+
+        Assert.True(await scope.Register(scope.TenantA).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
+        Assert.Empty((await scope.Register(scope.TenantA).GetByIdAsync(entry.Id))!.AuditIntents);
+        intent.EvidenceHash = new string('B', 64);
+        Assert.False(await scope.Register(scope.TenantA).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
+        Assert.Empty((await scope.Register(scope.TenantA).GetByIdAsync(entry.Id))!.AuditIntents);
 
         var reuse = await scope.Ledger(scope.TenantA).AllocateAsync(
             Allocation("OWN", "owner-cancel-reuse", Guid.NewGuid(), Guid.NewGuid()));
@@ -157,7 +201,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Same_tenant_non_owner_cancel_denial_changes_no_register_ledger_or_history_state()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var owner = Guid.NewGuid().ToString("D");
         var entry = await CreateRequestedAsync(
             scope, scope.TenantA, Guid.NewGuid(), "NNO", "non-owner-request", requestedBy: owner);
@@ -187,7 +231,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Expected_version_stale_transition_changes_nothing()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var entry = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "CAS", "cas");
         var repository = scope.Register(scope.TenantA);
 
@@ -205,7 +249,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Correction_approval_reconciles_to_replacement_active_and_former_retired()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var productId = Guid.NewGuid();
         var former = await CreateRequestedAsync(scope, scope.TenantA, productId, "OLD", "old");
         var repository = scope.Register(scope.TenantA);
@@ -233,7 +277,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Retirement_request_reject_and_later_checker_approval_preserve_closed_lifecycle()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var entry = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "RET", "ret");
         var repository = scope.Register(scope.TenantA);
         Assert.True((await repository.TransitionAsync(
@@ -260,7 +304,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Reject_cancel_retire_and_soft_delete_never_release_a_durable_ABB()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var repository = scope.Register(scope.TenantA);
         var rejected = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "RJT", "reject-path");
         var cancelled = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "CNL", "cancel-path");
@@ -298,7 +342,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
     [Fact]
     public async Task Immutable_history_append_is_idempotent_and_payload_drift_fails_closed()
     {
-        await using var scope = await MongoScope.CreateAsync();
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var repository = new ProductAbbreviationHistoryRepository(scope.Database, scope.Context(scope.TenantA));
         var entry = new ProductAbbreviationHistoryEntry
         {
@@ -413,9 +457,9 @@ public sealed class ProductAbbreviationRegisterMongoTests
         public Guid TenantB { get; } = Guid.NewGuid();
         public IMongoDatabase Database { get; }
 
-        public static async Task<MongoScope> CreateAsync()
+        public static async Task<MongoScope> CreateAsync(string connectionString)
         {
-            var uri = Environment.GetEnvironmentVariable("MONGO_TEST_URI") ?? "mongodb://localhost:27017";
+            var uri = connectionString;
             var settings = MongoClientSettings.FromConnectionString(uri);
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
             settings.ConnectTimeout = TimeSpan.FromSeconds(5);
@@ -423,7 +467,7 @@ public sealed class ProductAbbreviationRegisterMongoTests
             settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
 #pragma warning restore CS0618
             var client = new MongoClient(settings);
-            var databaseName = "DitenERP_MOD0290_FU01_Test_" + Guid.NewGuid().ToString("N");
+            var databaseName = "diten_mdm_abb_register_itest";
             var database = client.GetDatabase(databaseName);
             await database.RunCommandAsync<MongoDB.Bson.BsonDocument>(
                 new MongoDB.Bson.BsonDocument("ping", 1));
@@ -446,7 +490,12 @@ public sealed class ProductAbbreviationRegisterMongoTests
             return context;
         }
 
-        public async ValueTask DisposeAsync() => await _client.DropDatabaseAsync(_databaseName);
+        public async ValueTask DisposeAsync()
+        {
+            foreach (var name in new[] { "mdm_product_abbreviation_register", "mdm_product_abbreviation_history", "mdm_product_abbreviation_allocation_ledger" })
+                await Database.GetCollection<MongoDB.Bson.BsonDocument>(name).DeleteManyAsync(
+                    MongoDB.Driver.Builders<MongoDB.Bson.BsonDocument>.Filter.In("TenantId", new[] { TenantA, TenantB }));
+        }
     }
 
     private sealed record TestActorContext(

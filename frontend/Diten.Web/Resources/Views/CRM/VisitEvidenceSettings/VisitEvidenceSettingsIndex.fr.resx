@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Preuves de visite</value></data>
+  <data name="Crumb" xml:space="preserve"><value>Paramètres CRM / Visite</value></data>
+  <data name="Intro" xml:space="preserve"><value>Les règles du « Démarrer la visite » du délégué. Le paramètre du locataire s'applique à tous les délégués ; une exception temporaire l'assouplit pour un délégué pendant un temps.</value></data>
+  <data name="NewException" xml:space="preserve"><value>Nouvelle exception</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>Paramètres par périmètre</value></data>
+  <data name="TabExceptions" xml:space="preserve"><value>Exceptions temporaires</value></data>
+  <data name="Retry" xml:space="preserve"><value>Réessayer</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Vous avez un accès en lecture seule ; les paramètres ne peuvent pas être modifiés.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>Périmètres</value></data>
+  <data name="ScopesNote" xml:space="preserve"><value>Priorité : unité commerciale › entité juridique › locataire</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Valeur par défaut du locataire</value></data>
+  <data name="Locked" xml:space="preserve"><value>Ne peut pas être supprimé</value></data>
+  <data name="AddLegalEntity" xml:space="preserve"><value>Ajouter une entité juridique</value></data>
+  <data name="AddLegalEntityHint" xml:space="preserve"><value>Les niveaux entité juridique et unité commerciale s'ouvrent lorsque le poste et l'affectation de territoire du délégué sont reliés.</value></data>
+  <data name="LookTitle" xml:space="preserve"><value>Voir le paramètre effectif d'un délégué</value></data>
+  <data name="LookSearch" xml:space="preserve"><value>Rechercher un délégué</value></data>
+  <data name="EffectiveTitle" xml:space="preserve"><value>Paramètre effectif</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Fermer</value></data>
+  <data name="ColField" xml:space="preserve"><value>Champ</value></data>
+  <data name="ColValue" xml:space="preserve"><value>Valeur effective</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Provenance</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priorité :</value></data>
+  <data name="SourceException" xml:space="preserve"><value>Exception</value></data>
+  <data name="SourceTenant" xml:space="preserve"><value>Locataire</value></data>
+  <data name="ScopeUnresolved" xml:space="preserve"><value>Les niveaux entité juridique et unité commerciale ne sont pas encore reliés.</value></data>
+  <data name="TypeTenant" xml:space="preserve"><value>Locataire</value></data>
+  <data name="PaneForm" xml:space="preserve"><value>Formulaire</value></data>
+  <data name="PaneHistory" xml:space="preserve"><value>Historique des modifications</value></data>
+  <data name="SoonTitle" xml:space="preserve"><value>Preuves supplémentaires</value></data>
+  <data name="SoonText" xml:space="preserve"><value>Le code QR de l'établissement et le contrôle de fausse position seront ajoutés ici.</value></data>
+  <data name="SoonBadge" xml:space="preserve"><value>Bientôt</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Un délégué de ce périmètre verra</value></data>
+  <data name="PvStartTitle" xml:space="preserve"><value>Démarrer la visite</value></data>
+  <data name="PvSample" xml:space="preserve"><value>Visite exemple · établissement · heure</value></data>
+  <data name="PvPhoto" xml:space="preserve"><value>Photo</value></data>
+  <data name="PvLocation" xml:space="preserve"><value>Position</value></data>
+  <data name="PvSign" xml:space="preserve"><value>Approbation du médecin · demandée en fin de visite</value></data>
+  <data name="PvStart" xml:space="preserve"><value>Démarrer la présentation</value></data>
+  <data name="LastChange" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>Des modifications ne sont pas enregistrées</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Annuler</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historique · Valeur par défaut du locataire</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Enregistrement d'audit · lecture seule</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Date</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Personne</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Ancienne → nouvelle valeur</value></data>
+  <data name="ExceptionsInfo" xml:space="preserve"><value>Une exception n'est pas un paramètre permanent : elle assouplit les règles pour un délégué, avec un motif, pendant 30 jours au plus. Seule une exception approuvée et dans ses dates s'applique. Les visites démarrées avec une exception sont marquées « démarrée avec une exception » dans la vue du responsable.</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>Exceptions temporaires</value></data>
+  <data name="XColRep" xml:space="preserve"><value>Délégué</value></data>
+  <data name="XColRules" xml:space="preserve"><value>Règles assouplies</value></data>
+  <data name="XColRange" xml:space="preserve"><value>Période</value></data>
+  <data name="XColReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="XColPeople" xml:space="preserve"><value>Créé / approuvé par</value></data>
+  <data name="XColStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="OpenRow" xml:space="preserve"><value>Ouvrir</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>Enregistrer les modifications ?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Enregistrer et appliquer</value></data>
+  <data name="XNewTitle" xml:space="preserve"><value>Nouvelle exception temporaire</value></data>
+  <data name="XRep" xml:space="preserve"><value>Délégué</value></data>
+  <data name="XRules" xml:space="preserve"><value>Règles à assouplir</value></data>
+  <data name="XRulesHint" xml:space="preserve"><value>Les seuils (distance, précision, visite courte) ne peuvent pas être modifiés par une exception.</value></data>
+  <data name="XFrom" xml:space="preserve"><value>Début</value></data>
+  <data name="XTo" xml:space="preserve"><value>Fin</value></data>
+  <data name="XReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="XReasonPlaceholder" xml:space="preserve"><value>ex. Le module GPS de la tablette est défaillant ; remplacement en attente (n° de demande IT).</value></data>
+  <data name="XSodNew" xml:space="preserve"><value>Séparation des tâches : vous ne pouvez pas approuver vous-même cette exception. Une fois envoyée, une autre personne l'approuve dans le Centre de tâches et elle s'applique dans ses dates.</value></data>
+  <data name="XSubmit" xml:space="preserve"><value>Envoyer pour approbation</value></data>
+  <data name="XDetailTitle" xml:space="preserve"><value>Détail de l'exception</value></data>
+  <data name="F_locationMode" xml:space="preserve"><value>Contrôle de position</value></data>
+  <data name="F_radiusMeters" xml:space="preserve"><value>Distance autorisée</value></data>
+  <data name="F_maxAccuracyMeters" xml:space="preserve"><value>Précision de position minimale</value></data>
+  <data name="F_accountWithoutLocation" xml:space="preserve"><value>Établissement sans position</value></data>
+  <data name="F_photoMode" xml:space="preserve"><value>Photo</value></data>
+  <data name="F_doctorConfirmation" xml:space="preserve"><value>Approbation du médecin (signature)</value></data>
+  <data name="F_durationConsistency" xml:space="preserve"><value>Cohérence de durée</value></data>
+  <data name="F_shortVisitSeconds" xml:space="preserve"><value>Seuil de visite courte</value></data>
+  <data name="D_locationMode_required" xml:space="preserve"><value>Obligatoire : le délégué ne peut démarrer la visite que près de l'établissement.</value></data>
+  <data name="D_locationMode_info" xml:space="preserve"><value>Information : la position est enregistrée ; la visite peut toujours démarrer.</value></data>
+  <data name="D_accountWithoutLocation" xml:space="preserve"><value>Lorsque la fiche de l'établissement n'a pas de coordonnées</value></data>
+  <data name="D_photoMode" xml:space="preserve"><value>Entrée de l'établissement ou salle d'attente ; aucun visage n'est photographié (protection des données).</value></data>
+  <data name="D_doctorConfirmation" xml:space="preserve"><value>Une signature ou un appui d'approbation sur la tablette en fin de visite. Toujours demandé lors d'une demande d'échantillons.</value></data>
+  <data name="Opt_locationMode_required" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="Opt_locationMode_info" xml:space="preserve"><value>Information</value></data>
+  <data name="Opt_photoMode_required" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="Opt_photoMode_optional" xml:space="preserve"><value>Facultative</value></data>
+  <data name="Opt_accountWithoutLocation_allow_flagged" xml:space="preserve"><value>Démarrer et signaler</value></data>
+  <data name="Opt_accountWithoutLocation_block" xml:space="preserve"><value>Bloquer</value></data>
+  <data name="R_radiusMeters" xml:space="preserve"><value>50–5000 m · défaut du locataire 300</value></data>
+  <data name="R_maxAccuracyMeters" xml:space="preserve"><value>10–1000 m · défaut du locataire 150</value></data>
+  <data name="R_shortVisitSeconds" xml:space="preserve"><value>30–1800 s · une visite plus courte est signalée.</value></data>
+  <data name="G_location" xml:space="preserve"><value>Position</value></data>
+  <data name="G_photo" xml:space="preserve"><value>Photo</value></data>
+  <data name="G_approval" xml:space="preserve"><value>Approbation et durée</value></data>
+  <data name="ValueOn" xml:space="preserve"><value>Activé</value></data>
+  <data name="ValueOff" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="UnitSeconds" xml:space="preserve"><value>{0} s</value></data>
+  <data name="UnitM" xml:space="preserve"><value>m</value></data>
+  <data name="UnitS" xml:space="preserve"><value>s</value></data>
+  <data name="RangeError" xml:space="preserve"><value>Doit être compris entre {0} et {1} {2}.</value></data>
+  <data name="PvRequired" xml:space="preserve"><value>obligatoire</value></data>
+  <data name="PvOptional" xml:space="preserve"><value>facultative</value></data>
+  <data name="PvInfo" xml:space="preserve"><value>information</value></data>
+  <data name="PvLocationRequired" xml:space="preserve"><value>Vous devez être à moins de {0} m de l'établissement.</value></data>
+  <data name="PvLocationInfo" xml:space="preserve"><value>Enregistrée pour information.</value></data>
+  <data name="PvOpenBoth" xml:space="preserve"><value>« Démarrer la présentation » s'active une fois la photo prise et le délégué à moins de {0} m de l'établissement.</value></data>
+  <data name="PvOpenLocation" xml:space="preserve"><value>« Démarrer la présentation » s'active lorsque le délégué est à moins de {0} m de l'établissement.</value></data>
+  <data name="PvOpenPhoto" xml:space="preserve"><value>« Démarrer la présentation » s'active une fois la photo prise.</value></data>
+  <data name="PvOpenNone" xml:space="preserve"><value>« Démarrer la présentation » est disponible immédiatement ; la position et la photo sont enregistrées pour information.</value></data>
+  <data name="PvAccuracy" xml:space="preserve"><value>Une position moins précise que {0} m est considérée comme non valide.</value></data>
+  <data name="PvNoLocationFlag" xml:space="preserve"><value>Dans un établissement sans coordonnées, la visite démarre et est signalée.</value></data>
+  <data name="PvNoLocationBlock" xml:space="preserve"><value>Dans un établissement sans coordonnées, la visite ne peut pas démarrer.</value></data>
+  <data name="PvShort" xml:space="preserve"><value>Les visites de moins de {0} s sont signalées.</value></data>
+  <data name="Reps" xml:space="preserve"><value>{0} délégués</value></data>
+  <data name="AllFields" xml:space="preserve"><value>Tous les champs renseignés</value></data>
+  <data name="DefaultPolicy" xml:space="preserve"><value>Valeurs par défaut · pas encore enregistrées</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>Vous</value></data>
+  <data name="WorkflowActor" xml:space="preserve"><value>Circuit d'approbation</value></data>
+  <data name="SaveText" xml:space="preserve"><value>La modification s'applique immédiatement aux {0} délégués de ce périmètre.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Paramètres enregistrés ; appliqués à {0} délégués.</value></data>
+  <data name="LookPlaceholder" xml:space="preserve"><value>Choisir un délégué</value></data>
+  <data name="ActiveException" xml:space="preserve"><value>Exception active : {0} · jusqu'au {1}</value></data>
+  <data name="SourceExceptionUntil" xml:space="preserve"><value>Exception · jusqu'au {0}</value></data>
+  <data name="HistCreated" xml:space="preserve"><value>Paramètre créé</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Aucune modification enregistrée ; les valeurs par défaut s'appliquent.</value></data>
+  <data name="XFilter_all" xml:space="preserve"><value>Toutes</value></data>
+  <data name="XFilter_active" xml:space="preserve"><value>Actives</value></data>
+  <data name="XFilter_planned" xml:space="preserve"><value>Planifiées</value></data>
+  <data name="XFilter_in_review" xml:space="preserve"><value>En attente d'approbation</value></data>
+  <data name="XFilter_draft" xml:space="preserve"><value>Brouillons</value></data>
+  <data name="XFilter_expired" xml:space="preserve"><value>Expirées</value></data>
+  <data name="XFilter_cancelled" xml:space="preserve"><value>Annulées</value></data>
+  <data name="XFilter_ended_early" xml:space="preserve"><value>Terminées plus tôt</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>Contrôle de position : Information</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>Photo : Facultative</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>Établissement sans position : Démarrer</value></data>
+  <data name="XSt_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="XSt_in_review" xml:space="preserve"><value>En attente d'approbation</value></data>
+  <data name="XSt_active" xml:space="preserve"><value>Active</value></data>
+  <data name="XSt_planned" xml:space="preserve"><value>Planifiée</value></data>
+  <data name="XSt_expired" xml:space="preserve"><value>Expirée</value></data>
+  <data name="XSt_cancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="XSt_ended_early" xml:space="preserve"><value>Terminée plus tôt</value></data>
+  <data name="XDays" xml:space="preserve"><value>{0} jours</value></data>
+  <data name="XCreatedBy" xml:space="preserve"><value>Créée par : {0}</value></data>
+  <data name="XApprovedBy" xml:space="preserve"><value>Approuvée par : {0}</value></data>
+  <data name="XEmpty" xml:space="preserve"><value>Aucune exception dans cette vue.</value></data>
+  <data name="XDetailRules" xml:space="preserve"><value>Règles assouplies</value></data>
+  <data name="XDetailRange" xml:space="preserve"><value>Période</value></data>
+  <data name="XDetailReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="XInReviewNote" xml:space="preserve"><value>En attente d'approbation dans le Centre de tâches.</value></data>
+  <data name="XSod" xml:space="preserve"><value>Vous avez créé, modifié ou envoyé cette exception ; une autre personne doit l'approuver.</value></data>
+  <data name="XReturnComment" xml:space="preserve"><value>Note à l'auteur</value></data>
+  <data name="XCloseReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="TlCreated" xml:space="preserve"><value>Créée</value></data>
+  <data name="TlSubmitted" xml:space="preserve"><value>Envoyée pour approbation</value></data>
+  <data name="TlApproved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="TlReturned" xml:space="preserve"><value>Renvoyée en brouillon</value></data>
+  <data name="TlWithdrawn" xml:space="preserve"><value>Retirée</value></data>
+  <data name="TlTimedOut" xml:space="preserve"><value>Délai d'approbation dépassé</value></data>
+  <data name="TlCancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="TlEndedEarly" xml:space="preserve"><value>Terminée plus tôt</value></data>
+  <data name="TlRefused_visit_evidence_exception_sod" xml:space="preserve"><value>Renvoyée : l'approbateur en était le créateur ou l'expéditeur</value></data>
+  <data name="TlRefused_visit_evidence_exception_overlap" xml:space="preserve"><value>Renvoyée : elle chevauche désormais une autre exception</value></data>
+  <data name="XBtnSubmit" xml:space="preserve"><value>Envoyer pour approbation</value></data>
+  <data name="XBtnWithdraw" xml:space="preserve"><value>Retirer</value></data>
+  <data name="XBtnApprove" xml:space="preserve"><value>Approuver</value></data>
+  <data name="XBtnReturn" xml:space="preserve"><value>Renvoyer en brouillon</value></data>
+  <data name="XBtnCancel" xml:space="preserve"><value>Annuler l'exception</value></data>
+  <data name="XBtnEndEarly" xml:space="preserve"><value>Terminer plus tôt</value></data>
+  <data name="XBtnConfirmReturn" xml:space="preserve"><value>Confirmer le renvoi</value></data>
+  <data name="XBtnConfirmCancel" xml:space="preserve"><value>Confirmer l'annulation</value></data>
+  <data name="XBtnConfirmEndEarly" xml:space="preserve"><value>Confirmer la fin anticipée</value></data>
+  <data name="XSubmitted" xml:space="preserve"><value>Exception envoyée pour approbation.</value></data>
+  <data name="XWithdrawn" xml:space="preserve"><value>L'approbation a été retirée ; l'exception redevient un brouillon.</value></data>
+  <data name="XApprovedToast" xml:space="preserve"><value>Décision envoyée ; l'exception est approuvée à la clôture du circuit.</value></data>
+  <data name="XReturnedToast" xml:space="preserve"><value>Renvoyée à l'auteur.</value></data>
+  <data name="XCancelledToast" xml:space="preserve"><value>Exception annulée.</value></data>
+  <data name="XEndedToast" xml:space="preserve"><value>Exception terminée plus tôt ; elle prend fin aujourd'hui.</value></data>
+  <data name="XCreatedNotSent" xml:space="preserve"><value>Enregistrée en brouillon mais non envoyée pour approbation : {0}</value></data>
+  <data name="XRuleNoRep" xml:space="preserve"><value>Choisissez d'abord un délégué.</value></data>
+  <data name="XRuleAlready" xml:space="preserve"><value>Ce délégué a déjà {0} ({1}).</value></data>
+  <data name="XRuleNow" xml:space="preserve"><value>Actuellement : {0} · {1}</value></data>
+  <data name="XDayCounter" xml:space="preserve"><value>{0} jours · {1} jours au plus</value></data>
+  <data name="XDayCounterEmpty" xml:space="preserve"><value>{0} jours au plus</value></data>
+  <data name="XErrRep" xml:space="preserve"><value>Choisissez un délégué.</value></data>
+  <data name="XErrRules" xml:space="preserve"><value>Choisissez au moins une règle.</value></data>
+  <data name="XErrFrom" xml:space="preserve"><value>Choisissez une date de début.</value></data>
+  <data name="XErrPast" xml:space="preserve"><value>Le début ne peut pas être dans le passé.</value></data>
+  <data name="XErrToRequired" xml:space="preserve"><value>Une date de fin est obligatoire ; aucune exception sans fin.</value></data>
+  <data name="XErrToBefore" xml:space="preserve"><value>La fin ne peut pas précéder le début.</value></data>
+  <data name="XErrTooLong" xml:space="preserve"><value>30 jours au plus ; la période choisie fait {0} jours.</value></data>
+  <data name="XErrWhy" xml:space="preserve"><value>Indiquez un motif.</value></data>
+  <data name="XErrWhyLong" xml:space="preserve"><value>{0} caractères au plus.</value></data>
+  <data name="Err_visit_evidence_exception_invalid" xml:space="preserve"><value>L'exception n'est pas valide : vérifiez les règles, les dates (pas de début passé, 30 jours au plus) et le motif.</value></data>
+  <data name="Err_visit_evidence_exception_overlap" xml:space="preserve"><value>Ce délégué a déjà une exception qui assouplit la même règle sur des jours qui se chevauchent.</value></data>
+  <data name="Err_visit_evidence_exception_rep_unknown" xml:space="preserve"><value>Le délégué n'a pas d'affectation de territoire principale active.</value></data>
+  <data name="Err_visit_evidence_exception_not_editable" xml:space="preserve"><value>Cette exception ne peut pas être modifiée dans son état actuel.</value></data>
+  <data name="Err_visit_evidence_exception_sod" xml:space="preserve"><value>Séparation des tâches : son créateur ou son expéditeur ne peut pas l'approuver.</value></data>
+  <data name="Err_visit_evidence_exception_not_found" xml:space="preserve"><value>Exception introuvable.</value></data>
+  <data name="Err_visit_evidence_policy_invalid" xml:space="preserve"><value>Une valeur est hors limites ; rien n'a été enregistré.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>Les paramètres ont été modifiés entre-temps ; rechargez et réessayez.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>Le modèle de circuit d'approbation n'est pas encore configuré. Contactez votre administrateur.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Le circuit d'approbation est injoignable ; rien n'a été modifié.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Vous n'êtes pas autorisé à faire cela dans le circuit d'approbation.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Aucune approbation en attente (elle vient peut-être de se terminer).</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>L'approbation ne peut pas être retirée maintenant.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Le renvoi nécessite une note à l'auteur.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Le circuit d'approbation a refusé la demande.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Vous n'avez pas l'autorisation pour cette action.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>L'enregistrement a changé entre-temps ; rechargez et réessayez.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Enregistrement impossible. Le serveur est injoignable ; vos modifications restent sur cet écran.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>L'action n'a pas pu être effectuée.</value></data>
+</root>

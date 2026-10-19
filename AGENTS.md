@@ -2,18 +2,38 @@
 
 Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması gereken yürütme kontratıdır.
 
-⚠ **Claude Code bu dosyayı otomatik yüklemez** — yalnız `CLAUDE.md`'yi yükler. 2026-09-08'de
-canlı oturumda ölçüldü: bağlamdaki tek proje dosyası `MEMORY.md`'ydi; bu dosya da,
-`.antigravity/` altındaki 41 kural / 20 ajan / 18 akış da yoktu.
-
-Bu yüzden repo kökünde **kısa bir `CLAUDE.md`** durur ve tek işi okuyucuyu buraya
-göndermektir. Sembolik bağ denendi ve **geri alındı**: ekipte Windows kullanan var, ve
-`core.symlinks=false` altında bağ "AGENTS.md" yazan düz bir metin dosyasına dönüşerek
-sessizce işlevsiz kalıyor — dosya var görünür, içerik yoktur.
+**Yükleme:** Codex ve Antigravity bu dosyayı kendileri yükler (bu denetimde canlı ölçülmedi). Claude Code, `CLAUDE.md` varken bu
+dosyayı yüklemez; bu yüzden aşağıdaki **Çekirdek** bloğu `.claude/rules/agents-core.md` olarak üretilir
+(`python3 .antigravity/scripts/sync_adapters.py`) ve Claude Code'un başlangıç bağlamına girmesi için oraya konur. Canlı ölçüm
+(2026-10-17, başsız CLI 2.1.71 / Haiku 4.5, araçlar ve MCP kapalı): çekirdek `9a8c009001a5` (`c02b28c16`) ve `c9fc70b86047`
+(`c82d7db2c`) birer dar pozitif-negatif ölçümden geçti; başlangıç belleği izole değildi, cevabın yalnız bu dosyadan geldiği
+kanıtlanmadı; etkileşimli oturum, alt ajanlar ve başka modeller ölçülmedi. Sembolik bağ kullanılmaz (Windows). Ayrıntı ve
+tarihçe: `.antigravity/AGENTS-REFERENCE.md`.
 
 `CLAUDE.md` bir kopya değildir ve olmamalıdır; çakışmada **bu dosya kazanır**.
 
 > **Otorite:** Bu dosya, `.antigravity/` içindeki global standartlardan üstündür. Domain veya module seviyesinde yazılmış bir kural bu dosyadan üstündür.
+> `.antigravity/AGENTS-REFERENCE.md` bu dosyanın devamıdır ve aynı yetki seviyesindedir.
+
+---
+
+<!-- core:start -->
+## Çekirdek — her işte geçerli davranış kuralları
+
+> Kısa ama **bağlayıcıdır** — hangi araçta kendiliğinden yüklendiğinden bağımsız olarak her işte geçerlidir. Ayrıntı gerektiğinde belirtilen bölümü (§N) ya da kural dosyasını **aç** — özetle yetinme.
+
+1. **Yetki sırası (§1):** Module Pack > Domain Config > AGENTS.md > `.antigravity/` > Archive. Çakışmada üstteki kazanır; bu sırayı bozma.
+2. **Kiracı izolasyonu (§6, `multi-tenancy`):** Kiracı verisine dokunan her sorgu ve endpoint `TenantId` ile sınırlanır; kiracılar arası erişim 404 döner. Üretim kodunda sabit ya da varsayılan kiracı kullanma. Silme yalnız soft delete (`IsDeleted`, `DeletedAt`).
+3. **Yetki (§6, `security-jwt`, `permission-key-standard`):** JWT + RBAC; her eylem `[HasPermission]` ister. Yetkisiz kullanıcıya sayfa iskeleti çizme, yönlendirme yapma (UAS-001).
+4. **Dil (§6, `localization-standard`):** Kullanıcıya görünen metin hardcoded yazılmaz. Platform modülü 2 dil (en, tr), kiracı modülü 7 dil (en, tr, fr, es, zh, ar, ru); bir dil eksikse iş bitmemiştir.
+5. **Portlar (§3):** Portların tek kaynağı §3 tablosudur; port uydurma. Web (5001) servislere doğrudan değil, Gateway (5000) üzerinden gider.
+6. **Korunan yollar (§4):** `.antigravity/**` değişikliği kullanıcı onayı ister. `ocelot.json`'u yalnız `integration-agent` değiştirir. Archive ve `_Layout.cshtml` donuktur. Başka domain'in servisine dokunma.
+7. **Modül ve kimlik (§7, §10, DCP-002):** Kod yalnız `approved` / `ready-for-dev` module pack ile yazılır; `@orchestrator` pack oluşturmaz. MOD kimliği uydurulmaz; pack açmadan önce `verify_module_id.py` ön kontrolü (fail-closed) koşulur. **Modül talebi:** Adı verilen yeni modül ya da kapsam istenince önce araştır: Blueprint, `python3 .antigravity/scripts/verify_module_id.py . --discover "<ad>"`, pack ve domain-config. Son yanıt dört parça: okunan kaynaklar (çıkarım ayrı); koşmayan ya da eksik keşif ve nedeni ("kısmi inceleme"); adaylar/mükerrerler, gerekçeli ilk kapsam (tek öneri); tüm açık onay/sahiplik kararları (TBD dahil). Belirsizde sor, salt-okunur adım öner; küçük düzeltmede tarama gerekmez. Kod, commit ya da dağıtım izni değildir.
+8. **Git (§9, GIT-002 `git-safety`):** `main`'e commit/push yok. Yalnız açık dosya yoluyla stage (`git add -A` / `git add .` yok). Commit, push, PR ve merge yalnız kullanıcının açık onayıyla; yıkıcı git komutları onaysız çalışmaz.
+9. **Başka modül (XMC-001):** İşin kapsamı dışındaki bir modülde düzeltme gerekirse dokunmadan önce sor. **Kayıt kodu (RCS-001):** yeni kayıt türünün görünen kodu `MG-ORG-000042` biçiminde ortak servisten gelir.
+10. **Test ve belge:** Kural, kendi kopyasıyla değil üretim koduyla ölçülür; sabotaj kanıtı olmayan guard, guard değildir. Belge yeri `docs-organization` beş sorusuyla belirlenir; `docs/` köküne dosya konmaz.
+11. **Kural haritası (§6.1):** İşe başlamadan §6.1'de işin satırını bul ve o kural dosyalarını aç. Bu blokta olmayan her ayrıntı için ilgili bölüm (§N) ya da `.antigravity/AGENTS-REFERENCE.md` açılır.
+<!-- core:end -->
 
 ---
 
@@ -21,7 +41,7 @@ sessizce işlevsiz kalıyor — dosya var görünür, içerik yoktur.
 
 Bir talep birden fazla kaynakta yer alıyorsa, en spesifik katman kazanır:
 
-1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}.md`
+1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
 2. **Domain Config** — `execution/domains/{domain}/domain-config.md`
 3. **AGENTS.md** — bu dosya (repo root)
 4. **Global Engineering System** — `.antigravity/` (ajanlar, kurallar, workflow'lar, skill'ler)
@@ -33,42 +53,13 @@ Bir talep birden fazla kaynakta yer alıyorsa, en spesifik katman kazanır:
 
 ## 2. Proje Klasör Yapısı
 
-```
-ERP-vNext/
-├── AGENTS.md                            (bu dosya)
-├── .antigravity/                        Global Engineering System (ajanlar, kurallar, workflow'lar)
-├── execution/                           Domain ve module execution katmanı
-│   └── domains/
-│       ├── developer-enablement/        (DEVEN — mevcut; Diten.DevEnablementService golden references)
-│       ├── enterprise-strategy-business-performance/ (ESBP — governance scaffold mevcut; Diten.EnterpriseStrategyService)
-│       ├── management-governance/       (MG — governance scaffold; DWS + BPM; production service yok)
-│       ├── pharmacovigilance/           (PVG — governance scaffold mevcut; DCP-004; production service yok)
-│       ├── master-data-management/       (MDM — governance scaffold mevcut; production service yok)
-│       ├── platform-shared-services/    (PSS — mevcut; Diten.Platform + Diten.AuthService)
-│       └── portfolio-delivery/          (PPM — governance scaffold mevcut; MOD-0117; production service yok)
-├── services/                            .NET 8 mikroservisler
-│   ├── Diten.AuthService/
-│   ├── Diten.DevEnablementService/
-│   ├── Diten.Platform/
-│   ├── Diten.Platform.Common/
-│   └── Diten.EnterpriseStrategyService/
-│   # Diten.ManagementGovernanceService/  MG service henüz scaffold edilmedi; approved module pack + açık kullanıcı onayı gerekir
-│   # Diten.MdmService/                   MDM service scaffold henüz oluşturulmadı
-│   # Diten.PpmService/                   DCP-006 + OD-03/04 + approved Slice 2 pack + açık kullanıcı onayı gerekir
-│   # Diten.PvgService/                   PVG service scaffold henüz oluşturulmadı; DCP-004 approved/ready-for-execution + üye module pack approved/ready-for-dev onayı olmadan oluşturulmaz
-├── frontend/                            Razor MVC + Sneat PRO + DataTables v2
-│   └── Diten.Web/
-├── gateway/                             Ocelot API Gateway
-│   └── Diten.ApiGateway/
-└── docs/                                Dokümantasyon ve audit raporları
-    └── audits/
-```
+Bu proje `src/Backend/` veya `src/Frontend/` yapısı **kullanmaz**. Kök: `services/` · `frontend/Diten.Web` · `gateway/Diten.ApiGateway` · `execution/domains/` · `.antigravity/` · `tests/` · `docs/`.
 
-**ÖNEMLİ:** Bu proje `src/Backend/` veya `src/Frontend/` yapısı **kullanmaz**. Yukarıdaki gerçek yapıya uyulmalıdır.
+- **Servisler (17):** `Diten.AuthService`, `Diten.CrmService`, `Diten.DevEnablementService`, `Diten.EnterpriseStrategyService`, `Diten.HcmService`, `Diten.HumanCapitalService`, `Diten.InventoryService`, `Diten.ManagementGovernanceService`, `Diten.ManufacturingService`, `Diten.MdmService`, `Diten.PlanningService`, `Diten.Platform`, `Diten.PpmService`, `Diten.ProcurementService`, `Diten.PvgService`, `Diten.SupplyChainService`, `Diten.TalentEcosystemService`
+- **Ortak kütüphaneler (3):** `Diten.Building.Blocks`, `Diten.Platform.Common`, `Diten.Platform.Contracts`
+- **Domain'ler (11):** `commercial-suite`, `developer-enablement`, `enterprise-strategy-business-performance`, `human-capital-management`, `management-governance`, `master-data-management`, `pharmacovigilance`, `platform-shared-services`, `portfolio-delivery`, `procurement`, `supply-chain-execution`
 
-**MDM notu:** `execution/domains/master-data-management/` governance scaffold olarak mevcuttur. Bu milestone
-`services/Diten.MdmService/` production service scaffold'ı oluşturmaz. MDM service implementation yalnızca ilgili
-module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı verildikten sonra ele alınabilir.
+Klasör ağacı ve tarihsel notlar: `.antigravity/AGENTS-REFERENCE.md` §2.
 
 ---
 
@@ -87,16 +78,11 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | Procurement Service | 5065 | `services/Diten.ProcurementService/src/Diten.ProcurementService.Api` |
 | SupplyChain Service | 5066 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
 | Inventory Service | 5067 | `services/Diten.InventoryService/src/Diten.InventoryService.Api` |
+| Planning Service | 5068 | `services/Diten.PlanningService/src/Diten.PlanningService.Api` |
 | Manufacturing Service | 5070 | `services/Diten.ManufacturingService/src/Diten.ManufacturingService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-> **Not (2026-09-11):** Mikroservis bandı 5011–5060'tan **5061'e uzatıldı** — `SupplyChain Service` (DCP-009, supply-chain-execution domain, kullanıcı onaylı). Sonraki mikroservisler 5062+ kullanır.
-> **Not (2026-09-16, revize 2026-09-17):** `Procurement Service` (DCP-010, procurement domain, kullanıcı onaylı) **port 5065**. İlk atama 5062'ydi; 2026-09-17 ölçümünde 5062 çakışması bulundu (OD-5): 5062'yi `Diten.DataKnowledgeService` (çalışıyor) + `Diten.PpmService` (config) kullanıyor; 5063 `HumanCapitalService`, 5064 `TalentEcosystemService`. En yeni servis (Procurement, henüz fleet'te çalışmıyor) en düşük boş porta (**5065**) taşındı — çalışan/başka-domain servisleri bozulmadı. **Sonraki mikroservisler 5066+ kullanır.**
-> **Not (2026-09-30):** `Inventory Service` (DCP-009 OD-5, supply-chain-execution domain, kullanıcı onaylı) **port 5066** — MOD-0173…0177 (stok defteri + izlenebilirlik) `Diten.SupplyChainService`'ten ayrılıp kendi servisine alındı. 5066 ölçümü: HEAD'de ve tüm remote dallarda config/launchSettings/script kullanımı yok. **Sonraki mikroservisler 5067+ kullanır.**
-> ⚠ **Drift (2026-09-30 ölçümü):** `services/Diten.CrmService/.../launchSettings.json` **5061** kullanıyor — tabloda `SupplyChain Service`'e ayrılı port. SupplyChainService henüz main'de değil; MVP-6 servisi main'e inmeden önce çözülmeli (EA / MVP-6 kararı).
-> **Not (2026-10-12, sahip kararı OD-P1 — yukarıdaki drift'i kapatır):** MVP-6 main'e indiğinde `SupplyChain Service` fiilen **5066**'da çalışıyordu (`appsettings.json` `Urls`, gateway `/api/shipment-bundle` → 5066) ve `Inventory Service` ile çakıştı. Karar: SupplyChain **5066**'da kalır, `Inventory Service` **5067**'ye taşındı (WP-MVP1-SYNC1, gateway'de bizim 8 rotamız 5067'de). 5061 = **CRM Service** (fiili kullanım). Kanıt: `docs/roadmap/plans/mvp1-mvp6-integration-2026-10-12.md`. **Sonraki mikroservisler 5068+ kullanır.**
-> **Not (2026-10-06, revize 2026-10-12):** `Manufacturing Service` (MOD-0193 BOM & Routings, MVP-3, DCP-009, ürün sahibi onaylı ayrı servis) **port 5070**. İlk atama 5067'ydi; OD-P1 (2026-10-12) ile **5067 Inventory'nin**, Manufacturing **5070**'e taşındı (5070 ölçümü: tüm remote dallarda config/launchSettings/script kullanımı yok). 5068 ve 5069 boş kalır.
-> ⚠ **Drift (EA reconciliation gerek):** yukarıdaki tablo `PpmService (5062)`, `DataKnowledgeService (5062, çalışıyor)`, `HumanCapitalService (5063)`, `TalentEcosystemService (5064)` satırlarını içermiyor; bu servisler §3 port authority'sine kayıtlı değil ve 5062 config-seviyesinde Ppm+Procurement tarafından çift-talep edildi. Bu satırların canonical port tahsisi + §3'e eklenmesi ilgili domain owner'lar/EA kararıdır (procurement sınırı dışı).
+> **Güncel durum (tarihli atama notları ve gerekçeleri: `.antigravity/AGENTS-REFERENCE.md` §3):** O notlar tarihseldir; içlerindeki "sıradaki" ve "boş" port ifadeleri yazıldıkları günün durumudur. Yeni servise port vermeden önce bu tabloyu kontrol et; tahsis EA kararıyla yapılır, burada sıradaki port önerilmez. Tabloda olmayan ama kullanılan portlar: 5062 (`PpmService` ve `DataKnowledgeService` — çift talep), 5063 (`HumanCapitalService`), 5064 (`TalentEcosystemService`); canonical tahsis EA kararını bekliyor. Port atamadan önce o notları oku.
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 
@@ -123,43 +109,13 @@ Module pack'ler kendi `Protected Paths` bölümünde ek kısıtlama getirebilir.
 
 ## 5. Build ve Test Komutları
 
-### Tüm servisleri build et
-```bash
-./run_all.sh          # Tüm servisleri derler ve çalıştırır (log prefix'li)
-./run-diten.sh        # Mac Terminal tab'larıyla servisleri başlatır
-```
+Tek servis: `dotnet build <proje>.csproj -c Debug` · test: `dotnet test <servis-klasörü>`. Mimari testler `services/*` altında **değildir**, repo genelini tarar ve yerelde de koşulur (CI her push'ta koşar):
 
-### Bireysel servis build
 ```bash
-dotnet build services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj -c Debug
-dotnet build services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj -c Debug
-dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Debug
-dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
-dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug
-```
-
-### Test komutları
-```bash
-dotnet test services/Diten.AuthService
-dotnet test services/Diten.EnterpriseStrategyService
-dotnet test services/Diten.Platform
 dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
-# Her servisin kendi test projeleri varsa onların yolu kullanılır
 ```
 
-> ⚠ `tests/architecture` **`services/*` altında değildir** ve bu yüzden yıllarca bu listede yer almadı.
-> İçindeki muhafızlar repo genelini tarar (Mongo test veritabanı deseni — [DB-010](.antigravity/rules/mongo-indexing.md),
-> `MongoClient` kurulum yeri). CI onu her push'ta koşuyor (`scripts/run_phase1_gates.sh`); yerelde de koşulmalı,
-> yoksa ihlal ancak PR açıldığında görünür.
-
-### DataTable Kontrat Doğrulama (Frontend)
-```bash
-python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact [--data-mode server|client] [--format gaps]
-```
-
-> Eski bir liste ekranına dokunan görev **dokunma protokolüne** tabidir (`frontend-datatable-template.md` → Dokunma protokolü):
-> sapmalar `--format gaps` ile listelenir, sahibe sorulur, sessizce ne düzeltilir ne atlanır. Claude Code'da `.claude/settings.json`
-> PostToolUse kancası (`list_screen_touch_hook.py`) bunu düzenlemeden hemen sonra otomatik koşturur.
+Tüm komutlar, çalıştırma betikleri ve DataTable kontrat doğrulaması: `.antigravity/AGENTS-REFERENCE.md` §5.
 
 ---
 
@@ -198,10 +154,11 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 41 kural var ve **hiçbiri otomatik yüklenmez.**
-`.antigravity/rules/GEMINI.md` yalnız Antigravity'de `always_on`'dur; Claude Code
-ve Codex o klasörü hiç okumaz. Bu dosya (`AGENTS.md` = `CLAUDE.md`) her üç araçta
-da yüklenen tek dosyadır, bu yüzden harita burada durur.
+`.antigravity/rules/` altında 46 kural dosyası var (2026-10-17, `git ls-tree` ile sayıldı). Kural dosyaları kendiliğinden
+yüklenmez; `.antigravity/adapters.json`'da listelenenlerin üretilmiş kopyaları `.claude/rules/` (Claude Code) ve
+`.agents/rules/` (Antigravity) altına konur — bu denetimde yalnız `agents-core.md`'nin yüklenmesi ölçüldü. Codex ve
+Antigravity bu haritayı bu dosyayla birlikte yükler (bu denetimde canlı ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
+işe başlamadan bu haritanın açılmasını şart koşar.
 
 Kural, ona atıf verildiği kadar görünür. **İşe başlamadan önce satırını bul ve o
 kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini değil.
@@ -209,7 +166,8 @@ kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini de
 ### Daima — istisnasız
 `multi-tenancy` kiracı izolasyonu · `security-jwt` token ve yetki ·
 `git-safety` dal ve commit güvenliği · `code-style` kod stili ·
-`docs-organization` belge nereye yazılır
+`docs-organization` belge nereye yazılır ·
+`cross-module-change-consent` kapsam dışı başka bir modülde düzeltme gerekirse durup sorar: "bunu da düzeltelim mi?" (XMC-001)
 
 ### Backend / handler yazıyorsan
 `handler-design` · `repository-standard` · `response-envelope` ·
@@ -222,7 +180,8 @@ kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini de
 `unauthorized-surface-standard` yetkisiz kullanıcı ne görür (UAS-001) ·
 `frontend-js-standard` · `premium-modal-standard` uyarı ve modal ·
 liste → `frontend-datatable-template` · detay → `frontend-details-template` ·
-create/edit → `frontend-form-template`
+create/edit → `frontend-form-template` ·
+`page-help-and-keyboard` "?" yardım metni (yoksa borç defteri), yan panelde Enter, kısayol katmanı, tur (UXH-001)
 
 ### Kullanıcıya görünen metin varsa
 `localization-standard` (Platform 2 dil · Tenant 7 dil) ·
@@ -237,7 +196,8 @@ modül yetki zorlaması · `data-scope-enforcement` hangi satırları görür (S
 ### Yeni modül / pack açıyorsan
 `module-pack-standard` · `capability-pack-standard` ·
 `module-self-registration-standard` manifest ·
-`audit-trail-standard` pakette "Denetlenen Olaylar" bölümü (AUD-001)
+`audit-trail-standard` pakette "Denetlenen Olaylar" bölümü (AUD-001) ·
+`record-coding-standard` kullanıcıya görünen kayıt kodu: `MG-ORG-000042` biçimi, OTOMATİK / İKİSİ DE / KALSIN (RCS-001)
 
 ### Ortam, çalıştırma, kayıt
 `dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·
@@ -270,7 +230,7 @@ Tüm git operasyonları (branch, staging, commit, push) [GIT-002 git-safety.md](
 Orchestrator çağrıldığında Aşama 0'da şu dosyaları okur:
 1. `AGENTS.md` (bu dosya)
 2. İlgili `execution/domains/{domain}/domain-config.md`
-3. Varsa `execution/domains/{domain}/module-packs/{ID}.md`
+3. Varsa `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
 4. Görev tipine uygun `.antigravity/workflows/*.md`
 
 **Kural:** `@orchestrator` module pack oluşturmaz. Yeni modül geliştirmesi yalnızca mevcut ve kullanıcı tarafından onaylanmış (`approved` veya `ready-for-dev`) module pack üzerinden başlar. Module pack yoksa veya `draft` durumundaysa kod yazılmaz; kullanıcı önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlamaya yönlendirilir.
@@ -282,33 +242,7 @@ Prompt yazma rehberi: [.antigravity/PROMPT-GUIDE.md](.antigravity/PROMPT-GUIDE.m
 
 ## 8. Çalışma Akışı (Domain / Module Oluşturma)
 
-İki ana yol var. Detaylı walkthrough: [docs/agent-usage-guide.md](docs/agent-usage-guide.md).
-
-### Yol A — Sıfırdan yeni domain (nadir)
-
-1. `execution/domains/{name}/` klasörü kur: `README.md` + `domain-config.md` + `module-packs/`
-2. `domain-config.md`'de **sadece domain'e özel kararlar** yaz (in-scope modüller, repo scope, protected paths, ownership boundaries, runtime decisions). Engineering kuralları için `.antigravity/rules/`'a link ver — **içeriği tekrarlama**.
-3. AGENTS.md §2 (klasör yapısı) + §9 (branch kodu) güncelle. Platform/Admin domain'i ise [execution/portfolio/master-development-plan.md](execution/portfolio/master-development-plan.md) Section 2 (Module Inventory) ve [execution/registries/module-id-registry.md](execution/registries/module-id-registry.md) içine ekle.
-4. İlk modülü Yol B ile yaz.
-
-> Şablon: [execution/domains/platform-shared-services/](execution/domains/platform-shared-services/) (README + domain-config kanonik örnek).
-
-### Yol B — Mevcut domain'de yeni modül (her gün)
-
-**Aşama 1 — Module Pack Hazırlık:**
-1. `/prepare-module-pack` çağır (modül adı + domain + servis + shell + form alan sayısı + iş kuralları)
-2. `module-pack-author` ajanı `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyasını `status: draft` ile üretir
-3. Kullanıcı incelemesi → `status: approved` veya `ready-for-dev`
-
-**Aşama 2 — Geliştirme:**
-4. Branch aç: `feature/{domain-kısa}/{module-id}-{slug}` (örn: `feature/pss/pss-001-platform-administrators`)
-5. `@orchestrator {pack-yolu}` → `/add-module` workflow'u Phase 0 → 6 çalışır
-6. Test + `status: in-progress → review → done`
-7. PR aç, merge et. Module pack silinmez, `done` olarak kalır.
-
-> `@orchestrator` module pack oluşturmaz. Pack yoksa veya `draft` ise kullanıcıyı `/prepare-module-pack`'e yönlendirir.
-
-Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GEMINI.md) working-agreement akışı uygulanır (önce kod düzeltilir, onay alındıktan sonra `.antigravity` etkisi kontrol edilir).
+Yeni modül: `/prepare-module-pack` → pack `approved` / `ready-for-dev` → dal `feature/{domain-kısa}/{module-id}-{slug}` → `@orchestrator {pack-yolu}` → `/add-module` (Phase 0 → 6). Yeni domain nadirdir. Adım adım iki yol (A: yeni domain, B: mevcut domain'de modül): `.antigravity/AGENTS-REFERENCE.md` §8.
 
 ---
 
@@ -360,52 +294,22 @@ Module pack minimum içermeli:
 
 ## 11. Terim Sözlüğü
 
-| Terim | Anlam |
-|-------|-------|
-| **Global Engineering System** | `.antigravity/` — tüm projeler arası yeniden kullanılabilir katman |
-| **Domain** | `execution/domains/{name}/` — bir iş alanı (DEVEN, PSS; MDM/ESBP planlı) |
-| **Module Pack** | `execution/domains/{d}/module-packs/{ID}.md` — tek bir modülün kimlik + AC dosyası |
-| **Domain Config** | `execution/domains/{d}/domain-config.md` — domain sınırları ve kararlar |
-| **Master Development Plan** | `execution/portfolio/master-development-plan.md` — High-level wave planı ve modül envanteri (eski monolith `docs/platform/master-plan.md` yerine) |
-| **Platform Delivery Board** | `execution/delivery/platform-delivery-board.md` — Aktif iş/hardening takibi ve status panosu |
-| **Module ID Registry** | `execution/registries/module-id-registry.md` — Tüm modüllerin canonical ID listesi ve eşleşmeleri |
-| **Workflow** | `.antigravity/workflows/*.md` — yeniden kullanılabilir tarif (ör. `/add-module`) |
-| **Delivery Capability Pack** | `execution/portfolio/delivery-capability-packs/DCP-{NNN}-{slug}.md` — çok modüllü / cross-cutting teslimat için sınır + sıra + sahiplik orkestrasyon sözleşmesi ([CAP-001](.antigravity/rules/capability-pack-standard.md)). Bir runtime entity, module pack veya MOD-0014 runtime Capability Group **değildir**; yalın `Capability` adıyla anılmaz |
+Terimler (Global Engineering System, Domain, Module Pack, Delivery Capability Pack …): `.antigravity/AGENTS-REFERENCE.md` §11.
 
 ---
 
 ## 12. Adaptasyon Notu
 
-Bu repo, [Layered Agent + Domain Package Model SOP v2.1](docs/sop/upstream/) temelinde çalışır; fakat projemize özgü farklar vardır:
-
-- `batches/` katmanı **kullanılmaz** (`.antigravity/workflows/add-module.md` zaten phase orchestration sağlar)
-- `snapshots/` katmanı **kullanılmaz** (git history + `docs/audits/` bu işi yapar)
-- `controls/` ve `decisions/` katmanları **kullanılmaz** (engineering standartları `.antigravity/rules/`'de, scope/MVP kararları `execution/portfolio/master-development-plan.md`'de — tarihsel klasörler `archive/domains/` altına taşındı)
-- Module ID registry canonical kaynaktır. Yeni ERP product module formatı `MOD-NNNN-slug`; follow-up formatı `MOD-NNNN-FUxx-slug`; Delivery Capability Pack formatı `DCP-NNN-slug`; Developer Enablement golden reference formatı `DEV-NNNN-slug`. Tarihsel/legacy formatlar migration boyunca geçerli kalır ve registry cleanup backlog'u üzerinden izlenir; toplu rename yapılmaz.
-- Klasör yapısı `services/` + `frontend/` + `gateway/` (SOP'taki `src/Backend/` + `src/Frontend/` yerine)
-
-SOP'tan sapmaların tam listesi, yukarıdaki hiyerarşi ve proje bazlı SOP dosyaları (`docs/sop/upstream/`) üzerinden takip edilir.
+Katman SOP'undan (v2.1) sapmalar ve kimlik formatları: `.antigravity/AGENTS-REFERENCE.md` §12.
 
 
 ---
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is its historical predecessor only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. **Never invent a MOD / PSS / NEW identity:** Blueprint lookup → existing MOD or FU when available → otherwise a Module Change Request in the Master (Master-first rule, Blueprint 8.7; no new `CAND-CAP`). Before creating or reserving any ID run the fail-closed preflight — a non-zero exit BLOCKS pack creation:
 
-1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
-2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.
-3. **Canonical-name validation** — the pack `name` must match the Blueprint canonical name (or an approved alias).
-4. **Parent/FU/child decision** — decide explicitly whether the work is a new module or an FU/child of an existing module before minting an ID.
-5. **Repo-only reservation** — a capability absent from the Blueprint requires an explicit Enterprise Architect reservation recorded in the registry; no placeholder or next-free ID may be invented.
-6. **Preflight (fail-closed)** — run `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS pack creation.
-
-Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`. Legacy (`PSS-*`, `NEW-*`) and repo-only IDs are valid only as deprecated aliases pending Enterprise Architect reservation.
-
-### CAND-CAP candidate namespace (DCP-002)
-
-When the Blueprint has no capability and no existing MOD/FU fits, use a temporary candidate identity `CAND-CAP-####` — a governance/documentation identity ONLY, never written into runtime literals. Validate with the fail-closed candidate gate:
-
+`python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`
 `python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
 
-Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**
+The six gate steps and the Master-first rule: `.antigravity/AGENTS-REFERENCE.md` (DCP-002). Authority and policy: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.

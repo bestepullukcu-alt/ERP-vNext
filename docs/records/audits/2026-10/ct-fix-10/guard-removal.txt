@@ -1,0 +1,25 @@
+CT-FIX-10 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness11.py.txt (harness10 with its CT list replaced). The copy's three files equal the final
+sources byte for byte: True. Each mutation: the file still parses; the named test fails; the control test
+(Controls.test_consumers_on_the_intact_fixture_exit_0) passes.
+
+G-U1 the queue error ignored: the row taken as known  (scripts/prompt_gate.py)
+    tests: test_a_pack_s_module_relation_is_not_judged_without_the_queue_row
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-U2 the unmeasured relation not written  (scripts/prompt_gate.py)
+    tests: test_a_pack_s_module_relation_is_not_judged_without_the_queue_row
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-U3 the pack's own module not given without the row  (scripts/prompt_gate.py)
+    tests: test_a_pack_s_module_relation_is_not_judged_without_the_queue_row
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-W1 the base read with a raw decode  (scripts/ct_queue.py)
+    tests: test_writers_names_a_ref_whose_queue_is_not_utf8
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-W2 a ref read with a raw decode  (scripts/ct_queue.py)
+    tests: test_writers_names_a_ref_whose_queue_is_not_utf8
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+G-W3 the merge base read with a raw decode  (scripts/ct_queue.py)
+    tests: test_writers_names_a_ref_whose_queue_is_not_utf8
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+
+proven: 6 of 6

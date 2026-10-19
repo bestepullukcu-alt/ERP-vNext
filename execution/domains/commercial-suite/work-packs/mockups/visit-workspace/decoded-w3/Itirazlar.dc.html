@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;gap:20px">
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="A1 İtiraz kütüphanesi" style="display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div><div style="font-size:13px;color:var(--mu)">{{ L.crumb }}</div><h4 style="margin:2px 0 0;font-size:22px;font-weight:500;color:var(--h)">{{ L.title }}</h4></div>
+        <sc-if value="{{ canEdit }}"><button onClick="{{ newRec }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx bx-plus" style="font-size:18px"></i>{{ L.newBtn }}</button></sc-if>
+      </div>
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+        <div style="padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:14px">
+          <div style="font-size:18px;font-weight:500;color:var(--h)">{{ L.filters }}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+            <select ref="{{ rFp }}" onChange="{{ onFp }}" aria-label="{{ L.product }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><option value="">{{ L.allProd }}</option><sc-for list="{{ prods }}" as="p"><option value="{{ p.k }}">{{ p.n }}</option></sc-for></select>
+            <select ref="{{ rFc }}" onChange="{{ onFc }}" aria-label="{{ L.cat }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><option value="">{{ L.allCat }}</option><sc-for list="{{ cats }}" as="c"><option value="{{ c.k }}">{{ c.l }}</option></sc-for></select>
+            <select ref="{{ rFs }}" onChange="{{ onFs }}" aria-label="{{ L.status }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><option value="">{{ L.allSt }}</option><sc-for list="{{ sts }}" as="s"><option value="{{ s.k }}">{{ s.l }}</option></sc-for></select>
+          </div>
+        </div>
+        <sc-if value="{{ isEmpty }}">
+          <div style="padding:64px 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center"><i class="bx bx-message-square-error" style="font-size:32px"></i></div>
+            <div style="font-size:18px;font-weight:500;color:var(--h)">{{ L.emptyT }}</div>
+            <div style="font-size:15px;max-width:460px;text-wrap:pretty;line-height:1.5">{{ L.emptyD }}</div>
+            <sc-if value="{{ canEdit }}"><button onClick="{{ newRec }}" style="margin-top:6px;height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="bx bx-plus" style="font-size:18px"></i>{{ L.newBtn }}</button></sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="position:relative;flex:0 1 320px;min-width:200px"><i class="bx bx-search" style="position:absolute;inset-inline-start:12px;top:10px;font-size:18px;color:var(--mu)"></i><input value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ L.searchPh }}" style="width:100%;height:38px;border:1px solid var(--bd2);border-radius:6px;padding-inline:38px 12px;font-size:15px;color:var(--h);background:var(--card)"></div>
+            <span style="font-size:14px;color:var(--mu)">{{ countL }}</span>
+          </div>
+          <sc-if value="{{ noMatch }}">
+            <div style="padding:40px 24px 48px;border-top:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center"><i class="bx bx-filter-alt" style="font-size:30px;color:var(--mu)"></i><div style="font-size:15px;color:var(--h);font-weight:500">{{ L.noMatch }}</div><button onClick="{{ clearF }}" style="border:0;background:transparent;color:var(--pt);font-size:14px;cursor:pointer">{{ L.clear }}</button></div>
+          </sc-if>
+          <sc-if value="{{ hasMatch }}" hint-placeholder-val="{{ true }}">
+          <div style="overflow-x:auto">
+            <table style="width:100%;min-width:1040px;border-collapse:collapse;font-size:14px">
+              <thead><tr style="border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)">
+                <sc-for list="{{ cols }}" as="c" hint-placeholder-count="8"><th style="text-align:{{ c.al }};padding:14px 16px;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h);white-space:nowrap">{{ c.l }}</th></sc-for>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+                  <tr onClick="{{ r.open }}" style="border-bottom:1px solid var(--bd);cursor:pointer" style-hover="background:var(--soft2)">
+                    <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:6px;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">{{ r.pi }}</div><div style="display:flex;flex-direction:column;line-height:1.3"><span style="color:var(--h);font-weight:500">{{ r.pn }}</span><span style="font-size:12px;color:var(--mu)">{{ r.pf }}</span></div></div></td>
+                    <td style="padding:12px 16px"><span style="display:inline-block;padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ r.cat.bg }};color:{{ r.cat.fg }};border:{{ r.cat.bd }};white-space:nowrap">{{ r.cat.l }}</span></td>
+                    <td style="padding:12px 16px;max-width:320px"><div style="color:var(--h);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.q }}</div></td>
+                    <td style="padding:12px 16px;text-align:center"><span style="display:inline-flex;align-items:center;gap:4px;color:{{ r.cfg }}"><i class="bx bx-check-shield" style="font-size:16px"></i>{{ r.nc }}</span></td>
+                    <td style="padding:12px 16px;text-align:center"><span style="display:inline-flex;align-items:center;gap:4px;color:{{ r.ufg }}"><i class="bx bx-slideshow" style="font-size:16px"></i>{{ r.nu }}</span></td>
+                    <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start"><span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ r.st.bg }};color:{{ r.st.fg }};border:{{ r.st.bd }}">{{ r.st.l }}</span><sc-if value="{{ r.pend }}"><span style="font-size:12px;color:var(--wa);display:flex;align-items:center;gap:3px"><i class="bx bx-time-five"></i>{{ L.pending }}</span></sc-if></div></td>
+                    <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:var(--seb);color:var(--se);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">{{ r.mi }}</div><div style="display:flex;flex-direction:column;line-height:1.3"><span style="color:var(--h)">{{ r.mBy }}</span><span style="font-size:12px;color:var(--mu)">{{ r.mAt }}</span></div></div></td>
+                    <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;gap:2px;justify-content:center">
+                      <button onClick="{{ r.open }}" title="{{ L.view }}" aria-label="{{ L.view }}" style="width:32px;height:32px;border:0;background:transparent;border-radius:50%;color:var(--h);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center" style-hover="background:var(--seb)"><i class="bx bx-show"></i></button>
+                      <sc-if value="{{ r.canEd }}"><button onClick="{{ r.edit }}" title="{{ L.edit }}" aria-label="{{ L.edit }}" style="width:32px;height:32px;border:0;background:transparent;border-radius:50%;color:var(--h);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center" style-hover="background:var(--seb)"><i class="bx bx-edit"></i></button></sc-if>
+                      <sc-if value="{{ r.canCopy }}"><button onClick="{{ r.copy }}" title="{{ L.copy }}" aria-label="{{ L.copy }}" style="width:32px;height:32px;border:0;background:transparent;border-radius:50%;color:var(--h);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center" style-hover="background:var(--seb)"><i class="bx bx-copy"></i></button></sc-if>
+                    </div></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mu)">
+            <span>{{ showingL }}</span>
+            <div style="display:flex;gap:4px"><span style="width:32px;height:32px;border-radius:50%;background:var(--seb);display:flex;align-items:center;justify-content:center;color:var(--mu)"><i class="bx bx-chevron-left"></i></span><span style="width:32px;height:32px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:500">1</span><span style="width:32px;height:32px;border-radius:50%;background:var(--seb);display:flex;align-items:center;justify-content:center;color:var(--mu)"><i class="bx bx-chevron-right"></i></span></div>
+          </div>
+          </sc-if>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEdit }}">
+    <div data-screen-label="A2 İtiraz yanıtı düzenle" style="display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div><div style="font-size:13px;color:var(--mu)"><a href="#" onClick="{{ toList }}">İtiraz kütüphanesi</a> / {{ editCrumb }}</div><h4 style="margin:2px 0 0;font-size:22px;font-weight:500;color:var(--h);display:flex;align-items:center;gap:10px">{{ editTitle }}<span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:var(--seb);color:var(--se)">Taslak</span></h4></div>
+      </div>
+      <sc-if value="{{ saveErr }}"><div role="alert" style="background:var(--dab);color:var(--da);border-radius:6px;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:14px"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-error-circle" style="font-size:20px"></i><span><strong>Kaydedilemedi.</strong> Sunucuya ulaşılamadı; girdiğiniz bilgiler bu ekranda korunuyor. Yeniden deneyin.</span></span><button onClick="{{ saveDraft }}" style="background:var(--dac);color:#fff;border:0;border-radius:6px;padding:6px 14px;font-weight:500;cursor:pointer;white-space:nowrap">Yeniden dene</button></div></sc-if>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px;align-items:start">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);display:flex;flex-direction:column">
+          <div style="padding:20px 24px;border-bottom:1px solid var(--bd);font-size:18px;font-weight:500;color:var(--h)">İtiraz ve onaylı yanıt</div>
+          <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Ürün <span style="color:var(--da)">*</span></span>
+                <select ref="{{ rP }}" onChange="{{ onP }}" style="height:38px;border:1px solid {{ eP.bd }};border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><option value="">Ürün seçin</option><sc-for list="{{ prods }}" as="p"><option value="{{ p.k }}">{{ p.n }} · {{ p.f }}</option></sc-for></select>
+                <sc-if value="{{ eP.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ eP.t }}</span></sc-if>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Kategori <span style="color:var(--da)">*</span></span>
+                <select ref="{{ rCat }}" onChange="{{ onCat }}" style="height:38px;border:1px solid {{ eC.bd }};border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><option value="">Kategori seçin</option><sc-for list="{{ catsTr }}" as="c"><option value="{{ c.k }}">{{ c.l }}</option></sc-for></select>
+                <sc-if value="{{ eC.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ eC.t }}</span></sc-if>
+              </label>
+            </div>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">İtiraz · doktorun sorusu <span style="color:var(--da)">*</span></span><span style="font-size:12px;color:{{ cQ.fg }}">{{ cQ.l }}</span></span>
+              <textarea value="{{ f.q }}" onChange="{{ onQ2 }}" rows="2" placeholder="ör. Tamsulin ile memnunum, neden değiştireyim?" style="border:1px solid {{ eQ.bd }};border-radius:6px;padding:9px 12px;font-size:15px;line-height:1.5;color:var(--h);background:var(--card);resize:vertical"></textarea>
+              <sc-if value="{{ eQ.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ eQ.t }}</span></sc-if>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Onaylı yanıt <span style="color:var(--da)">*</span></span><span style="font-size:12px;color:{{ cA.fg }}">{{ cA.l }}</span></span>
+              <textarea value="{{ f.a }}" onChange="{{ onA }}" rows="6" placeholder="Temsilcinin söyleyeceği yanıt. Yalnız onaylı iddialara dayanın." style="border:1px solid {{ eA.bd }};border-radius:6px;padding:9px 12px;font-size:15px;line-height:1.5;color:var(--h);background:var(--card);resize:vertical"></textarea>
+              <sc-if value="{{ eA.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ eA.t }}</span></sc-if>
+            </label>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Dayanak iddialar</span><span style="font-size:12px;color:var(--mu)">{{ claimSel }}</span></div>
+              <div style="font-size:13px;display:flex;gap:6px;align-items:center"><i class="bx bx-info-circle" style="color:var(--in)"></i>Yalnız seçili ürünün onaylı iddiaları listelenir.</div>
+              <sc-if value="{{ noProd }}"><div style="border:1px dashed var(--bd2);border-radius:8px;padding:16px;font-size:14px;color:var(--mu);text-align:center">Önce ürün seçin.</div></sc-if>
+              <sc-for list="{{ claimOpts }}" as="c">
+                <label style="display:flex;gap:12px;align-items:flex-start;border:1px solid {{ c.bd }};background:{{ c.bg }};border-radius:8px;padding:12px 14px;cursor:pointer">
+                  <input type="checkbox" checked="{{ c.on }}" onChange="{{ c.toggle }}" style="accent-color:var(--p);width:17px;height:17px;margin-top:2px;flex:0 0 auto">
+                  <span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="font:12px ui-monospace,monospace;color:var(--pt);background:var(--pl);padding:1px 6px;border-radius:4px">{{ c.id }}</span><span style="padding:1px 8px;border-radius:4px;font-size:12px;font-weight:500;background:var(--okb);color:var(--ok)">Onaylı</span></span><span style="font-size:14px;color:var(--h);line-height:1.45">{{ c.t }}</span><span style="font-size:12px;color:var(--mu)">{{ c.ref }}</span></span>
+                </label>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:16px 24px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+            <button onClick="{{ cancel }}" style="height:38px;background:var(--seb);color:var(--se);border:0;border-radius:6px;padding:0 18px;font-size:15px;cursor:pointer">Vazgeç</button>
+            <button onClick="{{ saveDraft }}" style="height:38px;background:var(--card);color:var(--pt);border:1px solid var(--pt);border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer">Taslağı kaydet</button>
+            <button onClick="{{ submit }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx {{ submitIc }}" style="font-size:18px"></i>{{ submitL }}</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px;position:sticky;top:{{ stickyTop }}px">
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:16px;font-weight:500;color:var(--h)">Önizleme</span><span style="font-size:12px;color:var(--mu);display:flex;gap:4px;align-items:center"><i class="bx bx-mobile-alt"></i>Temsilci kumandası · Notlar</span></div>
+            <div style="padding:16px 20px;display:grid;gap:6px">
+              <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)">Beklenen itirazlar · onaylı yanıt</span>
+              <div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden"><button onClick="{{ togglePv }}" style="width:100%;min-height:44px;border:0;background:var(--soft2);padding:8px 12px;display:flex;gap:8px;align-items:center;text-align:start;cursor:pointer;color:var(--h);font-size:14px;font-weight:500"><i class="bx bx-message-error" style="color:var(--da);font-size:17px"></i><span style="flex:1;color:{{ pv.qfg }}">{{ pv.q }}</span><i class="bx {{ pv.chev }}" style="font-size:20px;color:var(--mu)"></i></button>
+                <sc-if value="{{ pv.open }}"><div style="padding:10px 12px;display:grid;gap:10px"><span style="font-size:14px;line-height:1.5;color:{{ pv.afg }};white-space:pre-wrap">{{ pv.a }}</span>
+                  <sc-if value="{{ pv.hasRefs }}"><div style="display:grid;gap:4px;border-top:1px solid var(--bd);padding-top:8px"><sc-for list="{{ pv.refs }}" as="x"><span style="font-size:12px;color:var(--mu)">{{ x }}</span></sc-for></div></sc-if>
+                </div></sc-if>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 20px;display:grid;gap:8px;font-size:14px">
+            <div style="display:flex;justify-content:space-between;gap:8px"><span>Oluşturan</span><span style="color:var(--h)">{{ meta.by }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px"><span>Son kayıt</span><span style="color:var(--h)">{{ meta.at }}</span></div>
+            <div style="font-size:13px;display:flex;gap:6px;align-items:flex-start;color:var(--mu);border-top:1px solid var(--bd);padding-top:8px"><i class="bx bx-shield-quarter" style="font-size:16px"></i>Onaylandıktan sonra kayıt değiştirilemez. Onayı yazar dışında bir onaylayıcı verir.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}">
+    <div data-screen-label="A3 İtiraz yanıtı ayrıntı" style="display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+        <div style="min-width:0"><div style="font-size:13px;color:var(--mu)"><a href="#" onClick="{{ toList }}">İtiraz kütüphanesi</a> / {{ d.pn }}</div><h4 style="margin:2px 0 0;font-size:22px;font-weight:500;color:var(--h);display:flex;align-items:center;gap:10px;flex-wrap:wrap">İtiraz yanıtı<span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ d.st.bg }};color:{{ d.st.fg }};border:{{ d.st.bd }}">{{ d.st.l }}</span><sc-if value="{{ d.pend }}"><span style="font-size:13px;font-weight:400;color:var(--wa);display:flex;align-items:center;gap:4px"><i class="bx bx-time-five"></i>Onay bekliyor</span></sc-if></h4></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <sc-if value="{{ act.editDraft }}"><button onClick="{{ editIt }}" style="height:38px;background:var(--card);color:var(--pt);border:1px solid var(--pt);border-radius:6px;padding:0 16px;font-size:15px;cursor:pointer;display:flex;gap:6px;align-items:center"><i class="bx bx-edit"></i>Düzenle</button><button onClick="{{ sendIt }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 16px;font-size:15px;font-weight:500;cursor:pointer;display:flex;gap:6px;align-items:center"><i class="bx bx-send"></i>Onaya gönder</button></sc-if>
+        </div>
+      </div>
+      <sc-if value="{{ strip.ok }}"><div style="background:var(--inb);color:var(--in);border-radius:6px;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-lock-alt" style="font-size:20px"></i>Onaylı yanıt değiştirilemez. Değiştirmek için emekliye ayırıp yenisini oluşturun.</span>
+        <sc-if value="{{ act.manage }}"><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ askRetire }}" style="height:34px;background:var(--card);color:var(--da);border:1px solid var(--dac);border-radius:6px;padding:0 14px;font-size:14px;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-archive-in"></i>Emekliye ayır</button><button onClick="{{ copyIt }}" style="height:34px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 14px;font-size:14px;font-weight:500;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-copy"></i>Kopyasından yeni taslak</button></div></sc-if>
+      </div></sc-if>
+      <sc-if value="{{ strip.pend }}"><div style="background:var(--wab);color:var(--wa);border-radius:6px;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-time-five" style="font-size:20px"></i>{{ strip.pendT }}</span>
+        <sc-if value="{{ act.approve }}"><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ rejectIt }}" style="height:34px;background:var(--card);color:var(--se);border:1px solid var(--bd2);border-radius:6px;padding:0 14px;font-size:14px;cursor:pointer">Taslağa geri gönder</button><button onClick="{{ approveIt }}" disabled="{{ act.sod }}" title="{{ act.sodT }}" style="height:34px;background:var(--okc);color:#fff;border:0;border-radius:6px;padding:0 14px;font-size:14px;font-weight:500;cursor:{{ act.cur }};opacity:{{ act.op }};display:flex;gap:5px;align-items:center"><i class="bx bx-check"></i>Onayla</button></div></div></sc-if>
+      </div></sc-if>
+      <sc-if value="{{ act.sod }}"><div style="margin-top:-12px;font-size:13px;display:flex;gap:6px;align-items:center;justify-content:flex-end;color:var(--h)"><i class="bx bx-user-x" style="font-size:17px;color:var(--da)"></i>Bu kaydı siz yazdınız; başka bir onaylayıcı onaylamalı.</div></sc-if>
+      <sc-if value="{{ strip.ret }}"><div style="background:var(--seb);color:var(--se);border-radius:6px;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-archive" style="font-size:20px"></i>{{ strip.retT }}</span><sc-if value="{{ act.manage }}"><button onClick="{{ copyIt }}" style="height:34px;background:var(--card);color:var(--pt);border:1px solid var(--pt);border-radius:6px;padding:0 14px;font-size:14px;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-copy"></i>Kopyasından yeni taslak</button></sc-if></div></sc-if>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+            <div style="padding:20px 24px;border-bottom:1px solid var(--bd);font-size:18px;font-weight:500;color:var(--h)">İtiraz ve onaylı yanıt</div>
+            <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+                <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">Ürün</span><span style="color:var(--h);font-weight:500">{{ d.pn }} <span style="font-weight:400;color:var(--mu)">· {{ d.pf }}</span></span></div>
+                <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">Kategori</span><span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ d.cat.bg }};color:{{ d.cat.fg }};border:{{ d.cat.bd }}">{{ d.cat.l }}</span></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">İtiraz · doktorun sorusu</span><span style="font-size:16px;color:var(--h);line-height:1.5">"{{ d.q }}"</span></div>
+              <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">Onaylı yanıt</span><span style="font-size:15px;color:var(--h);line-height:1.6;white-space:pre-wrap">{{ d.a }}</span></div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">Dayanak iddialar · {{ d.nc }}</span>
+                <sc-if value="{{ d.noClaims }}"><span style="font-size:14px;color:var(--mu)">Dayanak iddia bağlanmamış.</span></sc-if>
+                <sc-for list="{{ d.claims }}" as="c"><div style="border:1px solid var(--bd);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:4px"><span style="font:12px ui-monospace,monospace;color:var(--pt)">{{ c.id }}</span><span style="font-size:14px;color:var(--h);line-height:1.45">{{ c.t }}</span><span style="font-size:12px;color:var(--mu)">{{ c.ref }}</span></div></sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+            <div style="padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:18px;font-weight:500;color:var(--h)">Kullanıldığı yerler</span><span style="font-size:13px;color:var(--mu)">{{ d.nu }} adım</span></div>
+            <sc-if value="{{ d.noUsed }}"><div style="padding:24px;font-size:14px;color:var(--mu);text-align:center">Bu yanıt henüz hiçbir bilgi yolu adımında beklenen itiraz olarak seçilmedi.</div></sc-if>
+            <sc-if value="{{ d.hasUsed }}"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="border-bottom:1px solid var(--bd)"><th style="text-align:start;padding:12px 24px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Bilgi yolu</th><th style="text-align:start;padding:12px 16px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Sürüm</th><th style="text-align:start;padding:12px 24px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Adım</th></tr></thead>
+              <tbody><sc-for list="{{ d.used }}" as="u"><tr style="border-bottom:1px solid var(--bd)"><td style="padding:12px 24px"><a href="#" onClick="{{ u.go }}">{{ u.path }}</a></td><td style="padding:12px 16px"><span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ u.vbg }};color:{{ u.vfg }}">{{ u.ver }} · {{ u.vl }}</span></td><td style="padding:12px 24px;color:var(--h)">{{ u.step }}</td></tr></sc-for></tbody></table></div></sc-if>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:16px;font-weight:500;color:var(--h)">Önizleme</span><span style="font-size:12px;color:var(--mu);display:flex;gap:4px;align-items:center"><i class="bx bx-mobile-alt"></i>Temsilci kumandası · Notlar</span></div>
+            <div style="padding:16px 20px;display:grid;gap:6px">
+              <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)">Beklenen itirazlar · onaylı yanıt</span>
+              <div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden"><button onClick="{{ togglePv }}" style="width:100%;min-height:44px;border:0;background:var(--soft2);padding:8px 12px;display:flex;gap:8px;align-items:center;text-align:start;cursor:pointer;color:var(--h);font-size:14px;font-weight:500"><i class="bx bx-message-error" style="color:var(--da);font-size:17px"></i><span style="flex:1">"{{ d.q }}"</span><i class="bx {{ pv.chev }}" style="font-size:20px;color:var(--mu)"></i></button>
+                <sc-if value="{{ pv.open }}"><div style="padding:10px 12px;display:grid;gap:10px"><span style="font-size:14px;line-height:1.5;color:var(--h)">{{ d.a }}</span><sc-if value="{{ d.hasClaims }}"><div style="display:grid;gap:4px;border-top:1px solid var(--bd);padding-top:8px"><sc-for list="{{ d.refs }}" as="x"><span style="font-size:12px;color:var(--mu)">{{ x }}</span></sc-for></div></sc-if></div></sc-if>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--bd);font-size:16px;font-weight:500;color:var(--h)">Geçmiş</div>
+            <div style="padding:16px 20px;display:flex;flex-direction:column">
+              <sc-for list="{{ d.hist }}" as="h"><div style="display:flex;gap:12px;position:relative;padding-bottom:16px">
+                <div style="display:flex;flex-direction:column;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:{{ h.c }};box-shadow:0 0 0 3px var(--card),0 0 0 4px {{ h.c }};margin-top:4px;flex:0 0 auto"></span><span style="flex:1;width:1px;background:var(--bd);margin-top:6px"></span></div>
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:14px;font-weight:500;color:var(--h)">{{ h.l }}</span><span style="font-size:13px">{{ h.by }} · {{ h.at }}</span></div>
+              </div></sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ retireDlg }}">
+    <div style="position:fixed;inset:0;z-index:400;background:var(--ov);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div role="dialog" aria-label="Emekliye ayır" style="background:var(--card);border-radius:8px;box-shadow:var(--sh2);width:min(480px,100%);display:flex;flex-direction:column">
+        <div style="padding:20px 24px 0;display:flex;gap:14px;align-items:flex-start"><div style="width:42px;height:42px;border-radius:50%;background:var(--dab);color:var(--da);display:flex;align-items:center;justify-content:center;flex:0 0 auto"><i class="bx bx-archive-in" style="font-size:22px"></i></div><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:18px;font-weight:500;color:var(--h)">Yanıt emekliye ayrılsın mı?</span><span style="font-size:14px;line-height:1.5">Emekliye ayrılan yanıt yeni bilgi yolu adımlarında seçilemez. Şu an {{ d.nu }} adımda kullanılıyor.</span></div></div>
+        <div style="padding:20px 24px;display:flex;justify-content:flex-end;gap:10px"><button onClick="{{ closeDlg }}" style="height:38px;background:var(--seb);color:var(--se);border:0;border-radius:6px;padding:0 18px;font-size:15px;cursor:pointer">Vazgeç</button><button onClick="{{ retireIt }}" style="height:38px;background:var(--dac);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer">Emekliye ayır</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const LL={
+ tr:{crumb:'Content Studio',title:'İtiraz kütüphanesi',newBtn:'Yeni itiraz yanıtı',filters:'Süzgeçler',product:'Ürün',cat:'Kategori',status:'Durum',allProd:'Tüm ürünler',allCat:'Tüm kategoriler',allSt:'Tüm durumlar',searchPh:'İtiraz metninde ara',
+  cols:['Ürün','Kategori','İtiraz','Bağlı iddia','Kullanıldığı adım','Durum','Son değişiklik','Eylemler'],st:{taslak:'Taslak',onayli:'Onaylı',emekli:'Emekli'},pending:'Onay bekliyor',
+  emptyT:'Henüz itiraz yanıtı yok',emptyD:'Temsilcinin sunum sırasında göreceği beklenen itirazlar ve onaylı yanıtlar burada toplanır. İlk kaydı oluşturarak başlayın.',
+  noMatch:'Süzgeçlere uyan kayıt yok',clear:'Süzgeçleri temizle',view:'Görüntüle',edit:'Düzenle',copy:'Kopyasından yeni taslak',count:n=>n+' kayıt',showing:(a,b)=>'1–'+a+' / '+b+' kayıt gösteriliyor'},
+ ar:{crumb:'استوديو المحتوى',title:'مكتبة الاعتراضات',newBtn:'رد اعتراض جديد',filters:'عوامل التصفية',product:'المنتج',cat:'الفئة',status:'الحالة',allProd:'كل المنتجات',allCat:'كل الفئات',allSt:'كل الحالات',searchPh:'ابحث في نص الاعتراض',
+  cols:['المنتج','الفئة','الاعتراض','الادعاءات المرتبطة','الخطوات المستخدمة','الحالة','آخر تعديل','الإجراءات'],st:{taslak:'مسودة',onayli:'معتمد',emekli:'مؤرشف'},pending:'بانتظار الموافقة',
+  emptyT:'لا توجد ردود اعتراضات بعد',emptyD:'تُجمع هنا الاعتراضات المتوقعة والردود المعتمدة التي يراها المندوب أثناء العرض. ابدأ بإنشاء السجل الأول.',
+  noMatch:'لا توجد سجلات مطابقة لعوامل التصفية',clear:'مسح عوامل التصفية',view:'عرض',edit:'تعديل',copy:'مسودة جديدة من نسخة',count:n=>n+' سجل',showing:(a,b)=>'عرض 1–'+a+' من '+b+' سجل'}
+};
+const STC={taslak:{bg:'var(--seb)',fg:'var(--se)',bd:'0'},onayli:{bg:'var(--okb)',fg:'var(--ok)',bd:'0'},emekli:{bg:'transparent',fg:'var(--mu)',bd:'1px solid var(--bd2)'}};
+const ini=n=>n.replace(/^(Dr\.|Doç\. Dr\.|Prof\. Dr\.)\s*/,'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+const NOW='2026-10-12 11:20';
+class Component extends DCLogic {
+  state={fp:'',fc:'',fs:'',q:'',f:null,fkey:null,tried:false,saveErr:false,pvOpen:true,dlg:false};
+  get A(){return this.props.app||{nav:{view:'list'},lang:'tr',obj:[],perm:'read',me:{n:''},set(){},go(){},updObj(){},addObj(){},toast(){}}}
+  initForm(){const A=this.A,nav=A.nav,key=nav.view+':'+(nav.id||'new');if(this.state.fkey===key)return null;
+    const o=A.obj.find(x=>x.id===nav.id);const f=o?{p:o.p,cat:String(o.cat),q:o.q,a:o.a,claims:[...o.claims]}:{p:'',cat:'',q:'',a:'',claims:[]};
+    return {f,fkey:key,tried:false,saveErr:false,pvOpen:true}}
+  rFp=React.createRef();rFc=React.createRef();rFs=React.createRef();rP=React.createRef();rCat=React.createRef();
+  syncSel(){const S=this.state,f=S.f||{};[[this.rFp,S.fp],[this.rFc,S.fc],[this.rFs,S.fs],[this.rP,f.p||''],[this.rCat,f.cat==null?'':f.cat]].forEach(([r,v])=>{if(r.current&&r.current.value!==String(v))r.current.value=String(v)})}
+  componentDidMount(){const s=this.initForm();if(s)this.setState(s);this.syncSel()}
+  componentDidUpdate(){const s=this.initForm();if(s)this.setState(s);this.syncSel()}
+  st(o,lang){return{...STC[o.st],l:LL[lang].st[o.st]}}
+  cat(i,lang){const c=window.W3D.CAT[i];return{bg:c.bg,fg:c.fg,bd:c.bd||'0',l:lang==='ar'?c.ar:c.l}}
+  validate(f,mode){const e={},full=mode==='send';if(!f.p)e.p='Ürün seçin.';if(f.cat==='')e.cat='Kategori seçin.';if(full&&!f.q.trim())e.q='İtiraz metnini yazın.';else if(f.q.length>500)e.q='En çok 500 karakter. '+(f.q.length-500)+' karakter fazla.';if(full&&!f.a.trim())e.a='Onaylı yanıtı yazın.';else if(f.a.length>4000)e.a='En çok 4000 karakter. '+(f.a.length-4000)+' karakter fazla.';return e}
+  save(send){const A=this.A,f=this.state.f,mode=send?'send':'draft',e=this.validate(f,mode);this.setState({tried:mode});
+    if(Object.keys(e).length)return;
+    if(A.failSave){this.setState({saveErr:true});return}
+    const me=A.me.n,id=A.nav.id;const rec=A.obj.find(x=>x.id===id);
+    const directApprove=send&&A.perm==='approve'&&rec&&rec.by!==me;
+    const p={p:f.p,cat:Number(f.cat),q:f.q,a:f.a,claims:f.claims,mBy:me,mAt:NOW,st:directApprove?'onayli':'taslak',pending:send&&!directApprove};
+    if(directApprove)Object.assign(p,{apBy:me,apAt:NOW});
+    let nid=id;if(rec)A.updObj(id,p);else nid=A.addObj({...p,by:me,at:NOW,used:[]});
+    this.setState({saveErr:false});
+    if(send){A.set({view:'detail',id:nid});A.toast(directApprove?'Yanıt onaylandı.':'Yanıt onaya gönderildi.')}
+    else{A.set({id:nid});this.setState({fkey:'edit:'+nid});A.toast('Taslak kaydedildi.')}}
+  renderVals(){
+    const A=this.A,S=this.state,nav=A.nav,lang=A.lang,T=LL[lang],D=window.W3D;
+    if(!D)return{isList:true};
+    const canEdit=A.perm==='edit'||A.perm==='approve';
+    const prods=Object.entries(D.P).map(([k,p])=>({k,n:p.n,f:p.f}));
+    const all=nav.empty?[]:A.obj;
+    const ql=S.q.toLocaleLowerCase('tr');
+    const fl=all.filter(o=>(!S.fp||o.p===S.fp)&&(S.fc===''||String(o.cat)===S.fc)&&(!S.fs||o.st===S.fs)&&(!ql||(o.q+' '+o.q_ar).toLocaleLowerCase('tr').includes(ql)));
+    const rows=fl.map(o=>{const p=D.P[o.p];return{pi:p.n.slice(0,2),pn:p.n,pf:p.f,cat:this.cat(o.cat,lang),q:lang==='ar'&&o.q_ar?o.q_ar:o.q,nc:o.claims.length,nu:o.used.length,cfg:o.claims.length?'var(--h)':'var(--mu)',ufg:o.used.length?'var(--h)':'var(--mu)',st:this.st(o,lang),pend:!!o.pending,mBy:o.mBy,mi:ini(o.mBy),mAt:D.fmt(o.mAt,lang),
+      canEd:canEdit&&o.st==='taslak'&&!o.pending,canCopy:canEdit&&o.st!=='taslak',
+      open:e=>{e&&e.stopPropagation&&e.stopPropagation();A.set({view:'detail',id:o.id})},edit:e=>{e.stopPropagation();A.set({view:'edit',id:o.id})},copy:e=>{e.stopPropagation();this.copy(o)}}});
+    const v={stickyTop:A.stickyTop||80,rFp:this.rFp,rFc:this.rFc,rFs:this.rFs,rP:this.rP,rCat:this.rCat,isList:nav.view==='list',isEdit:nav.view==='edit',isDetail:nav.view==='detail',L:T,canEdit,prods,
+      cats:D.CAT.map((c,i)=>({k:String(i),l:lang==='ar'?c.ar:c.l})),catsTr:D.CAT.map((c,i)=>({k:String(i),l:c.l})),
+      sts:['taslak','onayli','emekli'].map(k=>({k,l:T.st[k]})),
+      fp:S.fp,fc:S.fc,fs:S.fs,q:S.q,onFp:e=>this.setState({fp:e.target.value}),onFc:e=>this.setState({fc:e.target.value}),onFs:e=>this.setState({fs:e.target.value}),onQ:e=>this.setState({q:e.target.value}),
+      clearF:()=>this.setState({fp:'',fc:'',fs:'',q:''}),
+      isEmpty:all.length===0,hasRows:all.length>0,noMatch:fl.length===0,hasMatch:fl.length>0,rows,
+      cols:T.cols.map((l,i)=>({l,al:i===3||i===4||i===7?'center':'start'})),countL:T.count(fl.length),showingL:T.showing(fl.length,all.length),
+      newRec:()=>A.set({view:'edit',id:null,empty:false}),toList:e=>{e&&e.preventDefault();A.set({view:'list',id:null})},
+      retireDlg:S.dlg,closeDlg:()=>this.setState({dlg:false})};
+    // A2
+    const f=S.f||{p:'',cat:'',q:'',a:'',claims:[]};const err=S.tried?this.validate(f,S.tried):{};
+    const E=k=>({on:!!err[k],t:err[k]||'',bd:err[k]?'var(--dac)':'var(--bd2)'});
+    const ctr=(n,max)=>({l:n+' / '+max,fg:n>max?'var(--da)':'var(--mu)'});
+    const rec=A.obj.find(x=>x.id===nav.id);
+    const upd=p=>this.setState(s=>({f:{...s.f,...p}}));
+    const copts=f.p?D.CLAIMS.filter(c=>c.p===f.p).map(c=>{const on=f.claims.includes(c.id);return{...c,on,bd:on?'var(--p)':'var(--bd)',bg:on?'var(--pl)':'transparent',toggle:()=>upd({claims:on?f.claims.filter(x=>x!==c.id):[...f.claims,c.id]})}}):[];
+    const selRefs=D.CLAIMS.filter(c=>f.claims.includes(c.id)).map(c=>c.ref);
+    const directApprove=A.perm==='approve'&&rec&&rec.by!==A.me.n;
+    Object.assign(v,{f,eP:E('p'),eC:E('cat'),eQ:E('q'),eA:E('a'),cQ:ctr(f.q.length,500),cA:ctr(f.a.length,4000),
+      onP:e=>upd({p:e.target.value,claims:[]}),onCat:e=>upd({cat:e.target.value}),onQ2:e=>upd({q:e.target.value}),onA:e=>upd({a:e.target.value}),
+      claimOpts:copts,noProd:!f.p,claimSel:f.claims.length+' seçili',
+      editTitle:rec?'İtiraz yanıtını düzenle':'Yeni itiraz yanıtı',editCrumb:rec?D.P[rec.p].n:'Yeni',
+      saveErr:S.saveErr,saveDraft:()=>this.save(false),submit:()=>this.save(true),
+      submitL:directApprove?'Onayla':'Onaya gönder',submitIc:directApprove?'bx-check':'bx-send',
+      cancel:()=>A.set(rec?{view:'detail'}:{view:'list',id:null}),
+      meta:{by:rec?rec.by:A.me.n,at:rec?D.fmt(rec.mAt,'tr',true):'Henüz kaydedilmedi'},
+      pv:{q:f.q?'"'+f.q+'"':'Doktorun sorusu burada görünür',qfg:f.q?'var(--h)':'var(--mu)',a:f.a||'Onaylı yanıt burada görünür.',afg:f.a?'var(--h)':'var(--mu)',open:S.pvOpen,chev:S.pvOpen?'bx-chevron-up':'bx-chevron-down',refs:selRefs,hasRefs:selRefs.length>0},
+      togglePv:()=>this.setState(s=>({pvOpen:!s.pvOpen}))});
+    // A3
+    if(rec&&nav.view==='detail'){
+      const cl=D.CLAIMS.filter(c=>rec.claims.includes(c.id));
+      const hist=[{l:'Oluşturuldu',by:rec.by,at:D.fmt(rec.at,'tr',true),c:'var(--pt)'}];
+      if(rec.pending||rec.apBy)hist.push({l:'Onaya gönderildi',by:rec.by,at:D.fmt(rec.pending?rec.mAt:rec.at,'tr',true),c:'var(--wac)'});
+      if(rec.apBy)hist.push({l:'Onaylandı',by:rec.apBy,at:D.fmt(rec.apAt,'tr',true),c:'var(--okc)'});
+      if(rec.retBy)hist.push({l:'Emekliye ayrıldı',by:rec.retBy,at:D.fmt(rec.retAt,'tr',true),c:'var(--se)'});
+      hist.reverse();
+      const sod=A.perm==='approve'&&rec.by===A.me.n;
+      Object.assign(v,{d:{pn:D.P[rec.p].n,pf:D.P[rec.p].f,cat:this.cat(rec.cat,'tr'),st:this.st(rec,'tr'),pend:!!rec.pending,q:rec.q,a:rec.a,claims:cl,nc:cl.length,noClaims:!cl.length,hasClaims:cl.length>0,refs:cl.map(c=>c.ref),
+          used:rec.used.map(u=>{const pub=u.ver==='v3'||u.ver==='v2'||u.ver==='v1';return{...u,vl:pub?'Yayında':'Taslak',vbg:pub?'var(--okb)':'var(--seb)',vfg:pub?'var(--ok)':'var(--se)',go:e=>{e.preventDefault();A.go('kp',{bPub:u.ver==='v3'})}}}),nu:rec.used.length,noUsed:!rec.used.length,hasUsed:rec.used.length>0,hist},
+        strip:{ok:rec.st==='onayli',pend:rec.st==='taslak'&&!!rec.pending,pendT:'Onay bekliyor · '+rec.mBy+', '+D.fmt(rec.mAt,'tr',true)+' tarihinde onaya gönderdi.',ret:rec.st==='emekli',retT:'Bu yanıt '+D.fmt(rec.retAt||rec.mAt,'tr')+' tarihinde emekliye ayrıldı; yeni adımlarda seçilemez.'},
+        act:{editDraft:canEdit&&rec.st==='taslak'&&!rec.pending,manage:canEdit,approve:A.perm==='approve',sod,sodT:sod?'Bu kaydı siz yazdınız; başka bir onaylayıcı onaylamalı.':'',op:sod?.5:1,cur:sod?'not-allowed':'pointer'},
+        editIt:()=>A.set({view:'edit'}),sendIt:()=>{if(A.failSave){A.toast('Gönderilemedi. Yeniden deneyin.');return}A.updObj(rec.id,{pending:true,mAt:NOW,mBy:A.me.n});A.toast('Yanıt onaya gönderildi.')},
+        approveIt:()=>{if(sod)return;A.updObj(rec.id,{st:'onayli',pending:false,apBy:A.me.n,apAt:NOW,mBy:A.me.n,mAt:NOW});A.toast('Yanıt onaylandı.')},
+        rejectIt:()=>{A.updObj(rec.id,{pending:false,mBy:A.me.n,mAt:NOW});A.toast('Yanıt yazara taslak olarak geri gönderildi.')},
+        askRetire:()=>this.setState({dlg:true}),retireIt:()=>{A.updObj(rec.id,{st:'emekli',retBy:A.me.n,retAt:NOW,mBy:A.me.n,mAt:NOW});this.setState({dlg:false});A.toast('Yanıt emekliye ayrıldı.')},
+        copyIt:()=>this.copy(rec)});
+    } else Object.assign(v,{d:{st:{},cat:{},claims:[],used:[],hist:[],refs:[]},strip:{},act:{}});
+    return v;
+  }
+  copy(o){const A=this.A;const id=A.addObj({p:o.p,cat:o.cat,q:o.q,q_ar:o.q_ar,a:o.a,claims:[...o.claims],used:[],st:'taslak',by:A.me.n,at:NOW,mBy:A.me.n,mAt:NOW});A.set({view:'edit',id});A.toast('Kopyadan yeni taslak oluşturuldu.')}
+}
+</script>
+</body>
+</html>

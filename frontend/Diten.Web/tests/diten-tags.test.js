@@ -484,6 +484,28 @@ describe("the box SAYS what to do in it", () => {
 
 // ── l10n ────────────────────────────────────────────────────────────────────
 
+/*
+ * WP-LANE-GUARDS-02 — SharedResource keys that exist in en / tr only. Measured 2026-10-13 at 80ff5d7bf, every use
+ * named: these are said by platform screens only (PlatformNavigationCatalog, Views / Controllers / js under
+ * Platform/), and platform modules are two languages. The test below holds that.
+ */
+const PLATFORM_ONLY_KEYS = [
+  "AddModule", "AddNotificationSettings", "AddNotificationTemplate", "AddSubscriptionPlan", "AddTenant",
+  "AddWorkingCalendar", "AdminBulkDeletePartial", "AdminBulkDuplicateIds", "AdminChangeUnavailable",
+  "AdminEmailImmutable", "AdminLastSuperAdminDenied", "AdminSeedDeleteDenied", "AdminSeedEmailChangeDenied",
+  "AdminSeedSuspendDenied", "AdminSelfActionDenied", "AdminSelfRoleDowngradeDenied", "AuditLogMenu",
+  "AuditRetentionMenu", "BaselineCannotBeDeactivated", "DomainCodeInUse", "DomainManagement", "InterfaceRegistry",
+  "ModuleCatalog", "ModuleManagedByCode", "NotificationDispatchesMenu", "NotificationEventsMenu",
+  "NotificationSettingsMenu", "NotificationTemplatesMenu", "PlatformAdministrators", "ServiceCodeInUse",
+  "ServiceManagement", "SubscriptionFeatures", "TenantManagementMenu", "WorkingCalendarsMenu"
+];
+// …and what is left of the debt: a key missing in five languages that no screen says. Named, with why. (Activate,
+// Deactivate and Login.EmailOrUsername were here — tenant screens say them — and are now in all seven: WP-LANE-GUARDS-02.)
+const SHARED_OWNER = "CT (SharedResource)";
+const TENANT_GAP = {
+  "InvitationEmailSendFailed": { owner: SHARED_OWNER, why: "hiçbir dosya söylemiyor (ölçüldü); silinmeli" }
+};
+
 describe("the component's strings live in ONE place", () => {
   const LOCALES = ["en", "fr", "es", "zh", "ar", "ru", "tr"];
   const KEYS = ["TagsPlaceholder", "TagsCount", "TagsRemove"];
@@ -538,10 +560,41 @@ describe("the component's strings live in ONE place", () => {
       expect(new Set(keys).size, `${locale} contains duplicate keys`).toBe(keys.length);
     });
 
-    // The pre-existing gap, pinned at its measured size. A NEW key added to en/tr alone widens it and fails here.
-    const missing = LOCALES.filter((l) => l !== "en")
-      .map((l) => keysOf("en").filter((k) => !keysOf(l).includes(k)).length);
-    expect(Math.max(...missing), "the pre-existing SharedResource gap grew").toBeLessThanOrEqual(33);
+    /*
+     * WP-LANE-GUARDS-02 — the pre-existing gap, pinned by NAME (it was a count, 33, and a count cannot say whose a
+     * key is: it read 38 when five platform-administrator sentences arrived, and 33 again would have hidden a tenant
+     * key replacing a platform one). tr carries every key; the other five lack exactly these.
+     */
+    const english = keysOf("en");
+    expect(english.filter((k) => !keysOf("tr").includes(k)), "tr lacks a SharedResource key").toEqual([]);
+    ["fr", "es", "zh", "ar", "ru"].forEach((locale) => {
+      expect(english.filter((k) => !keysOf(locale).includes(k)).sort(), `the ${locale} gap is not the named one`)
+        .toEqual([...PLATFORM_ONLY_KEYS, ...Object.keys(TENANT_GAP)].sort());
+    });
+  });
+
+  test("WP-LANE-GUARDS-02: a key allowed in two languages is used by platform screens only", () => {
+    // Platform modules are two languages (en, tr; AGENTS.md): a key may skip the other five ONLY while no tenant
+    // screen says it. A tenant page reaching one of these would show English in fr / es / zh / ar / ru — red here.
+    const files = [];
+    const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).forEach((e) => {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { if (!["vendor", "node_modules", "bin", "obj", "Resources", "tests"].includes(e.name)) { walk(p); } }
+      else if (/\.(cs|cshtml|js)$/.test(e.name)) { files.push(p); }
+    });
+    ["Views", "Controllers", "Navigation", path.join("wwwroot", "assets", "js")].forEach((d) => walk(web(d)));
+    const PLATFORM = /^(Views\/Platform\/|Controllers\/Platform\/|wwwroot\/assets\/js\/Platform\/|Navigation\/PlatformNavigationCatalog\.cs$)/;
+    const outside = [];
+    files.forEach((f) => {
+      const rel = path.relative(web(), f).split(path.sep).join("/");
+      if (PLATFORM.test(rel)) { return; }
+      const source = fs.readFileSync(f, "utf8");
+      PLATFORM_ONLY_KEYS.forEach((key) => {
+        if (new RegExp(`["'\\[]${key.replace(".", "\\.")}["'\\]]`).test(source)) { outside.push(`${key} ← ${rel}`); }
+      });
+    });
+    expect(outside, "a two-language key is said on a tenant screen").toEqual([]);
+    expect(Object.values(TENANT_GAP).filter((row) => !row || !row.owner || !row.why), "a tenant gap row without owner or reason").toEqual([]);
   });
 
   test("the strings reach the browser through ONE bridge, rendered by the layout", () => {

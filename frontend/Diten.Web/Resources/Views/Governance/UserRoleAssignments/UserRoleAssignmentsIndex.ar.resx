@@ -4,14 +4,14 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="Title" xml:space="preserve"><value>User Roles</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Assign or remove roles for a user.</value></data>
-  <data name="SelectUser" xml:space="preserve"><value>User</value></data>
+  <data name="Title" xml:space="preserve"><value>أدوار المستخدمين</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>أسند الأدوار إلى مستخدم أو أزِلها.</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>المستخدم</value></data>
   <data name="SearchRoles" xml:space="preserve"><value>اسم الدور أو الرمز…</value></data>
-  <data name="SelectUserPrompt" xml:space="preserve"><value>Select a user to manage their roles.</value></data>
-  <data name="NoRoles" xml:space="preserve"><value>No roles are available.</value></data>
-  <data name="Assign" xml:space="preserve"><value>Assign</value></data>
-  <data name="Assigned" xml:space="preserve"><value>Assigned</value></data>
+  <data name="SelectUserPrompt" xml:space="preserve"><value>اختر مستخدمًا لإدارة أدواره.</value></data>
+  <data name="NoRoles" xml:space="preserve"><value>لا توجد أدوار متاحة.</value></data>
+  <data name="Assign" xml:space="preserve"><value>إسناد</value></data>
+  <data name="Assigned" xml:space="preserve"><value>مُسند</value></data>
   <data name="SearchRolesLabel" xml:space="preserve"><value>البحث في الأدوار</value></data>
   <data name="FilterAll" xml:space="preserve"><value>الكل</value></data>
   <data name="FilterAssigned" xml:space="preserve"><value>المسندة</value></data>
@@ -29,4 +29,14 @@
   <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
   <data name="PermissionCountFormat" xml:space="preserve"><value>{0} إذن</value></data>
   <data name="RolesShownFormat" xml:space="preserve"><value>عرض {0} دور</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>تعذّر التحقق من جلستك. سجّل الدخول من جديد ثم أعد المحاولة.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>هذا الدور لم يعد موجودًا. حدّث الصفحة.</value>
+  </data>
+  <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
+    <value>هذا المستخدم لم يعد موجودًا. حدّث الصفحة.</value>
+  </data>
+  <data name="ErrorUserRoleRevokeLastSteward" xml:space="preserve"><value>إزالة هذا الدور لن تترك أي حساب نشط آخر يمكنه إضافة المستخدمين. امنح هذا الحق لمستخدم آخر أولاً.</value></data>
 </root>

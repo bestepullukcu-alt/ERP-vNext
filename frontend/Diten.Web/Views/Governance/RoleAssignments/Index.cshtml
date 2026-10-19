@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<RoleAssignmentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
-@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["Title"].Value;
     Layout = "_LayoutTenantShell";
@@ -30,7 +29,10 @@
 
     ⚠ Display only. AuthService's [HasPermission("auth.roles.assign-permission")] remains the authority (UAS-001 §4).
 *@
-@if (!Perms.Has("auth.roles.assign-permission"))
+@* WP-URA-FIX-01 FIX1 — the SAME reader as the controller (PermissionClaims): "*", a "permissions" claim and a
+   comma-separated list count the same here as there, so the status code and the face can never disagree. The UX
+   snapshot (Perms) reads only exact "permission" claims. Same rule as GlobalProducts (EK item 11, FIX5). *@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "auth.roles.assign-permission"))
 {
     <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
     return;
@@ -255,5 +257,6 @@
     <script src="~/assets/js/Governance/RoleAssignments/index.l10n.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, E2 — this page's own searchable-dropdown adapter now delegates here. *@
     <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-refusal.js" asp-append-version="true"></script>
     <script src="~/assets/js/Governance/RoleAssignments/index.js" asp-append-version="true"></script>
 }

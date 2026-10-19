@@ -40,7 +40,10 @@ public sealed record ContactPeriodStatusRequest(
     IReadOnlyCollection<Guid> ContactIds,
     DateOnly Today,
     DateTimeOffset At,
-    IReadOnlyCollection<ContactEntity>? KnownContacts = null);
+    IReadOnlyCollection<ContactEntity>? KnownContacts = null,
+    // WP-VP-4M (1) — the SELECTED week (its Monday): "due this week" is read for it and plannedThisWeek is said; null =
+    // today's week (the 3D behaviour) and no plannedThisWeek.
+    DateOnly? WeekStart = null);
 
 /// <summary>
 /// WP-VP-3D (B-6, B-9) — the SHARED reader of "where does each doctor stand in the rep's period": required / done /
@@ -134,8 +137,9 @@ public sealed class ContactPeriodStatusReader
             var freq = frequency.GetValueOrDefault(contactId);
             result[contactId] = Compose(
                 contactId, mine, reportByPlan, request.Period, request.Today, freq,
-                Badges(segments, contactId), consent.GetValueOrDefault(contactId),
-                contacts.TryGetValue(contactId, out var contact) && VisitTargetNameReader.IsInactiveStatus(contact.Status));
+                SegmentBadges(segments, contactId), consent.GetValueOrDefault(contactId),
+                contacts.TryGetValue(contactId, out var contact) && VisitTargetNameReader.IsInactiveStatus(contact.Status),
+                request.WeekStart);
         }
 
         return result;
@@ -151,7 +155,8 @@ public sealed class ContactPeriodStatusReader
         VisitFrequencyResolveResult? frequency,
         IReadOnlyList<string> badges,
         string? consentStatus,
-        bool inactive)
+        bool inactive,
+        DateOnly? weekStart = null)
     {
         // Cancelled / archived plans never count — not as done, not as planned, not as the last visit.
         var counting = plans.Where(p => !p.IsCancelled() && !p.IsArchived()).ToList();
@@ -180,6 +185,7 @@ public sealed class ContactPeriodStatusReader
         int? required = period is null ? null : RequiredInPeriod(frequency, period);
         int? remaining = required is { } req && period is not null ? Math.Max(0, req - done - planned) : null;
 
+        var unknown = IsUnknown(frequency);
         return new ContactPeriodStatusDto(
             contactId,
             required,
@@ -190,31 +196,59 @@ public sealed class ContactPeriodStatusReader
             remaining,
             lastVisit,
             NeverVisited: completed.Count == 0,
-            DueThisWeek: IsDueThisWeek(remaining, required, period, lastInPeriod, today),
+            DueThisWeek: IsDueThisWeek(remaining, required, period, lastInPeriod, ReferenceDay(weekStart, today, period)),
             badges,
             consentStatus,
-            inactive);
+            inactive)
+        {
+            FrequencyDefault = unknown ? FrequencyDefaults.Weekly : null,
+            // WP-VP-4L (2) — an extra visit counts as done / planned; what goes beyond the requirement is said, remaining
+            // never drops under 0.
+            OverFrequency = required is { } over && period is not null ? Math.Max(0, done + planned - over) : 0,
+            // WP-VP-4M (2) — a WRITTEN (planned / approved, not cancelled / archived) visit in the selected week; a draft
+            // week's visits live in the preview only, so they are not counted here. Null without a selected week.
+            PlannedThisWeek = weekStart is { } ws
+                ? counting.Any(p => p.PlannedDate >= ws && p.PlannedDate <= ws.AddDays(6))
+                : null
+        };
     }
 
-    /// <summary>CT fix on merge with WP-VP-3A — the SAME rule as the planning engine (<see cref="FrequencyExtendPlanner"/>):
-    /// the policy count × its period-type units in the period; no count / unknown cadence ⇒ one visit per period.</summary>
-    public static int RequiredInPeriod(VisitFrequencyResolveResult? frequency, ContactStatusPeriod period)
+    /// <summary>WP-VP-4M (1) — the day "this week" is read on: the selected week's Monday (its first day inside the period
+    /// when the period starts mid-week), else today (the 3D behaviour).</summary>
+    public static DateOnly ReferenceDay(DateOnly? weekStart, DateOnly today, ContactStatusPeriod? period)
     {
-        if (frequency?.RequiredVisitCount is not { } count || count <= 0
-            || string.Equals(frequency.FrequencyStatus, FrequencyStatus.Unknown, StringComparison.Ordinal))
+        if (weekStart is not { } ws)
         {
-            return FrequencyRequirement.Unknown.RequiredInPeriod;
+            return today;
         }
 
-        return count * FrequencyExtendPlanner.UnitsIn(frequency.PeriodType, period.Frame);
+        return period is not null && ws < period.Start && period.Start <= ws.AddDays(6) ? period.Start : ws;
+    }
+
+    private static bool IsUnknown(VisitFrequencyResolveResult? frequency)
+        => frequency?.RequiredVisitCount is not > 0
+           || string.Equals(frequency.FrequencyStatus, FrequencyStatus.Unknown, StringComparison.Ordinal);
+
+    /// <summary>CT fix on merge with WP-VP-3A — the SAME rule as the planning engine (<see cref="FrequencyExtendPlanner"/>):
+    /// the policy count × its period-type units in the period; WP-VP-4L (1) — no count / unknown cadence ⇒ the weekly
+    /// default, through the ONE helper the engine uses (<see cref="FrequencyDefaults.UnknownRequiredInPeriod"/>).</summary>
+    public static int RequiredInPeriod(VisitFrequencyResolveResult? frequency, ContactStatusPeriod period)
+    {
+        if (IsUnknown(frequency))
+        {
+            return FrequencyDefaults.UnknownRequiredInPeriod(period.Frame);
+        }
+
+        return frequency!.RequiredVisitCount!.Value * FrequencyExtendPlanner.UnitsIn(frequency.PeriodType, period.Frame);
     }
 
     /// <summary>
     /// <b>dueThisWeek</b> (B-6, documented rule). Even distribution: the period's weeks divided by the required count is
     /// the STRIDE — how many weeks may pass between two visits.
     /// <list type="number">
-    /// <item>Not due when nothing remains (remaining ≤ 0), the frequency is unknown, there is no period, or today is
-    /// outside it.</item>
+    /// <item>Not due when nothing remains (remaining ≤ 0), there is no requirement at all (required null — a frequency that
+    /// could not be resolved to a number), there is no period, or the reference day is outside it. WP-VP-4L/4M — an unknown
+    /// frequency HAS a requirement now (the weekly default), so such a doctor is due like any other.</item>
     /// <item>No completed visit in the period yet ⇒ due (the period's first slot is its first week — the engine's base
     /// week, <c>FrequencyExtendPlanner</c> week 0 — so every week from the start counts).</item>
     /// <item>Otherwise due when the whole weeks between the last completed visit's week (Monday) and this week (Monday)
@@ -244,7 +278,9 @@ public sealed class ContactPeriodStatusReader
     /// <summary>The Monday of the ISO week containing <paramref name="date"/>.</summary>
     public static DateOnly WeekStart(DateOnly date) => date.AddDays(-(((int)date.DayOfWeek + 6) % 7));
 
-    private static IReadOnlyList<string> Badges(ContactSegmentSet segments, Guid contactId)
+    /// <summary>The doctor's segment badges: the names of their active segments, alphabetical, at most
+    /// <see cref="MaxSegmentBadges"/>. W2-BE-d — public: the visit workspace cards show the SAME badges.</summary>
+    public static IReadOnlyList<string> SegmentBadges(ContactSegmentSet segments, Guid contactId)
         => segments.For(contactId)
             .Select(id => segments.SegmentNames.GetValueOrDefault(id))
             .Where(name => !string.IsNullOrWhiteSpace(name))

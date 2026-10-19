@@ -64,6 +64,12 @@ izin yazma üyesini çağırıyor.
 ⚠ **Dar tür yaz.** Test, aradaki türün *o komut için* yazıcıyı çağırdığını göremez. `üzerinden` sütununa bir depo ya da
 her şeyi yapan genel bir servis yazılırsa, o türe dokunan her komut sahte kredi alır.
 
+⚠ **Bilinen sınır — kanıt TÜR başınadır.** Aynı tür birden çok komuta hizmet ediyorsa (ör. MDM'de bir kimlik işlemcisi
+hem `Start…Workflow` hem `Withdraw…Approval` komutunun `üzerinden`'i), testin sorusu "bu tür izin yazma üyelerinden
+BİRİNİ çağırıyor mu"dur: bir komutun yolundaki yazım silinse de diğer komutun yazımı türü yeşil tutar. Belirteç `/`
+(biri) ile birçok üye taşıdığında sınır genişler. Ölçüm mantığı bunu bugün ayırmaz (WP-MDM-SETTLE-CAP-01 FIX1 M6);
+daraltmak için iki ayrı iz (başlatma yazıcıları / geri çekme yazıcıları) önerilebilir — Control Tower kararı.
+
 ### `## Bilinen borç` — denetlenmeyen komutlar
 
 **Yalnız küçülür.** Bir komutu denetlediğinde ya da sildiğinde satırını çıkar **ve** testteki sabit sayıyı düşür.

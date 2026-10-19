@@ -7,6 +7,7 @@
     <!-- BL-395: Persistence/LockProofChild.cs supplies Main, so the machine-wide Mongo test lock can be proved from
          a second real process (dotnet Diten.Platform.Application.Tests.dll lock-proof …). vstest never calls Main. -->
     <GenerateProgramFile>false</GenerateProgramFile>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,5 +36,10 @@
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.InterfaceRegistry.Abstractions\Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj" />
     <!-- BL-501: the receiving side is tested with the shared forwarder's own client (Audit/CentralAuditAppendMongoTests). -->
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.CentralAudit\Diten.BuildingBlocks.CentralAudit.csproj" />
+  </ItemGroup>
+  <!-- WP-CT-LANE-MAIN-SYNC-01 (CT decision C): the ONE source of the Platform tests' Mongo, linked into the three
+       Platform test projects (they do not reference each other). -->
+  <ItemGroup>
+    <Compile Include="..\Shared\PlatformTestMongo.cs" Link="Shared\PlatformTestMongo.cs" />
   </ItemGroup>
 </Project>

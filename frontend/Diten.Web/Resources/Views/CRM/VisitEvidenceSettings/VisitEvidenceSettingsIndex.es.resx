@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Evidencias de visita</value></data>
+  <data name="Crumb" xml:space="preserve"><value>Ajustes de CRM / Visita</value></data>
+  <data name="Intro" xml:space="preserve"><value>Las reglas de «Iniciar visita» del representante. El ajuste del inquilino se aplica a todos los representantes; una excepción temporal lo flexibiliza para un representante durante un tiempo.</value></data>
+  <data name="NewException" xml:space="preserve"><value>Nueva excepción</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>Ajustes por ámbito</value></data>
+  <data name="TabExceptions" xml:space="preserve"><value>Excepciones temporales</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Tiene acceso de solo lectura; los ajustes no se pueden cambiar.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>Ámbitos</value></data>
+  <data name="ScopesNote" xml:space="preserve"><value>Prioridad: unidad de negocio › entidad legal › inquilino</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Predeterminado del inquilino</value></data>
+  <data name="Locked" xml:space="preserve"><value>No se puede eliminar</value></data>
+  <data name="AddLegalEntity" xml:space="preserve"><value>Añadir entidad legal</value></data>
+  <data name="AddLegalEntityHint" xml:space="preserve"><value>Los niveles de entidad legal y unidad de negocio se abren cuando se vinculan el puesto y la asignación de territorio del representante.</value></data>
+  <data name="LookTitle" xml:space="preserve"><value>Ver el ajuste efectivo de un representante</value></data>
+  <data name="LookSearch" xml:space="preserve"><value>Buscar representante</value></data>
+  <data name="EffectiveTitle" xml:space="preserve"><value>Ajuste efectivo</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="ColField" xml:space="preserve"><value>Campo</value></data>
+  <data name="ColValue" xml:space="preserve"><value>Valor efectivo</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Origen</value></data>
+  <data name="Priority" xml:space="preserve"><value>Prioridad:</value></data>
+  <data name="SourceException" xml:space="preserve"><value>Excepción</value></data>
+  <data name="SourceTenant" xml:space="preserve"><value>Inquilino</value></data>
+  <data name="ScopeUnresolved" xml:space="preserve"><value>Los niveles de entidad legal y unidad de negocio aún no están vinculados.</value></data>
+  <data name="TypeTenant" xml:space="preserve"><value>Inquilino</value></data>
+  <data name="PaneForm" xml:space="preserve"><value>Formulario</value></data>
+  <data name="PaneHistory" xml:space="preserve"><value>Historial de cambios</value></data>
+  <data name="SoonTitle" xml:space="preserve"><value>Evidencias adicionales</value></data>
+  <data name="SoonText" xml:space="preserve"><value>Aquí se añadirán el código QR de la institución y el control de ubicación falsa.</value></data>
+  <data name="SoonBadge" xml:space="preserve"><value>Próximamente</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Un representante de este ámbito verá</value></data>
+  <data name="PvStartTitle" xml:space="preserve"><value>Iniciar visita</value></data>
+  <data name="PvSample" xml:space="preserve"><value>Visita de ejemplo · institución · hora</value></data>
+  <data name="PvPhoto" xml:space="preserve"><value>Foto</value></data>
+  <data name="PvLocation" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="PvSign" xml:space="preserve"><value>Aprobación del médico · se pide al final de la visita</value></data>
+  <data name="PvStart" xml:space="preserve"><value>Iniciar presentación</value></data>
+  <data name="LastChange" xml:space="preserve"><value>Último cambio</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>Hay cambios sin guardar</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Guardar</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historial · Predeterminado del inquilino</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Registro de auditoría · solo lectura</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Fecha</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Persona</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Valor anterior → nuevo</value></data>
+  <data name="ExceptionsInfo" xml:space="preserve"><value>Una excepción no es un ajuste permanente: flexibiliza las reglas para un representante, con un motivo, durante 30 días como máximo. Solo se aplica una excepción aprobada y dentro de sus fechas. Las visitas iniciadas con una excepción se marcan como «iniciada con excepción» en la vista del responsable.</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>Excepciones temporales</value></data>
+  <data name="XColRep" xml:space="preserve"><value>Representante</value></data>
+  <data name="XColRules" xml:space="preserve"><value>Reglas flexibilizadas</value></data>
+  <data name="XColRange" xml:space="preserve"><value>Rango de fechas</value></data>
+  <data name="XColReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="XColPeople" xml:space="preserve"><value>Creado / aprobado por</value></data>
+  <data name="XColStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="OpenRow" xml:space="preserve"><value>Abrir</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>¿Guardar los cambios?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Guardar y aplicar</value></data>
+  <data name="XNewTitle" xml:space="preserve"><value>Nueva excepción temporal</value></data>
+  <data name="XRep" xml:space="preserve"><value>Representante</value></data>
+  <data name="XRules" xml:space="preserve"><value>Reglas a flexibilizar</value></data>
+  <data name="XRulesHint" xml:space="preserve"><value>Los umbrales (distancia, precisión, visita corta) no se pueden cambiar con una excepción.</value></data>
+  <data name="XFrom" xml:space="preserve"><value>Inicio</value></data>
+  <data name="XTo" xml:space="preserve"><value>Fin</value></data>
+  <data name="XReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="XReasonPlaceholder" xml:space="preserve"><value>p. ej. El módulo GPS de la tableta está averiado; se espera el cambio de dispositivo (n.º de solicitud de TI).</value></data>
+  <data name="XSodNew" xml:space="preserve"><value>Separación de funciones: no puede aprobar usted mismo esta excepción. Una vez enviada, otra persona la aprueba en el Centro de tareas y se aplica dentro de sus fechas.</value></data>
+  <data name="XSubmit" xml:space="preserve"><value>Enviar a aprobación</value></data>
+  <data name="XDetailTitle" xml:space="preserve"><value>Detalle de la excepción</value></data>
+  <data name="F_locationMode" xml:space="preserve"><value>Control de ubicación</value></data>
+  <data name="F_radiusMeters" xml:space="preserve"><value>Distancia permitida</value></data>
+  <data name="F_maxAccuracyMeters" xml:space="preserve"><value>Precisión mínima de ubicación</value></data>
+  <data name="F_accountWithoutLocation" xml:space="preserve"><value>Institución sin ubicación</value></data>
+  <data name="F_photoMode" xml:space="preserve"><value>Foto</value></data>
+  <data name="F_doctorConfirmation" xml:space="preserve"><value>Aprobación del médico (firma)</value></data>
+  <data name="F_durationConsistency" xml:space="preserve"><value>Coherencia de duración</value></data>
+  <data name="F_shortVisitSeconds" xml:space="preserve"><value>Umbral de visita corta</value></data>
+  <data name="D_locationMode_required" xml:space="preserve"><value>Obligatorio: el representante no puede iniciar la visita si no está cerca de la institución.</value></data>
+  <data name="D_locationMode_info" xml:space="preserve"><value>Información: la ubicación se registra; la visita siempre se puede iniciar.</value></data>
+  <data name="D_accountWithoutLocation" xml:space="preserve"><value>Cuando el registro de la institución no tiene coordenadas</value></data>
+  <data name="D_photoMode" xml:space="preserve"><value>Entrada de la institución o sala de espera; no se fotografían caras (protección de datos).</value></data>
+  <data name="D_doctorConfirmation" xml:space="preserve"><value>Una firma o un toque de aprobación en la tableta al final de la visita. Siempre se pide al solicitar muestras.</value></data>
+  <data name="Opt_locationMode_required" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="Opt_locationMode_info" xml:space="preserve"><value>Información</value></data>
+  <data name="Opt_photoMode_required" xml:space="preserve"><value>Obligatoria</value></data>
+  <data name="Opt_photoMode_optional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="Opt_accountWithoutLocation_allow_flagged" xml:space="preserve"><value>Iniciar y marcar</value></data>
+  <data name="Opt_accountWithoutLocation_block" xml:space="preserve"><value>Bloquear</value></data>
+  <data name="R_radiusMeters" xml:space="preserve"><value>50–5000 m · predeterminado del inquilino 300</value></data>
+  <data name="R_maxAccuracyMeters" xml:space="preserve"><value>10–1000 m · predeterminado del inquilino 150</value></data>
+  <data name="R_shortVisitSeconds" xml:space="preserve"><value>30–1800 s · una visita más corta se marca.</value></data>
+  <data name="G_location" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="G_photo" xml:space="preserve"><value>Foto</value></data>
+  <data name="G_approval" xml:space="preserve"><value>Aprobación y duración</value></data>
+  <data name="ValueOn" xml:space="preserve"><value>Activado</value></data>
+  <data name="ValueOff" xml:space="preserve"><value>Desactivado</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="UnitSeconds" xml:space="preserve"><value>{0} s</value></data>
+  <data name="UnitM" xml:space="preserve"><value>m</value></data>
+  <data name="UnitS" xml:space="preserve"><value>s</value></data>
+  <data name="RangeError" xml:space="preserve"><value>Debe estar entre {0} y {1} {2}.</value></data>
+  <data name="PvRequired" xml:space="preserve"><value>obligatorio</value></data>
+  <data name="PvOptional" xml:space="preserve"><value>opcional</value></data>
+  <data name="PvInfo" xml:space="preserve"><value>información</value></data>
+  <data name="PvLocationRequired" xml:space="preserve"><value>Debe estar a menos de {0} m de la institución.</value></data>
+  <data name="PvLocationInfo" xml:space="preserve"><value>Se registra como información.</value></data>
+  <data name="PvOpenBoth" xml:space="preserve"><value>«Iniciar presentación» se activa al tomar la foto y estar el representante a menos de {0} m de la institución.</value></data>
+  <data name="PvOpenLocation" xml:space="preserve"><value>«Iniciar presentación» se activa cuando el representante está a menos de {0} m de la institución.</value></data>
+  <data name="PvOpenPhoto" xml:space="preserve"><value>«Iniciar presentación» se activa al tomar la foto.</value></data>
+  <data name="PvOpenNone" xml:space="preserve"><value>«Iniciar presentación» está disponible de inmediato; la ubicación y la foto se registran como información.</value></data>
+  <data name="PvAccuracy" xml:space="preserve"><value>Una ubicación con precisión peor que {0} m se considera no válida.</value></data>
+  <data name="PvNoLocationFlag" xml:space="preserve"><value>En una institución sin coordenadas la visita se inicia y se marca.</value></data>
+  <data name="PvNoLocationBlock" xml:space="preserve"><value>En una institución sin coordenadas la visita no se puede iniciar.</value></data>
+  <data name="PvShort" xml:space="preserve"><value>Las visitas de menos de {0} s se marcan.</value></data>
+  <data name="Reps" xml:space="preserve"><value>{0} representantes</value></data>
+  <data name="AllFields" xml:space="preserve"><value>Todos los campos completos</value></data>
+  <data name="DefaultPolicy" xml:space="preserve"><value>Valores predeterminados · aún no guardados</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>Usted</value></data>
+  <data name="WorkflowActor" xml:space="preserve"><value>Flujo de aprobación</value></data>
+  <data name="SaveText" xml:space="preserve"><value>El cambio se aplica de inmediato a los {0} representantes de este ámbito.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Ajustes guardados; aplicados a {0} representantes.</value></data>
+  <data name="LookPlaceholder" xml:space="preserve"><value>Elija un representante</value></data>
+  <data name="ActiveException" xml:space="preserve"><value>Excepción activa: {0} · hasta el {1}</value></data>
+  <data name="SourceExceptionUntil" xml:space="preserve"><value>Excepción · hasta el {0}</value></data>
+  <data name="HistCreated" xml:space="preserve"><value>Ajuste creado</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Aún no hay cambios registrados; se aplican los valores predeterminados.</value></data>
+  <data name="XFilter_all" xml:space="preserve"><value>Todas</value></data>
+  <data name="XFilter_active" xml:space="preserve"><value>Activas</value></data>
+  <data name="XFilter_planned" xml:space="preserve"><value>Planificadas</value></data>
+  <data name="XFilter_in_review" xml:space="preserve"><value>Pendientes de aprobación</value></data>
+  <data name="XFilter_draft" xml:space="preserve"><value>Borradores</value></data>
+  <data name="XFilter_expired" xml:space="preserve"><value>Vencidas</value></data>
+  <data name="XFilter_cancelled" xml:space="preserve"><value>Canceladas</value></data>
+  <data name="XFilter_ended_early" xml:space="preserve"><value>Finalizadas antes</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>Control de ubicación: Información</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>Foto: Opcional</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>Institución sin ubicación: Iniciar</value></data>
+  <data name="XSt_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="XSt_in_review" xml:space="preserve"><value>Pendiente de aprobación</value></data>
+  <data name="XSt_active" xml:space="preserve"><value>Activa</value></data>
+  <data name="XSt_planned" xml:space="preserve"><value>Planificada</value></data>
+  <data name="XSt_expired" xml:space="preserve"><value>Vencida</value></data>
+  <data name="XSt_cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="XSt_ended_early" xml:space="preserve"><value>Finalizada antes</value></data>
+  <data name="XDays" xml:space="preserve"><value>{0} días</value></data>
+  <data name="XCreatedBy" xml:space="preserve"><value>Creada por: {0}</value></data>
+  <data name="XApprovedBy" xml:space="preserve"><value>Aprobada por: {0}</value></data>
+  <data name="XEmpty" xml:space="preserve"><value>No hay excepciones en esta vista.</value></data>
+  <data name="XDetailRules" xml:space="preserve"><value>Reglas flexibilizadas</value></data>
+  <data name="XDetailRange" xml:space="preserve"><value>Rango de fechas</value></data>
+  <data name="XDetailReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="XInReviewNote" xml:space="preserve"><value>Pendiente de aprobación en el Centro de tareas.</value></data>
+  <data name="XSod" xml:space="preserve"><value>Usted creó, editó o envió esta excepción; otra persona debe aprobarla.</value></data>
+  <data name="XReturnComment" xml:space="preserve"><value>Nota para el autor</value></data>
+  <data name="XCloseReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="TlCreated" xml:space="preserve"><value>Creada</value></data>
+  <data name="TlSubmitted" xml:space="preserve"><value>Enviada a aprobación</value></data>
+  <data name="TlApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="TlReturned" xml:space="preserve"><value>Devuelta a borrador</value></data>
+  <data name="TlWithdrawn" xml:space="preserve"><value>Retirada</value></data>
+  <data name="TlTimedOut" xml:space="preserve"><value>Aprobación vencida</value></data>
+  <data name="TlCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="TlEndedEarly" xml:space="preserve"><value>Finalizada antes</value></data>
+  <data name="TlRefused_visit_evidence_exception_sod" xml:space="preserve"><value>Devuelta: quien aprobó era su creador o remitente</value></data>
+  <data name="TlRefused_visit_evidence_exception_overlap" xml:space="preserve"><value>Devuelta: ahora se solapa con otra excepción</value></data>
+  <data name="XBtnSubmit" xml:space="preserve"><value>Enviar a aprobación</value></data>
+  <data name="XBtnWithdraw" xml:space="preserve"><value>Retirar</value></data>
+  <data name="XBtnApprove" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="XBtnReturn" xml:space="preserve"><value>Devolver a borrador</value></data>
+  <data name="XBtnCancel" xml:space="preserve"><value>Cancelar excepción</value></data>
+  <data name="XBtnEndEarly" xml:space="preserve"><value>Finalizar antes</value></data>
+  <data name="XBtnConfirmReturn" xml:space="preserve"><value>Confirmar devolución</value></data>
+  <data name="XBtnConfirmCancel" xml:space="preserve"><value>Confirmar cancelación</value></data>
+  <data name="XBtnConfirmEndEarly" xml:space="preserve"><value>Confirmar finalización anticipada</value></data>
+  <data name="XSubmitted" xml:space="preserve"><value>Excepción enviada a aprobación.</value></data>
+  <data name="XWithdrawn" xml:space="preserve"><value>Se retiró la aprobación; la excepción vuelve a ser borrador.</value></data>
+  <data name="XApprovedToast" xml:space="preserve"><value>Decisión enviada; la excepción se aprueba al cerrarse el flujo.</value></data>
+  <data name="XReturnedToast" xml:space="preserve"><value>Devuelta al autor.</value></data>
+  <data name="XCancelledToast" xml:space="preserve"><value>Excepción cancelada.</value></data>
+  <data name="XEndedToast" xml:space="preserve"><value>Excepción finalizada antes; termina hoy.</value></data>
+  <data name="XCreatedNotSent" xml:space="preserve"><value>Guardada como borrador pero no enviada a aprobación: {0}</value></data>
+  <data name="XRuleNoRep" xml:space="preserve"><value>Elija primero un representante.</value></data>
+  <data name="XRuleAlready" xml:space="preserve"><value>Este representante ya tiene {0} ({1}).</value></data>
+  <data name="XRuleNow" xml:space="preserve"><value>Ahora: {0} · {1}</value></data>
+  <data name="XDayCounter" xml:space="preserve"><value>{0} días · como máximo {1} días</value></data>
+  <data name="XDayCounterEmpty" xml:space="preserve"><value>Como máximo {0} días</value></data>
+  <data name="XErrRep" xml:space="preserve"><value>Elija un representante.</value></data>
+  <data name="XErrRules" xml:space="preserve"><value>Elija al menos una regla.</value></data>
+  <data name="XErrFrom" xml:space="preserve"><value>Elija una fecha de inicio.</value></data>
+  <data name="XErrPast" xml:space="preserve"><value>El inicio no puede estar en el pasado.</value></data>
+  <data name="XErrToRequired" xml:space="preserve"><value>La fecha de fin es obligatoria; no hay excepciones sin fin.</value></data>
+  <data name="XErrToBefore" xml:space="preserve"><value>El fin no puede ser anterior al inicio.</value></data>
+  <data name="XErrTooLong" xml:space="preserve"><value>Como máximo 30 días; el rango elegido es de {0} días.</value></data>
+  <data name="XErrWhy" xml:space="preserve"><value>Escriba un motivo.</value></data>
+  <data name="XErrWhyLong" xml:space="preserve"><value>Como máximo {0} caracteres.</value></data>
+  <data name="Err_visit_evidence_exception_invalid" xml:space="preserve"><value>La excepción no es válida: revise las reglas, las fechas (sin inicio pasado, máximo 30 días) y el motivo.</value></data>
+  <data name="Err_visit_evidence_exception_overlap" xml:space="preserve"><value>Este representante ya tiene una excepción que flexibiliza la misma regla en días solapados.</value></data>
+  <data name="Err_visit_evidence_exception_rep_unknown" xml:space="preserve"><value>El representante no tiene una asignación de territorio principal activa.</value></data>
+  <data name="Err_visit_evidence_exception_not_editable" xml:space="preserve"><value>Esta excepción no se puede cambiar en su estado actual.</value></data>
+  <data name="Err_visit_evidence_exception_sod" xml:space="preserve"><value>Separación de funciones: quien la creó o envió no puede aprobarla.</value></data>
+  <data name="Err_visit_evidence_exception_not_found" xml:space="preserve"><value>No se encontró la excepción.</value></data>
+  <data name="Err_visit_evidence_policy_invalid" xml:space="preserve"><value>Un valor está fuera de sus límites; no se guardó nada.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>Los ajustes cambiaron mientras tanto; recargue e inténtelo de nuevo.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>La plantilla del flujo de aprobación aún no está configurada. Consulte a su administrador.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>No se puede acceder al flujo de aprobación; no se cambió nada.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>No tiene permiso para hacer esto en el flujo de aprobación.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>No hay ninguna aprobación pendiente (puede que acabe de terminar).</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>La aprobación no se puede retirar ahora.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Devolver requiere una nota para el autor.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>El flujo de aprobación rechazó la solicitud.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>El registro cambió mientras tanto; recargue e inténtelo de nuevo.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>No se pudo guardar. No se puede acceder al servidor; sus cambios se conservan en esta pantalla.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>No se pudo completar la acción.</value></data>
+</root>

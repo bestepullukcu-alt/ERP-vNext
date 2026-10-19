@@ -1,0 +1,4 @@
+@using Diten.Web.Views.SupplyChain.DemandPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DemandPlanningIndex> Localizer
+<script id="demandForecastL10n" type="application/json">@Json.Serialize(Localizer.GetAllStrings(true).ToDictionary(item => item.Name, item => item.Value))</script>

@@ -4,10 +4,19 @@
 # tenant/platform-admin escalation boundary: re-attributing a permission to another module must not move a
 # single row across it. PermissionScopePreservationTests compares the seed catalog against this file in both
 # directions, so a shifted Scope AND a stale baseline both fail.
+# DECIDED CHANGE (owner + Control Tower, 2026-10-01; MOD-0018-FU24/FU25): three rows moved 1 -> 0 on purpose —
+# platform.workflow.instances.start, platform.workflow.tasks.approve, platform.workflow.tasks.reject. They are the
+# SeedOwnedTenantScopeKeys list (Domain/Authorization); no other row changed. Any further 1 -> 0 here is an
+# escalation-boundary decision, not a baseline refresh.
+# MAIN DECISION (WP-0023-FX, main 9648e046d, 2026-10-07; came with main-sync 2026-10-13): four more rows 1 -> 0 —
+# platform.workflow.instances.view, platform.workflow.tasks.cancel / delegate / request-info. Not on
+# SeedOwnedTenantScopeKeys: they move through the allowlisted, audited TenantRouteScopeCorrections (TenantApiPermission).
+# ACCEPTED by the owner 2026-10-14 (WP-LANE-MAIN-SYNC-02 A1): the seven Tenant workflow keys are pinned by name in SeedOwnedTenantScopeKeysTests.
 # key,scope   (0 = Tenant, 1 = PlatformAdmin)
 auth.roles.assign-permission,0
 auth.roles.create,0
 auth.roles.delete,0
+auth.roles.export,0
 auth.roles.read,0
 auth.roles.update,0
 auth.users.assign-role,0
@@ -64,6 +73,16 @@ crm.planned-visit.read,0
 # "crm-planned-visit" / "crm-visit-plan" are not platform-admin modules; a tenant role must be able to hold them.
 crm.planned-visit.read-all,0
 crm.visit-plan.read-all,0
+# WP-VW-W4 (W4-BE-c) — 5 doctor insights keys, stated Tenant (0): moduleOverride "crm-doctor-insights" is not in
+# PlatformAdminModules; a tenant role holds them (own / team doctors, the whole tenant, aggregates, thresholds).
+crm.doctor-insights.manage,0
+crm.doctor-insights.read,0
+crm.doctor-insights.read-aggregate,0
+crm.doctor-insights.read-all,0
+crm.doctor-insights.thresholds.manage,0
+# WP-VW-W4 (W4-BE-a) — the competitor usage counts key, stated Tenant (0): moduleOverride "crm-visit-report" is not in
+# PlatformAdminModules.
+crm.visit-report.read-aggregate,0
 # SCMM-12-API / SCMM-14 / SCMM-11-follow-API — 10 content-composition keys, stated Tenant (0): moduleOverride
 # "crm-content-composition" is not in PlatformAdminModules; live diten_auth_v3 Scope=0 (verified 2026-09-25). These
 # were seeded without a baseline row, so Baseline_covers_every_seeded_permission_and_nothing_else was already red.
@@ -94,8 +113,14 @@ goldenslim.records.read,0
 goldenslim.records.update,0
 mdm.brands.archive,0
 mdm.brands.create,0
+mdm.brands.export,0
 mdm.brands.read,0
 mdm.brands.update,0
+# WP-VW-W4 (W4-BE-b2) — 3 competitor product keys, stated Tenant (0): moduleOverride "product-item-sku-master" is not in
+# PlatformAdminModules; a tenant role holds them (read the list, manage records + decide proposals, a rep proposes).
+mdm.competitor-products.manage,0
+mdm.competitor-products.propose,0
+mdm.competitor-products.read,0
 mdm.global-products.create,0
 mdm.global-products.read,0
 mdm.legal-entities.bulk-delete,0

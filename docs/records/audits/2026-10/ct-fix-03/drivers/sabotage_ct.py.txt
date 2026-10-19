@@ -1,0 +1,101 @@
+"""R1 sabotage driver (CT-FIX-03): each sabotage puts one shared-reader part back to its old behaviour in the worktree
+file, runs the named checks, restores the file byte-for-byte (sha-256 verified) in a finally block."""
+import hashlib, json, re, subprocess, sys
+from pathlib import Path
+WT = Path(sys.argv[1]).resolve(); OUT = Path(sys.argv[2])
+if str(WT).startswith("<REPO>"):
+    raise SystemExit("refused: sabotage runs only in a scratch clone outside the repository (Codex, 2026-10-17)")
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def run(cmd):
+    r = subprocess.run(cmd, cwd=WT, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    fails = sorted(set(re.findall(r"^(?:FAIL|ERROR):? (.*)$", out, re.M)))
+    summary = [l for l in out.splitlines() if re.search(r"self-test: \d+/\d+|^Ran |^OK|^FAILED", l)]
+    return {"cmd": " ".join(cmd[2:]), "exit": r.returncode, "summary": summary, "fails": fails[:40]}
+SELF = lambda f: [sys.executable, "-B", f, "--self-test"]
+R0 = lambda *k: [sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_ct_cli_regression.py", *sum((["-k", x] for x in k), [])]
+SAB = [
+ ("S1 any-form key count off (old column-0 grammar)", "scripts/ct_queue.py",
+  '''    return re.compile(rf"""^\\s*\\**\\s*(["']?){re.escape(key)}\\1\\s*\\**\\s*:""", re.I)''',
+  '''    return re.compile(rf"^{re.escape(key)}:")''',
+  [R0("V4A_F3"), SELF("scripts/ct_route.py"), SELF("scripts/acceptance_record.py")]),
+ ("S2 body status rule off", "scripts/ct_queue.py",
+  '''    return [n for n, l in enumerate(lines) if n not in hidden and STATUS_KEY_BODY.match(l)]''',
+  '''    return []''',
+  [R0("V4A_F3"), SELF("scripts/prompt_gate.py"), SELF("scripts/ct_route.py")]),
+ ("S3 unbalanced quote stripped (old .strip)", "scripts/ct_queue.py",
+  '''    if value[:1] in ("\\"", "'") or value[-1:] in ("\\"", "'"):
+        return None, "dengesiz ya da iç içe tırnaklı"''',
+  '''    value = value.strip("\\"'")''',
+  [R0("V4A_F3", "V4A_F5"), SELF("scripts/ct_route.py")]),
+ ("S4 continuation looks at the next line only", "scripts/ct_queue.py",
+  '''        nxt = next((l for l in block[hits[0] + 1:] if l.strip() and not l.lstrip().startswith("#")), "")''',
+  '''        nxt = block[hits[0] + 1] if hits[0] + 1 < len(block) else ""''',
+  [R0("V4A_F3"), SELF("scripts/ct_route.py")]),
+ ("S5 fence closed by any fence mark", "scripts/ct_queue.py",
+  '''                      if re.match(rf"^ {{0,3}}{re.escape(mark[0])}{{{len(mark)},}}[ \\t]*$", lines[j])), None)''',
+  '''                      if FENCE.match(lines[j])), None)''',
+  [R0("V4A_F3")]),
+ ("S6 chain check back to the column-0 identity", "scripts/acceptance_record.py",
+  '''            ident, ibad = shared().kunye_fields(t, ("queue", "work_package"))
+            q, w = ident.get("queue"), ident.get("work_package")
+            if not ibad and q and w and "#" not in q + w and (q, w) != (f["queue"], f["work_package"]):''',
+  '''            col0 = lambda k: [m.group(1).split(" #")[0].strip().strip("\\"'") for m in (re.match(rf"^{k}:[ \\t]*(.*?)[ \\t]*$", l) for l in t.split("---")[1].split("\\n")) if m]
+            q, w = col0("queue"), col0("work_package")
+            q, w = (q[0] if len(q) == 1 else None), (w[0] if len(w) == 1 else None)
+            if q and w and (q, w) != (f["queue"], f["work_package"]):''',
+  [SELF("scripts/acceptance_record.py")]),
+ ("S8 nested-object rule off (every indented key counts)", "scripts/ct_queue.py",
+  '''    owned = nested_lines(block)''',
+  '''    owned = set()''',
+  [R0("V4A_F3"), SELF("scripts/ct_route.py")]),
+ ("S9 every space-indented line owned (also under a scalar key)", "scripts/ct_queue.py",
+  '''            if opener:
+                owned.add(n)''',
+  '''            owned.add(n)''',
+  [R0("V4A_F3"), SELF("scripts/ct_route.py")]),
+ ("S10 tab-indented lines owned like spaces", "scripts/ct_queue.py",
+  '''        if line[:1] == " " or (line[:1] == "-"''',
+  '''        if line[:1] in " \\t" or (line[:1] == "-"''',
+  [R0("V4A_F3"), SELF("scripts/ct_route.py")]),
+ ("S11 R2 full SOP §7 state set off", "scripts/ct_queue.py",
+  '''    if SOP7_STATES - names:
+        problems.append(''',
+  '''    if False:
+        problems.append(''',
+  [R0("V4A_F2"), SELF("scripts/ct_queue.py"), SELF("scripts/status_report_v2.py")]),
+ ("S12 R2 main-flow steps off", "scripts/ct_queue.py",
+  '''    elif edges and SOP7_REQUIRED_EDGES - edges:''',
+  '''    elif False:''',
+  [R0("V4A_F2"), SELF("scripts/ct_queue.py")]),
+ ("S13 R2 missing table tolerated (strict flag ignored)", "scripts/ct_queue.py",
+  '''    if not edges and strict_registered:''',
+  '''    if False:''',
+  [R0("V4A_F2"), SELF("scripts/ct_queue.py")]),
+ ("S14 R2 states the SOP does not list tolerated", "scripts/ct_queue.py",
+  '''    if names - SOP7_STATES:''',
+  '''    if False:''',
+  [R0("V4A_F2"), SELF("scripts/ct_queue.py")]),
+ ("S7 ct_route ignores the shared reader (old front_matter: column 0 only)", "scripts/ct_route.py",
+  '''        got, bad = ctq.kunye_fields(text, (key,))''',
+  '''        got, bad = ctq.kunye_fields("\\n".join(l for l in text.replace("\\r\\n", "\\n").split("\\n") if not l[:1].isspace() and not l.startswith(("\\"", "*"))), (key,))''',
+  [SELF("scripts/ct_route.py")]),
+]
+results = []
+ONLY = sys.argv[3:]
+for name, rel, old, new, cmds in SAB:
+    if ONLY and name.split()[0] not in ONLY:
+        continue
+    p = WT / rel; orig = p.read_bytes(); before = sha(p)
+    text = orig.decode("utf-8")
+    if text.count(old) != 1:
+        results.append({"sabotage": name, "applied": False, "anchor_count": text.count(old)}); continue
+    try:
+        p.write_bytes(text.replace(old, new).encode("utf-8"))
+        res = [run(c) for c in cmds]
+    finally:
+        p.write_bytes(orig)
+    assert sha(p) == before, name
+    results.append({"sabotage": name, "file": rel, "applied": True, "restored_sha256": before, "runs": res})
+    print(name); [print("   ", r["cmd"][-60:], "exit", r["exit"], r["summary"][-1:], "|", "; ".join(f[:90] for f in r["fails"][:12])) for r in res]
+OUT.write_text(json.dumps(results, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

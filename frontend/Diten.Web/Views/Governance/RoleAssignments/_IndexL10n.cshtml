@@ -20,9 +20,16 @@
     // its permission set describe different things (today: tasks → "Görev Tanımları" vs "Görevler"). A module with
     // no Perm.Module key simply falls through to its menu name, so this map stays as short as the problem is.
     const string PermModulePrefix = "Perm.Module.";
+    // WP-WEB-ROLE-PERMISSION-LABELS-01 (BL-508) — SCREEN-SPECIFIC row names. A permission's source code is not always a
+    // menu page ("approvals", "weeks", "content-set"), and the row names must not be written as Nav.Page.* (those are the
+    // sidebar's and Ctrl+K's, and every Nav.Page code owes page help in seven languages). Collected in their OWN map and
+    // layered over the Nav.Page names in PermLabel.split, so a code both name is said this screen's way whatever order
+    // GetAllStrings walks the resource file in.
+    const string PermEntityPrefix = "Perm.Entity.";
     var moduleNames = new Dictionary<string, string>(StringComparer.Ordinal);
     var entityNames = new Dictionary<string, string>(StringComparer.Ordinal);
     var permModuleNames = new Dictionary<string, string>(StringComparer.Ordinal);
+    var permEntityNames = new Dictionary<string, string>(StringComparer.Ordinal);
     try
     {
         foreach (var entry in SharedLocalizer.GetAllStrings(includeParentCultures: true))
@@ -45,6 +52,11 @@
                 var code = entry.Name.Substring(PermModulePrefix.Length);
                 if (code.Length > 0 && !permModuleNames.ContainsKey(code)) permModuleNames[code] = entry.Value;
             }
+            else if (entry.Name.StartsWith(PermEntityPrefix, StringComparison.Ordinal))
+            {
+                var code = entry.Name.Substring(PermEntityPrefix.Length);
+                if (code.Length > 0 && !permEntityNames.ContainsKey(code)) permEntityNames[code] = entry.Value;
+            }
         }
     }
     catch (Exception)
@@ -54,6 +66,7 @@
         moduleNames.Clear();
         entityNames.Clear();
         permModuleNames.Clear();
+        permEntityNames.Clear();
     }
 }
 
@@ -79,12 +92,27 @@
         // permission row. → window.L10n.EntityNames, consumed by PermLabel.split. Discovered by prefix like
         // ModuleNames, so a source this screen has never seen still reads as words (humanized) and never as a slug.
         EntityNames = entityNames,
+        // WP-WEB-ROLE-PERMISSION-LABELS-01 — { NORMALIZEDCODE: localized name } from Perm.Entity.*, read by PermLabel.split
+        // BEFORE EntityNames (this screen's own row names win over the menu's). → window.L10n.PermEntityNames.
+        PermEntityNames = permEntityNames,
         // FIX-RBAC-PERM-MODULE-ATTRIBUTION — { actionSuffix: localized reach } for the second pill on a chip.
         // "read-tenant-wide" is the read action at a wider REACH, not a 98th verb, and the reach is the half that
         // decides whether the grant is dangerous — so it is shown as its own token, in the user's language.
         ScopeLabels = new Dictionary<string, string>
         {
-            ["tenant-wide"] = Localizer["ScopeLabel_TenantWide"].Value
+            ["tenant-wide"] = Localizer["ScopeLabel_TenantWide"].Value,
+            // WP-WEB-ROLE-PERMISSION-LABELS-01 (BL-508 (1)) — the reach of the whole action `read-all`
+            // (PermLabel SCOPE_ACTIONS): the same tenant-wide reach, so the same words and the same chip.
+            ["all"] = Localizer["ScopeLabel_TenantWide"].Value
+        },
+        // WP-WEB-ROLE-PERMISSION-LABELS-01 — what a key grants beyond the verb its chip shows (PermLabel KEY_VERBS),
+        // keyed by the permission KEY; shown on the chip's tooltip.
+        KeyHints = new Dictionary<string, string>
+        {
+            ["crm.visit-plan.read-all"] = Localizer["KeyHint_CrmVisitPlanReadAll"].Value,
+            ["crm.planned-visit.read-all"] = Localizer["KeyHint_CrmPlannedVisitReadAll"].Value,
+            // WP-WEB-TASK-UPDATE-HINT-01 (BL-341 step 1) — everything "Update Task" grants (TasksController).
+            ["platform.tasks.update"] = Localizer["KeyHint_PlatformTasksUpdate"].Value
         },
         PermissionSummary = Localizer["PermissionSummary"].Value,
         SelectedRoleTitle = Localizer["SelectedRoleTitle"].Value,
@@ -108,6 +136,14 @@
         RecordCreated = SharedLocalizer["RecordCreated"].Value,
         RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
         ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        // WP-ROLES-CLOSE-01 — refusal sentences, keyed from AuthService's stable codes (index.js ERROR_CODE_KEYS).
+        ErrorRoleActorRequired = Localizer["ErrorRoleActorRequired"].Value,
+        ErrorRoleNotFound = Localizer["ErrorRoleNotFound"].Value,
+        ErrorRolePermissionNotTenantAssignable = Localizer["ErrorRolePermissionNotTenantAssignable"].Value,
+        ErrorRolePermissionNotForHumanRole = Localizer["ErrorRolePermissionNotForHumanRole"].Value,
+        ErrorRolePermissionGrantManaged = Localizer["ErrorRolePermissionGrantManaged"].Value,
+        ErrorRolePermissionRevokeLastSteward = Localizer["ErrorRolePermissionRevokeLastSteward"].Value,
+        ErrorRolePermissionAlreadyGranted = Localizer["ErrorRolePermissionAlreadyGranted"].Value,
         Cancel = SharedLocalizer["Cancel"].Value,
         Delete = SharedLocalizer["Delete"].Value,
         Reset = SharedLocalizer["Reset"].Value,
@@ -178,7 +214,77 @@
             ["verify"] = Localizer["ActionVerb_Verify"].Value,
             ["request"] = Localizer["ActionVerb_Request"].Value,
             ["change-lifecycle"] = Localizer["ActionVerb_ChangeLifecycle"].Value,
-            ["read-manager-chain"] = Localizer["ActionVerb_ReadManagerChain"].Value
+            ["read-manager-chain"] = Localizer["ActionVerb_ReadManagerChain"].Value,
+            // WP-WEB-ROLE-PERMISSION-LABELS-01 (BL-508 (2)) — every remaining verb the catalog carries (measured from the Auth
+            // seed + the module manifests by role-assignments-label-ledger.test.js), so no chip falls back to English.
+            // Keys are the DISPLAY form PermLabel.normalizeAction gives (kebab; dots kept), never snake_case.
+            ["allocate"] = Localizer["ActionVerb_Allocate"].Value,
+            ["amend"] = Localizer["ActionVerb_Amend"].Value,
+            ["append"] = Localizer["ActionVerb_Append"].Value,
+            ["apply"] = Localizer["ActionVerb_Apply"].Value,
+            ["approve-extension"] = Localizer["ActionVerb_ApproveExtension"].Value,
+            ["attach-evidence"] = Localizer["ActionVerb_AttachEvidence"].Value,
+            ["audit"] = Localizer["ActionVerb_Audit"].Value,
+            ["audit.view"] = Localizer["ActionVerb_AuditView"].Value,
+            ["block"] = Localizer["ActionVerb_Block"].Value,
+            ["capture"] = Localizer["ActionVerb_Capture"].Value,
+            ["change"] = Localizer["ActionVerb_Change"].Value,
+            ["change-status"] = Localizer["ActionVerb_ChangeStatus"].Value,
+            ["update-brand"] = Localizer["ActionVerb_UpdateBrand"].Value,
+            ["commit"] = Localizer["ActionVerb_Commit"].Value,
+            ["configure"] = Localizer["ActionVerb_Configure"].Value,
+            ["confirm"] = Localizer["ActionVerb_Confirm"].Value,
+            ["correct"] = Localizer["ActionVerb_Correct"].Value,
+            ["create-draft"] = Localizer["ActionVerb_CreateDraft"].Value,
+            ["deactivate"] = Localizer["ActionVerb_Deactivate"].Value,
+            ["decide"] = Localizer["ActionVerb_Decide"].Value,
+            ["dispatch"] = Localizer["ActionVerb_Dispatch"].Value,
+            ["dispose"] = Localizer["ActionVerb_Dispose"].Value,
+            ["dry-run"] = Localizer["ActionVerb_DryRun"].Value,
+            ["edit-employment"] = Localizer["ActionVerb_EditEmployment"].Value,
+            ["edit-legal"] = Localizer["ActionVerb_EditLegal"].Value,
+            ["end"] = Localizer["ActionVerb_End"].Value,
+            ["generate"] = Localizer["ActionVerb_Generate"].Value,
+            ["impact.view"] = Localizer["ActionVerb_ImpactView"].Value,
+            ["instantiate"] = Localizer["ActionVerb_Instantiate"].Value,
+            ["invalidate"] = Localizer["ActionVerb_Invalidate"].Value,
+            ["investigate"] = Localizer["ActionVerb_Investigate"].Value,
+            ["link"] = Localizer["ActionVerb_Link"].Value,
+            ["lookup"] = Localizer["ActionVerb_Lookup"].Value,
+            ["lookup-validation"] = Localizer["ActionVerb_LookupValidation"].Value,
+            ["migrate"] = Localizer["ActionVerb_Migrate"].Value,
+            ["minutes-publish"] = Localizer["ActionVerb_MinutesPublish"].Value,
+            ["minutes-write"] = Localizer["ActionVerb_MinutesWrite"].Value,
+            ["propose"] = Localizer["ActionVerb_Propose"].Value,
+            ["publish-override"] = Localizer["ActionVerb_PublishOverride"].Value,
+            ["read-aggregate"] = Localizer["ActionVerb_ReadAggregate"].Value,
+            ["rebase"] = Localizer["ActionVerb_Rebase"].Value,
+            ["recover"] = Localizer["ActionVerb_Recover"].Value,
+            ["release"] = Localizer["ActionVerb_Release"].Value,
+            ["reopen"] = Localizer["ActionVerb_Reopen"].Value,
+            ["replace"] = Localizer["ActionVerb_Replace"].Value,
+            ["request-correction"] = Localizer["ActionVerb_RequestCorrection"].Value,
+            ["request-info"] = Localizer["ActionVerb_RequestInfo"].Value,
+            ["request-retirement"] = Localizer["ActionVerb_RequestRetirement"].Value,
+            ["reserve"] = Localizer["ActionVerb_Reserve"].Value,
+            ["resolve"] = Localizer["ActionVerb_Resolve"].Value,
+            ["retire"] = Localizer["ActionVerb_Retire"].Value,
+            ["rollback"] = Localizer["ActionVerb_Rollback"].Value,
+            ["series-manage"] = Localizer["ActionVerb_SeriesManage"].Value,
+            ["settle"] = Localizer["ActionVerb_Settle"].Value,
+            ["sign"] = Localizer["ActionVerb_Sign"].Value,
+            ["temporary-issue"] = Localizer["ActionVerb_TemporaryIssue"].Value,
+            ["thresholds.manage"] = Localizer["ActionVerb_ThresholdsManage"].Value,
+            ["transition"] = Localizer["ActionVerb_Transition"].Value,
+            ["types-manage"] = Localizer["ActionVerb_TypesManage"].Value,
+            ["unblock"] = Localizer["ActionVerb_Unblock"].Value,
+            ["update-released"] = Localizer["ActionVerb_UpdateReleased"].Value,
+            ["version.publish"] = Localizer["ActionVerb_VersionPublish"].Value,
+            ["view-sensitive"] = Localizer["ActionVerb_ViewSensitive"].Value,
+            ["view-status-history"] = Localizer["ActionVerb_ViewStatusHistory"].Value,
+            ["withdraw"] = Localizer["ActionVerb_Withdraw"].Value,
+            ["write"] = Localizer["ActionVerb_Write"].Value,
+            ["write-value"] = Localizer["ActionVerb_WriteValue"].Value
         }
     })
 </script>

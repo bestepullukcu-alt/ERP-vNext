@@ -1,0 +1,52 @@
+# Checks — step 1 (pre-merge fixes), measured 2026-10-15T17:50+0300
+
+## origin/main (local ref; remote not fetched)
+local origin/main: 3912d568b18193f627539a1b27965167ac4077b6
+last fetch (FETCH_HEAD mtime): 2026-10-15T11:40+0300
+
+## run 1 — clean e07df6bf1
+HEAD=e07df6bf1a8f29b02e5a376b66779e1733dc4435 clean=0
+Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 7 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+raw_sha256=7dbc78c036726ba8071184fe2b5503cf34205f2e0c48b6cda110388043aa4495
+sanitized_sha256=93514158540e31cf7e48c725e177c18886ebfcfeb1c1f8136dcf0e108ebd29c8
+replacements R1=306 R2=145 R3=1 R4=1
+leftover home=0 user=0 unsanitised computerName=0
+
+## run 2 — step-1 changes applied (before the duplicate-name fix in known_failures.py)
+HEAD=e07df6bf1a8f29b02e5a376b66779e1733dc4435 (uncommitted step-1 changes applied)
+Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 7 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+raw_sha256=de6d4c3dbd7909faf3d8dd74b1bb4bc3005d5cd54ff2b61bec1c0fb81fb84570
+sanitized_sha256=0c77e689f513b15544c6b4e8766d02de61310d19057c99f4211dcd6bc2d8e6fd
+replacements R1=306 R2=145 R3=1 R4=1
+leftover home=0 user=0 unsanitised computerName=0
+
+## known_failures.py check (final tool)
+run1-raw: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+run1.sanitized: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+run2-raw: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+run2.sanitized: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+
+## FU05-like simulation on run 2 (in memory)
+simulated fix (one recorded item removed, FU05-like): exit=0 KISMEN-DÜZELDİ=1 YENİ-AYRINTI=0 BİLİNEN=6
+simulated regression (one new item added): exit=1 KISMEN-DÜZELDİ=0 YENİ-AYRINTI=1 BİLİNEN=6
+simulated fix + regression together: exit=1 KISMEN-DÜZELDİ=0 YENİ-AYRINTI=1 BİLİNEN=6
+
+## self-tests and validators
+self-test: 23/23 passed
+OK registry
+self-test: 27/27 passed
+OK sce-mvp6 (çalışma ağacı): 0 hata, 1 uyarı; taban 6b8a62d5a
+
+## require (sce-mvp6, READY id Q124)
+DAĞITILABİLİR Q124: READY
+HAZIRLIK: 'sce-mvp6' bu çalışma ağacının kayıt dosyasında kayıtlı
+YÜRÜRLÜK: yerel origin/main referansı 3912d568b (son fetch: 2026-10-15T11:40) — kayıt dosyası yok; uzak durum doğrulanmadı
+NOT: durum sınıflandırması kuyruk sahibince onaylanmadı (confirmation=pending); geçicidir.
+exit=0
+DAĞITILABİLİR Q124: READY
+DUR: --in-force — 'sce-mvp6' origin/main'de kayıtlı değil; R8 r3'e göre yürürlükte bir kayıtlı kaynak yok
+exit (--in-force)=1
+
+## tools
+Python 3.9.6
+sanitize_trx.py sha256: b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72

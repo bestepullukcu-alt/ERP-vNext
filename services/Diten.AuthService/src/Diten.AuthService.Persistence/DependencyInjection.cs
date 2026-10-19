@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Domain.Repositories;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Persistence.Seed;
@@ -9,13 +10,38 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence;
 
 public static class DependencyInjection
 {
+    public static IServiceCollection AddEntitlementReconciliationPersistence(this IServiceCollection services, IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>()
+            ?? throw new InvalidOperationException("MONGO_SETTINGS_REQUIRED");
+        if (string.IsNullOrWhiteSpace(settings.ConnectionString) || string.IsNullOrWhiteSpace(settings.DatabaseName))
+            throw new InvalidOperationException("MONGO_SETTINGS_REQUIRED");
+        BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        var conventions = new ConventionPack { new IgnoreExtraElementsConvention(true) };
+        ConventionRegistry.Register("EntitlementOperationalIgnoreExtraElements", conventions,
+            type => type.Namespace?.StartsWith("Diten.AuthService.Domain", StringComparison.Ordinal) == true);
+        var clientSettings = MongoClientSettings.FromConnectionString(settings.ConnectionString);
+        clientSettings.GuidRepresentation = GuidRepresentation.Standard;
+        clientSettings.ApplicationName = "Diten.AuthService.EntitlementReconciliation";
+        clientSettings.RetryWrites = false;
+        clientSettings.ReadPreference = ReadPreference.Primary;
+        clientSettings.ReadConcern = ReadConcern.Majority;
+        clientSettings.WriteConcern = WriteConcern.WMajority;
+        var client = new MongoClient(clientSettings);
+        services.AddSingleton<IMongoDatabase>(client.GetDatabase(settings.DatabaseName));
+        services.AddSingleton<IEntitlementReconciliationOperationStore, EntitlementReconciliationOperationStore>();
+        return services;
+    }
+
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.ValidateRequiredSecrets(configuration, environment, "AuthService.Persistence", [
@@ -66,7 +92,10 @@ public static class DependencyInjection
         services.AddSingleton<IMongoDatabase>(database);
 
         // Repositories
-        services.AddScoped<IUserRepository, UserRepository>();
+        // BL-521 FIX6 item 13 (D') — the user repository every handler gets hides platform accounts from a tenant actor
+        // (see PlatformAccountScopedUserRepository); the Mongo implementation underneath is unchanged.
+        services.AddScoped<UserRepository>();
+        services.AddScoped<IUserRepository, PlatformAccountScopedUserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
@@ -79,6 +108,8 @@ public static class DependencyInjection
         services.AddScoped<IIntegrationEventInboxRepository, IntegrationEventInboxRepository>();
         services.AddScoped<IAuthAuditService, AuthAuditService>();
         services.AddScoped<IMfaChallengeRepository, MfaChallengeRepository>();
+        services.AddScoped<IServiceClientIdentityRepository, ServiceClientIdentityRepository>();
+        services.AddScoped<IServiceClientTenantGrantRepository, ServiceClientTenantGrantRepository>();
         services.AddScoped<IESignReauthTicketRepository, ESignReauthTicketRepository>();
         services.AddScoped<IESignReauthWindowRepository, ESignReauthWindowRepository>();
 
@@ -88,10 +119,17 @@ public static class DependencyInjection
         try
         {
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-            // Mock users only when BOTH hold: Development AND the opt-in key (see DataSeeder.MockUsersOptInConfigurationKey).
-            var seedMockUsers = environment.IsDevelopment()
-                && configuration.GetValue<bool>(DataSeeder.MockUsersOptInConfigurationKey);
-            DataSeeder.SeedAsync(database, seedMockUsers).GetAwaiter().GetResult();
+            // WP-AUTH-ADMIN-BOOTSTRAP-01 — the system seed (permissions, roles, templates) in every environment, then the account
+            // step: dev accounts in Development only, each also under its opt-in key (platform administrator, mock users, dev
+            // tenant administrator);
+            // anywhere else no account is created, deleted or switched on (AdminAccountSeed).
+            DataSeeder.SeedAsync(database).GetAwaiter().GetResult();
+            AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(
+                    Development: environment.IsDevelopment(),
+                    PlatformAdmin: configuration.GetValue<bool>(DevAccountSeed.PlatformAdminOptInConfigurationKey),
+                    MockUsers: configuration.GetValue<bool>(DevAccountSeed.MockUsersOptInConfigurationKey),
+                    TenantAdmin: configuration.GetValue<bool>(DevAccountSeed.TenantAdminOptInConfigurationKey)))
+                .GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {

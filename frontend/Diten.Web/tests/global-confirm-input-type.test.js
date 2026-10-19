@@ -17,6 +17,7 @@ const path = require("path");
  * its source. The Razor expressions (`@Json.Serialize(...)`) are the only thing replaced, with the strings they
  * would render. Everything else is the shipped code.
  */
+const { PROCUREMENT, STOCK, ESIGN, MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, misnamedRows } = require("./main-sync-owners");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const VIEW = fs.readFileSync(
   path.join(repoRoot, "frontend", "Diten.Web", "Views", "Shared", "_GlobalConfirmation.cshtml"), "utf8");
@@ -40,6 +41,35 @@ const captureConfig = () => {
   const seen = {};
   const stub = { fire: (config) => { seen.config = config; return { then: () => {} }; }, showValidationMessage: () => {} };
   return { seen, stub };
+};
+
+// WP-LANE-GUARDS-02 — every caller of the input box: { inputs: `showInput:` count, typed: `inputType:` count }.
+const SHOW_INPUT_CALLERS = {
+  "DocumentManagement/MasterRegister/details.js": { inputs: 1, typed: 0 },
+  "DocumentManagement/TemplateMasters/index.js": { inputs: 1, typed: 0 },
+  "MDM/ProductAbbreviationRegister/index.js": { inputs: 3, typed: 1 },
+  "MasterDataManagement/GlobalProducts/index.js": { inputs: 2, typed: 1 },
+  "MasterDataManagement/Gskus/index.js": { inputs: 1, typed: 1 },
+  "MasterDataManagement/Items/index.js": { inputs: 1, typed: 1 },
+  "MasterDataManagement/Lskus/index.js": { inputs: 1, typed: 0 },
+  "Meetings/form.js": { inputs: 3, typed: 3 },
+  "Platform/AuditLog/index.js": { inputs: 1, typed: 0 },
+  "Platform/Tenants/details.js": { inputs: 3, typed: 1 },
+  "Platform/Tenants/index.js": { inputs: 1, typed: 0 },
+  // The module seam: it passes whatever its own caller said (`undefined` for every prose dialog).
+  "WorkCenterNext/app.js": { inputs: 1, typed: 1 }
+};
+// …and the callers that came with main (XMC-001: not ours to change; listed so the census stays exact).
+const MAIN_SYNC_SHOW_INPUT = {
+  "Procurement/InvoiceMatch/details.js": { inputs: 1, typed: 1, owner: PROCUREMENT, why: MAIN_SYNC_WHY },
+  "Procurement/InvoiceMatch/index.js": { inputs: 1, typed: 1, owner: PROCUREMENT, why: MAIN_SYNC_WHY },
+  // main-sync 2026-10-14 (WP-LANE-MAIN-SYNC-02): every one of them names its type.
+  "ESignature/esign-pages.js": { inputs: 1, typed: 1, owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  "Quarantine/blocked.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Quarantine/details.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Quarantine/retest.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Traceability/LotMigration/index.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Traceability/Lots/status.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY }
 };
 
 describe("the callers that were already using the input box", () => {
@@ -68,15 +98,23 @@ describe("the callers that were already using the input box", () => {
     });
     roots.forEach(walk);
 
-    const callers = files.filter((f) => /showInput\s*:/.test(fs.readFileSync(f, "utf8")));
-    const occurrences = callers.reduce((n, f) =>
-      n + (fs.readFileSync(f, "utf8").match(/showInput\s*:/g) || []).length, 0);
-    expect(occurrences).toBe(8);
-
-    // The one file that DOES pass a type is the WorkCenterNext seam, and it passes whatever its own caller said —
-    // `undefined` for every prose dialog, which is what keeps them on the default.
-    const namingAType = callers.filter((f) => /inputType\s*:/.test(fs.readFileSync(f, "utf8")));
-    expect(namingAType.map((f) => path.basename(f))).toEqual(["app.js"]);
+    /*
+     * ⚠ WP-LANE-GUARDS-02 — A CENSUS BY NAME, NOT A COUNT. The count read 8 and then 21: BL-146 made naming a type
+     * the point (a date, a select), and the MDM, Meetings and Platform dialogs that came after it name one on purpose.
+     * A number cannot say WHICH file moved, so every caller is written out with how many inputs it opens and how many
+     * name a type. A prose caller that starts naming a type, a new caller, or a caller gone is red until this table
+     * changes in the same diff, where review sees it. Rows that came with main name their owner (main-sync-owners.js).
+     */
+    const census = Object.fromEntries(files
+      .map((f) => [path.relative(roots[0], f).split(path.sep).join("/"), fs.readFileSync(f, "utf8")])
+      .filter(([, source]) => /showInput\s*:/.test(source))
+      .map(([rel, source]) => [rel, [(source.match(/showInput\s*:/g) || []).length, (source.match(/inputType\s*:/g) || []).length]]));
+    expect(census).toEqual(Object.fromEntries(Object.entries({ ...SHOW_INPUT_CALLERS, ...MAIN_SYNC_SHOW_INPUT })
+      .map(([rel, row]) => [rel, [row.inputs, row.typed]])));
+    expect(misnamedRows(MAIN_SYNC_SHOW_INPUT), "a main-sync row without its path's owner or the main-sync reason").toEqual([]);
+    // The prose callers BL-146 found stay on the default: none of them names a type.
+    ["DocumentManagement/TemplateMasters/index.js", "Platform/AuditLog/index.js", "Platform/Tenants/index.js"]
+      .forEach((rel) => expect(census[rel], rel).toEqual([1, 0]));
   });
 
   it("still gets a textarea when it asks for an input without naming a type", () => {

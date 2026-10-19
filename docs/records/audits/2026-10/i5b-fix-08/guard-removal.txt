@@ -1,0 +1,11 @@
+İ5B-FIX-08 guard removal — in copies outside the repository; run by the AI session. The copy holds this package's
+AGENTS.md, generated core and test; only adapters.json is undone. Named tests: test_the_module_request_rule_is_a_
+required_core_text_once and test_each_contract_part_removed_or_hidden_in_a_comment_is_lost; control:
+test_a_dead_link_is_still_a_dead_link.
+
+G-R1 one new required text removed from the manifest ('gerekçeli ilk kapsam (tek öneri)')
+    named: RED — FAILED (failures=3) · control: OK · proven: True
+G-R2 all five new required texts removed from the manifest
+    named: RED — FAILED (failures=15) · control: OK · proven: True
+
+proven: 2 of 2

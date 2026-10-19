@@ -477,6 +477,7 @@ public sealed class CreateContentEngagementJourneyVersionHandler
             StageName = s.StageName,
             StageObjective = s.StageObjective,
             StageType = s.StageType,
+            AdoptionStageCode = s.AdoptionStageCode,
             RecommendedKnowledgePathId = s.RecommendedKnowledgePathId,
             PathCode = s.PathCode,
             PathVersionPinPolicy = s.PathVersionPinPolicy,

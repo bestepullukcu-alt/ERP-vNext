@@ -42,8 +42,13 @@ public static class GskuCreateOptionsFacade
                 x.DisplayText,
                 x.SortOrder,
                 x.MaximumDecimalPrecision)).ToList();
-        return Response<ProductItemSkuMasterModels.GskuCreateOptionsDto>.Success(new(products, uoms));
+        return Response<ProductItemSkuMasterModels.GskuCreateOptionsDto>.Success(
+            new(products, uoms, HasMorePages(pageNumber, pageSize, page.TotalCount)));
     }
+
+    // The picker's `pagination.more`: the rows up to and including this page are fewer than the matching total.
+    internal static bool HasMorePages(int pageNumber, int pageSize, long totalCount) =>
+        pageNumber > 0 && pageSize > 0 && (long)pageNumber * pageSize < totalCount;
 
     internal static int NormalizeProviderStatus(int statusCode) => statusCode switch
     {

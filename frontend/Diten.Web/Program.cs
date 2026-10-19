@@ -2,10 +2,10 @@ using Diten.Web;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Web.Filters;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Diten.Web.Services.Auth;
 using Diten.Web.Services.EnterpriseStrategy;
 using Diten.Web.Services.ManagementGovernance;
-using Diten.Web.Services.WorkCenter;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
@@ -17,6 +17,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// BL-517 — every log line (message, structured values, scopes; every category) keeps a URL's path and loses its query
+// string (person searches put name fragments there). Levels are unchanged; see QueryStringRedactingLoggerFactory.
+Diten.Web.Services.Http.QueryStringRedactingLoggerFactory.AddQueryStringRedaction(builder.Services);
 
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04).
@@ -111,28 +115,10 @@ builder.Services.AddHttpClient<IAuthGateway, AuthGateway>(client =>
 {
     client.BaseAddress = new Uri(authServiceUrl);
 });
-// Pre-auth tenant branding lookup for the login screen. Targets the Platform service DIRECTLY
-// (the internal branding endpoint is not exposed through the gateway), authenticated with the
-// shared internal API key. Best-effort: failures fall back to platform default branding.
 var platformServiceUrl = builder.Configuration["PlatformServiceUrl"] ?? "http://localhost:5057";
-builder.Services.AddHttpClient<Diten.Web.Services.Branding.IBrandingGateway, Diten.Web.Services.Branding.BrandingGateway>(client =>
-{
-    client.BaseAddress = new Uri(platformServiceUrl);
-});
-// FIX-4: per-request tenant liveness lookup for the shell session guard (deleted/suspended tenant → sign-out).
-// Same Platform target + shared internal API key; best-effort/fail-open and short-cached (~30s) in the gateway.
-builder.Services.AddHttpClient<Diten.Web.Services.TenantStatus.ITenantStatusGateway, Diten.Web.Services.TenantStatus.TenantStatusGateway>(client =>
-{
-    client.BaseAddress = new Uri(platformServiceUrl);
-    client.Timeout = TimeSpan.FromSeconds(5);
-});
-// Vanity slug → tenant login redirect (e.g. http://<host>/gmg → /account/login?tenantId=...).
-// Targets the Platform service DIRECTLY with the shared internal API key (same pattern as branding).
-builder.Services.AddHttpClient<Diten.Web.Services.TenantResolution.ITenantSlugResolver, Diten.Web.Services.TenantResolution.TenantSlugResolver>(client =>
-{
-    client.BaseAddress = new Uri(platformServiceUrl);
-    client.Timeout = TimeSpan.FromSeconds(5);
-});
+// BL-454 — branding, tenant liveness and vanity-slug lookups go to Platform DIRECTLY with the shared internal API key;
+// registered in one place, and none of them follows a redirect (the key must not travel to the host a 3xx names).
+builder.Services.AddPlatformInternalClients(platformServiceUrl);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 // FE-A-harden (A5): the default HttpClient is registered TRANSIENT — each scoped (per-request)
@@ -153,7 +139,6 @@ builder.Services.AddScoped<Diten.Web.Services.IPermissionSnapshot, Diten.Web.Ser
 // FEAT-NAV-L10N — generic code→resx localization for the tenant nav (sidebar + Ctrl+K).
 builder.Services.AddScoped<Diten.Web.Services.Navigation.INavNameLocalizer, Diten.Web.Services.Navigation.NavNameLocalizer>();
 builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
-builder.Services.AddSingleton<ITaskDetailService, TaskDetailService>();
 builder.Services.AddScoped<IManagementGovernanceFrontendAdapter, MockManagementGovernanceFrontendAdapter>();
 builder.Services.AddScoped<IEnterpriseStrategyFrontendAdapter, MockEnterpriseStrategyFrontendAdapter>();
 // FE-A-harden (A4): trust forwarded scheme/host/ip from the TLS-terminating reverse proxy.
@@ -304,6 +289,20 @@ else
 // Only triggers for empty-body error responses (JSON API/proxy responses carry a body → unaffected).
 app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
+// BL-619: the old mock Task Center (/WorkCenter) is removed; /WorkCenterNext is the only Task Center. Every old URL
+// (bookmarks, mails, history) answers a permanent redirect to it. StartsWithSegments matches whole segments only, so
+// /WorkCenterNext is never caught. The query string is dropped on purpose: the old page honoured a user override.
+app.Use(async (context, next) =>
+{
+    if (IsLegacyWorkCenterPath(context.Request.Path))
+    {
+        context.Response.Redirect("/WorkCenterNext", permanent: true);
+        return;
+    }
+
+    await next();
+});
+
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -375,10 +374,8 @@ app.MapGet("/", (HttpContext context) =>
 {
     var host = context.Request.Host.Host;
     var isAdminHost = host.StartsWith("admin.", StringComparison.OrdinalIgnoreCase);
-    // WorkCenterNext, not WorkCenter: the older surface loads mock-work-items.js for its list while its detail
-    // page calls the real /api/tasks endpoints — so it shows invented tasks whose ids the engine has never heard
-    // of. A pure mock announces itself; a half-real one does not. WorkCenterNext loads its list from the WC-1
-    // projection through the same-origin proxy (WorkCenterNextController), with no mock branch on that path.
+    // WorkCenterNext is the only Task Center: the old mock /WorkCenter surface was removed (BL-619). It loads its
+    // list from the WC-1 projection through the same-origin proxy (WorkCenterNextController), with no mock branch.
     return Results.Redirect(isAdminHost ? "/Platform/Tenants" : "/WorkCenterNext");
 });
 
@@ -386,7 +383,7 @@ app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=WorkCenter}/{action=Index}/{id?}");
+    pattern: "{controller=WorkCenterNext}/{action=Index}/{id?}");
 
 // Vanity tenant slug entry point. Runs ONLY when no controller/route matched (lowest priority),
 // so it never shadows real routes/static files. A single-segment GET like "/gmg" is treated as a
@@ -416,6 +413,9 @@ app.Run();
 // A vanity-slug candidate is a single path segment of slug-safe characters (letters, digits, dash)
 // with no file extension — e.g. "/gmg". Anything multi-segment, dotted (static file), or oversized
 // is rejected so we never make a Platform lookup for junk or asset paths.
+static bool IsLegacyWorkCenterPath(PathString path) =>
+    path.StartsWithSegments("/WorkCenter", StringComparison.OrdinalIgnoreCase);
+
 static bool TryGetSlugCandidate(PathString path, out string slug)
 {
     slug = string.Empty;

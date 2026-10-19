@@ -1,7 +1,10 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.Auth.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -9,8 +12,7 @@ namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
 public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginCommand, Response<AuthResponse>>
 {
-    private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-    private const string PlatformActorType = "platform_admin";
+    private static readonly Guid PlatformTenantId = PlatformSystemTenant.Id;
 
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -54,27 +56,62 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             ? await _userRepository.GetByEmailAndTenantAsync(loginIdentifier, PlatformTenantId, ct)
             : await _userRepository.GetByUserNameAndTenantAsync(loginIdentifier, PlatformTenantId, ct);
 
-        if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 2 — no account still costs one verification (SignInTiming): the answer's time
+        // does not tell an administrator's address from an unknown one.
+        if (user is null)
         {
-            return Response<AuthResponse>.Fail("Invalid credentials.", 401);
+            await SignInTiming.VerifyAgainstNoAccountAsync(_passwordHasher, request.Password, ct);
+            return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
+        }
+        if (!await _passwordHasher.VerifyAsync(request.Password, user.PasswordHash, ct))
+        {
+            return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
         }
 
         if (!user.IsActive)
         {
-            return Response<AuthResponse>.Fail("User is inactive.", 401);
+            return Response<AuthResponse>.Fail("User is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401);
         }
 
-        if (!await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
+        // BL-521 FIX2 item 1 — the actor type of the token comes from the administrator's Platform RECORD, never from
+        // Auth's own copy on the user (User.PlatformActorType): that copy is written best-effort AFTER the record is saved,
+        // so a sync that fails leaves it saying platform_admin and every login would mint platform_admin for a partner.
+        // Item 3 — no answer from Platform is 503 (retry), not "inactive".
+        var record = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
+        if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
+        {
+            _logger.LogWarning("Platform login refused: platform administrator status unavailable. UserId={UserId}", user.Id);
+            return Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, [new ResponseError(AuthRefusalCodes.LoginUnavailable)], 503);
+        }
+
+        if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
         {
             _logger.LogWarning("Platform login denied by platform administrator status. UserId={UserId} Email={Email}", user.Id, user.Email);
-            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
+            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401);
         }
+
+        // BL-521 FIX7 item 1 - the record is the authority and it says this is a platform administrator: Auth's own copy of the
+        // actor type (what the tenant doors and the user repository tell platform accounts apart by) is made to say the same
+        // before anything is minted - a targeted write, and the in-memory user is healed too because the sign-in's own replace
+        // of the document (below) would otherwise write the old value back.
+        await PlatformAccountDiscriminator.EnsureAsync(_userRepository, user, record.ActorType!, _logger, ct);
 
         if (user.MustChangePassword &&
             user.TemporaryPasswordExpiresAt.HasValue &&
             user.TemporaryPasswordExpiresAt.Value <= DateTime.UtcNow)
         {
-            return Response<AuthResponse>.Fail("Temporary password has expired. Please reset your password.", 401);
+            return Response<AuthResponse>.Fail("Temporary password has expired. Please reset your password.", [new ResponseError(AuthRefusalCodes.TemporaryPasswordExpired)], 401);
+        }
+
+        // BL-521 FIX4 item 2 — the roles this token is minted with follow the RECORD: Auth's copy is converged to the roles
+        // Platform's answer names before it is read below (a sync that was lost — a refused write, a failed convergence —
+        // no longer outlives the next sign-in). An older Platform that sends no roles converges nothing.
+        // FIX5 item 3 — AT MINT NO PROVISIONING DEFAULT: an empty or unrecognised list means the record grants no platform
+        // role, so none is granted (and the account's platform roles are revoked) and the 403 below answers, as it always
+        // did for an account without one. FIX4 turned that into a ReadOnly sign-in.
+        if (record.Roles is not null)
+        {
+            await PlatformAdministratorRoleConvergence.ConvergeAtMintAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
         }
 
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, PlatformTenantId, ct))
@@ -92,7 +129,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         if (!isPlatformAdmin)
         {
             _logger.LogWarning("Platform login denied. UserId={UserId} Email={Email}", user.Id, user.Email);
-            return Response<AuthResponse>.Fail("Platform admin privileges are required.", 403);
+            return Response<AuthResponse>.Fail("Platform admin privileges are required.", [new ResponseError(AuthRefusalCodes.PlatformPrivilegesRequired)], 403);
         }
 
         var roleIds = await ResolveRoleIdsAsync(roles, PlatformTenantId, ct);
@@ -101,7 +138,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var actorType = NormalizePlatformActorType(user.PlatformActorType);
+        var actorType = record.ActorType!;
         var accessToken = _tokenService.GeneratePlatformAccessToken(
             user.Id,
             user.Email,
@@ -125,9 +162,20 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             actorType,
             request.UserAgent);
 
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
+
+        // BL-529 — a reset between this sign-in's read and now ended every session; the token just written must not
+        // outlive it (the answer is the wrong-password one: the password checked is no longer the account's).
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, PlatformTenantId, user.PasswordHash, refreshTokenStr, ct))
+        {
+            return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
+        }
+
+        // BL-529 — only the sign-in's own fields: a whole-account write here could undo a reset that landed meanwhile.
         user.RecordLoginSuccess();
-        await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
+        await _userRepository.RecordLoginOutcomeAsync(user, PlatformTenantId, ct);
         await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
 
         return Response<AuthResponse>.Success(new AuthResponse(
@@ -152,13 +200,5 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         }
 
         return roleIds;
-    }
-
-    private static string NormalizePlatformActorType(string? actorType)
-    {
-        return string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(actorType, "PartnerAdmin", StringComparison.OrdinalIgnoreCase)
-            ? "partner_admin"
-            : PlatformActorType;
     }
 }

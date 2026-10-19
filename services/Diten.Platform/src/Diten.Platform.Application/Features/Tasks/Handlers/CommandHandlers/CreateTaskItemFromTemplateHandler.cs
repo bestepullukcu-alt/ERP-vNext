@@ -41,6 +41,15 @@ public sealed class CreateTaskItemFromTemplateHandler
 
         var target = request.AssignmentTargetOverride ?? template.DefaultAssignmentTarget;
 
+        // BL-509 — a request is one person asking another; a template names neither. Refused here by name rather
+        // than left to the create handler, so the answer does not depend on what else the command carries.
+        if (target == Domain.Enums.Tasks.TaskAssignmentTarget.Offered)
+        {
+            return Response<Guid>.Fail(
+                Services.TaskAssignmentIntentRules.RequestNotAvailableMessage,
+                400, TaskReasonCodes.AssignmentTargetInvalid, command.CorrelationId);
+        }
+
         var createRequest = new CreateTaskItemRequest(
             Title: string.IsNullOrWhiteSpace(request.TitleOverride)
                 ? template.TitleTemplate ?? template.Name

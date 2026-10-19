@@ -135,6 +135,7 @@ public static class DependencyInjection
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
         // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
         services.AddScoped<IClaimRepository, ClaimRepository>();
+        services.AddScoped<IObjectionResponseRepository, ObjectionResponseRepository>(); // WP-VW-W3 (W3-BE-b)
         // WP-CL-BE-1 (claims v2) — claim country versions.
         services.AddScoped<IClaimCountryVersionRepository, ClaimCountryVersionRepository>();
         // WP-CL-BE-4 — consumed-event inbox (claim workflow outcome consumer).
@@ -260,6 +261,8 @@ public static class DependencyInjection
         // sequential writes on dev standalone Mongo), so a half-applied plan can never survive (D-APPLY-ATOMICITY = C).
         services.AddScoped<IPlanningSessionRepository, PlanningSessionRepository>();
         services.AddScoped<IPlanningSessionApplyUnitOfWork, PlanningSessionApplyUnitOfWork>();
+        // WP-VW-W2 (K-W1 = A) — a submitted rescheduled report + the new planned visit it creates, all-or-nothing.
+        services.AddScoped<IVisitRescheduleUnitOfWork, VisitRescheduleUnitOfWork>();
 
         // MOD-0155 FU02 - VisitReport: the immutable record of an EXECUTED visit (one collection). No delete: a report is
         // a compliance record, corrections are append-only amendments. Single-document writes only, guarded by the
@@ -267,6 +270,21 @@ public static class DependencyInjection
         // reflection is a documented no-op (FU01 has no "executed" transition, F-EXECUTED-MARKER), so there is no second
         // aggregate to keep consistent and no multi-document transaction is needed.
         services.AddScoped<IVisitReportRepository, VisitReportRepository>();
+
+        // WP-VW-W3 (BE-a) — the visit execution (one per planned visit) and the tenant's evidence policy (one per tenant).
+        // Neither exposes a delete: a started visit is evidence, and a policy is changed, never removed.
+        services.AddScoped<IVisitExecutionRepository, VisitExecutionRepository>();
+        services.AddScoped<IVisitEvidencePolicyRepository, VisitEvidencePolicyRepository>();
+        // WP-VW-W3 (W3-BE-c) — the evidence policy history and the time-boxed exceptions.
+        services.AddScoped<IVisitEvidencePolicyChangeRepository, VisitEvidencePolicyChangeRepository>();
+        services.AddScoped<IVisitEvidenceExceptionRepository, VisitEvidenceExceptionRepository>();
+        // WP-VW-W4 (W4-BE-c) — doctor profile + potential + thresholds and their append-only histories.
+        services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
+        services.AddScoped<IDoctorProfileChangeRepository, DoctorProfileChangeRepository>();
+        services.AddScoped<IDoctorProductPotentialRepository, DoctorProductPotentialRepository>();
+        services.AddScoped<IDoctorProductPotentialChangeRepository, DoctorProductPotentialChangeRepository>();
+        services.AddScoped<IProductPotentialThresholdRepository, ProductPotentialThresholdRepository>();
+        services.AddScoped<IProductPotentialThresholdChangeRepository, ProductPotentialThresholdChangeRepository>();
 
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
@@ -613,6 +631,17 @@ public static class DependencyInjection
         // silently returns nothing (the new-aggregate class-map trap).
         // WP-CL-BE-1 (claims v2) — the new optional Guid members (ProductId, AudienceProfileIds, ResponsibleOrgUnitId,
         // SupersedesClaimId) take the same string-Guid convention. A pre-v2 document simply lacks them (defaults apply).
+        // WP-VW-W3 (W3-BE-b) — the objection library: ProductId and the ClaimIds list take the string-Guid convention (the
+        // new-aggregate class-map trap: without it the ids store binary and every by-id read silently finds nothing).
+        Map<ObjectionResponse>(map =>
+        {
+            map.GetMemberMap(x => x.ProductId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ClaimIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            // WP-VW-W3 (W3-BE-c) — the copy source (string-Guid, the trap); ReviewRounds / Decisions reuse the
+            // ClaimReviewRound / RegulatoryTextDecision maps.
+            map.GetMemberMap(x => x.CopiedFromId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         Map<Claim>(map =>
         {
             map.GetMemberMap(x => x.ComponentRefs)
@@ -779,6 +808,18 @@ public static class DependencyInjection
                 map.GetMemberMap(s => s.ContentId).SetSerializer(stringGuid);
                 map.GetMemberMap(s => s.PrerequisiteStepId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
                 map.GetMemberMap(s => s.ConceptNodeId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        // WP-VW-W3 (W3-BE-b) — the step's presentation notes: a new embedded type, so its Guid list takes the string-Guid
+        // convention here (the new-type GUID trap). An older step has no "Presentation" (null).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(KnowledgePathStepPresentation)))
+        {
+            BsonClassMap.RegisterClassMap<KnowledgePathStepPresentation>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(p => p.ObjectionResponseIds)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
             });
         }
         if (!BsonClassMap.IsClassMapRegistered(typeof(KnowledgePathBranchCondition)))
@@ -972,6 +1013,8 @@ public static class DependencyInjection
             map.GetMemberMap(v => v.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(v => v.PositionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(v => v.PlannedDate).SetSerializer(dateOnlyString);
+            // WP-VW-W2 — the reschedule back link (string Guid, the CRM class-map rule).
+            map.GetMemberMap(v => v.RescheduledFromPlannedVisitId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitResourceRef)))
         {
@@ -1157,6 +1200,19 @@ public static class DependencyInjection
                 map.GetMemberMap(p => p.ContactId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
+        // WP-VP-4L (2) — the rep's per-week extra visits: a new embedded type, so its Guids take the string-Guid convention
+        // here (the CRM new-type GUID trap). An older session without "WeekExtras" reads as an empty list.
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningWeekExtra)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningWeekExtra>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(e => e.TargetId).SetSerializer(stringGuid);
+                map.GetMemberMap(e => e.ContactId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(e => e.AccountId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionProvenance)))
         {
             BsonClassMap.RegisterClassMap<PlanningSessionProvenance>(map =>
@@ -1180,6 +1236,8 @@ public static class DependencyInjection
         Map<VisitReport>(map =>
         {
             map.GetMemberMap(r => r.PlannedVisitId).SetSerializer(stringGuid);
+            // WP-VW-W2 — the reschedule forward link (string Guid, the CRM class-map rule).
+            map.GetMemberMap(r => r.RescheduledToPlannedVisitId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(r => r.RescheduleToDate).SetSerializer(
                 new NullableSerializer<DateOnly>(dateOnlyString));
         });
@@ -1208,6 +1266,135 @@ public static class DependencyInjection
         {
             BsonClassMap.RegisterClassMap<VisitReportAmendment>(map => map.AutoMap());
         }
+
+        // WP-VW-W4 (W4-BE-a) - the report v2 sections. Every embedded type is registered (the new-aggregate trap) and every
+        // Guid - product, step, concept node, competitor, objection answer, GSKU, met contact, evidence, linked contacts -
+        // takes the string-Guid convention; the request / follow-up days are DateOnly "yyyy-MM-dd" strings.
+        var nullableStringGuidV2 = new NullableSerializer<Guid>(stringGuid);
+        var nullableDateOnlyV2 = new NullableSerializer<DateOnly>(dateOnlyString);
+        Map<VisitReportGeneral>(map => map.GetMemberMap(g => g.MetContactId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportProductSection>(map => map.GetMemberMap(p => p.ProductId).SetSerializer(stringGuid));
+        Map<VisitReportPresentedStep>(map => map.GetMemberMap(s => s.StepId).SetSerializer(stringGuid));
+        Map<VisitReportPotential>(_ => { });
+        Map<VisitReportPotentialRow>(map =>
+        {
+            map.GetMemberMap(r => r.IndicationNodeId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.ProfileNodeId).SetSerializer(nullableStringGuidV2);
+        });
+        Map<VisitReportCompetitor>(map => map.GetMemberMap(c => c.CompetitorProductId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportObjection>(map => map.GetMemberMap(o => o.ObjectionResponseId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportRequest>(map => map.GetMemberMap(r => r.DueDate).SetSerializer(nullableDateOnlyV2));
+        Map<VisitReportV2Sample>(map => map.GetMemberMap(s => s.GskuId).SetSerializer(stringGuid));
+        Map<VisitReportDoctorLevel>(_ => { });
+        Map<VisitReportPharmacy>(_ => { });
+        Map<VisitReportStockRow>(map => map.GetMemberMap(s => s.GskuId).SetSerializer(stringGuid));
+        Map<VisitReportShelf>(map => map.GetMemberMap(s => s.PhotoEvidenceId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportSalesRow>(map => map.GetMemberMap(s => s.GskuId).SetSerializer(stringGuid));
+        Map<VisitReportRecommendation>(map => map.GetMemberMap(r => r.LinkedContactIds)
+            .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid)));
+        Map<VisitReportTraining>(_ => { });
+        Map<VisitReportSafety>(_ => { });
+        Map<VisitReportFollowUp>(map => map.GetMemberMap(f => f.SuggestedDate).SetSerializer(nullableDateOnlyV2));
+        Map<VisitReportAmendmentChange>(_ => { });
+
+        // WP-VW-W3 (BE-a) - VisitExecution and its embedded types. Every Guid (the plan FK, the evidence content ids, the
+        // timing / mark / note product + step ids) takes the string-Guid convention - an unmapped embedded Guid would be
+        // written binary and every by-plan / by-id filter would silently find NOTHING (the CRM new-aggregate trap). The
+        // types without a Guid are registered too, so the driver never treats them as anonymous.
+        Map<VisitExecution>(map =>
+        {
+            map.GetMemberMap(e => e.PlannedVisitId).SetSerializer(stringGuid);
+            // WP-VW-W3 (W3-BE-c) — the exception the start ran under (string-Guid, the trap).
+            map.GetMemberMap(e => e.ExceptionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionLocation)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionLocation>(map => map.AutoMap());
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionEvidence)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionEvidence>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(e => e.ContentId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionSignature)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionSignature>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.ContentId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionProductTiming)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionProductTiming>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(t => t.ProductId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionSlideTiming)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionSlideTiming>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(t => t.ProductId).SetSerializer(stringGuid);
+                map.GetMemberMap(t => t.StepId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionMark)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionMark>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(m => m.ProductId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionPersonalNote)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionPersonalNote>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(n => n.ProductId).SetSerializer(stringGuid);
+            });
+        }
+        // WP-VW-W3 (BE-a, K-W2) - the tenant's evidence policy: no Guid of its own beyond the base Id / TenantId.
+        Map<VisitEvidencePolicy>(_ => { });
+
+        // WP-VW-W3 (W3-BE-c) - the time-boxed exceptions: the dates are DateOnly "yyyy-MM-dd" strings (the PlannedVisit
+        // convention), the rounds / decisions reuse the ClaimReviewRound / RegulatoryTextDecision maps; the policy
+        // history carries no Guid of its own beyond the base Id / TenantId.
+        Map<VisitEvidenceException>(map =>
+        {
+            map.GetMemberMap(e => e.StartDate).SetSerializer(dateOnlyString);
+            map.GetMemberMap(e => e.EndDate).SetSerializer(dateOnlyString);
+        });
+        Map<VisitEvidencePolicyChange>(_ => { });
+
+        // WP-VW-W4 (W4-BE-c) - the doctor insights: every Guid FK as a string (the GUID trap: a type missing here stores
+        // its Guids binary and the string-Guid queries come back EMPTY silently).
+        var nullableStringGuid = new NullableSerializer<Guid>(stringGuid);
+        Map<DoctorProfile>(map => map.GetMemberMap(p => p.ContactId).SetSerializer(stringGuid));
+        Map<DoctorProfileChange>(map => map.GetMemberMap(c => c.ContactId).SetSerializer(stringGuid));
+        Map<DoctorProductPotential>(map =>
+        {
+            map.GetMemberMap(p => p.ContactId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.GlobalProductId).SetSerializer(stringGuid);
+        });
+        Map<DoctorPotentialRow>(map =>
+        {
+            map.GetMemberMap(r => r.IndicationNodeId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.ProfileNodeId).SetSerializer(nullableStringGuid);
+        });
+        Map<DoctorProductPotentialChange>(map =>
+        {
+            map.GetMemberMap(c => c.ContactId).SetSerializer(stringGuid);
+            map.GetMemberMap(c => c.GlobalProductId).SetSerializer(stringGuid);
+        });
+        Map<ProductPotentialThreshold>(map => map.GetMemberMap(t => t.GlobalProductId).SetSerializer(nullableStringGuid));
+        Map<ProductPotentialThresholdChange>(map => map.GetMemberMap(c => c.GlobalProductId).SetSerializer(nullableStringGuid));
 
         _classMapsRegistered = true;
     }
@@ -1939,6 +2126,33 @@ public static class DependencyInjection
                     .Ascending(r => r.TenantId).Ascending(r => r.ReportedByResourceId)
                     .Ascending("ContentActuals.StageIndex"),
                 new CreateIndexOptions { Name = "ix_visit_reports_tenant_resource_stage" }));
+
+            // WP-VW-W3 (BE-a) - visit_executions: ONE per planned visit, guaranteed by the database (a concurrent second
+            // start loses). Equality-only partial filter (IsDeleted:false) - $ne in a partial filter crash-loops startup.
+            // Scalar keys only: StartedAt / FinishedAt are DateTimeOffset (BSON arrays) and are never index keys.
+            var visitExecutions = database.GetCollection<VisitExecution>(VisitExecutionRepository.CollectionName);
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.PlannedVisitId),
+                new CreateIndexOptions<VisitExecution>
+                {
+                    Name = "ux_visit_executions_tenant_planned_visit",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitExecution>.Filter.Eq(e => e.IsDeleted, false)
+                }));
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.ResourceId).Ascending(e => e.Status),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_resource_status" }));
+
+            // WP-VW-W3 (BE-a, K-W2) - visit_evidence_policies: one document per tenant.
+            var evidencePolicies = database.GetCollection<VisitEvidencePolicy>(VisitEvidencePolicyRepository.CollectionName);
+            evidencePolicies.Indexes.CreateOne(new CreateIndexModel<VisitEvidencePolicy>(
+                Builders<VisitEvidencePolicy>.IndexKeys.Ascending(p => p.TenantId),
+                new CreateIndexOptions<VisitEvidencePolicy>
+                {
+                    Name = "ux_visit_evidence_policies_tenant",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitEvidencePolicy>.Filter.Eq(p => p.IsDeleted, false)
+                }));
         }
         catch (MongoException)
         {

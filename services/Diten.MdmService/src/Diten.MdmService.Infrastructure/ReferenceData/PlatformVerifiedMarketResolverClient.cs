@@ -69,6 +69,13 @@ public sealed class PlatformVerifiedMarketResolverClient : IVerifiedMarketRefere
                 request,
                 HttpCompletionOption.ResponseHeadersRead,
                 budget.Token);
+            // LSKU FIX4 item 2 (the FIX3 item 6 rule at create time): a failure that is not Platform's JSON (an
+            // ingress/proxy page, a misrouted path) is the provider being unreachable — never "this market does not
+            // exist", whose refusal burns the creation's code.
+            if (!response.IsSuccessStatusCode
+                && !string.Equals(response.Content.Headers.ContentType?.MediaType, "application/json",
+                    StringComparison.OrdinalIgnoreCase))
+                return Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
             ResolveEnvelope? envelope;
             try
             {
@@ -221,10 +228,16 @@ public sealed class PlatformVerifiedMarketResolverClient : IVerifiedMarketRefere
         && string.Equals(selection.ResolutionMode, "LATEST", StringComparison.Ordinal)
         && selection.ResolvedAtUtc != default;
 
+    // LSKU FIX4 item 2: only Platform's own exact "this market is not offered" is a definite 404; a JSON 404 with any
+    // other reason is a contract error (503), so it never counts as a definite refusal of the creation.
+    public const string MarketNotOfferedReason = "REFERENCE_MARKET_NOT_FOUND";
+
     private static VerifiedMarketReferenceResolveResult MapFailure(HttpStatusCode status, string? reasonCode) =>
         status switch
         {
-            HttpStatusCode.NotFound => Fail(404, TrustedReason(reasonCode, "REFERENCE_MARKET_NOT_FOUND")),
+            HttpStatusCode.NotFound => string.Equals(reasonCode, MarketNotOfferedReason, StringComparison.Ordinal)
+                ? Fail(404, MarketNotOfferedReason)
+                : Fail(503, "REFERENCE_PROVIDER_CONTRACT_INVALID"),
             HttpStatusCode.GatewayTimeout => Fail(504, "REFERENCE_PROVIDER_TIMEOUT"),
             _ => Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE")
         };

@@ -784,6 +784,11 @@ internal sealed class SwitchedApprovals(TimesheetApprovalService inner, CancelSw
     public Task<IReadOnlyDictionary<Guid, TimesheetDecisionOutcome>> ReadOutcomesAsync(
         IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
         => inner.ReadOutcomesAsync(workflowInstanceIds, ct);
+
+    public Task<IReadOnlySet<Guid>> DecidableInstanceIdsAsync(
+        Guid userId, IReadOnlyCollection<Guid> workflowInstanceIds, bool includeDecidedByUser = false,
+        CancellationToken ct = default)
+        => inner.DecidableInstanceIdsAsync(userId, workflowInstanceIds, includeDecidedByUser, ct);
 }
 
 internal sealed class ScopeEcho

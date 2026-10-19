@@ -1,0 +1,361 @@
+name: service-tests
+
+# BL-577 — the service test projects, on Linux (one on macOS: the Auth acceptance host, job service-tests-macos). phase1-gates.yml only BUILDS the service solutions; before this file
+# none of their tests ran in CI, so Linux-only behaviour (BL-570: the Auth operator commands' Unix secret channel and
+# lock) was never measured. Guide: docs/guides/operations/ci-service-tests.md.
+#
+# Triggers (Control Tower decision, to save Actions minutes): pull requests, pushes to main, and by hand. A branch
+# push does NOT run these; phase1-gates.yml keeps its own triggers.
+#
+# The architecture guard CiServiceTestsGuardTests reads this file: the matrix must name every service test project
+# (or the guard's named list of projects outside this job — empty since BL-590), and every job keeps its timeout, its
+# hang timeout, the pinned mongod and DITEN_TEST_MONGOD (every test owns its mongod — no job-local one), and the pinned RabbitMQ.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  # mongod is pinned: the same major version as dev (measured `db version v7.0.28`). MongoDB publishes 7.0 for
+  # Ubuntu 22.04 (jammy) and NOT for 24.04 (noble: 8.0 and later; measured 2026-10-09 in repo.mongodb.org), hence
+  # runs-on: ubuntu-22.04 below. The digest is written HERE — never read from the server the tarball comes from.
+  MONGODB_VERSION: "7.0.28"
+  MONGODB_TARBALL: mongodb-linux-x86_64-ubuntu2204-7.0.28.tgz
+  MONGODB_SHA256: 7fc16f46fb10753b982ab03bd9d7dd5920d18d181259f825c2462ca903c55d4d
+  # CT-CI-MACOS-01: the same version for the macOS job (Apple silicon tarball, official fastdl.mongodb.org/osx). Its
+  # digest was computed from the tarball itself (2026-10-16, 69 532 134 bytes) and is written HERE, like the Linux one.
+  MONGODB_MACOS_TARBALL: mongodb-macos-arm64-7.0.28.tgz
+  MONGODB_MACOS_SHA256: 1388a09743db960785de75aa4b5e077fca1767e9c948ccfaafef6280c862e239
+  # BL-590: RabbitMQ for Platform.Eventing, pinned by the multi-arch index digest of the exact tag (Docker Hub,
+  # measured 2026-10-09). 4.3.2 is the version dev runs (Homebrew rabbitmq 4.3.2).
+  RABBITMQ_IMAGE: rabbitmq:4.3.2@sha256:345dd3c11d67892c7b452fb2237d94f577acb2aa0569c3fd5c9841eb0c1b57fb
+
+jobs:
+  service-tests:
+    name: service-tests (${{ matrix.suite }})
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: platform-app
+            project: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj
+          - suite: platform-bgjobs
+            project: services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj
+          - suite: platform-eventing
+            project: services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj
+          # WP-PLATFORM-COMPOSITION-GUARD-OWNED-01: main's composition-root guard (Q366). No URI on this row: the guard
+          # starts its own mongod from DITEN_TEST_MONGOD (PlatformTestMongo), like the other Platform rows.
+          - suite: platform-composition-guard
+            project: services/Diten.Platform/tests/Diten.Platform.CompositionGuard.Tests/Diten.Platform.CompositionGuard.Tests.csproj
+          - suite: auth-app
+            project: services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
+          # WP-CI-SERVICE-TESTS-03 (with the MDM takeover): starts its OWN mongod (Support/OwnedMongo.cs, random port,
+          # DITEN_TEST_MONGOD / DITEN_ITEST_MONGOD_BIN_DIR); auth-* also carries DITEN_REQUIRE_OWNED_MONGO.
+          - suite: auth-scr
+            project: services/Diten.AuthService/tests/Diten.AuthService.ServiceClientRegistry.Tests/Diten.AuthService.ServiceClientRegistry.Tests.csproj
+          - suite: mdm-app
+            project: services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj
+          # WP-CI-SERVICE-TESTS-03 (with the MDM takeover): MdmHttpHost starts its OWN mongod (DITEN_TEST_MONGOD).
+          - suite: mdm-api
+            project: services/Diten.MdmService/tests/Diten.MdmService.Api.Tests/Diten.MdmService.Api.Tests.csproj
+          # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
+          # (measured, scratchpad cf3-measure.log). Only DevEnablement needs a mongod — its own, via
+          # DITEN_ITEST_MONGOD_BIN_DIR (EphemeralMongo); the rest need nothing outside the process. Not yet here, each with
+          # its reason: the guard's NotInThisJob (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM).
+          - suite: bb-secrets
+            project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
+          - suite: bb-email
+            project: services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Email.Tests/Diten.BuildingBlocks.Email.Tests.csproj
+          - suite: devenablement-api
+            project: services/Diten.DevEnablementService/tests/Diten.DevEnablementService.Api.Tests/Diten.DevEnablementService.Api.Tests.csproj
+          - suite: mg-tests
+            project: services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj
+          - suite: procurement-api
+            project: services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj
+          - suite: pvg-api
+            project: services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj
+          - suite: pvg-case-processing
+            project: services/Diten.PvgService/tests/Diten.PvgService.CaseProcessing.Tests/Diten.PvgService.CaseProcessing.Tests.csproj
+          - suite: pvg-meddra-coding
+            project: services/Diten.PvgService/tests/Diten.PvgService.MeddraCoding.Tests/Diten.PvgService.MeddraCoding.Tests.csproj
+          - suite: pvg-regpv-base
+            project: services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj
+          - suite: pvg-signal-management
+            project: services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj
+          # WP-LANE-MAIN-SYNC-02 M1 (owner decision 2026-10-14): the two services that came with main-sync 2026-10-14.
+          # Inventory (Stok / MVP-1) starts its OWN replica set from DITEN_TEST_MONGOD (TestMongo, refuses 27017); its
+          # contract tests need Prism 4.10.5 in the npx cache (step "Install Prism (Inventory)"). Manufacturing (Üretim /
+          # MVP-3) reads MANUFACTURING_TEST_MONGO for its Mongo tests — no CI row provides one yet (BL-637).
+          - suite: inventory-tests
+            project: services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj
+          - suite: manufacturing-tests
+            project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
+          - suite: planning-tests
+            project: services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj
+          # SafetyStock's Mongo tests start and stop their own replica set from DITEN_TEST_MONGOD.
+          - suite: safety-stock-calculation
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Calculation.Tests/Diten.SafetyStockService.Calculation.Tests.csproj
+          - suite: safety-stock-policy-state
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.PolicyState.Tests/Diten.SafetyStockService.PolicyState.Tests.csproj
+          - suite: safety-stock-read
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Read.Tests/Diten.SafetyStockService.Read.Tests.csproj
+          # Main sync (CI follow-up 3 review): the gateway's own tests (route table, ports, headers). No Mongo, no broker.
+          - suite: gateway
+            project: gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj
+    env:
+      SUITE: ${{ matrix.suite }}
+      PROJECT: ${{ matrix.project }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install mongod (pinned version and digest)
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$MONGODB_TARBALL" "https://fastdl.mongodb.org/linux/$MONGODB_TARBALL"
+          echo "$MONGODB_SHA256  $RUNNER_TEMP/$MONGODB_TARBALL" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$MONGODB_TARBALL" -C "$RUNNER_TEMP"
+          bin="$RUNNER_TEMP/${MONGODB_TARBALL%.tgz}/bin"
+          "$bin/mongod" --version | grep -F "db version v$MONGODB_VERSION"
+          # Platform's disposable mongod and the other owned-mongod tests use this binary (Auth's acceptance host runs in
+          # the macOS job below, with the macOS build of the same version).
+          echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
+          echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
+          # WP-CI-SERVICE-TESTS-05 (BL-646 item 1): Platform's audit-outbox temporal fixture (AuditOutboxTemporalReplicaSetFixture,
+          # 4 classes, 325 tests in PR #144) starts its OWN standalone + replica-set mongod from THIS variable; without it the
+          # fixture searches PATH and fixed install paths, finds nothing on the runner, and every test is red with
+          # AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED. The same pinned binary; still no job-local mongod.
+          echo "DITEN_FU02_MONGOD_PATH=$bin/mongod" >> "$GITHUB_ENV"
+
+      # FIX1 (measured): MDM's cross-service tests load Platform.API's and MDM.Api's RELEASE assemblies from their bin
+      # (bin/Release/net8.0 — "run the Platform Release build first"); the job's Debug test build does not produce them,
+      # so without this step 38 mdm-app tests are red with FileNotFoundException.
+      - name: Build the Release assemblies the MDM cross-service tests load (MDM)
+        if: matrix.suite == 'mdm-app'
+        run: |
+          dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release
+          dotnet build services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Release
+
+      # FIX2 (measured on a clean worktree, no bin/obj): Platform BackgroundJobs' child-host test
+      # (PlatformApiStartupExecutionModeTests.Actual_api_host_serves_health_with_scheduler_and_dashboard_disabled) starts
+      # Platform.API's RELEASE DLL; the Debug test build does not produce it, so the row is red without this step.
+      - name: Build the Release Platform API the child-host test starts (Platform BackgroundJobs)
+        if: matrix.suite == 'platform-bgjobs'
+        run: dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release
+
+      # Main sync FIX1 (CT decision D): NO job-local mongod any more. Every service test starts its OWN mongod from
+      # DITEN_TEST_MONGOD (set by the install step above): Platform / BackgroundJobs / Eventing through
+      # services/Diten.Platform/tests/Shared/PlatformTestMongo.cs, MDM through MdmTestMongo (BL-595 MDM — it ignores
+      # MDM_TEST_MONGO by design), Auth through its owned replica set. Nothing read MONGO_TEST_URI / MDM_TEST_MONGO /
+      # Eventing__MongoDb__ConnectionString any more (measured), so the step and its three variables were removed.
+      #
+      # BL-590: Platform.Eventing's integration tests need a real broker. A step, not a `services:` container: a service
+      # cannot be started for one matrix row only. --network host: the default guest user may only log in over
+      # loopback, so no user or password is written anywhere (guest lives and dies with this job's container).
+      # WP-CI-SERVICE-TESTS-05 (BL-646 item D; PR #144 job 116035243722): the broker did not start slowly, it crashed —
+      # "Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces". The readiness probe was `docker exec` as ROOT
+      # right after `docker run`; when the CLI wins the race it creates the cookie owned by root (mode 400) and the
+      # server, running as the image's rabbitmq user, cannot read it. So: (1) a TCP connect from the runner comes FIRST
+      # and short-circuits the rest — no CLI runs before the server has written its own cookie; (2) every CLI call runs
+      # as `-u rabbitmq`, the cookie's owner; (3) a container that has exited fails at once with its log. No cookie value
+      # is written anywhere (the server generates its own; nothing here is a secret). Budget back to 120 s.
+      - name: Start RabbitMQ (Eventing)
+        if: matrix.suite == 'platform-eventing'
+        env:
+          RABBITMQ_PORT: "5672"
+        run: |
+          set -euo pipefail
+          docker run -d --name rabbitmq --network host "$RABBITMQ_IMAGE"
+          # A real 120 s deadline (bash SECONDS), not an attempt count: each attempt can take up to ~4 s (2 s TCP timeout
+          # + 2 s sleep), so 60 attempts alone could run ~240 s while the message said 120 s (Codex measurement, 2026-10-16).
+          deadline=$((SECONDS + 120))
+          for attempt in $(seq 1 60); do
+            if [ "$(docker inspect -f '{{.State.Running}}' rabbitmq)" != "true" ]; then
+              docker logs rabbitmq 2>&1 | tail -80
+              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — the container exited (attempt $attempt)"
+              exit 1
+            fi
+            if timeout 2 bash -c "exec 3<>/dev/tcp/127.0.0.1/$RABBITMQ_PORT" 2>/dev/null \
+              && docker exec -u rabbitmq rabbitmq rabbitmq-diagnostics -q check_running >/dev/null 2>&1 \
+              && docker exec -u rabbitmq rabbitmq rabbitmq-diagnostics -q check_port_listener "$RABBITMQ_PORT" >/dev/null 2>&1; then
+              echo "[rabbitmq] ok — accepting a TCP connection, running and listening after $attempt attempt(s)"
+              break
+            fi
+            last=0
+            if [ "$SECONDS" -ge "$deadline" ]; then last=1; fi
+            if [ "$attempt" -eq 60 ]; then last=1; fi
+            if [ "$last" -eq 1 ]; then
+              docker logs rabbitmq 2>&1 | tail -80
+              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — not accepting / running / listening within 120 s ($attempt attempt(s), ${SECONDS}s)"
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "Eventing__RabbitMq__IntegrationTestsEnabled=true" >> "$GITHUB_ENV"
+          echo "Eventing__RabbitMq__Host=127.0.0.1" >> "$GITHUB_ENV"
+          echo "Eventing__RabbitMq__Port=$RABBITMQ_PORT" >> "$GITHUB_ENV"
+
+      # WP-LANE-MAIN-SYNC-02 M1: Inventory's PrismMockFixture reads @stoplight/prism-cli 4.10.5 from the npx cache; a
+      # one-shot `--version` puts exactly that version there and exits (no server). Pinned version, Inventory row only.
+      - name: Install Prism (Inventory)
+        if: matrix.suite == 'inventory-tests'
+        run: npx --yes @stoplight/prism-cli@4.10.5 --version
+
+      # BL-570 FIX3 makes Auth's owned-Mongo tests RED (not skipped) when no owned mongod is found, when this flag is
+      # set. Until that code lands the flag has no effect and does no harm — "takes effect with BL-570 FIX3".
+      - name: Owned Mongo is required (Auth)
+        if: startsWith(matrix.suite, 'auth-')
+        run: echo "DITEN_REQUIRE_OWNED_MONGO=1" >> "$GITHUB_ENV"
+
+      - name: Start owned Mongo (Planning)
+        if: matrix.suite == 'planning-tests'
+        run: bash scripts/test-env/mod0188-ci-mongo.sh start
+
+      # A hung test must not hold the job until its timeout: --blame-hang-timeout aborts and names it (lesson 8).
+      - name: Test
+        run: |
+          dotnet test "$PROJECT" -c Debug --blame-hang --blame-hang-timeout 20m \
+            --logger "trx;LogFileName=$SUITE.trx" --results-directory "$RUNNER_TEMP/test-results"
+
+      # dotnet test exits 0 when tests are skipped. Runs even after a red test step, so both are reported. FIX1: the only
+      # accepted skips are the repository allow-list's codes for THIS suite (scripts/ci-skip-allowlist.tsv).
+      - name: Skipped = 0
+        if: always()
+        run: python3 scripts/check_trx_no_skipped.py --suite "$SUITE" "$RUNNER_TEMP/test-results/$SUITE.trx"
+
+      - name: Stop owned Mongo (Planning)
+        if: always() && matrix.suite == 'planning-tests'
+        run: bash scripts/test-env/mod0188-ci-mongo.sh stop
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-${{ matrix.suite }}
+          path: ${{ runner.temp }}/test-results
+          if-no-files-found: warn
+
+  # CT-CI-MACOS-01 (PR #148 run): the acceptance host's supervisor tests use macOS-only process interfaces —
+  # posix_spawnattr_t passed as a pointer (glibc's is a struct; the Linux run aborted, "host exited unexpectedly"),
+  # libproc / kinfo_proc, and the host's peer verification, which fails closed on any other system (Program.cs G6(b)).
+  # So the row runs HERE, on the system they were written for, and in no other job: the whole project, no --filter,
+  # no skip, the same test / skip / upload steps. macos-15 (Apple silicon), not macos-14 (retired 2026-11-02).
+  # Two of its tests start /usr/local/share/dotnet/dotnet (a fixed path): setup-dotnet installs there
+  # (DOTNET_INSTALL_DIR, its README). Before it, one step prepares that directory on the fresh VM — not a symlink, absent
+  # or empty, created with sudo -n and owned by the runner user, writable; after it, one step checks that binary and its
+  # 8.0 runtime. Both fail closed, before any test. /usr/local may be root-owned on Apple silicon images (not measured).
+  # CT-CI-MACOS-02: the tests start the host with a minimal environment (DITEN_ITEST_MONGOD_BIN_DIR is not in it), and
+  # its mongod resolver (AccountKindAcceptance: that variable, PATH, /opt/homebrew/bin, /usr/local/bin, /usr/bin) did
+  # not see the pinned mongod (first run, job 117179592751: 19 of 71 red, "mongo-start-failed"). One step links the
+  # pinned binary at /usr/local/bin/mongod — only if nothing is there — and checks, in the resolver's own order, that the
+  # first mongod found is exactly that binary (real path and sha256). No test code, env allow-list or PATH change.
+  service-tests-macos:
+    name: service-tests (${{ matrix.suite }})
+    runs-on: macos-15
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: auth-acceptance-host
+            project: services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj
+    env:
+      SUITE: ${{ matrix.suite }}
+      PROJECT: ${{ matrix.project }}
+      DOTNET_INSTALL_DIR: /usr/local/share/dotnet
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Prepare the dotnet install directory (macOS)
+        run: |
+          set -euo pipefail
+          test ! -L "$DOTNET_INSTALL_DIR"
+          if [ -e "$DOTNET_INSTALL_DIR" ]; then
+            entries="$(ls -A "$DOTNET_INSTALL_DIR")"
+            test -z "$entries"
+          fi
+          sudo -n mkdir -p "$DOTNET_INSTALL_DIR"
+          sudo -n chown "$(id -u):$(id -g)" "$DOTNET_INSTALL_DIR"
+          test -w "$DOTNET_INSTALL_DIR"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: The acceptance host's dotnet (macOS)
+        run: |
+          set -euo pipefail
+          test -x /usr/local/share/dotnet/dotnet
+          /usr/local/share/dotnet/dotnet --list-runtimes | grep -F "Microsoft.NETCore.App 8." | grep -F "[/usr/local/share/dotnet/shared/Microsoft.NETCore.App]"
+
+      - name: Install mongod (pinned version and digest, macOS)
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$MONGODB_MACOS_TARBALL" "https://fastdl.mongodb.org/osx/$MONGODB_MACOS_TARBALL"
+          actual="$(shasum -a 256 "$RUNNER_TEMP/$MONGODB_MACOS_TARBALL" | cut -d ' ' -f 1)"
+          test "$actual" = "$MONGODB_MACOS_SHA256"
+          tar -xzf "$RUNNER_TEMP/$MONGODB_MACOS_TARBALL" -C "$RUNNER_TEMP"
+          bin="$RUNNER_TEMP/mongodb-macos-aarch64-$MONGODB_VERSION/bin"
+          "$bin/mongod" --version | grep -F "db version v$MONGODB_VERSION"
+          echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
+          echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
+
+      - name: The acceptance host resolves the pinned mongod (macOS)
+        run: |
+          set -euo pipefail
+          test -x "$DITEN_TEST_MONGOD"
+          test ! -e /usr/local/bin/mongod
+          test ! -L /usr/local/bin/mongod
+          sudo -n mkdir -p /usr/local/bin
+          sudo -n ln -s "$DITEN_TEST_MONGOD" /usr/local/bin/mongod
+          first=""
+          IFS=: read -r -a entries <<< "$PATH"
+          for dir in "${entries[@]}" /opt/homebrew/bin /usr/local/bin /usr/bin; do
+            if [ -z "$first" ] && [ -n "$dir" ] && [ -f "$dir/mongod" ]; then first="$dir/mongod"; fi
+          done
+          test -n "$first"
+          selected="$(realpath "$first")"
+          pinned="$(realpath "$DITEN_TEST_MONGOD")"
+          test "$selected" = "$pinned"
+          selected_sha="$(shasum -a 256 < "$first")"
+          pinned_sha="$(shasum -a 256 < "$DITEN_TEST_MONGOD")"
+          test "$selected_sha" = "$pinned_sha"
+          "$first" --version | grep -F "db version v$MONGODB_VERSION"
+          echo "the acceptance host resolves mongod at $first -> $selected"
+
+      - name: Owned Mongo is required (Auth)
+        if: startsWith(matrix.suite, 'auth-')
+        run: echo "DITEN_REQUIRE_OWNED_MONGO=1" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: |
+          dotnet test "$PROJECT" -c Debug --blame-hang --blame-hang-timeout 20m \
+            --logger "trx;LogFileName=$SUITE.trx" --results-directory "$RUNNER_TEMP/test-results"
+
+      - name: Skipped = 0
+        if: always()
+        run: python3 scripts/check_trx_no_skipped.py --suite "$SUITE" "$RUNNER_TEMP/test-results/$SUITE.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results-${{ matrix.suite }}
+          path: ${{ runner.temp }}/test-results
+          if-no-files-found: warn

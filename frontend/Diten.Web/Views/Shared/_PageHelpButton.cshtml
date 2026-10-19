@@ -1,0 +1,17 @@
+@model Diten.Web.Models.Shared.PageHelpModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Diten.Web.PageHelpResource> Help
+@*
+    WP-UX-COMMON-01 (BL-495) — the top bar's ONE help button, in the same place on every page of the shell, at every
+    width (the language and theme items beside it stay visible on a phone; so does this). It opens _PageHelpPanel.
+    Not drawn on the unauthorized face (UAS-001): the panel would describe a page the reader cannot use.
+*@
+@if (!Diten.Web.Services.Navigation.CurrentPage.IsAccessDenied(Context))
+{
+    <li class="nav-item me-2 me-xl-0">
+        <button type="button" class="nav-link btn diten-help-toggle" id="diten-help-toggle" data-diten-help-open
+            aria-controls="diten-help-panel" title="@Help["Help.Panel.Open"]" aria-label="@Help["Help.Panel.Open"]">
+            <i class="icon-base bx bx-help-circle icon-md" aria-hidden="true"></i>
+        </button>
+    </li>
+}

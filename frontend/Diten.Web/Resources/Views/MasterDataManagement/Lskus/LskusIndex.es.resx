@@ -35,4 +35,64 @@
   <data name="ErrorProviderTimeout"><value>El proveedor de referencia agotó el tiempo de espera.</value></data>
   <data name="ErrorForbidden"><value>No tiene permiso.</value></data>
   <data name="ErrorGateway"><value>No se pudo completar la solicitud.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Identidad aprobada</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Aprobación de identidad pendiente</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retirado</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Enviar para aprobación</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>¿Enviar esta identidad LSKU para aprobación?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Motivo del retiro</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>El motivo del retiro es obligatorio.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>El motivo del retiro no puede superar los 128 caracteres.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>La identidad LSKU se envió y está pendiente de aprobación.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>El estado del ciclo de vida cambió. Se cargó el registro más reciente.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Su sesión ha caducado. Inicie sesión de nuevo.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>El servicio de ciclo de vida no está disponible. Inténtelo más tarde.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>La solicitud de ciclo de vida agotó el tiempo de espera. Inténtelo de nuevo.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Retirar aprobación</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>¿Retirar la solicitud de aprobación?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>La retirada sigue en proceso.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Solicitud de aprobación retirada.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Solicitar retirada</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>¿Enviar una solicitud de retirada?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>La solicitud de retirada espera una decisión.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Solicitud de retirada enviada.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>Este GSKU ya tiene un LSKU para este mercado. Abra el LSKU existente en lugar de crear uno nuevo.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>El servicio de aprobación rechazó este envío antes de iniciar una aprobación. El LSKU sigue siendo un borrador; puede enviarlo de nuevo.</value>
+  </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Antes de enviar este LSKU a aprobación, defina en el comportamiento de stock: {0}.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>La aprobación no se pudo aplicar a este LSKU, por ejemplo porque su mercado o su elemento principal ya no se puede usar. El LSKU vuelve a ser un borrador; corrija la causa y envíelo de nuevo.</value>
+  </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>Este LSKU cambió o se canceló después de iniciar el envío, por lo que no se envió nada a aprobación. Vuelva a abrir el LSKU y envíelo si todavía es necesario.</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>Hay una retirada de este envío en curso; vuelva a enviar la retirada para terminarla antes de enviar de nuevo.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>el control por número de serie (este LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>el control por lote de su GSKU — debe definirlo alguien autorizado a editar el GSKU</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>El comportamiento de stock está incompleto o es incoherente, por lo que aún no se puede enviar a aprobación. Complételo en Comportamiento de stock.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} y {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>La configuración de aprobación de esta acción está incompleta. Informe a su administrador.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>La solicitud no llegó al servicio de aprobación. Envíe la misma solicitud de nuevo.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>La aprobación está cambiando en este momento. Vuelva a intentarlo en un instante.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nadie más que usted puede aprobar el registro que envió. Pida a su administrador que ajuste los aprobadores; después podrá enviarlo de nuevo.</value></data>
 </root>

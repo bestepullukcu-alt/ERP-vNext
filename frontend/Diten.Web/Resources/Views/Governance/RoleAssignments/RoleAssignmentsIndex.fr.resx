@@ -94,4 +94,104 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Déplacer</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Démarrer</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Consulter la chaîne hiérarchique</value></data>
+  <data name="ActionVerb_Allocate" xml:space="preserve"><value>Allouer</value></data>
+  <data name="ActionVerb_Amend" xml:space="preserve"><value>Rectifier</value></data>
+  <data name="ActionVerb_Append" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="ActionVerb_Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="ActionVerb_ApproveExtension" xml:space="preserve"><value>Approuver la prolongation</value></data>
+  <data name="ActionVerb_AttachEvidence" xml:space="preserve"><value>Joindre une preuve</value></data>
+  <data name="ActionVerb_Audit" xml:space="preserve"><value>Auditer</value></data>
+  <data name="ActionVerb_AuditView" xml:space="preserve"><value>Consulter la piste d'audit</value></data>
+  <data name="ActionVerb_Block" xml:space="preserve"><value>Bloquer</value></data>
+  <data name="ActionVerb_Capture" xml:space="preserve"><value>Saisir</value></data>
+  <data name="ActionVerb_Change" xml:space="preserve"><value>Changer</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Modifier la marque</value></data>
+  <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Changer le statut</value></data>
+  <data name="ActionVerb_Commit" xml:space="preserve"><value>Finaliser</value></data>
+  <data name="ActionVerb_Configure" xml:space="preserve"><value>Configurer</value></data>
+  <data name="ActionVerb_Confirm" xml:space="preserve"><value>Confirmer</value></data>
+  <data name="ActionVerb_Correct" xml:space="preserve"><value>Corriger</value></data>
+  <data name="ActionVerb_CreateDraft" xml:space="preserve"><value>Créer un brouillon</value></data>
+  <data name="ActionVerb_Deactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="ActionVerb_Decide" xml:space="preserve"><value>Statuer</value></data>
+  <data name="ActionVerb_Dispatch" xml:space="preserve"><value>Expédier</value></data>
+  <data name="ActionVerb_Dispose" xml:space="preserve"><value>Éliminer</value></data>
+  <data name="ActionVerb_DryRun" xml:space="preserve"><value>Exécution à blanc</value></data>
+  <data name="ActionVerb_EditEmployment" xml:space="preserve"><value>Éditer les données d'emploi</value></data>
+  <data name="ActionVerb_EditLegal" xml:space="preserve"><value>Éditer le profil légal</value></data>
+  <data name="ActionVerb_End" xml:space="preserve"><value>Mettre fin</value></data>
+  <data name="ActionVerb_Generate" xml:space="preserve"><value>Générer</value></data>
+  <data name="ActionVerb_ImpactView" xml:space="preserve"><value>Consulter l'impact</value></data>
+  <data name="ActionVerb_Instantiate" xml:space="preserve"><value>Instancier</value></data>
+  <data name="ActionVerb_Invalidate" xml:space="preserve"><value>Invalider</value></data>
+  <data name="ActionVerb_Investigate" xml:space="preserve"><value>Enquêter</value></data>
+  <data name="ActionVerb_Link" xml:space="preserve"><value>Lier</value></data>
+  <data name="ActionVerb_Lookup" xml:space="preserve"><value>Interroger</value></data>
+  <data name="ActionVerb_LookupValidation" xml:space="preserve"><value>Valider la référence</value></data>
+  <data name="ActionVerb_Migrate" xml:space="preserve"><value>Migrer</value></data>
+  <data name="ActionVerb_MinutesPublish" xml:space="preserve"><value>Publier le compte rendu</value></data>
+  <data name="ActionVerb_MinutesWrite" xml:space="preserve"><value>Rédiger le compte rendu</value></data>
+  <data name="ActionVerb_Propose" xml:space="preserve"><value>Proposer</value></data>
+  <data name="ActionVerb_PublishOverride" xml:space="preserve"><value>Publier par dérogation</value></data>
+  <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>Consulter la synthèse</value></data>
+  <data name="ActionVerb_Rebase" xml:space="preserve"><value>Réaligner</value></data>
+  <data name="ActionVerb_Recover" xml:space="preserve"><value>Récupérer</value></data>
+  <data name="ActionVerb_Release" xml:space="preserve"><value>Libérer</value></data>
+  <data name="ActionVerb_Reopen" xml:space="preserve"><value>Rouvrir</value></data>
+  <data name="ActionVerb_Replace" xml:space="preserve"><value>Remplacer</value></data>
+  <data name="ActionVerb_RequestCorrection" xml:space="preserve"><value>Demander une correction</value></data>
+  <data name="ActionVerb_RequestInfo" xml:space="preserve"><value>Demander des informations</value></data>
+  <data name="ActionVerb_RequestRetirement" xml:space="preserve"><value>Demander le retrait</value></data>
+  <data name="ActionVerb_Reserve" xml:space="preserve"><value>Réserver</value></data>
+  <data name="ActionVerb_Resolve" xml:space="preserve"><value>Résoudre</value></data>
+  <data name="ActionVerb_Retire" xml:space="preserve"><value>Retirer du service</value></data>
+  <data name="ActionVerb_Rollback" xml:space="preserve"><value>Revenir en arrière</value></data>
+  <data name="ActionVerb_SeriesManage" xml:space="preserve"><value>Gérer les séries</value></data>
+  <data name="ActionVerb_Settle" xml:space="preserve"><value>Régler</value></data>
+  <data name="ActionVerb_Sign" xml:space="preserve"><value>Signer</value></data>
+  <data name="ActionVerb_TemporaryIssue" xml:space="preserve"><value>Émettre temporairement</value></data>
+  <data name="ActionVerb_ThresholdsManage" xml:space="preserve"><value>Gérer les seuils</value></data>
+  <data name="ActionVerb_Transition" xml:space="preserve"><value>Faire évoluer l'état</value></data>
+  <data name="ActionVerb_TypesManage" xml:space="preserve"><value>Gérer les types</value></data>
+  <data name="ActionVerb_Unblock" xml:space="preserve"><value>Débloquer</value></data>
+  <data name="ActionVerb_UpdateReleased" xml:space="preserve"><value>Modifier après libération</value></data>
+  <data name="ActionVerb_VersionPublish" xml:space="preserve"><value>Publier la version</value></data>
+  <data name="ActionVerb_ViewSensitive" xml:space="preserve"><value>Consulter les données sensibles</value></data>
+  <data name="ActionVerb_ViewStatusHistory" xml:space="preserve"><value>Consulter l'historique des statuts</value></data>
+  <data name="ActionVerb_Withdraw" xml:space="preserve"><value>Retirer la demande</value></data>
+  <data name="ActionVerb_Write" xml:space="preserve"><value>Écrire</value></data>
+  <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Saisir la valeur</value></data>
+  <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Tout le locataire : permet aussi à ce rôle de planifier, d'appliquer et de replanifier des visites pour d'autres représentants.</value></data>
+  <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Tout le locataire : étend à tout le locataire les autorisations d'écriture existantes de ce rôle sur les visites planifiées et les rapports de visite.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>Cette autorisation permet aussi de :
+• modifier les champs de la tâche
+• accepter une demande ou la refuser en indiquant un motif
+• retirer une demande restée sans réponse
+• planifier la tâche dans le calendrier ou l'en retirer
+• démarrer la tâche
+• l'envoyer en revue
+• signaler que la tâche attend quelqu'un
+• rendre le travail à son demandeur
+• cocher, ajouter, modifier, supprimer et réordonner les éléments de la liste de contrôle
+• ajouter et supprimer des pièces jointes
+• ajouter et supprimer des dépendances</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Votre session n'a pas pu être vérifiée. Reconnectez-vous puis réessayez.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Ce rôle n'existe plus. Actualisez la page.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>Cette autorisation est réservée à l'administration de la plateforme et ne peut pas être accordée à un rôle.</value>
+  </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>Cette autorisation est réservée aux processus système automatisés et ne peut pas être accordée à un rôle.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>Cette autorisation est fournie avec le rôle ou avec un module de votre abonnement ; elle ne peut pas être retirée ici.</value>
+  </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>Le rôle dispose déjà de cette autorisation. Actualisez la page.</value>
+  </data>
+  <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Retirer cette autorisation ne laisserait aucun autre compte actif pouvant ajouter des utilisateurs. Accordez d'abord ce droit à un autre utilisateur.</value></data>
 </root>

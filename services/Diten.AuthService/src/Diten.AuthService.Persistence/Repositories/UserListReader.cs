@@ -25,8 +25,14 @@ public sealed class UserListReader : IUserListReader
     private readonly IMongoCollection<UserRole> _userRoles;
     private readonly IMongoCollection<Role> _roles;
 
-    public UserListReader(IMongoDatabase database)
+    // BL-521 FIX6 item 13 (D') — the visibility says whether the caller is a tenant actor, for whom platform accounts are not
+    // part of the list, the export or the counters. FIX7 item 4 — REQUIRED, no default: a reader built without it (or a container
+    // that does not register it) fails instead of showing every platform account to every tenant actor.
+    private readonly IPlatformAccountVisibility _visibility;
+
+    public UserListReader(IMongoDatabase database, IPlatformAccountVisibility visibility)
     {
+        _visibility = visibility ?? throw new ArgumentNullException(nameof(visibility));
         _users = database.GetCollection<User>("users");
         _userRoles = database.GetCollection<UserRole>("userRoles");
         _roles = database.GetCollection<Role>("roles");
@@ -80,7 +86,7 @@ public sealed class UserListReader : IUserListReader
 
     public async Task<UserListPage> SearchAsync(Guid tenantId, UserListCriteria criteria, CancellationToken ct)
     {
-        var filter = BuildFilter(tenantId, criteria);
+        var filter = BuildFilter(tenantId, criteria, _visibility.HidesPlatformAccounts);
         var filteredTotal = await _users.CountDocumentsAsync(filter, cancellationToken: ct);
 
         // BL-452 export: the count already exceeds the cap → the caller refuses the file (413). Reading up to 50 000 full
@@ -141,7 +147,7 @@ public sealed class UserListReader : IUserListReader
         _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Not an orderable column.")
     };
 
-    private static FilterDefinition<User> BuildFilter(Guid tenantId, UserListCriteria criteria)
+    private static FilterDefinition<User> BuildFilter(Guid tenantId, UserListCriteria criteria, bool excludePlatformAccounts)
     {
         var f = Builders<User>.Filter;
         var all = new List<FilterDefinition<User>>
@@ -149,6 +155,11 @@ public sealed class UserListReader : IUserListReader
             f.Eq(u => u.TenantId, tenantId),
             f.Eq(u => u.IsDeleted, false)
         };
+
+        if (excludePlatformAccounts)
+        {
+            all.Add(PlatformAccountsExcluded);
+        }
 
         foreach (var token in (criteria.Search ?? string.Empty)
                      .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -179,6 +190,10 @@ public sealed class UserListReader : IUserListReader
 
         return f.And(all);
     }
+
+    /// <summary>An account that is not a platform account (BL-521 FIX6 item 13) — the ONE shared definition, equal to
+    /// <c>User.IsPlatformAccount</c> (FIX8 item 3: an empty or whitespace actor type is not one either).</summary>
+    private static readonly FilterDefinition<User> PlatformAccountsExcluded = PlatformAccountFilter.IsNotPlatformAccount;
 
     // The "i" option folds I↔i and Ç↔ç but not the Turkish pair: "YILMAZ" would miss "Yılmaz" (ı) and "ÇELİK" would miss
     // "Çelik". Every i-like letter of the (already escaped) token becomes the class of all four, so a Turkish tenant's
@@ -225,10 +240,16 @@ public sealed class UserListReader : IUserListReader
                 })) }
         });
 
+        var summaryFilter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        if (_visibility.HidesPlatformAccounts)
+        {
+            summaryFilter = Builders<User>.Filter.And(summaryFilter, PlatformAccountsExcluded);
+        }
+
         var row = await _users.Aggregate()
-            .Match(Builders<User>.Filter.And(
-                Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-                Builders<User>.Filter.Eq(u => u.IsDeleted, false)))
+            .Match(summaryFilter)
             .AppendStage<BsonDocument>(group)
             .FirstOrDefaultAsync(ct);
 

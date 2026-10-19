@@ -1,0 +1,54 @@
+{
+  "checks": [
+    {
+      "check": "route",
+      "exit": 0,
+      "summary": [
+        "self-test: 167/167 passed"
+      ]
+    },
+    {
+      "check": "queue",
+      "exit": 0,
+      "summary": [
+        "self-test: 69/69 passed"
+      ]
+    },
+    {
+      "check": "status",
+      "exit": 0,
+      "summary": [
+        "self-test: 75/75 passed"
+      ]
+    },
+    {
+      "check": "registry",
+      "exit": 0,
+      "summary": []
+    }
+  ],
+  "before": {
+    "scripts/ct_route.py": "8cd2b2f7ded7c59f045b00890d6408c87f11d894ba212fc4455f4f304644ae17",
+    ".antigravity/rules/capability-pack-standard.md": "ee5241de42f5a571b2d57996beef020e5473a24f67c4fc4aef7b00c496012a73",
+    "docs/guides/operations/control-tower-operating-card.md": "dcc25aad29fef64899b438d650ba9a859e51665c000b1a0f4d23f3df1543e990",
+    "execution/delivery/ct-contacts-template.tsv": "b17d9b5aa4d6025d9c6aac0927b0a49bd98839478ff9c70c87d35eb791e5b5ea"
+  },
+  "after": {
+    "scripts/ct_route.py": "8cd2b2f7ded7c59f045b00890d6408c87f11d894ba212fc4455f4f304644ae17",
+    ".antigravity/rules/capability-pack-standard.md": "ee5241de42f5a571b2d57996beef020e5473a24f67c4fc4aef7b00c496012a73",
+    "docs/guides/operations/control-tower-operating-card.md": "dcc25aad29fef64899b438d650ba9a859e51665c000b1a0f4d23f3df1543e990",
+    "execution/delivery/ct-contacts-template.tsv": "b17d9b5aa4d6025d9c6aac0927b0a49bd98839478ff9c70c87d35eb791e5b5ea"
+  },
+  "stable_during_checks": true,
+  "protected_unchanged": {
+    "execution/delivery/ct-queue-registry.tsv": true,
+    "execution/delivery/ct-queue-template.tsv": true,
+    "docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv": true,
+    "execution/domains/supply-chain-execution/work-packs/CT-QUEUE.tsv": true,
+    "scripts/ct_queue.py": true,
+    "scripts/prompt_gate.py": true,
+    "scripts/acceptance_record.py": true
+  },
+  "sop36_2_onward_unchanged": true,
+  "functional_source_same_as_independent_fixture_v3": true
+}

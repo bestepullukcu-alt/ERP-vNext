@@ -54,6 +54,7 @@
     const branchList = document.getElementById('branchList');
     let stages = [];
     let paths = [];
+    let adoptionStages = null; // WP-VW-W4 (W4-WEB-a): the crm-adoption-stage values; null = the list could not be read
     let canvas = null;
 
     const optionHtml = (arr, sel) => (arr || []).map(v => `<option value="${esc(v)}"${v === sel ? ' selected' : ''}>${esc(v)}</option>`).join('');
@@ -77,7 +78,24 @@
             if (journeySubjectId && journeyLanguage) query += '&language=' + encodeURIComponent(journeyLanguage);
             paths = (await envelope(await fetch(`${endpoint}/knowledge-paths?${query}`, { credentials: 'same-origin', headers: { Accept: 'application/json' } })))?.items || [];
         } catch (e) { paths = []; }
+        adoptionStages = await loadAdoptionStages();
     };
+
+    // WP-VW-W4 (W4-WEB-a) — the stage's adoption stage (the visit report's list, BRD crm-adoption-stage) in the page language.
+    const pageLanguage = String(document.documentElement.lang || 'en').toLowerCase().split('-')[0];
+    const adoptionLabel = v => (pageLanguage !== 'en' && v.attributes && (v.attributes['label_' + pageLanguage])) || v.displayName || v.valueCode;
+    const loadAdoptionStages = async () => {
+        try {
+            const data = await envelope(await fetch(`${endpoint}/adoption-stages`, { credentials: 'same-origin', headers: { Accept: 'application/json' } }));
+            const list = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
+            return list ? list.filter(v => v && v.valueCode && v.isActive !== false && v.isDeprecated !== true)
+                .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)).map(v => ({ code: v.valueCode, label: adoptionLabel(v) })) : null;
+        } catch (e) { return null; }
+    };
+    const adoptionName = code => ((adoptionStages || []).find(a => a.code === code) || {}).label || code;
+    const adoptionHtml = sel => `<option value="">${esc(L.AdoptionStageNone || '')}</option>` +
+        (adoptionStages || []).map(a => `<option value="${esc(a.code)}"${a.code === sel ? ' selected' : ''}>${esc(a.label)}</option>`).join('') +
+        (sel && !(adoptionStages || []).some(a => a.code === sel) ? `<option value="${esc(sel)}" selected>${esc(sel)}</option>` : '');
 
     const loadStages = async () => {
         try {
@@ -102,6 +120,7 @@
                     ${s.pathUsageCountInJourney > 1 ? `<span class="badge bg-label-secondary ms-2" title="${esc(L.RepeatedHint || '')}">${esc(L.Repeated || 'path repeat')}</span>` : ''}
                     <span class="badge ${resCls} ms-2">${esc(s.pathResolutionStatus)}</span>
                     ${s.advancementRule ? `<span class="badge bg-label-secondary ms-2">${esc(s.advancementRule)}</span>` : ''}
+                    ${s.adoptionStageCode ? `<span class="badge bg-label-warning ms-2" title="${esc(L.AdoptionStage || '')}">${esc(adoptionName(s.adoptionStageCode))}</span>` : ''}
                     ${s.branchConditions && s.branchConditions.length ? `<span class="badge bg-label-secondary ms-2">${esc(L.BranchConditions || 'branch')}: ${s.branchConditions.length}</span>` : ''}
                 </div>
                 <div class="d-flex gap-1">
@@ -158,6 +177,11 @@
         document.getElementById('stageType').innerHTML = optionalHtml(vocab.stageTypes, stage ? stage.stageType : '');
         document.getElementById('stagePathPin').innerHTML = optionHtml(vocab.pathVersionPinPolicies, stage ? stage.pathVersionPinPolicy : 'pinned');
         document.getElementById('stageAdvancementRule').innerHTML = optionalHtml(vocab.advancementRules, stage ? stage.advancementRule : '');
+        const adoption = document.getElementById('stageAdoption');
+        if (adoption) {
+            adoption.innerHTML = adoptionHtml(stage ? stage.adoptionStageCode : '');
+            adoption.title = adoptionStages ? '' : (L.AdoptionStageUnavailable || '');
+        }
         document.getElementById('stageKnowledgePathId').innerHTML = `<option value="">${esc(L.SelectOption || '')}</option>` +
             paths.map(p => {
                 const id = p.pathId || p.id;
@@ -212,6 +236,7 @@
             advancementRule: document.getElementById('stageAdvancementRule').value || null,
             fallbackStageId: document.getElementById('stageFallback').value || null,
             notes: document.getElementById('stageNotes').value.trim() || null,
+            adoptionStageCode: document.getElementById('stageAdoption')?.value || null,
             branchConditions: readBranches()
         };
         const url = editId ? `${endpoint}/journeys/${journeyId}/stages/${editId}` : `${endpoint}/journeys/${journeyId}/stages`;

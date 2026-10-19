@@ -23,6 +23,7 @@
   <data name="Archive" xml:space="preserve"><value>Arşivle</value></data>
   <data name="ArchiveConfirm" xml:space="preserve"><value>Şablon arşivlenecek ve aktif listeden kaldırılacak. Devam edilsin mi?</value></data>
   <data name="TemplateArchived" xml:space="preserve"><value>Şablon arşivlendi.</value></data>
+  <data name="TemplateChangedReload" xml:space="preserve"><value>Bu şablon siz açtıktan sonra değiştirildi. Sayfayı yeniden yükleyip değişikliğinizi tekrar yapın.</value></data>
   <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
   <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>Arşivlenmiş</value></data>

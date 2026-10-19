@@ -378,9 +378,6 @@
   <data name="ServiceCodeInUse" xml:space="preserve">
     <value>Servis kodu zaten kullanımda.</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Görev Merkezi</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Kalem Kartı</value>
   </data>
@@ -511,6 +508,11 @@
   <data name="AdminLastSuperAdminDenied" xml:space="preserve"><value>Sistemde en az bir aktif Super Admin kalmalıdır.</value></data>
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>Sistem seed yoneticisi silinemez.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>Sistem seed yoneticisi askıya alınamaz.</value></data>
+  <data name="AdminSeedEmailChangeDenied" xml:space="preserve"><value>Sistem seed yöneticisinin e-posta adresi değiştirilemez.</value></data>
+  <data name="AdminChangeUnavailable" xml:space="preserve"><value>Yönetici değişikliği şu anda kaydedilemedi; hiçbir şey yazılmadı. Lütfen yeniden deneyin.</value></data>
+  <data name="AdminEmailImmutable" xml:space="preserve"><value>Bir yöneticinin e-posta adresi değiştirilemez. Yeni adresi yeni bir yönetici olarak davet edin ve eski yöneticiyi kaldırın.</value></data>
+  <data name="AdminBulkDuplicateIds" xml:space="preserve"><value>Aynı yönetici birden fazla kez listelenmiş. Hiçbir şey silinmedi.</value></data>
+  <data name="AdminBulkDeletePartial" xml:space="preserve"><value>Bazı yöneticiler silindi, ancak istek silinemeyen bir yöneticide durdu. Kalanları görmek için listeyi yeniden yükleyin.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Yonetici olusturuldu ancak davet e-postasi gonderilemedi. SMTP ayarlarini kontrol edip Daveti Yeniden Gonder islemini kullanin.</value></data>
   <data name="AccessGovernance" xml:space="preserve"><value>Erişim Yönetişimi</value></data>
   <data name="UsersMenu" xml:space="preserve"><value>Kullanıcılar</value></data>
@@ -579,6 +581,35 @@
   <data name="Password.Error.NewRequired" xml:space="preserve"><value>Yeni şifre gereklidir.</value></data>
   <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>E-posta adresi gereklidir.</value></data>
   <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>Sıfırlama anahtarı gereklidir.</value></data>
+  <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Çok fazla istek gönderildi. Lütfen birkaç dakika bekleyip yeniden deneyin.</value></data>
+  <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Parolanız bu arada değiştirildi (örneğin bir yönetici tarafından). Lütfen yeniden oturum açın.</value></data>
+  <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Hesabınız bir yönetici tarafından pasifleştirildi. Yöneticinize başvurun.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>E-posta ya da parola hatalı, ya da hesap kısa süreliğine kilitlendi. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>Giriş şu anda yapılamıyor. Lütfen biraz sonra tekrar deneyin.</value></data>
+  <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>Bu kuruluş için e-posta ile giriş kapalı.</value></data>
+  <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Geçici şifrenizin süresi doldu. Lütfen şifrenizi sıfırlayın.</value></data>
+  <data name="Auth.Error.PlatformPrivilegesRequired" xml:space="preserve"><value>Bu hesabın platform yönetimi rolü yok.</value></data>
+  <data name="Auth.Error.InvalidVerificationCode" xml:space="preserve"><value>Doğrulama kodu geçersiz veya süresi dolmuş.</value></data>
+  <data name="Auth.Error.CurrentPasswordIncorrect" xml:space="preserve"><value>Mevcut şifreniz hatalı.</value></data>
+  <data name="Auth.Error.SessionEnded" xml:space="preserve"><value>Oturumunuz sona erdi. Lütfen yeniden giriş yapın.</value></data>
+  <data name="Auth.Error.LinkInvalid" xml:space="preserve"><value>Bu bağlantı artık geçerli değil. Yöneticinizden yeni bağlantı isteyin.</value></data>
+  <data name="Auth.Error.LoginFailed" xml:space="preserve"><value>Giriş yapılamadı. Lütfen tekrar deneyin.</value></data>
+  <data name="Auth.Error.VerificationFailed" xml:space="preserve"><value>Doğrulama tamamlanamadı. Lütfen tekrar deneyin.</value></data>
+  <data name="Auth.Error.PasswordChangeFailed" xml:space="preserve"><value>Şifreniz değiştirilemedi. Lütfen tekrar deneyin.</value></data>
+  <data name="Auth.Error.ServiceUnavailable" xml:space="preserve"><value>Giriş hizmeti şu anda kullanılamıyor. Lütfen biraz sonra tekrar deneyin.</value></data>
+  <data name="Auth.Error.RequestInvalid" xml:space="preserve"><value>İstek eksik. Lütfen alanları kontrol edip tekrar deneyin.</value></data>
+  <data name="Auth.Error.TenantMissing" xml:space="preserve"><value>Bu giriş bağlantısında kuruluş bilgisi yok. Lütfen davet bağlantınızı yeniden kullanın.</value></data>
+  <data name="Auth.Error.VerificationCodeRequired" xml:space="preserve"><value>Lütfen doğrulama kodunu girin.</value></data>
+  <data name="Auth.Error.VerificationChallengeRequired" xml:space="preserve"><value>Doğrulama adımının süresi doldu. Lütfen yeniden giriş yapın.</value></data>
+  <data name="Auth.Dialog.Ok" xml:space="preserve"><value>Tamam</value></data>
+  <data name="Auth.Mfa.Title" xml:space="preserve"><value>İki adımlı doğrulama</value></data>
+  <data name="Auth.Mfa.Prompt" xml:space="preserve"><value>Şu adrese gönderilen doğrulama kodunu girin:</value></data>
+  <data name="Auth.Mfa.CodeLabel" xml:space="preserve"><value>Doğrulama kodu</value></data>
+  <data name="Auth.Mfa.Resend" xml:space="preserve"><value>Kodu yeniden gönder</value></data>
+  <data name="Auth.Mfa.Verifying" xml:space="preserve"><value>Doğrulanıyor...</value></data>
+  <data name="Auth.Mfa.Resending" xml:space="preserve"><value>Gönderiliyor...</value></data>
+  <data name="Auth.Mfa.ResentTitle" xml:space="preserve"><value>Kod gönderildi</value></data>
+  <data name="Auth.Mfa.ResentMessage" xml:space="preserve"><value>Yeni bir doğrulama kodu gönderildi.</value></data>
   <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Yönetim</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Geliştirici Etkinleştirme</value></data>
@@ -686,6 +717,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Görevi düzenle</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Marka ve Ürün Ana Verisi</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Ürün / Kalem / SKU Ana Verisi</value>
   </data>
@@ -694,6 +728,9 @@
   </data>
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU’lar</value>
+  </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>Kalemler</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Görev Türleri</value>
@@ -764,6 +801,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Ülke Yasal Profilleri</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>Ziyaret Çalışma Alanı</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>Ziyaret Planlama</value>
   </data>
@@ -809,6 +849,9 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Markalar</value>
   </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>Rakip ürünler</value>
+  </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
   <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
@@ -848,6 +891,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Kişi Rehberi</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Referans Listeleri</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>Görevler</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>Çalışan Kaydı (Temel İK)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>CRM Müşteri Hesapları</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>CRM Kişileri</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>CRM İçerik Kurgusu</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>CRM Hekim İçgörüleri</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>CRM Bilgi Yönetimi</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>CRM Planlanan Ziyaretler</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>CRM Bölgeleri</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>CRM Ziyaret Planlama</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>CRM Ziyaret Raporları</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>Onaylar</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>Kategoriler</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>Zaman Çizelgeleri</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>Haftalar</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>Kontrol Listesi Şablonları</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>Şablonlar</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>İçerik Kapsamı</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>İçerik Seti</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Uygunluk</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Ziyaret Sıklığı Politikası</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Ürünler</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Müşteri Hesabı</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Kampanya</value></data>
@@ -1109,6 +1173,30 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Yine De Kabul Et</value>
   </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>Liste yüklenemedi.</value>
+  </data>
+  <data name="DtLoadNoPermission" xml:space="preserve">
+    <value>Bu listeyi görme yetkiniz yok.</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>Yeniden Dene</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>Ara ({0})</value>
+  </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>Yazdığınız bir tarih okunamadığı için kaydedilmedi. Alanın biçiminde yeniden yazın ya da takvimden seçin.</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>İtiraz Kütüphanesi</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Ziyaret Kanıtı</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Potansiyel Eşikleri</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Üretim</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Reçete ve Rotalar</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>Ürün Reçeteleri</value></data>
@@ -1161,4 +1249,6 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Tatbikat Planlayıcı</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Geri Çağırma Kanıt Paketi</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Geri Çağırma Ayarları</value></data>
+  <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
+  <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
 </root>

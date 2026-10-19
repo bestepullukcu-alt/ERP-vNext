@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalBusy" xml:space="preserve"><value>С этой записью уже выполняется операция. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalCapacity" xml:space="preserve"><value>Эта запись сейчас не может принять больше изменений. Повторите попытку позже; если ошибка повторяется, обратитесь в поддержку.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>Запись изменилась, пока вы с ней работали. Обновите страницу и повторите попытку.</value></data>
+  <data name="RefusalDependents" xml:space="preserve"><value>От этого GSKU зависят записи, или под ним создаётся запись. Выведите их из использования или дождитесь завершения.</value></data>
+  <data name="RefusalForbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>Действие остановлено из-за непредвиденного несоответствия; ничего не изменено. Обратитесь в поддержку.</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>Запрос недействителен. Проверьте поля и повторите попытку.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>Запись не найдена или недоступна вам.</value></data>
+  <data name="RefusalNotRequester" xml:space="preserve"><value>Отозвать это утверждение может только тот, кто его отправил.</value></data>
+  <data name="RefusalPackInvalid" xml:space="preserve"><value>Количество или единица упаковки недействительны. Исправьте их и повторите попытку.</value></data>
+  <data name="RefusalParentNotReady" xml:space="preserve"><value>Глобальный продукт не утверждён или на него больше нельзя ссылаться.</value></data>
+  <data name="RefusalReconciliation" xml:space="preserve"><value>Этот запрос ожидает проверки специалистом и до тех пор остаётся без изменений. Обратитесь в поддержку.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>Этот запрос уже был отправлен с другими данными. Обновите страницу и начните заново.</value></data>
+  <data name="RefusalRequestEnded" xml:space="preserve"><value>Запрос завершён без применения. Запустите его снова, если он ещё нужен.</value></data>
+  <data name="RefusalResubmit" xml:space="preserve"><value>Запрос не дошёл до службы утверждения. Отправьте тот же запрос ещё раз.</value></data>
+  <data name="RefusalRetirementInProgress" xml:space="preserve"><value>Этот GSKU выводится из использования.</value></data>
+  <data name="RefusalSelfApproval" xml:space="preserve"><value>Решение по запросу принял сам отправитель, поэтому оно не применено.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>Служба, необходимая для этого действия, сейчас недоступна. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalSessionExpired" xml:space="preserve"><value>Служба утверждения не приняла ваш сеанс. Войдите снова и повторите действие.</value></data>
+  <data name="RefusalSetupIncomplete" xml:space="preserve"><value>Настройка утверждения для этого действия не завершена. Сообщите администратору.</value></data>
+  <data name="RefusalManualReconciliation" xml:space="preserve"><value>Служба утверждения и эта запись не согласуются, и повтор запроса этого не исправил. Запись остаётся без изменений до ручной сверки; обратитесь к администратору.</value></data>
+  <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>Утверждение закрыто без решения (отменено или истекло). Черновик можно изменить и отправить снова.</value></data>
+  <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Единица, используемая этим GSKU, была выведена из использования после утверждения. Утверждение остаётся в силе: оно применено со значениями, проверенными при отправке; выведенную единицу нельзя выбрать для новых записей.</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Перед отправкой этого GSKU на утверждение задайте в складских параметрах: {0}.</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>Отзыв этой отправки ещё выполняется; повторно отправьте отзыв, чтобы завершить его, прежде чем отправлять снова.</value></data>
+  <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Сначала укажите срок годности: для утверждённого GSKU {0} можно задать только после того, как известен его срок годности.</value></data>
+  <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Списки единиц и условий хранения сейчас недоступны. Повторите попытку чуть позже.</value></data>
+  <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Сначала задайте базовую единицу GSKU — готовый продукт использует её.</value></data>
+  <data name="RefusalStockGskuShelfLifeMissing" xml:space="preserve"><value>Сначала задайте срок годности GSKU — собственный срок готового продукта не может его превышать.</value></data>
+  <data name="RefusalStockConversionInvalid" xml:space="preserve"><value>Пересчёт единиц недопустим: сначала задайте базовую единицу; каждая единица должна сводиться к ней не более чем за четыре шага без циклов, а пары одной размерности (например, кг ↔ г) вручную не вводятся.</value></data>
+  <data name="RefusalStockStorageConflict" xml:space="preserve"><value>Можно выбрать только одно температурное условие.</value></data>
+  <data name="RefusalStockStorageInvalid" xml:space="preserve"><value>Кода условия хранения нет в списке. Проверьте коды.</value></data>
+  <data name="RefusalStockUomInvalid" xml:space="preserve"><value>Кода единицы нет в списке. Проверьте коды.</value></data>
+  <data name="RefusalStockPackUomUnknown" xml:space="preserve"><value>Единицы упаковки этого GSKU нет в списке единиц, поэтому пересчёт коробка ↔ упаковка вывести нельзя.</value></data>
+  <data name="RefusalStockIncomplete" xml:space="preserve"><value>Пока нельзя сделать складируемым: сначала заполните все обязательные складские поля.</value></data>
+  <data name="RefusalStockShelfLifeInvalid" xml:space="preserve"><value>Срок годности должен быть целым числом дней от 1 до 3650.</value></data>
+  <data name="RefusalStockFgShelfLifeExceedsGsku" xml:space="preserve"><value>Срок годности готового продукта не может превышать срок его GSKU.</value></data>
+  <data name="RefusalStockGtinInvalid" xml:space="preserve"><value>GTIN должен состоять из 14 цифр с верной контрольной цифрой GS1.</value></data>
+  <data name="RefusalStockDaysInvalid" xml:space="preserve"><value>Интервал повторного контроля и минимальный остаточный срок годности должны быть целыми числами дней от 0 до 3650.</value></data>
+  <data name="RefusalStockNotEditable" xml:space="preserve"><value>Статус этой записи не позволяет менять складское поведение.</value></data>
+  <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Заполненное значение утверждённой записи здесь изменить нельзя — только через исправление. В списки можно лишь добавлять новые строки.</value></data>
+  <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Этот GTIN уже используется другим готовым продуктом.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalNoEligibleApprover" xml:space="preserve"><value>Никто, кроме вас, не может утвердить отправленную вами запись. Попросите администратора изменить согласующих, после этого вы сможете отправить её снова.</value></data>
+</root>

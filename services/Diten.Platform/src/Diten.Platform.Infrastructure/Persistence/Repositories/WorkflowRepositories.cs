@@ -185,6 +185,43 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    public Task<WorkflowInstance?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        Collection.Find(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<WorkflowInstance>.Filter.And(
+                ExecutionFilter,
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid instanceId,
+        int expectedVersion,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Active));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.Status, WorkflowInstanceStatus.Cancelled)
+            .Set(x => x.CompletedAt, decisionAt)
+            .Set(x => x.LastTransitionAt, decisionAt)
+            .Set(x => x.UpdatedAt, decisionAt)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            filter,
+            update,
+            cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
     // BL-484 — the same rule as GetByIdAsync (tenant + IsDeleted=false + id), for several ids in one read.
     public async Task<IReadOnlyList<WorkflowInstance>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,
@@ -201,12 +238,79 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    // D2-FIX4 item 3 — over ix_workflow_instances_tenant_template ({TenantId, WorkflowTemplateId}); the id only. Every
+    // creator of an instance writes TemplateId and WorkflowTemplateId alike, and the second is the indexed one.
+    public async Task<IReadOnlyList<Guid>> ListOpenIdsByTemplateAsync(Guid templateId, CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.WorkflowTemplateId, templateId),
+            Builders<WorkflowInstance>.Filter.In(
+                x => x.Status,
+                [WorkflowInstanceStatus.Pending, WorkflowInstanceStatus.Active, WorkflowInstanceStatus.Escalated]));
+        return await Collection.Find(filter).Project(x => x.Id).ToListAsync(ct);
+    }
+
     public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
     {
         var filter = Builders<WorkflowInstance>.Filter.And(
             ExecutionFilter,
             Builders<WorkflowInstance>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey));
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<(WorkflowInstance Instance, bool Created)> ReserveTrustedStartAsync(
+        WorkflowInstance instance,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return (await CreateAsync(instance, ct), true);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            var existing = await GetByIdempotencyKeyAsync(instance.IdempotencyKey!, ct);
+            if (existing is null)
+            {
+                throw;
+            }
+
+            return (existing, false);
+        }
+    }
+
+    public async Task<bool> AdvanceStartCheckpointAsync(
+        Guid instanceId,
+        int expectedVersion,
+        WorkflowStartCheckpoint expectedCheckpoint,
+        WorkflowStartCheckpoint nextCheckpoint,
+        CancellationToken ct = default)
+    {
+        if ((int)nextCheckpoint != (int)expectedCheckpoint + 1)
+        {
+            return false;
+        }
+
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.StartCheckpoint, expectedCheckpoint),
+            // BL-539 (CT decision, rule 4) — a reservation is completed only while it is still Pending: one the recovery
+            // closed (Cancelled) is never brought back by a late replay.
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Pending));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.StartCheckpoint, nextCheckpoint)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1);
+        if (nextCheckpoint == WorkflowStartCheckpoint.Completed)
+        {
+            update = update
+                .Set(x => x.Status, WorkflowInstanceStatus.Active)
+                .Set(x => x.LastTransitionAt, DateTimeOffset.UtcNow);
+        }
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 
     // "Latest" is picked in memory, NOT by a server-side sort — and it must stay that way until BL-030 lands.
@@ -264,6 +368,85 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         int expectedVersion,
         CancellationToken ct = default) =>
         UpdateAsync(instance, expectedVersion, ct);
+
+    // BL-539 — see IWorkflowInstanceRepository.CloseIncompleteTrustedStartAsync: targeted, fenced on version, checkpoint and Pending.
+    public async Task<bool> CloseIncompleteTrustedStartAsync(
+        Guid instanceId,
+        int expectedVersion,
+        WorkflowStartCheckpoint expectedCheckpoint,
+        string reasonCode,
+        DateTimeOffset now,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.StartCheckpoint, expectedCheckpoint),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Pending),
+            Builders<WorkflowInstance>.Filter.Ne(x => x.TrustedConsumerClientId, null));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.Status, WorkflowInstanceStatus.Cancelled)
+            .Set(x => x.StartClosedReasonCode, reasonCode)
+            .Set(x => x.CompletedAt, now)
+            .Set(x => x.LastTransitionAt, now)
+            .Set(x => x.UpdatedAt, now)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
+    // BL-549 — see IWorkflowInstanceRepository.ClaimStartCompletionAsync: targeted, versioned, only while Active.
+    public async Task<bool> ClaimStartCompletionAsync(
+        Guid instanceId,
+        int expectedVersion,
+        Guid approvalTaskId,
+        Guid assignmentSnapshotId,
+        Guid startTransitionLogId,
+        DateTimeOffset now,
+        CancellationToken ct = default)
+    {
+        var (filter, update) = StartClaim(instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
+    // FIX2 item 1 — the same claim, inside the transaction that also inserts the start task.
+    public async Task<bool> ClaimStartCompletionAsync(
+        IPlatformTransactionSession session,
+        Guid instanceId,
+        int expectedVersion,
+        Guid approvalTaskId,
+        Guid assignmentSnapshotId,
+        Guid startTransitionLogId,
+        DateTimeOffset now,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        var (filter, update) = StartClaim(instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now);
+        var result = await Collection.UpdateOneAsync(handle, filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
+    private (FilterDefinition<WorkflowInstance> Filter, UpdateDefinition<WorkflowInstance> Update) StartClaim(
+        Guid instanceId,
+        int expectedVersion,
+        Guid approvalTaskId,
+        Guid assignmentSnapshotId,
+        Guid startTransitionLogId,
+        DateTimeOffset now) =>
+        (Builders<WorkflowInstance>.Filter.And(
+                ExecutionFilter,
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Active)),
+            Builders<WorkflowInstance>.Update
+                .Set(x => x.InitialApprovalTaskId, approvalTaskId)
+                .Set(x => x.InitialAssignmentSnapshotId, assignmentSnapshotId)
+                .Set(x => x.StartTransitionLogId, startTransitionLogId)
+                .Set(x => x.LastTransitionAt, now)
+                .Set(x => x.UpdatedAt, now)
+                .Inc(x => x.Version, 1));
 }
 
 public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IApprovalTaskRepository
@@ -274,6 +457,18 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         : base(dbContext.Database, tenantContext, PlatformCollections.ApprovalTasks)
     {
         _dbContext = dbContext;
+    }
+
+    // D1 — the next step's task joins the transaction that closes the previous step.
+    public async Task<ApprovalTask> CreateAsync(
+        IPlatformTransactionSession session,
+        ApprovalTask task,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        typeof(ApprovalTask).GetProperty(nameof(ApprovalTask.TenantId))!.SetValue(task, TenantContext.TenantId);
+        await Collection.InsertOneAsync(handle, task, cancellationToken: ct);
+        return task;
     }
 
     // WP-CL-BE-3 — terminal task write inside the Platform transaction.
@@ -294,12 +489,67 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 
+    public Task<ApprovalTask?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        Collection.Find(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<ApprovalTask>.Filter.And(
+                ExecutionFilter,
+                Builders<ApprovalTask>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid taskId,
+        int expectedVersion,
+        Guid actorUserId,
+        string reasonCode,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.Eq(x => x.Id, taskId),
+            Builders<ApprovalTask>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<ApprovalTask>.Filter.In(
+                x => x.Status,
+                [ApprovalTaskStatus.WaitingApproval, ApprovalTaskStatus.WaitingEvidence]));
+        var update = Builders<ApprovalTask>.Update
+            .Set(x => x.Status, ApprovalTaskStatus.Cancelled)
+            .Set(x => x.CompletedAt, decisionAt)
+            .Set(x => x.ActionedBy, actorUserId.ToString("D"))
+            .Set(x => x.ActionReasonCode, reasonCode)
+            .Set(x => x.UpdatedAt, decisionAt)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            filter,
+            update,
+            cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
     public Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
     {
         var filter = Builders<ApprovalTask>.Filter.And(
             ExecutionFilter,
             Builders<ApprovalTask>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId));
         return Collection.Find(filter).SortBy(x => x.CreatedAt).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(task, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(task.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow task could not be re-read in tenant scope.");
+        }
     }
 
     public Task<ApprovalTask?> GetActiveByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
@@ -344,6 +594,20 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         return await Collection.Find(filter).SortByDescending(x => x.CreatedAt).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdsAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        if (workflowInstanceIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.In(x => x.WorkflowInstanceId, workflowInstanceIds));
+        return await Collection.Find(filter).SortByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default)
     {
         return await Collection.Find(ExecutionFilter).SortByDescending(x => x.CreatedAt).ToListAsync(ct);
@@ -354,22 +618,98 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         int maxItems,
         CancellationToken ct = default)
     {
-        var filter = Builders<ApprovalTask>.Filter.And(
+        /*
+         * What the sweep reads.
+         *   • TimedOut is NOT read (BL-502 item 7): it is terminal; a sweep can only skip it, and it held a place.
+         *   • D2-FIX2 item 4 — only tasks whose LOOK TIME has come: never looked at (null), or rested until now or earlier.
+         *     Every task a sweep cannot act on is given its next look time (RunWorkflowEscalationsHandler), so a standing
+         *     backlog it cannot act on — no SLA rule, nobody eligible, already escalated with no timeout — rests instead
+         *     of filling the first page forever, and a parked task is looked at again (a seat may have changed hands).
+         *     This replaces D2-FIX1's "parked tasks in a second read", which still starved them: the unparked skips were
+         *     never parked.
+         *   • Order: the look time first (never-looked — null — sorts first), then the oldest due date, then the id.
+         *     DueAt is stored as [ticks, offsetMinutes] (BL-030), and an ASCENDING sort on an array uses its SMALLEST
+         *     element — the offset — so the sort reads the ticks element itself (DueAt.0).
+         *   • Served by ix_approval_tasks_tenant_status_next_look: scalar fields only (TenantId, Status, the look time,
+         *     _id). The older ix_approval_tasks_tenant_status_due is multikey (DueAt is an array) and serves neither the
+         *     look-time filter nor DueAt.0; BL-030 forbids putting a second array field beside it anyway.
+         */
+        var limit = Math.Max(1, maxItems);
+        var due = Builders<ApprovalTask>.Filter.And(
             ExecutionFilter,
             Builders<ApprovalTask>.Filter.In(
                 x => x.Status,
                 [
                     ApprovalTaskStatus.WaitingApproval,
                     ApprovalTaskStatus.WaitingEvidence,
-                    ApprovalTaskStatus.Escalated,
-                    ApprovalTaskStatus.TimedOut
+                    ApprovalTaskStatus.Escalated
                 ]),
             Builders<ApprovalTask>.Filter.Ne(x => x.DueAt, null),
-            Builders<ApprovalTask>.Filter.Lte(x => x.DueAt, nowUtc));
-        return await Collection.Find(filter)
-            .SortBy(x => x.DueAt)
-            .Limit(Math.Max(1, maxItems))
-            .ToListAsync(ct);
+            Builders<ApprovalTask>.Filter.Lte(x => x.DueAt, nowUtc),
+            Builders<ApprovalTask>.Filter.Or(
+                Builders<ApprovalTask>.Filter.Eq(x => x.EscalationNextLookAtUtc, null),
+                Builders<ApprovalTask>.Filter.Lte(x => x.EscalationNextLookAtUtc, nowUtc.UtcDateTime)));
+        var order = Builders<ApprovalTask>.Sort
+            .Ascending(x => x.EscalationNextLookAtUtc)
+            .Ascending(DueAtTicksPath)
+            .Ascending(x => x.Id);
+
+        return await Collection.Find(due).Sort(order).Limit(limit).ToListAsync(ct);
+    }
+
+    // D2-FIX2 item 4 — targeted: only the look time (and the parked reason), only on a task still waiting on somebody,
+    // and no version — see IApprovalTaskRepository.ScheduleEscalationLookAsync.
+    public async Task<bool> ScheduleEscalationLookAsync(
+        Guid taskId,
+        DateTime nextLookAtUtc,
+        string? parkReasonCode,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.Eq(x => x.Id, taskId),
+            Builders<ApprovalTask>.Filter.In(
+                x => x.Status,
+                [
+                    ApprovalTaskStatus.WaitingApproval,
+                    ApprovalTaskStatus.WaitingEvidence,
+                    ApprovalTaskStatus.Escalated
+                ]));
+        var update = Builders<ApprovalTask>.Update.Set(
+            x => x.EscalationNextLookAtUtc, DateTime.SpecifyKind(nextLookAtUtc, DateTimeKind.Utc));
+        if (parkReasonCode is not null)
+        {
+            update = update.Set(x => x.LastEscalationReasonCode, parkReasonCode);
+        }
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.MatchedCount == 1;
+    }
+
+    // D2-FIX4 item 3 — targeted, tenant-filtered: only the look time, only tasks still waiting on somebody that HAVE one,
+    // in chunks of ids (served by ix_approval_tasks_tenant_instance_status), and no version.
+    public async Task<int> ResetEscalationLooksAsync(IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        var reset = 0;
+        foreach (var chunk in workflowInstanceIds.Distinct().Chunk(500))
+        {
+            var filter = Builders<ApprovalTask>.Filter.And(
+                ExecutionFilter,
+                Builders<ApprovalTask>.Filter.In(x => x.WorkflowInstanceId, chunk),
+                Builders<ApprovalTask>.Filter.In(
+                    x => x.Status,
+                    [
+                        ApprovalTaskStatus.WaitingApproval,
+                        ApprovalTaskStatus.WaitingEvidence,
+                        ApprovalTaskStatus.Escalated
+                    ]),
+                Builders<ApprovalTask>.Filter.Ne(x => x.EscalationNextLookAtUtc, null));
+            var update = Builders<ApprovalTask>.Update.Set(x => x.EscalationNextLookAtUtc, (DateTime?)null);
+            var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+            reset += (int)result.ModifiedCount;
+        }
+
+        return reset;
     }
 
     public async Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default)
@@ -386,14 +726,47 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
 
     public Task<bool> UpdateEscalationAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(task, expectedVersion, ct);
+
+    /// <summary>The ticks element of the stored [ticks, offsetMinutes] array (BL-030) — see ListOverdueTasksAsync.</summary>
+    internal const string DueAtTicksPath = "DueAt.0";
 }
 
 public sealed class RuntimeAssignmentSnapshotRepository
     : TenantRepository<RuntimeAssignmentSnapshot>, IRuntimeAssignmentSnapshotRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public RuntimeAssignmentSnapshotRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowRuntimeAssignmentSnapshots)
     {
+        _dbContext = dbContext;
+    }
+
+    // D1 — the next step's assignment snapshot joins the transaction that closes the previous step.
+    public async Task<RuntimeAssignmentSnapshot> CreateAsync(
+        IPlatformTransactionSession session,
+        RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        typeof(RuntimeAssignmentSnapshot).GetProperty(nameof(RuntimeAssignmentSnapshot.TenantId))!
+            .SetValue(snapshot, TenantContext.TenantId);
+        await Collection.InsertOneAsync(handle, snapshot, cancellationToken: ct);
+        return snapshot;
+    }
+
+    public async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<RuntimeAssignmentSnapshot>.Filter.And(
+            ExecutionFilter,
+            Builders<RuntimeAssignmentSnapshot>.Filter.In(x => x.Id, ids));
+        return await Collection.Find(filter).ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(
@@ -404,6 +777,21 @@ public sealed class RuntimeAssignmentSnapshotRepository
             ExecutionFilter,
             Builders<RuntimeAssignmentSnapshot>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId));
         return await Collection.Find(filter).SortByDescending(x => x.ResolvedAt).ToListAsync(ct);
+    }
+
+    public async Task<RuntimeAssignmentSnapshot> EnsureTrustedStartSnapshotAsync(
+        RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(snapshot, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(snapshot.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow assignment snapshot could not be re-read in tenant scope.");
+        }
     }
 }
 
@@ -474,12 +862,55 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
     public Task<WorkflowTransitionLog> AppendAsync(WorkflowTransitionLog log, CancellationToken ct = default) =>
         CreateAsync(log, ct);
 
+    public async Task<WorkflowTransitionLog> AppendAsync(
+        IPlatformTransactionSession session,
+        WorkflowTransitionLog log,
+        CancellationToken ct = default)
+    {
+        await Collection.InsertOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            log,
+            cancellationToken: ct);
+        return log;
+    }
+
+    public async Task<WorkflowTransitionLog> EnsureTrustedStartLogAsync(
+        WorkflowTransitionLog log,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(log, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(log.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow start log could not be re-read in tenant scope.");
+        }
+    }
+
     public async Task<long> GetLatestSequenceNoAsync(Guid workflowInstanceId, CancellationToken ct = default)
     {
         var latest = await Collection
             .Find(Builders<WorkflowTransitionLog>.Filter.And(
                 ExecutionFilter,
                 Builders<WorkflowTransitionLog>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId)))
+            .SortByDescending(x => x.SequenceNo)
+            .FirstOrDefaultAsync(ct);
+        return latest?.SequenceNo ?? 0;
+    }
+
+    public async Task<long> GetLatestSequenceNoAsync(
+        IPlatformTransactionSession session,
+        Guid workflowInstanceId,
+        CancellationToken ct = default)
+    {
+        var latest = await Collection
+            .Find(
+                PlatformMongoTransactionSession.Require(session, _dbContext),
+                Builders<WorkflowTransitionLog>.Filter.And(
+                    ExecutionFilter,
+                    Builders<WorkflowTransitionLog>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId)))
             .SortByDescending(x => x.SequenceNo)
             .FirstOrDefaultAsync(ct);
         return latest?.SequenceNo ?? 0;

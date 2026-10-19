@@ -1,0 +1,39 @@
+CT-FIX-06 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Drivers: drivers/harness3.py.txt (the summary, G-S1…S7) and drivers/harness4.py.txt (evidence lines and registry
+columns, G-L1, G-L2, G-R1). Each copy holds the final bytes of the file its mutations change (verify_module_id.py
+57555e59…; acceptance_record.py cb017a3c…, ct_queue.py ee8b7eef…). The control is
+Controls.test_consumers_on_the_intact_fixture_exit_0.
+Each mutation: the file still parses; the named tests fail; the control test passes in the same copy.
+
+G-S1 the summary is not written under the header
+    file: .antigravity/scripts/verify_module_id.py · tests: test_the_fixture_report_carries_the_summary_and_the_gate_s_count_is_unchanged
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-S2 one file id on two paths is not named
+    file: .antigravity/scripts/verify_module_id.py · tests: test_a_collision_is_named_with_its_packs_and_parent_and_fu_are_not_one, test_one_file_id_on_two_pack_paths_is_a_possible_collision_first
+    named: RED — FAILED (failures=2) · control: OK · proven: True
+G-S3 a deprecated alias reads as a collision again
+    file: .antigravity/scripts/verify_module_id.py · tests: test_a_deprecated_alias_is_said_apart_and_does_not_clear_its_paths
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-S4 no byte budget
+    file: .antigravity/scripts/verify_module_id.py · tests: test_the_block_stays_within_its_byte_budget_and_says_what_it_left_out
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-S5 the künye groups lose their blob ids
+    file: .antigravity/scripts/verify_module_id.py · tests: test_kunye_values_keep_their_blob_and_ref_ids
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-S6 different values on different refs collapse to one
+    file: .antigravity/scripts/verify_module_id.py · tests: test_different_kunye_values_on_another_ref_stay_unresolved
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-S7 the count of paths not shown is cut away
+    file: .antigravity/scripts/verify_module_id.py · tests: test_the_block_stays_within_its_byte_budget_and_says_what_it_left_out
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-L1 a cited line is only checked against the split count again
+    file: scripts/acceptance_record.py · tests: test_a_cited_line_must_be_a_real_filled_line
+    named: RED — FAILED (failures=2) · control: OK · proven: True
+G-L2 a blank cited line passes
+    file: scripts/acceptance_record.py · tests: test_a_cited_line_must_be_a_real_filled_line
+    named: RED — FAILED (failures=1) · control: OK · proven: True
+G-R1 check_registry does not check required columns
+    file: scripts/ct_queue.py · tests: test_an_empty_required_column_in_the_branch_registry_stops, test_every_consumer_stops
+    named: RED — FAILED (failures=2) · control: OK · proven: True
+
+proven: 10 of 10

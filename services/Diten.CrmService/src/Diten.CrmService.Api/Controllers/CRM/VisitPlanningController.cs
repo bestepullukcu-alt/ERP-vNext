@@ -126,19 +126,21 @@ public sealed class VisitPlanningController : CustomBaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
         [FromQuery] string? resourceId = null,
+        [FromQuery] string? weekStart = null,
         CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(
             new Application.Features.VisitPlanning.TargetStatus.GetAccountDoctorsQuery(
-                accountId, planningSessionId, quick, search, specialty, page, pageSize, resourceId),
+                accountId, planningSessionId, quick, search, specialty, page, pageSize, resourceId, weekStart),
             cancellationToken));
 
     /// <summary>WP-VP-3D (D5) — the plan's selected institutions, pharmacies and doctors (names, types, places, doctor
     /// statuses) in ONE response. Same ownership as the session read (another rep's plan is 404).</summary>
     [HttpGet("api/crm/visit-plan/sessions/{planningSessionId:guid}/targets")]
     [HasPermission(Perms.Read)]
-    public async Task<IActionResult> SessionTargets(Guid planningSessionId, CancellationToken cancellationToken)
+    public async Task<IActionResult> SessionTargets(
+        Guid planningSessionId, [FromQuery] string? weekStart = null, CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(
-            new Application.Features.VisitPlanning.TargetStatus.GetSessionTargetsQuery(planningSessionId),
+            new Application.Features.VisitPlanning.TargetStatus.GetSessionTargetsQuery(planningSessionId, weekStart),
             cancellationToken));
 
     [HttpGet("api/crm/visit-plan/sessions/{planningSessionId:guid}")]
@@ -166,6 +168,7 @@ public sealed class VisitPlanningController : CustomBaseController
             new UpdatePlanningSessionSelectionCommand(
                 planningSessionId, request.SelectedAccountIds, request.SelectedPharmacyIds, request.ToContacts(),
                 request.SegmentId, request.CampaignId, request.StrategyTemplateId,
-                request.RequestedStatus, request.ExpectedVersion, request.TargetWeekStart, request.ToDayPins()),
+                request.RequestedStatus, request.ExpectedVersion, request.TargetWeekStart, request.ToDayPins(),
+                request.ToWeekExtras()),
             cancellationToken));
 }

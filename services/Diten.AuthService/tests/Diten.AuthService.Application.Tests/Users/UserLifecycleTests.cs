@@ -78,7 +78,8 @@ public sealed class UserLifecycleTests
         var reset = new User("r@acme.test", "hash:x", "R", "Eset", TenantA);
         reset.ConfirmEmail();
         reset.RequirePasswordChange(null);
-        // A provisioned tenant admin: a temporary password + forced change, email confirmed (InternalEventsController).
+        // An account that has a password and a forced change, email confirmed (the shape a re-invited tenant admin had
+        // before BL-454 stage D replaced the temporary password with a link).
         var provisioned = new User("p@acme.test", "hash:temp", "P", "Rov", TenantA);
         provisioned.ConfirmEmail();
         provisioned.RequirePasswordChange(DateTime.UtcNow.AddDays(1));
@@ -220,7 +221,8 @@ public sealed class UserLifecycleTests
         const string redeem = "SetTenantPasswordCommandHandler.cs";
         var handlers = Directory.EnumerateFiles(Path.Combine(SrcRoot(), "Diten.AuthService.Application", "Features", "Users", "Handlers"), "*.cs", SearchOption.AllDirectories)
             .Select(f => (Name: Path.GetFileName(f), Body: WithoutComments(File.ReadAllText(f))))
-            .Where(f => Regex.IsMatch(f.Body, @"\.Activate\s*\(\s*\)"))
+            // BL-529 FIX2 — an administrator's activation is spelled ActivateByAdministrator(); both spellings switch an account on.
+            .Where(f => Regex.IsMatch(f.Body, @"\.Activate(ByAdministrator)?\s*\(\s*\)"))
             .ToArray();
 
         Assert.Contains(handlers, h => h.Name == "SetUserActiveStatusCommandHandler.cs");
@@ -246,7 +248,7 @@ public sealed class UserLifecycleTests
     }
 
     private static SetUserActiveStatusCommandHandler StatusHandler(IUserRepository repo)
-        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), RecoveryGuardForTests.Permits(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
 
     /// <summary>The signed-in administrator is never the row under test here; self-deactivation has its own guard file.</summary>
     private sealed class SomeoneElse : ICurrentUserAccessor
@@ -258,7 +260,7 @@ public sealed class UserLifecycleTests
         => UpdateHandler(repo, new SomeoneElse(), new NoRefreshTokens());
 
     private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo, ICurrentUserAccessor actor, IRefreshTokenRepository tokens)
-        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(new NoAudit())), UserAuditForTests.None(), new RecordingUserQuotaClient(), actor, tokens, NullLogger<UpdateUserCommandHandler>.Instance);
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(new NoAudit())), UserAuditForTests.None(), new RecordingUserQuotaClient(), actor, tokens, RecoveryGuardForTests.Permits(), NullLogger<UpdateUserCommandHandler>.Instance);
 
     private static CreateUserCommandHandler CreateHandler(IUserRepository repo, FakeInvitationEmailService email)
         => new(repo, new FakePasswordHasher(), new FakePasswordPolicyService(), TenantContextFor(TenantA), new FakeTokenService(),
@@ -320,9 +322,14 @@ public sealed class UserLifecycleTests
             Writes++;
             return _inner.CreateAsync(user, ct);
         }
-        public Task<User> UpdateAsync(User user, CancellationToken ct) { Writes++; return _inner.UpdateAsync(user, ct); }
-        public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) { Writes++; return _inner.UpdateForTenantAsync(user, tenantId, ct); }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+        public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
+        public object CaptureState(User user) => _inner.CaptureState(user);
+        public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) { Writes++; return _inner.TryWriteChangesAsync(user, capturedState, tenantId, condition, ct); }
+        public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
+        public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => _inner.VisibleUserIdsAsync(tenantId, userIds, ct);
     }
 
     private sealed class NoRefreshTokens : IRefreshTokenRepository
@@ -331,7 +338,10 @@ public sealed class UserLifecycleTests
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.CompletedTask;
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult(0L);
     }
 
     private sealed class NoRolesRepository : IUserRoleRepository
@@ -381,6 +391,9 @@ public sealed class UserLifecycleTests
     {
         public List<(string Email, string Token)> Sends { get; } = [];
         public string BuildTenantSetPasswordUrl(string email, string setupToken) => $"http://localhost:5001/account/set-password?email={email}&token={setupToken}";
+        // BL-454 — no default on the interface any more: this double records a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
         {
             Sends.Add((email, setupToken));
@@ -446,12 +459,99 @@ public sealed class UserLifecycleTests
         Assert.Contains(UserAuditEvents.Invited, local.Names);
     }
 
+    // ── CT acceptance, WP-USERS-ERROR-CODES-01 fix round 2 (2026-10-02): an update that does not SAY isActive ──────
+    // UpdateUserCommand.IsActive is nullable now. Null must behave like "the value the account already has" on EVERY
+    // branch that reads it, not only on the final write: the acceptance sabotage turned one branch at a time to
+    // `request.IsActive` and no test noticed (the endpoint test reads back firstName and isActive only).
+
+    [Fact]
+    public async Task A_rename_that_does_not_say_isActive_leaves_the_users_sessions_alone()
+    {
+        var other = new User("keep@acme.test", "hash:x", "Ke", "Ep", TenantA);
+        var repo = new InMemoryUserRepository([other]);
+        var tokens = new CountingRevokes();
+
+        var result = await UpdateHandler(repo, new Actor(Guid.NewGuid()), tokens)
+            .Handle(new UpdateUserCommand(other.Id, "New", "Name", IsActive: null), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.True((await repo.GetByIdAndTenantAsync(other.Id, TenantA, CancellationToken.None))!.IsActive);
+        Assert.Equal(0, tokens.RevokeAllCount);
+    }
+
+    [Fact]
+    public async Task Renaming_yourself_without_saying_isActive_is_not_a_self_deactivation()
+    {
+        var me = new User("me2@acme.test", "hash:x", "Me", "Self", TenantA);
+        var repo = new InMemoryUserRepository([me]);
+
+        var result = await UpdateHandler(repo, new Actor(me.Id), new CountingRevokes())
+            .Handle(new UpdateUserCommand(me.Id, "Renamed", "Self", IsActive: null), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        var stored = (await repo.GetByIdAndTenantAsync(me.Id, TenantA, CancellationToken.None))!;
+        Assert.Equal("Renamed", stored.FirstName);
+        Assert.True(stored.IsActive);
+    }
+
+    [Fact]
+    public async Task The_audit_row_of_a_rename_that_does_not_say_isActive_names_only_the_names()
+    {
+        var other = new User("audit@acme.test", "hash:x", "Au", "Dit", TenantA);
+        var repo = new InMemoryUserRepository([other]);
+        var rows = new AuditRows();
+
+        var result = await UpdateHandlerWith(repo, rows, new RecordingUserQuotaClient())
+            .Handle(new UpdateUserCommand(other.Id, "New", "Dit", IsActive: null), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        var row = Assert.Single(rows.Rows, r => r.Name == UserAuditEvents.Updated);
+        Assert.Equal(new[] { "firstName" }, Assert.IsAssignableFrom<IEnumerable<string>>(row.Metadata["changedFields"]));
+        Assert.Equal(true, row.Metadata["previousIsActive"]);
+        Assert.Equal(true, row.Metadata["isActive"]);
+    }
+
+    [Fact]
+    public async Task Renaming_an_inactive_account_without_saying_isActive_asks_for_no_seat_and_leaves_it_inactive()
+    {
+        var off = new User("off@acme.test", "hash:x", "Of", "F", TenantA);
+        off.ConfirmEmail();
+        off.Deactivate();
+        var repo = new InMemoryUserRepository([off]);
+        var quota = new RecordingUserQuotaClient();
+
+        var result = await UpdateHandlerWith(repo, new AuditRows(), quota)
+            .Handle(new UpdateUserCommand(off.Id, "Still", "Off", IsActive: null), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Empty(quota.Consumed);
+        Assert.False((await repo.GetByIdAndTenantAsync(off.Id, TenantA, CancellationToken.None))!.IsActive);
+    }
+
+    private static UpdateUserCommandHandler UpdateHandlerWith(IUserRepository repo, AuditRows rows, RecordingUserQuotaClient quota)
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(new NoAudit())),
+            UserAuditForTests.Over(rows), quota, new Actor(Guid.NewGuid()), new CountingRevokes(), RecoveryGuardForTests.Permits(), NullLogger<UpdateUserCommandHandler>.Instance);
+
+    private sealed class AuditRows : IRbacAuditRecorder
+    {
+        public List<(string Name, IReadOnlyDictionary<string, object?> Metadata)> Rows { get; } = [];
+
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default)
+        {
+            Rows.Add((eventName, (IReadOnlyDictionary<string, object?>)metadata));
+            return Task.CompletedTask;
+        }
+    }
+
     private sealed class Actor(Guid id) : ICurrentUserAccessor { public Guid? UserId => id; }
 
     private sealed class CountingRevokes : IRefreshTokenRepository
     {
         public int RevokeAllCount { get; private set; }
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.CompletedTask; }
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.FromResult(0L); }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
@@ -467,6 +567,9 @@ public sealed class UserLifecycleTests
     private sealed class ThrowingInvitationEmail : ITenantUserInvitationEmailService
     {
         public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://localhost/set-password";
+        // BL-454 — no default on the interface any more: this double fails a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct) => throw new InvalidOperationException("SMTP down");
     }
 }

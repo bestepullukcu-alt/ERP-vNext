@@ -140,9 +140,24 @@ Kurallar:
 - ☐ VP-UI-3 Haftalar + doktor paneli + yeniden açma penceresi
 - ☐ C6 çok ziyaretli durakta doktor adları (Rota tasarımı değişmeden; kullanıcı onayıyla)
 
+- ◐ **Main sonrası kullanıcı manuel testi (2026-10-08):** PR main'e birleşti; planlar temizlendi (`reset_visit_planning_97c5.py`, yedekli); [test rehberi](MANUAL-TEST-visit-planning-2026-10-08.md). İlk bulgular + **mockup v3 (Hedefler)** → ☑ E2 `8f4c48147` (Web 810/0; ☐ E4) [WP-VP-4J](WP-VP-4J-targets-v3-list-fixes.md) (Hedefler v3 düz liste, ürün paneli dönem görünümü, boş hafta geri bildirimi, liste süzgeci + **seçili boş taslakları arşivle** (kullanıcı kararı), yeni plan temsilci alanı; `C:	mpp-4j`)
+- ◐ **Android raporları (2026-10-08)** → [CT değerlendirmesi](mobile/2026-10-08-visit-planning-contract/CT-REVIEW-android-visit-report-status-2026-10-08.md) + [yanıt](mobile/2026-10-08-visit-planning-contract/MOBILE-ANSWERS-2026-10-08-android-report.md). **Kullanıcı kararları:** iptal edilmiş ziyaret düzenlenemez + raporlanamaz · "bugün" UTC · rapor son tarihi 48 sa · saha temsilcisi rolünü kullanıcı ekrandan verir → ⏸ **ERTELENDİ — kullanıcı kararı (2026-10-08): Ziyaret Çalışma Alanı mockup'ı geldikten sonra** [WP-VP-4K](WP-VP-4K-visit-report-rules-calendar-names.md) backend (takvim adı + iptal nedeni, T-1, raporlayan = çağıran, iptal kuralları, 48 sa, rapor uçları `crm.visit-report.*`; worktree kaldırıldı, zamanı gelince test dalı başından yeniden). Faz 6'ya: B4 taslak→planlı, B11 etiketler.
+
 ### Faz 5 — mobil
 - ☑ Mobil not iletildi (2026-10-06) · ☑ 3 soru yanıtlandı ([yanıtlar](mobile/2026-10-06-visit-planning/MOBILE-ANSWERS-2026-10-06.md)): düzenlemede değerleri geri gönder; `resources/me` tek kaynak + `displayName` gelecek (B-1); ad için ara istek kabul, adlar B-8 ile yanıta girecek
 - ◐ Faz 2–4 alanları kesinleşti → [sözleşme notu 2026-10-08](mobile/2026-10-08-visit-planning-contract/MOBILE-CONTRACT-2026-10-08-visit-planning.md) yazıldı (kullanıcı iletir); SB-3-MOB SB-3c ile ayrı
+
+- ◐ **Manuel test bulgusu (2026-10-08):** sıklığı tanımsız 54 doktorun hepsi 41. haftada bitti, 42–53 boş. **Kararlar:** tanımsız sıklık = **haftada 1**; **haftaya ek ziyaret** evet → ☑ E2 4L-WEB `b403aa18f` + 4L-BE `ac73da19a` (CRM 2466/0/5, Web 816/0, mimari 27; ☐ E4) [WP-VP-4L](WP-VP-4L-weekly-default-week-extras.md) (4L-BE ∥ 4L-WEB; `C:	mpp-4l-be`, `C:	mpp-4l-web`). Mobil M10 metni "haftada 1 (varsayılan)" olacak.
+
+- ☑ **[WP-VP-4M](WP-VP-4M-targets-numbers-selected-week.md) E2 ACCEPTED (2026-10-09; BE `1db6c77da` + WEB `5bf85bb8c`; CRM 2470/0/5, Web 822/0, mimari 27) — canlı E4 bekliyor (4J + 4L ile tek tur)** — kullanıcı onayı ("4L-BE dönünce paketle"): Hedefler sayıları (canlı, plan `f2c6014d`, 42. hafta, Acıbadem Taksim):
+  1. "Yapılan / kalan" planlı ziyareti göstermiyor → seçili doktorda "0 / 0"; doğrusu "0 yapıldı · 1 planlı".
+  2. Varsayılan "Bu hafta görülmesi gerekenler" süzgeci planda olan doktorları gizliyor ("4 / 29 seçili" ama tabloda seçili yok) → planda olanlar süzgeçten bağımsız, durumlarıyla listenin başında.
+  3. `dueThisWeek` / hızlı süzgeç sayıları **bugünkü haftaya** göre, başlık **seçili haftaya** göre → doktor durumu okumasına (my-accounts/{id}/doctors, sessions/{id}/targets) seçili hafta parametresi (`weekStart`, ek) ve Web bunu gönderir.
+
+### ★ Yön değişikliği (kullanıcı, 2026-10-08) — Ziyaret Çalışma Alanı (tek takvim)
+- Ziyaret Planlama + Ziyaret Yürütme **tek takvim ekranında**: Planla / Yürüt modu, ziyarete başla (fotoğraf + kanıt), iptal / yapılamadı / ertele (neden kategorisi), sunum ekranı (tablette doktor, telefonda temsilci), zengin hekim / eczane raporu (süre, etkinlik, bağlılık, hasta sayıları, rakip, itiraz, talep, numune, önceki değer önerisi), doktor satış payı ekranı.
+- ☑ **Mockup brief:** [BRIEF-visit-workspace-calendar](mockups/visit-workspace/BRIEF-visit-workspace-calendar.md) → mockup geldi (2026-10-09, `mockups/visit-workspace/`).
+- ▶ **Yeni yol haritası:** [ROADMAP-visit-workspace](ROADMAP-visit-workspace.md) — W0–W9, ≈25–26 prompt (gerçekçi 30–33). Faz 6 → W2 / W9, SB-3c → W3, 4K → W1, Faz 8 → W3'ten önce önerildi.
 
 ### Faz 6 — Planlanan Ziyaretler sayfası
 - ☐ Canlı analiz → (mockup?) → paketler: GUID (D1), tamamen İngilizce sayfa, sahiplik, T1–T3, `target_inactive`

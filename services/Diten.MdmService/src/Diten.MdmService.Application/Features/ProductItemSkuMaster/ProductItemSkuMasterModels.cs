@@ -21,6 +21,8 @@ public static class ProductItemSkuMasterModels
         public Guid ReservationId { get; init; }
         public int ExpectedReservationVersion { get; init; }
         public string IdempotencyKey { get; init; } = string.Empty;
+        // MOD-0290-FU05: optional; a linkable brand of this tenant. Its code and name are never accepted (unknown fields).
+        public Guid? BrandId { get; init; }
 
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
@@ -43,13 +45,58 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         CodeReservationBindingState CodeBindingState,
-        bool BindingReconciliationRequired);
+        bool BindingReconciliationRequired,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
 
+    public sealed class UpdateGlobalProductDraftRequest
+    {
+        private readonly Guid? _brandId;
+
+        public string? GlobalProductName { get; init; }
+        public int? ExpectedVersion { get; init; }
+
+        // MOD-0290-FU05 (T-4): the serializer calls this setter only when the field is in the body, so its absence leaves
+        // the stored brand as it is, null removes it and a value links it.
+        public Guid? BrandId
+        {
+            get => _brandId;
+            init
+            {
+                _brandId = value;
+                BrandIdSpecified = true;
+            }
+        }
+
+        [JsonIgnore]
+        public bool BrandIdSpecified { get; private set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed record GlobalProductDraftUpdateDto(
+        Guid Id,
+        string CanonicalCode,
+        string GlobalProductName,
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        int Version,
+        bool IsReplay,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
+
+    // MOD-0290-FU05 (Karar b): BrandId is the stored link; BrandCode / BrandName are read from the brand at read time
+    // (never stored on the product). No brand = all three null; a brand that cannot be read = id only.
     public sealed record GlobalProductListItemDto(
         Guid Id,
         string CanonicalCode,
         string GlobalProductName,
-        ProductIdentityLifecycleStatus LifecycleStatus);
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
 
     public sealed record GlobalProductDetailDto(
         Guid Id,
@@ -58,12 +105,65 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
 
     public sealed record GlobalProductSelectorDto(
         Guid Id,
         string CanonicalCode,
-        string GlobalProductName);
+        string GlobalProductName,
+        Guid? BrandId = null,
+        string? BrandCode = null,
+        string? BrandName = null);
+
+    /// <summary>
+    /// MOD-0290-FU05 slice 2 — an approved product's new brand. The field is required (its absence is a 400); null
+    /// removes the brand. Code and name are never accepted (unknown fields).
+    /// </summary>
+    public sealed class ChangeGlobalProductBrandRequest
+    {
+        private readonly Guid? _brandId;
+
+        public int? ExpectedVersion { get; init; }
+
+        public Guid? BrandId
+        {
+            get => _brandId;
+            init
+            {
+                _brandId = value;
+                BrandIdSpecified = true;
+            }
+        }
+
+        [JsonIgnore]
+        public bool BrandIdSpecified { get; private set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    /// <summary>MOD-0290-FU05 slice 2 — the product after the change (Changed = false: the same brand, nothing written).</summary>
+    public sealed record GlobalProductBrandChangeDto(
+        Guid Id,
+        string CanonicalCode,
+        string GlobalProductName,
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        int Version,
+        bool Changed,
+        bool IsReplay,
+        Guid? BrandId,
+        string? BrandCode,
+        string? BrandName);
+
+    /// <summary>MOD-0290-FU05 (T-1) — a brand a Global Product may be linked to now (active, inside its window).</summary>
+    public sealed record GlobalProductBrandOptionDto(
+        Guid Id,
+        string BrandCode,
+        string BrandName);
 
     public sealed record PagedResult<T>(
         IReadOnlyList<T> Items,
@@ -165,9 +265,37 @@ public static class ProductItemSkuMasterModels
         decimal PackQuantity,
         string PackUomCode,
         ProductIdentityLifecycleStatus LifecycleStatus,
-        int Version,
+        int RevisionVersion,
+        int GskuVersion,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions,
+        // B2 (b) (GSKU FIX1): set when the latest identity approval was granted and could not be applied — the
+        // reason the pair is a draft again, for the maker to fix before submitting again.
+        string? IdentityNotAppliedReason = null,
+        // FIX2 item 1: where the draft's latest submit stands (SUBMIT_IN_FLIGHT, RESUBMIT_REQUIRED,
+        // RECONCILIATION_REQUIRED, SUBMISSION_ENDED) — the screen says what happens next for each.
+        string? IdentitySubmitState = null,
+        // FIX3 E2: with RECONCILIATION_REQUIRED, the version the reconciling repeat of the submit carries.
+        int? IdentitySubmitVersion = null,
+        // FIX3 (CT decision 1): set when the pair was completed with the submit-time proof because a reference was
+        // retired after the approval — the screen says so as information.
+        string? IdentityApprovalNote = null,
+        // FIX4 item 1 (b): STUCK when a correction or retirement request holds the GSKU in manual reconciliation; the
+        // request itself only for its requester (REPEAT_REQUEST sends it again, as it was).
+        string? LifecycleRequestState = null,
+        GskuPendingLifecycleRequestDto? PendingLifecycleRequest = null)
+    {
+        // MOD-0290-FU04 S5 (O-12): the "Stock behaviour" section — values, stockable and why not, locks (O-8).
+        public global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourDto? StockBehaviour { get; init; }
+    }
+
+    public sealed record GskuPendingLifecycleRequestDto(
+        string Kind,
+        int ExpectedGskuVersion,
+        decimal? PackQuantity,
+        string? PackUomCode,
+        string? RequestReason);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,
@@ -180,9 +308,17 @@ public static class ProductItemSkuMasterModels
         int SortOrder,
         int MaximumDecimalPrecision);
 
+    public sealed record GskuMutationOptionsDto(
+        Guid GskuId,
+        int GskuVersion,
+        int RevisionVersion,
+        IReadOnlyList<GskuCreateUomOptionDto> Uoms);
+
+    // FIX3 B17: HasMore = more referenceable products match than this page holds (the picker pages with it).
     public sealed record GskuCreateOptionsDto(
         IReadOnlyList<GskuCreateGlobalProductOptionDto> GlobalProducts,
-        IReadOnlyList<GskuCreateUomOptionDto> Uoms);
+        IReadOnlyList<GskuCreateUomOptionDto> Uoms,
+        bool HasMore = false);
 
     public sealed class CreateFinishedGoodDraftRequest
     {
@@ -212,7 +348,12 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // FG FIX1 item 1: the audited Draft cancellation as reads see it (None / PendingAudit / Cancelled) — it takes
+        // precedence over the stored Draft for actions and display; derived, never a stored flag.
+        public FinishedGoodCancellationDisposition CancellationDisposition { get; init; }
+    }
 
     public sealed record FinishedGoodDetailDto(
         Guid Id,
@@ -223,7 +364,15 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // FG FIX1 item 1: the audited Draft cancellation as reads see it (None / PendingAudit / Cancelled) — it takes
+        // precedence over the stored Draft for actions and display; derived, never a stored flag.
+        public FinishedGoodCancellationDisposition CancellationDisposition { get; init; }
+
+        // MOD-0290-FU04 S5 (O-12): the "Stock behaviour" section (base unit and days from the GSKU, O-14 / D-2).
+        public global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourDto? StockBehaviour { get; init; }
+    }
 
     public sealed record FinishedGoodGskuSelectorDto(
         Guid Id,
@@ -264,7 +413,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string>? AvailableActions = null);
 
     public sealed record LskuDetailDto(
         Guid Id,
@@ -275,7 +425,12 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string>? AvailableActions = null)
+    {
+        // MOD-0290-FU04 S5 (O-3): the LSKU's own serial flag; everything else read from its GSKU now.
+        public global::Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourDto? StockBehaviour { get; init; }
+    }
 
     public sealed record LskuCreateGskuOptionDto(
         Guid Id,

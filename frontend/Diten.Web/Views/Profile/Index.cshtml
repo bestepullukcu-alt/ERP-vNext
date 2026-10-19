@@ -1,0 +1,74 @@
+@using Diten.Web.Views.Profile
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProfileIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ProfileTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-EMAIL-LANG-01 delivery 2 — My profile: the signed-in tenant user's own name and address (read only) and the
+    language their mail is written in (CT decision 1 = A: the same choice also sets this browser's screen language).
+    Every tenant user has a profile, so there is no permission face here; the shell's filter sends an anonymous caller to
+    the login page and answers a non-tenant actor 403 before this view is drawn. No inline style (FG-003).
+*@
+<div class="profile-page" id="profilePage">
+    <div class="mb-3">
+        <h5 class="mb-0">@Localizer["ProfileTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+
+    <div class="alert d-none" id="profileNotice" role="status" aria-live="polite"></div>
+
+    @* The skeleton while the profile loads; replaced by the card below (never both). *@
+    <div id="profileSkeleton">
+        @* FIX2 (a11y) — the words a screen reader hears are OUTSIDE the hidden placeholder block. *@
+        <span class="visually-hidden" role="status">@Localizer["Loading"]</span>
+        <section class="card" aria-hidden="true">
+            <div class="card-body placeholder-glow">
+                <span class="placeholder col-4 mb-3"></span>
+                <span class="placeholder col-6 mb-3"></span>
+                <span class="placeholder col-8 mb-3"></span>
+                <span class="placeholder col-3"></span>
+            </div>
+        </section>
+    </div>
+
+    <section class="card d-none" id="profileCard">
+        <div class="card-body">
+            <dl class="row mb-4">
+                <dt class="col-sm-3">@Localizer["NameLabel"]</dt>
+                <dd class="col-sm-9 text-break" id="profileName"></dd>
+                <dt class="col-sm-3">@Localizer["EmailLabel"]</dt>
+                <dd class="col-sm-9 text-break" id="profileEmail"></dd>
+            </dl>
+
+            <h6 class="mb-1">@Localizer["LanguageTitle"]</h6>
+            <p class="text-muted small">@Localizer["LanguageHelp"]</p>
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-6">
+                    <label for="profileLanguage" class="form-label">@Localizer["LanguageLabel"]</label>
+                    <select id="profileLanguage" class="form-select">
+                        <option value="">@Localizer["LanguageTenantDefault"]</option>
+                        @* Each language in its own name: a reader finds their language whatever the screen is in. *@
+                        <option value="en" lang="en">English</option>
+                        <option value="tr" lang="tr">Türkçe</option>
+                        <option value="fr" lang="fr">Français</option>
+                        <option value="es" lang="es">Español</option>
+                        <option value="zh" lang="zh">中文</option>
+                        <option value="ar" lang="ar">العربية</option>
+                        <option value="ru" lang="ru">Русский</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <button type="button" class="btn btn-primary w-100" id="profileSave">@Localizer["Save"]</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Profile/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Profile/index.js" asp-append-version="true"></script>
+}

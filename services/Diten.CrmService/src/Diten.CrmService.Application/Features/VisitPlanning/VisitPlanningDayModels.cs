@@ -22,7 +22,7 @@ public sealed record PinOverflowPreview(
 public sealed record PinWarningPreview(string WeekStart, string TargetType, Guid TargetId, string Date, string Code);
 
 /// <summary>One stored day pin (detail).</summary>
-public sealed record PlanningDayPinDto(string TargetType, Guid TargetId, Guid? ContactId, string Date, string Scope);
+public sealed record PlanningDayPinDto(string TargetType, Guid TargetId, Guid? ContactId, string Date, string Scope, string? StartTime = null);
 
 /// <summary>WP-VP-4E (4C §37) — the period capacity's per-visit model, so the product picker shows the limits and the
 /// visit time without a capacity read key: max promo / non-promo products, minutes per product by role, the report

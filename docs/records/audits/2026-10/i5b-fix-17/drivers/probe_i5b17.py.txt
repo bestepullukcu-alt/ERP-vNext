@@ -1,0 +1,137 @@
+import json, os, shutil, subprocess, sys
+SRC, WORK = sys.argv[1:3]
+agents = open(os.path.join(SRC, "AGENTS.md"), encoding="utf-8").read()
+ref = open(os.path.join(SRC, ".antigravity/AGENTS-REFERENCE.md"), encoding="utf-8").read()
+man = json.load(open(os.path.join(SRC, ".antigravity/adapters.json"), encoding="utf-8"))["instruction_budget"]["files"]
+anchor = man[2]["required_sections"][0]["anchors"][0]
+r2a = ref.index("## 2. Proje Klasör Yapısı"); r2b = ref.index("## 3. Port Şeması"); ac = ref.index(anchor, r2a)
+pre_par = ref.rfind("\n\n", 0, r2a)                     # a paragraph before section 2
+pre_line_end = ref.rfind("\n", 0, r2a - 1)
+END = "<!-- core:end -->"; after = agents.index(END) + len(END)
+req = man[0]["required_headings"]
+later = next(l for l in agents[after:].split("\n") if l.startswith("## ") and any(l[3:].startswith(h) for h in req)); la = agents.index(later, after)
+last = ref.rstrip("\n")
+R = ".antigravity/AGENTS-REFERENCE.md"
+sc = '<script type="text/plain">'
+cases = [("normal", {}, "0/0")]
+for tag in ('script type="text/plain"', "pre", "style", "textarea"):
+    c = tag.split()[0]
+    cases.append((f"block: REF section 2 inside <{c}>", {R: ref[:r2a] + f"<{tag}>\n" + ref[r2a:r2b] + f"</{c}>\n\n" + ref[r2b:]}, "nonzero"))
+cases += [
+ ("block: AGENTS.md required heading after the core inside <pre>", {"AGENTS.md": agents[:la] + "<pre>\n" + later + "\n</pre>\n" + agents[la + len(later) + 1:]}, "nonzero"),
+ ("block: REF heading inside <div> (no blank line)", {R: ref[:r2a] + "<div>\n" + ref[r2a:].replace("\n", "\n</div>\n", 1)}, "nonzero"),
+ ("inline: Codex's anchor inside a mid-paragraph <script type=text/plain>", {R: ref[:ac] + sc + anchor + "</script>" + ref[ac + len(anchor):]}, "nonzero"),
+ ("inline: <script> opened mid-line in the paragraph before section 2, closed after it", {R: ref[:pre_line_end] + " " + sc + ref[pre_line_end:r2b] + "</script>\n\n" + ref[r2b:]}, "nonzero"),
+ ("inline: an unclosed mid-line <script> before section 2", {R: ref[:pre_line_end] + " " + sc + ref[pre_line_end:]}, "nonzero"),
+ ("inline: the anchor inside <span hidden>", {R: ref[:ac] + "<span hidden>" + anchor + "</span>" + ref[ac + len(anchor):]}, "nonzero"),
+ ("control: unrelated <div>Example</div> appended to the last section", {R: last + "\n<div>Example</div>\n"}, "0/0"),
+ ("control: unrelated <div>Example</div>, a blank line, then the real section", {R: ref[:r2a] + "<div>Example</div>\n\n" + ref[r2a:]}, "0/0"),
+ ("control: unrelated inline HTML in section 2's body, not around its anchor", {R: ref[:ac] + "Not: <b>kalın</b> ve <br> satır. " + ref[ac:]}, "0/0"),
+ ("control: an unrelated closed <details> block", {R: ref.replace("## 3. Port Şeması", "<details>\n<summary>x</summary>\nnot\n</details>\n\n## 3. Port Şeması", 1)}, "0/0"),
+ ("control: HTML shown in a closed code example", {R: ref.replace("## 3. Port Şeması", "```\n<script>\n## 2. not a heading\n</script>\n```\n\n## 3. Port Şeması", 1)}, "0/0"),
+ ("control: HTML in inline code inside section 2", {R: ref[:ac] + "Örnek `<script>` ve `<span hidden>`. " + ref[ac:]}, "0/0"),
+ ("control: inline HTML at a paragraph start, heading right after", {R: ref[:r2a] + "<b>Not:</b> metin\n" + ref[r2a:]}, "0/0")]
+cases += [
+ ("codex-p02-A: <script type=text/plain> holding </pre> and a blank line, then section 2, then </script>", {R: ref[:r2a] + sc + "\n</pre>\n\n" + ref[r2a:r2b] + "</script>\n\n" + ref[r2b:]}, "nonzero"),
+ ("codex-p02-B: 'Visible prefix <span hidden>' in the previous paragraph, a blank line, section 2, then </span>", {R: ref[:r2a] + "Visible prefix <span hidden>\n\n" + ref[r2a:r2b] + "</span>\n\n" + ref[r2b:]}, "nonzero"),
+ ("codex-p03-A: <div>example</div> right before section 2's heading, no blank line", {R: ref[:r2a] + "<div>example</div>\n" + ref[r2a:]}, "nonzero"),
+ ("codex-p03-B: <script/>, a blank line, section 2, then </script>", {R: ref[:r2a] + "<script/>\n\n" + ref[r2a:r2b] + "</script>\n\n" + ref[r2b:]}, "nonzero"),
+ ("own: nested same-name <div> — the inner close does not end the outer", {R: ref[:r2a] + "Metin <div><div>x</div>\n\n" + ref[r2a:r2b] + "</div>\n\n" + ref[r2b:]}, "nonzero"),
+ ("own: a </span> inside a closed code example does not close <span hidden>", {R: ref[:r2a] + "Metin <span hidden>\n\n```\n</span>\n```\n\n" + ref[r2a:r2b] + "</span>\n\n" + ref[r2b:]}, "nonzero"),
+ ("own: a </span> in inline code does not close <span hidden>", {R: ref[:r2a] + "Metin <span hidden> `</span>`\n\n" + ref[r2a:r2b] + "</span>\n\n" + ref[r2b:]}, "nonzero"),
+ ("own: an escaped \\</span> does not close <span hidden>", {R: ref[:r2a] + "Metin <span hidden> " + chr(92) + "</span>\n\n" + ref[r2a:r2b] + "</span>\n\n" + ref[r2b:]}, "nonzero"),
+ ("own: <span/> never closed before section 2 (declared safe refusal)", {R: ref[:r2a] + "Metin <span/>\n\n" + ref[r2a:]}, "nonzero"),
+ ("own: the AGENTS.md required heading after the core inside a mid-line <span hidden> across a blank line", {"AGENTS.md": agents[:la] + "Metin <span hidden>\n\n" + later + "\n</span>\n" + agents[la + len(later) + 1:]}, "nonzero"),
+ ("control: a void <br/> and a blank line before section 2", {R: ref[:r2a] + "Metin <br/>\n\n" + ref[r2a:]}, "0/0"),
+ ("control: a closed nested <div><div>x</div></div>, a blank line, section 2", {R: ref[:r2a] + "<div><div>x</div></div>\n\n" + ref[r2a:]}, "0/0"),
+ ("control: an escaped \\<span hidden> before section 2", {R: ref[:r2a] + "Metin " + chr(92) + "<span hidden>\n\n" + ref[r2a:]}, "0/0"),
+ ("control: <script/> shown in inline code before section 2", {R: ref[:r2a] + "Metin `<script/>`\n\n" + ref[r2a:]}, "0/0")]
+
+cases += [
+ ("codex-p04: the anchor inside a mid-paragraph <script data-example=\"<\"> … </script>", {R: ref[:ac] + '<script data-example="<">' + anchor + "</script>" + ref[ac + len(anchor):]}, "nonzero"),
+ ("own: a '<' in an attribute of a tag before section 2 ('<span title=\"a<b\">')", {R: ref[:r2a] + 'Metin <span title="a<b">x</span>\n\n' + ref[r2a:]}, "nonzero"),
+ ("own: a bare 'a<b' in prose before section 2 (an opener the reader cannot read)", {R: ref[:r2a] + "Metin a<b c\n\n" + ref[r2a:]}, "nonzero"),
+ ("own: a tag left open at the end of the file's last line", {R: last + "\n\nMetin <span\n"}, "0/0"),
+ ("control: a URI autolink before section 2", {R: ref[:r2a] + "Bkz. <https://example.com/x>\n\n" + ref[r2a:]}, "0/0"),
+ ("control: an e-mail autolink before section 2", {R: ref[:r2a] + "Bkz. <ops@example.com>\n\n" + ref[r2a:]}, "0/0"),
+ ("control: an escaped \\<b in prose before section 2", {R: ref[:r2a] + "Metin a" + chr(92) + "<b c\n\n" + ref[r2a:]}, "0/0"),
+ ("control: 'a<b' in inline code before section 2", {R: ref[:r2a] + "Metin `a<b` c\n\n" + ref[r2a:]}, "0/0"),
+ ("control: 'a < b' with spaces before section 2", {R: ref[:r2a] + "Metin a < b c\n\n" + ref[r2a:]}, "0/0"),
+ ("control: '<script data-example=\"<\">' in a closed code example before section 2", {R: ref[:r2a] + '```\n<script data-example="<">\n```\n\n' + ref[r2a:]}, "0/0")]
+
+sc2 = '<script type="text/plain">'
+wR = lambda b, a: {R: ref[:r2a] + b + ref[r2a:r2b] + a + ref[r2b:]}
+bR = lambda ins: {R: ref[:r2a] + ins + ref[r2a:]}
+cases = [cases[0],                                          # the normal file
+ ("i5b17 nv: Codex F1, '</div>' in a double-quoted value", wR('<div hidden title="> </div>">\n\n', "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: Codex F1, '</div>' in a single-quoted value", wR("<div hidden title='> </div>'>\n\n", "</div>\n\n"), "nonzero"),
+ ("i5b17 hidden: a quoted value holding '>' only", wR('<div hidden title="a>b">\n\n', "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: Codex F2, '<script>' in a quoted value", bR('<div title="> <script type=text/plain>">örnek</div>\n\n'), "nonzero"),
+ ("i5b17 nv: Claude, '</script>' in indented code", wR("Not: " + sc2 + " başlar.\n\n    </script>\n\n", "</script>\n\n"), "nonzero"),
+ ("i5b17 nv: Claude, '</div>' in indented code", wR("Not: <div hidden> başlar.\n\n    </div>\n\n", "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: Claude, '</div>' in tab-indented code", wR("Not: <div hidden> başlar.\n\n\t</div>\n\n", "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: Claude, '</div>' in indented code in a list item", wR("- madde <div hidden>\n\n      </div>\n\n", "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: Claude, '</script>' in a link title", wR("Not: " + sc2 + ' [x](https://example.com/a "</script>")\n\n', "</script>\n\n"), "nonzero"),
+ ("i5b17 nv: Claude, '</div>' in a link title", wR('Not: <div hidden> [x](https://example.com/a "</div>")\n\n', "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: '</div>' in a possible list continuation", wR("- madde <div hidden>\n\n  devam </div>\n\n", "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: '</div>' on a block quote line", wR("Metin <div hidden>\n> alıntı </div>\n\n", "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: '</div>' beside link syntax the check cannot read", wR('Metin <div hidden> [[[x]]](y "</div>")\n\n', "</div>\n\n"), "nonzero"),
+ ("i5b17 nv: Claude, an AGENTS.md heading after '</script>' in indented code",
+  {"AGENTS.md": agents[:la] + "Not: " + sc2 + " başlar.\n\n    </script>\n\n" + later + "\n\n</script>\n" + agents[la + len(later) + 1:]}, "nonzero"),
+ ("i5b17 passes: a closed element whose quoted value holds '>'", bR('<div title="x>y">z</div>\n\n'), "0/0"),
+ ("i5b17 passes: '</div>' in indented code with nothing open", bR("Not:\n\n    </div>\n\n"), "0/0"),
+ ("i5b17 passes: '</div>' in a link title with nothing open", bR('Not: [x](https://example.com/a "</div>")\n\n'), "0/0"),
+ ("i5b17 passes: a real '</div>' on an indented continuation line", bR("Metin <div hidden>\n    </div>\n\n"), "0/0"),
+ ("i5b17 passes: a type-7 line whose quoted value holds '>' starts a raw HTML block", bR('<span hidden title="a>b">\n`</span>`\n\n'), "0/0"),
+]
+
+import difflib, hashlib
+def tree_id(root):                                   # one SHA-256 over every file's path and bytes
+    h = hashlib.sha256()
+    for d, dirs, fs in os.walk(root):
+        dirs.sort()
+        for f in sorted(fs):
+            p = os.path.join(d, f); h.update(os.path.relpath(p, root).encode() + b"\0" + open(p, "rb").read() + b"\0")
+    return h.hexdigest()
+TOOL = sys.argv[4] if len(sys.argv) > 4 else None   # optional: the frozen sync_adapters.py laid over the base each round
+def restore():
+    subprocess.run(["rsync", "-a", "--delete", "--checksum", SRC + "/", W + "/"], check=True)
+    if TOOL:
+        shutil.copyfile(TOOL, os.path.join(W, ".antigravity/scripts/sync_adapters.py"))
+def sha(b):
+    return hashlib.sha256(b).hexdigest()
+NAME = sys.argv[3]                                   # the result name: <NAME>.json and the <NAME>/ folder
+OUT = os.path.join(os.path.dirname(WORK), NAME); os.makedirs(OUT)
+W = os.path.join(WORK, "one"); os.makedirs(W, exist_ok=True)
+base_before = tree_id(SRC); tool = ".antigravity/scripts/sync_adapters.py"
+restore(); src_before = tree_id(W)                   # the base with the tool laid over it
+res = []
+for n, (label, files, want) in enumerate(cases):
+    restore()
+    assert tree_id(W) == src_before, "the single copy is not the source before case %d" % n
+    tool_sha = sha(open(os.path.join(W, tool), "rb").read())
+    inputs = {}
+    for p, t in files.items():
+        open(os.path.join(W, p), "w", encoding="utf-8").write(t)
+        old = open(os.path.join(SRC, p), encoding="utf-8").read()
+        d = "".join(difflib.unified_diff(old.splitlines(True), t.splitlines(True), "a/" + p, "b/" + p))
+        open(os.path.join(OUT, f"c{n:02d}.input.diff"), "a", encoding="utf-8").write(d)
+        inputs[p] = {"sha256": sha(t.encode()), "bytes": len(t.encode())}
+    run = lambda *x: subprocess.run([sys.executable, "-B", tool, *x], cwd=W, capture_output=True, text=True, timeout=120)
+    a, b = run(), run("--check"); got = f"{a.returncode}/{b.returncode}"
+    open(os.path.join(OUT, f"c{n:02d}.output.txt"), "w", encoding="utf-8").write(
+        f"case: {label}\n### write exit {a.returncode}\n{a.stdout}{a.stderr}### check exit {b.returncode}\n{b.stdout}{b.stderr}")
+    out = (a.stdout + a.stderr).splitlines()
+    ok = (got == "0/0") == (want == "0/0")
+    res.append({"case": label, "n": n, "write_check": got, "expected": want, "ok": ok, "tool_sha256": tool_sha, "inputs": inputs,
+                "warn": any("WARN" in l for l in out),
+                "problems": [l[:240] for l in out if l.startswith(("HEADING", "SECTION", "ANCHOR", "CORE"))][:3]})
+    print(f"{'OK ' if ok else 'GAP'} {label}: {got} (expected {want}){' WARN' if res[-1]['warn'] else ''} · {res[-1]['problems'][:1]}")
+restore()
+summary = {"base_tree_sha256_before": base_before, "base_tree_sha256_after": tree_id(SRC), "tool_override": bool(TOOL),
+           "source_tree_sha256_before": src_before, "source_tree_sha256_after": (restore(), tree_id(W))[1], "single_copy_after_restore": tree_id(W),
+           "cases": len(res), "all_as_expected": all(r["ok"] for r in res), "results": res}
+json.dump(summary, open(os.path.join(os.path.dirname(WORK), NAME + ".json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+print("all as expected:", summary["all_as_expected"], len(res), "· base unchanged:", base_before == summary["base_tree_sha256_after"],
+      "· source before = after:", src_before == summary["source_tree_sha256_after"],
+      "· copy restored:", summary["single_copy_after_restore"] == src_before)

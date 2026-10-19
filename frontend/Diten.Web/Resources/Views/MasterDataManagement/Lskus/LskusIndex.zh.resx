@@ -35,4 +35,64 @@
   <data name="ErrorProviderTimeout"><value>参考数据提供程序超时。</value></data>
   <data name="ErrorForbidden"><value>您没有权限。</value></data>
   <data name="ErrorGateway"><value>无法完成请求。</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>标识已批准</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>等待标识审批</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>已停用</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>提交审批</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>是否提交此 LSKU 标识以供审批？</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>停用原因</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>必须填写停用原因。</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>停用原因不能超过 128 个字符。</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>LSKU 标识已提交，正在等待审批。</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>生命周期状态已更改，已加载最新记录。</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>会话已过期，请重新登录。</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>生命周期服务不可用，请稍后重试。</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>生命周期请求超时，请重试。</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>撤回审批</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>撤回审批请求？</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>撤回仍在处理中。</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>审批请求已撤回。</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>申请退役</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>提交退役申请？</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>退役申请正在等待决定。</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>退役申请已提交。</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>此 GSKU 在该市场已有 LSKU。请打开现有的 LSKU，而不是新建一个。</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>审批服务在启动审批之前拒绝了此次提交。该 LSKU 仍为草稿，您可以重新提交。</value>
+  </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>在提交此 LSKU 审批之前，请在库存行为中设置：{0}。</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>审批结果无法应用到此 LSKU，例如其市场或上级记录已不可用。该 LSKU 已恢复为草稿；请纠正原因后重新提交。</value>
+  </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>此 LSKU 在提交开始后已被更改或取消，因此未提交任何审批。请重新打开该 LSKU，如仍需要，请再次提交。</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>此提交的撤回正在进行中；请重新发送撤回以完成它，然后再次提交。</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>序列号管理（此 LSKU）</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>其 GSKU 的批次管理——须由有权编辑该 GSKU 的人员设置</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>库存行为不完整或不一致，因此暂时无法提交审批。请在“库存行为”中补全。</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0}和{1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>、</value>
+  </data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>此操作的审批设置不完整。请通知您的管理员。</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>请求未到达审批服务。请再次发送相同的请求。</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>审批正在变更中。请稍后重试。</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>除您之外没有人可以审批您提交的记录。请联系管理员调整审批人，之后您可以重新提交。</value></data>
 </root>

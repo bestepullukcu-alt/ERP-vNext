@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
@@ -6,6 +7,13 @@ namespace Diten.AuthService.Api;
 
 public sealed class GlobalExceptionHandler : IExceptionHandler
 {
+    /// <summary>
+    /// BL-516 — what a 5xx says. The exception's own message on an unexpected failure is a driver's or a library's text
+    /// (a database timeout names host and port); it goes to the server log, never to the caller. The trace id in the
+    /// same body is how the two are matched.
+    /// </summary>
+    public const string ServerErrorDetail = "An unexpected error occurred. Quote the trace id when reporting it.";
+
     private readonly ILogger<GlobalExceptionHandler> _logger;
 
     public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
@@ -15,11 +23,27 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX6 N3 — the password-work gate's refusal reached outside MediatR (the platform
+        // controller hashes and verifies itself) is the doors' coded 429 with Retry-After: 1, as the pipeline's is — not 500.
+        if (exception is PasswordWorkCapacityExceededException capacity)
+        {
+            _logger.LogWarning("Password work refused: every slot and the queue are taken. Path={Path} TraceId={TraceId}",
+                httpContext.Request.Path, httpContext.TraceIdentifier);
+            httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            httpContext.Response.Headers.RetryAfter = "1";
+            await httpContext.Response.WriteAsJsonAsync(Response<NoContent>.Fail(
+                capacity.Message, [new ResponseError(AuthRefusalCodes.TooManyRequests)], StatusCodes.Status429TooManyRequests), cancellationToken);
+            return true;
+        }
+
         var (statusCode, title) = exception switch
         {
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             HttpStatusException httpStatusException => (httpStatusException.StatusCode, "Request failed"),
             ValidationException => (StatusCodes.Status400BadRequest, "Validation failed"),
+            // WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 6 — Kestrel's refusal of the request itself (a body past [RequestSizeLimit] is
+            // 413) keeps its own status; it used to fall through to 500.
+            Microsoft.AspNetCore.Http.BadHttpRequestException badRequest => (badRequest.StatusCode, "Bad request"),
             _ => (StatusCodes.Status500InternalServerError, "Server error")
         };
 
@@ -33,11 +57,31 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         }
 
         httpContext.Response.StatusCode = statusCode;
+
+        // WP-USERS-ERROR-CODES-01 — a pipeline validator's refusal carries its stable codes (the one prefix list and
+        // the one helper ExceptionHandlingBehavior uses). ADDITIVE ONLY: without an allowed code the body below is
+        // byte for byte what it always was.
+        var errorCodes = exception is ValidationException validation ? EnvelopeErrorCodePrefixes.Extract(validation.Errors) : [];
+        if (errorCodes.Count > 0)
+        {
+            await httpContext.Response.WriteAsJsonAsync(new
+            {
+                title,
+                status = statusCode,
+                detail = exception.Message,
+                traceId = httpContext.TraceIdentifier,
+                errorCodes
+            }, cancellationToken);
+
+            return true;
+        }
+
         await httpContext.Response.WriteAsJsonAsync(new
         {
             title,
             status = statusCode,
-            detail = exception.Message,
+            // A 4xx is the application's own answer and keeps its sentence; a 5xx keeps nothing of the exception.
+            detail = statusCode >= 500 ? ServerErrorDetail : exception.Message,
             traceId = httpContext.TraceIdentifier
         }, cancellationToken);
 

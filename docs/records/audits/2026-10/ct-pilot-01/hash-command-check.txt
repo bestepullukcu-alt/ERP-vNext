@@ -1,0 +1,13 @@
+REP-001 §7.1 komutu, belgeden olduğu gibi kopyalandı (sha256 f927f097908744f4ef6d5516e33cc32e1f09e1df2229cc0152b9b561b8f13d90)
+karşılaştırma: aracın kendi ledger_content_sha256 fonksiyonu (scripts/status_report_v2.py)
+
+AYNI · vaka 1 şablon doldurulmuş: komut 021833d84852bd5ef37262b2744ffd319d4ee1cfd029e088daba0ee42a68290b · araç 021833d84852bd5ef37262b2744ffd319d4ee1cfd029e088daba0ee42a68290b
+AYNI · vaka 2 pilot tabanı: komut 98d0b9d7469ef050d39a52b49d85d30ed5a0187c9e51421584995befc0444d3d · araç 98d0b9d7469ef050d39a52b49d85d30ed5a0187c9e51421584995befc0444d3d
+AYNI · vaka 3 gövdede de approval_record satırı: komut a0754f37a411798ef9675685d286a01cc3b789990218eb43f1532121a77f0c3f · araç a0754f37a411798ef9675685d286a01cc3b789990218eb43f1532121a77f0c3f
+AYNI · vaka 4 son satır sonu yok: komut 69e7c1637eefab6ee3a864df69b89478070752bdc2739ac6e78ce0e23fd02c03 · araç 69e7c1637eefab6ee3a864df69b89478070752bdc2739ac6e78ce0e23fd02c03
+AYNI · vaka 5 CRLF: komut ret (çıkış 1: yalnız LF ve künyede tek approval_record olmalı) · araç ret
+AYNI · vaka 6 iki approval_record: komut ret (çıkış 1: yalnız LF ve künyede tek approval_record olmalı) · araç ret
+AYNI · vaka 7 künye yok: komut ret (çıkış 1: yalnız LF ve künyede tek approval_record olmalı) · araç ret
+AYNI · vaka 8 künye kapanmıyor: komut ret (çıkış 1: yalnız LF ve künyede tek approval_record olmalı) · araç ret
+
+sonuç: 8/8 aynı

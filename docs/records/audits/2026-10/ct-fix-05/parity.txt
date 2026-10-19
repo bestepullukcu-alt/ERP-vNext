@@ -1,0 +1,28 @@
+CT-FIX-05 real-data parity — 16 read-only command lines on the repository's own data, in the combined scratch clone,
+first at 0609bc588 (candidate 3), then at 3d4f0f405 (candidate 4). Exit codes, stdout and stderr compared byte for
+byte after replacing the HEAD SHA itself. Lines 1–14 are CT-FIX-04's; 15 is the pack probe (drivers/probe_packs.py.txt),
+16 the Employee discovery. Driver: drivers/parity2.py.txt. Run by the AI session.
+
+  same  exit 0 -> 0  scripts/ct_queue.py validate
+  diff  exit 0 -> 0  scripts/ct_queue.py summary --queue sce-mvp6   — expected (F2): the count line names the queue check; the count is the same (40), none refused
+  same  exit 0 -> 0  scripts/ct_queue.py guard --queue sce-mvp6
+  same  exit 2 -> 2  scripts/ct_queue.py writers --queue sce-mvp6
+  same  exit 0 -> 0  scripts/ct_queue.py require Q149 --queue sce-mvp6
+  same  exit 1 -> 1  scripts/ct_queue.py require Q149 --queue sce-mvp6 --in-force
+  same  exit 1 -> 1  scripts/ct_queue.py require Q01 --queue sce-mvp6
+  same  exit 1 -> 1  scripts/ct_route.py --kind delivery --module MOD-0185
+  same  exit 1 -> 1  scripts/ct_route.py --kind delivery --module MOD-0251
+  same  exit 1 -> 1  scripts/ct_route.py --kind contract --module MOD-0251
+  same  exit 1 -> 1  scripts/ct_route.py --kind contract --module MOD-0173
+  same  exit 1 -> 1  scripts/ct_route.py --kind delivery --wp Q149 --queue sce-mvp6
+  same  exit 2 -> 2  scripts/status_report.py --mode v2 --queue sce-mvp6
+  same  exit 0 -> 0  .antigravity/scripts/sync_adapters.py --check
+  diff  exit 0 -> 0  probe_packs.py .   — expected (C2, E1): see real-data-effects.txt
+  diff  exit 3 -> 3  .antigravity/scripts/verify_module_id.py . --discover Employee   — expected: only the report's own SHA-256 line, which covers the HEAD line
+
+identical: 13 of 16; the 3 differences are the expected ones named above; the tracked tree clean after both runs
+(git status --untracked-files=no, as the driver records it)
+
+summary, the changed line:
+  before: DAĞITILABİLİR KİMLİK 40 (require'ın kabul edeceği: tek satırlı ve dispatch=yes)
+  after:  DAĞITILABİLİR KİMLİK 40 (require'ın kabul edeceği: tek satırlı, dispatch=yes ve kuyruk denetiminden geçen)

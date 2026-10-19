@@ -78,7 +78,7 @@
   <data name="ActionVerb_Activate" xml:space="preserve"><value>Etkinleştir</value></data>
   <data name="ActionVerb_Reactivate" xml:space="preserve"><value>Yeniden Etkinleştir</value></data>
   <data name="ActionVerb_Suspend" xml:space="preserve"><value>Askıya Al</value></data>
-  <data name="ActionVerb_Deprecate" xml:space="preserve"><value>Kullanımdan Kaldır</value></data>
+  <data name="ActionVerb_Deprecate" xml:space="preserve"><value>Eskimiş Olarak İşaretle</value></data>
   <data name="ActionVerb_Approve" xml:space="preserve"><value>Onayla</value></data>
   <data name="ActionVerb_Reject" xml:space="preserve"><value>Reddet</value></data>
   <data name="ActionVerb_Publish" xml:space="preserve"><value>Yayınla</value></data>
@@ -94,4 +94,104 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Taşı</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Başlat</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Yönetici Zincirini Görüntüle</value></data>
+  <data name="ActionVerb_Allocate" xml:space="preserve"><value>Tahsis Et</value></data>
+  <data name="ActionVerb_Amend" xml:space="preserve"><value>Tadil Et</value></data>
+  <data name="ActionVerb_Append" xml:space="preserve"><value>Ekle</value></data>
+  <data name="ActionVerb_Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="ActionVerb_ApproveExtension" xml:space="preserve"><value>Uzatmayı Onayla</value></data>
+  <data name="ActionVerb_AttachEvidence" xml:space="preserve"><value>Kanıt Ekle</value></data>
+  <data name="ActionVerb_Audit" xml:space="preserve"><value>Denetle</value></data>
+  <data name="ActionVerb_AuditView" xml:space="preserve"><value>Denetim İzini Görüntüle</value></data>
+  <data name="ActionVerb_Block" xml:space="preserve"><value>Blokla</value></data>
+  <data name="ActionVerb_Capture" xml:space="preserve"><value>Kayda Geçir</value></data>
+  <data name="ActionVerb_Change" xml:space="preserve"><value>Değiştir</value></data>
+  <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Markayı Değiştir</value></data>
+  <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Durumu Değiştir</value></data>
+  <data name="ActionVerb_Commit" xml:space="preserve"><value>Kesinleştir</value></data>
+  <data name="ActionVerb_Configure" xml:space="preserve"><value>Yapılandır</value></data>
+  <data name="ActionVerb_Confirm" xml:space="preserve"><value>Teyit Et</value></data>
+  <data name="ActionVerb_Correct" xml:space="preserve"><value>Düzelt</value></data>
+  <data name="ActionVerb_CreateDraft" xml:space="preserve"><value>Taslak Oluştur</value></data>
+  <data name="ActionVerb_Deactivate" xml:space="preserve"><value>Devre Dışı Bırak</value></data>
+  <data name="ActionVerb_Decide" xml:space="preserve"><value>Karar Ver</value></data>
+  <data name="ActionVerb_Dispatch" xml:space="preserve"><value>Sevk Et</value></data>
+  <data name="ActionVerb_Dispose" xml:space="preserve"><value>Bertaraf Et</value></data>
+  <data name="ActionVerb_DryRun" xml:space="preserve"><value>Deneme Çalıştır</value></data>
+  <data name="ActionVerb_EditEmployment" xml:space="preserve"><value>İstihdam Bilgisini Düzenle</value></data>
+  <data name="ActionVerb_EditLegal" xml:space="preserve"><value>Yasal Profili Düzenle</value></data>
+  <data name="ActionVerb_End" xml:space="preserve"><value>Sonlandır</value></data>
+  <data name="ActionVerb_Generate" xml:space="preserve"><value>Üret</value></data>
+  <data name="ActionVerb_ImpactView" xml:space="preserve"><value>Etkiyi Görüntüle</value></data>
+  <data name="ActionVerb_Instantiate" xml:space="preserve"><value>Örnek Oluştur</value></data>
+  <data name="ActionVerb_Invalidate" xml:space="preserve"><value>Geçersiz Kıl</value></data>
+  <data name="ActionVerb_Investigate" xml:space="preserve"><value>Araştır</value></data>
+  <data name="ActionVerb_Link" xml:space="preserve"><value>Bağla</value></data>
+  <data name="ActionVerb_Lookup" xml:space="preserve"><value>Sorgula</value></data>
+  <data name="ActionVerb_LookupValidation" xml:space="preserve"><value>Referansı Doğrula</value></data>
+  <data name="ActionVerb_Migrate" xml:space="preserve"><value>Veri Geçişi Yap</value></data>
+  <data name="ActionVerb_MinutesPublish" xml:space="preserve"><value>Tutanağı Yayınla</value></data>
+  <data name="ActionVerb_MinutesWrite" xml:space="preserve"><value>Tutanak Yaz</value></data>
+  <data name="ActionVerb_Propose" xml:space="preserve"><value>Öner</value></data>
+  <data name="ActionVerb_PublishOverride" xml:space="preserve"><value>İstisnayla Yayınla</value></data>
+  <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>Özeti Görüntüle</value></data>
+  <data name="ActionVerb_Rebase" xml:space="preserve"><value>Ana Sürüme Uyarla</value></data>
+  <data name="ActionVerb_Recover" xml:space="preserve"><value>Kurtar</value></data>
+  <data name="ActionVerb_Release" xml:space="preserve"><value>Serbest Bırak</value></data>
+  <data name="ActionVerb_Reopen" xml:space="preserve"><value>Yeniden Aç</value></data>
+  <data name="ActionVerb_Replace" xml:space="preserve"><value>Yenisiyle Değiştir</value></data>
+  <data name="ActionVerb_RequestCorrection" xml:space="preserve"><value>Düzeltme Talep Et</value></data>
+  <data name="ActionVerb_RequestInfo" xml:space="preserve"><value>Bilgi Talep Et</value></data>
+  <data name="ActionVerb_RequestRetirement" xml:space="preserve"><value>Kullanımdan Kaldırma Talep Et</value></data>
+  <data name="ActionVerb_Reserve" xml:space="preserve"><value>Rezerve Et</value></data>
+  <data name="ActionVerb_Resolve" xml:space="preserve"><value>Çöz</value></data>
+  <data name="ActionVerb_Retire" xml:space="preserve"><value>Kullanımdan Kaldır</value></data>
+  <data name="ActionVerb_Rollback" xml:space="preserve"><value>Geri Al</value></data>
+  <data name="ActionVerb_SeriesManage" xml:space="preserve"><value>Seriyi Yönet</value></data>
+  <data name="ActionVerb_Settle" xml:space="preserve"><value>Sonuçlandır</value></data>
+  <data name="ActionVerb_Sign" xml:space="preserve"><value>İmzala</value></data>
+  <data name="ActionVerb_TemporaryIssue" xml:space="preserve"><value>Geçici Nüsha Ver</value></data>
+  <data name="ActionVerb_ThresholdsManage" xml:space="preserve"><value>Eşikleri Yönet</value></data>
+  <data name="ActionVerb_Transition" xml:space="preserve"><value>Durum Geçişi Yap</value></data>
+  <data name="ActionVerb_TypesManage" xml:space="preserve"><value>Türleri Yönet</value></data>
+  <data name="ActionVerb_Unblock" xml:space="preserve"><value>Blokajı Kaldır</value></data>
+  <data name="ActionVerb_UpdateReleased" xml:space="preserve"><value>Serbest Bırakılan Kaydı Güncelle</value></data>
+  <data name="ActionVerb_VersionPublish" xml:space="preserve"><value>Sürümü Yayınla</value></data>
+  <data name="ActionVerb_ViewSensitive" xml:space="preserve"><value>Hassas Veriyi Görüntüle</value></data>
+  <data name="ActionVerb_ViewStatusHistory" xml:space="preserve"><value>Durum Geçmişini Görüntüle</value></data>
+  <data name="ActionVerb_Withdraw" xml:space="preserve"><value>Geri Çek</value></data>
+  <data name="ActionVerb_Write" xml:space="preserve"><value>Yaz</value></data>
+  <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Değer Gir</value></data>
+  <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Tüm kiracı: bu role diğer temsilciler adına ziyaret planlama, planı uygulama ve yeniden planlama yetkisi de verir.</value></data>
+  <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Tüm kiracı: bu rolün planlanan ziyaretler ve ziyaret raporları üzerindeki mevcut yazma izinlerini tüm kiracıya genişletir.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>Bu izin şunları da verir:
+• görevin alanlarını düzenleme
+• isteği kabul etme ya da gerekçeyle reddetme
+• yanıtlanmamış isteği geri çekme
+• görevi takvime planlama ya da plandan çıkarma
+• görevi başlatma
+• incelemeye gönderme
+• görevin birini beklediğini bildirme
+• işi isteyene iade etme
+• kontrol listesi maddelerini işaretleme, ekleme, düzenleme, silme ve sıralama
+• ek ekleme ve kaldırma
+• bağımlılık ekleme ve kaldırma</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Oturumunuz doğrulanamadı. Yeniden giriş yapıp tekrar deneyin.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Bu rol artık yok. Sayfayı yenileyin.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>Bu izin platform yönetimine ayrılmıştır; bir role verilemez.</value>
+  </data>
+  <data name="ErrorRolePermissionNotForHumanRole" xml:space="preserve">
+    <value>Bu izin otomatik sistem süreçlerine ayrılmıştır; bir role verilemez.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>Bu izin rolle birlikte ya da aboneliğinizdeki bir modülle gelir; buradan kaldırılamaz.</value>
+  </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>Rol bu izne zaten sahip. Sayfayı yenileyin.</value>
+  </data>
+  <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Bu izni kaldırmak, kullanıcı ekleyebilen başka etkin hesap bırakmaz. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
 </root>

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Рабочая область визитов</value></data>
+  <data name="PageSubtitle" xml:space="preserve"><value>Планируйте, посещайте, отчитывайтесь — всё в одном календаре.</value></data>
+  <data name="TodayButton" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="PreviousWeek" xml:space="preserve"><value>Предыдущая неделя</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Следующая неделя</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Утвердить неделю</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Открыть неделю заново</value></data>
+  <data name="UnplannedVisit" xml:space="preserve"><value>Внеплановый визит</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="FilterAccount" xml:space="preserve"><value>Учреждение</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="FilterAllAccounts" xml:space="preserve"><value>Все учреждения</value></data>
+  <data name="FilterAllProducts" xml:space="preserve"><value>Все продукты</value></data>
+  <data name="NoPlanWeek" xml:space="preserve"><value>На эту неделю плана нет.</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Визит</value></data>
+  <data name="WhatToPresent" xml:space="preserve"><value>Что я представлю</value></data>
+  <data name="PreviousVisit" xml:space="preserve"><value>С прошлого визита</value></data>
+  <data name="FrequencyTitle" xml:space="preserve"><value>Частота</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Отмена</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Причина</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Примечание</value></data>
+  <data name="NoteRequired" xml:space="preserve"><value>обязательно для этой причины</value></data>
+  <data name="NewDate" xml:space="preserve"><value>Новая дата</value></data>
+  <data name="ReopenReason" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="ReopenHint" xml:space="preserve"><value>Не менее 10 символов; сохраняется в истории недели.</value></data>
+  <data name="UnplacedTitle" xml:space="preserve"><value>Визиты, не поместившиеся в эту неделю</value></data>
+  <data name="UnplacedHint" xml:space="preserve"><value>Чтобы оставить визит на этой неделе, закрепите его за днём в режиме планирования.</value></data>
+  <data name="UnplannedTitle" xml:space="preserve"><value>Внеплановый визит</value></data>
+  <data name="UnplannedHint" xml:space="preserve"><value>Добавьте вручную один визит на сегодня. Будущие визиты добавляйте как цели в режиме планирования.</value></data>
+  <data name="DoctorLabel" xml:space="preserve"><value>Врач</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>Поиск по имени (не менее 2 букв)</value></data>
+  <data name="TimeLabel" xml:space="preserve"><value>Время</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Добавить</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>Неделя {0}</value></data>
+  <data name="WeekStateDraft" xml:space="preserve"><value>Черновик · автоматически</value></data>
+  <data name="WeekStateApproved" xml:space="preserve"><value>Утверждена</value></data>
+  <data name="WeekStatePast" xml:space="preserve"><value>Прошедшая</value></data>
+  <data name="WeekStateNone" xml:space="preserve"><value>Нет плана</value></data>
+  <data name="CapacityLabel" xml:space="preserve"><value>Запланировано {0} / {1}</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>{0} ч</value></data>
+  <data name="Unplaced" xml:space="preserve"><value>⚠ Не поместилось визитов: {0}</value></data>
+  <data name="UnplacedDetail" xml:space="preserve"><value>Визитов этой недели, не размещённых по рабочим дням (ёмкость или праздники): {0}.</value></data>
+  <data name="HolidayLabel" xml:space="preserve"><value>Праздник</value></data>
+  <data name="DayLoad" xml:space="preserve"><value>Визитов: {0} · свободно {1}</value></data>
+  <data name="NoVisitDay" xml:space="preserve"><value>В этот день визитов нет.</value></data>
+  <data name="Status_cancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="Status_not_done" xml:space="preserve"><value>Не выполнен</value></data>
+  <data name="Status_rescheduled" xml:space="preserve"><value>Перенесён</value></data>
+  <data name="Status_reported" xml:space="preserve"><value>Отчёт сдан</value></data>
+  <data name="Status_expired" xml:space="preserve"><value>Срок истёк</value></data>
+  <data name="Status_report_missing" xml:space="preserve"><value>Нет отчёта</value></data>
+  <data name="Status_missed" xml:space="preserve"><value>Пропущен</value></data>
+  <data name="Status_today" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="Status_planned" xml:space="preserve"><value>Запланирован</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Icon_Pinned" xml:space="preserve"><value>Закреплён</value></data>
+  <data name="Icon_Unplanned" xml:space="preserve"><value>Внеплановый</value></data>
+  <data name="Icon_Rescheduled" xml:space="preserve"><value>Перенесён с другой даты</value></data>
+  <data name="CountdownLeft" xml:space="preserve"><value>Осталось {0} ч {1} мин</value></data>
+  <data name="CountdownPassed" xml:space="preserve"><value>Срок отчёта истёк</value></data>
+  <data name="BandMissed" xml:space="preserve"><value>Пропущен: в течение 48 часов отметьте «не выполнен» или перенесите.</value></data>
+  <data name="BandExpired" xml:space="preserve"><value>Заблокирован: 48 часов без отчёта; отмечен для руководителя.</value></data>
+  <data name="BandReportMissing" xml:space="preserve"><value>Визит проведён; отправьте отчёт.</value></data>
+  <data name="BandDraft" xml:space="preserve"><value>Черновая неделя: план ещё может измениться.</value></data>
+  <data name="BandCancelled" xml:space="preserve"><value>Этот визит отменён.</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>продвижение</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>напоминание</value></data>
+  <data name="NoContent" xml:space="preserve"><value>Продукты не запланированы.</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Выполнено {0} / {1} · запланировано {2}</value></data>
+  <data name="Outcome_completed" xml:space="preserve"><value>Выполнен</value></data>
+  <data name="Outcome_missed" xml:space="preserve"><value>Не выполнен</value></data>
+  <data name="Outcome_rescheduled" xml:space="preserve"><value>Перенесён</value></data>
+  <data name="Action_cancel" xml:space="preserve"><value>Отменить визит</value></data>
+  <data name="Action_result" xml:space="preserve"><value>Внести результат</value></data>
+  <data name="Action_notDone" xml:space="preserve"><value>Не выполнен</value></data>
+  <data name="Action_reschedule" xml:space="preserve"><value>Перенести</value></data>
+  <data name="Action_sendReport" xml:space="preserve"><value>Отправить отчёт</value></data>
+  <data name="Action_plan" xml:space="preserve"><value>Открыть план</value></data>
+  <data name="LockedInfo" xml:space="preserve"><value>Запись только для чтения. Изменение и ввод отчёта закрыты.</value></data>
+  <data name="DlgCancelTitle" xml:space="preserve"><value>Отменить визит</value></data>
+  <data name="DlgNotDoneTitle" xml:space="preserve"><value>Визит не состоялся</value></data>
+  <data name="DlgRescheduleTitle" xml:space="preserve"><value>Перенести визит</value></data>
+  <data name="RescheduleDayLoad" xml:space="preserve"><value>Визитов: {0} · {1} / {2}</value></data>
+  <data name="RescheduleNoDays" xml:space="preserve"><value>В ближайшие недели нет свободных рабочих дней.</value></data>
+  <data name="ReasonsUnavailable" xml:space="preserve"><value>Не удалось прочитать список причин. Повторите попытку.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Saved" xml:space="preserve"><value>Сохранено.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>Не удалось выполнить действие.</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>Не удалось загрузить календарь.</value></data>
+  <data name="ApproveDone" xml:space="preserve"><value>Неделя утверждена.</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>Неделя снова открыта.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>Открыть заново: {0}</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>Врач не найден.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>48-часовой срок отчёта истёк; визит заблокирован.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>Визит отменён; записать ничего нельзя.</value></data>
+  <data name="Err_visit_reason_invalid" xml:space="preserve"><value>Выберите причину из списка.</value></data>
+  <data name="Err_visit_reason_note_required" xml:space="preserve"><value>Для этой причины нужно примечание.</value></data>
+  <data name="Err_visit_reason_note_too_long" xml:space="preserve"><value>Примечание слишком длинное (не более 500 символов).</value></data>
+  <data name="Err_visit_reschedule_date_invalid" xml:space="preserve"><value>Выберите рабочий день после сегодняшнего в пределах активного периода.</value></data>
+  <data name="Err_visit_report_reschedule_date_invalid" xml:space="preserve"><value>Новая дата недействительна.</value></data>
+  <data name="Err_visit_reschedule_already_applied" xml:space="preserve"><value>Новый визит уже создан; его дату изменить нельзя.</value></data>
+  <data name="Err_visit_cancel_past_day" xml:space="preserve"><value>Прошедший визит не отменяется; отметьте «не выполнен» или перенесите.</value></data>
+  <data name="Err_unplanned_visit_today_only" xml:space="preserve"><value>Внеплановый визит можно добавить только на сегодня.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Не удалось прочитать список причин, повторите попытку.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>60-минутное окно исправления закрыто; исправьте через поправку.</value></data>
+  <data name="Err_visit_report_invalid_transition" xml:space="preserve"><value>Состояние визита не допускает этот шаг. Обновите страницу и повторите.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>Действовать можно только со своими визитами.</value></data>
+  <data name="Err_visit_reason_applies_to_invalid" xml:space="preserve"><value>Не удалось прочитать список причин для этого действия.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>День визита ещё не наступил.</value></data>
+  <data name="Err_planned_visit_invalid_transition" xml:space="preserve"><value>Этот визит больше нельзя изменить.</value></data>
+  <data name="Err_planned_visit_overlap" xml:space="preserve"><value>На это время запланирован другой визит.</value></data>
+  <data name="TargetsTitle" xml:space="preserve"><value>Цели · {0} — перетащите на день</value></data>
+  <data name="TargetsNoPlan" xml:space="preserve"><value>На эту неделю ещё нет плана.</value></data>
+  <data name="PlanReadOnlyWeek" xml:space="preserve"><value>{0} утверждена — откройте неделю заново, чтобы изменить.</value></data>
+  <data name="PlanReadOnlyPast" xml:space="preserve"><value>{0} прошла — только чтение.</value></data>
+  <data name="QuickDue" xml:space="preserve"><value>Визит на этой неделе</value></data>
+  <data name="QuickNever" xml:space="preserve"><value>Ни разу не посещены</value></data>
+  <data name="QuickAll" xml:space="preserve"><value>Все</value></data>
+  <data name="FrequencyPerPeriod" xml:space="preserve"><value>{0} за период</value></data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve"><value>1 в неделю (по умолчанию)</value></data>
+  <data name="DueThisWeek" xml:space="preserve"><value>Визит на этой неделе</value></data>
+  <data name="PlanDoctorsHeading" xml:space="preserve"><value>В плане ({0})</value></data>
+  <data name="OtherDoctorsHeading" xml:space="preserve"><value>Другие врачи</value></data>
+  <data name="NoDoctors" xml:space="preserve"><value>Нет врачей для этого фильтра.</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Выбрать всех ({0})</value></data>
+  <data name="ApplyProducts" xml:space="preserve"><value>Применить продукты ({0})</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>врачей: {0} · аптек: {1} · учреждений: {2}</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>План обновлён.</value></data>
+  <data name="PinSaved" xml:space="preserve"><value>Визит закреплён.</value></data>
+  <data name="ProductsApplied" xml:space="preserve"><value>Продукты применены.</value></data>
+  <data name="NoProductPicked" xml:space="preserve"><value>Продукт ещё не выбран.</value></data>
+  <data name="RemoveProduct" xml:space="preserve"><value>Убрать продукт</value></data>
+  <data name="UnplacedReasonOther" xml:space="preserve"><value>Не удалось разместить на этой неделе.</value></data>
+  <data name="Pin_pin_time_invalid" xml:space="preserve"><value>Время должно быть кратно 15 минутам; ко времени можно закрепить только отдельный визит.</value></data>
+  <data name="Pin_pin_time_outside_hours" xml:space="preserve"><value>Время вне рабочих часов (или в обеденный перерыв).</value></data>
+  <data name="Pin_pin_time_conflict" xml:space="preserve"><value>Это время занято; визит перенесён на ближайшее свободное время.</value></data>
+  <data name="Pin_pin_time_past_day_end" xml:space="preserve"><value>Визит выходит за конец рабочего дня, поэтому перенесён раньше.</value></data>
+  <data name="Pin_pin_overflow" xml:space="preserve"><value>В неделе нет места; закреплённый визит перенесён на следующую неделю.</value></data>
+  <data name="Pin_pin_day_full" xml:space="preserve"><value>Закреплённый день заполнен; визит перенесён на следующий рабочий день.</value></data>
+  <data name="Pin_week_already_approved" xml:space="preserve"><value>Неделя утверждена — откройте её заново, чтобы изменить.</value></data>
+  <data name="Reason_capacity_full" xml:space="preserve"><value>Неделя заполнена.</value></data>
+  <data name="Reason_no_near_day" xml:space="preserve"><value>Нет близкого дня со свободным временем.</value></data>
+  <data name="Reason_period_exhausted" xml:space="preserve"><value>В периоде не осталось места.</value></data>
+  <data name="Reason_missing_location" xml:space="preserve"><value>У учреждения нет координат.</value></data>
+  <data name="Reason_consent_blocked" xml:space="preserve"><value>Согласие запрещает визит.</value></data>
+  <data name="Reason_week_full_skipped" xml:space="preserve"><value>Еженедельный визит по умолчанию пропущен: неделя заполнена.</value></data>
+  <data name="Reason_extra_no_room" xml:space="preserve"><value>Нет места для дополнительного визита на этой неделе.</value></data>
+  <data name="Reason_no_feasible_availability_window" xml:space="preserve"><value>Доступность врача не подходит.</value></data>
+  <data name="ModeLabel" xml:space="preserve"><value>Режим</value></data>
+  <data name="ModeExecute" xml:space="preserve"><value>Выполнение</value></data>
+  <data name="ModePlan" xml:space="preserve"><value>Планирование</value></data>
+  <data name="DragHint" xml:space="preserve"><value>Перетащите врача на день или час.</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Учреждение</value></data>
+  <data name="QuickFiltersLabel" xml:space="preserve"><value>Быстрые фильтры</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>Применить продукты</value></data>
+  <data name="ProductsHint" xml:space="preserve"><value>Добавляются врачам плана этого учреждения: первый продукт — промо, остальные — напоминание.</value></data>
+  <data name="PickedProducts" xml:space="preserve"><value>Выбранные продукты</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>Найти продукт…</value></data>
+  <data name="ApplyButton" xml:space="preserve"><value>Применить</value></data>
+  <data name="TodayBadge" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="CapacityWeekLine" xml:space="preserve"><value>На этой неделе ёмкость {0} · запланировано {1}</value></data>
+  <data name="FilterAllStatuses" xml:space="preserve"><value>Все статусы</value></data>
+  <data name="FilterStatusCount" xml:space="preserve"><value>Статусов: {0}</value></data>
+  <data name="CardReportLeft" xml:space="preserve"><value>До отчёта {0} ч</value></data>
+  <data name="CardMarkLeft" xml:space="preserve"><value>Отметить в течение {0} ч</value></data>
+  <data name="CardLocked" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="CardMovedTo" xml:space="preserve"><value>→ на {0}</value></data>
+  <data name="MonthVisits" xml:space="preserve"><value>Визитов: {0}</value></data>
+  <data name="LegendPinned" xml:space="preserve"><value>закреплён</value></data>
+  <data name="LegendUnplanned" xml:space="preserve"><value>внеплановый</value></data>
+  <data name="LegendProduct" xml:space="preserve"><value>ПРОДУКТ</value></data>
+  <data name="DetailPinned" xml:space="preserve"><value>Закреплён на день</value></data>
+  <data name="DetailUnplanned" xml:space="preserve"><value>Внеплановый</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="ContentSteps" xml:space="preserve"><value>Шагов контента: {0}</value></data>
+  <data name="AboutMinutes" xml:space="preserve"><value>≈ {0} мин</value></data>
+  <data name="EstimateLine" xml:space="preserve"><value>{0} промо + {1} напоминание + отчёт ≈ {2} мин</value></data>
+  <data name="EstimateLineNoReminder" xml:space="preserve"><value>{0} промо + отчёт ≈ {1} мин</value></data>
+  <data name="DetailFrequency" xml:space="preserve"><value>Частота: {0} за период · {1}</value></data>
+  <data name="AlertTitle_draft" xml:space="preserve"><value>Черновая неделя</value></data>
+  <data name="AlertText_draft" xml:space="preserve"><value>Создан автоматически по частоте. Перетащите в календаре, чтобы закрепить на день.</value></data>
+  <data name="AlertTitle_planned" xml:space="preserve"><value>Неделя утверждена</value></data>
+  <data name="AlertText_planned" xml:space="preserve"><value>Чтобы перенести, откройте неделю заново. Ввод результата открывается в день визита.</value></data>
+  <data name="AlertTitle_today" xml:space="preserve"><value>Сегодня · {1}</value></data>
+  <data name="AlertText_today" xml:space="preserve"><value>Начните визит, когда прибудете в учреждение.</value></data>
+  <data name="AlertTitle_report_missing" xml:space="preserve"><value>До отчёта {0} ч</value></data>
+  <data name="AlertText_report_missing" xml:space="preserve"><value>По истечении срока запись блокируется.</value></data>
+  <data name="AlertTitle_reported" xml:space="preserve"><value>Отчёт отправлен</value></data>
+  <data name="AlertText_reported" xml:space="preserve"><value>Для изменения нужна обоснованная корректировка.</value></data>
+  <data name="AlertTitle_missed" xml:space="preserve"><value>Пропущен</value></data>
+  <data name="AlertText_missed" xml:space="preserve"><value>Визит не начат. На «Не выполнен» или «Перенести» осталось {0} ч.</value></data>
+  <data name="AlertTitle_missed_locked" xml:space="preserve"><value>Пропущен · заблокирован</value></data>
+  <data name="AlertText_missed_locked" xml:space="preserve"><value>Не отмечен за 48 часов. Запись заблокирована и отмечена для руководителя.</value></data>
+  <data name="AlertTitle_expired" xml:space="preserve"><value>Срок отчёта истёк</value></data>
+  <data name="AlertText_expired" xml:space="preserve"><value>Запись заблокирована и отмечена для руководителя.</value></data>
+  <data name="DlgTab_cancel" xml:space="preserve"><value>Отменить</value></data>
+  <data name="DlgTab_notDone" xml:space="preserve"><value>Не выполнен</value></data>
+  <data name="DlgTab_reschedule" xml:space="preserve"><value>Перенести</value></data>
+  <data name="DlgMean_cancel" xml:space="preserve"><value>Визит не состоится (отмена плана; возможна и до дня визита).</value></data>
+  <data name="DlgMean_notDone" xml:space="preserve"><value>День наступил, но визит не состоялся.</value></data>
+  <data name="DlgMean_reschedule" xml:space="preserve"><value>Перенесите на другой день; выберите новую дату.</value></data>
+  <data name="DlgConfirm_cancel" xml:space="preserve"><value>Отменить визит</value></data>
+  <data name="DlgConfirm_notDone" xml:space="preserve"><value>Отметить как не выполненный</value></data>
+  <data name="DlgConfirm_reschedule" xml:space="preserve"><value>Перенести визит</value></data>
+  <data name="TargetsSub" xml:space="preserve"><value>{0} · перетащите на день</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Сводка выбора · {0}</value></data>
+  <data name="SummaryDoctors" xml:space="preserve"><value>врачей</value></data>
+  <data name="SummaryPharmacies" xml:space="preserve"><value>аптек</value></data>
+  <data name="SummaryAccounts" xml:space="preserve"><value>учреждений</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>Ничего не выбрано</value></data>
+  <data name="ViewLabel" xml:space="preserve"><value>Вид</value></data>
+  <data name="ViewDay" xml:space="preserve"><value>День</value></data>
+  <data name="ViewWeek" xml:space="preserve"><value>Неделя</value></data>
+  <data name="ViewMonth" xml:space="preserve"><value>Месяц</value></data>
+  <data name="TargetsHeading" xml:space="preserve"><value>Цели</value></data>
+  <data name="MapPlaceholder" xml:space="preserve"><value>превью карты</value></data>
+  <!-- WP-VW-W3 (WEB-a) — start the visit (E3), in_progress -->
+  <data name="Status_in_progress" xml:space="preserve"><value>Идёт</value></data>
+  <data name="AlertTitle_in_progress" xml:space="preserve"><value>Идёт · {0} мин</value></data>
+  <data name="AlertText_in_progress" xml:space="preserve"><value>Начата в {1} (время сервера).</value></data>
+  <data name="AlertText_today_start" xml:space="preserve"><value>Прибыв в учреждение, начните визит; презентация откроется после шага подтверждения.</value></data>
+  <data name="CardLiveMinutes" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="Action_start" xml:space="preserve"><value>Начать визит</value></data>
+  <data name="Action_presentation" xml:space="preserve"><value>Вернуться к презентации</value></data>
+  <data name="Action_finish" xml:space="preserve"><value>Завершить визит</value></data>
+  <data name="E3Required" xml:space="preserve"><value>обязательно</value></data>
+  <data name="E3Optional" xml:space="preserve"><value>необязательно</value></data>
+  <data name="E3Webcam" xml:space="preserve"><value>Веб-камера</value></data>
+  <data name="E3CameraPhone" xml:space="preserve"><value>Камера</value></data>
+  <data name="E3Missing" xml:space="preserve"><value>Не хватает: {0}</value></data>
+  <data name="E3Missing_photo" xml:space="preserve"><value>фото</value></data>
+  <data name="E3Missing_location" xml:space="preserve"><value>местоположение</value></data>
+  <data name="E3HintReady" xml:space="preserve"><value>Время начала берётся с сервера.</value></data>
+  <data name="Loc_pending" xml:space="preserve"><value>Определяем местоположение…</value></data>
+  <data name="Loc_ok" xml:space="preserve"><value>Местоположение получено</value></data>
+  <data name="Loc_okDetail" xml:space="preserve"><value>Точность ±{0} м · расстояние до учреждения измеряет сервер.</value></data>
+  <data name="Loc_inaccurate" xml:space="preserve"><value>Низкая точность</value></data>
+  <data name="Loc_inaccurateDetail" xml:space="preserve"><value>±{0} м; допускается не более {1} м. Повторите на открытом месте.</value></data>
+  <data name="Loc_denied" xml:space="preserve"><value>Доступ запрещён</value></data>
+  <data name="Loc_deniedDetail" xml:space="preserve"><value>Браузер запретил доступ к местоположению. Разрешите его в адресной строке и повторите.</value></data>
+  <data name="Loc_unavailable" xml:space="preserve"><value>Местоположение недоступно</value></data>
+  <data name="Loc_unavailableDetail" xml:space="preserve"><value>Устройство не смогло определить местоположение. Проверьте, что геолокация включена, и повторите.</value></data>
+  <data name="Loc_timeout" xml:space="preserve"><value>Время истекло</value></data>
+  <data name="Loc_timeoutDetail" xml:space="preserve"><value>Местоположение не получено вовремя. Повторите.</value></data>
+  <data name="Loc_requiredNote" xml:space="preserve"><value>Местоположение обязательно: начать можно, оказавшись рядом с учреждением.</value></data>
+  <data name="Loc_requiredMissing" xml:space="preserve"><value>Здесь местоположение обязательно: без него визит не начать.</value></data>
+  <data name="Loc_infoNote" xml:space="preserve"><value>Сохраняется для сведения; его видит ваш руководитель.</value></data>
+  <data name="Cam_denied" xml:space="preserve"><value>Доступ к камере запрещён. Разрешите его в адресной строке или используйте «Загрузить файл».</value></data>
+  <data name="Cam_unavailable" xml:space="preserve"><value>Камера не найдена. Используйте «Загрузить файл».</value></data>
+  <data name="Cam_failed" xml:space="preserve"><value>Не удалось открыть камеру. Используйте «Загрузить файл».</value></data>
+  <data name="Photo_invalid" xml:space="preserve"><value>Не удалось прочитать фото. Выберите JPEG или PNG.</value></data>
+  <data name="Photo_tooLarge" xml:space="preserve"><value>Фото слишком большое. Выберите другое.</value></data>
+  <data name="UploadFailed" xml:space="preserve"><value>Не удалось отправить. Проверьте подключение и повторите.</value></data>
+  <data name="DistanceMeters" xml:space="preserve"><value>{0} м</value></data>
+  <data name="DistanceKm" xml:space="preserve"><value>{0} км</value></data>
+  <data name="StartErr_visit_not_today" xml:space="preserve"><value>Этот визит можно начать только в его день.</value></data>
+  <data name="StartErr_visit_not_confirmed" xml:space="preserve"><value>Неделя ещё не утверждена; сначала утвердите её.</value></data>
+  <data name="StartErr_visit_already_started" xml:space="preserve"><value>Этот визит уже начат.</value></data>
+  <data name="StartErr_visit_already_reported" xml:space="preserve"><value>По этому визиту уже есть отчёт.</value></data>
+  <data name="StartErr_visit_location_required" xml:space="preserve"><value>Местоположение обязательно: разрешите геолокацию и повторите.</value></data>
+  <data name="StartErr_visit_location_too_far" xml:space="preserve"><value>Вы в {0} от учреждения.</value></data>
+  <data name="StartErr_visit_location_inaccurate" xml:space="preserve"><value>Местоположение недостаточно точное. Повторите на открытом месте.</value></data>
+  <data name="StartErr_visit_account_location_unknown" xml:space="preserve"><value>Местоположение учреждения неизвестно; визит нельзя проверить. Сообщите руководителю.</value></data>
+  <data name="StartErr_visit_photo_required" xml:space="preserve"><value>Для начала нужно фото.</value></data>
+  <data name="StartErr_visit_photo_invalid" xml:space="preserve"><value>Фото не принято. Сделайте другое.</value></data>
+  <data name="StartErr_visit_capture_invalid" xml:space="preserve"><value>Данные запуска неверны. Закройте окно и повторите.</value></data>
+  <data name="StartErr_visit_evidence_store_unavailable" xml:space="preserve"><value>Хранилище подтверждений сейчас недоступно. Повторите чуть позже.</value></data>
+  <data name="StartErr_visit_execution_not_found" xml:space="preserve"><value>Визит не найден.</value></data>
+  <data name="StartErr_visit_execution_concurrency_conflict" xml:space="preserve"><value>Визит тем временем изменился. Обновите страницу и повторите.</value></data>
+  <data name="E3Title" xml:space="preserve"><value>Начать визит</value></data>
+  <data name="E3Photo" xml:space="preserve"><value>Фото</value></data>
+  <data name="E3Upload" xml:space="preserve"><value>Загрузить файл</value></data>
+  <data name="E3Shutter" xml:space="preserve"><value>Сделать снимок</value></data>
+  <data name="E3PhotoTaken" xml:space="preserve"><value>Фото сделано</value></data>
+  <data name="E3Retake" xml:space="preserve"><value>Переснять</value></data>
+  <data name="E3Kvkk" xml:space="preserve"><value>Вход в учреждение или зона ожидания. Не снимайте лица врача и пациентов (защита данных).</value></data>
+  <data name="E3LocationTime" xml:space="preserve"><value>Место и время</value></data>
+  <data name="E3Location" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="E3Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="E3StartLabel" xml:space="preserve"><value>Начало</value></data>
+  <data name="E3StartValue" xml:space="preserve"><value>при запуске · время сервера</value></data>
+  <data name="E3Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="E3Begin" xml:space="preserve"><value>Начать презентацию</value></data>
+  <data name="UnpTargetType" xml:space="preserve"><value>Визит к</value></data>
+  <data name="UnpTargetDoctor" xml:space="preserve"><value>Врач</value></data>
+  <data name="UnpTargetPharmacy" xml:space="preserve"><value>Аптека</value></data>
+  <data name="UnpDoctorLabel" xml:space="preserve"><value>Врач</value></data>
+  <data name="UnpDoctorSearch" xml:space="preserve"><value>Поиск врача по имени (минимум 2 буквы)</value></data>
+  <data name="UnpPharmacyLabel" xml:space="preserve"><value>Аптека</value></data>
+  <data name="UnpPharmacySearch" xml:space="preserve"><value>Поиск аптеки по названию (минимум 2 буквы)</value></data>
+  <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>У этой цели сегодня уже есть визит такого типа.</value></data>
+  <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>Время визита недопустимо; выберите другое время начала.</value></data>
+</root>

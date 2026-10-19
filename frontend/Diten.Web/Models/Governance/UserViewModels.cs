@@ -5,20 +5,25 @@ namespace Diten.Web.Models.Governance;
 // FE-C 3/3 (MOD-0018-FU9) — tenant Users screen view models. Backed by AuthService /api/users.
 public sealed class UserEditViewModel
 {
+    /// <summary>The name limit — AuthService's validators' (MaximumLength); the form's maxlength reads it too.</summary>
+    public const int NameMaxLength = 100;
+
+    /// <summary>The e-mail limit — AuthService's validator's; the form's maxlength reads it too.</summary>
+    public const int EmailMaxLength = 256;
+
     public Guid? Id { get; set; }
 
-    [Required]
-    [EmailAddress]
-    public string Email { get; set; } = string.Empty;
+    // No [Required]/[EmailAddress] here: without an ErrorMessage MVC answers in English ("The FirstName field is
+    // required."). UsersController.FormRefusalCodes checks the same rules and answers with the USER_… codes the
+    // screen already says in seven languages. Nullable so a missing field binds instead of failing in English too.
+    public string? Email { get; set; } = string.Empty;
 
     // Required on create only (validated in the controller); ignored on edit.
     public string? Password { get; set; }
 
-    [Required]
-    public string FirstName { get; set; } = string.Empty;
+    public string? FirstName { get; set; } = string.Empty;
 
-    [Required]
-    public string LastName { get; set; } = string.Empty;
+    public string? LastName { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
 }

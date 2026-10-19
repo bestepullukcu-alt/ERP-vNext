@@ -1,0 +1,16 @@
+CT-FIX-11 guard removal — one guard undone at a time in its own copy outside the repository; run by the AI session.
+Driver: drivers/harness14.py.txt (harness11 with its CT list replaced). The copy's two files equal the final
+sources byte for byte: True. Each mutation: the file still parses; the named test fails; the control test
+(Controls.test_consumers_on_the_intact_fixture_exit_0) passes.
+
+G-V1 the unmeasured relation not written  (scripts/prompt_gate.py)
+    tests: test_only_the_row_bound_relation_is_unmeasured
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-V2 an explicit or broken work_packages field ignored without the row  (scripts/prompt_gate.py)
+    tests: test_only_the_row_bound_relation_is_unmeasured
+    applied: True · parses: True · named: RED — FAILED (failures=2) · control: OK · proven: True
+G-V3 the queue error ignored: a known row marked unmeasured too  (scripts/prompt_gate.py)
+    tests: test_only_the_row_bound_relation_is_unmeasured
+    applied: True · parses: True · named: RED — FAILED (failures=1) · control: OK · proven: True
+
+proven: 3 of 3

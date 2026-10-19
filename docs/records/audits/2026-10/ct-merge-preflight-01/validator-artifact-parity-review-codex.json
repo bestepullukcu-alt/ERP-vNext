@@ -1,0 +1,30 @@
+[
+  {
+    "input_tree": "A",
+    "artifact_counts": [
+      609,
+      609
+    ],
+    "identical": true,
+    "different_files": [],
+    "sample_names": [
+      "DocumentManagement__AccessMatrix__gaps.out",
+      "TalentEcosystem__VerifiedParticipants__gaps.err",
+      "MasterData__Products__gaps.out"
+    ]
+  },
+  {
+    "input_tree": "B",
+    "artifact_counts": [
+      609,
+      609
+    ],
+    "identical": true,
+    "different_files": [],
+    "sample_names": [
+      "DocumentManagement__AccessMatrix__gaps.out",
+      "TalentEcosystem__VerifiedParticipants__gaps.err",
+      "MasterData__Products__gaps.out"
+    ]
+  }
+]

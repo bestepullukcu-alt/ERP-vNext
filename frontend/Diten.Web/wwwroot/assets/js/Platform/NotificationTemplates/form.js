@@ -151,7 +151,9 @@
             bodyHtmlTemplate: document.getElementById('bodyHtmlTemplate')?.value || null,
             bodyTextTemplate: document.getElementById('bodyTextTemplate')?.value || null,
             variables: collectVariables(),
-            sampleVariables: collectSampleVariables()
+            sampleVariables: collectSampleVariables(),
+            // BL-454 — the saved template's heading, table and button are drawn into the preview too.
+            templateId: mode === 'edit' && templateId ? templateId : null
         };
         try {
             const res = await fetch(`${apiBase}/templates/render-preview`, {
@@ -171,10 +173,13 @@
             }
             const rendered = unwrap(body);
             if (previewSubject) previewSubject.textContent = rendered?.subject || '';
-            if (previewFrame) previewFrame.srcdoc = rendered?.bodyHtml || '';
+            // BL-454 — the author sees the e-mail as it arrives: the body inside the e-mail shell. An older
+            // Platform that does not send the framed form still previews the bare body, as before.
+            if (previewFrame) previewFrame.srcdoc = rendered?.bodyHtmlFramed || rendered?.bodyHtml || '';
             if (previewText) {
-                previewText.textContent = rendered?.bodyText || '';
-                previewText.classList.toggle('d-none', !rendered?.bodyText);
+                const text = rendered?.bodyTextFramed || rendered?.bodyText || '';
+                previewText.textContent = text;
+                previewText.classList.toggle('d-none', !text);
             }
             previewResult?.classList.remove('d-none');
         } catch (error) {
@@ -186,10 +191,16 @@
         }
     };
 
+    // BL-454 — the version this editor read; sent back on save so a save made from an older read is refused (409).
+    let rowVersion = null;
+
     const loadTemplate = async () => {
         if (mode !== 'edit' || !templateId) return;
         try {
-            const res = await fetch(`${apiBase}/templates/${templateId}`, { credentials: 'same-origin' });
+            // A tenant's override is read under its tenant; an id alone reaches platform defaults only.
+            const res = await fetch(scopeTenantId
+                ? `${apiBase}/tenant/${scopeTenantId}/templates/${templateId}`
+                : `${apiBase}/templates/${templateId}`, { credentials: 'same-origin' });
             const body = await res.json();
             if (!res.ok) {
                 showSummary(errorsOf(body).join(' ') || L().ErrorOccurred);
@@ -197,6 +208,7 @@
             }
             const dto = unwrap(body);
             if (!dto) return;
+            rowVersion = dto.rowVersion || null;
             document.getElementById('templateKey').value = dto.templateKey || '';
             document.getElementById('templateLocale').value = dto.locale || '';
             document.getElementById('templateChannel').value = dto.channel || '';
@@ -239,7 +251,8 @@
             bodyTextTemplate: document.getElementById('bodyTextTemplate')?.value || null,
             variables: collectVariables(),
             status: document.getElementById('templateStatus')?.value || '',
-            semanticVersion: document.getElementById('semanticVersion')?.value?.trim() || null
+            semanticVersion: document.getElementById('semanticVersion')?.value?.trim() || null,
+            rowVersion: mode === 'edit' ? rowVersion : null
         };
         const { url, method } = buildSaveUrl();
         const saveButton = document.getElementById('btnSaveTemplate');
@@ -255,6 +268,11 @@
             if (res.ok) {
                 window.showToast?.(L().RecordSaved || '', 'success');
                 window.location.href = '/Platform/NotificationTemplates';
+                return;
+            }
+            // BL-454 — Response<T> serialises its reason as `reason_code` (JsonPropertyName), not `reasonCode`.
+            if (res.status === 409 && (body?.reason_code ?? body?.reasonCode ?? body?.ReasonCode) === 'TEMPLATE_CHANGED') {
+                showSummary(L().TemplateChangedReload || L().ErrorOccurred);
                 return;
             }
             if (res.status === 409) {

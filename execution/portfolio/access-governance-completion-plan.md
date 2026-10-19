@@ -15,12 +15,12 @@ Every decision resolves against **one** of two distinct authority chains. Do not
 
 ### A. Module Identity Authority
 *Layer A scope: MOD-xxxx identifier, canonical name, and parent / FU / child relationship — nothing else.*
-1. **Blueprint** — `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`, sheet `Blueprint_Data`.
+1. **Blueprint** — `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx`, sheet `Blueprint_Data` (8.1 and 8.7 before).
 2. `execution/registries/module-id-registry.md`.
 3. `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 4. `verify_module_id.py` fail-closed result.
 
-Rules: never guess a new MOD-xxxx. If an ID is **not in the Blueprint**, write **`CAND-CAP REQUIRED — EA DECISION`**. Deprecated aliases (`MOD-0040 → MOD-0288`, `MOD-0040-FU01 → MOD-0288-FU01`, …) are never used as new identities.
+Rules: never guess a new MOD-xxxx. If an ID is **not in the Blueprint**, write **`MODULE CHANGE REQUEST REQUIRED — MASTER`** (Master-first rule, Blueprint 8.7; until 2026-10-19 this read `CAND-CAP REQUIRED — EA DECISION`). Deprecated aliases (`MOD-0040 → MOD-0288`, `MOD-0040-FU01 → MOD-0288-FU01`, …) are never used as new identities.
 
 ### B. Implementation & Scope Authority
 *Layer B scope: repo scope, protected paths, acceptance criteria, runtime limits, implementation decisions.*
@@ -419,7 +419,7 @@ Open a **new** temporary chat only for: a separate worktree/branch lane, a real 
 ```
 Plan Step:           AG-STEP-XXX
 Live preflight:      <Live State Refresh Rule output — branch/HEAD/origin-main/status/staged/unstaged/untracked/worktrees/branches/pack status/deps/concurrent-agent risk>
-Canonical ID:        <layer-A verified via verify_module_id.py --check-id … --name …; or CAND-CAP REQUIRED — EA DECISION>
+Canonical ID:        <layer-A verified via verify_module_id.py --check-id … --name …; or MODULE CHANGE REQUEST REQUIRED — MASTER>
 Purpose:             <one line>
 Dependencies:        <AG-STEP-… / gates>
 Current branch:      <module branch; never main>

@@ -1,0 +1,176 @@
+using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+
+namespace Diten.MdmService.Api.Services.ProductItemSkuMaster;
+
+/// <summary>
+/// WP-MDM-GSKU-ACCEPT-01 FIX3 item 1 (B13): what one recovery cycle did, counted the same way for every GSKU flow.
+/// Claimed = the cycle held the operation's lease; advanced = it moved (or finished); quarantined = it ended this
+/// cycle in manual reconciliation; waiting = everything else (busy elsewhere, out of scope, not yet due, retry set).
+/// InManualReconciliation is the number of the flow's operations waiting for a person, read after the cycle.
+/// </summary>
+public sealed class ProductIdentityRecoveryCycle
+{
+    public int Tenants { get; set; }
+    public int Seen { get; set; }
+    public int Claimed { get; set; }
+    public int Advanced { get; set; }
+    public int Quarantined { get; set; }
+    public int Waiting { get; set; }
+    public int Failed { get; set; }
+    public long InManualReconciliation { get; set; }
+    // FIX6 item 4 (b): of those, the ones the requester's repeat cannot settle — only a person can (BL-530).
+    public long NeedingAPerson { get; set; }
+
+    /// <summary>
+    /// Counts one operation. <paramref name="claimed"/> is false when the processor answered without holding the
+    /// lease (another owner holds it, or the store did not answer the claim).
+    /// </summary>
+    public void Count(bool claimed, bool quarantinedNow, bool advanced)
+    {
+        Seen++;
+        if (!claimed)
+        {
+            Waiting++;
+            return;
+        }
+        Claimed++;
+        if (quarantinedNow) Quarantined++;
+        else if (advanced) Advanced++;
+        else Waiting++;
+    }
+
+    public void NotClaimed()
+    {
+        Seen++;
+        Waiting++;
+    }
+
+    /// <summary>One line per cycle: counts only — no tenant data, no secret.</summary>
+    public void Log(ILogger logger, string flow)
+    {
+        // FIX4 item 8: a cycle that found nothing to do and nothing stuck is Debug (every few seconds otherwise).
+        logger.Log(Quarantined > 0 || Failed > 0 ? LogLevel.Warning
+            : Seen == 0 && InManualReconciliation == 0 ? LogLevel.Debug : LogLevel.Information,
+            "{Flow} recovery cycle: tenants {Tenants}, operations {Seen}, claimed {Claimed}, advanced {Advanced}, quarantined {Quarantined}, waiting {Waiting}, failed {Failed}, in manual reconciliation {InManualReconciliation}, needing a person {NeedingAPerson}.",
+            flow, Tenants, Seen, Claimed, Advanced, Quarantined, Waiting, Failed, InManualReconciliation, NeedingAPerson);
+    }
+
+    public static bool WasNotClaimed(string? errorCode) =>
+        errorCode is not null && (errorCode.EndsWith("_BUSY", StringComparison.Ordinal)
+                                  || errorCode == Application.Features.ProductItemSkuMaster.Workflow
+                                      .ProductIdentityWorkflowClaims.StoreUnavailable);
+}
+
+/// <summary>
+/// The one gauge for operations waiting in manual reconciliation, per flow (tag "flow"), as the last cycle counted
+/// them. MDM has no health or metrics pattern of its own (only an anonymous /health that answers "Healthy"); this is
+/// the standard .NET meter, readable with dotnet-counters or any OpenTelemetry exporter, plus the cycle log line.
+/// </summary>
+public sealed class ProductIdentityRecoveryMetrics : IDisposable
+{
+    public const string MeterName = "Diten.MdmService.ProductIdentityRecovery";
+    public const string ManualReconciliationGauge = "mdm.product_identity.recovery.manual_reconciliation";
+    // FIX6 item 4 (b): the stuck operations only a person can settle (their requester's repeat cannot) — alert on it.
+    public const string NeedingAPersonGauge = "mdm.product_identity.recovery.needing_a_person";
+
+    private readonly Meter _meter = new(MeterName);
+    private readonly ConcurrentDictionary<string, long> _manual = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, long> _person = new(StringComparer.Ordinal);
+    // FIX3 M4: 1 while the last count of a flow FAILED (a gauge that silently stops is no gauge) — alert on it.
+    public const string CountFailedGauge = "mdm.product_identity.recovery.count_failed";
+    private readonly ConcurrentDictionary<string, long> _countFailed = new(StringComparer.Ordinal);
+    // BL-607: how long the oldest approval still open (waiting for a person) has been open, per flow — measured from the
+    // moment the engine opened it, not from the request — and the age at which that is worth an alert. A number per flow,
+    // never a tenant. Absent while no approval is open.
+    public const string OldestOpenApprovalAgeGauge = "mdm.product_identity.open_approval.oldest_age";
+    public const string OpenApprovalAlertAfterGauge = "mdm.product_identity.open_approval.alert_after";
+    private readonly ConcurrentDictionary<string, double> _oldestOpenApproval = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, double> _openApprovalAlertAfter = new(StringComparer.Ordinal);
+    // BL-607 FIX1 item 1: 1 while the last read of a flow's oldest open approval FAILED (its age is dropped, not stale).
+    public const string OpenApprovalReadFailedGauge = "mdm.product_identity.open_approval.read_failed";
+    private readonly ConcurrentDictionary<string, long> _openApprovalReadFailed = new(StringComparer.Ordinal);
+    // S2 FIX3 item 3: an AGE (seconds), never on the "stuck operations" series — a filterless alert on
+    // manual_reconciliation > 0 must not ring for a waiting approval.
+    // Merge note (S2 lane): the item flow's own age; BL-607's open_approval.* gauges serve LSKU. One gauge for both is
+    // a separate step (it needs an item alert threshold), named in the merge report.
+    public const string OldestOpenApprovalGauge = "mdm.product_identity.recovery.oldest_open_approval_age";
+    private readonly ConcurrentDictionary<string, long> _oldestOpenSeconds = new(StringComparer.Ordinal);
+
+    public ProductIdentityRecoveryMetrics()
+    {
+        _meter.CreateObservableGauge(ManualReconciliationGauge,
+            () => _manual.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "{operation}",
+            description: "Product-identity operations waiting in manual reconciliation, per flow, at the last recovery cycle.");
+        _meter.CreateObservableGauge(NeedingAPersonGauge,
+            () => _person.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "{operation}",
+            description: "Stuck operations their requester's repeat cannot settle (a person has to, BL-530), per flow.");
+        _meter.CreateObservableGauge(CountFailedGauge,
+            () => _countFailed.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "{flow}",
+            description: "1 while the last count of a flow failed (its other gauges are stale), per flow.");
+        _meter.CreateObservableGauge(OldestOpenApprovalAgeGauge,
+            () => _oldestOpenApproval.Select(item => new Measurement<double>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "s",
+            description: "Age of the oldest approval still open (waiting for a person), from the moment the engine opened it, per flow.");
+        _meter.CreateObservableGauge(OpenApprovalAlertAfterGauge,
+            () => _openApprovalAlertAfter.Select(item => new Measurement<double>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "s",
+            description: "The open-approval age past which an alert is due (validated at start against the backoff ceiling and the poll interval), per flow.");
+        _meter.CreateObservableGauge(OpenApprovalReadFailedGauge,
+            () => _openApprovalReadFailed.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "{flow}",
+            description: "1 while the last read of the oldest open approval failed (its age gauge is absent until a read succeeds), per flow.");
+        _meter.CreateObservableGauge(OldestOpenApprovalGauge,
+            () => _oldestOpenSeconds.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "s",
+            description: "Age of the oldest approval still waiting for its decision, per flow (0: none open).");
+    }
+
+    /// <summary>BL-607: the oldest open approval's age (null: none open — the gauge drops the flow) and the alert threshold.</summary>
+    public void RecordOldestOpenApproval(string flow, TimeSpan? oldestAge, TimeSpan alertAfter)
+    {
+        if (oldestAge is { } age) _oldestOpenApproval[flow] = Math.Max(age.TotalSeconds, 0);
+        else _oldestOpenApproval.TryRemove(flow, out _);
+        _openApprovalAlertAfter[flow] = alertAfter.TotalSeconds;
+        _openApprovalReadFailed[flow] = 0;
+    }
+
+    /// <summary>BL-607 FIX1 item 1: the read failed — the age is dropped (never left stale) and the failure is marked.</summary>
+    public void RecordOpenApprovalReadFailed(string flow, TimeSpan alertAfter)
+    {
+        _oldestOpenApproval.TryRemove(flow, out _);
+        _openApprovalAlertAfter[flow] = alertAfter.TotalSeconds;
+        _openApprovalReadFailed[flow] = 1;
+    }
+
+    public long? OpenApprovalReadFailed(string flow) => _openApprovalReadFailed.TryGetValue(flow, out var value) ? value : null;
+
+    public double? OldestOpenApprovalSeconds(string flow) => _oldestOpenApproval.TryGetValue(flow, out var value) ? value : null;
+
+    public double? OpenApprovalAlertAfterSeconds(string flow) => _openApprovalAlertAfter.TryGetValue(flow, out var value) ? value : null;
+
+    public void RecordOldestOpenApproval(string flow, long seconds) => _oldestOpenSeconds[flow] = seconds;
+
+    public long? OldestOpenApproval(string flow) => _oldestOpenSeconds.TryGetValue(flow, out var value) ? value : null;
+
+    public void RecordCountFailed(string flow, bool failed) => _countFailed[flow] = failed ? 1 : 0;
+
+    public long? CountFailed(string flow) => _countFailed.TryGetValue(flow, out var value) ? value : null;
+
+    public void Record(string flow, long inManualReconciliation) => _manual[flow] = inManualReconciliation;
+
+    public void Record(string flow, long inManualReconciliation, long needingAPerson)
+    {
+        _manual[flow] = inManualReconciliation;
+        _person[flow] = needingAPerson;
+    }
+
+    public long? NeedingAPerson(string flow) => _person.TryGetValue(flow, out var value) ? value : null;
+
+    public long? Current(string flow) => _manual.TryGetValue(flow, out var value) ? value : null;
+
+    public void Dispose() => _meter.Dispose();
+}

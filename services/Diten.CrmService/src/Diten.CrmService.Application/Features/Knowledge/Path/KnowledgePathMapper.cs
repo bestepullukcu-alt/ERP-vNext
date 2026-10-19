@@ -106,7 +106,8 @@ public static class KnowledgePathMapper
             step.UpdatedAt,
             step.UpdatedBy,
             step.IsArchived(),
-            ToDto(step.Arrangement));
+            ToDto(step.Arrangement),
+            KnowledgePathStepPresentationDto.From(step.Presentation));
     }
 
     public static KnowledgePathArrangementDto? ToDto(KnowledgePathArrangement? a)

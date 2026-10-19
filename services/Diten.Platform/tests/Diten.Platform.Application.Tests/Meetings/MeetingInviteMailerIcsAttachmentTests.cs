@@ -27,11 +27,13 @@ public sealed class MeetingInviteMailerIcsAttachmentTests
     private sealed class SucceedingDispatchAdapter : INotificationEventDispatchAdapter
     {
         public NotificationEventDispatchRequest? LastRequest { get; private set; }
+        public List<NotificationEventDispatchRequest> Requests { get; } = [];
 
         public Task<Response<NotificationDispatchDto>> DispatchByEventCodeAsync(
             NotificationEventDispatchRequest request, CancellationToken ct = default)
         {
             LastRequest = request;
+            Requests.Add(request);
             return Task.FromResult(Response<NotificationDispatchDto>.Success());
         }
     }
@@ -68,6 +70,21 @@ public sealed class MeetingInviteMailerIcsAttachmentTests
 
     private static MeetingAttendee MakeAttendee(Guid meetingId, Guid userId) => new()
     { TenantId = Tenant, MeetingId = meetingId, UserId = userId, CreatedBy = "test" };
+
+    [Fact]
+    public async Task The_invitation_is_in_the_attendees_own_language()
+    {
+        // WP-EMAIL-LANG-01 FIX1 — the meeting mailer passes each attendee's preferred language on to the dispatch.
+        var meeting = MakeMeeting();
+        var adapter = new SucceedingDispatchAdapter();
+        var mailer = Mailer(adapter, new Diten.Platform.Application.Tests.Notifications.RecipientLanguageFixOneTests.LanguagePeople(
+            (Invitee, "invitee@example.test", "ar")));
+
+        await mailer.SendInviteAsync(meeting, "MGMT-REVIEW", [MakeAttendee(meeting.Id, Invitee)], Organizer);
+
+        var toInvitee = Assert.Single(adapter.Requests, r => r.To.Any(t => t.Email == "invitee@example.test"));
+        Assert.Equal("ar", Assert.Single(toInvitee.To).Locale);
+    }
 
     [Fact]
     public async Task SendInviteAsync_attaches_one_ics_file_named_invite_ics_with_the_REQUEST_content_type()

@@ -50,8 +50,11 @@ public sealed class UpdateExpiryNoOpMongoTests
         var events = new Mock<ITransactionalIntegrationEventWriter>(MockBehavior.Strict);
         var audit = new Mock<ITransactionalAuditOutboxWriter>(MockBehavior.Strict);
         var currentUser = new Mock<ICurrentUserContext>();
+        var modules = new Mock<IModuleCatalogRepository>();
+        modules.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string code, CancellationToken _) => new ModuleCatalogItem { ModuleCode = code, ModuleName = code, DisplayName = code });
         var handler = new UpdateTenantModuleEntitlementExpiryCommandHandler(
-            repository, executor, versions.Object, events.Object, audit.Object, currentUser.Object);
+            repository, modules.Object, executor, versions.Object, events.Object, audit.Object, currentUser.Object);
 
         var result = await handler.Handle(
             new UpdateTenantModuleEntitlementExpiryCommand(

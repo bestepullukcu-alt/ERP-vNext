@@ -1,0 +1,30 @@
+{
+  "source_sha256": "fcd86a07bd80dc8b7e8defb4b379d9ab5c34eaf0cf31fe7968b7ab62eebb3c33",
+  "results": [
+    {
+      "case": "clean",
+      "exit": 0,
+      "output": "{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"Liste ekranı dokunma protokolü — Test/List: referansla uyumlu, sapma yok.\"}}\n"
+    },
+    {
+      "case": "gaps",
+      "exit": 0,
+      "output": "{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"⚠ Liste ekranı dokunma protokolü — Test/List referanstan 1 noktada sapıyor (.antigravity/scripts/verify_datatable_page.py):\\n1) missing marker\\n\\nProtokol (frontend-datatable-template.md → Dokunma protokolü): bu sapmaları raporunda numaralı listeyle göster ve sahibe SOR: \\\"Bu görevde düzeltmemi ister misin?\\\" — evet → aynı dalda AYRI commit; hayır → test kaydına 'bilinen sapma' olarak yaz. Sessizce düzeltmek (kapsam) ve sessizce atlamak yasak.\"}}\n"
+    },
+    {
+      "case": "crash",
+      "exit": 0,
+      "output": "{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"Liste ekranı dokunma protokolü — Test/List: referansla uyumlu, sapma yok.\"}}\n"
+    },
+    {
+      "case": "argerror",
+      "exit": 0,
+      "output": "{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": \"Liste ekranı dokunma protokolü — Test/List: referansla uyumlu, sapma yok.\"}}\n"
+    },
+    {
+      "case": "timeout",
+      "exit": 0,
+      "output": ""
+    }
+  ]
+}

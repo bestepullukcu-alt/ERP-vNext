@@ -1,16 +1,29 @@
 @using Diten.Web.Views.MasterDataManagement.Lskus
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<LskusIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div id="inlineFilterHost" class="px-3 pt-0 pb-3">
+<div id="inlineFilterHost" class="px-3">
     <div class="collapse" id="inlineFilterCollapse">
-        <div class="card card-body">
-            <label class="form-label" for="lskuSearch">@Localizer["Search"]</label>
-            <input id="lskuSearch" class="form-control" type="search" />
-            <div class="mt-3 d-flex gap-2">
-                <button id="btnFilterApply" type="button" class="btn btn-primary">@Localizer["Apply"]</button>
-                <button id="btnFilterReset" type="button" class="btn btn-label-secondary">@Localizer["Reset"]</button>
-            </div>
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-lifecycle-status">
+                        <select id="filterLifecycleStatus" class="form-select form-select-sm select2"
+                                data-placeholder="@Localizer["Status"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="Draft">@Localizer["LifecycleDraft"]</option>
+                            <option value="PendingIdentityApproval">@Localizer["LifecyclePendingIdentityApproval"]</option>
+                            <option value="IdentityApproved">@Localizer["LifecycleIdentityApproved"]</option>
+                            <option value="Retired">@Localizer["LifecycleRetired"]</option>
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button id="btnFilterApply" type="button" class="btn btn-sm btn-primary">@SharedLocalizer["Apply"]</button>
+                        <button id="btnFilterReset" type="reset" class="btn btn-sm btn-label-danger">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
