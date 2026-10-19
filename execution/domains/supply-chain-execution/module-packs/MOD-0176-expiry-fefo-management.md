@@ -1135,6 +1135,12 @@ Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
 - **`d0159c924` FU-EVIDENCE-AUDIT-NAMES (kapandı):** FEFO kanıtı ortak `IAuditActorNames` okuyucusunu kullanır; Expiry kopyası (`IExpiryAuditNames`) silindi; Expiry ↔ Recall bağı yok (mimari kural, MOD-0177 commit'i).
 - **`b19a322af` FU-WEB-CONTRACT-FAKES (kapandı, dört modülde):** `ExpiryF5WebTests` sahtesi fefo sözleşmesine bağlandı — uyumsuzluk yok.
 
+**WP-MVP1-FU-CLEAN2 — yardım paneli ve karar çekmecesi (agent result, pending CT, 2026-10-19).** Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fu-clean2-evidence-2026-10-19.md`.
+- 8 sayfanın UXH-001 metni modül resx'inden (panelin okumadığı yer; iki kod manifest dışıydı: EXPIRYEXPIRED / EXPIRYFEFOORDER) panelin kaynağına, manifest kodlarıyla (EXPIREDSTOCK / FEFOORDER) taşındı; adımlar sayfaya karşı düzeltildi; modüldeki 48 anahtar kaldırıldı. Ayrıntı sayfası kendi kodunu söyler (EXPIRYEXCEPTIONDETAILS).
+- `#ex-drawer` "Devam" / "İmzala ve kaydet" `data-dt-primary="chord"` (Enter kuralı R4 tabanda kırmızıydı). Kaldırılan InventoryGovernance görünümünün (F5 CT-F12) donuk defter satırı çıktı.
+- **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
