@@ -10,7 +10,7 @@
 > **Kapsam:** yalnız Control Tower araçları ve `.antigravity` kuralları. Ürün kodu, başka ekiplerin modülleri ve
 > MVP-6 yok.
 > **Ölçüm tabanı:** main `01f1080fd` (2026-10-19).
-> **Dayanaklar:** Blueprint master 8.7 `Dev_Readiness` sayfası (CEO kuralı, 2026-10-16); REP-001 v2 kabul kaydı
+> **Dayanaklar:** Blueprint master 8.7 / 8.8 `Dev_Readiness` sayfası (8.8'de depo içe aktarma sütunları Z–AD) (CEO kuralı, 2026-10-16); REP-001 v2 kabul kaydı
 > (`scripts/acceptance_record.py`); paket onay okuyucusu (`scripts/ct_queue.py` `pack_approval_limit`); sahip ve Codex
 > görüşü (2026-10-19, bu belgenin §4'ünde).
 
@@ -81,11 +81,22 @@ kayıtlar "Kaynak kayıtlar" sütununda listelenir. `verifier` bir beyandır, ki
 
 AC kimliği olmayan eski biçimli paket "ölçülemez" diye hata listesine girer, aşama önerilmez.
 
-### 2.5 Çıktı
+### 2.5 Çıktı (Master 8.8'in içe aktarma sözleşmesine göre)
 
-TSV sütunları: `Module ID`, `Önerilen aşama`, `Gerekçe`, `Eksik kanıt`, `Excel'de doldurulmalı`, `Code link`, `PR link (türetilmiş)`,
-`Test evidence`, `Verification evidence`, `Verified By`, `Verified Date`, `Kaynak kayıtlar (yol@commit)`.
-Hata listesi ayrı bir dosyadır. Çıktının başında main commit'i ve üretim zamanı yazar.
+Master 8.8, `Dev_Readiness` sayfasına depo için beş giriş sütunu ekledi; AE sütunu insanın seçtiği `Stage` ile öneriyi
+karşılaştırır (`MATCH` ya da `REVIEW: repo suggests …`). Araç yalnız bu beş sütunu, `Module ID` anahtarıyla üretir:
+
+| Excel | Sütun | Araçtaki karşılığı |
+|---|---|---|
+| A | `Module ID` | anahtar (yapıştırma için; Excel'de zaten var) |
+| Z | `Repo Suggested Stage` | §2.4'teki önerilen aşama (Excel'in aşama listesindeki yazımla) |
+| AA | `Suggested At` | üretim tarihi |
+| AB | `Source Commit` | çıktının üretildiği main commit'i (40 hane) |
+| AC | `Suggested Evidence` | kanıt bağlantıları: modül kaydı, test kanıtı (yol@commit), commit; PR bağlantısı "türetildi" etiketiyle |
+| AD | `Suggestion Reason` | gerekçe ve eksik kanıt; Excel'de doldurulması gerekenler (Owner, Last Updated, Change Note) |
+
+`Stage` (G) ve insanın doldurduğu hiçbir sütun üretilmez. Hata listesi ayrı bir dosyadır. Çıktının başında main commit'i ve
+üretim zamanı yazar.
 
 ### 2.6 Koruyucular (sabotajla gösterilecek)
 
@@ -214,7 +225,7 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
   - onaylayıcı listesi ve betiklerin de korunması;
   - PR bağlantısının "türetildi" etiketi;
   - Tested için yayın kapsamının bütün gerekli testleri.
-- **Sahip:** onay sistemi ilk sürümde GitHub hesabı olmadan; CODEOWNERS sonra. MVP-6 kapsam dışı.
+- **Sahip:** onay sistemi ilk sürümde GitHub hesabı olmadan; CODEOWNERS sonra (PR #153 ile eklendi). MVP-6 kapsam dışı.
 
 ## 5. Sahibin kararları
 
@@ -225,7 +236,7 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
 | D3 | Yayın kapsamı | yeni tablo yok: modülün yayını Blueprint 8.7'den okunur; kapsam = modülün ve takip paketlerinin main'deki onaylı paket sürümleri (çok paketli kapsam desteklenir) |
 | D4 | Doğrulama tarihi | REP-001 v2'ye isteğe bağlı `verified_at` alanı; okuyucu tanımsız alanı reddettiği için (`scripts/acceptance_record.py@01f1080fd:181–185`) okuyucu ve öz-test birlikte güncellenir; eski kayıtlar geriye doldurulmaz |
 | D5 | Yürürlük | `execution/approvals/POLICY-START.md`'nin main'e girdiği commit; eski onaylar bozulmaz |
-| D6 | GitHub hesapları ve ayarları | sonra (CODEOWNERS) |
+| D6 | GitHub hesapları ve ayarları | **yapıldı (dosya):** `.github/CODEOWNERS` PR #153 ile main'de (2026-10-19); GitHub `codeowners/errors` boş. **Açık (depo ayarı, ölçüldü 2026-10-19):** squash ve rebase merge hâlâ açık; "Require review from Code Owners" ayarı yönetici yetkisi olmadan okunamadı |
 | D7 | İlk sürümün güven sınırı | beyan tutarlılığı + türetilmiş insan adımı (merge eden ≠ yazan); kimlik doğrulaması GitHub katmanıyla gelir |
 | D8 | Tested–Verified ayrımı | §2.4'teki tanım |
 

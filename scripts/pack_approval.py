@@ -24,7 +24,8 @@ absence is a refusal, not "no rule".
 
 Trust boundary of this version (owner decision 2026-10-19, no GitHub accounts yet): declarations are checked for
 consistency and the human step is derived from git; identities are not verified. Merges must be merge commits (a
-squash or fast-forward merge leaves no merge author and a HIGH approval then fails). CODEOWNERS is a later layer.
+squash or fast-forward merge leaves no merge author and a HIGH approval then fails). Since PR #153 (2026-10-19)
+.github/CODEOWNERS puts the approval files, the approver list and these checks under a code-owner review.
 
     python3 scripts/pack_approval.py card  <pack> [--ref REF]        # the approval card and its SHA-256
     python3 scripts/pack_approval.py check <pack> [--ref REF]        # exit 0 approved · 1 not approved · 2 unreadable

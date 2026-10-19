@@ -15,7 +15,10 @@ Bu dosyanın main'e girdiği commit, kuralın başladığı yerdir (sahip karar�
 - **Güven sınırı (ilk sürüm):** araç beyanların tutarlılığını denetler; kimin yazdığını doğrulamaz. İnsan adımı main
   çizgisinden git ile türetilir: yüksek riskli onay satırı main'e, satırı ekleyenden farklı birinin merge ettiği bir
   merge commit'iyle gelir. Bu yüzden PR'lar "merge commit" ile birleştirilmelidir (squash ya da fast-forward'da insan
-  adımı görülmez ve yüksek riskli onay geçmez). GitHub CODEOWNERS katmanı sonra eklenecek (D6).
+  adımı görülmez ve yüksek riskli onay geçmez).
+- **GitHub katmanı (D6):** `.github/CODEOWNERS` 2026-10-19'da main'e girdi (PR #153). Onay dosyaları, onaylayıcı
+  listesi, kontrol araçları, CI tanımları ve CODEOWNERS'ın kendisi yalnız CEO ya da kıdemli geliştirici incelemesiyle
+  değişir; bu, depo ayarlarında "Require review from Code Owners" açıkken zorunludur.
 - **Bu dosya silinemez:** eklendikten sonra yokluğu kuralı kapatmaz; onay geçmez.
 
 Sözleşme: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §3.
