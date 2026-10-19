@@ -36,10 +36,11 @@ MOD-0189 `MRPRun`, `NetRequirement`, `ReplenishmentProposal` ve MRP istisnaları
 | NetRequirement | SKU × Warehouse × zaman kovası için brüt ihtiyaç, uygun stok, açık tedarik, safety stock ve net sonuç izleri. | Netting sırası, birim, kovalar ve kısmi verinin anlamı. |
 | ReplenishmentProposal | Net ihtiyaçtan türeyen idempotent, gerekçeli öneri; PO değil. | Lot/lead-time, onay ve MOD-0141 handoff alındısı. |
 | MRPException | Eksik, çelişkili, geçersiz veya güncelliğini yitirmiş girdinin görünür kaydı. | Şiddet, çözüm ve run'a etkisi. |
+| PlanningLeadTime | SKU × Warehouse için gün cinsinden tarihli ve sürümlü planlama parametresi; planlamacı hazırlar, bağımsız kişi onaylar. | Kalıcı yazma/audit yolu ve gelecekteki yetkili tedarikçi kaydına geçiş sözleşmesi. |
 
 ## 4. Entity Fields
 
-`TenantId`, `LegalEntityId`, `IsDeleted`, `DeletedAt`, oluşturma/güncelleme izi ve teknik sürüm repo standardına göre zorunludur. İş alanları adaydır: `runId`, `planningPeriodKey`, `demandRevisionId`, `demandStateVersion`, `inventoryAsOf`, `bomVersionId`, `sourceVersion`, `skuId`, `warehouseId`, `baseUomId`, `grossQuantity`, `availableQuantity`, `openSupplyQuantity`, `safetyStockQuantity`, `netQuantity`, `proposalId`, `idempotencyKey`, `evidenceChecksum`. Alan adları ve hesap semantiği CT incelemesinden önce runtime sözleşmesi değildir.
+`TenantId`, `LegalEntityId`, `IsDeleted`, `DeletedAt`, oluşturma/güncelleme izi ve teknik sürüm repo standardına göre zorunludur. İş alanları adaydır: `runId`, `planningPeriodKey`, `demandRevisionId`, `demandStateVersion`, `inventoryAsOf`, `bomVersionId`, `sourceVersion`, `skuId`, `warehouseId`, `baseUomId`, `grossQuantity`, `availableQuantity`, `openSupplyQuantity`, `safetyStockQuantity`, `netQuantity`, `proposalId`, `idempotencyKey`, `evidenceChecksum`. Lead time parametresinde `leadTimeDays`, geçerlilik aralığı, policy revision, hazırlayan, bağımsız onaylayan ve onay izi gerekir. Alan adları ve kalıcı şema ayrıca incelenir.
 
 ## 5. Repo Scope
 
@@ -80,12 +81,16 @@ UI ve Gateway ayrı onay konusudur. Frontend doğrudan servis portuna istek atma
 ## 12. Validation Rules
 
 Ali kararı: her SKU × Warehouse × ISO haftası için girdi sürüm/asOf kesiti kaydedilir. Hesap izi
-`netRequirement = grossDemand + approvedSafetyStock - availableStock - openOrderQuantity` biçimindedir.
+`netRequirement = max(0, grossDemand + approvedSafetyStock - availableStock - openOrderQuantity)` biçimindedir.
 Güvenlik stoğu yalnız MOD-0191'in onaylı politika sürümünden gelir. İlk sürüm lot-for-lot'tur;
 MOQ/koli yuvarlaması yapılmaz. MOD-0141 açık satır görünümü yokken `openOrderQuantity` güvenilir
 bir sıfır olarak yazılmaz: terim hesaptan çıkarılır ve her plan
-`DEGRADED: açık siparişler hesaba katılmadı` işaretini taşır. Negatif ara/net sonucun ele alınışı, stok devri ve lead time'ın öneri
-tarihine etkisi ayrıca kararlaştırılmadan uygulama formülü tamamlanmış sayılmaz.
+`DEGRADED: açık siparişler hesaba katılmadı` işaretini taşır. Haftalık tahmini fazla stok sonraki
+ISO haftasına devreder; negatif öneri üretilmez. Lead time, MOD-0189'un SKU × Warehouse için gün
+cinsinden tarihli ve sürümlü planlama parametresidir; planlamacı girer, hazırlayandan bağımsız
+inceleyen onaylar. Sourcing teklifindeki nullable `leadTimeDays` yetkili kaynak değildir.
+İleride satın alma tarafında yetkili tedarikçi × SKU kaydı gelirse tercih sırası ayrıca onaylanır.
+Kova içi tarih tahsisi ve önerinin gerçekleşmiş tedarik sayılacağı an teknik tasarımda açık tutulur.
 
 | Alan / kanıt | Önerilen doğrulama | Açık ürün kararı |
 |---|---|---|
@@ -93,11 +98,11 @@ tarihine etkisi ayrıca kararlaştırılmadan uygulama formülü tamamlanmış s
 | Demand revision | Aynı `revisionId`, yetkili durum ve checksum; kısmi sayfa yok. | Dört kontrol noktası ve tarihsel bağ şeması. |
 | Item/SKU/UoM/Warehouse | FROZEN üreticilerde mevcut ve aynı ölçü biriminde. | Dönüşüm, boyut ve lokasyon kapsamı. |
 | Inventory/PO/BOM asOf | Run sınırında sürümlü, tekrarlanabilir kesit. | Gecikme toleransı ve MOD-0141 açık satır görünümü. |
-| Miktar ve zaman | Decimal, ISO haftası, lot-for-lot ve negatif/missing ayrımı. | Negatif net sonuç, stok devri, lead time ve ileride MOQ/koli yuvarlaması. |
+| Miktar ve zaman | Decimal, ISO haftası, lot-for-lot, `max(0, …)` ve fazla stok devri. | Kova içi tarih tahsisi ve ileride MOQ/koli yuvarlaması. |
 
 ## 13. Failure Path to Verify
 
-Yanlış tenant/şirket/seri için kayıt veya run görünmez; eksik işlem izni reddedilir. Yetki, Demand durumu, stok asOf veya BOM sürümü doğrulanamıyorsa run/proposal güvenilir ilan edilmez. Açık PO görünümü yoksa kullanıcıdan gizlenmeyen DEGRADED plan üretilir; açık tedarik sıfır diye doğrulanmış sayılmaz ve bu planın ilerletme sınırı ayrıca kararlaştırılır. Görünüm varken bozuk veya çelişkili bakiye sessizce DEGRADED'a düşmez, kapalı hata/istisna üretir. Aynı istek aynı girdilerle tek run/öneri etkisi üretir; aynı anahtar farklı içerikle çatışır. Audit veya zorunlu kanıt başarısızlığı yarım sonuç bırakmaz. Olay kaybında düzenli yetkili durum uzlaştırması gerekir; aralık ve kullanıcıya görünen askı durumu açık karardır.
+Yanlış tenant/şirket/seri için kayıt veya run görünmez; eksik işlem izni reddedilir. Yetki, Demand durumu, stok asOf veya BOM sürümü doğrulanamıyorsa run/proposal güvenilir ilan edilmez. Açık PO görünümü yoksa kullanıcıdan gizlenmeyen DEGRADED plan hesaplanır, incelenir ve öneri üretebilir; açık tedarik sıfır diye doğrulanmış sayılmaz. MOD-0141'e otomatik aktarım yasaktır. Bağımsız onaylayıcı yalnız "açık siparişler kontrol edildi" gerekçesini yazarak manuel aktarabilir; gerekçe zorunlu audit kaydında tutulur. Görünüm varken bozuk veya çelişkili bakiye sessizce DEGRADED'a düşmez, kapalı hata/istisna üretir. Aynı istek aynı girdilerle tek run/öneri etkisi üretir; aynı anahtar farklı içerikle çatışır. Audit veya zorunlu kanıt başarısızlığı yarım sonuç bırakmaz. Olay kaybında düzenli yetkili durum uzlaştırması gerekir; aralık ve kullanıcıya görünen askı durumu açık karardır.
 
 ## 14. Authorization Convention
 
@@ -113,6 +118,9 @@ Servis `Diten.PlanningService`, port 5068 olarak kararlaştırıldı; yeni servi
 - [ ] Manufacturing yolunda effective BOM sürümü sabitlenir; component ihtiyaçları belgelenmiş netting kuralına göre hesaplanır. BOM olmayan ticari yolda patlatma yapılmaz.
 - [ ] Uygun stok ve doğrulanmış açık tedarik çift sayılmadan, safety stock/lead-time kuralıyla açıklanabilir net ihtiyaç üretilir.
 - [ ] Açık PO görünümü yokken her plan DEGRADED işaretlidir; açık tedarik sıfır diye sertifikalanmaz. Görünüm varken bozuk veri ayrı kapalı hatadır.
+- [ ] DEGRADED plan incelenir ve öneri üretir; otomatik MOD-0141 devri reddedilir. Bağımsız onaylayıcının gerekçeli manuel devri audit kaydıyla birlikte doğrulanır.
+- [ ] Tarihli/sürümlü SKU × Warehouse lead time parametresini hazırlayan kendi revision'ını onaylayamaz; eski/çakışan sürüm reddedilir.
+- [ ] Fazla tahmini stok sonraki ISO haftasına devreder; net ihtiyaç ve öneri negatif olmaz.
 - [ ] Aynı girdi ve idempotency anahtarı ikinci run/öneri oluşturmaz; farklı içerikli tekrar çatışır.
 - [ ] Sadece onaylı requirement, MOD-0141'e sözleşmeli handoff alındısıyla iletilir; MOD-0189 PO oluşturmaz.
 - [ ] Demand `Superseded` veya `Invalidated`, kayıp/geç olay ve durum sorgusu kesintisi hallerinde kararlaştırılmış dört tüketici kontrolü ve uzlaştırma güvenli sonuç verir.
@@ -130,12 +138,19 @@ Karar sonrası saf netting için sınır/decimal/UoM ve eksik-veri testleri; FRO
 - [x] MOD-0188 PlanningService main'e merge edildi; MOD-0189 kod kapısı ayrıca açılmadı.
 - [ ] Kalıcı kayıt yeri ve servis içi sahiplik sınırı onaylandı.
 - [x] Ali, SKU × Warehouse × ISO hafta netting formülü, lot-for-lot, onaylı MOD-0191 policy ve BOM olayının kontrol işareti olmasını kararlaştırdı.
-- [ ] MOD-0141 sürümlü açık PO satırı ve beklenen teslim tarihi sözleşmesi; yokluğunda DEGRADED planın kabul/ilerletme sınırı ayrıca netleştirildi.
-- [ ] Lead time'ın yetkili kaynağı ve eksikliğinde öneri davranışı Ali tarafından seçildi.
+- [ ] MOD-0141 sürümlü açık PO satırı ve beklenen teslim tarihi sözleşmesi; yokluğunda DEGRADED planın manuel devri onaylı olsa da üretici bağımlılığı açık.
+- [x] Ali, ilk lead time kaynağını MOD-0189'un tarihli/sürümlü SKU × Warehouse planlama parametresi ve bağımsız onayı olarak seçti.
 - [ ] Demand v2 tüketici sınırı (dört durum kontrolü, bağlı run kanıtı, uzlaştırma) onaylandı; DRAFT v2 canlı girdi sayılmadı.
 - [ ] Platform şirket/seri kapsamı ve izinler ile audit yolu kararlaştırıldı.
 - [ ] İzole fixture dilimi ve canlı kabul kapısı ayrıldı; CT/Ali `ready-for-dev` kapsamını açıkça onayladı.
 - [ ] Owner ve hedef tarih idari olarak belirlendi; `TBD` değerleri onaylı kararla değiştirildi.
+
+Dar ready-for-dev adayı (henüz izin değil): Prism girdili saf ISO-hafta netting, fazla stok devri,
+lot-for-lot, onaylı safety-stock/lead-time sürüm referansları, açık PO yokken DEGRADED işareti ve
+BOM olayından sonra `current`/`explode` doğrulama kuralının fixture testleri. Bunun dışında
+kalıcı MRPRun/parametre yazımı, audit, HTTP/UI, MOD-0141 devri ve canlı Demand/PO/BOM tüketimi
+bu `draft` pack ile açılmaz. Açık PO üretici sözleşmesi ve full-pack onayı gelmeden frontmatter
+`ready-for-dev` yapılmaz; dar dilim için de Ali/CT'nin ayrı açık onayı gerekir.
 
 ## 19. Implementation Notes
 
@@ -147,11 +162,11 @@ Blueprint 8.1 `Blueprint_Data`, MOD-0189'u W-4 Planning Execution, SoR `MRP runs
 
 | Kapsam | Karar / davranış | Hazırlık durumu |
 |---|---|---|
-| ISO hafta netting | SKU × Warehouse; sürümlü kesit; brüt talep + onaylı safety stock − kullanılabilir stok − varsa açık sipariş; ilk sürüm lot-for-lot. | Ürün kuralı onaylı; negatif sonuç/stok devri ve UoM ayrıntısı açık. |
-| Demand | Yalnız onaylı ve Published v2 revision; v1 fallback yok. | Prism taklidi izole test adayı; v2 DRAFT dondurma ve tüketici kabulü açık. |
+| ISO hafta netting | SKU × Warehouse; sürümlü kesit; `max(0, brüt talep + onaylı safety stock − kullanılabilir stok − varsa açık sipariş)`; fazla tahmini stok devreder, ilk sürüm lot-for-lot. | Ürün kuralı onaylı; UoM ve kova içi tarih tahsisi teknik tasarımda açık. |
+| Demand | Yalnız onaylı ve Published v2 revision; v1 fallback yok. | Ali: v2 şimdi dondurulmaz. Prism taklidi izole geliştirme adayı; canlı tüketici kabulü açık. |
 | BOM | v1.2.0 olayları kontrol işareti; `current` / `explode` ile güncel effective sürüm ayrıca doğrulanır. | Tüketici kuralı onaylı; canlı test ve çok seviyeli hesap sınırı açık. |
-| Açık PO | Tüketicide `PO - GRN` yapılmaz; MOD-0141 sürümlü açık satır görünümü gelene kadar her planda DEGRADED işareti. | Üretici sözleşmesi ve DEGRADED planın ilerletme sınırı açık; ready-for-dev engeli. |
-| Lead time | Yetkili kaynak seçilmeden sabit gün veya teklif süresi varsayılmaz. | Ali kaynak kararı bekleniyor; ready-for-dev engeli. |
+| Açık PO | Tüketicide `PO - GRN` yapılmaz; görünüm yokken her plan DEGRADED. Hesap/inceleme/öneri serbest; MOD-0141'e otomatik devir yok, bağımsız onaylayıcı gerekçeli/auditli manuel devir yapabilir. | MOD-0141 üretici sözleşmesi açık; tüm pack için ready-for-dev engeli. |
+| Lead time | MOD-0189 SKU × Warehouse başına gün; tarihli/sürümlü; planlamacı girer, bağımsız kişi onaylar. Sourcing teklif alanı yetkili değildir. | Ürün kararı onaylı; kalıcı komut/audit tasarımı ve gelecekteki satın alma kaynağı geçişi açık. |
 | MOQ / koli | İlk sürüm lot-for-lot. | Daha sonraki ürün kararı; ilk sürümü engellemez. |
 
 MOD-0141 sahibine iletilecek açık satır görünümü alan adayları (henüz onaylı şema değildir):
@@ -167,11 +182,10 @@ MOD-0141 sahibine iletilecek açık satır görünümü alan adayları (henüz o
 | `asOfUtc`, `sourceVersion` | date-time / string | Tekrarlanabilir kesit ve değişim denetimi. |
 | `lineStatus` | enum | İptal/kapalı/bloke satırın açık tedarik sayılmasını önler; değer kümesi üreticide kararlaştırılır. |
 
-Lead time için karar seçenekleri: MDM ürün alanı genel ama tedarikçi/rota farkını gizler; MOD-0145
-Sourcing teklifindeki nullable `leadTimeDays` gerçek bir alan olsa da teklif yetkili, güncel ikmal
-politikası değildir; sürümlü ve tarihli tedarikçi × SKU × rota/şirket politikası en açıklanabilir
-hedef kaynaktır, sahibi/sözleşmesi ayrıca onaylanmalıdır. Sabit politika yalnız açıkça onaylanmış,
-sürümlü bir fallback ise düşünülebilir; bugün hiçbir kaynak sessiz varsayılan değildir.
+Lead time kaynak kararı: ilk sürümde MOD-0189'un kendi onaylı planlama parametresi tek yetkili
+kaynaktır. İleride satın alma tarafının yetkili tedarikçi × SKU kaydı gelirse öncelik ona geçer;
+alan/sürüm/effective-date ve mevcut planların geçişi ayrı sözleşme işidir. MOD-0145 Sourcing
+teklifindeki nullable `leadTimeDays` ve sessiz sabit varsayılan kullanılmaz.
 
 ### Önceki seçeneklerin karar izi
 
