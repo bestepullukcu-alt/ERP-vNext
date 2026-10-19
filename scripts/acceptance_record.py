@@ -94,7 +94,11 @@ OPTIONAL_FIELDS = ["module_pack"]
 MODULE_PACK = re.compile(r"^(execution/domains/[a-z0-9][a-z0-9-]*/module-packs/[A-Za-z0-9][A-Za-z0-9._-]*\.md)@([0-9a-f]{40})$")
 PACK_PATH = re.compile(r"^execution/domains/[^/]+/module-packs/[^/]+\.md$")
 PACK_STATUS = {"approved", "ready-for-dev"}
-AC_HEADING = re.compile(r"^#{1,6}[ \t]*Acceptance Criteria[ \t]*$", re.I)
+AC_HEADING = re.compile(r"^#{1,6}[ \t]*(?:[0-9]+\.[ \t]*)?Acceptance Criteria[ \t]*$", re.I)
+# AUDIT-FU-01 (5): the one accepted form of the section heading — level 2, optionally numbered as the standard's §6
+# section table numbers it ("## 16. Acceptance Criteria", 108 of the 144 packs on main 37530d190). Any other heading
+# that AC_HEADING counts (another level, number 0, other spacing) is refused, never read.
+AC_SECTION = re.compile(r"^## (?:[1-9][0-9]*\. )?Acceptance Criteria$")
 AC_ITEM = re.compile(r"^- \[[ xX]\] AC-([1-9][0-9]*) \((zorunlu|isteğe bağlı)\) — (\S.*)$")
 AC_ID = re.compile(r"^AC-([1-9][0-9]*)$")
 DRAFT_MARK = "<<DOLDUR"   # CT-FIX-03 (U3): a field the draft left for a person; any left is an ENGEL
@@ -678,6 +682,7 @@ def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], lis
     closed block with a single id equal to the module and a single status approved / ready-for-dev. One pass over the
     body tracks fenced code by its opening mark and length (only the same mark, at least as long, alone on its line
     closes it); an unclosed fence anywhere makes the pack unreadable. Outside fences: one '## Acceptance Criteria'
+    (or '## <n>. Acceptance Criteria')
     section up to the next heading of level 1–2, every item there '- [ ] AC-<n> (zorunlu|isteğe bağlı) — <criterion>',
     at least one mandatory. A section without any identity is the old format: not measurable."""
     lines = text.replace("\r\n", "\n").split("\n")
@@ -717,8 +722,9 @@ def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], lis
     if fence is not None:
         return {}, bad + [f"paket: satır {opened + 1}'de açılan kod çiti kapanmıyor — sonrası okunamaz"], False
     heads = [i for i in outside if AC_HEADING.match(lines[i].strip())]
-    if len(heads) != 1 or lines[heads[0]].strip() != "## Acceptance Criteria":
-        return {}, bad + [f"paket: tek '## Acceptance Criteria' bölümü olmalı ({len(heads)} başlık)"], False
+    if len(heads) != 1 or not AC_SECTION.match(lines[heads[0]].strip()):
+        return {}, bad + [f"paket: tek '## Acceptance Criteria' ya da '## <n>. Acceptance Criteria' bölümü olmalı "
+                          f"({len(heads)} başlık)"], False
     after = [i for i in outside if i > heads[0]]
     end = next((i for i in after if re.match(r"^#{1,2}\s", lines[i])), len(lines))
     criteria: dict[int, tuple[bool, str]] = {}
@@ -1318,6 +1324,13 @@ def self_test() -> int:
     cases.append(("İ4 S2: an AC-like line in another section is not a criterion", r is not None and not r[1] and 7 not in r[0]))
     r = pp(pack("- [ ] liste açılır\n- [ ] yetkisiz kullanıcı 403 alır\n"))
     cases.append(("İ4 S2: an old pack without identities -> not measurable (old format), no criteria", r is not None and r[2] and not r[0]))
+    # AUDIT-FU-01 (5): the numbered heading the standard's §6 table gives (108 of 144 packs on main) is the same section
+    r = pp(pack(good_ac, heading="## 16. Acceptance Criteria"))
+    cases.append(("AUDIT-FU-01: '## 16. Acceptance Criteria' is the section; its AC rows are read",
+                  r is not None and not r[1] and not r[2] and sorted(r[0]) == [1, 2, 3, 4]))
+    r = pp(pack("- [ ] liste açılır\n- [ ] yetkisiz kullanıcı 403 alır\n", heading="## 16. Acceptance Criteria"))
+    cases.append(("AUDIT-FU-01: a numbered section without identities -> old format (not measurable), not '0 headings'",
+                  r is not None and r[2] and not r[0] and not r[1]))
     for label, text, module, why in (
             ("the pack's id is another module (FU)", pack(good_ac), "MOD-0151-FU01", "tek id"),
             ("no id", pack(good_ac, fm="status: approved\n"), "MOD-0151", "tek id"),
@@ -1327,6 +1340,9 @@ def self_test() -> int:
             ("no Acceptance Criteria section", pack(good_ac, heading="## Kabul"), "MOD-0151", "bölümü olmalı"),
             ("two Acceptance Criteria sections", pack(good_ac, after="\n## Acceptance Criteria\n- [ ] AC-5 (zorunlu) — x\n"), "MOD-0151", "bölümü olmalı"),
             ("the section at another heading level", pack(good_ac, heading="### Acceptance Criteria"), "MOD-0151", "bölümü olmalı"),
+            ("a numbered section at another heading level", pack(good_ac, heading="### 16. Acceptance Criteria"), "MOD-0151", "bölümü olmalı"),
+            ("a section numbered 0", pack(good_ac, heading="## 0. Acceptance Criteria"), "MOD-0151", "bölümü olmalı"),
+            ("a numbered and an unnumbered section", pack(good_ac, after="\n## 16. Acceptance Criteria\n- [ ] AC-5 (zorunlu) — x\n"), "MOD-0151", "bölümü olmalı"),
             ("an unidentified item beside identified ones", pack(good_ac + "- [ ] gizli madde\n"), "MOD-0151", "uymayan madde"),
             ("an AC line outside the item form", pack(good_ac + "AC-5 (zorunlu) — liste dışı\n"), "MOD-0151", "uymayan madde"),
             ("AC-0", pack(good_ac + "- [ ] AC-0 (zorunlu) — sıfır\n"), "MOD-0151", "uymayan madde"),
