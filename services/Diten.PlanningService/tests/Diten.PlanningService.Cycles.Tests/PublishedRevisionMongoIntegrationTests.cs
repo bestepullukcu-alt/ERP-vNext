@@ -210,7 +210,7 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
     [ManualDraftMongoFact]
     public async Task MethodDraft_RoundTripsThroughIndependentReviewAndVerifiedPublication()
     {
-        var (drafts, published, _) = Open();
+        var (drafts, published, context) = Open();
         var tenant = Guid.NewGuid(); var legalEntity = Guid.NewGuid();
         var creator = Guid.NewGuid(); var reviewer = Guid.NewGuid();
         var template = Draft(tenant, legalEntity, creator, FirstWeek);
@@ -246,6 +246,12 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         var snapshot = (await published.ReadSnapshotAsync(tenant, legalEntity,
             draft.Id, default))!.Value;
         Assert.Equal("MOD0188-CANONICAL-2/SHA-256", snapshot.Manifest.ChecksumScheme);
+        var outbox = await context.Outbox.Find(x => x.TenantId == tenant &&
+            x.LegalEntityId == legalEntity && x.RevisionId == draft.Id &&
+            x.EventType == "demand.revision.published.v2").SingleAsync();
+        using (var payload = System.Text.Json.JsonDocument.Parse(outbox.Payload))
+        using (var schema = EventSchema())
+            AssertDraftSchema(payload.RootElement, schema.RootElement);
         Assert.Equal(snapshot.Manifest.Checksum,
             PublishedSnapshotIntegrity.Calculate(snapshot.Manifest, snapshot.Parts));
         Assert.All(Assert.Single(snapshot.Parts).Rows, row =>
@@ -302,7 +308,27 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         Assert.Equal(replacement.Id, (await context.PublishedBaselineSlots.Find(x =>
             x.TenantId == tenant && x.LegalEntityId == legalEntity &&
             x.PlanningPeriodKey == "2026-10-05").FirstAsync()).RevisionId);
-        Assert.Equal(2, await context.Outbox.CountDocumentsAsync(x =>
+        Assert.Equal(3, await context.Outbox.CountDocumentsAsync(x =>
+            x.TenantId == tenant && x.LegalEntityId == legalEntity));
+        var supersededMessage = await context.Outbox.Find(x =>
+            x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+            x.RevisionId == first.Id && x.EventType == "demand.revision.superseded.v2")
+            .SingleAsync();
+        using (var payload = System.Text.Json.JsonDocument.Parse(supersededMessage.Payload))
+        using (var schema = EventSchema())
+        {
+            AssertDraftSchema(payload.RootElement, schema.RootElement);
+            Assert.Equal("DemandRevisionSuperseded",
+                payload.RootElement.GetProperty("eventType").GetString());
+            Assert.Equal("Superseded", payload.RootElement.GetProperty("newState").GetString());
+            Assert.Equal(old.StateVersion,
+                payload.RootElement.GetProperty("stateVersion").GetInt32());
+            Assert.Equal(original.Checksum, payload.RootElement
+                .GetProperty("integritySummary").GetProperty("digest").GetString());
+        }
+        Assert.Equal(PublishOutcome.Replayed,
+            (await Publish(published, replacement, reviewer)).Outcome);
+        Assert.Equal(3, await context.Outbox.CountDocumentsAsync(x =>
             x.TenantId == tenant && x.LegalEntityId == legalEntity));
 
         var changedAsOf = Draft(tenant, legalEntity, creator, FirstWeek,
@@ -506,6 +532,44 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         Assert.Equal(previous.Id, (await context.PublishedBaselineSlots.Find(x =>
             x.TenantId == draft.TenantId && x.LegalEntityId == draft.LegalEntityId &&
             x.PlanningPeriodKey == draft.PlanningPeriodKey).FirstAsync()).RevisionId);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task Publish_SupersededOutboxFailure_RollsBackBothRevisionStates()
+    {
+        var (drafts, published, context) = Open();
+        var tenant = Guid.NewGuid(); var legalEntity = Guid.NewGuid();
+        var creator = Guid.NewGuid(); var reviewer = Guid.NewGuid();
+        var previous = Draft(tenant, legalEntity, creator, FirstWeek);
+        var replacement = Draft(tenant, legalEntity, creator, FirstWeek, quantity: 7m);
+        await Approve(drafts, previous, creator, reviewer);
+        Assert.Equal(PublishOutcome.Published,
+            (await Publish(published, previous, reviewer)).Outcome);
+        await Approve(drafts, replacement, creator, reviewer);
+        await context.Outbox.InsertOneAsync(new DemandOutboxMessage
+        {
+            TenantId = tenant, LegalEntityId = legalEntity,
+            RevisionId = Guid.NewGuid(),
+            EventId = PublishedRevisionMongoStore.DeterministicSupersededEventId(
+                tenant, legalEntity, previous.Id, replacement.Id),
+            EventType = "test-blocker", Payload = "{}", OccurredAt = Now
+        });
+
+        Assert.Equal(PublishOutcome.Conflict,
+            (await Publish(published, replacement, reviewer)).Outcome);
+        Assert.Equal(DemandRevisionState.Published,
+            (await published.ReadSnapshotAsync(tenant, legalEntity, previous.Id, default))?.Manifest.State);
+        Assert.Equal(DemandRevisionState.Approved,
+            (await drafts.ReadAsync(tenant, legalEntity, replacement.Id, default))?.State);
+        Assert.Equal(previous.Id, (await context.PublishedBaselineSlots.Find(x =>
+            x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+            x.PlanningPeriodKey == previous.PlanningPeriodKey).SingleAsync()).RevisionId);
+        Assert.Equal(0, await context.ManualDraftPublicationAudit.CountDocumentsAsync(x =>
+            x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+            x.RevisionId == previous.Id && x.NewState == DemandRevisionState.Superseded));
+        Assert.Equal(0, await context.Outbox.CountDocumentsAsync(x =>
+            x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+            x.RevisionId == replacement.Id));
     }
 
     [ManualDraftMongoFact]

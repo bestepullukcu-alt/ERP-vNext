@@ -64,7 +64,7 @@ x-implementation-gaps:
   - Cycle and history-import HTTP operations are implemented in PlanningService but are not yet modeled in this revision-focused DRAFT contract.
   - Superseded content reading awaits approved evidence of a bound MRP run; status reading alone does not grant content access.
   - Full external checksum recomputation from HTTP still needs independent consumer verification against every manifest and row field; this DRAFT is not frozen.
-  - Current publish transaction persists a Superseded state/audit but only a Published outbox record; separate Superseded outbox intent remains to be implemented and tested.
+  - The publish transaction persists separate Published and, when replacing a baseline, Superseded outbox intents with both state changes and audit; event transport and delivery remain open.
 x-open-design-decisions:
   - Stable row ordering definition and opaque cursor encoding and expiry.
   - Atomic persistence, outbox and monotonic status fencing mechanism.
