@@ -356,15 +356,17 @@ public sealed class VwW4DoctorInsightsTests
             TenantId = Tenant, ContactId = doctor, Weekday = "tuesday", StartTime = "09:00", EndTime = "11:00", AvailabilityType = "visit",
             Preference = new VisitPreference { PreferredContactMethod = "visit" }
         });
+        // FU-W4-DOCINSIGHT-DATE — every time in the test data comes from the pinned test clock (World.Clock): the read keeps a
+        // preference whose EffectiveFrom <= the INJECTED now, so a real-time EffectiveFrom fell after the pinned now and was dropped.
         w.Preferences.Items.Add(new PreferenceRecord
         {
             TenantId = Tenant, SubjectType = ConsentSubjectType.Contact, SubjectId = doctor, Channel = "all",
-            PreferenceType = PreferenceType.PreferredChannel, PreferenceValue = "email", EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1)
+            PreferenceType = PreferenceType.PreferredChannel, PreferenceValue = "email", EffectiveFrom = w.Clock.GetUtcNow().AddDays(-1)
         });
         w.Preferences.Items.Add(new PreferenceRecord
         {
             TenantId = Tenant, SubjectType = ConsentSubjectType.Contact, SubjectId = doctor, Channel = "all",
-            PreferenceType = PreferenceType.DoNotContact, PreferenceValue = "x", EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1)
+            PreferenceType = PreferenceType.DoNotContact, PreferenceValue = "x", EffectiveFrom = w.Clock.GetUtcNow().AddDays(-1)
         });
         var read = (await w.Queries(Rep, DoctorInsightsPermissions.Read).Handle(new GetDoctorProfileQuery(doctor), default)).Data!;
         Assert.Equal(("innovator", "driver", "national", 60), (read.Profile.AdoptionTypologyCode, read.Profile.CommunicationStyleCode, read.Profile.KolLevelCode, read.Profile.TotalMonthlyPatients));
