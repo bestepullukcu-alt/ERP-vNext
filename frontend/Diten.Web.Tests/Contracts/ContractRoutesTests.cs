@@ -21,6 +21,9 @@ public sealed class ContractRoutesTests
         ContractRoutes.Require("/api/quarantine/settings", 409, "{}");
         ContractRoutes.Require("/api/users/aaaaaaaa-1111-4111-8111-000000000001/display-label", 200, "{}");
         Assert.Contains("/api/users", ContractRoutes.Unbound.Keys);
+        // WP-MVP1-NAMES1: INVENTORY 1.5.0 createdBy (userId + optional name) is a valid TransactionItem member
+        ContractRoutes.Require("/api/inventory/transactions", 200,
+            """{"items":[{"transactionId":"t-1","createdBy":{"userId":"aaaaaaaa-1111-4111-8111-000000000001","name":"Ayşe Demir"}},{"transactionId":"t-2","createdBy":{"userId":"aaaaaaaa-1111-4111-8111-000000000001"}}],"page":1,"pageSize":50,"total":2}""");
     }
 
     [Theory]
@@ -30,6 +33,9 @@ public sealed class ContractRoutesTests
     [InlineData("/api/product-master/products/", """{ "itemId": "x" }""", "/itemId: format")]
     [InlineData("/api/quarantine/no-such-route", "{}", "has no operation")]
     [InlineData("/api/nowhere", "{}", "no contract owns this path")]
+    // WP-MVP1-NAMES1: a person member the contract does not name (here an e-mail) is refused; so is a createdBy without its userId
+    [InlineData("/api/inventory/transactions", """{"items":[{"transactionId":"t-1","createdBy":{"userId":"aaaaaaaa-1111-4111-8111-000000000001","email":"a@b.c"}}]}""", "/createdBy/email")]
+    [InlineData("/api/inventory/transactions", """{"items":[{"transactionId":"t-1","createdBy":{"name":"Ayşe Demir"}}]}""", "required")]
     public void An_off_contract_body_is_refused(string prefix, string body, string expected)
     {
         var error = Assert.Throws<ContractViolationException>(() => ContractRoutes.Require(prefix, 200, body));

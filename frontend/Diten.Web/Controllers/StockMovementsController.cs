@@ -620,6 +620,8 @@ public sealed partial class StockMovementsController : Controller
             DocumentNo = Field("sourceDocumentId"),
             TransactionDate = Field("transactionDate"),
             PostingDate = Field("postingDate"),
+            RecordedById = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+            RecordedByName = MovementReceiptViewModel.PostingName(User),
             BalanceLocationText = Place(snapshot?.WarehouseId, snapshot?.LocationId),
             BalanceLotId = snapshot?.LotId,
             BalanceLotNumber = Number(snapshot?.LotId),

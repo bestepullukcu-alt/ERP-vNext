@@ -287,6 +287,9 @@ const StockMovementsList = (function () {
 
     const rowActionHandlers = { reversal: reverse, correct: correct };
 
+    // WP-MVP1-NAMES1: the "Kaydeden" cell — the rule is StockMovementPeople (people.js, measured by Node), never the id as a name
+    const recordedBy = (full) => window.StockMovementPeople.html(full, L().UnknownUser);
+
     const renderAction = (full) => {
         if (!canReverse()) return '';
         if (full.isAutomatic) {
@@ -355,6 +358,7 @@ const StockMovementsList = (function () {
                     { data: 'lotId', name: 'lot' },
                     { data: 'toStockStatus', name: 'statusChange' },
                     { data: 'sourceModule', name: 'source' },
+                    { data: 'createdByName', name: 'recordedBy' },
                     { data: 'transactionDate', name: 'transactionDate' },
                     { data: 'postingDate', name: 'postingDate' },
                     { data: 'id', name: 'action' }
@@ -407,7 +411,9 @@ const StockMovementsList = (function () {
                         render: (data, type, full) => `<div class="d-flex flex-column"><span>${esc(full.sourceModule || '')}</span>`
                             + `<small class="text-muted">${esc([full.sourceDocumentId, full.sourceLineId].filter(Boolean).join(' / '))}</small></div>`
                     },
-                    { targets: [11, 12], render: (data) => esc(formatDate(data)) },
+                    // WP-MVP1-NAMES1 (BG-05): the poster's name at the posting, else "unknown user" — the id only as the hover title, never as a name
+                    { targets: 11, render: (data, type, full) => recordedBy(full) },
+                    { targets: [12, 13], render: (data) => esc(formatDate(data)) },
                     {
                         targets: -1,
                         title: L().Actions,

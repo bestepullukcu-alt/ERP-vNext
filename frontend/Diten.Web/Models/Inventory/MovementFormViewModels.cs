@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -281,8 +282,26 @@ public sealed class MovementReceiptViewModel
     public string? CorrectedNumber { get; set; }
     /// <summary>KD-2: the receipt of a stock entry links back to the stock list.</summary>
     public bool FromEntry { get; set; }
+    /// <summary>
+    /// WP-MVP1-NAMES1 ("Kaydeden", BG-05): the poster of THIS movement is the signed-in user who just posted it; the name is the one their token
+    /// carries at the posting — the very name the service records in the central audit queue for the posting (<see cref="PostingName"/>).
+    /// No name → the receipt says "unknown user"; the id is only the hover title.
+    /// </summary>
+    public string? RecordedById { get; set; }
+    public string? RecordedByName { get; set; }
 
     public bool IsEmpty => string.IsNullOrWhiteSpace(TransactionNumber);
+
+    /// <summary>The name the token carries (<c>name</c>, else <c>given_name</c> + <c>family_name</c>, either claim spelling) — the rule of the
+    /// service's central audit scope, so the receipt and the history show the same name for one posting.</summary>
+    public static string? PostingName(ClaimsPrincipal user)
+    {
+        string? Claim(params string[] types) => types.Select(t => user.FindFirst(t)?.Value).FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+        var name = Claim("name", ClaimTypes.Name);
+        if (!string.IsNullOrWhiteSpace(name)) return name.Trim();
+        var full = $"{Claim("given_name", ClaimTypes.GivenName)} {Claim("family_name", ClaimTypes.Surname)}".Trim();
+        return full.Length == 0 ? null : full;
+    }
 
     public static MovementReceiptViewModel From(ITempDataDictionary tempData)
     {

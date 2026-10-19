@@ -213,6 +213,8 @@ public static class InventoryListAdapter
                 SourceLineId = t.SourceLineId,
                 TransactionDate = t.TransactionDate,
                 PostingDate = t.PostingDate,
+                CreatedById = t.CreatedBy?.UserId,
+                CreatedByName = string.IsNullOrWhiteSpace(t.CreatedBy?.Name) ? null : t.CreatedBy!.Name!.Trim(),
                 ReversedOnPage = reversed,
                 CanReverse = IsReversible(t) && !reversed,
                 CanCorrect = IsCorrectable(t) && !reversed

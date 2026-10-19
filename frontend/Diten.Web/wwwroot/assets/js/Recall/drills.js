@@ -17,7 +17,7 @@
     const state = { plans: [], runs: [], warning: null, run: null, serverNow: null, answeredAt: 0, setup: null, mode: 'Auto', plan: null, prepared: null };
     const show = (el, on) => el?.classList.toggle('d-none', !on);
     const modal = (id) => window.bootstrap?.Modal?.getOrCreateInstance(byId(id)) || { show() {}, hide() {} };
-    const person = (u) => u?.name || u?.userId || '';
+    const person = (u) => window.RecallCaseView.personName(u, t); // WP-MVP1-NAMES1: the one person rule (never the id)
 
     // ── calls ─────────────────────────────────────────────────────────────────────────────────────────────────────
     const antiforgery = () => document.querySelector('#rc-antiforgery input[name="__RequestVerificationToken"]')?.value || '';

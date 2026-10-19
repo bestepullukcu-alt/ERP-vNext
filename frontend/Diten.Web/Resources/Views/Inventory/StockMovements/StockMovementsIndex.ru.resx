@@ -200,4 +200,6 @@
   <data name="ErrItemNotActive" xml:space="preserve"><value>Статус товара не допускает этот тип движения (черновик, деактивирован или выведен из оборота). Ничего не изменено.</value></data>
   <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Этот товар может учитываться по серийным номерам: запас нельзя перемещать на уровне глобальной SKU. Выберите уровень локальной SKU или готовой продукции.</value></data>
   <data name="LotUnresolvedHint" xml:space="preserve"><value>не удалось прочитать номер партии</value></data>
+  <data name="ColRecordedBy" xml:space="preserve"><value>Кем проведено</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
 </root>

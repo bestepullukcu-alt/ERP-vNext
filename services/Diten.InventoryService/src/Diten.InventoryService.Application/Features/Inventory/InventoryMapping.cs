@@ -75,8 +75,19 @@ public static class InventoryMapping
         };
 
     public static TransactionItemDto ToTransactionItem(InventoryTransaction transaction)
+        => ToTransactionItem(transaction, null);
+
+    /// <summary>
+    /// INVENTORY 1.5.0 (WP-MVP1-NAMES1): the row with its <c>createdBy</c> — <c>userId</c> = the posting user, <c>name</c> = the entry of
+    /// <paramref name="names"/> for (posting correlation, posting user), else omitted. A posting without a user carries no <c>createdBy</c>.
+    /// </summary>
+    public static TransactionItemDto ToTransactionItem(InventoryTransaction transaction, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names)
         => new()
         {
+            CreatedBy = names is null || transaction.CreatedBy == Guid.Empty
+                ? null
+                : new TransactionCreatedByDto(transaction.CreatedBy.ToString("D"),
+                    names.TryGetValue((transaction.CorrelationId, transaction.CreatedBy), out var name) ? name : null),
             TransactionId = transaction.Id.ToString(),
             TransactionNumber = transaction.TransactionNumber,
             MovementType = WireNames.ToWire(transaction.MovementType),

@@ -209,6 +209,13 @@
                             <div class="backbone-preview-value mt-1"><time data-utc="@Model.PostingDate">@Dash(Model.PostingDate)</time></div>
                         </div></div>
                     </div>
+                    @* WP-MVP1-NAMES1 (BG-05 "Recorded by"): the name at the posting, else "unknown user" — the id only as the hover title *@
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-user"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ColRecordedBy"]</div>
+                            <div class="backbone-preview-value mt-1 text-break" data-recorded-by title="@(Model.RecordedByName is null ? Model.RecordedById : null)">@(Model.RecordedByName ?? Localizer["UnknownUser"].Value)</div>
+                        </div></div>
+                    </div>
                 </div>
             </section>
         </div>

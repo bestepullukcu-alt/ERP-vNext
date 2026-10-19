@@ -101,7 +101,6 @@ public sealed class RecallController : Controller
         var rows = panel["openCaseRows"] as JsonArray ?? new JsonArray();
         var labels = await LabelsAsync(rows, ct);
         Decorate(rows, labels);
-        await PeopleAsync(ct, rows);
         return Json(new JsonObject { ["panel"] = panel.DeepClone(), ["labelsAvailable"] = labels.Available });
     }
 
@@ -204,7 +203,6 @@ public sealed class RecallController : Controller
         var rows = Merge(root);
         var labels = await LabelsAsync(rows, ct);
         Decorate(rows, labels);
-        await PeopleAsync(ct, rows);
         var total = (long?)root["total"] ?? rows.Count;
         return Json(new JsonObject
         {
@@ -251,7 +249,6 @@ public sealed class RecallController : Controller
         if (!reply.IsSuccess) return Failed("case " + (part ?? "detail"), reply);
         var data = JsonNode.Parse(reply.Body) ?? new JsonObject();
         var labels = await CaseLabelsAsync(data, ct);
-        await PeopleAsync(ct, data);
         return Json(new JsonObject { ["data"] = data.DeepClone(), ["labelsAvailable"] = labels });
     }
 
@@ -542,7 +539,6 @@ public sealed class RecallController : Controller
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/drill-runs{query}", null, null, ct);
         if (!reply.IsSuccess) return Failed("listDrillRuns", reply);
         var page = JsonNode.Parse(reply.Body) ?? new JsonObject();
-        await PeopleAsync(ct, page);
         return Json(new JsonObject { ["data"] = page.DeepClone(), ["serverNowUtc"] = ServerNow(reply) });
     }
 
@@ -555,7 +551,6 @@ public sealed class RecallController : Controller
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/drill-runs/{runId:D}", null, null, ct);
         if (!reply.IsSuccess) return Failed("getDrillRun", reply);
         var run = JsonNode.Parse(reply.Body) ?? new JsonObject();
-        await PeopleAsync(ct, run);
         return Json(new JsonObject { ["data"] = run.DeepClone(), ["serverNowUtc"] = ServerNow(reply) });
     }
 
@@ -689,7 +684,6 @@ public sealed class RecallController : Controller
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/evidence/exports{query}", null, null, ct);
         if (!reply.IsSuccess) return Failed("listEvidenceExports", reply);
         var page = JsonNode.Parse(reply.Body) ?? new JsonObject();
-        await PeopleAsync(ct, page);
         return Json(new JsonObject { ["data"] = page.DeepClone() });
     }
 
@@ -723,7 +717,6 @@ public sealed class RecallController : Controller
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/settings", null, null, ct);
         if (!reply.IsSuccess) return Failed("getSettings", reply);
         var settings = JsonNode.Parse(reply.Body) ?? new JsonObject();
-        await PeopleAsync(ct, settings);
         return Json(new JsonObject { ["data"] = settings.DeepClone() });
     }
 
@@ -736,7 +729,6 @@ public sealed class RecallController : Controller
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/settings/history{query}", null, null, ct);
         if (!reply.IsSuccess) return Failed("getSettingsHistory", reply);
         var page = JsonNode.Parse(reply.Body) ?? new JsonObject();
-        await PeopleAsync(ct, page);
         return Json(new JsonObject { ["data"] = page.DeepClone() });
     }
 
@@ -884,7 +876,11 @@ public sealed class RecallController : Controller
         }
     }
 
-    /// <summary>Every <c>{ userId }</c> of the rows gets its display name (AuthService display-label, the caller's token) — the FU-0175-Q5-02 helper.</summary>
+    /// <summary>
+    /// The CURRENT account label (AuthService display-label, the caller's token) for an ASSIGNED person only — the drill plan owner (RECALL
+    /// 1.8.0, WP-MVP1-NAMES1). A person who DID an action comes named by the service with the name at the time of the action, or unnamed (the
+    /// page says "unknown user"): the Web never fills a live label into such a person, so the other recall reads no longer call this.
+    /// </summary>
     private async Task PeopleAsync(CancellationToken ct, params JsonNode?[] roots)
     {
         var ids = Diten.Web.Models.Quarantine.QuarantinePeople.UserIds(roots);

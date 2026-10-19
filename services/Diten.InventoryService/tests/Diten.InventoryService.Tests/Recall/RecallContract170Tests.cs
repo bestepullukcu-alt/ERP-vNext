@@ -35,7 +35,7 @@ public sealed class RecallContract170Tests
     public void The_1_7_0_change_is_additive_only()
     {
         var before = Load(FixtureV160Path);
-        var after = Load(ContractSchemas.RecallContractPath);
+        var after = Load(RecallContract180Tests.FixtureV170Path); // WP-MVP1-NAMES1: the 1.7.0 file as frozen (the live file is 1.8.0)
         Assert.Equal(("1.6.0", "1.7.0"), (before["info"]!["version"]!.GetValue<string>(), after["info"]!["version"]!.GetValue<string>()));
 
         string[] evidence = ["previewEvidence", "listEvidenceExports", "getEvidenceFile", "createEvidenceExport"];

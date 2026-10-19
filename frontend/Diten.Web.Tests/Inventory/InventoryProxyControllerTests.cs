@@ -136,6 +136,21 @@ public sealed class InventoryProxyControllerTests
         Assert.True(items[1].GetProperty("isAutomatic").GetBoolean());
     }
 
+    /// <summary>WP-MVP1-NAMES1 (INVENTORY 1.5.0): the history row carries the poster and the name recorded at the posting — the fake is the contract shape.</summary>
+    [Fact]
+    public async Task History_list_carries_the_poster_and_the_recorded_name()
+    {
+        const string poster = "aaaaaaaa-1111-4111-8111-000000000001";
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/transactions", 200, $$$"""{"items":[{"transactionId":"{{{Guid.NewGuid()}}}","transactionNumber":"INV-1","movementType":"COUNT_LOSS","sourceModule":"MOD-0173","itemId":"{{{Item}}}","quantity":"1.000","uomId":"EA","createdBy":{"userId":"{{{poster}}}","name":"Ayşe Demir"}},{"transactionId":"{{{Guid.NewGuid()}}}","transactionNumber":"INV-2","movementType":"GOODS_RECEIPT_PO","sourceModule":"MOD-0142","itemId":"{{{Item}}}","quantity":"5","uomId":"EA","createdBy":{"userId":"{{{poster}}}"}}],"page":1,"pageSize":50,"total":2}""");
+
+        var items = Body(await Movements(gateway, ReadAndCreate, ("start", "0"), ("length", "50")).List(CancellationToken.None)).GetProperty("data").GetProperty("items");
+
+        Assert.Equal((poster, "Ayşe Demir"), (items[0].GetProperty("createdById").GetString(), items[0].GetProperty("createdByName").GetString()));
+        Assert.Equal(poster, items[1].GetProperty("createdById").GetString());
+        Assert.True(!items[1].TryGetProperty("createdByName", out var none) || none.ValueKind == System.Text.Json.JsonValueKind.Null);
+    }
+
     [Fact]
     public async Task Reversal_posts_a_REVERSAL_of_the_original_with_one_idempotency_key()
     {

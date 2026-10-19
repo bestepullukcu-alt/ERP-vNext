@@ -1612,6 +1612,11 @@ now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU
 - **`fff2bfe0f` FU-WEB-CONTRACT-FAKES:** `QuarantinePeopleTests` sahtesi bağlandı — tutma ayrıntısı `QH-…` numarası ve eksik 18 üye, ayarlar `{}` sözleşmeye aykırıydı → tam HoldDetail (`KRN-2026-0001`) ve tam Settings.
 - **Paylaşılan kişi seçici:** `QuarantinePeople.SearchPath / Options` (MOD-0177 plan sorumlusu için eklendi; AuthService lookup, kiracı token'dan).
 
+**WP-MVP1-NAMES1 — hareket izinde kaydeden (agent result, pending CT, 2026-10-19).** Kanıt `docs/records/audits/2026-10/mvp1-names1-evidence-2026-10-19.md`.
+- **`72a36e273`:** tutma ve bloke ayrıntısının hareket izi `MovementLink.byUserName` (var olan isteğe bağlı QUARANTINE alanı; bugüne dek hiç dolmuyordu) = kayıt anındaki ad (merkezi denetim kuyruğu, aynı correlation + kişi + şirket), iz başına tek okuma. QUARANTINE sözleşmesi değişmedi.
+- **`f1f2d990a` Web:** ad yoksa hücre 7 dilde "Bilinmeyen kullanıcı" (`Quarantine.Details.Moves.UnknownUser`). O-ITEM-3 / FU-0173-UI-USER-01 kapandı (MOD-0173-FU01 notu).
+
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
