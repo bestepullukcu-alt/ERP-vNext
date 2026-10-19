@@ -79,3 +79,33 @@ KORU/YAPMA: Golden başlık, K-TABS iç / dış sekmeler, istisna listesi (FIX-b
 DOĞRULA: Web.Tests (xUnit + RunNode; vitest bu makinede çalışmaz): ağaç düğümleri API'den; ekle / kaldır akışı (vekil çağrıları); miras etiketleri ve "üstten al" (alan null gönderilir); kaydet onayı N temsilci; etkin kart kaynak + not; temsilci çipi; geçmiş kapsam süzgeci; 7 dil; UAS-001; tema guard; yardım U1 / U2 yeşil + 3 sabotaj (.bak + touch): (1) "üstten al" alanı boş string göndersin (null değil) → kırmızı; (2) kaynak etiketi kapsam adını değil kodu göstersin → kırmızı; (3) Kapsamı kaldır chord → enter → kırmızı. Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt (AYRI sekme; mockup C1 / C2 / ekran 7 ile yan yana; fleet kapalıysa kendi düzeneğin): ağaç, LE seçili form, BU seçili form, etkin kart, Arapça, koyu, telefon.
 Commit: "feat(web): WP-VW-W3L W3-WEB-e — visit evidence scope tree (tenant, legal entity, business unit), field-level inheritance, add / remove scope, effective rules and rep table with their source" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W3-BE-d E2 ACCEPTED (2026-10-19)
+Test dalına alındı: `ad254aef3` (ajan `4f3a3c5fe`), çakışmasız. 23 dosya.
+
+**Ne geldi:**
+- **Saklama:** katmanlar yeni koleksiyon `visit_evidence_policy_layers`'da: (TenantId, ScopeType, ScopeRef), aktif kapsam başına tekil kısmi indeks, sürümlü, arşivleme. Kiracı belgesi kendi koleksiyonunda aynı (indeks değişmedi, geri doldurma yok).
+- **Platform istemcisi:** `PlatformOrganizationSeatReader` (K-L8; tekil + toplu ≤ 100; kullanıcı token'ı; 3 sn + 1 yeniden deneme; her hata → null / platform-unavailable, çağırana fırlatmaz).
+- **İş birimi okuyucu:** K-L4.
+- **Çözümleyici:** BU > LE > tenant alan alan, istisna üstte, alan kaynağı; ScopeChain ziyaret başlangıç kaydında (`EvidenceScope`).
+- **API:** scopes listesi (değişen alan, son değişiklik, temsilci sayısı — koltuk toplu), kapsam GET / PUT (409) / DELETE (arşiv), geçmiş kapsam süzgeci, effective + roster zinciri (sayfa başına tek toplu Platform çağrısı).
+- **TerritoryPositionPolicy:** tam eşit ya da "-<rol>" son eki (en uzun rol kazanır).
+- **Denetim:** `IVisitEvidenceAuditPublisher`; varsayılan log, `Crm:Audit:Mode=http` ile `HttpCrmAuditPublisher` (SourceModule MOD-0155).
+- **Betik:** `scripts/rbac/grant_w3l_organization_seats_97c5.py` (dry-run, çalıştırılmadı).
+
+**Ajanın kararları (kabul):**
+- LE katmanı yoksa Platform çağrılmaz (not `no-layer`).
+- Ek not `no-business-unit`.
+- İstisna kaynağı eski biçiminde (`exception` + ExceptionId) — yanıt şekli bozulmasın diye.
+- Boş katman yazımı 400 (her şeyi devralmak isteyen kapsamı kaldırır).
+- `VwW3EBeCTests.CT1` sahte depoları genişletildi.
+
+**CT kontrolü:**
+- **Diff:** katman deposu kiracı + aktif + silinmemiş süzgeçli; ortak `HttpCrmAuditPublisher`'a yalnız yeni arayüz uygulaması eklendi; Platform / Web dokunulmadı.
+- **Testler (ajan):** yeni 18 test (L17 geçici mongod :27391); CRM 2911/1 (taban 2893/1, +18; tek kırmızı `PiiMasking`); mimari 125/13 = taban.
+- **CT sabotajı (K-L5):** `PlatformOrganizationSeatReader` ağ / zaman aşımı hatasını yakalamasın (`HttpRequestException` / `TaskCanceledException` süzgeçten çıkarıldı) → `L15_the_seat_client…unavailable_for_every_failure` **kırmızı**; md5 ile geri alındı.
+
+**Açık / dikkat:**
+- **AUD-001:** `UpsertVisitEvidencePolicyScopeCommand` ve `ArchiveVisitEvidencePolicyScopeCommand` tabanda zaten kırmızı olan teste "denetimsiz" olarak ekleniyor (CRM'deki tüm izler "aday"; yayıncıya bağlı komut da denetlenmiş sayılmıyor). Borç satırı eklenmedi → Faz 8.
+- **Yetki:** `platform.organization-seats.read` anahtarı PLT-ORG-SEAT gelince katalogda olur; yönetici rolüne verilmezse roster ve başka temsilcinin effective okumasında Platform 403 → platform-unavailable → LE katmanı atlanır (temsilcinin kendi ziyaret başlangıcında self izinli). Betik PLT-ORG-SEAT sonrası kullanıcı tarafından `--apply`.
+- **Gecikme:** LE katmanı varken Platform kapalıysa ziyaret başlangıcı en çok ~3 sn bekleyebilir.
