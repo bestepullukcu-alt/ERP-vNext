@@ -43,4 +43,6 @@
   <data name="RefusalStockNotEditable" xml:space="preserve"><value>This record's status does not allow stock behaviour changes.</value></data>
   <data name="RefusalStockFieldLocked" xml:space="preserve"><value>A filled value on an approved record cannot be changed here — it changes only through a correction. Lists only gain new rows.</value></data>
   <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Another Finished Good already uses this GTIN.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can approve the record you submitted. Ask your administrator to adjust the approvers; you can submit it again after that.</value></data>
 </root>

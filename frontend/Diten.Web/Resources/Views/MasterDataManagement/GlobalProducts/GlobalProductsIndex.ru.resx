@@ -15,4 +15,20 @@
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Этот продукт отправляется на утверждение. Его нельзя изменить, пока отправка не дойдёт до механизма утверждения.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>Черновик изменился во время отправки. Откройте его снова и отправьте текущую версию.</value></data>
   <data name="ErrorSubmitStuck" xml:space="preserve"><value>Отправка этого продукта застряла. Отправивший её сотрудник устраняет это, снова нажав «Отправить»; если это не помогает, это должен сделать администратор.</value></data>
+  <!-- MOD-0290-FU05: the Global Product brand (slice 3). -->
+  <data name="Brand" xml:space="preserve"><value>Бренд</value></data>
+  <data name="BrandNone" xml:space="preserve"><value>Без бренда</value></data>
+  <data name="BrandHelp" xml:space="preserve"><value>Необязательно. Показываются только активные бренды в пределах срока действия.</value></data>
+  <data name="ChangeBrand" xml:space="preserve"><value>Изменить бренд</value></data>
+  <data name="ChangeBrandConfirmation" xml:space="preserve"><value>Бренд этого утверждённого глобального продукта будет изменён. Изменение фиксируется в журнале аудита.</value></data>
+  <data name="ChangeBrandSuccess" xml:space="preserve"><value>Бренд изменён.</value></data>
+  <data name="BrandUnchanged" xml:space="preserve"><value>Выбранный бренд уже привязан; ничего не изменено.</value></data>
+  <data name="ErrorBrandNotFound" xml:space="preserve"><value>Выбранный бренд не найден. Выберите другой бренд.</value></data>
+  <data name="ErrorBrandArchived" xml:space="preserve"><value>Выбранный бренд архивирован и не может быть привязан. Выберите другой бренд.</value></data>
+  <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>Выбранный бренд неактивен или вне срока действия. Выберите другой бренд.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>Настройка утверждения для этого действия не завершена. Сообщите администратору.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>Запрос не дошёл до службы утверждения. Отправьте тот же запрос ещё раз.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>Утверждение сейчас изменяется. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Никто, кроме вас, не может утвердить отправленную вами запись. Попросите администратора изменить согласующих, после этого вы сможете отправить её снова.</value></data>
 </root>

@@ -34,7 +34,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         var withdraw = Assert.Single(items.Actions, action => action.ActionCode == "WITHDRAW_APPROVAL");
         Assert.Equal(("mdm.items.withdraw", "RowAction", false, true),
             (withdraw.PermissionKey, withdraw.ActionType, withdraw.IsDangerous, withdraw.IsRowAction));
-        Assert.Equal("1.2.0", Manifest.ModuleVersion);
+        // MOD-0290-FU05 slice 2: 1.2.0 → 1.3.0 (+ GLOBAL_PRODUCTS CHANGE_BRAND).
+        Assert.Equal("1.3.0", Manifest.ModuleVersion);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -103,6 +104,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.global-products.retire",
                 "mdm.global-products.submit",
                 "mdm.global-products.update",
+                // MOD-0290-FU05 slice 2: the approved product's brand change (CHANGE_BRAND).
+                "mdm.global-products.update-brand",
                 "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
@@ -143,7 +146,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(51, declared.Count);
+        // MOD-0290-FU05 slice 2: 51 → 52 (+ mdm.global-products.update-brand).
+        Assert.Equal(52, declared.Count);
         Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.brands.", StringComparison.Ordinal));
         Assert.All(declared, permission =>
         {
@@ -192,7 +196,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal(
-            ["ADD_NEW", "EDIT", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
+            ["ADD_NEW", "CHANGE_BRAND", "EDIT", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
             page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
         Assert.Equal(
             [
@@ -203,6 +207,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.global-products.retire",
                 "mdm.global-products.submit",
                 "mdm.global-products.update",
+                // MOD-0290-FU05 slice 2: the approved product's brand change (CHANGE_BRAND).
+                "mdm.global-products.update-brand",
                 "mdm.global-products.withdraw",
                 "mdm.product-identity.lifecycle-operations.recover"
             ],
@@ -210,6 +216,9 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "EDIT").IsRowAction);
         Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT").IsRowAction);
         Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "WITHDRAW_APPROVAL").IsRowAction);
+        var changeBrand = Assert.Single(page.Actions, action => action.ActionCode == "CHANGE_BRAND");
+        Assert.Equal(("mdm.global-products.update-brand", "RowAction", false, true),
+            (changeBrand.PermissionKey, changeBrand.ActionType, changeBrand.IsDangerous, changeBrand.IsRowAction));
         var correction = Assert.Single(page.Actions, action => action.ActionCode == "REQUEST_CORRECTION");
         Assert.True(correction.IsRowAction);
         Assert.False(correction.IsDangerous);

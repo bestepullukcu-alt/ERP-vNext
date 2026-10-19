@@ -248,6 +248,18 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
         return await Collection.Find(filter).AnyAsync(cancellationToken);
     }
 
+    /// <summary>MOD-0290-FU05 — one read for a Global Product page's brands, inside this tenant (TenantFilter).</summary>
+    public async Task<IReadOnlyList<Brand>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        return await Collection.Find(TenantFilter & Builders<Brand>.Filter.In(x => x.Id, ids.Distinct()))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Brand>> GetAllAsync(CancellationToken cancellationToken = default)
         => await Collection.Find(TenantFilter)
             .SortBy(x => x.BrandName)

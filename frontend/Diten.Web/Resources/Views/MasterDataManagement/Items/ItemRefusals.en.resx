@@ -24,4 +24,6 @@
   <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>Your session was not accepted by the approval service. Sign in again and repeat the action.</value></data>
   <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>The approval setup for this action is incomplete. Please inform your administrator.</value></data>
   <data name="RefusalApprovalResubmit" xml:space="preserve"><value>The request did not reach the approval service. Send the same request again.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. -->
+  <data name="RefusalApprovalNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can approve the record you submitted. Ask your administrator to adjust the approvers; you can submit it again after that.</value></data>
 </root>
