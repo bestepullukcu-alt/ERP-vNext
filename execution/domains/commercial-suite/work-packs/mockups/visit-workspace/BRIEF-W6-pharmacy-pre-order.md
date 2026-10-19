@@ -53,7 +53,12 @@
 7. **Eczacı imzası** sipariş belgesinin parçasıdır. Onaydan sonra sipariş değiştirilemez; değişiklik için iptal edilip yeni sipariş açılır.
 8. **Depoya iletim:** depo e-posta adresine PDF belgesi gider; eczaneye bir kopya. Ekranda "iletildi · tarih · alıcı" izi görünür.
    - Depo cevabını (teslim edildi / eksik) şimdilik elle işaretleme yeri olsun; otomatik entegrasyon yok.
-9. **Görünürlük:**
+9. **Ülke ve fiyat modu** (K-W10 e / f, kullanıcı 2026-10-19):
+   - Ön sipariş, şirketlerimizin (tüzel kişilik; RO şirketleri dahil) bulunduğu her ülkede açıktır. Temsilcinin şirketi, ülkesi ve para birimi sistemden gelir; temsilci seçmez.
+   - **Fiyatlı mod:** şirketin yürürlükte fiyat listesi varsa fiyat, MF, iskonto, toplam ve bütün kurallar gösterilir.
+   - **Adetli mod:** liste yoksa yalnız ürün, adet ve MF girilir. Fiyat ve toplam alanları görünmez; "Fiyatı depo uygular" notu çıkar. Kurallar MF ve adet üzerinden çalışır.
+   - Mockup A ekranının iki hâlini de çizsin. Örnek: Türkiye (TRY, fiyatlı) ve Kırgızistan RO (KGS, adetli). D ekranındaki fiyat listesinde "Satan şirket", "Ülke" ve "Para birimi" sütunları ile kademeler (depo fiyatı, eczacı alış, halka satış) görünsün.
+10. **Görünürlük:**
    - Temsilci kendi siparişlerini görür.
    - Yönetici ekibinin siparişlerini görür.
    - Satış operasyonu tümünü görür.
