@@ -7,8 +7,10 @@ using Diten.PlanningService.Application.Features.DemandPlanning.Cycles;
 using Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
 using Diten.PlanningService.Application.Features.DemandPlanning.ForecastRuns;
 using Diten.PlanningService.Application.Features.DemandPlanning.ManualDrafts;
+using Diten.PlanningService.Application.Features.Mrp;
 using Diten.PlanningService.Infrastructure.Features.DemandPlanning;
 using Diten.PlanningService.Persistence.Features.DemandPlanning;
+using Diten.PlanningService.Persistence.Features.Mrp;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -87,6 +89,10 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
 
         services.AddSingleton<DemandPlanningMongoContext>();
+        services.AddSingleton<ILeadTimeAuthority, UnavailableLeadTimeAuthority>();
+        services.AddSingleton<LeadTimeMongoContext>();
+        services.AddSingleton<ILeadTimeAuditAppender, MongoLeadTimeAuditAppender>();
+        services.AddSingleton<ILeadTimeMutationStore, LeadTimeMongoStore>();
         services.AddSingleton<ManualDraftMongoStore>();
         services.AddSingleton<IManualDraftStore>(sp => sp.GetRequiredService<ManualDraftMongoStore>());
         services.AddSingleton<IForecastDraftStore>(sp => sp.GetRequiredService<ManualDraftMongoStore>());

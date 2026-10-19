@@ -44,7 +44,7 @@ MOD-0189 `MRPRun`, `NetRequirement`, `ReplenishmentProposal` ve MRP istisnaları
 
 ## 5. Repo Scope
 
-Bu dar dilimin yazma kapsamı bu pack, main'e merge edilmiş `services/Diten.PlanningService/` içindeki yalnız MOD-0189'a ait `Features/Mrp` kodu ve odaklı testleri, ayrıca kendi servisinin audit defterindeki MOD-0189 satırlarıdır. Servis portu 5068'dir. MOD-0188 iç tipleri geliştirme bağımlılığı olamaz. HTTP/UI, Gateway ve merkezî contract değişiklikleri ayrı sahiplik ve onay gerektirir.
+Bu dar dilimin yazma kapsamı bu pack, main'e merge edilmiş `services/Diten.PlanningService/` içindeki yalnız MOD-0189'a ait `Features/Mrp` kodu ve odaklı testleri, `DemandPlanningServiceCollectionExtensions.cs` içindeki yalnız MOD-0189 bağımlılık kayıtları, kendi servisinin audit defterindeki MOD-0189 satırları ve `tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs` içindeki yalnız MOD-0189 c-yolu izi sabitlemesidir. Servis portu 5068'dir. MOD-0188 iç tipleri geliştirme bağımlılığı olamaz. HTTP/UI, Gateway ve merkezî contract değişiklikleri ayrı sahiplik ve onay gerektirir.
 
 ## 6. Protected Paths
 
