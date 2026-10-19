@@ -1,0 +1,12 @@
+İ5B-FIX-05 red first — this package's scripts/tests/test_sync_adapters_budget.py against the İ5B-FIX-04 sources
+(61f9cb25a69a30ccbf571aa4643709b3fe9dc6d9: AGENTS.md without the sentence, the manifest without its anchor, core rules
+read with fenced code), in a copy outside the repository.
+
+ran 26 tests, FAILED (failures=3, errors=2)
+    1  ERROR InstructionBudget.test_a_core_rule_only_inside_a_code_block_is_lost
+    1  ERROR InstructionBudget.test_the_module_request_rule_hidden_in_a_comment_or_removed_is_lost
+    1  FAIL InstructionBudget.test_an_unclosed_fence_in_the_core_hides_the_rules_after_it
+    1  FAIL InstructionBudget.test_the_generated_core_carries_the_rule
+    1  FAIL InstructionBudget.test_the_module_request_rule_is_a_required_core_text_once
+
+the 21 İ5B-FIX-04 tests green on the base sources (an ERROR is a test that could not find the sentence it moves)

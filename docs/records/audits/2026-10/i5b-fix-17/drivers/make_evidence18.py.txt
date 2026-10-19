@@ -1,0 +1,97 @@
+"""İ5B-FIX-17: the generated evidence texts from the raw outputs (no local paths).
+Usage: make_evidence18.py <scratch ctfix10> <İ5B-FIX-17 evidence dir>"""
+import hashlib, json, os, re, shutil, sys
+S, E = sys.argv[1:3]
+T = os.path.join(S, "i5b17")
+os.makedirs(os.path.join(E, "drivers"), exist_ok=True)
+
+
+def sha(p):
+    return hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def write(name, lines):
+    open(os.path.join(E, name), "w", encoding="utf-8").write("\n".join(l.rstrip() for l in lines) + "\n")
+
+
+def pairs(path):
+    return dict(reversed(l.split()) for l in open(path, encoding="utf-8") if l.strip())
+
+
+freeze = pairs(os.path.join(T, "i5b17-freeze-02.txt"))
+inputs = pairs(os.path.join(T, "red-inputs-01.txt"))
+text = open(os.path.join(T, "red-i5b17-pre.txt"), encoding="utf-8").read()
+fails = re.findall(r"^FAIL: (test_\w+) \(scripts\.tests\.\w+\.\w+\)(?: (\(.*\)))?$", text, re.M)
+NEW = "test_a_tag_ends_outside_quotes_and_a_close_needs_evidence"
+out = ["İ5B-FIX-17 red first — this package's final test file in the İ5B worktree while sync_adapters.py was still C15's",
+       "(eca57404d, İ5B-FIX-16), before the code was written; run by the AI session. The two files run (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in inputs.items()]
+out += [f"  the test equals the frozen one: {inputs['scripts/tests/test_sync_adapters_budget.py'] == freeze['scripts/tests/test_sync_adapters_budget.py']}", "",
+        re.search(r"^Ran .*$", text, re.M).group(0) + " · " + re.search(r"^(OK|FAILED).*$", text, re.M).group(0),
+        f"  every failure is in the new test {NEW}: {all(n == NEW for n, _ in fails)}; the 52 earlier tests pass", "", "failed cases:"]
+out += [f"  FAIL  {n} {sub}" for n, sub in fails]
+out += ["", "Read: on C15 the quote, indented-code, link-title, container and unreadable-link cases are 0 / 0 or refused without",
+        "'not verified'; Codex F2 is refused as a script never closed; the type-7 line with a quoted '>' is a false refusal. The",
+        "quoted '>'-only hidden case and the four harmless controls already pass on C15 and guard this package's own rules."]
+write("red-first.txt", out)
+
+runs = [("01", "harness17.py", "on the first frozen source 16a11a3a (with the indented-code check)"),
+        ("02", "harness17b.py", "on the final source 0e456b0f (the indented-code check removed as redundant)")]
+out = ["İ5B-FIX-17 guard removal — one guard undone at a time in ONE work copy outside the repository, restored before every",
+       "mutation (rsync from the İ5B-FIX-14 base, the two frozen files laid over it, checked by SHA-256); run by the AI session.",
+       "Each mutation: the file still parses; the named test fails without a crash; the control test",
+       "(test_a_dead_link_is_still_a_dead_link) passes. The guards run are this package's new ones (G-Z) and the İ5B-FIX-16",
+       "guards whose line lies in mask_html or unreadable_html (the code this package changed); the other İ5B-FIX-16 guards'",
+       "anchors are all still once in the final source and their code is untouched, so they are not run again.", ""]
+for run, driver, what in runs:
+    res = json.load(open(os.path.join(T, "guard", f"i5b17-guard-{run}.json"), encoding="utf-8"))
+    out += [f"run {run} — {what} (drivers/{driver}.txt): proven {sum(r.get('proven', False) for r in res)} of {len(res)}"]
+    for r in res:
+        out += [f"  {r['mutation']}", f"      tests: {', '.join(t.split('.')[-1] for t in r['tests'])} · named: {'RED' if r['red'] else 'green'} — {r['summary']}"
+                f" · control: {r['control_summary']} · proven: {r['proven']}"]
+    out.append("")
+out += ["Run 01 (24 of 25, kept as history): G-Z2 — the separate indented-code check — stayed green, because a closing tag",
+        "in indented code is also on a paragraph that starts indented two or more columns, which G-Z4's rule refuses. The",
+        "check was redundant and was removed; run 02 is on the final source: 24 of 24 (8 new, 16 affected earlier)."]
+write("guard-removal.txt", out)
+
+log = open(os.path.join(T, "i5b17-run.log"), encoding="utf-8").read()
+same_id = open(os.path.join(T, "i5b17-pre.txt"), "rb").read() == open(os.path.join(T, "i5b17-post.txt"), "rb").read()
+out = ["İ5B-FIX-17 — the narrow run, on the branch's two frozen files in the İ5B worktree (branch chore/agents/i5b-fix-17 on",
+       "eca57404d with this package's uncommitted changes). Not a full scripts/tests run, not a run on a combined candidate.", "",
+       "commands (from the worktree root):", "  python3 -B -m unittest -v scripts.tests.test_sync_adapters_budget",
+       "  python3 -B .antigravity/scripts/sync_adapters.py --check", "sources (SHA-256):"]
+out += [f"  {p:50s}{h}" for p, h in freeze.items()]
+out += ["result (from the full log):"] + ["  " + l for l in log.splitlines() if l.startswith(("### exit", "Ran ", "OK", "FAILED", "start ", "end ", "Python"))]
+out += [f"before = after (branch, status, the two SHA-256 — the identity file's first two lines are the branch name twice;"
+        f" HEAD was not printed there): {same_id}", f"full log SHA-256 {sha(os.path.join(T, 'i5b17-run.log'))} (kept outside the repository)", "",
+        "The real files, C15's reader against this one:"]
+out += ["  " + l for l in open(os.path.join(T, "real-data-02.txt"), encoding="utf-8").read().splitlines()]
+out += ["", "The two frozen sources: 16a11a3a (first) and 0e456b0f (final, the indented-code check removed). Their whole",
+        f"difference is drivers/16a11a3a-to-0e456b0f.diff.txt (SHA-256 {sha(os.path.join(T, '16a11a3a-to-0e456b0f.diff'))})."]
+write("checks.txt", out)
+
+before = json.load(open(os.path.join(S, "probe-i5b17-before-01.json"), encoding="utf-8"))
+after = json.load(open(os.path.join(S, "probe-i5b17-final-01.json"), encoding="utf-8"))
+out = ["İ5B-FIX-17 real CLI — 20 cases (the normal file and this package's negatives and positives), write and --check, each in",
+       "ONE work copy restored before every case; run by the AI session. Driver: drivers/probe_i5b17.py.txt — the tool laid over",
+       "İ5B-FIX-14's frozen base: C15's (before) and the final one (after). One AGENTS.md case passes 22000 bytes and prints WARN.",
+       "", f"{'case':96s} {'expected':9s} {'before':7s} after"]
+for b, a in zip(before["results"], after["results"]):
+    assert b["case"] == a["case"]
+    out.append(f"{b['case'][:96]:96s} {b['expected']:9s} {b['write_check']:7s} {a['write_check']}")
+tools = lambda d: sorted({r["tool_sha256"] for r in d["results"]})
+out += ["", f"before: tool {tools(before)}, {sum(r['ok'] for r in before['results'])} of {len(before['results'])} as expected",
+        f"after:  tool {tools(after)}, {sum(r['ok'] for r in after['results'])} of {len(after['results'])} as expected",
+        f"base unchanged before / after: {before['base_tree_sha256_before'] == before['base_tree_sha256_after']} / {after['base_tree_sha256_before'] == after['base_tree_sha256_after']}",
+        f"results: before {sha(os.path.join(S, 'probe-i5b17-before-01.json'))}, after {sha(os.path.join(S, 'probe-i5b17-final-01.json'))} (kept outside the repository)",
+        "An exit code alone does not show the reason; the unit test checks that each refusal says 'not verified'.",
+        "The case with link syntax the check cannot read ('[[[x]]](y ...)') exits 1 on C15 already, from DEADLINK — its link",
+        "target 'y' does not exist — not from the visibility reader; it is not a closed false pass. Its new not-verified",
+        "rule is shown by the unit test and by guard G-Z6 (a real assertion red, its control green)."]
+write("real-cli.txt", out)
+for src, dst in (("i5b17/guard/harness17.py", "harness17.py.txt"), ("i5b17/guard/harness17b.py", "harness17b.py.txt"),
+                 ("probe_i5b17.py", "probe_i5b17.py.txt"), ("make_evidence18.py", "make_evidence18.py.txt"),
+                 ("i5b17/16a11a3a-to-0e456b0f.diff", "16a11a3a-to-0e456b0f.diff.txt")):
+    shutil.copyfile(os.path.join(S, src), os.path.join(E, "drivers", dst))
+print("written", same_id)

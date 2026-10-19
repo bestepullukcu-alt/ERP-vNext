@@ -1,0 +1,175 @@
+İ5B-FIX-16 guard removal — one guard undone at a time in ONE work copy outside the repository, restored before every
+mutation (rsync from the İ5B-FIX-14 base, the two frozen files laid over it, checked by SHA-256); run by the AI session.
+Each mutation: the file still parses; the named test fails without a crash; the control test
+(test_a_dead_link_is_still_a_dead_link) passes. G-Y0 only: its red is a hang, measured with a 60 s limit, and its
+control is the same named test on the intact copy.
+
+run 01 — the 17 new guards, first run (drivers/harness16.py.txt): proven 15 of 17
+  G-Y1 the HTML reader reads no escape
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y2 a backtick run of any length closes a code span
+      tests: test_one_context_reader_for_comments_code_and_html, test_the_rule_line_readers_use_the_same_lexer · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y3 a code span never crosses a line end
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-Y4 a block quote or list line read as a plain continuation
+      tests: test_what_the_reader_cannot_read_is_said_to_be_not_verified · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y5 a heading, fence, thematic, setext or comment line does not end the paragraph
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y6 HTML block lines read as Markdown
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y7 fences read on the comment view, not where no HTML block masks a line
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y8 a raw-text element counts the tags inside it
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y9 in a paragraph a raw-text close shown in code counts
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y10 an inline comment closes past its paragraph
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y11 a comment left open in an HTML block is ignored
+      tests: test_one_context_reader_for_comments_code_and_html · named: green — OK · control: OK · proven: False
+  G-Y12 a line-start '<!--' read as an inline comment
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y13 an element never closed is not reported (nor masked)
+      tests: test_what_the_reader_cannot_read_is_said_to_be_not_verified · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y14 CORE-SPAN read on the core view (masked after what it cannot read)
+      tests: test_a_code_span_across_lines_in_the_core_is_refused · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y15 the rule-line lexer reads no escape
+      tests: test_the_rule_line_readers_use_the_same_lexer · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y16 the core's raw-HTML scan reads no escape
+      tests: test_the_same_reader_holds_for_agents_md_and_the_core · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y17 the comment scanner reads no escape
+      tests: test_one_context_reader_for_comments_code_and_html · named: green — OK · control: OK · proven: False
+
+run 02 — the 17 new guards and G-Y0 (the cursor hang, a time limit), on the final test (drivers/harness16b.py.txt): proven 18 of 18
+  G-Y0 the line cursor of scan_comments goes back to the start of a blank line (the interim b5afb5b1 bug: a hang)
+      tests: test_what_the_reader_cannot_read_is_said_to_be_not_verified · named: RED — the test did not finish in 60 s (a hang) · control: OK · proven: True
+  G-Y1 the HTML reader reads no escape
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y2 a backtick run of any length closes a code span
+      tests: test_one_context_reader_for_comments_code_and_html, test_the_rule_line_readers_use_the_same_lexer · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y3 a code span never crosses a line end
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-Y4 a block quote or list line read as a plain continuation
+      tests: test_what_the_reader_cannot_read_is_said_to_be_not_verified · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y5 a heading, fence, thematic, setext or comment line does not end the paragraph
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y6 HTML block lines read as Markdown
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y7 fences read on the comment view, not where no HTML block masks a line
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y8 a raw-text element counts the tags inside it
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-Y9 in a paragraph a raw-text close shown in code counts
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y10 an inline comment closes past its paragraph
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y11 a comment left open in an HTML block is ignored
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y12 a line-start '<!--' read as an inline comment
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y13 an element never closed is not reported (nor masked)
+      tests: test_what_the_reader_cannot_read_is_said_to_be_not_verified · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y14 CORE-SPAN read on the core view (masked after what it cannot read)
+      tests: test_a_code_span_across_lines_in_the_core_is_refused · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y15 the rule-line lexer reads no escape
+      tests: test_the_rule_line_readers_use_the_same_lexer · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-Y16 the core's raw-HTML scan reads no escape
+      tests: test_the_same_reader_holds_for_agents_md_and_the_core · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-Y17 the comment scanner reads no escape
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=1) · control: OK · proven: True
+
+run 03 — 21 earlier guards whose code this package rewrote, on their new anchors (drivers/harness16c.py.txt): proven 19 of 21
+  G-E1' an escaped '<' read as raw HTML (html_scan reads no escape)
+      applied: False (anchor found 0 times) · proven: False
+  G-E2' any backslash escapes '<' (parity ignored: one character skipped)
+      tests: test_an_escaped_less_than_or_an_autolink_is_not_raw_html · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-A1' an autolink read as raw HTML
+      tests: test_an_escaped_less_than_or_an_autolink_is_not_raw_html · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-C1' a fence open at core:start not reported
+      tests: test_the_core_start_marker_has_no_open_context · named: RED — FAILED (failures=5) · control: OK · proven: True
+  G-C2' an HTML comment not tracked (a fence line inside it opens a fence)
+      tests: test_the_core_start_marker_has_no_open_context · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-C4' inline code not read (a comment opener shown in it opens a comment)
+      tests: test_the_core_start_marker_has_no_open_context · named: green — OK · control: OK · proven: False
+  G-H1' the heading reader's text read with comments deleted before fences again
+      tests: test_the_heading_reader_reads_comments_and_fences_in_order · named: RED — FAILED (failures=6) · control: OK · proven: True
+  G-H3' a fence line inside a comment opens a fence (the comment's later lines classified)
+      tests: test_the_heading_reader_reads_comments_and_fences_in_order · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-H4' the core view read with comments deleted before fences again
+      tests: test_the_core_view_masks_comments_outside_fences · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X4' an HTML block ends with its first line
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X5' nesting of the same element not counted (a closing tag closes the outermost)
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X6' a non-void self-closed tag masks only itself
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-X7' an element left open stops at the paragraph's end
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=7) · control: OK · proven: True
+  G-X8' the raw-text rule: a nested '<script>' text counted as an opening
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X9' tags searched inside fences
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X10' tags searched inside inline code
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X11' a backslash-escaped '<' read as a tag
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X12' a tag the reader cannot read skipped as text
+      tests: test_an_html_opener_the_check_cannot_read_is_not_verified · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-X13' the 'not verified' reason not written
+      tests: test_an_html_opener_the_check_cannot_read_is_not_verified · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-X14' an autolink read as a tag the reader cannot read
+      tests: test_unrelated_or_shown_html_keeps_the_required_text · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-H1'' (İ5B-FIX-15's G-H1') the same deletion on İ5B-FIX-16's anchor, against the comment-order test
+      tests: test_the_heading_reader_reads_comments_and_fences_in_order · named: RED — FAILED (failures=6) · control: OK · proven: True
+
+run 04 — two entries of run 03 corrected (drivers/harness16d.py.txt): proven 2 of 2
+  G-E1' an escaped '<' read as raw HTML (html_scan reads no escape)
+      tests: test_an_escaped_less_than_or_an_autolink_is_not_raw_html · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-C4' inline code not read by the comment scanner (a '<!--' held by a code span opens a comment)
+      tests: test_one_context_reader_for_comments_code_and_html · named: RED — FAILED (failures=2) · control: OK · proven: True
+
+run 05 — the 19 earlier guards whose anchors are unchanged, on the final source (drivers/harness16e.py.txt): proven 19 of 19
+  G-M1 a link's destination and title counted
+      tests: test_a_required_text_only_in_link_metadata_is_lost · named: RED — FAILED (failures=7) · control: OK · proven: True
+  G-M2 a numbered reference definition counted
+      tests: test_a_required_text_only_in_link_metadata_is_lost · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-M3 an image's alt text counted
+      tests: test_a_required_text_only_in_link_metadata_is_lost · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-N1 a rule line with link syntax the check cannot read still proves its text
+      tests: test_link_syntax_the_check_cannot_read_is_not_verified · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-S1 the rule list's shape not checked
+      tests: test_the_rule_list_has_one_supported_shape · named: RED — FAILED (failures=10) · control: OK · proven: True
+  G-S2 a gap between numbered lines ignored
+      tests: test_the_rule_list_has_one_supported_shape · named: RED — FAILED (failures=7) · control: OK · proven: True
+  G-S4 the numbering 1..N not checked
+      tests: test_the_rule_list_has_one_supported_shape · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-I1 an image opener left on the line not searched
+      tests: test_a_reference_image_proves_no_required_text · named: RED — FAILED (failures=5) · control: OK · proven: True
+  G-I2 a known link masked whole (its visible label lost)
+      tests: test_a_reference_image_proves_no_required_text · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-I3 an escaped opener read as an opener
+      tests: test_a_reference_image_proves_no_required_text · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-P1 the line before rule 1 not judged when it is the marker line (the old block view)
+      tests: test_the_core_markers_keep_their_physical_context · named: RED — FAILED (failures=3) · control: OK · proven: True
+  G-P2 no blank physical line needed before rule 1
+      tests: test_the_core_markers_keep_their_physical_context, test_the_rule_list_has_one_supported_shape · named: RED — FAILED (failures=4) · control: OK · proven: True
+  G-B1 an escaped bang read as an image
+      tests: test_an_escaped_bang_before_a_link_is_text · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-C3 core:start not required alone on its line
+      tests: test_the_core_start_marker_has_no_open_context · named: RED — FAILED (failures=2) · control: OK · proven: True
+  G-H2 comments deleted and the pieces joined, not masked in place
+      tests: test_the_heading_reader_reads_comments_and_fences_in_order · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-H5 the comment diagnosis read with the old regex
+      tests: test_the_heading_reader_reads_comments_and_fences_in_order · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X1 raw HTML not masked in the heading reader's view
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=20) · control: OK · proven: True
+  G-X2 the HTML blocks ignored (elements only)
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=1) · control: OK · proven: True
+  G-X3 the elements ignored (HTML blocks only)
+      tests: test_raw_html_around_a_required_text_hides_it · named: RED — FAILED (failures=13) · control: OK · proven: True
+
+Counted once each: the 18 new guards (run 02), the 21 rewritten earlier guards (run 03, with G-E1' and G-C4' from
+run 04), the 19 unchanged earlier guards (run 05): 58 of 58 proven. Run 01 (15 of 17) and run 03's two misses are
+kept as history: G-Y11 and G-Y17 had no test that saw them (a message assertion and an escape positive were added);
+G-E1' was a harness mistake (its anchor not written raw, so it never applied); G-C4''s old case is now absorbed by
+the inline-comment rule, and the one-context test shows the same protection.

@@ -1,0 +1,67 @@
+"""İ5B-FIX-03 sabotage driver — runs ONLY in a scratch clone outside the repository (Codex test-isolation rule,
+2026-10-17); refuses a path inside the repository. Each sabotage puts one part of the fix back to its old behaviour,
+runs the named checks, restores the file byte-for-byte (sha-256 verified) in a finally block.
+
+    python3 -I -B sabotage_i5b.py <scratch clone> <out.json>"""
+import hashlib
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+WT, OUT = Path(sys.argv[1]).resolve(), Path(sys.argv[2])
+if str(WT).startswith("<REPO>"):
+    raise SystemExit("refused: sabotage runs only in a scratch clone outside the repository")
+F = ".antigravity/scripts/sync_adapters.py"
+TESTS = [sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_sync_adapters_budget.py"]
+CHECK = [sys.executable, "-B", F, "--check"]
+SAB = [
+    ("I1 link grammar back to the bare inline form",
+     '''    found = [m.group(1) for m in INLINE_LINK.finditer(text)] + [m.group(1) for m in REFERENCE_DEF.finditer(text)]''',
+     '''    found = re.findall(r"\\]\\(([^)\\s]+)\\)", text)'''),
+    ("I2 forbidden import check off", '''    wanted = {n.lower() for n in names}''', '''    return []'''),
+    ("I3 code spans and fences not skipped",
+     '''        out.append((n, re.sub(r"(`+)(?!`).*?(?<!`)\\1(?!`)", " ", line)))''', '''        out.append((n, line))'''),
+    ("I4 an unclosed fence hides the rest", '''        if close is None:
+            break''', '''        if close is None:
+            hidden.update(range(i, len(lines)))
+            break'''),
+    ("I5 a core rule inside an HTML comment counts", '''            visible = HTML_COMMENT.sub("", block)''', '''            visible = block'''),
+    ("I6 the write happens before the budget", '''    if budget_problems and not args.check:''', '''    if False:'''),
+    ("I7 OVERSIZE names Antigravity for every file",
+     '''            note = " (Antigravity truncates AGENTS.md at 24000)" if path == "AGENTS.md" else ""''',
+     '''            note = " (Antigravity truncates AGENTS.md at 24000)"'''),
+]
+
+
+def run(cmd):
+    r = subprocess.run(cmd, cwd=WT, capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    return {"cmd": " ".join(cmd[1:]), "exit": r.returncode,
+            "summary": [l for l in out.splitlines() if re.match(r"^(Ran |OK|FAILED|FAIL \d|OK \d)", l)],
+            "fails": sorted(set(re.findall(r"^(?:FAIL|ERROR): (.*)$", out, re.M)))}
+
+
+p = WT / F
+orig = p.read_bytes()
+before = hashlib.sha256(orig).hexdigest()
+results = [{"baseline": [run(TESTS), run(CHECK)], "source_sha256": before}]
+for name, old, new in SAB:
+    text = orig.decode("utf-8")
+    if text.count(old) != 1:
+        results.append({"sabotage": name, "applied": False, "anchor_count": text.count(old)})
+        print(name, "ANCHOR", text.count(old))
+        continue
+    try:
+        p.write_bytes(text.replace(old, new).encode("utf-8"))
+        res = [run(TESTS), run(CHECK)]
+    finally:
+        p.write_bytes(orig)
+    assert hashlib.sha256(p.read_bytes()).hexdigest() == before, name
+    results.append({"sabotage": name, "applied": True, "runs": res})
+    print(name)
+    for r in res:
+        print("   ", r["cmd"][-50:], "exit", r["exit"], r["summary"][-1:], "|", "; ".join(f[:80] for f in r["fails"][:6]))
+OUT.write_text(json.dumps(results, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+print("restored", before)

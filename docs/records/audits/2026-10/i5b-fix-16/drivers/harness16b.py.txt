@@ -1,0 +1,91 @@
+"""İ5B-FIX-16 guard removal, run 02 (harness16 + G-Y0, the cursor hang, with a targeted time limit: a timeout is its red, and the control is the same test on the intact copy): one ONE work copy, restored before every mutation (rsync from the base, then the two frozen
+files laid over it and checked by SHA-256) — no copy per mutation. Each guard is undone alone; the named test must fail
+(a crash or a hang is not counted) and a control test must pass in the same copy.
+Usage: python3 harness15.py <base src> <frozen sync_adapters.py> <frozen test> <freeze list> <work dir> <out.json>"""
+import hashlib, json, os, shutil, subprocess, sys, time
+BASE, TOOL, TEST, FREEZE, W, OUT = sys.argv[1:7]
+FROZEN = dict(reversed(l.split()) for l in open(FREEZE, encoding="utf-8") if l.strip())
+F = ".antigravity/scripts/sync_adapters.py"
+B = "scripts.tests.test_sync_adapters_budget.InstructionBudget."
+ONE, CORE, NV = B + "test_one_context_reader_for_comments_code_and_html", B + "test_the_same_reader_holds_for_agents_md_and_the_core", B + "test_what_the_reader_cannot_read_is_said_to_be_not_verified"
+RULE, SPAN = B + "test_the_rule_line_readers_use_the_same_lexer", B + "test_a_code_span_across_lines_in_the_core_is_refused"
+M = [
+ ("G-Y0 the line cursor of scan_comments goes back to the start of a blank line (the interim b5afb5b1 bug: a hang)",
+  "        if pos == end_of_line:                               # the line is read: go to the next one\n"
+  "            prev_blank, pos = not line.strip(), pos + 1\n"
+  "        else:                                                # a code span or comment ran into a later line\n"
+  "            prev_blank = False\n",
+  "        if pos >= end_of_line:\n"
+  "            n = bisect.bisect_right(offs, min(pos, size) - 1 if pos > 0 else 0) - 1\n"
+  "            prev_blank = not lines[n].strip()\n"
+  "            pos = offs[n] + len(lines[n]) + 1 if pos <= offs[n] + len(lines[n]) else pos\n",
+  [NV], {"timeout": 60, "control_intact": True}),
+ ("G-Y1 the HTML reader reads no escape", r'        if not block and c == "\\" and i + 1 < size and view[i + 1] in ESCAPABLE:', "        if False:", [ONE]),
+ ("G-Y2 a backtick run of any length closes a code span", "        if k == run:", "        if k >= 1:", [ONE, RULE]),
+ ("G-Y3 a code span never crosses a line end", "    unsure = None\n    while e >= 0:", "    return (e if e >= 0 else len(text)), None\n    unsure = None\n    while e >= 0:", [ONE]),
+ ("G-Y4 a block quote or list line read as a plain continuation", "        if unsure is None and CONTAINER_LINE.match(nxt):", "        if False:", [NV]),
+ ("G-Y5 a heading, fence, thematic, setext or comment line does not end the paragraph",
+  "        if (not nxt.strip() or ATX_HEADING.match(nxt) or opener(nxt) is not None or BREAK_LINE.match(nxt)",
+  "        if (not nxt.strip() or False and (ATX_HEADING.match(nxt) or opener(nxt) is not None or BREAK_LINE.match(nxt))", [ONE]),
+ ("G-Y6 HTML block lines read as Markdown", "        block = in_block[n]", "        block = False", [ONE]),
+ ("G-Y7 fences read on the comment view, not where no HTML block masks a line", "    block_view = view if block_view is None else block_view", "    block_view = view", [ONE]),
+ ("G-Y8 a raw-text element counts the tags inside it", '            elif name in ("script", "style", "textarea", "title"):', "            elif False:", [ONE]),
+ ("G-Y9 in a paragraph a raw-text close shown in code counts", '        if not block and c == "`":', '        if not block and raw is None and c == "`":', [ONE]),
+ ("G-Y10 an inline comment closes past its paragraph", "                if e >= 0 and e + 3 <= stop:", "                if e >= 0:", [ONE]),
+ ("G-Y11 a comment left open in an HTML block is ignored", "                return i\n            spans.append((i, e + 3))", "                return None\n            spans.append((i, e + 3))", [ONE]),
+ ("G-Y12 a line-start '<!--' read as an inline comment", '            if re.match(r"^ {0,3}<!--", line):              # a block comment', "            if False:", [ONE]),
+ ("G-Y13 an element never closed is not reported (nor masked)", "    if nv is None and (stack or raw):", "    if False:", [NV]),
+ ("G-Y14 CORE-SPAN read on the core view (masked after what it cannot read)", "            found, unread = code_spans(only_comments)", "            found, unread = code_spans(visible)", [SPAN]),
+ ("G-Y15 the rule-line lexer reads no escape", r'        if text[i] == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:' + "\n            i += 2", "        if False:\n            i += 2", [RULE]),
+ ("G-Y16 the core's raw-HTML scan reads no escape", r'        if text[i] == "\\" and i + 1 < len(text) and text[i + 1] in ESCAPABLE:' + "\n            out[i] = out[i + 1] = \" \"", "        if False:\n            out[i] = out[i + 1] = \" \"", [CORE]),
+ ("G-Y17 the comment scanner reads no escape", r'            if c == "\\" and pos + 1 < size and text[pos + 1] in ESCAPABLE:' + "\n                pos += 2", "            if False:\n                pos += 2", [ONE]),
+]
+CONTROL = B + "test_a_dead_link_is_still_a_dead_link"
+sha = lambda p: hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def restore():
+    subprocess.run(["rsync", "-a", "--delete", "--checksum", BASE + "/", W + "/"], check=True)
+    shutil.copyfile(TOOL, os.path.join(W, F)); shutil.copyfile(TEST, os.path.join(W, "scripts/tests/test_sync_adapters_budget.py"))
+    for p, h in FROZEN.items():
+        assert sha(os.path.join(W, p)) == h, p
+
+
+def run(names, limit=600):
+    try:
+        p = subprocess.run([sys.executable, "-B", "-m", "unittest", *names], cwd=W, capture_output=True, text=True, timeout=limit)
+    except subprocess.TimeoutExpired:
+        return "timeout", f"the test did not finish in {limit} s (a hang)"
+    crashed = "Traceback" in p.stderr and "AssertionError" not in p.stderr
+    return (99 if crashed else p.returncode), (p.stderr.strip().splitlines() or [""])[-1]
+
+
+os.makedirs(W, exist_ok=True)
+results = []
+for label, old, new, tests, *opt in M:
+    opt = opt[0] if opt else {}
+    restore()
+    f = os.path.join(W, F)
+    text = open(f, encoding="utf-8").read()
+    n = text.count(old)
+    if n != 1:
+        results.append({"mutation": label, "applied": False, "anchor_count": n}); print(label, "NOT APPLIED", n, flush=True); continue
+    open(f, "w", encoding="utf-8").write(text.replace(old, new))
+    parsed = subprocess.run([sys.executable, "-B", "-c", "import ast,sys; ast.parse(open(sys.argv[1]).read())", f]).returncode == 0
+    t0 = time.time()
+    if opt.get("timeout"):     # a hang is this guard's red: a targeted limit; the control is the same test on the intact copy
+        code, tail = run(tests, opt["timeout"])
+        restore()
+        ccode, ctail = run(tests)
+        proven = parsed and code == "timeout" and ccode == 0
+    else:
+        code, tail = run(tests)
+        ccode, ctail = run([CONTROL])
+        proven = parsed and code not in (0, 99, "timeout") and ccode == 0
+    results.append({"mutation": label, "applied": True, "file": F, "tests": tests, "exit": code, "red": code != 0, "summary": tail,
+                    "parsed": parsed, "control": (tests if opt.get("control_intact") else CONTROL), "control_exit": ccode, "control_summary": ctail, "proven": proven,
+                    "seconds": round(time.time() - t0)})
+    print(label, "PROVEN" if proven else "NOT PROVEN", "| named:", tail, "| control:", ctail, flush=True)
+restore()
+json.dump(results, open(OUT, "w"), ensure_ascii=False, indent=1)
+print("proven", sum(r.get("proven", False) for r in results), "of", len(results), "· the copy restored to the frozen sources")

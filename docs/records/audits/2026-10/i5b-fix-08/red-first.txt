@@ -1,0 +1,9 @@
+İ5B-FIX-08 red first — this package's test_sync_adapters_budget.py against the base files of 60878562a (İ5B-FIX-07:
+AGENTS.md, the generated core, adapters.json) in a copy outside the repository; run by the AI session.
+
+Ran 33 tests in 0.441s · FAILED (failures=15)
+
+   10  InstructionBudget.test_each_contract_part_removed_or_hidden_in_a_comment_is_lost
+    5  InstructionBudget.test_the_module_request_rule_is_a_required_core_text_once
+
+Every other test passed. The base core has none of the five contract parts, and the manifest does not require them.
