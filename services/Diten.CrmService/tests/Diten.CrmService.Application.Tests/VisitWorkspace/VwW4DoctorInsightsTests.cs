@@ -375,6 +375,81 @@ public sealed class VwW4DoctorInsightsTests
         Assert.Single(w.Availability.Items); // read, never copied
     }
 
+    // ═══ 6b · the effective window of what the profile reads from its owners (FU-W4-INSIGHT-WINDOW-TEST) ══════════════════
+    // DoctorInsightsHandlers.ProfileAsync keeps an availability only while (EffectiveFrom ≤ now ≤ EffectiveTo, a missing bound
+    // open), not deleted and not closed; a preference only while IsEffectiveAt(now), not deleted / archived, and only of the
+    // types preferred-channel / preferred-visit-window. "now" is the INJECTED clock: every time below comes from w.Clock
+    // (FU-W4-DOCINSIGHT-DATE — never the real clock). Each record carries its own mark (weekday + start, or value), and the
+    // assertions name the visible ones in order, so a record that should be hidden and shows up is caught by name.
+
+    [Fact]
+    public async Task The_profile_shows_only_the_availability_effective_at_the_injected_now_bounds_inclusive()
+    {
+        var w = new World();
+        var doctor = w.Doctor("Dr. Pencere", w.NodeA);
+        var now = w.Clock.GetUtcNow();
+        void Add(string weekday, string start, DateTimeOffset? from, DateTimeOffset? to, bool deleted = false, string status = AvailabilityLifecycle.Active)
+            => w.Availability.Items.Add(new ContactAvailability
+            {
+                TenantId = Tenant, ContactId = doctor, Weekday = weekday, StartTime = start, EndTime = "18:00", AvailabilityType = "visit",
+                EffectiveFrom = from, EffectiveTo = to, IsDeleted = deleted, Status = status, Preference = new VisitPreference()
+            });
+
+        Add("monday", "09:00", now.AddDays(-1), null);                                     // effective, open-ended → shown
+        Add("tuesday", "09:00", now.AddDays(1), null);                                     // starts tomorrow → hidden
+        Add("wednesday", "09:00", now.AddDays(-10), now.AddDays(-1));                      // ended yesterday → hidden
+        Add("thursday", "09:00", now, now);                                                // both bounds = now → shown (inclusive)
+        Add("friday", "09:00", null, null);                                                // no bounds → shown
+        Add("saturday", "09:00", now.AddDays(-1), null, deleted: true);                    // deleted → hidden
+        Add("sunday", "09:00", now.AddDays(-1), null, status: AvailabilityLifecycle.Inactive); // closed → hidden
+        Add("monday", "14:00", now.AddDays(-1), null, status: AvailabilityLifecycle.Archived);  // closed → hidden
+        Add("friday", "14:00", now.AddTicks(1), null);                                     // one tick after now → hidden
+        Add("friday", "16:00", null, now.AddTicks(-1));                                    // ended one tick before now → hidden
+
+        var read = (await w.Queries(Rep, DoctorInsightsPermissions.Read).Handle(new GetDoctorProfileQuery(doctor), default)).Data!;
+
+        Assert.Equal(new[] { "monday@09:00", "thursday@09:00", "friday@09:00" },
+            read.Availability.Select(a => a.Weekday + "@" + a.StartTime).ToArray());
+        Assert.Equal(10, w.Availability.Items.Count); // read, never copied or pruned
+    }
+
+    [Fact]
+    public async Task The_profile_shows_only_the_contact_preferences_of_its_two_types_effective_at_the_injected_now()
+    {
+        var w = new World();
+        var doctor = w.Doctor("Dr. Tercih", w.NodeA);
+        var now = w.Clock.GetUtcNow();
+        void Add(string type, string value, int priority, DateTimeOffset from, DateTimeOffset? to, bool archived = false, bool deleted = false)
+            => w.Preferences.Items.Add(new PreferenceRecord
+            {
+                TenantId = Tenant, SubjectType = ConsentSubjectType.Contact, SubjectId = doctor, Channel = "all", PreferenceType = type,
+                PreferenceValue = value, Priority = priority, EffectiveFrom = from, EffectiveTo = to, IsDeleted = deleted,
+                ArchivedAt = archived ? now.AddDays(-2) : null
+            });
+
+        Add(PreferenceType.PreferredChannel, "email", 1, now.AddDays(-1), null);                  // effective → shown
+        Add(PreferenceType.PreferredChannel, "sms", 2, now.AddDays(1), null);                     // starts tomorrow → hidden
+        Add(PreferenceType.PreferredChannel, "fax", 3, now.AddDays(-10), now.AddDays(-1));        // ended yesterday → hidden
+        Add(PreferenceType.PreferredChannel, "phone", 4, now, now);                               // both bounds = now → shown (inclusive)
+        Add(PreferenceType.PreferredChannel, "archived", 5, now.AddDays(-1), null, archived: true); // archived → hidden
+        Add(PreferenceType.PreferredChannel, "deleted", 6, now.AddDays(-1), null, deleted: true);   // deleted → hidden
+        Add(PreferenceType.PreferredChannel, "tick-late", 7, now.AddTicks(1), null);              // one tick after now → hidden
+        Add(PreferenceType.PreferredChannel, "tick-gone", 8, now.AddDays(-1), now.AddTicks(-1));  // ended one tick before now → hidden
+        Add(PreferenceType.DoNotContact, "true", 1, now.AddDays(-1), null);                       // effective, but not a profile type → hidden
+        Add(PreferenceType.DoNotVisit, "true", 1, now.AddDays(-1), null);                         // not a profile type → hidden
+        Add(PreferenceType.PreferredVisitWindow, "09:00-11:00", 1, now.AddDays(-1), null);        // effective, the second profile type → shown
+
+        var read = (await w.Queries(Rep, DoctorInsightsPermissions.Read).Handle(new GetDoctorProfileQuery(doctor), default)).Data!;
+
+        Assert.Equal(new[]
+            {
+                (PreferenceType.PreferredChannel, "email"), (PreferenceType.PreferredChannel, "phone"),
+                (PreferenceType.PreferredVisitWindow, "09:00-11:00")
+            },
+            read.Preferences.Select(p => (p.PreferenceType, p.PreferenceValue)).ToArray());
+        Assert.Equal(11, w.Preferences.Items.Count);
+    }
+
     // ═══ 7 · tenant isolation ════════════════════════════════════════════════════════════════════════════
 
     [Fact]
