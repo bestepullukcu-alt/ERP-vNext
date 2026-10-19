@@ -36,6 +36,10 @@ public sealed class HasAnyPermissionAttributeTests
         [HasPermission(B)]
         public IActionResult Both() => Ok();
 
+        [HttpGet("one")]
+        [HasPermission(A)]
+        public IActionResult One() => Ok();
+
         [HttpGet("either")]
         [HasAnyPermission(A, B)]
         public IActionResult Either() => Ok();
@@ -100,11 +104,17 @@ public sealed class HasAnyPermissionAttributeTests
     public async Task HasAnyPermission_anonymous_is_401()
         => Assert.Equal(401, Status(await RunAsync(nameof(Probe.Either), Context(false, null, A, B))));
 
+    // MVP-1 SYNC3: main's BL-521 FIX1 narrowed the actor rule (a partner passes only an endpoint that admits partners), so
+    // the pin is "the same decision as HasPermission" for each actor, not a fixed answer; platform_admin still passes.
     [Theory]
     [InlineData("platform_admin")]
     [InlineData("partner_admin")]
     public async Task HasAnyPermission_keeps_the_platform_actor_rule_of_HasPermission(string actor)
-        => Assert.Null(await RunAsync(nameof(Probe.Either), Context(true, actor)));
+    {
+        var single = Status(await RunAsync(nameof(Probe.One), Context(true, actor)));
+        Assert.Equal(single, Status(await RunAsync(nameof(Probe.Either), Context(true, actor))));
+        if (actor == "platform_admin") Assert.Null(single);
+    }
 
     [Fact]
     public void A_HasAnyPermission_needs_at_least_one_key()
