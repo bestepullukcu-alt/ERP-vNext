@@ -38,4 +38,5 @@
   <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
     <value>هذا المستخدم لم يعد موجودًا. حدّث الصفحة.</value>
   </data>
+  <data name="ErrorUserRoleRevokeLastSteward" xml:space="preserve"><value>إزالة هذا الدور لن تترك أي حساب نشط آخر يمكنه إضافة المستخدمين. امنح هذا الحق لمستخدم آخر أولاً.</value></data>
 </root>

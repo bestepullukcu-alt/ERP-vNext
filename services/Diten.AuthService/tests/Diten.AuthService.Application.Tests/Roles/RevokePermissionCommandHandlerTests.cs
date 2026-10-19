@@ -359,7 +359,8 @@ public sealed class RevokePermissionCommandHandlerTests
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
             new FakePermissionRepository(),
-            RoleAuditForTests.Over(new NoOpRbacAuditRecorder()));
+            RoleAuditForTests.Over(new NoOpRbacAuditRecorder()),
+            RecoveryGuardForTests.Permits());
     }
 
     // FEAT-AUDIT-RBAC — permission lookup is best-effort (for the audit key); audit itself asserted in

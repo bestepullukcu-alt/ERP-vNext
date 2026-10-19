@@ -14,15 +14,18 @@ public sealed class GetGlobalProductsHandler : IRequestHandler<GetGlobalProducts
 {
     private readonly IGlobalProductRepository _repository;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IBrandRepository? _brands;
 
     public GetGlobalProductsHandler(
         IGlobalProductRepository repository,
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IBrandRepository? brands = null)
     {
         _repository = repository;
+        _brands = brands;
         _scopeGuard = new ProductLegalEntityScopeConsumerGuard(
             rolloutStates,
             policies,
@@ -54,6 +57,7 @@ public sealed class GetGlobalProductsHandler : IRequestHandler<GetGlobalProducts
                 search,
                 request.LifecycleStatus,
                 sort,
+                request.BrandId,
                 cancellationToken),
             ProductLegalEntityScopeRolloutMode.Enforced => await _repository.GetEnforcedLegalEntityScopePageAsync(
                 request.PageNumber,
@@ -62,16 +66,26 @@ public sealed class GetGlobalProductsHandler : IRequestHandler<GetGlobalProducts
                 request.LifecycleStatus,
                 referenceableOnly: false,
                 sort,
+                request.BrandId,
                 scope.Context.EffectiveCandidateLegalEntityIds,
                 scope.Context.ServerNowUtc,
                 cancellationToken),
             _ => new GlobalProductPage([], 0)
         };
-        var items = page.Items.Select(x => new ProductItemSkuMasterModels.GlobalProductListItemDto(
-            x.Id,
-            x.CanonicalCode,
-            x.GlobalProductName,
-            x.LifecycleStatus)).ToList();
+        // MOD-0290-FU05 (Karar b): the page's brands in one read; code and name come from the brand, never the product.
+        var brands = await GlobalProductBrands.ReadAsync(_brands, page.Items.Select(x => x.BrandId), cancellationToken);
+        var items = page.Items.Select(x =>
+        {
+            var brand = GlobalProductBrands.Describe(x.BrandId, brands);
+            return new ProductItemSkuMasterModels.GlobalProductListItemDto(
+                x.Id,
+                x.CanonicalCode,
+                x.GlobalProductName,
+                x.LifecycleStatus,
+                brand.Id,
+                brand.Code,
+                brand.Name);
+        }).ToList();
 
         return Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.GlobalProductListItemDto>>.Success(
             new(items, request.PageNumber, request.PageSize, page.TotalCount));

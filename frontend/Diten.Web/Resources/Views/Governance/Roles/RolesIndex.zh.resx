@@ -61,4 +61,5 @@
   <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
     <value>系统角色无法编辑。</value>
   </data>
+  <data name="ErrorRoleDeleteLastSteward" xml:space="preserve"><value>删除此角色后，将没有其他可以添加用户的活动账户。请先将此权限授予其他用户。</value></data>
 </root>

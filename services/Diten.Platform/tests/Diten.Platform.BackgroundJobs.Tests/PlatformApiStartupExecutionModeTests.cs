@@ -251,8 +251,10 @@ public sealed class PlatformApiStartupExecutionModeTests
         }
         start.Environment["BackgroundJobs__Enabled"] = "false";
         start.Environment["BackgroundJobs__DashboardEnabled"] = "false";
+        // WP-PLT-MARKET-REFTENANT-01 — a reference tenant that is NOT the platform system tenant (MOD-0048-FU01 2026-10-15):
+        // the Development reference tenant.
         start.Environment["BusinessReferenceData__Provider__ReferenceTenantId"] =
-            "00000000-0000-0000-0000-000000000001";
+            "0b7d0048-0290-4000-8000-000000000001";
         // WP-CI-SERVICE-TESTS-05 (BL-646 item A): appsettings.Development.json provisions the MOD-0290 verified-GSKU
         // pilot for the dev database (fb4042c3b). This host's database is empty by design (the manifest assertion
         // below), so the pilot is "not provisioned here": every value of the section is cleared, which is the state

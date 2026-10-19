@@ -13,6 +13,7 @@
 | WP dağıtılabilir mi — isteğe bağlı erken kontrol (kapı aynı kararı kendisi verir) | `python3 scripts/ct_queue.py require <WP> --queue <kuyruk>` | 0 dağıtılabilir · 1 DUR |
 | Yeni iş: önce keşif, raporu commit et (taslaktan önce; yoksa Expected HEAD eskir) | `python3 .antigravity/scripts/verify_module_id.py . --discover "<ad>"` | 0 eşleşme yok · 3 inceleme gerekli · 2 tamamlanamadı |
 | Prompt taslağı (keşif commit'inden sonra) | `python3 scripts/prompt_gate.py draft --queue <kuyruk> --wp <WP>` | 0 taslak üretildi — dağıtım izni değil · 2 ölçülemez |
+| Paket onayı: kart, onay satırı ve kontrol (kural başlangıcından sonra değişen paket; satırı `execution/approvals/approvals.tsv`'ye siz eklersiniz) | `python3 scripts/pack_approval.py card <paket>` · `python3 scripts/pack_approval.py row <paket> --author <hesap> --approver <hesap> --risk HIGH --reason "<gerekçe>"` · `python3 scripts/pack_approval.py check <paket>` | check: 0 onaylı · 1 onaylı değil · 2 okunamadı |
 | Dağıtımdan önce (kayıt `main`'de değilse `--prepare`: yalnız hazırlık) | `python3 scripts/prompt_gate.py check <prompt> --queue <kuyruk>` | 0 geçti · 1 ENGEL · 2 tamamlanamadı |
 | Kuyruğa yazmadan hemen önce | `python3 scripts/ct_queue.py guard --queue <kuyruk>` | yazma öncesi özet; kilit değildir |
 | Başka bir MVP'ye soru | `python3 scripts/ct_route.py --kind delivery --module <MOD>` (sözleşme için `--kind contract`) | 0 tek hedef + gönderilmeyen taslak · 1 hedef yok · 2 ölçülemez |

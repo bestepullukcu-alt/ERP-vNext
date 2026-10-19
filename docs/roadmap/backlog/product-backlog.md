@@ -369,7 +369,9 @@ yalnız doğru başlığın altına gider.
 - **İlgili:** DCP-004 OD-WC-02 · §10.4 (A/B binding law) · §17 · WC-1 birleşik WorkItem kontratı.
 
 ### BL-019 — Blueprint canonical MOD-xxxx tahsisi (CAND-CAP-0006 mezuniyeti)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+
+- **Kapanış (2026-10-19):** Blueprint master 8.7 (Master 8.2 `Main_Reconciliation_v8_2`) `CAND-CAP-0006`'yı yeni bir modül açmadan `MOD-0024` Task & Checklist Engine'in Work Center sayfası / çalışma alanı olarak içine aldı. Kayıtta `CAND-CAP-0006` artık `MOD-0024`'ün eski takma adı; WC-1 / WC-1b paketleri `MOD-0024-WC1` / `MOD-0024-WC1B` oldu. Aşağıdaki metin kapanıştan önceki kayıttır.
 
 - **Nedir:** EA, Work Aggregation / Task Center (Görev Merkezi) için Blueprint'e canonical bir `MOD-xxxx` satırı açar ve `CAND-CAP-0006 → MOD-xxxx` deprecated-alias zincirini kaydeder (DCP-002). Blueprint'te bugün karşılık yok (doğrulandı); CAND-CAP-0006 geçici governance kimliğidir.
 - **Yapım tetikleyicisi:** Yetenek **WC-1'de kanıtlanınca** (şimdi değil). CAND-CAP-0006 WC-1 dilimi boyunca kalır; MOD-xxxx tahsisi ayrı bir EA kararıdır.
@@ -8637,6 +8639,8 @@ Yapılacak:
 
 Gelecek regresyon riski: 🟢 eski sayfa kullanılmıyor; risk yanlış sayfanın açılması ve bakım yükü.
 
+> **2026-10-16 (CT):** Parça 1 yapıldı — eski `/WorkCenter` kaldırıldı (dal `chore/web/bl-619-remove-old-workcenter`, 0e28f845e + e10370600). Parça 2 denetimi: dondurulmuş eski çerçevede 96 sayfa, hiçbir eylemin çizmediği 22 ölü sayfa, taklit veriyle 4 alan (Yönetim/Yönetişim, Teslimat yürütme, Envanter yönetişimi, Strateji kütüphanesi). **Sahip kararı (2026-10-16):** bunlar şimdi elle kaldırılmaz / tamamlanmaz; zamanı gelince kendi modülleriyle taşınacak. Kalan açık: `.antigravity/workflows/details-page-rules.md:59` silinen `WorkCenterTabs.cshtml`'i örnek gösteriyor (sahip onayı bekliyor).
+
 ---
 
 ### BL-618
@@ -10175,6 +10179,83 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-647
+
+**Referans kiracı herhangi bir müşteri kiracısı olarak ayarlanabiliyor — "özel olarak işaretlenmiş referans kiracı" kuralı yok (Market ve GSKU)**
+
+DURUM: AÇIK · SAHİP: CT (Platform / referans veri) · BULAN: WP-PLT-MARKET-REFTENANT-01 bağımsız incelemesi (2026-10-15) · KAYIT: 2026-10-15
+
+**Ne:** Market operasyonel yüklemesi referans kiracıyı ayardan okuyor (BL-645 düzeltmesi) ve yalnız boş / sistem kiracısı / GSKU tüketicisini
+reddediyor (DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility.cs:66-67). GSKU yolu yalnız "referans ≠ tüketici" diyor
+(DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility.cs:134-136), sistem kiracısını reddetmiyor. Ayar sıradan bir müşteri kiracısına
+verilirse referans verisi o kiracının kullanıcılarına ait olur. Bugün yalnız Development + açık ayar + aktör kilidiyle sınırlı.
+**Yapılacak (canlı K-INFRA-2'den ÖNCE):** referans kiracı yalnız işaretli bir kiracı olabilir (Platform kiracı kaydında bayrak ya da kayıt defteri); Market
+ve GSKU aynı kuralı paylaşır; Market tüketicisi (74355e70-…) ile karşılaştırma eklenir. Ayrıca not: ayar sırası nedeniyle gerçek sunucuda
+"ortam değişkeni = yapılandırma" kontrolü yalnız değişkenin varlığını kanıtlar (VerifiedMarketOperationalMode.cs:27-32) — mevcut desen.
+**Gelecek regresyon riski:** 🟡 (canlıda yanlış ayar → referans verisi müşteri kiracısına).
+
+---
+
+### BL-654
+
+**Platform yöneticileri için iki adımlı giriş (MFA) ve platform girişinde hesap kilitleme yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: CT kapsam ölçümü (2026-10-15) · KAYIT: 2026-10-19 · ERTELEME: sahip kararı 2026-10-19 ("backloga alalım, sonra yapalım")
+
+Ölçüldü (origin/main 3912d568b): kiracı kullanıcılarında e-posta kodlu ikinci adım var (`MfaChallenge`, `MfaChallengeService`, `/account/login/mfa`); platform girişinde (`PlatformLoginCommandHandler`) ikinci adım YOK ve başarısız denemeler sayılmıyor (hesap kilitleme yok; yalnız istek sınırı, BL-626). Taslak paket: CAND-CAP-0003-FU02 (2026-05, güncellenmeli). Karar taslağı (9 madde, öneriler): CT scratchpad `mfa-platform-admin-owner-decisions.md` — öneri: ilk sürüm e-posta kodu (hazır kod), bütün platform hesaplarına zorunlu, platform girişine hesap kilitleme; TOTP sonraki dilim. SAP / Oracle'da yönetici MFA'sı zorunlu tutulur.
+**Ne zaman:** canlıya ikinci bir platform yöneticisi (ya da partner yöneticisi) açılmadan ÖNCE.
+**Gelecek regresyon riski:** 🔴 (o koşul gerçekleşirse); bugün 🟡 — canlıda tek platform yöneticisi sahip.
+
+---
+
+### BL-649
+
+**Aralıklı Auth testleri: `ProductIdentityEntitlementReconciliationMongoTests` sınıfında her koşuda FARKLI bir senaryo `QUIESCENCE_DRIFT` ile düşüyor (1/2817)**
+
+DURUM: AÇIK · SAHİP: CT (Legacy; MDM ürün devralma hattı) · BULAN: AI001 (PR #147 service-tests ölçümü, 2026-10-16) · KAYIT: 2026-10-16
+
+Ölçüldü (test adı düzeyinde, Codex okuması; AI001 düzeltmesiyle): üç koşuda farklı senaryo, hepsinde `QUIESCENCE_DRIFT`, her seferinde 1/2817 — PR #147 (38902043508) `Commit_WhenAcknowledgementIsLostAfterRealCommit_ClassifiesByReadbackWithoutRetry(readbackUnavailable: False)`; main 22b056c8c (38718582375) `ReadReceipt_WhenEvidenceIsInvalid_FailsClosed(mutation: duplicate)`; main 6b8a62d5a (38622593452) `Commit_WhenWriterAppearsAfterSnapshot_CannotFinalizeSuccess(drift: versionless-protected-row)`; main 3912d568b'de geçmiş. Aynı sınıfta önceden var olan bir kararsızlığa işaret ediyor; kök neden DOĞRULANMADI.
+**Hipotezler (ölçülmedi):** (1) paralel yazım — DESTEKLENMİYOR: sınıf `DisposableAuthMongoReplicaSet` koleksiyonunda (`DisableParallelization = true`, :16) ve kendi replika setini açıyor (AI001 / Codex okuması). (2) yazımsız kayma — `EntitlementReconciliationOperationStore.ObserveQuiescenceAsync` (~:464) `$currentOp`'u allUsers + idleConnections + idleSessions + localOps ile okuyup kendi ApplicationName'i dışındaki istemcilerden parmak izi kuruyor; okumalar arasında boşta bağlantı / oturum kümesi değişirse (testin başka MongoClient'ları, sürücü havuzu) iz yazım olmadan kayabilir. Ürün bekçisinin reddi doğru davranış; düzeltme önce ölçümle, test tarafında. Önceki iz: `docs/records/audits/2026-09/product-five-cross-branch-delivery-audit-2026-09-29.md:944`, `:969` ("değiştirilmemiş tekil tekrar geçti", istemci-sessizlik / test yaşam döngüsü teşhisi sürüyordu).
+**Yapılacak:** testin sessizlik (quiescence) koşulunun hangi eşzamanlı yazımla kaydığını ölçmek; düzeltme testin kendi bekleme sözleşmesinde (ürün kuralı gevşetilmez); düzeltilene kadar CI'da bu testin kırmızısı "bilinen aralıklı" olarak adıyla anılır, toplu yeniden deneme yok.
+**Gelecek regresyon riski:** 🟡 (aralıklı kırmızı gerçek gerilemeyi gizleyebilir).
+
+---
+
+### BL-648
+
+**Auth DataSeeder tek bir 97c5 kullanıcısına (e-postayla) HER ortamda rol veriyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-AUTH-ADMIN-BOOTSTRAP-01 güvenlik incelemesi (2026-10-15) · KAYIT: 2026-10-15
+
+**Ne:** `DataSeeder` dev tenant-97c5'teki sabit bir kullanıcıya, e-posta ile bulup, BRD / CRM izinleri veriyor (DataSeeder.cs ~:1741, :1822, :1900, :1975,
+:2069 — admin-bootstrap dalındaki satırlar). Ortam kapısı yok: o kiracı ve kullanıcı bir canlı / test ortamında varsa açılışta yeniden rol alır.
+Yönetici tohumu işinden önce de vardı; o iş hesap tohumlarını kapattı, bu rol tohumlarını değil.
+**Yapılacak:** bu hibeler DevAccountSeed'e (Development + açık ayar) taşınır ya da tamamen kalkar; test: Production açılışında bu kullanıcının rolleri değişmez.
+**Gelecek regresyon riski:** 🟡
+
+---
+
+### BL-646
+
+**service-tests iş akışının ilk tam CI koşusu (PR #144): kırmızıların çoğu CI ortamı — Mongo yolu değişkeni, RabbitMQ, Prism, Linux yolları**
+
+DURUM: KAPANDI (PR #148, WP-CI-SERVICE-TESTS-05, main'de) · SAHİP: CT (CI) · BULAN: PR #144 CI (2026-10-14, b7ba78de7) · KAYIT: 2026-10-14
+
+Ölçüldü (GitHub check-runs + iş günlükleri): 24 işin 16'sı yeşil.
+- platform-app 337 kırmızı: 325'i `AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED` — CI `DITEN_FU02_MONGOD_PATH` (ya da replika ayarı) vermiyor; 2 `DirectoryNotFound`
+  (Linux büyük/küçük harf ya da yol); `InternalESignActionsController.Register` iç izin listesi (main'in kendi kırmızısı, e-imza sahibine bildirildi);
+  2 `PlatformAdministratorSeedMeasurementTests` NotExecuted ("Skipped = 0" adımı).
+- platform-eventing: RabbitMQ 120 sn'de hazır olmadı (`RABBITMQ_NOT_READY`), test koşmadı.
+- inventory-tests: 16 `PrismConsumedContractSmokeTests` (Prism CI'da çalışmıyor; yerelde de aynı 16).
+- platform-bgjobs 1 (sağlık kontrolü zamanlaması), mdm-api 1 NotExecuted (`ProductMasterContractFixtureTests` SOURCE.txt), auth-acceptance-host 3
+  (`LoginPeerVerificationTests` Linux'ta süreç doğrulama / BrokenPipe).
+- phase1 ×2: main'in bilinen 7 mimari kırmızısı.
+**Yapılacak:** iş akışına doğru mongod değişkenleri; RabbitMQ başlatma bekleme / servis konteyneri; Prism kurulumunun doğrulanması; Linux yol düzeltmeleri;
+NotExecuted testler ya gerçek koşar ya adlı izin listesinde; her adım için CI'da yeşil kanıt.
+**Gelecek regresyon riski:** 🟡 (CI kırmızıyken gerçek gerileme gürültüde kaybolur).
+
+---
+
 ### BL-645
 
 **Dev referans kiracısı iki yerde farklı: Pazar (market) operasyonel yüklemesi hattın kilidiyle `0000…0001` istiyor, main'in dev ayarı `0b7d0048-…` diyor — CRM'in yerel Pazar betiği reddediliyor**
@@ -10479,3 +10560,40 @@ DURUM: ERTELENDİ · SAHİP: MOD-0187 pack yazarı (kanıt yükleme gibi üç i�
 **Ölçüm komutu:**
 
     grep -n -E 'evidence upload|carrier picker|approved amount history|FUxx' docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md
+
+### BL-655
+
+**MOD-0043 / MOD-0044 / MOD-0046 — Master 8.7'nin eski anlam eşlemesi ile depodaki takip işleri farklı**
+
+DURUM: ERTELENDİ · SAHİP: Enterprise Architect / sahip · KARAR: sahip, 2026-10-19 ("gerek yok, backlog") · KAYIT: 2026-10-19
+
+**Ne:** Blueprint 8.7 `Legacy_ID_Migration_Map` bu üç eski proje kimliğinin anlamını başka yerlere taşıyor: `MOD-0043` → `MOD-0013` + `MOD-0014`
+(yönetişim, çalışan modül değil); `MOD-0044` → nesneye göre `MOD-0009` / `MOD-0360` / `MOD-0361`; `MOD-0046` → Platform Administration çalışma
+alanı + `MOD-0286`. Depo ise bunları aktif takip işleri `MOD-0009-FU01` / `-FU02` / `-FU03`'e bağlıyor (kayıt satırlarında "DIVERGENCE" notu var).
+**Neden ertelendi:** yürüyen işleri yeniden bağlamak paketleri, bağlantıları ve kabul kayıtlarını değiştirir; Master'a uymak mı, depodaki eşlemeyi
+korumak mı bir karar işidir, teknik değil.
+**Yapım tetikleyicisi:** Enterprise Architect ya da sahibin kararı; ya da Blueprint sahibinin eşlemeyi depodaki takip işlerine göre güncellemesi.
+**Gelecek regresyon riski:** 🟢 — kimlik aracı iki eşlemeyi de kabul ediyor; risk yalnız raporlarda iki farklı sahiplik görünmesi.
+
+**Ölçüm komutu:**
+
+    grep -nE '^\| MOD-004[346] \|' execution/registries/module-id-registry.md
+
+### BL-656
+
+**Dev_Readiness aktarımı (CT-DRA-01 §2) — kanıt kaydı olmadığı için ertelendi**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-19 ("önce onay sistemi") · KAYIT: 2026-10-19
+
+**Ne:** Blueprint 8.7 `Dev_Readiness` sayfası için depodan tek yönlü öneri tablosu (önerilen aşama, gerekçe, eksik kanıt,
+kanıt bağlantıları). Sözleşme hazır: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §2 (v2, Codex'in iki
+koşullu görüşü işlendi).
+**Neden ertelendi:** main'de REP-001 v2 kabul kaydı yok (0, ölçüldü 2026-10-19 `01f1080fd`); araç bugün boş tablo üretirdi.
+Eski kayıtlardan aşama çıkarmak, sözleşmenin yasakladığı kanıtsız aşama olur.
+**Yapım tetikleyicisi:** ilk REP-001 v2 modül kaydı (`completion: Module Done`) main'e girince. D1 (Owner kaynağı) o gün
+`execution/approvals/approvers.tsv` ile çözülür; D4 (`verified_at`) aynı işte okuyucuyla birlikte eklenir.
+**Gelecek regresyon riski:** 🟢 — Excel bu arada "Not Started" gösterir; kanıt olmadığı için bu doğru.
+
+**Ölçüm komutu:**
+
+    git grep -l '^format: rep-001-v2' -- docs/records | wc -l

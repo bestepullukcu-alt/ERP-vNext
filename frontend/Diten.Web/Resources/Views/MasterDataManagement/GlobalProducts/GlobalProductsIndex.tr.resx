@@ -15,4 +15,20 @@
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Bu ürün onaya gönderiliyor. Gönderim onay motoruna ulaşana kadar düzenlenemez.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>Taslak, gönderilirken değişti. Yeniden açın ve güncel sürümü gönderin.</value></data>
   <data name="ErrorSubmitStuck" xml:space="preserve"><value>Bu ürünün bir gönderimi takılı kaldı. Gönderen kişi Gönder'e yeniden basarak çözer; bu çözmezse bir yönetici çözmelidir.</value></data>
+  <!-- MOD-0290-FU05: the Global Product brand (slice 3). -->
+  <data name="Brand" xml:space="preserve"><value>Marka</value></data>
+  <data name="BrandNone" xml:space="preserve"><value>Marka yok</value></data>
+  <data name="BrandHelp" xml:space="preserve"><value>İsteğe bağlı. Yalnız aktif ve geçerlilik süresi içindeki markalar listelenir.</value></data>
+  <data name="ChangeBrand" xml:space="preserve"><value>Markayı Değiştir</value></data>
+  <data name="ChangeBrandConfirmation" xml:space="preserve"><value>Onaylı bu Global Ürünün markası değişecek. Değişiklik denetim izine kaydedilir.</value></data>
+  <data name="ChangeBrandSuccess" xml:space="preserve"><value>Marka değiştirildi.</value></data>
+  <data name="BrandUnchanged" xml:space="preserve"><value>Seçilen marka zaten bağlı; değişiklik yapılmadı.</value></data>
+  <data name="ErrorBrandNotFound" xml:space="preserve"><value>Seçilen marka bulunamadı. Başka bir marka seçin.</value></data>
+  <data name="ErrorBrandArchived" xml:space="preserve"><value>Seçilen marka arşivlenmiş; bağlanamaz. Başka bir marka seçin.</value></data>
+  <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>Seçilen marka aktif değil ya da geçerlilik süresinin dışında. Başka bir marka seçin.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>Bu işlemin onay ayarları tamamlanmamış. Lütfen yöneticinize bildirin.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>İstek onay servisine ulaşmadı. Aynı isteği yeniden gönderin.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>Onay şu anda değişiyor. Birazdan yeniden deneyin.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Gönderdiğiniz kaydı sizden başka onaylayabilecek kimse yok. Onaycıları düzenlemesi için yöneticinize başvurun; ardından kaydı yeniden gönderebilirsiniz.</value></data>
 </root>

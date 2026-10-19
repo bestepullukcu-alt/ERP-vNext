@@ -506,6 +506,16 @@ Bir modulun **gerceklesme durumu degistiginde** (frontend eklendi, test eklendi,
 
 ---
 
+### Sürüme bağlı onay (CT-APR-01, 2026-10-19)
+
+- `execution/approvals/POLICY-START.md`'nin main'e girdiği commit'ten sonra değişen bir paket, dağıtımdan önce
+  `execution/approvals/approvals.tsv`'de geçerli bir onay satırı ister. Onay paketin tamamının SHA-256'sına bağlıdır;
+  paket değişince düşer. Komutlar: `scripts/pack_approval.py card | row | check`.
+- Risk gerekçeyle beyan edilir, araç yalnız yükseltir. İlk onay ve izin, güvenlik, kiracı, şema/taşıma, gateway, korunan
+  yol, ürün kodu yolu ya da entegrasyona dokunan değişiklik yüksek risktir. Yüksek riskli işi onaylayıcı listesinde
+  `high: evet` olan ve paketi yazmamış biri onaylar.
+- Eski onaylar geriye dönük düşmez. Ayrıntı ve güven sınırı: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §3.
+
 ## 17. Authority Rule
 
 Yetki hiyerarsisi:

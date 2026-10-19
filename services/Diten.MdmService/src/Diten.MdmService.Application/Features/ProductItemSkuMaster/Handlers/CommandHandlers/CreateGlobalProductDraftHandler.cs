@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.BrandProductContract;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
@@ -18,17 +19,23 @@ public sealed class CreateGlobalProductDraftHandler
     private readonly IGlobalProductRepository _globalProducts;
     private readonly ITenantContext _tenantContext;
     private readonly IProductIdentityActorContext _actorContext;
+    private readonly IBrandRepository? _brands;
+    private readonly TimeProvider _clock;
 
     public CreateGlobalProductDraftHandler(
         ICodeReservationRepository reservations,
         IGlobalProductRepository globalProducts,
         ITenantContext tenantContext,
-        IProductIdentityActorContext actorContext)
+        IProductIdentityActorContext actorContext,
+        IBrandRepository? brands = null,
+        TimeProvider? clock = null)
     {
         _reservations = reservations;
         _globalProducts = globalProducts;
         _tenantContext = tenantContext;
         _actorContext = actorContext;
+        _brands = brands;
+        _clock = clock ?? TimeProvider.System;
     }
 
     public async Task<Response<ProductItemSkuMasterModels.GlobalProductDraftDto>> Handle(
@@ -50,6 +57,25 @@ public sealed class CreateGlobalProductDraftHandler
                     "GLOBAL_PRODUCT_NAME_DUPLICATE",
                     409);
             }
+        }
+
+        // MOD-0290-FU05: the brand is checked before the code reservation is consumed — a refused brand burns nothing.
+        // CT decision (slice 1 §7.3): a repeat of a create that already wrote its product is not a new link — the link
+        // rule is skipped (the brand may have been archived since) and the repository compares the brand id instead
+        // (the same brand repeats the first answer, another brand is CODE_RESERVATION_MISMATCH).
+        Domain.Entities.Brand? brand = null;
+        var alreadyCreated = command.BrandId is not null
+                             && await _globalProducts.GetByReservationIdAsync(command.ReservationId, cancellationToken) is not null;
+        if (command.BrandId is { } brandId && !alreadyCreated)
+        {
+            var link = await GlobalProductBrands.ResolveLinkAsync(_brands, brandId, _clock.GetUtcNow(), cancellationToken);
+            if (link.Refusal is { } refusal)
+            {
+                return BrandProductFailures.Fail<ProductItemSkuMasterModels.GlobalProductDraftDto>(
+                    refusal.ReasonCode, refusal.Message, refusal.StatusCode);
+            }
+
+            brand = link.Brand;
         }
 
         var requestedIdentityId = Guid.NewGuid();
@@ -81,12 +107,18 @@ public sealed class CreateGlobalProductDraftHandler
             identityId,
             command.IdempotencyKey,
             visibleName,
-            normalizedName);
+            normalizedName,
+            command.BrandId);
         GlobalProductCreateResult createResult;
 
         try
         {
             createResult = await _globalProducts.CreateDraftAsync(globalProduct, cancellationToken);
+            if (alreadyCreated && createResult.GlobalProduct?.BrandId is { } repeatedBrand)
+            {
+                brand = (await GlobalProductBrands.ReadAsync(_brands, [repeatedBrand], cancellationToken))
+                    .GetValueOrDefault(repeatedBrand);
+            }
         }
         catch (Exception)
         {
@@ -146,7 +178,8 @@ public sealed class CreateGlobalProductDraftHandler
                     BuildDto(
                         createResult.GlobalProduct,
                         CodeReservationBindingState.Confirmed,
-                        bindingReconciliationRequired: false),
+                        bindingReconciliationRequired: false,
+                        brand),
                     201);
             }
 
@@ -156,7 +189,8 @@ public sealed class CreateGlobalProductDraftHandler
                     BuildDto(
                         createResult.GlobalProduct,
                         CodeReservationBindingState.PendingIdentityWrite,
-                        bindingReconciliationRequired: true),
+                        bindingReconciliationRequired: true,
+                        brand),
                     202);
             }
 
@@ -169,14 +203,16 @@ public sealed class CreateGlobalProductDraftHandler
             BuildDto(
                 createResult.GlobalProduct,
                 CodeReservationBindingState.Confirmed,
-                bindingReconciliationRequired: false),
+                bindingReconciliationRequired: false,
+                brand),
             201);
     }
 
     private static ProductItemSkuMasterModels.GlobalProductDraftDto BuildDto(
         GlobalProduct created,
         CodeReservationBindingState bindingState,
-        bool bindingReconciliationRequired)
+        bool bindingReconciliationRequired,
+        Domain.Entities.Brand? brand)
         => new(
             created.Id,
             created.CanonicalCode,
@@ -185,17 +221,26 @@ public sealed class CreateGlobalProductDraftHandler
             created.LifecycleStatus,
             created.Version,
             bindingState,
-            bindingReconciliationRequired);
+            bindingReconciliationRequired,
+            created.BrandId,
+            created.BrandId is not null && created.BrandId == brand?.Id ? brand.BrandCode : null,
+            created.BrandId is not null && created.BrandId == brand?.Id ? brand.BrandName : null);
 
     private GlobalProduct BuildGlobalProduct(
         CodeReservation reservation,
         Guid identityId,
         string commandId,
         string visibleName,
-        string normalizedName)
+        string normalizedName,
+        Guid? brandId)
     {
         var timestamp = DateTimeOffset.UtcNow;
         var evidence = $"{_tenantContext.TenantId:N}|{identityId:N}|{reservation.Id:N}|{reservation.ReservedCode}|DRAFT";
+        // MOD-0290-FU05: the brand the draft is created with is one of the intent's facts (unchanged evidence without one).
+        if (brandId is { } linkedBrand)
+        {
+            evidence += $"|BRAND:{linkedBrand:N}";
+        }
         var intent = new LocalAuditIntent
         {
             IntentId = Guid.NewGuid(),
@@ -228,6 +273,7 @@ public sealed class CreateGlobalProductDraftHandler
             GlobalProductNameNormalized = normalizedName,
             CodeReservationId = reservation.Id,
             LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+            BrandId = brandId,
             Version = 0,
             AuditIntents = [intent]
         };
