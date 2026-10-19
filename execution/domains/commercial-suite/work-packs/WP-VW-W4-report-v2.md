@@ -1123,3 +1123,14 @@ KORU/YAPMA: testlerin anlattığı kural ve beklentiler aynı kalır (yalnız za
 DOĞRULA: (a) düzeltilen test bugün yeşil; (b) saatten bağımsızlık kanıtı — testi farklı "bugün"lerde koştur (ör. sistem saatini değiştirmeden: World.Clock'u geçici olarak 2026-10-13 ve 2027-03-01 yapıp ikisinde de yeşil) ve raporla; (c) tarama listesi (dosya · satır · düzeltildi / yalnız raporlandı) + 1 sabotaj (.bak + touch): satır 362'yi tekrar DateTimeOffset.UtcNow.AddDays(-1) yap ve World.Clock'u 2026-10-13'te bırak → kırmızı (bugünün tarihiyle). CRM Application tam takım (-o repo içi), taban karşılaştırması (taban: bu testin kırmızı olduğu bilinen 2 kırmızı — VisitPlanningFix2…shared_pattern -o artefaktı ve bu test).
 Commit: "test(crm): FU-W4-DOCINSIGHT-DATE — doctor insight test data takes its times from the pinned test clock (a real-time EffectiveFrom fell after the pinned now and hid the preference); same mix fixed across the visit test family" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — FU-W4-DOCINSIGHT-DATE E2 ACCEPTED (2026-10-19)
+Test dalına alındı: `f6cae237f` (ajan `0785004a3`), çakışmasız.
+- **Değişiklik:** `VwW4DoctorInsightsTests` satır 362 / 367 `EffectiveFrom = w.Clock.GetUtcNow().AddDays(-1)`; dosyada gerçek saat kalmadı. Ürün koduna ve assertion'lara dokunulmadı.
+- **Ajan:** sınıf 39/39 (saat 2026-10-13 ve 2027-03-01); sabotaj (362 gerçek saat) kırmızı; CRM Application 2891/1 (yalnız `-o` artefaktı `VisitPlanningFix2…shared_pattern`), taban 2889/3.
+- **Tarama:** ziyaret ailesinde başka karışım yok (işleyiciler saat almıyor, test de gerçek saat kullanıyor → tutarlı). Claims / KnowledgePath yalnız raporlandı.
+- **CT sabotajları → TEST EKSİĞİ bulundu:**
+  - (1) `DoctorInsightsHandlers.cs:168` müsaitlik `EffectiveFrom <= now` kaldırıldı → DoctorInsight + VwW4 95/95 **yeşil kaldı**.
+  - (2) satır 174 tercih `IsEffectiveAt(now)` kaldırıldı → 95/95 **yeşil kaldı**.
+  - Yani "henüz başlamamış (ya da süresi dolmuş) müsaitlik / tercih doktor profilinde görünmez" kuralı testsiz. Eski test bu kurala saat hatası yüzünden tesadüfen çarpıyordu.
+  - → **FU-W4-INSIGHT-WINDOW-TEST:** gelecek tarihli ve süresi dolmuş müsaitlik + tercih kayıtları profilde görünmez (sabit saatle). Her iki sabotaj bu testle kırmızı olmalı.
