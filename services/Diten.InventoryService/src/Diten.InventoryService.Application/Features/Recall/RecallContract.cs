@@ -31,6 +31,12 @@ public static class RecallContract
     public const string SettingsUpdateAction = "recall.settings.update";
 
     public const string DefaultMeaningCode = "APPROVE";
+
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN1 (FU-0177-SWEEP-01): the error code a recall quarantine REQUEST carries when the sweeper stopped retrying it — a stored
+    /// value of the request, not an HTTP answer (so not a RECALL x-error-code of the contract).
+    /// </summary>
+    public const string QuarantineRetryLimit = "RECALL_QUARANTINE_RETRY_LIMIT";
     public const string DefaultVisualMode = "savedAccepted";
 
     // AUD-001 (pack §8.12) — the R1 events.

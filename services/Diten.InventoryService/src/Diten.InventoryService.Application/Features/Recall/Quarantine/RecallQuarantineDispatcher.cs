@@ -127,7 +127,7 @@ public sealed class RecallQuarantineDispatcher
     }
 
     /// <summary>The error code of a request the sweeper stopped retrying (FU-0177-SWEEP-01).</summary>
-    public const string RetryLimitReached = "RECALL_QUARANTINE_RETRY_LIMIT";
+    public const string RetryLimitReached = RecallContract.QuarantineRetryLimit;
 
     private readonly Dictionary<Guid, string> _deferrals = [];
 
