@@ -11,6 +11,8 @@ public sealed record GetGlobalProductsQuery : IRequest<Response<ProductItemSkuMa
     public int PageSize { get; init; } = 20;
     public string? Search { get; init; }
     public ProductIdentityLifecycleStatus? LifecycleStatus { get; init; }
+    // MOD-0290-FU05: only this brand's products (the stored link; null = every product).
+    public Guid? BrandId { get; init; }
 
     // WP-MDM-GP-LIST-01: server-side order. Only the whitelisted stored fields; anything else is a 400
     // (GetGlobalProductsValidator). No orderBy = the register's order before sorting existed.

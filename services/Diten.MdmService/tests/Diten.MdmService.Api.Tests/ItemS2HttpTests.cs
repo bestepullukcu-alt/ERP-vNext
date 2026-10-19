@@ -26,7 +26,7 @@ namespace Diten.MdmService.Api.Tests;
 /// Deactivated, the activation gate (R-04), path b for every new write, the field-level item write and the orphan IT- repair.
 /// </summary>
 [Collection(ItemActivationHttpCollection.Name)]
-public sealed class ItemS2HttpTests(ItemActivationHttpHost host) : IAsyncLifetime
+public sealed partial class ItemS2HttpTests(ItemActivationHttpHost host) : IAsyncLifetime
 {
     private static readonly string[] All =
     [

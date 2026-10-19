@@ -18,7 +18,12 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     /// </summary>
     public const string SelfDeactivateCode = UserErrorCodes.DeactivateSelf;
 
+    /// <summary>WP-USERS-ROLES-SMALL-02 — switching off the last ACTIVE account that can create users (shared rule:
+    /// <see cref="IRecoveryCapabilityGuard"/>). The edit form's Active switch answers with the same code.</summary>
+    public const string LastStewardCode = UserErrorCodes.DeactivateLastSteward;
+
     private readonly IUserRepository _userRepository;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserAccessor _currentUser;
@@ -33,9 +38,11 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
         ICurrentUserAccessor currentUser,
         IUserAuditRecorder audit,
         IUserQuotaClient quota,
+        IRecoveryCapabilityGuard recoveryGuard,
         ILogger<SetUserActiveStatusCommandHandler> logger)
     {
         _userRepository = userRepository;
+        _recoveryGuard = recoveryGuard;
         _refreshTokenRepository = refreshTokenRepository;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
@@ -65,6 +72,15 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
         }
 
         var wasActive = user.IsActive;
+
+        // WP-USERS-ROLES-SMALL-02 — only a REAL active → inactive switch can take the capability away: disabling an account
+        // that is already off stays the 204 it was, and switching one ON is never refused here. Before anything is written.
+        if (!request.IsActive && wasActive
+            && await _recoveryGuard.WouldLeaveNoActiveHolderAsync(
+                _tenantContext.TenantId, new RecoveryCapabilityChange.DeactivateUser(user.Id), ct))
+        {
+            return LastStewardRefusal<NoContent>();
+        }
 
         // BL-459 F1 — an Inactive account holds no seat (users.max counts Active + Invited), so switching one back on
         // takes a seat and asks first; otherwise deactivate → add someone → reactivate would walk past the plan's limit.
@@ -112,4 +128,10 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
         }
         return Response<NoContent>.Success(204);
     }
+
+    /// <summary>The refusal both deactivation doors (this kebab and the edit form) answer with.</summary>
+    internal static Response<T> LastStewardRefusal<T>() => Response<T>.Fail(
+        "Deactivating this account would leave the tenant with no active account that can create users.",
+        [new ResponseError(LastStewardCode)],
+        409);
 }

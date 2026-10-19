@@ -76,4 +76,5 @@
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>姓氏过长，请缩短后重试。</value></data>
   <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>电子邮件地址过长，请缩短后重试。</value></data>
   <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>还有一个问题；请检查您输入的内容后重试。</value></data>
+  <data name="ErrorUserDeactivateLastSteward" xml:space="preserve"><value>停用此账户后，将没有其他可以添加用户的活动账户。请先将此权限授予其他用户。</value></data>
 </root>

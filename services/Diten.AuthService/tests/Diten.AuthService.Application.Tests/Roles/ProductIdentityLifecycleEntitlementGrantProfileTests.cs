@@ -8,7 +8,19 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     [Fact]
     public void Profile_owns_exact_lifecycle_non_human_and_cross_module_descriptor_sets()
     {
-        Assert.Equal(18, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
+        // MOD-0290-FU05 slice 2: 18 → 19 (+ mdm.global-products.update-brand), the exact set below.
+        Assert.Equal(19, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
+        Assert.Equal(
+            [
+                "mdm.finished-goods.retire", "mdm.finished-goods.submit",
+                "mdm.global-products.request-correction", "mdm.global-products.request-retirement",
+                "mdm.global-products.retire", "mdm.global-products.submit", "mdm.global-products.update",
+                "mdm.global-products.update-brand", "mdm.global-products.withdraw",
+                "mdm.gskus.request-correction", "mdm.gskus.request-retirement", "mdm.gskus.retire", "mdm.gskus.submit",
+                "mdm.gskus.update", "mdm.gskus.withdraw",
+                "mdm.lskus.request-retirement", "mdm.lskus.retire", "mdm.lskus.submit", "mdm.lskus.withdraw"
+            ],
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Order(StringComparer.Ordinal));
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdate,
             ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw,
@@ -37,12 +49,13 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     }
 
     [Fact]
-    public void Dedicated_roles_have_exact_twenty_seven_eleven_matrices()
+    public void Dedicated_roles_have_exact_twenty_one_seven_nine_matrices()
     {
         var roles = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
             .ToDictionary(role => role.RoleName, StringComparer.Ordinal);
 
-        Assert.Equal(20, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
+        // MOD-0290-FU05 slice 2: 20 → 21 — update-brand goes to the Steward (the draft edit's role) and to no other role.
+        Assert.Equal(21, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
         Assert.Equal(7, roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys.Count);
         // FG FIX1 item 9 (CT decision B): 10 → 9 — direct FG retire is a system action, no longer the steward's.
         Assert.Equal(9, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
@@ -61,6 +74,13 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdate, steward);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw, steward);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestCorrection, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand, steward);
+        Assert.Equal([ProductIdentityLifecycleEntitlementGrantProfile.StewardRole],
+            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
+                .Where(role => role.PermissionKeys.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand))
+                .Select(role => role.RoleName));
+        Assert.True(ProductIdentityLifecycleEntitlementGrantProfile.IsDedicatedOnlyPermissionKey(
+            ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand));
         var retirement = roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys;
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw, retirement);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement, retirement);
@@ -291,7 +311,10 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     {
         var keys = DeclaredKeys();
         Assert.DoesNotContain(keys, ProductIdentityLifecycleEntitlementGrantProfile.IsBrandModuleKey);
-        Assert.Equal(27, keys.Count);
+        // MOD-0290-FU05 slice 2: 27 → 28 (+ mdm.global-products.update-brand — not a Brand-module key).
+        Assert.Equal(28, keys.Count);
+        Assert.False(ProductIdentityLifecycleEntitlementGrantProfile.IsBrandModuleKey(
+            ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdateBrand));
 
         ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys);
         var declared = ProductCatalog();

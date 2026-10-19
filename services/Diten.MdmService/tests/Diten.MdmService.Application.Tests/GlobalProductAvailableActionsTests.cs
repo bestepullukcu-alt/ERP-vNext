@@ -44,6 +44,27 @@ public sealed class GlobalProductAvailableActionsTests
         Assert.DoesNotContain("REQUEST_RETIREMENT", Actions(product, new Actor()));
     }
 
+    // MOD-0290-FU05 slice 2: CHANGE_BRAND only for an approved product, with no lifecycle operation, to the update-brand key.
+    [Theory]
+    [InlineData(ProductIdentityLifecycleStatus.Draft)]
+    [InlineData(ProductIdentityLifecycleStatus.PendingIdentityApproval)]
+    [InlineData(ProductIdentityLifecycleStatus.Retired)]
+    public void Change_brand_is_server_projected_only_for_approved_unbound_authorized_product(ProductIdentityLifecycleStatus notApproved)
+    {
+        var product = new GlobalProduct { LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved };
+        var authorized = new Actor(ProductIdentityLifecyclePermissions.GlobalProductUpdateBrand);
+
+        Assert.Contains("CHANGE_BRAND", Actions(product, authorized));
+        Assert.DoesNotContain("CHANGE_BRAND", Actions(product, new Actor("mdm.global-products.update")));
+
+        product.ActiveLifecycleOperation = new(GlobalProductLifecycleOperationKind.Correction, Guid.NewGuid(), 0);
+        Assert.DoesNotContain("CHANGE_BRAND", Actions(product, authorized));
+
+        product.ActiveLifecycleOperation = null;
+        product.LifecycleStatus = notApproved;
+        Assert.DoesNotContain("CHANGE_BRAND", Actions(product, authorized));
+    }
+
     private static IReadOnlyList<string> Actions(
         GlobalProduct product,
         IProductIdentityLifecycleActorContext actor) =>

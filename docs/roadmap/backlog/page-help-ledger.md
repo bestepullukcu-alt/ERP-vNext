@@ -2,7 +2,7 @@
 
 Kural: `.antigravity/rules/page-help-and-keyboard.md` (UXH-001) · Ölçen test: `frontend/Diten.Web/tests/page-help-ledger.test.js`
 
-**Tavan (yalnız azalır): kiracı 246 · platform 18 · frozen 99**
+**Tavan (yalnız azalır): kiracı 246 · platform 18 · frozen 81**
 
 - Tavan artışı (CT kararı): kiracı 236 → 246 — WP-LANE-UX-GUARDS-01, bir kerelik: main-sync (2026-10-12) ile gelen 11 Tedarik Zinciri / CRM sayfası (sahipleri satırlarında, metin sahiplerinin işi) eklendi; CRM'in kaldırdığı CONTENTSCOPES (WP-SB-1R) çıktı. Kural gevşemedi: bundan sonraki her yeni satır yine kırmızı.
 
@@ -385,21 +385,3 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | `Shared/Components/DynamicModuleMenu/Default.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
 | `Shared/Components/TenantBrand/Default.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
 | `Shared/Components/TenantFavicon/Default.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/AllWorkScopeBar.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/AllWorkTab.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/InboxList.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/InboxRow.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/InboxTab.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskActionsPanel.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskActivity.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskDependencies.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskDescription.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskHeader.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskMetadataSummary.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskSecondaryMeta.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskStepBar.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskSubtasks.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/TaskTimeEntry.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/WorkCenterHeader.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/WorkCenterPage.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |
-| `WorkCenter/WorkCenterTabs.cshtml` | `_Layout` (FROZEN) — yardım gösterilemez |

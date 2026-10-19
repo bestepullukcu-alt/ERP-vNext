@@ -44,6 +44,8 @@ const SENTENCE_OF = {
   USER_DELETE_SELF: "ErrorUserDeleteSelf",
   USER_DELETE_LAST_STEWARD: "ErrorUserDeleteLastSteward",
   USER_DEACTIVATE_SELF: "ErrorUserDeactivateSelf",
+  // WP-USERS-ROLES-SMALL-02 — switching off the last ACTIVE account that can add users (kebab and edit form alike).
+  USER_DEACTIVATE_LAST_STEWARD: "ErrorUserDeactivateLastSteward",
   USER_NOT_FOUND: "ErrorUserNotFound",
   USER_ACCOUNT_KIND_INVALID: "ErrorUserAccountKindInvalid",
   USER_SETUP_ALREADY_COMPLETED: "ErrorUserSetupAlreadyCompleted",

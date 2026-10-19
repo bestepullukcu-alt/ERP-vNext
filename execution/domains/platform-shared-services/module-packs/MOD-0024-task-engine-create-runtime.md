@@ -111,8 +111,8 @@ Queries: `GetTaskItemList`, `GetTaskItemById`, `GetTaskAssignmentPositionLookup`
 `POST /{id}/accept` · `POST /{id}/claim` · `POST /{id}/release` · `POST /{id}/plan` · `POST /{id}/start` ·
 `POST /{id}/complete` · `POST /{id}/cancel` · `GET /lookups/assignable-positions`.
 
-> `api/tasks` is **already taken** by the frozen legacy `TaskApiController`
-> (`frontend/Diten.Web/Controllers/TaskApiController.cs:8`, serves legacy `/WorkCenter`). The new backend uses
+> `api/tasks` was held by the legacy `TaskApiController` — BL-619 ile kaldırıldı (2026-10-16); gerçek uçlar Platform
+> `TasksController` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs`). The new backend uses
 > `api/v1/tasks`; the frontend proxy uses `/Tasks/api/*` — **never** `api/tasks`.
 
 ## 4. Entity Fields
@@ -223,7 +223,7 @@ Contract limits are hard bounds: ≤ **6** sections, ≤ **8** fields/section, �
 - `Features/Workflow/**`, `Entities/Workflow/**` — MOD-0023 consumed via its endpoints/contracts only.
 - `services/Diten.AuthService/**` — permission seed/grant is a separate MOD-0018 task (§14).
 - `gateway/Diten.ApiGateway/**/ocelot.json` — integration-agent only (§15).
-- Legacy `/WorkCenter`: `Controllers/WorkCenterController.cs`, `Controllers/TaskApiController.cs`,
+- Legacy `/WorkCenter`: `Controllers/WorkCenterController.cs`, `Controllers/TaskApiController.cs` (BL-619 ile kaldırıldı (2026-10-16); gerçek uçlar Platform TasksController),
   `Views/WorkCenter/**`, `wwwroot/assets/js/WorkCenter/**`, `Services/WorkCenter/**`, `Models/WorkCenter/**` — frozen.
 - `Views/Shared/_Layout.cshtml`; `Entities/Organization/**` (MOD-0288 owns writes);
   `services/Diten.Platform.Common/**`; `.antigravity/**`; Blueprint `.xlsx`; `execution/registries/**`;
@@ -536,7 +536,7 @@ proxy returns 503 — a release blocker.
 ### Governance
 - [x] `MOD-0024` identity unchanged; no new ID; preflight exit 0.
 - [x] `Features/WorkAggregation` unchanged except one DI line; MOD-0023 files, AuthService, `ocelot.json`,
-  legacy `/WorkCenter` (incl. `TaskApiController`), `_Layout.cshtml`, Blueprint, registry/portfolio untouched.
+  legacy `/WorkCenter` (incl. `TaskApiController`), `_Layout.cshtml`, Blueprint, registry/portfolio untouched. (2026-10-16 BL-619 ile kaldırıldı)
 - [x] DEV-1 (quick-create offcanvas under Compact) explicitly approved at sign-off.
 - [x] No `api/tasks` reuse; backend is `api/v1/tasks`, proxy is `/Tasks/api/*`.
 
