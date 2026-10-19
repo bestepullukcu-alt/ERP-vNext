@@ -22,6 +22,13 @@
  *                                        code off / optional / required, device verification off / flag; "block" is
  *                                        shown but NOT selectable until W3E-ATTEST), the reps' effective values
  *   errorKey(response)                   a CRM refusal → the user's text key (never a raw code)
+ *   WP-VW-W3L (W3-WEB-e) — the scope layers (tenant › legal entity › business unit, K-L1 / K-L2):
+ *   scopeId / parseSource / scopeNames / scopeName / sourceOf   a scope's id; a field source → its label (the NAME)
+ *   scopeTree / scopeMeta / addOptions   the tree of GET scopes, its meta line, what "add" may still offer
+ *   layerOverrides / layerEffective / layerChanges / layerFieldErrors / layerPutBody   a layer's form: null = from above;
+ *                                        the PUT body carries EVERY field (an inherited one as null, never "")
+ *   chainNotes / appliedLayers / historyScope / historyQuery   why a layer was skipped for a rep, the rep's applied
+ *                                        layers, a history row's scope and the history filter
  */
 (function (root, factory) {
     'use strict';
@@ -335,9 +342,14 @@
     const historyRows = items => (items || []).map(h => ({
         at: h.at, by: h.by, kind: h.kind,
         field: h.field || null,
-        from: h.kind === 'created' ? null : h.oldValue,
-        to: h.kind === 'created' ? null : h.newValue
+        from: h.kind === 'created' || h.kind === 'archived' ? null : h.oldValue,
+        to: h.kind === 'created' || h.kind === 'archived' ? null : h.newValue,
+        // WP-VW-W3L — a layer's side that does not override the field is "from above" (null on the wire); the row's scope
+        fromInherited: isLayerChange(h) && h.oldValue == null,
+        toInherited: isLayerChange(h) && h.newValue == null,
+        scope: historyScope(h)
     }));
+    const isLayerChange = h => !!h && h.kind !== 'created' && h.kind !== 'archived' && !!h.scope && h.scope !== 'tenant';
 
     /** A history / effective value (a string on the wire) → its typed value for valueKey. */
     const typed = (field, raw) => {
@@ -358,12 +370,20 @@
      * fills the table — the same rule as the CRM resolver. → [{ resourceId, name, cells: { field: { value, fromException } } }]
      */
     const REP_COLUMNS = ['locationMode', 'photoMode', 'qrMode', 'antiFraudMode'];
-    const repRows = (reps, policy, exceptions) => {
+    const repRows = (reps, policy, exceptions, layers) => {
         const p = policy || {};
         const active = (exceptions || []).filter(x => x && x.status === 'approved' && x.phase === 'active');
         return (reps || []).map(r => {
             const cells = {};
             REP_COLUMNS.forEach(f => { cells[f] = { value: p[f], fromException: false }; });
+            // WP-VW-W3L — the rep's layers (the roster row's chain): the legal entity's overrides, then the business unit's
+            // (K-L1), each only where it overrides; an approved exception still relaxes on top
+            const chain = r.scopeChain || null;
+            const ids = chain ? [chain.legalEntity ? scopeId('legal-entity', chain.legalEntity) : null, chain.businessUnit ? scopeId('business-unit', chain.businessUnit) : null] : [];
+            ids.forEach(id => {
+                const ov = id && layers ? layers[id] : null;
+                if (ov) { REP_COLUMNS.forEach(f => { if (!inherited(ov[f])) { cells[f] = { value: ov[f], fromException: false }; } }); }
+            });
             active.filter(x => x.resourceId === r.resourceId).forEach(x => (x.rules || []).forEach(rule => {
                 const map = RULE_FIELD[rule];
                 if (!map || !cells[map.field] || (map.only && cells[map.field].value !== map.only)) { return; }
@@ -371,6 +391,202 @@
             }));
             return { resourceId: r.resourceId, name: r.displayName || r.resourceId, cells: cells };
         });
+    };
+
+    // ── WP-VW-W3L (W3-WEB-e) — the scope layers ─────────────────────────────────────────────────────────────
+    /** The two layers a manager adds under the tenant (K-L1: the business unit wins over the legal entity). */
+    const LAYER_TYPES = ['legal-entity', 'business-unit'];
+
+    /** A legal entity is a Guid (compared case-insensitively, "D"), a business unit its code. */
+    const normRef = (type, ref) => (ref == null ? '' : type === 'legal-entity' ? String(ref).trim().toLowerCase() : String(ref).trim());
+
+    /** The page's id of a scope: "tenant" | "legal-entity:<id>" | "business-unit:<code>" (the CRM's field source spelling). */
+    const scopeId = (type, ref) => (type === 'tenant' || !type ? 'tenant' : type + ':' + normRef(type, ref));
+
+    /** A field source of the CRM (tenant | legal-entity:<id> | business-unit:<code> | exception) → { type, ref }. */
+    const parseSource = source => {
+        const s = String(source || 'tenant');
+        if (s === 'tenant') { return { type: 'tenant', ref: null }; }
+        if (s === 'exception' || s.indexOf('exception:') === 0) { return { type: 'exception', ref: null }; }
+        const i = s.indexOf(':');
+        const type = i > 0 ? s.slice(0, i) : s;
+        return LAYER_TYPES.indexOf(type) > -1 ? { type: type, ref: normRef(type, s.slice(i + 1)) } : { type: 'tenant', ref: null };
+    };
+
+    /**
+     * The names of the scopes the page can show: the MDM legal entities ({ ref: id, name }) and the published business-unit
+     * values ({ ref: code, name }) → { scopeId: name }. Never the code where a name is known.
+     */
+    const scopeNames = (legalEntities, businessUnits) => {
+        const out = {};
+        (legalEntities || []).forEach(x => { if (x && x.ref && x.name) { out[scopeId('legal-entity', x.ref)] = x.name; } });
+        (businessUnits || []).forEach(x => { if (x && x.ref && x.name) { out[scopeId('business-unit', x.ref)] = x.name; } });
+        return out;
+    };
+
+    /** A scope's name: the tenant's label; a layer's name from the lists; when no list knows it, its code (a legal entity
+     *  Guid shortened) — the screen never invents a name. */
+    const scopeName = (type, ref, names, labels) => {
+        if (type === 'tenant' || !type) { return (labels && labels.TenantDefault) || ''; }
+        const known = names && names[scopeId(type, ref)];
+        if (known) { return known; }
+        const r = String(ref || '');
+        return type === 'legal-entity' && r.length > 12 ? r.slice(0, 8) + '…' : r;
+    };
+
+    /** The tone of a scope (the mockup: tenant secondary, legal entity info, business unit primary, exception warning). */
+    const SCOPE_TONE = { tenant: 'secondary', 'legal-entity': 'info', 'business-unit': 'primary', exception: 'warning' };
+    const SCOPE_ICON = { tenant: 'bx-buildings', 'legal-entity': 'bx-briefcase', 'business-unit': 'bx-sitemap' };
+
+    /**
+     * Where a field's value comes from, as a label: { key, args, tone } — "Kiracı" | "Tüzel kişilik: <name>" |
+     * "İş birimi: <name>" | "İstisna · <date>'e kadar" (the caller gives the end day). The NAME, never the code.
+     */
+    const sourceOf = (source, names, labels) => {
+        const s = parseSource(source);
+        if (s.type === 'exception') { return { type: s.type, key: 'SourceExceptionUntil', args: [], tone: SCOPE_TONE.exception }; }
+        if (s.type === 'tenant') { return { type: s.type, key: 'SourceTenant', args: [], tone: SCOPE_TONE.tenant }; }
+        return {
+            type: s.type, ref: s.ref, tone: SCOPE_TONE[s.type],
+            key: s.type === 'legal-entity' ? 'SourceLegalEntity' : 'SourceBusinessUnit',
+            args: [scopeName(s.type, s.ref, names, labels)]
+        };
+    };
+
+    /**
+     * The scope tree (mockup C1) from GET scopes: the tenant first, then the legal entities, then the business units (each
+     * by name). A business unit is not under a legal entity: the CRM takes it from the rep's territory assignment, whatever
+     * their legal entity (K-L4). → [{ id, type, ref, name, overridden, repCount, repCountNote, version, updatedAt,
+     * updatedBy, isDefault, depth }]
+     */
+    const scopeTree = (list, names, labels) => {
+        const items = (list && list.items) || [];
+        const node = x => ({
+            id: scopeId(x.scopeType, x.scopeRef), type: x.scopeType || 'tenant', ref: x.scopeType === 'tenant' ? null : normRef(x.scopeType, x.scopeRef),
+            name: scopeName(x.scopeType, x.scopeRef, names, labels), overridden: x.overriddenFields || 0,
+            repCount: typeof x.repCount === 'number' ? x.repCount : 0, repCountNote: x.repCountNote || null,
+            version: x.version || 0, updatedAt: x.updatedAt || null, updatedBy: x.updatedBy || null, isDefault: !!x.isDefault,
+            depth: x.scopeType === 'tenant' ? 0 : 1
+        });
+        const byName = (a, b) => String(a.name).localeCompare(String(b.name));
+        const tenant = items.filter(x => x.scopeType === 'tenant').map(node);
+        const le = items.filter(x => x.scopeType === 'legal-entity').map(node).sort(byName);
+        const bu = items.filter(x => x.scopeType === 'business-unit').map(node).sort(byName);
+        return (tenant.length ? tenant : [node({ scopeType: 'tenant', isDefault: true })]).concat(le, bu);
+    };
+
+    /** A tree row's meta line as keys: the tenant "Tüm alanlar dolu", a layer "N alan farklı" / "Değişiklik yok"; the reps
+     *  "N temsilci" ("en az N" when some seats could not be read). */
+    const scopeMeta = n => ({
+        fields: n.type === 'tenant' ? { key: 'AllFields', args: [] } : n.overridden ? { key: 'Diff', args: [n.overridden] } : { key: 'NoDiff', args: [] },
+        reps: { key: n.repCountNote === 'platform-unavailable' ? 'RepsAtLeast' : 'Reps', args: [n.repCount] }
+    });
+
+    /** The options "add a legal entity / business unit" offers: the list's entries without a layer yet, by name. */
+    const addOptions = (type, options, tree) => {
+        const taken = (tree || []).filter(n => n.type === type).map(n => n.id);
+        return (options || []).filter(o => o && o.ref && taken.indexOf(scopeId(type, o.ref)) < 0)
+            .map(o => ({ id: scopeId(type, o.ref), ref: normRef(type, o.ref), name: o.name || o.ref }))
+            .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    };
+
+    const inherited = v => v === null || v === undefined || v === '';
+
+    /** A layer's overrides (GET scopes/{type}/{ref} fields, the wire strings) → { field: typed value | null } (null = from above). */
+    const layerOverrides = detail => {
+        const out = {};
+        FIELDS.forEach(f => { out[f] = null; });
+        ((detail && detail.fields) || []).forEach(x => {
+            if (x && FIELDS.indexOf(x.field) > -1) { out[x.field] = x.value == null ? null : typed(x.field, x.value); }
+        });
+        return out;
+    };
+
+    /** The values a rep in the scope starts with: the base (the tenant policy) with the scope's overrides on top. */
+    const layerEffective = (base, overrides) => {
+        const out = draftOf(base);
+        FIELDS.forEach(f => { if (!inherited((overrides || {})[f])) { out[f] = overrides[f]; } });
+        return out;
+    };
+
+    /** The fields the layer overrides (its "N alan farklı"). */
+    const overriddenCount = overrides => FIELDS.filter(f => !inherited((overrides || {})[f])).length;
+
+    /** The changed fields of a layer: { field, from: { value, inherited }, to: { value, inherited } } — an inherited side
+     *  carries the value it inherits (the confirm says "Üstten: X" / "Üst ayara döner (X)"). */
+    const layerChanges = (original, draft, base) => FIELDS
+        .filter(f => {
+            const a = (original || {})[f], b = (draft || {})[f];
+            return inherited(a) !== inherited(b) || (!inherited(a) && !same(a, b));
+        })
+        .map(f => {
+            const side = v => (inherited(v) ? { value: (base || {})[f], inherited: true } : { value: v, inherited: false });
+            return { field: f, from: side((original || {})[f]), to: side((draft || {})[f]) };
+        });
+
+    /** A layer's number bounds: only the fields it overrides (an inherited value is the scope above's to keep). */
+    const layerFieldErrors = (overrides, base) => {
+        const all = fieldErrors(layerEffective(base, overrides));
+        const out = {};
+        Object.keys(all).forEach(f => { if (!inherited((overrides || {})[f])) { out[f] = all[f]; } });
+        return out;
+    };
+
+    /**
+     * The layer PUT body (VisitEvidencePolicyLayerInput): EVERY field, an inherited one as null (the PUT replaces the
+     * layer's overrides — a field left out or sent as "" is not "from above"); numbers as numbers, switches as booleans, a
+     * choice only as one of its wire values ("block" never leaves the page).
+     */
+    const layerPutBody = (overrides, version) => {
+        const o = overrides || {};
+        const body = {};
+        FIELDS.forEach(f => {
+            const v = o[f];
+            if (inherited(v)) { body[f] = null; return; }
+            if (KIND[f] === 'num') { body[f] = Number(v); return; }
+            if (KIND[f] === 'switch') { body[f] = v === true || v === 'true'; return; }
+            body[f] = canSelect(f, v) ? v : null;
+        });
+        body.expectedVersion = typeof version === 'number' && version > 0 ? version : null;
+        return body;
+    };
+
+    /** Why a layer was skipped for this rep (the CRM's ScopeChain notes) → the note keys, legal entity first. */
+    const CHAIN_NOTES = {
+        'no-seat': 'ChainNoSeat', 'platform-unavailable': 'ChainPlatformDown', 'no-territory': 'ChainNoTerritory',
+        'no-business-unit': 'ChainNoBusinessUnit', 'bu-ambiguous': 'ChainBuAmbiguous'
+    };
+    const chainNotes = chain => {
+        if (!chain) { return []; }
+        const out = [];
+        const take = n => { const k = CHAIN_NOTES[String(n || '').trim()]; if (k && out.indexOf(k) < 0) { out.push(k); } };
+        if (chain.legalEntityNote || chain.businessUnitNote) { take(chain.legalEntityNote); take(chain.businessUnitNote); }
+        else { String(chain.note || '').split(',').forEach(take); }
+        return out;
+    };
+
+    /** The layers that apply to a rep today (their chain against the tenant's layers): legal entity, then business unit. */
+    const appliedLayers = (chain, tree) => {
+        const out = [];
+        if (!chain) { return out; }
+        const find = (type, ref) => (tree || []).find(n => n.type === type && n.id === scopeId(type, ref));
+        if (chain.legalEntity) { const le = find('legal-entity', chain.legalEntity); if (le) { out.push(le); } }
+        if (chain.businessUnit) { const bu = find('business-unit', chain.businessUnit); if (bu) { out.push(bu); } }
+        return out;
+    };
+
+    /** A history row's scope (the CRM writes scope + scopeRef) → { type, ref, id }. */
+    const historyScope = item => {
+        const type = item && LAYER_TYPES.indexOf(item.scope) > -1 ? item.scope : 'tenant';
+        return { type: type, ref: type === 'tenant' ? null : normRef(type, item.scopeRef), id: scopeId(type, item && item.scopeRef) };
+    };
+
+    /** The history read's scope filter for the proxy: "" (every scope) | "tenant" | "<type>:<ref>" → query parameters. */
+    const historyQuery = filter => {
+        if (!filter) { return {}; }
+        if (filter === 'tenant') { return { scope: 'tenant' }; }
+        const i = filter.indexOf(':');
+        return i > 0 ? { scope: filter.slice(0, i), scopeRef: filter.slice(i + 1) } : {};
     };
 
     // ── people (WP-VW-W3-FIX F5) ─────────────────────────────────────────────────────────────────────────────
@@ -421,6 +637,9 @@
         RULES, RULE_FIELD, MAX_DAYS, MAX_REASON, daysInclusive, todayUtc, exceptionErrors, ruleState, chipOf,
         FILTERS, filterExceptions, filterCount, tabBadge, isOwn, actionsOf, timeline, historyRows, typed, effectiveRows,
         ERROR_CODES, errorKey, isMachineCode, mergeNames, personLabel,
-        NEW_FIELDS, EXTRA, canSelect, NEW_RULES, REP_COLUMNS, repRows
+        NEW_FIELDS, EXTRA, canSelect, NEW_RULES, REP_COLUMNS, repRows,
+        LAYER_TYPES, SCOPE_TONE, SCOPE_ICON, CHAIN_NOTES, normRef, scopeId, parseSource, scopeNames, scopeName, sourceOf, scopeTree,
+        scopeMeta, addOptions, layerOverrides, layerEffective, overriddenCount, layerChanges, layerFieldErrors, layerPutBody,
+        chainNotes, appliedLayers, historyScope, historyQuery
     };
 }));

@@ -33,8 +33,8 @@
 @*
     WP-VW-W3 (W3-WEB-d) — the visit evidence settings (mockup "W3 Yazim Ekranlari", screens C1–C4): the tenant's "Start the
     visit" rules (form + preview + save confirm), a rep's effective rules, the change history and the time-boxed
-    exceptions approved in the Work Center. This round the scope tree holds ONLY the tenant default: the legal entity /
-    business unit layers come with their package ("Add legal entity" is disabled with its hint). Every call is a
+    exceptions approved in the Work Center. WP-VW-W3L (W3-WEB-e): the scope tree holds the tenant default and its legal
+    entity / business unit layers (add, remove, field-level inheritance, the source of every effective value). Every call is a
     same-origin proxy under /CRM/VisitEvidenceSettings/api/*. UAS-001: without a policy read key NOTHING but the notice.
     W3E-E4R2-FIX-b (K-STD, K-TABS): the Golden Compact header (no page breadcrumb — the layout's own one stands), the two tabs
     on the shared tab card, and the exceptions on the Golden Compact DataTable (client mode, the standard filter, quick view,
@@ -88,8 +88,9 @@
                             <span class="ve-node-last" id="ve-node-last"></span>
                         </span>
                     </button>
-                    <button type="button" class="ve-add" disabled aria-describedby="ve-add-hint"><i class="bx bx-plus-circle"></i> @Localizer["AddLegalEntity"]</button>
-                    <div class="ve-hint" id="ve-add-hint">@Localizer["AddLegalEntityHint"]</div>
+                    @* WP-VW-W3L (W3-WEB-e, C1) — the tenant's legal entity and business unit layers (the script draws them from
+                       GET scopes) and, with the manage key, "Add legal entity" / "Add business unit" *@
+                    <div class="ve-col ve-gap-xs" id="ve-tree-layers"></div>
                 </div>
             </div>
             <div class="ve-card ve-pad ve-col">
@@ -106,6 +107,8 @@
                     <div class="ve-row"><span class="ve-avatar" id="ve-eff-initials"></span><div class="ve-col"><span class="ve-sub">@Localizer["EffectiveTitle"]</span><span class="ve-name" id="ve-eff-name"></span></div></div>
                     <button type="button" class="ve-x" id="ve-eff-close" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
                 </div>
+                @* WP-VW-W3L — the rep's chain (legal entity › business unit) and why a layer was skipped *@
+                <div class="ve-col ve-gap-xs ve-m d-none" id="ve-eff-chain-box"><span class="ve-row ve-wrap" id="ve-eff-chain"></span><span class="ve-col ve-gap-xs" id="ve-eff-notes"></span></div>
                 <div class="ve-alert ve-alert-warning ve-m d-none" id="ve-eff-exception"></div>
                 <div class="ve-table-wrap">
                     <table class="ve-table">
@@ -113,17 +116,19 @@
                         <tbody id="ve-eff-rows"></tbody>
                     </table>
                 </div>
-                <div class="ve-foot-note"><span>@Localizer["Priority"]</span> <span class="ve-pill ve-tone-warning">@Localizer["SourceException"]</span> › <span class="ve-pill ve-tone-secondary">@Localizer["SourceTenant"]</span> · <span class="ve-mu">@Localizer["ScopeUnresolved"]</span></div>
+                <div class="ve-foot-note"><span>@Localizer["Priority"]</span> <span class="ve-pill ve-tone-warning">@Localizer["SourceException"]</span> <i class="bx bx-chevron-right ve-flip" aria-hidden="true"></i> <span class="ve-pill ve-tone-primary">@Localizer["TypeBusinessUnit"]</span> <i class="bx bx-chevron-right ve-flip" aria-hidden="true"></i> <span class="ve-pill ve-tone-info">@Localizer["TypeLegalEntity"]</span> <i class="bx bx-chevron-right ve-flip" aria-hidden="true"></i> <span class="ve-pill ve-tone-secondary">@Localizer["SourceTenant"]</span></div>
             </div>
 
-            @* C2 — the tenant scope: its header, the form / history panes *@
+            @* C2 — the selected scope (the tenant, a legal entity or a business unit — WP-VW-W3L): its header, the form / history panes *@
             <div id="ve-scope">
                 <div class="ve-card">
                     <div class="ve-card-head">
                         <div class="ve-row">
-                            <span class="ve-scope-icon"><i class="bx bx-buildings"></i></span>
-                            <div class="ve-col"><span class="ve-row"><span class="ve-name">@Localizer["TenantDefault"]</span><span class="ve-pill ve-tone-secondary">@Localizer["TypeTenant"]</span></span><span class="ve-sub" id="ve-scope-meta"></span></div>
+                            <span class="ve-scope-icon" id="ve-scope-icon"><i class="bx bx-buildings"></i></span>
+                            <div class="ve-col"><span class="ve-row ve-wrap"><span class="ve-name" id="ve-scope-name">@Localizer["TenantDefault"]</span><span class="ve-pill ve-tone-secondary" id="ve-scope-type">@Localizer["TypeTenant"]</span></span><span class="ve-sub" id="ve-scope-meta"></span></div>
                         </div>
+                        @* a layer only, with the manage key: archived, never deleted; its reps fall back at once (the confirm below) *@
+                        <button type="button" class="ve-btn ve-btn-od ve-btn-sm d-none" id="ve-scope-remove"><i class="bx bx-trash"></i> @Localizer["ScopeRemove"]</button>
                     </div>
                 </div>
 
@@ -132,6 +137,8 @@
 
                 <div class="tab-content p-0" id="ve-scope-panes">
                 <div class="tab-pane fade show active" id="ve-pane-form" role="tabpanel" aria-labelledby="ve-ptab-form">
+                @* WP-VW-W3L (C2) — a layer's form: the faded fields come from above *@
+                <div class="ve-alert ve-alert-info mb-3 d-none" id="ve-inherit-note"><i class="bx bx-git-merge"></i> <span id="ve-inherit-text"></span></div>
                 <div class="ve-form-grid">
                     <div class="ve-col ve-gap">
                         <div id="ve-groups" class="ve-col ve-gap"></div>
@@ -160,6 +167,7 @@
                         <div class="ve-card ve-pad ve-col ve-gap-s">
                             <div class="ve-row"><span class="ve-avatar ve-avatar-sm" id="ve-last-initials"></span><div class="ve-col"><span class="ve-sub">@Localizer["LastChange"]</span><span class="ve-strong" id="ve-last-by"></span></div></div>
                             <div class="ve-unsaved d-none" id="ve-unsaved"><i class="bx bx-edit-alt"></i> @Localizer["Unsaved"]</div>
+                            <div class="ve-hint d-none" id="ve-layer-empty"><i class="bx bx-info-circle"></i> <span id="ve-layer-empty-text"></span></div>
                             @* read-only: the bar stays hidden (the script shows it only with crm.visit-evidence-policy.manage) *@
                             <div class="ve-row ve-end d-none" id="ve-save-bar">
                                 <button type="button" class="ve-btn ve-btn-s" id="ve-revert" disabled>@Localizer["CancelButton"]</button>
@@ -173,6 +181,14 @@
                 @* C3 — the change history (append-only): the Golden Compact DataTable, server mode (W3E-E4R2-FIX-d) *@
                 <div class="tab-pane fade" id="ve-pane-history" role="tabpanel" aria-labelledby="ve-ptab-history">
                     <div class="ve-pane-note"><span class="ve-card-title">@Localizer["HistoryTitle"]</span><span class="ve-sub ve-row"><i class="bx bx-lock-alt"></i> @Localizer["AuditReadOnly"]</span></div>
+                    @* WP-VW-W3L — the scope filter (follows the selected scope; "every scope" reads the whole history) *@
+                    <div class="ve-history-filter mb-3">
+                        <label class="form-label fw-medium" for="ve-history-scope">@Localizer["HistScopeFilter"]</label>
+                        <div class="diten-field">
+                            <i class="bx bx-layer diten-field-icon" aria-hidden="true"></i>
+                            <select class="form-select" id="ve-history-scope"></select>
+                        </div>
+                    </div>
                     <partial name="~/Views/CRM/VisitEvidenceSettings/_HistoryTable.cshtml" />
                 </div>
 
@@ -216,6 +232,47 @@
                 <div class="ve-row ve-end">
                     <button type="button" class="ve-btn ve-btn-s" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
                     <button type="button" class="ve-btn ve-btn-p" id="ve-save-confirm" data-dt-primary="chord">@Localizer["SaveConfirm"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── WP-VW-W3L (C2) — "Remove the scope": not irreversible (the layer is archived, the history keeps it) but at once in
+   effect for every rep of the scope, so Ctrl / ⌘ + Enter only (UXH-001 §3: chord) ── *@
+<div class="modal fade ve-modal" id="ve-rm-modal" tabindex="-1" aria-labelledby="ve-rm-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="ve-dlg">
+                <div class="ve-row ve-top"><span class="ve-dlg-icon ve-dlg-icon-danger"><i class="bx bx-trash"></i></span><div class="ve-col"><h5 class="ve-dlg-title" id="ve-rm-title">@Localizer["RemoveTitle"]</h5><span class="ve-sub" id="ve-rm-text"></span></div></div>
+                <div class="ve-alert ve-alert-danger d-none" id="ve-rm-error" role="alert"></div>
+                <div class="ve-row ve-end">
+                    <button type="button" class="ve-btn ve-btn-s" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                    <button type="button" class="ve-btn ve-btn-d" id="ve-rm-confirm" data-dt-primary="chord">@Localizer["ScopeRemove"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── WP-VW-W3L (C1) — "Add legal entity" / "Add business unit": the pick only opens an empty scope on the page (nothing is
+   written until its first save), so Enter (UXH-001 §3) ── *@
+<div class="modal fade ve-modal" id="ve-add-modal" tabindex="-1" aria-labelledby="ve-add-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="ve-dlg">
+                <div class="ve-row ve-top"><span class="ve-dlg-icon ve-dlg-icon-primary"><i class="bx bx-plus"></i></span><div class="ve-col"><h5 class="ve-dlg-title" id="ve-add-title"></h5><span class="ve-sub">@Localizer["AddDescription"]</span></div></div>
+                <div>
+                    <label class="form-label fw-medium" for="ve-add-pick" id="ve-add-label"></label>
+                    <div class="diten-field">
+                        <i class="bx bx-search diten-field-icon" aria-hidden="true"></i>
+                        <select class="form-select" id="ve-add-pick"></select>
+                    </div>
+                    <span class="ve-sub d-none" id="ve-add-none"></span>
+                </div>
+                <div class="ve-row ve-end">
+                    <button type="button" class="ve-btn ve-btn-s" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                    <button type="button" class="ve-btn ve-btn-p" id="ve-add-confirm" data-dt-primary="enter" disabled>@Localizer["AddConfirm"]</button>
                 </div>
             </div>
         </div>

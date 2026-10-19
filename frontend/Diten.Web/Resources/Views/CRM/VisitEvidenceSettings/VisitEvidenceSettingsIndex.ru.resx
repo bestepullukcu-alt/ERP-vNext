@@ -16,7 +16,6 @@
   <data name="TenantDefault" xml:space="preserve"><value>Значения арендатора по умолчанию</value></data>
   <data name="Locked" xml:space="preserve"><value>Нельзя удалить</value></data>
   <data name="AddLegalEntity" xml:space="preserve"><value>Добавить юрлицо</value></data>
-  <data name="AddLegalEntityHint" xml:space="preserve"><value>Уровни юрлица и бизнес-единицы откроются, когда будут связаны должность и назначение территории представителя.</value></data>
   <data name="LookTitle" xml:space="preserve"><value>Действующие настройки представителя</value></data>
   <data name="LookSearch" xml:space="preserve"><value>Поиск представителя</value></data>
   <data name="EffectiveTitle" xml:space="preserve"><value>Действующая настройка</value></data>
@@ -27,7 +26,6 @@
   <data name="Priority" xml:space="preserve"><value>Приоритет:</value></data>
   <data name="SourceException" xml:space="preserve"><value>Исключение</value></data>
   <data name="SourceTenant" xml:space="preserve"><value>Арендатор</value></data>
-  <data name="ScopeUnresolved" xml:space="preserve"><value>Уровни юрлица и бизнес-единицы пока не связаны.</value></data>
   <data name="TypeTenant" xml:space="preserve"><value>Арендатор</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Форма настроек</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>История изменений</value></data>
@@ -43,7 +41,7 @@
   <data name="Unsaved" xml:space="preserve"><value>Есть несохранённые изменения</value></data>
   <data name="CancelButton" xml:space="preserve"><value>Отмена</value></data>
   <data name="SaveButton" xml:space="preserve"><value>Сохранить</value></data>
-  <data name="HistoryTitle" xml:space="preserve"><value>История · значения арендатора по умолчанию</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>История изменений</value></data>
   <data name="AuditReadOnly" xml:space="preserve"><value>Журнал аудита · только чтение</value></data>
   <data name="ColDate" xml:space="preserve"><value>Дата</value></data>
   <data name="ColPerson" xml:space="preserve"><value>Пользователь</value></data>
@@ -251,4 +249,49 @@
   <data name="FilterPhase" xml:space="preserve"><value>Этап</value></data>
   <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
   <data name="ColActions" xml:space="preserve"><value>Действия</value></data>
+  <data name="TypeLegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="TypeBusinessUnit" xml:space="preserve"><value>Бизнес-подразделение</value></data>
+  <data name="Diff" xml:space="preserve"><value>Отличается полей: {0}</value></data>
+  <data name="NoDiff" xml:space="preserve"><value>Без изменений</value></data>
+  <data name="RepsAtLeast" xml:space="preserve"><value>не менее {0} представителей</value></data>
+  <data name="AddBusinessUnit" xml:space="preserve"><value>Добавить бизнес-подразделение</value></data>
+  <data name="AddTitleLegalEntity" xml:space="preserve"><value>Добавить настройку юридического лица</value></data>
+  <data name="AddTitleBusinessUnit" xml:space="preserve"><value>Добавить настройку бизнес-подразделения</value></data>
+  <data name="AddDescription" xml:space="preserve"><value>Новая область начинается пустой; все поля берутся из вышестоящей области.</value></data>
+  <data name="AddPlaceholder" xml:space="preserve"><value>Выберите</value></data>
+  <data name="AddConfirm" xml:space="preserve"><value>Добавить</value></data>
+  <data name="AddNone" xml:space="preserve"><value>Больше нет областей для добавления.</value></data>
+  <data name="AddUnavailable" xml:space="preserve"><value>Не удалось прочитать список; повторите попытку позже.</value></data>
+  <data name="NewScopeBadge" xml:space="preserve"><value>Ещё не сохранено</value></data>
+  <data name="NewScopeNote" xml:space="preserve"><value>Новая область начинается пустой; все поля берутся из вышестоящей области. Она создаётся при сохранении хотя бы с одним изменённым полем.</value></data>
+  <data name="InheritNote" xml:space="preserve"><value>Бледные поля берутся из вышестоящей области. Чтобы изменить поле, нажмите «Изменить в этой области».</value></data>
+  <data name="InheritNoneNote" xml:space="preserve"><value>Эта область пока не меняет ни одного поля; все значения берутся из вышестоящей области.</value></data>
+  <data name="InheritBuNote" xml:space="preserve"><value>В бизнес-подразделении пустое поле берётся из настройки юридического лица представителя, а при её отсутствии — из настройки арендатора.</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>Наследуется ({0}): {1}</value></data>
+  <data name="ChangeHere" xml:space="preserve"><value>Изменить в этой области</value></data>
+  <data name="OverriddenHere" xml:space="preserve"><value>Изменено в этой области</value></data>
+  <data name="UpperValue" xml:space="preserve"><value>Вышестоящая настройка: {0}</value></data>
+  <data name="BackToUpperLink" xml:space="preserve"><value>Вернуть вышестоящую настройку</value></data>
+  <data name="LayerEmpty" xml:space="preserve"><value>Чтобы сохранить, измените хотя бы одно поле в этой области; чтобы всё наследовать сверху, удалите область.</value></data>
+  <data name="SaveTextNew" xml:space="preserve"><value>Область будет создана и сразу применится к представителям, которые в неё входят.</value></data>
+  <data name="ScopeCreated" xml:space="preserve"><value>Область создана.</value></data>
+  <data name="DiffInherited" xml:space="preserve"><value>Наследуется: {0}</value></data>
+  <data name="DiffBackToUpper" xml:space="preserve"><value>Возврат к вышестоящей настройке ({0})</value></data>
+  <data name="ScopeRemove" xml:space="preserve"><value>Удалить область</value></data>
+  <data name="RemoveTitle" xml:space="preserve"><value>Удалить область?</value></data>
+  <data name="RemoveText" xml:space="preserve"><value>Представители этой области ({0}) сразу вернутся к вышестоящей настройке. История сохраняет область.</value></data>
+  <data name="Removed" xml:space="preserve"><value>Область удалена; её представители вернулись к вышестоящей настройке.</value></data>
+  <data name="SourceLegalEntity" xml:space="preserve"><value>Юридическое лицо: {0}</value></data>
+  <data name="SourceBusinessUnit" xml:space="preserve"><value>Бизнес-подразделение: {0}</value></data>
+  <data name="ChainNoSeat" xml:space="preserve"><value>Нет назначения на должность — уровень юридического лица пропущен</value></data>
+  <data name="ChainPlatformDown" xml:space="preserve"><value>Не удалось прочитать должность — уровень юридического лица пропущен</value></data>
+  <data name="ChainNoTerritory" xml:space="preserve"><value>Нет основного назначения на территорию — уровень бизнес-подразделения пропущен</value></data>
+  <data name="ChainNoBusinessUnit" xml:space="preserve"><value>В назначении на территорию нет бизнес-подразделения — уровень бизнес-подразделения пропущен</value></data>
+  <data name="ChainBuAmbiguous" xml:space="preserve"><value>Более одного бизнес-подразделения — уровень бизнес-подразделения пропущен</value></data>
+  <data name="HistAllScopes" xml:space="preserve"><value>Все области</value></data>
+  <data name="HistScopeFilter" xml:space="preserve"><value>Область</value></data>
+  <data name="ColScope" xml:space="preserve"><value>Область</value></data>
+  <data name="HistArchived" xml:space="preserve"><value>Область удалена</value></data>
+  <data name="HistScopeCreated" xml:space="preserve"><value>Область создана</value></data>
+  <data name="HistInherited" xml:space="preserve"><value>Наследуется</value></data>
 </root>

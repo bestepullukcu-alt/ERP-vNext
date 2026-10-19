@@ -35,9 +35,13 @@ public sealed class VisitEvidenceSettingsController : Controller
     private const string Policy = "/api/crm/visit-evidence-policy";
     private const string Exceptions = "/api/crm/visit-evidence-exceptions";
 
+    /// <summary>WP-VW-W3L — the MOD-0048 set a business unit layer's code is checked against (the territory model's set).</summary>
+    private const string BusinessUnitSetCode = "business-unit";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly ILogger<VisitEvidenceSettingsController> _logger;
+    private readonly Diten.Web.Services.CrmReferenceSetReader _referenceSets;
 
     public VisitEvidenceSettingsController(
         HttpClient httpClient, IConfiguration configuration, ILogger<VisitEvidenceSettingsController> logger)
@@ -46,6 +50,7 @@ public sealed class VisitEvidenceSettingsController : Controller
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _logger = logger;
+        _referenceSets = new Diten.Web.Services.CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- page ----------------
@@ -89,9 +94,11 @@ public sealed class VisitEvidenceSettingsController : Controller
         if (!HasAny(PolicyRead, PolicyManage)) return Denied();
         var refusal = ListRefusal(length, orderBy, orderDir) ?? (string.IsNullOrWhiteSpace(search) ? null : "The history has no search.");
         if (refusal is not null) return Refused(refusal);
+        // WP-VW-W3L — the scope filter (?scope=&scopeRef=): one scope's changes, or every scope's when absent
+        if (HistoryScopeQuery(Request.Query["scope"], Request.Query["scopeRef"]) is not { } scopeQuery) return Refused("scope must be tenant | legal-entity | business-unit (with its scopeRef).");
         var size = length ?? 10;
         var page = Math.Max(0, start ?? 0) / size + 1;
-        using var response = await SendGatewayAsync(HttpMethod.Get, $"{Policy}/history?page={page}&pageSize={size}", null, ct);
+        using var response = await SendGatewayAsync(HttpMethod.Get, $"{Policy}/history?page={page}&pageSize={size}{scopeQuery}", null, ct);
         if (response is null || !response.IsSuccessStatusCode) return await ToProxyResultAsync(response, ct);
         if (await ListPageOf(response, ct) is not { } chunk) return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
         return Ok(new { data = new { items = chunk.Items, total = chunk.Total, filteredTotal = chunk.Total, displayNames = chunk.Names } });
@@ -181,12 +188,14 @@ public sealed class VisitEvidenceSettingsController : Controller
         if (!ListExportContract.TryParseFormat(format, out var fileFormat)) return ExportRefusal(400, "format must be 'csv' or 'xlsx'.", ListExportContract.FormatInvalidCode);
         var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
         if (!HistoryColumns().TryResolve(columns, out var exportColumns, out var columnsError)) return ExportRefusal(400, columnsError!, ListExportContract.ColumnsInvalidCode);
+        // WP-VW-W3L — the screen's scope filter, and the scope column by NAME (the lists the page reads)
+        if (HistoryScopeQuery(Request.Query["scope"], Request.Query["scopeRef"]) is not { } scopeQuery) return ExportRefusal(400, "scope must be tenant | legal-entity | business-unit (with its scopeRef).", "visit_evidence_scope_invalid");
 
         var rows = new List<JsonElement>();
         var people = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         for (var page = 1; ; page++)
         {
-            using var response = await SendGatewayAsync(HttpMethod.Get, $"{Policy}/history?page={page}&pageSize=200", null, ct);
+            using var response = await SendGatewayAsync(HttpMethod.Get, $"{Policy}/history?page={page}&pageSize=200{scopeQuery}", null, ct);
             if (response is null || !response.IsSuccessStatusCode) return await ToProxyResultAsync(response, ct);
             if (await ListPageOf(response, ct) is not { } chunk) return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
             if (chunk.Total > ListExportContract.MaxRows)
@@ -202,28 +211,73 @@ public sealed class VisitEvidenceSettingsController : Controller
         var lines = rows.Select(r => new HistoryExportRow(
             r.TryGetProperty("at", out var a) && a.ValueKind == JsonValueKind.String && a.TryGetDateTimeOffset(out var at) ? at : null,
             Str(r, "by") is { } by ? people.GetValueOrDefault(by) : null,
-            Str(r, "field"), Str(r, "oldValue"), Str(r, "newValue"), Str(r, "kind") ?? "set")).ToList();
+            Str(r, "field"), Str(r, "oldValue"), Str(r, "newValue"), Str(r, "kind") ?? "set",
+            Str(r, "scope") ?? "tenant", Str(r, "scopeRef"))).ToList();
+        // the scope names only once the file will be written (a refused export reads nothing more)
+        _exportScopeNames = exportColumns.Any(c => c.Key == "scope") ? await ScopeNamesAsync(ct) : new Dictionary<string, string>();
         var content = ListExportWriter.Write(fileFormat, exportColumns, lines, culture, Text("PaneHistory", culture));
         return File(content, ListExportContract.ContentType(fileFormat), ListExportContract.FileName("visit-evidence-policy-history", DateTimeOffset.UtcNow, fileFormat));
     }
 
-    /// <summary>One change as the export writes it (the person by name — never the id).</summary>
-    public sealed record HistoryExportRow(DateTimeOffset? At, string? By, string? Field, string? OldValue, string? NewValue, string Kind);
+    /// <summary>One change as the export writes it (the person by name — never the id); its scope (WP-VW-W3L).</summary>
+    public sealed record HistoryExportRow(DateTimeOffset? At, string? By, string? Field, string? OldValue, string? NewValue, string Kind,
+        string Scope = "tenant", string? ScopeRef = null);
 
     private ListExportColumnSet<HistoryExportRow> HistoryColumns() => new(
     [
         new("at", c => Text("ColDate", c), (r, c) => r.At?.ToString("g", c)),
+        new("scope", c => Text("ColScope", c), (r, c) => ScopeText(r.Scope, r.ScopeRef, c)),
         new("by", c => Text("ColPerson", c), (r, _) => r.By ?? "—"),
         new("field", c => Text("ColField", c), (r, c) => r.Field is { Length: > 0 } f ? Text("F_" + f, c) : "—"),
-        new("newValue", c => Text("ColChange", c), (r, c) => r.Kind == "created"
-            ? "— → " + Text("HistCreated", c)
-            : ValueText(r.Field, r.OldValue, c) + " → " + ValueText(r.Field, r.NewValue, c))
+        new("newValue", c => Text("ColChange", c), (r, c) => r.Kind switch
+        {
+            "created" => "— → " + Text(r.Scope == "tenant" ? "HistCreated" : "HistScopeCreated", c),
+            "archived" => "— → " + Text("HistArchived", c),
+            _ => ValueText(r.Field, r.OldValue, c, r.Scope != "tenant") + " → " + ValueText(r.Field, r.NewValue, c, r.Scope != "tenant")
+        })
     ]);
 
-    /// <summary>A history value in the reader's words — the page's valueKey rule (evidence-core.js): a switch On / Off, a
-    /// number with its unit, a choice its option text.</summary>
-    private string ValueText(string? field, string? raw, CultureInfo culture)
+    /// <summary>The scope names of the export (filled per request from the lists the page reads).</summary>
+    private IReadOnlyDictionary<string, string> _exportScopeNames = new Dictionary<string, string>();
+
+    /// <summary>A row's scope by NAME — the tenant's label, a layer's MDM / MOD-0048 name, its code only when no list knows it.</summary>
+    private string ScopeText(string scope, string? scopeRef, CultureInfo culture)
     {
+        if (scope is not ("legal-entity" or "business-unit")) return Text("TenantDefault", culture);
+        var key = scope + ":" + (scope == "legal-entity" ? scopeRef?.ToLowerInvariant() : scopeRef);
+        return _exportScopeNames.TryGetValue(key, out var name) ? name : scopeRef ?? "—";
+    }
+
+    /// <summary>"legal-entity:&lt;id&gt;" / "business-unit:&lt;code&gt;" → name, from the two option lists (an unreadable list adds none).</summary>
+    private async Task<Dictionary<string, string>> ScopeNamesAsync(CancellationToken ct)
+    {
+        var names = new Dictionary<string, string>(StringComparer.Ordinal);
+        using (var le = await SendGatewayAsync(HttpMethod.Get, "/api/legal-entities/lookup", null, ct))
+        {
+            if (le is { IsSuccessStatusCode: true } && LegalEntityOptionsOf(await le.Content.ReadAsStringAsync(ct)) is { } entities)
+            {
+                foreach (var o in entities) names["legal-entity:" + o.Ref.ToLowerInvariant()] = o.Name;
+            }
+        }
+
+        var tenantId = GetTenantId();
+        if (!string.IsNullOrWhiteSpace(tenantId))
+        {
+            using var bu = await _referenceSets.ReadAsync(BusinessUnitSetCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), tenantId, ct);
+            if (bu is { IsSuccessStatusCode: true } && BusinessUnitOptionsOf(await bu.Content.ReadAsStringAsync(ct)) is { } units)
+            {
+                foreach (var o in units) names["business-unit:" + o.Ref] = o.Name;
+            }
+        }
+
+        return names;
+    }
+
+    /// <summary>A history value in the reader's words — the page's valueKey rule (evidence-core.js): a switch On / Off, a
+    /// number with its unit, a choice its option text; a layer's empty side is "from above" (WP-VW-W3L).</summary>
+    private string ValueText(string? field, string? raw, CultureInfo culture, bool layer = false)
+    {
+        if (layer && !string.IsNullOrEmpty(field) && raw is null) return Text("HistInherited", culture);
         if (string.IsNullOrEmpty(field) || raw is null) return "—";
         if (Switches.Contains(field)) return Text(raw is "true" or "True" ? "ValueOn" : "ValueOff", culture);
         if (NumberUnits.TryGetValue(field, out var unit)) return Text(unit, culture).Replace("{0}", raw, StringComparison.Ordinal);
@@ -270,6 +324,156 @@ public sealed class VisitEvidenceSettingsController : Controller
     [HttpGet("api/policy/reps")]
     public Task<IActionResult> Reps(CancellationToken ct)
         => ProxyAsync(HttpMethod.Get, $"{Policy}/reps{Request.QueryString}", null, ct, PolicyRead, PolicyManage);
+
+    // ---------------- WP-VW-W3L (W3-WEB-e) — the scope layers ----------------
+
+    /// <summary>The layers a manager adds under the tenant (the tenant layer is the policy itself).</summary>
+    public static readonly IReadOnlyList<string> LayerTypes = ["legal-entity", "business-unit"];
+
+    /// <summary>
+    /// Static, so MVC never treats it as an action: the CRM path of one layer, or null when the key is not one (a legal entity
+    /// is a Guid — normalized "D" —, a business unit a code of at most 100 characters). Refused before any CRM call.
+    /// </summary>
+    public static string? ScopePath(string? scopeType, string? scopeRef)
+    {
+        var type = scopeType?.Trim().ToLowerInvariant();
+        var key = scopeRef?.Trim();
+        if (type is null || !LayerTypes.Contains(type) || string.IsNullOrEmpty(key)) return null;
+        if (type == "legal-entity")
+        {
+            return Guid.TryParse(key, out var id) && id != Guid.Empty ? $"{Policy}/scopes/{type}/{id:D}" : null;
+        }
+
+        return key.Length <= 100 ? $"{Policy}/scopes/{type}/{Uri.EscapeDataString(key)}" : null;
+    }
+
+    /// <summary>Static, so MVC never treats it as an action: the history read's scope filter (<c>scope</c> tenant |
+    /// legal-entity | business-unit, <c>scopeRef</c> for a layer) → the CRM query suffix ("" = every scope); null = refused.</summary>
+    public static string? HistoryScopeQuery(string? scope, string? scopeRef)
+    {
+        var type = scope?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(type)) return string.Empty;
+        if (type == "tenant") return "&scope=tenant";
+        return ScopePath(type, scopeRef) is null ? null : $"&scope={type}&scopeRef={Uri.EscapeDataString(scopeRef!.Trim())}";
+    }
+
+    [HttpGet("api/policy/scopes")]
+    public Task<IActionResult> ListScopes(CancellationToken ct)
+        => ProxyAsync(HttpMethod.Get, $"{Policy}/scopes", null, ct, PolicyRead, PolicyManage);
+
+    [HttpGet("api/policy/scopes/{scopeType}/{scopeRef}")]
+    public Task<IActionResult> GetScope(string scopeType, string scopeRef, CancellationToken ct)
+        => ScopePath(scopeType, scopeRef) is { } path
+            ? ProxyAsync(HttpMethod.Get, path, null, ct, PolicyRead, PolicyManage)
+            : ScopeRefusal(PolicyRead, PolicyManage);
+
+    /// <summary>Create a layer, or replace its overrides at <c>expectedVersion</c> (the body carries every field; null =
+    /// from above). The CRM refuses an empty layer (400) and a stale version (409).</summary>
+    [HttpPut("api/policy/scopes/{scopeType}/{scopeRef}")]
+    public Task<IActionResult> PutScope(string scopeType, string scopeRef, CancellationToken ct)
+        => ScopePath(scopeType, scopeRef) is { } path
+            ? ProxyBodyAsync(HttpMethod.Put, path, ct, PolicyManage)
+            : ScopeRefusal(PolicyManage);
+
+    /// <summary>"Remove the scope": archived at <c>expectedVersion</c>, its reps fall back to the layer below at once.</summary>
+    [HttpDelete("api/policy/scopes/{scopeType}/{scopeRef}")]
+    public Task<IActionResult> RemoveScope(string scopeType, string scopeRef, [FromQuery] int? expectedVersion, CancellationToken ct)
+        => ScopePath(scopeType, scopeRef) is { } path
+            ? ProxyAsync(HttpMethod.Delete, path + (expectedVersion is { } v ? "?expectedVersion=" + v.ToString(CultureInfo.InvariantCulture) : string.Empty), null, ct, PolicyManage)
+            : ScopeRefusal(PolicyManage);
+
+    /// <summary>A key that is not a layer: 400 for a caller who may make the call, 403 otherwise (no CRM call either way).</summary>
+    private Task<IActionResult> ScopeRefusal(params string[] anyOf)
+        => Task.FromResult<IActionResult>(HasAny(anyOf)
+            ? BadRequest(new { errors = new[] { "scopeType legal-entity | business-unit; a legal entity scopeRef is a Guid.", "visit_evidence_scope_invalid" } })
+            : Denied());
+
+    /// <summary>
+    /// "Add a legal entity" and the scope names: the tenant's referenceable MDM legal entities → <c>{ available, items: [{ ref,
+    /// name }] }</c> (the name, never the code beside it). MDM refusing or down → <c>available = false</c> and no items: the
+    /// page names a layer by its id then, never by a guess.
+    /// </summary>
+    [HttpGet("api/scope-options/legal-entities")]
+    public async Task<IActionResult> LegalEntityOptions(CancellationToken ct)
+    {
+        if (!HasAny(PolicyRead, PolicyManage)) return Denied();
+        using var response = await SendGatewayAsync(HttpMethod.Get, "/api/legal-entities/lookup", null, ct);
+        var items = response is { IsSuccessStatusCode: true } ? LegalEntityOptionsOf(await response.Content.ReadAsStringAsync(ct)) : null;
+        return Ok(new { data = new { available = items is not null, items = (IEnumerable<ScopeOption>?)items ?? [] } });
+    }
+
+    /// <summary>"Add a business unit" and the scope names: the tenant's PUBLISHED MOD-0048 business-unit values (the set the
+    /// territory model reads; the CRM validates a layer's code against it) → <c>{ available, items: [{ ref: code, name: label }] }</c>.</summary>
+    [HttpGet("api/scope-options/business-units")]
+    public async Task<IActionResult> BusinessUnitOptions(CancellationToken ct)
+    {
+        if (!HasAny(PolicyRead, PolicyManage)) return Denied();
+        var tenantId = GetTenantId();
+        using var response = string.IsNullOrWhiteSpace(tenantId)
+            ? null
+            : await _referenceSets.ReadAsync(BusinessUnitSetCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), tenantId, ct);
+        var items = response is { IsSuccessStatusCode: true } ? BusinessUnitOptionsOf(await response.Content.ReadAsStringAsync(ct)) : null;
+        return Ok(new { data = new { available = items is not null, items = (IEnumerable<ScopeOption>?)items ?? [] } });
+    }
+
+    /// <summary>One scope a manager may pick: its ref (legal entity id "D" / business unit code) and its name.</summary>
+    public sealed record ScopeOption(string Ref, string Name);
+
+    /// <summary>MDM <c>GET /api/legal-entities/lookup</c> → the referenceable entities by name (display name, else legal
+    /// name, else code); null when the body is not the lookup.</summary>
+    public static List<ScopeOption>? LegalEntityOptionsOf(string body)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            var root = document.RootElement;
+            var data = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("data", out var d) ? d : root;
+            if (data.ValueKind != JsonValueKind.Array) return null;
+            var options = new List<ScopeOption>();
+            foreach (var item in data.EnumerateArray())
+            {
+                if (!Guid.TryParse(Str(item, "legalEntityId") ?? Str(item, "id"), out var id) || id == Guid.Empty) continue;
+                if (item.TryGetProperty("referenceable", out var r) && r.ValueKind == JsonValueKind.False) continue;
+                var name = new[] { Str(item, "displayName"), Str(item, "legalName"), Str(item, "code") }.FirstOrDefault(n => !string.IsNullOrWhiteSpace(n));
+                options.Add(new ScopeOption(id.ToString("D"), name?.Trim() ?? id.ToString("D")));
+            }
+
+            return options;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>The published values model (<c>{ data: { items: [{ code, label, isActive }] } }</c>) → the active values by
+    /// label; null when the body is not that model.</summary>
+    public static List<ScopeOption>? BusinessUnitOptionsOf(string body)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            var root = document.RootElement;
+            var data = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("data", out var d) ? d : root;
+            var items = data.ValueKind == JsonValueKind.Object && data.TryGetProperty("items", out var i) ? i : data;
+            if (items.ValueKind != JsonValueKind.Array) return null;
+            var options = new List<ScopeOption>();
+            foreach (var item in items.EnumerateArray())
+            {
+                var code = Str(item, "code") ?? Str(item, "valueCode");
+                if (string.IsNullOrWhiteSpace(code)) continue;
+                if (item.TryGetProperty("isActive", out var a) && a.ValueKind == JsonValueKind.False) continue;
+                var label = Str(item, "label");
+                options.Add(new ScopeOption(code.Trim(), string.IsNullOrWhiteSpace(label) ? code.Trim() : label.Trim()));
+            }
+
+            return options;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
 
     // ---------------- the time-boxed exceptions ----------------
 

@@ -415,7 +415,7 @@
     <value>Utiliser le clavier</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
-    <value>Définissez les preuves qu'un délégué doit fournir au début d'une visite : localisation, photo, code QR de l'établissement et vérification de l'appareil. Le paramètre du locataire s'applique à tous les délégués ; une exception limitée dans le temps assouplit une règle pour un seul délégué, pour une durée donnée.</value>
+    <value>Définissez les preuves qu'un délégué doit fournir au début d'une visite : localisation, photo, code QR de l'établissement et vérification de l'appareil. Le paramétrage est en couches et le plus précis l'emporte : l'unité commerciale prime sur l'entité juridique, qui prime sur le locataire ; une exception limitée dans le temps assouplit une règle pour un seul délégué, pour une durée donnée.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
     <value>Responsables des opérations commerciales</value>
@@ -424,22 +424,22 @@
     <value>Enregistrer et appliquer le paramètre</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
-    <value>Dans l'onglet « Paramètres par périmètre », faites un choix pour chaque preuve dans « Formulaire ». L'aperçu à droite montre ce que le délégué verra au début de la visite.</value>
+    <value>Dans l'onglet « Paramètres par périmètre », choisissez le locataire, une entité juridique ou une unité commerciale dans « Périmètres ». Pour un nouveau périmètre, cliquez sur « Ajouter une entité juridique » ou « Ajouter une unité commerciale » ; il démarre vide et tous les champs viennent du niveau supérieur.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
-    <value>Choisir les règles</value>
+    <value>Choisir le périmètre</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
-    <value>Cliquez sur « Enregistrer », vérifiez les lignes modifiées et confirmez avec « Enregistrer et appliquer ». Le paramètre s'applique immédiatement à tous les délégués.</value>
+    <value>Dans « Formulaire », cliquez sur « Modifier dans ce périmètre » sur le champ à changer ; « Revenir au paramètre supérieur » le fait de nouveau hériter. Cliquez sur « Enregistrer », vérifiez les lignes modifiées et le nombre de délégués concernés, puis confirmez avec « Enregistrer et appliquer ».</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
-    <value>Enregistrer et appliquer</value>
+    <value>Modifier les champs et appliquer</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
-    <value>« Historique des modifications » montre qui a modifié quoi et quand. « Délégués » montre la valeur en vigueur aujourd'hui pour chaque délégué ; une valeur assouplie par une exception porte la mention « exception ».</value>
+    <value>« Voir le paramètre effectif d'un délégué » montre la valeur de chaque champ et le périmètre dont elle vient. « Historique des modifications » montre qui a modifié quoi et quand, filtré par périmètre ; « Délégués » montre le périmètre appliqué à chaque délégué. « Supprimer le périmètre » ramène aussitôt ses délégués au paramètre supérieur ; confirmez avec Ctrl+Entrée (⌘+Entrée sur Mac).</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
-    <value>Suivre l'historique et les délégués</value>
+    <value>Suivre la source et l'historique</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
     <value>Dans l'onglet « Exceptions temporaires », cliquez sur « Nouvelle exception ». Saisissez le délégué, les règles à assouplir, une période de 30 jours au plus et le motif, puis cliquez sur « Envoyer pour approbation » ou appuyez sur Ctrl+Entrée (⌘+Entrée sur Mac).</value>

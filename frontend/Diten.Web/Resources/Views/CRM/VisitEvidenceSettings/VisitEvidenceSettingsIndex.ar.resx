@@ -16,7 +16,6 @@
   <data name="TenantDefault" xml:space="preserve"><value>الإعداد الافتراضي للمستأجر</value></data>
   <data name="Locked" xml:space="preserve"><value>لا يمكن حذفه</value></data>
   <data name="AddLegalEntity" xml:space="preserve"><value>إضافة كيان قانوني</value></data>
-  <data name="AddLegalEntityHint" xml:space="preserve"><value>تُفتح طبقتا الكيان القانوني ووحدة العمل عند ربط منصب المندوب وتعيين منطقته.</value></data>
   <data name="LookTitle" xml:space="preserve"><value>عرض الإعداد الفعلي لمندوب</value></data>
   <data name="LookSearch" xml:space="preserve"><value>ابحث عن مندوب</value></data>
   <data name="EffectiveTitle" xml:space="preserve"><value>الإعداد الفعلي</value></data>
@@ -27,7 +26,6 @@
   <data name="Priority" xml:space="preserve"><value>الأولوية:</value></data>
   <data name="SourceException" xml:space="preserve"><value>استثناء</value></data>
   <data name="SourceTenant" xml:space="preserve"><value>المستأجر</value></data>
-  <data name="ScopeUnresolved" xml:space="preserve"><value>طبقتا الكيان القانوني ووحدة العمل غير مرتبطتين بعد.</value></data>
   <data name="TypeTenant" xml:space="preserve"><value>المستأجر</value></data>
   <data name="PaneForm" xml:space="preserve"><value>نموذج الإعداد</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>سجل التغييرات</value></data>
@@ -43,7 +41,7 @@
   <data name="Unsaved" xml:space="preserve"><value>توجد تغييرات غير محفوظة</value></data>
   <data name="CancelButton" xml:space="preserve"><value>إلغاء</value></data>
   <data name="SaveButton" xml:space="preserve"><value>حفظ</value></data>
-  <data name="HistoryTitle" xml:space="preserve"><value>سجل التغييرات · الإعداد الافتراضي للمستأجر</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>سجل التغييرات</value></data>
   <data name="AuditReadOnly" xml:space="preserve"><value>سجل تدقيق · للقراءة فقط</value></data>
   <data name="ColDate" xml:space="preserve"><value>التاريخ</value></data>
   <data name="ColPerson" xml:space="preserve"><value>الشخص</value></data>
@@ -251,4 +249,49 @@
   <data name="FilterPhase" xml:space="preserve"><value>المرحلة</value></data>
   <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
   <data name="ColActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="TypeLegalEntity" xml:space="preserve"><value>كيان قانوني</value></data>
+  <data name="TypeBusinessUnit" xml:space="preserve"><value>وحدة عمل</value></data>
+  <data name="Diff" xml:space="preserve"><value>{0} حقول مختلفة</value></data>
+  <data name="NoDiff" xml:space="preserve"><value>لا تغييرات</value></data>
+  <data name="RepsAtLeast" xml:space="preserve"><value>{0} مندوب على الأقل</value></data>
+  <data name="AddBusinessUnit" xml:space="preserve"><value>إضافة وحدة عمل</value></data>
+  <data name="AddTitleLegalEntity" xml:space="preserve"><value>إضافة إعداد كيان قانوني</value></data>
+  <data name="AddTitleBusinessUnit" xml:space="preserve"><value>إضافة إعداد وحدة عمل</value></data>
+  <data name="AddDescription" xml:space="preserve"><value>يبدأ النطاق الجديد فارغًا؛ وتُورَث كل الحقول من النطاق الأعلى.</value></data>
+  <data name="AddPlaceholder" xml:space="preserve"><value>اختر</value></data>
+  <data name="AddConfirm" xml:space="preserve"><value>إضافة</value></data>
+  <data name="AddNone" xml:space="preserve"><value>لم يتبقَّ نطاق لإضافته.</value></data>
+  <data name="AddUnavailable" xml:space="preserve"><value>تعذّرت قراءة القائمة؛ حاول لاحقًا.</value></data>
+  <data name="NewScopeBadge" xml:space="preserve"><value>لم يُحفظ بعد</value></data>
+  <data name="NewScopeNote" xml:space="preserve"><value>يبدأ النطاق الجديد فارغًا؛ وتُورَث كل الحقول من النطاق الأعلى. يُنشأ عند حفظه بعد تغيير حقل واحد على الأقل.</value></data>
+  <data name="InheritNote" xml:space="preserve"><value>الحقول الباهتة موروثة من النطاق الأعلى. استخدم «تغيير في هذا النطاق» في الحقل الذي تريد تغييره.</value></data>
+  <data name="InheritNoneNote" xml:space="preserve"><value>لا يغيّر هذا النطاق أي حقل بعد؛ وكل القيم موروثة من النطاق الأعلى.</value></data>
+  <data name="InheritBuNote" xml:space="preserve"><value>في وحدة العمل، يُورَث الحقل الفارغ من إعداد الكيان القانوني للمندوب، أو من المستأجر إن لم يوجد.</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>موروث ({0}): {1}</value></data>
+  <data name="ChangeHere" xml:space="preserve"><value>تغيير في هذا النطاق</value></data>
+  <data name="OverriddenHere" xml:space="preserve"><value>مُعدَّل في هذا النطاق</value></data>
+  <data name="UpperValue" xml:space="preserve"><value>الإعداد الأعلى: {0}</value></data>
+  <data name="BackToUpperLink" xml:space="preserve"><value>العودة إلى الإعداد الأعلى</value></data>
+  <data name="LayerEmpty" xml:space="preserve"><value>للحفظ، غيّر حقلًا واحدًا على الأقل في هذا النطاق؛ ولتوريث كل الحقول من الأعلى، أزِل النطاق.</value></data>
+  <data name="SaveTextNew" xml:space="preserve"><value>يُنشأ النطاق ويُطبَّق فورًا على المندوبين الذين يقعون ضمنه.</value></data>
+  <data name="ScopeCreated" xml:space="preserve"><value>تم إنشاء النطاق.</value></data>
+  <data name="DiffInherited" xml:space="preserve"><value>موروث: {0}</value></data>
+  <data name="DiffBackToUpper" xml:space="preserve"><value>يعود إلى الإعداد الأعلى ({0})</value></data>
+  <data name="ScopeRemove" xml:space="preserve"><value>إزالة النطاق</value></data>
+  <data name="RemoveTitle" xml:space="preserve"><value>هل تريد إزالة النطاق؟</value></data>
+  <data name="RemoveText" xml:space="preserve"><value>يعود {0} مندوب في هذا النطاق فورًا إلى الإعداد الأعلى. ويحتفظ السجل بالنطاق.</value></data>
+  <data name="Removed" xml:space="preserve"><value>تمت إزالة النطاق؛ وعاد المندوبون إلى الإعداد الأعلى.</value></data>
+  <data name="SourceLegalEntity" xml:space="preserve"><value>كيان قانوني: {0}</value></data>
+  <data name="SourceBusinessUnit" xml:space="preserve"><value>وحدة عمل: {0}</value></data>
+  <data name="ChainNoSeat" xml:space="preserve"><value>لا يوجد تعيين وظيفي — تم تخطي طبقة الكيان القانوني</value></data>
+  <data name="ChainPlatformDown" xml:space="preserve"><value>تعذّرت قراءة الوظيفة — تم تخطي طبقة الكيان القانوني</value></data>
+  <data name="ChainNoTerritory" xml:space="preserve"><value>لا يوجد تعيين إقليم رئيسي — تم تخطي طبقة وحدة العمل</value></data>
+  <data name="ChainNoBusinessUnit" xml:space="preserve"><value>تعيين الإقليم لا يحدد وحدة عمل — تم تخطي طبقة وحدة العمل</value></data>
+  <data name="ChainBuAmbiguous" xml:space="preserve"><value>أكثر من وحدة عمل — تم تخطي طبقة وحدة العمل</value></data>
+  <data name="HistAllScopes" xml:space="preserve"><value>كل النطاقات</value></data>
+  <data name="HistScopeFilter" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ColScope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="HistArchived" xml:space="preserve"><value>تمت إزالة النطاق</value></data>
+  <data name="HistScopeCreated" xml:space="preserve"><value>تم إنشاء النطاق</value></data>
+  <data name="HistInherited" xml:space="preserve"><value>موروث</value></data>
 </root>

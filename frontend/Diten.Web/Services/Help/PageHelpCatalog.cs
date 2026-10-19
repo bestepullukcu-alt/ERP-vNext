@@ -32,7 +32,7 @@ public static class PageHelpCatalog
             ["USERROLES"] = ["bx-user", "bx-filter-alt", "bx-user-check", "bx-user-minus"],
             ["ITEMS"] = ["bx-filter-alt", "bx-plus-circle", "bx-send", "bx-transfer-alt", "bx-help-circle"],
             // WP-SYNC-144 W-UXH — the CRM tenant pages of W3 / W4 / W3E (BL-642 + the two W3E pages)
-            ["VISITEVIDENCESETTINGS"] = ["bx-slider-alt", "bx-check-shield", "bx-history", "bx-time-five", "bx-task"],
+            ["VISITEVIDENCESETTINGS"] = ["bx-layer", "bx-slider-alt", "bx-history", "bx-time-five", "bx-task"],
             ["CRMVISITEVIDENCEFLAGS"] = ["bx-calendar", "bx-filter-alt", "bx-bar-chart-alt-2", "bx-show", "bx-group"],
             ["CRMVISITQRCODES"] = ["bx-filter-alt", "bx-qr", "bx-printer", "bx-block", "bx-slider-alt"],
             ["CRMDOCTORINSIGHTTHRESHOLDS"] = ["bx-table", "bx-edit-alt", "bx-check-circle", "bx-plus-circle", "bx-history"],

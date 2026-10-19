@@ -16,7 +16,6 @@
   <data name="TenantDefault" xml:space="preserve"><value>Predeterminado del inquilino</value></data>
   <data name="Locked" xml:space="preserve"><value>No se puede eliminar</value></data>
   <data name="AddLegalEntity" xml:space="preserve"><value>Añadir entidad legal</value></data>
-  <data name="AddLegalEntityHint" xml:space="preserve"><value>Los niveles de entidad legal y unidad de negocio se abren cuando se vinculan el puesto y la asignación de territorio del representante.</value></data>
   <data name="LookTitle" xml:space="preserve"><value>Ver el ajuste efectivo de un representante</value></data>
   <data name="LookSearch" xml:space="preserve"><value>Buscar representante</value></data>
   <data name="EffectiveTitle" xml:space="preserve"><value>Ajuste efectivo</value></data>
@@ -27,7 +26,6 @@
   <data name="Priority" xml:space="preserve"><value>Prioridad:</value></data>
   <data name="SourceException" xml:space="preserve"><value>Excepción</value></data>
   <data name="SourceTenant" xml:space="preserve"><value>Inquilino</value></data>
-  <data name="ScopeUnresolved" xml:space="preserve"><value>Los niveles de entidad legal y unidad de negocio aún no están vinculados.</value></data>
   <data name="TypeTenant" xml:space="preserve"><value>Inquilino</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Formulario</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>Historial de cambios</value></data>
@@ -43,7 +41,7 @@
   <data name="Unsaved" xml:space="preserve"><value>Hay cambios sin guardar</value></data>
   <data name="CancelButton" xml:space="preserve"><value>Cancelar</value></data>
   <data name="SaveButton" xml:space="preserve"><value>Guardar</value></data>
-  <data name="HistoryTitle" xml:space="preserve"><value>Historial · Predeterminado del inquilino</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historial de cambios</value></data>
   <data name="AuditReadOnly" xml:space="preserve"><value>Registro de auditoría · solo lectura</value></data>
   <data name="ColDate" xml:space="preserve"><value>Fecha</value></data>
   <data name="ColPerson" xml:space="preserve"><value>Persona</value></data>
@@ -251,4 +249,49 @@
   <data name="FilterPhase" xml:space="preserve"><value>Fase</value></data>
   <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
   <data name="ColActions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="TypeLegalEntity" xml:space="preserve"><value>Entidad legal</value></data>
+  <data name="TypeBusinessUnit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="Diff" xml:space="preserve"><value>{0} campos distintos</value></data>
+  <data name="NoDiff" xml:space="preserve"><value>Sin cambios</value></data>
+  <data name="RepsAtLeast" xml:space="preserve"><value>al menos {0} representantes</value></data>
+  <data name="AddBusinessUnit" xml:space="preserve"><value>Añadir unidad de negocio</value></data>
+  <data name="AddTitleLegalEntity" xml:space="preserve"><value>Añadir un ajuste de entidad legal</value></data>
+  <data name="AddTitleBusinessUnit" xml:space="preserve"><value>Añadir un ajuste de unidad de negocio</value></data>
+  <data name="AddDescription" xml:space="preserve"><value>Un nuevo ámbito empieza vacío; todos los campos vienen del ámbito superior.</value></data>
+  <data name="AddPlaceholder" xml:space="preserve"><value>Seleccionar</value></data>
+  <data name="AddConfirm" xml:space="preserve"><value>Añadir</value></data>
+  <data name="AddNone" xml:space="preserve"><value>No quedan ámbitos por añadir.</value></data>
+  <data name="AddUnavailable" xml:space="preserve"><value>No se pudo leer la lista; inténtelo más tarde.</value></data>
+  <data name="NewScopeBadge" xml:space="preserve"><value>Aún no guardado</value></data>
+  <data name="NewScopeNote" xml:space="preserve"><value>Un nuevo ámbito empieza vacío; todos los campos vienen del ámbito superior. Se crea al guardarlo con al menos un campo cambiado.</value></data>
+  <data name="InheritNote" xml:space="preserve"><value>Los campos atenuados vienen del ámbito superior. Use «Cambiar en este ámbito» en el campo que quiera cambiar.</value></data>
+  <data name="InheritNoneNote" xml:space="preserve"><value>Este ámbito aún no cambia ningún campo; todos los valores vienen del ámbito superior.</value></data>
+  <data name="InheritBuNote" xml:space="preserve"><value>En una unidad de negocio, un campo vacío viene del ajuste de la entidad legal del representante o, si no lo hay, del inquilino.</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>Heredado ({0}): {1}</value></data>
+  <data name="ChangeHere" xml:space="preserve"><value>Cambiar en este ámbito</value></data>
+  <data name="OverriddenHere" xml:space="preserve"><value>Cambiado en este ámbito</value></data>
+  <data name="UpperValue" xml:space="preserve"><value>Ajuste superior: {0}</value></data>
+  <data name="BackToUpperLink" xml:space="preserve"><value>Volver al ajuste superior</value></data>
+  <data name="LayerEmpty" xml:space="preserve"><value>Para guardar, cambie al menos un campo en este ámbito; para heredarlo todo, quite el ámbito.</value></data>
+  <data name="SaveTextNew" xml:space="preserve"><value>El ámbito se crea y se aplica de inmediato a los representantes que pertenecen a él.</value></data>
+  <data name="ScopeCreated" xml:space="preserve"><value>Se creó el ámbito.</value></data>
+  <data name="DiffInherited" xml:space="preserve"><value>Heredado: {0}</value></data>
+  <data name="DiffBackToUpper" xml:space="preserve"><value>Vuelve al ajuste superior ({0})</value></data>
+  <data name="ScopeRemove" xml:space="preserve"><value>Quitar el ámbito</value></data>
+  <data name="RemoveTitle" xml:space="preserve"><value>¿Quitar el ámbito?</value></data>
+  <data name="RemoveText" xml:space="preserve"><value>Los {0} representantes de este ámbito vuelven de inmediato al ajuste superior. El historial conserva el ámbito.</value></data>
+  <data name="Removed" xml:space="preserve"><value>Se quitó el ámbito; sus representantes volvieron al ajuste superior.</value></data>
+  <data name="SourceLegalEntity" xml:space="preserve"><value>Entidad legal: {0}</value></data>
+  <data name="SourceBusinessUnit" xml:space="preserve"><value>Unidad de negocio: {0}</value></data>
+  <data name="ChainNoSeat" xml:space="preserve"><value>Sin asignación de puesto: se omitió la capa de entidad legal</value></data>
+  <data name="ChainPlatformDown" xml:space="preserve"><value>No se pudo leer el puesto: se omitió la capa de entidad legal</value></data>
+  <data name="ChainNoTerritory" xml:space="preserve"><value>Sin asignación principal de territorio: se omitió la capa de unidad de negocio</value></data>
+  <data name="ChainNoBusinessUnit" xml:space="preserve"><value>La asignación de territorio no indica unidad de negocio: se omitió la capa de unidad de negocio</value></data>
+  <data name="ChainBuAmbiguous" xml:space="preserve"><value>Más de una unidad de negocio: se omitió la capa de unidad de negocio</value></data>
+  <data name="HistAllScopes" xml:space="preserve"><value>Todos los ámbitos</value></data>
+  <data name="HistScopeFilter" xml:space="preserve"><value>Ámbito</value></data>
+  <data name="ColScope" xml:space="preserve"><value>Ámbito</value></data>
+  <data name="HistArchived" xml:space="preserve"><value>Ámbito quitado</value></data>
+  <data name="HistScopeCreated" xml:space="preserve"><value>Ámbito creado</value></data>
+  <data name="HistInherited" xml:space="preserve"><value>Heredado</value></data>
 </root>

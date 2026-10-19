@@ -415,7 +415,7 @@
     <value>使用键盘</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
-    <value>设置代表开始拜访时必须提供的证据：位置、照片、机构二维码和设备验证。租户设置适用于所有代表；限时例外会在一段时间内为某一位代表放宽规则。</value>
+    <value>设置代表开始拜访时必须提供的证据：位置、照片、机构二维码和设备验证。设置分层，最具体的生效：业务单元设置优先于法人实体设置，法人实体设置优先于租户设置；限时例外会在一段时间内为某一位代表放宽规则。</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
     <value>销售运营经理</value>
@@ -424,22 +424,22 @@
     <value>保存并应用设置</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
-    <value>在“分范围设置”选项卡的“设置表单”中为每项证据做出选择。右侧的预览显示代表开始拜访时会看到的内容。</value>
+    <value>在“分范围设置”选项卡的“范围”中选择租户、某个法人实体或业务单元。要新建范围，请点击“添加法人实体”或“添加业务单元”；新范围初始为空，所有字段都继承自上级。</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
-    <value>选择规则</value>
+    <value>选择范围</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
-    <value>点击“保存”，检查变更的行，然后用“保存并应用”确认。设置会立即应用于所有代表。</value>
+    <value>在“设置表单”中，对要更改的字段点击“在此范围中更改”；“恢复为上级设置”会重新继承上级的值。点击“保存”，检查变更的行及受影响的代表人数，然后用“保存并应用”确认。</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
-    <value>保存并应用</value>
+    <value>更改字段并应用</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
-    <value>“变更历史”显示谁在何时更改了什么。“代表”显示每位代表今天生效的值；因例外而放宽的值旁标有“例外”。</value>
+    <value>“查看代表的生效设置”显示每个字段的值及其来源范围。“变更历史”按范围显示谁在何时更改了什么；“代表”显示每位代表所适用的范围。“移除范围”会立即让其代表恢复为上级设置；请按 Ctrl+Enter（Mac 上为 ⌘+Enter）确认。</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
-    <value>查看历史和代表</value>
+    <value>查看来源和历史</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
     <value>在“限时例外”选项卡中点击“新建例外”。填写代表、要放宽的规则、最长 30 天的日期范围和理由，然后点击“提交审批”或按 Ctrl+Enter（Mac 上为 ⌘+Enter）。</value>

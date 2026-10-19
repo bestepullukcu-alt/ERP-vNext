@@ -415,7 +415,7 @@
     <value>Usar el teclado</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
-    <value>Defina las evidencias que un representante debe aportar al iniciar una visita: ubicación, foto, código QR de la institución y verificación del dispositivo. La configuración del inquilino se aplica a todos los representantes; una excepción temporal relaja una regla para un solo representante durante un tiempo.</value>
+    <value>Defina las evidencias que un representante debe aportar al iniciar una visita: ubicación, foto, código QR de la institución y verificación del dispositivo. La configuración es por capas y gana la más específica: la unidad de negocio prevalece sobre la entidad legal, y esta sobre el inquilino; una excepción temporal relaja una regla para un solo representante durante un tiempo.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
     <value>Responsables de operaciones comerciales</value>
@@ -424,22 +424,22 @@
     <value>Guardar y aplicar la configuración</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
-    <value>En la pestaña «Ajustes por ámbito», elija una opción para cada evidencia en «Formulario». La vista previa de la derecha muestra lo que verá el representante al iniciar la visita.</value>
+    <value>En la pestaña «Ajustes por ámbito», elija el inquilino, una entidad legal o una unidad de negocio en «Ámbitos». Para un ámbito nuevo, haga clic en «Añadir entidad legal» o «Añadir unidad de negocio»; empieza vacío y todos los campos vienen del nivel superior.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
-    <value>Elegir las reglas</value>
+    <value>Elegir el ámbito</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
-    <value>Haga clic en «Guardar», revise las filas cambiadas y confirme con «Guardar y aplicar». La configuración se aplica de inmediato a todos los representantes.</value>
+    <value>En «Formulario», haga clic en «Cambiar en este ámbito» en el campo que quiera cambiar; «Volver al ajuste superior» lo vuelve a heredar. Haga clic en «Guardar», revise las filas cambiadas y a cuántos representantes llega, y confirme con «Guardar y aplicar».</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
-    <value>Guardar y aplicar</value>
+    <value>Cambiar los campos y aplicar</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
-    <value>«Historial de cambios» muestra quién cambió qué y cuándo. «Representantes» muestra el valor vigente hoy para cada representante; un valor relajado por una excepción lleva la marca «excepción».</value>
+    <value>«Ver el ajuste efectivo de un representante» muestra el valor de cada campo y el ámbito del que viene. «Historial de cambios» muestra quién cambió qué y cuándo, filtrado por ámbito; «Representantes» muestra el ámbito aplicado a cada representante. «Quitar el ámbito» devuelve de inmediato a sus representantes al ajuste superior; confirme con Ctrl+Intro (⌘+Intro en Mac).</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
-    <value>Seguir el historial y los representantes</value>
+    <value>Seguir el origen y el historial</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
     <value>En la pestaña «Excepciones temporales», haga clic en «Nueva excepción». Indique el representante, las reglas que se relajan, un periodo de 30 días como máximo y el motivo, y haga clic en «Enviar a aprobación» o pulse Ctrl+Intro (⌘+Intro en Mac).</value>

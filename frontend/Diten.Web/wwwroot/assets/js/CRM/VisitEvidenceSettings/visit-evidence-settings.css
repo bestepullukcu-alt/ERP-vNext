@@ -98,7 +98,8 @@
 .ve-node-name { font-size: 14px; color: var(--ve-h); font-weight: 600; display: flex; gap: 6px; align-items: center; }
 .ve-node-meta { font-size: 12px; color: var(--ve-mu); }
 .ve-node-last { font-size: 11px; color: var(--ve-mu); }
-.ve-add { border: 0; background: transparent; border-radius: 6px; padding: 6px 12px; display: flex; gap: 6px; align-items: center; color: var(--ve-pt); font-size: 13px; opacity: .5; cursor: not-allowed; }
+.ve-add { border: 0; background: transparent; border-radius: 6px; padding: 6px 12px; padding-inline-start: 28px; display: flex; gap: 6px; align-items: center; color: var(--ve-pt); font-size: 13px; cursor: pointer; width: 100%; text-align: start; }
+.ve-add:hover { background: var(--ve-soft); }
 .ve-hint { font-size: 12px; color: var(--ve-mu); padding: 0 12px 8px; display: flex; gap: 4px; align-items: flex-start; }
 .ve-field .ve-hint, .ve-fields .ve-hint { padding: 0; }
 .ve-input { height: 38px; border: 1px solid var(--ve-bd2); border-radius: 6px; padding: 0 12px; font-size: 14px; color: var(--ve-h); background: var(--ve-card); width: 100%; }
@@ -220,3 +221,19 @@
 .datatables-visitevidenceexceptions .ve-pill { white-space: nowrap; }
 .ve-empty-state { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 24px; text-align: center; color: var(--ve-h); }
 .ve-empty-state i { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; background: var(--ve-pl); color: var(--ve-pt); margin-bottom: 4px; }
+
+/* ── WP-VW-W3L (W3-WEB-e) — the scope layers (mockup C1 / C2 / screen 7) ── */
+.ve-node-layer { padding-inline-start: 28px; }
+.ve-node-icon.ve-tone-secondary, .ve-scope-icon.ve-tone-secondary { background: var(--ve-seb); color: var(--ve-se); }
+.ve-node-icon.ve-tone-info, .ve-scope-icon.ve-tone-info { background: var(--ve-inb); color: var(--ve-in); }
+.ve-node-icon.ve-tone-primary, .ve-scope-icon.ve-tone-primary { background: var(--ve-pl); color: var(--ve-pt); }
+.ve-node-layer .ve-node-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ve-node-layer.active .ve-node-name { font-weight: 600; }
+.ve-node-meta.ve-node-diff { color: var(--ve-pt); }
+.ve-inherited .ve-seg, .ve-inherited .ve-radios, .ve-inherited .ve-num, .ve-inherited .ve-switch, .ve-inherited .ve-choices { opacity: .55; }
+.ve-inh { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; margin-top: 8px; }
+.ve-inh .ve-link { display: inline-flex; gap: 3px; align-items: center; text-decoration: none; color: var(--ve-pt); font-weight: 500; padding: 0; }
+.ve-dlg-icon-danger { background: var(--ve-dab); color: var(--ve-da); }
+.ve-dlg-icon-primary { background: var(--ve-pl); color: var(--ve-pt); }
+.ve-history-filter { max-width: 360px; }
+#ve-eff-chain .ve-pill { font-size: 13px; }

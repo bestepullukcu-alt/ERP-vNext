@@ -53,10 +53,11 @@ public sealed class VisitEvidenceSettingsWebTests
         Assert.True(manager.CanRead && manager.CanManagePolicy && manager.CanReadExceptions && manager.CanManageExceptions);
         Assert.Equal("user-1", manager.Me);
 
-        // this round: the tenant default only; the legal entity layer is a disabled button with its hint
-        Assert.Contains("class=\"ve-add\" disabled", view);
-        Assert.Contains("Localizer[\"AddLegalEntityHint\"]", view);
-        Assert.DoesNotContain("AddBusinessUnit", view);
+        // WP-VW-W3L (W3-WEB-e) — the layers are live: the script draws them (and "add") into the tree; no disabled stand-in
+        Assert.Contains("<div class=\"ve-col ve-gap-xs\" id=\"ve-tree-layers\"></div>", view);
+        Assert.DoesNotContain("class=\"ve-add\" disabled", view);
+        Assert.DoesNotContain("AddLegalEntityHint", view);
+        Assert.DoesNotContain("ScopeUnresolved", view);
         // WP-VW-W3E (W3E-WEB-b, E1) — the former "Additional evidence · Coming soon" card is replaced by the live section
         Assert.DoesNotContain("ve-soon", view);
         Assert.Contains("<div id=\"ve-extra\"></div>", view);

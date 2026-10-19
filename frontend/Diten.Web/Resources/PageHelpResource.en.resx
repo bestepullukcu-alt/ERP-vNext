@@ -415,7 +415,7 @@
     <value>Use the keyboard</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
-    <value>Set the evidence a rep must give when starting a visit: location, photo, institution QR code and device verification. The tenant setting applies to every rep; a time-boxed exception relaxes a rule for one rep for a while.</value>
+    <value>Set the evidence a rep must give when starting a visit: location, photo, institution QR code and device verification. The setting is layered and the most specific wins: a business unit setting overrides the legal entity setting, which overrides the tenant setting; a time-boxed exception relaxes a rule for one rep for a while.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
     <value>Sales operations managers</value>
@@ -424,22 +424,22 @@
     <value>Saving and applying the setting</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
-    <value>On the “Scoped settings” tab, make a choice for each kind of evidence in the “Setting form”. The preview on the right shows what the rep will see when starting a visit.</value>
+    <value>On the “Scoped settings” tab, pick the tenant, a legal entity or a business unit in “Scopes”. For a new scope click “Add legal entity” or “Add business unit”; it starts empty and every field comes from above.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
-    <value>Choose the rules</value>
+    <value>Choose the scope</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
-    <value>Click “Save”, check the changed rows and confirm with “Save and apply”. The setting applies to every rep at once.</value>
+    <value>In the “Setting form”, click “Change in this scope” on a field you want to change; “Back to the setting above” takes it from above again. Click “Save”, check the changed rows and how many reps it reaches, and confirm with “Save and apply”.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
-    <value>Save and apply</value>
+    <value>Change the fields and apply</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
-    <value>“Change history” shows who changed what and when. “Reps” shows each rep's value in force today; a value relaxed by an exception is marked “exception”.</value>
+    <value>“See a rep's effective setting” shows each field's value and the scope it comes from. “Change history” shows who changed what and when, filtered by scope; “Reps” shows the scope applied to each rep. “Remove the scope” returns its reps to the setting above at once; confirm with Ctrl+Enter (⌘+Enter on a Mac).</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
-    <value>Follow the history and the reps</value>
+    <value>Follow the source and the history</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
     <value>On the “Time-boxed exceptions” tab, click “New exception”. Enter the rep, the rules to relax, a date range of at most 30 days and the reason, then click “Send for approval” or press Ctrl+Enter (⌘+Enter on a Mac).</value>

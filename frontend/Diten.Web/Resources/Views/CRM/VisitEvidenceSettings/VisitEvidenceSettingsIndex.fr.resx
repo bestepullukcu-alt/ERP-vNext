@@ -16,7 +16,6 @@
   <data name="TenantDefault" xml:space="preserve"><value>Valeur par défaut du locataire</value></data>
   <data name="Locked" xml:space="preserve"><value>Ne peut pas être supprimé</value></data>
   <data name="AddLegalEntity" xml:space="preserve"><value>Ajouter une entité juridique</value></data>
-  <data name="AddLegalEntityHint" xml:space="preserve"><value>Les niveaux entité juridique et unité commerciale s'ouvrent lorsque le poste et l'affectation de territoire du délégué sont reliés.</value></data>
   <data name="LookTitle" xml:space="preserve"><value>Voir le paramètre effectif d'un délégué</value></data>
   <data name="LookSearch" xml:space="preserve"><value>Rechercher un délégué</value></data>
   <data name="EffectiveTitle" xml:space="preserve"><value>Paramètre effectif</value></data>
@@ -27,7 +26,6 @@
   <data name="Priority" xml:space="preserve"><value>Priorité :</value></data>
   <data name="SourceException" xml:space="preserve"><value>Exception</value></data>
   <data name="SourceTenant" xml:space="preserve"><value>Locataire</value></data>
-  <data name="ScopeUnresolved" xml:space="preserve"><value>Les niveaux entité juridique et unité commerciale ne sont pas encore reliés.</value></data>
   <data name="TypeTenant" xml:space="preserve"><value>Locataire</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Formulaire</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>Historique des modifications</value></data>
@@ -43,7 +41,7 @@
   <data name="Unsaved" xml:space="preserve"><value>Des modifications ne sont pas enregistrées</value></data>
   <data name="CancelButton" xml:space="preserve"><value>Annuler</value></data>
   <data name="SaveButton" xml:space="preserve"><value>Enregistrer</value></data>
-  <data name="HistoryTitle" xml:space="preserve"><value>Historique · Valeur par défaut du locataire</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historique des modifications</value></data>
   <data name="AuditReadOnly" xml:space="preserve"><value>Enregistrement d'audit · lecture seule</value></data>
   <data name="ColDate" xml:space="preserve"><value>Date</value></data>
   <data name="ColPerson" xml:space="preserve"><value>Personne</value></data>
@@ -251,4 +249,49 @@
   <data name="FilterPhase" xml:space="preserve"><value>Étape</value></data>
   <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
   <data name="ColActions" xml:space="preserve"><value>Opérations</value></data>
+  <data name="TypeLegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
+  <data name="TypeBusinessUnit" xml:space="preserve"><value>Unité commerciale</value></data>
+  <data name="Diff" xml:space="preserve"><value>{0} champs différents</value></data>
+  <data name="NoDiff" xml:space="preserve"><value>Aucun changement</value></data>
+  <data name="RepsAtLeast" xml:space="preserve"><value>au moins {0} délégués</value></data>
+  <data name="AddBusinessUnit" xml:space="preserve"><value>Ajouter une unité commerciale</value></data>
+  <data name="AddTitleLegalEntity" xml:space="preserve"><value>Ajouter un paramètre d'entité juridique</value></data>
+  <data name="AddTitleBusinessUnit" xml:space="preserve"><value>Ajouter un paramètre d'unité commerciale</value></data>
+  <data name="AddDescription" xml:space="preserve"><value>Un nouveau périmètre démarre vide ; tous les champs viennent du périmètre supérieur.</value></data>
+  <data name="AddPlaceholder" xml:space="preserve"><value>Sélectionner</value></data>
+  <data name="AddConfirm" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="AddNone" xml:space="preserve"><value>Plus aucun périmètre à ajouter.</value></data>
+  <data name="AddUnavailable" xml:space="preserve"><value>La liste n'a pas pu être lue ; réessayez plus tard.</value></data>
+  <data name="NewScopeBadge" xml:space="preserve"><value>Pas encore enregistré</value></data>
+  <data name="NewScopeNote" xml:space="preserve"><value>Un nouveau périmètre démarre vide ; tous les champs viennent du périmètre supérieur. Il est créé lorsque vous l'enregistrez avec au moins un champ modifié.</value></data>
+  <data name="InheritNote" xml:space="preserve"><value>Les champs estompés viennent du périmètre supérieur. Utilisez « Modifier dans ce périmètre » sur le champ à changer.</value></data>
+  <data name="InheritNoneNote" xml:space="preserve"><value>Ce périmètre ne modifie encore aucun champ ; toutes les valeurs viennent du périmètre supérieur.</value></data>
+  <data name="InheritBuNote" xml:space="preserve"><value>Dans une unité commerciale, un champ vide vient du paramètre de l'entité juridique du délégué, ou du locataire à défaut.</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>Hérité ({0}) : {1}</value></data>
+  <data name="ChangeHere" xml:space="preserve"><value>Modifier dans ce périmètre</value></data>
+  <data name="OverriddenHere" xml:space="preserve"><value>Modifié dans ce périmètre</value></data>
+  <data name="UpperValue" xml:space="preserve"><value>Paramètre supérieur : {0}</value></data>
+  <data name="BackToUpperLink" xml:space="preserve"><value>Revenir au paramètre supérieur</value></data>
+  <data name="LayerEmpty" xml:space="preserve"><value>Pour enregistrer, modifiez au moins un champ dans ce périmètre ; pour tout hériter, supprimez le périmètre.</value></data>
+  <data name="SaveTextNew" xml:space="preserve"><value>Le périmètre est créé et s'applique aussitôt aux délégués qui en relèvent.</value></data>
+  <data name="ScopeCreated" xml:space="preserve"><value>Le périmètre a été créé.</value></data>
+  <data name="DiffInherited" xml:space="preserve"><value>Hérité : {0}</value></data>
+  <data name="DiffBackToUpper" xml:space="preserve"><value>Revient au paramètre supérieur ({0})</value></data>
+  <data name="ScopeRemove" xml:space="preserve"><value>Supprimer le périmètre</value></data>
+  <data name="RemoveTitle" xml:space="preserve"><value>Supprimer le périmètre ?</value></data>
+  <data name="RemoveText" xml:space="preserve"><value>Les {0} délégués de ce périmètre reviennent aussitôt au paramètre supérieur. L'historique conserve le périmètre.</value></data>
+  <data name="Removed" xml:space="preserve"><value>Le périmètre a été supprimé ; ses délégués sont revenus au paramètre supérieur.</value></data>
+  <data name="SourceLegalEntity" xml:space="preserve"><value>Entité juridique : {0}</value></data>
+  <data name="SourceBusinessUnit" xml:space="preserve"><value>Unité commerciale : {0}</value></data>
+  <data name="ChainNoSeat" xml:space="preserve"><value>Aucune affectation de poste — la couche entité juridique a été ignorée</value></data>
+  <data name="ChainPlatformDown" xml:space="preserve"><value>Le poste n'a pas pu être lu — la couche entité juridique a été ignorée</value></data>
+  <data name="ChainNoTerritory" xml:space="preserve"><value>Aucune affectation de territoire principale — la couche unité commerciale a été ignorée</value></data>
+  <data name="ChainNoBusinessUnit" xml:space="preserve"><value>L'affectation de territoire n'indique aucune unité commerciale — la couche unité commerciale a été ignorée</value></data>
+  <data name="ChainBuAmbiguous" xml:space="preserve"><value>Plusieurs unités commerciales — la couche unité commerciale a été ignorée</value></data>
+  <data name="HistAllScopes" xml:space="preserve"><value>Tous les périmètres</value></data>
+  <data name="HistScopeFilter" xml:space="preserve"><value>Périmètre</value></data>
+  <data name="ColScope" xml:space="preserve"><value>Périmètre</value></data>
+  <data name="HistArchived" xml:space="preserve"><value>Périmètre supprimé</value></data>
+  <data name="HistScopeCreated" xml:space="preserve"><value>Périmètre créé</value></data>
+  <data name="HistInherited" xml:space="preserve"><value>Hérité</value></data>
 </root>

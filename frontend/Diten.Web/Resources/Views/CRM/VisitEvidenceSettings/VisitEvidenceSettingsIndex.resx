@@ -16,7 +16,6 @@
   <data name="TenantDefault" xml:space="preserve"><value>Tenant default</value></data>
   <data name="Locked" xml:space="preserve"><value>Cannot be removed</value></data>
   <data name="AddLegalEntity" xml:space="preserve"><value>Add legal entity</value></data>
-  <data name="AddLegalEntityHint" xml:space="preserve"><value>The legal entity and business unit layers open when the rep's position and territory assignments are connected.</value></data>
   <data name="LookTitle" xml:space="preserve"><value>See a rep's effective setting</value></data>
   <data name="LookSearch" xml:space="preserve"><value>Search a rep</value></data>
   <data name="EffectiveTitle" xml:space="preserve"><value>Effective setting</value></data>
@@ -27,7 +26,6 @@
   <data name="Priority" xml:space="preserve"><value>Priority:</value></data>
   <data name="SourceException" xml:space="preserve"><value>Exception</value></data>
   <data name="SourceTenant" xml:space="preserve"><value>Tenant</value></data>
-  <data name="ScopeUnresolved" xml:space="preserve"><value>Legal entity and business unit layers are not connected yet.</value></data>
   <data name="TypeTenant" xml:space="preserve"><value>Tenant</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Setting form</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>Change history</value></data>
@@ -43,7 +41,7 @@
   <data name="Unsaved" xml:space="preserve"><value>There are unsaved changes</value></data>
   <data name="CancelButton" xml:space="preserve"><value>Cancel</value></data>
   <data name="SaveButton" xml:space="preserve"><value>Save</value></data>
-  <data name="HistoryTitle" xml:space="preserve"><value>Change history · Tenant default</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Change history</value></data>
   <data name="AuditReadOnly" xml:space="preserve"><value>Audit record · read only</value></data>
   <data name="ColDate" xml:space="preserve"><value>Date</value></data>
   <data name="ColPerson" xml:space="preserve"><value>Person</value></data>
@@ -251,4 +249,49 @@
   <data name="FilterPhase" xml:space="preserve"><value>Phase</value></data>
   <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
   <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="TypeLegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="TypeBusinessUnit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="Diff" xml:space="preserve"><value>{0} fields differ</value></data>
+  <data name="NoDiff" xml:space="preserve"><value>No changes</value></data>
+  <data name="RepsAtLeast" xml:space="preserve"><value>at least {0} reps</value></data>
+  <data name="AddBusinessUnit" xml:space="preserve"><value>Add business unit</value></data>
+  <data name="AddTitleLegalEntity" xml:space="preserve"><value>Add a legal entity setting</value></data>
+  <data name="AddTitleBusinessUnit" xml:space="preserve"><value>Add a business unit setting</value></data>
+  <data name="AddDescription" xml:space="preserve"><value>A new scope starts empty; every field comes from the scope above.</value></data>
+  <data name="AddPlaceholder" xml:space="preserve"><value>Select</value></data>
+  <data name="AddConfirm" xml:space="preserve"><value>Add</value></data>
+  <data name="AddNone" xml:space="preserve"><value>No scope left to add.</value></data>
+  <data name="AddUnavailable" xml:space="preserve"><value>The list could not be read; try again later.</value></data>
+  <data name="NewScopeBadge" xml:space="preserve"><value>Not saved yet</value></data>
+  <data name="NewScopeNote" xml:space="preserve"><value>A new scope starts empty; every field comes from the scope above. It is created when you save it with at least one changed field.</value></data>
+  <data name="InheritNote" xml:space="preserve"><value>Faded fields come from the scope above. Use “Change in this scope” on the field you want to change.</value></data>
+  <data name="InheritNoneNote" xml:space="preserve"><value>This scope does not change any field yet; every value comes from the scope above.</value></data>
+  <data name="InheritBuNote" xml:space="preserve"><value>In a business unit, an empty field comes from the rep's legal entity setting, or from the tenant when there is none.</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>From above ({0}): {1}</value></data>
+  <data name="ChangeHere" xml:space="preserve"><value>Change in this scope</value></data>
+  <data name="OverriddenHere" xml:space="preserve"><value>Changed in this scope</value></data>
+  <data name="UpperValue" xml:space="preserve"><value>Setting above: {0}</value></data>
+  <data name="BackToUpperLink" xml:space="preserve"><value>Back to the setting above</value></data>
+  <data name="LayerEmpty" xml:space="preserve"><value>To save, change at least one field in this scope; to take every field from above, remove the scope.</value></data>
+  <data name="SaveTextNew" xml:space="preserve"><value>The scope is created and applies at once to the reps who fall in it.</value></data>
+  <data name="ScopeCreated" xml:space="preserve"><value>The scope was created.</value></data>
+  <data name="DiffInherited" xml:space="preserve"><value>From above: {0}</value></data>
+  <data name="DiffBackToUpper" xml:space="preserve"><value>Back to the setting above ({0})</value></data>
+  <data name="ScopeRemove" xml:space="preserve"><value>Remove the scope</value></data>
+  <data name="RemoveTitle" xml:space="preserve"><value>Remove the scope?</value></data>
+  <data name="RemoveText" xml:space="preserve"><value>The {0} reps of this scope return to the setting above at once. The history keeps the scope.</value></data>
+  <data name="Removed" xml:space="preserve"><value>The scope was removed; its reps returned to the setting above.</value></data>
+  <data name="SourceLegalEntity" xml:space="preserve"><value>Legal entity: {0}</value></data>
+  <data name="SourceBusinessUnit" xml:space="preserve"><value>Business unit: {0}</value></data>
+  <data name="ChainNoSeat" xml:space="preserve"><value>No position assignment — the legal entity layer was skipped</value></data>
+  <data name="ChainPlatformDown" xml:space="preserve"><value>The position could not be read — the legal entity layer was skipped</value></data>
+  <data name="ChainNoTerritory" xml:space="preserve"><value>No primary territory assignment — the business unit layer was skipped</value></data>
+  <data name="ChainNoBusinessUnit" xml:space="preserve"><value>The territory assignment names no business unit — the business unit layer was skipped</value></data>
+  <data name="ChainBuAmbiguous" xml:space="preserve"><value>More than one business unit — the business unit layer was skipped</value></data>
+  <data name="HistAllScopes" xml:space="preserve"><value>All scopes</value></data>
+  <data name="HistScopeFilter" xml:space="preserve"><value>Scope</value></data>
+  <data name="ColScope" xml:space="preserve"><value>Scope</value></data>
+  <data name="HistArchived" xml:space="preserve"><value>Scope removed</value></data>
+  <data name="HistScopeCreated" xml:space="preserve"><value>Scope created</value></data>
+  <data name="HistInherited" xml:space="preserve"><value>From above</value></data>
 </root>

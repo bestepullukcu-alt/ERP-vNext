@@ -415,7 +415,7 @@
     <value>Klavyeyi kullanın</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
-    <value>Temsilcinin ziyarete başlarken vermesi gereken kanıtları ayarlayın: konum, fotoğraf, kurum QR kodu ve cihaz doğrulama. Kiracı ayarı tüm temsilcilere uygulanır; süreli istisna tek bir temsilci için kuralı geçici olarak gevşetir.</value>
+    <value>Temsilcinin ziyarete başlarken vermesi gereken kanıtları ayarlayın: konum, fotoğraf, kurum QR kodu ve cihaz doğrulama. Ayar katmanlıdır ve en özel olan kazanır: iş birimi ayarı tüzel kişilik ayarını, tüzel kişilik ayarı kiracı ayarını ezer; süreli istisna tek bir temsilci için kuralı geçici olarak gevşetir.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
     <value>Satış operasyon yöneticileri</value>
@@ -424,22 +424,22 @@
     <value>Ayarı kaydedip uygulama</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
-    <value>“Kapsamlı ayarlar” sekmesinde “Ayar formu” içinde her kanıt için seçiminizi yapın. Sağdaki önizleme, temsilcinin ziyarete başlarken ne göreceğini gösterir.</value>
+    <value>“Kapsamlı ayarlar” sekmesinde “Kapsamlar” listesinden kiracıyı, bir tüzel kişiliği ya da bir iş birimini seçin. Yeni bir kapsam için “Tüzel kişilik ekle” ya da “İş birimi ekle”ye tıklayın; yeni kapsam boş başlar ve tüm alanlar üstten gelir.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
-    <value>Kuralları seçin</value>
+    <value>Kapsamı seçin</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
-    <value>“Kaydet”e tıklayın, değişen satırları kontrol edin ve “Kaydet ve uygula” ile onaylayın. Ayar tüm temsilcilere hemen uygulanır.</value>
+    <value>“Ayar formu” içinde değiştirmek istediğiniz alanda “Bu kapsamda değiştir”e tıklayın; “Üst ayara dön” alanı yeniden üstten alır. “Kaydet”e tıklayın, değişen satırları ve kaç temsilciye uygulanacağını kontrol edip “Kaydet ve uygula” ile onaylayın.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
-    <value>Kaydedip uygulayın</value>
+    <value>Alanları değiştirip uygulayın</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
-    <value>“Değişiklik geçmişi” kimin neyi ne zaman değiştirdiğini gösterir. “Temsilciler” her temsilcinin bugün geçerli değerini gösterir; istisnayla gevşeyen değerin yanında “istisna” yazar.</value>
+    <value>“Bir temsilcinin etkin ayarını gör” her alanın değerini ve hangi kapsamdan geldiğini gösterir. “Değişiklik geçmişi” kimin neyi ne zaman değiştirdiğini kapsama göre süzerek, “Temsilciler” her temsilciye uygulanan kapsamı gösterir. “Kapsamı kaldır” o kapsamdaki temsilcileri hemen üst ayara döndürür; Ctrl+Enter (Mac'te ⌘+Enter) ile onaylayın.</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
-    <value>Geçmişi ve temsilcileri izleyin</value>
+    <value>Kaynağı ve geçmişi izleyin</value>
   </data>
   <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
     <value>“Süreli istisnalar” sekmesinde “Yeni istisna”ya tıklayın. Temsilciyi, gevşetilecek kuralları, en çok 30 günlük tarih aralığını ve gerekçeyi girip “Onaya gönder”e tıklayın ya da Ctrl+Enter'a (Mac'te ⌘+Enter) basın.</value>

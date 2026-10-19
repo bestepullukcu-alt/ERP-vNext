@@ -16,7 +16,6 @@
   <data name="TenantDefault" xml:space="preserve"><value>租户默认值</value></data>
   <data name="Locked" xml:space="preserve"><value>无法删除</value></data>
   <data name="AddLegalEntity" xml:space="preserve"><value>添加法人实体</value></data>
-  <data name="AddLegalEntityHint" xml:space="preserve"><value>当代表的职位和区域分配关联后，将开放法人实体和业务单元层级。</value></data>
   <data name="LookTitle" xml:space="preserve"><value>查看代表的生效设置</value></data>
   <data name="LookSearch" xml:space="preserve"><value>搜索代表</value></data>
   <data name="EffectiveTitle" xml:space="preserve"><value>生效设置</value></data>
@@ -27,7 +26,6 @@
   <data name="Priority" xml:space="preserve"><value>优先级：</value></data>
   <data name="SourceException" xml:space="preserve"><value>例外</value></data>
   <data name="SourceTenant" xml:space="preserve"><value>租户</value></data>
-  <data name="ScopeUnresolved" xml:space="preserve"><value>法人实体和业务单元层级尚未关联。</value></data>
   <data name="TypeTenant" xml:space="preserve"><value>租户</value></data>
   <data name="PaneForm" xml:space="preserve"><value>设置表单</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>变更历史</value></data>
@@ -43,7 +41,7 @@
   <data name="Unsaved" xml:space="preserve"><value>有未保存的更改</value></data>
   <data name="CancelButton" xml:space="preserve"><value>取消</value></data>
   <data name="SaveButton" xml:space="preserve"><value>保存</value></data>
-  <data name="HistoryTitle" xml:space="preserve"><value>变更历史 · 租户默认值</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>变更历史</value></data>
   <data name="AuditReadOnly" xml:space="preserve"><value>审计记录 · 只读</value></data>
   <data name="ColDate" xml:space="preserve"><value>日期</value></data>
   <data name="ColPerson" xml:space="preserve"><value>人员</value></data>
@@ -251,4 +249,49 @@
   <data name="FilterPhase" xml:space="preserve"><value>阶段</value></data>
   <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
   <data name="ColActions" xml:space="preserve"><value>操作</value></data>
+  <data name="TypeLegalEntity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="TypeBusinessUnit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="Diff" xml:space="preserve"><value>{0} 个字段不同</value></data>
+  <data name="NoDiff" xml:space="preserve"><value>无更改</value></data>
+  <data name="RepsAtLeast" xml:space="preserve"><value>至少 {0} 名代表</value></data>
+  <data name="AddBusinessUnit" xml:space="preserve"><value>添加业务单元</value></data>
+  <data name="AddTitleLegalEntity" xml:space="preserve"><value>添加法人实体设置</value></data>
+  <data name="AddTitleBusinessUnit" xml:space="preserve"><value>添加业务单元设置</value></data>
+  <data name="AddDescription" xml:space="preserve"><value>新范围初始为空；所有字段均继承自上级范围。</value></data>
+  <data name="AddPlaceholder" xml:space="preserve"><value>请选择</value></data>
+  <data name="AddConfirm" xml:space="preserve"><value>添加</value></data>
+  <data name="AddNone" xml:space="preserve"><value>没有可添加的范围。</value></data>
+  <data name="AddUnavailable" xml:space="preserve"><value>无法读取列表；请稍后重试。</value></data>
+  <data name="NewScopeBadge" xml:space="preserve"><value>尚未保存</value></data>
+  <data name="NewScopeNote" xml:space="preserve"><value>新范围初始为空；所有字段均继承自上级范围。至少修改一个字段并保存后才会创建。</value></data>
+  <data name="InheritNote" xml:space="preserve"><value>淡色字段继承自上级范围。请在要更改的字段上使用“在此范围中更改”。</value></data>
+  <data name="InheritNoneNote" xml:space="preserve"><value>此范围尚未更改任何字段；所有值均继承自上级范围。</value></data>
+  <data name="InheritBuNote" xml:space="preserve"><value>在业务单元中，空字段继承自代表所属法人实体的设置；若无，则继承自租户。</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>继承自上级（{0}）：{1}</value></data>
+  <data name="ChangeHere" xml:space="preserve"><value>在此范围中更改</value></data>
+  <data name="OverriddenHere" xml:space="preserve"><value>已在此范围中更改</value></data>
+  <data name="UpperValue" xml:space="preserve"><value>上级设置：{0}</value></data>
+  <data name="BackToUpperLink" xml:space="preserve"><value>恢复为上级设置</value></data>
+  <data name="LayerEmpty" xml:space="preserve"><value>要保存，请至少在此范围中更改一个字段；若希望全部继承上级，请移除此范围。</value></data>
+  <data name="SaveTextNew" xml:space="preserve"><value>范围将被创建，并立即应用于属于该范围的代表。</value></data>
+  <data name="ScopeCreated" xml:space="preserve"><value>范围已创建。</value></data>
+  <data name="DiffInherited" xml:space="preserve"><value>继承：{0}</value></data>
+  <data name="DiffBackToUpper" xml:space="preserve"><value>恢复为上级设置（{0}）</value></data>
+  <data name="ScopeRemove" xml:space="preserve"><value>移除范围</value></data>
+  <data name="RemoveTitle" xml:space="preserve"><value>移除此范围？</value></data>
+  <data name="RemoveText" xml:space="preserve"><value>此范围中的 {0} 名代表将立即恢复为上级设置。历史记录会保留此范围。</value></data>
+  <data name="Removed" xml:space="preserve"><value>范围已移除；其代表已恢复为上级设置。</value></data>
+  <data name="SourceLegalEntity" xml:space="preserve"><value>法人实体：{0}</value></data>
+  <data name="SourceBusinessUnit" xml:space="preserve"><value>业务单元：{0}</value></data>
+  <data name="ChainNoSeat" xml:space="preserve"><value>无职位分配 — 已跳过法人实体层</value></data>
+  <data name="ChainPlatformDown" xml:space="preserve"><value>无法读取职位 — 已跳过法人实体层</value></data>
+  <data name="ChainNoTerritory" xml:space="preserve"><value>无主要区域分配 — 已跳过业务单元层</value></data>
+  <data name="ChainNoBusinessUnit" xml:space="preserve"><value>区域分配未指定业务单元 — 已跳过业务单元层</value></data>
+  <data name="ChainBuAmbiguous" xml:space="preserve"><value>存在多个业务单元 — 已跳过业务单元层</value></data>
+  <data name="HistAllScopes" xml:space="preserve"><value>所有范围</value></data>
+  <data name="HistScopeFilter" xml:space="preserve"><value>范围</value></data>
+  <data name="ColScope" xml:space="preserve"><value>范围</value></data>
+  <data name="HistArchived" xml:space="preserve"><value>范围已移除</value></data>
+  <data name="HistScopeCreated" xml:space="preserve"><value>范围已创建</value></data>
+  <data name="HistInherited" xml:space="preserve"><value>继承</value></data>
 </root>

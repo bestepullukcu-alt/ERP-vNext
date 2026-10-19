@@ -71,8 +71,8 @@ public sealed partial class VisitEvidenceFlagsWebTests
     {
         foreach (var (file, id, slug, headers) in new[]
                  {
-                     ("_HistoryTable.cshtml", "dt-ve-history", "ve-history", new[] { "ColDate", "ColPerson", "ColField", "ColChange" }),
-                     ("_RepsTable.cshtml", "dt-ve-reps", "ve-reps", new[] { "ColRep", "ColLocation", "ColPhoto", "ColQr", "ColDevice" })
+                     ("_HistoryTable.cshtml", "dt-ve-history", "ve-history", new[] { "ColDate", "ColScope", "ColPerson", "ColField", "ColChange" }), // WP-VW-W3L: + the scope
+                     ("_RepsTable.cshtml", "dt-ve-reps", "ve-reps", new[] { "ColRep", "ColScope", "ColLocation", "ColPhoto", "ColQr", "ColDevice" })
                  })
         {
             var shell = VeView(file);
@@ -284,7 +284,9 @@ public sealed partial class VisitEvidenceFlagsWebTests
     {
         var keys = new[] { "PaneForm", "PaneHistory", "PaneReps", "TenantDefault", "HistoryTitle", "AuditReadOnly", "RepsTitle", "RepsNote",
             "ColDate", "ColPerson", "ColField", "ColChange", "ColRep", "ColLocation", "ColPhoto", "ColQr", "ColDevice",
-            "HistCreated", "UnitMeters", "UnitSeconds", "ValueOn", "ValueOff", "SourceExceptionShort" };
+            "HistCreated", "UnitMeters", "UnitSeconds", "ValueOn", "ValueOff", "SourceExceptionShort",
+            // WP-VW-W3L — the export's scope column and a layer's rows
+            "ColScope", "HistScopeCreated", "HistArchived", "HistInherited" };
         var controller = File.ReadAllText(Path.Combine(WebRoot(), "Controllers", "CRM", "VisitEvidenceSettingsController.cs"));
         foreach (Match m in Regex.Matches(controller, "Text\\(\"([A-Za-z]+)\", c"))
         {
