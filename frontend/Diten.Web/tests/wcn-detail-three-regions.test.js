@@ -1081,7 +1081,7 @@ describe("cancelling a subtask actually cancels it", () => {
   const withSubtasks = (items) => projectionItem({ subtasks: { mode: "full", items } });
 
   const withConfirm = (behaviour) => {
-    // The real MOD-0013 shape: a callback for yes, options.onCancel for no — and NEITHER fires synchronously.
+    // The real MOD-0286 (formerly MOD-0013) shape: a callback for yes, options.onCancel for no — and NEITHER fires synchronously.
     global.showConfirm = (message, callback, options) => {
       setTimeout(() => {
         if (behaviour === "yes") { callback(); } else if (options && options.onCancel) { options.onCancel(); }

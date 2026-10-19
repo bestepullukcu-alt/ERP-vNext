@@ -1002,7 +1002,7 @@ describe("cancelling a subtask from its row", () => {
     /*
      * Content, not count: every boot in this file leaves another delegated document listener behind (jsdom keeps
      * one document per file), so a single click reaches every instance loaded so far. What matters is that the
-     * click asked BEFORE acting, through the app's single MOD-0013 confirm rather than a page-local dialog.
+     * click asked BEFORE acting, through the app's single MOD-0286 (formerly MOD-0013) confirm rather than a page-local dialog.
      */
     expect(asked.length).toBeGreaterThan(0);
     asked.forEach((message) => expect(message).toContain("SubtaskCancelConfirm"));

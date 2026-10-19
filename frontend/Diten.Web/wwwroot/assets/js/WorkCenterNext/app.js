@@ -6181,7 +6181,7 @@
     };
 
     /*
-     * MOD-0013 is the ONE confirm implementation in the app; a page-local dialog would be a second one.
+     * MOD-0286 (formerly MOD-0013) is the ONE confirm implementation in the app; a page-local dialog would be a second one.
      *
      * ⚠ THE BUG THIS SHAPE CAUSED, written down because it was invisible: the previous version resolved FALSE
      * on the next tick — "showConfirm does not report dismissal" — so the promise settled a millisecond after
@@ -7721,7 +7721,7 @@
         }
     };
 
-    // WorkCenter uses the shared MOD-0013 Notyf surface. A page-local toast would
+    // WorkCenter uses the shared MOD-0286 (formerly MOD-0013) Notyf surface. A page-local toast would
     // introduce a second position, colour system and accessibility lifecycle.
     const toast = (message, type) => global.showToast?.(message, type || 'success');
 

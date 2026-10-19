@@ -3,7 +3,7 @@
 // MOD-0145 Sourcing Details — RFx lifecycle actions (publish / submit bid / award) + bids sub-list.
 // State-changing calls go through the same-origin controller proxy (/Sourcing/...), which keeps the
 // Idempotency-Key server-side. Confirmations use the premium shared helpers (window.showConfirm/showToast,
-// premium-modal-standard MOD-0013); data entry uses Bootstrap modals.
+// premium-modal-standard, MOD-0286 (formerly MOD-0013)); data entry uses Bootstrap modals.
 (function () {
     const root = document.querySelector('.sourcing-details');
     if (!root) return;

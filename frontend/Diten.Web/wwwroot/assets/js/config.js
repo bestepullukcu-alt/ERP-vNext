@@ -43,7 +43,7 @@ window.config = {
 window.assetsPath = document.documentElement.getAttribute('data-assets-path');
 window.templateName = document.documentElement.getAttribute('data-template');
 
-if (typeof TemplateCustomizer !== 'undefined') {  // MOD-0013: 7 Language Support for Template Customizer
+if (typeof TemplateCustomizer !== 'undefined') {  // MOD-0286 (formerly MOD-0013): 7 Language Support for Template Customizer
   TemplateCustomizer.LANGUAGES.en = {
     panel_header: 'Template Customizer',
     panel_sub_header: 'Customize and preview in real time',

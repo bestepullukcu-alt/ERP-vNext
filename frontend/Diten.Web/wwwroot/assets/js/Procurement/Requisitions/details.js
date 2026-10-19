@@ -3,7 +3,7 @@
 // MOD-0141 Requisition Details — submit lifecycle action (Draft → Submitted).
 // State-changing call goes through the same-origin controller proxy (/Requisitions/submit/{id}), which keeps the
 // Idempotency-Key server-side. Confirmation uses the premium shared helpers (window.showConfirm/showToast,
-// premium-modal-standard MOD-0013).
+// premium-modal-standard, MOD-0286 (formerly MOD-0013)).
 (function () {
     const root = document.querySelector('.requisition-details');
     if (!root) return;

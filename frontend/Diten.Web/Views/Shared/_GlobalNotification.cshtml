@@ -1,7 +1,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<!-- MOD-0013: Premium Toast Styling -->
+<!-- MOD-0286 (UI Design System & Page Pattern Governance; formerly MOD-0013 modal/toast standard): Premium Toast Styling -->
 <style>
     /* Z-Index: Toast ALWAYS on top, even above SweetAlert modals */
     .notyf {
@@ -139,7 +139,7 @@
         }
 
         type = type || 'success';
-        console.log('[MOD-0013 showToast] Triggered - Key:', key, '| Type:', type);
+        console.log('[MOD-0286 showToast] Triggered - Key:', key, '| Type:', type);
 
         var messages = {
             'RecordCreated': @Json.Serialize(SharedLocalizer["RecordCreated"].Value),
@@ -231,7 +231,7 @@
                     _notyfInstance.open({ type: type, message: notyfText });
                 }
 
-                console.log('[MOD-0013 showToast] Displayed via Notyf - Message:', message);
+                console.log('[MOD-0286 showToast] Displayed via Notyf - Message:', message);
                 return;
             }
 
@@ -258,12 +258,12 @@
                     Notiflix.Notify.failure(message);
                 }
 
-                console.log('[MOD-0013 showToast] Displayed via Notiflix - Message:', message);
+                console.log('[MOD-0286 showToast] Displayed via Notiflix - Message:', message);
                 return;
             }
-            console.warn('[MOD-0013 showToast] No toast library found. Message:', message);
+            console.warn('[MOD-0286 showToast] No toast library found. Message:', message);
         } catch (err) {
-            console.error('[MOD-0013 showToast] Error caught:', err);
+            console.error('[MOD-0286 showToast] Error caught:', err);
         }
     };
 </script>

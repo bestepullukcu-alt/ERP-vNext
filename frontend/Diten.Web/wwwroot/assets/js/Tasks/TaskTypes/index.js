@@ -505,7 +505,7 @@ const TaskFieldDefinitionList = (function () {
             };
             if (next) { void apply(); return; }
             /*
-             * ⚠ TITLE FIRST, SENTENCE AS `subtext` — the shared dialog's own contract (MOD-0013). The first
+             * ⚠ TITLE FIRST, SENTENCE AS `subtext` — the shared dialog's own contract (MOD-0286 (formerly MOD-0013)). The first
              * argument is a KEY OR TITLE; the body comes from `options.subtext`. Passing the whole sentence as
              * argument one put it in the title and left the generic "Devam etmek istediğinize emin misiniz?"
              * underneath, which is exactly the mismatch that dialog's comments already record for four other

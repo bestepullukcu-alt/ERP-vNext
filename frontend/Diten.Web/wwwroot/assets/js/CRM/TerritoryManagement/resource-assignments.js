@@ -720,7 +720,7 @@
 
     /**
      * Lifecycle prompts (End / Replace / Transfer) go through the platform-standard confirmation
-     * (MOD-0013 window.showConfirm) — the same modal the Golden Reference Slim delete uses:
+     * (MOD-0286 (formerly MOD-0013) window.showConfirm) — the same modal the Golden Reference Slim delete uses:
      * circled icon, centred title, entity badge, reversed btn-label-secondary cancel.
      * The extra fields are rendered into the confirmation body and validated inline, so the
      * confirm button stays disabled until every required field has a value.

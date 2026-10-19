@@ -1,5 +1,5 @@
 /*
- * Backbone Custom CSS (MOD-0013)
+ * Backbone Custom CSS (MOD-0286 (formerly MOD-0013))
  * Use this file for modern frontend standards.
  * Base: 16px rem (Sneat Default). Do NOT override html font-size.
  */
@@ -95,7 +95,7 @@ div.dt-container div.dt-search input {
     box-shadow: 0 0.125rem 0.25rem 0 rgba(161, 172, 184, 0.4);
 }
 
-/* MOD-0013: Fix sidebar brand text/badge visibility in collapsed state */
+/* MOD-0286 (formerly MOD-0013): Fix sidebar brand text/badge visibility in collapsed state */
 .layout-menu-collapsed .layout-menu .app-brand .menu-text {
     display: none !important;
 }
@@ -312,7 +312,7 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 }
 
 /* ================================================
-   Skeleton Loader / Shimmer Effect (MOD-0013)
+   Skeleton Loader / Shimmer Effect (MOD-0286 (formerly MOD-0013))
    ================================================ */
 .shimmer {
     background: #f6f7f8;

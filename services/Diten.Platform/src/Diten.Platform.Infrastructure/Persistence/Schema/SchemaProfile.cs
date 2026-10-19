@@ -30,7 +30,7 @@ public enum SchemaProfile
     /// <summary>MOD-0029 controlled documents, templates, shares, access policies.</summary>
     DocumentManagement = 8,
 
-    /// <summary>CAND-CAP-0010 Working Calendar &amp; Public Holidays: working_calendars + import batches.</summary>
+    /// <summary>MOD-0362 (formerly CAND-CAP-0010) Working Calendar &amp; Public Holidays: working_calendars + import batches.</summary>
     WorkingCalendar = 9,
 
     /// <summary>MOD-0357 Management Review &amp; Cadence: the meeting↔task bridge (S1). Meeting/minutes/attendee

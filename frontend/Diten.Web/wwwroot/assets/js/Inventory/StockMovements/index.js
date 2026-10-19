@@ -218,7 +218,7 @@ const StockMovementsList = (function () {
         }
     };
 
-    // The SHARED confirm (MOD-0013 window.showConfirm — one dialog implementation, product-wide). Its callback runs
+    // The SHARED confirm (MOD-0286 (formerly MOD-0013) window.showConfirm — one dialog implementation, product-wide). Its callback runs
     // after the dialog has closed, but a refused reversal must keep the dialog OPEN with the reason (pack §13), so
     // the confirm button is taken over in `didOpen`: post, and either close + reload, or stay with the sentence.
     const reverse = ({ row }) => {

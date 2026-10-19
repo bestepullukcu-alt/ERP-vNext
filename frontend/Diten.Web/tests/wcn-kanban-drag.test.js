@@ -782,7 +782,7 @@ describe("Kanban drop runs the action (Dilim 3b)", () => {
       fetchWorkItemsCalls += 1;
       return realFetch(...args);
     };
-    // The product's own toast seam (MOD-0013) — recorded rather than rendered, matching every other test in
+    // The product's own toast seam (MOD-0286 (formerly MOD-0013)) — recorded rather than rendered, matching every other test in
     // this suite that asserts on what the reader is TOLD (toast() is a no-op without this: `global.showToast?.`).
     toasted = [];
     global.showToast = (message, type) => { toasted.push({ message, type }); };
