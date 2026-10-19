@@ -1,6 +1,12 @@
 # CT-DRA-01 — Dev_Readiness aktarımı ve sürüme bağlı onay: alan ve kural sözleşmesi
 
-> **Durum:** taslak v2 — Codex'in ikinci incelemesi (KOŞULLU, 2026-10-19) işlendi; sahip kararları bekliyor. Kod yazılmadı.
+> **Durum:** v2 — sahip kararları alındı (2026-10-19). **§3 onay (APR) v1 uygulandı:** `scripts/pack_approval.py`,
+> `execution/approvals/`, `scripts/prompt_gate.py` dağıtım kapısı. Bağımsız inceleme (2026-10-19) 3 engel + 4 düzeltme
+> buldu, hepsi uygulandı: iptal edilen onayın tabanı, insan adımının main çizgisinde ölçülmesi, aynı kişinin hesapları
+> (`person`), listenin merge'den önceki hâli, silinen POLICY-START, yalnız-ekleme içerik denetimi, kanonik yol, başlığa
+> bağlı risk (gerçek geçmişte yüksek risk %63 → %39). **§2 Dev_Readiness (DRX) ertelendi:** main'de REP-001 v2
+> kaydı yok (0, ölçüldü); ilk kayıt main'e girince yazılır (backlog BL-656). Onaylayıcılar: rol + GitHub hesabı; junior
+> yüksek riskli işi onaylayamaz.
 > **Kapsam:** yalnız Control Tower araçları ve `.antigravity` kuralları. Ürün kodu, başka ekiplerin modülleri ve
 > MVP-6 yok.
 > **Ölçüm tabanı:** main `01f1080fd` (2026-10-19).

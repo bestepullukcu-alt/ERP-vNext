@@ -10499,3 +10499,22 @@ korumak mı bir karar işidir, teknik değil.
 **Ölçüm komutu:**
 
     grep -nE '^\| MOD-004[346] \|' execution/registries/module-id-registry.md
+
+### BL-656
+
+**Dev_Readiness aktarımı (CT-DRA-01 §2) — kanıt kaydı olmadığı için ertelendi**
+
+DURUM: ERTELENDİ · SAHİP: CONTROL TOWER · KARAR: sahip, 2026-10-19 ("önce onay sistemi") · KAYIT: 2026-10-19
+
+**Ne:** Blueprint 8.7 `Dev_Readiness` sayfası için depodan tek yönlü öneri tablosu (önerilen aşama, gerekçe, eksik kanıt,
+kanıt bağlantıları). Sözleşme hazır: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §2 (v2, Codex'in iki
+koşullu görüşü işlendi).
+**Neden ertelendi:** main'de REP-001 v2 kabul kaydı yok (0, ölçüldü 2026-10-19 `01f1080fd`); araç bugün boş tablo üretirdi.
+Eski kayıtlardan aşama çıkarmak, sözleşmenin yasakladığı kanıtsız aşama olur.
+**Yapım tetikleyicisi:** ilk REP-001 v2 modül kaydı (`completion: Module Done`) main'e girince. D1 (Owner kaynağı) o gün
+`execution/approvals/approvers.tsv` ile çözülür; D4 (`verified_at`) aynı işte okuyucuyla birlikte eklenir.
+**Gelecek regresyon riski:** 🟢 — Excel bu arada "Not Started" gösterir; kanıt olmadığı için bu doğru.
+
+**Ölçüm komutu:**
+
+    git grep -l '^format: rep-001-v2' -- docs/records | wc -l
