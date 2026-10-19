@@ -1,7 +1,7 @@
 ---
-id: CAND-CAP-0006
+id: MOD-0024-WC1B
 name: WC-1b — Frontend Wiring & Tenant Module Manifest (Görev Merkezi)
-governance_identity: CAND-CAP-0006
+governance_identity: MOD-0024 (was CAND-CAP-0006; Blueprint 8.7)
 charter: DCP-004
 slice: WC-1b
 domain: platform-shared-services
@@ -20,6 +20,8 @@ depends_on: WC-1 (commit 866bcbf3)
 ---
 
 # WC-1b — Frontend Wiring & Tenant Module Manifest (Görev Merkezi / Task Center)
+
+> **Blueprint 8.7 (2026-10-19):** the Master absorbs `CAND-CAP-0006` into `MOD-0024` Task & Checklist Engine as its Work Center page / workspace. This pack's identity is now `MOD-0024-WC1B` (child of `MOD-0024`; file renamed from `CAND-CAP-0006-WC1b-frontend-wiring-module-manifest.md`). The `CAND-CAP-0006` sentences below are the record before that; runtime code, slugs and the product name Görev Merkezi / Task Center are unchanged.
 
 > **Identity (DCP-002):** governance identity `CAND-CAP-0006`, charter
 > [DCP-004](../../../portfolio/delivery-capability-packs/DCP-004-work-aggregation-task-center.md) §8 row **1b**.
