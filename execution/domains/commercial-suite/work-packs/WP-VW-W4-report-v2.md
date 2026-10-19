@@ -1095,3 +1095,31 @@ Fleet yeniden başlatıldıktan sonra:
 - G-3 + G-4 arayüzden eczane hedefli + saatli plan dışı ziyaret: aynı gün aynı hedef 409 Türkçe mesaj; Karabük eczanesi 16:00 → 201, kayıt `0e3776f1` TargetType `pharmacy`, 16:00–16:20, Source `unplanned`.
 
 **W4 sonucu:** yerel E4 3 turda tamamlandı; açık hata yok. Kalan veri sahibi / kapsam dışı maddeler §37 FIX-c/d "Açık" listesinde. Temizlik listesine `0e3776f1` eklendi.
+
+
+## FU-W4-DOCINSIGHT-DATE — CT teşhisi (2026-10-19)
+**Kırmızı:** `VwW4DoctorInsightsTests.A_manual_profile_edit_needs_the_current_version_and_reads_availability_and_preferences_from_their_owners`, satır 372: `read.Preferences.Single()` → "Sequence contains no elements". Test dalında 2026-10-16'dan beri kırmızı.
+
+**Kök neden:** test karışık saat kullanıyor.
+- `World.Clock` sabit: `new TestClock(2026-10-13 09:00Z)` (satır 429).
+- Tercih kayıtları `EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1)` (satır 362, 367) **gerçek saatle** yazılıyor.
+- Okuma tarafı (`DoctorInsightsHandlers.cs:168`: `EffectiveFrom <= now`, `now` = sabit saat) gerçek tarih 2026-10-14'ü geçince tercihi "henüz yürürlükte değil" sayıp eliyor.
+
+**Ürün kodu doğru, test yanlış.** Benzer risk: `VwW4ShelfPhotoTests.cs:107` `PlannedDate = DateOnly.FromDateTime(DateTime.UtcNow)`.
+
+## §36.1 Agent Prompt — FU-W4-DOCINSIGHT-DATE (paste-ready · yalnız CRM testleri)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · FU-W4-DOCINSIGHT-DATE — CRM W4 doktor içgörü testi gerçek saat ile sabit test saatini karıştırıyor (2026-10-16'dan beri kırmızı); test saati tek kaynak olsun + ziyaret test ailesinde aynı karışımı tara ve düzelt
+Repository: C:\tmp\fu-w4-docinsight-date (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/fu-w4-docinsight-date · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "FU-W4-DOCINSIGHT-DATE — CT teşhisi". Emsal: W3E-FIX CT-3 (smoke saatinin sabitlenmesi) ve W3E-FLAGS-STD (Node düzeneğinde saat 2026-10-14'e sabit).
+MEVCUT: services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/VisitWorkspace/VwW4DoctorInsightsTests.cs — World.Clock = TestClock(2026-10-13 09:00Z) (satır ~429); satır ~362 ve ~367 PreferenceRecord.EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1) (gerçek saat); okuma DoctorInsightsHandlers.cs:168 "EffectiveFrom <= now" (now = enjekte saat) → bugün tercih elenir, satır 372 Single() boş. Aynı risk: VwW4ShelfPhotoTests.cs:107 PlannedDate = DateOnly.FromDateTime(DateTime.UtcNow).
+NE:
+(1) VwW4DoctorInsightsTests: test verisindeki her zaman değeri World.Clock'tan (Clock.GetUtcNow()) türetilir; gerçek saat (DateTime.UtcNow / DateTimeOffset.UtcNow / DateTime.Now / DateOnly.FromDateTime(DateTime.UtcNow)) bu dosyada kalmaz.
+(2) Tarama: CRM Application.Tests altında enjekte bir saat (TimeProvider / TestClock / FakeTimeProvider / sabit "now") kullanan ve aynı zamanda gerçek saat okuyan test dosyalarını listele (VwW*, VisitWorkspace, VisitEvidence, VisitQr, DoctorInsights öncelikli). Bizim ziyaret ailemizde (WP-VW-W2 / W3 / W3E / W4 testleri) karışım varsa aynı şekilde düzelt; başka modülün testlerini DÜZELTME, yalnız raporla (XMC-001).
+(3) Ürün koduna DOKUNMA: DoctorInsightsHandlers / ProductIndicationProfileReader zaten enjekte saatle çalışıyor — doğru.
+KORU/YAPMA: testlerin anlattığı kural ve beklentiler aynı kalır (yalnız zaman kaynağı değişir); hiçbir assertion gevşetilmez / silinmez; yeni muafiyet yok; localhost:27017'ye BAĞLANMA.
+DOĞRULA: (a) düzeltilen test bugün yeşil; (b) saatten bağımsızlık kanıtı — testi farklı "bugün"lerde koştur (ör. sistem saatini değiştirmeden: World.Clock'u geçici olarak 2026-10-13 ve 2027-03-01 yapıp ikisinde de yeşil) ve raporla; (c) tarama listesi (dosya · satır · düzeltildi / yalnız raporlandı) + 1 sabotaj (.bak + touch): satır 362'yi tekrar DateTimeOffset.UtcNow.AddDays(-1) yap ve World.Clock'u 2026-10-13'te bırak → kırmızı (bugünün tarihiyle). CRM Application tam takım (-o repo içi), taban karşılaştırması (taban: bu testin kırmızı olduğu bilinen 2 kırmızı — VisitPlanningFix2…shared_pattern -o artefaktı ve bu test).
+Commit: "test(crm): FU-W4-DOCINSIGHT-DATE — doctor insight test data takes its times from the pinned test clock (a real-time EffectiveFrom fell after the pinned now and hid the preference); same mix fixed across the visit test family" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
