@@ -780,6 +780,10 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
 - **O-LIVE1-2.** More than 200 lots of one SKU → the rest show "unresolved".
 **Owner decision (2026-10-19): FU-0173-UI-USER-01 → A.** INVENTORY 1.5.0 additive optional `TransactionItem.createdBy: { userId, name? }` (the name at the time of the posting: central-audit `ActorDisplayName` of the posting correlation via the shared `IAuditActorNames`; absent → the Web shows the localized "unknown user", never an id) → WP-MVP1-NAMES1. Consumers outside SCE get an additive optional field only.
 
+**WP-MVP1-NAMES1 — FU-0173-UI-USER-01 kapandı (agent result, pending CT, 2026-10-19).** Kanıt `docs/records/audits/2026-10/mvp1-names1-evidence-2026-10-19.md`.
+- **`45e1f524d` + `4cf4f0f23` INVENTORY 1.5.0 (yalnız ekleme, isteğe bağlı):** `TransactionItem.createdBy { userId, name? }` — `userId` = kaydeden, `name` = kayıt anındaki ad (kuyruğun hareket correlation'ı + kaydeden, aynı kiracı ve şirket); kayıt yoksa `name` yok; sayfa başına TEK okuma. SCE dışı tüketici yok (ölçüldü).
+- **`d448114f2` Web:** S-2 "Kaydeden" sütunu (BG-05 "Recorded by" kapandı) — ad, yoksa 7 dilde "Bilinmeyen kullanıcı", kimlik yalnız `title`'da (`people.js`); makbuzda "Kaydeden" = kaydı yapan oturumun token adı (servisin denetim kuyruğu kuralı).
+
 
 ## 20. Follow-up Items
 
