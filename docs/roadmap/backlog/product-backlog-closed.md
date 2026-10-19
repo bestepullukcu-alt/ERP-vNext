@@ -5339,3 +5339,33 @@ Ayrı bir turda, kendi Scope-korunumu ölçümüyle.
   MOD-0251'in 8 snake_case aksiyonu da düzeldi — kurala istisna listesi açmamak için; anahtarları ve modül kodu
   dokunulmadan duruyor ve HCM'e sorulacak soru BL-342'de.
 
+
+### BL-641
+
+**CRM W4 ziyaret raporu v2: üç yan panelin birincil eylemi işaretsiz (Enter / chord)**
+
+DURUM: KAPANDI · SAHİP: CRM · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `CRM/KnowledgePaths/_PresentationNotes.cshtml`, `CRM/PotentialThresholds/Index.cshtml`,
+`CRM/VisitEvidenceSettings/Index.cshtml` `data-dt-primary` taşımıyor (UX-COMMON-FIX2 R4). `diten-enter-primary.test.js` içinde adlı satır.
+**Yapılacak:** her panelin birincil düğmesi `enter` ya da `chord` ile işaretlenir; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+**Kapanış (2026-10-19, CT):** WP-SYNC-144 W-UXH (`4b88fed8a`, test dalı). Üç panelin birincil düğmesi işaretli (`_PresentationNotes` pnSave enter · PotentialThresholds pt-save enter · VisitEvidenceSettings yeni istisna "Onaya gönder" chord); `diten-enter-primary.test.js`'teki adlı satırlar çıktı. Not: modal / sayfa formu işaretleri (kaydet onayları, QR yeniden üret / iptal, ayar formu Kaydet, yazdır) ortak Enter modülü modalları dinlemediği için bugün etkisiz — takip FU-UXH-MODAL (Kapanış / ortak modül sahibi).
+
+---
+
+### BL-642
+
+**CRM W4 ile gelen 5 kiracı sayfasının "?" yardım metni yok**
+
+DURUM: KAPANDI · SAHİP: CRM (COMPETITORPRODUCTS dahil — W4 rakip ürün listesi) · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** COMPETITORPRODUCTS, CRMDOCTORINSIGHTTHRESHOLDS, OBJECTIONRESPONSES, VISITEVIDENCESETTINGS, VISITWORKSPACE. Yardım defterine
+satır girmedi (tavan değişmedi); `page-help-ledger.test.js` içinde `MAIN_SYNC_3_PAGES` adlı listesi, anahtarlar sabit, yalnız küçülür.
+**Yapılacak:** `PageHelpResource` içinde 7 dilde metin; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+**Kapanış (2026-10-19, CT):** WP-SYNC-144 W-UXH (`4b88fed8a`, test dalı). 5 sayfa + W3E'nin 2 sayfası (CRMVISITQRCODES, CRMVISITEVIDENCEFLAGS) için `PageHelpResource` 7 dilde (Purpose / Audience / Immediate / Step1..5 + Title) + `PageHelpCatalog` adım ikonları; `MAIN_SYNC_3_PAGES` boşaldığı için nesnesi ve testi kaldırıldı. Node 16'da ledger taraması: taban 1 kırmızı (CRMVISIT* + DEMANDPLANNING) → yalnız DEMANDPLANNING (MOD-0188, başka modül).
+
+---

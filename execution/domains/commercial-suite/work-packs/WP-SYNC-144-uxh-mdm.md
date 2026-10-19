@@ -35,3 +35,35 @@ KORU/YAPMA: sayfa davranışları, K-STD / K-TABS / K-THEME aynen; ortak dosyala
 DOĞRULA: vitest bu makinede çalışmaz (Node 16) → page-help-ledger, diten-enter-primary, diten-shortcuts, page-help-rule-contract testlerinin bu sayfalara düşen ölçümlerini Node 16'da çalışan bir xUnit + RunNode testiyle ya da testlerin kendi tarama kodunu çağıran küçük bir Node betiğiyle yeniden üret (üretim dosyalarını okuyarak) ve sonucu raporla; CI asıl hakemdir. resx: 7 dilde anahtar tamlığı (Purpose / Audience / Step{n} + Title, boşluksuz sıra), değer ≠ anahtar, en ≠ tr. Web.Tests (xUnit) tam takım (-o repo içi), taban karşılaştırması + 3 sabotaj (.bak + touch): (1) bir sayfanın tr Step2Title'ı silinsin → kırmızı; (2) VisitEvidenceSettings "Kaydet ve uygula" chord → enter → kırmızı; (3) MAIN_SYNC_3_PAGES'e satır geri eklensin (defter büyür) → kırmızı. Görsel kanıt (AYRI sekme; fleet açıksa): 2 sayfanın "?" paneli (tr + ar), bir chord düğmesinin ipucu.
 Commit: "fix(web): WP-SYNC-144 W-UXH — page help for 7 CRM tenant pages (7 languages), Enter / chord marks on CRM side panels and dialogs; BL-642 and BL-641 ledger rows removed" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+
+## §37 CT kabul — W-UXH E2 ACCEPTED (2026-10-19) — BL-641 + BL-642 kapandı
+Test dalına alındı: `4b88fed8a` (ajan `9c57ec535`), çakışmasız. BL-641 / BL-642 `DURUM: KAPANDI` yapılıp `product-backlog-closed.md`'ye taşındı (defter K2 / K3).
+
+**Ne geldi:**
+- **Yardım metni:** 7 sayfa × 7 dil (dil başına 90 anahtar) + `PageHelpCatalog` adım ikonları:
+  COMPETITORPRODUCTS, CRMDOCTORINSIGHTTHRESHOLDS, OBJECTIONRESPONSES, VISITEVIDENCESETTINGS, VISITWORKSPACE, CRMVISITQRCODES, CRMVISITEVIDENCEFLAGS.
+  - Tırnaklı her ad o dilde sayfanın kendi resx'inden okunuyor ve dilin tırnak biçimiyle yazılıyor (en / tr / zh “…” · fr « … » · es / ar / ru «…»).
+  - Ajanın denetimi Rusça Eşikler sınıf adlarındaki uyumsuzluğu yakaladı ve düzeltti.
+- **Defter:** `MAIN_SYNC_3_PAGES` boşaldı; nesnesi, sabiti, süzgeçteki kullanımı ve kendi testi kaldırıldı.
+- **Enter / chord:**
+  - `_PresentationNotes` pnSave → enter · Eşikler pt-save → enter · pt-save-confirm → enter.
+  - Ziyaret kanıtı ayar formu Kaydet → enter · "Kaydet ve uygula" → chord · yeni istisna "Onaya gönder" → chord.
+  - İstisna hızlı görünümünde iade / iptal / erken bitir onayı → chord (betikte; ipucu `DitenEnterPrimary.decorate`).
+  - QR yeniden üret / iptal → chord · yazdır → enter.
+- `diten-enter-primary.test.js`'ten BL-641'in 3 satırı çıktı.
+
+**CT kontrolü:**
+- **Diff:** yalnız işaret öznitelikleri, resx ve katalog satırları değişti; sayfa davranışı aynı. Ortak dosyalara dokunulmadı.
+- **Testler** (CT `-o`): Web tam takım 2683/3. Kırmızılar bilinen 3: 2 `ShipmentDetailsDateNode` + `WorkCenterMenu` `-o` artefaktı. Ajan 2683/3, taban 2669/3 (+14).
+- **Node 16 bekçi taraması (ajan):** `page-help-ledger` 1 kırmızıya indi; kalan DEMANDPLANNING (MOD-0188, başka modül, tabanda da kırmızı). `page-help-rule-contract` 43/0, `diten-enter-primary` 12/0. CI asıl hakem.
+- **CT sabotajları (ajanın dokunmadığı kurallar):**
+  - (1) "Onaya gönder" chord → enter → U5 **kırmızı**.
+  - (2) tr `SaveConfirm` ekran metni değişti ("Kaydet ve uygula X") → U2 **kırmızı** (yardım metnindeki tırnaklı ad ekranla eşleşmiyor).
+  - İkisi de md5 ile geri alındı.
+
+**Açık / takip:**
+- **FU-UXH-MODAL (Kapanış / ortak modül):** Ortak Enter modülü (`DitenEnterPrimary`) yalnız offcanvas yan panelleri dinliyor; modal pencereler kural §3'te kapsam dışı. Bu yüzden şu işaretler bugün **etkisiz**: iki kaydet onayı modalı, QR yeniden üret / iptal modalı, ayar formu Kaydet (sayfa formu), yazdır (sayfa). İşaretler doğru niyeti taşıyor; ajan yanlış bilgi vermemek için `aria-keyshortcuts` eklememiş. Çalışması için ortak modüle modal desteği gerekir (XMC-001).
+- **DEMANDPLANNING:** `page-help-ledger`'da CI'da kırmızı olabilir; MOD-0188 (#146) sahibine bildirilmeli.
+- **`diten-tabs.js` ve kısayol kuralı:** Bekçiler `wwwroot` altında `keydown` taramıyor, takılmadı. Ama kural metni "sayfa kendi keydown'unu yazmaz" diyor; ortak WAI-ARIA bileşen istisnası kuralda açıkça yazılmalı → Kapanış'a not.
+- **Ad farkı:** QR sayfasında "?" panel başlığı menü adını ("Ziyaret QR Kodları") gösteriyor, sayfa başlığı "Kurum QR kodları"; önceden de böyleydi. Menü adı düzeltmesi küçük ayrı iş (FU-QR-NAV-NAME).

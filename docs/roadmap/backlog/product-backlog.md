@@ -10125,31 +10125,7 @@ eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests`
 
 ---
 
-### BL-641
 
-**CRM W4 ziyaret raporu v2: üç yan panelin birincil eylemi işaretsiz (Enter / chord)**
-
-DURUM: AÇIK · SAHİP: CRM · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
-
-**Ne:** `CRM/KnowledgePaths/_PresentationNotes.cshtml`, `CRM/PotentialThresholds/Index.cshtml`,
-`CRM/VisitEvidenceSettings/Index.cshtml` `data-dt-primary` taşımıyor (UX-COMMON-FIX2 R4). `diten-enter-primary.test.js` içinde adlı satır.
-**Yapılacak:** her panelin birincil düğmesi `enter` ya da `chord` ile işaretlenir; satır çıkar.
-**Gelecek regresyon riski:** 🟢
-
----
-
-### BL-642
-
-**CRM W4 ile gelen 5 kiracı sayfasının "?" yardım metni yok**
-
-DURUM: AÇIK · SAHİP: CRM (COMPETITORPRODUCTS dahil — W4 rakip ürün listesi) · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
-
-**Ne:** COMPETITORPRODUCTS, CRMDOCTORINSIGHTTHRESHOLDS, OBJECTIONRESPONSES, VISITEVIDENCESETTINGS, VISITWORKSPACE. Yardım defterine
-satır girmedi (tavan değişmedi); `page-help-ledger.test.js` içinde `MAIN_SYNC_3_PAGES` adlı listesi, anahtarlar sabit, yalnız küçülür.
-**Yapılacak:** `PageHelpResource` içinde 7 dilde metin; satır çıkar.
-**Gelecek regresyon riski:** 🟢
-
----
 
 ### BL-643
 
