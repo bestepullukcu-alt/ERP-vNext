@@ -67,3 +67,29 @@ Test dalına alındı: `4b88fed8a` (ajan `9c57ec535`), çakışmasız. BL-641 / 
 - **DEMANDPLANNING:** `page-help-ledger`'da CI'da kırmızı olabilir; MOD-0188 (#146) sahibine bildirilmeli.
 - **`diten-tabs.js` ve kısayol kuralı:** Bekçiler `wwwroot` altında `keydown` taramıyor, takılmadı. Ama kural metni "sayfa kendi keydown'unu yazmaz" diyor; ortak WAI-ARIA bileşen istisnası kuralda açıkça yazılmalı → Kapanış'a not.
 - **Ad farkı:** QR sayfasında "?" panel başlığı menü adını ("Ziyaret QR Kodları") gösteriyor, sayfa başlığı "Kurum QR kodları"; önceden de böyleydi. Menü adı düzeltmesi küçük ayrı iş (FU-QR-NAV-NAME).
+
+
+## §36.1 Agent Prompt — BL-640 (paste-ready · yalnız MDM)
+**CT ölçümü (2026-10-19):**
+- `MongoWorkflowApprovalStore<T>` yalnız `CompetitorProposalDecision` için kullanılıyor (`CompetitorProductRepository` içinde).
+- `ProcessedEvent`, `MdmEventInboxRepository`'nin iç sınıfı ve yalnız `InsertOneAsync` ile yazılıyor; bütün yazma sorunu yok, yalnız eşleme kaydı eksik.
+- `CompetitorProductClassMaps` her yerde `SetIgnoreExtraElements(true)` kullanıyor.
+- Muafiyetler: `MdmDocumentClassMapsTests.cs` → `MainSyncUncoveredTypes` (CompetitorProduct, CompetitorProposalDecision, ProcessedEvent) ve `MainSyncLenientWholeWrites` (CompetitorProduct, "T" = MongoWorkflowApprovalStore<T>).
+- Yerel ve canlı veritabanlarında W4 rakip ürün kayıtları VAR → eski belgeler okunmaya devam etmeli.
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-SYNC-144 · BL-640 — MDM rakip ürün kayıtları (CompetitorProduct, CompetitorProposalDecision, ProcessedEvent) MdmDocumentClassMaps kaydına alınır; bütün belge yazıları (ReplaceOneAsync) alan düzeyine iner ya da eşleme katı olur; MdmDocumentClassMapsTests'teki BL-640 muafiyet satırları çıkar
+Repository: C:\tmp\sync144-bl640 (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/sync144-bl640 · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-SYNC-144-uxh-mdm.md (kapsam + bu bölüm). Borç: docs/roadmap/backlog/product-backlog.md BL-640 (süre 2026-11-13). Önce oku: src/Diten.MdmService.Persistence/Configurations/MdmDocumentClassMaps.cs (kayıt, Verify, "repository first, map second" BL-569 tuzağı, GUID gösterimi) + bu kayda alınmış bir türün emsali (ör. GlobalProduct / FinishedGood: eşleme + alan düzeyi yazı ya da katı eşleme — hattın seçtiği desen hangisiyse onu izle); tests/Diten.MdmService.Application.Tests/MdmDocumentClassMapsTests.cs (MainSyncUncoveredTypes, MainSyncLenientWholeWrites — "yalnız küçülür" kuralı) + MdmDocumentClassMapsIsolationTests.cs. Hafıza tuzakları: Mongo GUID alt türü (standard / C# legacy) — kayıtlı türler yanlış GUID gösterimiyle yazılırsa sorgular sessizce eşleşmez.
+MEVCUT: Configurations/CompetitorProductClassMaps.cs (SetIgnoreExtraElements(true), kendi RegisterClassMap'leri) · Repositories/CompetitorProductRepository.cs:48 ReplaceOneAsync (CompetitorProduct bütün yazı) · Repositories/MongoWorkflowApprovalStore.cs:51 ReplaceOneAsync (yalnız CompetitorProposalDecision kullanıyor; tenant + CAS) · Repositories/MdmEventInboxRepository.cs ProcessedEvent (iç sınıf, yalnız InsertOne) · DependencyInjection.cs ~121.
+NE:
+(1) Üç tür MdmDocumentClassMaps'in Roots listesine (ProcessedEvent iç sınıfsa NestedDocument deseniyle — CanonicalCodeCounter emsali); CompetitorProductClassMaps'teki eşlemeler kayda taşınır, çift kayıt OLMAZ (kayıt tek kaynak; CompetitorProductClassMaps ya kaldırılır ya da kayda delege eder). Alt / gömülü tipler de kapsanır.
+(2) Bütün belge yazıları: CompetitorProductRepository güncellemesi ve MongoWorkflowApprovalStore<T> kaydı → hattın kayıttaki emsaliyle aynı desen (alan düzeyi $set / sürüm koşullu güncelleme ya da katı eşleme + bilinen alan seti). CAS / sürüm kontrolü ve kiracı sınırı (TenantId filtresi) aynen korunur; çakışma davranışı (ör. 409 / VersionConflict) değişmez.
+(3) MdmDocumentClassMapsTests: MainSyncUncoveredTypes ve MainSyncLenientWholeWrites'tan BL-640'ın 5 satırı çıkar (sözlükler boşalırsa testin "yalnız küçülür" mantığına uygun şekilde kaldır); yeni muafiyet satırı EKLEME.
+(4) GERİYE UYUM (zorunlu): bugünkü eşlemeyle yazılmış belgeler (alan adları, GUID gösterimi, sürüm alanı, iç içe listeler) yeni eşlemeyle okunur ve güncellenince bilinmeyen / sonraki sürüm alanı KAYBOLMAZ. Veri göçü gerekiyorsa (GUID alt türü farkı vb.) DUR, raporla — kendiliğinden göç betiği yazma.
+KORU/YAPMA: rakip ürün / öneri API sözleşmeleri, Workflow onay akışı (SoD, gönder / karar, olay yayını), CRM'in okuma yüzeyleri aynen; yalnız MDM Persistence + testler; başka MDM türlerinin eşlemesine / kaydına DOKUNMA (XMC-001 — gerekirse DUR, raporla); localhost:27017'ye BAĞLANMA (testler kendi geçici mongod'u ile); kalıcı veri yazma YOK.
+DOĞRULA: MDM testleri — (a) Verify üç türü ve alt tiplerini kapsar; (b) eski biçimde (bugünkü CompetitorProductClassMaps ile) yazılmış bir CompetitorProduct / CompetitorProposalDecision / ProcessedEvent belgesi yeni eşlemeyle okunur (gerçek mongod; BsonDocument ile hazırlanmış eski şekil); (c) bilinmeyen bir alan taşıyan belge güncellenince o alan KORUNUR (BL-640'ın asıl riski); (d) CAS çakışması ve kiracı izolasyonu aynen (başka kiracının kaydı güncellenmez); (e) GUID alanları sorguda eşleşir. MdmDocumentClassMapsTests + IsolationTests yeşil, BL-640 satırları yok + 3 sabotaj (.bak + touch): (1) CompetitorProduct Roots'tan çıkarılsın → kırmızı; (2) CompetitorProductRepository yeniden ReplaceOneAsync'e dönsün → (c) kırmızı; (3) muafiyet satırı geri eklensin → "yalnız küçülür" kırmızı. MDM tam takım (-o repo içi) + mimari, taban karşılaştırması.
+Commit: "fix(mdm): WP-SYNC-144 BL-640 — competitor product, proposal decision and processed event types on MdmDocumentClassMaps; field-level writes keep unknown fields; BL-640 exemption rows removed" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
