@@ -21,8 +21,8 @@
   <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>قرب انتهاء الصلاحية</value></data>
   <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
   <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>ترتيب FEFO</value></data>
-  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>اليوم {0} · «قريب» {1} يومًا · «حرج» {2} يومًا</value></data>
-  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>اليوم {0}</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>اليوم (UTC) {0} · «قريب» {1} يومًا · «حرج» {2} يومًا</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>اليوم (UTC) {0}</value></data>
   <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>الفترة</value></data>
   <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
   <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>ينتهي خلال {0} يومًا</value></data>

@@ -21,8 +21,8 @@
   <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Péremption proche</value></data>
   <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Stock périmé</value></data>
   <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>Ordre FEFO</value></data>
-  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Aujourd'hui {0} · « Proche » {1} jours · « Critique » {2} jours</value></data>
-  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Aujourd'hui {0}</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Aujourd'hui (UTC) {0} · « Proche » {1} jours · « Critique » {2} jours</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Aujourd'hui (UTC) {0}</value></data>
   <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Période</value></data>
   <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Stock périmé</value></data>
   <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>Périmant sous {0} jours</value></data>

@@ -21,8 +21,8 @@
   <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Approaching expiry</value></data>
   <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Expired stock</value></data>
   <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>FEFO order</value></data>
-  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Today {0} · "Approaching" {1} days · "Critical" {2} days</value></data>
-  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Today {0}</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Today (UTC) {0} · "Approaching" {1} days · "Critical" {2} days</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Today (UTC) {0}</value></data>
   <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Period</value></data>
   <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Expired stock</value></data>
   <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>Expiring within {0} days</value></data>

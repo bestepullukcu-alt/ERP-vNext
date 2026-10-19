@@ -21,8 +21,8 @@
   <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Son Kullanma Yaklaşanlar</value></data>
   <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Süresi Dolmuş Stok</value></data>
   <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>FEFO Sırası</value></data>
-  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Bugün {0} · "Yaklaşıyor" {1} gün · "Kritik" {2} gün</value></data>
-  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Bugün {0}</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Bugün (UTC) {0} · "Yaklaşıyor" {1} gün · "Kritik" {2} gün</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Bugün (UTC) {0}</value></data>
   <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Dönem</value></data>
   <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Süresi dolmuş stok</value></data>
   <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>{0} gün içinde dolacak</value></data>

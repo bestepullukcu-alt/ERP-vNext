@@ -21,8 +21,8 @@
   <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>即将过期</value></data>
   <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>过期库存</value></data>
   <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>FEFO 顺序</value></data>
-  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>今天 {0} · “临近” {1} 天 · “紧急” {2} 天</value></data>
-  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>今天 {0}</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>今天 (UTC) {0} · “临近” {1} 天 · “紧急” {2} 天</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>今天 (UTC) {0}</value></data>
   <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>期间</value></data>
   <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>过期库存</value></data>
   <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>{0} 天内到期</value></data>

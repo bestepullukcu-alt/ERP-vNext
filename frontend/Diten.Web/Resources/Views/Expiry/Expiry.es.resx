@@ -21,8 +21,8 @@
   <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Próximos a caducar</value></data>
   <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Stock caducado</value></data>
   <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>Orden FEFO</value></data>
-  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Hoy {0} · «Próximo» {1} días · «Crítico» {2} días</value></data>
-  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Hoy {0}</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Hoy (UTC) {0} · «Próximo» {1} días · «Crítico» {2} días</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Hoy (UTC) {0}</value></data>
   <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Período</value></data>
   <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Stock caducado</value></data>
   <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>Caduca en {0} días</value></data>
