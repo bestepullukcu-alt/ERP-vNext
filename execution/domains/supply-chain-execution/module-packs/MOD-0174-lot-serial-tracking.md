@@ -1032,6 +1032,9 @@ F-3 shell "Search" → central layout owner. FU-0174-P5 CLOSED.
 - **`359532230` FU-WEB-CONTRACT-FAKES:** `TraceProxyControllerTests` ve `LotMigrationWebTests` sahteleri trace sözleşmesine bağlandı — uyumsuzluk yok.
 **DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0174 --name "Lot/Batch/Serial Tracking"` → OK (proven against Blueprint/registry) → **W-0174-01 closed**.
 
+**WP-MVP1-FIX-LIVE3 (ek) — updateLot anahtarı öznitelikte (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (ek maddeler e / f), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md` (§7).
+- `PATCH /api/trace/lots/{lotId}` `[HasAnyPermission(trace.lots.update, trace.lots.update-released)]` taşır; hangi anahtarın gerektiği lotun durumuna bağlı — adıyla istisna (`BodyKeyedActions`). Manifest tamlık testi PATCH anahtarlarını artık öznitelikten okur.
+
 
 ## 20. Follow-up Items
 
