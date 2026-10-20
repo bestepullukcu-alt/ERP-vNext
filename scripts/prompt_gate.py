@@ -42,6 +42,20 @@ What it checks (each is an ENGEL when it fails):
              commit holds the same bytes), or its künye's work_packages lists the WP; a mention is not a binding;
              its allowed paths are normal globs outside services/, frontend/, gateway/, with no symbolic link at or
              under their fixed prefix at Expected HEAD (CT-FIX-05 C1)
+  S-5        (CT-APR-02 dispatch gate; SOP §20.4 item 8) from where execution/approvals/POLICY-DISPATCH-REVIEW-START.md
+             entered MAIN (the oldest first-parent commit of main that added it; a worker-branch preview uses the
+             branch's own adding commit only while main does not have it): every new dispatch of a product WP, in every
+             queue (strict or legacy), needs the pack version at Expected HEAD covered by reviews on main. review_negatives
+             (shared with acceptance_record.py): the review file's append-only history on main first; negatives from this
+             version, every reviewed version with the same body (outside the künye) and every version this one is exempt
+             from (pack_approval.review_problems at main — any failure stops); a positive cover only from this version or
+             an exempt-reachable one. Protected (only from 'no review', never from a negative): the WP's single row in its
+             queue file, read at the start commit, had a state of class 'active' (ct-queue-states.tsv for the queue's
+             vocabulary, also read there) and named this pack's module; the queue path, the row's module and the pack
+             bytes are unchanged and the row is not re-opened now (READY / REWORK). A shallow repository, a deleted start
+             record and a non-canonical pack path are refusals. --prepare only reports. Every ENGEL names the rule and its
+             start, the reason (with the protection-loss reason), the next step, and tells a Control Tower session opened
+             before the rule to take main and open a new session
   risk       §9.1 signals from the fixed list; any signal means HIGH; allowed paths that touch migrations, the
              gateway or authorization need the matching signal
   queue      the WP row and scripts/ct_queue.py's own require decision (require_decision) say dispatchable
@@ -86,6 +100,11 @@ GIT_ALLOWED = {"rev-parse", "cat-file", "show", "status", "ls-tree", "log", "for
 
 
 DRAFT_MARK = "<<DOLDUR"   # CT-FIX-03 (U2): a field the draft left for a person; any left in a prompt is an ENGEL
+# S-5 (owner decision, Codex-reviewed model): the CT-APR-02 dispatch gate. Work that was already running when the rule
+# started is protected while its pack is unchanged; the queue's strictness is not an exemption.
+DISPATCH_POLICY = "execution/approvals/POLICY-DISPATCH-REVIEW-START.md"
+PROTECTED_STATES = ("DISPATCHED", "IN_PROGRESS", "REPORTED", "VERIFYING", "VERIFIED", "INTEGRATION_READY", "INTEGRATED")
+NEW_SESSION_HINT = "Bu kuralı tanımıyorsan Control Tower oturumun kuraldan önce açılmıştır: main'i al ve yeni oturum aç."
 
 
 class Incomplete(Exception):
@@ -469,7 +488,218 @@ def check_authority(p: dict, repo, commit: str, row: dict | None = None, row_kno
     return eng
 
 
-def check_approval_limit(p: dict, repo, commit: str, prepare: bool) -> tuple[list[str], list[str]]:
+class StartDeleted(Exception):
+    """S-5: POLICY-DISPATCH-REVIEW-START was added and is missing now — a refusal whose next step is to restore it."""
+
+
+def dispatch_added(pa, root: str, commit: str) -> str | None:
+    """S-5: the oldest commit that added POLICY-DISPATCH-REVIEW-START anywhere in `commit`'s history (a branch preview)."""
+    added = pa.git(root, "log", "--format=%H", "--diff-filter=A", commit, "--", DISPATCH_POLICY).decode().split()
+    return added[-1] if added else None
+
+
+def shallow_problem(pa, root: str) -> str | None:
+    """S-5 (F-6): a shallow repository hides history (the start, the review rows, the queue at the start): a refusal."""
+    if pa.git(root, "rev-parse", "--is-shallow-repository").decode().strip() == "true":
+        return "sığ (shallow) depo — kural başlangıcı, inceleme geçmişi ve kuyruk anı ölçülemez; tam klonda koşun"
+    return None
+
+
+def dispatch_start(pa, root: str, main: str, commit: str) -> str | None:
+    """S-5 (F-5): the rule's start is where the start record entered MAIN — the oldest first-parent commit of main that
+    added it (a merge commit when it came through a PR). Only when main does not have it yet does the ref's own adding
+    commit count (a worker-branch preview). None = the rule never started. Once added (on main or in the ref's history)
+    its absence there is a refusal (StartDeleted), never 'no rule'."""
+    start = start_commit(pa, root, main, commit)
+    for where in (main, commit):
+        added = dispatch_added(pa, root, where)
+        if added is not None and pa.read(root, where, DISPATCH_POLICY) is None:
+            raise StartDeleted(f"POLICY-DISPATCH-REVIEW-START {(start or added)[:9]}'de başlamıştı ama {where[:9]}'de yok — "
+                               "kural dosya silinerek kapatılamaz")
+    return start
+
+
+def start_commit(pa, root: str, main: str, commit: str) -> str | None:
+    """The start commit alone (no deletion check): main's oldest first-parent adding commit, else the ref's own."""
+    first = pa.git(root, "log", "--first-parent", "--diff-filter=A", "--format=%H", main, "--", DISPATCH_POLICY).decode().split()
+    return first[-1] if first else (dispatch_added(pa, root, main) or dispatch_added(pa, root, commit))
+
+
+def s5_line(start: str, reasons: list[str], path: str, next_step: str | None = None) -> str:
+    """One self-explaining Turkish line: the rule, why it stopped, the next step, and the hint for an older session."""
+    why = "; ".join(" ".join(r.split()) for r in reasons[:4]) + (f" (+{len(reasons) - 4})" if len(reasons) > 4 else "")
+    step = next_step or ("UYGUN DEĞİL ya da açık ENGEL varsa önce paketi düzelt; dağıtılacak sürümü bağımsız incelet, "
+                         f"satırı `python3 scripts/pack_approval.py review-row {path} --findings <bulgu dosyası> …` ile üret "
+                         "ve main'e başka birinin merge'iyle al (SOP §20.4 madde 8)")
+    return (f"dağıtım kapısı (S-5 / CT-APR-02 dağıtım kapısı, POLICY-DISPATCH-REVIEW-START @ {start}): durdu — {why} · "
+            f"sonraki adım: {step} · " + NEW_SESSION_HINT + f" ({path})")
+
+
+RESTORE_STEP = ("kural dosyası silinemez — execution/approvals/POLICY-DISPATCH-REVIEW-START.md dosyasını geri getir "
+                "(SOP §20.4 madde 8)")
+
+
+def _body(text: str, pa) -> list[str]:
+    return [l.rstrip(" \t\r") for l in pa.split_front(text)[1]]
+
+
+def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes) -> tuple[list[str], list[str], list[str]]:
+    """S-5 (F-1, F-3): (stops, covering versions, notes) for one pack version, from the reviews on MAIN — the one reading
+    of the dispatch gate and of acceptance_record.py.
+      - The review file's append-only history on main is checked FIRST: a deleted or rewritten row stops (review_problems
+        answers 'inceleme yok' before its own append-only check).
+      - Negatives come from the wide set: this exact version, every reviewed version whose body (outside the künye)
+        equals this one's, and every reviewed version from which this one is exempt (pa.review_exempt) — each read with
+        pa.review_problems(…, main, …, main); any failure stops (UYGUN DEĞİL, open ENGEL, broken record, a row that did
+        not reach main through another person's merge). A reviewed version whose bytes are in no history cannot be
+        related: a negative-looking row of it (UYGUN DEĞİL or blockers_open ≠ 0) stops, fail-closed.
+      - A positive cover comes only from the narrow set: this exact version or an exempt-reachable one."""
+    digest = pa.sha256(data)
+    trail = pa.append_only_problems(root, main, pa.REVIEWS)
+    if trail:
+        return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], []
+    text = data.decode("utf-8", errors="replace")
+    rows = [r for r in pa.review_rows(root, main) if r["target"] == path]
+    stops, cover, notes = [], [], []
+    for sha in sorted({r["target_sha256"] for r in rows}):
+        if sha == digest:
+            old, label, positive = data, f"sha {digest[:8]}", True
+        else:
+            old = pa.version_bytes(root, commit, path, sha) or pa.version_bytes(root, main, path, sha)
+            if old is None:
+                odd = [r for r in rows if r["target_sha256"] == sha and (r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0")]
+                if odd:
+                    stops.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı ve olumsuz sonuç taşıyor — bu sürümle "
+                                 "ilişkisi ölçülemedi")
+                else:
+                    notes.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı — sayılmadı")
+                continue
+            otext = old.decode("utf-8", errors="replace")
+            positive = pa.review_exempt(text, otext)[0]
+            if not positive and _body(otext, pa) != _body(text, pa):
+                notes.append(f"{sha[:8]}'den bu yana değişiklik muaf değil")
+                continue
+            label = f"önceki sürüm {sha[:8]} ({'muaf uzaklıkta' if positive else 'gövdesi aynı'})"
+        fails = pa.review_problems(root, main, path, old, main)[0]
+        stops += [f"{label}: {f}" for f in fails]
+        if positive:
+            cover.append(sha)
+    return stops, cover, notes
+
+
+PROTECT_CLASS = "active"
+REOPENED_CLASSES = ("dispatchable", "rework")
+REOPENED_STATES = ("READY", "REWORK")
+
+
+def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: str | None, q: dict | None) -> tuple[bool, str]:
+    """S-5 (3; F-2, F-4; owner decision 2026-10-21): (protected?, why). Read AT the start commit: the queue's registry row
+    (by queue_id, else by path; the path unchanged), its vocabulary's state classes (ct-queue-states.tsv), and the WP's
+    single queue row — its state's class is 'active' and its module names this pack's identity (ct_queue.pack_identity,
+    as check_authority reads a row). The pack is byte-identical to its version there, the row's module is unchanged now,
+    and the row is not re-opened now (READY / REWORK, or a dispatchable / rework class). Anything not proven goes through
+    the gate; the reason is always given."""
+    q = q or {}
+    qpath, qid, now = q.get("path"), q.get("queue_id"), q.get("row") or {}
+    if not qpath or not wp:
+        return False, "kuyruk yolu ya da WP ölçülemedi"
+    reg_rel = _SHARED.REGISTRY.relative_to(_SHARED.ROOT).as_posix()
+    st_rel = _SHARED.STATES.relative_to(_SHARED.ROOT).as_posix()
+    reg_raw, st_raw = pa.read(root, start, reg_rel), pa.read(root, start, st_rel)
+    if reg_raw is None or st_raw is None:
+        return False, f"kuyruk kaydı ya da durum sözlüğü kural başlangıcında ({start[:9]}) yoktu"
+    reg = _SHARED.Table(reg_raw.decode("utf-8", errors="replace"))
+    ri = {c: reg.index(c) for c in ("queue_id", "path", "vocabulary")}
+    if None in ri.values():
+        return False, "kural başlangıcındaki kuyruk kaydı okunamadı"
+    mine = [r for r in reg.rows if len(r) == len(reg.header) and (r[ri["queue_id"]] == qid if qid else r[ri["path"]] == qpath)]
+    if len(mine) != 1:
+        return False, f"kuyruk kural başlangıcındaki kayıtta tek satır değil ({len(mine)})"
+    if mine[0][ri["path"]] != qpath:
+        return False, f"kuyruk dosyasının yolu kural başlangıcından beri değişti ({mine[0][ri['path']][:60]} → {qpath[:60]})"
+    st = _SHARED.Table(st_raw.decode("utf-8", errors="replace"))
+    si = {c: st.index(c) for c in ("queue_id", "state", "class")}
+    if None in si.values():
+        return False, "kural başlangıcındaki durum sözlüğü okunamadı"
+    classes = {r[si["state"]]: r[si["class"]] for r in st.rows
+               if len(r) == len(st.header) and r[si["queue_id"]] == mine[0][ri["vocabulary"]]}
+    raw = pa.read(root, start, qpath)
+    if raw is None:
+        return False, f"kuyruk dosyası kural başlangıcında ({start[:9]}) yoktu"
+    table = _SHARED.Table(raw.decode("utf-8", errors="replace"))
+    id_i, st_i, mod_i = table.index("id"), table.index("state"), table.index("module")
+    rows = [r for r in table.rows if id_i is not None and st_i is not None and len(r) == len(table.header) and r[id_i] == wp]
+    if len(rows) != 1:
+        return False, f"{wp} kural başlangıcında kuyrukta tek satır değildi ({len(rows)}: yok ya da yinelenen kimlik)"
+    state = rows[0][st_i]
+    if classes.get(state) != PROTECT_CLASS:
+        return False, f"{wp} kural başlangıcında {state[:30]} durumundaydı (sınıf {classes.get(state, 'yok')}) — yürüyen iş değil"
+    if mod_i is None:
+        return False, "kuyrukta module sütunu yok — satırın bu pakete bağı ölçülemedi"
+    before = pa.read(root, start, path)
+    if before != data:
+        return False, f"paket kural başlangıcından ({start[:9]}) beri değişti — {wp} {state} olsa da koruma düştü"
+    module = rows[0][mod_i]
+    wrong = _SHARED.pack_identity(path, before.decode("utf-8", errors="replace"), re.findall(r"MOD-\d{4}(?:-FU\d+)?", module))
+    if wrong:
+        return False, f"{wp} satırı kural başlangıcında bu paketin modülünü göstermiyor — {wrong}"
+    if now.get("module") != module:
+        return False, f"{wp} satırının modülü kural başlangıcından beri değişti ({module[:30]} → {str(now.get('module'))[:30]})"
+    cur = now.get("state")
+    if not cur:
+        return False, f"{wp} satırının bugünkü durumu ölçülemedi"
+    if cur in REOPENED_STATES or classes.get(cur) in REOPENED_CLASSES:
+        return False, f"{wp} yeniden açıldı (bugün {cur[:30]}) — yeni dağıtım sayılır"
+    return True, f"{wp} kural başlangıcında {state} (sınıf {PROTECT_CLASS}), modülü bu paket ve paket o andaki sürümüyle aynı"
+
+
+def check_dispatch_review(pa, p: dict, repo, commit: str, q: dict | None) -> tuple[list[str], list[str]]:
+    """S-5: (problems, notes) for one product WP. The caller turns problems into ENGEL (dispatch) or lines (--prepare).
+    Protection only lifts the 'no review' requirement; negatives stop protected work too (F-4)."""
+    path = p["authority"]
+    where = getattr(repo, "worktree", None)
+    if where is None:      # a test double without git access: asked only when the start file is in its tree
+        if repo.file(commit, DISPATCH_POLICY) is None:
+            return [], []
+        return [s5_line("?", ["kural ölçülemedi — depo erişimi yok"], path)], []
+    start = "?"
+    try:
+        shallow = shallow_problem(pa, where)
+        if shallow:
+            return [s5_line(start, [shallow], path, "deponun tam klonunda (git fetch --unshallow) yeniden koş")], []
+        main = pa.main_line(where)
+        start = (start_commit(pa, where, main, commit) or "?")[:9]
+        begun = dispatch_start(pa, where, main, commit)
+        if begun is None:
+            return [], []
+        start = begun[:9]
+        if not pa.PACK_PATH.match(path or "") or "//" in path:
+            return [s5_line(start, [f"paket yolu kanonik değil ({path[:60]})"], path, "paketi kanonik yoluyla yaz "
+                            "(execution/domains/<domain>/module-packs/<dosya>.md; ./ ya da // yok)")], []
+        data = pa.read(where, commit, path)
+        if data is None:
+            return [], []          # check_authority reports the missing pack
+        protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q)
+        stops, cover, _notes = review_negatives(pa, where, main, commit, path, data)
+        guard = [f"korunan iş de durur ({why})"] if protected else [f"koruma yok: {why}"]
+        if stops:
+            return [s5_line(start, guard + stops, path)], []
+        digest = pa.sha256(data)[:8]
+        if cover:
+            how = ("bu sürümün main'deki incelemesi geçerli" if pa.sha256(data) in cover else
+                   f"önceki sürüm incelemesi taşındı ({', '.join(s[:8] for s in cover)} → {digest}): değişiklik yalnız muaf")
+            return [], [f"dağıtım kapısı (S-5): {how} ({path})"]
+        if protected:
+            return [], [f"dağıtım kapısı (S-5): {why} — yürüyen iş korunur, olumsuz inceleme yok ({path})"]
+        return [s5_line(start, guard + [f"sha {digest} için main'de geçerli inceleme yok" +
+                                         (f" ({'; '.join(_notes[:2])})" if _notes else "")], path)], []
+    except StartDeleted as e:
+        return [s5_line(start, [str(e)], path, RESTORE_STEP)], []
+    except (pa.Unreadable, UnicodeDecodeError, OSError, ValueError, KeyError) as e:
+        return [s5_line(start, [f"ölçülemedi — {e}"], path)], []
+
+
+def check_approval_limit(p: dict, repo, commit: str, prepare: bool, q: dict | None = None) -> tuple[list[str], list[str]]:
     """CT-FIX-04 (joint decision with Codex, Employee pilot): a Module Pack whose künye carries a second approval field
     that is not plain 'approved' (ct_queue.pack_approval_limit) gives no product dispatch by its 'status' alone — the
     gate never derives a scope from it. A conditional approval may be prepared (reported) but a new dispatch stops
@@ -514,6 +744,10 @@ def check_approval_limit(p: dict, repo, commit: str, prepare: bool) -> tuple[lis
                 problems, notes = slice_problems(p, binds, ids, whole)
         (info if prepare else eng).extend(f"{x} ({p['authority']})" for x in problems)
         info += notes
+    # S-5: every new dispatch of a product WP needs a valid independent review of the exact pack version
+    problems, notes = check_dispatch_review(pa, p, repo, commit, q)
+    (info if prepare else eng).extend(problems)
+    info += notes
     return eng, info
 
 
@@ -816,7 +1050,7 @@ def gate(prompt: bytes, repo, q: dict, prepare: bool, review: bytes | None, read
         info.append(f"sözleşme: {quotes} alıntı Expected HEAD'de birebir denetlendi")
         eng += check_authority(p, repo, commit, q.get("row"), row_known=not q.get("error"))
         eng += check_governance_paths(p, repo, commit)      # CT-FIX-05 (C1)
-        a_eng, a_info = check_approval_limit(p, repo, commit, prepare)
+        a_eng, a_info = check_approval_limit(p, repo, commit, prepare, q)
         eng += a_eng
         info += a_info
         out.append(f"kaynak-paketi-sha256: {pack_digest(pack)} · {len(pack)} dosya")
@@ -926,7 +1160,7 @@ def _real_queue(cq, queue_id: str, wp_id: str) -> dict:
     rows = [r for r in cur.rows if id_i is not None and len(r) == len(cur.header) and r[id_i] == wp_id]
     row = dict(zip(cur.header, rows[0])) if len(rows) == 1 else None
     return {"code": code, "line": line, "state": state, "reason": reason, "main": head,
-            "strict": qd["strict"] == "yes", "row": row}
+            "strict": qd["strict"] == "yes", "row": row, "path": qd["path"], "queue_id": qd["queue_id"]}
 
 
 def real_names(row: dict) -> set[str]:
@@ -1476,6 +1710,8 @@ Rapor formatı: §22
     cases.append(("sabotage CT-APR-02: the rule started but the repository cannot be measured -> ENGEL, never a pass",
                   any("dilim: kural ölçülemedi" in e for e in eng(run(slice_base, rp=started)))))
 
+    self_test_dispatch_review(cases)
+
     src = Path(__file__).read_text(encoding="utf-8")
     cases.append(("read-only: no write call in this script", not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))
     failed = 0
@@ -1484,6 +1720,203 @@ Rapor formatı: §22
         failed += not ok
     print(f"self-test: {len(cases) - failed}/{len(cases)} passed")
     return 1 if failed else 0
+
+
+def self_test_dispatch_review(cases: list) -> None:
+    """S-5: the dispatch gate on a tiny real repository — reviews reach main through another person's merge."""
+    import tempfile
+    pa = _load("pack_approval", ROOT / "scripts" / "pack_approval.py")
+    tmp = tempfile.TemporaryDirectory()
+    root = os.path.join(tmp.name, "r")
+    os.makedirs(root)
+    DEV, LEAD = ("dev", "dev@x.invalid"), ("lead", "lead@x.invalid")
+
+    def g(*args, who=DEV, at=None):
+        env = dict(os.environ, GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0],
+                   GIT_COMMITTER_EMAIL=who[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", at or root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rel, text):
+        full = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def get(rel):
+        with open(os.path.join(root, rel), encoding="utf-8") as f:
+            return f.read()
+
+    def commit(msg, who=DEV):
+        g("add", "-A", who=who)
+        g("commit", "-q", "-m", msg, who=who)
+
+    def via_branch(name, change):
+        g("checkout", "-q", "-b", name)
+        change()
+        commit(name)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=LEAD)
+
+    n = [0]
+
+    def review(path, verdict, findings, blockers):
+        """A findings file for the pack's current version and its review row, on a branch merged by another person."""
+        def change():
+            digest = sha256(get(path).encode("utf-8"))
+            rel = f"docs/records/reviews/t/{n[0]:02d}-{digest[:8]}.md"
+            put(rel, f"# İnceleme\n\nhedef: {path} @ {digest}\n\n" + "".join(l + "\n" for l in findings))
+            row = "\t".join([path, digest, rel, sha256(get(rel).encode("utf-8")), verdict, str(blockers), "claude",
+                             "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-10-21"])
+            put(pa.REVIEWS, get(pa.REVIEWS) + row + "\n")
+        n[0] += 1
+        via_branch(f"review-{n[0]}", change)
+
+    pk = lambda k: f"execution/domains/x/module-packs/MOD-000{k}-x{k}.md"
+    PK, PK2, PK3, PK4, PK5 = (pk(k) for k in range(1, 6))
+    QP = "execution/domains/x/work-packs/CT-QUEUE.tsv"
+    ver = lambda k: f"---\nid: MOD-000{k}\nstatus: approved\nowner: TBD\nupdated: 2026-10-01\n---\n# X{k}\n\n## Notes\n- a\n"
+    g("init", "-q", "-b", "main")
+    for k in range(1, 6):
+        put(pk(k), ver(k))
+    put(pa.REVIEWS, "\t".join(pa.REVIEW_COLUMNS) + "\n")
+    rows = [("W-RUN", 1, "IN_PROGRESS"), ("W-NEW", 1, "READY"), ("W-OLD", 1, "DISCOVERED"), ("W-RUN2", 2, "VERIFYING"),
+            ("W-DUP", 1, "IN_PROGRESS"), ("W-DUP", 1, "IN_PROGRESS"), ("W-LATE", 1, "READY"), ("W-X", 3, "READY"),
+            ("W-RUN4", 4, "IN_PROGRESS"), ("W-RUN5", 5, "INTEGRATED")]
+    put(QP, "id\titem\tmodule\tstate\n" + "".join(f"{w}\tiş\tMOD-000{k}\t{s}\n" for w, k, s in rows))
+    reg_cols = _SHARED.REGISTRY_COLUMNS
+    reg_row = {c: "x" for c in reg_cols} | {"queue_id": "tq", "path": QP, "vocabulary": "sop7", "strict": "yes"}
+    put(_SHARED.REGISTRY.relative_to(_SHARED.ROOT).as_posix(),
+        "\t".join(reg_cols) + "\n" + "\t".join(reg_row[c] for c in reg_cols) + "\n")
+    put(_SHARED.STATES.relative_to(_SHARED.ROOT).as_posix(), "\t".join(_SHARED.STATE_COLUMNS) + "\n" + "".join(
+        f"sop7\t{s}\t{c}\tno\tx\tconfirmed\n" for s, c in (("DISCOVERED", "planned"), ("READY", "dispatchable"),
+        ("DISPATCHED", "active"), ("IN_PROGRESS", "active"), ("VERIFYING", "active"), ("INTEGRATED", "active"),
+        ("REWORK", "rework"), ("ACCEPTED", "closed"))))
+    commit("before the rule", who=LEAD)
+    repo = GitRepo(root)
+    mod = lambda path: re.search(r"MOD-\d{4}", path).group(0)
+
+    def q_for(wp, now, module):
+        return {"path": QP, "queue_id": "tq", "strict": False, "row": {"id": wp, "module": module, "state": now}}
+
+    def lim(wp="W-NEW", path=PK, now="READY", module=None, prepare=False, q="default", rp=None):
+        p = {"task_class": "ürün", "authority": path, "wp": wp, "slices": None}
+        r = rp or repo
+        return check_approval_limit(p, r, r.head(), prepare, q_for(wp, now, module or mod(path)) if q == "default" else q)
+    s5 = lambda lines: [l for l in lines if "S-5" in l]
+    eng5 = lambda *a, **k: s5(lim(*a, **k)[0])
+    has = lambda lines, *texts: any(all(t in x for t in texts) for x in lines)
+
+    cases.append(("S-5: before POLICY-DISPATCH-REVIEW-START was ever added -> no dispatch-gate line (no rule yet)",
+                  not s5(lim()[0] + lim()[1])))
+    # F-5: the start record comes through a PR; meanwhile main dispatches W-LATE — the start is the merge on main
+    g("checkout", "-q", "-b", "s5-pr")
+    put(DISPATCH_POLICY, "# S-5 start\n")
+    commit("S-5 start on its PR branch")
+    branch_add = repo.head()
+    g("checkout", "-q", "main")
+    put(QP, get(QP).replace("W-LATE\tiş\tMOD-0001\tREADY", "W-LATE\tiş\tMOD-0001\tDISPATCHED"))
+    commit("dispatch W-LATE", who=LEAD)
+    g("merge", "-q", "--no-ff", "-m", "Merge s5-pr", "s5-pr", who=LEAD)
+    start = repo.head()
+    start9 = start[:9]
+    cases.append(("S-5 F-5: the start is the first-parent merge that brought the record into main, not the branch's own "
+                  "commit; W-LATE (DISPATCHED on main then) is running work -> protected",
+                  dispatch_start(pa, root, start, start) == start != branch_add
+                  and not eng5("W-LATE", now="DISPATCHED") and has(s5(lim("W-LATE", now="DISPATCHED")[1]), "korunur")))
+    e, i = lim()
+    cases.append(("sabotage S-5: a new WP (READY at the start) and no review of the pack version -> ENGEL 'inceleme yok'",
+                  has(s5(e), "inceleme yok")))
+    cases.append(("S-5 F-7: the ENGEL is self-explaining — rule + start commit, the protection-loss reason, review-row as "
+                  "the next step, and the 'yeni oturum aç' hint",
+                  has(s5(e), f"POLICY-DISPATCH-REVIEW-START @ {start9}", "koruma yok: W-NEW kural başlangıcında READY",
+                      "review-row", "SOP §20.4", NEW_SESSION_HINT)))
+    e_p, i_p = lim(prepare=True)
+    cases.append(("S-5: --prepare only reports the same line (no ENGEL)", not s5(e_p) and has(s5(i_p), "inceleme yok")))
+    cases.append(("sabotage S-5: a legacy (strict no) and a strict queue are treated alike — no exemption for legacy",
+                  all(eng5(q=dict(q_for("W-NEW", "READY", "MOD-0001"), strict=st)) for st in (False, True))))
+    e, i = lim("W-RUN", now="IN_PROGRESS")
+    cases.append(("S-5: a WP whose class was 'active' at the start (IN_PROGRESS), same module, pack byte-identical, still "
+                  "running -> protected, no ENGEL", not s5(e) and has(s5(i), "korunur")))
+    cases.append(("sabotage S-5 F-2: the running WP's row names MOD-0001 at the start, the prompt names MOD-0002's pack "
+                  "(unchanged, never reviewed) -> not protected -> ENGEL", has(eng5("W-RUN", PK2, "IN_PROGRESS", "MOD-0002"),
+                                                                                 "modülünü göstermiyor")))
+    cases.append(("sabotage S-5 F-2: the row's module edited after the start -> protection lost -> ENGEL",
+                  has(eng5("W-RUN", PK, "IN_PROGRESS", "MOD-0001, MOD-0002"), "modülü kural başlangıcından beri değişti")))
+    cases.append(("sabotage S-5: a WP only planned (DISCOVERED, class planned) at the start -> ENGEL with that reason",
+                  has(eng5("W-OLD"), "sınıf planned", "inceleme yok")))
+    cases.append(("sabotage S-5 F-7: the queue cannot be read (no path) -> protection not proven -> ENGEL with the reason",
+                  has(eng5("W-RUN", q={"error": "x"}), "koruma yok: kuyruk yolu ya da WP ölçülemedi")))
+    cases.append(("sabotage S-5 F-4: a row running at the start but re-opened now (READY / REWORK) is a new dispatch -> ENGEL",
+                  all(has(eng5("W-RUN", now=st), "yeniden açıldı") for st in ("READY", "REWORK"))))
+    cases.append(("sabotage S-5 F-7: a duplicate WP id in the queue at the start -> not protected -> ENGEL naming it",
+                  has(eng5("W-DUP", now="IN_PROGRESS"), "yinelenen")))
+    review(PK4, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
+    cases.append(("sabotage S-5 F-4: protected running work whose exact version is UYGUN DEĞİL on main -> ENGEL (protection "
+                  "never overrides a negative)", has(eng5("W-RUN4", PK4, "IN_PROGRESS"), "korunan iş de durur", "UYGUN DEĞİL")))
+    review(PK, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    e, i = lim()
+    cases.append(("S-5 positive control: a valid UYGUN review of the exact version on main -> pass",
+                  not s5(e) and has(s5(i), "incelemesi geçerli")))
+    put(PK, get(PK).replace("updated: 2026-10-01", "updated: 2026-10-21"))
+    commit("date only")
+    e, i = lim()
+    cases.append(("S-5: the earlier version reviewed and only an exempt change (a date) since -> pass by carry-over",
+                  not s5(e) and has(s5(i), "taşındı")))
+    review(PK, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
+    cases.append(("sabotage S-5: UYGUN DEĞİL on the current SHA -> ENGEL although the earlier version has UYGUN",
+                  has(eng5(), "UYGUN DEĞİL")))
+    put(PK, get(PK).replace("updated: 2026-10-21", "updated: 2026-10-22"))
+    commit("date again")
+    cases.append(("sabotage S-5: no own review, exempt from an UYGUN version AND from an UYGUN DEĞİL one -> ENGEL (the "
+                  "positive one hides nothing)", has(eng5(), "UYGUN DEĞİL")))
+    review(PK2, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    review(PK2, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
+    put(PK2, get(PK2).replace("owner: TBD", "owner: kalite sorumlusu"))
+    commit("owner filled")
+    cases.append(("sabotage S-5: an earlier version with UYGUN plus an open ENGEL, then only an exempt change -> ENGEL "
+                  "('açık ENGEL' carried with it)", has(eng5("W-NEW", PK2), "açık ENGEL")))
+    cases.append(("sabotage S-5: a WP running at the start whose pack changed since (owner filled) -> not protected -> ENGEL",
+                  has(eng5("W-RUN2", PK2, "VERIFYING"), "koruma düştü")))
+    # F-1: X0 UYGUN; X1 = owner filled, UYGUN DEĞİL; X2 = the owner changed again (not exempt from X1, exempt from X0)
+    review(PK3, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    put(PK3, get(PK3).replace("owner: TBD", "owner: kalite sorumlusu"))
+    commit("X1")
+    review(PK3, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | gövde belirsiz | kapandı | - | -"], 0)
+    put(PK3, get(PK3).replace("owner: kalite sorumlusu", "owner: uyum sorumlusu"))
+    commit("X2")
+    cases.append(("sabotage S-5 F-1: an owner hop after an UYGUN DEĞİL (same body) cannot reach back to the earlier UYGUN "
+                  "-> ENGEL ('gövdesi aynı')", has(eng5("W-X", PK3), "gövdesi aynı", "UYGUN DEĞİL")))
+    put(PK, get(PK) + "- yeni kapsam satırı\n")
+    commit("body change")
+    cases.append(("sabotage S-5: a non-exempt change since the reviewed versions -> ENGEL 'muaf değil'",
+                  has(eng5(), "inceleme yok", "muaf değil")))
+    cases.append(("sabotage S-5: the running WP after its pack changed (body) -> ENGEL, the reason says the protection dropped",
+                  has(eng5("W-RUN", now="IN_PROGRESS"), "koruma düştü", "inceleme yok")))
+    cases.append(("S-5: W-RUN5 (INTEGRATED at the start, pack unchanged, no review) -> protected before the review file is "
+                  "tampered with", not eng5("W-RUN5", PK5, "INTEGRATED")))
+    via_branch("tidy-reviews", lambda: put(pa.REVIEWS, get(pa.REVIEWS).split("\n", 1)[0] + "\n"))
+    cases.append(("sabotage S-5 F-3: a review row deleted from reviews.tsv on main (merged by another) -> ENGEL, protected "
+                  "work too ('yalnız ekleme değil')", has(eng5("W-RUN5", PK5, "INTEGRATED"), "yalnız ekleme değil")
+                  and has(eng5("W-NEW", PK5), "yalnız ekleme değil")))
+    cases.append(("sabotage S-5: a non-canonical spelling of the pack path ('./') -> ENGEL",
+                  has(eng5("W-RUN", "./" + PK, "IN_PROGRESS", "MOD-0001"), "kanonik değil")))
+    clone = os.path.join(tmp.name, "shallow")
+    subprocess.run(["git", "clone", "-q", "--depth", "1", "file://" + root, clone], check=True, capture_output=True,
+                   env=dict(os.environ, GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null"))
+    cases.append(("sabotage S-5 F-6: a shallow clone -> ENGEL 'sığ', never a reading of partial history",
+                  has(eng5("W-RUN5", PK5, "INTEGRATED", rp=GitRepo(clone)), "sığ (shallow)", NEW_SESSION_HINT)))
+    fake = FakeRepo({PK: ver(1), DISPATCH_POLICY: "x\n"})
+    cases.append(("sabotage S-5: the start record is in the tree but the repository cannot be measured -> ENGEL, never a pass",
+                  has(s5(check_approval_limit({"task_class": "ürün", "authority": PK, "wp": "W-RUN"}, fake, "a" * 40, False,
+                                              q_for("W-RUN", "IN_PROGRESS", "MOD-0001"))[0]), "ölçülemedi")))
+    g("rm", "-q", DISPATCH_POLICY)
+    commit("delete the start", who=LEAD)
+    e = eng5("W-RUN5", PK5, "INTEGRATED")
+    cases.append(("sabotage S-5 F-7: POLICY-DISPATCH-REVIEW-START deleted -> refusal naming the real start, next step 'geri "
+                  "getir' (not review-row), also for protected work",
+                  has(e, "silinerek kapatılamaz", f"@ {start9}", "geri getir", NEW_SESSION_HINT)
+                  and not has(e, "review-row")))
+    tmp.cleanup()
 
 
 def main() -> int:

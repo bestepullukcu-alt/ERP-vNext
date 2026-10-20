@@ -136,6 +136,8 @@ Allowed paths / Protected paths
 
 Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, missing contract, ownership conflict, unplanned migration, **agent/scope mismatch**.
 
+**S-5 dağıtım kapısı (SOP §20.4 madde 8):** ürün WP'sinin her yeni dağıtımı paket sürümünün main'deki geçerli bağımsız incelemesini ister (katı ya da eski her kuyrukta); kural başladığında yürüyen ve paketi değişmeyen iş korunur, olumsuz inceleme kabulü de durdurur — ENGEL'deki kuralı tanımıyorsanız main'i alın ve yeni Control Tower oturumu açın.
+
 ## 4. EVIDENCE LEVEL
 
 | Level | Evidence | Meaning |
