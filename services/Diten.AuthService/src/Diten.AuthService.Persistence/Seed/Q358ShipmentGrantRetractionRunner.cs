@@ -8,11 +8,13 @@ using MongoDB.Driver;
 namespace Diten.AuthService.Persistence.Seed;
 
 /// <summary>
-/// The Mongo side of <see cref="Q358ShipmentGrantRetraction"/>: a one-time, audited clean-up, run only when
-/// <c>Q358Retraction:Mode</c> says so (default Off).
+/// The Mongo side of <see cref="BaselineGrantRetraction"/>: a one-time, audited clean-up of ONE widening
+/// (<see cref="BaselineGrantRetraction.Definition"/> — Q358: <see cref="Q358ShipmentGrantRetraction"/>, G7:
+/// <see cref="G7SandopCapacityGrantRetraction"/>), run only when that definition's <c>…Retraction:Mode</c> says so (default
+/// Off). (The file keeps its Q358 name: the closed writer inventory lists its calls by path.)
 ///
-/// <para>⚠ AN AUTHORITY WRITER. <see cref="Q358ShipmentGrantRetraction.Mode.DryRun"/> writes NOTHING and reports the plan;
-/// <see cref="Q358ShipmentGrantRetraction.Mode.Apply"/> changes only System-sourced Shipment grants of tenant Admin roles.</para>
+/// <para>⚠ AN AUTHORITY WRITER. <see cref="BaselineGrantRetraction.Mode.DryRun"/> writes NOTHING and reports the plan;
+/// <see cref="BaselineGrantRetraction.Mode.Apply"/> changes only System-sourced grants of the definition's keys on tenant Admin roles.</para>
 ///
 /// <para><b>Audit first (AUD-001, K2 fail-closed).</b> Each change writes its audit row (deterministic id) BEFORE the grant
 /// is touched: a write of the row that fails (other than "already there") fails the tenant and the grant is not touched;
@@ -36,12 +38,12 @@ public static class Q358ShipmentGrantRetractionRunner
 
     /// <summary>What one run decided and did. <paramref name="Planned"/> is the full plan (also in DryRun).</summary>
     public sealed record Result(
-        Q358ShipmentGrantRetraction.Mode Mode,
+        BaselineGrantRetraction.Mode Mode,
         int AdminRolesScanned,
         int Converted,
         int SoftDeleted,
         int NotApplied,
-        IReadOnlyList<Q358ShipmentGrantRetraction.Planned> Planned,
+        IReadOnlyList<BaselineGrantRetraction.Planned> Planned,
         IReadOnlyList<Guid> UnknownTenants,
         IReadOnlyList<Guid> FailedTenants)
     {
@@ -52,24 +54,25 @@ public static class Q358ShipmentGrantRetractionRunner
     /// <param name="hook">Test seam: called after a change's audit row is written and before the grant is touched.</param>
     public static async Task<Result> RunAsync(
         IMongoDatabase database,
-        Q358ShipmentGrantRetraction.Mode mode,
+        BaselineGrantRetraction.Definition definition,
+        BaselineGrantRetraction.Mode mode,
         Func<Guid, CancellationToken, Task<IReadOnlyCollection<string>?>> readEntitlement,
         ILogger logger,
         CancellationToken ct = default,
-        Func<Q358ShipmentGrantRetraction.Planned, Task>? hook = null)
+        Func<BaselineGrantRetraction.Planned, Task>? hook = null)
     {
-        if (mode == Q358ShipmentGrantRetraction.Mode.Off)
+        if (mode == BaselineGrantRetraction.Mode.Off)
             return new Result(mode, 0, 0, 0, 0, [], [], []);
 
         var permissions = (await database.GetCollection<Permission>("permissions")
-                .Find(Builders<Permission>.Filter.In(p => p.Key, Q358ShipmentGrantRetraction.ShipmentKeys)
+                .Find(Builders<Permission>.Filter.In(p => p.Key, definition.AllKeys)
                       & Builders<Permission>.Filter.Eq(p => p.IsDeleted, false))
                 .ToListAsync(ct))
             .ToDictionary(p => p.Id, p => p.Key);
 
         // Tenant Admin roles only: the system role named Admin of a real tenant. Viewer, SuperAdmin, custom roles: never.
         var adminRoles = await database.GetCollection<Role>("roles")
-            .Find(Builders<Role>.Filter.Eq(r => r.Name, Q358ShipmentGrantRetraction.AdminRoleName)
+            .Find(Builders<Role>.Filter.Eq(r => r.Name, BaselineGrantRetraction.AdminRoleName)
                   & Builders<Role>.Filter.Eq(r => r.IsSystem, true)
                   & Builders<Role>.Filter.Eq(r => r.IsDeleted, false)
                   & Builders<Role>.Filter.Ne(r => r.TenantId, Guid.Empty))
@@ -84,13 +87,13 @@ public static class Q358ShipmentGrantRetractionRunner
                       & Builders<RolePermission>.Filter.In(rp => rp.PermissionId, permissions.Keys)
                       & Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, false))
                 .ToListAsync(ct))
-            .Select(rp => new Q358ShipmentGrantRetraction.Grant(rp.Id, rp.TenantId, rp.RoleId, rp.PermissionId, permissions[rp.PermissionId], rp.GrantSource))
+            .Select(rp => new BaselineGrantRetraction.Grant(rp.Id, rp.TenantId, rp.RoleId, rp.PermissionId, permissions[rp.PermissionId], rp.GrantSource))
             .ToList();
 
         var roleTenant = adminRoles.ToDictionary(r => r.Id, r => r.TenantId);
         var auditCol = database.GetCollection<AuthAuditLog>("authAuditLogs");
         var versions = new RoleAssignmentVersionRepository(database);
-        var planned = new List<Q358ShipmentGrantRetraction.Planned>();
+        var planned = new List<BaselineGrantRetraction.Planned>();
         var unknown = new List<Guid>();
         var failed = new List<Guid>();
         int converted = 0, softDeleted = 0, notApplied = 0;
@@ -98,7 +101,7 @@ public static class Q358ShipmentGrantRetractionRunner
         // A grant whose tenant differs from its role's is not this rule's to decide (and is reported, not touched).
         foreach (var stray in grants.Where(g => roleTenant[g.RoleId] != g.TenantId))
         {
-            logger.LogError("Q358 retraction skips grant {GrantId}: its tenant {TenantId} is not its role's.", stray.GrantId, stray.TenantId);
+            logger.LogError("{Retraction} retraction skips grant {GrantId}: its tenant {TenantId} is not its role's.", definition.Name, stray.GrantId, stray.TenantId);
         }
 
         foreach (var tenant in grants.Where(g => roleTenant[g.RoleId] == g.TenantId)
@@ -108,29 +111,29 @@ public static class Q358ShipmentGrantRetractionRunner
             try
             {
                 var entitled = await readEntitlement(tenant.Key, ct);
-                var plan = Q358ShipmentGrantRetraction.Plan(tenant, entitled);
+                var plan = BaselineGrantRetraction.Plan(definition, tenant, entitled);
                 planned.AddRange(plan);
                 if (entitled is null)
                 {
                     unknown.Add(tenant.Key);
-                    logger.LogWarning("Q358 retraction skips tenant {TenantId}: its entitlement could not be read; {Count} grant(s) left as they are.",
-                        tenant.Key, plan.Count);
+                    logger.LogWarning("{Retraction} retraction skips tenant {TenantId}: its entitlement could not be read; {Count} grant(s) left as they are.",
+                        definition.Name, tenant.Key, plan.Count);
                     continue;
                 }
 
                 foreach (var item in plan)
                 {
-                    logger.LogInformation("Q358 retraction {Mode}: tenant {TenantId}, role {RoleId}, key {PermissionKey} → {Action}.",
-                        mode, item.Grant.TenantId, item.Grant.RoleId, item.Grant.PermissionKey, item.Action);
+                    logger.LogInformation("{Retraction} retraction {Mode}: tenant {TenantId}, role {RoleId}, key {PermissionKey} → {Action}.",
+                        definition.Name, mode, item.Grant.TenantId, item.Grant.RoleId, item.Grant.PermissionKey, item.Action);
                 }
 
-                if (mode != Q358ShipmentGrantRetraction.Mode.Apply) continue;
+                if (mode != BaselineGrantRetraction.Mode.Apply) continue;
 
                 var changedAny = false;
                 foreach (var item in plan)
                 {
-                    var auditId = Q358ShipmentGrantRetraction.AuditId(item.Grant.TenantId, item.Grant.RoleId, item.Grant.PermissionKey, item.Action);
-                    var ownRow = await InsertOnceAsync(auditCol, AuditRow(item, auditId), ct);
+                    var auditId = BaselineGrantRetraction.AuditId(definition, item.Grant.TenantId, item.Grant.RoleId, item.Grant.PermissionKey, item.Action);
+                    var ownRow = await InsertOnceAsync(auditCol, AuditRow(definition, item, auditId), ct);
                     if (hook is not null) await hook(item);
 
                     var filter = Builders<RolePermission>.Filter.Eq(rp => rp.Id, item.Grant.GrantId)
@@ -138,10 +141,10 @@ public static class Q358ShipmentGrantRetractionRunner
                                  & Builders<RolePermission>.Filter.Or(
                                      Builders<RolePermission>.Filter.Eq(rp => rp.GrantSource, GrantSource.System),
                                      Builders<RolePermission>.Filter.Exists(rp => rp.GrantSource, false));
-                    var update = item.Action == Q358ShipmentGrantRetraction.Action.ConvertToModule
+                    var update = item.Action == BaselineGrantRetraction.Action.ConvertToModule
                         ? Builders<RolePermission>.Update
                             .Set(rp => rp.GrantSource, GrantSource.Module)
-                            .Set(rp => rp.SourceModuleCode, Q358ShipmentGrantRetraction.ModuleCode)
+                            .Set(rp => rp.SourceModuleCode, item.ModuleCode)
                         : Builders<RolePermission>.Update.Set(rp => rp.IsDeleted, true);
                     update = update.Set(rp => rp.UpdatedAt, DateTimeOffset.UtcNow).Set(rp => rp.UpdatedBy, SystemUser);
 
@@ -149,7 +152,7 @@ public static class Q358ShipmentGrantRetractionRunner
                     if (changed.ModifiedCount == 1)
                     {
                         changedAny = true;
-                        if (item.Action == Q358ShipmentGrantRetraction.Action.ConvertToModule) converted++; else softDeleted++;
+                        if (item.Action == BaselineGrantRetraction.Action.ConvertToModule) converted++; else softDeleted++;
                         continue;
                     }
 
@@ -157,7 +160,7 @@ public static class Q358ShipmentGrantRetractionRunner
                     // changed the grant since it was read. Only a row THIS run wrote claims a change; withdraw it.
                     if (ownRow)
                     {
-                        await InsertOnceAsync(auditCol, NotAppliedRow(item, auditId), ct);
+                        await InsertOnceAsync(auditCol, NotAppliedRow(definition, item, auditId), ct);
                         notApplied++;
                     }
                 }
@@ -172,32 +175,32 @@ public static class Q358ShipmentGrantRetractionRunner
             catch (Exception ex)
             {
                 failed.Add(tenant.Key);
-                logger.LogError("Q358 retraction failed for tenant {TenantId}: {ExceptionType}. It is looked at again on the next run.",
-                    tenant.Key, ex.GetType().FullName);
+                logger.LogError("{Retraction} retraction failed for tenant {TenantId}: {ExceptionType}. It is looked at again on the next run.",
+                    definition.Name, tenant.Key, ex.GetType().FullName);
             }
         }
 
         return new Result(mode, adminRoles.Count, converted, softDeleted, notApplied, planned, unknown, failed);
     }
 
-    private static AuthAuditLog AuditRow(Q358ShipmentGrantRetraction.Planned item, Guid auditId)
+    private static AuthAuditLog AuditRow(BaselineGrantRetraction.Definition definition, BaselineGrantRetraction.Planned item, Guid auditId)
     {
-        var convert = item.Action == Q358ShipmentGrantRetraction.Action.ConvertToModule;
+        var convert = item.Action == BaselineGrantRetraction.Action.ConvertToModule;
         return new AuthAuditLog(
-            convert ? Q358ShipmentGrantRetraction.ConvertedEventName : Q358ShipmentGrantRetraction.RevokedEventName,
+            convert ? BaselineGrantRetraction.ConvertedEventName : BaselineGrantRetraction.RevokedEventName,
             Guid.Empty, item.Grant.TenantId, JsonSerializer.Serialize(new Dictionary<string, object?>
             {
                 ["roleId"] = item.Grant.RoleId,
-                ["roleName"] = Q358ShipmentGrantRetraction.AdminRoleName,
+                ["roleName"] = BaselineGrantRetraction.AdminRoleName,
                 ["permissionId"] = item.Grant.PermissionId,
                 ["permissionKey"] = item.Grant.PermissionKey,
                 ["grantId"] = item.Grant.GrantId,
                 ["before"] = new Dictionary<string, object?> { ["grantSource"] = GrantSource.System.ToString(), ["isDeleted"] = false },
                 ["after"] = convert
-                    ? new Dictionary<string, object?> { ["grantSource"] = GrantSource.Module.ToString(), ["sourceModuleCode"] = Q358ShipmentGrantRetraction.ModuleCode }
+                    ? new Dictionary<string, object?> { ["grantSource"] = GrantSource.Module.ToString(), ["sourceModuleCode"] = item.ModuleCode }
                     : new Dictionary<string, object?> { ["isDeleted"] = true },
-                ["decision"] = Q358ShipmentGrantRetraction.DecisionRef,
-                ["source"] = Q358ShipmentGrantRetraction.AuditSource,
+                ["decision"] = definition.DecisionRef,
+                ["source"] = definition.AuditSource,
                 ["actor"] = SystemUser,
                 ["actorId"] = null
             }))
@@ -206,19 +209,19 @@ public static class Q358ShipmentGrantRetractionRunner
         };
     }
 
-    private static AuthAuditLog NotAppliedRow(Q358ShipmentGrantRetraction.Planned item, Guid withdraws)
+    private static AuthAuditLog NotAppliedRow(BaselineGrantRetraction.Definition definition, BaselineGrantRetraction.Planned item, Guid withdraws)
         => new(NotAppliedEventName, Guid.Empty, item.Grant.TenantId, JsonSerializer.Serialize(new Dictionary<string, object?>
         {
             ["roleId"] = item.Grant.RoleId,
             ["permissionKey"] = item.Grant.PermissionKey,
             ["grantId"] = item.Grant.GrantId,
             ["withdraws"] = withdraws,
-            ["source"] = Q358ShipmentGrantRetraction.AuditSource,
+            ["source"] = definition.AuditSource,
             ["actor"] = SystemUser,
             ["actorId"] = null
         }))
         {
-            Id = Q358ShipmentGrantRetraction.NotAppliedAuditId(withdraws)
+            Id = BaselineGrantRetraction.NotAppliedAuditId(definition, withdraws)
         };
 
     private static async Task<bool> InsertOnceAsync<T>(IMongoCollection<T> collection, T document, CancellationToken ct)

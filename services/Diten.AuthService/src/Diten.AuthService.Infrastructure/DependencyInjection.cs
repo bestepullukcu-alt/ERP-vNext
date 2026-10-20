@@ -86,7 +86,7 @@ public static class DependencyInjection
             trustedProxies, sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Security.ClientAddressResolver>>()));
         services.AddHostedService<Security.ClientAddressStartupWarning>();
         services.AddHostedService<Security.SignInTimingWarmup>();
-        // Q358 clean-up (C-13 follow-up) — one-time, audited; does nothing unless Q358Retraction:Mode is DryRun or Apply.
+        // Q358 + G7 clean-ups — one-time, audited; each does nothing unless its Q358Retraction:Mode / G7Retraction:Mode is DryRun or Apply.
         services.AddHostedService<Authorization.Q358ShipmentGrantRetractionHostedService>();
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
