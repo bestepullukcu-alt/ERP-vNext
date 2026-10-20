@@ -20,7 +20,7 @@
   <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>لوحة الجاهزية</value></data>
   <data name="Recall.Tabs.Trace" xml:space="preserve"><value>التتبّع</value></data>
   <data name="Recall.Tabs.Cases" xml:space="preserve"><value>الحالات</value></data>
-  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>اليوم {0} · هدف التمرين {1} ساعة</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>اليوم (UTC) {0} · هدف التمرين {1} ساعة</value></data>
   <data name="Recall.Freq.Band" xml:space="preserve"><value>آخر تمرين أقدم من {0} يومًا.</value></data>
   <data name="Recall.Freq.Detail" xml:space="preserve"><value>آخر تمرين {0} (قبل {1} يومًا). يأتي الحدّ من الإعدادات.</value></data>
   <data name="Recall.Freq.None" xml:space="preserve"><value>لم يُستكمل أي تمرين بعد. يأتي الحدّ من الإعدادات.</value></data>

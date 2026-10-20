@@ -20,7 +20,7 @@
   <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Panel de preparación</value></data>
   <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Trazabilidad</value></data>
   <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Casos</value></data>
-  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Hoy {0} · objetivo del simulacro {1} h</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Hoy (UTC) {0} · objetivo del simulacro {1} h</value></data>
   <data name="Recall.Freq.Band" xml:space="preserve"><value>El último simulacro tiene más de {0} días.</value></data>
   <data name="Recall.Freq.Detail" xml:space="preserve"><value>Último simulacro el {0} (hace {1} días). El umbral viene de la configuración.</value></data>
   <data name="Recall.Freq.None" xml:space="preserve"><value>Aún no se ha completado ningún simulacro. El umbral viene de la configuración.</value></data>

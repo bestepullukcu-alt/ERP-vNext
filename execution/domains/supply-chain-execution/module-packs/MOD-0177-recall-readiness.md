@@ -1572,6 +1572,11 @@ Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push 
 **DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0177 --name "Recall Readiness"` → OK (proven against Blueprint/registry) → **W-0177-01 closed**.
 
 
+### 19.25 WP-MVP1-FIX-LIVE3 — agent result, pending CT (2026-10-20)
+
+Dal `feature/sce/wp-mvp1-fix-live3` (MVP-1 ucu `03c697e1a`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md`.
+- Vakalar listesi Türkçe arama ipucu ve ortak liste sözcüklerini alır (`_MvpOneListL10n`); `_Header` ve vaka detayı sekmeleri `text-none`; hazırlık panosu "Bugün (UTC) …" (7 dil; tarih zaten UTC biçimliydi).
+- **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
 
 
 ## 20. Follow-up Items

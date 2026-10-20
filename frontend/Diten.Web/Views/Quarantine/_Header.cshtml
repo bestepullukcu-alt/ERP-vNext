@@ -31,7 +31,7 @@
         var on = tab.Code == Model;
         <li class="nav-item">
             @* WP-MVP1-FU-CLEAN1 (FU-0175-UI-THEME-01 / O-F4-7): an inactive tab takes the theme's paper colour (dark theme too), as the Expiry header *@
-            <a class="nav-link d-flex align-items-center gap-2 @(on ? "active" : "shadow-sm")" style="@(on ? null : "background-color: var(--bs-paper-bg)")" href="@tab.Url" @(on ? "aria-current=page" : "") data-qr-tab="@tab.Code">
+            <a class="nav-link text-none d-flex align-items-center gap-2 @(on ? "active" : "shadow-sm")" style="@(on ? null : "background-color: var(--bs-paper-bg)")" href="@tab.Url" @(on ? "aria-current=page" : "") data-qr-tab="@tab.Code">
                 <i class="bx @tab.Icon"></i><span>@Localizer[tab.Key]</span>
                 @if (tab.Code != "QUARANTINESETTINGS")
                 {

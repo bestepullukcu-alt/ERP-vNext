@@ -67,7 +67,7 @@
         @foreach (var (tab, key) in new[] { ("all", "Expiry.Inbox.Tab.All"), ("active", "Expiry.Inbox.Tab.Active"), ("late", "Expiry.Inbox.Tab.Late"), ("done", "Expiry.Inbox.Tab.Done") })
         {
             <li class="nav-item">
-                <button type="button" class="nav-link d-flex align-items-center gap-2 @(tab == "all" ? "active" : "shadow-sm")" style="@(tab == "all" ? null : "background-color: var(--bs-paper-bg)")"
+                <button type="button" class="nav-link text-none d-flex align-items-center gap-2 @(tab == "all" ? "active" : "shadow-sm")" style="@(tab == "all" ? null : "background-color: var(--bs-paper-bg)")"
                         data-ex-tab="@tab" aria-pressed="@(tab == "all" ? "true" : "false")">
                     <span>@Localizer[key]</span><span class="badge rounded-pill bg-label-secondary" data-ex-count="@tab">…</span>
                 </button>
@@ -128,6 +128,7 @@
 <partial name="~/Views/Expiry/_OpenExceptionModal.cshtml" />
 
 @section Scripts {
+    <partial name="~/Views/Inventory/_MvpOneListL10n.cshtml" /> @* WP-MVP1-FIX-LIVE3: the list words, before the list script *@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
     <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />

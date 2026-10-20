@@ -1142,6 +1142,11 @@ Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
 **DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0176 --name "Expiry / FEFO Management"` → OK (proven against Blueprint/registry) → **W-0176-01 closed**.
 
 
+**WP-MVP1-FIX-LIVE3 — FEFO "bugün" (bulgu 4) ve liste / sekme metinleri (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (MVP-1 ucu `03c697e1a`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md`.
+- **"Bugün" = UTC tarihi (ASSUMPTION-0176-05) korundu:** Inventory'nin okuyabildiği kiracı / şirket saat dilimi kaynağı yok (token claim'i, okuma kapısı, ayar — ölçüldü). Pano etiketi 7 dilde "Bugün (UTC) …". Yerel gün istenirse karar + kaynak gerekir (O-LIVE3-1).
+- Yaklaşan / Süresi dolmuş / İstisnalar listeleri Türkçe arama ipucu alır (`_MvpOneListL10n`); sekmeler "ve" gibi iç sözcükleri küçük harfle gösterir (`text-none`).
+- **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
+
 
 ## 20. Follow-up Items
 

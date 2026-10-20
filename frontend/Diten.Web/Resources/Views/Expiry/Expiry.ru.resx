@@ -21,8 +21,8 @@
   <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Истекающие сроки</value></data>
   <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Просроченный запас</value></data>
   <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>Порядок FEFO</value></data>
-  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Сегодня {0} · «Скоро» {1} дн. · «Критично» {2} дн.</value></data>
-  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Сегодня {0}</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Сегодня (UTC) {0} · «Скоро» {1} дн. · «Критично» {2} дн.</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Сегодня (UTC) {0}</value></data>
   <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Период</value></data>
   <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Просроченный запас</value></data>
   <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>Истекает в течение {0} дн.</value></data>

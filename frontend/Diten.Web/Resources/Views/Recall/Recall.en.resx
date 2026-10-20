@@ -20,7 +20,7 @@
   <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Readiness dashboard</value></data>
   <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Trace</value></data>
   <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Cases</value></data>
-  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Today {0} · drill target {1} h</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Today (UTC) {0} · drill target {1} h</value></data>
   <data name="Recall.Freq.Band" xml:space="preserve"><value>The last drill is older than {0} days.</value></data>
   <data name="Recall.Freq.Detail" xml:space="preserve"><value>Last drill {0} ({1} days ago). The threshold comes from Settings.</value></data>
   <data name="Recall.Freq.None" xml:space="preserve"><value>No drill has been completed yet. The threshold comes from Settings.</value></data>

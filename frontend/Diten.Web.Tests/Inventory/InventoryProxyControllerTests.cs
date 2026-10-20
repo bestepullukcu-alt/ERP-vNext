@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Controllers;
 using Diten.Web.Models.Inventory;
+using Diten.Web.Models.Traceability;
 using Diten.Web.Services;
 using Diten.Web.Views.Inventory.StockLedger;
 using Diten.Web.Views.Inventory.StockMovements;
@@ -149,6 +150,49 @@ public sealed class InventoryProxyControllerTests
         Assert.Equal((poster, "Ayşe Demir"), (items[0].GetProperty("createdById").GetString(), items[0].GetProperty("createdByName").GetString()));
         Assert.Equal(poster, items[1].GetProperty("createdById").GetString());
         Assert.True(!items[1].TryGetProperty("createdByName", out var none) || none.ValueKind == System.Text.Json.JsonValueKind.Null);
+    }
+
+    /// <summary>
+    /// WP-MVP1-FIX-LIVE3 (live finding 1: the history showed the lot GUID where Quarantine shows AMX-2511): a registered lot is answered with
+    /// its TRACE lot number, read through the production LotNumberResolver — ONE listLots per SKU of the page, never one per row; a
+    /// registered lot TRACE does not return is "unresolved" (the page says "unknown lot", the id only as the title); a typed lot text is
+    /// neither. The fakes are the contract shapes (ContractRoutes).
+    /// </summary>
+    [Fact]
+    public async Task History_list_shows_the_lot_number_with_one_trace_read_per_sku()
+    {
+        const string sku = "bbbbbbbb-2222-4222-8222-000000000002";
+        const string known = "dfb1b684-0000-4000-8000-000000000001";
+        const string unread = "dfb1b684-0000-4000-8000-000000000002";
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/transactions", 200, $$$"""{"items":[{"transactionId":"{{{Guid.NewGuid()}}}","transactionNumber":"INV-1","movementType":"STATUS_TRANSFER","sourceModule":"MOD-0175","itemId":"{{{Item}}}","skuId":"{{{sku}}}","skuLevel":"Lsku","quantity":"1","uomId":"EA","lotId":"{{{known}}}"},{"transactionId":"{{{Guid.NewGuid()}}}","transactionNumber":"INV-2","movementType":"STATUS_TRANSFER","sourceModule":"MOD-0175","itemId":"{{{Item}}}","skuId":"{{{sku}}}","skuLevel":"Lsku","quantity":"1","uomId":"EA","lotId":"{{{unread}}}"},{"transactionId":"{{{Guid.NewGuid()}}}","transactionNumber":"INV-3","movementType":"GOODS_RECEIPT_PO","sourceModule":"MOD-0142","itemId":"{{{Item}}}","skuId":"{{{sku}}}","skuLevel":"Lsku","quantity":"5","uomId":"EA","lotId":"L-OLD-7"}],"page":1,"pageSize":50,"total":3}""");
+        gateway.On("/api/trace/lots", 200, $$$"""{"items":[{"lotId":"{{{known}}}","lotNumber":"AMX-2511"}],"total":1}""");
+
+        var items = Body(await Movements(gateway, [.. ReadAndCreate, LotNumberResolver.ReadKey], ("start", "0"), ("length", "50")).List(CancellationToken.None))
+            .GetProperty("data").GetProperty("items");
+
+        var trace = Assert.Single(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/trace/lots", StringComparison.Ordinal)); // one per SKU
+        Assert.Equal($"/api/trace/lots?skuId={sku}&skuLevel=Lsku&page=1&pageSize={LotNumberResolver.PageSize}", trace.PathAndQuery);
+        Assert.Equal((known, "AMX-2511", false), (items[0].GetProperty("lotId").GetString(), items[0].GetProperty("lotNumber").GetString(), items[0].GetProperty("lotUnresolved").GetBoolean()));
+        Assert.Equal(System.Text.Json.JsonValueKind.Null, items[1].GetProperty("lotNumber").ValueKind);
+        Assert.True(items[1].GetProperty("lotUnresolved").GetBoolean());                      // registered, not read → "unknown lot"
+        Assert.Equal(unread, items[1].GetProperty("lotId").GetString());                        // the id stays for the title / filter
+        Assert.False(items[2].GetProperty("lotUnresolved").GetBoolean());                       // a typed lot text is not "unresolved"
+        Assert.Equal("L-OLD-7", items[2].GetProperty("lotId").GetString());
+    }
+
+    [Fact]
+    public async Task History_list_without_trace_lots_read_asks_TRACE_nothing_and_names_no_lot()
+    {
+        const string lot = "dfb1b684-0000-4000-8000-000000000001";
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/transactions", 200, $$$"""{"items":[{"transactionId":"{{{Guid.NewGuid()}}}","transactionNumber":"INV-1","movementType":"STATUS_TRANSFER","sourceModule":"MOD-0175","itemId":"{{{Item}}}","skuId":"{{{Guid.NewGuid()}}}","skuLevel":"Lsku","quantity":"1","uomId":"EA","lotId":"{{{lot}}}"}],"page":1,"pageSize":50,"total":1}""");
+
+        var row = Body(await Movements(gateway, ReadAndCreate, ("start", "0"), ("length", "50")).List(CancellationToken.None)).GetProperty("data").GetProperty("items")[0];
+
+        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/trace", StringComparison.Ordinal));
+        Assert.True(row.GetProperty("lotUnresolved").GetBoolean());
+        Assert.Equal(lot, row.GetProperty("lotId").GetString());
     }
 
     [Fact]

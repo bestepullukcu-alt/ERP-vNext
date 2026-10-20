@@ -202,4 +202,5 @@
   <data name="LotUnresolvedHint" xml:space="preserve"><value>numéro de lot illisible</value></data>
   <data name="ColRecordedBy" xml:space="preserve"><value>Enregistré par</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
+  <data name="UnknownLot" xml:space="preserve"><value>Lot inconnu</value></data>
 </root>

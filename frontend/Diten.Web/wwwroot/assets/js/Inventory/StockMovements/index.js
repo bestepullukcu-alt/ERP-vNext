@@ -44,6 +44,19 @@ const StockMovementsList = (function () {
     const byId = (id) => document.getElementById(id);
     const can = (key) => window.Permissions?.has?.(key) === true;
     const canReverse = () => can('inventory.movements.create');
+    // WP-MVP1-FIX-LIVE3: the LOT cell — the TRACE lot number of a registered lot (resolved server-side, one read per SKU of the page),
+    // a link to the lot for a reader of lots; a registered lot whose number could not be read says "unknown lot" (the id only as the
+    // title, the person rule's principle); a typed lot text stays text with the W-UI-02 badge. The filter and S-1 "History" keep the id.
+    const lotCell = (data, full) => {
+        if (!data) return '';
+        if (full.lotNumber) {
+            return can('trace.lots.read')
+                ? `<a href="/Lots/Details?${new URLSearchParams({ lotId: data })}" title="${esc(data)}">${esc(full.lotNumber)}</a>`
+                : `<span title="${esc(data)}">${esc(full.lotNumber)}</span>`;
+        }
+        if (full.lotUnresolved) return `<span title="${esc(data)}">${esc(L().UnknownLot)}</span>`;
+        return `${esc(data)}${lotBadge(data)}`;
+    };
     const esc = (value) => String(value ?? '')
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const numberFormat = new Intl.NumberFormat(document.documentElement.lang || undefined, { maximumFractionDigits: 6 });
@@ -401,7 +414,7 @@ const StockMovementsList = (function () {
                             + `<small class="text-muted">${esc(full.toLocationLabel || full.toLocationId || '')}</small></div>`
                     },
                     // W-UI-02 badge: typed lot text only, until the migration closes typing (MOD-0174 P4).
-                    { targets: 8, render: (data) => (data ? `${esc(data)}${lotBadge(data)}` : '') },
+                    { targets: 8, render: (data, type, full) => lotCell(data, full) },
                     {
                         targets: 9,
                         // "from → to" only when the movement names both and they differ (an outbound has no "to").
