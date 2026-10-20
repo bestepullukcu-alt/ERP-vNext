@@ -91,4 +91,10 @@ Local run `~/mvp6-env/q358-gate-111143` (owned mongod required, skips = red; lan
 - The Viewer's two `.read` keys stay with every tenant's Viewer through the read rule (unchanged by design — the decision
   record's "Viewer: no change"). An Admin without the entitlement therefore holds no S&OP/Capacity key while its Viewer
   can read, the same shape C-13 left for Shipments.
-- Not measured on mongod 7.0.28 (CI version).
+- **mongod 7.0.28 (CI version) — measured 2026-10-20** for both Q358 and G7:
+  - CI: #167's `service-tests (auth-app)` ran the whole Auth suite on Linux with `db version v7.0.28`
+    (owned mongod required): 2923 passed, 0 failed, 2 skipped (two `ServiceClientSecretOutputSinkUnixTests`, not this
+    change); total 2925, the same count as the local run, so the retraction tests are in it.
+  - Local macOS: `mongodb-macos-arm64-7.0.28.tgz` (SHA-256 matches the workflow's `MONGODB_MACOS_SHA256`) as
+    `DITEN_TEST_MONGOD`: Q358 + G7 retraction, G7 role split and writer-inventory tests **84 passed, 0 skipped**.
+  - The lane runs (M0–M9) were on 8.0.18 only.
