@@ -43,7 +43,7 @@
       },
       {
         "path": ".antigravity/skills/control-tower/SKILL.md",
-        "max_bytes": 7500,
+        "max_bytes": 8000,
         "required_sections": [
           {
             "heading": "1. Başlangıç ve kimlik",
@@ -80,6 +80,8 @@
               "bu skill hiçbirini vermez.",
               "her biri için modeli ve effort'u yaz ve kullanılanı ölç",
               "Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4)",
+              "İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.",
+              "`module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.",
               "hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı)"
             ]
           },
@@ -259,6 +261,33 @@
           "fields": {
             "name": "security-agent",
             "description": "Diten güvenlik denetçisi (salt-okunur): kiracı izolasyonu (TenantId, kiracılar arası 404), JWT ve [HasPermission] yetkisi, denetim kaydı, gizli bilgi ve kişisel veri sızıntısı için kodu ya da bir değişikliği inceler ve bulguları raporlar; dosya değiştirmez. Yalnız güvenlik ya da kiracı incelemesi açıkça istendiğinde kullan. Özellik geliştirme, hata düzeltme ya da yerelleştirme için KULLANMA."
+          }
+        }
+      ]
+    },
+    {
+      "id": "module-pack-author",
+      "kind": "agent",
+      "source": ".antigravity/agents/module-pack-author.md",
+      "targets": [
+        {
+          "tool": "claude-code",
+          "format": "markdown",
+          "path": ".claude/agents/module-pack-author.md",
+          "frontmatter": {
+            "name": "module-pack-author",
+            "description": "Diten module pack hazırlama ajanı: kod yazmadan yeni module pack ya da DCP oluşturur ve günceller (domain, alan sayısı, Slim/Compact kararı, kapsam, kabul ölçütleri, test beklentileri; Golden Reference şablonu). Yalnız execution/domains/*/module-packs altında çalışır. Module pack ya da DCP oluşturma/düzenleme istendiğinde kullan. Servis, frontend, gateway kodu yazmak, pack'i onaylamak, commit/push yapmak ya da pack'i bağımsız incelemek için KULLANMA.",
+            "tools": "Read, Grep, Glob, Bash, Edit, Write",
+            "model": "inherit"
+          }
+        },
+        {
+          "tool": "codex",
+          "format": "codex-agent-toml",
+          "path": ".codex/agents/module-pack-author.toml",
+          "fields": {
+            "name": "module-pack-author",
+            "description": "Diten module pack hazırlama ajanı: kod yazmadan yeni module pack ya da DCP oluşturur ve günceller (domain, alan sayısı, Slim/Compact kararı, kapsam, kabul ölçütleri, test beklentileri; Golden Reference şablonu). Yalnız execution/domains/*/module-packs altında çalışır. Module pack ya da DCP oluşturma/düzenleme istendiğinde kullan. Servis, frontend, gateway kodu yazmak, pack'i onaylamak, commit/push yapmak ya da pack'i bağımsız incelemek için KULLANMA."
           }
         }
       ]

@@ -1390,7 +1390,7 @@ karşılaştırılır; eski paketlere geriye dönük inceleme yoktur.
 
 **2. Kim inceler.** Geliştirici Codex'i ya da Claude'u seçer; inceleme, paketi yazan oturumdan ayrı bir oturumda yapılır.
 Model ve effort §17.1 r5 kuralıyla seçilir (zor bir bağımsız denetim için başlangıç profili Opus · high). Derinlik riske
-göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu. İnceleyici yerel depoyu göremeyebilir (Codex kendisine verilenle çalışır); inceleme isteği, inceleyicinin tam sürümü nasıl okuyacağını adlandırır: sabitlenmiş bir commit'teki itilmiş dal (PR yok) ya da dosyaların SHA-256'lı ZIP'i. İstem yerel worktree erişimi varsaymaz.
+göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu. İnceleyici yerel depoyu göremeyebilir (Codex kendisine verilenle çalışır); inceleme isteği, inceleyicinin tam sürümü nasıl okuyacağını adlandırır: sabitlenmiş bir commit'teki itilmiş dal (PR yok) ya da dosyaların SHA-256'lı ZIP'i. İstem yerel worktree erişimi varsaymaz. İncelemeden önce paketi CT değil `module-pack-author` ajanı düzenler; CT'nin önceki incelemeye itirazları sonraki inceleme isteğine eklenir.
 
 **3. Kayıt.** Bulgu dosyası `docs/records/reviews/<kimlik>/<dosya>.md` (biçim: POLICY-REVIEW-START) commit edilir; satırı
 `python3 scripts/pack_approval.py review-row <paket> --findings <dosya> …` üretir ve `execution/approvals/reviews.tsv`'ye

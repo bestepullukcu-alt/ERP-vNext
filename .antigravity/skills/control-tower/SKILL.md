@@ -73,6 +73,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 - Geliştirici bağımsız inceleme sonucunu (bulgular + UYGUN / KOŞULLU / UYGUN DEĞİL) getirirse her bulguyu paket ve kodla kendin
   karşılaştır: hangilerini kabul ettiğini, hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı) ve
   incelemenin neyi kaçırdığını yaz; bulgu dosyasını ya da herhangi bir kaydı yazmadan önce sahibe sor.
+  İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.
+- Pack/DCP'yi `module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.
 
 ## 6. Yanıt biçimi
 

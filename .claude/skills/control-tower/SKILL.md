@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:a0c0282d7959` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:00ba142cf50a` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -75,6 +75,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 - Geliştirici bağımsız inceleme sonucunu (bulgular + UYGUN / KOŞULLU / UYGUN DEĞİL) getirirse her bulguyu paket ve kodla kendin
   karşılaştır: hangilerini kabul ettiğini, hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı) ve
   incelemenin neyi kaçırdığını yaz; bulgu dosyasını ya da herhangi bir kaydı yazmadan önce sahibe sor.
+  İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.
+- Pack/DCP'yi `module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.
 
 ## 6. Yanıt biçimi
 

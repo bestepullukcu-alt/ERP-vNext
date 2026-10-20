@@ -42,6 +42,9 @@ iletildi.
 | S-8 | Kuraldan önce açılmış CT oturumları yeni kuralı bilmez; main'i alsalar da oturum yenilenmeden skill değişmez; kapı durdurunca nedenini anlamayabilirler | Setup (işletim) | 🟡 | S-5 ile | açık — S-5'in her ENGEL mesajı kuralı, nedeni, sonraki adımı ve "main'i al, yeni oturum aç" ipucunu kendisi söyler |
 | S-9 | CT'ye bağımsız inceleme sonucu getirildiğinde körü körüne kabul etmemesini söyleyen kural yok | Setup | 🟡 | alt ajan (metin) | yapıldı — skill §5 + SOP §20.4/4; çapa silinince --check FAIL |
 | S-10 | İş merge edildikten sonra worktree'yi kaldırma kuralı SOP / kart / skill'de yok; 17 worktree birikmiş (7'si merge edilmiş ve temiz; 2'sinde push edilmemiş 10 commit) | Setup | 🟡 | alt ajan (metin) + sahip (temizlik) | yapıldı — SOP §16.5 + kart §6; temizlik sahibin onayında |
+| S-11 | Kural paketi `module-pack-author` ajanına hazırlatır ama ajan Claude Code / Codex'e aktarılmamıştı; CT paketi kendisi düzeltti. CT'nin incelemeye itirazı inceleyene geri dönmüyordu | Setup | 🟡 | alt ajan (yapılandırma + metin) | yapıldı — ajan `.claude/agents/` ve `.codex/agents/`'a aktarıldı (model: inherit, CT model/effort yazar); skill §5 + SOP §20.4/2; skill bütçesi 7500 → 8000; çapalar silinince --check FAIL |
+| S-12 | Kabul edilmiş bir iş (ABB listesi, BL-553: kabul `9020e844f`) main'e hiç girmemiş, yalnız yerel bir dalda duruyordu; kabul kaydı işin main'de olduğunu doğrulamıyor | Setup (işletim) | 🔴 | sahip + sonraki paket | açık — dal yedek olarak push edildi (PR yok); kural önerisi: kabul ya da kapanış, işin commit'inin main'de olduğunu ölçsün |
+| S-13 | CT'nin rolü (karar verir, ölçer, denetler; işi devreder; yalnız küçük kayıt işlerini kendisi yapar) skill'de açık değil | Setup | 🟡 | sahip kararı | açık — cümle hazır, onay bekliyor |
 
 ## Model bulguları (düzeltme gerekmez, sonraki modülde yeniden ölçülür)
 
