@@ -1,5 +1,6 @@
 using Diten.InventoryService.Infrastructure.Middleware;
 using Diten.InventoryService.Tests.Recall;
+using MongoDB.Bson;
 using Xunit;
 
 namespace Diten.InventoryService.Tests.Api;
@@ -43,6 +44,56 @@ public sealed class CorrelationReplacementTests : IClassFixture<RecallApiFactory
         Assert.Equal(201, (int)response.StatusCode);
         Assert.Equal(mine, response.Headers.GetValues("X-Correlation-Id").Single());
         Assert.Empty(Replaced(mine));
+    }
+
+    /// <summary>
+    /// The EMPTY UUID is not an id (CT hold, 2026-10-20): accepted, every caller sending it would share one correlation across their movements,
+    /// audit rows and outbox events — the NAMES1 name match (correlation + person) and the audit trail would mix. It is replaced like any other
+    /// invalid value.
+    /// </summary>
+    [Fact]
+    public async Task The_empty_uuid_is_replaced_by_a_fresh_uuid_in_every_record_and_logged_once()
+    {
+        const string zero = "00000000-0000-0000-0000-000000000000";
+        var s = new RecallScenario(_factory).Ledger;
+        using var response = await s.PostAsync(s.Receipt("1"), configure: r => r.Headers.TryAddWithoutValidation("X-Correlation-Id", zero));
+
+        Assert.Equal(201, (int)response.StatusCode);
+        var minted = response.Headers.GetValues("X-Correlation-Id").Single();
+        Assert.True(Guid.TryParse(minted, out var id) && id != Guid.Empty, minted);
+        foreach (var collection in new[] { "inventory_transactions", "inventory_audit", "inventory_outbox" })
+        {
+            var row = Assert.Single(s.Persisted(collection));
+            Assert.Equal(minted, row["CorrelationId"].AsString);
+            Assert.DoesNotContain(zero, row.ToJson(), StringComparison.Ordinal);
+        }
+
+        var line = Assert.Single(Replaced(minted));
+        Assert.Contains("\"" + zero + "\"", line, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Several values of the header (even two valid UUIDs) name no single id: a fresh UUID carries the request; the values are logged joined
+    /// by a comma (73 characters here → cut to the first <see cref="CorrelationIdMiddleware.LoggedLength"/>).
+    /// </summary>
+    [Fact]
+    public async Task Several_values_are_replaced_by_a_fresh_uuid_and_logged_once()
+    {
+        var first = Guid.NewGuid().ToString();
+        var second = Guid.NewGuid().ToString();
+        var s = new RecallScenario(_factory).Ledger;
+        using var response = await s.PostAsync(s.Receipt("1"), configure: r => r.Headers.TryAddWithoutValidation("X-Correlation-Id", new[] { first, second }));
+
+        Assert.Equal(201, (int)response.StatusCode);
+        var minted = response.Headers.GetValues("X-Correlation-Id").Single();
+        Assert.True(Guid.TryParse(minted, out var id) && id != Guid.Empty, minted);
+        Assert.NotEqual(first, minted);
+        Assert.NotEqual(second, minted);
+        Assert.Equal(minted, Assert.Single(s.Persisted("inventory_transactions"))["CorrelationId"].AsString);
+        Assert.Equal(minted, Assert.Single(s.Persisted("inventory_audit"))["CorrelationId"].AsString);
+        var line = Assert.Single(Replaced(minted));
+        var joined = first + "," + second;
+        Assert.Contains("\"" + joined[..CorrelationIdMiddleware.LoggedLength] + "\"...(+" + (joined.Length - CorrelationIdMiddleware.LoggedLength) + ")", line, StringComparison.Ordinal);
     }
 
     [Fact]

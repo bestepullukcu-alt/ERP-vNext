@@ -185,3 +185,24 @@ Taban notu: MVP-1 dalının belge commit'i `83c923825` (G1 notları) bu dala `--
 | Yeni-denetimsiz | 0 |
 | Derleme | 0 hata, uyarı sayıları aynı |
 | DataTable doğrulayıcı | 19 |
+
+### e — CT HOLD düzeltmesi (2026-10-20): boş UUID ve çoklu değer testleri
+
+CT, kendi worktree'sinde `8e22482a5` üzerinde `&& fromCaller != Guid.Empty` koşulunu kaldırdı; 19 correlation testinin hepsi yeşil kaldı. Kod doğruydu ama kuralı ölçen test yoktu. Kural önemli: sıfır UUID geçerli sayılsaydı farklı isteklerin hareket / denetim / outbox kayıtları aynı correlation'ı paylaşır ve NAMES1 ad eşleştirmesi (correlation + kişi) karışırdı. Üretim kodu değişmedi; iki test eklendi, ikisi de gerçek host üzerinde (`CorrelationReplacementTests`):
+
+1. `The_empty_uuid_is_replaced_by_a_fresh_uuid_in_every_record_and_logged_once`
+   - başlık `00000000-0000-0000-0000-000000000000` → yanıt 201
+   - yanıt başlığında yeni, boş olmayan bir UUID
+   - hareket, denetim ve outbox kayıtlarında bu yeni kimlik; sıfır UUID hiçbir kayıtta yok
+   - tek uyarı log satırı (`"00000000-…"`)
+2. `Several_values_are_replaced_by_a_fresh_uuid_and_logged_once`
+   - aynı başlığın iki geçerli UUID değeri → yeni UUID, ikisinden de farklı
+   - hareket ve denetim kayıtlarında yeni kimlik
+   - tek log satırı; birleşik değer 73 karakter → ilk 64'ü + `...(+9)`
+
+| Sabotaj | Kırmızı | SHA (önce = sonra) |
+|---|---|---|
+| `&& fromCaller != Guid.Empty` kaldırıldı | `The_empty_uuid_is_replaced…` (1 / 14) | `c20011d27d2b0495` |
+| `supplied.Count == 1 &&` kaldırıldı | `Several_values_are_replaced…` + 5 `AuditCorrelationTests` (başlıksız istekte `supplied[0]` boş diziyi okur) — 6 / 14 | `c20011d27d2b0495` |
+
+Tam Inventory takımı (filtresiz): **1335 + 4**, hepsi yeşil (1333 + 4 + 2 yeni). Derleme: 0 uyarı, 0 hata.
