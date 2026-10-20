@@ -7,7 +7,8 @@ consumed: MOD-0140
 measured_at: origin/main 365f260a9 (2026-10-20)
 ---
 
-DURUM: TASLAK — karar verilmedi (D1–D6 öneridir; karar veren ve tarih yok)
+DURUM: TASLAK — **tedarikçi modeli kararlaştırıldı (Natig, yönetim, 2026-10-21; §4.0)**; D1 bu karara göre yeniden
+yazıldı (öneri). D1–D6 hâlâ öneridir; karar veren ve tarih yok.
 
 # DC-02 — karar taslağı (öneri, onay değil)
 
@@ -58,12 +59,34 @@ Supplier lane, **build commitment** — imzayla kapanmaz.
 - **I5 — Kimlik biçimi.** Sözleşmede `supplierId` string (örnek `SUP-2001`); MOD-0147/0148 paketleri bunu nasıl tutacak
   (string mi, Guid mi) paketlerde sabit olmalı.
 
+## 4.0 Verilmiş karar — tedarikçi modeli (Natig, yönetim, 2026-10-21)
+
+> Tedarikçinin **ana kaydı kiracı içinde tektir**; kiracının bütün tüzel kişilikleri (LE) aynı kaydı paylaşır. **Onay
+> durumu, ödeme koşulları ve satın alma ilişkisi her LE için ayrı** tutulur. Aynı firma iki kez kaydedilmez; tedarikçi
+> onayı şirket/tesis bazında kalır.
+
+Bu kararın sonuçları (çıkarım, olgu değil):
+
+- **K1 — Bugünkü kod kararla uyuşmuyor.** F5'e göre Procurement tedarikçiyi **Tenant + LE** anahtarıyla tutuyor; aynı firma
+  iki LE'de iki ayrı kayıt olur. Kararın istediği yapı: kiracı düzeyinde bir ana kayıt + LE başına bir ilişki kaydı (onay,
+  ödeme koşulları, satın alma ilişkisi). Bu MOD-0140'ın veri modeli değişikliğidir: **MOD-0140 sahibinin işi, XMC-001**.
+  Mevcut LE başına kayıtların ana kayda birleştirilmesi (aynı firmanın tekrarları) bir göç kararı ister.
+- **K2 — Bugünkü LE başına kayıt, fiilen "LE ilişkisi" gibi davranıyor.** Bir LE'de kayıtlı olmak, o LE'de ilişki var
+  demektir. Bu yüzden "tedarikçi bu LE için uygun mu?" sorusu bugün de doğru LE bağlamıyla cevaplanabilir; değişen,
+  cevabın **ana kayıt kimliği** ile verilmesidir.
+- **K3 — Kimlik (I5'i keskinleştirir).** MOD-0147/0148, tedarikçiyi **kiracı düzeyindeki ana kayıt kimliğiyle** tutmalıdır;
+  LE başına kayıt kimliği tutulursa, Procurement birleştirmesinden sonra puan kartları ve portal kayıtları yetim kalır.
+  Bugünkü LE başına kimlikten ana kimliğe bir eşleme (Procurement göçünün çıktısı) gerekir.
+- **K4 — Durum iki düzeyde olabilir (D2'yi etkiler).** LE ilişkisinin onay durumu (`Active`/`OnHold`/`Blocked`/`Inactive`)
+  LE başınadır; ama bazı engeller kiracı düzeyinde olabilir (ör. yaptırım listesi → bütün LE'lerde blok). Hangi durumun
+  hangi düzeyde tutulduğu D2'de sahibin kararıdır.
+
 ## 4. Sahip kararları (her biri için önerilen seçenek)
 
 | # | Karar | Seçenekler | Öneri |
 |---|---|---|---|
-| D1 | Uygunluk kaynağı | (a) mevcut `POST /api/suppliers/validate`'i doğrulanmış LE ile çağırmak; (b) MOD-0140'a yeni bir `eligibility` ucu (sözleşme halefi v1.3.0) | **(a)** — yeni sözleşme gerekmez; F5 davranışı yeterli. (b) yalnız D2 durum dışında bir kural isterse |
-| D2 | Durum → izin matrisi | Örn. değerlendirme/risk: `Active`, `OnHold` izinli; `Blocked`, `Inactive` → 422; portal erişimi/gönderim: yalnız `Active` | Öneri bu; **karar MOD-0147/0148 sahibi + MOD-0140 sahibi** |
+| D1 | Uygunluk kaynağı (**2026-10-21 tedarikçi modeline göre yeniden yazıldı**) | (a) mevcut `POST /api/suppliers/validate`'i doğrulanmış LE ile çağırmak (bugünkü LE başına kayıt = LE ilişkisi, K2); (b) MOD-0140 sözleşme halefi (v1.3.0): `validate`, her `supplierId` için **ana kayıt kimliğini** (`known`) ve çağıranın doğrulanmış LE'sindeki **ilişki durumunu** ayrı alanlarla döner; ana kayıt düzeyindeki engel (K4) ayrı alan | **(b) hedef, (a) köprü.** Kalıcı kaynak (b): karar ana kayıt + LE ilişkisi ayrımını istiyor; v1.2.0 `FROZEN` sözleşme bu ayrımı taşımıyor, halef **MOD-0140 sahibinin** işi. İlk dilim (C8) beklemeden (a) ile başlayabilir — **koşul:** MOD-0147/0148 kimliği ana kayıt kimliği olarak saklar (K3) ve (a) yanıtını yalnız "bu LE'de ilişki var mı + durumu" olarak okur; (b) gelince okuyucu aynı arayüzle (`ISupplierEligibilityReader`) değiştirilir |
+| D2 | Durum → izin matrisi | Örn. değerlendirme/risk: `Active`, `OnHold` izinli; `Blocked`, `Inactive` → 422; portal erişimi/gönderim: yalnız `Active`. **2026-10-21 eki:** durum LE ilişkisinde tutulur; kiracı düzeyinde bir engel (K4) varsa her LE'de 422 | Öneri bu; **karar MOD-0147/0148 sahibi + MOD-0140 sahibi** (hangi durumun hangi düzeyde olduğu dahil) |
 | D3 | Çağrı kimliği | (a) kullanıcının token'ı (yetki: `procurement.suppliers.read` rol şablonlarına); (b) S2S servis kimliği | **(a)** ilk dilim için — DC-03'e bağımlılık yaratmaz; (b) MOD-0148 portal aktörü için DC-03'le birlikte |
 | D4 | LE iletimi | SupplyChain, MDM'le doğruladığı LE'yi `X-Legal-Entity-Id` ile iletir; Procurement'ta claim/başlık doğrulaması ayrı iş | Öneri bu; Procurement tarafı (F7) **MOD-0140 sahibine ayrı bildirim**, XMC-001 |
 | D5 | Hata davranışı (fail-closed) | Procurement ulaşılamaz / zaman aşımı / `known:false` → yazma yok | 503 (ulaşılamaz) ve 422 (bilinmeyen/uygunsuz), sıfır yazma; tam kod listesi paket sürümünde |
