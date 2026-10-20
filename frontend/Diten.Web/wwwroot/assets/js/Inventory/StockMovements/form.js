@@ -198,6 +198,8 @@ const StockMovementForm = (function () {
             block.classList.toggle('d-none', !visible);
             block.querySelectorAll('select, input, textarea').forEach((control) => {
                 // The lot block's own controls (picker, typed text, retest confirmation) are required by the facts, not the matrix.
+                // WP-MVP1-FIX-LIVE4: the FEFO band's reason (rendered inside the source block) is required by the band, not the matrix
+                if (control.id === 'ex-band-reason') return;
                 control.required = visible && !['lotId', 'lotIdTyped', 'lotRetestConfirm'].includes(control.id);
                 control.setAttribute('aria-required', control.required ? 'true' : 'false');
             });
@@ -369,7 +371,8 @@ const StockMovementForm = (function () {
         hint('source', row ? fmt(t('HintSourceStock'), qty(row.onHand), row.baseUomId || '') : form.querySelector('[data-hint-for="source"]')?.textContent);
         syncWarehouseFromSource();
         // WP-0176-F5: the outbound FEFO band — the source row's lot against the FEFO order of its warehouse (expiry-bands.js)
-        window.ExpiryBands?.movement.onSource({ direction: direction(), itemId: el.item.value, sku: el.sku.value, warehouseId: row?.warehouseId, lotId: row?.lotId });
+        // WP-MVP1-FIX-LIVE4: the type and the source status decide whether the service checks FEFO at all (an exempt type gets no band)
+        window.ExpiryBands?.movement.onSource({ direction: direction(), movementType: el.type.value, fromStatus: row?.stockStatus, itemId: el.item.value, sku: el.sku.value, warehouseId: row?.warehouseId, lotId: row?.lotId });
         refreshEffect();
     };
 
@@ -861,7 +864,7 @@ const StockMovementForm = (function () {
 
     const bind = () => {
         const on = (select, handler) => { if (select) $(select).on('change', handler); };
-        on(el.type, () => { clearErrors(); applyType(); });
+        on(el.type, () => { clearErrors(); applyType(); onSourceChanged(); }); // WP-MVP1-FIX-LIVE4: the band follows the type too
         on(el.item, async () => { clearErrors(); await loadSkus(); await onSkuChanged(); });
         on(el.sku, () => { clearErrors(); onSkuChanged(); });
         on(el.source, onSourceChanged);
