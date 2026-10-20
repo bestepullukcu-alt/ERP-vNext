@@ -489,6 +489,42 @@
   <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
     <value>Comparar representantes</value>
   </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>Vea los correos que el CRM envió automáticamente a partir de los informes de visita — resumen, evento adverso, solicitud fuera de indicación, informe vencido — con sus destinatarios y su estado, y abra cada uno tal como se redactó. No se muestra ninguna dirección de correo.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Representantes (sus propias visitas), responsables (su equipo) y el equipo de operaciones comerciales</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>Fije el «Periodo»: los últimos 30 o 7 días, este mes o un «Rango personalizado…». El periodo es el día de la visita.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Elija el periodo</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>Filtre por «Tipo de correo», «Estado» y —si es responsable— «Representante». «Ruta de FV pendiente» significa que la dirección de seguridad de FV no está definida y solo se informó al responsable.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Acote la lista</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>La columna «Destinatario» muestra roles, nunca direcciones: «Responsable», «Seguridad FV», «MSL (enlace médico)». Un correo de seguridad va a FV o al MSL con el responsable en copia.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Lea los destinatarios</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>La «Vista rápida» de la fila muestra el correo tal como se envió: el asunto, «Para», «CC», «Fecha», el contenido y «Ver informe».</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>Abra el correo</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>Con el permiso de ajustes, la pestaña «Ajustes de notificación» define el «Correo de seguridad de FV» y el «Correo de MSL» y activa o no el resumen y el recordatorio de vencimiento. Si alguien guardó mientras tanto, recargue y guarde de nuevo.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Configure las direcciones</value>
+  </data>
   <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
     <value>Gestione los códigos QR colocados en la recepción de las instituciones. El representante escanea este código al iniciar la visita; una subunidad sin código propio usa el de su institución principal.</value>
   </data>

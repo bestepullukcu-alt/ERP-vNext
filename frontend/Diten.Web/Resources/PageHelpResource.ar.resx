@@ -489,6 +489,42 @@
   <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
     <value>قارن المندوبين</value>
   </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>اطّلع على الرسائل التي أرسلها CRM تلقائيًا من تقارير الزيارات — ملخص التقرير، حدث سلبي، طلب خارج دواعي الاستعمال، تأخر التقرير — مع مستلميها وحالتها، وافتح كل رسالة كما كُتبت. لا يُعرض أي عنوان بريد إلكتروني.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>المندوبون (زياراتهم)، والمديرون (فرقهم)، وفريق عمليات المبيعات</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>حدّد «الفترة»: آخر 30 يومًا أو آخر 7 أيام أو هذا الشهر أو «نطاق مخصص…». الفترة بحسب يوم الزيارة.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>اختر الفترة</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>صفِّ حسب «نوع الرسالة» و«الحالة» و— إن كنت مديرًا — «المندوب». تعني «توجيه اليقظة الدوائية معلق» أن بريد سلامة اليقظة الدوائية غير محدد وأن المدير وحده أُبلغ.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>ضيّق القائمة</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>يعرض عمود «المستلم» أدوارًا لا عناوين: «المدير» و«اليقظة الدوائية» و«مسؤول الاتصال العلمي (MSL)». تُرسل رسالة السلامة إلى اليقظة الدوائية أو MSL مع نسخة إلى المدير.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>اقرأ المستلمين</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>يعرض «عرض سريع» للصف الرسالة كما أُرسلت: الموضوع و«إلى» و«نسخة» و«التاريخ» والمحتوى و«عرض التقرير».</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>افتح الرسالة</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>بصلاحية الإعدادات، يضبط تبويب «إعدادات الإشعارات» «بريد سلامة اليقظة الدوائية» و«بريد MSL» ويُشغّل ملخص التقرير وتذكير التأخر أو يوقفهما. إذا حفظ شخص آخر في الأثناء فأعد التحميل واحفظ مجددًا.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>اضبط العناوين</value>
+  </data>
   <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
     <value>أدِر رموز QR المعلّقة في استقبال المؤسسات. يمسح المندوب هذا الرمز عند بدء الزيارة؛ والوحدة الفرعية التي ليس لها رمز خاص تستخدم رمز المؤسسة الأم.</value>
   </data>

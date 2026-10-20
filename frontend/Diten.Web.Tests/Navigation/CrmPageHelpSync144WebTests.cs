@@ -17,7 +17,8 @@ public sealed class CrmPageHelpSync144WebTests
     private static readonly string[] Pages =
     [
         "COMPETITORPRODUCTS", "CRMDOCTORINSIGHTTHRESHOLDS", "OBJECTIONRESPONSES", "VISITEVIDENCESETTINGS", "VISITWORKSPACE",
-        "CRMVISITQRCODES", "CRMVISITEVIDENCEFLAGS"
+        "CRMVISITQRCODES", "CRMVISITEVIDENCEFLAGS",
+        "CRMVISITNOTIFICATIONS" // WP-VW-W5 W5-WEB — a new page arrives with its text (never a ledger row)
     ];
 
     private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
@@ -31,7 +32,8 @@ public sealed class CrmPageHelpSync144WebTests
         ["VISITEVIDENCESETTINGS"] = ["CRM/VisitEvidenceSettings/VisitEvidenceSettingsIndex"],
         ["VISITWORKSPACE"] = ["CRM/VisitWorkspace/VisitWorkspaceIndex"],
         ["CRMVISITQRCODES"] = ["CRM/VisitQrCodes/VisitQrCodesIndex", "CRM/VisitQrCodes/VisitQrIndex", "CRM/VisitEvidenceSettings/VisitEvidenceSettingsIndex"],
-        ["CRMVISITEVIDENCEFLAGS"] = ["CRM/VisitEvidenceFlags/VisitEvidenceFlagsIndex"]
+        ["CRMVISITEVIDENCEFLAGS"] = ["CRM/VisitEvidenceFlags/VisitEvidenceFlagsIndex"],
+        ["CRMVISITNOTIFICATIONS"] = ["CRM/VisitNotifications/VisitNotificationsIndex"]
     };
 
     // the panel catalog's own quote rule (PageHelpCatalog.Quoted): “…” (en, tr, zh) or «…» / « … » (fr, es, ar, ru)

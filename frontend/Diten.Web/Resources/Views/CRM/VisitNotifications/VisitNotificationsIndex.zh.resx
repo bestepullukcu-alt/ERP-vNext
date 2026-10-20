@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>已发送的电子邮件</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>拜访报告自动发送的电子邮件：报告摘要、不良事件、超说明书请求、报告逾期。</value></data>
+  <data name="TabList" xml:space="preserve"><value>电子邮件</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>通知设置</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>期间</value></data>
+  <data name="CustomFrom" xml:space="preserve"><value>开始</value></data>
+  <data name="CustomTo" xml:space="preserve"><value>结束</value></data>
+  <data name="EventLabel" xml:space="preserve"><value>邮件类型</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>状态</value></data>
+  <data name="RepLabel" xml:space="preserve"><value>代表</value></data>
+  <data name="ColDate" xml:space="preserve"><value>发送时间</value></data>
+  <data name="ColEvent" xml:space="preserve"><value>邮件</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>医生 / 机构</value></data>
+  <data name="ColRep" xml:space="preserve"><value>代表</value></data>
+  <data name="ColRecipients" xml:space="preserve"><value>收件人</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="ColActions" xml:space="preserve"><value>操作</value></data>
+  <data name="DrawerTitle" xml:space="preserve"><value>邮件预览</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>拜访邮件设置</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>安全邮件的去向以及自动发送哪些邮件。</value></data>
+  <data name="PvMailboxLabel" xml:space="preserve"><value>药物警戒安全邮箱</value></data>
+  <data name="PvMailboxHelp" xml:space="preserve"><value>不良事件邮件发送到此地址；直属经理抄送。</value></data>
+  <data name="MslMailboxLabel" xml:space="preserve"><value>MSL 邮箱</value></data>
+  <data name="MslMailboxHelp" xml:space="preserve"><value>超说明书信息请求发送到此地址；直属经理抄送。</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>如为空，仅通知直属经理；与药物警戒系统的连接将在 K-W8 决定后加入。</value></data>
+  <data name="ReportSummaryLabel" xml:space="preserve"><value>报告摘要发送给直属经理</value></data>
+  <data name="ReportSummaryHelp" xml:space="preserve"><value>提交拜访报告时发送。更正不会再次发送。</value></data>
+  <data name="OverdueRemindersLabel" xml:space="preserve"><value>报告逾期提醒</value></data>
+  <data name="OverdueRemindersHelp" xml:space="preserve"><value>拜访报告未按时填写时通知直属经理。</value></data>
+  <data name="SafetyAlwaysNote" xml:space="preserve"><value>不良事件和超说明书邮件始终发送，无法关闭。</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>保存</value></data>
+  <data name="PeriodLast30" xml:space="preserve"><value>最近 30 天</value></data>
+  <data name="PeriodLast7" xml:space="preserve"><value>最近 7 天</value></data>
+  <data name="PeriodCustom" xml:space="preserve"><value>自定义范围…</value></data>
+  <data name="EventAll" xml:space="preserve"><value>全部邮件</value></data>
+  <data name="StatusAll" xml:space="preserve"><value>全部状态</value></data>
+  <data name="RepAll" xml:space="preserve"><value>全部代表</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>报告摘要</value></data>
+  <data name="Event_adverseevent" xml:space="preserve"><value>不良事件通知</value></data>
+  <data name="Event_offlabelrequest" xml:space="preserve"><value>超说明书请求</value></data>
+  <data name="Event_overdue" xml:space="preserve"><value>报告逾期</value></data>
+  <data name="St_sent" xml:space="preserve"><value>已发送</value></data>
+  <data name="St_queued" xml:space="preserve"><value>等待中</value></data>
+  <data name="St_failed" xml:space="preserve"><value>失败</value></data>
+  <data name="St_failed_final" xml:space="preserve"><value>失败（不再重试）</value></data>
+  <data name="St_no_recipient" xml:space="preserve"><value>无收件人</value></data>
+  <data name="St_route_pending" xml:space="preserve"><value>路由待定</value></data>
+  <data name="St_route_pending_pv" xml:space="preserve"><value>药物警戒路由待定</value></data>
+  <data name="St_route_pending_msl" xml:space="preserve"><value>MSL 路由待定</value></data>
+  <data name="St_unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Rcp_manager" xml:space="preserve"><value>直属经理</value></data>
+  <data name="Rcp_upper_manager" xml:space="preserve"><value>上级经理</value></data>
+  <data name="Rcp_pv" xml:space="preserve"><value>药物警戒</value></data>
+  <data name="Rcp_msl" xml:space="preserve"><value>医学联络官 (MSL)</value></data>
+  <data name="Rcp_user" xml:space="preserve"><value>用户</value></data>
+  <data name="ManagerOf" xml:space="preserve"><value>{0} 的直属经理</value></data>
+  <data name="RcpNone" xml:space="preserve"><value>未找到收件人</value></data>
+  <data name="RcpPending" xml:space="preserve"><value>未发送给：{0}（未设置地址）</value></data>
+  <data name="CcSuffix" xml:space="preserve"><value>{0}（抄送）</value></data>
+  <data name="VisitDayLine" xml:space="preserve"><value>拜访 {0}</value></data>
+  <data name="Attempts" xml:space="preserve"><value>{0} 次尝试</value></data>
+  <data name="MailFrom" xml:space="preserve"><value>发件人</value></data>
+  <data name="MailFromValue" xml:space="preserve"><value>CRM 通知</value></data>
+  <data name="MailTo" xml:space="preserve"><value>收件人</value></data>
+  <data name="MailCc" xml:space="preserve"><value>抄送</value></data>
+  <data name="MailDate" xml:space="preserve"><value>日期</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>使用此邮件数据的模板预览。不显示邮箱地址。</value></data>
+  <data name="FooterKvkk" xml:space="preserve"><value>此邮件由 CRM 自动发送，不含患者身份信息（KVKK）。回复将转给代表 {0}。</value></data>
+  <data name="Kind_submitted" xml:space="preserve"><value>拜访报告</value></data>
+  <data name="Kind_adverseevent" xml:space="preserve"><value>药物警戒</value></data>
+  <data name="Kind_offlabelrequest" xml:space="preserve"><value>医学信息请求</value></data>
+  <data name="Kind_overdue" xml:space="preserve"><value>合规通知</value></data>
+  <data name="Subj_submitted" xml:space="preserve"><value>拜访报告 · {0} · {1}</value></data>
+  <data name="Subj_adverseevent" xml:space="preserve"><value>紧急 · 不良事件通知 · {0} · 24 小时</value></data>
+  <data name="Subj_offlabelrequest" xml:space="preserve"><value>超说明书信息请求 · {0}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>报告逾期 · {0} · {1}</value></data>
+  <data name="Band_submitted" xml:space="preserve"><value>报告已提交</value></data>
+  <data name="Band_adverseevent" xml:space="preserve"><value>24 小时规则 · 须在 24 小时内评估</value></data>
+  <data name="Band_offlabelrequest" xml:space="preserve"><value>转交 MSL · 代表未作答</value></data>
+  <data name="Band_overdue" xml:space="preserve"><value>期限已过 · 记录已锁定</value></data>
+  <data name="Title_submitted" xml:space="preserve"><value>{0} 拜访报告</value></data>
+  <data name="Title_adverseevent" xml:space="preserve"><value>拜访中报告了不良事件</value></data>
+  <data name="Title_offlabelrequest" xml:space="preserve"><value>医生请求了超说明书信息</value></data>
+  <data name="Title_overdue" xml:space="preserve"><value>某次拜访未填写报告</value></data>
+  <data name="Intro_submitted" xml:space="preserve"><value>{0} 提交了拜访报告。摘要如下，详情见 CRM。</value></data>
+  <data name="Intro_adverseevent" xml:space="preserve"><value>医生在现场拜访中报告了副作用/不良事件，须在 24 小时内评估。</value></data>
+  <data name="Intro_offlabelrequest" xml:space="preserve"><value>拜访中医生请求了获批适应症以外的信息。代表未作答，已将请求转交给您。</value></data>
+  <data name="Intro_overdue" xml:space="preserve"><value>{0} 未按时填写 {1} 拜访的报告，记录已锁定。</value></data>
+  <data name="Row_rep" xml:space="preserve"><value>代表</value></data>
+  <data name="Row_doctor" xml:space="preserve"><value>医生</value></data>
+  <data name="Row_institution" xml:space="preserve"><value>机构</value></data>
+  <data name="Row_visit" xml:space="preserve"><value>拜访</value></data>
+  <data name="Row_products" xml:space="preserve"><value>产品</value></data>
+  <data name="Row_reporter" xml:space="preserve"><value>报告人</value></data>
+  <data name="Row_sourceDoctor" xml:space="preserve"><value>来源医生</value></data>
+  <data name="Row_suspectProduct" xml:space="preserve"><value>可疑产品</value></data>
+  <data name="Row_product" xml:space="preserve"><value>产品</value></data>
+  <data name="Row_deadline" xml:space="preserve"><value>截止时间</value></data>
+  <data name="Sec_note" xml:space="preserve"><value>备注</value></data>
+  <data name="Sec_safety" xml:space="preserve"><value>安全</value></data>
+  <data name="Sec_followUp" xml:space="preserve"><value>跟进</value></data>
+  <data name="Sec_repNote" xml:space="preserve"><value>代表备注</value></data>
+  <data name="Safety_adverse_yes" xml:space="preserve"><value>不良事件：是</value></data>
+  <data name="Safety_adverse_no" xml:space="preserve"><value>不良事件：否</value></data>
+  <data name="Safety_offlabel_yes" xml:space="preserve"><value>超说明书信息请求：是</value></data>
+  <data name="Safety_offlabel_no" xml:space="preserve"><value>超说明书信息请求：否</value></data>
+  <data name="Note_adverseevent" xml:space="preserve"><value>代表不做医学评估，仅传递信息。</value></data>
+  <data name="CtaOpenReport" xml:space="preserve"><value>查看报告</value></data>
+  <data name="CtaReviewRecord" xml:space="preserve"><value>查看记录</value></data>
+  <data name="Explain_queued" xml:space="preserve"><value>等待发送。</value></data>
+  <data name="Explain_failed" xml:space="preserve"><value>发送失败，系统将自动重试。</value></data>
+  <data name="Explain_failed_final" xml:space="preserve"><value>多次重试后仍发送失败，不再重试。</value></data>
+  <data name="Explain_no_recipient" xml:space="preserve"><value>未找到代表的直属经理，未发送邮件。</value></data>
+  <data name="Explain_route_pending_pv" xml:space="preserve"><value>未设置药物警戒安全邮箱：仅通知了直属经理。</value></data>
+  <data name="Explain_route_pending_msl" xml:space="preserve"><value>未设置 MSL 邮箱：仅通知了直属经理。</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>此期间没有邮件</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>更改期间或筛选条件以查看其他邮件。</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>设置已保存。</value></data>
+  <data name="SettingsDefault" xml:space="preserve"><value>默认设置——尚未保存。</value></data>
+  <data name="SettingsUpdated" xml:space="preserve"><value>最近修改：{0} · {1}</value></data>
+  <data name="ErrEmailField" xml:space="preserve"><value>请输入一个电子邮件地址（或留空）。</value></data>
+  <data name="ErrRangeMissing" xml:space="preserve"><value>请选择自定义范围的两个日期。</value></data>
+  <data name="ErrRangeOrder" xml:space="preserve"><value>开始日期不能晚于结束日期。</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>您打开后有人修改了这些设置。请刷新页面查看更改，然后重新保存。</value></data>
+  <data name="Err_visit_notification_email_invalid" xml:space="preserve"><value>某个电子邮件地址无效。</value></data>
+  <data name="Err_visit_notification_invalid" xml:space="preserve"><value>筛选条件无效。</value></data>
+  <data name="Err_visit_notification_not_found" xml:space="preserve"><value>未找到此邮件或不在您的范围内。</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>您没有此权限。</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>服务暂时无法访问，请稍后重试。</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>出现问题，请重试。</value></data>
+</root>

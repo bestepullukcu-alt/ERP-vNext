@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>رسائل البريد الإلكتروني المرسلة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>رسائل تلقائية من تقارير الزيارات: ملخص التقرير، حدث سلبي، طلب خارج دواعي الاستعمال، تأخر التقرير.</value></data>
+  <data name="TabList" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>إعدادات الإشعارات</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>الفترة</value></data>
+  <data name="CustomFrom" xml:space="preserve"><value>من</value></data>
+  <data name="CustomTo" xml:space="preserve"><value>إلى</value></data>
+  <data name="EventLabel" xml:space="preserve"><value>نوع الرسالة</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>الحالة</value></data>
+  <data name="RepLabel" xml:space="preserve"><value>المندوب</value></data>
+  <data name="ColDate" xml:space="preserve"><value>الإرسال</value></data>
+  <data name="ColEvent" xml:space="preserve"><value>الرسالة</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>الطبيب / المؤسسة</value></data>
+  <data name="ColRep" xml:space="preserve"><value>المندوب</value></data>
+  <data name="ColRecipients" xml:space="preserve"><value>المستلم</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ColActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="DrawerTitle" xml:space="preserve"><value>معاينة الرسالة</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>إعدادات رسائل الزيارات</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>إلى أين تُرسل رسائل السلامة وأي الرسائل تُرسل تلقائيًا.</value></data>
+  <data name="PvMailboxLabel" xml:space="preserve"><value>بريد سلامة اليقظة الدوائية</value></data>
+  <data name="PvMailboxHelp" xml:space="preserve"><value>تُرسل رسائل الأحداث السلبية إلى هذا العنوان؛ ويكون المدير في النسخة.</value></data>
+  <data name="MslMailboxLabel" xml:space="preserve"><value>بريد MSL</value></data>
+  <data name="MslMailboxHelp" xml:space="preserve"><value>تُرسل طلبات المعلومات خارج دواعي الاستعمال إلى هذا العنوان؛ ويكون المدير في النسخة.</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>إذا كان فارغًا يُبلَّغ المدير فقط؛ وسيُضاف الربط بنظام اليقظة الدوائية بعد قرار K-W8.</value></data>
+  <data name="ReportSummaryLabel" xml:space="preserve"><value>ملخص التقرير إلى المدير</value></data>
+  <data name="ReportSummaryHelp" xml:space="preserve"><value>يُرسل عند تقديم تقرير الزيارة. التصحيح لا يرسل شيئًا.</value></data>
+  <data name="OverdueRemindersLabel" xml:space="preserve"><value>تذكير بتأخر التقرير</value></data>
+  <data name="OverdueRemindersHelp" xml:space="preserve"><value>يُبلغ المدير عندما لا يُدخل تقرير الزيارة في الوقت المحدد.</value></data>
+  <data name="SafetyAlwaysNote" xml:space="preserve"><value>تُرسل رسائل الأحداث السلبية وخارج دواعي الاستعمال دائمًا ولا يمكن إيقافها.</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>حفظ</value></data>
+  <data name="PeriodLast30" xml:space="preserve"><value>آخر 30 يومًا</value></data>
+  <data name="PeriodLast7" xml:space="preserve"><value>آخر 7 أيام</value></data>
+  <data name="PeriodCustom" xml:space="preserve"><value>نطاق مخصص…</value></data>
+  <data name="EventAll" xml:space="preserve"><value>كل الرسائل</value></data>
+  <data name="StatusAll" xml:space="preserve"><value>كل الحالات</value></data>
+  <data name="RepAll" xml:space="preserve"><value>كل المندوبين</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>ملخص التقرير</value></data>
+  <data name="Event_adverseevent" xml:space="preserve"><value>إخطار حدث سلبي</value></data>
+  <data name="Event_offlabelrequest" xml:space="preserve"><value>طلب خارج دواعي الاستعمال</value></data>
+  <data name="Event_overdue" xml:space="preserve"><value>تأخر التقرير</value></data>
+  <data name="St_sent" xml:space="preserve"><value>أُرسلت</value></data>
+  <data name="St_queued" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="St_failed" xml:space="preserve"><value>فشل</value></data>
+  <data name="St_failed_final" xml:space="preserve"><value>فشل (بلا محاولات أخرى)</value></data>
+  <data name="St_no_recipient" xml:space="preserve"><value>لا مستلم</value></data>
+  <data name="St_route_pending" xml:space="preserve"><value>التوجيه معلق</value></data>
+  <data name="St_route_pending_pv" xml:space="preserve"><value>توجيه اليقظة الدوائية معلق</value></data>
+  <data name="St_route_pending_msl" xml:space="preserve"><value>توجيه MSL معلق</value></data>
+  <data name="St_unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="Rcp_manager" xml:space="preserve"><value>المدير</value></data>
+  <data name="Rcp_upper_manager" xml:space="preserve"><value>المدير الأعلى</value></data>
+  <data name="Rcp_pv" xml:space="preserve"><value>اليقظة الدوائية</value></data>
+  <data name="Rcp_msl" xml:space="preserve"><value>مسؤول الاتصال العلمي (MSL)</value></data>
+  <data name="Rcp_user" xml:space="preserve"><value>مستخدم</value></data>
+  <data name="ManagerOf" xml:space="preserve"><value>مدير {0}</value></data>
+  <data name="RcpNone" xml:space="preserve"><value>لم يُعثر على مستلم</value></data>
+  <data name="RcpPending" xml:space="preserve"><value>لم تُرسل إلى: {0} (العنوان غير محدد)</value></data>
+  <data name="CcSuffix" xml:space="preserve"><value>{0} (نسخة)</value></data>
+  <data name="VisitDayLine" xml:space="preserve"><value>الزيارة {0}</value></data>
+  <data name="Attempts" xml:space="preserve"><value>{0} محاولات</value></data>
+  <data name="MailFrom" xml:space="preserve"><value>من</value></data>
+  <data name="MailFromValue" xml:space="preserve"><value>إشعارات CRM</value></data>
+  <data name="MailTo" xml:space="preserve"><value>إلى</value></data>
+  <data name="MailCc" xml:space="preserve"><value>نسخة</value></data>
+  <data name="MailDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>معاينة للقالب بقيم هذه الرسالة. لا تُعرض العناوين.</value></data>
+  <data name="FooterKvkk" xml:space="preserve"><value>أُرسلت هذه الرسالة تلقائيًا من CRM. لا تحتوي على هوية أي مريض (KVKK). تُحال الردود إلى المندوب {0}.</value></data>
+  <data name="Kind_submitted" xml:space="preserve"><value>تقرير الزيارة</value></data>
+  <data name="Kind_adverseevent" xml:space="preserve"><value>اليقظة الدوائية</value></data>
+  <data name="Kind_offlabelrequest" xml:space="preserve"><value>طلب معلومات طبية</value></data>
+  <data name="Kind_overdue" xml:space="preserve"><value>إشعار امتثال</value></data>
+  <data name="Subj_submitted" xml:space="preserve"><value>تقرير الزيارة · {0} · {1}</value></data>
+  <data name="Subj_adverseevent" xml:space="preserve"><value>عاجل · إخطار حدث سلبي · {0} · 24 ساعة</value></data>
+  <data name="Subj_offlabelrequest" xml:space="preserve"><value>طلب معلومات خارج دواعي الاستعمال · {0}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>تأخر التقرير · {0} · {1}</value></data>
+  <data name="Band_submitted" xml:space="preserve"><value>تم تقديم التقرير</value></data>
+  <data name="Band_adverseevent" xml:space="preserve"><value>قاعدة 24 ساعة · قيِّم خلال 24 ساعة</value></data>
+  <data name="Band_offlabelrequest" xml:space="preserve"><value>توجيه إلى MSL · لم يُجب المندوب</value></data>
+  <data name="Band_overdue" xml:space="preserve"><value>انتهت المهلة · السجل مقفل</value></data>
+  <data name="Title_submitted" xml:space="preserve"><value>تقرير زيارة {0}</value></data>
+  <data name="Title_adverseevent" xml:space="preserve"><value>تم الإبلاغ عن حدث سلبي خلال زيارة</value></data>
+  <data name="Title_offlabelrequest" xml:space="preserve"><value>طلب طبيب معلومات خارج دواعي الاستعمال</value></data>
+  <data name="Title_overdue" xml:space="preserve"><value>لم يُدخل تقرير إحدى الزيارات</value></data>
+  <data name="Intro_submitted" xml:space="preserve"><value>قدّم {0} تقرير الزيارة. الملخص أدناه والتفاصيل في CRM.</value></data>
+  <data name="Intro_adverseevent" xml:space="preserve"><value>أبلغ طبيب عن أثر جانبي / حدث سلبي خلال زيارة ميدانية. يجب تقييمه خلال 24 ساعة.</value></data>
+  <data name="Intro_offlabelrequest" xml:space="preserve"><value>خلال الزيارة طلب الطبيب معلومات خارج دواعي الاستعمال المعتمدة. لم يُجب المندوب وأحال الطلب إليك.</value></data>
+  <data name="Intro_overdue" xml:space="preserve"><value>لم يُدخل {0} تقرير زيارة {1} في الوقت المحدد. السجل مقفل.</value></data>
+  <data name="Row_rep" xml:space="preserve"><value>المندوب</value></data>
+  <data name="Row_doctor" xml:space="preserve"><value>الطبيب</value></data>
+  <data name="Row_institution" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="Row_visit" xml:space="preserve"><value>الزيارة</value></data>
+  <data name="Row_products" xml:space="preserve"><value>المنتجات</value></data>
+  <data name="Row_reporter" xml:space="preserve"><value>المُبلِّغ</value></data>
+  <data name="Row_sourceDoctor" xml:space="preserve"><value>الطبيب المصدر</value></data>
+  <data name="Row_suspectProduct" xml:space="preserve"><value>المنتج المشتبه به</value></data>
+  <data name="Row_product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Row_deadline" xml:space="preserve"><value>الموعد النهائي</value></data>
+  <data name="Sec_note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Sec_safety" xml:space="preserve"><value>السلامة</value></data>
+  <data name="Sec_followUp" xml:space="preserve"><value>المتابعة</value></data>
+  <data name="Sec_repNote" xml:space="preserve"><value>ملاحظة المندوب</value></data>
+  <data name="Safety_adverse_yes" xml:space="preserve"><value>حدث سلبي: نعم</value></data>
+  <data name="Safety_adverse_no" xml:space="preserve"><value>حدث سلبي: لا</value></data>
+  <data name="Safety_offlabel_yes" xml:space="preserve"><value>طلب خارج دواعي الاستعمال: نعم</value></data>
+  <data name="Safety_offlabel_no" xml:space="preserve"><value>طلب خارج دواعي الاستعمال: لا</value></data>
+  <data name="Note_adverseevent" xml:space="preserve"><value>لا يُجري المندوب أي تقييم طبي؛ بل ينقل المعلومة فقط.</value></data>
+  <data name="CtaOpenReport" xml:space="preserve"><value>عرض التقرير</value></data>
+  <data name="CtaReviewRecord" xml:space="preserve"><value>مراجعة السجل</value></data>
+  <data name="Explain_queued" xml:space="preserve"><value>بانتظار الإرسال.</value></data>
+  <data name="Explain_failed" xml:space="preserve"><value>فشل الإرسال؛ ستُعاد المحاولة تلقائيًا.</value></data>
+  <data name="Explain_failed_final" xml:space="preserve"><value>فشل الإرسال بعد كل المحاولات؛ ولن تُعاد المحاولة.</value></data>
+  <data name="Explain_no_recipient" xml:space="preserve"><value>لم يُعثر على مدير للمندوب، فلم يُرسل شيء.</value></data>
+  <data name="Explain_route_pending_pv" xml:space="preserve"><value>بريد سلامة اليقظة الدوائية غير محدد: أُبلغ المدير فقط.</value></data>
+  <data name="Explain_route_pending_msl" xml:space="preserve"><value>بريد MSL غير محدد: أُبلغ المدير فقط.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>لا توجد رسائل في هذه الفترة</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>غيّر الفترة أو عوامل التصفية لعرض رسائل أخرى.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>تم حفظ الإعدادات.</value></data>
+  <data name="SettingsDefault" xml:space="preserve"><value>الإعدادات الافتراضية — لم تُحفظ بعد.</value></data>
+  <data name="SettingsUpdated" xml:space="preserve"><value>آخر تغيير: {0} · {1}</value></data>
+  <data name="ErrEmailField" xml:space="preserve"><value>أدخل عنوان بريد إلكتروني واحدًا (أو اتركه فارغًا).</value></data>
+  <data name="ErrRangeMissing" xml:space="preserve"><value>اختر تاريخي النطاق المخصص.</value></data>
+  <data name="ErrRangeOrder" xml:space="preserve"><value>لا يمكن أن يكون تاريخ البداية بعد تاريخ النهاية.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>غيّر شخص آخر هذه الإعدادات بعد أن فتحتها. أعد تحميل الصفحة لرؤية التغيير ثم احفظ مجددًا.</value></data>
+  <data name="Err_visit_notification_email_invalid" xml:space="preserve"><value>أحد عناوين البريد الإلكتروني غير صالح.</value></data>
+  <data name="Err_visit_notification_invalid" xml:space="preserve"><value>عامل التصفية غير صالح.</value></data>
+  <data name="Err_visit_notification_not_found" xml:space="preserve"><value>لم يُعثر على هذه الرسالة أو أنها خارج نطاقك.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>ليست لديك صلاحية لذلك.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>تعذّر الوصول إلى الخدمة الآن. حاول مجددًا بعد قليل.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>حدث خطأ. حاول مرة أخرى.</value></data>
+</root>

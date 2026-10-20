@@ -489,6 +489,42 @@
   <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
     <value>Comparer les délégués</value>
   </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>Consultez les e-mails envoyés automatiquement par le CRM à partir des rapports de visite — résumé, événement indésirable, demande hors AMM, rapport en retard — avec leurs destinataires et leur statut, et ouvrez chacun tel qu'il a été rédigé. Aucune adresse e-mail n'est affichée.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Délégués (leurs propres visites), managers (leur équipe) et l'équipe des opérations commerciales</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>Réglez la « Période » : les 30 ou 7 derniers jours, ce mois-ci ou une « Période personnalisée… ». La période porte sur le jour de la visite.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Choisissez la période</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>Filtrez par « Type d'e-mail », « Statut » et — en tant que manager — « Délégué ». « Routage PV en attente » signifie que l'adresse de sécurité PV n'est pas définie : seul le manager a été informé.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>La colonne « Destinataire » montre des rôles, jamais des adresses : « Manager », « Sécurité PV », « MSL (liaison médicale) ». Un e-mail de sécurité part vers la PV ou le MSL, le manager en copie.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Lisez les destinataires</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>L'« Aperçu rapide » de la ligne montre l'e-mail tel qu'il a été envoyé : l'objet, « À », « Copie », « Date d'envoi », le contenu et « Voir le rapport ».</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>Ouvrez l'e-mail</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>Avec le droit de paramétrage, l'onglet « Paramètres de notification » définit l'« E-mail de sécurité PV » et l'« E-mail MSL » et active ou non le résumé et le rappel de retard. Si quelqu'un a enregistré entre-temps, rechargez puis enregistrez à nouveau.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Réglez les adresses</value>
+  </data>
   <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
     <value>Gérez les codes QR affichés à l'accueil des établissements. Le délégué scanne ce code au début de la visite ; une sous-unité sans code propre utilise celui de l'établissement parent.</value>
   </data>

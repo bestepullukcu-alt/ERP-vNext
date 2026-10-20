@@ -489,6 +489,42 @@
   <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
     <value>Temsilcileri karşılaştırın</value>
   </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>CRM'in ziyaret raporlarından otomatik gönderdiği e-postaları — rapor özeti, advers olay, endikasyon dışı talep, rapor süresi doldu — alıcıları ve durumlarıyla görün; her birini yazıldığı gibi açın. E-posta adresi gösterilmez.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Temsilciler (kendi ziyaretleri), yöneticiler (ekipleri) ve satış operasyon ekibi</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>“Dönem” için son 30 gün, son 7 gün, bu ay ya da “Özel aralık…” seçin. Dönem ziyaret gününe göredir.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Dönemi seçin</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>“E-posta türü”, “Durum” ve — yöneticiyseniz — “Temsilci” ile süzün. “PV yönlendirmesi bekliyor”, PV güvenlik adresi tanımlı olmadığı için yalnız yöneticinin bilgilendirildiğini söyler.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Listeyi daraltın</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>“Alıcı” sütunu adres değil rol gösterir: “Yönetici”, “PV güvenlik”, “MSL”. Güvenlik e-postası PV'ye ya da MSL'e gider, yönetici bilgide olur.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Alıcıları okuyun</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>Satırın “Hızlı görünüm” penceresi e-postayı gönderildiği gibi gösterir: konu, “Kime”, “Bilgi”, “Tarih”, içerik ve “Raporu görüntüle”.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>E-postayı açın</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>Ayar yetkiniz varsa “Bildirim ayarları” sekmesinde “PV güvenlik e-postası” ile “MSL e-postası” girilir; rapor özeti ve süre hatırlatması açılıp kapatılır. Arada başkası kaydettiyse sayfayı yenileyip yeniden kaydedin.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Adresleri ayarlayın</value>
+  </data>
   <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
     <value>Kurumların kabulüne asılan QR kodlarını yönetin. Temsilci ziyarete başlarken bu kodu okutur; alt birimin kendi kodu yoksa üst kurumun kodu geçer.</value>
   </data>

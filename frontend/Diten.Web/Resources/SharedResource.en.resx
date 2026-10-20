@@ -1185,6 +1185,9 @@
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>Visit Evidence Flags</value>
   </data>
+  <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
+    <value>Sent Visit E-mails</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Manufacturing</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>BOM &amp; Routings</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>Bills of Materials</value></data>

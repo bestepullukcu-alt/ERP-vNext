@@ -1127,6 +1127,9 @@
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>Alertes de preuve de visite</value>
   </data>
+  <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
+    <value>E-mails de visite envoyés</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>

@@ -275,6 +275,13 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("CRM_VISIT_EVIDENCE_FLAGS", "Visit Evidence Flags", "/CRM/VisitEvidenceFlags", "crm.visit-evidence-flags.read", null, true, "List", 71,
                 [
                     new ModuleManifestAction("FLAGS_READ_ALL", "Read All Visit Evidence Flags (Tenant-Wide)", "crm.visit-evidence-flags.read-all", "Toolbar", 10, false, true, false)
+                ]),
+                // WP-VW-W5 (W5-WEB, K-N9) — the sent visit e-mails (list + preview) and the notification settings card: .read =
+                // the caller's own + team's visit e-mails; .settings.manage = the tenant's PV / MSL mailboxes and switches, and
+                // every visit e-mail of the tenant (the settings tab is drawn only with it).
+                new ModuleManifestPage("CRM_VISIT_NOTIFICATIONS", "Sent Visit E-mails", "/CRM/VisitNotifications", "crm.visit-notifications.read", null, true, "List", 72,
+                [
+                    new ModuleManifestAction("SETTINGS_MANAGE", "Manage Visit Notification Settings", "crm.visit-notifications.settings.manage", "Toolbar", 10, false, true, false)
                 ])
             ],
             // WP-VW-W5 PLT-NOTIFY (K-N3, K-N4) — the visit report e-mails, sent by MOD-0155 through the internal event dispatch
@@ -296,14 +303,6 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 VisitReportEvent(VisitReportOverdueEvent, "NotificationEvent_CrmVisitReportOverdue", "Visit report overdue",
                     "Sent to the representative's line manager when a visit's report was not entered within its deadline.",
                     "Warning", [], requiredExtra: ["deadline"])
-            ],
-            // WP-VW-W5 (W5-BE, K-N9) — the visit notification keys. API-only until W5-WEB ships the "sent e-mails" page
-            // (then they become a page + action above): .read = the caller's own + team's visit e-mails; .settings.manage =
-            // the tenant's PV / MSL mailboxes and switches, and every visit e-mail of the tenant.
-            ApiPermissions:
-            [
-                new ModuleManifestPermission("crm.visit-notifications.read", "Read Visit Notifications"),
-                new ModuleManifestPermission("crm.visit-notifications.settings.manage", "Manage Visit Notification Settings")
             ]);
 
     // WP-VW-W5 PLT-NOTIFY — the four visit report events (K-N4). Template key = event code. No hyphen in a code: the

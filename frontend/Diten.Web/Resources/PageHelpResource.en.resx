@@ -489,6 +489,42 @@
   <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
     <value>Compare the reps</value>
   </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>See the e-mails the CRM sent automatically from visit reports — report summary, adverse event, off-label request, report overdue — with their recipients and status, and open each one as it was written. No e-mail address is shown.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Representatives (their own visits), line managers (their team) and the sales operations team</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>Set the “Period”: the last 30 days, the last 7 days, this month or a “Custom range…”. The period is the day of the visit.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Choose the period</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>Filter by “E-mail type”, “Status” and — as a manager — “Representative”. “PV route pending” means the PV safety e-mail is not set and only the line manager was informed.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Narrow the list</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>The “Recipient” column shows roles, never addresses: “Line manager”, “PV safety”, “MSL”. A safety e-mail goes to PV or MSL with the line manager in copy.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Read the recipients</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>The row's “Quick view” shows the e-mail as it was sent: the subject, “To”, “Cc”, “Date”, the content and “View report”.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>Open the e-mail</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>With the settings permission, the “Notification settings” tab sets the “PV safety e-mail” and the “MSL e-mail” and switches the report summary and the overdue reminder. If someone saved meanwhile, reload and save again.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Set the mailboxes</value>
+  </data>
   <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
     <value>Manage the QR codes posted at the institutions' reception desks. The rep scans this code when starting a visit; a sub-unit without its own code uses its parent institution's code.</value>
   </data>

@@ -35,6 +35,8 @@ public static class PageHelpCatalog
             ["VISITEVIDENCESETTINGS"] = ["bx-layer", "bx-slider-alt", "bx-history", "bx-time-five", "bx-task"],
             ["CRMVISITEVIDENCEFLAGS"] = ["bx-calendar", "bx-filter-alt", "bx-bar-chart-alt-2", "bx-show", "bx-group"],
             ["CRMVISITQRCODES"] = ["bx-filter-alt", "bx-qr", "bx-printer", "bx-block", "bx-slider-alt"],
+            // WP-VW-W5 W5-WEB — the sent visit e-mails
+            ["CRMVISITNOTIFICATIONS"] = ["bx-calendar", "bx-filter-alt", "bx-user-check", "bx-envelope-open", "bx-cog"],
             ["CRMDOCTORINSIGHTTHRESHOLDS"] = ["bx-table", "bx-edit-alt", "bx-check-circle", "bx-plus-circle", "bx-history"],
             ["OBJECTIONRESPONSES"] = ["bx-filter-alt", "bx-plus-circle", "bx-send", "bx-check-shield", "bx-archive"],
             ["COMPETITORPRODUCTS"] = ["bx-filter-alt", "bx-plus-circle", "bx-user-voice", "bx-task", "bx-git-merge"],

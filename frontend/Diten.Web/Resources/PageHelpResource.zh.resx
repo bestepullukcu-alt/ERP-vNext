@@ -489,6 +489,42 @@
   <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
     <value>比较代表</value>
   </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>查看 CRM 根据拜访报告自动发送的邮件（报告摘要、不良事件、超说明书请求、报告逾期）及其收件人和状态，并按原样打开每封邮件。不显示任何邮箱地址。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>代表（本人的拜访）、直属经理（其团队）以及销售运营团队</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>设置“期间”：最近 30 天、最近 7 天、本月或“自定义范围…”。期间按拜访日期计算。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>选择期间</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>按“邮件类型”、“状态”以及（经理可用）“代表”筛选。“药物警戒路由待定”表示未设置药物警戒安全邮箱，仅通知了直属经理。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>“收件人”列显示角色而非地址：“直属经理”、“药物警戒”、“医学联络官 (MSL)”。安全邮件发给药物警戒或 MSL，并抄送直属经理。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>查看收件人</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>行的“快速查看”按发送时的样子显示邮件：主题、“收件人”、“抄送”、“日期”、内容以及“查看报告”。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>打开邮件</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>拥有设置权限时，可在“通知设置”选项卡设置“药物警戒安全邮箱”和“MSL 邮箱”，并开关报告摘要和逾期提醒。如有他人同时保存，请刷新后再保存。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>设置邮箱</value>
+  </data>
   <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
     <value>管理张贴在机构接待处的二维码。代表开始拜访时扫描此码；没有自己代码的下级单位使用上级机构的代码。</value>
   </data>

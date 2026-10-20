@@ -1126,6 +1126,9 @@
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>拜访证据标记</value>
   </data>
+  <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
+    <value>已发送的拜访邮件</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>

@@ -1,0 +1,28 @@
+@using Diten.Web.Views.CRM.VisitNotifications
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitNotificationsIndex> Localizer
+@{
+    // W5-WEB — the e-mails table is the shared component (BL-440): the page describes it, _ListShell renders it. Server
+    // mode (the CRM pages the e-mails, newest first). READ ONLY: nothing a selection could act on, so the selection is
+    // DECLARED off and no bulk bar is rendered.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-visitnotifications",
+        DataMode = "server",
+        Slug = "visitnotifications",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColDate"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColEvent"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTarget"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRep"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRecipients"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

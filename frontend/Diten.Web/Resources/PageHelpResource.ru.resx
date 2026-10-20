@@ -489,6 +489,42 @@
   <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
     <value>Сравните представителей</value>
   </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>Просматривайте письма, которые CRM автоматически отправила по отчётам о визитах (сводка, нежелательное явление, запрос вне показаний, просроченный отчёт), с получателями и статусом, и открывайте каждое в том виде, в каком оно было составлено. Адреса электронной почты не показываются.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Представители (свои визиты), руководители (своя команда) и команда коммерческих операций</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>Задайте «Период»: последние 30 или 7 дней, текущий месяц или «Свой период…». Период считается по дню визита.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Выберите период</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>Фильтруйте по «Тип письма», «Статус» и — для руководителя — «Представитель». «Маршрут ФН не задан» означает, что адрес безопасности ФН не задан и уведомлён только руководитель.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>Столбец «Получатель» показывает роли, а не адреса: «Руководитель», «Безопасность ФН», «MSL (медицинский советник)». Письмо по безопасности уходит в ФН или MSL, руководитель в копии.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Посмотрите получателей</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>«Быстрый просмотр» строки показывает письмо в том виде, в каком оно было отправлено: тема, «Кому», «Копия», «Дата», содержание и «Открыть отчёт».</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>Откройте письмо</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>При наличии права на настройки во вкладке «Настройки уведомлений» задаются «Адрес безопасности ФН» и «Адрес MSL», включаются сводка отчёта и напоминание о просрочке. Если кто-то сохранил раньше вас, обновите страницу и сохраните снова.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Настройте адреса</value>
+  </data>
   <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
     <value>Управляйте QR-кодами, размещёнными на стойках регистрации учреждений. Представитель сканирует этот код при начале визита; подразделение без собственного кода использует код родительского учреждения.</value>
   </data>
