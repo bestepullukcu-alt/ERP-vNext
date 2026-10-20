@@ -6,8 +6,8 @@ from the draft pack, current contract metadata, fixture output or this document.
 | Gate | Accountable owner / concurrence | Exact artifact still required | Blocks | Current state |
 |---|---|---|---|---|
 | Ownership placement | Enterprise/domain owner; CT/SCE | Hash-bound disposition aligning MOD-0147 with SCE/service and identifying later domain/DCP/registry writers | Pack promotion | **CONCURRED (DC-01, 2026-10-18; ny@gmgroup.ch)** |
-| Supplier base consumption | MOD-0140; MOD-0147 design consumer | Consent to exact SUPPLIER v1 input plus live producer identity/status behavior | Runtime dependency acceptance | OPEN |
-| Tenant+LE eligibility | MOD-0140 eligibility owner + security scope owner | Exact affirmative eligibility authority, carrier, endpoint/claim choice, errors, correlation and live proof | Evaluation/first publish/risk registration | OPEN |
+| Supplier base consumption | MOD-0140; MOD-0147 design consumer | Consent to exact SUPPLIER v1 input plus live producer identity/status behavior | Runtime dependency acceptance | **DECIDED** (DC-02, 2026-10-20, `mvp6-supplier-dc02-owner-decision-01.md`); build + live proof OPEN |
+| Tenant+LE eligibility | MOD-0140 eligibility owner + security scope owner | Exact affirmative eligibility authority, carrier, endpoint/claim choice, errors, correlation and live proof | Evaluation/first publish/risk registration | **DECIDED** (DC-02, 2026-10-20, `mvp6-supplier-dc02-owner-decision-01.md`); build + live proof OPEN |
 | Shared contract successor | CT Supplier seam single writer | Exact diff, version disposition, compatibility inventory and named consumer consents | Any new LE/503/UUID/snapshot wire behavior | OPEN; no candidate from this lane |
 | Metric policy | Metric Registry owner; MOD-0147; Risk owner for bands | Live pointer, immutable revision shape, scope/UoM/direction/validity/withdrawal oracle, policy1 weights and band consent | Deterministic evaluation/scorecard | OPEN |
 | Risk taxonomy | Risk Register owner; MOD-0147 | Taxonomy-only ownership, immutable revision shape, six-category/four-level scope and failure oracle | Risk registration | OPEN |

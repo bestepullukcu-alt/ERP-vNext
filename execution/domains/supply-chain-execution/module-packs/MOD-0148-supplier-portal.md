@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Review draft (2026-10-19); no runtime code or service-scaffold authority. Placement CONCURRED (DC-01, 2026-10-18, docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md); domain-config, DCP-009 and the module-id registry record it. SUPPLIER-BASE is frozen (docs/analysis/contracts/supplier.openapi.yaml v1.2.0, 780f8368a). ready-for-dev stays blocked: DC-02/DC-03 are unbuilt build seams, DC-04/DC-05 deferred (no producer service); target 2026-12-31 is a placeholder bound to those gates; see §0, §18 and docs/roadmap/plans/mvp6-mod0148-spec-split-01/CONCURRENCE-OPEN.md."
+status_note: "Review draft (2026-10-19); no runtime code or service-scaffold authority. Placement CONCURRED (DC-01, 2026-10-18, docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md); domain-config, DCP-009 and the module-id registry record it. SUPPLIER-BASE is frozen (docs/analysis/contracts/supplier.openapi.yaml v1.2.0, 780f8368a). DC-02 DECIDED for D1/D2-b/D4 (caller identity stays on DC-03) 2026-10-20 (docs/records/decisions/2026-10/mvp6-supplier-dc02-owner-decision-01.md; §0.4), seam not built. ready-for-dev stays blocked: DC-02/DC-03 are unbuilt build seams, DC-04/DC-05 deferred (no producer service); target 2026-12-31 is a placeholder bound to those gates; see §0, §18 and docs/roadmap/plans/mvp6-mod0148-spec-split-01/CONCURRENCE-OPEN.md."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0148-supplier-portal
 started: 2026-09-15
@@ -41,10 +41,10 @@ Every requirement below carries one of three labels. A label is a claim about au
 Where this pack's own text (sections 1–21) states a behaviour as a rule and the label below says ÖNERİLEN or BLOKE, **the
 label wins**: the text is the target, not an approved rule.
 
-| Endpoint (operationId) | Wire | Behaviour | Gate / decision owner | Tests (`ACCEPTANCE-TEST-MAP.r2.tsv`) |
+| Endpoint (operationId) | Wire | Behaviour | Gate / decision owner | Tests (`ACCEPTANCE-TEST-MAP.r3.tsv`) |
 |---|---|---|---|---|
-| `GET /portal/status` (getSupplierPortalStatus) | ONAYLI | **BLOKE** — actor binding (DC-03), Tenant+LE eligibility (DC-02); status matrix ÖNERİLEN | Platform security owner; MOD-0140 owner | AC-03, AC-04, AC-08, AC-09 |
-| `POST /portal/submissions` (createOwnPortalSubmission) | ONAYLI wire; **payload contradiction** (§0.2) | **BLOKE** — DC-03, DC-02; receipt ÖNERİLEN (§0.1) | security owner; CT Supplier Seam Owner | AC-05 (suspended → 403), AC-12 (scope override → 400), AC-13 (create replay), AC-15 (fingerprint, whitespace key), AC-16 (remap), AC-17 (race) |
+| `GET /portal/status` (getSupplierPortalStatus) | ONAYLI | **BLOKE** — actor binding (DC-03); Tenant+LE eligibility ÖNERİLEN (DC-02 decided, §0.4; caller identity on DC-03); status matrix ÖNERİLEN | Platform security owner; SCE / CT (DC-02 build) | AC-03, AC-04, AC-08, AC-09, T-0148-ELG-01, T-0148-ELG-02 |
+| `POST /portal/submissions` (createOwnPortalSubmission) | ONAYLI wire; **payload contradiction** (§0.2) | **BLOKE** — DC-03; eligibility ÖNERİLEN (DC-02 decided, §0.4); receipt ÖNERİLEN (§0.1) | security owner; CT Supplier Seam Owner | AC-05 (suspended → 403), AC-12 (scope override → 400), AC-13 (create replay), AC-15 (fingerprint, whitespace key), AC-16 (remap), AC-17 (race) |
 | `POST /portal/submissions/{id}/submit` (submitOwnPortalSubmission) | ONAYLI | ÖNERİLEN — only `DRAFT→SUBMITTED`; **BLOKE** — DC-03 | security owner | AC-14, AC-15, AC-17 |
 | `GET /portal/submissions`, `GET /portal/submissions/{id}` | ONAYLI | ÖNERİLEN — Tenant+LE+mapped Supplier+non-deleted predicate; **BLOKE** — DC-03 | security owner | AC-05 (suspended → 403), AC-10 (predicate), AC-11 (revocation fence) |
 | Review operation | **none in v1** — the statuses `UNDER_REVIEW`, `ACCEPTED`, `REJECTED` **are** in the v1 enum | **BLOKE** — no command reaches them; not in the first slice | MOD-0148 owner; CT contract writer | — |
@@ -63,6 +63,15 @@ Test IDs added in r2 (MOD-0148) — the behaviours are proposed (§0.2, §0.3); 
 | T-0148-TXN-02 | A duplicate delivery of one outbox event is ignored by the consumer (EventId) | §0.3 |
 | T-0148-TXN-03 | A crash between commit and publish is recovered by the publisher from the Pending record | §0.3 |
 | T-0148-PAY-01 | Per-`submissionType` schema, size and depth limits — BLOKE until the contract successor | §0.2 |
+
+**Test map revision r3 (2026-10-20, DC-02).** Additive again: `ACCEPTANCE-TEST-MAP.r3.tsv` = r2 plus the `T-…-ELG-…` rows below; `SHA256SUMS.r3` records the folder's current bytes (`CONCURRENCE-OPEN.md` changed: the DC-02 gate rows). r2, `SHA256SUMS.r2` and the originals stay byte-identical. **r3 is the map this pack follows.**
+
+Test IDs added in r3 (MOD-0148) — DC-02 (§0.4); the IDs are in `ACCEPTANCE-TEST-MAP.r3.tsv`:
+
+| ID | Asserts | Rule |
+|---|---|---|
+| T-0148-ELG-01 | Portal status and submission proceed only for an `Active` own supplier; `OnHold`, `Blocked`, `Inactive` → 403 (AC-05), zero writes — BLOKE on DC-03 for the caller identity | §0.4 D2-b |
+| T-0148-ELG-02 | The eligibility read uses the server-resolved own `supplierId` and the MDM-validated LE (`X-Legal-Entity-Id`); a client-supplied supplier or LE is never used; Procurement unreachable → 503, zero writes | §0.4 D1, D4 |
 
 ### 0.1 Replay receipt — ÖNERİLEN (SPEC-DELTA "Create and submit"), BLOKE on DC-03
 
@@ -91,6 +100,21 @@ is a target only.
 - "Exactly once" applies to the state and the outbox record; delivery is at-least-once, consumers deduplicate by EventId.
 - Acceptance tests to add when authorised: abort leaves zero records; duplicate delivery ignored; crash between commit and
   publish recovered from the Pending record.
+
+### 0.4 Supplier eligibility seam (DC-02) — DECIDED 2026-10-20 in part, seam not built
+
+Decision record: `docs/records/decisions/2026-10/mvp6-supplier-dc02-owner-decision-01.md`. It decides the seam; it does not build it and gives no code authority.
+
+- **D1 — source.** The portal's own supplier is checked with the frozen `POST /api/suppliers/validate` (a one-element
+  `supplierIds`) through the gateway. This replaces the earlier `getSupplier` target in `CONCURRENCE-OPEN.md`.
+- **D2-b — status.** Portal access and submission: `Active` only. A non-`Active` own supplier is **403** (AC-05: the
+  supplier is the caller itself, not a referenced record) — not the 422 MOD-0147 uses.
+- **D4 — LE.** The LE forwarded in `X-Legal-Entity-Id` is the MDM-validated one; never client-supplied.
+- **Not decided here — caller identity.** D3 (caller's own token) does **not** apply: a supplier user must not hold
+  `procurement.suppliers.read` (it reads every supplier of the LE). The call needs a service identity or a bound-actor
+  read, both **BLOKE on DC-03** (actor binding).
+- Unreachable / timeout → 503, zero writes (D5).
+- Tests: T-0148-ELG-01, T-0148-ELG-02 (r3).
 
 ## 1. Module Summary
 
@@ -170,7 +194,7 @@ no current write permission to runtime paths.
 | Dependency | State | Rule |
 |---|---|---|
 | `SUPPLIER-PERFORMANCE` v1 | FROZEN | Portal paths are implementation authority |
-| `SUPPLIER-BASE` | FROZEN in `docs/analysis/contracts/supplier.openapi.yaml` (x-owner MOD-0140, `780f8368a`, v1.2.0, sha256 `373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7`; first pinned at `c8badff96` v1.0) — identity surface only; consumption authority open (DC-02) | **CONSUMES: SUPPLIER-BASE (merkez üretecek)**; no local substitute |
+| `SUPPLIER-BASE` | FROZEN in `docs/analysis/contracts/supplier.openapi.yaml` (x-owner MOD-0140, `780f8368a`, v1.2.0, sha256 `373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7`; first pinned at `c8badff96` v1.0) — identity surface only; consumption **decided in part** (DC-02, 2026-10-20, §0.4: `validateSuppliers`; caller identity on DC-03), seam unbuilt | **CONSUMES: SUPPLIER-BASE (merkez üretecek)**; no local substitute |
 | Authenticated actor mapping | Central/Gateway seam | `supplierId` resolved server-side; client override forbidden |
 | Event Bus | Platform dependency | Correlation-preserving outbox publication |
 | Domain ownership | **CONCURRED** (DC-01, 2026-10-18) | Placement recorded in domain-config, DCP-009 `placed_non_canonical_modules`, module-id registry |
@@ -274,7 +298,7 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
 - [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
 - [ ] Central owner freezes authenticated supplier actor mapping behavior.
 - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
-- [ ] Supplier base identity/status + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
+- [ ] Supplier base identity/status + Tenant/LE eligibility (DC-02) — **decided in part 2026-10-20** (§0.4: source, status, LE); caller identity waits on DC-03; build seam (SCE / CT), not built.
 - [ ] Actor binding + authorization (DC-03) — Platform/Auth security owner: one active Supplier per actor/Tenant/LE,
       binding revision and revocation fencing, trusted LE issuance; build seam, not built. **The portal's core path.**
 - [ ] Shared contract, replay receipt, own-record persistence, portal-source resolver (with MOD-0147), fixture — OPEN in
@@ -294,7 +318,7 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
 
 ## 20. Follow-up Items
 
-- SUPPLIER-BASE is published and frozen: `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`, 2026-09-15). Still open and unchanged: **GAP: merkez CT üretmeli** the authenticated supplier actor mapping mock behavior; and the authority to consume SUPPLIER-BASE — DC-02, AWAITING-CT per the 2026-10-05 CT ruling.
+- SUPPLIER-BASE is published and frozen: `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`, 2026-09-15). Still open and unchanged: **GAP: merkez CT üretmeli** the authenticated supplier actor mapping mock behavior; the consumption authority is decided in part (DC-02, 2026-10-20, §0.4); the portal's caller identity waits on DC-03.
 - ~~Reconcile MOD-0148 ownership in domain-config and central records~~ — done 2026-10-19 (DC-01 governance alignment).
 - Define and approve the internal review command if required beyond the frozen portal self-service surface.
 - Separate permission/gateway integration WP after endpoints exist.

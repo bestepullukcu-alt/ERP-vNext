@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Review draft (2026-10-19); no runtime code or service-scaffold authority. Placement CONCURRED (DC-01, 2026-10-18, docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md); domain-config, DCP-009 and the module-id registry record it. SUPPLIER-BASE is frozen (docs/analysis/contracts/supplier.openapi.yaml v1.2.0, 780f8368a). ready-for-dev stays blocked: DC-02/DC-03 are unbuilt build seams, DC-04/DC-05 deferred (no producer service); target 2026-12-31 is a placeholder bound to those gates; see §0, §18 and docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md."
+status_note: "Review draft (2026-10-19); no runtime code or service-scaffold authority. Placement CONCURRED (DC-01, 2026-10-18, docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md); domain-config, DCP-009 and the module-id registry record it. SUPPLIER-BASE is frozen (docs/analysis/contracts/supplier.openapi.yaml v1.2.0, 780f8368a). DC-02 DECIDED 2026-10-20 (docs/records/decisions/2026-10/mvp6-supplier-dc02-owner-decision-01.md; §0.4), seam not built. ready-for-dev stays blocked: DC-02/DC-03 are unbuilt build seams, DC-04/DC-05 deferred (no producer service); target 2026-12-31 is a placeholder bound to those gates; see §0, §18 and docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0147-supplier-performance-risk
 started: 2026-09-15
@@ -41,13 +41,13 @@ Every requirement below carries one of three labels. A label is a claim about au
 Where this pack's own text (sections 1–21) states a behaviour as a rule and the label below says ÖNERİLEN or BLOKE, **the
 label wins**: the text is the target, not an approved rule.
 
-| Endpoint (operationId) | Wire | Behaviour | Gate / decision owner | Tests (`ACCEPTANCE-TEST-MAP.r2.tsv`) |
+| Endpoint (operationId) | Wire | Behaviour | Gate / decision owner | Tests (`ACCEPTANCE-TEST-MAP.r3.tsv`) |
 |---|---|---|---|---|
-| `POST /evaluations` (createSupplierEvaluation) | ONAYLI | **BLOKE** — Supplier eligibility (DC-02, MOD-0140), metric policy (DC-04, Metric Registry — deferred); score policy ÖNERİLEN (§0.1) | MOD-0140 owner; Metric Registry owner | AC-03, AC-04, AC-18…AC-22 |
+| `POST /evaluations` (createSupplierEvaluation) | ONAYLI | Supplier eligibility ÖNERİLEN — DC-02 decided (§0.4), seam unbuilt; **BLOKE** — metric policy (DC-04, Metric Registry — deferred); score policy ÖNERİLEN (§0.1) | SCE / CT (DC-02 build); Metric Registry owner | AC-03, AC-04, AC-18…AC-22, T-0147-ELG-01…04 |
 | `POST /evaluations/{id}/submit` (submitSupplierEvaluation) | ONAYLI | **BLOKE** — DC-04 snapshot; atomic publication ÖNERİLEN (§0.3) | Metric Registry owner | AC-18…AC-22 |
 | `GET /evaluations`, `GET /evaluations/{id}` | ONAYLI | ÖNERİLEN — Tenant+LE isolation, 404 without leakage | MOD-0147 owner | T-0147-ISO-01 |
 | `GET /scorecards`, `GET /scorecards/{id}` | ONAYLI | ÖNERİLEN — immutable publication | MOD-0147 owner | AC-22 (revision snapshot), T-0147-ISO-01, T-0147-IMM-01 |
-| `POST /risks` (registerSupplierRisk) | ONAYLI | **BLOKE** — risk taxonomy (DC-05, Risk Register — deferred), DC-02; lifecycle ÖNERİLEN | Risk Register owner; MOD-0140 owner | AC-23…AC-26 |
+| `POST /risks` (registerSupplierRisk) | ONAYLI | **BLOKE** — risk taxonomy (DC-05, Risk Register — deferred); supplier eligibility ÖNERİLEN (DC-02 decided, §0.4); lifecycle ÖNERİLEN | Risk Register owner; SCE / CT (DC-02 build) | AC-23…AC-26, T-0147-ELG-01…04 |
 | `POST /risks/{id}/status` (changeSupplierRiskStatus) | ONAYLI | ÖNERİLEN — linear `OPEN→ACKNOWLEDGED→MITIGATED→CLOSED`; **BLOKE** — taxonomy snapshot (DC-05) | Risk Register owner | AC-23, AC-24 |
 | `GET /risks` | ONAYLI | ÖNERİLEN — Tenant+LE isolation | MOD-0147 owner | T-0147-ISO-01 |
 | Risk source `PORTAL_SUBMISSION` | ONAYLI enum | **BLOKE** — portal source resolution (with MOD-0148) | MOD-0148 owner; Risk owner | AC-25 |
@@ -71,6 +71,17 @@ Test IDs added in r2 (MOD-0147) — the behaviours are proposed (§0.2, §0.3); 
 | T-0147-TXN-01 | Transaction abort leaves no state, receipt, audit or outbox record | §0.3 |
 | T-0147-TXN-02 | A duplicate delivery of one outbox event is ignored by the consumer (EventId) | §0.3 |
 | T-0147-TXN-03 | A crash between commit and publish is recovered by the publisher from the Pending record | §0.3 |
+
+**Test map revision r3 (2026-10-20, DC-02).** Additive again: `ACCEPTANCE-TEST-MAP.r3.tsv` = r2 plus the `T-…-ELG-…` rows below; `SHA256SUMS.r3` records the folder's current bytes (`CONCURRENCE-OPEN.md` changed: the DC-02 gate rows). r2, `SHA256SUMS.r2` and the originals stay byte-identical. **r3 is the map this pack follows.**
+
+Test IDs added in r3 (MOD-0147) — DC-02 (§0.4); the IDs are in `ACCEPTANCE-TEST-MAP.r3.tsv`:
+
+| ID | Asserts | Rule |
+|---|---|---|
+| T-0147-ELG-01 | Before a write, `validateSuppliers` is called through the gateway with the caller's token and `X-Legal-Entity-Id` = the request's MDM-validated LE; a supplier of another LE (`known:false`) → 422, zero writes | §0.4 D1, D3, D4 |
+| T-0147-ELG-02 | Status matrix: `Active`, `OnHold` proceed; `Blocked`, `Inactive` → 422, zero writes | §0.4 D2-a |
+| T-0147-ELG-03 | Procurement unreachable, timeout or non-success (other than 401/403) → 503, zero writes; no retry turns it into a write | §0.4 D5 |
+| T-0147-ELG-04 | Procurement 401/403 (caller lacks `procurement.suppliers.read`) → 403, zero writes — derived, owner confirms | §0.4 |
 
 ### 0.1 Score policy — ÖNERİLEN (SPEC-DELTA "Evaluation delta"), BLOKE on DC-04/DC-05
 
@@ -134,6 +145,24 @@ Derived acceptance examples (from the proposed policy; they become acceptance ex
 - Acceptance tests to add when authorised: transaction abort leaves zero of the four records; publisher retry delivers a
   duplicate that the consumer ignores; a crash between commit and publish is recovered by the publisher from the Pending
   record.
+
+### 0.4 Supplier eligibility seam (DC-02) — DECIDED 2026-10-20, seam not built
+
+Decision record: `docs/records/decisions/2026-10/mvp6-supplier-dc02-owner-decision-01.md`. It decides the seam; it does not build it and gives no code authority.
+
+- **D1 — source.** Eligibility comes from the frozen `POST /api/suppliers/validate` (`validateSuppliers`, SUPPLIER
+  v1.2.0, MOD-0140) through the gateway. Procurement scopes every supplier read to Tenant + LE, so a supplier of another
+  LE answers `known:false`. No contract successor.
+- **D2-a — status.** Evaluation and risk registration proceed for `Active` and `OnHold`; `Blocked` and `Inactive` are
+  refused.
+- **D3 — caller.** SupplyChain calls with the caller's own token; the caller also needs `procurement.suppliers.read`
+  (a grant in the role templates, single-writer seam — not authorised here).
+- **D4 — LE.** SupplyChain forwards the LE it validated with MDM (R-2) in `X-Legal-Entity-Id`; never a client-supplied LE.
+- **D5 — failure (fail-closed).** Unreachable / timeout / non-success → 503; `known:false` or a refused status → 422;
+  Procurement 401/403 → 403 (derived, ÖNERİLEN). Zero writes in every case, checked before any state, receipt, audit or
+  outbox record.
+- **Order.** The check runs after authentication, permission and LE validation and before the first write.
+- Tests: T-0147-ELG-01…04 (r3). Still BLOKE for other reasons: DC-04 (evaluation/score), DC-05 (risk taxonomy).
 
 ## 1. Module Summary
 
@@ -224,7 +253,7 @@ no current write permission to runtime paths.
 | Dependency | State | Rule |
 |---|---|---|
 | `SUPPLIER-PERFORMANCE` v1 | FROZEN | Owned contract; implementation must match exactly |
-| `SUPPLIER-BASE` | FROZEN in `docs/analysis/contracts/supplier.openapi.yaml` (x-owner MOD-0140, `780f8368a`, v1.2.0, sha256 `373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7`; first pinned at `c8badff96` v1.0) — identity surface only; consumption authority open (DC-02) | **CONSUMES: SUPPLIER-BASE (merkez üretecek)**; no local substitute |
+| `SUPPLIER-BASE` | FROZEN in `docs/analysis/contracts/supplier.openapi.yaml` (x-owner MOD-0140, `780f8368a`, v1.2.0, sha256 `373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7`; first pinned at `c8badff96` v1.0) — identity surface only; consumption **decided** (DC-02, 2026-10-20, §0.4: `validateSuppliers`), seam unbuilt | **CONSUMES: SUPPLIER-BASE (merkez üretecek)**; no local substitute |
 | Metric Registry / Risk Register | Building-block dependency | Contract adapters only; no local registry clone |
 | Event Bus | Platform dependency | Correlation-preserving outbox publication |
 | Domain ownership | **CONCURRED** (DC-01, 2026-10-18) | Placement recorded in domain-config, DCP-009 `placed_non_canonical_modules`, module-id registry |
@@ -319,7 +348,7 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 - [x] Backend-only proposed first slice, paths, objects, failures and acceptance are explicit.
 - [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
 - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
-- [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
+- [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — **decided 2026-10-20** (§0.4); build seam (SCE / CT), not built.
 - [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. Blocks deterministic evaluation/score.
 - [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration.
 - [ ] Shared contract successor, replay/concurrency receipt, permission definition/composition, fixture, portal-source
@@ -338,7 +367,8 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 
 ## 20. Follow-up Items
 
-- SUPPLIER-BASE contract/mock owned by MOD-0140 is published and frozen: `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, `c8badff96`, 2026-09-15), offering `listSuppliers`, `getSupplier` and `validateSuppliers`. What remains open is the authority to consume it — DC-02, AWAITING-CT per the 2026-10-05 CT ruling — not the contract's existence.
+- SUPPLIER-BASE contract/mock owned by MOD-0140 is published and frozen: `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, `c8badff96`, 2026-09-15), offering `listSuppliers`, `getSupplier` and `validateSuppliers`. The consumption authority is decided (DC-02, 2026-10-20, §0.4); what remains is building the seam.
+- MOD-0140 notice (XMC-001): Procurement takes the LE from `X-Legal-Entity-Id` without validating it against the tenant (`TenantResolutionMiddleware.cs:77-100`); the SupplyChain path is safe by D4, the producer fix is MOD-0140's.
 - ~~Reconcile MOD-0147 ownership in domain-config and central records~~ — done 2026-10-19 (DC-01 governance alignment).
 - Separate permission/gateway integration WP after endpoints exist.
 - Future UI pack revision if an operator surface is approved.
