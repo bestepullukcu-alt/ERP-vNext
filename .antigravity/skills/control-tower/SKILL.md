@@ -48,6 +48,7 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   paketinde yalnız P2 draft / reference-validation dilimi onaylıydı; bugünün izni paketin kendisinden okunur.)
 - Belgede iddia edilen uygulamayı ilgili kodla ve kanıtın kaydedildiği sürümle karşılaştır (`dosya:satır@commit`).
   Çalışma testi yapılmadıysa "çalışma testi yapılmadı" yaz; okumadan "doğru" deme.
+- Module pack'i (ya da DCP'yi) okurken bu paketin kendi yoluyla bağımsız inceleme kaydı olup olmadığını da oku (`execution/approvals/reviews.tsv`). Kayıt yoksa, paket eski de olsa yeni de olsa, bunu söyle ve pakette yeni iş başlamadan önce bağımsız inceleme öner (SOP §20.4); yalnız önerir, incelemeyi çalıştırmaz ve yazmaz.
 
 ## 4. Olmayan modül
 

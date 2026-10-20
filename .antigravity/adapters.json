@@ -64,7 +64,8 @@
           {
             "heading": "3. Var olan modül",
             "anchors": [
-              "Onayı bütün modüle yayma."
+              "Onayı bütün modüle yayma.",
+              "yalnız önerir, incelemeyi çalıştırmaz ve yazmaz."
             ]
           },
           {
