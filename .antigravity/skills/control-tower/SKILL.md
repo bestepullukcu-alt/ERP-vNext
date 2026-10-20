@@ -17,6 +17,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 - Dal, HEAD ve `git status --porcelain` çıktısını kendin ölç; bunları ve kaynaklardan okunabilen hiçbir alanı kullanıcıya
   sorma.
+- Önce yeri ölç: `git fetch` sonrası ağaç `origin/main`'in gerisindeyse ya da paylaşılan ana klasördeysen dur; main'den
+  ayrı bir worktree ve dal iste. O ana kadar hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme.
 - Kartın tablosundaki araçların bu ağaçta olup olmadığını ölç. Olmayanı "bu ağaçta yok" diye yaz; çalıştırmış gibi
   davranma, yerine kendi kontrolünü uydurma.
 - Görev kaynağını ve kaydını oku (kartın §0'ı): kuyruk ve kayıt satırı var mı, `main`'de yürürlükte mi. Yürürlükte
