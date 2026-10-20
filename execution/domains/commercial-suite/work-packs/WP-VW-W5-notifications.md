@@ -168,3 +168,44 @@ Ajan commit'i `93b6270b1` → test dalına cherry-pick (W5-FIX + F8-a'nın üst�
 - **Yapılan:** `/CRM/VisitNotifications` Golden Compact liste (tarih, tür, hekim / kurum, temsilci, alıcı rolü, durum rozeti; süzgeç dönem / tür / durum / temsilci); sağ çekmece 06 mockup önizlemesi (Kimden / Kime / Bilgi / Tarih, bant, alanlar, KVKK) — adres hiçbir yerde yok (proxy izin listesiyle yeniden kurar, serbest metindeki adresi maskeler); tireli ve tiresiz kodlar aynı adla; bildirim ayarları sekmesi yalnız `settings.manage` (proxy'de de denetim), 409 sözlü; menü + "?" yardım 7 dil, sayfa kaynağı 132 anahtar × 7.
 - **CT kontrolü:** CT sabotajı (ajanın yapmadığı): olay kodu tanıyıcıdan tire kaldırma çıkarıldı (eski kodlar tanınmasın) → `N8_both_forms_of_an_event_code…` ×2 + N9 + N11 **kırmızı**; md5 geri. Web tam takım 2733/3 (bilinen: 2 ShipmentDetailsDateNode + WorkCenterMenu -o); `verify_datatable_page.py --api-profile proxy` PASS. Ajan: hedefli 51/51, 4 sabotaj kırmızı, Platform Crm manifest 13/13.
 - **Takipler:** **FU-W5-ROW-TARGET** — CRM liste satırına hekim / kurum + alıcı özeti (proxy bugün sayfa başına satır ayrıntısını ayrıca okuyor, en çok 6 paralel). **FU-W5-MANAGER-NAME** — önizlemede yöneticinin adı (PLT-W6 "yöneticiler" ucuyla). Menü canlıda manifest yeniden kaydıyla (fleet yeniden başlatma) görünür.
+
+## §37 CT — W5 canlı E4 (2026-10-20, CT yürüttü · yerel fleet, kiracı 97c5, Admin User)
+**Akış:** bildirim ayarları (PV `pv-safety@example.test`, MSL `msl-team@example.test`) → plan dışı ziyaret (AYŞE ABACI, bugün) → başlat → bitir → rapor (advers olay = Evet + not, endikasyon dışı = Evet) → gönder → Gönderilen e-postalar → önizleme → Platform kayıtları → denetim günlüğü. Tarayıcı paneli konum izni vermediği için kiracı konum kuralı denemede geçici olarak "Bilgi" yapıldı ve sonra **"Zorunlu"ya geri alındı** (API ile doğrulandı).
+
+**Geçenler:**
+- Sayfa + sekmeler + ayar kartı (yetki betiği `grant_w5_visit_notifications_97c5.py` uygulandı); ayar kaydı → "Ayarlar kaydedildi".
+- **F8-a canlı kanıtı:** `audit_events` → Category 18 (Crm), EntityType `VisitNotificationSettings`, SourceModule MOD-0155, Metadata yalnız `changedFields` (adres yok).
+- Rapor gönderiminde üç satır: endikasyon dışı → **Gönderildi** (Platform dispatch var, replyTo dolu); rapor özeti → **Alıcı yok** (beklenen: Admin = CEO koltuğu, Reports-to yok); advers → **Başarısız** (aşağıda F-1).
+- Önizleme: adres yok, roller + adlar ("PV güvenlik", "Yönetici (Admin User temsilcisinin yöneticisi)"), "ACİL · 24 saat" bandı, temsilci notu, "Temsilci tıbbi değerlendirme yapmaz" notu, KVKK altbilgisi — 06 mockup'ıyla uyumlu.
+- Platform `notification_dispatches`: iki CRM kaydı tiresiz kodlarla (`crm.visitreport.offlabelrequest`, `.adverseevent`), `ReplyToEmail` dolu. İkisi de SMTP'de `ProviderTlsFailed` — **yerel SMTP / TLS ayarı (ortam)**, kod değil.
+
+**Bulgular:**
+- **F-1 (önemli) — zaman aşımı + çift gönderim riski:** Platform iç ucu e-postayı aynı istekte SMTP'ye göndermeye çalışıyor; SMTP yavaşken yanıt CRM'in 3 sn sınırını aşıyor → CRM satırı `failed / platform-unreachable`, oysa Platform dispatch'i oluşturmuş. Zamanlayıcının yeniden denemesi ikinci bir Platform dispatch'i yaratır → SMTP çalışırken **aynı advers olay e-postası iki kez gider**. Çözüm: Platform iç ucu kaydı yazıp hemen dönsün (gönderim arka plan işinde), ve isteğe **tekillik anahtarı** (CRM satır kimliği) — aynı anahtarla gelen ikinci istek yeni dispatch açmaz, ilk sonucu döner.
+- **F-2:** Ayar kartındaki bilgi kutusu kullanıcıya iç karar kodunu gösteriyor ("PV bağlantısı K-W8 kararından sonra eklenecek").
+- **F-3:** Ayar kartında "Son değişiklik: … · c5769c62-…" — kişinin adı yerine kullanıcı kimliği.
+- **F-4:** Advers e-postası konusunda ürün yokken "ACİL · Advers olay bildirimi · — · 24 saat" (boş bölüm "—" ile gösteriliyor; gizlenmeli).
+- **F-5 (kontrol):** PV / MSL posta kutusu alıcılarına dispatch dili `en` — kiracı dili TR ise posta kutusu alıcısının dili kiracı dilinden gelmeli.
+- **F-6:** CRM listesinde "Gönderildi" = Platform'a teslim edildi; Platform'daki SMTP sonucu (ör. TLS hatası) listede görünmüyor. Rozet adı "İletildi" olsun (araç ipucu: "e-posta servisine teslim edildi") — gerçek teslim durumu ileride Platform olayıyla.
+- Not (W5 dışı): ziyaret takvimi 5 haftalık aralıkta ~20 sn'de yüklendi (fleet ısınması da olabilir) — W2 performans takibi.
+- **Mockup karşılaştırması:** liste + önizleme 06 ile yapı olarak uyumlu (Golden Compact liste standardı kazanır); belirgin görsel fark yok.
+
+## §36.1 Agent Prompt — W5-FIX2 (paste-ready · Platform + CRM + Web; canlı E4 bulguları)
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W5 · W5-FIX2 — canlı E4 bulguları: Platform iç olay ucu kaydı yazıp hemen dönsün + tekillik anahtarı (çift e-posta yok), CRM tekillik anahtarını göndersin; ayar kartı ve konu metni düzeltmeleri
+Repository: C:\tmp\vw-w5-fix2 (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w5-fix2 · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA. Platform sahibi kullanıcı (onay 2026-10-20, bu istemin kapsamı).
+
+ÖNCE OKU: execution/domains/commercial-suite/work-packs/WP-VW-W5-notifications.md — "§37 CT — W5 canlı E4" (F-1…F-6) + §37 PLT-NOTIFY / W5-FIX / W5-WEB · Platform: Features/Notifications/Services/InternalEventDispatchService.cs, NotificationEventDispatchAdapter, QueueEmailNotificationHandler (bugün gönderimi aynı istekte yapıyor), EmailDispatchJob / EmailDispatchSweepJob (arka plan gönderim + yeniden deneme), NotificationDispatch · CRM: Infrastructure/VisitNotifications/PlatformNotificationClient.cs, Features/VisitNotifications/VisitNotifications.cs (sender, durumlar) · Web: Views/CRM/VisitNotifications/_SettingsCard.cshtml + resx (7 dil), notifications-core.js / index.js (rozetler).
+NE:
+(1) F-1 Platform: iç uç isteğine isteğe bağlı `idempotencyKey` (≤ 128, sourceModule kapsamında). Aynı (kiracı, sourceModule, idempotencyKey) ile ikinci istek YENİ dispatch açmaz, ilk isteğin sonucunu döner (tekil indeks + yarış güvenli). İç uç yolunda gönderim isteğe bağlanmaz: dispatch'ler `Queued` yazılır, yanıt hemen döner; gönderim mevcut arka plan işine (EmailDispatchJob / sweep) bırakılır — yalnız bu iç uç yolu için; mevcut QueueEmail / Tasks / TimeEntry yolları DEĞİŞMEZ (kanıtla). Yanıt durumu `queued` olur.
+(2) F-1 CRM: her istekte `idempotencyKey` = `crm_visit_notifications` satır kimliği; zaman aşımı / ağ hatası artık "belirsiz" sayılır, satır `failed` olarak yeniden denenir ama tekillik anahtarı sayesinde Platform ikinci dispatch açmaz. `queued` yanıtı satırı `sent`e (Web'de "İletildi") çevirir.
+(3) F-6 Web: rozet "Gönderildi" → "İletildi" (araç ipucu: e-posta servisine teslim edildi), 7 dil; önizleme bandı da aynı dil.
+(4) F-2 Web: ayar kartı bilgi kutusundaki iç karar kodu kalkar ("Boşsa yalnız yönetici bilgilendirilir." — 7 dil).
+(5) F-3: ayar DTO'suna `UpdatedByName` (CRM'in mevcut AuthUserDisplayNameClient deseni; çözülmezse null → Web "—"); Web kimlik yerine adı gösterir.
+(6) F-4 Platform şablonu: `products` boşken konudaki ürün bölümü (ve ayracı) hiç yazılmaz — 4 olay × 7 dil şablonlarında aynı kural; test.
+(7) F-5: posta kutusu (email) alıcısının dili verilmemişse kiracı dili kullanılır (mevcut TenantNotificationLocaleResolver); bugün `en` düşüyorsa nedenini ölç ve düzelt — test.
+KORU/YAPMA: mevcut bildirim yollarının davranışı aynı; gerçek SMTP'ye gönderme YOK (testlerde sahte sağlayıcı); localhost:27017 YOK.
+DOĞRULA: Platform: aynı anahtarla iki istek → tek dispatch + aynı yanıt; eşzamanlı iki istek → tek dispatch (gerçek Mongo testi DITEN_TEST_MONGOD ile); iç uç yanıtı SMTP'yi beklemez (yavaş sahte sağlayıcıyla süre ölçümü); mevcut QueueEmail testleri değişmeden yeşil; konu şablonu ürünsüz; posta kutusu dili. CRM: anahtar gövdede; zaman aşımında satır yeniden denenir, ikinci denemede Platform tekil yanıt döner (sahte işleyici). Web: rozet / bilgi kutusu / ad (7 dil resx eksiksiz). Sabotajlar (.bak + touch, md5): tekillik denetimi kaldır → kırmızı; iç uçta gönderimi isteğe geri bağla → süre testi kırmızı; CRM anahtarı gönderme → kırmızı. Tam takımlar: Platform Application (DITEN_TEST_MONGOD + -o services/Diten.Platform içinde; taban aynı baş), CRM Application (-o repo içi), Web, mimari (known_failures.py).
+Commit: "fix(platform,crm,web): WP-VW-W5 W5-FIX2 — internal dispatch queues and returns at once with an idempotency key (no duplicate e-mail on retry), CRM sends its row id as the key; settings card and subject fixes from the live E4" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
