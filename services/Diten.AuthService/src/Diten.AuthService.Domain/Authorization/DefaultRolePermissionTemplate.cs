@@ -57,13 +57,13 @@ public static class DefaultRolePermissionTemplate
     // Q358 retracted (C-13): "shipment-tracking-pod" (MOD-0183) is no longer in the Admin baseline — the tenant Admin gets
     // the five supplychain.shipments.* keys only through a Shipments entitlement (measured over the broker path). Decision:
     // docs/records/decisions/2026-10/mvp6-shipment-admin-baseline-temporary-widening-owner-decision-01.md
-    // G7 (Wave 6.1) — TEMPORARY, EXPIRES 2026-11-03 (aligned with Q358/BL-652). The S&OP (MOD-0190) and Capacity
-    // (MOD-0192) manifest ModuleCodes join the Admin baseline so every tenant Admin holds all eight
-    // supplychain.sandop-plans.* / supplychain.capacity-plans.* keys; the default Viewer already receives the two .read
-    // keys through the read rule below. Their keys enter the catalog only where the modules are composed (non-production
-    // demand seed), so this grants nothing elsewhere. Remove when the entitlement path grants them. Decision:
+    // G7 removed (2026-10-20, before its 2026-11-03 expiry): "sop-workflow-signoffs" (MOD-0190) and "capacity-planning"
+    // (MOD-0192) are no longer in the Admin baseline — the tenant Admin gets the eight supplychain.sandop-plans.* /
+    // supplychain.capacity-plans.* keys only through an entitlement (measured on the lane: entitled tenant → 8/8 Module).
+    // The default Viewer's two .read keys come from the read rule below and are unchanged. Tenants activated while the
+    // entries stood are cleaned up by the G7 retraction (G7Retraction:Mode). Decision:
     // docs/records/decisions/2026-10/mvp6-0190-0192-g7-role-grants-owner-decision-01.md
-    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign", "sop-workflow-signoffs", "capacity-planning" };
+    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign" };
 
     /// <summary>
     /// MOD-0022 CT-D10 — the e-signature keys EVERY default tenant role holds: signing, keeping one's own signature sample
