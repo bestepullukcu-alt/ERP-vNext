@@ -64,7 +64,7 @@ public sealed class QuarantineBlockedFixTests : IClassFixture<WebApplicationFact
         var output = await node.StandardOutput.ReadToEndAsync();
         await node.WaitForExitAsync();
         Assert.True(node.ExitCode == 0, $"{output}\n{await error}");
-        Assert.Matches(new Regex(@"^# pass 10$", RegexOptions.Multiline), output);
+        Assert.Matches(new Regex(@"^# pass 11$", RegexOptions.Multiline), output);
         Assert.Matches(new Regex(@"^# fail 0$", RegexOptions.Multiline), output);
     }
 

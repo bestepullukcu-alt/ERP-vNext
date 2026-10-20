@@ -9,20 +9,19 @@
 
 /**
  * WP-MVP1-FIX-QUI1 — the "Stoğu bloke et" quantity rules (no DOM; the Node test runs the page against THIS file):
- *   quantityAfterRowChange — choosing a stock row keeps the quantity the user typed; only an EMPTY field takes the row's amount
- *                            (a suggestion), so a typed 50 never silently becomes the whole lot's 200;
+ *   quantityAfterRowChange — choosing a stock row NEVER writes a quantity (WP-MVP1-FIX-LIVE4, FU-0175-BLOCK-QTY: the row's 80 prefilled
+ *                            the field and a typed "10" became "8010"); what the user typed stays, an empty field stays empty;
+ *   quantityAll            — the whole row's amount, written ONLY by the "Tümü" button;
  *   quantityError          — none, ≤ 0 or above the row's amount is refused before anything is sent.
  */
 var QuarantineBlockedRules = (function () {
-    const quantityAfterRowChange = (current, row) => {
-        const typed = String(current ?? '').trim();
-        return row && typed === '' ? String(row.onHand ?? '') : typed;
-    };
+    const quantityAfterRowChange = (current) => String(current ?? '').trim();
+    const quantityAll = (row) => (row ? String(row.onHand ?? '') : '');
     const quantityError = (value, row) => {
         const quantity = Number(value);
         return !row || !(quantity > 0) || quantity > Number(row.onHand) ? 'Quarantine.BlockStock.QtyInvalid' : null;
     };
-    return { quantityAfterRowChange, quantityError };
+    return { quantityAfterRowChange, quantityAll, quantityError };
 })();
 
 if (typeof window !== 'undefined') window.QuarantineBlockedRules = QuarantineBlockedRules;
@@ -189,7 +188,17 @@ if (typeof window !== 'undefined') window.QuarantineBlockedRules = QuarantineBlo
             const field = ui.byId('qr-block-qty');
             field.value = QuarantineBlockedRules.quantityAfterRowChange(field.value, row);
             ui.byId('qr-block-available').textContent = row ? t('Quarantine.BlockStock.Available', qty(row.onHand), row.baseUomId || '') : '';
-            ui.fieldError(ui.byId('qr-block-form'), 'qty', row && QuarantineBlockedRules.quantityError(field.value, row) ? t('Quarantine.BlockStock.QtyInvalid') : '');
+            ui.byId('qr-block-all').disabled = !row;
+            ui.fieldError(ui.byId('qr-block-form'), 'qty', row && field.value !== '' && QuarantineBlockedRules.quantityError(field.value, row) ? t('Quarantine.BlockStock.QtyInvalid') : '');
+        });
+        // WP-MVP1-FIX-LIVE4 (FU-0175-BLOCK-QTY): the whole row only on purpose — "Tümü" writes the row's amount, a click away, never by default
+        ui.byId('qr-block-all').addEventListener('click', () => {
+            const value = ui.byId('qr-block-row').value;
+            const row = value === '' ? undefined : stockRows[Number(value)];
+            const field = ui.byId('qr-block-qty');
+            field.value = QuarantineBlockedRules.quantityAll(row);
+            ui.fieldError(ui.byId('qr-block-form'), 'qty', '');
+            field.focus?.();
         });
         ui.byId('qr-block-form').addEventListener('submit', submitBlock);
     };

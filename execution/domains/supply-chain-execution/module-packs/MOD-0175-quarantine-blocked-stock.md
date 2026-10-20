@@ -1631,6 +1631,11 @@ now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU
 **WP-MVP1-FIX-LIVE3 (ek) — karar uçlarının anahtarı öznitelikte (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (ek maddeler e / f), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md` (§7).
 - `createDecision` ve `submitDecision` `[HasAnyPermission(decisions.create, blocked.dispose, blocked.unblock)]` taşır; gövdedeki "üçünden biri" kontrolü kalktı. `createDecision`'da hangi anahtarın gerektiği kararın türüne bağlı (§4.6) — adıyla istisna (`AuthorizationGuardTests.BodyKeyedActions`). Davranış aynı: her anahtar geçer, anahtarsız 403 (aynı gövde), anonim 401.
 
+**WP-MVP1-FIX-LIVE4 — FU-0175-BLOCK-QTY kapandı, FU-0175-HELP-CHIPS ölçüldü (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live4` (MVP-1 ucu `c654429ca`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live4-evidence-2026-10-20.md`.
+- "Stoğu bloke et": satır seçimi miktarı yazmaz (alan boş kalır, "Kullanılabilir: …" altında); "Tümü" (7 dil) tam miktarı yalnız tıklanınca yazar. "Stoğu karantinaya al" doldurmuyordu; karar penceresinin kalan hesabı satır ön doldurması değil.
+- Yardım etiketleri: sunucu çizimi tırnaklı adları gerçek metin düğümü olarak yazıyor, CSS gizlemiyor; erişilebilirlik ağacında düşen metin aracın rolsüz `span` okuması. Ortak bileşen — DUR-SOR (A: değişmez / B: `PageHelpCatalog.Labelled`'de anlamlı öğe).
+- **Sayılar:** Web 3962 / 3964 → 3967 / 3969 (yalnız 2 SafetyStock kırmızısı), Inventory 1335 + 4 (servis değişmedi), mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 4 / 4 sabotaj.
+
 
 ## 20. Follow-up Items
 
