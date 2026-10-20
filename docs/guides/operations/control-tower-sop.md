@@ -863,6 +863,8 @@ Default:
 - paralel işler ayrı Agent Lane + ayrı worktree + disjoint scope ile,
 - WIP artırımı CT tarafından risk gerekçesiyle yapılır.
 
+İş paketinin PR'ı merge edildikten sonra worktree'si, temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırılır; kaydedilmemiş değişikliği ya da main'de veya uzak dalda olmayan commit'i varsa kaldırılmaz, CT sahibe bildirir ve sorar.
+
 Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli değilse sırf paralellik için iş bölünmez.
 
 ---
@@ -1400,7 +1402,7 @@ satırı main'e başkasının merge'iyle gelmediyse onay geçmez. Sonradan eklen
 yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
 uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
 dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
-incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür.
+incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz.
 
 **5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
 main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz.

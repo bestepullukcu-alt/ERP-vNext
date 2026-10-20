@@ -175,6 +175,7 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] Dependency gates yeniden hesaplandı.
 - [ ] Newly-unblocked work belirlendi.
 - [ ] Güvenli paralellik varsa sonraki **2+ WP** üretildi; yoksa neden yazıldı.
+- [ ] PR merge edildikten sonra worktree temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırıldı; değilse kaldırılmadı, sahibe bildirilip soruldu (SOP §16.5).
 
 ```text
 Commit ≠ Acceptance

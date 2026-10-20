@@ -39,6 +39,9 @@ iletildi.
 | S-5 | İnceleme kaydı olmayan pakete iş dağıtılabiliyor (prompt kapısı durdurmuyor) | Setup (politika) | 🟡 | sahip + Codex | açık — Codex görüşü bekleniyor |
 | S-6 | SOP §20.4 inceleyenin depoya erişimini söylemiyor; CT'nin prompt'u Codex'in yerel çalışma ağacını görebildiğini varsaydı (Codex yerel depoyu görmüyor: ZIP ya da push edilmiş dal) | Model + setup | 🟢 | alt ajan (metin) | yapıldı — SOP §20.4/2: inceleyicinin erişimi (itilmiş dal ya da ZIP) |
 | S-7 | Ana klasör main gerisindeyken açılan oturum skill'in eski kopyasını yükler; yeni kural ancak yeni oturumda görünür | Setup (işletim) | 🟢 | — | kabul: CT-START-03 bunu durdurur; testten önce ana klasör güncellenir |
+| S-8 | Kuraldan önce açılmış CT oturumları yeni kuralı bilmez; main'i alsalar da oturum yenilenmeden skill değişmez; kapı durdurunca nedenini anlamayabilirler | Setup (işletim) | 🟡 | S-5 ile | açık — S-5'in her ENGEL mesajı kuralı, nedeni, sonraki adımı ve "main'i al, yeni oturum aç" ipucunu kendisi söyler |
+| S-9 | CT'ye bağımsız inceleme sonucu getirildiğinde körü körüne kabul etmemesini söyleyen kural yok | Setup | 🟡 | alt ajan (metin) | yapıldı — skill §5 + SOP §20.4/4; çapa silinince --check FAIL |
+| S-10 | İş merge edildikten sonra worktree'yi kaldırma kuralı SOP / kart / skill'de yok; 17 worktree birikmiş (7'si merge edilmiş ve temiz; 2'sinde push edilmemiş 10 commit) | Setup | 🟡 | alt ajan (metin) + sahip (temizlik) | yapıldı — SOP §16.5 + kart §6; temizlik sahibin onayında |
 
 ## Model bulguları (düzeltme gerekmez, sonraki modülde yeniden ölçülür)
 

@@ -70,6 +70,9 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   (SOP §17.1 r5); karmaşıklık modeli, risk incelemeyi belirler.
 - Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4); WP prompt'u `Kapsanan dilim` yazar ve paketin
   tamamını tek WP'ye vermez.
+- Geliştirici bağımsız inceleme sonucunu (bulgular + UYGUN / KOŞULLU / UYGUN DEĞİL) getirirse her bulguyu paket ve kodla kendin
+  karşılaştır: hangilerini kabul ettiğini, hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı) ve
+  incelemenin neyi kaçırdığını yaz; bulgu dosyasını ya da herhangi bir kaydı yazmadan önce sahibe sor.
 
 ## 6. Yanıt biçimi
 
