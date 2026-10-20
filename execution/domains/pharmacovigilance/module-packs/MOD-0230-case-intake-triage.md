@@ -887,5 +887,5 @@ Out of slice 1, requiring their own approval:
 | DL-3 | API yüzeyi ve hata modeli | Failure Path to Verify, Authorization Convention, Audit / Workflow / Evidence / Trace / Error Requirements, PHI/PII And Regulated Safety Controls |
 | DL-4 | Gateway route ailesi ve kimlik doğrulama | Gateway / API Routing Decision |
 | DL-5 | tenant UI ve yerelleştirme | Layout & Shell Contract, Frontend File Contract |
-| DL-6 | manifest, katalog ve izin kataloğu | Follow-up Items (seed/grant ve port kaydı maddeleri), Authorization Convention (izin anahtarları) |
+| DL-6 | manifest, katalog ve izin kataloğu | Follow-up Items, Authorization Convention |
 | DL-7 | operasyonel runtime kanıtları | MOD-0230 Runtime Authorization Packet (Draft / Not Approved), Required Approval Gates, Validation Required Before Runtime Work Can Be Accepted, Test Expectations |
