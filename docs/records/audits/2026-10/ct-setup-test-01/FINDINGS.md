@@ -60,3 +60,14 @@ iletildi.
 | P-2 | MOD-0230: Gateway PV route'larında kimlik doğrulaması yok; anonim istek API'ye ulaşıyor | aynı not, G1/G4 |
 | P-3 | MOD-0230 paketinde ve DCP-004 pvg'de kişisel e-posta | PVG CT, 2026-10-21 |
 | P-4 | MOD-0040: kimlik kaydı ile Blueprint 8.8 çatışıyor | PVG karar kaydı D2 |
+
+## Sahip dönüşünde karar bekleyenler (2026-10-21)
+
+| # | Konu | Öneri |
+|---|---|---|
+| K-1 | S-4 port tahsisi: 5004 (bant dışı), 5011, 5062 (çift talep), 5063, 5064 | EA kararı; sonra `AGENTS.md` §3 tablosu (yol sütunu kısaltılarak sığar) |
+| K-2 | S-12 kabul edilmiş ama main'e girmemiş iş | SOP "kabul ≠ merge" der; kabulü merge'e bağlamak yerine "kabul edilmiş ama main'de olmayan" işleri listeleyen bir uyarı (ct_queue özeti ya da durum raporu) |
+| K-3 | `abb-accept` (ABB listesi, 8 commit) yedek olarak push edildi; main'e alınıp alınmayacağı | MDM işinin sahibi karar verir |
+| K-4 | Kaydedilmemiş iş içeren worktree'ler: platform-owned-mongo (12 dosya, BL-595), mdm+product-takeover (4 dosya), live-main (yerel ayar) | Sahipleriyle bakılmalı; silinmedi |
+| K-5 | S-5 (dağıtım kapısı) Codex kod denetimi | Bağımsız inceleme düzeltmeleri bitince ZIP + prompt hazır olur; Codex'e sahip gönderir |
+| K-6 | PR #176 (PR-1) merge | CODEOWNERS: CEO ya da kıdemli geliştirici |
