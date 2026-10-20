@@ -5,7 +5,7 @@ name: Supply Chain Inventory & Execution
 type: Delivery Capability Pack
 standard: CAP-001
 status: approved
-status_note: "approved (CT 2026-09-11, per CAP-001 §5). Owner decisions RESOLVED (scope=Inventory+Warehouse; service=Diten.SupplyChainService; port=5061). runtime_code_allowed=false: DCP approval alone does NOT authorize code — each member module pack must reach its own ready-for-dev gate first (CAP-001 §7). Member module packs: nine written under execution/domains/supply-chain-execution/module-packs/ — seven ready-for-dev (MOD-0183…0187, 0190, 0192), two draft (MOD-0147, MOD-0148); measured 2026-10-05, Q450 (each team's local CT authors its own)."
+status_note: "approved (CT 2026-09-11, per CAP-001 §5). Owner decisions RESOLVED (scope=Inventory+Warehouse; service=Diten.SupplyChainService; port=5061 — corrected 2026-10-20: AGENTS.md §3 assigns 5066 to SupplyChain; 5061 is CRM). runtime_code_allowed=false: DCP approval alone does NOT authorize code — each member module pack must reach its own ready-for-dev gate first (CAP-001 §7). Member module packs: nine written under execution/domains/supply-chain-execution/module-packs/ — seven ready-for-dev (MOD-0183…0187, 0190, 0192), two draft (MOD-0147, MOD-0148); measured 2026-10-05, Q450 (each team's local CT authors its own)."
 approved_by: control-tower
 approved_on: 2026-09-11
 owner_domain: supply-chain-execution
@@ -42,7 +42,7 @@ inputs:
 | Status | **approved** (CT 2026-09-11; runtime_code_allowed=false) |
 | Owner domain | supply-chain-execution |
 | Canonical source | Blueprint 8.1 (Supply Chain Execution Suite + Planning + Manufacturing) |
-| Service | `Diten.SupplyChainService` · port **5061** (warehouse/planning/mfg/logistics) · `Diten.InventoryService` · port **5067** (MOD-0173…0177, OD-5 2026-09-30; moved 5066 → 5067 by owner decision OD-P1 2026-10-12, WP-MVP1-SYNC1) |
+| Service | `Diten.SupplyChainService` · port **5066** (warehouse/planning/mfg/logistics; AGENTS.md §3 — the 5061 of the 2026-09-11 decision is CRM's port) · `Diten.InventoryService` · port **5067** (MOD-0173…0177, OD-5 2026-09-30; moved 5066 → 5067 by owner decision OD-P1 2026-10-12, WP-MVP1-SYNC1) |
 | runtime_code_allowed | **false** (DCP-level value, unchanged here; seven member packs are ready-for-dev and MVP-6 code exists — see `runtime_code_scope`, measured 2026-10-05, Q450) |
 
 ## 2. Business outcome
