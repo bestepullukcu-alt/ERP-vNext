@@ -1,0 +1,7 @@
+## entitle F with SOP-WORKFLOW-SIGNOFFS after Apply (soft-deleted S&OP keys must come back as Module)
+HTTP 201
+tenant e-ed0f0514d9 Admin      8/8  capacity.create(1) capacity.evaluate(1) capacity.read(1) capacity.scenario.create(1) sandop.create(1) sandop.read(1) sandop.sign-off.record(1) sandop.snapshot.capture(1)
+tenant e-ed0f0514d9 Viewer     2/8  capacity.read(0) sandop.read(0)
+role_permission_retraction_not_applied=0
+DuplicateRolePermission in auth log: 0
+soft-deleted G7 grants now=0

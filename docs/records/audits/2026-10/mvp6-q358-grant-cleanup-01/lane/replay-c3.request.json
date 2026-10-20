@@ -1,0 +1,1 @@
+{"eventId": "9e5df9b8-f909-4d13-8968-1d4c34a045be", "tenantId": "2287464d-77f1-4cb0-9b21-711c08aa273f", "eventName": "tenant.activated", "eventVersion": 1, "correlationId": "1cd5141b-34f6-4246-9689-398782580e76", "causationId": "00000000-0000-0000-0000-000000000000", "occurredAt": "2026-10-19T21:51:31.671338+00:00", "producer": "Q358-cleanup-reactivation-measurement"}

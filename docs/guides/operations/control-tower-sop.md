@@ -65,6 +65,12 @@ records in `docs/records/decisions/2026-10/`):
 - **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
   Control Towers that confirmed it.
 
+Revision r5 (2026-10-20, PVG Control Tower testi ve yöneticinin isteği; Codex görüşleri): §17.1'e `Model · Effort
+(istenen / kullanılan)` alanları ve kuralları eklendi — karmaşıklık ve risk ayrı eksenler, başlangıç profili,
+başarısızlıkta önce hata sınıfı, istenen ile kullanılanın kaydı; yalnız 2026-10-15'ten sonra açılan Control Tower'lar
+için. §20.4 (CT-APR-02) eklendi — Module Pack ve DCP onaydan önce bağımsız incelenir, dilim dilim uygulanır; §17.1 ve
+§36.1'e `Kapsanan dilim` alanı.
+
 Revision r4 (2026-10-19, yöneticinin hız notu; sahip onayı): §20.3 eklendi — test planı ilk build'den önce donar,
 test bütçesinden önce tek ortam ön kontrolü, kademeli test ve geniş takımın gereksiz yeniden koşulmaması, üst sınırlı yedek
 kapsam ya da ilk hatada dur. Başka bir kural değişmedi.
@@ -879,6 +885,8 @@ Agent Lane ID:
 Agent Lane Type: DEV | INS | VER | INT
 Target Agent / Entry Point:   # §6 tablosundan; ör. `@orchestrator` + `/add-module`
 Risk Class:
+Model · Effort (istenen):    # r5 — işin karmaşıklık ekseni; ör. claude-sonnet-5-5 · medium (aşağıdaki kural)
+Model · Effort (kullanılan): # r5 — oturum açılınca ölçülen; istenenden farklıysa gerekçe ve geri dönüş
 
 Target Branch:
 Expected Base HEAD:
@@ -899,10 +907,29 @@ Authority Sources:
 
 Allowed Paths:
 Protected Paths:
+Kapsanan dilim:              # r5 (CT-APR-02) — paketin `Teslim dilimleri` DL-n kimlikleri; `tamamı` yalnız onay satırındaki whole_pack=<WP> ile (§20.4)
 
 Golden-Flow Profile:
 A | B | C
 ```
+
+**r5 — model ve effort (CT-START-04, 2026-10-20; Codex görüşü dahil)**
+
+- **İki ayrı eksen.** İşin karmaşıklığı ve belirsizliği model ile effort'u belirler; iş riski ise gereken inceleme ve
+  onayı (CT-APR-01). Riskli ama hesaplaması kolay bir değişiklik güçlü model istemeyebilir; salt okunur bir mimari
+  denetim ise zor olabilir.
+- **Başlangıç profili** (kanıtlanmış en ekonomik seçim değil; sonuçlara göre ayarlanır): açık ve rutin iş → Sonnet 5.5 ·
+  medium; karmaşık uygulama → Sonnet 5.5 · high; mimari iş ve zor bağımsız denetim → Opus 5.5 · high; mekanik iş →
+  Haiku 5.5 · low.
+- **Başarısızlıkta önce hatayı sınıfla.** İki başarısızlıktan sonra kendiliğinden daha güçlü modele geçilmez: eksik
+  yetki, bağımlılık ya da yanlış kapsam daha güçlü modelle çözülmez. Model yalnız hata akıl yürütme ya da karmaşıklık
+  kaynaklıysa yükseltilir.
+- **İstenen ve kullanılan kaydedilir.** Prompt'a yazmak çalışma ayarını değiştirmez: alt ajan aracının model ve effort
+  parametresi ya da açılan oturumun ayarı ölçülür (oturum bilgisi). Seçim gerekçesi ve varsa geri dönüş yazılır;
+  desteklenmeyen bir seçim sessizce başka modelle değiştirilmez. Takma adlar sağlayıcıya göre farklı modele çözülebilir;
+  araç izin veriyorsa tam model kimliği yazılır.
+- **Kapsam.** 2026-10-15'ten sonra açılan Control Tower'lar için zorunlu; eski Control Tower'lara geriye dönük yük
+  getirmez.
 
 **v2.5 rules for the two new fields**
 
@@ -1346,6 +1373,48 @@ yazılı değilse (b) geçerlidir.
 
 **5. Bağımlılık sırası.** Bağımsız belge işleri paralel hazırlanabilir. Bitmemiş bir sözleşmeye bağlı aşağı akış
 geliştirmesi başlamaz (§16.4).
+
+## 20.4 Onaydan önce bağımsız inceleme ve dilimli uygulama (CT-APR-02, r5)
+
+> Kaynak: yöneticinin isteği (2026-10-20) — Module Pack ve DCP, yazıldıktan sonra ve onaya gitmeden önce bağımsız
+> incelenir; tek seferde uygulanmaz. Tasarım ve Codex görüşleri: `docs/roadmap/plans/ct-apr-02-pack-review/DESIGN.md`.
+> Kural kaydı: `execution/approvals/POLICY-REVIEW-START.md`. Araçlar: `scripts/pack_approval.py`,
+> `scripts/prompt_gate.py`.
+
+**1. Ne zaman.** Kural başlangıcından sonra eklenen her onay satırı, paketin aynı sürümünün incelemesini ister. Tek
+istisna: değişen her satır muaftır (tarih alanı; `owner` / `reviewer` TBD'den dolduruldu; yalnız boşluk) ve hiçbir risk
+HIGH değildir. Satır sayısı ölçüt değildir. Hiç onay almamış eski bir paket kuralın başladığı andaki sürümüyle
+karşılaştırılır; eski paketlere geriye dönük inceleme yoktur.
+
+**2. Kim inceler.** Geliştirici Codex'i ya da Claude'u seçer; inceleme, paketi yazan oturumdan ayrı bir oturumda yapılır.
+Model ve effort §17.1 r5 kuralıyla seçilir (zor bir bağımsız denetim için başlangıç profili Opus · high). Derinlik riske
+göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu.
+
+**3. Kayıt.** Bulgu dosyası `docs/records/reviews/<kimlik>/<dosya>.md` (biçim: POLICY-REVIEW-START) commit edilir; satırı
+`python3 scripts/pack_approval.py review-row <paket> --findings <dosya> …` üretir ve `execution/approvals/reviews.tsv`'ye
+eklenir. Özetler ve açık ENGEL sayısı dosyadan hesaplanır; elle yazılmaz.
+
+**4. Onaya bağlanma.** `pack_approval.py check`: o sürüm için inceleme yoksa (paket sonra değiştiyse inceleme bayattır),
+herhangi bir inceleme `UYGUN DEĞİL` ise, açık bir ENGEL kaldıysa, bulgu dosyası kayıttan sonra değiştiyse ya da inceleme
+satırı main'e başkasının merge'iyle gelmediyse onay geçmez. Sonradan eklenen bir `UYGUN` önceki sonucu ezmez. ENGEL'i
+yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
+uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
+dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
+incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür.
+
+**5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
+main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz.
+
+**6. Dilimli uygulama.** İnceleme isteyen bir Module Pack `## Teslim dilimleri` tablosu (`| DL-1 | ad | bölümler |`), bir
+DCP `## 8.1 Delivery slices` tablosu taşır. WP prompt'u `Kapsanan dilim:` satırını yazar (§17.1, §36.1). Prompt kapısı
+paket bu kurala bağlıysa durdurur: alan yoksa, dilim onaylı sürümde yoksa ya da bütün dilimler tek WP'deyse. İstisna
+yalnız onay satırının `note` alanındaki `whole_pack=<WP>`'dir: onaylayan, o sürüm için o WP'nin paketin tamamını
+almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız uyarıdır.
+
+**7. Üst üste PR'da merge sırası (GitHub).** Bir PR başka bir PR'ın dalı üstüne açıldıysa, alttaki merge edilince
+GitHub üstteki PR'ın onaylarını "taban değişti" diye düşürür (eski onay düşürme ayarı). Sıra: önce üstteki dal güncel
+main ile birleştirilir ("Update branch", merge commit), sonra son itişi yapmayan biri onaylar, onaydan hemen sonra
+"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167).
 
 ---
 
@@ -2179,6 +2248,7 @@ Risk: {LOW|MEDIUM|HIGH} · §9.1 sinyalleri: {§20.2 listesinden, virgülle | yo
 Görev sınıfı: {ürün · Paket: <pack yolu> | yönetişim · Kapsam kaydı: <docs/records/decisions/… yolu>}
 İzinli yollar: {virgülle ayrılmış yollar / desenler}
 Korunan yollar: {virgülle ayrılmış yollar / desenler | yok}
+Kapsanan dilim: {DL-n[, DL-m …] | tamamı}   # CT-APR-02 (§20.4); inceleme almış pakette zorunlu, eski pakette yalnız uyarı
 
 Önce oku (sırayla):
 {authority paths — module pack, domain-config, AGENTS.md, ilgili .antigravity/rules/**}
