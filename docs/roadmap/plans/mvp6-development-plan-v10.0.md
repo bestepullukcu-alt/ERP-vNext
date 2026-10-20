@@ -1,4 +1,4 @@
-# MVP6 development plan v10.0 — 2026-10-20
+# MVP6 development plan v10.0 — 2026-10-20 (updated with Ali's answers, same day)
 
 Supersedes v9.9 (2026-10-19). Measured on `origin/main` `9d44e8a1f` (after #173). Every state names the PR, commit
 or record that moved it. Accounts: **Ali = `GMG-ERP`** (product owner), **Beste = `Bestepul` / `bestepullukcu-alt`**
@@ -46,8 +46,8 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 
 | # | step | owner | state |
 |---|---|---|---|
-| A1 | Run Q358 in production: `Q358Retraction__Mode=DryRun` → read the log (`unknown` 0, `failed` 0) → `Apply` → remove the setting. Runbook on main | **Ali** (deploys) | **open — next** |
-| A2 | G7 clean-up on non-prod hosts with `DemandFixtures` enabled (same runbook, `G7Retraction`) | Ali decides who/when | open, optional |
+| A1 | Run Q358 in production: `Q358Retraction__Mode=DryRun` → read the log (`unknown` 0, `failed` 0) → `Apply` → remove the setting. Runbook on main | **Ali** (deploys) | **waiting — Ali 2026-10-20:** run it when production authorizations are updated; production is not in active use yet |
+| A2 | G7 clean-up on non-prod hosts with `DemandFixtures` enabled (same runbook, `G7Retraction`) | — | **closed — Ali 2026-10-20:** not needed on other servers |
 | A3 | Mark `mvp6-0190-0192-g7-role-grants-owner-decision-01.md` superseded (still says "IN EFFECT") | Ali | open |
 | A4 | Fix the account mapping in `mvp6-g7-grant-removal-01/REPORT.md` ("Ali (`bestepullukcu-alt`)" → Ali = `GMG-ERP`) — small docs PR | CT prepares, Beste merges | open |
 
@@ -59,17 +59,17 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 | B2 | `PpmAuditRetentionPolicySeedMongoTests` — CI `platform-app` row has no test-owned mongod | PSS / Platform | issue **#175** |
 | B3 | MOD-0022 `LoginOnlyEndpointGuardTests` ×2 | MVP-1 lane | owner-ruled known red (v9.9 1a) |
 | B4 | BL-615 Arch ×3 (`DocsPathGuard`, `AuditTrailStandard` ×2) | joint with CRM | registered known failures |
-| B5 | `OperationalSingleInstanceLockTests` (main auth-app, once) | Auth operational lock owner | measure before routing |
+| B5 | main auth-app red in 5 of the last 6 runs, a **different test each run** (`ProductIdentityEntitlementReconciliationMongoTests`, `AnonymousDoorLimitTests`, `OperationalSingleInstanceLockTests`), already before #164; lock test 30/30 locally (macOS) — flaky on Linux CI, not Q358/G7 | Auth owner | measured 2026-10-20; issue to file |
 
 **C. Supplier work (MOD-0147 / MOD-0148) — decisions before any code**
 
 | # | step | owner | state |
 |---|---|---|---|
-| C1 | MOD-0140 system of record: this repository (Procurement 5065, frozen `supplier.openapi.yaml`) or `ERP-vNext` (Platform 5057)? DC-02 D1 depends on it | **Ali** | open (`mod-0140-dual-implementation-01`, local record) |
-| C2 | Private notice to the MOD-0140 owner: Procurement takes `X-Legal-Entity-Id` without validating it against the tenant (`TenantResolutionMiddleware.cs:77-100`). Already visible in closed #171 | Ali / user, private channel | open |
+| C1 | MOD-0140 system of record | **Ali** | **answered 2026-10-20: Procurement, tenant-based** (each tenant its own suppliers). Open: today Procurement scopes suppliers per Tenant **+ LE** (`SupplierRepository.cs:141-148`) — confirm whether a supplier stays per LE or is shared across a tenant's LEs; D1 is written for per-LE |
+| C2 | Procurement takes `X-Legal-Entity-Id` without validating it against the tenant (`TenantResolutionMiddleware.cs:77-100`). Fix recommended 2026-10-20: when the LE comes only from the header, check with MDM that it is the tenant's and active (as SupplyChain's `MdmLegalEntityScopeValidator`) → 404 / MDM down 503, zero writes; claim/header conflict stays 400; user↔LE rights are MOD-0018-FU21 (unmerged) | Ali forwards to the Procurement developer | recommendation sent |
 | C3 | **DC-02 decisions** (draft `docs/sce/dc02-supplier-eligibility-draft-01`): D1, D3, D4, D5 — MOD-0147/0148 owner (SCE); **D2 joint with the MOD-0140 Procurement owner**; D6 — management | named owners | open |
-| C4 | **DC-03 decisions** (draft `docs/sce/dc03-supplier-actor-binding-draft-01`): D1–D8 — Auth/Platform security owner with the MOD-0148 owner; D9 — management. Precondition found (scan on closed #172's branch): the gateway 403s every non-`tenant_user` actor on tenant endpoints, so a portal-only rule is needed; a token without `actor_type` passes | named owners | open |
-| C5 | DC-04 / DC-05 (Metric Registry, Risk Register — no service exists; MOD-0004 is DOCS ONLY): open via a Master change request, or bound MOD-0147's first version without scoring/risk depth | Ali | open |
+| C4 | **DC-03 decisions** (draft `docs/sce/dc03-supplier-actor-binding-draft-01`). Ali's first proposal 2026-10-20: **one identity, separate door** (same Auth, separate portal login; `supplier_user` cannot enter the company app and vice versa; no separate user DB). Research done (main `9d44e8a1f`); proposals to decide with Ali: separate portal subdomain (host-only cookies separate the sessions), MFA required for supplier accounts (needs per-account-kind enforcement; email code only today), no same-email company+supplier account in one tenant (unique `{Email, TenantId}`), gateway allow-list `supplier_user` → `/api/supplier-performance/portal/*` + own session endpoints only, before going public: `TrustedProxies`, gateway rate limit (MOD-0032), shared limiter store; D9 owner/timing | Ali + Auth/Platform owner | **research done, decision with Ali** |
+| C5 | DC-04 = **MOD-0004**, DC-05 = **MOD-0213** (Blueprint W-2; no MCR needed). Ali 2026-10-20: MOD-0147 v1 = performance record only; scoring and risk when MOD-0004 / MOD-0213 exist (or minimal versions first). Our additions: v1 needs an owner-approved fixed metric set (pack amendment); supplier risk overlaps **MOD-0216 TPRM** (SoR of third-party assessments); MOD-0004 may already be under way elsewhere (status report "Treasury Core" sheet) — locate before building. Open: which plan is binding (status report: MVP-6 Supporting vs Supply Chain-Quality Wave 3, MOD-0216 Wave 2) | Ali | open |
 | C6 | After C3: decision record → PR → MOD-0147/0148 pack revision ("Supplier eligibility seam") → **CT-APR-02 independent review** → CT-APR-01 row (one person adds, another merges with a merge commit) | CT, reviewer, Beste | waits on C3 |
 | C7 | After C4: same path for MOD-0148 + a separate Auth/Platform pack for the binding, `supplier_user` token and gateway rule | CT, Auth/Platform, integration owner | waits on C4 |
 | C8 | Only then: the narrow `ISupplierEligibilityReader` slice (MOD-0147 first) | CT | waits on C6 |
@@ -82,9 +82,9 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 | D2 | Where contracts live (v9.9 4c): `docs/analysis/contracts/` vs the five docs folders — move, or allow the path in `docs-organization` (rule change, approval) | Ali | open |
 | D3 | Runbook text says MongoDB 7.0, dev machine runs 8.0.18 (v9.9 4b; ruled not blocking) | Ali | open item |
 | D4 | Gateway `Observability:Correlation:SigningKey` set in every non-Development environment (code fail-fast is on main) | ops / Ali | open |
-| D5 | `DeletedAt` on Auth entities (soft delete records `UpdatedAt`/`UpdatedBy` today) | Ali | open |
+| D5 | `DeletedAt` on Auth entities (soft delete records `UpdatedAt`/`UpdatedBy` today) | CT (Auth, XMC-001) | **Ali 2026-10-20: may be added** — work item |
 
-**Critical path:** A1 (only production work left from MVP-6) · C1 → C3 → C6 → C8 for the next real code.
+**Critical path:** C1 (LE scope question) → C3 → C6 → C8 for the next real code; A1 waits for the production authorization update.
 B1 should close first among the reds: it makes every PR's `planning-tests` red.
 
 **Stacked PRs (lesson of #167):** the repository dismisses approvals when the merge-base changes. Land a stacked
