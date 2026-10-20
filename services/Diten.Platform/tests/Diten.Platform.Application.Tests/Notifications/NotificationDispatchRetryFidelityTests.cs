@@ -79,6 +79,23 @@ public sealed class NotificationDispatchRetryFidelityTests
     }
 
     [Fact]
+    public async Task WP_VW_W6_an_attachment_exactly_at_the_internal_dispatch_budget_is_persisted_so_its_retry_carries_it()
+    {
+        // the internal event dispatch refuses anything above InternalEventDispatchService.MaxAttachmentBytes (400); this
+        // proves its ceiling is the persisted budget itself — the largest file it lets through is kept for the retry.
+        Assert.Equal(QueueEmailNotificationHandler.MaxPersistedAttachmentBytes, InternalEventDispatchService.MaxAttachmentBytes);
+        var tenantId = Guid.NewGuid();
+        var dispatches = new InMemoryDispatches();
+        var handler = CreateQueueHandler(tenantId, dispatches, provider: new ScriptedProvider(MessagingProviderResult.Success("ok")));
+        var pdf = new byte[InternalEventDispatchService.MaxAttachmentBytes];
+
+        await handler.Handle(CreateCommand(tenantId, attachments: [new MessagingProviderAttachment("MG-ORD-000042.pdf", "application/pdf", pdf)]), CancellationToken.None);
+
+        var kept = Assert.Single(Assert.Single(dispatches.Items).Attachments);
+        Assert.Equal(("MG-ORD-000042.pdf", "application/pdf", pdf.Length), (kept.FileName, kept.ContentType, kept.Content.Length));
+    }
+
+    [Fact]
     public async Task The_templates_own_SemanticVersion_is_stamped_onto_the_dispatch_at_queue_time()
     {
         var tenantId = Guid.NewGuid();

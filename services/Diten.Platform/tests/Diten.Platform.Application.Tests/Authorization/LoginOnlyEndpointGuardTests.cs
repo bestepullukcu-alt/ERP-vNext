@@ -46,6 +46,9 @@ public sealed class LoginOnlyEndpointGuardTests
         // platform.organization-seats.read, enforced by OrganizationSeatReader before it reads (the GetTeamAvailability
         // posture: login-only at the edge, the authority decided in the application layer).
         "OrganizationSeatsController.Get",
+        // WP-VW-W6 PLT-W6 — the seat's sibling (the user's line managers): the same rule, enforced by
+        // OrganizationLineManagerReader before it reads.
+        "OrganizationSeatsController.LineManagers",
         "OrganizationSeatsController.Lookup",
         "SavedViewsController.Create",
         "SavedViewsController.Delete",

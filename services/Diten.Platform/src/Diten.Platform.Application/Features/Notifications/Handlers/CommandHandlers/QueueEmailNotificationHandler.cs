@@ -51,7 +51,9 @@ public sealed class QueueEmailNotificationHandler
     // BL-374 — an attachment has no secret to protect, but it does cost storage; above this the FIRST send
     // still carries it (this bound is a persistence decision, not a delivery one) and only the retry path
     // loses it, exactly like the gap this WP was written to close in reverse.
-    private const int MaxPersistedAttachmentBytes = 256 * 1024;
+    // WP-VW-W6 PLT-W6 — public: the internal event dispatch refuses (400) anything above it, so an attachment a service
+    // sends is always persisted and every retry carries it.
+    public const int MaxPersistedAttachmentBytes = 256 * 1024;
 
     private readonly ITenantMessagingSettingsResolver _settingsResolver;
     private readonly INotificationTemplateRepository _templateRepository;

@@ -9,7 +9,7 @@ namespace Diten.Platform.API.Controllers.Platform;
 
 /// <summary>
 /// WP-VW-W3L PLT-ORG-SEAT (K-L8) — a user's current PRIMARY seat (position → organization unit → legal entity), one user or
-/// up to 100 at once. Tenant-scoped (the Gateway's tenant org paths). No <c>[HasPermission]</c> on purpose: a user may read
+/// up to 100 at once; WP-VW-W6 PLT-W6 — the user's line managers (<c>{userId}/line-managers</c>). Tenant-scoped (the Gateway's tenant org paths). No <c>[HasPermission]</c> on purpose: a user may read
 /// their OWN seat with no key; reading anybody else's needs <see cref="OrganizationSeatPermissions.Read"/>. Whether the
 /// caller holds it is decided HERE from the claims (the same evaluator as <c>[HasPermission]</c>) and handed to the reader
 /// as data; the reader refuses before it reads anything.
@@ -36,6 +36,16 @@ public sealed class OrganizationSeatsController : CustomBaseController
     [LoginOnly(ReadReason)]
     public async Task<IActionResult> Lookup([FromBody] OrganizationSeatLookupRequest? request, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new LookupOrganizationSeatsQuery(request?.UserIds, MayReadOthers()), ct));
+
+    // WP-VW-W6 PLT-W6 (MOD-0168 AÇIK-2) — the seat's sibling: whom the user reports to (ids, names, the seat they hold; no
+    // e-mail). The same authority rule as the seat read, enforced by the reader before it reads.
+    private const string LineManagersReason =
+        "A user reads their own line managers with no key; another user's need platform.organization-seats.read, which the reader enforces (403 before any read).";
+
+    [HttpGet("{userId:guid}/line-managers")]
+    [LoginOnly(LineManagersReason)]
+    public async Task<IActionResult> LineManagers(Guid userId, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new GetOrganizationLineManagersQuery(userId, MayReadOthers()), ct));
 
     /// <summary>Public + static so a test measures it on a principal: the caller holds the "read others" key.</summary>
     public static bool HoldsReadOthers(System.Security.Claims.ClaimsPrincipal user)

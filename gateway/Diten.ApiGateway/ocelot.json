@@ -233,6 +233,22 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/platform/organization/seats/{userId}/line-managers",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/organization/seats/{userId}/line-managers",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/platform/organization/seats/lookup",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

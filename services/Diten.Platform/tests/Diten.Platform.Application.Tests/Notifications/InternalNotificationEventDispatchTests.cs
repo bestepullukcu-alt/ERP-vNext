@@ -37,7 +37,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// the dispatch adapter (recording) — each double reads the AMBIENT tenant, exactly as the tenant execution filter and
 /// AuthService's own tenant scoping do, so a call that did not pin the body's tenant would see nobody.
 /// </summary>
-public sealed class InternalNotificationEventDispatchTests
+public sealed partial class InternalNotificationEventDispatchTests
 {
     private const string ApiKey = "test-internal-api-key";
     private const string Crm = "MOD-0155";
@@ -379,7 +379,8 @@ public sealed class InternalNotificationEventDispatchTests
         string sourceModule = Crm,
         IReadOnlyList<InternalEventRecipient>? to = null,
         IReadOnlyList<InternalEventRecipient>? cc = null,
-        InternalEventReplyTo? replyTo = null) =>
+        InternalEventReplyTo? replyTo = null,
+        IReadOnlyList<InternalEventAttachment>? attachments = null) =>
         new(
             tenantId ?? TenantA,
             eventCode,
@@ -395,7 +396,8 @@ public sealed class InternalNotificationEventDispatchTests
                 ["deadline"] = "2026-10-10T11:31:00Z"
             },
             "corr-1",
-            ReplyTo: replyTo);
+            ReplyTo: replyTo,
+            Attachments: attachments);
 
     private sealed class Host : IDisposable
     {
@@ -406,6 +408,9 @@ public sealed class InternalNotificationEventDispatchTests
         public OrgChart Org { get; } = new();
         public Contacts Recipients { get; }
         public RecordingAdapter Adapter { get; } = new();
+
+        /// <summary>WP-VW-W6 PLT-W6 — the MOD-0262 rows + their bytes (tenant-filtered by the ambient tenant).</summary>
+        public Documents Files { get; } = new();
 
         public Host()
         {
@@ -431,6 +436,8 @@ public sealed class InternalNotificationEventDispatchTests
                     services.AddScoped<ITaskNotificationRecipientResolver>(sp => Recipients.For(sp.GetRequiredService<ITenantContext>()));
                     services.AddSingleton<INotificationLocaleResolver>(new FakeNotificationLocaleResolver("tr"));
                     services.AddSingleton<INotificationEventDispatchAdapter>(Adapter);
+                    services.AddScoped<IRepositoryObjectRepository>(sp => Files.For(sp.GetRequiredService<ITenantContext>()));
+                    services.AddSingleton<Diten.Platform.Application.Contracts.DocumentRepository.IContentStorageGateway>(Files);
                     services.AddScoped<IInternalEventDispatchService, InternalEventDispatchService>();
                     services.AddControllers()
                         .ConfigureApplicationPartManager(manager =>

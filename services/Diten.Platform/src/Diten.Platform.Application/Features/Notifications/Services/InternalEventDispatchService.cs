@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
@@ -20,6 +21,15 @@ public sealed record InternalEventRecipient(
     string? DisplayName = null,
     string? Locale = null);
 
+/// <summary>WP-VW-W6 PLT-W6 (MOD-0168 AÇIK-4) — a file the mail carries (the depot / pharmacy copy of a pre-order as PDF):
+/// exactly one of <paramref name="ContentBase64"/> (the bytes) or <paramref name="DocumentRef"/> (a MOD-0262 content id of
+/// the SAME tenant). Bounded by the platform's persisted-attachment budget so a retry carries it too.</summary>
+public sealed record InternalEventAttachment(
+    string? FileName,
+    string? ContentType,
+    string? ContentBase64 = null,
+    Guid? DocumentRef = null);
+
 public sealed record InternalEventRecipients(
     IReadOnlyList<InternalEventRecipient>? To = null,
     IReadOnlyList<InternalEventRecipient>? Cc = null);
@@ -37,7 +47,9 @@ public sealed record InternalEventDispatchRequest(
     IReadOnlyDictionary<string, string?>? Variables,
     string? CorrelationId,
     Guid? CausationId = null,
-    InternalEventReplyTo? ReplyTo = null);
+    InternalEventReplyTo? ReplyTo = null,
+    // WP-VW-W6 PLT-W6 (AÇIK-4) — optional files; never echoed in the answer
+    IReadOnlyList<InternalEventAttachment>? Attachments = null);
 
 /// <summary>WP-VW-W5 (contract annex) — whose address a reply goes to: a user of the same tenant (the representative,
 /// K-N4). The address is resolved here and never returned; unresolved, the tenant's own reply address applies.</summary>
@@ -87,6 +99,23 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
 {
     public const string ReasonBadRequest = "INTERNAL_DISPATCH_BAD_REQUEST";
     public const string ReasonEventForbidden = "EVENT_NOT_OWNED_OR_NOT_ACTIVE";
+    public const string ReasonAttachmentInvalid = "INTERNAL_DISPATCH_ATTACHMENT_INVALID";
+
+    /// <summary>WP-VW-W6 PLT-W6 — the most files one call may carry.</summary>
+    public const int MaxAttachments = 5;
+
+    /// <summary>All files of one call together: the platform's persisted-attachment budget, so the stored dispatch keeps
+    /// them and its retry sends the same files (BL-374). Above it: 400, nothing sent.</summary>
+    public const int MaxAttachmentBytes = Handlers.CommandHandlers.QueueEmailNotificationHandler.MaxPersistedAttachmentBytes;
+
+    public const int MaxAttachmentFileNameLength = 200;
+
+    /// <summary>The file types a service may attach (a document copy or its picture) — nothing executable, nothing
+    /// archive-shaped.</summary>
+    public static readonly IReadOnlySet<string> AllowedAttachmentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "application/pdf", "image/png", "image/jpeg"
+    };
 
     public const string StatusSent = "sent";
     public const string StatusQueued = "queued";
@@ -122,6 +151,8 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
     private readonly INotificationLocaleResolver _locales;
     private readonly INotificationEventDispatchAdapter _adapter;
     private readonly ILogger<InternalEventDispatchService> _logger;
+    private readonly IRepositoryObjectRepository? _documents;
+    private readonly IContentStorageGateway? _storage;
 
     public InternalEventDispatchService(
         ITenantRegistryRepository tenants,
@@ -131,8 +162,13 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
         ITaskNotificationRecipientResolver recipients,
         INotificationLocaleResolver locales,
         INotificationEventDispatchAdapter adapter,
-        ILogger<InternalEventDispatchService> logger)
+        ILogger<InternalEventDispatchService> logger,
+        // WP-VW-W6 PLT-W6 — a documentRef attachment is read from the MOD-0262 repository (tenant-filtered)
+        IRepositoryObjectRepository? documents = null,
+        IContentStorageGateway? storage = null)
     {
+        _documents = documents;
+        _storage = storage;
         _tenants = tenants;
         _events = events;
         _tenantContext = tenantContext;
@@ -175,6 +211,14 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
 
         // 3) Every read below happens in the body's tenant — and only there.
         using var scope = TenantScope.Begin(_tenantContext, request.TenantId);
+
+        // 3b) WP-VW-W6 PLT-W6 — the files: read (a documentRef only in this tenant), the whole set within the budget; a
+        //     refusal sends nothing.
+        var (attachments, attachmentError) = await AttachmentsAsync(request.Attachments, ct);
+        if (attachmentError is not null)
+        {
+            return Response<InternalEventDispatchResultDto>.Fail(attachmentError, 400, ReasonAttachmentInvalid);
+        }
 
         var to = await ResolveAsync(request.TenantId, request.Recipients?.To, ct);
         var cc = await ResolveAsync(request.TenantId, request.Recipients?.Cc, ct);
@@ -243,7 +287,8 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
                         CorrelationId: request.CorrelationId,
                         CausationId: request.CausationId,
                         SourceModule: sourceModule,
-                        ReplyToEmail: replyToEmail),
+                        ReplyToEmail: replyToEmail,
+                        Attachments: attachments),
                     ct);
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
@@ -441,7 +486,164 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
             return "replyTo names a user id.";
         }
 
-        return null;
+        return AttachmentShapeError(request.Attachments);
+    }
+
+    /// <summary>WP-VW-W6 PLT-W6 — each file: a safe name, an allowed type, exactly one source, decodable bytes; the inline
+    /// bytes already within the budget (a documentRef's size is checked when it is read).</summary>
+    private static string? AttachmentShapeError(IReadOnlyList<InternalEventAttachment>? attachments)
+    {
+        if (attachments is null || attachments.Count == 0)
+        {
+            return null;
+        }
+
+        if (attachments.Count > MaxAttachments)
+        {
+            return $"At most {MaxAttachments} attachments may be sent.";
+        }
+
+        long inline = 0;
+        foreach (var attachment in attachments)
+        {
+            if (attachment is null)
+            {
+                return "An attachment is empty.";
+            }
+
+            var name = attachment.FileName?.Trim();
+            if (string.IsNullOrEmpty(name) || name.Length > MaxAttachmentFileNameLength
+                || name.IndexOfAny(['/', '\\', ':', '*', '?', '"', '<', '>', '|']) >= 0 || name.Any(char.IsControl))
+            {
+                return $"An attachment needs a plain file name (≤ {MaxAttachmentFileNameLength}, no path).";
+            }
+
+            if (string.IsNullOrWhiteSpace(attachment.ContentType) || !AllowedAttachmentTypes.Contains(attachment.ContentType.Trim()))
+            {
+                return $"An attachment's type must be one of {string.Join(", ", AllowedAttachmentTypes)}.";
+            }
+
+            var sources = (string.IsNullOrWhiteSpace(attachment.ContentBase64) ? 0 : 1) + (attachment.DocumentRef is null ? 0 : 1);
+            if (sources != 1 || attachment.DocumentRef == Guid.Empty)
+            {
+                return "Each attachment carries exactly one of contentBase64 or documentRef.";
+            }
+
+            if (attachment.ContentBase64 is { } base64 && !string.IsNullOrWhiteSpace(base64))
+            {
+                var bytes = DecodeOrNull(base64);
+                if (bytes is null || bytes.Length == 0)
+                {
+                    return "An attachment's contentBase64 is not valid base64.";
+                }
+
+                inline += bytes.Length;
+            }
+        }
+
+        return inline > MaxAttachmentBytes
+            ? $"The attachments may total at most {MaxAttachmentBytes} bytes."
+            : null;
+    }
+
+    /// <summary>The files as the mail carries them; a documentRef read in the pinned tenant only (another tenant's id is
+    /// "not found"). Over the budget in total → refused.</summary>
+    private async Task<(IReadOnlyList<MessagingProviderAttachment>? Files, string? Error)> AttachmentsAsync(
+        IReadOnlyList<InternalEventAttachment>? attachments, CancellationToken ct)
+    {
+        if (attachments is null || attachments.Count == 0)
+        {
+            return (null, null);
+        }
+
+        var files = new List<MessagingProviderAttachment>(attachments.Count);
+        long total = 0;
+        foreach (var attachment in attachments)
+        {
+            byte[]? bytes;
+            if (attachment.DocumentRef is { } contentId)
+            {
+                var (document, tooBig) = await ReadDocumentAsync(contentId, ct);
+                if (tooBig)
+                {
+                    return (null, $"The attachments may total at most {MaxAttachmentBytes} bytes.");
+                }
+
+                if (document is null)
+                {
+                    return (null, "An attachment's documentRef was not found.");
+                }
+
+                bytes = document;
+            }
+            else
+            {
+                bytes = DecodeOrNull(attachment.ContentBase64!)!;
+            }
+
+            total += bytes.Length;
+            if (total > MaxAttachmentBytes)
+            {
+                return (null, $"The attachments may total at most {MaxAttachmentBytes} bytes.");
+            }
+
+            files.Add(new MessagingProviderAttachment(attachment.FileName!.Trim(), attachment.ContentType!.Trim().ToLowerInvariant(), bytes));
+        }
+
+        return (files, null);
+    }
+
+    /// <summary>The document's bytes (null = not found in this tenant); <c>TooBig</c> = over the budget, never read whole.</summary>
+    private async Task<(byte[]? Bytes, bool TooBig)> ReadDocumentAsync(Guid contentId, CancellationToken ct)
+    {
+        if (_documents is null || _storage is null)
+        {
+            return (null, false);
+        }
+
+        var row = await _documents.GetByContentIdAsync(contentId, ct);
+        if (row is null || row.TenantId != _tenantContext.TenantId || row.IsDeleted)
+        {
+            return (null, false);
+        }
+
+        if (row.ByteSize > MaxAttachmentBytes)
+        {
+            return (null, true);
+        }
+
+        var opened = await _storage.OpenReadAsync(row.StorageProvider, row.ObjectKey, ct);
+        if (!opened.IsSuccessful || opened.Data is null)
+        {
+            return (null, false);
+        }
+
+        await using var content = opened.Data.Content;
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while ((read = await content.ReadAsync(chunk, ct)) > 0)
+        {
+            buffer.Write(chunk, 0, read);
+            if (buffer.Length > MaxAttachmentBytes)
+            {
+                return (null, true); // the stored size lied: never read a bigger file whole
+            }
+        }
+
+        return (buffer.ToArray(), false);
+    }
+
+    private static byte[]? DecodeOrNull(string base64)
+    {
+        try
+        {
+            return Convert.FromBase64String(base64.Trim());
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
     }
 
     private static string? SupportedLocaleOrNull(string? locale)

@@ -105,17 +105,10 @@ public sealed class OrganizationSeatReader :
         return Response<OrganizationSeatsDto>.Success(new OrganizationSeatsDto(await ReadAsync(asked, ct)));
     }
 
-    /// <summary>Tenant + identity + key, before anything is read. Null = allowed.</summary>
+    /// <summary>Tenant + identity + key, before anything is read (the one rule every seat endpoint uses — WP-VW-W6
+    /// PLT-W6 moved it to <see cref="OrganizationSeatAuthority"/> unchanged). Null = allowed.</summary>
     private (string Message, int Status)? Refusal(IReadOnlyCollection<Guid> userIds, bool mayReadOthers)
-    {
-        if (!_tenant.IsResolved || _tenant.TenantId == Guid.Empty)
-            return ("A tenant is required.", 403);
-        if (!_caller.IsAuthenticated || _caller.UserId == Guid.Empty)
-            return ("An authenticated user is required.", 403);
-        if (!mayReadOthers && userIds.Any(userId => userId != _caller.UserId))
-            return ($"Reading another user's seat needs {OrganizationSeatPermissions.Read}.", 403);
-        return null;
-    }
+        => OrganizationSeatAuthority.Refusal(_tenant, _caller, userIds, mayReadOthers);
 
     private async Task<IReadOnlyList<OrganizationSeatDto>> ReadAsync(IReadOnlyList<Guid> userIds, CancellationToken ct)
     {
