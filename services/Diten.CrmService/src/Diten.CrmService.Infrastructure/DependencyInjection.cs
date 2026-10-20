@@ -118,6 +118,13 @@ public static class DependencyInjection
         services.AddHttpClient<Application.Features.Commercial.Pricing.IPricingLegalEntityDirectory, Commercial.MdmPricingLegalEntityDirectory>();
         services.AddSingleton<Application.Features.Commercial.Pricing.IPriceListFileParser, Commercial.PriceListFileParser>();
         services.AddSingleton<Application.Features.Commercial.Pricing.IPricingApprovalSettings, Commercial.ConfigurationPricingApprovalSettings>();
+        // WP-VW-W6 W6-BE-a — MOD-0168: MDM (seller legal entity, SKUs) and Platform line managers through the Gateway with the
+        // caller's token; the e-mail events and the depot transmission stay unwired until W6-BE-c (log line / "deferred").
+        services.AddHttpClient<Application.Features.Commercial.PreOrders.IPreOrderMdmDirectory, Commercial.MdmPreOrderDirectory>();
+        services.AddHttpClient<Application.Features.Commercial.PreOrders.IPreOrderLineManagerReader, Commercial.PlatformPreOrderLineManagerReader>();
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderNotifier, Commercial.LoggingPreOrderNotifier>();
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderTransmitter, Commercial.NotWiredPreOrderTransmitter>();
+        services.AddSingleton<Application.Features.Commercial.PreOrders.IPreOrderApprovalSettings, Commercial.ConfigurationPreOrderApprovalSettings>();
 
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs

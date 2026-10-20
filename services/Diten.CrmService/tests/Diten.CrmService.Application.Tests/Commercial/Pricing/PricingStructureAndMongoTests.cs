@@ -115,17 +115,7 @@ public sealed class PricingStructureAndMongoTests
         Assert.True(File.Exists(Path.Combine(root, "Evaluation", "PricingMath.cs")));
     }
 
-    private static string FindPricingFolder()
-    {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "src", "Diten.CrmService.Application", "Diten.CrmService.Application.csproj")))
-        {
-            dir = dir.Parent;
-        }
-
-        Assert.NotNull(dir);
-        return Path.Combine(dir!.FullName, "src", "Diten.CrmService.Application", "Features", "Commercial", "Pricing");
-    }
+    private static string FindPricingFolder() => Path.Combine(CrmSourceTree.ApplicationRoot(), "Features", "Commercial", "Pricing");
 
     // ═══ the real mongod (the lane's own port; skipped without CRM_TEST_MONGO_URI) ═════════════════════════════
 
@@ -195,7 +185,12 @@ public sealed class PricingStructureAndMongoTests
             Assert.True(await fx.TryInsertAsync(Rate(new DateOnly(2026, 10, 1), 3.6725m), default));
             Assert.True(await fx.TryInsertAsync(Rate(new DateOnly(2026, 10, 15), 3.6730m), default));
             Assert.False(await fx.TryInsertAsync(Rate(new DateOnly(2026, 10, 15), 3.70m), default));
+            Assert.True(await fx.TryInsertAsync(Rate(new DateOnly(2026, 9, 20), 3.6600m), default));    // an OLDER rate, inserted last
             Assert.Equal(3.6725m, (await fx.GetLatestAsync(tenant, PricingWorld.LeAe, "USD", "AED", new DateOnly(2026, 10, 14), default))!.Rate);
+            // FU-W6-FX-LATEST-TEST: three rates on or before asOf — the NEWEST one wins (an ascending sort would return 2026-09-20)
+            var latest = await fx.GetLatestAsync(tenant, PricingWorld.LeAe, "USD", "AED", new DateOnly(2026, 10, 20), default);
+            Assert.Equal((new DateOnly(2026, 10, 15), 3.6730m), (latest!.RateDate, latest.Rate));
+            Assert.Equal(3.6600m, (await fx.GetLatestAsync(tenant, PricingWorld.LeAe, "USD", "AED", new DateOnly(2026, 9, 30), default))!.Rate);
             Assert.Null(await fx.GetLatestAsync(PricingWorld.OtherTenant, PricingWorld.LeAe, "USD", "AED", new DateOnly(2026, 10, 20), default));
 
             // the change log reads back by entity, this tenant only

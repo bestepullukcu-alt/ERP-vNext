@@ -23,7 +23,9 @@ public sealed class CrmManifestCommercialPricingTests
     [Fact]
     public void The_sixteen_pricing_keys_are_declared_once_each_with_a_display_name()
     {
-        var commercial = (Manifest.ApiPermissions ?? []).Where(p => p.PermissionKey.StartsWith("commercial.", StringComparison.Ordinal)).ToList();
+        // W6-BE-a: the namespace also holds MOD-0168's pre-order keys (CrmManifestCommercialPreOrderTests) — the pricing families here
+        string[] families = ["commercial.price-lists.", "commercial.pricing-rules.", "commercial.fx-rates."];
+        var commercial = (Manifest.ApiPermissions ?? []).Where(p => families.Any(f => p.PermissionKey.StartsWith(f, StringComparison.Ordinal))).ToList();
 
         Assert.Equal(Keys.OrderBy(k => k, StringComparer.Ordinal), commercial.Select(p => p.PermissionKey).OrderBy(k => k, StringComparer.Ordinal));
         Assert.All(commercial, p => Assert.False(string.IsNullOrWhiteSpace(p.DisplayName)));

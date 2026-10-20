@@ -300,6 +300,11 @@ public static class DependencyInjection
         services.AddScoped<Domain.Repositories.Commercial.IPricingRuleRepository, Repositories.Commercial.PricingRuleRepository>();
         services.AddScoped<Domain.Repositories.Commercial.IFxRateRepository, Repositories.Commercial.FxRateRepository>();
         services.AddScoped<Domain.Repositories.Commercial.IPricingChangeLogRepository, Repositories.Commercial.PricingChangeLogRepository>();
+        // WP-VW-W6 W6-BE-a — MOD-0168 pre-order stores (orders, settings, approval links, the ORD counter).
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderRepository, Repositories.Commercial.PreOrderRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderSettingsRepository, Repositories.Commercial.PreOrderSettingsRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderApprovalLinkRepository, Repositories.Commercial.PreOrderApprovalLinkRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderCodeSequenceRepository, Repositories.Commercial.PreOrderCodeSequenceRepository>();
 
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
@@ -1501,6 +1506,71 @@ public static class DependencyInjection
         });
         Map<Domain.Entities.Commercial.PricingFieldChange>(_ => { });
 
+        // WP-VW-W6 W6-BE-a — MOD-0168 pre-orders (commercial_pre_order*): the root AND every embedded type is mapped (the
+        // CRM new-root GUID trap); every Guid (lists included) a string, every DateOnly "yyyy-MM-dd"; money stays decimal.
+        var guidList = new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid);
+        Map<Domain.Entities.Commercial.PreOrder>(map =>
+        {
+            map.GetMemberMap(o => o.VisitId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(o => o.CopiedFromPreOrderId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(o => o.RequestedDeliveryDate).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PreOrderSeller>(map => map.GetMemberMap(s => s.LegalEntityId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderParty>(map => map.GetMemberMap(p => p.AccountId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderRep>(map =>
+        {
+            map.GetMemberMap(r => r.UserId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.PositionId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderLine>(map => map.GetMemberMap(l => l.SkuId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderSkuSnapshot>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderMf>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderFinding>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderRuleRef>(map => map.GetMemberMap(r => r.RuleKey).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderTotals>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderFxSnapshot>(map => map.GetMemberMap(f => f.RateDate).SetSerializer(dateOnlyString));
+        Map<Domain.Entities.Commercial.PreOrderPriceSnapshot>(map =>
+        {
+            map.GetMemberMap(p => p.PriceListId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.ValidFrom).SetSerializer(dateOnlyString);
+        });
+        Map<Domain.Entities.Commercial.PreOrderEvaluationSnapshot>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderApprovalRequirement>(map =>
+        {
+            map.GetMemberMap(r => r.ApproverPositionId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(r => r.ApproverUserIds).SetSerializer(guidList);
+        });
+        Map<Domain.Entities.Commercial.PreOrderSignature>(map =>
+        {
+            map.GetMemberMap(s => s.BinaryRef).SetSerializer(stringGuid);
+            map.GetMemberMap(s => s.CapturedByUserId).SetSerializer(stringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderApproval>(map =>
+        {
+            map.GetMemberMap(a => a.WorkflowInstanceId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(a => a.DecidedByUserId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderTransmission>(map =>
+        {
+            map.GetMemberMap(t => t.DepotDocumentRef).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(t => t.PharmacyCopyRef).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderTransmissionAttempt>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderCancellation>(map => map.GetMemberMap(c => c.ByUserId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderDepotResponse>(map => map.GetMemberMap(d => d.ByUserId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderPartialLine>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderEvent>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderSettings>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderCountryTier>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderCompanyPrefix>(map => map.GetMemberMap(p => p.LegalEntityId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderApprovalLink>(map =>
+        {
+            map.GetMemberMap(l => l.PreOrderId).SetSerializer(stringGuid);
+            map.GetMemberMap(l => l.ApproverUserIds).SetSerializer(guidList);
+            map.GetMemberMap(l => l.ConsumedByUserId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderCodeSequence>(_ => { });
+
         _classMapsRegistered = true;
     }
 
@@ -2350,6 +2420,37 @@ public static class DependencyInjection
             pricingLog.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingChangeLog>(
                 Builders<Domain.Entities.Commercial.PricingChangeLog>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.EntityId),
                 new CreateIndexOptions { Name = "ix_commercial_pricing_change_log_tenant_entity" }));
+
+            // WP-VW-W6 W6-BE-a — MOD-0168 pre-orders (§17): one code per tenant; the list / scope / pharmacy reads; one settings
+            // document per tenant; one link per token hash; one ORD counter per (tenant, prefix). No partial filters.
+            var preOrders = database.GetCollection<Domain.Entities.Commercial.PreOrder>(Repositories.Commercial.PreOrderRepository.CollectionName);
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Code),
+                new CreateIndexOptions { Name = "ux_commercial_pre_orders_tenant_code", Unique = true }));
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Status).Descending(o => o.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_tenant_status_created" }));
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Rep.UserId).Descending(o => o.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_tenant_rep_created" }));
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Pharmacy.AccountId).Descending(o => o.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_tenant_pharmacy_created" }));
+            var preOrderSettings = database.GetCollection<Domain.Entities.Commercial.PreOrderSettings>(Repositories.Commercial.PreOrderSettingsRepository.CollectionName);
+            preOrderSettings.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderSettings>(
+                Builders<Domain.Entities.Commercial.PreOrderSettings>.IndexKeys.Ascending(s => s.TenantId),
+                new CreateIndexOptions { Name = "ux_commercial_pre_order_settings_tenant", Unique = true }));
+            var preOrderLinks = database.GetCollection<Domain.Entities.Commercial.PreOrderApprovalLink>(Repositories.Commercial.PreOrderApprovalLinkRepository.CollectionName);
+            preOrderLinks.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderApprovalLink>(
+                Builders<Domain.Entities.Commercial.PreOrderApprovalLink>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.TokenHash),
+                new CreateIndexOptions { Name = "ux_commercial_pre_order_approval_links_tenant_hash", Unique = true }));
+            preOrderLinks.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderApprovalLink>(
+                Builders<Domain.Entities.Commercial.PreOrderApprovalLink>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.PreOrderId),
+                new CreateIndexOptions { Name = "ix_commercial_pre_order_approval_links_tenant_order" }));
+            var preOrderSequences = database.GetCollection<Domain.Entities.Commercial.PreOrderCodeSequence>(Repositories.Commercial.PreOrderCodeSequenceRepository.CollectionName);
+            preOrderSequences.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderCodeSequence>(
+                Builders<Domain.Entities.Commercial.PreOrderCodeSequence>.IndexKeys.Ascending(q => q.TenantId).Ascending(q => q.Prefix),
+                new CreateIndexOptions { Name = "ux_commercial_pre_order_code_sequences_tenant_prefix", Unique = true }));
 
             // WP-VW-W3E (W3E-BE-a) - crm_institution_qr_codes: ONE ACTIVE code per institution, guaranteed by the database
             // (a concurrent second issue loses). Equality-only partial filter (Status:"active", IsDeleted:false) - $ne in a

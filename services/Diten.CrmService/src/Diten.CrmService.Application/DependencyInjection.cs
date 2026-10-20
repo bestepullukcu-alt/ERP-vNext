@@ -191,6 +191,16 @@ public static class DependencyInjection
         services.AddScoped<Features.Commercial.Pricing.PricingApprovalOutcomeApplier>();
         services.AddScoped<Features.Commercial.Pricing.PricingApprovalReconciler>();
 
+        // WP-VW-W6 W6-BE-a — MOD-0168 Order Capture (pharmacy pre-order): the shared handler context, the parts reader, the
+        // MOD-0156 bridge (its three §4.6 interfaces only), the approval and transmission services, the team scope (the
+        // existing territory-subtree resolver, consumed as is).
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderContext>();
+        services.AddScoped<Features.Commercial.PreOrders.Handlers.CommandHandlers.PreOrderParts>();
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderPricing>();
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderApprovalService>();
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderTransmissionService>();
+        services.AddScoped<Features.Commercial.PreOrders.IPreOrderTeamScope, Features.Commercial.PreOrders.TerritoryPreOrderTeamScope>();
+
         return services;
     }
 }

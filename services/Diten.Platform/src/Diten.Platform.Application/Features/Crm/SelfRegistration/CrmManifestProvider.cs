@@ -324,7 +324,19 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission("commercial.fx-rates.read", "Read FX Rates"),
                 new ModuleManifestPermission("commercial.fx-rates.create", "Enter FX Rates"),
                 new ModuleManifestPermission("commercial.fx-rates.update", "Correct FX Rates"),
-                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates")
+                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates"),
+                // WP-VW-W6 W6-BE-a — MOD-0168 §14 pre-order keys (definition only; pages arrive with W6-WEB-a, the grant with W6-CFG).
+                new ModuleManifestPermission("commercial.pre-orders.read", "Read Own and Team Pre-Orders"),
+                new ModuleManifestPermission("commercial.pre-orders.read-all", "Read All Pre-Orders"),
+                new ModuleManifestPermission("commercial.pre-orders.create", "Create and Edit Pre-Order Drafts"),
+                new ModuleManifestPermission("commercial.pre-orders.submit", "Submit Pre-Orders"),
+                new ModuleManifestPermission("commercial.pre-orders.approve", "Approve, Reject or Send Back Pre-Orders"),
+                new ModuleManifestPermission("commercial.pre-orders.cancel", "Cancel Pre-Orders"),
+                new ModuleManifestPermission("commercial.pre-orders.record-depot-response", "Record the Depot's Answer"),
+                new ModuleManifestPermission("commercial.pre-orders.retry-transmission", "Retry a Failed Transmission"),
+                new ModuleManifestPermission("commercial.pre-orders.export", "Export Pre-Orders"),
+                new ModuleManifestPermission("commercial.pre-order-settings.read", "Read Pre-Order Settings"),
+                new ModuleManifestPermission("commercial.pre-order-settings.update", "Change Pre-Order Settings")
             ]);
 
     // WP-VW-W5 PLT-NOTIFY — the four visit report events (K-N4). Template key = event code. No hyphen in a code: the

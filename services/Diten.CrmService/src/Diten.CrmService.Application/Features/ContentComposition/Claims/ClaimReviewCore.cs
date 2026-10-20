@@ -94,7 +94,11 @@ public sealed record ClaimWorkflowStartRequest(
     ClaimWorkflowDisplayContext DisplayContext,
     // WP-KP-5a-FIX-1 — the audit reason code of the start. Null = the claim's own code (CRM_CLAIM_SUBMITTED), so the
     // claim flow is unchanged; the knowledge path revision and the regulatory texts send their own.
-    string? ReasonCode = null);
+    string? ReasonCode = null,
+    // WP-VW-W6 W6-BE-a — runtime candidates (MOD-0168: the rep's line managers). Null / empty = none, so every existing
+    // caller is unchanged (MOD-0023 then takes the template's positions); MOD-0023 uses runtime candidates only when the
+    // template's first step has none of its own.
+    IReadOnlyList<string>? CandidatePrincipalIds = null);
 
 public sealed record ClaimWorkflowStartResult(ClaimWorkflowCallOutcome Outcome, Guid? WorkflowInstanceId, string? Detail);
 

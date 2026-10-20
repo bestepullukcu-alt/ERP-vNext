@@ -56,9 +56,11 @@ public sealed class VwW6PricingRouteCoverageTests
     [Fact]
     public void Each_pricing_root_is_declared_once_as_itself_and_its_catch_all()
     {
-        var templates = Load().Routes.Select(r => r.UpstreamPathTemplate).Where(t => t.StartsWith("/api/commercial/", StringComparison.Ordinal))
-            .OrderBy(t => t, StringComparer.Ordinal).ToList();
         string[] roots = ["price-lists", "price-list-imports", "pricing-rules", "pricing-contract", "fx-rates", "pricing-history"];
+        // W6-BE-a: the commercial namespace also holds MOD-0168's pre-order roots (their own coverage test) — only the pricing roots here
+        var templates = Load().Routes.Select(r => r.UpstreamPathTemplate)
+            .Where(t => roots.Any(r => t == "/api/commercial/" + r || t.StartsWith("/api/commercial/" + r + "/", StringComparison.Ordinal)))
+            .OrderBy(t => t, StringComparer.Ordinal).ToList();
         Assert.Equal(roots.SelectMany(r => new[] { "/api/commercial/" + r, "/api/commercial/" + r + "/{everything}" }).OrderBy(t => t, StringComparer.Ordinal),
             templates);
     }
