@@ -142,7 +142,13 @@ public sealed record QueueEmailNotificationRequest(
     /// <summary>WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY. This message's own reply address, over the tenant's: ONE plain
     /// address or it is not used (logged). Kept on the dispatch so a retry replies to the same person. Null for every
     /// producer that predates it — the tenant's reply address, exactly as before.</summary>
-    string? ReplyToEmail = null);
+    string? ReplyToEmail = null,
+    /// <summary>WP-VW-W5 W5-FIX2 (F-1) — ADDITIVE ONLY, set by the internal event dispatch alone. The row is written
+    /// <c>Queued</c> and due at once, the answer returns without calling the provider, and the retry sweep sends it (the
+    /// first send runs on <c>EmailDispatchJob</c>, like any retry). Honoured only where that sweep is scheduled; on a server
+    /// without it the send stays in the request as before (nothing would ever send the row otherwise). False for every
+    /// other producer — their behaviour is unchanged.</summary>
+    bool QueueOnly = false);
 
 public sealed record NotificationDispatchDto(
     Guid Id,

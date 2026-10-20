@@ -47,7 +47,7 @@ window.VisitNotificationsSettings = (function () {
         const meta = byId('vn-settings-meta');
         if (meta) {
             meta.textContent = s.isDefault ? (L().SettingsDefault || '')
-                : fmt(L().SettingsUpdated, s.updatedAt ? new Date(s.updatedAt).toLocaleString(document.documentElement.lang || undefined) : '—', s.updatedBy || '—');
+                : fmt(L().SettingsUpdated, s.updatedAt ? new Date(s.updatedAt).toLocaleString(document.documentElement.lang || undefined) : '—', s.updatedByName || '—'); // W5-FIX2 (F-3) — the writer's name, never the id
         }
     };
 

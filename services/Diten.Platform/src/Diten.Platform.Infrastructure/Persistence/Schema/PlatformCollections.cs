@@ -161,6 +161,8 @@ public static class PlatformCollections
     public const string ModulePageDescriptors = "platform_module_page_descriptors";
     public const string ModuleServices = "platform_module_services";
     public const string NotificationDispatches = "notification_dispatches";
+    // WP-VW-W5 W5-FIX2 (F-1) — the internal event dispatch's idempotency keys (one row per tenant, module, key).
+    public const string InternalDispatchKeys = "notification_internal_dispatch_keys";
     public const string NotificationEventDefinitions = "notification_event_definitions";
     public const string NotificationTemplates = "notification_templates";
     public const string OrganizationFieldDefinitions = "organization_field_definitions";

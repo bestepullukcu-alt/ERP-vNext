@@ -339,6 +339,10 @@ public sealed class VisitNotificationsWebTests
         Assert.Contains("bg-label-info", cells[1].GetProperty("status").GetString());
         Assert.Equal(tr["St_failed_final"], cells[3].GetProperty("statusText").GetString());
         Assert.Equal(tr["St_no_recipient"], cells[4].GetProperty("statusText").GetString());
+        // W5-FIX2 (F-6) — "sent" reads İletildi (handed over to the e-mail service), said on hover too
+        Assert.Equal(("İletildi", "E-posta servisine teslim edildi."), (tr["St_sent"], tr["Explain_sent"]));
+        Assert.Equal(tr["St_sent"], cells[0].GetProperty("statusText").GetString());
+        Assert.Contains("title=\"" + Encode(tr["Explain_sent"]) + "\"", cells[0].GetProperty("status").GetString());
         Assert.Equal(tr["Rcp_upper_manager"], cells[1].GetProperty("recipientsText").GetString());           // PV not set → the manager (found up the chain) moved up
         Assert.Contains(Encode(Fmt(tr["RcpPending"], tr["Rcp_pv"])), cells[1].GetProperty("recipients").GetString());
         Assert.Equal(tr["Rcp_msl"] + ", " + tr["Rcp_manager"], cells[2].GetProperty("recipientsText").GetString());
@@ -366,6 +370,7 @@ public sealed class VisitNotificationsWebTests
         Assert.DoesNotContain("javascript:", summary.GetProperty("body").GetString());
         Assert.Contains(Encode(tr["Safety_offlabel_yes"]), summary.GetProperty("body").GetString());
         Assert.Contains(Encode(tr["Safety_adverse_no"]), summary.GetProperty("body").GetString());
+        Assert.Contains(Encode(tr["Explain_sent"]), summary.GetProperty("body").GetString());                 // W5-FIX2 — the preview band says it too
         var overdue = s.GetProperty("overdue");
         Assert.Equal(tr["CtaReviewRecord"], overdue.GetProperty("openText").GetString());
         Assert.Contains(Encode(tr["Explain_failed_final"]), overdue.GetProperty("body").GetString());
@@ -396,6 +401,7 @@ public sealed class VisitNotificationsWebTests
         var loaded = s.GetProperty("settingsLoaded");
         Assert.Equal(("", false, true), (loaded.GetProperty("msl").GetString(), loaded.GetProperty("summary").GetBoolean(), loaded.GetProperty("overdue").GetBoolean()));
         Assert.Contains("Ayşe Yönetici", loaded.GetProperty("meta").GetString());
+        Assert.DoesNotContain("c5769c62", loaded.GetProperty("meta").GetString());                          // W5-FIX2 (F-3) — the name, never the id
 
         var invalid = s.GetProperty("saveInvalid");
         Assert.Equal((0, true, true, tr["ErrEmailField"]), (invalid.GetProperty("puts").GetInt32(), invalid.GetProperty("pvInvalid").GetBoolean(), invalid.GetProperty("mslInvalid").GetBoolean(), invalid.GetProperty("pvMsg").GetString()));
@@ -413,6 +419,45 @@ public sealed class VisitNotificationsWebTests
         Assert.Equal(tr["Err_visit_notification_email_invalid"], s.GetProperty("save400").GetProperty("alert").GetString());
         Assert.True(s.GetProperty("save400").GetProperty("pvInvalid").GetBoolean());
         Assert.Equal(["GET", "PUT", "PUT", "PUT"], s.GetProperty("settingsCalls").EnumerateArray().Select(x => x.GetString()));
+    }
+
+    /// <summary>W5-FIX2 (F-2, F-6) — no internal decision code reaches the settings card, and the "sent" badge and its
+    /// explanation exist in every language.</summary>
+    [Theory]
+    [InlineData("en")]
+    [InlineData("tr")]
+    [InlineData("fr")]
+    [InlineData("es")]
+    [InlineData("zh")]
+    [InlineData("ar")]
+    [InlineData("ru")]
+    public void N14_the_settings_note_names_no_internal_decision_and_the_sent_badge_is_explained_in_each_language(string lang)
+    {
+        var words = Resx(lang);
+        Assert.DoesNotContain("K-W8", words["MailboxEmptyNote"]);
+        Assert.DoesNotMatch(@"\bK-[A-Z]*\d", words["MailboxEmptyNote"]);
+        Assert.False(string.IsNullOrWhiteSpace(words["Explain_sent"]));
+        Assert.False(string.IsNullOrWhiteSpace(words["St_sent"]));
+        if (lang != "en")
+        {
+            Assert.NotEqual(Resx("en")["Explain_sent"], words["Explain_sent"]);
+        }
+    }
+
+    /// <summary>W5-FIX2 (F-4) — the preview's subject leaves an empty part out with its separator (the twin of the Platform's
+    /// EmailTemplateRenderer.WithoutEmptySegments): no product → no "· — ·"; a filled part, or a part with no slot, stays.</summary>
+    [Fact]
+    public void N15_the_preview_subject_leaves_an_empty_part_out_with_its_separator()
+    {
+        var tr = Resx("tr");
+        string Run(string key, string args) =>
+            RunNode(Core() + "process.stdout.write(C.withoutEmptySegments(" + JsArg(tr[key]) + ", " + args + "));") ?? "<no node>";
+        if (RunNode("process.stdout.write('ok')") is null) return;
+
+        Assert.Equal("ACİL · Advers olay bildirimi · 24 saat", Run("Subj_adverseevent", "['']"));
+        Assert.Equal("ACİL · Advers olay bildirimi · {0} · 24 saat", Run("Subj_adverseevent", "['UROFLEKS']"));
+        Assert.Equal("Endikasyon dışı bilgi talebi", Run("Subj_offlabelrequest", "[null]"));
+        Assert.Equal("Ziyaret raporu · {1}", Run("Subj_submitted", "['', '20.10.2026']"));
     }
 
     [Fact]

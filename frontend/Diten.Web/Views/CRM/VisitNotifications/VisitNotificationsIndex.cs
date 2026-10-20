@@ -26,7 +26,7 @@ public sealed class VisitNotificationsIndex
         "Sec_note", "Sec_safety", "Sec_followUp", "Sec_repNote",
         "Safety_adverse_yes", "Safety_adverse_no", "Safety_offlabel_yes", "Safety_offlabel_no", "Note_adverseevent",
         "CtaOpenReport", "CtaReviewRecord",
-        "Explain_queued", "Explain_failed", "Explain_failed_final", "Explain_no_recipient", "Explain_route_pending_pv", "Explain_route_pending_msl",
+        "Explain_sent", "Explain_queued", "Explain_failed", "Explain_failed_final", "Explain_no_recipient", "Explain_route_pending_pv", "Explain_route_pending_msl",
         "EmptyTitle", "EmptyText", "QuickView",
         "SettingsSaved", "SettingsDefault", "SettingsUpdated", "ErrEmailField", "ErrRangeMissing", "ErrRangeOrder",
         "Err_conflict", "Err_visit_notification_email_invalid", "Err_visit_notification_invalid", "Err_visit_notification_not_found",

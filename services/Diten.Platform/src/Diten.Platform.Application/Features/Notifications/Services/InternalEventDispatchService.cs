@@ -3,6 +3,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using Microsoft.Extensions.Logging;
@@ -38,6 +39,10 @@ public sealed record InternalEventRecipients(
 /// WP-VW-W5 PLT-NOTIFY (K-N1) — what a service or a scheduler sends to <c>POST api/internal/notifications/events/dispatch</c>.
 /// There is no request context behind it: the tenant comes from <paramref name="TenantId"/>, the asking module from
 /// <paramref name="SourceModule"/>. Variables are display text — the producer formats dates and names.
+/// <para>W5-FIX2 (F-1) — <paramref name="IdempotencyKey"/> (optional, at most
+/// <see cref="InternalEventDispatchService.MaxIdempotencyKeyLength"/> characters, scoped by the tenant and
+/// <paramref name="SourceModule"/>): a second call with the same key opens no dispatch and answers what the first one
+/// answered. CRM sends its notification row id, so a retry after a time-out never mails the same report twice.</para>
 /// </summary>
 public sealed record InternalEventDispatchRequest(
     Guid TenantId,
@@ -49,7 +54,8 @@ public sealed record InternalEventDispatchRequest(
     Guid? CausationId = null,
     InternalEventReplyTo? ReplyTo = null,
     // WP-VW-W6 PLT-W6 (AÇIK-4) — optional files; never echoed in the answer
-    IReadOnlyList<InternalEventAttachment>? Attachments = null);
+    IReadOnlyList<InternalEventAttachment>? Attachments = null,
+    string? IdempotencyKey = null);
 
 /// <summary>WP-VW-W5 (contract annex) — whose address a reply goes to: a user of the same tenant (the representative,
 /// K-N4). The address is resolved here and never returned; unresolved, the tenant's own reply address applies.</summary>
@@ -94,6 +100,12 @@ public interface IInternalEventDispatchService
 /// <item>One mail per language (each reader in their own language); the copies ride with the first group that was
 /// accepted. Nobody resolved → nothing is sent and the answer says <c>no-recipient</c>.</item>
 /// </list>
+/// <para>W5-FIX2 (F-1) — the send is NOT part of the call: every mail is written <c>Queued</c> and the platform's retry
+/// sweep sends it (<see cref="QueueEmailNotificationRequest.QueueOnly"/>), so the answer is <c>queued</c> and a slow mail
+/// server can no longer push the caller past its time budget. With an idempotency key the call is claimed before anything
+/// is written (after the tenant and owner checks, so a module cannot probe another module's keys): a repeat answers the
+/// stored result, a concurrent repeat waits briefly for it and otherwise answers 409 (try again later), and a call that had
+/// nothing accepted releases its key.</para>
 /// </summary>
 public sealed class InternalEventDispatchService : IInternalEventDispatchService
 {
@@ -116,6 +128,17 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
     {
         "application/pdf", "image/png", "image/jpeg"
     };
+
+    public const string ReasonInProgress = "INTERNAL_DISPATCH_IN_PROGRESS";
+
+    /// <summary>W5-FIX2 — the longest idempotency key a caller may send.</summary>
+    public const int MaxIdempotencyKeyLength = 128;
+
+    /// <summary>W5-FIX2 — a claim left pending this long (its call died) is taken over by the next call with the key.</summary>
+    public static readonly TimeSpan StaleClaimAfter = TimeSpan.FromMinutes(2);
+
+    /// <summary>W5-FIX2 — how long a concurrent repeat waits for the first call's answer (under CRM's 3 s budget).</summary>
+    public static readonly TimeSpan InFlightWait = TimeSpan.FromSeconds(2);
 
     public const string StatusSent = "sent";
     public const string StatusQueued = "queued";
@@ -150,6 +173,7 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
     private readonly ITaskNotificationRecipientResolver _recipients;
     private readonly INotificationLocaleResolver _locales;
     private readonly INotificationEventDispatchAdapter _adapter;
+    private readonly IInternalDispatchKeyRepository _keys;
     private readonly ILogger<InternalEventDispatchService> _logger;
     private readonly IRepositoryObjectRepository? _documents;
     private readonly IContentStorageGateway? _storage;
@@ -162,11 +186,13 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
         ITaskNotificationRecipientResolver recipients,
         INotificationLocaleResolver locales,
         INotificationEventDispatchAdapter adapter,
+        IInternalDispatchKeyRepository keys,
         ILogger<InternalEventDispatchService> logger,
         // WP-VW-W6 PLT-W6 — a documentRef attachment is read from the MOD-0262 repository (tenant-filtered)
         IRepositoryObjectRepository? documents = null,
         IContentStorageGateway? storage = null)
     {
+        _keys = keys;
         _documents = documents;
         _storage = storage;
         _tenants = tenants;
@@ -212,6 +238,91 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
         // 3) Every read below happens in the body's tenant — and only there.
         using var scope = TenantScope.Begin(_tenantContext, request.TenantId);
 
+        var idempotencyKey = request.IdempotencyKey?.Trim();
+        if (string.IsNullOrEmpty(idempotencyKey))
+        {
+            return await ResolveAndDispatchAsync(request, eventCode, sourceModule, ct);
+        }
+
+        // W5-FIX2 (F-1) — one dispatch per key: claimed before anything is written.
+        var module = sourceModule.ToUpperInvariant();
+        var claim = await _keys.ClaimAsync(module, idempotencyKey, DateTimeOffset.UtcNow, StaleClaimAfter, ct);
+        if (claim.Outcome != InternalDispatchKeyOutcome.Claimed)
+        {
+            return await ReplayAsync(claim, module, idempotencyKey, eventCode, ct);
+        }
+
+        Response<InternalEventDispatchResultDto> response;
+        try
+        {
+            response = await ResolveAndDispatchAsync(request, eventCode, sourceModule, ct);
+        }
+        catch
+        {
+            await ReleaseQuietlyAsync(claim.Record, eventCode);
+            throw;
+        }
+
+        if (response.IsSuccessful && response.Data is not null)
+        {
+            await _keys.CompleteAsync(
+                claim.Record.Id, claim.Record.ClaimToken,
+                System.Text.Json.JsonSerializer.Serialize(response.Data, ResultJson), DateTimeOffset.UtcNow, CancellationToken.None);
+        }
+        else
+        {
+            // Nothing was accepted: the key goes back, so the caller's retry is a real second try.
+            await ReleaseQuietlyAsync(claim.Record, eventCode);
+        }
+
+        return response;
+    }
+
+    private static readonly System.Text.Json.JsonSerializerOptions ResultJson = new(System.Text.Json.JsonSerializerDefaults.Web);
+
+    /// <summary>The key is held: the stored answer, or — while the first call runs — a short wait for it, then 409.</summary>
+    private async Task<Response<InternalEventDispatchResultDto>> ReplayAsync(
+        InternalDispatchKeyClaim claim, string module, string key, string eventCode, CancellationToken ct)
+    {
+        var record = claim.Record;
+        var waitUntil = DateTimeOffset.UtcNow + InFlightWait;
+        while (record.State != InternalDispatchKeyStates.Done && DateTimeOffset.UtcNow < waitUntil)
+        {
+            await Task.Delay(100, ct);
+            record = await _keys.GetAsync(module, key, ct) ?? record;
+        }
+
+        if (record.State == InternalDispatchKeyStates.Done && record.ResultJson is { Length: > 0 } json
+            && System.Text.Json.JsonSerializer.Deserialize<InternalEventDispatchResultDto>(json, ResultJson) is { } stored)
+        {
+            _logger.LogInformation(
+                "notification.internal_dispatch_replayed EventCode={EventCode} SourceModule={SourceModule} Status={Status}",
+                eventCode, module, stored.Status);
+            return Response<InternalEventDispatchResultDto>.Success(stored, 200);
+        }
+
+        _logger.LogInformation(
+            "notification.internal_dispatch_in_progress EventCode={EventCode} SourceModule={SourceModule}", eventCode, module);
+        return Response<InternalEventDispatchResultDto>.Fail(
+            "The same request is still being handled; try again later.", 409, ReasonInProgress);
+    }
+
+    private async Task ReleaseQuietlyAsync(InternalDispatchKey record, string eventCode)
+    {
+        try
+        {
+            await _keys.ReleaseAsync(record.Id, record.ClaimToken, DateTimeOffset.UtcNow, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            // A claim that could not be released is taken over once it is stale.
+            _logger.LogWarning(ex, "notification.internal_dispatch_key_release_failed EventCode={EventCode}", eventCode);
+        }
+    }
+
+    private async Task<Response<InternalEventDispatchResultDto>> ResolveAndDispatchAsync(
+        InternalEventDispatchRequest request, string eventCode, string sourceModule, CancellationToken ct)
+    {
         // 3b) WP-VW-W6 PLT-W6 — the files: read (a documentRef only in this tenant), the whole set within the budget; a
         //     refusal sends nothing.
         var (attachments, attachmentError) = await AttachmentsAsync(request.Attachments, ct);
@@ -288,7 +399,9 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
                         CausationId: request.CausationId,
                         SourceModule: sourceModule,
                         ReplyToEmail: replyToEmail,
-                        Attachments: attachments),
+                        Attachments: attachments,
+                        // W5-FIX2 (F-1) — written and answered; the background sweep sends.
+                        QueueOnly: true),
                     ct);
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
@@ -484,6 +597,12 @@ public sealed class InternalEventDispatchService : IInternalEventDispatchService
         if (request.ReplyTo is { } replyTo && (replyTo.UserId is null || replyTo.UserId == Guid.Empty))
         {
             return "replyTo names a user id.";
+        }
+
+        if (request.IdempotencyKey is { } key
+            && (string.IsNullOrWhiteSpace(key) || key.Trim().Length > MaxIdempotencyKeyLength || key.Any(char.IsControl)))
+        {
+            return $"idempotencyKey is 1 to {MaxIdempotencyKeyLength} printable characters.";
         }
 
         return AttachmentShapeError(request.Attachments);

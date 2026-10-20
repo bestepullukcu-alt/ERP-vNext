@@ -29,7 +29,7 @@
   <data name="PvMailboxHelp" xml:space="preserve"><value>不良事件邮件发送到此地址；直属经理抄送。</value></data>
   <data name="MslMailboxLabel" xml:space="preserve"><value>MSL 邮箱</value></data>
   <data name="MslMailboxHelp" xml:space="preserve"><value>超说明书信息请求发送到此地址；直属经理抄送。</value></data>
-  <data name="MailboxEmptyNote" xml:space="preserve"><value>如为空，仅通知直属经理；与药物警戒系统的连接将在 K-W8 决定后加入。</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>如为空，仅通知直属经理。</value></data>
   <data name="ReportSummaryLabel" xml:space="preserve"><value>报告摘要发送给直属经理</value></data>
   <data name="ReportSummaryHelp" xml:space="preserve"><value>提交拜访报告时发送。更正不会再次发送。</value></data>
   <data name="OverdueRemindersLabel" xml:space="preserve"><value>报告逾期提醒</value></data>
@@ -46,7 +46,7 @@
   <data name="Event_adverseevent" xml:space="preserve"><value>不良事件通知</value></data>
   <data name="Event_offlabelrequest" xml:space="preserve"><value>超说明书请求</value></data>
   <data name="Event_overdue" xml:space="preserve"><value>报告逾期</value></data>
-  <data name="St_sent" xml:space="preserve"><value>已发送</value></data>
+  <data name="St_sent" xml:space="preserve"><value>已转交</value></data>
   <data name="St_queued" xml:space="preserve"><value>等待中</value></data>
   <data name="St_failed" xml:space="preserve"><value>失败</value></data>
   <data name="St_failed_final" xml:space="preserve"><value>失败（不再重试）</value></data>
@@ -114,6 +114,7 @@
   <data name="Note_adverseevent" xml:space="preserve"><value>代表不做医学评估，仅传递信息。</value></data>
   <data name="CtaOpenReport" xml:space="preserve"><value>查看报告</value></data>
   <data name="CtaReviewRecord" xml:space="preserve"><value>查看记录</value></data>
+  <data name="Explain_sent" xml:space="preserve"><value>已交付给电子邮件服务。</value></data>
   <data name="Explain_queued" xml:space="preserve"><value>等待发送。</value></data>
   <data name="Explain_failed" xml:space="preserve"><value>发送失败，系统将自动重试。</value></data>
   <data name="Explain_failed_final" xml:space="preserve"><value>多次重试后仍发送失败，不再重试。</value></data>

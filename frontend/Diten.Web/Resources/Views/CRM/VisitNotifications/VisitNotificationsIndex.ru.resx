@@ -29,7 +29,7 @@
   <data name="PvMailboxHelp" xml:space="preserve"><value>Сюда приходят письма о нежелательных явлениях; руководитель в копии.</value></data>
   <data name="MslMailboxLabel" xml:space="preserve"><value>Адрес MSL</value></data>
   <data name="MslMailboxHelp" xml:space="preserve"><value>Сюда приходят запросы информации вне показаний; руководитель в копии.</value></data>
-  <data name="MailboxEmptyNote" xml:space="preserve"><value>Если пусто, уведомляется только руководитель; связь с системой ФН появится после решения K-W8.</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>Если пусто, уведомляется только руководитель.</value></data>
   <data name="ReportSummaryLabel" xml:space="preserve"><value>Сводка отчёта руководителю</value></data>
   <data name="ReportSummaryHelp" xml:space="preserve"><value>Отправляется при отправке отчёта о визите. Исправление ничего не отправляет.</value></data>
   <data name="OverdueRemindersLabel" xml:space="preserve"><value>Напоминание о просроченном отчёте</value></data>
@@ -46,7 +46,7 @@
   <data name="Event_adverseevent" xml:space="preserve"><value>Сообщение о нежелательном явлении</value></data>
   <data name="Event_offlabelrequest" xml:space="preserve"><value>Запрос вне показаний</value></data>
   <data name="Event_overdue" xml:space="preserve"><value>Отчёт просрочен</value></data>
-  <data name="St_sent" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="St_sent" xml:space="preserve"><value>Передано</value></data>
   <data name="St_queued" xml:space="preserve"><value>Ожидает</value></data>
   <data name="St_failed" xml:space="preserve"><value>Ошибка</value></data>
   <data name="St_failed_final" xml:space="preserve"><value>Ошибка (повторов не будет)</value></data>
@@ -114,6 +114,7 @@
   <data name="Note_adverseevent" xml:space="preserve"><value>Представитель не даёт медицинской оценки, а только передаёт информацию.</value></data>
   <data name="CtaOpenReport" xml:space="preserve"><value>Открыть отчёт</value></data>
   <data name="CtaReviewRecord" xml:space="preserve"><value>Просмотреть запись</value></data>
+  <data name="Explain_sent" xml:space="preserve"><value>Передано почтовой службе.</value></data>
   <data name="Explain_queued" xml:space="preserve"><value>Ожидает отправки.</value></data>
   <data name="Explain_failed" xml:space="preserve"><value>Отправка не удалась; будет повторена автоматически.</value></data>
   <data name="Explain_failed_final" xml:space="preserve"><value>Отправка не удалась после всех попыток; повторов не будет.</value></data>

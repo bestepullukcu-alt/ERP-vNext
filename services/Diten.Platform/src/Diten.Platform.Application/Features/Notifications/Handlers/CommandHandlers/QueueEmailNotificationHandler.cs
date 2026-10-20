@@ -184,6 +184,18 @@ public sealed class QueueEmailNotificationHandler
             ? Guid.NewGuid().ToString("N")
             : request.CorrelationId;
         var persistedAttachments = PrepareAttachmentsForPersistence(request.Request.Attachments, out var attachmentsSkippedForSize);
+        // WP-VW-W5 W5-FIX2 (F-1) — the internal event dispatch does not wait for the provider: the row is written due at
+        // once and the retry sweep sends it. Only where that sweep runs, and only when the row holds everything the send
+        // needs (an attachment too large to keep would be lost): otherwise the send stays in this request, as before.
+        var queueOnly = request.Request.QueueOnly && _retriesScheduled && !attachmentsSkippedForSize;
+        if (request.Request.QueueOnly && !queueOnly)
+        {
+            _logger.LogWarning(
+                "email.dispatch.queue_only_unavailable TenantId={TenantId} TemplateKey={TemplateKey} RetriesScheduled={RetriesScheduled} AttachmentsTooLarge={AttachmentsTooLarge}. Sending in the request.",
+                request.TenantId, template.TemplateKey, _retriesScheduled, attachmentsSkippedForSize);
+        }
+
+        var queuedAt = DateTimeOffset.UtcNow;
         var dispatch = new NotificationDispatch
         {
             TenantId = request.TenantId,
@@ -215,7 +227,9 @@ public sealed class QueueEmailNotificationHandler
             // reproduce this exact send, or whether the template has since moved on.
             TemplateSemanticVersion = template.SemanticVersion,
             Attachments = persistedAttachments,
-            QueuedAt = DateTimeOffset.UtcNow,
+            QueuedAt = queuedAt,
+            // W5-FIX2 — a queue-only row is due for its FIRST send now (NotificationDispatchRepository.FindDueQueuedAsync).
+            NextRetryAt = queueOnly ? queuedAt : null,
             RetryCount = 0,
             CorrelationId = correlationId,
             CausationId = request.Request.CausationId,
@@ -249,6 +263,14 @@ public sealed class QueueEmailNotificationHandler
                 dispatch.CorrelationId),
             new EventPublishOptions { TenantId = dispatch.TenantId, CausationId = dispatch.CausationId },
             ct);
+
+        if (queueOnly)
+        {
+            _logger.LogInformation(
+                "Notification dispatch queued for the background send. DispatchId={DispatchId} TenantId={TenantId} SourceModule={SourceModule} CorrelationId={CorrelationId}",
+                dispatch.Id, dispatch.TenantId, dispatch.SourceModule, dispatch.CorrelationId);
+            return Response<NotificationDispatchDto>.Success(dispatch.ToDto(), 202);
+        }
 
         var providerResult = await providerResponse.Data.SendEmailAsync(
             new MessagingProviderEmailRequest(

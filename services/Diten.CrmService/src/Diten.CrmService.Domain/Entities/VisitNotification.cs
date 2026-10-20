@@ -175,5 +175,9 @@ public static class VisitNotificationNotes
     public const string PvRoutePending = "pv-route-pending";
     public const string MslRoutePending = "msl-route-pending";
     public const string PlatformUnavailable = "platform-unavailable";
+    /// <summary>W5-FIX2 (F-1) — a time-out or a network error: the Platform may have received the call or not. The row is
+    /// retried like any failure; the idempotency key (the row id) makes the Platform answer the first call's result instead
+    /// of mailing again.</summary>
+    public const string PlatformUncertain = "platform-uncertain";
     public const string AttemptsExhausted = "attempts-exhausted";
 }

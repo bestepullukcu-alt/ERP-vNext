@@ -72,7 +72,10 @@ public sealed record PlatformNotificationRequest(
     string? CausationId = null,
     /// <summary>W5-FIX (contract annex) — the user a reply goes to (the representative); the Platform resolves the address.
     /// Null — not a user id — and the field is not sent at all.</summary>
-    string? ReplyToUserId = null);
+    string? ReplyToUserId = null,
+    /// <summary>W5-FIX2 (F-1) — the notification row's id: the Platform opens one dispatch per key, so a retry after a
+    /// time-out (the first call may have landed) never mails the same report twice.</summary>
+    string? IdempotencyKey = null);
 
 public sealed record PlatformResolvedRecipient(string? UserId, string Via);
 
@@ -162,7 +165,7 @@ public sealed class VisitNotificationSender
             // reply goes to the representative when the row's representative is a user id.
             : await _platform.DispatchAsync(new PlatformNotificationRequest(row.TenantId, VisitNotificationEvents.Canonical(row.EventCode),
                 VisitNotificationLimits.SourceModule, to, cc, row.Variables, row.CorrelationId,
-                ReplyToUserId: ReplyToOf(row)), ct);
+                ReplyToUserId: ReplyToOf(row), IdempotencyKey: IdempotencyKeyOf(row)), ct);
         Apply(row, result, now);
         row.ClaimedUntilTicks = 0;
         row.ClaimedBy = null;
@@ -200,6 +203,8 @@ public sealed class VisitNotificationSender
             return;
         }
 
+        // W5-FIX2 (F-1, F-6) — "queued" (today's internal dispatch answer: the Platform stored the mail and sends it in the
+        // background) is handed over like "sent": the row reads Sent ("İletildi" on the Web — delivered to the mail service).
         row.SentAt = now;
         row.Status = row.Notes.Any(n => n is VisitNotificationNotes.PvRoutePending or VisitNotificationNotes.MslRoutePending)
             ? VisitNotificationStatuses.RoutePending
@@ -256,6 +261,9 @@ public sealed class VisitNotificationSender
     /// (K-N4); a representative id that is not a user id (Guid) sends no reply address.</summary>
     public static string? ReplyToOf(VisitNotification row)
         => Guid.TryParse(row.ResourceId, out var userId) && userId != Guid.Empty ? userId.ToString("D") : null;
+
+    /// <summary>W5-FIX2 (F-1) — the idempotency key of every send of this row: its id, the same on each retry.</summary>
+    public static string IdempotencyKeyOf(VisitNotification row) => row.Id.ToString("D");
 
     /// <summary>Deterministic: the same subject's event always carries the same correlation id (an idempotency hint).</summary>
     public static string CorrelationOf(VisitNotification row) => $"crm:{row.EventCode}:{row.SubjectId:D}";
@@ -537,7 +545,10 @@ public sealed class VisitNotificationWorker
 
 public sealed record VisitNotificationSettingsDto(
     string? PvEmail, string? MslEmail, bool OverdueReminders, bool ReportSummary, int Version, bool IsDefault,
-    DateTimeOffset? UpdatedAt, string? UpdatedBy);
+    DateTimeOffset? UpdatedAt, string? UpdatedBy,
+    /// <summary>W5-FIX2 (F-3) — the display name of <see cref="UpdatedBy"/> (AuthService, the IUserDisplayNameResolver
+    /// seam); null when it cannot be resolved — the screen then shows "—", never the id.</summary>
+    string? UpdatedByName = null);
 
 public sealed record VisitNotificationSettingsInput(
     string? PvEmail, string? MslEmail, bool? OverdueReminders, bool? ReportSummary, int? ExpectedVersion);
@@ -599,10 +610,11 @@ public static class VisitNotificationRules
 
     public static string? Norm(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
 
-    public static VisitNotificationSettingsDto ToDto(VisitNotificationSettings? s)
+    public static VisitNotificationSettingsDto ToDto(VisitNotificationSettings? s, string? updatedByName = null)
         => s is null
             ? new VisitNotificationSettingsDto(null, null, true, true, 0, true, null, null)
-            : new VisitNotificationSettingsDto(s.PvEmail, s.MslEmail, s.OverdueReminders, s.ReportSummary, s.Version, false, s.UpdatedAt, s.UpdatedBy);
+            : new VisitNotificationSettingsDto(s.PvEmail, s.MslEmail, s.OverdueReminders, s.ReportSummary, s.Version, false, s.UpdatedAt, s.UpdatedBy,
+                updatedByName);
 }
 
 public sealed class VisitNotificationSettingsHandlers :
@@ -617,10 +629,12 @@ public sealed class VisitNotificationSettingsHandlers :
     private readonly IVisitNotificationSettingsRepository _settings;
     private readonly IVisitEvidenceAuditPublisher _audit;
     private readonly TimeProvider _clock;
+    private readonly IUserDisplayNameResolver? _names;
 
     public VisitNotificationSettingsHandlers(ITenantContext tenant, IActorContext actor, IVisitNotificationSettingsRepository settings,
-        IVisitEvidenceAuditPublisher audit, TimeProvider? clock = null)
+        IVisitEvidenceAuditPublisher audit, TimeProvider? clock = null, IUserDisplayNameResolver? names = null)
     {
+        _names = names;
         _tenant = tenant;
         _actor = actor;
         _settings = settings;
@@ -631,7 +645,21 @@ public sealed class VisitNotificationSettingsHandlers :
     public async Task<Response<VisitNotificationSettingsDto>> Handle(GetVisitNotificationSettingsQuery request, CancellationToken ct)
         => _tenant.TenantId is not { } tenantId
             ? Response<VisitNotificationSettingsDto>.Fail("Tenant context is required.", 400)
-            : Response<VisitNotificationSettingsDto>.Success(VisitNotificationRules.ToDto(await _settings.GetAsync(tenantId, ct)));
+            : Response<VisitNotificationSettingsDto>.Success(await DtoAsync(await _settings.GetAsync(tenantId, ct), ct));
+
+    /// <summary>W5-FIX2 (F-3) — the DTO with the last writer's name (one display-name call; unresolved → null).</summary>
+    private async Task<VisitNotificationSettingsDto> DtoAsync(VisitNotificationSettings? settings, CancellationToken ct)
+    {
+        string? name = null;
+        if (settings?.UpdatedBy is { Length: > 0 } updatedBy
+            && await UserDisplayNames.MapAsync(_names, [updatedBy], ct) is { } names
+            && Guid.TryParse(updatedBy, out var id))
+        {
+            names.TryGetValue(id.ToString("D"), out name);
+        }
+
+        return VisitNotificationRules.ToDto(settings, name);
+    }
 
     /// <summary>PUT: absent fields keep their value; an e-mail field sent as "" clears it. Versioned (409); audited.</summary>
     public async Task<Response<VisitNotificationSettingsDto>> Handle(UpdateVisitNotificationSettingsCommand request, CancellationToken ct)
@@ -678,7 +706,7 @@ public sealed class VisitNotificationSettingsHandlers :
         await _audit.PublishAsync(AuditEvent, tenantId, AuditEntity, settings.Id, settings.Version,
             $"pvEmail={(settings.PvEmail is null ? "unset" : "set")};mslEmail={(settings.MslEmail is null ? "unset" : "set")};" +
             $"overdueReminders={settings.OverdueReminders.ToString().ToLowerInvariant()};reportSummary={settings.ReportSummary.ToString().ToLowerInvariant()}", ct);
-        return Response<VisitNotificationSettingsDto>.Success(VisitNotificationRules.ToDto(settings));
+        return Response<VisitNotificationSettingsDto>.Success(await DtoAsync(settings, ct));
     }
 
     private static Response<VisitNotificationSettingsDto> Conflict()

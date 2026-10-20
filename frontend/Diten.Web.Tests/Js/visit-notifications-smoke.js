@@ -92,7 +92,7 @@ const details = {
 // the same e-mail under the catalogue's hyphen-less code
 details.n2b = { row: Object.assign({}, rows[1], { id: 'n2b', eventCode: 'crm.visitreport.adverseevent' }), recipients: rows[1].recipients, resolved: rows[1].resolved, variables: variables };
 
-let settings = { pvEmail: 'pv.guvenlik@firma.com', mslEmail: '', overdueReminders: true, reportSummary: false, version: 3, isDefault: false, updatedAt: '2026-10-19T12:00:00Z', updatedBy: 'Ayşe Yönetici' };
+let settings = { pvEmail: 'pv.guvenlik@firma.com', mslEmail: '', overdueReminders: true, reportSummary: false, version: 3, isDefault: false, updatedAt: '2026-10-19T12:00:00Z', updatedBy: 'c5769c62-0000-4000-8000-0000000000aa', updatedByName: 'Ayşe Yönetici' };
 let putAnswer = null;
 const calls = [];
 global.fetch = (url, init) => {

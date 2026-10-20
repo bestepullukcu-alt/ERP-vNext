@@ -54,6 +54,12 @@ public sealed class PlatformNotificationClient : IPlatformNotificationClient
             ["causationId"] = request.CausationId
         };
 
+        // W5-FIX2 (F-1) — the row id: a second call with it opens no second dispatch on the Platform.
+        if (request.IdempotencyKey is { Length: > 0 } idempotencyKey)
+        {
+            body["idempotencyKey"] = idempotencyKey;
+        }
+
         // W5-FIX (contract annex) — replyTo only with a user id; without one the field is not sent at all.
         if (request.ReplyToUserId is { Length: > 0 } replyTo)
         {
@@ -89,9 +95,15 @@ public sealed class PlatformNotificationClient : IPlatformNotificationClient
         {
             throw;
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or NotSupportedException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            return PlatformNotificationResult.Unavailable("platform-unreachable");
+            // W5-FIX2 (F-1) — a time-out or a network error is UNCERTAIN: the Platform may have stored the mail. The row is
+            // retried; the idempotency key makes the Platform answer the first result instead of opening a second dispatch.
+            return PlatformNotificationResult.Unavailable(Diten.CrmService.Domain.Entities.VisitNotificationNotes.PlatformUncertain);
+        }
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
+        {
+            return PlatformNotificationResult.Unavailable("platform-unreadable");
         }
 
         return PlatformNotificationResult.Unavailable("platform-unreachable");

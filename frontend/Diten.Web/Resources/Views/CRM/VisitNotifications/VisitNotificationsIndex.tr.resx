@@ -29,7 +29,7 @@
   <data name="PvMailboxHelp" xml:space="preserve"><value>Advers olay e-postaları bu adrese gider; yönetici bilgide olur.</value></data>
   <data name="MslMailboxLabel" xml:space="preserve"><value>MSL e-postası</value></data>
   <data name="MslMailboxHelp" xml:space="preserve"><value>Endikasyon dışı bilgi talepleri bu adrese gider; yönetici bilgide olur.</value></data>
-  <data name="MailboxEmptyNote" xml:space="preserve"><value>Boşsa yalnız yönetici bilgilendirilir; PV bağlantısı K-W8 kararından sonra eklenecek.</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>Boşsa yalnız yönetici bilgilendirilir.</value></data>
   <data name="ReportSummaryLabel" xml:space="preserve"><value>Rapor özeti yöneticiye</value></data>
   <data name="ReportSummaryHelp" xml:space="preserve"><value>Ziyaret raporu gönderilince gider. Düzeltme yeni e-posta göndermez.</value></data>
   <data name="OverdueRemindersLabel" xml:space="preserve"><value>Rapor süresi hatırlatması</value></data>
@@ -46,7 +46,7 @@
   <data name="Event_adverseevent" xml:space="preserve"><value>Advers olay bildirimi</value></data>
   <data name="Event_offlabelrequest" xml:space="preserve"><value>Endikasyon dışı talep</value></data>
   <data name="Event_overdue" xml:space="preserve"><value>Rapor süresi doldu</value></data>
-  <data name="St_sent" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="St_sent" xml:space="preserve"><value>İletildi</value></data>
   <data name="St_queued" xml:space="preserve"><value>Bekliyor</value></data>
   <data name="St_failed" xml:space="preserve"><value>Başarısız</value></data>
   <data name="St_failed_final" xml:space="preserve"><value>Başarısız (yeniden denenmeyecek)</value></data>
@@ -114,6 +114,7 @@
   <data name="Note_adverseevent" xml:space="preserve"><value>Temsilci tıbbi değerlendirme yapmaz; yalnız bilgiyi iletir.</value></data>
   <data name="CtaOpenReport" xml:space="preserve"><value>Raporu görüntüle</value></data>
   <data name="CtaReviewRecord" xml:space="preserve"><value>Kaydı incele</value></data>
+  <data name="Explain_sent" xml:space="preserve"><value>E-posta servisine teslim edildi.</value></data>
   <data name="Explain_queued" xml:space="preserve"><value>Gönderilmeyi bekliyor.</value></data>
   <data name="Explain_failed" xml:space="preserve"><value>Gönderilemedi; otomatik olarak yeniden denenecek.</value></data>
   <data name="Explain_failed_final" xml:space="preserve"><value>Tüm denemelere rağmen gönderilemedi; yeniden denenmeyecek.</value></data>

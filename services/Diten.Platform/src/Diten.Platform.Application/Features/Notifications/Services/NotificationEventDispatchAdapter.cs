@@ -52,7 +52,10 @@ public sealed record NotificationEventDispatchRequest(
     /// <summary>WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY. The reply address of THIS message (the representative's, resolved
     /// by the internal event dispatch); forwarded unchanged into <see cref="QueueEmailNotificationRequest.ReplyToEmail"/>.
     /// Null: the tenant's own reply address, exactly as before.</summary>
-    string? ReplyToEmail = null);
+    string? ReplyToEmail = null,
+    /// <summary>WP-VW-W5 W5-FIX2 — ADDITIVE ONLY. Set by the internal event dispatch; forwarded unchanged into
+    /// <see cref="QueueEmailNotificationRequest.QueueOnly"/>. False for every other producer.</summary>
+    bool QueueOnly = false);
 
 public interface INotificationEventDispatchAdapter
 {
@@ -307,7 +310,8 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
             Attachments: request.Attachments,
             MeetingAttendeeUserId: request.MeetingAttendeeUserId,
             SourceModule: request.SourceModule,
-            ReplyToEmail: request.ReplyToEmail);
+            ReplyToEmail: request.ReplyToEmail,
+            QueueOnly: request.QueueOnly);
 
         var command = new QueueEmailNotificationCommand(request.TenantId, queueRequest, request.CorrelationId);
         Response<NotificationDispatchDto> response;

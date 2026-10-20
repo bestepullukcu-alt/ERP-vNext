@@ -29,7 +29,7 @@
   <data name="PvMailboxHelp" xml:space="preserve"><value>Adverse event e-mails go here; the line manager is in copy.</value></data>
   <data name="MslMailboxLabel" xml:space="preserve"><value>MSL e-mail</value></data>
   <data name="MslMailboxHelp" xml:space="preserve"><value>Off-label information requests go here; the line manager is in copy.</value></data>
-  <data name="MailboxEmptyNote" xml:space="preserve"><value>If empty, only the line manager is informed. The link to the PV system comes after the K-W8 decision.</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>If empty, only the line manager is informed.</value></data>
   <data name="ReportSummaryLabel" xml:space="preserve"><value>Report summary to the line manager</value></data>
   <data name="ReportSummaryHelp" xml:space="preserve"><value>Sent when a visit report is submitted. A correction sends nothing.</value></data>
   <data name="OverdueRemindersLabel" xml:space="preserve"><value>Report overdue reminder</value></data>
@@ -46,7 +46,7 @@
   <data name="Event_adverseevent" xml:space="preserve"><value>Adverse event notice</value></data>
   <data name="Event_offlabelrequest" xml:space="preserve"><value>Off-label request</value></data>
   <data name="Event_overdue" xml:space="preserve"><value>Report overdue</value></data>
-  <data name="St_sent" xml:space="preserve"><value>Sent</value></data>
+  <data name="St_sent" xml:space="preserve"><value>Handed over</value></data>
   <data name="St_queued" xml:space="preserve"><value>Pending</value></data>
   <data name="St_failed" xml:space="preserve"><value>Failed</value></data>
   <data name="St_failed_final" xml:space="preserve"><value>Failed (no more retries)</value></data>
@@ -114,6 +114,7 @@
   <data name="Note_adverseevent" xml:space="preserve"><value>The representative makes no medical assessment; they only pass the information on.</value></data>
   <data name="CtaOpenReport" xml:space="preserve"><value>View report</value></data>
   <data name="CtaReviewRecord" xml:space="preserve"><value>Review the record</value></data>
+  <data name="Explain_sent" xml:space="preserve"><value>Handed over to the e-mail service.</value></data>
   <data name="Explain_queued" xml:space="preserve"><value>Waiting to be sent.</value></data>
   <data name="Explain_failed" xml:space="preserve"><value>Sending failed; it is tried again automatically.</value></data>
   <data name="Explain_failed_final" xml:space="preserve"><value>Sending failed after every retry; it will not be tried again.</value></data>

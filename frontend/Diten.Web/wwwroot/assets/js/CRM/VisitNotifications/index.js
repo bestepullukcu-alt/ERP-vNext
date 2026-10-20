@@ -61,7 +61,9 @@ const VisitNotificationsList = (function () {
     };
     const statusHtml = (status, notes) => {
         const s = C.statusOf(status, notes);
-        return '<span class="badge bg-label-' + s.tone + ' d-inline-flex align-items-center gap-1 text-nowrap"><i class="bx ' + s.icon + '"></i>' + esc(L()[s.key] || s.code || '') + '</span>';
+        // W5-FIX2 (F-6) — "sent" means handed over to the e-mail service, not delivered to the inbox: the badge says so on hover.
+        const tip = L()['Explain_' + String(s.key).replace(/^St_/, '')] || '';
+        return '<span class="badge bg-label-' + s.tone + ' d-inline-flex align-items-center gap-1 text-nowrap"' + (tip ? ' title="' + esc(tip) + '"' : '') + '><i class="bx ' + s.icon + '"></i>' + esc(L()[s.key] || s.code || '') + '</span>';
     };
     const targetHtml = (row) => {
         const t = row.target || {};
@@ -185,7 +187,7 @@ const VisitNotificationsList = (function () {
     const head = (k, v) => '<span class="vn-mu">' + esc(k) + '</span><span class="vn-hv">' + v + '</span>';
     /** The template's {n} slots are DATA: each goes in escaped and isolated (bidi), the words around it escaped. */
     const filled = (t) => {
-        const text = String(L()[t.key] || '');
+        const text = t.text != null ? String(t.text) : String(L()[t.key] || '');
         const parts = text.split(/(\{\d+\})/);
         return parts.map((p) => { const m = /^\{(\d+)\}$/.exec(p); return m ? F.bidi((t.args || [])[Number(m[1])] == null ? '' : t.args[Number(m[1])]) : esc(p); }).join('');
     };
@@ -197,7 +199,8 @@ const VisitNotificationsList = (function () {
         const r = C.recipientsOf(d);
         const s = C.statusOf(row.status, row.notes);
         const at = row.sentAt || row.createdAt;
-        const explain = row.status === 'sent' ? '' : L()['Explain_' + String(s.key).replace(/^St_/, '')] || '';
+        // W5-FIX2 (F-6) — the preview band words "sent" like the badge: handed over to the e-mail service.
+        const explain = L()['Explain_' + String(s.key).replace(/^St_/, '')] || '';
         const rows = t.rows.map((x) => '<tr><td class="vn-k">' + esc(L()[x.key] || '') + '</td><td class="vn-v">' + F.bidi(x.value) + '</td></tr>').join('');
         const sections = t.sections.map((x) => '<div class="vn-sec"><div class="vn-sec-title">' + esc(L()[x.key] || '') + '</div><ul class="vn-items">'
             + (x.itemKeys || []).map((k) => '<li>' + esc(L()[k] || '') + '</li>').join('')
@@ -207,7 +210,7 @@ const VisitNotificationsList = (function () {
         return '<div class="vn-status d-flex flex-column gap-1 px-4 py-3 border-bottom">' + statusHtml(row.status, row.notes)
             + (explain ? '<small class="text-muted">' + esc(explain) + '</small>' : '')
             + (row.attempts > 1 ? '<small class="text-muted">' + esc(T('Attempts', F.number(row.attempts, 0))) + '</small>' : '') + '</div>'
-            + '<div class="vn-mail-head px-4 py-3 border-bottom"><div class="vn-subject">' + filled(t.subject) + '</div><div class="vn-head-grid">'
+            + '<div class="vn-mail-head px-4 py-3 border-bottom"><div class="vn-subject">' + filled(Object.assign({}, t.subject, { text: C.withoutEmptySegments(L()[t.subject.key], t.subject.args) })) + '</div><div class="vn-head-grid">'
             + head(L().MailFrom, esc(L().MailFromValue))
             + head(L().MailTo, r.none ? esc(L().RcpNone) : r.to.map(who).join(', ') || '—')
             + (r.cc.length ? head(L().MailCc, r.cc.map(who).join(', ')) : '')

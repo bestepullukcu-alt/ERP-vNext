@@ -64,6 +64,22 @@ public interface INotificationDispatchRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// WP-VW-W5 W5-FIX2 (F-1) — cross-tenant: the <see cref="Diten.Platform.Domain.Enums.NotificationDispatchStatus.Queued"/>
+    /// rows written for a background FIRST send (the internal event dispatch; <see cref="NotificationDispatch.NextRetryAt"/>
+    /// set at queue time — no other path writes a Queued row with one) that are due at <paramref name="asOfUtc"/>. Each row
+    /// returned is CLAIMED in the same call: its <see cref="NotificationDispatch.NextRetryAt"/> moves to
+    /// <paramref name="leaseUntil"/> by a write conditional on the value read, so a second sweep (or a second server) does
+    /// not enqueue the same send again while the first job has not run; a job that never ran makes the row due again then.
+    /// The default answers none, so a repository double written before this method existed is unaffected.
+    /// </summary>
+    Task<IReadOnlyList<NotificationDispatchRetryHandle>> ClaimDueQueuedAsync(
+        DateTimeOffset asOfUtc,
+        DateTimeOffset leaseUntil,
+        int take,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<NotificationDispatchRetryHandle>>([]);
+
+    /// <summary>
     /// BL-454 C-FIX1 — the CLAIM of a pending row's permanent-failure effects: a targeted write (<c>UpdatedAt</c>,
     /// <c>UpdatedBy</c> = <paramref name="claimActor"/>, <c>Version</c> + 1) that matches only while the row is the version
     /// read, still Failed AND still pending (<see cref="NotificationDispatch.PermanentFailurePending"/>) — the last part

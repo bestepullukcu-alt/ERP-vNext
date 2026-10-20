@@ -29,7 +29,7 @@
   <data name="PvMailboxHelp" xml:space="preserve"><value>Les e-mails d'événement indésirable arrivent ici ; le manager est en copie.</value></data>
   <data name="MslMailboxLabel" xml:space="preserve"><value>E-mail MSL</value></data>
   <data name="MslMailboxHelp" xml:space="preserve"><value>Les demandes d'information hors AMM arrivent ici ; le manager est en copie.</value></data>
-  <data name="MailboxEmptyNote" xml:space="preserve"><value>Si vide, seul le manager est informé ; le lien avec le système PV viendra après la décision K-W8.</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>Si vide, seul le manager est informé.</value></data>
   <data name="ReportSummaryLabel" xml:space="preserve"><value>Résumé du rapport au manager</value></data>
   <data name="ReportSummaryHelp" xml:space="preserve"><value>Envoyé quand un rapport de visite est soumis. Une correction n'envoie rien.</value></data>
   <data name="OverdueRemindersLabel" xml:space="preserve"><value>Rappel de rapport en retard</value></data>
@@ -46,7 +46,7 @@
   <data name="Event_adverseevent" xml:space="preserve"><value>Notification d'événement indésirable</value></data>
   <data name="Event_offlabelrequest" xml:space="preserve"><value>Demande hors AMM</value></data>
   <data name="Event_overdue" xml:space="preserve"><value>Rapport en retard</value></data>
-  <data name="St_sent" xml:space="preserve"><value>Envoyé</value></data>
+  <data name="St_sent" xml:space="preserve"><value>Transmis</value></data>
   <data name="St_queued" xml:space="preserve"><value>En attente</value></data>
   <data name="St_failed" xml:space="preserve"><value>Échec</value></data>
   <data name="St_failed_final" xml:space="preserve"><value>Échec (plus de nouvel essai)</value></data>
@@ -114,6 +114,7 @@
   <data name="Note_adverseevent" xml:space="preserve"><value>Le délégué ne fait aucune évaluation médicale ; il transmet seulement l'information.</value></data>
   <data name="CtaOpenReport" xml:space="preserve"><value>Voir le rapport</value></data>
   <data name="CtaReviewRecord" xml:space="preserve"><value>Examiner l'enregistrement</value></data>
+  <data name="Explain_sent" xml:space="preserve"><value>Remis au service de messagerie.</value></data>
   <data name="Explain_queued" xml:space="preserve"><value>En attente d'envoi.</value></data>
   <data name="Explain_failed" xml:space="preserve"><value>L'envoi a échoué ; il sera retenté automatiquement.</value></data>
   <data name="Explain_failed_final" xml:space="preserve"><value>L'envoi a échoué après tous les essais ; il ne sera plus retenté.</value></data>

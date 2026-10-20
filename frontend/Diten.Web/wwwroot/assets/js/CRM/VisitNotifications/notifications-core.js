@@ -135,6 +135,20 @@
      *   { kindKey, subject: { key, args }, band: { tone, icon, key, args }, title: { key, args }, intro: { key, args },
      *     rows: [{ key, value }], sections: [{ key, items: [value] }], noteKey, cta: { key, url } }
      */
+    /**
+     * W5-FIX2 (F-4) — the subject's " · " parts whose {n} values are all empty are left out with their separator (the
+     * Platform's EmailTemplateRenderer.WithoutEmptySegments, the twin): "ACİL · Advers olay bildirimi · {0} · 24 saat"
+     * with no product reads "ACİL · Advers olay bildirimi · 24 saat", never "· — ·". A part without a slot always stays.
+     */
+    const withoutEmptySegments = (text, args) => {
+        const parts = String(text || '').split(' · ');
+        const empty = (part) => {
+            const slots = part.match(/\{\d+\}/g);
+            return !!slots && slots.every((s) => { const a = (args || [])[Number(s.slice(1, -1))]; return a == null || String(a).trim() === ''; });
+        };
+        return parts.filter((p) => !empty(p)).join(' · ');
+    };
+
     const template = (key, vars, dates) => {
         const v = vars || {};
         const d = dates || { day: (x) => x, moment: (x) => x };
@@ -148,7 +162,7 @@
         const cta = { key: key === 'overdue' ? 'CtaReviewRecord' : 'CtaOpenReport', url: safeUrl(v.reportUrl) };
         if (key === 'adverseevent') {
             return {
-                kindKey: 'Kind_adverseevent', subject: { key: 'Subj_adverseevent', args: [products || '—'] },
+                kindKey: 'Kind_adverseevent', subject: { key: 'Subj_adverseevent', args: [products] },
                 band: { tone: 'danger', icon: 'bx-error', key: 'Band_adverseevent', args: [] },
                 title: { key: 'Title_adverseevent', args: [] }, intro: { key: 'Intro_adverseevent', args: [] },
                 rows: rows([{ key: 'Row_reporter', value: val('repName') }, { key: 'Row_sourceDoctor', value: [doctor, institution].filter(Boolean).join(' · ') },
@@ -159,7 +173,7 @@
         }
         if (key === 'offlabelrequest') {
             return {
-                kindKey: 'Kind_offlabelrequest', subject: { key: 'Subj_offlabelrequest', args: [who || '—'] },
+                kindKey: 'Kind_offlabelrequest', subject: { key: 'Subj_offlabelrequest', args: [who] },
                 band: { tone: 'info', icon: 'bx-info-circle', key: 'Band_offlabelrequest', args: [] },
                 title: { key: 'Title_offlabelrequest', args: [] }, intro: { key: 'Intro_offlabelrequest', args: [] },
                 rows: rows([{ key: 'Row_doctor', value: doctor }, { key: 'Row_institution', value: institution }, { key: 'Row_product', value: products },
@@ -169,7 +183,7 @@
         }
         if (key === 'overdue') {
             return {
-                kindKey: 'Kind_overdue', subject: { key: 'Subj_overdue', args: [who || '—', visitDay || '—'] },
+                kindKey: 'Kind_overdue', subject: { key: 'Subj_overdue', args: [who, visitDay] },
                 band: { tone: 'danger', icon: 'bx-lock-alt', key: 'Band_overdue', args: [] },
                 title: { key: 'Title_overdue', args: [] }, intro: { key: 'Intro_overdue', args: [val('repName') || '—', visitDay || '—'] },
                 rows: rows([{ key: 'Row_rep', value: val('repName') }, { key: 'Row_doctor', value: doctor }, { key: 'Row_institution', value: institution },
@@ -186,7 +200,7 @@
         if (safety.length) { sections.push({ key: 'Sec_safety', itemKeys: safety.map((s) => s.key), items: [] }); }
         if (val('followUpDate')) { sections.push({ key: 'Sec_followUp', items: [d.day(val('followUpDate'))] }); }
         return {
-            kindKey: 'Kind_submitted', subject: { key: 'Subj_submitted', args: [who || '—', visitDay || '—'] },
+            kindKey: 'Kind_submitted', subject: { key: 'Subj_submitted', args: [who, visitDay] },
             band: { tone: 'success', icon: 'bx-check-circle', key: 'Band_submitted', args: [] },
             title: { key: 'Title_submitted', args: [who || '—'] }, intro: { key: 'Intro_submitted', args: [val('repName') || '—'] },
             rows: rows([{ key: 'Row_rep', value: val('repName') }, { key: 'Row_doctor', value: doctor }, { key: 'Row_institution', value: institution },
@@ -254,6 +268,6 @@
 
     return {
         EVENTS, EVENT_KEYS, STATUSES, STATUS_CODES, PERIODS, MAX_EMAIL, ERROR_CODES, eventKey, eventOf, statusOf, specOf, recipientsOf, roleKeys,
-        maskEmails, hasEmail, safeUrl, template, rangeOf, customRangeError, validEmail, settingsBody, errorKey
+        maskEmails, hasEmail, safeUrl, template, withoutEmptySegments, rangeOf, customRangeError, validEmail, settingsBody, errorKey
     };
 }));

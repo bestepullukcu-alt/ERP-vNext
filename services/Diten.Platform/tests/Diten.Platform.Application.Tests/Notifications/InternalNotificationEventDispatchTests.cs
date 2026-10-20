@@ -43,7 +43,7 @@ public sealed partial class InternalNotificationEventDispatchTests
     private const string Crm = "MOD-0155";
 
     private static readonly Guid TenantA = Guid.Parse("a5a5a5a5-0000-0000-0000-0000000000a5");
-    private static readonly Guid TenantB = Guid.Parse("b6b6b6b6-0000-0000-0000-0000000000b6");
+    internal static readonly Guid TenantB = Guid.Parse("b6b6b6b6-0000-0000-0000-0000000000b6");
 
     private static readonly Guid Rep = Guid.Parse("10000000-0000-0000-0000-000000000001");
     private static readonly Guid Manager = Guid.Parse("10000000-0000-0000-0000-000000000002");
@@ -373,7 +373,7 @@ public sealed partial class InternalNotificationEventDispatchTests
 
     private static InternalEventRecipient LineManagerOf(Guid user) => new(LineManagerOf: user);
 
-    private static InternalEventDispatchRequest Body(
+    internal static InternalEventDispatchRequest Body(
         Guid? tenantId = null,
         string eventCode = CrmManifestProvider.VisitReportSubmittedEvent,
         string sourceModule = Crm,
@@ -399,7 +399,7 @@ public sealed partial class InternalNotificationEventDispatchTests
             ReplyTo: replyTo,
             Attachments: attachments);
 
-    private sealed class Host : IDisposable
+    internal sealed class Host : IDisposable
     {
         private readonly TestServer _server;
 
@@ -438,6 +438,10 @@ public sealed partial class InternalNotificationEventDispatchTests
                     services.AddSingleton<INotificationEventDispatchAdapter>(Adapter);
                     services.AddScoped<IRepositoryObjectRepository>(sp => Files.For(sp.GetRequiredService<ITenantContext>()));
                     services.AddSingleton<Diten.Platform.Application.Contracts.DocumentRepository.IContentStorageGateway>(Files);
+                    // W5-FIX2 — the idempotency keys: one store for the host, read in each request's own tenant.
+                    services.AddSingleton(new List<InternalDispatchKey>());
+                    services.AddScoped<IInternalDispatchKeyRepository>(sp => new InMemoryInternalDispatchKeys(
+                        sp.GetRequiredService<ITenantContext>(), sp.GetRequiredService<List<InternalDispatchKey>>()));
                     services.AddScoped<IInternalEventDispatchService, InternalEventDispatchService>();
                     services.AddControllers()
                         .ConfigureApplicationPartManager(manager =>

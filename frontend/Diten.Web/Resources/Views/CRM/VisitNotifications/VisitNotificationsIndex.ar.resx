@@ -29,7 +29,7 @@
   <data name="PvMailboxHelp" xml:space="preserve"><value>تُرسل رسائل الأحداث السلبية إلى هذا العنوان؛ ويكون المدير في النسخة.</value></data>
   <data name="MslMailboxLabel" xml:space="preserve"><value>بريد MSL</value></data>
   <data name="MslMailboxHelp" xml:space="preserve"><value>تُرسل طلبات المعلومات خارج دواعي الاستعمال إلى هذا العنوان؛ ويكون المدير في النسخة.</value></data>
-  <data name="MailboxEmptyNote" xml:space="preserve"><value>إذا كان فارغًا يُبلَّغ المدير فقط؛ وسيُضاف الربط بنظام اليقظة الدوائية بعد قرار K-W8.</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>إذا كان فارغًا يُبلَّغ المدير فقط.</value></data>
   <data name="ReportSummaryLabel" xml:space="preserve"><value>ملخص التقرير إلى المدير</value></data>
   <data name="ReportSummaryHelp" xml:space="preserve"><value>يُرسل عند تقديم تقرير الزيارة. التصحيح لا يرسل شيئًا.</value></data>
   <data name="OverdueRemindersLabel" xml:space="preserve"><value>تذكير بتأخر التقرير</value></data>
@@ -46,7 +46,7 @@
   <data name="Event_adverseevent" xml:space="preserve"><value>إخطار حدث سلبي</value></data>
   <data name="Event_offlabelrequest" xml:space="preserve"><value>طلب خارج دواعي الاستعمال</value></data>
   <data name="Event_overdue" xml:space="preserve"><value>تأخر التقرير</value></data>
-  <data name="St_sent" xml:space="preserve"><value>أُرسلت</value></data>
+  <data name="St_sent" xml:space="preserve"><value>سُلِّمت</value></data>
   <data name="St_queued" xml:space="preserve"><value>قيد الانتظار</value></data>
   <data name="St_failed" xml:space="preserve"><value>فشل</value></data>
   <data name="St_failed_final" xml:space="preserve"><value>فشل (بلا محاولات أخرى)</value></data>
@@ -114,6 +114,7 @@
   <data name="Note_adverseevent" xml:space="preserve"><value>لا يُجري المندوب أي تقييم طبي؛ بل ينقل المعلومة فقط.</value></data>
   <data name="CtaOpenReport" xml:space="preserve"><value>عرض التقرير</value></data>
   <data name="CtaReviewRecord" xml:space="preserve"><value>مراجعة السجل</value></data>
+  <data name="Explain_sent" xml:space="preserve"><value>سُلِّمت إلى خدمة البريد الإلكتروني.</value></data>
   <data name="Explain_queued" xml:space="preserve"><value>بانتظار الإرسال.</value></data>
   <data name="Explain_failed" xml:space="preserve"><value>فشل الإرسال؛ ستُعاد المحاولة تلقائيًا.</value></data>
   <data name="Explain_failed_final" xml:space="preserve"><value>فشل الإرسال بعد كل المحاولات؛ ولن تُعاد المحاولة.</value></data>

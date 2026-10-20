@@ -29,7 +29,7 @@
   <data name="PvMailboxHelp" xml:space="preserve"><value>Los correos de eventos adversos van aquí; el responsable va en copia.</value></data>
   <data name="MslMailboxLabel" xml:space="preserve"><value>Correo de MSL</value></data>
   <data name="MslMailboxHelp" xml:space="preserve"><value>Las solicitudes de información fuera de indicación van aquí; el responsable va en copia.</value></data>
-  <data name="MailboxEmptyNote" xml:space="preserve"><value>Si está vacío, solo se informa al responsable; el enlace con el sistema de FV llegará tras la decisión K-W8.</value></data>
+  <data name="MailboxEmptyNote" xml:space="preserve"><value>Si está vacío, solo se informa al responsable.</value></data>
   <data name="ReportSummaryLabel" xml:space="preserve"><value>Resumen del informe al responsable</value></data>
   <data name="ReportSummaryHelp" xml:space="preserve"><value>Se envía al enviar un informe de visita. Una corrección no envía nada.</value></data>
   <data name="OverdueRemindersLabel" xml:space="preserve"><value>Recordatorio de informe vencido</value></data>
@@ -46,7 +46,7 @@
   <data name="Event_adverseevent" xml:space="preserve"><value>Notificación de evento adverso</value></data>
   <data name="Event_offlabelrequest" xml:space="preserve"><value>Solicitud fuera de indicación</value></data>
   <data name="Event_overdue" xml:space="preserve"><value>Informe vencido</value></data>
-  <data name="St_sent" xml:space="preserve"><value>Enviado</value></data>
+  <data name="St_sent" xml:space="preserve"><value>Transmitido</value></data>
   <data name="St_queued" xml:space="preserve"><value>Pendiente</value></data>
   <data name="St_failed" xml:space="preserve"><value>Fallido</value></data>
   <data name="St_failed_final" xml:space="preserve"><value>Fallido (sin más reintentos)</value></data>
@@ -114,6 +114,7 @@
   <data name="Note_adverseevent" xml:space="preserve"><value>El representante no hace ninguna evaluación médica; solo transmite la información.</value></data>
   <data name="CtaOpenReport" xml:space="preserve"><value>Ver informe</value></data>
   <data name="CtaReviewRecord" xml:space="preserve"><value>Revisar el registro</value></data>
+  <data name="Explain_sent" xml:space="preserve"><value>Entregado al servicio de correo electrónico.</value></data>
   <data name="Explain_queued" xml:space="preserve"><value>Pendiente de envío.</value></data>
   <data name="Explain_failed" xml:space="preserve"><value>El envío falló; se reintentará automáticamente.</value></data>
   <data name="Explain_failed_final" xml:space="preserve"><value>El envío falló tras todos los reintentos; no se volverá a intentar.</value></data>
