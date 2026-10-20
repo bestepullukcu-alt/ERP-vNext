@@ -23,7 +23,13 @@ public enum AuditCategory
     Tasks = 16,
 
     /// <summary>MOD-0022 e-Signature Service — signatures, invalidations, requests, policy, meanings, exports. Additive.</summary>
-    ESignature = 17
+    ESignature = 17,
+
+    /// <summary>
+    /// WP-VW-W6 F8-a (AUD-001 K4) — the commercial-suite service (Diten.CrmService: CRM modules and the commercial.*
+    /// modules it hosts) forwarding through the shared Building.Blocks forwarder. Additive.
+    /// </summary>
+    Crm = 18
 }
 
 public enum AuditOperation

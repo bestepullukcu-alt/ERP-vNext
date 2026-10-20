@@ -1,4 +1,5 @@
 using System.Globalization;
+using Diten.BuildingBlocks.Auditing;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.Approvals;
@@ -543,7 +544,28 @@ public sealed record VisitNotificationSettingsInput(
 
 public sealed record GetVisitNotificationSettingsQuery : IRequest<Response<VisitNotificationSettingsDto>>;
 
-public sealed record UpdateVisitNotificationSettingsCommand(VisitNotificationSettingsInput Input) : IRequest<Response<VisitNotificationSettingsDto>>;
+public sealed record UpdateVisitNotificationSettingsCommand(VisitNotificationSettingsInput Input)
+    : IRequest<Response<VisitNotificationSettingsDto>>, IAuditableCommand, IAuditDetailsProvider
+{
+    /// <summary>WP-VW-W6 F8-a (AUD-001 K4, path b) — the tenant's notification settings (MOD-0155, W5): one per tenant.</summary>
+    public AuditDescriptor DescribeAudit()
+        => new(AuditCategory.Crm, AuditOperation.Update, VisitNotificationSettingsHandlers.AuditEntity, "MOD-0155");
+
+    /// <summary>The NAMES of the fields the request sets — a mailbox is personal data and never enters the record.</summary>
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+    {
+        details.Set("expectedVersion", Input?.ExpectedVersion);
+        if (Input is { } input)
+        {
+            if (input.PvEmail is not null) details.Changed(nameof(input.PvEmail));
+            if (input.MslEmail is not null) details.Changed(nameof(input.MslEmail));
+            if (input.OverdueReminders is not null) details.Changed(nameof(input.OverdueReminders));
+            if (input.ReportSummary is not null) details.Changed(nameof(input.ReportSummary));
+        }
+
+        details.ObjectVersion = (response as Response<VisitNotificationSettingsDto>)?.Data?.Version;
+    }
+}
 
 public static class VisitNotificationRules
 {

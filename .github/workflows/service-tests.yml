@@ -75,6 +75,9 @@ jobs:
             project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
           - suite: bb-email
             project: services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Email.Tests/Diten.BuildingBlocks.Email.Tests.csproj
+          # WP-VW-W6 F8-a (AUD-001 K4): the shared audit forwarder; needs nothing outside the process.
+          - suite: bb-auditing
+            project: services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Auditing.Tests/Diten.BuildingBlocks.Auditing.Tests.csproj
           - suite: devenablement-api
             project: services/Diten.DevEnablementService/tests/Diten.DevEnablementService.Api.Tests/Diten.DevEnablementService.Api.Tests.csproj
           - suite: mg-tests

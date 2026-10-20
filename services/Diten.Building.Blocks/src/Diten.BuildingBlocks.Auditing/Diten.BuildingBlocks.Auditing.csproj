@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- AUD-001 K4 (WP-VW-W6 F8-a) — the shared audit forwarder runs inside an ASP.NET Core service: the caller is read from
+         the request (claims, X-Correlation-Id) and the record goes to Platform over IHttpClientFactory. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The MediatR the services already ship (23 projects on 12.3.0): one pipeline contract, not a second version. -->
+    <PackageReference Include="MediatR" Version="12.3.0" />
+  </ItemGroup>
+</Project>

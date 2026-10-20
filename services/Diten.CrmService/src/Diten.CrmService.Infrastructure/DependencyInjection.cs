@@ -35,6 +35,9 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.Territory.ITerritoryLifecycleAuditPublisher,
             Audit.LoggingTerritoryLifecycleAuditPublisher>();
 
+        // WP-VW-W6 F8-a (AUD-001 K4, path b) — where the shared forwarder of the IAuditableCommand records goes.
+        services.AddCrmAuditForwarding(configuration);
+
         // MOD-0021 audit seam. Default is the structured-logging seam; set Crm:Audit:Mode=http to forward
         // Account/Contact/import/export events to the governed audit append contract over the Gateway (fail-soft).
         if (string.Equals(configuration["Crm:Audit:Mode"], "http", StringComparison.OrdinalIgnoreCase))

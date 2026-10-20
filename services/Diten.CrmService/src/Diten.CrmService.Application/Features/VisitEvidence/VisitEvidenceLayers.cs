@@ -1,4 +1,5 @@
 using System.Globalization;
+using Diten.BuildingBlocks.Auditing;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Common.ReferenceValidation;
@@ -486,10 +487,60 @@ public sealed record ListVisitEvidencePolicyScopesQuery : IRequest<Response<Evid
 public sealed record GetVisitEvidencePolicyScopeQuery(string? ScopeType, string? ScopeRef) : IRequest<Response<EvidenceScopeDetailDto>>;
 
 public sealed record UpsertVisitEvidencePolicyScopeCommand(string? ScopeType, string? ScopeRef, VisitEvidencePolicyLayerInput Input)
-    : IRequest<Response<EvidenceScopeDetailDto>>;
+    : IRequest<Response<EvidenceScopeDetailDto>>, IAuditableCommand, IAuditDetailsProvider
+{
+    public AuditDescriptor DescribeAudit() => VisitEvidenceScopeAudit.Describe(AuditOperation.Update);
+
+    /// <summary>The scope and the NAMES of the fields the request sets (the values are the layer's own history).</summary>
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+    {
+        VisitEvidenceScopeAudit.Scope(details, ScopeType, ScopeRef, response).Set("expectedVersion", Input?.ExpectedVersion);
+        if (Input is { } input)
+        {
+            if (input.LocationMode is not null) details.Changed(nameof(input.LocationMode));
+            if (input.RadiusMeters is not null) details.Changed(nameof(input.RadiusMeters));
+            if (input.MaxAccuracyMeters is not null) details.Changed(nameof(input.MaxAccuracyMeters));
+            if (input.PhotoMode is not null) details.Changed(nameof(input.PhotoMode));
+            if (input.DoctorConfirmation is not null) details.Changed(nameof(input.DoctorConfirmation));
+            if (input.DurationConsistency is not null) details.Changed(nameof(input.DurationConsistency));
+            if (input.ShortVisitSeconds is not null) details.Changed(nameof(input.ShortVisitSeconds));
+            if (input.AccountWithoutLocation is not null) details.Changed(nameof(input.AccountWithoutLocation));
+            if (input.QrMode is not null) details.Changed(nameof(input.QrMode));
+            if (input.AntiFraudMode is not null) details.Changed(nameof(input.AntiFraudMode));
+        }
+    }
+}
 
 public sealed record ArchiveVisitEvidencePolicyScopeCommand(string? ScopeType, string? ScopeRef, int? ExpectedVersion)
-    : IRequest<Response<EvidenceScopeDetailDto>>;
+    : IRequest<Response<EvidenceScopeDetailDto>>, IAuditableCommand, IAuditDetailsProvider
+{
+    public AuditDescriptor DescribeAudit() => VisitEvidenceScopeAudit.Describe(AuditOperation.Deactivate);
+
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+        => VisitEvidenceScopeAudit.Scope(details, ScopeType, ScopeRef, response).Set("expectedVersion", ExpectedVersion);
+}
+
+/// <summary>WP-VW-W6 F8-a (AUD-001 K4, path b) — the evidence scope writes' central audit record (MOD-0155, W3L). A scope
+/// is keyed by (type, ref), not by an id: both go in the record.</summary>
+public static class VisitEvidenceScopeAudit
+{
+    public const string SourceModule = "MOD-0155";
+
+    public static AuditDescriptor Describe(AuditOperation operation)
+        => new(AuditCategory.Crm, operation, VisitEvidenceAuditEvents.EntityType, SourceModule);
+
+    public static AuditDetails Scope(AuditDetails details, string? scopeType, string? scopeRef, object? response)
+    {
+        details.Set("scopeType", scopeType).Set("scopeRef", scopeRef);
+        if ((response as Response<EvidenceScopeDetailDto>)?.Data is { } scope)
+        {
+            details.Set("status", scope.Status);
+            details.ObjectVersion = scope.Version;
+        }
+
+        return details;
+    }
+}
 
 // ── the API: handlers ─────────────────────────────────────────────────────────────────────────────────────────────
 

@@ -15,6 +15,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 | crm-knowledge-yayinci | aday | yazıcı | IKnowledgeConceptAuditPublisher.PublishAsync |
 | crm-territory-yayinci | aday | yazıcı | ITerritoryLifecycleAuditPublisher.PublishAsync |
 | crm-visit-evidence-yayinci | aday | yazıcı | IVisitEvidenceAuditPublisher.PublishAsync |
+| crm-merkezi-iletim | b | işaret | IAuditableCommand |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
@@ -24,6 +25,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 > **crm-knowledge-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
 > **crm-territory-yayinci** — Yalnız uygulama günlüğü; HTTP uygulaması yok.
 > **crm-visit-evidence-yayinci** — (WP-VW-W3L, kapsam yaz / kaldır) Aynı: varsayılan yalnız uygulama günlüğü; `Crm:Audit:Mode=http` ile `HttpCrmAuditPublisher` (SourceModule MOD-0155).
+> **crm-merkezi-iletim** — (WP-VW-W6 F8-a, 2026-10-20; AUD-001 K4) Ortak işaret ve davranış `Diten.Building.Blocks` (`Diten.BuildingBlocks.Auditing`): `AuditForwardingBehavior` CRM `AddApplication` içinde EN DIŞTA kayıtlı; `PlatformAuditForwarder` → Platform `POST /api/internal/audit/append` (`PlatformService:BaseUrl` + `AuthService:InternalApiKey`; geliştirme ortamında açık), kategori `Crm` (18). Başarılı / reddedilen / hata ayrı kayıt; anahtar / adres boşsa başlangıçta ve her kayıtta uyarı + sayaç (K8). Kabulü CT kararıdır (`AcceptedTrails`).
 
 ## İstisnalar
 

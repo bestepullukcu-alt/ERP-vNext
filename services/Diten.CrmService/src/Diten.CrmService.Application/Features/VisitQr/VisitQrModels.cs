@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.Auditing;
 using Diten.CrmService.Application.Common.Models;
 using MediatR;
 
@@ -74,17 +75,89 @@ public sealed record GetVisitQrAccountQuery(Guid AccountId) : IRequest<Response<
 
 public sealed record GetVisitQrHistoryQuery(Guid AccountId) : IRequest<Response<IReadOnlyList<VisitQrEventDto>>>;
 
-public sealed record IssueVisitQrCommand(Guid AccountId, VisitQrIssueInput Input) : IRequest<Response<VisitQrAccountDto>>;
+public sealed record IssueVisitQrCommand(Guid AccountId, VisitQrIssueInput Input)
+    : IRequest<Response<VisitQrAccountDto>>, IAuditableCommand, IAuditDetailsProvider
+{
+    public AuditDescriptor DescribeAudit() => VisitQrAudit.Describe(AuditOperation.Create, AccountId);
 
-public sealed record RevokeVisitQrCommand(Guid AccountId, VisitQrRevokeInput Input) : IRequest<Response<VisitQrAccountDto>>;
+    /// <summary>A REGENERATE (an expected version given) or a first issue; the reason is the QR history's, not copied here.</summary>
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+    {
+        details.Set("regenerate", Input?.ExpectedVersion is not null).Set("reasonGiven", !string.IsNullOrWhiteSpace(Input?.Reason));
+        details.ObjectVersion = (response as Response<VisitQrAccountDto>)?.Data?.Version;
+    }
+}
+
+public sealed record RevokeVisitQrCommand(Guid AccountId, VisitQrRevokeInput Input)
+    : IRequest<Response<VisitQrAccountDto>>, IAuditableCommand, IAuditDetailsProvider
+{
+    public AuditDescriptor DescribeAudit() => VisitQrAudit.Describe(AuditOperation.Revoke, AccountId);
+
+    /// <summary>The revoked version; the reason text stays in the QR history (free text is not copied to the central log).</summary>
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+    {
+        details.Set("expectedVersion", Input?.ExpectedVersion).Set("reasonGiven", !string.IsNullOrWhiteSpace(Input?.Reason));
+        details.ObjectVersion = (response as Response<VisitQrAccountDto>)?.Data?.Version;
+    }
+}
 
 /// <summary>A command (it writes the <c>printed</c> event), although it is a GET on the wire. W3E-BE-c (D-4): the paper /
 /// copies the print says (optional; recorded on the event).</summary>
-public sealed record GetVisitQrPayloadCommand(Guid AccountId, string? Paper = null, int? Copies = null) : IRequest<Response<VisitQrPayloadDto>>;
+public sealed record GetVisitQrPayloadCommand(Guid AccountId, string? Paper = null, int? Copies = null)
+    : IRequest<Response<VisitQrPayloadDto>>, IAuditableCommand, IAuditDetailsProvider
+{
+    public AuditDescriptor DescribeAudit() => VisitQrAudit.Describe(AuditOperation.Export, AccountId);
 
-public sealed record BulkIssueVisitQrCommand(VisitQrBulkInput Input) : IRequest<Response<VisitQrBulkIssueDto>>;
+    /// <summary>The printed version, paper and copies — NEVER the payload (a signed code; AUD-001 §3).</summary>
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+    {
+        details.Set("paper", Paper).Set("copies", Copies);
+        details.ObjectVersion = (response as Response<VisitQrPayloadDto>)?.Data?.Version;
+    }
+}
 
-public sealed record BulkVisitQrPayloadCommand(VisitQrBulkInput Input) : IRequest<Response<IReadOnlyList<VisitQrPayloadDto>>>;
+public sealed record BulkIssueVisitQrCommand(VisitQrBulkInput Input)
+    : IRequest<Response<VisitQrBulkIssueDto>>, IAuditableCommand, IAuditDetailsProvider
+{
+    public AuditDescriptor DescribeAudit() => VisitQrAudit.Describe(AuditOperation.Create, accountId: null);
+
+    /// <summary>The institutions asked for (≤ <see cref="VisitQrLimits.MaxBulk"/>) and what happened to them.</summary>
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+    {
+        details.Set("accountIds", Input?.AccountIds?.ToArray()).Set("requested", Input?.AccountIds?.Count ?? 0);
+        if ((response as Response<VisitQrBulkIssueDto>)?.Data is { } result)
+        {
+            details.Set("issued", result.Issued).Set("skippedActive", result.SkippedActive).Set("notFound", result.NotFound);
+        }
+    }
+}
+
+public sealed record BulkVisitQrPayloadCommand(VisitQrBulkInput Input)
+    : IRequest<Response<IReadOnlyList<VisitQrPayloadDto>>>, IAuditableCommand, IAuditDetailsProvider
+{
+    public AuditDescriptor DescribeAudit() => VisitQrAudit.Describe(AuditOperation.Export, accountId: null);
+
+    /// <summary>The institutions asked for, how many were printed, paper and copies — NEVER a payload.</summary>
+    public void DescribeAuditDetails(AuditDetails details, object? response)
+    {
+        details.Set("accountIds", Input?.AccountIds?.ToArray()).Set("requested", Input?.AccountIds?.Count ?? 0)
+            .Set("paper", Input?.Paper).Set("copies", Input?.Copies);
+        if ((response as Response<IReadOnlyList<VisitQrPayloadDto>>)?.Data is { } printed)
+        {
+            details.Set("printed", printed.Count);
+        }
+    }
+}
+
+/// <summary>WP-VW-W6 F8-a (AUD-001 K4, path b) — the institution QR commands' central audit record (MOD-0155, W3E).</summary>
+public static class VisitQrAudit
+{
+    public const string EntityType = "AccountVisitQr";
+    public const string SourceModule = "MOD-0155";
+
+    public static AuditDescriptor Describe(AuditOperation operation, Guid? accountId)
+        => new(AuditCategory.Crm, operation, EntityType, SourceModule, accountId is { } id && id != Guid.Empty ? id : null);
+}
 
 public sealed record ListVisitQrAccountsQuery(
     string? Status, string? AccountType, string? City, string? TerritoryId, string? Search, int Page, int PageSize)

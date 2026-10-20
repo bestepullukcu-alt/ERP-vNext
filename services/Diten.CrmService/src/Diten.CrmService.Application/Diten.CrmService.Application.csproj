@@ -12,5 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Diten.CrmService.Domain\Diten.CrmService.Domain.csproj" />
+    <!-- WP-VW-W6 F8-a (AUD-001 K4) — the shared audit marker + forwarding behavior (path b), not a CRM copy. -->
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Auditing\Diten.BuildingBlocks.Auditing.csproj" />
   </ItemGroup>
 </Project>
