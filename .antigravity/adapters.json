@@ -48,7 +48,8 @@
           {
             "heading": "1. Başlangıç ve kimlik",
             "anchors": [
-              "Kayıt, sahiplik ya da onay uydurma."
+              "Kayıt, sahiplik ya da onay uydurma.",
+              "ayrı bir worktree ve dal iste. O ana kadar hiçbir dosya yazma, geçici dosya dahil"
             ]
           },
           {
