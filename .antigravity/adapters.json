@@ -82,6 +82,7 @@
               "Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4)",
               "İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.",
               "`module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.",
+              "prompt'u sahibe taşıtma. Kendin yalnız küçük kayıt işi yaparsın.",
               "hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı)"
             ]
           },

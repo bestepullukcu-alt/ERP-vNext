@@ -75,6 +75,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   incelemenin neyi kaçırdığını yaz; bulgu dosyasını ya da herhangi bir kaydı yazmadan önce sahibe sor.
   İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.
 - Pack/DCP'yi `module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.
+- Sen karar verir, ölçer, denetlersin; işi devredersin. Kod işi için bağlı alt oturum aç, kapıdan geçmiş prompt'u
+  model ve effort'la ver, ilerlemesini izle; prompt'u sahibe taşıtma. Kendin yalnız küçük kayıt işi yaparsın.
 
 ## 6. Yanıt biçimi
 
