@@ -65,6 +65,10 @@ records in `docs/records/decisions/2026-10/`):
 - **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
   Control Towers that confirmed it.
 
+Revision r5 (2026-10-20, PVG Control Tower testi; Codex görüşü): §17.1'e `Model · Effort (istenen / kullanılan)` alanları
+ve kuralları eklendi — karmaşıklık ve risk ayrı eksenler, başlangıç profili, başarısızlıkta önce hata sınıfı, istenen ile
+kullanılanın kaydı. Yalnız 2026-10-15'ten sonra açılan Control Tower'lar için.
+
 Revision r4 (2026-10-19, yöneticinin hız notu; sahip onayı): §20.3 eklendi — test planı ilk build'den önce donar,
 test bütçesinden önce tek ortam ön kontrolü, kademeli test ve geniş takımın gereksiz yeniden koşulmaması, üst sınırlı yedek
 kapsam ya da ilk hatada dur. Başka bir kural değişmedi.
@@ -879,6 +883,8 @@ Agent Lane ID:
 Agent Lane Type: DEV | INS | VER | INT
 Target Agent / Entry Point:   # §6 tablosundan; ör. `@orchestrator` + `/add-module`
 Risk Class:
+Model · Effort (istenen):    # r5 — işin karmaşıklık ekseni; ör. claude-sonnet-5-5 · medium (aşağıdaki kural)
+Model · Effort (kullanılan): # r5 — oturum açılınca ölçülen; istenenden farklıysa gerekçe ve geri dönüş
 
 Target Branch:
 Expected Base HEAD:
@@ -903,6 +909,24 @@ Protected Paths:
 Golden-Flow Profile:
 A | B | C
 ```
+
+**r5 — model ve effort (CT-START-04, 2026-10-20; Codex görüşü dahil)**
+
+- **İki ayrı eksen.** İşin karmaşıklığı ve belirsizliği model ile effort'u belirler; iş riski ise gereken inceleme ve
+  onayı (CT-APR-01). Riskli ama hesaplaması kolay bir değişiklik güçlü model istemeyebilir; salt okunur bir mimari
+  denetim ise zor olabilir.
+- **Başlangıç profili** (kanıtlanmış en ekonomik seçim değil; sonuçlara göre ayarlanır): açık ve rutin iş → Sonnet 5.5 ·
+  medium; karmaşık uygulama → Sonnet 5.5 · high; mimari iş ve zor bağımsız denetim → Opus 5.5 · high; mekanik iş →
+  Haiku 5.5 · low.
+- **Başarısızlıkta önce hatayı sınıfla.** İki başarısızlıktan sonra kendiliğinden daha güçlü modele geçilmez: eksik
+  yetki, bağımlılık ya da yanlış kapsam daha güçlü modelle çözülmez. Model yalnız hata akıl yürütme ya da karmaşıklık
+  kaynaklıysa yükseltilir.
+- **İstenen ve kullanılan kaydedilir.** Prompt'a yazmak çalışma ayarını değiştirmez: alt ajan aracının model ve effort
+  parametresi ya da açılan oturumun ayarı ölçülür (oturum bilgisi). Seçim gerekçesi ve varsa geri dönüş yazılır;
+  desteklenmeyen bir seçim sessizce başka modelle değiştirilmez. Takma adlar sağlayıcıya göre farklı modele çözülebilir;
+  araç izin veriyorsa tam model kimliği yazılır.
+- **Kapsam.** 2026-10-15'ten sonra açılan Control Tower'lar için zorunlu; eski Control Tower'lara geriye dönük yük
+  getirmez.
 
 **v2.5 rules for the two new fields**
 
