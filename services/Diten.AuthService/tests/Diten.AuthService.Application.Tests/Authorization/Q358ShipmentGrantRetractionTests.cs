@@ -8,8 +8,8 @@ using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Persistence.Seed;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Driver;
-using Action = Diten.AuthService.Domain.Authorization.Q358ShipmentGrantRetraction.Action;
-using Mode = Diten.AuthService.Domain.Authorization.Q358ShipmentGrantRetraction.Mode;
+using Action = Diten.AuthService.Domain.Authorization.BaselineGrantRetraction.Action;
+using Mode = Diten.AuthService.Domain.Authorization.BaselineGrantRetraction.Mode;
 
 namespace Diten.AuthService.Application.Tests.Authorization;
 
@@ -21,7 +21,9 @@ namespace Diten.AuthService.Application.Tests.Authorization;
 /// </summary>
 public sealed class Q358ShipmentGrantRetractionPlanTests
 {
-    private static Q358ShipmentGrantRetraction.Grant G(string key, GrantSource source)
+    private static readonly BaselineGrantRetraction.Definition Q358 = Q358ShipmentGrantRetraction.Definition;
+
+    private static BaselineGrantRetraction.Grant G(string key, GrantSource source)
         => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), key, source);
 
     [Theory]
@@ -33,7 +35,7 @@ public sealed class Q358ShipmentGrantRetractionPlanTests
     [InlineData(" dry-run ", Mode.DryRun)]
     [InlineData("APPLY", Mode.Apply)]
     public void Only_DryRun_and_Apply_switch_it_on(string? value, Mode expected)
-        => Assert.Equal(expected, Q358ShipmentGrantRetraction.ParseMode(value));
+        => Assert.Equal(expected, BaselineGrantRetraction.ParseMode(value));
 
     [Fact]
     public void Only_System_grants_of_the_five_keys_are_candidates()
@@ -47,7 +49,7 @@ public sealed class Q358ShipmentGrantRetractionPlanTests
             G("supplychain.shipments.pod.capture", GrantSource.System)
         };
 
-        var plan = Q358ShipmentGrantRetraction.Plan(grants, ["finance"]);
+        var plan = BaselineGrantRetraction.Plan(Q358, grants, ["finance"]);
 
         Assert.Equal(["supplychain.shipments.pod.capture", "supplychain.shipments.read"], plan.Select(p => p.Grant.PermissionKey));
         Assert.All(plan, p => Assert.Equal(Action.SoftDelete, p.Action));
@@ -58,9 +60,9 @@ public sealed class Q358ShipmentGrantRetractionPlanTests
     {
         var grants = Q358ShipmentGrantRetraction.ShipmentKeys.Select(k => G(k, GrantSource.System)).ToList();
 
-        Assert.All(Q358ShipmentGrantRetraction.Plan(grants, [" Shipment-Tracking-POD "]), p => Assert.Equal(Action.ConvertToModule, p.Action));
-        Assert.All(Q358ShipmentGrantRetraction.Plan(grants, []), p => Assert.Equal(Action.SoftDelete, p.Action));
-        var unknown = Q358ShipmentGrantRetraction.Plan(grants, null);
+        Assert.All(BaselineGrantRetraction.Plan(Q358, grants, [" Shipment-Tracking-POD "]), p => Assert.Equal(Action.ConvertToModule, p.Action));
+        Assert.All(BaselineGrantRetraction.Plan(Q358, grants, []), p => Assert.Equal(Action.SoftDelete, p.Action));
+        var unknown = BaselineGrantRetraction.Plan(Q358, grants, null);
         Assert.Equal(5, unknown.Count);
         Assert.All(unknown, p => Assert.Equal(Action.Skip, p.Action));
     }
@@ -69,6 +71,7 @@ public sealed class Q358ShipmentGrantRetractionPlanTests
 [Collection(AuthReconciliationMongoCollection.Name)]
 public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
+    private static readonly BaselineGrantRetraction.Definition Q358 = Q358ShipmentGrantRetraction.Definition;
     private IMongoDatabase Db => ownedMongo.Database;
     private IMongoCollection<RolePermission> Grants => Db.GetCollection<RolePermission>("rolePermissions");
     private IMongoCollection<AuthAuditLog> Audit => Db.GetCollection<AuthAuditLog>("authAuditLogs");
@@ -127,8 +130,8 @@ public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoRe
 
     private Task<Q358ShipmentGrantRetractionRunner.Result> RunAsync(Mode mode,
         Func<Guid, CancellationToken, Task<IReadOnlyCollection<string>?>> entitlement,
-        Func<Q358ShipmentGrantRetraction.Planned, Task>? hook = null)
-        => Q358ShipmentGrantRetractionRunner.RunAsync(Db, mode, entitlement, NullLogger.Instance, CancellationToken.None, hook);
+        Func<BaselineGrantRetraction.Planned, Task>? hook = null)
+        => Q358ShipmentGrantRetractionRunner.RunAsync(Db, Q358, mode, entitlement, NullLogger.Instance, CancellationToken.None, hook);
 
     [OwnedMongoFact]
     public async Task DryRun_plans_every_tenant_and_writes_nothing()
@@ -208,13 +211,13 @@ public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoRe
         }
 
         // Audit: one row per change, written by the system, naming the decision.
-        Assert.Equal(5, await Audit.CountDocumentsAsync(a => a.TenantId == e.Id && a.EventName == Q358ShipmentGrantRetraction.ConvertedEventName));
-        Assert.Equal(5, await Audit.CountDocumentsAsync(a => a.TenantId == n.Id && a.EventName == Q358ShipmentGrantRetraction.RevokedEventName));
+        Assert.Equal(5, await Audit.CountDocumentsAsync(a => a.TenantId == e.Id && a.EventName == BaselineGrantRetraction.ConvertedEventName));
+        Assert.Equal(5, await Audit.CountDocumentsAsync(a => a.TenantId == n.Id && a.EventName == BaselineGrantRetraction.RevokedEventName));
         Assert.Equal(0, await Audit.CountDocumentsAsync(a => a.TenantId == u.Id || a.TenantId == m.Id));
         var row = await Audit.Find(a => a.TenantId == n.Id).FirstAsync();
         using (var meta = JsonDocument.Parse(row.Metadata))
         {
-            Assert.Equal(Q358ShipmentGrantRetraction.DecisionRef, meta.RootElement.GetProperty("decision").GetString());
+            Assert.Equal(Q358.DecisionRef, meta.RootElement.GetProperty("decision").GetString());
             Assert.Equal("system", meta.RootElement.GetProperty("actor").GetString());
             Assert.Equal(n.Admin, meta.RootElement.GetProperty("roleId").GetGuid());
         }
@@ -275,7 +278,7 @@ public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoRe
 
         Assert.Equal(5, second.SoftDeleted);
         Assert.Empty(second.FailedTenants);
-        Assert.Equal(5, await Audit.CountDocumentsAsync(a => a.TenantId == n.Id && a.EventName == Q358ShipmentGrantRetraction.RevokedEventName));
+        Assert.Equal(5, await Audit.CountDocumentsAsync(a => a.TenantId == n.Id && a.EventName == BaselineGrantRetraction.RevokedEventName));
         Assert.Equal(0, await Audit.CountDocumentsAsync(a => a.TenantId == n.Id && a.EventName == Q358ShipmentGrantRetractionRunner.NotAppliedEventName));
     }
 
@@ -299,7 +302,7 @@ public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoRe
         Assert.Equal((GrantSource.Manual, false), (kept.GrantSource, kept.IsDeleted));
         var withdrawn = await Audit.Find(a => a.TenantId == n.Id && a.EventName == Q358ShipmentGrantRetractionRunner.NotAppliedEventName).SingleAsync();
         using var meta = JsonDocument.Parse(withdrawn.Metadata);
-        Assert.Equal(Q358ShipmentGrantRetraction.AuditId(n.Id, n.Admin, "supplychain.shipments.read", Action.SoftDelete),
+        Assert.Equal(BaselineGrantRetraction.AuditId(Q358, n.Id, n.Admin, "supplychain.shipments.read", Action.SoftDelete),
             meta.RootElement.GetProperty("withdraws").GetGuid());
     }
 }
