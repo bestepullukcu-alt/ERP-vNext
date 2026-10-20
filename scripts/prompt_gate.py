@@ -138,7 +138,7 @@ def glob_match(pattern: str, path: str) -> bool:
 def parse_prompt(text: str) -> tuple[dict, list[str]]:
     """Fields of a §36.1 prompt and the format problems (each an ENGEL)."""
     lines = text.replace("\r\n", "\n").split("\n")
-    p: dict = {"read": [], "surfaces": {}, "decisions": {}, "allowed": [], "protected": []}
+    p: dict = {"read": [], "surfaces": {}, "decisions": {}, "allowed": [], "protected": [], "slices": None}
     bad: list[str] = []
 
     def one(prefix: str, pattern: str, what: str):
@@ -178,6 +178,16 @@ def parse_prompt(text: str) -> tuple[dict, list[str]]:
     m = one("Korunan yollar:", r"^Korunan yollar:\s*(.+?)\s*$", "virgülle ayrılmış yollar ya da 'yok'")
     if m:
         p["protected"] = [] if m.group(1).strip() == "yok" else [x.strip() for x in m.group(1).split(",") if x.strip()]
+    # CT-APR-02 (6): optional here; check_slices decides whether the pack needs it
+    ds = [l for l in lines if l.startswith("Kapsanan dilim:")]
+    if len(ds) > 1:
+        bad.append(f"biçim: 'Kapsanan dilim:' satırı {len(ds)} kez var, en çok 1 olmalı")
+    elif ds:
+        m = re.match(r"^Kapsanan dilim:\s*(tamamı|DL-\d+(?:\s*,\s*DL-\d+)*)\s*$", ds[0])
+        if m:
+            p["slices"] = ["tamamı"] if m.group(1) == "tamamı" else [x.strip() for x in m.group(1).split(",")]
+        else:
+            bad.append("biçim: 'Kapsanan dilim:' okunamadı (DL-n[, DL-m …] ya da 'tamamı')")
     for sec in REQUIRED_SECTIONS:
         at = [i for i, l in enumerate(lines) if l.startswith(sec)]
         if len(at) != 1:
@@ -491,7 +501,42 @@ def check_approval_limit(p: dict, repo, commit: str, prepare: bool) -> tuple[lis
         if code != 0:
             why = next((l for l in reversed(lines) if l.startswith(("sonuç:", "ENGEL:"))), lines[-1])
             (info if prepare else eng).append(f"görev sınıfı: sürüme bağlı onay (CT-APR-01) — {why} ({p['authority']})")
+    # CT-APR-02 (6): a pack bound by the review rule is delivered in slices; an old, unchanged pack only warns
+    if where is not None or repo.file(commit, pa.REVIEW_POLICY) is not None:
+        if where is None:
+            problems, notes = ["dilim: kural ölçülemedi — depo erişimi yok"], []
+        else:
+            try:
+                binds, ids, whole = pa.slice_rule(where, commit, p["authority"])
+            except pa.Unreadable as e:
+                problems, notes = [f"dilim: kural ölçülemedi — {e}"], []
+            else:
+                problems, notes = slice_problems(p, binds, ids, whole)
+        (info if prepare else eng).extend(f"{x} ({p['authority']})" for x in problems)
+        info += notes
     return eng, info
+
+
+def slice_problems(p: dict, binds: bool, ids: list[str] | None, whole: str | None) -> tuple[list[str], list[str]]:
+    """CT-APR-02 (6): (problems, notes) for the prompt's 'Kapsanan dilim' against the pack's 'Teslim dilimleri' table.
+    No WP takes every slice of a bound pack unless its approval row (version-bound, CT-APR-01 checked) names the WP
+    with whole_pack=<WP>; the presence of some decision file is not enough."""
+    sl, wp = p.get("slices"), p.get("wp")
+    if not binds:
+        return [], ([] if sl else ["dilim: 'Kapsanan dilim' yok — paket eski kurala tabi, yalnız uyarı (CT-APR-02)"])
+    if sl is None:
+        return ["dilim: 'Kapsanan dilim:' alanı yok — paket CT-APR-02'ye tabi"], []
+    if not ids:
+        return ["dilim: paketin 'Teslim dilimleri' tablosu yok ya da boş"], []
+    if sl == ["tamamı"]:
+        return ([] if whole == wp else [f"dilim: 'tamamı' yalnız onay satırındaki whole_pack={wp} ile"]), []
+    unknown = [x for x in sl if x not in ids]
+    if unknown:
+        return [f"dilim: {', '.join(unknown)} onaylı paket sürümünde yok"], []
+    if set(sl) >= set(ids) and whole != wp:
+        return [f"dilim: bütün dilimler ({len(ids)}) tek WP'de — paket tek seferde uygulanamaz; istisna yalnız onay "
+                f"satırındaki whole_pack={wp} ile"], []
+    return [], [f"dilim: {', '.join(sl)} · paketin {len(ids)} diliminden"]
 
 
 # CT-FIX-05 (C1, v6 audit): a governance work package writes no product code. Its allowed paths are normal repo-relative
@@ -1004,6 +1049,7 @@ Rapor formatı: §22
         return [l for l in r[1] if l.startswith("ENGEL")]
 
     cases = []
+    slice_base = good          # CT-APR-02 tests below run after 'good' is rebound to bytes
     r = run(good)
     cases.append(("a complete LOW prompt -> exit 0", r[0] == 0 and not eng(r)))
     cases.append(("sabotage: NE section missing -> format ENGEL", run(good.replace("NE: x\n", ""))[0] == 1))
@@ -1407,6 +1453,28 @@ Rapor formatı: §22
         globals()["_real_queue"] = saved_read
     cases.append(("CT-FIX-09: output printed while the queue loads -> a queue error, never a silent pass",
                   noisy.get("error") == "kuyruk okuyucusu beklenmeyen çıktı verdi: UYARI beklenmeyen"))
+
+    # CT-APR-02 (6): sliced delivery
+    sp = lambda sl, binds=True, ids=("DL-1", "DL-2"), whole=None: slice_problems(
+        {"slices": sl, "wp": "WP-T-01"}, binds, list(ids) if ids is not None else None, whole)
+    cases.append(("CT-APR-02: an old, unbound pack without the field -> a warning only", sp(None, binds=False)[0] == []
+                  and sp(None, binds=False)[1]))
+    cases.append(("sabotage CT-APR-02: a bound pack, no 'Kapsanan dilim' -> ENGEL", bool(sp(None)[0])))
+    cases.append(("sabotage CT-APR-02: a slice the pack does not have -> ENGEL", bool(sp(["DL-3"])[0])))
+    cases.append(("sabotage CT-APR-02: every slice in one WP without whole_pack -> ENGEL", bool(sp(["DL-1", "DL-2"])[0])))
+    cases.append(("sabotage CT-APR-02: 'tamamı' with whole_pack for another WP -> ENGEL", bool(sp(["tamamı"], whole="WP-X")[0])))
+    cases.append(("sabotage CT-APR-02: a bound pack without a slice table -> ENGEL", bool(sp(["DL-1"], ids=None)[0])))
+    cases.append(("positive control CT-APR-02: one slice of two, and 'tamamı' with whole_pack for this WP -> no ENGEL",
+                  sp(["DL-1"]) [0] == [] and sp(["tamamı"], whole="WP-T-01")[0] == []))
+    cases.append(("CT-APR-02: 'Kapsanan dilim:' parsed; a malformed or doubled line is a format ENGEL",
+                  parse_prompt(slice_base.replace("Korunan yollar: yok\n", "Korunan yollar: yok\nKapsanan dilim: DL-1, DL-2\n"))[0]["slices"]
+                  == ["DL-1", "DL-2"]
+                  and parse_prompt(slice_base.replace("Korunan yollar: yok\n", "Korunan yollar: yok\nKapsanan dilim: hepsi\n"))[1]
+                  and parse_prompt(slice_base.replace("Korunan yollar: yok\n",
+                                                "Korunan yollar: yok\nKapsanan dilim: DL-1\nKapsanan dilim: DL-2\n"))[1]))
+    started = FakeRepo(dict(files, **{"execution/approvals/POLICY-REVIEW-START.md": "x\n"}))
+    cases.append(("sabotage CT-APR-02: the rule started but the repository cannot be measured -> ENGEL, never a pass",
+                  any("dilim: kural ölçülemedi" in e for e in eng(run(slice_base, rp=started)))))
 
     src = Path(__file__).read_text(encoding="utf-8")
     cases.append(("read-only: no write call in this script", not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))

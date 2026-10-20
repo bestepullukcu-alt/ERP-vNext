@@ -29,7 +29,10 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 - Yalnız işle ilgili girdileri oku: Blueprint ve modül kimlik kaydı, ilgili `domain-config.md`, module pack, görev
   kaynakları. Bütün depoyu tarama.
 - Mükerrer ya da süren iş için kartın keşif komutunu koş. Erişilemeyen kaynak ya da ref'i yaz; görünmeyen işi
-  doğrulanmış sayma.
+  doğrulanmış sayma. Çağrıdaki ad bir domain'se keşfi o domain'in modülleriyle tek tek koş; domain adıyla tek keşif
+  yetmez.
+- Sahip kararlarını ara: modül kimlikleri ve domain adıyla `git log --grep` ve `docs/records/decisions/` içinde. Bulduğun
+  her kararı kaynağıyla (`yol@commit`) yaz ve "hâlâ geçerli mi? Evet / Hayır" diye sor; sahibin hatırlamasını bekleme.
 - Keşfi bir kez koş ve çıktıyı ekrandan oku; geçici dosya dahil hiçbir dosyaya yönlendirme. Aynı kaynak ve sorguyla
   tekrar koşma; kaynak değiştiyse ya da teknik bir hata olduysa gerekçesini yazıp bir kez yeniden koşabilirsin. Çıktı
   kesildiyse "kısmi" de.
@@ -62,6 +65,10 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 - İlk çağrıda kuyruğa ya da kayda yazma, `guard` ya da prompt taslağı dosyası yok; geçici dosya dahil hiçbir dosyaya
   yazma. Görev, test, kabul ve başka bir
   MVP'ye soru için kartın ilgili satırını ve aracını kullan; yeni yetki yaratma, zorunlu kapıları atlama.
+- Alt ajana, alt oturuma ya da worker prompt'una iş verirken her biri için modeli ve effort'u yaz ve kullanılanı ölç
+  (SOP §17.1 r5); karmaşıklık modeli, risk incelemeyi belirler.
+- Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4); WP prompt'u `Kapsanan dilim` yazar ve paketin
+  tamamını tek WP'ye vermez.
 
 ## 6. Yanıt biçimi
 
@@ -72,7 +79,9 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 3. Kritik çakışma ya da engel (kimlik çakışması, onaysız görünen kod, kayıtlı kuyruğun yokluğu): satır hedefi bunları
    gizlemez.
 4. Gerekçeli tek öneri, "öneri — onay değil".
-5. Yalnız kullanıcı kararı gerekiyorsa, en çok bloklayan kararı tek soruyla sor; gerekmiyorsa soru uydurma.
+5. Yalnız kullanıcı kararı gerekiyorsa, en çok bloklayan kararı tek soruyla sor; gerekmiyorsa soru uydurma. Soru
+   "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "evet: satırı yazar, commit, push, PR; merge sizde");
+   kullanıcıdan uzun onay metni beklenmez.
 
 Kısa yanıtta da olguyu çıkarımdan ayır. Kaynak tablosu, olgular (`kaynak:satır`), çıkarımlar ve aday listesi istenince
 ayrıntılı verilir. Satır numarasını yalnız numaralı bir okumadan ver (`grep -n`, `nl -ba` ya da okuma aracının satır

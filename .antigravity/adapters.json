@@ -43,7 +43,7 @@
       },
       {
         "path": ".antigravity/skills/control-tower/SKILL.md",
-        "max_bytes": 6500,
+        "max_bytes": 7500,
         "required_sections": [
           {
             "heading": "1. Başlangıç ve kimlik",
@@ -56,6 +56,8 @@
             "heading": "2. Araştırma",
             "anchors": [
               "`--check-report` yalnız bütünlüğü kanıtlar, güncelliği değil.",
+              "Çağrıdaki ad bir domain'se keşfi o domain'in modülleriyle tek tek koş; domain adıyla tek keşif",
+              "her kararı kaynağıyla (`yol@commit`) yaz ve \"hâlâ geçerli mi? Evet / Hayır\" diye sor; sahibin hatırlamasını bekleme.",
               "geçici dosya dahil hiçbir dosyaya yönlendirme."
             ]
           },
@@ -74,7 +76,9 @@
           {
             "heading": "5. Sınırlar",
             "anchors": [
-              "bu skill hiçbirini vermez."
+              "bu skill hiçbirini vermez.",
+              "her biri için modeli ve effort'u yaz ve kullanılanı ölç",
+              "Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4)"
             ]
           },
           {
@@ -82,7 +86,8 @@
             "anchors": [
               "İncelenen kaynak tablosundan geniş \"tam inceledim\" deme.",
               "satır hedefi bunları",
-              "Satır numarasını yalnız numaralı bir okumadan ver"
+              "Satır numarasını yalnız numaralı bir okumadan ver",
+              "\"evet\" ve \"hayır\"ın neyi yetkilendirdiğini söyler"
             ]
           }
         ]
