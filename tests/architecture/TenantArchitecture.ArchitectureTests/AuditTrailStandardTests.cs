@@ -91,6 +91,8 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // AdminPasswordReset.ResetAsync (in a finally); a handler that calls it is audited through it.
         ("Diten.AuthService", "auth-kullanici-iletimi", "b", "IUserAuditRecorder.RecordAsync/AdminPasswordReset.ResetAsync"),
         ("Diten.MdmService", "mdm-merkezi-iletim", "b", "IAuditableCommand+IAuditMetadataProvider"),
+        // WP-VW-W6 F8-a (CT, 2026-10-20): AUD-001 K4 shared forwarder in Building.Blocks, registered in CRM (path b)
+        ("Diten.CrmService", "crm-merkezi-iletim", "b", "IAuditableCommand"),
         ("Diten.MdmService", "mdm-kisaltma-gecmisi", "c", "IProductAbbreviationHistoryRepository.AppendIfAbsentAsync"),
         // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): niyet durum değişikliğiyle aynı yazımda / işlemde, Platform'a iletilir.
         ("Diten.MdmService", "mdm-guvenilir-kaynak-niyeti", "b",
