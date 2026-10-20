@@ -30,6 +30,20 @@ var ExpiryBandRules = (function () {
     };
 
     /**
+     * WP-MVP1-FIX-LIVE4 (FU-0176-BAND-EXEMPT, live finding: the band asked a COUNT_LOSS for a FEFO reason the service never reads) — the ONE
+     * Web copy of the service's exempt types (pack §8.3, CT-D4 + CT-F3 + MOD-0175; ExpiryHookScope.Exempt in FefoRules.cs). The Web never
+     * decides with another list: ExpiryBandExemptGuardTests pins THIS array to the service's production set, value for value.
+     */
+    const FEFO_EXEMPT_TYPES = Object.freeze(['REVERSAL', 'SCRAP', 'WRITE_OFF', 'STATUS_TRANSFER', 'LOCATION_TRANSFER', 'WAREHOUSE_TRANSFER', 'COUNT_GAIN', 'COUNT_LOSS', 'SUPPLIER_RETURN']);
+
+    /**
+     * Does the service run its outbound FEFO check (the ISSUE hook) on this posting? ExpiryHookScope.For: never on an exempt type; otherwise an
+     * outbound movement FROM AVAILABLE with a lot (GOODS_ISSUE_SALES / GOODS_ISSUE_PROD today). No check → no band, no reason field.
+     */
+    const outboundChecked = (movementType, fromStatus, lotId) =>
+        !!movementType && !!lotId && !FEFO_EXEMPT_TYPES.includes(String(movementType)) && fromStatus === 'AVAILABLE';
+
+    /**
      * Outbound (KF-B): the issued lot against the server's FEFO order (getFefoOrder). Equal expiry = compliant; no order / no lot = nothing to
      * say. Mode unknown (the reader may not read the policy) → "reason" (the server asks or not — its 422 is the authority).
      */
@@ -84,7 +98,7 @@ var ExpiryBandRules = (function () {
         retest: !!suggested.retest && (entered.retest || '') !== suggested.retest
     });
 
-    return { MIN_REASON, receiptRetry, outbound, outboundRefusal, reasonOk, receipt, suggestion, differs };
+    return { MIN_REASON, FEFO_EXEMPT_TYPES, outboundChecked, receiptRetry, outbound, outboundRefusal, reasonOk, receipt, suggestion, differs };
 })();
 
 if (typeof window !== 'undefined') window.ExpiryBandRules = ExpiryBandRules;
@@ -155,13 +169,29 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') window.Exp
             const lot = first ? t('Expiry.Band.FefoFirst', first.lotNumber || '', date(first.expiryDate)) : '';
             const text = { ok: t('Expiry.Band.FefoOkText'), warn: t('Expiry.Band.FefoWarnText'), reason: t('Expiry.Band.FefoReasonText'), block: t('Expiry.Band.FefoBlockText') }[state] || '';
             draw(box(), state, state === 'ok' ? t('Expiry.Band.FefoOkTitle') : lot, text);
-            reasonBox()?.classList.toggle('d-none', !['reason', 'warn'].includes(state));
+            const asks = ['reason', 'warn'].includes(state);
+            reasonBox()?.classList.toggle('d-none', !asks);
+            // WP-MVP1-FIX-LIVE4 (FU-0173-REQ-COUNTER): the band owns its field's requiredness — required only while the band asks ('reason')
+            const field = reasonField();
+            if (field) {
+                field.required = state === 'reason';
+                field.setAttribute('aria-required', field.required ? 'true' : 'false');
+                if (!asks) { field.value = ''; filled(field); }
+            }
             if (submit()) submit().disabled = state === 'block';
         };
 
-        /** Outbound: the source row's lot against the FEFO order of its warehouse. */
-        const onSource = async ({ direction, itemId, sku, warehouseId, lotId }) => {
-            if (direction !== 'out' || !lotId || !warehouseId) { setOutbound('none'); return; }
+        /**
+         * WP-MVP1-FIX-LIVE4 (FU-0173-REQ-COUNTER): the shared required tracker counts again only on a CLASS change inside the form (it binds
+         * its input listeners to the fields visible at load — this one is hidden then). Its filled state is mirrored as a class, so typing the
+         * reason moves the counter the moment the field becomes filled / empty.
+         */
+        const filled = (field) => field.classList.toggle('ex-band-reason-filled', field.value.trim() !== '');
+        if (reasonField()) reasonField().addEventListener('input', () => filled(reasonField()));
+
+        /** Outbound: the source row's lot against the FEFO order of its warehouse — only where the service checks it (outboundChecked). */
+        const onSource = async ({ direction, movementType, fromStatus, itemId, sku, warehouseId, lotId }) => {
+            if (direction !== 'out' || !lotId || !warehouseId || !R.outboundChecked(movementType, fromStatus, lotId)) { setOutbound('none'); return; }
             const ctx = await context({ itemId, sku, warehouseId });
             const result = R.outbound(ctx?.order, lotId, ctx?.policy?.fefoOutboundMode);
             setOutbound(result.state, result.first);

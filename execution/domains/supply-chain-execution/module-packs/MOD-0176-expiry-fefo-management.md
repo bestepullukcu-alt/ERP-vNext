@@ -1147,6 +1147,11 @@ Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
 - Yaklaşan / Süresi dolmuş / İstisnalar listeleri Türkçe arama ipucu alır (`_MvpOneListL10n`); sekmeler "ve" gibi iç sözcükleri küçük harfle gösterir (`text-none`).
 - **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
 
+**WP-MVP1-FIX-LIVE4 — FU-0176-BAND-EXEMPT kapandı (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live4` (MVP-1 ucu `c654429ca`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live4-evidence-2026-10-20.md`.
+- Hareket formunun FEFO çıkış bandı artık yalnız servisin kontrol ettiği yerde açılır (`ExpiryHookScope`: muaf değil, AVAILABLE'dan, lotlu). Web'in tek listesi `ExpiryBandRules.FEFO_EXEMPT_TYPES`; `ExpiryBandExemptTests` onu `FefoRules.cs` `Exempt` ile değer değer karşılaştırır. COUNT_LOSS (INV-2026-0000010 bulgusu) ve diğer muaf türlerde bant ve gerekçe alanı yok; gerekçe yalnız bant isterken gider.
+- Ölçüm: formun 8 türünden hiçbirine servis çıkış FEFO kontrolü uygulamıyor (5 çıkış / transfer türü muaf, 3'ü giriş) — bant formda bugün açılmaz; GOODS_ISSUE_SALES / PROD ve sunucunun 422'si için eskisi gibi çalışır.
+- **Sayılar:** Web 3962 / 3964 → 3967 / 3969 (yalnız 2 SafetyStock kırmızısı), Inventory 1335 + 4 (servis değişmedi), mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 4 / 4 sabotaj.
+
 
 ## 20. Follow-up Items
 
