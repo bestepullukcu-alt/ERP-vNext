@@ -67,6 +67,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   MVP'ye soru için kartın ilgili satırını ve aracını kullan; yeni yetki yaratma, zorunlu kapıları atlama.
 - Alt ajana, alt oturuma ya da worker prompt'una iş verirken her biri için modeli ve effort'u yaz ve kullanılanı ölç
   (SOP §17.1 r5); karmaşıklık modeli, risk incelemeyi belirler.
+- Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4); WP prompt'u `Kapsanan dilim` yazar ve paketin
+  tamamını tek WP'ye vermez.
 
 ## 6. Yanıt biçimi
 

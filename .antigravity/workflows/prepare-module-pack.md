@@ -128,6 +128,8 @@ Pack `ready-for-dev`'e geçmeden önce **Ready-for-dev Checklist** bölümündek
 - [ ] Audited Events tablosu her yazma komutunu tam bir kez içeriyor; servisin denetim altyapısı var ya da `Dependencies`'te engel olarak yazılı (AUD-001)
 - [ ] Record Codes tablosu kodlu her türü içeriyor; yeni önekler RCS-001 §3 tablosuna eklendi; modül kendi sayacını yazmıyor (RCS-001)
 - [ ] Kapsam dışı bir modülde değişiklik gerekiyorsa kullanıcıya soruldu ve cevap `Dependencies` / `Follow-up Items`'ta yazılı (XMC-001)
+- [ ] `Teslim dilimleri` tablosu var; paketin tamamını tek WP almıyor (CT-APR-02)
+- [ ] Onaydan önce bağımsız inceleme yapıldı (Codex ya da Claude, ayrı oturum); bulgu dosyası ve `execution/approvals/reviews.tsv` satırı hazır, açık ENGEL yok (SOP §20.4)
 
 
 ---
