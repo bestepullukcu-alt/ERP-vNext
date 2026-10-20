@@ -127,3 +127,61 @@ Worktree `C:\Users\Ali\erp-vnext-wt-live3`; ana çalışma dizininde derleme yap
   - servisin geride kalan `mongod`'u 37140
   - kendi derleme sunucularım (VBCSCompiler 29748, MSBuild düğümleri ×9)
 - Sonra: 5180–5199'da dinleyen yok; tek `mongod` sahibinin 5264'ü (dokunulmadı); worktree / önizleme komut satırlı süreç 0.
+
+## 7. Ek (CT, 2026-10-20): e ve f
+
+Taban notu: MVP-1 dalının belge commit'i `83c923825` (G1 notları) bu dala `--no-ff` ile alındı. Yalnız 7 paket dosyası değişti, çakışma çıkmadı.
+
+### e) FU-INT1-02 — sahip kararı G1-D3 = A
+
+- `CorrelationIdMiddleware` artık geçersiz değeri reddetmiyor. Geçersiz sayılanlar: UUID olmayan değer (`req-1`), boş UUID, birden çok değer.
+- Bu durumda sunucu yeni bir UUID üretir. Kullanıldığı yerler:
+  - istek bağlamı (`ICorrelationContext`)
+  - yanıt başlığı
+  - hareket, denetim ve outbox kayıtları
+- Gelen metin yalnız tek bir uyarı satırına yazılır: `inventory.correlation.replaced {Header} {Supplied} -> {CorrelationId}`.
+  - Metin en çok 64 karakter; kırpılınca kaç karakterin atıldığı `"...(+n)"` ile gösterilir.
+  - Yazdırılabilir ASCII dışındaki karakterler, `"` ve `\` → `\uXXXX`.
+  - Hiçbir kayıtta kimlik olarak kullanılmaz.
+- Geçerli tek UUID olduğu gibi geçer ve log satırı yazılmaz.
+- Testler:
+  - `AuditCorrelationTests.A_non_uuid_correlation_id_is_replaced_by_a_fresh_uuid_used_everywhere` — eski "400" beklentisinin yerine geçti, gerekçe G1-D3. 201 dönüyor; yeni UUID başlıkta ve üç kayıtta; `req-1` hiçbir kayıtta yok.
+  - `CorrelationReplacementTests`, 4 test: log satırı; geçerli UUID değişmez ve log yok; aşırı uzun değer kırpılır ve kaçışlanır; boş değerler.
+- Sabotaj: istek yeniden 400'e döndürüldü → 3 test kırmızı. Geri alınınca SHA `c20011d27d2b0495` eşit.
+
+### f) Çekirdek kural 3 — anahtarı gövdede kontrol eden üç uç
+
+| Uç | Önce (gövdede) | Kabul edilen anahtarlar | Sonra |
+|---|---|---|---|
+| `POST /api/quarantine/decisions` (`QuarantineController.CreateDecision`) | `DecisionKeys.Any(Holds)` → 403 | `quarantine.decisions.create`, `quarantine.blocked.dispose`, `quarantine.blocked.unblock` | `[HasAnyPermission(…)]`; hangi anahtarın gerektiği kararın türüne bağlı (§4.6), bu kontrol gövdede kaldı → adıyla istisna (`BodyKeyedActions`) |
+| `POST /api/quarantine/decisions/{id}/submit` (`SubmitDecision`) | aynı | aynı üçü | `[HasAnyPermission(…)]`; gövde kontrolü kalktı |
+| `PATCH /api/trace/lots/{lotId}` (`TraceController.UpdateLot`) | `canDraft \|\| canReleased` → 403 | `trace.lots.update`, `trace.lots.update-released` | `[HasAnyPermission(…)]`; hangi anahtarın gerektiği lotun durumuna bağlı → adıyla istisna (`BodyKeyedActions`) |
+
+- `HasAnyPermissionAttribute`, Inventory'nin kendi yetki öznitelikleri yanında eklemeli olarak yazıldı.
+  - Politika: `AnyPermission:a|b`.
+  - `AnyPermissionAuthorizationHandler`, `PermissionAuthorizationHandler` ile aynı tam claim eşleşmesini yapar; rol kısayolu yok.
+  - 401 / 403 yanıtları aynı sözleşme gövdesiyle `ContractAuthorizationResultHandler`'dan çıkar.
+  - Kayıt: `PermissionPolicyProvider` yeni öneki tanır; `DependencyInjection` handler'ı ekler.
+- Yeni servis geneli bekçi `AuthorizationGuardTests` (önceden yalnız Karantina denetleyicisine özel bir bekçi vardı):
+  - her HTTP eylemi anahtarını öznitelikte taşır (eylemde ya da denetleyicide);
+  - taşımayan her eylem adıyla, gerekçesiyle istisnadır;
+  - ölçülen istisnalar yalnız üç e-imza konu sağlayıcısı (`Quarantine/Expiry/RecallESignSubjectsController.GetSignableSubject`); gerekçe ESIGN-BUNDLE §6 — her ret tek 404 olmalı (sızıntı yok), öznitelik ise 403 döner.
+- İzin kataloğu (A1): `QuarantineManifestTests` ve `LotSerialTrackingManifestCompletenessTests` artık `[HasAnyPermission]` anahtarlarını da okuyor. PATCH'in iki anahtarı önceden testte elle ekleniyordu; şimdi öznitelikten okunuyor.
+- Değişen test beklentisi: `QuarantineManifestTests.…every_action_carries_a_key` içindeki `CreateDecision` / `SubmitDecision` istisnası kalktı; iki eylem de öznitelik taşıyor.
+- Uç testleri (`AnyPermissionEndpointTests`, gerçek host):
+  - kabul edilen 8 anahtar–uç çiftinin her biri yetki kapısını geçer; boş gövde olağan doğrulamaya takılır (400 / 404 / 428);
+  - anahtarsız istek sözleşme 403'ünü alır ("The caller lacks the permission required for this operation.");
+  - token'sız istek 401 alır.
+- Sabotaj: `SubmitDecision`'dan öznitelik kaldırıldı → 4 kırmızı (iki bekçi, Karantina bekçisi, 403 testi). Geri alınınca SHA `1f07ba4f19f72ca0` eşit.
+
+### §8 (e + f sonrası, dal ucu, filtresiz)
+
+| Ölçüm | Sonuç |
+|---|---|
+| Web | 3962 / 3964 — yalnız 2 SafetyStock kırmızısı |
+| Inventory | **1333 + 4**, hepsi yeşil |
+| Mimari | aynı 7 |
+| Gateway | 298 / 298 |
+| Yeni-denetimsiz | 0 |
+| Derleme | 0 hata, uyarı sayıları aynı |
+| DataTable doğrulayıcı | 19 |
