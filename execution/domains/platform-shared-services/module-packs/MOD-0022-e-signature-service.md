@@ -1805,6 +1805,8 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
 - ESIGN-HELP'in 7 sayfa içi notu (`#esignPageHelp`, `ESign.Help.*`) UXH-001 yapısında panele taşındı (kiracı kabuğu, 7 dil); sayfadaki not ve anahtarları kaldırıldı (aynı metin iki kez yok). Notlardaki yanlışlar sayfaya karşı düzeltildi (ör. "Onay bekliyor" etiketi, iki adımlı geçersiz kılma, anlamın kodu kullanılana kadar değişebilir).
 - `ESignaturePageHelpWebTests` taşımayı ölçecek biçimde yeniden yazıldı.
 - **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+**DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0022 --name "E-Signature Service"` → OK (proven against Blueprint/registry) → **W-0022-01 closed**.
+
 
 
 ## 20. Follow-up Items

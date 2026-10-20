@@ -642,6 +642,8 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
 - **`8a92871b5` FU-WEB-CONTRACT-FAKES:** `ContractRoutes` — eski yedi sahtenin 2xx gövdesi sahip sözleşmenin cevabı olmalı (kapalı nesne, format, pattern, enum); bilerek sözleşme dışı gövde `RequireOff` ile yalnız adı verilen ihlale izinli. Inventory / Location / MovementForm sahte gövdeleri düzeltildi (itemKind, getSku ↔ UoM rotası, uuid itemId, LocationDetail); sözleşme değişmedi.
 - **Sayılar:** Inventory 1278 + 4 → 1286 + 4, Web 2575 → 2607; mimari aynı 8, gateway 164 / 165, Inventory yeni-denetimsiz 0. Sabotaj 13 / 13 kırmızı → yeşil.
 - **CT'ye:** FU-0173-UI-USER-01 DUR-SOR — hareket satırında kullanıcı yok (`TransactionItem`), Web-only yol yok; A: INVENTORY-BUNDLE'a eklemeli `createdBy: UserRef`, B: bugünkü hâl. O-CLEAN1-3 (yük altında sallantılı merkezi denetim yetim testi), O-CLEAN1-4 (bin'den başlayan host 5067'yi alır).
+**G1 re-measure + owner decisions (CT, 2026-10-20, MVP-1 tip `03c697e1a`).** Read-only re-measure of the 17 items of `docs/analysis/inventory-capability-scope-and-dependency-report.md` §20.1 (last formal record: `docs/records/audits/2026-10/mod-0173-g1-closure-measurement-2026-10-02.md`). PASS 11 (5–11, 13–16; the live evidence of 5–10 is from 2026-10-06 → re-run live on the tip in the closing G1 run), PARTIAL 4 (1–4: MDM PRODUCT-MASTER code is on the branch since SYNC3 but the fleet still uses the 4010 bridge and v1.1 is `1.1.0-draft.16`), OPEN 2 (12 cross-LE leak; 17 E4 UI + API + persisted + audit together). Owner decisions: **G1-D1 = A** — item 12 passes CONDITIONALLY; waiver W-0173-02 is extended until the central user↔legal-entity work (FU-LE-01) lands (owner deferred it after all MVPs), its expiry is no longer "before G1 sign-off". **G1-D2 = A** — items 1–4 pass CONDITIONALLY and close with WP-MVP1-PM-LIVE right after MVP-1 (real MDM PRODUCT-MASTER, bridge removed, data option A). **G1-D3 = A** — FU-INT1-02: non-UUID correlation id accepted and replaced (FIX-LIVE3 addendum). **G1-D4 = A** — W-UI-02: the seed tenant `…0001` is a test tenant, reset by the PM-LIVE data rebuild. Record fixes in this pass: FU-S1-01 / FU-S1-02 / FU-S2-01 marked CLOSED (closed in S2 / K1, rows never marked), FU-PM-01 PARTIAL, FU01 W-UI-01 closed in code. **DCP-002:** the verifier ran on 2026-10-20 with Python 3.12.10 + openpyxl 3.1.5 — `verify_module_id.py . --check-id MOD-0173 --name "Inventory Ledger & Valuation"` → OK (proven against Blueprint/registry) → **W-0173-01 closed**. Remaining for G1 sign-off: the live G1 run on the tip (items 5–10 + 17 with the owner session) and item 13 note (3 Inventory endpoints check the key in the body — `QuarantineController.cs:102,135`, `TraceController.cs:69`, pack §4.6 design — vs Core rule 3; CT proposal: a declared either-key attribute like Platform `[HasAnyPermission]`, FIX-LIVE3 addendum).
+
 
 ## 20. Follow-up Items
 
@@ -651,13 +653,16 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
   **Status (2026-10-02): CLOSED** — the location master is MOD-0173-FU02 (in-process, LOC1/INT2/LOC2 accepted); the G1
   runs built real location trees through `POST /api/locations` (5 × 201, run G10G21Z).
 - **FU-PM-01 (MDM — blocks real use + G1):** no gateway route `/api/product-master` — MDM (MOD-0290) does not yet expose PRODUCT-MASTER-BUNDLE v1; real postings fail closed (503 `PRODUCT_MASTER_UNAVAILABLE`).
+  **Status (2026-10-20, G1 re-measure): PARTIAL** — MDM `ProductMasterController` + gateway route `/api/product-master` → 5059 arrived with SYNC3 (`f656e9548`); the fleet still uses the 4010 bridge and PRODUCT-MASTER v1.1 is `1.1.0-draft.16`. Closes with WP-MVP1-PM-LIVE (owner decision G1-D2 = A).
 
 - **FU-LE-01 (central / PSS — blocks G1):** user↔legal-entity assignment + AuthService issuing `legal_entity_id` (active company; switching = token re-issue). Same gap affects MVP-2 (ProcurementService header fallback) and MVP-6 (MOD-0183 "held"). Retires W-0173-02.
 
 - **FU-INT1-01 (central/gateway owner):** `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs` `KnownDownstreamPorts` lacks 5063/5064/5065/5066 (AGENTS.md §3) — the guard is red on `main`-derived code since before MVP-1; update belongs to the gateway test owner.
 - **FU-INT1-02 (before G1):** a caller sending a non-UUID `X-Correlation-Id` (e.g. `req-1`) gets 400 from this service; decide with consumers (MOD-0142 GRN, WMS) whether to accept-and-replace instead.
+  **Owner decision G1-D3 (2026-10-20) = A:** a non-UUID `X-Correlation-Id` is accepted and replaced by a new UUID (the original value logged, never trusted as an id) instead of 400 → implemented in WP-MVP1-FIX-LIVE3 (addendum).
 
 - **FU-S2-01 (low, before G1):** the startup SKU-position rebuild counts scope-incomplete groups (`LastSkippedUnscoped`) but nothing logs it — a skipped group would be silent. Log a warning with the count (and fail the startup gate if > 0 outside test databases).
+  **Status (2026-10-20, G1 re-measure): CLOSED** in WP-0173-K1 (§19: the startup gate logs the skipped scope-incomplete groups as WARNING and fails closed outside test databases — `InventoryIndexInitializerHostedService.cs:45,59-74`); this row was never marked.
 
 - **FU-RSV-01 (blocks G1 reservation item; found by the CT G1 live run 2026-10-02):** `inventory.reservations.manage`
   can never be granted to a tenant role. The key exists only on the API (`InventoryController` `[HasPermission]`); the
@@ -674,9 +679,11 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
 - **FU-S1-01 (before G1 freeze):** `GET /availability` for a *known* item/SKU with no ledger rows returns
   404 `UNKNOWN_ITEM` (ASSUMPTION-S1-04). Consumers (0172 ATP, 0189 MRP) must see 200 with zeros; 404 only when
   PRODUCT-MASTER says the item/SKU does not exist (fail-closed 503 when it is unreachable).
+  **Status (2026-10-20, G1 re-measure): CLOSED** in WP-0173-S2 (§19: no ledger rows → PRODUCT-MASTER decides, `GetAvailabilityHandler.cs:25-26,62-80`).
 - **FU-S1-02 (before G1 freeze):** the template's `SuperAdmin` role bypass lets that role post stock movements
   without `inventory.movements.create`. For a GxP stock SoR, mutations require the explicit permission;
   review with security-agent.
+  **Status (2026-10-20, G1 re-measure): CLOSED** in WP-0173-S2 (no SuperAdmin bypass, `PermissionAuthorizationHandler.cs:8-10`).
 
 - S2 Reservations; S3 Valuation (requires additive `INVENTORY-BUNDLE` v1.1 for any valuation read surface).
 - INT-1: gateway route + permission seed (integration-agent).
