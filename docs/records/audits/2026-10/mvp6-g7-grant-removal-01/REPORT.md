@@ -84,7 +84,7 @@ Local run `~/mvp6-env/q358-gate-111143` (owned mongod required, skips = red; lan
 - **Not committed, not pushed** — owner approval required (GIT-002). Depends on #164 (stacked branch).
 - **Decision record** `mvp6-0190-0192-g7-role-grants-owner-decision-01.md` still reads "IN EFFECT". Marking it superseded
   is the owner's edit (or with approval).
-- **Q358 production run (owner decision 2026-10-20, in chat):** Ali (`bestepullukcu-alt`) runs it at the first deployment
+- **Q358 production run (owner decision 2026-10-20, in chat):** Ali (`GMG-ERP`; corrected 2026-10-20 — earlier text named `bestepullukcu-alt`, which is Beste's account) runs it at the first deployment
   after #164 merges — `Q358Retraction__Mode=DryRun`, the log is read, then `Apply`, then the setting is removed.
 - **Non-production hosts** with `DemandFixtures` enabled: running `G7Retraction` (DryRun → Apply → remove the setting) is an
   operator step; who and when: owner (TBD). Production needs no run (nothing to clean, see above).
