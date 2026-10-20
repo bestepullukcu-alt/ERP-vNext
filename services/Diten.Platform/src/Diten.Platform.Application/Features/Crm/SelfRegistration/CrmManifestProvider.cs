@@ -303,6 +303,28 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 VisitReportEvent(VisitReportOverdueEvent, "NotificationEvent_CrmVisitReportOverdue", "Visit report overdue",
                     "Sent to the representative's line manager when a visit's report was not entered within its deadline.",
                     "Warning", [], requiredExtra: ["deadline"])
+            ],
+            // WP-VW-W6 W6-BE-b — MOD-0156 Price Lists & Discount Guardrails (commercial.*, K-O2; MOD-0156 §14): API-only keys
+            // until W6-WEB-b ships screen D (then they become its page + actions). DEFINITION ONLY — the role seed / grant is
+            // F-RBAC (W6-CFG). CrmService enforces each one with [HasPermission].
+            ApiPermissions:
+            [
+                new ModuleManifestPermission("commercial.price-lists.read", "Read Price Lists"),
+                new ModuleManifestPermission("commercial.price-lists.create", "Create Price List Drafts"),
+                new ModuleManifestPermission("commercial.price-lists.update", "Edit Price List Drafts"),
+                new ModuleManifestPermission("commercial.price-lists.import", "Import Price Lists"),
+                new ModuleManifestPermission("commercial.price-lists.submit", "Submit Price Lists for Publication"),
+                new ModuleManifestPermission("commercial.price-lists.publish", "Publish or Return Price Lists (Four Eyes)"),
+                new ModuleManifestPermission("commercial.price-lists.export", "Export Price Lists"),
+                new ModuleManifestPermission("commercial.pricing-rules.read", "Read Pricing Rules and Try Them"),
+                new ModuleManifestPermission("commercial.pricing-rules.create", "Create Pricing Rule Drafts"),
+                new ModuleManifestPermission("commercial.pricing-rules.update", "Revise or Retire Pricing Rules (Drafts)"),
+                new ModuleManifestPermission("commercial.pricing-rules.submit", "Submit Pricing Rules for Approval"),
+                new ModuleManifestPermission("commercial.pricing-rules.publish", "Approve or Return Pricing Rules (Four Eyes)"),
+                new ModuleManifestPermission("commercial.fx-rates.read", "Read FX Rates"),
+                new ModuleManifestPermission("commercial.fx-rates.create", "Enter FX Rates"),
+                new ModuleManifestPermission("commercial.fx-rates.update", "Correct FX Rates"),
+                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates")
             ]);
 
     // WP-VW-W5 PLT-NOTIFY — the four visit report events (K-N4). Template key = event code. No hyphen in a code: the

@@ -112,6 +112,12 @@ public static class DependencyInjection
         services.AddHttpClient<Application.Common.IProductNameReader, StrategyTemplate.MdmProductNameReader>();
         // WP-VW-W4 (W4-BE-a) — the MDM competitor products (report lookup, proposals, merged survivors) with the caller's token.
         services.AddHttpClient<Application.Features.VisitReport.V2.IMdmCompetitorClient, Mdm.GatewayMdmCompetitorClient>();
+        // WP-VW-W6 W6-BE-b — MOD-0156: product-master v1.1 SKU reads and the MDM legal entity (Gateway, caller token, fail
+        // closed), the price file parser (xlsx / csv, never stored) and the publication workflow template (W6-CFG creates it).
+        services.AddHttpClient<Application.Features.Commercial.Pricing.IPricingSkuDirectory, Commercial.MdmPricingSkuDirectory>();
+        services.AddHttpClient<Application.Features.Commercial.Pricing.IPricingLegalEntityDirectory, Commercial.MdmPricingLegalEntityDirectory>();
+        services.AddSingleton<Application.Features.Commercial.Pricing.IPriceListFileParser, Commercial.PriceListFileParser>();
+        services.AddSingleton<Application.Features.Commercial.Pricing.IPricingApprovalSettings, Commercial.ConfigurationPricingApprovalSettings>();
 
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs

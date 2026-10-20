@@ -293,6 +293,13 @@ public static class DependencyInjection
         // WP-VW-W3E (W3E-BE-a) — the institution QR codes (one active per institution) and their append-only history.
         services.AddScoped<IInstitutionQrCodeRepository, InstitutionQrCodeRepository>();
         services.AddScoped<IInstitutionQrEventRepository, InstitutionQrEventRepository>();
+        // WP-VW-W6 W6-BE-b — MOD-0156 pricing stores (lists + items, imports + rows, rules, FX rates, change log).
+        services.AddScoped<Domain.Repositories.Commercial.IPriceListRepository, Repositories.Commercial.PriceListRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPriceListItemRepository, Repositories.Commercial.PriceListItemRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPriceListImportRepository, Repositories.Commercial.PriceListImportRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPricingRuleRepository, Repositories.Commercial.PricingRuleRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IFxRateRepository, Repositories.Commercial.FxRateRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPricingChangeLogRepository, Repositories.Commercial.PricingChangeLogRepository>();
 
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
@@ -1439,6 +1446,61 @@ public static class DependencyInjection
         Map<ProductPotentialThreshold>(map => map.GetMemberMap(t => t.GlobalProductId).SetSerializer(nullableStringGuid));
         Map<ProductPotentialThresholdChange>(map => map.GetMemberMap(c => c.GlobalProductId).SetSerializer(nullableStringGuid));
 
+        // WP-VW-W6 W6-BE-b — MOD-0156 pricing (commercial_*): every Guid a string and every DateOnly a sortable "yyyy-MM-dd"
+        // string (the GUID trap: a binary Guid makes a filter come back EMPTY silently); the review rounds / decisions reuse
+        // the ClaimReviewRound / RegulatoryTextDecision maps above; money stays decimal (the driver writes it as text).
+        var pricingDate = new NullableSerializer<DateOnly>(dateOnlyString);
+        Map<Domain.Entities.Commercial.PriceList>(map =>
+        {
+            map.GetMemberMap(l => l.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(l => l.FamilyId).SetSerializer(stringGuid);
+            map.GetMemberMap(l => l.PreviousPriceListId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(l => l.SourceImportId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(l => l.ValidFrom).SetSerializer(dateOnlyString);
+            map.GetMemberMap(l => l.ValidTo).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PriceListItem>(map =>
+        {
+            map.GetMemberMap(i => i.PriceListId).SetSerializer(stringGuid);
+            map.GetMemberMap(i => i.SkuId).SetSerializer(stringGuid);
+        });
+        Map<Domain.Entities.Commercial.PriceListImport>(map =>
+        {
+            map.GetMemberMap(i => i.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(i => i.ComparedPriceListId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(i => i.ConvertedPriceListId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(i => i.ValidFrom).SetSerializer(dateOnlyString);
+            map.GetMemberMap(i => i.ValidTo).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PriceListImportRow>(map =>
+        {
+            map.GetMemberMap(r => r.ImportId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.SkuId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PricingRule>(map =>
+        {
+            map.GetMemberMap(r => r.RuleKey).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.SkuId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.ValidFrom).SetSerializer(pricingDate);
+            map.GetMemberMap(r => r.ValidTo).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PricingPctLimit>(_ => { });
+        Map<Domain.Entities.Commercial.PricingMfLimit>(_ => { });
+        Map<Domain.Entities.Commercial.PricingMfTerm>(_ => { });
+        Map<Domain.Entities.Commercial.PricingQuantityLimit>(_ => { });
+        Map<Domain.Entities.Commercial.FxRate>(map =>
+        {
+            map.GetMemberMap(r => r.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.RateDate).SetSerializer(dateOnlyString);
+        });
+        Map<Domain.Entities.Commercial.PricingChangeLog>(map =>
+        {
+            map.GetMemberMap(c => c.EntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(c => c.ParentId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PricingFieldChange>(_ => { });
+
         _classMapsRegistered = true;
     }
 
@@ -2242,6 +2304,52 @@ public static class DependencyInjection
                     Unique = true,
                     PartialFilterExpression = Builders<VisitNotificationSettings>.Filter.Eq(s => s.IsDeleted, false)
                 }));
+
+            // WP-VW-W6 W6-BE-b - MOD-0156 pricing: the evaluation reads ONE list and ONE rule set per call (§8); an item is unique
+            // per (list, SKU) among the live rows (equality-only partial filter: an item removed from a draft frees its SKU), a
+            // rule version unique per (key, version), a rate unique per (legal entity, pair, day). Scalar keys only.
+            var priceLists = database.GetCollection<Domain.Entities.Commercial.PriceList>(Repositories.Commercial.PriceListRepository.CollectionName);
+            priceLists.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceList>(
+                Builders<Domain.Entities.Commercial.PriceList>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.LegalEntityId)
+                    .Ascending(l => l.CountryCode).Ascending(l => l.Status).Ascending(l => l.ValidFrom),
+                new CreateIndexOptions { Name = "ix_commercial_price_lists_tenant_le_country_status_from" }));
+            var priceListItems = database.GetCollection<Domain.Entities.Commercial.PriceListItem>(Repositories.Commercial.PriceListItemRepository.CollectionName);
+            priceListItems.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceListItem>(
+                Builders<Domain.Entities.Commercial.PriceListItem>.IndexKeys.Ascending(i => i.TenantId).Ascending(i => i.PriceListId).Ascending(i => i.SkuId),
+                new CreateIndexOptions<Domain.Entities.Commercial.PriceListItem>
+                {
+                    Name = "ux_commercial_price_list_items_tenant_list_sku",
+                    Unique = true,
+                    PartialFilterExpression = Builders<Domain.Entities.Commercial.PriceListItem>.Filter.Eq(i => i.IsDeleted, false)
+                }));
+            var priceListImports = database.GetCollection<Domain.Entities.Commercial.PriceListImport>(Repositories.Commercial.PriceListImportRepository.CollectionName);
+            priceListImports.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceListImport>(
+                Builders<Domain.Entities.Commercial.PriceListImport>.IndexKeys.Ascending(i => i.TenantId).Descending(i => i.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_price_list_imports_tenant_created" }));
+            var priceListImportRows = database.GetCollection<Domain.Entities.Commercial.PriceListImportRow>(Repositories.Commercial.PriceListImportRepository.RowsCollectionName);
+            priceListImportRows.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceListImportRow>(
+                Builders<Domain.Entities.Commercial.PriceListImportRow>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.ImportId).Ascending(r => r.RowNo),
+                new CreateIndexOptions { Name = "ix_commercial_price_list_import_rows_tenant_import_row" }));
+            var pricingRules = database.GetCollection<Domain.Entities.Commercial.PricingRule>(Repositories.Commercial.PricingRuleRepository.CollectionName);
+            pricingRules.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingRule>(
+                Builders<Domain.Entities.Commercial.PricingRule>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.LegalEntityId)
+                    .Ascending(r => r.SkuId).Ascending(r => r.Status),
+                new CreateIndexOptions { Name = "ix_commercial_pricing_rules_tenant_le_sku_status" }));
+            pricingRules.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingRule>(
+                Builders<Domain.Entities.Commercial.PricingRule>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.RuleKey).Ascending(r => r.RuleVersion),
+                new CreateIndexOptions { Name = "ux_commercial_pricing_rules_tenant_key_version", Unique = true }));
+            var fxRates = database.GetCollection<Domain.Entities.Commercial.FxRate>(Repositories.Commercial.FxRateRepository.CollectionName);
+            fxRates.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.FxRate>(
+                Builders<Domain.Entities.Commercial.FxRate>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.LegalEntityId)
+                    .Ascending(r => r.FromCurrency).Ascending(r => r.ToCurrency).Ascending(r => r.RateDate),
+                new CreateIndexOptions { Name = "ux_commercial_fx_rates_tenant_le_pair_date", Unique = true }));
+            var pricingLog = database.GetCollection<Domain.Entities.Commercial.PricingChangeLog>(Repositories.Commercial.PricingChangeLogRepository.CollectionName);
+            pricingLog.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingChangeLog>(
+                Builders<Domain.Entities.Commercial.PricingChangeLog>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.EntityType).Descending(c => c.At),
+                new CreateIndexOptions { Name = "ix_commercial_pricing_change_log_tenant_type_at" }));
+            pricingLog.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingChangeLog>(
+                Builders<Domain.Entities.Commercial.PricingChangeLog>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.EntityId),
+                new CreateIndexOptions { Name = "ix_commercial_pricing_change_log_tenant_entity" }));
 
             // WP-VW-W3E (W3E-BE-a) - crm_institution_qr_codes: ONE ACTIVE code per institution, guaranteed by the database
             // (a concurrent second issue loses). Equality-only partial filter (Status:"active", IsDeleted:false) - $ne in a

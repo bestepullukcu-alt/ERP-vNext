@@ -176,6 +176,21 @@ public static class DependencyInjection
             Features.Segmentation.Resolution.ContactSegmentSetReader>();
         services.AddScoped<Features.VisitPlanning.TargetStatus.ContactPeriodStatusReader>();
 
+        // WP-VW-W6 W6-BE-b — MOD-0156 Price Lists & Discount Guardrails (Features/Commercial/Pricing): the in-process
+        // contracts MOD-0168 consumes (IPriceResolver, IPricingEvaluator, IFxRateReader — pure reads, the arithmetic in
+        // Evaluation/ only), the change-log writer, the shared handler contexts, the four-eyes outcome applier + reconciler.
+        services.AddScoped<Features.Commercial.Pricing.Evaluation.PriceResolver>();
+        services.AddScoped<Features.Commercial.Pricing.Contracts.IPriceResolver>(sp =>
+            sp.GetRequiredService<Features.Commercial.Pricing.Evaluation.PriceResolver>());
+        services.AddScoped<Features.Commercial.Pricing.Contracts.IPricingEvaluator, Features.Commercial.Pricing.Evaluation.PricingEvaluator>();
+        services.AddScoped<Features.Commercial.Pricing.Contracts.IFxRateReader, Features.Commercial.Pricing.Evaluation.FxRateReader>();
+        services.AddScoped<Features.Commercial.Pricing.PricingChangeLogWriter>();
+        services.AddScoped<Features.Commercial.Pricing.PriceLists.PriceListItemWriter>();
+        services.AddScoped<Features.Commercial.Pricing.PriceLists.Handlers.CommandHandlers.PriceListCommandContext>();
+        services.AddScoped<Features.Commercial.Pricing.PricingRules.Handlers.PricingRuleContext>();
+        services.AddScoped<Features.Commercial.Pricing.PricingApprovalOutcomeApplier>();
+        services.AddScoped<Features.Commercial.Pricing.PricingApprovalReconciler>();
+
         return services;
     }
 }
