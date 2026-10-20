@@ -153,7 +153,7 @@ public sealed class PolicyMutationMongoTests
         Assert.Equal(1, await context.Audit.CountDocumentsAsync(a => a.TenantId == tenant.ToString("D")));
     }
 
-    private static SafetyStockMongoContext Context()
+    internal static SafetyStockMongoContext Context()
     {
         var uri = OwnedMongoConnection.Uri;
         EnsureReplicaSet(uri);
