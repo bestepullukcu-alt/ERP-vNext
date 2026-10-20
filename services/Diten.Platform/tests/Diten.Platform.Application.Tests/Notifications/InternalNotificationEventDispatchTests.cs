@@ -229,6 +229,38 @@ public sealed class InternalNotificationEventDispatchTests
         Assert.Equal("sent", result.Status);
     }
 
+    // ── W5-FIX (3) — one address, one mail: a reader in To is not copied in Cc as well ─────────────────────────────
+
+    [Fact]
+    public async Task The_same_user_in_to_and_in_copy_is_written_to_once_and_left_out_of_the_copy()
+    {
+        using var host = new Host();
+
+        var result = await host.ReadAsync(await host.PostAsync(Body(
+            to: [new InternalEventRecipient(UserId: Manager)],
+            cc: [LineManagerOf(Rep), new InternalEventRecipient(UserId: EnglishColleague)])));
+
+        var sent = Assert.Single(host.Adapter.Requests);
+        Assert.Equal(["manager@a.test"], sent.To.Select(r => r.Email));
+        Assert.Equal(["colleague@a.test"], sent.Cc!.Select(r => r.Email));
+        Assert.Equal(Manager, Assert.Single(result.Resolved.To).UserId);
+        Assert.Equal([EnglishColleague], result.Resolved.Cc.Select(c => c.UserId!.Value));
+    }
+
+    [Fact]
+    public async Task The_same_address_in_another_letter_case_in_to_and_in_copy_is_one_reader()
+    {
+        using var host = new Host();
+
+        await host.PostAsync(Body(
+            to: [new InternalEventRecipient(Email: "PV-Safety@A.test", DisplayName: "PV", Locale: "tr")],
+            cc: [new InternalEventRecipient(Email: "pv-safety@a.test"), LineManagerOf(Rep)]));
+
+        var sent = Assert.Single(host.Adapter.Requests);
+        Assert.Equal(["PV-Safety@A.test"], sent.To.Select(r => r.Email));
+        Assert.Equal(["manager@a.test"], sent.Cc!.Select(r => r.Email));
+    }
+
     [Fact]
     public async Task The_answer_carries_no_e_mail_address_at_all()
     {

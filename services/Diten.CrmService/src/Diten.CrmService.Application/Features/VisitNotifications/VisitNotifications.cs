@@ -68,7 +68,10 @@ public sealed record PlatformNotificationRecipient(string? UserId = null, string
 public sealed record PlatformNotificationRequest(
     Guid TenantId, string EventCode, string SourceModule, IReadOnlyList<PlatformNotificationRecipient> To,
     IReadOnlyList<PlatformNotificationRecipient> Cc, IReadOnlyDictionary<string, string> Variables, string CorrelationId,
-    string? CausationId = null);
+    string? CausationId = null,
+    /// <summary>W5-FIX (contract annex) — the user a reply goes to (the representative); the Platform resolves the address.
+    /// Null — not a user id — and the field is not sent at all.</summary>
+    string? ReplyToUserId = null);
 
 public sealed record PlatformResolvedRecipient(string? UserId, string Via);
 
@@ -117,6 +120,17 @@ public sealed class VisitNotificationSender
         row.CreatedTicks = now.UtcTicks;
         row.Status = VisitNotificationStatuses.Queued;
         row.CorrelationId = string.IsNullOrEmpty(row.CorrelationId) ? CorrelationOf(row) : row.CorrelationId;
+
+        // W5-FIX — a report already mailed under the event's legacy (hyphenated) code is not mailed again under today's:
+        // the unique index sees two different codes, so the old spelling is asked for here.
+        foreach (var alias in VisitNotificationEvents.Aliases(row.EventCode).Where(code => code != row.EventCode))
+        {
+            if (await _rows.ExistsAsync(row.TenantId, alias, row.SubjectId, ct))
+            {
+                return false;
+            }
+        }
+
         if (!await _rows.TryInsertAsync(row, ct))
         {
             return false;
@@ -143,8 +157,11 @@ public sealed class VisitNotificationSender
         row.Attempts++;
         var result = to.Count == 0 && cc.Count == 0
             ? new PlatformNotificationResult(true, VisitNotificationStatuses.NoRecipient, [], [], [])
-            : await _platform.DispatchAsync(new PlatformNotificationRequest(row.TenantId, row.EventCode, VisitNotificationLimits.SourceModule,
-                to, cc, row.Variables, row.CorrelationId), ct);
+            // W5-FIX — always today's code (a legacy row retried by the scheduler would be refused by the catalogue), and the
+            // reply goes to the representative when the row's representative is a user id.
+            : await _platform.DispatchAsync(new PlatformNotificationRequest(row.TenantId, VisitNotificationEvents.Canonical(row.EventCode),
+                VisitNotificationLimits.SourceModule, to, cc, row.Variables, row.CorrelationId,
+                ReplyToUserId: ReplyToOf(row)), ct);
         Apply(row, result, now);
         row.ClaimedUntilTicks = 0;
         row.ClaimedBy = null;
@@ -233,6 +250,11 @@ public sealed class VisitNotificationSender
 
         return new PlatformNotificationRecipient(Email: address.Trim());
     }
+
+    /// <summary>W5-FIX — every visit e-mail (summary, adverse event, off-label, overdue) is answered to the representative
+    /// (K-N4); a representative id that is not a user id (Guid) sends no reply address.</summary>
+    public static string? ReplyToOf(VisitNotification row)
+        => Guid.TryParse(row.ResourceId, out var userId) && userId != Guid.Empty ? userId.ToString("D") : null;
 
     /// <summary>Deterministic: the same subject's event always carries the same correlation id (an idempotency hint).</summary>
     public static string CorrelationOf(VisitNotification row) => $"crm:{row.EventCode}:{row.SubjectId:D}";
@@ -700,7 +722,7 @@ public sealed class VisitNotificationQueryHandlers :
 
         if (request.PageSize is < 1 or > VisitNotificationLimits.MaxPageSize || request.Page is < 1
             || request.From is { } f && request.To is { } t && f > t
-            || request.EventCode is { Length: > 0 } ev && !VisitNotificationEvents.All.Contains(ev)
+            || request.EventCode is { Length: > 0 } ev && !VisitNotificationEvents.All.Contains(VisitNotificationEvents.Canonical(ev.Trim()))
             || request.Status is { Length: > 0 } st && !VisitNotificationStatuses.All.Contains(st))
         {
             return WorkflowApprovalRules.Fail<VisitNotificationPageDto>(VisitNotificationErrors.Invalid,
@@ -716,7 +738,8 @@ public sealed class VisitNotificationQueryHandlers :
             return Response<VisitNotificationPageDto>.Success(new VisitNotificationPageDto([], 0, page, size)); // nothing outside the scope
         }
 
-        var filter = new VisitNotificationFilter(request.From, request.To, NullIfEmpty(request.EventCode), NullIfEmpty(request.Status), resource,
+        var eventCode = NullIfEmpty(request.EventCode) is { } code ? VisitNotificationEvents.Canonical(code) : null;
+        var filter = new VisitNotificationFilter(request.From, request.To, eventCode, NullIfEmpty(request.Status), resource,
             scope.All ? null : scope.Reps.ToList());
         var (items, total) = await _rows.ListAsync(tenantId, filter, (page - 1) * size, size, ct);
         return Response<VisitNotificationPageDto>.Success(new VisitNotificationPageDto(
@@ -745,7 +768,7 @@ public sealed class VisitNotificationQueryHandlers :
     }
 
     private static VisitNotificationRowDto ToRow(VisitNotification r, VisitEvidenceFlagScope scope)
-        => new(r.Id, r.EventCode, r.Status, r.PlannedVisitId, r.VisitReportId, r.ResourceId,
+        => new(r.Id, VisitNotificationEvents.Canonical(r.EventCode), r.Status, r.PlannedVisitId, r.VisitReportId, r.ResourceId,
             r.Variables.TryGetValue("repName", out var name) && !string.IsNullOrWhiteSpace(name) ? name : scope.NameOf(r.ResourceId), r.VisitDate,
             r.CreatedAt, r.SentAt, r.Attempts, r.Notes);
 

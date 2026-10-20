@@ -100,14 +100,42 @@ public sealed class VisitNotificationSettings : EntityBase
     public string? UpdatedBy { get; set; }
 }
 
+/// <summary>
+/// WP-VW-W5 W5-FIX — the event codes, exactly as the Platform's notification catalogue holds them (CrmManifestProvider,
+/// PLT-NOTIFY): lowercase dotted segments of letters and digits, NO hyphen — the catalogue refuses a hyphenated code
+/// (synced as Draft, the dispatch answers 403). Both sides pin the same four strings in a test.
+/// </summary>
 public static class VisitNotificationEvents
 {
-    public const string ReportSubmitted = "crm.visit-report.submitted";
-    public const string AdverseEvent = "crm.visit-report.adverse-event";
-    public const string OffLabelRequest = "crm.visit-report.off-label-request";
-    public const string ReportOverdue = "crm.visit-report.overdue";
+    public const string ReportSubmitted = "crm.visitreport.submitted";
+    public const string AdverseEvent = "crm.visitreport.adverseevent";
+    public const string OffLabelRequest = "crm.visitreport.offlabelrequest";
+    public const string ReportOverdue = "crm.visitreport.overdue";
 
     public static readonly IReadOnlyList<string> All = new[] { ReportSubmitted, AdverseEvent, OffLabelRequest, ReportOverdue };
+
+    /// <summary>
+    /// The codes W5-BE first wrote (hyphenated) → today's. Rows written before W5-FIX keep their code — nothing is
+    /// rewritten — and are READ as today's: the once-per-subject rule, the list filter, the list and preview, and a retry
+    /// all treat the two as one event.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> Legacy = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["crm.visit-report.submitted"] = ReportSubmitted,
+        ["crm.visit-report.adverse-event"] = AdverseEvent,
+        ["crm.visit-report.off-label-request"] = OffLabelRequest,
+        ["crm.visit-report.overdue"] = ReportOverdue
+    };
+
+    /// <summary>Today's code for a stored one (a legacy code maps to its successor; anything else is returned as is).</summary>
+    public static string Canonical(string code) => Legacy.TryGetValue(code, out var current) ? current : code;
+
+    /// <summary>Every code a row of this event may carry: today's first, then its legacy spelling.</summary>
+    public static IReadOnlyList<string> Aliases(string code)
+    {
+        var current = Canonical(code);
+        return new[] { current }.Concat(Legacy.Where(pair => pair.Value == current).Select(pair => pair.Key)).ToList();
+    }
 }
 
 public static class VisitNotificationStatuses

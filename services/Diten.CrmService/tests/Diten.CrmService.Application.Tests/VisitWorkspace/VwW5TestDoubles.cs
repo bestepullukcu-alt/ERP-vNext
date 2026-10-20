@@ -25,6 +25,14 @@ internal sealed class FakeNotificationRows : IVisitNotificationRepository
         }
     }
 
+    public Task<bool> ExistsAsync(Guid tenantId, string eventCode, Guid subjectId, CancellationToken ct)
+    {
+        lock (_lock)
+        {
+            return Task.FromResult(Items.Any(r => r.TenantId == tenantId && r.EventCode == eventCode && r.SubjectId == subjectId));
+        }
+    }
+
     public Task<bool> ReplaceAsync(VisitNotification row, int expectedVersion, CancellationToken ct)
     {
         lock (_lock)
@@ -44,7 +52,7 @@ internal sealed class FakeNotificationRows : IVisitNotificationRepository
     {
         var rows = Items.Where(r => r.TenantId == tenantId
                                     && (f.From is null || r.VisitDate >= f.From) && (f.To is null || r.VisitDate <= f.To)
-                                    && (f.EventCode is null || r.EventCode == f.EventCode) && (f.Status is null || r.Status == f.Status)
+                                    && (f.EventCode is null || VisitNotificationEvents.Aliases(f.EventCode).Contains(r.EventCode)) && (f.Status is null || r.Status == f.Status)
                                     && (f.ResourceId is null || r.ResourceId == f.ResourceId) && (f.Reps is null || f.Reps.Contains(r.ResourceId)))
             .OrderByDescending(r => r.CreatedTicks).ToList();
         return Task.FromResult<(IReadOnlyList<VisitNotification>, long)>((rows.Skip(skip).Take(take).ToList(), rows.Count));

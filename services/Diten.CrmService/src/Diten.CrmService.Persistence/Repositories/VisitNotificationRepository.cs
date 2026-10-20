@@ -49,6 +49,11 @@ public sealed class VisitNotificationRepository : IVisitNotificationRepository
         return false;
     }
 
+    public async Task<bool> ExistsAsync(Guid tenantId, string eventCode, Guid subjectId, CancellationToken cancellationToken)
+        => await _collection.Find(Builders<VisitNotification>.Filter.Where(x =>
+                x.TenantId == tenantId && x.EventCode == eventCode && x.SubjectId == subjectId))
+            .AnyAsync(cancellationToken);
+
     public async Task<VisitNotification?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken)
         => await _collection.Find(Tenant(tenantId) & Builders<VisitNotification>.Filter.Eq(x => x.Id, id)).FirstOrDefaultAsync(cancellationToken);
 
@@ -59,7 +64,8 @@ public sealed class VisitNotificationRepository : IVisitNotificationRepository
         var f = Tenant(tenantId);
         if (filter.From is { } from) f &= b.Gte(x => x.VisitDate, from);
         if (filter.To is { } to) f &= b.Lte(x => x.VisitDate, to);
-        if (filter.EventCode is { } ev) f &= b.Eq(x => x.EventCode, ev);
+        // W5-FIX — an event matches its rows under either spelling (rows written before the rename keep theirs).
+        if (filter.EventCode is { } ev) f &= b.In(x => x.EventCode, VisitNotificationEvents.Aliases(ev));
         if (filter.Status is { } st) f &= b.Eq(x => x.Status, st);
         if (filter.ResourceId is { } rep) f &= b.Eq(x => x.ResourceId, rep);
         if (filter.Reps is { } reps) f &= b.In(x => x.ResourceId, reps);

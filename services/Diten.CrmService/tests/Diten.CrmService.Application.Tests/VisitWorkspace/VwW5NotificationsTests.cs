@@ -298,6 +298,116 @@ public sealed class VwW5NotificationsTests
         await on.TickAsync(default);                                                     // no worker registered: logged, not thrown
     }
 
+    // ═══ W5-FIX · the event codes the Platform catalogue holds, the legacy rows, the reply address ═══════════════
+
+    [Fact]
+    public void F1_the_four_event_codes_are_pinned_to_the_platform_catalogues_strings()
+    {
+        // The SAME four strings are pinned on the Platform side (CrmManifestProvider, CrmVisitReportEventCodeContractTests):
+        // either side changing one turns red. The catalogue accepts lowercase dotted letters and digits only.
+        Assert.Equal(new[] { "crm.visitreport.submitted", "crm.visitreport.adverseevent", "crm.visitreport.offlabelrequest", "crm.visitreport.overdue" },
+            VisitNotificationEvents.All);
+        Assert.Equal("crm.visitreport.submitted", VisitNotificationEvents.ReportSubmitted);
+        Assert.Equal("crm.visitreport.adverseevent", VisitNotificationEvents.AdverseEvent);
+        Assert.Equal("crm.visitreport.offlabelrequest", VisitNotificationEvents.OffLabelRequest);
+        Assert.Equal("crm.visitreport.overdue", VisitNotificationEvents.ReportOverdue);
+        Assert.All(VisitNotificationEvents.All, code => Assert.Matches("^[a-z0-9]+(\\.[a-z0-9]+)*$", code));
+
+        // The first (hyphenated) spellings read as today's codes, and nothing else does.
+        Assert.Equal(VisitNotificationEvents.AdverseEvent, VisitNotificationEvents.Canonical("crm.visit-report.adverse-event"));
+        Assert.Equal(VisitNotificationEvents.All, VisitNotificationEvents.Legacy.Keys.Select(VisitNotificationEvents.Canonical));
+        Assert.Equal("crm.something.else", VisitNotificationEvents.Canonical("crm.something.else"));
+    }
+
+    [Theory]
+    [InlineData("crm.visit-report.submitted", "crm.visitreport.submitted")]
+    [InlineData("crm.visit-report.adverse-event", "crm.visitreport.adverseevent")]
+    [InlineData("crm.visit-report.off-label-request", "crm.visitreport.offlabelrequest")]
+    [InlineData("crm.visit-report.overdue", "crm.visitreport.overdue")]
+    public async Task F2_a_report_mailed_under_the_old_code_is_not_mailed_again_under_the_new_one(string legacy, string current)
+    {
+        var old = NewRow(Rep, legacy);
+        old.Status = VisitNotificationStatuses.Sent;
+        _n.Rows.Items.Add(old);
+
+        var again = NewRow(Rep, current);
+        again.SubjectId = old.SubjectId;
+        var queued = await _n.Sender().QueueAndSendAsync(again, default);
+
+        Assert.False(queued);
+        Assert.Single(_n.Rows.Items);
+        Assert.Empty(_n.Platform.Requests);
+
+        // another subject under the new code still goes
+        Assert.True(await _n.Sender().QueueAndSendAsync(NewRow(Rep, current), default));
+        Assert.Equal(current, Assert.Single(_n.Platform.Requests).EventCode);
+    }
+
+    [Fact]
+    public async Task F3_a_failed_row_written_under_the_old_code_is_retried_under_the_new_one()
+    {
+        var old = NewRow(Rep, "crm.visit-report.submitted");
+        old.Status = VisitNotificationStatuses.Failed;
+        _n.Rows.Items.Add(old);
+
+        await _n.Sender().SendAsync(old, default);
+
+        Assert.Equal(VisitNotificationEvents.ReportSubmitted, Assert.Single(_n.Platform.Requests).EventCode);
+        Assert.Equal("crm.visit-report.submitted", old.EventCode); // the row keeps its stored code: nothing is rewritten
+    }
+
+    [Fact]
+    public async Task F4_the_list_filter_finds_old_rows_under_the_new_code_and_shows_the_new_code()
+    {
+        var team = new TeamWorld();
+        var legacy = Stored(Rep, "crm.visit-report.adverse-event");
+        var current = Stored(Rep, VisitNotificationEvents.AdverseEvent);
+        Stored(Rep, VisitNotificationEvents.ReportSubmitted);
+        var handlers = team.Handlers(_n.Rows, "admin", VisitNotificationPermissions.SettingsManage);
+
+        var page = (await handlers.Handle(new ListVisitNotificationsQuery(EventCode: VisitNotificationEvents.AdverseEvent), default)).Data!;
+        var byOld = (await handlers.Handle(new ListVisitNotificationsQuery(EventCode: "crm.visit-report.adverse-event"), default)).Data!;
+        var detail = (await handlers.Handle(new GetVisitNotificationQuery(legacy.Id), default)).Data!;
+
+        Assert.Equal(new[] { current.Id, legacy.Id }.OrderBy(x => x), page.Items.Select(i => i.Id).OrderBy(x => x));
+        Assert.All(page.Items, i => Assert.Equal(VisitNotificationEvents.AdverseEvent, i.EventCode));
+        Assert.Equal(page.Items.Select(i => i.Id).OrderBy(x => x), byOld.Items.Select(i => i.Id).OrderBy(x => x));
+        Assert.Equal(VisitNotificationEvents.AdverseEvent, detail.Row.EventCode);
+    }
+
+    [Fact]
+    public async Task F5_every_visit_mail_replies_to_the_representative_and_a_rep_that_is_not_a_user_id_sends_no_reply_address()
+    {
+        var repUser = Guid.Parse("5e5e5e5e-0000-0000-0000-00000000005e");
+        foreach (var code in VisitNotificationEvents.All)
+        {
+            await _n.Sender().QueueAndSendAsync(NewRow(repUser.ToString("D"), code), default);
+        }
+
+        Assert.Equal(4, _n.Platform.Requests.Count);
+        Assert.All(_n.Platform.Requests, r => Assert.Equal(repUser.ToString("D"), r.ReplyToUserId));
+
+        await _n.Sender().QueueAndSendAsync(NewRow(Rep, VisitNotificationEvents.ReportSubmitted), default); // "rep-1"
+        Assert.Null(_n.Platform.Requests.Last().ReplyToUserId);
+    }
+
+    [Fact]
+    public async Task F6_the_platform_body_carries_reply_to_with_a_user_id_and_no_reply_to_field_without_one()
+    {
+        var handler = new PlatformHandler { Answer = _ => Json("{\"data\":{\"dispatches\":[],\"resolved\":{\"to\":[],\"cc\":[]},\"status\":\"queued\"},\"isSuccessful\":true}") };
+        var client = Client(handler, "internal-key-1");
+        var repUser = Guid.NewGuid().ToString("D");
+
+        await client.DispatchAsync(Request() with { ReplyToUserId = repUser }, default);
+        await client.DispatchAsync(Request(), default);
+
+        var with = JsonDocument.Parse(handler.Bodies[0]).RootElement;
+        var without = JsonDocument.Parse(handler.Bodies[1]).RootElement;
+        Assert.Equal(repUser, with.GetProperty("replyTo").GetProperty("userId").GetString());
+        Assert.False(without.TryGetProperty("replyTo", out _));
+        Assert.Equal(VisitNotificationEvents.ReportSubmitted, without.GetProperty("eventCode").GetString());
+    }
+
     // ═══ 6 · the real mongod (the lane's own port; skipped without CRM_TEST_MONGO_URI) ═════════════════════════
 
     [Fact]

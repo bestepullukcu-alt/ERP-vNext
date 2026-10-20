@@ -16,6 +16,10 @@ public interface IVisitNotificationRepository
     /// <summary>False when the (tenant, event, subject) row already exists — the e-mail was already queued / sent.</summary>
     Task<bool> TryInsertAsync(VisitNotification row, CancellationToken cancellationToken);
 
+    /// <summary>WP-VW-W5 W5-FIX — whether a row of this exact event code exists for the subject (the sender asks it for the
+    /// legacy spelling of a code, so a report mailed before the rename is not mailed again).</summary>
+    Task<bool> ExistsAsync(Guid tenantId, string eventCode, Guid subjectId, CancellationToken cancellationToken);
+
     /// <summary>Optimistic replace on the technical version.</summary>
     Task<bool> ReplaceAsync(VisitNotification row, int expectedVersion, CancellationToken cancellationToken);
 

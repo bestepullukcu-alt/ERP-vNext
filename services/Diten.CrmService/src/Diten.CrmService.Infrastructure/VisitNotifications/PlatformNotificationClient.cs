@@ -43,16 +43,22 @@ public sealed class PlatformNotificationClient : IPlatformNotificationClient
             return PlatformNotificationResult.Unavailable("internal-api-key-missing");
         }
 
-        var body = new
+        var body = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
-            tenantId = request.TenantId,
-            eventCode = request.EventCode,
-            sourceModule = request.SourceModule,
-            recipients = new { to = request.To.Select(Wire), cc = request.Cc.Select(Wire) },
-            variables = request.Variables,
-            correlationId = request.CorrelationId,
-            causationId = request.CausationId
+            ["tenantId"] = request.TenantId,
+            ["eventCode"] = request.EventCode,
+            ["sourceModule"] = request.SourceModule,
+            ["recipients"] = new { to = request.To.Select(Wire), cc = request.Cc.Select(Wire) },
+            ["variables"] = request.Variables,
+            ["correlationId"] = request.CorrelationId,
+            ["causationId"] = request.CausationId
         };
+
+        // W5-FIX (contract annex) — replyTo only with a user id; without one the field is not sent at all.
+        if (request.ReplyToUserId is { Length: > 0 } replyTo)
+        {
+            body["replyTo"] = new { userId = replyTo };
+        }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TotalTimeout);
