@@ -1628,6 +1628,9 @@ now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU
 - Kuyruk, Bloke, Yeniden test ve Ayarlar listeleri ortak liste sözcüklerini 7 dilde alır (arama ipucu artık "Search..." değil); `_Header` sekmeleri `text-none`. Karantina gün hesabı (yeniden test / imha tarihi) UTC — MOD-0176 ASSUMPTION-0176-05 ile aynı çizgi, değişmedi.
 - **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
 
+**WP-MVP1-FIX-LIVE3 (ek) — karar uçlarının anahtarı öznitelikte (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (ek maddeler e / f), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md` (§7).
+- `createDecision` ve `submitDecision` `[HasAnyPermission(decisions.create, blocked.dispose, blocked.unblock)]` taşır; gövdedeki "üçünden biri" kontrolü kalktı. `createDecision`'da hangi anahtarın gerektiği kararın türüne bağlı (§4.6) — adıyla istisna (`AuthorizationGuardTests.BodyKeyedActions`). Davranış aynı: her anahtar geçer, anahtarsız 403 (aynı gövde), anonim 401.
+
 
 ## 20. Follow-up Items
 
