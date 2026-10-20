@@ -138,3 +138,21 @@ Ajan commit'i `2ace45caf` → test dalına cherry-pick. Platform (+ testler); Ga
 - **Testler:** CT hedefli (dispatch + çözümleyici + şablon + kabuk) 542/0; ajan tam takım Platform 8768/6 = taban (aynı 6), mimari 127/17 = taban, LoginOnly yalnız ESignature.
 
 **Açık:** Meetings `organizer-added/-updated/-cancelled` olayları aynı tire kuralı yüzünden hiç etkinleşmiyor (eski kusur, Meetings ekibine not — kullanıcı: biz düzeltmiyoruz). Olay görünen adları yalnız İngilizce yedek ad (manifest deseni).
+
+## §36.1 Agent Prompt — W5-FIX (paste-ready · CRM + bir Platform testi; W5-WEB ile paralel)
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W5 · W5-FIX — CRM olay kodlarını Platform kataloğuyla eşitle (tiresiz), CRM replyTo göndersin, Platform'da To/Cc tekilleştirme kuralına test (CT sabotajı yeşil kaldı)
+Repository: C:\tmp\vw-w5-fix (worktree, test/crm-content-visit-e2e güncel başı — 9f1ebcc96 ya da daha yeni) · Branch: wp/vw-w5-fix · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA. Platform sahibi kullanıcı (onay 2026-10-20, yalnız (3)'teki test).
+
+ÖNCE OKU: execution/domains/commercial-suite/work-packs/WP-VW-W5-notifications.md — "Sözleşme eki", §37 W5-BE, §37 PLT-NOTIFY (tiresiz kodlar, daraltılmış zorunlu değişkenler, CT sabotajı 1) · CRM: Domain/Entities/VisitNotification.cs (~105–108 olay sabitleri), Features/VisitNotifications/VisitNotifications.cs (alıcı tarifi, değişkenler), Infrastructure/VisitNotifications/PlatformNotificationClient.cs (gövde) · Platform: Features/Crm/SelfRegistration/CrmManifestProvider.cs (NotificationEvents), Features/Notifications/Services/InternalEventDispatchService.cs (To/Cc tekilleştirme satırı "One address, one mail"), tests/…/Notifications/InternalNotificationEventDispatchTests.cs.
+NE:
+(1) CRM olay sabitleri: `crm.visitreport.submitted`, `crm.visitreport.adverseevent`, `crm.visitreport.offlabelrequest`, `crm.visitreport.overdue`. Mevcut `crm_visit_notifications` satırlarının EventCode değeri: tekil indeks (TenantId, EventCode, SubjectId) eski satırla yenisini ayrı sayar → yerel veride eski koddaki satırlar için okuma uyumu (liste / önizleme eski kodu da tanır) ya da tek seferlik göç — basit ve güvenli olanı seç, raporda gerekçele; aynı rapor için ikinci e-posta GİTMEMELİ (eski kodla gönderilmiş rapor yeni kodla tekrar gönderilmez — test).
+(2) Sözleşme kilidi: CRM testi dört kodu sabit dizgelerle ölçer; Platform testi CrmManifestProvider'daki dört kodu aynı dizgelerle ölçer (iki taraf aynı listeyi sabitler — biri değişirse kırmızı).
+(3) Platform: "To'daki adres Cc'ye ikinci kez yazılmaz" kuralına test (aynı kullanıcı To ve Cc'de → tek alıcı, Cc'de yok; aynı e-posta farklı biçimde (büyük / küçük harf) → yine tek). Sabotaj: süzgeç satırı kaldırılınca kırmızı.
+(4) CRM `replyTo: { userId: <temsilci> }` gönderir (rapor özeti, advers, MSL, süre doldu); temsilci kimliği Guid değilse alan gönderilmez. Test: gövdede replyTo var / yok.
+KORU/YAPMA: başka davranış değişmez; Platform'da yalnız test (üretim kodu değişmez); localhost:27017 YOK.
+DOĞRULA: CRM Application tam takım (-o repo içi; taban aynı baş — bilinen VisitPlanningFix2 -o, kararsız PiiMasking) + Platform hedefli (Notifications + Crm manifest) + mimari (known_failures.py, taban sınıfları). Sabotajlar: (a) CRM sabitlerinden biri tireli eski hâline → CRM sözleşme testi kırmızı; (b) Platform tekilleştirme satırı kaldır → yeni test kırmızı; (c) replyTo eklenmesin → kırmızı.
+Commit: "fix(crm): WP-VW-W5 W5-FIX — visit notification event codes match the Platform catalogue (hyphen-less, pinned on both sides), reply-to the rep, To/Cc dedupe rule tested" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
