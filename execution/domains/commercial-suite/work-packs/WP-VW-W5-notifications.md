@@ -121,3 +121,20 @@ Ajan commit'i `34c19673d` → test dalına cherry-pick. CRM + Platform `CrmManif
 - **PLT-NOTIFY** değişken adları + `replyTo` → "Sözleşme eki"; CRM `replyTo` gönderimi PLT-NOTIFY sonrası (W5-BE-FU).
 - **Canlı yapılandırma:** `PlatformService:BaseUrl`, `Crm:Notifications:WebBaseUrl` (yerel varsayılan 5057 / 5001).
 - Rapor gönderimi e-posta denemesini aynı istekte bekliyor (en kötü ~3 sn × olay sayısı) — canlı E4'te ölçülecek.
+
+## §37 CT kabul — PLT-NOTIFY E2 ACCEPTED (2026-10-20 · CRM olay kodu düzeltmesi + bir test boşluğu W5-FIX'e)
+Ajan commit'i `2ace45caf` → test dalına cherry-pick. Platform (+ testler); Gateway / ocelot değişmedi.
+
+**Yapılan:** `ILineManagerResolver` (kendisi hariç, boş koltuk → yukarı, döngü / 32 seviye → None, başka kiracı → None; `ApproverResolver` ortak çözümleyiciden geçer, havuz yedeği timesheet'te). İç uç `POST api/internal/notifications/events/dispatch`: anahtar → 401 (okuma yok); kiracı yok / pasif → 404; olay katalogda yok / aktif değil / başka modülün → 403 (MOD-0155 → CRM sahipliği açık tabloyla); kiracı bağlamı gövdeden (`TenantScope`); alıcı userId / lineManagerOf / email; dil başına dispatch; yanıtta adres yok; alıcı yoksa `no-recipient`; `replyTo { userId }` aynı kiracıda çözülür (Reply-To + alt bilgi, yeniden denemede korunur). Dispatch'e `SourceModule` + `ReplyToEmail`. 4 olay × 7 dil şablon (06 mockup kabuğu; advers "ACİL · 24 saat"; KVKK notu; hasta kimliği yok).
+
+**Sözleşme değişiklikleri (ajan, gerekçeli — kabul):**
+- **Olay kodları tiresiz:** katalog kuralı tire kabul etmiyor → `crm.visitreport.submitted`, `crm.visitreport.adverseevent`, `crm.visitreport.offlabelrequest`, `crm.visitreport.overdue`. "Sözleşme eki"ndeki tireli adlar bunlarla değişir; **CRM sabitleri (`VisitNotification.cs` ~105–108) W5-FIX'te**.
+- **Zorunlu değişkenler daraltıldı:** `repName`, `visitDate`, `reportUrl` (+ overdue `deadline`); boş hekim / kurum 422 yerine bölüm gizlenir. `adverseEvent` / `offLabelRequest` tanımlı ama gösterilmez. Tarihler CRM'in gönderdiği ham biçimde (yerelleştirme CRM'de — W5-FIX).
+
+**CT kontrolü:**
+- **Kod:** tenant sırası ve kapsamı doğru; `replyTo` ve userId alıcıları Auth istemcisinde sunucu tarafı kiracıyla çözülüyor (`AuthTaskNotificationRecipientClient` ITenantContext; `TenantScope` gövdeden) — başka kiracı testleri var.
+- **CT sabotajı 1 (ajanın yapmadığı) — YEŞİL KALDI = test boşluğu:** "To'daki adres Cc'ye ikinci kez yazılmaz" süzgeci kaldırıldı → hedefli 542 test yeşil. → **W5-FIX (1)**.
+- **CT sabotajı 2:** "To boş, Cc dolu → Cc To'ya yazılır" kaldırıldı → `Nobody_in_to_but_somebody_in_copy_is_written_to_rather_than_left_out` **kırmızı**; md5 geri.
+- **Testler:** CT hedefli (dispatch + çözümleyici + şablon + kabuk) 542/0; ajan tam takım Platform 8768/6 = taban (aynı 6), mimari 127/17 = taban, LoginOnly yalnız ESignature.
+
+**Açık:** Meetings `organizer-added/-updated/-cancelled` olayları aynı tire kuralı yüzünden hiç etkinleşmiyor (eski kusur, Meetings ekibine not — kullanıcı: biz düzeltmiyoruz). Olay görünen adları yalnız İngilizce yedek ad (manifest deseni).
