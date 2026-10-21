@@ -26,6 +26,28 @@
 
 Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır (listedeki, yazardan başka bir kişi onaylar; başka bir kişi birleştirir). Var olan bir sahip değerini değiştirmek (örneğin e-postayı role çevirmek) muaf değişiklik değildir ve bağımsız inceleme ister (SOP §20.4).
 
+## Soru biçimi — her Control Tower, her soru (S-22, sahip kararı 2026-10-21)
+
+Sahibin ya da geliştiricinin karar vermesi gereken her soru, yanıtın **sonunda** ve metnin içinde, şu biçimde yazılır.
+Butonlu soru kutusu yalnız ek kolaylıktır; metinde "soru kutuda" denmez.
+
+Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; terminalde ve Codex'te de okunur):
+
+```text
+> ❓ **SORU:** <tek cümle — hangi kararı istiyorum>
+> **1) <seçenek> — ÖNERİM**, çünkü <tek cümle neden>
+> **2) <seçenek>** — <seçilirse ne olur>
+> "1" derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
+```
+
+Aynı seçenekler istenirse butonlu kutuyla da verilir; görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her
+soruda token harcar.
+
+- Bir yanıtta en çok **bir** soru; en çok üç seçenek. Karar gerekmiyorsa soru yazılmaz.
+- Önerilen seçenek `ÖNERİM` ile işaretlenir ve gerekçesi tek cümledir; öneri yoksa "önerim yok, çünkü …" yazılır.
+- Her seçenek neye izin verdiğini ve vermediğini söyler; sahipten uzun onay metni beklenmez.
+- Soru teknik terimsiz, düz Türkçe; kod, kimlik ya da yol gerekiyorsa seçeneğin içinde tek parça yazılır.
+
 ## 0. Yeni Control Tower açılışı
 
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
@@ -57,8 +79,8 @@ Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır
      worktree açar (`git worktree add -b chore/ct/<q>-ct-01 --no-track .claude/worktrees/<q>-ct-01 origin/main`);
      kuyruk ya da kayıt satırı yazmaz (`--prepare` sınırı).
   5. **Başkasının işi.** Açık bir oturum süreçten ölçülemez (oturum taşınsa da süreç klasörü değişmez). Hedef worktree
-     kirliyse ya da son 60 dakikada değişmişse (`git -C <wt> log -g -1 --format=%cr`, `find <wt> -newermt '-60
-     minutes' -not -path '*/.git*' | head -1`) tek soru sor: "Bu worktree'de açık başka bir CT var mı? evet: geçmem /
+     kirliyse ya da son 60 dakikada değişmişse (`git -C <wt> log -g -1 --format=%cr`, `find <wt> -mmin -60 -not -path
+     '*/.git*' | head -1`; macOS'ta denendi — `-newermt '-60 minutes'` orada hata verir, S-20) tek soru sor: "Bu worktree'de açık başka bir CT var mı? evet: geçmem /
      hayır: geçerim". `origin/main` gerisindeyse yazma; ilk soru `git merge --no-edit origin/main` (merge commit;
      çakışmada `git merge --abort`).
   6. **Geçemiyorsan devam etme.** Araç oturumu taşıyamıyorsa (Codex) worktree'yi hazırla ve yeni oturumun açılacağı
@@ -92,6 +114,9 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
 ```
 
 - Araç raporu yalnız ekrana yazar; Control Tower onu tek yönlendirmeyle iş paketinin kanıt yoluna kaydeder.
+- İlk çağrıda (dosyaya yazılmaz) rapor uzunsa (yüzlerce `ref:` satırı) ekrandan süzülerek okunur:
+  `… --discover "<ad>" | grep -v '^ref:'` — `ÖZET`, `kaynak`, `BULGU`, `EKSİK`, `İNCELENEN REF'LER` ve `sonuç`
+  satırları okunur; ref satırları yalnız sayılır. Süzme yine kesilirse inceleme "kısmi"dir (S-21).
 - Rapor: aracın kimliği (commit + betiğin SHA-256'sı), sorgu, `origin/main` SHA'sı ve son fetch zamanı, incelenen
   kaynakların kimlikleri, eksikler, sonuç ve çıkış kodu.
 - Raporun son satırı `rapor-sha256: <hex>`. Değer, bu satır **hariç** önceki bütün satırların `\n` ile birleştirilip
