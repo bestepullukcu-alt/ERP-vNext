@@ -49,7 +49,8 @@
             "heading": "1. Başlangıç ve kimlik",
             "anchors": [
               "Kayıt, sahiplik ya da onay uydurma.",
-              "ayrı bir worktree ve dal iste. O ana kadar hiçbir dosya yazma, geçici dosya dahil"
+              "hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme. Geliştiriciden klasör seçmesini isteme",
+              "§0 \"Yer\" adımıyla modülün worktree ve dalına kendin geç; worktree açmak tek yazma yetkindir, commit/push değil."
             ]
           },
           {

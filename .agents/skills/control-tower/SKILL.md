@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:d8547e74b757` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:383f43a353c7` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -19,8 +19,9 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 - Dal, HEAD ve `git status --porcelain` çıktısını kendin ölç; bunları ve kaynaklardan okunabilen hiçbir alanı kullanıcıya
   sorma.
-- Önce yeri ölç: `git fetch` sonrası ağaç `origin/main`'in gerisindeyse ya da paylaşılan ana klasördeysen dur; main'den
-  ayrı bir worktree ve dal iste. O ana kadar hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme.
+- Önce yeri ölç (ilk satır, §6). Paylaşılan ana klasörde ya da `origin/main` gerisindeki ağaçta
+  hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme. Geliştiriciden klasör seçmesini isteme: kartın
+  §0 "Yer" adımıyla modülün worktree ve dalına kendin geç; worktree açmak tek yazma yetkindir, commit/push değil.
 - Kartın tablosundaki araçların bu ağaçta olup olmadığını ölç. Olmayanı "bu ağaçta yok" diye yaz; çalıştırmış gibi
   davranma, yerine kendi kontrolünü uydurma.
 - Görev kaynağını ve kaydını oku (kartın §0'ı): kuyruk ve kayıt satırı var mı, `main`'de yürürlükte mi. Yürürlükte
@@ -46,8 +47,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 - Mevcut kimliği ve paketi kullan; yeni ya da mükerrer bir kimlik açma.
 - Paketin `status` alanını tek başına okuma; her çağrıda paketin güncel `approval_status` alanını ve kapsam metnini de
-  oku. Onaylı dilimi ve dışarıda kalanı ayrı yaz. Onayı bütün modüle yayma. (Tarihsel örnek, 2026-10-18: MOD-0251
-  paketinde yalnız P2 draft / reference-validation dilimi onaylıydı; bugünün izni paketin kendisinden okunur.)
+  oku. Onaylı dilimi ve dışarıda kalanı ayrı yaz. Onayı bütün modüle yayma. (Ör. 2026-10-18: MOD-0251'de yalnız P2
+  dilimi onaylıydı; bugünün izni paketin kendisinden okunur.)
 - Belgede iddia edilen uygulamayı ilgili kodla ve kanıtın kaydedildiği sürümle karşılaştır (`dosya:satır@commit`).
   Çalışma testi yapılmadıysa "çalışma testi yapılmadı" yaz; okumadan "doğru" deme.
 - Module pack'i (ya da DCP'yi) okurken bu paketin kendi yoluyla bağımsız inceleme kaydı olup olmadığını da oku (`execution/approvals/reviews.tsv`). Kayıt yoksa, paket eski de olsa yeni de olsa, bunu söyle ve pakette yeni iş başlamadan önce bağımsız inceleme öner (SOP §20.4); yalnız önerir, incelemeyi çalıştırmaz ve yazmaz.
@@ -84,7 +85,7 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 İlk yanıt kısadır (hedef yaklaşık 12 satır) ve bu sıradadır:
 
-1. Tek satırda durum: dal, HEAD, görev kaydı.
+1. İlk satır `Klasör: … | Dal: … | HEAD: …`; sonra görev kaydı.
 2. Bilinen eksik ya da okunamayan kaynaklar, adlarıyla; eksik varsa "kısmi inceleme". Sayısını bilmiyorsan sayı uydurma.
 3. Kritik çakışma ya da engel (kimlik çakışması, onaysız görünen kod, kayıtlı kuyruğun yokluğu): satır hedefi bunları
    gizlemez.

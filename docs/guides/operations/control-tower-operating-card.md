@@ -31,6 +31,28 @@ Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
 > için. Eski Control Tower'lar ve onaylı işleri geriye dönük değişmez, durdurulmaz.
 
+- [ ] **Yer (S-18, 2026-10-21; Codex tasarım görüşü KOŞULLU, 5 şartı burada):** geliştirici oturumu her zaman ana
+  klasörde açar ve yalnız `/control-tower <modül>` yazar; yeri CT kurar. Ana klasörde ya da hedef doğrulanana kadar hiçbir
+  dosya yazılmaz; ana klasördeki değişiklikler yeni yere taşınmaz, stash yapılmaz, hiçbir şey silinmez.
+  1. **Doğrula.** `git fetch origin`; aynı depo (`origin` URL'si). Kuyruk kimliği `<q>` modülün kayıt satırından
+     ([`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)) tam eşleşmeyle okunur; satır yoksa ya
+     da birden çoksa önce tek soru sor. Modülün dalı yalnız `chore/ct/<q>-ct-NN` (NN iki hane) biçimindedir; benzer ad,
+     başka kuyruk ya da başka iş sayılmaz.
+  2. **Var olanı bul (salt okunur).** `git worktree list`, yerel dallar ve `origin` dalları. Tek aday:
+     - worktree'si varsa oturumu oraya taşı (Claude Code: `EnterWorktree`, `path`);
+     - worktree'si yok ama yerel dal varsa o dalı kullan; `origin`'deki aynı dalla ayrışmışsa (iki yönde commit) dur ve sor;
+     - yalnız `origin`'de varsa onu izleyen bir worktree aç (`.claude/worktrees/<q>-ct-NN`).
+     Birden çok aday varsa listele, tek soru sor; tahminle seçme.
+  3. **Yoksa yeni aç.** `origin/main`'den (fetch sonrası) `chore/ct/<q>-ct-NN`; NN yerel ve `origin`'deki en büyük
+     numaranın bir fazlası. Dal ya da klasör çakışmasında `--force`, reset ya da üzerine yazma yok: dur ve sor.
+  4. **Başkasının işi.** Hedef worktree'de başka bir açık oturum çalışıyorsa (ölçülebiliyorsa) ya da worktree kirliyse
+     devralma: listele ve tek soru sor. `origin/main` gerisindeyse yazma; ilk soru olarak `git merge --no-edit origin/main`
+     (merge commit; çakışmada `git merge --abort`) iste.
+  5. **Geçemiyorsan devam etme.** Araç oturumu gerçekten taşıyamıyorsa (Codex) worktree'yi hazırla ve yeni oturumun
+     açılacağı klasörü tek satırla söyle; ana klasörde devam etme. Geçişten sonra eski mutlak yolları kullanma; hedefte
+     `AGENTS.md` ve bu kartı yeniden oku.
+  İlk yanıtın ilk satırı ölçülmüş durumdur: `Klasör: … | Dal: … | HEAD: …`. Bulmak salt okunurdur; worktree açmak dosya ve
+  Git kaydı yazar ve bu skill'in tek yazma yetkisidir; commit, push, merge ya da dağıtım izni değildir.
 - [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
   "tamamlanamadı" der (çıkış 2).
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
