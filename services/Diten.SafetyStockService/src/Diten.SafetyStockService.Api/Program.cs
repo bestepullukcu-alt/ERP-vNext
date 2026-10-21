@@ -55,6 +55,14 @@ builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, P
 builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, PolicyMutationResult>, PolicyMutationLoggingBehavior>();
 builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, PolicyMutationResult>, PolicyMutationExceptionBehavior>();
 builder.Services.AddTransient<MediatR.IPipelineBehavior<PolicyMutationCommand, PolicyMutationResult>, PolicyMutationPerformanceBehavior>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<ManualQuantityCommand, ManualQuantityResult>, ManualQuantityValidationBehavior<ManualQuantityCommand>>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<ManualQuantityCommand, ManualQuantityResult>, ManualQuantityLoggingBehavior<ManualQuantityCommand>>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<ManualQuantityCommand, ManualQuantityResult>, ManualQuantityExceptionBehavior<ManualQuantityCommand>>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<ManualQuantityCommand, ManualQuantityResult>, ManualQuantityPerformanceBehavior<ManualQuantityCommand>>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<EffectiveManualQuantityQuery, ManualQuantityResult>, ManualQuantityValidationBehavior<EffectiveManualQuantityQuery>>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<EffectiveManualQuantityQuery, ManualQuantityResult>, ManualQuantityLoggingBehavior<EffectiveManualQuantityQuery>>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<EffectiveManualQuantityQuery, ManualQuantityResult>, ManualQuantityExceptionBehavior<EffectiveManualQuantityQuery>>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<EffectiveManualQuantityQuery, ManualQuantityResult>, ManualQuantityPerformanceBehavior<EffectiveManualQuantityQuery>>();
 builder.Services.AddScoped<IActorSeriesScopeReader, MdmOnlyLegalEntityScopeReader>();
 if (!string.IsNullOrWhiteSpace(builder.Configuration["Mongo:ConnectionString"]))
 {
@@ -62,11 +70,13 @@ if (!string.IsNullOrWhiteSpace(builder.Configuration["Mongo:ConnectionString"]))
     builder.Services.AddScoped<IPolicyAuditAppender, PolicyAuditAppender>();
     builder.Services.AddScoped<IPolicyMutationStore, MongoPolicyMutationStore>();
     builder.Services.AddScoped<IPolicyReadStore, MongoPolicyReadStore>();
+    builder.Services.AddScoped<IManualQuantityStore, ManualQuantityMongoStore>();
 }
 else
 {
     builder.Services.AddScoped<IPolicyMutationStore, UnconfiguredPolicyMutationStore>();
     builder.Services.AddScoped<IPolicyReadStore, UnconfiguredPolicyReadStore>();
+    builder.Services.AddScoped<IManualQuantityStore, UnconfiguredManualQuantityStore>();
 }
 builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection("PlatformRegistration"));
 builder.Services.AddHttpClient();
@@ -77,6 +87,12 @@ builder.Services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityRef
     var url = builder.Configuration["Mdm:LegalEntitiesUrl"];
     if (Uri.TryCreate(url, UriKind.Absolute, out var address))
         client.BaseAddress = address;
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+builder.Services.AddHttpClient<ISkuBaseUomReader, ProductMasterBaseUomReader>(client =>
+{
+    var url = builder.Configuration["Mdm:ProductMasterUrl"];
+    if (Uri.TryCreate(url, UriKind.Absolute, out var address)) client.BaseAddress = address;
     client.Timeout = TimeSpan.FromSeconds(5);
 });
 

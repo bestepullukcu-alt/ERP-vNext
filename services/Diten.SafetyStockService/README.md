@@ -11,6 +11,9 @@ Configuration values are supplied outside source control:
 - `Mdm__LegalEntitiesUrl`: base URL ending in `/api/legal-entities/`; the
   caller's bearer token is forwarded to `lookup-validation`. An unavailable or
   malformed response returns 503.
+- `Mdm__ProductMasterUrl`: PRODUCT-MASTER base URL for `getSku`; the caller's
+  bearer token is forwarded. Manual quantities are unavailable without an active
+  SKU and its base unit. The endpoint does not convert units.
 - `Mongo__ConnectionString`: required for policy writes and reads; use a
   deployment secret or environment variable, never source control.
 - `Mongo__DatabaseName`: shared database name (default `DitenERP`).
@@ -26,3 +29,9 @@ approved mutation permissions are API-only in the module manifest. Each
 successful command and local audit record commit in one Mongo transaction;
 BL-501 central audit and audit visibility remain open. Browser traffic must use a separately approved Gateway route;
 the direct port is for service tests only.
+
+Manual safety-stock quantities require a reason, approved policy revision and
+independent review. Their effective read uses an explicit `asOf` date; MRP
+would supply the ISO week's Monday. This service
+does not yet publish a cross-module quantity contract, so MRP must continue to
+mark safety stock as omitted until that contract is approved and integrated.
