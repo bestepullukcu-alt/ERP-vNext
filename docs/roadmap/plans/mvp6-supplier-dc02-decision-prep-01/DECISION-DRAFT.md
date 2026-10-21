@@ -99,8 +99,38 @@ sürümü → yeni CT-APR-01 onayı), ardından tek bir SupplyChain-içi okuyucu
 geliştirilir. Bu, DC-02'yi kapatır; MOD-0147'nin puanlaması (DC-04) ve risk sınıflaması (DC-05) ile MOD-0148'in portal
 aktörü (DC-03) hâlâ açık kalır — yani ilk dilim tek başına kullanıcıya görünen bir özellik üretmez.
 
+## 5a. D2–D6 için ek ölçüm ve seçenekler (2026-10-21, `origin/main` `9d44e8a1f`, salt okunur)
+
+Yollar `services/Diten.ProcurementService/src/` altındadır.
+
+**Yeni olgular (D2'yi değiştirir):**
+
+| # | Olgu | Kaynak |
+|---|---|---|
+| F10 | `SupplierStatus` = Active / OnHold / Blocked / Inactive; **tek yazım create'te `Active`**. OnHold/Blocked/Inactive'e geçiren komut, handler ya da uç **yok** | `Domain/Entities/Supplier.cs:6-12,95`; `…/CreateSupplierHandler.cs:43`; `Api/Controllers/SuppliersController.cs:33-145` |
+| F11 | Hiçbir işlem durumu okumuyor: PO, sözleşme, fatura, RFx ve teklif yalnız "kayıt var mı" diye bakıyor | `…/CreatePurchaseOrderHandler.cs:70-76`, `…/CreateContractHandler.cs:60-64`, `…/CaptureInvoiceHandler.cs:77-81`, `…/CreateRfxEventHandler.cs:66-77`, `…/SubmitBidHandler.cs:79-84` |
+| F12 | Onay ayrı alanda: `OnboardingStatus` (Draft/InReview/Approved/Rejected), KYC, yaptırım, `Approval`. **Approved ya da Rejected'a geçiren kod yok**; onay gönderimi sahte bir `WF-xxxx` iş akışı kimliği üretiyor; onay ile `SupplierStatus` bağlı değil (onaylanmamış tedarikçi de `Active`) | `Supplier.cs:15-21,76-82,106-113`; `…/SubmitOnboardingCaseHandler.cs:46-68,83` |
+| F13 | `validate` yanıtı yalnız `known` + `status` döner; **`OnboardingStatus` dönmez** | `…/Supplier/SupplierModels.cs:56-64`; `…/ValidateSuppliersHandler.cs:22-35` |
+| F14 | `procurement.suppliers.read` Auth kaynağında hiç geçmiyor; `procurement-suppliers` `AdminModules`'te yok. Anahtar yalnız manifestle kataloğa gelir; kataloğa girerse varsayılan **Viewer** `read` kuralıyla alır, **Admin almaz** | `DefaultRolePermissionTemplate.cs:66,175-216`; `…/SupplierOnboardingManifestProvider.cs:15,30` |
+| F15 | Procurement'ın **servis token şeması yok** (tek JwtBearer, audience `diten-erp`); Auth'un servis token audience politikasında Procurement yok | `Api/Program.cs:38-60`; `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/ServiceIdentityTokenAudiencePolicy.cs:5-17` |
+| F16 | Kiracının varlığı kontrol edilmiyor (her GUID kabul); kiracı/LE eksik ya da claim–başlık çelişkisi → 400 problem+json | `Infrastructure/Middleware/TenantResolutionMiddleware.cs:50-58,68-74,80-88,101-107,109` |
+| F17 | Tedarikçide ödeme koşulu / LE ilişkisi alanı yok; bütün belge ve indeksler Tenant+LE başına | `Supplier.cs:88-125`; `Persistence/SupplierIndexConfiguration.cs:21-39` |
+
+**Çıkarım:** Bugün "uygun mu?" sorusunun Procurement'ta **anlamlı bir cevabı yok** — durum hep `Active`, onay hiç
+verilmiyor. D2 matrisi yazılabilir, ama Procurement durum geçişlerini ve onayı (LE başına, §4.0) uygulamadan **etkisi
+olmaz**. Bu, DC-02'nin MOD-0140 tarafındaki asıl açığıdır.
+
+| # | Karar | Seçenekler | Öneri |
+|---|---|---|---|
+| D2 | Uygunluk ölçütü | (a) yalnız `SupplierStatus` (F10–F11: bugün hep Active); (b) `OnboardingStatus = Approved` **ve** `SupplierStatus ∉ {Blocked, Inactive}` — LE ilişkisinde (§4.0) | **(b)** — kararın "onay LE başına" ilkesine uyan tek seçenek. Ön koşul: MOD-0140 onay ve durum geçişlerini uygular (F10, F12) ve `validate` onayı da döner (F13; sözleşme halefi, D1-b) — **MOD-0140 sahibi, XMC-001** |
+| D3 | Çağrı kimliği | (a) kullanıcının token'ı — her değerlendiricinin `procurement.suppliers.read` tutması gerekir (F14: Admin'de yok); (b) servis kimliği — Procurement'ta yeni bir servis-token şeması + Auth'ta yeni audience (F15) | **(b)**, BL-652 Seçenek 2 ile aynı desen (Auth `service-tokens/issue`). (a) BL-652'de yaşanan "kullanıcıya başka modülün iznini ver" sorununu tekrarlar |
+| D4 | LE iletimi | SupplyChain, MDM'le doğruladığı LE'yi `X-Legal-Entity-Id` ile iletir | Öneri bu. F16: Procurement kiracının varlığını da kontrol etmiyor — SupplyChain kiracıyı token'dan, LE'yi MDM doğrulamasından verir; Procurement'ın kendi doğrulaması ayrı iş (C2, MOD-0140) |
+| D5 | Hata eşlemesi (fail-closed) | Procurement 400 (eksik/çelişen kiracı-LE) · 401/403 · zaman aşımı/ulaşılamaz · `known:false` · uygun değil | 400/401/403/ulaşılamaz → **503**, sıfır yazma (bizim yapılandırma ya da kimlik sorunumuz, kullanıcının değil); `known:false` ve uygun değil → **422**; bunlar paket sürümünde sabitlenir |
+| D6 | İnşa sahibi ve zamanı | — | **Yönetim (Natig)**: MOD-0140 tarafı (onay/durum geçişleri, sözleşme halefi, servis-token şeması) Procurement ekibinde; SupplyChain okuyucusu SCE'de. Zaman: MOD-0147 TPRM'den sonra başladığı için, MOD-0140 işi o zamana kadar bitmeli |
+
 ## 6. Ölçülmeyenler
 
 - Çalışma testi: Procurement + gateway + SupplyChain ayağa kaldırılıp `validate` çağrılmadı.
 - `verify_module_id.py --discover` bu iş için koşulmadı (kimlikler mevcut; yeni kimlik önerilmiyor).
-- Procurement'ın rol şablonunda `procurement.suppliers.read`'in hangi rollere verildiği ölçülmedi (I4).
+- ~~Procurement'ın rol şablonunda `procurement.suppliers.read`'in hangi rollere verildiği ölçülmedi (I4).~~ Ölçüldü 2026-10-21 (F14).
+- Anahtarın canlı kataloğa fiilen girip girmediği (manifest itmesi çalışma anında) ölçülmedi.
