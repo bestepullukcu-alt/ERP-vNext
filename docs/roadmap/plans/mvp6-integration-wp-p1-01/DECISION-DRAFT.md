@@ -7,7 +7,8 @@ consumed: [INVENTORY-BUNDLE 1.5.0, PRODUCT-MASTER 1.1.0-draft.16, WAREHOUSE-OUTB
 measured_at: origin/main 1afd37843 (2026-10-22)
 ---
 
-DURUM: TASLAK — **karar verilmedi.** Bu belge paket metni değildir; paket yamaları kararlar verildikten sonra yazılır.
+DURUM: TASLAK — **kısmen kararlaştırıldı (Natig, yönetim, 2026-10-22): G1, G5, G6, G7, G8, G9, G10 öneriler gibi kabul edildi
+(§3a).** G2, G3, G4 MVP-1 CT'nin cevabını bekliyor. Paket yamaları yalnız kararlaştırılmış kısımlar için yazıldı (§8).
 
 # WP-P1 — MOD-0183 / MOD-0186 paket revizyonu: Inventory'ye yazma (karar taslağı)
 
@@ -67,6 +68,20 @@ P3 W-4 ile çelişmez (API üzerinden yazma, ikinci bakiye yok); P1, P2, P4, P5 
 | G9 | **Dispatched olayı** — MVP-5, MOD-0183'ün `Dispatched` olayıyla outbound'u `Shipped` yapacak; brief "biçimi değiştirmeden önce haber verin" | Olay biçimi **değişmez**; yalnız zamanı "tüm satırlar yazıldıktan sonra" olur | Öneri bu; MVP-1 CT'ye bilgi | MVP-6 CT |
 | G10 | **Depo modülü olmayan kiracı** — "sevkiyat stoğu sizin hareketinizle düşer" | Sevkiyat yaratılırken satırın lot/lokasyonu kullanıcıdan (G1-a); depo modülü olan kiracıda MVP-5'in `ReadyToShip`'i doldurur | Öneri bu; MVP-5 akışı yazılınca eşleme ayrıca | MVP-6 CT + MVP-1 CT |
 
+## 3a. Verilen kararlar (Natig, yönetim, 2026-10-22)
+
+| # | Karar |
+|---|---|
+| G1 | SHIPMENT-BUNDLE 3.4.0 (yalnız ekleme): sevkiyat satırına isteğe bağlı `skuLevel`, `lotId`, `fromLocationId`, `fefoBypassReason`. Depo modülü olmayan kiracıda kullanıcı girer; depo modülü olan kiracıda MVP-5 toplama sonucu doldurur. `skuLevel` ürün doğrulamasıyla (G6) çapraz kontrol edilir |
+| G5 | Hareket kullanıcının token'ıyla gönderilir; sevk eden rol `inventory.movements.create`'i Rol → İzin ekranından alır (BL-652 ara çözümüyle aynı; şablon değil). Servis kimliği BL-652 Seçenek 2 ile birlikte, sonra |
+| G6 | Ürün doğrulaması PRODUCT-MASTER dondurulunca yazılır; DL-4 ayrı dilim |
+| G7 | Inventory reddi wire'da tek kod `INVENTORY_REFUSED`, Inventory kodu `details.inventoryCode`'da; kullanıcı metni Shipments ekranında 7 dilde |
+| G8 | İadede kalem / SKU / lot orijinal çıkış hareketinden okunur; varış deposu / lokasyonu iade alımında girilir (RETURNS sözleşmesine ekleme) |
+| G9 | `Dispatched` olayının biçimi değişmez; yalnız bütün satırlar yazıldıktan sonra yayımlanır |
+| G10 | G1 ile karşılanır (depo modülü olmayan kiracıda kullanıcı girer) |
+
+Açık: **G2, G3, G4** (MVP-1 CT). DL-2 (çıkış çekirdeği) ve DL-6 (rezervasyon) bunlara bağlı.
+
 ## 4. Önerilen paket değişiklikleri (kararlardan sonra yazılacak — özet)
 
 **MOD-0183**
@@ -116,3 +131,13 @@ inceleme** (MVP-1 CT; yazandan ayrı oturum) → **CT-APR-01** satırı: risk **
 - Inventory'nin `GOODS_ISSUE_SALES` için `sourceModule`'ü okuyup okumadığı (kural "never by sourceModule" diyor, F10) yalnız
   sözleşme metninden; kod okunmadı.
 - `verify_module_id.py --discover` koşulmadı (mevcut kimlikler; yeni kimlik önerilmiyor).
+
+## 8. Bu dalda hazırlanan yamalar (kararlaştırılmış kısımlar; uygulanmadı)
+
+| dosya | kapsar | bekleyen |
+|---|---|---|
+| `SHIPMENT-BUNDLE-3.4.0-PROPOSAL.md` | G1 satır alanları, G7 `INVENTORY_REFUSED` | sözleşme tek yazıcısı + CT-APR-02 |
+| `MOD-0186-section-34.patch` | E-7 iade → `CUSTOMER_RETURN` (QUARANTINE), G5, G8 | CT-APR-02 → CT-APR-01 |
+| `MOD-0183-section-23.patch` | G1, G5, G7, G9, G10 + DL tablosu; DL-2 / DL-6 "G2–G4 bekliyor" olarak işaretli | G2–G4, sonra CT-APR-02 → CT-APR-01 |
+
+Yamalar `git apply --check` ile denendi; paket dosyaları bu dalda **değiştirilmedi** (tek paket yazıcısı kuralı).
