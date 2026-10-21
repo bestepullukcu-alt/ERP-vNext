@@ -92,7 +92,8 @@
               "İncelenen kaynak tablosundan geniş \"tam inceledim\" deme.",
               "satır hedefi bunları",
               "Satır numarasını yalnız numaralı bir okumadan ver",
-              "\"evet\" ve \"hayır\"ın neyi yetkilendirdiğini söyler"
+              "\"evet\" ve \"hayır\"ın neyi yetkilendirdiğini söyler",
+              "her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01)."
             ]
           }
         ]

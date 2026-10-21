@@ -91,6 +91,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
    "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "evet: satırı yazar, commit, push, PR; merge sizde");
    kullanıcıdan uzun onay metni beklenmez.
 
+Block'un iş takip sayfası varsa her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01).
+
 Kısa yanıtta da olguyu çıkarımdan ayır. Kaynak tablosu, olgular (`kaynak:satır`), çıkarımlar ve aday listesi istenince
 ayrıntılı verilir. Satır numarasını yalnız numaralı bir okumadan ver (`grep -n`, `nl -ba` ya da okuma aracının satır
 numarası); yoksa yalnız `yol@commit` yaz.
