@@ -14,11 +14,12 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
   (künye dışı) bu sürümle aynı olan her incelenmiş sürüm ve bu sürümün muaf uzaklıkta olduğu her incelenmiş sürüm. Herhangi
   birinde `UYGUN DEĞİL`, açık bir ENGEL, bozuk bir kayıt ya da main'e başka birinin merge'iyle gelmemiş bir satır
   dağıtımı durdurur. Geçmişte bulunamayan bir incelenmiş sürümün olumsuz görünen satırı da durdurur.
-- **Yeniden inceleme çıkışı:** bu sürümün main'de kendi inceleme satırları varsa ve geçiyorsa, yalnız gövdesi aynı (künye
-  değişikliği muaf olmayan) sürümlerden ya da geçmişte bulunamayan sürümlerden gelen olumsuzlar BİLGİ olur, durdurmaz.
-  Muaf uzaklıktaki bir sürümün olumsuzu her zaman durdurur: tarih ya da TBD doldurma bir bulguyu düzeltemez; paket esaslı
-  değişmelidir. Önce `reviews.tsv`'nin main geçmişi bozuksa (satır silindi ya da yeri değişti) her şey durur; çıkış,
-  silinen satırları aynı sırayla geri ekleyen, CODEOWNERS onaylı bir PR'dır.
+- **Yeniden inceleme çıkışı (CT önerisi, sahip onayı bekliyor):** bu sürümün main'de kendi inceleme satırları varsa ve geçiyorsa (`UYGUN
+  DEĞİL` yok, açık ENGEL yok, kayıt bozuk değil), bu sürümü inceleyen kişi kararı vermiştir: başka sürümlerden gelen bütün
+  olumsuzlar (muaf uzaklıkta, gövdesi aynı ya da geçmişte bulunamayan) BİLGİ olur, durdurmaz. Kendi geçen incelemesi
+  yoksa hepsi durdurur. `reviews.tsv`'nin main geçmişi bozuksa (satır silindi ya da yeri değişti) her şey durur; çıkış,
+  silinen satırları aynı sırayla geri ekleyen, CODEOWNERS onaylı bir PR'dır. Bir satırın biçimi bozuksa da her şey durur;
+  çıkış, o satırı düzelten CODEOWNERS onaylı bir PR'dır.
 - **Olumlu kapsama (dar küme):** yalnız bu sürümün ya da bu sürümün muaf uzaklıkta olduğu bir sürümün (tarih alanı;
   `owner` / `reviewer` alanının TBD'den doldurulması; yalnız satır sonu boşluğu) geçerli incelemesi dağıtımı açar. Önceki
   olumlu bir inceleme hiçbir olumsuzu gizlemez.
@@ -35,7 +36,9 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
   korunan yürüyen iş dahil. Kaydın commit'i başlangıçtan kesin olarak önce değilse (başlangıçtan önce ayrılmış bir dalda
   sonradan yazılan kayıt da kural altındadır) ürün işi kaydı (`module` alanında MOD kimliği) `module_pack` bağlamalıdır;
   bağlanan commit doğrulanan kod commit'inin atası olmalı ve paketin kod commit'indeki baytları bağlanan sürümle aynı
-  olmalıdır. Daha eski kayıtlar değişmez.
+  olmalıdır. Bu sürüm ayrıca ya main'de geçerli bir incelemeyle kapsanır, ya bu WP'nin kural başlangıcında korunan
+  başlangıç sürümüdür, ya da main'deki sürümdür ve `pack_approval.py check` onu onaylı sayar (CT-APR-01); değilse kabul
+  edilmez ("paket iş dalında değiştiyse yeni sürümü inceletin"). Daha eski kayıtlar değişmez.
 - **CT-APR-01 onayı değişmez:** bu kural onayın yerine geçmez; inceleme var diye yeni bir ilk HIGH onay istenmez.
 - **Kendini açıklayan ENGEL:** her ENGEL satırı kuralı ve başlangıç commit'inin kısa kimliğini, durma nedenini (koruma
   yoksa nedeni dahil) ve sonraki adımı (`python3 scripts/pack_approval.py review-row …`, SOP §20.4; silinmiş başlangıç

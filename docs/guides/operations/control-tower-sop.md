@@ -1425,9 +1425,11 @@ raporlar). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf 
 Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırı değişmeyen ve
 yeniden açılmamış iş yalnız "inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
 kuyruğun (sce-mvp6) satırları hiç korunmaz; dağıtım yalnız `READY` / `REWORK`'ten başladığı için bu gerçek bir dağıtımı
-etkilemez. Bu sürümün kendi incelemesi geçiyorsa gövdesi aynı ya da geçmişte bulunmayan sürümlerin olumsuzları bilgiye
-düşer; muaf uzaklıktaki olumsuz her zaman durdurur. Bağlı paket sürümünde olumsuz varsa `acceptance_record.py check`
-kabulü reddeder; başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket sürümüne `module_pack` ile bağlanır.
+etkilemez. Bu sürümün kendi incelemesi geçiyorsa başka sürümlerin bütün olumsuzları bilgiye düşer (CT önerisi, sahip onayı bekliyor); kendi
+geçen incelemesi yoksa hepsi durdurur. Bağlı paket sürümünde olumsuz varsa `acceptance_record.py check` kabulü reddeder;
+başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket sürümüne `module_pack` ile bağlanır ve bu sürüm
+incelenmiş, korunan başlangıç sürümü ya da CT-APR-01'le onaylı main sürümü olmalıdır (iş dalında değişen paket yeniden
+incelenir).
 Sığ depo reddedilir. CT-APR-01 onayı değişmez. ENGEL satırı kuralı, nedeni ve sonraki adımı söyler; kuraldan önce açılmış bir
 Control Tower oturumu main'i alır ve yeni oturum açar.
 
