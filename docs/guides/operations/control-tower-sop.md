@@ -1404,7 +1404,10 @@ satırı main'e başkasının merge'iyle gelmediyse onay geçmez. Sonradan eklen
 yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
 uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
 dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
-incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz.
+incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz. Sonuç gelir
+gelmez ham metni, onay beklemeden, worktree'de `docs/records/reviews/<kimlik>/` altına commit'siz taslak olarak yazar;
+oturumun geçici klasörü kayıt yeri değildir (S-19: MOD-0230 sonucu oturum kapanırken neredeyse kayboldu). Taslağın
+bulgu dosyası biçimine çevrilmesi, commit'i ve `reviews.tsv` satırı sahibin onayıyla olur.
 
 **5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
 main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz.
@@ -1414,6 +1417,11 @@ DCP `## 8.1 Delivery slices` tablosu taşır. WP prompt'u `Kapsanan dilim:` sat�
 paket bu kurala bağlıysa durdurur: alan yoksa, dilim onaylı sürümde yoksa ya da bütün dilimler tek WP'deyse. İstisna
 yalnız onay satırının `note` alanındaki `whole_pack=<WP>`'dir: onaylayan, o sürüm için o WP'nin paketin tamamını
 almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız uyarıdır.
+
+**6a. Kural değişince oturum.** Kart ya da SOP'ta değişen bir kural, CT dalını main ile birleştirip dosyayı yeniden
+okuyunca geçerli olur; yeni oturum gerekmez. Skill (`.claude/skills/…`, `.agents/skills/…`) oturum başında yüklenir;
+skill'de değişen bir kural ancak yeni oturumda geçerlidir. GitHub hesap adı değişirse önce
+`execution/approvals/approvers.tsv` güncellenir; yoksa o hesabın onayları tanınmaz.
 
 **7. Üst üste PR'da merge sırası (GitHub).** Bir PR başka bir PR'ın dalı üstüne açıldıysa, alttaki merge edilince
 GitHub üstteki PR'ın onaylarını "taban değişti" diye düşürür (eski onay düşürme ayarı). Sıra: önce üstteki dal güncel
@@ -1545,6 +1553,11 @@ Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**
    aynı listeyi görür.
 2. **Pilot.** Önce Pharmacovigilance block'unda denenir; bir block'ta işe yaradığı görülünce zorunlu yapılır (sahip
    kararı). Mevcut Control Tower'lara geriye dönük yük yoktur.
+2a. **Ne zaman açılır (S-31, kaynak öneride vardı, uyarlamada atlanmıştı).** Pilot block'ta CT, ilk durum
+   değerlendirmesinden sonra ya da block'un ilk paket / karar kaydı commit edildiğinde sayfayı **kendisi önerir** ve tek
+   kelimelik onayla (`sayfa-ac`) açar; "sırada" diye ertelemez. Block başına tek sayfa; varsa yenisi açılmaz. Açınca
+   depodaki bütün kalan işleri ve bitmiş olanları (geçmiş görünsün) yazar, bir okumayla doğrular, bağlantıyı ve kısa
+   "nasıl kullanılır"ı verir, bağlantıyı 8. maddedeki yere yazar.
 3. **Kaynak depodur.** Sayfa bir görünümdür. CT listeyi depodaki kaynaklardan kurar ve günceller: kuyruk dosyası
    (`CT-QUEUE.tsv` satırları ve durumları), karar kayıtları (`docs/records/decisions/`), block'un açık kararları ve
    takipleri, başka ekiplere düşen işler (XMC-001). Çelişkide depo kazanır; CT sayfayı düzeltir.
