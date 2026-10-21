@@ -819,7 +819,7 @@ def kunye_commit(text: str) -> str | None:
     # F-17: an attempted künye ('---' first, BOM allowed) the reader cannot open but which carries a commit line is
     # ambiguous, never 'not measured'
     if any(p in ("künye: dosya '---' ile başlamıyor", "künye: kapanış '---' yok") for p in problems) \
-            and text.lstrip("\ufeff").startswith("---") and re.search(r"(?m)^commit:", text):
+            and text.lstrip("\ufeff").startswith("---") and re.search(r"(?mi)^[ \t]*[\"']?commit[\"']?[ \t]*:", text):
         return AMBIGUOUS
     if "commit" not in fields:
         return None
@@ -1571,7 +1571,9 @@ def self_test() -> int:
              ("a" * 9, "docs/r7.md"): b"---\nformat: x\n---\n",
              ("a" * 9, "docs/r8.md"): b"---\nformat: x\ncommit: nonsense\n---\n",
              ("a" * 9, "docs/r9.md"): ("\ufeff---\ncommit: " + "d" * 40 + "\n---\n").encode(),
-             ("a" * 9, "docs/r10.md"): ("---\ncommit: " + "d" * 40 + "\n# no closing line\n").encode()}
+             ("a" * 9, "docs/r10.md"): ("---\ncommit: " + "d" * 40 + "\n# no closing line\n").encode(),
+             ("a" * 9, "docs/r11.md"): ("\ufeff---\n  commit: " + "d" * 40 + "\n---\n").encode(),
+             ("a" * 9, "docs/r12.md"): ("---\n'Commit' : " + "d" * 40 + "\n").encode()}
     in_m = {"a" * 9, "c" * 40}
     acc = Table(header + "\n" + "\n".join([
         "A1\tMOD-0183 x\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
@@ -1586,7 +1588,9 @@ def self_test() -> int:
         "A10\tno commit\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r7.md@" + "a" * 9,
         "A11\tbad commit\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r8.md@" + "a" * 9,
         "A12\tBOM künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r9.md@" + "a" * 9,
-        "A13\tunclosed künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r10.md@" + "a" * 9]) + "\n")
+        "A13\tunclosed künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r10.md@" + "a" * 9,
+        "A14\tBOM + indented\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r11.md@" + "a" * 9,
+        "A15\tunclosed + quoted key\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r12.md@" + "a" * 9]) + "\n")
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     s_late = summary_lines(summarize(acc, vocab, queue) | {"accepted_not_in_main": late})
     cases.append(("sabotage S-12: a closed row whose acceptance record and accepted code commit are not in main -> UYARI "
@@ -1598,7 +1602,7 @@ def self_test() -> int:
                           for l in s_late) and any("KAPANMIŞ 3" in l for l in s_late)))
     cases.append(("sabotage S-12 F-8 (Codex): a künye with two commit lines (first in main, second not) -> never clean: "
                   "UYARI KÜNYE BELİRSİZ naming it; a present but malformed commit ('nonsense', F-15) too",
-                  late["ambiguous"] == ["A8", "A11", "A12", "A13"] and any("KÜNYE BELİRSİZ 4" in l and "A8" in l for l in s_late)))
+                  late["ambiguous"] == ["A8", "A11", "A12", "A13", "A14", "A15"] and any("KÜNYE BELİRSİZ 6" in l and "A8" in l for l in s_late)))
     in_m.add("b" * 9)
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     cases.append(("sabotage S-12: the record merged but the accepted code commit never reached main (the ABB case) -> UYARI "
