@@ -96,7 +96,8 @@ Static facts at commit `ce3be60cf`, plus the E2/E3 measurements of the PVG-M1-02
 (`docs/records/audits/2026-10/pvg-m1-02-inspection-01/INSPECTION-NOTE.md`, measured 2026-10-20). Two statements in
 that note are wrong and are corrected here: `ocelot.json` carries `AuthenticationOptions` on 2 routes (the
 `/api/v1/uploads` pair), not 4; and the service does check permission keys (`pvg.mod0230.intake.*`). Each gap names
-the delivery slice that owns it.
+the delivery slice that owns it. Row G-16 and the 2026-10-22 additions to G-5 and G-15 are static facts measured at
+commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-10-21-b48500cf.md`).
 
 | # | Gap | Measured fact | Owning slice |
 |---|---|---|---|
@@ -104,7 +105,7 @@ the delivery slice that owns it.
 | G-2 | Tenant and actor come from request headers | `PvgCaseIntakeTriageEndpoints.cs` reads `X-Diten-Tenant-Context`, `X-Diten-Actor-Id`, `X-Diten-Actor-Kind`. The Gateway resolves the tenant into `X-Tenant-Id` (`gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs`) and neither writes nor strips `X-Diten-*`. The MVC proxy fills both headers from the session token, but a caller that reaches the Gateway or the service directly chooses its own tenant and actor. `multi-tenancy.md` names `X-Tenant-Id` via `TenantResolutionMiddleware` as the single tenant source, and `security-jwt.md` requires it to match the token's tenant claim. | DL-4 |
 | G-3 | Permission keys differ from this pack | The service checks `pvg.mod0230.intake.{read,create,update,triage,route}` (`PvgIntakeDraftApplicationService.cs` lines 7-11), pinned by `PvgApplicationContractShapeTests.cs`. This pack proposes `pvg.case-intake-triage.*`. Neither family exists in `Diten.AuthService` or `Diten.Web`. Target family selected 2026-10-21 on the PVG side (OD-PVG-1): `pvg.case-intake-triage.*`; not applied until MOD-0018 / AuthService approves catalog-grant ownership and the `pvg.*` namespace. | DL-6 |
 | G-4 | MVC controller carries `[Authorize]` only | `PharmacovigilanceCaseIntakeTriageController.cs`: class-level `[Authorize]`, zero `[HasPermission]` across its 10 actions; `Index`, `Create`, `Edit`, `Details` return views without a permission check (UAS-001 gap). | DL-7 |
-| G-5 | No audit write | Mutations return a `PvgAuditIntent` built after the store write; the application service has no audit sink or outbox dependency; the host registers none; the API response drops the intent. `tests/architecture/audit-ledger/Diten.PvgService.md` records no trace and lists the four MOD-0230 write commands as known debt. | DL-5 |
+| G-5 | No audit write | Mutations return a `PvgAuditIntent` built after the store write; the application service has no audit sink or outbox dependency; the host registers none; the API response drops the intent. `tests/architecture/audit-ledger/Diten.PvgService.md` records no trace and lists the four MOD-0230 write commands as known debt. No read audit either (added 2026-10-22): `GetDraftByIdAsync` (`PvgIntakeDraftApplicationService.cs` line 337) opens one safety case and writes no record; AUD-001 §7 requires one ("Audited Events", BG-18). | DL-5 |
 | G-6 | Startup is not fail-closed for missing dependencies | `PvgServiceApiRuntimeOptions.ThrowIfUnsafe()` checks two flags only; the four ports and the store are registered only when `Pvg:Runtime:UseNonProductionAdapters` is true; `/health/ready` reports flags, not dependencies. E3 B3: production-like + `Pvg:Runtime:OperationalRuntimeAuthorized=true` + no adapters -> host starts, `/health/ready` 200, list call with full headers -> HTTP 500 with empty body. Test `Production_like_authorized_startup_does_not_register_non_production_adapters` asserts the five missing registrations as success. | DL-3 |
 | G-7 | Operational runtime authorization is a configuration flag | `Pvg:Runtime:OperationalRuntimeAuthorized` is read from environment variables or command line (`Program.cs`, `PvgServiceApiHost.cs`); it is not bound to any approval evidence. | DL-3 |
 | G-8 | Error model | Endpoints map `Succeeded` to 200, `Invalid` to 400, and every other outcome to 409 - including not-found (`IntakeDraftNotFound` is returned as `Blocked`), permission denied, and missing tenant / actor / correlation context. This pack requires 404 / empty for not-found and cross-tenant and 401/403 for unauthorized; `multi-tenancy.md` requires 400 for a missing tenant header. | DL-4 |
@@ -114,7 +115,8 @@ the delivery slice that owns it.
 | G-12 | Port-conformance names are not in code | `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md` is committed and defines C-01 ... C-17 against `PvgStaticFieldPolicy`, `PvgStaticTransitionGate`, `PvgPendingEvidenceStore`, `IPvgSafetyPartnerAdapter`, `PvgPortResult`, `AddRegPvBasePorts`, and key `Pvg:RegPvBase:UseNonProductionAdapters`; none occurs in `services/Diten.PvgService` (`git grep`, 0 files) and no test names a C-id. Code uses `DenyAll*` adapters, a fourth port `IPvgPermissionGate` not in the document, and `Pvg:Runtime:*` keys. | DL-1 |
 | G-13 | Port 5011 | Not in the `AGENTS.md` §3 table; `AGENTS.md` lists 5011 (`PvgService`) among ports in use awaiting an Enterprise Architecture decision. `.claude/launch.json` entry `web-verify` starts Diten.Web on 5011, so both cannot run locally on defaults. | DL-3 |
 | G-14 | DataTable verifier gaps | `python3 .antigravity/scripts/verify_datatable_page.py . --area Pharmacovigilance --module CaseIntakeTriage --reference compact --api-profile proxy --format gaps` printed 18 gaps: data mode undeclared; old skeleton instead of `_TableSkeleton`; `_Filter` and `_IndexL10n` partial includes not found; form view model not found under `frontend/Diten.Web/Models`; the remaining 13 items (bulk delete, export, import, select-all, reload-with-toast and clear-selection wiring) are tied to bulk / export features this pack excludes. Since this revision the frontmatter declares `data_mode: server` (OD-PVG-8); re-run after this edit (2026-10-21) still prints 18 gaps - the data-mode item names `_DataTable.cshtml`, which carries no `data-dt-data-mode` attribute yet (DL-7). | DL-7 |
-| G-15 | No concurrency check on update | `InMemoryPvgIntakeDraftRepository.ReplaceAsync` overwrites without a version check (last write wins). | DL-2 |
+| G-15 | No concurrency check on update | `InMemoryPvgIntakeDraftRepository.ReplaceAsync` overwrites without a version check (last write wins). Added 2026-10-22: no record version exists in any layer. `IPvgIntakeDraftStore.ReplaceAsync` (line 12) takes no expected version and returns `bool`; `PvgIntakeDraftApplicationService` reads `false` as `IntakeDraftNotFound` at all three call sites (update line 157, triage line 239, route line 321); the API request records in `PvgCaseIntakeTriageEndpoints.cs`, the MVC form inputs in `PharmacovigilanceCaseIntakeTriageController.cs`, and the JS carry no version (`git grep -i 'version\|etag\|rowversion\|concurrency'` over these paths finds only the `asp-append-version` cache-busting attribute in the views). Ownership: store contract and service calls DL-2 (BG-12); API transport DL-4 (BG-19); MVC / JS transport DL-7 (BG-20). | DL-2 |
+| G-16 | The list shows at most the first 100 records | `wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js` `buildListUrl` (lines 28-35) sets `pageNumber=1` and `pageSize=100` on every request; the DataTable is not server-side (no `serverSide` option, no total fields); the MVC proxy `List` action clamps `pageSize` to 1 ... 100; `IPvgIntakeDraftStore.ListAsync`, `PvgIntakeDraftQueryResult`, and `PvgCaseIntakeApiResponse` return items only - no total or filtered count. A tenant with more than 100 intake drafts cannot reach the 101st: a functional defect of the build/test screen. `data_mode: server` and the table attribute alone do not fix it. WP-0230-07 has no acceptance record and is not counted as done while this holds. API-side counts: DL-4 (BG-19); screen: DL-7 (BG-20). | DL-7 |
 
 Gateway note: route-level `AuthenticationOptions` is absent on most routes by repo norm; the Gateway applies
 authentication and `TenantResolutionMiddleware` pipeline-wide. E3 G1 / G4 (dev profile, 2026-10-20) observed anonymous
@@ -193,11 +195,12 @@ Out of scope for this build/test-ready pack:
 | Safety Case Intake | MOD-0230 SoR for intake-stage Safety Case creation boundary | Domain type `SafetyCaseIntake` exists; stored in the in-memory store only |
 | Intake Artifact | MOD-0230 SoR for intake-stage submitted artifacts and source references | Represented only as `SourceReference` and `EvidenceLinkReferences` fields |
 | Triage State | MOD-0230 SoR for initial triage status and routing outcome | `PvgIntakeStatus`, `PvgTriageOutcome` exist |
-| Routing Decision | MOD-0230 SoR for controlled routing decision metadata | Route command exists; the deny-all workflow gate denies every route target |
+| Routing Decision | MOD-0230 SoR for controlled routing decision metadata | Route command exists; `DenyAllWorkflowTransitionGate.EvaluateAsync` denies every route transition |
 | Evidence Pack Boundary | MOD-0230 produces intake evidence-link requirements; MOD-0031 owns evidence-link service | Port `IPvgEvidenceLinkPort` with deny-all adapter only |
 
 Write commands (each appears once in "Audited Events"): `CreateIntakeDraftCommand`, `UpdateIntakeDraftCommand`,
-`TriageIntakeDraftCommand`, `RouteIntakeDraftCommand`. Queries: `GetIntakeDraftListQuery`, `GetIntakeDraftByIdQuery`.
+`TriageIntakeDraftCommand`, `RouteIntakeDraftCommand`. Queries: `GetIntakeDraftListQuery`, `GetIntakeDraftByIdQuery`
+(the single-record read `GetIntakeDraftByIdQuery` also has a read row in "Audited Events", AUD-001 §7).
 API endpoints: see "Gateway / API Routing Decision". Frontend route: `/Pharmacovigilance/CaseIntakeTriage`.
 Permission keys: see "Authorization Convention" (OD-PVG-1).
 
@@ -318,9 +321,9 @@ it does not approve a contract and does not open operational runtime. No row in 
 |---|---|---|---|
 | MOD-0018 RBAC / permissions | canonical permission keys, seed/grant ownership, actor context, tenant authorization context, optional data-scope shape | actor roles and permission matrix for read/create/update/triage/route; archive/export out of slice 1; delete and bulk-delete permanently excluded | **OPEN - owner contract pending.** Build/test substitute only: `IPvgPermissionGate` + `DenyAllPermissionGate`, registered only when `Pvg:Runtime:UseNonProductionAdapters` is true. No JWT validation in the service; tenant and actor come from request headers (G-1, G-2). PvgService references no `Diten.Platform.Common` project, so nothing is consumed from `Diten.Platform.Common/Authorization`. Real RBAC - JWT validation, Gateway-resolved tenant / actor context (OD-PVG-2), `pvg` permission evidence and tests - is required before operational runtime. Key family: OD-PVG-1. |
 | MOD-0019 masking / row-field security | field sensitivity vocabulary, masking/omit/deny behavior, row-scope and field-scope evaluation, unavailable-policy behavior | per-field sensitivity matrix and fail-closed behavior for list/detail/create/update/audit; export out of slice 1 | **PORTED** - `IPvgFieldSecurityPolicy` + `DenyAllFieldSecurityPolicy`. Build gate satisfied by the substitute; **operational runtime still BLOCKER**. MOD-0019 registry row exists for planning traceability only; it is still unowned, missing a module pack, and has no runtime (see Implementation Notes) |
-| MOD-0021 AuditEvent v1 | append/event shape, safe metadata envelope, redaction rules, critical audit failure policy, correlation propagation | audited operations, payload allow-list, failure behavior when audit append/outbox is unavailable | **OPEN - owner contract pending; no substitute.** The code builds a `PvgAuditIntent` only; no sink or outbox; the API response drops it (G-5). Nothing is consumed from the `Diten.Platform` audit feature. The audit-write path that blocks the mutation when the record cannot be written is a separate delivery (DL-5) and acceptance condition (BG-11). |
+| MOD-0021 AuditEvent v1 | append/event shape, safe metadata envelope, redaction rules, critical audit failure policy, correlation propagation | audited operations, payload allow-list, failure behavior when audit append/outbox is unavailable | **OPEN - owner contract pending; no substitute.** The code builds a `PvgAuditIntent` only; no sink or outbox; the API response drops it (G-5). Nothing is consumed from the `Diten.Platform` audit feature. The audit-write path that blocks the mutation when the record cannot be written is a separate delivery (DL-5) and acceptance condition (BG-11). The single-record read audit (AUD-001 §7) depends on the same contract and the same K4 forwarder (OD-PVG-9); its write-failure behaviour is a required item of this contract (BG-18). |
 | MOD-0023 Workflow/Inbox v1 | transition gate or inbox handoff API/event, assignment semantics, routing state, fail-closed behavior | triage states, routable states, route targets, transition reason codes, blocked/allowed behavior | **PORTED** - `IPvgWorkflowTransitionGate` + `DenyAllWorkflowTransitionGate`. Build gate satisfied by the substitute; **operational runtime still BLOCKER**. Queue registry, assignment, and SLA remain MOD-0023's and are not ported |
-| MOD-0031 Evidence-Link | object reference shape, link/query API, evidence requirement/completeness rule, evidence-pack boundary | whether artifacts require evidence links at create, triage, route, and downstream handoff | **PORTED** - `IPvgEvidenceLinkPort` + `DenyAllEvidenceLinkPort`. Build gate satisfied by the substitute; **operational runtime still BLOCKER**. A non-production adapter may only record evidence as `Pending`, never as satisfied |
+| MOD-0031 Evidence-Link | object reference shape, link/query API, evidence requirement/completeness rule, evidence-pack boundary | whether artifacts require evidence links at create, triage, route, and downstream handoff | **PORTED** - `IPvgEvidenceLinkPort` + `DenyAllEvidenceLinkPort`. Build gate satisfied by the substitute; **operational runtime still BLOCKER**. Today: `DenyAllEvidenceLinkPort.EvaluateAsync` returns `EvidenceLinkDenied` for every request and records nothing. Proposed, not in code: a non-production adapter that records a requirement as `Pending` (never as satisfied), only if the MOD-0031 owner approves a durable pending-evidence state |
 | Blueprint MOD-0040 / TRACE-BUNDLE | canonical/external ID semantics, `X-Correlation-Id`, trace stitching, regulated error model | generated/manual intake ID policy, external source ID policy, correlation propagation, error reason-code policy | **OPEN - owner contract pending.** PvgService references no `Diten.Platform.Common` Observability or Tenancy code. Local behaviour only: `X-Correlation-Id` is required and checked (at most 128 characters, no whitespace) into `PvgCorrelationContext`; draft IDs are generated by the store; request DTOs carry no `Id` or `TenantId`; no shared correlation middleware and no trace stitching. Error model: G-8, OD-PVG-3. |
 
 ### MOD-0230 Owner-Approval Evidence Intake Template
@@ -336,7 +339,7 @@ runtime and does not authorize any surface outside the MOD-0230 build/test gate.
 |---|---|---|---|---|---|---|---|---|---|
 | `PVG-MOD0230-RBAC-Contract v1` | MOD-0018 / AuthService / Platform access governance | MOD-0018 owner role - **Not approved - owner contract pending.** The 2026-08-09 entry named the PVG package owner as approver; that is not an owner approval. | Open | Build/test substitute only: `IPvgPermissionGate` + `DenyAllPermissionGate` (`services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllPermissionGate.cs`), registered only when `Pvg:Runtime:UseNonProductionAdapters` is true. PvgService projects reference no `Diten.Platform.Common` project (`*.csproj`), so the `Diten.Platform.Common/Authorization` types listed on 2026-08-09 are not consumed by this module. | n/a - no owner-approved version | Missing - required proof: deny on missing actor, tenant, permission, scope, seed/grant catalog, or auth context; JWT validated in the service; tenant and actor taken only from validated server context (OD-PVG-2); cross-tenant reads return 404/empty and mutations deny. | Missing - required tests: role/action allow-deny matrix, missing-permission denial, missing or invalid token 401, forged `X-Diten-*` headers without effect, cross-tenant denial, platform/partner/tenant actor behavior, seed/grant ownership proof, and no delete/bulk-delete surface. | **Not owner-approved.** The 2026-08-09 wording "Approved for the build/test gate" applies only to the deny-all substitute: it denies every call, so no permission is ever granted. Real RBAC - JWT validation, Gateway-resolved tenant / actor context, `pvg` permission evidence and tests - is required before operational runtime. Key family: OD-PVG-1; seed/grant ownership stays with MOD-0018 / AuthService. `archive` and `export` keys are out of slice 1; delete and bulk-delete keys are permanently excluded. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build/test gate satisfied by the deny-all substitute only (the box checked on 2026-08-09 covered only that substitute); operational runtime blocked** |
 | `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgFieldSecurityPolicy` with `DenyAllFieldSecurityPolicy` | n/a - MOD-0019 contract does not exist | Missing - required proof: deny or omit/mask when field policy is missing or unavailable; raw PHI/PII/free text cannot enter UI/API output, logs, traces, metrics, audit metadata, validation errors, or exports. | Missing - required tests: all 16 fields across list/detail/create/update/export/audit, missing-policy denial, raw-value leak scans, and cross-tenant checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllFieldSecurityPolicy` denies unconditionally. This row continues to **block operational runtime** until MOD-0019 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
-| `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | MOD-0021 owner role - **Not approved - owner contract pending.** The 2026-08-09 entry named the PVG package owner as approver; that is not an owner approval. | Open | Code fact: mutations return a `PvgAuditIntent` (operation, status, permission, actor kind, timestamp) built after the store write; `PvgIntakeDraftApplicationService` has no audit sink or outbox dependency; the host registers none; the API response drops the intent. `tests/architecture/audit-ledger/Diten.PvgService.md`: no trace; the four MOD-0230 write commands are known debt. Nothing is consumed from the `Diten.Platform` audit feature. | n/a - no owner-approved version | Missing - required proof: no unaudited regulated mutation succeeds; an audit write failure blocks the mutation (AUD-001 K2) or uses only an owner-approved durable outbox in the same unit of work; payload redaction happens before persistence/export. | Missing - required tests: create, update, triage, route, denial/failure events; audit-writer failure leaves the store unchanged and the result not `Succeeded`; redaction; correlation propagation. | **Not owner-approved and not substituted.** No audit record is written today. Mutations cannot succeed outside tests only because the deny-all permission gate denies every call; that is not audit evidence. The audit-write path that blocks the mutation when the record cannot be written is a separate delivery (DL-5) and acceptance condition (BG-11). Planned audited operations: create, update, triage, route, denial/failure; archive and export events are out of slice 1; the payload allow-list excludes every PHI/PII field. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **open; no build/test substitute** |
+| `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | MOD-0021 owner role - **Not approved - owner contract pending.** The 2026-08-09 entry named the PVG package owner as approver; that is not an owner approval. | Open | Code fact: mutations return a `PvgAuditIntent` (operation, status, permission, actor kind, timestamp) built after the store write; `PvgIntakeDraftApplicationService` has no audit sink or outbox dependency; the host registers none; the API response drops the intent. `tests/architecture/audit-ledger/Diten.PvgService.md`: no trace; the four MOD-0230 write commands are known debt. Nothing is consumed from the `Diten.Platform` audit feature. | n/a - no owner-approved version | Missing - required proof: no unaudited regulated mutation succeeds; an audit write failure blocks the mutation (AUD-001 K2) or uses only an owner-approved durable outbox in the same unit of work; payload redaction happens before persistence/export. | Missing - required tests: create, update, triage, route, denial/failure events; audit-writer failure leaves the store unchanged and the result not `Succeeded`; single-record read audit (AUD-001 §7) and its write-failure behaviour as this contract fixes it (BG-18); redaction; correlation propagation. | **Not owner-approved and not substituted.** No audit record is written today. Mutations cannot succeed outside tests only because the deny-all permission gate denies every call; that is not audit evidence. The audit-write path that blocks the mutation when the record cannot be written is a separate delivery (DL-5) and acceptance condition (BG-11). Planned audited operations: create, update, triage, route, denial/failure; archive and export events are out of slice 1; the payload allow-list excludes every PHI/PII field. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **open; no build/test substitute** |
 | `PVG-MOD0230-WorkflowTransitionGate-v1` | MOD-0023 Workflow/Inbox owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgWorkflowTransitionGate` with `DenyAllWorkflowTransitionGate` | n/a - MOD-0023 contract does not exist | Missing - required proof: gate runs before commit; blocked, unavailable, missing queue, missing assignment policy, missing reason code, tenant/object mismatch, or unapproved `NotApplicable` prevents lifecycle mutation. | Missing - required tests: gate-before-commit, allowed/blocked/not-applicable, outage, missing queue/assignment policy, cross-tenant denial, reason-code validation, correlation propagation, and no-PHI workflow event/log/error checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllWorkflowTransitionGate` denies unconditionally. This row continues to **block operational runtime** until MOD-0023 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
 | `PVG-MOD0230-EvidenceLink-v1` | MOD-0031 Evidence-Link owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgEvidenceLinkPort` with `DenyAllEvidenceLinkPort` | n/a - MOD-0031 contract does not exist | Missing - required proof: missing required evidence or unavailable Evidence-Link blocks triage, route, archive/void, or handoff unless MOD-0031 owner approves a durable pending-evidence state; no fake pack or duplicated content. | Missing - required tests: link/query shape, completeness, outage, cross-tenant denial, link/unlink audit, correlation propagation, workflow handoff blocked on missing evidence, no duplicated document content, and no-PHI evidence-content checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllEvidenceLinkPort` denies unconditionally. This row continues to **block operational runtime** until MOD-0031 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
 | `PVG-MOD0230-TraceBundle-v1` | Enterprise Architecture / platform trace authority for Blueprint MOD-0040 / TRACE-BUNDLE | Enterprise Architecture / trace authority role - **Not approved - owner contract pending.** The 2026-08-09 entry was recorded by the PVG package owner against `Diten.Platform.Common` types that PvgService does not reference. | Open | Code fact: correlation is a PVG-local read of `X-Correlation-Id` into `PvgCorrelationContext`; draft IDs are generated by the store; request DTOs carry no `Id` or `TenantId` (E3 f2: a body `tenantId` is not accepted); no shared correlation middleware; no trace stitching. | n/a - Blueprint MOD-0040 standard version not approved for MOD-0230 | Missing - required proof: no untraceable regulated mutation succeeds; external IDs are non-authoritative; duplicate or mismatch ambiguity rejects, conflicts safely, or routes only through owner-approved durable duplicate review/outbox. | Missing - required tests: server-generated canonical IDs, client-supplied ID rejection, external-ref non-authority, duplicate/mismatch handling, missing/valid/invalid `X-Correlation-Id`, and trace propagation through intake, audit, workflow, evidence, error, and outbox/events. | **Not owner-approved.** MOD-0230 pack rules that bind this module's code (not an approval of the trace contract): canonical IDs are server-generated; client-supplied `Id` and `TenantId` are rejected; `SourceReference` is non-authoritative; duplicate handling returns 409 with no silent overwrite. The repo registry row for `MOD-0040` is a deprecated alias to MOD-0288 and is **not** the authority here - the Blueprint MOD-0040 standard is. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **open; local correlation check only; operational runtime blocked** |
@@ -354,7 +357,7 @@ contract unless the owner explicitly approves the named artifact/version and sup
 |---|---|---|---|---|
 | `PVG-MOD0230-RBAC-Contract v1` | MOD-0018 / AuthService / Platform access governance | Approver, approval date, artifact/link, approved version, RBAC deny proof, role/action allow-deny tests, cross-tenant denial, platform/partner/tenant actor behavior, seed/grant ownership proof, no delete/bulk-delete proof | Packet recorded only, draft matrix, informal email, unversioned notes, partial permission list, approval by the PVG package owner | All evidence fields are supplied and owner explicitly approves MOD-0230 `ready-for-dev` consumption |
 | `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Approver, approval date, artifact/link, version, all 16 field rules, missing-policy fail-closed proof, raw PHI/PII/free-text leak tests, list/detail/create/update/export/audit tests | Sensitivity vocabulary alone, draft field matrix, generic masking standard, untested policy | Owner-approved artifact proves allow/mask/omit/deny behavior and tests pass for every required surface |
-| `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | Approver, approval date, artifact/link, version, append/event shape, outage fail-closed/outbox proof, redaction proof, create/update/triage/route/archive/export/denial tests | Generic audit capability, unapproved event names, audit notes without failure-mode proof, an in-memory audit intent, approval by the PVG package owner | Owner approves the PVG event contract and required audit/outage/redaction tests are supplied |
+| `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | Approver, approval date, artifact/link, version, append/event shape, outage fail-closed/outbox proof, redaction proof, create/update/triage/route/archive/export/denial tests, single-record read audit test and its write-failure behaviour (AUD-001 §7) | Generic audit capability, unapproved event names, audit notes without failure-mode proof, an in-memory audit intent, approval by the PVG package owner | Owner approves the PVG event contract and required audit/outage/redaction tests are supplied |
 | `PVG-MOD0230-WorkflowTransitionGate-v1` | MOD-0023 Workflow/Inbox owner | Approver, approval date, artifact/link, version, gate-before-commit proof, queue/assignment/reason-code behavior, outage and blocked transition tests, cross-tenant denial, no-PHI workflow event/log/error proof | Draft workflow states, queue names without owner approval, untested `NotApplicable` behavior | Owner approves the transition gate contract and all blocked/unavailable/missing-policy paths fail closed |
 | `PVG-MOD0230-EvidenceLink-v1` | MOD-0031 Evidence-Link owner | Approver, approval date, artifact/link, version, link/query shape, completeness rules, outage behavior, cross-tenant denial, link/unlink audit, no duplicated content, no-PHI evidence-content tests | Fake evidence pack, duplicated documents, live URL references as authority, generic evidence-link notes | Owner approves the EvidenceLink contract and evidence completeness/outage behavior is test-proven |
 | `PVG-MOD0230-TraceBundle-v1` | Enterprise Architecture / platform trace authority for Blueprint MOD-0040 / TRACE-BUNDLE | Approver, approval date, artifact/link, version, canonical ID policy, external ID non-authority proof, duplicate/mismatch handling, correlation header behavior, trace propagation tests | External IDs as primary keys, unversioned trace notes, generic correlation convention only | Owner approves trace identity/correlation behavior and tests prove no untraceable regulated mutation |
@@ -500,6 +503,8 @@ Applies to the build/test code now and to any later runtime.
 - Audit: create, update, triage, route, denial, and failure paths need owner-approved audit append behavior.
   An audit write failure must block the mutation (AUD-001 K2) or use only an owner-approved durable outbox written in
   the same unit of work. Today only an in-memory `PvgAuditIntent` exists (G-5); the write path is DL-5 (BG-11).
+- Read audit: opening one safety case (`GetIntakeDraftByIdQuery`) is audited through the central path only (AUD-001
+  §7; "Audited Events" read row, BG-18). Today no read is audited (G-5).
 - Workflow: triage and route transitions must call the gate before commit. Missing queue, assignment, reason code,
   tenant/object mismatch, unavailable gate, or blocked transition must prevent mutation.
 - Evidence: required evidence links and completeness rules must be owner-approved. Missing or unavailable EvidenceLink
@@ -594,6 +599,10 @@ Rules that hold regardless of the deviation:
 `golden_reference: compact` · `data_mode: server` (OD-PVG-8, decided 2026-10-21; the table attribute
 `data-dt-data-mode="server"` is DL-7 work)
 
+Declaring `data_mode: server` and the table attribute does not make the list server-paged. Today `index.js`
+`buildListUrl` sends `pageNumber=1` and `pageSize=100` on every request and the API returns no total counts, so records
+beyond the first 100 are unreachable (G-16). The fix is measured by BG-20 (screen, DL-7) and BG-19 (API counts, DL-4).
+
 The create/edit field count is 16, so MOD-0230 follows Golden Reference Compact:
 
 - `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` (MVC proxy; 10 actions).
@@ -627,11 +636,16 @@ unique; tenant + status + received) as data only.
 Order of checks (G-9): tenant / actor / correlation context and the permission check run **before** field validation,
 so an unauthorized caller never receives validation reason codes. Today validation runs first.
 
-**Route is intentionally unsatisfiable in slice 1.** `IPvgWorkflowTransitionGate.ResolveRouteTargetAsync` denies
-unconditionally because the queue registry belongs to MOD-0023 and does not exist. The `Route` command, endpoint,
-permission key, audit event, and fail-closed test are all built in slice 1 and become functional the day a real
-MOD-0023 client replaces the deny adapter. Any implementation that makes Route succeed by inventing a queue list
-must be rejected in review.
+**Route is intentionally unsatisfiable in slice 1.** Today (code at `8e13f3787`): `IPvgWorkflowTransitionGate`
+defines one member, `EvaluateAsync`; `RouteDraftAsync` calls it for the route transition and passes `null` as the route
+target queue (`PvgIntakeDraftApplicationService.cs` line 302); `DenyAllWorkflowTransitionGate.EvaluateAsync` returns
+`WorkflowTransitionDenied` for every request, so Route never succeeds. Proposed, not in code: a route-target resolution
+against the MOD-0023 queue registry - named `ResolveRouteTargetAsync` in
+`docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md` and WP-0230-01 (G-12) - whose shape (separate member
+or part of `EvaluateAsync`) is set by `PVG-MOD0230-WorkflowTransitionGate-v1`. The queue registry belongs to MOD-0023
+and does not exist. The `Route` command, endpoint, permission key, audit event, and fail-closed test are all built in
+slice 1 and become functional only when a real MOD-0023 client replaces the deny adapter. Any implementation that makes
+Route succeed by inventing a queue list must be rejected in review.
 
 | Field | Required | Rule | DB-level | Pre-check | Sensitivity / fail-closed requirement |
 |---|---|---|---|---|---|
@@ -647,13 +661,23 @@ must be rejected in review.
 | SuspectProductText | No | Max 512 chars | Not indexed | Length check only until a terminology contract exists | regulated-safety; omit/deny if unapproved |
 | Seriousness | Yes | Controlled option set | Planned index `(TenantId, Seriousness)` | Value must exist in the PVG lookup | regulated-safety |
 | IntakePriority | Yes | Controlled option set; SLA linkage deferred to MOD-0023 | Planned index `(TenantId, IntakePriority)` | Value must exist in the PVG lookup; no SLA is computed in slice 1 | regulated-safety |
-| TriageOutcome | Yes at Triage, absent at Create | Controlled option set: `Triaged`, `Rejected`, `Duplicate` | Planned index `(TenantId, TriageOutcome)` | Transition must return `Allowed` from `IPvgWorkflowTransitionGate` **before** commit | invalid or unapproved transition fails closed |
+| TriageOutcome | Yes at Triage, absent at Create | Controlled option set: `Triaged`, `Rejected`, `Duplicate` | Planned index `(TenantId, TriageOutcome)` | Transition must return `Allowed` from `IPvgWorkflowTransitionGate.EvaluateAsync` **before** commit (today the deny-all gate denies every triage) | invalid or unapproved transition fails closed |
 | TriageReason | Required when `TriageOutcome` is `Rejected` or `Duplicate`, otherwise optional | Max 1000 chars; a taxonomy reason code is mandatory, free text is supplementary only | Not indexed | Reason code must exist in the taxonomy; free text alone is rejected | PHI; raw reason text prohibited in logs/traces/metrics/audit payloads |
-| RouteTargetQueue | Yes at Route | Value must be resolved by `IPvgWorkflowTransitionGate.ResolveRouteTargetAsync` | Not indexed | **Denies unconditionally in slice 1** - the queue registry is MOD-0023's and does not exist | confidential; visibility must be permission-filtered; no hardcoded queue list is permitted |
-| EvidenceLinkReferences | No | Max 20 references; each is an object reference only, never document content | Not indexed | `IPvgEvidenceLinkPort` records requirements as `Pending`; completeness never returns `Allowed` in slice 1 | confidential; no fake evidence pack when the evidence service is unavailable |
+| RouteTargetQueue | Yes at Route | Today: the value is not passed to the gate (`null`, line 302) and `DenyAllWorkflowTransitionGate.EvaluateAsync` denies every route. Proposed, not in code: the value is resolved against the MOD-0023 queue registry through the route-target resolution described above | Not indexed | **Denied for every request in slice 1** - the queue registry is MOD-0023's and does not exist | confidential; visibility must be permission-filtered; no hardcoded queue list is permitted |
+| EvidenceLinkReferences | No | Max 20 references; each is an object reference only, never document content | Not indexed | Today: `DenyAllEvidenceLinkPort.EvaluateAsync` returns `EvidenceLinkDenied` and records nothing, so a create or update that carries references, and every triage and route, is blocked. Proposed, not in code: requirements recorded as `Pending`, only if the MOD-0031 owner approves a durable pending-evidence state. Completeness never returns `Allowed` in slice 1 | confidential; no fake evidence pack when the evidence service is unavailable |
 
-Update concurrency (G-15): an update based on a stale read must return 409 with no silent overwrite. Today the
-in-memory store overwrites without a version check.
+Update concurrency (G-15): an update, triage, or route based on a stale read must return 409 with no silent
+overwrite. Today no record version exists in any layer; the in-memory store overwrites without a version check and the
+application service reads every `ReplaceAsync` `false` as not-found. Required shape and ownership:
+
+| Layer | Required change | Slice | Prerequisite |
+|---|---|---|---|
+| Store contract (`IPvgIntakeDraftStore.cs`, `InMemoryPvgIntakeDraftRepository.cs`) | Each stored draft carries a version; `ReplaceAsync` takes the expected version and returns a result that separates not-found from version conflict (not a `bool`) | DL-2 | none |
+| Application (`PvgIntakeDraftApplicationService.cs` `ReplaceAsync` call sites at lines 157, 239, 321; command, request, and result types; `PvgApplicationReasonCodes.cs`) | Update, triage, and route commands carry the expected version; a conflict maps to its own reason code, never to `IntakeDraftNotFound`; read results return the current version | DL-2 | none |
+| API (`PvgCaseIntakeTriageEndpoints.cs` request and response records) | PUT, `/triage`, and `/route` bodies carry the expected version; item and list responses return it; a conflict is HTTP 409 | DL-4 | DL-2 (BG-12) |
+| MVC proxy and JS (`PharmacovigilanceCaseIntakeTriageController.cs` form inputs, `form.js`, `details.js`, Edit / Details views) | The version read with the record is sent back on save, triage, and route; a conflict shows the controlled-failure alert, not success | DL-7 | DL-4 (BG-19) |
+
+Acceptance: BG-12 (DL-2), BG-19 (DL-4), BG-20 (DL-7).
 
 ### Option-Set Ownership
 
@@ -688,7 +712,8 @@ until then).
 - **Duplicate or conflicting intake identifier**
   - Expected: 409 or approved duplicate-handling response; no silent overwrite.
 - **Concurrent update on a stale version**
-  - Expected: 409; no silent overwrite. Today: last write wins (G-15).
+  - Expected: 409 with a version-conflict reason code distinct from not-found; no silent overwrite. Today: last write
+    wins; no version exists in any layer (G-15; BG-12, BG-19, BG-20).
 - **Unauthorized actor / missing or invalid token**
   - Expected: 401 for missing or invalid token, 403 for missing permission; no data leakage. Today: no token
     validation; 409 `PVG_PERMISSION_DENIED` from the deny-all gate (G-1, G-8).
@@ -714,6 +739,10 @@ until then).
 - **Audit write fails**
   - Expected: regulated mutation not committed; result not `Succeeded`; store unchanged (AUD-001 K2). Today: no audit
     write exists (G-5).
+- **Read audit for a single-record open cannot be written**
+  - Expected: the behaviour fixed by the MOD-0021 contract `PVG-MOD0230-AuditEvent-v1` (OD-PVG-9; BG-18). AUD-001 §7
+    requires the read audit but does not state this behaviour; this pack does not invent one. Today: no read audit
+    exists (G-5).
 - **Required dependency missing at startup**
   - Expected (OD-PVG-5, decided 2026-10-21): a production-like host refuses to start; in every environment readiness
     returns 503 with safe dependency codes; no business endpoint returns an empty-body 500.
@@ -772,7 +801,11 @@ Initial role / permission matrix - **proposal** (not approved; MOD-0018 owner ap
 | PVG Triage Lead | Yes | Yes | Yes | Yes | Yes | Only after retention/legal-hold approval | No |
 | PVG Safety Manager | Yes | Yes | Yes | Yes | Yes | Only after retention/legal-hold approval | Masked export only |
 | PVG Compliance Auditor | Read-only | No | No | No | No | No | Masked export only |
-| PVG System Integration | Approved intake contract only | Yes | No | No | No | No | No |
+| PVG System Integration | Approved intake contract only (none exists; see REQ-PVG-CRM-01 below) | Yes | No | No | No | No | No |
+
+PVG System Integration: no system-to-system intake contract is written. The CRM visit-report adverse-event request
+`execution/domains/pharmacovigilance/work-packs/REQ-PVG-CRM-01-visit-report-adverse-event-msl.md` (2026-10-21, open,
+deferred) asks for one; this pack only references it and defines no contract.
 
 Open authorization decisions:
 
@@ -804,6 +837,25 @@ Event names below are proposals.
 | `UpdateIntakeDraftCommand` | `pvg.case-intake.updated` | SafetyCaseIntake | none today - same dependency | Before/after of changed taxonomy-coded fields only | - (K2 class) |
 | `TriageIntakeDraftCommand` | `pvg.case-intake.triaged` | SafetyCaseIntake | none today - same dependency | Before/after: status, TriageOutcome, triage reason code | - (K2 class) |
 | `RouteIntakeDraftCommand` | `pvg.case-intake.routed` | SafetyCaseIntake | none today - same dependency | Before/after: status, route target queue code | - (K2 class) |
+| `GetIntakeDraftByIdQuery` (**read**; `GetDraftByIdAsync`) | `pvg.case-intake.viewed` | SafetyCaseIntake | none today - dependency: the same K4 forwarder (path `b`) + MOD-0021 contract (OD-PVG-9); central path `a` / `b` only, path `c` (equivalent trail) is not allowed for reads (AUD-001 §7) | Read: object type and id, actor, server-resolved tenant, correlation id, UTC time, outcome; no field value | - (AUD-001 §7: a patient-safety record - a pharmacovigilance case - opened singly) |
+
+**Read row (added 2026-10-22, independent review 02 F-1).** AUD-001 §7 audits no read by default, except three
+classes; one of them is a pharmacovigilance case opened singly. `GetIntakeDraftByIdQuery` is that open (today it
+returns the draft id and status only; the class does not depend on how many fields the detail returns). The read row
+adds no write command, so AUD-001 §5 K4 is not breached by it; it shares the write rows' dependency and is not
+actionable until OD-PVG-9's two dependencies exist - no separate decision is opened for it. Not audited:
+`GetIntakeDraftListQuery` (`ListDraftsAsync`) - a list page is not a single-record open, and it is not a bulk export of
+personal data (export is out of slice 1), so none of the three §7 classes applies.
+
+- Today: `GetDraftByIdAsync` (`PvgIntakeDraftApplicationService.cs` line 337) writes no audit record. The deny-all
+  permission gate stops every read outside tests; that is the absence of reads, not a read audit, and it does not stand
+  in for one. Any change that lets a single-record open succeed outside tests before BG-18 holds breaks AUD-001 §7.
+- Write-failure behaviour: AUD-001 §7 requires the read audit and its central path; it does not state what happens when
+  the read record cannot be written. §4.3 states fail-closed for the K2 class in terms of commands and for bulk
+  personal-data export only. This pack does not extend either to reads on its own authority: the behaviour is a
+  required item of `PVG-MOD0230-AuditEvent-v1` (MOD-0021 owner), reached through OD-PVG-9, and BG-18 pins it with a test.
+- No architecture test measures read audit (AUD-001 §9: "§7 Okuma denetimi - Hiçbir test"); BG-18 therefore names
+  PVG's own tests.
 
 Never written to the audit record: `ReporterContactSummary`, `PatientSubjectCode`, `EventOnsetDate`,
 `AdverseEventNarrative`, `SuspectProductText`, `TriageReason` free text, raw `SourceReference`, tokens, tenant values
@@ -908,9 +960,13 @@ command or test shows the stated result. Items that depend on an open decision c
       `/Pharmacovigilance/CaseIntakeTriage` receives the shared unauthorized response; the body contains no
       `dt-pvg-case-intake-triage` table, form, or filter markup; a named test proves it.
 - [ ] BG-4 (DL-6; after OD-PVG-1 and MOD-0018 / AuthService approval of catalog-grant and the `pvg.*` namespace) -
-      `git grep -n "pvg\." -- services/Diten.PvgService/src` shows one key family only - target
-      `pvg.case-intake-triage.*` - the shape test pins the same family, and "Authorization Convention" lists the same
-      strings.
+      Scan limited to the MOD-0230 surface (narrowed 2026-10-22, review 02 F-2):
+      `git grep -n 'pvg\.' -- 'services/Diten.PvgService/src/*/RegPvBase/*' services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs`
+      prints only keys of the target family `pvg.case-intake-triage.*` (today it prints the five `pvg.mod0230.intake.*`
+      constants and the five shape-test strings, measured 2026-10-22); the shape test pins the same family, and
+      "Authorization Convention" lists the same strings. The MOD-0231 keys `pvg.mod0231.case-processing.*`
+      (`Application/CaseProcessing/PvgCaseProcessingApplicationService.cs` lines 7-10) are outside this scan: they are
+      the MOD-0231 pack's subject, not this pack's (XMC-001).
 - [ ] BG-5 (DL-4; after OD-PVG-2 and Enterprise Architecture approval of the contract and MOD-0018 approval of the
       claim names) - No bearer or an invalid bearer -> 401; a caller-supplied `X-Diten-Tenant-Context`
       or `X-Diten-Actor-Id` that differs from validated context has no effect (test reads no data of the injected
@@ -935,7 +991,13 @@ command or test shows the stated result. Items that depend on an open decision c
       No MOD-0230 mutation succeeds without its audit record written in the same unit
       of work; with the audit writer forced to fail, the result is not `Succeeded` and the store is unchanged (test);
       the ledger's known-debt list shrinks by the audited commands.
-- [ ] BG-12 (DL-2) - Update on a stale version returns 409 (test).
+- [ ] BG-12 (DL-2) - Stale update at the store and application layer ("Validation Rules", update concurrency table):
+      `IPvgIntakeDraftStore.ReplaceAsync` takes the expected version and its result separates not-found from version
+      conflict; update, triage, and route map a conflict to their own reason code, never to `IntakeDraftNotFound`, and
+      the store is unchanged; read results return the current version. Named tests in
+      `tests/Diten.PvgService.RegPvBase.Tests` (names required): `ReplaceAsync_with_stale_version_returns_conflict_not_not_found`,
+      `Update_with_stale_version_returns_version_conflict_and_leaves_store_unchanged`,
+      `Triage_and_route_with_stale_version_return_version_conflict` (with allow-stub ports in the test only).
 - [ ] BG-13 (DL-2) - No Mongo driver reference in PvgService under the build/test gate (existing architecture tests
       stay green).
 - [ ] BG-14 (DL-7; OD-PVG-8 and OD-PVG-10 decided 2026-10-21) - The DataTable verifier shows no gap other than the
@@ -947,6 +1009,35 @@ command or test shows the stated result. Items that depend on an open decision c
 - [ ] BG-16 (DL-8) - `ocelot.json` holds exactly the four MOD-0230 route entries and no archive, export, delete, or
       bulk-delete route.
 - [ ] BG-17 (DL-1) - Every command in "Test Expectations" reports 0 failed and `known_failures.py check` exit 0.
+- [ ] BG-18 (DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract;
+      added 2026-10-22, review 02 F-1) - Single-record read audit (AUD-001 §7, "Audited Events" read row): every
+      `GetDraftByIdAsync` call that returns the record (`Succeeded`) writes exactly one `pvg.case-intake.viewed` record
+      through the central path (`b`) carrying object type and id, actor, server-resolved tenant, correlation id, UTC
+      time, and outcome, and no field value from the never-written list - test
+      `GetById_success_writes_one_read_audit_record_without_field_values` (name required); with the read-audit writer
+      forced to fail, the result is the behaviour fixed by `PVG-MOD0230-AuditEvent-v1` - test
+      `GetById_when_read_audit_cannot_be_written_follows_the_MOD0021_contract` (name required). This item cannot be
+      checked before that contract is signed. The deny-all permission gate does not satisfy it.
+- [ ] BG-19 (DL-4; after DL-2 BG-12; does not wait for OD-PVG-2 / OD-PVG-3 - 409 is today's mapping for every
+      non-success and also OD-PVG-3's target for a concurrency conflict; added 2026-10-22, review 02 F-3 and F-5) -
+      API: (a) PUT, `/triage`, and `/route` bodies carry the expected version, GET item and list items return it, and a
+      stale PUT returns 409 with the version-conflict reason code and leaves the store unchanged - test
+      `Put_with_stale_version_returns_409_version_conflict`; (b) the list response carries a total count (all of the
+      tenant's drafts) and a filtered count (after the status filter): with 101 drafts, `pageNumber=2&pageSize=100`
+      returns 1 item, total 101, filtered 101 - test `List_with_101_drafts_returns_second_page_and_total_counts`; with a
+      status filter the filtered count equals the matching drafts - test `List_with_status_filter_returns_filtered_count`
+      (names required; tests in `Diten.PvgService.Api.Tests`). DL-4 owns the whole API-side count: the store count
+      member, `PvgIntakeDraftQueryResult`, `ListDraftsAsync`, and the API response.
+- [ ] BG-20 (DL-7; after DL-4 BG-19; added 2026-10-22, review 02 F-3 and F-5) - Screen, measured in
+      `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js` (names required): (a) page parameters are passed - the
+      request for page n carries `pageNumber=n` and the table's page size (at most 100, the proxy clamp) instead of the
+      fixed `pageNumber=1` / `pageSize=100` - test `pvg list sends the requested page number and page size`; (b) with
+      at least 101 records the next page is reachable - given a proxy response with 100 items and total 101, moving to
+      page 2 requests `pageNumber=2` and renders the 101st record - test `pvg list reaches the 101st record on page 2`;
+      (c) the totals are correct - the table's total and filtered counts come from the API's total and filtered counts,
+      not from the number of rows received - test `pvg list shows the API total and filtered counts`; (d) the version
+      read with the record is sent back on save, triage, and route, and a 409 version conflict shows the
+      controlled-failure alert - test `pvg form sends the record version and shows a conflict as a controlled failure`.
 
 **Operational runtime gate (all open - do not check without owner evidence):**
 
@@ -1090,15 +1181,16 @@ Behaviour that the suites must cover (each with at least one named test):
 - Authorization: 401 / 403 paths; permission before validation (BG-7); one key family (BG-4); controller
   `[HasPermission]` and UAS-001 (BG-2, BG-3).
 - Per-field PHI/PII sensitivity, masking, row/field deny, and missing-policy fail-closed tests.
-- Audit write failure blocks the mutation (BG-11); correlation/TRACE-BUNDLE, evidence-link, workflow/inbox
-  failure-path tests.
+- Audit write failure blocks the mutation (BG-11); single-record read audit and its write-failure behaviour (BG-18);
+  correlation/TRACE-BUNDLE, evidence-link, workflow/inbox failure-path tests.
 - Raw PHI/PII/free text absent from logs, traces, metrics, audit payloads, validation errors, and regulated error
   responses.
 - Startup fail-closed (BG-8) and configuration scans (BG-9, BG-10). The configuration key for scans is the code's
   `Pvg:Runtime:*` family.
 - Gate-before-commit: no state-changing path commits without an `Allowed` transition result in the same correlation
   scope.
-- Concurrency 409 (BG-12).
+- Concurrency 409 (BG-12 store and application, BG-19 API, BG-20 screen).
+- List paging beyond 100 records with correct total and filtered counts (BG-19 API, BG-20 screen).
 - REG-PV-BASE port conformance C-01 ... C-17: the document `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md`
   is committed, but its type names and configuration key are not in the code (G-12). **Until the type names are
   aligned with the code, or a C-id-to-test mapping is recorded, this criterion is unmapped and cannot be checked.**
@@ -1111,8 +1203,8 @@ Behaviour that the suites must cover (each with at least one named test):
 - [x] Required governance files read.
 - [x] DCP-002 preflight passed.
 - [x] Pack status is `ready-for-dev` (2026-08-09) - **build/test gate only**.
-- [ ] Version-bound approval row for the current pack version (CT-APR-01 / CT-APR-02) - none; independent review 01
-      returned "UYGUN DEĞİL"; this revision needs a new review.
+- [ ] Version-bound approval row for the current pack version (CT-APR-01 / CT-APR-02) - none; independent reviews 01
+      and 02 returned "UYGUN DEĞİL"; this revision (2026-10-22) needs a new review.
 - [x] DCP-004 promoted to `approved` / `ready-for-execution` (2026-08-09).
 - [x] W-3A0 scope per OD-2: W-3A0-Lite gates build/test; W-3A0-Full gates operational runtime.
 - [ ] MOD-0018 RBAC / permission contract - **open**. Build gate substituted by `DenyAllPermissionGate` only; no JWT
@@ -1139,7 +1231,8 @@ Behaviour that the suites must cover (each with at least one named test):
 - [ ] Backend File Convention matches Golden Reference - **no**; the measured deviation (G-11) is a documented
       deviation (technical debt) for slice 1 by owner decision OD-PVG-4 (2026-10-21).
 - [ ] Audited Events table covers every write command with a path - table present; no path exists (OD-PVG-9: PVG
-      side decided 2026-10-21; awaiting the K4 shared forwarder package and the MOD-0021 owner contract).
+      side decided 2026-10-21; awaiting the K4 shared forwarder package and the MOD-0021 owner contract). The
+      single-record read row (AUD-001 §7) was added 2026-10-22 under the same dependency (BG-18).
 - [n/a] Retention, archive/void activation, and legal-hold policy - **removed from slice 1 scope**; required before archive/void is ever added.
 - [x] Build/buy/partner integration boundary recorded as hybrid, partner-aware internal control wrapper.
 - [x] Gateway route family defined per NET-001 and assigned to integration-agent.
@@ -1160,6 +1253,14 @@ Behaviour that the suites must cover (each with at least one named test):
   `data_mode: server` (OD-PVG-8), the documented backend deviation (OD-PVG-4), the binding startup form (OD-PVG-5),
   the verifier known deviation (OD-PVG-10). The six rows that wait for another owner change no code target until that
   approval is recorded.
+- **2026-10-22 revision after independent review 02.** Review 02 of pack version `b48500cf` returned "UYGUN DEĞİL"
+  with F-1 ... F-5 (`docs/records/reviews/MOD-0230/2026-10-21-b48500cf.md`; Control Tower comparison note
+  `docs/records/reviews/MOD-0230/2026-10-21-b48500cf-ct-karsilastirma-02.md`). Addressed in this text: single-record
+  read audit row bound to OD-PVG-9 with BG-18 (F-1); BG-4 scan narrowed to the MOD-0230 surface (F-2); stale-update
+  ownership across DL-2 / DL-4 / DL-7 with BG-12, BG-19, BG-20 (F-3); "today" vs "proposed, not in code" for the route
+  target and evidence `Pending` wording (F-4); list paging gap G-16 with BG-19 and BG-20 (F-5); the comparison note's
+  §3 items 2-4 (read row tied to OD-PVG-9, G-16, REQ-PVG-CRM-01 reference in the role matrix). No decision, approval, or
+  frontmatter field changed.
 - **Platform.Common is not consumed.** The 2026-08-09 text said several contracts were "consumed directly from merged
   `Diten.Platform.Common`". No PvgService project references `Diten.Platform.Common`; authorization, correlation,
   tenancy, and observability are PVG-local or absent.
@@ -1211,7 +1312,7 @@ Behaviour that the suites must cover (each with at least one named test):
 
 MOD-0230's own follow-ups (other owners' work is listed under "Teslim dilimleri" as outside every slice):
 
-- Close build-gate gaps G-1 ... G-15 through slices DL-2 ... DL-8.
+- Close build-gate gaps G-1 ... G-16 through slices DL-2 ... DL-8.
 - Record the owner answers to OD-PVG-1 ... OD-PVG-10 in this pack - done in this revision (2026-10-21). Still open:
   the other owners' approvals named for OD-PVG-1, 2, 3, 6, 7, and 9.
 - Align the port-contract document's type names and configuration key with the code, or record a C-id-to-test map (G-12).
@@ -1244,29 +1345,45 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   Kapsam dışı: her kod yolu, WP dosyaları, DCP-004. Bitiş: OD-PVG-1…10 için sahip yanıtı pakete yazılmış ya da
   "açık" kalmış; bağımsız inceleme açık engelsiz; `scripts/pack_approval.py check` çıkış 0; BG-17.
 - **DL-2** — Yollar: `services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/**`, `Application/RegPvBase/`
-  içindeki komut, sorgu, istek tipleri ve `PvgIntakeDraftValidator.cs`, `Infrastructure/RegPvBase/InMemoryPvgIntakeDraftRepository.cs`,
-  `PvgIntakeDraftIndexCatalog.cs`, `tests/Diten.PvgService.RegPvBase.Tests/**`. Önkoşul: OD-PVG-4 kapandı (2026-10-21; belgelenmiş sapma).
-  Kapsam dışı: Mongo koleksiyonu, indeks, migration; komut adlarının değiştirilmesi. Bitiş: BG-12, BG-13; `pvg-regpv-base` 0 kırmızı.
+  içindeki komut, sorgu, istek ve sonuç tipleri (`PvgIntakeDraftSummary.cs` dahil), `PvgApplicationReasonCodes.cs` ve
+  `PvgIntakeDraftValidator.cs`, `Application/RegPvBase/IPvgIntakeDraftStore.cs` (`ReplaceAsync` beklenen sürümü alır,
+  sonuç bulunamadı ile sürüm çakışmasını ayırır), `PvgIntakeDraftApplicationService.cs` içindeki üç `ReplaceAsync` çağrısı
+  (satır 157, 239, 321) ve sonuçlarının yorumu, `Infrastructure/RegPvBase/InMemoryPvgIntakeDraftRepository.cs`,
+  `PvgIntakeDraftIndexCatalog.cs`, `tests/Diten.PvgService.RegPvBase.Tests/**`. Önkoşul: OD-PVG-4 kapandı (2026-10-21; belgelenmiş sapma);
+  başka dilim önkoşulu yok — DL-4 (BG-19) ve DL-7 (BG-20) sürüm taşımasında DL-2'yi bekler.
+  Kapsam dışı: Mongo koleksiyonu, indeks, migration; komut adlarının değiştirilmesi; API ve MVC/JS sürüm taşıması
+  (DL-4, DL-7); liste toplam sayısı (DL-4). Bitiş: BG-12, BG-13; `pvg-regpv-base` 0 kırmızı.
 - **DL-3** — Yollar: `src/Diten.PvgService.Api/Program.cs`, `PvgServiceApiHost.cs`, `tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs`.
   Önkoşul: OD-PVG-5 kapandı (2026-10-21); BG-10 için OD-PVG-6 (PVG tarafı karar 2026-10-21; onay satırına bağlama biçimi
   Enterprise Architecture onayını bekliyor). Kapsam dışı: port tahsisi (OD-PVG-7), üretim açılışı, sırlı appsettings.
   Bitiş: BG-8, BG-9, BG-10 yeşil; bir kayıt silinince adı belli test kırmızı (sabotaj kanıtı).
-- **DL-4** — Yollar: `src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs`, `Program.cs` içindeki kimlik doğrulama kaydı
-  (DL-3 ile aynı dosya: DL-3 önce ya da aynı WP), `PvgIntakeDraftApplicationService.cs` içindeki kontrol sırası, API testleri.
-  Önkoşul: OD-PVG-2 (PVG tarafı karar 2026-10-21; Enterprise Architecture ve MOD-0018 claim adları onayı bekleniyor),
-  OD-PVG-3 (PVG tarafı karar 2026-10-21; düzenlenmiş hata zarfı MOD-0041 / Ops onayını bekliyor). Kapsam dışı: Gateway ara katmanı, izin tanımı/grant, MOD-0018 sözleşmesi. Bitiş: BG-5, BG-6, BG-7; `pvg-api` 0 kırmızı.
-- **DL-5** — Yollar: `PvgIntakeDraftApplicationService.cs` içindeki denetim çağrısı, `Application/RegPvBase/` altında denetim
-  yazıcı portu, ilgili testler, defterde yalnız borç satırı silme. Önkoşul: OD-PVG-9 (PVG tarafı karar 2026-10-21;
-  K4 ortak iletici paketi (Control Tower) + MOD-0021 sahip sözleşmesi bekleniyor).
-  Kapsam dışı: ileticinin ya da merkezi günlüğün yapımı. Bitiş: BG-11; `AuditTrailStandardTests` yeşil ve borç listesi küçülmüş.
+- **DL-4** — Yollar: `src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs` (istek ve yanıt kayıtlarında sürüm
+  alanı, liste yanıtında toplam ve süzülmüş sayı dahil), `Program.cs` içindeki kimlik doğrulama kaydı
+  (DL-3 ile aynı dosya: DL-3 önce ya da aynı WP), `PvgIntakeDraftApplicationService.cs` içindeki kontrol sırası ve
+  `ListDraftsAsync`, liste sayımı için `IPvgIntakeDraftStore.cs` / `InMemoryPvgIntakeDraftRepository.cs` sayım üyesi ve
+  `PvgIntakeDraftQueryResult.cs` (DL-2 ile aynı dosyalar: DL-2 önce), API testleri. API tarafı toplam sayının tamamı bu dilimdedir.
+  Önkoşul: BG-5 için OD-PVG-2 (PVG tarafı karar 2026-10-21; Enterprise Architecture ve MOD-0018 claim adları onayı bekleniyor),
+  BG-6 için OD-PVG-3 (PVG tarafı karar 2026-10-21; düzenlenmiş hata zarfı MOD-0041 / Ops onayını bekliyor); BG-19 için
+  DL-2 (BG-12) — BG-19 OD-PVG-2 / OD-PVG-3'ü beklemez. Kapsam dışı: Gateway ara katmanı, izin tanımı/grant, MOD-0018 sözleşmesi;
+  MVC/JS sayfalama ve sürüm taşıması (DL-7). Bitiş: BG-5, BG-6, BG-7, BG-19; `pvg-api` 0 kırmızı.
+- **DL-5** — Yollar: `PvgIntakeDraftApplicationService.cs` içindeki denetim çağrıları (dört yazma komutu ve
+  `GetDraftByIdAsync` okuma denetimi), `Application/RegPvBase/` altında denetim yazıcı portu, ilgili testler, defterde yalnız
+  borç satırı silme. Önkoşul: OD-PVG-9 (PVG tarafı karar 2026-10-21;
+  K4 ortak iletici paketi (Control Tower) + MOD-0021 sahip sözleşmesi bekleniyor); okuma satırı aynı bağımlılığa bağlıdır, ayrı karar açılmadı.
+  Kapsam dışı: ileticinin ya da merkezi günlüğün yapımı; liste okumasının denetimi (AUD-001 §7 sınıfı değil).
+  Bitiş: BG-11, BG-18 (tekil açılış okuma denetimi); `AuditTrailStandardTests` yeşil ve borç listesi küçülmüş.
 - **DL-6** — Yollar: `PvgIntakeDraftApplicationService.cs` satır 7–11'deki izin sabitleri,
   `tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs`. Önkoşul: OD-PVG-1 (PVG tarafı karar 2026-10-21,
   hedef `pvg.case-intake-triage.*`; MOD-0018 / AuthService katalog-grant ve `pvg.*` ad alanı onayı bekleniyor).
-  Kapsam dışı: katalog, seed, grant (MOD-0018 / AuthService); denetleyici öznitelikleri (DL-7). Bitiş: BG-4.
-- **DL-7** — Yollar: `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`, görünüm kökü, JS, resx,
+  Kapsam dışı: katalog, seed, grant (MOD-0018 / AuthService); denetleyici öznitelikleri (DL-7); MOD-0231'in
+  `pvg.mod0231.case-processing.*` anahtarları (MOD-0231 paketinin konusu, XMC-001). Bitiş: BG-4 (MOD-0230 yüzeyine daraltılmış tarama).
+- **DL-7** — Yollar: `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` (form girdilerinde
+  sürüm alanı, liste vekilinde sayfa parametreleri dahil), görünüm kökü, JS (`index.js` `buildListUrl` sayfalaması,
+  `form.js` / `details.js` sürüm taşıması dahil), resx,
   `Models/CaseIntakeTriage/**`, `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`. Önkoşul: DL-6; OD-PVG-8 kapandı (2026-10-21);
-  OD-PVG-10 kapandı (2026-10-21).
-  Kapsam dışı: `_Layout.cshtml`, ortak partial'lar, menü/manifest (WP-0230-08 blocked). Bitiş: BG-1, BG-2, BG-3, BG-14, BG-15; vitest 0 kırmızı.
+  OD-PVG-10 kapandı (2026-10-21); BG-20 için DL-4 (BG-19: API'de sürüm ve toplam/süzülmüş sayı alanları).
+  Kapsam dışı: `_Layout.cshtml`, ortak partial'lar, menü/manifest (WP-0230-08 blocked); servis yolları (API tarafı toplam sayı DL-4).
+  Bitiş: BG-1, BG-2, BG-3, BG-14, BG-15, BG-20; vitest 0 kırmızı.
   Bilinen sapma (OD-PVG-10): toplu silme, dışa aktarma, içe aktarma, tümünü seç ve bağlantıları (reload-with-toast,
   clear-selection) - doğrulayıcının 13 maddesi; kalan beş madde (veri modu, `_TableSkeleton`, `_Filter` ve `_IndexL10n`
   partial'ları, form ViewModel'i) DL-7'de düzeltilir.
