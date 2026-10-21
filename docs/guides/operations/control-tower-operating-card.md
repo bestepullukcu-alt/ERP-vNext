@@ -35,9 +35,9 @@ Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; term
 
 ```text
 > ❓ **SORU:** <tek cümle — hangi kararı istiyorum>
-> **1) <seçenek> — ÖNERİM**, çünkü <tek cümle neden>
-> **2) <seçenek>** — <seçilirse ne olur>
-> "1" derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
+> **1) `<cevap kelimesi>` <seçenek> — ÖNERİM**, çünkü <tek cümle neden>
+> **2) `<cevap kelimesi>` <seçenek>** — <seçilirse ne olur>
+> "`<cevap kelimesi>`" (ya da 1) derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
 ```
 
 Aynı seçenekler istenirse butonlu kutuyla da verilir; görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her
@@ -46,6 +46,10 @@ soruda token harcar.
 - Bir yanıtta en çok **bir** soru; en çok üç seçenek. Karar gerekmiyorsa soru yazılmaz.
 - Önerilen seçenek `ÖNERİM` ile işaretlenir ve gerekçesi tek cümledir; öneri yoksa "önerim yok, çünkü …" yazılır.
 - Her seçenek neye izin verdiğini ve vermediğini söyler; sahipten uzun onay metni beklenmez.
+- Her seçeneğin bu soruya özgü kısa bir **cevap kelimesi** vardır (`commit`, `düzelt`, `hepsi-evet`); sahip kelimeyi ya da
+  numarayı yazabilir. Art arda gelen sorularda aynı numara farklı anlam taşıyabildiği için, yalnız numara gelir ve bu
+  önerilen seçenek değilse ya da yazma, silme veya geri alınamaz bir adım başlatıyorsa CT seçeneğin adını tekrar
+  edip tek satırla teyit ister: "2 = önce düzelt — bunu mu kastettiniz?" (S-26).
 - Soru doğrudan izni sorar ("Geçip main'i merge edeyim mi?"). Bir olgu sorusu ("başka oturum açık mı?") izin vermez:
   olgu gerekiyorsa seçenekler olgu ile izni birlikte adlandırır ("Açık oturum yok — geç ve merge et") (S-24).
 - Soru teknik terimsiz, düz Türkçe; kod, kimlik ya da yol gerekiyorsa seçeneğin içinde tek parça yazılır.
