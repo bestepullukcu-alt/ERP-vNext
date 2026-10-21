@@ -74,7 +74,7 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 |---|---|---|---|
 | B1 | `MrpLiveCalculationTests` ×2 — fixture fixes the first demand week at 2026-10-19 and stock `AsOf` at `UtcNow`; red every day since 2026-10-20 | MOD-0189 (`ElikPenco`) | issue **#174** **2026-10-21 (team):** analysed — the two MRP tests take the first demand week as a fixed 19.10.2026 and the stock date as "now", red by themselves since 20 Oct; the same rule may make MRP "Unavailable" in production for plans whose first week is already past. Fix prompt sent to ElikPenco. **2026-10-21 evening:** no fix on main yet (`dfb5de610`). |
 | B2 | `PpmAuditRetentionPolicySeedMongoTests` — CI `platform-app` row has no test-owned mongod | PSS / Platform | issue **#175** **2026-10-21 evening:** no fix on main yet (`dfb5de610`). |
-| B3 | MOD-0022 `LoginOnlyEndpointGuardTests` ×2 | MVP-1 lane | owner-ruled known red (v9.9 1a) |
+| B3 | MOD-0022 `LoginOnlyEndpointGuardTests` ×2 | MVP-1 lane | **Closed 2026-10-21** by MVP-1 PR **#183** (`7c0b58783`): `ESignatureSamplesController.Image` and `ESignatureSettingsController.ListMeanings` gated with `[HasAnyPermission]`, `InternalESignActionsController` allow-listed; all 7 `LoginOnlyEndpointGuardTests` green (MVP-1 report, not re-run here). SCE branches cut before #183 merge `origin/main` before any PR. |
 | B4 | BL-615 Arch ×3 (`DocsPathGuard`, `AuditTrailStandard` ×2) | joint with CRM | registered known failures |
 | B5 | main auth-app red in 5 of the last 6 runs, a **different test each run** (`ProductIdentityEntitlementReconciliationMongoTests`, `AnonymousDoorLimitTests`, `OperationalSingleInstanceLockTests`), already before #164; lock test 30/30 locally (macOS) — flaky on Linux CI, not Q358/G7 | Auth owner | measured 2026-10-20; issue to file **Issue #180** (2026-10-21); Ali has the review prompt. |
 
@@ -104,7 +104,7 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 | D5 | `DeletedAt` on Auth entities (soft delete records `UpdatedAt`/`UpdatedBy` today) | CT (Auth, XMC-001) | **Ali 2026-10-20: may be added** — work item **PR #178** (`140018f22`; local 22/22) — review: Beste + Auth owner. **Done** — merged #178 (`fd4dc780a`). |
 | D6 | Old open PRs **#49** and **#169** — keep, revive or close | **Beste** | **2026-10-21:** Beste decides **2026-10-21 (Beste):** #169 merged to main; #49 stays as it is, no action. **Done.** |
 
-**Critical path:** C1 is answered (2026-10-21) → rewrite DC-02 D1 for the tenant-wide master → C3 (D2–D6) → C6 → C8 for the next real code; MOD-0147 itself starts only after MOD-0216 TPRM; A1 waits for the production authorization update. **2026-10-21 evening:** Cihan's S1 (model + migration) is next on the supplier path and depends on BL-501 arriving with MVP-1; the reds B1/B2 are still open; H2 slice A waits for its run.
+**Critical path:** C1 is answered (2026-10-21) → rewrite DC-02 D1 for the tenant-wide master → C3 (D2–D6) → C6 → C8 for the next real code; MOD-0147 itself starts only after MOD-0216 TPRM; A1 waits for the production authorization update. **2026-10-21 evening:** Cihan's S1 (model + migration) is next on the supplier path and depends on BL-501 arriving with MVP-1; the reds B1/B2 are still open (B3 closed by #183); H2 is done locally (§4).
 B1 should close first among the reds: it makes every PR's `planning-tests` red.
 
 **Stacked PRs (lesson of #167):** the repository dismisses approvals when the merge-base changes. Land a stacked
@@ -139,23 +139,31 @@ All four sources are Procurement modules (other owner) — reading them needs XM
 - **Inference (to confirm with Cihan / the status-report owner):** the "Treasury Core" sheet's 7 commits are most likely
   these same 7 DKI commits — i.e. one piece of work, not two.
 
-## 4. Hardening after MVP-6 (H2 started 2026-10-21)
+## 4. Hardening after MVP-6 (H2 done locally 2026-10-21)
 
 H1 dev JWT secret fail-fast in every service and out of 23 appsettings · H2 test hosts mint AuthService-shaped tokens
 + a legal-entity failing path per gate · H3 BL-615 audit ledger (joint with CRM) · H4 one adapter base.
 
-**H2 — in progress (Natig 2026-10-21: start slice A).** Branch `feature/sce/real-identity-tests-01` (from `dfb5de610`),
-not pushed. Slice A is written, **not yet built or run**: one shared `AuthServiceToken` helper with AuthService's real claim
-set (issuer `diten-auth-service`, audience `diten-erp`, no `legal_entity_id`); the 7 hand-made token sites migrated; a
-legal-entity refusal through the real host for every gate (Returns, Claims, Carriers, Loads, Shipments, S&OP, Capacity:
-404/403 and 503, the gate asked MDM, no write). Findings from the measurement (from code, not run):
+**H2 — done locally, not pushed (Natig 2026-10-21).** Branch `feature/sce/real-identity-tests-01` (from `dfb5de610`),
+two commits: `f0522e6f2` (slice A) and `e49461a99` (slice B). Push and PR wait until the work unit is reviewed as a whole
+(Natig: no push/PR before a module is finished); before the PR the branch merges `origin/main` (it predates #183).
+- **Slice A** — one shared `AuthServiceToken` helper with AuthService's real claim set (issuer `diten-auth-service`,
+  audience `diten-erp`, no `legal_entity_id`); the 7 hand-made token sites migrated; a legal-entity refusal through the
+  real host for every gate (Returns, Claims, Carriers, Loads, Shipments, S&OP, Capacity: 404/403 and 503, the gate asked
+  MDM, no write). Run once on an owned mongod: full SupplyChain suite **606 passed, 0 failed, 1 skipped**
+  (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, the child-process half), 15 new tests green.
+- **Slice B** — `tests/acceptance/real_role_probe.py`, run once 2026-10-21 against Auth, Platform, MDM and SupplyChain on an
+  owned 8.0.18 replica set with lane-only secrets: **26/26 steps PASS**. Real logins of seeded users whose roles were made
+  and granted through the tenant Roles API (BL-652 interim); user A (with `mdm.legal-entities.read`) created a shipment,
+  a carrier and a load and read returns and claims; user B (without it) got 503 `DEPENDENCY_UNAVAILABLE` with no write.
+  The token carried AuthService's shape and no `legal_entity_id`. Deviations from the scope draft: returns/claims checked
+  by GET, not create; seeded users, not API-created ones. Not via the gateway. All processes and mongod were stopped.
+Open findings (separate decisions, not fixed in H2):
 - **SourceIntake** `TrustedSourceContext` still requires a `legal_entity_id` claim — no HTTP endpoint calls it today, so no
-  real user is refused yet; recorded as a test, fix is a separate decision.
+  real user is refused yet; recorded as a test (`SourceIntakeRealTokenTests`) that must be inverted when it is aligned.
 - The SupplyChain **runtime probes** mint their own tokens, call the service directly (not the gateway) and set no
-  `LegalEntity:ReferenceBaseUrl`, so every self-started create most likely answers 503 today.
-Next: slice A run (one build, full SupplyChain suite once, owned mongod) → slice B, the acceptance run with a real
-login token from a role granted in Roles → Permissions (Ali's BL-652 condition; scope question to Ali open —
-`mvp6-follow-up-drafts-01/SUPPLYCHAIN-REAL-ROLE-TESTS-SCOPE-v0.1.md`).
+  `LegalEntity:ReferenceBaseUrl`, so every self-started create most likely answers 503 today (from code, not run).
+- The scope question to Ali stays open (`mvp6-follow-up-drafts-01/SUPPLYCHAIN-REAL-ROLE-TESTS-SCOPE-v0.1.md`).
 
 ## 5. Post-MVP-6 (named, not scheduled)
 
