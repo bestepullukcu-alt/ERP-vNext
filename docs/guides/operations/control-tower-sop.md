@@ -1418,6 +1418,11 @@ paket bu kurala bağlıysa durdurur: alan yoksa, dilim onaylı sürümde yoksa y
 yalnız onay satırının `note` alanındaki `whole_pack=<WP>`'dir: onaylayan, o sürüm için o WP'nin paketin tamamını
 almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız uyarıdır.
 
+**6a. Kural değişince oturum.** Kart ya da SOP'ta değişen bir kural, CT dalını main ile birleştirip dosyayı yeniden
+okuyunca geçerli olur; yeni oturum gerekmez. Skill (`.claude/skills/…`, `.agents/skills/…`) oturum başında yüklenir;
+skill'de değişen bir kural ancak yeni oturumda geçerlidir. GitHub hesap adı değişirse önce
+`execution/approvals/approvers.tsv` güncellenir; yoksa o hesabın onayları tanınmaz.
+
 **7. Üst üste PR'da merge sırası (GitHub).** Bir PR başka bir PR'ın dalı üstüne açıldıysa, alttaki merge edilince
 GitHub üstteki PR'ın onaylarını "taban değişti" diye düşürür (eski onay düşürme ayarı). Sıra: önce üstteki dal güncel
 main ile birleştirilir ("Update branch", merge commit), sonra son itişi yapmayan biri onaylar, onaydan hemen sonra
