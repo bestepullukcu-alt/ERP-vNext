@@ -70,6 +70,6 @@ iletildi.
 | K-3 | `abb-accept` (ABB listesi, 8 commit) yedek olarak push edildi; main'e alınıp alınmayacağı | MDM işinin sahibi karar verir |
 | K-4 | Kaydedilmemiş iş içeren worktree'ler: platform-owned-mongo (12 dosya, BL-595), mdm+product-takeover (4 dosya), live-main (yerel ayar) | Sahipleriyle bakılmalı; silinmedi |
 | K-5 | S-5 (dağıtım kapısı) Codex kod denetimi | Hazır: dal `chore/agents/ct-apr-03` (yerel, push yok; 3 commit, 719788b7e), ZIP `s5-codex-01.zip` (sha256 b38ad7b1…) ve prompt; bağımsız alt ajan 3 turdan sonra KOŞULLU→düzeltildi. Codex'e sahip gönderir |
-| K-7 | S-5 R3-2: bu sürümün kendi geçerli incelemesi varsa önceki sürümlerin bütün olumsuzları bilgiye düşer (CT önerisi; ör. "sahip TBD" bulgusu sahip doldurulup yeniden incelenince takılmaz) | Sahip onayı; Codex'e de sorulur |
+| K-7 | S-5 D2: önceki sürümün olumsuzu ne zaman bilgiye düşer | **Karar (sahip, 2026-10-21): seçenek 2, koşullu** — yalnız olumsuzdan sonra yapılmış ve o incelemeyi adıyla (bulgu dosyası özetinin ilk 8 hanesi) değerlendiren kendi geçerli incelemesi olan sürümde. Codex S-5 denetimi (Q2) bu biçimi önerdi |
 | K-8 | S-5 yürüyen iş koruması pratikte hiçbir gerçek dağıtımda devreye girmez (dağıtım yalnız READY/REWORK'ten; yeniden açılan iş korunmaz); yürüyen iş zaten yeniden dağıtılmaz, kabulde yalnız olumsuzlar durdurur; legacy sce-mvp6 kuyruğunda module sütunu olmadığı için koruma yok | Bilgi; sahip kabul eder ya da değiştirir |
 | K-6 | PR #176 (PR-1) merge | CODEOWNERS: CEO ya da kıdemli geliştirici |
