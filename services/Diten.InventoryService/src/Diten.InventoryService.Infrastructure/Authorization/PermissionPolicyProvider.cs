@@ -24,6 +24,13 @@ public sealed class PermissionPolicyProvider : IAuthorizationPolicyProvider
             return Task.FromResult<AuthorizationPolicy?>(policy);
         }
 
+        // WP-MVP1-FIX-LIVE3: [HasAnyPermission(a, b, …)] — any one key grants (AnyPermissionAuthorizationHandler)
+        if (policyName.StartsWith(HasAnyPermissionAttribute.PolicyPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var permissions = policyName[HasAnyPermissionAttribute.PolicyPrefix.Length..].Split('|', StringSplitOptions.RemoveEmptyEntries);
+            return Task.FromResult<AuthorizationPolicy?>(new AuthorizationPolicyBuilder().AddRequirements(new AnyPermissionRequirement(permissions)).Build());
+        }
+
         return _fallbackProvider.GetPolicyAsync(policyName);
     }
 

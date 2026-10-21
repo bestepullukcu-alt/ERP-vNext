@@ -38,5 +38,8 @@ F-3 | DÜŞÜK | <bulgu> | kapandı | - | -
 F-1@<önceki bulgu dosyasının özetinin ilk 8 hanesi> | ENGEL | <bulgu> | kabul — onaylayan | <onaylayan kişi anahtarı> | -
 ```
 
-Seviyenin adı bulgu satırı dışında büyük harfle yazılmaz; araç bu tür satırları bozuk sayar. Açık ORTA ve DÜŞÜK koşulların
-sahibi ve son tarihi yazılır.
+Seviye adları (ENGEL, ORTA, DÜŞÜK) yalnız bulgu satırında büyük harfle yazılır; bulgu satırı dışında bu sözcüklerden biri büyük
+harfle geçerse araç satırı bozuk sayar. `|` karakteri yalnız bulgu satırında kullanılır; geçerli olmayan `|` içeren satır ve `F-`
+ile başlayan geçersiz satır da bozuk sayılır (görünüşü benzer karakterler ve küçük harfli `f-1 | engel | …` bu yolla yakalanır).
+Sıradan açıklama metni bu sözcükleri küçük harfle (ya da yalnız ilk harfi büyük) kullanabilir: "bu bir engel değil" geçerlidir.
+Açık ORTA ve DÜŞÜK koşulların sahibi ve son tarihi yazılır.

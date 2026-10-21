@@ -24,6 +24,8 @@ public static class TraceabilityServiceCollectionExtensions
         services.AddScoped<ISerialRepository, SerialRepository>();
         services.AddScoped<ILotExpirySweeper, LotExpirySweeper>();
         services.AddSingleton<ILotStatusChangeGate, AlwaysAllowLotStatusChangeGate>();
+        // MOD-0176 F2 (KF-D): no lot-date rule by default; AddExpiry replaces the gate.
+        services.AddScoped<ILotDateOverrideGate, NoLotDateOverrideGate>();
 
         // WP-0174-P2 — the ledger link (pack §8), in-process; Trace:EnforceRegisteredLots defaults to false (ASSUMPTION-0174-10).
         services.AddScoped<LedgerTransactionBinding>();

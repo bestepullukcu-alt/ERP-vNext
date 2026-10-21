@@ -187,6 +187,7 @@ public sealed class Quarantine
         "Quarantine.Details.Moves.Title",
         "Quarantine.Details.Moves.Subtitle",
         "Quarantine.Details.Moves.Empty",
+        "Quarantine.Details.Moves.UnknownUser",
         "Quarantine.Details.StartReview",
         "Quarantine.Details.StartReviewText",
         "Quarantine.Details.ReviewNote",
@@ -299,6 +300,18 @@ public sealed class Quarantine
         "Quarantine.CompleteReview.Title",
         "Quarantine.CompleteReview.Done",
         "Quarantine.BlockStock.Title",
+        "Quarantine.ManualHold.Action",
+        "Quarantine.ManualHold.Warn",
+        "Quarantine.ManualHold.Next",
+        "Quarantine.ManualHold.ConfirmTitle",
+        "Quarantine.ManualHold.Done",
+        "Quarantine.ManualHold.Help",
+        "Help.QUARANTINEMANUALHOLD.Purpose",
+        "Help.QUARANTINEMANUALHOLD.Audience",
+        "Help.QUARANTINEMANUALHOLD.Step1Title",
+        "Help.QUARANTINEMANUALHOLD.Step1",
+        "Help.QUARANTINEMANUALHOLD.Step2Title",
+        "Help.QUARANTINEMANUALHOLD.Step2",
         "Quarantine.BlockStock.Warn",
         "Quarantine.BlockStock.Lot",
         "Quarantine.BlockStock.LotSearch",
@@ -309,6 +322,14 @@ public sealed class Quarantine
         "Quarantine.BlockStock.Note",
         "Quarantine.BlockStock.Confirm",
         "Quarantine.BlockStock.Done",
+        "Quarantine.BlockStock.Available", // WP-MVP1-FIX-QUI1
+        "Quarantine.BlockStock.All", // WP-MVP1-FIX-LIVE4
+        "Quarantine.BlockStock.AllHint",
+        "Quarantine.Blocked.Filter.Status", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.Open", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.Closed", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.SampleRetained", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.All", // WP-MVP1-FIX-QUI1
         "Quarantine.Retest.Title",
         "Quarantine.Retest.Info",
         "Quarantine.Retest.Horizon",

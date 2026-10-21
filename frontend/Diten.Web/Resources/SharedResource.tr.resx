@@ -1236,6 +1236,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-İmza Politikası</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>İmza Anlamları</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>İmza Örneği Onayları</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Son Kullanma / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO Paneli</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Son Kullanma Yaklaşanlar</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Süresi Dolmuş Stok</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO Sırası</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>İstisna Kutusu</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>İstisna Detayı</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Raf Ömrü Kuralları ve Ayarlar</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Kanıt Paketi</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Geri Çağırma İzleme</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Geri Çağırma Vakaları</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Geri Çağırma Vakası</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Tatbikat Planlayıcı</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Geri Çağırma Kanıt Paketi</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Geri Çağırma Ayarları</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
 </root>

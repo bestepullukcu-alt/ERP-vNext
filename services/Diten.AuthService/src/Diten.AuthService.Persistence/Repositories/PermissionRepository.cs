@@ -64,9 +64,11 @@ public sealed class PermissionRepository : GlobalRepositoryBase<Permission>, IPe
     public async Task DeleteAsync(Guid id, CancellationToken ct)
     {
         var filter = Builders<Permission>.Filter.Eq(p => p.Id, id);
+        var now = DateTimeOffset.UtcNow;
         var update = Builders<Permission>.Update
             .Set(p => p.IsDeleted, true)
-            .Set(p => p.UpdatedAt, DateTimeOffset.UtcNow);
+            .Set(p => p.DeletedAt, now)
+            .Set(p => p.UpdatedAt, now);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
@@ -79,6 +81,7 @@ public sealed class PermissionRepository : GlobalRepositoryBase<Permission>, IPe
         var filter = Builders<Permission>.Filter.Eq(p => p.Id, id);
         var update = Builders<Permission>.Update
             .Set(p => p.IsDeleted, false)
+            .Set(p => p.DeletedAt, null)
             .Set(p => p.IsSystem, false) // catalog-owned (user-defined) so a later DELETE-sync may remove it again
             .Set(p => p.DisplayName, displayName)
             .Set(p => p.Description, description)

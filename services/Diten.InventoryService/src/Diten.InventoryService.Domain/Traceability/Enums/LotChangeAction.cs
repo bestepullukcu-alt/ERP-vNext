@@ -8,5 +8,8 @@ public enum LotChangeAction
     StatusChanged,
     Linked,
     Migrated,
-    SystemExpired
+    SystemExpired,
+
+    /// <summary>MOD-0176 F2 (TRACE 1.4.0, KF-D): an expiry / retest date set apart from the suggestion with a consumed override.</summary>
+    ExpiryOverridden
 }

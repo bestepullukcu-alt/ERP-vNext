@@ -24,6 +24,8 @@
 | Rapor | `python3 scripts/status_report.py --mode v2 --queue <kuyruk>` | 0 tam · 1 basıldı ama eksik (neden makine bloğunda) · 2 ölçülemez |
 | Test koşusundan sonra | `python3 scripts/known_failures.py check <koşu.trx> --suite <süit>` | 0 yeni regresyon yok · 1 regresyon · 2 koşu güvenilmez |
 
+Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır (listedeki, yazardan başka bir kişi onaylar; başka bir kişi birleştirir). Var olan bir sahip değerini değiştirmek (örneğin e-postayı role çevirmek) muaf değişiklik değildir ve bağımsız inceleme ister (SOP §20.4).
+
 ## 0. Yeni Control Tower açılışı
 
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
@@ -136,6 +138,8 @@ Allowed paths / Protected paths
 
 Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, missing contract, ownership conflict, unplanned migration, **agent/scope mismatch**.
 
+**S-5 dağıtım kapısı (SOP §20.4 madde 8):** ürün WP'sinin her yeni dağıtımı paket sürümünün main'deki geçerli bağımsız incelemesini ister (katı ya da eski her kuyrukta); kural başladığında yürüyen ve paketi değişmeyen iş korunur, olumsuz inceleme kabulü de durdurur — ENGEL'deki kuralı tanımıyorsanız main'i alın ve yeni Control Tower oturumu açın.
+
 ## 4. EVIDENCE LEVEL
 
 | Level | Evidence | Meaning |
@@ -173,6 +177,7 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] Dependency gates yeniden hesaplandı.
 - [ ] Newly-unblocked work belirlendi.
 - [ ] Güvenli paralellik varsa sonraki **2+ WP** üretildi; yoksa neden yazıldı.
+- [ ] PR merge edildikten sonra worktree temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırıldı; değilse kaldırılmadı, sahibe bildirilip soruldu (SOP §16.5).
 
 ```text
 Commit ≠ Acceptance

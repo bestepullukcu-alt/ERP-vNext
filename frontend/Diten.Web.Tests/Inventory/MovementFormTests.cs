@@ -188,6 +188,39 @@ public sealed class MovementFormTests
         Assert.Equal("QUALITY_INSPECTION", receipt.BalanceStatus);
     }
 
+    // WP-MVP1-FIX-LIVE2 (finding 9, owner step MOD-0173 makbuz): the receipt names a registered lot by its NUMBER (TRACE listLots of the SKU,
+    // the caller's own trace.lots.read — FIX-LIVE1 pattern); without the key or when TRACE cannot say, the id with a hint (sabotage g)
+    [Fact]
+    public async Task The_receipt_names_a_registered_lot_by_its_number_and_an_unreadable_one_by_its_id_with_a_hint()
+    {
+        const string lot = "d4e5f6a7-0000-4000-8000-000000000042";
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/movements", 201, $$$"""{"transactionId":"t-9","transactionNumber":"INV-2026-0000042","idempotentReplay":false,"balanceSnapshot":{"lotId":"{{{lot}}}","onHand":"7.5","available":"7.5","stockStatus":"QUALITY_INSPECTION","baseUomId":"ADET","baseQuantity":"7.5"}}""");
+        gateway.On("/api/trace/lots", 200, $$$"""{"items":[{"lotId":"{{{lot}}}","lotNumber":"LOT-2026-042"}],"total":1}""");
+        var form = Form("OPENING_BALANCE") with { LotId = lot };
+
+        var named = Movements(gateway, [.. ReadAndCreate, "trace.lots.read"]);
+        await named.PostMovement(form.ToModel(), CancellationToken.None);
+        var receipt = MovementReceiptViewModel.From(named.TempData);
+        Assert.Equal(("LOT-2026-042", false, lot), (receipt.LotNumber, receipt.LotUnresolved, receipt.LotId));
+        Assert.Equal(("LOT-2026-042", false), (receipt.BalanceLotNumber, receipt.BalanceLotUnresolved));
+        var trace = Assert.Single(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/trace/lots?", StringComparison.Ordinal)); // ONE listLots for the SKU
+        Assert.Contains($"skuId={SkuId}", trace.PathAndQuery, StringComparison.Ordinal);
+
+        // without the caller's own trace.lots.read: no TRACE call, the id stays with the hint — never a number made up
+        gateway.Requests.Clear();
+        var plain = Movements(gateway, ReadAndCreate);
+        await plain.PostMovement((form with { IdempotencyKey = Guid.NewGuid().ToString() }).ToModel(), CancellationToken.None);
+        var bare = MovementReceiptViewModel.From(plain.TempData);
+        Assert.Equal((null, true, lot), (bare.LotNumber, bare.LotUnresolved, bare.LotId));
+        Assert.DoesNotContain(gateway.Requests, r => r.PathAndQuery.StartsWith("/api/trace/lots?", StringComparison.Ordinal));
+
+        // a typed lot text (pre-MOD-0174) is not "unresolved"
+        var typed = Movements(gateway, [.. ReadAndCreate, "trace.lots.read"]);
+        await typed.PostMovement((Form("OPENING_BALANCE") with { LotId = "lot-1" }).ToModel(), CancellationToken.None);
+        Assert.False(MovementReceiptViewModel.From(typed.TempData).LotUnresolved);
+    }
+
     [Fact]
     public async Task Without_the_create_permission_or_with_a_malformed_form_nothing_reaches_the_gateway()
     {
@@ -396,9 +429,9 @@ public sealed class MovementFormTests
         var gateway = new FakeGateway();
         gateway.On("/api/product-master/stockable-items", 200, $$$"""
             {"items":[
-              {"skuId":"{{{gsku}}}","skuLevel":"Gsku","itemId":"{{{Item}}}","canonicalCode":"GS-1","name":"Amox","lifecycleStatus":"Active"},
-              {"skuId":"{{{SkuId}}}","skuLevel":"Lsku","itemId":"{{{Item}}}","canonicalCode":"LS-TR-1","name":"Amox TR","lifecycleStatus":"Active"},
-              {"skuId":"{{{Guid.NewGuid()}}}","skuLevel":"Lsku","itemId":"{{{Guid.NewGuid()}}}","canonicalCode":"LS-X","name":"Other","lifecycleStatus":"Active"}
+              {"skuId":"{{{gsku}}}","skuLevel":"Gsku","itemId":"{{{Item}}}","itemKind":"GlobalProduct","canonicalCode":"GS-1","name":"Amox","lifecycleStatus":"Active"},
+              {"skuId":"{{{SkuId}}}","skuLevel":"Lsku","itemId":"{{{Item}}}","itemKind":"GlobalProduct","canonicalCode":"LS-TR-1","name":"Amox TR","lifecycleStatus":"Active"},
+              {"skuId":"{{{Guid.NewGuid()}}}","skuLevel":"Lsku","itemId":"{{{Guid.NewGuid()}}}","itemKind":"GlobalProduct","canonicalCode":"LS-X","name":"Other","lifecycleStatus":"Active"}
             ],"page":1,"pageSize":100,"totalCount":3,"contractVersion":"v1.1"}
             """);
 
@@ -465,7 +498,9 @@ public sealed class MovementFormTests
     {
         var gateway = new FakeGateway();
         gateway.On("/api/product-master/products", 200, $$"""{"itemId":"{{Item}}","baseUomId":"ADET","lotControlled":true,"serialControlled":false}""");
-        gateway.On("/api/product-master/skus", 200, """{"baseUomId":"ADET","conversions":[{"fromUom":"KOLI","toUom":"ADET","numerator":"12","denominator":"1"}]}""");
+        // FU-WEB-CONTRACT-FAKES: the conversion answer is getSkuUom's (it was registered on the whole /skus prefix, answering getSku too)
+        gateway.On($"/api/product-master/skus/{SkuId}/uom", 200, """{"baseUomId":"ADET","conversions":[{"fromUom":"KOLI","toUom":"ADET","numerator":"12","denominator":"1"}]}""");
+        gateway.On($"/api/product-master/skus/{SkuId}", 200, $$"""{"skuId":"{{SkuId}}","skuLevel":"Lsku","lotControlled":true,"serialControlled":false}""");
         gateway.On("/api/inventory/balance", 200, $$"""{"rows":[{"warehouseId":"{{Wh1}}","locationId":"{{Bin1}}","lotId":"L1","stockStatus":"AVAILABLE","onHand":"30.5","baseUomId":"ADET"}],"total":1}""");
         gateway.On("/api/locations", 404, string.Empty);
 
@@ -481,23 +516,25 @@ public sealed class MovementFormTests
 
     // ── WP-0173-PM1: PRODUCT-MASTER v1.1 flags on the form ─────────────────────────────────────────────────
 
-    private static FakeGateway V11(string skuBody, string? productBody = null)
+    private static FakeGateway V11(string skuBody, string? productBody = null, string? offContract = null)
     {
         var gateway = new FakeGateway();
         gateway.On($"/api/product-master/skus/{SkuId}/uom", 200, """{"baseUomId":"ADET","conversions":[]}""");
-        gateway.On($"/api/product-master/skus/{SkuId}", 200, skuBody);
+        // FU-WEB-CONTRACT-FAKES: a flag of the wrong type is outside the contract ON PURPOSE — only that violation is allowed
+        if (offContract is null) gateway.On($"/api/product-master/skus/{SkuId}", 200, skuBody);
+        else gateway.OnOff($"/api/product-master/skus/{SkuId}", 200, skuBody, offContract);
         if (productBody is not null) gateway.On("/api/product-master/products", 200, productBody);
         return gateway;
     }
 
     [Theory]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":null,"serialControlled":false}""")]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","serialControlled":false}""")]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":"yes","serialControlled":false}""")]
-    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":false,"serialControlled":null}""")]
-    public async Task An_unknown_flag_on_the_sku_blocks_the_form(string skuBody)
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":null,"serialControlled":false}""", null)]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","serialControlled":false}""", null)]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":"yes","serialControlled":false}""", "/lotControlled: type")]
+    [InlineData("""{"skuId":"c3d4e5f6-0000-0000-0000-000000000002","skuLevel":"Lsku","lotControlled":false,"serialControlled":null}""", null)]
+    public async Task An_unknown_flag_on_the_sku_blocks_the_form(string skuBody, string? offContract)
     {
-        var gateway = V11(skuBody);
+        var gateway = V11(skuBody, offContract: offContract);
         var json = Body(await Movements(gateway, ReadAndCreate, ("itemId", Item), ("sku", Sku)).Lookups("product", null, null, CancellationToken.None));
 
         Assert.True(json.GetProperty("available").GetBoolean());
@@ -648,7 +685,10 @@ public sealed class MovementFormTests
 
         public List<(string Method, string PathAndQuery, string? IdempotencyKey, string Body)> Requests { get; } = [];
 
-        public void On(string prefix, int status, string body) => _routes.Add((prefix, status, body));
+        public void On(string prefix, int status, string body) { Contracts.ContractRoutes.Require(prefix, status, body); _routes.Add((prefix, status, body)); } // FU-WEB-CONTRACT-FAKES
+
+        /// <summary>A deliberate off-contract answer (a negative test): only the named contract violations are allowed.</summary>
+        public void OnOff(string prefix, int status, string body, params string[] allowed) { Contracts.ContractRoutes.RequireOff(prefix, status, body, allowed); _routes.Add((prefix, status, body)); }
 
         /// <summary>POST /api/inventory/movements answered by Idempotency-Key (reversal vs movement).</summary>
         public void OnMovement(Func<string, (int Status, string Body)> answer) => _movements = answer;
@@ -663,6 +703,7 @@ public sealed class MovementFormTests
             if (_movements is not null && request.Method == HttpMethod.Post && pathAndQuery == "/api/inventory/movements")
             {
                 var (status, text) = _movements(key ?? string.Empty);
+                Contracts.ContractRoutes.Require("/api/inventory/movements", status, text); // FU-WEB-CONTRACT-FAKES: the computed answer too
                 return new HttpResponseMessage((HttpStatusCode)status) { Content = new StringContent(text, Encoding.UTF8, "application/json") };
             }
 

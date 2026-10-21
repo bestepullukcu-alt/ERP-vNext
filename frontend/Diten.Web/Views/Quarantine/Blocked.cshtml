@@ -7,6 +7,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["Quarantine.Blocked.Title"].Value;
+    ViewData["PageCode"] = "BLOCKEDSTOCK"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 
@@ -61,14 +62,22 @@
                 <form class="m-0" id="filterForm" data-no-tracker>
                     <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                         <div class="filter-chip">
-                            <select id="filterReason" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.AllReasons"]">
+                            <select id="filterReason" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.AllReasons"]" data-placeholder="@Localizer["Quarantine.Blocked.Filter.AllReasons"]">
                                 <option value="">@Localizer["Quarantine.Blocked.Filter.AllReasons"]</option>
                             </select>
                         </div>
                         <div class="filter-chip">
-                            <select id="filterPending" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.PendingOnly"]">
+                            <select id="filterPending" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.PendingOnly"]" data-placeholder="@SharedLocalizer["ShowAll"]">
                                 <option value="">@SharedLocalizer["ShowAll"]</option>
                                 <option value="true">@Localizer["Quarantine.Blocked.Filter.PendingOnly"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterStatus" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.Status"]" data-placeholder="@Localizer["Quarantine.Blocked.Status.Open"]">
+                                <option value="">@Localizer["Quarantine.Blocked.Status.Open"]</option>
+                                <option value="Closed">@Localizer["Quarantine.Blocked.Status.Closed"]</option>
+                                <option value="SampleRetained">@Localizer["Quarantine.Blocked.Status.SampleRetained"]</option>
+                                <option value="All">@Localizer["Quarantine.Blocked.Status.All"]</option>
                             </select>
                         </div>
                         <div class="ms-auto d-flex gap-3">
@@ -100,6 +109,7 @@
 }
 
 @section Scripts {
+    <partial name="~/Views/Inventory/_MvpOneListL10n.cshtml" /> @* WP-MVP1-FIX-LIVE3: the list words, before the list script *@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
     <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />

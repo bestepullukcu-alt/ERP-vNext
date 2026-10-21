@@ -668,8 +668,8 @@ def review_rows(root: str, commit: str) -> list[dict]:
 
 
 def parse_findings(text: str, target: str, digest: str) -> tuple[list[dict], list[str]]:
-    """The finding lines of a review record and its problems. A line that names ENGEL or starts with 'F-' but is not a
-    valid finding line is a problem, never ignored."""
+    """The finding lines of a review record and its problems. A line with '|', one that starts with 'F-', or one that
+    names ENGEL / ORTA / DÜŞÜK in UPPER case but is not a valid finding line is a problem, never ignored."""
     found, problems, seen = [], [], set()
     lines = text.replace("\r\n", "\n").split("\n")
     if sum(1 for l in lines if l.strip() == f"hedef: {target} @ {digest}") != 1:
@@ -677,8 +677,9 @@ def parse_findings(text: str, target: str, digest: str) -> tuple[list[dict], lis
     for n, line in enumerate(lines, 1):
         m = FINDING.match(line.strip())
         if not m:
-            # a line with '|' is always a finding line: a lookalike (U+2010, Cyrillic Е) or lower case cannot hide one
-            if "|" in line or line.strip().upper().startswith("F") and "-" in line[:4] or re.search(r"(?i)\bengel\b", line):
+            # a line with '|' is always a finding line: a lookalike (U+2010, Cyrillic Е) or lower case cannot hide one.
+            # The level words count only in UPPER case (case-sensitive): prose such as "bir engel değil" is allowed.
+            if "|" in line or line.strip().upper().startswith("F") and "-" in line[:4] or re.search(r"\b(?:ENGEL|ORTA|DÜŞÜK)\b", line):
                 problems.append(f"bozuk bulgu satırı {n}: {line.strip()[:60]}")
             continue
         parts = [x.strip() for x in m.group(4).rsplit("|", 3)]
@@ -1763,6 +1764,11 @@ def self_test_review(cases: list) -> None:
                   not review_exempt(based.replace("2026-10-01", "kapsam genişledi"), based)[0]))
     cases.append(("sabotage CT-APR-02 (m2): lookalike or lower-case finding lines are refused, not ignored",
                   bool(probe(["F\u20101 | \u0415NGEL | x | açık | - | -"])) and bool(probe(["f-1 | engel | x | açık | - | -"]))))
+    cases.append(("sabotage CT-APR-02 (S-3): ordinary prose with lower-case or capitalised level words is allowed; upper-case "
+                  "level words outside a finding line are not",
+                  not probe(["Bu bir engel değil.", "orta vadede ele alınır; Engel yok, düşük risk."])
+                  and bool(probe(["- ENGEL: gizli"])) and bool(probe(["Bu ORTA bir sorun"])) and bool(probe(["DÜŞÜK etki"]))
+                  and bool(probe(["F-1 engel yok"])) and bool(probe(["bulgu | prose"]))))
     g("checkout", "-q", "-b", "drop-review-policy")
     g("rm", "-q", REVIEW_POLICY)
     commit("drop the review start")

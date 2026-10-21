@@ -18,6 +18,8 @@ public sealed class SafetyStockMongoContext
         Revisions = db.GetCollection<PolicyRevisionDocument>("mod0191_policy_revisions");
         Audit = db.GetCollection<PolicyAuditDocument>("mod0191_policy_audit");
         Receipts = db.GetCollection<PolicyCommandReceiptDocument>("mod0191_policy_receipts");
+        ManualQuantities = db.GetCollection<ManualQuantityDocument>("mod0191_manual_quantities");
+        ManualQuantityReceipts = db.GetCollection<ManualQuantityReceiptDocument>("mod0191_manual_quantity_receipts");
     }
 
     public IMongoClient Client { get; }
@@ -25,4 +27,6 @@ public sealed class SafetyStockMongoContext
     public IMongoCollection<PolicyRevisionDocument> Revisions { get; }
     public IMongoCollection<PolicyAuditDocument> Audit { get; }
     public IMongoCollection<PolicyCommandReceiptDocument> Receipts { get; }
+    public IMongoCollection<ManualQuantityDocument> ManualQuantities { get; }
+    public IMongoCollection<ManualQuantityReceiptDocument> ManualQuantityReceipts { get; }
 }

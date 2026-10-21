@@ -354,7 +354,8 @@ public sealed class TenantsController : Controller
     [HttpGet("api/lookups/{**everything}")]
     public Task<IActionResult> LookupsProxy(string everything)
     {
-        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/lookups/{everything}{Request.QueryString}");
+        if (!Diten.Web.Services.Proxy.ProxyPath.TryBuild("/api/lookups", everything, out var path, out var refused)) return Task.FromResult(Diten.Web.Services.Proxy.ProxyPath.Refusal(refused)); // WP-MVP1-SEC-PROXY1
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}{(string.IsNullOrEmpty(everything) ? path + "/" : path)}{Request.QueryString}");
     }
 
     [HttpPost("api/{id:guid}/{actionName}")]

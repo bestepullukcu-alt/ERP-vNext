@@ -9,6 +9,12 @@ modules: [MOD-0190, MOD-0192]
 
 # Wave 6.1 G7 — default role grants for S&OP + Capacity (owner decision)
 
+> **SUPERSEDED (2026-10-20) — no longer in effect.** PR #167 (merge `d6c7b9e05`, 2026-10-20) removed both codes
+> (`sop-workflow-signoffs`, `capacity-planning`) from `AdminModules`, and the definition-driven retraction runner covers
+> existing tenants' G7 grants (non-prod `DemandFixtures` hosts only; production never composed S&OP/Capacity). Evidence:
+> `docs/records/audits/2026-10/mvp6-g7-grant-removal-01/REPORT.md`. The 2026-11-03 expiry below no longer applies. The
+> text below is kept unchanged as the record of what was ruled on 2026-10-18.
+
 > **IN EFFECT (2026-10-18).** The owner applied `g7-adminmodules-standalone.patch` + `g7-role-split-test.patch`
 > (`git apply`, owner's terminal); CT verified the tree (`AdminModules` line 68 carries both codes; the patch reverse-checks
 > as applied) and ran `Diten.AuthService.Application.Tests` (Roles/DefaultRolePermission/PermissionSeed): **848 passed,

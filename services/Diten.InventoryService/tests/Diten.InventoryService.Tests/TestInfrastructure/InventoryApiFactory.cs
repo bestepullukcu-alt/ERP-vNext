@@ -28,7 +28,9 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
         // MOD-0175: the post-commit intake observer writes quarantine records for any tenant that posts into QUARANTINE /
         // QUALITY_INSPECTION / BLOCKED — removed with the tenant like the ledger documents (DB-010).
         "quarantine_holds", "quarantine_decisions", "quarantine_decision_events", "quarantine_blocked_stock", "quarantine_history",
-        "quarantine_settings", "quarantine_block_reasons", "quarantine_sequences", "quarantine_event_inbox"
+        "quarantine_settings", "quarantine_block_reasons", "quarantine_sequences", "quarantine_event_inbox",
+        // BL-501: the shared central-audit outbox (TenantId stored as a string, like the ledger's).
+        "central_audit_outbox"
     ];
 
     private readonly ConcurrentBag<Guid> _tenants = [];
@@ -87,8 +89,17 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
                 LegalEntities.HttpContextAccessor = sp.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>();
                 return LegalEntities;
             });
+
+            // WP-MVP1-NAMES1: the production name reader, counted (AuditNameReads) — pass-through, it reads exactly what production reads.
+            services.AddScoped<Diten.InventoryService.Persistence.CentralAuditActorNames>();
+            services.AddScoped<Diten.InventoryService.Application.Common.IAuditActorNames>(sp => new CountingAuditActorNames(
+                sp.GetRequiredService<Diten.InventoryService.Persistence.CentralAuditActorNames>(),
+                sp.GetRequiredService<Diten.InventoryService.Application.Common.ITenantContext>(), AuditNameReads));
         });
     }
+
+    /// <summary>WP-MVP1-NAMES1 — every name read of this host (tenant, pairs asked, company): a test filters by its own tenant.</summary>
+    public ConcurrentQueue<AuditNameRead> AuditNameReads { get; } = new();
 
     protected override void Dispose(bool disposing)
     {

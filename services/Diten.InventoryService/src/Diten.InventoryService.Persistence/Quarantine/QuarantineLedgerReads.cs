@@ -199,6 +199,8 @@ public sealed class QuarantineIntakeSweeper
             using var scope = _scopeFactory.CreateScope();
             var actor = candidate.Transaction.CreatedBy != Guid.Empty ? candidate.Transaction.CreatedBy : QuarantineSweeperActor;
             scope.ServiceProvider.GetRequiredService<ITenantContext>().SetScope(candidate.TenantId, candidate.LegalEntityId, actor);
+            // WP-MVP1-FU-CLEAN2: a movement this intake posts names the intake's own poster (stored name, no token here)
+            scope.ServiceProvider.GetService<IPostingActorName>()?.Use(candidate.Transaction.CreatedByName);
             // one correlation id per swept transaction: the posting's own, so the history row joins the ledger audit row
             scope.ServiceProvider.GetRequiredService<ICorrelationContext>().Set(
                 candidate.Transaction.CorrelationId != Guid.Empty ? candidate.Transaction.CorrelationId : Guid.NewGuid());

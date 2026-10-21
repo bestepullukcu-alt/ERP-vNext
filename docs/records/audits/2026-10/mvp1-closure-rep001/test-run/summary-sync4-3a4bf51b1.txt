@@ -1,0 +1,13 @@
+Diten.Web.Tests exit=1
+Başarısız! - Başarısız:     4, Başarılı:  4061, Atlanan:     0, Toplam:  4065, Süre: 2 m 40 s - Diten.Web.Tests.dll (net8.0)
+Diten.InventoryService.Tests exit=1
+Başarısız! - Başarısız:    16, Başarılı:  1319, Atlanan:     4, Toplam:  1339, Süre: 2 m 12 s - Diten.InventoryService.Tests.dll (net8.0)
+TenantArchitecture.ArchitectureTests exit=1
+Başarısız! - Başarısız:     7, Başarılı:   139, Atlanan:     0, Toplam:   146, Süre: 48 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+Diten.ApiGateway.Tests exit=0
+Başarılı!  - Başarısız:     0, Başarılı:   313, Atlanan:     0, Toplam:   313, Süre: 6 s - Diten.ApiGateway.Tests.dll (net8.0)
+Diten.Platform.Application.Tests exit=1
+Başarısız! - Başarısız:    19, Başarılı:  8695, Atlanan:     0, Toplam:  8714, Süre: 19 m 18 s - Diten.Platform.Application.Tests.dll (net8.0)
+Diten.AuthService.Application.Tests exit=1
+Başarısız! - Başarısız:   896, Başarılı:  2007, Atlanan:    19, Toplam:  2922, Süre: 1 m 17 s - Diten.AuthService.Application.Tests.dll (net8.0)
+DONE

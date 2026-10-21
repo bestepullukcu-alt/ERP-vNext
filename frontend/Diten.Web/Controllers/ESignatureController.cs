@@ -90,7 +90,9 @@ public sealed class ESignatureController : Controller
     [HttpPost("api/{**everything}")]
     [HttpPut("api/{**everything}")]
     public Task<IActionResult> ProxyApi(string? everything)
-        => ProxyGatewayAsync(string.IsNullOrWhiteSpace(everything) ? "/api/v1/esign" : $"/api/v1/esign/{everything.TrimStart('/')}");
+        => Diten.Web.Services.Proxy.ProxyPath.TryBuild("/api/v1/esign", everything, out var path, out var refused) // WP-MVP1-SEC-PROXY1: the prefix boundary
+            ? ProxyGatewayAsync(path)
+            : Task.FromResult(Diten.Web.Services.Proxy.ProxyPath.Refusal(refused));
 
     /// <summary>The Requests list (server mode) → listSignatureRequests (scope mine) with the page's module / status / dates.</summary>
     [HttpGet("list/requests")]

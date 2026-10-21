@@ -6,6 +6,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["Quarantine.Decide.PageTitle"].Value;
+    ViewData["PageCode"] = "QUARANTINEDECIDE"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 
@@ -85,6 +86,8 @@
                             }
                         </div>
                         <div class="invalid-feedback d-block" data-err="decision"></div>
+                        @* WP-0177-R7c (owner step MOD-0175, CT-R9): a yellow WARNING when a release meets a recalled lot — never a block *@
+                        <partial name="~/Views/Shared/Recall/_ReleaseRecallBand.cshtml" />
                     </div>
 
                     <div id="qr-lines" class="mb-4 d-none">

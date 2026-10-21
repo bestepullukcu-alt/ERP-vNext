@@ -78,6 +78,11 @@ public sealed class LoginOnlyEndpointGuardTests
     {
         "InternalAuditController",
         "InternalBusinessReferenceDataController",
+        // MOD-0022 CT-D12 / WP-MVP1-SEC-ESIGN1 — POST api/internal/esign/actions/register (ESIGN-BUNDLE §4.23). Caller: a consumer
+        // module registering its signable actions at start-up (e.g. InventoryService MOD-0175 quarantine actions), service to service.
+        // Gate: X-Internal-Api-Key compared in fixed time with AuthService:InternalApiKey, fail closed when unset or absent — checked
+        // before the body is read (InternalESignActionsRegisterAuthTests). Not routed by the Gateway: no browser or tenant token reaches it.
+        "InternalESignActionsController",
         "InternalModuleRegistrationController",
         "InternalPlatformAdministratorsController",
         "InternalPpmEntitlementDecisionController",
@@ -290,6 +295,7 @@ public sealed class LoginOnlyEndpointGuardTests
 
     private static bool IsKeyGated(MethodInfo action)
         => action.IsDefined(typeof(HasPermissionAttribute), true)
+           || action.IsDefined(typeof(HasAnyPermissionAttribute), true) // WP-MVP1-SEC-ESIGN1: any one of the declared keys
            || action.DeclaringType!.IsDefined(typeof(HasPermissionAttribute), true)
            || action.IsDefined(typeof(RequiresExplicitPermissionAttribute), true);
 
