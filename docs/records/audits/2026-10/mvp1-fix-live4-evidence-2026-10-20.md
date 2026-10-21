@@ -137,3 +137,25 @@ Kök neden: `ExpiryBands.movement.onSource` yalnız yöne bakıyordu (`direction
 
 - Durdurulanlar: önizleme host 24696, geçit 38592, servis 27000 ve onun `mongod`'u 40668.
 - Sonra: 5180–5199'da dinleyen yok; tek `mongod` sahibinin 5264'ü (dokunulmadı).
+
+## 7. CT HOLD (2026-10-21): sayaç testi jsdom'suz
+
+- **CT bulgusu:**
+  - `node_modules` olmayan temiz bir worktree'de (`9b81fcad2`) Web 3966 / 3969 çıktı.
+  - Üçüncü kırmızı `ExpiryBandExemptTests.The_band_rules_hold_against_the_shipped_scripts(file: "movement-required-counter.test.mjs")` → `Cannot find module 'jsdom'`.
+  - CI'ın ilk aşaması da Web testlerini `npm ci` olmadan koşuyor.
+- **Düzeltme (`a64846f65`, yalnız test):**
+  - `movement-required-counter.test.mjs` artık `jsdom`'a bağlı değil.
+  - Üretimdeki `required-fields-tracker.js` (ortak, değişmedi) ve `expiry-bands.js` dosya içindeki küçük bir DOM üzerinde olduğu gibi koşuyor. Bu DOM, iki betiğin kullandığı yüzeyi sağlıyor:
+    - öğeler, öznitelikler, sınıf listeleri
+    - kullanılan seçiciler: etiket, `#id`, `.sınıf`, `[öznitelik]`, `:not`, soy, virgül
+    - olaylar
+    - mikrogörev teslimli `MutationObserver` (tarayıcıdaki gibi)
+  - Bant işaretlemesi hâlâ gerçek `_FefoBand` kısmi görünümü. Kopya ya da atlama (`skip`) yok.
+- **Ölçtüğü aynı:**
+  - bant açıkken 8 / 9 → gerekçe yazılınca 9 / 9;
+  - bant kapalıyken (muaf tür) 8 / 8.
+- **Sabotaj:** gerekçe doluluğunun sınıf yansıması kaldırıldı → "Zorunlu: 8 / 9" (canlı hatanın aynısı), kırmızı. Geri alınınca SHA `e22791730aadc0a3` eşit, porcelain temiz.
+- **Temiz worktree doğrulaması:**
+  - `git worktree add --detach ../erp-vnext-wt-live4-clean a64846f65` ile açıldı; `frontend/Diten.Web/node_modules` yok, `npm ci` çalıştırılmadı.
+  - Web filtresiz: **3967 / 3969**. Kırmızılar yalnız `NavManifestL10nGuardTests` ×2 (SafetyStock, main'den); `Cannot find module` 0.
