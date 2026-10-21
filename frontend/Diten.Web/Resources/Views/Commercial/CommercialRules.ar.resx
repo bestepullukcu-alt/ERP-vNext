@@ -163,4 +163,82 @@
   <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
     <value>تعذّر حفظ الملف. حاول مرة أخرى بعد قليل.</value>
   </data>
+  <data name="Rule.pricing_request_invalid" xml:space="preserve">
+    <value>الطلب غير صالح.</value>
+  </data>
+  <data name="Rule.pricing_not_found" xml:space="preserve">
+    <value>لم يُعثر على السجل أو لا يمكنك رؤيته.</value>
+  </data>
+  <data name="Rule.pricing_legal_entity_invalid" xml:space="preserve">
+    <value>اختر شركة بائعة تابعة لهذا المستأجر.</value>
+  </data>
+  <data name="Rule.pricing_mdm_unavailable" xml:space="preserve">
+    <value>تعذّر الاستعلام عن البيانات الرئيسية. حاول بعد قليل.</value>
+  </data>
+  <data name="Rule.pricing_sku_invalid" xml:space="preserve">
+    <value>لم يُعثر على المنتج في البيانات الرئيسية للمنتجات.</value>
+  </data>
+  <data name="Rule.pricing_sku_retired" xml:space="preserve">
+    <value>المنتج متوقف ولا يمكن استخدامه.</value>
+  </data>
+  <data name="Rule.price_list_overlap" xml:space="preserve">
+    <value>توجد قائمة منشورة أخرى لهذه الشركة والدولة تبدأ في اليوم نفسه.</value>
+  </data>
+  <data name="Rule.price_list_not_editable" xml:space="preserve">
+    <value>لا يمكن تغيير إلا القائمة المسودة؛ وتحصل القائمة المنشورة على إصدار جديد.</value>
+  </data>
+  <data name="Rule.price_list_item_invalid" xml:space="preserve">
+    <value>تحقق من البند: منتج وسعر واحد على الأقل (0 أو أكثر، 4 منازل عشرية كحد أقصى) وضريبة بين 0 و100.</value>
+  </data>
+  <data name="Rule.price_list_item_duplicate" xml:space="preserve">
+    <value>هذا المنتج موجود في القائمة بالفعل.</value>
+  </data>
+  <data name="Rule.price_list_empty" xml:space="preserve">
+    <value>لا يمكن نشر قائمة بلا بنود.</value>
+  </data>
+  <data name="Rule.price_list_not_published" xml:space="preserve">
+    <value>لا يمكن إنشاء إصدار جديد إلا لقائمة منشورة.</value>
+  </data>
+  <data name="Rule.price_list_sod" xml:space="preserve">
+    <value>أنت من أعدّ هذه القائمة: يجب أن يقرر شخص آخر.</value>
+  </data>
+  <data name="Rule.price_list_import_invalid" xml:space="preserve">
+    <value>تعذّرت قراءة الملف. استخدم xlsx أو csv حتى 5 ميغابايت بالأعمدة المسماة.</value>
+  </data>
+  <data name="Rule.price_list_import_not_open" xml:space="preserve">
+    <value>تم تحويل هذا الاستيراد أو تجاهله بالفعل.</value>
+  </data>
+  <data name="Rule.price_list_import_nothing_matched" xml:space="preserve">
+    <value>لم يطابق أي صف من الملف منتجًا: لا يمكن إدخال شيء في المسودة.</value>
+  </data>
+  <data name="Rule.pricing_rule_limits_invalid" xml:space="preserve">
+    <value>تحقق من الحدود: يجب ألا يتجاوز كل حد مرن حده الصارم، والبونص بصيغة 10+2.</value>
+  </data>
+  <data name="Rule.pricing_rule_overlap" xml:space="preserve">
+    <value>توجد قاعدة نشطة لنفس الشركة والمنتج ودرجة التحديد تغطي هذه الفترة بالفعل.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_editable" xml:space="preserve">
+    <value>لا يمكن تغيير إلا القاعدة المسودة.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_active" xml:space="preserve">
+    <value>لا يمكن مراجعة أو إيقاف إلا القاعدة النشطة.</value>
+  </data>
+  <data name="Rule.pricing_rule_open_draft_exists" xml:space="preserve">
+    <value>لهذه القاعدة مسودة مفتوحة بالفعل. أكملها أو تجاهلها أولًا.</value>
+  </data>
+  <data name="Rule.pricing_rule_sod" xml:space="preserve">
+    <value>أنت من أعدّ تغيير القاعدة هذا: يجب أن يقرر شخص آخر.</value>
+  </data>
+  <data name="Rule.pricing_segment_not_enabled" xml:space="preserve">
+    <value>لم تُفعَّل شرائح الصيدليات بعد: اترك الشريحة فارغة.</value>
+  </data>
+  <data name="Rule.fx_rate_duplicate" xml:space="preserve">
+    <value>يوجد سعر لهذه الشركة والزوج واليوم بالفعل: صحّحه.</value>
+  </data>
+  <data name="Rule.fx_rate_invalid" xml:space="preserve">
+    <value>تحقق من السعر: عملات من 3 أحرف، ويوم، وسعر أكبر من 0 بست منازل عشرية كحد أقصى، ومصدر.</value>
+  </data>
+  <data name="Rule.pricing_stale_version" xml:space="preserve">
+    <value>قام شخص آخر بتغييره في الأثناء. أعد التحميل وحاول مجددًا.</value>
+  </data>
 </root>

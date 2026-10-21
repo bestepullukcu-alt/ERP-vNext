@@ -386,6 +386,9 @@ public sealed class PreOrdersWebTests
         var refusals = Consts(preOrders, "PreOrderErrors");
         Assert.Equal(12, reasons.Count);
         Assert.True(refusals.Count >= 38, "the PreOrderErrors constants were not read");
+        // W6-WEB-b: the MOD-0156 refusal codes joined the ONE shared source (screen D words them from it too)
+        var pricingRefusals = Consts(pricing, "PricingErrors");
+        Assert.True(pricingRefusals.Count >= 26, "the PricingErrors constants were not read");
 
         // the contract's parameters per reason code (MOD-0156 §4.6.3, the pricing-contract endpoint's own list)
         var parameters = Regex.Matches(contract, @"Code\(PricingReasonCodes\.(\w+), PricingFindingSeverities\.\w+((?:, ""\w+"")*)\)")
@@ -395,7 +398,7 @@ public sealed class PreOrdersWebTests
 
         var english = Rules("en");
         Assert.Equal(english.OrderBy(x => x.Key), Rules("").OrderBy(x => x.Key));
-        var expected = reasons.Concat(refusals).Select(c => CommercialRules.Prefix + c).Concat(CommercialRules.Outcomes.Select(o => CommercialRules.Prefix + "Outcome." + o)).ToList();
+        var expected = reasons.Concat(refusals).Concat(pricingRefusals).Select(c => CommercialRules.Prefix + c).Concat(CommercialRules.Outcomes.Select(o => CommercialRules.Prefix + "Outcome." + o)).ToList();
         foreach (var language in Languages)
         {
             var words = Rules(language);

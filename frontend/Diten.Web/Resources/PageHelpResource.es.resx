@@ -840,4 +840,244 @@
   <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
     <value>2–5 letras inician el número de pedido (MG-ORD-000123). Un prefijo que ya numeró un pedido queda bloqueado.</value>
   </data>
+  <data name="Help.COMMERCIALPRICING.Purpose" xml:space="preserve">
+    <value>Las listas de precios de cada empresa vendedora, país y moneda: los precios que lee un prepedido.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Audience" xml:space="preserve">
+    <value>Marketing (prepara) y operaciones comerciales (publica).</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1Title" xml:space="preserve">
+    <value>Lea el estado</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1" xml:space="preserve">
+    <value>Borrador, En revisión, Planificada, Vigente o Pasada, según el día; una lista vigente por empresa y país.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2Title" xml:space="preserve">
+    <value>Añada una lista</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2" xml:space="preserve">
+    <value>«Nueva lista» para escribirla a mano o «Importar» para un archivo Excel / CSV.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3Title" xml:space="preserve">
+    <value>Use las pestañas</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3" xml:space="preserve">
+    <value>Las reglas, la prueba de reglas, el historial y los tipos de cambio están en las otras pestañas.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4Title" xml:space="preserve">
+    <value>Exporte</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4" xml:space="preserve">
+    <value>«Exportar» da todas las listas del filtro con las columnas visibles.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Purpose" xml:space="preserve">
+    <value>Una lista de precios: su cabecera, sus artículos y la diferencia con la versión anterior; publicar requiere otra persona.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Audience" xml:space="preserve">
+    <value>Marketing (prepara) y operaciones comerciales (publica).</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1Title" xml:space="preserve">
+    <value>Complete la cabecera</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1" xml:space="preserve">
+    <value>Nombre, empresa vendedora, moneda, tipo y primer día; el país es el de la empresa.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2Title" xml:space="preserve">
+    <value>Añada los artículos</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2" xml:space="preserve">
+    <value>Cada producto una vez, con precio de distribuidor, de compra del farmacéutico, al público e IVA.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3Title" xml:space="preserve">
+    <value>Envíe a publicación</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3" xml:space="preserve">
+    <value>«Enviar a publicación» la pasa a otra persona; quien la preparó no ve «Publicar».</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4Title" xml:space="preserve">
+    <value>Cambie una lista publicada</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4" xml:space="preserve">
+    <value>Una lista publicada no se edita: «Nueva versión» la copia en un borrador nuevo.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Purpose" xml:space="preserve">
+    <value>Trae una lista de precios desde un archivo Excel / CSV en tres pasos.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Audience" xml:space="preserve">
+    <value>Marketing.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1Title" xml:space="preserve">
+    <value>Elija el archivo</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1" xml:space="preserve">
+    <value>La cabecera (la moneda es obligatoria), el archivo y, si hace falta, los nombres de columnas.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2Title" xml:space="preserve">
+    <value>Revise la vista previa</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2" xml:space="preserve">
+    <value>Las filas con coincidencia, sin ella, retiradas, repetidas y con precio no válido se cuentan aparte, con la diferencia frente a la lista vigente.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3Title" xml:space="preserve">
+    <value>Cree el borrador</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3" xml:space="preserve">
+    <value>«Crear el borrador» toma solo las filas con coincidencia; la coincidencia por código de barras (GTIN) sigue desactivada hasta product-master v1.2.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4Title" xml:space="preserve">
+    <value>Envíe a publicación</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4" xml:space="preserve">
+    <value>El borrador va a otra persona, que lo publica o lo devuelve.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Purpose" xml:space="preserve">
+    <value>Los límites de bonificación / descuento por empresa y producto con que se comprueba una línea de prepedido.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Audience" xml:space="preserve">
+    <value>Marketing (prepara) y operaciones comerciales (aprueba).</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1Title" xml:space="preserve">
+    <value>Lea flexible y estricto</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1" xml:space="preserve">
+    <value>Si se supera un límite flexible, el pedido va al responsable; si es estricto, la línea no se puede introducir.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2Title" xml:space="preserve">
+    <value>Gana la más específica</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2" xml:space="preserve">
+    <value>Una regla con período prevalece sobre una general; los segmentos llegarán después.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3Title" xml:space="preserve">
+    <value>Cambie una regla</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3" xml:space="preserve">
+    <value>Una regla activa se cambia con «Revisar» o «Retirar»: una versión nueva que aprueba otra persona.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4Title" xml:space="preserve">
+    <value>Pruébela</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4" xml:space="preserve">
+    <value>La pestaña «Prueba de reglas» muestra qué obtendría una línea, sin guardar nada.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Purpose" xml:space="preserve">
+    <value>Escribe un borrador de regla: su clave y sus límites flexibles / estrictos.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Audience" xml:space="preserve">
+    <value>Marketing.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1Title" xml:space="preserve">
+    <value>Elija la clave</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1" xml:space="preserve">
+    <value>Empresa y producto (fijos después) y la vigencia si la regla es para un período.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2Title" xml:space="preserve">
+    <value>Escriba los límites</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2" xml:space="preserve">
+    <value>Descuento %, bonificación como «10+2», tope combinado y cantidad; el flexible no supera al estricto.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3Title" xml:space="preserve">
+    <value>Lea el % efectivo</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3" xml:space="preserve">
+    <value>Al elegir empresa y producto, el sistema muestra el % efectivo junto a cada bonificación.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4Title" xml:space="preserve">
+    <value>Envíe a aprobación</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4" xml:space="preserve">
+    <value>Guarde y luego «Enviar a aprobación» en la regla: otra persona la activa.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Purpose" xml:space="preserve">
+    <value>Muestra qué obtendría una línea de pedido de la lista de precios y las reglas, sin guardar nada.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Audience" xml:space="preserve">
+    <value>Marketing y operaciones comerciales.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1Title" xml:space="preserve">
+    <value>Complete la línea</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1" xml:space="preserve">
+    <value>Empresa, producto, cantidad, bonificación y descuento; el día y el nivel de precio si hace falta.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2Title" xml:space="preserve">
+    <value>Pruebe</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2" xml:space="preserve">
+    <value>«Probar» consulta al sistema; no se guarda nada.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3Title" xml:space="preserve">
+    <value>Lea el resultado</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3" xml:space="preserve">
+    <value>La insignia (dentro de límites / requiere aprobación / no permitido) y los mensajes de cada límite superado.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4Title" xml:space="preserve">
+    <value>Vea qué regla se aplicó</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4" xml:space="preserve">
+    <value>Se aplica la regla más específica del día; se muestra su versión.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Purpose" xml:space="preserve">
+    <value>Cada cambio en listas, artículos, reglas y tipos de cambio: quién, cuándo, anterior → nuevo.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Audience" xml:space="preserve">
+    <value>Marketing, operaciones comerciales y auditoría.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1Title" xml:space="preserve">
+    <value>Filtre</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1" xml:space="preserve">
+    <value>Por tipo de registro y por período.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2Title" xml:space="preserve">
+    <value>Lea anterior → nuevo</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2" xml:space="preserve">
+    <value>Cada fila indica el campo, su valor anterior y el nuevo.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3Title" xml:space="preserve">
+    <value>Sus permisos deciden</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3" xml:space="preserve">
+    <value>Solo ve los tipos que cubren sus permisos (listas, reglas, tipos).</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4Title" xml:space="preserve">
+    <value>Abra un cambio</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4" xml:space="preserve">
+    <value>El icono del ojo muestra todo el cambio en el panel lateral.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Purpose" xml:space="preserve">
+    <value>Los tipos de cambio provisionales por empresa, par y día que usa un prepedido para su equivalente local.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Audience" xml:space="preserve">
+    <value>Operaciones comerciales.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1Title" xml:space="preserve">
+    <value>Introduzca un tipo</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1" xml:space="preserve">
+    <value>«Nuevo tipo»: empresa, par, día, tipo y fuente; un tipo por empresa, par y día.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2Title" xml:space="preserve">
+    <value>Corrija un tipo</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2" xml:space="preserve">
+    <value>Abra el tipo y «Corregir»: el anterior → nuevo se registra en el historial.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3Title" xml:space="preserve">
+    <value>Los pedidos conservan su tipo</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3" xml:space="preserve">
+    <value>Un pedido enviado conserva el tipo con que se envió; una corrección no lo cambia.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4Title" xml:space="preserve">
+    <value>El último antes del día</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
+    <value>Un pedido usa el último tipo de su día o anterior; sin tipo, no se muestra equivalente local.</value>
+  </data>
 </root>

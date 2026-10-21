@@ -1141,6 +1141,30 @@
   <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
     <value>الموافقة على الطلب المسبق</value>
   </data>
+  <data name="Nav.Page.COMMERCIALPRICING" xml:space="preserve">
+    <value>قوائم الأسعار والقواعد</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTFORM" xml:space="preserve">
+    <value>قائمة الأسعار</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTIMPORT" xml:space="preserve">
+    <value>استيراد قائمة الأسعار</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULELIST" xml:space="preserve">
+    <value>قواعد البونص / الخصم</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULEFORM" xml:space="preserve">
+    <value>قاعدة البونص / الخصم</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGTRIAL" xml:space="preserve">
+    <value>تجربة القواعد</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGHISTORY" xml:space="preserve">
+    <value>سجل تغييرات التسعير</value>
+  </data>
+  <data name="Nav.Page.COMFXRATELIST" xml:space="preserve">
+    <value>أسعار الصرف</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>

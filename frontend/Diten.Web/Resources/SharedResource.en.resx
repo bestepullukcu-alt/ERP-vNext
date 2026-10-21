@@ -1200,6 +1200,30 @@
   <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
     <value>Pre-Order Approval</value>
   </data>
+  <data name="Nav.Page.COMMERCIALPRICING" xml:space="preserve">
+    <value>Price Lists and Rules</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTFORM" xml:space="preserve">
+    <value>Price List</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTIMPORT" xml:space="preserve">
+    <value>Price List Import</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULELIST" xml:space="preserve">
+    <value>MF / Discount Rules</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULEFORM" xml:space="preserve">
+    <value>MF / Discount Rule</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGTRIAL" xml:space="preserve">
+    <value>Rule Trial</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGHISTORY" xml:space="preserve">
+    <value>Pricing Change History</value>
+  </data>
+  <data name="Nav.Page.COMFXRATELIST" xml:space="preserve">
+    <value>FX Rates</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Manufacturing</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>BOM &amp; Routings</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>Bills of Materials</value></data>

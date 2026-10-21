@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ScreenTitle" xml:space="preserve">
+    <value>قوائم الأسعار وقواعد البونص / الخصم</value>
+  </data>
+  <data name="ScreenDescription" xml:space="preserve">
+    <value>يديرها الفريق التجاري؛ ويقرأ الطلب المسبق سعر الوحدة والحدود من هنا.</value>
+  </data>
+  <data name="TabLists" xml:space="preserve">
+    <value>قوائم الأسعار</value>
+  </data>
+  <data name="TabRules" xml:space="preserve">
+    <value>قواعد البونص / الخصم</value>
+  </data>
+  <data name="TabTrial" xml:space="preserve">
+    <value>تجربة القواعد</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>سجل التغييرات</value>
+  </data>
+  <data name="TabFx" xml:space="preserve">
+    <value>أسعار الصرف</value>
+  </data>
+  <data name="PageTitle" xml:space="preserve">
+    <value>قوائم الأسعار</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>تنتمي كل قائمة إلى شركة بائعة ودولتها وعملة واحدة.</value>
+  </data>
+  <data name="ListsNote" xml:space="preserve">
+    <value>عند نشر قائمة جديدة تصبح السابقة «سابقة»؛ وتبقى الطلبات السابقة مرتبطة بقائمة يومها.</value>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>استيراد (Excel / CSV)</value>
+  </data>
+  <data name="NewList" xml:space="preserve">
+    <value>قائمة جديدة</value>
+  </data>
+  <data name="NewRule" xml:space="preserve">
+    <value>قاعدة جديدة</value>
+  </data>
+  <data name="NewRate" xml:space="preserve">
+    <value>سعر جديد</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>عرض سريع</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>فتح</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>لا يوجد شيء بعد</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>لا يوجد سجل يطابق عامل التصفية.</value>
+  </data>
+  <data name="DrawerTitleList" xml:space="preserve">
+    <value>قائمة الأسعار</value>
+  </data>
+  <data name="DrawerTitleRule" xml:space="preserve">
+    <value>القاعدة</value>
+  </data>
+  <data name="DrawerTitleChange" xml:space="preserve">
+    <value>التغيير</value>
+  </data>
+  <data name="DrawerTitleRate" xml:space="preserve">
+    <value>سعر الصرف</value>
+  </data>
+  <data name="ColName" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="ColCompany" xml:space="preserve">
+    <value>الشركة البائعة</value>
+  </data>
+  <data name="ColCountry" xml:space="preserve">
+    <value>الدولة</value>
+  </data>
+  <data name="ColCurrency" xml:space="preserve">
+    <value>العملة</value>
+  </data>
+  <data name="ColKind" xml:space="preserve">
+    <value>النوع</value>
+  </data>
+  <data name="ColValidity" xml:space="preserve">
+    <value>الصلاحية</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="ColItems" xml:space="preserve">
+    <value>البنود</value>
+  </data>
+  <data name="ColVersion" xml:space="preserve">
+    <value>الإصدار</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="ColSku" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="ColBarcode" xml:space="preserve">
+    <value>الباركود</value>
+  </data>
+  <data name="ColDepotPrice" xml:space="preserve">
+    <value>سعر المستودع</value>
+  </data>
+  <data name="ColPharmacistPrice" xml:space="preserve">
+    <value>سعر شراء الصيدلي</value>
+  </data>
+  <data name="ColPublicPrice" xml:space="preserve">
+    <value>سعر البيع للجمهور</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>الضريبة %</value>
+  </data>
+  <data name="ColDiff" xml:space="preserve">
+    <value>الفرق</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="ColMaxDiscount" xml:space="preserve">
+    <value>أقصى خصم %</value>
+  </data>
+  <data name="ColMaxMf" xml:space="preserve">
+    <value>أقصى بونص</value>
+  </data>
+  <data name="ColMaxCombined" xml:space="preserve">
+    <value>السقف المجمّع %</value>
+  </data>
+  <data name="ColQuantity" xml:space="preserve">
+    <value>الكمية</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>الكمية</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>البونص</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>الخصم %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>سعر الوحدة</value>
+  </data>
+  <data name="ColWhen" xml:space="preserve">
+    <value>متى</value>
+  </data>
+  <data name="ColWho" xml:space="preserve">
+    <value>من</value>
+  </data>
+  <data name="ColWhat" xml:space="preserve">
+    <value>ماذا</value>
+  </data>
+  <data name="ColChanges" xml:space="preserve">
+    <value>القديم ← الجديد</value>
+  </data>
+  <data name="ColPair" xml:space="preserve">
+    <value>الزوج</value>
+  </data>
+  <data name="ColRateDate" xml:space="preserve">
+    <value>يوم السعر</value>
+  </data>
+  <data name="ColRate" xml:space="preserve">
+    <value>السعر</value>
+  </data>
+  <data name="ColSource" xml:space="preserve">
+    <value>المصدر</value>
+  </data>
+  <data name="ColUpdated" xml:space="preserve">
+    <value>آخر تغيير</value>
+  </data>
+  <data name="ColRowNo" xml:space="preserve">
+    <value>الصف</value>
+  </data>
+  <data name="ColSourceCode" xml:space="preserve">
+    <value>الرمز في الملف</value>
+  </data>
+  <data name="ColRowStatus" xml:space="preserve">
+    <value>النتيجة</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>الشركة البائعة</value>
+  </data>
+  <data name="CompanyAll" xml:space="preserve">
+    <value>كل الشركات</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>الدولة</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>كل الدول</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>العملة</value>
+  </data>
+  <data name="CurrencyAll" xml:space="preserve">
+    <value>كل العملات</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>النوع</value>
+  </data>
+  <data name="KindAll" xml:space="preserve">
+    <value>كل الأنواع</value>
+  </data>
+  <data name="Kind_official" xml:space="preserve">
+    <value>رسمية</value>
+  </data>
+  <data name="Kind_company" xml:space="preserve">
+    <value>قائمة الشركة</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>كل الحالات</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>ابحث عن منتج بالاسم أو الرمز</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>اكتب حرفين على الأقل</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>جارٍ البحث…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>لا توجد نتائج</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>نوع السجل</value>
+  </data>
+  <data name="TypeAll" xml:space="preserve">
+    <value>كل الأنواع</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>من</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>إلى</value>
+  </data>
+  <data name="FromCurrencyLabel" xml:space="preserve">
+    <value>العملة المصدر</value>
+  </data>
+  <data name="ToCurrencyLabel" xml:space="preserve">
+    <value>العملة الهدف</value>
+  </data>
+  <data name="ItemsCount" xml:space="preserve">
+    <value>{0} بند</value>
+  </data>
+  <data name="ItemsShown" xml:space="preserve">
+    <value>عرض {0} من {1}</value>
+  </data>
+  <data name="ValidityRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="ValidityFrom" xml:space="preserve">
+    <value>من {0}</value>
+  </data>
+  <data name="AlwaysValid" xml:space="preserve">
+    <value>دائمًا</value>
+  </data>
+  <data name="Badge_draft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="Badge_in_review" xml:space="preserve">
+    <value>قيد المراجعة</value>
+  </data>
+  <data name="Badge_planned" xml:space="preserve">
+    <value>مخطط لها</value>
+  </data>
+  <data name="Badge_in_force" xml:space="preserve">
+    <value>سارية</value>
+  </data>
+  <data name="Badge_past" xml:space="preserve">
+    <value>سابقة</value>
+  </data>
+  <data name="Badge_discarded" xml:space="preserve">
+    <value>متجاهلة</value>
+  </data>
+  <data name="Badge_unknown" xml:space="preserve">
+    <value>غير معروف</value>
+  </data>
+  <data name="RuleSt_draft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="RuleSt_in_review" xml:space="preserve">
+    <value>بانتظار الموافقة</value>
+  </data>
+  <data name="RuleSt_active" xml:space="preserve">
+    <value>نشطة</value>
+  </data>
+  <data name="RuleSt_superseded" xml:space="preserve">
+    <value>مستبدلة</value>
+  </data>
+  <data name="RuleSt_retired" xml:space="preserve">
+    <value>موقوفة</value>
+  </data>
+  <data name="RuleSt_discarded" xml:space="preserve">
+    <value>متجاهلة</value>
+  </data>
+  <data name="RuleSt_unknown" xml:space="preserve">
+    <value>غير معروف</value>
+  </data>
+  <data name="Change_revise" xml:space="preserve">
+    <value>مراجعة</value>
+  </data>
+  <data name="Change_retire" xml:space="preserve">
+    <value>إيقاف</value>
+  </data>
+  <data name="SoftLabel" xml:space="preserve">
+    <value>مرن</value>
+  </data>
+  <data name="HardLabel" xml:space="preserve">
+    <value>صارم</value>
+  </data>
+  <data name="SoftLegend" xml:space="preserve">
+    <value>تجاوزه يتطلب موافقة المدير</value>
+  </data>
+  <data name="HardLegend" xml:space="preserve">
+    <value>تجاوزه يمنع إدخال البند</value>
+  </data>
+  <data name="Specificity_0" xml:space="preserve">
+    <value>عامة</value>
+  </data>
+  <data name="Specificity_1" xml:space="preserve">
+    <value>فترة</value>
+  </data>
+  <data name="Specificity_2" xml:space="preserve">
+    <value>شريحة</value>
+  </data>
+  <data name="Specificity_3" xml:space="preserve">
+    <value>شريحة + فترة</value>
+  </data>
+  <data name="SpecificityLabel" xml:space="preserve">
+    <value>درجة التحديد</value>
+  </data>
+  <data name="Outcome_approved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="Outcome_rejected" xml:space="preserve">
+    <value>أُعيدت</value>
+  </data>
+  <data name="Outcome_cancelled" xml:space="preserve">
+    <value>سُحبت</value>
+  </data>
+  <data name="Outcome_timed_out" xml:space="preserve">
+    <value>انتهت المهلة</value>
+  </data>
+  <data name="Outcome_approve" xml:space="preserve">
+    <value>وافق</value>
+  </data>
+  <data name="Outcome_publish" xml:space="preserve">
+    <value>نشر</value>
+  </data>
+  <data name="Outcome_return" xml:space="preserve">
+    <value>أعاد</value>
+  </data>
+  <data name="RoundOpen" xml:space="preserve">
+    <value>مفتوحة</value>
+  </data>
+  <data name="RoundLine" xml:space="preserve">
+    <value>الجولة {0} · أرسلها {1} · {2}</value>
+  </data>
+  <data name="DecisionLine" xml:space="preserve">
+    <value>{0} {1} · {2}</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>السبب: {0}</value>
+  </data>
+  <data name="NoRounds" xml:space="preserve">
+    <value>لم يُرسل للموافقة بعد.</value>
+  </data>
+  <data name="ApprovalTitle" xml:space="preserve">
+    <value>الموافقة (أربع عيون)</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>نشر</value>
+  </data>
+  <data name="ReturnDraft" xml:space="preserve">
+    <value>إعادة</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>تتطلب الإعادة سببًا؛ ويستلمها المُعِدّ مسودةً.</value>
+  </data>
+  <data name="FourEyesOwn" xml:space="preserve">
+    <value>أنت من أعدّ هذا: يقرر شخص آخر (أربع عيون).</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>النشر الآن؟ تسري في يومها الأول وتنهي القائمة السابقة حينها.</value>
+  </data>
+  <data name="ReturnTitle" xml:space="preserve">
+    <value>إعادة إلى المُعِدّ</value>
+  </data>
+  <data name="ReturnText" xml:space="preserve">
+    <value>تعود كمسودة مع سببك.</value>
+  </data>
+  <data name="PublishedToast" xml:space="preserve">
+    <value>تم النشر.</value>
+  </data>
+  <data name="ReturnedToast" xml:space="preserve">
+    <value>أُعيد إلى المُعِدّ.</value>
+  </data>
+  <data name="ApprovedToast" xml:space="preserve">
+    <value>تمت الموافقة: القاعدة سارية.</value>
+  </data>
+  <data name="SubmittedToast" xml:space="preserve">
+    <value>أُرسل للموافقة.</value>
+  </data>
+  <data name="RetireRequestedToast" xml:space="preserve">
+    <value>أُرسل الإيقاف للموافقة.</value>
+  </data>
+  <data name="SubmitConfirm" xml:space="preserve">
+    <value>إرسال هذه القائمة للنشر؟ يقرر شخص آخر.</value>
+  </data>
+  <data name="SubmitRuleConfirm" xml:space="preserve">
+    <value>إرسال هذه القاعدة للموافقة؟ يقرر شخص آخر.</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>هل تريد تجاهل هذه المسودة؟</value>
+  </data>
+  <data name="RetireConfirm" xml:space="preserve">
+    <value>إيقاف هذه القاعدة؟ يذهب الإيقاف لموافقة شخص آخر.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>تم حفظ المسودة.</value>
+  </data>
+  <data name="ListCreateTitle" xml:space="preserve">
+    <value>قائمة أسعار جديدة</value>
+  </data>
+  <data name="ListEditTitle" xml:space="preserve">
+    <value>تعديل مسودة قائمة الأسعار</value>
+  </data>
+  <data name="ListDetailsTitle" xml:space="preserve">
+    <value>قائمة الأسعار</value>
+  </data>
+  <data name="ListHeadSection" xml:space="preserve">
+    <value>القائمة</value>
+  </data>
+  <data name="ItemsSection" xml:space="preserve">
+    <value>البنود</value>
+  </data>
+  <data name="ItemsHelp" xml:space="preserve">
+    <value>كل منتج مرة واحدة؛ سعر واحد على الأقل؛ الضريبة 0–100.</value>
+  </data>
+  <data name="AddItem" xml:space="preserve">
+    <value>إضافة بند</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>إزالة</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>لا توجد بنود بعد.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+  <data name="CountryFromCompany" xml:space="preserve">
+    <value>الدولة هي دولة الشركة (البيانات الرئيسية).</value>
+  </data>
+  <data name="ValidFromLabel" xml:space="preserve">
+    <value>ساري من</value>
+  </data>
+  <data name="ValidToLabel" xml:space="preserve">
+    <value>ساري حتى</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>العودة إلى القائمة</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>حفظ المسودة</value>
+  </data>
+  <data name="EditDraft" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>تجاهل</value>
+  </data>
+  <data name="NewVersion" xml:space="preserve">
+    <value>إصدار جديد</value>
+  </data>
+  <data name="SubmitForPublishing" xml:space="preserve">
+    <value>إرسال للنشر</value>
+  </data>
+  <data name="DiffToggle" xml:space="preserve">
+    <value>الفرق عن الإصدار السابق</value>
+  </data>
+  <data name="PublishedLine" xml:space="preserve">
+    <value>نُشرت</value>
+  </data>
+  <data name="Diff_added" xml:space="preserve">
+    <value>مضاف</value>
+  </data>
+  <data name="Diff_removed" xml:space="preserve">
+    <value>محذوف</value>
+  </data>
+  <data name="Diff_changed" xml:space="preserve">
+    <value>متغيّر</value>
+  </data>
+  <data name="Diff_unchanged" xml:space="preserve">
+    <value>دون تغيير</value>
+  </data>
+  <data name="Diff_vatChanged" xml:space="preserve">
+    <value>تغيّرت الضريبة</value>
+  </data>
+  <data name="ErrListHead" xml:space="preserve">
+    <value>املأ الاسم والشركة وعملة من 3 أحرف واليوم الأول.</value>
+  </data>
+  <data name="ErrItemSku" xml:space="preserve">
+    <value>اختر منتجًا.</value>
+  </data>
+  <data name="ErrPrice" xml:space="preserve">
+    <value>السعر 0 أو أكثر بأربع منازل عشرية كحد أقصى.</value>
+  </data>
+  <data name="ErrNoTier" xml:space="preserve">
+    <value>أدخل سعرًا واحدًا على الأقل من الثلاثة.</value>
+  </data>
+  <data name="ErrVat" xml:space="preserve">
+    <value>الضريبة مطلوبة، من 0 إلى 100.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>استيراد قائمة أسعار</value>
+  </data>
+  <data name="StepFile" xml:space="preserve">
+    <value>الملف</value>
+  </data>
+  <data name="StepPreview" xml:space="preserve">
+    <value>المعاينة</value>
+  </data>
+  <data name="StepPublish" xml:space="preserve">
+    <value>إرسال للنشر</value>
+  </data>
+  <data name="FileLabel" xml:space="preserve">
+    <value>الملف (xlsx أو csv)</value>
+  </data>
+  <data name="FileHelp" xml:space="preserve">
+    <value>5 ميغابايت و10000 صف كحد أقصى.</value>
+  </data>
+  <data name="ColumnsTitle" xml:space="preserve">
+    <value>أسماء الأعمدة في الملف</value>
+  </data>
+  <data name="ColumnsHelp" xml:space="preserve">
+    <value>اتركها فارغة لاستخدام الأسماء القياسية.</value>
+  </data>
+  <data name="ColumnSku" xml:space="preserve">
+    <value>رمز المنتج</value>
+  </data>
+  <data name="ColumnDepot" xml:space="preserve">
+    <value>سعر المستودع</value>
+  </data>
+  <data name="ColumnPharmacist" xml:space="preserve">
+    <value>سعر شراء الصيدلي</value>
+  </data>
+  <data name="ColumnPublic" xml:space="preserve">
+    <value>سعر البيع للجمهور</value>
+  </data>
+  <data name="ColumnVat" xml:space="preserve">
+    <value>الضريبة %</value>
+  </data>
+  <data name="ColumnGtin" xml:space="preserve">
+    <value>الباركود (GTIN)</value>
+  </data>
+  <data name="GtinOffNote" xml:space="preserve">
+    <value>تتم المطابقة برمز المنتج (LS- / FG-). تبقى المطابقة بالباركود (GTIN) معطلة حتى product-master v1.2؛ وتُحسب الصفوف التي تحمل باركودًا فقط غير مطابقة.</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>رفع وتحقق</value>
+  </data>
+  <data name="ErrImportHead" xml:space="preserve">
+    <value>املأ الاسم والشركة وعملة من 3 أحرف واليوم الأول والملف (5 ميغابايت كحد أقصى).</value>
+  </data>
+  <data name="Imp_total" xml:space="preserve">
+    <value>قُرئ {0} صفًا</value>
+  </data>
+  <data name="Imp_matched" xml:space="preserve">
+    <value>{0} مطابق</value>
+  </data>
+  <data name="Imp_unmatched" xml:space="preserve">
+    <value>{0} غير مطابق</value>
+  </data>
+  <data name="Imp_retired" xml:space="preserve">
+    <value>{0} متوقف</value>
+  </data>
+  <data name="Imp_duplicate" xml:space="preserve">
+    <value>{0} مكرر</value>
+  </data>
+  <data name="Imp_invalidPrice" xml:space="preserve">
+    <value>{0} سعر غير صالح</value>
+  </data>
+  <data name="Diff_addedCount" xml:space="preserve">
+    <value>{0} مضاف</value>
+  </data>
+  <data name="Diff_removedCount" xml:space="preserve">
+    <value>{0} محذوف</value>
+  </data>
+  <data name="Diff_changedCount" xml:space="preserve">
+    <value>{0} سعر متغيّر</value>
+  </data>
+  <data name="Diff_vatChangedCount" xml:space="preserve">
+    <value>{0} ضريبة متغيّرة</value>
+  </data>
+  <data name="NoCompared" xml:space="preserve">
+    <value>لا توجد قائمة سارية للمقارنة: كل صف جديد.</value>
+  </data>
+  <data name="OnlyMatchedNote" xml:space="preserve">
+    <value>تدخل الصفوف المطابقة فقط إلى المسودة؛ وتبقى البقية هنا.</value>
+  </data>
+  <data name="RowStatusLabel" xml:space="preserve">
+    <value>الصفوف</value>
+  </data>
+  <data name="RowStatusAll" xml:space="preserve">
+    <value>كل الصفوف</value>
+  </data>
+  <data name="Row_matched" xml:space="preserve">
+    <value>مطابق</value>
+  </data>
+  <data name="Row_unmatched" xml:space="preserve">
+    <value>غير مطابق</value>
+  </data>
+  <data name="Row_retired" xml:space="preserve">
+    <value>متوقف</value>
+  </data>
+  <data name="Row_duplicate" xml:space="preserve">
+    <value>مكرر</value>
+  </data>
+  <data name="Row_invalid_price" xml:space="preserve">
+    <value>سعر غير صالح</value>
+  </data>
+  <data name="Row_removed" xml:space="preserve">
+    <value>محذوف</value>
+  </data>
+  <data name="NoRows" xml:space="preserve">
+    <value>لا توجد صفوف.</value>
+  </data>
+  <data name="DiscardImport" xml:space="preserve">
+    <value>تجاهل الاستيراد</value>
+  </data>
+  <data name="DiscardImportConfirm" xml:space="preserve">
+    <value>هل تريد تجاهل هذا الاستيراد؟</value>
+  </data>
+  <data name="ConvertToDraft" xml:space="preserve">
+    <value>إنشاء المسودة</value>
+  </data>
+  <data name="ConvertedText" xml:space="preserve">
+    <value>أُنشئت مسودة القائمة من الصفوف المطابقة. راجعها وأرسلها للنشر.</value>
+  </data>
+  <data name="OpenDraft" xml:space="preserve">
+    <value>فتح المسودة</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>قواعد البونص / الخصم</value>
+  </data>
+  <data name="RulesNote" xml:space="preserve">
+    <value>البونص «10+2»: علبتان مجانًا لكل 10؛ والنسبة والخصم المجمّع من حساب النظام.</value>
+  </data>
+  <data name="RuleCreateTitle" xml:space="preserve">
+    <value>قاعدة جديدة</value>
+  </data>
+  <data name="RuleEditTitle" xml:space="preserve">
+    <value>تعديل القاعدة أو مراجعتها</value>
+  </data>
+  <data name="RuleDetailsTitle" xml:space="preserve">
+    <value>القاعدة</value>
+  </data>
+  <data name="RuleKeySection" xml:space="preserve">
+    <value>مفتاح القاعدة</value>
+  </data>
+  <data name="LimitsSection" xml:space="preserve">
+    <value>الحدود</value>
+  </data>
+  <data name="SegmentLabel" xml:space="preserve">
+    <value>شريحة الصيدلية</value>
+  </data>
+  <data name="SegmentSoon" xml:space="preserve">
+    <value>قريبًا</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>اختياري</value>
+  </data>
+  <data name="MaxDiscountLabel" xml:space="preserve">
+    <value>أقصى خصم %</value>
+  </data>
+  <data name="MaxMfLabel" xml:space="preserve">
+    <value>أقصى بونص (10+2)</value>
+  </data>
+  <data name="MaxCombinedLabel" xml:space="preserve">
+    <value>السقف المجمّع %</value>
+  </data>
+  <data name="QuantityLabel" xml:space="preserve">
+    <value>الكمية</value>
+  </data>
+  <data name="QuantityMin" xml:space="preserve">
+    <value>الأدنى</value>
+  </data>
+  <data name="QuantitySoftMax" xml:space="preserve">
+    <value>الحد المرن الأعلى</value>
+  </data>
+  <data name="QuantityHardMax" xml:space="preserve">
+    <value>الحد الصارم الأعلى</value>
+  </data>
+  <data name="QuantityLimits" xml:space="preserve">
+    <value>الأدنى {0} · مرن {1} · صارم {2}</value>
+  </data>
+  <data name="MfRatioHelp" xml:space="preserve">
+    <value>تأتي النسبة الفعلية بجانب البونص من النظام عند اختيار الشركة والمنتج.</value>
+  </data>
+  <data name="MfRatioIs" xml:space="preserve">
+    <value>= {0}</value>
+  </data>
+  <data name="SaveRevision" xml:space="preserve">
+    <value>حفظ كمراجعة</value>
+  </data>
+  <data name="Revise" xml:space="preserve">
+    <value>مراجعة</value>
+  </data>
+  <data name="Retire" xml:space="preserve">
+    <value>إيقاف</value>
+  </data>
+  <data name="SubmitForApproval" xml:space="preserve">
+    <value>إرسال للموافقة</value>
+  </data>
+  <data name="VersionsTitle" xml:space="preserve">
+    <value>الإصدارات</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>اكتب البونص على شكل شراء + مجاني، مثل 10+2.</value>
+  </data>
+  <data name="ErrPct" xml:space="preserve">
+    <value>النسبة المئوية بين 0 و100 بمنزلة عشرية واحدة كحد أقصى.</value>
+  </data>
+  <data name="ErrCount" xml:space="preserve">
+    <value>الكمية عدد صحيح.</value>
+  </data>
+  <data name="ErrRuleKey" xml:space="preserve">
+    <value>اختر الشركة والمنتج.</value>
+  </data>
+  <data name="TrialTitle" xml:space="preserve">
+    <value>تجربة القواعد</value>
+  </data>
+  <data name="TrialResult" xml:space="preserve">
+    <value>النتيجة</value>
+  </data>
+  <data name="TrialEmpty" xml:space="preserve">
+    <value>املأ البند واضغط «جرّب»: يقيّمه النظام كطلب ولا يحفظ شيئًا.</value>
+  </data>
+  <data name="TryButton" xml:space="preserve">
+    <value>جرّب</value>
+  </data>
+  <data name="AsOfLabel" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>فئة السعر</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>سعر شراء الصيدلي</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>سعر المستودع</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>سعر البيع للجمهور</value>
+  </data>
+  <data name="TrialMode" xml:space="preserve">
+    <value>الوضع</value>
+  </data>
+  <data name="ModePricedWith" xml:space="preserve">
+    <value>بالأسعار · {0}</value>
+  </data>
+  <data name="ModeQuantityOnly" xml:space="preserve">
+    <value>كميات فقط (لا قائمة سارية)</value>
+  </data>
+  <data name="TrialPriceList" xml:space="preserve">
+    <value>قائمة الأسعار</value>
+  </data>
+  <data name="TrialFree" xml:space="preserve">
+    <value>علب مجانية</value>
+  </data>
+  <data name="TrialMfRatio" xml:space="preserve">
+    <value>نسبة البونص</value>
+  </data>
+  <data name="TrialCombined" xml:space="preserve">
+    <value>الخصم المجمّع</value>
+  </data>
+  <data name="TrialNet" xml:space="preserve">
+    <value>الصافي</value>
+  </data>
+  <data name="TrialVat" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="TrialRule" xml:space="preserve">
+    <value>القاعدة المطبقة</value>
+  </data>
+  <data name="TrialNoRule" xml:space="preserve">
+    <value>لا تنطبق أي قاعدة</value>
+  </data>
+  <data name="TrialNoFindings" xml:space="preserve">
+    <value>لم يُتجاوز أي حد.</value>
+  </data>
+  <data name="RuleRef" xml:space="preserve">
+    <value>v{0} · {1}</value>
+  </data>
+  <data name="ErrTrialCompany" xml:space="preserve">
+    <value>اختر الشركة البائعة.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>سجل التغييرات</value>
+  </data>
+  <data name="Type_price_list" xml:space="preserve">
+    <value>قائمة الأسعار</value>
+  </data>
+  <data name="Type_price_list_item" xml:space="preserve">
+    <value>بند قائمة الأسعار</value>
+  </data>
+  <data name="Type_pricing_rule" xml:space="preserve">
+    <value>القاعدة</value>
+  </data>
+  <data name="Type_fx_rate" xml:space="preserve">
+    <value>سعر الصرف</value>
+  </data>
+  <data name="Type_unknown" xml:space="preserve">
+    <value>سجل</value>
+  </data>
+  <data name="Act_created" xml:space="preserve">
+    <value>أُنشئ</value>
+  </data>
+  <data name="Act_updated" xml:space="preserve">
+    <value>عُدّل</value>
+  </data>
+  <data name="Act_version_created" xml:space="preserve">
+    <value>إصدار جديد</value>
+  </data>
+  <data name="Act_discarded" xml:space="preserve">
+    <value>تم التجاهل</value>
+  </data>
+  <data name="Act_submitted" xml:space="preserve">
+    <value>أُرسل للموافقة</value>
+  </data>
+  <data name="Act_published" xml:space="preserve">
+    <value>نُشر / وُوفق عليه</value>
+  </data>
+  <data name="Act_returned" xml:space="preserve">
+    <value>أُعيد</value>
+  </data>
+  <data name="Act_refused" xml:space="preserve">
+    <value>رُفض</value>
+  </data>
+  <data name="Act_withdrawn" xml:space="preserve">
+    <value>سُحب</value>
+  </data>
+  <data name="Act_superseded" xml:space="preserve">
+    <value>استُبدل</value>
+  </data>
+  <data name="Act_retired" xml:space="preserve">
+    <value>أُوقف</value>
+  </data>
+  <data name="Act_unknown" xml:space="preserve">
+    <value>تغيّر</value>
+  </data>
+  <data name="FxTitle" xml:space="preserve">
+    <value>أسعار الصرف</value>
+  </data>
+  <data name="FxCreateTitle" xml:space="preserve">
+    <value>سعر صرف جديد</value>
+  </data>
+  <data name="FxEditTitle" xml:space="preserve">
+    <value>تصحيح سعر الصرف</value>
+  </data>
+  <data name="RateSection" xml:space="preserve">
+    <value>السعر</value>
+  </data>
+  <data name="SaveRate" xml:space="preserve">
+    <value>حفظ السعر</value>
+  </data>
+  <data name="EditRate" xml:space="preserve">
+    <value>تصحيح</value>
+  </data>
+  <data name="ErrRateHead" xml:space="preserve">
+    <value>املأ الشركة وعملتين من 3 أحرف واليوم والمصدر.</value>
+  </data>
+  <data name="ErrRate" xml:space="preserve">
+    <value>السعر أكبر من 0 بست منازل عشرية كحد أقصى.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>حدث خطأ ما. حاول مرة أخرى.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>لا يمكن الوصول إلى الخدمة الآن. حاول بعد قليل.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>لا تملك صلاحية لذلك.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>لم يُعثر على السجل أو لا يمكنك رؤيته.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>قام شخص آخر بتغييره في الأثناء. أعد التحميل وحاول مجددًا.</value>
+  </data>
+</root>

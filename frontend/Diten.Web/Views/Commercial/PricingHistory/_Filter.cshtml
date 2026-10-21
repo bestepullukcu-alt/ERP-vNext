@@ -1,0 +1,30 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W6-WEB-b — the history filter: the kind of record and the period (yyyy-MM-dd sent; the culture's short date shown). *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-type">
+                        <select id="filterType" class="form-select form-select-sm select2" data-placeholder="@Localizer["TypeLabel"]"><option value=""></option></select>
+                    </div>
+                    <div class="filter-chip filter-from">
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="pr-from" autocomplete="off" aria-label="@Localizer["FromDate"]" placeholder="@Localizer["FromDate"]" /></div>
+                    </div>
+                    <div class="filter-chip filter-to">
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="pr-to" autocomplete="off" aria-label="@Localizer["ToDate"]" placeholder="@Localizer["ToDate"]" /></div>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1141,6 +1141,30 @@
   <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
     <value>预订单审批</value>
   </data>
+  <data name="Nav.Page.COMMERCIALPRICING" xml:space="preserve">
+    <value>价目表与规则</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTFORM" xml:space="preserve">
+    <value>价目表</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTIMPORT" xml:space="preserve">
+    <value>价目表导入</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULELIST" xml:space="preserve">
+    <value>赠品 / 折扣规则</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULEFORM" xml:space="preserve">
+    <value>赠品 / 折扣规则编辑</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGTRIAL" xml:space="preserve">
+    <value>规则试算</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGHISTORY" xml:space="preserve">
+    <value>价格变更历史</value>
+  </data>
+  <data name="Nav.Page.COMFXRATELIST" xml:space="preserve">
+    <value>汇率</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>

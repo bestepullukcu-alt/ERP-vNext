@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ScreenTitle" xml:space="preserve">
+    <value>Fiyat listeleri ve MF / iskonto kuralları</value>
+  </data>
+  <data name="ScreenDescription" xml:space="preserve">
+    <value>Ticari ekip yönetir; ön sipariş birim fiyatı ve sınırları buradan okur.</value>
+  </data>
+  <data name="TabLists" xml:space="preserve">
+    <value>Fiyat listeleri</value>
+  </data>
+  <data name="TabRules" xml:space="preserve">
+    <value>MF-iskonto kuralları</value>
+  </data>
+  <data name="TabTrial" xml:space="preserve">
+    <value>Kural deneme</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>Değişiklik geçmişi</value>
+  </data>
+  <data name="TabFx" xml:space="preserve">
+    <value>Kurlar</value>
+  </data>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Fiyat listeleri</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Her liste bir satış şirketine, onun ülkesine ve bir para birimine aittir.</value>
+  </data>
+  <data name="ListsNote" xml:space="preserve">
+    <value>Yeni liste yayımlanınca önceki liste "Geçmiş" olur; eski siparişler kendi tarihindeki listeye bağlı kalır.</value>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>İçe aktar (Excel / CSV)</value>
+  </data>
+  <data name="NewList" xml:space="preserve">
+    <value>Yeni liste</value>
+  </data>
+  <data name="NewRule" xml:space="preserve">
+    <value>Yeni kural</value>
+  </data>
+  <data name="NewRate" xml:space="preserve">
+    <value>Yeni kur</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Hızlı görünüm</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>Aç</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Henüz kayıt yok</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>Süzgece uyan kayıt yok.</value>
+  </data>
+  <data name="DrawerTitleList" xml:space="preserve">
+    <value>Fiyat listesi</value>
+  </data>
+  <data name="DrawerTitleRule" xml:space="preserve">
+    <value>Kural</value>
+  </data>
+  <data name="DrawerTitleChange" xml:space="preserve">
+    <value>Değişiklik</value>
+  </data>
+  <data name="DrawerTitleRate" xml:space="preserve">
+    <value>Kur</value>
+  </data>
+  <data name="ColName" xml:space="preserve">
+    <value>Ad</value>
+  </data>
+  <data name="ColCompany" xml:space="preserve">
+    <value>Satan şirket</value>
+  </data>
+  <data name="ColCountry" xml:space="preserve">
+    <value>Ülke</value>
+  </data>
+  <data name="ColCurrency" xml:space="preserve">
+    <value>Para birimi</value>
+  </data>
+  <data name="ColKind" xml:space="preserve">
+    <value>Tür</value>
+  </data>
+  <data name="ColValidity" xml:space="preserve">
+    <value>Geçerlilik</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="ColItems" xml:space="preserve">
+    <value>Kalem</value>
+  </data>
+  <data name="ColVersion" xml:space="preserve">
+    <value>Sürüm</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>İşlemler</value>
+  </data>
+  <data name="ColSku" xml:space="preserve">
+    <value>Ürün</value>
+  </data>
+  <data name="ColBarcode" xml:space="preserve">
+    <value>Barkod</value>
+  </data>
+  <data name="ColDepotPrice" xml:space="preserve">
+    <value>Depo fiyatı</value>
+  </data>
+  <data name="ColPharmacistPrice" xml:space="preserve">
+    <value>Eczacı alış</value>
+  </data>
+  <data name="ColPublicPrice" xml:space="preserve">
+    <value>Halka satış</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>KDV %</value>
+  </data>
+  <data name="ColDiff" xml:space="preserve">
+    <value>Fark</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>Ürün</value>
+  </data>
+  <data name="ColMaxDiscount" xml:space="preserve">
+    <value>En yüksek iskonto %</value>
+  </data>
+  <data name="ColMaxMf" xml:space="preserve">
+    <value>En yüksek MF</value>
+  </data>
+  <data name="ColMaxCombined" xml:space="preserve">
+    <value>Birleşik tavan %</value>
+  </data>
+  <data name="ColQuantity" xml:space="preserve">
+    <value>Adet</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>Adet</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>MF</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>İskonto %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>Birim fiyat</value>
+  </data>
+  <data name="ColWhen" xml:space="preserve">
+    <value>Ne zaman</value>
+  </data>
+  <data name="ColWho" xml:space="preserve">
+    <value>Kim</value>
+  </data>
+  <data name="ColWhat" xml:space="preserve">
+    <value>Ne</value>
+  </data>
+  <data name="ColChanges" xml:space="preserve">
+    <value>Eski → yeni</value>
+  </data>
+  <data name="ColPair" xml:space="preserve">
+    <value>Çift</value>
+  </data>
+  <data name="ColRateDate" xml:space="preserve">
+    <value>Kur tarihi</value>
+  </data>
+  <data name="ColRate" xml:space="preserve">
+    <value>Kur</value>
+  </data>
+  <data name="ColSource" xml:space="preserve">
+    <value>Kaynak</value>
+  </data>
+  <data name="ColUpdated" xml:space="preserve">
+    <value>Son değişiklik</value>
+  </data>
+  <data name="ColRowNo" xml:space="preserve">
+    <value>Satır</value>
+  </data>
+  <data name="ColSourceCode" xml:space="preserve">
+    <value>Dosyadaki kod</value>
+  </data>
+  <data name="ColRowStatus" xml:space="preserve">
+    <value>Sonuç</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>Satan şirket</value>
+  </data>
+  <data name="CompanyAll" xml:space="preserve">
+    <value>Tüm şirketler</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>Ülke</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>Tüm ülkeler</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Para birimi</value>
+  </data>
+  <data name="CurrencyAll" xml:space="preserve">
+    <value>Tüm para birimleri</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Tür</value>
+  </data>
+  <data name="KindAll" xml:space="preserve">
+    <value>Tüm türler</value>
+  </data>
+  <data name="Kind_official" xml:space="preserve">
+    <value>Resmî</value>
+  </data>
+  <data name="Kind_company" xml:space="preserve">
+    <value>Şirket listesi</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>Tüm durumlar</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>Ürün</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>Ad ya da koda göre ürün arayın</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>Tümü</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>En az 2 karakter yazın</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Aranıyor…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>Sonuç yok</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Kayıt türü</value>
+  </data>
+  <data name="TypeAll" xml:space="preserve">
+    <value>Tüm türler</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>Başlangıç</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>Bitiş</value>
+  </data>
+  <data name="FromCurrencyLabel" xml:space="preserve">
+    <value>Kaynak para birimi</value>
+  </data>
+  <data name="ToCurrencyLabel" xml:space="preserve">
+    <value>Hedef para birimi</value>
+  </data>
+  <data name="ItemsCount" xml:space="preserve">
+    <value>{0} kalem</value>
+  </data>
+  <data name="ItemsShown" xml:space="preserve">
+    <value>{0} / {1} gösteriliyor</value>
+  </data>
+  <data name="ValidityRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="ValidityFrom" xml:space="preserve">
+    <value>{0} tarihinden</value>
+  </data>
+  <data name="AlwaysValid" xml:space="preserve">
+    <value>Süresiz</value>
+  </data>
+  <data name="Badge_draft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="Badge_in_review" xml:space="preserve">
+    <value>Onay bekliyor</value>
+  </data>
+  <data name="Badge_planned" xml:space="preserve">
+    <value>Planlandı</value>
+  </data>
+  <data name="Badge_in_force" xml:space="preserve">
+    <value>Yürürlükte</value>
+  </data>
+  <data name="Badge_past" xml:space="preserve">
+    <value>Geçmiş</value>
+  </data>
+  <data name="Badge_discarded" xml:space="preserve">
+    <value>Atıldı</value>
+  </data>
+  <data name="Badge_unknown" xml:space="preserve">
+    <value>Bilinmiyor</value>
+  </data>
+  <data name="RuleSt_draft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="RuleSt_in_review" xml:space="preserve">
+    <value>Onay bekliyor</value>
+  </data>
+  <data name="RuleSt_active" xml:space="preserve">
+    <value>Etkin</value>
+  </data>
+  <data name="RuleSt_superseded" xml:space="preserve">
+    <value>Yerine yenisi geldi</value>
+  </data>
+  <data name="RuleSt_retired" xml:space="preserve">
+    <value>Emekliye ayrıldı</value>
+  </data>
+  <data name="RuleSt_discarded" xml:space="preserve">
+    <value>Atıldı</value>
+  </data>
+  <data name="RuleSt_unknown" xml:space="preserve">
+    <value>Bilinmiyor</value>
+  </data>
+  <data name="Change_revise" xml:space="preserve">
+    <value>Revizyon</value>
+  </data>
+  <data name="Change_retire" xml:space="preserve">
+    <value>Emekliye ayırma</value>
+  </data>
+  <data name="SoftLabel" xml:space="preserve">
+    <value>Yumuşak</value>
+  </data>
+  <data name="HardLabel" xml:space="preserve">
+    <value>Sert</value>
+  </data>
+  <data name="SoftLegend" xml:space="preserve">
+    <value>aşılırsa yönetici onayına gider</value>
+  </data>
+  <data name="HardLegend" xml:space="preserve">
+    <value>aşılırsa satır girilemez</value>
+  </data>
+  <data name="Specificity_0" xml:space="preserve">
+    <value>Genel</value>
+  </data>
+  <data name="Specificity_1" xml:space="preserve">
+    <value>Dönem</value>
+  </data>
+  <data name="Specificity_2" xml:space="preserve">
+    <value>Segment</value>
+  </data>
+  <data name="Specificity_3" xml:space="preserve">
+    <value>Segment + dönem</value>
+  </data>
+  <data name="SpecificityLabel" xml:space="preserve">
+    <value>Özgüllük</value>
+  </data>
+  <data name="Outcome_approved" xml:space="preserve">
+    <value>onaylandı</value>
+  </data>
+  <data name="Outcome_rejected" xml:space="preserve">
+    <value>iade edildi</value>
+  </data>
+  <data name="Outcome_cancelled" xml:space="preserve">
+    <value>geri çekildi</value>
+  </data>
+  <data name="Outcome_timed_out" xml:space="preserve">
+    <value>süresi doldu</value>
+  </data>
+  <data name="Outcome_approve" xml:space="preserve">
+    <value>onayladı</value>
+  </data>
+  <data name="Outcome_publish" xml:space="preserve">
+    <value>yayımladı</value>
+  </data>
+  <data name="Outcome_return" xml:space="preserve">
+    <value>iade etti</value>
+  </data>
+  <data name="RoundOpen" xml:space="preserve">
+    <value>açık</value>
+  </data>
+  <data name="RoundLine" xml:space="preserve">
+    <value>Tur {0} · gönderen {1} · {2}</value>
+  </data>
+  <data name="DecisionLine" xml:space="preserve">
+    <value>{0} {1} · {2}</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>Gerekçe: {0}</value>
+  </data>
+  <data name="NoRounds" xml:space="preserve">
+    <value>Henüz onaya gönderilmedi.</value>
+  </data>
+  <data name="ApprovalTitle" xml:space="preserve">
+    <value>Onay (dört göz)</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Yayımla</value>
+  </data>
+  <data name="ReturnDraft" xml:space="preserve">
+    <value>İade et</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>İade gerekçe ister; hazırlayan taslak olarak geri alır.</value>
+  </data>
+  <data name="FourEyesOwn" xml:space="preserve">
+    <value>Bunu siz hazırladınız: kararı ikinci bir kişi verir (dört göz).</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>Şimdi yayımlansın mı? İlk gününde yürürlüğe girer ve o gün önceki listeyi bitirir.</value>
+  </data>
+  <data name="ReturnTitle" xml:space="preserve">
+    <value>Hazırlayana iade et</value>
+  </data>
+  <data name="ReturnText" xml:space="preserve">
+    <value>Gerekçenizle taslak olarak geri döner.</value>
+  </data>
+  <data name="PublishedToast" xml:space="preserve">
+    <value>Yayımlandı.</value>
+  </data>
+  <data name="ReturnedToast" xml:space="preserve">
+    <value>Hazırlayana iade edildi.</value>
+  </data>
+  <data name="ApprovedToast" xml:space="preserve">
+    <value>Onaylandı: kural yürürlükte.</value>
+  </data>
+  <data name="SubmittedToast" xml:space="preserve">
+    <value>Onaya gönderildi.</value>
+  </data>
+  <data name="RetireRequestedToast" xml:space="preserve">
+    <value>Emekliye ayırma onaya gönderildi.</value>
+  </data>
+  <data name="SubmitConfirm" xml:space="preserve">
+    <value>Bu liste yayıma gönderilsin mi? Kararı ikinci bir kişi verir.</value>
+  </data>
+  <data name="SubmitRuleConfirm" xml:space="preserve">
+    <value>Bu kural onaya gönderilsin mi? Kararı ikinci bir kişi verir.</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>Bu taslak atılsın mı?</value>
+  </data>
+  <data name="RetireConfirm" xml:space="preserve">
+    <value>Bu kural emekliye ayrılsın mı? Emekliye ayırma ikinci kişinin onayına gider.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>Taslak kaydedildi.</value>
+  </data>
+  <data name="ListCreateTitle" xml:space="preserve">
+    <value>Yeni fiyat listesi</value>
+  </data>
+  <data name="ListEditTitle" xml:space="preserve">
+    <value>Fiyat listesi taslağını düzenle</value>
+  </data>
+  <data name="ListDetailsTitle" xml:space="preserve">
+    <value>Fiyat listesi</value>
+  </data>
+  <data name="ListHeadSection" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="ItemsSection" xml:space="preserve">
+    <value>Kalemler</value>
+  </data>
+  <data name="ItemsHelp" xml:space="preserve">
+    <value>Her ürün bir kez; en az bir fiyat; KDV 0–100.</value>
+  </data>
+  <data name="AddItem" xml:space="preserve">
+    <value>Kalem ekle</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>Kaldır</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>Henüz kalem yok.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Ad</value>
+  </data>
+  <data name="CountryFromCompany" xml:space="preserve">
+    <value>Ülke şirketinkidir (ana veri).</value>
+  </data>
+  <data name="ValidFromLabel" xml:space="preserve">
+    <value>Geçerlilik başlangıcı</value>
+  </data>
+  <data name="ValidToLabel" xml:space="preserve">
+    <value>Geçerlilik bitişi</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Listeye dön</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>Taslağı kaydet</value>
+  </data>
+  <data name="EditDraft" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>At</value>
+  </data>
+  <data name="NewVersion" xml:space="preserve">
+    <value>Yeni sürüm</value>
+  </data>
+  <data name="SubmitForPublishing" xml:space="preserve">
+    <value>Yayıma gönder</value>
+  </data>
+  <data name="DiffToggle" xml:space="preserve">
+    <value>Önceki sürüme göre fark</value>
+  </data>
+  <data name="PublishedLine" xml:space="preserve">
+    <value>Yayımlandı</value>
+  </data>
+  <data name="Diff_added" xml:space="preserve">
+    <value>Eklendi</value>
+  </data>
+  <data name="Diff_removed" xml:space="preserve">
+    <value>Çıkarıldı</value>
+  </data>
+  <data name="Diff_changed" xml:space="preserve">
+    <value>Değişti</value>
+  </data>
+  <data name="Diff_unchanged" xml:space="preserve">
+    <value>Aynı</value>
+  </data>
+  <data name="Diff_vatChanged" xml:space="preserve">
+    <value>KDV değişti</value>
+  </data>
+  <data name="ErrListHead" xml:space="preserve">
+    <value>Ad, şirket, 3 harfli para birimi ve ilk günü doldurun.</value>
+  </data>
+  <data name="ErrItemSku" xml:space="preserve">
+    <value>Bir ürün seçin.</value>
+  </data>
+  <data name="ErrPrice" xml:space="preserve">
+    <value>Fiyat 0 ya da üstü, en çok 4 ondalık olmalı.</value>
+  </data>
+  <data name="ErrNoTier" xml:space="preserve">
+    <value>Üç fiyattan en az birini girin.</value>
+  </data>
+  <data name="ErrVat" xml:space="preserve">
+    <value>KDV zorunlu, 0–100.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>Fiyat listesi içe aktar</value>
+  </data>
+  <data name="StepFile" xml:space="preserve">
+    <value>Dosya</value>
+  </data>
+  <data name="StepPreview" xml:space="preserve">
+    <value>Önizleme</value>
+  </data>
+  <data name="StepPublish" xml:space="preserve">
+    <value>Yayıma gönder</value>
+  </data>
+  <data name="FileLabel" xml:space="preserve">
+    <value>Dosya (xlsx ya da csv)</value>
+  </data>
+  <data name="FileHelp" xml:space="preserve">
+    <value>En çok 5 MB ve 10.000 satır.</value>
+  </data>
+  <data name="ColumnsTitle" xml:space="preserve">
+    <value>Dosyadaki sütun adları</value>
+  </data>
+  <data name="ColumnsHelp" xml:space="preserve">
+    <value>Standart adlar için boş bırakın.</value>
+  </data>
+  <data name="ColumnSku" xml:space="preserve">
+    <value>Ürün kodu</value>
+  </data>
+  <data name="ColumnDepot" xml:space="preserve">
+    <value>Depo fiyatı</value>
+  </data>
+  <data name="ColumnPharmacist" xml:space="preserve">
+    <value>Eczacı alış</value>
+  </data>
+  <data name="ColumnPublic" xml:space="preserve">
+    <value>Halka satış</value>
+  </data>
+  <data name="ColumnVat" xml:space="preserve">
+    <value>KDV %</value>
+  </data>
+  <data name="ColumnGtin" xml:space="preserve">
+    <value>Barkod (GTIN)</value>
+  </data>
+  <data name="GtinOffNote" xml:space="preserve">
+    <value>Eşleştirme ürün koduyla (LS- / FG-) yapılır. Barkodla (GTIN) eşleştirme product-master v1.2'ye kadar kapalı; yalnız barkodu olan satırlar eşleşmeyen sayılır.</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Yükle ve kontrol et</value>
+  </data>
+  <data name="ErrImportHead" xml:space="preserve">
+    <value>Ad, şirket, 3 harfli para birimi, ilk gün ve dosyayı (en çok 5 MB) doldurun.</value>
+  </data>
+  <data name="Imp_total" xml:space="preserve">
+    <value>{0} satır okundu</value>
+  </data>
+  <data name="Imp_matched" xml:space="preserve">
+    <value>{0} eşleşti</value>
+  </data>
+  <data name="Imp_unmatched" xml:space="preserve">
+    <value>{0} eşleşmedi</value>
+  </data>
+  <data name="Imp_retired" xml:space="preserve">
+    <value>{0} kullanımdan kalkmış</value>
+  </data>
+  <data name="Imp_duplicate" xml:space="preserve">
+    <value>{0} tekrar</value>
+  </data>
+  <data name="Imp_invalidPrice" xml:space="preserve">
+    <value>{0} hatalı fiyat</value>
+  </data>
+  <data name="Diff_addedCount" xml:space="preserve">
+    <value>{0} eklenen</value>
+  </data>
+  <data name="Diff_removedCount" xml:space="preserve">
+    <value>{0} çıkan</value>
+  </data>
+  <data name="Diff_changedCount" xml:space="preserve">
+    <value>{0} fiyatı değişen</value>
+  </data>
+  <data name="Diff_vatChangedCount" xml:space="preserve">
+    <value>{0} KDV'si değişen</value>
+  </data>
+  <data name="NoCompared" xml:space="preserve">
+    <value>Karşılaştırılacak yürürlükte liste yok: her satır yeni.</value>
+  </data>
+  <data name="OnlyMatchedNote" xml:space="preserve">
+    <value>Taslağa yalnız eşleşen satırlar girer; diğerleri burada kalır.</value>
+  </data>
+  <data name="RowStatusLabel" xml:space="preserve">
+    <value>Satırlar</value>
+  </data>
+  <data name="RowStatusAll" xml:space="preserve">
+    <value>Tüm satırlar</value>
+  </data>
+  <data name="Row_matched" xml:space="preserve">
+    <value>Eşleşti</value>
+  </data>
+  <data name="Row_unmatched" xml:space="preserve">
+    <value>Eşleşmedi</value>
+  </data>
+  <data name="Row_retired" xml:space="preserve">
+    <value>Kullanımdan kalkmış</value>
+  </data>
+  <data name="Row_duplicate" xml:space="preserve">
+    <value>Tekrar</value>
+  </data>
+  <data name="Row_invalid_price" xml:space="preserve">
+    <value>Hatalı fiyat</value>
+  </data>
+  <data name="Row_removed" xml:space="preserve">
+    <value>Çıkan</value>
+  </data>
+  <data name="NoRows" xml:space="preserve">
+    <value>Satır yok.</value>
+  </data>
+  <data name="DiscardImport" xml:space="preserve">
+    <value>İçe aktarmayı at</value>
+  </data>
+  <data name="DiscardImportConfirm" xml:space="preserve">
+    <value>Bu içe aktarma atılsın mı?</value>
+  </data>
+  <data name="ConvertToDraft" xml:space="preserve">
+    <value>Taslağı oluştur</value>
+  </data>
+  <data name="ConvertedText" xml:space="preserve">
+    <value>Taslak liste eşleşen satırlardan oluşturuldu. Kontrol edip yayıma gönderin.</value>
+  </data>
+  <data name="OpenDraft" xml:space="preserve">
+    <value>Taslağı aç</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>MF-iskonto kuralları</value>
+  </data>
+  <data name="RulesNote" xml:space="preserve">
+    <value>MF "10+2": 10 kutuya 2 kutu mal fazlası; oran ve birleşik indirim sistemin kendi hesabıdır.</value>
+  </data>
+  <data name="RuleCreateTitle" xml:space="preserve">
+    <value>Yeni kural</value>
+  </data>
+  <data name="RuleEditTitle" xml:space="preserve">
+    <value>Kuralı düzenle ya da revize et</value>
+  </data>
+  <data name="RuleDetailsTitle" xml:space="preserve">
+    <value>Kural</value>
+  </data>
+  <data name="RuleKeySection" xml:space="preserve">
+    <value>Kural anahtarı</value>
+  </data>
+  <data name="LimitsSection" xml:space="preserve">
+    <value>Sınırlar</value>
+  </data>
+  <data name="SegmentLabel" xml:space="preserve">
+    <value>Eczane segmenti</value>
+  </data>
+  <data name="SegmentSoon" xml:space="preserve">
+    <value>Yakında</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>isteğe bağlı</value>
+  </data>
+  <data name="MaxDiscountLabel" xml:space="preserve">
+    <value>En yüksek iskonto %</value>
+  </data>
+  <data name="MaxMfLabel" xml:space="preserve">
+    <value>En yüksek MF (10+2)</value>
+  </data>
+  <data name="MaxCombinedLabel" xml:space="preserve">
+    <value>Birleşik tavan %</value>
+  </data>
+  <data name="QuantityLabel" xml:space="preserve">
+    <value>Adet</value>
+  </data>
+  <data name="QuantityMin" xml:space="preserve">
+    <value>En az</value>
+  </data>
+  <data name="QuantitySoftMax" xml:space="preserve">
+    <value>Yumuşak üst</value>
+  </data>
+  <data name="QuantityHardMax" xml:space="preserve">
+    <value>Sert üst</value>
+  </data>
+  <data name="QuantityLimits" xml:space="preserve">
+    <value>en az {0} · yumuşak {1} · sert {2}</value>
+  </data>
+  <data name="MfRatioHelp" xml:space="preserve">
+    <value>MF'nin yanındaki etkin %, şirket ve ürün seçilince sistemden gelir.</value>
+  </data>
+  <data name="MfRatioIs" xml:space="preserve">
+    <value>= {0}</value>
+  </data>
+  <data name="SaveRevision" xml:space="preserve">
+    <value>Revizyon olarak kaydet</value>
+  </data>
+  <data name="Revise" xml:space="preserve">
+    <value>Revize et</value>
+  </data>
+  <data name="Retire" xml:space="preserve">
+    <value>Emekliye ayır</value>
+  </data>
+  <data name="SubmitForApproval" xml:space="preserve">
+    <value>Onaya gönder</value>
+  </data>
+  <data name="VersionsTitle" xml:space="preserve">
+    <value>Sürümler</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>MF'yi alım + bedelsiz olarak yazın, örneğin 10+2.</value>
+  </data>
+  <data name="ErrPct" xml:space="preserve">
+    <value>Yüzde 0–100 arası, en çok bir ondalıkla olmalı.</value>
+  </data>
+  <data name="ErrCount" xml:space="preserve">
+    <value>Adet tam sayı olmalı.</value>
+  </data>
+  <data name="ErrRuleKey" xml:space="preserve">
+    <value>Şirketi ve ürünü seçin.</value>
+  </data>
+  <data name="TrialTitle" xml:space="preserve">
+    <value>Kural deneme</value>
+  </data>
+  <data name="TrialResult" xml:space="preserve">
+    <value>Sonuç</value>
+  </data>
+  <data name="TrialEmpty" xml:space="preserve">
+    <value>Satırı doldurup Dene'ye basın: sistem bunu bir sipariş gibi değerlendirir, hiçbir şey kaydetmez.</value>
+  </data>
+  <data name="TryButton" xml:space="preserve">
+    <value>Dene</value>
+  </data>
+  <data name="AsOfLabel" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>Fiyat kademesi</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>Eczacı alış</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>Depo fiyatı</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>Halka satış</value>
+  </data>
+  <data name="TrialMode" xml:space="preserve">
+    <value>Mod</value>
+  </data>
+  <data name="ModePricedWith" xml:space="preserve">
+    <value>Fiyatlı · {0}</value>
+  </data>
+  <data name="ModeQuantityOnly" xml:space="preserve">
+    <value>Yalnız adet (yürürlükte liste yok)</value>
+  </data>
+  <data name="TrialPriceList" xml:space="preserve">
+    <value>Fiyat listesi</value>
+  </data>
+  <data name="TrialFree" xml:space="preserve">
+    <value>Bedelsiz kutu</value>
+  </data>
+  <data name="TrialMfRatio" xml:space="preserve">
+    <value>MF oranı</value>
+  </data>
+  <data name="TrialCombined" xml:space="preserve">
+    <value>Birleşik indirim</value>
+  </data>
+  <data name="TrialNet" xml:space="preserve">
+    <value>Net</value>
+  </data>
+  <data name="TrialVat" xml:space="preserve">
+    <value>KDV</value>
+  </data>
+  <data name="TrialRule" xml:space="preserve">
+    <value>Uygulanan kural</value>
+  </data>
+  <data name="TrialNoRule" xml:space="preserve">
+    <value>Uygulanan kural yok</value>
+  </data>
+  <data name="TrialNoFindings" xml:space="preserve">
+    <value>Hiçbir sınır aşılmadı.</value>
+  </data>
+  <data name="RuleRef" xml:space="preserve">
+    <value>v{0} · {1}</value>
+  </data>
+  <data name="ErrTrialCompany" xml:space="preserve">
+    <value>Satan şirketi seçin.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>Değişiklik geçmişi</value>
+  </data>
+  <data name="Type_price_list" xml:space="preserve">
+    <value>Fiyat listesi</value>
+  </data>
+  <data name="Type_price_list_item" xml:space="preserve">
+    <value>Fiyat listesi kalemi</value>
+  </data>
+  <data name="Type_pricing_rule" xml:space="preserve">
+    <value>Kural</value>
+  </data>
+  <data name="Type_fx_rate" xml:space="preserve">
+    <value>Kur</value>
+  </data>
+  <data name="Type_unknown" xml:space="preserve">
+    <value>Kayıt</value>
+  </data>
+  <data name="Act_created" xml:space="preserve">
+    <value>oluşturuldu</value>
+  </data>
+  <data name="Act_updated" xml:space="preserve">
+    <value>değiştirildi</value>
+  </data>
+  <data name="Act_version_created" xml:space="preserve">
+    <value>yeni sürüm</value>
+  </data>
+  <data name="Act_discarded" xml:space="preserve">
+    <value>atıldı</value>
+  </data>
+  <data name="Act_submitted" xml:space="preserve">
+    <value>onaya gönderildi</value>
+  </data>
+  <data name="Act_published" xml:space="preserve">
+    <value>yayımlandı / onaylandı</value>
+  </data>
+  <data name="Act_returned" xml:space="preserve">
+    <value>iade edildi</value>
+  </data>
+  <data name="Act_refused" xml:space="preserve">
+    <value>reddedildi</value>
+  </data>
+  <data name="Act_withdrawn" xml:space="preserve">
+    <value>geri çekildi</value>
+  </data>
+  <data name="Act_superseded" xml:space="preserve">
+    <value>yerine yenisi geldi</value>
+  </data>
+  <data name="Act_retired" xml:space="preserve">
+    <value>emekliye ayrıldı</value>
+  </data>
+  <data name="Act_unknown" xml:space="preserve">
+    <value>değişti</value>
+  </data>
+  <data name="FxTitle" xml:space="preserve">
+    <value>Kurlar</value>
+  </data>
+  <data name="FxCreateTitle" xml:space="preserve">
+    <value>Yeni kur</value>
+  </data>
+  <data name="FxEditTitle" xml:space="preserve">
+    <value>Kuru düzelt</value>
+  </data>
+  <data name="RateSection" xml:space="preserve">
+    <value>Kur</value>
+  </data>
+  <data name="SaveRate" xml:space="preserve">
+    <value>Kuru kaydet</value>
+  </data>
+  <data name="EditRate" xml:space="preserve">
+    <value>Düzelt</value>
+  </data>
+  <data name="ErrRateHead" xml:space="preserve">
+    <value>Şirket, iki adet 3 harfli para birimi, gün ve kaynağı doldurun.</value>
+  </data>
+  <data name="ErrRate" xml:space="preserve">
+    <value>Kur 0'dan büyük, en çok 6 ondalık olmalı.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>Bir sorun oluştu. Tekrar deneyin.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>Servis şu an ulaşılamıyor. Biraz sonra tekrar deneyin.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>Bunun için yetkiniz yok.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>Kayıt bulunamadı ya da görme yetkiniz yok.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>Bu arada başka biri değiştirdi. Yenileyip tekrar deneyin.</value>
+  </data>
+</root>

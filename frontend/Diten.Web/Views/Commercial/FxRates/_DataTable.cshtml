@@ -1,0 +1,26 @@
+@using Diten.Web.Views.Commercial.Pricing
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    // W6-WEB-b — the FX rates, server mode. A rate is corrected, never deleted (the history keeps it): no selection.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-fxrates",
+        DataMode = "server",
+        Slug = "fxrates",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColCompany"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColPair"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRateDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColSource"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColUpdated"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

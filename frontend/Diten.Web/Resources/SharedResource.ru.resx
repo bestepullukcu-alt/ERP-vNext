@@ -1141,6 +1141,30 @@
   <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
     <value>Согласование предзаказа</value>
   </data>
+  <data name="Nav.Page.COMMERCIALPRICING" xml:space="preserve">
+    <value>Прайс-листы и правила</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTFORM" xml:space="preserve">
+    <value>Прайс-лист</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTIMPORT" xml:space="preserve">
+    <value>Импорт прайс-листа</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULELIST" xml:space="preserve">
+    <value>Правила бонусов / скидок</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULEFORM" xml:space="preserve">
+    <value>Правило бонуса / скидки</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGTRIAL" xml:space="preserve">
+    <value>Проверка правил</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGHISTORY" xml:space="preserve">
+    <value>История изменений цен</value>
+  </data>
+  <data name="Nav.Page.COMFXRATELIST" xml:space="preserve">
+    <value>Курсы валют</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Управление перевозчиками</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Перевозчики</value></data>

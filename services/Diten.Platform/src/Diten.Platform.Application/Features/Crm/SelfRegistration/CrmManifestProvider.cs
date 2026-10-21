@@ -300,6 +300,27 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("PREORDERSETTINGS", "Pre-Order Settings", "/Commercial/PreOrderSettings", "commercial.pre-order-settings.read", null, true, "Form", 74,
                 [
                     new ModuleManifestAction("UPDATE", "Change Pre-Order Settings", "commercial.pre-order-settings.update", "Toolbar", 10, false, true, false)
+                ]),
+                // WP-VW-W6 (W6-WEB-b, MOD-0156 §9 / §14) — screen D, ONE menu item (Nav.Page.COMMERCIALPRICING) with five tabs:
+                // price lists · MF / discount rules · rule trial · change history · FX rates. The page opens with the price
+                // lists' read key; every other screen-D key is an action of it (the tabs a caller may open follow the keys).
+                // fx-rates.import has no screen yet and stays API-only below. DEFINITION ONLY — the role grant is W6-CFG.
+                new ModuleManifestPage("COMMERCIALPRICING", "Price Lists and Rules", "/Commercial/Pricing", "commercial.price-lists.read", null, true, "List", 75,
+                [
+                    new ModuleManifestAction("LISTS_CREATE", "Create Price List Drafts", "commercial.price-lists.create", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("LISTS_UPDATE", "Edit Price List Drafts", "commercial.price-lists.update", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("LISTS_IMPORT", "Import Price Lists", "commercial.price-lists.import", "Toolbar", 30, false, true, false),
+                    new ModuleManifestAction("LISTS_SUBMIT", "Submit Price Lists for Publication", "commercial.price-lists.submit", "RowAction", 40, false, false, true),
+                    new ModuleManifestAction("LISTS_PUBLISH", "Publish or Return Price Lists (Four Eyes)", "commercial.price-lists.publish", "RowAction", 50, true, false, true),
+                    new ModuleManifestAction("LISTS_EXPORT", "Export Price Lists", "commercial.price-lists.export", "Toolbar", 60, false, true, false),
+                    new ModuleManifestAction("RULES_READ", "Read Pricing Rules and Try Them", "commercial.pricing-rules.read", "Toolbar", 70, false, true, false),
+                    new ModuleManifestAction("RULES_CREATE", "Create Pricing Rule Drafts", "commercial.pricing-rules.create", "Toolbar", 80, false, true, false),
+                    new ModuleManifestAction("RULES_UPDATE", "Revise or Retire Pricing Rules (Drafts)", "commercial.pricing-rules.update", "RowAction", 90, false, false, true),
+                    new ModuleManifestAction("RULES_SUBMIT", "Submit Pricing Rules for Approval", "commercial.pricing-rules.submit", "RowAction", 100, false, false, true),
+                    new ModuleManifestAction("RULES_PUBLISH", "Approve or Return Pricing Rules (Four Eyes)", "commercial.pricing-rules.publish", "RowAction", 110, true, false, true),
+                    new ModuleManifestAction("FX_READ", "Read FX Rates", "commercial.fx-rates.read", "Toolbar", 120, false, true, false),
+                    new ModuleManifestAction("FX_CREATE", "Enter FX Rates", "commercial.fx-rates.create", "Toolbar", 130, false, true, false),
+                    new ModuleManifestAction("FX_UPDATE", "Correct FX Rates", "commercial.fx-rates.update", "RowAction", 140, false, false, true)
                 ])
             ],
             // WP-VW-W5 PLT-NOTIFY (K-N3, K-N4) — the visit report e-mails, sent by MOD-0155 through the internal event dispatch
@@ -346,27 +367,11 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     "Sent to the representative and the line manager when a pre-order is cancelled, and to the depot and the pharmacy only when it had been transmitted.",
                     "Warning", ["reason"], [])
             ],
-            // WP-VW-W6 W6-BE-b — MOD-0156 Price Lists & Discount Guardrails (commercial.*, K-O2; MOD-0156 §14): API-only keys
-            // until W6-WEB-b ships screen D (then they become its page + actions). DEFINITION ONLY — the role seed / grant is
-            // F-RBAC (W6-CFG). CrmService enforces each one with [HasPermission]. The MOD-0168 pre-order keys left this list
-            // with W6-WEB-a: they are the PREORDERS / PREORDERSETTINGS pages and actions above.
+            // WP-VW-W6 W6-BE-b + W6-WEB-b — the MOD-0156 key without a screen yet (the FX import endpoint; screen D enters and
+            // corrects rates one by one). The other fifteen MOD-0156 keys are the COMMERCIALPRICING page and its actions above,
+            // the MOD-0168 keys the PREORDERS / PREORDERSETTINGS pages. CrmService enforces each one with [HasPermission].
             ApiPermissions:
             [
-                new ModuleManifestPermission("commercial.price-lists.read", "Read Price Lists"),
-                new ModuleManifestPermission("commercial.price-lists.create", "Create Price List Drafts"),
-                new ModuleManifestPermission("commercial.price-lists.update", "Edit Price List Drafts"),
-                new ModuleManifestPermission("commercial.price-lists.import", "Import Price Lists"),
-                new ModuleManifestPermission("commercial.price-lists.submit", "Submit Price Lists for Publication"),
-                new ModuleManifestPermission("commercial.price-lists.publish", "Publish or Return Price Lists (Four Eyes)"),
-                new ModuleManifestPermission("commercial.price-lists.export", "Export Price Lists"),
-                new ModuleManifestPermission("commercial.pricing-rules.read", "Read Pricing Rules and Try Them"),
-                new ModuleManifestPermission("commercial.pricing-rules.create", "Create Pricing Rule Drafts"),
-                new ModuleManifestPermission("commercial.pricing-rules.update", "Revise or Retire Pricing Rules (Drafts)"),
-                new ModuleManifestPermission("commercial.pricing-rules.submit", "Submit Pricing Rules for Approval"),
-                new ModuleManifestPermission("commercial.pricing-rules.publish", "Approve or Return Pricing Rules (Four Eyes)"),
-                new ModuleManifestPermission("commercial.fx-rates.read", "Read FX Rates"),
-                new ModuleManifestPermission("commercial.fx-rates.create", "Enter FX Rates"),
-                new ModuleManifestPermission("commercial.fx-rates.update", "Correct FX Rates"),
                 new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates")
             ]);
 

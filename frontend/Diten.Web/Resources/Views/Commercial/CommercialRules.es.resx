@@ -163,4 +163,82 @@
   <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
     <value>No se pudo guardar el archivo. Inténtelo de nuevo en un momento.</value>
   </data>
+  <data name="Rule.pricing_request_invalid" xml:space="preserve">
+    <value>La solicitud no es válida.</value>
+  </data>
+  <data name="Rule.pricing_not_found" xml:space="preserve">
+    <value>No se encontró el registro o no puede verlo.</value>
+  </data>
+  <data name="Rule.pricing_legal_entity_invalid" xml:space="preserve">
+    <value>Elija una empresa vendedora de este inquilino.</value>
+  </data>
+  <data name="Rule.pricing_mdm_unavailable" xml:space="preserve">
+    <value>No se pudo consultar los datos maestros. Inténtelo de nuevo en un momento.</value>
+  </data>
+  <data name="Rule.pricing_sku_invalid" xml:space="preserve">
+    <value>No se encontró el producto en el maestro de productos.</value>
+  </data>
+  <data name="Rule.pricing_sku_retired" xml:space="preserve">
+    <value>El producto está retirado y no se puede usar.</value>
+  </data>
+  <data name="Rule.price_list_overlap" xml:space="preserve">
+    <value>Otra lista publicada de esta empresa y país empieza el mismo día.</value>
+  </data>
+  <data name="Rule.price_list_not_editable" xml:space="preserve">
+    <value>Solo se puede cambiar una lista borrador; una publicada recibe una versión nueva.</value>
+  </data>
+  <data name="Rule.price_list_item_invalid" xml:space="preserve">
+    <value>Revise el artículo: un producto, al menos un precio (0 o más, 4 decimales como máximo) e IVA 0–100.</value>
+  </data>
+  <data name="Rule.price_list_item_duplicate" xml:space="preserve">
+    <value>Este producto ya está en la lista.</value>
+  </data>
+  <data name="Rule.price_list_empty" xml:space="preserve">
+    <value>No se puede publicar una lista sin artículos.</value>
+  </data>
+  <data name="Rule.price_list_not_published" xml:space="preserve">
+    <value>Solo una lista publicada puede recibir una versión nueva.</value>
+  </data>
+  <data name="Rule.price_list_sod" xml:space="preserve">
+    <value>Usted preparó esta lista: debe decidir otra persona.</value>
+  </data>
+  <data name="Rule.price_list_import_invalid" xml:space="preserve">
+    <value>No se pudo leer el archivo. Use xlsx o csv de hasta 5 MB con las columnas indicadas.</value>
+  </data>
+  <data name="Rule.price_list_import_not_open" xml:space="preserve">
+    <value>Esta importación ya se convirtió o descartó.</value>
+  </data>
+  <data name="Rule.price_list_import_nothing_matched" xml:space="preserve">
+    <value>Ninguna fila del archivo coincidió con un producto: nada puede entrar en el borrador.</value>
+  </data>
+  <data name="Rule.pricing_rule_limits_invalid" xml:space="preserve">
+    <value>Revise los límites: cada límite flexible no debe superar su límite estricto; bonificación como 10+2.</value>
+  </data>
+  <data name="Rule.pricing_rule_overlap" xml:space="preserve">
+    <value>Una regla activa de la misma empresa, producto y especificidad ya cubre este período.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_editable" xml:space="preserve">
+    <value>Solo se puede cambiar una regla borrador.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_active" xml:space="preserve">
+    <value>Solo se puede revisar o retirar una regla activa.</value>
+  </data>
+  <data name="Rule.pricing_rule_open_draft_exists" xml:space="preserve">
+    <value>Esta regla ya tiene un borrador abierto. Termínelo o descártelo primero.</value>
+  </data>
+  <data name="Rule.pricing_rule_sod" xml:space="preserve">
+    <value>Usted preparó este cambio de regla: debe decidir otra persona.</value>
+  </data>
+  <data name="Rule.pricing_segment_not_enabled" xml:space="preserve">
+    <value>Los segmentos de farmacia aún no se usan: deje el segmento vacío.</value>
+  </data>
+  <data name="Rule.fx_rate_duplicate" xml:space="preserve">
+    <value>Ya existe un tipo para esta empresa, par y día: corrija ese.</value>
+  </data>
+  <data name="Rule.fx_rate_invalid" xml:space="preserve">
+    <value>Revise el tipo: monedas de 3 letras, un día, un tipo mayor que 0 con 6 decimales como máximo y una fuente.</value>
+  </data>
+  <data name="Rule.pricing_stale_version" xml:space="preserve">
+    <value>Otra persona lo cambió mientras tanto. Recargue e inténtelo de nuevo.</value>
+  </data>
 </root>

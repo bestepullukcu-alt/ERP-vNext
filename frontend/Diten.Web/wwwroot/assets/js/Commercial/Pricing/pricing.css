@@ -1,0 +1,84 @@
+/* WP-VW-W6 · W6-WEB-b — screen D (price lists · rules · trial · history · FX rates). The theme's tokens only (the layout
+   primary, the semantic warning / danger / success) — never a fixed navy (DESIGN-GAP §4); logical sides only (RTL). */
+
+.pr-drawer {
+    --bs-offcanvas-width: min(520px, 100vw);
+}
+
+.pr-soft {
+    color: var(--bs-warning-text-emphasis, var(--bs-warning));
+}
+
+.pr-hard {
+    color: var(--bs-danger-text-emphasis, var(--bs-danger));
+    font-weight: 500;
+}
+
+.pr-old {
+    text-decoration: line-through;
+}
+
+.pr-removed td {
+    opacity: 0.6;
+}
+
+.pr-item {
+    padding-block-end: 0.5rem;
+    border-block-end: 1px dashed var(--bs-border-color);
+}
+
+.pr-steps li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--bs-secondary-color);
+}
+
+.pr-steps li.active {
+    color: var(--bs-primary);
+    font-weight: 500;
+}
+
+.pr-step-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    font-size: 0.75rem;
+}
+
+.pr-trial-msg {
+    padding-block: 0.25rem;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 3px solid var(--bs-border-color);
+    margin-block-end: 0.25rem;
+}
+
+.pr-trial-soft {
+    border-inline-start-color: var(--bs-warning);
+}
+
+.pr-trial-hard {
+    border-inline-start-color: var(--bs-danger);
+}
+
+.pr-mf-ratio {
+    display: block;
+    margin-block-start: 0.25rem;
+}
+
+.pr-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding-block: 2rem;
+}
+
+.pr-empty .bx {
+    font-size: 2rem;
+    color: var(--bs-primary);
+}

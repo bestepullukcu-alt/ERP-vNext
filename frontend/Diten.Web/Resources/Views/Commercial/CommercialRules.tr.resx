@@ -163,4 +163,82 @@
   <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
     <value>Dosya saklanamadı. Biraz sonra tekrar deneyin.</value>
   </data>
+  <data name="Rule.pricing_request_invalid" xml:space="preserve">
+    <value>İstek geçerli değil.</value>
+  </data>
+  <data name="Rule.pricing_not_found" xml:space="preserve">
+    <value>Kayıt bulunamadı ya da görme yetkiniz yok.</value>
+  </data>
+  <data name="Rule.pricing_legal_entity_invalid" xml:space="preserve">
+    <value>Bu kiracının bir satış şirketini seçin.</value>
+  </data>
+  <data name="Rule.pricing_mdm_unavailable" xml:space="preserve">
+    <value>Ana veri sorgulanamadı. Biraz sonra tekrar deneyin.</value>
+  </data>
+  <data name="Rule.pricing_sku_invalid" xml:space="preserve">
+    <value>Ürün, ürün ana verisinde bulunamadı.</value>
+  </data>
+  <data name="Rule.pricing_sku_retired" xml:space="preserve">
+    <value>Ürün kullanımdan kalktı, kullanılamaz.</value>
+  </data>
+  <data name="Rule.price_list_overlap" xml:space="preserve">
+    <value>Bu şirket ve ülkenin yayımlanmış başka bir listesi aynı gün başlıyor.</value>
+  </data>
+  <data name="Rule.price_list_not_editable" xml:space="preserve">
+    <value>Yalnız taslak liste değiştirilebilir; yayımlanmış listeye yeni sürüm açılır.</value>
+  </data>
+  <data name="Rule.price_list_item_invalid" xml:space="preserve">
+    <value>Kalemi kontrol edin: ürün, en az bir fiyat (0 ya da üstü, en çok 4 ondalık) ve KDV 0–100.</value>
+  </data>
+  <data name="Rule.price_list_item_duplicate" xml:space="preserve">
+    <value>Bu ürün listede zaten var.</value>
+  </data>
+  <data name="Rule.price_list_empty" xml:space="preserve">
+    <value>Kalemsiz liste yayımlanamaz.</value>
+  </data>
+  <data name="Rule.price_list_not_published" xml:space="preserve">
+    <value>Yalnız yayımlanmış listeye yeni sürüm açılabilir.</value>
+  </data>
+  <data name="Rule.price_list_sod" xml:space="preserve">
+    <value>Bu listeyi siz hazırladınız: kararı ikinci bir kişi vermeli.</value>
+  </data>
+  <data name="Rule.price_list_import_invalid" xml:space="preserve">
+    <value>Dosya okunamadı. Adı verilen sütunlarla en çok 5 MB xlsx ya da csv kullanın.</value>
+  </data>
+  <data name="Rule.price_list_import_not_open" xml:space="preserve">
+    <value>Bu içe aktarma zaten dönüştürüldü ya da atıldı.</value>
+  </data>
+  <data name="Rule.price_list_import_nothing_matched" xml:space="preserve">
+    <value>Dosyanın hiçbir satırı bir ürünle eşleşmedi: taslağa satır girmez.</value>
+  </data>
+  <data name="Rule.pricing_rule_limits_invalid" xml:space="preserve">
+    <value>Sınırları kontrol edin: her yumuşak sınır sert sınırından büyük olmamalı, MF 10+2 biçiminde.</value>
+  </data>
+  <data name="Rule.pricing_rule_overlap" xml:space="preserve">
+    <value>Aynı şirket, ürün ve özgüllükte etkin bir kural bu dönemi zaten kapsıyor.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_editable" xml:space="preserve">
+    <value>Yalnız taslak kural değiştirilebilir.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_active" xml:space="preserve">
+    <value>Yalnız etkin kural revize edilebilir ya da emekliye ayrılabilir.</value>
+  </data>
+  <data name="Rule.pricing_rule_open_draft_exists" xml:space="preserve">
+    <value>Bu kuralın zaten açık bir taslağı var. Önce onu tamamlayın ya da atın.</value>
+  </data>
+  <data name="Rule.pricing_rule_sod" xml:space="preserve">
+    <value>Bu kural değişikliğini siz hazırladınız: kararı ikinci bir kişi vermeli.</value>
+  </data>
+  <data name="Rule.pricing_segment_not_enabled" xml:space="preserve">
+    <value>Eczane segmentleri henüz kullanılmıyor: segmenti boş bırakın.</value>
+  </data>
+  <data name="Rule.fx_rate_duplicate" xml:space="preserve">
+    <value>Bu şirket, çift ve gün için kur zaten var: onu düzeltin.</value>
+  </data>
+  <data name="Rule.fx_rate_invalid" xml:space="preserve">
+    <value>Kuru kontrol edin: 3 harfli para birimleri, gün, 0'dan büyük en çok 6 ondalıklı kur ve kaynak.</value>
+  </data>
+  <data name="Rule.pricing_stale_version" xml:space="preserve">
+    <value>Bu arada başka biri değiştirdi. Yenileyip tekrar deneyin.</value>
+  </data>
 </root>

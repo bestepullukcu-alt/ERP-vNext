@@ -163,4 +163,82 @@
   <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
     <value>Не удалось сохранить файл. Повторите чуть позже.</value>
   </data>
+  <data name="Rule.pricing_request_invalid" xml:space="preserve">
+    <value>Запрос недействителен.</value>
+  </data>
+  <data name="Rule.pricing_not_found" xml:space="preserve">
+    <value>Запись не найдена или недоступна вам.</value>
+  </data>
+  <data name="Rule.pricing_legal_entity_invalid" xml:space="preserve">
+    <value>Выберите компанию-продавца этого арендатора.</value>
+  </data>
+  <data name="Rule.pricing_mdm_unavailable" xml:space="preserve">
+    <value>Не удалось запросить мастер-данные. Повторите чуть позже.</value>
+  </data>
+  <data name="Rule.pricing_sku_invalid" xml:space="preserve">
+    <value>Препарат не найден в справочнике продуктов.</value>
+  </data>
+  <data name="Rule.pricing_sku_retired" xml:space="preserve">
+    <value>Препарат выведен из оборота и не может использоваться.</value>
+  </data>
+  <data name="Rule.price_list_overlap" xml:space="preserve">
+    <value>Другой опубликованный прайс-лист этой компании и страны начинается в тот же день.</value>
+  </data>
+  <data name="Rule.price_list_not_editable" xml:space="preserve">
+    <value>Изменить можно только черновик; для опубликованного создаётся новая версия.</value>
+  </data>
+  <data name="Rule.price_list_item_invalid" xml:space="preserve">
+    <value>Проверьте позицию: препарат, хотя бы одна цена (от 0, не более 4 знаков) и НДС 0–100.</value>
+  </data>
+  <data name="Rule.price_list_item_duplicate" xml:space="preserve">
+    <value>Этот препарат уже есть в прайс-листе.</value>
+  </data>
+  <data name="Rule.price_list_empty" xml:space="preserve">
+    <value>Прайс-лист без позиций нельзя опубликовать.</value>
+  </data>
+  <data name="Rule.price_list_not_published" xml:space="preserve">
+    <value>Новую версию можно создать только для опубликованного прайс-листа.</value>
+  </data>
+  <data name="Rule.price_list_sod" xml:space="preserve">
+    <value>Вы подготовили этот прайс-лист: решение должен принять другой человек.</value>
+  </data>
+  <data name="Rule.price_list_import_invalid" xml:space="preserve">
+    <value>Файл не прочитан. Используйте xlsx или csv до 5 МБ с указанными столбцами.</value>
+  </data>
+  <data name="Rule.price_list_import_not_open" xml:space="preserve">
+    <value>Этот импорт уже преобразован или отменён.</value>
+  </data>
+  <data name="Rule.price_list_import_nothing_matched" xml:space="preserve">
+    <value>Ни одна строка файла не сопоставлена с препаратом: в черновик ничего не попадёт.</value>
+  </data>
+  <data name="Rule.pricing_rule_limits_invalid" xml:space="preserve">
+    <value>Проверьте лимиты: мягкий лимит не выше жёсткого, бонус в виде 10+2.</value>
+  </data>
+  <data name="Rule.pricing_rule_overlap" xml:space="preserve">
+    <value>Активное правило той же компании, препарата и специфичности уже охватывает этот период.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_editable" xml:space="preserve">
+    <value>Изменить можно только черновик правила.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_active" xml:space="preserve">
+    <value>Пересмотреть или вывести можно только активное правило.</value>
+  </data>
+  <data name="Rule.pricing_rule_open_draft_exists" xml:space="preserve">
+    <value>У правила уже есть открытый черновик. Сначала завершите или удалите его.</value>
+  </data>
+  <data name="Rule.pricing_rule_sod" xml:space="preserve">
+    <value>Вы подготовили это изменение правила: решение должен принять другой человек.</value>
+  </data>
+  <data name="Rule.pricing_segment_not_enabled" xml:space="preserve">
+    <value>Сегменты аптек пока не используются: оставьте поле пустым.</value>
+  </data>
+  <data name="Rule.fx_rate_duplicate" xml:space="preserve">
+    <value>Курс для этой компании, пары и дня уже есть: исправьте его.</value>
+  </data>
+  <data name="Rule.fx_rate_invalid" xml:space="preserve">
+    <value>Проверьте курс: валюты из 3 букв, день, курс больше 0 (до 6 знаков) и источник.</value>
+  </data>
+  <data name="Rule.pricing_stale_version" xml:space="preserve">
+    <value>Кто-то изменил это тем временем. Обновите и повторите.</value>
+  </data>
 </root>

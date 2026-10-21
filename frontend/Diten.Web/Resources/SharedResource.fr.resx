@@ -1142,6 +1142,30 @@
   <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
     <value>Validation de pré-commande</value>
   </data>
+  <data name="Nav.Page.COMMERCIALPRICING" xml:space="preserve">
+    <value>Listes de prix et règles</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTFORM" xml:space="preserve">
+    <value>Liste de prix</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTIMPORT" xml:space="preserve">
+    <value>Import de liste de prix</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULELIST" xml:space="preserve">
+    <value>Règles UG / remise</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULEFORM" xml:space="preserve">
+    <value>Règle UG / remise</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGTRIAL" xml:space="preserve">
+    <value>Essai de règle</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGHISTORY" xml:space="preserve">
+    <value>Historique des prix</value>
+  </data>
+  <data name="Nav.Page.COMFXRATELIST" xml:space="preserve">
+    <value>Taux de change</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>

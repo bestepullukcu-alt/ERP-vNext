@@ -3,9 +3,10 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Crm;
 
-// WP-VW-W6 W6-BE-b — the CRM manifest declares the sixteen MOD-0156 §14 permission keys (price lists, guardrail rules,
-// FX rates) as API permissions: a definition only (the grant is W6-CFG), no page yet (W6-WEB-b), the module identity and
-// the existing pages unchanged. CrmService pins the same sixteen in PricingPermissions.All.
+// WP-VW-W6 W6-BE-b + W6-WEB-b — the sixteen MOD-0156 §14 permission keys (price lists, guardrail rules, FX rates). W6-BE-b
+// declared them API-only; W6-WEB-b ships screen D: ONE menu page COMMERCIALPRICING (Nav.Page.COMMERCIALPRICING, opened with
+// the price lists' read key) whose actions are fifteen of them — the FX import has no screen yet and stays API-only. A
+// definition only (the grant is W6-CFG), declared once each. CrmService pins the same sixteen in PricingPermissions.All.
 public sealed class CrmManifestCommercialPricingTests
 {
     private static readonly Diten.BuildingBlocks.ModuleRegistration.Abstractions.ModuleManifestDocument Manifest =
@@ -20,26 +21,32 @@ public sealed class CrmManifestCommercialPricingTests
         "commercial.fx-rates.read", "commercial.fx-rates.create", "commercial.fx-rates.update", "commercial.fx-rates.import"
     ];
 
-    [Fact]
-    public void The_sixteen_pricing_keys_are_declared_once_each_with_a_display_name()
-    {
-        // W6-BE-a: the namespace also holds MOD-0168's pre-order keys (CrmManifestCommercialPreOrderTests) — the pricing families here
-        string[] families = ["commercial.price-lists.", "commercial.pricing-rules.", "commercial.fx-rates."];
-        var commercial = (Manifest.ApiPermissions ?? []).Where(p => families.Any(f => p.PermissionKey.StartsWith(f, StringComparison.Ordinal))).ToList();
+    private static readonly string[] Families = ["commercial.price-lists.", "commercial.pricing-rules.", "commercial.fx-rates."];
 
-        Assert.Equal(Keys.OrderBy(k => k, StringComparer.Ordinal), commercial.Select(p => p.PermissionKey).OrderBy(k => k, StringComparer.Ordinal));
-        Assert.All(commercial, p => Assert.False(string.IsNullOrWhiteSpace(p.DisplayName)));
-        Assert.DoesNotContain(commercial, p => p.PermissionKey.EndsWith(".manage", StringComparison.Ordinal));   // §14: no .manage key
+    [Fact]
+    public void The_sixteen_pricing_keys_are_the_screen_d_page_its_actions_and_the_one_api_only_key_declared_once_each()
+    {
+        var page = Assert.Single(Manifest.Pages, p => p.PageCode == "COMMERCIALPRICING");
+        Assert.Equal(("/Commercial/Pricing", "commercial.price-lists.read", true), (page.RoutePath, page.RequiredPermission, page.IsNavigationVisible));
+        Assert.All(page.Actions, a => Assert.False(string.IsNullOrWhiteSpace(a.DisplayName)));
+        Assert.All(page.Actions.Where(a => a.PermissionKey.EndsWith(".publish", StringComparison.Ordinal)), a => Assert.True(a.IsDangerous));
+
+        var api = (Manifest.ApiPermissions ?? []).Where(p => Families.Any(f => p.PermissionKey.StartsWith(f, StringComparison.Ordinal))).ToList();
+        Assert.Equal(["commercial.fx-rates.import"], api.Select(p => p.PermissionKey));
+
+        var declared = new[] { page.RequiredPermission }.Concat(page.Actions.Select(a => a.PermissionKey)).Concat(api.Select(p => p.PermissionKey)).ToList();
+        Assert.Equal(Keys.OrderBy(k => k, StringComparer.Ordinal), declared.OrderBy(k => k, StringComparer.Ordinal));
+        Assert.DoesNotContain(declared, k => k.EndsWith(".manage", StringComparison.Ordinal));                     // §14: no .manage key
     }
 
     [Fact]
-    public void No_page_uses_a_pricing_key_yet_and_the_module_identity_is_unchanged()
+    public void Only_screen_d_uses_a_pricing_key_and_the_module_identity_is_unchanged()
     {
         Assert.Equal("CRM", Manifest.ModuleCode);
-        // W6-WEB-a: the pre-order pages (commercial.pre-orders.* / .pre-order-settings.*) exist; no page or action uses a PRICING key yet
-        string[] families = ["commercial.price-lists.", "commercial.pricing-rules.", "commercial.fx-rates."];
-        var pageKeys = Manifest.Pages.SelectMany(p => new[] { p.RequiredPermission }.Concat(p.Actions.Select(a => a.PermissionKey))).ToList();
-        Assert.DoesNotContain(pageKeys, k => families.Any(f => k?.StartsWith(f, StringComparison.Ordinal) == true));
+        var users = Manifest.Pages.Where(p => new[] { p.RequiredPermission }.Concat(p.Actions.Select(a => a.PermissionKey))
+            .Any(k => Families.Any(f => k?.StartsWith(f, StringComparison.Ordinal) == true))).Select(p => p.PageCode).ToList();
+        Assert.Equal(["COMMERCIALPRICING"], users);
+        Assert.Single(Manifest.Pages, p => p.SortOrder == 75);
         var all = Manifest.ApiPermissions ?? [];
         Assert.Equal(all.Count, all.Select(p => p.PermissionKey).Distinct(StringComparer.OrdinalIgnoreCase).Count());
     }

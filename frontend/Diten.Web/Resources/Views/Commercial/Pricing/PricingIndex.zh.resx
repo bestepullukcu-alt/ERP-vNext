@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ScreenTitle" xml:space="preserve">
+    <value>价目表与赠品 / 折扣规则</value>
+  </data>
+  <data name="ScreenDescription" xml:space="preserve">
+    <value>由商务团队维护；预订单从这里读取单价和限额。</value>
+  </data>
+  <data name="TabLists" xml:space="preserve">
+    <value>价目表</value>
+  </data>
+  <data name="TabRules" xml:space="preserve">
+    <value>赠品 / 折扣规则</value>
+  </data>
+  <data name="TabTrial" xml:space="preserve">
+    <value>规则试算</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>变更历史</value>
+  </data>
+  <data name="TabFx" xml:space="preserve">
+    <value>汇率</value>
+  </data>
+  <data name="PageTitle" xml:space="preserve">
+    <value>价目表</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>每份价目表属于一家销售公司、其所在国家和一种货币。</value>
+  </data>
+  <data name="ListsNote" xml:space="preserve">
+    <value>新价目表发布后，旧表变为“已过期”；以往订单仍关联其当日的价目表。</value>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>导入（Excel / CSV）</value>
+  </data>
+  <data name="NewList" xml:space="preserve">
+    <value>新建价目表</value>
+  </data>
+  <data name="NewRule" xml:space="preserve">
+    <value>新建规则</value>
+  </data>
+  <data name="NewRate" xml:space="preserve">
+    <value>新建汇率</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>快速查看</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>暂无记录</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>没有符合筛选条件的记录。</value>
+  </data>
+  <data name="DrawerTitleList" xml:space="preserve">
+    <value>价目表</value>
+  </data>
+  <data name="DrawerTitleRule" xml:space="preserve">
+    <value>规则</value>
+  </data>
+  <data name="DrawerTitleChange" xml:space="preserve">
+    <value>变更</value>
+  </data>
+  <data name="DrawerTitleRate" xml:space="preserve">
+    <value>汇率</value>
+  </data>
+  <data name="ColName" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="ColCompany" xml:space="preserve">
+    <value>销售公司</value>
+  </data>
+  <data name="ColCountry" xml:space="preserve">
+    <value>国家</value>
+  </data>
+  <data name="ColCurrency" xml:space="preserve">
+    <value>货币</value>
+  </data>
+  <data name="ColKind" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="ColValidity" xml:space="preserve">
+    <value>有效期</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="ColItems" xml:space="preserve">
+    <value>明细数</value>
+  </data>
+  <data name="ColVersion" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="ColSku" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="ColBarcode" xml:space="preserve">
+    <value>条码</value>
+  </data>
+  <data name="ColDepotPrice" xml:space="preserve">
+    <value>经销商价</value>
+  </data>
+  <data name="ColPharmacistPrice" xml:space="preserve">
+    <value>药剂师采购价</value>
+  </data>
+  <data name="ColPublicPrice" xml:space="preserve">
+    <value>零售价</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>增值税 %</value>
+  </data>
+  <data name="ColDiff" xml:space="preserve">
+    <value>差异</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="ColMaxDiscount" xml:space="preserve">
+    <value>最高折扣 %</value>
+  </data>
+  <data name="ColMaxMf" xml:space="preserve">
+    <value>最高赠品</value>
+  </data>
+  <data name="ColMaxCombined" xml:space="preserve">
+    <value>综合上限 %</value>
+  </data>
+  <data name="ColQuantity" xml:space="preserve">
+    <value>数量</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>数量</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>赠品</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>折扣 %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>单价</value>
+  </data>
+  <data name="ColWhen" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="ColWho" xml:space="preserve">
+    <value>人员</value>
+  </data>
+  <data name="ColWhat" xml:space="preserve">
+    <value>对象</value>
+  </data>
+  <data name="ColChanges" xml:space="preserve">
+    <value>旧值 → 新值</value>
+  </data>
+  <data name="ColPair" xml:space="preserve">
+    <value>货币对</value>
+  </data>
+  <data name="ColRateDate" xml:space="preserve">
+    <value>汇率日期</value>
+  </data>
+  <data name="ColRate" xml:space="preserve">
+    <value>汇率</value>
+  </data>
+  <data name="ColSource" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="ColUpdated" xml:space="preserve">
+    <value>最近修改</value>
+  </data>
+  <data name="ColRowNo" xml:space="preserve">
+    <value>行</value>
+  </data>
+  <data name="ColSourceCode" xml:space="preserve">
+    <value>文件中的代码</value>
+  </data>
+  <data name="ColRowStatus" xml:space="preserve">
+    <value>结果</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>销售公司</value>
+  </data>
+  <data name="CompanyAll" xml:space="preserve">
+    <value>全部公司</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>国家</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>全部国家</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>货币</value>
+  </data>
+  <data name="CurrencyAll" xml:space="preserve">
+    <value>全部货币</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="KindAll" xml:space="preserve">
+    <value>全部类型</value>
+  </data>
+  <data name="Kind_official" xml:space="preserve">
+    <value>官方</value>
+  </data>
+  <data name="Kind_company" xml:space="preserve">
+    <value>公司价目表</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>全部状态</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>按名称或代码搜索产品</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>请至少输入 2 个字符</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>正在搜索…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>未找到结果</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>记录类型</value>
+  </data>
+  <data name="TypeAll" xml:space="preserve">
+    <value>全部类型</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>至</value>
+  </data>
+  <data name="FromCurrencyLabel" xml:space="preserve">
+    <value>源货币</value>
+  </data>
+  <data name="ToCurrencyLabel" xml:space="preserve">
+    <value>目标货币</value>
+  </data>
+  <data name="ItemsCount" xml:space="preserve">
+    <value>{0} 项</value>
+  </data>
+  <data name="ItemsShown" xml:space="preserve">
+    <value>显示 {0} / {1}</value>
+  </data>
+  <data name="ValidityRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="ValidityFrom" xml:space="preserve">
+    <value>自 {0} 起</value>
+  </data>
+  <data name="AlwaysValid" xml:space="preserve">
+    <value>长期</value>
+  </data>
+  <data name="Badge_draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="Badge_in_review" xml:space="preserve">
+    <value>审核中</value>
+  </data>
+  <data name="Badge_planned" xml:space="preserve">
+    <value>已计划</value>
+  </data>
+  <data name="Badge_in_force" xml:space="preserve">
+    <value>生效中</value>
+  </data>
+  <data name="Badge_past" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Badge_discarded" xml:space="preserve">
+    <value>已放弃</value>
+  </data>
+  <data name="Badge_unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="RuleSt_draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="RuleSt_in_review" xml:space="preserve">
+    <value>待审批</value>
+  </data>
+  <data name="RuleSt_active" xml:space="preserve">
+    <value>有效</value>
+  </data>
+  <data name="RuleSt_superseded" xml:space="preserve">
+    <value>已被替代</value>
+  </data>
+  <data name="RuleSt_retired" xml:space="preserve">
+    <value>已停用</value>
+  </data>
+  <data name="RuleSt_discarded" xml:space="preserve">
+    <value>已放弃</value>
+  </data>
+  <data name="RuleSt_unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="Change_revise" xml:space="preserve">
+    <value>修订</value>
+  </data>
+  <data name="Change_retire" xml:space="preserve">
+    <value>停用</value>
+  </data>
+  <data name="SoftLabel" xml:space="preserve">
+    <value>软</value>
+  </data>
+  <data name="HardLabel" xml:space="preserve">
+    <value>硬</value>
+  </data>
+  <data name="SoftLegend" xml:space="preserve">
+    <value>超出则需经理审批</value>
+  </data>
+  <data name="HardLegend" xml:space="preserve">
+    <value>超出则该行不能录入</value>
+  </data>
+  <data name="Specificity_0" xml:space="preserve">
+    <value>通用</value>
+  </data>
+  <data name="Specificity_1" xml:space="preserve">
+    <value>期间</value>
+  </data>
+  <data name="Specificity_2" xml:space="preserve">
+    <value>细分</value>
+  </data>
+  <data name="Specificity_3" xml:space="preserve">
+    <value>细分 + 期间</value>
+  </data>
+  <data name="SpecificityLabel" xml:space="preserve">
+    <value>特异性</value>
+  </data>
+  <data name="Outcome_approved" xml:space="preserve">
+    <value>已通过</value>
+  </data>
+  <data name="Outcome_rejected" xml:space="preserve">
+    <value>已退回</value>
+  </data>
+  <data name="Outcome_cancelled" xml:space="preserve">
+    <value>已撤回</value>
+  </data>
+  <data name="Outcome_timed_out" xml:space="preserve">
+    <value>已超时</value>
+  </data>
+  <data name="Outcome_approve" xml:space="preserve">
+    <value>通过</value>
+  </data>
+  <data name="Outcome_publish" xml:space="preserve">
+    <value>发布</value>
+  </data>
+  <data name="Outcome_return" xml:space="preserve">
+    <value>退回</value>
+  </data>
+  <data name="RoundOpen" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="RoundLine" xml:space="preserve">
+    <value>第 {0} 轮 · 提交人 {1} · {2}</value>
+  </data>
+  <data name="DecisionLine" xml:space="preserve">
+    <value>{0} {1} · {2}</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>理由：{0}</value>
+  </data>
+  <data name="NoRounds" xml:space="preserve">
+    <value>尚未提交审批。</value>
+  </data>
+  <data name="ApprovalTitle" xml:space="preserve">
+    <value>审批（双人复核）</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>发布</value>
+  </data>
+  <data name="ReturnDraft" xml:space="preserve">
+    <value>退回</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>退回必须填写理由；准备人将收到草稿。</value>
+  </data>
+  <data name="FourEyesOwn" xml:space="preserve">
+    <value>此项由您准备：由另一人作出决定（双人复核）。</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>立即发布？将在首日生效并同时终止上一份价目表。</value>
+  </data>
+  <data name="ReturnTitle" xml:space="preserve">
+    <value>退回给准备人</value>
+  </data>
+  <data name="ReturnText" xml:space="preserve">
+    <value>将以草稿退回，并附上您的理由。</value>
+  </data>
+  <data name="PublishedToast" xml:space="preserve">
+    <value>已发布。</value>
+  </data>
+  <data name="ReturnedToast" xml:space="preserve">
+    <value>已退回准备人。</value>
+  </data>
+  <data name="ApprovedToast" xml:space="preserve">
+    <value>已通过：规则已生效。</value>
+  </data>
+  <data name="SubmittedToast" xml:space="preserve">
+    <value>已提交审批。</value>
+  </data>
+  <data name="RetireRequestedToast" xml:space="preserve">
+    <value>停用申请已提交审批。</value>
+  </data>
+  <data name="SubmitConfirm" xml:space="preserve">
+    <value>提交此价目表发布？由另一人作出决定。</value>
+  </data>
+  <data name="SubmitRuleConfirm" xml:space="preserve">
+    <value>提交此规则审批？由另一人作出决定。</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>放弃此草稿？</value>
+  </data>
+  <data name="RetireConfirm" xml:space="preserve">
+    <value>停用此规则？停用需由另一人审批。</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>草稿已保存。</value>
+  </data>
+  <data name="ListCreateTitle" xml:space="preserve">
+    <value>新建价目表</value>
+  </data>
+  <data name="ListEditTitle" xml:space="preserve">
+    <value>编辑价目表草稿</value>
+  </data>
+  <data name="ListDetailsTitle" xml:space="preserve">
+    <value>价目表</value>
+  </data>
+  <data name="ListHeadSection" xml:space="preserve">
+    <value>价目表信息</value>
+  </data>
+  <data name="ItemsSection" xml:space="preserve">
+    <value>明细</value>
+  </data>
+  <data name="ItemsHelp" xml:space="preserve">
+    <value>每个产品只出现一次；至少一个价格；增值税 0–100。</value>
+  </data>
+  <data name="AddItem" xml:space="preserve">
+    <value>添加明细</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>尚无明细。</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="CountryFromCompany" xml:space="preserve">
+    <value>国家取自公司（主数据）。</value>
+  </data>
+  <data name="ValidFromLabel" xml:space="preserve">
+    <value>生效日期</value>
+  </data>
+  <data name="ValidToLabel" xml:space="preserve">
+    <value>失效日期</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>返回列表</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>保存草稿</value>
+  </data>
+  <data name="EditDraft" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>放弃</value>
+  </data>
+  <data name="NewVersion" xml:space="preserve">
+    <value>新建版本</value>
+  </data>
+  <data name="SubmitForPublishing" xml:space="preserve">
+    <value>提交发布</value>
+  </data>
+  <data name="DiffToggle" xml:space="preserve">
+    <value>与上一版本的差异</value>
+  </data>
+  <data name="PublishedLine" xml:space="preserve">
+    <value>发布时间</value>
+  </data>
+  <data name="Diff_added" xml:space="preserve">
+    <value>新增</value>
+  </data>
+  <data name="Diff_removed" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Diff_changed" xml:space="preserve">
+    <value>变更</value>
+  </data>
+  <data name="Diff_unchanged" xml:space="preserve">
+    <value>未变</value>
+  </data>
+  <data name="Diff_vatChanged" xml:space="preserve">
+    <value>增值税变更</value>
+  </data>
+  <data name="ErrListHead" xml:space="preserve">
+    <value>请填写名称、公司、3 字母货币和首日。</value>
+  </data>
+  <data name="ErrItemSku" xml:space="preserve">
+    <value>请选择产品。</value>
+  </data>
+  <data name="ErrPrice" xml:space="preserve">
+    <value>价格须 ≥ 0，最多 4 位小数。</value>
+  </data>
+  <data name="ErrNoTier" xml:space="preserve">
+    <value>请至少填写三个价格中的一个。</value>
+  </data>
+  <data name="ErrVat" xml:space="preserve">
+    <value>增值税必填，0–100。</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>导入价目表</value>
+  </data>
+  <data name="StepFile" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="StepPreview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="StepPublish" xml:space="preserve">
+    <value>提交发布</value>
+  </data>
+  <data name="FileLabel" xml:space="preserve">
+    <value>文件（xlsx 或 csv）</value>
+  </data>
+  <data name="FileHelp" xml:space="preserve">
+    <value>最多 5 MB、10,000 行。</value>
+  </data>
+  <data name="ColumnsTitle" xml:space="preserve">
+    <value>文件中的列名</value>
+  </data>
+  <data name="ColumnsHelp" xml:space="preserve">
+    <value>留空则使用标准列名。</value>
+  </data>
+  <data name="ColumnSku" xml:space="preserve">
+    <value>产品代码</value>
+  </data>
+  <data name="ColumnDepot" xml:space="preserve">
+    <value>经销商价</value>
+  </data>
+  <data name="ColumnPharmacist" xml:space="preserve">
+    <value>药剂师采购价</value>
+  </data>
+  <data name="ColumnPublic" xml:space="preserve">
+    <value>零售价</value>
+  </data>
+  <data name="ColumnVat" xml:space="preserve">
+    <value>增值税 %</value>
+  </data>
+  <data name="ColumnGtin" xml:space="preserve">
+    <value>条码（GTIN）</value>
+  </data>
+  <data name="GtinOffNote" xml:space="preserve">
+    <value>按产品代码（LS- / FG-）匹配。条码（GTIN）匹配在 product-master v1.2 之前关闭；只有条码的行计为未匹配。</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>上传并检查</value>
+  </data>
+  <data name="ErrImportHead" xml:space="preserve">
+    <value>请填写名称、公司、3 字母货币、首日并选择文件（最多 5 MB）。</value>
+  </data>
+  <data name="Imp_total" xml:space="preserve">
+    <value>读取 {0} 行</value>
+  </data>
+  <data name="Imp_matched" xml:space="preserve">
+    <value>{0} 行已匹配</value>
+  </data>
+  <data name="Imp_unmatched" xml:space="preserve">
+    <value>{0} 行未匹配</value>
+  </data>
+  <data name="Imp_retired" xml:space="preserve">
+    <value>{0} 行已停用</value>
+  </data>
+  <data name="Imp_duplicate" xml:space="preserve">
+    <value>{0} 行重复</value>
+  </data>
+  <data name="Imp_invalidPrice" xml:space="preserve">
+    <value>{0} 行价格无效</value>
+  </data>
+  <data name="Diff_addedCount" xml:space="preserve">
+    <value>新增 {0}</value>
+  </data>
+  <data name="Diff_removedCount" xml:space="preserve">
+    <value>删除 {0}</value>
+  </data>
+  <data name="Diff_changedCount" xml:space="preserve">
+    <value>价格变更 {0}</value>
+  </data>
+  <data name="Diff_vatChangedCount" xml:space="preserve">
+    <value>增值税变更 {0}</value>
+  </data>
+  <data name="NoCompared" xml:space="preserve">
+    <value>没有可比较的生效价目表：所有行均为新增。</value>
+  </data>
+  <data name="OnlyMatchedNote" xml:space="preserve">
+    <value>只有已匹配的行会进入草稿；其余行留在此处。</value>
+  </data>
+  <data name="RowStatusLabel" xml:space="preserve">
+    <value>行</value>
+  </data>
+  <data name="RowStatusAll" xml:space="preserve">
+    <value>全部行</value>
+  </data>
+  <data name="Row_matched" xml:space="preserve">
+    <value>已匹配</value>
+  </data>
+  <data name="Row_unmatched" xml:space="preserve">
+    <value>未匹配</value>
+  </data>
+  <data name="Row_retired" xml:space="preserve">
+    <value>已停用</value>
+  </data>
+  <data name="Row_duplicate" xml:space="preserve">
+    <value>重复</value>
+  </data>
+  <data name="Row_invalid_price" xml:space="preserve">
+    <value>价格无效</value>
+  </data>
+  <data name="Row_removed" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="NoRows" xml:space="preserve">
+    <value>无数据行。</value>
+  </data>
+  <data name="DiscardImport" xml:space="preserve">
+    <value>放弃导入</value>
+  </data>
+  <data name="DiscardImportConfirm" xml:space="preserve">
+    <value>放弃此导入？</value>
+  </data>
+  <data name="ConvertToDraft" xml:space="preserve">
+    <value>生成草稿</value>
+  </data>
+  <data name="ConvertedText" xml:space="preserve">
+    <value>草稿价目表已根据已匹配行生成。请检查后提交发布。</value>
+  </data>
+  <data name="OpenDraft" xml:space="preserve">
+    <value>打开草稿</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>赠品 / 折扣规则</value>
+  </data>
+  <data name="RulesNote" xml:space="preserve">
+    <value>赠品“10+2”：每 10 盒赠 2 盒；比例和综合折扣由系统计算。</value>
+  </data>
+  <data name="RuleCreateTitle" xml:space="preserve">
+    <value>新建规则</value>
+  </data>
+  <data name="RuleEditTitle" xml:space="preserve">
+    <value>编辑或修订规则</value>
+  </data>
+  <data name="RuleDetailsTitle" xml:space="preserve">
+    <value>规则</value>
+  </data>
+  <data name="RuleKeySection" xml:space="preserve">
+    <value>规则键</value>
+  </data>
+  <data name="LimitsSection" xml:space="preserve">
+    <value>限额</value>
+  </data>
+  <data name="SegmentLabel" xml:space="preserve">
+    <value>药店细分</value>
+  </data>
+  <data name="SegmentSoon" xml:space="preserve">
+    <value>即将推出</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>可选</value>
+  </data>
+  <data name="MaxDiscountLabel" xml:space="preserve">
+    <value>最高折扣 %</value>
+  </data>
+  <data name="MaxMfLabel" xml:space="preserve">
+    <value>最高赠品（10+2）</value>
+  </data>
+  <data name="MaxCombinedLabel" xml:space="preserve">
+    <value>综合上限 %</value>
+  </data>
+  <data name="QuantityLabel" xml:space="preserve">
+    <value>数量</value>
+  </data>
+  <data name="QuantityMin" xml:space="preserve">
+    <value>最少</value>
+  </data>
+  <data name="QuantitySoftMax" xml:space="preserve">
+    <value>软上限</value>
+  </data>
+  <data name="QuantityHardMax" xml:space="preserve">
+    <value>硬上限</value>
+  </data>
+  <data name="QuantityLimits" xml:space="preserve">
+    <value>最少 {0} · 软 {1} · 硬 {2}</value>
+  </data>
+  <data name="MfRatioHelp" xml:space="preserve">
+    <value>选择公司和产品后，赠品旁的实际比例由系统给出。</value>
+  </data>
+  <data name="MfRatioIs" xml:space="preserve">
+    <value>= {0}</value>
+  </data>
+  <data name="SaveRevision" xml:space="preserve">
+    <value>保存为修订</value>
+  </data>
+  <data name="Revise" xml:space="preserve">
+    <value>修订</value>
+  </data>
+  <data name="Retire" xml:space="preserve">
+    <value>停用</value>
+  </data>
+  <data name="SubmitForApproval" xml:space="preserve">
+    <value>提交审批</value>
+  </data>
+  <data name="VersionsTitle" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>赠品请按“购买+赠送”填写，例如 10+2。</value>
+  </data>
+  <data name="ErrPct" xml:space="preserve">
+    <value>百分比为 0–100，最多一位小数。</value>
+  </data>
+  <data name="ErrCount" xml:space="preserve">
+    <value>数量须为整数。</value>
+  </data>
+  <data name="ErrRuleKey" xml:space="preserve">
+    <value>请选择公司和产品。</value>
+  </data>
+  <data name="TrialTitle" xml:space="preserve">
+    <value>规则试算</value>
+  </data>
+  <data name="TrialResult" xml:space="preserve">
+    <value>结果</value>
+  </data>
+  <data name="TrialEmpty" xml:space="preserve">
+    <value>填写该行后点击“试算”：系统按订单方式评估，不保存任何内容。</value>
+  </data>
+  <data name="TryButton" xml:space="preserve">
+    <value>试算</value>
+  </data>
+  <data name="AsOfLabel" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>价格层级</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>药剂师采购价</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>经销商价</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>零售价</value>
+  </data>
+  <data name="TrialMode" xml:space="preserve">
+    <value>模式</value>
+  </data>
+  <data name="ModePricedWith" xml:space="preserve">
+    <value>含价格 · {0}</value>
+  </data>
+  <data name="ModeQuantityOnly" xml:space="preserve">
+    <value>仅数量（无生效价目表）</value>
+  </data>
+  <data name="TrialPriceList" xml:space="preserve">
+    <value>价目表</value>
+  </data>
+  <data name="TrialFree" xml:space="preserve">
+    <value>赠送盒数</value>
+  </data>
+  <data name="TrialMfRatio" xml:space="preserve">
+    <value>赠品比例</value>
+  </data>
+  <data name="TrialCombined" xml:space="preserve">
+    <value>综合折扣</value>
+  </data>
+  <data name="TrialNet" xml:space="preserve">
+    <value>净额</value>
+  </data>
+  <data name="TrialVat" xml:space="preserve">
+    <value>增值税</value>
+  </data>
+  <data name="TrialRule" xml:space="preserve">
+    <value>适用规则</value>
+  </data>
+  <data name="TrialNoRule" xml:space="preserve">
+    <value>无适用规则</value>
+  </data>
+  <data name="TrialNoFindings" xml:space="preserve">
+    <value>未超出任何限额。</value>
+  </data>
+  <data name="RuleRef" xml:space="preserve">
+    <value>v{0} · {1}</value>
+  </data>
+  <data name="ErrTrialCompany" xml:space="preserve">
+    <value>请选择销售公司。</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>变更历史</value>
+  </data>
+  <data name="Type_price_list" xml:space="preserve">
+    <value>价目表</value>
+  </data>
+  <data name="Type_price_list_item" xml:space="preserve">
+    <value>价目表明细</value>
+  </data>
+  <data name="Type_pricing_rule" xml:space="preserve">
+    <value>规则</value>
+  </data>
+  <data name="Type_fx_rate" xml:space="preserve">
+    <value>汇率</value>
+  </data>
+  <data name="Type_unknown" xml:space="preserve">
+    <value>记录</value>
+  </data>
+  <data name="Act_created" xml:space="preserve">
+    <value>已创建</value>
+  </data>
+  <data name="Act_updated" xml:space="preserve">
+    <value>已修改</value>
+  </data>
+  <data name="Act_version_created" xml:space="preserve">
+    <value>新版本</value>
+  </data>
+  <data name="Act_discarded" xml:space="preserve">
+    <value>已放弃</value>
+  </data>
+  <data name="Act_submitted" xml:space="preserve">
+    <value>已提交审批</value>
+  </data>
+  <data name="Act_published" xml:space="preserve">
+    <value>已发布 / 已通过</value>
+  </data>
+  <data name="Act_returned" xml:space="preserve">
+    <value>已退回</value>
+  </data>
+  <data name="Act_refused" xml:space="preserve">
+    <value>被拒绝</value>
+  </data>
+  <data name="Act_withdrawn" xml:space="preserve">
+    <value>已撤回</value>
+  </data>
+  <data name="Act_superseded" xml:space="preserve">
+    <value>已被替代</value>
+  </data>
+  <data name="Act_retired" xml:space="preserve">
+    <value>已停用</value>
+  </data>
+  <data name="Act_unknown" xml:space="preserve">
+    <value>已变更</value>
+  </data>
+  <data name="FxTitle" xml:space="preserve">
+    <value>汇率</value>
+  </data>
+  <data name="FxCreateTitle" xml:space="preserve">
+    <value>新建汇率</value>
+  </data>
+  <data name="FxEditTitle" xml:space="preserve">
+    <value>更正汇率</value>
+  </data>
+  <data name="RateSection" xml:space="preserve">
+    <value>汇率</value>
+  </data>
+  <data name="SaveRate" xml:space="preserve">
+    <value>保存汇率</value>
+  </data>
+  <data name="EditRate" xml:space="preserve">
+    <value>更正</value>
+  </data>
+  <data name="ErrRateHead" xml:space="preserve">
+    <value>请填写公司、两个 3 字母货币、日期和来源。</value>
+  </data>
+  <data name="ErrRate" xml:space="preserve">
+    <value>汇率须大于 0，最多 6 位小数。</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>出现问题，请重试。</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>服务暂时无法访问，请稍后重试。</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>您没有此权限。</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>未找到该记录，或您无权查看。</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>其他人在此期间已修改。请刷新后重试。</value>
+  </data>
+</root>

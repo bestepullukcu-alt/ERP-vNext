@@ -1,0 +1,84 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-b — screen D · tab 1: the price lists (mockup W6 D) on the Golden Compact LIST STANDARD: the inline
+    filter (company · country · currency · kind · status) → the screen head (h5 + p + the five-tab card) → the server-mode
+    table (name, selling company, country, currency, kind, validity, status badge — Draft / In review / Planned / In force /
+    Past, read on the day — and the item count) → the quick view. "New list" (EK-1 manual entry) is the standard primary
+    button for commercial.price-lists.create; "Import" for .import. UAS-001: without .read NOTHING but the notice.
+*@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Commercial/PriceLists/_Filter.cshtml" model="Model" />
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+
+<div id="pr-pane">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <h6 class="mb-0">@Localizer["PageTitle"]</h6>
+            <p class="mb-0 text-muted small">@Localizer["PageDescription"]</p>
+        </div>
+        @if (Model.CanImportList)
+        {
+            <a href="/Commercial/Pricing/PriceLists/Import" class="btn btn-label-primary" id="pr-open-import"><i class="bx bx-import me-1"></i>@Localizer["ImportButton"]</a>
+        }
+    </div>
+    <div id="pr-root" class="d-none" data-tab="lists"
+         data-can-create="@Model.CanCreateList.ToString().ToLowerInvariant()"
+         data-can-export="@Model.CanExportLists.ToString().ToLowerInvariant()"></div>
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-pricelists" data-dt-standard="v2"> *@
+    <partial name="~/Views/Commercial/PriceLists/_DataTable.cshtml" />
+    <p class="text-muted small mt-2 mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["ListsNote"]</p>
+</div>
+
+@* Quick view — the standard offcanvas: the list's head, its approval and its numbers, read once per open *@
+<div class="offcanvas offcanvas-end pr-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-purchase-tag-alt fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">@Localizer["DrawerTitleList"]</h5>
+                <small id="oc-subtitle" class="text-muted d-block">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="d-flex flex-column" id="oc-details-list"></div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@Localizer["OpenDetails"]</a>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Commercial/PriceLists/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PriceLists/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PriceLists/index.js" asp-append-version="true"></script>
+}

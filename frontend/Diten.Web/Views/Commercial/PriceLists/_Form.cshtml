@@ -1,0 +1,63 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+
+@*
+    WP-VW-W6 · W6-WEB-b — a price list draft by hand (EK-1): the head (name · selling company · currency · kind · validity;
+    the country is the company's — MDM, never typed) and, once saved, its items: add / change / remove a row (product from
+    the product master, Active only; the three tiers + VAT). The CRM checks each row exactly as an imported one (Retired,
+    tiers ≥ 0, VAT 0–100, one SKU once). A published list is never edited here: it makes a new version (details page).
+    _CreateEditOffcanvas is NOT used (Compact).
+*@
+<div id="pr-form-root" data-id="@(Model.Id?.ToString("D") ?? "")" data-screen="@Model.Screen">
+    <div class="alert alert-danger d-none" id="pr-alert" role="alert"></div>
+    <section class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-section-title mb-3"><i class="bx bx-id-card"></i>@Localizer["ListHeadSection"]</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="pr-name">@Localizer["NameLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-text diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="pr-name" maxlength="120" required /></div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="pr-company">@Localizer["CompanyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-company"><option value=""></option></select></div>
+                    <small class="text-muted">@Localizer["CountryFromCompany"]</small>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="pr-currency">@Localizer["CurrencyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-money diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control text-uppercase" id="pr-currency" maxlength="3" required /></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="pr-kind">@Localizer["KindLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-category diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-kind"><option value="official">@Localizer["Kind_official"]</option><option value="company">@Localizer["Kind_company"]</option></select></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="pr-from">@Localizer["ValidFromLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-from" autocomplete="off" /></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="pr-to">@Localizer["ValidToLabel"]</label>
+                    <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-to" autocomplete="off" /></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card mb-3 d-none" id="pr-items-card">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h6 class="card-section-title mb-0"><i class="bx bx-capsule"></i>@Localizer["ItemsSection"]</h6>
+                <small class="text-muted">@Localizer["ItemsHelp"]</small>
+            </div>
+            <div id="pr-items" class="d-flex flex-column gap-2"></div>
+            <button type="button" class="btn btn-sm btn-label-primary mt-3" id="pr-add-item"><i class="bx bx-plus me-1"></i>@Localizer["AddItem"]</button>
+        </div>
+    </section>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a href="/Commercial/Pricing/PriceLists" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        <button type="button" class="btn btn-primary" id="pr-save"><i class="bx bx-save me-1"></i>@Localizer["SaveDraft"]</button>
+    </div>
+</div>

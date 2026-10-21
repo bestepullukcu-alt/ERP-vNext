@@ -1,0 +1,37 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["RuleCreateTitle"].Value;
+    ViewData["PageCode"] = PricingIndex.RuleFormHelpCode; // UXH-001 — COM-PRICINGRULE-FORM
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@* W6-WEB-b — a new MF / discount rule (commercial.pricing-rules.create). UAS-001: without the key NOTHING but the notice. *@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["RuleCreateTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+<div id="pr-pane">
+    <h6 class="mb-3">@Localizer["RuleCreateTitle"]</h6>
+    <partial name="~/Views/Commercial/PricingRules/_Form.cshtml" model="Model" />
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="~/Views/Commercial/PriceLists/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PriceLists/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PricingRules/form.js" asp-append-version="true"></script>
+}

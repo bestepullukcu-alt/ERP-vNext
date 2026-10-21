@@ -1,0 +1,81 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["RulesTitle"].Value;
+    ViewData["PageCode"] = PricingIndex.RuleListHelpCode; // UXH-001 — COM-PRICINGRULE-LIST
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-b — screen D · tab 2: the MF / discount rules (mockup W6 D rules) on the Golden Compact list standard:
+    the filter (company · product · status) → the screen head → the server-mode table: product + company, each soft / hard
+    pair (discount %, MF with the CRM's own ratio, combined %, quantity min / soft / hard), validity, status, version →
+    the quick view. Soft = over it goes to the manager; hard = over it the line cannot be entered (the legend). "New rule"
+    for commercial.pricing-rules.create. UAS-001: without .read NOTHING but the notice.
+*@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["RulesTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Commercial/PricingRules/_Filter.cshtml" model="Model" />
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+
+<div id="pr-pane">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <h6 class="mb-0">@Localizer["RulesTitle"]</h6>
+            <p class="mb-0 text-muted small">@Localizer["PageDescription"]</p>
+        </div>
+        <div class="d-flex flex-wrap gap-3 small">
+            <span><span class="badge bg-label-warning me-1">@Localizer["SoftLabel"]</span>@Localizer["SoftLegend"]</span>
+            <span><span class="badge bg-label-danger me-1">@Localizer["HardLabel"]</span>@Localizer["HardLegend"]</span>
+        </div>
+    </div>
+    <div id="pr-root" class="d-none" data-tab="rules" data-can-create="@Model.CanCreateRule.ToString().ToLowerInvariant()"></div>
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-pricingrules" data-dt-standard="v2"> *@
+    <partial name="~/Views/Commercial/PricingRules/_DataTable.cshtml" />
+    <p class="text-muted small mt-2 mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["RulesNote"]</p>
+</div>
+
+<div class="offcanvas offcanvas-end pr-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-slider-alt fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">@Localizer["DrawerTitleRule"]</h5>
+                <small id="oc-subtitle" class="text-muted d-block">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="d-flex flex-column" id="oc-details-list"></div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@Localizer["OpenDetails"]</a>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Commercial/PricingRules/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PricingRules/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PricingRules/index.js" asp-append-version="true"></script>
+}

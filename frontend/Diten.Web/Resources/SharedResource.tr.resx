@@ -1200,6 +1200,30 @@
   <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
     <value>Ön Sipariş Onayı</value>
   </data>
+  <data name="Nav.Page.COMMERCIALPRICING" xml:space="preserve">
+    <value>Fiyat Listeleri ve Kurallar</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTFORM" xml:space="preserve">
+    <value>Fiyat Listesi</value>
+  </data>
+  <data name="Nav.Page.COMPRICELISTIMPORT" xml:space="preserve">
+    <value>Fiyat Listesi İçe Aktarma</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULELIST" xml:space="preserve">
+    <value>MF-İskonto Kuralları</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGRULEFORM" xml:space="preserve">
+    <value>MF-İskonto Kuralı</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGTRIAL" xml:space="preserve">
+    <value>Kural Deneme</value>
+  </data>
+  <data name="Nav.Page.COMPRICINGHISTORY" xml:space="preserve">
+    <value>Fiyat Değişiklik Geçmişi</value>
+  </data>
+  <data name="Nav.Page.COMFXRATELIST" xml:space="preserve">
+    <value>Kurlar</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Üretim</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Reçete ve Rotalar</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>Ürün Reçeteleri</value></data>

@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ScreenTitle" xml:space="preserve">
+    <value>Listas de precios y reglas de bonificación / descuento</value>
+  </data>
+  <data name="ScreenDescription" xml:space="preserve">
+    <value>Las gestiona el equipo comercial; el prepedido lee aquí su precio unitario y sus límites.</value>
+  </data>
+  <data name="TabLists" xml:space="preserve">
+    <value>Listas de precios</value>
+  </data>
+  <data name="TabRules" xml:space="preserve">
+    <value>Reglas de bonificación / descuento</value>
+  </data>
+  <data name="TabTrial" xml:space="preserve">
+    <value>Prueba de reglas</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>Historial de cambios</value>
+  </data>
+  <data name="TabFx" xml:space="preserve">
+    <value>Tipos de cambio</value>
+  </data>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Listas de precios</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Cada lista pertenece a una empresa vendedora, su país y una moneda.</value>
+  </data>
+  <data name="ListsNote" xml:space="preserve">
+    <value>Al publicar una lista nueva, la anterior pasa a «Pasada»; los pedidos anteriores conservan la lista de su día.</value>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>Importar (Excel / CSV)</value>
+  </data>
+  <data name="NewList" xml:space="preserve">
+    <value>Nueva lista</value>
+  </data>
+  <data name="NewRule" xml:space="preserve">
+    <value>Nueva regla</value>
+  </data>
+  <data name="NewRate" xml:space="preserve">
+    <value>Nuevo tipo</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Vista rápida</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>Abrir</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Aún no hay nada</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>Ningún registro coincide con el filtro.</value>
+  </data>
+  <data name="DrawerTitleList" xml:space="preserve">
+    <value>Lista de precios</value>
+  </data>
+  <data name="DrawerTitleRule" xml:space="preserve">
+    <value>Regla</value>
+  </data>
+  <data name="DrawerTitleChange" xml:space="preserve">
+    <value>Cambio</value>
+  </data>
+  <data name="DrawerTitleRate" xml:space="preserve">
+    <value>Tipo de cambio</value>
+  </data>
+  <data name="ColName" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="ColCompany" xml:space="preserve">
+    <value>Empresa vendedora</value>
+  </data>
+  <data name="ColCountry" xml:space="preserve">
+    <value>País</value>
+  </data>
+  <data name="ColCurrency" xml:space="preserve">
+    <value>Moneda</value>
+  </data>
+  <data name="ColKind" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="ColValidity" xml:space="preserve">
+    <value>Vigencia</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="ColItems" xml:space="preserve">
+    <value>Artículos</value>
+  </data>
+  <data name="ColVersion" xml:space="preserve">
+    <value>Versión</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="ColSku" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="ColBarcode" xml:space="preserve">
+    <value>Código de barras</value>
+  </data>
+  <data name="ColDepotPrice" xml:space="preserve">
+    <value>Precio de distribuidor</value>
+  </data>
+  <data name="ColPharmacistPrice" xml:space="preserve">
+    <value>Compra del farmacéutico</value>
+  </data>
+  <data name="ColPublicPrice" xml:space="preserve">
+    <value>Precio al público</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>IVA %</value>
+  </data>
+  <data name="ColDiff" xml:space="preserve">
+    <value>Diferencia</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="ColMaxDiscount" xml:space="preserve">
+    <value>Descuento máx. %</value>
+  </data>
+  <data name="ColMaxMf" xml:space="preserve">
+    <value>Bonificación máx.</value>
+  </data>
+  <data name="ColMaxCombined" xml:space="preserve">
+    <value>Tope combinado %</value>
+  </data>
+  <data name="ColQuantity" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>Bonif.</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>Descuento %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>Precio unitario</value>
+  </data>
+  <data name="ColWhen" xml:space="preserve">
+    <value>Cuándo</value>
+  </data>
+  <data name="ColWho" xml:space="preserve">
+    <value>Quién</value>
+  </data>
+  <data name="ColWhat" xml:space="preserve">
+    <value>Qué</value>
+  </data>
+  <data name="ColChanges" xml:space="preserve">
+    <value>Anterior → nuevo</value>
+  </data>
+  <data name="ColPair" xml:space="preserve">
+    <value>Par</value>
+  </data>
+  <data name="ColRateDate" xml:space="preserve">
+    <value>Día del tipo</value>
+  </data>
+  <data name="ColRate" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="ColSource" xml:space="preserve">
+    <value>Fuente</value>
+  </data>
+  <data name="ColUpdated" xml:space="preserve">
+    <value>Último cambio</value>
+  </data>
+  <data name="ColRowNo" xml:space="preserve">
+    <value>Fila</value>
+  </data>
+  <data name="ColSourceCode" xml:space="preserve">
+    <value>Código del archivo</value>
+  </data>
+  <data name="ColRowStatus" xml:space="preserve">
+    <value>Resultado</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>Empresa vendedora</value>
+  </data>
+  <data name="CompanyAll" xml:space="preserve">
+    <value>Todas las empresas</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>País</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>Todos los países</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Moneda</value>
+  </data>
+  <data name="CurrencyAll" xml:space="preserve">
+    <value>Todas las monedas</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="KindAll" xml:space="preserve">
+    <value>Todos los tipos</value>
+  </data>
+  <data name="Kind_official" xml:space="preserve">
+    <value>Oficial</value>
+  </data>
+  <data name="Kind_company" xml:space="preserve">
+    <value>Lista de la empresa</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>Todos los estados</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>Busque un producto por nombre o código</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>Todos</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>Escriba al menos 2 caracteres</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Buscando…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>Sin resultados</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Tipo de registro</value>
+  </data>
+  <data name="TypeAll" xml:space="preserve">
+    <value>Todos los tipos</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>Desde</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>Hasta</value>
+  </data>
+  <data name="FromCurrencyLabel" xml:space="preserve">
+    <value>Moneda origen</value>
+  </data>
+  <data name="ToCurrencyLabel" xml:space="preserve">
+    <value>Moneda destino</value>
+  </data>
+  <data name="ItemsCount" xml:space="preserve">
+    <value>{0} artículos</value>
+  </data>
+  <data name="ItemsShown" xml:space="preserve">
+    <value>{0} de {1} mostrados</value>
+  </data>
+  <data name="ValidityRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="ValidityFrom" xml:space="preserve">
+    <value>desde {0}</value>
+  </data>
+  <data name="AlwaysValid" xml:space="preserve">
+    <value>Siempre</value>
+  </data>
+  <data name="Badge_draft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="Badge_in_review" xml:space="preserve">
+    <value>En revisión</value>
+  </data>
+  <data name="Badge_planned" xml:space="preserve">
+    <value>Planificada</value>
+  </data>
+  <data name="Badge_in_force" xml:space="preserve">
+    <value>Vigente</value>
+  </data>
+  <data name="Badge_past" xml:space="preserve">
+    <value>Pasada</value>
+  </data>
+  <data name="Badge_discarded" xml:space="preserve">
+    <value>Descartada</value>
+  </data>
+  <data name="Badge_unknown" xml:space="preserve">
+    <value>Desconocido</value>
+  </data>
+  <data name="RuleSt_draft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="RuleSt_in_review" xml:space="preserve">
+    <value>Pendiente de aprobación</value>
+  </data>
+  <data name="RuleSt_active" xml:space="preserve">
+    <value>Activa</value>
+  </data>
+  <data name="RuleSt_superseded" xml:space="preserve">
+    <value>Sustituida</value>
+  </data>
+  <data name="RuleSt_retired" xml:space="preserve">
+    <value>Retirada</value>
+  </data>
+  <data name="RuleSt_discarded" xml:space="preserve">
+    <value>Descartada</value>
+  </data>
+  <data name="RuleSt_unknown" xml:space="preserve">
+    <value>Desconocido</value>
+  </data>
+  <data name="Change_revise" xml:space="preserve">
+    <value>Revisión</value>
+  </data>
+  <data name="Change_retire" xml:space="preserve">
+    <value>Retiro</value>
+  </data>
+  <data name="SoftLabel" xml:space="preserve">
+    <value>Flexible</value>
+  </data>
+  <data name="HardLabel" xml:space="preserve">
+    <value>Estricto</value>
+  </data>
+  <data name="SoftLegend" xml:space="preserve">
+    <value>si se supera, aprueba el responsable</value>
+  </data>
+  <data name="HardLegend" xml:space="preserve">
+    <value>si se supera, la línea no se puede introducir</value>
+  </data>
+  <data name="Specificity_0" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Specificity_1" xml:space="preserve">
+    <value>Período</value>
+  </data>
+  <data name="Specificity_2" xml:space="preserve">
+    <value>Segmento</value>
+  </data>
+  <data name="Specificity_3" xml:space="preserve">
+    <value>Segmento + período</value>
+  </data>
+  <data name="SpecificityLabel" xml:space="preserve">
+    <value>Especificidad</value>
+  </data>
+  <data name="Outcome_approved" xml:space="preserve">
+    <value>aprobada</value>
+  </data>
+  <data name="Outcome_rejected" xml:space="preserve">
+    <value>devuelta</value>
+  </data>
+  <data name="Outcome_cancelled" xml:space="preserve">
+    <value>retirada</value>
+  </data>
+  <data name="Outcome_timed_out" xml:space="preserve">
+    <value>caducada</value>
+  </data>
+  <data name="Outcome_approve" xml:space="preserve">
+    <value>aprobó</value>
+  </data>
+  <data name="Outcome_publish" xml:space="preserve">
+    <value>publicó</value>
+  </data>
+  <data name="Outcome_return" xml:space="preserve">
+    <value>devolvió</value>
+  </data>
+  <data name="RoundOpen" xml:space="preserve">
+    <value>abierto</value>
+  </data>
+  <data name="RoundLine" xml:space="preserve">
+    <value>Ronda {0} · enviada por {1} · {2}</value>
+  </data>
+  <data name="DecisionLine" xml:space="preserve">
+    <value>{0} {1} · {2}</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>Motivo: {0}</value>
+  </data>
+  <data name="NoRounds" xml:space="preserve">
+    <value>Aún no se envió a aprobación.</value>
+  </data>
+  <data name="ApprovalTitle" xml:space="preserve">
+    <value>Aprobación (cuatro ojos)</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
+  <data name="ReturnDraft" xml:space="preserve">
+    <value>Devolver</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>Una devolución requiere un motivo; quien la preparó la recibe como borrador.</value>
+  </data>
+  <data name="FourEyesOwn" xml:space="preserve">
+    <value>Usted lo preparó: decide otra persona (cuatro ojos).</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>¿Publicar ahora? Entra en vigor su primer día y entonces termina la lista anterior.</value>
+  </data>
+  <data name="ReturnTitle" xml:space="preserve">
+    <value>Devolver a quien la preparó</value>
+  </data>
+  <data name="ReturnText" xml:space="preserve">
+    <value>Vuelve como borrador con su motivo.</value>
+  </data>
+  <data name="PublishedToast" xml:space="preserve">
+    <value>Publicado.</value>
+  </data>
+  <data name="ReturnedToast" xml:space="preserve">
+    <value>Devuelto a quien lo preparó.</value>
+  </data>
+  <data name="ApprovedToast" xml:space="preserve">
+    <value>Aprobada: la regla está vigente.</value>
+  </data>
+  <data name="SubmittedToast" xml:space="preserve">
+    <value>Enviado a aprobación.</value>
+  </data>
+  <data name="RetireRequestedToast" xml:space="preserve">
+    <value>Retiro enviado a aprobación.</value>
+  </data>
+  <data name="SubmitConfirm" xml:space="preserve">
+    <value>¿Enviar esta lista a publicación? Decide otra persona.</value>
+  </data>
+  <data name="SubmitRuleConfirm" xml:space="preserve">
+    <value>¿Enviar esta regla a aprobación? Decide otra persona.</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>¿Descartar este borrador?</value>
+  </data>
+  <data name="RetireConfirm" xml:space="preserve">
+    <value>¿Retirar esta regla? El retiro va a la aprobación de otra persona.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>Borrador guardado.</value>
+  </data>
+  <data name="ListCreateTitle" xml:space="preserve">
+    <value>Nueva lista de precios</value>
+  </data>
+  <data name="ListEditTitle" xml:space="preserve">
+    <value>Editar el borrador de la lista</value>
+  </data>
+  <data name="ListDetailsTitle" xml:space="preserve">
+    <value>Lista de precios</value>
+  </data>
+  <data name="ListHeadSection" xml:space="preserve">
+    <value>Lista</value>
+  </data>
+  <data name="ItemsSection" xml:space="preserve">
+    <value>Artículos</value>
+  </data>
+  <data name="ItemsHelp" xml:space="preserve">
+    <value>Cada producto una vez; al menos un precio; IVA 0–100.</value>
+  </data>
+  <data name="AddItem" xml:space="preserve">
+    <value>Añadir artículo</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>Quitar</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>Aún no hay artículos.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="CountryFromCompany" xml:space="preserve">
+    <value>El país es el de la empresa (datos maestros).</value>
+  </data>
+  <data name="ValidFromLabel" xml:space="preserve">
+    <value>Vigente desde</value>
+  </data>
+  <data name="ValidToLabel" xml:space="preserve">
+    <value>Vigente hasta</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Volver a la lista</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>Guardar borrador</value>
+  </data>
+  <data name="EditDraft" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>Descartar</value>
+  </data>
+  <data name="NewVersion" xml:space="preserve">
+    <value>Nueva versión</value>
+  </data>
+  <data name="SubmitForPublishing" xml:space="preserve">
+    <value>Enviar a publicación</value>
+  </data>
+  <data name="DiffToggle" xml:space="preserve">
+    <value>Diferencia con la versión anterior</value>
+  </data>
+  <data name="PublishedLine" xml:space="preserve">
+    <value>Publicada</value>
+  </data>
+  <data name="Diff_added" xml:space="preserve">
+    <value>Añadido</value>
+  </data>
+  <data name="Diff_removed" xml:space="preserve">
+    <value>Quitado</value>
+  </data>
+  <data name="Diff_changed" xml:space="preserve">
+    <value>Cambiado</value>
+  </data>
+  <data name="Diff_unchanged" xml:space="preserve">
+    <value>Sin cambios</value>
+  </data>
+  <data name="Diff_vatChanged" xml:space="preserve">
+    <value>IVA cambiado</value>
+  </data>
+  <data name="ErrListHead" xml:space="preserve">
+    <value>Complete el nombre, la empresa, una moneda de 3 letras y el primer día.</value>
+  </data>
+  <data name="ErrItemSku" xml:space="preserve">
+    <value>Elija un producto.</value>
+  </data>
+  <data name="ErrPrice" xml:space="preserve">
+    <value>Un precio es 0 o más con 4 decimales como máximo.</value>
+  </data>
+  <data name="ErrNoTier" xml:space="preserve">
+    <value>Introduzca al menos uno de los tres precios.</value>
+  </data>
+  <data name="ErrVat" xml:space="preserve">
+    <value>El IVA es obligatorio, 0–100.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>Importar una lista de precios</value>
+  </data>
+  <data name="StepFile" xml:space="preserve">
+    <value>Archivo</value>
+  </data>
+  <data name="StepPreview" xml:space="preserve">
+    <value>Vista previa</value>
+  </data>
+  <data name="StepPublish" xml:space="preserve">
+    <value>Enviar a publicación</value>
+  </data>
+  <data name="FileLabel" xml:space="preserve">
+    <value>Archivo (xlsx o csv)</value>
+  </data>
+  <data name="FileHelp" xml:space="preserve">
+    <value>Como máximo 5 MB y 10.000 filas.</value>
+  </data>
+  <data name="ColumnsTitle" xml:space="preserve">
+    <value>Nombres de columnas del archivo</value>
+  </data>
+  <data name="ColumnsHelp" xml:space="preserve">
+    <value>Déjelos vacíos para usar los nombres estándar.</value>
+  </data>
+  <data name="ColumnSku" xml:space="preserve">
+    <value>Código de producto</value>
+  </data>
+  <data name="ColumnDepot" xml:space="preserve">
+    <value>Precio de distribuidor</value>
+  </data>
+  <data name="ColumnPharmacist" xml:space="preserve">
+    <value>Compra del farmacéutico</value>
+  </data>
+  <data name="ColumnPublic" xml:space="preserve">
+    <value>Precio al público</value>
+  </data>
+  <data name="ColumnVat" xml:space="preserve">
+    <value>IVA %</value>
+  </data>
+  <data name="ColumnGtin" xml:space="preserve">
+    <value>Código de barras (GTIN)</value>
+  </data>
+  <data name="GtinOffNote" xml:space="preserve">
+    <value>La coincidencia es por código de producto (LS- / FG-). Por código de barras (GTIN) sigue desactivada hasta product-master v1.2; las filas con solo código de barras cuentan como sin coincidencia.</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Subir y comprobar</value>
+  </data>
+  <data name="ErrImportHead" xml:space="preserve">
+    <value>Complete el nombre, la empresa, una moneda de 3 letras, el primer día y el archivo (hasta 5 MB).</value>
+  </data>
+  <data name="Imp_total" xml:space="preserve">
+    <value>{0} filas leídas</value>
+  </data>
+  <data name="Imp_matched" xml:space="preserve">
+    <value>{0} coinciden</value>
+  </data>
+  <data name="Imp_unmatched" xml:space="preserve">
+    <value>{0} sin coincidencia</value>
+  </data>
+  <data name="Imp_retired" xml:space="preserve">
+    <value>{0} retirados</value>
+  </data>
+  <data name="Imp_duplicate" xml:space="preserve">
+    <value>{0} repetidas</value>
+  </data>
+  <data name="Imp_invalidPrice" xml:space="preserve">
+    <value>{0} precios no válidos</value>
+  </data>
+  <data name="Diff_addedCount" xml:space="preserve">
+    <value>{0} añadidos</value>
+  </data>
+  <data name="Diff_removedCount" xml:space="preserve">
+    <value>{0} quitados</value>
+  </data>
+  <data name="Diff_changedCount" xml:space="preserve">
+    <value>{0} precios cambiados</value>
+  </data>
+  <data name="Diff_vatChangedCount" xml:space="preserve">
+    <value>{0} IVA cambiados</value>
+  </data>
+  <data name="NoCompared" xml:space="preserve">
+    <value>No hay lista vigente con la que comparar: cada fila es nueva.</value>
+  </data>
+  <data name="OnlyMatchedNote" xml:space="preserve">
+    <value>Solo las filas con coincidencia entran en el borrador; las demás quedan aquí.</value>
+  </data>
+  <data name="RowStatusLabel" xml:space="preserve">
+    <value>Filas</value>
+  </data>
+  <data name="RowStatusAll" xml:space="preserve">
+    <value>Todas las filas</value>
+  </data>
+  <data name="Row_matched" xml:space="preserve">
+    <value>Coincide</value>
+  </data>
+  <data name="Row_unmatched" xml:space="preserve">
+    <value>Sin coincidencia</value>
+  </data>
+  <data name="Row_retired" xml:space="preserve">
+    <value>Retirado</value>
+  </data>
+  <data name="Row_duplicate" xml:space="preserve">
+    <value>Repetida</value>
+  </data>
+  <data name="Row_invalid_price" xml:space="preserve">
+    <value>Precio no válido</value>
+  </data>
+  <data name="Row_removed" xml:space="preserve">
+    <value>Quitada</value>
+  </data>
+  <data name="NoRows" xml:space="preserve">
+    <value>Sin filas.</value>
+  </data>
+  <data name="DiscardImport" xml:space="preserve">
+    <value>Descartar la importación</value>
+  </data>
+  <data name="DiscardImportConfirm" xml:space="preserve">
+    <value>¿Descartar esta importación?</value>
+  </data>
+  <data name="ConvertToDraft" xml:space="preserve">
+    <value>Crear el borrador</value>
+  </data>
+  <data name="ConvertedText" xml:space="preserve">
+    <value>El borrador se creó con las filas con coincidencia. Revíselo y envíelo a publicación.</value>
+  </data>
+  <data name="OpenDraft" xml:space="preserve">
+    <value>Abrir el borrador</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>Reglas de bonificación / descuento</value>
+  </data>
+  <data name="RulesNote" xml:space="preserve">
+    <value>Bonificación «10+2»: 2 cajas gratis por 10; la proporción y el descuento combinado los calcula el sistema.</value>
+  </data>
+  <data name="RuleCreateTitle" xml:space="preserve">
+    <value>Nueva regla</value>
+  </data>
+  <data name="RuleEditTitle" xml:space="preserve">
+    <value>Editar o revisar la regla</value>
+  </data>
+  <data name="RuleDetailsTitle" xml:space="preserve">
+    <value>Regla</value>
+  </data>
+  <data name="RuleKeySection" xml:space="preserve">
+    <value>Clave de la regla</value>
+  </data>
+  <data name="LimitsSection" xml:space="preserve">
+    <value>Límites</value>
+  </data>
+  <data name="SegmentLabel" xml:space="preserve">
+    <value>Segmento de farmacia</value>
+  </data>
+  <data name="SegmentSoon" xml:space="preserve">
+    <value>Próximamente</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>opcional</value>
+  </data>
+  <data name="MaxDiscountLabel" xml:space="preserve">
+    <value>Descuento máx. %</value>
+  </data>
+  <data name="MaxMfLabel" xml:space="preserve">
+    <value>Bonificación máx. (10+2)</value>
+  </data>
+  <data name="MaxCombinedLabel" xml:space="preserve">
+    <value>Tope combinado %</value>
+  </data>
+  <data name="QuantityLabel" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="QuantityMin" xml:space="preserve">
+    <value>Mín.</value>
+  </data>
+  <data name="QuantitySoftMax" xml:space="preserve">
+    <value>Máx. flexible</value>
+  </data>
+  <data name="QuantityHardMax" xml:space="preserve">
+    <value>Máx. estricto</value>
+  </data>
+  <data name="QuantityLimits" xml:space="preserve">
+    <value>mín. {0} · flexible {1} · estricto {2}</value>
+  </data>
+  <data name="MfRatioHelp" xml:space="preserve">
+    <value>El % efectivo junto a la bonificación lo da el sistema al elegir empresa y producto.</value>
+  </data>
+  <data name="MfRatioIs" xml:space="preserve">
+    <value>= {0}</value>
+  </data>
+  <data name="SaveRevision" xml:space="preserve">
+    <value>Guardar como revisión</value>
+  </data>
+  <data name="Revise" xml:space="preserve">
+    <value>Revisar</value>
+  </data>
+  <data name="Retire" xml:space="preserve">
+    <value>Retirar</value>
+  </data>
+  <data name="SubmitForApproval" xml:space="preserve">
+    <value>Enviar a aprobación</value>
+  </data>
+  <data name="VersionsTitle" xml:space="preserve">
+    <value>Versiones</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>Escriba la bonificación como compra + gratis, por ejemplo 10+2.</value>
+  </data>
+  <data name="ErrPct" xml:space="preserve">
+    <value>Un porcentaje va de 0 a 100 con un decimal como máximo.</value>
+  </data>
+  <data name="ErrCount" xml:space="preserve">
+    <value>Una cantidad es un número entero.</value>
+  </data>
+  <data name="ErrRuleKey" xml:space="preserve">
+    <value>Elija la empresa y el producto.</value>
+  </data>
+  <data name="TrialTitle" xml:space="preserve">
+    <value>Prueba de reglas</value>
+  </data>
+  <data name="TrialResult" xml:space="preserve">
+    <value>Resultado</value>
+  </data>
+  <data name="TrialEmpty" xml:space="preserve">
+    <value>Complete la línea y pulse Probar: el sistema la evalúa como un pedido y no guarda nada.</value>
+  </data>
+  <data name="TryButton" xml:space="preserve">
+    <value>Probar</value>
+  </data>
+  <data name="AsOfLabel" xml:space="preserve">
+    <value>Día</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>Nivel de precio</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>Compra del farmacéutico</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>Precio de distribuidor</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>Precio al público</value>
+  </data>
+  <data name="TrialMode" xml:space="preserve">
+    <value>Modo</value>
+  </data>
+  <data name="ModePricedWith" xml:space="preserve">
+    <value>Con precio · {0}</value>
+  </data>
+  <data name="ModeQuantityOnly" xml:space="preserve">
+    <value>Solo cantidades (sin lista vigente)</value>
+  </data>
+  <data name="TrialPriceList" xml:space="preserve">
+    <value>Lista de precios</value>
+  </data>
+  <data name="TrialFree" xml:space="preserve">
+    <value>Cajas gratis</value>
+  </data>
+  <data name="TrialMfRatio" xml:space="preserve">
+    <value>Proporción de bonificación</value>
+  </data>
+  <data name="TrialCombined" xml:space="preserve">
+    <value>Descuento combinado</value>
+  </data>
+  <data name="TrialNet" xml:space="preserve">
+    <value>Neto</value>
+  </data>
+  <data name="TrialVat" xml:space="preserve">
+    <value>IVA</value>
+  </data>
+  <data name="TrialRule" xml:space="preserve">
+    <value>Regla aplicada</value>
+  </data>
+  <data name="TrialNoRule" xml:space="preserve">
+    <value>No se aplica ninguna regla</value>
+  </data>
+  <data name="TrialNoFindings" xml:space="preserve">
+    <value>No se supera ningún límite.</value>
+  </data>
+  <data name="RuleRef" xml:space="preserve">
+    <value>v{0} · {1}</value>
+  </data>
+  <data name="ErrTrialCompany" xml:space="preserve">
+    <value>Elija la empresa vendedora.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>Historial de cambios</value>
+  </data>
+  <data name="Type_price_list" xml:space="preserve">
+    <value>Lista de precios</value>
+  </data>
+  <data name="Type_price_list_item" xml:space="preserve">
+    <value>Artículo de lista</value>
+  </data>
+  <data name="Type_pricing_rule" xml:space="preserve">
+    <value>Regla</value>
+  </data>
+  <data name="Type_fx_rate" xml:space="preserve">
+    <value>Tipo de cambio</value>
+  </data>
+  <data name="Type_unknown" xml:space="preserve">
+    <value>Registro</value>
+  </data>
+  <data name="Act_created" xml:space="preserve">
+    <value>creado</value>
+  </data>
+  <data name="Act_updated" xml:space="preserve">
+    <value>cambiado</value>
+  </data>
+  <data name="Act_version_created" xml:space="preserve">
+    <value>nueva versión</value>
+  </data>
+  <data name="Act_discarded" xml:space="preserve">
+    <value>descartado</value>
+  </data>
+  <data name="Act_submitted" xml:space="preserve">
+    <value>enviado a aprobación</value>
+  </data>
+  <data name="Act_published" xml:space="preserve">
+    <value>publicado / aprobado</value>
+  </data>
+  <data name="Act_returned" xml:space="preserve">
+    <value>devuelto</value>
+  </data>
+  <data name="Act_refused" xml:space="preserve">
+    <value>rechazado</value>
+  </data>
+  <data name="Act_withdrawn" xml:space="preserve">
+    <value>retirado</value>
+  </data>
+  <data name="Act_superseded" xml:space="preserve">
+    <value>sustituido</value>
+  </data>
+  <data name="Act_retired" xml:space="preserve">
+    <value>retirado</value>
+  </data>
+  <data name="Act_unknown" xml:space="preserve">
+    <value>cambiado</value>
+  </data>
+  <data name="FxTitle" xml:space="preserve">
+    <value>Tipos de cambio</value>
+  </data>
+  <data name="FxCreateTitle" xml:space="preserve">
+    <value>Nuevo tipo de cambio</value>
+  </data>
+  <data name="FxEditTitle" xml:space="preserve">
+    <value>Corregir el tipo</value>
+  </data>
+  <data name="RateSection" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="SaveRate" xml:space="preserve">
+    <value>Guardar el tipo</value>
+  </data>
+  <data name="EditRate" xml:space="preserve">
+    <value>Corregir</value>
+  </data>
+  <data name="ErrRateHead" xml:space="preserve">
+    <value>Complete la empresa, dos monedas de 3 letras, el día y la fuente.</value>
+  </data>
+  <data name="ErrRate" xml:space="preserve">
+    <value>El tipo es mayor que 0 con 6 decimales como máximo.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>Algo salió mal. Inténtelo de nuevo.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>El servicio no está disponible ahora. Inténtelo en un momento.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>No tiene permiso para esto.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>No se encontró el registro o no puede verlo.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>Otra persona lo cambió mientras tanto. Recargue e inténtelo de nuevo.</value>
+  </data>
+</root>

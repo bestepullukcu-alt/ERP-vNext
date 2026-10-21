@@ -1,0 +1,46 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+
+@* WP-VW-W6 · W6-WEB-b — one FX rate (D14): company × pair × day (the key: fixed in a correction) and the rate (≤ 6
+   decimals) with its source. Saving a new key that already has a rate is the CRM's 409 fx_rate_duplicate; a correction
+   writes the old → new into the change history. Reversible (a plain save). *@
+<div id="pr-form-root" data-id="@(Model.Id?.ToString("D") ?? "")" data-screen="@Model.Screen">
+    <div class="alert alert-danger d-none" id="pr-alert" role="alert"></div>
+    <section class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-section-title mb-3"><i class="bx bx-transfer-alt"></i>@Localizer["RateSection"]</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="pr-company">@Localizer["CompanyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-company"><option value=""></option></select></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="pr-fromcur">@Localizer["FromCurrencyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-money diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control text-uppercase" id="pr-fromcur" maxlength="3" /></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="pr-tocur">@Localizer["ToCurrencyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-money diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control text-uppercase" id="pr-tocur" maxlength="3" /></div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <label class="form-label" for="pr-date">@Localizer["ColRateDate"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-date" autocomplete="off" /></div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <label class="form-label" for="pr-rate">@Localizer["ColRate"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-line-chart diten-field-icon" aria-hidden="true"></i><input type="text" inputmode="decimal" class="form-control" id="pr-rate" /></div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label" for="pr-source">@Localizer["ColSource"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-link diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="pr-source" maxlength="60" /></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="/Commercial/Pricing/FxRates" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        <button type="button" class="btn btn-primary" id="pr-save"><i class="bx bx-save me-1"></i>@Localizer["SaveRate"]</button>
+    </div>
+</div>

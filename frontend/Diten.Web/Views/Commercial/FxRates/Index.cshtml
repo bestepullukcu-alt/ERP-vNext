@@ -1,0 +1,75 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["FxTitle"].Value;
+    ViewData["PageCode"] = PricingIndex.FxHelpCode; // UXH-001 — COM-FXRATE-LIST;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-b — screen D · tab 5: the interim FX rates (D14, K-W10 g; not in the mockup → the Golden list + form):
+    company · pair · day · rate · source, one per company × pair × day. Sales operations enters them ("New rate" for
+    commercial.fx-rates.create) and corrects them (.update) — a correction is written into the change history; an order's
+    own FX snapshot never changes (AC-FX-2). UAS-001: without commercial.fx-rates.read NOTHING but the notice.
+*@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["FxTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Commercial/FxRates/_Filter.cshtml" model="Model" />
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+
+<div id="pr-pane">
+    <div class="mb-3">
+        <h6 class="mb-0">@Localizer["FxTitle"]</h6>
+        <p class="mb-0 text-muted small">@Localizer["PageDescription"]</p>
+    </div>
+    <div id="pr-root" class="d-none" data-tab="fx" data-can-create="@Model.CanCreateFx.ToString().ToLowerInvariant()" data-can-update="@Model.CanUpdateFx.ToString().ToLowerInvariant()"></div>
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-fxrates" data-dt-standard="v2"> *@
+    <partial name="~/Views/Commercial/FxRates/_DataTable.cshtml" />
+</div>
+
+<div class="offcanvas offcanvas-end pr-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-transfer-alt fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">@Localizer["DrawerTitleRate"]</h5>
+                <small id="oc-subtitle" class="text-muted d-block">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="d-flex flex-column" id="oc-details-list"></div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1 d-none">@Localizer["EditRate"]</a>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Commercial/FxRates/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/FxRates/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/FxRates/index.js" asp-append-version="true"></script>
+}

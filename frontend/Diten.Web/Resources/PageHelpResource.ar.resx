@@ -840,4 +840,244 @@
   <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
     <value>تبدأ رقم الطلب من 2 إلى 5 أحرف (MG-ORD-000123). البادئة التي رقّمت طلبًا مقفلة.</value>
   </data>
+  <data name="Help.COMMERCIALPRICING.Purpose" xml:space="preserve">
+    <value>قوائم أسعار كل شركة بائعة ودولة وعملة: الأسعار التي يقرأها الطلب المسبق.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Audience" xml:space="preserve">
+    <value>التسويق (يُعدّ) وعمليات المبيعات (تنشر).</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1Title" xml:space="preserve">
+    <value>اقرأ الحالة</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1" xml:space="preserve">
+    <value>مسودة أو قيد المراجعة أو مخطط لها أو سارية أو سابقة — حسب اليوم؛ قائمة سارية واحدة لكل شركة ودولة.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2Title" xml:space="preserve">
+    <value>أضف قائمة</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2" xml:space="preserve">
+    <value>«قائمة جديدة» لإدخالها يدويًا، أو «استيراد» لملف Excel / CSV.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3Title" xml:space="preserve">
+    <value>استخدم علامات التبويب</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3" xml:space="preserve">
+    <value>القواعد وتجربتها وسجل التغييرات وأسعار الصرف في علامات التبويب الأخرى.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4Title" xml:space="preserve">
+    <value>صدّر</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4" xml:space="preserve">
+    <value>يمنح «تصدير» كل القوائم المطابقة للتصفية بالأعمدة الظاهرة.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Purpose" xml:space="preserve">
+    <value>قائمة أسعار واحدة: رأسها وبنودها والفرق عن الإصدار السابق؛ ويتطلب النشر شخصًا ثانيًا.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Audience" xml:space="preserve">
+    <value>التسويق (يُعدّ) وعمليات المبيعات (تنشر).</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1Title" xml:space="preserve">
+    <value>املأ الرأس</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1" xml:space="preserve">
+    <value>الاسم والشركة البائعة والعملة والنوع واليوم الأول؛ والدولة هي دولة الشركة.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2Title" xml:space="preserve">
+    <value>أضف البنود</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2" xml:space="preserve">
+    <value>كل منتج مرة واحدة مع سعر المستودع وسعر شراء الصيدلي وسعر البيع للجمهور والضريبة.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3Title" xml:space="preserve">
+    <value>أرسل للنشر</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3" xml:space="preserve">
+    <value>يسلّم «إرسال للنشر» القائمة لشخص ثانٍ؛ ولا يرى المُعِدّ «نشر».</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4Title" xml:space="preserve">
+    <value>غيّر قائمة منشورة</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4" xml:space="preserve">
+    <value>لا تُعدَّل القائمة المنشورة: يَنسخها «إصدار جديد» إلى مسودة جديدة.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Purpose" xml:space="preserve">
+    <value>يستورد قائمة أسعار من ملف Excel / CSV في ثلاث خطوات.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Audience" xml:space="preserve">
+    <value>التسويق.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1Title" xml:space="preserve">
+    <value>اختر الملف</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1" xml:space="preserve">
+    <value>رأس القائمة (العملة مطلوبة) والملف وأسماء الأعمدة عند الحاجة.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2Title" xml:space="preserve">
+    <value>راجع المعاينة</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2" xml:space="preserve">
+    <value>تُعد الصفوف المطابقة وغير المطابقة والمتوقفة والمكررة وذات السعر غير الصالح كلًا على حدة مع الفرق عن القائمة السارية.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3Title" xml:space="preserve">
+    <value>أنشئ المسودة</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3" xml:space="preserve">
+    <value>يأخذ «إنشاء المسودة» الصفوف المطابقة فقط؛ وتبقى المطابقة بالباركود (GTIN) معطلة حتى product-master v1.2.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4Title" xml:space="preserve">
+    <value>أرسل للنشر</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4" xml:space="preserve">
+    <value>تذهب المسودة إلى شخص ثانٍ ينشرها أو يعيدها.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Purpose" xml:space="preserve">
+    <value>حدود البونص / الخصم لكل شركة ومنتج التي يُفحص بها بند الطلب المسبق.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Audience" xml:space="preserve">
+    <value>التسويق (يُعدّ) وعمليات المبيعات (توافق).</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1Title" xml:space="preserve">
+    <value>اقرأ المرن والصارم</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1" xml:space="preserve">
+    <value>عند تجاوز الحد المرن يذهب الطلب إلى المدير؛ وعند تجاوز الصارم لا يمكن إدخال البند.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2Title" xml:space="preserve">
+    <value>تفوز الأكثر تحديدًا</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2" xml:space="preserve">
+    <value>تتقدم القاعدة ذات الفترة على العامة؛ والشرائح لاحقًا.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3Title" xml:space="preserve">
+    <value>غيّر قاعدة</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3" xml:space="preserve">
+    <value>تتغير القاعدة النشطة بـ«مراجعة» أو «إيقاف»: إصدار جديد يوافق عليه شخص ثانٍ.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4Title" xml:space="preserve">
+    <value>جرّبها</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4" xml:space="preserve">
+    <value>تعرض علامة «تجربة القواعد» ما سيحصل عليه البند دون حفظ شيء.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Purpose" xml:space="preserve">
+    <value>يكتب مسودة قاعدة: مفتاحها وحدودها المرنة / الصارمة.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Audience" xml:space="preserve">
+    <value>التسويق.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1Title" xml:space="preserve">
+    <value>اختر المفتاح</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1" xml:space="preserve">
+    <value>الشركة والمنتج (ثابتان بعد ذلك)، والصلاحية إن كانت القاعدة لفترة.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2Title" xml:space="preserve">
+    <value>اكتب الحدود</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2" xml:space="preserve">
+    <value>الخصم % والبونص بصيغة «10+2» والسقف المجمّع والكمية؛ ويجب ألا يتجاوز المرن الصارم.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3Title" xml:space="preserve">
+    <value>اقرأ النسبة الفعلية</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3" xml:space="preserve">
+    <value>يعرض النظام النسبة الفعلية بجانب كل بونص عند اختيار الشركة والمنتج.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4Title" xml:space="preserve">
+    <value>أرسل للموافقة</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4" xml:space="preserve">
+    <value>احفظ ثم «إرسال للموافقة» في القاعدة: ينشّطها شخص ثانٍ.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Purpose" xml:space="preserve">
+    <value>يعرض ما سيحصل عليه بند طلب من قائمة الأسعار والقواعد دون حفظ شيء.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Audience" xml:space="preserve">
+    <value>التسويق وعمليات المبيعات.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1Title" xml:space="preserve">
+    <value>املأ البند</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1" xml:space="preserve">
+    <value>الشركة والمنتج والكمية والبونص والخصم؛ واليوم وفئة السعر عند الحاجة.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2Title" xml:space="preserve">
+    <value>جرّب</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2" xml:space="preserve">
+    <value>يسأل «جرّب» النظام؛ ولا يُحفظ شيء.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3Title" xml:space="preserve">
+    <value>اقرأ النتيجة</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3" xml:space="preserve">
+    <value>الشارة (ضمن الحدود / تتطلب موافقة / غير مسموح) والرسائل لكل حد متجاوز.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4Title" xml:space="preserve">
+    <value>انظر القاعدة المطبقة</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4" xml:space="preserve">
+    <value>تنطبق القاعدة الأكثر تحديدًا لذلك اليوم ويُعرض إصدارها.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Purpose" xml:space="preserve">
+    <value>كل تغيير في قوائم الأسعار والبنود والقواعد وأسعار الصرف: من ومتى والقديم ← الجديد.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Audience" xml:space="preserve">
+    <value>التسويق وعمليات المبيعات والتدقيق.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1Title" xml:space="preserve">
+    <value>صفِّ</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1" xml:space="preserve">
+    <value>حسب نوع السجل والفترة.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2Title" xml:space="preserve">
+    <value>اقرأ القديم ← الجديد</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2" xml:space="preserve">
+    <value>يذكر كل صف الحقل وقيمته القديمة والجديدة.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3Title" xml:space="preserve">
+    <value>صلاحياتك تقرر</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3" xml:space="preserve">
+    <value>ترى فقط الأنواع التي تغطيها صلاحياتك (القوائم والقواعد والأسعار).</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4Title" xml:space="preserve">
+    <value>افتح تغييرًا</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4" xml:space="preserve">
+    <value>تعرض أيقونة العين التغيير كاملًا في اللوحة الجانبية.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Purpose" xml:space="preserve">
+    <value>أسعار الصرف المؤقتة لكل شركة وزوج ويوم التي يستخدمها الطلب المسبق للمعادل المحلي.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Audience" xml:space="preserve">
+    <value>عمليات المبيعات.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1Title" xml:space="preserve">
+    <value>أدخل سعرًا</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1" xml:space="preserve">
+    <value>«سعر جديد»: الشركة والزوج واليوم والسعر والمصدر؛ سعر واحد لكل شركة وزوج ويوم.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2Title" xml:space="preserve">
+    <value>صحّح سعرًا</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2" xml:space="preserve">
+    <value>افتح السعر ثم «تصحيح»: يُسجَّل القديم ← الجديد في سجل التغييرات.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3Title" xml:space="preserve">
+    <value>تحتفظ الطلبات بسعرها</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3" xml:space="preserve">
+    <value>يحتفظ الطلب المرسل بسعر إرساله؛ ولا يغيّره التصحيح.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4Title" xml:space="preserve">
+    <value>الأحدث قبل اليوم</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
+    <value>يستخدم الطلب أحدث سعر في يومه أو قبله؛ وبدونه لا يُعرض معادل محلي.</value>
+  </data>
 </root>

@@ -1,0 +1,52 @@
+@using System.Globalization
+@using Diten.Web.Infrastructure
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W6-WEB-b — the L10n payload of the standard for screen D (every tab and page uses the ONE PricingIndex resource; each
+   list module's _IndexL10n renders the same payload): the toolbar / filter vocabulary of the shared layer + every word
+   the screen's scripts read (PricingIndex.ScriptKeys). The rule messages travel in their own shared payload
+   (_CommercialRulesL10n.cshtml, W6-WEB-a). *@
+@{
+    var shared = new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["ColActions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        DateFormat = DateFieldFormat.Flatpickr(CultureInfo.CurrentCulture)
+    };
+    var payload = new Dictionary<string, string>(StringComparer.Ordinal);
+    foreach (var property in shared.GetType().GetProperties())
+    {
+        payload[property.Name] = (string)property.GetValue(shared)!;
+    }
+
+    foreach (var key in PricingIndex.ScriptKeys)
+    {
+        payload[key] = Localizer[key].Value;
+    }
+}
+<script id="pricing-l10n" type="application/json">
+    @Json.Serialize(payload)
+</script>

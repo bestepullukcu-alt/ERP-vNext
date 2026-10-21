@@ -1,0 +1,31 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W6-WEB-b — the rules' inline filter: selling company, product (searched in the product master as you type) and status.
+   The pharmacy segment filter is not drawn: the first version has no segment (MOD-0156 §20.3 AÇIK-3). *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-company">
+                        <select id="filterLegalEntity" class="form-select form-select-sm select2" data-placeholder="@Localizer["CompanyLabel"]"><option value=""></option></select>
+                    </div>
+                    <div class="filter-chip filter-sku">
+                        <select id="filterSku" class="form-select form-select-sm select2" data-placeholder="@Localizer["ProductLabel"]"><option value=""></option></select>
+                    </div>
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["StatusLabel"]"><option value=""></option></select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,75 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["HistoryTitle"].Value;
+    ViewData["PageCode"] = PricingIndex.HistoryHelpCode; // UXH-001 — COM-PRICING-HISTORY;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-b — screen D · tab 4: the change history (MOD-0156 §4.7, AC-HIST-1) on the Golden Compact list
+    standard: who · when · what (list / item / rule / rate, the action, the version) · each field's old → new. READ ONLY.
+    The CRM shows only the kinds the caller's keys cover (lists + items, rules, rates). UAS-001: without any of the three
+    read keys NOTHING but the notice.
+*@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["HistoryTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Commercial/PricingHistory/_Filter.cshtml" model="Model" />
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+
+<div id="pr-pane">
+    <div class="mb-3">
+        <h6 class="mb-0">@Localizer["HistoryTitle"]</h6>
+        <p class="mb-0 text-muted small">@Localizer["PageDescription"]</p>
+    </div>
+    <div id="pr-root" class="d-none" data-tab="history"></div>
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-pricinghistory" data-dt-standard="v2"> *@
+    <partial name="~/Views/Commercial/PricingHistory/_DataTable.cshtml" />
+</div>
+
+<div class="offcanvas offcanvas-end pr-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-history fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">@Localizer["DrawerTitleChange"]</h5>
+                <small id="oc-subtitle" class="text-muted d-block">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="d-flex flex-column" id="oc-details-list"></div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1 d-none">@Localizer["OpenDetails"]</a>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Commercial/PricingHistory/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PricingHistory/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PricingHistory/index.js" asp-append-version="true"></script>
+}

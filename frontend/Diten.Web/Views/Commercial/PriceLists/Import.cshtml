@@ -1,0 +1,135 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ImportTitle"].Value;
+    ViewData["PageCode"] = PricingIndex.ImportHelpCode; // UXH-001 — COM-PRICELIST-IMPORT
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-b — the price list import in three steps (mockup W6 D import; MOD-0156 §4.2): ① the file (xlsx / csv,
+    ≤ 5 MB) with the list head (the currency is REQUIRED — AC-LIST-4) and the column names; ② the preview — matched,
+    unmatched, Retired, duplicate and invalid-price rows counted SEPARATELY, the difference to the list in force (added ·
+    removed · changed · VAT changed) and the rows; only the matched rows enter the draft; ③ the draft, sent for publishing
+    (four eyes). Matching is by product code: the GTIN match stays off until product-master v1.2 (said in words). UAS-001:
+    without commercial.price-lists.import NOTHING but the notice.
+*@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["ImportTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+<div id="pr-pane">
+    <div id="pr-import-root" data-id="@(Model.Id?.ToString("D") ?? "")" data-can-submit="@Model.CanSubmitList.ToString().ToLowerInvariant()">
+        <h6 class="mb-3">@Localizer["ImportTitle"]</h6>
+        <ol class="pr-steps list-unstyled d-flex flex-wrap gap-3 mb-3" id="pr-steps">
+            <li data-step="1"><span class="pr-step-no">1</span>@Localizer["StepFile"]</li>
+            <li data-step="2"><span class="pr-step-no">2</span>@Localizer["StepPreview"]</li>
+            <li data-step="3"><span class="pr-step-no">3</span>@Localizer["StepPublish"]</li>
+        </ol>
+        <div class="alert alert-danger d-none" id="pr-alert" role="alert"></div>
+
+        <form id="pr-step-1" class="card" novalidate>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="pr-name">@Localizer["NameLabel"] <span class="text-danger">*</span></label>
+                        <div class="diten-field"><i class="bx bx-text diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="pr-name" maxlength="120" required /></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="pr-company">@Localizer["CompanyLabel"] <span class="text-danger">*</span></label>
+                        <div class="diten-field"><i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-company"><option value=""></option></select></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label" for="pr-currency">@Localizer["CurrencyLabel"] <span class="text-danger">*</span></label>
+                        <div class="diten-field"><i class="bx bx-money diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control text-uppercase" id="pr-currency" maxlength="3" required /></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label" for="pr-kind">@Localizer["KindLabel"]</label>
+                        <div class="diten-field"><i class="bx bx-category diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-kind"><option value="official">@Localizer["Kind_official"]</option><option value="company">@Localizer["Kind_company"]</option></select></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label" for="pr-from">@Localizer["ValidFromLabel"] <span class="text-danger">*</span></label>
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-from" autocomplete="off" /></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label" for="pr-to">@Localizer["ValidToLabel"]</label>
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-to" autocomplete="off" /></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="pr-file">@Localizer["FileLabel"] <span class="text-danger">*</span></label>
+                        <div class="diten-field"><i class="bx bx-spreadsheet diten-field-icon" aria-hidden="true"></i><input type="file" class="form-control" id="pr-file" accept=".xlsx,.csv" required /></div>
+                        <small class="text-muted">@Localizer["FileHelp"]</small>
+                    </div>
+                    <div class="col-12"><h6 class="mb-0 mt-2">@Localizer["ColumnsTitle"]</h6><small class="text-muted">@Localizer["ColumnsHelp"]</small></div>
+                    @foreach (var (id, key) in new[] { ("sku", "ColumnSku"), ("depot", "ColumnDepot"), ("pharmacist", "ColumnPharmacist"), ("public", "ColumnPublic"), ("vat", "ColumnVat") })
+                    {
+                        <div class="col-6 col-md-4 col-xl-2">
+                            <label class="form-label small" for="pr-col-@id">@Localizer[key]</label>
+                            <div class="diten-field"><i class="bx bx-columns diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="pr-col-@id" maxlength="60" /></div>
+                        </div>
+                    }
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <label class="form-label small" for="pr-col-gtin">@Localizer["ColumnGtin"]</label>
+                        <div class="diten-field"><i class="bx bx-barcode diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="pr-col-gtin" disabled /></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="alert alert-info d-flex gap-2 align-items-start mb-0" role="note"><i class="bx bx-info-circle mt-1"></i><span>@Localizer["GtinOffNote"]</span></div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/Commercial/Pricing/PriceLists" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+                    <button type="submit" class="btn btn-primary" id="pr-upload"><i class="bx bx-upload me-1"></i>@Localizer["Upload"]</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="pr-step-2" class="d-none">
+            <div class="card mb-3"><div class="card-body">
+                <div class="d-flex flex-wrap gap-2 mb-2" id="pr-counts"></div>
+                <div class="d-flex flex-wrap gap-2" id="pr-diff-counts"></div>
+                <small class="text-muted d-block mt-2">@Localizer["OnlyMatchedNote"]</small>
+            </div></div>
+            <div class="card mb-3"><div class="card-body">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div class="diten-field"><i class="bx bx-filter-alt diten-field-icon" aria-hidden="true"></i><select class="form-select form-select-sm" id="pr-row-status" aria-label="@Localizer["RowStatusLabel"]"></select></div>
+                    <small class="text-muted" id="pr-rows-more"></small>
+                </div>
+                <div id="pr-rows"></div>
+            </div></div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-label-danger" id="pr-import-discard"><i class="bx bx-trash me-1"></i>@Localizer["DiscardImport"]</button>
+                <button type="button" class="btn btn-primary" id="pr-convert" disabled><i class="bx bx-transfer me-1"></i>@Localizer["ConvertToDraft"]</button>
+            </div>
+        </div>
+
+        <div id="pr-step-3" class="d-none">
+            <div class="card"><div class="card-body">
+                <p class="mb-3" id="pr-converted-text"></p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="#" class="btn btn-label-primary" id="pr-open-draft">@Localizer["OpenDraft"]</a>
+                    <button type="button" class="btn btn-primary d-none" id="pr-submit-draft"><i class="bx bx-send me-1"></i>@Localizer["SubmitForPublishing"]</button>
+                </div>
+            </div></div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="~/Views/Commercial/PriceLists/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PriceLists/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PriceLists/import.js" asp-append-version="true"></script>
+}

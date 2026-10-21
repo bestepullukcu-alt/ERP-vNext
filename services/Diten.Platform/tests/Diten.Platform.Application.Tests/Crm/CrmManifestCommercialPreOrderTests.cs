@@ -36,7 +36,8 @@ public sealed class CrmManifestCommercialPreOrderTests
         // no pre-order key elsewhere in the manifest (not API-only, not on another page)
         var api = Manifest.ApiPermissions ?? [];
         Assert.DoesNotContain(api, p => p.PermissionKey.StartsWith("commercial.pre-order", StringComparison.Ordinal));
-        Assert.Equal(16, api.Count(p => p.PermissionKey.StartsWith("commercial.", StringComparison.Ordinal)));
+        // W6-WEB-b: the MOD-0156 keys are screen D's page + actions too; only the FX import (no screen yet) stays API-only
+        Assert.Equal(["commercial.fx-rates.import"], api.Where(p => p.PermissionKey.StartsWith("commercial.", StringComparison.Ordinal)).Select(p => p.PermissionKey));
         var everywhere = Manifest.Pages.SelectMany(p => new[] { p.RequiredPermission }.Concat(p.Actions.Select(a => a.PermissionKey)))
             .Where(k => k.StartsWith("commercial.pre-order", StringComparison.Ordinal)).ToList();
         Assert.Equal(Keys.Length, everywhere.Count);

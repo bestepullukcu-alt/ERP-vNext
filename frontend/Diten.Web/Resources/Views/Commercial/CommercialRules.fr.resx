@@ -163,4 +163,82 @@
   <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
     <value>Le fichier n'a pas pu être enregistré. Réessayez dans un instant.</value>
   </data>
+  <data name="Rule.pricing_request_invalid" xml:space="preserve">
+    <value>La demande n'est pas valide.</value>
+  </data>
+  <data name="Rule.pricing_not_found" xml:space="preserve">
+    <value>L'enregistrement est introuvable ou vous ne pouvez pas le voir.</value>
+  </data>
+  <data name="Rule.pricing_legal_entity_invalid" xml:space="preserve">
+    <value>Choisissez une société vendeuse de ce locataire.</value>
+  </data>
+  <data name="Rule.pricing_mdm_unavailable" xml:space="preserve">
+    <value>Le référentiel n'a pas pu être interrogé. Réessayez dans un instant.</value>
+  </data>
+  <data name="Rule.pricing_sku_invalid" xml:space="preserve">
+    <value>Le produit est introuvable dans le référentiel produits.</value>
+  </data>
+  <data name="Rule.pricing_sku_retired" xml:space="preserve">
+    <value>Le produit est retiré et ne peut pas être utilisé.</value>
+  </data>
+  <data name="Rule.price_list_overlap" xml:space="preserve">
+    <value>Une autre liste publiée de cette société et de ce pays commence le même jour.</value>
+  </data>
+  <data name="Rule.price_list_not_editable" xml:space="preserve">
+    <value>Seule une liste brouillon peut être modifiée ; une liste publiée reçoit une nouvelle version.</value>
+  </data>
+  <data name="Rule.price_list_item_invalid" xml:space="preserve">
+    <value>Vérifiez l'article : un produit, au moins un prix (0 ou plus, 4 décimales au plus) et une TVA de 0 à 100.</value>
+  </data>
+  <data name="Rule.price_list_item_duplicate" xml:space="preserve">
+    <value>Ce produit figure déjà dans la liste.</value>
+  </data>
+  <data name="Rule.price_list_empty" xml:space="preserve">
+    <value>Une liste sans article ne peut pas être publiée.</value>
+  </data>
+  <data name="Rule.price_list_not_published" xml:space="preserve">
+    <value>Seule une liste publiée peut recevoir une nouvelle version.</value>
+  </data>
+  <data name="Rule.price_list_sod" xml:space="preserve">
+    <value>Vous avez préparé cette liste : une autre personne doit statuer.</value>
+  </data>
+  <data name="Rule.price_list_import_invalid" xml:space="preserve">
+    <value>Le fichier n'a pas pu être lu. Utilisez un xlsx ou csv de 5 Mo au plus avec les colonnes indiquées.</value>
+  </data>
+  <data name="Rule.price_list_import_not_open" xml:space="preserve">
+    <value>Cet import a déjà été converti ou abandonné.</value>
+  </data>
+  <data name="Rule.price_list_import_nothing_matched" xml:space="preserve">
+    <value>Aucune ligne du fichier ne correspond à un produit : rien ne peut entrer dans le brouillon.</value>
+  </data>
+  <data name="Rule.pricing_rule_limits_invalid" xml:space="preserve">
+    <value>Vérifiez les limites : chaque limite souple ne doit pas dépasser sa limite stricte, UG sous la forme 10+2.</value>
+  </data>
+  <data name="Rule.pricing_rule_overlap" xml:space="preserve">
+    <value>Une règle active de même société, produit et spécificité couvre déjà cette période.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_editable" xml:space="preserve">
+    <value>Seule une règle brouillon peut être modifiée.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_active" xml:space="preserve">
+    <value>Seule une règle active peut être révisée ou retirée.</value>
+  </data>
+  <data name="Rule.pricing_rule_open_draft_exists" xml:space="preserve">
+    <value>Cette règle a déjà un brouillon ouvert. Terminez-le ou abandonnez-le d'abord.</value>
+  </data>
+  <data name="Rule.pricing_rule_sod" xml:space="preserve">
+    <value>Vous avez préparé cette modification de règle : une autre personne doit statuer.</value>
+  </data>
+  <data name="Rule.pricing_segment_not_enabled" xml:space="preserve">
+    <value>Les segments de pharmacie ne sont pas encore utilisés : laissez le segment vide.</value>
+  </data>
+  <data name="Rule.fx_rate_duplicate" xml:space="preserve">
+    <value>Un taux existe déjà pour cette société, cette paire et ce jour : corrigez-le.</value>
+  </data>
+  <data name="Rule.fx_rate_invalid" xml:space="preserve">
+    <value>Vérifiez le taux : devises à 3 lettres, un jour, un taux supérieur à 0 avec 6 décimales au plus et une source.</value>
+  </data>
+  <data name="Rule.pricing_stale_version" xml:space="preserve">
+    <value>Quelqu'un d'autre l'a modifié entre-temps. Rechargez et réessayez.</value>
+  </data>
 </root>

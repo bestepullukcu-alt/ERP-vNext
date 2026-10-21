@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ScreenTitle" xml:space="preserve">
+    <value>Прайс-листы и правила бонусов / скидок</value>
+  </data>
+  <data name="ScreenDescription" xml:space="preserve">
+    <value>Ведёт коммерческая команда; предзаказ берёт отсюда цену и лимиты.</value>
+  </data>
+  <data name="TabLists" xml:space="preserve">
+    <value>Прайс-листы</value>
+  </data>
+  <data name="TabRules" xml:space="preserve">
+    <value>Правила бонусов / скидок</value>
+  </data>
+  <data name="TabTrial" xml:space="preserve">
+    <value>Проверка правил</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>История изменений</value>
+  </data>
+  <data name="TabFx" xml:space="preserve">
+    <value>Курсы валют</value>
+  </data>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Прайс-листы</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Каждый прайс-лист относится к одной компании-продавцу, её стране и одной валюте.</value>
+  </data>
+  <data name="ListsNote" xml:space="preserve">
+    <value>После публикации нового прайс-листа прежний становится «Прошлым»; прежние заказы остаются со своим прайс-листом.</value>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>Импорт (Excel / CSV)</value>
+  </data>
+  <data name="NewList" xml:space="preserve">
+    <value>Новый прайс-лист</value>
+  </data>
+  <data name="NewRule" xml:space="preserve">
+    <value>Новое правило</value>
+  </data>
+  <data name="NewRate" xml:space="preserve">
+    <value>Новый курс</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Быстрый просмотр</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>Открыть</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Пока пусто</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>Нет записей, подходящих под фильтр.</value>
+  </data>
+  <data name="DrawerTitleList" xml:space="preserve">
+    <value>Прайс-лист</value>
+  </data>
+  <data name="DrawerTitleRule" xml:space="preserve">
+    <value>Правило</value>
+  </data>
+  <data name="DrawerTitleChange" xml:space="preserve">
+    <value>Изменение</value>
+  </data>
+  <data name="DrawerTitleRate" xml:space="preserve">
+    <value>Курс</value>
+  </data>
+  <data name="ColName" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="ColCompany" xml:space="preserve">
+    <value>Компания-продавец</value>
+  </data>
+  <data name="ColCountry" xml:space="preserve">
+    <value>Страна</value>
+  </data>
+  <data name="ColCurrency" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="ColKind" xml:space="preserve">
+    <value>Вид</value>
+  </data>
+  <data name="ColValidity" xml:space="preserve">
+    <value>Срок действия</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="ColItems" xml:space="preserve">
+    <value>Позиции</value>
+  </data>
+  <data name="ColVersion" xml:space="preserve">
+    <value>Версия</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="ColSku" xml:space="preserve">
+    <value>Препарат</value>
+  </data>
+  <data name="ColBarcode" xml:space="preserve">
+    <value>Штрихкод</value>
+  </data>
+  <data name="ColDepotPrice" xml:space="preserve">
+    <value>Цена дистрибьютора</value>
+  </data>
+  <data name="ColPharmacistPrice" xml:space="preserve">
+    <value>Закупочная для аптеки</value>
+  </data>
+  <data name="ColPublicPrice" xml:space="preserve">
+    <value>Розничная цена</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>НДС %</value>
+  </data>
+  <data name="ColDiff" xml:space="preserve">
+    <value>Разница</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>Препарат</value>
+  </data>
+  <data name="ColMaxDiscount" xml:space="preserve">
+    <value>Макс. скидка %</value>
+  </data>
+  <data name="ColMaxMf" xml:space="preserve">
+    <value>Макс. бонус</value>
+  </data>
+  <data name="ColMaxCombined" xml:space="preserve">
+    <value>Совокупный потолок %</value>
+  </data>
+  <data name="ColQuantity" xml:space="preserve">
+    <value>Количество</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>Количество</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>Бонус</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>Скидка %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>Цена</value>
+  </data>
+  <data name="ColWhen" xml:space="preserve">
+    <value>Когда</value>
+  </data>
+  <data name="ColWho" xml:space="preserve">
+    <value>Кто</value>
+  </data>
+  <data name="ColWhat" xml:space="preserve">
+    <value>Что</value>
+  </data>
+  <data name="ColChanges" xml:space="preserve">
+    <value>Было → стало</value>
+  </data>
+  <data name="ColPair" xml:space="preserve">
+    <value>Пара</value>
+  </data>
+  <data name="ColRateDate" xml:space="preserve">
+    <value>Дата курса</value>
+  </data>
+  <data name="ColRate" xml:space="preserve">
+    <value>Курс</value>
+  </data>
+  <data name="ColSource" xml:space="preserve">
+    <value>Источник</value>
+  </data>
+  <data name="ColUpdated" xml:space="preserve">
+    <value>Последнее изменение</value>
+  </data>
+  <data name="ColRowNo" xml:space="preserve">
+    <value>Строка</value>
+  </data>
+  <data name="ColSourceCode" xml:space="preserve">
+    <value>Код в файле</value>
+  </data>
+  <data name="ColRowStatus" xml:space="preserve">
+    <value>Результат</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>Компания-продавец</value>
+  </data>
+  <data name="CompanyAll" xml:space="preserve">
+    <value>Все компании</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>Страна</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>Все страны</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="CurrencyAll" xml:space="preserve">
+    <value>Все валюты</value>
+  </data>
+  <data name="KindLabel" xml:space="preserve">
+    <value>Вид</value>
+  </data>
+  <data name="KindAll" xml:space="preserve">
+    <value>Все виды</value>
+  </data>
+  <data name="Kind_official" xml:space="preserve">
+    <value>Официальный</value>
+  </data>
+  <data name="Kind_company" xml:space="preserve">
+    <value>Прайс компании</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>Все статусы</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>Препарат</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>Найдите препарат по названию или коду</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>Введите не менее 2 символов</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Поиск…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Тип записи</value>
+  </data>
+  <data name="TypeAll" xml:space="preserve">
+    <value>Все типы</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>С</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>По</value>
+  </data>
+  <data name="FromCurrencyLabel" xml:space="preserve">
+    <value>Исходная валюта</value>
+  </data>
+  <data name="ToCurrencyLabel" xml:space="preserve">
+    <value>Целевая валюта</value>
+  </data>
+  <data name="ItemsCount" xml:space="preserve">
+    <value>Позиций: {0}</value>
+  </data>
+  <data name="ItemsShown" xml:space="preserve">
+    <value>Показано {0} из {1}</value>
+  </data>
+  <data name="ValidityRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="ValidityFrom" xml:space="preserve">
+    <value>с {0}</value>
+  </data>
+  <data name="AlwaysValid" xml:space="preserve">
+    <value>Бессрочно</value>
+  </data>
+  <data name="Badge_draft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="Badge_in_review" xml:space="preserve">
+    <value>На согласовании</value>
+  </data>
+  <data name="Badge_planned" xml:space="preserve">
+    <value>Запланирован</value>
+  </data>
+  <data name="Badge_in_force" xml:space="preserve">
+    <value>Действует</value>
+  </data>
+  <data name="Badge_past" xml:space="preserve">
+    <value>Прошлый</value>
+  </data>
+  <data name="Badge_discarded" xml:space="preserve">
+    <value>Удалён</value>
+  </data>
+  <data name="Badge_unknown" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="RuleSt_draft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="RuleSt_in_review" xml:space="preserve">
+    <value>Ждёт согласования</value>
+  </data>
+  <data name="RuleSt_active" xml:space="preserve">
+    <value>Действует</value>
+  </data>
+  <data name="RuleSt_superseded" xml:space="preserve">
+    <value>Заменено</value>
+  </data>
+  <data name="RuleSt_retired" xml:space="preserve">
+    <value>Выведено</value>
+  </data>
+  <data name="RuleSt_discarded" xml:space="preserve">
+    <value>Удалено</value>
+  </data>
+  <data name="RuleSt_unknown" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="Change_revise" xml:space="preserve">
+    <value>Пересмотр</value>
+  </data>
+  <data name="Change_retire" xml:space="preserve">
+    <value>Вывод</value>
+  </data>
+  <data name="SoftLabel" xml:space="preserve">
+    <value>Мягкий</value>
+  </data>
+  <data name="HardLabel" xml:space="preserve">
+    <value>Жёсткий</value>
+  </data>
+  <data name="SoftLegend" xml:space="preserve">
+    <value>при превышении согласует руководитель</value>
+  </data>
+  <data name="HardLegend" xml:space="preserve">
+    <value>при превышении строку нельзя ввести</value>
+  </data>
+  <data name="Specificity_0" xml:space="preserve">
+    <value>Общее</value>
+  </data>
+  <data name="Specificity_1" xml:space="preserve">
+    <value>Период</value>
+  </data>
+  <data name="Specificity_2" xml:space="preserve">
+    <value>Сегмент</value>
+  </data>
+  <data name="Specificity_3" xml:space="preserve">
+    <value>Сегмент + период</value>
+  </data>
+  <data name="SpecificityLabel" xml:space="preserve">
+    <value>Специфичность</value>
+  </data>
+  <data name="Outcome_approved" xml:space="preserve">
+    <value>согласовано</value>
+  </data>
+  <data name="Outcome_rejected" xml:space="preserve">
+    <value>возвращено</value>
+  </data>
+  <data name="Outcome_cancelled" xml:space="preserve">
+    <value>отозвано</value>
+  </data>
+  <data name="Outcome_timed_out" xml:space="preserve">
+    <value>истекло</value>
+  </data>
+  <data name="Outcome_approve" xml:space="preserve">
+    <value>согласовал(а)</value>
+  </data>
+  <data name="Outcome_publish" xml:space="preserve">
+    <value>опубликовал(а)</value>
+  </data>
+  <data name="Outcome_return" xml:space="preserve">
+    <value>вернул(а)</value>
+  </data>
+  <data name="RoundOpen" xml:space="preserve">
+    <value>открыт</value>
+  </data>
+  <data name="RoundLine" xml:space="preserve">
+    <value>Круг {0} · отправил(а) {1} · {2}</value>
+  </data>
+  <data name="DecisionLine" xml:space="preserve">
+    <value>{0} {1} · {2}</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>Причина: {0}</value>
+  </data>
+  <data name="NoRounds" xml:space="preserve">
+    <value>Ещё не отправлено на согласование.</value>
+  </data>
+  <data name="ApprovalTitle" xml:space="preserve">
+    <value>Согласование (четыре глаза)</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Опубликовать</value>
+  </data>
+  <data name="ReturnDraft" xml:space="preserve">
+    <value>Вернуть</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>Возврат требует причины; подготовивший получит черновик.</value>
+  </data>
+  <data name="FourEyesOwn" xml:space="preserve">
+    <value>Вы это подготовили: решает другой человек (четыре глаза).</value>
+  </data>
+  <data name="PublishConfirm" xml:space="preserve">
+    <value>Опубликовать сейчас? Вступит в силу в первый день и завершит прежний прайс-лист.</value>
+  </data>
+  <data name="ReturnTitle" xml:space="preserve">
+    <value>Вернуть подготовившему</value>
+  </data>
+  <data name="ReturnText" xml:space="preserve">
+    <value>Вернётся черновиком с вашей причиной.</value>
+  </data>
+  <data name="PublishedToast" xml:space="preserve">
+    <value>Опубликовано.</value>
+  </data>
+  <data name="ReturnedToast" xml:space="preserve">
+    <value>Возвращено подготовившему.</value>
+  </data>
+  <data name="ApprovedToast" xml:space="preserve">
+    <value>Согласовано: правило действует.</value>
+  </data>
+  <data name="SubmittedToast" xml:space="preserve">
+    <value>Отправлено на согласование.</value>
+  </data>
+  <data name="RetireRequestedToast" xml:space="preserve">
+    <value>Вывод отправлен на согласование.</value>
+  </data>
+  <data name="SubmitConfirm" xml:space="preserve">
+    <value>Отправить прайс-лист на публикацию? Решает другой человек.</value>
+  </data>
+  <data name="SubmitRuleConfirm" xml:space="preserve">
+    <value>Отправить правило на согласование? Решает другой человек.</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>Удалить этот черновик?</value>
+  </data>
+  <data name="RetireConfirm" xml:space="preserve">
+    <value>Вывести правило? Вывод уйдёт на согласование другому человеку.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>Черновик сохранён.</value>
+  </data>
+  <data name="ListCreateTitle" xml:space="preserve">
+    <value>Новый прайс-лист</value>
+  </data>
+  <data name="ListEditTitle" xml:space="preserve">
+    <value>Изменить черновик прайс-листа</value>
+  </data>
+  <data name="ListDetailsTitle" xml:space="preserve">
+    <value>Прайс-лист</value>
+  </data>
+  <data name="ListHeadSection" xml:space="preserve">
+    <value>Прайс-лист</value>
+  </data>
+  <data name="ItemsSection" xml:space="preserve">
+    <value>Позиции</value>
+  </data>
+  <data name="ItemsHelp" xml:space="preserve">
+    <value>Каждый препарат один раз; хотя бы одна цена; НДС 0–100.</value>
+  </data>
+  <data name="AddItem" xml:space="preserve">
+    <value>Добавить позицию</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>Позиций пока нет.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="CountryFromCompany" xml:space="preserve">
+    <value>Страна берётся из компании (мастер-данные).</value>
+  </data>
+  <data name="ValidFromLabel" xml:space="preserve">
+    <value>Действует с</value>
+  </data>
+  <data name="ValidToLabel" xml:space="preserve">
+    <value>Действует по</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Назад к списку</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>Сохранить черновик</value>
+  </data>
+  <data name="EditDraft" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="NewVersion" xml:space="preserve">
+    <value>Новая версия</value>
+  </data>
+  <data name="SubmitForPublishing" xml:space="preserve">
+    <value>Отправить на публикацию</value>
+  </data>
+  <data name="DiffToggle" xml:space="preserve">
+    <value>Отличие от прежней версии</value>
+  </data>
+  <data name="PublishedLine" xml:space="preserve">
+    <value>Опубликован</value>
+  </data>
+  <data name="Diff_added" xml:space="preserve">
+    <value>Добавлено</value>
+  </data>
+  <data name="Diff_removed" xml:space="preserve">
+    <value>Удалено</value>
+  </data>
+  <data name="Diff_changed" xml:space="preserve">
+    <value>Изменено</value>
+  </data>
+  <data name="Diff_unchanged" xml:space="preserve">
+    <value>Без изменений</value>
+  </data>
+  <data name="Diff_vatChanged" xml:space="preserve">
+    <value>НДС изменён</value>
+  </data>
+  <data name="ErrListHead" xml:space="preserve">
+    <value>Укажите название, компанию, валюту из 3 букв и первый день.</value>
+  </data>
+  <data name="ErrItemSku" xml:space="preserve">
+    <value>Выберите препарат.</value>
+  </data>
+  <data name="ErrPrice" xml:space="preserve">
+    <value>Цена — от 0, не более 4 знаков.</value>
+  </data>
+  <data name="ErrNoTier" xml:space="preserve">
+    <value>Укажите хотя бы одну из трёх цен.</value>
+  </data>
+  <data name="ErrVat" xml:space="preserve">
+    <value>НДС обязателен, 0–100.</value>
+  </data>
+  <data name="ImportTitle" xml:space="preserve">
+    <value>Импорт прайс-листа</value>
+  </data>
+  <data name="StepFile" xml:space="preserve">
+    <value>Файл</value>
+  </data>
+  <data name="StepPreview" xml:space="preserve">
+    <value>Просмотр</value>
+  </data>
+  <data name="StepPublish" xml:space="preserve">
+    <value>На публикацию</value>
+  </data>
+  <data name="FileLabel" xml:space="preserve">
+    <value>Файл (xlsx или csv)</value>
+  </data>
+  <data name="FileHelp" xml:space="preserve">
+    <value>Не более 5 МБ и 10 000 строк.</value>
+  </data>
+  <data name="ColumnsTitle" xml:space="preserve">
+    <value>Названия столбцов в файле</value>
+  </data>
+  <data name="ColumnsHelp" xml:space="preserve">
+    <value>Оставьте пустым для стандартных названий.</value>
+  </data>
+  <data name="ColumnSku" xml:space="preserve">
+    <value>Код препарата</value>
+  </data>
+  <data name="ColumnDepot" xml:space="preserve">
+    <value>Цена дистрибьютора</value>
+  </data>
+  <data name="ColumnPharmacist" xml:space="preserve">
+    <value>Закупочная для аптеки</value>
+  </data>
+  <data name="ColumnPublic" xml:space="preserve">
+    <value>Розничная цена</value>
+  </data>
+  <data name="ColumnVat" xml:space="preserve">
+    <value>НДС %</value>
+  </data>
+  <data name="ColumnGtin" xml:space="preserve">
+    <value>Штрихкод (GTIN)</value>
+  </data>
+  <data name="GtinOffNote" xml:space="preserve">
+    <value>Сопоставление по коду препарата (LS- / FG-). По штрихкоду (GTIN) отключено до product-master v1.2; строки только со штрихкодом считаются несопоставленными.</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Загрузить и проверить</value>
+  </data>
+  <data name="ErrImportHead" xml:space="preserve">
+    <value>Укажите название, компанию, валюту из 3 букв, первый день и файл (до 5 МБ).</value>
+  </data>
+  <data name="Imp_total" xml:space="preserve">
+    <value>Прочитано строк: {0}</value>
+  </data>
+  <data name="Imp_matched" xml:space="preserve">
+    <value>Сопоставлено: {0}</value>
+  </data>
+  <data name="Imp_unmatched" xml:space="preserve">
+    <value>Не сопоставлено: {0}</value>
+  </data>
+  <data name="Imp_retired" xml:space="preserve">
+    <value>Выведено из оборота: {0}</value>
+  </data>
+  <data name="Imp_duplicate" xml:space="preserve">
+    <value>Повторов: {0}</value>
+  </data>
+  <data name="Imp_invalidPrice" xml:space="preserve">
+    <value>Неверная цена: {0}</value>
+  </data>
+  <data name="Diff_addedCount" xml:space="preserve">
+    <value>Добавлено: {0}</value>
+  </data>
+  <data name="Diff_removedCount" xml:space="preserve">
+    <value>Удалено: {0}</value>
+  </data>
+  <data name="Diff_changedCount" xml:space="preserve">
+    <value>Цена изменена: {0}</value>
+  </data>
+  <data name="Diff_vatChangedCount" xml:space="preserve">
+    <value>НДС изменён: {0}</value>
+  </data>
+  <data name="NoCompared" xml:space="preserve">
+    <value>Нет действующего прайс-листа для сравнения: все строки новые.</value>
+  </data>
+  <data name="OnlyMatchedNote" xml:space="preserve">
+    <value>В черновик попадут только сопоставленные строки; остальные останутся здесь.</value>
+  </data>
+  <data name="RowStatusLabel" xml:space="preserve">
+    <value>Строки</value>
+  </data>
+  <data name="RowStatusAll" xml:space="preserve">
+    <value>Все строки</value>
+  </data>
+  <data name="Row_matched" xml:space="preserve">
+    <value>Сопоставлено</value>
+  </data>
+  <data name="Row_unmatched" xml:space="preserve">
+    <value>Не сопоставлено</value>
+  </data>
+  <data name="Row_retired" xml:space="preserve">
+    <value>Выведено</value>
+  </data>
+  <data name="Row_duplicate" xml:space="preserve">
+    <value>Повтор</value>
+  </data>
+  <data name="Row_invalid_price" xml:space="preserve">
+    <value>Неверная цена</value>
+  </data>
+  <data name="Row_removed" xml:space="preserve">
+    <value>Удалено</value>
+  </data>
+  <data name="NoRows" xml:space="preserve">
+    <value>Строк нет.</value>
+  </data>
+  <data name="DiscardImport" xml:space="preserve">
+    <value>Отменить импорт</value>
+  </data>
+  <data name="DiscardImportConfirm" xml:space="preserve">
+    <value>Отменить этот импорт?</value>
+  </data>
+  <data name="ConvertToDraft" xml:space="preserve">
+    <value>Создать черновик</value>
+  </data>
+  <data name="ConvertedText" xml:space="preserve">
+    <value>Черновик создан из сопоставленных строк. Проверьте и отправьте на публикацию.</value>
+  </data>
+  <data name="OpenDraft" xml:space="preserve">
+    <value>Открыть черновик</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>Правила бонусов / скидок</value>
+  </data>
+  <data name="RulesNote" xml:space="preserve">
+    <value>Бонус «10+2»: 2 упаковки на 10; долю и совокупную скидку считает система.</value>
+  </data>
+  <data name="RuleCreateTitle" xml:space="preserve">
+    <value>Новое правило</value>
+  </data>
+  <data name="RuleEditTitle" xml:space="preserve">
+    <value>Изменить или пересмотреть правило</value>
+  </data>
+  <data name="RuleDetailsTitle" xml:space="preserve">
+    <value>Правило</value>
+  </data>
+  <data name="RuleKeySection" xml:space="preserve">
+    <value>Ключ правила</value>
+  </data>
+  <data name="LimitsSection" xml:space="preserve">
+    <value>Лимиты</value>
+  </data>
+  <data name="SegmentLabel" xml:space="preserve">
+    <value>Сегмент аптеки</value>
+  </data>
+  <data name="SegmentSoon" xml:space="preserve">
+    <value>Скоро</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>необязательно</value>
+  </data>
+  <data name="MaxDiscountLabel" xml:space="preserve">
+    <value>Макс. скидка %</value>
+  </data>
+  <data name="MaxMfLabel" xml:space="preserve">
+    <value>Макс. бонус (10+2)</value>
+  </data>
+  <data name="MaxCombinedLabel" xml:space="preserve">
+    <value>Совокупный потолок %</value>
+  </data>
+  <data name="QuantityLabel" xml:space="preserve">
+    <value>Количество</value>
+  </data>
+  <data name="QuantityMin" xml:space="preserve">
+    <value>Мин.</value>
+  </data>
+  <data name="QuantitySoftMax" xml:space="preserve">
+    <value>Мягкий макс.</value>
+  </data>
+  <data name="QuantityHardMax" xml:space="preserve">
+    <value>Жёсткий макс.</value>
+  </data>
+  <data name="QuantityLimits" xml:space="preserve">
+    <value>мин. {0} · мягк. {1} · жёстк. {2}</value>
+  </data>
+  <data name="MfRatioHelp" xml:space="preserve">
+    <value>Фактический % рядом с бонусом даёт система после выбора компании и препарата.</value>
+  </data>
+  <data name="MfRatioIs" xml:space="preserve">
+    <value>= {0}</value>
+  </data>
+  <data name="SaveRevision" xml:space="preserve">
+    <value>Сохранить как пересмотр</value>
+  </data>
+  <data name="Revise" xml:space="preserve">
+    <value>Пересмотреть</value>
+  </data>
+  <data name="Retire" xml:space="preserve">
+    <value>Вывести</value>
+  </data>
+  <data name="SubmitForApproval" xml:space="preserve">
+    <value>Отправить на согласование</value>
+  </data>
+  <data name="VersionsTitle" xml:space="preserve">
+    <value>Версии</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>Укажите бонус как «покупка + бесплатно», например 10+2.</value>
+  </data>
+  <data name="ErrPct" xml:space="preserve">
+    <value>Процент — от 0 до 100, не более одного знака.</value>
+  </data>
+  <data name="ErrCount" xml:space="preserve">
+    <value>Количество — целое число.</value>
+  </data>
+  <data name="ErrRuleKey" xml:space="preserve">
+    <value>Выберите компанию и препарат.</value>
+  </data>
+  <data name="TrialTitle" xml:space="preserve">
+    <value>Проверка правил</value>
+  </data>
+  <data name="TrialResult" xml:space="preserve">
+    <value>Результат</value>
+  </data>
+  <data name="TrialEmpty" xml:space="preserve">
+    <value>Заполните строку и нажмите «Проверить»: система оценит её как заказ и ничего не сохранит.</value>
+  </data>
+  <data name="TryButton" xml:space="preserve">
+    <value>Проверить</value>
+  </data>
+  <data name="AsOfLabel" xml:space="preserve">
+    <value>День</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>Уровень цены</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>Закупочная для аптеки</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>Цена дистрибьютора</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>Розничная цена</value>
+  </data>
+  <data name="TrialMode" xml:space="preserve">
+    <value>Режим</value>
+  </data>
+  <data name="ModePricedWith" xml:space="preserve">
+    <value>С ценами · {0}</value>
+  </data>
+  <data name="ModeQuantityOnly" xml:space="preserve">
+    <value>Только количества (нет действующего прайс-листа)</value>
+  </data>
+  <data name="TrialPriceList" xml:space="preserve">
+    <value>Прайс-лист</value>
+  </data>
+  <data name="TrialFree" xml:space="preserve">
+    <value>Бесплатных упаковок</value>
+  </data>
+  <data name="TrialMfRatio" xml:space="preserve">
+    <value>Доля бонуса</value>
+  </data>
+  <data name="TrialCombined" xml:space="preserve">
+    <value>Совокупная скидка</value>
+  </data>
+  <data name="TrialNet" xml:space="preserve">
+    <value>Нетто</value>
+  </data>
+  <data name="TrialVat" xml:space="preserve">
+    <value>НДС</value>
+  </data>
+  <data name="TrialRule" xml:space="preserve">
+    <value>Применённое правило</value>
+  </data>
+  <data name="TrialNoRule" xml:space="preserve">
+    <value>Правило не применяется</value>
+  </data>
+  <data name="TrialNoFindings" xml:space="preserve">
+    <value>Ни один лимит не превышен.</value>
+  </data>
+  <data name="RuleRef" xml:space="preserve">
+    <value>v{0} · {1}</value>
+  </data>
+  <data name="ErrTrialCompany" xml:space="preserve">
+    <value>Выберите компанию-продавца.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>История изменений</value>
+  </data>
+  <data name="Type_price_list" xml:space="preserve">
+    <value>Прайс-лист</value>
+  </data>
+  <data name="Type_price_list_item" xml:space="preserve">
+    <value>Позиция прайс-листа</value>
+  </data>
+  <data name="Type_pricing_rule" xml:space="preserve">
+    <value>Правило</value>
+  </data>
+  <data name="Type_fx_rate" xml:space="preserve">
+    <value>Курс</value>
+  </data>
+  <data name="Type_unknown" xml:space="preserve">
+    <value>Запись</value>
+  </data>
+  <data name="Act_created" xml:space="preserve">
+    <value>создано</value>
+  </data>
+  <data name="Act_updated" xml:space="preserve">
+    <value>изменено</value>
+  </data>
+  <data name="Act_version_created" xml:space="preserve">
+    <value>новая версия</value>
+  </data>
+  <data name="Act_discarded" xml:space="preserve">
+    <value>удалено</value>
+  </data>
+  <data name="Act_submitted" xml:space="preserve">
+    <value>отправлено на согласование</value>
+  </data>
+  <data name="Act_published" xml:space="preserve">
+    <value>опубликовано / согласовано</value>
+  </data>
+  <data name="Act_returned" xml:space="preserve">
+    <value>возвращено</value>
+  </data>
+  <data name="Act_refused" xml:space="preserve">
+    <value>отклонено</value>
+  </data>
+  <data name="Act_withdrawn" xml:space="preserve">
+    <value>отозвано</value>
+  </data>
+  <data name="Act_superseded" xml:space="preserve">
+    <value>заменено</value>
+  </data>
+  <data name="Act_retired" xml:space="preserve">
+    <value>выведено</value>
+  </data>
+  <data name="Act_unknown" xml:space="preserve">
+    <value>изменено</value>
+  </data>
+  <data name="FxTitle" xml:space="preserve">
+    <value>Курсы валют</value>
+  </data>
+  <data name="FxCreateTitle" xml:space="preserve">
+    <value>Новый курс</value>
+  </data>
+  <data name="FxEditTitle" xml:space="preserve">
+    <value>Исправить курс</value>
+  </data>
+  <data name="RateSection" xml:space="preserve">
+    <value>Курс</value>
+  </data>
+  <data name="SaveRate" xml:space="preserve">
+    <value>Сохранить курс</value>
+  </data>
+  <data name="EditRate" xml:space="preserve">
+    <value>Исправить</value>
+  </data>
+  <data name="ErrRateHead" xml:space="preserve">
+    <value>Укажите компанию, две валюты из 3 букв, день и источник.</value>
+  </data>
+  <data name="ErrRate" xml:space="preserve">
+    <value>Курс больше 0, не более 6 знаков.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>Что-то пошло не так. Повторите попытку.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>Сервис сейчас недоступен. Повторите чуть позже.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>У вас нет прав на это.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>Запись не найдена или недоступна вам.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>Кто-то изменил это тем временем. Обновите и повторите.</value>
+  </data>
+</root>

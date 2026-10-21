@@ -163,4 +163,82 @@
   <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
     <value>The file could not be stored. Try again in a moment.</value>
   </data>
+  <data name="Rule.pricing_request_invalid" xml:space="preserve">
+    <value>The request is not valid.</value>
+  </data>
+  <data name="Rule.pricing_not_found" xml:space="preserve">
+    <value>The record was not found or you cannot see it.</value>
+  </data>
+  <data name="Rule.pricing_legal_entity_invalid" xml:space="preserve">
+    <value>Choose a selling company of this tenant.</value>
+  </data>
+  <data name="Rule.pricing_mdm_unavailable" xml:space="preserve">
+    <value>The master data could not be asked. Try again in a moment.</value>
+  </data>
+  <data name="Rule.pricing_sku_invalid" xml:space="preserve">
+    <value>The product was not found in the product master.</value>
+  </data>
+  <data name="Rule.pricing_sku_retired" xml:space="preserve">
+    <value>The product is retired and cannot be used.</value>
+  </data>
+  <data name="Rule.price_list_overlap" xml:space="preserve">
+    <value>Another published list of this company and country starts on the same day.</value>
+  </data>
+  <data name="Rule.price_list_not_editable" xml:space="preserve">
+    <value>Only a draft list can be changed; a published one gets a new version.</value>
+  </data>
+  <data name="Rule.price_list_item_invalid" xml:space="preserve">
+    <value>Check the item: a product, at least one price (0 or more, 4 decimals at most) and VAT 0–100.</value>
+  </data>
+  <data name="Rule.price_list_item_duplicate" xml:space="preserve">
+    <value>This product is already on the list.</value>
+  </data>
+  <data name="Rule.price_list_empty" xml:space="preserve">
+    <value>A list without items cannot be published.</value>
+  </data>
+  <data name="Rule.price_list_not_published" xml:space="preserve">
+    <value>Only a published list can get a new version.</value>
+  </data>
+  <data name="Rule.price_list_sod" xml:space="preserve">
+    <value>You prepared this list: a second person must decide on it.</value>
+  </data>
+  <data name="Rule.price_list_import_invalid" xml:space="preserve">
+    <value>The file could not be read. Use xlsx or csv up to 5 MB with the named columns.</value>
+  </data>
+  <data name="Rule.price_list_import_not_open" xml:space="preserve">
+    <value>This import was already converted or discarded.</value>
+  </data>
+  <data name="Rule.price_list_import_nothing_matched" xml:space="preserve">
+    <value>No row of the file matched a product: nothing can enter the draft.</value>
+  </data>
+  <data name="Rule.pricing_rule_limits_invalid" xml:space="preserve">
+    <value>Check the limits: each soft limit must not be above its hard limit, MF as 10+2.</value>
+  </data>
+  <data name="Rule.pricing_rule_overlap" xml:space="preserve">
+    <value>An active rule of the same company, product and specificity already covers this period.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_editable" xml:space="preserve">
+    <value>Only a draft rule can be changed.</value>
+  </data>
+  <data name="Rule.pricing_rule_not_active" xml:space="preserve">
+    <value>Only an active rule can be revised or retired.</value>
+  </data>
+  <data name="Rule.pricing_rule_open_draft_exists" xml:space="preserve">
+    <value>This rule already has an open draft. Finish or discard it first.</value>
+  </data>
+  <data name="Rule.pricing_rule_sod" xml:space="preserve">
+    <value>You prepared this rule change: a second person must decide on it.</value>
+  </data>
+  <data name="Rule.pricing_segment_not_enabled" xml:space="preserve">
+    <value>Pharmacy segments are not in use yet: leave the segment empty.</value>
+  </data>
+  <data name="Rule.fx_rate_duplicate" xml:space="preserve">
+    <value>A rate of this company, pair and day already exists: correct that one.</value>
+  </data>
+  <data name="Rule.fx_rate_invalid" xml:space="preserve">
+    <value>Check the rate: 3-letter currencies, a day, a rate above 0 with 6 decimals at most and a source.</value>
+  </data>
+  <data name="Rule.pricing_stale_version" xml:space="preserve">
+    <value>Someone else changed this in the meantime. Reload and try again.</value>
+  </data>
 </root>

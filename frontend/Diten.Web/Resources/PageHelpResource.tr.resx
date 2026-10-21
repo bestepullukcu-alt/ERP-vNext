@@ -840,4 +840,244 @@
   <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
     <value>2–5 harf sipariş numarasını başlatır (MG-ORD-000123). Sipariş numaralandırmış önek kilitlidir.</value>
   </data>
+  <data name="Help.COMMERCIALPRICING.Purpose" xml:space="preserve">
+    <value>Her satış şirketinin, ülkenin ve para biriminin fiyat listeleri: ön siparişin okuduğu fiyatlar.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Audience" xml:space="preserve">
+    <value>Pazarlama (hazırlar) ve satış operasyonu (yayımlar).</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1Title" xml:space="preserve">
+    <value>Durumu okuyun</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1" xml:space="preserve">
+    <value>Taslak, Onay bekliyor, Planlandı, Yürürlükte ya da Geçmiş — o güne göre okunur; şirket ve ülke başına bir liste yürürlüktedir.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2Title" xml:space="preserve">
+    <value>Liste ekleyin</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2" xml:space="preserve">
+    <value>Elle yazmak için “Yeni liste”, Excel / CSV dosyası için “İçe aktar”.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3Title" xml:space="preserve">
+    <value>Sekmeleri kullanın</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3" xml:space="preserve">
+    <value>Kurallar, kural deneme, değişiklik geçmişi ve kurlar diğer sekmelerdedir.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4Title" xml:space="preserve">
+    <value>Dışa aktarın</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4" xml:space="preserve">
+    <value>“Dışa aktar” süzgece uyan tüm listeleri görünen sütunlarla verir.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Purpose" xml:space="preserve">
+    <value>Bir fiyat listesi: başlığı, kalemleri ve önceki sürüme göre farkı; yayımlama ikinci bir kişi ister.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Audience" xml:space="preserve">
+    <value>Pazarlama (hazırlar) ve satış operasyonu (yayımlar).</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1Title" xml:space="preserve">
+    <value>Başlığı doldurun</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1" xml:space="preserve">
+    <value>Ad, satan şirket, para birimi, tür ve ilk gün; ülke şirketinkidir.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2Title" xml:space="preserve">
+    <value>Kalemleri ekleyin</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2" xml:space="preserve">
+    <value>Her ürün bir kez; depo, eczacı alış, halka satış fiyatı ve KDV ile.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3Title" xml:space="preserve">
+    <value>Yayıma gönderin</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3" xml:space="preserve">
+    <value>“Yayıma gönder” listeyi ikinci bir kişiye verir; hazırlayan “Yayımla”yı görmez.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4Title" xml:space="preserve">
+    <value>Yayımlanmış listeyi değiştirin</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4" xml:space="preserve">
+    <value>Yayımlanmış liste düzenlenmez: “Yeni sürüm” onu yeni bir taslağa kopyalar.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Purpose" xml:space="preserve">
+    <value>Fiyat listesini üç adımda Excel / CSV dosyasından alır.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Audience" xml:space="preserve">
+    <value>Pazarlama.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1Title" xml:space="preserve">
+    <value>Dosyayı seçin</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1" xml:space="preserve">
+    <value>Liste başlığı (para birimi zorunlu), dosya ve gerekirse sütun adları.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2Title" xml:space="preserve">
+    <value>Önizlemeyi kontrol edin</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2" xml:space="preserve">
+    <value>Eşleşen, eşleşmeyen, kullanımdan kalkmış, tekrar ve hatalı fiyatlı satırlar ayrı sayılır; yürürlükteki listeye göre fark gösterilir.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3Title" xml:space="preserve">
+    <value>Taslağı oluşturun</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3" xml:space="preserve">
+    <value>“Taslağı oluştur” yalnız eşleşen satırları alır; barkod (GTIN) eşleştirmesi product-master v1.2'ye kadar kapalı.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4Title" xml:space="preserve">
+    <value>Yayıma gönderin</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4" xml:space="preserve">
+    <value>Taslak ikinci bir kişiye gider; o yayımlar ya da iade eder.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Purpose" xml:space="preserve">
+    <value>Ön sipariş satırının denetlendiği, şirket ve ürün başına MF / iskonto sınırları.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Audience" xml:space="preserve">
+    <value>Pazarlama (hazırlar) ve satış operasyonu (onaylar).</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1Title" xml:space="preserve">
+    <value>Yumuşak ve serti okuyun</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1" xml:space="preserve">
+    <value>Yumuşak sınır aşılırsa sipariş yöneticiye gider; sert sınır aşılırsa satır girilemez.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2Title" xml:space="preserve">
+    <value>En özel kural kazanır</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2" xml:space="preserve">
+    <value>Dönemli kural genel kurala üstün gelir; segmentler sonra gelecek.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3Title" xml:space="preserve">
+    <value>Kuralı değiştirin</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3" xml:space="preserve">
+    <value>Etkin kural “Revize et” ya da “Emekliye ayır” ile değişir: ikinci kişinin onayladığı yeni sürüm.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4Title" xml:space="preserve">
+    <value>Deneyin</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4" xml:space="preserve">
+    <value>“Kural deneme” sekmesi bir satırın ne alacağını hiçbir şey kaydetmeden gösterir.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Purpose" xml:space="preserve">
+    <value>Bir kural taslağı yazar: anahtarı ve yumuşak / sert sınırları.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Audience" xml:space="preserve">
+    <value>Pazarlama.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1Title" xml:space="preserve">
+    <value>Anahtarı seçin</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1" xml:space="preserve">
+    <value>Şirket ve ürün (sonra değişmez) ve kural bir dönem içinse geçerlilik.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2Title" xml:space="preserve">
+    <value>Sınırları yazın</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2" xml:space="preserve">
+    <value>İskonto %, “10+2” biçiminde MF, birleşik tavan ve adet; yumuşak sert değerden büyük olmamalı.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3Title" xml:space="preserve">
+    <value>Etkin %'yi okuyun</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3" xml:space="preserve">
+    <value>Şirket ve ürün seçilince sistem her MF'nin yanında etkin %'yi gösterir.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4Title" xml:space="preserve">
+    <value>Onaya gönderin</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4" xml:space="preserve">
+    <value>Kaydedin, sonra kuralda “Onaya gönder”: ikinci bir kişi etkinleştirir.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Purpose" xml:space="preserve">
+    <value>Bir sipariş satırının fiyat listesinden ve kurallardan ne alacağını hiçbir şey kaydetmeden gösterir.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Audience" xml:space="preserve">
+    <value>Pazarlama ve satış operasyonu.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1Title" xml:space="preserve">
+    <value>Satırı doldurun</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1" xml:space="preserve">
+    <value>Şirket, ürün, adet, MF ve iskonto; gerekirse gün ve fiyat kademesi.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2Title" xml:space="preserve">
+    <value>Deneyin</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2" xml:space="preserve">
+    <value>“Dene” sisteme sorar; hiçbir şey kaydedilmez.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3Title" xml:space="preserve">
+    <value>Sonucu okuyun</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3" xml:space="preserve">
+    <value>Rozet (sınır içi / onay gerekir / girilemez) ve aşılan her sınırı yazan iletiler.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4Title" xml:space="preserve">
+    <value>Uygulanan kurala bakın</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4" xml:space="preserve">
+    <value>O günün en özel kuralı uygulanır; sürümü gösterilir.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Purpose" xml:space="preserve">
+    <value>Fiyat listelerinde, kalemlerde, kurallarda ve kurlarda her değişiklik: kim, ne zaman, eski → yeni.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Audience" xml:space="preserve">
+    <value>Pazarlama, satış operasyonu ve denetim.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1Title" xml:space="preserve">
+    <value>Süzün</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1" xml:space="preserve">
+    <value>Kayıt türüne ve döneme göre.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2Title" xml:space="preserve">
+    <value>Eski → yeniyi okuyun</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2" xml:space="preserve">
+    <value>Her satır alanı, eski ve yeni değerini yazar.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3Title" xml:space="preserve">
+    <value>Yetkiniz belirler</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3" xml:space="preserve">
+    <value>Yalnız yetkinizin kapsadığı türleri görürsünüz (listeler, kurallar, kurlar).</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4Title" xml:space="preserve">
+    <value>Bir değişikliği açın</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4" xml:space="preserve">
+    <value>Göz simgesi değişikliğin tamamını yan panelde gösterir.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Purpose" xml:space="preserve">
+    <value>Ön siparişin yerel karşılık için kullandığı, şirket, çift ve gün başına ara kurlar.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Audience" xml:space="preserve">
+    <value>Satış operasyonu.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1Title" xml:space="preserve">
+    <value>Kur girin</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1" xml:space="preserve">
+    <value>“Yeni kur”: şirket, çift, gün, kur ve kaynak; şirket, çift ve gün başına bir kur.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2Title" xml:space="preserve">
+    <value>Kuru düzeltin</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2" xml:space="preserve">
+    <value>Kuru açıp “Düzelt”: eski → yeni değişiklik geçmişine yazılır.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3Title" xml:space="preserve">
+    <value>Siparişler kurunu korur</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3" xml:space="preserve">
+    <value>Gönderilmiş sipariş gönderildiği kuru korur; düzeltme onu değiştirmez.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4Title" xml:space="preserve">
+    <value>Günden önceki en son kur</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
+    <value>Sipariş kendi günü ya da öncesindeki en son kuru kullanır; kur yoksa yerel karşılık gösterilmez.</value>
+  </data>
 </root>

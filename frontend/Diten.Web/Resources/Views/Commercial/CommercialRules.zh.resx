@@ -163,4 +163,82 @@
   <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
     <value>无法保存文件，请稍后重试。</value>
   </data>
+  <data name="Rule.pricing_request_invalid" xml:space="preserve">
+    <value>请求无效。</value>
+  </data>
+  <data name="Rule.pricing_not_found" xml:space="preserve">
+    <value>未找到该记录，或您无权查看。</value>
+  </data>
+  <data name="Rule.pricing_legal_entity_invalid" xml:space="preserve">
+    <value>请选择本租户的销售公司。</value>
+  </data>
+  <data name="Rule.pricing_mdm_unavailable" xml:space="preserve">
+    <value>无法查询主数据，请稍后重试。</value>
+  </data>
+  <data name="Rule.pricing_sku_invalid" xml:space="preserve">
+    <value>在产品主数据中找不到该产品。</value>
+  </data>
+  <data name="Rule.pricing_sku_retired" xml:space="preserve">
+    <value>该产品已停用，不能使用。</value>
+  </data>
+  <data name="Rule.price_list_overlap" xml:space="preserve">
+    <value>该公司和国家的另一份已发布价目表在同一天生效。</value>
+  </data>
+  <data name="Rule.price_list_not_editable" xml:space="preserve">
+    <value>只有草稿价目表可以修改；已发布的需新建版本。</value>
+  </data>
+  <data name="Rule.price_list_item_invalid" xml:space="preserve">
+    <value>请检查该行：需有产品、至少一个价格（≥0，最多 4 位小数）且增值税为 0–100。</value>
+  </data>
+  <data name="Rule.price_list_item_duplicate" xml:space="preserve">
+    <value>该产品已在价目表中。</value>
+  </data>
+  <data name="Rule.price_list_empty" xml:space="preserve">
+    <value>没有明细的价目表不能发布。</value>
+  </data>
+  <data name="Rule.price_list_not_published" xml:space="preserve">
+    <value>只有已发布的价目表才能新建版本。</value>
+  </data>
+  <data name="Rule.price_list_sod" xml:space="preserve">
+    <value>此价目表由您准备：须由另一人作出决定。</value>
+  </data>
+  <data name="Rule.price_list_import_invalid" xml:space="preserve">
+    <value>无法读取文件。请使用不超过 5 MB 且含指定列的 xlsx 或 csv。</value>
+  </data>
+  <data name="Rule.price_list_import_not_open" xml:space="preserve">
+    <value>此导入已转换或已放弃。</value>
+  </data>
+  <data name="Rule.price_list_import_nothing_matched" xml:space="preserve">
+    <value>文件中没有任何行匹配到产品：无法生成草稿。</value>
+  </data>
+  <data name="Rule.pricing_rule_limits_invalid" xml:space="preserve">
+    <value>请检查限额：每个软限额不得高于对应的硬限额，赠品格式为 10+2。</value>
+  </data>
+  <data name="Rule.pricing_rule_overlap" xml:space="preserve">
+    <value>同一公司、产品和特异性的有效规则已覆盖该期间。</value>
+  </data>
+  <data name="Rule.pricing_rule_not_editable" xml:space="preserve">
+    <value>只有草稿规则可以修改。</value>
+  </data>
+  <data name="Rule.pricing_rule_not_active" xml:space="preserve">
+    <value>只有有效规则才能修订或停用。</value>
+  </data>
+  <data name="Rule.pricing_rule_open_draft_exists" xml:space="preserve">
+    <value>该规则已有未完成的草稿，请先完成或放弃。</value>
+  </data>
+  <data name="Rule.pricing_rule_sod" xml:space="preserve">
+    <value>此规则变更由您准备：须由另一人作出决定。</value>
+  </data>
+  <data name="Rule.pricing_segment_not_enabled" xml:space="preserve">
+    <value>药店细分尚未启用：请将细分留空。</value>
+  </data>
+  <data name="Rule.fx_rate_duplicate" xml:space="preserve">
+    <value>该公司、货币对和日期的汇率已存在：请更正该条。</value>
+  </data>
+  <data name="Rule.fx_rate_invalid" xml:space="preserve">
+    <value>请检查汇率：3 字母货币代码、日期、大于 0 且最多 6 位小数的汇率以及来源。</value>
+  </data>
+  <data name="Rule.pricing_stale_version" xml:space="preserve">
+    <value>其他人在此期间已修改。请刷新后重试。</value>
+  </data>
 </root>
