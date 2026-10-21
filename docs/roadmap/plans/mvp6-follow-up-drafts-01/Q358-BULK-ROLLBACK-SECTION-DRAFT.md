@@ -5,7 +5,9 @@
 > bullet's "ayrı bir iş olarak yapılır" to "aşağıdaki adımlarla yapılır". Measured on `origin/main` `9d44e8a1f`
 > (runner `Q358ShipmentGrantRetractionRunner.cs:136-169,186-224`; `RolePermission.GrantSource` is an int enum, System = 0,
 > Module = 1; Auth stores Guids as standard UUIDs; `auth_role_assignment_versions` has `_id` = TenantId, `Version`).
-> **Not run** — test the script on a non-prod copy (DryRun first) before production.
+> **Tested 2026-10-21** on a throwaway local mongod 8.0.18 with synthetic post-Apply data (CT): DryRun → Apply → DryRun;
+> converted and revoked grants restored, an admin-changed grant skipped, `not_applied` and G7 rows untouched, versions
+> bumped once per tenant; the `TENANTS` filter limited the change to one tenant. Not run on real data.
 
 ---
 
