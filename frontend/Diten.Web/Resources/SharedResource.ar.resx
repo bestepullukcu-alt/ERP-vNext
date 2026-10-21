@@ -1149,6 +1149,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>الحمولات</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>إدارة المطالبات</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>مطالبات الشحن</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>سير عمل S&amp;OP والاعتمادات</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>خطط S&amp;OP</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>تخطيط القدرات</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>خطط القدرات</value></data>
   <data name="Activate" xml:space="preserve"><value>تفعيل</value></data>
   <data name="Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>البريد الإلكتروني أو اسم المستخدم</value></data>

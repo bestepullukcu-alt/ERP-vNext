@@ -120,7 +120,7 @@ const ShipmentCreate = (function () {
             if (!response.ok) { await failure(response); return; }
             const result = await response.json();
             window.showToast?.(result.idempotentReplay ? L.replay : L.success, 'success');
-            window.location.assign(`/SupplyChain/Shipments/Details/${encodeURIComponent(result.shipmentId)}`);
+            window.location.assign(`/SupplyChain/Shipments/Details/${encodeURIComponent(result.shipmentId)}?legalEntityId=${encodeURIComponent(company)}`);
         } catch (error) { showError(L.persistenceUnavailable); }
         finally { button.disabled = false; }
     };

@@ -147,6 +147,7 @@ python3 -B scripts/status_report.py --self-test
 python3 -B .antigravity/scripts/list_screen_touch_hook.py --self-test
 python3 -B scripts/known_failures.py --self-test
 python3 -B scripts/ct_route.py --self-test
+python3 -B scripts/pack_approval.py --self-test
 
 # AUDIT-FU-01 (4): a nav key written in a module pack has the runtime's normalized form (NavNameLocalizer.Normalize);
 # the keys written before this check are listed in the script (KNOWN, only shrinks). Standard library and git only.

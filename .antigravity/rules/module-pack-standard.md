@@ -280,6 +280,7 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 | 19 | `Implementation Notes` | Master-plan saplamalari, kararlar, gelecek baglantilari |
 | 20 | `Follow-up Items` | Sonraki sprint/wave'e birakilan isler |
 | 21 | `Audited Events` (Denetlenen Olaylar) | Yeni paketlerde zorunlu; mevcut pakette yazma komutu ekleyen/degistiren ilk iste zorunlu (Bolum 10.1 gecis kurali). Paketin her yazma komutu icin: komut → olay adi → yol (a/b/c) ya da istisna sinifi + gerekce. Bkz. Bolum 10.1 ve `audit-trail-standard.md` (AUD-001) |
+| 22 | `Teslim dilimleri` | CT-APR-02'den sonra inceleme isteyen pakette zorunlu: `| DL-n | ad | kapsadığı bölümler |`; her WP bir ya da birkaç dilim alır, paketin tamamını tek WP alamaz (istisna: onay satırında `whole_pack=<WP>`). Bkz. Bölüm 16 "Onaydan önce bağımsız inceleme" |
 
 ---
 
@@ -515,6 +516,25 @@ Bir modulun **gerceklesme durumu degistiginde** (frontend eklendi, test eklendi,
   yol, ürün kodu yolu ya da entegrasyona dokunan değişiklik yüksek risktir. Yüksek riskli işi onaylayıcı listesinde
   `high: evet` olan ve paketi yazmamış biri onaylar.
 - Eski onaylar geriye dönük düşmez. Ayrıntı ve güven sınırı: `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §3.
+
+### Onaydan önce bağımsız inceleme ve teslim dilimleri (CT-APR-02, 2026-10-20)
+
+- `execution/approvals/POLICY-REVIEW-START.md`'den sonra eklenen onay satırı, paketin aynı sürümünün bağımsız incelemesini
+  ister (Codex ya da Claude, geliştirici seçer; yazandan ayrı oturum). Muaf olan yalnız tarih alanı, `owner` / `reviewer`
+  alanının TBD'den doldurulması ve boşluktur. Kayıt: `execution/approvals/reviews.tsv` ve bulgu dosyası; komut
+  `scripts/pack_approval.py review-row`. `UYGUN DEĞİL` ya da açık ENGEL onayı durdurur.
+- İnceleme isteyen paket `## Teslim dilimleri` tablosu taşır:
+
+  ```markdown
+  ## Teslim dilimleri
+
+  | dilim | ad | kapsadığı bölümler |
+  |---|---|---|
+  | DL-1 | çekirdek kayıt | Owned Objects, Entity Fields, Validation Rules |
+  | DL-2 | ekran | Frontend File Contract |
+  ```
+
+- Ayrıntı: `docs/guides/operations/control-tower-sop.md` §20.4.
 
 ## 17. Authority Rule
 

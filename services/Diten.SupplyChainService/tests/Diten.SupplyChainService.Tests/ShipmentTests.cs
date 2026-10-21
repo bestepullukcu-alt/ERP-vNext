@@ -288,6 +288,74 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         using var options = new HttpRequestMessage(HttpMethod.Options, "/api/shipment-bundle/shipments");
         Assert.Equal(HttpStatusCode.MethodNotAllowed, (await c.SendAsync(options)).StatusCode);
     }
+    // MOD-0183 §16 (evidence audit 2026-10-19): "same create/transition key → same result, no second write or event" had a
+    // create and a POD replay test but no TRANSITION replay. Same key + same body → the same answer and no new history,
+    // audit or outbox row; same key + a different body → 409, still nothing written.
+    [Fact]
+    public async Task SameKeyTransitionReplayIsOneWriteAndADifferentBodyIsRefused()
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient(); var id = await Create(app, c);
+        var first = await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "plan-once");
+        Assert.Equal(200, first.Status);
+        var before = await StateSnapshotAsync(app);
+        var replay = await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "plan-once");
+        Assert.Equal(200, replay.Status);
+        Assert.Equal(first.Body["status"]?.GetValue<string>(), replay.Body["status"]?.GetValue<string>());
+        Assert.Equal(first.Body["shipmentId"]?.GetValue<string>(), replay.Body["shipmentId"]?.GetValue<string>());
+        await AssertUnchangedAsync(app, before, "transition replay");
+        var changed = await Send(c, "POST", $"/{id}/transition", Transition("Cancelled"), "plan-once");
+        Assert.Equal(409, changed.Status);
+        await AssertUnchangedAsync(app, before, "same key, different body");
+        Assert.Equal(2, await Count(app, "sce_shipment_history"));
+        Assert.Equal(2, await Count(app, "sce_shipment_outbox"));
+    }
+
+    // MOD-0183 §16: cross-tenant / cross-legal-entity MUTATIONS (only reads were tested) answer 404 and write nothing —
+    // neither in the owner's scope nor in the caller's. Token and headers move together, so this is the repository's
+    // answer, not a header mismatch.
+    [Fact]
+    public async Task CrossScopeMutationsAre404AndWriteNothingAnywhere()
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient(); var id = await Create(app, c);
+        Assert.Equal(200, (await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "own-plan")).Status);
+        Assert.Equal(200, (await Send(c, "POST", $"/{id}/transition", Transition("Dispatched"), "own-dispatch")).Status);
+        var before = await StateSnapshotAsync(app);
+        var otherTenant = Guid.NewGuid(); var otherLe = Guid.NewGuid();
+        foreach (var (tenant, le, label) in new[] { (otherTenant, _le, "tenant"), (_tenant, otherLe, "legal-entity") })
+        {
+            Assert.Equal(404, (await Send(c, "POST", $"/{id}/transition", Transition("InTransit"), "x-" + label, tenant: tenant, le: le)).Status);
+            Assert.Equal(404, (await Send(c, "POST", $"/{id}/pod", Pod(), "pod-" + label, tenant: tenant, le: le)).Status);
+            var foreign = new BsonDocument { { "TenantId", tenant.ToString() }, { "LegalEntityId", le.ToString() } };
+            foreach (var name in StateCollections)
+                Assert.Equal(0, await Db(app).GetCollection<BsonDocument>(name).CountDocumentsAsync(foreign));
+        }
+        await AssertUnchangedAsync(app, before, "cross-scope mutations");
+    }
+
+    // MOD-0183 §16 #10 (contract fidelity): every live answer of the bound operations — success and error — validates
+    // against the FROZEN shipment-bundle OpenAPI (Common/ShipmentBundleContract reads the YAML from the repository).
+    [Fact]
+    public async Task Live_responses_match_the_frozen_contract()
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient();
+        var errors = new List<string>();
+        void Check(string path, string method, (int Status, JsonObject Body) r) =>
+            errors.AddRange(Diten.SupplyChainService.Tests.Common.ShipmentBundleContract.ValidateResponse(path, method, r.Status, r.Body).Select(e => $"{method} {path} {r.Status}: {e}"));
+        var created = await Send(c, "POST", "", CreateBody(), "contract-create"); Check("/shipments", "POST", created);
+        var id = created.Body["shipmentId"]!.GetValue<string>();
+        Check("/shipments/{shipmentId}", "GET", await Send(c, "GET", "/" + id));
+        Check("/shipments", "GET", await Send(c, "GET", ""));
+        foreach (var status in new[] { "Planned", "Dispatched", "InTransit" })
+            Check("/shipments/{shipmentId}/transition", "POST", await Send(c, "POST", $"/{id}/transition", Transition(status), "contract-" + status));
+        Check("/shipments/{shipmentId}/pod", "POST", await Send(c, "POST", $"/{id}/pod", Pod(), "contract-pod"));
+        Check("/shipments/{shipmentId}", "GET", await Send(c, "GET", "/" + id));
+        Check("/shipments/{shipmentId}", "GET", await Send(c, "GET", "/" + Guid.NewGuid()));                              // 404
+        var bad = CreateBody(); bad.Remove("plannedShipAt"); Check("/shipments", "POST", await Send(c, "POST", "", bad, "contract-bad")); // 400
+        Check("/shipments/{shipmentId}/transition", "POST", await Send(c, "POST", $"/{id}/transition", Transition("Planned"), "contract-422")); // 422
+        foreach (var e in errors) output.WriteLine(e);
+        Assert.Empty(errors);
+    }
+
     private static readonly string[] StateCollections =
         ["sce_shipments", "sce_shipment_receipts", "sce_shipment_history", "sce_shipment_audit", "sce_shipment_outbox"];
 

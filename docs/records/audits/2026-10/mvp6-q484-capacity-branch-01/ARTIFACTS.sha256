@@ -1,0 +1,8 @@
+# mvp6-q484-capacity-branch-01 — resealed 2026-10-13T08:45:04Z
+# Program.cs after: 0d66f096247b644c6192abb8ec50974539318beb60f1047679adb653142a3dd4
+# added 2026-10-13: CompositionRootGuardTests 3/3 against the branch; the 2026-10-11 test-host reading; Q492
+f72d5a0e6630408f1543ee111d6649e9f91bad1fd01182ea3e03ef0b8978a770  REPORT.md
+e64aa8c4165fb29301d2a400da37c51e0a368b4eb643834aa2e6e124feb4fcb3  evidence/after-capacity-set.log
+9bb85d752f5b6e248a9adcccf0cdbcfcea76a67c70cbabea5a2bfa623a215374  evidence/composition-root-guard.log
+bfd36fd3de02c43ef80f990698bad391fa2afe7f2687b093fe2e92f515a010fb  evidence/restored-with-branch.log
+c544a7fa328abc32d7513d84b6d7f0e29e1901a6dece7ee486ed9b48f4bd0fd7  evidence/sabotage-branch-removed.log

@@ -1,0 +1,21 @@
+Kaynak: çalışma ağacı · ana dala göre: 0 commit geride, 37 commit ileride
+Paketler: execution/domains/supply-chain-execution/module-packs/*.md · karar kayıtları: docs/records/audits/**/*.md
+
+| Modül | Paket durumu | Kanıt seviyesi | Kanıtın yeri | CT kararı | Sıradaki tek eksik |
+|---|---|---|---|---|---|
+| MOD-0147 | draft | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0148 | draft | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0173 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0174 | draft | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0175 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0183 | ready-for-dev | E4 | `docs/records/audits/2026-10/mvp6-gateway-idempotency-replay-01/REPORT.md@7b168c4fa` | conditional | kayıt yok |
+| MOD-0184 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0185 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0186 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0187 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0188 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0190 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0192 | ready-for-dev | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+| MOD-0193 | done | kayıt yok | kayıt yok | kayıt yok | kayıt yok |
+
+Toplam 14 paket; CT karar kaydı olan 1. Yüzde yazacaksan bu tabloyla birlikte yaz (REP-001 §2).

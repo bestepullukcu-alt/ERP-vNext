@@ -32,6 +32,25 @@ public sealed class ShipmentDetailActionTests
         Assert.Contains("const version = ++loadVersion", _details);
         Assert.Contains("if (version !== loadVersion) return", _details);
     }
+    // 2026-10-18 (found while scoping G6): the adapter answers 400 without ?legalEntityId=, and the workspace sent it on no
+    // call — so Details, transitions and POD could never succeed through the Web. Every workspace call is scoped now,
+    // a missing scope fails closed before any request, and both ways into the workspace carry the scope.
+    [Fact] public void EveryWorkspaceCallCarriesTheLegalEntityScopeAndAMissingScopeFailsClosed()
+    {
+        Assert.Contains("const legalEntityId = host?.dataset.legalEntityId || ''", _details);
+        Assert.Contains("const scoped = (path) => `${path}?legalEntityId=${encodeURIComponent(legalEntityId)}`", _details);
+        Assert.Contains("await fetch(scoped(`/SupplyChain/Shipments/api/${shipmentId}`), {", _details);
+        Assert.Contains("await fetch(scoped(`/SupplyChain/Shipments/api/${shipmentId}/${kind}`), {", _details);
+        Assert.DoesNotContain("fetch(`/SupplyChain/Shipments/api/${shipmentId}", _details);
+        Assert.Contains("if (!uuidPattern.test(legalEntityId)) { hideSkeleton(); text('shipmentNumber', L.unavailable); showError(L.legalEntityRequired); return; }", _details);
+        Assert.Contains("Details/${encodeURIComponent(id)}?legalEntityId=${encodeURIComponent(document.getElementById('filterLegalEntity')?.value || '')}", _index);
+        Assert.Contains("Details/${encodeURIComponent(result.shipmentId)}?legalEntityId=${encodeURIComponent(company)}", _create);
+        Assert.Contains("data-legal-entity-id=\"@ViewBag.LegalEntityId\"", _detailsView);
+        Assert.Contains("ViewBag.LegalEntityId = LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId)", _controller);
+    }
+    private readonly string _index = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js");
+    private readonly string _detailsView = Read("frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml");
+    private readonly string _controller = Read("frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs");
     private static string Read(string path) => File.ReadAllText(Path.Combine(Root(), path));
     private static string Root() { var dir = new DirectoryInfo(AppContext.BaseDirectory); while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent; return dir?.FullName ?? throw new DirectoryNotFoundException(); }
 }

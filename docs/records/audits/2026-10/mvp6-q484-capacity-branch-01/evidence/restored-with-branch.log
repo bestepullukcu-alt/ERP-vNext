@@ -1,0 +1,44 @@
+Test run for /Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+/Users/natig/mvp6-env/bs-0190-0192-20261011-1411/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.15]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.30]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.31]   Starting:    Diten.SupplyChainService.Tests
+[20:46:18 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+[20:46:19 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[20:46:19 WRN] Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured. CorrelationId= TenantId= LegalEntityId=
+[20:46:19 INF] Now listening on: http://127.0.0.1:5066 CorrelationId= TenantId= LegalEntityId=
+[20:46:20 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - application/json; charset=utf-8 208 CorrelationId=5fc87c41-3a4b-4e99-a7c7-eadbe1b5589d TenantId= LegalEntityId=
+[20:46:20 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - 401 null application/json; charset=utf-8 53.8677ms CorrelationId=5fc87c41-3a4b-4e99-a7c7-eadbe1b5589d TenantId= LegalEntityId=
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacityHostCompositionTests.Capacity_controller_is_mapped_and_its_context_middleware_is_composed [2 s]
+[20:46:20 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/sandop-plans - application/json; charset=utf-8 120 CorrelationId=6df01a2d-710b-43e4-8113-8c0eb381c350 TenantId= LegalEntityId=
+[20:46:20 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=6df01a2d-710b-43e4-8113-8c0eb381c350 TenantId= LegalEntityId=
+[20:46:20 INF] Route matched with {action = "Create", controller = "SandopPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController (Diten.SupplyChainService.Api). CorrelationId=6df01a2d-710b-43e4-8113-8c0eb381c350 TenantId= LegalEntityId=
+[20:46:20 INF] Handling CreateSandopPlanCommand CorrelationId=00000000-0000-0000-0000-000000000000 TenantId=00000000-0000-0000-0000-000000000000 LegalEntityId=00000000-0000-0000-0000-000000000000
+[20:46:20 INF] Executing ContentResult with HTTP Response ContentType of application/json CorrelationId=6df01a2d-710b-43e4-8113-8c0eb381c350 TenantId= LegalEntityId=
+[20:46:20 INF] Executed action Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api) in 103.8727ms CorrelationId=6df01a2d-710b-43e4-8113-8c0eb381c350 TenantId= LegalEntityId=
+[20:46:20 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.SandopPlans.SandopPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=6df01a2d-710b-43e4-8113-8c0eb381c350 TenantId= LegalEntityId=
+[20:46:20 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/sandop-plans - 201 292 application/json 152.587ms CorrelationId=6df01a2d-710b-43e4-8113-8c0eb381c350 TenantId= LegalEntityId=
+[20:46:20 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - application/json; charset=utf-8 208 CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId= LegalEntityId=
+[20:46:20 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId= LegalEntityId=
+[20:46:20 INF] Route matched with {action = "Create", controller = "CapacityPlans"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(Diten.SupplyChainService.Application.Features.CapacityPlans.CreateCapacityPlanRequest, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController (Diten.SupplyChainService.Api). CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId= LegalEntityId=
+[20:46:20 INF] Handling CreateCapacityPlanCommand CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId=19200000-0000-4000-8000-000000000001 LegalEntityId=19200000-0000-4000-8000-000000000002
+[20:46:20 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.CapacityPlans.CapacityPlanResponse'. CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId= LegalEntityId=
+[20:46:20 INF] Executed action Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api) in 115.834ms CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId= LegalEntityId=
+[20:46:20 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.CapacityPlans.CapacityPlansController.Create (Diten.SupplyChainService.Api)' CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId= LegalEntityId=
+[20:46:20 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - 201 null application/json; charset=utf-8 123.4987ms CorrelationId=3af86ae1-191c-48da-961b-231981c66371 TenantId= LegalEntityId=
+[20:46:20 INF] Request starting HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - application/json; charset=utf-8 208 CorrelationId= TenantId= LegalEntityId=
+[20:46:20 INF] Request finished HTTP/1.1 POST http://localhost/api/supply-chain/capacity-plans - 400 null application/json; charset=utf-8 0.5568ms CorrelationId=9fc84342-c537-444e-baef-c87fcef4b4b5 TenantId= LegalEntityId=
+[xUnit.net 00:00:03.84]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.Common.SandopCapacityHostCompositionTests.Sandop_controller_is_mapped_and_serves_a_request [168 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityCorrelationTests.Correlation_survives_request_response_audit_and_event [162 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityCorrelationTests.Malformed_correlation_is_rejected_before_any_write [4 ms]
+
+Test Run Successful.
+Total tests: 4
+     Passed: 4
+ Total time: 4.4218 Seconds

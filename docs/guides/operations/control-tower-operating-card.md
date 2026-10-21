@@ -1,6 +1,6 @@
 # CONTROL TOWER — Daily Operating Card v1.8
 
-> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r4).
+> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r5).
 
 ## Bugün hangi komut
 
@@ -14,6 +14,7 @@
 | Yeni iş: önce keşif, raporu commit et (taslaktan önce; yoksa Expected HEAD eskir) | `python3 .antigravity/scripts/verify_module_id.py . --discover "<ad>"` | 0 eşleşme yok · 3 inceleme gerekli · 2 tamamlanamadı |
 | Prompt taslağı (keşif commit'inden sonra) | `python3 scripts/prompt_gate.py draft --queue <kuyruk> --wp <WP>` | 0 taslak üretildi — dağıtım izni değil · 2 ölçülemez |
 | Paket onayı: kart, onay satırı ve kontrol (kural başlangıcından sonra değişen paket; satırı `execution/approvals/approvals.tsv`'ye siz eklersiniz) | `python3 scripts/pack_approval.py card <paket>` · `python3 scripts/pack_approval.py row <paket> --author <hesap> --approver <hesap> --risk HIGH --reason "<gerekçe>"` · `python3 scripts/pack_approval.py check <paket>` | check: 0 onaylı · 1 onaylı değil · 2 okunamadı |
+| Onaydan önce bağımsız inceleme (Module Pack ya da DCP; SOP §20.4; bulgu dosyası önce commit edilir, satırı `execution/approvals/reviews.tsv`'ye siz eklersiniz) | `python3 scripts/pack_approval.py review-row <paket> --findings <dosya> --verdict UYGUN --reviewer codex --model <model> --effort <effort> --reviewer-session <oturum> --author <K…> --author-session <oturum> --requested-by <hesap>` | 0 satır basıldı · 2 reddedildi |
 | Dağıtımdan önce (kayıt `main`'de değilse `--prepare`: yalnız hazırlık) | `python3 scripts/prompt_gate.py check <prompt> --queue <kuyruk>` | 0 geçti · 1 ENGEL · 2 tamamlanamadı |
 | Kuyruğa yazmadan hemen önce | `python3 scripts/ct_queue.py guard --queue <kuyruk>` | yazma öncesi özet; kilit değildir |
 | Başka bir MVP'ye soru | `python3 scripts/ct_route.py --kind delivery --module <MOD>` (sözleşme için `--kind contract`) | 0 tek hedef + gönderilmeyen taslak · 1 hedef yok · 2 ölçülemez |
@@ -22,6 +23,8 @@
 | Kabul | `python3 scripts/acceptance_record.py check <kayıt>@<commit> --queue <kuyruk> --wp <WP> --module <MOD>` | 0 ACCEPTED'e izin verir · 1 ENGEL · 2 tamamlanamadı |
 | Rapor | `python3 scripts/status_report.py --mode v2 --queue <kuyruk>` | 0 tam · 1 basıldı ama eksik (neden makine bloğunda) · 2 ölçülemez |
 | Test koşusundan sonra | `python3 scripts/known_failures.py check <koşu.trx> --suite <süit>` | 0 yeni regresyon yok · 1 regresyon · 2 koşu güvenilmez |
+
+Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır (listedeki, yazardan başka bir kişi onaylar; başka bir kişi birleştirir). Var olan bir sahip değerini değiştirmek (örneğin e-postayı role çevirmek) muaf değişiklik değildir ve bağımsız inceleme ister (SOP §20.4).
 
 ## 0. Yeni Control Tower açılışı
 
@@ -172,6 +175,7 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] Dependency gates yeniden hesaplandı.
 - [ ] Newly-unblocked work belirlendi.
 - [ ] Güvenli paralellik varsa sonraki **2+ WP** üretildi; yoksa neden yazıldı.
+- [ ] PR merge edildikten sonra worktree temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırıldı; değilse kaldırılmadı, sahibe bildirilip soruldu (SOP §16.5).
 
 ```text
 Commit ≠ Acceptance

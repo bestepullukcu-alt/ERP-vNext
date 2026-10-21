@@ -87,7 +87,8 @@ public sealed class LegalEntityMiddlewareWiringTests
             new EndpointMetadataCollection(new ClaimPermissionAttribute(ClaimPermissions.Read)), "wiring"));
         var next = false;
         var stub = new StubLegalEntityScopeValidator(outcome);
-        var middleware = new ClaimContextMiddleware(_ => { next = true; return Task.CompletedTask; });
+        var middleware = new ClaimContextMiddleware(_ => { next = true; return Task.CompletedTask; },
+            NullLogger<ClaimContextMiddleware>.Instance);
         await middleware.InvokeAsync(http, new ClaimRequestContext(), new RequestContext(), stub);
         return (http.Response.StatusCode, next, stub);
     }

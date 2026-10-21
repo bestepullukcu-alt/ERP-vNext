@@ -1,0 +1,2 @@
+fixture: tenant c34f34c2-8a04-416e-9adf-b8d2de805cb0 Admin d2212d66-e4a6-4033-9e50-238980ab48d6 +5 System shipments grants (simulates pre-C-13 widening)
+fixture CreatedAt normalised on 5 doc(s)
