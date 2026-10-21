@@ -100,7 +100,7 @@ PR as: merge the bottom PR → update the top branch once → approve → merge 
 
 ## 3a. Proposals for owner review (2026-10-21) — not decisions
 
-**MOD-0147 v1 fixed metric set — draft for Natig's review.** The pack's score policy (`MOD-0147-supplier-performance-risk.md`
+**MOD-0147 v1 fixed metric set — DECIDED 2026-10-21 (Natig):** `docs/records/decisions/2026-10/mvp6-mod0147-v1-metric-set-owner-decision-2026-10-21.md` — equal weights 25/25/25/25 · calendar month · OTD on or before the promised date (≤ 3 days early on time) · quantity ±2 % · publish when ≥ 3 of 4 metrics have data (missing one shown) · minimum 5 receipt lines. The draft table below is kept as written. The pack's score policy (`MOD-0147-supplier-performance-risk.md`
 §0.1) requires every metric to be unit `PERCENT`, measured `0..100`, direction `HIGHER_IS_BETTER`. The two
 "rate of bad events" metrics are therefore stated as their positive counterpart (same data, same meaning).
 Scope: per Tenant + LE + supplier + period (C1: approval and relationship are per LE).
