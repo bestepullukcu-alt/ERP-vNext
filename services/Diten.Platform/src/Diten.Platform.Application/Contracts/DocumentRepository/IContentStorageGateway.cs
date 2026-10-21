@@ -88,7 +88,13 @@ public enum ContentStorageScope
     /// existing scopes' keys are unchanged. This scope alone has its own file rule (images only, own size
     /// cap — <see cref="ContentStorageScopeRules"/>) and its own scope-bound keys
     /// (<c>platform.document-repository.visit-evidence.*</c>), which never open any other scope.</summary>
-    CrmVisitEvidence = 5
+    CrmVisitEvidence = 5,
+
+    /// <summary>WP-VW-W6 PLT-W6-DOC — the MOD-0168 pre-order's depot document (depot copy, pharmacy copy): a PDF the CRM's
+    /// system transmission writes with no user behind it. Own <c>commercial-pre-order-documents</c> partition, own file
+    /// rule (PDF only, ≤ 256 KB — <see cref="CommercialPreOrderDocumentFileRule"/>). Written ONLY through the internal
+    /// key-only door (<c>api/internal/document-repository</c>); additive and projected by name.</summary>
+    CommercialPreOrderDocument = 6
 }
 
 /// <summary>

@@ -86,6 +86,9 @@ public sealed class LoginOnlyEndpointGuardTests
     {
         "InternalAuditController",
         "InternalBusinessReferenceDataController",
+        // WP-VW-W6 PLT-W6-DOC — a service's system step writes / reads its own document scopes: the internal API key is
+        // checked before anything is read, a user token is refused, tenant from the request (InternalDocumentRepositoryTests).
+        "InternalDocumentRepositoryController",
         "InternalModuleRegistrationController",
         // WP-VW-W5 PLT-NOTIFY — services and schedulers start a catalogued notification: the internal API key is checked
         // before anything is read; tenant from the body, owner-module check (InternalNotificationEventDispatchTests).

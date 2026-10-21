@@ -321,6 +321,8 @@ public static class DependencyInjection
         // the resolver: AddTimeEntryModule registers the same one for hosts that compose only that module.
         services.TryAddScoped<Contracts.ILineManagerResolver, Features.OrganizationSeats.LineManagerResolver>();
         services.AddScoped<Features.Notifications.Services.IInternalEventDispatchService, Features.Notifications.Services.InternalEventDispatchService>();
+        // WP-VW-W6 PLT-W6-DOC — the key-only document repository door for a service's system step (CRM pre-order documents).
+        services.AddScoped<Features.DocumentRepository.Internal.IInternalDocumentRepositoryService, Features.DocumentRepository.Internal.InternalDocumentRepositoryService>();
         services.AddScoped<TenantSuspendedV1NotificationMapper>();
         services.AddScoped<TenantReactivatedV1NotificationMapper>();
         services.AddScoped<INotificationEventMapper<TenantSuspendedV1>>(sp => sp.GetRequiredService<TenantSuspendedV1NotificationMapper>());

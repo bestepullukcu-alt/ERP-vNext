@@ -56,7 +56,7 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
         IReadOnlyList<string> allowedMediaTypes = scopeRule?.AllowedMediaTypes ?? _options.AllowedMediaTypes;
         var maxFileSizeBytes = scopeRule is null
             ? _options.MaxFileSizeBytes
-            : scopeRule.MaxFileSizeBytes > 0 ? scopeRule.MaxFileSizeBytes : CrmVisitEvidenceFileRule.DefaultMaxFileSizeBytes;
+            : scopeRule.MaxFileSizeBytes > 0 ? scopeRule.MaxFileSizeBytes : scopeRule.DefaultMaxFileSizeBytes;
 
         if (allowedExtensions.Count > 0 && !allowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
         {
@@ -244,6 +244,8 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
             ContentStorageScope.ESignatureImages => "esign-images",
             // WP-VW-W3-PLT — same rule: visit evidence (photo/signature) gets its own partition, never "documents".
             ContentStorageScope.CrmVisitEvidence => "crm-visit-evidence",
+            // WP-VW-W6 PLT-W6-DOC — the pre-order depot documents get their own partition too.
+            ContentStorageScope.CommercialPreOrderDocument => "commercial-pre-order-documents",
             _ => "documents"
         };
         if (!string.IsNullOrWhiteSpace(request.StoragePartition))
