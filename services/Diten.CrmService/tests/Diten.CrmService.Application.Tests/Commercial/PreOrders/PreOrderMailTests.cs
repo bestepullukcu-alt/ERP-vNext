@@ -294,8 +294,20 @@ public sealed class PreOrderMailTests : PreOrderTestBase
     [InlineData("AE", "ar")]
     [InlineData("SA", "ar")]
     [InlineData("EG", "ar")]
+    [InlineData("KZ", "ru")]
+    [InlineData("KG", "ru")]
+    [InlineData("BY", "ru")]
+    [InlineData("UZ", "ru")]
+    [InlineData("TJ", "ru")]
+    [InlineData("TM", "ru")]
+    [InlineData("AZ", "ru")]
+    [InlineData("GE", "ru")]
+    [InlineData("UA", "ru")]
+    [InlineData("md", "ru")]
     [InlineData("ro", null)]
-    [InlineData("KG", null)]
+    [InlineData("PL", null)]
+    [InlineData("XK", null)]
+    [InlineData("CH", null)]
     [InlineData("DE", null)]
     [InlineData("", null)]
     [InlineData(null, null)]
@@ -303,10 +315,10 @@ public sealed class PreOrderMailTests : PreOrderTestBase
         => Assert.Equal(language, ExternalRecipientLanguages.ForCountry(country));
 
     [Fact]
-    public async Task L2_an_ae_company_writes_to_its_depot_in_arabic_and_a_kg_company_in_the_tenants_language()
+    public async Task L2_an_ae_company_writes_to_its_depot_in_arabic_and_a_kg_company_in_russian()
     {
         await SetMode(PreOrderApprovalModes.AutoWithinLimits);
-        foreach (var (rep, sku, language) in new[] { (PreOrderWorld.RepAe, "TUT", "ar"), (PreOrderWorld.RepKg, "GLU", (string?)null) })
+        foreach (var (rep, sku, language) in new[] { (PreOrderWorld.RepAe, "TUT", "ar"), (PreOrderWorld.RepKg, "GLU", (string?)"ru") })
         {
             Platform.Reset();
             var draft = await Draft(rep, Input(lines: Line(sku, 30)));

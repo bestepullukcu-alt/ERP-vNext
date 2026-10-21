@@ -19,6 +19,13 @@ public static class ExternalRecipientLanguages
         "AE", "BH", "DJ", "DZ", "EG", "IQ", "JO", "KM", "KW", "LB", "LY", "MA", "MR", "OM", "PS", "QA", "SA", "SD", "SO", "SY", "TN", "YE"
     };
 
+    /// <summary>The countries whose business language is Russian besides Russia itself (user decision 2026-10-21, W6 E4:
+    /// the CIS / post-Soviet countries of the tenant's companies).</summary>
+    public static readonly IReadOnlySet<string> RussianCountries = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "RU", "KZ", "KG", "BY", "UZ", "TJ", "TM", "AZ", "GE", "UA", "MD"
+    };
+
     /// <summary>The language for a country code, or null (= the tenant's language).</summary>
     public static string? ForCountry(string? countryCode)
     {
@@ -29,8 +36,8 @@ public static class ExternalRecipientLanguages
             "TR" => "tr",
             "FR" => "fr",
             "ES" => "es",
-            "RU" => "ru",
             "CN" => "zh",
+            _ when RussianCountries.Contains(code) => "ru",
             _ when ArabicCountries.Contains(code) => "ar",
             _ => null
         };
