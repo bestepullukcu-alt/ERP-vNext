@@ -816,8 +816,11 @@ def kunye_commit(text: str) -> str | None:
     if any(p.startswith(("künye: 'commit' iki kez", "künye: 'commit' değeri")) or
            (p.startswith("künye satır") and "commit" in p.lower()) for p in problems):
         return AMBIGUOUS
-    value = fields.get("commit", "")
-    return value if COMMIT_ID.match(value) else None
+    if "commit" not in fields:
+        return None
+    value = fields["commit"]
+    # Codex F-15: a present but malformed value is ambiguous, never 'not measured' like a missing field
+    return value if COMMIT_ID.match(value) else AMBIGUOUS
 
 
 def in_main(commit: str, main_ref: str = MAIN_REF) -> bool:
@@ -1560,7 +1563,8 @@ def self_test() -> int:
              ("a" * 9, "docs/r4.md"): ("---\r\nformat: x\r\ncommit: " + "f" * 12 + "\r\n--- \r\n# kayıt\r\n").encode(),
              ("a" * 9, "docs/r5.md"): ("---\ncommit: " + "c" * 40 + "\ncommit: " + "d" * 40 + "\n---\n").encode(),
              ("a" * 9, "docs/r6.md"): ("---\ntitle: x\ncommit: " + "d" * 40 + "\n---\n").encode(),
-             ("a" * 9, "docs/r7.md"): b"---\nformat: x\n---\n"}
+             ("a" * 9, "docs/r7.md"): b"---\nformat: x\n---\n",
+             ("a" * 9, "docs/r8.md"): b"---\nformat: x\ncommit: nonsense\n---\n"}
     in_m = {"a" * 9, "c" * 40}
     acc = Table(header + "\n" + "\n".join([
         "A1\tMOD-0183 x\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
@@ -1572,7 +1576,8 @@ def self_test() -> int:
         "A7\tCRLF künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r4.md@" + "a" * 9,
         "A8\ttwo commits\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r5.md@" + "a" * 9,
         "A9\tother field\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r6.md@" + "a" * 9,
-        "A10\tno commit\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r7.md@" + "a" * 9]) + "\n")
+        "A10\tno commit\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r7.md@" + "a" * 9,
+        "A11\tbad commit\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r8.md@" + "a" * 9]) + "\n")
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     s_late = summary_lines(summarize(acc, vocab, queue) | {"accepted_not_in_main": late})
     cases.append(("sabotage S-12: a closed row whose acceptance record and accepted code commit are not in main -> UYARI "
@@ -1583,8 +1588,8 @@ def self_test() -> int:
                   and any("KABUL EDİLDİ AMA MAIN'DE YOK 3" in l and "bbbbbbbbb main'de değil" in l and "ddddddddd main'de değil" in l
                           for l in s_late) and any("KAPANMIŞ 3" in l for l in s_late)))
     cases.append(("sabotage S-12 F-8 (Codex): a künye with two commit lines (first in main, second not) -> never clean: "
-                  "UYARI KÜNYE BELİRSİZ naming it", late["ambiguous"] == ["A8"]
-                  and any("KÜNYE BELİRSİZ 1" in l and "A8" in l for l in s_late)))
+                  "UYARI KÜNYE BELİRSİZ naming it; a present but malformed commit ('nonsense', F-15) too",
+                  late["ambiguous"] == ["A8", "A11"] and any("KÜNYE BELİRSİZ 2" in l and "A8" in l for l in s_late)))
     in_m.add("b" * 9)
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     cases.append(("sabotage S-12: the record merged but the accepted code commit never reached main (the ABB case) -> UYARI "

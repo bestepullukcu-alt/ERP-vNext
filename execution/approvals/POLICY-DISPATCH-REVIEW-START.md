@@ -46,7 +46,7 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
   olağan kapanış (`ACCEPTED`, `DONE` — `closed` sınıfı) ayrılmak sayılmaz; kapandıktan sonra yeniden çalışılan duruma
   dönmek yeniden açılmadır. Yeniden açılma sırayla değil ebeveyn kenarıyla ölçülür: satırın kapanmış olmadığı ve
   ebeveynlerinden birinde kapanmış olduğu her commit (paralel dal ya da commit tarihi sonucu değiştirmez). Kabulde
-  geçmiş main'den ve kabul kaydının commit'inden okunur. Ölçü git'e kaydedilmiş geçmiştir: aynı commit içindeki gidiş-dönüş ya da squash ile silinen
+  geçmiş main'den, kabul kaydının commit'inden ve doğrulanan kod commit'inden okunur. Ölçü git'e kaydedilmiş geçmiştir: aynı commit içindeki gidiş-dönüş ya da squash ile silinen
   ara durum görünmez; bu yüzden kuyruk değişiklikleri squash edilmez (depo yalnız merge commit kabul eder). Kapsamın kaynağı kuyruk satırıdır; kapsamı
   ayrıca bir WP belgesinde yazılı iş için bu koruma o belgenin sürümünü ölçmez. Bunlardan biri tutmazsa iş kapıdan geçer ve ENGEL nedenini söyler. Eski kuyruk istisna değildir.
   `module` sütunu olmayan bir kuyruğun (bugün sce-mvp6) satırları hiç korunmaz; bu bilinen bir sonuçtur ve gerçek bir

@@ -388,7 +388,8 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
                                 f"paketin bu sürümünü main'de onaylatın (`python3 scripts/pack_approval.py check {path}` "
                                 "çıkış 0; SOP §20.4)"))
                 if not cover:
-                    protected, why = start_protected(pa, pg, root, start, main, queue, wp, path, pdata, record_at)
+                    protected, why = start_protected(pa, pg, root, start, main, queue, wp, path, pdata, record_at,
+                                                     code_commit)
                     if not protected:
                         out.append((f"kabul edilen paket sürümü (sha {sha8}) incelenmemiş ve korunan yürüyen işin başlangıç "
                                     f"sürümü değil ({why}) — eski onay inceleme şartının yerine geçmez",
@@ -404,10 +405,11 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
 
 
 def start_protected(pa, pg, root: str, start: str, main: str, queue: str | None, wp: str | None, path: str,
-                    pdata: bytes, record_at: str | None = None) -> tuple[bool, str]:
+                    pdata: bytes, record_at: str | None = None, code_commit: str | None = None) -> tuple[bool, str]:
     """R3-1 (b): is `pdata` the start version of this WP while the WP was protected at the start? The queue's path is
     read from the registry at the start, its row today from main; the decision is the dispatch gate's own, its queue
-    history read from main AND the record's commit (F-11)."""
+    history read from main, the record's commit (F-11) AND the verified code commit (Codex F-14: a worker branch's
+    REWORK and back may be in neither main nor the record's history)."""
     if not queue or not wp:
         return False, "kuyruk ya da WP bilinmiyor"
     cq = pg._SHARED
@@ -425,7 +427,7 @@ def start_protected(pa, pg, root: str, start: str, main: str, queue: str | None,
         return False, f"{wp} main'deki kuyrukta tek satır değil"
     return pg.dispatch_protected(pa, root, start, path, pdata, wp,
                                  {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))},
-                                 [main] + ([record_at] if record_at else []), closing=True)
+                                 [main] + [c for c in (record_at, code_commit) if c], closing=True)
 
 
 def s5_line(start: str, reason: str, step: str | None, path: str | None) -> str:
@@ -1543,7 +1545,7 @@ def self_test() -> int:
     # older than POLICY-START, unchanged) or does not (the pack changed after POLICY-START, no approval row)
     cq = gate()._SHARED
 
-    def protected_repo(name, legacy, reopen=False, after=()):
+    def protected_repo(name, legacy, reopen=False, after=(), worker_reopen=False):
         rq = S5Repo(os.path.join(s5_tmp.name, name))
         reg_cols = cq.REGISTRY_COLUMNS
         reg_row = {c: "x" for c in reg_cols} | {"queue_id": "pqg-ct", "path": "q/CT-QUEUE.tsv", "vocabulary": "sop7"}
@@ -1558,6 +1560,13 @@ def self_test() -> int:
         rq.commit_file("execution/approvals/POLICY-START.md", "# start\n")
         pv = rq.commit_file(PK, V) if not legacy else rq.head()
         rq.start()
+        if worker_reopen:         # Codex F-14: REWORK and back only on the worker (code) branch; the record on main
+            rq.g("checkout", "-q", "-b", "worker")
+            for to in ("REWORK", "IN_PROGRESS"):
+                rq.commit_file("q/CT-QUEUE.tsv", re.sub(r"W7\tiş\tMOD-0151\t\w+", f"W7\tiş\tMOD-0151\t{to}", rq.get("q/CT-QUEUE.tsv")))
+            code = rq.commit_file("src/x.txt", "kod\n")
+            rq.g("checkout", "-q", "main")
+            return rq, pv, code
         for to in (("REWORK", "IN_PROGRESS") if reopen else ()):     # Codex Q7: re-opened after the start, then back
             rq.commit_file("q/CT-QUEUE.tsv", re.sub(r"W7\tiş\tMOD-0151\t\w+", f"W7\tiş\tMOD-0151\t{to}", rq.get("q/CT-QUEUE.tsv")))
         rq.commit_file("q/CT-QUEUE.tsv", rq.get("q/CT-QUEUE.tsv").replace("W7\tiş\tMOD-0151\tIN_PROGRESS", "W7\tiş\tMOD-0151\tVERIFYING"))
@@ -1581,6 +1590,11 @@ def self_test() -> int:
                   "refused: protection is never regained",
                   r_r[0] == 1 and any("korunan yürüyen işin başlangıç sürümü değil" in e and "geri kazanılamaz" in e
                                       for e in s5e(r_r))))
+    rw14, pw14, cw14 = protected_repo("f14-worker", True, worker_reopen=True)
+    r_w14 = wp_run(rw14, pw14, cw14, "W7")
+    cases.append(("sabotage S-5 F-14 (Codex): REWORK and back only on the worker branch whose code is verified, the record "
+                  "written on main without it -> refused (the code commit's queue history is read too)",
+                  r_w14[0] == 1 and any("geri kazanılamaz" in e for e in s5e(r_w14))))
     ra7, pa7, ca7 = protected_repo("f7-closed", True, after=("ACCEPTED",))
     r_a7 = wp_run(ra7, pa7, ca7, "W7")
     cases.append(("S-5 F-7 (Codex): the same protected WP after its normal closure (queue ACCEPTED) -> the record is still "
