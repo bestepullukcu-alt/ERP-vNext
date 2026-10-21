@@ -175,11 +175,33 @@ public sealed class NavManifestL10nGuardTests
         {
             Assert.False(string.IsNullOrWhiteSpace(manifest.ModuleCode), $"{manifest.File}: no ModuleCode parsed");
             Assert.False(string.IsNullOrWhiteSpace(manifest.Domain), $"{manifest.File}: no Domain parsed");
-            Assert.True(manifest.ParsedPageCount > 0, $"{manifest.File}: no pages parsed");
+            Assert.True(manifest.ParsedPageCount > 0 || PagelessUntil.ContainsKey(manifest.ModuleCode), $"{manifest.File}: no pages parsed");
             // Every `new ModuleManifestPage(` in the file must have been understood — named args, positional args
             // and const-referenced page codes are all in use today, and a fourth shape must fail LOUDLY here
             // rather than quietly shrink the expected key set.
             Assert.Equal(manifest.RawPageOccurrences, manifest.ParsedPageCount);
+        }
+    }
+
+    // CT FIX-F4R1 — the ONE open exception to "every manifest yields pages": a module that is API-only for now, named with the WP that
+    // gives it its screens. It is self-expiring: the test below turns red the moment the listed manifest declares a page (or disappears),
+    // and asks for the entry to be deleted. A page-less manifest that is NOT listed here stays red; nothing else is relaxed.
+    private static readonly IReadOnlyDictionary<string, string> PagelessUntil = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        // WP-0177-R6: RECALL-READINESS declares its first pages — its entry was deleted (the guard below forced it)
+    };
+
+    [Fact]
+    public void A_pageless_exception_expires_the_moment_its_manifest_declares_a_page()
+    {
+        var manifests = ReadManifests();
+        foreach (var (moduleCode, entry) in PagelessUntil)
+        {
+            var manifest = manifests.SingleOrDefault(m => m.ModuleCode == moduleCode);
+            Assert.True(manifest is not null, $"{entry}: no manifest declares {moduleCode} any more — delete the entry from PagelessUntil.");
+            Assert.True(manifest!.RawPageOccurrences == 0 && manifest.ParsedPageCount == 0,
+                $"{entry}: {Path.GetFileName(manifest.File)} now declares {manifest.RawPageOccurrences} page(s) — the exception has expired; "
+                + "delete the entry from PagelessUntil.");
         }
     }
 

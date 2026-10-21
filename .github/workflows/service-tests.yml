@@ -75,6 +75,10 @@ jobs:
             project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
           - suite: bb-email
             project: services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Email.Tests/Diten.BuildingBlocks.Email.Tests.csproj
+          # MVP-1 SYNC3 (BL-501, WP-MVP1-AUDIT1): the shared central-audit forwarder; in-memory outbox + fake Platform, no
+          # mongod (the Mongo store itself runs in inventory-tests over its own replica set).
+          - suite: bb-central-audit
+            project: services/Diten.Building.Blocks/Diten.BuildingBlocks.CentralAudit.Tests/Diten.BuildingBlocks.CentralAudit.Tests.csproj
           - suite: devenablement-api
             project: services/Diten.DevEnablementService/tests/Diten.DevEnablementService.Api.Tests/Diten.DevEnablementService.Api.Tests.csproj
           - suite: mg-tests

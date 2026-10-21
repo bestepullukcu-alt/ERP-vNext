@@ -1,5 +1,7 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Inventory.Commands;
 
@@ -9,8 +11,11 @@ namespace Diten.InventoryService.Application.Features.Inventory.Commands;
 /// typed value is a contract 400, not a model-binding accident. There is no TenantId / LegalEntityId member:
 /// scope comes from the signed JWT (tenant-audit DTO rule).
 /// </summary>
-public sealed record PostMovementCommand : IRequest<Response<MovementResponseDto>>
+public sealed record PostMovementCommand : IRequest<Response<MovementResponseDto>>, ICentralAuditDeclaration
 {
+    public CentralAuditMetadata CentralAudit => ForLedger("Create", "InventoryTransaction");
+    public Guid? CentralAuditEntityId(object? response) => Id(Data<MovementResponseDto>(response)?.TransactionId);
+
     /// <summary>The <c>Idempotency-Key</c> header; must equal <see cref="IdempotencyKey"/>.</summary>
     public string? HeaderIdempotencyKey { get; init; }
 
@@ -38,4 +43,7 @@ public sealed record PostMovementCommand : IRequest<Response<MovementResponseDto
     public string? SourceSystem { get; init; }
     public string? TransactionDate { get; init; }
     public string? PostingDate { get; init; }
+
+    /// <summary>INVENTORY 1.3.0 (MOD-0176 KF-B): the reason of an issue that is not from the first eligible FEFO lot (10–1000).</summary>
+    public string? FefoBypassReason { get; init; }
 }

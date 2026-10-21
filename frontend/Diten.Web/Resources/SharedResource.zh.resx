@@ -1177,6 +1177,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>电子签名策略</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>签名含义</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>签名样本审批</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>有效期 / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>召回准备</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO 看板</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>即将过期</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>过期库存</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO 顺序</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>异常收件箱</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>异常详情</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>保质期规则与设置</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>证据包</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>召回准备情况</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>召回追溯</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>召回案例</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>召回案例</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>召回演练计划</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>召回证据包</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>召回设置</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
 </root>

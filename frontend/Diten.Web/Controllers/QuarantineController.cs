@@ -127,17 +127,21 @@ public sealed class QuarantineController : Controller
     {
         if (!_permissions.Has(QuarantineKeys.HoldsRead)) return Refuse(403, null);
         var (page, size) = Paging();
+        // WP-MVP1-FIX-QUI1: the list (and the tab's count) shows OPEN records unless the page asks for another BlockedStatus;
+        // "All" is the page's word for no status filter at all. The status shown travels back to the page.
+        var requested = Request.Query["status"].ToString().Trim();
+        var status = requested.Length == 0 ? "Open" : requested == "All" ? null : requested;
         var query = new QueryBuilder()
             .Add("page", page).Add("pageSize", size).Add("q", Search())
             .Add("blockReasonCode", Request.Query["blockReasonCode"]).Add("pendingOnly", Request.Query["pendingOnly"])
-            .Add("warehouseId", Request.Query["warehouseId"]).Add("status", Request.Query["status"]);
+            .Add("warehouseId", Request.Query["warehouseId"]).Add("status", status);
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/blocked{query}", null, null, null, ct);
         if (!reply.IsSuccess) return Failed("listBlocked", reply);
         var root = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
         var items = root["items"] as JsonArray ?? new JsonArray();
         var labels = await LabelsAsync(items, ct);
         Decorate(items, labels);
-        return ListJson(items, (int?)root["total"] ?? items.Count, labels.Available, null);
+        return ListJson(items, (int?)root["total"] ?? items.Count, labels.Available, new JsonObject { ["status"] = status ?? "All" });
     }
 
     /// <summary>listRetest answers the whole horizon (an array, no paging); the door pages and searches it here.</summary>
@@ -268,14 +272,18 @@ public sealed class QuarantineController : Controller
                     ? "/api/locations?type=Warehouse"
                     : "/api/locations/search?isStockable=true&status=Active&page=1&pageSize=200";
                 var reply = await ledger.GetAsync(path, ct);
-                return reply.IsSuccess ? Json(new { items = Options(reply.Body, "id", "code", "name") }) : Failed("lookups." + kind, reply);
+                // FIX-LIVE1: LOCATION rows are read by LocationRef.locationId (location.openapi.yaml), never by "id".
+                return reply.IsSuccess
+                    ? Json(new { items = (LocationOptions.Parse(reply.Body) ?? []).Select(o => new { value = o.Value, text = o.Text }) })
+                    : Failed("lookups." + kind, reply);
             }
             case "lots":
             {
                 var trace = TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User);
                 if (trace is null) return Refuse(401, null);
                 var reply = await trace.GetAsync($"/api/trace/lots?q={Uri.EscapeDataString(q ?? string.Empty)}&page=1&pageSize=20", ct);
-                return reply.IsSuccess ? Json(new { items = Options(reply.Body, "id", "lotNumber", null) }) : Failed("lookups.lots", reply);
+                // FIX-LIVE1: TRACE LotRef.lotId (trace.openapi.yaml), never "id".
+                return reply.IsSuccess ? Json(new { items = Options(reply.Body, "lotId", "lotNumber", null) }) : Failed("lookups.lots", reply);
             }
             case "stock":
             {
@@ -330,7 +338,7 @@ public sealed class QuarantineController : Controller
 
     private async Task<IActionResult> ProxyAsync(string? everything)
     {
-        var path = string.IsNullOrWhiteSpace(everything) ? ApiBase : $"{ApiBase}/{everything.TrimStart('/')}";
+        if (!Diten.Web.Services.Proxy.ProxyPath.TryBuild(ApiBase, everything, out var path, out var refused)) return Diten.Web.Services.Proxy.ProxyPath.Refusal(refused); // WP-MVP1-SEC-PROXY1
         string? body = null;
         if (!HttpMethods.IsGet(Request.Method) && Request.ContentLength is > 0)
         {

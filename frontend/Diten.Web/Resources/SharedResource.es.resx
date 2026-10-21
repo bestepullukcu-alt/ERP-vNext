@@ -1178,6 +1178,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Política de firma</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significados de firma</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Aprobación de muestras</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Caducidad / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Preparación para retiradas</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>Panel FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Próximos a caducar</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Stock caducado</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>Orden FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Bandeja de excepciones</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Detalle de la excepción</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Reglas de vida útil y ajustes</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Paquete de evidencias</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Preparación ante retiradas</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Trazabilidad de retirada</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Casos de retirada</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Caso de retirada</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Planificador de simulacros de retirada</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Paquete de evidencias de retirada</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Configuración de retirada</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
 </root>

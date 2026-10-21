@@ -1,0 +1,26 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@*
+    MOD-0177 R7a — one reason (≥ 10 characters) for the unsigned decisions that need one: "Geri gönder" (returnScope) and "Vakayı iptal et"
+    (cancelCase). The page script sets the title and the door; the server checks the reason again (REASON_REQUIRED).
+*@
+<div class="modal fade" id="rc-reason-modal" tabindex="-1" aria-labelledby="rc-reason-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="rc-reason-form" novalidate>
+            <div class="modal-header">
+                <h5 class="modal-title" id="rc-reason-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Recall.Common.Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="rc-reason-text">@Localizer["Recall.Reason.Label"]</label>
+                <textarea class="form-control" id="rc-reason-text" rows="3" maxlength="1000" required></textarea>
+                <div class="invalid-feedback">@Localizer["Recall.Common.ReasonMin"]</div>
+                <div class="alert alert-danger small d-none mt-3 mb-0" id="rc-reason-error" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Recall.Common.Cancel"]</button>
+                <button type="submit" class="btn btn-primary">@Localizer["Recall.Reason.Save"]</button>
+            </div>
+        </form>
+    </div>
+</div>

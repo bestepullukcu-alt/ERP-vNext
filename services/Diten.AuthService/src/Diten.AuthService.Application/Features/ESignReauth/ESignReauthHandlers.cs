@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,7 @@ public sealed class ReauthenticateForESignCommandHandler
     private readonly IAuthAuditService _audit;
     private readonly ITenantLoginSettingsClient _loginSettings;
     private readonly IESignReauthTicketService _tickets;
+    private readonly IUserAuditRecorder _central;
     private readonly ILogger<ReauthenticateForESignCommandHandler> _logger;
 
     public ReauthenticateForESignCommandHandler(
@@ -36,6 +38,7 @@ public sealed class ReauthenticateForESignCommandHandler
         IAuthAuditService audit,
         ITenantLoginSettingsClient loginSettings,
         IESignReauthTicketService tickets,
+        IUserAuditRecorder central,
         ILogger<ReauthenticateForESignCommandHandler> logger)
     {
         _users = users;
@@ -43,6 +46,7 @@ public sealed class ReauthenticateForESignCommandHandler
         _audit = audit;
         _loginSettings = loginSettings;
         _tickets = tickets;
+        _central = central;
         _logger = logger;
     }
 
@@ -154,6 +158,9 @@ public sealed class ReauthenticateForESignCommandHandler
 
         await _audit.WriteAsync(ESignReauthCodes.AuditSucceeded, user.Id, request.TenantId,
             ESignReauthResponses.Metadata(new { intent = request.Intent, kind = nameof(ESignReauthKind.Password), windowMinutes = request.OpenWindowMinutes }), ct);
+        // Central log (Auth's existing path b recorder; never the password or the ticket — AUD-001 §3).
+        await _central.RecordAsync(UserAuditEvents.ESignReauthenticated, request.TenantId, user.Id,
+            new Dictionary<string, object?> { ["intent"] = request.Intent, ["kind"] = nameof(ESignReauthKind.Password), ["windowMinutes"] = request.OpenWindowMinutes }, ct);
 
         return Response<ESignReauthTicketDto>.Success(new ESignReauthTicketDto(
             issued.Ticket, issued.ExpiresAtUtc, verifiedAt, nameof(ESignReauthKind.Password), windowExpiresAt));
@@ -170,12 +177,14 @@ public sealed class IssueESignWindowTicketCommandHandler
     private readonly IUserRepository _users;
     private readonly IAuthAuditService _audit;
     private readonly IESignReauthTicketService _tickets;
+    private readonly IUserAuditRecorder _central;
 
-    public IssueESignWindowTicketCommandHandler(IUserRepository users, IAuthAuditService audit, IESignReauthTicketService tickets)
+    public IssueESignWindowTicketCommandHandler(IUserRepository users, IAuthAuditService audit, IESignReauthTicketService tickets, IUserAuditRecorder central)
     {
         _users = users;
         _audit = audit;
         _tickets = tickets;
+        _central = central;
     }
 
     public async Task<Response<ESignReauthTicketDto>> Handle(IssueESignWindowTicketCommand request, CancellationToken ct)
@@ -240,6 +249,8 @@ public sealed class IssueESignWindowTicketCommandHandler
             window.PasswordVerifiedAtUtc, request.RequestIp, request.UserAgent, ct);
         await _audit.WriteAsync(ESignReauthCodes.AuditWindowTicketIssued, user.Id, request.TenantId,
             ESignReauthResponses.Metadata(new { intent = request.Intent, kind = nameof(ESignReauthKind.Window) }), ct);
+        await _central.RecordAsync(UserAuditEvents.ESignWindowTicketIssued, request.TenantId, user.Id,
+            new Dictionary<string, object?> { ["intent"] = request.Intent, ["kind"] = nameof(ESignReauthKind.Window) }, ct);
 
         return Response<ESignReauthTicketDto>.Success(new ESignReauthTicketDto(
             issued.Ticket, issued.ExpiresAtUtc, window.PasswordVerifiedAtUtc, nameof(ESignReauthKind.Window), window.ExpiresAtUtc));
@@ -259,11 +270,13 @@ public sealed class ConsumeESignTicketCommandHandler
 {
     private readonly IESignReauthTicketService _tickets;
     private readonly IAuthAuditService _audit;
+    private readonly IUserAuditRecorder _central;
 
-    public ConsumeESignTicketCommandHandler(IESignReauthTicketService tickets, IAuthAuditService audit)
+    public ConsumeESignTicketCommandHandler(IESignReauthTicketService tickets, IAuthAuditService audit, IUserAuditRecorder central)
     {
         _tickets = tickets;
         _audit = audit;
+        _central = central;
     }
 
     public async Task<Response<ESignTicketConsumedDto>> Handle(ConsumeESignTicketCommand request, CancellationToken ct)
@@ -284,6 +297,8 @@ public sealed class ConsumeESignTicketCommandHandler
 
         await _audit.WriteAsync(ESignReauthCodes.AuditTicketConsumed, ticket.UserId, ticket.TenantId,
             ESignReauthResponses.Metadata(new { intent = ticket.Intent, kind = ticket.Kind.ToString(), consumedBy = request.ConsumedBy }), ct);
+        await _central.RecordAsync(UserAuditEvents.ESignTicketConsumed, ticket.TenantId, ticket.UserId,
+            new Dictionary<string, object?> { ["intent"] = ticket.Intent, ["kind"] = ticket.Kind.ToString(), ["consumedBy"] = request.ConsumedBy }, ct);
 
         return Response<ESignTicketConsumedDto>.Success(new ESignTicketConsumedDto(
             ticket.Kind.ToString(), ticket.Intent, ticket.PasswordVerifiedAtUtc, ticket.CreatedAtUtc));

@@ -1,5 +1,7 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Inventory.Commands;
 
@@ -8,8 +10,11 @@ namespace Diten.InventoryService.Application.Features.Inventory.Commands;
 /// ASSUMPTION-0173-12). Raw request strings; <see cref="Services.ReservationRequestParser"/> owns parsing. No
 /// TenantId / LegalEntityId member: scope comes from the signed JWT.
 /// </summary>
-public sealed record CreateReservationCommand : IRequest<Response<ReservationResponseDto>>
+public sealed record CreateReservationCommand : IRequest<Response<ReservationResponseDto>>, ICentralAuditDeclaration
 {
+    public CentralAuditMetadata CentralAudit => ForLedger("Create", "InventoryReservation");
+    public Guid? CentralAuditEntityId(object? response) => Id(Data<ReservationResponseDto>(response)?.ReservationId);
+
     /// <summary>The <c>Idempotency-Key</c> header; must equal <see cref="IdempotencyKey"/>.</summary>
     public string? HeaderIdempotencyKey { get; init; }
 

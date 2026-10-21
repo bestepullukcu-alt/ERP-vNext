@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Common.Crumb.Root" xml:space="preserve"><value>الاستدعاء</value></data>
+  <data name="Recall.Common.Company.Label" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Recall.Common.Company.Placeholder" xml:space="preserve"><value>اختر شركة</value></data>
+  <data name="Recall.Common.Company.Required" xml:space="preserve"><value>اختر الشركة لعرض جاهزيتها للاستدعاء.</value></data>
+  <data name="Recall.Common.Company.Unavailable" xml:space="preserve"><value>تعذّر تحميل قائمة الشركات. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Recall.Common.NamesUnavailable" xml:space="preserve"><value>تعذّرت قراءة أسماء المنتجات والمستودعات؛ تُعرض الرموز.</value></data>
+  <data name="Recall.Common.Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="Recall.Common.Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Recall.Common.Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Recall.Common.Clear" xml:space="preserve"><value>مسح</value></data>
+  <data name="Recall.Common.ReasonMin" xml:space="preserve"><value>اكتب 10 أحرف على الأقل.</value></data>
+  <data name="Recall.Common.Required" xml:space="preserve"><value>مطلوب.</value></data>
+  <data name="Recall.Common.None" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>لوحة الجاهزية</value></data>
+  <data name="Recall.Tabs.Trace" xml:space="preserve"><value>التتبّع</value></data>
+  <data name="Recall.Tabs.Cases" xml:space="preserve"><value>الحالات</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>اليوم (UTC) {0} · هدف التمرين {1} ساعة</value></data>
+  <data name="Recall.Freq.Band" xml:space="preserve"><value>آخر تمرين أقدم من {0} يومًا.</value></data>
+  <data name="Recall.Freq.Detail" xml:space="preserve"><value>آخر تمرين {0} (قبل {1} يومًا). يأتي الحدّ من الإعدادات.</value></data>
+  <data name="Recall.Freq.None" xml:space="preserve"><value>لم يُستكمل أي تمرين بعد. يأتي الحدّ من الإعدادات.</value></data>
+  <data name="Recall.Kpi.Open" xml:space="preserve"><value>حالات الاستدعاء المفتوحة</value></data>
+  <data name="Recall.Kpi.OpenSub" xml:space="preserve"><value>الفئة 1: {0} · الفئة 2: {1} · الفئة 3: {2}</value></data>
+  <data name="Recall.Kpi.LastDrill" xml:space="preserve"><value>مدة آخر تمرين</value></data>
+  <data name="Recall.Kpi.LastDrillSub" xml:space="preserve"><value>{0} · الهدف {1} ساعة</value></data>
+  <data name="Recall.Kpi.NoDrill" xml:space="preserve"><value>لا يوجد تمرين مكتمل</value></data>
+  <data name="Recall.Kpi.Coverage" xml:space="preserve"><value>نسبة تغطية التتبّع</value></data>
+  <data name="Recall.Kpi.CoverageSub" xml:space="preserve"><value>آخر {0} يومًا · {1} من {2} حركة صرف بتشغيلة / رقم تسلسلي</value></data>
+  <data name="Recall.Kpi.CoverageNone" xml:space="preserve"><value>لا توجد حركة صرف في آخر {0} يومًا</value></data>
+  <data name="Recall.Kpi.Gaps" xml:space="preserve"><value>صرف بدون تشغيلة (غير قابل للتتبّع)</value></data>
+  <data name="Recall.Kpi.GapsSub" xml:space="preserve"><value>آخر {0} يومًا</value></data>
+  <data name="Recall.Kpi.Returned" xml:space="preserve"><value>المُعاد (الحالات المفتوحة)</value></data>
+  <data name="Recall.Kpi.ReturnedNone" xml:space="preserve"><value>لا يوجد مرتجع مرتبط</value></data>
+  <data name="Recall.Badge.OnTarget" xml:space="preserve"><value>ضمن الهدف</value></data>
+  <data name="Recall.Badge.OverTarget" xml:space="preserve"><value>تجاوز الهدف</value></data>
+  <data name="Recall.Chart.Title" xml:space="preserve"><value>سجل التمارين · آخر 12</value></data>
+  <data name="Recall.Chart.Target" xml:space="preserve"><value>الهدف {0} ساعة</value></data>
+  <data name="Recall.Chart.Hours" xml:space="preserve"><value>ساعات</value></data>
+  <data name="Recall.Chart.Empty" xml:space="preserve"><value>لم يُستكمل أي تمرين بعد.</value></data>
+  <data name="Recall.OpenCases.Title" xml:space="preserve"><value>الحالات المفتوحة</value></data>
+  <data name="Recall.OpenCases.All" xml:space="preserve"><value>كل الحالات ←</value></data>
+  <data name="Recall.OpenCases.Empty" xml:space="preserve"><value>لا توجد حالات استدعاء مفتوحة.</value></data>
+  <data name="Recall.Duration.HoursMinutes" xml:space="preserve"><value>{0} س {1} د</value></data>
+  <data name="Recall.Duration.Minutes" xml:space="preserve"><value>{0} د</value></data>
+  <data name="Recall.Col.Number" xml:space="preserve"><value>رقم الحالة</value></data>
+  <data name="Recall.Col.ProductLot" xml:space="preserve"><value>المنتج / التشغيلة</value></data>
+  <data name="Recall.Col.ProductRootLot" xml:space="preserve"><value>المنتج / التشغيلة الجذرية</value></data>
+  <data name="Recall.Col.Class" xml:space="preserve"><value>الفئة</value></data>
+  <data name="Recall.Col.Level" xml:space="preserve"><value>المستوى</value></data>
+  <data name="Recall.Col.Opened" xml:space="preserve"><value>الفتح</value></data>
+  <data name="Recall.Col.Affected" xml:space="preserve"><value>المتأثر</value></data>
+  <data name="Recall.Col.ReturnedPct" xml:space="preserve"><value>نسبة المُعاد %</value></data>
+  <data name="Recall.Col.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Recall.Col.Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="Recall.Col.Owner" xml:space="preserve"><value>المسؤول</value></data>
+  <data name="Recall.Col.Progress" xml:space="preserve"><value>التقدّم (المُعاد / المشحون)</value></data>
+  <data name="Recall.Class.N" xml:space="preserve"><value>الفئة {0}</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>بانتظار اعتماد النطاق</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>نشطة</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>فحص الفعالية</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>التمرين جارٍ</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>اكتمل التمرين</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>أُلغي التمرين</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>الجملة</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>الصيدلية</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>المريض</value></data>
+  <data name="Recall.Type.Real" xml:space="preserve"><value>حقيقية</value></data>
+  <data name="Recall.Type.Drill" xml:space="preserve"><value>تمرين</value></data>
+  <data name="Recall.Drill.Passed" xml:space="preserve"><value>ناجح</value></data>
+  <data name="Recall.Drill.Failed" xml:space="preserve"><value>راسب</value></data>
+  <data name="Recall.Drill.NoClass" xml:space="preserve"><value>التمرين ليس له فئة أو مستوى</value></data>
+  <data name="Recall.Trace.Subtitle" xml:space="preserve"><value>سلسلة النسب MOD-0174 · سجل المخزون MOD-0173 · الشحنات MOD-0183</value></data>
+  <data name="Recall.Trace.Lot" xml:space="preserve"><value>رقم التشغيلة</value></data>
+  <data name="Recall.Trace.LotPlaceholder" xml:space="preserve"><value>ابحث عن رقم تشغيلة</value></data>
+  <data name="Recall.Trace.Product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Recall.Trace.Direction" xml:space="preserve"><value>الاتجاه</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>إلى الخلف</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>إلى الأمام</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>كلاهما</value></data>
+  <data name="Recall.Trace.Run" xml:space="preserve"><value>تتبّع</value></data>
+  <data name="Recall.Trace.Recent" xml:space="preserve"><value>آخر التشغيلات:</value></data>
+  <data name="Recall.Trace.Busy" xml:space="preserve"><value>جارٍ فحص سلسلة النسب وسجل المخزون…</value></data>
+  <data name="Recall.Trace.Empty" xml:space="preserve"><value>اختر تشغيلة وابدأ التتبّع.</value></data>
+  <data name="Recall.Trace.Summary" xml:space="preserve"><value>{0} تشغيلة منتج نهائي · {1} سطر مخزون · {2} شحنة · {3} فجوة</value></data>
+  <data name="Recall.Trace.Duration" xml:space="preserve"><value>اكتمل الاستعلام في {0} ث · مصدر قياس التمرين</value></data>
+  <data name="Recall.Trace.OpenCase" xml:space="preserve"><value>افتح حالة استدعاء بهذا النطاق</value></data>
+  <data name="Recall.Trace.Csv" xml:space="preserve"><value>تنزيل CSV</value></data>
+  <data name="Recall.Trace.GapBand" xml:space="preserve"><value>{0} فجوة تتبّع: لا يمكن إثبات وجهة هذه الكميات عبر التشغيلة.</value></data>
+  <data name="Recall.Trace.Truncated" xml:space="preserve"><value>بلغ التتبّع حدّه — النتيجة غير مكتملة.</value></data>
+  <data name="Recall.Trace.OtherCompany" xml:space="preserve"><value>توجد {0} حركة لهذه التشغيلات في شركات أخرى من مؤسستك — شغّل التتبّع هناك أيضًا.</value></data>
+  <data name="Recall.Trace.Tree" xml:space="preserve"><value>شجرة</value></data>
+  <data name="Recall.Trace.Table" xml:space="preserve"><value>جدول</value></data>
+  <data name="Recall.Trace.ExpandAll" xml:space="preserve"><value>توسيع الكل</value></data>
+  <data name="Recall.TCol.Kind" xml:space="preserve"><value>نوع العقدة</value></data>
+  <data name="Recall.TCol.Place" xml:space="preserve"><value>المستودع / العميل</value></data>
+  <data name="Recall.TCol.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Recall.TCol.Ref" xml:space="preserve"><value>رقم الحركة / الشحنة</value></data>
+  <data name="Recall.TCol.Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>تشغيلة مادة خام</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>تشغيلة منتج نهائي</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>مُدخل</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>مخزون المستودع</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>شحنة</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>العميل</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>فجوة تتبّع</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>إتلاف / إرجاع للمورّد</value></data>
+  <data name="Recall.Badge.Untracked" xml:space="preserve"><value>غير متتبَّع</value></data>
+  <data name="Recall.StockStatus.AVAILABLE" xml:space="preserve"><value>متوفر</value></data>
+  <data name="Recall.StockStatus.QUARANTINE" xml:space="preserve"><value>في الحجر</value></data>
+  <data name="Recall.StockStatus.QUALITY_INSPECTION" xml:space="preserve"><value>قيد فحص الجودة</value></data>
+  <data name="Recall.StockStatus.BLOCKED" xml:space="preserve"><value>محظور</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>حركة صرف بدون تشغيلة</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>نص تشغيلة مكتوب غير مرتبط بتشغيلة</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>رابط سلسلة النسب مفقود</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>استُهلك في الإنتاج دون رابط مُخرَج</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>شحنة بدون مرجع عميل</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>بلغ حدّ التتبّع</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>حركات في شركة أخرى (العدد فقط)</value></data>
+  <data name="Recall.Shipment.Unreadable" xml:space="preserve"><value>تعذّرت قراءة تفاصيل الشحنة (حقول ناقصة)</value></data>
+  <data name="Recall.Shipment.Customer" xml:space="preserve"><value>العميل {0}</value></data>
+  <data name="Recall.Shipment.UnknownCustomer" xml:space="preserve"><value>غير معروف (بدون مستند)</value></data>
+  <data name="Recall.OpenCase.Title" xml:space="preserve"><value>فتح حالة استدعاء</value></data>
+  <data name="Recall.OpenCase.Intro" xml:space="preserve"><value>تُفتح الحالة كمسودة؛ ويؤخذ نطاقها من تتبّع {0}.</value></data>
+  <data name="Recall.OpenCase.Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Recall.OpenCase.Reference" xml:space="preserve"><value>رقم الانحراف / الشكوى</value></data>
+  <data name="Recall.OpenCase.Submit" xml:space="preserve"><value>فتح حالة كمسودة</value></data>
+  <data name="Recall.OpenCase.Done" xml:space="preserve"><value>فُتحت الحالة المسودة {0}.</value></data>
+  <data name="Recall.Cases.Subtitle" xml:space="preserve"><value>الحالات الحقيقية والتمارين · الحالة: مسودة ← بانتظار اعتماد النطاق ← نشطة ← فحص الفعالية ← مغلقة</value></data>
+  <data name="Recall.Filter.AllTypes" xml:space="preserve"><value>كل الأنواع</value></data>
+  <data name="Recall.Filter.AllStatuses" xml:space="preserve"><value>كل الحالات</value></data>
+  <data name="Recall.Filter.AllClasses" xml:space="preserve"><value>كل الفئات</value></data>
+  <data name="Recall.Filter.AllProducts" xml:space="preserve"><value>كل المنتجات</value></data>
+  <data name="Recall.Filter.OpenedFrom" xml:space="preserve"><value>تاريخ الفتح من</value></data>
+  <data name="Recall.Filter.CaseStatuses" xml:space="preserve"><value>حالات الحالة</value></data>
+  <data name="Recall.Filter.DrillStatuses" xml:space="preserve"><value>حالات التمرين</value></data>
+  <data name="Recall.Cases.Empty" xml:space="preserve"><value>لا توجد حالة تطابق عامل التصفية.</value></data>
+  <data name="Recall.Cases.Count" xml:space="preserve"><value>{0} سجل</value></data>
+  <data name="Recall.Errors.GENERIC" xml:space="preserve"><value>تعذّر إكمال الطلب.</value></data>
+  <data name="Recall.Errors.FORBIDDEN" xml:space="preserve"><value>ليست لديك صلاحية لذلك.</value></data>
+  <data name="Recall.Errors.UNAUTHORIZED" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى.</value></data>
+  <data name="Recall.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>تعذّر الوصول إلى خدمة الاستدعاء. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Recall.Errors.INVALID_REQUEST" xml:space="preserve"><value>بعض الحقول ناقصة أو غير صالحة.</value></data>
+  <data name="Recall.Errors.REASON_REQUIRED" xml:space="preserve"><value>اكتب سببًا من 10 أحرف على الأقل.</value></data>
+  <data name="Recall.Errors.UNKNOWN_LOT" xml:space="preserve"><value>لم يُعثر على التشغيلة.</value></data>
+  <data name="Recall.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>هذا السجل يخص شركة أخرى.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>لهذه التشغيلة حالة استدعاء مفتوحة بالفعل.</value></data>
+  <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>أُرسل هذا الطلب سابقًا بمحتوى مختلف. حدّث الصفحة.</value></data>
+  <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>اختر شركة أولًا.</value></data>
+  <data name="Recall.Case.Crumb" xml:space="preserve"><value>الحالة {0}</value></data>
+  <data name="Recall.Case.NotFound" xml:space="preserve"><value>لم يتم العثور على حالة الاستدعاء.</value></data>
+  <data name="Recall.Case.Product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Recall.Case.RootLot" xml:space="preserve"><value>التشغيلة الجذرية</value></data>
+  <data name="Recall.Case.Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Recall.Case.OpenedBy" xml:space="preserve"><value>فتحها · في</value></data>
+  <data name="Recall.Case.Direction" xml:space="preserve"><value>اتجاه التتبّع</value></data>
+  <data name="Recall.Case.Close" xml:space="preserve"><value>إغلاق الحالة</value></data>
+  <data name="Recall.Case.Cancel" xml:space="preserve"><value>إلغاء الحالة</value></data>
+  <data name="Recall.Case.ClosedInfo" xml:space="preserve"><value>أغلقها {0} في {1}</value></data>
+  <data name="Recall.Case.CancelledInfo" xml:space="preserve"><value>ألغاها {0}: {1}</value></data>
+  <data name="Recall.Case.Signature" xml:space="preserve"><value>التوقيع الإلكتروني {0}</value></data>
+  <data name="Recall.Case.YouSubmitted" xml:space="preserve"><value>أنت من أرسل هذا النطاق. يوافق عليه مستخدم آخر لديه صلاحية الموافقة (مبدأ الأعين الأربع).</value></data>
+  <data name="Recall.Case.YouCompleted" xml:space="preserve"><value>أنت من أكمل فحص الفعالية. يغلق الحالة مستخدم آخر (مبدأ الأعين الأربع).</value></data>
+  <data name="Recall.Case.PendingRevision" xml:space="preserve"><value>مراجعة النطاق {0} بانتظار الموافقة ({1} عنصر جديد). يبقى النطاق المعتمد وحظره كما هو في الأثناء.</value></data>
+  <data name="Recall.Case.Saved" xml:space="preserve"><value>تم الحفظ.</value></data>
+  <data name="Recall.CaseTab.Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="Recall.CaseTab.Stock" xml:space="preserve"><value>المخزون المتوفر</value></data>
+  <data name="Recall.CaseTab.Customers" xml:space="preserve"><value>العملاء والشحنات</value></data>
+  <data name="Recall.CaseTab.Returns" xml:space="preserve"><value>المرتجعات</value></data>
+  <data name="Recall.CaseTab.Effectiveness" xml:space="preserve"><value>فحص الفعالية</value></data>
+  <data name="Recall.CaseTab.Timeline" xml:space="preserve"><value>الخط الزمني</value></data>
+  <data name="Recall.Scope.Summary" xml:space="preserve"><value>{0} عنصر · {1} مستبعد · المراجعة {2}</value></data>
+  <data name="Recall.Scope.Submit" xml:space="preserve"><value>إرسال النطاق للموافقة</value></data>
+  <data name="Recall.Scope.Return" xml:space="preserve"><value>إعادة إلى المسودة</value></data>
+  <data name="Recall.Scope.Approve" xml:space="preserve"><value>الموافقة على النطاق</value></data>
+  <data name="Recall.Scope.Rescan" xml:space="preserve"><value>إعادة التتبّع</value></data>
+  <data name="Recall.Scope.Revise" xml:space="preserve"><value>مراجعة النطاق</value></data>
+  <data name="Recall.Scope.Included" xml:space="preserve"><value>مشمول</value></data>
+  <data name="Recall.Scope.Excluded" xml:space="preserve"><value>مستبعد</value></data>
+  <data name="Recall.Scope.ExcludedByParent" xml:space="preserve"><value>مستبعد مع العنصر الأعلى</value></data>
+  <data name="Recall.Scope.ExclusionReason" xml:space="preserve"><value>سبب الاستبعاد</value></data>
+  <data name="Recall.Scope.SaveMarks" xml:space="preserve"><value>حفظ الشمول / الاستبعاد</value></data>
+  <data name="Recall.Scope.Root" xml:space="preserve"><value>الجذر</value></data>
+  <data name="Recall.Scope.New" xml:space="preserve"><value>جديد</value></data>
+  <data name="Recall.Scope.EditHint" xml:space="preserve"><value>لا يمكن تغيير الشمول / الاستبعاد إلا قبل الموافقة على النطاق؛ استبعاد عنصر يستبعد كل ما تحته.</value></data>
+  <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>تمت الموافقة على النطاق؛ يتطلب التغيير مراجعة للنطاق.</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>ملخص النطاق الحالي (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>إعادة التتبّع الحيّة مقابل النطاق المعتمد</value></data>
+  <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>لا فرق: التتبّع الحيّ يطابق النطاق المعتمد.</value></data>
+  <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>{0} اكتشاف خارج النطاق: وُجد الآن وليس في النطاق المعتمد. لا يغيّر شيئًا بمفرده.</value></data>
+  <data name="Recall.Scope.DiffRemoved" xml:space="preserve"><value>{0} عنصر من النطاق المعتمد لم يعد في التتبّع الحيّ.</value></data>
+  <data name="Recall.Scope.ReviseReason" xml:space="preserve"><value>لماذا تُضاف هذه العناصر؟ (10 أحرف على الأقل)</value></data>
+  <data name="Recall.SCol.Node" xml:space="preserve"><value>العقدة</value></data>
+  <data name="Recall.SCol.Place" xml:space="preserve"><value>المستودع / العميل</value></data>
+  <data name="Recall.SCol.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Recall.SCol.Mark" xml:space="preserve"><value>الشمول / الاستبعاد</value></data>
+  <data name="Recall.Stock.Info" xml:space="preserve"><value>يُتخذ قرار الحجر في وحدة الحجر؛ هنا يظهر الطلب وحالته فقط.</value></data>
+  <data name="Recall.Stock.SendSelected" xml:space="preserve"><value>حجر المحدد ({0})</value></data>
+  <data name="Recall.Stock.Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="Recall.Stock.Segregate" xml:space="preserve"><value>تأكيد الفصل</value></data>
+  <data name="Recall.Stock.Segregated" xml:space="preserve"><value>تم التأكيد {0}</value></data>
+  <data name="Recall.Stock.NoRequest" xml:space="preserve"><value>لا يوجد طلب</value></data>
+  <data name="Recall.Stock.Empty" xml:space="preserve"><value>لا يوجد مخزون لتشغيلات الحالة في هذه الشركة.</value></data>
+  <data name="Recall.Stock.Reserved" xml:space="preserve"><value>محجوز: {0}</value></data>
+  <data name="Recall.Stock.Totals" xml:space="preserve"><value>الإجمالي {0}</value></data>
+  <data name="Recall.StCol.Place" xml:space="preserve"><value>المستودع / الموقع</value></data>
+  <data name="Recall.StCol.Lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="Recall.StCol.Request" xml:space="preserve"><value>حالة الحجر</value></data>
+  <data name="Recall.StCol.Hold" xml:space="preserve"><value>سجل الحجر</value></data>
+  <data name="Recall.StCol.Segregation" xml:space="preserve"><value>الفصل المادي</value></data>
+  <data name="Recall.ReqStatus.Pending" xml:space="preserve"><value>بانتظار الإرسال</value></data>
+  <data name="Recall.ReqStatus.Held" xml:space="preserve"><value>في الحجر</value></data>
+  <data name="Recall.ReqStatus.PartiallyHeld" xml:space="preserve"><value>محجور جزئيًا</value></data>
+  <data name="Recall.ReqStatus.BlockedByReservation" xml:space="preserve"><value>محجوب بسبب حجز</value></data>
+  <data name="Recall.ReqStatus.NothingAvailable" xml:space="preserve"><value>لا يوجد متاح</value></data>
+  <data name="Recall.ReqStatus.Failed" xml:space="preserve"><value>فشل</value></data>
+  <data name="Recall.ReqStatus.NotNeeded" xml:space="preserve"><value>غير مطلوب</value></data>
+  <data name="Recall.NotNeeded.AlreadyQuarantined" xml:space="preserve"><value>محجور مسبقًا</value></data>
+  <data name="Recall.NotNeeded.AlreadyBlocked" xml:space="preserve"><value>محظور مسبقًا</value></data>
+  <data name="Recall.NotNeeded.LotBlocked" xml:space="preserve"><value>التشغيلة محظورة</value></data>
+  <data name="Recall.NotNeeded.LotExpired" xml:space="preserve"><value>التشغيلة منتهية الصلاحية</value></data>
+  <data name="Recall.NotNeeded.Excluded" xml:space="preserve"><value>مستبعد من النطاق</value></data>
+  <data name="Recall.Seg.Title" xml:space="preserve"><value>تأكيد الفصل المادي</value></data>
+  <data name="Recall.Seg.Quantity" xml:space="preserve"><value>الكمية المفصولة</value></data>
+  <data name="Recall.Seg.Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Recall.Seg.Hint" xml:space="preserve"><value>سجل فقط — لا تتم حركة مخزون. نقل المخزون هو تحويل موقع تقوم به بنفسك.</value></data>
+  <data name="Recall.Cust.Summary" xml:space="preserve"><value>تم إبلاغ {0} / {1} عميل · الإبلاغ مجرد سجل؛ لا يُرسل بريد إلكتروني</value></data>
+  <data name="Recall.Cust.Empty" xml:space="preserve"><value>لا توجد شحنات في النطاق.</value></data>
+  <data name="Recall.CCol.Customer" xml:space="preserve"><value>العميل</value></data>
+  <data name="Recall.CCol.Shipment" xml:space="preserve"><value>الشحنة</value></data>
+  <data name="Recall.CCol.Delivery" xml:space="preserve"><value>التسليم</value></data>
+  <data name="Recall.CCol.Shipped" xml:space="preserve"><value>المشحون</value></data>
+  <data name="Recall.CCol.Returned" xml:space="preserve"><value>المرتجع</value></data>
+  <data name="Recall.CCol.Open" xml:space="preserve"><value>المتبقي</value></data>
+  <data name="Recall.CCol.Notification" xml:space="preserve"><value>الإبلاغ</value></data>
+  <data name="Recall.Cust.Notified" xml:space="preserve"><value>تم الإبلاغ</value></data>
+  <data name="Recall.Cust.NotNotified" xml:space="preserve"><value>لم يُبلَّغ</value></data>
+  <data name="Recall.Cust.Mark" xml:space="preserve"><value>تسجيل كمُبلَّغ</value></data>
+  <data name="Recall.Cust.Consumption" xml:space="preserve"><value>إضافة إقرار استهلاك</value></data>
+  <data name="Recall.Cust.Consumed" xml:space="preserve"><value>تم الإقرار باستهلاك {0}</value></data>
+  <data name="Recall.Cust.Delivered" xml:space="preserve"><value>سُلِّم في {0}</value></data>
+  <data name="Recall.Cust.NotDelivered" xml:space="preserve"><value>لم يُسلَّم بعد ({0})</value></data>
+  <data name="Recall.Read.NotApplicable" xml:space="preserve"><value>لا يوجد سجل شحنة — بيانات سجل المخزون</value></data>
+  <data name="Recall.Read.Forbidden" xml:space="preserve"><value>تعذّرت قراءة الشحنة — الصلاحية</value></data>
+  <data name="Recall.Read.NotFound" xml:space="preserve"><value>لم يتم العثور على الشحنة</value></data>
+  <data name="Recall.Read.Unavailable" xml:space="preserve"><value>خدمة الشحن غير متاحة</value></data>
+  <data name="Recall.Notif.Title" xml:space="preserve"><value>تسجيل إبلاغ العميل</value></data>
+  <data name="Recall.Notif.Date" xml:space="preserve"><value>تاريخ الإبلاغ</value></data>
+  <data name="Recall.Notif.Channel" xml:space="preserve"><value>القناة</value></data>
+  <data name="Recall.Channel.Phone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="Recall.Channel.ExternalEmail" xml:space="preserve"><value>بريد إلكتروني (خارج النظام)</value></data>
+  <data name="Recall.Channel.Fax" xml:space="preserve"><value>الفاكس</value></data>
+  <data name="Recall.Channel.InPerson" xml:space="preserve"><value>شخصيًا</value></data>
+  <data name="Recall.Channel.Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Recall.Cons.Title" xml:space="preserve"><value>إقرار الاستهلاك</value></data>
+  <data name="Recall.Cons.Product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Recall.Cons.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Recall.Cons.Date" xml:space="preserve"><value>تاريخ الإقرار</value></data>
+  <data name="Recall.Cons.Evidence" xml:space="preserve"><value>الدليل (مستند، خطاب)</value></data>
+  <data name="Recall.Ret.Info" xml:space="preserve"><value>يُسجَّل مرتجع العميل كحركة مخزون؛ وبعد تسجيله يظهر هنا كمرشح.</value></data>
+  <data name="Recall.Ret.Linked" xml:space="preserve"><value>المرتجعات المرتبطة</value></data>
+  <data name="Recall.Ret.Candidates" xml:space="preserve"><value>المرشحات</value></data>
+  <data name="Recall.Ret.Empty" xml:space="preserve"><value>لا توجد مرتجعات مرتبطة.</value></data>
+  <data name="Recall.Ret.NoCandidates" xml:space="preserve"><value>لا توجد مرشحات.</value></data>
+  <data name="Recall.Ret.Link" xml:space="preserve"><value>ربط المرتجع</value></data>
+  <data name="Recall.RCol.Movement" xml:space="preserve"><value>الحركة</value></data>
+  <data name="Recall.RCol.Status" xml:space="preserve"><value>حالة المخزون</value></data>
+  <data name="Recall.RCol.Date" xml:space="preserve"><value>الترحيل</value></data>
+  <data name="Recall.RCol.Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Recall.Ret.Ineligible.NotQuarantined" xml:space="preserve"><value>غير محجوز — أُعيد إلى المخزون المتاح</value></data>
+  <data name="Recall.Ret.Ineligible.NotInScope" xml:space="preserve"><value>التشغيلة ليست ضمن النطاق</value></data>
+  <data name="Recall.Ret.Ineligible.BeforeApproval" xml:space="preserve"><value>رُحِّل قبل الموافقة على النطاق</value></data>
+  <data name="Recall.Ret.Ineligible.AlreadyLinked" xml:space="preserve"><value>مرتبط بحالة أخرى مسبقًا</value></data>
+  <data name="Recall.Ret.Source.Mod0186Return" xml:space="preserve"><value>لوجستيات المرتجعات</value></data>
+  <data name="Recall.Ret.Source.ManualCustomerReturn" xml:space="preserve"><value>مرتجع عميل (يدوي)</value></data>
+  <data name="Recall.Link.Reference" xml:space="preserve"><value>مرجع المرتجع</value></data>
+  <data name="Recall.Eff.Shipped" xml:space="preserve"><value>المشحون</value></data>
+  <data name="Recall.Eff.Returned" xml:space="preserve"><value>المرتجع</value></data>
+  <data name="Recall.Eff.Consumed" xml:space="preserve"><value>المُقرّ باستهلاكه</value></data>
+  <data name="Recall.Eff.Open" xml:space="preserve"><value>الكمية المتبقية</value></data>
+  <data name="Recall.Eff.Percent" xml:space="preserve"><value>الفعالية</value></data>
+  <data name="Recall.Eff.Target" xml:space="preserve"><value>الهدف {0}% (الفئة {1})</value></data>
+  <data name="Recall.Eff.Met" xml:space="preserve"><value>ضمن الهدف</value></data>
+  <data name="Recall.Eff.NotMet" xml:space="preserve"><value>دون الهدف</value></data>
+  <data name="Recall.Eff.Live" xml:space="preserve"><value>حيّ — يتغيّر حتى اكتمال الفحص.</value></data>
+  <data name="Recall.Eff.Stored" xml:space="preserve"><value>النتيجة المحفوظة بتاريخ {0}</value></data>
+  <data name="Recall.Eff.Start" xml:space="preserve"><value>بدء فحص الفعالية</value></data>
+  <data name="Recall.Eff.Complete" xml:space="preserve"><value>إكمال فحص الفعالية</value></data>
+  <data name="Recall.Eff.PerCustomer" xml:space="preserve"><value>الفعالية حسب العميل</value></data>
+  <data name="Recall.Eff.Empty" xml:space="preserve"><value>لا توجد شحنات — لا شيء للقياس.</value></data>
+  <data name="Recall.Eff.PerUnit" xml:space="preserve"><value>حسب المنتج والوحدة — لا تُجمع الوحدات المختلفة أبدًا.</value></data>
+  <data name="Recall.Tl.Empty" xml:space="preserve"><value>لا توجد أحداث بعد.</value></data>
+  <data name="Recall.Event.Opened" xml:space="preserve"><value>فُتحت الحالة</value></data>
+  <data name="Recall.Event.ScopeItemsAdded" xml:space="preserve"><value>أضيفت عناصر إلى النطاق</value></data>
+  <data name="Recall.Event.ScopeMarked" xml:space="preserve"><value>تغيّر الشمول / الاستبعاد</value></data>
+  <data name="Recall.Event.ScopeSubmitted" xml:space="preserve"><value>أُرسل النطاق للموافقة</value></data>
+  <data name="Recall.Event.ScopeReturned" xml:space="preserve"><value>أُعيد النطاق إلى المسودة</value></data>
+  <data name="Recall.Event.ScopeApproved" xml:space="preserve"><value>تمت الموافقة على النطاق</value></data>
+  <data name="Recall.Event.SegregationConfirmed" xml:space="preserve"><value>تم تأكيد الفصل المادي</value></data>
+  <data name="Recall.Event.CustomerNotified" xml:space="preserve"><value>تم إبلاغ العميل</value></data>
+  <data name="Recall.Event.ConsumptionDeclared" xml:space="preserve"><value>تم الإقرار بالاستهلاك</value></data>
+  <data name="Recall.Event.EffectivenessStarted" xml:space="preserve"><value>بدأ فحص الفعالية</value></data>
+  <data name="Recall.Event.EffectivenessCompleted" xml:space="preserve"><value>اكتمل فحص الفعالية</value></data>
+  <data name="Recall.Event.Closed" xml:space="preserve"><value>أُغلقت الحالة</value></data>
+  <data name="Recall.Event.Cancelled" xml:space="preserve"><value>أُلغيت الحالة</value></data>
+  <data name="Recall.Event.TraceRun" xml:space="preserve"><value>تم تشغيل التتبّع</value></data>
+  <data name="Recall.Event.OutOfScopeFinding" xml:space="preserve"><value>اكتشاف خارج النطاق</value></data>
+  <data name="Recall.Event.QuarantineRequested" xml:space="preserve"><value>تم طلب الحجر</value></data>
+  <data name="Recall.Event.QuarantineFailed" xml:space="preserve"><value>فشل طلب الحجر</value></data>
+  <data name="Recall.Event.QuarantineRetried" xml:space="preserve"><value>أُعيدت محاولة طلب الحجر</value></data>
+  <data name="Recall.Event.ExitRefused" xml:space="preserve"><value>رُفضت حركة الإخراج (التشغيلة قيد الاستدعاء)</value></data>
+  <data name="Recall.Event.ReturnLinked" xml:space="preserve"><value>تم ربط المرتجع</value></data>
+  <data name="Recall.Event.ScopeRevised" xml:space="preserve"><value>أُرسلت مراجعة النطاق</value></data>
+  <data name="Recall.Sign.ApproveTitle" xml:space="preserve"><value>الموافقة على النطاق</value></data>
+  <data name="Recall.Sign.CompleteTitle" xml:space="preserve"><value>إكمال فحص الفعالية</value></data>
+  <data name="Recall.Sign.CloseTitle" xml:space="preserve"><value>إغلاق الحالة</value></data>
+  <data name="Recall.Sign.Step1" xml:space="preserve"><value>1 · القرار</value></data>
+  <data name="Recall.Sign.Step2" xml:space="preserve"><value>2 · التوقيع الإلكتروني</value></data>
+  <data name="Recall.Sign.ApproveNote" xml:space="preserve"><value>ملاحظة الموافقة (اختيارية)</value></data>
+  <data name="Recall.Sign.CompleteNote" xml:space="preserve"><value>ملاحظة (10 أحرف على الأقل)</value></data>
+  <data name="Recall.Sign.Summary" xml:space="preserve"><value>ملخص الإغلاق (10 أحرف على الأقل)</value></data>
+  <data name="Recall.Sign.Acceptance" xml:space="preserve"><value>سبب قبول الكمية المتبقية</value></data>
+  <data name="Recall.Sign.AcceptWarn" xml:space="preserve"><value>توجد كمية متبقية. يتطلب الإغلاق سبب قبول.</value></data>
+  <data name="Recall.Sign.Next" xml:space="preserve"><value>متابعة</value></data>
+  <data name="Recall.Sign.SignSave" xml:space="preserve"><value>التوقيع والحفظ</value></data>
+  <data name="Recall.Sign.Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Recall.Sign.ToSign" xml:space="preserve"><value>تم إعداد القرار (صالح لمدة 15 دقيقة). تُفتح نافذة التوقيع الإلكتروني بعد ذلك؛ إلغاؤها لا يحفظ شيئًا.</value></data>
+  <data name="Recall.Sign.NoSignature" xml:space="preserve"><value>سياسة التوقيع الإلكتروني للشركة لا تطلب توقيعًا لهذا القرار؛ يُحفظ دون توقيع.</value></data>
+  <data name="Recall.Sign.Cancelled" xml:space="preserve"><value>أُغلقت نافذة التوقيع؛ لم يُحفظ شيء.</value></data>
+  <data name="Recall.Sign.DoneSigned" xml:space="preserve"><value>تم الحفظ بالتوقيع الإلكتروني {0}.</value></data>
+  <data name="Recall.Reason.ReturnTitle" xml:space="preserve"><value>إعادة النطاق إلى المسودة</value></data>
+  <data name="Recall.Reason.CancelTitle" xml:space="preserve"><value>إلغاء الحالة</value></data>
+  <data name="Recall.Reason.Label" xml:space="preserve"><value>السبب (10 أحرف على الأقل)</value></data>
+  <data name="Recall.Reason.Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION" xml:space="preserve"><value>لا يمكن لمن أرسل النطاق الموافقة عليه.</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION_CLOSE" xml:space="preserve"><value>لا يمكن لمن أكمل فحص الفعالية إغلاق الحالة.</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_REQUIRED" xml:space="preserve"><value>يتطلب هذا القرار توقيعًا إلكترونيًا.</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_MISMATCH" xml:space="preserve"><value>التوقيع لا يطابق هذا القرار (تغيّر الموقّع أو الإجراء أو المحتوى). أعد إعداد القرار.</value></data>
+  <data name="Recall.Errors.RECALL_PENDING_ACTION_MISMATCH" xml:space="preserve"><value>انتهت صلاحية القرار المُعد أو أنه مختلف. أعد إعداده.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_CHANGED" xml:space="preserve"><value>تغيّر النطاق منذ إرساله. أعده أو أرسله مجددًا.</value></data>
+  <data name="Recall.Errors.RECALL_INVALID_TRANSITION" xml:space="preserve"><value>هذه الخطوة غير ممكنة في حالة الحالة الراهنة.</value></data>
+  <data name="Recall.Errors.RECALL_CONFLICT" xml:space="preserve"><value>غيّر شخص آخر الحالة في الأثناء. تم تحديث الصفحة؛ حاول مجددًا.</value></data>
+  <data name="Recall.Errors.RECALL_OPEN_QUANTITY_ACCEPTANCE_REQUIRED" xml:space="preserve"><value>توجد كمية متبقية: اكتب سبب القبول.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_EXCLUSION_REASON_REQUIRED" xml:space="preserve"><value>اكتب سبب استبعاد من 10 أحرف على الأقل لكل عنصر مستبعد.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_ITEM_NOT_MARKABLE" xml:space="preserve"><value>لا يمكن وضع علامة على هذا العنصر (التشغيلة الجذرية تبقى في النطاق).</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE" xml:space="preserve"><value>لا يمكن إعادة محاولة طلب الحجر هذا.</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_EXISTS" xml:space="preserve"><value>يوجد طلب حجر لهذا السطر مسبقًا.</value></data>
+  <data name="Recall.Errors.RECALL_SEGREGATION_NOT_HELD" xml:space="preserve"><value>لا يمكن تأكيد الفصل إلا لمخزون محجور.</value></data>
+  <data name="Recall.Errors.RECALL_UNKNOWN_CUSTOMER" xml:space="preserve"><value>هذا العميل ليس من عملاء الحالة.</value></data>
+  <data name="Recall.Errors.RECALL_QUANTITY_EXCEEDS_SHIPPED" xml:space="preserve"><value>لا يمكن أن يتجاوز المرتجع والمستهلك معًا ما شُحن لهذا العميل.</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_ELIGIBLE" xml:space="preserve"><value>لا يمكن ربط هذه الحركة (ليست مرتجع عميل لتشغيلة ضمن النطاق بعد الموافقة).</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_QUARANTINED" xml:space="preserve"><value>لا يمكن ربط مرتجع دخل المخزون المتاح؛ يجب حجز البضاعة المستدعاة.</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_ALREADY_LINKED" xml:space="preserve"><value>هذا المرتجع مرتبط مسبقًا.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على حالة الاستدعاء.</value></data>
+  <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>هذه التشغيلة قيد الاستدعاء — حركات الإخراج محظورة.</value></data>
+  <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>تعذّر فتح نافذة التوقيع الإلكتروني. حاول مجددًا بعد قليل.</value></data>
+  <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>النطاق بانتظار الموافقة؛ لتغييره أعده إلى المسودة.</value></data>
+  <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>طلبات الحجر: {0}</value></data>
+  <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>العملاء المُبلَّغون: {0} / {1}</value></data>
+  <data name="Recall.Tabs.Drills" xml:space="preserve"><value>مخطط التمارين</value></data>
+  <data name="Recall.Tabs.Evidence" xml:space="preserve"><value>حزمة الأدلة</value></data>
+  <data name="Recall.Tabs.Settings" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="Recall.Dashboard.PlanDrill" xml:space="preserve"><value>تخطيط تمرين</value></data>
+  <data name="Recall.Case.Evidence" xml:space="preserve"><value>حزمة الأدلة</value></data>
+  <data name="Recall.Drills.Badge" xml:space="preserve"><value>تمرين</value></data>
+  <data name="Recall.Drills.ReadOnly" xml:space="preserve"><value>تمرين للقراءة فقط: لا حركة مخزون، ولا طلب حجر، ولا إبلاغ للعملاء.</value></data>
+  <data name="Recall.Drills.Plan" xml:space="preserve"><value>الخطة</value></data>
+  <data name="Recall.Drills.Lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="Recall.Drills.ServerClock" xml:space="preserve"><value>الوقت من الخادم</value></data>
+  <data name="Recall.Drills.LotSelection" xml:space="preserve"><value>اختيار التشغيلة</value></data>
+  <data name="Recall.Drills.ModeAuto" xml:space="preserve"><value>يختار النظام</value></data>
+  <data name="Recall.Drills.ModeManual" xml:space="preserve"><value>سأختار بنفسي</value></data>
+  <data name="Recall.Drills.LotRequired" xml:space="preserve"><value>اختر تشغيلة.</value></data>
+  <data name="Recall.Drills.StartTimer" xml:space="preserve"><value>بدء المؤقت</value></data>
+  <data name="Recall.Drills.Cancel" xml:space="preserve"><value>إلغاء التمرين</value></data>
+  <data name="Recall.Drills.CancelTitle" xml:space="preserve"><value>إلغاء التمرين</value></data>
+  <data name="Recall.Drills.CancelledDone" xml:space="preserve"><value>أُلغي التمرين؛ ويُحتفظ بالتشغيل بحالة ملغى.</value></data>
+  <data name="Recall.Drills.CancelledReason" xml:space="preserve"><value>سبب الإلغاء: {0}</value></data>
+  <data name="Recall.Drills.Duration" xml:space="preserve"><value>المدة</value></data>
+  <data name="Recall.Drills.GapsFound" xml:space="preserve"><value>الفجوات المكتشفة</value></data>
+  <data name="Recall.Drills.Result" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="Recall.Drills.ResultTarget" xml:space="preserve"><value>النتيجة · الهدف {0} ساعة</value></data>
+  <data name="Recall.Drills.Sign" xml:space="preserve"><value>حفظ النتيجة بالتوقيع الإلكتروني</value></data>
+  <data name="Recall.Drills.SignTitle" xml:space="preserve"><value>توقيع نتيجة التمرين</value></data>
+  <data name="Recall.Drills.SignLine.Duration" xml:space="preserve"><value>المدة {0} · الهدف {1} ساعة · {2}</value></data>
+  <data name="Recall.Drills.SignLine.Gaps" xml:space="preserve"><value>فجوات التتبّع المكتشفة: {0}</value></data>
+  <data name="Recall.Drills.ResultNote" xml:space="preserve"><value>ملاحظة النتيجة (10 أحرف على الأقل)</value></data>
+  <data name="Recall.Drills.ResultNoteShown" xml:space="preserve"><value>ملاحظة النتيجة: {0}</value></data>
+  <data name="Recall.Drills.Signed" xml:space="preserve"><value>تم حفظ نتيجة التمرين.</value></data>
+  <data name="Recall.Drills.Plans" xml:space="preserve"><value>خطط التمارين</value></data>
+  <data name="Recall.Drills.AddPlan" xml:space="preserve"><value>إضافة خطة</value></data>
+  <data name="Recall.Drills.EditPlan" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Recall.Drills.SavePlan" xml:space="preserve"><value>حفظ الخطة</value></data>
+  <data name="Recall.Drills.PlanSaved" xml:space="preserve"><value>تم حفظ الخطة.</value></data>
+  <data name="Recall.Drills.PlanName" xml:space="preserve"><value>اسم الخطة</value></data>
+  <data name="Recall.Drills.Frequency" xml:space="preserve"><value>التكرار</value></data>
+  <data name="Recall.Drills.CustomDays" xml:space="preserve"><value>كل … يوم</value></data>
+  <data name="Recall.Drills.CustomDaysRange" xml:space="preserve"><value>أدخل عدد أيام بين 1 و730.</value></data>
+  <data name="Recall.Drills.Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="Recall.Drills.NextDue" xml:space="preserve"><value>التاريخ التالي</value></data>
+  <data name="Recall.Drills.LastResult" xml:space="preserve"><value>آخر نتيجة</value></data>
+  <data name="Recall.Drills.Recent" xml:space="preserve"><value>نتائج التمارين الأخيرة</value></data>
+  <data name="Recall.Drills.Active" xml:space="preserve"><value>نشطة</value></data>
+  <data name="Recall.Drills.Inactive" xml:space="preserve"><value>غير نشطة</value></data>
+  <data name="Recall.Drills.StartRun" xml:space="preserve"><value>بدء التمرين</value></data>
+  <data name="Recall.Drills.NoPlans" xml:space="preserve"><value>لا توجد خطة تمرين بعد.</value></data>
+  <data name="Recall.Drills.NoRuns" xml:space="preserve"><value>لم يُجرَ أي تمرين بعد.</value></data>
+  <data name="Recall.Drills.ClockStopped" xml:space="preserve"><value>توقف المؤقت</value></data>
+  <data name="Recall.Drills.ClockOver" xml:space="preserve"><value>تم تجاوز هدف {0} ساعة</value></data>
+  <data name="Recall.Drills.ClockRemaining" xml:space="preserve"><value>الهدف {0} ساعة · المتبقي {1}</value></data>
+  <data name="Recall.Drills.Target" xml:space="preserve"><value>الوقت المستهدف {0} ساعات · إعداد الشركة</value></data>
+  <data name="Recall.Drills.Step.Trace" xml:space="preserve"><value>التتبّع</value></data>
+  <data name="Recall.Drills.Step.Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="Recall.Drills.Step.CustomerList" xml:space="preserve"><value>قائمة العملاء</value></data>
+  <data name="Recall.Drills.StepInfo.Trace" xml:space="preserve"><value>الخطوة 1: شغّل التتبّع الأمامي والخلفي للتشغيلة.</value></data>
+  <data name="Recall.Drills.StepInfo.Scope" xml:space="preserve"><value>الخطوة 2: تحقّق من النطاق (تشغيلات المنتج النهائي، المخزون المتاح، الشحنات).</value></data>
+  <data name="Recall.Drills.StepInfo.CustomerList" xml:space="preserve"><value>الخطوة 3: أكمل قائمة العملاء المتأثرين.</value></data>
+  <data name="Recall.Drills.StepButton.Trace" xml:space="preserve"><value>تشغيل التتبّع</value></data>
+  <data name="Recall.Drills.StepButton.Scope" xml:space="preserve"><value>التحقق من النطاق</value></data>
+  <data name="Recall.Drills.StepButton.CustomerList" xml:space="preserve"><value>إكمال قائمة العملاء · إيقاف المؤقت</value></data>
+  <data name="Recall.Drills.Summary" xml:space="preserve"><value>{0} عقدة · {1} تشغيلة · {2} سطر مخزون · {3} شحنة</value></data>
+  <data name="Recall.Drills.GapBand" xml:space="preserve"><value>تم العثور على {0} فجوة تتبّع (مثل صرف بدون تشغيلة).</value></data>
+  <data name="Recall.Drills.Owner" xml:space="preserve"><value>المسؤول: {0}</value></data>
+  <data name="Recall.Drills.OwnerMe" xml:space="preserve"><value>أنت (المستخدم الذي يحفظ الخطة)</value></data>
+  <data name="Recall.Freq.Yearly1" xml:space="preserve"><value>مرة في السنة</value></data>
+  <data name="Recall.Freq.Yearly2" xml:space="preserve"><value>مرتان في السنة</value></data>
+  <data name="Recall.Freq.Quarterly" xml:space="preserve"><value>كل ثلاثة أشهر</value></data>
+  <data name="Recall.Freq.CustomDays" xml:space="preserve"><value>مخصص (أيام)</value></data>
+  <data name="Recall.Freq.CustomN" xml:space="preserve"><value>كل {0} يوم</value></data>
+  <data name="Recall.DrillScope.RandomFinishedGoodLot" xml:space="preserve"><value>تشغيلة منتج نهائي عشوائية</value></data>
+  <data name="Recall.DrillScope.RawMaterialLot" xml:space="preserve"><value>تشغيلة مادة خام</value></data>
+  <data name="Recall.DrillScope.SelectedLot" xml:space="preserve"><value>تشغيلة محددة</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_ALREADY_RUNNING" xml:space="preserve"><value>يوجد تمرين قيد التشغيل في هذه الشركة؛ أنهِه أو ألغِه أولاً.</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_NO_CANDIDATE" xml:space="preserve"><value>لا تجد الخطة أي تشغيلة للتمرين.</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_STEP_ORDER" xml:space="preserve"><value>تتم الخطوات بالترتيب: التتبّع، النطاق، قائمة العملاء.</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على التمرين.</value></data>
+  <data name="Recall.Evidence.Subtitle" xml:space="preserve"><value>اختر حالة (حقيقية أو تمرين) أو فترة؛ المعاينة هي محتوى الملف نفسه.</value></data>
+  <data name="Recall.Evidence.Kind" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="Recall.Evidence.Period" xml:space="preserve"><value>الفترة</value></data>
+  <data name="Recall.Evidence.Subject" xml:space="preserve"><value>الحالة أو التمرين</value></data>
+  <data name="Recall.Evidence.From" xml:space="preserve"><value>من</value></data>
+  <data name="Recall.Evidence.To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Recall.Evidence.Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Recall.Evidence.Pdf" xml:space="preserve"><value>تنزيل PDF</value></data>
+  <data name="Recall.Evidence.Csv" xml:space="preserve"><value>تنزيل CSV</value></data>
+  <data name="Recall.Evidence.PdfLanguages" xml:space="preserve"><value>تسميات PDF وCSV بالتركية أو الإنجليزية (اللغات الأخرى: الإنجليزية — FU-0176-PDF-L10N)؛ والقيم هي قيم السجلات نفسها.</value></data>
+  <data name="Recall.Evidence.PreviewTitle" xml:space="preserve"><value>حزمة أدلة الاستدعاء</value></data>
+  <data name="Recall.Evidence.PickFirst" xml:space="preserve"><value>اختر موضوعاً ثم اضغط معاينة.</value></data>
+  <data name="Recall.Evidence.Log" xml:space="preserve"><value>سجل التصدير</value></data>
+  <data name="Recall.Evidence.LogEmpty" xml:space="preserve"><value>لا يوجد تصدير بعد.</value></data>
+  <data name="Recall.Evidence.NoSubjects" xml:space="preserve"><value>لا توجد حالة أو تمرين من هذا النوع</value></data>
+  <data name="Recall.Evidence.SubjectsUnavailable" xml:space="preserve"><value>تعذّرت قراءة قائمة الحالات؛ اختر فترة أو افتح الحزمة من الحالة.</value></data>
+  <data name="Recall.Evidence.Generated" xml:space="preserve"><value>أُنشئت في {0}</value></data>
+  <data name="Recall.Evidence.Missing" xml:space="preserve"><value>لم يتم تسليم هذا القسم.</value></data>
+  <data name="Recall.Evidence.Unreadable" xml:space="preserve"><value>تعذّرت قراءة توقيع من MOD-0022؛ يُدرج كغير مقروء ولا يُملأ أي حقل.</value></data>
+  <data name="Recall.Evidence.Verified" xml:space="preserve"><value>تم تنزيل {0}؛ وبصمة SHA-256 تطابق سجل التصدير.</value></data>
+  <data name="Recall.Evidence.NotVerified" xml:space="preserve"><value>{0}: الملف الذي تم تنزيله لا يطابق بصمة SHA-256 المسجلة. لا تستخدمه.</value></data>
+  <data name="Recall.Evidence.LocalHash" xml:space="preserve"><value>المحسوب في المتصفح: {0}</value></data>
+  <data name="Recall.Evidence.PeriodRequired" xml:space="preserve"><value>أدخل تاريخي الفترة كليهما.</value></data>
+  <data name="Recall.Evidence.SubjectRequired" xml:space="preserve"><value>اختر حالة أو تمريناً.</value></data>
+  <data name="Recall.Errors.RECALL_EVIDENCE_RANGE_INVALID" xml:space="preserve"><value>يجب أن تنتهي الفترة في تاريخ بدايتها أو بعده وألا تتجاوز 366 يوماً.</value></data>
+  <data name="Recall.Errors.RECALL_EVIDENCE_EXPORT_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على التصدير.</value></data>
+  <data name="Recall.Settings.Subtitle" xml:space="preserve"><value>إعدادات الشركة · يغيّرها مسؤول نظام الجودة مع ذكر السبب</value></data>
+  <data name="Recall.Settings.Target" xml:space="preserve"><value>الوقت المستهدف للتمرين (ساعات)</value></data>
+  <data name="Recall.Settings.TargetHint" xml:space="preserve"><value>الافتراضي 4. ينجح التمرين إذا اكتملت قائمة العملاء خلال هذا الوقت.</value></data>
+  <data name="Recall.Settings.Frequency" xml:space="preserve"><value>تنبيه تكرار التمارين (أيام)</value></data>
+  <data name="Recall.Settings.FrequencyHint" xml:space="preserve"><value>الافتراضي 180. شريط التنبيه في اللوحة يأتي من هذا الحد.</value></data>
+  <data name="Recall.Settings.Effectiveness" xml:space="preserve"><value>هدف الفعالية (%) · لكل فئة</value></data>
+  <data name="Recall.Settings.SignatureNote" xml:space="preserve"><value>لا تُحدَّد سياسة التوقيع الإلكتروني (اعتماد النطاق، الإغلاق، الإعدادات) هنا: بل تُدار في صفوف سياسة MOD-0022.</value></data>
+  <data name="Recall.Settings.Reset" xml:space="preserve"><value>تراجع</value></data>
+  <data name="Recall.Settings.History" xml:space="preserve"><value>سجل التغييرات</value></data>
+  <data name="Recall.Settings.HistoryEmpty" xml:space="preserve"><value>لا توجد تغييرات بعد.</value></data>
+  <data name="Recall.Settings.RangeHours" xml:space="preserve"><value>أدخل عدد ساعات صحيحاً بين 1 و72.</value></data>
+  <data name="Recall.Settings.RangeDays" xml:space="preserve"><value>أدخل عدد أيام صحيحاً بين 30 و730.</value></data>
+  <data name="Recall.Settings.RangePercent" xml:space="preserve"><value>أدخل نسبة مئوية بين 0 و100.</value></data>
+  <data name="Recall.Settings.Defaults" xml:space="preserve"><value>تُطبَّق القيم الافتراضية (لم تُحفظ بعد لهذه الشركة).</value></data>
+  <data name="Recall.Settings.Updated" xml:space="preserve"><value>آخر تغيير بواسطة {0} في {1}</value></data>
+  <data name="Recall.Settings.ReasonShown" xml:space="preserve"><value>السبب: {0}</value></data>
+  <data name="Recall.Settings.Saved" xml:space="preserve"><value>تم حفظ الإعدادات.</value></data>
+  <data name="Recall.Settings.SignTitle" xml:space="preserve"><value>توقيع تغيير الإعدادات</value></data>
+  <data name="Recall.Settings.Field.drillTargetHours" xml:space="preserve"><value>الوقت المستهدف للتمرين</value></data>
+  <data name="Recall.Settings.Field.drillFrequencyWarningDays" xml:space="preserve"><value>تنبيه تكرار التمارين</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_1" xml:space="preserve"><value>هدف الفعالية · الفئة 1</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_2" xml:space="preserve"><value>هدف الفعالية · الفئة 2</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_3" xml:space="preserve"><value>هدف الفعالية · الفئة 3</value></data>
+  <data name="Recall.Settings.Field.traceMaxDepth" xml:space="preserve"><value>حد عمق التتبّع</value></data>
+  <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>حد عقد التتبّع</value></data>
+  <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>أحد الإعدادات خارج النطاق المسموح.</value></data>
+  <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>لم يتم تغيير أي شيء.</value></data>
+  <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · الملخص</value></data>
+  <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · نتيجة التتبّع</value></data>
+  <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · طلبات الحجر ونتائجها</value></data>
+  <data name="Recall.Ev.W.4_customers" xml:space="preserve"><value>4 · العملاء والإبلاغ</value></data>
+  <data name="Recall.Ev.W.5_returnsAndEffectiveness" xml:space="preserve"><value>5 · المرتجعات وفحص الفعالية</value></data>
+  <data name="Recall.Ev.W.6_timeline" xml:space="preserve"><value>6 · الخط الزمني</value></data>
+  <data name="Recall.Ev.W.7_signatures" xml:space="preserve"><value>7 · التوقيعات</value></data>
+  <data name="Recall.Ev.W.notApplicable" xml:space="preserve"><value>لا ينطبق</value></data>
+  <data name="Recall.Ev.W.notApplicableDrill" xml:space="preserve"><value>لا ينطبق — التمرين تدريب للقراءة فقط</value></data>
+  <data name="Recall.Ev.W.notApplicablePeriod" xml:space="preserve"><value>لا ينطبق — تقرير الفترة يسرد التمارين فقط</value></data>
+  <data name="Recall.Ev.W.notSealed" xml:space="preserve"><value>النطاق غير مختوم؛ لا توجد لقطة تتبّع</value></data>
+  <data name="Recall.Ev.W.none" xml:space="preserve"><value>لا يوجد سجل</value></data>
+  <data name="Recall.Ev.W.field" xml:space="preserve"><value>الحقل</value></data>
+  <data name="Recall.Ev.W.value" xml:space="preserve"><value>القيمة</value></data>
+  <data name="Recall.Ev.W.nodeKind" xml:space="preserve"><value>العقدة</value></data>
+  <data name="Recall.Ev.W.lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="Recall.Ev.W.place" xml:space="preserve"><value>المستودع / العميل</value></data>
+  <data name="Recall.Ev.W.quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Recall.Ev.W.unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Recall.Ev.W.document" xml:space="preserve"><value>المستند</value></data>
+  <data name="Recall.Ev.W.date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Recall.Ev.W.warehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="Recall.Ev.W.location" xml:space="preserve"><value>الموقع</value></data>
+  <data name="Recall.Ev.W.status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Recall.Ev.W.reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Recall.Ev.W.held" xml:space="preserve"><value>المحتجز</value></data>
+  <data name="Recall.Ev.W.holds" xml:space="preserve"><value>سجل الحجر</value></data>
+  <data name="Recall.Ev.W.customer" xml:space="preserve"><value>العميل</value></data>
+  <data name="Recall.Ev.W.notifiedOn" xml:space="preserve"><value>تاريخ الإبلاغ</value></data>
+  <data name="Recall.Ev.W.channel" xml:space="preserve"><value>القناة</value></data>
+  <data name="Recall.Ev.W.note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Recall.Ev.W.transaction" xml:space="preserve"><value>الحركة</value></data>
+  <data name="Recall.Ev.W.sku" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.shipped" xml:space="preserve"><value>المشحون</value></data>
+  <data name="Recall.Ev.W.returned" xml:space="preserve"><value>المُرتجع</value></data>
+  <data name="Recall.Ev.W.consumed" xml:space="preserve"><value>المستهلك</value></data>
+  <data name="Recall.Ev.W.open" xml:space="preserve"><value>المفتوح</value></data>
+  <data name="Recall.Ev.W.percent" xml:space="preserve"><value>الفعالية %</value></data>
+  <data name="Recall.Ev.W.target" xml:space="preserve"><value>الهدف %</value></data>
+  <data name="Recall.Ev.W.met" xml:space="preserve"><value>ضمن الهدف</value></data>
+  <data name="Recall.Ev.W.seq" xml:space="preserve"><value>الرقم</value></data>
+  <data name="Recall.Ev.W.at" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Recall.Ev.W.event" xml:space="preserve"><value>الحدث</value></data>
+  <data name="Recall.Ev.W.actor" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="Recall.Ev.W.text" xml:space="preserve"><value>النص</value></data>
+  <data name="Recall.Ev.W.signatureId" xml:space="preserve"><value>التوقيع</value></data>
+  <data name="Recall.Ev.W.action" xml:space="preserve"><value>الإجراء</value></data>
+  <data name="Recall.Ev.W.signer" xml:space="preserve"><value>الموقّع</value></data>
+  <data name="Recall.Ev.W.meaning" xml:space="preserve"><value>المعنى</value></data>
+  <data name="Recall.Ev.W.signedAt" xml:space="preserve"><value>وقت التوقيع</value></data>
+  <data name="Recall.Ev.W.run" xml:space="preserve"><value>التمرين</value></data>
+  <data name="Recall.Ev.W.started" xml:space="preserve"><value>البداية</value></data>
+  <data name="Recall.Ev.W.duration" xml:space="preserve"><value>المدة (دقيقة)</value></data>
+  <data name="Recall.Ev.W.targetHours" xml:space="preserve"><value>الهدف (ساعة)</value></data>
+  <data name="Recall.Ev.W.passed" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="Recall.Ev.W.returns" xml:space="preserve"><value>المرتجعات</value></data>
+  <data name="Recall.Ev.W.effectiveness" xml:space="preserve"><value>الفعالية</value></data>
+  <data name="Recall.Ev.W.summary" xml:space="preserve"><value>الملخص</value></data>
+  <data name="Recall.Ev.W.runs" xml:space="preserve"><value>التمارين</value></data>
+  <data name="Recall.Ev.W.trace" xml:space="preserve"><value>التتبّع</value></data>
+  <data name="Recall.Ev.W.requests" xml:space="preserve"><value>الطلبات</value></data>
+  <data name="Recall.Ev.W.customers" xml:space="preserve"><value>العملاء</value></data>
+  <data name="Recall.Ev.W.timeline" xml:space="preserve"><value>الأحداث</value></data>
+  <data name="Recall.Ev.W.signatures" xml:space="preserve"><value>التوقيعات</value></data>
+  <data name="Recall.Ev.W.number" xml:space="preserve"><value>الرقم</value></data>
+  <data name="Recall.Ev.W.class" xml:space="preserve"><value>الفئة</value></data>
+  <data name="Recall.Ev.W.level" xml:space="preserve"><value>المستوى</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>معرّف الصنف</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>معرّف SKU</value></data>
+  <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>التشغيلة الجذرية</value></data>
+  <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>مرجع السبب</value></data>
+  <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>فتحها</value></data>
+  <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>وقت الفتح</value></data>
+  <data name="Recall.Ev.W.direction" xml:space="preserve"><value>الاتجاه</value></data>
+  <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>مراجعة النطاق</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>ملخص لقطة التتبع</value></data>
+  <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>اعتمد النطاق</value></data>
+  <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>وقت اعتماد النطاق</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>أكمل الفعالية</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedAtUtc" xml:space="preserve"><value>وقت إكمال الفعالية</value></data>
+  <data name="Recall.Ev.W.closedBy" xml:space="preserve"><value>أغلقها</value></data>
+  <data name="Recall.Ev.W.closedAtUtc" xml:space="preserve"><value>وقت الإغلاق</value></data>
+  <data name="Recall.Ev.W.closureSummary" xml:space="preserve"><value>ملخص الإغلاق</value></data>
+  <data name="Recall.Ev.W.openQuantityAcceptance" xml:space="preserve"><value>قبول الكمية المفتوحة</value></data>
+  <data name="Recall.Ev.W.cancelledBy" xml:space="preserve"><value>ألغاها</value></data>
+  <data name="Recall.Ev.W.cancelReason" xml:space="preserve"><value>سبب الإلغاء</value></data>
+  <data name="Recall.Ev.W.planCode" xml:space="preserve"><value>الخطة</value></data>
+  <data name="Recall.Ev.W.selectionMode" xml:space="preserve"><value>اختيار التشغيلة</value></data>
+  <data name="Recall.Ev.W.startedAtUtc" xml:space="preserve"><value>وقت البدء</value></data>
+  <data name="Recall.Ev.W.endedAtUtc" xml:space="preserve"><value>وقت الانتهاء</value></data>
+  <data name="Recall.Ev.W.durationMinutes" xml:space="preserve"><value>المدة (دقيقة)</value></data>
+  <data name="Recall.Ev.W.gapCount" xml:space="preserve"><value>فجوات التتبّع</value></data>
+  <data name="Recall.Ev.W.resultNote" xml:space="preserve"><value>ملاحظة النتيجة</value></data>
+  <data name="Recall.Ev.W.from" xml:space="preserve"><value>من تاريخ</value></data>
+  <data name="Recall.Ev.W.to" xml:space="preserve"><value>إلى تاريخ</value></data>
+  <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>عدد التمارين</value></data>
+  <data name="Recall.Band.Badge" xml:space="preserve"><value>استدعاء مفتوح: {0}</value></data>
+  <data name="Recall.Band.Trace" xml:space="preserve"><value>تتبّع</value></data>
+  <data name="Recall.Band.FullTrace" xml:space="preserve"><value>تتبّع كامل (استدعاء)</value></data>
+  <data name="Recall.Band.Exit" xml:space="preserve"><value>هذه التشغيلة قيد الاستدعاء — حركات الإخراج محظورة ({0})</value></data>
+  <data name="Recall.Band.Release" xml:space="preserve"><value>هذه التشغيلة قيد الاستدعاء ({0})؛ الإفراج عنها لا يرفع حظر الإخراج.</value></data>
+  <data name="Recall.Band.HoldSource" xml:space="preserve"><value>المصدر: استدعاء {0}</value></data>
+  <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>إدخال مرتجع عميل</value></data>
+  <data name="Recall.Ev.W.item" xml:space="preserve"><value>الصنف</value></data>
+  <data name="Recall.Ev.W.skuCode" xml:space="preserve"><value>رمز SKU</value></data>
+  <data name="Recall.Ev.W.company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Recall.Ev.W.companyId" xml:space="preserve"><value>معرّف الشركة</value></data>
+  <data name="Recall.Ev.W.submittedScopeSeal" xml:space="preserve"><value>ختم النطاق المُرسَل (مُوقَّع)</value></data>
+  <data name="Recall.Ev.W.approvedScopeSeal" xml:space="preserve"><value>ختم النطاق المعتمد (مُوقَّع)</value></data>
+  <data name="Recall.Ev.W.openedById" xml:space="preserve"><value>فتحه (المعرّف)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedById" xml:space="preserve"><value>اعتمد النطاق (المعرّف)</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedById" xml:space="preserve"><value>أكمل فحص الفعالية (المعرّف)</value></data>
+  <data name="Recall.Ev.W.closedById" xml:space="preserve"><value>أغلقه (المعرّف)</value></data>
+  <data name="Recall.Ev.W.cancelledById" xml:space="preserve"><value>ألغاه (المعرّف)</value></data>
+  <data name="Recall.Ev.W.actorId" xml:space="preserve"><value>معرّف المستخدم</value></data>
+  <data name="Recall.Ev.W.signerId" xml:space="preserve"><value>معرّف الموقّع</value></data>
+  <data name="Recall.Ev.W.warehouseId" xml:space="preserve"><value>معرّف المستودع</value></data>
+  <data name="Recall.Ev.W.locationId" xml:space="preserve"><value>معرّف الموقع</value></data>
+  <data name="Recall.Ev.W.nameUnreadable" xml:space="preserve"><value>{0} (تعذّرت قراءة الاسم)</value></data>
+  <data name="Recall.Ev.W.unreadable" xml:space="preserve"><value>{0} (تعذّرت القراءة)</value></data>
+  <data name="Recall.Ev.W.yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="Recall.Ev.W.no" xml:space="preserve"><value>لا</value></data>
+  <data name="Recall.Ev.W.passedTrue" xml:space="preserve"><value>ناجح</value></data>
+  <data name="Recall.Ev.W.passedFalse" xml:space="preserve"><value>غير ناجح</value></data>
+  <data name="Recall.Ev.W.sigOk" xml:space="preserve"><value>صالح</value></data>
+  <data name="Recall.Ev.W.sigInvalidated" xml:space="preserve"><value>أُبطل</value></data>
+  <data name="Recall.Ev.W.sigUnreadable" xml:space="preserve"><value>تعذّرت القراءة ({0})</value></data>
+  <data name="Recall.Ev.W.effectivenessCheck" xml:space="preserve"><value>نتيجة فحص الفعالية</value></data>
+  <data name="Recall.Ev.W.noShipments" xml:space="preserve"><value>لا توجد شحنات — لا توجد كمية للقياس</value></data>
+  <data name="Recall.Ev.W.notCompleted" xml:space="preserve"><value>لم يكتمل بعد — الأرقام الحالية</value></data>
+  <data name="Recall.Ev.W.meaning.APPROVE" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="Recall.Ev.W.englishFallback" xml:space="preserve"><value>أُنشئت هذه الوثيقة باللغة الإنجليزية (اللغة المختارة غير مدعومة في ملف PDF)</value></data>
+  <data name="Recall.Scope.SubmittedSeal" xml:space="preserve"><value>ختم النطاق المُرسَل (مُوقَّع) {0}</value></data>
+  <data name="Recall.Scope.ApprovedSeal" xml:space="preserve"><value>ختم النطاق المعتمد (مُوقَّع) {0}</value></data>
+  <data name="Recall.Scope.SealDiffers" xml:space="preserve"><value>يختلف ملخص النطاق الحالي عن آخر ختم — تغيّر النطاق بعد ختمه.</value></data>
+  <data name="Recall.Link.NoCustomers" xml:space="preserve"><value>لا يوجد عملاء في النطاق؛ لا يمكن ربط المرتجع إلا بعميل ضمن النطاق المعتمد. يأتي العملاء من شحنات المبيعات.</value></data>
+  <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>إفراج</value></data>
+  <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>إعداد</value></data>
+  <data name="Recall.Case.UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
+  <data name="Recall.Drills.OwnerPick" xml:space="preserve"><value>مسؤول الخطة</value></data>
+  <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>ابحث عن شخص بالاسم</value></data>
+  <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>بحث</value></data>
+  <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>لا يوجد مستخدم نشط يطابق هذا الاسم.</value></data>
+</root>

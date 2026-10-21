@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Controllers
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0177 R7c — what the recall bands need on a MOD-0173 / 0174 / 0175 page, rendered once (the MOD-0176 _ExpiryBandAssets pattern): which
+    reads / links the reader may use (display only — the Recall door and InventoryService decide), the band sentences (Recall.Band.*, 7 languages)
+    and recall-bands.js.
+*@
+@if (Context.Items["RecallBandAssetsRendered"] is not true)
+{
+    Context.Items["RecallBandAssetsRendered"] = true;
+    var config = new
+    {
+        perms = new
+        {
+            status = Perms.Has(RecallKeys.LotsStatusRead),
+            trace = Perms.Has(RecallKeys.TraceRun),
+            cases = Perms.Has(RecallKeys.CasesRead)
+        },
+        l10n = Diten.Web.Views.Recall.Recall.BandKeys.ToDictionary(k => k, k => Localizer[k].Value)
+    };
+    <script id="recall-band-config" type="application/json">@Json.Serialize(config)</script>
+    <script src="~/assets/js/Recall/recall-bands.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Type.FEFO_BYPASS" xml:space="preserve"><value>FEFO dışı çıkış</value></data>
+  <data name="Expiry.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>Min. kalan raf ömrü altı</value></data>
+  <data name="Expiry.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>SKT / retest değişikliği</value></data>
+  <data name="Expiry.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>Süresi dolmuş stok elde</value></data>
+  <data name="Expiry.Status.Open" xml:space="preserve"><value>Açık</value></data>
+  <data name="Expiry.Status.InReview" xml:space="preserve"><value>İnceleniyor</value></data>
+  <data name="Expiry.Status.Accepted" xml:space="preserve"><value>Kabul edildi</value></data>
+  <data name="Expiry.Status.Fixed" xml:space="preserve"><value>Düzeltildi</value></data>
+  <data name="Expiry.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="Expiry.Status.Cancelled" xml:space="preserve"><value>İptal</value></data>
+  <data name="Expiry.Resolution.AcceptedWithReason" xml:space="preserve"><value>Gerekçeyle kabul</value></data>
+  <data name="Expiry.Resolution.Fixed" xml:space="preserve"><value>Düzeltildi</value></data>
+  <data name="Expiry.Resolution.Cancelled" xml:space="preserve"><value>İptal</value></data>
+  <data name="Expiry.Policy.Field.fefoOutboundMode" xml:space="preserve"><value>FEFO çıkış kuralı</value></data>
+  <data name="Expiry.Policy.Field.belowMinRemainingMode" xml:space="preserve"><value>Mal kabulde minimum kalan raf ömrü altı</value></data>
+  <data name="Expiry.Policy.Field.dateOverrideMode" xml:space="preserve"><value>SKT / retest değişikliği</value></data>
+  <data name="Expiry.Policy.Field.approachingDays" xml:space="preserve"><value>"Yaklaşıyor" ufku</value></data>
+  <data name="Expiry.Policy.Field.criticalDays" xml:space="preserve"><value>"Kritik" eşiği</value></data>
+  <data name="Expiry.Policy.Field.expiredOnHandThresholdDays" xml:space="preserve"><value>"Süresi dolmuş stok elde" eşiği</value></data>
+  <data name="Expiry.Policy.Mode.Warn" xml:space="preserve"><value>Uyar</value></data>
+  <data name="Expiry.Policy.Mode.RequireReason" xml:space="preserve"><value>Gerekçe iste</value></data>
+  <data name="Expiry.Policy.Mode.Block" xml:space="preserve"><value>Engelle</value></data>
+  <data name="Expiry.Policy.Mode.AutoQuarantine" xml:space="preserve"><value>Otomatik karantinaya al</value></data>
+  <data name="Expiry.Policy.Mode.Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="Expiry.Policy.Mode.Reason" xml:space="preserve"><value>Gerekçe iste</value></data>
+  <data name="Expiry.Policy.Mode.ReasonAndSignature" xml:space="preserve"><value>Gerekçe + e-imza</value></data>
+  <data name="Expiry.Evidence.Summary" xml:space="preserve"><value>Özet göstergeler</value></data>
+  <data name="Expiry.Evidence.Exceptions" xml:space="preserve"><value>Dönem içi istisnalar ve çözümleri</value></data>
+  <data name="Expiry.Evidence.PolicyChanges" xml:space="preserve"><value>Dönemdeki politika değişiklikleri</value></data>
+  <data name="Expiry.Evidence.Bypasses" xml:space="preserve"><value>FEFO dışı çıkışlar</value></data>
+  <data name="ExpiryPdf.Title" xml:space="preserve"><value>FEFO / Son Kullanma — Kanıt Paketi</value></data>
+  <data name="ExpiryPdf.Company" xml:space="preserve"><value>Şirket</value></data>
+  <data name="ExpiryPdf.Period" xml:space="preserve"><value>Dönem</value></data>
+  <data name="ExpiryPdf.Generated" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="ExpiryPdf.Page" xml:space="preserve"><value>Sayfa</value></data>
+  <data name="ExpiryPdf.Warehouses" xml:space="preserve"><value>Depolar</value></data>
+  <data name="ExpiryPdf.Types" xml:space="preserve"><value>Türler</value></data>
+  <data name="ExpiryPdf.All" xml:space="preserve"><value>Tümü</value></data>
+  <data name="ExpiryPdf.Kpi" xml:space="preserve"><value>Gösterge</value></data>
+  <data name="ExpiryPdf.Value" xml:space="preserve"><value>Değer</value></data>
+  <data name="ExpiryPdf.Compliance" xml:space="preserve"><value>FEFO uyum oranı</value></data>
+  <data name="ExpiryPdf.Issues" xml:space="preserve"><value>FEFO kapsamındaki çıkışlar</value></data>
+  <data name="ExpiryPdf.Bypassed" xml:space="preserve"><value>FEFO dışı</value></data>
+  <data name="ExpiryPdf.Critical" xml:space="preserve"><value>Kritik (kullanılabilir stok)</value></data>
+  <data name="ExpiryPdf.Approaching" xml:space="preserve"><value>Yaklaşıyor (kullanılabilir stok)</value></data>
+  <data name="ExpiryPdf.Expired" xml:space="preserve"><value>Süresi dolmuş stok</value></data>
+  <data name="ExpiryPdf.Open" xml:space="preserve"><value>Açık istisnalar</value></data>
+  <data name="ExpiryPdf.Late" xml:space="preserve"><value>SLA'yı geçen</value></data>
+  <data name="ExpiryPdf.AvgResolution" xml:space="preserve"><value>Ortalama çözüm süresi</value></data>
+  <data name="ExpiryPdf.Hours" xml:space="preserve"><value>sa</value></data>
+  <data name="ExpiryPdf.Available" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="ExpiryPdf.Held" xml:space="preserve"><value>Bekleyen</value></data>
+  <data name="ExpiryPdf.None" xml:space="preserve"><value>Kayıt yok.</value></data>
+  <data name="ExpiryPdf.No" xml:space="preserve"><value>No</value></data>
+  <data name="ExpiryPdf.Type" xml:space="preserve"><value>Tür</value></data>
+  <data name="ExpiryPdf.Item" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ExpiryPdf.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="ExpiryPdf.Warehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="ExpiryPdf.Opened" xml:space="preserve"><value>Açılış (UTC)</value></data>
+  <data name="ExpiryPdf.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="ExpiryPdf.Resolution" xml:space="preserve"><value>Çözüm</value></data>
+  <data name="ExpiryPdf.Reason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="ExpiryPdf.Signature" xml:space="preserve"><value>İmza kimliği</value></data>
+  <data name="ExpiryPdf.Signer" xml:space="preserve"><value>İmzalayan</value></data>
+  <data name="ExpiryPdf.Field" xml:space="preserve"><value>Alan</value></data>
+  <data name="ExpiryPdf.Old" xml:space="preserve"><value>Eski</value></data>
+  <data name="ExpiryPdf.New" xml:space="preserve"><value>Yeni</value></data>
+  <data name="ExpiryPdf.By" xml:space="preserve"><value>Değiştiren</value></data>
+  <data name="ExpiryPdf.When" xml:space="preserve"><value>Zaman (UTC)</value></data>
+  <data name="ExpiryPdf.FirstEligible" xml:space="preserve"><value>İlk uygun lot</value></data>
+  <data name="ExpiryPdf.NameUnreadable" xml:space="preserve"><value>{0} (ad okunamadı)</value></data>
+  <data name="ExpiryPdf.Unreadable" xml:space="preserve"><value>{0} (okunamadı)</value></data>
+  <data name="ExpiryPdf.EnglishFallback" xml:space="preserve"><value>Bu belge İngilizce üretildi (seçilen dil PDF'te desteklenmiyor)</value></data>
+  <data name="ExpiryPdf.RequestedLanguage" xml:space="preserve"><value>İstenen dil: {0}</value></data>
+</root>
