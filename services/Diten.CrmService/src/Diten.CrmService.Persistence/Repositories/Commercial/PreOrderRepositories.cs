@@ -43,6 +43,24 @@ public sealed class PreOrderRepository : IPreOrderRepository
         return rows.Select(r => (r.TenantId, r.Id)).ToList();
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<(Guid TenantId, Guid Id)>> ListApprovedUntransmittedAsync(DateTimeOffset decidedBefore, int take,
+        CancellationToken cancellationToken)
+    {
+        // Served by ix_commercial_pre_orders_status_next_attempt (its Status prefix). The decision time is a DateTimeOffset
+        // (stored as an array — the CRM parallel-array trap): it is compared here, not in the query, over a bounded page.
+        var b = Builders<PreOrder>.Filter;
+        var waiting = b.Eq(o => o.Status, PreOrderStatuses.Approved) & b.Eq(o => o.Transmission, null) & b.Eq(o => o.IsDeleted, false);
+        var rows = await _collection.Find(waiting)
+            .Project(o => new { o.TenantId, o.Id, o.Approval })
+            .Limit(Math.Clamp(take, 1, 200) * 4)
+            .ToListAsync(cancellationToken);
+        return rows.Where(r => r.Approval?.DecidedAt is { } at && at <= decidedBefore)
+            .OrderBy(r => r.Approval!.DecidedAt)
+            .Take(Math.Clamp(take, 1, 200))
+            .Select(r => (r.TenantId, r.Id)).ToList();
+    }
+
     public Task<(IReadOnlyList<PreOrder> Items, long Total)> ListAsync(Guid tenantId, PreOrderFilter f, int skip, int take, CancellationToken cancellationToken)
     {
         var b = Builders<PreOrder>.Filter;

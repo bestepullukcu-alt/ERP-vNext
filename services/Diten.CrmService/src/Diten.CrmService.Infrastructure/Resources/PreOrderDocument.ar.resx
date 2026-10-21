@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title_depot" xml:space="preserve"><value>طلب مسبق — نسخة المستودع</value></data>
+  <data name="Title_pharmacy" xml:space="preserve"><value>طلب مسبق — نسخة الصيدلية</value></data>
+  <data name="OrderNo" xml:space="preserve"><value>رقم الطلب</value></data>
+  <data name="OrderDate" xml:space="preserve"><value>تاريخ الطلب</value></data>
+  <data name="Delivery" xml:space="preserve"><value>تاريخ التسليم</value></data>
+  <data name="Seller" xml:space="preserve"><value>البائع</value></data>
+  <data name="Depot" xml:space="preserve"><value>المستودع</value></data>
+  <data name="Rep" xml:space="preserve"><value>المندوب</value></data>
+  <data name="Pharmacy" xml:space="preserve"><value>الصيدلية</value></data>
+  <data name="Address" xml:space="preserve"><value>العنوان</value></data>
+  <data name="Gln" xml:space="preserve"><value>GLN</value></data>
+  <data name="PharmacyCode" xml:space="preserve"><value>رمز الصيدلية</value></data>
+  <data name="TaxNumber" xml:space="preserve"><value>الرقم الضريبي</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ColBarcode" xml:space="preserve"><value>الباركود</value></data>
+  <data name="ColQty" xml:space="preserve"><value>الكمية</value></data>
+  <data name="ColMf" xml:space="preserve"><value>البونص</value></data>
+  <data name="ColFree" xml:space="preserve"><value>مجاني</value></data>
+  <data name="ColDiscount" xml:space="preserve"><value>الخصم %</value></data>
+  <data name="ColUnitPrice" xml:space="preserve"><value>سعر الوحدة</value></data>
+  <data name="ColVat" xml:space="preserve"><value>الضريبة %</value></data>
+  <data name="ColLineTotal" xml:space="preserve"><value>إجمالي البند</value></data>
+  <data name="TotalNet" xml:space="preserve"><value>الصافي</value></data>
+  <data name="TotalVat" xml:space="preserve"><value>الضريبة</value></data>
+  <data name="TotalGross" xml:space="preserve"><value>الإجمالي</value></data>
+  <data name="EffectiveDiscount" xml:space="preserve"><value>الخصم الفعلي %</value></data>
+  <data name="LocalEquivalent" xml:space="preserve"><value>المعادل المحلي</value></data>
+  <data name="FxLine" xml:space="preserve"><value>≈ {0} {1} · السعر {2} · {3} · المصدر {4}</value></data>
+  <data name="QuantityMode" xml:space="preserve"><value>كميات فقط — يطبّق المستودع السعر.</value></data>
+  <data name="Signature" xml:space="preserve"><value>توقيع الصيدلي</value></data>
+  <data name="SignedBy" xml:space="preserve"><value>وقّع</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>وافق</value></data>
+  <data name="AutoApproved" xml:space="preserve"><value>تمت الموافقة تلقائيًا (إعداد المستأجر)</value></data>
+  <data name="Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Disclaimer" xml:space="preserve"><value>هذا طلب مسبق؛ يُصدر المستودع الفاتورة.</value></data>
+  <data name="Trace" xml:space="preserve"><value>الإرسال: المحاولة {0}</value></data>
+  <data name="Form" xml:space="preserve"><value>الشكل</value></data>
+</root>

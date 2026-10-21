@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title_depot" xml:space="preserve"><value>Предзаказ — экземпляр дистрибьютора</value></data>
+  <data name="Title_pharmacy" xml:space="preserve"><value>Предзаказ — экземпляр аптеки</value></data>
+  <data name="OrderNo" xml:space="preserve"><value>№ заказа</value></data>
+  <data name="OrderDate" xml:space="preserve"><value>Дата заказа</value></data>
+  <data name="Delivery" xml:space="preserve"><value>Дата доставки</value></data>
+  <data name="Seller" xml:space="preserve"><value>Продавец</value></data>
+  <data name="Depot" xml:space="preserve"><value>Дистрибьютор</value></data>
+  <data name="Rep" xml:space="preserve"><value>Представитель</value></data>
+  <data name="Pharmacy" xml:space="preserve"><value>Аптека</value></data>
+  <data name="Address" xml:space="preserve"><value>Адрес</value></data>
+  <data name="Gln" xml:space="preserve"><value>GLN</value></data>
+  <data name="PharmacyCode" xml:space="preserve"><value>Код аптеки</value></data>
+  <data name="TaxNumber" xml:space="preserve"><value>ИНН</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Препарат</value></data>
+  <data name="ColBarcode" xml:space="preserve"><value>Штрихкод</value></data>
+  <data name="ColQty" xml:space="preserve"><value>Кол-во</value></data>
+  <data name="ColMf" xml:space="preserve"><value>Бонус</value></data>
+  <data name="ColFree" xml:space="preserve"><value>Бесплатно</value></data>
+  <data name="ColDiscount" xml:space="preserve"><value>Скидка %</value></data>
+  <data name="ColUnitPrice" xml:space="preserve"><value>Цена</value></data>
+  <data name="ColVat" xml:space="preserve"><value>НДС %</value></data>
+  <data name="ColLineTotal" xml:space="preserve"><value>Сумма строки</value></data>
+  <data name="TotalNet" xml:space="preserve"><value>Нетто</value></data>
+  <data name="TotalVat" xml:space="preserve"><value>НДС</value></data>
+  <data name="TotalGross" xml:space="preserve"><value>Итого</value></data>
+  <data name="EffectiveDiscount" xml:space="preserve"><value>Фактическая скидка %</value></data>
+  <data name="LocalEquivalent" xml:space="preserve"><value>Местный эквивалент</value></data>
+  <data name="FxLine" xml:space="preserve"><value>≈ {0} {1} · курс {2} · {3} · источник {4}</value></data>
+  <data name="QuantityMode" xml:space="preserve"><value>Только количества — цену применяет дистрибьютор.</value></data>
+  <data name="Signature" xml:space="preserve"><value>Подпись провизора</value></data>
+  <data name="SignedBy" xml:space="preserve"><value>Подписал(а)</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>Согласовал(а)</value></data>
+  <data name="AutoApproved" xml:space="preserve"><value>Согласовано автоматически (настройка арендатора)</value></data>
+  <data name="Note" xml:space="preserve"><value>Примечание</value></data>
+  <data name="Disclaimer" xml:space="preserve"><value>Это предварительный заказ; счёт выставляет дистрибьютор.</value></data>
+  <data name="Trace" xml:space="preserve"><value>Передача: попытка {0}</value></data>
+  <data name="Form" xml:space="preserve"><value>Форма</value></data>
+</root>

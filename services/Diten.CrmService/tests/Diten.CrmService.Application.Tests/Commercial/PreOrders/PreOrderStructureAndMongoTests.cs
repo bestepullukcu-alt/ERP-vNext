@@ -41,7 +41,7 @@ public sealed class PreOrderStructureAndMongoTests : PreOrderTestBase
     {
         var actions = Controllers.SelectMany(c => c.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(m => m.GetCustomAttributes<Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute>().Any())).ToList();
-        Assert.Equal(19, actions.Count);                                          // §15 minus the document (W6-BE-c)
+        Assert.Equal(20, actions.Count);                                          // §15 (the document arrived with W6-BE-c2)
         foreach (var action in actions)
         {
             var key = Assert.Single(action.GetCustomAttributes<HasPermissionAttribute>()).Permission;

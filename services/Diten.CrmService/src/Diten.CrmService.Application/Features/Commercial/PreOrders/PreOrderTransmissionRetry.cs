@@ -15,6 +15,17 @@ namespace Diten.CrmService.Application.Features.Commercial.PreOrders;
 public static class PreOrderTransmissionRetry
 {
     public const int BatchSize = 50;
+
+    /// <summary>W6-BE-c2 (FU-W6-APPROVED-BACKLOG) — an approved order with no attempt is taken by the scheduler only after
+    /// this long: the decision transmits inline right after its save, and the scheduler must not race it.</summary>
+    public static readonly TimeSpan ApprovedGrace = TimeSpan.FromMinutes(2);
+
+    /// <summary>An approved order that was never tried (the transmitter was off — W6-BE-c1 — or the process stopped between
+    /// the approval and its transmission): its first attempt is due once the grace has passed.</summary>
+    public static bool IsApprovedBacklog(PreOrder order, DateTimeOffset now)
+        => order.Status == PreOrderStatuses.Approved
+           && (order.Transmission is null || order.Transmission.Attempts.Count == 0)
+           && order.Approval?.DecidedAt is { } decided && decided <= now - ApprovedGrace;
     public static readonly TimeSpan FirstWait = TimeSpan.FromMinutes(5);
     public static readonly TimeSpan MaxWait = TimeSpan.FromHours(6);
 
@@ -57,9 +68,14 @@ public sealed class RunPreOrderTransmissionRetryHandler : IRequestHandler<RunPre
         }
 
         var order = await _c.Orders.GetByIdAsync(tenantId, request.Id, ct);
-        if (order is null || order.TenantId != tenantId || order.IsDeleted
-            || order.Status != PreOrderStatuses.TransmissionFailed
-            || order.Transmission?.NextAttemptAtTicks is not { } due || due > _c.Now.UtcTicks)
+        if (order is null || order.TenantId != tenantId || order.IsDeleted)
+        {
+            return Response<bool>.Success(false);
+        }
+
+        var retryDue = order.Status == PreOrderStatuses.TransmissionFailed
+                       && order.Transmission?.NextAttemptAtTicks is { } due && due <= _c.Now.UtcTicks;
+        if (!retryDue && !PreOrderTransmissionRetry.IsApprovedBacklog(order, _c.Now))
         {
             return Response<bool>.Success(false);
         }

@@ -213,6 +213,10 @@ public sealed class InternalDocumentRepositoryTests : IDisposable
         yield return ["bad-base64", (Func<object>)(() => Body() with { ContentBase64 = "%%%not-base64%%%" })];
         yield return ["empty", (Func<object>)(() => Body() with { ContentBase64 = "" })];
         yield return ["path-name", (Func<object>)(() => Body(fileName: "../depot.pdf"))];
+        // FU-PLT-DOC-FILENAME-TEST (W6-BE-c2) — a folder or a drive in the name, without "..": the /, \ and : rule alone refuses them
+        yield return ["slash-name", (Func<object>)(() => Body(fileName: "dir/depot.pdf"))];
+        yield return ["backslash-name", (Func<object>)(() => Body(fileName: @"dir\depot.pdf"))];
+        yield return ["drive-name", (Func<object>)(() => Body(fileName: "c:depot.pdf"))];
         yield return ["no-owner", (Func<object>)(() => Body() with { OwnerItemId = Guid.Empty })];
     }
 

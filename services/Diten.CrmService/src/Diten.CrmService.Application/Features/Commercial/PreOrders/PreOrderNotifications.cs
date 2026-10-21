@@ -127,12 +127,20 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
 
         var vars = External(order);
         vars["note"] = order.Note?.Trim() ?? string.Empty;
-        return await SendAsync(order, PreOrderNotificationEvents.TransmittedDepot, attemptNo, null, [ExternalRecipient(order, depot)], [], vars, ct);
+        return await SendAsync(order, PreOrderNotificationEvents.TransmittedDepot, attemptNo, null, [ExternalRecipient(order, depot)], [], vars, ct,
+            Attachment(order, PreOrderDocumentCopies.Depot, documents.DepotDocumentRef));
     }
 
     public async Task<PlatformNotificationResult?> SendPharmacyCopyAsync(PreOrder order, int attemptNo, PreOrderDocuments documents, CancellationToken ct)
         => Email(order.Pharmacy.Email) is { } pharmacy
-            ? await SendAsync(order, PreOrderNotificationEvents.PharmacyCopy, attemptNo, null, [ExternalRecipient(order, pharmacy)], [], External(order), ct)
+            ? await SendAsync(order, PreOrderNotificationEvents.PharmacyCopy, attemptNo, null, [ExternalRecipient(order, pharmacy)], [], External(order), ct,
+                Attachment(order, PreOrderDocumentCopies.Pharmacy, documents.PharmacyCopyRef))
+            : null;
+
+    /// <summary>W6-BE-c2 — the copy's PDF by its MOD-0262 reference; none when the copy has no document.</summary>
+    private static IReadOnlyList<PlatformNotificationAttachment>? Attachment(PreOrder order, string copy, Guid? documentRef)
+        => documentRef is { } id && id != Guid.Empty
+            ? [new PlatformNotificationAttachment(PreOrderDocumentRules.FileName(order, copy), "application/pdf", id)]
             : null;
 
     // ── the wire ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -151,7 +159,7 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
 
     private async Task<PlatformNotificationResult> SendAsync(PreOrder order, string eventCode, int round, string? part,
         IReadOnlyList<PlatformNotificationRecipient> to, IReadOnlyList<PlatformNotificationRecipient> cc, Dictionary<string, string> vars,
-        CancellationToken ct)
+        CancellationToken ct, IReadOnlyList<PlatformNotificationAttachment>? attachments = null)
     {
         if (to.Count == 0 && cc.Count == 0)
         {
@@ -163,7 +171,7 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
             return await _platform.DispatchAsync(new PlatformNotificationRequest(order.TenantId, eventCode, PreOrderNotificationEvents.SourceModule,
                 to, cc, vars, $"crm:preorder:{order.Id:D}", order.Id.ToString("D"),
                 ReplyToUserId: order.Rep.UserId == Guid.Empty ? null : order.Rep.UserId.ToString("D"),
-                IdempotencyKey: PreOrderNotificationEvents.KeyOf(order, eventCode, round, part)), ct);
+                IdempotencyKey: PreOrderNotificationEvents.KeyOf(order, eventCode, round, part), Attachments: attachments), ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -276,8 +284,9 @@ public sealed class PreOrderTransmitter : IPreOrderTransmitter
         var documents = await _documents.ProduceAsync(order, attemptNo, ct);
         if (!documents.Ok)
         {
-            return new PreOrderTransmissionResult(PreOrderTransmissionResult.Failed, Array.Empty<string>(), null, null,
-                documents.ReasonCode ?? PreOrderTransmissionReasons.DocumentFailed);
+            // W6-BE-c2 — a copy already written stays bound (the next attempt does not render it again)
+            return new PreOrderTransmissionResult(PreOrderTransmissionResult.Failed, Array.Empty<string>(), documents.DepotDocumentRef,
+                documents.PharmacyCopyRef, documents.ReasonCode ?? PreOrderTransmissionReasons.DocumentFailed);
         }
 
         var depot = await _mailer.SendDepotAsync(order, attemptNo, documents, ct);

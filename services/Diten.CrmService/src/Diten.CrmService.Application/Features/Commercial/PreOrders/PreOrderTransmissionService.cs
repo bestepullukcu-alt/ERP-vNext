@@ -59,14 +59,16 @@ public sealed class PreOrderTransmissionService
             ReasonCode = result.ReasonCode, ByUserId = by
         });
         order.Transmission.LastStatus = sent ? PreOrderTransmissionStatuses.Sent : PreOrderTransmissionStatuses.Failed;
+        // W6-BE-c2 — the documents of an attempt are bound whatever the mail did: a retry reuses them (MOD-0262 would open a
+        // new version for every write) instead of rendering them again
+        order.Transmission.DepotDocumentRef = result.DepotDocumentRef ?? order.Transmission.DepotDocumentRef;
+        order.Transmission.PharmacyCopyRef = result.PharmacyCopyRef ?? order.Transmission.PharmacyCopyRef;
         PreOrderStateMachine.Append(order, PreOrderEventTypes.TransmissionAttempted, by, now,
             new Dictionary<string, string?> { ["attempt"] = attemptNo.ToString(), ["reason"] = result.ReasonCode });
         if (sent)
         {
             order.Transmission.NextAttemptAtTicks = null;
             order.Transmission.TransmittedAt = now;
-            order.Transmission.DepotDocumentRef = result.DepotDocumentRef ?? order.Transmission.DepotDocumentRef;
-            order.Transmission.PharmacyCopyRef = result.PharmacyCopyRef ?? order.Transmission.PharmacyCopyRef;
             PreOrderStateMachine.TryApply(order, PreOrderStateMachine.Actions.TransmitOk, PreOrderEventTypes.Transmitted, by, now);
         }
         else

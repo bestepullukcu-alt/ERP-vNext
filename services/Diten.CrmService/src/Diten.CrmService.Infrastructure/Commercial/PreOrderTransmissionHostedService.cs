@@ -61,8 +61,12 @@ public sealed class PreOrderTransmissionHostedService : BackgroundService
         try
         {
             using var scope = _scopes.CreateScope();
-            due = await scope.ServiceProvider.GetRequiredService<IPreOrderRepository>()
-                .ListDueTransmissionRetriesAsync(_clock.GetUtcNow().UtcTicks, PreOrderTransmissionRetry.BatchSize, ct);
+            var orders = scope.ServiceProvider.GetRequiredService<IPreOrderRepository>();
+            var now = _clock.GetUtcNow();
+            var retries = await orders.ListDueTransmissionRetriesAsync(now.UtcTicks, PreOrderTransmissionRetry.BatchSize, ct);
+            // W6-BE-c2 (FU-W6-APPROVED-BACKLOG) — the approved orders that never had an attempt get their first one
+            var backlog = await orders.ListApprovedUntransmittedAsync(now - PreOrderTransmissionRetry.ApprovedGrace, PreOrderTransmissionRetry.BatchSize, ct);
+            due = retries.Concat(backlog).Distinct().ToList();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

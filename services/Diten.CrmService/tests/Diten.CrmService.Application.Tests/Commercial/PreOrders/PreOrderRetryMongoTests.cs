@@ -55,6 +55,23 @@ public sealed class PreOrderRetryMongoTests
                       ?? await db.GetCollection<BsonDocument>(PreOrderRepository.CollectionName).Find(FilterDefinition<BsonDocument>.Empty).FirstAsync();
             Assert.Equal(BsonType.Int64, raw["Transmission"]["NextAttemptAtTicks"].BsonType);
 
+            // W6-BE-c2 (FU-W6-APPROVED-BACKLOG) — the approved orders that never had an attempt, decided before the grace
+            PreOrder Approved(DateTimeOffset decided, bool tried = false) => new()
+            {
+                TenantId = PreOrderWorld.Tenant, Code = "MG-ORD-" + Guid.NewGuid().ToString("N")[..6], Status = PreOrderStatuses.Approved,
+                Approval = new PreOrderApproval { Decision = PreOrderDecisions.Approve, DecidedAt = decided },
+                Transmission = tried ? new PreOrderTransmission { LastStatus = "failed" } : null
+            };
+            var old = Approved(now.AddMinutes(-10));
+            var fresh = Approved(now.AddSeconds(-30));
+            var tried = Approved(now.AddMinutes(-10), tried: true);
+            foreach (var o in new[] { old, fresh, tried })
+            {
+                await orders.InsertAsync(o, default);
+            }
+
+            Assert.Equal(new[] { (PreOrderWorld.Tenant, old.Id) }, await orders.ListApprovedUntransmittedAsync(now.AddMinutes(-2), 50, default));
+
             var indexes = await (await db.GetCollection<BsonDocument>(PreOrderRepository.CollectionName).Indexes.ListAsync()).ToListAsync();
             Assert.Contains(indexes, i => i["name"] == "ix_commercial_pre_orders_status_next_attempt");
         }

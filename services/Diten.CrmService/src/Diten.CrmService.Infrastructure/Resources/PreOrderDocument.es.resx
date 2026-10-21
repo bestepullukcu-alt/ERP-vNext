@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title_depot" xml:space="preserve"><value>Prepedido — copia del distribuidor</value></data>
+  <data name="Title_pharmacy" xml:space="preserve"><value>Prepedido — copia de la farmacia</value></data>
+  <data name="OrderNo" xml:space="preserve"><value>N.º de pedido</value></data>
+  <data name="OrderDate" xml:space="preserve"><value>Fecha del pedido</value></data>
+  <data name="Delivery" xml:space="preserve"><value>Fecha de entrega</value></data>
+  <data name="Seller" xml:space="preserve"><value>Vendedor</value></data>
+  <data name="Depot" xml:space="preserve"><value>Distribuidor</value></data>
+  <data name="Rep" xml:space="preserve"><value>Representante</value></data>
+  <data name="Pharmacy" xml:space="preserve"><value>Farmacia</value></data>
+  <data name="Address" xml:space="preserve"><value>Dirección</value></data>
+  <data name="Gln" xml:space="preserve"><value>GLN</value></data>
+  <data name="PharmacyCode" xml:space="preserve"><value>Código de farmacia</value></data>
+  <data name="TaxNumber" xml:space="preserve"><value>NIF</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ColBarcode" xml:space="preserve"><value>Código de barras</value></data>
+  <data name="ColQty" xml:space="preserve"><value>Cant.</value></data>
+  <data name="ColMf" xml:space="preserve"><value>Bonif.</value></data>
+  <data name="ColFree" xml:space="preserve"><value>Gratis</value></data>
+  <data name="ColDiscount" xml:space="preserve"><value>Descuento %</value></data>
+  <data name="ColUnitPrice" xml:space="preserve"><value>Precio unitario</value></data>
+  <data name="ColVat" xml:space="preserve"><value>IVA %</value></data>
+  <data name="ColLineTotal" xml:space="preserve"><value>Total línea</value></data>
+  <data name="TotalNet" xml:space="preserve"><value>Neto</value></data>
+  <data name="TotalVat" xml:space="preserve"><value>IVA</value></data>
+  <data name="TotalGross" xml:space="preserve"><value>Total</value></data>
+  <data name="EffectiveDiscount" xml:space="preserve"><value>Descuento efectivo %</value></data>
+  <data name="LocalEquivalent" xml:space="preserve"><value>Equivalente local</value></data>
+  <data name="FxLine" xml:space="preserve"><value>≈ {0} {1} · tipo {2} · {3} · fuente {4}</value></data>
+  <data name="QuantityMode" xml:space="preserve"><value>Solo cantidades: el distribuidor aplica el precio.</value></data>
+  <data name="Signature" xml:space="preserve"><value>Firma del farmacéutico</value></data>
+  <data name="SignedBy" xml:space="preserve"><value>Firmado por</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>Aprobado por</value></data>
+  <data name="AutoApproved" xml:space="preserve"><value>Aprobado automáticamente (configuración del inquilino)</value></data>
+  <data name="Note" xml:space="preserve"><value>Nota</value></data>
+  <data name="Disclaimer" xml:space="preserve"><value>Esto es un prepedido; el distribuidor emite la factura.</value></data>
+  <data name="Trace" xml:space="preserve"><value>Transmisión: intento {0}</value></data>
+  <data name="Form" xml:space="preserve"><value>Forma</value></data>
+</root>

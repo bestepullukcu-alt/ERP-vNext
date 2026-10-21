@@ -60,6 +60,12 @@ public sealed class PlatformNotificationClient : IPlatformNotificationClient
             body["idempotencyKey"] = idempotencyKey;
         }
 
+        // W6-BE-c2 — the depot document by MOD-0262 reference (PLT-W6); without one the field is not sent at all.
+        if (request.Attachments is { Count: > 0 } attachments)
+        {
+            body["attachments"] = attachments.Select(a => new { fileName = a.FileName, contentType = a.ContentType, documentRef = a.DocumentRef }).ToList();
+        }
+
         // W5-FIX (contract annex) — replyTo only with a user id; without one the field is not sent at all.
         if (request.ReplyToUserId is { Length: > 0 } replyTo)
         {

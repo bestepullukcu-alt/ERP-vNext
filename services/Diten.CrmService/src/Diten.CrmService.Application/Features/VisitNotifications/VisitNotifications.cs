@@ -75,7 +75,13 @@ public sealed record PlatformNotificationRequest(
     string? ReplyToUserId = null,
     /// <summary>W5-FIX2 (F-1) — the notification row's id: the Platform opens one dispatch per key, so a retry after a
     /// time-out (the first call may have landed) never mails the same report twice.</summary>
-    string? IdempotencyKey = null);
+    string? IdempotencyKey = null,
+    /// <summary>WP-VW-W6 W6-BE-c2 — files by MOD-0262 reference (PLT-W6 <c>attachments[].documentRef</c>); the Platform reads
+    /// them in the body's tenant. Null — the field is not sent at all.</summary>
+    IReadOnlyList<PlatformNotificationAttachment>? Attachments = null);
+
+/// <summary>WP-VW-W6 W6-BE-c2 — one attachment on the wire: a MOD-0262 document by reference (never bytes in CRM's call).</summary>
+public sealed record PlatformNotificationAttachment(string FileName, string ContentType, Guid DocumentRef);
 
 public sealed record PlatformResolvedRecipient(string? UserId, string Via);
 

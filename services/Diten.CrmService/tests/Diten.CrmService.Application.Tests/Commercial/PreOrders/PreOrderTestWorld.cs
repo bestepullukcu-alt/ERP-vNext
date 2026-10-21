@@ -346,6 +346,11 @@ internal sealed class MemoryPreOrders : CopyingStore<PreOrder>, IPreOrderReposit
             .Where(o => !o.IsDeleted && o.Status == PreOrderStatuses.TransmissionFailed && o.Transmission?.NextAttemptAtTicks is { } due && due <= nowTicks)
             .OrderBy(o => o.Transmission!.NextAttemptAtTicks).Take(take).Select(o => (o.TenantId, o.Id)).ToList());
 
+    public Task<IReadOnlyList<(Guid TenantId, Guid Id)>> ListApprovedUntransmittedAsync(DateTimeOffset decidedBefore, int take, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<(Guid, Guid)>>(Store
+            .Where(o => !o.IsDeleted && o.Status == PreOrderStatuses.Approved && o.Transmission is null && o.Approval?.DecidedAt is { } at && at <= decidedBefore)
+            .OrderBy(o => o.Approval!.DecidedAt).Take(take).Select(o => (o.TenantId, o.Id)).ToList());
+
     public Task<(IReadOnlyList<PreOrder> Items, long Total)> ListAsync(Guid tenantId, PreOrderFilter f, int skip, int take, CancellationToken cancellationToken)
     {
         var rows = Live(tenantId).Where(o =>

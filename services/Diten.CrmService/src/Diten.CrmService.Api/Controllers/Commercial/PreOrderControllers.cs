@@ -108,6 +108,18 @@ public sealed class PreOrdersController : CustomBaseController
     public async Task<IActionResult> DepotResponse(Guid id, [FromBody] PreOrderDepotResponseInput input, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(new RecordPreOrderDepotResponseCommand(id, input), ct));
 
+    /// <summary>W6-BE-c2 — the depot document (depot copy / pharmacy copy) as a PDF, from the one template; the order's
+    /// visibility decides (404 outside it).</summary>
+    [HttpGet(Base + "/{id:guid}/document")]
+    [HasPermission(PreOrderPermissions.Read)]
+    public async Task<IActionResult> Document(Guid id, [FromQuery] string? copy, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetPreOrderDocumentQuery(id, copy), ct);
+        return response.IsSuccessful && response.Data is { } file
+            ? File(file.Content, "application/pdf", file.FileName)
+            : CreateActionResultInstance(response);
+    }
+
     /// <summary>Screen C: the pharmacy's last six months (the handler admits the order's approver or read-all).</summary>
     [HttpGet(Base + "/{id:guid}/pharmacy-history")]
     [HasPermission(PreOrderPermissions.Read)]
