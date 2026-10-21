@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Domain.Rules;
@@ -5,6 +6,7 @@ using Diten.InventoryService.Domain.Traceability.Entities;
 using Diten.InventoryService.Domain.Traceability.Repositories;
 using Diten.InventoryService.Domain.Traceability.Rules;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Traceability;
 
@@ -127,8 +129,11 @@ public sealed record GetMovementLotLinksQuery(string? TransactionId, string? Lot
 public sealed record GetManualLotMigrationStatusQuery : IRequest<Response<ManualLotMigrationStatusDto>>;
 
 /// <summary>POST /api/trace/migration/manual-lots/commit (<c>commitManualLotMigration</c>). Raw values; the handler parses.</summary>
-public sealed record CommitManualLotMigrationCommand : IRequest<Response<MigrationResultDto>>
+public sealed record CommitManualLotMigrationCommand : IRequest<Response<MigrationResultDto>>, ICentralAuditDeclaration
 {
+    public CentralAuditMetadata CentralAudit => ForLotSerial("Execute", "ManualLotMigration");
+    public Guid? CentralAuditEntityId(object? response) => Id(Data<MigrationResultDto>(response)?.MigrationId);
+
     public string? HeaderIdempotencyKey { get; init; }
     public string? IdempotencyKey { get; init; }
     public string? Reason { get; init; }

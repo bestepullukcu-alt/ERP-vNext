@@ -79,4 +79,5 @@
   <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Les données de base article n'indiquent pas le suivi par lot ou par numéro de série pour ce SKU ; le mouvement ne peut donc pas être enregistré. Réessayez une fois la fiche article complétée.</value></data>
   <data name="ErrItemNotActive" xml:space="preserve"><value>Le statut de l'article n'autorise pas ce type de mouvement (brouillon, désactivé ou retiré). Rien n'a été modifié.</value></data>
   <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Ce produit peut être suivi par numéro de série : le stock ne peut pas être mouvementé au niveau SKU global. Choisissez le niveau SKU local ou produit fini.</value></data>
+  <data name="LotUnresolvedHint" xml:space="preserve"><value>numéro de lot illisible</value></data>
 </root>

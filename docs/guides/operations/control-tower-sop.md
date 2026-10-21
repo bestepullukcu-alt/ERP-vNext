@@ -1381,8 +1381,9 @@ geliştirmesi başlamaz (§16.4).
 
 > Kaynak: yöneticinin isteği (2026-10-20) — Module Pack ve DCP, yazıldıktan sonra ve onaya gitmeden önce bağımsız
 > incelenir; tek seferde uygulanmaz. Tasarım ve Codex görüşleri: `docs/roadmap/plans/ct-apr-02-pack-review/DESIGN.md`.
-> Kural kaydı: `execution/approvals/POLICY-REVIEW-START.md`. Araçlar: `scripts/pack_approval.py`,
-> `scripts/prompt_gate.py`.
+> Kural kaydı: `execution/approvals/POLICY-REVIEW-START.md`; dağıtım kapısı (madde 8):
+> `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`. Araçlar: `scripts/pack_approval.py`, `scripts/prompt_gate.py`,
+> `scripts/acceptance_record.py`.
 
 **1. Ne zaman.** Kural başlangıcından sonra eklenen her onay satırı, paketin aynı sürümünün incelemesini ister. Tek
 istisna: değişen her satır muaftır (tarih alanı; `owner` / `reviewer` TBD'den dolduruldu; yalnız boşluk) ve hiçbir risk
@@ -1403,7 +1404,10 @@ satırı main'e başkasının merge'iyle gelmediyse onay geçmez. Sonradan eklen
 yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
 uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
 dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
-incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz.
+incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz. Sonuç gelir
+gelmez ham metni, onay beklemeden, worktree'de `docs/records/reviews/<kimlik>/` altına commit'siz taslak olarak yazar;
+oturumun geçici klasörü kayıt yeri değildir (S-19: MOD-0230 sonucu oturum kapanırken neredeyse kayboldu). Taslağın
+bulgu dosyası biçimine çevrilmesi, commit'i ve `reviews.tsv` satırı sahibin onayıyla olur.
 
 **5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
 main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz.
@@ -1414,10 +1418,44 @@ paket bu kurala bağlıysa durdurur: alan yoksa, dilim onaylı sürümde yoksa y
 yalnız onay satırının `note` alanındaki `whole_pack=<WP>`'dir: onaylayan, o sürüm için o WP'nin paketin tamamını
 almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız uyarıdır.
 
+**6a. Kural değişince oturum.** Kart ya da SOP'ta değişen bir kural, CT dalını main ile birleştirip dosyayı yeniden
+okuyunca geçerli olur; yeni oturum gerekmez. Skill (`.claude/skills/…`, `.agents/skills/…`) oturum başında yüklenir;
+skill'de değişen bir kural ancak yeni oturumda geçerlidir. GitHub hesap adı değişirse önce
+`execution/approvals/approvers.tsv` güncellenir; yoksa o hesabın onayları tanınmaz.
+
 **7. Üst üste PR'da merge sırası (GitHub).** Bir PR başka bir PR'ın dalı üstüne açıldıysa, alttaki merge edilince
 GitHub üstteki PR'ın onaylarını "taban değişti" diye düşürür (eski onay düşürme ayarı). Sıra: önce üstteki dal güncel
 main ile birleştirilir ("Update branch", merge commit), sonra son itişi yapmayan biri onaylar, onaydan hemen sonra
-"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167).
+"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167). Bir PR dalına
+itmeden önce PR'ın hâlâ açık olduğu ölçülür (`gh pr view <n> --json state`); merge edilmiş bir PR'ın dalına itilen commit
+main'e girmez. Ölçüm önce `git fetch origin` ile güncellenir ve itilen sabit SHA'ya bağlanır (PR durumu bir kilit
+değildir; itişten hemen önce yeniden okunur). Merge'den sonra dal başının main'de olduğu ölçülür (`git merge-base
+--is-ancestor <itilen SHA> origin/main`);
+değilse kalan commit'ler yeni bir PR'la gelir (2026-10-21, PR #176 → #182).
+
+**8. Dağıtım kapısı (S-5).** Kural kaydı `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`; başlangıç, dosyanın
+main'e girdiği ilk-üst commit'tir (dosya silinemez). Ürün WP'sinin her yeni dağıtımı — katı ya da eski her kuyrukta —
+Expected HEAD'deki paket sürümünün main'deki geçerli incelemesini ister (`prompt_gate.py check`; `--prepare` yalnız
+raporlar). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf uzaklıktaki incelenmiş sürümler; önce
+`reviews.tsv`'nin yalnız-ekleme geçmişi); olumlu kapsama yalnız bu sürümden ya da muaf uzaklıktaki bir sürümden gelir.
+Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırın kapsamı (`item`
+ve `module`) değişmeyen ve
+başlangıçtan bu yana hiç `active` dışına çıkmamış (kuyruk geçmişi dağıtılan commit'ten ve main'den, yan dallar dahil
+okunur; bir kez `REWORK` ya da `BLOCKED` olan korumayı geri kazanmaz) iş yalnız
+"inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
+kuyruğun (sce-mvp6) satırları hiç korunmaz; dağıtım yalnız `READY` / `REWORK`'ten başladığı için bu gerçek bir dağıtımı
+etkilemez. Başka sürümlerin olumsuzları yalnız bu sürümün, o olumsuzlardan SONRA gelen ve her birini bulgu özetinin ilk 8
+hanesiyle anan geçen bir kendi incelemesi varsa bilgiye düşer (koşullu; sahip onayı 2026-10-21); bozuk ya da sayılmayan
+bir inceleme satırı da kendi başına olumsuzdur ve adıyla anılmalıdır (özeti 64 hane değilse `reviews.tsv satır N`);
+adlar yalnız bulgu dosyasının `değerlendirilen olumsuz incelemeler: a, b` satırından, tam olarak okunur; yoksa hepsi
+durdurur. Kabulde olağan kapanış (`ACCEPTED`, `DONE`) korumayı düşürmez; kapandıktan sonra yeniden çalışmaya dönmek
+yeniden açılmadır. Kuyruk değişiklikleri squash edilmez (ara durumlar geçmişte kalmalı).
+Kabul edilmiş bir ENGEL, kabul edenin HIGH CT-APR-01 onay satırını ister. Bağlı paket sürümünde olumsuz varsa
+`acceptance_record.py check` kabulü reddeder; başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket
+sürümüne `module_pack` ile bağlanır ve bu sürüm hem CT-APR-01'le onaylı main sürümü hem de incelenmiş ya da korunan
+başlangıç sürümü olmalıdır. Bozuk `reviews.tsv` geçmişi satır geri eklenerek düzelmez; sahip kararı ister.
+Sığ depo reddedilir. CT-APR-01 onayı değişmez. ENGEL satırı kuralı, nedeni ve sonraki adımı söyler; kuraldan önce açılmış bir
+Control Tower oturumu main'i alır ve yeni oturum açar.
 
 ---
 
@@ -1515,6 +1553,11 @@ Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**
    aynı listeyi görür.
 2. **Pilot.** Önce Pharmacovigilance block'unda denenir; bir block'ta işe yaradığı görülünce zorunlu yapılır (sahip
    kararı). Mevcut Control Tower'lara geriye dönük yük yoktur.
+2a. **Ne zaman açılır (S-31, kaynak öneride vardı, uyarlamada atlanmıştı).** Pilot block'ta CT, ilk durum
+   değerlendirmesinden sonra ya da block'un ilk paket / karar kaydı commit edildiğinde sayfayı **kendisi önerir** ve tek
+   kelimelik onayla (`sayfa-ac`) açar; "sırada" diye ertelemez. Block başına tek sayfa; varsa yenisi açılmaz. Açınca
+   depodaki bütün kalan işleri ve bitmiş olanları (geçmiş görünsün) yazar, bir okumayla doğrular, bağlantıyı ve kısa
+   "nasıl kullanılır"ı verir, bağlantıyı 8. maddedeki yere yazar.
 3. **Kaynak depodur.** Sayfa bir görünümdür. CT listeyi depodaki kaynaklardan kurar ve günceller: kuyruk dosyası
    (`CT-QUEUE.tsv` satırları ve durumları), karar kayıtları (`docs/records/decisions/`), block'un açık kararları ve
    takipleri, başka ekiplere düşen işler (XMC-001). Çelişkide depo kazanır; CT sayfayı düzeltir.

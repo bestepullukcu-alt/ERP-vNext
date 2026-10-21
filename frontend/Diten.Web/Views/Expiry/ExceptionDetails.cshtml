@@ -1,0 +1,143 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Expiry.Detail.Title"].Value;
+    ViewData["PageCode"] = "EXPIRYEXCEPTIONDETAILS"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0176 F5 — İstisna Detayı (EXPIRYEXCEPTIONDETAILS, pack §11.1 / §11.3; mockup "det"). MODEL: the case id. One door
+    /Expiry/data/exception/{id} → FEFO-BUNDLE getException (+ names). "Ne oldu" (the facts of the type), the timeline (insert-only events),
+    comments, and the decision: "Üstlen ve incelemeye al" (review), "Karar ver" → the two-step drawer + the MOD-0022 dialog (resolve),
+    "İstisnayı kapat" (close). Each button only with its key (UAS-001 §4: absent, not disabled); SoD and signature refusals are the server's.
+    UAS-001 — nothing below is drawn without expiry.exceptions.read. No redirect.
+*@
+@if (!Perms.Has("expiry.exceptions.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Expiry.Detail.Title"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Expiry.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Expiry.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Expiry.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Expiry.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Expiry/_Header.cshtml" model="@("EXPIRYEXCEPTIONS")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="ex-detail" data-exception-id="@Model">
+        <a class="btn btn-sm btn-label-secondary mb-3" href="/Expiry/Exceptions"><i class="bx bx-chevron-left me-1"></i>@Localizer["Expiry.Tabs.Exceptions"]</a>
+        <div id="ex-d-error" class="alert alert-danger d-none" role="alert"></div>
+        <div id="ex-d-loading" class="text-muted small">@Localizer["Expiry.Common.Loading"]</div>
+
+        <div id="ex-d-body" class="d-none">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                <h4 class="mb-0"><span class="text-muted fw-normal">@Localizer["Expiry.Detail.Heading"] /</span> <span class="font-monospace" id="ex-d-number"></span></h4>
+                <span id="ex-d-type"></span><span id="ex-d-status"></span><span id="ex-d-sla"></span>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12 col-xl-7">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <h5 class="card-title mb-0">@Localizer["Expiry.Detail.Facts"]</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-sm btn-label-secondary" id="ex-d-lot-link" href="#"><i class="bx bx-package me-1"></i>@Localizer["Expiry.Action.LotDetail"]</a>
+                                @if (Perms.Has("quarantine.holds.create"))
+                                {
+                                    <a class="btn btn-sm btn-label-secondary" id="ex-d-quarantine" href="/Quarantine"><i class="bx bx-shield-quarter me-1"></i>@Localizer["Expiry.Detail.ToQuarantine"]</a>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0 small" id="ex-d-facts"></dl>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header"><h5 class="card-title mb-0">@Localizer["Expiry.Detail.WhatHappened"]</h5></div>
+                        <div class="card-body">
+                            <div class="alert mb-3" id="ex-d-headline" role="status"></div>
+                            <dl class="row mb-0 small" id="ex-d-what"></dl>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header"><h5 class="card-title mb-0">@Localizer["Expiry.Detail.Timeline"]</h5></div>
+                        <div class="card-body">
+                            <ul class="timeline mb-0" id="ex-d-timeline"></ul>
+                            @if (Perms.Has("expiry.exceptions.comment"))
+                            {
+                                <div class="d-flex flex-column flex-sm-row gap-2 mt-3" id="ex-d-comment">
+                                    <label class="visually-hidden" for="ex-d-comment-text">@Localizer["Expiry.Detail.CommentPlaceholder"]</label>
+                                    <textarea class="form-control" id="ex-d-comment-text" rows="2" maxlength="1000" placeholder="@Localizer["Expiry.Detail.CommentPlaceholder"]"></textarea>
+                                    <button type="button" class="btn btn-label-primary align-self-sm-start" id="ex-d-comment-send" disabled>@Localizer["Expiry.Detail.CommentSend"]</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-5">
+                    <div class="card mb-4" id="ex-d-decision-card">
+                        <div class="card-header"><h5 class="card-title mb-0">@Localizer["Expiry.Detail.Decision"]</h5></div>
+                        <div class="card-body">
+                            <div id="ex-d-decided" class="d-none"></div>
+                            <div id="ex-d-pending" class="d-none">
+                                <p class="small text-muted" id="ex-d-decision-help"></p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @if (Perms.Has("expiry.exceptions.review"))
+                                    {
+                                        <button type="button" class="btn btn-label-primary d-none" id="ex-d-take"><i class="bx bx-user-check me-1"></i>@Localizer["Expiry.Detail.Take"]</button>
+                                    }
+                                    @if (Perms.Has("expiry.exceptions.resolve"))
+                                    {
+                                        <button type="button" class="btn btn-primary d-none" id="ex-d-decide"><i class="bx bx-check-shield me-1"></i>@Localizer["Expiry.Detail.Decide"]</button>
+                                    }
+                                </div>
+                                @if (!Perms.Has("expiry.exceptions.resolve"))
+                                {
+                                    <p class="small text-muted mt-3 mb-0" id="ex-d-no-decide">@Localizer["Expiry.Detail.NoDecideKey"]</p>
+                                }
+                            </div>
+                            @if (Perms.Has("expiry.exceptions.close"))
+                            {
+                                <button type="button" class="btn btn-label-success mt-3 d-none" id="ex-d-close"><i class="bx bx-lock-alt me-1"></i>@Localizer["Expiry.Detail.Close"]</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Expiry/_ExpiryAntiforgery.cshtml" />
+    @if (Perms.Has("expiry.exceptions.resolve"))
+    {
+        <partial name="~/Views/Expiry/_DecisionDrawer.cshtml" />
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Expiry/expiry-decision.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Expiry/exception-detail.js" asp-append-version="true"></script>
+    }
+}

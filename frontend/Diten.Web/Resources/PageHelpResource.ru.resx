@@ -414,4 +414,1622 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Пользуйтесь клавиатурой</value>
   </data>
+  <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
+  <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
+    <value>Смотрите, сколько каждого товара у вас есть по складам, местам хранения, партиям и статусам. Список только для чтения: запас меняется только движениями.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Audience" xml:space="preserve">
+    <value>Кладовщики, контролёры запасов, закупщики и планировщики производства</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1" xml:space="preserve">
+    <value>Если страница просит, выберите компанию в поле «Компания». Затем нажмите значок фильтра («Фильтр»), выберите «Товар», «SKU (артикул)», «Склад», «Место хранения», «Номер партии» или «Статус запаса» и нажмите «Применить»; «Сбросить» очищает фильтры.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2" xml:space="preserve">
+    <value>Отфильтруйте по товару или SKU, и карточки над списком покажут «Всего в наличии», «Доступно», «На контроле качества» и «Карантин / заблокировано» для этой выборки. Без фильтра по товару карточки намеренно пусты.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2Title" xml:space="preserve">
+    <value>Смотрите итоги</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3" xml:space="preserve">
+    <value>Каждая строка — один товар в одном месте, партии и статусе. «В наличии» — то, что физически есть, «Зарезервировано» — уже отложенное, «Доступно» — то, что ещё можно использовать.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3Title" xml:space="preserve">
+    <value>Читайте строку запаса</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4" xml:space="preserve">
+    <value>В действиях строки «История» открывает историю движений по этому товару и партии; «Движение» открывает новое движение, где эта строка уже указана как источник.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4Title" xml:space="preserve">
+    <value>Проследите или переместите</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5" xml:space="preserve">
+    <value>Чтобы добавить запас (начальный остаток или излишек инвентаризации), нажмите «Новое поступление запаса». Вкладка «История движений» показывает все движения, из которых сложился остаток.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5Title" xml:space="preserve">
+    <value>Оформите поступление</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Purpose" xml:space="preserve">
+    <value>Оформляйте запас, поступивший вне документного процесса: начальный остаток или излишек инвентаризации. Список остатков никогда не правится напрямую; эта страница проводит приходное движение.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Audience" xml:space="preserve">
+    <value>Контролёры запасов, руководители склада</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Immediate" xml:space="preserve">
+    <value>«Провести движение» сразу проводит запас, без подтверждения. Проведённое движение нельзя изменить; ошибка исправляется в истории движений кнопками «Сторнировать» или «Исправить».</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1" xml:space="preserve">
+    <value>В поле «Тип движения» выберите «Начальный остаток» или «Излишек инвентаризации». Тип определяет, какие поля назначения появятся ниже.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1Title" xml:space="preserve">
+    <value>Выберите тип поступления</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2" xml:space="preserve">
+    <value>Сначала выберите «Товар», затем его «Артикул (SKU)»; в списке только артикулы этого товара.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2Title" xml:space="preserve">
+    <value>Выберите товар и SKU</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3" xml:space="preserve">
+    <value>Заполните «Склад назначения», «Место назначения» и «Статус запаса назначения» и выберите «Партия», если артикул учитывается по партиям.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3Title" xml:space="preserve">
+    <value>Укажите, куда</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4" xml:space="preserve">
+    <value>Введите «Количество» и «Единица» (и серийные номера, если артикул их требует), затем «№ документа», «Дата операции» и «Дата проводки».</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4Title" xml:space="preserve">
+    <value>Введите количество и даты</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5" xml:space="preserve">
+    <value>Сверьте значения до и после в блоке «Влияние на запас» и нажмите «Провести движение». «Отмена» возвращает к списку остатков, ничего не проводя.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5Title" xml:space="preserve">
+    <value>Проверьте и проведите</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Purpose" xml:space="preserve">
+    <value>Все движения запасов компании, сначала новые. Движения никогда не правятся: ошибка отменяется сторно и при необходимости заменяется новым движением.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Audience" xml:space="preserve">
+    <value>Контролёры запасов, руководители склада, аудиторы</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1" xml:space="preserve">
+    <value>Если страница просит, выберите компанию в поле «Компания». Нажмите значок фильтра («Фильтр»), задайте «Товар», «Номер партии», «Склад», «Место хранения», «Дата с» или «Дата по» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>Сузьте историю</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2" xml:space="preserve">
+    <value>В каждой строке — «№ операции», «Тип движения», товар и количества, куда ушёл запас, и «Кем проведено»: человек, который провёл движение.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>Читайте движение</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3" xml:space="preserve">
+    <value>У ручного движения «Сторнировать» открывает подтверждение; «Сторнировать движение» проводит обратное движение, которое его отменяет. Исходная строка остаётся в истории.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>Сторнируйте движение</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4" xml:space="preserve">
+    <value>«Исправить» открывает страницу исправления с уже заполненными значениями движения. Она проводит сторно и исправленное движение; обе записи остаются видны.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>Исправьте движение</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5" xml:space="preserve">
+    <value>Нажмите «Новое движение» для недостачи, списания в брак, списания или перемещения. Вкладка «Список остатков» показывает итоговый остаток.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>Проведите новое движение</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Purpose" xml:space="preserve">
+    <value>Проведите ручное движение запаса: начальный остаток, излишек или недостачу инвентаризации, брак, списание, перемещение или возврат от клиента. Каждое движение хранится навсегда и меняет запас сразу после проведения.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Audience" xml:space="preserve">
+    <value>Контролёры запасов, кладовщики</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Immediate" xml:space="preserve">
+    <value>«Провести движение» сразу меняет запас, без подтверждения. Проведённое движение нельзя изменить; ошибка исправляется в истории движений кнопками «Сторнировать» или «Исправить».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1" xml:space="preserve">
+    <value>Начните с поля «Тип движения». Тип определяет, нужен ли источник, назначение или оба, и форма показывает только эти поля.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1Title" xml:space="preserve">
+    <value>Выберите тип движения</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2" xml:space="preserve">
+    <value>Сначала выберите «Товар», затем его «Артикул (SKU)»; в списке только артикулы этого товара.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2Title" xml:space="preserve">
+    <value>Выберите товар и SKU</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3" xml:space="preserve">
+    <value>Для расхода и перемещения выберите строку запаса в поле «Источник (партия / место)». Для прихода и перемещения заполните «Склад назначения», «Место назначения» и, если требуется, «Статус запаса назначения» и «Партия».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3Title" xml:space="preserve">
+    <value>Укажите откуда и куда</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4" xml:space="preserve">
+    <value>Введите «Количество» и «Единица» (и серийные номера, если артикул их требует), затем «№ документа», «Дата операции» и «Дата проводки».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4Title" xml:space="preserve">
+    <value>Введите количество и даты</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5" xml:space="preserve">
+    <value>Сверьте значения до и после в блоке «Влияние на запас» и нажмите «Провести движение»; откроется квитанция. «Отмена» возвращает к истории движений, ничего не проводя.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5Title" xml:space="preserve">
+    <value>Проверьте и проведите</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Purpose" xml:space="preserve">
+    <value>Исправьте ручное движение, проведённое с ошибкой. Исходное движение не меняется: страница проводит сторно, которое его отменяет, а затем исправленное движение; обе записи остаются в истории.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Audience" xml:space="preserve">
+    <value>Контролёры запасов, руководители склада</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1" xml:space="preserve">
+    <value>Карточка «Исправляемое движение» показывает «№ операции», «Тип движения», товар, количество и партию исходного движения.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1Title" xml:space="preserve">
+    <value>Проверьте исходное</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2" xml:space="preserve">
+    <value>Форма открывается с исходными значениями. Измените то, что было неверно, например «Количество», «Место назначения» или «Партия», и проверьте даты.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2Title" xml:space="preserve">
+    <value>Исправьте значения</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3" xml:space="preserve">
+    <value>Перед проведением сверьте значения до и после в блоке «Влияние на запас».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3Title" xml:space="preserve">
+    <value>Проверьте влияние</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4" xml:space="preserve">
+    <value>Нажмите «Исправить». Подтверждение объясняет две записи; «Сторнировать и провести» проводит сторно и исправленное движение, затем открывается квитанция.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4Title" xml:space="preserve">
+    <value>Подтвердите исправление</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5" xml:space="preserve">
+    <value>Если сторно прошло, а исправленное движение отклонено, на странице остаётся предупреждение. Исправьте указанное поле и нажмите «Провести исправленное движение»; ничего не проводится дважды.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5Title" xml:space="preserve">
+    <value>Завершите частичное исправление</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Purpose" xml:space="preserve">
+    <value>Квитанция только что проведённого движения: что проведено, куда ушёл запас и какой остаток получился. Показывается один раз, сразу после проведения.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Audience" xml:space="preserve">
+    <value>Контролёры запасов, кладовщики</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1" xml:space="preserve">
+    <value>Зелёная плашка показывает номер проведённого движения. После исправления вторая плашка называет сторно и исправленное движение.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1Title" xml:space="preserve">
+    <value>Проверьте результат</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2" xml:space="preserve">
+    <value>Карточки повторяют введённое: «Тип движения», «Товар», «Артикул (SKU)», «Откуда», «Куда», «Партия», «Количество», «№ документа» и даты.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2Title" xml:space="preserve">
+    <value>Просмотрите движение</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3" xml:space="preserve">
+    <value>«Кем проведено» показывает человека, который провёл движение.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3Title" xml:space="preserve">
+    <value>Посмотрите, кто провёл</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4" xml:space="preserve">
+    <value>«Текущий остаток» показывает запас, оставшийся в этом месте после движения: в наличии, доступно, статус и партия.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4Title" xml:space="preserve">
+    <value>Смотрите новый остаток</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5" xml:space="preserve">
+    <value>Нажмите «История движений», чтобы вернуться к списку, или «Список запасов» после поступления.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5Title" xml:space="preserve">
+    <value>Вернитесь</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Purpose" xml:space="preserve">
+    <value>Ведите физические места компании одним деревом: площадка, склад, зона хранения, участок и ячейка. Запасы, закупки и производство читают этот список.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Audience" xml:space="preserve">
+    <value>Руководители складов, администраторы логистики</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1" xml:space="preserve">
+    <value>Если страница просит, выберите компанию в поле «Компания». В блоке «Иерархия местоположений» раскройте площадку, чтобы увидеть её склады, затем зоны хранения, участки и ячейки. Включите «Показать архивные», чтобы видеть и архивные места.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1Title" xml:space="preserve">
+    <value>Просматривайте иерархию</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2" xml:space="preserve">
+    <value>Нажмите на местоположение, чтобы увидеть «Сведения», есть ли запас на нём или ниже в блоке «Запасы», «Дочерние местоположения» и «История изменений».</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2Title" xml:space="preserve">
+    <value>Откройте местоположение</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3" xml:space="preserve">
+    <value>Нажмите «Новая площадка» для верхнего уровня или «Добавить дочернее» у выбранного местоположения. Заполните «Код», «Название», «Тип» и «Хранение запасов» в боковой панели и нажмите «Сохранить»; Enter тоже сохраняет.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3Title" xml:space="preserve">
+    <value>Добавьте площадку или дочернее</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4" xml:space="preserve">
+    <value>«Изменить» правит местоположение. На участке или зоне хранения «Создать ячейки» создаёт сразу много ячеек: задайте диапазоны, нажмите «Предпросмотр», затем подтвердите кнопкой создания.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4Title" xml:space="preserve">
+    <value>Изменяйте или создавайте ячейки</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5" xml:space="preserve">
+    <value>«Активировать», «Деактивировать» и «В архив» сначала просят подтверждения; архивирование необратимо. «Показать в списке запасов» открывает запас в этом месте.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5Title" xml:space="preserve">
+    <value>Меняйте статус или смотрите запас</value>
+  </data>
+  <data name="Help.LOCATIONS.Purpose" xml:space="preserve">
+    <value>Те же местоположения компании, что и в иерархии, в виде плоского списка с поиском, фильтрами и сортировкой. Используйте его, чтобы быстро найти место или работать со многими местами одного типа.</value>
+  </data>
+  <data name="Help.LOCATIONS.Audience" xml:space="preserve">
+    <value>Руководители складов, администраторы логистики</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1" xml:space="preserve">
+    <value>Если страница просит, выберите компанию в поле «Компания». Введите текст в поле поиска или нажмите значок фильтра («Фильтр»), выберите «Тип», «Статус», «Хранение запасов» или «Родитель» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1Title" xml:space="preserve">
+    <value>Найдите местоположения</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2" xml:space="preserve">
+    <value>В каждой строке — «Код», «Название», «Тип», «Путь родителя», «Статус» и признак хранения запасов. Нажмите «Иерархия», чтобы увидеть те же места деревом.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2Title" xml:space="preserve">
+    <value>Читайте список</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3" xml:space="preserve">
+    <value>Нажмите «Новое местоположение», заполните «Код», «Название», «Тип», «Родитель» и «Хранение запасов» в боковой панели и нажмите «Сохранить»; Enter тоже сохраняет.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3Title" xml:space="preserve">
+    <value>Добавьте местоположение</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4" xml:space="preserve">
+    <value>В действиях строки «Изменить» открывает ту же боковую панель; «Добавить дочернее» создаёт местоположение под этим. Архивное местоположение изменить нельзя.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4Title" xml:space="preserve">
+    <value>Изменяйте или добавляйте ниже</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5" xml:space="preserve">
+    <value>«Активировать», «Деактивировать» и «В архив» сначала просят подтверждения; архивирование необратимо. «История» открывает историю изменений в иерархии, а «Показать в списке запасов» — запас в этом месте.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5Title" xml:space="preserve">
+    <value>Статус, история и запас</value>
+  </data>
+  <data name="Help.LOTS.Purpose" xml:space="preserve">
+    <value>Смотрите все партии товаров компании в одном списке: даты, статус и сколько в наличии. Отсюда вы открываете партию, меняете её статус или создаёте новую.</value>
+  </data>
+  <data name="Help.LOTS.Audience" xml:space="preserve">
+    <value>Склад, служба качества и планирование</value>
+  </data>
+  <data name="Help.LOTS.Step1" xml:space="preserve">
+    <value>Введите номер партии или партию производителя / поставщика в поле поиска либо нажмите значок фильтра, выберите «Товар», «Статус», «Срок годности до» или «Только партии с предупреждением» и нажмите «Применить». «Сбросить» очищает фильтры.</value>
+  </data>
+  <data name="Help.LOTS.Step1Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.LOTS.Step2" xml:space="preserve">
+    <value>Столбец «Статус» показывает Черновик, Выпущен, Заблокирован или Просрочен; «Годен до» предупреждает, когда срок близок или истёк, а «В наличии» — запас партии в выбранной компании.</value>
+  </data>
+  <data name="Help.LOTS.Step2Title" xml:space="preserve">
+    <value>Проверьте статус и срок</value>
+  </data>
+  <data name="Help.LOTS.Step3" xml:space="preserve">
+    <value>Нажмите на строку или «Карточка партии», чтобы увидеть партию целиком. В меню строки есть также «Изменить», «История движений» и «Прослеживаемость».</value>
+  </data>
+  <data name="Help.LOTS.Step3Title" xml:space="preserve">
+    <value>Откройте партию</value>
+  </data>
+  <data name="Help.LOTS.Step4" xml:space="preserve">
+    <value>Выберите «Изменить статус» в меню строки, отметьте новый статус и укажите причину не короче 10 символов. Блокировка делает весь запас партии непригодным, поэтому сначала отметьте «Я понимаю последствия.». Статус Просрочен устанавливает только система.</value>
+  </data>
+  <data name="Help.LOTS.Step4Title" xml:space="preserve">
+    <value>Смените статус</value>
+  </data>
+  <data name="Help.LOTS.Step5" xml:space="preserve">
+    <value>Нажмите «Новая партия», чтобы зарегистрировать партию вручную; она сохраняется как черновик.</value>
+  </data>
+  <data name="Help.LOTS.Step5Title" xml:space="preserve">
+    <value>Добавьте партию</value>
+  </data>
+  <data name="Help.LOTDETAILS.Purpose" xml:space="preserve">
+    <value>Всё об одной партии на одной странице: статус и предупреждения, наличие, где лежит запас, серийные номера и кто, что и почему изменил.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Audience" xml:space="preserve">
+    <value>Склад, служба качества и планирование</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1" xml:space="preserve">
+    <value>Значок статуса и предупреждения находятся рядом с номером партии. «В наличии» показывает количество, «Сведения о партии» — даты, происхождение и источник партии.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1Title" xml:space="preserve">
+    <value>Проверьте партию</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2" xml:space="preserve">
+    <value>«Распределение запаса» перечисляет каждый «Склад», «Место», «Статус запаса» и «Количество» этой партии в выбранной компании.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2Title" xml:space="preserve">
+    <value>Посмотрите, где запас</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3" xml:space="preserve">
+    <value>«История изменений» показывает, кто изменил какое поле, старое → новое, и причину. Листайте кнопками ‹ и ›; записи удалить нельзя.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3Title" xml:space="preserve">
+    <value>Прочитайте историю</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4" xml:space="preserve">
+    <value>Нажмите «Изменить», чтобы исправить поля партии, или «Изменить статус», чтобы выпустить или заблокировать её с причиной не короче 10 символов.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4Title" xml:space="preserve">
+    <value>Измените партию или статус</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5" xml:space="preserve">
+    <value>Откройте «История движений», «Прослеживаемость» или «Открыть в складском учёте» вверху; для партии с серийным учётом «Все серийные номера» в блоке «Серийные номера» открывает обзор серийных номеров.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5Title" xml:space="preserve">
+    <value>Идите дальше</value>
+  </data>
+  <data name="Help.LOTCREATE.Purpose" xml:space="preserve">
+    <value>Зарегистрируйте вручную партию для товара с партионным учётом, с датами и происхождением. Новая партия сохраняется как черновик.</value>
+  </data>
+  <data name="Help.LOTCREATE.Audience" xml:space="preserve">
+    <value>Склад и служба качества</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1" xml:space="preserve">
+    <value>Выберите «Товар», затем «Артикул (SKU)», к которому относится партия. Партию можно создать только для товара с партионным учётом.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1Title" xml:space="preserve">
+    <value>Выберите товар</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2" xml:space="preserve">
+    <value>Введите «№ партии»: 1–40 символов, A–Z, 0–9 и . / -. После сохранения его нельзя изменить, и он должен быть уникальным для товара.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2Title" xml:space="preserve">
+    <value>Введите номер партии</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3" xml:space="preserve">
+    <value>Укажите «Дата производства», «Срок годности» и при необходимости «Дата повторного контроля»: производство — сегодня или раньше, срок годности — после производства, повторный контроль — между ними.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3Title" xml:space="preserve">
+    <value>Заполните даты</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4" xml:space="preserve">
+    <value>При желании заполните «Партия производителя», «Партия поставщика», «Страна происхождения» и «Ссылка на сертификат анализа (CoA)».</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4Title" xml:space="preserve">
+    <value>Добавьте происхождение</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5" xml:space="preserve">
+    <value>Проверьте блок «Сводка» и нажмите «Сохранить». «Отмена» возвращает в обзор партий без сохранения.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5Title" xml:space="preserve">
+    <value>Сохраните</value>
+  </data>
+  <data name="Help.LOTEDIT.Purpose" xml:space="preserve">
+    <value>Исправьте данные существующей партии: даты, происхождение и ссылки. Каждое изменение сохраняется в истории изменений партии.</value>
+  </data>
+  <data name="Help.LOTEDIT.Audience" xml:space="preserve">
+    <value>Склад и служба качества</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1" xml:space="preserve">
+    <value>«Товар», «Артикул (SKU)» и «№ партии» нельзя изменить после сохранения партии; они показаны только для чтения.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1Title" xml:space="preserve">
+    <value>Что изменить нельзя</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2" xml:space="preserve">
+    <value>Если партия не черновик, поля остаются заблокированными, пока вы не введёте не менее 10 символов в «Причина изменения». Причина сохраняется в истории изменений.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2Title" xml:space="preserve">
+    <value>Укажите причину</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3" xml:space="preserve">
+    <value>Исправьте «Дата производства», «Срок годности», «Дата повторного контроля», «Партия производителя», «Партия поставщика», «Страна происхождения» или «Ссылка на сертификат анализа (CoA)».</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3Title" xml:space="preserve">
+    <value>Измените поля</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4" xml:space="preserve">
+    <value>«Изменения для сохранения» перед сохранением перечисляет каждое изменённое поле: старое → новое.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4Title" xml:space="preserve">
+    <value>Проверьте изменения</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5" xml:space="preserve">
+    <value>Нажмите «Сохранить». «Отмена» возвращает в карточку партии без сохранения.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5Title" xml:space="preserve">
+    <value>Сохраните</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Purpose" xml:space="preserve">
+    <value>Смотрите все движения одной партии в складском учёте: что пришло, что ушло, куда и в каком статусе запаса.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Audience" xml:space="preserve">
+    <value>Склад, служба качества и планирование</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1" xml:space="preserve">
+    <value>Найдите и выберите партию в селекторе «Партия» над таблицей. Если вы пришли из партии, она уже выбрана.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>Выберите партию</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2" xml:space="preserve">
+    <value>Нажмите значок фильтра, укажите «Дата с» и «Дата по» и нажмите «Применить». «Сбросить» убирает даты.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>Ограничьте даты</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3" xml:space="preserve">
+    <value>Каждая строка показывает «№ операции», «Тип движения», «Количество» (+ зелёным для прихода, − красным для расхода), «Куда», «Статус», «Источник» и «Дата операции».</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>Прочитайте движения</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4" xml:space="preserve">
+    <value>Нажмите на строку или «Квитанция движения», чтобы увидеть движение так, как его записал учёт; «Открыть в складском учёте» ведёт в учёт.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>Откройте квитанцию</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5" xml:space="preserve">
+    <value>Если вы пришли из обзора серийных номеров, метка «Серийный номер …» называет номер, а его последнее движение выделено в списке.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>Отследите серийный номер</value>
+  </data>
+  <data name="Help.SERIALS.Purpose" xml:space="preserve">
+    <value>Найдите любой серийный номер: где он сейчас, к какой партии относится и можно ли его использовать. Страница только для просмотра.</value>
+  </data>
+  <data name="Help.SERIALS.Audience" xml:space="preserve">
+    <value>Склад, служба качества и сервис</value>
+  </data>
+  <data name="Help.SERIALS.Step1" xml:space="preserve">
+    <value>Введите серийный номер в поле поиска над списком.</value>
+  </data>
+  <data name="Help.SERIALS.Step1Title" xml:space="preserve">
+    <value>Найдите номер</value>
+  </data>
+  <data name="Help.SERIALS.Step2" xml:space="preserve">
+    <value>Нажмите значок фильтра, выберите «Товар», затем «Партия» и «Статус» (Активен, Заблокирован, Израсходован) и нажмите «Применить». «Сбросить» очищает фильтры.</value>
+  </data>
+  <data name="Help.SERIALS.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.SERIALS.Step3" xml:space="preserve">
+    <value>«Склад / место» показывает, где находится номер, «Последнее движение» — когда он двигался в последний раз, «Статус» — можно ли его использовать; номер заблокирован, если заблокирована его партия.</value>
+  </data>
+  <data name="Help.SERIALS.Step3Title" xml:space="preserve">
+    <value>Посмотрите, где он</value>
+  </data>
+  <data name="Help.SERIALS.Step4" xml:space="preserve">
+    <value>Выберите «Карточка партии» в меню строки, чтобы открыть партию серийного номера.</value>
+  </data>
+  <data name="Help.SERIALS.Step4Title" xml:space="preserve">
+    <value>Откройте его партию</value>
+  </data>
+  <data name="Help.SERIALS.Step5" xml:space="preserve">
+    <value>Выберите «История движений» в меню строки: откроются движения партии с выделенным последним движением этого номера.</value>
+  </data>
+  <data name="Help.SERIALS.Step5Title" xml:space="preserve">
+    <value>Посмотрите движения</value>
+  </data>
+  <data name="Help.LOTTRACE.Purpose" xml:space="preserve">
+    <value>Проследите партию назад — откуда она пришла, и вперёд — куда ушла, по два уровня в каждую сторону, и посмотрите, какое количество затронуто.</value>
+  </data>
+  <data name="Help.LOTTRACE.Audience" xml:space="preserve">
+    <value>Служба качества, отзывы и склад</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1" xml:space="preserve">
+    <value>Найдите и выберите партию в селекторе «Партия». Если вы пришли из партии, она уже выбрана.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1Title" xml:space="preserve">
+    <value>Выберите партию</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2" xml:space="preserve">
+    <value>«Общее затронутое количество» складывает наличие и отгрузки по каждой единице измерения (разные единицы никогда не суммируются); карточки показывают «На складе», «Отгружено» и «Затронутые партии».</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2Title" xml:space="preserve">
+    <value>Оцените затронутое количество</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3" xml:space="preserve">
+    <value>«Выбранная партия» в центре, с одной стороны «Назад · уровень 1» и «Назад · уровень 2», с другой — «Вперёд · уровень 1» и «Вперёд · уровень 2». Пока назад показывается источник прихода партии, а вперёд — только номера расходных документов.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3Title" xml:space="preserve">
+    <value>Прочитайте цепочку</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4" xml:space="preserve">
+    <value>Нажмите на карточку партии, чтобы поместить её в центр и прослеживать дальше; «Карточка партии» у выбранной партии открывает её полную страницу.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4Title" xml:space="preserve">
+    <value>Двигайтесь по цепочке</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5" xml:space="preserve">
+    <value>Если у вас есть право на отзывы, «Полное прослеживание (отзыв)» открывает прослеживание отзыва для этой партии.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5Title" xml:space="preserve">
+    <value>Запустите полное прослеживание</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Purpose" xml:space="preserve">
+    <value>Привяжите к зарегистрированным партиям тексты партий, введённые вручную в старые движения складского учёта до регистрации партий. Перенос не изменяет прошлые движения; он только добавляет привязку к партии.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Audience" xml:space="preserve">
+    <value>Руководители склада и службы качества</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1" xml:space="preserve">
+    <value>Карточки показывают «Всего строк», «Сопоставлено» и «Ожидает». Вкладки «Все», «Ожидает» и «Сопоставлено» оставляют только нужные строки; каждая строка — товар + «Вручную введённая партия».</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1Title" xml:space="preserve">
+    <value>Посмотрите, что осталось</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2" xml:space="preserve">
+    <value>Если в «Предлагаемое соответствие» указана партия, выберите «Применить предложение» в меню строки или нажмите «Применить все предложения», чтобы принять все сразу.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2Title" xml:space="preserve">
+    <value>Примите предложения</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3" xml:space="preserve">
+    <value>Выберите «Привязать к существующей партии», чтобы указать зарегистрированную партию того же артикула, или «Опечатка — привязать к другой партии», чтобы присоединить строку к другой введённой партии, и нажмите «Привязать».</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3Title" xml:space="preserve">
+    <value>Привяжите вручную</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4" xml:space="preserve">
+    <value>Выберите «Создать как новую партию», проверьте номер партии и даты и нажмите «Принять как решение». Партия создаётся как черновик только при подтверждении переноса.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4Title" xml:space="preserve">
+    <value>Создайте партию</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5" xml:space="preserve">
+    <value>Решения хранятся на этой странице до подтверждения; «Изменить» снова открывает строку. Когда ожидающих строк не останется, нажмите «Подтвердить перенос» и укажите причину не короче 10 символов. Это необратимо: после этого ручной ввод партии в складском учёте будет закрыт.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5Title" xml:space="preserve">
+    <value>Подтвердите перенос</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Purpose" xml:space="preserve">
+    <value>Следите за каждой строкой запаса в карантине, которая ждёт решения по качеству: видьте просрочки, помещайте запас в карантин вручную и открывайте записи, чтобы принять решение.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Audience" xml:space="preserve">
+    <value>Обеспечение качества и руководители склада</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1" xml:space="preserve">
+    <value>Выберите «Компания». Карточки показывают строки, ожидающие решения, общее количество по единицам и записи сверх цели ожидания; просроченные строки выделены в списке.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1Title" xml:space="preserve">
+    <value>Выберите компанию</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2" xml:space="preserve">
+    <value>Введите текст в поле поиска или нажмите кнопку фильтра («Фильтр»), выберите склад, статус запаса, источник или «Только просроченные» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3" xml:space="preserve">
+    <value>Нажмите «Поместить запас в карантин», выберите партию, её доступную строку и количество, нажмите «Далее» и подтвердите обоснованием не короче 10 символов. Затем запись ждёт решения в этой очереди.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3Title" xml:space="preserve">
+    <value>Поместите запас в карантин вручную</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4" xml:space="preserve">
+    <value>Нажмите на строку или «Подробнее», чтобы увидеть сведения о качестве, историю решений и движения запаса.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4Title" xml:space="preserve">
+    <value>Откройте запись</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
+    <value>Нажмите «Принять решение» в открытой записи, чтобы выпустить, отклонить или заблокировать запас. Запас движется только после утверждения решения.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
+    <value>Примите решение</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Purpose" xml:space="preserve">
+    <value>Смотрите всё по одной записи карантина — партию, количество, сведения о качестве, историю решений и движения запаса — и доводите её до решения.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Audience" xml:space="preserve">
+    <value>Обеспечение качества и руководители склада</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Immediate" xml:space="preserve">
+    <value>Сохранение заметки об анализе</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
+    <value>Проверьте данные вверху, карточку «Сведения о качестве» и движения запаса, созданные записью; жёлтая полоса предупреждает о превышении цели ожидания.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
+    <value>Изучите запись</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2" xml:space="preserve">
+    <value>Нажмите «Начать проверку», чтобы перевести запись в статус проверки. Запас не движется.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2Title" xml:space="preserve">
+    <value>Начните проверку</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3" xml:space="preserve">
+    <value>Нажмите «Изменить заметку», впишите результат анализа и нажмите «Сохранить». Пока решение ждёт утверждения, заметка заблокирована.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3Title" xml:space="preserve">
+    <value>Напишите заметку об анализе</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4" xml:space="preserve">
+    <value>Нажмите «Принять решение», чтобы открыть страницу решения и выпустить, отклонить или заблокировать запас.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4Title" xml:space="preserve">
+    <value>Примите решение</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5" xml:space="preserve">
+    <value>В блоке рабочего процесса используйте «Обновить статус», «Подписать и отправить» для черновика, «Отозвать решение» или «Применить повторно», если решение не удалось применить. Подписи видны в «История решений».</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5Title" xml:space="preserve">
+    <value>Следите за утверждением</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Purpose" xml:space="preserve">
+    <value>Примите решение по качеству для записи карантина — выпуск, отклонение или блокировка, — подпишите его и отправьте на утверждение. До утверждения ничего не движется.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Audience" xml:space="preserve">
+    <value>Специалисты по качеству, принимающие решения</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1" xml:space="preserve">
+    <value>Выберите «Выпустить», «Отклонить» или «Заблокировать». Чтобы разделить количество, включите «Частичное решение» и укажите две строки с разными решениями, сумма которых равна количеству записи.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1Title" xml:space="preserve">
+    <value>Выберите решение</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2" xml:space="preserve">
+    <value>Для отклонения или блокировки выберите «Причина блокировки». Для выпуска отметьте «CoA / результат анализа проверен»; партии с истёкшей датой повторного контроля нужна также «Новая дата повторного контроля».</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2Title" xml:space="preserve">
+    <value>Заполните детали</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3" xml:space="preserve">
+    <value>Введите «Обоснование» не короче 10 символов. Заметка вверху показывает, требует ли правило «четырёх глаз» утверждения другим пользователем качества.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3Title" xml:space="preserve">
+    <value>Напишите обоснование</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4" xml:space="preserve">
+    <value>Нажмите «Далее: электронная подпись». Создаётся черновик (запас не движется), он показан в «Решение для подписи»; чтобы изменить его, нажмите «Назад».</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4Title" xml:space="preserve">
+    <value>Перейдите к подписи</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5" xml:space="preserve">
+    <value>Нажмите «Подписать и отправить» и подпишите в окне электронной подписи (или «Отправить на утверждение», если политика не требует подписи). Запас движется после утверждения.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5Title" xml:space="preserve">
+    <value>Подпишите и отправьте</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Purpose" xml:space="preserve">
+    <value>Подпишите и отправьте черновик решения, созданный не формой на этой странице, — например, запрос на выпуск партии или решение, отправка которого не удалась. Запас движется после утверждения.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Audience" xml:space="preserve">
+    <value>Специалисты по качеству, принимающие решения</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1" xml:space="preserve">
+    <value>Прочитайте «Решение для подписи»: строки и их целевой статус, планируемое движение запаса и обоснование в том виде, как их сформировал сервер.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1Title" xml:space="preserve">
+    <value>Проверьте решение</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2" xml:space="preserve">
+    <value>Нажмите «Подписать и отправить» и подпишите в окне электронной подписи (или «Отправить на утверждение», если политика не требует подписи). Затем решение ждёт утверждения.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2Title" xml:space="preserve">
+    <value>Подпишите и отправьте</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3" xml:space="preserve">
+    <value>Нажмите «Отмена», чтобы вернуться в очередь; ничего не отправляется.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3Title" xml:space="preserve">
+    <value>Выйдите без отправки</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Purpose" xml:space="preserve">
+    <value>Управляйте заблокированным запасом: при необходимости сразу блокируйте запас, завершайте проверку и решайте его судьбу — распоряжение или снятие блокировки.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Audience" xml:space="preserve">
+    <value>Обеспечение качества и руководители склада</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Immediate" xml:space="preserve">
+    <value>«Заблокировать запас» → «Заблокировать»: выбранный запас сразу становится заблокированным, без процесса утверждения</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
+    <value>Введите текст в поле поиска или нажмите кнопку фильтра («Фильтр»), выберите причину блокировки, «Только ожидающие распоряжения» или «Статус» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2" xml:space="preserve">
+    <value>Нажмите «Заблокировать запас», выберите партию, её доступную строку, количество и «Причина блокировки», введите обоснование не короче 10 символов и нажмите «Заблокировать».</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2Title" xml:space="preserve">
+    <value>Заблокируйте запас</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3" xml:space="preserve">
+    <value>Когда расследование закончено, нажмите «Завершить проверку» в строке и укажите обоснование. После этого становится доступным снятие блокировки.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3Title" xml:space="preserve">
+    <value>Завершите проверку</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4" xml:space="preserve">
+    <value>Нажмите «Решение о распоряжении», чтобы уничтожить запас, вернуть поставщику, отправить на переработку или отложить как образец.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4Title" xml:space="preserve">
+    <value>Примите решение о распоряжении</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5" xml:space="preserve">
+    <value>Нажмите «Снять блокировку» в проверенной записи и укажите обоснование. Решение подписывается и отправляется на утверждение; запас становится доступным только после утверждения.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5Title" xml:space="preserve">
+    <value>Снимите блокировку</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Purpose" xml:space="preserve">
+    <value>Решите судьбу записи заблокированного запаса — уничтожение, возврат поставщику, переработка или хранение как образца — и отправьте решение на подпись и утверждение.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Audience" xml:space="preserve">
+    <value>Специалисты по качеству, принимающие решения</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1" xml:space="preserve">
+    <value>Выберите «Уничтожение», «Возврат поставщику», «Переработка» или «Отложить как образец / эталон»; каждая карточка показывает создаваемое движение запаса.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1Title" xml:space="preserve">
+    <value>Выберите распоряжение</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2" xml:space="preserve">
+    <value>Укажите «Количество» (не больше заблокированного; остаток остаётся заблокированным). Для возврата нужны «Поставщик» и «№ документа возврата», для уничтожения — «Способ уничтожения» и «Дата уничтожения». Для образца в настройках карантина должно быть задано место хранения образцов.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2Title" xml:space="preserve">
+    <value>Укажите количество и детали</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3" xml:space="preserve">
+    <value>Введите «Обоснование» не короче 10 символов и проверьте блок «Движение, которое появится в журнале запасов после утверждения».</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3Title" xml:space="preserve">
+    <value>Напишите обоснование</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4" xml:space="preserve">
+    <value>Нажмите «Далее: электронная подпись», проверьте сводку, затем нажмите «Подписать и отправить» (или «Отправить на утверждение»). Запас движется после утверждения.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4Title" xml:space="preserve">
+    <value>Подпишите и отправьте</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Purpose" xml:space="preserve">
+    <value>Смотрите партии, у которых дата повторного контроля прошла или скоро наступит, и отправляйте их в карантин для решения по качеству.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Audience" xml:space="preserve">
+    <value>Обеспечение качества и руководители склада</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1" xml:space="preserve">
+    <value>Список показывает партии с прошедшей датой повторного контроля или с датой в ближайшие 30 дней и их статус: предстоящая, просрочена и закрыта для использования или уже в карантине. Просроченную партию нельзя продавать, резервировать и отпускать до решения по качеству.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1Title" xml:space="preserve">
+    <value>Изучите список</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2" xml:space="preserve">
+    <value>Введите товар или партию в поле поиска, чтобы сузить список.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2Title" xml:space="preserve">
+    <value>Найдите партию</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3" xml:space="preserve">
+    <value>Нажмите «Поместить в карантин» в строке и подтвердите обоснованием не короче 10 символов. Доступный запас партии переходит в карантин, а в очередь карантина добавляется запись.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3Title" xml:space="preserve">
+    <value>Поместите партию в карантин</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4" xml:space="preserve">
+    <value>Для партии, которая уже в карантине, нажмите «Открыть запись карантина», чтобы следить за решением.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4Title" xml:space="preserve">
+    <value>Откройте существующую запись</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Purpose" xml:space="preserve">
+    <value>Задайте правила карантина вашей компании: цель ожидания, «четыре глаза» и утверждение выпуска партии, кто может утверждать, где хранятся образцы и какие есть причины блокировки.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Audience" xml:space="preserve">
+    <value>Менеджеры по качеству и администраторы</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Immediate" xml:space="preserve">
+    <value>«Сохранить» для настроек и сохранение причины блокировки действуют сразу</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1" xml:space="preserve">
+    <value>Укажите «Цель ожидания (дни)» (1–60) и «Интервал повторного чтения (секунды)», включите или выключите «Четыре глаза» и «Утверждение выпуска партии».</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1Title" xml:space="preserve">
+    <value>Задайте общие правила</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2" xml:space="preserve">
+    <value>В разделе «Кандидаты на утверждение» выберите должность или пользователя и нажмите «Добавить» (не более 10). Без кандидатов ни одно решение нельзя отправить на утверждение.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2Title" xml:space="preserve">
+    <value>Выберите утверждающих</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3" xml:space="preserve">
+    <value>В разделе «Места хранения образцов» выберите склад и место для образцов и нажмите «Добавить»; одно место на склад.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3Title" xml:space="preserve">
+    <value>Задайте места хранения образцов</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4" xml:space="preserve">
+    <value>Нажмите «Сохранить» вверху. Если шаблон утверждения отмечен как отсутствующий, один раз нажмите «Подготовить шаблон утверждения».</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4Title" xml:space="preserve">
+    <value>Сохраните и подготовьте шаблон</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5" xml:space="preserve">
+    <value>Нажмите «Добавить причину блокировки», введите код и название на всех семи языках и сохраните; для изменения существующей причины используйте действие в строке.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5Title" xml:space="preserve">
+    <value>Управляйте причинами блокировки</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve">
+    <value>Оценивайте риск истечения сроков в вашей компании одним взглядом: просроченный запас в наличии, критичные и истекающие партии, приёмки ниже минимального остаточного срока, открытые исключения и соблюдение FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve">
+    <value>Обеспечение качества, руководители складов и планировщики снабжения</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve">
+    <value>Если потребуется, выберите компанию в поле «Компания», затем сузьте показатели через «Все склады» и «Период» карточки соответствия; страница обновляется сразу после изменения.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve">
+    <value>Выберите охват</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve">
+    <value>Карточки просроченного, критичного и истекающего запаса считают партии и количества по порогам вашей компании, указанным в подзаголовке; карточка исключений показывает, сколько случаев вышли за SLA.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve">
+    <value>Читайте карточки</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3" xml:space="preserve">
+    <value>Нажмите карточку «Просроченный запас» или критичную либо истекающую карточку, чтобы открыть соответствующий список, уже отфильтрованный по вашему складу.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3Title" xml:space="preserve">
+    <value>Откройте партии за карточкой</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4" xml:space="preserve">
+    <value>График показывает по месяцам, сколько запаса «Доступно» и «Удержано» истечёт.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4Title" xml:space="preserve">
+    <value>Смотрите на 12 месяцев вперёд</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5" xml:space="preserve">
+    <value>В таблице «10 самых рискованных партий» используйте значки строки «Показать порядок FEFO», «В карантин (MOD-0175)» (открывает модуль «Карантин») или «Открыть исключение»; «Показать все» открывает полный список.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5Title" xml:space="preserve">
+    <value>Займитесь самыми рискованными партиями</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve">
+    <value>Просматривайте партии с истекающим сроком годности, ближайший срок первым (порядок FEFO), с доступным и удержанным запасом в отдельных столбцах, чтобы вовремя их использовать или обработать.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve">
+    <value>Пользователи склада, продаж и качества</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve">
+    <value>Выберите «Все склады», «Все статусы», «Горизонт» и «Включая удержанный запас» или «Только доступный запас», затем нажмите «Применить»; «Сбросить» очищает фильтры. Без горизонта действует настройка вашей компании.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve">
+    <value>«Осталось дней» и «Остаточный срок» показывают срочность партии; «Доступно» и «Удержано» показывают, что ещё можно использовать. Нажмите номер партии, чтобы открыть «Сведения о партии (MOD-0174)».</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve">
+    <value>Читайте строку</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3" xml:space="preserve">
+    <value>Используйте значки строки: «Показать порядок FEFO» показывает, какую партию брать первой, «В карантин (MOD-0175)» открывает модуль «Карантин», а «Открыть исключение» регистрирует случай, если партию не успеть использовать.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3Title" xml:space="preserve">
+    <value>Действуйте по партии</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4" xml:space="preserve">
+    <value>«Экспорт (CSV)» скачивает список с применёнными фильтрами.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4Title" xml:space="preserve">
+    <value>Выгрузите список</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Purpose" xml:space="preserve">
+    <value>Просматривайте просроченные партии, по которым ещё есть запас. Просроченная партия автоматически закрывается для использования; здесь решения не принимаются, решение об уничтожении или возврате принимается в модуле «Карантин».</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Audience" xml:space="preserve">
+    <value>Обеспечение качества и руководители складов</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1" xml:space="preserve">
+    <value>Выберите склад в списке «Все склады» и нажмите «Применить»; «Сбросить» снова показывает все склады.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1Title" xml:space="preserve">
+    <value>Выберите склад</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2" xml:space="preserve">
+    <value>«С момента истечения» показывает, сколько дней назад истёк срок партии; «Доступно» и «Удержано» показывают, сколько ещё в наличии. Нажмите номер партии, чтобы открыть «Сведения о партии (MOD-0174)».</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2Title" xml:space="preserve">
+    <value>Проверьте запас</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3" xml:space="preserve">
+    <value>Если случай уже открыт, столбец «Исключение» ведёт к нему; иначе используйте «Открыть исключение» в строке, чтобы зарегистрировать случай.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3Title" xml:space="preserve">
+    <value>Следите за исключением или откройте его</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4" xml:space="preserve">
+    <value>«В карантин (MOD-0175)» в строке открывает модуль «Карантин», где вы решаете уничтожить или вернуть запас.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4Title" xml:space="preserve">
+    <value>Решайте в карантине</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5" xml:space="preserve">
+    <value>«Экспорт (CSV)» скачивает список выбранного склада.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5Title" xml:space="preserve">
+    <value>Выгрузите список</value>
+  </data>
+  <data name="Help.FEFOORDER.Purpose" xml:space="preserve">
+    <value>Узнайте, какую партию товара на складе нужно использовать первой по сроку годности. Это подсказка только для чтения: здесь ничего не резервируется и не отпускается, а отпуск из более поздней партии подчиняется правилу отпуска FEFO вашей компании.</value>
+  </data>
+  <data name="Help.FEFOORDER.Audience" xml:space="preserve">
+    <value>Операторы склада и планировщики</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1" xml:space="preserve">
+    <value>Выберите «Склад», затем «Товар (SKU)»; предлагаются только товары с партионным запасом на этом складе.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1Title" xml:space="preserve">
+    <value>Выберите склад и товар</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2" xml:space="preserve">
+    <value>Если нужно определённое количество, введите его в «Требуемое количество (необязательно)», затем нажмите «Рассчитать порядок».</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2Title" xml:space="preserve">
+    <value>Рассчитайте порядок</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3" xml:space="preserve">
+    <value>«Партии в очереди · по сроку годности» ранжирует партии, которые можно отпустить сейчас; с количеством столбец «Для этого количества» показывает, сколько брать из каждой партии и что не покрывается.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3Title" xml:space="preserve">
+    <value>Следуйте порядку</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4" xml:space="preserve">
+    <value>«Исключённые партии» перечисляет партии, которые сейчас нельзя использовать, с причиной; ссылки ведут в просроченный запас или в модуль «Карантин».</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4Title" xml:space="preserve">
+    <value>Посмотрите исключённое</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>Работайте с исключениями FEFO вашей компании: каждое отклонение от правил сроков годности, от открытия до закрытия (Открыто, На рассмотрении, Принято или Исправлено, Закрыто).</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve">
+    <value>Пользователи обеспечения качества, которые рассматривают исключения и принимают решения</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve">
+    <value>Используйте вкладки «Все», «Открытые + На рассмотрении», «Срок нарушен» и «Завершённые»; на каждой вкладке виден её счётчик.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>Выберите представление</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve">
+    <value>Выберите «Все типы», «Все статусы», «Все склады» или «Назначенные мне», затем нажмите «Применить»; «Сбросить» очищает фильтры.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3" xml:space="preserve">
+    <value>Столбец «Срок (SLA)» показывает оставшееся время или просрочку случая; «Исполнитель» показывает, кто им занимается.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3Title" xml:space="preserve">
+    <value>Следите за SLA</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4" xml:space="preserve">
+    <value>Нажмите стрелку в конце строки («Открыть исключение»), чтобы увидеть факты, хронологию и решение.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4Title" xml:space="preserve">
+    <value>Откройте случай</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5" xml:space="preserve">
+    <value>Нажмите «Открыть исключение», выберите склад, товар и партию, «Тип исключения», напишите «Описание» не короче 10 символов и снова нажмите «Открыть исключение»; новый случай откроется на своей странице.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5Title" xml:space="preserve">
+    <value>Откройте новое исключение</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve">
+    <value>Ведите одно исключение: изучите факты и что произошло, следите за хронологией и зафиксируйте решение.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve">
+    <value>Пользователи обеспечения качества и участники исключения</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Immediate" xml:space="preserve">
+    <value>«Отправить», «Взять на рассмотрение» и «Закрыть исключение» срабатывают сразу после нажатия, без подтверждения.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve">
+    <value>«Факты» и «Что произошло» показывают партию, даты и движение, вызвавшее исключение, как они записаны; «Сведения о партии (MOD-0174)» и «В карантин (MOD-0175)» открывают связанные модули.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve">
+    <value>Изучите факты</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve">
+    <value>«Хронология» перечисляет каждый шаг случая; напишите в поле комментария и нажмите «Отправить».</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve">
+    <value>Обсуждайте в хронологии</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3" xml:space="preserve">
+    <value>Пока исключение открыто, нажмите «Взять на рассмотрение» в блоке «Решение», чтобы взять его на себя.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3Title" xml:space="preserve">
+    <value>Возьмите на рассмотрение</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4" xml:space="preserve">
+    <value>Нажмите «Принять решение», выберите «Принято с обоснованием», «Исправлено» или «Отменено», напишите «Обоснование» (не менее 10 символов) и нажмите «Далее»; если политика электронной подписи вашей компании этого требует, завершите кнопкой «Подписать и сохранить», иначе решение сохраняется сразу.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4Title" xml:space="preserve">
+    <value>Примите решение</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5" xml:space="preserve">
+    <value>После решения «Принято с обоснованием» или «Исправлено» нажмите «Закрыть исключение».</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5Title" xml:space="preserve">
+    <value>Закройте исключение</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve">
+    <value>Задайте правила сроков годности вашей компании: горизонты «приближается» и «критично», правило отпуска FEFO, действия при приёмке ниже минимального остаточного срока, изменения дат, сроки обработки исключений и порог просроченного запаса.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve">
+    <value>Менеджеры по качеству, отвечающие за политику сроков годности</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve">
+    <value>В «Настройки компании» введите в днях горизонт «приближается» и порог «критично»; критичный порог должен быть меньше горизонта приближения.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve">
+    <value>Задайте горизонты</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve">
+    <value>Выберите по одному варианту для «Правило отпуска FEFO», «Приёмка ниже минимального остаточного срока» и «Изменение срока годности / переконтроля»; задайте часы по типам в «Сроки обработки исключений» и порог «просроченный запас в наличии» в днях.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve">
+    <value>Выберите правила</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3" xml:space="preserve">
+    <value>Нажмите «Сохранить изменения», проверьте изменённые поля, напишите «Причина изменения» (не менее 10 символов) и подтвердите кнопкой «Сохранить изменения»; «Отмена» отбрасывает правки. Без права управлять политикой форма доступна только для чтения.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3Title" xml:space="preserve">
+    <value>Сохраните с причиной</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4" xml:space="preserve">
+    <value>«По товарам» показывает срок годности, переконтроль и минимальный остаток из мастер-данных товара; значения «Не задано» исправляются в карточке товара в MDM, а не здесь.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4Title" xml:space="preserve">
+    <value>Проверьте товары</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5" xml:space="preserve">
+    <value>«История изменений» показывает каждое изменение: когда и кто, старое и новое значение и причину.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5Title" xml:space="preserve">
+    <value>Просмотрите историю</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve">
+    <value>Сформируйте пакет доказательств FEFO / сроков годности за период для аудитов: сводку соответствия, исключения с решениями и подписями, изменения политики и обходы FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve">
+    <value>Обеспечение качества, менеджеры системы качества и аудиторы</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve">
+    <value>Выберите «Период» или «Диапазон дат» и заполните «С» и «По»; при необходимости сузьте через «Склад» и «Тип».</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Выберите период и охват</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve">
+    <value>Нажмите «Просмотр», чтобы увидеть четыре раздела пакета: сводные показатели, исключения и решения, изменения политики и обходы FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Просмотрите</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3" xml:space="preserve">
+    <value>Нажмите «Скачать PDF» или «Скачать CSV»; файл создаётся на сервере, скачивается и записывается в журнал выгрузок.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3Title" xml:space="preserve">
+    <value>Скачайте</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4" xml:space="preserve">
+    <value>«Журнал выгрузок» перечисляет каждую выгрузку с автором, временем и SHA-256, вычисленным по байтам файла; откройте файл снова по его имени и используйте «Скопировать значение SHA-256» для сравнения.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4Title" xml:space="preserve">
+    <value>Проверьте файл</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve">
+    <value>С одного взгляда оцените готовность вашей компании к отзыву: открытые случаи, последнее учение относительно цели, охват отгрузок партиями, непрослеживаемые отгрузки и возвраты по открытым случаям.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve">
+    <value>Качество (ответственный за отзыв), администратор системы качества и руководство (только чтение).</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve">
+    <value>Если страница просит, выберите компанию в поле «Компания». Все цифры на странице относятся только к этой компании.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve">
+    <value>Выберите компанию</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve">
+    <value>Посмотрите пять карточек: «Открытые случаи отзыва», «Длительность последнего учения», «Охват прослеживаемости», «Отгрузки без партии (не прослеживаются)» и «Возвращено (открытые случаи)». Красная отметка «Цель превышена» у последнего учения или ненулевое число непрослеживаемых отгрузок требуют внимания.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve">
+    <value>Прочитайте карточки</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve">
+    <value>«История учений · последние 12» показывает последние завершённые учения относительно линии цели; красный столбец — учение, превысившее цель.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve">
+    <value>Следите за историей учений</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4" xml:space="preserve">
+    <value>Если жёлтая полоса сообщает, что последнее учение слишком давнее, нажмите «Запланировать учение», чтобы открыть планировщик.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4Title" xml:space="preserve">
+    <value>Отреагируйте на предупреждение</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5" xml:space="preserve">
+    <value>Таблица «Открытые случаи» показывает каждый случай с классом, затронутым количеством и долей возврата; нажмите «Все случаи →», чтобы открыть полный список.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5Title" xml:space="preserve">
+    <value>Следите за открытыми случаями</value>
+  </data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve">
+    <value>Проследите партию по всей генеалогии: назад до её исходных материалов и вперёд до запасов, отгрузок и клиентов, и увидьте разрывы, где партия не может доказать, куда ушёл товар.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve">
+    <value>Качество (ответственный за отзыв) и администратор системы качества.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve">
+    <value>«Открыть черновик случая» сразу создаёт черновик случая; до утверждения объёма на странице случая ничего не блокируется.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve">
+    <value>Найдите партию в поле «Номер партии» или нажмите одну из «Недавние партии:». Товар подставится сам.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve">
+    <value>Выберите партию</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve">
+    <value>Выберите «Назад», «Вперёд» или «Оба» и нажмите «Проследить». Сводка над результатом считает партии, строки запасов, отгрузки и разрывы.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve">
+    <value>Выберите направление и проследите</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve">
+    <value>Переключайтесь между «Дерево» и «Таблица»; оба вида показывают одни и те же узлы, а «Развернуть всё» раскрывает каждую ветку. Красные строки — разрывы прослеживаемости; активность другой компании видна только числом.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve">
+    <value>Читайте дерево или таблицу</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4" xml:space="preserve">
+    <value>«Скачать CSV» даёт те же строки. «Открыть случай отзыва с этим объёмом» запрашивает «Класс», «Уровень», «Причина» и, если есть, «№ отклонения / жалобы»; затем нажмите «Открыть черновик случая».</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4Title" xml:space="preserve">
+    <value>Выгрузите или откройте случай</value>
+  </data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve">
+    <value>Следите в одном списке за реальными случаями отзыва и учениями вашей компании, от новых к старым, с их статусом и ходом выполнения.</value>
+  </data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve">
+    <value>Все, кто следит за отзывами: качество, склад, коммерция и руководство.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve">
+    <value>Нажмите кнопку статуса над списком, например «Черновик», «Ожидает утверждения объёма» или «Активен»; число на ней — количество случаев в этом статусе.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve">
+    <value>Выберите статус</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve">
+    <value>Введите текст в поле поиска или нажмите «Фильтр» и выберите «Все типы», «Все статусы», «Статусы учений», «Все классы», «Все товары» или «Открыт с», затем нажмите «Применить»; «Очистить» сбрасывает. Фильтр по классу показывает только реальные случаи.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3" xml:space="preserve">
+    <value>В строке учения в столбце «Тип» стоит «Учение», вместо хода показаны результат и длительность, а класс и уровень — «—».</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3Title" xml:space="preserve">
+    <value>Отличайте учения</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4" xml:space="preserve">
+    <value>Нажмите номер, чтобы открыть: реальный случай открывает свою страницу, идущее учение — планировщик учений, завершённое учение — его пакет доказательств.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4Title" xml:space="preserve">
+    <value>Откройте строку</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve">
+    <value>Ведите один случай отзыва от черновика до закрытия: объём, запасы, клиенты, возвраты, проверка эффективности и история.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve">
+    <value>Сотрудники качества (QA), склада и клиентской службы компании.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Immediate" xml:space="preserve">
+    <value>«Сохранить включение / исключение», «Отправить объём на утверждение», «Поместить выбранное в карантин» и «Начать проверку эффективности» действуют сразу, без окна подтверждения.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve">
+    <value>На вкладке «Объём» выключите то, что не затронуто, и укажите «Причина исключения», нажмите «Сохранить включение / исключение», затем «Отправить объём на утверждение». «Проследить заново» показывает новые узлы, которые вы добавляете с причиной через «Ревизия объёма».</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve">
+    <value>Отметьте и отправьте объём</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve">
+    <value>Другой пользователь нажимает «Утвердить объём» (или «Вернуть в черновик» с причиной), проверяет сводку, нажимает «Далее» и, если требует политика, подписывает в окне электронной подписи. После этого партии блокируются и отправляются запросы на карантин.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve">
+    <value>Утвердите объём</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve">
+    <value>На вкладке «Запасы в наличии» отметьте строки и нажмите «Поместить выбранное в карантин»; для неудачного запроса используйте «Повторить», а когда товар физически отделён — «Подтвердить отделение».</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve">
+    <value>Поместите запасы в карантин</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
+    <value>На вкладке «Клиенты и отгрузки» используйте «Отметить как уведомлённого» и «Добавить декларацию потребления». На вкладке «Возвраты» «Оформить возврат клиента» открывает форму движения запасов; затем нажмите «Привязать возврат» у кандидата.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
+    <value>Следите за клиентами и возвратами</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5" xml:space="preserve">
+    <value>На вкладке «Проверка эффективности» нажмите «Начать проверку эффективности», затем «Завершить проверку эффективности» с электронной подписью; другой пользователь нажимает «Закрыть случай». «Пакет доказательств» и «Хронология» сохраняют запись.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5Title" xml:space="preserve">
+    <value>Проверьте эффективность и закройте</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve">
+    <value>Планируйте учения по отзыву и проводите их на время, не затрагивая запасы.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve">
+    <value>Служба обеспечения качества и администратор системы качества.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Immediate" xml:space="preserve">
+    <value>«Запустить таймер» и каждая кнопка шага действуют сразу, без окна подтверждения; запасы не затрагиваются.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve">
+    <value>Нажмите «Добавить план», заполните «Название плана», «Периодичность», «Охват» и «Следующая дата» и нажмите «Сохранить план». Существующий план меняйте кнопкой «Изменить».</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve">
+    <value>Добавьте план</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve">
+    <value>В блоке «Ответственный за план» введите имя в поле поиска, нажмите «Найти» и выберите человека из списка. Без поиска ответственный не меняется (в новом плане — вы).</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve">
+    <value>Выберите ответственного</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve">
+    <value>В строке плана нажмите «Начать учение», выберите для партии «Выбирает система» или «Выберу сам» и нажмите «Запустить таймер».</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve">
+    <value>Начните учение</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4" xml:space="preserve">
+    <value>Нажимайте по порядку «Выполнить прослеживание», «Проверить охват» и «Завершить список клиентов · остановить таймер»; часы — серверные. «Отменить учение» запрашивает причину и сохраняет запуск.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4Title" xml:space="preserve">
+    <value>Пройдите три шага</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5" xml:space="preserve">
+    <value>Нажмите «Сохранить результат с электронной подписью», напишите примечание к результату и подпишите, если требует политика. «Последние результаты учений» перечисляют все запуски; нажмите номер, чтобы открыть снова.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5Title" xml:space="preserve">
+    <value>Сохраните результат</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve">
+    <value>Формируйте пакет доказательств по случаю, учению или периоду для аудитов и подтверждайте, что передаваемый файл — тот самый, что записан в журнал.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve">
+    <value>Служба качества, администратор системы качества и аудиторы.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Immediate" xml:space="preserve">
+    <value>Каждое скачивание сразу записывается в «Журнал выгрузок».</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve">
+    <value>В блоке «Объект» нажмите «Реальный», «Учение» или «Период»; затем выберите случай или учение в поле «Случай или учение» либо задайте «С» и «По» для периода.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Выберите объект</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve">
+    <value>Нажмите «Предпросмотр»; он показывает семь разделов в точности так, как они будут в файле. Кнопки скачивания включаются только после предпросмотра.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Просмотрите пакет</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3" xml:space="preserve">
+    <value>Нажмите «Скачать PDF» или «Скачать CSV». Страница вычисляет хеш скачанного файла и сообщает, совпадает ли его SHA-256 с журналом выгрузок. Подписи в файле — на турецком или английском.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3Title" xml:space="preserve">
+    <value>Скачайте и проверьте</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4" xml:space="preserve">
+    <value>«Журнал выгрузок» перечисляет каждый файл с пользователем, временем и SHA-256; нажмите имя файла, чтобы скачать его снова.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4Title" xml:space="preserve">
+    <value>Пользуйтесь журналом выгрузок</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve">
+    <value>Задайте для вашей компании целевое время учения, предупреждение о частоте учений и цель эффективности по классам.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve">
+    <value>Администратор системы качества.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve">
+    <value>Измените «Целевое время учения (часы)» (1–72), «Предупреждение о частоте учений (дни)» (30–730) и значения классов в блоке «Цель эффективности (%) · по классам» (0–100). Без права изменения поля доступны только для чтения.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve">
+    <value>Измените значения</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve">
+    <value>Заполните «Причина (не менее 10 символов)» и нажмите «Сохранить»; «Отменить» возвращает сохранённые значения. Если требует политика, нажмите «Подписать и сохранить» и подпишите в окне электронной подписи.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve">
+    <value>Укажите причину и сохраните</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3" xml:space="preserve">
+    <value>«История изменений» показывает каждое изменение с причиной и подписью. Политика электронной подписи задаётся не здесь, а в MOD-0022.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3Title" xml:space="preserve">
+    <value>Проверьте историю</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Purpose" xml:space="preserve">
+    <value>Подписывайте или отклоняйте работу на подпись, которую вам назначили модули. Первым идёт ближайший срок; при одинаковом сроке первым идёт более новый запрос.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Audience" xml:space="preserve">
+    <value>Все, кого просят подписать запись</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Immediate" xml:space="preserve">
+    <value>Подписание и отклонение запроса; после любого из них запрос закрывается</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1" xml:space="preserve">
+    <value>Нажмите «Фильтр», выберите «Модуль», «Статус» или период «Дата запроса» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2" xml:space="preserve">
+    <value>Смотрите столбец «Срок»: ожидающий запрос со сроком сегодня отмечен «Сегодня», а счётчик над списком показывает, сколько запросов ждут.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2Title" xml:space="preserve">
+    <value>Найдите срочное</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3" xml:space="preserve">
+    <value>Нажмите «Подписать» в ожидающей строке; окно подписи откроется со значением, указанным в запросе. Введите «Пароль» (в пределах окна действия пароля вместо него введите имя пользователя) и нажмите «Подписать».</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3Title" xml:space="preserve">
+    <value>Подпишите</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4" xml:space="preserve">
+    <value>Нажмите «Отклонить», напишите «Обоснование» не короче 10 символов и подтвердите кнопкой «Отклонить»; инициатор получит уведомление.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4Title" xml:space="preserve">
+    <value>Отклоните</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5" xml:space="preserve">
+    <value>Нажмите «Подписи записи», чтобы открыть запись на странице проверки.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5Title" xml:space="preserve">
+    <value>Посмотрите подписи записи</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Purpose" xml:space="preserve">
+    <value>Смотрите подписи записи и то, действительна ли каждая из них сегодня: действительна, запись изменилась, искажена или аннулирована. Проверка сравнивает подписанное с текущим состоянием записи; сама запись подписи никогда не меняется.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Audience" xml:space="preserve">
+    <value>Специалисты по качеству и аудиту, администраторы электронной подписи</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Immediate" xml:space="preserve">
+    <value>Аннулирование подписи: она показывается недействительной везде, где используется, и это нельзя отменить</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1" xml:space="preserve">
+    <value>Выберите «Модуль», введите «Тип записи» и «Идентификатор записи» и нажмите «Показать» или выберите запись в списке «Недавно подписанные записи» (виден только с правом экспорта). Ссылка «Подписи записи» открывает запись сразу.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1Title" xml:space="preserve">
+    <value>Выберите запись</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2" xml:space="preserve">
+    <value>Счётчики показывают, сколько подписей в состоянии «Действительна», «Запись изменилась», «Искажена» или «Аннулирована»; каждая карточка показывает подписанта, значение, вид подписи и хеш на момент подписания. Записи компаний видны только для компаний вашей области данных; ваши собственные подписи видны всегда.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2Title" xml:space="preserve">
+    <value>Прочитайте результат</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3" xml:space="preserve">
+    <value>Нажмите «Проверить снова», чтобы ещё раз сравнить каждую подпись с текущей записью; ничего не меняется.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3Title" xml:space="preserve">
+    <value>Проверьте снова</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4" xml:space="preserve">
+    <value>Нажмите «Аннулировать подпись» на карточке, напишите «Обоснование» не короче 10 символов и нажмите «Продолжить», затем введите «Пароль» и нажмите «Аннулировать подпись». Это необратимо; аннулирование хранится как отдельная постоянная запись.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4Title" xml:space="preserve">
+    <value>Аннулируйте подпись</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Purpose" xml:space="preserve">
+    <value>Фильтруйте записи подписей и скачивайте их в PDF или CSV для аудитов и инспекций. Каждый экспорт получает номер и навсегда фиксируется: кто выгрузил, с каким фильтром, сколько записей и хеш SHA-256 файла.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Audience" xml:space="preserve">
+    <value>Специалисты по аудиту, качеству и соответствию</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Immediate" xml:space="preserve">
+    <value>«Экспорт в PDF» и «Экспорт в CSV»: экспорт фиксируется сразу при нажатии, даже если вы не сохраните файл</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1" xml:space="preserve">
+    <value>Нажмите «Фильтр», задайте «С» и «По», выберите «Модуль», «Подписант», «Значение подписи» или «Компания» и нажмите «Применить»; записи компаний ограничены вашей областью данных.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте записи</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2" xml:space="preserve">
+    <value>Переключайтесь между «Таблица» и «Просмотр PDF», чтобы увидеть строки на экране в виде блоков подписей отчёта.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2Title" xml:space="preserve">
+    <value>Просмотрите</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3" xml:space="preserve">
+    <value>Нажмите «Экспорт в PDF» или «Экспорт в CSV»; файл формирует сервер, даты печатаются в UTC.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3Title" xml:space="preserve">
+    <value>Скачайте файл</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4" xml:space="preserve">
+    <value>«Журнал экспорта» показывает каждый экспорт с номером, датой, автором, форматом, числом записей, фильтром и хешем файла.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4Title" xml:space="preserve">
+    <value>Проверьте журнал</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Purpose" xml:space="preserve">
+    <value>Храните образец подписи, который можно использовать при электронной подписи, и следите за историей своих образцов. Активный образец всегда один, а сохранение нового всегда требует пароль.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Audience" xml:space="preserve">
+    <value>Все, кто подписывает электронно</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Immediate" xml:space="preserve">
+    <value>Деактивация и удаление образца; без правила одобрения сохранённый образец сразу становится активным</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1" xml:space="preserve">
+    <value>«Мой образец подписи» показывает активный образец, когда он добавлен, кто его одобрил и сколько подписей его использовали; нажмите на изображение, чтобы увеличить его.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1Title" xml:space="preserve">
+    <value>Посмотрите образец</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2" xml:space="preserve">
+    <value>В разделе «Новый образец подписи» рисуйте на вкладке «Нарисовать» (задайте «Толщина» и «Цвет» или используйте «Во весь экран (горизонтально)» на телефоне) либо на вкладке «Загрузить изображение» выберите PNG или JPG до 1 МБ, обрежьте его и при необходимости включите «Очистить фон».</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2Title" xml:space="preserve">
+    <value>Нарисуйте или загрузите</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3" xml:space="preserve">
+    <value>Нажмите «Сохранить с паролем», введите «Пароль» и нажмите «Проверить и сохранить».</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3Title" xml:space="preserve">
+    <value>Сохраните с паролем</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4" xml:space="preserve">
+    <value>Если политика требует одобрения, новый образец показан как «Ожидает одобрения», пока его не одобрит другой администратор электронной подписи; до тех пор используется текущий образец. Свой образец вы никогда не можете одобрить сами.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4Title" xml:space="preserve">
+    <value>Дождитесь одобрения</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5" xml:space="preserve">
+    <value>В «История образцов подписи» используйте «Деактивировать» для активного образца или «Удалить» для ни разу не использованного; образец, использованный в подписи, удалить нельзя, только деактивировать.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5Title" xml:space="preserve">
+    <value>Управляйте старыми образцами</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Purpose" xml:space="preserve">
+    <value>Решите, какие действия требуют электронной подписи, с каким значением и каким правилом изображения подписи, и как часто запрашивается пароль. Изменения применяются к новым подписям; каждое требует обоснования и записывается в историю изменений.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Audience" xml:space="preserve">
+    <value>Администраторы электронной подписи</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Immediate" xml:space="preserve">
+    <value>Сохранение политики и возврат компании к политике арендатора; оба сразу применяются к новым подписям</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1" xml:space="preserve">
+    <value>Нажмите «По умолчанию для арендатора» для политики, которую использует каждая компания без собственной, или «По компании» и выберите компанию.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1Title" xml:space="preserve">
+    <value>Выберите область</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2" xml:space="preserve">
+    <value>Если компания использует политику арендатора, нажмите «Отдельная политика для компании», чтобы начать с копии; отличающиеся строки отмечены «Отличается». «Вернуться к политике арендатора» удаляет политику компании после ввода обоснования.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2Title" xml:space="preserve">
+    <value>Дайте компании свою политику</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3" xml:space="preserve">
+    <value>В «Правила подписи по действиям» установите для каждого действия «Обязательно» или «Выключено» и выберите «Значение подписи» и «Изображение подписи»; для «Второй фактор» показано «Скоро».</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3Title" xml:space="preserve">
+    <value>Задайте правила по действиям</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4" xml:space="preserve">
+    <value>В «Общие настройки» выберите «Запрашивать пароль при каждой подписи» или «Один раз в течение периода» и задайте «Срок действия повторной проверки пароля» (1–60 мин). «Требовать одобрения администратора перед использованием образца подписи» действует для всего арендатора.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4Title" xml:space="preserve">
+    <value>Задайте правило пароля</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5" xml:space="preserve">
+    <value>Нажмите «Сохранить с обоснованием», напишите обоснование не короче 10 символов и нажмите «Сохранить»; изменение появится в «История изменений». Без права управлять политикой страница доступна только для чтения.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5Title" xml:space="preserve">
+    <value>Сохраните с обоснованием</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Purpose" xml:space="preserve">
+    <value>Определите, что заявляет подпись, например Утверждаю или Проверено; окно подписи предлагает активные значения. Как только значение использовано, его код блокируется, а каждая подпись хранит текст значения на момент подписания.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Audience" xml:space="preserve">
+    <value>Администраторы электронной подписи</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Immediate" xml:space="preserve">
+    <value>Сохранение, включение и отключение значения</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1" xml:space="preserve">
+    <value>Нажмите «Фильтр», выберите «Статус» или «Использование» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1Title" xml:space="preserve">
+    <value>Найдите значение</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2" xml:space="preserve">
+    <value>Нажмите «Новое значение», введите «Код» (2–32 символа, начиная с заглавной буквы: A–Z, 0–9, _), «Отображаемое имя» на всех 7 языках и при желании «Описание», затем нажмите «Сохранить».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2Title" xml:space="preserve">
+    <value>Добавьте значение</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3" xml:space="preserve">
+    <value>Нажмите «Изменить» в строке; использованное значение сохраняет код, а смена имени влияет только на новые подписи. Без права управлять значениями в строке доступен «Просмотр».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3Title" xml:space="preserve">
+    <value>Измените значение</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4" xml:space="preserve">
+    <value>Используйте переключатель в столбце «Статус» и подтвердите кнопкой «Включить» или «Отключить». Отключённое значение нельзя выбрать для новых подписей, а значение, используемое строкой политики, отключить нельзя.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4Title" xml:space="preserve">
+    <value>Включите или отключите</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Purpose" xml:space="preserve">
+    <value>Проверяйте новые образцы подписи, ожидающие одобрения, когда этого требует политика. Одобренный образец становится единственным активным образцом владельца, а каждое решение навсегда сохраняется в истории решений.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Audience" xml:space="preserve">
+    <value>Администраторы электронной подписи</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Immediate" xml:space="preserve">
+    <value>Одобрение и отклонение образца</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1" xml:space="preserve">
+    <value>Нажмите «Фильтр», выберите «Способ добавления» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1Title" xml:space="preserve">
+    <value>Сузьте очередь</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2" xml:space="preserve">
+    <value>Нажмите на изображение в столбце «Изображение», чтобы увеличить его вместе с владельцем, датой и хешем.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2Title" xml:space="preserve">
+    <value>Проверьте изображение</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3" xml:space="preserve">
+    <value>Нажмите «Одобрить» и подтвердите кнопкой «Одобрить»; прежний активный образец пользователя станет неактивным.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3Title" xml:space="preserve">
+    <value>Одобрите</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4" xml:space="preserve">
+    <value>Нажмите «Отклонить», напишите «Обоснование» не короче 10 символов и подтвердите кнопкой «Отклонить»; пользователь увидит обоснование на странице «Моя подпись».</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4Title" xml:space="preserve">
+    <value>Отклоните</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5" xml:space="preserve">
+    <value>В строке вашего собственного образца вместо кнопок написано «Решает другой администратор». Каждое решение появляется в «История решений» ниже.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
+    <value>Свой образец оставьте другим</value>
+  </data>
 </root>

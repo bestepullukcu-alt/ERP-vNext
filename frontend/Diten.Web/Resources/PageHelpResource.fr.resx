@@ -414,4 +414,1622 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Utiliser le clavier</value>
   </data>
+  <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
+  <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
+    <value>Consultez la quantité de chaque produit en stock, par entrepôt, emplacement, lot et statut. La liste est en lecture seule : le stock ne change que par des mouvements.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Audience" xml:space="preserve">
+    <value>Magasiniers, contrôleurs de stock, acheteurs et planificateurs de production</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1" xml:space="preserve">
+    <value>Si la page le demande, choisissez la société dans «Société». Cliquez ensuite sur l’icône de filtre («Filtrer»), choisissez «Produit», «SKU (référence)», «Entrepôt», «Emplacement», «Numéro de lot» ou «Statut du stock», puis cliquez sur «Appliquer» ; «Réinitialiser» efface les filtres.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step1Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2" xml:space="preserve">
+    <value>Filtrez sur un produit ou un SKU : les cartes au-dessus de la liste affichent «Total en stock», «Disponible», «En contrôle qualité» et «Quarantaine / bloqué» pour cette sélection. Sans filtre produit, les cartes restent vides volontairement.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step2Title" xml:space="preserve">
+    <value>Lisez les totaux</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3" xml:space="preserve">
+    <value>Chaque ligne correspond à un produit à un endroit, un lot et un statut donnés. «En stock» est ce qui est physiquement présent, «Réservé» ce qui est déjà réservé et «Disponible» ce que vous pouvez encore utiliser.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step3Title" xml:space="preserve">
+    <value>Lisez une ligne de stock</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4" xml:space="preserve">
+    <value>Dans les actions d’une ligne, «Historique» ouvre l’historique des mouvements filtré sur ce produit et ce lot ; «Mouvement» ouvre un nouveau mouvement avec cette ligne déjà définie comme source.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step4Title" xml:space="preserve">
+    <value>Retracez ou déplacez une ligne</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5" xml:space="preserve">
+    <value>Pour ajouter du stock (solde d’ouverture ou excédent d’inventaire), cliquez sur «Nouvelle entrée de stock». L’onglet «Historique des mouvements» montre tous les mouvements à l’origine du solde.</value>
+  </data>
+  <data name="Help.STOCKLEDGER.Step5Title" xml:space="preserve">
+    <value>Enregistrez une entrée</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Purpose" xml:space="preserve">
+    <value>Enregistrez du stock arrivé hors d’un flux documentaire : un solde d’ouverture ou un excédent d’inventaire. La liste des stocks n’est jamais modifiée directement ; cette page enregistre un mouvement d’entrée.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Audience" xml:space="preserve">
+    <value>Contrôleurs de stock, responsables d’entrepôt</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Immediate" xml:space="preserve">
+    <value>«Enregistrer le mouvement» comptabilise le stock immédiatement, sans confirmation. Un mouvement enregistré ne peut pas être modifié ; une erreur se corrige dans l’historique des mouvements avec «Contre-passer» ou «Corriger».</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1" xml:space="preserve">
+    <value>Dans «Type de mouvement», choisissez «Solde d'ouverture» ou «Excédent d'inventaire». Le type détermine les champs de destination affichés plus bas.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step1Title" xml:space="preserve">
+    <value>Choisissez le type d’entrée</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2" xml:space="preserve">
+    <value>Sélectionnez d’abord le «Produit», puis sa «Référence (SKU)» ; seules les références de ce produit sont proposées.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step2Title" xml:space="preserve">
+    <value>Choisissez produit et SKU</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3" xml:space="preserve">
+    <value>Renseignez «Entrepôt de destination», «Emplacement de destination» et «Statut de stock cible», et choisissez le «Numéro de lot» si la référence est suivie par lot.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step3Title" xml:space="preserve">
+    <value>Indiquez la destination</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4" xml:space="preserve">
+    <value>Saisissez «Quantité» et «Unité» (ainsi que les numéros de série si la référence l’exige), puis «N° de document», «Date de l’opération» et «Date de comptabilisation».</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step4Title" xml:space="preserve">
+    <value>Saisissez quantité et dates</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5" xml:space="preserve">
+    <value>Vérifiez les valeurs avant et après dans «Effet sur le stock», puis cliquez sur «Enregistrer le mouvement». «Annuler» revient à la liste des stocks sans rien enregistrer.</value>
+  </data>
+  <data name="Help.STOCKLEDGERCREATE.Step5Title" xml:space="preserve">
+    <value>Vérifiez et enregistrez</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Purpose" xml:space="preserve">
+    <value>Tous les mouvements de stock de la société, du plus récent au plus ancien. Un mouvement n’est jamais modifié : une erreur est annulée par une contre-passation et, si besoin, remplacée par un nouveau mouvement.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Audience" xml:space="preserve">
+    <value>Contrôleurs de stock, responsables d’entrepôt, auditeurs</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1" xml:space="preserve">
+    <value>Si la page le demande, choisissez la société dans «Société». Cliquez sur l’icône de filtre («Filtrer»), renseignez «Produit», «Numéro de lot», «Entrepôt», «Emplacement», «Date de début» ou «Date de fin», puis cliquez sur «Appliquer».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>Affinez l’historique</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2" xml:space="preserve">
+    <value>Chaque ligne indique le «N° de transaction», le «Type de mouvement», le produit et les quantités, la destination du stock et «Enregistré par» : la personne qui l’a enregistré.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>Lisez un mouvement</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3" xml:space="preserve">
+    <value>Sur un mouvement manuel, «Contre-passer» ouvre une confirmation ; «Contre-passer le mouvement» enregistre un mouvement inverse qui l’annule. La ligne d’origine reste dans l’historique.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>Contre-passez un mouvement</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4" xml:space="preserve">
+    <value>«Corriger» ouvre la page de correction préremplie avec les valeurs du mouvement. Elle enregistre une contre-passation et le mouvement corrigé ; les deux restent visibles.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>Corrigez un mouvement</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5" xml:space="preserve">
+    <value>Cliquez sur «Nouveau mouvement» pour un manquant d’inventaire, une mise au rebut, une perte ou un transfert. L’onglet «Liste des stocks» montre le solde qui en résulte.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>Saisissez un mouvement</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Purpose" xml:space="preserve">
+    <value>Enregistrez un mouvement de stock manuel : solde d’ouverture, excédent ou manquant d’inventaire, mise au rebut, perte, transfert ou retour client. Chaque mouvement est conservé définitivement et modifie le stock dès son enregistrement.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Audience" xml:space="preserve">
+    <value>Contrôleurs de stock, magasiniers</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Immediate" xml:space="preserve">
+    <value>«Enregistrer le mouvement» modifie le stock immédiatement, sans confirmation. Un mouvement enregistré ne peut pas être modifié ; une erreur se corrige dans l’historique des mouvements avec «Contre-passer» ou «Corriger».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1" xml:space="preserve">
+    <value>Commencez par «Type de mouvement». Le type détermine s’il faut une source, une destination ou les deux, et le formulaire n’affiche que ces champs.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step1Title" xml:space="preserve">
+    <value>Choisissez le type</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2" xml:space="preserve">
+    <value>Sélectionnez d’abord le «Produit», puis sa «Référence (SKU)» ; seules les références de ce produit sont proposées.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step2Title" xml:space="preserve">
+    <value>Choisissez produit et SKU</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3" xml:space="preserve">
+    <value>Pour une sortie ou un transfert, choisissez la ligne de stock dans «Source (lot / emplacement)». Pour une entrée ou un transfert, renseignez «Entrepôt de destination», «Emplacement de destination» et, si demandé, «Statut de stock cible» et «Numéro de lot».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step3Title" xml:space="preserve">
+    <value>Indiquez source et destination</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4" xml:space="preserve">
+    <value>Saisissez «Quantité» et «Unité» (ainsi que les numéros de série si la référence l’exige), puis «N° de document», «Date de l’opération» et «Date de comptabilisation».</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step4Title" xml:space="preserve">
+    <value>Saisissez quantité et dates</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5" xml:space="preserve">
+    <value>Vérifiez les valeurs avant et après dans «Effet sur le stock», puis cliquez sur «Enregistrer le mouvement» ; le reçu s’ouvre. «Annuler» revient à l’historique sans rien enregistrer.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTCREATE.Step5Title" xml:space="preserve">
+    <value>Vérifiez et enregistrez</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Purpose" xml:space="preserve">
+    <value>Corrigez un mouvement manuel enregistré par erreur. L’original n’est jamais modifié : cette page enregistre une contre-passation qui l’annule, puis le mouvement corrigé ; les deux restent dans l’historique.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Audience" xml:space="preserve">
+    <value>Contrôleurs de stock, responsables d’entrepôt</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1" xml:space="preserve">
+    <value>La carte «Mouvement corrigé» affiche le «N° de transaction», le «Type de mouvement», le produit, la quantité et le lot du mouvement d’origine.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step1Title" xml:space="preserve">
+    <value>Vérifiez l’original</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2" xml:space="preserve">
+    <value>Le formulaire s’ouvre avec les valeurs d’origine. Modifiez ce qui était faux, par exemple «Quantité», «Emplacement de destination» ou «Numéro de lot», et vérifiez les dates.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step2Title" xml:space="preserve">
+    <value>Corrigez les valeurs</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3" xml:space="preserve">
+    <value>Consultez les valeurs avant et après dans «Effet sur le stock» avant d’enregistrer.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step3Title" xml:space="preserve">
+    <value>Vérifiez l’effet</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4" xml:space="preserve">
+    <value>Cliquez sur «Corriger». Une confirmation explique les deux enregistrements ; «Extourner et enregistrer» enregistre la contre-passation et le mouvement corrigé, puis le reçu s’ouvre.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step4Title" xml:space="preserve">
+    <value>Confirmez la correction</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5" xml:space="preserve">
+    <value>Si la contre-passation est passée mais que le mouvement corrigé a été refusé, un avertissement reste affiché. Corrigez le champ indiqué et cliquez sur «Enregistrer le mouvement corrigé» ; rien n’est enregistré deux fois.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTEDIT.Step5Title" xml:space="preserve">
+    <value>Terminez une correction partielle</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Purpose" xml:space="preserve">
+    <value>Le reçu du mouvement que vous venez d’enregistrer : ce qui a été comptabilisé, où le stock est allé et le solde qui en résulte. Il s’affiche une fois, juste après l’enregistrement.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Audience" xml:space="preserve">
+    <value>Contrôleurs de stock, magasiniers</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1" xml:space="preserve">
+    <value>Le bandeau vert indique le numéro du mouvement enregistré. Après une correction, un second bandeau nomme la contre-passation et le mouvement corrigé.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step1Title" xml:space="preserve">
+    <value>Vérifiez le résultat</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2" xml:space="preserve">
+    <value>Les cartes reprennent votre saisie : «Type de mouvement», «Produit», «Référence (SKU)», «De», «Vers», «Numéro de lot», «Quantité», «N° de document» et les dates.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step2Title" xml:space="preserve">
+    <value>Relisez le mouvement</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3" xml:space="preserve">
+    <value>«Enregistré par» indique la personne qui a enregistré le mouvement.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step3Title" xml:space="preserve">
+    <value>Voyez qui l’a enregistré</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4" xml:space="preserve">
+    <value>«Solde actuel» montre le stock restant à cet emplacement après le mouvement : en stock, disponible, statut et lot.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step4Title" xml:space="preserve">
+    <value>Lisez le nouveau solde</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5" xml:space="preserve">
+    <value>Cliquez sur «Historique des mouvements» pour revenir à la liste, ou sur «Liste des stocks» après une entrée de stock.</value>
+  </data>
+  <data name="Help.STOCKMOVEMENTDETAILS.Step5Title" xml:space="preserve">
+    <value>Revenez en arrière</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Purpose" xml:space="preserve">
+    <value>Gérez les lieux physiques de la société sous forme d’arbre : établissement, entrepôt, aire de stockage, secteur et casier. Le stock, les achats et la production lisent tous cette liste.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Audience" xml:space="preserve">
+    <value>Responsables d’entrepôt, administrateurs logistiques</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1" xml:space="preserve">
+    <value>Si la page le demande, choisissez la société dans «Société». Dans «Hiérarchie des emplacements», ouvrez un établissement pour voir ses entrepôts, puis les aires de stockage, secteurs et casiers. Activez «Afficher les archivés» pour voir aussi les lieux archivés.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step1Title" xml:space="preserve">
+    <value>Parcourez la hiérarchie</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2" xml:space="preserve">
+    <value>Cliquez sur un emplacement pour voir ses «Informations», s’il porte du stock lui-même ou en dessous dans «Stock présent», ses «Sous-emplacements» et l’«Historique des modifications».</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step2Title" xml:space="preserve">
+    <value>Ouvrez un emplacement</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3" xml:space="preserve">
+    <value>Cliquez sur «Nouvel établissement» pour un niveau supérieur, ou sur «Ajouter un sous-emplacement» pour l’emplacement sélectionné. Renseignez «Code emplacement», «Nom», «Type d'emplacement» et «Peut contenir du stock» dans le panneau latéral, puis cliquez sur «Enregistrer» ; Entrée enregistre aussi.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step3Title" xml:space="preserve">
+    <value>Ajoutez un site ou un sous-niveau</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4" xml:space="preserve">
+    <value>Utilisez «Modifier» pour changer un emplacement. Sur un secteur ou une aire de stockage, «Générer des casiers» en crée plusieurs à la fois : saisissez les plages, cliquez sur «Aperçu», puis validez avec le bouton de création.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step4Title" xml:space="preserve">
+    <value>Modifiez ou générez des casiers</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5" xml:space="preserve">
+    <value>«Activer», «Désactiver» et «Archiver» demandent chacun une confirmation ; l’archivage est irréversible. «Voir dans la liste des stocks» ouvre le stock de cet emplacement.</value>
+  </data>
+  <data name="Help.LOCATIONTREE.Step5Title" xml:space="preserve">
+    <value>Changez le statut ou voyez le stock</value>
+  </data>
+  <data name="Help.LOCATIONS.Purpose" xml:space="preserve">
+    <value>Les mêmes emplacements que la hiérarchie, sous forme de liste à plat que vous pouvez rechercher, filtrer et trier. Utilisez-la pour retrouver vite un lieu ou traiter de nombreux emplacements d’un même type.</value>
+  </data>
+  <data name="Help.LOCATIONS.Audience" xml:space="preserve">
+    <value>Responsables d’entrepôt, administrateurs logistiques</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1" xml:space="preserve">
+    <value>Si la page le demande, choisissez la société dans «Société». Tapez dans la zone de recherche, ou cliquez sur l’icône de filtre («Filtrer»), choisissez «Type d'emplacement», «Statut», «Peut contenir du stock» ou «Emplacement parent», puis cliquez sur «Appliquer».</value>
+  </data>
+  <data name="Help.LOCATIONS.Step1Title" xml:space="preserve">
+    <value>Trouvez des emplacements</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2" xml:space="preserve">
+    <value>Chaque ligne indique le «Code emplacement», le «Nom», le «Type d'emplacement», le «Chemin parent», le «Statut» et si l’emplacement peut contenir du stock. Cliquez sur «Hiérarchie» pour voir les mêmes lieux en arbre.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step2Title" xml:space="preserve">
+    <value>Lisez la liste</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3" xml:space="preserve">
+    <value>Cliquez sur «Nouvel emplacement», renseignez «Code emplacement», «Nom», «Type d'emplacement», «Emplacement parent» et «Peut contenir du stock» dans le panneau latéral, puis cliquez sur «Enregistrer» ; Entrée enregistre aussi.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step3Title" xml:space="preserve">
+    <value>Ajoutez un emplacement</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4" xml:space="preserve">
+    <value>Dans les actions d’une ligne, «Modifier» ouvre le même panneau latéral ; «Ajouter un sous-emplacement» crée un emplacement sous celui-ci. Un emplacement archivé ne peut plus être modifié.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step4Title" xml:space="preserve">
+    <value>Modifiez ou ajoutez en dessous</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5" xml:space="preserve">
+    <value>«Activer», «Désactiver» et «Archiver» demandent une confirmation ; l’archivage est irréversible. «Historique» ouvre l’historique des modifications dans la hiérarchie et «Voir dans la liste des stocks» montre le stock présent.</value>
+  </data>
+  <data name="Help.LOCATIONS.Step5Title" xml:space="preserve">
+    <value>Statut, historique et stock</value>
+  </data>
+  <data name="Help.LOTS.Purpose" xml:space="preserve">
+    <value>Consultez tous les lots des produits de la société dans une seule liste : leurs dates, leur statut et la quantité en stock. D'ici, vous ouvrez un lot, changez son statut ou en créez un nouveau.</value>
+  </data>
+  <data name="Help.LOTS.Audience" xml:space="preserve">
+    <value>Équipes entrepôt, qualité et planification</value>
+  </data>
+  <data name="Help.LOTS.Step1" xml:space="preserve">
+    <value>Saisissez un numéro de lot ou un lot fabricant / fournisseur dans la zone de recherche, ou cliquez sur l'icône de filtre, choisissez «Produit», «Statut», «Péremption avant le» ou «Uniquement les lots avec un avertissement» puis cliquez sur «Appliquer». «Effacer» vide les filtres.</value>
+  </data>
+  <data name="Help.LOTS.Step1Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.LOTS.Step2" xml:space="preserve">
+    <value>La colonne «Statut» indique Brouillon, Libéré, Bloqué ou Périmé ; «Péremption» avertit quand la date approche ou est passée, et «En stock» est le stock du lot dans la société sélectionnée.</value>
+  </data>
+  <data name="Help.LOTS.Step2Title" xml:space="preserve">
+    <value>Lisez statut et péremption</value>
+  </data>
+  <data name="Help.LOTS.Step3" xml:space="preserve">
+    <value>Cliquez sur une ligne ou sur «Détail du lot» pour voir le lot complet. Le menu de la ligne propose aussi «Modifier», «Historique des mouvements» et «Traçabilité».</value>
+  </data>
+  <data name="Help.LOTS.Step3Title" xml:space="preserve">
+    <value>Ouvrez un lot</value>
+  </data>
+  <data name="Help.LOTS.Step4" xml:space="preserve">
+    <value>Choisissez «Changer le statut» dans le menu de la ligne, sélectionnez le nouveau statut et saisissez un motif d'au moins 10 caractères. Bloquer rend tout le stock du lot inutilisable : cochez d'abord «Je comprends l’impact.». Le statut Périmé est attribué uniquement par le système.</value>
+  </data>
+  <data name="Help.LOTS.Step4Title" xml:space="preserve">
+    <value>Changez le statut</value>
+  </data>
+  <data name="Help.LOTS.Step5" xml:space="preserve">
+    <value>Cliquez sur «Nouveau lot» pour enregistrer un lot manuellement ; il est enregistré en brouillon.</value>
+  </data>
+  <data name="Help.LOTS.Step5Title" xml:space="preserve">
+    <value>Ajoutez un lot</value>
+  </data>
+  <data name="Help.LOTDETAILS.Purpose" xml:space="preserve">
+    <value>Tout sur un lot sur une seule page : son statut et ses avertissements, le stock, l'emplacement du stock, ses numéros de série et qui a modifié quoi et pourquoi.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Audience" xml:space="preserve">
+    <value>Équipes entrepôt, qualité et planification</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1" xml:space="preserve">
+    <value>Le badge de statut et les avertissements figurent à côté du numéro de lot. «En stock» indique la quantité, «Informations sur le lot» les dates, l'origine et la source du lot.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step1Title" xml:space="preserve">
+    <value>Vérifiez le lot</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2" xml:space="preserve">
+    <value>«Répartition du stock» liste chaque «Entrepôt», «Emplacement», «Statut du stock» et «Quantité» de ce lot dans la société sélectionnée.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step2Title" xml:space="preserve">
+    <value>Voyez où est le stock</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3" xml:space="preserve">
+    <value>«Historique des modifications» montre qui a modifié quel champ, ancien → nouveau, et le motif. Utilisez ‹ et › pour changer de page ; les enregistrements ne peuvent pas être supprimés.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step3Title" xml:space="preserve">
+    <value>Lisez l'historique</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4" xml:space="preserve">
+    <value>Cliquez sur «Modifier» pour corriger les champs du lot, ou sur «Changer le statut» pour le libérer ou le bloquer avec un motif d'au moins 10 caractères.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step4Title" xml:space="preserve">
+    <value>Modifiez ou changez le statut</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5" xml:space="preserve">
+    <value>Ouvrez «Historique des mouvements», «Traçabilité» ou «Ouvrir dans le registre des stocks» en haut ; pour un lot suivi par numéro de série, «Tous les numéros de série» dans «Numéros de série» ouvre l'explorateur de numéros de série.</value>
+  </data>
+  <data name="Help.LOTDETAILS.Step5Title" xml:space="preserve">
+    <value>Allez plus loin</value>
+  </data>
+  <data name="Help.LOTCREATE.Purpose" xml:space="preserve">
+    <value>Enregistrez manuellement un lot pour un produit suivi par lot, avec ses dates et son origine. Le nouveau lot est enregistré en brouillon.</value>
+  </data>
+  <data name="Help.LOTCREATE.Audience" xml:space="preserve">
+    <value>Équipes entrepôt et qualité</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1" xml:space="preserve">
+    <value>Sélectionnez le «Produit», puis la «Référence (SKU)» à laquelle appartient le lot. Seuls les produits suivis par lot peuvent recevoir un lot.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step1Title" xml:space="preserve">
+    <value>Choisissez le produit</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2" xml:space="preserve">
+    <value>Saisissez le «N° de lot» : 1 à 40 caractères, A–Z, 0–9 et . / -. Il ne peut plus être modifié après l'enregistrement et doit être unique pour le produit.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step2Title" xml:space="preserve">
+    <value>Saisissez le numéro de lot</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3" xml:space="preserve">
+    <value>Saisissez la «Date de fabrication», la «Date de péremption» et, si besoin, la «Date de recontrôle» : la fabrication est aujourd'hui ou avant, la péremption suit la fabrication, le recontrôle se situe entre les deux.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step3Title" xml:space="preserve">
+    <value>Renseignez les dates</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4" xml:space="preserve">
+    <value>Renseignez si vous le souhaitez «Lot fabricant», «Lot fournisseur», «Pays d’origine» et «Réf. certificat d’analyse (CoA)».</value>
+  </data>
+  <data name="Help.LOTCREATE.Step4Title" xml:space="preserve">
+    <value>Ajoutez l'origine</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5" xml:space="preserve">
+    <value>Vérifiez la carte «Récapitulatif» et cliquez sur «Enregistrer». «Annuler» revient à l'explorateur de lots sans enregistrer.</value>
+  </data>
+  <data name="Help.LOTCREATE.Step5Title" xml:space="preserve">
+    <value>Enregistrez</value>
+  </data>
+  <data name="Help.LOTEDIT.Purpose" xml:space="preserve">
+    <value>Corrigez les informations d'un lot existant : dates, origine et références. Chaque modification est conservée dans l'historique du lot.</value>
+  </data>
+  <data name="Help.LOTEDIT.Audience" xml:space="preserve">
+    <value>Équipes entrepôt et qualité</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1" xml:space="preserve">
+    <value>«Produit», «Référence (SKU)» et «N° de lot» ne peuvent plus être modifiés une fois le lot enregistré ; ils sont affichés en lecture seule.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step1Title" xml:space="preserve">
+    <value>Sachez ce qui est figé</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2" xml:space="preserve">
+    <value>Si le lot n'est pas un brouillon, les champs restent verrouillés tant que vous n'avez pas saisi au moins 10 caractères dans «Motif de la modification». Le motif est conservé dans l'historique.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step2Title" xml:space="preserve">
+    <value>Saisissez un motif</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3" xml:space="preserve">
+    <value>Corrigez «Date de fabrication», «Date de péremption», «Date de recontrôle», «Lot fabricant», «Lot fournisseur», «Pays d’origine» ou «Réf. certificat d’analyse (CoA)».</value>
+  </data>
+  <data name="Help.LOTEDIT.Step3Title" xml:space="preserve">
+    <value>Modifiez les champs</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4" xml:space="preserve">
+    <value>«Modifications à enregistrer» liste chaque champ modifié, ancien → nouveau, avant l'enregistrement.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step4Title" xml:space="preserve">
+    <value>Vérifiez les modifications</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5" xml:space="preserve">
+    <value>Cliquez sur «Enregistrer». «Annuler» revient au détail du lot sans enregistrer.</value>
+  </data>
+  <data name="Help.LOTEDIT.Step5Title" xml:space="preserve">
+    <value>Enregistrez</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Purpose" xml:space="preserve">
+    <value>Consultez tous les mouvements du registre des stocks d'un lot : ce qui est entré, ce qui est sorti, où c'est allé et avec quel statut de stock.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Audience" xml:space="preserve">
+    <value>Équipes entrepôt, qualité et planification</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1" xml:space="preserve">
+    <value>Recherchez et sélectionnez le lot dans le sélecteur «Lot» au-dessus du tableau. Si vous venez d'un lot, il est déjà sélectionné.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step1Title" xml:space="preserve">
+    <value>Choisissez le lot</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2" xml:space="preserve">
+    <value>Cliquez sur l'icône de filtre, renseignez «Date de début» et «Date de fin», puis cliquez sur «Appliquer». «Réinitialiser» retire les dates.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step2Title" xml:space="preserve">
+    <value>Limitez les dates</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3" xml:space="preserve">
+    <value>Chaque ligne indique «N° de transaction», «Type de mouvement», «Quantité» (+ en vert pour les entrées, − en rouge pour les sorties), «Vers», «Statut», «Origine» et «Date de transaction».</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step3Title" xml:space="preserve">
+    <value>Lisez les mouvements</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4" xml:space="preserve">
+    <value>Cliquez sur une ligne ou sur «Bon de mouvement» pour voir le mouvement tel que le registre l'a enregistré ; «Ouvrir dans le registre des stocks» vous mène au registre.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step4Title" xml:space="preserve">
+    <value>Ouvrez le bon</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5" xml:space="preserve">
+    <value>Quand vous venez de l'explorateur de numéros de série, une étiquette «Numéro de série …» nomme le numéro et son dernier mouvement est mis en évidence dans la liste.</value>
+  </data>
+  <data name="Help.LOTMOVEMENTS.Step5Title" xml:space="preserve">
+    <value>Suivez un numéro de série</value>
+  </data>
+  <data name="Help.SERIALS.Purpose" xml:space="preserve">
+    <value>Retrouvez n'importe quel numéro de série : où il se trouve, à quel lot il appartient et s'il est utilisable. Cette page est en lecture seule.</value>
+  </data>
+  <data name="Help.SERIALS.Audience" xml:space="preserve">
+    <value>Équipes entrepôt, qualité et service</value>
+  </data>
+  <data name="Help.SERIALS.Step1" xml:space="preserve">
+    <value>Saisissez le numéro de série dans la zone de recherche au-dessus de la liste.</value>
+  </data>
+  <data name="Help.SERIALS.Step1Title" xml:space="preserve">
+    <value>Trouvez un numéro</value>
+  </data>
+  <data name="Help.SERIALS.Step2" xml:space="preserve">
+    <value>Cliquez sur l'icône de filtre, choisissez «Produit», puis «Lot» et «Statut» (Actif, Bloqué, Consommé), et cliquez sur «Appliquer». «Réinitialiser» efface les filtres.</value>
+  </data>
+  <data name="Help.SERIALS.Step2Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.SERIALS.Step3" xml:space="preserve">
+    <value>«Entrepôt / Emplacement» indique où se trouve le numéro, «Dernier mouvement» quand il a bougé pour la dernière fois et «Statut» s'il est utilisable ; un numéro est Bloqué quand son lot est bloqué.</value>
+  </data>
+  <data name="Help.SERIALS.Step3Title" xml:space="preserve">
+    <value>Voyez où il est</value>
+  </data>
+  <data name="Help.SERIALS.Step4" xml:space="preserve">
+    <value>Choisissez «Détail du lot» dans le menu de la ligne pour ouvrir le lot du numéro de série.</value>
+  </data>
+  <data name="Help.SERIALS.Step4Title" xml:space="preserve">
+    <value>Ouvrez son lot</value>
+  </data>
+  <data name="Help.SERIALS.Step5" xml:space="preserve">
+    <value>Choisissez «Historique des mouvements» dans le menu de la ligne : les mouvements du lot s'ouvrent avec le dernier mouvement de ce numéro mis en évidence.</value>
+  </data>
+  <data name="Help.SERIALS.Step5Title" xml:space="preserve">
+    <value>Voyez ses mouvements</value>
+  </data>
+  <data name="Help.LOTTRACE.Purpose" xml:space="preserve">
+    <value>Suivez un lot en amont jusqu'à son origine et en aval jusqu'à sa destination, sur deux niveaux dans chaque sens, et voyez la quantité concernée.</value>
+  </data>
+  <data name="Help.LOTTRACE.Audience" xml:space="preserve">
+    <value>Équipes qualité, rappel et entrepôt</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1" xml:space="preserve">
+    <value>Recherchez et sélectionnez le lot dans le sélecteur «Lot». Si vous venez d'un lot, il est déjà sélectionné.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step1Title" xml:space="preserve">
+    <value>Choisissez le lot</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2" xml:space="preserve">
+    <value>«Quantité totale concernée» additionne le stock et l'expédié par unité (les unités ne sont jamais additionnées entre elles) ; les cartes indiquent «En stock», «Expédié» et «Lots concernés».</value>
+  </data>
+  <data name="Help.LOTTRACE.Step2Title" xml:space="preserve">
+    <value>Voyez la quantité concernée</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3" xml:space="preserve">
+    <value>«Lot sélectionné» est au centre, avec «Amont · niveau 1» et «Amont · niveau 2» d'un côté, «Aval · niveau 1» et «Aval · niveau 2» de l'autre. Pour l'instant, l'amont montre l'origine de réception du lot et l'aval uniquement les numéros des documents de sortie.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step3Title" xml:space="preserve">
+    <value>Lisez le flux</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4" xml:space="preserve">
+    <value>Cliquez sur une carte de lot pour la placer au centre et poursuivre la traçabilité ; «Détail du lot» sur le lot sélectionné ouvre sa page complète.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step4Title" xml:space="preserve">
+    <value>Parcourez la chaîne</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5" xml:space="preserve">
+    <value>Si vous êtes autorisé aux rappels, «Traçabilité complète (rappel)» ouvre la traçabilité de rappel pour ce lot.</value>
+  </data>
+  <data name="Help.LOTTRACE.Step5Title" xml:space="preserve">
+    <value>Lancez une traçabilité complète</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Purpose" xml:space="preserve">
+    <value>Rattachez aux lots enregistrés les textes de lot saisis manuellement dans d'anciens mouvements du registre des stocks, avant l'enregistrement des lots. La migration ne modifie pas les mouvements passés ; elle ajoute uniquement le rattachement au lot.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Audience" xml:space="preserve">
+    <value>Responsables stocks et qualité</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1" xml:space="preserve">
+    <value>Les cartes indiquent «Total des lignes», «Rapprochées» et «En attente». Utilisez les onglets «Toutes», «En attente» et «Rapprochées» pour n'afficher que les lignes utiles ; chaque ligne est un produit + «Lot saisi manuellement».</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step1Title" xml:space="preserve">
+    <value>Voyez ce qui reste</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2" xml:space="preserve">
+    <value>Quand «Correspondance suggérée» propose un lot, choisissez «Appliquer la suggestion» dans le menu de la ligne, ou cliquez sur «Appliquer toutes les suggestions» pour tout reprendre en une fois.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step2Title" xml:space="preserve">
+    <value>Reprenez les suggestions</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3" xml:space="preserve">
+    <value>Choisissez «Rattacher à un lot existant» pour sélectionner un lot enregistré de la même référence, ou «Faute de frappe — rattacher à un autre lot» pour joindre la ligne à un autre lot saisi, puis cliquez sur «Rattacher».</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step3Title" xml:space="preserve">
+    <value>Rattachez manuellement</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4" xml:space="preserve">
+    <value>Choisissez «Créer comme nouveau lot», vérifiez le numéro de lot et les dates, puis cliquez sur «Retenir comme décision». Le lot n'est créé en brouillon qu'à la confirmation de la migration.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step4Title" xml:space="preserve">
+    <value>Créez un lot</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5" xml:space="preserve">
+    <value>Les décisions restent sur cette page jusqu'à la confirmation ; «Modifier» rouvre une ligne. Quand plus rien n'est en attente, cliquez sur «Confirmer la migration» et saisissez un motif d'au moins 10 caractères. C'est irréversible : ensuite, la saisie manuelle de lots dans le registre des stocks est fermée.</value>
+  </data>
+  <data name="Help.LOTMIGRATION.Step5Title" xml:space="preserve">
+    <value>Confirmez la migration</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Purpose" xml:space="preserve">
+    <value>Suivez chaque ligne de stock en quarantaine qui attend une décision qualité : repérez les retards, mettez du stock en quarantaine à la main et ouvrez chaque enregistrement pour décider.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Audience" xml:space="preserve">
+    <value>Assurance qualité et responsables d’entrepôt</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1" xml:space="preserve">
+    <value>Sélectionnez votre «Société». Les cartes affichent les lignes en attente de décision, la quantité totale par unité et les enregistrements au-delà de l’objectif d’attente ; les lignes en retard sont mises en évidence.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step1Title" xml:space="preserve">
+    <value>Choisissez la société</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2" xml:space="preserve">
+    <value>Saisissez dans la zone de recherche ou cliquez sur le bouton de filtre («Filtrer»), choisissez un entrepôt, un statut de stock, une source ou «En retard uniquement», puis cliquez sur «Appliquer».</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step2Title" xml:space="preserve">
+    <value>Réduisez la liste</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3" xml:space="preserve">
+    <value>Cliquez sur «Mettre du stock en quarantaine», choisissez le lot, sa ligne disponible et la quantité, cliquez sur «Continuer» et confirmez avec une justification d’au moins 10 caractères. L’enregistrement attend ensuite dans cette file.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step3Title" xml:space="preserve">
+    <value>Mettez du stock en quarantaine à la main</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4" xml:space="preserve">
+    <value>Cliquez sur une ligne ou sur «Détail» pour voir les informations qualité, l’historique des décisions et les mouvements de stock.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step4Title" xml:space="preserve">
+    <value>Ouvrez un enregistrement</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
+    <value>Cliquez sur «Décider» sur un enregistrement ouvert pour libérer, rejeter ou bloquer le stock. Le stock ne bouge qu’après l’approbation de la décision.</value>
+  </data>
+  <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
+    <value>Décidez</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Purpose" xml:space="preserve">
+    <value>Voyez tout sur un enregistrement de quarantaine — lot, quantité, informations qualité, historique des décisions et mouvements de stock — et faites-le avancer vers une décision.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Audience" xml:space="preserve">
+    <value>Assurance qualité et responsables d’entrepôt</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Immediate" xml:space="preserve">
+    <value>Enregistrement de la note d’analyse</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
+    <value>Vérifiez les informations du haut, la carte «Informations qualité» et les mouvements de stock créés par l’enregistrement ; un bandeau jaune signale un objectif d’attente dépassé.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
+    <value>Lisez l’enregistrement</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2" xml:space="preserve">
+    <value>Cliquez sur «Commencer l’examen» pour passer l’enregistrement en examen. Aucun stock ne bouge.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step2Title" xml:space="preserve">
+    <value>Commencez l’examen</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3" xml:space="preserve">
+    <value>Cliquez sur «Modifier la note», saisissez le résultat d’analyse et cliquez sur «Enregistrer». La note est verrouillée tant qu’une décision attend l’approbation.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step3Title" xml:space="preserve">
+    <value>Rédigez la note d’analyse</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4" xml:space="preserve">
+    <value>Cliquez sur «Décider» pour ouvrir la page de décision et libérer, rejeter ou bloquer le stock.</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step4Title" xml:space="preserve">
+    <value>Décidez</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5" xml:space="preserve">
+    <value>Dans la zone du flux de travail, utilisez «Actualiser le statut», «Signer et envoyer» pour un brouillon, «Retirer la décision» ou «Réappliquer» si une décision n’a pas pu être appliquée. Les signatures figurent dans «Historique des décisions».</value>
+  </data>
+  <data name="Help.QUARANTINEDETAILS.Step5Title" xml:space="preserve">
+    <value>Suivez l’approbation</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Purpose" xml:space="preserve">
+    <value>Prenez la décision qualité d’un enregistrement de quarantaine — libérer, rejeter ou bloquer —, signez-la et envoyez-la pour approbation. Rien ne bouge avant l’approbation.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Audience" xml:space="preserve">
+    <value>Décideurs de l’assurance qualité</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1" xml:space="preserve">
+    <value>Choisissez «Libérer», «Rejeter» ou «Bloquer». Pour répartir la quantité, activez «Décision partielle» et saisissez deux lignes aux décisions différentes dont le total égale la quantité de l’enregistrement.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step1Title" xml:space="preserve">
+    <value>Choisissez la décision</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2" xml:space="preserve">
+    <value>Pour un rejet ou un blocage, choisissez un «Motif de blocage». Pour une libération, cochez «CoA / résultat d’analyse vérifié» ; un lot dont la date de recontrôle est passée demande aussi une «Nouvelle date de recontrôle».</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step2Title" xml:space="preserve">
+    <value>Complétez les détails</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3" xml:space="preserve">
+    <value>Saisissez une «Justification» d’au moins 10 caractères. La note du haut indique si la règle des quatre yeux impose l’approbation d’un autre utilisateur qualité.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step3Title" xml:space="preserve">
+    <value>Rédigez la justification</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4" xml:space="preserve">
+    <value>Cliquez sur «Suivant : signature électronique». Un brouillon est créé (aucun stock ne bouge) et s’affiche dans «Décision à signer» ; utilisez «Retour» pour le modifier.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step4Title" xml:space="preserve">
+    <value>Passez à la signature</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5" xml:space="preserve">
+    <value>Cliquez sur «Signer et envoyer» et signez dans la fenêtre de signature électronique (ou «Envoyer pour approbation» si la politique ne demande pas de signature). Le stock bouge après l’approbation.</value>
+  </data>
+  <data name="Help.QUARANTINEDECIDE.Step5Title" xml:space="preserve">
+    <value>Signez et envoyez</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Purpose" xml:space="preserve">
+    <value>Signez et envoyez une décision brouillon qui n’a pas été créée par un formulaire ici — par exemple une demande de libération de lot ou une décision dont l’envoi a échoué. Le stock bouge après l’approbation.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Audience" xml:space="preserve">
+    <value>Décideurs de l’assurance qualité</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1" xml:space="preserve">
+    <value>Lisez «Décision à signer» : les lignes et leur statut cible, le mouvement de stock prévu et la justification, tels que le serveur les a établis.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step1Title" xml:space="preserve">
+    <value>Vérifiez la décision</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2" xml:space="preserve">
+    <value>Cliquez sur «Signer et envoyer» et signez dans la fenêtre de signature électronique (ou «Envoyer pour approbation» si la politique ne demande pas de signature). La décision attend ensuite l’approbation.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step2Title" xml:space="preserve">
+    <value>Signez et envoyez</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3" xml:space="preserve">
+    <value>Cliquez sur «Annuler» pour revenir à la file ; rien n’est envoyé.</value>
+  </data>
+  <data name="Help.DECISIONSUBMIT.Step3Title" xml:space="preserve">
+    <value>Quittez sans envoyer</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Purpose" xml:space="preserve">
+    <value>Gérez le stock bloqué : bloquez du stock immédiatement si besoin, terminez l’examen et décidez de son sort — une disposition ou un déblocage.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Audience" xml:space="preserve">
+    <value>Assurance qualité et responsables d’entrepôt</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Immediate" xml:space="preserve">
+    <value>«Bloquer le stock» → «Bloquer» : le stock choisi devient Bloqué immédiatement, sans flux d’approbation</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
+    <value>Saisissez dans la zone de recherche ou cliquez sur le bouton de filtre («Filtrer»), choisissez un motif de blocage, «En attente de disposition uniquement» ou un «Statut», puis cliquez sur «Appliquer».</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
+    <value>Réduisez la liste</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2" xml:space="preserve">
+    <value>Cliquez sur «Bloquer le stock», choisissez le lot, sa ligne disponible, la quantité et un «Motif de blocage», saisissez une justification d’au moins 10 caractères et cliquez sur «Bloquer».</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step2Title" xml:space="preserve">
+    <value>Bloquez du stock</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3" xml:space="preserve">
+    <value>Une fois l’investigation finie, cliquez sur «Terminer l’examen» sur la ligne et donnez une justification. Le déblocage devient alors possible.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step3Title" xml:space="preserve">
+    <value>Terminez l’examen</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4" xml:space="preserve">
+    <value>Cliquez sur «Décision de disposition» pour détruire, retourner au fournisseur, retraiter ou conserver le stock comme échantillon.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step4Title" xml:space="preserve">
+    <value>Décidez de la disposition</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5" xml:space="preserve">
+    <value>Cliquez sur «Débloquer» sur un enregistrement examiné et donnez une justification. La décision est signée et envoyée pour approbation ; le stock ne redevient disponible qu’après l’approbation.</value>
+  </data>
+  <data name="Help.BLOCKEDSTOCK.Step5Title" xml:space="preserve">
+    <value>Débloquez</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Purpose" xml:space="preserve">
+    <value>Décidez du sort d’un enregistrement de stock bloqué — destruction, retour au fournisseur, retraitement ou conservation comme échantillon — et envoyez la décision pour signature et approbation.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Audience" xml:space="preserve">
+    <value>Décideurs de l’assurance qualité</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1" xml:space="preserve">
+    <value>Choisissez «Destruction», «Retour au fournisseur», «Retraitement» ou «Conserver comme échantillon / référence» ; chaque carte indique le mouvement de stock créé.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step1Title" xml:space="preserve">
+    <value>Choisissez la disposition</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2" xml:space="preserve">
+    <value>Saisissez la «Quantité» (au plus la quantité bloquée ; le reste reste Bloqué). Un retour demande un «Fournisseur» et le «N° de document de retour» ; une destruction demande une «Méthode de destruction» et une «Date de destruction». Un échantillon exige un emplacement d’échantillons défini dans les paramètres de quarantaine.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step2Title" xml:space="preserve">
+    <value>Saisissez la quantité et les détails</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3" xml:space="preserve">
+    <value>Saisissez une «Justification» d’au moins 10 caractères et vérifiez le cadre «Mouvement créé dans le registre des stocks à l’approbation».</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step3Title" xml:space="preserve">
+    <value>Rédigez la justification</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4" xml:space="preserve">
+    <value>Cliquez sur «Suivant : signature électronique», vérifiez le résumé, puis cliquez sur «Signer et envoyer» (ou «Envoyer pour approbation»). Le stock bouge après l’approbation.</value>
+  </data>
+  <data name="Help.BLOCKEDDISPOSITION.Step4Title" xml:space="preserve">
+    <value>Signez et envoyez</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Purpose" xml:space="preserve">
+    <value>Voyez les lots dont la date de recontrôle est dépassée ou proche, et mettez-les en quarantaine pour une décision qualité.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Audience" xml:space="preserve">
+    <value>Assurance qualité et responsables d’entrepôt</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1" xml:space="preserve">
+    <value>La liste affiche les lots dont la date de recontrôle est passée ou tombe dans les 30 jours, avec un statut : à venir, dépassé et fermé à l’usage, ou déjà en quarantaine. Un lot dépassé ne peut être ni vendu, ni réservé, ni sorti avant une décision qualité.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step1Title" xml:space="preserve">
+    <value>Lisez la liste</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2" xml:space="preserve">
+    <value>Saisissez un produit ou un lot dans la zone de recherche pour réduire la liste.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step2Title" xml:space="preserve">
+    <value>Trouvez un lot</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3" xml:space="preserve">
+    <value>Cliquez sur «Mettre en quarantaine» sur la ligne et confirmez avec une justification d’au moins 10 caractères. Le stock disponible du lot passe en Quarantaine et un enregistrement est ajouté à la file de quarantaine.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step3Title" xml:space="preserve">
+    <value>Mettez le lot en quarantaine</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4" xml:space="preserve">
+    <value>Pour un lot déjà en quarantaine, cliquez sur «Ouvrir l’enregistrement de quarantaine» pour suivre sa décision.</value>
+  </data>
+  <data name="Help.RETESTQUEUE.Step4Title" xml:space="preserve">
+    <value>Ouvrez l’enregistrement existant</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Purpose" xml:space="preserve">
+    <value>Définissez les règles de quarantaine de votre société : objectif d’attente, quatre yeux et approbation de libération de lot, qui peut approuver, où sont conservés les échantillons et quels motifs de blocage existent.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Audience" xml:space="preserve">
+    <value>Responsables qualité et administrateurs</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Immediate" xml:space="preserve">
+    <value>«Enregistrer» pour les paramètres et l’enregistrement d’un motif de blocage s’appliquent immédiatement</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1" xml:space="preserve">
+    <value>Saisissez l’«Objectif d’attente (jours)» (1–60) et l’«Intervalle de relecture (secondes)», puis activez ou désactivez «Quatre yeux» et «Approbation de libération de lot».</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step1Title" xml:space="preserve">
+    <value>Définissez les règles générales</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2" xml:space="preserve">
+    <value>Sous «Approbateurs candidats», choisissez un poste ou un utilisateur et cliquez sur «Ajouter» (10 au plus). Sans candidat, aucune décision ne peut être envoyée pour approbation.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step2Title" xml:space="preserve">
+    <value>Choisissez les approbateurs</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3" xml:space="preserve">
+    <value>Sous «Emplacements d’échantillons», choisissez un entrepôt et son emplacement d’échantillons, puis cliquez sur «Ajouter» ; un emplacement par entrepôt.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step3Title" xml:space="preserve">
+    <value>Définissez les emplacements d’échantillons</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4" xml:space="preserve">
+    <value>Cliquez sur «Enregistrer» en haut. Si le modèle d’approbation apparaît manquant, cliquez une fois sur «Préparer le modèle d’approbation».</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step4Title" xml:space="preserve">
+    <value>Enregistrez et préparez le modèle</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5" xml:space="preserve">
+    <value>Cliquez sur «Ajouter un motif de blocage», saisissez un code et un nom dans les sept langues, puis enregistrez ; utilisez l’action de ligne pour modifier un motif existant.</value>
+  </data>
+  <data name="Help.QUARANTINESETTINGS.Step5Title" xml:space="preserve">
+    <value>Gérez les motifs de blocage</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Purpose" xml:space="preserve">
+    <value>Voyez d'un coup d'œil le risque de péremption de votre société : stock périmé encore en main, lots critiques et proches, réceptions sous la durée de vie résiduelle minimale, exceptions ouvertes et conformité FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Audience" xml:space="preserve">
+    <value>Assurance qualité, responsables d'entrepôt et planificateurs d'approvisionnement</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1" xml:space="preserve">
+    <value>Choisissez votre société dans «Société» si on vous le demande, puis affinez les chiffres avec «Tous les entrepôts» et la «Période» de la carte de conformité ; la page se met à jour dès que vous les modifiez.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step1Title" xml:space="preserve">
+    <value>Choisissez le périmètre</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2" xml:space="preserve">
+    <value>Les cartes périmé, critique et proche comptent les lots et les quantités selon les seuils de votre société indiqués dans le sous-titre ; la carte des exceptions indique combien de dossiers ont dépassé le SLA.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step2Title" xml:space="preserve">
+    <value>Lisez les cartes</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3" xml:space="preserve">
+    <value>Cliquez sur la carte «Stock périmé» ou sur la carte critique ou proche pour ouvrir la liste correspondante, déjà filtrée sur votre entrepôt.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step3Title" xml:space="preserve">
+    <value>Ouvrez les lots d'une carte</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4" xml:space="preserve">
+    <value>Le graphique montre, mois par mois, la quantité de stock «Disponible» et «Bloqué» qui va périmer.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step4Title" xml:space="preserve">
+    <value>Regardez les 12 prochains mois</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5" xml:space="preserve">
+    <value>Dans «Les 10 lots les plus à risque», utilisez les icônes de ligne «Voir l'ordre FEFO», «Mettre en quarantaine (MOD-0175)» (ouvre le module Quarantaine) ou «Ouvrir une exception» ; «Tout voir» ouvre la liste complète.</value>
+  </data>
+  <data name="Help.EXPIRYDASHBOARD.Step5Title" xml:space="preserve">
+    <value>Agissez sur les lots les plus à risque</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Purpose" xml:space="preserve">
+    <value>Listez les lots qui périment bientôt, péremption la plus proche en premier (ordre FEFO), avec le stock disponible et bloqué dans des colonnes séparées, pour les utiliser ou les traiter à temps.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Audience" xml:space="preserve">
+    <value>Utilisateurs entrepôt, ventes et qualité</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1" xml:space="preserve">
+    <value>Choisissez «Tous les entrepôts», «Tous les statuts», «Horizon» et «Stock bloqué inclus» ou «Stock disponible uniquement», puis cliquez sur «Appliquer» ; «Effacer» réinitialise les filtres. Sans horizon, le paramètre de votre société s'applique.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step1Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2" xml:space="preserve">
+    <value>«Jours restants» et «Durée de vie restante» indiquent l'urgence d'un lot ; «Disponible» et «Bloqué» montrent ce qui reste utilisable. Cliquez sur le numéro de lot pour ouvrir «Détail du lot (MOD-0174)».</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step2Title" xml:space="preserve">
+    <value>Lisez la ligne</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3" xml:space="preserve">
+    <value>Utilisez les icônes de ligne : «Voir l'ordre FEFO» montre quel lot utiliser d'abord, «Mettre en quarantaine (MOD-0175)» ouvre le module Quarantaine et «Ouvrir une exception» enregistre un dossier si le lot ne peut pas être utilisé à temps.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step3Title" xml:space="preserve">
+    <value>Agissez sur un lot</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4" xml:space="preserve">
+    <value>«Exporter (CSV)» télécharge la liste avec les filtres appliqués.</value>
+  </data>
+  <data name="Help.EXPIRYAPPROACHING.Step4Title" xml:space="preserve">
+    <value>Exportez la liste</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Purpose" xml:space="preserve">
+    <value>Voyez les lots périmés qui ont encore du stock. Un lot périmé est automatiquement fermé à l'utilisation ; aucune décision n'est prise ici, la décision de destruction ou de retour se prend dans le module Quarantaine.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Audience" xml:space="preserve">
+    <value>Assurance qualité et responsables d'entrepôt</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1" xml:space="preserve">
+    <value>Choisissez un entrepôt dans «Tous les entrepôts» et cliquez sur «Appliquer» ; «Effacer» affiche de nouveau tous les entrepôts.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step1Title" xml:space="preserve">
+    <value>Choisissez l'entrepôt</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2" xml:space="preserve">
+    <value>«Depuis la péremption» indique depuis combien de jours le lot est périmé ; «Disponible» et «Bloqué» indiquent ce qui reste en main. Cliquez sur le numéro de lot pour «Détail du lot (MOD-0174)».</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step2Title" xml:space="preserve">
+    <value>Vérifiez le stock</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3" xml:space="preserve">
+    <value>Si un dossier est déjà ouvert, la colonne «Exception» y mène ; sinon, utilisez «Ouvrir une exception» dans la ligne pour enregistrer le dossier.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step3Title" xml:space="preserve">
+    <value>Suivez ou ouvrez une exception</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4" xml:space="preserve">
+    <value>«Mettre en quarantaine (MOD-0175)» dans la ligne ouvre le module Quarantaine, où vous décidez de détruire ou de retourner le stock.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step4Title" xml:space="preserve">
+    <value>Décidez en Quarantaine</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5" xml:space="preserve">
+    <value>«Exporter (CSV)» télécharge la liste de l'entrepôt sélectionné.</value>
+  </data>
+  <data name="Help.EXPIREDSTOCK.Step5Title" xml:space="preserve">
+    <value>Exportez la liste</value>
+  </data>
+  <data name="Help.FEFOORDER.Purpose" xml:space="preserve">
+    <value>Voyez quel lot d'un produit utiliser en premier dans un entrepôt, selon la péremption. C'est une suggestion en lecture seule : rien n'est réservé ni sorti ici, et une sortie depuis un lot plus tardif suit la règle de sortie FEFO de votre société.</value>
+  </data>
+  <data name="Help.FEFOORDER.Audience" xml:space="preserve">
+    <value>Opérateurs d'entrepôt et planificateurs</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1" xml:space="preserve">
+    <value>Choisissez l'«Entrepôt», puis le «Produit (SKU)» ; seuls les produits ayant du stock en lots dans cet entrepôt sont proposés.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step1Title" xml:space="preserve">
+    <value>Choisissez entrepôt et produit</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2" xml:space="preserve">
+    <value>Si vous avez besoin d'une quantité précise, saisissez-la dans «Quantité demandée (facultatif)», puis cliquez sur «Calculer l'ordre».</value>
+  </data>
+  <data name="Help.FEFOORDER.Step2Title" xml:space="preserve">
+    <value>Calculez l'ordre</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3" xml:space="preserve">
+    <value>«Lots ordonnés · par péremption» classe les lots que vous pouvez sortir maintenant ; avec une quantité, «Pour cette quantité» indique combien prendre dans chaque lot et la part non couverte.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step3Title" xml:space="preserve">
+    <value>Suivez l'ordre</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4" xml:space="preserve">
+    <value>«Lots exclus» liste les lots inutilisables pour l'instant avec leur motif ; les liens mènent au stock périmé ou au module Quarantaine.</value>
+  </data>
+  <data name="Help.FEFOORDER.Step4Title" xml:space="preserve">
+    <value>Voyez ce qui est exclu</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>Traitez les exceptions FEFO de votre société : chaque écart aux règles de péremption, de l'ouverture à la clôture (Ouverte, En examen, Acceptée ou Corrigée, Clôturée).</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Audience" xml:space="preserve">
+    <value>Utilisateurs de l'assurance qualité qui examinent et décident les exceptions</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1" xml:space="preserve">
+    <value>Utilisez les onglets «Toutes», «Ouvertes + En examen», «Délai dépassé» et «Conclues» ; chaque onglet affiche son nombre.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>Choisissez une vue</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2" xml:space="preserve">
+    <value>Choisissez «Tous les types», «Tous les statuts», «Tous les entrepôts» ou «Qui me sont attribuées», puis cliquez sur «Appliquer» ; «Effacer» réinitialise les filtres.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3" xml:space="preserve">
+    <value>La colonne «Délai (SLA)» indique le temps restant ou le retard d'un dossier ; «Responsable» indique qui le traite.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step3Title" xml:space="preserve">
+    <value>Surveillez le SLA</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4" xml:space="preserve">
+    <value>Cliquez sur la flèche en fin de ligne («Ouvrir l'exception») pour voir ses faits, sa chronologie et sa décision.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step4Title" xml:space="preserve">
+    <value>Ouvrez un dossier</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5" xml:space="preserve">
+    <value>Cliquez sur «Ouvrir une exception», choisissez l'entrepôt, le produit et le lot, le «Type d'exception», rédigez une «Description» d'au moins 10 caractères et cliquez de nouveau sur «Ouvrir une exception» ; le nouveau dossier s'ouvre sur sa page de détail.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONS.Step5Title" xml:space="preserve">
+    <value>Ouvrez une nouvelle exception</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Purpose" xml:space="preserve">
+    <value>Traitez une exception : examinez ses faits et ce qui s'est passé, suivez sa chronologie et consignez la décision.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Audience" xml:space="preserve">
+    <value>Utilisateurs de l'assurance qualité et personnes concernées par l'exception</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Immediate" xml:space="preserve">
+    <value>«Envoyer», «Prendre en examen» et «Clôturer l'exception» prennent effet dès le clic ; aucune confirmation n'est demandée.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1" xml:space="preserve">
+    <value>«Faits» et «Ce qui s'est passé» montrent le lot, les dates et le mouvement à l'origine de l'exception, tels qu'enregistrés ; «Détail du lot (MOD-0174)» et «Mettre en quarantaine (MOD-0175)» ouvrent les modules liés.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step1Title" xml:space="preserve">
+    <value>Examinez les faits</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2" xml:space="preserve">
+    <value>«Chronologie» liste chaque étape du dossier ; écrivez dans la zone de commentaire et cliquez sur «Envoyer».</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step2Title" xml:space="preserve">
+    <value>Échangez dans la chronologie</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3" xml:space="preserve">
+    <value>Tant que l'exception est ouverte, cliquez sur «Prendre en examen» dans «Décision» pour la prendre en charge.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step3Title" xml:space="preserve">
+    <value>Prenez-la en examen</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4" xml:space="preserve">
+    <value>Cliquez sur «Décider», choisissez «Acceptée avec justification», «Corrigée» ou «Annulée», rédigez la «Justification» (au moins 10 caractères) et cliquez sur «Continuer» ; si la politique de signature électronique de votre société l'exige, terminez par «Signer et enregistrer», sinon la décision est enregistrée aussitôt.</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step4Title" xml:space="preserve">
+    <value>Décidez</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5" xml:space="preserve">
+    <value>Après une décision acceptée ou corrigée, cliquez sur «Clôturer l'exception».</value>
+  </data>
+  <data name="Help.EXPIRYEXCEPTIONDETAILS.Step5Title" xml:space="preserve">
+    <value>Clôturez l'exception</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Purpose" xml:space="preserve">
+    <value>Fixez les règles de péremption de votre société : horizons proche et critique, règle de sortie FEFO, conduite à tenir pour une réception sous la durée de vie résiduelle minimale, modifications de date, délais des exceptions et seuil de stock périmé.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Audience" xml:space="preserve">
+    <value>Responsables qualité propriétaires de la politique de péremption</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1" xml:space="preserve">
+    <value>Dans «Paramètres de la société», saisissez en jours l'horizon «proche» et le seuil «critique» ; le seuil critique doit être inférieur à l'horizon proche.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step1Title" xml:space="preserve">
+    <value>Fixez les horizons</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2" xml:space="preserve">
+    <value>Choisissez une option pour «Règle de sortie FEFO», «Réception sous la durée de vie résiduelle minimale» et «Modification de péremption / recontrôle» ; saisissez les heures par type dans «Délais des exceptions» et le seuil «stock périmé en main» en jours.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step2Title" xml:space="preserve">
+    <value>Choisissez les règles</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3" xml:space="preserve">
+    <value>Cliquez sur «Enregistrer les modifications», vérifiez les champs modifiés, rédigez le «Motif de la modification» (au moins 10 caractères) et confirmez avec «Enregistrer les modifications» ; «Annuler» abandonne vos saisies. Sans le droit de gérer la politique, le formulaire est en lecture seule.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step3Title" xml:space="preserve">
+    <value>Enregistrez avec un motif</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4" xml:space="preserve">
+    <value>«Vue par produit» montre la durée de vie, le recontrôle et le résiduel minimal issus du référentiel produit ; les valeurs «Non défini» se corrigent sur la fiche produit dans MDM, pas ici.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step4Title" xml:space="preserve">
+    <value>Vérifiez les produits</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5" xml:space="preserve">
+    <value>«Historique des modifications» montre chaque changement avec la date et l'auteur, l'ancienne et la nouvelle valeur et le motif.</value>
+  </data>
+  <data name="Help.EXPIRYPOLICY.Step5Title" xml:space="preserve">
+    <value>Consultez l'historique</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Purpose" xml:space="preserve">
+    <value>Produisez le dossier de preuves FEFO / péremption d'une période pour les audits : synthèse de conformité, exceptions avec leurs résolutions et signatures, modifications de politique et contournements FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Audience" xml:space="preserve">
+    <value>Assurance qualité, responsables du système qualité et auditeurs</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1" xml:space="preserve">
+    <value>Choisissez une «Période» ou «Plage de dates» et renseignez «Du» et «Au» ; affinez si besoin avec «Entrepôt» et «Type».</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Choisissez la période et le périmètre</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2" xml:space="preserve">
+    <value>Cliquez sur «Aperçu» pour voir les quatre sections du dossier : indicateurs de synthèse, exceptions et résolutions, modifications de politique et contournements FEFO.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Prévisualisez</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3" xml:space="preserve">
+    <value>Cliquez sur «Télécharger le PDF» ou «Télécharger le CSV» ; le fichier est produit sur le serveur, téléchargé et inscrit au journal des exports.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step3Title" xml:space="preserve">
+    <value>Téléchargez</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4" xml:space="preserve">
+    <value>«Journal des exports» liste chaque export avec l'auteur, la date et son SHA-256, calculé sur les octets du fichier ; rouvrez un fichier depuis son nom et utilisez «Copier la valeur SHA-256» pour le comparer.</value>
+  </data>
+  <data name="Help.EXPIRYEVIDENCE.Step4Title" xml:space="preserve">
+    <value>Vérifiez le fichier</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve">
+    <value>Voyez d’un coup d’œil si votre société est prête pour un rappel : dossiers ouverts, dernier exercice face à son objectif, couverture par lot des sorties, sorties non traçables et retours des dossiers ouverts.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve">
+    <value>Qualité (responsable des rappels), administrateur du système qualité et direction (lecture seule).</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve">
+    <value>Si la page le demande, choisissez la société dans «Société». Chaque chiffre de cette page ne concerne que cette société.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve">
+    <value>Choisissez la société</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve">
+    <value>Regardez les cinq cartes : «Dossiers de rappel ouverts», «Durée du dernier exercice», «Taux de couverture de la traçabilité», «Sorties sans lot (non traçables)» et «Retourné (dossiers ouverts)». Un «Objectif dépassé» rouge sur le dernier exercice ou un nombre de sorties non traçables supérieur à zéro demande votre attention.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve">
+    <value>Lisez les cartes</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve">
+    <value>«Historique des exercices · 12 derniers» montre les derniers exercices terminés face à la ligne d’objectif ; une barre rouge est un exercice qui a dépassé l’objectif.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve">
+    <value>Suivez l’historique des exercices</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4" xml:space="preserve">
+    <value>Quand le bandeau jaune indique que le dernier exercice est trop ancien, cliquez sur «Planifier un exercice» pour ouvrir le planificateur.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step4Title" xml:space="preserve">
+    <value>Réagissez à l’alerte</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5" xml:space="preserve">
+    <value>Le tableau «Dossiers ouverts» montre chaque dossier avec sa classe, la quantité concernée et la part retournée ; cliquez sur «Tous les dossiers →» pour ouvrir la liste complète.</value>
+  </data>
+  <data name="Help.RECALLDASHBOARD.Step5Title" xml:space="preserve">
+    <value>Suivez les dossiers ouverts</value>
+  </data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve">
+    <value>Tracez un lot dans toute sa généalogie, en amont jusqu’à ses intrants et en aval jusqu’au stock, aux expéditions et aux clients, et repérez les trous où un lot ne peut pas prouver où la marchandise est allée.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve">
+    <value>Qualité (responsable des rappels) et administrateur du système qualité.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve">
+    <value>«Ouvrir le dossier brouillon» crée le dossier brouillon immédiatement ; rien n’est bloqué avant l’approbation du périmètre sur la page du dossier.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve">
+    <value>Recherchez le lot dans «Numéro de lot» ou cliquez sur l’un de vos «Lots récents :». Le produit se remplit tout seul.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve">
+    <value>Choisissez le lot</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve">
+    <value>Choisissez «En amont», «En aval» ou «Les deux» puis cliquez sur «Tracer». Le résumé au-dessus du résultat compte les lots, les lignes de stock, les expéditions et les trous.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve">
+    <value>Choisissez le sens et tracez</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve">
+    <value>Passez de «Arbre» à «Tableau» ; les deux montrent les mêmes nœuds et «Tout déplier» ouvre chaque branche. Les lignes rouges sont des trous de traçabilité ; l’activité d’une autre société n’apparaît que sous forme de nombre.</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve">
+    <value>Lisez l’arbre ou le tableau</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4" xml:space="preserve">
+    <value>«Télécharger le CSV» donne les mêmes lignes. «Ouvrir un dossier de rappel avec ce périmètre» demande «Classe», «Niveau», «Motif» et, si vous en avez un, «N° d’écart / de réclamation» ; cliquez ensuite sur «Ouvrir le dossier brouillon».</value>
+  </data>
+  <data name="Help.RECALLTRACE.Step4Title" xml:space="preserve">
+    <value>Exportez ou ouvrez un dossier</value>
+  </data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve">
+    <value>Suivez dans une seule liste les dossiers de rappel réels et les exercices de votre société, du plus récent au plus ancien, avec leur statut et leur avancement.</value>
+  </data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve">
+    <value>Tous ceux qui suivent les rappels : qualité, entrepôt, commercial et direction.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve">
+    <value>Cliquez sur un bouton de statut au-dessus de la liste, par exemple «Brouillon», «Approbation du périmètre en attente» ou «Actif» ; son nombre indique combien de dossiers ont ce statut.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve">
+    <value>Choisissez un statut</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve">
+    <value>Tapez dans la zone de recherche, ou cliquez sur «Filtrer» et choisissez «Tous les types», «Tous les statuts», «Statuts des exercices», «Toutes les classes», «Tous les produits» ou «Ouvert à partir du», puis cliquez sur «Appliquer» ; «Effacer» réinitialise. Un filtre de classe n’affiche que les dossiers réels.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3" xml:space="preserve">
+    <value>Une ligne d’exercice indique «Exercice» dans «Type», affiche son résultat et sa durée comme avancement, et porte «—» pour la classe et le niveau.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step3Title" xml:space="preserve">
+    <value>Distinguez les exercices</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4" xml:space="preserve">
+    <value>Cliquez sur un numéro pour l’ouvrir : un dossier réel ouvre sa page, un exercice en cours ouvre le planificateur et un exercice terminé ouvre son dossier de preuves.</value>
+  </data>
+  <data name="Help.RECALLCASES.Step4Title" xml:space="preserve">
+    <value>Ouvrez une ligne</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve">
+    <value>Menez un dossier de rappel du brouillon à la clôture : périmètre, stock, clients, retours, contrôle d’efficacité et historique.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve">
+    <value>Utilisateurs qualité (QA), entrepôt et service client de la société.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Immediate" xml:space="preserve">
+    <value>«Enregistrer inclus / exclus», «Soumettre le périmètre à l’approbation», «Mettre en quarantaine la sélection» et «Démarrer le contrôle d’efficacité» s’appliquent immédiatement, sans fenêtre de confirmation.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve">
+    <value>Dans «Périmètre», désactivez ce qui n’est pas concerné et saisissez le «Motif d’exclusion», cliquez sur «Enregistrer inclus / exclus», puis sur «Soumettre le périmètre à l’approbation». «Retracer» montre les nouveaux nœuds, que vous ajoutez avec un motif via «Révision du périmètre».</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve">
+    <value>Marquez et soumettez le périmètre</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve">
+    <value>Un autre utilisateur clique sur «Approuver le périmètre» (ou «Renvoyer en brouillon» avec un motif), vérifie le résumé, clique sur «Continuer» et signe dans la fenêtre de signature électronique si la politique l’exige. Les lots sont alors bloqués et les demandes de quarantaine envoyées.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve">
+    <value>Approuvez le périmètre</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve">
+    <value>Dans «Stock disponible», cochez les lignes et cliquez sur «Mettre en quarantaine la sélection» ; utilisez «Réessayer» pour une demande en échec et «Confirmer la séparation» une fois la marchandise physiquement séparée.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve">
+    <value>Mettez le stock en quarantaine</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
+    <value>Dans «Clients et expéditions», utilisez «Marquer comme informé» et «Ajouter une déclaration de consommation». Dans «Retours», «Saisir un retour client» ouvre le formulaire de mouvement de stock ; cliquez ensuite sur «Lier le retour» sur un candidat.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
+    <value>Suivez clients et retours</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5" xml:space="preserve">
+    <value>Dans «Contrôle d’efficacité», cliquez sur «Démarrer le contrôle d’efficacité», puis sur «Terminer le contrôle d’efficacité» avec signature électronique ; un autre utilisateur clique sur «Clôturer le dossier». «Dossier de preuves» et «Chronologie» gardent la trace.</value>
+  </data>
+  <data name="Help.RECALLCASEDETAILS.Step5Title" xml:space="preserve">
+    <value>Contrôlez l’efficacité et clôturez</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve">
+    <value>Planifiez des exercices de rappel et menez-les contre la montre, sans toucher au stock.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve">
+    <value>Assurance qualité et administrateur du système qualité.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Immediate" xml:space="preserve">
+    <value>«Démarrer le chronomètre» et chaque bouton d’étape s’appliquent immédiatement, sans fenêtre de confirmation ; le stock n’est jamais touché.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve">
+    <value>Cliquez sur «Ajouter un plan», renseignez «Nom du plan», «Fréquence», «Périmètre» et «Prochaine date», puis cliquez sur «Enregistrer le plan». Modifiez un plan existant avec «Modifier».</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve">
+    <value>Ajoutez un plan</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve">
+    <value>Dans «Responsable du plan», tapez un nom dans la zone de recherche, cliquez sur «Rechercher» et choisissez la personne dans la liste. Sans recherche, le responsable reste inchangé (vous, pour un nouveau plan).</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve">
+    <value>Choisissez le responsable</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve">
+    <value>Sur une ligne de plan, cliquez sur «Lancer l’exercice», choisissez «Le système choisit» ou «Je choisis» pour le lot, puis cliquez sur «Démarrer le chronomètre».</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve">
+    <value>Lancez l’exercice</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4" xml:space="preserve">
+    <value>Cliquez dans l’ordre sur «Lancer la traçabilité», «Vérifier le périmètre» et «Compléter la liste des clients · arrêter le chronomètre» ; l’horloge est celle du serveur. «Annuler l’exercice» demande un motif et conserve l’exercice.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step4Title" xml:space="preserve">
+    <value>Terminez les trois étapes</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5" xml:space="preserve">
+    <value>Cliquez sur «Enregistrer le résultat avec signature électronique», rédigez la note de résultat et signez si la politique l’exige. «Derniers résultats d’exercice» liste chaque exercice ; cliquez sur un numéro pour le rouvrir.</value>
+  </data>
+  <data name="Help.RECALLDRILLS.Step5Title" xml:space="preserve">
+    <value>Enregistrez le résultat</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve">
+    <value>Produisez le dossier de preuves d’un dossier, d’un exercice ou d’une période pour les audits, et prouvez que le fichier remis est bien celui qui a été journalisé.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve">
+    <value>Assurance qualité, administrateur du système qualité et auditeurs.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Immediate" xml:space="preserve">
+    <value>Chaque téléchargement est inscrit immédiatement dans le «Journal des exports».</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve">
+    <value>Sous «Objet», cliquez sur «Réel», «Exercice» ou «Période» ; choisissez ensuite le dossier ou l’exercice dans «Dossier ou exercice», ou saisissez «Du» et «Au» pour une période.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Choisissez l’objet</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve">
+    <value>Cliquez sur «Aperçu» ; il montre les sept sections exactement comme le fichier les contient. Les boutons de téléchargement ne s’activent qu’après un aperçu.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Prévisualisez le dossier</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3" xml:space="preserve">
+    <value>Cliquez sur «Télécharger le PDF» ou «Télécharger le CSV». La page calcule l’empreinte du fichier téléchargé et indique si son SHA-256 correspond au journal des exports. Les libellés du fichier sont en turc ou en anglais.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step3Title" xml:space="preserve">
+    <value>Téléchargez et vérifiez</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4" xml:space="preserve">
+    <value>«Journal des exports» liste chaque fichier avec l’utilisateur, l’heure et le SHA-256 ; cliquez sur un nom de fichier pour le télécharger à nouveau.</value>
+  </data>
+  <data name="Help.RECALLEVIDENCE.Step4Title" xml:space="preserve">
+    <value>Utilisez le journal des exports</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve">
+    <value>Réglez la durée cible des exercices, l’alerte de fréquence des exercices et l’objectif d’efficacité par classe de votre société.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve">
+    <value>L’administrateur du système qualité.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve">
+    <value>Modifiez «Durée cible de l’exercice (heures)» (1–72), «Alerte de fréquence des exercices (jours)» (30–730) et les valeurs par classe sous «Objectif d’efficacité (%) · par classe» (0–100). Sans le droit de modification, les champs sont en lecture seule.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve">
+    <value>Modifiez les valeurs</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve">
+    <value>Saisissez «Motif (au moins 10 caractères)» et cliquez sur «Enregistrer» ; «Annuler» rétablit les valeurs enregistrées. Si la politique l’exige, cliquez sur «Signer et enregistrer» et signez dans la fenêtre de signature électronique.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve">
+    <value>Motivez et enregistrez</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3" xml:space="preserve">
+    <value>«Historique des modifications» montre chaque modification avec son motif et sa signature. La politique de signature électronique ne se règle pas ici ; elle est gérée dans MOD-0022.</value>
+  </data>
+  <data name="Help.RECALLSETTINGS.Step3Title" xml:space="preserve">
+    <value>Consultez l’historique</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Purpose" xml:space="preserve">
+    <value>Signez ou refusez le travail de signature que les modules vous ont attribué. L'échéance la plus proche vient en premier ; à échéance égale, la demande la plus récente passe devant.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Audience" xml:space="preserve">
+    <value>Toute personne invitée à signer un enregistrement</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Immediate" xml:space="preserve">
+    <value>Signer et refuser une demande ; ensuite, la demande est close</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1" xml:space="preserve">
+    <value>Cliquez sur «Filtrer», choisissez «Module métier», «Statut» ou une plage «Date de demande», puis cliquez sur «Appliquer».</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step1Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2" xml:space="preserve">
+    <value>Regardez la colonne «Échéance» : une demande en attente qui échoit aujourd'hui porte l'étiquette «Aujourd'hui», et le compteur au-dessus de la liste indique combien de demandes attendent.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step2Title" xml:space="preserve">
+    <value>Repérez l'urgent</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3" xml:space="preserve">
+    <value>Cliquez sur «Signer» sur une ligne en attente ; la fenêtre de signature s'ouvre avec la signification indiquée dans la demande. Saisissez votre «Mot de passe» (pendant la période de validité, tapez plutôt votre nom d'utilisateur) et cliquez sur «Signer».</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step3Title" xml:space="preserve">
+    <value>Signez</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4" xml:space="preserve">
+    <value>Cliquez sur «Refuser», écrivez un «Motif» d'au moins 10 caractères et confirmez avec «Refuser» ; le demandeur est informé.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step4Title" xml:space="preserve">
+    <value>Refusez</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5" xml:space="preserve">
+    <value>Cliquez sur «Signatures de l'enregistrement» pour ouvrir l'enregistrement sur la page de vérification.</value>
+  </data>
+  <data name="Help.ESIGNREQUESTS.Step5Title" xml:space="preserve">
+    <value>Voyez les signatures</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Purpose" xml:space="preserve">
+    <value>Voyez les signatures d'un enregistrement et si chacune est encore valide aujourd'hui : valide, enregistrement modifié, altérée ou invalidée. La vérification compare ce qui a été signé avec l'enregistrement tel qu'il est maintenant ; l'enregistrement de signature lui-même ne change jamais.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Audience" xml:space="preserve">
+    <value>Responsables qualité et audit, administrateurs de la signature électronique</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Immediate" xml:space="preserve">
+    <value>Invalider une signature : elle apparaît invalide partout où elle est utilisée, sans retour possible</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1" xml:space="preserve">
+    <value>Choisissez le «Module métier», saisissez le «Type d'enregistrement» et l'«Identifiant de l'enregistrement» puis cliquez sur «Afficher», ou choisissez-en un dans «Enregistrements signés récemment» (visible seulement avec le droit d'export). Un lien «Signatures de l'enregistrement» ouvre directement l'enregistrement.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step1Title" xml:space="preserve">
+    <value>Choisissez l'enregistrement</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2" xml:space="preserve">
+    <value>Les compteurs indiquent combien de signatures sont «Valide», «Enregistrement modifié», «Altérée» ou «Invalidée» ; chaque carte montre le signataire, la signification, l'apparence et l'empreinte à la signature. Les enregistrements d'une société n'apparaissent que pour les sociétés de votre périmètre de données ; vos propres signatures apparaissent toujours.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step2Title" xml:space="preserve">
+    <value>Lisez le résultat</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3" xml:space="preserve">
+    <value>Cliquez sur «Vérifier à nouveau» pour comparer encore chaque signature avec l'enregistrement actuel ; rien n'est modifié.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step3Title" xml:space="preserve">
+    <value>Vérifiez à nouveau</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4" xml:space="preserve">
+    <value>Cliquez sur «Invalider la signature» sur une carte, écrivez un «Motif» d'au moins 10 caractères et cliquez sur «Continuer», puis saisissez votre «Mot de passe» et cliquez sur «Invalider la signature». C'est irréversible ; l'invalidation est conservée comme une entrée distincte et permanente.</value>
+  </data>
+  <data name="Help.ESIGNVERIFICATION.Step4Title" xml:space="preserve">
+    <value>Invalidez une signature</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Purpose" xml:space="preserve">
+    <value>Filtrez les enregistrements de signature et téléchargez-les en PDF ou CSV pour les audits et inspections. Chaque export reçoit un numéro et est enregistré de façon permanente avec son auteur, le filtre, le nombre d'enregistrements et l'empreinte SHA-256 du fichier.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Audience" xml:space="preserve">
+    <value>Responsables audit, qualité et conformité</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Immediate" xml:space="preserve">
+    <value>«Exporter en PDF» et «Exporter en CSV» : l'export est enregistré dès le clic, même si vous ne gardez pas le fichier</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1" xml:space="preserve">
+    <value>Cliquez sur «Filtrer», renseignez «Du» et «Au», choisissez «Module métier», «Signataire», «Signification de la signature» ou «Société» et cliquez sur «Appliquer» ; les enregistrements des sociétés sont limités à votre périmètre de données.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step1Title" xml:space="preserve">
+    <value>Filtrez les enregistrements</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2" xml:space="preserve">
+    <value>Basculez entre «Tableau» et «Aperçu PDF» pour voir les lignes affichées sous forme de blocs de signature du rapport.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step2Title" xml:space="preserve">
+    <value>Prévisualisez</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3" xml:space="preserve">
+    <value>Cliquez sur «Exporter en PDF» ou «Exporter en CSV» ; le serveur produit le fichier et imprime les dates en UTC.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step3Title" xml:space="preserve">
+    <value>Téléchargez le fichier</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4" xml:space="preserve">
+    <value>Le «Journal des exports» liste chaque export avec son numéro, sa date, son auteur, son format, le nombre d'enregistrements, le filtre et l'empreinte du fichier.</value>
+  </data>
+  <data name="Help.ESIGNAUDITEXPORT.Step4Title" xml:space="preserve">
+    <value>Consultez le journal</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Purpose" xml:space="preserve">
+    <value>Conservez le spécimen de signature que vous pouvez utiliser lorsque vous signez électroniquement et suivez l'historique de vos spécimens. Vous n'avez qu'un spécimen actif à la fois, et l'enregistrement d'un nouveau demande toujours votre mot de passe.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Audience" xml:space="preserve">
+    <value>Toute personne qui signe électroniquement</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Immediate" xml:space="preserve">
+    <value>Désactiver et supprimer un spécimen ; sans règle d'approbation, un spécimen enregistré devient actif immédiatement</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1" xml:space="preserve">
+    <value>«Mon spécimen de signature» montre votre spécimen actif, sa date d'ajout, qui l'a approuvé et combien de signatures l'ont utilisé ; cliquez sur l'image pour l'agrandir.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step1Title" xml:space="preserve">
+    <value>Voyez votre spécimen</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2" xml:space="preserve">
+    <value>Sous «Nouveau spécimen de signature», dessinez dans l'onglet «Dessiner» (réglez «Épaisseur» et «Couleur», ou utilisez «Plein écran (paysage)» sur un téléphone), ou dans l'onglet «Importer une image» choisissez un PNG ou JPG de 1 Mo au plus, recadrez-le et activez si besoin «Nettoyer l'arrière-plan».</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step2Title" xml:space="preserve">
+    <value>Dessinez ou importez</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3" xml:space="preserve">
+    <value>Cliquez sur «Enregistrer avec le mot de passe», saisissez votre «Mot de passe» et cliquez sur «Vérifier et enregistrer».</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step3Title" xml:space="preserve">
+    <value>Enregistrez avec votre mot de passe</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4" xml:space="preserve">
+    <value>Si la politique exige une approbation, le nouveau spécimen affiche «En attente d'approbation» jusqu'à ce qu'un autre administrateur de la signature électronique l'approuve ; d'ici là, votre spécimen actuel reste utilisé. Vous ne pouvez jamais approuver votre propre spécimen.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step4Title" xml:space="preserve">
+    <value>Attendez l'approbation</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5" xml:space="preserve">
+    <value>Dans «Historique des spécimens», utilisez «Désactiver» sur le spécimen actif ou «Supprimer» sur un spécimen jamais utilisé ; un spécimen utilisé dans une signature ne peut pas être supprimé, seulement désactivé.</value>
+  </data>
+  <data name="Help.ESIGNMYSIGNATURE.Step5Title" xml:space="preserve">
+    <value>Gérez les anciens spécimens</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Purpose" xml:space="preserve">
+    <value>Décidez quelles actions exigent une signature électronique, avec quelle signification et quelle règle de signature visuelle, et à quelle fréquence le mot de passe est demandé. Les changements s'appliquent aux nouvelles signatures ; chacun exige un motif et est inscrit dans l'historique des modifications.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Audience" xml:space="preserve">
+    <value>Administrateurs de la signature électronique</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Immediate" xml:space="preserve">
+    <value>Enregistrer la politique et ramener une société à la valeur par défaut ; les deux s'appliquent aussitôt aux nouvelles signatures</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1" xml:space="preserve">
+    <value>Cliquez sur «Valeur par défaut du locataire» pour la politique qu'utilise toute société sans politique propre, ou sur «Par société» et choisissez la société.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step1Title" xml:space="preserve">
+    <value>Choisissez la portée</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2" xml:space="preserve">
+    <value>Si la société utilise la valeur par défaut, cliquez sur «Politique distincte pour cette société» pour partir d'une copie ; les lignes qui diffèrent portent l'étiquette «Différent». «Revenir à la valeur par défaut» supprime la politique de la société après saisie d'un motif.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step2Title" xml:space="preserve">
+    <value>Donnez une politique propre à une société</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3" xml:space="preserve">
+    <value>Dans «Règles de signature par action», mettez chaque action sur «Obligatoire» ou «Désactivée» et choisissez sa «Signification de la signature» et sa «Signature visuelle» ; «Second facteur» affiche «Bientôt».</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step3Title" xml:space="preserve">
+    <value>Réglez les règles par action</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4" xml:space="preserve">
+    <value>Sous «Paramètres généraux», choisissez «Demander le mot de passe à chaque signature» ou «Une fois par période» et réglez la «Durée de validité de la revérification» (1 à 60 min). «Exiger l'approbation d'un administrateur avant d'utiliser un modèle de signature» vaut pour tout le locataire.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step4Title" xml:space="preserve">
+    <value>Réglez la règle du mot de passe</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5" xml:space="preserve">
+    <value>Cliquez sur «Enregistrer avec un motif», écrivez un motif d'au moins 10 caractères et cliquez sur «Enregistrer» ; le changement apparaît dans «Historique des modifications». Sans le droit de gérer la politique, la page est en lecture seule.</value>
+  </data>
+  <data name="Help.ESIGNPOLICY.Step5Title" xml:space="preserve">
+    <value>Enregistrez avec un motif</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Purpose" xml:space="preserve">
+    <value>Définissez ce qu'une signature déclare, par exemple J'approuve ou J'ai vérifié ; la fenêtre de signature propose les significations actives. Dès qu'une signification est utilisée, son code est verrouillé, et chaque signature garde le texte de la signification au moment de la signature.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Audience" xml:space="preserve">
+    <value>Administrateurs de la signature électronique</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Immediate" xml:space="preserve">
+    <value>Enregistrer, activer et désactiver une signification</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1" xml:space="preserve">
+    <value>Cliquez sur «Filtrer», choisissez «Statut» ou «Utilisation» et cliquez sur «Appliquer».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step1Title" xml:space="preserve">
+    <value>Trouvez une signification</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2" xml:space="preserve">
+    <value>Cliquez sur «Nouvelle signification», saisissez le «Code interne» (2 à 32 caractères commençant par une majuscule : A–Z, 0–9, _), le «Nom affiché» dans les 7 langues et, si vous le souhaitez, un «Descriptif», puis cliquez sur «Enregistrer».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step2Title" xml:space="preserve">
+    <value>Ajoutez une signification</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3" xml:space="preserve">
+    <value>Cliquez sur «Modifier» sur une ligne ; une signification utilisée garde son code, et un changement de nom ne touche que les nouvelles signatures. Sans le droit de gérer les significations, la ligne propose «Afficher».</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step3Title" xml:space="preserve">
+    <value>Modifiez une signification</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4" xml:space="preserve">
+    <value>Utilisez l'interrupteur de la colonne «Statut» et confirmez avec «Activer» ou «Désactiver». Une signification désactivée ne peut plus être choisie pour de nouvelles signatures, et une signification utilisée par une ligne de politique ne peut pas être désactivée.</value>
+  </data>
+  <data name="Help.ESIGNMEANINGS.Step4Title" xml:space="preserve">
+    <value>Activez ou désactivez</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Purpose" xml:space="preserve">
+    <value>Examinez les nouveaux spécimens de signature en attente d'approbation lorsque la politique l'exige. Un spécimen approuvé devient le seul spécimen actif de son propriétaire, et chaque décision est conservée de façon permanente dans l'historique des décisions.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Audience" xml:space="preserve">
+    <value>Administrateurs de la signature électronique</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Immediate" xml:space="preserve">
+    <value>Approuver et refuser un spécimen</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1" xml:space="preserve">
+    <value>Cliquez sur «Filtrer», choisissez «Mode d'ajout» et cliquez sur «Appliquer».</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step1Title" xml:space="preserve">
+    <value>Affinez la file</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2" xml:space="preserve">
+    <value>Cliquez sur l'image de la colonne «Visuel» pour l'agrandir avec son propriétaire, sa date et son empreinte.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step2Title" xml:space="preserve">
+    <value>Vérifiez l'image</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3" xml:space="preserve">
+    <value>Cliquez sur «Approuver» et confirmez avec «Approuver» ; le spécimen actif précédent de l'utilisateur devient inactif.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step3Title" xml:space="preserve">
+    <value>Approuvez</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4" xml:space="preserve">
+    <value>Cliquez sur «Refuser», écrivez un «Motif» d'au moins 10 caractères et confirmez avec «Refuser» ; l'utilisateur voit le motif sur la page Ma signature.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step4Title" xml:space="preserve">
+    <value>Refusez</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5" xml:space="preserve">
+    <value>Pour votre propre spécimen, la ligne affiche «Un autre administrateur décide» à la place des boutons. Chaque décision apparaît dans l'«Historique des décisions» ci-dessous.</value>
+  </data>
+  <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
+    <value>Laissez votre propre spécimen</value>
+  </data>
 </root>

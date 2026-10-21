@@ -424,7 +424,7 @@
   <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>The lot is past its retest date; it cannot be used until a quality decision is made.</value></data>
   <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>The posting period is closed.</value></data>
   <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>The location is unknown or cannot be used.</value></data>
-  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>unknown user</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
   <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>Global SKU</value></data>
   <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>Local SKU</value></data>
   <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Finished good</value></data>
@@ -434,4 +434,25 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Analysis note updated</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>The note is locked while a decision on this record is awaiting approval or application.</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Note: {0} → {1} characters · Attachments: {2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>Available: {0} {1}</value></data>
+  <data name="Quarantine.BlockStock.All" xml:space="preserve"><value>All</value></data>
+  <data name="Quarantine.BlockStock.AllHint" xml:space="preserve"><value>Write the whole row amount</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Sample retained</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>All</value></data>
+  <data name="Quarantine.ManualHold.Action" xml:space="preserve"><value>Quarantine stock</value></data>
+  <data name="Quarantine.ManualHold.Warn" xml:space="preserve"><value>The chosen available stock moves to QUARANTINE and waits for a decision in the quarantine queue.</value></data>
+  <data name="Quarantine.ManualHold.Next" xml:space="preserve"><value>Continue</value></data>
+  <data name="Quarantine.ManualHold.ConfirmTitle" xml:space="preserve"><value>Quarantine this stock?</value></data>
+  <data name="Quarantine.ManualHold.Done" xml:space="preserve"><value>Quarantine record opened: {0}</value></data>
+  <data name="Quarantine.ManualHold.Help" xml:space="preserve"><value>Help</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Purpose" xml:space="preserve"><value>Quarantines hand-picked available stock for a quality decision (return, suspect product, complaint).</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Audience" xml:space="preserve"><value>Quality assurance and warehouse leads.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1Title" xml:space="preserve"><value>Choose the stock</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step1" xml:space="preserve"><value>Search the lot, pick its available row and the quantity; the quantity cannot exceed the row's stock.</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Confirm with a reason</value></data>
+  <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>The confirmation asks for a reason of at least 10 characters; the record then waits for a decision in the queue.</value></data>
+  <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
 </root>

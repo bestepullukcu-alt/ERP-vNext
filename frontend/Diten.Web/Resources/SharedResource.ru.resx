@@ -1177,6 +1177,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Политика подписи</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Значения подписи</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Одобрение образцов</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Сроки годности / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Готовность к отзыву</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>Панель FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Истекающие сроки</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Просроченный запас</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>Порядок FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Входящие исключения</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Карточка исключения</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Правила сроков годности и настройки</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Пакет доказательств</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Готовность к отзыву</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Прослеживание для отзыва</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Случаи отзыва</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Случай отзыва</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Планировщик учений по отзыву</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Пакет доказательств отзыва</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Настройки отзыва</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Планирование спроса</value></data>
 </root>

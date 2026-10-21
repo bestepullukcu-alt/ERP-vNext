@@ -38,6 +38,9 @@ public static class InventoryIndexConfiguration
                 new CreateIndexOptions { Name = "ix_tenant_le_item_postingdate" }),
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.LotId),
                 new CreateIndexOptions { Name = "ix_tenant_le_lot" }),
+            // MOD-0177 R2 (pack §8.9): the movements of one source document — production inputs of the recall trace, return candidates (R3).
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.SourceModule).Ascending(x => x.SourceDocumentId),
+                new CreateIndexOptions { Name = "ix_tenant_le_source_document" }),
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ToLocationId),
                 new CreateIndexOptions { Name = "ix_tenant_le_tolocation" }),
             // Additive to pack §4: GET /transactions?locationId matches either side, so the source side is indexed too.
