@@ -1381,8 +1381,9 @@ geliştirmesi başlamaz (§16.4).
 
 > Kaynak: yöneticinin isteği (2026-10-20) — Module Pack ve DCP, yazıldıktan sonra ve onaya gitmeden önce bağımsız
 > incelenir; tek seferde uygulanmaz. Tasarım ve Codex görüşleri: `docs/roadmap/plans/ct-apr-02-pack-review/DESIGN.md`.
-> Kural kaydı: `execution/approvals/POLICY-REVIEW-START.md`. Araçlar: `scripts/pack_approval.py`,
-> `scripts/prompt_gate.py`.
+> Kural kaydı: `execution/approvals/POLICY-REVIEW-START.md`; dağıtım kapısı (madde 8):
+> `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`. Araçlar: `scripts/pack_approval.py`, `scripts/prompt_gate.py`,
+> `scripts/acceptance_record.py`.
 
 **1. Ne zaman.** Kural başlangıcından sonra eklenen her onay satırı, paketin aynı sürümünün incelemesini ister. Tek
 istisna: değişen her satır muaftır (tarih alanı; `owner` / `reviewer` TBD'den dolduruldu; yalnız boşluk) ve hiçbir risk
@@ -1417,7 +1418,36 @@ almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız u
 **7. Üst üste PR'da merge sırası (GitHub).** Bir PR başka bir PR'ın dalı üstüne açıldıysa, alttaki merge edilince
 GitHub üstteki PR'ın onaylarını "taban değişti" diye düşürür (eski onay düşürme ayarı). Sıra: önce üstteki dal güncel
 main ile birleştirilir ("Update branch", merge commit), sonra son itişi yapmayan biri onaylar, onaydan hemen sonra
-"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167).
+"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167). Bir PR dalına
+itmeden önce PR'ın hâlâ açık olduğu ölçülür (`gh pr view <n> --json state`); merge edilmiş bir PR'ın dalına itilen commit
+main'e girmez. Ölçüm önce `git fetch origin` ile güncellenir ve itilen sabit SHA'ya bağlanır (PR durumu bir kilit
+değildir; itişten hemen önce yeniden okunur). Merge'den sonra dal başının main'de olduğu ölçülür (`git merge-base
+--is-ancestor <itilen SHA> origin/main`);
+değilse kalan commit'ler yeni bir PR'la gelir (2026-10-21, PR #176 → #182).
+
+**8. Dağıtım kapısı (S-5).** Kural kaydı `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`; başlangıç, dosyanın
+main'e girdiği ilk-üst commit'tir (dosya silinemez). Ürün WP'sinin her yeni dağıtımı — katı ya da eski her kuyrukta —
+Expected HEAD'deki paket sürümünün main'deki geçerli incelemesini ister (`prompt_gate.py check`; `--prepare` yalnız
+raporlar). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf uzaklıktaki incelenmiş sürümler; önce
+`reviews.tsv`'nin yalnız-ekleme geçmişi); olumlu kapsama yalnız bu sürümden ya da muaf uzaklıktaki bir sürümden gelir.
+Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırın kapsamı (`item`
+ve `module`) değişmeyen ve
+başlangıçtan bu yana hiç `active` dışına çıkmamış (kuyruk geçmişi dağıtılan commit'ten ve main'den, yan dallar dahil
+okunur; bir kez `REWORK` ya da `BLOCKED` olan korumayı geri kazanmaz) iş yalnız
+"inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
+kuyruğun (sce-mvp6) satırları hiç korunmaz; dağıtım yalnız `READY` / `REWORK`'ten başladığı için bu gerçek bir dağıtımı
+etkilemez. Başka sürümlerin olumsuzları yalnız bu sürümün, o olumsuzlardan SONRA gelen ve her birini bulgu özetinin ilk 8
+hanesiyle anan geçen bir kendi incelemesi varsa bilgiye düşer (koşullu; sahip onayı 2026-10-21); bozuk ya da sayılmayan
+bir inceleme satırı da kendi başına olumsuzdur ve adıyla anılmalıdır (özeti 64 hane değilse `reviews.tsv satır N`);
+adlar yalnız bulgu dosyasının `değerlendirilen olumsuz incelemeler: a, b` satırından, tam olarak okunur; yoksa hepsi
+durdurur. Kabulde olağan kapanış (`ACCEPTED`, `DONE`) korumayı düşürmez; kapandıktan sonra yeniden çalışmaya dönmek
+yeniden açılmadır. Kuyruk değişiklikleri squash edilmez (ara durumlar geçmişte kalmalı).
+Kabul edilmiş bir ENGEL, kabul edenin HIGH CT-APR-01 onay satırını ister. Bağlı paket sürümünde olumsuz varsa
+`acceptance_record.py check` kabulü reddeder; başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket
+sürümüne `module_pack` ile bağlanır ve bu sürüm hem CT-APR-01'le onaylı main sürümü hem de incelenmiş ya da korunan
+başlangıç sürümü olmalıdır. Bozuk `reviews.tsv` geçmişi satır geri eklenerek düzelmez; sahip kararı ister.
+Sığ depo reddedilir. CT-APR-01 onayı değişmez. ENGEL satırı kuralı, nedeni ve sonraki adımı söyler; kuraldan önce açılmış bir
+Control Tower oturumu main'i alır ve yeni oturum açar.
 
 ---
 
