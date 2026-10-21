@@ -831,7 +831,8 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
         elif classes.get(was) != PROTECT_CLASS or was in REOPENED_STATES:
             how = ("yeniden açılmış iş korunmaz" if was in REOPENED_STATES or classes.get(was) in REOPENED_CLASSES
                    else "yürüyen iş durumundan çıkmış iş korunmaz")
-            return False, (f"{wp} kural başlangıcından sonra {c[:9]}'de {was[:30]} oldu (sınıf {classes.get(was, 'yok')}) — "
+            return False, (f"{wp} kural başlangıcından bu yana okunan geçmişte {c[:9]}'de {was[:30]} durumunda (sınıf "
+                           f"{classes.get(was, 'yok')}; bu commit kural başlangıcının geçmişinde değil) — "
                            f"{how}, koruma geri kazanılamaz")
         if hits[0].get("module") != module or any(hits[0].get(k) != then.get(k) for k in SCOPE_COLUMNS):
             return False, f"{wp} satırının kapsamı ya da modülü {c[:9]}'de değişti — koruma geri kazanılamaz"
@@ -2069,7 +2070,7 @@ def self_test_dispatch_review(cases: list) -> None:
         commit(f"W-RE {to}", who=LEAD)
     cases.append(("sabotage S-5 Q7: a WP re-opened (REWORK) after the start and IN_PROGRESS again -> not protected -> "
                   "ENGEL 'geri kazanılamaz' naming the REWORK commit",
-                  has(eng5("W-RE", PK11, "IN_PROGRESS"), "REWORK oldu", "koruma geri kazanılamaz", "inceleme yok")))
+                  has(eng5("W-RE", PK11, "IN_PROGRESS"), "REWORK durumunda", "koruma geri kazanılamaz", "inceleme yok")))
     # F-1: REWORK and back on a side branch merged with --no-ff (no net change to the queue file) -> still seen
     flip = lambda wp, to: put(QP, re.sub(rf"{wp}\tiş\tMOD-0011\t\w+", f"{wp}\tiş\tMOD-0011\t{to}", get(QP)))
     g("checkout", "-q", "-b", "side-rework")
@@ -2080,7 +2081,7 @@ def self_test_dispatch_review(cases: list) -> None:
     g("merge", "-q", "--no-ff", "-m", "Merge side-rework", "side-rework", who=LEAD)
     cases.append(("sabotage S-5 Q7/F-1: REWORK and back on a side branch merged into main (TREESAME merge) -> not "
                   "protected -> ENGEL 'geri kazanılamaz'",
-                  has(eng5("W-SIDE", PK11, "IN_PROGRESS"), "REWORK oldu", "koruma geri kazanılamaz")))
+                  has(eng5("W-SIDE", PK11, "IN_PROGRESS"), "REWORK durumunda", "koruma geri kazanılamaz")))
     # F-2: the worker branch was cut before main recorded W-MAIN's REWORK and return -> main's history counts too
     worker = repo.head()
     for to in ("REWORK", "IN_PROGRESS"):
@@ -2090,14 +2091,14 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 Q7/F-2: dispatching a worker commit older than main's REWORK of the WP -> main's queue "
                   "history is read too -> ENGEL",
                   has(s5(check_approval_limit(p_main, repo, worker, False, q_for("W-MAIN", "IN_PROGRESS", "MOD-0011"))[0]),
-                      "REWORK oldu", "koruma geri kazanılamaz")))
+                      "REWORK durumunda", "koruma geri kazanılamaz")))
     # F-5: BLOCKED and back is not a re-opening, but it leaves running work -> stop, with that reason
     for to in ("BLOCKED", "IN_PROGRESS"):
         flip("W-BLK", to)
         commit(f"W-BLK {to}", who=LEAD)
     cases.append(("sabotage S-5 Q7/F-5: BLOCKED (not in the start vocabulary's active class) and back -> not protected, "
                   "the reason says it left running work (not 're-opened')",
-                  has(eng5("W-BLK", PK11, "IN_PROGRESS"), "BLOCKED oldu", "yürüyen iş durumundan çıkmış")))
+                  has(eng5("W-BLK", PK11, "IN_PROGRESS"), "BLOCKED durumunda", "yürüyen iş durumundan çıkmış")))
     # F-9: the closure on a CT branch while main changes ANOTHER row later; merged -> closed, still protected for the
     # acceptance (closing=True) — re-opening is an edge, never the order of commits
     pk11 = get(PK11).encode("utf-8")
