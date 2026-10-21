@@ -51,7 +51,7 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 |---|---|---|---|
 | A1 | Run Q358 in production: `Q358Retraction__Mode=DryRun` → read the log (`unknown` 0, `failed` 0) → `Apply` → remove the setting. Runbook on main | **Ali** (deploys) | **waiting — Ali 2026-10-20:** run it when production authorizations are updated; production is not in active use yet. 2026-10-21: Natig will notify when production authorizations are updated |
 | A2 | G7 clean-up on non-prod hosts with `DemandFixtures` enabled (same runbook, `G7Retraction`) | — | **closed — Ali 2026-10-20:** not needed on other servers |
-| A3 | Mark `mvp6-0190-0192-g7-role-grants-owner-decision-01.md` superseded (still says "IN EFFECT") | Ali | open |
+| A3 | Mark `mvp6-0190-0192-g7-role-grants-owner-decision-01.md` superseded (still says "IN EFFECT") | **Natig** (`ny@gmgroup.ch` — the record names Natig as owner; earlier rows said Ali) | supersession banner drafted 2026-10-21 (record text above it unchanged) — waits for Natig's approval |
 | A4 | Fix the account mapping in `mvp6-g7-grant-removal-01/REPORT.md` ("Ali (`bestepullukcu-alt`)" → Ali = `GMG-ERP`) — small docs PR | CT prepares, Beste merges | open |
 
 **B. Main reds (other owners; MVP-6 does not touch them, XMC-001)**
