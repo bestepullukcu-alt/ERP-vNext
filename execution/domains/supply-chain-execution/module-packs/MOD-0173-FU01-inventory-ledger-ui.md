@@ -798,6 +798,11 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
 - **Sekmeler (bulgu 3):** tema `nav-link`'i `capitalize` yapıyor (core.css, ortak); MVP-1 sekmeleri temanın `.text-none`'unu taşır.
 - **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
 
+**WP-MVP1-FIX-LIVE4 — FU-0173-REQ-COUNTER kapandı, FU-0173-PICKER-CODE ölçüldü (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live4` (MVP-1 ucu `c654429ca`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live4-evidence-2026-10-20.md`.
+- S-3 sayaç: bant gerekçe alanı yalnız bant isterken zorunlu ve doluluğu sınıfla yansıtılır (ortak sayaç yalnız açılışta görünen alanlara dinleyici bağlıyor, sonra yalnız `class` değişiminde sayıyor); bant açıkken 9 / 9'a ulaşılır, kapalıyken gerekçe sayılmaz. Form türü ve kaynak durumu banda geçer.
+- Ürün kodu araması: Web `q`'yu PRODUCT-MASTER `searchStockableItems`'a olduğu gibi geçirir (yerel filtre yok, Inventory yolda değil); sözleşme "kod ön eki ya da ad". GP koduyla bulunamama köprü (4010) / MDM tarafında — DUR-SOR (PM-LIVE sonrası yeniden ölçülecek).
+- **Sayılar:** Web 3962 / 3964 → 3967 / 3969 (yalnız 2 SafetyStock kırmızısı), Inventory 1335 + 4 (servis değişmedi), mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 4 / 4 sabotaj.
+
 
 ## 20. Follow-up Items
 

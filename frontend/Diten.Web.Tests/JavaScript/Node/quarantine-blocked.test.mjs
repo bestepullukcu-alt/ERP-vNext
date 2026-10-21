@@ -166,11 +166,26 @@ test('(2) a typed 50 stays 50 after the stock row (200 EA) is chosen; the row am
     assert.equal(p.seen.fieldErrors.qty, '');
 });
 
-test('(2) an empty quantity takes the row amount as a suggestion', async () => {
+// WP-MVP1-FIX-LIVE4 (FU-0175-BLOCK-QTY, G1 live run) CHANGES the expectation above it: choosing the row no longer suggests the row's amount
+// (the live 80 + a typed "10" became "8010"); the field stays empty, the amount is shown under it, "Tümü" writes it on purpose.
+test('(2) choosing a stock row leaves an empty quantity EMPTY — the row amount is only shown under the field', async () => {
     const p = await withStock();
     p.byId('qr-block-qty').value = '';
     await chooseRow(p);
+    assert.equal(p.byId('qr-block-qty').value, '');
+    assert.equal(p.byId('qr-block-available').textContent, 'Kullanılabilir: 200 EA');
+    assert.equal(p.byId('qr-block-all').disabled, false);
+    assert.equal(p.seen.fieldErrors.qty, '');
+});
+
+test('(2) "Tümü" writes the whole row amount — and only when clicked; typing then replaces it', async () => {
+    const p = await withStock();
+    await chooseRow(p);
+    await p.byId('qr-block-all').fire('click', {});
     assert.equal(p.byId('qr-block-qty').value, '200');
+    p.byId('qr-block-qty').value = '10';                                  // the reader's own value replaces the field (no append)
+    await chooseRow(p);
+    assert.equal(p.byId('qr-block-qty').value, '10');
 });
 
 test('(2) a quantity above the row amount is named at once and is NOT sent', async () => {

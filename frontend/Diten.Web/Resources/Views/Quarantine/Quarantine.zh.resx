@@ -435,6 +435,8 @@
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>此记录有待审批或待执行的决定时，备注已锁定。</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>备注：{0} → {1} 个字符 · 附件：{2} → {3}</value></data>
   <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>可用：{0} {1}</value></data>
+  <data name="Quarantine.BlockStock.All" xml:space="preserve"><value>全部</value></data>
+  <data name="Quarantine.BlockStock.AllHint" xml:space="preserve"><value>填入该行全部数量</value></data>
   <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>状态</value></data>
   <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>未结</value></data>
   <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>已关闭</value></data>
