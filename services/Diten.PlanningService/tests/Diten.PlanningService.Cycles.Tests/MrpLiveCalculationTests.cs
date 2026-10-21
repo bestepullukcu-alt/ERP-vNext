@@ -84,6 +84,56 @@ public sealed class MrpLiveCalculationTests
         Assert.Equal(2, sources.Demand.Reads);
     }
 
+    [Fact]
+    public async Task StockSnapshotInLaterWeek_StartsFromThatIsoWeek()
+    {
+        var sources = CreateSources();
+        sources.Stock.Value = sources.Stock.Value! with
+        {
+            AsOf = new DateTimeOffset(2026, 10, 27, 12, 0, 0, TimeSpan.Zero)
+        };
+
+        var result = await Run(sources);
+
+        Assert.Equal(MrpCalculationStatus.Found, result.Status);
+        Assert.NotNull(result.Plan);
+        Assert.Equal(51, result.Plan.Weeks.Count);
+        Assert.Equal(new DateOnly(2026, 10, 26), result.Plan.Weeks[0].WeekStart);
+        Assert.Equal(2, sources.Demand.Reads);
+        Assert.Equal(new DateOnly(2026, 10, 26), sources.LeadTime.LastHorizonStart);
+    }
+
+    [Fact]
+    public async Task StockSnapshotWithinFirstWeek_KeepsFirstIsoWeek()
+    {
+        var sources = CreateSources();
+        sources.Stock.Value = sources.Stock.Value! with
+        {
+            AsOf = new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero)
+        };
+
+        var result = await Run(sources);
+
+        Assert.Equal(MrpCalculationStatus.Found, result.Status);
+        Assert.Equal(new DateOnly(2026, 10, 19), result.Plan!.Weeks[0].WeekStart);
+        Assert.Equal(52, result.Plan.Weeks.Count);
+    }
+
+    [Fact]
+    public async Task StockSnapshotAfterPublishedHorizon_ProducesNoPlan()
+    {
+        var sources = CreateSources();
+        sources.Stock.Value = sources.Stock.Value! with
+        {
+            AsOf = new DateTimeOffset(2027, 10, 19, 12, 0, 0, TimeSpan.Zero)
+        };
+
+        var result = await Run(sources);
+
+        Assert.Equal(MrpCalculationStatus.Unavailable, result.Status);
+        Assert.Null(result.Plan);
+    }
+
     private Task<MrpCalculationResult> Run(Sources sources) =>
         sources.Service.CalculateAsync(_tenant, _company, "2026-Q4", _sku,
             _warehouse, CancellationToken.None);
@@ -101,7 +151,7 @@ public sealed class MrpLiveCalculationTests
         var stock = new StockReader
         {
             Value = new(_tenant, _company, _sku, _warehouse, "EA", 2m,
-                DateTimeOffset.UtcNow)
+                new DateTimeOffset(2026, 10, 19, 12, 0, 0, TimeSpan.Zero))
         };
         var leadTime = new LeadTimeReader
         {
@@ -151,8 +201,12 @@ public sealed class MrpLiveCalculationTests
     private sealed class LeadTimeReader : IMrpApprovedLeadTimeReader
     {
         public MrpApprovedLeadTime? Value { get; set; }
+        public DateOnly? LastHorizonStart { get; private set; }
         public Task<MrpApprovedLeadTime?> ReadAsync(Guid tenantId, Guid legalEntityId,
-            Guid skuId, Guid warehouseId, DateOnly start, DateOnly end, CancellationToken ct) =>
-            Task.FromResult(Value);
+            Guid skuId, Guid warehouseId, DateOnly start, DateOnly end, CancellationToken ct)
+        {
+            LastHorizonStart = start;
+            return Task.FromResult(Value);
+        }
     }
 }
