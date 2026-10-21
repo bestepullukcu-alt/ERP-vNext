@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:15881eec6141` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:2dc35e5b50fe` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -50,6 +50,7 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   paketinde yalnız P2 draft / reference-validation dilimi onaylıydı; bugünün izni paketin kendisinden okunur.)
 - Belgede iddia edilen uygulamayı ilgili kodla ve kanıtın kaydedildiği sürümle karşılaştır (`dosya:satır@commit`).
   Çalışma testi yapılmadıysa "çalışma testi yapılmadı" yaz; okumadan "doğru" deme.
+- Module pack'i (ya da DCP'yi) okurken bu paketin kendi yoluyla bağımsız inceleme kaydı olup olmadığını da oku (`execution/approvals/reviews.tsv`). Kayıt yoksa, paket eski de olsa yeni de olsa, bunu söyle ve pakette yeni iş başlamadan önce bağımsız inceleme öner (SOP §20.4); yalnız önerir, incelemeyi çalıştırmaz ve yazmaz.
 
 ## 4. Olmayan modül
 
@@ -71,6 +72,13 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   (SOP §17.1 r5); karmaşıklık modeli, risk incelemeyi belirler.
 - Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4); WP prompt'u `Kapsanan dilim` yazar ve paketin
   tamamını tek WP'ye vermez.
+- Geliştirici bağımsız inceleme sonucunu (bulgular + UYGUN / KOŞULLU / UYGUN DEĞİL) getirirse her bulguyu paket ve kodla kendin
+  karşılaştır: hangilerini kabul ettiğini, hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı) ve
+  incelemenin neyi kaçırdığını yaz; bulgu dosyasını ya da herhangi bir kaydı yazmadan önce sahibe sor.
+  İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.
+- Pack/DCP'yi `module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.
+- Sen karar verir, ölçer, denetlersin; işi devredersin. Kod işi için bağlı alt oturum aç, kapıdan geçmiş prompt'u
+  model ve effort'la ver, ilerlemesini izle; prompt'u sahibe taşıtma. Kendin yalnız küçük kayıt işi yaparsın.
 
 ## 6. Yanıt biçimi
 

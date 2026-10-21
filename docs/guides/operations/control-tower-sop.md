@@ -863,6 +863,8 @@ Default:
 - paralel işler ayrı Agent Lane + ayrı worktree + disjoint scope ile,
 - WIP artırımı CT tarafından risk gerekçesiyle yapılır.
 
+İş paketinin PR'ı merge edildikten sonra worktree'si, temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırılır; kaydedilmemiş değişikliği ya da main'de veya uzak dalda olmayan commit'i varsa kaldırılmaz, CT sahibe bildirir ve sorar.
+
 Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli değilse sırf paralellik için iş bölünmez.
 
 ---
@@ -1388,7 +1390,7 @@ karşılaştırılır; eski paketlere geriye dönük inceleme yoktur.
 
 **2. Kim inceler.** Geliştirici Codex'i ya da Claude'u seçer; inceleme, paketi yazan oturumdan ayrı bir oturumda yapılır.
 Model ve effort §17.1 r5 kuralıyla seçilir (zor bir bağımsız denetim için başlangıç profili Opus · high). Derinlik riske
-göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu.
+göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu. İnceleyici yerel depoyu göremeyebilir (Codex kendisine verilenle çalışır); inceleme isteği, inceleyicinin tam sürümü nasıl okuyacağını adlandırır: sabitlenmiş bir commit'teki itilmiş dal (PR yok) ya da dosyaların SHA-256'lı ZIP'i. İstem yerel worktree erişimi varsaymaz. İncelemeden önce paketi CT değil `module-pack-author` ajanı düzenler; CT'nin önceki incelemeye itirazları sonraki inceleme isteğine eklenir.
 
 **3. Kayıt.** Bulgu dosyası `docs/records/reviews/<kimlik>/<dosya>.md` (biçim: POLICY-REVIEW-START) commit edilir; satırı
 `python3 scripts/pack_approval.py review-row <paket> --findings <dosya> …` üretir ve `execution/approvals/reviews.tsv`'ye
@@ -1400,7 +1402,7 @@ satırı main'e başkasının merge'iyle gelmediyse onay geçmez. Sonradan eklen
 yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
 uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
 dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
-incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür.
+incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz.
 
 **5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
 main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz.
