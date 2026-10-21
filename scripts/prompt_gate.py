@@ -552,7 +552,15 @@ REVIEW_STEP = ("UYGUN DEĞİL ya da açık ENGEL varsa önce paketi düzelt; da�
                "`python3 scripts/pack_approval.py review-row {path} --findings <bulgu dosyası> …` ile üret ve main'e başka "
                "birinin merge'iyle al (SOP §20.4 madde 8)")
 SETTLE_STEP = ("olumsuzdan sonra yapılan ve {names} incelemesini adıyla değerlendiren yeni bir inceleme gerekir (bu sürümün "
-               "kendi incelemesi; bulgu dosyasında her olumsuz incelemenin bulgu özetinin ilk 8 hanesi geçmeli)")
+               "kendi incelemesi; bulgu dosyasında her olumsuz incelemenin bulgu özetinin ilk 8 hanesi, özeti 64 hane "
+               "olmayan satır için 'reviews.tsv satır N' geçmeli)")
+
+
+def neg_name(pa, r: dict) -> str:
+    """How a settling review names a negative row (Q2, F-3): the first 8 hex of its findings_sha256 when that is a
+    64-hex digest, else 'reviews.tsv satır N' — an empty, '-' or short digest is never a name every file contains."""
+    sha = r.get("findings_sha256") or ""
+    return sha[:8] if pa.HEX64.match(sha) else f"reviews.tsv satır {r['_n']}"
 TRAIL_STEP = ("inceleme dosyasının main geçmişi bozuk: {commits} satır sildi ya da yerini değiştirdi; bu commit geçmişte kalır, "
               "satırları sonradan geri eklemek bunu temizlemez — çözüm sahip kararı ister (ör. yeni bir kayıtlı başlangıç; "
               "SOP §20.4 madde 8)")
@@ -646,7 +654,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
     step = REVIEW_STEP.format(path=path)
     if others:
         negs = {r["_n"]: r for _m, rs in others for r in rs}.values()
-        names = ", ".join(sorted({r["findings_sha256"][:8] for r in negs}))
+        names = ", ".join(sorted({neg_name(pa, r) for r in negs}))
         if own_ok and settles(pa, root, main, [r for r in rows if r["target_sha256"] == digest], list(negs)):
             notes += [f"bilgi (bu sürümün sonraki kendi incelemesi {names} incelemesini adıyla değerlendirdi): {m}"
                       for m, _r in others]
@@ -660,7 +668,8 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
 def settles(pa, root: str, main: str, own_rows: list[dict], negs: list[dict]) -> bool:
     """Q2: one own (passing) review row whose commit descends from every negative row's commit (Codex Q2′: a malformed
     row is a negative of its own — _negative_rows — so one added later is never settled by an earlier evaluation) and
-    whose findings file (read at main) names every negative row by its findings_sha256's first 8 hex."""
+    whose findings file (read at main) names every negative row (neg_name: its findings_sha256's first 8 hex, or
+    'reviews.tsv satır N' when that is not a 64-hex digest)."""
     neg_commits = [pa.row_commit(root, main, r["_n"], pa.REVIEWS) for r in negs]
     for r in own_rows:
         c = pa.row_commit(root, main, r["_n"], pa.REVIEWS)
@@ -668,7 +677,7 @@ def settles(pa, root: str, main: str, own_rows: list[dict], negs: list[dict]) ->
             continue
         found = pa.read(root, main, r["findings"])
         lines = (found or b"").decode("utf-8", errors="replace").split("\n")
-        if all(any(n["findings_sha256"][:8] in l for l in lines) for n in negs):
+        if all(any(neg_name(pa, n) in l for l in lines) for n in negs):
             return True
     return False
 
@@ -705,15 +714,15 @@ REOPENED_STATES = ("READY", "REWORK")
 
 
 def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: str | None, q: dict | None,
-                       upto: str | None = None) -> tuple[bool, str]:
+                       tips: list[str] | None = None) -> tuple[bool, str]:
     """S-5 (3; F-2, F-4; owner decision 2026-10-21): (protected?, why). Read AT the start commit: the queue's registry row
     (by queue_id, else by path; the path unchanged), its vocabulary's state classes (ct-queue-states.tsv), and the WP's
     single queue row — its state's class is 'active' and its module names this pack's identity (ct_queue.pack_identity,
     as check_authority reads a row). The pack is byte-identical to its version there, the row's scope (SCOPE_COLUMNS:
     item, module; Q1) is unchanged now, and the row is not re-opened now (READY / REWORK, or a dispatchable / rework class).
-    Codex Q7: protection is never regained — every version of the queue file after the start up to `upto` (every commit
-    that touched it, merged branches included) shows this WP's single row in an 'active' state with the same module and
-    scope; one REWORK in between ends it. Anything not proven goes through the gate; the reason is always given."""
+    Codex Q7: protection is never regained — every version of the queue file after the start reachable from any of
+    `tips` (the dispatched commit AND main, F-2; `--full-history`, so a side branch merged back is read too, F-1) shows
+    this WP's single row in an 'active' state with the same module and scope; one REWORK or BLOCKED in between ends it. Anything not proven goes through the gate; the reason is always given."""
     q = q or {}
     qpath, qid, now = q.get("path"), q.get("queue_id"), q.get("row") or {}
     if not qpath or not wp:
@@ -773,9 +782,9 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
         return False, f"{wp} satırının bugünkü durumu ölçülemedi"
     if cur in REOPENED_STATES or classes.get(cur) in REOPENED_CLASSES:
         return False, f"{wp} yeniden açıldı (bugün {cur[:30]}) — yeni dağıtım sayılır"
-    if not upto:
+    if not tips:
         return False, f"{wp} satırının kural başlangıcından bu yana geçmişi ölçülemedi"
-    log = pa.git(root, "rev-list", "--reverse", f"{start}..{upto}", "--", qpath, ok_fail=True)
+    log = pa.git(root, "rev-list", "--full-history", "--reverse", *tips, f"^{start}", "--", qpath, ok_fail=True)
     if log is None:
         return False, f"{wp} satırının kural başlangıcından bu yana geçmişi okunamadı"
     for c in log.decode().split():
@@ -787,8 +796,10 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
             return False, f"{wp} {c[:9]}'de kuyrukta tek satır değildi — koruma geri kazanılamaz"
         was = hits[0].get("state", "")
         if classes.get(was) != PROTECT_CLASS or was in REOPENED_STATES:
+            how = ("yeniden açılmış iş korunmaz" if was in REOPENED_STATES or classes.get(was) in REOPENED_CLASSES
+                   else "yürüyen iş durumundan çıkmış iş korunmaz")
             return False, (f"{wp} kural başlangıcından sonra {c[:9]}'de {was[:30]} oldu (sınıf {classes.get(was, 'yok')}) — "
-                           "yeniden açılmış iş korunmaz, koruma geri kazanılamaz")
+                           f"{how}, koruma geri kazanılamaz")
         if hits[0].get("module") != module or any(hits[0].get(k) != then.get(k) for k in SCOPE_COLUMNS):
             return False, f"{wp} satırının kapsamı ya da modülü {c[:9]}'de değişti — koruma geri kazanılamaz"
     return True, f"{wp} kural başlangıcında {state} (sınıf {PROTECT_CLASS}), modülü bu paket ve paket o andaki sürümüyle aynı"
@@ -820,7 +831,7 @@ def check_dispatch_review(pa, p: dict, repo, commit: str, q: dict | None) -> tup
         data = pa.read(where, commit, path)
         if data is None:
             return [], []          # check_authority reports the missing pack
-        protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q, commit)
+        protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q, [commit, main])
         stops, cover, _notes, step, accepted = review_negatives(pa, where, main, commit, path, data)
         guard = [f"korunan iş de durur ({why})"] if protected else [f"koruma yok: {why}"]
         soft_notes = [f"dağıtım kapısı (S-5): {n} ({path})" for n in _notes if n.startswith("bilgi")]
@@ -1905,14 +1916,14 @@ def self_test_dispatch_review(cases: list) -> None:
 
     n = [0]
 
-    def review(path, verdict, findings, blockers, text=None, model="claude-opus-5-5"):
+    def review(path, verdict, findings, blockers, text=None, model="claude-opus-5-5", fsha=None):
         """A findings file for the pack's current version (or `text`) and its review row, on a branch merged by another
         person."""
         def change():
             digest = sha256((text if text is not None else get(path)).encode("utf-8"))
             rel = f"docs/records/reviews/t/{n[0]:02d}-{digest[:8]}.md"
             put(rel, f"# İnceleme\n\nhedef: {path} @ {digest}\n\n" + "".join(l + "\n" for l in findings))
-            row = "\t".join([path, digest, rel, sha256(get(rel).encode("utf-8")), verdict, str(blockers), "claude",
+            row = "\t".join([path, digest, rel, fsha if fsha is not None else sha256(get(rel).encode("utf-8")), verdict, str(blockers), "claude",
                              model, "high", "rs-1", "K4", "as-1", "dev", "2026-10-21"])
             put(pa.REVIEWS, get(pa.REVIEWS) + row + "\n")
             out.append(sha256(get(rel).encode("utf-8"))[:8])
@@ -1932,7 +1943,8 @@ def self_test_dispatch_review(cases: list) -> None:
     rows = [("W-RUN", 1, "IN_PROGRESS"), ("W-BOOK", 11, "IN_PROGRESS"), ("W-NEW", 1, "READY"), ("W-OLD", 1, "DISCOVERED"), ("W-RUN2", 2, "VERIFYING"),
             ("W-DUP", 1, "IN_PROGRESS"), ("W-DUP", 1, "IN_PROGRESS"), ("W-LATE", 1, "READY"), ("W-X", 3, "READY"),
             ("W-RUN4", 4, "IN_PROGRESS"), ("W-RUN5", 5, "INTEGRATED"), ("W-6", 6, "READY"), ("W-7", 7, "READY"),
-            ("W-8", 8, "READY"), ("W-9", 9, "READY"), ("W-10", 10, "READY"), ("W-12", 12, "READY"), ("W-RE", 11, "IN_PROGRESS")]
+            ("W-8", 8, "READY"), ("W-9", 9, "READY"), ("W-10", 10, "READY"), ("W-12", 12, "READY"), ("W-RE", 11, "IN_PROGRESS"),
+            ("W-SIDE", 11, "IN_PROGRESS"), ("W-MAIN", 11, "IN_PROGRESS"), ("W-BLK", 11, "IN_PROGRESS")]
     put(QP, "id\titem\tmodule\tstate\towner\tsince\trecord\n"
         + "".join(f"{w}\tiş\tMOD-{k:04d}\t{s}\tCT\t2026-10-01\t-\n" for w, k, s in rows))
     put(pa.APPROVALS, "\t".join(pa.APPROVAL_COLUMNS) + "\n")
@@ -2024,6 +2036,34 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 Q7: a WP re-opened (REWORK) after the start and IN_PROGRESS again -> not protected -> "
                   "ENGEL 'geri kazanılamaz' naming the REWORK commit",
                   has(eng5("W-RE", PK11, "IN_PROGRESS"), "REWORK oldu", "koruma geri kazanılamaz", "inceleme yok")))
+    # F-1: REWORK and back on a side branch merged with --no-ff (no net change to the queue file) -> still seen
+    flip = lambda wp, to: put(QP, re.sub(rf"{wp}\tiş\tMOD-0011\t\w+", f"{wp}\tiş\tMOD-0011\t{to}", get(QP)))
+    g("checkout", "-q", "-b", "side-rework")
+    for to in ("REWORK", "IN_PROGRESS"):
+        flip("W-SIDE", to)
+        commit(f"W-SIDE {to}")
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge side-rework", "side-rework", who=LEAD)
+    cases.append(("sabotage S-5 Q7/F-1: REWORK and back on a side branch merged into main (TREESAME merge) -> not "
+                  "protected -> ENGEL 'geri kazanılamaz'",
+                  has(eng5("W-SIDE", PK11, "IN_PROGRESS"), "REWORK oldu", "koruma geri kazanılamaz")))
+    # F-2: the worker branch was cut before main recorded W-MAIN's REWORK and return -> main's history counts too
+    worker = repo.head()
+    for to in ("REWORK", "IN_PROGRESS"):
+        flip("W-MAIN", to)
+        commit(f"W-MAIN {to}", who=LEAD)
+    p_main = {"task_class": "ürün", "authority": PK11, "wp": "W-MAIN", "slices": None}
+    cases.append(("sabotage S-5 Q7/F-2: dispatching a worker commit older than main's REWORK of the WP -> main's queue "
+                  "history is read too -> ENGEL",
+                  has(s5(check_approval_limit(p_main, repo, worker, False, q_for("W-MAIN", "IN_PROGRESS", "MOD-0011"))[0]),
+                      "REWORK oldu", "koruma geri kazanılamaz")))
+    # F-5: BLOCKED and back is not a re-opening, but it leaves running work -> stop, with that reason
+    for to in ("BLOCKED", "IN_PROGRESS"):
+        flip("W-BLK", to)
+        commit(f"W-BLK {to}", who=LEAD)
+    cases.append(("sabotage S-5 Q7/F-5: BLOCKED (not in the start vocabulary's active class) and back -> not protected, "
+                  "the reason says it left running work (not 're-opened')",
+                  has(eng5("W-BLK", PK11, "IN_PROGRESS"), "BLOCKED oldu", "yürüyen iş durumundan çıkmış")))
     cases.append(("sabotage S-5 F-7: a duplicate WP id in the queue at the start -> not protected -> ENGEL naming it",
                   has(eng5("W-DUP", now="IN_PROGRESS"), "yinelenen")))
     review(PK4, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
@@ -2095,6 +2135,17 @@ def self_test_dispatch_review(cases: list) -> None:
     e, i = lim("W-7", PK7)
     cases.append(("S-5 Q2′: a still later own UYGUN naming the negative AND the malformed row -> BİLGİ again",
                   not s5(e) and has(s5(i), "bilgi", "model boş")))
+    # F-3: a malformed row whose findings_sha256 is '-' must be named by its row number, never by a prefix every file has
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0, text=ver(7), model="-", fsha="-")
+    dash_n = len(get(pa.REVIEWS).rstrip("\n").split("\n"))
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz incelemeler: {neg7}, {bad7}"], 0)
+    cases.append(("sabotage S-5 Q2′/F-3: a malformed row with findings_sha256 '-'; a later own UYGUN naming only the other "
+                  "negatives -> still ENGEL, the step names 'reviews.tsv satır N'",
+                  has(eng5("W-7", PK7), f"inceleme satır {dash_n}: model boş", f"reviews.tsv satır {dash_n} incelemesini")))
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -",
+                          f"değerlendirilen olumsuz incelemeler: {neg7}, {bad7}, reviews.tsv satır {dash_n}"], 0)
+    e, i = lim("W-7", PK7)
+    cases.append(("S-5 Q2′/F-3: naming the '-' row as 'reviews.tsv satır N' settles it -> BİLGİ", not s5(e) and has(s5(i), "bilgi")))
     # Q2 temporal: X9 = Y9 + a date; X9's own UYGUN comes first, Y9's UYGUN DEĞİL later -> the older own UYGUN settles
     # nothing; a later own UYGUN that does not name it settles nothing; a later one naming it settles
     y9 = get(PK9)

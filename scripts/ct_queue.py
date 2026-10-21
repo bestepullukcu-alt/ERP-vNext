@@ -794,20 +794,34 @@ def summarize(cur: Table, vocab: dict[str, dict], queue: dict, checked: dict | N
 
 
 RECORD_AT = re.compile(r"^([^@\s]+)@([0-9a-f]{7,40})$")
-KUNYE_COMMIT = re.compile(r"(?m)^commit:[ \t]*([0-9a-f]{40})[ \t]*$")
+COMMIT_ID = re.compile(r"^[0-9a-f]{7,40}$")
+_KUNYE_READER: dict = {}
+
+
+def kunye_commit(text: str) -> str | None:
+    """The künye's `commit` as acceptance_record reads it (its strict_front_matter, imported, never a second reader:
+    CRLF, '--- ', 7–40 hex); None when the record has no such field."""
+    if "ar" not in _KUNYE_READER:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("acceptance_record", ROOT / "scripts" / "acceptance_record.py")
+        _KUNYE_READER["ar"] = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_KUNYE_READER["ar"])
+    value = _KUNYE_READER["ar"].strict_front_matter(text)[0].get("commit", "")
+    return value if COMMIT_ID.match(value) else None
 
 
 def in_main(commit: str, main_ref: str = MAIN_REF) -> bool:
     return git("merge-base", "--is-ancestor", commit, main_ref).returncode == 0
 
 
-def accepted_not_in_main(cur: Table, vocab: dict[str, dict], read_at=None, merged=None) -> dict:
+def accepted_not_in_main(cur: Table, vocab: dict[str, dict], read_at=None, merged=None, kunye=None) -> dict:
     """S-12 (CT-SETUP-TEST-01, K-2): a WARNING, never a gate — acceptance is not a merge (SOP §29.5). Every row in a
     'closed' state whose record is path@commit: the record's commit and the code commit its künye names (`commit:`, 40
-    hex, in the front matter) must both be in main; otherwise the row is listed. A closed row whose record is not
+    hex, read by acceptance_record's own künye reader) must both be in main; otherwise the row is listed. A closed row whose record is not
     path@commit, or whose record has no künye commit, is counted as not measured (legacy DONE rows)."""
     read_at = read_at or git_file
     merged = merged or in_main
+    kunye = kunye or kunye_commit
     out = {"missing": [], "unmeasured": 0}
     id_i, st_i, rec_i = cur.index("id"), cur.index("state"), cur.index("record")
     for row in cur.rows:
@@ -821,16 +835,15 @@ def accepted_not_in_main(cur: Table, vocab: dict[str, dict], read_at=None, merge
         why = [] if merged(at) else [f"kabul kaydı commit'i {at[:9]} main'de değil"]
         data = read_at(at, path)
         text = data.decode("utf-8", errors="replace") if data is not None else None
-        front = text[4:].split("\n---", 1)[0] if text is not None and text.startswith("---\n") else ""
-        code = KUNYE_COMMIT.search(front)
+        code = kunye(text) if text is not None else None
         if text is None:
             why.append(f"kabul kaydı {path[:60]}@{at[:9]} okunamadı")
         elif code is None:
             if not why:
                 out["unmeasured"] += 1
                 continue
-        elif not merged(code.group(1)):
-            why.append(f"kabul edilen kod commit'i {code.group(1)[:9]} main'de değil")
+        elif not merged(code):
+            why.append(f"kabul edilen kod commit'i {code[:9]} main'de değil")
         if why:
             out["missing"].append({"id": row[id_i] if id_i is not None else "?", "why": why})
     return out
@@ -1526,7 +1539,8 @@ def self_test() -> int:
     # S-12: closed rows whose acceptance record or accepted code commit is not in main -> listed (a warning)
     kun = lambda c: f"---\nformat: x\ncommit: {c}\n---\n# kayıt\nbody commit: {'e' * 40}\n".encode()
     files = {("a" * 9, "docs/r1.md"): kun("c" * 40), ("b" * 9, "docs/r2.md"): kun("d" * 40),
-             ("a" * 9, "docs/r3.md"): ("# not a künye\ncommit: " + "d" * 40 + "\n").encode()}
+             ("a" * 9, "docs/r3.md"): ("# not a künye\ncommit: " + "d" * 40 + "\n").encode(),
+             ("a" * 9, "docs/r4.md"): ("---\r\nformat: x\r\ncommit: " + "f" * 12 + "\r\n--- \r\n# kayıt\r\n").encode()}
     in_m = {"a" * 9, "c" * 40}
     acc = Table(header + "\n" + "\n".join([
         "A1\tMOD-0183 x\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
@@ -1534,19 +1548,23 @@ def self_test() -> int:
         "A3\tMOD-0183 z\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
         "A4\tlegacy\tDONE\tCT\t-\t-\t2026-10-01\towner action",
         "A5\tnot künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r3.md@" + "a" * 9,
-        "A6\trunning\tIN-PROGRESS\tCT\t-\t-\t2026-10-01\tdocs/r2.md@" + "b" * 9]) + "\n")
+        "A6\trunning\tIN-PROGRESS\tCT\t-\t-\t2026-10-01\tdocs/r2.md@" + "b" * 9,
+        "A7\tCRLF künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r4.md@" + "a" * 9]) + "\n")
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     s_late = summary_lines(summarize(acc, vocab, queue) | {"accepted_not_in_main": late})
     cases.append(("sabotage S-12: a closed row whose acceptance record and accepted code commit are not in main -> UYARI "
                   "naming both; record and code in main -> nothing; a non-künye or free-text record -> 'ölçülmedi'; a "
                   "running row is not read; a 'commit:' line outside the front matter is never the künye's",
-                  [x["id"] for x in late["missing"]] == ["A2"] and late["unmeasured"] == 2
-                  and any("KABUL EDİLDİ AMA MAIN'DE YOK 1" in l and "bbbbbbbbb main'de değil" in l and "ddddddddd main'de değil" in l
+                  [x["id"] for x in late["missing"]] == ["A2", "A7"] and late["unmeasured"] == 2
+                  and late["missing"][1]["why"] == ["kabul edilen kod commit'i fffffffff main'de değil"]
+                  and any("KABUL EDİLDİ AMA MAIN'DE YOK 2" in l and "bbbbbbbbb main'de değil" in l and "ddddddddd main'de değil" in l
                           for l in s_late) and any("KAPANMIŞ 2" in l for l in s_late)))
     in_m.add("b" * 9)
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     cases.append(("sabotage S-12: the record merged but the accepted code commit never reached main (the ABB case) -> UYARI "
-                  "naming the code commit", [x["why"] for x in late["missing"]] == [["kabul edilen kod commit'i ddddddddd main'de değil"]]))
+                  "naming the code commit; a CRLF künye with '--- ' and a 12-hex commit is read like acceptance_record "
+                  "reads it (F-4)", [x["why"] for x in late["missing"]] == [["kabul edilen kod commit'i ddddddddd main'de değil"],
+                                                                          ["kabul edilen kod commit'i fffffffff main'de değil"]]))
 
     own = write_calls(Path(__file__).read_text(encoding="utf-8"))
     planted = write_calls("from pathlib import Path\nPath('q.tsv').write_text('x')\nopen('q.tsv', 'a')\nopen('q.tsv')\n")

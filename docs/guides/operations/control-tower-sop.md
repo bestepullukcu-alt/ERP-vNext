@@ -1430,12 +1430,14 @@ raporlar). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf 
 `reviews.tsv`'nin yalnız-ekleme geçmişi); olumlu kapsama yalnız bu sürümden ya da muaf uzaklıktaki bir sürümden gelir.
 Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırın kapsamı (`item`
 ve `module`) değişmeyen ve
-başlangıçtan bu yana hiç yeniden açılmamış (kuyruk geçmişinde bir kez `REWORK` olan korumayı geri kazanmaz) iş yalnız
+başlangıçtan bu yana hiç `active` dışına çıkmamış (kuyruk geçmişi dağıtılan commit'ten ve main'den, yan dallar dahil
+okunur; bir kez `REWORK` ya da `BLOCKED` olan korumayı geri kazanmaz) iş yalnız
 "inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
 kuyruğun (sce-mvp6) satırları hiç korunmaz; dağıtım yalnız `READY` / `REWORK`'ten başladığı için bu gerçek bir dağıtımı
 etkilemez. Başka sürümlerin olumsuzları yalnız bu sürümün, o olumsuzlardan SONRA gelen ve her birini bulgu özetinin ilk 8
 hanesiyle anan geçen bir kendi incelemesi varsa bilgiye düşer (koşullu; sahip onayı 2026-10-21); bozuk ya da sayılmayan
-bir inceleme satırı da kendi başına olumsuzdur ve adıyla anılmalıdır; yoksa hepsi durdurur.
+bir inceleme satırı da kendi başına olumsuzdur ve adıyla anılmalıdır (özeti 64 hane değilse `reviews.tsv satır N`);
+yoksa hepsi durdurur.
 Kabul edilmiş bir ENGEL, kabul edenin HIGH CT-APR-01 onay satırını ister. Bağlı paket sürümünde olumsuz varsa
 `acceptance_record.py check` kabulü reddeder; başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket
 sürümüne `module_pack` ile bağlanır ve bu sürüm hem CT-APR-01'le onaylı main sürümü hem de incelenmiş ya da korunan

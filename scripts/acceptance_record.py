@@ -423,7 +423,7 @@ def start_protected(pa, pg, root: str, start: str, main: str, queue: str | None,
     if len(rows) != 1:
         return False, f"{wp} main'deki kuyrukta tek satır değil"
     return pg.dispatch_protected(pa, root, start, path, pdata, wp,
-                                 {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))}, main)
+                                 {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))}, [main])
 
 
 def s5_line(start: str, reason: str, step: str | None, path: str | None) -> str:
