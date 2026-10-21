@@ -54,6 +54,10 @@ soruda token harcar.
   soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
   çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında tam yolu ve SHA-256'sı yazılır.
+- **Dış istek (S-30):** başka bir ekipten istek gelince CT (1) her isteği sınıflandırır (modül, kimin kararı, mevcut
+  paketi etkiliyor mu), (2) her soruya önerilen cevabı **sohbette** gösterir — yalnız itiraz listesi yetmez, (3) isteyene
+  gidecek mesajı kod bloğunda hazırlar; doğrulama gereken yerleri (ör. QPPV, başka modül sahibi) işaretler. Mesajı
+  kendisi göndermez; kimin ileteceğini sorar. Kuyruğa yazmak ayrı onaydır.
 - **Teslim dosyalarının yeri (S-29):** başkasına gidecek ZIP ve benzeri dosyalar oturumun geçici klasörüne değil,
   CT worktree'sinde git'in izlemediği kalıcı bir klasöre yazılır (`.ct-teslim/<iş>/`; worktree'de `.git` bir dosyadır, hariç tutma `$(git rev-parse --git-common-dir)/info/exclude`'a yazılır);
   oturum kapanınca kaybolmaz, depoya da girmez.
@@ -105,6 +109,9 @@ soruda token harcar.
      eski mutlak yolları kullanma; hedefte `AGENTS.md` ve bu kartı yeniden oku.
   İlk yanıtın ilk satırı ölçülmüş durumdur: geçildiyse `Klasör: <hedef> | Dal: … | HEAD: …`; geçilemediyse
   `Klasör: <ana> (hedef: <yol>, geçilmedi) | Dal: … | HEAD: …`.
+- [ ] **İş takip sayfası (CT-TRK-01, pilot PVG):** block'un sayfası yoksa ilk durum değerlendirmesinden ya da ilk paket /
+  karar commit'inden sonra CT önerir ve `sayfa-ac` ile açar (SOP §22.2/2a); varsa her kabul, prompt ve karardan sonra
+  günceller. Bağlantı SOP §22.2/8'deki yere yazılır.
 - [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
   "tamamlanamadı" der (çıkış 2).
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
