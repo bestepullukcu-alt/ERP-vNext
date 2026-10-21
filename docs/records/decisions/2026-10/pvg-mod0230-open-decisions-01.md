@@ -1,6 +1,6 @@
 ---
 decision_id: PVG-MOD0230-OPEN-DECISIONS-01
-status: proposed — sahip 10/10 "Evet" işaretledi (2026-10-21, sohbette "2 — hepsine evet"); OD-PVG-4, 5, 8, 10 tam karar; OD-PVG-1, 2, 3, 6, 7, 9 PVG tarafı karar, diğer sahiplerin onayı bekliyor (taslak, commit edilmedi)
+status: proposed — sahip 10/10 "Evet" işaretledi (2026-10-21, sohbette "2 — hepsine evet"); OD-PVG-4, 5, 8, 10 tam karar; OD-PVG-1, 2, 3, 6, 7, 9 PVG tarafı karar, diğer sahiplerin onayı bekliyor (ilk commit 4fe62fdc3; bu parantez 2026-10-21'de düzeltildi — ilk sürüm yanlışlıkla "taslak, commit edilmedi" diyordu)
 prepared_at_local: 2026-10-21
 prepared_by: PVG Control Tower (Claude Code oturumu); bu kayıt kendi adına karar vermez
 decided_by: depo sahibi (rol) — her satırda "Sahip işareti" alanı; kişi adı ve e-posta yazılmaz

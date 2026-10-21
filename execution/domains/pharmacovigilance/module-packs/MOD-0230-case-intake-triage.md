@@ -6,6 +6,7 @@ service: Diten.PvgService
 service_port: 5011
 shell: tenant
 golden_reference: compact
+data_mode: server
 entity_base: EntityBase
 status: ready-for-dev
 build_gate: open
@@ -101,7 +102,7 @@ the delivery slice that owns it.
 |---|---|---|---|
 | G-1 | No JWT validation in PvgService | `Program.cs` registers routing and the PVG host only; no authentication middleware. PvgService projects reference only their own projects; no `*.csproj` references `Diten.Platform.Common`. | DL-4 |
 | G-2 | Tenant and actor come from request headers | `PvgCaseIntakeTriageEndpoints.cs` reads `X-Diten-Tenant-Context`, `X-Diten-Actor-Id`, `X-Diten-Actor-Kind`. The Gateway resolves the tenant into `X-Tenant-Id` (`gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs`) and neither writes nor strips `X-Diten-*`. The MVC proxy fills both headers from the session token, but a caller that reaches the Gateway or the service directly chooses its own tenant and actor. `multi-tenancy.md` names `X-Tenant-Id` via `TenantResolutionMiddleware` as the single tenant source, and `security-jwt.md` requires it to match the token's tenant claim. | DL-4 |
-| G-3 | Permission keys differ from this pack | The service checks `pvg.mod0230.intake.{read,create,update,triage,route}` (`PvgIntakeDraftApplicationService.cs` lines 7-11), pinned by `PvgApplicationContractShapeTests.cs`. This pack proposes `pvg.case-intake-triage.*`. Neither family exists in `Diten.AuthService` or `Diten.Web`. | DL-6 |
+| G-3 | Permission keys differ from this pack | The service checks `pvg.mod0230.intake.{read,create,update,triage,route}` (`PvgIntakeDraftApplicationService.cs` lines 7-11), pinned by `PvgApplicationContractShapeTests.cs`. This pack proposes `pvg.case-intake-triage.*`. Neither family exists in `Diten.AuthService` or `Diten.Web`. Target family selected 2026-10-21 on the PVG side (OD-PVG-1): `pvg.case-intake-triage.*`; not applied until MOD-0018 / AuthService approves catalog-grant ownership and the `pvg.*` namespace. | DL-6 |
 | G-4 | MVC controller carries `[Authorize]` only | `PharmacovigilanceCaseIntakeTriageController.cs`: class-level `[Authorize]`, zero `[HasPermission]` across its 10 actions; `Index`, `Create`, `Edit`, `Details` return views without a permission check (UAS-001 gap). | DL-7 |
 | G-5 | No audit write | Mutations return a `PvgAuditIntent` built after the store write; the application service has no audit sink or outbox dependency; the host registers none; the API response drops the intent. `tests/architecture/audit-ledger/Diten.PvgService.md` records no trace and lists the four MOD-0230 write commands as known debt. | DL-5 |
 | G-6 | Startup is not fail-closed for missing dependencies | `PvgServiceApiRuntimeOptions.ThrowIfUnsafe()` checks two flags only; the four ports and the store are registered only when `Pvg:Runtime:UseNonProductionAdapters` is true; `/health/ready` reports flags, not dependencies. E3 B3: production-like + `Pvg:Runtime:OperationalRuntimeAuthorized=true` + no adapters -> host starts, `/health/ready` 200, list call with full headers -> HTTP 500 with empty body. Test `Production_like_authorized_startup_does_not_register_non_production_adapters` asserts the five missing registrations as success. | DL-3 |
@@ -112,7 +113,7 @@ the delivery slice that owns it.
 | G-11 | Backend layout differs from Golden Reference | Code: `Application/RegPvBase/*` with one `PvgIntakeDraftApplicationService`; commands `CreateIntakeDraftCommand`, `UpdateIntakeDraftCommand`, `TriageIntakeDraftCommand`, `RouteIntakeDraftCommand`; queries `GetIntakeDraftListQuery`, `GetIntakeDraftByIdQuery`; no `Features/` folder; no `*Handler` classes; no MediatR. | DL-2 |
 | G-12 | Port-conformance names are not in code | `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md` is committed and defines C-01 ... C-17 against `PvgStaticFieldPolicy`, `PvgStaticTransitionGate`, `PvgPendingEvidenceStore`, `IPvgSafetyPartnerAdapter`, `PvgPortResult`, `AddRegPvBasePorts`, and key `Pvg:RegPvBase:UseNonProductionAdapters`; none occurs in `services/Diten.PvgService` (`git grep`, 0 files) and no test names a C-id. Code uses `DenyAll*` adapters, a fourth port `IPvgPermissionGate` not in the document, and `Pvg:Runtime:*` keys. | DL-1 |
 | G-13 | Port 5011 | Not in the `AGENTS.md` §3 table; `AGENTS.md` lists 5011 (`PvgService`) among ports in use awaiting an Enterprise Architecture decision. `.claude/launch.json` entry `web-verify` starts Diten.Web on 5011, so both cannot run locally on defaults. | DL-3 |
-| G-14 | DataTable verifier gaps | `python3 .antigravity/scripts/verify_datatable_page.py . --area Pharmacovigilance --module CaseIntakeTriage --reference compact --api-profile proxy --format gaps` printed 18 gaps: data mode undeclared; old skeleton instead of `_TableSkeleton`; `_Filter` and `_IndexL10n` partial includes not found; form view model not found under `frontend/Diten.Web/Models`; the remaining 13 items (bulk delete, export, import, select-all, reload-with-toast and clear-selection wiring) are tied to bulk / export features this pack excludes. | DL-7 |
+| G-14 | DataTable verifier gaps | `python3 .antigravity/scripts/verify_datatable_page.py . --area Pharmacovigilance --module CaseIntakeTriage --reference compact --api-profile proxy --format gaps` printed 18 gaps: data mode undeclared; old skeleton instead of `_TableSkeleton`; `_Filter` and `_IndexL10n` partial includes not found; form view model not found under `frontend/Diten.Web/Models`; the remaining 13 items (bulk delete, export, import, select-all, reload-with-toast and clear-selection wiring) are tied to bulk / export features this pack excludes. Since this revision the frontmatter declares `data_mode: server` (OD-PVG-8); re-run after this edit (2026-10-21) still prints 18 gaps - the data-mode item names `_DataTable.cshtml`, which carries no `data-dt-data-mode` attribute yet (DL-7). | DL-7 |
 | G-15 | No concurrency check on update | `InMemoryPvgIntakeDraftRepository.ReplaceAsync` overwrites without a version check (last write wins). | DL-2 |
 
 Gateway note: route-level `AuthenticationOptions` is absent on most routes by repo norm; the Gateway applies
@@ -122,21 +123,26 @@ gap is on the service side (G-1, G-2), not in the route entries.
 
 ## Open Decisions (Owner Decision Pending)
 
-Every row below is **"Açık karar - sahip kararı bekler"**. Each carries one recommended option with its reason. This
-pack does not decide them; the dependent acceptance criteria stay open until the owner's answer is recorded here.
+The owner marked all ten rows "Evet" (yes) on 2026-10-21, adopting the recommended option of every row. Record:
+`docs/records/decisions/2026-10/pvg-mod0230-open-decisions-01.md@4fe62fdc3`. The last column states the result. Four
+rows are fully decided (OD-PVG-4, OD-PVG-5, OD-PVG-8, OD-PVG-10). Six rows are decided on the PVG side only and wait
+for another owner's approval named in that column (OD-PVG-1, OD-PVG-2, OD-PVG-3, OD-PVG-6, OD-PVG-7, OD-PVG-9); they
+are not actionable until that approval is recorded, and the acceptance criteria that depend on them stay open. This
+section records decisions only: it is not the version-bound pack approval row (CT-APR-01 / CT-APR-02), not another
+module owner's approval, and it does not open the operational runtime gate.
 
-| ID | Decision | Facts | Recommended option (proposal only) | Who decides |
-|---|---|---|---|---|
-| OD-PVG-1 | Single permission-key family | G-3. No key of either family is seeded, granted, emitted in a JWT, or enforced by a shipped `[HasPermission]`, so neither is "published" under PKS-001 §2. The `pvg.*` namespace is not yet listed in PKS-001 §4. | Adopt `pvg.case-intake-triage.{read,create,update,triage,route}`; change the five service constants and the shape test (DL-6); no alias is needed because no key is published. `triage` and `route` are registered here as PKS-001 Tier-3 actions. Reason: PKS-001 §1 makes the middle segment a resource, not a module ID (module code is not a permission namespace); the name matches the Gateway route family and MVC route; cost is five constants and one test. | PVG paket sahibi; MOD-0018 owner confirms catalog / grant ownership and the `pvg.*` namespace |
-| OD-PVG-2 | Gateway-service tenant / actor context contract | G-1, G-2 | The service validates the JWT itself (issuer / audience as for other tenant services), takes the actor from the validated subject claim, takes the tenant from `X-Tenant-Id` as written by the Gateway and requires it to equal the token's tenant claim; `X-Diten-Tenant-Context` and `X-Diten-Actor-*` stop being authoritative and are ignored. Reason: one tenant source per `multi-tenancy.md`, claim match per `security-jwt.md`, and no change to Gateway code outside the route family (protected). | PVG paket sahibi with Enterprise Architecture; MOD-0018 owner for claim names |
-| OD-PVG-3 | Error-model mapping | G-8 | Not-found and cross-tenant -> 404 with a safe reason code and no record data; missing or invalid token -> 401; permission denied -> 403; missing tenant context -> 400; validation -> 400; duplicate, workflow-blocked, evidence-blocked, concurrency conflict -> 409; unexpected failure -> 500 with a non-empty safe envelope. Reason: matches `multi-tenancy.md`, `security-jwt.md`, and "Failure Path to Verify". | PVG paket sahibi; MOD-0041 / Ops for the regulated envelope |
-| OD-PVG-4 | Backend file convention | G-11 | Record the `Application/RegPvBase/*` application-service layout as a documented deviation (technical debt) for slice 1; do not rename. Reason: PvgService does not use MediatR; renaming the four commands would add new names to the audit ledger's known-debt list, which may only shrink (AUD-001); the API and RegPvBase suites pin the current names. Revisit when DL-5 lands. | PVG paket sahibi |
-| OD-PVG-5 | Form of startup fail-closed | G-6 | When the host is production-like, refuse to start unless every constructor dependency of `PvgIntakeDraftApplicationService` resolves (checked during service registration or provider build); in every environment `/health/ready` returns 503 when a required port or the store is missing. Reason: refusal at start is the strongest form and matches the two existing flag refusals; the readiness check covers non-production hosts. | PVG paket sahibi; startup policy approval also sits in "Required Approval Gates" |
-| OD-PVG-6 | Binding the operational-runtime flag to evidence | G-7 | Until the operational runtime authorization row is approved, `Pvg:Runtime:OperationalRuntimeAuthorized=true` is set only inside tests; a static CI scan fails when any committed configuration, launch profile, workflow, or deployment file sets it. When runtime is later approved, the host also requires a configured reference to that approval row. Reason: a flag cannot prove approval; the scan is cheap and measurable now. | PVG paket sahibi with Enterprise Architecture |
-| OD-PVG-7 | Port allocation | G-13 | Enterprise Architecture allocates 5011 to `Diten.PvgService` in the `AGENTS.md` §3 table, and the `web-verify` entry in `.claude/launch.json` moves to another port. Reason: 5011 is already in `Program.cs`, the four Gateway routes, domain-config (OD-7), and DCP-004; moving `web-verify` touches one local launch entry. | Enterprise Architecture; repo owner for `.claude/launch.json` |
-| OD-PVG-8 | `data_mode` for the list | G-14; the list endpoint is server-paged (`pageNumber`, `pageSize`); intake records are unbounded. | `data_mode: server` in the frontmatter (next pack revision) and `data-dt-data-mode="server"` on the table. Reason: `module-pack-standard.md` §3 maps an unbounded entity list to `server`. | PVG paket sahibi |
-| OD-PVG-9 | Audit write path for K2-class commands | G-5. AUD-001 §4.3 K2: for GxP records, no audit record means no operation. AUD-001 §5 K4: PVG has no audit trace; new write commands are blocked until the shared forwarder package exists. | Wait for the K4 shared forwarder (path `b`) and the MOD-0021 owner contract, then deliver DL-5; until then, keep every MOD-0230 mutation unable to succeed outside tests (deny-all permission gate). Reason: path `a` is Platform-only and copying the MDM forwarder is forbidden by AUD-001 §5. | Control Tower (K4 package); MOD-0021 owner; PVG paket sahibi |
-| OD-PVG-10 | Verifier items tied to excluded features | G-14 | Record the bulk-delete, export, import, select-all, and related wiring items as a "known deviation" for this module (they contradict the permanent exclusions); fix the other five items in DL-7. Reason: the list-screen touch protocol requires an owner answer; the exclusions are owner decisions already recorded in this pack. | PVG paket sahibi |
+| ID | Decision | Facts | Recommended option | Who decides | Owner decision (2026-10-21) |
+|---|---|---|---|---|---|
+| OD-PVG-1 | Single permission-key family | G-3. No key of either family is seeded, granted, emitted in a JWT, or enforced by a shipped `[HasPermission]`, so neither is "published" under PKS-001 §2. The `pvg.*` namespace is not yet listed in PKS-001 §4. | Adopt `pvg.case-intake-triage.{read,create,update,triage,route}`; change the five service constants and the shape test (DL-6); no alias is needed because no key is published. `triage` and `route` are registered here as PKS-001 Tier-3 actions. Reason: PKS-001 §1 makes the middle segment a resource, not a module ID (module code is not a permission namespace); the name matches the Gateway route family and MVC route; cost is five constants and one test. | PVG paket sahibi; MOD-0018 owner confirms catalog / grant ownership and the `pvg.*` namespace | PVG side decided 2026-10-21 (owner): target family `pvg.case-intake-triage.*`; awaiting MOD-0018 / AuthService approval of catalog-grant ownership and the `pvg.*` namespace - not actionable until then. |
+| OD-PVG-2 | Gateway-service tenant / actor context contract | G-1, G-2 | The service validates the JWT itself (issuer / audience as for other tenant services), takes the actor from the validated subject claim, takes the tenant from `X-Tenant-Id` as written by the Gateway and requires it to equal the token's tenant claim; `X-Diten-Tenant-Context` and `X-Diten-Actor-*` stop being authoritative and are ignored. Reason: one tenant source per `multi-tenancy.md`, claim match per `security-jwt.md`, and no change to Gateway code outside the route family (protected). | PVG paket sahibi with Enterprise Architecture; MOD-0018 owner for claim names | PVG side decided 2026-10-21 (owner); awaiting Enterprise Architecture approval of the contract and MOD-0018 owner approval of the claim names - not actionable until then. |
+| OD-PVG-3 | Error-model mapping | G-8 | Not-found and cross-tenant -> 404 with a safe reason code and no record data; missing or invalid token -> 401; permission denied -> 403; missing tenant context -> 400; validation -> 400; duplicate, workflow-blocked, evidence-blocked, concurrency conflict -> 409; unexpected failure -> 500 with a non-empty safe envelope. Reason: matches `multi-tenancy.md`, `security-jwt.md`, and "Failure Path to Verify". | PVG paket sahibi; MOD-0041 / Ops for the regulated envelope | PVG side decided 2026-10-21 (owner): status-code mapping decided; awaiting MOD-0041 / Ops approval of the regulated error envelope - not actionable until then. |
+| OD-PVG-4 | Backend file convention | G-11 | Record the `Application/RegPvBase/*` application-service layout as a documented deviation (technical debt) for slice 1; do not rename. Reason: PvgService does not use MediatR; renaming the four commands would add new names to the audit ledger's known-debt list, which may only shrink (AUD-001); the API and RegPvBase suites pin the current names. Revisit when DL-5 lands. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. |
+| OD-PVG-5 | Form of startup fail-closed | G-6 | When the host is production-like, refuse to start unless every constructor dependency of `PvgIntakeDraftApplicationService` resolves (checked during service registration or provider build); in every environment `/health/ready` returns 503 when a required port or the store is missing. Reason: refusal at start is the strongest form and matches the two existing flag refusals; the readiness check covers non-production hosts. | PVG paket sahibi; startup policy approval also sits in "Required Approval Gates" | Decided 2026-10-21 (owner): recommended option adopted. |
+| OD-PVG-6 | Binding the operational-runtime flag to evidence | G-7 | Until the operational runtime authorization row is approved, `Pvg:Runtime:OperationalRuntimeAuthorized=true` is set only inside tests; a static CI scan fails when any committed configuration, launch profile, workflow, or deployment file sets it. When runtime is later approved, the host also requires a configured reference to that approval row. Reason: a flag cannot prove approval; the scan is cheap and measurable now. | PVG paket sahibi with Enterprise Architecture | PVG side decided 2026-10-21 (owner): CI scan decided; awaiting Enterprise Architecture approval of how the flag binds to the approval row - not actionable until then. |
+| OD-PVG-7 | Port allocation | G-13 | Enterprise Architecture allocates 5011 to `Diten.PvgService` in the `AGENTS.md` §3 table, and the `web-verify` entry in `.claude/launch.json` moves to another port. Reason: 5011 is already in `Program.cs`, the four Gateway routes, domain-config (OD-7), and DCP-004; moving `web-verify` touches one local launch entry. | Enterprise Architecture; repo owner for `.claude/launch.json` | PVG side decided 2026-10-21 (owner): PVG takes the request to Enterprise Architecture; awaiting the Enterprise Architecture port-allocation decision - not actionable until then. The `.claude/launch.json` change is a separate repo-owner approval; this decision does not give it. |
+| OD-PVG-8 | `data_mode` for the list | G-14; the list endpoint is server-paged (`pageNumber`, `pageSize`); intake records are unbounded. | `data_mode: server` in the frontmatter (declared there since this revision) and `data-dt-data-mode="server"` on the table (DL-7). Reason: `module-pack-standard.md` §3 maps an unbounded entity list to `server`. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. |
+| OD-PVG-9 | Audit write path for K2-class commands | G-5. AUD-001 §4.3 K2: for GxP records, no audit record means no operation. AUD-001 §5 K4: PVG has no audit trace; new write commands are blocked until the shared forwarder package exists. | Wait for the K4 shared forwarder (path `b`) and the MOD-0021 owner contract, then deliver DL-5; until then, keep every MOD-0230 mutation unable to succeed outside tests (deny-all permission gate). Reason: path `a` is Platform-only and copying the MDM forwarder is forbidden by AUD-001 §5. | Control Tower (K4 package); MOD-0021 owner; PVG paket sahibi | PVG side decided 2026-10-21 (owner); awaiting the Control Tower K4 shared forwarder package and the MOD-0021 owner contract - not actionable until then; the deny-all permission gate stays. |
+| OD-PVG-10 | Verifier items tied to excluded features | G-14 | Record the bulk-delete, export, import, select-all, and related wiring items as a "known deviation" for this module (they contradict the permanent exclusions); fix the other five items in DL-7. Reason: the list-screen touch protocol requires an owner answer; the exclusions are owner decisions already recorded in this pack. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. |
 
 ## Module Summary
 
@@ -423,6 +429,7 @@ contract unless the owner explicitly approves the named artifact/version and sup
   `web-verify` entry in `.claude/launch.json` also binds 5011, so only one of them can run on defaults; this pack
   makes no claim that 5011 is free.
 - **Operational runtime gate.** Port allocation in `AGENTS.md` §3 is required (OD-PVG-7, "Required Approval Gates").
+  OD-PVG-7: PVG side decided 2026-10-21; awaiting the Enterprise Architecture allocation decision.
   Until then the port decision blocks operational runtime only; it does not stop build/test work.
 - **Appsettings.** No `appsettings*.json` or `launchSettings.json` exists for PvgService today. Approved
   `appsettings*.json` content must be service-local, local/dev/CI scoped, and minimum necessary. It may carry
@@ -437,13 +444,17 @@ Today (G-6): a production-like host with `Pvg:Runtime:OperationalRuntimeAuthoriz
 `/health/ready` returns 200, and a list call with full headers returns HTTP 500 with an empty body (E3 B3). The
 existing test treats the missing registrations as success.
 
-Measurable acceptance (BG-8), in either of these two forms (choice: OD-PVG-5):
+Measurable acceptance (BG-8). Form decided by OD-PVG-5 (owner, 2026-10-21; recommended option adopted). Both parts
+are binding:
 
-1. The host refuses to start (exception during service registration or provider build, non-zero process exit) when
-   any constructor dependency of `PvgIntakeDraftApplicationService` - field security, workflow gate, evidence link,
-   permission gate, intake store - is not registered; **or**
-2. `/health/ready` returns a non-200 status (503) naming only safe dependency codes, **and** every business endpoint
-   returns a safe, non-empty error envelope with a non-500 status and a reason code, never an empty-body 500.
+1. **Production-like host:** the host refuses to start (exception during service registration or provider build,
+   non-zero process exit) when any constructor dependency of `PvgIntakeDraftApplicationService` - field security,
+   workflow gate, evidence link, permission gate, intake store - does not resolve; **and**
+2. **Every environment:** `/health/ready` returns 503, naming only safe dependency codes, when a required port or the
+   intake store is missing.
+
+An empty-body 500 from a business endpoint stays unacceptable in every environment ("Audit / Workflow / Evidence /
+Trace / Error Requirements").
 
 Test rules:
 
@@ -466,7 +477,7 @@ Applies to the build/test code now and to any later runtime.
 - Tenant context must be server-resolved. Today it is not: the service reads `X-Diten-Tenant-Context` from the
   request (G-2). The Gateway writes the resolved tenant into `X-Tenant-Id` and leaves `X-Diten-*` untouched, so a
   client header is authoritative today. Closing this is a pre-runtime requirement and a build-gate gap owned by DL-4
-  (contract: OD-PVG-2).
+  (contract: OD-PVG-2; PVG side decided 2026-10-21, awaiting Enterprise Architecture and MOD-0018 claim names).
 - Client payloads, query strings, route values, or headers must not supply authoritative `TenantId` or actor identity.
 - Cross-tenant reads must return safe 404/empty/not-found style behavior with no existence leak (today: 409, G-8).
 - Cross-tenant mutations must deny before mutation and must not disclose the target tenant, object existence, or raw
@@ -510,8 +521,8 @@ MOD-0230 is a tenant/domain operational workflow surface, not a platform-admin c
 - MVC route: `/Pharmacovigilance/CaseIntakeTriage`, served by `PharmacovigilanceCaseIntakeTriageController`
   (`[Route("Pharmacovigilance/CaseIntakeTriage")]`).
 - View root: `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**`.
-- Every controller action carries `[HasPermission("<key>")]` with a key of the family chosen in OD-PVG-1, in
-  addition to `[Authorize]`. Today the controller carries `[Authorize]` only (G-4).
+- Every controller action carries `[HasPermission("<key>")]` with a key of the family chosen in OD-PVG-1 (target
+  `pvg.case-intake-triage.*`; not applied until MOD-0018 / AuthService approval), in addition to `[Authorize]`. Today the controller carries `[Authorize]` only (G-4).
 - UAS-001: a user without the read permission receives no page skeleton of this module (no DataTable, form, or filter
   markup) and is not redirected into the module; the shared unauthorized response applies.
 - Frontend API profile: same-origin MVC proxy. Browser JavaScript calls the MVC proxy surface, never the Gateway
@@ -566,11 +577,13 @@ with commands `CreateCaseIntakeTriageCommand`, `UpdateCaseIntakeTriageCommand`, 
 `RouteCaseIntakeTriageCommand`, queries `GetCaseIntakeTriageListQuery`, `GetCaseIntakeTriageByIdQuery`, handlers
 `*Handler`, validators `*Validator`.
 
-**Open decision OD-PVG-4 (owner decision pending):** record the measured layout as a documented deviation for slice 1,
-or migrate to the Golden Reference shape. Recommended: record the deviation; see "Open Decisions (Owner Decision
-Pending)" for the reason.
+**Decision OD-PVG-4 (owner, 2026-10-21; recommended option adopted):** the measured `Application/RegPvBase/*`
+application-service layout is a **documented deviation (technical debt) from the Golden Reference for slice 1**. The
+four commands, the two queries, and the application service are not renamed; the Golden Reference shape above stays
+recorded as the reference, not as a slice 1 requirement. Revisit when DL-5 lands. Reason: see "Open Decisions (Owner
+Decision Pending)".
 
-Rules that hold under either answer:
+Rules that hold regardless of the deviation:
 
 - **Out of slice 1:** archive, void, and any export command.
 - Permanently forbidden: delete and bulk-delete commands, DELETE endpoints, and bulk-delete endpoints.
@@ -578,7 +591,8 @@ Rules that hold under either answer:
 
 ## Frontend File Contract
 
-`golden_reference: compact` · `data_mode`: not declared (OD-PVG-8; recommended `server`)
+`golden_reference: compact` · `data_mode: server` (OD-PVG-8, decided 2026-10-21; the table attribute
+`data-dt-data-mode="server"` is DL-7 work)
 
 The create/edit field count is 16, so MOD-0230 follows Golden Reference Compact:
 
@@ -593,10 +607,11 @@ The create/edit field count is 16, so MOD-0230 follows Golden Reference Compact:
 
 Compact must not include Slim-only `_CreateEditOffcanvas.cshtml` or `_DetailsQuickView.cshtml`.
 
-DataTable verifier (G-14): 18 gaps at `ce3be60cf`. Five are real gaps for DL-7 (data mode, `_TableSkeleton`, the
-`_Filter` and `_IndexL10n` partial includes, form view model). The rest concern bulk delete, export, import,
-select-all, and their wiring, which this pack permanently excludes; recording them as a known deviation is
-OD-PVG-10 (list-screen touch protocol: owner answer required, no silent fix and no silent skip).
+DataTable verifier (G-14): 18 gaps at `ce3be60cf`. Five are real gaps fixed in DL-7 (data mode, `_TableSkeleton`,
+the `_Filter` and `_IndexL10n` partial includes, form view model). The other 13 concern bulk delete, export, import,
+select-all, and their wiring (reload-with-toast, clear-selection), which this pack permanently excludes; by OD-PVG-10
+(owner, 2026-10-21) they are recorded as this module's **known deviation** (list-screen touch protocol answered: no
+silent fix and no silent skip).
 
 Frontend API calls use the same-origin MVC proxy profile. Direct browser-to-Gateway calls and direct service-port calls
 are forbidden for this regulated tenant surface.
@@ -664,7 +679,8 @@ expectation proving unauthorized, cross-tenant, missing-policy, and masking-deni
 ## Failure Path to Verify
 
 Each path lists the required behaviour and, where measured, today's behaviour (E3, 2026-10-20). Status codes follow
-OD-PVG-3 once decided.
+OD-PVG-3 (PVG side decided 2026-10-21; awaiting MOD-0041 / Ops approval of the regulated error envelope - not applied
+until then).
 
 - **Missing required intake field**
   - Expected: 400 validation response; no intake record created. Today: 400 - but returned before the permission
@@ -699,7 +715,8 @@ OD-PVG-3 once decided.
   - Expected: regulated mutation not committed; result not `Succeeded`; store unchanged (AUD-001 K2). Today: no audit
     write exists (G-5).
 - **Required dependency missing at startup**
-  - Expected: host refuses to start, or readiness non-200 and business endpoints return a safe non-empty error.
+  - Expected (OD-PVG-5, decided 2026-10-21): a production-like host refuses to start; in every environment readiness
+    returns 503 with safe dependency codes; no business endpoint returns an empty-body 500.
     Today: ready 200 and HTTP 500 with empty body (G-6).
 - **Correlation/trace context missing**
   - Expected: regulated request blocked with a safe reason code; no untraceable regulated state change. Today: blocked
@@ -710,8 +727,10 @@ OD-PVG-3 once decided.
 ## Authorization Convention
 
 **Fact (G-3):** the service checks `pvg.mod0230.intake.{read,create,update,triage,route}` today; this pack proposes
-`pvg.case-intake-triage.*`. The single key family is **Open Decision OD-PVG-1** ("Açık karar - sahip kararı bekler";
-recommended: `pvg.case-intake-triage.*`). Every key list below is a **proposal** until that decision is recorded.
+`pvg.case-intake-triage.*`. The single key family is **OD-PVG-1**: PVG side decided 2026-10-21 (owner) - target family
+`pvg.case-intake-triage.*`; awaiting MOD-0018 / AuthService approval of catalog-grant ownership and the `pvg.*`
+namespace. Until that approval is recorded the keys below are the implementation target only and are not applied
+(DL-6 does not start).
 Catalog, seed, and grant ownership stay with MOD-0018 / AuthService; MOD-0230 only defines and consumes keys.
 
 Policy and enforcement (PKS-001 format, tenant shell):
@@ -723,7 +742,7 @@ Policy and enforcement (PKS-001 format, tenant shell):
 - Actor types: tenant_user (UI), system integration actor (approved intake contract only); platform_admin has no
   special access to PHI fields without MOD-0019 policy.
 
-Permission keys - **proposal** (pending OD-PVG-1):
+Permission keys - **target** (OD-PVG-1 PVG side decided; not applied until MOD-0018 / AuthService approval):
 
 ```text
 pvg.case-intake-triage.read
@@ -757,7 +776,7 @@ Initial role / permission matrix - **proposal** (not approved; MOD-0018 owner ap
 
 Open authorization decisions:
 
-- Key family: OD-PVG-1.
+- Key family: OD-PVG-1 - PVG side decided (`pvg.case-intake-triage.*`); awaiting MOD-0018 / AuthService.
 - Final actor role names, actor type mapping, and seed/grant ownership require MOD-0018 / AuthService approval.
 - Archive permission is unusable until retention/legal-hold policy is approved.
 - PHI/PII field-level authorization must align with MOD-0019 before runtime.
@@ -775,7 +794,9 @@ These four commands predate that rule (commit `0860632f1`, 2026-08-16); this pac
 All four are **K2 class** (GxP regulated safety record, PHI-bearing): if the audit record cannot be written, the
 command must fail (AUD-001 §4.3). No fail-closed path exists today. Mutations cannot succeed outside tests only because
 the deny-all permission gate denies every call; any change that lets a MOD-0230 mutation succeed before DL-5 lands
-breaks K2. Path and event names are **Open Decision OD-PVG-9**; event names below are proposals.
+breaks K2. Path: **OD-PVG-9** - PVG side decided 2026-10-21 (owner): wait for the K4 shared forwarder (path `b`)
+and the MOD-0021 owner contract, keep the deny-all permission gate until then; not actionable until both exist.
+Event names below are proposals.
 
 | Command | Event name (proposal) | Object (type) | Path | Before/after or changed fields | Exception class + reason |
 |---|---|---|---|---|---|
@@ -862,7 +883,8 @@ acceptance record.
       `scripts/pack_approval.py check` exit 1 (measured 2026-10-21). Requires an independent review with no open
       blocking finding and an approval by someone other than the author.
 - [x] `service` resolved to `Diten.PvgService` (OD-7).
-- [ ] Port 5011 allocated in `AGENTS.md` §3 - open (OD-PVG-7).
+- [ ] Port 5011 allocated in `AGENTS.md` §3 - open (OD-PVG-7: PVG side decided 2026-10-21; awaiting the Enterprise
+      Architecture allocation decision; the `.claude/launch.json` change needs the repo owner's separate approval).
 - [x] Three consumption ports exist with deny-by-default adapters (`DenyAllFieldSecurityPolicy`,
       `DenyAllWorkflowTransitionGate`, `DenyAllEvidenceLinkPort`), plus a fourth `DenyAllPermissionGate`.
 - [ ] Port conformance suite C-01 ... C-17 mapped to tests - not mapped (G-12).
@@ -879,35 +901,48 @@ command or test shows the stated result. Items that depend on an open decision c
 
 - [ ] BG-1 (DL-7) - Every `.cshtml` under `Views/Pharmacovigilance/CaseIntakeTriage/` that renders a page sets
       `Layout = "_LayoutTenantShell";` (`grep -L` over `Index`, `Create`, `Edit`, `Details` prints nothing).
-- [ ] BG-2 (DL-7; after OD-PVG-1) - `PharmacovigilanceCaseIntakeTriageController` carries `[HasPermission("<key>")]`
-      on 10 of 10 actions, every key from the chosen family.
+- [ ] BG-2 (DL-7; after OD-PVG-1 and MOD-0018 / AuthService approval of catalog-grant and the `pvg.*` namespace) -
+      `PharmacovigilanceCaseIntakeTriageController` carries `[HasPermission("<key>")]` on 10 of 10 actions, every key
+      from the target family `pvg.case-intake-triage.*` (not applied until that approval).
 - [ ] BG-3 (DL-7) - UAS-001: a signed-in tenant user without the read key requesting
       `/Pharmacovigilance/CaseIntakeTriage` receives the shared unauthorized response; the body contains no
       `dt-pvg-case-intake-triage` table, form, or filter markup; a named test proves it.
-- [ ] BG-4 (DL-6; after OD-PVG-1) - `git grep -n "pvg\." -- services/Diten.PvgService/src` shows one key family only,
-      the shape test pins the same family, and "Authorization Convention" lists the same strings.
-- [ ] BG-5 (DL-4; after OD-PVG-2) - No bearer or an invalid bearer -> 401; a caller-supplied `X-Diten-Tenant-Context`
+- [ ] BG-4 (DL-6; after OD-PVG-1 and MOD-0018 / AuthService approval of catalog-grant and the `pvg.*` namespace) -
+      `git grep -n "pvg\." -- services/Diten.PvgService/src` shows one key family only - target
+      `pvg.case-intake-triage.*` - the shape test pins the same family, and "Authorization Convention" lists the same
+      strings.
+- [ ] BG-5 (DL-4; after OD-PVG-2 and Enterprise Architecture approval of the contract and MOD-0018 approval of the
+      claim names) - No bearer or an invalid bearer -> 401; a caller-supplied `X-Diten-Tenant-Context`
       or `X-Diten-Actor-Id` that differs from validated context has no effect (test reads no data of the injected
       tenant); tenant header and token tenant claim mismatch -> denied.
-- [ ] BG-6 (DL-4; after OD-PVG-3) - Unknown id and cross-tenant id -> 404 with no record data; no endpoint returns an
-      empty-body 500; tests in `Diten.PvgService.Api.Tests`.
+- [ ] BG-6 (DL-4; after OD-PVG-3 and MOD-0041 / Ops approval of the regulated error envelope) - Target mapping:
+      unknown id and cross-tenant id -> 404 with no record data; missing or invalid token -> 401; permission denied ->
+      403; missing tenant context and validation -> 400; duplicate, workflow-blocked, evidence-blocked, concurrency
+      conflict -> 409; unexpected failure -> 500 with a non-empty safe envelope; no endpoint returns an empty-body 500;
+      tests in `Diten.PvgService.Api.Tests`. Not applied until that approval.
 - [ ] BG-7 (DL-4) - An unauthorized caller with an invalid body receives the context / permission outcome, never a
       validation reason code (test).
-- [ ] BG-8 (DL-3; form per OD-PVG-5) - "Startup Fail-Closed Requirements" holds; removing one required registration
-      turns a named test red.
+- [ ] BG-8 (DL-3; form decided by OD-PVG-5, 2026-10-21) - "Startup Fail-Closed Requirements" holds: a production-like
+      host refuses to start when a dependency of `PvgIntakeDraftApplicationService` does not resolve, and in every
+      environment `/health/ready` returns 503 when a required port or the store is missing; removing one required
+      registration turns a named test red.
 - [ ] BG-9 (DL-3) - A static test fails if any committed `appsettings*.json`, launch profile, workflow, or deployment
       file sets `Pvg:Runtime:OperationalRuntimeAuthorized` to `true` or sets `Pvg:Runtime:UseNonProductionAdapters`
       for a production-like environment.
-- [ ] BG-10 (DL-3; after OD-PVG-6) - A production-like start with `Pvg:Runtime:OperationalRuntimeAuthorized=true` is
+- [ ] BG-10 (DL-3; after OD-PVG-6 and Enterprise Architecture approval of the binding form) - A production-like start with `Pvg:Runtime:OperationalRuntimeAuthorized=true` is
       refused unless the approval-evidence binding is satisfied; a test proves the refusal.
-- [ ] BG-11 (DL-5; after OD-PVG-9) - No MOD-0230 mutation succeeds without its audit record written in the same unit
+- [ ] BG-11 (DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract) -
+      No MOD-0230 mutation succeeds without its audit record written in the same unit
       of work; with the audit writer forced to fail, the result is not `Succeeded` and the store is unchanged (test);
       the ledger's known-debt list shrinks by the audited commands.
 - [ ] BG-12 (DL-2) - Update on a stale version returns 409 (test).
 - [ ] BG-13 (DL-2) - No Mongo driver reference in PvgService under the build/test gate (existing architecture tests
       stay green).
-- [ ] BG-14 (DL-7; after OD-PVG-8, OD-PVG-10) - The DataTable verifier shows no gap other than those recorded as
-      known deviations.
+- [ ] BG-14 (DL-7; OD-PVG-8 and OD-PVG-10 decided 2026-10-21) - The DataTable verifier shows no gap other than the
+      recorded known deviation: the 13 items tied to bulk delete, export, import, select-all, and their wiring
+      (reload-with-toast, clear-selection) (G-14, OD-PVG-10). The other five - data mode (`data-dt-data-mode="server"`
+      on the table), `_TableSkeleton`, the `_Filter` and `_IndexL10n` partial includes, form view model - are fixed in
+      DL-7. Open: the verifier still prints 18 gaps (2026-10-21).
 - [ ] BG-15 (DL-7) - The seven `CaseIntakeTriageIndex.*.resx` files exist and carry the same key set.
 - [ ] BG-16 (DL-8) - `ocelot.json` holds exactly the four MOD-0230 route entries and no archive, export, delete, or
       bulk-delete route.
@@ -1089,19 +1124,22 @@ Behaviour that the suites must cover (each with at least one named test):
 - [ ] Blueprint MOD-0040 / TRACE-BUNDLE - **open**; local correlation header check only. Corrected 2026-10-21 from "resolved".
 - [ ] MOD-0041 observability / regulated error model - **open** (G-6, G-8).
 - [x] `service` resolved to `Diten.PvgService`.
-- [ ] Port allocated in `AGENTS.md` §3 - **open** (OD-PVG-7); 5011 is a proposal.
+- [ ] Port allocated in `AGENTS.md` §3 - **open** (OD-PVG-7: PVG side decided 2026-10-21; awaiting Enterprise
+      Architecture); 5011 is a proposal.
 - [x] `shell` resolved as `tenant`.
 - [x] `entity_base` recorded as `EntityBase` for the dedicated PVG service boundary.
 - [x] Create/edit user-entered fields defined and marked required/optional.
 - [x] PHI/PII/sensitive-field matrix recorded for every intake field.
 - [x] `form_field_count` recorded as `16`; `golden_reference` recorded as `compact`.
-- [ ] `data_mode` declared - **open** (OD-PVG-8).
+- [x] `data_mode` declared - `server` in the frontmatter (OD-PVG-8, decided 2026-10-21).
 - [x] Validation rules recorded (max lengths, cross-field rules, planned index decisions, fail-closed behaviour).
 - [x] Option-set ownership recorded for intake, source, reporter, seriousness, priority, triage outcome, and route queue.
-- [ ] Permission-key family and actor/role matrix approved - **open** (OD-PVG-1; MOD-0018 owner). Corrected
-      2026-10-21 from "approved".
-- [ ] Backend File Convention matches Golden Reference - **open**; measured deviation (G-11, OD-PVG-4).
-- [ ] Audited Events table covers every write command with a path - table present; no path exists (OD-PVG-9).
+- [ ] Permission-key family and actor/role matrix approved - **open** (OD-PVG-1: PVG side decided
+      `pvg.case-intake-triage.*` 2026-10-21; MOD-0018 owner approval pending). Corrected 2026-10-21 from "approved".
+- [ ] Backend File Convention matches Golden Reference - **no**; the measured deviation (G-11) is a documented
+      deviation (technical debt) for slice 1 by owner decision OD-PVG-4 (2026-10-21).
+- [ ] Audited Events table covers every write command with a path - table present; no path exists (OD-PVG-9: PVG
+      side decided 2026-10-21; awaiting the K4 shared forwarder package and the MOD-0021 owner contract).
 - [n/a] Retention, archive/void activation, and legal-hold policy - **removed from slice 1 scope**; required before archive/void is ever added.
 - [x] Build/buy/partner integration boundary recorded as hybrid, partner-aware internal control wrapper.
 - [x] Gateway route family defined per NET-001 and assigned to integration-agent.
@@ -1117,6 +1155,11 @@ Behaviour that the suites must cover (each with at least one named test):
   self-approval entries withdrawn as owner approvals; permission-key mismatch, controller scope, startup
   fail-closed, configuration key, gate boundary, port source, error model, check order, persistence, file layout, and
   conformance-suite mapping recorded as facts with open decisions; delivery slices rebuilt.
+- **2026-10-21 owner decisions OD-PVG-1 ... OD-PVG-10.** Recorded in "Open Decisions (Owner Decision Pending)" from
+  `docs/records/decisions/2026-10/pvg-mod0230-open-decisions-01.md@4fe62fdc3`. Applied in this revision: frontmatter
+  `data_mode: server` (OD-PVG-8), the documented backend deviation (OD-PVG-4), the binding startup form (OD-PVG-5),
+  the verifier known deviation (OD-PVG-10). The six rows that wait for another owner change no code target until that
+  approval is recorded.
 - **Platform.Common is not consumed.** The 2026-08-09 text said several contracts were "consumed directly from merged
   `Diten.Platform.Common`". No PvgService project references `Diten.Platform.Common`; authorization, correlation,
   tenancy, and observability are PVG-local or absent.
@@ -1148,7 +1191,7 @@ Behaviour that the suites must cover (each with at least one named test):
   registers their application services as composition-only wiring ("Runtime Constraints"). This pack is the higher
   authority; the wording difference is recorded only.
 - Frontmatter decisions: `shell: tenant`, `entity_base: EntityBase`, `form_field_count: 16`,
-  `golden_reference: compact`, `service: Diten.PvgService`, `service_port: 5011` (proposal; not allocated).
+  `golden_reference: compact`, `data_mode: server` (OD-PVG-8), `service: Diten.PvgService`, `service_port: 5011` (proposal; not allocated).
 - Route/API profile: tenant MVC route `/Pharmacovigilance/CaseIntakeTriage`, view root
   `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**`, same-origin MVC proxy, Gateway family
   `/api/pv-case-intake-triage` upstream to `/api/v1/pv-case-intake-triage` downstream.
@@ -1169,11 +1212,12 @@ Behaviour that the suites must cover (each with at least one named test):
 MOD-0230's own follow-ups (other owners' work is listed under "Teslim dilimleri" as outside every slice):
 
 - Close build-gate gaps G-1 ... G-15 through slices DL-2 ... DL-8.
-- Record the owner answers to OD-PVG-1 ... OD-PVG-10 in this pack.
+- Record the owner answers to OD-PVG-1 ... OD-PVG-10 in this pack - done in this revision (2026-10-21). Still open:
+  the other owners' approvals named for OD-PVG-1, 2, 3, 6, 7, and 9.
 - Align the port-contract document's type names and configuration key with the code, or record a C-id-to-test map (G-12).
 - After real MOD-0019, MOD-0023, and MOD-0031 ship: replace the three non-production adapters and remove the
   `Pvg:Runtime:UseNonProductionAdapters` switch.
-- Declare `data_mode` in the frontmatter in the next pack revision (OD-PVG-8).
+- Declare `data_mode` in the frontmatter (OD-PVG-8) - done in this revision (`data_mode: server`).
 
 Out of slice 1, requiring their own approval:
 
@@ -1201,23 +1245,31 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   "açık" kalmış; bağımsız inceleme açık engelsiz; `scripts/pack_approval.py check` çıkış 0; BG-17.
 - **DL-2** — Yollar: `services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/**`, `Application/RegPvBase/`
   içindeki komut, sorgu, istek tipleri ve `PvgIntakeDraftValidator.cs`, `Infrastructure/RegPvBase/InMemoryPvgIntakeDraftRepository.cs`,
-  `PvgIntakeDraftIndexCatalog.cs`, `tests/Diten.PvgService.RegPvBase.Tests/**`. Önkoşul: OD-PVG-4.
+  `PvgIntakeDraftIndexCatalog.cs`, `tests/Diten.PvgService.RegPvBase.Tests/**`. Önkoşul: OD-PVG-4 kapandı (2026-10-21; belgelenmiş sapma).
   Kapsam dışı: Mongo koleksiyonu, indeks, migration; komut adlarının değiştirilmesi. Bitiş: BG-12, BG-13; `pvg-regpv-base` 0 kırmızı.
 - **DL-3** — Yollar: `src/Diten.PvgService.Api/Program.cs`, `PvgServiceApiHost.cs`, `tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs`.
-  Önkoşul: OD-PVG-5; BG-10 için OD-PVG-6. Kapsam dışı: port tahsisi (OD-PVG-7), üretim açılışı, sırlı appsettings.
+  Önkoşul: OD-PVG-5 kapandı (2026-10-21); BG-10 için OD-PVG-6 (PVG tarafı karar 2026-10-21; onay satırına bağlama biçimi
+  Enterprise Architecture onayını bekliyor). Kapsam dışı: port tahsisi (OD-PVG-7), üretim açılışı, sırlı appsettings.
   Bitiş: BG-8, BG-9, BG-10 yeşil; bir kayıt silinince adı belli test kırmızı (sabotaj kanıtı).
 - **DL-4** — Yollar: `src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs`, `Program.cs` içindeki kimlik doğrulama kaydı
   (DL-3 ile aynı dosya: DL-3 önce ya da aynı WP), `PvgIntakeDraftApplicationService.cs` içindeki kontrol sırası, API testleri.
-  Önkoşul: OD-PVG-2, OD-PVG-3. Kapsam dışı: Gateway ara katmanı, izin tanımı/grant, MOD-0018 sözleşmesi. Bitiş: BG-5, BG-6, BG-7; `pvg-api` 0 kırmızı.
+  Önkoşul: OD-PVG-2 (PVG tarafı karar 2026-10-21; Enterprise Architecture ve MOD-0018 claim adları onayı bekleniyor),
+  OD-PVG-3 (PVG tarafı karar 2026-10-21; düzenlenmiş hata zarfı MOD-0041 / Ops onayını bekliyor). Kapsam dışı: Gateway ara katmanı, izin tanımı/grant, MOD-0018 sözleşmesi. Bitiş: BG-5, BG-6, BG-7; `pvg-api` 0 kırmızı.
 - **DL-5** — Yollar: `PvgIntakeDraftApplicationService.cs` içindeki denetim çağrısı, `Application/RegPvBase/` altında denetim
-  yazıcı portu, ilgili testler, defterde yalnız borç satırı silme. Önkoşul: OD-PVG-9 (K4 ortak iletici + MOD-0021 sözleşmesi).
+  yazıcı portu, ilgili testler, defterde yalnız borç satırı silme. Önkoşul: OD-PVG-9 (PVG tarafı karar 2026-10-21;
+  K4 ortak iletici paketi (Control Tower) + MOD-0021 sahip sözleşmesi bekleniyor).
   Kapsam dışı: ileticinin ya da merkezi günlüğün yapımı. Bitiş: BG-11; `AuditTrailStandardTests` yeşil ve borç listesi küçülmüş.
 - **DL-6** — Yollar: `PvgIntakeDraftApplicationService.cs` satır 7–11'deki izin sabitleri,
-  `tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs`. Önkoşul: OD-PVG-1.
+  `tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs`. Önkoşul: OD-PVG-1 (PVG tarafı karar 2026-10-21,
+  hedef `pvg.case-intake-triage.*`; MOD-0018 / AuthService katalog-grant ve `pvg.*` ad alanı onayı bekleniyor).
   Kapsam dışı: katalog, seed, grant (MOD-0018 / AuthService); denetleyici öznitelikleri (DL-7). Bitiş: BG-4.
 - **DL-7** — Yollar: `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`, görünüm kökü, JS, resx,
-  `Models/CaseIntakeTriage/**`, `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`. Önkoşul: DL-6, OD-PVG-8, OD-PVG-10.
+  `Models/CaseIntakeTriage/**`, `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`. Önkoşul: DL-6; OD-PVG-8 kapandı (2026-10-21);
+  OD-PVG-10 kapandı (2026-10-21).
   Kapsam dışı: `_Layout.cshtml`, ortak partial'lar, menü/manifest (WP-0230-08 blocked). Bitiş: BG-1, BG-2, BG-3, BG-14, BG-15; vitest 0 kırmızı.
+  Bilinen sapma (OD-PVG-10): toplu silme, dışa aktarma, içe aktarma, tümünü seç ve bağlantıları (reload-with-toast,
+  clear-selection) - doğrulayıcının 13 maddesi; kalan beş madde (veri modu, `_TableSkeleton`, `_Filter` ve `_IndexL10n`
+  partial'ları, form ViewModel'i) DL-7'de düzeltilir.
 - **DL-8** — Yollar: `gateway/Diten.ApiGateway/ocelot.json` içindeki dört MOD-0230 route girdisi (yalnız integration-agent).
   Önkoşul: bugünkü durum için yok. Kapsam dışı: Gateway ara katmanı ve diğer route'lar.
   Bitiş: BG-16; Gateway üzerinden smoke çağrısı servisin sonucunu döndürür.
