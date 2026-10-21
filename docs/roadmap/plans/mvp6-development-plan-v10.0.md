@@ -83,7 +83,7 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 
 | # | step | owner | state |
 |---|---|---|---|
-| D1 | **BL-652** (Admin baseline for Carrier/Load/Return/Claim): Option 1 ruled 2026-10-18, **never applied**, expiry 2026-11-03. After Q358/G7 every widening left clean-up debt; recommendation: do not apply — go straight to Option 2 (SupplyChain → MDM service identity) or the entitlement path | Ali | open |
+| D1 | **BL-652** (Admin baseline for Carrier/Load/Return/Claim): Option 1 ruled 2026-10-18, **never applied**, expiry 2026-11-03. After Q358/G7 every widening left clean-up debt; recommendation: do not apply — go straight to Option 2 (SupplyChain → MDM service identity) or the entitlement path | **Natig** (`ny@gmgroup.ch`; the 2026-10-18 record names Natig as owner — earlier rows said Ali) | **Decided 2026-10-21: Option 2 replaces Option 1** (`docs/records/decisions/2026-10/mvp6-bl652-option2-owner-decision-2026-10-21.md`; scope `mvp6-bl652-coupling-decision-01/OPTION2-S2S-SCOPE-v0.1.md`). Option 1's expiry is moot; no widening. Open: Auth + MDM owner consent (XMC-001), delegated user, tenant-grant provisioning |
 | D2 | Where contracts live (v9.9 4c): `docs/analysis/contracts/` vs the five docs folders — move, or allow the path in `docs-organization` (rule change, approval) | Ali | open |
 | D3 | Runbook text says MongoDB 7.0, dev machine runs 8.0.18 (v9.9 4b; ruled not blocking) | Ali | open item |
 | D4 | Gateway `Observability:Correlation:SigningKey` set in every non-Development environment (code fail-fast is on main) | ops / Ali | open |
@@ -136,4 +136,4 @@ DemandPlanning production authorities (S1, AC-D01…D29); DEMAND v2 (G3) to repl
 SUPPLY-CONSTRAINTS producer MOD-0193 (G2); BL-652 Option 2; the parked process audit.
 
 **Dates:** the R8 transition ends about **2026-11-18** (v9.9 inference; owner confirms). BL-652's expiry 2026-11-03
-is the only open expiry; Q358 and G7 are already removed.
+is moot since 2026-10-21 (Option 1 never applied, replaced by Option 2); Q358 and G7 are already removed — no open expiry.
