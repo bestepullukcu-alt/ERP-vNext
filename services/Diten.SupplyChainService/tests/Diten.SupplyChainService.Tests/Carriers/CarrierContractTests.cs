@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Diten.SupplyChainService.Application.Common;
 using Diten.SupplyChainService.Domain.Features.Carriers;
 using Diten.SupplyChainService.Persistence.Features.Carriers;
 using Microsoft.AspNetCore.Hosting;
@@ -51,8 +52,8 @@ public sealed class CarrierContractTests
     }
     private sealed class Factory(Probe probe) : WebApplicationFactory<Program>
     {
-        private static Dictionary<string, string?> Settings => new() { ["Mongo:ConnectionString"] = Connection, ["Mongo:DatabaseName"] = Database,
-            ["JwtSettings:Secret"] = Secret, ["JwtSettings:Issuer"] = "carrier-tests", ["JwtSettings:Audience"] = "carrier-tests" };
+        private static Dictionary<string, string?> Settings => new(AuthServiceToken.JwtSettings(Secret))
+            { ["Mongo:ConnectionString"] = Connection, ["Mongo:DatabaseName"] = Database };
         protected override IHost CreateHost(IHostBuilder builder)
         { builder.ConfigureHostConfiguration(c => c.AddInMemoryCollection(Settings)); return base.CreateHost(builder); }
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -65,14 +66,12 @@ public sealed class CarrierContractTests
             });
         }
     }
-    private string Token(Guid tenant, Guid le, string[]? permissions = null, string? badClaim = null, Guid? actor = null)
-    {
-        var claims = new List<Claim> { new("tenant_id", tenant.ToString()), new("legal_entity_id", le.ToString()), new("sub", (actor ?? _actor).ToString()) };
-        if (badClaim is not null) claims.Add(new(badClaim, Guid.NewGuid().ToString()));
-        claims.AddRange((permissions ?? ["read", "create", "status.change"]).Select(p => new Claim("permission", "supplychain.carriers." + p)));
-        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("carrier-tests", "carrier-tests", claims, expires: DateTime.UtcNow.AddMinutes(10),
-            signingCredentials: new(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256)));
-    }
+    // AuthService's real token shape; the legal entity is the X-Legal-Entity-Id header, not a claim. badClaim adds
+    // one stray claim with a random value — a duplicate tenant_id/sub must be refused, a stray legal_entity_id ignored.
+    private string Token(Guid tenant, Guid le, string[]? permissions = null, string? badClaim = null, Guid? actor = null) =>
+        AuthServiceToken.Mint(Secret, tenant, actor ?? _actor,
+            (permissions ?? ["read", "create", "status.change"]).Select(p => "supplychain.carriers." + p),
+            extraClaims: badClaim is null ? null : [new Claim(badClaim, Guid.NewGuid().ToString())]);
     private static JsonObject Body(string code = "C") => new() { ["carrierCode"] = code, ["displayName"] = "Carrier", ["supportedModes"] = new JsonArray("Road") };
     private static JsonObject Change(string status) => new() { ["targetStatus"] = status, ["reasonCode"] = "" };
     private async Task<(int Status, JsonObject Body, string Correlation)> Send(HttpClient client, string method = "POST", string path = "", JsonObject? body = null,
@@ -351,5 +350,16 @@ public sealed class CarrierContractTests
         Assert.Equal(400,(await Send(c,body:new JsonObject())).Status);
         Assert.Equal(0,probe.RepositoryCalls);
         Assert.Equal(201,(await Send(c,body:Body())).Status);Assert.Equal(1,probe.RepositoryCalls);
+    }
+    // H2: the legal-entity gate over the real host with AuthService's token shape — the refusal, and no write.
+    [Theory]
+    [InlineData(LegalEntityScopeOutcome.NotReferenceable, 404)]
+    [InlineData(LegalEntityScopeOutcome.Unavailable, 503)]
+    public async Task LegalEntityGateRefusalWritesNothing(LegalEntityScopeOutcome outcome, int expected)
+    {
+        using var app = new Factory(new()); using var c = app.CreateClient();
+        await LegalEntityGate.AssertRefusedWithoutWrites(LegalEntityGate.Stub(app.Services),
+            app.Services.GetRequiredService<IMongoDatabase>(), _tenant, outcome, expected,
+            async () => (await Send(c, body: Body("gate"), correlation: Guid.NewGuid().ToString())).Status);
     }
 }
