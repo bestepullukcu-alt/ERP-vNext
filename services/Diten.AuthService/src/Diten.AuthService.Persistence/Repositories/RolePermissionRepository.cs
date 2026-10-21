@@ -67,6 +67,7 @@ public sealed class RolePermissionRepository : RepositoryBase<RolePermission>, I
             Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, true));
         var update = Builders<RolePermission>.Update
             .Set(rp => rp.IsDeleted, false)
+            .Set(rp => rp.DeletedAt, null)
             .Set(rp => rp.GrantSource, rolePermission.GrantSource)
             .Set(rp => rp.SourceModuleCode, rolePermission.SourceModuleCode)
             .Set(rp => rp.AssignedAt, rolePermission.AssignedAt)

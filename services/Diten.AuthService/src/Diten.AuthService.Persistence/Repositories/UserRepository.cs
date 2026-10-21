@@ -333,9 +333,11 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
     public async Task SoftDeleteAsync(Guid id, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
     {
         var filter = LiveAccount(id, tenantId, excludePlatformAccounts);
+        var now = DateTimeOffset.UtcNow;
         var update = Builders<User>.Update
             .Set(u => u.IsDeleted, true)
-            .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
+            .Set(u => u.DeletedAt, (DateTimeOffset?)now)
+            .Set(u => u.UpdatedAt, (DateTimeOffset?)now);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }

@@ -24,9 +24,10 @@ namespace Diten.AuthService.Persistence.Seed;
 /// row written for a change that then did not happen (an administrator, or another writer, changed the grant in between)
 /// is withdrawn by a <c>…_not_applied</c> row of its own.</para>
 ///
-/// <para><b>Soft delete.</b> A revoked grant is marked <c>IsDeleted</c> (with <c>UpdatedAt</c>/<c>UpdatedBy</c>; the
-/// entity has no <c>DeletedAt</c>). Granting it again later — the tenant buys the module — revives that document
-/// (<see cref="RolePermissionRepository.AssignAsync"/>), because the unique (role, permission, tenant) index still holds it.</para>
+/// <para><b>Soft delete.</b> A revoked grant is marked <c>IsDeleted</c> with <c>DeletedAt</c> (and
+/// <c>UpdatedAt</c>/<c>UpdatedBy</c>). Granting it again later — the tenant buys the module — revives that document and
+/// clears <c>DeletedAt</c> (<see cref="RolePermissionRepository.AssignAsync"/>), because the unique (role, permission,
+/// tenant) index still holds it.</para>
 ///
 /// <para><b>Unknown entitlement → nothing.</b> A tenant whose entitlement cannot be read authoritatively is skipped and
 /// reported; it is looked at again on the next run.</para>
@@ -141,12 +142,13 @@ public static class Q358ShipmentGrantRetractionRunner
                                  & Builders<RolePermission>.Filter.Or(
                                      Builders<RolePermission>.Filter.Eq(rp => rp.GrantSource, GrantSource.System),
                                      Builders<RolePermission>.Filter.Exists(rp => rp.GrantSource, false));
+                    var now = DateTimeOffset.UtcNow;
                     var update = item.Action == BaselineGrantRetraction.Action.ConvertToModule
                         ? Builders<RolePermission>.Update
                             .Set(rp => rp.GrantSource, GrantSource.Module)
                             .Set(rp => rp.SourceModuleCode, item.ModuleCode)
-                        : Builders<RolePermission>.Update.Set(rp => rp.IsDeleted, true);
-                    update = update.Set(rp => rp.UpdatedAt, DateTimeOffset.UtcNow).Set(rp => rp.UpdatedBy, SystemUser);
+                        : Builders<RolePermission>.Update.Set(rp => rp.IsDeleted, true).Set(rp => rp.DeletedAt, now);
+                    update = update.Set(rp => rp.UpdatedAt, now).Set(rp => rp.UpdatedBy, SystemUser);
 
                     var changed = await rpCol.UpdateOneAsync(filter, update, cancellationToken: ct);
                     if (changed.ModifiedCount == 1)
