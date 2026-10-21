@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Common.Crumb.Root" xml:space="preserve"><value>Сроки годности / FEFO</value></data>
+  <data name="Expiry.Common.Company.Label" xml:space="preserve"><value>Компания</value></data>
+  <data name="Expiry.Common.Company.Placeholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="Expiry.Common.Company.Required" xml:space="preserve"><value>Выберите компанию, в которой вы работаете, чтобы увидеть данные о сроках годности.</value></data>
+  <data name="Expiry.Common.Company.Unavailable" xml:space="preserve"><value>Не удалось загрузить список компаний. Повторите попытку позже.</value></data>
+  <data name="Expiry.Common.NamesUnavailable" xml:space="preserve"><value>Названия товаров и складов сейчас недоступны; показаны идентификаторы. Количества верны.</value></data>
+  <data name="Expiry.Common.Days" xml:space="preserve"><value>{0} дн.</value></data>
+  <data name="Expiry.Common.AllWarehouses" xml:space="preserve"><value>Все склады</value></data>
+  <data name="Expiry.Common.Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Expiry.Common.Clear" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="Expiry.Common.Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Expiry.Common.NoUnit" xml:space="preserve"><value>без единицы</value></data>
+  <data name="Expiry.Common.Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Expiry.Tabs.Dashboard" xml:space="preserve"><value>Панель FEFO</value></data>
+  <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Истекающие сроки</value></data>
+  <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Просроченный запас</value></data>
+  <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>Порядок FEFO</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Сегодня (UTC) {0} · «Скоро» {1} дн. · «Критично» {2} дн.</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Сегодня (UTC) {0}</value></data>
+  <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Период</value></data>
+  <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Просроченный запас</value></data>
+  <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>Истекает в течение {0} дн.</value></data>
+  <data name="Expiry.Kpi.CriticalPlain" xml:space="preserve"><value>Критично</value></data>
+  <data name="Expiry.Kpi.ApproachingPlain" xml:space="preserve"><value>Скоро</value></data>
+  <data name="Expiry.Kpi.Lots" xml:space="preserve"><value>{0} партий</value></data>
+  <data name="Expiry.Kpi.AvailableHeld" xml:space="preserve"><value>Доступно {0} · Удержано {1}</value></data>
+  <data name="Expiry.Kpi.Quantity" xml:space="preserve"><value>Количество {0}</value></data>
+  <data name="Expiry.Kpi.BelowMin" xml:space="preserve"><value>Приёмки ниже мин. остаточного срока · последние 30 дней</value></data>
+  <data name="Expiry.Kpi.OpenExceptions" xml:space="preserve"><value>Открытые исключения FEFO</value></data>
+  <data name="Expiry.Kpi.LateSome" xml:space="preserve"><value>{0} с нарушением SLA</value></data>
+  <data name="Expiry.Kpi.LateNone" xml:space="preserve"><value>Все в рамках SLA</value></data>
+  <data name="Expiry.Kpi.Compliance" xml:space="preserve"><value>Соблюдение FEFO · последние {0} дн.</value></data>
+  <data name="Expiry.Kpi.ComplianceSub" xml:space="preserve"><value>{0} / {1} отпусков из партии с ближайшим сроком</value></data>
+  <data name="Expiry.Kpi.ComplianceNone" xml:space="preserve"><value>За период отпусков нет</value></data>
+  <data name="Expiry.Kpi.AvgResolution" xml:space="preserve"><value>Среднее время решения {0} ч</value></data>
+  <data name="Expiry.Chart.Title" xml:space="preserve"><value>Следующие 12 месяцев · количество с истекающим сроком по месяцам</value></data>
+  <data name="Expiry.Chart.Subtitle" xml:space="preserve"><value>Доступный и удержанный запас, все единицы</value></data>
+  <data name="Expiry.Chart.Available" xml:space="preserve"><value>Доступно</value></data>
+  <data name="Expiry.Chart.Held" xml:space="preserve"><value>Удержано</value></data>
+  <data name="Expiry.TopRisk.Title" xml:space="preserve"><value>10 самых рискованных партий</value></data>
+  <data name="Expiry.TopRisk.Subtitle" xml:space="preserve"><value>Горизонт {0} дн. · по оставшимся дням</value></data>
+  <data name="Expiry.TopRisk.SeeAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="Expiry.TopRisk.Empty" xml:space="preserve"><value>В этом горизонте партии не истекают.</value></data>
+  <data name="Expiry.Col.Product" xml:space="preserve"><value>Товар</value></data>
+  <data name="Expiry.Col.SkuLevel" xml:space="preserve"><value>Уровень SKU</value></data>
+  <data name="Expiry.Col.LotNo" xml:space="preserve"><value>№ партии</value></data>
+  <data name="Expiry.Col.Warehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="Expiry.Col.Expiry" xml:space="preserve"><value>Срок годности</value></data>
+  <data name="Expiry.Col.DaysLeft" xml:space="preserve"><value>Осталось дней</value></data>
+  <data name="Expiry.Col.ShelfLife" xml:space="preserve"><value>Остаточный срок</value></data>
+  <data name="Expiry.Col.Available" xml:space="preserve"><value>Доступно</value></data>
+  <data name="Expiry.Col.Held" xml:space="preserve"><value>Удержано</value></data>
+  <data name="Expiry.Col.Unit" xml:space="preserve"><value>Ед.</value></data>
+  <data name="Expiry.Col.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Expiry.Col.Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Expiry.Col.SinceExpiry" xml:space="preserve"><value>С момента истечения</value></data>
+  <data name="Expiry.Col.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Expiry.Col.Exception" xml:space="preserve"><value>Исключение</value></data>
+  <data name="Expiry.Col.Rank" xml:space="preserve"><value>№</value></data>
+  <data name="Expiry.Col.ForQuantity" xml:space="preserve"><value>Для этого количества</value></data>
+  <data name="Expiry.Col.Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="Expiry.Severity.Expired" xml:space="preserve"><value>Истёк</value></data>
+  <data name="Expiry.Severity.Critical" xml:space="preserve"><value>Критично</value></data>
+  <data name="Expiry.Severity.Approaching" xml:space="preserve"><value>Скоро</value></data>
+  <data name="Expiry.Severity.Ok" xml:space="preserve"><value>Норма</value></data>
+  <data name="Expiry.Reason.EXPIRED" xml:space="preserve"><value>Истёк</value></data>
+  <data name="Expiry.Reason.RETEST_DUE" xml:space="preserve"><value>Дата повторного контроля прошла</value></data>
+  <data name="Expiry.Reason.BLOCKED" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Expiry.Reason.HELD" xml:space="preserve"><value>Удержано (повторный контроль)</value></data>
+  <data name="Expiry.Reason.QUARANTINED" xml:space="preserve"><value>В карантине</value></data>
+  <data name="Expiry.Reason.BELOW_MIN_REMAINING" xml:space="preserve"><value>Ниже минимального остаточного срока</value></data>
+  <data name="Expiry.Action.OpenException" xml:space="preserve"><value>Открыть исключение</value></data>
+  <data name="Expiry.Action.Quarantine" xml:space="preserve"><value>В карантин (MOD-0175)</value></data>
+  <data name="Expiry.Action.ViewOrder" xml:space="preserve"><value>Показать порядок FEFO</value></data>
+  <data name="Expiry.Action.Export" xml:space="preserve"><value>Экспорт (CSV)</value></data>
+  <data name="Expiry.Action.LotDetail" xml:space="preserve"><value>Сведения о партии (MOD-0174)</value></data>
+  <data name="Expiry.Approaching.Subtitle" xml:space="preserve"><value>Сортировка по умолчанию: срок годности по возрастанию (порядок FEFO). Критично ≤ {0} дн., Скоро ≤ {1} дн.</value></data>
+  <data name="Expiry.Approaching.SubtitlePlain" xml:space="preserve"><value>Сортировка по умолчанию: срок годности по возрастанию (порядок FEFO).</value></data>
+  <data name="Expiry.Approaching.Count" xml:space="preserve"><value>{0} партий · в течение {1} дн.</value></data>
+  <data name="Expiry.Approaching.Empty" xml:space="preserve"><value>Нет партий, соответствующих фильтрам.</value></data>
+  <data name="Expiry.Approaching.AllStatuses" xml:space="preserve"><value>Все статусы</value></data>
+  <data name="Expiry.Approaching.Horizon" xml:space="preserve"><value>Горизонт</value></data>
+  <data name="Expiry.Approaching.HeldAll" xml:space="preserve"><value>Включая удержанный запас</value></data>
+  <data name="Expiry.Approaching.HeldNone" xml:space="preserve"><value>Только доступный запас</value></data>
+  <data name="Expiry.Expired.Subtitle" xml:space="preserve"><value>Просроченные партии, по которым ещё есть запас</value></data>
+  <data name="Expiry.Expired.Band" xml:space="preserve"><value>Просроченная партия автоматически закрывается для использования; решение об уничтожении / возврате принимается в модуле «Карантин».</value></data>
+  <data name="Expiry.Expired.Empty" xml:space="preserve"><value>Нет партий с просроченным запасом.</value></data>
+  <data name="Expiry.Expired.Footer" xml:space="preserve"><value>На этом экране решения не принимаются; ссылка открывает модуль «Карантин».</value></data>
+  <data name="Expiry.Expired.SinceDays" xml:space="preserve"><value>{0} дн.</value></data>
+  <data name="Expiry.Order.Subtitle" xml:space="preserve"><value>Какую партию использовать первой · рекомендация только для чтения</value></data>
+  <data name="Expiry.Order.Product" xml:space="preserve"><value>Товар (SKU)</value></data>
+  <data name="Expiry.Order.Quantity" xml:space="preserve"><value>Требуемое количество (необязательно)</value></data>
+  <data name="Expiry.Order.Calculate" xml:space="preserve"><value>Рассчитать порядок</value></data>
+  <data name="Expiry.Order.Eligible" xml:space="preserve"><value>Партии в очереди · по сроку годности</value></data>
+  <data name="Expiry.Order.ForQuantity" xml:space="preserve"><value>Партии для {0}:</value></data>
+  <data name="Expiry.Order.Shortfall" xml:space="preserve"><value>Доступно всего {0}; не покрывается {1}.</value></data>
+  <data name="Expiry.Order.EligibleEmpty" xml:space="preserve"><value>На этом складе нет партий этого товара для очереди.</value></data>
+  <data name="Expiry.Order.Excluded" xml:space="preserve"><value>Исключённые партии</value></data>
+  <data name="Expiry.Order.ExcludedEmpty" xml:space="preserve"><value>На этом складе нет исключённых партий.</value></data>
+  <data name="Expiry.Order.Band" xml:space="preserve"><value>В MVP-1 только для чтения; отбор будет использовать этот порядок с появлением складского модуля (MOD-0178).</value></data>
+  <data name="Expiry.Order.Pick" xml:space="preserve"><value>Выберите склад и товар, затем рассчитайте порядок.</value></data>
+  <data name="Expiry.Order.Basis" xml:space="preserve"><value>Количество по партии — доступный фактический запас; резервы не привязаны к партиям. Свободное количество SKU: {0}</value></data>
+  <data name="Expiry.Order.NoProducts" xml:space="preserve"><value>На этом складе нет запаса по партиям.</value></data>
+  <data name="Expiry.Order.SeeExpired" xml:space="preserve"><value>Смотреть в просроченном запасе</value></data>
+  <data name="Expiry.Order.SeeQuarantine" xml:space="preserve"><value>Смотреть в MOD-0175</value></data>
+  <data name="Expiry.Modal.Title" xml:space="preserve"><value>Открыть исключение</value></data>
+  <data name="Expiry.Modal.Type" xml:space="preserve"><value>Тип исключения</value></data>
+  <data name="Expiry.Modal.Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="Expiry.Modal.DescriptionMin" xml:space="preserve"><value>Описание должно содержать не менее 10 символов.</value></data>
+  <data name="Expiry.Modal.Opened" xml:space="preserve"><value>{0} открыто.</value></data>
+  <data name="Expiry.Modal.Type.FEFO_BYPASS" xml:space="preserve"><value>FEFO_BYPASS — отпуск не из партии с ближайшим сроком</value></data>
+  <data name="Expiry.Modal.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>BELOW_MIN_REMAINING — остаточный срок ниже минимума</value></data>
+  <data name="Expiry.Modal.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>EXPIRY_DATE_OVERRIDE — изменена дата годности / контроля</value></data>
+  <data name="Expiry.Modal.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>EXPIRED_ON_HAND — просроченный запас в наличии</value></data>
+  <data name="Expiry.LotStatus.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Expiry.LotStatus.Released" xml:space="preserve"><value>Выпущена</value></data>
+  <data name="Expiry.LotStatus.Blocked" xml:space="preserve"><value>Заблокирована</value></data>
+  <data name="Expiry.LotStatus.Expired" xml:space="preserve"><value>Истекла</value></data>
+  <data name="Expiry.Errors.GENERIC" xml:space="preserve"><value>Не удалось выполнить запрос. Повторите попытку.</value></data>
+  <data name="Expiry.Errors.FORBIDDEN" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="Expiry.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Сервис запасов сейчас недоступен. Повторите попытку позже.</value></data>
+  <data name="Expiry.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Сначала выберите компанию.</value></data>
+  <data name="Expiry.Errors.INVALID_REQUEST" xml:space="preserve"><value>Запрос недействителен; проверьте фильтры.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_SKU" xml:space="preserve"><value>Этот товар (SKU) не найден в справочнике товаров.</value></data>
+  <data name="Expiry.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Справочник товаров недоступен; порядок не рассчитан.</value></data>
+  <data name="Expiry.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Доступ к записи другой компании запрещён.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Партия не найдена.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Склад не найден.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EXCEPTION_ALREADY_OPEN" xml:space="preserve"><value>Для этой партии и склада уже есть открытое исключение этого типа.</value></data>
+  <data name="Expiry.Errors.REASON_REQUIRED" xml:space="preserve"><value>Описание должно содержать не менее 10 символов.</value></data>
+  <data name="Expiry.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Этот запрос уже был отправлен с другим содержимым; обновите страницу.</value></data>
+  <data name="Expiry.Tabs.Exceptions" xml:space="preserve"><value>Входящие исключения</value></data>
+  <data name="Expiry.Tabs.Policy" xml:space="preserve"><value>Правила сроков годности и настройки</value></data>
+  <data name="Expiry.Tabs.Evidence" xml:space="preserve"><value>Пакет доказательств</value></data>
+  <data name="Expiry.Action.OpenDetail" xml:space="preserve"><value>Открыть исключение</value></data>
+  <data name="Expiry.Col.Assignee" xml:space="preserve"><value>Исполнитель</value></data>
+  <data name="Expiry.Col.ExceptionNo" xml:space="preserve"><value>№ исключения</value></data>
+  <data name="Expiry.Col.LotWarehouse" xml:space="preserve"><value>Партия · Склад</value></data>
+  <data name="Expiry.Col.Opened" xml:space="preserve"><value>Открыто</value></data>
+  <data name="Expiry.Col.Signature" xml:space="preserve"><value>Подпись</value></data>
+  <data name="Expiry.Col.Sla" xml:space="preserve"><value>Срок (SLA)</value></data>
+  <data name="Expiry.Col.Type" xml:space="preserve"><value>Тип</value></data>
+  <data name="Expiry.Common.Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="Expiry.Common.System" xml:space="preserve"><value>Система</value></data>
+  <data name="Expiry.Common.UnknownUser" xml:space="preserve"><value>неизвестный пользователь</value></data>
+  <data name="Expiry.Type.FEFO_BYPASS" xml:space="preserve"><value>Отпуск вне FEFO</value></data>
+  <data name="Expiry.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>Ниже минимального остаточного срока</value></data>
+  <data name="Expiry.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>Изменение срока годности / переконтроля</value></data>
+  <data name="Expiry.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>Просроченный запас в наличии</value></data>
+  <data name="Expiry.Status.Open" xml:space="preserve"><value>Открыто</value></data>
+  <data name="Expiry.Status.InReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="Expiry.Status.Accepted" xml:space="preserve"><value>Принято</value></data>
+  <data name="Expiry.Status.Fixed" xml:space="preserve"><value>Исправлено</value></data>
+  <data name="Expiry.Status.Closed" xml:space="preserve"><value>Закрыто</value></data>
+  <data name="Expiry.Status.Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="Expiry.Resolution.AcceptedWithReason" xml:space="preserve"><value>Принято с обоснованием</value></data>
+  <data name="Expiry.Resolution.Fixed" xml:space="preserve"><value>Исправлено</value></data>
+  <data name="Expiry.Resolution.Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="Expiry.Event.Opened" xml:space="preserve"><value>Исключение открыто</value></data>
+  <data name="Expiry.Event.Taken" xml:space="preserve"><value>Взято на рассмотрение</value></data>
+  <data name="Expiry.Event.Commented" xml:space="preserve"><value>Комментарий</value></data>
+  <data name="Expiry.Event.Resolved" xml:space="preserve"><value>Решение принято</value></data>
+  <data name="Expiry.Event.Closed" xml:space="preserve"><value>Закрыто</value></data>
+  <data name="Expiry.Event.Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="Expiry.Event.SlaBreached" xml:space="preserve"><value>Срок нарушен</value></data>
+  <data name="Expiry.Movement.GOODS_ISSUE_SALES" xml:space="preserve"><value>Отпуск по продаже</value></data>
+  <data name="Expiry.Movement.GOODS_ISSUE_PROD" xml:space="preserve"><value>Отпуск в производство</value></data>
+  <data name="Expiry.Movement.WAREHOUSE_TRANSFER" xml:space="preserve"><value>Перемещение между складами</value></data>
+  <data name="Expiry.Movement.GOODS_RECEIPT_PO" xml:space="preserve"><value>Приёмка закупки</value></data>
+  <data name="Expiry.Movement.GOODS_RECEIPT_PROD" xml:space="preserve"><value>Приход из производства</value></data>
+  <data name="Expiry.Movement.CUSTOMER_RETURN" xml:space="preserve"><value>Возврат от клиента</value></data>
+  <data name="Expiry.Movement.OTHER" xml:space="preserve"><value>Движение</value></data>
+  <data name="Expiry.Sla.Ago" xml:space="preserve"><value>просрочено на {0}</value></data>
+  <data name="Expiry.Sla.Left" xml:space="preserve"><value>осталось {0}</value></data>
+  <data name="Expiry.Sla.Late" xml:space="preserve"><value>Срок нарушен</value></data>
+  <data name="Expiry.Sla.DaysHours" xml:space="preserve"><value>{0} д {1} ч</value></data>
+  <data name="Expiry.Sla.HoursMinutes" xml:space="preserve"><value>{0} ч {1} мин</value></data>
+  <data name="Expiry.Inbox.Subtitle" xml:space="preserve"><value>Открыто → На рассмотрении → Принято / Исправлено → Закрыто</value></data>
+  <data name="Expiry.Inbox.Tab.All" xml:space="preserve"><value>Все</value></data>
+  <data name="Expiry.Inbox.Tab.Active" xml:space="preserve"><value>Открытые + На рассмотрении</value></data>
+  <data name="Expiry.Inbox.Tab.Late" xml:space="preserve"><value>Срок нарушен</value></data>
+  <data name="Expiry.Inbox.Tab.Done" xml:space="preserve"><value>Завершённые</value></data>
+  <data name="Expiry.Inbox.AllTypes" xml:space="preserve"><value>Все типы</value></data>
+  <data name="Expiry.Inbox.AllAssignees" xml:space="preserve"><value>Все исполнители</value></data>
+  <data name="Expiry.Inbox.AssignedToMe" xml:space="preserve"><value>Назначенные мне</value></data>
+  <data name="Expiry.Inbox.Empty" xml:space="preserve"><value>Нет исключений, соответствующих фильтрам.</value></data>
+  <data name="Expiry.Inbox.Unassigned" xml:space="preserve"><value>Не назначено</value></data>
+  <data name="Expiry.Modal.PickHint" xml:space="preserve"><value>Выберите партию исключения: склад, товар, партия.</value></data>
+  <data name="Expiry.Modal.LotRequired" xml:space="preserve"><value>Выберите партию.</value></data>
+  <data name="Expiry.Order.Sku" xml:space="preserve"><value>Товар (SKU)</value></data>
+  <data name="Expiry.Kpi.ComplianceShort" xml:space="preserve"><value>Соблюдение FEFO</value></data>
+  <data name="Expiry.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>Не удалось открыть окно электронной подписи. Обновите страницу и повторите попытку.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EXCEPTION_NOT_FOUND" xml:space="preserve"><value>Исключение не найдено.</value></data>
+  <data name="Expiry.Errors.EXPIRY_SOD_VIOLATION" xml:space="preserve"><value>Принцип четырёх глаз: тот, чьё действие открыло исключение, не может принимать по нему решение. Решение должен принять другой сотрудник качества.</value></data>
+  <data name="Expiry.Errors.EXPIRY_SIGNATURE_REQUIRED" xml:space="preserve"><value>Политика электронной подписи компании требует подписи для этого решения.</value></data>
+  <data name="Expiry.Errors.EXPIRY_SIGNATURE_MISMATCH" xml:space="preserve"><value>Подпись не относится к этому решению (изменились подписант, действие, смысл или запись). Подготовьте и подпишите решение заново.</value></data>
+  <data name="Expiry.Errors.EXPIRY_PENDING_RESOLUTION_MISMATCH" xml:space="preserve"><value>Подготовленное решение изменилось или истекло. Подготовьте его заново.</value></data>
+  <data name="Expiry.Errors.EXPIRY_INVALID_TRANSITION" xml:space="preserve"><value>Это действие невозможно в текущем статусе исключения.</value></data>
+  <data name="Expiry.Errors.EXPIRY_CONFLICT" xml:space="preserve"><value>Запись изменилась после того, как вы её открыли. Обновите страницу и повторите попытку.</value></data>
+  <data name="Expiry.Errors.EXPIRY_POLICY_INVALID" xml:space="preserve"><value>Неверные настройки: «Критично» должно быть меньше «Приближается», и каждое значение — в своём диапазоне.</value></data>
+  <data name="Expiry.Errors.EXPIRY_NO_CHANGES" xml:space="preserve"><value>Нет изменений для сохранения.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EVIDENCE_EXPORT_NOT_FOUND" xml:space="preserve"><value>Экспортированный файл не найден.</value></data>
+  <data name="Expiry.Errors.EXPIRY_NO_SUGGESTION" xml:space="preserve"><value>В мастер-данных товара нет срока годности / переконтроля: предложенной даты нет.</value></data>
+  <data name="Expiry.Errors.EXPIRY_DATE_EQUALS_SUGGESTION" xml:space="preserve"><value>Введённая дата совпадает с предложенной: отклонение не нужно.</value></data>
+  <data name="Expiry.Detail.Title" xml:space="preserve"><value>Карточка исключения</value></data>
+  <data name="Expiry.Detail.Heading" xml:space="preserve"><value>Исключение</value></data>
+  <data name="Expiry.Detail.Facts" xml:space="preserve"><value>Факты</value></data>
+  <data name="Expiry.Detail.WhatHappened" xml:space="preserve"><value>Что произошло</value></data>
+  <data name="Expiry.Detail.Timeline" xml:space="preserve"><value>Хронология</value></data>
+  <data name="Expiry.Detail.Decision" xml:space="preserve"><value>Решение</value></data>
+  <data name="Expiry.Detail.ToQuarantine" xml:space="preserve"><value>В карантин (MOD-0175)</value></data>
+  <data name="Expiry.Detail.Movement" xml:space="preserve"><value>Связанное движение</value></data>
+  <data name="Expiry.Detail.OpenedManually" xml:space="preserve"><value>Открыто вручную</value></data>
+  <data name="Expiry.Detail.AutomaticCheck" xml:space="preserve"><value>Автоматическая проверка</value></data>
+  <data name="Expiry.Detail.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Expiry.Detail.When" xml:space="preserve"><value>Когда · кто</value></data>
+  <data name="Expiry.Detail.ExpiryShort" xml:space="preserve"><value>годен до {0}</value></data>
+  <data name="Expiry.Detail.CommentPlaceholder" xml:space="preserve"><value>Добавить комментарий</value></data>
+  <data name="Expiry.Detail.CommentSend" xml:space="preserve"><value>Отправить</value></data>
+  <data name="Expiry.Detail.Take" xml:space="preserve"><value>Взять на рассмотрение</value></data>
+  <data name="Expiry.Detail.Decide" xml:space="preserve"><value>Принять решение</value></data>
+  <data name="Expiry.Detail.Close" xml:space="preserve"><value>Закрыть исключение</value></data>
+  <data name="Expiry.Detail.DecisionHelp" xml:space="preserve"><value>Выберите решение и укажите обоснование (не менее 10 символов); если политика электронной подписи требует, решение подписывается в окне MOD-0022.</value></data>
+  <data name="Expiry.Detail.NoDecideKey" xml:space="preserve"><value>Право решения — у роли качества (QA).</value></data>
+  <data name="Expiry.Detail.ResolutionLabel" xml:space="preserve"><value>Решение по исключению</value></data>
+  <data name="Expiry.Detail.Signed" xml:space="preserve"><value>Эл. подпись</value></data>
+  <data name="Expiry.Detail.Taken" xml:space="preserve"><value>{0} взято на рассмотрение.</value></data>
+  <data name="Expiry.Detail.Closed" xml:space="preserve"><value>{0} закрыто.</value></data>
+  <data name="Expiry.Drawer.Title" xml:space="preserve"><value>Решение по исключению</value></data>
+  <data name="Expiry.Drawer.Step1" xml:space="preserve"><value>Решение</value></data>
+  <data name="Expiry.Drawer.Step2" xml:space="preserve"><value>Электронная подпись</value></data>
+  <data name="Expiry.Drawer.Resolution" xml:space="preserve"><value>Решение</value></data>
+  <data name="Expiry.Drawer.ResolutionHelp.AcceptedWithReason" xml:space="preserve"><value>Отклонение принимается с обоснованием; исправление не требуется.</value></data>
+  <data name="Expiry.Drawer.ResolutionHelp.Fixed" xml:space="preserve"><value>Первопричина устранена / запас исправлен.</value></data>
+  <data name="Expiry.Drawer.ResolutionHelp.Cancelled" xml:space="preserve"><value>Исключение недействительно (например, ошибочное движение сторнировано).</value></data>
+  <data name="Expiry.Drawer.Reason" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="Expiry.Drawer.ReasonPlaceholder" xml:space="preserve"><value>Укажите обоснование решения</value></data>
+  <data name="Expiry.Drawer.Counter" xml:space="preserve"><value>{0} / не менее {1}</value></data>
+  <data name="Expiry.Drawer.ResolutionRequired" xml:space="preserve"><value>Выберите решение.</value></data>
+  <data name="Expiry.Drawer.ReasonMin" xml:space="preserve"><value>Обоснование должно содержать не менее 10 символов.</value></data>
+  <data name="Expiry.Drawer.Next" xml:space="preserve"><value>Далее</value></data>
+  <data name="Expiry.Drawer.Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="Expiry.Drawer.SignAndSave" xml:space="preserve"><value>Подписать и сохранить</value></data>
+  <data name="Expiry.Drawer.ToSign" xml:space="preserve"><value>Решение для подписи</value></data>
+  <data name="Expiry.Drawer.SummaryReason" xml:space="preserve"><value>Обоснование: «{0}»</value></data>
+  <data name="Expiry.Drawer.SignInfo" xml:space="preserve"><value>«Подписать и сохранить» открывает общее окно подписи MOD-0022; подпись связывается с решением вместе с пользователем, временем и смыслом.</value></data>
+  <data name="Expiry.Drawer.SignSkipped" xml:space="preserve"><value>Политика электронной подписи компании не требует подписи для этого решения: шаг подписи пропущен.</value></data>
+  <data name="Expiry.Drawer.SignCancelled" xml:space="preserve"><value>Окно подписи закрыто: решение не сохранено.</value></data>
+  <data name="Expiry.Drawer.Saved" xml:space="preserve"><value>{0} сохранено как «{1}».</value></data>
+  <data name="Expiry.Drawer.SavedSigned" xml:space="preserve"><value>{0} сохранено как «{1}» (с эл. подписью).</value></data>
+  <data name="Expiry.What.Fefo" xml:space="preserve"><value>Отпуск сделан из партии, срок которой на {0} дн. позже первой партии порядка FEFO.</value></data>
+  <data name="Expiry.What.BelowMin" xml:space="preserve"><value>Партия принята на {0} дн. ниже минимального остаточного срока.</value></data>
+  <data name="Expiry.What.Override" xml:space="preserve"><value>Введено {2} вместо предложенной даты «{0}» {1}.</value></data>
+  <data name="Expiry.What.ExpiredOnHand" xml:space="preserve"><value>Просроченный запас находится в наличии {0} дн.</value></data>
+  <data name="Expiry.What.Manual" xml:space="preserve"><value>Исключение, открытое вручную.</value></data>
+  <data name="Expiry.What.UsedLot" xml:space="preserve"><value>Использованная партия</value></data>
+  <data name="Expiry.What.FirstLot" xml:space="preserve"><value>Первая партия (FEFO)</value></data>
+  <data name="Expiry.What.Gap" xml:space="preserve"><value>Разница</value></data>
+  <data name="Expiry.What.BypassReason" xml:space="preserve"><value>Причина отпуска</value></data>
+  <data name="Expiry.What.Remaining" xml:space="preserve"><value>Остаточный срок при приёмке</value></data>
+  <data name="Expiry.What.Required" xml:space="preserve"><value>Минимальный остаток (MDM)</value></data>
+  <data name="Expiry.What.Missing" xml:space="preserve"><value>Не хватает</value></data>
+  <data name="Expiry.What.Field" xml:space="preserve"><value>Изменённое поле</value></data>
+  <data name="Expiry.What.FieldExpiry" xml:space="preserve"><value>срок годности</value></data>
+  <data name="Expiry.What.FieldRetest" xml:space="preserve"><value>дата переконтроля</value></data>
+  <data name="Expiry.What.Suggested" xml:space="preserve"><value>Предложено</value></data>
+  <data name="Expiry.What.SuggestedRule" xml:space="preserve"><value>{0} (дата производства + срок годности)</value></data>
+  <data name="Expiry.What.Entered" xml:space="preserve"><value>Введено</value></data>
+  <data name="Expiry.What.UserReason" xml:space="preserve"><value>Обоснование пользователя</value></data>
+  <data name="Expiry.What.OpenedBy" xml:space="preserve"><value>Открыл</value></data>
+  <data name="Expiry.Policy.Tab.Company" xml:space="preserve"><value>Настройки компании</value></data>
+  <data name="Expiry.Policy.Tab.Products" xml:space="preserve"><value>По товарам</value></data>
+  <data name="Expiry.Policy.Tab.History" xml:space="preserve"><value>История изменений</value></data>
+  <data name="Expiry.Policy.ReadOnly" xml:space="preserve"><value>Только чтение. Настройки меняет администратор системы качества.</value></data>
+  <data name="Expiry.Policy.Approaching" xml:space="preserve"><value>Горизонт «приближается»</value></data>
+  <data name="Expiry.Policy.ApproachingHelp" xml:space="preserve"><value>По умолчанию 90 дней · настройка компании</value></data>
+  <data name="Expiry.Policy.Critical" xml:space="preserve"><value>Порог «критично»</value></data>
+  <data name="Expiry.Policy.CriticalHelp" xml:space="preserve"><value>По умолчанию 30 дней · меньше горизонта «приближается»</value></data>
+  <data name="Expiry.Policy.Field.fefoOutboundMode" xml:space="preserve"><value>Правило отпуска FEFO</value></data>
+  <data name="Expiry.Policy.Field.belowMinRemainingMode" xml:space="preserve"><value>Приёмка ниже минимального остаточного срока</value></data>
+  <data name="Expiry.Policy.Field.dateOverrideMode" xml:space="preserve"><value>Изменение срока годности / переконтроля</value></data>
+  <data name="Expiry.Policy.Field.approachingDays" xml:space="preserve"><value>Горизонт «приближается»</value></data>
+  <data name="Expiry.Policy.Field.criticalDays" xml:space="preserve"><value>Порог «критично»</value></data>
+  <data name="Expiry.Policy.Field.expiredOnHandThresholdDays" xml:space="preserve"><value>Порог «просроченный запас в наличии»</value></data>
+  <data name="Expiry.Policy.Mode.Warn" xml:space="preserve"><value>Предупредить</value></data>
+  <data name="Expiry.Policy.Mode.RequireReason" xml:space="preserve"><value>Требовать обоснование</value></data>
+  <data name="Expiry.Policy.Mode.Block" xml:space="preserve"><value>Запретить</value></data>
+  <data name="Expiry.Policy.Mode.AutoQuarantine" xml:space="preserve"><value>Автоматически в карантин</value></data>
+  <data name="Expiry.Policy.Mode.Reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="Expiry.Policy.Mode.Reason" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="Expiry.Policy.Mode.ReasonAndSignature" xml:space="preserve"><value>Обоснование + эл. подпись</value></data>
+  <data name="Expiry.Policy.FefoHelp" xml:space="preserve"><value>Когда отпуск не из партии с ближайшим сроком</value></data>
+  <data name="Expiry.Policy.BelowMinHelp" xml:space="preserve"><value>Минимум берётся из мастер-данных товара (MDM)</value></data>
+  <data name="Expiry.Policy.DateOverrideHelp" xml:space="preserve"><value>Когда предложенная дата меняется при создании партии</value></data>
+  <data name="Expiry.Policy.Sla" xml:space="preserve"><value>Сроки обработки исключений</value></data>
+  <data name="Expiry.Policy.SlaHelp" xml:space="preserve"><value>По типу, в часах</value></data>
+  <data name="Expiry.Policy.Threshold" xml:space="preserve"><value>Порог «просроченный запас в наличии»</value></data>
+  <data name="Expiry.Policy.ThresholdHelp" xml:space="preserve"><value>При превышении открывается исключение EXPIRED_ON_HAND</value></data>
+  <data name="Expiry.Policy.UnitDays" xml:space="preserve"><value>дн.</value></data>
+  <data name="Expiry.Policy.UnitHours" xml:space="preserve"><value>ч</value></data>
+  <data name="Expiry.Policy.Hours" xml:space="preserve"><value>{0} ч</value></data>
+  <data name="Expiry.Policy.SlaOf" xml:space="preserve"><value>Срок · {0}</value></data>
+  <data name="Expiry.Policy.Dirty" xml:space="preserve"><value>Есть несохранённые изменения</value></data>
+  <data name="Expiry.Policy.Save" xml:space="preserve"><value>Сохранить изменения</value></data>
+  <data name="Expiry.Policy.SaveTitle" xml:space="preserve"><value>Сохранить изменения настроек</value></data>
+  <data name="Expiry.Policy.ChangeReason" xml:space="preserve"><value>Причина изменения</value></data>
+  <data name="Expiry.Policy.Saved" xml:space="preserve"><value>Настройки сохранены и записаны в историю изменений.</value></data>
+  <data name="Expiry.Policy.FillAll" xml:space="preserve"><value>Заполните все поля.</value></data>
+  <data name="Expiry.Policy.Defaults" xml:space="preserve"><value>Действуют значения по умолчанию (ещё не сохранены).</value></data>
+  <data name="Expiry.Policy.UpdatedBy" xml:space="preserve"><value>Последнее изменение {0} · {1}</value></data>
+  <data name="Expiry.Policy.WhenWho" xml:space="preserve"><value>Когда · кто</value></data>
+  <data name="Expiry.Policy.Setting" xml:space="preserve"><value>Настройка</value></data>
+  <data name="Expiry.Policy.OldNew" xml:space="preserve"><value>Было → стало</value></data>
+  <data name="Expiry.Policy.HistoryEmpty" xml:space="preserve"><value>Изменений пока нет.</value></data>
+  <data name="Expiry.Policy.ProductsSubtitle" xml:space="preserve"><value>Из MDM · только чтение · исправляется в MDM</value></data>
+  <data name="Expiry.Policy.ProductsFooter" xml:space="preserve"><value>К значениям «Не задано» правило не применяется; значение исправляется в карточке товара в MDM.</value></data>
+  <data name="Expiry.Policy.ProductsEmpty" xml:space="preserve"><value>В компании нет товаров с партионным запасом.</value></data>
+  <data name="Expiry.Policy.ShelfLife" xml:space="preserve"><value>Срок годности</value></data>
+  <data name="Expiry.Policy.Retest" xml:space="preserve"><value>Переконтроль</value></data>
+  <data name="Expiry.Policy.MinRemaining" xml:space="preserve"><value>Мин. остаток</value></data>
+  <data name="Expiry.Policy.Undefined" xml:space="preserve"><value>Не задано</value></data>
+  <data name="Expiry.Evidence.Subtitle" xml:space="preserve"><value>Исключения, подписи, изменения политики и сводка соблюдения за период — для аудита</value></data>
+  <data name="Expiry.Evidence.Period" xml:space="preserve"><value>Период</value></data>
+  <data name="Expiry.Evidence.Preset.q" xml:space="preserve"><value>Этот квартал</value></data>
+  <data name="Expiry.Evidence.Preset.d30" xml:space="preserve"><value>Последние 30 дней</value></data>
+  <data name="Expiry.Evidence.Preset.ytd" xml:space="preserve"><value>С начала года</value></data>
+  <data name="Expiry.Evidence.Preset.custom" xml:space="preserve"><value>Диапазон дат</value></data>
+  <data name="Expiry.Evidence.From" xml:space="preserve"><value>С</value></data>
+  <data name="Expiry.Evidence.To" xml:space="preserve"><value>По</value></data>
+  <data name="Expiry.Evidence.Preview" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Expiry.Evidence.DownloadPdf" xml:space="preserve"><value>Скачать PDF</value></data>
+  <data name="Expiry.Evidence.DownloadCsv" xml:space="preserve"><value>Скачать CSV</value></data>
+  <data name="Expiry.Evidence.PreviewTitle" xml:space="preserve"><value>Просмотр · пакет доказательств FEFO / сроков годности</value></data>
+  <data name="Expiry.Evidence.PeriodLine" xml:space="preserve"><value>с {0} по {1}</value></data>
+  <data name="Expiry.Evidence.Summary" xml:space="preserve"><value>Сводные показатели</value></data>
+  <data name="Expiry.Evidence.Exceptions" xml:space="preserve"><value>Исключения периода и решения по ним</value></data>
+  <data name="Expiry.Evidence.PolicyChanges" xml:space="preserve"><value>Изменения политики за период</value></data>
+  <data name="Expiry.Evidence.Bypasses" xml:space="preserve"><value>Отпуски вне FEFO</value></data>
+  <data name="Expiry.Evidence.NoType" xml:space="preserve"><value>№ · тип</value></data>
+  <data name="Expiry.Evidence.Awaiting" xml:space="preserve"><value>Ожидает решения</value></data>
+  <data name="Expiry.Evidence.NoExceptions" xml:space="preserve"><value>За период исключений нет.</value></data>
+  <data name="Expiry.Evidence.NoPolicyChanges" xml:space="preserve"><value>За период изменений политики нет.</value></data>
+  <data name="Expiry.Evidence.NoBypasses" xml:space="preserve"><value>За период отпусков вне FEFO нет.</value></data>
+  <data name="Expiry.Evidence.Issues" xml:space="preserve"><value>Отпуски в рамках FEFO</value></data>
+  <data name="Expiry.Evidence.IssuesValue" xml:space="preserve"><value>{0} · вне FEFO {1}</value></data>
+  <data name="Expiry.Evidence.LotsAvailableHeld" xml:space="preserve"><value>{0} партий · доступно {1} · удержано {2}</value></data>
+  <data name="Expiry.Evidence.LotsQuantity" xml:space="preserve"><value>{0} партий · {1}</value></data>
+  <data name="Expiry.Evidence.OpenLate" xml:space="preserve"><value>{0} · с нарушением срока {1}</value></data>
+  <data name="Expiry.Evidence.AvgResolution" xml:space="preserve"><value>Среднее время решения</value></data>
+  <data name="Expiry.Evidence.Log" xml:space="preserve"><value>Журнал выгрузок</value></data>
+  <data name="Expiry.Evidence.LogEmpty" xml:space="preserve"><value>Выгрузок пока нет.</value></data>
+  <data name="Expiry.Evidence.Rows" xml:space="preserve"><value>{0} строк</value></data>
+  <data name="Expiry.Evidence.CopyHash" xml:space="preserve"><value>Скопировать значение SHA-256</value></data>
+  <data name="Expiry.Evidence.Copied" xml:space="preserve"><value>SHA-256 скопирован.</value></data>
+  <data name="Expiry.Evidence.Exported" xml:space="preserve"><value>{0} создан ({1}) и записан в журнал.</value></data>
+  <data name="Expiry.Band.FefoOkTitle" xml:space="preserve"><value>Порядок FEFO соблюдён</value></data>
+  <data name="Expiry.Band.FefoOkText" xml:space="preserve"><value>Выбранная партия — первая в порядке.</value></data>
+  <data name="Expiry.Band.FefoFirst" xml:space="preserve"><value>Есть партия с более ранним сроком: {0} (годен до {1})</value></data>
+  <data name="Expiry.Band.FefoWarnText" xml:space="preserve"><value>Отпуск возможен; регистрируется исключение FEFO_BYPASS.</value></data>
+  <data name="Expiry.Band.FefoReasonText" xml:space="preserve"><value>Укажите обоснование, чтобы продолжить; откроется исключение FEFO_BYPASS.</value></data>
+  <data name="Expiry.Band.FefoBlockText" xml:space="preserve"><value>Отпуск из этой партии запрещён. Сначала используйте партию из порядка FEFO.</value></data>
+  <data name="Expiry.Band.ReasonLabel" xml:space="preserve"><value>Обоснование отпуска вне FEFO</value></data>
+  <data name="Expiry.Band.ReasonHelp" xml:space="preserve"><value>Не менее 10 символов. Записывается в исключение FEFO_BYPASS.</value></data>
+  <data name="Expiry.Band.ReasonMin" xml:space="preserve"><value>Обоснование должно содержать не менее 10 символов.</value></data>
+  <data name="Expiry.Band.MinOkTitle" xml:space="preserve"><value>Остаточный срок: {0} дн. · минимум {1} дн. ✓</value></data>
+  <data name="Expiry.Band.MinOkText" xml:space="preserve"><value>Партию можно принять.</value></data>
+  <data name="Expiry.Band.MinBelowTitle" xml:space="preserve"><value>Остаточный срок: {0} дн. · ниже минимума {1} дн.</value></data>
+  <data name="Expiry.Band.MinWarnText" xml:space="preserve"><value>Предупреждение: принять можно; откроется исключение BELOW_MIN_REMAINING.</value></data>
+  <data name="Expiry.Band.MinQuarText" xml:space="preserve"><value>Партия принимается в карантин (MOD-0175); откроется исключение BELOW_MIN_REMAINING.</value></data>
+  <data name="Expiry.Band.MinRejectText" xml:space="preserve"><value>Приёмка отклонена; партия не приходуется.</value></data>
+  <data name="Expiry.Band.MinBelowText" xml:space="preserve"><value>При проведении применяется правило компании (предупреждение, карантин или отказ).</value></data>
+  <data name="Expiry.Band.MinUndefined" xml:space="preserve"><value>Минимальный остаточный срок не задан в мастер-данных: правило не применяется.</value></data>
+  <data name="Expiry.Band.ResubmitTitle" xml:space="preserve"><value>Остаточный срок {0} дн. · ниже минимума {1} дн.</value></data>
+  <data name="Expiry.Band.ResubmitText" xml:space="preserve"><value>Правило компании «автоматически в карантин»: движение отправляется повторно в QUARANTINE.</value></data>
+  <data name="Expiry.Band.ResubmitAlert" xml:space="preserve"><value>Партия ниже минимального остаточного срока. Движение повторно отправлено в QUARANTINE вместо AVAILABLE с новым ключом запроса.</value></data>
+  <data name="Expiry.Band.SuggestTitle" xml:space="preserve"><value>Предложенные даты</value></data>
+  <data name="Expiry.Band.DiffersTitle" xml:space="preserve"><value>Дата отличается от предложенной</value></data>
+  <data name="Expiry.Band.SuggestExpiry" xml:space="preserve"><value>Предложенный срок годности {0} (дата производства + {1} дн.)</value></data>
+  <data name="Expiry.Band.SuggestRetest" xml:space="preserve"><value>переконтроль {0} (+{1} дн.)</value></data>
+  <data name="Expiry.Band.NoRetest" xml:space="preserve"><value>срок переконтроля не применяется</value></data>
+  <data name="Expiry.Band.UseSuggestion" xml:space="preserve"><value>Использовать предложенную дату</value></data>
+  <data name="Expiry.Band.DiffersReason" xml:space="preserve"><value>Отличается от предложенной — обоснование</value></data>
+  <data name="Expiry.Band.DiffersPlaceholder" xml:space="preserve"><value>например, взят срок из CoA поставщика</value></data>
+  <data name="Expiry.Band.NoteReason" xml:space="preserve"><value>При сохранении создаётся исключение EXPIRY_DATE_OVERRIDE · правило: обоснование</value></data>
+  <data name="Expiry.Band.NoteSign" xml:space="preserve"><value>При сохранении создаётся исключение EXPIRY_DATE_OVERRIDE · правило: обоснование + эл. подпись (откроется окно MOD-0022)</value></data>
+  <data name="Expiry.Band.NoteServer" xml:space="preserve"><value>При сохранении создаётся исключение EXPIRY_DATE_OVERRIDE; правило компании при необходимости запросит эл. подпись.</value></data>
+  <data name="Expiry.Band.OverrideFailed" xml:space="preserve"><value>Не удалось подготовить отклонение даты.</value></data>
+  <data name="Expiry.Band.SignUnavailable" xml:space="preserve"><value>Окно подписи нельзя открыть на этой странице; отклонение даты требует подписи.</value></data>
+  <data name="Expiry.Band.SignCancelled" xml:space="preserve"><value>Окно подписи закрыто: партия не сохранена.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_REQUIRED" xml:space="preserve"><value>Дата отличается от предложенной: требуется обоснованное отклонение.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED" xml:space="preserve"><value>Отклонение даты требует электронной подписи.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH" xml:space="preserve"><value>Подпись не относится к этому отклонению. Подготовьте и подпишите заново.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_MISMATCH" xml:space="preserve"><value>Подготовленное отклонение не совпадает с датами партии; проверьте даты и сохраните снова.</value></data>
+  <data name="Expiry.Band.Errors.EXPIRY_NO_SUGGESTION" xml:space="preserve"><value>В мастер-данных нет срока годности: отклонение не нужно.</value></data>
+  <data name="Expiry.Band.Errors.EXPIRY_DATE_EQUALS_SUGGESTION" xml:space="preserve"><value>Введённая дата совпадает с предложенной: отклонение не нужно.</value></data>
+  <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>Обоснование должно содержать не менее 10 символов.</value></data>
+  <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Мастер-данные товара сейчас недоступны; повторите позже.</value></data>
+  <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>У вас нет права готовить отклонение даты.</value></data>
+  <data name="Expiry.Evidence.EnglishFallback" xml:space="preserve"><value>Этот документ создан на английском языке (выбранный язык не поддерживается в PDF)</value></data>
+</root>

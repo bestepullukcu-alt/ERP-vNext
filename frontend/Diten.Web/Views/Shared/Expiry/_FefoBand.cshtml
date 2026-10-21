@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@*
+    MOD-0176 F5 — the outbound FEFO band of the movement form (pack §8.3.1, KF-B; mockup "ex" 3). ExpiryBands.movement.onSource draws it from
+    the server's FEFO order when the source row's lot is not the first; the reason (≥ 10) travels as fefoBypassReason; "Engelle" disables the
+    post. The posting hook decides — its 422 is drawn here too.
+*@
+<div id="ex-band-movement" class="d-none" role="status" aria-live="polite"></div>
+<div id="ex-band-reason-group" class="mb-2 d-none">
+    <label class="form-label fw-medium" for="ex-band-reason">@Localizer["Expiry.Band.ReasonLabel"] *</label>
+    <textarea class="form-control" id="ex-band-reason" rows="2" maxlength="1000"></textarea>
+    <div class="form-text">@Localizer["Expiry.Band.ReasonHelp"]</div>
+</div>

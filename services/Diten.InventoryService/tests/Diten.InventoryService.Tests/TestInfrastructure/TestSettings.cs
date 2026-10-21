@@ -59,6 +59,8 @@ public static class TestSettings
             Environment.SetEnvironmentVariable("Inventory__Quarantine__IntakeSweeperEnabled", "false");
             // MOD-0175 Q4: the retest hold sweeper (start + periodic) scans every tenant too; tests drive RetestHoldSweeper directly.
             Environment.SetEnvironmentVariable("Inventory__Quarantine__RetestSweeperEnabled", "false");
+            // MOD-0176 F1: the expired-on-hand / SLA sweeper scans every tenant too; tests drive ExpiredOnHandSweeper directly.
+            Environment.SetEnvironmentVariable("Inventory__Expiry__SweeperEnabled", "false");
             _applied = true;
         }
     }

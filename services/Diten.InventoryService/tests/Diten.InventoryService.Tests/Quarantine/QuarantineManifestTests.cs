@@ -99,7 +99,10 @@ public sealed class QuarantineManifestTests
         Assert.All(QuarantinePermissions.All, k => Assert.Contains(k, reachable));
 
         var enforced = typeof(QuarantineController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-            .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>()).Select(a => a.Policy!["Permission:".Length..]).ToHashSet(StringComparer.Ordinal);
+            .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>()).Select(a => a.Policy!["Permission:".Length..])
+            .Concat(typeof(QuarantineController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .SelectMany(m => m.GetCustomAttributes<HasAnyPermissionAttribute>()).SelectMany(a => a.Permissions)) // WP-MVP1-FIX-LIVE3
+            .ToHashSet(StringComparer.Ordinal);
         Assert.True(enforced.Count >= 6);
         Assert.All(enforced, k => Assert.Contains(k, reachable));
     }
@@ -110,8 +113,7 @@ public sealed class QuarantineManifestTests
         var route = typeof(QuarantineController).GetCustomAttribute<RouteAttribute>()!.Template;
         Assert.Equal("api/quarantine", route);
         var actions = typeof(QuarantineController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToList();
-        // createDecision / submitDecision check the kind's key in the action (three possible keys, like TRACE updateLot)
-        Assert.All(actions.Where(a => a.Name is not ("CreateDecision" or "SubmitDecision")),
-            a => Assert.NotNull(a.GetCustomAttribute<HasPermissionAttribute>()));
+        // WP-MVP1-FIX-LIVE3: no exception any more — createDecision / submitDecision carry [HasAnyPermission] of the three decision keys
+        Assert.All(actions, a => Assert.True(a.GetCustomAttribute<HasPermissionAttribute>() is not null || a.GetCustomAttribute<HasAnyPermissionAttribute>() is not null, a.Name));
     }
 }

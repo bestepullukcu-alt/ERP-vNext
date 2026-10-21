@@ -1,0 +1,53 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@*
+    MOD-0177 R7a — the decision dialog of the three signed decisions (pack §8.8): "Kapsamı onayla", "Etkinlik kontrolünü tamamla", "Vakayı kapat".
+    Step 1 "Karar": the fields of the decision → prepare (the server stores the PendingAction for 15 minutes and says whether the company's
+    MOD-0022 policy asks for a signature). Step 2 "E-imza": "İmzala ve kaydet" opens the ONE MOD-0022 dialog (ESign.open — no password field
+    here) and then sends the command with the signatureId; when the policy asks for none the step says so and "Kaydet" sends it unsigned.
+    The calls are case-decision.js's (measured by the Node test); this file only holds the fields.
+*@
+<div class="modal fade" id="rc-sign-modal" tabindex="-1" aria-labelledby="rc-sign-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form class="modal-content" id="rc-sign-form" novalidate>
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="rc-sign-title"></h5>
+                    <div class="d-flex gap-3 small mt-1">
+                        <span class="fw-medium" id="rc-sign-step1">@Localizer["Recall.Sign.Step1"]</span>
+                        <span class="text-muted" id="rc-sign-step2">@Localizer["Recall.Sign.Step2"]</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Recall.Common.Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="small mb-3" id="rc-sign-lines"></ul>
+                <div id="rc-sign-fields">
+                    <div class="mb-3 d-none" data-sign-field="note">
+                        <label class="form-label" for="rc-sign-note" id="rc-sign-note-label"></label>
+                        <textarea class="form-control" id="rc-sign-note" rows="3" maxlength="1000"></textarea>
+                        <div class="invalid-feedback">@Localizer["Recall.Common.ReasonMin"]</div>
+                    </div>
+                    <div class="mb-3 d-none" data-sign-field="summary">
+                        <label class="form-label" for="rc-sign-summary">@Localizer["Recall.Sign.Summary"]</label>
+                        <textarea class="form-control" id="rc-sign-summary" rows="3" maxlength="2000"></textarea>
+                        <div class="invalid-feedback">@Localizer["Recall.Common.ReasonMin"]</div>
+                    </div>
+                    <div class="mb-3 d-none" data-sign-field="acceptance">
+                        <div class="alert alert-warning small py-2 mb-2">@Localizer["Recall.Sign.AcceptWarn"]</div>
+                        <label class="form-label" for="rc-sign-acceptance">@Localizer["Recall.Sign.Acceptance"]</label>
+                        <textarea class="form-control" id="rc-sign-acceptance" rows="2" maxlength="1000"></textarea>
+                        <div class="invalid-feedback">@Localizer["Recall.Common.ReasonMin"]</div>
+                    </div>
+                </div>
+                <div class="alert alert-info small d-none" id="rc-sign-ready" role="status"></div>
+                <div class="alert alert-danger small d-none" id="rc-sign-error" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Recall.Common.Cancel"]</button>
+                <button type="submit" class="btn btn-primary" id="rc-sign-next">@Localizer["Recall.Sign.Next"]</button>
+                <button type="button" class="btn btn-primary d-none" id="rc-sign-commit"><i class="bx bx-pen me-1"></i><span id="rc-sign-commit-text"></span></button>
+            </div>
+        </form>
+    </div>
+</div>

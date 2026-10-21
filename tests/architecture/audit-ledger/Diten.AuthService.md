@@ -61,10 +61,15 @@ Bu liste de **yalnız küçülür**: komut kapalı-başarısız yola geçince sa
 
 Liste nasıl çıkarıldı: yol `b` ile denetlenen sekiz kullanıcı yaşam döngüsü komutunun hepsi (kimlik). `IUserAuditRecorder` yerel yazımı ve iletimi hata olursa yutar.
 
+CT kararı 2026-10-14 (WP-MVP1-AUDIT1, `CT-DECISIONS.md`): MOD-0022 e-imza yeniden kimlik doğrulama komutları (`ConsumeESignTicketCommand`, `IssueESignWindowTicketCommand`, `ReauthenticateForESignCommand`) aynı `IUserAuditRecorder` ile merkezi günlüğe iletilir ve en iyi çaba yazdığı için bu listeye alındı (8 → 11). Kapanış: FU-0022-AUD-02 (önce-yaz kalıbı, `WriteOnceAsync`).
+
 - AdminResetPasswordCommand
 - AssignRoleCommand
+- ConsumeESignTicketCommand
 - CreateUserCommand
 - DeleteUserCommand
+- IssueESignWindowTicketCommand
+- ReauthenticateForESignCommand
 - ResendUserInvitationCommand
 - RevokeRoleCommand
 - SetUserActiveStatusCommand

@@ -162,20 +162,12 @@ public sealed class ESignatureSettingsController : CustomBaseController
 
     /// <summary>
     /// §4.20 listMeanings — key <c>esign.meanings.read</c> OR <c>esign.signatures.sign</c> (the dialog lists meanings).
-    /// [HasPermission] takes one key, so this action checks the pair itself with the same evaluator.
+    /// [HasAnyPermission] (WP-MVP1-SEC-ESIGN1) — the either-key rule is declared, so A1 and the guards see both keys.
     /// </summary>
     [HttpGet("meanings")]
-    [Authorize]
-    public async Task<IActionResult> ListMeanings([FromQuery] bool activeOnly = false, CancellationToken ct = default)
-    {
-        if (!PermissionClaimEvaluator.Evaluate(User.Claims, ESignPermissions.MeaningsRead).IsSatisfied
-            && !PermissionClaimEvaluator.Evaluate(User.Claims, ESignPermissions.SignaturesSign).IsSatisfied)
-        {
-            return CreateActionResultInstance(Response<object>.Fail("Permission denied.", 403, "PERMISSION_DENIED"));
-        }
-
-        return CreateActionResultInstance(await _mediator.Send(new ListMeaningsQuery(activeOnly), ct));
-    }
+    [HasAnyPermission(ESignPermissions.MeaningsRead, ESignPermissions.SignaturesSign)]
+    public async Task<IActionResult> ListMeanings([FromQuery] bool activeOnly = false, CancellationToken ct = default) =>
+        CreateActionResultInstance(await _mediator.Send(new ListMeaningsQuery(activeOnly), ct));
 
     /// <summary>§4.21 createMeaning.</summary>
     [HttpPost("meanings")]

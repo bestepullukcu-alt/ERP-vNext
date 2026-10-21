@@ -129,7 +129,8 @@ public sealed class LedgerImmutabilityArchitectureTests
     /// <summary>
     /// No DELETE anywhere. PUT exists only where a frozen contract names a whole-record replacement of MASTER DATA, never a
     /// stock record: QUARANTINE-BUNDLE 1.0.0 saveSettings (<c>PUT /settings</c>) and updateBlockReason
-    /// (<c>PUT /block-reasons/{code}</c>) — exactly these two, by controller + template (WP-0175-Q1).
+    /// (<c>PUT /block-reasons/{code}</c>) — exactly these two, by controller + template (WP-0175-Q1) — and FEFO-BUNDLE 1.0.0
+    /// updatePolicy (<c>PUT /api/expiry/policy</c>, the company's expiry policy, WP-0176-F1).
     /// </summary>
     [Fact]
     public void No_controller_in_the_service_exposes_put_or_delete()
@@ -143,8 +144,15 @@ public sealed class LedgerImmutabilityArchitectureTests
 
         Assert.NotEmpty(routes);
         Assert.DoesNotContain(routes, r => r.Verb == "DELETE");
+        // RECALL-BUNDLE 1.0.0 updateSettings (PUT /api/recall/settings — the company's recall settings, master data, WP-0177-R1): exactly
+        // this one recall PUT; it is taken out here so the list below stays as frozen (any other recall PUT still turns it red).
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "RecallController:settings");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "RecallController:settings");
+        // RECALL-BUNDLE updateDrillPlan (PUT /api/recall/drill-plans/{planId} — a drill plan, master data, frozen since 1.0.0, served by WP-0177-R5)
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
         Assert.Equal(
-            ["QuarantineController:block-reasons/{code}", "QuarantineController:settings"],
+            ["ExpiryController:policy", "QuarantineController:block-reasons/{code}", "QuarantineController:settings"],
             routes.Where(r => r.Verb == "PUT").Select(r => r.Route).OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
