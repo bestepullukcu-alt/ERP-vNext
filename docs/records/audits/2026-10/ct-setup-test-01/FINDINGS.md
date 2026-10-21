@@ -45,6 +45,7 @@ iletildi.
 | S-11 | Kural paketi `module-pack-author` ajanına hazırlatır ama ajan Claude Code / Codex'e aktarılmamıştı; CT paketi kendisi düzeltti. CT'nin incelemeye itirazı inceleyene geri dönmüyordu | Setup | 🟡 | alt ajan (yapılandırma + metin) | yapıldı — ajan `.claude/agents/` ve `.codex/agents/`'a aktarıldı (model: inherit, CT model/effort yazar); skill §5 + SOP §20.4/2; skill bütçesi 7500 → 8000; çapalar silinince --check FAIL |
 | S-12 | Kabul edilmiş bir iş (ABB listesi, BL-553: kabul `9020e844f`) main'e hiç girmemiş, yalnız yerel bir dalda duruyordu; kabul kaydı işin main'de olduğunu doğrulamıyor | Setup (işletim) | 🔴 | sahip + sonraki paket | açık — dal yedek olarak push edildi (PR yok); kural önerisi: kabul ya da kapanış, işin commit'inin main'de olduğunu ölçsün |
 | S-13 | CT'nin rolü (karar verir, ölçer, denetler; işi devreder; kod işi için bağlı alt oturum açar, prompt'u sahibe taşıtmaz; yalnız küçük kayıt işlerini kendisi yapar) skill'de açık değil | Setup | 🟡 | sahip onayı (2026-10-21) | yapıldı — skill §5 + çapa; cümle silinince --check FAIL |
+| S-14 | Sahip için block başına tek bir iş takip görünümü yok (CRM ekibinin önerisi CT-TRK-01) | Setup (yeni özellik) | 🟡 | alt ajan (metin) | yapıldı — uyarlanmış hali SOP §22.2 + skill §6 (pilot PVG; depo kaynak, sayfa görünüm; sayfa özel); çapa silinince --check FAIL |
 
 ## Model bulguları (düzeltme gerekmez, sonraki modülde yeniden ölçülür)
 
@@ -70,6 +71,6 @@ iletildi.
 | K-3 | `abb-accept` (ABB listesi, 8 commit) yedek olarak push edildi; main'e alınıp alınmayacağı | MDM işinin sahibi karar verir |
 | K-4 | Kaydedilmemiş iş içeren worktree'ler: platform-owned-mongo (12 dosya, BL-595), mdm+product-takeover (4 dosya), live-main (yerel ayar) | Sahipleriyle bakılmalı; silinmedi |
 | K-5 | S-5 (dağıtım kapısı) Codex kod denetimi | Hazır: dal `chore/agents/ct-apr-03` (yerel, push yok; 3 commit, 719788b7e), ZIP `s5-codex-01.zip` (sha256 b38ad7b1…) ve prompt; bağımsız alt ajan 3 turdan sonra KOŞULLU→düzeltildi. Codex'e sahip gönderir |
-| K-7 | S-5 R3-2: bu sürümün kendi geçerli incelemesi varsa önceki sürümlerin bütün olumsuzları bilgiye düşer (CT önerisi; ör. "sahip TBD" bulgusu sahip doldurulup yeniden incelenince takılmaz) | Sahip onayı; Codex'e de sorulur |
+| K-7 | S-5 D2: önceki sürümün olumsuzu ne zaman bilgiye düşer | **Karar (sahip, 2026-10-21): seçenek 2, koşullu** — yalnız olumsuzdan sonra yapılmış ve o incelemeyi adıyla (bulgu dosyası özetinin ilk 8 hanesi) değerlendiren kendi geçerli incelemesi olan sürümde. Codex S-5 denetimi (Q2) bu biçimi önerdi |
 | K-8 | S-5 yürüyen iş koruması pratikte hiçbir gerçek dağıtımda devreye girmez (dağıtım yalnız READY/REWORK'ten; yeniden açılan iş korunmaz); yürüyen iş zaten yeniden dağıtılmaz, kabulde yalnız olumsuzlar durdurur; legacy sce-mvp6 kuyruğunda module sütunu olmadığı için koruma yok | Bilgi; sahip kabul eder ya da değiştirir |
 | K-6 | PR #176 (PR-1) merge | CODEOWNERS: CEO ya da kıdemli geliştirici |
