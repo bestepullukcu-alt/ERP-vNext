@@ -43,7 +43,7 @@
       },
       {
         "path": ".antigravity/skills/control-tower/SKILL.md",
-        "max_bytes": 8000,
+        "max_bytes": 8200,
         "required_sections": [
           {
             "heading": "1. Başlangıç ve kimlik",

@@ -57,8 +57,8 @@ Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır
      worktree açar (`git worktree add -b chore/ct/<q>-ct-01 --no-track .claude/worktrees/<q>-ct-01 origin/main`);
      kuyruk ya da kayıt satırı yazmaz (`--prepare` sınırı).
   5. **Başkasının işi.** Açık bir oturum süreçten ölçülemez (oturum taşınsa da süreç klasörü değişmez). Hedef worktree
-     kirliyse ya da son 60 dakikada değişmişse (`git -C <wt> log -g -1 --format=%cr`, `find <wt> -newermt '-60
-     minutes' -not -path '*/.git*' | head -1`) tek soru sor: "Bu worktree'de açık başka bir CT var mı? evet: geçmem /
+     kirliyse ya da son 60 dakikada değişmişse (`git -C <wt> log -g -1 --format=%cr`, `find <wt> -mmin -60 -not -path
+     '*/.git*' | head -1`; macOS'ta denendi — `-newermt '-60 minutes'` orada hata verir, S-20) tek soru sor: "Bu worktree'de açık başka bir CT var mı? evet: geçmem /
      hayır: geçerim". `origin/main` gerisindeyse yazma; ilk soru `git merge --no-edit origin/main` (merge commit;
      çakışmada `git merge --abort`).
   6. **Geçemiyorsan devam etme.** Araç oturumu taşıyamıyorsa (Codex) worktree'yi hazırla ve yeni oturumun açılacağı
@@ -92,6 +92,9 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
 ```
 
 - Araç raporu yalnız ekrana yazar; Control Tower onu tek yönlendirmeyle iş paketinin kanıt yoluna kaydeder.
+- İlk çağrıda (dosyaya yazılmaz) rapor uzunsa (yüzlerce `ref:` satırı) ekrandan süzülerek okunur:
+  `… --discover "<ad>" | grep -v '^ref:'` — `ÖZET`, `kaynak`, `BULGU`, `EKSİK`, `İNCELENEN REF'LER` ve `sonuç`
+  satırları okunur; ref satırları yalnız sayılır. Süzme yine kesilirse inceleme "kısmi"dir (S-21).
 - Rapor: aracın kimliği (commit + betiğin SHA-256'sı), sorgu, `origin/main` SHA'sı ve son fetch zamanı, incelenen
   kaynakların kimlikleri, eksikler, sonuç ve çıkış kodu.
 - Raporun son satırı `rapor-sha256: <hex>`. Değer, bu satır **hariç** önceki bütün satırların `\n` ile birleştirilip
