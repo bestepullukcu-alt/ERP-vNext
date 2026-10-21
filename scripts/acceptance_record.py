@@ -38,8 +38,9 @@ main or at the record's commit (once added, its absence is a refusal): the bound
 the dispatch gate's own negative set (scripts/prompt_gate.py review_negatives: the review file's append-only history on
 main first; this version, every reviewed version with the same body and every version it is exempt from) — any UYGUN
 DEĞİL, open ENGEL or untrusted review record refuses the acceptance (exit 1), protected running work included. A product
-record (a MOD-nnnn module) whose commit is at or after the start must bind module_pack, and the bound commit must be an
-ancestor of the verified code commit; older records stay as they were. No review at all is not a stop here. A shallow
+record (a MOD-nnnn module) whose commit is not strictly before the start must bind module_pack; the bound commit must be
+an ancestor of the verified code commit and the pack's bytes at the code commit must be the bound bytes; older records
+stay as they were. No review at all is not a stop here. A shallow
 repository is refused.
 
 The künye's `commit` is the verified code tree; the record itself is read at RECORD@COMMIT, a different commit.
@@ -282,9 +283,9 @@ class Git:
         out = self._run("diff", "--name-only", "-z", "--no-renames", a, b, "--", ok_fail=True)
         return None if out is None else self._paths(out, "diff")
 
-    def s5(self, record_at, module_pack, pdata, code_commit, product):
+    def s5(self, record_at, module_pack, pdata, code_commit, product, declared=None):
         """S-5: (start commit short or None when the rule never started, [(reason, next step or None)])."""
-        return s5_acceptance(self.root, record_at, module_pack, pdata, code_commit, product)
+        return s5_acceptance(self.root, record_at, module_pack, pdata, code_commit, product, declared)
 
     def v2_records(self, ref: str = "HEAD") -> dict[str, str]:
         """{path: text} of every v2 record committed at ref under docs/records/ (the supersedes graph)."""
@@ -320,10 +321,15 @@ def gate():
 
 
 def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str] | None, pdata: bytes | None,
-                  code_commit: str, product: bool) -> tuple[str | None, list[tuple[str, str | None]]]:
+                  code_commit: str, product: bool, declared: bool | None = None) -> tuple[str | None, list[tuple[str, str | None]]]:
     """S-5 for one acceptance record: (the start, short — None when the rule never started (F-8); the problems, each
-    with its next step or None for the review default). record_at: the record's own commit (None = unknown, read as
-    'after the start'). A deleted start record is a refusal; a shallow repository is a refusal."""
+    with its next step or None for the review default). record_at: the record's own commit; the record is under the
+    rule unless that commit is strictly before the start (N-2, the CT-APR-02 reading: a branch forked before the rule
+    is not 'before' it); unknown = under the rule. declared: the künye names a module_pack at all (N-7: a malformed or
+    missing one already has its own ENGEL). Under the rule the bound pack commit is an ancestor of the verified code
+    commit AND the pack's bytes at the code commit are the bound bytes (N-1). A deleted start record and a shallow
+    repository are refusals."""
+    declared = module_pack is not None if declared is None else declared
     pg = gate()
     pa = _load("pack_approval_s5", ROOT / "scripts" / "pack_approval.py")
     label = "?"
@@ -341,21 +347,28 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
         if start is None:
             return None, []
         ancestor = lambda a, b: bool(a and b) and pa.git(root, "merge-base", "--is-ancestor", a, b, ok_fail=True) is not None
-        after = record_at is None or ancestor(start, ref)
+        rec = pa.commit_of(root, record_at) if record_at else None
+        after = rec is None or not pa.strictly_before(root, rec, start)
         out: list[tuple[str, str | None]] = []
-        if after and product and module_pack is None:
-            out.append(("kayıt kural başlangıcından sonra yazılmış bir ürün işi kaydı ama module_pack bağlamıyor — kabul "
+        if after and product and not declared:
+            out.append(("kayıt kural altında (commit'i başlangıçtan kesin olarak önce değil) bir ürün işi kaydı ama module_pack bağlamıyor — kabul "
                         "edilen paket sürümü ve incelemesi ölçülemez",
                         "künyeye module_pack: <paket yolu>@<40 haneli commit> ekle (REP-001 §6.1)"))
         if module_pack is not None and pdata is not None:
             path, at = module_pack
             at_full = pa.commit_of(root, at)
-            if after and not ancestor(at_full, pa.commit_of(root, code_commit)):
+            code_full = pa.commit_of(root, code_commit)
+            if after and not ancestor(at_full, code_full):
                 out.append((f"bağlı paket commit'i {at[:9]} doğrulanan kod commit'inin ({code_commit[:9]}) atası değil — "
                             "kod bu paket sürümünden üretilmemiş", "module_pack'i kod ağacının geçmişindeki paket "
                             "sürümüne bağla"))
-            stops = pg.review_negatives(pa, root, main, at_full or main, path, pdata)[0]
-            out += [(f"bağlı paket sürümü (sha {pa.sha256(pdata)[:8]}): {x}", None) for x in stops]
+            elif after and (pa.read(root, code_full, path) if code_full else None) != pdata:
+                out.append((f"doğrulanan kod commit'inde ({code_commit[:9]}) paket, bağlanan sürüm ({at[:9]}, sha "
+                            f"{pa.sha256(pdata)[:8]}) değil — eski bir paket sürümüne bağlanmış", "module_pack'i doğrulanan "
+                            "kod commit'indeki paket sürümüne bağla (o sürümün incelemesi okunur)"))
+            stops, _cover, _notes, step = pg.review_negatives(pa, root, main, at_full or main, path, pdata)
+            out += [(f"bağlı paket sürümü (sha {pa.sha256(pdata)[:8]}): {x}", f"{step}; yürüyen iş de bu sonuçla kabul "
+                     "edilmez") for x in stops]
         return start[:9], out
     except (pa.Unreadable, UnicodeDecodeError, OSError, ValueError, KeyError) as e:
         return label, [(f"incelemeler ölçülemedi — {e}", None)]
@@ -649,7 +662,7 @@ def check_record(text: str, read, exists, records: dict[str, str] | None, expect
         eng.append(s5_line("?", "S-5 ölçülemedi — git erişimi yok", None, s5_pack[0] if s5_pack else None))
     else:
         start, problems = s5(record_at, (s5_pack[0], s5_pack[1]) if s5_pack else None, s5_pack[2] if s5_pack else None,
-                             f["commit"], bool(PRODUCT_MODULE.search(f["module"])))
+                             f["commit"], bool(PRODUCT_MODULE.search(f["module"])), declared=bool(f.get("module_pack")))
         eng += [s5_line(start or "?", why, step, s5_pack[0] if s5_pack else None) for why, step in problems]
     if f["decision"] == "accepted":
         for r in rows:
@@ -1096,7 +1109,7 @@ def self_test() -> int:
             paths = {p for (c, p) in self.fs if c in (a, b)}
             return sorted(p for p in paths if self.fs.get((a, p)) != self.fs.get((b, p)))
         # S-5: the rule has not started in this fixture (a real repository below)
-        def s5(self, record_at, module_pack, pdata, code_commit, product): return None, []
+        def s5(self, record_at, module_pack, pdata, code_commit, product, declared=None): return None, []
 
     def run(text, fs=files, records=None, path="docs/records/audits/2026-10/x/kayit.md", exp=expect, ex=exists, ops=None,
             record_at=None):
@@ -1348,9 +1361,9 @@ def self_test() -> int:
         def __init__(self, fs, repo, pack_at, code_at):
             super().__init__(fs)
             self.repo, self.pack_at, self.code_at = repo, pack_at, code_at
-        def s5(self, record_at, module_pack, pdata, code_commit, product):
+        def s5(self, record_at, module_pack, pdata, code_commit, product, declared=None):
             mp = (module_pack[0], self.pack_at) if module_pack else None
-            return s5_acceptance(self.repo.root, record_at, mp, pdata, self.code_at, product)
+            return s5_acceptance(self.repo.root, record_at, mp, pdata, self.code_at, product, declared)
 
     def s5_run(repo, pk_text, pack_at, code_at, record_at, mp=True):
         fs = bound(pk_text=pk_text)
@@ -1427,6 +1440,33 @@ def self_test() -> int:
     r_e2 = s5_run(re_, late_pack, later, code, re_.head())
     cases.append(("sabotage S-5 F-3c: the bound pack commit is not an ancestor of the verified code commit -> refused",
                   r_e2[0] == 1 and any("atası değil" in e for e in s5e(r_e2))))
+    # N-2: a record on a branch forked BEFORE the start, written after it, is under the rule (not strictly before)
+    re_.g("checkout", "-q", "-b", "stale", before)
+    stale = re_.commit_file("docs/x.md", "kayıt\n")
+    re_.g("checkout", "-q", "main")
+    r_n2 = s5_run(re_, V, before, code, stale, mp=False)
+    cases.append(("sabotage S-5 N-2: a product record on a branch forked before the start (written after it) is under the "
+                  "rule -> no module_pack refused", r_n2[0] == 1 and any("module_pack bağlamıyor" in e for e in s5e(r_n2))))
+    # N-7: a malformed module_pack, or one missing at its commit, gives its own ENGEL only — not also 'bağlamıyor'
+    fs7 = bound()
+    ops7 = GitOps(fs7, re_, before, code)
+    r_n7a = run(rec(_extra_fm="module_pack: execution/domains/x/MOD-0151.md@abc\n"), fs=fs7, ops=ops7, record_at=re_.head())
+    r_n7b = run(rec(_extra_fm=good_mp), fs=files, ops=GitOps(files, re_, before, code), record_at=re_.head())
+    cases.append(("sabotage S-5 N-7: a malformed module_pack, or one missing at its commit -> one clear ENGEL, no extra "
+                  "'module_pack bağlamıyor'", r_n7a[0] == 1 and r_n7b[0] == 1 and any("commit'te yok" in e for e in eng(r_n7b))
+                  and not any("module_pack bağlamıyor" in e for e in eng(r_n7a) + eng(r_n7b))))
+    # N-1: the record binds an OLD pack version (an ancestor of the code) while the code carries a newer one
+    rn = S5Repo(os.path.join(s5_tmp.name, "n1"))
+    VOLD = pack(good_ac, after="\n## Notes\n- eski not\n")
+    p_old = rn.commit_file(PK, VOLD)
+    rn.commit_file(PK, V)
+    rn.start()
+    code_n = rn.commit_file("src/x.txt", "kod\n")
+    r_n1 = s5_run(rn, VOLD, p_old, code_n, rn.head())
+    r_n1ok = s5_run(rn, V, code_n, code_n, rn.head())
+    cases.append(("sabotage S-5 N-1: the bound pack version is an ancestor but not the pack at the verified code commit -> "
+                  "refused; the code commit's own version -> exit 0", r_n1[0] == 1
+                  and any("eski bir paket sürümüne bağlanmış" in e for e in s5e(r_n1)) and r_n1ok[0] == 0))
     # F — F-6: a shallow clone
     shallow = os.path.join(s5_tmp.name, "f")
     subprocess.run(["git", "clone", "-q", "--depth", "1", "file://" + rb.root, shallow], check=True, capture_output=True,

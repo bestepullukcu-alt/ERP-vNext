@@ -14,6 +14,11 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
   (künye dışı) bu sürümle aynı olan her incelenmiş sürüm ve bu sürümün muaf uzaklıkta olduğu her incelenmiş sürüm. Herhangi
   birinde `UYGUN DEĞİL`, açık bir ENGEL, bozuk bir kayıt ya da main'e başka birinin merge'iyle gelmemiş bir satır
   dağıtımı durdurur. Geçmişte bulunamayan bir incelenmiş sürümün olumsuz görünen satırı da durdurur.
+- **Yeniden inceleme çıkışı:** bu sürümün main'de kendi inceleme satırları varsa ve geçiyorsa, yalnız gövdesi aynı (künye
+  değişikliği muaf olmayan) sürümlerden ya da geçmişte bulunamayan sürümlerden gelen olumsuzlar BİLGİ olur, durdurmaz.
+  Muaf uzaklıktaki bir sürümün olumsuzu her zaman durdurur: tarih ya da TBD doldurma bir bulguyu düzeltemez; paket esaslı
+  değişmelidir. Önce `reviews.tsv`'nin main geçmişi bozuksa (satır silindi ya da yeri değişti) her şey durur; çıkış,
+  silinen satırları aynı sırayla geri ekleyen, CODEOWNERS onaylı bir PR'dır.
 - **Olumlu kapsama (dar küme):** yalnız bu sürümün ya da bu sürümün muaf uzaklıkta olduğu bir sürümün (tarih alanı;
   `owner` / `reviewer` alanının TBD'den doldurulması; yalnız satır sonu boşluğu) geçerli incelemesi dağıtımı açar. Önceki
   olumlu bir inceleme hiçbir olumsuzu gizlemez.
@@ -23,11 +28,14 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
   `INTEGRATED`; sce-mvp6: `IN-PROGRESS`) ve satırın `module` alanı bu paketin modül kimliğini göstermelidir. Ayrıca kuyruk
   dosyasının yolu, satırın modülü ve paket dosyası o andan beri aynı kalmalı; satır bugün yeniden açılmış (`READY`,
   `REWORK`) olmamalıdır. Bunlardan biri tutmazsa iş kapıdan geçer ve ENGEL nedenini söyler. Eski kuyruk istisna değildir.
+  `module` sütunu olmayan bir kuyruğun (bugün sce-mvp6) satırları hiç korunmaz; bu bilinen bir sonuçtur ve gerçek bir
+  dağıtımı etkilemez, çünkü dağıtım yalnız `READY` ya da `REWORK` satırından başlar ve yeniden açılmış satır korunmaz.
 - **Kabul:** `acceptance_record.py check`, bu dosya main'de ya da kaydın commit'inde varsa, kaydın bağladığı paket
   sürümüne (`module_pack`) dağıtım kapısının aynı olumsuz kümesini uygular; olumsuz varsa kabulü reddeder (çıkış 1),
-  korunan yürüyen iş dahil. Kaydın commit'i başlangıçta ya da sonrasındaysa ürün işi kaydı (`module` alanında MOD
-  kimliği) `module_pack` bağlamalıdır ve bağlanan commit doğrulanan kod commit'inin atası olmalıdır. Daha eski kayıtlar
-  değişmez.
+  korunan yürüyen iş dahil. Kaydın commit'i başlangıçtan kesin olarak önce değilse (başlangıçtan önce ayrılmış bir dalda
+  sonradan yazılan kayıt da kural altındadır) ürün işi kaydı (`module` alanında MOD kimliği) `module_pack` bağlamalıdır;
+  bağlanan commit doğrulanan kod commit'inin atası olmalı ve paketin kod commit'indeki baytları bağlanan sürümle aynı
+  olmalıdır. Daha eski kayıtlar değişmez.
 - **CT-APR-01 onayı değişmez:** bu kural onayın yerine geçmez; inceleme var diye yeni bir ilk HIGH onay istenmez.
 - **Kendini açıklayan ENGEL:** her ENGEL satırı kuralı ve başlangıç commit'inin kısa kimliğini, durma nedenini (koruma
   yoksa nedeni dahil) ve sonraki adımı (`python3 scripts/pack_approval.py review-row …`, SOP §20.4; silinmiş başlangıç

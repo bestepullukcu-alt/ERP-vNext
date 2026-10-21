@@ -48,8 +48,9 @@ What it checks (each is an ENGEL when it fails):
              queue (strict or legacy), needs the pack version at Expected HEAD covered by reviews on main. review_negatives
              (shared with acceptance_record.py): the review file's append-only history on main first; negatives from this
              version, every reviewed version with the same body (outside the künye) and every version this one is exempt
-             from (pack_approval.review_problems at main — any failure stops); a positive cover only from this version or
-             an exempt-reachable one. Protected (only from 'no review', never from a negative): the WP's single row in its
+             from (pack_approval.review_problems at main — any failure stops; when this version's own review rows pass,
+             body-equal and no-history negatives are notes, exempt-reachable ones still stop); a positive cover only
+             from this version or an exempt-reachable one. Protected (only from 'no review', never from a negative): the WP's single row in its
              queue file, read at the start commit, had a state of class 'active' (ct-queue-states.tsv for the queue's
              vocabulary, also read there) and named this pack's module; the queue path, the row's module and the pack
              bytes are unchanged and the row is not re-opened now (READY / REWORK). A shallow repository, a deleted start
@@ -543,48 +544,69 @@ def _body(text: str, pa) -> list[str]:
     return [l.rstrip(" \t\r") for l in pa.split_front(text)[1]]
 
 
-def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes) -> tuple[list[str], list[str], list[str]]:
-    """S-5 (F-1, F-3): (stops, covering versions, notes) for one pack version, from the reviews on MAIN — the one reading
-    of the dispatch gate and of acceptance_record.py.
-      - The review file's append-only history on main is checked FIRST: a deleted or rewritten row stops (review_problems
-        answers 'inceleme yok' before its own append-only check).
-      - Negatives come from the wide set: this exact version, every reviewed version whose body (outside the künye)
-        equals this one's, and every reviewed version from which this one is exempt (pa.review_exempt) — each read with
-        pa.review_problems(…, main, …, main); any failure stops (UYGUN DEĞİL, open ENGEL, broken record, a row that did
-        not reach main through another person's merge). A reviewed version whose bytes are in no history cannot be
-        related: a negative-looking row of it (UYGUN DEĞİL or blockers_open ≠ 0) stops, fail-closed.
-      - A positive cover comes only from the narrow set: this exact version or an exempt-reachable one."""
+REVIEW_STEP = ("UYGUN DEĞİL ya da açık ENGEL varsa önce paketi düzelt; dağıtılacak sürümü bağımsız incelet, satırı "
+               "`python3 scripts/pack_approval.py review-row {path} --findings <bulgu dosyası> …` ile üret ve main'e başka "
+               "birinin merge'iyle al (SOP §20.4 madde 8)")
+WAY_OUT = ("bu sürümü yeniden inceletin (kendi incelemesi geçerse gövdesi aynı / geçmişte olmayan sürümlerin olumsuzları "
+           "bilgiye düşer); muaf uzaklıktaki olumsuz için paket esaslı değişmeli")
+TRAIL_STEP = ("inceleme dosyasının main geçmişi bozuk (satır silindi ya da yeri değişti): silinen satırları aynı sırayla geri "
+              "ekleyen, CODEOWNERS onaylı bir PR gerekir (SOP §20.4 madde 8)")
+
+
+def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes) -> tuple[list[str], list[str], list[str], str]:
+    """S-5 (F-1, F-3, N-3, N-4, N-5): (stops, covering versions, notes, next step) for one pack version, from the reviews
+    on MAIN — the one reading of the dispatch gate and of acceptance_record.py.
+      - The review file's append-only history on main is checked FIRST: a deleted or moved row stops everything, with
+        its own next step (review_problems answers 'inceleme yok' before its own append-only check).
+      - Negatives (pa.review_problems(…, main, …, main); any failure) come from: this exact version; every reviewed
+        version from which this one is exempt (pa.review_exempt) — these ALWAYS stop (a date or a TBD fill cannot fix a
+        finding); every reviewed version whose body (outside the künye) equals this one's; a reviewed version whose
+        bytes are in no history and whose row looks negative (UYGUN DEĞİL or blockers_open ≠ 0), fail-closed.
+      - The last two are 'soft': when this exact version has its own review rows on main and they pass, a soft negative
+        is a note (BİLGİ), not a stop — the version was reviewed again on its own. Without that, they stop (F-1).
+      - A positive cover comes only from this exact version or an exempt-reachable one."""
     digest = pa.sha256(data)
     trail = pa.append_only_problems(root, main, pa.REVIEWS)
     if trail:
-        return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], []
+        return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP
     text = data.decode("utf-8", errors="replace")
     rows = [r for r in pa.review_rows(root, main) if r["target"] == path]
-    stops, cover, notes = [], [], []
+    hard, soft, cover, notes = [], [], [], []
+    own_rows, own_ok = False, False
     for sha in sorted({r["target_sha256"] for r in rows}):
         if sha == digest:
-            old, label, positive = data, f"sha {digest[:8]}", True
-        else:
-            old = pa.version_bytes(root, commit, path, sha) or pa.version_bytes(root, main, path, sha)
-            if old is None:
-                odd = [r for r in rows if r["target_sha256"] == sha and (r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0")]
-                if odd:
-                    stops.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı ve olumsuz sonuç taşıyor — bu sürümle "
-                                 "ilişkisi ölçülemedi")
-                else:
-                    notes.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı — sayılmadı")
-                continue
-            otext = old.decode("utf-8", errors="replace")
-            positive = pa.review_exempt(text, otext)[0]
-            if not positive and _body(otext, pa) != _body(text, pa):
-                notes.append(f"{sha[:8]}'den bu yana değişiklik muaf değil")
-                continue
-            label = f"önceki sürüm {sha[:8]} ({'muaf uzaklıkta' if positive else 'gövdesi aynı'})"
+            fails = pa.review_problems(root, main, path, data, main)[0]
+            own_rows, own_ok = True, not fails
+            hard += [f"sha {digest[:8]}: {f}" for f in fails]
+            if not fails:
+                cover.append(sha)
+            continue
+        old = pa.version_bytes(root, commit, path, sha) or pa.version_bytes(root, main, path, sha)
+        if old is None:
+            if any(r["target_sha256"] == sha and (r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0") for r in rows):
+                soft.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı ve olumsuz sonuç taşıyor — bu sürümle "
+                            "ilişkisi ölçülemedi")
+            else:
+                notes.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı — sayılmadı")
+            continue
+        otext = old.decode("utf-8", errors="replace")
+        exempt = pa.review_exempt(text, otext)[0]
+        if not exempt and _body(otext, pa) != _body(text, pa):
+            notes.append(f"{sha[:8]}'den bu yana değişiklik muaf değil")
+            continue
         fails = pa.review_problems(root, main, path, old, main)[0]
-        stops += [f"{label}: {f}" for f in fails]
-        if positive:
+        label = f"önceki sürüm {sha[:8]} ({'muaf uzaklıkta' if exempt else 'gövdesi aynı'})"
+        (hard if exempt else soft).extend(f"{label}: {f}" for f in fails)
+        if exempt and not fails:
             cover.append(sha)
-    return stops, cover, notes
+    if own_rows and own_ok:
+        notes += [f"bilgi (bu sürümün kendi incelemesi geçerli): {s}" for s in soft]
+        soft = []
+    stops = hard + soft
+    step = REVIEW_STEP.format(path=path)
+    if any(not s.startswith(f"sha {digest[:8]}:") for s in stops):
+        step = f"{WAY_OUT}; {step}"
+    return stops, cover, notes, step
 
 
 PROTECT_CLASS = "active"
@@ -643,6 +665,8 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
     wrong = _SHARED.pack_identity(path, before.decode("utf-8", errors="replace"), re.findall(r"MOD-\d{4}(?:-FU\d+)?", module))
     if wrong:
         return False, f"{wp} satırı kural başlangıcında bu paketin modülünü göstermiyor — {wrong}"
+    if not now:
+        return False, f"{wp} satırının bugünkü hâli ölçülemedi (kuyruk satırı okunamadı)"
     if now.get("module") != module:
         return False, f"{wp} satırının modülü kural başlangıcından beri değişti ({module[:30]} → {str(now.get('module'))[:30]})"
     cur = now.get("state")
@@ -680,15 +704,16 @@ def check_dispatch_review(pa, p: dict, repo, commit: str, q: dict | None) -> tup
         if data is None:
             return [], []          # check_authority reports the missing pack
         protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q)
-        stops, cover, _notes = review_negatives(pa, where, main, commit, path, data)
+        stops, cover, _notes, step = review_negatives(pa, where, main, commit, path, data)
         guard = [f"korunan iş de durur ({why})"] if protected else [f"koruma yok: {why}"]
+        soft_notes = [f"dağıtım kapısı (S-5): {n} ({path})" for n in _notes if n.startswith("bilgi")]
         if stops:
-            return [s5_line(start, guard + stops, path)], []
+            return [s5_line(start, guard + stops, path, step)], soft_notes
         digest = pa.sha256(data)[:8]
         if cover:
             how = ("bu sürümün main'deki incelemesi geçerli" if pa.sha256(data) in cover else
                    f"önceki sürüm incelemesi taşındı ({', '.join(s[:8] for s in cover)} → {digest}): değişiklik yalnız muaf")
-            return [], [f"dağıtım kapısı (S-5): {how} ({path})"]
+            return [], [f"dağıtım kapısı (S-5): {how} ({path})"] + soft_notes
         if protected:
             return [], [f"dağıtım kapısı (S-5): {why} — yürüyen iş korunur, olumsuz inceleme yok ({path})"]
         return [s5_line(start, guard + [f"sha {digest} için main'de geçerli inceleme yok" +
@@ -1759,10 +1784,11 @@ def self_test_dispatch_review(cases: list) -> None:
 
     n = [0]
 
-    def review(path, verdict, findings, blockers):
-        """A findings file for the pack's current version and its review row, on a branch merged by another person."""
+    def review(path, verdict, findings, blockers, text=None):
+        """A findings file for the pack's current version (or `text`) and its review row, on a branch merged by another
+        person."""
         def change():
-            digest = sha256(get(path).encode("utf-8"))
+            digest = sha256((text if text is not None else get(path)).encode("utf-8"))
             rel = f"docs/records/reviews/t/{n[0]:02d}-{digest[:8]}.md"
             put(rel, f"# İnceleme\n\nhedef: {path} @ {digest}\n\n" + "".join(l + "\n" for l in findings))
             row = "\t".join([path, digest, rel, sha256(get(rel).encode("utf-8")), verdict, str(blockers), "claude",
@@ -1772,16 +1798,17 @@ def self_test_dispatch_review(cases: list) -> None:
         via_branch(f"review-{n[0]}", change)
 
     pk = lambda k: f"execution/domains/x/module-packs/MOD-000{k}-x{k}.md"
-    PK, PK2, PK3, PK4, PK5 = (pk(k) for k in range(1, 6))
+    PK, PK2, PK3, PK4, PK5, PK6, PK7, PK8 = (pk(k) for k in range(1, 9))
     QP = "execution/domains/x/work-packs/CT-QUEUE.tsv"
     ver = lambda k: f"---\nid: MOD-000{k}\nstatus: approved\nowner: TBD\nupdated: 2026-10-01\n---\n# X{k}\n\n## Notes\n- a\n"
     g("init", "-q", "-b", "main")
-    for k in range(1, 6):
+    for k in range(1, 9):
         put(pk(k), ver(k))
     put(pa.REVIEWS, "\t".join(pa.REVIEW_COLUMNS) + "\n")
     rows = [("W-RUN", 1, "IN_PROGRESS"), ("W-NEW", 1, "READY"), ("W-OLD", 1, "DISCOVERED"), ("W-RUN2", 2, "VERIFYING"),
             ("W-DUP", 1, "IN_PROGRESS"), ("W-DUP", 1, "IN_PROGRESS"), ("W-LATE", 1, "READY"), ("W-X", 3, "READY"),
-            ("W-RUN4", 4, "IN_PROGRESS"), ("W-RUN5", 5, "INTEGRATED")]
+            ("W-RUN4", 4, "IN_PROGRESS"), ("W-RUN5", 5, "INTEGRATED"), ("W-6", 6, "READY"), ("W-7", 7, "READY"),
+            ("W-8", 8, "READY")]
     put(QP, "id\titem\tmodule\tstate\n" + "".join(f"{w}\tiş\tMOD-000{k}\t{s}\n" for w, k, s in rows))
     reg_cols = _SHARED.REGISTRY_COLUMNS
     reg_row = {c: "x" for c in reg_cols} | {"queue_id": "tq", "path": QP, "vocabulary": "sop7", "strict": "yes"}
@@ -1886,6 +1913,38 @@ def self_test_dispatch_review(cases: list) -> None:
     commit("X2")
     cases.append(("sabotage S-5 F-1: an owner hop after an UYGUN DEĞİL (same body) cannot reach back to the earlier UYGUN "
                   "-> ENGEL ('gövdesi aynı')", has(eng5("W-X", PK3), "gövdesi aynı", "UYGUN DEĞİL")))
+    # N-3: X6' = a künye field (service) changed after a UYGUN DEĞİL; X6' reviewed UYGUN on its own -> the body-equal
+    # negative is a note; N-3b: X7' = X7 + a date after X7's UYGUN DEĞİL, X7' reviewed UYGUN -> still a stop
+    put(PK6, get(PK6).replace("status: approved", "status: approved\nservice: yanlis-servis"))
+    commit("X6 service")
+    review(PK6, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | servis alanı yanlış | kapandı | - | -"], 0)
+    put(PK6, get(PK6).replace("service: yanlis-servis", "service: dogru-servis"))
+    commit("X6 service fixed")
+    cases.append(("sabotage S-5 N-3: a body-equal version's UYGUN DEĞİL without an own review of this version -> ENGEL, "
+                  "the next step names the way out", has(eng5("W-6", PK6), "gövdesi aynı", "yeniden inceletin",
+                                                         "paket esaslı değişmeli")))
+    review(PK6, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    e, i = lim("W-6", PK6)
+    cases.append(("S-5 N-3: this version reviewed UYGUN on its own -> a body-equal version's UYGUN DEĞİL becomes BİLGİ, "
+                  "not a stop (no false stop)", not s5(e) and has(s5(i), "bilgi", "gövdesi aynı")))
+    review(PK7, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
+    put(PK7, get(PK7).replace("updated: 2026-10-01", "updated: 2026-10-25"))
+    commit("X7 date")
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    cases.append(("sabotage S-5 N-3: an exempt-reachable version's UYGUN DEĞİL stops even when this version has its own "
+                  "UYGUN (a date cannot fix a finding)", has(eng5("W-7", PK7), "muaf uzaklıkta", "UYGUN DEĞİL")))
+    # N-4: a draft reviewed UYGUN DEĞİL whose bytes never reached any history
+    review(PK8, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0,
+           text=ver(8).replace("- a\n", "- a\n- taslak kapsam\n"))
+    put(PK8, get(PK8).replace("- a\n", "- a\n- düzeltilmiş kapsam\n"))
+    commit("X8 fixed")
+    cases.append(("sabotage S-5 N-4: a negative review of a version in no history, this version without its own review "
+                  "-> ENGEL from that negative itself (fail-closed), not only 'no review'",
+                  has(eng5("W-8", PK8), "geçmişte bulunamadı ve olumsuz") and not has(eng5("W-8", PK8), "geçerli inceleme yok")))
+    review(PK8, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    e, i = lim("W-8", PK8)
+    cases.append(("S-5 N-4: this version reviewed UYGUN on its own -> the orphan negative becomes BİLGİ",
+                  not s5(e) and has(s5(i), "bilgi", "geçmişte bulunamadı")))
     put(PK, get(PK) + "- yeni kapsam satırı\n")
     commit("body change")
     cases.append(("sabotage S-5: a non-exempt change since the reviewed versions -> ENGEL 'muaf değil'",
@@ -1898,6 +1957,9 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 F-3: a review row deleted from reviews.tsv on main (merged by another) -> ENGEL, protected "
                   "work too ('yalnız ekleme değil')", has(eng5("W-RUN5", PK5, "INTEGRATED"), "yalnız ekleme değil")
                   and has(eng5("W-NEW", PK5), "yalnız ekleme değil")))
+    e = eng5("W-NEW", PK5)
+    cases.append(("sabotage S-5 N-5: the broken review history has its own next step (restore the rows by a CODEOWNERS PR), "
+                  "not review-row", has(e, "main geçmişi bozuk", "CODEOWNERS") and not has(e, "review-row")))
     cases.append(("sabotage S-5: a non-canonical spelling of the pack path ('./') -> ENGEL",
                   has(eng5("W-RUN", "./" + PK, "IN_PROGRESS", "MOD-0001"), "kanonik değil")))
     clone = os.path.join(tmp.name, "shallow")
