@@ -1,0 +1,28 @@
+# Yeniden ölçüm — dal ddcb4ec27 (origin/main 7c0b58783 merge edildi) ve origin/main 7c0b58783, 2026-10-21T11:39:02Z, SDK 10.0.112
+# İki ayrı worktree, filtresiz; ana çalışma dizininde derleme yok; testler hiçbir Mongo'ya bağlanmadı.
+
+### branch
+## procurement
+Passed!  - Failed:     0, Passed:   147, Skipped:     0, Total:   147, Duration: 800 ms - Diten.ProcurementService.Api.Tests.dll (net8.0)
+## architecture
+Failed!  - Failed:     3, Passed:   143, Skipped:     0, Total:   146, Duration: 25 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+## gateway
+Passed!  - Failed:     0, Passed:   313, Skipped:     0, Total:   313, Duration: 9 s - Diten.ApiGateway.Tests.dll (net8.0)
+  red: AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+  red: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+  red: DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+
+### main
+## procurement
+Passed!  - Failed:     0, Passed:   147, Skipped:     0, Total:   147, Duration: 979 ms - Diten.ProcurementService.Api.Tests.dll (net8.0)
+## architecture
+Failed!  - Failed:     3, Passed:   143, Skipped:     0, Total:   146, Duration: 24 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+## gateway
+Passed!  - Failed:     0, Passed:   313, Skipped:     0, Total:   313, Duration: 10 s - Diten.ApiGateway.Tests.dll (net8.0)
+  red: AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous
+  red: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt
+  red: DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders
+
+Sonuç: dal ile main aynı — yeni kırmızı yok. Mimari 3 kırmızı main'in kendisi (DocsPathGuard; AuditTrailStandard x2: CrmService denetimsiz yeni komutlar, SupplyChainService defteri yok).
+Procurement denetim defteri satırı (değişmedi): 35 yazma komutu, 35 bilinen borç, a/b/c denetimli 0; Procurement denetimsiz-yeni listesinde yok.
+Inventory: 67 yazma komutu, 67'si b (CentralAudit) — bağlama örneği.
