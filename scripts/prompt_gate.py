@@ -48,15 +48,19 @@ What it checks (each is an ENGEL when it fails):
              queue (strict or legacy), needs the pack version at Expected HEAD covered by reviews on main. review_negatives
              (shared with acceptance_record.py): the review file's append-only history on main first; negatives from this
              version, every reviewed version with the same body (outside the künye) and every version this one is exempt
-             from (pack_approval.review_problems at main — any failure stops; when this version's own review rows pass,
-             every negative of another version is a note: the reviewer of this version settled it); a positive cover
-             only from this version or an exempt-reachable one; a malformed reviews.tsv row stops with its own step. Protected (only from 'no review', never from a negative): the WP's single row in its
-             queue file, read at the start commit, had a state of class 'active' (ct-queue-states.tsv for the queue's
-             vocabulary, also read there) and named this pack's module; the queue path, the row's module and the pack
-             bytes are unchanged and the row is not re-opened now (READY / REWORK). A shallow repository, a deleted start
-             record and a non-canonical pack path are refusals. --prepare only reports. Every ENGEL names the rule and its
-             start, the reason (with the protection-loss reason), the next step, and tells a Control Tower session opened
-             before the rule to take main and open a new session
+             from (pack_approval.review_problems at main — any failure stops). Owner-approved 2026-10-21, conditional:
+             other versions' negatives become notes only when an own passing review row of this version comes after
+             every such negative row and its findings file names each by its findings_sha256's first 8 hex. A positive
+             cover only from this version or an exempt-reachable one; a malformed reviews.tsv row and a broken
+             append-only history stop with their own steps. An ENGEL accepted in a review read for this version needs a
+             valid HIGH CT-APR-01 approval row for exactly this sha whose approver is the acceptor. Protected (only from
+             'no review', never from a negative): the WP's single row in its queue file, read at the start commit, had a
+             state of class 'active' (ct-queue-states.tsv for the queue's vocabulary, also read there) and named this
+             pack's module; the queue path, the row's scope columns (item, module) and the pack bytes are
+             unchanged and the row is not re-opened now (READY / REWORK). A shallow repository, a deleted start record
+             and a non-canonical pack path are refusals. --prepare only reports. Every ENGEL names the rule and its
+             start, the reason (with the protection-loss reason), the next step, and tells a Control Tower session
+             opened before the rule to take main and open a new session
   risk       §9.1 signals from the fixed list; any signal means HIGH; allowed paths that touch migrations, the
              gateway or authorization need the matching signal
   queue      the WP row and scripts/ct_queue.py's own require decision (require_decision) say dispatchable
@@ -547,51 +551,68 @@ def _body(text: str, pa) -> list[str]:
 REVIEW_STEP = ("UYGUN DEĞİL ya da açık ENGEL varsa önce paketi düzelt; dağıtılacak sürümü bağımsız incelet, satırı "
                "`python3 scripts/pack_approval.py review-row {path} --findings <bulgu dosyası> …` ile üret ve main'e başka "
                "birinin merge'iyle al (SOP §20.4 madde 8)")
-WAY_OUT = "bu sürümü yeniden inceletin; kendi incelemesi geçerse önceki sürümlerin olumsuzları bilgiye düşer"
-TRAIL_STEP = ("inceleme dosyasının main geçmişi bozuk (satır silindi ya da yeri değişti): silinen satırları aynı sırayla geri "
-              "ekleyen, CODEOWNERS onaylı bir PR gerekir (SOP §20.4 madde 8)")
+SETTLE_STEP = ("olumsuzdan sonra yapılan ve {names} incelemesini adıyla değerlendiren yeni bir inceleme gerekir (bu sürümün "
+               "kendi incelemesi; bulgu dosyasında her olumsuz incelemenin bulgu özetinin ilk 8 hanesi geçmeli)")
+TRAIL_STEP = ("inceleme dosyasının main geçmişi bozuk: {commits} satır sildi ya da yerini değiştirdi; bu commit geçmişte kalır, "
+              "satırları sonradan geri eklemek bunu temizlemez — çözüm sahip kararı ister (ör. yeni bir kayıtlı başlangıç; "
+              "SOP §20.4 madde 8)")
 ROW_STEP = ("reviews.tsv satır {n} biçimi bozuk: o satırı düzelten CODEOWNERS onaylı bir PR gerekir (SOP §20.4 madde 8)")
+ACCEPT_STEP = ("kabul edilmiş ENGEL'i taşıyan sürüm için ENGEL'i kabul eden kişinin onayladığı, HIGH sayılan bir CT-APR-01 "
+               "onay satırı gerekir: `python3 scripts/pack_approval.py row {path} … --risk HIGH`, main'e başka birinin "
+               "merge'iyle (SOP §20.4 madde 4)")
 
 
-def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes) -> tuple[list[str], list[str], list[str], str]:
-    """S-5 (F-1, F-3, N-3, N-4, N-5, R3-2, R3-3): (stops, covering versions, notes, next step) for one pack version,
-    from the reviews on MAIN — the one reading of the dispatch gate and of acceptance_record.py.
-      - The review file's append-only history on main is checked FIRST: a deleted or moved row stops everything, with
-        its own next step (review_problems answers 'inceleme yok' before its own append-only check). A malformed row
+def _negative_rows(rows: list[dict]) -> list[dict]:
+    """The rows of one version that carry its negative: UYGUN DEĞİL or an open ENGEL count; when none of them does (a
+    broken record, a row not merged by another person) every row of that version must be settled."""
+    return [r for r in rows if r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0"] or rows
+
+
+def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes) -> tuple[list[str], list[str], list[str], str, set]:
+    """S-5 (F-1, F-3, N-3, N-4, N-5, R3-3, Q2, Q4, Q5): (stops, covering versions, notes, next step, the person keys that
+    accepted an ENGEL in a review read for this version) for one pack version, from the reviews on MAIN — the one
+    reading of the dispatch gate and of acceptance_record.py.
+      - The review file's append-only history on main is checked FIRST: a deleted or moved row stops everything; the
+        offending commit stays in history, so re-adding rows never clears it (an owner decision). A malformed row
         (pa.review_rows refuses the whole file) stops everything too, with a next step naming that row.
       - Negatives (pa.review_problems(…, main, …, main); any failure) come from: this exact version; every reviewed
         version from which this one is exempt (pa.review_exempt); every reviewed version whose body (outside the
         künye) equals this one's; a reviewed version whose bytes are in no history and whose row looks negative
-        (UYGUN DEĞİL or blockers_open ≠ 0), fail-closed.
-      - CT proposal pending owner approval (R3-2): when this exact version has its own review rows on main and they pass, the reviewer of
-        THIS version has settled it — every negative from another version is a note (BİLGİ), not a stop. Without an
-        own passing review, all of them stop (F-1, F-3a).
+        (UYGUN DEĞİL or blockers_open ≠ 0), fail-closed. Every one of them stops.
+      - Owner-approved 2026-10-21 (Q2, conditional, nothing broader): the negatives of OTHER versions become notes only
+        when this exact version has an own passing review row whose commit comes after (descends from) the commit of
+        EVERY such negative review row on main, and whose findings file names each of those negative reviews by the
+        first 8 hex of its findings_sha256. An older own UYGUN never settles a later negative.
       - A positive cover comes only from this exact version or an exempt-reachable one."""
     digest = pa.sha256(data)
     trail = pa.append_only_problems(root, main, pa.REVIEWS)
     if trail:
-        return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP
+        commits = ", ".join(sorted(set(re.findall(r"([0-9a-f]{12})'de yalnız ekleme değil", " ".join(trail))))) or "bir commit"
+        return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP.format(commits=commits), set()
     text = data.decode("utf-8", errors="replace")
     try:
         rows = [r for r in pa.review_rows(root, main) if r["target"] == path]
     except (pa.Unreadable, UnicodeDecodeError) as e:
         line = re.search(r"satır (\d+)", str(e))
-        return [f"{pa.REVIEWS} main'de okunamadı — {e}"], [], [], ROW_STEP.format(n=line.group(1) if line else "?")
-    own, others, cover, notes = [], [], [], []
-    own_rows, own_ok = False, False
+        return [f"{pa.REVIEWS} main'de okunamadı — {e}"], [], [], ROW_STEP.format(n=line.group(1) if line else "?"), set()
+    own, others, cover, notes, accepted, others_acc = [], [], [], [], set(), set()
+    own_ok = False
     for sha in sorted({r["target_sha256"] for r in rows}):
+        mine = [r for r in rows if r["target_sha256"] == sha]
         if sha == digest:
-            fails = pa.review_problems(root, main, path, data, main)[0]
-            own_rows, own_ok = True, not fails
+            fails, _n, acc, _e = pa.review_problems(root, main, path, data, main)
+            own_ok = not fails
+            accepted |= acc
             own += [f"sha {digest[:8]}: {f}" for f in fails]
             if not fails:
                 cover.append(sha)
             continue
         old = pa.version_bytes(root, commit, path, sha) or pa.version_bytes(root, main, path, sha)
         if old is None:
-            if any(r["target_sha256"] == sha and (r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0") for r in rows):
-                others.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı ve olumsuz sonuç taşıyor — bu sürümle "
-                            "ilişkisi ölçülemedi")
+            odd = [r for r in mine if r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0"]
+            if odd:
+                others.append((f"incelenen sürüm {sha[:8]} geçmişte bulunamadı ve olumsuz sonuç taşıyor — bu sürümle "
+                               "ilişkisi ölçülemedi", odd))
             else:
                 notes.append(f"incelenen sürüm {sha[:8]} geçmişte bulunamadı — sayılmadı")
             continue
@@ -600,22 +621,72 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
         if not exempt and _body(otext, pa) != _body(text, pa):
             notes.append(f"{sha[:8]}'den bu yana değişiklik muaf değil")
             continue
-        fails = pa.review_problems(root, main, path, old, main)[0]
+        fails, _n, acc, _e = pa.review_problems(root, main, path, old, main)
         label = f"önceki sürüm {sha[:8]} ({'muaf uzaklıkta' if exempt else 'gövdesi aynı'})"
-        others.extend(f"{label}: {f}" for f in fails)
-        if exempt and not fails:
-            cover.append(sha)
-    if own_rows and own_ok:
-        notes += [f"bilgi (bu sürümün kendi incelemesi geçerli): {s}" for s in others]
-        others = []
-    stops = own + others
+        if fails:
+            negs = _negative_rows(mine)
+            others += [(f"{label}: {f}", negs) for f in fails]
+            others_acc |= acc
+        else:
+            accepted |= acc
+            if exempt:
+                cover.append(sha)
     step = REVIEW_STEP.format(path=path)
-    if any(not s.startswith(f"sha {digest[:8]}:") for s in stops):
-        step = f"{WAY_OUT}; {step}"
-    return stops, cover, notes, step
+    if others:
+        negs = {r["_n"]: r for _m, rs in others for r in rs}.values()
+        names = ", ".join(sorted({r["findings_sha256"][:8] for r in negs}))
+        if own_ok and settles(pa, root, main, [r for r in rows if r["target_sha256"] == digest], list(negs)):
+            notes += [f"bilgi (bu sürümün sonraki kendi incelemesi {names} incelemesini adıyla değerlendirdi): {m}"
+                      for m, _r in others]
+            accepted |= others_acc
+            others = []
+        else:
+            step = f"{SETTLE_STEP.format(names=names)}; {step}"
+    return own + [m for m, _r in others], cover, notes, step, accepted
+
+
+def settles(pa, root: str, main: str, own_rows: list[dict], negs: list[dict]) -> bool:
+    """Q2: one own (passing) review row whose commit descends from every negative row's commit and whose findings file
+    (read at main) names every negative review by its findings_sha256's first 8 hex."""
+    neg_commits = [pa.row_commit(root, main, r["_n"], pa.REVIEWS) for r in negs]
+    for r in own_rows:
+        c = pa.row_commit(root, main, r["_n"], pa.REVIEWS)
+        if not all(n != c and pa.git(root, "merge-base", "--is-ancestor", n, c, ok_fail=True) is not None for n in neg_commits):
+            continue
+        found = pa.read(root, main, r["findings"])
+        lines = (found or b"").decode("utf-8", errors="replace").split("\n")
+        if all(any(n["findings_sha256"][:8] in l for l in lines) for n in negs):
+            return True
+    return False
+
+
+def accepted_engel_problem(pa, root: str, main: str, path: str, digest: str, accepted: set) -> str | None:
+    """Q4: an ENGEL accepted in a review read for this version needs a CT-APR-01 approval row on main for exactly this
+    SHA, valid (pack_approval.judge + today_problems), effectively HIGH, whose approver's person key (approvers.tsv as
+    it was on main before the row's merge) is the acceptor. An old, unchanged pack's legacy approval is not enough."""
+    rows = pa.approval_rows(root, main, path)
+    if not rows or rows[-1]["action"] != "approve" or rows[-1]["pack_sha256"] != digest:
+        return (f"bu sürümün incelemesinde kabul edilmiş ENGEL var ({', '.join(sorted(accepted))}) ama main'de bu sürüm "
+                f"(sha {digest[:8]}) için son satır olan bir CT-APR-01 onay satırı yok — eski onay ya da 'değişmedi' yetmez")
+    ctx = pa.Ctx(root, main, path)
+    i = len(ctx.rows) - 1
+    fails, _out, effective, _needed = pa.judge(ctx, i)
+    fails = fails + pa.today_problems(ctx, i)
+    if fails:
+        return f"kabul edilmiş ENGEL'i taşıyan sürümün onay satırı geçersiz — {fails[0]}"
+    if effective != "HIGH":
+        return "kabul edilmiş ENGEL'i taşıyan sürümün onayı HIGH değil"
+    merge = pa.main_merge(root, main, pa.row_commit(root, main, rows[-1]["_n"]))[0]
+    listed = pa.approvers_at(root, f"{merge}^1") if merge else {}
+    person = listed.get(rows[-1]["approver"], {}).get("person")
+    if accepted != {person}:
+        return (f"ENGEL'i kabul eden ({', '.join(sorted(accepted))}) onay satırının onaylayanı değil "
+                f"({person or rows[-1]['approver']}) — riski yalnız onaylayan üstlenir")
+    return None
 
 
 PROTECT_CLASS = "active"
+SCOPE_COLUMNS = ("item", "module")      # Q1: what a queue row's scope is; the rest of the row is bookkeeping
 REOPENED_CLASSES = ("dispatchable", "rework")
 REOPENED_STATES = ("READY", "REWORK")
 
@@ -624,8 +695,8 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
     """S-5 (3; F-2, F-4; owner decision 2026-10-21): (protected?, why). Read AT the start commit: the queue's registry row
     (by queue_id, else by path; the path unchanged), its vocabulary's state classes (ct-queue-states.tsv), and the WP's
     single queue row — its state's class is 'active' and its module names this pack's identity (ct_queue.pack_identity,
-    as check_authority reads a row). The pack is byte-identical to its version there, the row's module is unchanged now,
-    and the row is not re-opened now (READY / REWORK, or a dispatchable / rework class). Anything not proven goes through
+    as check_authority reads a row). The pack is byte-identical to its version there, the row's scope (SCOPE_COLUMNS:
+    item, module; Q1) is unchanged now, and the row is not re-opened now (READY / REWORK, or a dispatchable / rework class). Anything not proven goes through
     the gate; the reason is always given."""
     q = q or {}
     qpath, qid, now = q.get("path"), q.get("queue_id"), q.get("row") or {}
@@ -675,6 +746,12 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
         return False, f"{wp} satırının bugünkü hâli ölçülemedi (kuyruk satırı okunamadı)"
     if now.get("module") != module:
         return False, f"{wp} satırının modülü kural başlangıcından beri değişti ({module[:30]} → {str(now.get('module'))[:30]})"
+    # Q1 (CT decision 2026-10-21, after Codex Q1): the row's scope is its SCOPE_COLUMNS — the same now as at the start; bookkeeping
+    # columns (owner, since, record, …) change during normal work and are not compared
+    then = dict(zip(table.header, rows[0]))
+    moved = [c for c in SCOPE_COLUMNS if then.get(c) != now.get(c)]
+    if moved:
+        return False, f"satırın kapsamı kural başlangıcından beri değişti ({', '.join(moved[:4])})"
     cur = now.get("state")
     if not cur:
         return False, f"{wp} satırının bugünkü durumu ölçülemedi"
@@ -710,12 +787,16 @@ def check_dispatch_review(pa, p: dict, repo, commit: str, q: dict | None) -> tup
         if data is None:
             return [], []          # check_authority reports the missing pack
         protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q)
-        stops, cover, _notes, step = review_negatives(pa, where, main, commit, path, data)
+        stops, cover, _notes, step, accepted = review_negatives(pa, where, main, commit, path, data)
         guard = [f"korunan iş de durur ({why})"] if protected else [f"koruma yok: {why}"]
         soft_notes = [f"dağıtım kapısı (S-5): {n} ({path})" for n in _notes if n.startswith("bilgi")]
         if stops:
             return [s5_line(start, guard + stops, path, step)], soft_notes
         digest = pa.sha256(data)[:8]
+        if accepted:
+            bad = accepted_engel_problem(pa, where, main, path, pa.sha256(data), accepted)
+            if bad:
+                return [s5_line(start, guard + [bad], path, ACCEPT_STEP.format(path=path))], soft_notes
         if cover:
             how = ("bu sürümün main'deki incelemesi geçerli" if pa.sha256(data) in cover else
                    f"önceki sürüm incelemesi taşındı ({', '.join(s[:8] for s in cover)} → {digest}): değişiklik yalnız muaf")
@@ -1800,22 +1881,28 @@ def self_test_dispatch_review(cases: list) -> None:
             row = "\t".join([path, digest, rel, sha256(get(rel).encode("utf-8")), verdict, str(blockers), "claude",
                              "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-10-21"])
             put(pa.REVIEWS, get(pa.REVIEWS) + row + "\n")
+            out.append(sha256(get(rel).encode("utf-8"))[:8])
         n[0] += 1
+        out = []
         via_branch(f"review-{n[0]}", change)
+        return out[0]          # the findings file's sha8 — how a later review names this one (Q2)
 
-    pk = lambda k: f"execution/domains/x/module-packs/MOD-000{k}-x{k}.md"
-    PK, PK2, PK3, PK4, PK5, PK6, PK7, PK8 = (pk(k) for k in range(1, 9))
+    pk = lambda k: f"execution/domains/x/module-packs/MOD-{k:04d}-x{k}.md"
+    PK, PK2, PK3, PK4, PK5, PK6, PK7, PK8, PK9, PK10, PK11, PK12 = (pk(k) for k in range(1, 13))
     QP = "execution/domains/x/work-packs/CT-QUEUE.tsv"
-    ver = lambda k: f"---\nid: MOD-000{k}\nstatus: approved\nowner: TBD\nupdated: 2026-10-01\n---\n# X{k}\n\n## Notes\n- a\n"
+    ver = lambda k: f"---\nid: MOD-{k:04d}\nstatus: approved\nowner: TBD\nupdated: 2026-10-01\n---\n# X{k}\n\n## Notes\n- a\n"
     g("init", "-q", "-b", "main")
-    for k in range(1, 9):
+    for k in range(1, 13):
         put(pk(k), ver(k))
     put(pa.REVIEWS, "\t".join(pa.REVIEW_COLUMNS) + "\n")
-    rows = [("W-RUN", 1, "IN_PROGRESS"), ("W-NEW", 1, "READY"), ("W-OLD", 1, "DISCOVERED"), ("W-RUN2", 2, "VERIFYING"),
+    rows = [("W-RUN", 1, "IN_PROGRESS"), ("W-BOOK", 11, "IN_PROGRESS"), ("W-NEW", 1, "READY"), ("W-OLD", 1, "DISCOVERED"), ("W-RUN2", 2, "VERIFYING"),
             ("W-DUP", 1, "IN_PROGRESS"), ("W-DUP", 1, "IN_PROGRESS"), ("W-LATE", 1, "READY"), ("W-X", 3, "READY"),
             ("W-RUN4", 4, "IN_PROGRESS"), ("W-RUN5", 5, "INTEGRATED"), ("W-6", 6, "READY"), ("W-7", 7, "READY"),
-            ("W-8", 8, "READY")]
-    put(QP, "id\titem\tmodule\tstate\n" + "".join(f"{w}\tiş\tMOD-000{k}\t{s}\n" for w, k, s in rows))
+            ("W-8", 8, "READY"), ("W-9", 9, "READY"), ("W-10", 10, "READY"), ("W-12", 12, "READY")]
+    put(QP, "id\titem\tmodule\tstate\towner\tsince\trecord\n"
+        + "".join(f"{w}\tiş\tMOD-{k:04d}\t{s}\tCT\t2026-10-01\t-\n" for w, k, s in rows))
+    put(pa.APPROVALS, "\t".join(pa.APPROVAL_COLUMNS) + "\n")
+    put(pa.APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\n")
     reg_cols = _SHARED.REGISTRY_COLUMNS
     reg_row = {c: "x" for c in reg_cols} | {"queue_id": "tq", "path": QP, "vocabulary": "sop7", "strict": "yes"}
     put(_SHARED.REGISTRY.relative_to(_SHARED.ROOT).as_posix(),
@@ -1829,7 +1916,7 @@ def self_test_dispatch_review(cases: list) -> None:
     mod = lambda path: re.search(r"MOD-\d{4}", path).group(0)
 
     def q_for(wp, now, module):
-        return {"path": QP, "queue_id": "tq", "strict": False, "row": {"id": wp, "module": module, "state": now}}
+        return {"path": QP, "queue_id": "tq", "strict": False, "row": {"id": wp, "item": "iş", "module": module, "state": now}}
 
     def lim(wp="W-NEW", path=PK, now="READY", module=None, prepare=False, q="default", rp=None):
         p = {"task_class": "ürün", "authority": path, "wp": wp, "slices": None}
@@ -1873,6 +1960,19 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 F-2: the running WP's row names MOD-0001 at the start, the prompt names MOD-0002's pack "
                   "(unchanged, never reviewed) -> not protected -> ENGEL", has(eng5("W-RUN", PK2, "IN_PROGRESS", "MOD-0002"),
                                                                                  "modülünü göstermiyor")))
+    cases.append(("sabotage S-5 Q1: the running WP's row 'item' (its scope) widened after the start, module, pack and state "
+                  "unchanged -> not protected -> ENGEL naming the column",
+                  has(eng5("W-RUN", now="IN_PROGRESS", q=dict(q_for("W-RUN", "IN_PROGRESS", "MOD-0001"),
+                      row={"id": "W-RUN", "item": "bütün yazma ve silme işleri", "module": "MOD-0001", "state": "IN_PROGRESS"})),
+                      "satırın kapsamı kural başlangıcından beri değişti (item)")))
+    book = lambda **over: dict(q_for("W-BOOK", "IN_PROGRESS", "MOD-0011"), row={
+        "id": "W-BOOK", "item": "iş", "module": "MOD-0011", "state": "IN_PROGRESS", "owner": "CT", "since": "2026-10-01",
+        "record": "-"} | over)
+    cases.append(("sabotage S-5 Q1 (CT decision): bookkeeping columns (owner, since, record) changed while running -> still "
+                  "protected; the scope column 'item' changed -> not protected",
+                  not eng5("W-BOOK", PK11, "IN_PROGRESS", q=book(owner="PVG CT", since="2026-10-22", record="docs/r.md@abc1234"))
+                  and has(eng5("W-BOOK", PK11, "IN_PROGRESS", q=book(item="bütün yazma işleri")),
+                          "satırın kapsamı kural başlangıcından beri değişti (item)")))
     cases.append(("sabotage S-5 F-2: the row's module edited after the start -> protection lost -> ENGEL",
                   has(eng5("W-RUN", PK, "IN_PROGRESS", "MOD-0001, MOD-0002"), "modülü kural başlangıcından beri değişti")))
     cases.append(("sabotage S-5: a WP only planned (DISCOVERED, class planned) at the start -> ENGEL with that reason",
@@ -1923,32 +2023,68 @@ def self_test_dispatch_review(cases: list) -> None:
     # negative is a note; N-3b: X7' = X7 + a date after X7's UYGUN DEĞİL, X7' reviewed UYGUN -> still a stop
     put(PK6, get(PK6).replace("status: approved", "status: approved\nservice: yanlis-servis"))
     commit("X6 service")
-    review(PK6, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | servis alanı yanlış | kapandı | - | -"], 0)
+    neg6 = review(PK6, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | servis alanı yanlış | kapandı | - | -"], 0)
     put(PK6, get(PK6).replace("service: yanlis-servis", "service: dogru-servis"))
     commit("X6 service fixed")
     cases.append(("sabotage S-5 N-3: a body-equal version's UYGUN DEĞİL without an own review of this version -> ENGEL, "
-                  "the next step names the way out", has(eng5("W-6", PK6), "gövdesi aynı", "yeniden inceletin",
-                                                         "önceki sürümlerin olumsuzları bilgiye düşer")))
-    review(PK6, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+                  "the next step names the way out", has(eng5("W-6", PK6), "gövdesi aynı", f"{neg6} incelemesini adıyla "
+                                                         "değerlendiren yeni bir inceleme")))
+    review(PK6, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz inceleme: {neg6}"], 0)
     e, i = lim("W-6", PK6)
     cases.append(("S-5 N-3: this version reviewed UYGUN on its own -> a body-equal version's UYGUN DEĞİL becomes BİLGİ, "
                   "not a stop (no false stop)", not s5(e) and has(s5(i), "bilgi", "gövdesi aynı")))
-    review(PK7, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
+    neg7 = review(PK7, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
     put(PK7, get(PK7).replace("updated: 2026-10-01", "updated: 2026-10-25"))
     commit("X7 date")
-    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz inceleme: {neg7}"], 0)
     e, i = lim("W-7", PK7)
-    cases.append(("S-5 R3-2 (CT proposal, owner approval pending): this version reviewed UYGUN on its own settles it — an exempt-reachable "
-                  "version's UYGUN DEĞİL becomes BİLGİ, not a stop", not s5(e) and has(s5(i), "bilgi", "muaf uzaklıkta")))
+    cases.append(("S-5 Q2 (owner-approved 2026-10-21): a later own UYGUN of this version naming the exempt-reachable "
+                  "version's UYGUN DEĞİL review settles it -> BİLGİ, not a stop", not s5(e) and has(s5(i), "bilgi", "muaf uzaklıkta")))
+    # Q2 temporal: X9 = Y9 + a date; X9's own UYGUN comes first, Y9's UYGUN DEĞİL later -> the older own UYGUN settles
+    # nothing; a later own UYGUN that does not name it settles nothing; a later one naming it settles
+    y9 = get(PK9)
+    put(PK9, y9.replace("updated: 2026-10-01", "updated: 2026-10-02"))
+    commit("X9")
+    # the older own UYGUN even names the (predictable) findings sha8 of the later negative: only the order is wrong
+    neg9_lines = ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"]
+    pre9 = sha256((f"# İnceleme\n\nhedef: {PK9} @ {sha256(y9.encode('utf-8'))}\n\n"
+                   + "".join(l + "\n" for l in neg9_lines)).encode("utf-8"))[:8]
+    review(PK9, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz inceleme: {pre9}"], 0)
+    neg9 = review(PK9, "UYGUN DEĞİL", neg9_lines, 0, text=y9)
+    cases.append(("sabotage S-5 Q2: an OLDER own UYGUN (even naming the negative's sha8) does not settle a LATER negative "
+                  "of an exempt-related version -> ENGEL with the 'adıyla değerlendiren' step",
+                  pre9 == neg9 and has(eng5("W-9", PK9), "muaf uzaklıkta", "UYGUN DEĞİL", f"{neg9} incelemesini adıyla değerlendiren")))
+    review(PK9, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    cases.append(("sabotage S-5 Q2: a later own UYGUN that does not name the negative review's findings sha8 -> ENGEL",
+                  has(eng5("W-9", PK9), "muaf uzaklıkta", "UYGUN DEĞİL")))
+    review(PK9, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz inceleme: {neg9}"], 0)
+    e, i = lim("W-9", PK9)
+    cases.append(("S-5 Q2: a later own UYGUN naming the negative review settles it -> BİLGİ", not s5(e) and has(s5(i), "bilgi")))
+    # Q4: an ENGEL accepted ('kabul — onaylayan') in a KOŞULLU review of this version
+    eng10 = review(PK10, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
+    review(PK10, "KOŞULLU", [f"F-1@{eng10} | ENGEL | yetki eksik | kabul — onaylayan | K1 | -"], 0)
+    cases.append(("sabotage S-5 Q4: an accepted ENGEL and no CT-APR-01 approval row for this sha on main -> ENGEL, "
+                  "self-explaining", has(eng5("W-10", PK10), "kabul edilmiş ENGEL var", "onay satırı yok", "--risk HIGH")))
+    via_branch("approve-10", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
+        root, "HEAD", PK10, "dev", "lead", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-21") + "\n"))
+    e, i = lim("W-10", PK10)
+    cases.append(("S-5 Q4: the same with a HIGH CT-APR-01 approval row whose approver (K1) is the acceptor -> pass",
+                  not s5(e)))
+    eng12 = review(PK12, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
+    review(PK12, "KOŞULLU", [f"F-1@{eng12} | ENGEL | yetki eksik | kabul — onaylayan | K2 | -"], 0)
+    via_branch("approve-12", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
+        root, "HEAD", PK12, "dev", "lead", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-21") + "\n"))
+    cases.append(("sabotage S-5 Q4: the ENGEL accepted by K2, the valid HIGH approval row's approver is K1 -> ENGEL naming "
+                  "both", has(eng5("W-12", PK12), "ENGEL'i kabul eden (K2)", "onaylayanı değil (K1)")))
     # N-4: a draft reviewed UYGUN DEĞİL whose bytes never reached any history
-    review(PK8, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0,
+    neg8 = review(PK8, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0,
            text=ver(8).replace("- a\n", "- a\n- taslak kapsam\n"))
     put(PK8, get(PK8).replace("- a\n", "- a\n- düzeltilmiş kapsam\n"))
     commit("X8 fixed")
     cases.append(("sabotage S-5 N-4: a negative review of a version in no history, this version without its own review "
                   "-> ENGEL from that negative itself (fail-closed), not only 'no review'",
                   has(eng5("W-8", PK8), "geçmişte bulunamadı ve olumsuz") and not has(eng5("W-8", PK8), "geçerli inceleme yok")))
-    review(PK8, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    review(PK8, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz inceleme: {neg8}"], 0)
     e, i = lim("W-8", PK8)
     cases.append(("S-5 N-4: this version reviewed UYGUN on its own -> the orphan negative becomes BİLGİ",
                   not s5(e) and has(s5(i), "bilgi", "geçmişte bulunamadı")))
@@ -1975,9 +2111,13 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 F-3: a review row deleted from reviews.tsv on main (merged by another) -> ENGEL, protected "
                   "work too ('yalnız ekleme değil')", has(eng5("W-RUN5", PK5, "INTEGRATED"), "yalnız ekleme değil")
                   and has(eng5("W-NEW", PK5), "yalnız ekleme değil")))
+    tidy = g("rev-list", "--no-merges", "-n", "1", "HEAD").strip()
     e = eng5("W-NEW", PK5)
-    cases.append(("sabotage S-5 N-5: the broken review history has its own next step (restore the rows by a CODEOWNERS PR), "
-                  "not review-row", has(e, "main geçmişi bozuk", "CODEOWNERS") and not has(e, "review-row")))
+    cases.append(("sabotage S-5 Q5: the broken review history names the offending commit, says re-adding does not clear "
+                  "it and needs an owner decision (not review-row)",
+                  any(tidy[:12] in (re.search(r"main geçmişi bozuk: (.*?) satır sildi", x) or [None, ""])[1] for x in e)
+                  and has(e, "geri eklemek bunu temizlemez", "sahip kararı")
+                  and not has(e, "review-row")))
     cases.append(("sabotage S-5: a non-canonical spelling of the pack path ('./') -> ENGEL",
                   has(eng5("W-RUN", "./" + PK, "IN_PROGRESS", "MOD-0001"), "kanonik değil")))
     clone = os.path.join(tmp.name, "shallow")

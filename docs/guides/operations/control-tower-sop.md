@@ -1422,14 +1422,16 @@ main'e girdiği ilk-üst commit'tir (dosya silinemez). Ürün WP'sinin her yeni 
 Expected HEAD'deki paket sürümünün main'deki geçerli incelemesini ister (`prompt_gate.py check`; `--prepare` yalnız
 raporlar). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf uzaklıktaki incelenmiş sürümler; önce
 `reviews.tsv`'nin yalnız-ekleme geçmişi); olumlu kapsama yalnız bu sürümden ya da muaf uzaklıktaki bir sürümden gelir.
-Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırı değişmeyen ve
+Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırın kapsamı (`item`
+ve `module`) değişmeyen ve
 yeniden açılmamış iş yalnız "inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
 kuyruğun (sce-mvp6) satırları hiç korunmaz; dağıtım yalnız `READY` / `REWORK`'ten başladığı için bu gerçek bir dağıtımı
-etkilemez. Bu sürümün kendi incelemesi geçiyorsa başka sürümlerin bütün olumsuzları bilgiye düşer (CT önerisi, sahip onayı bekliyor); kendi
-geçen incelemesi yoksa hepsi durdurur. Bağlı paket sürümünde olumsuz varsa `acceptance_record.py check` kabulü reddeder;
-başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket sürümüne `module_pack` ile bağlanır ve bu sürüm
-incelenmiş, korunan başlangıç sürümü ya da CT-APR-01'le onaylı main sürümü olmalıdır (iş dalında değişen paket yeniden
-incelenir).
+etkilemez. Başka sürümlerin olumsuzları yalnız bu sürümün, o olumsuzlardan SONRA gelen ve her birini bulgu özetinin ilk 8
+hanesiyle anan geçen bir kendi incelemesi varsa bilgiye düşer (koşullu; sahip onayı 2026-10-21); yoksa hepsi durdurur.
+Kabul edilmiş bir ENGEL, kabul edenin HIGH CT-APR-01 onay satırını ister. Bağlı paket sürümünde olumsuz varsa
+`acceptance_record.py check` kabulü reddeder; başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket
+sürümüne `module_pack` ile bağlanır ve bu sürüm hem CT-APR-01'le onaylı main sürümü hem de incelenmiş ya da korunan
+başlangıç sürümü olmalıdır. Bozuk `reviews.tsv` geçmişi satır geri eklenerek düzelmez; sahip kararı ister.
 Sığ depo reddedilir. CT-APR-01 onayı değişmez. ENGEL satırı kuralı, nedeni ve sonraki adımı söyler; kuraldan önce açılmış bir
 Control Tower oturumu main'i alır ve yeni oturum açar.
 
