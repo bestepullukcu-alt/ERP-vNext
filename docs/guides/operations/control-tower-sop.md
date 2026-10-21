@@ -1553,6 +1553,11 @@ Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**
    aynı listeyi görür.
 2. **Pilot.** Önce Pharmacovigilance block'unda denenir; bir block'ta işe yaradığı görülünce zorunlu yapılır (sahip
    kararı). Mevcut Control Tower'lara geriye dönük yük yoktur.
+2a. **Ne zaman açılır (S-31, kaynak öneride vardı, uyarlamada atlanmıştı).** Pilot block'ta CT, ilk durum
+   değerlendirmesinden sonra ya da block'un ilk paket / karar kaydı commit edildiğinde sayfayı **kendisi önerir** ve tek
+   kelimelik onayla (`sayfa-ac`) açar; "sırada" diye ertelemez. Block başına tek sayfa; varsa yenisi açılmaz. Açınca
+   depodaki bütün kalan işleri ve bitmiş olanları (geçmiş görünsün) yazar, bir okumayla doğrular, bağlantıyı ve kısa
+   "nasıl kullanılır"ı verir, bağlantıyı 8. maddedeki yere yazar.
 3. **Kaynak depodur.** Sayfa bir görünümdür. CT listeyi depodaki kaynaklardan kurar ve günceller: kuyruk dosyası
    (`CT-QUEUE.tsv` satırları ve durumları), karar kayıtları (`docs/records/decisions/`), block'un açık kararları ve
    takipleri, başka ekiplere düşen işler (XMC-001). Çelişkide depo kazanır; CT sayfayı düzeltir.
