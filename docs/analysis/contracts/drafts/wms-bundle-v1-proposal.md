@@ -9,7 +9,7 @@
 >
 > **Kaynak:** pack `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md` (davranış otoritesi;
 > bu dosya kablo şeklidir). Sahip kararları W-1…W-5, W-10, E-1, E-2, E-6, paket soruları Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2 ve mockup kararları M-1…M-6
-> (Beste, 2026-10-21; pack §19.1.1, §19.1.2). **E-imza yok** (M-1): bu sözleşmede imzalanabilir eylem ve imza alanı tanımlanmaz.
+> (Beste, 2026-10-21; pack §19.1.1, §19.1.2) ve bağımsız inceleme 01 düzeltmeleri F-1…F-16 (pack §19.1.3). **E-imza yok** (M-1): bu sözleşmede imzalanabilir eylem ve imza alanı tanımlanmaz.
 > Açık sorular yalnız diğer ekiplerde + Q-10 (pack §19.5).
 >
 > **Superset kuralı:** WMS-BUNDLE, WAREHOUSE-OUTBOUND 1.0.0'ın **yollarını ve şemalarını aynen** içerir (§2) — tek bir yol, parametre,
@@ -25,8 +25,9 @@
 
 1. Sunucu `/api/warehouse` (Gateway → `Diten.InventoryService` **5067**, yeni route INT-WMS, integration-agent). Kiracı kabuğu
    kullanıcıları (`actor_type = tenant_user`).
-2. `TenantId` token'dan. Şirket W-0173-02 (claim, yoksa `X-Legal-Entity-Id` + MDM doğrulaması). Başka şirket → 403
-   `CROSS_LE_FORBIDDEN`; başka kiracı / bilinmeyen id → **404**. Her okuma ve yazma kiracı + şirket kapsamlı. `tenantId` /
+2. `TenantId` token'dan. Şirket W-0173-02 (claim, yoksa `X-Legal-Entity-Id` + MDM doğrulaması). 403 `CROSS_LE_FORBIDDEN` yalnız
+   başlık ↔ token / üyelik uyuşmazlığıdır; seçili şirketle başka şirketin kaydına id ile erişim → **404**; başka kiracı / bilinmeyen
+   id → **404** (F-11). Her okuma ve yazma kiracı + şirket kapsamlı. `tenantId` /
    `legalEntityId` gövde ya da sorguda → 400.
 3. Zarf: InventoryService'in ölçülmüş kablosu — başarı gövdesi aşağıdaki şemanın kendisi (sarmalanmamış; INVENTORY / FEFO / RECALL
    R-1 emsali); hata `Error` = `{ error: { code, message, details?, correlationId }, contractVersion: "v1" }` (INVENTORY `Error`).
@@ -118,6 +119,7 @@ Bir satır birden çok lot / staging lokasyonuyla toplanırsa: 1.0.0 `OutboundLi
   "assignee": { "userId": "uuid", "name": "string" },
   "priority": "Low | Normal | High",
   "note": "string",
+  "serialControlled": false,
   "confirmations": [ TaskConfirmation ],
   "integrationFlag": "None | PostingPending | PostingRefused",
   "allowedActions": ["Confirm", "Claim", "Update", "Cancel", "CloseShort", "Retry"],
@@ -142,14 +144,23 @@ kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" g
   "deviationReason": "string",
   "status": "Pending | Posted | Refused",
   "postingKey": "wms:put:{taskId}:1",
+  "transactionDate": "date-time", "postingDate": "date-time",
+  "serialIds": ["string"],
   "transactionId": "string", "transactionNumber": "INV-2026-0000123",
-  "error": { "code": "INSUFFICIENT_STOCK", "message": "…", "details": { } },
+  "error": { "code": "INSUFFICIENT_STOCK", "message": "…", "details": { }, "status": 422 },
+  "resolution": "SupersededByNewConfirmation | ReturnedToSource",
+  "resolutionReason": "string",
   "channel": "Ui | Api | External",
   "scanRef": "string",
   "confirmedBy": { "userId": "uuid", "name": "string" }, "confirmedAtUtc": "date-time",
   "attempts": 1, "lastAttemptAtUtc": "date-time"
 }
 ```
+
+- `transactionDate` / `postingDate` işlem 1'de bir kez yazılır, her denemede aynen gönderilir (ledger idempotency izi tarihleri kapsar).
+- `serialIds` yalnız seri kontrollü SKU'da: kaynak kovanın bütün serileri sistemce okunur (istemci göndermez); adet = miktar (F-1).
+- INVENTORY cevabı: 2xx → `Posted`; 422 ve diğer 4xx (400 / 403 / 404 / 409) → kalıcı `Refused` (`error.status` saklanır); yalnız
+  503 / zaman aşımı / ağ hatası → `Pending` (F-2). `resolution` yalnız `Refused` onayda (F-4).
 
 ### 3.3 `PutawayCandidate` (okuma — saklanmaz, INVENTORY bakiyesinden hesaplanır)
 ```json
@@ -169,7 +180,7 @@ kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" g
 ```
 `openQuantity = onHand − Σ (açık görevlerin planned − confirmed)`; okuma anında. Uygun olmayan satırlar listede görünür
 (`eligible: false` + neden + engelleyen belge numarası — M-4), görev açılmaz; satır gizlenmez. `storageConditions` ürünün
-PRODUCT-MASTER v1.1 `getSku.storageConditions` kopyasıdır (yalnız gösterim; kural §3.7).
+PRODUCT-MASTER v1.1 `getSku.storageConditions` kopyasıdır (yalnız gösterim; kural §3.6).
 
 ### 3.4 `WarehouseTaskEvent`
 ```json
@@ -190,24 +201,26 @@ FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE`; `product-mast
 kodu. İkisinden en az biri dolu. Kayıt düğümün stoklanabilir alt ağacına uygulanır; LOCATION'da düğüm yaratılmaz, LOCATION
 sözleşmesi değişmez (karar Q-04).
 
-### 3.7 Saklama koşulu uyumu (M-3, S1 kuralı)
+### 3.6 Saklama koşulu uyumu (M-3, S1 kuralı)
 - Etkin kabul kümesi = `getLocationPath` üzerinde hedef bine en yakın (kendisi dahil) ve `acceptedStorageConditions`'ı dolu kaydın kümesi.
 - Uyum: ürün `storageConditions` ⊆ etkin küme. Etkin küme yoksa (etiketsiz): ürün kümesi ⊆ `{AMBIENT_15_25}` (koşulsuz ya da yalnız
   AMBIENT ürün).
 - Ürün alanı yoksa (bilinmiyor) → 422 `WMS_STORAGE_CONDITIONS_UNKNOWN`; uyumsuz → 422 `WMS_STORAGE_CONDITION_MISMATCH`
   (`details: productConditions, locationConditions, inheritedFromLocationId`). Görev oluşturma, düzenleme (hedef değişince) ve onayda
   uygulanır.
+- Okuma yolu: InventoryService bugün `storageConditions` okumuyor; MOD-0173 `SkuReference` / `ProductMasterHttpClient` seam'i ile
+  eklenir (pack §5). Kabul: dev PRODUCT-MASTER köprüsü 4010 (veri seti genişletilerek) E3 / E4; canlı PM-LIVE sonrası (F-5).
 - Kapsam: yalnız putaway hedefi. Mal kabul alanının saklama koşulu uyumu MVP-2 GRN'in işidir (pack Q-M2-3).
 - Rolsüz kayıt (yalnız `acceptedStorageConditions`) geçerlidir; "Depolama" rolü yoktur. Okumalarda kalıtılan küme
   `effectiveStorageConditions { codes[], inheritedFromLocationId?, inheritedFromLocationCode? }` olarak döner (ekranda "üst düğümden").
 
-### 3.8 Görev numarası (M-2)
+### 3.7 Görev numarası (M-2)
 `number = {companyCodePrefix}-PUT-{000001}`; `companyCodePrefix` = görev açılırken okunan MDM tüzel kişilik `Code`'u, `^[A-Z]{2,5}$`
 değilse görev açılmaz (422 `WMS_COMPANY_CODE_INVALID`, `details.companyCode`). Önek bir kez yazılır, değişmez; sayaç (kiracı, önek, tür)
-başına; depo kodu numarada yok (`warehouseCode` ayrı alan). Şirket kodu geçersizken yalnız `createPutawayTask` reddedilir; mevcut
+başına; numara **kiracı genelinde tekil**; `999999`'dan sonra 7 hane; depo kodu numarada yok (`warehouseCode` ayrı alan). Şirket kodu geçersizken yalnız `createPutawayTask` reddedilir; mevcut
 görevler okunur ve onaylanır.
 
-### 3.6 Liste sayfaları
+### 3.8 Liste sayfaları
 `{ items, total, page, pageSize, contractVersion }` (FEFO / RECALL R-6 emsali), `pageSize ≤ 200`. (Donmuş outbound listesi kendi
 cursor şeklini korur, §2.)
 
@@ -219,18 +232,19 @@ cursor şeklini korur, §2.)
 | `GET /putaway-tasks` | `listPutawayTasks` | `warehouse.putaway-tasks.read` | `status*`, `warehouseId?`, `assigneeUserId?`, `priority?`, `q?` (numara / lot), `orderBy`, `page`, `pageSize` | 200 sayfa `WarehouseTask` | INVALID_REQUEST, CROSS_LE_FORBIDDEN |
 | `POST /putaway-tasks` | `createPutawayTask` | `warehouse.putaway-tasks.create` | `{ idempotencyKey, candidateKey \| (warehouseId, fromLocationId, item, lotId?, stockStatus), plannedQuantity, toLocationId?, targetSource?, assigneeUserId?, priority?, note? }` | 201 `WarehouseTask` + ETag (replay 200) | WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_SOURCE_STOCK_NOT_FOUND, WMS_SOURCE_NOT_RECEIVING, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_QUANTITY_EXCEEDS_OPEN, WMS_TARGET_NOT_ALLOWED, WMS_ASSIGNEE_INVALID, UNKNOWN_LOCATION, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_RECORD_CODE_UNAVAILABLE |
 | `GET /putaway-tasks/{taskId}` | `getPutawayTask` | `warehouse.putaway-tasks.read` | — | 200 + ETag | WMS_TASK_NOT_FOUND, CROSS_LE_FORBIDDEN |
-| `PUT /putaway-tasks/{taskId}` | `updatePutawayTask` | `warehouse.putaway-tasks.update` | If-Match; `{ idempotencyKey, plannedQuantity?, toLocationId?, targetSource?, assigneeUserId?, priority?, note? }` — kaynak kova alanları **kabul edilmez** (400); planned ≥ confirmed + pending | 200 + ETag | INVALID_REQUEST, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_QUANTITY_EXCEEDS_OPEN, WMS_QUANTITY_BELOW_CONFIRMED, WMS_TARGET_NOT_ALLOWED, WMS_STORAGE_CONDITION_MISMATCH, WMS_TASK_NOT_FOUND |
+| `PUT /putaway-tasks/{taskId}` | `updatePutawayTask` | `warehouse.putaway-tasks.update` | If-Match; `{ idempotencyKey, plannedQuantity?, toLocationId?, targetSource?, assigneeUserId?, priority?, note? }` — kaynak kova alanları **kabul edilmez** (400); planned ≥ confirmed + pending | 200 + ETag | INVALID_REQUEST, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_QUANTITY_EXCEEDS_OPEN, WMS_QUANTITY_BELOW_CONFIRMED, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, LOT_UNDER_RECALL, WMS_TASK_NOT_FOUND |
 | `POST /putaway-tasks/{taskId}/claim` | `claimPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey }` — kendine ata (atanmamış görev) | 200 + ETag | WMS_TASK_ALREADY_ASSIGNED, WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_CONFLICT |
 | `POST /putaway-tasks/bulk-assign` | `bulkAssignPutawayTasks` | `warehouse.putaway-tasks.update` | `{ idempotencyKey, assigneeUserId, items: [{ taskId, version }] }` (≤ 100) | 200 `{ results: [{ taskId, outcome: Assigned \| Conflict \| NotFound \| InvalidTransition, version? }] }` — satır başına sonuç, kısmi başarı işaretli | INVALID_REQUEST, WMS_ASSIGNEE_INVALID |
-| `POST /putaway-tasks/{taskId}/confirmations` | `confirmPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, quantity, toLocationId, deviationReason?, channel?, scanRef? }` | 201 `WarehouseTask` (onay Posted) · 422 onay Refused (INVENTORY kodu aynen, gövde `Error` + `details.task`) · 503 onay Pending | WMS_NOT_ASSIGNEE (403), WMS_CONFIRMATION_PENDING, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, INVALID_REQUEST, REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_QUANTITY_EXCEEDS_REMAINING, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, LOT_UNDER_RECALL, + INVENTORY postMovement 422 kodları (geçiş), INVENTORY_UNAVAILABLE / PRODUCT_MASTER_UNAVAILABLE (503) |
-| `POST /putaway-tasks/{taskId}/confirmations/{seq}/retry` | `retryPutawayConfirmation` | `warehouse.putaway-tasks.confirm` | `{ idempotencyKey }` (yalnız Pending; aynı `postingKey`; deneme sınırı yok, `attempts` / `lastAttemptAtUtc` döner) | 200 `WarehouseTask` | WMS_CONFIRMATION_NOT_RETRYABLE, + yukarıdaki geçiş kodları |
-| `POST /putaway-tasks/{taskId}/close-short` | `closePutawayTaskShort` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (en az bir Posted onay) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING |
+| `POST /putaway-tasks/{taskId}/confirmations` | `confirmPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, quantity, toLocationId, deviationReason?, channel?, scanRef? }` — seri istemciden alınmaz (F-1) | 201 `WarehouseTask` (onay Posted) · 422 onay Refused (INVENTORY kodu aynen, gövde `Error` + `details.task`) · 503 onay Pending | **ön kontrol (onay kaydı açılmadan):** INVALID_REQUEST, REASON_REQUIRED, WMS_CONFLICT, WMS_NOT_ASSIGNEE (403), WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_QUANTITY_EXCEEDS_REMAINING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_SERIAL_BUCKET_CHANGED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN; **defter (Refused):** INVENTORY postMovement 4xx kodları aynen (`INSUFFICIENT_STOCK`, `LOT_RETEST_DUE`, `SERIAL_NOT_AVAILABLE`, `ITEM_NOT_ACTIVE`, …); **503 (Pending):** INVENTORY_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, LOCATION_MASTER_UNAVAILABLE |
+| `POST /putaway-tasks/{taskId}/confirmations/{seq}/retry` | `retryPutawayConfirmation` | `warehouse.putaway-tasks.confirm` | `{ idempotencyKey }` (yalnız Pending; aynı `postingKey`, aynı tarihler, aynı seriler; deneme sınırı yok, `attempts` / `lastAttemptAtUtc` döner). Önce 0178 ön kontrolleri yeniden koşar (recall, `AVAILABLE`, saklama koşulu, seri kovası) — tutmazsa onay Refused, INVENTORY çağrılmaz (F-4). Sonuç yazımı koşulludur (`status == Pending`, F-3) | 200 `WarehouseTask` | WMS_CONFIRMATION_NOT_RETRYABLE, LOT_UNDER_RECALL, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_SERIAL_BUCKET_CHANGED, + defter 4xx (Refused), 503 (Pending) |
+| `POST /putaway-tasks/{taskId}/confirmations/{seq}/returned` | `markPutawayConfirmationReturned` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (10–1000) — "Geri taşındı": mal kaynağa iade edildi, hareket yok (F-4) | 200 `WarehouseTask` (`resolution: ReturnedToSource`) | REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE, WMS_NOT_ASSIGNEE |
+| `POST /putaway-tasks/{taskId}/close-short` | `closePutawayTaskShort` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (en az bir Posted onay; seri SKU'da yok) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED |
 | `POST /putaway-tasks/{taskId}/cancel` | `cancelPutawayTask` | `warehouse.putaway-tasks.cancel` | If-Match; `{ idempotencyKey, reason }` (yalnız Posted onay yokken) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING |
 | `GET /putaway-tasks/{taskId}/events` | `getPutawayTaskEvents` | `warehouse.putaway-tasks.read` | `page`, `pageSize` | 200 sayfa `WarehouseTaskEvent` | WMS_TASK_NOT_FOUND |
 | `GET /location-roles` | `listLocationRoles` | `warehouse.location-roles.read` | `warehouseId?`, `role?`, `page`, `pageSize` | 200 sayfa | INVALID_REQUEST |
-| `POST /location-roles` | `createLocationRole` | `warehouse.location-roles.manage` | `{ idempotencyKey, locationId, roles[], acceptedStorageConditions[], note? }` | 201 + ETag | UNKNOWN_LOCATION, WMS_LOCATION_ROLE_EXISTS, WMS_LOCATION_ROLE_CONFLICT, WMS_LOCATION_TYPE_NOT_ALLOWED, WMS_STORAGE_CONDITION_INVALID |
+| `POST /location-roles` | `createLocationRole` | `warehouse.location-roles.manage` | `{ idempotencyKey, locationId, roles[], acceptedStorageConditions[], note? }` | 201 + ETag | UNKNOWN_LOCATION, WMS_LOCATION_ROLE_EXISTS, WMS_LOCATION_ROLE_CONFLICT, WMS_LOCATION_ROLE_INHERITED_CONFLICT, WMS_LOCATION_TYPE_NOT_ALLOWED, WMS_STORAGE_CONDITION_INVALID |
 | `GET /location-roles/{roleId}` | `getLocationRole` | `warehouse.location-roles.read` | — | 200 + ETag | WMS_LOCATION_ROLE_NOT_FOUND |
-| `PUT /location-roles/{roleId}` | `updateLocationRole` | `warehouse.location-roles.manage` | If-Match; `{ idempotencyKey, roles?, acceptedStorageConditions?, note? }` | 200 | WMS_CONFLICT, WMS_LOCATION_ROLE_CONFLICT, WMS_STORAGE_CONDITION_INVALID, WMS_LOCATION_HAS_OPEN_TASKS (Receiving kaldırılırken) |
+| `PUT /location-roles/{roleId}` | `updateLocationRole` | `warehouse.location-roles.manage` | If-Match; `{ idempotencyKey, roles?, acceptedStorageConditions?, note? }` | 200 | WMS_CONFLICT, WMS_LOCATION_ROLE_CONFLICT, WMS_STORAGE_CONDITION_INVALID, WMS_LOCATION_ROLE_INHERITED_CONFLICT, WMS_LOCATION_HAS_OPEN_TASKS (Receiving kaldırılırken) |
 | `DELETE /location-roles/{roleId}` | `deleteLocationRole` | `warehouse.location-roles.manage` | If-Match; Idempotency-Key | 200 (soft delete) | WMS_CONFLICT, WMS_LOCATION_ROLE_NOT_FOUND, WMS_LOCATION_HAS_OPEN_TASKS |
 | `POST /location-roles/bulk-delete` | `bulkDeleteLocationRoles` | `warehouse.location-roles.manage` | `{ idempotencyKey, items: [{ roleId, version }] }` | 200 satır başına sonuç | INVALID_REQUEST |
 | §2 `GET /outbound-shipments`, `GET /outbound-shipments/{outboundId}` | (frozen) | `warehouse.outbound-shipments.read` | aynen | aynen | aynen |
@@ -261,13 +275,17 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | `WMS_LOCATION_TYPE_NOT_ALLOWED` | 422 | rol için tip Site / Warehouse |
 | `WMS_RECORD_CODE_UNAVAILABLE` | 503 | geçici RCS sayacı yazılamadı (pack Q-07 B) |
 | `WMS_COMPANY_CODE_INVALID` | 422 | MDM tüzel kişilik `Code` `^[A-Z]{2,5}$` değil — yerelleştirilmiş "şirket kodunu düzeltin" (M-2) |
-| `WMS_STORAGE_CONDITION_MISMATCH` | 422 | hedefin etkin kabul kümesi ürün koşullarını karşılamıyor (§3.7) |
+| `WMS_STORAGE_CONDITION_MISMATCH` | 422 | hedefin etkin kabul kümesi ürün koşullarını karşılamıyor (§3.6) |
 | `WMS_STORAGE_CONDITIONS_UNKNOWN` | 422 | ürünün `storageConditions` alanı PRODUCT-MASTER'da yok (bilinmiyor, boş sayılmaz) |
 | `WMS_STORAGE_CONDITION_INVALID` | 400 | etiket kodu sözleşmede yok / tekrar / birden çok sıcaklık kodu |
 | `WMS_LOCATION_HAS_OPEN_TASKS` | 409 | açık görevi olan düğümden Receiving kaldırma / kayıt silme |
 | `WMS_NOT_ASSIGNEE` | 403 | onaylayan atanan değil ve sorumlu değil |
 | `WMS_TASK_ALREADY_ASSIGNED` | 409 | atanmış görev üstlenilemez (sorumlu `updatePutawayTask` / `bulkAssignPutawayTasks` ile yeniden atar) |
 | `WMS_QUANTITY_BELOW_CONFIRMED` | 422 | planlanan < onaylanan + bekleyen |
+| `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` | 422 | seri kontrollü SKU'da kısmi onay / kısa kapatma / miktar düzenleme (S1 yalnız tam miktar, F-1) |
+| `WMS_SERIAL_BUCKET_CHANGED` | 422 | onay ya da yeniden deneme anında kovadaki seri kümesi görev miktarından farklı (`details.expected`, `details.found`) |
+| `WMS_CONFIRMATION_NOT_RESOLVABLE` | 409 | "Geri taşındı" yalnız çözümsüz Refused onayda |
+| `WMS_LOCATION_ROLE_INHERITED_CONFLICT` | 409 | atası / alt ağacı karşı rolü taşıyan düğüme Receiving / Staging verilemez (F-13) |
 | S2: `WMS_ALLOCATION_FAILED` (422), `WMS_OUTBOUND_NOT_EDITABLE` (409), `WMS_PACKAGE_INCOMPLETE` (409), `UNKNOWN_OUTBOUND` (404, frozen) | | |
 
 ### 5.2 Yeniden tanımlanmayan, kullanılan kodlar
@@ -287,7 +305,9 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | `Open` / `InProgress` | `Completed` | Posted onay ile kalan = 0 | |
 | `Open` / `InProgress` | `Completed` | closePutawayTaskShort | ≥ 1 Posted, Pending yok, gerekçe |
 | `Open` / `InProgress` | `Cancelled` | cancelPutawayTask | hiç Posted onay yok, Pending yok, gerekçe (Posted varsa yalnız closePutawayTaskShort) |
-Onay: `Pending → Posted | Refused`; `Pending` yalnız `retry` ile ilerler (aynı `postingKey`) ve görevi kilitler. Durum onaylanan miktardan
+Onay: `Pending → Posted | Refused`; `Pending` yalnız `retry` ile ilerler (aynı `postingKey`, aynı tarihler) ve görevi kilitler; sonuç
+yazımı koşulludur (`status == Pending`, F-3). `Refused` → `resolution: SupersededByNewConfirmation` (aynı görevde yeni Posted onay) ya
+da `ReturnedToSource` ("Geri taşındı", hareket yok) (F-4). Durum onaylanan miktardan
 türetilir; `integrationFlag` ayrı rozettir. Açık görevde otomatik askı yoktur; karantina / recall kontrolü onay anındadır (M-5).
 
 ### 6.2 Outbound (S2, §2.2) ve pick görevi (S2 — putaway ile aynı makine, `Kind = Pick`).
@@ -346,7 +366,7 @@ adres yok). Sayaçlar: `wms_task_confirmations_total{kind,result}`, `wms_posting
 | `PutawayCandidate.onHand`, `stockStatus`, `lotId`, `baseUomId`, `lastPostingDate` | INVENTORY `getBalance` · `BalanceView.onHand / stockStatus / lotId / baseUomId / lastPostingDate` (süreç içi aynı sorgu) | okuma | saklanmaz; `openQuantity` okuma anında |
 | `item { itemId, skuId, skuLevel }` | INVENTORY `BalanceView.itemId / skuId / skuLevel` (PRODUCT-MASTER kimliği) | okuma | `Item` seviyesi görevde kabul, outbound'da değil (§2.1) |
 | `lotNumber`, `lotStatus` | TRACE `getLot` · `LotRef.lotNumber`, `LotRef.status` (`trace.openapi.yaml:288-300`) | okuma | Blocked / Expired uygun değil |
-| `storageConditions` (ürün) | PRODUCT-MASTER v1.1 `getSku` · `storageConditions` (`StorageConditionCode[]`, `product-master-bundle.openapi.yaml:601-604, 750`; **1.1.0-draft.16, donmamış**) | okuma | §3.7; alan yok = bilinmiyor |
+| `storageConditions` (ürün) | PRODUCT-MASTER v1.1 `getSku` · `storageConditions` (`StorageConditionCode[]`, `product-master-bundle.openapi.yaml:601-604, 750`; **1.1.0-draft.16, donmamış**) | okuma | §3.6; alan yok = bilinmiyor |
 | `acceptedStorageConditions` (lokasyon) | aynı `StorageConditionCode` kod kümesi | 0178 sahibi | §3.5 |
 | `companyCodePrefix` | MDM tüzel kişilik `Code` (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:11`) — InventoryService'in MDM okuması (hangi uç: geliştiricinin ilk ölçümü) | okuma | `^[A-Z]{2,5}$` (M-2) |
 | `warehouseCode` | LOCATION `getLocation` · `LocationRef.code` (Warehouse) | okuma | yalnız gösterim / sütun |
@@ -384,8 +404,9 @@ sistemin kimliği / anahtarı (servis kimliği, `X-Internal-Api-Key` deseni) MOD
 
 ## 15. Açık kararlar
 
+İnceleme 01 düzeltmeleri F-1…F-16 işlendi (pack §19.1.3); W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
 Karar verildi (pack §19.1.1 / §19.1.2, Beste 2026-10-21): Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2, M-1…M-6 — bu taslak onlara göre
 yazıldı (rol + saklama koşulu kaydı 0178'in, ayrı dosya, `WMS_*` burada, geçici RCS sayacı + MDM `Code` öneki, `warehouse.*` 0178'in,
 yalnız `AVAILABLE` yerleştirilir, recall'daki lot reddedilir, saklama koşulu uyumu, üstlenme, onay kilidi, e-imza yok, koli elle).
 Açık (pack §19.5): Q-10 (MVP-1 CT), Q-M2-1…2 (MVP-2), Q-M6-1…9 (MVP-6), Q-MDM-3 + kısa kod alanı / P9 takvimleri (bilgi) (MDM),
-Q-EA-1…5 (EA). Kablo şeklini değiştirebilecek olanlar: Q-M6-1…9 (§2.3); PRODUCT-MASTER v1.1 donarken `storageConditions` değişirse §3.7.
+Q-EA-1…5 (EA). Kablo şeklini değiştirebilecek olanlar: Q-M6-1…9 (§2.3); PRODUCT-MASTER v1.1 donarken `storageConditions` değişirse §3.6.
