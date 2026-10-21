@@ -94,6 +94,7 @@
               "satır hedefi bunları",
               "Satır numarasını yalnız numaralı bir okumadan ver",
               "\"evet\" ve \"hayır\"ın neyi yetkilendirdiğini söyler",
+              "Soruyu kartın \"Soru biçimi\"yle yanıtın sonunda yaz;",
               "her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01)."
             ]
           }

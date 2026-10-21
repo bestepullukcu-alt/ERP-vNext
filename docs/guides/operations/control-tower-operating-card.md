@@ -26,6 +26,28 @@
 
 Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır (listedeki, yazardan başka bir kişi onaylar; başka bir kişi birleştirir). Var olan bir sahip değerini değiştirmek (örneğin e-postayı role çevirmek) muaf değişiklik değildir ve bağımsız inceleme ister (SOP §20.4).
 
+## Soru biçimi — her Control Tower, her soru (S-22, sahip kararı 2026-10-21)
+
+Sahibin ya da geliştiricinin karar vermesi gereken her soru, yanıtın **sonunda** ve metnin içinde, şu biçimde yazılır.
+Butonlu soru kutusu yalnız ek kolaylıktır; metinde "soru kutuda" denmez.
+
+Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; terminalde ve Codex'te de okunur):
+
+```text
+> ❓ **SORU:** <tek cümle — hangi kararı istiyorum>
+> **1) <seçenek> — ÖNERİM**, çünkü <tek cümle neden>
+> **2) <seçenek>** — <seçilirse ne olur>
+> "1" derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
+```
+
+Aynı seçenekler istenirse butonlu kutuyla da verilir; görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her
+soruda token harcar.
+
+- Bir yanıtta en çok **bir** soru; en çok üç seçenek. Karar gerekmiyorsa soru yazılmaz.
+- Önerilen seçenek `ÖNERİM` ile işaretlenir ve gerekçesi tek cümledir; öneri yoksa "önerim yok, çünkü …" yazılır.
+- Her seçenek neye izin verdiğini ve vermediğini söyler; sahipten uzun onay metni beklenmez.
+- Soru teknik terimsiz, düz Türkçe; kod, kimlik ya da yol gerekiyorsa seçeneğin içinde tek parça yazılır.
+
 ## 0. Yeni Control Tower açılışı
 
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar

@@ -90,7 +90,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dı�
 4. Gerekçeli tek öneri, "öneri — onay değil".
 5. Yalnız kullanıcı kararı gerekiyorsa, en çok bloklayan kararı tek soruyla sor; gerekmiyorsa soru uydurma. Soru
    "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "evet: satırı yazar, commit, push, PR; merge sizde");
-   kullanıcıdan uzun onay metni beklenmez.
+   kullanıcıdan uzun onay metni beklenmez. Soruyu kartın "Soru biçimi"yle yanıtın sonunda yaz;
+   butonlu kutu yalnız ek kolaylıktır, "soru kutuda" deme.
 
 Block'un iş takip sayfası varsa her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01).
 
