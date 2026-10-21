@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:383f43a353c7` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:d3235cdbac3f` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -13,7 +13,7 @@ onu sor.
 
 Bu skill yeni yetki yaratmaz. Kurallar `AGENTS.md`, CONTROL TOWER SOP ve işletim kartındadır
 (`docs/guides/operations/control-tower-operating-card.md`). Komutlar kartın "Bugün hangi komut" tablosunda ve §0'dadır;
-burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
+burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dışında salt okunurdur.
 
 ## 1. Başlangıç ve kimlik
 
@@ -21,7 +21,7 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
   sorma.
 - Önce yeri ölç (ilk satır, §6). Paylaşılan ana klasörde ya da `origin/main` gerisindeki ağaçta
   hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme. Geliştiriciden klasör seçmesini isteme: kartın
-  §0 "Yer" adımıyla modülün worktree ve dalına kendin geç; worktree açmak tek yazma yetkindir, commit/push değil.
+  §0 "Yer" adımıyla modülün worktree ve dalına kendin geç; worktree açmak commit/push izni değildir.
 - Kartın tablosundaki araçların bu ağaçta olup olmadığını ölç. Olmayanı "bu ağaçta yok" diye yaz; çalıştırmış gibi
   davranma, yerine kendi kontrolünü uydurma.
 - Görev kaynağını ve kaydını oku (kartın §0'ı): kuyruk ve kayıt satırı var mı, `main`'de yürürlükte mi. Yürürlükte
@@ -48,7 +48,7 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 - Mevcut kimliği ve paketi kullan; yeni ya da mükerrer bir kimlik açma.
 - Paketin `status` alanını tek başına okuma; her çağrıda paketin güncel `approval_status` alanını ve kapsam metnini de
   oku. Onaylı dilimi ve dışarıda kalanı ayrı yaz. Onayı bütün modüle yayma. (Ör. 2026-10-18: MOD-0251'de yalnız P2
-  dilimi onaylıydı; bugünün izni paketin kendisinden okunur.)
+  dilimi onaylıydı.)
 - Belgede iddia edilen uygulamayı ilgili kodla ve kanıtın kaydedildiği sürümle karşılaştır (`dosya:satır@commit`).
   Çalışma testi yapılmadıysa "çalışma testi yapılmadı" yaz; okumadan "doğru" deme.
 - Module pack'i (ya da DCP'yi) okurken bu paketin kendi yoluyla bağımsız inceleme kaydı olup olmadığını da oku (`execution/approvals/reviews.tsv`). Kayıt yoksa, paket eski de olsa yeni de olsa, bunu söyle ve pakette yeni iş başlamadan önce bağımsız inceleme öner (SOP §20.4); yalnız önerir, incelemeyi çalıştırmaz ve yazmaz.
@@ -66,9 +66,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı salt okunurdur.
 
 - Kapsam önerisi, paket taslağı, kod geliştirme ve dağıtım dört ayrı yetkidir; bu skill hiçbirini vermez. Sahibin onayı
   olmadan ürün kodu, commit, push ya da PR yok.
-- İlk çağrıda kuyruğa ya da kayda yazma, `guard` ya da prompt taslağı dosyası yok; geçici dosya dahil hiçbir dosyaya
-  yazma. Görev, test, kabul ve başka bir
-  MVP'ye soru için kartın ilgili satırını ve aracını kullan; yeni yetki yaratma, zorunlu kapıları atlama.
+- İlk çağrıda kuyruğa ya da kayda yazma, `guard` ya da prompt taslağı dosyası yok; "Yer" dışında hiçbir dosyaya
+  yazma (geçici dahil). Görev, test, kabul ve başka bir MVP'ye soru için kartın ilgili satırını ve aracını kullan; yeni yetki yaratma, zorunlu kapıları atlama.
 - Alt ajana, alt oturuma ya da worker prompt'una iş verirken her biri için modeli ve effort'u yaz ve kullanılanı ölç
   (SOP §17.1 r5); karmaşıklık modeli, risk incelemeyi belirler.
 - Module Pack ya da DCP onaya gitmeden önce bağımsız incelenir (SOP §20.4); WP prompt'u `Kapsanan dilim` yazar ve paketin
