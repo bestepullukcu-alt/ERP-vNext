@@ -16,7 +16,7 @@ screens:
   - module: LotMigration
     data_mode: server
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 status_note: "ready-for-dev 2026-10-05 (owner). Was draft — WP-0174-P0 (CT-MVP1-0174-P0 v1), 2026-10-05. Owner decisions K-A…K-G (2026-10-05) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D8 TAKEN 2026-10-05 (§19; CT-D1 = option a, owner). WP-0174-P0 CT-ACCEPTED 2026-10-05. TRACE v1.1 proposal: docs/analysis/contracts/drafts/trace-v1.1-proposal.md. DCP-002 verifier re-run pending (no Python — waiver W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0174-lot-serial-tracking
