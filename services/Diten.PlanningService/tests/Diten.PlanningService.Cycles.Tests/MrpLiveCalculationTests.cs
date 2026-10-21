@@ -84,6 +84,77 @@ public sealed class MrpLiveCalculationTests
         Assert.Equal(2, sources.Demand.Reads);
     }
 
+    [Fact]
+    public async Task WeeklySafetyStock_UsesEachApprovedRevision_AndMarksOnlyMissingWeek()
+    {
+        var sources = CreateSources();
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var start = sources.Demand.Value!.Weeks[0].WeekStart;
+        sources.Safety.Values[start] = Approved(first, start, 2m);
+        sources.Safety.Values[start.AddDays(7)] = Approved(second, start.AddDays(7), 4m);
+
+        var result = await Run(sources);
+
+        Assert.Equal(MrpCalculationStatus.Found, result.Status);
+        Assert.Equal(2m, result.Plan!.Weeks[0].ApprovedSafetyStock);
+        Assert.Equal(first.ToString("D"), result.Plan.Weeks[0].SafetyEvidence!.PolicyRevisionId);
+        Assert.Equal(4m, result.Plan.Weeks[1].ApprovedSafetyStock);
+        Assert.Equal(second.ToString("D"), result.Plan.Weeks[1].SafetyEvidence!.PolicyRevisionId);
+        Assert.False(result.Plan.Weeks[2].SafetyEvidence!.Found);
+        Assert.Null(result.Plan.Weeks[0].DegradedReason);
+        Assert.Null(result.Plan.Weeks[1].DegradedReason);
+        Assert.Equal(MrpNetting.SafetyStockUnavailable, result.Plan.Weeks[2].DegradedReason);
+        Assert.Contains(MrpNetting.SafetyStockUnavailable, result.Plan.DegradedReason);
+    }
+
+    [Fact]
+    public async Task EveryWeekHasApprovedSafetyStock_LeavesOnlyOpenOrdersDegraded()
+    {
+        var sources = CreateSources();
+        foreach (var week in sources.Demand.Value!.Weeks)
+            sources.Safety.Values[week.WeekStart] = Approved(Guid.NewGuid(), week.WeekStart, 1m);
+
+        var result = await Run(sources);
+
+        Assert.Equal(MrpCalculationStatus.Found, result.Status);
+        Assert.Equal(MrpNetting.OpenOrdersUnavailable, result.Plan!.DegradedReason);
+        Assert.All(result.Plan.Weeks, week =>
+        {
+            Assert.Equal(1m, week.ApprovedSafetyStock);
+            Assert.True(week.SafetyEvidence!.Found);
+            Assert.Null(week.DegradedReason);
+        });
+    }
+
+    [Fact]
+    public async Task SafetyStockServiceFailure_OrUnitMismatch_ProducesNoPlan()
+    {
+        var sources = CreateSources();
+        sources.Safety.Unavailable = true;
+        Assert.Equal(MrpCalculationStatus.Unavailable, (await Run(sources)).Status);
+        sources = CreateSources();
+        var start = sources.Demand.Value!.Weeks[0].WeekStart;
+        sources.Safety.Values[start] = Approved(Guid.NewGuid(), start, 2m) with
+        {
+            BaseUomId = "BOX"
+        };
+        Assert.Equal(MrpCalculationStatus.Unavailable, (await Run(sources)).Status);
+    }
+
+    [Fact]
+    public async Task SafetyStockChangesDuringCalculation_ProducesNoPlan()
+    {
+        var sources = CreateSources();
+        var start = sources.Demand.Value!.Weeks[0].WeekStart;
+        sources.Safety.Values[start] = Approved(Guid.NewGuid(), start, 2m);
+        sources.Safety.ChangeOnSecondPass = true;
+        Assert.Equal(MrpCalculationStatus.Unavailable, (await Run(sources)).Status);
+    }
+
+    private static MrpApprovedSafetyStock Approved(Guid revision, DateOnly week, decimal quantity) =>
+        new(quantity, "EA", revision, week, week.AddDays(6), 1, "Manual");
+
     private Task<MrpCalculationResult> Run(Sources sources) =>
         sources.Service.CalculateAsync(_tenant, _company, "2026-Q4", _sku,
             _warehouse, CancellationToken.None);
@@ -101,18 +172,40 @@ public sealed class MrpLiveCalculationTests
         var stock = new StockReader
         {
             Value = new(_tenant, _company, _sku, _warehouse, "EA", 2m,
-                DateTimeOffset.UtcNow)
+                new DateTimeOffset(2026, 10, 19, 12, 0, 0, TimeSpan.Zero))
         };
         var leadTime = new LeadTimeReader
         {
             Value = new(_tenant, _company, _sku, _warehouse, Guid.NewGuid().ToString("D"),
                 5, start, null)
         };
-        return new(new(company, demand, stock, leadTime), company, demand, stock, leadTime);
+        var safety = new SafetyReader();
+        return new(new(company, demand, stock, leadTime, safety), company, demand, stock,
+            leadTime, safety);
     }
 
     private sealed record Sources(MrpLiveCalculation Service, CompanyReader Company,
-        DemandReader Demand, StockReader Stock, LeadTimeReader LeadTime);
+        DemandReader Demand, StockReader Stock, LeadTimeReader LeadTime, SafetyReader Safety);
+
+    private sealed class SafetyReader : IMrpApprovedSafetyStockReader
+    {
+        public Dictionary<DateOnly, MrpApprovedSafetyStock> Values { get; } = [];
+        public bool Unavailable { get; set; }
+        public bool ChangeOnSecondPass { get; set; }
+        private int _reads;
+
+        public Task<MrpSafetyStockRead> ReadAsync(Guid tenantId, Guid legalEntityId,
+            Guid skuId, Guid warehouseId, DateOnly asOf, CancellationToken ct)
+        {
+            _reads++;
+            if (Unavailable) return Task.FromResult(new MrpSafetyStockRead(MrpSafetyStockStatus.Unavailable));
+            if (!Values.TryGetValue(asOf, out var value))
+                return Task.FromResult(new MrpSafetyStockRead(MrpSafetyStockStatus.NotFound));
+            if (ChangeOnSecondPass && _reads > 52)
+                value = value with { RecordVersion = 2 };
+            return Task.FromResult(new MrpSafetyStockRead(MrpSafetyStockStatus.Found, value));
+        }
+    }
 
     private sealed class CompanyReader : ILegalEntityScopeReader
     {

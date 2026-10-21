@@ -60,7 +60,7 @@ Bu dilimin yazma kapsamı bu pack, main'e merge edilmiş `services/Diten.Plannin
 | Açık PO / MOD-0141 | Main ProcurementService `requisition-po.openapi.yaml` v1.1.0 FROZEN list/get PO; `poId`, `poLineId`, durum, satır miktarı ve UoM. `needBy` yalnız requisition satırında; runtime `PoLine` da teslim tarihi veya açık bakiye tutmaz. | Üreticiden sürümlü açık satır görünümü (kalan miktar, beklenen teslim tarihi, asOf) istenir. Tüketicide `PO - GRN` hesaplanmaz. Görünüm gelene kadar açık sipariş terimi uygulanmaz; her plan görünür `DEGRADED: açık siparişler hesaba katılmadı` işareti taşır. |
 | Mal kabul / MOD-0142 | `grn-event.openapi.yaml` v1.0.0 FROZEN; GRN, `poId/poLineId` ve alınan miktarı taşır, stok hareketini MOD-0173'e post eder. | PO açık bakiyesinin yetkili hesabı ve çift sayımı önleyen ilişki ayrıca kararlaştırılmalı; GRN tek başına gelecekteki tedarik değildir. |
 | BOM / MOD-0193 | `bom.openapi.yaml` v1.2.0 FROZEN, `current` / `explode` ve `BomVersionEffective` / `BomVersionSuperseded` olayları. | Olay yalnız kontrol işaretidir; güncel/yürürlükteki BOM ve patlatma her zaman BOM servisinden ayrıca doğrulanır. Çok seviyeli patlatma, alternatif, fire/verim, geçerlilik tarihi, döngü ve sürüm sabitleme kuralları açık. Manufacturing yolu dışında BOM zorunlu değil. |
-| Safety stock / MOD-0191 | MOD-0191 ayrı dalda izole Yöntem A ve revision çekirdeği; main'de onaylı canlı politika tüketim sözleşmesi yok. | Hangi etkin policy sürümü ve hangi tarihli miktar netting'e girer kararlaştırılmalı; fixture canlı policy değildir. |
+| Safety stock / MOD-0191 | DRAFT v1.1 yürürlükteki onaylı miktar okuması; her ISO haftası başlangıcında `asOf` ile sorgulanır. | Her hafta ayrı miktar, politika revizyonu ve kayıt sürümü taşınır. Kayıtsız hafta yalnız o hafta için safety-stock DEGRADED olur; servis/yetki hatası tüm hesabı kapatır. |
 
 ## 8. Runtime Constraints
 
@@ -91,6 +91,13 @@ cinsinden tarihli ve sürümlü planlama parametresidir; planlamacı girer, haz�
 inceleyen onaylar. Sourcing teklifindeki nullable `leadTimeDays` yetkili kaynak değildir.
 İleride satın alma tarafında yetkili tedarikçi × SKU kaydı gelirse tercih sırası ayrıca onaylanır.
 Kova içi tarih tahsisi ve önerinin gerçekleşmiş tedarik sayılacağı an teknik tasarımda açık tutulur.
+
+Ali'nin haftalık safety-stock kararı: MOD-0191 v1.1 yürürlükteki onaylı miktar ucu
+her ISO haftasının başlangıç tarihinde okunur. Hafta sonucu miktar, temel birim,
+politika revizyonu ve kayıt sürümünü ayrı taşır; tek plan-geneli revizyon yetkili
+kanıt sayılmaz. Kayıt bulunmayan hafta DEGRADED işaretlenir ve onaylı sıfır gibi
+sunulmaz. Üreticiye erişilemiyorsa veya birim uyuşmuyorsa plan üretilmez. Açık PO
+görünümü gelene kadar her planın açık sipariş DEGRADED nedeni ayrıca sürer.
 
 | Alan / kanıt | Önerilen doğrulama | Açık ürün kararı |
 |---|---|---|
