@@ -811,7 +811,10 @@ def kunye_commit(text: str) -> str | None:
         _KUNYE_READER["ar"] = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(_KUNYE_READER["ar"])
     fields, problems = _KUNYE_READER["ar"].strict_front_matter(text)
-    if any("'commit'" in p or p.startswith("künye satır") for p in problems):
+    # F-13: only a problem with the commit field itself, or an unreadable künye line that mentions commit, is ambiguous;
+    # a missing commit field is None (not measured), another field's problem does not hide the commit
+    if any(p.startswith(("künye: 'commit' iki kez", "künye: 'commit' değeri")) or
+           (p.startswith("künye satır") and "commit" in p.lower()) for p in problems):
         return AMBIGUOUS
     value = fields.get("commit", "")
     return value if COMMIT_ID.match(value) else None
@@ -1555,7 +1558,9 @@ def self_test() -> int:
     files = {("a" * 9, "docs/r1.md"): kun("c" * 40), ("b" * 9, "docs/r2.md"): kun("d" * 40),
              ("a" * 9, "docs/r3.md"): ("# not a künye\ncommit: " + "d" * 40 + "\n").encode(),
              ("a" * 9, "docs/r4.md"): ("---\r\nformat: x\r\ncommit: " + "f" * 12 + "\r\n--- \r\n# kayıt\r\n").encode(),
-             ("a" * 9, "docs/r5.md"): ("---\ncommit: " + "c" * 40 + "\ncommit: " + "d" * 40 + "\n---\n").encode()}
+             ("a" * 9, "docs/r5.md"): ("---\ncommit: " + "c" * 40 + "\ncommit: " + "d" * 40 + "\n---\n").encode(),
+             ("a" * 9, "docs/r6.md"): ("---\ntitle: x\ncommit: " + "d" * 40 + "\n---\n").encode(),
+             ("a" * 9, "docs/r7.md"): b"---\nformat: x\n---\n"}
     in_m = {"a" * 9, "c" * 40}
     acc = Table(header + "\n" + "\n".join([
         "A1\tMOD-0183 x\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
@@ -1565,16 +1570,18 @@ def self_test() -> int:
         "A5\tnot künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r3.md@" + "a" * 9,
         "A6\trunning\tIN-PROGRESS\tCT\t-\t-\t2026-10-01\tdocs/r2.md@" + "b" * 9,
         "A7\tCRLF künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r4.md@" + "a" * 9,
-        "A8\ttwo commits\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r5.md@" + "a" * 9]) + "\n")
+        "A8\ttwo commits\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r5.md@" + "a" * 9,
+        "A9\tother field\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r6.md@" + "a" * 9,
+        "A10\tno commit\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r7.md@" + "a" * 9]) + "\n")
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     s_late = summary_lines(summarize(acc, vocab, queue) | {"accepted_not_in_main": late})
     cases.append(("sabotage S-12: a closed row whose acceptance record and accepted code commit are not in main -> UYARI "
                   "naming both; record and code in main -> nothing; a non-künye or free-text record -> 'ölçülmedi'; a "
                   "running row is not read; a 'commit:' line outside the front matter is never the künye's",
-                  [x["id"] for x in late["missing"]] == ["A2", "A7"] and late["unmeasured"] == 2
+                  [x["id"] for x in late["missing"]] == ["A2", "A7", "A9"] and late["unmeasured"] == 3
                   and late["missing"][1]["why"] == ["kabul edilen kod commit'i fffffffff main'de değil"]
-                  and any("KABUL EDİLDİ AMA MAIN'DE YOK 2" in l and "bbbbbbbbb main'de değil" in l and "ddddddddd main'de değil" in l
-                          for l in s_late) and any("KAPANMIŞ 2" in l for l in s_late)))
+                  and any("KABUL EDİLDİ AMA MAIN'DE YOK 3" in l and "bbbbbbbbb main'de değil" in l and "ddddddddd main'de değil" in l
+                          for l in s_late) and any("KAPANMIŞ 3" in l for l in s_late)))
     cases.append(("sabotage S-12 F-8 (Codex): a künye with two commit lines (first in main, second not) -> never clean: "
                   "UYARI KÜNYE BELİRSİZ naming it", late["ambiguous"] == ["A8"]
                   and any("KÜNYE BELİRSİZ 1" in l and "A8" in l for l in s_late)))
@@ -1583,7 +1590,8 @@ def self_test() -> int:
     cases.append(("sabotage S-12: the record merged but the accepted code commit never reached main (the ABB case) -> UYARI "
                   "naming the code commit; a CRLF künye with '--- ' and a 12-hex commit is read like acceptance_record "
                   "reads it (F-4)", [x["why"] for x in late["missing"]] == [["kabul edilen kod commit'i ddddddddd main'de değil"],
-                                                                          ["kabul edilen kod commit'i fffffffff main'de değil"]]))
+                                                                          ["kabul edilen kod commit'i fffffffff main'de değil"],
+                                                                          ["kabul edilen kod commit'i ddddddddd main'de değil"]]))
 
     own = write_calls(Path(__file__).read_text(encoding="utf-8"))
     planted = write_calls("from pathlib import Path\nPath('q.tsv').write_text('x')\nopen('q.tsv', 'a')\nopen('q.tsv')\n")

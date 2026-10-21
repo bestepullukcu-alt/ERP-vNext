@@ -388,7 +388,7 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
                                 f"paketin bu sürümünü main'de onaylatın (`python3 scripts/pack_approval.py check {path}` "
                                 "çıkış 0; SOP §20.4)"))
                 if not cover:
-                    protected, why = start_protected(pa, pg, root, start, main, queue, wp, path, pdata)
+                    protected, why = start_protected(pa, pg, root, start, main, queue, wp, path, pdata, record_at)
                     if not protected:
                         out.append((f"kabul edilen paket sürümü (sha {sha8}) incelenmemiş ve korunan yürüyen işin başlangıç "
                                     f"sürümü değil ({why}) — eski onay inceleme şartının yerine geçmez",
@@ -404,9 +404,10 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
 
 
 def start_protected(pa, pg, root: str, start: str, main: str, queue: str | None, wp: str | None, path: str,
-                    pdata: bytes) -> tuple[bool, str]:
+                    pdata: bytes, record_at: str | None = None) -> tuple[bool, str]:
     """R3-1 (b): is `pdata` the start version of this WP while the WP was protected at the start? The queue's path is
-    read from the registry at the start, its row today from main; the decision is the dispatch gate's own."""
+    read from the registry at the start, its row today from main; the decision is the dispatch gate's own, its queue
+    history read from main AND the record's commit (F-11)."""
     if not queue or not wp:
         return False, "kuyruk ya da WP bilinmiyor"
     cq = pg._SHARED
@@ -423,8 +424,8 @@ def start_protected(pa, pg, root: str, start: str, main: str, queue: str | None,
     if len(rows) != 1:
         return False, f"{wp} main'deki kuyrukta tek satır değil"
     return pg.dispatch_protected(pa, root, start, path, pdata, wp,
-                                 {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))}, [main],
-                                 closing=True)
+                                 {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))},
+                                 [main] + ([record_at] if record_at else []), closing=True)
 
 
 def s5_line(start: str, reason: str, step: str | None, path: str | None) -> str:

@@ -563,8 +563,8 @@ NAMED_LINE = re.compile(r"^\s*değerlendirilen olumsuz inceleme(?:ler)?:[ \t]*(.
 def named_in(text: str) -> set[str]:
     """Codex F-6: the names a findings file gives, read only from its 'değerlendirilen olumsuz inceleme(ler): a, b'
     lines, each name compared whole — 'reviews.tsv satır 2' is never found inside 'reviews.tsv satır 20'."""
-    return {x.strip() for l in text.replace("\r\n", "\n").split("\n") if (m := NAMED_LINE.match(l))
-            for x in m.group(1).split(",") if x.strip()}
+    return {x.strip().strip("`").strip() for l in text.replace("\r\n", "\n").split("\n") if (m := NAMED_LINE.match(l))
+            for x in m.group(1).split(",") if x.strip().strip("`").strip()}
 
 
 def neg_name(pa, r: dict) -> str:
@@ -738,8 +738,9 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
     Codex Q7: protection is never regained — every version of the queue file after the start reachable from any of
     `tips` (the dispatched commit AND main, F-2; `--full-history`, so a side branch merged back is read too, F-1) shows
     this WP's single row in an 'active' state with the same module and scope; one REWORK or BLOCKED in between ends it.
-    Codex F-7: with `closing` (acceptance_record only) the normal closure is not a leaving — once the row reaches a
-    'closed' class (ACCEPTED, DONE) it may only stay closed; closed and back to work is a re-opening and ends it. Anything not proven goes through the gate; the reason is always given."""
+    Codex F-7: with `closing` (acceptance_record only) the normal closure (a 'closed' class: ACCEPTED, DONE) is not a
+    leaving. Re-opening is an EDGE, never an order (F-9, F-10): a commit whose row is back at work while one of its
+    parents shows it closed — so parallel branches and commit dates change nothing. Anything not proven goes through the gate; the reason is always given."""
     q = q or {}
     qpath, qid, now = q.get("path"), q.get("queue_id"), q.get("row") or {}
     if not qpath or not wp:
@@ -803,23 +804,30 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
         return False, f"{wp} bugün kapanmış ({cur[:30]}) — kapanmış iş yeniden dağıtılmaz"
     if not tips:
         return False, f"{wp} satırının kural başlangıcından bu yana geçmişi ölçülemedi"
-    log = pa.git(root, "rev-list", "--full-history", "--reverse", *tips, f"^{start}", "--", qpath, ok_fail=True)
+    log = pa.git(root, "rev-list", "--full-history", "--parents", *tips, f"^{start}", "--", qpath, ok_fail=True)
     if log is None:
         return False, f"{wp} satırının kural başlangıcından bu yana geçmişi okunamadı"
-    closed = False
-    for c in log.decode().split():
-        raw = pa.read(root, c, qpath)
-        t = _SHARED.Table(raw.decode("utf-8", errors="replace")) if raw is not None else None
-        ti = t.index("id") if t else None
-        hits = [dict(zip(t.header, r)) for r in t.rows if ti is not None and len(r) == len(t.header) and r[ti] == wp] if t else []
+    seen: dict[str, list[dict]] = {}
+
+    def rows_at(c: str) -> list[dict]:
+        if c not in seen:
+            raw = pa.read(root, c, qpath)
+            t = _SHARED.Table(raw.decode("utf-8", errors="replace")) if raw is not None else None
+            ti = t.index("id") if t else None
+            seen[c] = [dict(zip(t.header, r)) for r in t.rows if ti is not None and len(r) == len(t.header) and r[ti] == wp] if t else []
+        return seen[c]
+    is_closed = lambda st: closing and classes.get(st) == CLOSED_CLASS and st not in REOPENED_STATES
+    for line in log.decode().splitlines():
+        c, *parents = line.split()
+        hits = rows_at(c)
         if len(hits) != 1:
             return False, f"{wp} {c[:9]}'de kuyrukta tek satır değildi — koruma geri kazanılamaz"
         was = hits[0].get("state", "")
-        if closing and classes.get(was) == CLOSED_CLASS and was not in REOPENED_STATES:
-            closed = True
-        elif closed:
-            return False, (f"{wp} kapandıktan sonra {c[:9]}'de {was[:30]} oldu — kapanmış iş yeniden açıldı, koruma geri "
-                           "kazanılamaz")
+        if is_closed(was):
+            pass
+        elif any(len(rows_at(p)) == 1 and is_closed(rows_at(p)[0].get("state", "")) for p in parents):
+            return False, (f"{wp} kapandıktan sonra {c[:9]}'de {was[:30]} oldu (ebeveyni kapanmış) — kapanmış iş yeniden "
+                           "açıldı, koruma geri kazanılamaz")
         elif classes.get(was) != PROTECT_CLASS or was in REOPENED_STATES:
             how = ("yeniden açılmış iş korunmaz" if was in REOPENED_STATES or classes.get(was) in REOPENED_CLASSES
                    else "yürüyen iş durumundan çıkmış iş korunmaz")
@@ -1969,7 +1977,8 @@ def self_test_dispatch_review(cases: list) -> None:
             ("W-DUP", 1, "IN_PROGRESS"), ("W-DUP", 1, "IN_PROGRESS"), ("W-LATE", 1, "READY"), ("W-X", 3, "READY"),
             ("W-RUN4", 4, "IN_PROGRESS"), ("W-RUN5", 5, "INTEGRATED"), ("W-6", 6, "READY"), ("W-7", 7, "READY"),
             ("W-8", 8, "READY"), ("W-9", 9, "READY"), ("W-10", 10, "READY"), ("W-12", 12, "READY"), ("W-RE", 11, "IN_PROGRESS"),
-            ("W-SIDE", 11, "IN_PROGRESS"), ("W-MAIN", 11, "IN_PROGRESS"), ("W-BLK", 11, "IN_PROGRESS")]
+            ("W-SIDE", 11, "IN_PROGRESS"), ("W-MAIN", 11, "IN_PROGRESS"), ("W-BLK", 11, "IN_PROGRESS"),
+            ("W-CL1", 11, "IN_PROGRESS"), ("W-CL2", 11, "IN_PROGRESS")]
     put(QP, "id\titem\tmodule\tstate\towner\tsince\trecord\n"
         + "".join(f"{w}\tiş\tMOD-{k:04d}\t{s}\tCT\t2026-10-01\t-\n" for w, k, s in rows))
     put(pa.APPROVALS, "\t".join(pa.APPROVAL_COLUMNS) + "\n")
@@ -2089,6 +2098,29 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 Q7/F-5: BLOCKED (not in the start vocabulary's active class) and back -> not protected, "
                   "the reason says it left running work (not 're-opened')",
                   has(eng5("W-BLK", PK11, "IN_PROGRESS"), "BLOCKED oldu", "yürüyen iş durumundan çıkmış")))
+    # F-9: the closure on a CT branch while main changes ANOTHER row later; merged -> closed, still protected for the
+    # acceptance (closing=True) — re-opening is an edge, never the order of commits
+    pk11 = get(PK11).encode("utf-8")
+    prot = lambda wp, now, closing=True: dispatch_protected(pa, root, start, PK11, pk11, wp, q_for(wp, now, "MOD-0011"),
+                                                            [repo.head()], closing=closing)
+    g("checkout", "-q", "-b", "ct-close")
+    flip("W-CL1", "ACCEPTED")
+    commit("W-CL1 ACCEPTED")
+    g("checkout", "-q", "main")
+    put(QP, get(QP).replace("W-OLD\tiş\tMOD-0001\tDISCOVERED", "W-OLD\tiş\tMOD-0001\tPLANNED"))
+    commit("another row, later", who=LEAD)
+    g("merge", "-q", "--no-ff", "-m", "Merge ct-close", "ct-close", who=LEAD)
+    ok9, why9 = prot("W-CL1", "ACCEPTED")
+    cases.append(("S-5 F-9: closed on a CT branch, a later commit on main changes another row, merged -> the acceptance "
+                  "still finds the WP protected (no false 're-opened'); a dispatch of the closed row is not protected",
+                  ok9 and not prot("W-CL1", "ACCEPTED", False)[0] and "bugün kapanmış" in prot("W-CL1", "ACCEPTED", False)[1]))
+    # F-10: closed, back to work, closed again on main -> a re-opening edge, whatever the order rev-list prints
+    for to in ("ACCEPTED", "IN_PROGRESS", "ACCEPTED"):
+        flip("W-CL2", to)
+        commit(f"W-CL2 {to}", who=LEAD)
+    ok10, why10 = prot("W-CL2", "ACCEPTED")
+    cases.append(("sabotage S-5 F-10: ACCEPTED -> IN_PROGRESS -> ACCEPTED -> a re-opening edge (a parent shows it closed) "
+                  "-> not protected", not ok10 and "ebeveyni kapanmış" in why10))
     cases.append(("sabotage S-5 F-7: a duplicate WP id in the queue at the start -> not protected -> ENGEL naming it",
                   has(eng5("W-DUP", now="IN_PROGRESS"), "yinelenen")))
     review(PK4, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
@@ -2173,7 +2205,7 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 F-6 (Codex): 'reviews.tsv satır N0' on the naming line, 'satır N' only in a free sentence "
                   "-> not a name of row N -> still ENGEL", has(eng5("W-7", PK7), f"reviews.tsv satır {dash_n} incelemesini")))
     review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -",
-                          f"değerlendirilen olumsuz incelemeler: {neg7}, {bad7}, reviews.tsv satır {dash_n}"], 0)
+                          f"değerlendirilen olumsuz incelemeler: `{neg7}`, {bad7}, `reviews.tsv satır {dash_n}`"], 0)
     e, i = lim("W-7", PK7)
     cases.append(("S-5 Q2′/F-3: naming the '-' row as 'reviews.tsv satır N' settles it -> BİLGİ", not s5(e) and has(s5(i), "bilgi")))
     # Q2 temporal: X9 = Y9 + a date; X9's own UYGUN comes first, Y9's UYGUN DEĞİL later -> the older own UYGUN settles
