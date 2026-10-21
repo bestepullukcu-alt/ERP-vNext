@@ -3,7 +3,8 @@
 - WP: WP-MVP2-SUPPLIER-TENANT-01 · aşama P0 (ölçüm + öneri; **kod yok**) · tarih 2026-10-21
 - Dal: `feature/mvp2/supplier-tenant-01` · taban `origin/main` `a00538e17`
 - Ölçüm: `docs/records/audits/2026-10/mvp2-supplier-tenant-01/MEASUREMENT.md` (dosya:satır kanıtları orada)
-- Durum: **ÖNERİ** — sahip onayı yok. Onaydan sonra MOD-0140 paketi değişir ve CT-APR-01'e göre yeniden onaylanır.
+- Durum: **SAHİP KARARLARI ALINDI (2026-10-21, §5a)** — paket değişikliği taslağı yazılır, CT-APR-01 onayı beklenir.
+  Onaydan sonra S1 başlar. ADR (K-9) yönetimin karar metni gelince yazılır.
 
 ## 0. Neden
 
@@ -144,8 +145,8 @@ db.suppliers.aggregate([
 
 **Tek davranış farkı (üretici yüzeyi):** şirket B'de, kiracıda zaten var olan bir vergi no ile tedarikçi oluşturmak bugün
 kabul ediliyor; yeni modelde 409 + mevcut `supplierId` döner, ekran "mevcut tedarikçiyi bu şirkete bağla"yı önerir (K-6).
-Bunu çağıran yalnız Diten.Web tedarikçi ekranı; MVP-6 tüketicileri tedarikçi oluşturmuyor. Yıkıcı değil; yine de geçiş
-penceresi önerisi: 1.3.0 yayımından sonra bir sürüm boyunca eski davranış `Suppliers:Model=PerLegalEntity` ile korunur.
+Bunu çağıran yalnız Diten.Web tedarikçi ekranı; MVP-6 tüketicileri tedarikçi oluşturmuyor. Yıkıcı değil. Canlıda veri
+olmadığı için eski davranışı bir sürüm koruyan anahtar **gerekmiyor** (K-6 kararı).
 
 **Etkilenen tüketiciler** (yalnız rapor, dokunulmadı):
 - MOD-0141 / 0143 / 0144 / 0145: beş doğrulama noktası (`CreatePurchaseOrderHandler.cs:72`, `CaptureInvoiceHandler.cs:78`,
@@ -192,3 +193,26 @@ paketleri. Onaydan sonra S1'den önce yazılacaklar:
 - MOD-0140 paket değişikliği: §4, §8, §12, yeni §21 ve `## Teslim dilimleri`.
 - Sözleşme 1.3.0 taslağı.
 - ADR (K-9).
+
+## 5a. Sahip kararları (2026-10-21)
+
+| # | karar | not |
+|---|---|---|
+| K-1 | **Kabul.** Ortak alanlar `procurement.suppliers.master.update` ile değişir | |
+| K-2 | **Kabul.** Tekillik: kiracı + ülke + normalize vergi no | |
+| K-3 | **Kabul.** Tarama sonucu tedarikçide; şirket istisnası ilişkide | |
+| K-4 | **İstisna gerekmiyor.** Merkezi denetim iletimi (BL-501, `Diten.BuildingBlocks.CentralAudit`) hazır, Inventory'de kullanılıyor; MVP-1 dalıyla main'e gelecek | S1 şimdi ilerleyebilir. Yeni yazma komutları (S2) MVP-1 main'e girince bu iletimle denetlenir; haber sahipten gelecek. Paketin §21 "Audited Events" bölümü ve onay tablosu satırları ilk yazma komutu değişikliğiyle (S2) eklenir |
+| K-5 | **Kabul.** Eski kodlar ilişkide takma ad; geçmiş belgeler yeniden yazılmaz | |
+| K-6 | **Kabul.** Başka şirkette aynı vergi no → 409 + mevcut kod + "bu şirkete bağla" | eski davranışı koruyan anahtar yok |
+| K-7 | **Kabul.** Bloke / beklemedeki tedarikçiye yeni işlem reddedilir | Procurement içindeki beş nokta bu WP'de; MVP-6 ve Inventory sahiplerine entegrasyon aşamasında sahip iletir |
+| K-8 | **Kabul.** İlişkide ödeme koşulu kodu; banka bilgisi Finance'ta | |
+| K-9 | **Kabul.** Karar ADR'ye yazılır; ADR yönetimin karar metnine atıf yapar | metin sahipten gelecek; ADR o gelince yazılır (`records/` sonradan düzeltilmez) |
+| K-10 | Paketi CT-APR-01'e göre onaylayıcı onaylar | onaylayıcının adı bildirilmedi (mesajda yer tutucu) |
+
+**Mevcut veri:** tedarikçi modülü canlıda kullanılmadı, gerçek veri yok; sayım sorgusu (§2.3a) koşulmayacak. Göç işi
+(deneme / uygulama / doğrulama, geri alma) yine yazılır ama yalnız geliştirme / test verisi içindir; gerçek veride
+birleştirme ve kod çakışması beklenmez.
+
+**Karantina uuid / kod uyuşmazlığı:** Inventory sahibinin işi; entegrasyonda Procurement ile Karantina bağlanırken
+ölçülüp düzeltilecek. Bu WP'de değişiklik yok.
+
