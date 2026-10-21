@@ -3,7 +3,7 @@ name: control-tower
 description: "Bir modül için Control Tower başlangıcı. Repo, HEAD ve araçların varlığını ölçer; modülü salt okunur araştırır (Blueprint, domain-config, module pack, görev kaynakları, mükerrer iş keşfi). Var olan modülde onayın kapsamını ve iddia edilen uygulamayı kod ve kanıt sürümüyle karşılaştırır; olmayan modülde parent / FU / yeni / aday ayrımını ve gerekçeli tek bir ilk kapsam önerisini sunar. Kullanıcı bir modülü başlatmak, sürdürmek ya da durumunu denetletmek istediğinde kullan (örnek: 'Employee modülünü yapalım'). Salt okunur: kod yazmaz, kuyruğa ya da kayda yazmaz, onay, paket ya da dağıtım izni vermez."
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:d3235cdbac3f` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/skills/control-tower/SKILL.md` · kaynak özeti: `sha256:0919481d9b3b` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # control-tower — bir modülün Control Tower başlangıcı
 
@@ -37,8 +37,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dı�
 - Sahip kararlarını ara: modül kimlikleri ve domain adıyla `git log --grep` ve `docs/records/decisions/` içinde. Bulduğun
   her kararı kaynağıyla (`yol@commit`) yaz ve "hâlâ geçerli mi? Evet / Hayır" diye sor; sahibin hatırlamasını bekleme.
 - Keşfi bir kez koş ve çıktıyı ekrandan oku; geçici dosya dahil hiçbir dosyaya yönlendirme. Aynı kaynak ve sorguyla
-  tekrar koşma; kaynak değiştiyse ya da teknik bir hata olduysa gerekçesini yazıp bir kez yeniden koşabilirsin. Çıktı
-  kesildiyse "kısmi" de.
+  tekrar koşma; kaynak değiştiyse ya da teknik bir hata olduysa gerekçesini yazıp bir kez yeniden koşabilirsin. Uzun çıktıyı
+  kartın §0.1'deki gibi süz; kesildiyse "kısmi" de.
 - Önceki bir keşif raporu: `--check-report` yalnız bütünlüğü kanıtlar, güncelliği değil. Raporu yalnız aynı iş için,
   HEAD, kirli kaynak baytları ve ref kimliklerinin değişmediği ölçüldüyse yeniden kullan; yeni işte ya da bunlar
   kanıtlanamıyorsa yeniden keşfet.
@@ -74,7 +74,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dı�
   tamamını tek WP'ye vermez.
 - Geliştirici bağımsız inceleme sonucunu (bulgular + UYGUN / KOŞULLU / UYGUN DEĞİL) getirirse her bulguyu paket ve kodla kendin
   karşılaştır: hangilerini kabul ettiğini, hangilerine kaynağıyla itiraz ettiğini (yanlış, abartılı, kapsam dışı) ve
-  incelemenin neyi kaçırdığını yaz; bulgu dosyasını ya da herhangi bir kaydı yazmadan önce sahibe sor.
+  incelemenin neyi kaçırdığını yaz. Ham sonucu hemen worktree'ye commit'siz taslak yaz (geçici klasöre değil); kaydı
+  ve commit'i yazmadan önce sahibe sor.
   İtirazlarını sonraki inceleme isteğine ekle, yanıtı kaydet.
 - Pack/DCP'yi `module-pack-author` yazar (model + effort yaz, SOP §17.1 r5); sen yazma, sonucu denetle.
 - Sen karar verir, ölçer, denetlersin; işi devredersin. Kod işi için bağlı alt oturum aç, kapıdan geçmiş prompt'u
@@ -91,7 +92,8 @@ burada kopyalanmaz, oradan okunur. İlk çağrı, kartın §0 "Yer" adımı dı�
 4. Gerekçeli tek öneri, "öneri — onay değil".
 5. Yalnız kullanıcı kararı gerekiyorsa, en çok bloklayan kararı tek soruyla sor; gerekmiyorsa soru uydurma. Soru
    "evet" ve "hayır"ın neyi yetkilendirdiğini söyler (ör. "evet: satırı yazar, commit, push, PR; merge sizde");
-   kullanıcıdan uzun onay metni beklenmez.
+   kullanıcıdan uzun onay metni beklenmez. Soruyu kartın "Soru biçimi"yle yanıtın sonunda yaz;
+   butonlu kutu yalnız ek kolaylıktır, "soru kutuda" deme.
 
 Block'un iş takip sayfası varsa her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01).
 
