@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Configurations;
 
-public static class NotificationTemplateSeed
+public static partial class NotificationTemplateSeed
 {
     /// <summary>The seven languages a tenant reader can have; a task template exists in each.</summary>
     internal static readonly string[] TenantLocales = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
@@ -422,7 +422,10 @@ public static class NotificationTemplateSeed
             .. TenantLocales.Select(VisitReportSubmitted),
             .. TenantLocales.Select(VisitReportAdverseEvent),
             .. TenantLocales.Select(VisitReportOffLabelRequest),
-            .. TenantLocales.Select(VisitReportOverdue)
+            .. TenantLocales.Select(VisitReportOverdue),
+
+            // WP-VW-W6 W6-BE-c1 — the seven pre-order e-mails, seven languages each (NotificationTemplateSeed.PreOrders.cs).
+            .. PreOrderTemplates()
         ];
     }
 

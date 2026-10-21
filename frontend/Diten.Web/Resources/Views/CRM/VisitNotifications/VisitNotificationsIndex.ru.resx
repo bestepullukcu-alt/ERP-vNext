@@ -79,8 +79,8 @@
   <data name="Kind_overdue" xml:space="preserve"><value>Уведомление о соблюдении</value></data>
   <data name="Subj_submitted" xml:space="preserve"><value>Отчёт о визите · {0} · {1}</value></data>
   <data name="Subj_adverseevent" xml:space="preserve"><value>СРОЧНО · Сообщение о нежелательном явлении · {0} · 24 часа</value></data>
-  <data name="Subj_offlabelrequest" xml:space="preserve"><value>Запрос информации вне показаний · {0}</value></data>
-  <data name="Subj_overdue" xml:space="preserve"><value>Отчёт просрочен · {0} · {1}</value></data>
+  <data name="Subj_offlabelrequest" xml:space="preserve"><value>Запрос информации о применении вне инструкции · {0}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>Срок отчёта истёк · {0} · {1}</value></data>
   <data name="Band_submitted" xml:space="preserve"><value>Отчёт отправлен</value></data>
   <data name="Band_adverseevent" xml:space="preserve"><value>Правило 24 часов · оценить в течение 24 часов</value></data>
   <data name="Band_offlabelrequest" xml:space="preserve"><value>Передано MSL · представитель не отвечал</value></data>

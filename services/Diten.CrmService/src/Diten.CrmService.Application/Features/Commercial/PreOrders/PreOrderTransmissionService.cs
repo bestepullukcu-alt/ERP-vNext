@@ -63,6 +63,7 @@ public sealed class PreOrderTransmissionService
             new Dictionary<string, string?> { ["attempt"] = attemptNo.ToString(), ["reason"] = result.ReasonCode });
         if (sent)
         {
+            order.Transmission.NextAttemptAtTicks = null;
             order.Transmission.TransmittedAt = now;
             order.Transmission.DepotDocumentRef = result.DepotDocumentRef ?? order.Transmission.DepotDocumentRef;
             order.Transmission.PharmacyCopyRef = result.PharmacyCopyRef ?? order.Transmission.PharmacyCopyRef;
@@ -70,8 +71,13 @@ public sealed class PreOrderTransmissionService
         }
         else
         {
+            // W6-BE-c1 — the next automatic attempt (a growing wait) while the tenant's budget lasts; the approval stands (K-N8)
+            var failures = order.Transmission.Attempts.Count(a => a.Status == PreOrderTransmissionStatuses.Failed);
+            var budget = (await _c.SettingsAsync(order.TenantId, ct)).TransmissionRetryMax;
+            order.Transmission.NextAttemptAtTicks = failures <= budget ? (now + PreOrderTransmissionRetry.Backoff(failures)).UtcTicks : null;
             PreOrderStateMachine.TryApply(order, PreOrderStateMachine.Actions.TransmitFailed, PreOrderEventTypes.TransmissionFailed, by, now,
-                new Dictionary<string, string?> { ["reason"] = result.ReasonCode });
+                new Dictionary<string, string?> { ["reason"] = result.ReasonCode, ["nextAttempt"] = order.Transmission.NextAttemptAtTicks is { } next
+                    ? new DateTimeOffset(next, TimeSpan.Zero).ToString("O", System.Globalization.CultureInfo.InvariantCulture) : null });
         }
 
         return await _c.SaveAsync(order, expected, ct);

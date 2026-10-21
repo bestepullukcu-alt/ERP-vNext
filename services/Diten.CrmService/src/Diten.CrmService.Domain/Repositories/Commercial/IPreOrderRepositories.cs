@@ -26,6 +26,11 @@ public interface IPreOrderRepository
     /// <summary>Newest first.</summary>
     Task<(IReadOnlyList<PreOrder> Items, long Total)> ListAsync(Guid tenantId, PreOrderFilter filter, int skip, int take,
         CancellationToken cancellationToken);
+
+    /// <summary>WP-VW-W6 W6-BE-c1 — across tenants (the scheduler has no request): the failed transmissions whose automatic
+    /// retry is due at <paramref name="nowTicks"/>, oldest due first. Only ids: each one is then read and written in its own
+    /// tenant.</summary>
+    Task<IReadOnlyList<(Guid TenantId, Guid Id)>> ListDueTransmissionRetriesAsync(long nowTicks, int take, CancellationToken cancellationToken);
 }
 
 public interface IPreOrderSettingsRepository

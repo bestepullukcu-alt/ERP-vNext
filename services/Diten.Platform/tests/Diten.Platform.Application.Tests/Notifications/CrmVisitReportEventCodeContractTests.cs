@@ -22,9 +22,12 @@ public sealed class CrmVisitReportEventCodeContractTests
     [Fact]
     public void The_crm_manifest_declares_exactly_the_four_pinned_codes()
     {
-        var declared = new CrmManifestProvider().GetManifest().NotificationEvents!.Select(e => e.EventCode).ToList();
+        var all = new CrmManifestProvider().GetManifest().NotificationEvents!.Select(e => e.EventCode).ToList();
+        var declared = all.Where(code => code.StartsWith("crm.", StringComparison.Ordinal)).ToList();
 
         Assert.Equal(Pinned, declared);
+        // WP-VW-W6 W6-BE-c1 — the manifest's only other events are the seven pre-order ones (CrmPreOrderTemplateTests pins them).
+        Assert.Equal(CrmManifestProvider.PreOrderEvents, all.Where(code => !code.StartsWith("crm.", StringComparison.Ordinal)));
         Assert.Equal(Pinned, new[]
         {
             CrmManifestProvider.VisitReportSubmittedEvent,

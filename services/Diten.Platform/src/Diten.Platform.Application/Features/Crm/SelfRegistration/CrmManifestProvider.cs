@@ -302,7 +302,31 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     "Warning", ["products"]),
                 VisitReportEvent(VisitReportOverdueEvent, "NotificationEvent_CrmVisitReportOverdue", "Visit report overdue",
                     "Sent to the representative's line manager when a visit's report was not entered within its deadline.",
-                    "Warning", [], requiredExtra: ["deadline"])
+                    "Warning", [], requiredExtra: ["deadline"]),
+                // WP-VW-W6 W6-BE-c1 — the MOD-0168 pre-order e-mails (MOD-0168 §4.6), sent by CRM through the internal event
+                // dispatch with sourceModule CRM. No page yet (W6-WEB-a): no target page and no page permission; the links
+                // are CRM's own variables.
+                PreOrderEvent(PreOrderApprovalRequestedEvent, "NotificationEvent_CommercialPreOrderApprovalRequested", "Pre-order approval requested",
+                    "Sent to the approver(s) when a submitted pre-order needs approval: the one-time, signed-in approval link.",
+                    "Warning", ["approvalUrl"], ["expiresAt"]),
+                PreOrderEvent(PreOrderAutoApprovedEvent, "NotificationEvent_CommercialPreOrderAutoApproved", "Pre-order approved automatically",
+                    "Sent to the representative (line manager in copy) when a pre-order within every limit is approved by the tenant setting.",
+                    "Info", [], []),
+                PreOrderEvent(PreOrderChangesRequestedEvent, "NotificationEvent_CommercialPreOrderChangesRequested", "Pre-order changes requested",
+                    "Sent to the representative when the approver sends the pre-order back to the draft.",
+                    "Warning", ["reason"], []),
+                PreOrderEvent(PreOrderRejectedEvent, "NotificationEvent_CommercialPreOrderRejected", "Pre-order rejected",
+                    "Sent to the representative when the approver rejects the pre-order.",
+                    "Warning", ["reason"], []),
+                PreOrderEvent(PreOrderTransmittedDepotEvent, "NotificationEvent_CommercialPreOrderTransmittedDepot", "Pre-order sent to the depot",
+                    "Sent to the depot when an approved pre-order is transmitted (the depot copy is attached).",
+                    "Info", [], ["note"]),
+                PreOrderEvent(PreOrderPharmacyCopyEvent, "NotificationEvent_CommercialPreOrderPharmacyCopy", "Pre-order copy to the pharmacy",
+                    "Sent to the pharmacy when its pre-order is transmitted to the depot (the pharmacy copy is attached).",
+                    "Info", [], []),
+                PreOrderEvent(PreOrderCancelledEvent, "NotificationEvent_CommercialPreOrderCancelled", "Pre-order cancelled",
+                    "Sent to the representative and the line manager when a pre-order is cancelled, and to the depot and the pharmacy only when it had been transmitted.",
+                    "Warning", ["reason"], [])
             ],
             // WP-VW-W6 W6-BE-b — MOD-0156 Price Lists & Discount Guardrails (commercial.*, K-O2; MOD-0156 §14): API-only keys
             // until W6-WEB-b ships screen D (then they become its page + actions). DEFINITION ONLY — the role seed / grant is
@@ -355,6 +379,53 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     /// <summary>Shown when CRM has them (an empty one hides its row): the doctor and the institution — empty when the visit
     /// has no contact or account.</summary>
     public static readonly IReadOnlyList<string> VisitReportOptionalVariables = ["doctorName", "institutionName"];
+
+    // WP-VW-W6 W6-BE-c1 — the seven pre-order events (MOD-0168 §4.6). The package wrote them commercial.pre-order.*; the
+    // catalogue accepts no hyphen, so they are written without one (the W5 lesson). CRM pins the same seven strings.
+    public const string PreOrderApprovalRequestedEvent = "commercial.preorder.approvalrequested";
+    public const string PreOrderAutoApprovedEvent = "commercial.preorder.autoapproved";
+    public const string PreOrderChangesRequestedEvent = "commercial.preorder.changesrequested";
+    public const string PreOrderRejectedEvent = "commercial.preorder.rejected";
+    public const string PreOrderTransmittedDepotEvent = "commercial.preorder.transmitteddepot";
+    public const string PreOrderPharmacyCopyEvent = "commercial.preorder.pharmacycopy";
+    public const string PreOrderCancelledEvent = "commercial.preorder.cancelled";
+
+    public static readonly IReadOnlyList<string> PreOrderEvents =
+    [
+        PreOrderApprovalRequestedEvent, PreOrderAutoApprovedEvent, PreOrderChangesRequestedEvent, PreOrderRejectedEvent,
+        PreOrderTransmittedDepotEvent, PreOrderPharmacyCopyEvent, PreOrderCancelledEvent
+    ];
+
+    /// <summary>What every pre-order e-mail carries (CRM always has them): the order number and the pharmacy.</summary>
+    public static readonly IReadOnlyList<string> PreOrderRequiredVariables = ["orderCode", "pharmacyName"];
+
+    /// <summary>Shown when CRM has them (an empty one hides its row; an empty orderUrl hides the button — external mails).</summary>
+    public static readonly IReadOnlyList<string> PreOrderOptionalVariables =
+        ["repName", "depotName", "deliveryDate", "lineCount", "totalText", "orderUrl", "sellerName"];
+
+    private static ModuleManifestNotificationEvent PreOrderEvent(
+        string eventCode, string displayNameKey, string fallbackDisplayName, string description, string severity,
+        IReadOnlyList<string> requiredExtra, IReadOnlyList<string> optionalExtra) =>
+        new(
+            EventCode: eventCode,
+            Channel: "Email",
+            DefaultTemplateKey: eventCode,
+            DisplayNameKey: displayNameKey,
+            FallbackDisplayName: fallbackDisplayName,
+            Description: description,
+            RequiredVariables: PreOrderRequiredVariables.Concat(requiredExtra)
+                .Select(name => new ModuleManifestNotificationVariable(name))
+                .ToList(),
+            OptionalVariables: PreOrderOptionalVariables.Concat(optionalExtra)
+                .Select(name => new ModuleManifestNotificationVariable(name, IsRequired: false))
+                .ToList(),
+            TargetPageCode: null,
+            RequiredPermissionKey: null,
+            CanTenantOverride: true,
+            UsageType: "SystemEvent",
+            SeverityDefault: severity,
+            LinkPolicy: "None",
+            Status: "Active");
 
     private static ModuleManifestNotificationEvent VisitReportEvent(
         string eventCode, string displayNameKey, string fallbackDisplayName, string description, string severity,

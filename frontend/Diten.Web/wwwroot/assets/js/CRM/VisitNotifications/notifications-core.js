@@ -158,11 +158,14 @@
         const who = doctor || institution;
         const visitDay = val('visitDate') ? d.day(val('visitDate')) : '';
         const products = val('products');
+        // FU-W5-PREVIEW-SUBJECT (user decision 2026-10-21) — the subject is the REAL mail's (the Platform template): event ·
+        // doctor · urgency, the visit date as the template writes it (yyyy-MM-dd), no product; an empty part is left out.
+        const subjectDay = val('visitDate');
         const rows = (list) => list.filter((r) => r.value).map((r) => ({ key: r.key, value: r.value }));
         const cta = { key: key === 'overdue' ? 'CtaReviewRecord' : 'CtaOpenReport', url: safeUrl(v.reportUrl) };
         if (key === 'adverseevent') {
             return {
-                kindKey: 'Kind_adverseevent', subject: { key: 'Subj_adverseevent', args: [products] },
+                kindKey: 'Kind_adverseevent', subject: { key: 'Subj_adverseevent', args: [doctor] },
                 band: { tone: 'danger', icon: 'bx-error', key: 'Band_adverseevent', args: [] },
                 title: { key: 'Title_adverseevent', args: [] }, intro: { key: 'Intro_adverseevent', args: [] },
                 rows: rows([{ key: 'Row_reporter', value: val('repName') }, { key: 'Row_sourceDoctor', value: [doctor, institution].filter(Boolean).join(' · ') },
@@ -173,7 +176,7 @@
         }
         if (key === 'offlabelrequest') {
             return {
-                kindKey: 'Kind_offlabelrequest', subject: { key: 'Subj_offlabelrequest', args: [who] },
+                kindKey: 'Kind_offlabelrequest', subject: { key: 'Subj_offlabelrequest', args: [doctor] },
                 band: { tone: 'info', icon: 'bx-info-circle', key: 'Band_offlabelrequest', args: [] },
                 title: { key: 'Title_offlabelrequest', args: [] }, intro: { key: 'Intro_offlabelrequest', args: [] },
                 rows: rows([{ key: 'Row_doctor', value: doctor }, { key: 'Row_institution', value: institution }, { key: 'Row_product', value: products },
@@ -183,7 +186,7 @@
         }
         if (key === 'overdue') {
             return {
-                kindKey: 'Kind_overdue', subject: { key: 'Subj_overdue', args: [who, visitDay] },
+                kindKey: 'Kind_overdue', subject: { key: 'Subj_overdue', args: [doctor, subjectDay] },
                 band: { tone: 'danger', icon: 'bx-lock-alt', key: 'Band_overdue', args: [] },
                 title: { key: 'Title_overdue', args: [] }, intro: { key: 'Intro_overdue', args: [val('repName') || '—', visitDay || '—'] },
                 rows: rows([{ key: 'Row_rep', value: val('repName') }, { key: 'Row_doctor', value: doctor }, { key: 'Row_institution', value: institution },
@@ -200,7 +203,7 @@
         if (safety.length) { sections.push({ key: 'Sec_safety', itemKeys: safety.map((s) => s.key), items: [] }); }
         if (val('followUpDate')) { sections.push({ key: 'Sec_followUp', items: [d.day(val('followUpDate'))] }); }
         return {
-            kindKey: 'Kind_submitted', subject: { key: 'Subj_submitted', args: [who, visitDay] },
+            kindKey: 'Kind_submitted', subject: { key: 'Subj_submitted', args: [doctor, subjectDay] },
             band: { tone: 'success', icon: 'bx-check-circle', key: 'Band_submitted', args: [] },
             title: { key: 'Title_submitted', args: [who || '—'] }, intro: { key: 'Intro_submitted', args: [val('repName') || '—'] },
             rows: rows([{ key: 'Row_rep', value: val('repName') }, { key: 'Row_doctor', value: doctor }, { key: 'Row_institution', value: institution },

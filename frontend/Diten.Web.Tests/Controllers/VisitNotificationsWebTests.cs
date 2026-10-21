@@ -356,7 +356,9 @@ public sealed class VisitNotificationsWebTests
         // note; the upper manager (found up the chain); the KVKK footer with the rep; the link only when it is safe
         var adverse = s.GetProperty("adverse").GetProperty("body").GetString()!;
         Assert.Equal(adverse, s.GetProperty("adverseHyphenless").GetProperty("body").GetString());
-        Assert.Contains(Encode(tr["Subj_adverseevent"]).Replace("{0}", "<bdi>UROFLEKS, TUTUKON</bdi>"), adverse);
+        // FU-W5-PREVIEW-SUBJECT — the real mail's subject: the doctor, not the products
+        Assert.Contains(Encode(tr["Subj_adverseevent"]).Replace("{0}", "<bdi>Dr. Hakan Öztürk</bdi>"), adverse);
+        Assert.DoesNotContain("<bdi>UROFLEKS, TUTUKON</bdi> · 24", adverse);
         Assert.Contains("vn-band-danger", adverse);
         Assert.Contains(Encode(tr["Band_adverseevent"]), adverse);
         Assert.Contains(Encode(tr["Note_adverseevent"]), adverse);
@@ -458,6 +460,50 @@ public sealed class VisitNotificationsWebTests
         Assert.Equal("ACİL · Advers olay bildirimi · {0} · 24 saat", Run("Subj_adverseevent", "['UROFLEKS']"));
         Assert.Equal("Endikasyon dışı bilgi talebi", Run("Subj_offlabelrequest", "[null]"));
         Assert.Equal("Ziyaret raporu · {1}", Run("Subj_submitted", "['', '20.10.2026']"));
+    }
+
+    /// <summary>FU-W5-PREVIEW-SUBJECT (user decision 2026-10-21) — the preview's subject IS the Platform template's subject, in
+    /// every language: read from the seed's own source (NotificationTemplateSeed, VisitReport* methods), {{doctorName}} →
+    /// {0}, {{visitDate}} → {1}. A wording changed on one side only turns this red.</summary>
+    [Theory]
+    [InlineData("submitted", "VisitReportSubmitted")]
+    [InlineData("adverseevent", "VisitReportAdverseEvent")]
+    [InlineData("offlabelrequest", "VisitReportOffLabelRequest")]
+    [InlineData("overdue", "VisitReportOverdue")]
+    public void N16_the_preview_subject_is_the_platform_templates_subject_in_seven_languages(string key, string method)
+    {
+        var repoRoot = Path.GetDirectoryName(Path.GetDirectoryName(WebRoot()))!;
+        var seed = File.ReadAllText(Path.Combine(repoRoot, "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "Persistence",
+            "Configurations", "NotificationTemplateSeed.cs"));
+        var start = seed.IndexOf($"private static NotificationTemplate {method}(string locale)", StringComparison.Ordinal);
+        Assert.True(start >= 0, method);
+        var body = seed[start..seed.IndexOf("return VisitReportTemplate(", start, StringComparison.Ordinal)];
+        var platform = System.Text.RegularExpressions.Regex.Matches(body, @"""(en|tr|fr|es|zh|ar|ru)"" => \(""((?:[^""\\]|\\.)*)""")
+            .ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value.Replace("{{doctorName}}", "{0}").Replace("{{visitDate}}", "{1}"));
+        Assert.Equal(7, platform.Count);
+
+        foreach (var (lang, subject) in platform)
+        {
+            Assert.Equal(subject, Resx(lang)["Subj_" + key]);
+        }
+
+        Assert.Equal(platform["en"], Resx("")["Subj_" + key]);
+    }
+
+    [Fact]
+    public void N17_the_preview_subject_takes_the_doctor_and_the_raw_visit_date_never_the_products()
+    {
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        string Subject(string key, string vars) =>
+            RunNode(Core() + "const t = C.template(" + JsArg(key) + ", " + vars + ", { day: (x) => 'D(' + x + ')', moment: (x) => x }); process.stdout.write(JSON.stringify(t.subject));")!;
+
+        const string vars = "{ doctorName: 'Dr. A', institutionName: 'Kurum', visitDate: '2026-10-08', products: 'URO, TUT' }";
+        Assert.Equal("{\"key\":\"Subj_adverseevent\",\"args\":[\"Dr. A\"]}", Subject("adverseevent", vars));
+        Assert.Equal("{\"key\":\"Subj_offlabelrequest\",\"args\":[\"Dr. A\"]}", Subject("offlabelrequest", vars));
+        Assert.Equal("{\"key\":\"Subj_overdue\",\"args\":[\"Dr. A\",\"2026-10-08\"]}", Subject("overdue", vars));
+        Assert.Equal("{\"key\":\"Subj_submitted\",\"args\":[\"Dr. A\",\"2026-10-08\"]}", Subject("submitted", vars));
+        // A pharmacy visit (no doctor): the doctor part is empty — the preview leaves it out like the real mail (W5-FIX2 F-4).
+        Assert.Equal("{\"key\":\"Subj_adverseevent\",\"args\":[\"\"]}", Subject("adverseevent", "{ institutionName: 'Eczane', visitDate: '2026-10-08' }"));
     }
 
     [Fact]

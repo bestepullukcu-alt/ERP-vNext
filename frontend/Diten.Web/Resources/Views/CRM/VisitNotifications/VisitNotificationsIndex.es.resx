@@ -78,9 +78,9 @@
   <data name="Kind_offlabelrequest" xml:space="preserve"><value>Solicitud de información médica</value></data>
   <data name="Kind_overdue" xml:space="preserve"><value>Aviso de cumplimiento</value></data>
   <data name="Subj_submitted" xml:space="preserve"><value>Informe de visita · {0} · {1}</value></data>
-  <data name="Subj_adverseevent" xml:space="preserve"><value>URGENTE · Notificación de evento adverso · {0} · 24 horas</value></data>
+  <data name="Subj_adverseevent" xml:space="preserve"><value>URGENTE · Notificación de acontecimiento adverso · {0} · 24 horas</value></data>
   <data name="Subj_offlabelrequest" xml:space="preserve"><value>Solicitud de información fuera de indicación · {0}</value></data>
-  <data name="Subj_overdue" xml:space="preserve"><value>Informe vencido · {0} · {1}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>Plazo del informe vencido · {0} · {1}</value></data>
   <data name="Band_submitted" xml:space="preserve"><value>Informe enviado</value></data>
   <data name="Band_adverseevent" xml:space="preserve"><value>Regla de 24 horas · evaluar en 24 horas</value></data>
   <data name="Band_offlabelrequest" xml:space="preserve"><value>Derivación a MSL · el representante no respondió</value></data>

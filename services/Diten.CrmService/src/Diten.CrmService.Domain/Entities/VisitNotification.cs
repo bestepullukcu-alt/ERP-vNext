@@ -41,6 +41,11 @@ public sealed class VisitNotification : EntityBase
     /// <summary>The template variables (doctor / institution, visit date, rep, products, note, link — no patient data).</summary>
     public Dictionary<string, string> Variables { get; set; } = new(StringComparer.Ordinal);
 
+    /// <summary>WP-VW-W6 W6-BE-c1 (user decision B) — the language of this row's mailbox recipients (PV / MSL): the rep's
+    /// selling company's country language, fixed when the row is written (a retry from the scheduler has no user to ask).
+    /// Null = the tenant's language.</summary>
+    public string? ExternalLocale { get; set; }
+
     public List<string> DispatchIds { get; set; } = new();
     public string CorrelationId { get; set; } = string.Empty;
 

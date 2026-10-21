@@ -77,10 +77,10 @@
   <data name="Kind_adverseevent" xml:space="preserve"><value>اليقظة الدوائية</value></data>
   <data name="Kind_offlabelrequest" xml:space="preserve"><value>طلب معلومات طبية</value></data>
   <data name="Kind_overdue" xml:space="preserve"><value>إشعار امتثال</value></data>
-  <data name="Subj_submitted" xml:space="preserve"><value>تقرير الزيارة · {0} · {1}</value></data>
-  <data name="Subj_adverseevent" xml:space="preserve"><value>عاجل · إخطار حدث سلبي · {0} · 24 ساعة</value></data>
-  <data name="Subj_offlabelrequest" xml:space="preserve"><value>طلب معلومات خارج دواعي الاستعمال · {0}</value></data>
-  <data name="Subj_overdue" xml:space="preserve"><value>تأخر التقرير · {0} · {1}</value></data>
+  <data name="Subj_submitted" xml:space="preserve"><value>تقرير زيارة · {0} · {1}</value></data>
+  <data name="Subj_adverseevent" xml:space="preserve"><value>عاجل · إبلاغ عن حدث ضائر · {0} · 24 ساعة</value></data>
+  <data name="Subj_offlabelrequest" xml:space="preserve"><value>طلب معلومات خارج دواعي الاستعمال المعتمدة · {0}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>انقضت مهلة التقرير · {0} · {1}</value></data>
   <data name="Band_submitted" xml:space="preserve"><value>تم تقديم التقرير</value></data>
   <data name="Band_adverseevent" xml:space="preserve"><value>قاعدة 24 ساعة · قيِّم خلال 24 ساعة</value></data>
   <data name="Band_offlabelrequest" xml:space="preserve"><value>توجيه إلى MSL · لم يُجب المندوب</value></data>

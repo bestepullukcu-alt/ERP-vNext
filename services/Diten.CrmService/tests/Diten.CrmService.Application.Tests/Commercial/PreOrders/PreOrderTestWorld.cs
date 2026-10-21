@@ -89,7 +89,8 @@ internal sealed class PreOrderWorld : IDisposable
 
     private readonly ServiceProvider _provider;
 
-    public PreOrderWorld()
+    /// <param name="configure">W6-BE-c1 — last registrations over the defaults (the real notifier / transmitter).</param>
+    public PreOrderWorld(Action<IServiceCollection>? configure = null)
     {
         Decisions = new FakeDecisionClient(Workflow);
         foreach (var (code, name) in new[] { ("TUT", "TUTUKON 100 mg 28 tablet"), ("ALM", "ALMIBA 10 mg 30 tablet"), ("GLU", "GLUKOFİT 850 mg 60 tablet"), ("URO", "ÜROFLEKS 0,4 mg 30 kapsül") })
@@ -177,6 +178,7 @@ internal sealed class PreOrderWorld : IDisposable
         services.AddSingleton(Dummy<IPriceListImportRepository>());
         services.AddSingleton(Dummy<IPricingChangeLogRepository>());
         services.AddSingleton(Dummy<IPricingLegalEntityDirectory>());
+        configure?.Invoke(services);
         _provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
         As(Rep);
     }
@@ -338,6 +340,11 @@ internal sealed class MemoryPreOrders : CopyingStore<PreOrder>, IPreOrderReposit
         => Task.FromResult(Live(tenantId).FirstOrDefault(x => x.Id == id));
 
     public Task<bool> ReplaceAsync(PreOrder order, int expectedVersion, CancellationToken cancellationToken) => Replace(order, expectedVersion);
+
+    public Task<IReadOnlyList<(Guid TenantId, Guid Id)>> ListDueTransmissionRetriesAsync(long nowTicks, int take, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<(Guid, Guid)>>(Store
+            .Where(o => !o.IsDeleted && o.Status == PreOrderStatuses.TransmissionFailed && o.Transmission?.NextAttemptAtTicks is { } due && due <= nowTicks)
+            .OrderBy(o => o.Transmission!.NextAttemptAtTicks).Take(take).Select(o => (o.TenantId, o.Id)).ToList());
 
     public Task<(IReadOnlyList<PreOrder> Items, long Total)> ListAsync(Guid tenantId, PreOrderFilter f, int skip, int take, CancellationToken cancellationToken)
     {

@@ -2436,6 +2436,10 @@ public static class DependencyInjection
             preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
                 Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Pharmacy.AccountId).Descending(o => o.CreatedAt),
                 new CreateIndexOptions { Name = "ix_commercial_pre_orders_tenant_pharmacy_created" }));
+            // WP-VW-W6 W6-BE-c1 — the transmission retry scheduler's due query (cross-tenant like the W5 claim). No partial filter.
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.Status).Ascending(o => o.Transmission!.NextAttemptAtTicks),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_status_next_attempt" }));
             var preOrderSettings = database.GetCollection<Domain.Entities.Commercial.PreOrderSettings>(Repositories.Commercial.PreOrderSettingsRepository.CollectionName);
             preOrderSettings.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderSettings>(
                 Builders<Domain.Entities.Commercial.PreOrderSettings>.IndexKeys.Ascending(s => s.TenantId),

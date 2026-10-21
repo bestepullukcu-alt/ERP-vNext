@@ -78,9 +78,9 @@
   <data name="Kind_offlabelrequest" xml:space="preserve"><value>Medical information request</value></data>
   <data name="Kind_overdue" xml:space="preserve"><value>Compliance notice</value></data>
   <data name="Subj_submitted" xml:space="preserve"><value>Visit report · {0} · {1}</value></data>
-  <data name="Subj_adverseevent" xml:space="preserve"><value>URGENT · Adverse event notice · {0} · 24 hours</value></data>
+  <data name="Subj_adverseevent" xml:space="preserve"><value>URGENT · Adverse event report · {0} · 24 hours</value></data>
   <data name="Subj_offlabelrequest" xml:space="preserve"><value>Off-label information request · {0}</value></data>
-  <data name="Subj_overdue" xml:space="preserve"><value>Report overdue · {0} · {1}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>Visit report overdue · {0} · {1}</value></data>
   <data name="Band_submitted" xml:space="preserve"><value>Report submitted</value></data>
   <data name="Band_adverseevent" xml:space="preserve"><value>24-hour rule · assess within 24 hours</value></data>
   <data name="Band_offlabelrequest" xml:space="preserve"><value>MSL routing · the representative did not answer</value></data>

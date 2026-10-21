@@ -27,6 +27,22 @@ public sealed class PreOrderRepository : IPreOrderRepository
     public Task<bool> ReplaceAsync(PreOrder order, int expectedVersion, CancellationToken cancellationToken)
         => PricingFilters.ReplaceAsync(_collection, order, expectedVersion, cancellationToken);
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<(Guid TenantId, Guid Id)>> ListDueTransmissionRetriesAsync(long nowTicks, int take, CancellationToken cancellationToken)
+    {
+        // Served by ix_commercial_pre_orders_status_next_attempt (Status, Transmission.NextAttemptAtTicks).
+        var b = Builders<PreOrder>.Filter;
+        var due = b.Eq(o => o.Status, PreOrderStatuses.TransmissionFailed)
+                  & b.Lte(o => o.Transmission!.NextAttemptAtTicks, nowTicks)
+                  & b.Eq(o => o.IsDeleted, false);
+        var rows = await _collection.Find(due)
+            .Project(o => new { o.TenantId, o.Id })
+            .Sort(Builders<PreOrder>.Sort.Ascending(o => o.Transmission!.NextAttemptAtTicks))
+            .Limit(Math.Clamp(take, 1, 200))
+            .ToListAsync(cancellationToken);
+        return rows.Select(r => (r.TenantId, r.Id)).ToList();
+    }
+
     public Task<(IReadOnlyList<PreOrder> Items, long Total)> ListAsync(Guid tenantId, PreOrderFilter f, int skip, int take, CancellationToken cancellationToken)
     {
         var b = Builders<PreOrder>.Filter;

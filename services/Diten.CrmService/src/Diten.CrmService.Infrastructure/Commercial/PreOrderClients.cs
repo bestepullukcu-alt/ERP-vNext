@@ -235,38 +235,34 @@ public sealed class PlatformPreOrderLineManagerReader : IPreOrderLineManagerRead
 }
 
 /// <summary>
-/// WP-VW-W6 W6-BE-a — the e-mail events until W6-BE-c wires Platform Notifications: one log line each (no address, no
-/// token). Never throws (K-N8).
+/// WP-VW-W6 W6-BE-c1 — the e-mail links: <c>Crm:Notifications:WebBaseUrl</c> (the W5 setting) + the MOD-0168 §9 page paths.
+/// The approval link signs in first (D4) and carries the single-use token as its query value.
 /// </summary>
-public sealed class LoggingPreOrderNotifier : IPreOrderNotifier
+public sealed class ConfigurationPreOrderLinks : IPreOrderLinks
 {
-    private readonly ILogger<LoggingPreOrderNotifier> _logger;
+    private readonly string _base;
 
-    public LoggingPreOrderNotifier(ILogger<LoggingPreOrderNotifier> logger) => _logger = logger;
+    public ConfigurationPreOrderLinks(IConfiguration configuration)
+        => _base = (configuration["Crm:Notifications:WebBaseUrl"] ?? "http://localhost:5001").TrimEnd('/');
 
-    public Task ApprovalRequestedAsync(PreOrder order, string approvalToken, DateTimeOffset expiresAt, CancellationToken ct)
-        => Log("approval-requested", order);
+    public string OrderUrl(Guid preOrderId) => _base + "/Commercial/PreOrders/Details/" + preOrderId.ToString("D");
 
-    public Task AutoApprovedAsync(PreOrder order, CancellationToken ct) => Log("auto-approved", order);
-
-    public Task ChangesRequestedAsync(PreOrder order, string reason, CancellationToken ct) => Log("changes-requested", order);
-
-    public Task RejectedAsync(PreOrder order, string reason, CancellationToken ct) => Log("rejected", order);
-
-    public Task CancelledAsync(PreOrder order, string reason, CancellationToken ct) => Log("cancelled", order);
-
-    private Task Log(string eventCode, PreOrder order)
-    {
-        _logger.LogInformation("pre_order.notify.pending_w6_bec Event=commercial.pre-order.{Event} PreOrderId={Id} Code={Code}", eventCode, order.Id, order.Code);
-        return Task.CompletedTask;
-    }
+    public string ApprovalLinkUrl(string token) => _base + "/Commercial/PreOrders/ApprovalLink?token=" + Uri.EscapeDataString(token);
 }
 
-/// <summary>Until W6-BE-c: nothing is sent, the approved order stays <c>approved</c> (never a fake "transmitted").</summary>
-public sealed class NotWiredPreOrderTransmitter : IPreOrderTransmitter
+/// <summary>WP-VW-W6 W6-BE-c1 — a legal entity's MDM country through the MOD-0168 MDM door (the caller's token; fail closed:
+/// anything but a found legal entity is null, and the external recipient then gets the tenant's language).</summary>
+public sealed class MdmLegalEntityCountryReader : ILegalEntityCountryReader
 {
-    public Task<PreOrderTransmissionResult> TransmitAsync(PreOrder order, int attemptNo, CancellationToken ct)
-        => Task.FromResult(PreOrderTransmissionResult.NotWired);
+    private readonly IPreOrderMdmDirectory _mdm;
+
+    public MdmLegalEntityCountryReader(IPreOrderMdmDirectory mdm) => _mdm = mdm;
+
+    public async Task<string?> CountryOfAsync(Guid legalEntityId, CancellationToken ct)
+    {
+        var (outcome, legalEntity) = await _mdm.GetLegalEntityAsync(legalEntityId, ct);
+        return outcome == PreOrderLookupOutcome.Found ? legalEntity?.CountryCode : null;
+    }
 }
 
 /// <summary><c>Commercial:PreOrders:Workflow:TemplateCode</c> (default <c>COM-PREORDER-APPROVAL</c>) and

@@ -122,8 +122,20 @@ public static class DependencyInjection
         // caller's token; the e-mail events and the depot transmission stay unwired until W6-BE-c (log line / "deferred").
         services.AddHttpClient<Application.Features.Commercial.PreOrders.IPreOrderMdmDirectory, Commercial.MdmPreOrderDirectory>();
         services.AddHttpClient<Application.Features.Commercial.PreOrders.IPreOrderLineManagerReader, Commercial.PlatformPreOrderLineManagerReader>();
-        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderNotifier, Commercial.LoggingPreOrderNotifier>();
-        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderTransmitter, Commercial.NotWiredPreOrderTransmitter>();
+        // WP-VW-W6 W6-BE-c1 — the seven pre-order e-mails through the Platform's internal dispatch (the W5 client), the links,
+        // and the transmission frame. NO IPreOrderDocumentProducer is registered until W6-BE-c2: the transmitter is then off
+        // and an approved order waits in "approved" (nothing faked). The retry scheduler runs (it only meets failed ones).
+        services.AddScoped<Application.Features.Commercial.PreOrders.PlatformPreOrderNotifier>();
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderNotifier>(sp =>
+            sp.GetRequiredService<Application.Features.Commercial.PreOrders.PlatformPreOrderNotifier>());
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderTransmissionMailer>(sp =>
+            sp.GetRequiredService<Application.Features.Commercial.PreOrders.PlatformPreOrderNotifier>());
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderTransmitter, Application.Features.Commercial.PreOrders.PreOrderTransmitter>();
+        services.AddSingleton<Application.Features.Commercial.PreOrders.IPreOrderLinks, Commercial.ConfigurationPreOrderLinks>();
+        services.AddHostedService<Commercial.PreOrderTransmissionHostedService>();
+        // WP-VW-W6 W6-BE-c1 (decision B) — the external recipients' language (W5 mailboxes + W6 depot / pharmacy): ONE resolver.
+        services.AddScoped<ILegalEntityCountryReader, Commercial.MdmLegalEntityCountryReader>();
+        services.AddScoped<IExternalRecipientLanguageResolver, ExternalRecipientLanguageResolver>();
         services.AddSingleton<Application.Features.Commercial.PreOrders.IPreOrderApprovalSettings, Commercial.ConfigurationPreOrderApprovalSettings>();
 
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own

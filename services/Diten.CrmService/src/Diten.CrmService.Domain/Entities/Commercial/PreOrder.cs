@@ -229,6 +229,11 @@ public sealed class PreOrderTransmission
     public DateTimeOffset? TransmittedAt { get; set; }
     public Guid? DepotDocumentRef { get; set; }
     public Guid? PharmacyCopyRef { get; set; }
+
+    /// <summary>WP-VW-W6 W6-BE-c1 — when the scheduler tries a failed transmission again (UTC ticks: one plain number, the
+    /// CRM parallel-array trap); null = no automatic retry is due (sent, or the tenant's retry budget is spent — sales
+    /// operations can still retry by hand).</summary>
+    public long? NextAttemptAtTicks { get; set; }
 }
 
 public sealed class PreOrderTransmissionAttempt

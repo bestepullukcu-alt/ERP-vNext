@@ -78,9 +78,9 @@
   <data name="Kind_offlabelrequest" xml:space="preserve"><value>Demande d'information médicale</value></data>
   <data name="Kind_overdue" xml:space="preserve"><value>Avis de conformité</value></data>
   <data name="Subj_submitted" xml:space="preserve"><value>Rapport de visite · {0} · {1}</value></data>
-  <data name="Subj_adverseevent" xml:space="preserve"><value>URGENT · Notification d'événement indésirable · {0} · 24 heures</value></data>
+  <data name="Subj_adverseevent" xml:space="preserve"><value>URGENT · Signalement d'événement indésirable · {0} · 24 heures</value></data>
   <data name="Subj_offlabelrequest" xml:space="preserve"><value>Demande d'information hors AMM · {0}</value></data>
-  <data name="Subj_overdue" xml:space="preserve"><value>Rapport en retard · {0} · {1}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>Délai du rapport dépassé · {0} · {1}</value></data>
   <data name="Band_submitted" xml:space="preserve"><value>Rapport soumis</value></data>
   <data name="Band_adverseevent" xml:space="preserve"><value>Règle des 24 heures · à évaluer sous 24 heures</value></data>
   <data name="Band_offlabelrequest" xml:space="preserve"><value>Routage MSL · le délégué n'a pas répondu</value></data>

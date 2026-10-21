@@ -78,9 +78,9 @@
   <data name="Kind_offlabelrequest" xml:space="preserve"><value>医学信息请求</value></data>
   <data name="Kind_overdue" xml:space="preserve"><value>合规通知</value></data>
   <data name="Subj_submitted" xml:space="preserve"><value>拜访报告 · {0} · {1}</value></data>
-  <data name="Subj_adverseevent" xml:space="preserve"><value>紧急 · 不良事件通知 · {0} · 24 小时</value></data>
+  <data name="Subj_adverseevent" xml:space="preserve"><value>紧急 · 不良事件报告 · {0} · 24 小时</value></data>
   <data name="Subj_offlabelrequest" xml:space="preserve"><value>超说明书信息请求 · {0}</value></data>
-  <data name="Subj_overdue" xml:space="preserve"><value>报告逾期 · {0} · {1}</value></data>
+  <data name="Subj_overdue" xml:space="preserve"><value>报告已逾期 · {0} · {1}</value></data>
   <data name="Band_submitted" xml:space="preserve"><value>报告已提交</value></data>
   <data name="Band_adverseevent" xml:space="preserve"><value>24 小时规则 · 须在 24 小时内评估</value></data>
   <data name="Band_offlabelrequest" xml:space="preserve"><value>转交 MSL · 代表未作答</value></data>

@@ -10,7 +10,9 @@ namespace Diten.CrmService.Application.Tests.Commercial.PreOrders;
 /// <summary>The steps every MOD-0168 test takes (draft → signature → submission → decision), on a fresh world.</summary>
 public abstract class PreOrderTestBase : IDisposable
 {
-    internal readonly PreOrderWorld W = new();
+    internal readonly PreOrderWorld W;
+
+    protected PreOrderTestBase(Action<Microsoft.Extensions.DependencyInjection.IServiceCollection>? configure = null) => W = new PreOrderWorld(configure);
 
     public void Dispose() => W.Dispose();
 

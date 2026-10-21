@@ -150,7 +150,7 @@ public sealed class VisitNotificationSender
     public async Task SendAsync(VisitNotification row, CancellationToken ct)
     {
         var settings = await _settings.GetAsync(row.TenantId, ct);
-        var (to, cc, notes) = Build(row.Recipients, settings);
+        var (to, cc, notes) = Build(row.Recipients, settings, row.ExternalLocale);
         foreach (var note in notes.Where(n => !row.Notes.Contains(n)))
         {
             row.Notes.Add(note);
@@ -214,7 +214,7 @@ public sealed class VisitNotificationSender
     /// <summary>Pure (K-N5): the spec → the wire recipients. A mailbox whose address is not set is dropped with its
     /// route-pending note; when nobody is left in "to", the "cc" moves up (the line manager gets it).</summary>
     public static (List<PlatformNotificationRecipient> To, List<PlatformNotificationRecipient> Cc, List<string> Notes) Build(
-        IReadOnlyList<VisitNotificationRecipient> spec, VisitNotificationSettings? settings)
+        IReadOnlyList<VisitNotificationRecipient> spec, VisitNotificationSettings? settings, string? externalLocale = null)
     {
         var to = new List<PlatformNotificationRecipient>();
         var cc = new List<PlatformNotificationRecipient>();
@@ -225,7 +225,10 @@ public sealed class VisitNotificationSender
             {
                 VisitNotificationRecipientKinds.LineManager when !string.IsNullOrWhiteSpace(r.UserId) => new(LineManagerOf: r.UserId),
                 VisitNotificationRecipientKinds.User when !string.IsNullOrWhiteSpace(r.UserId) => new(UserId: r.UserId),
-                VisitNotificationRecipientKinds.Mailbox => MailboxOf(r.Mailbox, settings, notes),
+                // W6-BE-c1 (decision B) — a mailbox has no language of its own: the selling company's country language
+                VisitNotificationRecipientKinds.Mailbox => MailboxOf(r.Mailbox, settings, notes) is { } mailbox
+                    ? mailbox with { Locale = externalLocale }
+                    : null,
                 _ => null
             };
             if (wire is not null)
@@ -293,11 +296,13 @@ public sealed class VisitReportNotifier : IVisitReportNotifier
     private readonly IVisitReportRepository _reports;
     private readonly IPlannedVisitRepository _plans;
     private readonly ILogger<VisitReportNotifier> _logger;
+    private readonly IExternalRecipientLanguageResolver? _languages;
 
     public VisitReportNotifier(VisitNotificationSender sender, IVisitNotificationSettingsRepository settings, IContactRepository contacts,
         IAccountRepository accounts, IVisitNotificationLinks links, IVisitReportRepository reports, IPlannedVisitRepository plans,
-        ILogger<VisitReportNotifier>? logger = null)
+        ILogger<VisitReportNotifier>? logger = null, IExternalRecipientLanguageResolver? languages = null)
     {
+        _languages = languages;
         _sender = sender;
         _settings = settings;
         _contacts = contacts;
@@ -353,6 +358,10 @@ public sealed class VisitReportNotifier : IVisitReportNotifier
                     [LineManager(VisitNotificationRoles.To, rep)]), ct);
             }
 
+            // W6-BE-c1 (decision B) — the mailboxes (PV / MSL) read the selling company's country language; asked once, at submit
+            var externalLocale = report.Safety?.AdverseEvent == true || report.Safety?.OffLabelRequest == true
+                ? await ExternalLocaleAsync(rep, ct)
+                : null;
             if (report.Safety?.AdverseEvent == true)
             {
                 var vars = new Dictionary<string, string>(common, StringComparer.Ordinal)
@@ -360,16 +369,20 @@ public sealed class VisitReportNotifier : IVisitReportNotifier
                     ["products"] = products,
                     ["adverseEventNote"] = report.Safety.AdverseEventNote?.Trim() ?? string.Empty
                 };
-                await _sender.QueueAndSendAsync(Row(tenantId, VisitNotificationEvents.AdverseEvent, report.Id, plan, report, rep, vars,
-                    [Mailbox(VisitNotificationMailboxes.Pv), LineManager(VisitNotificationRoles.Cc, rep)]), ct);
+                var row = Row(tenantId, VisitNotificationEvents.AdverseEvent, report.Id, plan, report, rep, vars,
+                    [Mailbox(VisitNotificationMailboxes.Pv), LineManager(VisitNotificationRoles.Cc, rep)]);
+                row.ExternalLocale = externalLocale;
+                await _sender.QueueAndSendAsync(row, ct);
             }
 
             // the off-label question is a doctor report's (a pharmacy report carries none)
             if (report.Safety?.OffLabelRequest == true)
             {
                 var vars = new Dictionary<string, string>(common, StringComparer.Ordinal) { ["products"] = products };
-                await _sender.QueueAndSendAsync(Row(tenantId, VisitNotificationEvents.OffLabelRequest, report.Id, plan, report, rep, vars,
-                    [Mailbox(VisitNotificationMailboxes.Msl), LineManager(VisitNotificationRoles.Cc, rep)]), ct);
+                var row = Row(tenantId, VisitNotificationEvents.OffLabelRequest, report.Id, plan, report, rep, vars,
+                    [Mailbox(VisitNotificationMailboxes.Msl), LineManager(VisitNotificationRoles.Cc, rep)]);
+                row.ExternalLocale = externalLocale;
+                await _sender.QueueAndSendAsync(row, ct);
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -396,6 +409,10 @@ public sealed class VisitReportNotifier : IVisitReportNotifier
             _logger.LogWarning(ex, "Visit overdue notification failed for plan {PlanId}.", plan.Id);
         }
     }
+
+    /// <summary>The rep's selling company's country language for the mailboxes; null (= the tenant's) when it cannot be read.</summary>
+    private async Task<string?> ExternalLocaleAsync(string rep, CancellationToken ct)
+        => _languages is null ? null : await _languages.ForUserAsync(rep, ct);
 
     private static string RepOf(PlannedVisitEntity plan, VisitReportEntity report)
         => string.IsNullOrWhiteSpace(report.ReportedByResourceId) ? plan.Resource.ResourceId : report.ReportedByResourceId;
