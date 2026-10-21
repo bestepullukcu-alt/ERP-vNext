@@ -348,3 +348,56 @@ KORU/YAPMA: başka modülün rollerine / izinlerine dokunma; parola / token beti
 DOĞRULA: betiklerin deneme çıktısı (yerel 97c5 — salt okuma bağlantısı varsa; yoksa sahte veriyle birim testi), matris ↔ manifest eşleşmesi testi (manifestteki her commercial.* anahtarı matriste ya da "atanmadı" listesinde), tekrar çalıştırmada sıfır yeni ekleme, `--apply` olmadan yazma yok (sabotaj: deneme bayrağını yok say → test kırmızı).
 Commit: "chore(crm): WP-VW-W6 W6-CFG — pre-order and pricing workflow templates, tenant ORD prefix, role permission grants (local 97c5 + live be823006) as dry-run scripts; rep CRM read keys for mobile" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §36.2 Uygulama raporu — W6-CFG (2026-10-21 · betikler yazıldı, hiçbiri `--apply` / `APPLY = true` ile çalıştırılmadı)
+Dal `wp/vw-w6-cfg` (taban `807e80d96`). Ürün kodu değişmedi; canlıya ve yerel Mongo'ya yazma yok. Auth `DefaultRolePermissionTemplate` değişmedi (takip CRM-ROLE-TEMPLATES).
+
+### Rol – izin matrisi (K-W6-ROLES; tek kaynak `scripts/rbac/w6_cfg_role_matrix.json`, canlı betik aynı kopyayı taşır — test farkı yakalar)
+| Rol | Anahtarlar |
+|---|---|
+| `CrmUser` (temsilci) | `commercial.pre-orders.read`, `.create`, `.submit`, `.cancel` · `crm.account.read`, `crm.contact.read`, `crm.account-contact.read`, `crm.visit-plan.read` (CRM-ROLE-1) · `mdm.product-master.read` (ürün seçici — aşağıda açık nokta) |
+| `Team Leader` (onaycı yönetici) | `commercial.pre-orders.read`, `.approve`, `.cancel` |
+| `Department Manager` (onaycı + satış operasyonu + dört göz) | Team Leader'ınkiler + `commercial.pre-orders.read-all`, `.record-depot-response`, `.retry-transmission` · `commercial.pre-order-settings.*` · `commercial.price-lists.*` · `commercial.pricing-rules.*` · `commercial.fx-rates.*` (yayımlama dahil) |
+| `Admin` | `commercial.*` |
+
+**Yalnız rapor (`workflow_needs`, betikler VERMEZ — MOD-0023 anahtarı, K13):** CrmUser `platform.workflow.instances.start`, `.instances.view` · Team Leader `.instances.view`, `.tasks.approve`, `.tasks.reject` · Department Manager + Admin dördü birden.
+
+`commercial.*` anahtarları Platform `CrmManifestProvider`'dan okunur (yerel betik kaynak dosyayı, canlı betik manifestten kayıtlı kataloğu); `.*` satırı o önekin bütün manifest anahtarlarıdır. 2026-10-21'de 27 anahtar: hepsi en az bir rolde ("atanmadı" boş), yalnız Admin'de olan: `commercial.pre-orders.export`. Matriste manifestte olmayan anahtar (yazım hatası) ya da hiçbir şeye uymayan `.*` satırı → betik durur.
+
+### Betikler
+| Dosya | Hedef | Ne yapar |
+|---|---|---|
+| `scripts/golive/w6-cfg-workflow-templates.js` | yerel (`TARGET='local'`) / canlı (`'live'`) · `/Platform/Workflow` konsolu | `COM-PREORDER-APPROVAL`: tek adım, **aday yok** (`candidatePrincipalIds: []`) → Platform çalışma anı adaylarını (CRM'in verdiği hattaki yöneticiler) kullanır (`WorkflowInstanceStartCoordinator`: ilk adımın adayı boşsa isteğinkiler); SLA yok; `rejectCommentRequired`. `COM-PRICING-PUBLISH`: dört göz adımı, aday yerelde `POS-SALES-OPS`, canlıda 8 ülkenin `<ÜLKE>-SALES-OPS`'u; SLA 4320 / 2880 (W3-CFG). Yayındaysa dokunmaz; pozisyon eksikse DUR |
+| `scripts/golive/w6-cfg-preorder-prefix.js` | yerel / canlı · `/Commercial/PreOrderSettings` konsolu | Yerel: GMG (`1754b820…`) → `MG`. Canlı: tüzel kişilikleri + mevcut önekleri listeler, önek listesi boş (kullanıcı seçer, `WANTED.live`'a yazar). Mevcut listeyi okuyup yalnız eksik satırı ekler, okuduğu sürümle yazar; var olan öneki değiştirmez (farklı önek / başka şirkette aynı önek → DUR); diğer ayarları göndermez |
+| `scripts/rbac/grant_w6_cfg_rbac_97c5.py` | yerel 97c5 · Mongo `diten_auth_v3` | W5 deseni (subtype-4, tarih yerel kayıttan, işaretçi `manual-grant-w6-cfg`, idempotent, rol / izin oluşturmaz). Yerelde olmayan rol raporlanır ve atlanır; `--role-map "CrmUser=…"` mevcut role eşler; `--strict-roles` eksik rolde durur. Katalogda olmayan anahtar → yazmadan durur (kod 3). Matrisin `workflow_needs` bölümündeki `platform.workflow.*` eksikleri BİLGİ satırı (betik vermez) |
+| `scripts/golive/w6-cfg-grant-roles-live.js` | canlı be823006 · `/RoleAssignments` konsolu | `grant-roles-live.js` deseni (ekranın `/RoleAssignments/assign` ucu); yalnız eksikleri ekler; katalogda yok / rol yok → DUR satırı; matriste olmayan `commercial.*` → ATANMADI satırı; `platform.workflow.*` eksiği → BİLGİ satırı (vermez) |
+
+Parola / belirteç hiçbir betikte yok (konsol betikleri oturum çerezi + sayfanın başlıkları; Python yerel Mongo).
+
+### Çalıştırma sırası (kullanıcı)
+1. Fleet'i yeniden başlat (W6-BE-a / BE-b / WEB-a manifest anahtarları kataloğa girsin) → yerleşik tarayıcıda giriş.
+2. **Şablonlar:** `/Platform/Workflow` → `w6-cfg-workflow-templates.js` (kuru) → plan doğruysa `APPLY = true`. Canlıda `TARGET = 'live'`.
+3. **Önek:** `/Commercial/PreOrderSettings` → `w6-cfg-preorder-prefix.js` (kuru) → `APPLY = true`. Canlıda önce kuru çalıştır, LE seç, `WANTED.live`'a yaz.
+4. **İzinler:** yerel `py -3 scripts/rbac/grant_w6_cfg_rbac_97c5.py` (kuru) → `--apply`; canlı `/RoleAssignments` → `w6-cfg-grant-roles-live.js` (kuru) → `APPLY = true`.
+5. Rol sahipleri **yeniden giriş** yapar.
+
+### Geri alma
+- Yerel izinler: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w6-cfg"})`.
+- Canlı izinler: ekran ucu işaretçi yazmaz → raporun "EKLENDI" satırları `/RoleAssignments`'tan kaldırılır.
+- Önek: numara vermemiş önek ayarlar ekranından silinir (numara vermişse CRM 409 — geri alınamaz, RCS-001 §5.4).
+- Şablon: yayımlanmış şablon silinmez; yeni sürüm yayımlanır ya da şablon arşivlenir (`/Platform/Workflow`).
+
+### Deneme çıktısı (yerel 97c5, salt okuma, 2026-10-21)
+- 27 `commercial.*` anahtarı, atanmadı: yok, yalnız Admin: `commercial.pre-orders.export`.
+- Yerel roller: Admin, DocumentMasterRegisterLinker, GQD, QADocumentation, Viewer → CrmUser / Team Leader / Department Manager **yok**, atlandı.
+- **DUR (kod 3):** 27 `commercial.*` anahtarı yerel katalogda yok (fleet W6'dan sonra yeniden başlatılmamış). İşaretçili satır: 0.
+- Konsol betikleri yerelde çalıştırılmadı (fleet / oturum yok); sahte pencereyle Node testleri koştu.
+
+### Doğrulama
+`scripts/tests/test_w6_cfg_scripts.py` 17 / 0 (unittest; Node yoksa konsol testleri atlanır). Matris ↔ manifest, JSON ↔ canlı JS eşliği, deneme modunda yazma yok, uygula → tekrar çalıştırmada sıfır ekleme, eksik rol / katalog, ön sipariş şablonunda aday yok, önek birleştirme / çakışma. İş akışı anahtarlarının hiç verilmediği (Python + canlı JS). Sabotajlar (10, hepsi kırmızı, md5 geri): Python deneme bayrağı yok sayıldı · Python var olanı yeniden ekler · canlı izin deneme bayrağı · ön sipariş şablonuna aday · şablon deneme bayrağı · önek deneme bayrağı · JSON'a anahtar eklendi (JS'ye değil) · boş joker satır · Python iş akışı anahtarını verir · canlı JS iş akışı anahtarını verir.
+
+### Açık noktalar
+- **`mdm.product-master.read` katalogda yok** (ölçüm: yerel `permissions` 0 satır; hiçbir manifestte ve Auth `DataSeeder`'da yok — yalnız `DefaultRolePermissionTemplate` ve ürün kimliği profilinde adı geçiyor). MDM `ProductMasterController` bu anahtarı istiyor → temsilcinin ürün seçicisi (`/Commercial/PreOrders/api/lookups/skus`) bu anahtar olmadan boş / 403. Yerel betik CrmUser eşlenince bu anahtar yüzünden durur; canlı betik "DUR: katalogda yok" satırı yazar. Karar: MDM sahibi anahtarı katalog / manifeste ekler (XMC-001) ya da seçici başka okuma anahtarına bağlanır.
+- `COM-PRICING-PUBLISH` iki nesne türüne hizmet ediyor; şablonun `requestedObjectType` alanı `commercial.pricing` (Platform bu alanı başlatmada denetlemiyor — ölçüldü; örnek kendi nesne türünü taşır).
+- **İş akışı anahtarları (karar gerekli):** CRM onay turunu **çağıranın token'ıyla** başlatır ve karara bağlar (`GatewayClaimWorkflowClient`; servis token'ı bilinçli olarak yok — SoD). Ölçülen Platform uçları: gönderim `POST api/v1/workflow/instances` → `platform.workflow.instances.start`; onaycının görevi `GET tasks/mine` → `instances.view`; karar `tasks/{id}/approve|reject` → `tasks.approve / reject`. Bunlar olmadan temsilcinin Gönder'i 503 `workflow_unavailable`, onaycının kararı 503 / 403 olur (C ekranı ve e-posta bağlantısı da aynı yoldan geçer). Matris istemi bu anahtarları içermiyor ve "başka modülün izinlerine dokunma" diyor → betikler yalnız raporlar. Öneri: `workflow_needs` satırlarının da verilmesi (W3-CFG'de Admin'e verilen anahtarların aynısı); onay gelirse matriste `keys`'e taşınır.
+- Canlı LE öneki kullanıcının seçimi (MDM'de kısa kod alanı yok — FU-MDM-LE-SHORTCODE).

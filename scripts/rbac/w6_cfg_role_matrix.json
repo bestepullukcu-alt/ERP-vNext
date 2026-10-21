@@ -1,0 +1,71 @@
+{
+  "_comment": [
+    "WP-VW-W6 W6-CFG — the role / permission matrix of the pharmacy pre-order (MOD-0168) and the price lists + pricing rules (MOD-0156).",
+    "ONE source: scripts/rbac/grant_w6_cfg_rbac_97c5.py reads this file; scripts/golive/w6-cfg-grant-roles-live.js carries the same",
+    "matrix (scripts/tests/test_w6_cfg_scripts.py fails when the two differ, or when a commercial.* key of the Platform",
+    "CrmManifestProvider is neither granted nor listed). A key ending in '.*' is a prefix: every manifest key under it.",
+    "K-W6-ROLES (user 2026-10-21): sales operations + four-eyes publishing = Department Manager or Admin (no own role);",
+    "the rep is CrmUser (WP-CRM-MOBILE-REQ CRM-ROLE-1)."
+  ],
+  "marker": "manual-grant-w6-cfg",
+  "workflow_needs_comment": [
+    "REPORT ONLY — never granted by the W6-CFG scripts (MOD-0023's keys; decision K13). The CRM starts and decides the",
+    "approval rounds with the CALLER's token (GatewayClaimWorkflowClient): submit → POST /api/v1/workflow/instances",
+    "(instances.start), the approver's task → GET tasks/mine (instances.view), the decision → tasks/{id}/approve|reject."
+  ],
+  "workflow_needs": {
+    "CrmUser": ["platform.workflow.instances.start", "platform.workflow.instances.view"],
+    "Team Leader": ["platform.workflow.instances.view", "platform.workflow.tasks.approve", "platform.workflow.tasks.reject"],
+    "Department Manager": ["platform.workflow.instances.start", "platform.workflow.instances.view", "platform.workflow.tasks.approve", "platform.workflow.tasks.reject"],
+    "Admin": ["platform.workflow.instances.start", "platform.workflow.instances.view", "platform.workflow.tasks.approve", "platform.workflow.tasks.reject"]
+  },
+  "roles": [
+    {
+      "role": "CrmUser",
+      "why": "field rep: own pre-orders (draft, sign, submit, cancel) + the CRM reads of the mobile app (CRM-ROLE-1) + the product picker",
+      "keys": [
+        "commercial.pre-orders.read",
+        "commercial.pre-orders.create",
+        "commercial.pre-orders.submit",
+        "commercial.pre-orders.cancel",
+        "crm.account.read",
+        "crm.contact.read",
+        "crm.account-contact.read",
+        "crm.visit-plan.read",
+        "mdm.product-master.read"
+      ]
+    },
+    {
+      "role": "Team Leader",
+      "why": "approving line manager (the Platform line-manager resolver names them as runtime candidates)",
+      "keys": [
+        "commercial.pre-orders.read",
+        "commercial.pre-orders.approve",
+        "commercial.pre-orders.cancel"
+      ]
+    },
+    {
+      "role": "Department Manager",
+      "why": "approving line manager + sales operations + four-eyes publishing (K-W6-ROLES)",
+      "keys": [
+        "commercial.pre-orders.read",
+        "commercial.pre-orders.approve",
+        "commercial.pre-orders.cancel",
+        "commercial.pre-orders.read-all",
+        "commercial.pre-orders.record-depot-response",
+        "commercial.pre-orders.retry-transmission",
+        "commercial.pre-order-settings.*",
+        "commercial.price-lists.*",
+        "commercial.pricing-rules.*",
+        "commercial.fx-rates.*"
+      ]
+    },
+    {
+      "role": "Admin",
+      "why": "every commercial.* key",
+      "keys": [
+        "commercial.*"
+      ]
+    }
+  ]
+}
