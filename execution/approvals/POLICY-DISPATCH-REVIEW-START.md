@@ -17,7 +17,8 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
 - **Yeniden inceleme çıkışı (koşullu; sahip onayı 2026-10-21):** başka bir sürümden gelen olumsuzlar yalnız şu durumda
   BİLGİ olur: bu sürümün main'de geçen bir kendi inceleme satırı vardır, bu satırın commit'i bütün o olumsuz inceleme
   satırlarının commit'lerinden sonra gelir (onların torunudur) ve bulgu dosyası her olumsuz incelemeyi bulgu özetinin
-  (`findings_sha256`) ilk 8 hanesiyle — özeti 64 hane olmayan satırı `reviews.tsv satır N` ile — adıyla anar. Olumsuz satır, açık olumsuzlar (`UYGUN DEĞİL`, açık ENGEL) ile
+  (`findings_sha256`) ilk 8 hanesiyle — özeti 64 hane olmayan satırı `reviews.tsv satır N` ile — adıyla anar. Ad
+  yalnız `değerlendirilen olumsuz incelemeler: a, b` satırından ve tam olarak okunur (`satır 20`, `satır 2`'yi anmaz). Olumsuz satır, açık olumsuzlar (`UYGUN DEĞİL`, açık ENGEL) ile
   bozuk ya da sayılmayan her satırdır; bozuk bir satır açık olumsuzun arkasına saklanmaz, sonradan eklenirse önceki
   değerlendirme onu kapatmaz. Olumsuzdan önce yapılmış bir kendi `UYGUN` hiçbir şeyi kapatmaz. Aksi
   halde hepsi durdurur; sonraki adım "olumsuzdan sonra yapılan ve <sha8> incelemesini adıyla değerlendiren yeni bir
@@ -41,7 +42,10 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
   değişir, karşılaştırılmaz) ve paket dosyası o andan beri aynı kalmalı; satır bugün yeniden açılmış (`READY`,
   `REWORK`) olmamalı ve başlangıçtan bu yana kuyruk dosyasının hiçbir sürümünde (birleşen dallar dahil) `active` dışı bir
   sınıfa düşmemiş olmalıdır: bir kez `REWORK` (ya da `BLOCKED` gibi `active` dışı bir durum) olan iş korumayı geri
-  kazanmaz. Geçmiş, dağıtılan commit'ten ve main'den birlikte, yan dallar dahil (`--full-history`) okunur. Kapsamın kaynağı kuyruk satırıdır; kapsamı
+  kazanmaz. Geçmiş, dağıtılan commit'ten ve main'den birlikte, yan dallar dahil (`--full-history`) okunur. Kabulde
+  olağan kapanış (`ACCEPTED`, `DONE` — `closed` sınıfı) ayrılmak sayılmaz; kapandıktan sonra yeniden çalışılan duruma
+  dönmek yeniden açılmadır. Ölçü git'e kaydedilmiş geçmiştir: aynı commit içindeki gidiş-dönüş ya da squash ile silinen
+  ara durum görünmez; bu yüzden kuyruk değişiklikleri squash edilmez (depo yalnız merge commit kabul eder). Kapsamın kaynağı kuyruk satırıdır; kapsamı
   ayrıca bir WP belgesinde yazılı iş için bu koruma o belgenin sürümünü ölçmez. Bunlardan biri tutmazsa iş kapıdan geçer ve ENGEL nedenini söyler. Eski kuyruk istisna değildir.
   `module` sütunu olmayan bir kuyruğun (bugün sce-mvp6) satırları hiç korunmaz; bu bilinen bir sonuçtur ve gerçek bir
   dağıtımı etkilemez, çünkü dağıtım yalnız `READY` ya da `REWORK` satırından başlar ve yeniden açılmış satır korunmaz.

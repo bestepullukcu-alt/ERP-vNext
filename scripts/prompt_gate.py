@@ -552,8 +552,19 @@ REVIEW_STEP = ("UYGUN DEĞİL ya da açık ENGEL varsa önce paketi düzelt; da�
                "`python3 scripts/pack_approval.py review-row {path} --findings <bulgu dosyası> …` ile üret ve main'e başka "
                "birinin merge'iyle al (SOP §20.4 madde 8)")
 SETTLE_STEP = ("olumsuzdan sonra yapılan ve {names} incelemesini adıyla değerlendiren yeni bir inceleme gerekir (bu sürümün "
-               "kendi incelemesi; bulgu dosyasında her olumsuz incelemenin bulgu özetinin ilk 8 hanesi, özeti 64 hane "
-               "olmayan satır için 'reviews.tsv satır N' geçmeli)")
+               "kendi incelemesi; bulgu dosyasında 'değerlendirilen olumsuz incelemeler: a, b' satırı her olumsuz "
+               "incelemeyi bulgu özetinin ilk 8 hanesiyle, özeti 64 hane olmayan satırı 'reviews.tsv satır N' ile tam "
+               "adıyla anmalı)")
+
+
+NAMED_LINE = re.compile(r"^\s*değerlendirilen olumsuz inceleme(?:ler)?:[ \t]*(.*?)[ \t]*$")
+
+
+def named_in(text: str) -> set[str]:
+    """Codex F-6: the names a findings file gives, read only from its 'değerlendirilen olumsuz inceleme(ler): a, b'
+    lines, each name compared whole — 'reviews.tsv satır 2' is never found inside 'reviews.tsv satır 20'."""
+    return {x.strip() for l in text.replace("\r\n", "\n").split("\n") if (m := NAMED_LINE.match(l))
+            for x in m.group(1).split(",") if x.strip()}
 
 
 def neg_name(pa, r: dict) -> str:
@@ -669,15 +680,16 @@ def settles(pa, root: str, main: str, own_rows: list[dict], negs: list[dict]) ->
     """Q2: one own (passing) review row whose commit descends from every negative row's commit (Codex Q2′: a malformed
     row is a negative of its own — _negative_rows — so one added later is never settled by an earlier evaluation) and
     whose findings file (read at main) names every negative row (neg_name: its findings_sha256's first 8 hex, or
-    'reviews.tsv satır N' when that is not a 64-hex digest)."""
+    'reviews.tsv satır N' when that is not a 64-hex digest) on a 'değerlendirilen olumsuz inceleme(ler):' line, each
+    name whole (named_in)."""
     neg_commits = [pa.row_commit(root, main, r["_n"], pa.REVIEWS) for r in negs]
     for r in own_rows:
         c = pa.row_commit(root, main, r["_n"], pa.REVIEWS)
         if not all(n != c and pa.git(root, "merge-base", "--is-ancestor", n, c, ok_fail=True) is not None for n in neg_commits):
             continue
         found = pa.read(root, main, r["findings"])
-        lines = (found or b"").decode("utf-8", errors="replace").split("\n")
-        if all(any(neg_name(pa, n) in l for l in lines) for n in negs):
+        names = named_in((found or b"").decode("utf-8", errors="replace"))
+        if all(neg_name(pa, n) in names for n in negs):
             return True
     return False
 
@@ -713,8 +725,11 @@ REOPENED_CLASSES = ("dispatchable", "rework")
 REOPENED_STATES = ("READY", "REWORK")
 
 
+CLOSED_CLASS = "closed"
+
+
 def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: str | None, q: dict | None,
-                       tips: list[str] | None = None) -> tuple[bool, str]:
+                       tips: list[str] | None = None, closing: bool = False) -> tuple[bool, str]:
     """S-5 (3; F-2, F-4; owner decision 2026-10-21): (protected?, why). Read AT the start commit: the queue's registry row
     (by queue_id, else by path; the path unchanged), its vocabulary's state classes (ct-queue-states.tsv), and the WP's
     single queue row — its state's class is 'active' and its module names this pack's identity (ct_queue.pack_identity,
@@ -722,7 +737,9 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
     item, module; Q1) is unchanged now, and the row is not re-opened now (READY / REWORK, or a dispatchable / rework class).
     Codex Q7: protection is never regained — every version of the queue file after the start reachable from any of
     `tips` (the dispatched commit AND main, F-2; `--full-history`, so a side branch merged back is read too, F-1) shows
-    this WP's single row in an 'active' state with the same module and scope; one REWORK or BLOCKED in between ends it. Anything not proven goes through the gate; the reason is always given."""
+    this WP's single row in an 'active' state with the same module and scope; one REWORK or BLOCKED in between ends it.
+    Codex F-7: with `closing` (acceptance_record only) the normal closure is not a leaving — once the row reaches a
+    'closed' class (ACCEPTED, DONE) it may only stay closed; closed and back to work is a re-opening and ends it. Anything not proven goes through the gate; the reason is always given."""
     q = q or {}
     qpath, qid, now = q.get("path"), q.get("queue_id"), q.get("row") or {}
     if not qpath or not wp:
@@ -782,11 +799,14 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
         return False, f"{wp} satırının bugünkü durumu ölçülemedi"
     if cur in REOPENED_STATES or classes.get(cur) in REOPENED_CLASSES:
         return False, f"{wp} yeniden açıldı (bugün {cur[:30]}) — yeni dağıtım sayılır"
+    if classes.get(cur) == CLOSED_CLASS and not closing:
+        return False, f"{wp} bugün kapanmış ({cur[:30]}) — kapanmış iş yeniden dağıtılmaz"
     if not tips:
         return False, f"{wp} satırının kural başlangıcından bu yana geçmişi ölçülemedi"
     log = pa.git(root, "rev-list", "--full-history", "--reverse", *tips, f"^{start}", "--", qpath, ok_fail=True)
     if log is None:
         return False, f"{wp} satırının kural başlangıcından bu yana geçmişi okunamadı"
+    closed = False
     for c in log.decode().split():
         raw = pa.read(root, c, qpath)
         t = _SHARED.Table(raw.decode("utf-8", errors="replace")) if raw is not None else None
@@ -795,7 +815,12 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
         if len(hits) != 1:
             return False, f"{wp} {c[:9]}'de kuyrukta tek satır değildi — koruma geri kazanılamaz"
         was = hits[0].get("state", "")
-        if classes.get(was) != PROTECT_CLASS or was in REOPENED_STATES:
+        if closing and classes.get(was) == CLOSED_CLASS and was not in REOPENED_STATES:
+            closed = True
+        elif closed:
+            return False, (f"{wp} kapandıktan sonra {c[:9]}'de {was[:30]} oldu — kapanmış iş yeniden açıldı, koruma geri "
+                           "kazanılamaz")
+        elif classes.get(was) != PROTECT_CLASS or was in REOPENED_STATES:
             how = ("yeniden açılmış iş korunmaz" if was in REOPENED_STATES or classes.get(was) in REOPENED_CLASSES
                    else "yürüyen iş durumundan çıkmış iş korunmaz")
             return False, (f"{wp} kural başlangıcından sonra {c[:9]}'de {was[:30]} oldu (sınıf {classes.get(was, 'yok')}) — "
@@ -2142,6 +2167,11 @@ def self_test_dispatch_review(cases: list) -> None:
     cases.append(("sabotage S-5 Q2′/F-3: a malformed row with findings_sha256 '-'; a later own UYGUN naming only the other "
                   "negatives -> still ENGEL, the step names 'reviews.tsv satır N'",
                   has(eng5("W-7", PK7), f"inceleme satır {dash_n}: model boş", f"reviews.tsv satır {dash_n} incelemesini")))
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -",
+                          f"değerlendirilen olumsuz incelemeler: {neg7}, {bad7}, reviews.tsv satır {dash_n}0",
+                          f"not: reviews.tsv satır {dash_n} serbest cümlede"], 0)
+    cases.append(("sabotage S-5 F-6 (Codex): 'reviews.tsv satır N0' on the naming line, 'satır N' only in a free sentence "
+                  "-> not a name of row N -> still ENGEL", has(eng5("W-7", PK7), f"reviews.tsv satır {dash_n} incelemesini")))
     review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -",
                           f"değerlendirilen olumsuz incelemeler: {neg7}, {bad7}, reviews.tsv satır {dash_n}"], 0)
     e, i = lim("W-7", PK7)

@@ -798,15 +798,22 @@ COMMIT_ID = re.compile(r"^[0-9a-f]{7,40}$")
 _KUNYE_READER: dict = {}
 
 
+AMBIGUOUS = "?"
+
+
 def kunye_commit(text: str) -> str | None:
     """The künye's `commit` as acceptance_record reads it (its strict_front_matter, imported, never a second reader:
-    CRLF, '--- ', 7–40 hex); None when the record has no such field."""
+    CRLF, '--- ', 7–40 hex); None when the record has no such field; AMBIGUOUS when the reader reports a problem with
+    the commit field or a künye line it cannot read (Codex F-8: two commit lines are never resolved by picking one)."""
     if "ar" not in _KUNYE_READER:
         import importlib.util
         spec = importlib.util.spec_from_file_location("acceptance_record", ROOT / "scripts" / "acceptance_record.py")
         _KUNYE_READER["ar"] = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(_KUNYE_READER["ar"])
-    value = _KUNYE_READER["ar"].strict_front_matter(text)[0].get("commit", "")
+    fields, problems = _KUNYE_READER["ar"].strict_front_matter(text)
+    if any("'commit'" in p or p.startswith("künye satır") for p in problems):
+        return AMBIGUOUS
+    value = fields.get("commit", "")
     return value if COMMIT_ID.match(value) else None
 
 
@@ -822,7 +829,7 @@ def accepted_not_in_main(cur: Table, vocab: dict[str, dict], read_at=None, merge
     read_at = read_at or git_file
     merged = merged or in_main
     kunye = kunye or kunye_commit
-    out = {"missing": [], "unmeasured": 0}
+    out = {"missing": [], "unmeasured": 0, "ambiguous": []}
     id_i, st_i, rec_i = cur.index("id"), cur.index("state"), cur.index("record")
     for row in cur.rows:
         if st_i is None or len(row) != len(cur.header) or vocab.get(row[st_i], {}).get("class") != "closed":
@@ -838,6 +845,10 @@ def accepted_not_in_main(cur: Table, vocab: dict[str, dict], read_at=None, merge
         code = kunye(text) if text is not None else None
         if text is None:
             why.append(f"kabul kaydı {path[:60]}@{at[:9]} okunamadı")
+        elif code == AMBIGUOUS:
+            out["ambiguous"].append(row[id_i] if id_i is not None else "?")
+            if not why:
+                continue
         elif code is None:
             if not why:
                 out["unmeasured"] += 1
@@ -874,6 +885,9 @@ def summary_lines(s: dict) -> list[str]:
         lines.append(f"UYARI KABUL EDİLDİ AMA MAIN'DE YOK {len(late['missing'])} satır: {shown}"
                      + (f" (+{len(late['missing']) - 10})" if len(late["missing"]) > 10 else "")
                      + " — kapı değil; işin main'e alınması ya da kabulün geri çekilmesi sahibin kararıdır (S-12, SOP §29.5)")
+    if late and late.get("ambiguous"):
+        lines.append(f"UYARI KÜNYE BELİRSİZ {len(late['ambiguous'])} kapanmış satır: {', '.join(late['ambiguous'][:10])} — "
+                     "kabul künyesinin commit alanı çelişkili ya da okunamıyor; main'de olup olmadığı ölçülemedi (S-12)")
     if late and late["unmeasured"]:
         lines.append(f"KAPANMIŞ {late['unmeasured']} satırın main'de olup olmadığı ölçülmedi (record yol@commit bir "
                      "kabul künyesi değil)")
@@ -1540,7 +1554,8 @@ def self_test() -> int:
     kun = lambda c: f"---\nformat: x\ncommit: {c}\n---\n# kayıt\nbody commit: {'e' * 40}\n".encode()
     files = {("a" * 9, "docs/r1.md"): kun("c" * 40), ("b" * 9, "docs/r2.md"): kun("d" * 40),
              ("a" * 9, "docs/r3.md"): ("# not a künye\ncommit: " + "d" * 40 + "\n").encode(),
-             ("a" * 9, "docs/r4.md"): ("---\r\nformat: x\r\ncommit: " + "f" * 12 + "\r\n--- \r\n# kayıt\r\n").encode()}
+             ("a" * 9, "docs/r4.md"): ("---\r\nformat: x\r\ncommit: " + "f" * 12 + "\r\n--- \r\n# kayıt\r\n").encode(),
+             ("a" * 9, "docs/r5.md"): ("---\ncommit: " + "c" * 40 + "\ncommit: " + "d" * 40 + "\n---\n").encode()}
     in_m = {"a" * 9, "c" * 40}
     acc = Table(header + "\n" + "\n".join([
         "A1\tMOD-0183 x\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
@@ -1549,7 +1564,8 @@ def self_test() -> int:
         "A4\tlegacy\tDONE\tCT\t-\t-\t2026-10-01\towner action",
         "A5\tnot künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r3.md@" + "a" * 9,
         "A6\trunning\tIN-PROGRESS\tCT\t-\t-\t2026-10-01\tdocs/r2.md@" + "b" * 9,
-        "A7\tCRLF künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r4.md@" + "a" * 9]) + "\n")
+        "A7\tCRLF künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r4.md@" + "a" * 9,
+        "A8\ttwo commits\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r5.md@" + "a" * 9]) + "\n")
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     s_late = summary_lines(summarize(acc, vocab, queue) | {"accepted_not_in_main": late})
     cases.append(("sabotage S-12: a closed row whose acceptance record and accepted code commit are not in main -> UYARI "
@@ -1559,6 +1575,9 @@ def self_test() -> int:
                   and late["missing"][1]["why"] == ["kabul edilen kod commit'i fffffffff main'de değil"]
                   and any("KABUL EDİLDİ AMA MAIN'DE YOK 2" in l and "bbbbbbbbb main'de değil" in l and "ddddddddd main'de değil" in l
                           for l in s_late) and any("KAPANMIŞ 2" in l for l in s_late)))
+    cases.append(("sabotage S-12 F-8 (Codex): a künye with two commit lines (first in main, second not) -> never clean: "
+                  "UYARI KÜNYE BELİRSİZ naming it", late["ambiguous"] == ["A8"]
+                  and any("KÜNYE BELİRSİZ 1" in l and "A8" in l for l in s_late)))
     in_m.add("b" * 9)
     late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
     cases.append(("sabotage S-12: the record merged but the accepted code commit never reached main (the ABB case) -> UYARI "
