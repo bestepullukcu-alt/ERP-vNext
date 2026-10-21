@@ -1418,7 +1418,10 @@ almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız u
 **7. Üst üste PR'da merge sırası (GitHub).** Bir PR başka bir PR'ın dalı üstüne açıldıysa, alttaki merge edilince
 GitHub üstteki PR'ın onaylarını "taban değişti" diye düşürür (eski onay düşürme ayarı). Sıra: önce üstteki dal güncel
 main ile birleştirilir ("Update branch", merge commit), sonra son itişi yapmayan biri onaylar, onaydan hemen sonra
-"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167).
+"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167). Bir PR dalına
+itmeden önce PR'ın hâlâ açık olduğu ölçülür (`gh pr view <n> --json state`); merge edilmiş bir PR'ın dalına itilen commit
+main'e girmez. Merge'den sonra dal başının main'de olduğu ölçülür (`git merge-base --is-ancestor <dal başı> origin/main`);
+değilse kalan commit'ler yeni bir PR'la gelir (2026-10-21, PR #176 → #182).
 
 **8. Dağıtım kapısı (S-5).** Kural kaydı `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`; başlangıç, dosyanın
 main'e girdiği ilk-üst commit'tir (dosya silinemez). Ürün WP'sinin her yeni dağıtımı — katı ya da eski her kuyrukta —
@@ -1427,10 +1430,12 @@ raporlar). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf 
 `reviews.tsv`'nin yalnız-ekleme geçmişi); olumlu kapsama yalnız bu sürümden ya da muaf uzaklıktaki bir sürümden gelir.
 Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırın kapsamı (`item`
 ve `module`) değişmeyen ve
-yeniden açılmamış iş yalnız "inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
+başlangıçtan bu yana hiç yeniden açılmamış (kuyruk geçmişinde bir kez `REWORK` olan korumayı geri kazanmaz) iş yalnız
+"inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
 kuyruğun (sce-mvp6) satırları hiç korunmaz; dağıtım yalnız `READY` / `REWORK`'ten başladığı için bu gerçek bir dağıtımı
 etkilemez. Başka sürümlerin olumsuzları yalnız bu sürümün, o olumsuzlardan SONRA gelen ve her birini bulgu özetinin ilk 8
-hanesiyle anan geçen bir kendi incelemesi varsa bilgiye düşer (koşullu; sahip onayı 2026-10-21); yoksa hepsi durdurur.
+hanesiyle anan geçen bir kendi incelemesi varsa bilgiye düşer (koşullu; sahip onayı 2026-10-21); bozuk ya da sayılmayan
+bir inceleme satırı da kendi başına olumsuzdur ve adıyla anılmalıdır; yoksa hepsi durdurur.
 Kabul edilmiş bir ENGEL, kabul edenin HIGH CT-APR-01 onay satırını ister. Bağlı paket sürümünde olumsuz varsa
 `acceptance_record.py check` kabulü reddeder; başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket
 sürümüne `module_pack` ile bağlanır ve bu sürüm hem CT-APR-01'le onaylı main sürümü hem de incelenmiş ya da korunan

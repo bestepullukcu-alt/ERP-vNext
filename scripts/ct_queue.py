@@ -793,6 +793,49 @@ def summarize(cur: Table, vocab: dict[str, dict], queue: dict, checked: dict | N
     }
 
 
+RECORD_AT = re.compile(r"^([^@\s]+)@([0-9a-f]{7,40})$")
+KUNYE_COMMIT = re.compile(r"(?m)^commit:[ \t]*([0-9a-f]{40})[ \t]*$")
+
+
+def in_main(commit: str, main_ref: str = MAIN_REF) -> bool:
+    return git("merge-base", "--is-ancestor", commit, main_ref).returncode == 0
+
+
+def accepted_not_in_main(cur: Table, vocab: dict[str, dict], read_at=None, merged=None) -> dict:
+    """S-12 (CT-SETUP-TEST-01, K-2): a WARNING, never a gate — acceptance is not a merge (SOP §29.5). Every row in a
+    'closed' state whose record is path@commit: the record's commit and the code commit its künye names (`commit:`, 40
+    hex, in the front matter) must both be in main; otherwise the row is listed. A closed row whose record is not
+    path@commit, or whose record has no künye commit, is counted as not measured (legacy DONE rows)."""
+    read_at = read_at or git_file
+    merged = merged or in_main
+    out = {"missing": [], "unmeasured": 0}
+    id_i, st_i, rec_i = cur.index("id"), cur.index("state"), cur.index("record")
+    for row in cur.rows:
+        if st_i is None or len(row) != len(cur.header) or vocab.get(row[st_i], {}).get("class") != "closed":
+            continue
+        m = RECORD_AT.match(row[rec_i].strip() if rec_i is not None else "")
+        if not m:
+            out["unmeasured"] += 1
+            continue
+        path, at = m.groups()
+        why = [] if merged(at) else [f"kabul kaydı commit'i {at[:9]} main'de değil"]
+        data = read_at(at, path)
+        text = data.decode("utf-8", errors="replace") if data is not None else None
+        front = text[4:].split("\n---", 1)[0] if text is not None and text.startswith("---\n") else ""
+        code = KUNYE_COMMIT.search(front)
+        if text is None:
+            why.append(f"kabul kaydı {path[:60]}@{at[:9]} okunamadı")
+        elif code is None:
+            if not why:
+                out["unmeasured"] += 1
+                continue
+        elif not merged(code.group(1)):
+            why.append(f"kabul edilen kod commit'i {code.group(1)[:9]} main'de değil")
+        if why:
+            out["missing"].append({"id": row[id_i] if id_i is not None else "?", "why": why})
+    return out
+
+
 def summary_lines(s: dict) -> list[str]:
     state = "geçici — sahip onayı bekliyor" if s["classification"] == "provisional" else "onaylı"
     lines = [f"KUYRUK {s['queue_id']} ({s['control_tower']}) — {s['rows']} satır; sınıflandırma {state}"]
@@ -812,6 +855,15 @@ def summary_lines(s: dict) -> list[str]:
     lines.append("MODÜL (türetildi: öğe metnindeki MOD-nnnn; bir satır birden çok modülde sayılabilir)")
     for mod, counts in s["modules"]["counts"].items():
         lines.append(f"  {mod} " + " ".join(f"{c}={n}" for c, n in counts.items()))
+    late = s.get("accepted_not_in_main")
+    if late and late["missing"]:
+        shown = "; ".join(f"{x['id']} ({', '.join(x['why'])})" for x in late["missing"][:10])
+        lines.append(f"UYARI KABUL EDİLDİ AMA MAIN'DE YOK {len(late['missing'])} satır: {shown}"
+                     + (f" (+{len(late['missing']) - 10})" if len(late["missing"]) > 10 else "")
+                     + " — kapı değil; işin main'e alınması ya da kabulün geri çekilmesi sahibin kararıdır (S-12, SOP §29.5)")
+    if late and late["unmeasured"]:
+        lines.append(f"KAPANMIŞ {late['unmeasured']} satırın main'de olup olmadığı ölçülmedi (record yol@commit bir "
+                     "kabul künyesi değil)")
     return lines
 
 
@@ -1471,6 +1523,31 @@ def self_test() -> int:
                   and s["dispatchable_ids"] == 1
                   and s["classification"] == "provisional" and "%" not in text))
 
+    # S-12: closed rows whose acceptance record or accepted code commit is not in main -> listed (a warning)
+    kun = lambda c: f"---\nformat: x\ncommit: {c}\n---\n# kayıt\nbody commit: {'e' * 40}\n".encode()
+    files = {("a" * 9, "docs/r1.md"): kun("c" * 40), ("b" * 9, "docs/r2.md"): kun("d" * 40),
+             ("a" * 9, "docs/r3.md"): ("# not a künye\ncommit: " + "d" * 40 + "\n").encode()}
+    in_m = {"a" * 9, "c" * 40}
+    acc = Table(header + "\n" + "\n".join([
+        "A1\tMOD-0183 x\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
+        "A2\tMOD-0183 y\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r2.md@" + "b" * 9,
+        "A3\tMOD-0183 z\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r1.md@" + "a" * 9,
+        "A4\tlegacy\tDONE\tCT\t-\t-\t2026-10-01\towner action",
+        "A5\tnot künye\tDONE\tCT\t-\t-\t2026-10-01\tdocs/r3.md@" + "a" * 9,
+        "A6\trunning\tIN-PROGRESS\tCT\t-\t-\t2026-10-01\tdocs/r2.md@" + "b" * 9]) + "\n")
+    late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
+    s_late = summary_lines(summarize(acc, vocab, queue) | {"accepted_not_in_main": late})
+    cases.append(("sabotage S-12: a closed row whose acceptance record and accepted code commit are not in main -> UYARI "
+                  "naming both; record and code in main -> nothing; a non-künye or free-text record -> 'ölçülmedi'; a "
+                  "running row is not read; a 'commit:' line outside the front matter is never the künye's",
+                  [x["id"] for x in late["missing"]] == ["A2"] and late["unmeasured"] == 2
+                  and any("KABUL EDİLDİ AMA MAIN'DE YOK 1" in l and "bbbbbbbbb main'de değil" in l and "ddddddddd main'de değil" in l
+                          for l in s_late) and any("KAPANMIŞ 2" in l for l in s_late)))
+    in_m.add("b" * 9)
+    late = accepted_not_in_main(acc, vocab, lambda at, path: files.get((at, path)), lambda c: c in in_m)
+    cases.append(("sabotage S-12: the record merged but the accepted code commit never reached main (the ABB case) -> UYARI "
+                  "naming the code commit", [x["why"] for x in late["missing"]] == [["kabul edilen kod commit'i ddddddddd main'de değil"]]))
+
     own = write_calls(Path(__file__).read_text(encoding="utf-8"))
     planted = write_calls("from pathlib import Path\nPath('q.tsv').write_text('x')\nopen('q.tsv', 'a')\nopen('q.tsv')\n")
     try:
@@ -2072,7 +2149,8 @@ def main() -> int:
                 blocked = f"katı kuyruk profili kurulamadı — {profile_error}" if profile_error else "kuyruk denetlenemedi"
             elif q.get("strict") == "yes" and checked["global"]:
                 blocked = f"katı kuyrukta bir işe bağlanmayan doğrulama hatası — {checked['global'][0]}"
-            result.append(summarize(cur, vocab, q, checked, blocked))
+            result.append(summarize(cur, vocab, q, checked, blocked)
+                          | {"accepted_not_in_main": accepted_not_in_main(cur, vocab)})
         if a.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:

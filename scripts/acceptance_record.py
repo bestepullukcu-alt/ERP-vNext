@@ -423,7 +423,7 @@ def start_protected(pa, pg, root: str, start: str, main: str, queue: str | None,
     if len(rows) != 1:
         return False, f"{wp} main'deki kuyrukta tek satır değil"
     return pg.dispatch_protected(pa, root, start, path, pdata, wp,
-                                 {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))})
+                                 {"path": paths[0], "queue_id": queue, "row": dict(zip(table.header, rows[0]))}, main)
 
 
 def s5_line(start: str, reason: str, step: str | None, path: str | None) -> str:
@@ -1541,13 +1541,14 @@ def self_test() -> int:
     # older than POLICY-START, unchanged) or does not (the pack changed after POLICY-START, no approval row)
     cq = gate()._SHARED
 
-    def protected_repo(name, legacy):
+    def protected_repo(name, legacy, reopen=False):
         rq = S5Repo(os.path.join(s5_tmp.name, name))
         reg_cols = cq.REGISTRY_COLUMNS
         reg_row = {c: "x" for c in reg_cols} | {"queue_id": "pqg-ct", "path": "q/CT-QUEUE.tsv", "vocabulary": "sop7"}
         rq.put(cq.REGISTRY.relative_to(cq.ROOT).as_posix(), "\t".join(reg_cols) + "\n" + "\t".join(reg_row[c] for c in reg_cols) + "\n")
         rq.put(cq.STATES.relative_to(cq.ROOT).as_posix(), "\t".join(cq.STATE_COLUMNS) + "\nsop7\tIN_PROGRESS\tactive\tno\tx\tconfirmed\n"
-               "sop7\tVERIFYING\tactive\tno\tx\tconfirmed\nsop7\tDISCOVERED\tplanned\tno\tx\tconfirmed\n")
+               "sop7\tVERIFYING\tactive\tno\tx\tconfirmed\nsop7\tDISCOVERED\tplanned\tno\tx\tconfirmed\n"
+               "sop7\tREWORK\trework\tno\tx\tconfirmed\n")
         rq.put("q/CT-QUEUE.tsv", "id\titem\tmodule\tstate\nW7\tiş\tMOD-0151\tIN_PROGRESS\nW8\tiş\tMOD-0151\tDISCOVERED\n")
         if legacy:
             rq.put(PK, V)
@@ -1555,6 +1556,8 @@ def self_test() -> int:
         rq.commit_file("execution/approvals/POLICY-START.md", "# start\n")
         pv = rq.commit_file(PK, V) if not legacy else rq.head()
         rq.start()
+        for to in (("REWORK", "IN_PROGRESS") if reopen else ()):     # Codex Q7: re-opened after the start, then back
+            rq.commit_file("q/CT-QUEUE.tsv", re.sub(r"W7\tiş\tMOD-0151\t\w+", f"W7\tiş\tMOD-0151\t{to}", rq.get("q/CT-QUEUE.tsv")))
         rq.commit_file("q/CT-QUEUE.tsv", rq.get("q/CT-QUEUE.tsv").replace("W7\tiş\tMOD-0151\tIN_PROGRESS", "W7\tiş\tMOD-0151\tVERIFYING"))
         return rq, pv, rq.commit_file("src/x.txt", "kod\n")
 
@@ -1567,6 +1570,12 @@ def self_test() -> int:
     cases.append(("S-5 Q3: a valid approval (legacy, unchanged since POLICY-START) AND the WP's protected start version -> "
                   "accepted without a review; the same version for an unprotected WP (W8) -> refused",
                   r_b[0] == 0 and r_b8[0] == 1 and any("korunan yürüyen işin başlangıç sürümü değil" in e for e in s5e(r_b8))))
+    rr, pr7, cr = protected_repo("q7-reopened", True, reopen=True)
+    r_r = wp_run(rr, pr7, cr, "W7")
+    cases.append(("sabotage S-5 Q7: W7 running at the start, REWORK after it, then IN_PROGRESS again (no review) -> "
+                  "refused: protection is never regained",
+                  r_r[0] == 1 and any("korunan yürüyen işin başlangıç sürümü değil" in e and "geri kazanılamaz" in e
+                                      for e in s5e(r_r))))
     rc, pc, cc = protected_repo("q3-unapproved", False)
     r_c = wp_run(rc, pc, cc, "W7")
     cases.append(("sabotage S-5 Q3: the WP's protected start version but no valid CT-APR-01 approval (changed after "

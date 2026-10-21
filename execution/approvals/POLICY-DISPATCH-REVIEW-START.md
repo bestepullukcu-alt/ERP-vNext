@@ -17,7 +17,9 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
 - **Yeniden inceleme çıkışı (koşullu; sahip onayı 2026-10-21):** başka bir sürümden gelen olumsuzlar yalnız şu durumda
   BİLGİ olur: bu sürümün main'de geçen bir kendi inceleme satırı vardır, bu satırın commit'i bütün o olumsuz inceleme
   satırlarının commit'lerinden sonra gelir (onların torunudur) ve bulgu dosyası her olumsuz incelemeyi bulgu özetinin
-  (`findings_sha256`) ilk 8 hanesiyle adıyla anar. Olumsuzdan önce yapılmış bir kendi `UYGUN` hiçbir şeyi kapatmaz. Aksi
+  (`findings_sha256`) ilk 8 hanesiyle adıyla anar. Olumsuz satır, açık olumsuzlar (`UYGUN DEĞİL`, açık ENGEL) ile
+  bozuk ya da sayılmayan her satırdır; bozuk bir satır açık olumsuzun arkasına saklanmaz, sonradan eklenirse önceki
+  değerlendirme onu kapatmaz. Olumsuzdan önce yapılmış bir kendi `UYGUN` hiçbir şeyi kapatmaz. Aksi
   halde hepsi durdurur; sonraki adım "olumsuzdan sonra yapılan ve <sha8> incelemesini adıyla değerlendiren yeni bir
   inceleme gerekir"dir.
 - **Bozuk inceleme dosyası:** `reviews.tsv`'nin main geçmişi bozuksa (satır silindi ya da yeri değişti) her şey durur.
@@ -37,7 +39,9 @@ SOP §20.4 madde 8. Araçlar: `scripts/prompt_gate.py`, `scripts/acceptance_reco
   `INTEGRATED`; sce-mvp6: `IN-PROGRESS`) ve satırın `module` alanı bu paketin modül kimliğini göstermelidir. Ayrıca kuyruk
   dosyasının yolu, satırın kapsamı (`item` ve `module`; `owner`, `since`, `record` gibi kayıt sütunları olağan işte
   değişir, karşılaştırılmaz) ve paket dosyası o andan beri aynı kalmalı; satır bugün yeniden açılmış (`READY`,
-  `REWORK`) olmamalıdır. Bunlardan biri tutmazsa iş kapıdan geçer ve ENGEL nedenini söyler. Eski kuyruk istisna değildir.
+  `REWORK`) olmamalı ve başlangıçtan bu yana kuyruk dosyasının hiçbir sürümünde (birleşen dallar dahil) `active` dışı bir
+  sınıfa düşmemiş olmalıdır: bir kez `REWORK` olan iş korumayı geri kazanmaz. Kapsamın kaynağı kuyruk satırıdır; kapsamı
+  ayrıca bir WP belgesinde yazılı iş için bu koruma o belgenin sürümünü ölçmez. Bunlardan biri tutmazsa iş kapıdan geçer ve ENGEL nedenini söyler. Eski kuyruk istisna değildir.
   `module` sütunu olmayan bir kuyruğun (bugün sce-mvp6) satırları hiç korunmaz; bu bilinen bir sonuçtur ve gerçek bir
   dağıtımı etkilemez, çünkü dağıtım yalnız `READY` ya da `REWORK` satırından başlar ve yeniden açılmış satır korunmaz.
 - **Kabul:** `acceptance_record.py check`, bu dosya main'de ya da kaydın commit'inde varsa, kaydın bağladığı paket

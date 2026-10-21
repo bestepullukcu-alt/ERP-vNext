@@ -562,10 +562,22 @@ ACCEPT_STEP = ("kabul edilmiş ENGEL'i taşıyan sürüm için ENGEL'i kabul ede
                "merge'iyle (SOP §20.4 madde 4)")
 
 
-def _negative_rows(rows: list[dict]) -> list[dict]:
-    """The rows of one version that carry its negative: UYGUN DEĞİL or an open ENGEL count; when none of them does (a
-    broken record, a row not merged by another person) every row of that version must be settled."""
-    return [r for r in rows if r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0"] or rows
+def _negative_rows(rows: list[dict], fails: list[str]) -> list[dict]:
+    """The rows of one version that carry its negative (Codex Q2′): every row a failure names — 'inceleme satır N' or
+    'F-n@<findings sha8>' — plus every UYGUN DEĞİL / open-ENGEL row. A malformed row is a negative of its own, never
+    hidden behind an explicit one; a failure that names no row makes every row of that version a negative."""
+    hit = set()
+    for f in fails:
+        m = re.match(r"inceleme satır (\d+):", f)
+        if m:
+            hit.add(int(m.group(1)))
+            continue
+        m = re.search(r"F-\d+@([0-9a-f]{8})", f)
+        owners = [r["_n"] for r in rows if m and r["findings_sha256"][:8] == m.group(1)]
+        if not owners:
+            return rows
+        hit |= set(owners)
+    return [r for r in rows if r["_n"] in hit or r["verdict"] == "UYGUN DEĞİL" or r["blockers_open"] != "0"] or rows
 
 
 def review_negatives(pa, root: str, main: str, commit: str, path: str, data: bytes) -> tuple[list[str], list[str], list[str], str, set]:
@@ -624,7 +636,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
         fails, _n, acc, _e = pa.review_problems(root, main, path, old, main)
         label = f"önceki sürüm {sha[:8]} ({'muaf uzaklıkta' if exempt else 'gövdesi aynı'})"
         if fails:
-            negs = _negative_rows(mine)
+            negs = _negative_rows(mine, fails)
             others += [(f"{label}: {f}", negs) for f in fails]
             others_acc |= acc
         else:
@@ -646,8 +658,9 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
 
 
 def settles(pa, root: str, main: str, own_rows: list[dict], negs: list[dict]) -> bool:
-    """Q2: one own (passing) review row whose commit descends from every negative row's commit and whose findings file
-    (read at main) names every negative review by its findings_sha256's first 8 hex."""
+    """Q2: one own (passing) review row whose commit descends from every negative row's commit (Codex Q2′: a malformed
+    row is a negative of its own — _negative_rows — so one added later is never settled by an earlier evaluation) and
+    whose findings file (read at main) names every negative row by its findings_sha256's first 8 hex."""
     neg_commits = [pa.row_commit(root, main, r["_n"], pa.REVIEWS) for r in negs]
     for r in own_rows:
         c = pa.row_commit(root, main, r["_n"], pa.REVIEWS)
@@ -691,13 +704,16 @@ REOPENED_CLASSES = ("dispatchable", "rework")
 REOPENED_STATES = ("READY", "REWORK")
 
 
-def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: str | None, q: dict | None) -> tuple[bool, str]:
+def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: str | None, q: dict | None,
+                       upto: str | None = None) -> tuple[bool, str]:
     """S-5 (3; F-2, F-4; owner decision 2026-10-21): (protected?, why). Read AT the start commit: the queue's registry row
     (by queue_id, else by path; the path unchanged), its vocabulary's state classes (ct-queue-states.tsv), and the WP's
     single queue row — its state's class is 'active' and its module names this pack's identity (ct_queue.pack_identity,
     as check_authority reads a row). The pack is byte-identical to its version there, the row's scope (SCOPE_COLUMNS:
-    item, module; Q1) is unchanged now, and the row is not re-opened now (READY / REWORK, or a dispatchable / rework class). Anything not proven goes through
-    the gate; the reason is always given."""
+    item, module; Q1) is unchanged now, and the row is not re-opened now (READY / REWORK, or a dispatchable / rework class).
+    Codex Q7: protection is never regained — every version of the queue file after the start up to `upto` (every commit
+    that touched it, merged branches included) shows this WP's single row in an 'active' state with the same module and
+    scope; one REWORK in between ends it. Anything not proven goes through the gate; the reason is always given."""
     q = q or {}
     qpath, qid, now = q.get("path"), q.get("queue_id"), q.get("row") or {}
     if not qpath or not wp:
@@ -757,6 +773,24 @@ def dispatch_protected(pa, root: str, start: str, path: str, data: bytes, wp: st
         return False, f"{wp} satırının bugünkü durumu ölçülemedi"
     if cur in REOPENED_STATES or classes.get(cur) in REOPENED_CLASSES:
         return False, f"{wp} yeniden açıldı (bugün {cur[:30]}) — yeni dağıtım sayılır"
+    if not upto:
+        return False, f"{wp} satırının kural başlangıcından bu yana geçmişi ölçülemedi"
+    log = pa.git(root, "rev-list", "--reverse", f"{start}..{upto}", "--", qpath, ok_fail=True)
+    if log is None:
+        return False, f"{wp} satırının kural başlangıcından bu yana geçmişi okunamadı"
+    for c in log.decode().split():
+        raw = pa.read(root, c, qpath)
+        t = _SHARED.Table(raw.decode("utf-8", errors="replace")) if raw is not None else None
+        ti = t.index("id") if t else None
+        hits = [dict(zip(t.header, r)) for r in t.rows if ti is not None and len(r) == len(t.header) and r[ti] == wp] if t else []
+        if len(hits) != 1:
+            return False, f"{wp} {c[:9]}'de kuyrukta tek satır değildi — koruma geri kazanılamaz"
+        was = hits[0].get("state", "")
+        if classes.get(was) != PROTECT_CLASS or was in REOPENED_STATES:
+            return False, (f"{wp} kural başlangıcından sonra {c[:9]}'de {was[:30]} oldu (sınıf {classes.get(was, 'yok')}) — "
+                           "yeniden açılmış iş korunmaz, koruma geri kazanılamaz")
+        if hits[0].get("module") != module or any(hits[0].get(k) != then.get(k) for k in SCOPE_COLUMNS):
+            return False, f"{wp} satırının kapsamı ya da modülü {c[:9]}'de değişti — koruma geri kazanılamaz"
     return True, f"{wp} kural başlangıcında {state} (sınıf {PROTECT_CLASS}), modülü bu paket ve paket o andaki sürümüyle aynı"
 
 
@@ -786,7 +820,7 @@ def check_dispatch_review(pa, p: dict, repo, commit: str, q: dict | None) -> tup
         data = pa.read(where, commit, path)
         if data is None:
             return [], []          # check_authority reports the missing pack
-        protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q)
+        protected, why = dispatch_protected(pa, where, begun, path, data, p.get("wp"), q, commit)
         stops, cover, _notes, step, accepted = review_negatives(pa, where, main, commit, path, data)
         guard = [f"korunan iş de durur ({why})"] if protected else [f"koruma yok: {why}"]
         soft_notes = [f"dağıtım kapısı (S-5): {n} ({path})" for n in _notes if n.startswith("bilgi")]
@@ -1871,7 +1905,7 @@ def self_test_dispatch_review(cases: list) -> None:
 
     n = [0]
 
-    def review(path, verdict, findings, blockers, text=None):
+    def review(path, verdict, findings, blockers, text=None, model="claude-opus-5-5"):
         """A findings file for the pack's current version (or `text`) and its review row, on a branch merged by another
         person."""
         def change():
@@ -1879,7 +1913,7 @@ def self_test_dispatch_review(cases: list) -> None:
             rel = f"docs/records/reviews/t/{n[0]:02d}-{digest[:8]}.md"
             put(rel, f"# İnceleme\n\nhedef: {path} @ {digest}\n\n" + "".join(l + "\n" for l in findings))
             row = "\t".join([path, digest, rel, sha256(get(rel).encode("utf-8")), verdict, str(blockers), "claude",
-                             "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-10-21"])
+                             model, "high", "rs-1", "K4", "as-1", "dev", "2026-10-21"])
             put(pa.REVIEWS, get(pa.REVIEWS) + row + "\n")
             out.append(sha256(get(rel).encode("utf-8"))[:8])
         n[0] += 1
@@ -1898,7 +1932,7 @@ def self_test_dispatch_review(cases: list) -> None:
     rows = [("W-RUN", 1, "IN_PROGRESS"), ("W-BOOK", 11, "IN_PROGRESS"), ("W-NEW", 1, "READY"), ("W-OLD", 1, "DISCOVERED"), ("W-RUN2", 2, "VERIFYING"),
             ("W-DUP", 1, "IN_PROGRESS"), ("W-DUP", 1, "IN_PROGRESS"), ("W-LATE", 1, "READY"), ("W-X", 3, "READY"),
             ("W-RUN4", 4, "IN_PROGRESS"), ("W-RUN5", 5, "INTEGRATED"), ("W-6", 6, "READY"), ("W-7", 7, "READY"),
-            ("W-8", 8, "READY"), ("W-9", 9, "READY"), ("W-10", 10, "READY"), ("W-12", 12, "READY")]
+            ("W-8", 8, "READY"), ("W-9", 9, "READY"), ("W-10", 10, "READY"), ("W-12", 12, "READY"), ("W-RE", 11, "IN_PROGRESS")]
     put(QP, "id\titem\tmodule\tstate\towner\tsince\trecord\n"
         + "".join(f"{w}\tiş\tMOD-{k:04d}\t{s}\tCT\t2026-10-01\t-\n" for w, k, s in rows))
     put(pa.APPROVALS, "\t".join(pa.APPROVAL_COLUMNS) + "\n")
@@ -1981,6 +2015,15 @@ def self_test_dispatch_review(cases: list) -> None:
                   has(eng5("W-RUN", q={"error": "x"}), "koruma yok: kuyruk yolu ya da WP ölçülemedi")))
     cases.append(("sabotage S-5 F-4: a row running at the start but re-opened now (READY / REWORK) is a new dispatch -> ENGEL",
                   all(has(eng5("W-RUN", now=st), "yeniden açıldı") for st in ("READY", "REWORK"))))
+    # Codex Q7: W-RE running at the start; REWORK after it, then IN_PROGRESS again -> protection never comes back
+    cases.append(("S-5 Q7 control: W-RE running since the start, never re-opened -> protected",
+                  not eng5("W-RE", PK11, "IN_PROGRESS") and has(s5(lim("W-RE", PK11, "IN_PROGRESS")[1]), "korunur")))
+    for to in ("REWORK", "IN_PROGRESS"):
+        put(QP, re.sub(r"W-RE\tiş\tMOD-0011\t\w+", f"W-RE\tiş\tMOD-0011\t{to}", get(QP)))
+        commit(f"W-RE {to}", who=LEAD)
+    cases.append(("sabotage S-5 Q7: a WP re-opened (REWORK) after the start and IN_PROGRESS again -> not protected -> "
+                  "ENGEL 'geri kazanılamaz' naming the REWORK commit",
+                  has(eng5("W-RE", PK11, "IN_PROGRESS"), "REWORK oldu", "koruma geri kazanılamaz", "inceleme yok")))
     cases.append(("sabotage S-5 F-7: a duplicate WP id in the queue at the start -> not protected -> ENGEL naming it",
                   has(eng5("W-DUP", now="IN_PROGRESS"), "yinelenen")))
     review(PK4, "UYGUN DEĞİL", ["F-1 | DÜŞÜK | kapsam belirsiz | kapandı | - | -"], 0)
@@ -2040,6 +2083,18 @@ def self_test_dispatch_review(cases: list) -> None:
     e, i = lim("W-7", PK7)
     cases.append(("S-5 Q2 (owner-approved 2026-10-21): a later own UYGUN of this version naming the exempt-reachable "
                   "version's UYGUN DEĞİL review settles it -> BİLGİ, not a stop", not s5(e) and has(s5(i), "bilgi", "muaf uzaklıkta")))
+    # Codex Q2′: after that settlement a malformed review (model empty) of the OLD version is added -> it is a negative of
+    # its own, later than the settling review -> stops; a still later own UYGUN naming both settles again
+    bad7 = review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0, text=ver(7), model="-")
+    cases.append(("sabotage S-5 Q2′: a malformed review row added to the settled old version AFTER the settling review -> "
+                  "ENGEL 'model boş', never hidden behind the explicit negative", has(eng5("W-7", PK7), "model boş")))
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz inceleme: {neg7}"], 0)
+    cases.append(("sabotage S-5 Q2′: a later own UYGUN naming only the explicit negative, not the malformed row -> still "
+                  "ENGEL 'model boş'", has(eng5("W-7", PK7), "model boş")))
+    review(PK7, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -", f"değerlendirilen olumsuz incelemeler: {neg7}, {bad7}"], 0)
+    e, i = lim("W-7", PK7)
+    cases.append(("S-5 Q2′: a still later own UYGUN naming the negative AND the malformed row -> BİLGİ again",
+                  not s5(e) and has(s5(i), "bilgi", "model boş")))
     # Q2 temporal: X9 = Y9 + a date; X9's own UYGUN comes first, Y9's UYGUN DEĞİL later -> the older own UYGUN settles
     # nothing; a later own UYGUN that does not name it settles nothing; a later one naming it settles
     y9 = get(PK9)
