@@ -37,6 +37,11 @@ public static class PageHelpCatalog
             ["CRMVISITQRCODES"] = ["bx-filter-alt", "bx-qr", "bx-printer", "bx-block", "bx-slider-alt"],
             // WP-VW-W5 W5-WEB — the sent visit e-mails
             ["CRMVISITNOTIFICATIONS"] = ["bx-calendar", "bx-filter-alt", "bx-user-check", "bx-envelope-open", "bx-cog"],
+            // WP-VW-W6 W6-WEB-a — the pharmacy pre-orders (COM-PREORDER-LIST / -FORM / -APPROVE / -SETTINGS)
+            ["PREORDERS"] = ["bx-filter-alt", "bx-money", "bx-show", "bx-package"],
+            ["COMPREORDERFORM"] = ["bx-capsule", "bx-error", "bx-pen", "bx-send"],
+            ["COMPREORDERAPPROVE"] = ["bx-help-circle", "bx-bar-chart-alt-2", "bx-check-shield", "bx-link"],
+            ["PREORDERSETTINGS"] = ["bx-user-check", "bx-time-five", "bx-purchase-tag-alt", "bx-hash"],
             ["CRMDOCTORINSIGHTTHRESHOLDS"] = ["bx-table", "bx-edit-alt", "bx-check-circle", "bx-plus-circle", "bx-history"],
             ["OBJECTIONRESPONSES"] = ["bx-filter-alt", "bx-plus-circle", "bx-send", "bx-check-shield", "bx-archive"],
             ["COMPETITORPRODUCTS"] = ["bx-filter-alt", "bx-plus-circle", "bx-user-voice", "bx-task", "bx-git-merge"],

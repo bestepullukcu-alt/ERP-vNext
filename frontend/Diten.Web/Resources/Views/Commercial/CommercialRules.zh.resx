@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Rule.Outcome.ok" xml:space="preserve">
+    <value>在限额内</value>
+  </data>
+  <data name="Rule.Outcome.soft" xml:space="preserve">
+    <value>需要审批</value>
+  </data>
+  <data name="Rule.Outcome.hard" xml:space="preserve">
+    <value>不允许</value>
+  </data>
+  <data name="Rule.discount.soft-exceeded" xml:space="preserve">
+    <value>需要经理审批：折扣 {value}% &gt; 限额 {limit}%</value>
+  </data>
+  <data name="Rule.discount.hard-exceeded" xml:space="preserve">
+    <value>不允许：折扣 {value}% &gt; 上限 {limit}%</value>
+  </data>
+  <data name="Rule.mf.soft-exceeded" xml:space="preserve">
+    <value>需要经理审批：赠品 {value}（{valuePct}%）&gt; 限额 {limit}（{limitPct}%）</value>
+  </data>
+  <data name="Rule.mf.hard-exceeded" xml:space="preserve">
+    <value>不允许：赠品 {value}（{valuePct}%）&gt; 上限 {limit}（{limitPct}%）</value>
+  </data>
+  <data name="Rule.combined.soft-exceeded" xml:space="preserve">
+    <value>需要经理审批：综合折扣 {valuePct}% &gt; 限额 {limitPct}%</value>
+  </data>
+  <data name="Rule.combined.hard-exceeded" xml:space="preserve">
+    <value>不允许：综合折扣 {valuePct}% &gt; 上限 {limitPct}%</value>
+  </data>
+  <data name="Rule.quantity.below-min" xml:space="preserve">
+    <value>不允许：数量 {value} &lt; 最低 {min}</value>
+  </data>
+  <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
+    <value>需要经理审批：数量 {value} &gt; 限额 {limit}</value>
+  </data>
+  <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
+    <value>不允许：数量 {value} &gt; 上限 {limit}</value>
+  </data>
+  <data name="Rule.sku.retired" xml:space="preserve">
+    <value>不允许：{skuId} 已停用</value>
+  </data>
+  <data name="Rule.price.sku-not-in-list" xml:space="preserve">
+    <value>不允许：{skuId} 不在价目表 {priceListName} 中</value>
+  </data>
+  <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>不允许：没有生效的价目表，不能输入折扣</value>
+  </data>
+  <data name="Rule.pre_order_request_invalid" xml:space="preserve">
+    <value>请求无效。</value>
+  </data>
+  <data name="Rule.pre_order_not_found" xml:space="preserve">
+    <value>未找到预订单，或您无权查看。</value>
+  </data>
+  <data name="Rule.pre_order_stale_version" xml:space="preserve">
+    <value>其他人已修改此预订单。请刷新后重试。</value>
+  </data>
+  <data name="Rule.pre_order_pharmacy_invalid" xml:space="preserve">
+    <value>请选择药店（类型为药店的机构）。</value>
+  </data>
+  <data name="Rule.pre_order_depot_invalid" xml:space="preserve">
+    <value>请选择经销商（分销商或批发商）。</value>
+  </data>
+  <data name="Rule.pre_order_depot_required" xml:space="preserve">
+    <value>请选择接收订单的经销商。</value>
+  </data>
+  <data name="Rule.pre_order_depot_no_email" xml:space="preserve">
+    <value>经销商的机构记录中没有电子邮件地址，无法发送订单。</value>
+  </data>
+  <data name="Rule.pre_order_lines_invalid" xml:space="preserve">
+    <value>请检查明细行：每行需要一个产品且数量至少为 1（最多 50 行）。</value>
+  </data>
+  <data name="Rule.pre_order_sku_retired" xml:space="preserve">
+    <value>订单中的某个产品已停用，不能订购。</value>
+  </data>
+  <data name="Rule.pre_order_sku_not_found" xml:space="preserve">
+    <value>在产品主数据中找不到订单中的某个产品。</value>
+  </data>
+  <data name="Rule.pre_order_mf_invalid" xml:space="preserve">
+    <value>赠品请按“购买+赠送”填写，例如 10+2。</value>
+  </data>
+  <data name="Rule.pre_order_discount_invalid" xml:space="preserve">
+    <value>折扣必须大于等于 0 且小于 100，最多一位小数。</value>
+  </data>
+  <data name="Rule.pre_order_discount_not_allowed" xml:space="preserve">
+    <value>贵公司没有生效的价目表，不能输入折扣。</value>
+  </data>
+  <data name="Rule.pre_order_delivery_date_invalid" xml:space="preserve">
+    <value>交货日期不能早于今天。</value>
+  </data>
+  <data name="Rule.pre_order_note_too_long" xml:space="preserve">
+    <value>备注最多 1000 个字符。</value>
+  </data>
+  <data name="Rule.pre_order_signature_required" xml:space="preserve">
+    <value>发送前需要药剂师签名。</value>
+  </data>
+  <data name="Rule.pre_order_signature_invalid" xml:space="preserve">
+    <value>无法读取签名，请重新签名。</value>
+  </data>
+  <data name="Rule.pre_order_hard_limit" xml:space="preserve">
+    <value>有明细行超出了不可超越的限额。请修改标记为“不允许”的行。</value>
+  </data>
+  <data name="Rule.pre_order_no_seat" xml:space="preserve">
+    <value>您没有有效的岗位，无法确定销售公司。请联系管理员。</value>
+  </data>
+  <data name="Rule.pre_order_context_unavailable" xml:space="preserve">
+    <value>订单所需的服务未响应，请稍后重试。</value>
+  </data>
+  <data name="Rule.pre_order_no_company_prefix" xml:space="preserve">
+    <value>贵公司尚无订单编号前缀。销售运营在预订单设置中设定。</value>
+  </data>
+  <data name="Rule.pre_order_no_approver" xml:space="preserve">
+    <value>在您的岗位之上找不到审批人。请联系管理员。</value>
+  </data>
+  <data name="Rule.pre_order_not_editable" xml:space="preserve">
+    <value>此预订单已不能修改。</value>
+  </data>
+  <data name="Rule.pre_order_not_owner" xml:space="preserve">
+    <value>只有创建该预订单的代表才能执行此操作。</value>
+  </data>
+  <data name="Rule.pre_order_already_decided" xml:space="preserve">
+    <value>另一位审批人已对此预订单作出决定。</value>
+  </data>
+  <data name="Rule.pre_order_invalid_transition" xml:space="preserve">
+    <value>在预订单当前状态下无法执行此步骤。</value>
+  </data>
+  <data name="Rule.pre_order_sod" xml:space="preserve">
+    <value>您不能审批自己的预订单。</value>
+  </data>
+  <data name="Rule.pre_order_not_approver" xml:space="preserve">
+    <value>您不是此预订单的审批人。</value>
+  </data>
+  <data name="Rule.pre_order_reason_required" xml:space="preserve">
+    <value>请填写理由（必填）。</value>
+  </data>
+  <data name="Rule.pre_order_decision_invalid" xml:space="preserve">
+    <value>决定无效。</value>
+  </data>
+  <data name="Rule.pre_order_link_unusable" xml:space="preserve">
+    <value>此审批链接已不能使用。</value>
+  </data>
+  <data name="Rule.pre_order_depot_response_invalid" xml:space="preserve">
+    <value>请检查经销商答复：部分交货需填写每行的交货数量。</value>
+  </data>
+  <data name="Rule.pre_order_cancel_forbidden" xml:space="preserve">
+    <value>您不能取消此预订单。</value>
+  </data>
+  <data name="Rule.pre_order_settings_invalid" xml:space="preserve">
+    <value>请检查设置：某个值超出允许范围。</value>
+  </data>
+  <data name="Rule.pre_order_prefix_locked" xml:space="preserve">
+    <value>该公司的前缀已用于订单编号，不能修改或删除。</value>
+  </data>
+  <data name="Rule.pre_order_workflow_unavailable" xml:space="preserve">
+    <value>无法创建审批任务，请稍后重试。</value>
+  </data>
+  <data name="Rule.pre_order_workflow_template_missing" xml:space="preserve">
+    <value>该租户未配置审批流程。请联系管理员。</value>
+  </data>
+  <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
+    <value>无法保存文件，请稍后重试。</value>
+  </data>
+</root>

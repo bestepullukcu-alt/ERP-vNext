@@ -720,4 +720,124 @@
   <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
     <value>Закройте несостоявшееся</value>
   </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Показывает предзаказы аптек, доступные вам, — ваши, вашей команды и ждущие вашего согласования — со статусом и ответом дистрибьютора.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Представители, их руководители (согласующие) и отдел продаж.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте список</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>Откройте «Фильтр»: период, статус, аптека, дистрибьютор, препарат, страна; у согласующего также «Ждут моего согласования».</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Смотрите суммы</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Каждая сумма указана в своей валюте; заказы в разных валютах не суммируются. «Местный эквивалент» включается в видимости столбцов.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Откройте быстрый просмотр</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>Значок глаза показывает строки, итоги и хронологию со ссылками на документ и согласование.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Отметьте ответ дистрибьютора</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Отдел продаж отмечает переданный заказ как «Доставлено» или «Частичная поставка» (упаковки по строкам и примечание) в быстром просмотре.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Оформляет заказ аптеки для передачи её дистрибьютору, который выставляет счёт. Компания, валюта и цены берутся из системы.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Полевые представители (планшет и телефон).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Выберите аптеку и препараты</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Найдите аптеку и добавьте препараты с количеством, бонусом (например 10+2) и — при действующем прайс-листе — скидкой.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Следите за значками правил</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Каждая строка показывает «В пределах лимитов», «Требуется согласование» или «Недопустимо» с превышенным лимитом. Недопустимую строку нужно исправить.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Сохраните и дайте подписать провизору</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>«Сохранить черновик» присваивает номер. Выберите дистрибьютора и передайте устройство провизору для подписи. Изменение строк снимает подпись.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Отправьте</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>«Отправить» становится доступной, когда ничто не мешает (причины указаны под кнопкой). Затем заказ ждёт согласующего или, если арендатор разрешает, сразу уходит дистрибьютору.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Решение по ждущему вас предзаказу: согласовать, отклонить или вернуть на доработку.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>Руководитель представителя (вышестоящая должность).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>Посмотрите, почему он у вас</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>«Почему на моём согласовании?» называет настройку арендатора или строки сверх мягкого лимита.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Сравните с лимитами</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>В каждой ячейке введённое значение и под ним лимит правила; последние шесть месяцев аптеки — справа.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Примите решение</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>«Согласовать» передаёт заказ дистрибьютору. «Отклонить» и «Запросить изменения» требуют причины; запрос изменений возвращает заказ представителю черновиком.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>По ссылке из письма</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>Ссылка из письма требует входа, срабатывает один раз и истекает; действует решение первого согласующего.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Задаёт, как предзаказы этого арендатора согласуются, оцениваются, нумеруются и передаются.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Отдел продаж.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Выберите режим согласования</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>«Всегда согласование руководителя» (по умолчанию) или «Автоматически в пределах лимитов» — заказ сверх мягкого лимита всё равно идёт руководителю.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Настройте ссылку и повторы</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>Ссылка согласования действует 12–168 часов (по умолчанию 48); неудачная передача повторяется 0–10 раз.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Выберите уровень цены</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>По стране: закупочная для аптеки (по умолчанию), цена дистрибьютора или розничная.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Задайте каждой компании префикс</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>Номер заказа начинается с 2–5 букв (MG-ORD-000123). Использованный префикс блокируется.</value>
+  </data>
 </root>

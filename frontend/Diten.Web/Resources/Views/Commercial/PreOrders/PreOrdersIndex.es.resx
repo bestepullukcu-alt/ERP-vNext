@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Prepedidos</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Pedidos de farmacia enviados al distribuidor; el distribuidor factura.</value>
+  </data>
+  <data name="PeriodLabel" xml:space="preserve">
+    <value>Período</value>
+  </data>
+  <data name="PeriodAll" xml:space="preserve">
+    <value>Todas las fechas</value>
+  </data>
+  <data name="PeriodLast7" xml:space="preserve">
+    <value>Últimos 7 días</value>
+  </data>
+  <data name="PeriodLast30" xml:space="preserve">
+    <value>Últimos 30 días</value>
+  </data>
+  <data name="PeriodMonth" xml:space="preserve">
+    <value>Este mes</value>
+  </data>
+  <data name="PeriodCustom" xml:space="preserve">
+    <value>Rango personalizado</value>
+  </data>
+  <data name="CustomFrom" xml:space="preserve">
+    <value>Desde</value>
+  </data>
+  <data name="CustomTo" xml:space="preserve">
+    <value>Hasta</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>Todos los estados</value>
+  </data>
+  <data name="RepLabel" xml:space="preserve">
+    <value>Representante</value>
+  </data>
+  <data name="RepAll" xml:space="preserve">
+    <value>Todos los representantes</value>
+  </data>
+  <data name="PharmacyLabel" xml:space="preserve">
+    <value>Farmacia</value>
+  </data>
+  <data name="DepotLabel" xml:space="preserve">
+    <value>Distribuidor</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>Todos</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>País</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>Todos los países</value>
+  </data>
+  <data name="AwaitingLabel" xml:space="preserve">
+    <value>Pendientes de mi aprobación</value>
+  </data>
+  <data name="AwaitingAll" xml:space="preserve">
+    <value>Todos los pedidos</value>
+  </data>
+  <data name="AwaitingOption" xml:space="preserve">
+    <value>Pendientes de mi aprobación ({0})</value>
+  </data>
+  <data name="AwaitingYou" xml:space="preserve">
+    <value>Espera su decisión</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>Escriba al menos 2 caracteres</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Buscando…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>Sin resultados</value>
+  </data>
+  <data name="ColCode" xml:space="preserve">
+    <value>N.º de pedido</value>
+  </data>
+  <data name="ColDate" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="ColPharmacy" xml:space="preserve">
+    <value>Farmacia</value>
+  </data>
+  <data name="ColDepot" xml:space="preserve">
+    <value>Distribuidor</value>
+  </data>
+  <data name="ColRep" xml:space="preserve">
+    <value>Representante</value>
+  </data>
+  <data name="ColLines" xml:space="preserve">
+    <value>Líneas</value>
+  </data>
+  <data name="ColTotal" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="ColLocal" xml:space="preserve">
+    <value>Equivalente local</value>
+  </data>
+  <data name="ColEffective" xml:space="preserve">
+    <value>Descuento efectivo</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="ColRule" xml:space="preserve">
+    <value>Regla</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Vista rápida</value>
+  </data>
+  <data name="DrawerTitle" xml:space="preserve">
+    <value>Prepedido</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="NewPreOrder" xml:space="preserve">
+    <value>Nuevo prepedido</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>No hay prepedidos</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>Ningún prepedido coincide con el filtro.</value>
+  </data>
+  <data name="QuantityModeShort" xml:space="preserve">
+    <value>Solo cantidades</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Documento</value>
+  </data>
+  <data name="OpenApproval" xml:space="preserve">
+    <value>Abrir la aprobación</value>
+  </data>
+  <data name="OpenEdit" xml:space="preserve">
+    <value>Abrir el pedido</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>Detalle del pedido</value>
+  </data>
+  <data name="DepotResponseTitle" xml:space="preserve">
+    <value>Respuesta del distribuidor · se registra a mano</value>
+  </data>
+  <data name="DR_delivered" xml:space="preserve">
+    <value>Entregado</value>
+  </data>
+  <data name="DR_partial" xml:space="preserve">
+    <value>Entrega parcial</value>
+  </data>
+  <data name="DepotResponseNote" xml:space="preserve">
+    <value>Nota (opcional)</value>
+  </data>
+  <data name="DepotResponseSave" xml:space="preserve">
+    <value>Registrar la respuesta</value>
+  </data>
+  <data name="DepotResponseSaved" xml:space="preserve">
+    <value>Se registró la respuesta del distribuidor.</value>
+  </data>
+  <data name="OfQuantity" xml:space="preserve">
+    <value>de {0} cajas</value>
+  </data>
+  <data name="St_draft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="St_pending_approval" xml:space="preserve">
+    <value>Pendiente de aprobación</value>
+  </data>
+  <data name="St_approved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+  <data name="St_transmitted" xml:space="preserve">
+    <value>Enviado al distribuidor</value>
+  </data>
+  <data name="St_transmission_failed" xml:space="preserve">
+    <value>Envío fallido</value>
+  </data>
+  <data name="St_rejected" xml:space="preserve">
+    <value>Rechazado</value>
+  </data>
+  <data name="St_cancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+  <data name="St_unknown" xml:space="preserve">
+    <value>Desconocido</value>
+  </data>
+  <data name="Ev_created" xml:space="preserve">
+    <value>Borrador creado</value>
+  </data>
+  <data name="Ev_updated" xml:space="preserve">
+    <value>Borrador guardado</value>
+  </data>
+  <data name="Ev_discarded" xml:space="preserve">
+    <value>Borrador descartado</value>
+  </data>
+  <data name="Ev_signature_captured" xml:space="preserve">
+    <value>Firmó el farmacéutico</value>
+  </data>
+  <data name="Ev_signature_cleared" xml:space="preserve">
+    <value>Firma borrada (el pedido cambió)</value>
+  </data>
+  <data name="Ev_submitted" xml:space="preserve">
+    <value>Enviado</value>
+  </data>
+  <data name="Ev_auto_approved" xml:space="preserve">
+    <value>Aprobado automáticamente (configuración del inquilino)</value>
+  </data>
+  <data name="Ev_approval_requested" xml:space="preserve">
+    <value>Aprobación solicitada</value>
+  </data>
+  <data name="Ev_approver_unresolved" xml:space="preserve">
+    <value>Aún no se pudo determinar el aprobador</value>
+  </data>
+  <data name="Ev_approved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+  <data name="Ev_rejected" xml:space="preserve">
+    <value>Rechazado</value>
+  </data>
+  <data name="Ev_changes_requested" xml:space="preserve">
+    <value>Cambios solicitados</value>
+  </data>
+  <data name="Ev_transmission_attempted" xml:space="preserve">
+    <value>Enviando al distribuidor</value>
+  </data>
+  <data name="Ev_transmitted" xml:space="preserve">
+    <value>Enviado al distribuidor</value>
+  </data>
+  <data name="Ev_transmission_failed" xml:space="preserve">
+    <value>Envío fallido</value>
+  </data>
+  <data name="Ev_cancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+  <data name="Ev_depot_response_recorded" xml:space="preserve">
+    <value>Respuesta del distribuidor registrada</value>
+  </data>
+  <data name="Ev_copied_from" xml:space="preserve">
+    <value>Copiado de un pedido anterior</value>
+  </data>
+  <data name="Ev_unknown" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="TimelineTitle" xml:space="preserve">
+    <value>Cronología del estado</value>
+  </data>
+  <data name="TimelineEmpty" xml:space="preserve">
+    <value>Aún no ha pasado nada.</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>Motivo: {0}</value>
+  </data>
+  <data name="NoteLine" xml:space="preserve">
+    <value>Nota: {0}</value>
+  </data>
+  <data name="FactCode" xml:space="preserve">
+    <value>N.º de pedido</value>
+  </data>
+  <data name="FactDate" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="FactPharmacy" xml:space="preserve">
+    <value>Farmacia</value>
+  </data>
+  <data name="FactDepot" xml:space="preserve">
+    <value>Distribuidor</value>
+  </data>
+  <data name="FactRep" xml:space="preserve">
+    <value>Representante</value>
+  </data>
+  <data name="FactDelivery" xml:space="preserve">
+    <value>Fecha de entrega</value>
+  </data>
+  <data name="FactSeller" xml:space="preserve">
+    <value>Empresa vendedora</value>
+  </data>
+  <data name="FactMode" xml:space="preserve">
+    <value>Modo de precio</value>
+  </data>
+  <data name="ModePriced" xml:space="preserve">
+    <value>Con precio · {0}</value>
+  </data>
+  <data name="ModeQuantity" xml:space="preserve">
+    <value>Solo cantidades</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>Cant.</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>Bonif.</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>Desc. %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>Precio unitario</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>IVA</value>
+  </data>
+  <data name="ColLineTotal" xml:space="preserve">
+    <value>Total línea</value>
+  </data>
+  <data name="ColCombined" xml:space="preserve">
+    <value>Combinado</value>
+  </data>
+  <data name="GtinShort" xml:space="preserve">
+    <value>GTIN {0}</value>
+  </data>
+  <data name="FreeBoxes" xml:space="preserve">
+    <value>+{0} cajas de bonificación</value>
+  </data>
+  <data name="CombinedLine" xml:space="preserve">
+    <value>descuento combinado {0}</value>
+  </data>
+  <data name="MfRatioLine" xml:space="preserve">
+    <value>proporción de bonificación {0}</value>
+  </data>
+  <data name="PerBox" xml:space="preserve">
+    <value>{0} / caja</value>
+  </data>
+  <data name="TotalNet" xml:space="preserve">
+    <value>Neto</value>
+  </data>
+  <data name="TotalVat" xml:space="preserve">
+    <value>IVA</value>
+  </data>
+  <data name="TotalEffective" xml:space="preserve">
+    <value>Descuento efectivo</value>
+  </data>
+  <data name="TotalGross" xml:space="preserve">
+    <value>Total general</value>
+  </data>
+  <data name="FxLine" xml:space="preserve">
+    <value>≈ {0} {1} · tipo {2} · {3} · fuente {4}</value>
+  </data>
+  <data name="QuantityModeNote" xml:space="preserve">
+    <value>El distribuidor aplica el precio. No hay lista de precios vigente en este país; las reglas se aplican a la bonificación y la cantidad.</value>
+  </data>
+  <data name="FormTitleCreate" xml:space="preserve">
+    <value>Nuevo prepedido</value>
+  </data>
+  <data name="FormTitleEdit" xml:space="preserve">
+    <value>Prepedido</value>
+  </data>
+  <data name="FormTitleOrder" xml:space="preserve">
+    <value>Prepedido · {0}</value>
+  </data>
+  <data name="FormDescription" xml:space="preserve">
+    <value>El pedido de la farmacia se toma para enviarlo al distribuidor; el distribuidor factura.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Volver a la lista</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>Guardar borrador</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>Descartar borrador</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>¿Descartar este borrador? Su número no se volverá a asignar.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>Borrador guardado.</value>
+  </data>
+  <data name="FromSystem" xml:space="preserve">
+    <value>Del sistema</value>
+  </data>
+  <data name="ModePricedBadge" xml:space="preserve">
+    <value>Con precio</value>
+  </data>
+  <data name="ModeQuantityBadge" xml:space="preserve">
+    <value>Solo cantidades</value>
+  </data>
+  <data name="PriceSource" xml:space="preserve">
+    <value>Precio: {0} · {1} · vigente desde {2}</value>
+  </data>
+  <data name="PriceSourceShort" xml:space="preserve">
+    <value>Fuente del precio: {0}</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>Compra del farmacéutico</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>Precio de distribuidor</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>Precio al público</value>
+  </data>
+  <data name="ChangeBannerTitle" xml:space="preserve">
+    <value>Cambios solicitados:</value>
+  </data>
+  <data name="PharmacySection" xml:space="preserve">
+    <value>Farmacia</value>
+  </data>
+  <data name="PharmacyPlaceholder" xml:space="preserve">
+    <value>Busque una farmacia por nombre o código</value>
+  </data>
+  <data name="LinesSection" xml:space="preserve">
+    <value>Productos</value>
+  </data>
+  <data name="LinesNotePriced" xml:space="preserve">
+    <value>El precio viene de la lista de precios y no se puede cambiar.</value>
+  </data>
+  <data name="LinesNoteQuantity" xml:space="preserve">
+    <value>Solo cantidades y bonificación; el distribuidor aplica el precio.</value>
+  </data>
+  <data name="AddLine" xml:space="preserve">
+    <value>Añadir producto</value>
+  </data>
+  <data name="RemoveLine" xml:space="preserve">
+    <value>Quitar la línea</value>
+  </data>
+  <data name="NoLinesYet" xml:space="preserve">
+    <value>Todavía no hay productos.</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>Busque un producto por nombre o código</value>
+  </data>
+  <data name="PreviousOrders" xml:space="preserve">
+    <value>Pedidos anteriores de esta farmacia</value>
+  </data>
+  <data name="PreviousOrdersNone" xml:space="preserve">
+    <value>No hay pedidos anteriores de esta farmacia.</value>
+  </data>
+  <data name="LinesCount" xml:space="preserve">
+    <value>{0} líneas</value>
+  </data>
+  <data name="DeliverySection" xml:space="preserve">
+    <value>Entrega</value>
+  </data>
+  <data name="DepotPlaceholder" xml:space="preserve">
+    <value>Busque un distribuidor</value>
+  </data>
+  <data name="DeliveryLabel" xml:space="preserve">
+    <value>Fecha de entrega</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Moneda</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>Nota para el distribuidor</value>
+  </data>
+  <data name="NotePlaceholder" xml:space="preserve">
+    <value>Aparece en la copia del distribuidor (opcional)</value>
+  </data>
+  <data name="SummarySection" xml:space="preserve">
+    <value>Resumen del pedido</value>
+  </data>
+  <data name="SummaryPending" xml:space="preserve">
+    <value>Los totales aparecen al elegir una farmacia y un producto.</value>
+  </data>
+  <data name="NeedTitle" xml:space="preserve">
+    <value>¿Requiere aprobación?</value>
+  </data>
+  <data name="Need_yes" xml:space="preserve">
+    <value>Sí: el pedido va al aprobador.</value>
+  </data>
+  <data name="Need_no" xml:space="preserve">
+    <value>No: dentro de todos los límites, se aprueba automáticamente.</value>
+  </data>
+  <data name="Need_unknown" xml:space="preserve">
+    <value>Se sabrá al elegir una farmacia y un producto.</value>
+  </data>
+  <data name="Need_tenant_setting" xml:space="preserve">
+    <value>La configuración del inquilino envía cada pedido al responsable.</value>
+  </data>
+  <data name="Need_soft" xml:space="preserve">
+    <value>Una línea supera un límite flexible.</value>
+  </data>
+  <data name="Approver_line" xml:space="preserve">
+    <value>Aprobador: {0}</value>
+  </data>
+  <data name="Approver_chain" xml:space="preserve">
+    <value>Aprobador: {0} (el puesto superior está vacante: un nivel más arriba)</value>
+  </data>
+  <data name="Approver_none" xml:space="preserve">
+    <value>No hay aprobador por encima de su puesto.</value>
+  </data>
+  <data name="Approver_unavailable" xml:space="preserve">
+    <value>No se puede mostrar el aprobador ahora; se buscará al enviar.</value>
+  </data>
+  <data name="ApproverPosition" xml:space="preserve">
+    <value>Puesto: {0}</value>
+  </data>
+  <data name="SignatureSection" xml:space="preserve">
+    <value>Firma del farmacéutico</value>
+  </data>
+  <data name="SignerLabel" xml:space="preserve">
+    <value>Nombre del farmacéutico</value>
+  </data>
+  <data name="SignatureHint" xml:space="preserve">
+    <value>Entregue el dispositivo al farmacéutico para que firme aquí.</value>
+  </data>
+  <data name="SignatureClear" xml:space="preserve">
+    <value>Borrar</value>
+  </data>
+  <data name="SignatureSave" xml:space="preserve">
+    <value>Guardar la firma</value>
+  </data>
+  <data name="SignatureSaved" xml:space="preserve">
+    <value>Se guardó la firma.</value>
+  </data>
+  <data name="SignatureNone" xml:space="preserve">
+    <value>Sin firma.</value>
+  </data>
+  <data name="SignedBy" xml:space="preserve">
+    <value>Firmado por {0} · {1}</value>
+  </data>
+  <data name="SignedNote" xml:space="preserve">
+    <value>Forma parte del documento del pedido.</value>
+  </data>
+  <data name="Resign" xml:space="preserve">
+    <value>Volver a firmar</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Enviar</value>
+  </data>
+  <data name="Why_no_permission" xml:space="preserve">
+    <value>No tiene permiso para enviar prepedidos.</value>
+  </data>
+  <data name="Why_no_lines" xml:space="preserve">
+    <value>Añada al menos un producto.</value>
+  </data>
+  <data name="Why_hard" xml:space="preserve">
+    <value>Una línea supera un límite que no se puede exceder.</value>
+  </data>
+  <data name="Why_no_depot" xml:space="preserve">
+    <value>Elija el distribuidor.</value>
+  </data>
+  <data name="Why_no_signature" xml:space="preserve">
+    <value>Falta la firma del farmacéutico.</value>
+  </data>
+  <data name="Why_unsaved" xml:space="preserve">
+    <value>Hay cambios sin guardar: guarde primero el borrador.</value>
+  </data>
+  <data name="SubmittedPending" xml:space="preserve">
+    <value>Enviado: el pedido espera la aprobación.</value>
+  </data>
+  <data name="SubmittedApproved" xml:space="preserve">
+    <value>Enviado y aprobado automáticamente: va al distribuidor.</value>
+  </data>
+  <data name="Lock_pending" xml:space="preserve">
+    <value>El pedido espera la aprobación y no se puede cambiar.</value>
+  </data>
+  <data name="Lock_sent" xml:space="preserve">
+    <value>El pedido fue aprobado; no se puede cambiar. Para cambiarlo, cancélelo y abra uno nuevo.</value>
+  </data>
+  <data name="Lock_rejected" xml:space="preserve">
+    <value>El pedido fue rechazado. Puede copiarlo en un pedido nuevo.</value>
+  </data>
+  <data name="Lock_cancelled" xml:space="preserve">
+    <value>El pedido fue cancelado. Puede copiarlo en un pedido nuevo.</value>
+  </data>
+  <data name="Lock_not_owner" xml:space="preserve">
+    <value>Solo el representante que creó este borrador puede cambiarlo.</value>
+  </data>
+  <data name="CancelAndNew" xml:space="preserve">
+    <value>Cancelar y abrir un pedido nuevo</value>
+  </data>
+  <data name="CopyAndNew" xml:space="preserve">
+    <value>Copiar y abrir un pedido nuevo</value>
+  </data>
+  <data name="CancelOrder" xml:space="preserve">
+    <value>Cancelar el pedido</value>
+  </data>
+  <data name="CancelTitle" xml:space="preserve">
+    <value>Cancelar el prepedido</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>Si el pedido se envió, el distribuidor y la farmacia reciben un correo de cancelación. Escriba el motivo.</value>
+  </data>
+  <data name="CancelConfirm" xml:space="preserve">
+    <value>Cancelar el pedido</value>
+  </data>
+  <data name="CancelledToast" xml:space="preserve">
+    <value>Se canceló el prepedido.</value>
+  </data>
+  <data name="ErrQuantity" xml:space="preserve">
+    <value>Cada producto necesita una cantidad de al menos 1.</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>Escriba la bonificación como compra + gratis, por ejemplo 10+2.</value>
+  </data>
+  <data name="ErrDiscount" xml:space="preserve">
+    <value>El descuento debe estar entre 0 y 100 (sin incluir), con un decimal como máximo.</value>
+  </data>
+  <data name="ErrRangeMissing" xml:space="preserve">
+    <value>Elija las dos fechas del rango.</value>
+  </data>
+  <data name="ErrRangeOrder" xml:space="preserve">
+    <value>La fecha de inicio no puede ser posterior a la de fin.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>Algo salió mal. Inténtelo de nuevo.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>El servicio no está disponible ahora. Inténtelo en un momento.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>No tiene permiso para esto.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>No se encontró el prepedido o no puede verlo.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>Otra persona lo cambió mientras tanto. Recargue e inténtelo de nuevo.</value>
+  </data>
+  <data name="DetailsTitle" xml:space="preserve">
+    <value>Detalle del prepedido</value>
+  </data>
+  <data name="DetailsTitleOrder" xml:space="preserve">
+    <value>Prepedido {0}</value>
+  </data>
+  <data name="DetailsDescription" xml:space="preserve">
+    <value>El pedido tal como se envió, con su cronología.</value>
+  </data>
+  <data name="StateSection" xml:space="preserve">
+    <value>Firma, aprobación y envío</value>
+  </data>
+  <data name="AutoApproved" xml:space="preserve">
+    <value>Aprobado automáticamente (configuración del inquilino)</value>
+  </data>
+  <data name="Decision_approve" xml:space="preserve">
+    <value>Aprobado por {0} · {1}</value>
+  </data>
+  <data name="Decision_reject" xml:space="preserve">
+    <value>Rechazado por {0} · {1}</value>
+  </data>
+  <data name="Decision_request_changes" xml:space="preserve">
+    <value>Cambios solicitados por {0} · {1}</value>
+  </data>
+  <data name="AwaitingApprover" xml:space="preserve">
+    <value>Pendiente de: {0}</value>
+  </data>
+  <data name="AwaitingApproverUnknown" xml:space="preserve">
+    <value>Pendiente de aprobación (se está determinando el aprobador).</value>
+  </data>
+  <data name="TransmittedAt" xml:space="preserve">
+    <value>Enviado a {0} · {1}</value>
+  </data>
+  <data name="TransmissionFailedLine" xml:space="preserve">
+    <value>El envío al distribuidor falló; se reintenta automáticamente.</value>
+  </data>
+  <data name="CancelledLine" xml:space="preserve">
+    <value>Cancelado · {0}</value>
+  </data>
+  <data name="PartialLine" xml:space="preserve">
+    <value>{0}: {1} de {2} cajas entregadas</value>
+  </data>
+  <data name="RetryTransmission" xml:space="preserve">
+    <value>Volver a enviar</value>
+  </data>
+  <data name="RetryToast" xml:space="preserve">
+    <value>Se vuelve a enviar al distribuidor.</value>
+  </data>
+  <data name="ApproveTitle" xml:space="preserve">
+    <value>Aprobación del prepedido</value>
+  </data>
+  <data name="ApproveTitleOrder" xml:space="preserve">
+    <value>Aprobación del prepedido · {0}</value>
+  </data>
+  <data name="ApproveDescription" xml:space="preserve">
+    <value>Revise las líneas que superan una regla; el pedido aprobado se envía al distribuidor en PDF.</value>
+  </data>
+  <data name="WhyMeTitle" xml:space="preserve">
+    <value>¿Por qué me llega a mí?</value>
+  </data>
+  <data name="WhyMeNone" xml:space="preserve">
+    <value>No hay motivo registrado.</value>
+  </data>
+  <data name="Why_me_tenant" xml:space="preserve">
+    <value>La configuración del inquilino: cada prepedido va al responsable.</value>
+  </data>
+  <data name="Why_me_soft" xml:space="preserve">
+    <value>Una línea supera un límite flexible:</value>
+  </data>
+  <data name="YouAreReportsTo" xml:space="preserve">
+    <value>Usted ocupa el puesto superior de {0} ({1}).</value>
+  </data>
+  <data name="LimitsNote" xml:space="preserve">
+    <value>Cada celda: el valor introducido y, debajo, el límite de la regla.</value>
+  </data>
+  <data name="LimitSoft" xml:space="preserve">
+    <value>límite {0}</value>
+  </data>
+  <data name="LimitHard" xml:space="preserve">
+    <value>tope {0}</value>
+  </data>
+  <data name="DecisionTitle" xml:space="preserve">
+    <value>Decisión</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Aprobar</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+  <data name="RequestChanges" xml:space="preserve">
+    <value>Solicitar cambios</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>Rechazar y solicitar cambios requieren un motivo. Tras la aprobación, el pedido no se puede cambiar.</value>
+  </data>
+  <data name="RejectTitle" xml:space="preserve">
+    <value>Rechazar el prepedido</value>
+  </data>
+  <data name="RejectText" xml:space="preserve">
+    <value>Se comunica el motivo al representante. Un pedido rechazado no se puede volver a enviar; se puede copiar.</value>
+  </data>
+  <data name="ChangesTitle" xml:space="preserve">
+    <value>Solicitar cambios</value>
+  </data>
+  <data name="ChangesText" xml:space="preserve">
+    <value>El pedido vuelve al representante como borrador; el farmacéutico vuelve a firmar.</value>
+  </data>
+  <data name="ReasonLabel" xml:space="preserve">
+    <value>Motivo</value>
+  </data>
+  <data name="ReasonPlaceholder" xml:space="preserve">
+    <value>Motivo (obligatorio)</value>
+  </data>
+  <data name="Decided_approve" xml:space="preserve">
+    <value>Aprobado. El pedido se envía al distribuidor.</value>
+  </data>
+  <data name="Decided_reject" xml:space="preserve">
+    <value>Rechazado. Se comunicó el motivo al representante.</value>
+  </data>
+  <data name="Decided_request_changes" xml:space="preserve">
+    <value>Cambios solicitados. El pedido volvió al representante.</value>
+  </data>
+  <data name="NotYourDecision" xml:space="preserve">
+    <value>No puede decidir sobre este prepedido (no está pendiente de usted).</value>
+  </data>
+  <data name="AlreadyDecided" xml:space="preserve">
+    <value>Este prepedido ya no espera aprobación: {0}.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>Últimos 6 meses</value>
+  </data>
+  <data name="HistoryTitleOf" xml:space="preserve">
+    <value>{0} · últimos 6 meses</value>
+  </data>
+  <data name="HistoryNote" xml:space="preserve">
+    <value>Pedidos enviados de la farmacia por mes (cada moneda por separado).</value>
+  </data>
+  <data name="ColMonth" xml:space="preserve">
+    <value>Mes</value>
+  </data>
+  <data name="ColOrders" xml:space="preserve">
+    <value>Pedidos</value>
+  </data>
+  <data name="ColBoxes" xml:space="preserve">
+    <value>Cajas</value>
+  </data>
+  <data name="LinkTitle" xml:space="preserve">
+    <value>Enlace de aprobación del prepedido</value>
+  </data>
+  <data name="LinkDescription" xml:space="preserve">
+    <value>Abrió el enlace de aprobación del correo.</value>
+  </data>
+  <data name="LinkOnce" xml:space="preserve">
+    <value>Este enlace solo se puede usar una vez · caduca en {0} horas</value>
+  </data>
+  <data name="LinkUsedNow" xml:space="preserve">
+    <value>Este enlace se usó y ya no es válido.</value>
+  </data>
+  <data name="Link_consumed" xml:space="preserve">
+    <value>Este enlace ya se usó</value>
+  </data>
+  <data name="Link_consumed_text" xml:space="preserve">
+    <value>Ya se tomó una decisión con él. Abra el pedido desde la lista para ver el resultado.</value>
+  </data>
+  <data name="Link_expired" xml:space="preserve">
+    <value>Este enlace ha caducado</value>
+  </data>
+  <data name="Link_expired_text" xml:space="preserve">
+    <value>Decida desde el Centro de trabajo o desde la lista de prepedidos.</value>
+  </data>
+  <data name="Link_superseded" xml:space="preserve">
+    <value>Este enlace ya no es válido</value>
+  </data>
+  <data name="Link_superseded_text" xml:space="preserve">
+    <value>El pedido cambió después del correo (decidido en otro lugar, cancelado o devuelto).</value>
+  </data>
+  <data name="Link_notfound" xml:space="preserve">
+    <value>No se puede abrir este enlace</value>
+  </data>
+  <data name="Link_notfound_text" xml:space="preserve">
+    <value>El enlace no es válido o no es para usted.</value>
+  </data>
+  <data name="DocumentTitle" xml:space="preserve">
+    <value>Documento enviado al distribuidor</value>
+  </data>
+  <data name="DocumentTitleOrder" xml:space="preserve">
+    <value>Documento enviado al distribuidor · {0}</value>
+  </data>
+  <data name="DocumentDescription" xml:space="preserve">
+    <value>Tras la aprobación va en PDF al correo del distribuidor; la farmacia recibe una copia.</value>
+  </data>
+  <data name="CopyGroupLabel" xml:space="preserve">
+    <value>Copia</value>
+  </data>
+  <data name="CopyDepot" xml:space="preserve">
+    <value>Copia del distribuidor</value>
+  </data>
+  <data name="CopyPharmacy" xml:space="preserve">
+    <value>Copia de la farmacia</value>
+  </data>
+  <data name="DownloadPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="TrailTitle" xml:space="preserve">
+    <value>Rastro del envío:</value>
+  </data>
+  <data name="TrailNone" xml:space="preserve">
+    <value>aún no enviado</value>
+  </data>
+  <data name="TrailAttempt" xml:space="preserve">
+    <value>Intento {0} · {1} · {2}</value>
+  </data>
+  <data name="Trail_sent" xml:space="preserve">
+    <value>enviado</value>
+  </data>
+  <data name="Trail_failed" xml:space="preserve">
+    <value>fallido</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Configuración de prepedidos</value>
+  </data>
+  <data name="SettingsDescription" xml:space="preserve">
+    <value>Cómo se aprueban, valoran, numeran y envían los prepedidos en este inquilino.</value>
+  </data>
+  <data name="ApprovalSection" xml:space="preserve">
+    <value>Aprobación</value>
+  </data>
+  <data name="Mode_always" xml:space="preserve">
+    <value>Siempre aprobación del responsable</value>
+  </data>
+  <data name="Mode_always_help" xml:space="preserve">
+    <value>Cada prepedido enviado va al responsable del representante (predeterminado).</value>
+  </data>
+  <data name="Mode_auto" xml:space="preserve">
+    <value>Automática dentro de los límites</value>
+  </data>
+  <data name="Mode_auto_help" xml:space="preserve">
+    <value>Un pedido dentro de todos los límites se aprueba y envía al momento; uno que supere un límite flexible va igualmente al responsable.</value>
+  </data>
+  <data name="TtlLabel" xml:space="preserve">
+    <value>Vigencia del enlace de aprobación (horas)</value>
+  </data>
+  <data name="TtlHelp" xml:space="preserve">
+    <value>12–168 horas, 48 por defecto.</value>
+  </data>
+  <data name="RetryLabel" xml:space="preserve">
+    <value>Reintentos automáticos de envío</value>
+  </data>
+  <data name="RetryHelp" xml:space="preserve">
+    <value>0–10; después, operaciones comerciales reenvía a mano.</value>
+  </data>
+  <data name="TierSection" xml:space="preserve">
+    <value>Nivel de precio por país</value>
+  </data>
+  <data name="TierHelp" xml:space="preserve">
+    <value>Qué precio de la lista usa un prepedido; un país sin fila usa el precio de compra del farmacéutico.</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>Nivel de precio</value>
+  </data>
+  <data name="TierNone" xml:space="preserve">
+    <value>Todos los países usan el precio de compra del farmacéutico.</value>
+  </data>
+  <data name="AddTier" xml:space="preserve">
+    <value>Añadir un país</value>
+  </data>
+  <data name="PrefixSection" xml:space="preserve">
+    <value>Prefijo del número de pedido por empresa</value>
+  </data>
+  <data name="PrefixHelp" xml:space="preserve">
+    <value>2–5 letras (MG-ORD-000123). Un prefijo que ya numeró un pedido no se puede cambiar ni eliminar.</value>
+  </data>
+  <data name="PrefixNone" xml:space="preserve">
+    <value>Aún no hay prefijo: los representantes de una empresa sin prefijo no pueden abrir prepedidos.</value>
+  </data>
+  <data name="AddPrefix" xml:space="preserve">
+    <value>Añadir una empresa</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>Empresa</value>
+  </data>
+  <data name="PrefixLabel" xml:space="preserve">
+    <value>Prefijo</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>Quitar</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Guardar la configuración</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>Se guardó la configuración.</value>
+  </data>
+  <data name="SettingsDefault" xml:space="preserve">
+    <value>Se usan los valores predeterminados (aún no se guardó nada).</value>
+  </data>
+  <data name="SettingsUpdated" xml:space="preserve">
+    <value>Último cambio: {0} · {1}</value>
+  </data>
+  <data name="ErrTtl" xml:space="preserve">
+    <value>La vigencia del enlace debe ser de 12 a 168 horas.</value>
+  </data>
+  <data name="ErrRetry" xml:space="preserve">
+    <value>Los reintentos deben ser de 0 a 10.</value>
+  </data>
+  <data name="ErrPrefix" xml:space="preserve">
+    <value>Cada prefijo necesita una empresa y 2–5 letras (A–Z).</value>
+  </data>
+  <data name="ErrTierDuplicate" xml:space="preserve">
+    <value>Un país solo puede aparecer una vez.</value>
+  </data>
+</root>

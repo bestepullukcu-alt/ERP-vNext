@@ -720,4 +720,124 @@
   <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
     <value>Clore ce qui n'a pas eu lieu</value>
   </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Liste les pré-commandes de pharmacie que vous pouvez voir — les vôtres, celles de votre équipe et celles qui attendent votre validation — avec leur statut et la réponse du dépositaire.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Les délégués, leurs responsables (approbateurs) et les opérations commerciales.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Filtrez la liste</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>Ouvrez « Filtre » : période, statut, pharmacie, dépositaire, produit, pays — un approbateur a aussi « En attente de ma validation ».</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Lisez les montants</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Chaque total porte sa devise ; des commandes de devises différentes ne sont jamais additionnées. « Équivalent local » s'affiche via la visibilité des colonnes.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Ouvrez l'aperçu rapide</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>L'icône œil affiche les lignes, les totaux et la chronologie, avec des liens vers le document et la validation.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Saisissez la réponse du dépositaire</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Les opérations commerciales marquent une commande transmise « Livrée » ou « Livraison partielle » (boîtes par ligne et note) dans l'aperçu rapide.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Prend la commande d'une pharmacie pour la transmettre à son dépositaire, qui facture. La société, la devise et les prix viennent du système.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Les délégués terrain (tablette et téléphone).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Choisissez la pharmacie et les produits</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Cherchez la pharmacie, puis ajoutez les produits avec leur quantité, l'UG (par exemple 10+2) et — si une liste de prix est en vigueur — la remise.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Surveillez les badges de règle</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Chaque ligne indique « Dans les limites », « Validation requise » ou « Non autorisé », avec la limite dépassée. Une ligne non autorisée doit être corrigée.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Enregistrez et faites signer le pharmacien</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>« Enregistrer le brouillon » attribue le numéro. Choisissez le dépositaire, puis tendez l'appareil au pharmacien pour la signature. Modifier les lignes efface la signature.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Envoyez</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>« Envoyer » s'active quand rien ne bloque (les raisons sont écrites dessous). La commande attend alors l'approbateur ou, si le locataire le permet, part directement chez le dépositaire.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Statuez sur une pré-commande qui vous attend : validez-la, refusez-la ou renvoyez-la pour modification.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>Le responsable du délégué (le poste de rattachement).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>Voyez pourquoi elle vous revient</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>« Pourquoi chez moi ? » indique le paramètre du locataire ou les lignes au-delà d'une limite souple.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Comparez aux limites</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>Chaque cellule montre la saisie et, dessous, la limite de la règle ; les six derniers mois de la pharmacie sont à droite.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Statuez</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>« Valider » transmet la commande au dépositaire. « Refuser » et « Demander des modifications » exigent un motif ; une demande de modification la renvoie en brouillon au délégué.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>Depuis le lien de l'e-mail</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>Le lien de l'e-mail demande de se connecter, ne sert qu'une fois et expire ; la décision du premier approbateur l'emporte.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Définit comment les pré-commandes de ce locataire sont validées, tarifées, numérotées et transmises.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Les opérations commerciales.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Choisissez le mode de validation</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>« Toujours la validation d'un responsable » (par défaut) ou « Automatique dans les limites » — une commande au-delà d'une limite souple va toujours au responsable.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Réglez le lien et les tentatives</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>Le lien de validation vit 12 à 168 heures (48 par défaut) ; une transmission échouée est relancée 0 à 10 fois.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Choisissez le niveau de prix</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>Par pays : achat pharmacien (par défaut), prix dépositaire ou prix public.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Donnez son préfixe à chaque société</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>2 à 5 lettres débutent le numéro de commande (MG-ORD-000123). Un préfixe ayant numéroté une commande est verrouillé.</value>
+  </data>
 </root>

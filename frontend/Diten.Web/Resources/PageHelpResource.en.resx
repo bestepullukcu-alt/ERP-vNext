@@ -720,4 +720,124 @@
   <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
     <value>Close what did not happen</value>
   </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Lists the pharmacy pre-orders you may see — your own, your team's and those waiting for your approval — with their status and the depot's answer.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Representatives, their managers (approvers) and sales operations.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Filter the list</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>Open “Filter”: period, status, pharmacy, depot, product, country — an approver also has “Awaiting my approval”.</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Read the amounts</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Each total carries its own currency; orders in different currencies are never added up. “Local equivalent” can be shown from Column Visibility.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Open the quick view</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>The eye icon shows the lines, the totals and the timeline, with links to the document and the approval.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Record the depot's answer</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Sales operations marks a sent order “Delivered” or “Partially delivered” (boxes per line and a note) in the quick view.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Takes a pharmacy's order to be passed to its depot; the depot issues the invoice. The company, the currency and the prices come from the system.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Field representatives (tablet and phone).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Choose the pharmacy and the products</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Search the pharmacy, then add products with their quantity, MF (for example 10+2) and — when a price list is in force — the discount.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Watch the rule badges</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Each line says “Within limits”, “Approval needed” or “Not allowed”, with the limit it passed. A line that is not allowed must be corrected.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Save and let the pharmacist sign</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>“Save draft” gives the order number. Choose the depot, then hand the device to the pharmacist for the signature. A change of lines clears the signature.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>“Send” opens when nothing blocks it (the reasons are written under it). The order then waits for the approver or, when the tenant allows it, goes straight to the depot.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Decides a pre-order that waits for you: approve it, reject it or send it back for changes.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>The representative's manager (the Reports-to position).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>See why it is with you</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>“Why is it with me?” names the tenant setting or the lines over a soft limit.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Compare with the limits</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>Each cell shows what was entered and, under it, the rule's limit; the pharmacy's last six months are on the right.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Decide</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>“Approve” sends the order to the depot. “Reject” and “Request changes” need a reason; a change request returns it to the representative as a draft.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>From the e-mail link</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>The e-mail link asks you to sign in, works once and expires; the first approver's decision wins.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Sets how this tenant's pre-orders are approved, priced, numbered and sent.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Sales operations.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Choose the approval mode</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>“Always a manager's approval” (default) or “Automatic within the limits” — an order over a soft limit still goes to the manager.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Set the link and the retries</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>The approval link lives 12–168 hours (48 by default); a failed transmission is retried automatically 0–10 times.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Choose the price tier</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>Per country: pharmacist purchase (default), depot price or public price.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Give each company its prefix</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>2–5 letters start the order number (MG-ORD-000123). A prefix that numbered an order is locked.</value>
+  </data>
 </root>

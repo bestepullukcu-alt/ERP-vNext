@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Ön siparişler</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Depoya iletilen eczane siparişleri; faturayı depo keser.</value>
+  </data>
+  <data name="PeriodLabel" xml:space="preserve">
+    <value>Dönem</value>
+  </data>
+  <data name="PeriodAll" xml:space="preserve">
+    <value>Tüm tarihler</value>
+  </data>
+  <data name="PeriodLast7" xml:space="preserve">
+    <value>Son 7 gün</value>
+  </data>
+  <data name="PeriodLast30" xml:space="preserve">
+    <value>Son 30 gün</value>
+  </data>
+  <data name="PeriodMonth" xml:space="preserve">
+    <value>Bu ay</value>
+  </data>
+  <data name="PeriodCustom" xml:space="preserve">
+    <value>Özel aralık</value>
+  </data>
+  <data name="CustomFrom" xml:space="preserve">
+    <value>Başlangıç</value>
+  </data>
+  <data name="CustomTo" xml:space="preserve">
+    <value>Bitiş</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>Tüm durumlar</value>
+  </data>
+  <data name="RepLabel" xml:space="preserve">
+    <value>Temsilci</value>
+  </data>
+  <data name="RepAll" xml:space="preserve">
+    <value>Tüm temsilciler</value>
+  </data>
+  <data name="PharmacyLabel" xml:space="preserve">
+    <value>Eczane</value>
+  </data>
+  <data name="DepotLabel" xml:space="preserve">
+    <value>Depo / distribütör</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>Ürün</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>Tümü</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>Ülke</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>Tüm ülkeler</value>
+  </data>
+  <data name="AwaitingLabel" xml:space="preserve">
+    <value>Onayımı bekleyenler</value>
+  </data>
+  <data name="AwaitingAll" xml:space="preserve">
+    <value>Tüm siparişler</value>
+  </data>
+  <data name="AwaitingOption" xml:space="preserve">
+    <value>Onayımı bekleyenler ({0})</value>
+  </data>
+  <data name="AwaitingYou" xml:space="preserve">
+    <value>Kararınızı bekliyor</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>En az 2 karakter yazın</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Aranıyor…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>Sonuç yok</value>
+  </data>
+  <data name="ColCode" xml:space="preserve">
+    <value>Sipariş no</value>
+  </data>
+  <data name="ColDate" xml:space="preserve">
+    <value>Tarih</value>
+  </data>
+  <data name="ColPharmacy" xml:space="preserve">
+    <value>Eczane</value>
+  </data>
+  <data name="ColDepot" xml:space="preserve">
+    <value>Depo</value>
+  </data>
+  <data name="ColRep" xml:space="preserve">
+    <value>Temsilci</value>
+  </data>
+  <data name="ColLines" xml:space="preserve">
+    <value>Satır</value>
+  </data>
+  <data name="ColTotal" xml:space="preserve">
+    <value>Toplam</value>
+  </data>
+  <data name="ColLocal" xml:space="preserve">
+    <value>Yerel karşılık</value>
+  </data>
+  <data name="ColEffective" xml:space="preserve">
+    <value>Etkin indirim</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="ColRule" xml:space="preserve">
+    <value>Kural</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>İşlemler</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Hızlı görünüm</value>
+  </data>
+  <data name="DrawerTitle" xml:space="preserve">
+    <value>Ön sipariş</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="NewPreOrder" xml:space="preserve">
+    <value>Yeni ön sipariş</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Ön sipariş yok</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>Süzgece uyan ön sipariş yok.</value>
+  </data>
+  <data name="QuantityModeShort" xml:space="preserve">
+    <value>Yalnız adet</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Belge</value>
+  </data>
+  <data name="OpenApproval" xml:space="preserve">
+    <value>Onay ekranını aç</value>
+  </data>
+  <data name="OpenEdit" xml:space="preserve">
+    <value>Siparişi aç</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>Sipariş ayrıntısı</value>
+  </data>
+  <data name="DepotResponseTitle" xml:space="preserve">
+    <value>Depo cevabı · elle işaretlenir</value>
+  </data>
+  <data name="DR_delivered" xml:space="preserve">
+    <value>Teslim edildi</value>
+  </data>
+  <data name="DR_partial" xml:space="preserve">
+    <value>Eksik teslim</value>
+  </data>
+  <data name="DepotResponseNote" xml:space="preserve">
+    <value>Not (isteğe bağlı)</value>
+  </data>
+  <data name="DepotResponseSave" xml:space="preserve">
+    <value>Cevabı kaydet</value>
+  </data>
+  <data name="DepotResponseSaved" xml:space="preserve">
+    <value>Depo cevabı kaydedildi.</value>
+  </data>
+  <data name="OfQuantity" xml:space="preserve">
+    <value>/ {0} kutu</value>
+  </data>
+  <data name="St_draft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="St_pending_approval" xml:space="preserve">
+    <value>Onay bekliyor</value>
+  </data>
+  <data name="St_approved" xml:space="preserve">
+    <value>Onaylandı</value>
+  </data>
+  <data name="St_transmitted" xml:space="preserve">
+    <value>Depoya iletildi</value>
+  </data>
+  <data name="St_transmission_failed" xml:space="preserve">
+    <value>İletim başarısız</value>
+  </data>
+  <data name="St_rejected" xml:space="preserve">
+    <value>Reddedildi</value>
+  </data>
+  <data name="St_cancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="St_unknown" xml:space="preserve">
+    <value>Bilinmiyor</value>
+  </data>
+  <data name="Ev_created" xml:space="preserve">
+    <value>Taslak oluşturuldu</value>
+  </data>
+  <data name="Ev_updated" xml:space="preserve">
+    <value>Taslak kaydedildi</value>
+  </data>
+  <data name="Ev_discarded" xml:space="preserve">
+    <value>Taslak silindi</value>
+  </data>
+  <data name="Ev_signature_captured" xml:space="preserve">
+    <value>Eczacı imzaladı</value>
+  </data>
+  <data name="Ev_signature_cleared" xml:space="preserve">
+    <value>İmza silindi (sipariş değişti)</value>
+  </data>
+  <data name="Ev_submitted" xml:space="preserve">
+    <value>Gönderildi</value>
+  </data>
+  <data name="Ev_auto_approved" xml:space="preserve">
+    <value>Kendiliğinden onaylandı (kiracı ayarı)</value>
+  </data>
+  <data name="Ev_approval_requested" xml:space="preserve">
+    <value>Onay istendi</value>
+  </data>
+  <data name="Ev_approver_unresolved" xml:space="preserve">
+    <value>Onaycı henüz belirlenemedi</value>
+  </data>
+  <data name="Ev_approved" xml:space="preserve">
+    <value>Onaylandı</value>
+  </data>
+  <data name="Ev_rejected" xml:space="preserve">
+    <value>Reddedildi</value>
+  </data>
+  <data name="Ev_changes_requested" xml:space="preserve">
+    <value>Değişiklik istendi</value>
+  </data>
+  <data name="Ev_transmission_attempted" xml:space="preserve">
+    <value>Depoya iletiliyor</value>
+  </data>
+  <data name="Ev_transmitted" xml:space="preserve">
+    <value>Depoya iletildi</value>
+  </data>
+  <data name="Ev_transmission_failed" xml:space="preserve">
+    <value>İletim başarısız</value>
+  </data>
+  <data name="Ev_cancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="Ev_depot_response_recorded" xml:space="preserve">
+    <value>Depo cevabı işaretlendi</value>
+  </data>
+  <data name="Ev_copied_from" xml:space="preserve">
+    <value>Önceki bir siparişten kopyalandı</value>
+  </data>
+  <data name="Ev_unknown" xml:space="preserve">
+    <value>Olay</value>
+  </data>
+  <data name="TimelineTitle" xml:space="preserve">
+    <value>Durum zaman çizelgesi</value>
+  </data>
+  <data name="TimelineEmpty" xml:space="preserve">
+    <value>Henüz bir olay yok.</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>Gerekçe: {0}</value>
+  </data>
+  <data name="NoteLine" xml:space="preserve">
+    <value>Not: {0}</value>
+  </data>
+  <data name="FactCode" xml:space="preserve">
+    <value>Sipariş no</value>
+  </data>
+  <data name="FactDate" xml:space="preserve">
+    <value>Tarih</value>
+  </data>
+  <data name="FactPharmacy" xml:space="preserve">
+    <value>Eczane</value>
+  </data>
+  <data name="FactDepot" xml:space="preserve">
+    <value>Depo</value>
+  </data>
+  <data name="FactRep" xml:space="preserve">
+    <value>Temsilci</value>
+  </data>
+  <data name="FactDelivery" xml:space="preserve">
+    <value>Teslim tarihi</value>
+  </data>
+  <data name="FactSeller" xml:space="preserve">
+    <value>Satan şirket</value>
+  </data>
+  <data name="FactMode" xml:space="preserve">
+    <value>Fiyat modu</value>
+  </data>
+  <data name="ModePriced" xml:space="preserve">
+    <value>Fiyatlı · {0}</value>
+  </data>
+  <data name="ModeQuantity" xml:space="preserve">
+    <value>Yalnız adet</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>Ürün</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>Adet</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>MF</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>İsk. %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>Birim fiyat</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>KDV</value>
+  </data>
+  <data name="ColLineTotal" xml:space="preserve">
+    <value>Satır toplamı</value>
+  </data>
+  <data name="ColCombined" xml:space="preserve">
+    <value>Birleşik</value>
+  </data>
+  <data name="GtinShort" xml:space="preserve">
+    <value>GTIN {0}</value>
+  </data>
+  <data name="FreeBoxes" xml:space="preserve">
+    <value>+{0} kutu MF</value>
+  </data>
+  <data name="CombinedLine" xml:space="preserve">
+    <value>birleşik indirim {0}</value>
+  </data>
+  <data name="MfRatioLine" xml:space="preserve">
+    <value>MF oranı {0}</value>
+  </data>
+  <data name="PerBox" xml:space="preserve">
+    <value>{0} / kutu</value>
+  </data>
+  <data name="TotalNet" xml:space="preserve">
+    <value>Net</value>
+  </data>
+  <data name="TotalVat" xml:space="preserve">
+    <value>KDV</value>
+  </data>
+  <data name="TotalEffective" xml:space="preserve">
+    <value>Etkin indirim</value>
+  </data>
+  <data name="TotalGross" xml:space="preserve">
+    <value>Genel toplam</value>
+  </data>
+  <data name="FxLine" xml:space="preserve">
+    <value>≈ {0} {1} · kur {2} · {3} · kaynak {4}</value>
+  </data>
+  <data name="QuantityModeNote" xml:space="preserve">
+    <value>Fiyatı depo uygular. Bu ülkede yürürlükte fiyat listesi yok; kurallar MF ve adet üzerinden çalışır.</value>
+  </data>
+  <data name="FormTitleCreate" xml:space="preserve">
+    <value>Yeni ön sipariş</value>
+  </data>
+  <data name="FormTitleEdit" xml:space="preserve">
+    <value>Ön sipariş</value>
+  </data>
+  <data name="FormTitleOrder" xml:space="preserve">
+    <value>Ön sipariş · {0}</value>
+  </data>
+  <data name="FormDescription" xml:space="preserve">
+    <value>Eczanenin siparişi depoya iletilmek üzere alınır; faturayı depo keser.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Listeye dön</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>Taslağı kaydet</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>Taslağı sil</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>Bu taslak silinsin mi? Numarası yeniden verilmez.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>Taslak kaydedildi.</value>
+  </data>
+  <data name="FromSystem" xml:space="preserve">
+    <value>Sistemden</value>
+  </data>
+  <data name="ModePricedBadge" xml:space="preserve">
+    <value>Fiyatlı</value>
+  </data>
+  <data name="ModeQuantityBadge" xml:space="preserve">
+    <value>Yalnız adet</value>
+  </data>
+  <data name="PriceSource" xml:space="preserve">
+    <value>Fiyat: {0} · {1} · {2} tarihinden geçerli</value>
+  </data>
+  <data name="PriceSourceShort" xml:space="preserve">
+    <value>Fiyat kaynağı: {0}</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>Eczacı alış</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>Depo fiyatı</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>Halka satış</value>
+  </data>
+  <data name="ChangeBannerTitle" xml:space="preserve">
+    <value>Değişiklik istendi:</value>
+  </data>
+  <data name="PharmacySection" xml:space="preserve">
+    <value>Eczane</value>
+  </data>
+  <data name="PharmacyPlaceholder" xml:space="preserve">
+    <value>Ad ya da koda göre eczane arayın</value>
+  </data>
+  <data name="LinesSection" xml:space="preserve">
+    <value>Ürünler</value>
+  </data>
+  <data name="LinesNotePriced" xml:space="preserve">
+    <value>Fiyat fiyat listesinden gelir, değiştirilemez.</value>
+  </data>
+  <data name="LinesNoteQuantity" xml:space="preserve">
+    <value>Yalnız adet ve MF; fiyatı depo uygular.</value>
+  </data>
+  <data name="AddLine" xml:space="preserve">
+    <value>Ürün ekle</value>
+  </data>
+  <data name="RemoveLine" xml:space="preserve">
+    <value>Satırı sil</value>
+  </data>
+  <data name="NoLinesYet" xml:space="preserve">
+    <value>Henüz ürün yok.</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>Ad ya da koda göre ürün arayın</value>
+  </data>
+  <data name="PreviousOrders" xml:space="preserve">
+    <value>Bu eczanenin önceki siparişleri</value>
+  </data>
+  <data name="PreviousOrdersNone" xml:space="preserve">
+    <value>Bu eczanenin önceki siparişi yok.</value>
+  </data>
+  <data name="LinesCount" xml:space="preserve">
+    <value>{0} satır</value>
+  </data>
+  <data name="DeliverySection" xml:space="preserve">
+    <value>Teslimat</value>
+  </data>
+  <data name="DepotPlaceholder" xml:space="preserve">
+    <value>Depo arayın</value>
+  </data>
+  <data name="DeliveryLabel" xml:space="preserve">
+    <value>Teslim tarihi</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Para birimi</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>Depoya not</value>
+  </data>
+  <data name="NotePlaceholder" xml:space="preserve">
+    <value>Depo nüshasında görünür (isteğe bağlı)</value>
+  </data>
+  <data name="SummarySection" xml:space="preserve">
+    <value>Sipariş özeti</value>
+  </data>
+  <data name="SummaryPending" xml:space="preserve">
+    <value>Toplamlar eczane ve ürün seçilince görünür.</value>
+  </data>
+  <data name="NeedTitle" xml:space="preserve">
+    <value>Onay gerekir mi?</value>
+  </data>
+  <data name="Need_yes" xml:space="preserve">
+    <value>Evet — sipariş onaycıya gider.</value>
+  </data>
+  <data name="Need_no" xml:space="preserve">
+    <value>Hayır — tüm sınırlar içinde, kendiliğinden onaylanır.</value>
+  </data>
+  <data name="Need_unknown" xml:space="preserve">
+    <value>Eczane ve ürün seçilince belli olur.</value>
+  </data>
+  <data name="Need_tenant_setting" xml:space="preserve">
+    <value>Kiracı ayarı her siparişi yöneticiye gönderir.</value>
+  </data>
+  <data name="Need_soft" xml:space="preserve">
+    <value>Bir satır yumuşak sınırı aşıyor.</value>
+  </data>
+  <data name="Approver_line" xml:space="preserve">
+    <value>Onaycı: {0}</value>
+  </data>
+  <data name="Approver_chain" xml:space="preserve">
+    <value>Onaycı: {0} (Reports to koltuğu boş — bir üst)</value>
+  </data>
+  <data name="Approver_none" xml:space="preserve">
+    <value>Pozisyonunuzun üstünde onaycı bulunamadı.</value>
+  </data>
+  <data name="Approver_unavailable" xml:space="preserve">
+    <value>Onaycı şu an gösterilemiyor; gönderimde yeniden bulunur.</value>
+  </data>
+  <data name="ApproverPosition" xml:space="preserve">
+    <value>Pozisyon: {0}</value>
+  </data>
+  <data name="SignatureSection" xml:space="preserve">
+    <value>Eczacı imzası</value>
+  </data>
+  <data name="SignerLabel" xml:space="preserve">
+    <value>Eczacının adı</value>
+  </data>
+  <data name="SignatureHint" xml:space="preserve">
+    <value>İmza için cihazı eczacıya verin.</value>
+  </data>
+  <data name="SignatureClear" xml:space="preserve">
+    <value>Temizle</value>
+  </data>
+  <data name="SignatureSave" xml:space="preserve">
+    <value>İmzayı kaydet</value>
+  </data>
+  <data name="SignatureSaved" xml:space="preserve">
+    <value>İmza kaydedildi.</value>
+  </data>
+  <data name="SignatureNone" xml:space="preserve">
+    <value>İmza yok.</value>
+  </data>
+  <data name="SignedBy" xml:space="preserve">
+    <value>{0} imzaladı · {1}</value>
+  </data>
+  <data name="SignedNote" xml:space="preserve">
+    <value>Sipariş belgesinin parçasıdır.</value>
+  </data>
+  <data name="Resign" xml:space="preserve">
+    <value>Yeniden imzalat</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Gönder</value>
+  </data>
+  <data name="Why_no_permission" xml:space="preserve">
+    <value>Ön sipariş gönderme yetkiniz yok.</value>
+  </data>
+  <data name="Why_no_lines" xml:space="preserve">
+    <value>En az bir ürün ekleyin.</value>
+  </data>
+  <data name="Why_hard" xml:space="preserve">
+    <value>Bir satır aşılamaz bir sınırı aşıyor.</value>
+  </data>
+  <data name="Why_no_depot" xml:space="preserve">
+    <value>Depoyu seçin.</value>
+  </data>
+  <data name="Why_no_signature" xml:space="preserve">
+    <value>Eczacı imzası yok.</value>
+  </data>
+  <data name="Why_unsaved" xml:space="preserve">
+    <value>Kaydedilmemiş değişiklik var: önce taslağı kaydedin.</value>
+  </data>
+  <data name="SubmittedPending" xml:space="preserve">
+    <value>Gönderildi: sipariş onay bekliyor.</value>
+  </data>
+  <data name="SubmittedApproved" xml:space="preserve">
+    <value>Gönderildi ve kendiliğinden onaylandı: depoya iletilecek.</value>
+  </data>
+  <data name="Lock_pending" xml:space="preserve">
+    <value>Sipariş onay bekliyor, değiştirilemez.</value>
+  </data>
+  <data name="Lock_sent" xml:space="preserve">
+    <value>Sipariş onaylandı; değiştirilemez. Değiştirmek için iptal edip yeni sipariş açın.</value>
+  </data>
+  <data name="Lock_rejected" xml:space="preserve">
+    <value>Sipariş reddedildi. Yeni bir siparişe kopyalayabilirsiniz.</value>
+  </data>
+  <data name="Lock_cancelled" xml:space="preserve">
+    <value>Sipariş iptal edildi. Yeni bir siparişe kopyalayabilirsiniz.</value>
+  </data>
+  <data name="Lock_not_owner" xml:space="preserve">
+    <value>Bu taslağı yalnız oluşturan temsilci değiştirebilir.</value>
+  </data>
+  <data name="CancelAndNew" xml:space="preserve">
+    <value>İptal et ve yeni sipariş aç</value>
+  </data>
+  <data name="CopyAndNew" xml:space="preserve">
+    <value>Kopyala ve yeni sipariş aç</value>
+  </data>
+  <data name="CancelOrder" xml:space="preserve">
+    <value>Siparişi iptal et</value>
+  </data>
+  <data name="CancelTitle" xml:space="preserve">
+    <value>Ön siparişi iptal et</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>Sipariş iletildiyse depoya ve eczaneye iptal e-postası gider. Gerekçeyi yazın.</value>
+  </data>
+  <data name="CancelConfirm" xml:space="preserve">
+    <value>Siparişi iptal et</value>
+  </data>
+  <data name="CancelledToast" xml:space="preserve">
+    <value>Ön sipariş iptal edildi.</value>
+  </data>
+  <data name="ErrQuantity" xml:space="preserve">
+    <value>Her ürünün en az 1 adedi olmalı.</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>MF'yi alım + bedelsiz olarak yazın, örneğin 10+2.</value>
+  </data>
+  <data name="ErrDiscount" xml:space="preserve">
+    <value>İskonto 0 ile 100 arasında (100 hariç), en çok bir ondalıkla olmalı.</value>
+  </data>
+  <data name="ErrRangeMissing" xml:space="preserve">
+    <value>Özel aralığın iki tarihini de seçin.</value>
+  </data>
+  <data name="ErrRangeOrder" xml:space="preserve">
+    <value>Başlangıç tarihi bitişten sonra olamaz.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>Bir sorun oluştu. Tekrar deneyin.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>Servis şu an ulaşılamıyor. Biraz sonra tekrar deneyin.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>Bunun için yetkiniz yok.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>Ön sipariş bulunamadı ya da görme yetkiniz yok.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>Bu arada başka biri değiştirdi. Yenileyip tekrar deneyin.</value>
+  </data>
+  <data name="DetailsTitle" xml:space="preserve">
+    <value>Ön sipariş ayrıntısı</value>
+  </data>
+  <data name="DetailsTitleOrder" xml:space="preserve">
+    <value>Ön sipariş {0}</value>
+  </data>
+  <data name="DetailsDescription" xml:space="preserve">
+    <value>Siparişin gönderildiği hâli ve zaman çizelgesi.</value>
+  </data>
+  <data name="StateSection" xml:space="preserve">
+    <value>İmza, onay ve iletim</value>
+  </data>
+  <data name="AutoApproved" xml:space="preserve">
+    <value>Kendiliğinden onaylandı (kiracı ayarı)</value>
+  </data>
+  <data name="Decision_approve" xml:space="preserve">
+    <value>{0} onayladı · {1}</value>
+  </data>
+  <data name="Decision_reject" xml:space="preserve">
+    <value>{0} reddetti · {1}</value>
+  </data>
+  <data name="Decision_request_changes" xml:space="preserve">
+    <value>{0} değişiklik istedi · {1}</value>
+  </data>
+  <data name="AwaitingApprover" xml:space="preserve">
+    <value>Onay bekliyor: {0}</value>
+  </data>
+  <data name="AwaitingApproverUnknown" xml:space="preserve">
+    <value>Onay bekliyor (onaycı belirleniyor).</value>
+  </data>
+  <data name="TransmittedAt" xml:space="preserve">
+    <value>{0} deposuna iletildi · {1}</value>
+  </data>
+  <data name="TransmissionFailedLine" xml:space="preserve">
+    <value>Depoya iletim başarısız; kendiliğinden yeniden denenir.</value>
+  </data>
+  <data name="CancelledLine" xml:space="preserve">
+    <value>İptal edildi · {0}</value>
+  </data>
+  <data name="PartialLine" xml:space="preserve">
+    <value>{0}: {1} / {2} kutu teslim</value>
+  </data>
+  <data name="RetryTransmission" xml:space="preserve">
+    <value>Yeniden ilet</value>
+  </data>
+  <data name="RetryToast" xml:space="preserve">
+    <value>Depoya yeniden iletiliyor.</value>
+  </data>
+  <data name="ApproveTitle" xml:space="preserve">
+    <value>Ön sipariş onayı</value>
+  </data>
+  <data name="ApproveTitleOrder" xml:space="preserve">
+    <value>Ön sipariş onayı · {0}</value>
+  </data>
+  <data name="ApproveDescription" xml:space="preserve">
+    <value>Kuralı aşan satırları inceleyin; onaylanan sipariş depoya PDF olarak iletilir.</value>
+  </data>
+  <data name="WhyMeTitle" xml:space="preserve">
+    <value>Neden onayımda?</value>
+  </data>
+  <data name="WhyMeNone" xml:space="preserve">
+    <value>Kayıtlı bir neden yok.</value>
+  </data>
+  <data name="Why_me_tenant" xml:space="preserve">
+    <value>Kiracı ayarı: her ön sipariş yöneticiye gider.</value>
+  </data>
+  <data name="Why_me_soft" xml:space="preserve">
+    <value>Bir satır yumuşak sınırı aşıyor:</value>
+  </data>
+  <data name="YouAreReportsTo" xml:space="preserve">
+    <value>Siz {0} adlı temsilcinin Reports to pozisyonundasınız ({1}).</value>
+  </data>
+  <data name="LimitsNote" xml:space="preserve">
+    <value>Her hücrede girilen değer ve altında kural sınırı.</value>
+  </data>
+  <data name="LimitSoft" xml:space="preserve">
+    <value>sınır {0}</value>
+  </data>
+  <data name="LimitHard" xml:space="preserve">
+    <value>tavan {0}</value>
+  </data>
+  <data name="DecisionTitle" xml:space="preserve">
+    <value>Karar</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Onayla</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="RequestChanges" xml:space="preserve">
+    <value>Değişiklik iste</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>Reddet ve değişiklik iste için gerekçe zorunludur. Onaydan sonra sipariş değiştirilemez.</value>
+  </data>
+  <data name="RejectTitle" xml:space="preserve">
+    <value>Ön siparişi reddet</value>
+  </data>
+  <data name="RejectText" xml:space="preserve">
+    <value>Gerekçe temsilciye bildirilir. Reddedilen sipariş yeniden gönderilemez; kopyalanabilir.</value>
+  </data>
+  <data name="ChangesTitle" xml:space="preserve">
+    <value>Değişiklik iste</value>
+  </data>
+  <data name="ChangesText" xml:space="preserve">
+    <value>Sipariş temsilciye taslak olarak döner; eczacı yeniden imzalar.</value>
+  </data>
+  <data name="ReasonLabel" xml:space="preserve">
+    <value>Gerekçe</value>
+  </data>
+  <data name="ReasonPlaceholder" xml:space="preserve">
+    <value>Gerekçe (zorunlu)</value>
+  </data>
+  <data name="Decided_approve" xml:space="preserve">
+    <value>Onaylandı. Sipariş depoya iletiliyor.</value>
+  </data>
+  <data name="Decided_reject" xml:space="preserve">
+    <value>Reddedildi. Gerekçe temsilciye bildirildi.</value>
+  </data>
+  <data name="Decided_request_changes" xml:space="preserve">
+    <value>Değişiklik istendi. Sipariş temsilciye döndü.</value>
+  </data>
+  <data name="NotYourDecision" xml:space="preserve">
+    <value>Bu ön siparişe karar veremezsiniz (sizi beklemiyor).</value>
+  </data>
+  <data name="AlreadyDecided" xml:space="preserve">
+    <value>Bu ön sipariş artık onay beklemiyor: {0}.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>Son 6 ay</value>
+  </data>
+  <data name="HistoryTitleOf" xml:space="preserve">
+    <value>{0} · son 6 ay</value>
+  </data>
+  <data name="HistoryNote" xml:space="preserve">
+    <value>Eczanenin aylara göre gönderilmiş siparişleri (her para birimi ayrı).</value>
+  </data>
+  <data name="ColMonth" xml:space="preserve">
+    <value>Ay</value>
+  </data>
+  <data name="ColOrders" xml:space="preserve">
+    <value>Sipariş</value>
+  </data>
+  <data name="ColBoxes" xml:space="preserve">
+    <value>Kutu</value>
+  </data>
+  <data name="LinkTitle" xml:space="preserve">
+    <value>Ön sipariş onay bağlantısı</value>
+  </data>
+  <data name="LinkDescription" xml:space="preserve">
+    <value>E-postadaki onay bağlantısını açtınız.</value>
+  </data>
+  <data name="LinkOnce" xml:space="preserve">
+    <value>Bu bağlantı bir kez kullanılabilir · süresi {0} saat</value>
+  </data>
+  <data name="LinkUsedNow" xml:space="preserve">
+    <value>Bu bağlantı kullanıldı ve artık geçersiz.</value>
+  </data>
+  <data name="Link_consumed" xml:space="preserve">
+    <value>Bu bağlantı zaten kullanıldı</value>
+  </data>
+  <data name="Link_consumed_text" xml:space="preserve">
+    <value>Bununla zaten karar verildi. Sonucu görmek için siparişi ön sipariş listesinden açın.</value>
+  </data>
+  <data name="Link_expired" xml:space="preserve">
+    <value>Bu bağlantının süresi doldu</value>
+  </data>
+  <data name="Link_expired_text" xml:space="preserve">
+    <value>Görev Merkezi'nden ya da ön sipariş listesinden karar verin.</value>
+  </data>
+  <data name="Link_superseded" xml:space="preserve">
+    <value>Bu bağlantı artık geçerli değil</value>
+  </data>
+  <data name="Link_superseded_text" xml:space="preserve">
+    <value>Sipariş e-postadan sonra değişti (başka yerden karar verildi, iptal edildi ya da geri gönderildi).</value>
+  </data>
+  <data name="Link_notfound" xml:space="preserve">
+    <value>Bu bağlantı açılamıyor</value>
+  </data>
+  <data name="Link_notfound_text" xml:space="preserve">
+    <value>Bağlantı geçerli değil ya da size ait değil.</value>
+  </data>
+  <data name="DocumentTitle" xml:space="preserve">
+    <value>Depoya giden belge</value>
+  </data>
+  <data name="DocumentTitleOrder" xml:space="preserve">
+    <value>Depoya giden belge · {0}</value>
+  </data>
+  <data name="DocumentDescription" xml:space="preserve">
+    <value>Onaydan sonra depo e-posta adresine PDF olarak gider; eczaneye bir kopya.</value>
+  </data>
+  <data name="CopyGroupLabel" xml:space="preserve">
+    <value>Nüsha</value>
+  </data>
+  <data name="CopyDepot" xml:space="preserve">
+    <value>Depo nüshası</value>
+  </data>
+  <data name="CopyPharmacy" xml:space="preserve">
+    <value>Eczane kopyası</value>
+  </data>
+  <data name="DownloadPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="TrailTitle" xml:space="preserve">
+    <value>İletim izi:</value>
+  </data>
+  <data name="TrailNone" xml:space="preserve">
+    <value>henüz iletilmedi</value>
+  </data>
+  <data name="TrailAttempt" xml:space="preserve">
+    <value>Deneme {0} · {1} · {2}</value>
+  </data>
+  <data name="Trail_sent" xml:space="preserve">
+    <value>iletildi</value>
+  </data>
+  <data name="Trail_failed" xml:space="preserve">
+    <value>başarısız</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Ön sipariş ayarları</value>
+  </data>
+  <data name="SettingsDescription" xml:space="preserve">
+    <value>Bu kiracıda ön siparişlerin nasıl onaylanacağı, fiyatlanacağı, numaralanacağı ve iletileceği.</value>
+  </data>
+  <data name="ApprovalSection" xml:space="preserve">
+    <value>Onay</value>
+  </data>
+  <data name="Mode_always" xml:space="preserve">
+    <value>Her zaman yönetici onayı</value>
+  </data>
+  <data name="Mode_always_help" xml:space="preserve">
+    <value>Gönderilen her ön sipariş temsilcinin yöneticisine gider (varsayılan).</value>
+  </data>
+  <data name="Mode_auto" xml:space="preserve">
+    <value>Sınır içinde kendiliğinden</value>
+  </data>
+  <data name="Mode_auto_help" xml:space="preserve">
+    <value>Tüm sınırlar içindeki sipariş hemen onaylanıp iletilir; yumuşak sınırı aşan yine yöneticiye gider.</value>
+  </data>
+  <data name="TtlLabel" xml:space="preserve">
+    <value>Onay bağlantısı süresi (saat)</value>
+  </data>
+  <data name="TtlHelp" xml:space="preserve">
+    <value>12–168 saat, varsayılan 48.</value>
+  </data>
+  <data name="RetryLabel" xml:space="preserve">
+    <value>Kendiliğinden iletim denemesi</value>
+  </data>
+  <data name="RetryHelp" xml:space="preserve">
+    <value>0–10; sonrasında satış operasyonu elle yeniden iletir.</value>
+  </data>
+  <data name="TierSection" xml:space="preserve">
+    <value>Ülkeye göre fiyat kademesi</value>
+  </data>
+  <data name="TierHelp" xml:space="preserve">
+    <value>Ön siparişin listedeki hangi fiyatı kullanacağı; satırı olmayan ülke eczacı alış fiyatını kullanır.</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>Fiyat kademesi</value>
+  </data>
+  <data name="TierNone" xml:space="preserve">
+    <value>Tüm ülkeler eczacı alış fiyatını kullanır.</value>
+  </data>
+  <data name="AddTier" xml:space="preserve">
+    <value>Ülke ekle</value>
+  </data>
+  <data name="PrefixSection" xml:space="preserve">
+    <value>Şirkete göre sipariş numarası öneki</value>
+  </data>
+  <data name="PrefixHelp" xml:space="preserve">
+    <value>2–5 harf (MG-ORD-000123). Bir sipariş numaralandırmış önek değiştirilemez ya da silinemez.</value>
+  </data>
+  <data name="PrefixNone" xml:space="preserve">
+    <value>Henüz önek yok: öneki olmayan şirketin temsilcileri ön sipariş açamaz.</value>
+  </data>
+  <data name="AddPrefix" xml:space="preserve">
+    <value>Şirket ekle</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>Şirket</value>
+  </data>
+  <data name="PrefixLabel" xml:space="preserve">
+    <value>Önek</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>Kaldır</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Ayarları kaydet</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>Ayarlar kaydedildi.</value>
+  </data>
+  <data name="SettingsDefault" xml:space="preserve">
+    <value>Varsayılanlar kullanılıyor (henüz kayıt yok).</value>
+  </data>
+  <data name="SettingsUpdated" xml:space="preserve">
+    <value>Son değişiklik: {0} · {1}</value>
+  </data>
+  <data name="ErrTtl" xml:space="preserve">
+    <value>Bağlantı süresi 12–168 saat olmalı.</value>
+  </data>
+  <data name="ErrRetry" xml:space="preserve">
+    <value>Deneme sayısı 0–10 olmalı.</value>
+  </data>
+  <data name="ErrPrefix" xml:space="preserve">
+    <value>Her önekte şirket ve 2–5 harf (A–Z) olmalı.</value>
+  </data>
+  <data name="ErrTierDuplicate" xml:space="preserve">
+    <value>Bir ülke yalnız bir kez yer alabilir.</value>
+  </data>
+</root>

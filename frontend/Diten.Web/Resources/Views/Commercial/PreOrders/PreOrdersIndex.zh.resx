@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>预订单</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>转交经销商的药店订单；发票由经销商开具。</value>
+  </data>
+  <data name="PeriodLabel" xml:space="preserve">
+    <value>期间</value>
+  </data>
+  <data name="PeriodAll" xml:space="preserve">
+    <value>全部日期</value>
+  </data>
+  <data name="PeriodLast7" xml:space="preserve">
+    <value>最近 7 天</value>
+  </data>
+  <data name="PeriodLast30" xml:space="preserve">
+    <value>最近 30 天</value>
+  </data>
+  <data name="PeriodMonth" xml:space="preserve">
+    <value>本月</value>
+  </data>
+  <data name="PeriodCustom" xml:space="preserve">
+    <value>自定义范围</value>
+  </data>
+  <data name="CustomFrom" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="CustomTo" xml:space="preserve">
+    <value>至</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>全部状态</value>
+  </data>
+  <data name="RepLabel" xml:space="preserve">
+    <value>代表</value>
+  </data>
+  <data name="RepAll" xml:space="preserve">
+    <value>全部代表</value>
+  </data>
+  <data name="PharmacyLabel" xml:space="preserve">
+    <value>药店</value>
+  </data>
+  <data name="DepotLabel" xml:space="preserve">
+    <value>经销商 / 分销商</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>国家</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>全部国家</value>
+  </data>
+  <data name="AwaitingLabel" xml:space="preserve">
+    <value>待我审批</value>
+  </data>
+  <data name="AwaitingAll" xml:space="preserve">
+    <value>全部订单</value>
+  </data>
+  <data name="AwaitingOption" xml:space="preserve">
+    <value>待我审批（{0}）</value>
+  </data>
+  <data name="AwaitingYou" xml:space="preserve">
+    <value>等待您的决定</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>请至少输入 2 个字符</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>正在搜索…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>未找到结果</value>
+  </data>
+  <data name="ColCode" xml:space="preserve">
+    <value>订单号</value>
+  </data>
+  <data name="ColDate" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="ColPharmacy" xml:space="preserve">
+    <value>药店</value>
+  </data>
+  <data name="ColDepot" xml:space="preserve">
+    <value>经销商</value>
+  </data>
+  <data name="ColRep" xml:space="preserve">
+    <value>代表</value>
+  </data>
+  <data name="ColLines" xml:space="preserve">
+    <value>行数</value>
+  </data>
+  <data name="ColTotal" xml:space="preserve">
+    <value>合计</value>
+  </data>
+  <data name="ColLocal" xml:space="preserve">
+    <value>本币等值</value>
+  </data>
+  <data name="ColEffective" xml:space="preserve">
+    <value>实际折扣</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="ColRule" xml:space="preserve">
+    <value>规则</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>快速查看</value>
+  </data>
+  <data name="DrawerTitle" xml:space="preserve">
+    <value>预订单</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="NewPreOrder" xml:space="preserve">
+    <value>新建预订单</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>没有预订单</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>没有符合筛选条件的预订单。</value>
+  </data>
+  <data name="QuantityModeShort" xml:space="preserve">
+    <value>仅数量</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>单据</value>
+  </data>
+  <data name="OpenApproval" xml:space="preserve">
+    <value>打开审批</value>
+  </data>
+  <data name="OpenEdit" xml:space="preserve">
+    <value>打开订单</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>订单详情</value>
+  </data>
+  <data name="DepotResponseTitle" xml:space="preserve">
+    <value>经销商答复 · 手动登记</value>
+  </data>
+  <data name="DR_delivered" xml:space="preserve">
+    <value>已交货</value>
+  </data>
+  <data name="DR_partial" xml:space="preserve">
+    <value>部分交货</value>
+  </data>
+  <data name="DepotResponseNote" xml:space="preserve">
+    <value>备注（可选）</value>
+  </data>
+  <data name="DepotResponseSave" xml:space="preserve">
+    <value>登记答复</value>
+  </data>
+  <data name="DepotResponseSaved" xml:space="preserve">
+    <value>已登记经销商答复。</value>
+  </data>
+  <data name="OfQuantity" xml:space="preserve">
+    <value>共 {0} 盒</value>
+  </data>
+  <data name="St_draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="St_pending_approval" xml:space="preserve">
+    <value>待审批</value>
+  </data>
+  <data name="St_approved" xml:space="preserve">
+    <value>已审批</value>
+  </data>
+  <data name="St_transmitted" xml:space="preserve">
+    <value>已转交经销商</value>
+  </data>
+  <data name="St_transmission_failed" xml:space="preserve">
+    <value>转交失败</value>
+  </data>
+  <data name="St_rejected" xml:space="preserve">
+    <value>已拒绝</value>
+  </data>
+  <data name="St_cancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="St_unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="Ev_created" xml:space="preserve">
+    <value>已创建草稿</value>
+  </data>
+  <data name="Ev_updated" xml:space="preserve">
+    <value>已保存草稿</value>
+  </data>
+  <data name="Ev_discarded" xml:space="preserve">
+    <value>已放弃草稿</value>
+  </data>
+  <data name="Ev_signature_captured" xml:space="preserve">
+    <value>药剂师已签名</value>
+  </data>
+  <data name="Ev_signature_cleared" xml:space="preserve">
+    <value>签名已清除（订单已更改）</value>
+  </data>
+  <data name="Ev_submitted" xml:space="preserve">
+    <value>已提交</value>
+  </data>
+  <data name="Ev_auto_approved" xml:space="preserve">
+    <value>已自动审批（租户设置）</value>
+  </data>
+  <data name="Ev_approval_requested" xml:space="preserve">
+    <value>已请求审批</value>
+  </data>
+  <data name="Ev_approver_unresolved" xml:space="preserve">
+    <value>暂时无法确定审批人</value>
+  </data>
+  <data name="Ev_approved" xml:space="preserve">
+    <value>已审批</value>
+  </data>
+  <data name="Ev_rejected" xml:space="preserve">
+    <value>已拒绝</value>
+  </data>
+  <data name="Ev_changes_requested" xml:space="preserve">
+    <value>已要求修改</value>
+  </data>
+  <data name="Ev_transmission_attempted" xml:space="preserve">
+    <value>正在转交经销商</value>
+  </data>
+  <data name="Ev_transmitted" xml:space="preserve">
+    <value>已转交经销商</value>
+  </data>
+  <data name="Ev_transmission_failed" xml:space="preserve">
+    <value>转交失败</value>
+  </data>
+  <data name="Ev_cancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="Ev_depot_response_recorded" xml:space="preserve">
+    <value>已登记经销商答复</value>
+  </data>
+  <data name="Ev_copied_from" xml:space="preserve">
+    <value>复制自以前的订单</value>
+  </data>
+  <data name="Ev_unknown" xml:space="preserve">
+    <value>事件</value>
+  </data>
+  <data name="TimelineTitle" xml:space="preserve">
+    <value>状态时间线</value>
+  </data>
+  <data name="TimelineEmpty" xml:space="preserve">
+    <value>尚无任何事件。</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>理由：{0}</value>
+  </data>
+  <data name="NoteLine" xml:space="preserve">
+    <value>备注：{0}</value>
+  </data>
+  <data name="FactCode" xml:space="preserve">
+    <value>订单号</value>
+  </data>
+  <data name="FactDate" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="FactPharmacy" xml:space="preserve">
+    <value>药店</value>
+  </data>
+  <data name="FactDepot" xml:space="preserve">
+    <value>经销商</value>
+  </data>
+  <data name="FactRep" xml:space="preserve">
+    <value>代表</value>
+  </data>
+  <data name="FactDelivery" xml:space="preserve">
+    <value>交货日期</value>
+  </data>
+  <data name="FactSeller" xml:space="preserve">
+    <value>销售公司</value>
+  </data>
+  <data name="FactMode" xml:space="preserve">
+    <value>价格模式</value>
+  </data>
+  <data name="ModePriced" xml:space="preserve">
+    <value>含价格 · {0}</value>
+  </data>
+  <data name="ModeQuantity" xml:space="preserve">
+    <value>仅数量</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>数量</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>赠品</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>折扣 %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>单价</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>增值税</value>
+  </data>
+  <data name="ColLineTotal" xml:space="preserve">
+    <value>行合计</value>
+  </data>
+  <data name="ColCombined" xml:space="preserve">
+    <value>综合</value>
+  </data>
+  <data name="GtinShort" xml:space="preserve">
+    <value>GTIN {0}</value>
+  </data>
+  <data name="FreeBoxes" xml:space="preserve">
+    <value>+{0} 盒赠品</value>
+  </data>
+  <data name="CombinedLine" xml:space="preserve">
+    <value>综合折扣 {0}</value>
+  </data>
+  <data name="MfRatioLine" xml:space="preserve">
+    <value>赠品比例 {0}</value>
+  </data>
+  <data name="PerBox" xml:space="preserve">
+    <value>{0} / 盒</value>
+  </data>
+  <data name="TotalNet" xml:space="preserve">
+    <value>净额</value>
+  </data>
+  <data name="TotalVat" xml:space="preserve">
+    <value>增值税</value>
+  </data>
+  <data name="TotalEffective" xml:space="preserve">
+    <value>实际折扣</value>
+  </data>
+  <data name="TotalGross" xml:space="preserve">
+    <value>总计</value>
+  </data>
+  <data name="FxLine" xml:space="preserve">
+    <value>≈ {0} {1} · 汇率 {2} · {3} · 来源 {4}</value>
+  </data>
+  <data name="QuantityModeNote" xml:space="preserve">
+    <value>价格由经销商确定。该国家没有生效的价目表；规则按赠品和数量执行。</value>
+  </data>
+  <data name="FormTitleCreate" xml:space="preserve">
+    <value>新建预订单</value>
+  </data>
+  <data name="FormTitleEdit" xml:space="preserve">
+    <value>预订单</value>
+  </data>
+  <data name="FormTitleOrder" xml:space="preserve">
+    <value>预订单 · {0}</value>
+  </data>
+  <data name="FormDescription" xml:space="preserve">
+    <value>记录药店订单以转交经销商；发票由经销商开具。</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>返回列表</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>保存草稿</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>放弃草稿</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>放弃此草稿？其编号不会再次使用。</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>草稿已保存。</value>
+  </data>
+  <data name="FromSystem" xml:space="preserve">
+    <value>来自系统</value>
+  </data>
+  <data name="ModePricedBadge" xml:space="preserve">
+    <value>含价格</value>
+  </data>
+  <data name="ModeQuantityBadge" xml:space="preserve">
+    <value>仅数量</value>
+  </data>
+  <data name="PriceSource" xml:space="preserve">
+    <value>价格：{0} · {1} · 自 {2} 起生效</value>
+  </data>
+  <data name="PriceSourceShort" xml:space="preserve">
+    <value>价格来源：{0}</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>药剂师采购价</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>经销商价</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>零售价</value>
+  </data>
+  <data name="ChangeBannerTitle" xml:space="preserve">
+    <value>已要求修改：</value>
+  </data>
+  <data name="PharmacySection" xml:space="preserve">
+    <value>药店</value>
+  </data>
+  <data name="PharmacyPlaceholder" xml:space="preserve">
+    <value>按名称或代码搜索药店</value>
+  </data>
+  <data name="LinesSection" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="LinesNotePriced" xml:space="preserve">
+    <value>价格来自价目表，不能修改。</value>
+  </data>
+  <data name="LinesNoteQuantity" xml:space="preserve">
+    <value>仅数量和赠品；价格由经销商确定。</value>
+  </data>
+  <data name="AddLine" xml:space="preserve">
+    <value>添加产品</value>
+  </data>
+  <data name="RemoveLine" xml:space="preserve">
+    <value>删除该行</value>
+  </data>
+  <data name="NoLinesYet" xml:space="preserve">
+    <value>尚无产品。</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>按名称或代码搜索产品</value>
+  </data>
+  <data name="PreviousOrders" xml:space="preserve">
+    <value>该药店以往订单</value>
+  </data>
+  <data name="PreviousOrdersNone" xml:space="preserve">
+    <value>该药店没有以往订单。</value>
+  </data>
+  <data name="LinesCount" xml:space="preserve">
+    <value>{0} 行</value>
+  </data>
+  <data name="DeliverySection" xml:space="preserve">
+    <value>交货</value>
+  </data>
+  <data name="DepotPlaceholder" xml:space="preserve">
+    <value>搜索经销商</value>
+  </data>
+  <data name="DeliveryLabel" xml:space="preserve">
+    <value>交货日期</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>货币</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>给经销商的备注</value>
+  </data>
+  <data name="NotePlaceholder" xml:space="preserve">
+    <value>显示在经销商联上（可选）</value>
+  </data>
+  <data name="SummarySection" xml:space="preserve">
+    <value>订单摘要</value>
+  </data>
+  <data name="SummaryPending" xml:space="preserve">
+    <value>选择药店和产品后显示合计。</value>
+  </data>
+  <data name="NeedTitle" xml:space="preserve">
+    <value>需要审批吗？</value>
+  </data>
+  <data name="Need_yes" xml:space="preserve">
+    <value>是 — 订单将提交审批人。</value>
+  </data>
+  <data name="Need_no" xml:space="preserve">
+    <value>否 — 在所有限额内，自动审批。</value>
+  </data>
+  <data name="Need_unknown" xml:space="preserve">
+    <value>选择药店和产品后确定。</value>
+  </data>
+  <data name="Need_tenant_setting" xml:space="preserve">
+    <value>租户设置要求每个订单都由经理审批。</value>
+  </data>
+  <data name="Need_soft" xml:space="preserve">
+    <value>有明细行超出软限额。</value>
+  </data>
+  <data name="Approver_line" xml:space="preserve">
+    <value>审批人：{0}</value>
+  </data>
+  <data name="Approver_chain" xml:space="preserve">
+    <value>审批人：{0}（直属上级岗位空缺 — 上移一级）</value>
+  </data>
+  <data name="Approver_none" xml:space="preserve">
+    <value>在您的岗位之上找不到审批人。</value>
+  </data>
+  <data name="Approver_unavailable" xml:space="preserve">
+    <value>暂时无法显示审批人；发送时将重新确定。</value>
+  </data>
+  <data name="ApproverPosition" xml:space="preserve">
+    <value>岗位：{0}</value>
+  </data>
+  <data name="SignatureSection" xml:space="preserve">
+    <value>药剂师签名</value>
+  </data>
+  <data name="SignerLabel" xml:space="preserve">
+    <value>药剂师姓名</value>
+  </data>
+  <data name="SignatureHint" xml:space="preserve">
+    <value>请将设备交给药剂师在此签名。</value>
+  </data>
+  <data name="SignatureClear" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="SignatureSave" xml:space="preserve">
+    <value>保存签名</value>
+  </data>
+  <data name="SignatureSaved" xml:space="preserve">
+    <value>签名已保存。</value>
+  </data>
+  <data name="SignatureNone" xml:space="preserve">
+    <value>未签名。</value>
+  </data>
+  <data name="SignedBy" xml:space="preserve">
+    <value>由 {0} 签名 · {1}</value>
+  </data>
+  <data name="SignedNote" xml:space="preserve">
+    <value>属于订单单据的一部分。</value>
+  </data>
+  <data name="Resign" xml:space="preserve">
+    <value>重新签名</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>发送</value>
+  </data>
+  <data name="Why_no_permission" xml:space="preserve">
+    <value>您无权发送预订单。</value>
+  </data>
+  <data name="Why_no_lines" xml:space="preserve">
+    <value>请至少添加一个产品。</value>
+  </data>
+  <data name="Why_hard" xml:space="preserve">
+    <value>有明细行超出不可超越的限额。</value>
+  </data>
+  <data name="Why_no_depot" xml:space="preserve">
+    <value>请选择经销商。</value>
+  </data>
+  <data name="Why_no_signature" xml:space="preserve">
+    <value>缺少药剂师签名。</value>
+  </data>
+  <data name="Why_unsaved" xml:space="preserve">
+    <value>有未保存的更改：请先保存草稿。</value>
+  </data>
+  <data name="SubmittedPending" xml:space="preserve">
+    <value>已发送：订单等待审批。</value>
+  </data>
+  <data name="SubmittedApproved" xml:space="preserve">
+    <value>已发送并自动审批：将转交经销商。</value>
+  </data>
+  <data name="Lock_pending" xml:space="preserve">
+    <value>订单正在等待审批，不能修改。</value>
+  </data>
+  <data name="Lock_sent" xml:space="preserve">
+    <value>订单已审批，不能修改。如需修改，请取消并新建订单。</value>
+  </data>
+  <data name="Lock_rejected" xml:space="preserve">
+    <value>订单已被拒绝。可以复制为新订单。</value>
+  </data>
+  <data name="Lock_cancelled" xml:space="preserve">
+    <value>订单已取消。可以复制为新订单。</value>
+  </data>
+  <data name="Lock_not_owner" xml:space="preserve">
+    <value>只有创建此草稿的代表可以修改。</value>
+  </data>
+  <data name="CancelAndNew" xml:space="preserve">
+    <value>取消并新建订单</value>
+  </data>
+  <data name="CopyAndNew" xml:space="preserve">
+    <value>复制并新建订单</value>
+  </data>
+  <data name="CancelOrder" xml:space="preserve">
+    <value>取消订单</value>
+  </data>
+  <data name="CancelTitle" xml:space="preserve">
+    <value>取消预订单</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>如订单已转交，经销商和药店会收到取消邮件。请填写理由。</value>
+  </data>
+  <data name="CancelConfirm" xml:space="preserve">
+    <value>取消订单</value>
+  </data>
+  <data name="CancelledToast" xml:space="preserve">
+    <value>预订单已取消。</value>
+  </data>
+  <data name="ErrQuantity" xml:space="preserve">
+    <value>每个产品数量至少为 1。</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>赠品请按“购买+赠送”填写，例如 10+2。</value>
+  </data>
+  <data name="ErrDiscount" xml:space="preserve">
+    <value>折扣必须大于等于 0 且小于 100，最多一位小数。</value>
+  </data>
+  <data name="ErrRangeMissing" xml:space="preserve">
+    <value>请选择自定义范围的两个日期。</value>
+  </data>
+  <data name="ErrRangeOrder" xml:space="preserve">
+    <value>开始日期不能晚于结束日期。</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>出现问题，请重试。</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>服务暂时无法访问，请稍后重试。</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>您没有此权限。</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>未找到预订单，或您无权查看。</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>其他人在此期间已修改。请刷新后重试。</value>
+  </data>
+  <data name="DetailsTitle" xml:space="preserve">
+    <value>预订单详情</value>
+  </data>
+  <data name="DetailsTitleOrder" xml:space="preserve">
+    <value>预订单 {0}</value>
+  </data>
+  <data name="DetailsDescription" xml:space="preserve">
+    <value>订单提交时的内容及其时间线。</value>
+  </data>
+  <data name="StateSection" xml:space="preserve">
+    <value>签名、审批与转交</value>
+  </data>
+  <data name="AutoApproved" xml:space="preserve">
+    <value>已自动审批（租户设置）</value>
+  </data>
+  <data name="Decision_approve" xml:space="preserve">
+    <value>由 {0} 审批 · {1}</value>
+  </data>
+  <data name="Decision_reject" xml:space="preserve">
+    <value>由 {0} 拒绝 · {1}</value>
+  </data>
+  <data name="Decision_request_changes" xml:space="preserve">
+    <value>由 {0} 要求修改 · {1}</value>
+  </data>
+  <data name="AwaitingApprover" xml:space="preserve">
+    <value>等待：{0}</value>
+  </data>
+  <data name="AwaitingApproverUnknown" xml:space="preserve">
+    <value>等待审批（正在确定审批人）。</value>
+  </data>
+  <data name="TransmittedAt" xml:space="preserve">
+    <value>已转交 {0} · {1}</value>
+  </data>
+  <data name="TransmissionFailedLine" xml:space="preserve">
+    <value>转交经销商失败；将自动重试。</value>
+  </data>
+  <data name="CancelledLine" xml:space="preserve">
+    <value>已取消 · {0}</value>
+  </data>
+  <data name="PartialLine" xml:space="preserve">
+    <value>{0}：已交 {1} / {2} 盒</value>
+  </data>
+  <data name="RetryTransmission" xml:space="preserve">
+    <value>重新转交</value>
+  </data>
+  <data name="RetryToast" xml:space="preserve">
+    <value>正在重新转交经销商。</value>
+  </data>
+  <data name="ApproveTitle" xml:space="preserve">
+    <value>预订单审批</value>
+  </data>
+  <data name="ApproveTitleOrder" xml:space="preserve">
+    <value>预订单审批 · {0}</value>
+  </data>
+  <data name="ApproveDescription" xml:space="preserve">
+    <value>请审查超出规则的明细行；审批通过的订单将以 PDF 转交经销商。</value>
+  </data>
+  <data name="WhyMeTitle" xml:space="preserve">
+    <value>为什么由我审批？</value>
+  </data>
+  <data name="WhyMeNone" xml:space="preserve">
+    <value>没有记录原因。</value>
+  </data>
+  <data name="Why_me_tenant" xml:space="preserve">
+    <value>租户设置：每个预订单都由经理审批。</value>
+  </data>
+  <data name="Why_me_soft" xml:space="preserve">
+    <value>有明细行超出软限额：</value>
+  </data>
+  <data name="YouAreReportsTo" xml:space="preserve">
+    <value>您是 {0} 的直属上级岗位（{1}）。</value>
+  </data>
+  <data name="LimitsNote" xml:space="preserve">
+    <value>每个单元格：输入值，下方为规则限额。</value>
+  </data>
+  <data name="LimitSoft" xml:space="preserve">
+    <value>限额 {0}</value>
+  </data>
+  <data name="LimitHard" xml:space="preserve">
+    <value>上限 {0}</value>
+  </data>
+  <data name="DecisionTitle" xml:space="preserve">
+    <value>决定</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>审批通过</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="RequestChanges" xml:space="preserve">
+    <value>要求修改</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>拒绝和要求修改必须填写理由。审批后订单不能修改。</value>
+  </data>
+  <data name="RejectTitle" xml:space="preserve">
+    <value>拒绝预订单</value>
+  </data>
+  <data name="RejectText" xml:space="preserve">
+    <value>理由将告知代表。被拒绝的订单不能再次发送，但可以复制。</value>
+  </data>
+  <data name="ChangesTitle" xml:space="preserve">
+    <value>要求修改</value>
+  </data>
+  <data name="ChangesText" xml:space="preserve">
+    <value>订单将以草稿退回代表；药剂师需重新签名。</value>
+  </data>
+  <data name="ReasonLabel" xml:space="preserve">
+    <value>理由</value>
+  </data>
+  <data name="ReasonPlaceholder" xml:space="preserve">
+    <value>理由（必填）</value>
+  </data>
+  <data name="Decided_approve" xml:space="preserve">
+    <value>已审批通过。订单正在转交经销商。</value>
+  </data>
+  <data name="Decided_reject" xml:space="preserve">
+    <value>已拒绝。理由已告知代表。</value>
+  </data>
+  <data name="Decided_request_changes" xml:space="preserve">
+    <value>已要求修改。订单已退回代表。</value>
+  </data>
+  <data name="NotYourDecision" xml:space="preserve">
+    <value>您不能审批此预订单（不在等待您处理）。</value>
+  </data>
+  <data name="AlreadyDecided" xml:space="preserve">
+    <value>此预订单已不在待审批状态：{0}。</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>最近 6 个月</value>
+  </data>
+  <data name="HistoryTitleOf" xml:space="preserve">
+    <value>{0} · 最近 6 个月</value>
+  </data>
+  <data name="HistoryNote" xml:space="preserve">
+    <value>药店每月已提交订单（各货币分开）。</value>
+  </data>
+  <data name="ColMonth" xml:space="preserve">
+    <value>月份</value>
+  </data>
+  <data name="ColOrders" xml:space="preserve">
+    <value>订单</value>
+  </data>
+  <data name="ColBoxes" xml:space="preserve">
+    <value>盒数</value>
+  </data>
+  <data name="LinkTitle" xml:space="preserve">
+    <value>预订单审批链接</value>
+  </data>
+  <data name="LinkDescription" xml:space="preserve">
+    <value>您打开了邮件中的审批链接。</value>
+  </data>
+  <data name="LinkOnce" xml:space="preserve">
+    <value>此链接只能使用一次 · {0} 小时后失效</value>
+  </data>
+  <data name="LinkUsedNow" xml:space="preserve">
+    <value>此链接已使用，现已失效。</value>
+  </data>
+  <data name="Link_consumed" xml:space="preserve">
+    <value>此链接已被使用</value>
+  </data>
+  <data name="Link_consumed_text" xml:space="preserve">
+    <value>已通过此链接作出决定。请从预订单列表打开订单查看结果。</value>
+  </data>
+  <data name="Link_expired" xml:space="preserve">
+    <value>此链接已过期</value>
+  </data>
+  <data name="Link_expired_text" xml:space="preserve">
+    <value>请在工作中心或预订单列表中作出决定。</value>
+  </data>
+  <data name="Link_superseded" xml:space="preserve">
+    <value>此链接已失效</value>
+  </data>
+  <data name="Link_superseded_text" xml:space="preserve">
+    <value>邮件发出后订单已变更（已在别处决定、已取消或已退回）。</value>
+  </data>
+  <data name="Link_notfound" xml:space="preserve">
+    <value>无法打开此链接</value>
+  </data>
+  <data name="Link_notfound_text" xml:space="preserve">
+    <value>链接无效或不是发给您的。</value>
+  </data>
+  <data name="DocumentTitle" xml:space="preserve">
+    <value>发给经销商的单据</value>
+  </data>
+  <data name="DocumentTitleOrder" xml:space="preserve">
+    <value>发给经销商的单据 · {0}</value>
+  </data>
+  <data name="DocumentDescription" xml:space="preserve">
+    <value>审批后以 PDF 发送到经销商邮箱；药店收到一份副本。</value>
+  </data>
+  <data name="CopyGroupLabel" xml:space="preserve">
+    <value>联次</value>
+  </data>
+  <data name="CopyDepot" xml:space="preserve">
+    <value>经销商联</value>
+  </data>
+  <data name="CopyPharmacy" xml:space="preserve">
+    <value>药店联</value>
+  </data>
+  <data name="DownloadPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="TrailTitle" xml:space="preserve">
+    <value>转交记录：</value>
+  </data>
+  <data name="TrailNone" xml:space="preserve">
+    <value>尚未转交</value>
+  </data>
+  <data name="TrailAttempt" xml:space="preserve">
+    <value>第 {0} 次 · {1} · {2}</value>
+  </data>
+  <data name="Trail_sent" xml:space="preserve">
+    <value>已转交</value>
+  </data>
+  <data name="Trail_failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>预订单设置</value>
+  </data>
+  <data name="SettingsDescription" xml:space="preserve">
+    <value>本租户预订单的审批、定价、编号和转交方式。</value>
+  </data>
+  <data name="ApprovalSection" xml:space="preserve">
+    <value>审批</value>
+  </data>
+  <data name="Mode_always" xml:space="preserve">
+    <value>始终需要经理审批</value>
+  </data>
+  <data name="Mode_always_help" xml:space="preserve">
+    <value>每个提交的预订单都交给代表的经理审批（默认）。</value>
+  </data>
+  <data name="Mode_auto" xml:space="preserve">
+    <value>在限额内自动审批</value>
+  </data>
+  <data name="Mode_auto_help" xml:space="preserve">
+    <value>在所有限额内的订单立即审批并转交；超出软限额的仍交经理审批。</value>
+  </data>
+  <data name="TtlLabel" xml:space="preserve">
+    <value>审批链接有效期（小时）</value>
+  </data>
+  <data name="TtlHelp" xml:space="preserve">
+    <value>12–168 小时，默认 48。</value>
+  </data>
+  <data name="RetryLabel" xml:space="preserve">
+    <value>自动转交重试次数</value>
+  </data>
+  <data name="RetryHelp" xml:space="preserve">
+    <value>0–10 次；之后由销售运营手动重新转交。</value>
+  </data>
+  <data name="TierSection" xml:space="preserve">
+    <value>按国家的价格层级</value>
+  </data>
+  <data name="TierHelp" xml:space="preserve">
+    <value>预订单使用价目表中的哪种价格；未设置的国家使用药剂师采购价。</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>价格层级</value>
+  </data>
+  <data name="TierNone" xml:space="preserve">
+    <value>所有国家均使用药剂师采购价。</value>
+  </data>
+  <data name="AddTier" xml:space="preserve">
+    <value>添加国家</value>
+  </data>
+  <data name="PrefixSection" xml:space="preserve">
+    <value>按公司的订单编号前缀</value>
+  </data>
+  <data name="PrefixHelp" xml:space="preserve">
+    <value>2–5 个字母（MG-ORD-000123）。已用于订单编号的前缀不能修改或删除。</value>
+  </data>
+  <data name="PrefixNone" xml:space="preserve">
+    <value>尚无前缀：没有前缀的公司的代表无法新建预订单。</value>
+  </data>
+  <data name="AddPrefix" xml:space="preserve">
+    <value>添加公司</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>公司</value>
+  </data>
+  <data name="PrefixLabel" xml:space="preserve">
+    <value>前缀</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>保存设置</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>设置已保存。</value>
+  </data>
+  <data name="SettingsDefault" xml:space="preserve">
+    <value>正在使用默认值（尚未保存）。</value>
+  </data>
+  <data name="SettingsUpdated" xml:space="preserve">
+    <value>最后修改：{0} · {1}</value>
+  </data>
+  <data name="ErrTtl" xml:space="preserve">
+    <value>链接有效期必须为 12–168 小时。</value>
+  </data>
+  <data name="ErrRetry" xml:space="preserve">
+    <value>重试次数必须为 0–10。</value>
+  </data>
+  <data name="ErrPrefix" xml:space="preserve">
+    <value>每个前缀需要一家公司和 2–5 个字母（A–Z）。</value>
+  </data>
+  <data name="ErrTierDuplicate" xml:space="preserve">
+    <value>每个国家只能出现一次。</value>
+  </data>
+</root>

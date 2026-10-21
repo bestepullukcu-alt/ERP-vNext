@@ -1,0 +1,36 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    ViewData["PageCode"] = PreOrdersIndex.FormHelpCode; // UXH-001 — the form's own help text (COM-PREORDER-FORM)
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/PreOrders";
+    ViewData["FormMode"] = "create";
+}
+
+@* W6-WEB-a — A: a new pre-order (commercial.pre-orders.create). UAS-001: without the key NOTHING but the notice. *@
+@if (!Model.CanCreate)
+{
+    <partial name="_AccessDenied" model="@Localizer["FormTitleCreate"].Value" />
+    return;
+}
+
+<partial name="~/Views/Commercial/PreOrders/_Form.cshtml" model="Model" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/js/Commercial/PreOrders/preorders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="~/Views/Commercial/PreOrders/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/_CommercialRulesL10n.cshtml" />
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/preorders-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/preorders-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/form.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,106 @@
+@model Diten.Web.Models.Commercial.PreOrderSettingsViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["SettingsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/PreOrderSettings";
+    var readOnly = !Model.CanUpdate;
+}
+
+@*
+    WP-VW-W6 · W6-WEB-a — the tenant's pre-order settings (MOD-0168 §4.3; not in the mockup → the Golden standard form):
+    the approval mode (D1: default "always a manager"), the approval link's lifetime (D3: 12–168 h, default 48), the
+    automatic transmission retries (0–10), the price tier per country (D11: default pharmacist purchase) and the ORD
+    number prefix of each selling company (2–5 letters; a prefix that numbered an order is locked — the CRM's 409). Read
+    with commercial.pre-order-settings.read, saved with .update (the form is read only and has no save button without it;
+    the proxy checks the key itself). UAS-001: without either key NOTHING but the notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["SettingsTitle"].Value" />
+    return;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SettingsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["SettingsDescription"]</p>
+</div>
+
+<div id="po-root" data-screen="settings" data-can-update="@Model.CanUpdate.ToString().ToLowerInvariant()">
+    <div class="alert d-none" id="po-alert" role="alert"></div>
+    <form id="po-settings-form" novalidate>
+        <div class="row g-3">
+            <div class="col-12 col-lg-6">
+                <section class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-section-title mb-3"><i class="bx bx-user-check"></i>@Localizer["ApprovalSection"]</h6>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="po-mode" id="po-mode-always" value="always" @(readOnly ? "disabled" : "") />
+                            <label class="form-check-label" for="po-mode-always">@Localizer["Mode_always"]</label>
+                            <small class="text-muted d-block">@Localizer["Mode_always_help"]</small>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="po-mode" id="po-mode-auto" value="auto-within-limits" @(readOnly ? "disabled" : "") />
+                            <label class="form-check-label" for="po-mode-auto">@Localizer["Mode_auto"]</label>
+                            <small class="text-muted d-block">@Localizer["Mode_auto_help"]</small>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label" for="po-ttl">@Localizer["TtlLabel"]</label>
+                                <div class="diten-field"><i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i><input type="number" class="form-control" id="po-ttl" min="12" max="168" step="1" @(readOnly ? "disabled" : "") /></div>
+                                <small class="text-muted">@Localizer["TtlHelp"]</small>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label" for="po-retry">@Localizer["RetryLabel"]</label>
+                                <div class="diten-field"><i class="bx bx-refresh diten-field-icon" aria-hidden="true"></i><input type="number" class="form-control" id="po-retry" min="0" max="10" step="1" @(readOnly ? "disabled" : "") /></div>
+                                <small class="text-muted">@Localizer["RetryHelp"]</small>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-12 col-lg-6">
+                <section class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-section-title mb-1"><i class="bx bx-purchase-tag-alt"></i>@Localizer["TierSection"]</h6>
+                        <small class="text-muted d-block mb-3">@Localizer["TierHelp"]</small>
+                        <div id="po-tiers" class="d-flex flex-column gap-2"></div>
+                        @if (Model.CanUpdate)
+                        {
+                            <button type="button" class="btn btn-sm btn-label-primary mt-2" id="po-add-tier"><i class="bx bx-plus me-1"></i>@Localizer["AddTier"]</button>
+                        }
+                    </div>
+                </section>
+                <section class="card">
+                    <div class="card-body">
+                        <h6 class="card-section-title mb-1"><i class="bx bx-hash"></i>@Localizer["PrefixSection"]</h6>
+                        <small class="text-muted d-block mb-3">@Localizer["PrefixHelp"]</small>
+                        <div id="po-prefixes" class="d-flex flex-column gap-2"></div>
+                        @if (Model.CanUpdate)
+                        {
+                            <button type="button" class="btn btn-sm btn-label-primary mt-2" id="po-add-prefix"><i class="bx bx-plus me-1"></i>@Localizer["AddPrefix"]</button>
+                        }
+                    </div>
+                </section>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+            @if (Model.CanUpdate)
+            {
+                <button type="submit" class="btn btn-primary" id="po-settings-save">@Localizer["SaveSettings"]</button>
+            }
+            <small class="text-muted" id="po-settings-meta"></small>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Commercial/PreOrders/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/_CommercialRulesL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/preorders-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/preorders-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/settings.js" asp-append-version="true"></script>
+}

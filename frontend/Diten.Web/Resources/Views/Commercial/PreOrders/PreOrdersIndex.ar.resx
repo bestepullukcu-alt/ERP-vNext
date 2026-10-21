@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>الطلبات المسبقة</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>طلبات الصيدليات المرسلة إلى المستودع؛ المستودع يصدر الفاتورة.</value>
+  </data>
+  <data name="PeriodLabel" xml:space="preserve">
+    <value>الفترة</value>
+  </data>
+  <data name="PeriodAll" xml:space="preserve">
+    <value>كل التواريخ</value>
+  </data>
+  <data name="PeriodLast7" xml:space="preserve">
+    <value>آخر 7 أيام</value>
+  </data>
+  <data name="PeriodLast30" xml:space="preserve">
+    <value>آخر 30 يومًا</value>
+  </data>
+  <data name="PeriodMonth" xml:space="preserve">
+    <value>هذا الشهر</value>
+  </data>
+  <data name="PeriodCustom" xml:space="preserve">
+    <value>نطاق مخصص</value>
+  </data>
+  <data name="CustomFrom" xml:space="preserve">
+    <value>من</value>
+  </data>
+  <data name="CustomTo" xml:space="preserve">
+    <value>إلى</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>كل الحالات</value>
+  </data>
+  <data name="RepLabel" xml:space="preserve">
+    <value>المندوب</value>
+  </data>
+  <data name="RepAll" xml:space="preserve">
+    <value>كل المندوبين</value>
+  </data>
+  <data name="PharmacyLabel" xml:space="preserve">
+    <value>الصيدلية</value>
+  </data>
+  <data name="DepotLabel" xml:space="preserve">
+    <value>المستودع / الموزّع</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>الدولة</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>كل الدول</value>
+  </data>
+  <data name="AwaitingLabel" xml:space="preserve">
+    <value>بانتظار موافقتي</value>
+  </data>
+  <data name="AwaitingAll" xml:space="preserve">
+    <value>كل الطلبات</value>
+  </data>
+  <data name="AwaitingOption" xml:space="preserve">
+    <value>بانتظار موافقتي ({0})</value>
+  </data>
+  <data name="AwaitingYou" xml:space="preserve">
+    <value>بانتظار قرارك</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>اكتب حرفين على الأقل</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>جارٍ البحث…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>لا توجد نتائج</value>
+  </data>
+  <data name="ColCode" xml:space="preserve">
+    <value>رقم الطلب</value>
+  </data>
+  <data name="ColDate" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="ColPharmacy" xml:space="preserve">
+    <value>الصيدلية</value>
+  </data>
+  <data name="ColDepot" xml:space="preserve">
+    <value>المستودع</value>
+  </data>
+  <data name="ColRep" xml:space="preserve">
+    <value>المندوب</value>
+  </data>
+  <data name="ColLines" xml:space="preserve">
+    <value>البنود</value>
+  </data>
+  <data name="ColTotal" xml:space="preserve">
+    <value>الإجمالي</value>
+  </data>
+  <data name="ColLocal" xml:space="preserve">
+    <value>المعادل المحلي</value>
+  </data>
+  <data name="ColEffective" xml:space="preserve">
+    <value>الخصم الفعلي</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="ColRule" xml:space="preserve">
+    <value>القاعدة</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>عرض سريع</value>
+  </data>
+  <data name="DrawerTitle" xml:space="preserve">
+    <value>طلب مسبق</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="NewPreOrder" xml:space="preserve">
+    <value>طلب مسبق جديد</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>لا توجد طلبات مسبقة</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>لا يوجد طلب مسبق يطابق عامل التصفية.</value>
+  </data>
+  <data name="QuantityModeShort" xml:space="preserve">
+    <value>كميات فقط</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>المستند</value>
+  </data>
+  <data name="OpenApproval" xml:space="preserve">
+    <value>فتح الموافقة</value>
+  </data>
+  <data name="OpenEdit" xml:space="preserve">
+    <value>فتح الطلب</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>تفاصيل الطلب</value>
+  </data>
+  <data name="DepotResponseTitle" xml:space="preserve">
+    <value>رد المستودع · يُسجَّل يدويًا</value>
+  </data>
+  <data name="DR_delivered" xml:space="preserve">
+    <value>تم التسليم</value>
+  </data>
+  <data name="DR_partial" xml:space="preserve">
+    <value>تسليم جزئي</value>
+  </data>
+  <data name="DepotResponseNote" xml:space="preserve">
+    <value>ملاحظة (اختيارية)</value>
+  </data>
+  <data name="DepotResponseSave" xml:space="preserve">
+    <value>تسجيل الرد</value>
+  </data>
+  <data name="DepotResponseSaved" xml:space="preserve">
+    <value>تم تسجيل رد المستودع.</value>
+  </data>
+  <data name="OfQuantity" xml:space="preserve">
+    <value>من {0} علبة</value>
+  </data>
+  <data name="St_draft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="St_pending_approval" xml:space="preserve">
+    <value>بانتظار الموافقة</value>
+  </data>
+  <data name="St_approved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="St_transmitted" xml:space="preserve">
+    <value>أُرسل إلى المستودع</value>
+  </data>
+  <data name="St_transmission_failed" xml:space="preserve">
+    <value>فشل الإرسال</value>
+  </data>
+  <data name="St_rejected" xml:space="preserve">
+    <value>مرفوض</value>
+  </data>
+  <data name="St_cancelled" xml:space="preserve">
+    <value>ملغى</value>
+  </data>
+  <data name="St_unknown" xml:space="preserve">
+    <value>غير معروف</value>
+  </data>
+  <data name="Ev_created" xml:space="preserve">
+    <value>تم إنشاء المسودة</value>
+  </data>
+  <data name="Ev_updated" xml:space="preserve">
+    <value>تم حفظ المسودة</value>
+  </data>
+  <data name="Ev_discarded" xml:space="preserve">
+    <value>تم تجاهل المسودة</value>
+  </data>
+  <data name="Ev_signature_captured" xml:space="preserve">
+    <value>وقّع الصيدلي</value>
+  </data>
+  <data name="Ev_signature_cleared" xml:space="preserve">
+    <value>حُذف التوقيع (تغيّر الطلب)</value>
+  </data>
+  <data name="Ev_submitted" xml:space="preserve">
+    <value>تم الإرسال</value>
+  </data>
+  <data name="Ev_auto_approved" xml:space="preserve">
+    <value>تمت الموافقة تلقائيًا (إعداد المستأجر)</value>
+  </data>
+  <data name="Ev_approval_requested" xml:space="preserve">
+    <value>طُلبت الموافقة</value>
+  </data>
+  <data name="Ev_approver_unresolved" xml:space="preserve">
+    <value>تعذّر تحديد المعتمِد بعد</value>
+  </data>
+  <data name="Ev_approved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="Ev_rejected" xml:space="preserve">
+    <value>مرفوض</value>
+  </data>
+  <data name="Ev_changes_requested" xml:space="preserve">
+    <value>طُلبت تعديلات</value>
+  </data>
+  <data name="Ev_transmission_attempted" xml:space="preserve">
+    <value>جارٍ الإرسال إلى المستودع</value>
+  </data>
+  <data name="Ev_transmitted" xml:space="preserve">
+    <value>أُرسل إلى المستودع</value>
+  </data>
+  <data name="Ev_transmission_failed" xml:space="preserve">
+    <value>فشل الإرسال</value>
+  </data>
+  <data name="Ev_cancelled" xml:space="preserve">
+    <value>ملغى</value>
+  </data>
+  <data name="Ev_depot_response_recorded" xml:space="preserve">
+    <value>سُجّل رد المستودع</value>
+  </data>
+  <data name="Ev_copied_from" xml:space="preserve">
+    <value>نُسخ من طلب سابق</value>
+  </data>
+  <data name="Ev_unknown" xml:space="preserve">
+    <value>حدث</value>
+  </data>
+  <data name="TimelineTitle" xml:space="preserve">
+    <value>التسلسل الزمني للحالة</value>
+  </data>
+  <data name="TimelineEmpty" xml:space="preserve">
+    <value>لم يحدث شيء بعد.</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>السبب: {0}</value>
+  </data>
+  <data name="NoteLine" xml:space="preserve">
+    <value>ملاحظة: {0}</value>
+  </data>
+  <data name="FactCode" xml:space="preserve">
+    <value>رقم الطلب</value>
+  </data>
+  <data name="FactDate" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="FactPharmacy" xml:space="preserve">
+    <value>الصيدلية</value>
+  </data>
+  <data name="FactDepot" xml:space="preserve">
+    <value>المستودع</value>
+  </data>
+  <data name="FactRep" xml:space="preserve">
+    <value>المندوب</value>
+  </data>
+  <data name="FactDelivery" xml:space="preserve">
+    <value>تاريخ التسليم</value>
+  </data>
+  <data name="FactSeller" xml:space="preserve">
+    <value>الشركة البائعة</value>
+  </data>
+  <data name="FactMode" xml:space="preserve">
+    <value>وضع السعر</value>
+  </data>
+  <data name="ModePriced" xml:space="preserve">
+    <value>بالأسعار · {0}</value>
+  </data>
+  <data name="ModeQuantity" xml:space="preserve">
+    <value>كميات فقط</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>الكمية</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>البونص</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>الخصم %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>سعر الوحدة</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="ColLineTotal" xml:space="preserve">
+    <value>إجمالي البند</value>
+  </data>
+  <data name="ColCombined" xml:space="preserve">
+    <value>المجمّع</value>
+  </data>
+  <data name="GtinShort" xml:space="preserve">
+    <value>GTIN {0}</value>
+  </data>
+  <data name="FreeBoxes" xml:space="preserve">
+    <value>+{0} علبة بونص</value>
+  </data>
+  <data name="CombinedLine" xml:space="preserve">
+    <value>الخصم المجمّع {0}</value>
+  </data>
+  <data name="MfRatioLine" xml:space="preserve">
+    <value>نسبة البونص {0}</value>
+  </data>
+  <data name="PerBox" xml:space="preserve">
+    <value>{0} / علبة</value>
+  </data>
+  <data name="TotalNet" xml:space="preserve">
+    <value>الصافي</value>
+  </data>
+  <data name="TotalVat" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="TotalEffective" xml:space="preserve">
+    <value>الخصم الفعلي</value>
+  </data>
+  <data name="TotalGross" xml:space="preserve">
+    <value>الإجمالي العام</value>
+  </data>
+  <data name="FxLine" xml:space="preserve">
+    <value>≈ {0} {1} · السعر {2} · {3} · المصدر {4}</value>
+  </data>
+  <data name="QuantityModeNote" xml:space="preserve">
+    <value>يطبّق المستودع السعر. لا توجد قائمة أسعار سارية في هذا البلد؛ تعمل القواعد على البونص والكمية.</value>
+  </data>
+  <data name="FormTitleCreate" xml:space="preserve">
+    <value>طلب مسبق جديد</value>
+  </data>
+  <data name="FormTitleEdit" xml:space="preserve">
+    <value>طلب مسبق</value>
+  </data>
+  <data name="FormTitleOrder" xml:space="preserve">
+    <value>طلب مسبق · {0}</value>
+  </data>
+  <data name="FormDescription" xml:space="preserve">
+    <value>يُسجَّل طلب الصيدلية لإرساله إلى المستودع؛ المستودع يصدر الفاتورة.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>العودة إلى القائمة</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>حفظ المسودة</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>تجاهل المسودة</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>هل تريد تجاهل هذه المسودة؟ لن يُعاد استخدام رقمها.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>تم حفظ المسودة.</value>
+  </data>
+  <data name="FromSystem" xml:space="preserve">
+    <value>من النظام</value>
+  </data>
+  <data name="ModePricedBadge" xml:space="preserve">
+    <value>بالأسعار</value>
+  </data>
+  <data name="ModeQuantityBadge" xml:space="preserve">
+    <value>كميات فقط</value>
+  </data>
+  <data name="PriceSource" xml:space="preserve">
+    <value>السعر: {0} · {1} · ساري منذ {2}</value>
+  </data>
+  <data name="PriceSourceShort" xml:space="preserve">
+    <value>مصدر السعر: {0}</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>سعر شراء الصيدلي</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>سعر المستودع</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>سعر البيع للجمهور</value>
+  </data>
+  <data name="ChangeBannerTitle" xml:space="preserve">
+    <value>طُلبت تعديلات:</value>
+  </data>
+  <data name="PharmacySection" xml:space="preserve">
+    <value>الصيدلية</value>
+  </data>
+  <data name="PharmacyPlaceholder" xml:space="preserve">
+    <value>ابحث عن صيدلية بالاسم أو الرمز</value>
+  </data>
+  <data name="LinesSection" xml:space="preserve">
+    <value>المنتجات</value>
+  </data>
+  <data name="LinesNotePriced" xml:space="preserve">
+    <value>السعر من قائمة الأسعار ولا يمكن تغييره.</value>
+  </data>
+  <data name="LinesNoteQuantity" xml:space="preserve">
+    <value>الكميات والبونص فقط؛ يطبّق المستودع السعر.</value>
+  </data>
+  <data name="AddLine" xml:space="preserve">
+    <value>إضافة منتج</value>
+  </data>
+  <data name="RemoveLine" xml:space="preserve">
+    <value>حذف البند</value>
+  </data>
+  <data name="NoLinesYet" xml:space="preserve">
+    <value>لا توجد منتجات بعد.</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>ابحث عن منتج بالاسم أو الرمز</value>
+  </data>
+  <data name="PreviousOrders" xml:space="preserve">
+    <value>الطلبات السابقة لهذه الصيدلية</value>
+  </data>
+  <data name="PreviousOrdersNone" xml:space="preserve">
+    <value>لا توجد طلبات سابقة لهذه الصيدلية.</value>
+  </data>
+  <data name="LinesCount" xml:space="preserve">
+    <value>{0} بنود</value>
+  </data>
+  <data name="DeliverySection" xml:space="preserve">
+    <value>التسليم</value>
+  </data>
+  <data name="DepotPlaceholder" xml:space="preserve">
+    <value>ابحث عن مستودع</value>
+  </data>
+  <data name="DeliveryLabel" xml:space="preserve">
+    <value>تاريخ التسليم</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>العملة</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>ملاحظة للمستودع</value>
+  </data>
+  <data name="NotePlaceholder" xml:space="preserve">
+    <value>يظهر في نسخة المستودع (اختياري)</value>
+  </data>
+  <data name="SummarySection" xml:space="preserve">
+    <value>ملخص الطلب</value>
+  </data>
+  <data name="SummaryPending" xml:space="preserve">
+    <value>تظهر الإجماليات عند اختيار صيدلية ومنتج.</value>
+  </data>
+  <data name="NeedTitle" xml:space="preserve">
+    <value>هل تلزم الموافقة؟</value>
+  </data>
+  <data name="Need_yes" xml:space="preserve">
+    <value>نعم — يذهب الطلب إلى المعتمِد.</value>
+  </data>
+  <data name="Need_no" xml:space="preserve">
+    <value>لا — ضمن كل الحدود، تتم الموافقة تلقائيًا.</value>
+  </data>
+  <data name="Need_unknown" xml:space="preserve">
+    <value>يتضح عند اختيار صيدلية ومنتج.</value>
+  </data>
+  <data name="Need_tenant_setting" xml:space="preserve">
+    <value>يرسل إعداد المستأجر كل طلب إلى المدير.</value>
+  </data>
+  <data name="Need_soft" xml:space="preserve">
+    <value>يتجاوز أحد البنود حدًا مرنًا.</value>
+  </data>
+  <data name="Approver_line" xml:space="preserve">
+    <value>المعتمِد: {0}</value>
+  </data>
+  <data name="Approver_chain" xml:space="preserve">
+    <value>المعتمِد: {0} (مقعد المدير المباشر شاغر — مستوى أعلى)</value>
+  </data>
+  <data name="Approver_none" xml:space="preserve">
+    <value>لا يوجد معتمِد فوق منصبك.</value>
+  </data>
+  <data name="Approver_unavailable" xml:space="preserve">
+    <value>لا يمكن عرض المعتمِد الآن؛ سيُحدَّد عند الإرسال.</value>
+  </data>
+  <data name="ApproverPosition" xml:space="preserve">
+    <value>المنصب: {0}</value>
+  </data>
+  <data name="SignatureSection" xml:space="preserve">
+    <value>توقيع الصيدلي</value>
+  </data>
+  <data name="SignerLabel" xml:space="preserve">
+    <value>اسم الصيدلي</value>
+  </data>
+  <data name="SignatureHint" xml:space="preserve">
+    <value>سلّم الجهاز للصيدلي ليوقّع هنا.</value>
+  </data>
+  <data name="SignatureClear" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="SignatureSave" xml:space="preserve">
+    <value>حفظ التوقيع</value>
+  </data>
+  <data name="SignatureSaved" xml:space="preserve">
+    <value>تم حفظ التوقيع.</value>
+  </data>
+  <data name="SignatureNone" xml:space="preserve">
+    <value>غير موقّع.</value>
+  </data>
+  <data name="SignedBy" xml:space="preserve">
+    <value>وقّعه {0} · {1}</value>
+  </data>
+  <data name="SignedNote" xml:space="preserve">
+    <value>جزء من مستند الطلب.</value>
+  </data>
+  <data name="Resign" xml:space="preserve">
+    <value>التوقيع مجددًا</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>إرسال</value>
+  </data>
+  <data name="Why_no_permission" xml:space="preserve">
+    <value>لا تملك صلاحية إرسال الطلبات المسبقة.</value>
+  </data>
+  <data name="Why_no_lines" xml:space="preserve">
+    <value>أضف منتجًا واحدًا على الأقل.</value>
+  </data>
+  <data name="Why_hard" xml:space="preserve">
+    <value>يتجاوز أحد البنود حدًا لا يمكن تجاوزه.</value>
+  </data>
+  <data name="Why_no_depot" xml:space="preserve">
+    <value>اختر المستودع.</value>
+  </data>
+  <data name="Why_no_signature" xml:space="preserve">
+    <value>توقيع الصيدلي مفقود.</value>
+  </data>
+  <data name="Why_unsaved" xml:space="preserve">
+    <value>توجد تغييرات غير محفوظة: احفظ المسودة أولًا.</value>
+  </data>
+  <data name="SubmittedPending" xml:space="preserve">
+    <value>تم الإرسال: الطلب بانتظار الموافقة.</value>
+  </data>
+  <data name="SubmittedApproved" xml:space="preserve">
+    <value>أُرسل ووُوفق عليه تلقائيًا: سيُرسل إلى المستودع.</value>
+  </data>
+  <data name="Lock_pending" xml:space="preserve">
+    <value>الطلب بانتظار الموافقة ولا يمكن تغييره.</value>
+  </data>
+  <data name="Lock_sent" xml:space="preserve">
+    <value>تمت الموافقة على الطلب ولا يمكن تغييره. لتغييره ألغِه وافتح طلبًا جديدًا.</value>
+  </data>
+  <data name="Lock_rejected" xml:space="preserve">
+    <value>رُفض الطلب. يمكنك نسخه إلى طلب جديد.</value>
+  </data>
+  <data name="Lock_cancelled" xml:space="preserve">
+    <value>أُلغي الطلب. يمكنك نسخه إلى طلب جديد.</value>
+  </data>
+  <data name="Lock_not_owner" xml:space="preserve">
+    <value>لا يمكن تغيير هذه المسودة إلا من المندوب الذي أنشأها.</value>
+  </data>
+  <data name="CancelAndNew" xml:space="preserve">
+    <value>إلغاء وفتح طلب جديد</value>
+  </data>
+  <data name="CopyAndNew" xml:space="preserve">
+    <value>نسخ وفتح طلب جديد</value>
+  </data>
+  <data name="CancelOrder" xml:space="preserve">
+    <value>إلغاء الطلب</value>
+  </data>
+  <data name="CancelTitle" xml:space="preserve">
+    <value>إلغاء الطلب المسبق</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>إذا أُرسل الطلب، يتلقى المستودع والصيدلية بريد إلغاء. اكتب السبب.</value>
+  </data>
+  <data name="CancelConfirm" xml:space="preserve">
+    <value>إلغاء الطلب</value>
+  </data>
+  <data name="CancelledToast" xml:space="preserve">
+    <value>أُلغي الطلب المسبق.</value>
+  </data>
+  <data name="ErrQuantity" xml:space="preserve">
+    <value>يحتاج كل منتج إلى كمية لا تقل عن 1.</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>اكتب البونص على شكل شراء + مجاني، مثل 10+2.</value>
+  </data>
+  <data name="ErrDiscount" xml:space="preserve">
+    <value>يجب أن يكون الخصم بين 0 و100 (دون 100)، بمنزلة عشرية واحدة كحد أقصى.</value>
+  </data>
+  <data name="ErrRangeMissing" xml:space="preserve">
+    <value>اختر تاريخي النطاق المخصص.</value>
+  </data>
+  <data name="ErrRangeOrder" xml:space="preserve">
+    <value>لا يمكن أن يكون تاريخ البداية بعد تاريخ النهاية.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>حدث خطأ ما. حاول مرة أخرى.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>لا يمكن الوصول إلى الخدمة الآن. حاول بعد قليل.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>لا تملك صلاحية لذلك.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>لم يُعثر على الطلب المسبق أو لا يمكنك رؤيته.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>قام شخص آخر بتغييره في الأثناء. أعد التحميل وحاول مجددًا.</value>
+  </data>
+  <data name="DetailsTitle" xml:space="preserve">
+    <value>تفاصيل الطلب المسبق</value>
+  </data>
+  <data name="DetailsTitleOrder" xml:space="preserve">
+    <value>الطلب المسبق {0}</value>
+  </data>
+  <data name="DetailsDescription" xml:space="preserve">
+    <value>الطلب كما أُرسل مع تسلسله الزمني.</value>
+  </data>
+  <data name="StateSection" xml:space="preserve">
+    <value>التوقيع والموافقة والإرسال</value>
+  </data>
+  <data name="AutoApproved" xml:space="preserve">
+    <value>تمت الموافقة تلقائيًا (إعداد المستأجر)</value>
+  </data>
+  <data name="Decision_approve" xml:space="preserve">
+    <value>وافق عليه {0} · {1}</value>
+  </data>
+  <data name="Decision_reject" xml:space="preserve">
+    <value>رفضه {0} · {1}</value>
+  </data>
+  <data name="Decision_request_changes" xml:space="preserve">
+    <value>طلب {0} تعديلات · {1}</value>
+  </data>
+  <data name="AwaitingApprover" xml:space="preserve">
+    <value>بانتظار: {0}</value>
+  </data>
+  <data name="AwaitingApproverUnknown" xml:space="preserve">
+    <value>بانتظار الموافقة (يجري تحديد المعتمِد).</value>
+  </data>
+  <data name="TransmittedAt" xml:space="preserve">
+    <value>أُرسل إلى {0} · {1}</value>
+  </data>
+  <data name="TransmissionFailedLine" xml:space="preserve">
+    <value>فشل الإرسال إلى المستودع؛ ستُعاد المحاولة تلقائيًا.</value>
+  </data>
+  <data name="CancelledLine" xml:space="preserve">
+    <value>ملغى · {0}</value>
+  </data>
+  <data name="PartialLine" xml:space="preserve">
+    <value>{0}: سُلّمت {1} من {2} علبة</value>
+  </data>
+  <data name="RetryTransmission" xml:space="preserve">
+    <value>إعادة الإرسال</value>
+  </data>
+  <data name="RetryToast" xml:space="preserve">
+    <value>تجري إعادة الإرسال إلى المستودع.</value>
+  </data>
+  <data name="ApproveTitle" xml:space="preserve">
+    <value>الموافقة على الطلب المسبق</value>
+  </data>
+  <data name="ApproveTitleOrder" xml:space="preserve">
+    <value>الموافقة على الطلب المسبق · {0}</value>
+  </data>
+  <data name="ApproveDescription" xml:space="preserve">
+    <value>راجع البنود التي تتجاوز القواعد؛ يُرسل الطلب المعتمد إلى المستودع بصيغة PDF.</value>
+  </data>
+  <data name="WhyMeTitle" xml:space="preserve">
+    <value>لماذا يصلني؟</value>
+  </data>
+  <data name="WhyMeNone" xml:space="preserve">
+    <value>لا يوجد سبب مسجّل.</value>
+  </data>
+  <data name="Why_me_tenant" xml:space="preserve">
+    <value>إعداد المستأجر: كل طلب مسبق يذهب إلى المدير.</value>
+  </data>
+  <data name="Why_me_soft" xml:space="preserve">
+    <value>يتجاوز أحد البنود حدًا مرنًا:</value>
+  </data>
+  <data name="YouAreReportsTo" xml:space="preserve">
+    <value>أنت في منصب المدير المباشر لـ {0} ({1}).</value>
+  </data>
+  <data name="LimitsNote" xml:space="preserve">
+    <value>كل خلية: القيمة المدخلة وتحتها حد القاعدة.</value>
+  </data>
+  <data name="LimitSoft" xml:space="preserve">
+    <value>الحد {0}</value>
+  </data>
+  <data name="LimitHard" xml:space="preserve">
+    <value>السقف {0}</value>
+  </data>
+  <data name="DecisionTitle" xml:space="preserve">
+    <value>القرار</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="RequestChanges" xml:space="preserve">
+    <value>طلب تعديلات</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>يتطلب الرفض وطلب التعديلات سببًا. بعد الموافقة لا يمكن تغيير الطلب.</value>
+  </data>
+  <data name="RejectTitle" xml:space="preserve">
+    <value>رفض الطلب المسبق</value>
+  </data>
+  <data name="RejectText" xml:space="preserve">
+    <value>يُبلَّغ المندوب بالسبب. لا يمكن إعادة إرسال الطلب المرفوض؛ يمكن نسخه.</value>
+  </data>
+  <data name="ChangesTitle" xml:space="preserve">
+    <value>طلب تعديلات</value>
+  </data>
+  <data name="ChangesText" xml:space="preserve">
+    <value>يعود الطلب إلى المندوب كمسودة؛ ويوقّع الصيدلي مجددًا.</value>
+  </data>
+  <data name="ReasonLabel" xml:space="preserve">
+    <value>السبب</value>
+  </data>
+  <data name="ReasonPlaceholder" xml:space="preserve">
+    <value>السبب (إلزامي)</value>
+  </data>
+  <data name="Decided_approve" xml:space="preserve">
+    <value>تمت الموافقة. يُرسل الطلب إلى المستودع.</value>
+  </data>
+  <data name="Decided_reject" xml:space="preserve">
+    <value>مرفوض. أُبلغ المندوب بالسبب.</value>
+  </data>
+  <data name="Decided_request_changes" xml:space="preserve">
+    <value>طُلبت تعديلات. عاد الطلب إلى المندوب.</value>
+  </data>
+  <data name="NotYourDecision" xml:space="preserve">
+    <value>لا يمكنك اتخاذ قرار بشأن هذا الطلب المسبق (ليس بانتظارك).</value>
+  </data>
+  <data name="AlreadyDecided" xml:space="preserve">
+    <value>لم يعد هذا الطلب المسبق بانتظار الموافقة: {0}.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>آخر 6 أشهر</value>
+  </data>
+  <data name="HistoryTitleOf" xml:space="preserve">
+    <value>{0} · آخر 6 أشهر</value>
+  </data>
+  <data name="HistoryNote" xml:space="preserve">
+    <value>الطلبات المرسلة للصيدلية حسب الشهر (كل عملة على حدة).</value>
+  </data>
+  <data name="ColMonth" xml:space="preserve">
+    <value>الشهر</value>
+  </data>
+  <data name="ColOrders" xml:space="preserve">
+    <value>الطلبات</value>
+  </data>
+  <data name="ColBoxes" xml:space="preserve">
+    <value>العلب</value>
+  </data>
+  <data name="LinkTitle" xml:space="preserve">
+    <value>رابط الموافقة على الطلب المسبق</value>
+  </data>
+  <data name="LinkDescription" xml:space="preserve">
+    <value>فتحت رابط الموافقة من البريد الإلكتروني.</value>
+  </data>
+  <data name="LinkOnce" xml:space="preserve">
+    <value>يمكن استخدام هذا الرابط مرة واحدة · تنتهي صلاحيته خلال {0} ساعة</value>
+  </data>
+  <data name="LinkUsedNow" xml:space="preserve">
+    <value>استُخدم هذا الرابط ولم يعد صالحًا.</value>
+  </data>
+  <data name="Link_consumed" xml:space="preserve">
+    <value>استُخدم هذا الرابط بالفعل</value>
+  </data>
+  <data name="Link_consumed_text" xml:space="preserve">
+    <value>اتُّخذ قرار بهذا الرابط بالفعل. افتح الطلب من القائمة لرؤية النتيجة.</value>
+  </data>
+  <data name="Link_expired" xml:space="preserve">
+    <value>انتهت صلاحية هذا الرابط</value>
+  </data>
+  <data name="Link_expired_text" xml:space="preserve">
+    <value>اتخذ القرار من مركز العمل أو من قائمة الطلبات المسبقة.</value>
+  </data>
+  <data name="Link_superseded" xml:space="preserve">
+    <value>لم يعد هذا الرابط صالحًا</value>
+  </data>
+  <data name="Link_superseded_text" xml:space="preserve">
+    <value>تغيّر الطلب بعد البريد (اتُّخذ قرار في مكان آخر أو أُلغي أو أُعيد).</value>
+  </data>
+  <data name="Link_notfound" xml:space="preserve">
+    <value>لا يمكن فتح هذا الرابط</value>
+  </data>
+  <data name="Link_notfound_text" xml:space="preserve">
+    <value>الرابط غير صالح أو ليس موجهًا إليك.</value>
+  </data>
+  <data name="DocumentTitle" xml:space="preserve">
+    <value>المستند المرسل إلى المستودع</value>
+  </data>
+  <data name="DocumentTitleOrder" xml:space="preserve">
+    <value>المستند المرسل إلى المستودع · {0}</value>
+  </data>
+  <data name="DocumentDescription" xml:space="preserve">
+    <value>بعد الموافقة يُرسل بصيغة PDF إلى بريد المستودع؛ وتتلقى الصيدلية نسخة.</value>
+  </data>
+  <data name="CopyGroupLabel" xml:space="preserve">
+    <value>النسخة</value>
+  </data>
+  <data name="CopyDepot" xml:space="preserve">
+    <value>نسخة المستودع</value>
+  </data>
+  <data name="CopyPharmacy" xml:space="preserve">
+    <value>نسخة الصيدلية</value>
+  </data>
+  <data name="DownloadPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="TrailTitle" xml:space="preserve">
+    <value>سجل الإرسال:</value>
+  </data>
+  <data name="TrailNone" xml:space="preserve">
+    <value>لم يُرسل بعد</value>
+  </data>
+  <data name="TrailAttempt" xml:space="preserve">
+    <value>المحاولة {0} · {1} · {2}</value>
+  </data>
+  <data name="Trail_sent" xml:space="preserve">
+    <value>أُرسل</value>
+  </data>
+  <data name="Trail_failed" xml:space="preserve">
+    <value>فشل</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>إعدادات الطلبات المسبقة</value>
+  </data>
+  <data name="SettingsDescription" xml:space="preserve">
+    <value>كيفية الموافقة على الطلبات المسبقة وتسعيرها وترقيمها وإرسالها لهذا المستأجر.</value>
+  </data>
+  <data name="ApprovalSection" xml:space="preserve">
+    <value>الموافقة</value>
+  </data>
+  <data name="Mode_always" xml:space="preserve">
+    <value>موافقة المدير دائمًا</value>
+  </data>
+  <data name="Mode_always_help" xml:space="preserve">
+    <value>يذهب كل طلب مسبق مرسل إلى مدير المندوب (افتراضي).</value>
+  </data>
+  <data name="Mode_auto" xml:space="preserve">
+    <value>تلقائيًا ضمن الحدود</value>
+  </data>
+  <data name="Mode_auto_help" xml:space="preserve">
+    <value>يُوافق على الطلب الواقع ضمن كل الحدود ويُرسل فورًا؛ والطلب الذي يتجاوز حدًا مرنًا يذهب إلى المدير.</value>
+  </data>
+  <data name="TtlLabel" xml:space="preserve">
+    <value>مدة صلاحية رابط الموافقة (ساعات)</value>
+  </data>
+  <data name="TtlHelp" xml:space="preserve">
+    <value>من 12 إلى 168 ساعة، الافتراضي 48.</value>
+  </data>
+  <data name="RetryLabel" xml:space="preserve">
+    <value>محاولات الإرسال التلقائية</value>
+  </data>
+  <data name="RetryHelp" xml:space="preserve">
+    <value>من 0 إلى 10؛ بعدها تعيد عمليات المبيعات الإرسال يدويًا.</value>
+  </data>
+  <data name="TierSection" xml:space="preserve">
+    <value>فئة السعر حسب الدولة</value>
+  </data>
+  <data name="TierHelp" xml:space="preserve">
+    <value>أي سعر من القائمة يستخدمه الطلب المسبق؛ الدولة بلا صف تستخدم سعر شراء الصيدلي.</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>فئة السعر</value>
+  </data>
+  <data name="TierNone" xml:space="preserve">
+    <value>تستخدم كل الدول سعر شراء الصيدلي.</value>
+  </data>
+  <data name="AddTier" xml:space="preserve">
+    <value>إضافة دولة</value>
+  </data>
+  <data name="PrefixSection" xml:space="preserve">
+    <value>بادئة رقم الطلب حسب الشركة</value>
+  </data>
+  <data name="PrefixHelp" xml:space="preserve">
+    <value>من 2 إلى 5 أحرف (MG-ORD-000123). لا يمكن تغيير أو حذف بادئة استُخدمت لترقيم طلب.</value>
+  </data>
+  <data name="PrefixNone" xml:space="preserve">
+    <value>لا توجد بادئة بعد: لا يمكن لمندوبي شركة بلا بادئة فتح طلب مسبق.</value>
+  </data>
+  <data name="AddPrefix" xml:space="preserve">
+    <value>إضافة شركة</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>الشركة</value>
+  </data>
+  <data name="PrefixLabel" xml:space="preserve">
+    <value>البادئة</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>إزالة</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>حفظ الإعدادات</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>تم حفظ الإعدادات.</value>
+  </data>
+  <data name="SettingsDefault" xml:space="preserve">
+    <value>تُستخدم القيم الافتراضية (لم يُحفظ شيء بعد).</value>
+  </data>
+  <data name="SettingsUpdated" xml:space="preserve">
+    <value>آخر تغيير: {0} · {1}</value>
+  </data>
+  <data name="ErrTtl" xml:space="preserve">
+    <value>يجب أن تكون مدة الرابط بين 12 و168 ساعة.</value>
+  </data>
+  <data name="ErrRetry" xml:space="preserve">
+    <value>يجب أن تكون المحاولات بين 0 و10.</value>
+  </data>
+  <data name="ErrPrefix" xml:space="preserve">
+    <value>تحتاج كل بادئة إلى شركة ومن 2 إلى 5 أحرف (A–Z).</value>
+  </data>
+  <data name="ErrTierDuplicate" xml:space="preserve">
+    <value>يمكن أن تظهر الدولة مرة واحدة فقط.</value>
+  </data>
+</root>

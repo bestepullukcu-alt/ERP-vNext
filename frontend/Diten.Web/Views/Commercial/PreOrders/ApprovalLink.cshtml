@@ -1,0 +1,74 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["LinkTitle"].Value;
+    ViewData["PageCode"] = PreOrdersIndex.ApproveHelpCode; // UXH-001 — the approval's help text (COM-PREORDER-APPROVE)
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/PreOrders";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-a — C-link: the approver's one-time e-mail link (W6-BE-c1 /Commercial/PreOrders/ApprovalLink?token=…).
+    The user is SIGNED IN first ([Authorize] — D4: no decision without a session; the mockup's "without signing in" is not
+    taken). Then the plain face of C: "Bu bağlantı bir kez kullanılabilir · süresi {n} saat", the order, "Neden onayımda?",
+    the lines and the decision. The states: valid · consumed · expired · superseded · not found (the CRM's 404: an unknown
+    link or not this user's — it never says whose). After a decision the link is used and says so. UAS-001: without
+    commercial.pre-orders.approve NOTHING but the notice.
+*@
+@if (!Model.CanApprove)
+{
+    <partial name="_AccessDenied" model="@Localizer["LinkTitle"].Value" />
+    return;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0" id="po-title">@Localizer["LinkTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["LinkDescription"]</p>
+</div>
+
+<div id="po-root" data-screen="link" data-link-token="@Model.LinkToken" class="po-link mx-auto">
+    <div class="alert alert-info d-flex gap-2 align-items-start d-none" id="po-link-note"><i class="bx bx-link mt-1"></i><span id="po-link-note-text"></span></div>
+    <div class="alert alert-danger d-none" id="po-alert" role="alert"></div>
+    <div class="card d-none" id="po-link-state">
+        <div class="card-body text-center py-5">
+            <i class="bx fs-1 mb-2 d-block" id="po-link-state-icon"></i>
+            <h6 class="mb-1" id="po-link-state-title"></h6>
+            <p class="text-muted mb-3" id="po-link-state-text"></p>
+            <a href="/Commercial/PreOrders" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        </div>
+    </div>
+    <div class="card d-none" id="po-body">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+                <div><div class="fw-semibold text-heading" id="po-link-code"></div><div class="text-muted" id="po-link-pharmacy"></div></div>
+                <div class="text-end" id="po-total"></div>
+            </div>
+            <div id="po-facts" class="mb-3"></div>
+            <h6 class="mb-2"><i class="bx bx-help-circle me-1"></i>@Localizer["WhyMeTitle"]</h6>
+            <div id="po-why" class="mb-3"></div>
+            <div id="po-limits" class="mb-3"></div>
+            <div class="d-flex flex-wrap justify-content-end gap-2" id="po-decide">
+                <button type="button" class="btn btn-label-warning" id="po-changes"><i class="bx bx-revision me-1"></i>@Localizer["RequestChanges"]</button>
+                <button type="button" class="btn btn-label-danger" id="po-reject"><i class="bx bx-x me-1"></i>@Localizer["Reject"]</button>
+                <button type="button" class="btn btn-success" id="po-approve"><i class="bx bx-check me-1"></i>@Localizer["Approve"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/Commercial/PreOrders/_ReasonModal.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/Commercial/PreOrders/preorders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Commercial/PreOrders/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/_CommercialRulesL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/preorders-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/preorders-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/approve.js" asp-append-version="true"></script>
+}

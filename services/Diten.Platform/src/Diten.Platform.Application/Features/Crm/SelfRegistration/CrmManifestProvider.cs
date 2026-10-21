@@ -282,6 +282,24 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("CRM_VISIT_NOTIFICATIONS", "Sent Visit E-mails", "/CRM/VisitNotifications", "crm.visit-notifications.read", null, true, "List", 72,
                 [
                     new ModuleManifestAction("SETTINGS_MANAGE", "Manage Visit Notification Settings", "crm.visit-notifications.settings.manage", "Toolbar", 10, false, true, false)
+                ]),
+                // WP-VW-W6 (W6-WEB-a, MOD-0168 §9 / §14) — the pharmacy pre-orders (B list → A create / edit, Details, C approval,
+                // C-link, E document) and the tenant's pre-order settings. .read = own + team (+ the resolved approver); every
+                // other §14 key is an action of the page it is used on. DEFINITION ONLY — the role grant is W6-CFG.
+                new ModuleManifestPage("PREORDERS", "Pre-Orders", "/Commercial/PreOrders", "commercial.pre-orders.read", null, true, "List", 73,
+                [
+                    new ModuleManifestAction("READ_ALL", "Read All Pre-Orders", "commercial.pre-orders.read-all", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("CREATE", "Create and Edit Pre-Order Drafts", "commercial.pre-orders.create", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit Pre-Orders", "commercial.pre-orders.submit", "RowAction", 30, false, false, true),
+                    new ModuleManifestAction("APPROVE", "Approve, Reject or Send Back Pre-Orders", "commercial.pre-orders.approve", "RowAction", 40, false, false, true),
+                    new ModuleManifestAction("CANCEL", "Cancel Pre-Orders", "commercial.pre-orders.cancel", "RowAction", 50, true, false, true),
+                    new ModuleManifestAction("RECORD_DEPOT_RESPONSE", "Record the Depot's Answer", "commercial.pre-orders.record-depot-response", "RowAction", 60, false, false, true),
+                    new ModuleManifestAction("RETRY_TRANSMISSION", "Retry a Failed Transmission", "commercial.pre-orders.retry-transmission", "RowAction", 70, false, false, true),
+                    new ModuleManifestAction("EXPORT", "Export Pre-Orders", "commercial.pre-orders.export", "Toolbar", 80, false, true, false)
+                ]),
+                new ModuleManifestPage("PREORDERSETTINGS", "Pre-Order Settings", "/Commercial/PreOrderSettings", "commercial.pre-order-settings.read", null, true, "Form", 74,
+                [
+                    new ModuleManifestAction("UPDATE", "Change Pre-Order Settings", "commercial.pre-order-settings.update", "Toolbar", 10, false, true, false)
                 ])
             ],
             // WP-VW-W5 PLT-NOTIFY (K-N3, K-N4) — the visit report e-mails, sent by MOD-0155 through the internal event dispatch
@@ -304,8 +322,8 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     "Sent to the representative's line manager when a visit's report was not entered within its deadline.",
                     "Warning", [], requiredExtra: ["deadline"]),
                 // WP-VW-W6 W6-BE-c1 — the MOD-0168 pre-order e-mails (MOD-0168 §4.6), sent by CRM through the internal event
-                // dispatch with sourceModule CRM. No page yet (W6-WEB-a): no target page and no page permission; the links
-                // are CRM's own variables.
+                // dispatch with sourceModule CRM. No target page and no page permission: the depot and the pharmacy are outside
+                // recipients, and the internal links are CRM's own variables (the W6-WEB-a pages /Commercial/PreOrders/…).
                 PreOrderEvent(PreOrderApprovalRequestedEvent, "NotificationEvent_CommercialPreOrderApprovalRequested", "Pre-order approval requested",
                     "Sent to the approver(s) when a submitted pre-order needs approval: the one-time, signed-in approval link.",
                     "Warning", ["approvalUrl"], ["expiresAt"]),
@@ -330,7 +348,8 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
             ],
             // WP-VW-W6 W6-BE-b — MOD-0156 Price Lists & Discount Guardrails (commercial.*, K-O2; MOD-0156 §14): API-only keys
             // until W6-WEB-b ships screen D (then they become its page + actions). DEFINITION ONLY — the role seed / grant is
-            // F-RBAC (W6-CFG). CrmService enforces each one with [HasPermission].
+            // F-RBAC (W6-CFG). CrmService enforces each one with [HasPermission]. The MOD-0168 pre-order keys left this list
+            // with W6-WEB-a: they are the PREORDERS / PREORDERSETTINGS pages and actions above.
             ApiPermissions:
             [
                 new ModuleManifestPermission("commercial.price-lists.read", "Read Price Lists"),
@@ -348,19 +367,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission("commercial.fx-rates.read", "Read FX Rates"),
                 new ModuleManifestPermission("commercial.fx-rates.create", "Enter FX Rates"),
                 new ModuleManifestPermission("commercial.fx-rates.update", "Correct FX Rates"),
-                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates"),
-                // WP-VW-W6 W6-BE-a — MOD-0168 §14 pre-order keys (definition only; pages arrive with W6-WEB-a, the grant with W6-CFG).
-                new ModuleManifestPermission("commercial.pre-orders.read", "Read Own and Team Pre-Orders"),
-                new ModuleManifestPermission("commercial.pre-orders.read-all", "Read All Pre-Orders"),
-                new ModuleManifestPermission("commercial.pre-orders.create", "Create and Edit Pre-Order Drafts"),
-                new ModuleManifestPermission("commercial.pre-orders.submit", "Submit Pre-Orders"),
-                new ModuleManifestPermission("commercial.pre-orders.approve", "Approve, Reject or Send Back Pre-Orders"),
-                new ModuleManifestPermission("commercial.pre-orders.cancel", "Cancel Pre-Orders"),
-                new ModuleManifestPermission("commercial.pre-orders.record-depot-response", "Record the Depot's Answer"),
-                new ModuleManifestPermission("commercial.pre-orders.retry-transmission", "Retry a Failed Transmission"),
-                new ModuleManifestPermission("commercial.pre-orders.export", "Export Pre-Orders"),
-                new ModuleManifestPermission("commercial.pre-order-settings.read", "Read Pre-Order Settings"),
-                new ModuleManifestPermission("commercial.pre-order-settings.update", "Change Pre-Order Settings")
+                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates")
             ]);
 
     // WP-VW-W5 PLT-NOTIFY — the four visit report events (K-N4). Template key = event code. No hyphen in a code: the

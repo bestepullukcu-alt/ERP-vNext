@@ -1129,6 +1129,18 @@
   <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
     <value>Отправленные письма о визитах</value>
   </data>
+  <data name="Nav.Page.PREORDERS" xml:space="preserve">
+    <value>Предзаказы</value>
+  </data>
+  <data name="Nav.Page.PREORDERSETTINGS" xml:space="preserve">
+    <value>Настройки предзаказов</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERFORM" xml:space="preserve">
+    <value>Предзаказ</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
+    <value>Согласование предзаказа</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Управление перевозчиками</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Перевозчики</value></data>

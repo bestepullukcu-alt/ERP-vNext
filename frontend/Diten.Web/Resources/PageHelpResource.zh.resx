@@ -720,4 +720,124 @@
   <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
     <value>关闭未完成的拜访</value>
   </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>列出您可查看的药店预订单——您自己的、团队的以及等待您审批的——及其状态和经销商答复。</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>代表、其经理（审批人）和销售运营。</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>筛选列表</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>打开“筛选”：期间、状态、药店、经销商、产品、国家——审批人还可选“待我审批”。</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>查看金额</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>每个合计都标明各自货币；不同货币的订单从不相加。“本币等值”可在列显示中打开。</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>打开快速查看</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>眼睛图标显示明细行、合计和时间线，并链接到单据和审批。</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>登记经销商答复</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>销售运营在快速查看中将已转交订单标记为“已交货”或“部分交货”（每行盒数和备注）。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>记录药店订单以转交其经销商，发票由经销商开具。公司、货币和价格均来自系统。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>一线代表（平板和手机）。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>选择药店和产品</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>搜索药店，然后添加产品及其数量、赠品（例如 10+2），如有生效价目表还可填写折扣。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>留意规则标记</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>每行显示“在限额内”“需要审批”或“不允许”，并注明超出的限额。不允许的行必须修改。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>保存并请药剂师签名</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>“保存草稿”会生成订单号。选择经销商，然后把设备交给药剂师签名。修改明细行会清除签名。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>发送</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>没有阻碍时“发送”才可用（原因写在按钮下方）。之后订单等待审批人，或在租户允许时直接转交经销商。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>审批等待您处理的预订单：通过、拒绝或退回修改。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>代表的经理（直属上级岗位）。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>查看为何由您审批</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>“为什么由我审批？”说明是租户设置还是超出软限额的明细行。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>与限额对比</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>每个单元格显示输入值，下方为规则限额；药店最近六个月的数据在右侧。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>作出决定</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>“审批通过”会把订单转交经销商。“拒绝”和“要求修改”需要理由；要求修改会把订单作为草稿退回代表。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>通过邮件链接</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>邮件链接需要登录，只能使用一次并会过期；以第一位审批人的决定为准。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>设置本租户预订单的审批、定价、编号和转交方式。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>销售运营。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>选择审批模式</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>“始终需要经理审批”（默认）或“在限额内自动审批”——超出软限额的订单仍交经理审批。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>设置链接和重试</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>审批链接有效期 12–168 小时（默认 48）；转交失败会自动重试 0–10 次。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>选择价格层级</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>按国家：药剂师采购价（默认）、经销商价或零售价。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>为每家公司设置前缀</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>订单编号以 2–5 个字母开头（MG-ORD-000123）。已用于编号的前缀会被锁定。</value>
+  </data>
 </root>

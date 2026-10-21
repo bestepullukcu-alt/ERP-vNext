@@ -720,4 +720,124 @@
   <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
     <value>Yapılamayanı kapatın</value>
   </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Görebildiğiniz eczane ön siparişlerini — kendinizin, ekibinizin ve onayınızı bekleyenleri — durumları ve depo cevabıyla listeler.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Temsilciler, yöneticileri (onaycılar) ve satış operasyonu.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Listeyi süzün</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>“Filtre”yi açın: dönem, durum, eczane, depo, ürün, ülke — onaycıda ayrıca “Onayımı bekleyenler”.</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Tutarları okuyun</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Her toplam kendi para birimiyle yazılır; farklı para birimindeki siparişler toplanmaz. “Yerel karşılık” Sütun görünürlüğünden açılır.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Hızlı görünümü açın</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>Göz simgesi satırları, toplamları ve zaman çizelgesini gösterir; belge ve onay ekranına bağlantı verir.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Depo cevabını işaretleyin</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Satış operasyonu iletilmiş siparişi hızlı görünümde “Teslim edildi” ya da “Eksik teslim” (satır başına kutu ve not) olarak işaretler.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Eczanenin siparişini deposuna iletilmek üzere alır; faturayı depo keser. Şirket, para birimi ve fiyatlar sistemden gelir.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Saha temsilcileri (tablet ve telefon).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Eczaneyi ve ürünleri seçin</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Eczaneyi arayın, ardından ürünleri adet, MF (örneğin 10+2) ve — fiyat listesi yürürlükteyse — iskontoyla ekleyin.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Kural rozetlerine bakın</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Her satır “Sınır içi”, “Onay gerekir” ya da “Girilemez” der ve aşılan sınırı yazar. Girilemez satır düzeltilmelidir.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Kaydedin ve eczacıya imzalatın</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>“Taslağı kaydet” sipariş numarasını verir. Depoyu seçin, ardından imza için cihazı eczacıya verin. Satır değişirse imza silinir.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Gönderin</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>“Gönder” engel kalmayınca açılır (nedenler altında yazar). Sipariş sonra onaycıyı bekler ya da kiracı izin veriyorsa doğrudan depoya gider.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Sizi bekleyen bir ön siparişe karar verirsiniz: onaylayın, reddedin ya da değişiklik için geri gönderin.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>Temsilcinin yöneticisi (Reports to pozisyonu).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>Neden sizde olduğuna bakın</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>“Neden onayımda?” kiracı ayarını ya da yumuşak sınırı aşan satırları söyler.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Sınırlarla karşılaştırın</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>Her hücre girilen değeri ve altında kural sınırını gösterir; eczanenin son altı ayı sağdadır.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Karar verin</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>“Onayla” siparişi depoya gönderir. “Reddet” ve “Değişiklik iste” gerekçe ister; değişiklik isteği siparişi temsilciye taslak olarak döndürür.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>E-posta bağlantısından</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>E-posta bağlantısı oturum açtırır, bir kez çalışır ve süresi dolar; ilk onaycının kararı geçerlidir.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Bu kiracının ön siparişlerinin nasıl onaylanacağını, fiyatlanacağını, numaralanacağını ve iletileceğini belirler.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Satış operasyonu.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Onay modunu seçin</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>“Her zaman yönetici onayı” (varsayılan) ya da “Sınır içinde kendiliğinden” — yumuşak sınırı aşan sipariş yine yöneticiye gider.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Bağlantıyı ve denemeleri ayarlayın</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>Onay bağlantısı 12–168 saat geçerlidir (varsayılan 48); başarısız iletim 0–10 kez kendiliğinden yeniden denenir.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Fiyat kademesini seçin</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>Ülkeye göre: eczacı alış (varsayılan), depo fiyatı ya da halka satış.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Her şirkete önekini verin</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>2–5 harf sipariş numarasını başlatır (MG-ORD-000123). Sipariş numaralandırmış önek kilitlidir.</value>
+  </data>
 </root>

@@ -1129,6 +1129,18 @@
   <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
     <value>رسائل الزيارات المرسلة</value>
   </data>
+  <data name="Nav.Page.PREORDERS" xml:space="preserve">
+    <value>الطلبات المسبقة</value>
+  </data>
+  <data name="Nav.Page.PREORDERSETTINGS" xml:space="preserve">
+    <value>إعدادات الطلبات المسبقة</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERFORM" xml:space="preserve">
+    <value>الطلب المسبق</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
+    <value>الموافقة على الطلب المسبق</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>

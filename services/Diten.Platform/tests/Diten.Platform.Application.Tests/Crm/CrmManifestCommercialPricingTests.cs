@@ -36,7 +36,10 @@ public sealed class CrmManifestCommercialPricingTests
     public void No_page_uses_a_pricing_key_yet_and_the_module_identity_is_unchanged()
     {
         Assert.Equal("CRM", Manifest.ModuleCode);
-        Assert.DoesNotContain(Manifest.Pages, p => p.RequiredPermission?.StartsWith("commercial.", StringComparison.Ordinal) == true);
+        // W6-WEB-a: the pre-order pages (commercial.pre-orders.* / .pre-order-settings.*) exist; no page or action uses a PRICING key yet
+        string[] families = ["commercial.price-lists.", "commercial.pricing-rules.", "commercial.fx-rates."];
+        var pageKeys = Manifest.Pages.SelectMany(p => new[] { p.RequiredPermission }.Concat(p.Actions.Select(a => a.PermissionKey))).ToList();
+        Assert.DoesNotContain(pageKeys, k => families.Any(f => k?.StartsWith(f, StringComparison.Ordinal) == true));
         var all = Manifest.ApiPermissions ?? [];
         Assert.Equal(all.Count, all.Select(p => p.PermissionKey).Distinct(StringComparer.OrdinalIgnoreCase).Count());
     }

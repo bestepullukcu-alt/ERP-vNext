@@ -1,0 +1,89 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/PreOrders";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-a — Details: one pre-order, read only (the representative's e-mail link lands here — W6-BE-c1
+    /Commercial/PreOrders/Details/{id}): the facts, the lines with their outcome and messages, the totals, the signature,
+    the approval, the transmission and the depot's answer, the timeline, the document. The buttons are the order's own
+    abilities (can.*: edit, decide, cancel, copy, retry) — the CRM checks each again. UAS-001: without a read key NOTHING
+    but the notice; an order outside the caller's scope is the CRM's 404 (said in words, nothing of it drawn).
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["DetailsTitle"].Value" />
+    return;
+}
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+    <div class="mb-0">
+        <h5 class="mb-0" id="po-title">@Localizer["DetailsTitle"]</h5>
+        <p class="mb-0 text-muted" id="po-subtitle">@Localizer["DetailsDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2" id="po-actions">
+        <span id="po-status"></span>
+        <a href="/Commercial/PreOrders" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        <a id="po-open-document" href="/Commercial/PreOrders/Document/@Model.OrderId" class="btn btn-label-primary d-none"><i class="bx bx-file me-1"></i>@Localizer["OpenDocument"]</a>
+        <a id="po-open-approve" href="/Commercial/PreOrders/Approve/@Model.OrderId" class="btn btn-label-warning d-none">@Localizer["OpenApproval"]</a>
+        <a id="po-open-edit" href="/Commercial/PreOrders/Edit/@Model.OrderId" class="btn btn-label-primary d-none">@Localizer["OpenEdit"]</a>
+        <button type="button" id="po-retry" class="btn btn-label-info d-none"><i class="bx bx-refresh me-1"></i>@Localizer["RetryTransmission"]</button>
+        <button type="button" id="po-copy" class="btn btn-label-primary d-none"><i class="bx bx-copy me-1"></i>@Localizer["CopyAndNew"]</button>
+        <button type="button" id="po-cancel" class="btn btn-label-danger d-none"><i class="bx bx-block me-1"></i>@Localizer["CancelOrder"]</button>
+    </div>
+</div>
+
+<div id="po-root" data-screen="details" data-order-id="@Model.OrderId">
+    <div class="alert alert-danger d-none" id="po-alert" role="alert"></div>
+    <div class="row g-3 d-none" id="po-body">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-3"><div class="card-body" id="po-facts"></div></section>
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-capsule"></i>@Localizer["LinesSection"]</h6>
+                    <div id="po-lines"></div>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-xl-4">
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-receipt"></i>@Localizer["SummarySection"]</h6>
+                    <div id="po-summary"></div>
+                </div>
+            </section>
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-badge-check"></i>@Localizer["StateSection"]</h6>
+                    <div id="po-state"></div>
+                </div>
+            </section>
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-git-commit"></i>@Localizer["TimelineTitle"]</h6>
+                    <div id="po-timeline"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/Commercial/PreOrders/_ReasonModal.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/Commercial/PreOrders/preorders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Commercial/PreOrders/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/_CommercialRulesL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/preorders-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/preorders-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/details.js" asp-append-version="true"></script>
+}

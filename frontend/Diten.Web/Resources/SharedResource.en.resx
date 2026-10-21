@@ -1188,6 +1188,18 @@
   <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
     <value>Sent Visit E-mails</value>
   </data>
+  <data name="Nav.Page.PREORDERS" xml:space="preserve">
+    <value>Pre-Orders</value>
+  </data>
+  <data name="Nav.Page.PREORDERSETTINGS" xml:space="preserve">
+    <value>Pre-Order Settings</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERFORM" xml:space="preserve">
+    <value>Pre-Order</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
+    <value>Pre-Order Approval</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Manufacturing</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>BOM &amp; Routings</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>Bills of Materials</value></data>

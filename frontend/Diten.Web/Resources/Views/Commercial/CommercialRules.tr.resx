@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Rule.Outcome.ok" xml:space="preserve">
+    <value>Sınır içi</value>
+  </data>
+  <data name="Rule.Outcome.soft" xml:space="preserve">
+    <value>Onay gerekir</value>
+  </data>
+  <data name="Rule.Outcome.hard" xml:space="preserve">
+    <value>Girilemez</value>
+  </data>
+  <data name="Rule.discount.soft-exceeded" xml:space="preserve">
+    <value>Yönetici onayı gerekir: iskonto %{value} &gt; sınır %{limit}</value>
+  </data>
+  <data name="Rule.discount.hard-exceeded" xml:space="preserve">
+    <value>Girilemez: iskonto %{value} &gt; tavan %{limit}</value>
+  </data>
+  <data name="Rule.mf.soft-exceeded" xml:space="preserve">
+    <value>Yönetici onayı gerekir: MF {value} (%{valuePct}) &gt; sınır {limit} (%{limitPct})</value>
+  </data>
+  <data name="Rule.mf.hard-exceeded" xml:space="preserve">
+    <value>Girilemez: MF {value} (%{valuePct}) &gt; tavan {limit} (%{limitPct})</value>
+  </data>
+  <data name="Rule.combined.soft-exceeded" xml:space="preserve">
+    <value>Yönetici onayı gerekir: birleşik indirim %{valuePct} &gt; sınır %{limitPct}</value>
+  </data>
+  <data name="Rule.combined.hard-exceeded" xml:space="preserve">
+    <value>Girilemez: birleşik indirim %{valuePct} &gt; tavan %{limitPct}</value>
+  </data>
+  <data name="Rule.quantity.below-min" xml:space="preserve">
+    <value>Girilemez: adet {value} &lt; en az {min}</value>
+  </data>
+  <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
+    <value>Yönetici onayı gerekir: adet {value} &gt; sınır {limit}</value>
+  </data>
+  <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
+    <value>Girilemez: adet {value} &gt; tavan {limit}</value>
+  </data>
+  <data name="Rule.sku.retired" xml:space="preserve">
+    <value>Girilemez: {skuId} kullanımdan kalktı</value>
+  </data>
+  <data name="Rule.price.sku-not-in-list" xml:space="preserve">
+    <value>Girilemez: {skuId} {priceListName} fiyat listesinde yok</value>
+  </data>
+  <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>Girilemez: yürürlükte fiyat listesi yok, iskonto girilemez</value>
+  </data>
+  <data name="Rule.pre_order_request_invalid" xml:space="preserve">
+    <value>İstek geçerli değil.</value>
+  </data>
+  <data name="Rule.pre_order_not_found" xml:space="preserve">
+    <value>Ön sipariş bulunamadı ya da görme yetkiniz yok.</value>
+  </data>
+  <data name="Rule.pre_order_stale_version" xml:space="preserve">
+    <value>Bu ön siparişi başka biri değiştirdi. Yenileyip tekrar deneyin.</value>
+  </data>
+  <data name="Rule.pre_order_pharmacy_invalid" xml:space="preserve">
+    <value>Bir eczane seçin (türü eczane olan kurum).</value>
+  </data>
+  <data name="Rule.pre_order_depot_invalid" xml:space="preserve">
+    <value>Bir depo seçin (distribütör ya da ecza deposu).</value>
+  </data>
+  <data name="Rule.pre_order_depot_required" xml:space="preserve">
+    <value>Siparişin gideceği depoyu seçin.</value>
+  </data>
+  <data name="Rule.pre_order_depot_no_email" xml:space="preserve">
+    <value>Deponun kurum kaydında e-posta adresi yok; sipariş depoya gönderilemez.</value>
+  </data>
+  <data name="Rule.pre_order_lines_invalid" xml:space="preserve">
+    <value>Satırları kontrol edin: her satırda ürün ve en az 1 adet olmalı (en çok 50 satır).</value>
+  </data>
+  <data name="Rule.pre_order_sku_retired" xml:space="preserve">
+    <value>Siparişteki bir ürün kullanımdan kalktı, sipariş edilemez.</value>
+  </data>
+  <data name="Rule.pre_order_sku_not_found" xml:space="preserve">
+    <value>Siparişteki bir ürün ürün ana verisinde bulunamadı.</value>
+  </data>
+  <data name="Rule.pre_order_mf_invalid" xml:space="preserve">
+    <value>MF'yi alım + bedelsiz olarak yazın, örneğin 10+2.</value>
+  </data>
+  <data name="Rule.pre_order_discount_invalid" xml:space="preserve">
+    <value>İskonto 0 ile 100 arasında (100 hariç), en çok bir ondalıkla olmalı.</value>
+  </data>
+  <data name="Rule.pre_order_discount_not_allowed" xml:space="preserve">
+    <value>Şirketiniz için yürürlükte fiyat listesi yok: iskonto girilemez.</value>
+  </data>
+  <data name="Rule.pre_order_delivery_date_invalid" xml:space="preserve">
+    <value>Teslim tarihi geçmişte olamaz.</value>
+  </data>
+  <data name="Rule.pre_order_note_too_long" xml:space="preserve">
+    <value>Not en çok 1000 karakter olabilir.</value>
+  </data>
+  <data name="Rule.pre_order_signature_required" xml:space="preserve">
+    <value>Göndermeden önce eczacı imzası gerekir.</value>
+  </data>
+  <data name="Rule.pre_order_signature_invalid" xml:space="preserve">
+    <value>İmza okunamadı. Yeniden imzalatın.</value>
+  </data>
+  <data name="Rule.pre_order_hard_limit" xml:space="preserve">
+    <value>Bir satır aşılamaz bir sınırı aşıyor. "Girilemez" işaretli satırları düzeltin.</value>
+  </data>
+  <data name="Rule.pre_order_no_seat" xml:space="preserve">
+    <value>Etkin bir pozisyon koltuğunuz yok; satan şirket belirlenemiyor. Yöneticinize başvurun.</value>
+  </data>
+  <data name="Rule.pre_order_context_unavailable" xml:space="preserve">
+    <value>Sipariş için gereken bir servis yanıt vermedi. Biraz sonra tekrar deneyin.</value>
+  </data>
+  <data name="Rule.pre_order_no_company_prefix" xml:space="preserve">
+    <value>Şirketinizin henüz sipariş numarası öneki yok. Satış operasyonu ön sipariş ayarlarında tanımlar.</value>
+  </data>
+  <data name="Rule.pre_order_no_approver" xml:space="preserve">
+    <value>Pozisyonunuzun üstünde onaycı bulunamadı. Yöneticinize başvurun.</value>
+  </data>
+  <data name="Rule.pre_order_not_editable" xml:space="preserve">
+    <value>Bu ön sipariş artık değiştirilemez.</value>
+  </data>
+  <data name="Rule.pre_order_not_owner" xml:space="preserve">
+    <value>Bunu yalnız ön siparişi oluşturan temsilci yapabilir.</value>
+  </data>
+  <data name="Rule.pre_order_already_decided" xml:space="preserve">
+    <value>Bu ön siparişe başka bir onaycı zaten karar verdi.</value>
+  </data>
+  <data name="Rule.pre_order_invalid_transition" xml:space="preserve">
+    <value>Bu adım ön siparişin şu anki durumunda yapılamaz.</value>
+  </data>
+  <data name="Rule.pre_order_sod" xml:space="preserve">
+    <value>Kendi ön siparişinize karar veremezsiniz.</value>
+  </data>
+  <data name="Rule.pre_order_not_approver" xml:space="preserve">
+    <value>Bu ön siparişin onaycısı değilsiniz.</value>
+  </data>
+  <data name="Rule.pre_order_reason_required" xml:space="preserve">
+    <value>Bir gerekçe yazın (zorunlu).</value>
+  </data>
+  <data name="Rule.pre_order_decision_invalid" xml:space="preserve">
+    <value>Karar geçerli değil.</value>
+  </data>
+  <data name="Rule.pre_order_link_unusable" xml:space="preserve">
+    <value>Bu onay bağlantısı artık kullanılamaz.</value>
+  </data>
+  <data name="Rule.pre_order_depot_response_invalid" xml:space="preserve">
+    <value>Depo cevabını kontrol edin: eksik teslimde her satırın teslim edilen adedi gerekir.</value>
+  </data>
+  <data name="Rule.pre_order_cancel_forbidden" xml:space="preserve">
+    <value>Bu ön siparişi iptal edemezsiniz.</value>
+  </data>
+  <data name="Rule.pre_order_settings_invalid" xml:space="preserve">
+    <value>Ayarları kontrol edin: bir değer izin verilen aralığın dışında.</value>
+  </data>
+  <data name="Rule.pre_order_prefix_locked" xml:space="preserve">
+    <value>Bu şirketin öneki bir sipariş numaralandırdı; değiştirilemez ya da silinemez.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_unavailable" xml:space="preserve">
+    <value>Onay görevi açılamadı. Biraz sonra tekrar deneyin.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_template_missing" xml:space="preserve">
+    <value>Onay iş akışı bu kiracı için tanımlı değil. Yöneticinize başvurun.</value>
+  </data>
+  <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
+    <value>Dosya saklanamadı. Biraz sonra tekrar deneyin.</value>
+  </data>
+</root>

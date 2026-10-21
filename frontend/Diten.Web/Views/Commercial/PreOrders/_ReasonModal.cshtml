@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W6-WEB-a — the reason dialog of reject / request changes / cancel (the reason is REQUIRED — D2, D5; the CRM refuses an
+   empty one with pre_order_reason_required). preorders-ui.js askReason writes the title, the text and the button word and
+   keeps the button closed until a reason is typed. A consequential act: Ctrl / ⌘ + Enter confirms, a plain Enter is a new
+   line (UXH-001 chord). *@
+<div class="modal fade" id="po-reason-modal" tabindex="-1" aria-labelledby="po-reason-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="po-reason-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3" id="po-reason-body"></p>
+                <label class="form-label" for="po-reason-text">@Localizer["ReasonLabel"] <span class="text-danger">*</span></label>
+                <div class="diten-field"><i class="bx bx-message-square-detail diten-field-icon" aria-hidden="true"></i><textarea class="form-control" id="po-reason-text" rows="4" maxlength="500" placeholder="@Localizer["ReasonPlaceholder"]"></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="po-reason-ok" data-dt-primary="chord" disabled></button>
+            </div>
+        </div>
+    </div>
+</div>

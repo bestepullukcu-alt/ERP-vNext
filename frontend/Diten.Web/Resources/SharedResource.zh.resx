@@ -1129,6 +1129,18 @@
   <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
     <value>已发送的拜访邮件</value>
   </data>
+  <data name="Nav.Page.PREORDERS" xml:space="preserve">
+    <value>预订单</value>
+  </data>
+  <data name="Nav.Page.PREORDERSETTINGS" xml:space="preserve">
+    <value>预订单设置</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERFORM" xml:space="preserve">
+    <value>预订单</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
+    <value>预订单审批</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>

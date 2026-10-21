@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Rule.Outcome.ok" xml:space="preserve">
+    <value>ضمن الحدود</value>
+  </data>
+  <data name="Rule.Outcome.soft" xml:space="preserve">
+    <value>تتطلب موافقة</value>
+  </data>
+  <data name="Rule.Outcome.hard" xml:space="preserve">
+    <value>غير مسموح</value>
+  </data>
+  <data name="Rule.discount.soft-exceeded" xml:space="preserve">
+    <value>تتطلب موافقة المدير: الخصم {value}% &gt; الحد {limit}%</value>
+  </data>
+  <data name="Rule.discount.hard-exceeded" xml:space="preserve">
+    <value>غير مسموح: الخصم {value}% &gt; السقف {limit}%</value>
+  </data>
+  <data name="Rule.mf.soft-exceeded" xml:space="preserve">
+    <value>تتطلب موافقة المدير: البونص {value} ({valuePct}%) &gt; الحد {limit} ({limitPct}%)</value>
+  </data>
+  <data name="Rule.mf.hard-exceeded" xml:space="preserve">
+    <value>غير مسموح: البونص {value} ({valuePct}%) &gt; السقف {limit} ({limitPct}%)</value>
+  </data>
+  <data name="Rule.combined.soft-exceeded" xml:space="preserve">
+    <value>تتطلب موافقة المدير: الخصم المجمّع {valuePct}% &gt; الحد {limitPct}%</value>
+  </data>
+  <data name="Rule.combined.hard-exceeded" xml:space="preserve">
+    <value>غير مسموح: الخصم المجمّع {valuePct}% &gt; السقف {limitPct}%</value>
+  </data>
+  <data name="Rule.quantity.below-min" xml:space="preserve">
+    <value>غير مسموح: الكمية {value} &lt; الحد الأدنى {min}</value>
+  </data>
+  <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
+    <value>تتطلب موافقة المدير: الكمية {value} &gt; الحد {limit}</value>
+  </data>
+  <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
+    <value>غير مسموح: الكمية {value} &gt; السقف {limit}</value>
+  </data>
+  <data name="Rule.sku.retired" xml:space="preserve">
+    <value>غير مسموح: {skuId} متوقف</value>
+  </data>
+  <data name="Rule.price.sku-not-in-list" xml:space="preserve">
+    <value>غير مسموح: {skuId} غير موجود في قائمة الأسعار {priceListName}</value>
+  </data>
+  <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>غير مسموح: لا توجد قائمة أسعار سارية، لا يمكن إدخال خصم</value>
+  </data>
+  <data name="Rule.pre_order_request_invalid" xml:space="preserve">
+    <value>الطلب غير صالح.</value>
+  </data>
+  <data name="Rule.pre_order_not_found" xml:space="preserve">
+    <value>لم يُعثر على الطلب المسبق أو لا يمكنك رؤيته.</value>
+  </data>
+  <data name="Rule.pre_order_stale_version" xml:space="preserve">
+    <value>قام شخص آخر بتغيير هذا الطلب المسبق. أعد تحميله وحاول مجددًا.</value>
+  </data>
+  <data name="Rule.pre_order_pharmacy_invalid" xml:space="preserve">
+    <value>اختر صيدلية (مؤسسة من نوع صيدلية).</value>
+  </data>
+  <data name="Rule.pre_order_depot_invalid" xml:space="preserve">
+    <value>اختر مستودعًا (موزّع أو تاجر جملة).</value>
+  </data>
+  <data name="Rule.pre_order_depot_required" xml:space="preserve">
+    <value>اختر المستودع الذي يُرسل إليه الطلب.</value>
+  </data>
+  <data name="Rule.pre_order_depot_no_email" xml:space="preserve">
+    <value>لا يوجد بريد إلكتروني في سجل المستودع؛ لا يمكن إرسال الطلب إليه.</value>
+  </data>
+  <data name="Rule.pre_order_lines_invalid" xml:space="preserve">
+    <value>تحقق من البنود: يحتاج كل بند إلى منتج وكمية لا تقل عن 1 (50 بندًا كحد أقصى).</value>
+  </data>
+  <data name="Rule.pre_order_sku_retired" xml:space="preserve">
+    <value>أحد منتجات الطلب متوقف ولا يمكن طلبه.</value>
+  </data>
+  <data name="Rule.pre_order_sku_not_found" xml:space="preserve">
+    <value>لم يُعثر على أحد منتجات الطلب في البيانات الرئيسية للمنتجات.</value>
+  </data>
+  <data name="Rule.pre_order_mf_invalid" xml:space="preserve">
+    <value>اكتب البونص على شكل شراء + مجاني، مثل 10+2.</value>
+  </data>
+  <data name="Rule.pre_order_discount_invalid" xml:space="preserve">
+    <value>يجب أن يكون الخصم بين 0 و100 (دون 100)، بمنزلة عشرية واحدة كحد أقصى.</value>
+  </data>
+  <data name="Rule.pre_order_discount_not_allowed" xml:space="preserve">
+    <value>لا توجد قائمة أسعار سارية لشركتك: لا يمكن إدخال خصم.</value>
+  </data>
+  <data name="Rule.pre_order_delivery_date_invalid" xml:space="preserve">
+    <value>لا يمكن أن يكون تاريخ التسليم في الماضي.</value>
+  </data>
+  <data name="Rule.pre_order_note_too_long" xml:space="preserve">
+    <value>يمكن أن تتكون الملاحظة من 1000 حرف كحد أقصى.</value>
+  </data>
+  <data name="Rule.pre_order_signature_required" xml:space="preserve">
+    <value>يلزم توقيع الصيدلي قبل الإرسال.</value>
+  </data>
+  <data name="Rule.pre_order_signature_invalid" xml:space="preserve">
+    <value>تعذّرت قراءة التوقيع. وقّع مرة أخرى.</value>
+  </data>
+  <data name="Rule.pre_order_hard_limit" xml:space="preserve">
+    <value>يتجاوز أحد البنود حدًا لا يمكن تجاوزه. صحّح البنود المعلّمة «غير مسموح».</value>
+  </data>
+  <data name="Rule.pre_order_no_seat" xml:space="preserve">
+    <value>ليس لديك مقعد وظيفي نشط، لذا لا يمكن تحديد الشركة البائعة. راجع المسؤول.</value>
+  </data>
+  <data name="Rule.pre_order_context_unavailable" xml:space="preserve">
+    <value>لم تستجب خدمة لازمة للطلب. حاول مرة أخرى بعد قليل.</value>
+  </data>
+  <data name="Rule.pre_order_no_company_prefix" xml:space="preserve">
+    <value>لا تملك شركتك بادئة لرقم الطلب بعد. تحددها عمليات المبيعات في إعدادات الطلب المسبق.</value>
+  </data>
+  <data name="Rule.pre_order_no_approver" xml:space="preserve">
+    <value>لم يُعثر على معتمِد فوق منصبك. راجع المسؤول.</value>
+  </data>
+  <data name="Rule.pre_order_not_editable" xml:space="preserve">
+    <value>لم يعد بالإمكان تغيير هذا الطلب المسبق.</value>
+  </data>
+  <data name="Rule.pre_order_not_owner" xml:space="preserve">
+    <value>لا يمكن ذلك إلا للمندوب الذي أنشأ الطلب المسبق.</value>
+  </data>
+  <data name="Rule.pre_order_already_decided" xml:space="preserve">
+    <value>اتخذ معتمِد آخر قرارًا بشأن هذا الطلب المسبق بالفعل.</value>
+  </data>
+  <data name="Rule.pre_order_invalid_transition" xml:space="preserve">
+    <value>لا يمكن تنفيذ هذه الخطوة في الحالة الحالية للطلب المسبق.</value>
+  </data>
+  <data name="Rule.pre_order_sod" xml:space="preserve">
+    <value>لا يمكنك اتخاذ قرار بشأن طلبك المسبق.</value>
+  </data>
+  <data name="Rule.pre_order_not_approver" xml:space="preserve">
+    <value>لست معتمِدًا لهذا الطلب المسبق.</value>
+  </data>
+  <data name="Rule.pre_order_reason_required" xml:space="preserve">
+    <value>اكتب سببًا (إلزامي).</value>
+  </data>
+  <data name="Rule.pre_order_decision_invalid" xml:space="preserve">
+    <value>القرار غير صالح.</value>
+  </data>
+  <data name="Rule.pre_order_link_unusable" xml:space="preserve">
+    <value>لم يعد بالإمكان استخدام رابط الموافقة هذا.</value>
+  </data>
+  <data name="Rule.pre_order_depot_response_invalid" xml:space="preserve">
+    <value>تحقق من رد المستودع: يتطلب التسليم الجزئي الكمية المسلّمة لكل بند.</value>
+  </data>
+  <data name="Rule.pre_order_cancel_forbidden" xml:space="preserve">
+    <value>لا يمكنك إلغاء هذا الطلب المسبق.</value>
+  </data>
+  <data name="Rule.pre_order_settings_invalid" xml:space="preserve">
+    <value>تحقق من الإعدادات: إحدى القيم خارج النطاق المسموح.</value>
+  </data>
+  <data name="Rule.pre_order_prefix_locked" xml:space="preserve">
+    <value>استُخدمت بادئة هذه الشركة لترقيم طلب؛ لا يمكن تغييرها أو حذفها.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_unavailable" xml:space="preserve">
+    <value>تعذّر فتح مهمة الموافقة. حاول مرة أخرى بعد قليل.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_template_missing" xml:space="preserve">
+    <value>لم يتم إعداد سير عمل الموافقة لهذا المستأجر. راجع المسؤول.</value>
+  </data>
+  <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
+    <value>تعذّر حفظ الملف. حاول مرة أخرى بعد قليل.</value>
+  </data>
+</root>

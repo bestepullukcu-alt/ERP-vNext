@@ -1,0 +1,145 @@
+/* WP-VW-W6 · W6-WEB-a — the pharmacy pre-order screens. Colours are the theme's tokens only (the layout primary, the
+   semantic warning / danger / success) — never a fixed navy (DESIGN-GAP §4); every side is a LOGICAL property, so the
+   drawer, the line edge and the timeline mirror in Arabic (RTL). */
+
+.po-drawer {
+    --bs-offcanvas-width: min(560px, 100vw);
+}
+
+.po-system .badge {
+    font-weight: 500;
+}
+
+.po-line {
+    border-inline-start: 3px solid var(--bs-border-color) !important;
+}
+
+.po-line:has(.po-outcome-soft) {
+    border-inline-start-color: var(--bs-warning) !important;
+}
+
+.po-line:has(.po-outcome-hard) {
+    border-inline-start-color: var(--bs-danger) !important;
+}
+
+.po-msgs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.po-msg {
+    font-size: 0.8125rem;
+}
+
+.po-msg-soft {
+    color: var(--bs-warning-text-emphasis, var(--bs-warning));
+}
+
+.po-msg-hard {
+    color: var(--bs-danger-text-emphasis, var(--bs-danger));
+}
+
+.po-limit {
+    display: block;
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+}
+
+.po-timeline li {
+    position: relative;
+    padding-block-end: 0.75rem;
+}
+
+.po-timeline li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0.875rem;
+    inset-block-start: 1.875rem;
+    inset-block-end: 0;
+    border-inline-start: 1px dashed var(--bs-border-color);
+}
+
+.po-tl-dot {
+    flex: 0 0 1.75rem;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.po-sign-canvas {
+    display: block;
+    inline-size: 100%;
+    block-size: 11rem;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.po-bars {
+    block-size: 8rem;
+}
+
+.po-bar-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    block-size: 100%;
+}
+
+.po-bar {
+    block-size: var(--po-bar, 0%);
+    min-block-size: 2px;
+    border-radius: var(--bs-border-radius-sm) var(--bs-border-radius-sm) 0 0;
+    background: var(--bs-primary);
+    opacity: 0.85;
+}
+
+.po-pdf {
+    display: block;
+    inline-size: 100%;
+    block-size: 80vh;
+    border: 0;
+}
+
+.po-link {
+    max-inline-size: 760px;
+}
+
+.po-prefix-code {
+    inline-size: 8rem;
+    flex: 0 0 8rem;
+}
+
+.po-dr-qty {
+    inline-size: 7rem;
+}
+
+.po-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding-block: 2rem;
+}
+
+.po-empty .bx {
+    font-size: 2rem;
+    color: var(--bs-primary);
+}
+
+@media (max-width: 575.98px) {
+    .po-form .card-body {
+        padding: 1rem;
+    }
+
+    .po-sign-canvas {
+        block-size: 9rem;
+    }
+}

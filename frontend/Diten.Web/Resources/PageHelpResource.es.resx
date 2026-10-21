@@ -720,4 +720,124 @@
   <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
     <value>Cerrar lo que no ocurrió</value>
   </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Lista los prepedidos de farmacia que puede ver —los suyos, los de su equipo y los pendientes de su aprobación— con su estado y la respuesta del distribuidor.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Representantes, sus responsables (aprobadores) y operaciones comerciales.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Filtre la lista</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>Abra «Filtro»: período, estado, farmacia, distribuidor, producto, país; un aprobador tiene además «Pendientes de mi aprobación».</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Lea los importes</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Cada total lleva su moneda; los pedidos en monedas distintas nunca se suman. «Equivalente local» se muestra desde la visibilidad de columnas.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Abra la vista rápida</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>El icono del ojo muestra las líneas, los totales y la cronología, con enlaces al documento y a la aprobación.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Registre la respuesta del distribuidor</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Operaciones comerciales marca un pedido enviado como «Entregado» o «Entrega parcial» (cajas por línea y una nota) en la vista rápida.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Toma el pedido de una farmacia para enviarlo a su distribuidor, que factura. La empresa, la moneda y los precios vienen del sistema.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Representantes de campo (tableta y teléfono).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Elija la farmacia y los productos</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Busque la farmacia y añada productos con su cantidad, la bonificación (por ejemplo 10+2) y, si hay lista de precios vigente, el descuento.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Observe las insignias de regla</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Cada línea indica «Dentro de los límites», «Requiere aprobación» o «No permitido», con el límite superado. Una línea no permitida debe corregirse.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Guarde y haga firmar al farmacéutico</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>«Guardar borrador» asigna el número de pedido. Elija el distribuidor y entregue el dispositivo al farmacéutico para firmar. Cambiar las líneas borra la firma.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Envíe</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>«Enviar» se activa cuando nada lo impide (los motivos aparecen debajo). Después el pedido espera al aprobador o, si el inquilino lo permite, va directo al distribuidor.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Decide sobre un prepedido pendiente de usted: apruébelo, rechácelo o devuélvalo para cambios.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>El responsable del representante (el puesto superior).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>Vea por qué le llega</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>«¿Por qué me llega a mí?» indica la configuración del inquilino o las líneas que superan un límite flexible.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Compare con los límites</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>Cada celda muestra lo introducido y, debajo, el límite de la regla; los últimos seis meses de la farmacia están a la derecha.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Decida</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>«Aprobar» envía el pedido al distribuidor. «Rechazar» y «Solicitar cambios» requieren un motivo; una solicitud de cambios lo devuelve como borrador al representante.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>Desde el enlace del correo</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>El enlace del correo pide iniciar sesión, funciona una sola vez y caduca; prevalece la decisión del primer aprobador.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Define cómo se aprueban, valoran, numeran y envían los prepedidos de este inquilino.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Operaciones comerciales.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Elija el modo de aprobación</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>«Siempre aprobación del responsable» (predeterminado) o «Automática dentro de los límites»; un pedido que supere un límite flexible va igualmente al responsable.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Ajuste el enlace y los reintentos</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>El enlace de aprobación dura 12–168 horas (48 por defecto); un envío fallido se reintenta automáticamente 0–10 veces.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Elija el nivel de precio</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>Por país: compra del farmacéutico (predeterminado), precio de distribuidor o precio al público.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Asigne a cada empresa su prefijo</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>2–5 letras inician el número de pedido (MG-ORD-000123). Un prefijo que ya numeró un pedido queda bloqueado.</value>
+  </data>
 </root>

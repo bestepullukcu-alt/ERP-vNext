@@ -1,0 +1,168 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+}
+
+@*
+    WP-VW-W6 · W6-WEB-a — A: the representative's pre-order (mockup W6 A) as a RESPONSIVE page inside the shell (tablet and
+    phone first; the mockup's device frame and its own top bar are NOT taken — DESIGN-GAP §4). The company, the country,
+    the currency and the price mode come "from the system 🔒" (the rep's seat → legal entity → MDM, K-O4): shown, never
+    chosen. Every price, free box, finding and total is the CRM's preview (MOD-0156) — form.js computes none (§4.2). In
+    quantity mode there is no discount and no price field at all (AC-PRICE-3). "Send" stays closed with its reason
+    written under it (hard limit / no signature / no line / no depot / unsaved change). After submission the order is drawn
+    locked with its timeline and the way out: "Cancel and open a new order" (approved / transmitted) or "Copy and open a new
+    order" (rejected / cancelled). _CreateEditOffcanvas is NOT used (Compact).
+*@
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+    <div class="mb-0">
+        <h5 class="mb-0" id="po-title">@(isEdit ? Localizer["FormTitleEdit"] : Localizer["FormTitleCreate"])</h5>
+        <p class="mb-0 text-muted" id="po-subtitle">@Localizer["FormDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <span id="po-status" class="d-none"></span>
+        <a href="/Commercial/PreOrders" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        <button type="button" id="po-discard" class="btn btn-label-danger d-none"><i class="bx bx-trash me-1"></i>@Localizer["DiscardDraft"]</button>
+        <button type="button" id="po-save" class="btn btn-label-primary"><i class="bx bx-save me-1"></i>@Localizer["SaveDraft"]</button>
+    </div>
+</div>
+
+<div id="po-root" class="po-form" data-screen="@(isEdit ? "edit" : "create")"
+     data-order-id="@(Model.OrderId?.ToString("D") ?? "")"
+     data-visit-id="@(Model.VisitId?.ToString("D") ?? "")"
+     data-can-submit="@Model.CanSubmit.ToString().ToLowerInvariant()"
+     data-can-cancel="@Model.CanCancel.ToString().ToLowerInvariant()">
+
+    <div class="alert alert-danger d-none" id="po-alert" role="alert"></div>
+
+    @* "Sistemden 🔒" — the seat's company, the country, the currency, the price mode (never chosen) *@
+    <div class="po-system card mb-3">
+        <div class="card-body py-2 d-flex flex-wrap align-items-center gap-2">
+            <span class="badge bg-label-secondary d-inline-flex align-items-center gap-1"><i class="bx bx-lock-alt"></i>@Localizer["FromSystem"]</span>
+            <span class="fw-medium text-heading" id="po-sys-company">—</span>
+            <span class="text-muted" id="po-sys-country"></span>
+            <span class="text-muted" id="po-sys-currency"></span>
+            <span class="badge bg-label-primary" id="po-sys-mode"></span>
+            <small class="text-muted ms-auto" id="po-sys-price"></small>
+        </div>
+    </div>
+
+    <div class="alert alert-warning d-none d-flex gap-2 align-items-start" id="po-change-banner" role="status">
+        <i class="bx bx-revision mt-1"></i><span id="po-change-text"></span>
+    </div>
+
+    <section class="card mb-3 d-none" id="po-timeline-card">
+        <div class="card-body">
+            <h6 class="card-section-title mb-3"><i class="bx bx-git-commit"></i>@Localizer["TimelineTitle"]</h6>
+            <div id="po-timeline"></div>
+            <div class="alert alert-secondary d-flex flex-wrap align-items-center gap-2 mt-3 mb-0 d-none" id="po-lock-note">
+                <i class="bx bx-lock-alt"></i><span id="po-lock-text" class="flex-grow-1"></span>
+                <button type="button" class="btn btn-sm btn-primary d-none" id="po-lock-action"></button>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-3">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-store-alt"></i>@Localizer["PharmacySection"]</h6>
+                    <label class="form-label" for="po-pharmacy">@Localizer["PharmacyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-plus-medical diten-field-icon" aria-hidden="true"></i>
+                        <select id="po-pharmacy" class="form-select" data-placeholder="@Localizer["PharmacyPlaceholder"]"><option value=""></option></select>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-capsule"></i>@Localizer["LinesSection"]</h6>
+                        <small class="text-muted" id="po-lines-note"></small>
+                    </div>
+                    <div id="po-lines" class="d-flex flex-column gap-3"></div>
+                    <button type="button" class="btn btn-sm btn-label-primary mt-3" id="po-add-line"><i class="bx bx-plus me-1"></i>@Localizer["AddLine"]</button>
+                </div>
+            </section>
+
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-history"></i>@Localizer["PreviousOrders"]</h6>
+                    <div id="po-previous"><p class="text-muted small mb-0">@Localizer["PreviousOrdersNone"]</p></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-buildings"></i>@Localizer["DeliverySection"]</h6>
+                    <label class="form-label" for="po-depot">@Localizer["DepotLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field mb-3">
+                        <i class="bx bx-building-house diten-field-icon" aria-hidden="true"></i>
+                        <select id="po-depot" class="form-select" data-placeholder="@Localizer["DepotPlaceholder"]"><option value=""></option></select>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-7">
+                            <label class="form-label" for="po-delivery">@Localizer["DeliveryLabel"]</label>
+                            <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="po-delivery" autocomplete="off" /></div>
+                        </div>
+                        <div class="col-5">
+                            <span class="form-label d-block">@Localizer["CurrencyLabel"]</span>
+                            <div class="diten-field"><i class="bx bx-lock-alt diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="po-currency" readonly tabindex="-1" aria-label="@Localizer["CurrencyLabel"]" /></div>
+                        </div>
+                    </div>
+                    <label class="form-label mt-3" for="po-note">@Localizer["NoteLabel"]</label>
+                    <div class="diten-field"><i class="bx bx-note diten-field-icon" aria-hidden="true"></i><textarea class="form-control" id="po-note" rows="2" maxlength="1000" placeholder="@Localizer["NotePlaceholder"]"></textarea></div>
+                </div>
+            </section>
+
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-receipt"></i>@Localizer["SummarySection"]</h6>
+                    <div id="po-summary"></div>
+                </div>
+            </section>
+
+            <section class="card mb-3" id="po-approval-card">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-2"><i class="bx bx-user-check"></i><span id="po-need-title">@Localizer["NeedTitle"]</span></h6>
+                    <div id="po-need"></div>
+                </div>
+            </section>
+
+            <section class="card mb-3" id="po-signature-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-pen"></i>@Localizer["SignatureSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-secondary d-none" id="po-resign">@Localizer["Resign"]</button>
+                    </div>
+                    <div id="po-signed" class="d-none"></div>
+                    <div id="po-sign-pad">
+                        <label class="form-label" for="po-signer">@Localizer["SignerLabel"] <span class="text-danger">*</span></label>
+                        <div class="diten-field mb-2"><i class="bx bx-user diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="po-signer" maxlength="200" autocomplete="off" /></div>
+                        <canvas id="po-sign-canvas" class="po-sign-canvas" aria-label="@Localizer["SignatureHint"]" role="img"></canvas>
+                        <small class="text-muted d-block mt-1">@Localizer["SignatureHint"]</small>
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-label-secondary" id="po-sign-clear">@Localizer["SignatureClear"]</button>
+                            <button type="button" class="btn btn-sm btn-primary" id="po-sign-save" disabled>@Localizer["SignatureSave"]</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-3" id="po-send-card">
+                <div class="card-body">
+                    <button type="button" class="btn btn-primary w-100" id="po-send" disabled><i class="bx bx-send me-1"></i>@Localizer["Send"]</button>
+                    <ul class="list-unstyled small text-muted mt-2 mb-0" id="po-send-why"></ul>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/Commercial/PreOrders/_ReasonModal.cshtml" />

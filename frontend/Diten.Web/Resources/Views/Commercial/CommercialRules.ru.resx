@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Rule.Outcome.ok" xml:space="preserve">
+    <value>В пределах лимитов</value>
+  </data>
+  <data name="Rule.Outcome.soft" xml:space="preserve">
+    <value>Требуется согласование</value>
+  </data>
+  <data name="Rule.Outcome.hard" xml:space="preserve">
+    <value>Недопустимо</value>
+  </data>
+  <data name="Rule.discount.soft-exceeded" xml:space="preserve">
+    <value>Требуется согласование руководителя: скидка {value}% &gt; лимит {limit}%</value>
+  </data>
+  <data name="Rule.discount.hard-exceeded" xml:space="preserve">
+    <value>Недопустимо: скидка {value}% &gt; потолок {limit}%</value>
+  </data>
+  <data name="Rule.mf.soft-exceeded" xml:space="preserve">
+    <value>Требуется согласование руководителя: бонус {value} ({valuePct}%) &gt; лимит {limit} ({limitPct}%)</value>
+  </data>
+  <data name="Rule.mf.hard-exceeded" xml:space="preserve">
+    <value>Недопустимо: бонус {value} ({valuePct}%) &gt; потолок {limit} ({limitPct}%)</value>
+  </data>
+  <data name="Rule.combined.soft-exceeded" xml:space="preserve">
+    <value>Требуется согласование руководителя: совокупная скидка {valuePct}% &gt; лимит {limitPct}%</value>
+  </data>
+  <data name="Rule.combined.hard-exceeded" xml:space="preserve">
+    <value>Недопустимо: совокупная скидка {valuePct}% &gt; потолок {limitPct}%</value>
+  </data>
+  <data name="Rule.quantity.below-min" xml:space="preserve">
+    <value>Недопустимо: количество {value} &lt; минимум {min}</value>
+  </data>
+  <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
+    <value>Требуется согласование руководителя: количество {value} &gt; лимит {limit}</value>
+  </data>
+  <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
+    <value>Недопустимо: количество {value} &gt; потолок {limit}</value>
+  </data>
+  <data name="Rule.sku.retired" xml:space="preserve">
+    <value>Недопустимо: {skuId} выведен из оборота</value>
+  </data>
+  <data name="Rule.price.sku-not-in-list" xml:space="preserve">
+    <value>Недопустимо: {skuId} нет в прайс-листе {priceListName}</value>
+  </data>
+  <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>Недопустимо: нет действующего прайс-листа, скидку ввести нельзя</value>
+  </data>
+  <data name="Rule.pre_order_request_invalid" xml:space="preserve">
+    <value>Запрос недействителен.</value>
+  </data>
+  <data name="Rule.pre_order_not_found" xml:space="preserve">
+    <value>Предзаказ не найден или недоступен вам.</value>
+  </data>
+  <data name="Rule.pre_order_stale_version" xml:space="preserve">
+    <value>Кто-то изменил этот предзаказ. Обновите страницу и повторите.</value>
+  </data>
+  <data name="Rule.pre_order_pharmacy_invalid" xml:space="preserve">
+    <value>Выберите аптеку (учреждение типа «аптека»).</value>
+  </data>
+  <data name="Rule.pre_order_depot_invalid" xml:space="preserve">
+    <value>Выберите дистрибьютора (дистрибьютор или оптовик).</value>
+  </data>
+  <data name="Rule.pre_order_depot_required" xml:space="preserve">
+    <value>Выберите дистрибьютора, которому уйдёт заказ.</value>
+  </data>
+  <data name="Rule.pre_order_depot_no_email" xml:space="preserve">
+    <value>В карточке дистрибьютора нет e-mail; заказ нельзя отправить.</value>
+  </data>
+  <data name="Rule.pre_order_lines_invalid" xml:space="preserve">
+    <value>Проверьте строки: в каждой нужен препарат и количество не меньше 1 (не более 50 строк).</value>
+  </data>
+  <data name="Rule.pre_order_sku_retired" xml:space="preserve">
+    <value>Препарат из заказа выведен из оборота и не может быть заказан.</value>
+  </data>
+  <data name="Rule.pre_order_sku_not_found" xml:space="preserve">
+    <value>Препарат из заказа не найден в справочнике продуктов.</value>
+  </data>
+  <data name="Rule.pre_order_mf_invalid" xml:space="preserve">
+    <value>Укажите бонус как «покупка + бесплатно», например 10+2.</value>
+  </data>
+  <data name="Rule.pre_order_discount_invalid" xml:space="preserve">
+    <value>Скидка должна быть от 0 до 100 (не включая), не более одного знака после запятой.</value>
+  </data>
+  <data name="Rule.pre_order_discount_not_allowed" xml:space="preserve">
+    <value>Для вашей компании нет действующего прайс-листа: скидку ввести нельзя.</value>
+  </data>
+  <data name="Rule.pre_order_delivery_date_invalid" xml:space="preserve">
+    <value>Дата доставки не может быть в прошлом.</value>
+  </data>
+  <data name="Rule.pre_order_note_too_long" xml:space="preserve">
+    <value>Примечание — не более 1000 символов.</value>
+  </data>
+  <data name="Rule.pre_order_signature_required" xml:space="preserve">
+    <value>Перед отправкой нужна подпись провизора.</value>
+  </data>
+  <data name="Rule.pre_order_signature_invalid" xml:space="preserve">
+    <value>Подпись не удалось прочитать. Подпишите ещё раз.</value>
+  </data>
+  <data name="Rule.pre_order_hard_limit" xml:space="preserve">
+    <value>Строка превышает непреодолимый лимит. Исправьте строки с пометкой «Недопустимо».</value>
+  </data>
+  <data name="Rule.pre_order_no_seat" xml:space="preserve">
+    <value>У вас нет активной должности, поэтому компанию-продавца определить нельзя. Обратитесь к администратору.</value>
+  </data>
+  <data name="Rule.pre_order_context_unavailable" xml:space="preserve">
+    <value>Сервис, необходимый для заказа, не ответил. Повторите чуть позже.</value>
+  </data>
+  <data name="Rule.pre_order_no_company_prefix" xml:space="preserve">
+    <value>У вашей компании ещё нет префикса номера заказа. Его задаёт отдел продаж в настройках предзаказов.</value>
+  </data>
+  <data name="Rule.pre_order_no_approver" xml:space="preserve">
+    <value>Над вашей должностью не найден согласующий. Обратитесь к администратору.</value>
+  </data>
+  <data name="Rule.pre_order_not_editable" xml:space="preserve">
+    <value>Этот предзаказ больше нельзя изменить.</value>
+  </data>
+  <data name="Rule.pre_order_not_owner" xml:space="preserve">
+    <value>Это может сделать только представитель, создавший предзаказ.</value>
+  </data>
+  <data name="Rule.pre_order_already_decided" xml:space="preserve">
+    <value>Другой согласующий уже принял решение по этому предзаказу.</value>
+  </data>
+  <data name="Rule.pre_order_invalid_transition" xml:space="preserve">
+    <value>Этот шаг невозможен в текущем статусе предзаказа.</value>
+  </data>
+  <data name="Rule.pre_order_sod" xml:space="preserve">
+    <value>Нельзя принимать решение по собственному предзаказу.</value>
+  </data>
+  <data name="Rule.pre_order_not_approver" xml:space="preserve">
+    <value>Вы не являетесь согласующим этого предзаказа.</value>
+  </data>
+  <data name="Rule.pre_order_reason_required" xml:space="preserve">
+    <value>Укажите причину (обязательно).</value>
+  </data>
+  <data name="Rule.pre_order_decision_invalid" xml:space="preserve">
+    <value>Решение недействительно.</value>
+  </data>
+  <data name="Rule.pre_order_link_unusable" xml:space="preserve">
+    <value>Эту ссылку согласования больше нельзя использовать.</value>
+  </data>
+  <data name="Rule.pre_order_depot_response_invalid" xml:space="preserve">
+    <value>Проверьте ответ дистрибьютора: при частичной поставке нужно количество по каждой строке.</value>
+  </data>
+  <data name="Rule.pre_order_cancel_forbidden" xml:space="preserve">
+    <value>Вы не можете отменить этот предзаказ.</value>
+  </data>
+  <data name="Rule.pre_order_settings_invalid" xml:space="preserve">
+    <value>Проверьте настройки: значение вне допустимого диапазона.</value>
+  </data>
+  <data name="Rule.pre_order_prefix_locked" xml:space="preserve">
+    <value>Префикс этой компании уже использован в номере заказа; его нельзя изменить или удалить.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_unavailable" xml:space="preserve">
+    <value>Не удалось открыть задачу согласования. Повторите чуть позже.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_template_missing" xml:space="preserve">
+    <value>Процесс согласования не настроен для этого арендатора. Обратитесь к администратору.</value>
+  </data>
+  <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
+    <value>Не удалось сохранить файл. Повторите чуть позже.</value>
+  </data>
+</root>

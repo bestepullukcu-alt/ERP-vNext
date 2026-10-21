@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Предзаказы</value>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Заказы аптек, переданные дистрибьютору; счёт выставляет дистрибьютор.</value>
+  </data>
+  <data name="PeriodLabel" xml:space="preserve">
+    <value>Период</value>
+  </data>
+  <data name="PeriodAll" xml:space="preserve">
+    <value>Все даты</value>
+  </data>
+  <data name="PeriodLast7" xml:space="preserve">
+    <value>Последние 7 дней</value>
+  </data>
+  <data name="PeriodLast30" xml:space="preserve">
+    <value>Последние 30 дней</value>
+  </data>
+  <data name="PeriodMonth" xml:space="preserve">
+    <value>Этот месяц</value>
+  </data>
+  <data name="PeriodCustom" xml:space="preserve">
+    <value>Свой диапазон</value>
+  </data>
+  <data name="CustomFrom" xml:space="preserve">
+    <value>С</value>
+  </data>
+  <data name="CustomTo" xml:space="preserve">
+    <value>По</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="StatusAll" xml:space="preserve">
+    <value>Все статусы</value>
+  </data>
+  <data name="RepLabel" xml:space="preserve">
+    <value>Представитель</value>
+  </data>
+  <data name="RepAll" xml:space="preserve">
+    <value>Все представители</value>
+  </data>
+  <data name="PharmacyLabel" xml:space="preserve">
+    <value>Аптека</value>
+  </data>
+  <data name="DepotLabel" xml:space="preserve">
+    <value>Дистрибьютор</value>
+  </data>
+  <data name="ProductLabel" xml:space="preserve">
+    <value>Препарат</value>
+  </data>
+  <data name="AllOption" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="CountryLabel" xml:space="preserve">
+    <value>Страна</value>
+  </data>
+  <data name="CountryAll" xml:space="preserve">
+    <value>Все страны</value>
+  </data>
+  <data name="AwaitingLabel" xml:space="preserve">
+    <value>Ждут моего согласования</value>
+  </data>
+  <data name="AwaitingAll" xml:space="preserve">
+    <value>Все заказы</value>
+  </data>
+  <data name="AwaitingOption" xml:space="preserve">
+    <value>Ждут моего согласования ({0})</value>
+  </data>
+  <data name="AwaitingYou" xml:space="preserve">
+    <value>Ждёт вашего решения</value>
+  </data>
+  <data name="SearchHint" xml:space="preserve">
+    <value>Введите не менее 2 символов</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Поиск…</value>
+  </data>
+  <data name="NoMatch" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="ColCode" xml:space="preserve">
+    <value>№ заказа</value>
+  </data>
+  <data name="ColDate" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="ColPharmacy" xml:space="preserve">
+    <value>Аптека</value>
+  </data>
+  <data name="ColDepot" xml:space="preserve">
+    <value>Дистрибьютор</value>
+  </data>
+  <data name="ColRep" xml:space="preserve">
+    <value>Представитель</value>
+  </data>
+  <data name="ColLines" xml:space="preserve">
+    <value>Строки</value>
+  </data>
+  <data name="ColTotal" xml:space="preserve">
+    <value>Итого</value>
+  </data>
+  <data name="ColLocal" xml:space="preserve">
+    <value>Местный эквивалент</value>
+  </data>
+  <data name="ColEffective" xml:space="preserve">
+    <value>Фактическая скидка</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="ColRule" xml:space="preserve">
+    <value>Правило</value>
+  </data>
+  <data name="ColActions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="QuickView" xml:space="preserve">
+    <value>Быстрый просмотр</value>
+  </data>
+  <data name="DrawerTitle" xml:space="preserve">
+    <value>Предзаказ</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="NewPreOrder" xml:space="preserve">
+    <value>Новый предзаказ</value>
+  </data>
+  <data name="EmptyTitle" xml:space="preserve">
+    <value>Предзаказов нет</value>
+  </data>
+  <data name="EmptyText" xml:space="preserve">
+    <value>Нет предзаказов, подходящих под фильтр.</value>
+  </data>
+  <data name="QuantityModeShort" xml:space="preserve">
+    <value>Только количества</value>
+  </data>
+  <data name="OpenDocument" xml:space="preserve">
+    <value>Документ</value>
+  </data>
+  <data name="OpenApproval" xml:space="preserve">
+    <value>Открыть согласование</value>
+  </data>
+  <data name="OpenEdit" xml:space="preserve">
+    <value>Открыть заказ</value>
+  </data>
+  <data name="OpenDetails" xml:space="preserve">
+    <value>Детали заказа</value>
+  </data>
+  <data name="DepotResponseTitle" xml:space="preserve">
+    <value>Ответ дистрибьютора · отмечается вручную</value>
+  </data>
+  <data name="DR_delivered" xml:space="preserve">
+    <value>Доставлено</value>
+  </data>
+  <data name="DR_partial" xml:space="preserve">
+    <value>Частичная поставка</value>
+  </data>
+  <data name="DepotResponseNote" xml:space="preserve">
+    <value>Примечание (необязательно)</value>
+  </data>
+  <data name="DepotResponseSave" xml:space="preserve">
+    <value>Записать ответ</value>
+  </data>
+  <data name="DepotResponseSaved" xml:space="preserve">
+    <value>Ответ дистрибьютора записан.</value>
+  </data>
+  <data name="OfQuantity" xml:space="preserve">
+    <value>из {0} уп.</value>
+  </data>
+  <data name="St_draft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="St_pending_approval" xml:space="preserve">
+    <value>Ждёт согласования</value>
+  </data>
+  <data name="St_approved" xml:space="preserve">
+    <value>Согласован</value>
+  </data>
+  <data name="St_transmitted" xml:space="preserve">
+    <value>Передан дистрибьютору</value>
+  </data>
+  <data name="St_transmission_failed" xml:space="preserve">
+    <value>Ошибка передачи</value>
+  </data>
+  <data name="St_rejected" xml:space="preserve">
+    <value>Отклонён</value>
+  </data>
+  <data name="St_cancelled" xml:space="preserve">
+    <value>Отменён</value>
+  </data>
+  <data name="St_unknown" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="Ev_created" xml:space="preserve">
+    <value>Черновик создан</value>
+  </data>
+  <data name="Ev_updated" xml:space="preserve">
+    <value>Черновик сохранён</value>
+  </data>
+  <data name="Ev_discarded" xml:space="preserve">
+    <value>Черновик удалён</value>
+  </data>
+  <data name="Ev_signature_captured" xml:space="preserve">
+    <value>Провизор подписал</value>
+  </data>
+  <data name="Ev_signature_cleared" xml:space="preserve">
+    <value>Подпись снята (заказ изменён)</value>
+  </data>
+  <data name="Ev_submitted" xml:space="preserve">
+    <value>Отправлен</value>
+  </data>
+  <data name="Ev_auto_approved" xml:space="preserve">
+    <value>Согласован автоматически (настройка арендатора)</value>
+  </data>
+  <data name="Ev_approval_requested" xml:space="preserve">
+    <value>Запрошено согласование</value>
+  </data>
+  <data name="Ev_approver_unresolved" xml:space="preserve">
+    <value>Согласующий пока не определён</value>
+  </data>
+  <data name="Ev_approved" xml:space="preserve">
+    <value>Согласован</value>
+  </data>
+  <data name="Ev_rejected" xml:space="preserve">
+    <value>Отклонён</value>
+  </data>
+  <data name="Ev_changes_requested" xml:space="preserve">
+    <value>Запрошены изменения</value>
+  </data>
+  <data name="Ev_transmission_attempted" xml:space="preserve">
+    <value>Передача дистрибьютору</value>
+  </data>
+  <data name="Ev_transmitted" xml:space="preserve">
+    <value>Передан дистрибьютору</value>
+  </data>
+  <data name="Ev_transmission_failed" xml:space="preserve">
+    <value>Ошибка передачи</value>
+  </data>
+  <data name="Ev_cancelled" xml:space="preserve">
+    <value>Отменён</value>
+  </data>
+  <data name="Ev_depot_response_recorded" xml:space="preserve">
+    <value>Ответ дистрибьютора записан</value>
+  </data>
+  <data name="Ev_copied_from" xml:space="preserve">
+    <value>Скопирован из прежнего заказа</value>
+  </data>
+  <data name="Ev_unknown" xml:space="preserve">
+    <value>Событие</value>
+  </data>
+  <data name="TimelineTitle" xml:space="preserve">
+    <value>Хронология статуса</value>
+  </data>
+  <data name="TimelineEmpty" xml:space="preserve">
+    <value>Пока ничего не произошло.</value>
+  </data>
+  <data name="ReasonLine" xml:space="preserve">
+    <value>Причина: {0}</value>
+  </data>
+  <data name="NoteLine" xml:space="preserve">
+    <value>Примечание: {0}</value>
+  </data>
+  <data name="FactCode" xml:space="preserve">
+    <value>№ заказа</value>
+  </data>
+  <data name="FactDate" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="FactPharmacy" xml:space="preserve">
+    <value>Аптека</value>
+  </data>
+  <data name="FactDepot" xml:space="preserve">
+    <value>Дистрибьютор</value>
+  </data>
+  <data name="FactRep" xml:space="preserve">
+    <value>Представитель</value>
+  </data>
+  <data name="FactDelivery" xml:space="preserve">
+    <value>Дата доставки</value>
+  </data>
+  <data name="FactSeller" xml:space="preserve">
+    <value>Компания-продавец</value>
+  </data>
+  <data name="FactMode" xml:space="preserve">
+    <value>Режим цен</value>
+  </data>
+  <data name="ModePriced" xml:space="preserve">
+    <value>С ценами · {0}</value>
+  </data>
+  <data name="ModeQuantity" xml:space="preserve">
+    <value>Только количества</value>
+  </data>
+  <data name="ColProduct" xml:space="preserve">
+    <value>Препарат</value>
+  </data>
+  <data name="ColQty" xml:space="preserve">
+    <value>Кол-во</value>
+  </data>
+  <data name="ColMf" xml:space="preserve">
+    <value>Бонус</value>
+  </data>
+  <data name="ColDiscount" xml:space="preserve">
+    <value>Скидка %</value>
+  </data>
+  <data name="ColUnitPrice" xml:space="preserve">
+    <value>Цена</value>
+  </data>
+  <data name="ColVat" xml:space="preserve">
+    <value>НДС</value>
+  </data>
+  <data name="ColLineTotal" xml:space="preserve">
+    <value>Сумма строки</value>
+  </data>
+  <data name="ColCombined" xml:space="preserve">
+    <value>Совокупная</value>
+  </data>
+  <data name="GtinShort" xml:space="preserve">
+    <value>GTIN {0}</value>
+  </data>
+  <data name="FreeBoxes" xml:space="preserve">
+    <value>+{0} уп. бонуса</value>
+  </data>
+  <data name="CombinedLine" xml:space="preserve">
+    <value>совокупная скидка {0}</value>
+  </data>
+  <data name="MfRatioLine" xml:space="preserve">
+    <value>доля бонуса {0}</value>
+  </data>
+  <data name="PerBox" xml:space="preserve">
+    <value>{0} / уп.</value>
+  </data>
+  <data name="TotalNet" xml:space="preserve">
+    <value>Нетто</value>
+  </data>
+  <data name="TotalVat" xml:space="preserve">
+    <value>НДС</value>
+  </data>
+  <data name="TotalEffective" xml:space="preserve">
+    <value>Фактическая скидка</value>
+  </data>
+  <data name="TotalGross" xml:space="preserve">
+    <value>Итого</value>
+  </data>
+  <data name="FxLine" xml:space="preserve">
+    <value>≈ {0} {1} · курс {2} · {3} · источник {4}</value>
+  </data>
+  <data name="QuantityModeNote" xml:space="preserve">
+    <value>Цену применяет дистрибьютор. В этой стране нет действующего прайс-листа; правила работают по бонусу и количеству.</value>
+  </data>
+  <data name="FormTitleCreate" xml:space="preserve">
+    <value>Новый предзаказ</value>
+  </data>
+  <data name="FormTitleEdit" xml:space="preserve">
+    <value>Предзаказ</value>
+  </data>
+  <data name="FormTitleOrder" xml:space="preserve">
+    <value>Предзаказ · {0}</value>
+  </data>
+  <data name="FormDescription" xml:space="preserve">
+    <value>Заказ аптеки оформляется для передачи дистрибьютору; счёт выставляет дистрибьютор.</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Назад к списку</value>
+  </data>
+  <data name="SaveDraft" xml:space="preserve">
+    <value>Сохранить черновик</value>
+  </data>
+  <data name="DiscardDraft" xml:space="preserve">
+    <value>Удалить черновик</value>
+  </data>
+  <data name="DiscardConfirm" xml:space="preserve">
+    <value>Удалить черновик? Его номер больше не будет выдан.</value>
+  </data>
+  <data name="DraftSaved" xml:space="preserve">
+    <value>Черновик сохранён.</value>
+  </data>
+  <data name="FromSystem" xml:space="preserve">
+    <value>Из системы</value>
+  </data>
+  <data name="ModePricedBadge" xml:space="preserve">
+    <value>С ценами</value>
+  </data>
+  <data name="ModeQuantityBadge" xml:space="preserve">
+    <value>Только количества</value>
+  </data>
+  <data name="PriceSource" xml:space="preserve">
+    <value>Цена: {0} · {1} · действует с {2}</value>
+  </data>
+  <data name="PriceSourceShort" xml:space="preserve">
+    <value>Источник цены: {0}</value>
+  </data>
+  <data name="Tier_pharmacist_purchase" xml:space="preserve">
+    <value>Закупочная для аптеки</value>
+  </data>
+  <data name="Tier_depot" xml:space="preserve">
+    <value>Цена дистрибьютора</value>
+  </data>
+  <data name="Tier_public" xml:space="preserve">
+    <value>Розничная цена</value>
+  </data>
+  <data name="ChangeBannerTitle" xml:space="preserve">
+    <value>Запрошены изменения:</value>
+  </data>
+  <data name="PharmacySection" xml:space="preserve">
+    <value>Аптека</value>
+  </data>
+  <data name="PharmacyPlaceholder" xml:space="preserve">
+    <value>Найдите аптеку по названию или коду</value>
+  </data>
+  <data name="LinesSection" xml:space="preserve">
+    <value>Препараты</value>
+  </data>
+  <data name="LinesNotePriced" xml:space="preserve">
+    <value>Цена берётся из прайс-листа и не меняется.</value>
+  </data>
+  <data name="LinesNoteQuantity" xml:space="preserve">
+    <value>Только количество и бонус; цену применяет дистрибьютор.</value>
+  </data>
+  <data name="AddLine" xml:space="preserve">
+    <value>Добавить препарат</value>
+  </data>
+  <data name="RemoveLine" xml:space="preserve">
+    <value>Удалить строку</value>
+  </data>
+  <data name="NoLinesYet" xml:space="preserve">
+    <value>Препаратов пока нет.</value>
+  </data>
+  <data name="ProductPlaceholder" xml:space="preserve">
+    <value>Найдите препарат по названию или коду</value>
+  </data>
+  <data name="PreviousOrders" xml:space="preserve">
+    <value>Прежние заказы этой аптеки</value>
+  </data>
+  <data name="PreviousOrdersNone" xml:space="preserve">
+    <value>У этой аптеки нет прежних заказов.</value>
+  </data>
+  <data name="LinesCount" xml:space="preserve">
+    <value>Строк: {0}</value>
+  </data>
+  <data name="DeliverySection" xml:space="preserve">
+    <value>Доставка</value>
+  </data>
+  <data name="DepotPlaceholder" xml:space="preserve">
+    <value>Найдите дистрибьютора</value>
+  </data>
+  <data name="DeliveryLabel" xml:space="preserve">
+    <value>Дата доставки</value>
+  </data>
+  <data name="CurrencyLabel" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="NoteLabel" xml:space="preserve">
+    <value>Примечание для дистрибьютора</value>
+  </data>
+  <data name="NotePlaceholder" xml:space="preserve">
+    <value>Видно в экземпляре дистрибьютора (необязательно)</value>
+  </data>
+  <data name="SummarySection" xml:space="preserve">
+    <value>Сводка заказа</value>
+  </data>
+  <data name="SummaryPending" xml:space="preserve">
+    <value>Итоги появятся после выбора аптеки и препарата.</value>
+  </data>
+  <data name="NeedTitle" xml:space="preserve">
+    <value>Нужно согласование?</value>
+  </data>
+  <data name="Need_yes" xml:space="preserve">
+    <value>Да — заказ уйдёт согласующему.</value>
+  </data>
+  <data name="Need_no" xml:space="preserve">
+    <value>Нет — в пределах всех лимитов, согласуется автоматически.</value>
+  </data>
+  <data name="Need_unknown" xml:space="preserve">
+    <value>Станет ясно после выбора аптеки и препарата.</value>
+  </data>
+  <data name="Need_tenant_setting" xml:space="preserve">
+    <value>По настройке арендатора каждый заказ идёт руководителю.</value>
+  </data>
+  <data name="Need_soft" xml:space="preserve">
+    <value>Строка превышает мягкий лимит.</value>
+  </data>
+  <data name="Approver_line" xml:space="preserve">
+    <value>Согласующий: {0}</value>
+  </data>
+  <data name="Approver_chain" xml:space="preserve">
+    <value>Согласующий: {0} (должность руководителя вакантна — уровнем выше)</value>
+  </data>
+  <data name="Approver_none" xml:space="preserve">
+    <value>Над вашей должностью нет согласующего.</value>
+  </data>
+  <data name="Approver_unavailable" xml:space="preserve">
+    <value>Согласующего сейчас не показать; он будет найден при отправке.</value>
+  </data>
+  <data name="ApproverPosition" xml:space="preserve">
+    <value>Должность: {0}</value>
+  </data>
+  <data name="SignatureSection" xml:space="preserve">
+    <value>Подпись провизора</value>
+  </data>
+  <data name="SignerLabel" xml:space="preserve">
+    <value>Имя провизора</value>
+  </data>
+  <data name="SignatureHint" xml:space="preserve">
+    <value>Передайте устройство провизору для подписи.</value>
+  </data>
+  <data name="SignatureClear" xml:space="preserve">
+    <value>Очистить</value>
+  </data>
+  <data name="SignatureSave" xml:space="preserve">
+    <value>Сохранить подпись</value>
+  </data>
+  <data name="SignatureSaved" xml:space="preserve">
+    <value>Подпись сохранена.</value>
+  </data>
+  <data name="SignatureNone" xml:space="preserve">
+    <value>Не подписан.</value>
+  </data>
+  <data name="SignedBy" xml:space="preserve">
+    <value>Подписал(а) {0} · {1}</value>
+  </data>
+  <data name="SignedNote" xml:space="preserve">
+    <value>Входит в документ заказа.</value>
+  </data>
+  <data name="Resign" xml:space="preserve">
+    <value>Подписать снова</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Отправить</value>
+  </data>
+  <data name="Why_no_permission" xml:space="preserve">
+    <value>У вас нет права отправлять предзаказы.</value>
+  </data>
+  <data name="Why_no_lines" xml:space="preserve">
+    <value>Добавьте хотя бы один препарат.</value>
+  </data>
+  <data name="Why_hard" xml:space="preserve">
+    <value>Строка превышает непреодолимый лимит.</value>
+  </data>
+  <data name="Why_no_depot" xml:space="preserve">
+    <value>Выберите дистрибьютора.</value>
+  </data>
+  <data name="Why_no_signature" xml:space="preserve">
+    <value>Нет подписи провизора.</value>
+  </data>
+  <data name="Why_unsaved" xml:space="preserve">
+    <value>Есть несохранённые изменения: сначала сохраните черновик.</value>
+  </data>
+  <data name="SubmittedPending" xml:space="preserve">
+    <value>Отправлено: заказ ждёт согласования.</value>
+  </data>
+  <data name="SubmittedApproved" xml:space="preserve">
+    <value>Отправлено и согласовано автоматически: уйдёт дистрибьютору.</value>
+  </data>
+  <data name="Lock_pending" xml:space="preserve">
+    <value>Заказ ждёт согласования и не может быть изменён.</value>
+  </data>
+  <data name="Lock_sent" xml:space="preserve">
+    <value>Заказ согласован и не меняется. Чтобы изменить, отмените его и откройте новый.</value>
+  </data>
+  <data name="Lock_rejected" xml:space="preserve">
+    <value>Заказ отклонён. Его можно скопировать в новый заказ.</value>
+  </data>
+  <data name="Lock_cancelled" xml:space="preserve">
+    <value>Заказ отменён. Его можно скопировать в новый заказ.</value>
+  </data>
+  <data name="Lock_not_owner" xml:space="preserve">
+    <value>Изменить черновик может только создавший его представитель.</value>
+  </data>
+  <data name="CancelAndNew" xml:space="preserve">
+    <value>Отменить и открыть новый заказ</value>
+  </data>
+  <data name="CopyAndNew" xml:space="preserve">
+    <value>Скопировать и открыть новый заказ</value>
+  </data>
+  <data name="CancelOrder" xml:space="preserve">
+    <value>Отменить заказ</value>
+  </data>
+  <data name="CancelTitle" xml:space="preserve">
+    <value>Отменить предзаказ</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>Если заказ передан, дистрибьютор и аптека получат письмо об отмене. Укажите причину.</value>
+  </data>
+  <data name="CancelConfirm" xml:space="preserve">
+    <value>Отменить заказ</value>
+  </data>
+  <data name="CancelledToast" xml:space="preserve">
+    <value>Предзаказ отменён.</value>
+  </data>
+  <data name="ErrQuantity" xml:space="preserve">
+    <value>Для каждого препарата нужно количество не меньше 1.</value>
+  </data>
+  <data name="ErrMf" xml:space="preserve">
+    <value>Укажите бонус как «покупка + бесплатно», например 10+2.</value>
+  </data>
+  <data name="ErrDiscount" xml:space="preserve">
+    <value>Скидка должна быть от 0 до 100 (не включая), не более одного знака после запятой.</value>
+  </data>
+  <data name="ErrRangeMissing" xml:space="preserve">
+    <value>Выберите обе даты диапазона.</value>
+  </data>
+  <data name="ErrRangeOrder" xml:space="preserve">
+    <value>Дата начала не может быть позже даты окончания.</value>
+  </data>
+  <data name="Err_generic" xml:space="preserve">
+    <value>Что-то пошло не так. Повторите попытку.</value>
+  </data>
+  <data name="Err_unavailable" xml:space="preserve">
+    <value>Сервис сейчас недоступен. Повторите чуть позже.</value>
+  </data>
+  <data name="Err_permission_denied" xml:space="preserve">
+    <value>У вас нет прав на это.</value>
+  </data>
+  <data name="Err_not_found" xml:space="preserve">
+    <value>Предзаказ не найден или недоступен вам.</value>
+  </data>
+  <data name="Err_conflict" xml:space="preserve">
+    <value>Кто-то изменил это тем временем. Обновите и повторите.</value>
+  </data>
+  <data name="DetailsTitle" xml:space="preserve">
+    <value>Детали предзаказа</value>
+  </data>
+  <data name="DetailsTitleOrder" xml:space="preserve">
+    <value>Предзаказ {0}</value>
+  </data>
+  <data name="DetailsDescription" xml:space="preserve">
+    <value>Заказ в отправленном виде и его хронология.</value>
+  </data>
+  <data name="StateSection" xml:space="preserve">
+    <value>Подпись, согласование и передача</value>
+  </data>
+  <data name="AutoApproved" xml:space="preserve">
+    <value>Согласован автоматически (настройка арендатора)</value>
+  </data>
+  <data name="Decision_approve" xml:space="preserve">
+    <value>Согласовал(а) {0} · {1}</value>
+  </data>
+  <data name="Decision_reject" xml:space="preserve">
+    <value>Отклонил(а) {0} · {1}</value>
+  </data>
+  <data name="Decision_request_changes" xml:space="preserve">
+    <value>Изменения запросил(а) {0} · {1}</value>
+  </data>
+  <data name="AwaitingApprover" xml:space="preserve">
+    <value>Ожидает: {0}</value>
+  </data>
+  <data name="AwaitingApproverUnknown" xml:space="preserve">
+    <value>Ждёт согласования (согласующий определяется).</value>
+  </data>
+  <data name="TransmittedAt" xml:space="preserve">
+    <value>Передан {0} · {1}</value>
+  </data>
+  <data name="TransmissionFailedLine" xml:space="preserve">
+    <value>Передача дистрибьютору не удалась; повтор будет автоматическим.</value>
+  </data>
+  <data name="CancelledLine" xml:space="preserve">
+    <value>Отменён · {0}</value>
+  </data>
+  <data name="PartialLine" xml:space="preserve">
+    <value>{0}: доставлено {1} из {2} уп.</value>
+  </data>
+  <data name="RetryTransmission" xml:space="preserve">
+    <value>Передать снова</value>
+  </data>
+  <data name="RetryToast" xml:space="preserve">
+    <value>Повторная передача дистрибьютору.</value>
+  </data>
+  <data name="ApproveTitle" xml:space="preserve">
+    <value>Согласование предзаказа</value>
+  </data>
+  <data name="ApproveTitleOrder" xml:space="preserve">
+    <value>Согласование предзаказа · {0}</value>
+  </data>
+  <data name="ApproveDescription" xml:space="preserve">
+    <value>Проверьте строки, нарушающие правила; согласованный заказ уходит дистрибьютору в PDF.</value>
+  </data>
+  <data name="WhyMeTitle" xml:space="preserve">
+    <value>Почему на моём согласовании?</value>
+  </data>
+  <data name="WhyMeNone" xml:space="preserve">
+    <value>Причина не записана.</value>
+  </data>
+  <data name="Why_me_tenant" xml:space="preserve">
+    <value>Настройка арендатора: каждый предзаказ идёт руководителю.</value>
+  </data>
+  <data name="Why_me_soft" xml:space="preserve">
+    <value>Строка превышает мягкий лимит:</value>
+  </data>
+  <data name="YouAreReportsTo" xml:space="preserve">
+    <value>Вы на должности руководителя для {0} ({1}).</value>
+  </data>
+  <data name="LimitsNote" xml:space="preserve">
+    <value>В каждой ячейке: введённое значение, под ним — лимит правила.</value>
+  </data>
+  <data name="LimitSoft" xml:space="preserve">
+    <value>лимит {0}</value>
+  </data>
+  <data name="LimitHard" xml:space="preserve">
+    <value>потолок {0}</value>
+  </data>
+  <data name="DecisionTitle" xml:space="preserve">
+    <value>Решение</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Согласовать</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="RequestChanges" xml:space="preserve">
+    <value>Запросить изменения</value>
+  </data>
+  <data name="DecisionNote" xml:space="preserve">
+    <value>Для отклонения и запроса изменений нужна причина. После согласования заказ не меняется.</value>
+  </data>
+  <data name="RejectTitle" xml:space="preserve">
+    <value>Отклонить предзаказ</value>
+  </data>
+  <data name="RejectText" xml:space="preserve">
+    <value>Причина будет сообщена представителю. Отклонённый заказ нельзя отправить снова; его можно скопировать.</value>
+  </data>
+  <data name="ChangesTitle" xml:space="preserve">
+    <value>Запросить изменения</value>
+  </data>
+  <data name="ChangesText" xml:space="preserve">
+    <value>Заказ вернётся представителю черновиком; провизор подпишет заново.</value>
+  </data>
+  <data name="ReasonLabel" xml:space="preserve">
+    <value>Причина</value>
+  </data>
+  <data name="ReasonPlaceholder" xml:space="preserve">
+    <value>Причина (обязательно)</value>
+  </data>
+  <data name="Decided_approve" xml:space="preserve">
+    <value>Согласовано. Заказ передаётся дистрибьютору.</value>
+  </data>
+  <data name="Decided_reject" xml:space="preserve">
+    <value>Отклонено. Причина сообщена представителю.</value>
+  </data>
+  <data name="Decided_request_changes" xml:space="preserve">
+    <value>Изменения запрошены. Заказ возвращён представителю.</value>
+  </data>
+  <data name="NotYourDecision" xml:space="preserve">
+    <value>Вы не можете решать по этому предзаказу (он ждёт не вас).</value>
+  </data>
+  <data name="AlreadyDecided" xml:space="preserve">
+    <value>Этот предзаказ больше не ждёт согласования: {0}.</value>
+  </data>
+  <data name="HistoryTitle" xml:space="preserve">
+    <value>Последние 6 месяцев</value>
+  </data>
+  <data name="HistoryTitleOf" xml:space="preserve">
+    <value>{0} · последние 6 месяцев</value>
+  </data>
+  <data name="HistoryNote" xml:space="preserve">
+    <value>Отправленные заказы аптеки по месяцам (каждая валюта отдельно).</value>
+  </data>
+  <data name="ColMonth" xml:space="preserve">
+    <value>Месяц</value>
+  </data>
+  <data name="ColOrders" xml:space="preserve">
+    <value>Заказы</value>
+  </data>
+  <data name="ColBoxes" xml:space="preserve">
+    <value>Упаковки</value>
+  </data>
+  <data name="LinkTitle" xml:space="preserve">
+    <value>Ссылка на согласование предзаказа</value>
+  </data>
+  <data name="LinkDescription" xml:space="preserve">
+    <value>Вы открыли ссылку на согласование из письма.</value>
+  </data>
+  <data name="LinkOnce" xml:space="preserve">
+    <value>Ссылкой можно воспользоваться один раз · срок {0} ч</value>
+  </data>
+  <data name="LinkUsedNow" xml:space="preserve">
+    <value>Ссылка использована и больше не действует.</value>
+  </data>
+  <data name="Link_consumed" xml:space="preserve">
+    <value>Эта ссылка уже использована</value>
+  </data>
+  <data name="Link_consumed_text" xml:space="preserve">
+    <value>По ссылке уже принято решение. Откройте заказ из списка, чтобы увидеть результат.</value>
+  </data>
+  <data name="Link_expired" xml:space="preserve">
+    <value>Срок действия ссылки истёк</value>
+  </data>
+  <data name="Link_expired_text" xml:space="preserve">
+    <value>Примите решение в Рабочем центре или из списка предзаказов.</value>
+  </data>
+  <data name="Link_superseded" xml:space="preserve">
+    <value>Ссылка больше не действует</value>
+  </data>
+  <data name="Link_superseded_text" xml:space="preserve">
+    <value>Заказ изменился после письма (решение принято в другом месте, отменён или возвращён).</value>
+  </data>
+  <data name="Link_notfound" xml:space="preserve">
+    <value>Ссылку не открыть</value>
+  </data>
+  <data name="Link_notfound_text" xml:space="preserve">
+    <value>Ссылка недействительна или предназначена не вам.</value>
+  </data>
+  <data name="DocumentTitle" xml:space="preserve">
+    <value>Документ для дистрибьютора</value>
+  </data>
+  <data name="DocumentTitleOrder" xml:space="preserve">
+    <value>Документ для дистрибьютора · {0}</value>
+  </data>
+  <data name="DocumentDescription" xml:space="preserve">
+    <value>После согласования уходит на e-mail дистрибьютора в PDF; аптека получает копию.</value>
+  </data>
+  <data name="CopyGroupLabel" xml:space="preserve">
+    <value>Экземпляр</value>
+  </data>
+  <data name="CopyDepot" xml:space="preserve">
+    <value>Экземпляр дистрибьютора</value>
+  </data>
+  <data name="CopyPharmacy" xml:space="preserve">
+    <value>Экземпляр аптеки</value>
+  </data>
+  <data name="DownloadPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="TrailTitle" xml:space="preserve">
+    <value>Ход передачи:</value>
+  </data>
+  <data name="TrailNone" xml:space="preserve">
+    <value>ещё не передан</value>
+  </data>
+  <data name="TrailAttempt" xml:space="preserve">
+    <value>Попытка {0} · {1} · {2}</value>
+  </data>
+  <data name="Trail_sent" xml:space="preserve">
+    <value>передан</value>
+  </data>
+  <data name="Trail_failed" xml:space="preserve">
+    <value>ошибка</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Настройки предзаказов</value>
+  </data>
+  <data name="SettingsDescription" xml:space="preserve">
+    <value>Как предзаказы согласуются, оцениваются, нумеруются и передаются у этого арендатора.</value>
+  </data>
+  <data name="ApprovalSection" xml:space="preserve">
+    <value>Согласование</value>
+  </data>
+  <data name="Mode_always" xml:space="preserve">
+    <value>Всегда согласование руководителя</value>
+  </data>
+  <data name="Mode_always_help" xml:space="preserve">
+    <value>Каждый отправленный предзаказ идёт руководителю представителя (по умолчанию).</value>
+  </data>
+  <data name="Mode_auto" xml:space="preserve">
+    <value>Автоматически в пределах лимитов</value>
+  </data>
+  <data name="Mode_auto_help" xml:space="preserve">
+    <value>Заказ в пределах всех лимитов сразу согласуется и передаётся; заказ сверх мягкого лимита всё равно идёт руководителю.</value>
+  </data>
+  <data name="TtlLabel" xml:space="preserve">
+    <value>Срок ссылки согласования (часы)</value>
+  </data>
+  <data name="TtlHelp" xml:space="preserve">
+    <value>12–168 часов, по умолчанию 48.</value>
+  </data>
+  <data name="RetryLabel" xml:space="preserve">
+    <value>Автоповторы передачи</value>
+  </data>
+  <data name="RetryHelp" xml:space="preserve">
+    <value>0–10; затем отдел продаж передаёт вручную.</value>
+  </data>
+  <data name="TierSection" xml:space="preserve">
+    <value>Уровень цены по странам</value>
+  </data>
+  <data name="TierHelp" xml:space="preserve">
+    <value>Какую цену прайс-листа использует предзаказ; страна без строки использует закупочную цену аптеки.</value>
+  </data>
+  <data name="TierLabel" xml:space="preserve">
+    <value>Уровень цены</value>
+  </data>
+  <data name="TierNone" xml:space="preserve">
+    <value>Все страны используют закупочную цену аптеки.</value>
+  </data>
+  <data name="AddTier" xml:space="preserve">
+    <value>Добавить страну</value>
+  </data>
+  <data name="PrefixSection" xml:space="preserve">
+    <value>Префикс номера заказа по компаниям</value>
+  </data>
+  <data name="PrefixHelp" xml:space="preserve">
+    <value>2–5 букв (MG-ORD-000123). Префикс, уже использованный в номере заказа, нельзя изменить или удалить.</value>
+  </data>
+  <data name="PrefixNone" xml:space="preserve">
+    <value>Префиксов нет: представители компании без префикса не могут открыть предзаказ.</value>
+  </data>
+  <data name="AddPrefix" xml:space="preserve">
+    <value>Добавить компанию</value>
+  </data>
+  <data name="CompanyLabel" xml:space="preserve">
+    <value>Компания</value>
+  </data>
+  <data name="PrefixLabel" xml:space="preserve">
+    <value>Префикс</value>
+  </data>
+  <data name="RemoveRow" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Сохранить настройки</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>Настройки сохранены.</value>
+  </data>
+  <data name="SettingsDefault" xml:space="preserve">
+    <value>Используются значения по умолчанию (ничего не сохранено).</value>
+  </data>
+  <data name="SettingsUpdated" xml:space="preserve">
+    <value>Последнее изменение: {0} · {1}</value>
+  </data>
+  <data name="ErrTtl" xml:space="preserve">
+    <value>Срок ссылки — 12–168 часов.</value>
+  </data>
+  <data name="ErrRetry" xml:space="preserve">
+    <value>Число повторов — 0–10.</value>
+  </data>
+  <data name="ErrPrefix" xml:space="preserve">
+    <value>Для каждого префикса нужны компания и 2–5 букв (A–Z).</value>
+  </data>
+  <data name="ErrTierDuplicate" xml:space="preserve">
+    <value>Страна может встречаться только один раз.</value>
+  </data>
+</root>

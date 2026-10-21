@@ -720,4 +720,124 @@
   <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
     <value>أغلِق ما لم يتم</value>
   </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>يعرض الطلبات المسبقة للصيدليات التي يمكنك رؤيتها — طلباتك وطلبات فريقك وتلك التي تنتظر موافقتك — مع حالتها ورد المستودع.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>المندوبون ومديروهم (المعتمِدون) وعمليات المبيعات.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>صفِّ القائمة</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>افتح «تصفية»: الفترة والحالة والصيدلية والمستودع والمنتج والدولة — وللمعتمِد أيضًا «بانتظار موافقتي».</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>اقرأ المبالغ</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>يحمل كل إجمالي عملته؛ ولا تُجمع الطلبات بعملات مختلفة أبدًا. يمكن إظهار «المعادل المحلي» من إظهار الأعمدة.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>افتح العرض السريع</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>تعرض أيقونة العين البنود والإجماليات والتسلسل الزمني مع روابط إلى المستند والموافقة.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>سجّل رد المستودع</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>تعلّم عمليات المبيعات الطلب المرسل «تم التسليم» أو «تسليم جزئي» (العلب لكل بند وملاحظة) في العرض السريع.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>يسجّل طلب الصيدلية لإرساله إلى مستودعها الذي يصدر الفاتورة. الشركة والعملة والأسعار من النظام.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>المندوبون الميدانيون (الجهاز اللوحي والهاتف).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>اختر الصيدلية والمنتجات</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>ابحث عن الصيدلية ثم أضف المنتجات بكمياتها والبونص (مثل 10+2) والخصم إن كانت قائمة الأسعار سارية.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>راقب شارات القواعد</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>يذكر كل بند «ضمن الحدود» أو «تتطلب موافقة» أو «غير مسموح» مع الحد المتجاوز. يجب تصحيح البند غير المسموح.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>احفظ واطلب توقيع الصيدلي</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>«حفظ المسودة» يمنح رقم الطلب. اختر المستودع ثم سلّم الجهاز للصيدلي للتوقيع. تغيير البنود يمسح التوقيع.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>أرسل</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>يُفعَّل «إرسال» عندما لا يعيقه شيء (الأسباب مكتوبة تحته). ثم ينتظر الطلب المعتمِد أو يذهب مباشرة إلى المستودع إن سمح المستأجر.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>تتخذ قرارًا بشأن طلب مسبق ينتظرك: وافق عليه أو ارفضه أو أعده للتعديل.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>مدير المندوب (منصب المدير المباشر).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>اعرف لماذا وصلك</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>يوضح «لماذا يصلني؟» إعداد المستأجر أو البنود التي تتجاوز حدًا مرنًا.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>قارن بالحدود</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>تعرض كل خلية القيمة المدخلة وتحتها حد القاعدة؛ وآخر ستة أشهر للصيدلية على اليمين.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>قرّر</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>«موافقة» ترسل الطلب إلى المستودع. «رفض» و«طلب تعديلات» يتطلبان سببًا؛ ويعيد طلب التعديل الطلبَ إلى المندوب كمسودة.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>من رابط البريد</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>يطلب رابط البريد تسجيل الدخول، ويعمل مرة واحدة وتنتهي صلاحيته؛ ويسري قرار أول معتمِد.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>يحدد كيفية الموافقة على الطلبات المسبقة لهذا المستأجر وتسعيرها وترقيمها وإرسالها.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>عمليات المبيعات.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>اختر وضع الموافقة</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>«موافقة المدير دائمًا» (افتراضي) أو «تلقائيًا ضمن الحدود» — والطلب الذي يتجاوز حدًا مرنًا يذهب إلى المدير.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>اضبط الرابط والمحاولات</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>يبقى رابط الموافقة صالحًا 12–168 ساعة (48 افتراضيًا)؛ ويُعاد الإرسال الفاشل تلقائيًا من 0 إلى 10 مرات.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>اختر فئة السعر</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>لكل دولة: سعر شراء الصيدلي (افتراضي) أو سعر المستودع أو سعر البيع للجمهور.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>امنح كل شركة بادئتها</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>تبدأ رقم الطلب من 2 إلى 5 أحرف (MG-ORD-000123). البادئة التي رقّمت طلبًا مقفلة.</value>
+  </data>
 </root>

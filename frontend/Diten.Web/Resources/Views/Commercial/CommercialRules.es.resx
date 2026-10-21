@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Rule.Outcome.ok" xml:space="preserve">
+    <value>Dentro de los límites</value>
+  </data>
+  <data name="Rule.Outcome.soft" xml:space="preserve">
+    <value>Requiere aprobación</value>
+  </data>
+  <data name="Rule.Outcome.hard" xml:space="preserve">
+    <value>No permitido</value>
+  </data>
+  <data name="Rule.discount.soft-exceeded" xml:space="preserve">
+    <value>Requiere aprobación del responsable: descuento {value} % &gt; límite {limit} %</value>
+  </data>
+  <data name="Rule.discount.hard-exceeded" xml:space="preserve">
+    <value>No permitido: descuento {value} % &gt; tope {limit} %</value>
+  </data>
+  <data name="Rule.mf.soft-exceeded" xml:space="preserve">
+    <value>Requiere aprobación del responsable: bonificación {value} ({valuePct} %) &gt; límite {limit} ({limitPct} %)</value>
+  </data>
+  <data name="Rule.mf.hard-exceeded" xml:space="preserve">
+    <value>No permitido: bonificación {value} ({valuePct} %) &gt; tope {limit} ({limitPct} %)</value>
+  </data>
+  <data name="Rule.combined.soft-exceeded" xml:space="preserve">
+    <value>Requiere aprobación del responsable: descuento combinado {valuePct} % &gt; límite {limitPct} %</value>
+  </data>
+  <data name="Rule.combined.hard-exceeded" xml:space="preserve">
+    <value>No permitido: descuento combinado {valuePct} % &gt; tope {limitPct} %</value>
+  </data>
+  <data name="Rule.quantity.below-min" xml:space="preserve">
+    <value>No permitido: cantidad {value} &lt; mínimo {min}</value>
+  </data>
+  <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
+    <value>Requiere aprobación del responsable: cantidad {value} &gt; límite {limit}</value>
+  </data>
+  <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
+    <value>No permitido: cantidad {value} &gt; tope {limit}</value>
+  </data>
+  <data name="Rule.sku.retired" xml:space="preserve">
+    <value>No permitido: {skuId} está retirado</value>
+  </data>
+  <data name="Rule.price.sku-not-in-list" xml:space="preserve">
+    <value>No permitido: {skuId} no está en la lista de precios {priceListName}</value>
+  </data>
+  <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>No permitido: no hay lista de precios vigente, no se puede introducir descuento</value>
+  </data>
+  <data name="Rule.pre_order_request_invalid" xml:space="preserve">
+    <value>La solicitud no es válida.</value>
+  </data>
+  <data name="Rule.pre_order_not_found" xml:space="preserve">
+    <value>No se encontró el prepedido o no puede verlo.</value>
+  </data>
+  <data name="Rule.pre_order_stale_version" xml:space="preserve">
+    <value>Otra persona cambió este prepedido. Recárguelo e inténtelo de nuevo.</value>
+  </data>
+  <data name="Rule.pre_order_pharmacy_invalid" xml:space="preserve">
+    <value>Elija una farmacia (institución de tipo farmacia).</value>
+  </data>
+  <data name="Rule.pre_order_depot_invalid" xml:space="preserve">
+    <value>Elija un distribuidor (distribuidor o mayorista).</value>
+  </data>
+  <data name="Rule.pre_order_depot_required" xml:space="preserve">
+    <value>Elija el distribuidor al que se envía el pedido.</value>
+  </data>
+  <data name="Rule.pre_order_depot_no_email" xml:space="preserve">
+    <value>El distribuidor no tiene correo electrónico en su ficha; no se le puede enviar el pedido.</value>
+  </data>
+  <data name="Rule.pre_order_lines_invalid" xml:space="preserve">
+    <value>Revise las líneas: cada una necesita un producto y una cantidad mínima de 1 (máximo 50 líneas).</value>
+  </data>
+  <data name="Rule.pre_order_sku_retired" xml:space="preserve">
+    <value>Un producto del pedido está retirado y no se puede pedir.</value>
+  </data>
+  <data name="Rule.pre_order_sku_not_found" xml:space="preserve">
+    <value>No se encontró un producto del pedido en el maestro de productos.</value>
+  </data>
+  <data name="Rule.pre_order_mf_invalid" xml:space="preserve">
+    <value>Escriba la bonificación como compra + gratis, por ejemplo 10+2.</value>
+  </data>
+  <data name="Rule.pre_order_discount_invalid" xml:space="preserve">
+    <value>El descuento debe estar entre 0 y 100 (sin incluir), con un decimal como máximo.</value>
+  </data>
+  <data name="Rule.pre_order_discount_not_allowed" xml:space="preserve">
+    <value>No hay lista de precios vigente para su empresa: no se puede introducir descuento.</value>
+  </data>
+  <data name="Rule.pre_order_delivery_date_invalid" xml:space="preserve">
+    <value>La fecha de entrega no puede estar en el pasado.</value>
+  </data>
+  <data name="Rule.pre_order_note_too_long" xml:space="preserve">
+    <value>La nota puede tener como máximo 1000 caracteres.</value>
+  </data>
+  <data name="Rule.pre_order_signature_required" xml:space="preserve">
+    <value>Se necesita la firma del farmacéutico antes de enviar.</value>
+  </data>
+  <data name="Rule.pre_order_signature_invalid" xml:space="preserve">
+    <value>No se pudo leer la firma. Vuelva a firmar.</value>
+  </data>
+  <data name="Rule.pre_order_hard_limit" xml:space="preserve">
+    <value>Una línea supera un límite que no se puede exceder. Corrija las líneas marcadas «No permitido».</value>
+  </data>
+  <data name="Rule.pre_order_no_seat" xml:space="preserve">
+    <value>No tiene un puesto activo, por lo que no se puede determinar la empresa vendedora. Consulte a su administrador.</value>
+  </data>
+  <data name="Rule.pre_order_context_unavailable" xml:space="preserve">
+    <value>Un servicio necesario para el pedido no respondió. Inténtelo de nuevo en un momento.</value>
+  </data>
+  <data name="Rule.pre_order_no_company_prefix" xml:space="preserve">
+    <value>Su empresa aún no tiene prefijo de número de pedido. Operaciones comerciales lo define en la configuración.</value>
+  </data>
+  <data name="Rule.pre_order_no_approver" xml:space="preserve">
+    <value>No se encontró un aprobador por encima de su puesto. Consulte a su administrador.</value>
+  </data>
+  <data name="Rule.pre_order_not_editable" xml:space="preserve">
+    <value>Este prepedido ya no se puede cambiar.</value>
+  </data>
+  <data name="Rule.pre_order_not_owner" xml:space="preserve">
+    <value>Solo el representante que creó el prepedido puede hacerlo.</value>
+  </data>
+  <data name="Rule.pre_order_already_decided" xml:space="preserve">
+    <value>Otro aprobador ya decidió sobre este prepedido.</value>
+  </data>
+  <data name="Rule.pre_order_invalid_transition" xml:space="preserve">
+    <value>Este paso no es posible en el estado actual del prepedido.</value>
+  </data>
+  <data name="Rule.pre_order_sod" xml:space="preserve">
+    <value>No puede decidir sobre su propio prepedido.</value>
+  </data>
+  <data name="Rule.pre_order_not_approver" xml:space="preserve">
+    <value>No es aprobador de este prepedido.</value>
+  </data>
+  <data name="Rule.pre_order_reason_required" xml:space="preserve">
+    <value>Escriba un motivo (obligatorio).</value>
+  </data>
+  <data name="Rule.pre_order_decision_invalid" xml:space="preserve">
+    <value>La decisión no es válida.</value>
+  </data>
+  <data name="Rule.pre_order_link_unusable" xml:space="preserve">
+    <value>Este enlace de aprobación ya no se puede usar.</value>
+  </data>
+  <data name="Rule.pre_order_depot_response_invalid" xml:space="preserve">
+    <value>Revise la respuesta del distribuidor: una entrega parcial necesita la cantidad entregada de cada línea.</value>
+  </data>
+  <data name="Rule.pre_order_cancel_forbidden" xml:space="preserve">
+    <value>No puede cancelar este prepedido.</value>
+  </data>
+  <data name="Rule.pre_order_settings_invalid" xml:space="preserve">
+    <value>Revise la configuración: un valor está fuera del rango permitido.</value>
+  </data>
+  <data name="Rule.pre_order_prefix_locked" xml:space="preserve">
+    <value>El prefijo de esta empresa ya numeró un pedido; no se puede cambiar ni eliminar.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_unavailable" xml:space="preserve">
+    <value>No se pudo abrir la tarea de aprobación. Inténtelo de nuevo en un momento.</value>
+  </data>
+  <data name="Rule.pre_order_workflow_template_missing" xml:space="preserve">
+    <value>El flujo de aprobación no está configurado para este inquilino. Consulte a su administrador.</value>
+  </data>
+  <data name="Rule.pre_order_store_unavailable" xml:space="preserve">
+    <value>No se pudo guardar el archivo. Inténtelo de nuevo en un momento.</value>
+  </data>
+</root>

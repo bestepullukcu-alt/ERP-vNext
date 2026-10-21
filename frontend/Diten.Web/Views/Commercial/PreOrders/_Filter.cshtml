@@ -1,0 +1,96 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W6-WEB-a — the inline collapse filter of the standard (Save View keeps it). The period is on the order's creation day;
+   its baseline "" is every order. The option texts are written by index.js (loadOptions): the statuses, the reps and the
+   countries the list has shown, and — for an approver — "Onayımı bekleyenler (n)". Pharmacy, depot and product search the
+   CRM / product master as you type (index.js turns those three into search pickers). The rep chip exists only for a caller
+   who sees more than their own orders (a rep sees only themself — DESIGN-GAP §1 B "temsilci (temsilcide yok)"). *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-period">
+                        <select id="filterPeriod" class="form-select form-select-sm select2" data-placeholder="@Localizer["PeriodLabel"]">
+                            <option value=""></option>
+                            <option value="last7"></option>
+                            <option value="last30"></option>
+                            <option value="month"></option>
+                            <option value="custom"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-from d-none" id="filterRangeFrom">
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="po-from" autocomplete="off" aria-label="@Localizer["CustomFrom"]" placeholder="@Localizer["CustomFrom"]" /></div>
+                    </div>
+                    <div class="filter-chip filter-to d-none" id="filterRangeTo">
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="po-to" autocomplete="off" aria-label="@Localizer["CustomTo"]" placeholder="@Localizer["CustomTo"]" /></div>
+                    </div>
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["StatusLabel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    @if (Model.SeesTeam)
+                    {
+                        <div class="filter-chip filter-rep" id="filterRepChip">
+                            <select id="filterRep" class="form-select form-select-sm select2" data-placeholder="@Localizer["RepLabel"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    }
+
+                    <div class="filter-chip filter-pharmacy">
+                        <select id="filterPharmacy" class="form-select form-select-sm select2" data-placeholder="@Localizer["PharmacyLabel"]" data-po-search="pharmacies">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-depot">
+                        <select id="filterDepot" class="form-select form-select-sm select2" data-placeholder="@Localizer["DepotLabel"]" data-po-search="depots">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-sku">
+                        <select id="filterSku" class="form-select form-select-sm select2" data-placeholder="@Localizer["ProductLabel"]" data-po-search="skus">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-country">
+                        <select id="filterCountry" class="form-select form-select-sm select2" data-placeholder="@Localizer["CountryLabel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    @if (Model.CanApprove)
+                    {
+                        <div class="filter-chip filter-awaiting">
+                            <select id="filterAwaiting" class="form-select form-select-sm select2" data-placeholder="@Localizer["AwaitingLabel"]">
+                                <option value=""></option>
+                                <option value="true"></option>
+                            </select>
+                        </div>
+                    }
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

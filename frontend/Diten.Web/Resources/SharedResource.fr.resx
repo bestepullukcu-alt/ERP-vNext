@@ -1130,6 +1130,18 @@
   <data name="Nav.Page.CRMVISITNOTIFICATIONS" xml:space="preserve">
     <value>E-mails de visite envoyés</value>
   </data>
+  <data name="Nav.Page.PREORDERS" xml:space="preserve">
+    <value>Pré-commandes</value>
+  </data>
+  <data name="Nav.Page.PREORDERSETTINGS" xml:space="preserve">
+    <value>Paramètres des pré-commandes</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERFORM" xml:space="preserve">
+    <value>Pré-commande</value>
+  </data>
+  <data name="Nav.Page.COMPREORDERAPPROVE" xml:space="preserve">
+    <value>Validation de pré-commande</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>

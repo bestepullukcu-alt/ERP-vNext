@@ -1,0 +1,98 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ApproveTitle"].Value;
+    ViewData["PageCode"] = PreOrdersIndex.ApproveHelpCode; // UXH-001 — the approval's own help text (COM-PREORDER-APPROVE)
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/PreOrders";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-a — C: the approval (mockup W6 C; the Work Center deep link /Commercial/PreOrders/Approve/{id},
+    MOD-0168 §4.5). "Neden onayımda?" (the tenant setting and / or the lines over a soft limit), "Siz … Reports to
+    pozisyonundasınız", each line's entered value ↔ its limit, the pharmacy's six months (chart + table, one total PER
+    currency), and the decision: Approve · Reject · Request changes (the last two with a REQUIRED reason, D2). No
+    breadcrumb of its own (DESIGN-GAP §4). The first decision wins (another approver's is 409, said in words). UAS-001:
+    without commercial.pre-orders.approve NOTHING but the notice.
+*@
+@if (!Model.CanApprove || !Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["ApproveTitle"].Value" />
+    return;
+}
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+    <div class="mb-0">
+        <h5 class="mb-0" id="po-title">@Localizer["ApproveTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["ApproveDescription"]</p>
+    </div>
+    <span id="po-status"></span>
+</div>
+
+<div id="po-root" data-screen="approve" data-order-id="@Model.OrderId">
+    <div class="alert alert-danger d-none" id="po-alert" role="alert"></div>
+    <div class="alert d-none d-flex gap-2 align-items-start" id="po-result" role="status"><i class="bx mt-1" id="po-result-icon"></i><span id="po-result-text"></span></div>
+    <div class="row g-3 d-none" id="po-body">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-3">
+                <div class="card-body">
+                    <div id="po-facts"></div>
+                    <div class="mt-3" id="po-total"></div>
+                </div>
+            </section>
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-2"><i class="bx bx-help-circle"></i>@Localizer["WhyMeTitle"]</h6>
+                    <div id="po-why"></div>
+                    <small class="text-muted d-block mt-2" id="po-you"></small>
+                </div>
+            </section>
+            <section class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-capsule"></i>@Localizer["LinesSection"]</h6>
+                        <small class="text-muted">@Localizer["LimitsNote"]</small>
+                    </div>
+                    <div id="po-limits"></div>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-xl-4">
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-check-shield"></i>@Localizer["DecisionTitle"]</h6>
+                    <div class="d-grid gap-2" id="po-decide">
+                        <button type="button" class="btn btn-success" id="po-approve"><i class="bx bx-check me-1"></i>@Localizer["Approve"]</button>
+                        <button type="button" class="btn btn-label-danger" id="po-reject"><i class="bx bx-x me-1"></i>@Localizer["Reject"]</button>
+                        <button type="button" class="btn btn-label-warning" id="po-changes"><i class="bx bx-revision me-1"></i>@Localizer["RequestChanges"]</button>
+                    </div>
+                    <small class="text-muted d-block mt-2">@Localizer["DecisionNote"]</small>
+                </div>
+            </section>
+            <section class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-bar-chart-alt-2"></i><span id="po-history-title">@Localizer["HistoryTitle"]</span></h6>
+                    <small class="text-muted d-block mb-3">@Localizer["HistoryNote"]</small>
+                    <div id="po-history"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/Commercial/PreOrders/_ReasonModal.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/Commercial/PreOrders/preorders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Commercial/PreOrders/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/_CommercialRulesL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/preorders-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/preorders-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/approve.js" asp-append-version="true"></script>
+}

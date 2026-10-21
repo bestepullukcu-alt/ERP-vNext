@@ -1,0 +1,21 @@
+@using Diten.Web.Views.Commercial
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<CommercialRules> Rules
+
+@* WP-VW-W6 (W6-WEB-a) — the shared commercial rule messages (Rule.{code}, 7 languages) as one JSON payload; commercial-rules.js
+   merges it into window.L10n. Every entry of the resource is sent (the resource IS the key list), so a page never names a
+   rule code itself. Used by the pre-order screens (W6-WEB-a) and the price list / rule screens (W6-WEB-b). *@
+@{
+    var payload = new Dictionary<string, string>(StringComparer.Ordinal);
+    foreach (var entry in Rules.GetAllStrings(includeParentCultures: true))
+    {
+        if (entry.Name.StartsWith(CommercialRules.Prefix, StringComparison.Ordinal) && !payload.ContainsKey(entry.Name))
+        {
+            payload[entry.Name] = entry.Value;
+        }
+    }
+}
+<script id="@CommercialRules.PayloadId" type="application/json">
+    @Json.Serialize(payload)
+</script>
+<script src="~/assets/js/Commercial/commercial-rules.js" asp-append-version="true"></script>
