@@ -1,0 +1,172 @@
+openapi: 3.0.3
+info:
+  title: Safety Stock read API
+  version: 1.0.0
+  description: DRAFT baseline of the four existing MOD-0191 read operations. Not a frozen cross-module contract.
+servers:
+  - url: /api/v1/safety-stock
+security:
+  - bearerAuth: []
+paths:
+  /policies:
+    get:
+      operationId: listSafetyStockPolicies
+      summary: List policies in the selected legal entity
+      x-required-permission: safety-stock.policies.read
+      parameters:
+        - $ref: '#/components/parameters/LegalEntityId'
+      responses:
+        '200':
+          description: Policies visible in the selected legal entity
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Policy'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /policies/{policyId}:
+    get:
+      operationId: getSafetyStockPolicy
+      summary: Read one policy
+      x-required-permission: safety-stock.policies.read
+      parameters:
+        - $ref: '#/components/parameters/LegalEntityId'
+        - $ref: '#/components/parameters/PolicyId'
+      responses:
+        '200':
+          description: Policy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Policy' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /policies/{policyId}/revisions/{revisionId}:
+    get:
+      operationId: getSafetyStockPolicyRevision
+      summary: Read one policy revision
+      x-required-permission: safety-stock.policies.read
+      parameters:
+        - $ref: '#/components/parameters/LegalEntityId'
+        - $ref: '#/components/parameters/PolicyId'
+        - name: revisionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Policy revision
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Revision' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /policies/{policyId}/evaluations/{evaluationId}:
+    get:
+      operationId: getSafetyStockEvaluation
+      summary: Read one evaluation
+      description: The endpoint exists, but its persistent read source is not connected and currently returns 503.
+      x-required-permission: safety-stock.evaluations.read
+      parameters:
+        - $ref: '#/components/parameters/LegalEntityId'
+        - $ref: '#/components/parameters/PolicyId'
+        - name: evaluationId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Evaluation when its read source becomes available
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Evaluation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    LegalEntityId:
+      name: X-Legal-Entity-Id
+      in: header
+      required: true
+      description: Selected active legal entity in the JWT tenant; validated against MDM. User-to-company authorization is pending.
+      schema: { type: string, format: uuid }
+    PolicyId:
+      name: policyId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    Unauthorized: { description: Missing or invalid JWT }
+    Forbidden: { description: Missing operation permission or invalid scope selection }
+    NotFound: { description: No record visible in the selected tenant and legal entity }
+    Unavailable: { description: 'MDM, authority, or record integrity could not be verified' }
+  schemas:
+    Series:
+      type: object
+      required: [skuId, warehouseId]
+      properties:
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string, format: uuid }
+    Policy:
+      type: object
+      required: [id, tenantId, legalEntityId, series, state, version]
+      properties:
+        id: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        series: { $ref: '#/components/schemas/Series' }
+        state: { type: string }
+        version: { type: integer, format: int64 }
+    Revision:
+      type: object
+      required: [id, policyId, tenantId, legalEntityId, series, state, version]
+      properties:
+        id: { type: string, format: uuid }
+        policyId: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        series: { $ref: '#/components/schemas/Series' }
+        state: { type: string }
+        version: { type: integer, format: int64 }
+    Evaluation:
+      type: object
+      required: [id, policyId, tenantId, legalEntityId, series, revisionId, method, candidateQuantity, inputVersion]
+      properties:
+        id: { type: string, format: uuid }
+        policyId: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        series: { $ref: '#/components/schemas/Series' }
+        revisionId: { type: string, format: uuid }
+        method: { type: string }
+        candidateQuantity: { type: number }
+        inputVersion: { type: string }

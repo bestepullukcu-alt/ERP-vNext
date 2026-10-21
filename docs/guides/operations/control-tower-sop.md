@@ -69,7 +69,8 @@ Revision r5 (2026-10-20, PVG Control Tower testi ve yöneticinin isteği; Codex 
 (istenen / kullanılan)` alanları ve kuralları eklendi — karmaşıklık ve risk ayrı eksenler, başlangıç profili,
 başarısızlıkta önce hata sınıfı, istenen ile kullanılanın kaydı; yalnız 2026-10-15'ten sonra açılan Control Tower'lar
 için. §20.4 (CT-APR-02) eklendi — Module Pack ve DCP onaydan önce bağımsız incelenir, dilim dilim uygulanır; §17.1 ve
-§36.1'e `Kapsanan dilim` alanı.
+§36.1'e `Kapsanan dilim` alanı. §22.2 (CT-TRK-01) eklendi — capability block iş takip sayfası, pilot (Pharmacovigilance),
+2026-10-21 sahip onayı; kaynak depodur, sayfa görünümdür.
 
 Revision r4 (2026-10-19, yöneticinin hız notu; sahip onayı): §20.3 eklendi — test planı ilk build'den önce donar,
 test bütçesinden önce tek ortam ön kontrolü, kademeli test ve geniş takımın gereksiz yeniden koşulmaması, üst sınırlı yedek
@@ -863,6 +864,8 @@ Default:
 - paralel işler ayrı Agent Lane + ayrı worktree + disjoint scope ile,
 - WIP artırımı CT tarafından risk gerekçesiyle yapılır.
 
+İş paketinin PR'ı merge edildikten sonra worktree'si, temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırılır; kaydedilmemiş değişikliği ya da main'de veya uzak dalda olmayan commit'i varsa kaldırılmaz, CT sahibe bildirir ve sorar.
+
 Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli değilse sırf paralellik için iş bölünmez.
 
 ---
@@ -1389,7 +1392,7 @@ karşılaştırılır; eski paketlere geriye dönük inceleme yoktur.
 
 **2. Kim inceler.** Geliştirici Codex'i ya da Claude'u seçer; inceleme, paketi yazan oturumdan ayrı bir oturumda yapılır.
 Model ve effort §17.1 r5 kuralıyla seçilir (zor bir bağımsız denetim için başlangıç profili Opus · high). Derinlik riske
-göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu.
+göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu. İnceleyici yerel depoyu göremeyebilir (Codex kendisine verilenle çalışır); inceleme isteği, inceleyicinin tam sürümü nasıl okuyacağını adlandırır: sabitlenmiş bir commit'teki itilmiş dal (PR yok) ya da dosyaların SHA-256'lı ZIP'i. İstem yerel worktree erişimi varsaymaz. İncelemeden önce paketi CT değil `module-pack-author` ajanı düzenler; CT'nin önceki incelemeye itirazları sonraki inceleme isteğine eklenir.
 
 **3. Kayıt.** Bulgu dosyası `docs/records/reviews/<kimlik>/<dosya>.md` (biçim: POLICY-REVIEW-START) commit edilir; satırı
 `python3 scripts/pack_approval.py review-row <paket> --findings <dosya> …` üretir ve `execution/approvals/reviews.tsv`'ye
@@ -1401,7 +1404,7 @@ satırı main'e başkasının merge'iyle gelmediyse onay geçmez. Sonradan eklen
 yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
 uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
 dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
-incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür.
+incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz.
 
 **5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
 main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz.
@@ -1522,6 +1525,33 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 - Tabloyu `scripts/status_report.py` üretir; betiğin bulamadığı hücre `kayıt yok` yazar ve CT o satırı `E0` sayar.
 
 Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**; biçim istenir.
+
+## 22.2 CT-TRK-01 — Capability block iş takip sayfası (pilot)
+
+> Kaynak: başka bir ekibin önerisi; sahip uyarlanmış biçimi 2026-10-21'de onayladı.
+
+1. **Amaç.** Her capability block'un (DCP / MVP block) kalan işleri tek, işaretlenebilir bir sayfada durur; sahip ve CT
+   aynı listeyi görür.
+2. **Pilot.** Önce Pharmacovigilance block'unda denenir; bir block'ta işe yaradığı görülünce zorunlu yapılır (sahip
+   kararı). Mevcut Control Tower'lara geriye dönük yük yoktur.
+3. **Kaynak depodur.** Sayfa bir görünümdür. CT listeyi depodaki kaynaklardan kurar ve günceller: kuyruk dosyası
+   (`CT-QUEUE.tsv` satırları ve durumları), karar kayıtları (`docs/records/decisions/`), block'un açık kararları ve
+   takipleri, başka ekiplere düşen işler (XMC-001). Çelişkide depo kazanır; CT sayfayı düzeltir.
+4. **Sahibin işaretleri.** Sahip sayfada bir kararı ya da işi işaretlerse CT bunu bir sonraki oturumda okur ve depoya
+   işler (karar kaydı, kuyruk durumu). İşaret tek başına karar kaydı değildir; CT kaydı yazmadan önce sahibe sorar.
+5. **Biçim.** claude.ai Artifact, paylaşılan veritabanı (`db`) yeteneğiyle; adı "<Block adı> İş Takibi". Bölümler: Şimdi
+   ve sırada · Karar bekleyenler · Sonraki fazlar · Bizim takipler · Başka sahiplerin işi (XMC-001) · Ortak bileşenler ·
+   Duraklatılanlar. Her işte kod (WP / FU / K / BL), kısa başlık, bir cümle ayrıntı, bitti işareti ve tarihi. Sayfa
+   sahibin dilindedir.
+6. **Gizlilik.** Sayfa ÖZEL başlar; yalnız ekip içinde paylaşılır, herkese açık (public) yapılmaz. Karar notları ve iş
+   listesi herkese açık olmamalıdır.
+7. **CT'nin güncellemesi (istenmeden).** CT kabulü (K13 / `acceptance_record`) → iş bitti + commit. Yeni prompt →
+   "Şimdi ve sırada". Sahip kararı → "Karar bekleyenler"de kapanır, karar kaydının yolu yazılır. Yeni takip → doğru
+   bölüm. Yazmalar okunan sürüme sabitlenir; sahibin sayfadaki değişikliği ezilmez.
+8. **Kayıt.** Sayfa bağlantısı block'un kuyruk kaydının not alanına ya da block'un karar kaydına yazılır; sonraki
+   oturumlar aynı sayfayı kullanır, yenisini açmaz.
+9. **Araç yoksa** (Artifact olmayan ajan ya da ortam): aynı liste depoda block'un klasöründe bir Markdown dosyasında
+   onay kutularıyla (`- [ ]` / `- [x]`) tutulur; araç gelince sayfaya taşınır.
 
 ---
 

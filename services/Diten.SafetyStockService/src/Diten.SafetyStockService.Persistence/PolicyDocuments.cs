@@ -53,6 +53,10 @@ public sealed class PolicyAuditDocument
     public string BeforeState { get; set; } = string.Empty;
     public string AfterState { get; set; } = string.Empty;
     public string? Reason { get; set; }
+    public decimal? Quantity { get; set; }
+    public string? BaseUomId { get; set; }
+    public DateTime? EffectiveFromUtc { get; set; }
+    public DateTime? EffectiveUntilUtc { get; set; }
     public DateTime OccurredAtUtc { get; set; }
     public string CorrelationId { get; set; } = string.Empty;
 }

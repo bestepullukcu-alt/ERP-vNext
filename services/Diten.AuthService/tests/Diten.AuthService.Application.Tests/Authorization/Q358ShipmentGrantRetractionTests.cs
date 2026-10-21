@@ -191,6 +191,7 @@ public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoRe
         Assert.All(await ShipmentGrantsAsync(e.Admin, catalog), g =>
         {
             Assert.False(g.IsDeleted);
+            Assert.Null(g.DeletedAt); // D5: a conversion is not a delete
             Assert.Equal(GrantSource.Module, g.GrantSource);
             Assert.Equal(Q358ShipmentGrantRetraction.ModuleCode, g.SourceModuleCode);
         });
@@ -199,6 +200,7 @@ public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoRe
             Assert.True(g.IsDeleted);
             Assert.Equal("system", g.UpdatedBy);
             Assert.NotNull(g.UpdatedAt);
+            Assert.Equal(g.UpdatedAt, g.DeletedAt); // D5: the soft delete records its instant
         });
         Assert.All(await ShipmentGrantsAsync(u.Admin, catalog), g => Assert.Equal((GrantSource.System, false), (g.GrantSource, g.IsDeleted)));
         Assert.All(await ShipmentGrantsAsync(m.Admin, catalog), g => Assert.Equal((GrantSource.Module, false), (g.GrantSource, g.IsDeleted)));
@@ -252,6 +254,7 @@ public sealed class Q358ShipmentGrantRetractionRunnerTests(DisposableAuthMongoRe
 
         var revived = await Grants.Find(g => g.RoleId == n.Admin && g.PermissionId == read).SingleAsync();
         Assert.False(revived.IsDeleted);
+        Assert.Null(revived.DeletedAt); // D5: revival clears the delete instant
         Assert.Equal(GrantSource.Module, revived.GrantSource);
         Assert.Contains(read, (await repository.GetByRoleAsync(n.Admin, n.Id, CancellationToken.None)).Select(g => g.PermissionId));
 
