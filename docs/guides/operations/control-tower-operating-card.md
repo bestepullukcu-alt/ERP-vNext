@@ -50,6 +50,13 @@ soruda token harcar.
   numarayı yazabilir. Art arda gelen sorularda aynı numara farklı anlam taşıyabildiği için, yalnız numara gelir ve bu
   önerilen seçenek değilse ya da yazma, silme veya geri alınamaz bir adım başlatıyorsa CT seçeneğin adını tekrar
   edip tek satırla teyit ister: "2 = önce düzelt — bunu mu kastettiniz?" (S-26).
+- **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
+  soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
+  denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
+  çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında tam yolu ve SHA-256'sı yazılır.
+- **Teslim dosyalarının yeri (S-29):** başkasına gidecek ZIP ve benzeri dosyalar oturumun geçici klasörüne değil,
+  CT worktree'sinde git'in izlemediği kalıcı bir klasöre yazılır (`.ct-teslim/<iş>/`; worktree'de `.git` bir dosyadır, hariç tutma `$(git rev-parse --git-common-dir)/info/exclude`'a yazılır);
+  oturum kapanınca kaybolmaz, depoya da girmez.
 - Soru doğrudan izni sorar ("Geçip main'i merge edeyim mi?"). Bir olgu sorusu ("başka oturum açık mı?") izin vermez:
   olgu gerekiyorsa seçenekler olgu ile izni birlikte adlandırır ("Açık oturum yok — geç ve merge et") (S-24).
 - Soru teknik terimsiz, düz Türkçe; kod, kimlik ya da yol gerekiyorsa seçeneğin içinde tek parça yazılır.
