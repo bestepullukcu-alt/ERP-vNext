@@ -46,7 +46,12 @@ soruda token harcar.
 - Bir yanıtta en çok **bir** soru; en çok üç seçenek. Karar gerekmiyorsa soru yazılmaz.
 - Önerilen seçenek `ÖNERİM` ile işaretlenir ve gerekçesi tek cümledir; öneri yoksa "önerim yok, çünkü …" yazılır.
 - Her seçenek neye izin verdiğini ve vermediğini söyler; sahipten uzun onay metni beklenmez.
+- Soru doğrudan izni sorar ("Geçip main'i merge edeyim mi?"). Bir olgu sorusu ("başka oturum açık mı?") izin vermez:
+  olgu gerekiyorsa seçenekler olgu ile izni birlikte adlandırır ("Açık oturum yok — geç ve merge et") (S-24).
 - Soru teknik terimsiz, düz Türkçe; kod, kimlik ya da yol gerekiyorsa seçeneğin içinde tek parça yazılır.
+- Soruda ya da onay istenen satırda geçen her kod, kişi anahtarı, hesap ya da dosya satırı yanında düz cümleyle
+  açıklanır: "K3 (siz — GMG-ERP hesabı)", "isteyen GMG-ERP (incelemeyi isteyen sizsiniz)". Değeri CT türettiyse
+  nereden türettiğini de yazar. Sahip neyi onayladığını açıklamayı okumadan anlayabilmelidir (S-25).
 
 ## 0. Yeni Control Tower açılışı
 
@@ -63,7 +68,8 @@ soruda token harcar.
      `queue_id`'ye eşit; (ii) ad bir `execution/domains/<domain>/` klasörüne eşit ve satırın `path`'i o klasörde; (iii) ad bir
      `MOD-nnnn` ve kayıtlı bir kuyruk dosyasının `module` sütununda geçiyor. `scope` metni eşleşmede kullanılmaz. Sonuç
      0 ya da birden çoksa `queue_id — control_tower` listesini göster ve tek soru sor.
-  2. **Yeri bul (salt okunur).** Modülün dalı yalnız `chore/ct/<q>-ct-NN` (NN iki hane). `git worktree list`, yerel ve
+  2. **Yeri bul (salt okunur, dışarıdan).** Geçişten önce hedefe `cd` yapılmaz; okumalar `git -C <wt> …` ve tam yolla
+     yapılır — uygulama `cd` ile oturumu oraya taşıyabilir ve 5. adımın sorusu atlanır (S-23). Modülün dalı yalnız `chore/ct/<q>-ct-NN` (NN iki hane). `git worktree list`, yerel ve
      `origin` dalları. Her aday için `origin/main`'e göre ileri/geri sayısı, son commit tarihi ve aynı adlı `origin`
      dalına göre `git rev-list --left-right --count <dal>...origin/<dal>`. Birden çok aday varsa bu bilgilerle listele
      ve tek soru sor; tahminle seçme.
