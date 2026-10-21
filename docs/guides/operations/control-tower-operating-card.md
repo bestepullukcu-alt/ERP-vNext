@@ -31,6 +31,41 @@ Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
 > için. Eski Control Tower'lar ve onaylı işleri geriye dönük değişmez, durdurulmaz.
 
+- [ ] **Yer (S-18, 2026-10-21; Codex tasarım görüşü KOŞULLU ve bağımsız inceleme bulguları burada):** geliştirici
+  oturumu her zaman ana klasörde açar ve yalnız `/control-tower <modül>` yazar; yeri CT kurar. Hedef doğrulanana kadar
+  hiçbir dosya yazılmaz; ana klasördeki değişiklikler taşınmaz, stash yok, silme yok, `--force` ya da reset yok. "İlk
+  çağrı salt okunur" kuralının tek istisnası bu adımdaki `git fetch` ve `git worktree add`'dir; commit, push, merge ya
+  da dağıtım izni değildir.
+  1. **Kuyruğu bul.** `git fetch origin`, sonra kaydı `git show origin/main:execution/delivery/ct-queue-registry.tsv`
+     ile oku (ana klasördeki kopya eski olabilir). `<q>` şu sırayla (büyük/küçük harf duyarsız): (i) çağrıdaki ad bir
+     `queue_id`'ye eşit; (ii) ad bir `execution/domains/<domain>/` klasörüne eşit ve satırın `path`'i o klasörde; (iii) ad bir
+     `MOD-nnnn` ve kayıtlı bir kuyruk dosyasının `module` sütununda geçiyor. `scope` metni eşleşmede kullanılmaz. Sonuç
+     0 ya da birden çoksa `queue_id — control_tower` listesini göster ve tek soru sor.
+  2. **Yeri bul (salt okunur).** Modülün dalı yalnız `chore/ct/<q>-ct-NN` (NN iki hane). `git worktree list`, yerel ve
+     `origin` dalları. Her aday için `origin/main`'e göre ileri/geri sayısı, son commit tarihi ve aynı adlı `origin`
+     dalına göre `git rev-list --left-right --count <dal>...origin/<dal>`. Birden çok aday varsa bu bilgilerle listele
+     ve tek soru sor; tahminle seçme.
+  3. **Tek adaya geç.** Worktree'si varsa oturumu oraya taşı (Claude Code: `EnterWorktree`, `path`). Worktree'si yoksa:
+     yerel dal varsa `git worktree add .claude/worktrees/<q>-ct-NN <dal>`; yalnız `origin`'de varsa
+     `git worktree add -b <dal> .claude/worktrees/<q>-ct-NN origin/<dal>`; sonra `EnterWorktree path`. `EnterWorktree
+     name` kullanılmaz (dalı `chore/ct/…` biçiminde açmaz). Dal aynı adlı `origin` dalının yalnız gerisindeyse ilk soru
+     `git merge --ff-only origin/<dal>`; iki yönde ayrışmışsa dur ve sor.
+  4. **Hiç yoksa.** Kayıtlı bir kuyruk için hiç `chore/ct/<q>-ct-NN` yoksa (eski adlandırmalı bir CT olabilir) yeni dal
+     açmadan önce kuyruk dosyasının son commit'ini (`git log --all -1 --format='%h %an %ci %D' -- <path>`) göster ve tek
+     soru sor; kuyruğu başka bir CT yazıyorsa yer kurulmaz, salt okunur devam edilir. Kayıtta hiç satır yoksa (yeni CT)
+     kayıtta olmayan bir `<q>` öner (domain kısa kodu) ve `chore/ct/<q>-ct-01` yolunu tek soruyla sun: "evet" yalnız
+     worktree açar (`git worktree add -b chore/ct/<q>-ct-01 --no-track .claude/worktrees/<q>-ct-01 origin/main`);
+     kuyruk ya da kayıt satırı yazmaz (`--prepare` sınırı).
+  5. **Başkasının işi.** Açık bir oturum süreçten ölçülemez (oturum taşınsa da süreç klasörü değişmez). Hedef worktree
+     kirliyse ya da son 60 dakikada değişmişse (`git -C <wt> log -g -1 --format=%cr`, `find <wt> -newermt '-60
+     minutes' -not -path '*/.git*' | head -1`) tek soru sor: "Bu worktree'de açık başka bir CT var mı? evet: geçmem /
+     hayır: geçerim". `origin/main` gerisindeyse yazma; ilk soru `git merge --no-edit origin/main` (merge commit;
+     çakışmada `git merge --abort`).
+  6. **Geçemiyorsan devam etme.** Araç oturumu taşıyamıyorsa (Codex) worktree'yi hazırla ve yeni oturumun açılacağı
+     klasörü tek satırla söyle; worktree'yi de açamıyorsa komutu tek satır ver. Ana klasörde devam etme. Geçişten sonra
+     eski mutlak yolları kullanma; hedefte `AGENTS.md` ve bu kartı yeniden oku.
+  İlk yanıtın ilk satırı ölçülmüş durumdur: geçildiyse `Klasör: <hedef> | Dal: … | HEAD: …`; geçilemediyse
+  `Klasör: <ana> (hedef: <yol>, geçilmedi) | Dal: … | HEAD: …`.
 - [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
   "tamamlanamadı" der (çıkış 2).
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
