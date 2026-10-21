@@ -165,6 +165,26 @@ Open findings (separate decisions, not fixed in H2):
   `LegalEntity:ReferenceBaseUrl`, so every self-started create most likely answers 503 today (from code, not run).
 - The scope question to Ali stays open (`mvp6-follow-up-drafts-01/SUPPLYCHAIN-REAL-ROLE-TESTS-SCOPE-v0.1.md`).
 
+## 4a. Integration phase (owner decisions 2026-10-21; state 2026-10-22, local commits, nothing pushed)
+
+Source: `docs/roadmap/plans/integration-phase-and-mvp5-start-plan-2026-10-21.md` §2.1 / §4.1 (Beste): E-1 correlation, E-2
+central audit now, E-5 MDM through the Gateway, E-6 UTC day, E-7 product check + return → `CUSTOMER_RETURN` (QUARANTINE),
+W-4 MOD-0183 is the single writer of `GOODS_ISSUE_SALES` at `Dispatched`, W-10 MVP-5's CT is the MVP-1 CT.
+
+| # | work package | state | where |
+|---|---|---|---|
+| I1 | WP-A1 — central audit (E-2): `IsSuccessful` on both envelopes, 17 commands marked, 9 transactions enlist, ledger + `AcceptedTrails` + `PinnedCounts` 0/0 (CT decision Natig 2026-10-21) | **done locally** — suite 603/0/1, 4 sabotages red | `feature/sce/central-audit-01` `ca59b5e97` |
+| I2 | WP-A2 — MDM through the Gateway (E-5) + FIX1 outbox created at start-up (race found by the suite: "Conflicted registering namespace", Carrier create 500) | **done locally** — suite 605/0/1; not proven against a live Gateway | same branch `041865e86` |
+| I3 | WP-P1 — MOD-0183 §23 / MOD-0186 §34 pack revision + SHIPMENT-BUNDLE 3.4.0 proposal | **draft** — G1, G5–G10 decided (Natig 2026-10-22); G2 reservation, G3 REVERSAL source (`MOD-0173` only), G4 two-phase multi-line **wait for the MVP-1 CT**; patches `git apply --check` OK, packs not edited | `docs/sce/wp-p1-inventory-writes-01` `c0587c728` |
+| I4 | Wave 2 code: DL-1 contract 3.4.0 · DL-2 issue core · DL-3 return → quarantine (after DL-2) · DL-4 product check (PRODUCT-MASTER frozen first) · DL-5 refusal texts · DL-6 reservations | waits on I3 approval (CT-APR-02 by the MVP-1 CT, CT-APR-01 high risk) | — |
+| I5 | Inventory read client (`ReadOnlySourceClients.cs`, not in DI) | measure first which rule or screen needs it | — |
+
+**Decided 2026-10-22 (Natig):** (1) lane live tours use the **6100–6199** range — a lane-only exception, not a §3 service
+port; (2) the finished units are pushed now, **one PR each** (H2 `feature/sce/real-identity-tests-01`, suite 606/0/1 after the
+main merge; I1+I2; this plan; I3), each after an `origin/main` merge and a re-test; (3) the CT-APR-01 approver of Cihan's
+MOD-0140 pack change is **Beste (K2)**. For the MVP-1 CT: G2–G4, and the FIX1 race may also exist in Inventory
+(the shared dispatcher creates the outbox indexes in the background).
+
 ## 5. Post-MVP-6 (named, not scheduled)
 
 DemandPlanning production authorities (S1, AC-D01…D29); DEMAND v2 (G3) to replace the S&OP/Capacity fixture seed;
