@@ -1,0 +1,20 @@
+# verify from: repository root
+# NOT FOR VERIFICATION (K6) — never shasum -c this file.
+# The repo paths this lane MEASURED, as measured on 2026-10-11. Nothing here was modified.
+#
+# --- consumer-side identity and governance ---
+734c5f6061aabe2728d0f5a265f6d29b4452cfb96251168a89142206a27ce35d  execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md
+e821e0a5475281dc791347020705651831b545c515bffb65d00fe65348251cea  execution/registries/module-id-registry.md
+7d9027ab8530290a816d544ed3fc3cb9dbc8c0e94465887f53bf0a61bfeb50d6  execution/portfolio/delivery-capability-packs/DCP-010-procurement-p2p.md
+fd7364c04f756e57e3cc85b0e429f8aacf93758d9802efeccf4d212ed4ebb51f  execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7  docs/analysis/contracts/supplier.openapi.yaml
+# --- consumer-side implementation (the comparison's measured half) ---
+a70529b3c083db4c7375793871dd7b34e4d945a33ada699017241467f33f2708  services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/SuppliersController.cs
+c68508e844459ffa53338243f11f576957aa485ef3afa5f69ce869bf2c76657b  services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/CustomBaseController.cs
+f5acc519e89e939df020e74056cac2cc338a02bba7a899c998756ee0fc8f1e51  services/Diten.ProcurementService/src/Diten.ProcurementService.Application/Features/Supplier/Handlers/CommandHandlers/SubmitOnboardingCaseHandler.cs
+17aa9587ea86a7d8e9dcb93da768dd4dbb210319ccce5beb3c955e97a0328104  services/Diten.ProcurementService/src/Diten.ProcurementService.Persistence/Repositories/SupplierRepository.cs
+2b9fa5fd92308d65f9b42db5ec4be83ebb463bec7b0ad00f011eea33ad4bdc09  services/Diten.ProcurementService/src/Diten.ProcurementService.Domain/Entities/Supplier.cs
+603c53c3ff4a731829297e0ee9bc1265238c4d756141749d947f646ccda85e19  services/Diten.ProcurementService/src/Diten.ProcurementService.Domain/Repositories/ISupplierRepository.cs
+# --- inbound producer disclosure, vendored unedited (K5); its own manifest is alongside it ---
+04a7390de2d599659c9b9c44134f3ef30f245dc4ea2713ab8cd6389fbdd0840f  docs/vendor/MOD-0140-SUPPLIER-BASE-disclosure-v1.0/MOD-0140-SUPPLIER-BASE-disclosure-v1.0.md
+# producer's authoritative contract digest: UNAVAILABLE — no SUPPLIER OpenAPI exists on the producer side.
