@@ -119,4 +119,16 @@
   <data name="ReportsToNone" xml:space="preserve"><value>— None (top of hierarchy) —</value></data>
   <data name="ReportsToHelp" xml:space="preserve"><value>Choose a contact already linked to this account. Within-account hierarchy; self-report and cycles are not allowed.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in the required fields correctly.</value></data>
+  <data name="Error.account_version_conflict" xml:space="preserve"><value>This account was changed by someone else. Reload it and apply your change again.</value></data>
+  <data name="VersionConflictReload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Error.account_expected_version_required" xml:space="preserve"><value>The form is out of date. Reload the account and try again.</value></data>
+  <data name="Error.account_code_taken" xml:space="preserve"><value>This account code is already in use.</value></data>
+  <data name="Error.external_reference_taken" xml:space="preserve"><value>This external reference is already recorded on another account.</value></data>
+  <data name="Error.account_type_invalid" xml:space="preserve"><value>Choose an account type from the list.</value></data>
+  <data name="Error.account_status_invalid" xml:space="preserve"><value>Choose a status from the list.</value></data>
+  <data name="Error.account_category_invalid" xml:space="preserve"><value>Choose a category from the list.</value></data>
+  <data name="Error.account_reference_set_missing" xml:space="preserve"><value>The reference data for this field is not published yet.</value></data>
+  <data name="Error.account_logo_invalid" xml:space="preserve"><value>The logo must be a PNG, JPG, GIF, WEBP or SVG image.</value></data>
+  <data name="Error.account_logo_too_large" xml:space="preserve"><value>The logo is too large (256 KB at most).</value></data>
+  <data name="Error.account_logo_conflict" xml:space="preserve"><value>Choose either a new logo or removing the logo, not both.</value></data>
 </root>

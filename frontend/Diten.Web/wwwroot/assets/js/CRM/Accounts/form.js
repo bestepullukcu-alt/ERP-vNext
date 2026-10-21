@@ -33,6 +33,14 @@ function initLogoPicker() {
     var placeholder = document.getElementById('accountLogoPlaceholder');
     var removeBtn = document.getElementById('accountLogoRemove');
     var error = document.getElementById('accountLogoError');
+    // WP-CRM-MOBILE-REQ CRM-ACC-EDIT — only a logo the user picked or removed is sent; an untouched one stays as stored
+    var changed = document.getElementById('accountLogoChanged');
+
+    function markChanged() {
+        if (changed) {
+            changed.value = 'true';
+        }
+    }
 
     function showError(message) {
         error.textContent = message;
@@ -81,6 +89,7 @@ function initLogoPicker() {
         var reader = new FileReader();
         reader.onload = function () {
             applyLogo(reader.result);
+            markChanged();
         };
         reader.readAsDataURL(file);
     });
@@ -89,5 +98,6 @@ function initLogoPicker() {
         clearError();
         fileInput.value = '';
         applyLogo('');
+        markChanged();
     });
 }

@@ -58,7 +58,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): IssueServiceIdentityTokenCommand (İ5) — WP-GP-AUDIT-TRAIL-01 D3.
         ["Diten.AuthService"] = new(Debt: 18, Exceptions: 1, K2Debt: 8),
         // Main sync (2026-10-11): the Crm ledger shrank to 169 on main (the CT line never touched it).
-        ["Diten.CrmService"] = new(Debt: 169, Exceptions: 0),
+        ["Diten.CrmService"] = new(Debt: 167, Exceptions: 0), // CRM-ACC-EDIT 2026-10-21: Create / UpdateAccountCommand now audited (169 → 167)
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),

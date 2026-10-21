@@ -85,7 +85,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - CloseClaimCountryCommand
 - CloseCyclePeriodCommand
 - ConfirmPlannedVisitCommand
-- CreateAccountCommand
 - CreateAccountRelationshipCommand
 - CreateAudienceProfileCommand
 - CreateCampaignCommand
@@ -169,7 +168,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - UnarchiveSubjectCommand
 - UnarchiveTopicCommand
 - UnlinkParentAccountCommand
-- UpdateAccountCommand
 - UpdateAccountContactLinkCommand
 - UpdateAccountRelationshipCommand
 - UpdateAudienceProfileCommand

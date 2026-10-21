@@ -119,4 +119,16 @@
   <data name="ReportsToNone" xml:space="preserve"><value>— Нет (высший уровень) —</value></data>
   <data name="ReportsToHelp" xml:space="preserve"><value>Выберите контакт, уже связанный с этим аккаунтом. Иерархия внутри аккаунта; самоподчинение и циклы запрещены.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, правильно заполните обязательные поля.</value></data>
+  <data name="Error.account_version_conflict" xml:space="preserve"><value>Эту запись изменил другой пользователь. Перезагрузите её и внесите изменение заново.</value></data>
+  <data name="VersionConflictReload" xml:space="preserve"><value>Перезагрузить</value></data>
+  <data name="Error.account_expected_version_required" xml:space="preserve"><value>Форма устарела. Перезагрузите запись и повторите попытку.</value></data>
+  <data name="Error.account_code_taken" xml:space="preserve"><value>Этот код клиента уже используется.</value></data>
+  <data name="Error.external_reference_taken" xml:space="preserve"><value>Эта внешняя ссылка уже зарегистрирована у другого клиента.</value></data>
+  <data name="Error.account_type_invalid" xml:space="preserve"><value>Выберите тип клиента из списка.</value></data>
+  <data name="Error.account_status_invalid" xml:space="preserve"><value>Выберите статус из списка.</value></data>
+  <data name="Error.account_category_invalid" xml:space="preserve"><value>Выберите категорию из списка.</value></data>
+  <data name="Error.account_reference_set_missing" xml:space="preserve"><value>Справочные данные для этого поля ещё не опубликованы.</value></data>
+  <data name="Error.account_logo_invalid" xml:space="preserve"><value>Логотип должен быть изображением PNG, JPG, GIF, WEBP или SVG.</value></data>
+  <data name="Error.account_logo_too_large" xml:space="preserve"><value>Логотип слишком большой (не более 256 КБ).</value></data>
+  <data name="Error.account_logo_conflict" xml:space="preserve"><value>Выберите новый логотип или удаление логотипа, но не то и другое.</value></data>
 </root>

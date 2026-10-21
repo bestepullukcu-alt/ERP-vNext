@@ -69,7 +69,15 @@ public interface IAccountRepository
 
     Task InsertAsync(Account account, CancellationToken cancellationToken);
 
+    /// <summary>An unconditional write of the account (delete, hierarchy link / unlink). It advances <c>Version</c> too, so an
+    /// edit that read the account before such a write finds its version stale (CRM-ACC-EDIT).</summary>
     Task UpdateAsync(Account account, CancellationToken cancellationToken);
+
+    /// <summary>WP-CRM-MOBILE-REQ CRM-ACC-EDIT — the ONE optimistic write of an edit: replaces the live account only while its
+    /// stored <c>Version</c> equals <paramref name="expectedVersion"/> (one filter on Id, TenantId, not deleted, Version), sets
+    /// <c>Version = expectedVersion + 1</c>. False = it changed meanwhile (or was deleted) — nothing written.</summary>
+    Task<bool> ReplaceIfVersionAsync(Account account, int expectedVersion, CancellationToken cancellationToken)
+        => throw new NotSupportedException("This account store does not support the optimistic edit.");
 
     /// <summary>WP-VW-W3E (W3E-BE-a) — the ids of the tenant's non-deleted accounts in <paramref name="cityRef"/>: the QR
     /// bulk page's city filter, used as an account-id scope of <see cref="ListAsync"/>. W3E-CITY — matched by

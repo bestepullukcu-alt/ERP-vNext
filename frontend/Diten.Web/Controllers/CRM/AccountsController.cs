@@ -137,7 +137,7 @@ public sealed class AccountsController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
-            AddGatewayErrorsToModelState(await ExtractGatewayErrorsAsync(response));
+            AddAccountErrorsToModelState(await ExtractGatewayErrorsAsync(response), model);
         }
         catch (Exception ex)
         {
@@ -197,7 +197,7 @@ public sealed class AccountsController : Controller
         {
             var response = await _httpClient.PutAsJsonAsync(
                 $"{_gatewayUrl}/api/crm/accounts/{id}",
-                ToPayload(model),
+                ToUpdatePayload(model),
                 _jsonOptions);
 
             if (response.IsSuccessStatusCode)
@@ -206,7 +206,7 @@ public sealed class AccountsController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
-            AddGatewayErrorsToModelState(await ExtractGatewayErrorsAsync(response));
+            AddAccountErrorsToModelState(await ExtractGatewayErrorsAsync(response), model);
         }
         catch (Exception ex)
         {
@@ -689,8 +689,47 @@ public sealed class AccountsController : Controller
         ResponsiblePersonEmail = model.ResponsiblePersonEmail,
         ExternalReference = model.ExternalReferences.FirstOrDefault()?.ExternalId,
         Notes = model.Notes,
-        LogoDataUri = model.LogoDataUri
+        LogoDataUri = model.LogoDataUri,
+        Version = model.Version
     };
+
+    /// <summary>WP-CRM-MOBILE-REQ CRM-ACC-EDIT — the edit body: the version the page read; the logo only when the user
+    /// changed it (an untouched logo is not sent and the backend keeps it; removed ⇒ removeLogo).</summary>
+    public static AccountSavePayload ToUpdatePayload(AccountEditViewModel model)
+    {
+        var payload = ToPayload(model);
+        payload.ExpectedVersion = model.Version;
+        if (!model.LogoChanged)
+        {
+            payload.LogoDataUri = null;
+        }
+        else if (string.IsNullOrWhiteSpace(model.LogoDataUri))
+        {
+            payload.LogoDataUri = null;
+            payload.RemoveLogo = true;
+        }
+
+        return payload;
+    }
+
+    /// <summary>The coded account errors under their fields (worded from the page resx), the version conflict as the
+    /// reload notice, any uncoded message in the summary.</summary>
+    private void AddAccountErrorsToModelState(IReadOnlyList<string> errors, AccountEditViewModel model)
+    {
+        foreach (var problem in AccountGatewayErrors.Parse(errors))
+        {
+            var text = problem.Code is { } code && _localizer[AccountGatewayErrors.ResourceKey(code)] is { ResourceNotFound: false } worded
+                ? worded.Value
+                : problem.Message;
+            if (problem.Code == AccountGatewayErrors.VersionConflict)
+            {
+                model.VersionConflict = true; // the reload notice says it (no second copy in the summary)
+                continue;
+            }
+
+            ModelState.AddModelError(problem.Field ?? string.Empty, text);
+        }
+    }
 
     private static AccountSavePayload ToPayload(AccountEditViewModel model) => new()
     {

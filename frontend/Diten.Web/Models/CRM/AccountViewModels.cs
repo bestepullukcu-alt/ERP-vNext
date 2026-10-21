@@ -67,6 +67,17 @@ public sealed class AccountEditViewModel
     [StringLength(700_000)]
     public string? LogoDataUri { get; set; }
 
+    /// <summary>WP-CRM-MOBILE-REQ CRM-ACC-EDIT — the version the edit page read (sent back as expectedVersion; a stale one
+    /// is 409 account_version_conflict).</summary>
+    public int? Version { get; set; }
+
+    /// <summary>Set by form.js when the user picked or removed a logo. False ⇒ the logo is NOT sent (the backend keeps
+    /// it); true + empty ⇒ removeLogo.</summary>
+    public bool LogoChanged { get; set; }
+
+    /// <summary>The last save lost to someone else's change: the page shows the reload notice.</summary>
+    public bool VersionConflict { get; set; }
+
     // Reference options (MOD-0048 published-values). Never hardcoded.
     public IReadOnlyList<ReferenceOptionViewModel> AccountTypeOptions { get; set; } = [];
     public IReadOnlyList<ReferenceOptionViewModel> AccountStatusOptions { get; set; } = [];
@@ -157,6 +168,9 @@ public sealed class AccountListItemViewModel
 public sealed class AccountDetailViewModel
 {
     public Guid Id { get; set; }
+
+    /// <summary>WP-CRM-MOBILE-REQ CRM-ACC-EDIT — the account's concurrency token.</summary>
+    public int Version { get; set; }
     public string AccountName { get; set; } = string.Empty;
     public string AccountCode { get; set; } = string.Empty;
     public string AccountType { get; set; } = string.Empty;
@@ -295,6 +309,14 @@ public sealed class AccountSavePayload
     public string? Notes { get; set; }
     public string? LogoDataUri { get; set; }
     public ExternalReferenceInputPayload? ExternalReference { get; set; }
+
+    /// <summary>WP-CRM-MOBILE-REQ CRM-ACC-EDIT — update only: the version the edit read; omitted on create.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public int? ExpectedVersion { get; set; }
+
+    /// <summary>Update only: true removes the logo (an omitted logo is kept).</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RemoveLogo { get; set; }
 }
 
 public sealed class ExternalReferenceInputPayload

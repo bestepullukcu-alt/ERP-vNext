@@ -119,4 +119,16 @@
   <data name="ReportsToNone" xml:space="preserve"><value>— 无（最高层）—</value></data>
   <data name="ReportsToHelp" xml:space="preserve"><value>选择已关联到此客户的联系人。客户内层级；不允许自我汇报或循环。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请正确填写必填字段。</value></data>
+  <data name="Error.account_version_conflict" xml:space="preserve"><value>此客户已被他人修改。请重新加载并再次进行您的更改。</value></data>
+  <data name="VersionConflictReload" xml:space="preserve"><value>重新加载</value></data>
+  <data name="Error.account_expected_version_required" xml:space="preserve"><value>表单已过期。请重新加载客户后重试。</value></data>
+  <data name="Error.account_code_taken" xml:space="preserve"><value>此客户代码已被使用。</value></data>
+  <data name="Error.external_reference_taken" xml:space="preserve"><value>此外部引用已记录在另一个客户上。</value></data>
+  <data name="Error.account_type_invalid" xml:space="preserve"><value>请从列表中选择客户类型。</value></data>
+  <data name="Error.account_status_invalid" xml:space="preserve"><value>请从列表中选择状态。</value></data>
+  <data name="Error.account_category_invalid" xml:space="preserve"><value>请从列表中选择类别。</value></data>
+  <data name="Error.account_reference_set_missing" xml:space="preserve"><value>此字段的参考数据尚未发布。</value></data>
+  <data name="Error.account_logo_invalid" xml:space="preserve"><value>徽标必须是 PNG、JPG、GIF、WEBP 或 SVG 图像。</value></data>
+  <data name="Error.account_logo_too_large" xml:space="preserve"><value>徽标过大（最多 256 KB）。</value></data>
+  <data name="Error.account_logo_conflict" xml:space="preserve"><value>请选择新徽标或删除徽标，不能同时进行。</value></data>
 </root>

@@ -32,7 +32,14 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
         {
             // Return a controlled 400 envelope (e.g. ValidFrom>ValidTo) instead of throwing → the API maps it to a
             // friendly 400 rather than a 500. Falls back to the exception only for non-Response<T> responses.
-            var messages = failures.Select(f => f.ErrorMessage).Distinct().ToList();
+            // WP-CRM-MOBILE-REQ CRM-ACC-EDIT (opt-in): a validator whose rules carry snake_case machine codes
+            // (WithErrorCode("account_name_required")) answers errors = [message, code] pairs; every other validator keeps
+            // the messages-only envelope exactly as before (FluentValidation's own codes, e.g. "NotEmptyValidator", are not
+            // machine codes).
+            var messages = failures.Any(f => IsMachineCode(f.ErrorCode))
+                ? failures.Select(f => (f.ErrorMessage, IsMachineCode(f.ErrorCode) ? f.ErrorCode : "validation_failed")).Distinct()
+                    .SelectMany(p => new[] { p.ErrorMessage, p.Item2 }).ToList()
+                : failures.Select(f => f.ErrorMessage).Distinct().ToList();
             if (TryBuildFailResponse(messages, out var failResponse))
             {
                 return failResponse;
@@ -43,6 +50,9 @@ public sealed class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<
 
         return await next();
     }
+
+    private static bool IsMachineCode(string? code)
+        => !string.IsNullOrEmpty(code) && System.Text.RegularExpressions.Regex.IsMatch(code, "^[a-z][a-z0-9]*(_[a-z0-9]+)+$");
 
     private static bool TryBuildFailResponse(IReadOnlyList<string> messages, out TResponse response)
     {

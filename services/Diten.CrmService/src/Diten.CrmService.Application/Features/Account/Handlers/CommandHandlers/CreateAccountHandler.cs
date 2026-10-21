@@ -39,14 +39,14 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
     {
         if (_tenant.TenantId is not { } tenantId)
         {
-            return Response<Guid>.Fail("Tenant context is required.", 400);
+            return AccountErrors.Fail<Guid>("Tenant context is required.", AccountErrors.TenantRequired, 400);
         }
 
         var referenceErrors = await AccountReferenceValidation.ValidateAsync(
             _referenceValidator, request.AccountType, request.Status, request.AccountCategory, cancellationToken);
         if (referenceErrors.Count != 0)
         {
-            return Response<Guid>.Fail(referenceErrors, 400);
+            return AccountErrors.Fail<Guid>(referenceErrors, 400);
         }
 
         if (request.ParentAccountId is { } parentId)
@@ -54,7 +54,7 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
             var parent = await _accounts.GetByIdAsync(tenantId, parentId, cancellationToken);
             if (parent is null)
             {
-                return Response<Guid>.Fail("Parent account not found.", 404);
+                return AccountErrors.Fail<Guid>("Parent account not found.", AccountErrors.ParentNotFound, 404);
             }
         }
 
@@ -69,7 +69,8 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
             if (await _externalRefs.ExistsBySourceExternalAsync(
                     tenantId, sourceSystem, externalInput.ExternalId.Trim(), excludeId: null, cancellationToken))
             {
-                return Response<Guid>.Fail("An external reference with this SourceSystem + ExternalId already exists.", 409);
+                return AccountErrors.Fail<Guid>("An external reference with this SourceSystem + ExternalId already exists.",
+                    AccountErrors.ExternalReferenceTaken, 409);
             }
         }
 
@@ -80,7 +81,7 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
             if (await _accounts.ExistsByCodeAsync(tenantId, accountCode, excludeId: null, cancellationToken))
             {
                 await _audit.PublishAsync(AccountAuditEvents.DuplicateRejected, tenantId, Guid.Empty, accountCode, cancellationToken);
-                return Response<Guid>.Fail("AccountCode already exists for this tenant.", 409);
+                return AccountErrors.Fail<Guid>("AccountCode already exists for this tenant.", AccountErrors.CodeTaken, 409);
             }
         }
         else
@@ -91,7 +92,7 @@ public sealed class CreateAccountHandler : IRequestHandler<CreateAccountCommand,
             }
             catch (AccountCodeGenerationException ex)
             {
-                return Response<Guid>.Fail(ex.Message, 500);
+                return AccountErrors.Fail<Guid>(ex.Message, AccountErrors.CodeGenerationFailed, 500);
             }
         }
 

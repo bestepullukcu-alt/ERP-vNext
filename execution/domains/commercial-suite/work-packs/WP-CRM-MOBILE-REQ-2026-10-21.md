@@ -33,3 +33,54 @@ KORU/YAPMA: Gateway rotası değişmez (yeni uç yok); Create davranışı aynı
 DOĞRULA: eski sürümle güncelleme → 409 + kayıt aynı; eşzamanlı iki güncelleme → biri 409 (gerçek mongod testi, atomik süzgeç); expectedVersion yok → 400; logo gönderilmezse korunur, `RemoveLogo` siler; taşınmayan alanlar korunur; 400 alan kodları; 409 üç kod (Create + Update); kiracılar arası 404; yetki (`crm.account.update`). Web: xUnit + RunNode — form version taşır, 409 iletisi 7 dil, alan altı hata. Sabotajlar (en az 4): sürüm süzgecini kaldır, logo null → sil'e geri dön, `account_code_taken` kodunu kaldır, Web formu version göndermesin. Tam takımlar: CRM (-o repo içi; taban aynı baş), Web (taban aynı baş; bilinen `ShipmentDetailsDateNode` ×2), mimari (known_failures.py).
 Commit: "fix(crm,web): WP-CRM-MOBILE-REQ CRM-ACC-EDIT — account update with optimistic concurrency (409 on a stale version), an omitted logo is kept, field and conflict codes on 400 / 409; the web form carries the version; mobile contract note" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## Sözleşme eki — CRM-ACC-EDIT (mobil)
+
+> Kaynak: `wp/crm-acc-edit` (CRM-ACC-EDIT). Uç **değişmedi**: `PUT api/crm/accounts/{id}` (yetki `crm.account.update`, Gateway rotası aynı). Okuma uçları (`GET api/crm/accounts`, `GET api/crm/accounts/{id}`) kayda `version` ekler.
+
+**Alanlar**
+
+| Alan | Nerede | Kural |
+|---|---|---|
+| `version` | liste satırı + ayrıntı yanıtı | kaydın eşzamanlılık belirteci (tam sayı; her yazmada +1 — düzenleme, silme, üst müşteri bağla / çöz) |
+| `expectedVersion` | `PUT` gövdesi | **zorunlu**; okunan `version`. Yoksa 400 `account_expected_version_required`; eskiyse 409 `account_version_conflict`, kayıt değişmez |
+| `logoDataUri` | `PUT` gövdesi | **gönderilmezse (null / boş) logo korunur**; yeni logo göndermek için `data:image/...;base64,...` |
+| `removeLogo` | `PUT` gövdesi | `true` → logo silinir. `logoDataUri` ile birlikte gönderilirse 400 `account_logo_conflict` |
+
+Güncellemenin **taşımadığı** alanlar hiç değişmez: `accountCode`, `parentAccountId` (ayrı uç: üst müşteri bağla / çöz), dış referanslar ve ek nitelikler (kendi uçları), oluşturma zamanı.
+
+**Hata zarfı:** `errors = [mesaj, kod, mesaj, kod, …]` — her sorun için bir çift; `mesaj` geliştirici içindir (İngilizce), ekran **kodu** kendi dilinde yazar.
+
+| HTTP | Kod | Alan | Ne zaman |
+|---|---|---|---|
+| 400 | `account_expected_version_required` | — | `expectedVersion` yok |
+| 400 | `account_name_required` · `account_name_too_long` | accountName | boş / > 200 |
+| 400 | `account_type_required` · `account_type_invalid` | accountType | boş / yayımlı `account-type` setinde değil |
+| 400 | `account_status_required` · `account_status_invalid` | status | boş / yayımlı `account-status` setinde değil |
+| 400 | `account_category_invalid` | accountCategory | yayımlı `account-category` setinde değil |
+| 400 | `account_reference_set_missing` | — | zorunlu referans seti yayımlanmamış |
+| 400 | `account_address_too_long` · `account_latitude_invalid` · `account_longitude_invalid` | addressLine · latitude · longitude | > 500 / −90..90 / −180..180 dışı |
+| 400 | `account_responsible_name_too_long` · `account_phone_invalid` · `account_email_invalid` | responsiblePerson* | > 200 / > 32 / e-posta değil |
+| 400 | `account_notes_too_long` | notes | > 2000 |
+| 400 | `account_logo_invalid` · `account_logo_too_large` · `account_logo_conflict` | logoDataUri | biçim / boyut / `removeLogo` ile birlikte |
+| 404 | `account_not_found` | — | yok, silinmiş ya da başka kiracının |
+| 409 | `account_version_conflict` | — | kayıt bu arada değişti → **yeniden oku, değişikliği tekrar uygula** (sessiz üzerine yazma yok) |
+| 409 | `account_code_taken` · `external_reference_taken` | accountCode · externalReference | yalnız oluşturmada (güncelleme bu alanları taşımaz) |
+
+**Örnek istek / yanıt**
+
+```http
+PUT /api/crm/accounts/5f1c…-…   (Authorization: Bearer …, X-Tenant-Id: …)
+{ "accountName": "Eczane Şifa", "accountType": "pharmacy", "status": "active", "cityRef": "istanbul",
+  "addressLine": "Bağdat Cad. 2", "expectedVersion": 3 }
+→ 200 { "data": true, "statusCode": 200, "isSuccessful": true, "errors": null }      // logo korunur; yeni version = 4
+
+PUT … { …, "expectedVersion": 3 }   // biri araya girdi
+→ 409 { "data": false, "statusCode": 409, "isSuccessful": false,
+        "errors": ["The account was changed by someone else; reload it and apply your change again.", "account_version_conflict"] }
+
+PUT … { …, "accountType": "garage", "expectedVersion": 4 }
+→ 400 { "errors": ["'garage' is not a valid published value of reference set 'account-type'.", "account_type_invalid"], … }
+```
+
+Başarılı yanıt yeni `version`'ı dönmez (`data: true`); sonraki düzenleme için kaydı yeniden okuyun (`GET api/crm/accounts/{id}`).

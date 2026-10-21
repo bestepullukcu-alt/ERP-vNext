@@ -204,6 +204,30 @@ public sealed class AccountRepository : IAccountRepository
     public async Task UpdateAsync(Account account, CancellationToken cancellationToken)
     {
         var filter = Builders<Account>.Filter.Where(a => a.Id == account.Id && a.TenantId == account.TenantId);
+        account.Version++; // every write advances the version (CRM-ACC-EDIT): an edit that read before it is then stale
         await _collection.ReplaceOneAsync(filter, account, cancellationToken: cancellationToken);
+    }
+
+    public async Task<bool> ReplaceIfVersionAsync(Account account, int expectedVersion, CancellationToken cancellationToken)
+    {
+        // A script-loaded account (TR demo load, imports) may carry no Version / IsDeleted field at all: it reads as version 0
+        // and live — the filter must say so too, or every edit of such an account would be a 409 forever.
+        var b = Builders<Account>.Filter;
+        var version = b.Eq(a => a.Version, expectedVersion);
+        if (expectedVersion == 0)
+        {
+            version = b.Or(version, b.Exists(a => a.Version, false));
+        }
+
+        var filter = b.Eq(a => a.Id, account.Id) & b.Eq(a => a.TenantId, account.TenantId) & b.Ne(a => a.IsDeleted, true) & version;
+        account.Version = expectedVersion + 1;
+        var result = await _collection.ReplaceOneAsync(filter, account, cancellationToken: cancellationToken);
+        if (result.MatchedCount == 1)
+        {
+            return true;
+        }
+
+        account.Version = expectedVersion;
+        return false;
     }
 }
