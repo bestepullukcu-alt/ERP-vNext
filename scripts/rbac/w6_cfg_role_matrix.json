@@ -8,17 +8,12 @@
     "the rep is CrmUser (WP-CRM-MOBILE-REQ CRM-ROLE-1)."
   ],
   "marker": "manual-grant-w6-cfg",
-  "workflow_needs_comment": [
-    "REPORT ONLY — never granted by the W6-CFG scripts (MOD-0023's keys; decision K13). The CRM starts and decides the",
-    "approval rounds with the CALLER's token (GatewayClaimWorkflowClient): submit → POST /api/v1/workflow/instances",
-    "(instances.start), the approver's task → GET tasks/mine (instances.view), the decision → tasks/{id}/approve|reject."
+  "_comment_workflow": [
+    "The platform.workflow.* rows (user decision 2026-10-21, K13 W6-CFG): the CRM starts and decides the approval rounds with",
+    "the CALLER's token (GatewayClaimWorkflowClient): submit → POST /api/v1/workflow/instances (instances.start), the",
+    "approver's task → GET tasks/mine (instances.view), the decision → tasks/{id}/approve|reject. Without them a submit",
+    "answers 503 workflow_unavailable and a decision 503 / 403."
   ],
-  "workflow_needs": {
-    "CrmUser": ["platform.workflow.instances.start", "platform.workflow.instances.view"],
-    "Team Leader": ["platform.workflow.instances.view", "platform.workflow.tasks.approve", "platform.workflow.tasks.reject"],
-    "Department Manager": ["platform.workflow.instances.start", "platform.workflow.instances.view", "platform.workflow.tasks.approve", "platform.workflow.tasks.reject"],
-    "Admin": ["platform.workflow.instances.start", "platform.workflow.instances.view", "platform.workflow.tasks.approve", "platform.workflow.tasks.reject"]
-  },
   "roles": [
     {
       "role": "CrmUser",
@@ -32,7 +27,9 @@
         "crm.contact.read",
         "crm.account-contact.read",
         "crm.visit-plan.read",
-        "mdm.product-master.read"
+        "mdm.product-master.read",
+        "platform.workflow.instances.start",
+        "platform.workflow.instances.view"
       ]
     },
     {
@@ -41,7 +38,10 @@
       "keys": [
         "commercial.pre-orders.read",
         "commercial.pre-orders.approve",
-        "commercial.pre-orders.cancel"
+        "commercial.pre-orders.cancel",
+        "platform.workflow.instances.view",
+        "platform.workflow.tasks.approve",
+        "platform.workflow.tasks.reject"
       ]
     },
     {
@@ -57,14 +57,22 @@
         "commercial.pre-order-settings.*",
         "commercial.price-lists.*",
         "commercial.pricing-rules.*",
-        "commercial.fx-rates.*"
+        "commercial.fx-rates.*",
+        "platform.workflow.instances.start",
+        "platform.workflow.instances.view",
+        "platform.workflow.tasks.approve",
+        "platform.workflow.tasks.reject"
       ]
     },
     {
       "role": "Admin",
       "why": "every commercial.* key",
       "keys": [
-        "commercial.*"
+        "commercial.*",
+        "platform.workflow.instances.start",
+        "platform.workflow.instances.view",
+        "platform.workflow.tasks.approve",
+        "platform.workflow.tasks.reject"
       ]
     }
   ]

@@ -10,9 +10,9 @@ scripts/golive/w6-cfg-grant-roles-live.js carries the same one — a test fails 
   Admin               commercial.*
 The commercial.* keys are read from the Platform CrmManifestProvider source (never a hand list): a '.*' row is every manifest
 key under it; a manifest key no role gets is printed under "NOT GRANTED" (never skipped silently).
-The matrix's "workflow_needs" (platform.workflow.instances.start / .view, tasks.approve / .reject per role) is REPORT ONLY:
-the CRM starts and decides the approval rounds with the caller's token, so a role without them cannot submit / decide —
-but they are MOD-0023's keys and this script never grants them (decision K13).
+Each role also gets the MOD-0023 keys its approval step needs (user decision 2026-10-21, K13 W6-CFG): the CRM starts and
+decides the approval rounds with the caller's token — CrmUser platform.workflow.instances.start / .view; Team Leader
+.instances.view, .tasks.approve / .reject; Department Manager + Admin all four.
 
 Local 97c5 has only some of these roles (measured 2026-10-21: Admin, DocumentMasterRegisterLinker, GQD, QADocumentation,
 Viewer). A matrix role that is not there is reported and skipped; --role-map "CrmUser=Some Local Role" grants a matrix row to an
@@ -196,8 +196,7 @@ def run(store, matrix: dict, universe: list, role_map: dict, apply: bool, strict
         return 2
 
     needed = sorted({k for _, _, _, keys in present for k in keys})
-    workflow_needs = matrix.get("workflow_needs", {})
-    perms = store.permissions(needed + sorted({k for keys in workflow_needs.values() for k in keys}))
+    perms = store.permissions(needed)
     missing = [k for k in needed if k not in perms]
     if missing:
         out(f"ABORT: permission(s) not in the catalog: {missing}. W6-BE-a / BE-b / WEB-a must be on the branch and the fleet "
@@ -223,10 +222,6 @@ def run(store, matrix: dict, universe: list, role_map: dict, apply: bool, strict
             planned.append(key)
             todo.append(store.new_grant(role["_id"], perms[key]["_id"], template, marker))
         out(f"role '{local}' ({role['_id']}): {len(planned)} grant(s) to insert: {planned}")
-        lacks = [k for k in workflow_needs.get(matrix_role, []) if k not in perms or perms[k]["_id"] not in held]
-        if lacks:
-            out(f"  INFO (not granted here — MOD-0023 keys, decision K13): '{local}' lacks {lacks}; the CRM starts / decides "
-                "the approval round with the caller's token, so without them a submit answers 503 workflow_unavailable and a decision 503 / 403.")
 
     if not apply:
         out(f"DRY-RUN — nothing written ({len(todo)} grant(s) planned). Re-run with --apply.")

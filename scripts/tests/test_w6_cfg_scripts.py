@@ -4,6 +4,7 @@
     granted; a matrix key the manifest does not declare (a typo) and a '.*' row that matches nothing are errors;
   * the live console script carries the same matrix as scripts/rbac/w6_cfg_role_matrix.json;
   * dry-run writes nothing (local Mongo script and the three console scripts), --apply writes, a second run adds nothing;
+  * every role gets the MOD-0023 keys its approval step needs (the CRM starts / decides with the caller's token);
   * COM-PREORDER-APPROVAL has no candidate of its own (else Platform ignores the runtime candidates = the line managers).
 
 The console scripts run under Node with a fake window (skipped when node is not on PATH). Run:
@@ -74,13 +75,18 @@ def run_quiet(*args, **kwargs):
     return code, buf.getvalue()
 
 
-def workflow_keys(matrix):
-    return sorted({k for keys in matrix["workflow_needs"].values() for k in keys})
+WF_START = "platform.workflow.instances.start"
+WF_VIEW = "platform.workflow.instances.view"
+WF_APPROVE = "platform.workflow.tasks.approve"
+WF_REJECT = "platform.workflow.tasks.reject"
+WF_ALL = [WF_START, WF_VIEW, WF_APPROVE, WF_REJECT]
+# keys per role = 9 / 3 / 24 / all commercial, each plus its workflow keys (2 / 3 / 4 / 4)
+COUNTS = {"CrmUser": 11, "Team Leader": 6, "Department Manager": 28}
 
 
 def all_keys(universe, matrix):
     plan, _ = grant.resolve(matrix, universe)
-    return sorted({k for _, keys in plan for k in keys} | set(workflow_keys(matrix)))
+    return sorted({k for _, keys in plan for k in keys})
 
 
 class MatrixAgainstManifest(unittest.TestCase):
@@ -112,12 +118,19 @@ class MatrixAgainstManifest(unittest.TestCase):
         for key in ("crm.account.read", "crm.contact.read", "crm.account-contact.read", "crm.visit-plan.read",
                     "mdm.product-master.read"):
             self.assertIn(key, plan["CrmUser"])
-        self.assertEqual(sorted(plan["Team Leader"]),
+        self.assertEqual(sorted(k for k in plan["Team Leader"] if k.startswith("commercial.")),
                          ["commercial.pre-orders.approve", "commercial.pre-orders.cancel", "commercial.pre-orders.read"])
         for key in ("commercial.price-lists.publish", "commercial.pricing-rules.publish", "commercial.pre-order-settings.update",
                     "commercial.fx-rates.create", "commercial.pre-orders.record-depot-response"):
             self.assertIn(key, plan["Department Manager"])
-        self.assertEqual(sorted(plan["Admin"]), self.universe)
+        self.assertEqual(sorted(plan["Admin"]), sorted(self.universe + WF_ALL))
+        # the workflow keys the CRM needs because it starts / decides with the caller's token
+        self.assertEqual([k for k in plan["CrmUser"] if k.startswith("platform.")], [WF_START, WF_VIEW])
+        self.assertEqual([k for k in plan["Team Leader"] if k.startswith("platform.")], [WF_VIEW, WF_APPROVE, WF_REJECT])
+        self.assertEqual([k for k in plan["Department Manager"] if k.startswith("platform.")], WF_ALL)
+        self.assertNotIn(WF_APPROVE, plan["CrmUser"], "the rep does not decide")
+        for role, n in COUNTS.items():
+            self.assertEqual(len(plan[role]), n, role)
 
     def test_a_typo_and_an_empty_wildcard_are_errors(self):
         bad = {"marker": "x", "roles": [{"role": "R", "keys": ["commercial.pre-orders.aprove", "commercial.nothing.*"]}]}
@@ -152,19 +165,21 @@ class LocalGrantScript(unittest.TestCase):
         store = FakeStore(self.ROLES, self.keys)
         self.assertEqual(run_quiet(store, self.matrix, self.universe, {}, apply=True)[0], 0)
         first = len(store.inserted)
-        self.assertEqual(first, 9 + 3 + 24 + len(self.universe))
+        self.assertEqual(first, sum(COUNTS.values()) + len(self.universe) + 4)
         self.assertTrue(all(d["CreatedBy"] == "manual-grant-w6-cfg" for d in store.inserted))
         self.assertEqual(run_quiet(store, self.matrix, self.universe, {}, apply=True)[0], 0)
         self.assertEqual(len(store.inserted), first, "second run inserts nothing")
 
-    def test_workflow_keys_are_reported_never_granted(self):
+    def test_workflow_keys_are_granted_per_role(self):
         store = FakeStore(self.ROLES, self.keys)
-        code, out = run_quiet(store, self.matrix, self.universe, {}, apply=True)
-        self.assertEqual(code, 0)
-        wf = {store.perms[k]["_id"] for k in workflow_keys(self.matrix)}
-        self.assertEqual([d for d in store.inserted if d["PermissionId"] in wf], [], "MOD-0023 keys are K13, not granted")
-        self.assertIn("'CrmUser' lacks ['platform.workflow.instances.start', 'platform.workflow.instances.view']", out)
-        self.assertEqual(out.count("INFO (not granted here"), 4)
+        self.assertEqual(run_quiet(store, self.matrix, self.universe, {}, apply=True)[0], 0)
+        ids = {r["Name"]: r["_id"] for r in store.role_list}
+        got = lambda role, key: (ids[role], store.perms[key]["_id"]) in store.grants  # noqa: E731
+        self.assertTrue(got("CrmUser", WF_START) and got("CrmUser", WF_VIEW))
+        self.assertFalse(got("CrmUser", WF_APPROVE) or got("CrmUser", WF_REJECT))
+        self.assertFalse(got("Team Leader", WF_START))
+        for role in ("Team Leader", "Department Manager", "Admin"):
+            self.assertTrue(got(role, WF_VIEW) and got(role, WF_APPROVE) and got(role, WF_REJECT), role)
 
     def test_a_key_already_held_is_not_inserted(self):
         store = FakeStore(self.ROLES, self.keys, held=[("Admin", "commercial.pre-orders.read")])
@@ -178,7 +193,7 @@ class LocalGrantScript(unittest.TestCase):
         code, out = run_quiet(store, self.matrix, self.universe, {}, apply=True)
         self.assertEqual(code, 0)
         self.assertIn("'CrmUser' (matrix row CrmUser) is not in tenant 97c5", out)
-        self.assertEqual(len(store.inserted), len(self.universe))
+        self.assertEqual(len(store.inserted), len(self.universe) + 4)
         store = FakeStore(["Admin"], self.keys)
         self.assertEqual(run_quiet(store, self.matrix, self.universe, {}, apply=True, strict_roles=True)[0], 2)
         self.assertEqual(store.inserted, [])
@@ -189,7 +204,7 @@ class LocalGrantScript(unittest.TestCase):
         viewer = store.role_list[1]["_id"]
         rows = [d["PermissionId"] for d in store.inserted if d["RoleId"] == viewer]
         self.assertEqual(len(rows), len(set(rows)))
-        self.assertEqual(len(rows), 9 + 1)  # CrmUser's nine + Team Leader's approve (read / cancel already planned)
+        self.assertEqual(len(rows), 11 + 3)  # CrmUser's eleven + Team Leader's approve, tasks.approve, tasks.reject
 
     def test_a_key_missing_from_the_catalog_aborts_before_any_write(self):
         store = FakeStore(self.ROLES, [k for k in self.keys if k != "crm.account-contact.read"])
@@ -234,8 +249,6 @@ class ConsoleScripts(unittest.TestCase):
     def test_live_grant_matrix_equals_the_json_matrix(self):
         out = node("console.log(JSON.stringify(require(process.argv[process.argv.length-1]).MATRIX))", LIVE_GRANTS)
         self.assertEqual(out, [{"role": r["role"], "keys": r["keys"]} for r in grant.load_matrix()["roles"]])
-        needs = node("console.log(JSON.stringify(require(process.argv[process.argv.length-1]).WORKFLOW_NEEDS))", LIVE_GRANTS)
-        self.assertEqual(needs, grant.load_matrix()["workflow_needs"])
 
     def test_live_grant_dry_run_writes_nothing_apply_writes_rerun_adds_nothing(self):
         universe = grant.manifest_commercial_keys()
@@ -260,20 +273,18 @@ const routes = (method, url, init) => {
   console.log(JSON.stringify({ dryWrites, applied, total: writes().length,
     planned: dry.filter(r => r.durum === 'EKLENECEK').length,
     again: again.filter(r => r.durum === 'zaten var').length, unassigned: dry.filter(r => r.durum.startsWith('ATANMADI')).length,
-    wfPosted: writes().filter(c => wf.includes(catalog.find(x => x.id === new URLSearchParams(c.body).get('permissionId')).key)).length,
-    info: again.filter(r => r.durum.startsWith('BILGI')).length }));
+    wfPosted: writes().filter(c => wf.includes(catalog.find(x => x.id === new URLSearchParams(c.body).get('permissionId')).key)).length }));
 })();
 """
         out = node(script, LIVE_GRANTS, json.dumps(universe))
-        expected = 9 + 3 + 24 + len(universe)
+        expected = sum(COUNTS.values()) + len(universe) + 4
         self.assertEqual(out["dryWrites"], 0, "APPLY=false → no POST")
         self.assertEqual(out["planned"], expected)
         self.assertEqual(out["applied"], expected)
         self.assertEqual(out["total"], expected, "second run posts nothing")
         self.assertEqual(out["again"], expected)
         self.assertEqual(out["unassigned"], 0)
-        self.assertEqual(out["wfPosted"], 0, "MOD-0023 keys are reported, never granted")
-        self.assertEqual(out["info"], 2 + 3 + 4 + 4)
+        self.assertEqual(out["wfPosted"], 2 + 3 + 4 + 4, "each role's workflow keys")
 
     def test_preorder_template_has_no_candidate_of_its_own(self):
         out = node("""

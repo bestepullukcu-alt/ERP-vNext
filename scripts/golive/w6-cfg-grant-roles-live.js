@@ -11,7 +11,9 @@
 // katalogdaki (CRM manifestinden kayitli) o onekin butun commercial.* anahtarlaridir; hicbir role dusmeyen commercial.*
 // anahtari "ATANMADI" satiriyla raporlanir (sessiz atlama yok). Katalogda olmayan anahtar "DUR" satiridir.
 // Canlida bu yolla eklenen satirin isaretcisi yoktur (ekranin ucu CreatedBy'yi oturumdan yazar): geri alma = rapordaki
-// "EKLENDI" satirlarini ayni ekrandan kaldirmak. platform.workflow.* eksikleri yalniz "BILGI" satiri (verilmez, K13).
+// "EKLENDI" satirlarini ayni ekrandan kaldirmak.
+// platform.workflow.* satirlari (kullanici karari 2026-10-21): CRM onay turunu CAGIRANIN token'iyla baslatir ve karara
+// baglar — gonder -> instances.start, onaycinin gorevi -> instances.view, karar -> tasks.approve / reject.
 // Rol sahipleri degisikligi gormek icin yeniden giris yapmalidir.
 
 (function (APPLY) {
@@ -22,25 +24,23 @@
       'commercial.pre-orders.read', 'commercial.pre-orders.create', 'commercial.pre-orders.submit', 'commercial.pre-orders.cancel',
       'crm.account.read', 'crm.contact.read', 'crm.account-contact.read', 'crm.visit-plan.read',
       'mdm.product-master.read',
+      'platform.workflow.instances.start', 'platform.workflow.instances.view',
     ] },
     { role: 'Team Leader', keys: [
       'commercial.pre-orders.read', 'commercial.pre-orders.approve', 'commercial.pre-orders.cancel',
+      'platform.workflow.instances.view', 'platform.workflow.tasks.approve', 'platform.workflow.tasks.reject',
     ] },
     { role: 'Department Manager', keys: [
       'commercial.pre-orders.read', 'commercial.pre-orders.approve', 'commercial.pre-orders.cancel',
       'commercial.pre-orders.read-all', 'commercial.pre-orders.record-depot-response', 'commercial.pre-orders.retry-transmission',
       'commercial.pre-order-settings.*', 'commercial.price-lists.*', 'commercial.pricing-rules.*', 'commercial.fx-rates.*',
+      'platform.workflow.instances.start', 'platform.workflow.instances.view', 'platform.workflow.tasks.approve', 'platform.workflow.tasks.reject',
     ] },
-    { role: 'Admin', keys: ['commercial.*'] },
+    { role: 'Admin', keys: [
+      'commercial.*',
+      'platform.workflow.instances.start', 'platform.workflow.instances.view', 'platform.workflow.tasks.approve', 'platform.workflow.tasks.reject',
+    ] },
   ];
-  // YALNIZ RAPOR — bu betik VERMEZ (MOD-0023 anahtarlari, karar K13). CRM onay turunu CAGIRANIN token'iyla baslatir ve
-  // karara baglar: gonder -> instances.start, onaycinin gorevi -> instances.view, karar -> tasks.approve / reject.
-  const WORKFLOW_NEEDS = {
-    'CrmUser': ['platform.workflow.instances.start', 'platform.workflow.instances.view'],
-    'Team Leader': ['platform.workflow.instances.view', 'platform.workflow.tasks.approve', 'platform.workflow.tasks.reject'],
-    'Department Manager': ['platform.workflow.instances.start', 'platform.workflow.instances.view', 'platform.workflow.tasks.approve', 'platform.workflow.tasks.reject'],
-    'Admin': ['platform.workflow.instances.start', 'platform.workflow.instances.view', 'platform.workflow.tasks.approve', 'platform.workflow.tasks.reject'],
-  };
 
   // '.*' -> catalog keys under the prefix; an exact commercial key the catalog lacks stays (it becomes a DUR row).
   const resolve = (universe) => MATRIX.map(r => {
@@ -98,9 +98,6 @@
         const j = await res.json().catch(() => null);
         report.push({ rol: p.role, anahtar: key, durum: j && j.success ? 'EKLENDI' : `HATA ${res.status} ${((j && j.errors) || []).join('; ')}` });
       }
-      for (const key of WORKFLOW_NEEDS[p.role] || []) {
-        if (!held.has(key)) report.push({ rol: p.role, anahtar: key, durum: 'BILGI: eksik — bu betik vermez (K13); yoksa gonderim / karar 503' });
-      }
     }
     for (const k of notGranted(plan, universe)) report.push({ rol: '—', anahtar: k, durum: 'ATANMADI (matriste yok)' });
 
@@ -111,7 +108,7 @@
     return report;
   };
 
-  const api = { MARKER, MATRIX, WORKFLOW_NEEDS, resolve, notGranted, run };
+  const api = { MARKER, MATRIX, resolve, notGranted, run };
   if (typeof module !== 'undefined' && module.exports) { module.exports = api; return; }
   run(window, APPLY).catch(e => console.error(e.message));
 })(/* APPLY = */ false);
