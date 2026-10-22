@@ -531,11 +531,15 @@ def main_merge(root: str, main: str, added: str) -> tuple[str | None, str]:
     """The first-parent merge of the main line that brought `added` in, or (None, why)."""
     if git(root, "merge-base", "--is-ancestor", added, main, ok_fail=True) is None:
         return None, "onay satırı henüz ana çizgide (main) değil"
-    if added in git(root, "rev-list", "--first-parent", main).decode().split():
+    line = git(root, "rev-list", "--first-parent", main).decode().split()
+    if added in line:
         return None, f"onay satırı {added[:12]} ile doğrudan ana çizgiye yazılmış — merge ile gelen ikinci kişi adımı yok"
-    # one walk, not one merge-base per merge (thousands on the real main line): the oldest first-parent commit of main
-    # that descends from `added` is the commit that brought it in; it must be a merge
-    chain = git(root, "rev-list", "--first-parent", "--ancestry-path", f"{added}..{main}").decode().split()
+    # S-40: the oldest first-parent commit of main that descends from `added` brought it in; it must be a merge. The
+    # descendants are walked on the FULL graph (--ancestry-path without --first-parent) and then kept to the main
+    # line: with --first-parent the walk misses a merge whose branch took main after the row (card §7a), because the
+    # row is then reachable only through that merge's second parent, not its own branch tip.
+    below = set(git(root, "rev-list", "--ancestry-path", f"{added}..{main}").decode().split())
+    chain = [c for c in line if c in below]
     if chain:
         m = chain[-1]
         if len(git(root, "rev-list", "--parents", "-n", "1", m).decode().split()) > 2:
@@ -1113,6 +1117,30 @@ def self_test() -> int:
     cases.append(("sabotage: a hand-made card digest -> exit 1", code == 1 and any("kartının özeti" in l for l in out)))
     code, out = high_attempt("h8", "lead")
     cases.append(("positive control: a valid HIGH approval after the refusals -> exit 0", code == 0))
+
+    # S-40: the row's branch takes main AFTER the row (card §7a: merge main before the push), then another person merges
+    # it -> the merge that brought the row in is found; the same with the row's author merging it -> still no human step
+    def row_then_main(name, merger):
+        g("checkout", "-q", "main")
+        put(PACK, get(PACK) + f"- {name}\n")
+        commit(f"pack change {name}")
+        g("checkout", "-q", "-b", name)
+        add_row("dev", "lead", "HIGH", "2026-10-26")
+        commit(f"{name} row", who=DEV)
+        g("checkout", "-q", "main")
+        put(f"other-{name}.txt", "x\n")
+        commit(f"unrelated main commit {name}", who=LEAD2)
+        g("checkout", "-q", name)
+        g("merge", "-q", "--no-ff", "-m", f"Merge main into {name}", "main", who=DEV)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=merger)
+        return check()
+    code, out = row_then_main("s40a", LEAD)
+    cases.append(("S-40: the row's branch merged main after the row, then another person merged it -> the bringing merge "
+                  "is found, exit 0", code == 0))
+    code, out = row_then_main("s40b", DEV)
+    cases.append(("sabotage S-40: the same shape merged by the row's own author -> no human step, exit 1",
+                  code == 1 and any("insan adımı yok" in l for l in out)))
 
     # B2 (independent review): the human step is measured on the MAIN line, not on the checked ref.
     # (a) a worker branch forked BEFORE the row reached main, later merged main in by the row's own author

@@ -313,6 +313,10 @@ Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyal
    geliştirme veritabanı). Başlamadan önce CT, başka bir CT'nin çalışıp çalışmadığını sorar.
 6. Kuralları değiştiren bir PR (`.antigravity/`, kart, SOP) merge edilince her CT kartı yeniden okur; skill
    değiştiyse yeni oturum açılır.
+7. **Bir PR'da bir paket için tek onay satırı (S-41).** Ara sürümler onaylanmaz; PR'a giren son paket sürümü onaylanır.
+   Aynı PR'da aynı pakete iki satır olursa ilk satır merge'le geçerli olur, ikincinin onay kartı main'de başka bir
+   tabana göre hesaplanır ve tutmaz; satır merge'den sonra yeniden üretilip yeni bir PR ile alınmak zorunda kalır.
+   Onay satırının onaylayanı PR'ı kendisi merge eder; satırı yazan merge ederse onay sayılmaz.
 
 ## 8. Domain → Control Tower sahipliği (yalnız kanıttan)
 
