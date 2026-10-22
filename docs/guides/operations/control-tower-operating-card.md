@@ -35,9 +35,9 @@ Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; term
 
 ```text
 > ❓ **SORU:** <tek cümle — hangi kararı istiyorum>
-> **1) <seçenek> — ÖNERİM**, çünkü <tek cümle neden>
-> **2) <seçenek>** — <seçilirse ne olur>
-> "1" derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
+> **1) `<cevap kelimesi>` <seçenek> — ÖNERİM**, çünkü <tek cümle neden>
+> **2) `<cevap kelimesi>` <seçenek>** — <seçilirse ne olur>
+> "`<cevap kelimesi>`" (ya da 1) derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
 ```
 
 Aynı seçenekler istenirse butonlu kutuyla da verilir; görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her
@@ -46,6 +46,21 @@ soruda token harcar.
 - Bir yanıtta en çok **bir** soru; en çok üç seçenek. Karar gerekmiyorsa soru yazılmaz.
 - Önerilen seçenek `ÖNERİM` ile işaretlenir ve gerekçesi tek cümledir; öneri yoksa "önerim yok, çünkü …" yazılır.
 - Her seçenek neye izin verdiğini ve vermediğini söyler; sahipten uzun onay metni beklenmez.
+- Her seçeneğin bu soruya özgü kısa bir **cevap kelimesi** vardır (`commit`, `düzelt`, `hepsi-evet`); sahip kelimeyi ya da
+  numarayı yazabilir. Art arda gelen sorularda aynı numara farklı anlam taşıyabildiği için, yalnız numara gelir ve bu
+  önerilen seçenek değilse ya da yazma, silme veya geri alınamaz bir adım başlatıyorsa CT seçeneğin adını tekrar
+  edip tek satırla teyit ister: "2 = önce düzelt — bunu mu kastettiniz?" (S-26).
+- **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
+  soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
+  denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
+  çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında tam yolu ve SHA-256'sı yazılır.
+- **Dış istek (S-30):** başka bir ekipten istek gelince CT (1) her isteği sınıflandırır (modül, kimin kararı, mevcut
+  paketi etkiliyor mu), (2) her soruya önerilen cevabı **sohbette** gösterir — yalnız itiraz listesi yetmez, (3) isteyene
+  gidecek mesajı kod bloğunda hazırlar; doğrulama gereken yerleri (ör. QPPV, başka modül sahibi) işaretler. Mesajı
+  kendisi göndermez; kimin ileteceğini sorar. Kuyruğa yazmak ayrı onaydır.
+- **Teslim dosyalarının yeri (S-29):** başkasına gidecek ZIP ve benzeri dosyalar oturumun geçici klasörüne değil,
+  CT worktree'sinde git'in izlemediği kalıcı bir klasöre yazılır (`.ct-teslim/<iş>/`; worktree'de `.git` bir dosyadır, hariç tutma `$(git rev-parse --git-common-dir)/info/exclude`'a yazılır);
+  oturum kapanınca kaybolmaz, depoya da girmez.
 - Soru doğrudan izni sorar ("Geçip main'i merge edeyim mi?"). Bir olgu sorusu ("başka oturum açık mı?") izin vermez:
   olgu gerekiyorsa seçenekler olgu ile izni birlikte adlandırır ("Açık oturum yok — geç ve merge et") (S-24).
 - Soru teknik terimsiz, düz Türkçe; kod, kimlik ya da yol gerekiyorsa seçeneğin içinde tek parça yazılır.
@@ -94,6 +109,9 @@ soruda token harcar.
      eski mutlak yolları kullanma; hedefte `AGENTS.md` ve bu kartı yeniden oku.
   İlk yanıtın ilk satırı ölçülmüş durumdur: geçildiyse `Klasör: <hedef> | Dal: … | HEAD: …`; geçilemediyse
   `Klasör: <ana> (hedef: <yol>, geçilmedi) | Dal: … | HEAD: …`.
+- [ ] **İş takip sayfası (CT-TRK-01, pilot PVG):** block'un sayfası yoksa ilk durum değerlendirmesinden ya da ilk paket /
+  karar commit'inden sonra CT önerir ve `sayfa-ac` ile açar (SOP §22.2/2a); varsa her kabul, prompt ve karardan sonra
+  günceller. Bağlantı SOP §22.2/8'deki yere yazılır.
 - [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
   "tamamlanamadı" der (çıkış 2).
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
@@ -266,6 +284,8 @@ Replanning = Closure
 | Kendi geçici çalışma dosyalarını kullanma | Kalıcı — tekrar sorulmaz | Sahip kararı 2026-10-15 |
 | Açıkça onaylanmış iş paketi için dal ve worktree oluşturma | Kalıcı — tekrar sorulmaz | [GIT-002](../../../.antigravity/rules/git-safety.md) §1; sahip kararı |
 | Commit, push, PR ve merge | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5 |
+| CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | **Her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
+| Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
 | Yıkıcı Git işlemleri | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §6 |
 | `.antigravity/**` değişiklikleri | **Her seferinde açık onay** | [AGENTS.md](../../../AGENTS.md) §4 |
 | Başka modüle müdahale | **Her seferinde açık onay** | [XMC-001](../../../.antigravity/rules/cross-module-change-consent.md) |
