@@ -95,6 +95,7 @@
               "Satır numarasını yalnız numaralı bir okumadan ver",
               "\"evet\" ve \"hayır\"ın neyi yetkilendirdiğini söyler",
               "Soruyu kartın \"Soru biçimi\"yle yanıtın sonunda yaz;",
+              "butonlu soru kutusu kullanılmaz; \"Şimdi siz\" satırı soru yerine geçmez.",
               "her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01)."
             ]
           }
