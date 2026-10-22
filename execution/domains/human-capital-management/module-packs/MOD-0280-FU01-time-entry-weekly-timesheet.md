@@ -1091,6 +1091,8 @@ These are questions for counsel, not answers.
 | **T3 — reminders** | unsubmitted-week reminder job, notification templates ×7, person-only minutes-conflict notification | — | the read-time minutes sync is already T1 |
 | T4 — reports (not scheduled) | team totals and per-person report under the D11 keys | T1 prerequisite (1) | — |
 
+DL kimlikleri (CT-APR-02): §27 Teslim dilimleri. T1a = DL-1, T1b = DL-2, T2a = DL-3, T2b = DL-4, T3 = DL-5, T4 = DL-6. Her WP prompt'u `Kapsanan dilim:` satırında bu kimlikleri yazar.
+
 ---
 
 ## 24. PPM "Project Effort Log" — not a second time store
@@ -1130,3 +1132,16 @@ All answered on 2026-09-29 — see §21.1 (A1–A10). Remaining non-blocking fol
 
 Nothing in this table blocks `ready-for-dev`. The CT prerequisites in §23 gate the start of their slice, not the
 pack status.
+
+---
+
+## 27. Teslim dilimleri
+
+| dilim | ad | bölümler | durum |
+|---|---|---|---|
+| DL-1 | T1a — the record (Platform only; §23) | T1 — backend (Diten.Platform) | teslim edildi (kabul commit'i ölçülemedi; son kod commit'i fd33870c6 WP-TIME-ENTRY-RECORD-01 v3, kabul 721ea84ae mesajında anılır) |
+| DL-2 | T1b — capture (Platform only; §23) | T1 — backend (Diten.Platform) | teslim edildi, CT kabulü 5e773aa24 |
+| DL-3 | T2a — My Timesheet page, top-bar timer chip, error-code bridge, nav entry (Web; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | teslim edildi, CT kabulü 0deba3fd1 |
+| DL-4 | T2b — Task Center timer actions, approvals page, categories, settings, correction diff field, platform-links table (Web + Platform T2 side; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | teslim edildi, CT kabulü f49788f9e |
+| DL-5 | T3 — reminders and notifications (§21.3) | T3 | teslim edildi, CT kabulü b1c970b10 (1. tur) ve 3d4c986ca (2. tur) |
+| DL-6 | T4 — reports (team totals, per-person report; D11 keys) | Follow-up Items / Out of Scope, Delivery Slices (each its own WP) | planlanmadı (§23) |
