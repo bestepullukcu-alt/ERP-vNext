@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Review draft (2026-10-19); no runtime code or service-scaffold authority. Placement CONCURRED (DC-01, 2026-10-18, docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md); domain-config, DCP-009 and the module-id registry record it. SUPPLIER-BASE is frozen (docs/analysis/contracts/supplier.openapi.yaml v1.2.0, 780f8368a). ready-for-dev stays blocked: DC-02/DC-03 are unbuilt build seams, DC-04/DC-05 deferred (no producer service); target 2026-12-31 is a placeholder bound to those gates; see §0, §18 and docs/roadmap/plans/mvp6-mod0148-spec-split-01/CONCURRENCE-OPEN.md."
+status_note: "Review draft; v1 scope revision 2026-10-22 (§0.0): MOD-0148 started (Natig) — v1 = the supplier's own submissions, internal only. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and the §0.0 gates (DC-03 binding pack and build, DC-02 / MOD-0140 1.3.0, PR #198, permissions, replay receipt) are met. Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0148-supplier-portal
 started: 2026-09-15
@@ -27,6 +27,42 @@ form_field_count: 0
 > **Placement (CONCURRED, DC-01 2026-10-18):** MOD-0148 is a Blueprint Procurement Suite (P2P) module placed in
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
 > master owner (domain `procurement`). Placement grants no runtime, contract, gateway or permission ownership.
+
+## 0.0 v1 scope — the supplier's own submissions, internal only (owner decision 2026-10-22) — revision draft
+
+> `docs/records/decisions/2026-10/mvp6-mod0148-start-owner-decision-2026-10-22.md` (Natig): MOD-0148 starts now, which is
+> the D9 trigger for Beste's DC-03 binding. **Draft revision — not approved**; needs CT-APR-02 and a new CT-APR-01 row
+> (high risk: a new actor type, authentication path and product code). Where this section and an older line below
+> disagree about v1, this section wins.
+
+| Area | v1 | Later |
+|---|---|---|
+| Operations | `getSupplierPortalStatus`, `createOwnPortalSubmission`, `submitOwnPortalSubmission`, own `GET /portal/submissions[/{id}]` | internal review command (`UNDER_REVIEW`/`ACCEPTED`/`REJECTED`) — contract successor |
+| Actor (DC-03, approved 2026-10-21) | `supplier_user` from the DC-03 binding (Beste, separate Auth/Platform pack): separate portal subdomain, mandatory two-step verification, one account per email per tenant, Gateway allow-list `supplier_user` → `/api/supplier-performance/portal/*` + own session endpoints; `supplierId` resolved from the binding, never the request | — |
+| Supplier (DC-02) | tenant-wide master id (MOD-0140 1.3.0); which supplier–LE statuses may submit follows the **DC-02 D2 decision (open**, joint with the MOD-0140 owner); the `accessStatus` mapping (`ACTIVE` / `SUSPENDED` / `PENDING`) is written when D2 is decided | — |
+| Exposure | **internal only** — not on the internet until `TrustedProxies`, Gateway rate limit (MOD-0032) and a shared limiter store exist (DC-03) | public portal |
+| Payload (§0.2) | frozen v1 wire kept (any object, no schema, no field rejection); **request body limit 1 MiB** for create (Natig, 2026-10-22), measured on the service; over the limit → 400 `INVALID_REQUEST` with `details.limitBytes` (the frozen contract declares no 413); stored as canonical JSON text + SHA-256, so `$`-prefixed or dotted keys are data, never Mongo operators | per-`submissionType` schemas, secret rejection and size/depth limits via a contract successor |
+| MOD-0147 link | none (portal-source resolution belongs to MOD-0147's risk part, after TPRM; AC-25 is a later slice) | with MOD-0147 risk |
+| Permissions | `getSupplierPortalStatus`, own list and get → `supplychain.supplier-portal.read`; create and submit → `.submit`; `.review` later. The `supplier_user` actor receives `.read`/`.submit` through the DC-03 binding pack (its role or seed — defined there). The service also checks `actor_type = supplier_user`: a company user calling `/portal/*` → 403; a `supplier_user` outside `/portal/*` is refused by the Gateway allow-list. Whether the portal re-checks the two-step-verification claim or trusts Auth is decided with the DC-03 pack | `.review` |
+| Audit (§21) | path b, `supplychain-merkezi-iletim` — **valid from the moment PR #198 is on `main`**; the actor recorded is the `supplier_user` (issuer, subject, mapped supplier id) | review command |
+| UI | none in v1 (backend first, §9); the supplier screen is a later revision on the portal subdomain, 7-language scope | — |
+
+**Still gates for v1 code:** the DC-03 binding pack and its build (Beste) — an **external** gate, not a slice of this pack;
+DC-02 (MOD-0140 1.3.0 on `main`, Cihan) and the D2 decision; PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
+permission/composition single writer (§14); and the replay receipt (§0.1, needs DC-03's issuer/subject).
+
+**Own-list size (Natig, 2026-10-22):** the frozen list has no paging and returns each record with its payload, so v1 keeps at
+most **200 submissions per supplier + LE**; creating the 201st → 422 `BUSINESS_RULE_VIOLATION`. Paging comes with a contract
+successor (test T-0148-V1-CAP-01).
+
+**Release gate (internal only, measurable):** before any deployment the evidence shows that the portal subdomain and the
+`/portal/*` routes are not published on any public ingress (Gateway route list + ingress configuration, recorded); opening
+them needs `TrustedProxies`, the Gateway rate limit (MOD-0032) and a shared limiter store, each with its owner, and Natig's
+approval.
+
+v1 test IDs (added with this revision; the r2 test map stays unchanged): T-0148-V1-PAY-01 (any object accepted; 1 MiB + 1 →
+400; `$`-keys stored as data), T-0148-V1-PERM-01 (company user on `/portal/*` → 403; mapping of §0.0), T-0148-V1-EXP-01
+(release gate evidence).
 
 ## 0. Requirement status and traceability (review 2026-10-19)
 
@@ -48,7 +84,7 @@ label wins**: the text is the target, not an approved rule.
 | `POST /portal/submissions/{id}/submit` (submitOwnPortalSubmission) | ONAYLI | ÖNERİLEN — only `DRAFT→SUBMITTED`; **BLOKE** — DC-03 | security owner | AC-14, AC-15, AC-17 |
 | `GET /portal/submissions`, `GET /portal/submissions/{id}` | ONAYLI | ÖNERİLEN — Tenant+LE+mapped Supplier+non-deleted predicate; **BLOKE** — DC-03 | security owner | AC-05 (suspended → 403), AC-10 (predicate), AC-11 (revocation fence) |
 | Review operation | **none in v1** — the statuses `UNDER_REVIEW`, `ACCEPTED`, `REJECTED` **are** in the v1 enum | **BLOKE** — no command reaches them; not in the first slice | MOD-0148 owner; CT contract writer | — |
-| Portal-source resolution for MOD-0147 | — | **BLOKE** | MOD-0147/Risk owner | AC-25 |
+| Portal-source resolution for MOD-0147 | — | **BLOKE** — later slice, with MOD-0147's risk part (§0.0) | MOD-0147/Risk owner | AC-25 |
 | Placement / Supplier pointer / frozen contract hashes | — | ONAYLI (DC-01) / pointer re-pinned to SUPPLIER v1.2.0 / hash guard | — | AC-01 (r2: CONCURRED), AC-02, AC-07 (hashes only) |
 | Shared seam / fixture | — | out of bounded operations; fixture never live evidence | Seam owner; CT fixture coordinator | AC-06, AC-27 |
 
@@ -76,13 +112,14 @@ Test IDs added in r2 (MOD-0148) — the behaviours are proposed (§0.2, §0.3); 
   current authorization and eligibility pass. Retention follows the business record; expiry cannot reopen a duplicate create.
 - `validatedIssuer` and `subject` come from the DC-03 binding, which does not exist yet — hence BLOKE.
 
-### 0.2 Payload — contradiction with the frozen contract, BLOKE
+### 0.2 Payload — contradiction with the frozen contract (resolved for v1 in §0.0: no validation, 1 MiB limit)
 
 The frozen v1 `CreatePortalSubmissionRequest.payload` is `{ type: object, additionalProperties: true }`. This pack's
 "allowlisted shape and bounded size" (sections 4 and 12) is therefore **not** wire authority: a server that rejects a
 payload v1 accepts changes the wire. Per-`submissionType` schemas, size and depth limits and reference validation need a
-contract successor through the single CT Supplier Seam Owner, with consumer consents. Until then the pack's payload rule
-is a target only.
+contract successor through the single CT Supplier Seam Owner, with consumer consents. **v1 (Natig, 2026-10-22):** the wire
+stays as frozen — no schema, no field rejection — and only the 1 MiB request limit applies (§0.0). T-0148-PAY-01 applies to the
+contract successor, not to v1.
 
 ### 0.3 Transaction, outbox and delivery — ÖNERİLEN (SPEC-DELTA "Persistence and evidence invariants")
 
@@ -101,7 +138,7 @@ resolved server-side from the authenticated actor and cannot be overridden by a 
 
 ## 2. Ownership and Boundaries
 
-**Owns:** portal access projection, submission records/payload snapshots, submit/review lifecycle, own-record queries,
+**Owns:** portal access projection, submission records/payload snapshots, submit lifecycle (review: later slice), own-record queries,
 idempotency, audit/outbox evidence and correlation propagation.
 
 **Consumes:** API Gateway/authenticated actor mapping, Event Bus and
@@ -120,7 +157,7 @@ MOD-0147 evaluations/scorecards/risks, source document SoRs, gateway/shared perm
 | Queries | Get own portal status; list/get own submissions |
 | API | `/portal/status` and `/portal/submissions/**` in `SUPPLIER-PERFORMANCE` v1 |
 | Events | Portal submission submitted/reviewed |
-| Permissions | `supplychain.supplier-portal.read`, `.submit`, `.review` |
+| Permissions | `supplychain.supplier-portal.read`, `.submit`; `.review` with the later review command |
 
 ## 4. Entity Fields
 
@@ -134,7 +171,7 @@ MOD-0147 evaluations/scorecards/risks, source document SoRs, gateway/shared perm
 | `SubmissionType` | Frozen enum: corrective action/evidence/certificate/response |
 | `Subject` | Required, trimmed, max 250 |
 | `ReferenceType`, `ReferenceId` | Optional typed reference; referenced SoR is not copied |
-| `Payload` | Submission snapshot object; allowlisted and size-limited by type validator |
+| `Payload` | v1: any object (frozen wire), request ≤ 1 MiB, stored as canonical JSON text + SHA-256; type schemas later (§0.0) |
 | `Status` | `DRAFT`, `SUBMITTED`, `UNDER_REVIEW`, `ACCEPTED`, `REJECTED` |
 | `Version` | Optimistic concurrency token |
 | `CreatedAt`, `SubmittedAt` | Server/audited UTC timestamps |
@@ -209,9 +246,9 @@ shell, actor journey, exact fields, DataTable choice, golden reference, denied s
 | `Idempotency-Key` | Mutations | 1..200; surrounding whitespace **rejected (400), never trimmed** — ÖNERİLEN, §0.1 (AC-15) | Receipt scope of §0.1 (ÖNERİLEN, BLOKE on DC-03) |
 | `X-Correlation-Id` | All operations | UUID | Propagate to response/audit/event |
 | Supplier identity | Every operation | Authenticated actor mapping only | SUPPLIER-BASE central mock; fail closed |
-| `SubmissionType` | Create | Frozen enum | Type-specific payload validator exists |
+| `SubmissionType` | Create | Frozen enum | v1: no type-specific payload validator (§0.0) |
 | `Subject` | Create | Trimmed, 1..250 | — |
-| `Payload` | Create | Target: allowlisted shape and bounded size — **not wire authority** (v1 `additionalProperties: true`, §0.2) | No secret/token fields |
+| `Payload` | Create | v1: any object; request body ≤ 1 MiB, else 400 `INVALID_REQUEST` (`details.limitBytes`) | Secret/token rejection: contract successor, not v1 |
 | `If-Match` | Submit/review | Current version | Conditional update |
 | Status transition | Submit/review | Frozen lifecycle | Terminal record cannot be silently reopened |
 
@@ -228,12 +265,13 @@ shell, actor journey, exact fields, DataTable choice, golden reference, denied s
 
 ## 14. Authorization Convention
 
-Actors: authenticated supplier actor for own read/create/submit; tenant reviewer only for a separately approved review
-command. Proposed server-side permissions:
+Actors: authenticated `supplier_user` (DC-03) for own read/create/submit; tenant reviewer only for the later review command.
+v1 mapping (§0.0): status, own list, own get → `.read`; create, submit → `.submit`; company users are refused on `/portal/*`
+(403). Server-side permissions:
 
 - `supplychain.supplier-portal.read`
 - `supplychain.supplier-portal.submit`
-- `supplychain.supplier-portal.review`
+- `supplychain.supplier-portal.review` (later review command)
 
 Permission definition/seed and supplier actor mapping are shared seams and are not authorized by this draft.
 
@@ -253,7 +291,7 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
 - [ ] Idempotent replay and stale version paths create no duplicate or overwritten side effects.
 - [ ] Unresolved identity and SUPPLIER-BASE outage fail closed without access or writes.
 - [ ] No Supplier master/KYC/credential replica exists locally.
-- [ ] First slice: a `SUBMITTED` portal record is resolvable as a same-scope `PORTAL_SUBMISSION` source for MOD-0147 (AC-25; BLOKE on the resolver).
+- [ ] **Later slice (with MOD-0147's risk part):** a `SUBMITTED` portal record is resolvable as a same-scope `PORTAL_SUBMISSION` source for MOD-0147 (AC-25; BLOKE on the resolver).
 - [ ] Later slice (not the first): G5 evidence links **accepted** portal feedback to MOD-0147 — requires the review operation (not in v1) or an approved external producer; `ACCEPTED` is never counted done without it.
 
 ## 17. Test Expectations
@@ -272,22 +310,23 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
 - [x] Owned OpenAPI portal surface is frozen as `SUPPLIER-PERFORMANCE` v1.
 - [x] Backend-only proposed first slice, identity boundary, paths, failures and acceptance are explicit.
 - [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
-- [ ] Central owner freezes authenticated supplier actor mapping behavior.
+- [ ] Central owner freezes authenticated supplier actor mapping behavior — this is the DC-03 binding pack (Beste), below.
 - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
 - [ ] Supplier base identity/status + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
 - [ ] Actor binding + authorization (DC-03) — Platform/Auth security owner: one active Supplier per actor/Tenant/LE,
       binding revision and revocation fencing, trusted LE issuance; build seam, not built. **The portal's core path.**
+      Decisions approved 2026-10-21 (plan v10 C4); builder Beste (D9), triggered by the MOD-0148 start of 2026-10-22 (§0.0).
 - [ ] Shared contract, replay receipt, own-record persistence, portal-source resolver (with MOD-0147), fixture — OPEN in
       `docs/roadmap/plans/mvp6-mod0148-spec-split-01/CONCURRENCE-OPEN.md`.
-- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — the service has no audit-ledger file (BL-615).
+- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — **met when PR #198 merges** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
 - [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev`.
 - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
 
 ## 19. Implementation Notes
 
 - **ASSUMPTION:** the initial slice is backend-only and uses `SupplierPortal` as feature root.
-- **ASSUMPTION:** structured payload validation is selected by `submissionType`; arbitrary executable content and
-  secrets are rejected.
+- **v1 (Natig, 2026-10-22):** no structured payload validation; the payload is stored as data and never executed or
+  rendered as HTML. Per-`submissionType` validation and secret rejection come with the contract successor.
 - **Resolved 2026-10-19:** the ownership ASSUMPTION is replaced by DC-01 placement (above); the governance records are
   aligned in the same change.
 - **CONSUMES: SUPPLIER-BASE (merkez üretecek)**; supplier identity is server-derived and opaque.
@@ -302,17 +341,28 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
 
 ## 21. Audited Events
 
-AUD-001 (`audit-trail-standard.md`). `Diten.SupplyChainService` has **no accepted audit trail** today: there is no
-`tests/architecture/audit-ledger/Diten.SupplyChainService.md` (part of BL-615), and its module-local `*_audit`
-collections are not an accepted §5.c equivalent trail. Per §10.1 the trail is a **dependency** and blocks
-`ready-for-dev`. The actor (supplier user) is server-derived; no command here changes identity or permissions
-(binding is DC-03's, in Auth), so none is K2 class.
+AUD-001 (`audit-trail-standard.md`). Create and submit use **path b, trail `supplychain-merkezi-iletim`** (ledger
+`tests/architecture/audit-ledger/Diten.SupplyChainService.md`), **valid from the moment PR #198 is on `main`**; until then it
+is a v1 gate (§0.0). The recorded actor is the `supplier_user` — issuer, subject and the mapped supplier id from the DC-03
+binding, actor type supplier. No command here changes identity or permissions (binding is DC-03's, in Auth), so none is K2
+class.
 
 | Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
 |---|---|---|---|---|---|
-| CreateSupplierPortalSubmissionCommand | supplier-portal-submission.created | SupplierPortalSubmission | — (bagimlilik: SupplyChain izi) | AfterState: SubmissionType, Status, payload snapshot hash | — |
-| SubmitSupplierPortalSubmissionCommand | supplier-portal-submission.submitted | SupplierPortalSubmission | — (bagimlilik: SupplyChain izi) | Before/After: Status; AfterState: SubmittedAt | — |
+| CreateSupplierPortalSubmissionCommand | supplier-portal-submission.created | SupplierPortalSubmission | b — supplychain-merkezi-iletim (PR #198 main'de) | AfterState: SubmissionType, Status, payload snapshot hash | — |
+| SubmitSupplierPortalSubmissionCommand | supplier-portal-submission.submitted | SupplierPortalSubmission | b — supplychain-merkezi-iletim (PR #198 main'de) | Before/After: Status; AfterState: SubmittedAt | — |
 | ReviewSupplierPortalSubmissionCommand (later bounded command, not in the first slice) | supplier-portal-submission.reviewed | SupplierPortalSubmission | — (bagimlilik: SupplyChain izi) | Before/After: Status, ReviewOutcome | — |
 
-Not recorded: the submission payload body itself (only its snapshot hash and type), supplier credentials (never held
-by this module) and any secret the validator rejects.
+Not recorded: the submission payload body itself (only its SHA-256 and type), supplier credentials (never held by this
+module). v1 has no secret validator; the payload is data only.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | portal durumu ve kendi kayıtlarını okuma, oluşturma | §0.0, §0.1, §3, §4, §8, §12, §13 (oluşturma ve okuma), §14 (v1 eşlemesi) |
+| DL-2 | gönderim (DRAFT → SUBMITTED) ve değişmezlik | §0.3, §13 (gönderim), §21, submit |
+
+DC-03 bağlaması (Beste, ayrı Auth/Platform paketi), iç inceleme komutu (sözleşme halefi) ve tedarikçi ekranı (portal alt
+alanı, 7 dil) bu paketin dilimi **değildir**: ilki dış kapıdır, diğer ikisi ayrı bir paket revizyonu ve onayıyla gelir.
+CT-APR-01 satırının not alanı: "yalnız DL-1, DL-2".

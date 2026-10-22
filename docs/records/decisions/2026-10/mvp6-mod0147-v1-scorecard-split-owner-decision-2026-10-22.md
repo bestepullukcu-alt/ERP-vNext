@@ -32,4 +32,15 @@ only in MVP-6 documents). "Start after TPRM" therefore meant waiting for a modul
   contracts exist (MOD-0141 PO, MOD-0142 GRN, MOD-0143 3-way match; QC source to be identified). The 5-receipt-line
   minimum needs a receipt count the v1 contract does not carry, so it applies from v1.1.
 
+## Follow-up decisions after the independent review (Natig, 2026-10-22)
+
+The CT-APR-02 review (`docs/records/reviews/MOD-0147/2026-10-22-9b5e0a77.md`, KOŞULLU) found two blocking points; Natig
+answered them the same day:
+
+- **Bands (F-2):** v1 uses `[90,100] LOW`, `[75,90) MEDIUM`, `[50,75) HIGH`, `[0,50) CRITICAL`, from the unrounded score.
+- **Missing metrics (F-1):** the client sends only the metrics with data, each at weight 25;
+  score = Σ(value × weight) / Σ(weight), exact; fewer than 3 metrics → 422 and no draft; a missing metric is shown by its
+  absence from `metrics[]`.
+- **Separation of duty (F-10):** none in v1 — one person may create and publish.
+
 This record authorizes no code and no pack change by itself.

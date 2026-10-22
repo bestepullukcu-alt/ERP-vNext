@@ -29,4 +29,12 @@
   v1 keeps that wire and limits only the total request size the service already enforces, and per-type payload schemas go
   to a contract successor.
 
+## Follow-up decision after the independent review (Natig, 2026-10-22)
+
+The CT-APR-02 review (`docs/records/reviews/MOD-0148/2026-10-22-7ba14d85.md`, KOŞULLU) found that the service has no
+explicit request-size limit (only Kestrel's 30 MB default, above MongoDB's 16 MiB document limit). Natig set the v1 limit:
+**1 MiB per create request** (over the limit → 400 `INVALID_REQUEST`; the frozen contract declares no 413).
+Own-list cap: the frozen list has no paging, so v1 keeps at most **200 submissions per supplier + legal entity** (the 201st
+create → 422); paging comes with a contract successor.
+
 This record authorizes no code and no pack change by itself.
