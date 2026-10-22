@@ -21,11 +21,12 @@ slice: "P1 - Design System Specification (DL-1) + UI Compliance Checklist (DL-2)
 
 # MOD-0286 - UI Design System & Page Pattern Governance
 
-> **Draft, 2026-10-22.** This pack is a planning document. It authorizes no code. `status: draft`; both gates closed.
+> **Draft, revision 02, 2026-10-22.** This pack is a planning document. It authorizes no code. `status: draft`; both gates closed.
 > `service: Diten.Platform` names the P2 host only - P1 touches no service. `shell: none` is the P1 value; P2 would be
 > `platform-admin`. `golden_reference: none` because P1 has no DataTable; P2 console lists would be Slim (see Frontend
 > File Contract). `entity_base: GlobalEntity` is the P2 value, justified under Runtime Constraints; P1 owns no entity.
 > `approval_status: none` - no CT-APR-01 row exists for this pack (`scripts/pack_approval.py check`, see Implementation Notes).
+> Revision 02 answers Codex review 01 (UYGUN DEĞİL, F-1..F-8) and CT additions C-1, C-2; see Implementation Notes.
 >
 > DCP-002 gate (2026-10-22): `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0286 --name "UI Design System & Page Pattern Governance"`
 > -> `OK  MOD-0286: proven against Blueprint/registry.` Registry row: `execution/registries/module-id-registry.md:164`
@@ -44,12 +45,15 @@ slice: "P1 - Design System Specification (DL-1) + UI Compliance Checklist (DL-2)
 | # | Decision | Who | Proposed answer | Rationale |
 |---|---|---|---|---|
 | D-1 | Where the DL-1 specification and DL-2 checklist live | Owner (CT proposes) | `docs/reference/modules/platform/ui-design-system-page-pattern-governance/` (`spec.md`, `compliance-checklist.md`) | `docs-organization.md` §1 question 5 (today's truth, updated when it changes) and §3.1 row "Modül belgesi (spec, karar notu) -> `docs/reference/modules/{platform\|tenant}/<modül>/`". Alternative `docs/reference/architecture/` fits "cross-cutting" but its README says it is for post-development architecture. `docs/` root is forbidden (K1). Not finalised here. |
-| D-2 | Do the 11 UI rule files stay in `.antigravity/rules/` or move under the spec? | Owner | Stay (P1). The spec indexes them; the rules remain normative. | Authority order Module Pack > Domain Config > AGENTS.md > `.antigravity/`; moving is a protected-path change and would break 62 pack citations of `verify_datatable_page.py` plus the AGENTS.md §6.1 map. Rule wins over spec on conflict. |
+| D-2 | Do the 11 UI rule files stay in `.antigravity/rules/` or move under the spec? | Owner | Stay (P1). The spec indexes them; the rules remain normative. | Authority order Module Pack > Domain Config > AGENTS.md > `.antigravity/`; moving is a protected-path change and would break 62 pack citations of `verify_datatable_page.py` plus the AGENTS.md §6.1 map. On a rule-vs-spec conflict the rule wins; rule-vs-rule conflicts are decided per D-8 (Conflicts register). |
 | D-3 | BL-655: Blueprint retires MOD-0046 Tenant Core UI into "Platform Administration workspace + MOD-0286"; the repo maps MOD-0046 -> MOD-0009-FU03 (`module-id-registry.md:145`, `:67`) | Enterprise Architect / owner | Not decided by this pack. P1 proceeds under either mapping. | BL-655 is ERTELENDİ (`docs/roadmap/backlog/product-backlog.md:10841`, owner 2026-10-19, Master ADR-8.8-001 open, regression risk recorded there as green). |
 | D-4 | P2 trigger (console, registry pages, API) | Owner | First real consumer (MOD-0295 or MOD-0297) reaching `approved`, or an explicit owner decision | Blueprint `Dependencies_Normalized`: both consumers are HARD dependants; both are NOT STARTED (`Dev_Readiness`). Building a console with no consumer repeats the "theme decision leaks page by page" problem in a new form. |
 | D-5 | Relabel "MOD-0013" in `premium-modal-standard.md:1,11`, `dynamic-localization-standard.md:2,5,181` and `AGENTS.md:139` to MOD-0286 | Owner (protected path `.antigravity/**`) | Yes, in a separate approved commit; not in this pack | Blueprint MOD-0013 = Platform Standards Registry; registry row 70 already says the repo UI-standard concept aligns to MOD-0286. Regression risk: green (labels only; no code reads them). |
 | D-6 | MOD-0297 identity: Blueprint 8.8 `Blueprint_Data` MOD-0297 = "HR Capability Block Shell" (domain 4, consumer of MOD-0286); repo registry row 189 MOD-0297 = "Tenant Subscription Management", deprecated alias -> MOD-0361 | Enterprise Architect | Record as a registry divergence; do not cite MOD-0297 as a consumer until resolved | Found while measuring consumers for this pack. `docs/reference/modules/platform/README.md` also lists MOD-0297 as "Tenant Subscription Lifecycle". Not this pack's to fix (XMC-001). |
 | D-7 | Is the mobile (Android) design kit (`:core:design`, commits `0456e913e`, `4dbd105f9`; no `mobile/` folder in this tree) a consumer of MOD-0286 or a separate design system? | Owner | Separate; re-asked in the P2 revision | The web spec indexes Razor / Bootstrap / backbone-custom.css rules that do not apply to an Android kit; binding them now would make the P1 spec claim a surface it cannot measure. |
+| D-8a | Conflict 1: `premium-modal-standard.md:27-28,35-36,43-44,51-52` prescribe icon HTML with inline `style="font-size: 2.5rem; color: ..."`; FG-003 (`frontend-js-standard.md:145`, `frontend-standards.md:194`) forbids inline CSS. Same authority layer (`.antigravity/rules`). | Rule owner (owner; `.antigravity/**`) | Apply FG-003: the premium-modal icon markup moves to classes in `backbone-custom.css`; `premium-modal-standard.md` §2 is corrected in a separate approved commit. Until then UIC-13 treats the four prescribed lines as the only tolerated `style=` and lists them in the record. | FG-003 is the newer, cross-cutting rule (UI-001 family); the modal snippet is a template detail with no runtime reader. Status: **karar bekliyor**. |
+| D-8b | Conflict 2: `frontend-js-standard.md:53` (7.1) "Tercih edilen yol: `window.DitenDataTable.createCrudTable(...)`" vs the same file's anti-pattern table (`:981`) and BL-440 (`product-backlog.md:6199-6203`, decided 2026-09-23, `createList` factory). Same file, stale line. | Rule owner (owner / CT as BL-440 owner) | UIC-4 stays on `createList`; line 53 is updated to name `createList` as the preferred path and `createCrudTable` as legacy, in a separate approved commit. | The verifier already resolves `createList` (`verify_datatable_page.py:535-536`); 37 pages use it, 81 still use `createCrudTable` (Module Summary). Status: **karar bekliyor**. |
+| D-8c | Conflict 3: `frontend-standards.md:208` "`Views/Platform/_ViewStart.cshtml` zaten admin layout'u atadığı için view'da manuel `Layout = ` opsiyoneldir" vs `module-pack-standard.md:88` ("Razor sayfasinda layout ACIKCA yazilir") and `views-organization.md:39` ("her Razor sayfasında ... layout açıkça seçilir"). Same layer. | Rule owner (owner) | Apply the explicit layout (UIC-1 as written); line 208 is corrected in a separate approved commit. | Two rules against one; `module-pack-standard.md:292, :608` make the explicit layout a testable AC in every pack. Status: **karar bekliyor**. |
 
 ## Module Summary
 
@@ -60,14 +64,14 @@ accessibility-ready consistency across modules (Blueprint aim). In P1 it deliver
   rule, visual token, accessibility, language, unauthorized-face, search-registry, record-code and API-profile rule, each
   with its normative source (`path:line` or `path §n`) and its live code path. It changes no rule.
 - **DL-2 UI Compliance Checklist** - a fixed-id list (`UIC-<n>`) of what a page or pack must satisfy, with the command
-  that measures each item or the words "elle: inceleme kaydı" where no tool exists.
+  that measures each item (run contract below) or the words "elle: inceleme kaydı" where no tool exists.
 
 Why now - three measurements (2026-10-22, this worktree at `41901c477`):
 
 1. **The standard is scattered.** `wc -l .antigravity/rules/{frontend-standards,frontend-datatable-template,frontend-details-template,frontend-form-template,frontend-js-standard,premium-modal-standard,page-help-and-keyboard,views-organization,unauthorized-surface-standard,localization-standard,dynamic-localization-standard}.md`
    = 220 + 644 + 104 + 305 + 1124 + 93 + 233 + 113 + 112 + 58 + 181 = **3187 lines in 11 files**, plus two Golden
    Reference packs (`DEV-0000-golden-reference-slim.md` ready-for-dev, 242 lines; `DEV-0001-golden-reference-compact.md`
-   in-progress, 257 lines). No file says which rule wins when two disagree (conflicts listed in Implementation Notes).
+   in-progress, 257 lines). No file says which rule wins when two disagree (Conflicts register, D-8a..c).
 2. **Packs cannot name their pattern.** `ls execution/domains/*/module-packs/*.md | grep -v README | wc -l` = **169**
    packs; **9** have no `golden_reference:` line; of the 160 that do, **15** write free text because no pattern name fits
    (`custom-integration` x3, `not_applicable` x2, `slim+compact`, `n/a ...` x5, `custom-admin-register`,
@@ -87,10 +91,10 @@ theme customizer to be removed from all three shells (`:3995`).
 
 ## Ownership and Boundaries
 
-- In-scope (P1): DL-1 specification; DL-2 checklist; the `UIC-<n>` id namespace; the measurement record format.
+- In-scope (P1): DL-1 specification; DL-2 checklist; the `UIC-<n>` id namespace; the run contract and record format.
 - In-scope (P2, deferred, DL-3): the five Blueprint soft pages as a Platform Admin console over `Diten.Platform`;
   UI-GOV-BUNDLE schemas; `AuditEvent v1` emission for governance writes.
-- Out-of-scope: changing any `.antigravity/rules/**` file (D-2, D-5 are owner commits); refactoring any list page;
+- Out-of-scope: changing any `.antigravity/rules/**` file (D-2, D-5, D-8a..c are owner commits); refactoring any list page;
   DEV-0000 / DEV-0001 packs and their live code (stay in developer-enablement; referenced, not absorbed - XMC-001); the
   BL-440 list-factory plan (stays with the Control Tower); theme vendor CSS (`wwwroot/assets/vendor/css/core.css`);
   `_Layout.cshtml` (frozen); MOD-0285 System Navigation; MOD-0018 permission model; the MOD-0046 / BL-655 decision (D-3);
@@ -105,8 +109,8 @@ theme customizer to be removed from all three shells (`:3995`).
 P1 owns documents and an id namespace, no runtime object:
 
 - Document: DL-1 `spec.md` (path per D-1).
-- Document: DL-2 `compliance-checklist.md` (path per D-1), items `UIC-1 ... UIC-25` (table below; ids are stable, never renumbered).
-- Record: measurement record **directory** `docs/records/audits/2026-10/mod-0286-uic-baseline-01/` (dated record, `docs-organization.md` §1 question 2). Every automatic UIC run is produced by `python3 scripts/run_record.py run --out docs/records/audits/2026-10/mod-0286-uic-baseline-01/<run> -- <command>` (clean tree, new run directory, raw output and exit code captured in `run-record-v1.json`); manual items go into the same directory as a human-written `manual.md`.
+- Document: DL-2 `compliance-checklist.md` (path per D-1), items `UIC-1 ... UIC-32` (table below; ids are stable, never renumbered; a new item takes the next number).
+- Record: measurement record **directory** `docs/records/audits/2026-10/mod-0286-uic-baseline-01/` (dated record, `docs-organization.md` §1 question 2) with run directories `auto-01/` (all automatic items, one `run_record.py` run), `sabotage-01/` (AC-13, second run after `auto-01` is committed) and the human-written `manual.md` (format under AC-6). Evidence flow: "Kanıt toplama akışı" below.
 - Entities, commands, queries, DTOs, API endpoints, frontend routes, permissions: **none in P1**.
 - RCS-001 (record code): P1 has no user-visible record -> "yok". P2 `UiPagePattern` code: OTOMATİK proposed, type prefix
   TBD per `record-coding-standard.md` §5.5; the owner decides, and the common code service must exist first
@@ -116,54 +120,136 @@ P1 owns documents and an id namespace, no runtime object:
 
 ### DL-1 specification outline (every heading cites its source rule and live code)
 
-| # | Heading | Normative source (rule wins) | Live code measured 2026-10-22 |
+| # | Heading | Normative source | Live code measured 2026-10-22 |
 |---|---|---|---|
 | 1 | Page archetypes: List Slim (<=8 fields, offcanvas), List Compact (>8, full pages), Details, Form, bespoke console, wizard | `module-pack-standard.md` §3, §5; `frontend-datatable-template.md`; `frontend-form-template.md`; `frontend-details-template.md`; AGENTS.md §6 "Golden Reference DataTable Kararı" | Slim `Views/DevEnablement/GoldenReferenceSlim/` (7 resx); Compact `Views/DevEnablement/GoldenReferenceCompact/`; bespoke consoles: MOD-0155-FU05 Day/Week setup and MOD-0155-FU02 execution calendar (packs say "NOT a Golden DataTable CRUD surface"); wizard: `Views/MasterData/LegalEntities/Wizard.cshtml` (438 lines, `Layout = "_LayoutTenantShell"`, JS `wwwroot/assets/js/MasterData/LegalEntities/wizard.js` cited at MOD-0220 pack line 562) - the only wizard surface found; no wizard rule file exists |
-| 2 | Component standards: premium modal/confirm, toast, offcanvas, quick view, list shell + factory, legacy CRUD table, select2, skeleton, filter partial, Save View, ColReorder, "?" help + shortcuts + tour | `premium-modal-standard.md`; `frontend-js-standard.md` (anti-pattern table :981); `frontend-datatable-template.md` (state standard :168, UI-019 :197); `page-help-and-keyboard.md` (UXH-001); `views-organization.md` §3 | `Views/Shared/_GlobalConfirmation.cshtml` (479 lines, `window.showConfirm` :206); `_GlobalNotification.cshtml` (269; Notyf :177, `window.showToast` :133, `DitenToastText` :109); `Views/Shared/Components/DataTable/_ListShell.cshtml` (58) + `_BulkActionBar.cshtml`, consumed by 41 views; `wwwroot/assets/js/diten-datatable.js` (1414; `createList` :961, legacy `createCrudTable` :251); `dt-defaults.js` (1603); `_TableSkeleton.cshtml` (51); `wwwroot/assets/js/shared/` premium-modal.js 126, diten-dialog.js 128, diten-help.js 138, diten-shortcuts.js 283, diten-tour.js 149, diten-tour-catalog.js 41 (3 flows: WORKCENTER, MYTIMESHEET, TIMEAPPROVALS), diten-enter-primary.js 207; select2 referenced in 210 JS files |
+| 2 | Component standards: premium modal/confirm, toast, offcanvas, quick view, list shell + factory, legacy CRUD table, select2, skeleton, filter partial, Save View, ColReorder, "?" help + shortcuts + tour | `premium-modal-standard.md`; `frontend-js-standard.md` (anti-pattern table :981); `frontend-datatable-template.md` (state standard :168, UI-019 :197); `page-help-and-keyboard.md` (UXH-001); `views-organization.md` §3 | `Views/Shared/_GlobalConfirmation.cshtml` (479 lines, `window.showConfirm` :206); `_GlobalNotification.cshtml` (269; Notyf :177, `window.showToast` :133, `DitenToastText` :109); `Views/Shared/Components/DataTable/_ListShell.cshtml` (58) + `_BulkActionBar.cshtml`, consumed by 41 views; `wwwroot/assets/js/diten-datatable.js` (1414; `createList` :961, legacy `createCrudTable` :251, filter button attrs :1046, save-view button :1052, colReorder default :1083, export guard :907-911); `dt-defaults.js` (1603); `_TableSkeleton.cshtml` (51); `wwwroot/assets/js/shared/` premium-modal.js 126, diten-dialog.js 128, diten-help.js 138, diten-shortcuts.js 283, diten-tour.js 149, diten-tour-catalog.js 41 (3 flows: WORKCENTER, MYTIMESHEET, TIMEAPPROVALS), diten-enter-primary.js 207; select2 referenced in 210 JS files |
 | 3 | Shell and layout: `_LayoutPlatformAdmin`, `_LayoutTenantShell`, frozen `_Layout`; `shell` x layout derivation | `views-organization.md` §2; `module-pack-standard.md` §2 "shell x Layout"; `frontend-standards.md` PROD-001, PROD-005 | `Views/Shared/_LayoutPlatformAdmin.cshtml`, `_LayoutTenantShell.cshtml`, `_Layout.cshtml`; `Views/Platform/_ViewStart.cshtml` |
 | 4 | Visual tokens: `--diten-*` / `--bs-*`, light/dark, RTL, no inline CSS (FG-003) | `frontend-standards.md` §4.2 "No Hardcoded Colors", UI-001; FG-003 (`frontend-js-standard.md:145`, `frontend-standards.md:194`) | `wwwroot/assets/css/backbone-custom.css` 8622 lines; 1152 lines reference `--diten-`/`--bs-`; 32 dark-theme selectors; 13 `[dir="rtl"]` rules; 93 non-Archive `.cshtml` files still contain `style="` |
-| 5 | Accessibility: AA 4.5:1, focus ring, keyboard | `frontend-datatable-template.md:628` A11y minimums ("Focus ring kaldırma yasak"); BL-100, BL-112, BL-236 (measured gaps) | no tool in repo; BL-100 method = real Tab-key count (17/60 stops without ring on 2026-08-14) |
-| 6 | Language: platform en+tr, tenant 7 (en, tr, fr, es, zh, ar, ru); no hardcoded text; `window.L10n` bridge A (`GetAllStrings(true)`) for new surfaces; dynamic localization | `localization-standard.md` §1-§4; `dynamic-localization-standard.md` :78 "iki köprü"; AGENTS.md §6 "Yerelleştirme" | `Resources/Views/**/*.{lang}.resx` (platform sample `Views/Platform/Tenants` 2 files; tenant sample GoldenReferenceSlim 7); `SharedResource.{lang}.resx`; `_IndexL10n.cshtml` / `_L10n.cshtml` |
-| 7 | Unauthorized face (UAS-001), Ctrl+K registry, record code `MG-ORG-000042` (RCS-001) | `unauthorized-surface-standard.md`; `platform-global-search-registry.md` §2, §5; `record-coding-standard.md` §1, §6 | `wwwroot/assets/js/diten-unauthorized.js` (52); `wwwroot/assets/json/platform-search.en.json`, `.tr.json` (+ legacy `platform-search.json`); record-code service: not found (0 files) |
+| 5 | Accessibility: AA 4.5:1, focus ring, keyboard, icon-only button labels, filter trigger ARIA | `frontend-datatable-template.md:628-631` A11y minimums ("Focus ring kaldırma yasak"; `title` + `aria-label`; `aria-controls` + `aria-expanded`); BL-100, BL-112, BL-236 (measured gaps) | no contrast/focus tool in repo; BL-100 method = real Tab-key count (17/60 stops without ring on 2026-08-14); factory filter button `diten-datatable.js:1046` carries `title`, `aria-controls`, `aria-expanded` and **no `aria-label`** (`grep -c aria-label diten-datatable.js` = 2, lines 600 and 1303, neither the toolbar) - FU-10 |
+| 6 | Language: platform en+tr, tenant 7 (en, tr, fr, es, zh, ar, ru); no hardcoded text; `window.L10n` bridge A (`GetAllStrings(true)`) for new surfaces; dynamic localization | `localization-standard.md` §1-§4; `dynamic-localization-standard.md` :78 "iki köprü"; AGENTS.md §6 "Yerelleştirme" | `Resources/Views/**/*.{lang}.resx` (platform sample `Views/Platform/Tenants` 2 files; tenant sample GoldenReferenceSlim 7); `SharedResource.{lang}.resx`; `_IndexL10n.cshtml` / `_L10n.cshtml`; pattern A used by 5 views (`grep -rl 'GetAllStrings(true)' frontend/Diten.Web/Views`), Golden Slim uses the explicit-key bridge (`_IndexL10n.cshtml:9-13`) |
+| 7 | Unauthorized face (UAS-001), Ctrl+K registry, record code `MG-ORG-000042` (RCS-001) | `unauthorized-surface-standard.md`; `platform-global-search-registry.md` §2, §5; `record-coding-standard.md` §1, §6 | `wwwroot/assets/js/diten-unauthorized.js` (52); `wwwroot/assets/json/platform-search.en.json`, `.tr.json` (+ legacy `platform-search.json`; `/Platform/Tenants` at `:7` and `:117` of both); record-code service: not found (0 files) |
 | 8 | API profile (proxy / direct-gateway), no token in browser JS | `routes.md` §"Profil 1 / Profil 2"; `frontend-js-standard.md` JS-015 and anti-pattern table | verifier `--api-profile`; `window.API.{service}` for direct-gateway |
-| 9 | Conflicts register: rule vs rule, rule vs spec; rule wins | this pack, Implementation Notes | - |
+| 9 | Conflicts register: rule vs rule, rule vs spec; per conflict: parties, layer, applied source, rationale, decider, status | D-8a..c; Implementation Notes "Çatışma kaydı" | - |
 
 ### DL-2 UI Compliance Checklist (draft items)
 
 Columns: item - applies to (list / details / form / all pages / pack) - mandatory or optional - how measured - source.
-"auto" = a command exists and is quoted; "elle" = manual review record. Automatic: 15 (UIC-1..7, 13, 14, 17, 19..22, 25). Manual: 10.
+"auto" = a command exists; its argv, fixture and expected output are in the run contract below. "elle" = manual review
+record (format under AC-6). Automatic: 22 (UIC-1..7, 13, 14, 17, 19..22, 24..27, 29..32). Manual: 10 (UIC-8..12, 15, 16, 18, 23, 28).
+Paths in this table are templates; the run contract spells the fixture paths out in full from the repo root.
 
 | Id | Item | Applies to | Req. | How measured | Source |
 |---|---|---|---|---|---|
-| UIC-1 | `Layout = "_LayoutPlatformAdmin"` or `"_LayoutTenantShell"` written explicitly in every non-partial view | all pages | zorunlu | auto: `grep -L 'Layout = "' frontend/Diten.Web/Views/{Area}/{Module}/[A-Z]*.cshtml` -> empty | `views-organization.md` §2; `module-pack-standard.md` §2 |
-| UIC-2 | Skeleton in the shape of the content (`#skeleton-loader` / `backbone-skeleton`), no `spinner-border`, no "Loading" text | all data pages | zorunlu | auto (list): `verify_datatable_page.py`; auto (other): `grep -c 'backbone-skeleton\|skeleton-loader'` >= 1 and `grep -c 'spinner-border'` = 0 | `views-organization.md` §3, §3.1 |
-| UIC-3 | Slim / Compact file set complete and matching `form_field_count` | list | zorunlu | auto: `python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --reference slim\|compact` | `module-pack-standard.md` §3, §5 |
-| UIC-4 | List built with `DitenDataTable.createList` (or `DtDefaults.create`); no new `createCrudTable`, no raw `$(...).DataTable` | list | zorunlu | auto: verifier `[factory]` line; `grep -c 'createCrudTable(' index.js` = 0 | `frontend-js-standard.md:981`; `frontend-datatable-template.md` |
-| UIC-5 | Quick view via event delegation (`.js-quick-view`), no inline `onclick` | list (Slim) | zorunlu | auto: verifier | `frontend-datatable-template.md` |
-| UIC-6 | `window.L10n` bridge = partial + loader; new surfaces use pattern A (`GetAllStrings(true)`) | all pages with JS text | zorunlu | auto: verifier (list); `grep -c 'GetAllStrings(true)' _IndexL10n.cshtml` >= 1 (other) | `dynamic-localization-standard.md:30, :78` |
-| UIC-7 | Language set complete: 2 resx (platform) or 7 (tenant) per marker class; SharedResource parity | all pages | zorunlu | auto: `ls frontend/Diten.Web/Resources/Views/{Area}/{Module}/*.resx \| wc -l` = 2 or 7; `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py . --context tenant\|platform` | `localization-standard.md` §1; `resx-check` skill |
-| UIC-8 | No hardcoded user-visible text in `.cshtml` / `.js`; no `\|\| 'Export'` fallbacks | all pages | zorunlu | elle: inceleme kaydı (no script covers view text - `resx-check/SKILL.md`) | `localization-standard.md` §4 |
+| UIC-1 | `Layout = "_LayoutPlatformAdmin"` or `"_LayoutTenantShell"` written explicitly in every non-partial view (files not starting with `_`, listed by name - no glob) | all pages | zorunlu | auto: `grep -L 'Layout = "' <each non-partial .cshtml>` -> stdout empty | `views-organization.md:39`; `module-pack-standard.md:88`; D-8c |
+| UIC-2 | Skeleton in the shape of the content (`#skeleton-loader` / `backbone-skeleton`), no `spinner-border`, no "Loading" text | all data pages | zorunlu | auto (list): verifier run of UIC-3; auto (other): `grep -c 'backbone-skeleton\|skeleton-loader' <Index.cshtml>` >= 1 and `grep -c 'spinner-border' <Index.cshtml>` = 0 | `views-organization.md:47, :53` |
+| UIC-3 | Slim / Compact file set complete per `golden_reference` (verifier checks `Index.cshtml exists` ... `backbone-custom.css exists`, Slim `_CreateEditOffcanvas.cshtml`, Compact `Create.cshtml` / `Edit.cshtml`; `verify_datatable_page.py:953-966`) | list | zorunlu | auto: `python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --reference slim\|compact --api-profile ... --format report` exit 0. Boundary: the verifier does not read `form_field_count` (`grep -c form_field_count verify_datatable_page.py` = 0) - that is UIC-26 | `module-pack-standard.md` §3, §5; `frontend-datatable-template.md:12, :32, :42, :46` |
+| UIC-4 | List built with `DitenDataTable.createList` (or `DtDefaults.create`); no new `createCrudTable`, no raw `$(...).DataTable` | list | zorunlu | auto: verifier `[factory]` line names `createList`; `grep -c 'createCrudTable(' <index.js>` prints 0 | `frontend-js-standard.md:30, :981`; BL-440; D-8b |
+| UIC-5 | Quick view via event delegation (`.js-quick-view`), no inline `onclick` | list (Slim) | zorunlu | auto: verifier checks `index.js includes .js-quick-view selector`, `index.js uses event delegation (closest('.js-quick-view'))` (UIC-3 run) | `frontend-datatable-template.md` |
+| UIC-6 | `window.L10n` bridge = partial + loader (verifier, list); **new surfaces** use pattern A (`GetAllStrings(true)`) | all pages with JS text | zorunlu (pattern A: new surfaces only) | auto: verifier bridge checks (UIC-3 run); `grep -c 'GetAllStrings(true)' <L10n partial>` >= 1 for a new surface. Boundary: the verifier does not test pattern A (`grep -c GetAllStrings verify_datatable_page.py` = 0); Golden Slim is the **legacy explicit-key bridge** and measures 0 - not a defect of the fixture | `dynamic-localization-standard.md:28, :30, :78` |
+| UIC-7 | Language set complete by **language name** (`{Marker}.{en,tr}.resx` platform / `{Marker}.{en,tr,fr,es,zh,ar,ru}.resx` tenant, marker = the `{Module}Index.cs` class); SharedResource parity | all pages | zorunlu | auto: `test -f` per language file; `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py . --context tenant\|platform`. Boundary: the checker reads `SharedResource.*.resx` only and is red today by shared debt (run contract) | `localization-standard.md:8, :58`; `frontend-standards.md:79-82` |
+| UIC-8 | No hardcoded user-visible text in `.cshtml` / `.js`; no `\|\| 'Export'` fallbacks; unauthorized text from resx in all required languages | all pages | zorunlu | elle: inceleme kaydı (no script covers view text) | `localization-standard.md:3`; `unauthorized-surface-standard.md:77` |
 | UIC-9 | RTL (`ar`) renders without overlap | tenant pages | zorunlu | elle: browser in `ar`, screenshot in record | `localization-standard.md` §1; `backbone-custom.css` 13 RTL rules |
 | UIC-10 | Dark theme renders with readable contrast | all pages | zorunlu | elle: both themes, screenshot | BL-236 method (`product-backlog.md:2567`) |
 | UIC-11 | Visible focus ring on every Tab stop | all pages | zorunlu | elle: real Tab-key count `n/N` in record | `frontend-datatable-template.md:628`; BL-100 |
 | UIC-12 | Text contrast >= 4.5:1 (AA) on card surface | all pages | zorunlu | elle: DevTools contrast per token, table in record | BL-236; BL-100 |
-| UIC-13 | No inline CSS: no `style="` in views, no `element.style` in JS | all pages | zorunlu | auto: `grep -l 'style="' Views/{Area}/{Module}/*.cshtml` -> empty; `grep -c '\.style\.' index.js` = 0 | FG-003 (`frontend-js-standard.md:145`; `frontend-standards.md:194`); UI-001 |
-| UIC-14 | Confirm / toast through `window.showConfirm` / `window.showToast`; no `alert(`, no raw `Swal.fire` outside the shared helper | all pages | zorunlu | auto: `grep -n 'alert(\|Swal\.fire\|toastr\.' index.js` -> empty | `premium-modal-standard.md` §4; `frontend-js-standard.md:981` |
-| UIC-15 | "?" help keys `Help.{KOD}.Purpose/Audience/Step{n}/Step{n}Title` in all required languages; Enter = primary action; tour only for the five flows | all pages | zorunlu | elle for behaviour; auto for keys: `grep -c 'Help\.{KOD}\.' Resources/.../*.resx` per language | `page-help-and-keyboard.md` §2-§6 (UXH-001) |
+| UIC-13 | No inline CSS: no `style="` in the module's views, no `.style.` in its JS (tolerated until D-8a: the four `premium-modal-standard.md` icon lines, listed in the record) | all pages | zorunlu | auto: `grep -l 'style="' <each .cshtml of the module>` -> stdout empty; `grep -c '\.style\.' <index.js>` prints 0 | FG-003 (`frontend-js-standard.md:145`; `frontend-standards.md:194`); UI-001; D-8a |
+| UIC-14 | Confirm / toast through `window.showConfirm` / `window.showToast`; no `alert(`, no raw `Swal.fire` outside the shared helper; bulk delete uses the same confirm as single delete | all pages | zorunlu | auto: `grep -n 'alert(\|Swal\.fire\|toastr\.' <index.js>` -> stdout empty | `premium-modal-standard.md:16`, §4; `frontend-js-standard.md:51, :981`; `frontend-datatable-template.md:23` |
+| UIC-15 | "?" help keys `Help.{KOD}.Purpose/Audience/Step{n}/Step{n}Title` in all required languages; Enter = primary action; tour only for the five flows | all pages | zorunlu | elle for behaviour; auto for keys: `grep -c 'Help\.{KOD}\.' frontend/Diten.Web/Resources/PageHelpResource.{lang}.resx` equal across the required languages (fixture `Help.USERS.` = 15 in all 7 files) | `page-help-and-keyboard.md:48-53, :220` (UXH-001) |
 | UIC-16 | Unauthorized user sees one explanation, no skeleton, no redirect | all pages | zorunlu | elle: login without the permission, screenshot | `unauthorized-surface-standard.md` §1-§2 (UAS-001) |
-| UIC-17 | Ctrl+K registry entry in `platform-search.en.json` and `.tr.json` | platform pages | zorunlu | auto: `grep -c '"url": "/Platform/{Module}"' wwwroot/assets/json/platform-search.en.json platform-search.tr.json` = 1 each | `platform-global-search-registry.md` §2, §5 |
+| UIC-17 | Ctrl+K registry entry in `platform-search.en.json` and `.tr.json` (platform fixture `Platform/Tenants`, C-1) | platform pages | zorunlu | auto: `grep -c '"url": "/Platform/{Module}"' frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json frontend/Diten.Web/wwwroot/assets/json/platform-search.tr.json` >= 1 per file | `platform-global-search-registry.md` §2, §5; `frontend-standards.md:213` |
 | UIC-18 | User-visible record code in `MG-ORG-000042` form from the common service; class OTOMATİK / İKİSİ DE / KALSIN in the pack | pages creating records | zorunlu where a code exists | elle: pack row + create one record; common service absent today (see Owned Objects) | `record-coding-standard.md` §1, §6 (RCS-001) |
-| UIC-19 | API profile declared (`proxy` for Platform area, `direct-gateway` elsewhere) and followed; browser never calls a service port | list | zorunlu | auto: verifier `--api-profile proxy\|direct-gateway` | `routes.md` §Profil 1/2; AGENTS.md §3 |
-| UIC-20 | No `document.cookie`, `access_token`, `Authorization: Bearer` in page JS | all JS | zorunlu | auto: verifier (list); `grep -n 'document.cookie\|Bearer' index.js` -> empty | `frontend-js-standard.md:981` |
-| UIC-21 | Nav keys in the pack are in runtime form (`Nav.Page.CODE`, upper, alphanumeric) | pack | zorunlu | auto: `python3 scripts/check_pack_nav_keys.py` exit 0 | `module-pack-standard.md` §7 |
-| UIC-22 | `data-dt-standard="v2"` and `data-dt-data-mode` equal to the pack's `data_mode` | list | zorunlu | auto: verifier `--data-mode server\|client` | `frontend-datatable-template.md:72` |
-| UIC-23 | Required-field markers (UI-020); Compact form / details information parity (UI-024) | form / details | zorunlu | elle: field list compared in record | `frontend-standards.md` UI-020, UI-024 |
-| UIC-24 | Save View dirty-state rule; export file = screen (BL-452); ColReorder | list | isteğe bağlı | elle: three actions exercised, noted in record | `frontend-datatable-template.md:107, :221` |
+| UIC-19 | API profile declared (`proxy` for Platform area, `direct-gateway` elsewhere) and followed; browser never calls a service port | list | zorunlu | auto: verifier `--api-profile proxy\|direct-gateway` (UIC-3 run; check `direct-gateway profile uses window.API service base`) | `routes.md` §Profil 1/2; AGENTS.md §3 |
+| UIC-20 | No `document.cookie`, `access_token`, `Authorization: Bearer` in page JS | all JS | zorunlu | auto: verifier (list); `grep -n 'document.cookie\|Bearer\|access_token' <index.js>` -> stdout empty | `frontend-js-standard.md:981` |
+| UIC-21 | Nav keys in the pack are in runtime form (`Nav.Page.CODE`, upper, alphanumeric) | pack | zorunlu | auto: `sh -c 'python3 scripts/check_pack_nav_keys.py 2>&1 \| grep -c <PACK-ID>; true'` prints 0 (no line names this pack). Boundary: the script reads `git ls-files` (`check_pack_nav_keys.py:131`) - an uncommitted pack is not scanned | `module-pack-standard.md` §7 |
+| UIC-22 | `data-dt-standard="v2"` and `data-dt-data-mode` equal to the pack's `data_mode` | list | zorunlu | auto: verifier `--data-mode server\|client` (checks `Data mode declared: ...`, `Index.cshtml has <table id="..." data-dt-standard="v2">`) | `frontend-datatable-template.md:16, :72, :195` |
+| UIC-23 | Required-field markers (UI-020); Compact form / details information parity (UI-024); required contract parity (validator = ViewModel = Razor) | form / details | zorunlu | elle: field list compared in record | `frontend-standards.md:99-100`; `frontend-datatable-template.md:20, :21` |
+| UIC-24 | Save View: `dt-save-filter-btn` always rendered (`d-none` until dirty), `savedView` config on the page, dirty-state follows applied state only; personalization through the shared client | list | **zorunlu** (exception: special pages with <= 2 data columns, with a comment line - `frontend-js-standard.md:76`) | auto: `grep -c 'savedView' <index.js>` >= 1; factory `grep -c 'dt-save-filter-btn' frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js` = 2; elle: dirty-state exercised | `frontend-datatable-template.md:24, :221-230`; `frontend-js-standard.md:33, :73` |
 | UIC-25 | Touch protocol on a legacy list: `--format gaps` run, deviations numbered, owner asked | list (legacy edit) | zorunlu | auto: `python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` output quoted | `frontend-datatable-template.md:151` |
+| UIC-26 | `form_field_count` in the pack equals the user-field count of the create/edit form (hidden inputs excluded) and the Slim/Compact decision follows it (<= 8 slim) | list / pack | zorunlu | auto: `grep -c 'form-control\|form-select\|form-check-input' <create/edit form>` = pack `form_field_count` (fixture: 6 = `DEV-0000-golden-reference-slim.md:16`). Boundary: counts lines, one control per line assumed | `module-pack-standard.md` §3; AGENTS.md §6 "Golden Reference DataTable Kararı" |
+| UIC-27 | Every field wrapped in `.diten-field` with an icon before the control, `aria-hidden="true"`; exceptions only `form-check`/switch and configurable fields; the date icon opens the picker (`diten-datefield.js`) | form | zorunlu | auto: `grep -c 'diten-field' <form>` >= field count; `grep -c 'aria-hidden="true"' <form>` >= field count minus exceptions; elle: date icon clicked | `frontend-form-template.md:21-31` |
+| UIC-28 | Before delivery every control on the screen is pressed; a control that does nothing fails (UI-027) | all pages | zorunlu | elle: control list with result per control in record | `frontend-standards.md:135, :165-166` |
+| UIC-29 | Icon-only toolbar buttons carry `title` + `aria-label`; filter trigger carries `aria-controls="inlineFilterCollapse"` + `aria-expanded` | list | zorunlu | auto: page `grep -c 'id="inlineFilterCollapse"' <_Filter.cshtml>` = 1 and `grep -c "collapseId: 'inlineFilterCollapse'" <index.js>` = 1; factory `sed -n 1046p diten-datatable.js` shows `title`, `'aria-controls': collapseId`, `'aria-expanded'` - and **no `aria-label`** today (FU-10, shared factory, XMC-001) | `frontend-datatable-template.md:630-631` |
+| UIC-30 | Every form panel's primary button carries `data-dt-primary="enter"` or `"chord"`; irreversible actions (publish, approve, delete, retire, ...) only `chord` = Ctrl/⌘+Enter; bare Enter does nothing there | form / panels | zorunlu | auto: `grep -n 'data-dt-primary=' <each panel .cshtml>` lists one marker per form panel; elle: each `chord` panel's action classified as irreversible in the record | `page-help-and-keyboard.md:16, :105-118` |
+| UIC-31 | Export file = screen (visible columns, applied filter/search/sort, all matching rows): server-mode lists declare `export: { mode: 'server', url, fileName }`; client-mode lists use the browser buttons (`exportColumns`); `export.mode: 'server'` with `dataMode: 'client'` throws | list | **zorunlu** (client mode: browser buttons suffice, every row is already in the browser) | auto: server list `grep -c "mode: 'server'" <index.js>` >= 1; client list `grep -c 'exportColumns' <index.js>` >= 1; factory guard `diten-datatable.js:907-911` | `frontend-datatable-template.md:107-129` (owner 2026-09-24, BL-452); `frontend-js-standard.md:31` |
+| UIC-32 | ColReorder active by default (`colReorder: { columns: ':gt(1):not(:last-child)' }` from the factory, `diten-datatable.js:1083`); a page overrides only with a non-standard column layout and a comment | list | **zorunlu** (exception: non-standard column structure, commented) | auto: `grep -c 'colReorder' <index.js>` = 0 (no override) or the override line quoted with its comment | `frontend-datatable-template.md:192`; `frontend-js-standard.md:74-76, :341` |
 
 How other packs bind to the list (proposal, not yet a rule): a module pack carries one Acceptance Criteria item
-"UI uyum: UIC-<ids> listesi, ölçüm kaydı `docs/records/audits/<yyyy-mm>/<file>.md`". Writing that into
+"UI uyum: UIC-<ids> listesi, ölçüm kaydı `docs/records/audits/<yyyy-mm>/<dizin>/`". Writing that into
 `module-pack-standard.md` is a `.antigravity` change (Follow-up Items, FU-1).
+
+### Koşu sözleşmesi (run contract) - automatic items
+
+Working directory: **always the repo root** (`run_record.py:131` runs `subprocess.run(argv, cwd=ROOT)` - no shell, so
+pipes, globs and `->` are not interpreted; every item below is one block inside a single `sh -c '...'` argv, see "Kanıt
+toplama akışı"). Fixtures: tenant list items `DevEnablement/GoldenReferenceSlim` (`G=` views, `J=` index.js, `R=` resx),
+platform items `Platform/Tenants` (`T=`; Ctrl+K entry measured: `platform-search.en.json:7, :117` and `.tr.json:7, :117`),
+pack items this pack. `grep -c` prints `0` and exits 1 when nothing matches; `grep -l`/`-n` with no match print nothing
+and exit 1 - acceptance below is by **stdout** unless an exit code is named. Expected values were measured 2026-10-22 at `79f87c1bf`.
+
+| Id | argv block (inside `sh -c`) | Expected stdout / exit |
+|---|---|---|
+| UIC-1 | `grep -L 'Layout = "' $G/Index.cshtml; grep -L 'Layout = "' $T/Index.cshtml $T/Create.cshtml $T/Details.cshtml $T/Security.cshtml` | empty (measured: `Index.cshtml:8` has `Layout = "_LayoutTenantShell"`; all four Tenants pages contain `Layout = "`) |
+| UIC-2 | `grep -c 'backbone-skeleton\|skeleton-loader' $G/Index.cshtml; grep -c 'spinner-border' $G/Index.cshtml` | `1` then `0` |
+| UIC-3/5/6/19 | `python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim --api-profile direct-gateway --format report` | today exit 1: 97 `[PASS]`, 1 `[FAIL]` (`personalizationClient sends tenant header only for tenant users`, FU-4); `[factory] index.js calls DitenDataTable.createList`; quick-view and `direct-gateway profile uses window.API service base` lines `[PASS]`. Target after FU-4: exit 0 |
+| UIC-4 | `grep -c 'createCrudTable(' $J; grep -c 'createList(' $J` | `0` then `1` |
+| UIC-6 (pattern A) | `grep -c 'GetAllStrings(true)' $G/_IndexL10n.cshtml; grep -c 'GetAllStrings(true)' frontend/Diten.Web/Views/WorkCenterNext/_L10n.cshtml` | `0` (legacy bridge fixture, expected) then `1` (pattern-A fixture) |
+| UIC-7 | `for l in en tr fr es zh ar ru; do test -f $R/GoldenReferenceSlimIndex.$l.resx && echo "$l ok" \|\| echo "$l MISSING"; done; test -f $G/GoldenReferenceSlimIndex.cs && echo marker ok; for l in en tr; do test -f frontend/Diten.Web/Resources/Views/Platform/Tenants/TenantsIndex.$l.resx && echo "$l ok"; done; python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py . --context tenant; echo "exit=$?"; python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py . --context platform; echo "exit=$?"` | 7 x `ok`, `marker ok`, 2 x `ok`; checker tenant exit 1 today (11 `[X]` lines: fr/es/zh/ar/ru "Missing 35 key(s) from SharedResource.en.resx" + 6 "still equal to English"); platform exit 1 (1 `[X]`: tr 5 keys equal to English). Shared debt, not this fixture's; the record quotes the `[X]` lines as-is |
+| UIC-13 | `grep -l 'style="' $G/Index.cshtml $G/_Filter.cshtml $G/_DataTable.cshtml $G/_IndexL10n.cshtml $G/_CreateEditOffcanvas.cshtml $G/_DetailsQuickView.cshtml; grep -c '\.style\.' $J` | empty then `0` |
+| UIC-14 | `grep -n 'alert(\|Swal\.fire\|toastr\.' $J` | empty |
+| UIC-17 | `grep -c '"url": "/Platform/Tenants"' frontend/Diten.Web/wwwroot/assets/json/platform-search.en.json frontend/Diten.Web/wwwroot/assets/json/platform-search.tr.json` | `...en.json:2` and `...tr.json:2` (two entries each, groups "Platform Operations" and "Common Tasks"); >= 1 per file accepted |
+| UIC-20 | `grep -n 'document.cookie\|Bearer\|access_token' $J` | empty |
+| UIC-21 | `python3 scripts/check_pack_nav_keys.py 2>&1 \| grep -c MOD-0286; true` | `0` (measured while the pack is uncommitted - not scanned; re-measure after the DL-2 commit, AC-8) |
+| UIC-22 | `python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim --data-mode client --api-profile direct-gateway --format gaps` | today exit 1 (same FU-4 gap); report form shows `[PASS] Data mode declared: client`, `[PASS] Client mode: DataTables serverSide is off` |
+| UIC-24 | `grep -c 'savedView' $J; grep -c 'dt-save-filter-btn' frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js` | `1` then `2` (`:994`, `:1052`) |
+| UIC-25 | same command as UIC-22 without `--data-mode` | exit 1, one numbered gap line (FU-4) |
+| UIC-26 | `grep -c 'form-control\|form-select\|form-check-input' $G/_CreateEditOffcanvas.cshtml; grep -n '^form_field_count' execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md` | `6` then `16:form_field_count: 6` (fields: Code, Name, ReferenceType, Priority, Description, IsActive) |
+| UIC-27 | `grep -c 'diten-field' $G/_CreateEditOffcanvas.cshtml; grep -c 'aria-hidden="true"' $G/_CreateEditOffcanvas.cshtml` | `10` then `5` (5 iconed fields + 1 switch exception = 6) |
+| UIC-29 | `grep -c 'id="inlineFilterCollapse"' $G/_Filter.cshtml; grep -c "collapseId: 'inlineFilterCollapse'" $J; sed -n 1046p frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js; grep -c 'aria-label' frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js` | `1`, `1`, the attr line (`title: l.Filter, 'aria-controls': collapseId, 'aria-expanded': 'false'`), `2` - toolbar `aria-label` missing today (FU-10) |
+| UIC-30 | `grep -n 'data-dt-primary=' $G/_CreateEditOffcanvas.cshtml $G/_DetailsQuickView.cshtml` | `_CreateEditOffcanvas.cshtml:88: ... data-dt-primary="enter"` (create/edit = reversible); quick view has no form, no marker |
+| UIC-31 | `grep -c 'exportColumns' $J; grep -c "mode: 'server'" $J` | `1` then `0` (client-mode fixture; a server-mode fixture is measured when one is named) |
+| UIC-32 | `grep -c 'colReorder' $J` | `0` (factory default applies) |
+
+With `G=frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim`, `J=frontend/Diten.Web/wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js`,
+`R=frontend/Diten.Web/Resources/Views/DevEnablement/GoldenReferenceSlim`, `T=frontend/Diten.Web/Views/Platform/Tenants` set at the top of the `sh -c` script.
+
+### Kanıt toplama akışı (evidence flow, F-6)
+
+`run_record.py` refuses a dirty tree (`:121-123`, untracked files count - `status_paths()` uses `--untracked-files=all`,
+`:79-85`) and refuses changes left outside the run directory (`:137-139`); it records into a new directory under
+`docs/records/audits/` (`EVIDENCE_ROOT`, `:46`). Fifteen or more sequential runs therefore cannot be made: the first run's
+untracked record dirties the tree for the second. The flow is:
+
+1. Commit everything first (today the tree has 3 untracked paths under `docs/records/reviews/`; they block any run until committed).
+2. **One run for all automatic items:** `python3 scripts/run_record.py run --out docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01 -- sh -c '<script>'`
+   where `<script>` sets `G J R T` and then, for every item, `echo "UIC-n"; <block>; echo "exit=$?"`. The run's own exit
+   is the last block's exit - it is **for the record only**, not the acceptance; acceptance is read per item from the
+   `UIC-n` / `exit=` pairs in `stdout.txt` against the expected column above. The baseline is red on FU-4 by design.
+3. Commit the `auto-01` record. The commit named in `run-record-v1.json` is the code version the acceptance binds to.
+4. Second run (AC-13 sabotage) into `.../sabotage-01/`, same tool, after step 3; commit it.
+5. `python3 scripts/run_record.py verify <dir>/run-record-v1.json` exit 0 for both runs; `manual.md` written by hand (AC-6).
+
+### Kapsama tablosu (coverage of "zorunlu" phrases, F-4)
+
+Measured 2026-10-22 with `grep -n -i "zorunlu" .antigravity/rules/<file>.md | wc -l`; lines are the grep hits. A phrase is
+"covered" when a UIC item measures it; "meta" = a heading or file description, not a requirement. Rule text written in
+capitals without the word (e.g. `frontend-form-template.md:21-31` "HER ALAN ... sarılır") is not in these counts.
+
+| File | N | Covered by UIC (lines) | Not covered (lines: phrase) |
+|---|---|---|---|
+| `frontend-standards.md` | 15 | 9: UIC-7/8 (79-82), UIC-23 (99-100), UIC-28 (135), UIC-1 (206), UIC-17 (213); meta 2, 97 | 4: 91 HTML5 input types; 118 modal id referenced from JS must exist; 175, 188 KPI card rules (no KPI archetype in P1) |
+| `frontend-datatable-template.md` | 23 | 19: UIC-3 (12, 19, 32, 42, 46, 59, 281), UIC-4 (13), UIC-22 (16, 195), UIC-23 (20, 21), UIC-14 (23), UIC-24 (24, 238), UIC-1 (278, 399), UIC-29 (630, 631); meta 3 | 3: 22 delete endpoint ownership; 622, 623 filter select attributes (`multiple` + `data-placeholder`, empty `ShowAll` option) |
+| `frontend-js-standard.md` | 31 | 11: UIC-4 (30, 52, 289), UIC-31 (31), UIC-24 (33, 73), UIC-14 (51), UIC-32 (76, 341), UIC-3 (134, 135) | 20: 50 endpoint ownership; 56 row-action dropdown alignment; 67 `viewName` payload; 79, 81, 90-92, 103-105, 110, 444 select2 filter init (10); 121, 124 multi-select summary; 137 popup layer from modal; 147 sticky strip menu direction; 345 column `name`; 913 radius fix; 972 `Index.cshtml` load order - factory-internal mechanics, no UIC item yet |
+| `premium-modal-standard.md` | 1 | 1: UIC-14 (16) | 0 |
+| `page-help-and-keyboard.md` | 8 | 7: UIC-15 (48-51, 53, 220), UIC-30 (109); meta 44 | 0 |
+| `views-organization.md` | 2 | 2: UIC-2 (47, 53) | 0 |
+| `unauthorized-surface-standard.md` | 1 | 1: UIC-8/16 (77) | 0 |
+| `localization-standard.md` | 7 | 7: UIC-7/8 (3, 8, 21, 29, 58), UIC-22 (49, 53 toolbar vocabulary, verifier v2) | 0 |
+| `dynamic-localization-standard.md` | 2 | 2: UIC-6 (28, 30) | 0 |
+| `frontend-details-template.md` | 2 | 1: UIC-1 (6); meta 3 | 0 |
+| `frontend-form-template.md` | 2 | 1: UIC-1 (6); meta 3 | 0 (the §21-31 field rules are UIC-27, outside this count) |
+
+Total 94 phrases: 61 covered, 6 meta, 27 not covered (listed). The uncovered phrases are a DL-2 revision input, not a P1 blocker (AC-15, FU-11).
 
 ## Entity Fields
 
@@ -176,25 +262,25 @@ all `GlobalEntity` (Runtime Constraints). Business version fields must not be na
 
 - `execution/domains/platform-shared-services/module-packs/MOD-0286-ui-design-system-page-pattern-governance.md` (this file).
 - DL-1 / DL-2: the D-1 folder under `docs/reference/...` (two files) - created only after D-1 is answered.
-- Measurement record directory: `docs/records/audits/2026-10/mod-0286-uic-baseline-01/` (run directories written by `scripts/run_record.py`, plus `manual.md`).
+- Measurement record directory: `docs/records/audits/2026-10/mod-0286-uic-baseline-01/` (`auto-01/`, `sabotage-01/` written by `scripts/run_record.py`, plus `manual.md`).
 - Nothing under `services/`, `frontend/`, `gateway/`, `.antigravity/`, `execution/registries/` in P1.
 
 ## Protected Paths
 
-- `.antigravity/**` (D-2, D-5 and FU-1 are separate owner-approved commits).
+- `.antigravity/**` (D-2, D-5, D-8a..c and FU-1 are separate owner-approved commits).
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml`, `Views/Archive/**`, `Controllers/Archive/**` (frozen).
 - `gateway/Diten.ApiGateway/**/ocelot.json` (integration-agent only; P2).
 - `services/Diten.MdmService/**`, `services/Diten.EnterpriseStrategyService/**`, `services/Diten.DevEnablementService/**`
   and every other domain's service (domain-config Protected Paths).
 - `execution/domains/developer-enablement/module-packs/DEV-0000-*.md`, `DEV-0001-*.md` and their live code (referenced only).
 - `docs/roadmap/backlog/product-backlog.md` (CT owns; this pack cites lines, does not edit).
-- `wwwroot/assets/vendor/**` (vendor CSS; BL-236 token lives there).
+- `wwwroot/assets/vendor/**` (vendor CSS; BL-236 token lives there); `wwwroot/assets/js/diten-datatable.js` (BL-440 owner; FU-10).
 
 ## Dependencies
 
 P1 runtime dependencies: **none** (documents only). Tooling the checklist relies on, all present in this worktree:
 `.antigravity/scripts/verify_datatable_page.py` (cited by 62 packs), `.antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py`
-(`resx-check` skill), `scripts/check_pack_nav_keys.py`, `scripts/acceptance_record.py`, `scripts/pack_approval.py`.
+(`resx-check` skill), `scripts/check_pack_nav_keys.py`, `scripts/run_record.py` (`run`, `verify`), `scripts/acceptance_record.py`, `scripts/pack_approval.py`.
 
 P2 (DL-3) HARD dependencies from Blueprint `Dependencies_Normalized` and their repo state (2026-10-22):
 
@@ -242,8 +328,9 @@ is a Slim DataTable (expected <= 8 form fields each; count to be measured in the
 
 ## Validation Rules
 
-P1'de yok: no field. Document-level rules instead: every `UIC-<n>` id unique; every automatic item quotes a runnable
-command; every spec heading cites >= 1 source rule. P2: `Code` required, max 64, unique global; `Name` required, max 200.
+P1'de yok: no field. Document-level rules instead: every `UIC-<n>` id unique; every automatic item has the five run-contract
+fields (working directory, fixture, full argv, shell call made explicit, expected stdout/exit); every spec heading cites >= 1
+source rule. P2: `Code` required, max 64, unique global; `Name` required, max 200.
 
 ## Failure Path to Verify
 
@@ -251,8 +338,10 @@ P1 (document failures, each must be reproducible):
 
 - **Missing source citation** - a spec heading without `path` reference -> AC-1 fails; the DL-1 commit is not accepted.
 - **Duplicate UIC id** - `grep -o '^| UIC-[0-9]*' compliance-checklist.md | sort | uniq -d` non-empty -> AC-4 fails.
-- **Unmeasured "auto" item** - an item marked auto whose command was not run -> AC-5 fails; the record must show the exit code.
-- **Spec contradicts a rule** - the rule wins; the contradiction goes to the spec's Conflicts register, the spec text is corrected.
+- **Unmeasured "auto" item** - an item marked auto with no `UIC-n` / `exit=` pair in `auto-01/stdout.txt` -> AC-5 fails.
+- **Auto item without a run contract row** - AC-16 fails.
+- **Spec contradicts a rule** - the rule wins; the contradiction goes to the Conflicts register, the spec text is corrected.
+- **Rule contradicts a rule** - neither wins by itself; the register row names the applied source, the decider and "karar bekliyor" until the owner decides (D-8a..c); a row marked "çözüldü" without a decision -> AC-3 fails.
 - **Unauthorized / concurrency** - not applicable in P1 (no runtime). P2 inherits the template cases (409 duplicate code, 400 missing name, 403 actor, 409 concurrency).
 
 ## Authorization Convention
@@ -290,32 +379,33 @@ none is K2 class):
 
 - [ ] AC-1 (zorunlu) — DL-1 `spec.md` exists at the D-1 path and each of its 9 top-level headings cites at least one source rule as `` `.antigravity/rules/<file>.md:<line>` `` or `` §<n> ``; `grep -c '\.antigravity/rules/' spec.md` >= 9.
 - [ ] AC-2 (zorunlu) — The DL-1 and DL-2 commits change no rule or runtime file: the diff of those commits restricted to `.antigravity`, `services`, `frontend`, `gateway`, `execution/registries` is empty.
-- [ ] AC-3 (zorunlu) — The spec's Conflicts register lists every rule-vs-rule and rule-vs-spec conflict found, at least the three in Implementation Notes (`premium-modal-standard.md:28,36,44,52` inline `style=` vs FG-003; `frontend-standards.md:208` "manuel `Layout = ` opsiyoneldir" vs `module-pack-standard.md` §2 explicit layout; "MOD-0013" label at `AGENTS.md:139` and the two rule files), each with its `path:line` and each resolved "rule wins".
-- [ ] AC-4 (zorunlu) — DL-2 `compliance-checklist.md` has >= 25 rows `| UIC-<n> |` with unique ids and the five columns (item, applies to, requirement, how measured, source); `grep -o '^| UIC-[0-9]*' compliance-checklist.md | sort | uniq -d` is empty.
-- [ ] AC-5 (zorunlu) — At least 15 items are automatic; each quotes a command, and each command was run once against `DevEnablement/GoldenReferenceSlim` (or the item's stated fixture) through `python3 scripts/run_record.py run --out docs/records/audits/2026-10/mod-0286-uic-baseline-01/<uic-id> -- <command>` on a clean tree; the exit code and raw output are in that run directory's `run-record-v1.json`, and `python3 scripts/run_record.py verify <dir>/run-record-v1.json` exits 0 for every run.
-- [ ] AC-6 (zorunlu) — Every manual item names its evidence form (screenshot, count `n/N`, or table) and `docs/records/audits/2026-10/mod-0286-uic-baseline-01/manual.md` carries that evidence for the Golden Slim fixture or states "ölçülmedi" with the reason, one heading per `UIC-<n>`.
+- [ ] AC-3 (zorunlu) — The spec's Conflicts register lists every rule-vs-rule and rule-vs-spec conflict found, at least the four of this pack (D-8a inline `style=` vs FG-003; D-8b `createCrudTable` 7.1 vs `createList`; D-8c "opsiyoneldir" layout vs explicit layout; D-5 "MOD-0013" label), and every row carries: parties as `path:line`, same-layer yes/no, applied source, rationale, decider, status (`karar bekliyor` / `çözüldü`). "Rule wins" appears only on rule-vs-spec rows; no rule-vs-rule row is `çözüldü` without a recorded owner decision.
+- [ ] AC-4 (zorunlu) — DL-2 `compliance-checklist.md` has >= 32 rows `| UIC-<n> |` with unique ids and the five columns (item, applies to, requirement, how measured, source); `grep -o '^| UIC-[0-9]*' compliance-checklist.md | sort | uniq -d` is empty.
+- [ ] AC-5 (zorunlu) — All 22 automatic items are measured in **one** run `python3 scripts/run_record.py run --out docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01 -- sh -c '<script>'` on a clean tree, `<script>` as in the run contract (fixtures Golden Slim / `Platform/Tenants` / this pack; every item preceded by `echo "UIC-n"` and followed by `echo "exit=$?"`); acceptance is read per item from `auto-01/stdout.txt` against the expected column, the run's overall exit is recorded, not judged (baseline red on FU-4); `python3 scripts/run_record.py verify docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/run-record-v1.json` exits 0; the commit in that `run-record-v1.json` is the code version the acceptance binds to.
+- [ ] AC-6 (zorunlu) — Every manual item names its evidence form (screenshot, count `n/N`, table, control list) and `docs/records/audits/2026-10/mod-0286-uic-baseline-01/manual.md` carries one table row per manual item in the form `UIC-n | sonuç | kanıt | inceleyen rol | tarih` (role = CT or independent reviewer, named; C-2), for the Golden Slim fixture, or `ölçülmedi` with the reason in the `sonuç` column.
 - [ ] AC-7 (zorunlu) — The run record for the Golden Slim verifier reports the result as measured, including the known red on 2026-10-22 (1 gap, `personalization-client.js`, exit 1); no PASS is claimed without a green run record.
-- [ ] AC-8 (zorunlu) — `python3 scripts/check_pack_nav_keys.py` exits 0 with this pack and the two documents present.
+- [ ] AC-8 (zorunlu) — After the DL-2 commit, `sh -c 'python3 scripts/check_pack_nav_keys.py 2>&1 | grep -c MOD-0286; true'` prints `0` (no nav-key finding names this pack). The script's global exit is **not** this pack's gate: it is 1 today by MOD-0176:645 and MOD-0177:915 (SCE packs, FU-9). The script reads `git ls-files` only (`check_pack_nav_keys.py:131`), so uncommitted documents are not scanned - measure after commit.
 - [ ] AC-9 (zorunlu) — `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0286 --name "UI Design System & Page Pattern Governance"` exits 0 at the DL-1 and DL-2 commits.
 - [ ] AC-10 (zorunlu) — `find docs -maxdepth 1 -type f ! -name README.md ! -name .DS_Store | wc -l` = 0 after DL-1/DL-2 (docs-organization K1).
 - [ ] AC-11 (zorunlu) — P2 not started: `frontend/Diten.Web/Views/Platform/UiGovernance` and `services/Diten.Platform/src/Diten.Platform.Application/Features/UiGovernance` do not exist at DL-2 acceptance.
 - [ ] AC-12 (zorunlu) — The binding sentence for other packs is proposed only in Follow-up Items (FU-1); `.antigravity/rules/module-pack-standard.md` is unchanged in the DL-1/DL-2 commits.
-- [ ] AC-13 (isteğe bağlı) — Sabotage evidence: a scratch copy of Golden Slim `index.js` with the `createList` / `DtDefaults` call removed makes the verifier exit 1; the run is recorded with `run_record.py run --out docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-uic-4 -- <command against the copy>` (the copy lives outside the repo tree so the pre-run clean-tree check holds).
+- [ ] AC-13 (isteğe bağlı) — Sabotage evidence with a **named new red**: a scratch copy in repo shape outside the tree (`<scratch>/frontend/Diten.Web/{Views,Models,wwwroot/assets/js,wwwroot/assets/css}` + `<scratch>/execution/domains/developer-enablement/module-packs/DEV-0000-golden-reference-slim.md`; the verifier builds `frontend/Diten.Web/...` from its root argument, `verify_datatable_page.py:937-949`) first reproduces the baseline (97 `[PASS]` / 1 `[FAIL]`, measured 2026-10-22); then `_IndexL10n.cshtml` and `index.l10n.js` of the copy are deleted and `python3 .antigravity/scripts/verify_datatable_page.py <scratch> --area DevEnablement --module GoldenReferenceSlim --reference slim --api-profile direct-gateway --format report` turns `[PASS] _IndexL10n.cshtml exists` and `[PASS] index.l10n.js exists` into `[FAIL]` (measured: 7 `[PASS]` / 2 `[FAIL]`, exit 1 - the verifier stops at missing files). Recorded as `run_record.py run --out docs/records/audits/2026-10/mod-0286-uic-baseline-01/sabotage-01 -- sh -c '<both verifier runs>'` after `auto-01` is committed. Removing the `createList` call is **not** a valid sabotage (`resolve_list_factory` returns silently, `:535-536`). Limit: the argv holds an absolute scratch path; reproduction requires rebuilding the copy from the file list above.
 - [ ] AC-14 (isteğe bağlı) — The spec's component inventory table carries each shared file's line count measured at the DL-1 commit (`wc -l`).
+- [ ] AC-15 (zorunlu) — DL-2 carries the coverage table: for each of the 11 rule files the `grep -n -i "zorunlu" | wc -l` count, the lines mapped to UIC ids, and the uncovered lines listed by phrase; the counts are re-measured at the DL-2 commit and the 27 uncovered phrases are carried as a DL-2 revision input (FU-11).
+- [ ] AC-16 (zorunlu) — Every item marked auto has a run-contract row with working directory (repo root), fixture, full argv (shell made explicit as `sh -c`), and expected stdout/exit; each of the 22 auto ids appears in the run contract Id column (grouped rows such as `UIC-3/5/6/19` allowed).
 
 ## Test Expectations
 
 No code, no build. Document-level evidence, commands as written; none of the runs below is claimed here - the record
 (AC-5) holds the real exit codes.
 
-- Verifier on the Slim reference (positive): `python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim --api-profile direct-gateway --format gaps --ok-line`.
-  Measured once in this worktree on 2026-10-22: **exit 1**, one gap - "personalizationClient sends tenant header only for
+- Verifier on the Slim reference (positive): `python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim --api-profile direct-gateway --format report`.
+  Measured in this worktree on 2026-10-22: **exit 1**, 97 `[PASS]`, 1 `[FAIL]` - "personalizationClient sends tenant header only for
   tenant users" (`frontend/Diten.Web/wwwroot/assets/js/personalization-client.js`). Not fixed here (other module, XMC-001; Follow-up FU-4).
-- Verifier sabotage (negative, AC-13): copy `frontend/Diten.Web` to the scratch dir, delete the `createList` call line in
-  `wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js`, rerun the command against the copy -> expected exit 1 with a `[factory]` gap. Not run (çalışma testi yapılmadı).
+- Verifier sabotage (negative, AC-13): measured 2026-10-22 in the session scratch directory exactly as AC-13 describes - copy baseline 97/1 (a copy without `Models/` adds a second red, `Form ViewModel source file is discoverable`, so `Models/` is part of the copy), sabotage 7/2 with the two named `[FAIL]` lines; `--format gaps` lists them as `1) _IndexL10n.cshtml exists — Missing: ...`, `2) index.l10n.js exists — Missing: ...`. Not yet recorded through `run_record.py` (tree dirty, step 1 of the evidence flow).
 - resx-check (negative): `python3 .antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py . --context tenant`
-  -> today FAILs on main by known debt (33 keys per non-English language, `resx-check/SKILL.md`); the record quotes the `[X]` lines as-is and separates them from any key this work adds (none).
-- Nav keys: `python3 scripts/check_pack_nav_keys.py` -> expected exit 0 (the three P2 keys are in normalized form); result of the run after this draft is in Implementation Notes.
+  -> measured 2026-10-22: exit 1, 11 `[X]` lines (fr/es/zh/ar/ru each "Missing 35 key(s) from SharedResource.en.resx"; fr 43, es 32, zh 31, ar 31, ru 31, tr 5 keys "still equal to English"); `--context platform` -> exit 1, 1 `[X]` (tr 5). Shared debt; the record quotes the `[X]` lines as-is and separates them from any key this work adds (none). The "33 keys" figure of revision 01 is superseded by this measurement; no known-red note was found in `.antigravity/skills/i18n-localization/SKILL.md` (`grep -n -i 'bilinen\|known'` -> 0).
+- Nav keys: AC-8 command -> `0` measured 2026-10-22 (pack uncommitted, not scanned); global `python3 scripts/check_pack_nav_keys.py` -> exit 1 (MOD-0176 / MOD-0177, FU-9).
 - Identity: `verify_module_id.py --check-id MOD-0286 ...` -> exit 0 (measured 2026-10-22, see header).
 - Approval: `python3 scripts/pack_approval.py check execution/domains/platform-shared-services/module-packs/MOD-0286-ui-design-system-page-pattern-governance.md` -> measured 2026-10-22 while the file is uncommitted: exit 2 ("paket bu ref'te yok" - the tool reads the pack from the git ref); expected 1 (no approval row) once committed, until the owner approves.
 - Docs placement: the AC-10 `find` command.
@@ -328,7 +418,7 @@ No code, no build. Document-level evidence, commands as written; none of the run
 
 ## Ready-for-dev Checklist
 
-- [ ] D-1 answered by the owner (document path); D-2 answered (rules stay).
+- [ ] D-1 answered by the owner (document path); D-2 answered (rules stay); D-8a..c answered or explicitly left "karar bekliyor" in the register.
 - [ ] Owner named (`owner: TBD` -> person) and `target` set.
 - [ ] Golden Reference Slim pack read as the P2 reference (not needed for P1; recorded for the P2 revision).
 - [ ] Frontmatter: `service`, `shell`, `golden_reference`, `entity_base` present; `data_mode` noted as not applicable in P1 and required in the P2 revision.
@@ -337,23 +427,33 @@ No code, no build. Document-level evidence, commands as written; none of the run
 - [ ] Validation Rules, Failure Path, Authorization, Gateway: P1 answers written; P2 drafts marked non-binding.
 - [ ] Audited Events: no P1 command; P2 draft rows carry path `a` (AUD-001).
 - [ ] Acceptance Criteria in `AC-<n> (zorunlu|isteğe bağlı)` form; Test Expectations quote commands only.
+- [ ] Run contract rows exist for every auto item (AC-16); evidence flow is one `auto-01` run + one `sabotage-01` run.
 - [ ] Page help: "no page" in P1 - written.
 - [ ] Teslim dilimleri table present; DL-3 marked not deliverable from this pack.
 - [ ] CT-APR-02 independent review of this pack version recorded in `execution/approvals/reviews.tsv` before any approval row.
 
 ## Implementation Notes
 
-- Conflicts found while indexing (the spec's Conflicts register starts with these; the rule file wins in each case until the owner changes it):
-  1. `premium-modal-standard.md` §2 prescribes icon HTML with inline `style="..."` (lines 27-28, 35-36, 43-44, 51-52), while FG-003 (`frontend-js-standard.md:145`, `frontend-standards.md:194`, UI-001) forbids inline CSS.
-  2. `frontend-standards.md:208` (PROD-005, Admin modülleri bullet) reads "`Views/Platform/_ViewStart.cshtml` zaten admin layout'u atadığı için view'da manuel `Layout = ` opsiyoneldir."; `module-pack-standard.md` §2 ("Razor sayfasinda layout ACIKCA yazilir; `_ViewStart.cshtml` varsayilani degistirilmez") and `views-organization.md` §2 require it explicitly in every page. Measured 2026-10-22: `grep -n 'opsiyoneldir' .antigravity/rules/frontend-standards.md` -> 208.
-  3. "MOD-0013" labels in `premium-modal-standard.md`, `dynamic-localization-standard.md` and `AGENTS.md:139` name the Blueprint's Platform Standards Registry, not the UI standard (D-5).
+- Rev 02 (2026-10-22): Codex inceleme 01 UYGUN DEĞİL; F-1…F-8 kabul edildi ve işlendi; CT ek C-1, C-2 işlendi; karşılaştırma `docs/records/reviews/MOD-0286/2026-10-22-33dc5e14-ct-karsilastirma-01.md`.
+- Rev 02 mapping: F-1 -> run contract + UIC-1/2/7/13/14/17/20/21 rewritten with full paths and explicit `sh -c`; F-2 -> UIC-3/6/7 boundaries + UIC-26; F-3 -> UIC-24 zorunlu, UIC-31/32 split with the rules' own exceptions; F-4 -> UIC-27..30 + coverage table + AC-15; F-5 -> D-8a..c + register below + AC-3; F-6 -> evidence flow + AC-5; F-7 -> AC-13 named reds, measured; F-8 -> AC-8 narrowed + FU-9; C-1 -> UIC-17 fixture `Platform/Tenants`; C-2 -> AC-6 row format.
+- **Çatışma kaydı (Conflicts register, seeds the spec's §9):**
+
+| # | Parties (`path:line`) | Same layer | Applied source | Rationale | Decider | Status |
+|---|---|---|---|---|---|---|
+| 1 | `premium-modal-standard.md:27-28,35-36,43-44,51-52` inline `style=` vs FG-003 `frontend-js-standard.md:145`, `frontend-standards.md:194` | yes (`.antigravity/rules`) | FG-003 (classes in `backbone-custom.css`) | cross-cutting, newer rule; snippet has no runtime reader | rule owner (owner) | karar bekliyor (D-8a) |
+| 2 | `frontend-js-standard.md:53` "Tercih edilen yol: createCrudTable" vs `frontend-js-standard.md:981` anti-pattern table and BL-440 (`product-backlog.md:6199-6203`) | yes (same file) | `createList` (BL-440 decision 2026-09-23) | verifier resolves `createList`; line 53 stale | rule owner (owner / CT) | karar bekliyor (D-8b) |
+| 3 | `frontend-standards.md:208` "manuel `Layout = ` opsiyoneldir" vs `module-pack-standard.md:88` and `views-organization.md:39` explicit layout | yes | explicit layout (UIC-1) | two rules vs one; `module-pack-standard.md:292, :608` make it a testable AC | rule owner (owner) | karar bekliyor (D-8c) |
+| 4 | "MOD-0013" labels `premium-modal-standard.md:1,11`, `dynamic-localization-standard.md:2,5,181`, `AGENTS.md:139` vs Blueprint MOD-0013 = Platform Standards Registry | yes (label) | MOD-0286 | registry row 70 aligns the UI-standard concept to MOD-0286 | owner (`.antigravity/**`) | karar bekliyor (D-5) |
+| 5 | rule vs spec (any) | no (spec below rules, D-2) | the rule | authority order | pack author corrects the spec | çözüldü by construction |
+
 - Two copies of the list shell exist: `Views/Shared/Components/DataTable/_ListShell.cshtml` (58 lines) and `Views/PPM/Shared/_ListShell.cshtml` (41 lines). The spec names the first as canonical; the second is a finding for the PPM owner (FU-3).
 - The Golden Slim reference is red on one shared check today (Test Expectations). The spec must not describe a green baseline it does not have.
+- Shared factory finding (UIC-29): `diten-datatable.js:1046` toolbar filter button has `title`, `aria-controls`, `aria-expanded` but no `aria-label`; `frontend-datatable-template.md:630` requires both. Not this pack's file (FU-10, XMC-001). Runtime DOM (DataTables Buttons may add attributes) ölçülmedi.
 - MOD-0220: pack `status: ready-for-dev` while `Views/MasterData/LegalEntities/Wizard.cshtml` and `wizard.js` exist and are cited by the pack itself (line 562). The spec records the wizard as "exists, status mismatch in pack"; it does not touch MOD-0220.
 - RCS-001: no common record-code service found in `services/` (0 hits); UIC-18 can only be checked in pack text until it exists.
 - Language of this pack follows MOD-0230 revision 05 (`67fe7446c`, English body, Turkish standard tokens). That pack's frontmatter has `build_gate`, `operational_runtime_gate`, `slice` and no `approval_status`; `approval_status` is used only by MOD-0251 (`conditionally-approved-...`). This pack writes `approval_status: none` to make the missing approval explicit.
 - Counting bases differ from the CT brief for packs (169 vs 173; 9 vs 13 missing; 15 vs 16 free text) and `DtDefaults` (177 files vs 176 pages); the brief's figures were not reproduced here, the commands above are the pack's basis.
-- Post-write checks (2026-10-22, this worktree, file uncommitted): `wc -l` 373; `grep -c '^## '` 24 (22 required + Open Decisions + Page Help); AC rows 14, `UIC-` rows 25, duplicate ids 0; `verify_module_id.py --check-id MOD-0286` exit 0; `pack_approval.py check` exit 2 (uncommitted, see Test Expectations); `check_pack_nav_keys.py` exit 1 with 2 new off-form keys in MOD-0176 / MOD-0177 (other packs, pre-existing) - it reads `git ls-files` only, so this untracked pack was not scanned by it; its four keys (`Nav.Module.UIGOVERNANCE`, `Nav.Page.UIPAGEPATTERNS`, `Nav.Page.UICOMPLIANCECHECKLIST`, `Nav.Page.CODE`) were checked with the script's own scanner (result in the handback; to be re-run after commit, AC-8).
+- Post-write checks (rev 01, 2026-10-22, file uncommitted): `wc -l` 373; AC rows 14, `UIC-` rows 25; `verify_module_id.py --check-id MOD-0286` exit 0; `pack_approval.py check` exit 2 (uncommitted); `check_pack_nav_keys.py` exit 1 with 2 off-form keys in MOD-0176 / MOD-0177 (pre-existing); the four P2 keys checked with the script's own scanner. Rev 02 counts are in the handback and re-measured after commit.
 
 ## Follow-up Items
 
@@ -367,11 +467,14 @@ No code, no build. Document-level evidence, commands as written; none of the run
 | FU-6 | `MOD-0220` pack status vs wizard code mismatch | MDM pack owner | 🟢 - documentation only |
 | FU-7 | P2 (DL-3) revision of this pack: entity fields, `data_mode`, permissions, Ocelot task, Help keys, Ctrl+K entries, 2-language resx - after D-4 | Pack author, on owner trigger | - |
 | FU-8 | Accessibility tooling: no repo script measures contrast or focus ring (UIC-11, UIC-12 manual); evaluate adding one under `.antigravity/scripts/` | Owner / CT | 🟡 - manual items are skipped under time pressure |
+| FU-9 | `check_pack_nav_keys.py` global exit 1: off-form nav keys at MOD-0176 pack line 645 and MOD-0177 pack line 915 (SCE) - ask the SCE pack owner (XMC-001) before touching | SCE pack owner / CT | 🟡 - every pack's global nav-key gate stays red until fixed; AC-8 is narrowed so DL-2 does not depend on it |
+| FU-10 | Shared factory `diten-datatable.js:1046`: toolbar filter button lacks `aria-label` (rule `frontend-datatable-template.md:630`); other icon-only toolbar buttons to be measured | BL-440 owner (CT) (XMC-001) | 🟡 - every v2 list inherits the A11y gap; UIC-29 factory part stays red |
+| FU-11 | DL-2 revision: decide a UIC item or an explicit "not in P1" for the 27 uncovered "zorunlu" phrases in the coverage table (select2 filter init x10, delete endpoint ownership x2, HTML5 input types, modal id reference, KPI card rules x2, filter select attributes x2, dropdown alignment, `viewName`, multi-select summary x2, popup layer, sticky menu, column `name`, radius fix, load order) | Pack author | 🟡 - a list can pass DL-2 while breaking one of these |
 
 ## Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | Design System Specification (Tasarım Sistemi Şartnamesi) | Owned Objects §DL-1 outline, Repo Scope, Protected Paths, AC-1, AC-2, AC-3, AC-9, AC-10, AC-14 |
-| DL-2 | UI Compliance Checklist + measurement binding (UI Uyum Kontrol Listesi) | Owned Objects §DL-2 table, Test Expectations, AC-4, AC-5, AC-6, AC-7, AC-8, AC-11, AC-12, AC-13 |
+| DL-1 | Design System Specification (Tasarım Sistemi Şartnamesi) | Owned Objects §DL-1 outline, Conflicts register (D-8a..c), Repo Scope, Protected Paths, AC-1, AC-2, AC-3, AC-9, AC-10, AC-14 |
+| DL-2 | UI Compliance Checklist + run contract + measurement binding (UI Uyum Kontrol Listesi) | Owned Objects §DL-2 table, run contract, evidence flow, coverage table, Test Expectations, AC-4, AC-5, AC-6, AC-7, AC-8, AC-11, AC-12, AC-13, AC-15, AC-16 |
 | DL-3 | P2 governance console - **deferred; not delivered from this pack; not assignable to a WP** until D-4 and the P2 revision (FU-7) | Entity Fields (P2), Layout & Shell Contract (P2), Backend File Convention, Frontend File Contract, Authorization Convention, Audited Events (P2 rows), Gateway / API Routing Decision, Page Help (P2) |
