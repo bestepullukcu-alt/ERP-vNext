@@ -1423,7 +1423,16 @@ class FakeRepo:
 
 
 def self_test() -> int:
-    os.environ["PACK_APPROVAL_PR_VERIFY"] = "test"     # temp repositories have no GitHub origin (pack_approval.pr_merge)
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     v = vmi()
     files = {"AGENTS.md": "x\n", "docs/api.md": "GET /api/things returns 200\nperm crm.thing.read\n",
              "tests/T.cs": "public void Thing_Returns200()\n",

@@ -1112,7 +1112,16 @@ def _refuses(fn) -> bool:
 
 
 def self_test() -> int:
-    os.environ["PACK_APPROVAL_PR_VERIFY"] = "test"     # temp repositories have no GitHub origin (pack_approval.pr_merge)
+    _orig_load = globals()["_load"]
+
+    def _test_load(name, path):
+        """Codex F-7: the GitHub stand-in is set in-process on every pack_approval this self-test loads; the CLI has
+        no switch for it."""
+        mod = _orig_load(name, path)
+        if Path(path).name == "pack_approval.py":
+            mod._PR_SOURCE = mod._test_pr
+        return mod
+    globals()["_load"] = _test_load
     # CT-FIX-05 (F3): C2 is the code commit, C3 = C2 + the run directory the runner wrote (the evidence commit)
     C1, C2, C3 = "a" * 40, "b" * 40, "c" * 40
     RUN = "docs/records/audits/2026-10/x/run-1"
