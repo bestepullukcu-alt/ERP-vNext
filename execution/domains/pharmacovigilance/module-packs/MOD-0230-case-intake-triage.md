@@ -16,7 +16,7 @@ branch: feature/pvg/mod-0230-case-intake-triage
 started: 2026-08-04
 approved: 2026-08-09
 target: 2026-08-28
-form_field_count: 16
+form_field_count: 32
 slice: "Slice 1 - intake + triage + route. Archive/void and export are out of scope."
 ---
 
@@ -97,7 +97,10 @@ Static facts at commit `ce3be60cf`, plus the E2/E3 measurements of the PVG-M1-02
 that note are wrong and are corrected here: `ocelot.json` carries `AuthenticationOptions` on 2 routes (the
 `/api/v1/uploads` pair), not 4; and the service does check permission keys (`pvg.mod0230.intake.*`). Each gap names
 the delivery slice that owns it. Row G-16 and the 2026-10-22 additions to G-5 and G-15 are static facts measured at
-commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-10-21-b48500cf.md`).
+commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-10-21-b48500cf.md`). Rows G-17 ... G-22
+(revision 04, intake fields AL-1 ... AL-7) are static facts measured on 2026-10-22 at commit `0a900f634` (rebuilt as
+`26384dceb`, same code tree; the branch history was rebuilt because approvals.tsv is append-only) (`grep` over
+`services/Diten.PvgService/src`, `services/Diten.PvgService/tests`, and the MOD-0230 frontend paths of "Repo Scope").
 
 | # | Gap | Measured fact | Owning slice |
 |---|---|---|---|
@@ -117,6 +120,12 @@ commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-1
 | G-14 | DataTable verifier gaps | `python3 .antigravity/scripts/verify_datatable_page.py . --area Pharmacovigilance --module CaseIntakeTriage --reference compact --api-profile proxy --format gaps` printed 18 gaps: data mode undeclared; old skeleton instead of `_TableSkeleton`; `_Filter` and `_IndexL10n` partial includes not found; form view model not found under `frontend/Diten.Web/Models`; the remaining 13 items (bulk delete, export, import, select-all, reload-with-toast and clear-selection wiring) are tied to bulk / export features this pack excludes. Since this revision the frontmatter declares `data_mode: server` (OD-PVG-8); re-run after this edit (2026-10-21) still prints 18 gaps - the data-mode item names `_DataTable.cshtml`, which carries no `data-dt-data-mode` attribute yet (DL-7). | DL-7 |
 | G-15 | No concurrency check on update | `InMemoryPvgIntakeDraftRepository.ReplaceAsync` overwrites without a version check (last write wins). Added 2026-10-22: no record version exists in any layer. `IPvgIntakeDraftStore.ReplaceAsync` (line 12) takes no expected version and returns `bool`; `PvgIntakeDraftApplicationService` reads `false` as `IntakeDraftNotFound` at all three call sites (update line 157, triage line 239, route line 321); the API request records in `PvgCaseIntakeTriageEndpoints.cs`, the MVC form inputs in `PharmacovigilanceCaseIntakeTriageController.cs`, and the JS carry no version (`git grep -i 'version\|etag\|rowversion\|concurrency'` over these paths finds only the `asp-append-version` cache-busting attribute in the views). Ownership: store contract and service calls DL-2 (BG-12); API transport DL-4 (BG-19); MVC / JS transport DL-7 (BG-20). | DL-2 |
 | G-16 | The list shows at most the first 100 records | `wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js` `buildListUrl` (lines 28-35) sets `pageNumber=1` and `pageSize=100` on every request; the DataTable is not server-side (no `serverSide` option, no total fields); the MVC proxy `List` action clamps `pageSize` to 1 ... 100; `IPvgIntakeDraftStore.ListAsync`, `PvgIntakeDraftQueryResult`, and `PvgCaseIntakeApiResponse` return items only - no total or filtered count. A tenant with more than 100 intake drafts cannot reach the 101st: a functional defect of the build/test screen. `data_mode: server` and the table attribute alone do not fix it. WP-0230-07 has no acceptance record and is not counted as done while this holds. API-side counts: DL-4 (BG-19); screen: DL-7 (BG-20). | DL-7 |
+| G-17 | Product is one free-text field (AL-1) | `PvgIntakeField` has 16 members including `SuspectProductText = 10`; `SafetyCaseIntake.SuspectProductText` is `string?`; `PvgIntakeFieldDefinition.ApprovedFields` lists it as optional, regulated-safety. `SuspectProductText` occurs in 9 source files, `_Form.cshtml`, the MVC controller, and 5 test files (`PvgApplicationContractShapeTests.cs` pins it). No product list, product role, Global Product id, GSKU, or lot number exists: `grep -iE 'GlobalProduct\|Gsku\|LotNumber'` finds nothing. Model and validation DL-2 (BG-21, BG-22); API DL-4 (BG-31); screen DL-7 (BG-32). | DL-2 |
+| G-18 | No awareness moment and no company recipient (AL-2) | The only timestamp of the record is `ReceivedAtUtc`; `grep -iE 'Awareness\|CompanyRecipient'` finds nothing. Model and validation DL-2 (BG-23, BG-24); API DL-4; screen DL-7. | DL-2 |
+| G-19 | No event country and no report type (AL-3, AL-4) | Neither is a member of `PvgIntakeField` or a property of `SafetyCaseIntake`; `grep -iE 'EventCountry\|ReportType'` finds nothing. PvgService makes no `/api/lookups` call and holds no country list. Model and validation DL-2 (BG-25, BG-26, BG-27). | DL-2 |
+| G-20 | No validity result (AL-5) | MOD-0230 code has no validity field. The only match in PvgService is MOD-0231's `SignalMinimumAssessment.CaseValidityStatus` / `CaseValidityReason` (`Domain/CaseProcessing/SignalMinimumAssessment.cs`) - another pack's field, not consumed here (XMC-001). Model and triage rule DL-2 (BG-28). | DL-2 |
+| G-21 | Reporter is a type plus a free-text summary (AL-6) | `SafetyCaseIntake` holds `ReporterType` (`string`) and `ReporterContactSummary` (`string?`); no reporter source, source id, or snapshot fields; `grep -iE 'ReporterSource\|ReporterSnapshot'` finds nothing. Model and validation DL-2 (BG-29, BG-30). | DL-2 |
+| G-22 | No read access to MOD-0290, MOD-0150, MOD-0288, or a country list | PvgService projects reference only their own projects (`*.csproj`); no `HttpClient` and no call to another service in `services/Diten.PvgService/src`. Each read waits for its owner contract ("Required Interface Contracts"); the pickers of the screen are DL-7 (BG-32). | DL-2 |
 
 Gateway note: route-level `AuthenticationOptions` is absent on most routes by repo norm; the Gateway applies
 authentication and `TenantResolutionMiddleware` pipeline-wide. E3 G1 / G4 (dev profile, 2026-10-20) observed anonymous
@@ -209,13 +218,28 @@ defined only inside the build/test gate. Operational runtime remains unauthorize
 
 ## Entity Fields
 
-Create/edit user-entered field count recorded for draft planning: `16`.
+Create/edit user-entered field count: `32` since revision 04 (2026-10-22; `16` before). Count, one per distinct
+user-entered field; a repeating group counts its columns once, not once per row:
+
+| Group | Fields | Count |
+|---|---|---:|
+| Kept from the 16 (all but `SuspectProductText`) | IntakeChannel, SourceType, SourceReference, ReceivedAtUtc, ReporterType, ReporterContactSummary, PatientSubjectCode, EventOnsetDate, AdverseEventNarrative, Seriousness, IntakePriority, TriageOutcome, TriageReason, RouteTargetQueue, EvidenceLinkReferences | 15 |
+| AL-1 product list (columns of one line) | ProductRole, GlobalProductId, ProductNameAsReported, PresentationGskuId, LotNumber | 5 |
+| AL-2 | AwarenessAtUtc, CompanyRecipientPersonId | 2 |
+| AL-3 | EventCountry | 1 |
+| AL-4 | ReportType | 1 |
+| AL-5 (triage input) | ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | 4 |
+| AL-6 reporter | ReporterSourceId (search and select), ReporterNameOrInitials, ReporterProfession, ReporterCountry | 4 |
+| **Total** | | **32** |
 
 Golden Reference decision: `compact`, because the create/edit form has more than 8 user-entered fields and
 regulated intake requires separate Create/Edit/Details review surfaces rather than Index-hosted offcanvas panels.
+The 16 -> 32 change does not cross the 8-field threshold of `module-pack-standard.md` ("Sayim Kurali"); `compact`
+is unchanged.
 
 Excluded from field count: `Id`, `TenantId`, audit fields, correlation id, workflow instance id, created/updated
-metadata, system-generated case number, and computed SLA/status timestamps.
+metadata, system-generated case number, computed SLA/status timestamps, and the system-set fields of revision 04
+(`ReporterSource`, `ValidityResult`, `ValidityMissingCriteria`).
 
 | Field | Required | Sensitivity class | User-entered | Notes / blocker |
 |---|---|---|---|---|
@@ -223,13 +247,31 @@ metadata, system-generated case number, and computed SLA/status timestamps.
 | SourceType | Yes | public-metadata | Yes | Allowed source taxonomy still requires approval. |
 | SourceReference | No | confidential | Yes | External source ID policy must align with Blueprint MOD-0040 / TRACE-BUNDLE. |
 | ReceivedAtUtc | Yes | regulated-safety | Yes | Must be UTC-normalized; client timestamp trust policy still requires approval. |
-| ReporterType | Yes | public-metadata | Yes | Allowed values still require approval. |
-| ReporterContactSummary | No | PII | Yes | Requires MOD-0019 masking / row-field policy before runtime. |
+| ReporterType | Yes | public-metadata | Yes | Allowed values still require approval. Revision 04 (AL-6): stays the reporter's type on all three reporter paths; on the manual path it is the "bildiren türü" the user enters. An employee is a reporter only when reporting an own adverse event, with the consumer / employee type. |
+| ReporterContactSummary | No | PII | Yes | Requires MOD-0019 masking / row-field policy before runtime. Revision 04 (AL-6): becomes the contact part of the reporter snapshot ("iletişim özeti"); copied from the source on a linked reporter, typed on a manual one; the 256-character rule is unchanged. |
 | PatientSubjectCode | No | PHI | Yes | Requires MOD-0019 masking / row-field policy before runtime. |
 | EventOnsetDate | No | PHI | Yes | Requires MOD-0019 masking / row-field policy before runtime. |
 | AdverseEventNarrative | Yes | PHI | Yes | Raw narrative prohibited in logs/traces/audit payloads. |
-| SuspectProductText | No | regulated-safety | Yes | Terminology/reference policy still requires approval. |
-| Seriousness | Yes | regulated-safety | Yes | Allowed values still require approval. |
+| ~~SuspectProductText~~ | - | - | - | **Replaced in revision 04 (AL-1)** by the product list below. It does not stay as a separate field: its content is the `ProductNameAsReported` of one product line with role `Suspect`. Code change in DL-2 (G-17); no stored data is migrated because persistence is in-memory only (G-10). |
+| ProductLines (list) | No at Create; at Triage a `Valid` result needs at least one line with role `Suspect` (AL-1, AL-5) | regulated-safety | Yes | Repeating group, at most 20 lines (EK-5, `pvg-mod0230-intake-fields-02.md`; review 04 assesses the limit). One line = the five fields below. |
+| ProductLines[].ProductRole | Yes on every line | regulated-safety | Yes | PVG option set `Suspect` / `Concomitant` (AL-1: şüpheli / birlikte kullanılan). |
+| ProductLines[].GlobalProductId | No | regulated-safety | Yes (product picker) | MOD-0290 Global Product id - optional link, set only for a company product. A non-company or unrecognised product has no id and is text only. Read through the MOD-0290 owner contract (open); PVG never writes to MDM (XMC-001). |
+| ProductLines[].ProductNameAsReported | Yes on every line | regulated-safety | Yes | The name exactly as the reporter said it ("as reported"), kept on every line even when `GlobalProductId` is set. Free text; never in logs, traces, metrics, or audit payloads. |
+| ProductLines[].PresentationGskuId | No | regulated-safety | Yes (picker) | MOD-0290 GSKU (presentation); allowed only on a line that carries `GlobalProductId` and must belong to it. |
+| ProductLines[].LotNumber | No | regulated-safety | Yes | Lot / batch number as given; free text; never in audit payloads. |
+| AwarenessAtUtc | Yes at Create (EK-2, `pvg-mod0230-intake-fields-02.md`) | regulated-safety | Yes | "Farkına varma anı" (day 0): the moment anyone in the company first learned the minimum information. Default value: `ReceivedAtUtc`; an earlier moment may be chosen when the information reached an employee before (EK-2). Rule: `AwarenessAtUtc` <= `ReceivedAtUtc`. When the information reached another employee first (for example a field representative), it is that employee's moment. Which timestamp counts as trusted is a QPPV decision (QPPV-02, REQ-PVG-CRM-01) - not applied until QPPV confirms. Regulatory wording here is general information; QPPV-verified. |
+| CompanyRecipientPersonId | Yes at Create, enforced from the MOD-0288 read contract on (before it, a supplied value is rejected and none is required - an id that cannot be verified is not stored) | confidential | Yes (defaulted, changeable) | Company recipient: the employee who learned it (MOD-0288 person id). A case opened by hand on the PV screen defaults to the MOD-0288 person of the PV user who opens it; the user may change it (AL-2 clarification). Read through the MOD-0288 owner contract (open). Not the reporter (AL-6). |
+| EventCountry | Yes at Create | regulated-safety | Yes | Country where the event occurred, chosen from the Platform reference country list, with an "unknown" option (AL-3). The "unknown" option is a PVG value; PVG adds no value to the reference list (XMC-001). Source of the list: see "Required Interface Contracts" (country-list row, open). |
+| ReportType | Yes at Create | regulated-safety | Yes | PVG option set `Spontaneous`, `Study`, `Literature`, `Solicited`, `Other` (AL-4). Values wait for QPPV confirmation, like the other PVG option sets whose values "still require approval". |
+| ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | Yes at Triage; absent at Create | regulated-safety | Yes (triage input) | The four minimum criteria of a valid case (AL-5; ICH E2D, general information, QPPV-verified). `ValiditySuspectProduct` may be set only when at least one product line has role `Suspect`. Applied only after QPPV confirms (AL-5). |
+| ValidityResult | Set at Triage | regulated-safety | No (system) | Derived: `Valid` when all four criteria hold; otherwise `InvalidFollowUpRequired`. An invalid notification is not deleted and stays a record (AL-5). Recorded beside `TriageOutcome`; it does not replace it. |
+| ValidityMissingCriteria | Set at Triage when not valid | regulated-safety | No (system) | Codes of the criteria that do not hold (AL-5: "hangi ölçütün eksik olduğu"). |
+| ReporterSource | Yes at Create | public-metadata | No (system) | `Crm` / `PersonDirectory` / `Manual`, set by how the reporter was given (AL-6): selected from CRM contacts (MOD-0150), selected from the person directory (MOD-0288), or typed. |
+| ReporterSourceId | Required when `ReporterSource` is `Crm` or `PersonDirectory`; absent when `Manual` | PII | Yes (search and select) | CRM contact id or MOD-0288 person id. A reporter identifier: never in logs, traces, metrics, or audit payloads ("Runtime Constraints"). Read through the MOD-0150 / MOD-0288 owner contracts (open). |
+| ReporterNameOrInitials | No at Create; at Triage `ValidityReporterIdentifiable` needs at least one reporter identifier or a link | PII | Yes (copied on a link) | Snapshot (AL-6): name or initials. |
+| ReporterProfession | No | PII | Yes (copied on a link) | Snapshot (AL-6): profession. |
+| ReporterCountry | No | PII | Yes (copied on a link) | Snapshot (AL-6): country, same country list as `EventCountry`. |
+| Seriousness | Yes | regulated-safety | Yes | Allowed values still require approval. This single value is for triage; the six seriousness criteria belong to MOD-0231 (AL-7, "Follow-up Items"). |
 | IntakePriority | Yes | regulated-safety | Yes | Priority taxonomy and SLA linkage still require approval. |
 | TriageOutcome | Yes | regulated-safety | Yes | Allowed states and transition rules require Workflow/Inbox contract. |
 | TriageReason | No | PHI | Yes | Raw reason text prohibited in logs/traces/audit payloads. |
@@ -239,6 +281,54 @@ metadata, system-generated case number, and computed SLA/status timestamps.
 Every field included in create/edit/list/detail/export surfaces must receive masking behavior, row/field access
 rules, audit payload rules, evidence-link rules, and fail-closed tests before slice 1 acceptance. Export remains
 out of slice 1 and still requires a real MOD-0019 approval before it can be added.
+
+**Revision 04 field rules (AL-1 ... AL-7, 2026-10-22).** Authority:
+`docs/records/decisions/2026-10/pvg-mod0230-intake-fields-01.md` (all seven rows "Evet", AL-2 and AL-6 with
+clarifications), supplemented by `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-02.md` (EK-1 ... EK-5 and
+the AL-3 correction). Parts that the records mark "Ayrıca gereken onay" (QPPV, MDM MOD-0290, CRM MOD-0150, Platform
+MOD-0288, and - after the AL-3 correction - MOD-0048 for the country list) are not applied until that approval is
+recorded; the acceptance items that depend on them say "after ...".
+Regulatory statements (ICH E2D, ICH E2B(R3), EU GVP Module VI) are general information with no source in the
+repository; QPPV-verified.
+
+Reporter (AL-6) - three paths, one record shape:
+
+1. **From CRM by system - automatic.** Reporter = the physician of the CRM contact record (`ReporterSource = Crm`,
+   `ReporterSourceId` = CRM contact id); company recipient = the representative who sends the report (the signed-in
+   user's MOD-0288 person id); channel "field visit", source "CRM", source reference = CRM report id. The user does
+   not type these. This path is part of the system-to-system intake contract that REQ-PVG-CRM-01 asks for; that
+   contract is still deferred and needs operational runtime approval (see "Authorization Convention").
+2. **Opened by hand on the PV screen - search first.** The reporter field is a search box over CRM contacts
+   (physician / pharmacist) and the person directory (employee). A hit is selected and linked.
+3. **Not in any system - typed.** Patient, relative, physician without a record: `ReporterType` plus at least one
+   identifier (name or initials, profession, country, contact summary) typed by hand. Selection is not required; PV
+   rejects no notification because "the person is not in the system". Decided (EK-3,
+   `pvg-mod0230-intake-fields-02.md`; QPPV confirms together with AL-5): a reporter with no identifier is accepted at
+   create, because PV refuses no notification; at triage it does not meet `ValidityReporterIdentifiable` (AL-5) and
+   the case gets "invalid - follow-up required" (`InvalidFollowUpRequired`).
+
+What is stored: when linked, the source person id **and** a snapshot of the source's values at that moment (name or
+initials, profession, country, contact summary). A later change or deletion of the source record does not change the
+case (GxP record); when follow-up needs current contact data, the source record is read. The snapshot is personal data:
+MOD-0019 masking and the audit rules apply unchanged. Editing the snapshot (EK-4, `pvg-mod0230-intake-fields-02.md`;
+DL-2 scope): a snapshot copied from a linked source may be edited on the case; the change is written to the audit
+record with the field name only (no value); the source record (CRM contact, person directory) is not changed, and the
+link id (`ReporterSourceId`) stays. Acceptance: BG-30.
+
+One CRM search for a typed reporter (AL-6 clarification): when the record is completed, the person is searched in CRM
+once; a hit is linked (link + snapshot, as on path 2). The search runs inside the existing Create / Update command at
+save, in the same unit of work - not as a new write command (AUD-001 §5 K4) and not as a background job (unauthorized,
+"Runtime Constraints"). What counts as a hit is part of the MOD-0150 read contract; an ambiguous result links nothing.
+After the MOD-0150 owner contract only.
+
+Reporter and company recipient are separate fields: the reporter tells the event (physician, patient); the company
+recipient is the employee who learned it (representative). A representative is not the reporter; an employee is the
+reporter only when reporting an own adverse event (type consumer / employee).
+
+CRM pre-fill (REQ-PVG-CRM-01): automatic filling from a CRM visit report uses exactly these fields (`AwarenessAtUtc` =
+the moment the representative learned it, `CompanyRecipientPersonId`, `ReporterSource = Crm`, `ReporterSourceId`,
+`ProductLines[].GlobalProductId` - the CRM visit report already holds products by Global Product id). The intake
+contract itself stays deferred; this revision writes no contract.
 
 ## Repo Scope
 
@@ -304,6 +394,11 @@ W-3A0 dependencies are production blockers, not waived:
 | TRACE-BUNDLE: canonical ID, Correlation-ID, trace stitching, regulated error model | Blueprint MOD-0040 / platform trace standards | BLOCKER |
 | OTel / operational telemetry | Platform observability foundations | BLOCKER |
 | Audit forwarder for services without an audit trace | AUD-001 §5 K4 shared forwarder package (Control Tower) | BLOCKER for DL-5 |
+| Global Product / GSKU read (revision 04, AL-1) | MOD-0290 Product / Item / SKU Master (master-data-management) | Open - owner contract pending; blocks BG-22 and the product picker of BG-32. PVG does not write to MDM (XMC-001). |
+| CRM contact read (revision 04, AL-6) | MOD-0150 Contact & Relationship Management (commercial-suite) | Open - owner contract pending; blocks BG-30 and the CRM part of the reporter search (BG-32). PVG does not write to CRM (XMC-001). |
+| Person directory read (revision 04, AL-2, AL-6) | MOD-0288 Organization, Person & Position Directory (platform-shared-services) | Open - owner contract pending; blocks BG-24 and the directory part of the pickers (BG-32). PVG does not write to the directory (XMC-001). |
+| Country list read (revision 04, AL-3, AL-6) | Platform reference data (MOD-0048 Reference Data Management) | Open — owner approval pending (EK-1 and the AL-3 correction, `pvg-mod0230-intake-fields-02.md`; see the country-list row below); blocks BG-26. PVG adds no value to the list (XMC-001). |
+| QPPV confirmations (revision 04) | QPPV (PV process owner) | Open: trusted awareness timestamp (AL-2, QPPV-02), report type values (AL-4), validity criteria (AL-5). Blocks BG-28 and the "approved" status of the AL-4 values. |
 | DCP-004 | PVG Urgent W-3 Development Block | **`approved` 2026-08-09**; build/test gate open, operational runtime gate closed |
 
 MOD-0004 Metric & Semantic Registry and MOD-0063 Data Warehouse / Lakehouse are not direct MOD-0230 runtime
@@ -325,6 +420,10 @@ it does not approve a contract and does not open operational runtime. No row in 
 | MOD-0023 Workflow/Inbox v1 | transition gate or inbox handoff API/event, assignment semantics, routing state, fail-closed behavior | triage states, routable states, route targets, transition reason codes, blocked/allowed behavior | **PORTED** - `IPvgWorkflowTransitionGate` + `DenyAllWorkflowTransitionGate`. Build gate satisfied by the substitute; **operational runtime still BLOCKER**. Queue registry, assignment, and SLA remain MOD-0023's and are not ported |
 | MOD-0031 Evidence-Link | object reference shape, link/query API, evidence requirement/completeness rule, evidence-pack boundary | whether artifacts require evidence links at create, triage, route, and downstream handoff | **PORTED** - `IPvgEvidenceLinkPort` + `DenyAllEvidenceLinkPort`. Build gate satisfied by the substitute; **operational runtime still BLOCKER**. Today: `DenyAllEvidenceLinkPort.EvaluateAsync` returns `EvidenceLinkDenied` for every request and records nothing. Proposed, not in code: a non-production adapter that records a requirement as `Pending` (never as satisfied), only if the MOD-0031 owner approves a durable pending-evidence state |
 | Blueprint MOD-0040 / TRACE-BUNDLE | canonical/external ID semantics, `X-Correlation-Id`, trace stitching, regulated error model | generated/manual intake ID policy, external source ID policy, correlation propagation, error reason-code policy | **OPEN - owner contract pending.** PvgService references no `Diten.Platform.Common` Observability or Tenancy code. Local behaviour only: `X-Correlation-Id` is required and checked (at most 128 characters, no whitespace) into `PvgCorrelationContext`; draft IDs are generated by the store; request DTOs carry no `Id` or `TenantId`; no shared correlation middleware and no trace stitching. Error model: G-8, OD-PVG-3. |
+| MOD-0290 Product / Item / SKU Master (revision 04) | read of a Global Product by id and of the GSKUs (presentations) of a product, tenant-scoped, read-only; product search for the picker; behaviour when the master is unavailable | which product facts the case keeps (id only; the as-reported name is always typed); an id that cannot be verified fails closed | **Open - owner contract pending.** Registry row MOD-0290 (`execution/registries/module-id-registry.md` line 167): status `canonical`, pack `execution/domains/master-data-management/module-packs/MOD-0290-product-item-sku-master.md`. Nothing is read today (G-22). Until the contract is recorded, every non-empty `GlobalProductId` or `PresentationGskuId` is rejected (BG-21); text-only lines work. PVG reads, never writes. |
+| MOD-0150 Contact & Relationship Management (revision 04) | read of a CRM contact (physician / pharmacist) by id and by search, tenant-scoped, read-only, returning the snapshot values (name, profession, country, contact summary); the match rule for the one-time search of a typed reporter | reporter link and snapshot; one search per completed record; an ambiguous match links nothing | **Open - owner contract pending.** Fact: the registry row MOD-0150 (line 268) says `reserved / planned`, while CRM code exists - `services/Diten.CrmService/src/Diten.CrmService.Domain/Entities/Contact.cs` is documented as "MOD-0150 Contact master" (fields include `DisplayName`, `ProfessionalTitle`, `Specialty`, `Phone`, `Email`, `CountryRef`). The mismatch is CRM's matter (XMC-001). Nothing is read today (G-22). Until the contract is recorded, `ReporterSource = Crm` is rejected (BG-29). PVG reads, never writes. |
+| MOD-0288 Organization, Person & Position Directory (revision 04) | read of a person by id and by search, and of the MOD-0288 person linked to the signed-in user, tenant-scoped, read-only | company recipient default and choice (AL-2); employee reporter (AL-6) | **Open - owner contract pending.** Registry row MOD-0288 (line 165): status `done`, runtime in `services/Diten.Platform`. Nothing is read today (G-22). Until the contract is recorded, a supplied `CompanyRecipientPersonId` is rejected and the field is not required, and `ReporterSource = PersonDirectory` is rejected (BG-24, BG-29). PVG reads, never writes. |
+| Platform reference country list (revision 04) | read-only country list for a tenant module; country code shape | `EventCountry` and `ReporterCountry` values; "unknown" stays a PVG value | **Open — owner approval pending.** Decided (EK-1, `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-02.md`): PVG asks the MOD-0048 owner for an approved country list for PVG (ISO 3166-1 alpha-2, business reference data path); the AL-3 correction in the same record states that AL-3 needs the MOD-0048 owner's approval. Measured: `GET /api/lookups/countries` is Platform provisioning / support only, `PlatformActor` policy, and "any public country list requires a separate approved decision" (`execution/domains/platform-shared-services/module-packs/MOD-0048-lookups-reference-data.md` lines 392, 555); MOD-0048-FU01 holds an ISO 3166-1 alpha-2 country-market set as business reference data; the CRM contact's `CountryRef` is a MOD-0048 published location code. Until the MOD-0048 owner delivers the approved list, `EventCountry` and `ReporterCountry` accept only the PVG "unknown" value (EK-1; `EventCountry` test: BG-25); PVG adds no value to the list; no hardcoded country list (`platform-lookups-reference-data.md`). |
 
 ### MOD-0230 Owner-Approval Evidence Intake Template
 
@@ -338,7 +437,7 @@ runtime and does not authorize any surface outside the MOD-0230 build/test gate.
 | Approval | Owner/team | Approver | Approval date | Evidence artifact/link | Approved version | Fail-closed proof | Required test evidence | Caveats / exclusions | Readiness decision |
 |---|---|---|---|---|---|---|---|---|---|
 | `PVG-MOD0230-RBAC-Contract v1` | MOD-0018 / AuthService / Platform access governance | MOD-0018 owner role - **Not approved - owner contract pending.** The 2026-08-09 entry named the PVG package owner as approver; that is not an owner approval. | Open | Build/test substitute only: `IPvgPermissionGate` + `DenyAllPermissionGate` (`services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllPermissionGate.cs`), registered only when `Pvg:Runtime:UseNonProductionAdapters` is true. PvgService projects reference no `Diten.Platform.Common` project (`*.csproj`), so the `Diten.Platform.Common/Authorization` types listed on 2026-08-09 are not consumed by this module. | n/a - no owner-approved version | Missing - required proof: deny on missing actor, tenant, permission, scope, seed/grant catalog, or auth context; JWT validated in the service; tenant and actor taken only from validated server context (OD-PVG-2); cross-tenant reads return 404/empty and mutations deny. | Missing - required tests: role/action allow-deny matrix, missing-permission denial, missing or invalid token 401, forged `X-Diten-*` headers without effect, cross-tenant denial, platform/partner/tenant actor behavior, seed/grant ownership proof, and no delete/bulk-delete surface. | **Not owner-approved.** The 2026-08-09 wording "Approved for the build/test gate" applies only to the deny-all substitute: it denies every call, so no permission is ever granted. Real RBAC - JWT validation, Gateway-resolved tenant / actor context, `pvg` permission evidence and tests - is required before operational runtime. Key family: OD-PVG-1; seed/grant ownership stays with MOD-0018 / AuthService. `archive` and `export` keys are out of slice 1; delete and bulk-delete keys are permanently excluded. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build/test gate satisfied by the deny-all substitute only (the box checked on 2026-08-09 covered only that substitute); operational runtime blocked** |
-| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgFieldSecurityPolicy` with `DenyAllFieldSecurityPolicy` | n/a - MOD-0019 contract does not exist | Missing - required proof: deny or omit/mask when field policy is missing or unavailable; raw PHI/PII/free text cannot enter UI/API output, logs, traces, metrics, audit metadata, validation errors, or exports. | Missing - required tests: all 16 fields across list/detail/create/update/export/audit, missing-policy denial, raw-value leak scans, and cross-tenant checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllFieldSecurityPolicy` denies unconditionally. This row continues to **block operational runtime** until MOD-0019 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
+| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgFieldSecurityPolicy` with `DenyAllFieldSecurityPolicy` | n/a - MOD-0019 contract does not exist | Missing - required proof: deny or omit/mask when field policy is missing or unavailable; raw PHI/PII/free text cannot enter UI/API output, logs, traces, metrics, audit metadata, validation errors, or exports. | Missing - required tests: every field of "Entity Fields" (32 user-entered since revision 04, plus the system-set fields) across list/detail/create/update/export/audit, missing-policy denial, raw-value leak scans, and cross-tenant checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllFieldSecurityPolicy` denies unconditionally. This row continues to **block operational runtime** until MOD-0019 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
 | `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | MOD-0021 owner role - **Not approved - owner contract pending.** The 2026-08-09 entry named the PVG package owner as approver; that is not an owner approval. | Open | Code fact: mutations return a `PvgAuditIntent` (operation, status, permission, actor kind, timestamp) built after the store write; `PvgIntakeDraftApplicationService` has no audit sink or outbox dependency; the host registers none; the API response drops the intent. `tests/architecture/audit-ledger/Diten.PvgService.md`: no trace; the four MOD-0230 write commands are known debt. Nothing is consumed from the `Diten.Platform` audit feature. | n/a - no owner-approved version | Missing - required proof: no unaudited regulated mutation succeeds; an audit write failure blocks the mutation (AUD-001 K2) or uses only an owner-approved durable outbox in the same unit of work; payload redaction happens before persistence/export. | Missing - required tests: create, update, triage, route, denial/failure events; audit-writer failure leaves the store unchanged and the result not `Succeeded`; single-record read audit (AUD-001 §7) and its write-failure behaviour as this contract fixes it (BG-18); redaction; correlation propagation. | **Not owner-approved and not substituted.** No audit record is written today. Mutations cannot succeed outside tests only because the deny-all permission gate denies every call; that is not audit evidence. The audit-write path that blocks the mutation when the record cannot be written is a separate delivery (DL-5) and acceptance condition (BG-11). Planned audited operations: create, update, triage, route, denial/failure; archive and export events are out of slice 1; the payload allow-list excludes every PHI/PII field. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **open; no build/test substitute** |
 | `PVG-MOD0230-WorkflowTransitionGate-v1` | MOD-0023 Workflow/Inbox owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgWorkflowTransitionGate` with `DenyAllWorkflowTransitionGate` | n/a - MOD-0023 contract does not exist | Missing - required proof: gate runs before commit; blocked, unavailable, missing queue, missing assignment policy, missing reason code, tenant/object mismatch, or unapproved `NotApplicable` prevents lifecycle mutation. | Missing - required tests: gate-before-commit, allowed/blocked/not-applicable, outage, missing queue/assignment policy, cross-tenant denial, reason-code validation, correlation propagation, and no-PHI workflow event/log/error checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllWorkflowTransitionGate` denies unconditionally. This row continues to **block operational runtime** until MOD-0023 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
 | `PVG-MOD0230-EvidenceLink-v1` | MOD-0031 Evidence-Link owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgEvidenceLinkPort` with `DenyAllEvidenceLinkPort` | n/a - MOD-0031 contract does not exist | Missing - required proof: missing required evidence or unavailable Evidence-Link blocks triage, route, archive/void, or handoff unless MOD-0031 owner approves a durable pending-evidence state; no fake pack or duplicated content. | Missing - required tests: link/query shape, completeness, outage, cross-tenant denial, link/unlink audit, correlation propagation, workflow handoff blocked on missing evidence, no duplicated document content, and no-PHI evidence-content checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllEvidenceLinkPort` denies unconditionally. This row continues to **block operational runtime** until MOD-0031 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
@@ -356,7 +455,7 @@ contract unless the owner explicitly approves the named artifact/version and sup
 | Required approval artifact | Who must approve | Evidence reviewers must supply | What cannot count as approval | Exact condition to mark approved |
 |---|---|---|---|---|
 | `PVG-MOD0230-RBAC-Contract v1` | MOD-0018 / AuthService / Platform access governance | Approver, approval date, artifact/link, approved version, RBAC deny proof, role/action allow-deny tests, cross-tenant denial, platform/partner/tenant actor behavior, seed/grant ownership proof, no delete/bulk-delete proof | Packet recorded only, draft matrix, informal email, unversioned notes, partial permission list, approval by the PVG package owner | All evidence fields are supplied and owner explicitly approves MOD-0230 `ready-for-dev` consumption |
-| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Approver, approval date, artifact/link, version, all 16 field rules, missing-policy fail-closed proof, raw PHI/PII/free-text leak tests, list/detail/create/update/export/audit tests | Sensitivity vocabulary alone, draft field matrix, generic masking standard, untested policy | Owner-approved artifact proves allow/mask/omit/deny behavior and tests pass for every required surface |
+| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Approver, approval date, artifact/link, version, rules for every field of "Entity Fields" (32 user-entered since revision 04, plus the system-set fields), missing-policy fail-closed proof, raw PHI/PII/free-text leak tests, list/detail/create/update/export/audit tests | Sensitivity vocabulary alone, draft field matrix, generic masking standard, untested policy | Owner-approved artifact proves allow/mask/omit/deny behavior and tests pass for every required surface |
 | `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | Approver, approval date, artifact/link, version, append/event shape, outage fail-closed/outbox proof, redaction proof, create/update/triage/route/archive/export/denial tests, single-record read audit test and its write-failure behaviour (AUD-001 §7) | Generic audit capability, unapproved event names, audit notes without failure-mode proof, an in-memory audit intent, approval by the PVG package owner | Owner approves the PVG event contract and required audit/outage/redaction tests are supplied |
 | `PVG-MOD0230-WorkflowTransitionGate-v1` | MOD-0023 Workflow/Inbox owner | Approver, approval date, artifact/link, version, gate-before-commit proof, queue/assignment/reason-code behavior, outage and blocked transition tests, cross-tenant denial, no-PHI workflow event/log/error proof | Draft workflow states, queue names without owner approval, untested `NotApplicable` behavior | Owner approves the transition gate contract and all blocked/unavailable/missing-policy paths fail closed |
 | `PVG-MOD0230-EvidenceLink-v1` | MOD-0031 Evidence-Link owner | Approver, approval date, artifact/link, version, link/query shape, completeness rules, outage behavior, cross-tenant denial, link/unlink audit, no duplicated content, no-PHI evidence-content tests | Fake evidence pack, duplicated documents, live URL references as authority, generic evidence-link notes | Owner approves the EvidenceLink contract and evidence completeness/outage behavior is test-proven |
@@ -370,7 +469,8 @@ contract unless the owner explicitly approves the named artifact/version and sup
 - Use **Blueprint MOD-0040 / TRACE-BUNDLE** for canonical ID, external ID, correlation header, trace stitching, and
   regulated error-model decisions.
 - Use **MOD-0288 Organization, Person & Position Directory** only if MOD-0230 routing, assignment, or search
-  explicitly consumes organization/person/position references.
+  explicitly consumes organization/person/position references. Since revision 04 it does: the company recipient
+  (AL-2) and the employee reporter (AL-6) are MOD-0288 person ids, read under an owner contract that is still open.
 - Do **not** reference legacy deprecated repo `MOD-0040` as the organization/person source. In this repo,
   organization/person/position ownership is canonicalized to MOD-0288.
 
@@ -603,7 +703,7 @@ Declaring `data_mode: server` and the table attribute does not make the list ser
 `buildListUrl` sends `pageNumber=1` and `pageSize=100` on every request and the API returns no total counts, so records
 beyond the first 100 are unreachable (G-16). The fix is measured by BG-20 (screen, DL-7) and BG-19 (API counts, DL-4).
 
-The create/edit field count is 16, so MOD-0230 follows Golden Reference Compact:
+The create/edit field count is 32 (16 before revision 04; see "Entity Fields"), so MOD-0230 follows Golden Reference Compact:
 
 - `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` (MVC proxy; 10 actions).
 - `Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`,
@@ -658,7 +758,24 @@ Route succeed by inventing a queue list must be rejected in review.
 | PatientSubjectCode | No | Max 64 chars; pseudonymous code only; no whitespace; must not contain the at-sign character or more than 2 consecutive digit groups resembling a national identifier | Not indexed | Rejected if it fails the pseudonymity pattern | PHI; never returned or audited raw without an approved policy |
 | EventOnsetDate | No | Date-only; not in the future; not before 1900-01-01; must be on or before `ReceivedAtUtc` date | Not indexed | Cross-field check against `ReceivedAtUtc` | PHI; mask/omit by actor policy |
 | AdverseEventNarrative | Yes | Max 8000 chars; required non-empty after trim | Not indexed; **excluded from any text index** | Length and non-empty check | PHI; raw free text prohibited in logs/traces/metrics/audit payloads and error responses |
-| SuspectProductText | No | Max 512 chars | Not indexed | Length check only until a terminology contract exists | regulated-safety; omit/deny if unapproved |
+| ~~SuspectProductText~~ | - | Replaced by `ProductLines` (revision 04, AL-1); its 512-character limit carries over to `ProductNameAsReported` | - | - | - |
+| ProductLines | No at Create; at Triage a `Valid` result needs at least one line with role `Suspect` | 0 ... 20 lines (EK-5) | Not indexed | Line count check; triage cross-check with `ValiditySuspectProduct` / `ValidityResult` | regulated-safety |
+| ProductLines[].ProductRole | Yes on every line | Controlled option set `Suspect`, `Concomitant` | Not indexed | Value must exist in the PVG lookup; unknown value rejected 400 | regulated-safety |
+| ProductLines[].ProductNameAsReported | Yes on every line | Max 512 chars (carried from `SuspectProductText`); required non-empty after trim; kept even when `GlobalProductId` is set | Not indexed; **excluded from any text index** | Length and non-empty check | regulated-safety; free text never in logs/traces/metrics/audit payloads/error responses |
+| ProductLines[].GlobalProductId | No | MOD-0290 Global Product id; optional | Not indexed | **Before the MOD-0290 read contract: a non-empty value is rejected (fail closed).** After it: the id must resolve in MOD-0290 for the tenant, otherwise rejected with a safe reason code | regulated-safety; no copy of MDM data beyond the id |
+| ProductLines[].PresentationGskuId | No | Allowed only when `GlobalProductId` is set on the same line | Not indexed | Same fail-closed rule as `GlobalProductId`; after the contract: the GSKU must belong to that product | regulated-safety |
+| ProductLines[].LotNumber | No | Max 64 chars (EK-5); trimmed | Not indexed | Length check | regulated-safety; never in audit payloads |
+| AwarenessAtUtc | Yes at Create (EK-2) | UTC instant; default value `ReceivedAtUtc`, an earlier moment may be chosen; `AwarenessAtUtc` <= `ReceivedAtUtc`; same bounds as `ReceivedAtUtc` (not later than server time + 5 min skew, not before 1900-01-01) | Not indexed (planned index decision deferred to MOD-0233 reporting needs) | Server re-normalizes to UTC; awareness later than received rejected 400 with its own reason code; trust policy for the timestamp waits for QPPV (QPPV-02) | regulated-safety; server-side UTC normalization is mandatory |
+| CompanyRecipientPersonId | Yes at Create from the MOD-0288 read contract on | MOD-0288 person id. Default on a case opened by hand: the MOD-0288 person of the PV user who opens it; changeable | Not indexed | **Before the MOD-0288 read contract: a supplied value is rejected, the field is not required.** After it: the id must resolve in MOD-0288 for the tenant; no person linked to the user -> no default, the user selects | confidential |
+| EventCountry | Yes at Create | One code from the Platform reference country list, or the PVG value "unknown" | Not indexed | **Until the country source is settled ("Required Interface Contracts"): only "unknown" is accepted; any other code is rejected.** After it: the code must exist in that list. No hardcoded country list in code or UI | regulated-safety |
+| ReportType | Yes at Create | Controlled option set `Spontaneous`, `Study`, `Literature`, `Solicited`, `Other` (values wait for QPPV) | Planned index `(TenantId, ReportType)` | Value must exist in the PVG lookup; unknown value rejected 400 | regulated-safety |
+| ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | Yes at Triage, absent at Create (after QPPV confirms AL-5) | Boolean each. `ValiditySuspectProduct = true` requires at least one product line with role `Suspect`; `ValidityReporterIdentifiable = true` requires a linked reporter or at least one reporter identifier | Not indexed | Cross-field checks; a value at Create is rejected | regulated-safety |
+| ValidityResult, ValidityMissingCriteria | System, set at Triage | `Valid` when all four criteria hold, otherwise `InvalidFollowUpRequired` with the missing criteria codes; a client-supplied value is rejected | Planned index `(TenantId, ValidityResult)` | Derived on the server only | regulated-safety; an invalid record is never deleted (no delete surface exists) |
+| ReporterSource | Yes at Create (system) | `Crm` / `PersonDirectory` / `Manual` | Not indexed | **Before the MOD-0150 / MOD-0288 read contracts: only `Manual` is accepted** | public-metadata |
+| ReporterSourceId | Required for `Crm` / `PersonDirectory`, absent for `Manual` | CRM contact id or MOD-0288 person id | Not indexed | Must resolve in the owner's read contract; otherwise rejected (fail closed). Reporter = company recipient only with the consumer / employee reporter type | PII; reporter identifier - never in logs/traces/metrics/audit payloads |
+| ReporterNameOrInitials | No at Create | Max 128 chars (EK-5); trimmed | Not indexed | Length check; copied from the source on a link | PII; deny/mask/omit when field policy is unavailable |
+| ReporterProfession | No | Max 128 chars (EK-5); trimmed | Not indexed | Length check; copied from the source on a link | PII; deny/mask/omit when field policy is unavailable |
+| ReporterCountry | No | Same list as `EventCountry`. **Until the MOD-0048 owner delivers the approved list: only the PVG "unknown" value is accepted (EK-1).** After it: a code from that list (BG-26) | Not indexed | As `EventCountry` | PII (snapshot) |
 | Seriousness | Yes | Controlled option set | Planned index `(TenantId, Seriousness)` | Value must exist in the PVG lookup | regulated-safety |
 | IntakePriority | Yes | Controlled option set; SLA linkage deferred to MOD-0023 | Planned index `(TenantId, IntakePriority)` | Value must exist in the PVG lookup; no SLA is computed in slice 1 | regulated-safety |
 | TriageOutcome | Yes at Triage, absent at Create | Controlled option set: `Triaged`, `Rejected`, `Duplicate` | Planned index `(TenantId, TriageOutcome)` | Transition must return `Allowed` from `IPvgWorkflowTransitionGate.EvaluateAsync` **before** commit (today the deny-all gate denies every triage) | invalid or unapproved transition fails closed |
@@ -692,6 +809,14 @@ Option-set ownership recorded for draft planning for future validation and UI co
 | IntakePriority | PVG lookup plus workflow/SLA policy owner | Workflow/reference-owned |
 | TriageOutcome | MOD-0023 Workflow/Inbox transition contract plus PVG state model | Workflow-owned |
 | RouteTargetQueue | MOD-0023 Workflow/Inbox queue registry, possibly backed by reference service | Workflow/reference-owned |
+| ReportType (revision 04, AL-4) | PVG-controlled lookup; values confirmed by QPPV | Static controlled PVG lookup (values pending QPPV) |
+| ProductRole (revision 04, AL-1) | PVG-controlled lookup (`Suspect`, `Concomitant`) | Static controlled PVG lookup |
+| ReporterSource (revision 04, AL-6) | PVG system values (`Crm`, `PersonDirectory`, `Manual`); not user-editable | PVG-owned system enumeration |
+| ValidityResult and missing-criteria codes (revision 04, AL-5) | PVG state model; criteria confirmed by QPPV | PVG-owned, derived (pending QPPV) |
+| EventCountry, ReporterCountry (revision 04, AL-3, AL-6) | Platform reference data country list (source open, "Required Interface Contracts"); "unknown" is a PVG value | Reference-owned, read-only |
+| GlobalProductId, PresentationGskuId (revision 04, AL-1) | MOD-0290 Product / Item / SKU Master | MDM-owned reference, read-only |
+| ReporterSourceId (revision 04, AL-6) | MOD-0150 CRM contact or MOD-0288 person | CRM- / directory-owned reference, read-only |
+| CompanyRecipientPersonId (revision 04, AL-2) | MOD-0288 person directory | Directory-owned reference, read-only |
 
 Static controlled PVG lookups may be planned as PVG-owned reference data only after the approved reference-data
 publication path is selected. Workflow/reference-owned option sets must fail closed when the owning contract is
@@ -736,6 +861,12 @@ until then).
   - Expected: fail-closed or explicitly degraded behavior; no fake evidence pack.
 - **Workflow/Inbox unavailable**
   - Expected: triage/routing transition blocked; no untraceable routing.
+- **Product, person, or country read unavailable, or an id that cannot be verified (revision 04)**
+  - Expected: the request carrying that id or code is rejected with a safe reason code and no field value; text-only
+    product lines, a manual reporter, and the "unknown" country stay possible; no invented or hardcoded list. Today: no
+    such field and no read exist (G-17 ... G-22).
+- **Awareness later than received (revision 04)**
+  - Expected: 400 with its own reason code; no record created or changed.
 - **Audit write fails**
   - Expected: regulated mutation not committed; result not `Succeeded`; store unchanged (AUD-001 K2). Today: no audit
     write exists (G-5).
@@ -805,7 +936,13 @@ Initial role / permission matrix - **proposal** (not approved; MOD-0018 owner ap
 
 PVG System Integration: no system-to-system intake contract is written. The CRM visit-report adverse-event request
 `execution/domains/pharmacovigilance/work-packs/REQ-PVG-CRM-01-visit-report-adverse-event-msl.md` (2026-10-21, open,
-deferred) asks for one; this pack only references it and defines no contract.
+deferred) asks for one; this pack only references it and defines no contract. Since revision 04 the fields such a
+contract would fill exist in "Entity Fields" (AL-6 path 1: awareness moment, company recipient, CRM reporter link,
+Global Product id); the contract itself stays deferred and needs operational runtime approval.
+
+Revision 04 adds no permission key: the new fields are read and written under the existing `read`, `create`,
+`update`, and `triage` keys. Reading MOD-0290, MOD-0150, and MOD-0288 data needs those owners' read authorization,
+which their contracts settle ("Required Interface Contracts"); this pack grants nothing in their namespaces.
 
 Open authorization decisions:
 
@@ -833,9 +970,9 @@ Event names below are proposals.
 
 | Command | Event name (proposal) | Object (type) | Path | Before/after or changed fields | Exception class + reason |
 |---|---|---|---|---|---|
-| `CreateIntakeDraftCommand` | `pvg.case-intake.created` | SafetyCaseIntake | none today - dependency: K4 forwarder (path `b`) + MOD-0021 contract | After: status, IntakeChannel, SourceType, ReporterType, Seriousness, IntakePriority (taxonomy codes only) | - (K2 class) |
-| `UpdateIntakeDraftCommand` | `pvg.case-intake.updated` | SafetyCaseIntake | none today - same dependency | Before/after of changed taxonomy-coded fields only | - (K2 class) |
-| `TriageIntakeDraftCommand` | `pvg.case-intake.triaged` | SafetyCaseIntake | none today - same dependency | Before/after: status, TriageOutcome, triage reason code | - (K2 class) |
+| `CreateIntakeDraftCommand` | `pvg.case-intake.created` | SafetyCaseIntake | none today - dependency: K4 forwarder (path `b`) + MOD-0021 contract | After: status, IntakeChannel, SourceType, ReporterType, Seriousness, IntakePriority (taxonomy codes only); since revision 04 also ReportType, EventCountry code, ReporterSource, CompanyRecipientPersonId, and per product line ProductRole, GlobalProductId, PresentationGskuId (codes and ids only) | - (K2 class) |
+| `UpdateIntakeDraftCommand` | `pvg.case-intake.updated` | SafetyCaseIntake | none today - same dependency | Before/after of changed taxonomy-coded fields and of the revision 04 codes and ids listed for create; for any other changed field (for example `AwarenessAtUtc`, `LotNumber`, `ProductNameAsReported`, the reporter snapshot, a reporter link made by the one-time CRM search) the field name only | - (K2 class) |
+| `TriageIntakeDraftCommand` | `pvg.case-intake.triaged` | SafetyCaseIntake | none today - same dependency | Before/after: status, TriageOutcome, triage reason code; since revision 04 also the four validity criteria, ValidityResult, and the missing-criteria codes | - (K2 class) |
 | `RouteIntakeDraftCommand` | `pvg.case-intake.routed` | SafetyCaseIntake | none today - same dependency | Before/after: status, route target queue code | - (K2 class) |
 | `GetIntakeDraftByIdQuery` (**read**; `GetDraftByIdAsync`) | `pvg.case-intake.viewed` | SafetyCaseIntake | none today - dependency: the same K4 forwarder (path `b`) + MOD-0021 contract (OD-PVG-9); central path `a` / `b` only, path `c` (equivalent trail) is not allowed for reads (AUD-001 §7) | Read: object type and id, actor, server-resolved tenant, correlation id, UTC time, outcome; no field value | - (AUD-001 §7: a patient-safety record - a pharmacovigilance case - opened singly) |
 
@@ -858,8 +995,14 @@ personal data (export is out of slice 1), so none of the three §7 classes appli
   PVG's own tests.
 
 Never written to the audit record: `ReporterContactSummary`, `PatientSubjectCode`, `EventOnsetDate`,
-`AdverseEventNarrative`, `SuspectProductText`, `TriageReason` free text, raw `SourceReference`, tokens, tenant values
-beyond the server-resolved tenant key.
+`AdverseEventNarrative`, `TriageReason` free text, raw `SourceReference`, tokens, tenant values beyond the
+server-resolved tenant key; since revision 04 also every value of `ProductLines[].ProductNameAsReported` (replaces
+`SuspectProductText`), `ProductLines[].LotNumber`, `AwarenessAtUtc`, `ReporterSourceId` (a reporter identifier,
+"Runtime Constraints"), and the rest of the reporter snapshot (`ReporterNameOrInitials`, `ReporterProfession`,
+`ReporterCountry`). Revision 04 payload rule: only taxonomy codes and ids enter the audit payload; a snapshot,
+as-reported text, or contact data never does - a change to such a field is recorded by field name only. The revision
+adds no write command and no read row; the one-time CRM search runs inside Create / Update (DL-2) and is audited as
+part of that command.
 
 ## Gateway / API Routing Decision
 
@@ -917,7 +1060,7 @@ acceptance record.
 - [x] DCP-002 preflight passed for MOD-0230.
 - [x] W-3A0 dependencies are recorded as production blockers, not waived.
 - [x] No operational runtime implementation is authorized.
-- [x] Form field count recorded as `16`.
+- [x] Form field count recorded as `16` (planning value; `32` since revision 04, 2026-10-22).
 - [x] Golden Reference recorded as `compact`.
 - [x] Shell recorded as `tenant`.
 - [x] Entity base recorded as `EntityBase` for the dedicated PVG service boundary.
@@ -1039,6 +1182,93 @@ command or test shows the stated result. Items that depend on an open decision c
       read with the record is sent back on save, triage, and route, and a 409 version conflict shows the
       controlled-failure alert - test `pvg form sends the record version and shows a conflict as a controlled failure`.
 
+**Intake fields - revision 04 (AL-1 ... AL-7, decision record
+`docs/records/decisions/2026-10/pvg-mod0230-intake-fields-01.md`; added 2026-10-22).** Tests in
+`tests/Diten.PvgService.RegPvBase.Tests` unless stated; names required. Items that depend on another owner or on QPPV
+say "after ..." and cannot be checked before that approval is recorded.
+
+- [ ] BG-21 (DL-2) - Product list (AL-1, G-17): `PvgIntakeField` and `SafetyCaseIntake` carry no `SuspectProductText`
+      and carry the product list; a create with zero product lines passes field validation - test
+      `Create_without_product_lines_passes_field_validation`; a line without `ProductNameAsReported` is rejected with a
+      reason code and no field value - test `Product_line_without_as_reported_name_is_rejected`; a role outside
+      `Suspect` / `Concomitant` is rejected - test `Product_line_role_outside_option_set_is_rejected`; a GSKU without a
+      Global Product id on the same line is rejected - test `Product_line_gsku_without_global_product_is_rejected`; while
+      the MOD-0290 read contract is absent, a non-empty `GlobalProductId` is rejected (fail closed) - test
+      `Product_line_global_product_id_is_rejected_while_MOD0290_contract_is_absent`. The shape test
+      `PvgApplicationContractShapeTests` pins the new field set.
+- [ ] BG-22 (DL-2; after the MOD-0290 owner read contract) - A `GlobalProductId` that does not resolve for the tenant
+      is rejected - test `Product_line_with_unresolved_global_product_id_is_rejected`; a GSKU that does not belong to
+      the line's product is rejected - test `Product_line_gsku_of_another_product_is_rejected`; MOD-0290 unavailable ->
+      the line is rejected with a safe reason code, a text-only line still passes - test
+      `Product_read_unavailable_rejects_linked_line_and_keeps_text_only_line`.
+- [ ] BG-23 (DL-2) - Awareness moment and the recipient before MOD-0288 (AL-2, G-18): missing `AwarenessAtUtc` is rejected - test
+      `Create_without_awareness_is_rejected`; an `AwarenessAtUtc` equal to `ReceivedAtUtc` (the default value)
+      and an earlier chosen moment are both stored unchanged (EK-2) - test
+      `Awareness_equal_to_received_default_or_earlier_is_stored_unchanged`;
+      `AwarenessAtUtc` later than `ReceivedAtUtc` is rejected with its own
+      reason code - test `Awareness_later_than_received_is_rejected`; an offset value is stored as UTC - test
+      `Awareness_with_offset_is_normalized_to_utc`; while the MOD-0288 read contract is absent, a supplied
+      `CompanyRecipientPersonId` is rejected and none is required - test
+      `Company_recipient_is_rejected_while_MOD0288_contract_is_absent`. The trusted-timestamp policy is not part of
+      this item (QPPV-02).
+- [ ] BG-24 (DL-2; after the MOD-0288 owner read contract) - Company recipient and employee reporter (AL-2, AL-6): a
+      manual create without a recipient gets the MOD-0288 person of the acting user - test
+      `Manual_create_defaults_company_recipient_to_acting_users_person`; a chosen recipient replaces the default - test
+      `Chosen_company_recipient_replaces_the_default`; an unresolved person id is rejected - test
+      `Unresolved_company_recipient_is_rejected`; a reporter equal to the company recipient is rejected unless the
+      reporter type is consumer / employee - test `Reporter_equal_to_company_recipient_requires_consumer_or_employee_type`.
+- [ ] BG-25 (DL-2) - Event country before the source is settled (AL-3, G-19): missing `EventCountry` is rejected - test
+      `Create_without_event_country_is_rejected`; the "unknown" value is accepted - test
+      `Event_country_unknown_is_accepted`; any other code is rejected - test
+      `Event_country_code_is_rejected_while_country_source_is_unsettled`; `grep` over the MOD-0230 service and
+      frontend paths finds no hardcoded country list.
+- [ ] BG-26 (DL-2; after the country source is settled with the MOD-0048 owner, see "Required Interface Contracts") -
+      `EventCountry` and `ReporterCountry` accept exactly the codes of that list plus, for `EventCountry`, "unknown" -
+      test `Event_country_accepts_reference_list_codes_and_unknown`; list unavailable -> a code other than "unknown" is
+      rejected with a safe reason code - test `Country_list_unavailable_rejects_codes_other_than_unknown`.
+- [ ] BG-27 (DL-2; the five values count as approved only after QPPV confirms them) - Report type (AL-4, G-19): missing
+      `ReportType` is rejected - test `Create_without_report_type_is_rejected`; a value outside the PVG option set is
+      rejected - test `Report_type_outside_option_set_is_rejected`.
+- [ ] BG-28 (DL-2; after QPPV confirms AL-5) - Validity result (AL-5, G-20): triage with all four criteria and at least
+      one `Suspect` line gives `Valid` - test `Triage_with_four_criteria_and_suspect_product_is_valid`; without a
+      `Suspect` line `ValiditySuspectProduct = true` is rejected - test
+      `Suspect_product_criterion_without_suspect_line_is_rejected`; a missing criterion gives `InvalidFollowUpRequired`
+      with that criterion's code - test `Missing_criterion_gives_invalid_with_missing_criterion_code`; the invalid record
+      is still returned by `GetDraftByIdAsync` after triage - test `Invalid_case_remains_a_record_after_triage`; a
+      client-supplied `ValidityResult` is rejected - test `Client_supplied_validity_result_is_rejected`.
+- [ ] BG-29 (DL-2) - Reporter record (AL-6, G-21): a manual reporter with no identifier is accepted at create - test
+      `Manual_reporter_without_identifier_is_accepted_at_create`; `ReporterSource = Crm` or `PersonDirectory` without
+      `ReporterSourceId` is rejected - test `Linked_reporter_without_source_id_is_rejected`; a `Manual` reporter with a
+      source id is rejected - test `Manual_reporter_with_source_id_is_rejected`; while the MOD-0150 / MOD-0288 read
+      contracts are absent only `Manual` is accepted - test
+      `Linked_reporter_source_is_rejected_while_owner_contracts_are_absent`.
+- [ ] BG-30 (DL-2; after the MOD-0150 owner read contract) - CRM link, snapshot, and the one-time search (AL-6): linking
+      a CRM contact stores the id and a snapshot; a later change of the CRM record does not change the case - test
+      `Linked_reporter_snapshot_does_not_change_when_source_changes`; editing a copied snapshot field on the case
+      (EK-4) leaves the source record and `ReporterSourceId` unchanged and writes only the field name, no value, to the
+      audit record - test `Edited_snapshot_field_keeps_source_and_link_and_audits_field_name_only`; a typed reporter
+      is searched in CRM exactly once, inside the completing Create / Update command - test
+      `Typed_reporter_is_searched_in_crm_once_on_save`; an ambiguous match links nothing - test `Ambiguous_crm_match_links_nothing`; no background job is registered (existing
+      host composition tests stay green).
+- [ ] BG-31 (DL-4; after DL-2 BG-21, BG-23, BG-25, BG-27, BG-29) - API (G-17 ... G-21): create and update request
+      records carry the revision 04 user-entered fields; item responses return them through the field-security port;
+      `ValidityResult`, `ValidityMissingCriteria`, and `ReporterSource` are response-only (a request value is rejected
+      400); a validation failure on a revision 04 field returns its reason code and no field value. Tests in
+      `Diten.PvgService.Api.Tests`: `Post_with_revision04_fields_round_trips_codes_and_ids`,
+      `Post_with_client_validity_result_is_rejected`, `Validation_failure_on_revision04_field_returns_code_without_value`.
+- [ ] BG-32 (DL-7; field inputs after DL-4 BG-31; pickers after the MOD-0290, MOD-0150, and MOD-0288 owner read
+      contracts and the country-source decision) - Screen: `_Form.cshtml` has the product list, awareness, company
+      recipient (prefilled with the acting user's person, changeable), event country with "unknown", report type, and
+      the reporter search with a manual path; the triage form has the four criteria; no option list (country, report
+      type, product role) is hardcoded in views or JS; pickers call only the same-origin MVC proxy; every new label
+      exists in all seven `CaseIntakeTriageIndex.*.resx` files (BG-15). Tests in
+      `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`: `pvg form posts the product lines and reporter
+      source`, `pvg form prefills the company recipient and allows a change`, `pvg pickers call only the mvc proxy`.
+- [ ] BG-33 (DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract) -
+      Audit payload of the revision 04 fields ("Audited Events"): create, update, and triage records carry only the
+      listed codes and ids; no as-reported text, lot number, awareness value, reporter source id, or snapshot value -
+      test `Audit_payload_carries_no_reporter_snapshot_or_as_reported_text`.
+
 **Operational runtime gate (all open - do not check without owner evidence):**
 
 - [ ] MOD-0018 owner signs `PVG-MOD0230-RBAC-Contract v1`.
@@ -1051,6 +1281,8 @@ command or test shows the stated result. Items that depend on an open decision c
 - [ ] Port allocated in `AGENTS.md` §3.
 - [ ] All non-production port adapters and the `Pvg:Runtime:UseNonProductionAdapters` switch are removed from the environment.
 - [ ] MOD-0230 operational runtime authorization is granted and the runtime flag is bound to it.
+- [ ] Revision 04: the MOD-0290, MOD-0150, and MOD-0288 owners sign their read contracts, the country-list source is
+      settled with the MOD-0048 owner, and QPPV confirms the AL-2 timestamp trust, the AL-4 values, and AL-5.
 
 ## MOD-0230 Runtime Authorization Packet (Draft / Not Approved)
 
@@ -1092,8 +1324,10 @@ operational fields are **not produced by BE-01 or BE-02** and must not be treate
 
 - intake/source context such as `IntakeChannel`, `SourceType`, `SourceReference`, and `ReporterType`
 - restricted PHI/PII context such as `ReporterContactSummary`, `PatientSubjectCode`, `EventOnsetDate`,
-  `AdverseEventNarrative`, and `SuspectProductText`
+  `AdverseEventNarrative`, and `SuspectProductText` (replaced by the product list in revision 04)
 - regulated safety context such as `Seriousness`, `IntakePriority`, `TriageReason`, and workflow lifecycle metadata
+- the revision 04 intake fields (product list, `AwarenessAtUtc`, `CompanyRecipientPersonId`, `EventCountry`,
+  `ReportType`, the validity criteria and result, reporter source, link, and snapshot)
 - workflow instance / assignment metadata beyond the v0.1 `RouteTargetQueueCode` reference
 - evidence completeness status or evidence-pack content beyond v0.1 reference IDs
 
@@ -1118,6 +1352,8 @@ All gates below must be owner-approved and evidence-backed before MOD-0230 opera
 - [ ] Startup fail-closed policy approved (OD-PVG-5) and the runtime flag bound to approval evidence (OD-PVG-6).
 - [ ] No-PHI/PII logs, traces, metrics, audit metadata, validation errors, and regulated errors proof supplied.
 - [ ] Tenant isolation proof supplied, including the Gateway-service context contract (OD-PVG-2).
+- [ ] Revision 04 read contracts (MOD-0290, MOD-0150, MOD-0288), the country-list source (MOD-0048), and the QPPV
+      confirmations for AL-2, AL-4, and AL-5 recorded.
 
 ### Allowed Paths After Explicit Runtime Approval
 
@@ -1191,6 +1427,14 @@ Behaviour that the suites must cover (each with at least one named test):
   scope.
 - Concurrency 409 (BG-12 store and application, BG-19 API, BG-20 screen).
 - List paging beyond 100 records with correct total and filtered counts (BG-19 API, BG-20 screen).
+- Revision 04 intake fields (2026-10-22, decision record `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-01.md`):
+  product list and the MOD-0290 fail-closed rule (BG-21, BG-22); awareness <= received and the recipient
+  (BG-23, BG-24); event country with "unknown" and no hardcoded list (BG-25, BG-26); report type (BG-27); validity
+  result, the "at least one suspect product" rule, and no deletion of an invalid record (BG-28); reporter source,
+  link, snapshot, and the one-time CRM search (BG-29, BG-30); API shape (BG-31); screen and seven-language labels
+  (BG-32); audit payload of codes and ids only (BG-33). Items marked "after ..." are measured only after that owner or
+  QPPV approval; until then their fail-closed tests (BG-21, BG-23, BG-25, BG-29) are the measurable part. The
+  existing `SuspectProductText` tests (5 test files, G-17) are changed in DL-2, not deleted without replacement.
 - REG-PV-BASE port conformance C-01 ... C-17: the document `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md`
   is committed, but its type names and configuration key are not in the code (G-12). **Until the type names are
   aligned with the code, or a C-id-to-test mapping is recorded, this criterion is unmapped and cannot be checked.**
@@ -1204,7 +1448,11 @@ Behaviour that the suites must cover (each with at least one named test):
 - [x] DCP-002 preflight passed.
 - [x] Pack status is `ready-for-dev` (2026-08-09) - **build/test gate only**.
 - [ ] Version-bound approval row for the current pack version (CT-APR-01 / CT-APR-02) - none; independent reviews 01
-      and 02 returned "UYGUN DEĞİL"; this revision (2026-10-22) needs a new review.
+      and 02 returned "UYGUN DEĞİL"; review 03 (`execution/approvals/reviews.tsv` row 4) returned "UYGUN" for version
+      `f5ca98e3`, and no approval row for that version remains: the unpushed approval-row commit and its revert were
+      dropped when the branch history was rebuilt on 2026-10-22 (approvals.tsv is append-only; the intake-fields
+      decision record names option a, which this rebuild replaced). Revision 04 (2026-10-22) changes the pack and needs
+      review 04 and a new row.
 - [x] DCP-004 promoted to `approved` / `ready-for-execution` (2026-08-09).
 - [x] W-3A0 scope per OD-2: W-3A0-Lite gates build/test; W-3A0-Full gates operational runtime.
 - [ ] MOD-0018 RBAC / permission contract - **open**. Build gate substituted by `DenyAllPermissionGate` only; no JWT
@@ -1222,10 +1470,12 @@ Behaviour that the suites must cover (each with at least one named test):
 - [x] `entity_base` recorded as `EntityBase` for the dedicated PVG service boundary.
 - [x] Create/edit user-entered fields defined and marked required/optional.
 - [x] PHI/PII/sensitive-field matrix recorded for every intake field.
-- [x] `form_field_count` recorded as `16`; `golden_reference` recorded as `compact`.
+- [x] `form_field_count` recorded as `32` (revision 04, 2026-10-22; `16` before); `golden_reference` recorded as `compact` (unchanged).
 - [x] `data_mode` declared - `server` in the frontmatter (OD-PVG-8, decided 2026-10-21).
 - [x] Validation rules recorded (max lengths, cross-field rules, planned index decisions, fail-closed behaviour).
-- [x] Option-set ownership recorded for intake, source, reporter, seriousness, priority, triage outcome, and route queue.
+- [x] Option-set ownership recorded for intake, source, reporter, seriousness, priority, triage outcome, and route queue;
+      revision 04 adds report type, product role, reporter source, validity result, country, product, and person
+      references (owners in "Option-Set Ownership").
 - [ ] Permission-key family and actor/role matrix approved - **open** (OD-PVG-1: PVG side decided
       `pvg.case-intake-triage.*` 2026-10-21; MOD-0018 owner approval pending). Corrected 2026-10-21 from "approved".
 - [ ] Backend File Convention matches Golden Reference - **no**; the measured deviation (G-11) is a documented
@@ -1238,6 +1488,9 @@ Behaviour that the suites must cover (each with at least one named test):
 - [x] Gateway route family defined per NET-001 and assigned to integration-agent.
 - [ ] Test expectations concrete - commands and thresholds listed; C-01 ... C-17 unmapped (G-12).
 - [ ] Page help texts (UXH-001) - not measured in this revision.
+- [ ] Revision 04 intake fields (AL-1 ... AL-7) - recorded in this text; not in code (G-17 ... G-22); read contracts
+      with MOD-0290, MOD-0150, MOD-0288, the country-list source, and the QPPV confirmations are open. Needs
+      independent review 04 and a new version-bound approval row.
 
 ## Implementation Notes
 
@@ -1261,6 +1514,29 @@ Behaviour that the suites must cover (each with at least one named test):
   target and evidence `Pending` wording (F-4); list paging gap G-16 with BG-19 and BG-20 (F-5); the comparison note's
   §3 items 2-4 (read row tied to OD-PVG-9, G-16, REQ-PVG-CRM-01 reference in the role matrix). No decision, approval, or
   frontmatter field changed.
+- **2026-10-22 revision 04 - intake fields AL-1 ... AL-7.** Authority: owner decision record
+  `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-01.md` (all seven rows "Evet"; AL-2 and AL-6 with
+  clarifications), prepared from the owner's questions and REQ-PVG-CRM-01. Applied in this text: product list replacing
+  `SuspectProductText` (AL-1), `AwarenessAtUtc` and the company recipient (AL-2), event country (AL-3), report type
+  (AL-4), validity criteria and result (AL-5), reporter source, link, snapshot, and the one-time CRM search (AL-6), and
+  the hand-off of later items to MOD-0231 / MOD-0233 / an E2B FU (AL-7, "Follow-up Items"). Frontmatter: only
+  `form_field_count` changed (16 -> 32); `golden_reference: compact` unchanged (threshold not crossed). Not applied
+  until recorded: QPPV (AL-2 timestamp trust, AL-4 values, AL-5), MOD-0290, MOD-0150, and MOD-0288 read contracts; each
+  dependent acceptance item says "after ...". New measured gaps G-17 ... G-22; new acceptance items BG-21 ... BG-33. The
+  pack version `f5ca98e3` reviewed in review 03 is superseded; no approval row for it remains (unpushed commits dropped
+  in the 2026-10-22 branch rebuild; approvals.tsv is append-only); review 04 and a new approval row are required.
+  The five points the first record did not settle are decided by the owner in
+  `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-02.md` (2026-10-22): the country-list source (EK-1, with
+  the AL-3 correction - AL-3 needs the MOD-0048 owner's approval; until the approved ISO 3166-1 alpha-2 list arrives,
+  `EventCountry` and `ReporterCountry` accept only "unknown"); `AwarenessAtUtc` required at create with default
+  `ReceivedAtUtc` and an earlier moment allowed (EK-2); a reporter with no identifier accepted at create and invalid at
+  triage (EK-3); an editable snapshot with field-name-only audit, source unchanged, link kept (EK-4, DL-2); and the
+  limits 20 product lines, `LotNumber` 64, reporter name and profession 128 characters (EK-5; review 04 assesses
+  them). Still open: the QPPV confirmations (EK-2 trusted timestamp QPPV-02, EK-3 with AL-5) and the MOD-0048 owner's
+  approval of the country list (EK-1). Regulatory statements stay general information, QPPV-verified.
+- **MOD-0231 validity field (fact only).** MOD-0231's `SignalMinimumAssessment` carries `CaseValidityStatus` and
+  `CaseValidityReason` (G-20). How MOD-0231 consumes the MOD-0230 validity result is the MOD-0231 pack's matter
+  (XMC-001); this pack changes nothing there.
 - **Platform.Common is not consumed.** The 2026-08-09 text said several contracts were "consumed directly from merged
   `Diten.Platform.Common`". No PvgService project references `Diten.Platform.Common`; authorization, correlation,
   tenancy, and observability are PVG-local or absent.
@@ -1291,7 +1567,7 @@ Behaviour that the suites must cover (each with at least one named test):
 - **Domain-config wording.** Domain-config says MOD-0231 / MOD-0232 / MOD-0234 have no API host; the MOD-0230 host
   registers their application services as composition-only wiring ("Runtime Constraints"). This pack is the higher
   authority; the wording difference is recorded only.
-- Frontmatter decisions: `shell: tenant`, `entity_base: EntityBase`, `form_field_count: 16`,
+- Frontmatter decisions: `shell: tenant`, `entity_base: EntityBase`, `form_field_count: 32` (16 before revision 04),
   `golden_reference: compact`, `data_mode: server` (OD-PVG-8), `service: Diten.PvgService`, `service_port: 5011` (proposal; not allocated).
 - Route/API profile: tenant MVC route `/Pharmacovigilance/CaseIntakeTriage`, view root
   `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**`, same-origin MVC proxy, Gateway family
@@ -1312,7 +1588,10 @@ Behaviour that the suites must cover (each with at least one named test):
 
 MOD-0230's own follow-ups (other owners' work is listed under "Teslim dilimleri" as outside every slice):
 
-- Close build-gate gaps G-1 ... G-16 through slices DL-2 ... DL-8.
+- Close build-gate gaps G-1 ... G-22 through slices DL-2 ... DL-8 (G-17 ... G-22: revision 04 intake fields).
+- Revision 04: ask the MOD-0290, MOD-0150, and MOD-0288 owners for their read contracts and the MOD-0048 owner for the
+  country-list source; ask QPPV for AL-2 timestamp trust, the AL-4 values, and AL-5. Drafts only; nothing is sent by
+  this pack.
 - Record the owner answers to OD-PVG-1 ... OD-PVG-10 in this pack - done in this revision (2026-10-21). Still open:
   the other owners' approvals named for OD-PVG-1, 2, 3, 6, 7, and 9.
 - Align the port-contract document's type names and configuration key with the code, or record a C-id-to-test map (G-12).
@@ -1324,6 +1603,19 @@ Out of slice 1, requiring their own approval:
 
 - Archive / void surfaces, export surfaces, background jobs, seed data.
 - Any AI-assisted intake, extraction, summarization, or routing behaviour.
+
+Named for later modules by AL-7 (2026-10-22) - **future requirements, not that pack's decision**; they are written
+into the named pack only by its owner (MOD-0231 / MOD-0233 owners are TBD today), and MOD-0230 does not build them:
+
+- The six seriousness criteria (death, life-threatening, hospitalisation, persistent disability, congenital anomaly,
+  medically important) - MOD-0231 Case Processing. The single `Seriousness` value of MOD-0230 is for triage only.
+- Duplicate-case check - MOD-0231 (the AL-6 reporter link is its basis).
+- Regulatory due date and reporting clock - MOD-0233 Reporting & Submissions (`AwarenessAtUtc` is the input MOD-0230
+  provides).
+- Case intake via E2B(R3) - a later follow-up (FU) of MOD-0230, only by a separate owner decision; no FU identity is
+  reserved here (DCP-002).
+- Follow-up of a case - MOD-0231.
+- REQ-PVG-CRM-01 system-to-system intake contract - still deferred; it will fill the revision 04 fields (AL-6 path 1).
 
 ## Teslim dilimleri
 
@@ -1353,6 +1645,16 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   başka dilim önkoşulu yok — DL-4 (BG-19) ve DL-7 (BG-20) sürüm taşımasında DL-2'yi bekler.
   Kapsam dışı: Mongo koleksiyonu, indeks, migration; komut adlarının değiştirilmesi; API ve MVC/JS sürüm taşıması
   (DL-4, DL-7); liste toplam sayısı (DL-4). Bitiş: BG-12, BG-13; `pvg-regpv-base` 0 kırmızı.
+  Revizyon 04 alım alanları (AL-1…AL-7, G-17…G-22) bu dilimdedir: alan tanımları (`PvgIntakeField`,
+  `PvgIntakeFieldDefinition`, `SafetyCaseIntake`; `SuspectProductText` ürün listesine dönüşür), doğrulama
+  (`PvgIntakeDraftValidator.cs`, yeni neden kodları), `PvgIntakeDraftApplicationService.cs` içinde Create / Update /
+  Triage alan eşlemesi, şirket alıcısı varsayılanı, geçerlilik sonucunun türetilmesi ve elle girilen bildiren için tek
+  seferlik CRM araması (aynı komut içinde; yeni yazma komutu ve arka plan işi yok), sahip okuma sözleşmeleri
+  geldikten sonra `Application/RegPvBase/` altındaki okuma portları ve `Infrastructure/RegPvBase/` uyarlayıcıları,
+  ilgili testler ve `PvgApplicationContractShapeTests.cs`'teki alan kümesi. Önkoşul: ölçülebilir kısım (BG-21, BG-23,
+  BG-25, BG-27, BG-29) için yok; BG-22 MOD-0290, BG-24 MOD-0288, BG-26 ülke listesi kaynağı (MOD-0048), BG-28 QPPV,
+  BG-30 MOD-0150 onayından sonra. Kapsam dışı: MDM, CRM ve kişi dizinine yazma (XMC-001); sabit ülke ya da seçenek
+  listesi; MOD-0231 / MOD-0233 alanları (AL-7). Bitiş (revizyon 04): BG-21…BG-30; `pvg-regpv-base` 0 kırmızı.
 - **DL-3** — Yollar: `src/Diten.PvgService.Api/Program.cs`, `PvgServiceApiHost.cs`, `tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs`.
   Önkoşul: OD-PVG-5 kapandı (2026-10-21); BG-10 için OD-PVG-6 (PVG tarafı karar 2026-10-21; onay satırına bağlama biçimi
   Enterprise Architecture onayını bekliyor). Kapsam dışı: port tahsisi (OD-PVG-7), üretim açılışı, sırlı appsettings.
@@ -1366,12 +1668,17 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   BG-6 için OD-PVG-3 (PVG tarafı karar 2026-10-21; düzenlenmiş hata zarfı MOD-0041 / Ops onayını bekliyor); BG-19 için
   DL-2 (BG-12) — BG-19 OD-PVG-2 / OD-PVG-3'ü beklemez. Kapsam dışı: Gateway ara katmanı, izin tanımı/grant, MOD-0018 sözleşmesi;
   MVC/JS sayfalama ve sürüm taşıması (DL-7). Bitiş: BG-5, BG-6, BG-7, BG-19; `pvg-api` 0 kırmızı.
+  Revizyon 04: `PvgCaseIntakeTriageEndpoints.cs` istek ve yanıt kayıtlarında yeni alanlar (türetilmiş geçerlilik
+  sonucu ve bildiren kaynağı yalnız yanıtta) ve API testleri. Önkoşul: DL-2 (BG-21, BG-23, BG-25, BG-27, BG-29).
+  Kapsam dışı: alan doğrulaması (DL-2), ekran (DL-7). Bitiş: BG-31.
 - **DL-5** — Yollar: `PvgIntakeDraftApplicationService.cs` içindeki denetim çağrıları (dört yazma komutu ve
   `GetDraftByIdAsync` okuma denetimi), `Application/RegPvBase/` altında denetim yazıcı portu, ilgili testler, defterde yalnız
   borç satırı silme. Önkoşul: OD-PVG-9 (PVG tarafı karar 2026-10-21;
   K4 ortak iletici paketi (Control Tower) + MOD-0021 sahip sözleşmesi bekleniyor); okuma satırı aynı bağımlılığa bağlıdır, ayrı karar açılmadı.
   Kapsam dışı: ileticinin ya da merkezi günlüğün yapımı; liste okumasının denetimi (AUD-001 §7 sınıfı değil).
   Bitiş: BG-11, BG-18 (tekil açılış okuma denetimi); `AuditTrailStandardTests` yeşil ve borç listesi küçülmüş.
+  Revizyon 04: yeni alanların denetim yükü yalnız taksonomi kodları ve kimlikler ("Audited Events"); aynı önkoşul.
+  Bitiş: BG-33.
 - **DL-6** — Yollar: `PvgIntakeDraftApplicationService.cs` satır 7–11'deki izin sabitleri,
   `tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs`. Önkoşul: OD-PVG-1 (PVG tarafı karar 2026-10-21,
   hedef `pvg.case-intake-triage.*`; MOD-0018 / AuthService katalog-grant ve `pvg.*` ad alanı onayı bekleniyor).
@@ -1387,6 +1694,12 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   Bilinen sapma (OD-PVG-10): toplu silme, dışa aktarma, içe aktarma, tümünü seç ve bağlantıları (reload-with-toast,
   clear-selection) - doğrulayıcının 13 maddesi; kalan beş madde (veri modu, `_TableSkeleton`, `_Filter` ve `_IndexL10n`
   partial'ları, form ViewModel'i) DL-7'de düzeltilir.
+  Revizyon 04: `_Form.cshtml` ve triyaj formunda yeni alanlar (ürün listesi, farkına varma anı, şirket alıcısı,
+  olay ülkesi "bilinmiyor" ile, rapor türü, bildiren arama + elle giriş, dört geçerlilik ölçütü), denetleyici form
+  girdileri, `form.js` / `details.js`, yedi dilde yeni etiketler, seçiciler (ürün, kişi, ülke) yalnız aynı kökenli MVC
+  vekili üzerinden. Önkoşul: alan girdileri için DL-4 (BG-31); seçiciler için MOD-0290, MOD-0150, MOD-0288 okuma
+  sözleşmeleri ve ülke listesi kaynağı. Kapsam dışı: servis tarafı doğrulama (DL-2); seçicilerin veri kaynağı yeni
+  bir Gateway route'u isterse o DL-8 / integration-agent işidir ve bu revizyonla yetkilendirilmez. Bitiş: BG-32.
 - **DL-8** — Yollar: `gateway/Diten.ApiGateway/ocelot.json` içindeki dört MOD-0230 route girdisi (yalnız integration-agent).
   Önkoşul: bugünkü durum için yok. Kapsam dışı: Gateway ara katmanı ve diğer route'lar.
   Bitiş: BG-16; Gateway üzerinden smoke çağrısı servisin sonucunu döndürür.
@@ -1395,7 +1708,7 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
 
 Başka sahiplerin işi (XMC-001) — hiçbir dilimde değil; bu paket bunları yapmaz, yalnız bekler:
 
-- MOD-0019 sahibi (platform-shared-services): modül paketi, sahip ve runtime; 16 alanlı hassasiyet matrisi ilk tüketici gereksinimi olarak verilir.
+- MOD-0019 sahibi (platform-shared-services): modül paketi, sahip ve runtime; "Entity Fields" hassasiyet matrisi (revizyon 04'ten beri 32 kullanıcı alanı ve sistem alanları) ilk tüketici gereksinimi olarak verilir.
 - MOD-0023 sahibi: triage durum kümesi ve route hedefi gereksinimi.
 - MOD-0031 sahibi: kanıt tamlığı gereksinimi.
 - MOD-0018 sahibi / AuthService: seçilen anahtar ailesinin katalog ve grant'ı; `pvg.*` ad alanının PKS-001 §4 tablosuna eklenmesi.
@@ -1404,4 +1717,13 @@ Başka sahiplerin işi (XMC-001) — hiçbir dilimde değil; bu paket bunları y
 - Enterprise Architecture: `AGENTS.md` §3 port tahsisi; depo sahibi: `.claude/launch.json` `web-verify` portu.
 - Uyum / yasal saklama sahibi: arşiv/iptal eklenmeden önce saklama politikası.
 - Portföy sahibi: `execution/portfolio/master-development-plan.md` ve teslim panosuna MOD-0230 satırları.
+- MOD-0290 sahibi (master-data-management): Global Ürün ve GSKU okuma sözleşmesi ve PVG okuma yetkisi (AL-1).
+- MOD-0150 sahibi (commercial-suite): CRM kişi okuma sözleşmesi, tek seferlik arama eşleşme kuralı ve PVG okuma
+  yetkisi (AL-6); kimlik kaydındaki "reserved / planned" durumunun kodla uzlaştırılması CRM'in konusudur.
+- MOD-0288 sahibi (platform-shared-services): kişi dizini okuma sözleşmesi, kullanıcıya bağlı kişinin okunması (AL-2,
+  AL-6).
+- MOD-0048 sahibi (platform-shared-services): kiracı modülünün okuyacağı ülke listesi kaynağı (AL-3); PVG için onaylı
+  ISO 3166-1 alfa-2 ülke listesi (EK-1, `pvg-mod0230-intake-fields-02.md`; liste gelene kadar yalnız "bilinmiyor").
+- QPPV: güvenilir farkına varma zaman damgası (AL-2, QPPV-02), rapor türü değerleri (AL-4), geçerlilik ölçütleri (AL-5).
+- MOD-0231 / MOD-0233 sahipleri (bugün TBD): AL-7'de adlandırılan gelecek gereksinimler; o paketlerin kararıdır.
 - Control Tower: WP-0230-03 başlığı ile WP-0230-07 denetleyici adı ve anahtar ailesinin bu paketle uzlaştırılması; PVG kuyruğundaki sahip alanının rol etiketiyle hizalanması; PVG-M1-02 inceleme notundaki iki yanlışın düzeltilmesi; WP-0230-08 manifest kararı.
