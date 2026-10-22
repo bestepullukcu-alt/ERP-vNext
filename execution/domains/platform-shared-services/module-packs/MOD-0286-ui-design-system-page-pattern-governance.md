@@ -11,10 +11,10 @@ status: draft
 build_gate: closed
 operational_runtime_gate: closed
 approval_status: none
-owner: TBD
+owner: K3
 branch: chore/ct/pss-ui-ct-01
 started: 2026-10-22
-target: TBD
+target: 2026-11-07
 form_field_count: 0
 slice: "P1 - Design System Specification (DL-1) + UI Compliance Checklist (DL-2). Documents only: no runtime page, entity, endpoint, permission or Ocelot route. P2 governance console deferred (DL-3)."
 ---
