@@ -43,7 +43,9 @@ form_field_count: 0
 | Exposure | **internal only** — not on the internet until `TrustedProxies`, Gateway rate limit (MOD-0032) and a shared limiter store exist (DC-03) | public portal |
 | Payload (§0.2) | frozen v1 wire kept (any object, no schema, no field rejection); **request body limit 1 MiB** for create (Natig, 2026-10-22), measured on the service; over the limit → 400 `INVALID_REQUEST` with `details.limitBytes` (the frozen contract declares no 413); stored as canonical JSON text + SHA-256, so `$`-prefixed or dotted keys are data, never Mongo operators | per-`submissionType` schemas, secret rejection and size/depth limits via a contract successor |
 | MOD-0147 link | none (portal-source resolution belongs to MOD-0147's risk part, after TPRM; AC-25 is a later slice) | with MOD-0147 risk |
-| Permissions | `getSupplierPortalStatus`, own list and get → `supplychain.supplier-portal.read`; create and submit → `.submit`; `.review` later. The `supplier_user` actor receives `.read`/`.submit` through the DC-03 binding pack (its role or seed — defined there). The service also checks `actor_type = supplier_user`: a company user calling `/portal/*` → 403; a `supplier_user` outside `/portal/*` is refused by the Gateway allow-list. Whether the portal re-checks the two-step-verification claim or trusts Auth is decided with the DC-03 pack | `.review` |
+| Permissions | `getSupplierPortalStatus`, own list and get → `supplychain.supplier-portal.read`; create and submit → `.submit`; `.review` later. The `supplier_user` actor receives `.read`/`.submit` through the DC-03 binding pack (its role or seed — defined there). The service also checks `actor_type = supplier_user`: a company user calling `getSupplierPortalStatus`, the own list or create →
+403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` (declared there); on own get and submit, which declare no 403, → 404 (no record is
+visible to an unmapped caller); a `supplier_user` outside `/portal/*` is refused by the Gateway allow-list. Whether the portal re-checks the two-step-verification claim or trusts Auth is decided with the DC-03 pack | `.review` |
 | Audit (§21) | path b, `supplychain-merkezi-iletim` — **valid from the moment PR #198 is on `main`**; the actor recorded is the `supplier_user` (issuer, subject, mapped supplier id) | review command |
 | UI | none in v1 (backend first, §9); the supplier screen is a later revision on the portal subdomain, 7-language scope | — |
 
@@ -51,9 +53,14 @@ form_field_count: 0
 DC-02 (MOD-0140 1.3.0 on `main`, Cihan) and the D2 decision; PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
 permission/composition single writer (§14); and the replay receipt (§0.1, needs DC-03's issuer/subject).
 
-**Own-list size (Natig, 2026-10-22):** the frozen list has no paging and returns each record with its payload, so v1 keeps at
-most **200 submissions per supplier + LE**; creating the 201st → 422 `BUSINESS_RULE_VIOLATION`. Paging comes with a contract
-successor (test T-0148-V1-CAP-01).
+**Open-draft cap (Natig, 2026-10-22, revised after review round 2):** the cap counts **only `DRAFT` records** — at most
+**200 open drafts per supplier + LE**; a create that would make the 201st draft → 422 `BUSINESS_RULE_VIOLATION` with
+`details.code = PORTAL_DRAFT_LIMIT` and `details.limit = 200`. Submitting a draft frees its place, so the cap is never a
+lifetime block. It is enforced **atomically**: the create transaction increments a per-supplier + LE counter document with a
+conditional update (`openDrafts < 200`) and submit decrements it in its own transaction, so two concurrent creates at 199
+leave at most 200 drafts. The frozen list still returns every record with its payload; it grows only by deliberate
+submissions, and paging comes with a contract successor. Tests: T-0148-V1-CAP-01 (201st draft → 422; submit frees a place;
+two concurrent creates at 199 → one 201/one 422).
 
 **Release gate (internal only, measurable):** before any deployment the evidence shows that the portal subdomain and the
 `/portal/*` routes are not published on any public ingress (Gateway route list + ingress configuration, recorded); opening
@@ -61,7 +68,7 @@ them needs `TrustedProxies`, the Gateway rate limit (MOD-0032) and a shared limi
 approval.
 
 v1 test IDs (added with this revision; the r2 test map stays unchanged): T-0148-V1-PAY-01 (any object accepted; 1 MiB + 1 →
-400; `$`-keys stored as data), T-0148-V1-PERM-01 (company user on `/portal/*` → 403; mapping of §0.0), T-0148-V1-EXP-01
+400; `$`-keys stored as data), T-0148-V1-PERM-01 (company user: status/list/create → 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED`, get/submit → 404; mapping of §0.0), T-0148-V1-EXP-01
 (release gate evidence).
 
 ## 0. Requirement status and traceability (review 2026-10-19)
@@ -267,7 +274,8 @@ shell, actor journey, exact fields, DataTable choice, golden reference, denied s
 
 Actors: authenticated `supplier_user` (DC-03) for own read/create/submit; tenant reviewer only for the later review command.
 v1 mapping (§0.0): status, own list, own get → `.read`; create, submit → `.submit`; company users are refused on `/portal/*`
-(403). Server-side permissions:
+(403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` on status, list and create; 404 on own get and submit — §0.0). Server-side
+permissions:
 
 - `supplychain.supplier-portal.read`
 - `supplychain.supplier-portal.submit`

@@ -34,7 +34,8 @@
 The CT-APR-02 review (`docs/records/reviews/MOD-0148/2026-10-22-7ba14d85.md`, KOŞULLU) found that the service has no
 explicit request-size limit (only Kestrel's 30 MB default, above MongoDB's 16 MiB document limit). Natig set the v1 limit:
 **1 MiB per create request** (over the limit → 400 `INVALID_REQUEST`; the frozen contract declares no 413).
-Own-list cap: the frozen list has no paging, so v1 keeps at most **200 submissions per supplier + legal entity** (the 201st
-create → 422); paging comes with a contract successor.
+Own-list cap: the frozen list has no paging, so v1 caps **open drafts** — at most **200 `DRAFT` records per supplier + legal
+entity** (the 201st draft → 422); submitting frees a place, so it is never a lifetime block (revised by Natig after review
+round 2, which showed a cap on all records would block a supplier for good). Paging comes with a contract successor.
 
 This record authorizes no code and no pack change by itself.

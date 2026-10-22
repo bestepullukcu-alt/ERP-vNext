@@ -61,6 +61,10 @@ for v1):
   missing metric is shown by its absence from `metrics[]` (the v1 wire has no other marker). Fewer than **3** metrics, an
   unknown code, a duplicated code, a fifth metric or a weight other than 25 → **422 `BUSINESS_RULE_VIOLATION`** at create,
   and no `DRAFT` is created. This replaces §0.1's "total weight exactly 100" and "sum / 100" for v1.
+- **Exact computation (review round 2, F-1):** with three metrics the quotient need not be a finite decimal (e.g.
+  6025 / 75 = 80.3333…). So the band is decided **without dividing**: `Σ(value × 25) ≥ threshold × Σ(25)` against 90, 75 and
+  50; and `overallScore` is produced by **one** decimal division rounded half-even to two places
+  (`round_half_even(Σ(value × 25) / Σ(25), 2)`), never by dividing first at a chosen precision and rounding again.
 - Codes are exactly `OTD`, `QTY_ACC`, `QUAL_ACC`, `INV_MATCH`. The frozen contract's examples (`ON_TIME_DELIVERY`,
   `QUALITY_ACCEPTANCE`) are not normative and answer 422 in v1; fixtures use the v1 codes.
 - **Period:** `periodStart` = the first day and `periodEnd` = the last day of the same calendar month (UTC dates), otherwise
@@ -78,12 +82,14 @@ arithmetic only, not v1 inputs — under v1 they are 422):
 | OTD 90, QTY_ACC 80, QUAL_ACC 100, INV_MATCH 70 (each weight 25) | 85.00, MEDIUM |
 | OTD 90, QTY_ACC 80, INV_MATCH 70 (QUAL_ACC absent) | 240·25/75 = 80 → 80.00, MEDIUM |
 | OTD 90, QTY_ACC 90, INV_MATCH 90 (QUAL_ACC absent) | 90.00, **LOW** |
+| OTD 90, QTY_ACC 80, INV_MATCH 71 (QUAL_ACC absent) | 6025/75 = 80.3333… → 80.33, MEDIUM (band: 6025 ≥ 75 × 75 = 5625 and < 90 × 75 = 6750) |
 | OTD 89.995, QTY_ACC 89.995, QUAL_ACC 89.995, INV_MATCH 89.995 | 90.00, **MEDIUM** (band from the unrounded 89.995) |
 | two metrics | 422 `BUSINESS_RULE_VIOLATION`, no draft |
 | a weight of 33.3333 or 40 | 422 |
 | period 2026-07-01 … 2026-09-30 | 422 (not one calendar month) |
 
-v1 test IDs (added with this revision; the r2 test map stays unchanged): T-0147-V1-SCORE-01 (the table above),
+v1 test IDs (added with this revision; the r2 test map stays unchanged and these IDs go into the next test-map revision, r3,
+when the folder's hash manifests are renewed with it): T-0147-V1-SCORE-01 (the table above),
 T-0147-V1-MISS-01 (3-of-4 and absence), T-0147-V1-CODE-01 (codes, duplicates, fifth metric, weight 25),
 T-0147-V1-PER-01 (calendar month), T-0147-V1-BAND-01 (bands from the unrounded value), T-0147-V1-PERM-01 (§14 mapping).
 
@@ -102,8 +108,8 @@ label wins**: the text is the target, not an approved rule.
 
 | Endpoint (operationId) | Wire | Behaviour | Gate / decision owner | Tests (`ACCEPTANCE-TEST-MAP.r2.tsv`) |
 |---|---|---|---|---|
-| `POST /evaluations` (createSupplierEvaluation) | ONAYLI | **BLOKE** — Supplier eligibility (DC-02, MOD-0140). v1: metric policy = pack-held `supplier-score-policy/1` and the v1 rules of §0.0 (DC-04 no longer blocks v1) | MOD-0140 owner; Metric Registry owner | AC-03, AC-04, AC-18…AC-22 |
-| `POST /evaluations/{id}/submit` (submitSupplierEvaluation) | ONAYLI | v1: snapshot of `supplier-score-policy/1` (DC-04 no longer blocks v1); atomic publication ÖNERİLEN (§0.3) | Metric Registry owner | AC-18…AC-22 |
+| `POST /evaluations` (createSupplierEvaluation) | ONAYLI | **BLOKE** — Supplier eligibility (DC-02, MOD-0140). v1: metric policy = pack-held `supplier-score-policy/1` and the v1 rules of §0.0 (DC-04 no longer blocks v1) | MOD-0140 owner | AC-03, AC-04; v1: T-0147-V1-SCORE-01, -MISS-01, -CODE-01, -PER-01, -BAND-01; AC-18, AC-19, AC-22 as far as they agree with §0.0; **AC-20 and AC-21 do not apply in v1** |
+| `POST /evaluations/{id}/submit` (submitSupplierEvaluation) | ONAYLI | v1: snapshot of `supplier-score-policy/1` (DC-04 no longer blocks v1); atomic publication ÖNERİLEN (§0.3) | MOD-0147 owner | v1: T-0147-V1-SCORE-01, T-0147-V1-BAND-01; AC-22 (revision snapshot = `supplier-score-policy/1`) |
 | `GET /evaluations`, `GET /evaluations/{id}` | ONAYLI | ÖNERİLEN — Tenant+LE isolation, 404 without leakage | MOD-0147 owner | T-0147-ISO-01 |
 | `GET /scorecards`, `GET /scorecards/{id}` | ONAYLI | ÖNERİLEN — immutable publication | MOD-0147 owner | AC-22 (revision snapshot), T-0147-ISO-01, T-0147-IMM-01 |
 | `POST /risks` (registerSupplierRisk) | ONAYLI | **BLOKE** — risk taxonomy (DC-05, Risk Register — deferred), DC-02; lifecycle ÖNERİLEN | Risk Register owner; MOD-0140 owner | AC-23…AC-26 |
@@ -275,7 +281,7 @@ source procurement facts, gateway/shared permission seams or other services' per
 | `TenantId`, `LegalEntityId` | Required, server-resolved; never mutation payload |
 | `SupplierId` | Required opaque MOD-0140 reference; no Supplier fields copied |
 | `PeriodStart`, `PeriodEnd` | ISO dates; start must not exceed end |
-| `Metrics` | At least one registry code; unique per evaluation; decimal-string score/weight |
+| `Metrics` | v1: 3 or 4 of the four policy codes, each once, weight 25 — the full rule is §0.0 and §12; decimal-string score/weight |
 | `OverallScore` | Derived 0..100 decimal string; client cannot override |
 | `RiskLevel` | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` |
 | `Status` | `DRAFT`, `PUBLISHED`, `CANCELLED` |
