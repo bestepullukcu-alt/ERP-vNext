@@ -22,8 +22,9 @@ The rule applies from the commit that added execution/approvals/POLICY-START.md.
 and never approved under it keeps its earlier approval (no retroactive invalidation). Once the file was added, its
 absence is a refusal, not "no rule".
 
-Trust boundary of this version (owner decision 2026-10-19, no GitHub accounts yet): declarations are checked for
-consistency and the human step is derived from git; identities are not verified. Merges must be merge commits (a
+Trust boundary (S-40, owner decision 2026-10-22): the human step is derived from git AND confirmed on GitHub — the
+bringing merge is a merged pull request into main whose merger is a listed person other than its opener; for an approval
+row the merger is the row's approver, for a review row not its author (gh api; not measurable = no human step). Merges must be merge commits (a
 squash or fast-forward merge leaves no merge author and a HIGH approval then fails). Since PR #153 (2026-10-19)
 .github/CODEOWNERS puts the approval files, the approver list and these checks under a code-owner review.
 
@@ -392,7 +393,7 @@ def judge(ctx: "Ctx", i: int) -> tuple[list[str], list[str], str, bool]:
         else:
             ok, why = other_merger(root, added_by, merge)
             if ok:      # Codex F-6: the merge must also be a merged pull request's, merged by another person (GitHub)
-                ok, why2 = pr_merge(root, merge, added_by)
+                ok, why2 = pr_person_check(root, merge, approver=row["approver"])
                 why = f"{why}; {why2}" if ok else why2
             (out.append("insan adımı: " + why) if ok else fails.append("insan adımı yok: " + why))
             listed = approvers_at(root, f"{merge}^1")       # the list as it was on main before this merge
@@ -526,76 +527,103 @@ _PR_CACHE: dict = {}
 
 
 def github_slug(root: str) -> str | None:
-    out = git(root, "remote", "get-url", "origin", ok_fail=True)
-    m = re.search(r"github\.com[:/]([^/\s]+)/([^/\s]+?)(?:\.git)?\s*$", out.decode() if out else "")
-    return f"{m.group(1)}/{m.group(2)}" if m else None
+    """owner/repo of any GitHub remote (host case-insensitive, trailing '/' and '.git' allowed; git applies
+    url.<base>.insteadOf to `remote -v`), else None."""
+    out = git(root, "remote", "-v", ok_fail=True)
+    for line in (out.decode(errors="replace") if out else "").splitlines():
+        m = re.search(r"github\.com[:/]+([^/\s]+)/([^/\s]+?)(?:\.git)?/*\s+\((?:fetch|push)\)", line, re.I)
+        if m:
+            return f"{m.group(1)}/{m.group(2)}"
+    return None
+
+
+def _in_temp(root: str) -> bool:
+    return os.path.realpath(root).startswith(os.path.realpath(tempfile.gettempdir()) + os.sep)
 
 
 def _gh_json(path: str):
     done = subprocess.run(["gh", "api", path], capture_output=True, timeout=60)
     if done.returncode != 0:
-        raise Unreadable(f"gh api {path} → {done.returncode}: {done.stderr.decode(errors='replace').strip()[:120]}")
+        raise Unreadable(f"gh api {path}: {done.stderr.decode(errors='replace').strip()[:160]} (çıkış {done.returncode})")
     return json.loads(done.stdout.decode())
 
 
-def _test_pr(root: str, merge: str, added: str) -> tuple[bool, str]:
-    """Self-test stand-in for GitHub, used only in a repository with no GitHub origin: a merge whose subject is
-    'Merge <branch>' is a PR merge; its merger is the merge commit's author, its opener the row commit's author."""
+def _test_pr(root: str, merge: str) -> dict | None:
+    """Self-test stand-in for GitHub: a merge whose subject is 'Merge <branch>' is a pull request merged into main by
+    the merge commit's author, opened by the author of its second parent's tip."""
     subject = git(root, "log", "-1", "--format=%s", merge).decode().strip()
     if not re.fullmatch(r"Merge (?!main\b)\S+", subject):
-        return False, f"{merge[:12]} bir PR'ın merge commit'i değil (test)"
-    who = lambda c: git(root, "log", "-1", "--format=%an", c).decode().strip().lower()
-    if who(added) == who(merge):
-        return False, f"PR'ı açan ve merge eden aynı kişi ({who(merge)}) (test)"
-    return True, f"PR merge'ü: açan {who(added)}, merge eden {who(merge)} (test)"
+        return None
+    who = lambda c: git(root, "log", "-1", "--format=%an", c).decode().strip()
+    return {"number": 0, "opener": who(f"{merge}^2"), "merger": who(merge), "base": "main"}
 
 
-def pr_merge(root: str, merge: str, added: str) -> tuple[bool, str]:
-    """Codex F-6 / S-40: the bringing merge must be the merge commit of a merged GitHub pull request whose merger is
-    another person than its opener (approvers.tsv person keys on the main line before the merge). Read from GitHub —
-    a local graph or committer text can be forged. Not measurable (no gh, no network, no GitHub origin) = no human step.
-    PACK_APPROVAL_PR_VERIFY=test switches to the self-test stand-in, and only in a repository with no GitHub origin."""
-    key = (root, merge, added)
+def pr_of_merge(root: str, merge: str) -> dict | None:
+    """{number, opener, merger, base} of the merged pull request whose merge commit is `merge` (GitHub), or None when
+    `merge` is no pull request's merge. Raises Unreadable when it cannot be measured. Only a successful read is cached.
+    PACK_APPROVAL_PR_VERIFY=test selects the stand-in only in a temporary-directory repository with no GitHub remote."""
+    slug = github_slug(root)
+    if slug is None:
+        if os.environ.get(PR_VERIFY_ENV) == "test" and _in_temp(root):
+            return _test_pr(root, merge)
+        raise Unreadable("origin bir GitHub deposu değil")
+    key = (slug, merge)
     if key in _PR_CACHE:
         return _PR_CACHE[key]
-    slug = github_slug(root)
-    if slug is None and os.environ.get(PR_VERIFY_ENV) == "test":
-        _PR_CACHE[key] = _test_pr(root, merge, added)
-        return _PR_CACHE[key]
-    if slug is None:
-        return False, "origin bir GitHub deposu değil — merge'ün PR merge'ü olduğu doğrulanamadı"
+    pulls = _gh_json(f"repos/{slug}/commits/{merge}/pulls")
+    if not isinstance(pulls, list):
+        raise Unreadable("GitHub cevabı bir liste değil")
+    hits = [x for x in pulls if isinstance(x, dict) and x.get("merge_commit_sha") == merge and x.get("merged_at")]
+    info = None
+    if hits:
+        pr = _gh_json(f"repos/{slug}/pulls/{hits[0].get('number')}")
+        if not isinstance(pr, dict):
+            raise Unreadable("GitHub PR cevabı bir nesne değil")
+        if pr.get("merged_at") and pr.get("merge_commit_sha") == merge:
+            info = {"number": pr.get("number"), "opener": (pr.get("user") or {}).get("login"),
+                    "merger": (pr.get("merged_by") or {}).get("login"), "base": (pr.get("base") or {}).get("ref")}
+    _PR_CACHE[key] = info
+    return info
+
+
+def pr_person_check(root: str, merge: str, approver: str | None = None, author_key: str | None = None) -> tuple[bool, str]:
+    """Codex F-6 + independent review F-1/F-3: the bringing merge is a merged pull request into main (GitHub); its
+    merger is listed (approvers.tsv on main before the merge) and another person than its opener; for an approval row
+    the merger IS the row's approver (S-41 — the approver merges); for a review row the merger is not the row's author.
+    Anything not measurable is no human step."""
     try:
-        prs = [p for p in _gh_json(f"repos/{slug}/commits/{merge}/pulls")
-               if p.get("merge_commit_sha") == merge and p.get("merged_at")]
-        if not prs:
-            res = (False, f"{merge[:12]} bir PR'ın merge commit'i değil (GitHub) — dal korumasını atlayan bir push olabilir")
-        else:
-            pr = _gh_json(f"repos/{slug}/pulls/{prs[0]['number']}")
-            n, opener, merger = pr["number"], (pr.get("user") or {}).get("login"), (pr.get("merged_by") or {}).get("login")
-            listed = approvers_at(root, f"{merge}^1")
-            pm, po = listed.get(merger or "", {}).get("person"), listed.get(opener or "", {}).get("person")
-            if not merger or pm is None:
-                res = (False, f"PR #{n}'yi merge eden ({merger}) onaylayıcı listesinde yok (GitHub)")
-            elif merger == opener or (po is not None and po == pm):
-                res = (False, f"PR #{n}'yi açan ve merge eden aynı kişi ({merger}) (GitHub)")
-            else:
-                res = (True, f"PR #{n}: açan {opener}, merge eden {merger} (GitHub)")
-    except (Unreadable, OSError, ValueError, KeyError, subprocess.TimeoutExpired) as e:
-        res = (False, f"GitHub'a sorulamadı — merge'ün PR merge'ü olduğu doğrulanamadı ({str(e)[:100]})")
-    _PR_CACHE[key] = res
-    return res
+        info = pr_of_merge(root, merge)
+    except (Unreadable, OSError, ValueError, subprocess.TimeoutExpired) as e:
+        return False, f"GitHub'a sorulamadı — merge'ün PR merge'ü olduğu doğrulanamadı ({str(e)[:160]})"
+    if info is None:
+        return False, f"{merge[:12]} bir PR'ın merge commit'i değil (GitHub) — dal korumasını atlayan bir push olabilir"
+    n, opener, merger, base = info["number"], info["opener"], info["merger"], info["base"]
+    if base != "main":
+        return False, f"PR #{n}'nin hedefi main değil ({base}) (GitHub)"
+    listed = approvers_at(root, f"{merge}^1")
+    pm, po = listed.get(merger or "", {}).get("person"), listed.get(opener or "", {}).get("person")
+    if pm is None:
+        return False, f"PR #{n}'yi merge eden ({merger}) onaylayıcı listesinde yok (GitHub)"
+    if merger == opener or (po is not None and po == pm):
+        return False, f"PR #{n}'yi açan ve merge eden aynı kişi ({merger}) (GitHub)"
+    if approver is not None and listed.get(approver, {}).get("person") != pm:
+        return False, (f"PR #{n}'yi onaylayan ({approver}) değil {merger} merge etti — onay satırını onaylayan kişi "
+                       "merge etmeli (kart §7a/7) (GitHub)")
+    if author_key is not None and pm == author_key:
+        return False, f"PR #{n}'yi satırın yazarı ({author_key}) merge etti (GitHub)"
+    return True, f"PR #{n}: açan {opener}, merge eden {merger} (GitHub)"
 
 
-def human_step(root: str, main: str, added: str) -> tuple[str | None, str]:
+def human_step(root: str, main: str, added: str, author_key: str | None = None) -> tuple[str | None, str]:
     """(the main-line merge that brought `added` in, why) when another person merged it — in git (other_merger) AND on
-    GitHub (pr_merge: the merge is a merged pull request's, merged by another listed person); else (None, why)."""
+    GitHub (pr_person_check); else (None, why)."""
     merge, why = main_merge(root, main, added)
     if merge is None:
         return None, why
     ok, why = other_merger(root, added, merge)
     if not ok:
         return None, why
-    ok, why2 = pr_merge(root, merge, added)
+    ok, why2 = pr_person_check(root, merge, author_key=author_key)
     return (merge if ok else None), (f"{why}; {why2}" if ok else why2)
 
 
@@ -816,7 +844,7 @@ def review_problems(root: str, main: str, path: str, data: bytes, at: str) -> tu
     for r in cur:
         tag = f"inceleme satır {r['_n']}"
         bad = []
-        merge, why = human_step(root, main, row_commit(root, commit, r["_n"], REVIEWS))
+        merge, why = human_step(root, main, row_commit(root, commit, r["_n"], REVIEWS), r["author"])
         if merge is None:
             bad.append(f"main'e insan adımıyla gelmedi — {why} (dal üzerindeki inceleme satırı sayılmaz)")
         if r["verdict"] not in VERDICTS:
@@ -1292,17 +1320,54 @@ def self_test() -> int:
     cases.append(("sabotage S-40/Codex F-6: a row straight on main carried by another person's pull-merge and a "
                   "fast-forward -> not a pull request's merge (GitHub), exit 1",
                   code == 1 and any("PR'ın merge commit'i değil" in l for l in out)))
-    # the test stand-in is refused in a repository with a GitHub origin: the real GitHub answer is required
+    # the test stand-in is refused in a repository with a GitHub remote: the real GitHub answer is required (F-4: any
+    # remote name, host case, trailing '/'), and a fake GitHub drives every decision line (independent review F-2)
     saved = globals()["_gh_json"]
-    def no_network(path):
-        raise Unreadable("ağ yok (test)")
-    globals()["_gh_json"] = no_network
-    g("remote", "add", "origin", "https://github.com/example-owner/example-repo.git")
+    pr_merge_sha = git(root, "rev-parse", "HEAD").decode().strip()
+    answers: dict = {}
+    def fake_gh(path):
+        if path not in answers:
+            raise Unreadable("ağ yok (test)")
+        return answers[path]
+    globals()["_gh_json"] = fake_gh
+    g("remote", "add", "upstream", "https://GitHub.com/example-owner/example-repo/")
     _PR_CACHE.clear()
-    ok, why = pr_merge(root, git(root, "rev-parse", "HEAD").decode().strip(), git(root, "rev-parse", "HEAD^2").decode().strip())
-    cases.append(("sabotage S-40/F-6: PACK_APPROVAL_PR_VERIFY=test is ignored in a repository with a GitHub origin -> "
-                  "GitHub is asked; unreachable = no human step", not ok and "GitHub'a sorulamadı" in why))
-    g("remote", "remove", "origin")
+    ok, why = pr_person_check(root, pr_merge_sha, approver="lead")
+    cases.append(("sabotage S-40/F-4: PACK_APPROVAL_PR_VERIFY=test is ignored with a GitHub remote (named upstream, "
+                  "'GitHub.com', trailing '/') -> GitHub is asked; unreachable = no human step",
+                  not ok and "GitHub'a sorulamadı" in why))
+    slug = "example-owner/example-repo"
+    def pr(**over):
+        base = {"number": 7, "merged_at": "2026-10-22T10:00:00Z", "merge_commit_sha": pr_merge_sha,
+                "user": {"login": "dev"}, "merged_by": {"login": "lead"}, "base": {"ref": "main"}}
+        base.update(over)
+        return base
+    def ask(approver=None, author_key=None, **over):
+        _PR_CACHE.clear()
+        answers.clear()
+        answers[f"repos/{slug}/commits/{pr_merge_sha}/pulls"] = [pr(**over)]
+        answers[f"repos/{slug}/pulls/7"] = pr(**over)
+        return pr_person_check(root, pr_merge_sha, approver=approver, author_key=author_key)
+    ok, why = ask(approver="lead")
+    cases.append(("S-40 GitHub: a merged PR into main, opened by dev, merged by the approver lead -> human step", ok))
+    for label, kw, text in (
+            ("merged by someone other than the approval row's approver (F-1)", dict(approver="lead2"), "onaylayan"),
+            ("the merger is the review row's author (F-1)", dict(author_key="K1"), "satırın yazarı"),
+            ("opened and merged by the same person", dict(approver="lead", user={"login": "lead"}), "aynı kişi"),
+            ("opened by another account of the merger (same person key)", dict(approver="lead", user={"login": "lead-alt"}), "aynı kişi"),
+            ("merged by a login not on the approver list", dict(merged_by={"login": "ghost"}), "listesinde yok"),
+            ("merged into another branch, not main (F-3)", dict(approver="lead", base={"ref": "dev"}), "hedefi main değil"),
+            ("no merged_at (closed, not merged)", dict(approver="lead", merged_at=None), "merge commit'i değil"),
+            ("another merge commit sha", dict(approver="lead", merge_commit_sha="0" * 40), "merge commit'i değil")):
+        ok, why = ask(**kw)
+        cases.append((f"sabotage S-40 GitHub: {label} -> no human step", not ok and text in why))
+    _PR_CACHE.clear()
+    answers.clear()
+    answers[f"repos/{slug}/commits/{pr_merge_sha}/pulls"] = {"message": "not a list"}
+    ok, why = pr_person_check(root, pr_merge_sha, approver="lead")
+    cases.append(("sabotage S-40 GitHub (F-6): a 2xx answer that is not a list -> not measurable, no human step",
+                  not ok and "liste değil" in why))
+    g("remote", "remove", "upstream")
     globals()["_gh_json"] = saved
     _PR_CACHE.clear()
 

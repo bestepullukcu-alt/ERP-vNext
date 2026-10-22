@@ -1853,6 +1853,8 @@ class S5Repo:
             os.makedirs(root)
             self.g("init", "-q", "-b", "main")
             self.put(self.pa.REVIEWS, "\t".join(self.pa.REVIEW_COLUMNS) + "\n")
+            # S-40: a review row's merger must be a listed person (pack_approval.pr_person_check)
+            self.put(self.pa.APPROVERS, "login\tperson\trole\thigh\nlead\tK1\tkıdemli\tevet\ndev\tK4\tgeliştirici\tevet\n")
             self.commit("init", self.LEAD)
 
     def g(self, *args, who=None):
