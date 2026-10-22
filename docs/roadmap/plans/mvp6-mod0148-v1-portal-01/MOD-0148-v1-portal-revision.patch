@@ -1,0 +1,57 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md	2026-10-22 22:10:49
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md	2026-10-22 22:13:09
+@@ -28,6 +28,28 @@
+ > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
+ > master owner (domain `procurement`). Placement grants no runtime, contract, gateway or permission ownership.
+ 
++## 0.0 v1 scope — the supplier's own submissions, internal only (owner decision 2026-10-22) — revision draft
++
++> `docs/records/decisions/2026-10/mvp6-mod0148-start-owner-decision-2026-10-22.md` (Natig): MOD-0148 starts now, which is
++> the D9 trigger for Beste's DC-03 binding. **Draft revision — not approved**; needs CT-APR-02 and a new CT-APR-01 row
++> (high risk: a new actor type, authentication path and product code). Where this section and an older line below
++> disagree about v1, this section wins.
++
++| Area | v1 | Later |
++|---|---|---|
++| Operations | `getSupplierPortalStatus`, `createOwnPortalSubmission`, `submitOwnPortalSubmission`, own `GET /portal/submissions[/{id}]` | internal review command (`UNDER_REVIEW`/`ACCEPTED`/`REJECTED`) — contract successor |
++| Actor (DC-03, approved 2026-10-21) | `supplier_user` from the DC-03 binding (Beste, separate Auth/Platform pack): separate portal subdomain, mandatory two-step verification, one account per email per tenant, Gateway allow-list `supplier_user` → `/api/supplier-performance/portal/*` + own session endpoints; `supplierId` resolved from the binding, never the request | — |
++| Supplier (DC-02) | tenant-wide master id (MOD-0140 1.3.0); submissions require the supplier–LE relationship to be `Active` (DC-02 D2 proposal) | — |
++| Exposure | **internal only** — not on the internet until `TrustedProxies`, Gateway rate limit (MOD-0032) and a shared limiter store exist (DC-03) | public portal |
++| Payload (§0.2) | frozen v1 wire kept (any object); only the service's existing total request-size limit applies (Natig, 2026-10-22) | per-`submissionType` schemas via a contract successor |
++| MOD-0147 link | none (portal-source resolution belongs to MOD-0147's risk part, after TPRM) | with MOD-0147 risk |
++| Audit (§21) | path b, `supplychain-merkezi-iletim` (PR #198) once merged | review command |
++| UI | none in v1 (backend first, §9); the supplier screen is a later revision on the portal subdomain, 7-language scope | — |
++
++**Still gates for v1 code:** the DC-03 binding pack and its build (Beste), DC-02 (MOD-0140 1.3.0 on `main`, Cihan), this
++revision's CT-APR-02 + CT-APR-01, the permission/composition single writer (§14), the replay receipt (§0.1, needs DC-03's
++issuer/subject).
++
+ ## 0. Requirement status and traceability (review 2026-10-19)
+ 
+ Every requirement below carries one of three labels. A label is a claim about authority, not about code (there is none).
+@@ -277,9 +299,10 @@
+ - [ ] Supplier base identity/status + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
+ - [ ] Actor binding + authorization (DC-03) — Platform/Auth security owner: one active Supplier per actor/Tenant/LE,
+       binding revision and revocation fencing, trusted LE issuance; build seam, not built. **The portal's core path.**
++      Decisions approved 2026-10-21 (plan v10 C4); builder Beste (D9), triggered by the MOD-0148 start of 2026-10-22 (§0.0).
+ - [ ] Shared contract, replay receipt, own-record persistence, portal-source resolver (with MOD-0147), fixture — OPEN in
+       `docs/roadmap/plans/mvp6-mod0148-spec-split-01/CONCURRENCE-OPEN.md`.
+-- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — the service has no audit-ledger file (BL-615).
++- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — **met when PR #198 merges** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
+ - [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev`.
+ - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
+ 
+@@ -316,3 +339,13 @@
+ 
+ Not recorded: the submission payload body itself (only its snapshot hash and type), supplier credentials (never held
+ by this module) and any secret the validator rejects.
++
++## Teslim dilimleri
++
++| dilim | ad | kapsadığı bölümler |
++|---|---|---|
++| DL-0 | DC-03 bağlama (ayrı Auth/Platform paketi, Beste) | `supplier_user`, portal kapısı, iki adım, Gateway izin listesi |
++| DL-1 | portal durumu + kendi gönderileri | §0.0, §0.1, §3, §4, §8, §12, §13 |
++| DL-2 | gönderim (DRAFT → SUBMITTED) ve değişmezlik | §0.3, §21 |
++| DL-3 | iç inceleme komutu | sözleşme halefi |
++| DL-4 | tedarikçi ekranı (portal alt alanı, 7 dil) | §9, §11 revizyonu |
