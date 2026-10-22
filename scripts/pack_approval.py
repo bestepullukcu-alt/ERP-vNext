@@ -542,8 +542,15 @@ def main_merge(root: str, main: str, added: str) -> tuple[str | None, str]:
     chain = [c for c in line if c in below]
     if chain:
         m = chain[-1]
-        if len(git(root, "rev-list", "--parents", "-n", "1", m).decode().split()) > 2:
+        parents = git(root, "rev-list", "--parents", "-n", "1", m).decode().split()[1:]
+        # independent review F-1/F-2: the row must be on the merged branch's OWN line (first-parent chain of a non-first
+        # parent); a foxtrot (someone pulls main with a merge and fast-forwards main past the author's self-merge) or a
+        # nested merge (the author merges the row's branch into another branch himself) does not count
+        if len(parents) > 1 and any(added in git(root, "rev-list", "--first-parent", p).decode().split() for p in parents[1:]):
             return m, ""
+        if len(parents) > 1:
+            return None, (f"onay satırı ana çizgiye {m[:12]} ile geldi ama o merge'ün dalının kendi çizgisinde değil (iç içe "
+                          "ya da ters merge) — satırın PR'ı main'e başka bir kişi tarafından doğrudan merge edilmeli")
     return None, "onay satırını ana çizgiye getiren merge commit'i bulunamadı"
 
 
@@ -1141,6 +1148,55 @@ def self_test() -> int:
     code, out = row_then_main("s40b", DEV)
     cases.append(("sabotage S-40: the same shape merged by the row's own author -> no human step, exit 1",
                   code == 1 and any("insan adımı yok" in l for l in out)))
+
+    def row_branch(name):
+        g("checkout", "-q", "main")
+        put(PACK, get(PACK) + f"- {name}\n")
+        commit(f"pack change {name}")
+        g("checkout", "-q", "-b", name)
+        add_row("dev", "lead", "HIGH", "2026-10-27")
+        commit(f"{name} row", who=DEV)
+    # F-5: the author merges the row himself, later another person merges something else -> the OLDEST bringing commit
+    # (the author's own merge) decides, never a later merge by someone else
+    row_branch("s40c")
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge s40c", "s40c", who=DEV)
+    via_branch("s40c-other", lambda: put("other-s40c.txt", "x\n"), merger=LEAD)
+    code, out = check()
+    cases.append(("sabotage S-40/F-5: the author merged the row himself, another person merged something later -> the "
+                  "oldest bringing merge (the author's) decides, exit 1", code == 1 and any("insan adımı yok" in l for l in out)))
+    # F-1: foxtrot — the author self-merges the row; another person pulls main into an older branch with a merge and
+    # main is fast-forwarded to it, so the author's merge leaves the first-parent line
+    g("checkout", "-q", "main")
+    g("checkout", "-q", "-b", "s40d-lead")
+    put("lead-work-s40d.txt", "x\n")
+    commit("lead work s40d", who=LEAD)
+    row_branch("s40d")
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge s40d", "s40d", who=DEV)
+    g("checkout", "-q", "s40d-lead")
+    g("merge", "-q", "--no-ff", "-m", "Merge main into lead work", "main", who=LEAD)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--ff-only", "s40d-lead", who=LEAD)
+    code, out = check()
+    cases.append(("sabotage S-40/F-1: foxtrot — another person's pull-merge fast-forwarded past the author's self-merge "
+                  "-> not on the merged branch's own line, exit 1", code == 1 and any("kendi çizgisinde değil" in l for l in out)))
+    # F-2 (owner decision pending; fail-closed default): the author merges the row's branch into another branch himself,
+    # another person merges that branch into main -> the row's own PR had no second person, exit 1
+    row_branch("s40e")
+    g("checkout", "-q", "main")
+    g("checkout", "-q", "-b", "s40e-outer")
+    put("outer-s40e.txt", "x\n")
+    commit("outer s40e", who=LEAD)
+    g("merge", "-q", "--no-ff", "-m", "Merge s40e into outer", "s40e", who=DEV)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge outer", "s40e-outer", who=LEAD)
+    code, out = check()
+    cases.append(("sabotage S-40/F-2: nested — the author merged the row's branch into another branch, another person "
+                  "merged that one -> exit 1", code == 1 and any("kendi çizgisinde değil" in l for l in out)))
+    # positive control after the refusals: the S-40 shape merged by another person still passes
+    code, out = row_then_main("s40f", LEAD)
+    cases.append(("S-40: positive control after the refusals -> exit 0", code == 0))
 
     # B2 (independent review): the human step is measured on the MAIN line, not on the checked ref.
     # (a) a worker branch forked BEFORE the row reached main, later merged main in by the row's own author
