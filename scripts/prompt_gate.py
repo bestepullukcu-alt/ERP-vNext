@@ -712,7 +712,7 @@ def accepted_engel_problem(pa, root: str, main: str, path: str, digest: str, acc
         return "kabul edilmiş ENGEL'i taşıyan sürümün onayı HIGH değil"
     merge = pa.main_merge(root, main, pa.row_commit(root, main, rows[-1]["_n"]))[0]
     listed = pa.approvers_at(root, f"{merge}^1") if merge else {}
-    person = listed.get(rows[-1]["approver"], {}).get("person")
+    person = pa.person_of(listed, rows[-1]["approver"])
     if accepted != {person}:
         return (f"ENGEL'i kabul eden ({', '.join(sorted(accepted))}) onay satırının onaylayanı değil "
                 f"({person or rows[-1]['approver']}) — riski yalnız onaylayan üstlenir")
@@ -2248,6 +2248,11 @@ def self_test_dispatch_review(cases: list) -> None:
         root, "HEAD", PK10, "dev", "lead", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-21") + "\n"))
     e, i = lim("W-10", PK10)
     cases.append(("S-5 Q4: the same with a HIGH CT-APR-01 approval row whose approver (K1) is the acceptor -> pass",
+                  not s5(e)))
+    via_branch("approve-10b", lambda: put(pa.APPROVALS, get(pa.APPROVALS) + pa.make_row(
+        root, "HEAD", PK10, "dev", "LEAD", "HIGH", "kabul edilmiş ENGEL — risk onaylayanda", "2026-10-22") + "\n"))
+    e, i = lim("W-10", PK10)
+    cases.append(("Codex F-14: the approval row's approver written LEAD is the listed lead (K1), the acceptor -> pass",
                   not s5(e)))
     eng12 = review(PK12, "KOŞULLU", ["F-1 | ENGEL | yetki eksik | açık | - | -"], 1)
     review(PK12, "KOŞULLU", [f"F-1@{eng12} | ENGEL | yetki eksik | kabul — onaylayan | K2 | -"], 0)

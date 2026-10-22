@@ -197,8 +197,22 @@ def approval_rows(root: str, commit: str, path: str) -> list[dict]:
 
 
 def approvers_at(root: str, commit: str) -> dict[str, dict]:
+    """The approver list at `commit`, keyed by login in lower case (GitHub logins are case-insensitive; Codex F-13/F-14).
+    Two rows whose logins differ only in case make the list unreadable."""
     raw = read(root, commit, APPROVERS)
-    return {r["login"]: r for r in parse_tsv(raw.decode("utf-8"), APPROVER_COLUMNS, APPROVERS)} if raw else {}
+    listed: dict[str, dict] = {}
+    for r in (parse_tsv(raw.decode("utf-8"), APPROVER_COLUMNS, APPROVERS) if raw else []):
+        key = r["login"].lower()
+        if key in listed:
+            raise Unreadable(f"{APPROVERS} satır {r['_n']}: '{r['login']}' listede harf farkıyla bir kez daha var")
+        listed[key] = r
+    return listed
+
+
+def person_of(listed: dict[str, dict], login: str | None) -> str | None:
+    """The person key of `login` in an approvers_at list, case-insensitively; None when not listed. Every consumer
+    resolves a login through here (Codex F-14)."""
+    return listed.get((login or "").lower(), {}).get("person")
 
 
 # ------------------------------------------------------------------------------------------------ risk and card
@@ -397,8 +411,8 @@ def judge(ctx: "Ctx", i: int) -> tuple[list[str], list[str], str, bool]:
                 why = f"{why}; {why2}" if ok else why2
             (out.append("insan adımı: " + why) if ok else fails.append("insan adımı yok: " + why))
             listed = approvers_at(root, f"{merge}^1")       # the list as it was on main before this merge
-            person = lambda login: listed[login]["person"] if login in listed else f"@{login}"
-            w = listed.get(row["approver"])
+            person = lambda login: person_of(listed, login) or f"@{login.lower()}"
+            w = listed.get(row["approver"].lower())
             if w is None:
                 fails.append(f"onaylayan {row['approver']} merge'den önceki onaylayıcı listesinde yok")
             elif w["high"] != "evet":
@@ -410,7 +424,7 @@ def judge(ctx: "Ctx", i: int) -> tuple[list[str], list[str], str, bool]:
                              f"{person(row['approver'])}) — riski yalnız onaylayan üstlenir")
     else:
         listed = approvers_at(root, list_point(root, ctx.main, added_by))   # Codex K2″: historical, not today's main
-        if row["approver"] != row["author"] and row["approver"] not in listed:
+        if row["approver"].lower() != row["author"].lower() and person_of(listed, row["approver"]) is None:
             fails.append(f"onaylayan {row['approver']} onaylayıcı listesinde yok ve yazan değil")
     if row["card_sha256"] != sha256(card(path, data, risk, reasons).encode("utf-8")):
         fails.append("onay kartının özeti paketin şimdiki kartıyla aynı değil — kart elle değişti ya da satır yeniden "
@@ -528,9 +542,15 @@ _PR_SOURCE = None                                # self-tests only: set in-proce
 _PR_CACHE: dict = {}
 
 
+GITHUB_HOST = "github.com"                       # Codex F-15: never the host GH_HOST or gh's config points at
+
+
+def _gh_cmd(path: str, paginate: bool = False) -> list[str]:
+    return ["gh", "api", "--hostname", GITHUB_HOST] + (["--paginate", "--slurp"] if paginate else []) + [path]
+
+
 def _gh_json(path: str, paginate: bool = False):
-    cmd = ["gh", "api"] + (["--paginate", "--slurp"] if paginate else []) + [path]
-    done = subprocess.run(cmd, capture_output=True, timeout=120)
+    done = subprocess.run(_gh_cmd(path, paginate), capture_output=True, timeout=120)
     if done.returncode != 0:
         raise Unreadable(f"gh api {path}: {done.stderr.decode(errors='replace').strip()[:160]} (çıkış {done.returncode})")
     return json.loads(done.stdout.decode())
@@ -596,15 +616,15 @@ def pr_person_check(root: str, merge: str, approver: str | None = None, author_k
         return False, f"PR #{n}'nin hedefi {TRUSTED_REPO} main değil ({info.get('base_repo')} {info.get('base')}) (GitHub)"
     if not opener or not merger:
         return False, f"PR #{n}'yi açan ya da merge eden GitHub cevabında okunamadı"
-    listed = {k.lower(): v for k, v in approvers_at(root, f"{merge}^1").items()}
-    pm, po = listed.get(merger, {}).get("person"), listed.get(opener, {}).get("person")
+    listed = approvers_at(root, f"{merge}^1")
+    pm, po = person_of(listed, merger), person_of(listed, opener)
     if pm is None:
         return False, f"PR #{n}'yi merge eden ({merger}) onaylayıcı listesinde yok (GitHub)"
     if po is None:
         return False, f"PR #{n}'yi açan ({opener}) onaylayıcı listesinde yok — farklı kişi olduğu ölçülemez (GitHub)"
     if po == pm:
         return False, f"PR #{n}'yi açan ve merge eden aynı kişi ({opener}, {merger}) (GitHub)"
-    if approver is not None and listed.get(approver.lower(), {}).get("person") != pm:
+    if approver is not None and person_of(listed, approver) != pm:
         return False, (f"PR #{n}'yi onaylayan ({approver}) değil {merger} merge etti — onay satırını onaylayan kişi "
                        "merge etmeli (kart §7a/7) (GitHub)")
     if author_key is not None and pm == author_key:
@@ -1183,6 +1203,12 @@ def self_test() -> int:
     code, out = check()
     cases.append(("positive control: a change under a non-sensitive heading is LOW; its author approves it -> exit 0",
                   code == 0 and "hesaplanan risk: LOW" in out))
+    put(PACK, get(PACK) + "- c2\n")
+    commit("notes line 2")
+    via_branch("approve-2b", lambda: add_row("dev", "LEAD", "LOW", "2026-10-21"), merger=LEAD)
+    code, out = check()
+    cases.append(("Codex F-13: a LOW row approved by LEAD (the listed lead in capitals) -> exit 0",
+                  code == 0 and not any("listesinde yok" in l for l in out)))
     put(PACK, get(PACK).replace("- services/Diten.X/**\n", "- services/Diten.X/**\n- services/Diten.Y/**\n"))
     commit("scope line")
     via_branch("approve-3", lambda: add_row("dev", "dev", "LOW", "2026-10-22"), merger=LEAD)
@@ -1199,6 +1225,22 @@ def self_test() -> int:
     code, out = high_attempt("h2", "lead-alt", author=LEAD, merger=LEAD2)
     cases.append(("sabotage: HIGH approved by another account of the author (same person) -> exit 1",
                   code == 1 and any("aynı kişinin başka hesabı" in l for l in out)))
+    code, out = high_attempt("h2b", "lead", author=("LEAD", "lead-up@x.invalid"), merger=LEAD)
+    cases.append(("sabotage Codex F-14: HIGH whose author is the approver's login in capitals (same person) -> exit 1",
+                  code == 1 and any("aynı kişinin başka hesabı" in l for l in out)))
+    via_branch("upcase", lambda: put(APPROVERS, get(APPROVERS).replace("\nlead\tK1", "\nLEAD\tK1")), merger=LEAD2)
+    code, out = high_attempt("h2c", "lead")
+    cases.append(("Codex F-13: the list writes LEAD, the row's approver is lead -> the same login, exit 0", code == 0))
+    g("checkout", "-q", "-b", "dupcase")
+    put(APPROVERS, get(APPROVERS) + "lead\tK7\tkıdemli\tevet\n")
+    commit("dupcase")
+    try:
+        approvers_at(root, "HEAD")
+        dup = False
+    except Unreadable as e:
+        dup = "harf farkıyla" in str(e)
+    g("checkout", "-q", "main")
+    cases.append(("sabotage Codex F-14: two list rows whose logins differ only in case -> the list is unreadable", dup))
     code, out = high_attempt("h3", "jun")
     cases.append(("sabotage: HIGH approved by a junior (high = hayır) -> exit 1", code == 1 and any("onaylayamaz" in l for l in out)))
     code, out = high_attempt("h4", "ghost")
@@ -1350,11 +1392,11 @@ def self_test() -> int:
     cases.append(("S-40 GitHub: a merged PR into main, opened by dev, merged by the approver lead -> human step", ok))
     ok, why = ask(approver="lead", merged_by={"login": "LEAD"}, user={"login": "Dev"})
     cases.append(("S-40 GitHub (Codex F-13): logins compared case-insensitively -> human step", ok))
-    saved_listed = globals()["approvers_at"]        # the real list has mixed-case logins (e.g. an all-caps account)
-    globals()["approvers_at"] = lambda r, c: {k.upper(): v for k, v in saved_listed(r, c).items()}
-    ok, why = ask(approver="lead")
-    globals()["approvers_at"] = saved_listed
-    cases.append(("S-40 GitHub (Codex F-13): logins written in capitals in approvers.tsv still match -> human step", ok))
+    ok, why = ask(approver="LEAD")
+    cases.append(("S-40 GitHub (Codex F-13): the row's approver written in capitals still matches the merger -> human step", ok))
+    cases.append(("Codex F-15: gh is pinned to github.com whatever GH_HOST says",
+                  _gh_cmd("x")[:4] == ["gh", "api", "--hostname", "github.com"]
+                  and _gh_cmd("x", True)[:4] == ["gh", "api", "--hostname", "github.com"]))
     ok, why = ask(approver="lead", pages=[[{"number": 3, "merge_commit_sha": "1" * 40, "merged_at": "x"}], [pr()]])
     cases.append(("S-40 GitHub (Codex F-11): the matching PR on the second page is found -> human step", ok))
     for label, kw, text in (
