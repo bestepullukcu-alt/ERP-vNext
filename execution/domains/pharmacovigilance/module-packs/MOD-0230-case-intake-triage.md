@@ -16,7 +16,7 @@ branch: feature/pvg/mod-0230-case-intake-triage
 started: 2026-08-04
 approved: 2026-08-09
 target: 2026-08-28
-form_field_count: 32
+form_field_count: 25
 slice: "Slice 1 - intake + triage + route. Archive/void and export are out of scope."
 ---
 
@@ -142,6 +142,12 @@ are not actionable until that approval is recorded, and the acceptance criteria 
 section records decisions only: it is not the version-bound pack approval row (CT-APR-01 / CT-APR-02), not another
 module owner's approval, and it does not open the operational runtime gate.
 
+Revision 05 (2026-10-22) added two rows, OD-PVG-11 and OD-PVG-12, for behaviour the first two intake-field decision
+records did not settle (review 04 F-3 and F-1). The owner decided both on 2026-10-22, adopting the recommended option:
+`docs/records/decisions/2026-10/pvg-mod0230-intake-fields-03.md` KR-1 (OD-PVG-11) and KR-2 (OD-PVG-12); the same
+record's KR-3 settles the country copied from a linked source ("What is stored" below). The rules are applied from
+today; QPPV receives KR-1 and KR-2 for information. The answers of OD-PVG-1 ... 10 are unchanged.
+
 | ID | Decision | Facts | Recommended option | Who decides | Owner decision (2026-10-21) |
 |---|---|---|---|---|---|
 | OD-PVG-1 | Single permission-key family | G-3. No key of either family is seeded, granted, emitted in a JWT, or enforced by a shipped `[HasPermission]`, so neither is "published" under PKS-001 §2. The `pvg.*` namespace is not yet listed in PKS-001 §4. | Adopt `pvg.case-intake-triage.{read,create,update,triage,route}`; change the five service constants and the shape test (DL-6); no alias is needed because no key is published. `triage` and `route` are registered here as PKS-001 Tier-3 actions. Reason: PKS-001 §1 makes the middle segment a resource, not a module ID (module code is not a permission namespace); the name matches the Gateway route family and MVC route; cost is five constants and one test. | PVG paket sahibi; MOD-0018 owner confirms catalog / grant ownership and the `pvg.*` namespace | PVG side decided 2026-10-21 (owner): target family `pvg.case-intake-triage.*`; awaiting MOD-0018 / AuthService approval of catalog-grant ownership and the `pvg.*` namespace - not actionable until then. |
@@ -154,6 +160,8 @@ module owner's approval, and it does not open the operational runtime gate.
 | OD-PVG-8 | `data_mode` for the list | G-14; the list endpoint is server-paged (`pageNumber`, `pageSize`); intake records are unbounded. | `data_mode: server` in the frontmatter (declared there since this revision) and `data-dt-data-mode="server"` on the table (DL-7). Reason: `module-pack-standard.md` §3 maps an unbounded entity list to `server`. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. |
 | OD-PVG-9 | Audit write path for K2-class commands | G-5. AUD-001 §4.3 K2: for GxP records, no audit record means no operation. AUD-001 §5 K4: PVG has no audit trace; new write commands are blocked until the shared forwarder package exists. | Wait for the K4 shared forwarder (path `b`) and the MOD-0021 owner contract, then deliver DL-5; until then, keep every MOD-0230 mutation unable to succeed outside tests (deny-all permission gate). Reason: path `a` is Platform-only and copying the MDM forwarder is forbidden by AUD-001 §5. | Control Tower (K4 package); MOD-0021 owner; PVG paket sahibi | PVG side decided 2026-10-21 (owner); awaiting the Control Tower K4 shared forwarder package and the MOD-0021 owner contract - not actionable until then; the deny-all permission gate stays. |
 | OD-PVG-10 | Verifier items tied to excluded features | G-14 | Record the bulk-delete, export, import, select-all, and related wiring items as a "known deviation" for this module (they contradict the permanent exclusions); fix the other five items in DL-7. Reason: the list-screen touch protocol requires an owner answer; the exclusions are owner decisions already recorded in this pack. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. |
+| OD-PVG-11 | `ReporterCountry` = "unknown" and unchanged stored codes once the country list exists (revision 05) | Review 04 F-3. EK-1 (`pvg-mod0230-intake-fields-02.md`) makes "unknown" the only accepted value of both country fields **until** the list arrives; AL-3 gives the "unknown" option to the **event** country; no record says whether `ReporterCountry` accepts a new or changed "unknown" once the list is present or its read is interrupted, nor what an update does with an unchanged stored list code while the list read is interrupted or after the code has left the list. These were the open cells of the "Country rule table" ("Entity Fields") in the revision 05 draft; they are now filled by KR-1. | (a) `ReporterCountry` keeps accepting "unknown" in every list state, like `EventCountry`; it stays a non-identifier ("Reporter identifiers"). (b) An unchanged stored list code is kept on update in every list state; only a new or changed code is checked against the list. Reason: PV refuses no notification (EK-3); "unknown" and null already mean "no country" for the reporter; a GxP record is not changed by a later list change (AL-6 snapshot principle). | PVG paket sahibi; QPPV if the reporter-country value is treated as regulatory content | **Evet — intake-fields-03 KR-1** (owner, 2026-10-22): recommended option (a) and (b) adopted; applied in the "Country rule table", Validation Rules, and BG-26. QPPV: for information. |
+| OD-PVG-12 | Removing a reporter link on update (revision 05) | Review 04 F-1. AL-6 and EK-4 say a link is made by selection or by the one-time CRM search and that the link id stays when the snapshot is edited; no record said whether a user may remove an existing link (turn a `Crm` / `PersonDirectory` reporter into `Manual`). Now settled by KR-2: removal only through the explicit `RemoveReporterLink` marker; an update without the selection pair and without the marker on a linked record stays rejected 400 (no silent unlink; BG-29). | Allow removal only as an explicit action: the update carries an explicit "remove link" marker instead of simply omitting the pair; the server then writes `ReporterSource = Manual`, clears `ReporterSourceId`, keeps the snapshot values as typed values, and the audit record names the change (field names only). Reason: an omitted pair cannot be told apart from a client defect; an explicit marker is measurable. | PVG paket sahibi; QPPV (the reporter link is the basis of MOD-0231's duplicate check, AL-7) | **Evet — intake-fields-03 KR-2** (owner, 2026-10-22): recommended option adopted; the marker is `RemoveReporterLink` (boolean), applied in the "Reporter selection contract", Validation Rules, Failure Path, and BG-29 / BG-31 / BG-32 / BG-33. QPPV: for information. |
 
 ## Module Summary
 
@@ -218,28 +226,36 @@ defined only inside the build/test gate. Operational runtime remains unauthorize
 
 ## Entity Fields
 
-Create/edit user-entered field count: `32` since revision 04 (2026-10-22; `16` before). Count, one per distinct
-user-entered field; a repeating group counts its columns once, not once per row:
+Create/edit user-entered field count: `25` since revision 05 (2026-10-22). `module-pack-standard.md` ("Sayim Kurali",
+lines 126-130) counts only the module fields the user fills in the **create/edit form**. Revision 04 recorded `32`
+and the pack before it `16`; both counts wrongly included fields of the separate triage and route operations
+(`TriageOutcome`, `TriageReason`, `RouteTargetQueue` in both; the four validity criteria in `32`). The true change of
+revision 04 was 13 -> 25, not 16 -> 32 (independent review 04 F-4; Control Tower comparison note 04 §3 item 1).
+Count per operation, one per distinct user-entered field; a repeating group counts its columns once, not once per row:
 
-| Group | Fields | Count |
-|---|---|---:|
-| Kept from the 16 (all but `SuspectProductText`) | IntakeChannel, SourceType, SourceReference, ReceivedAtUtc, ReporterType, ReporterContactSummary, PatientSubjectCode, EventOnsetDate, AdverseEventNarrative, Seriousness, IntakePriority, TriageOutcome, TriageReason, RouteTargetQueue, EvidenceLinkReferences | 15 |
-| AL-1 product list (columns of one line) | ProductRole, GlobalProductId, ProductNameAsReported, PresentationGskuId, LotNumber | 5 |
-| AL-2 | AwarenessAtUtc, CompanyRecipientPersonId | 2 |
-| AL-3 | EventCountry | 1 |
-| AL-4 | ReportType | 1 |
-| AL-5 (triage input) | ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | 4 |
-| AL-6 reporter | ReporterSourceId (search and select), ReporterNameOrInitials, ReporterProfession, ReporterCountry | 4 |
-| **Total** | | **32** |
+| Operation | Group | Fields | Count |
+|---|---|---|---:|
+| Create / Edit | Slice 1 fields kept (all but `SuspectProductText`) | IntakeChannel, SourceType, SourceReference, ReceivedAtUtc, ReporterType, ReporterContactSummary, PatientSubjectCode, EventOnsetDate, AdverseEventNarrative, Seriousness, IntakePriority, EvidenceLinkReferences | 12 |
+| Create / Edit | AL-1 product list (columns of one line) | ProductRole, GlobalProductId, ProductNameAsReported, PresentationGskuId, LotNumber | 5 |
+| Create / Edit | AL-2 | AwarenessAtUtc, CompanyRecipientPersonId | 2 |
+| Create / Edit | AL-3 | EventCountry | 1 |
+| Create / Edit | AL-4 | ReportType | 1 |
+| Create / Edit | AL-6 reporter | Reporter selection (one search-and-select input; sends the pair `ReporterSelectionDirectory` + `ReporterSelectionId`), ReporterNameOrInitials, ReporterProfession, ReporterCountry | 4 |
+| **Create / Edit total** | | | **25** |
+| Triage (separate operation; **not counted**) | AL-5 criteria and triage decision | ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent, TriageOutcome, TriageReason | (6) |
+| Route (separate operation; **not counted**) | Routing | RouteTargetQueue | (1) |
 
 Golden Reference decision: `compact`, because the create/edit form has more than 8 user-entered fields and
 regulated intake requires separate Create/Edit/Details review surfaces rather than Index-hosted offcanvas panels.
-The 16 -> 32 change does not cross the 8-field threshold of `module-pack-standard.md` ("Sayim Kurali"); `compact`
-is unchanged.
+Neither the corrected 25 nor the earlier values cross the 8-field threshold of `module-pack-standard.md` ("Sayim
+Kurali"); `compact` is unchanged.
 
 Excluded from field count: `Id`, `TenantId`, audit fields, correlation id, workflow instance id, created/updated
-metadata, system-generated case number, computed SLA/status timestamps, and the system-set fields of revision 04
-(`ReporterSource`, `ValidityResult`, `ValidityMissingCriteria`).
+metadata, system-generated case number, computed SLA/status timestamps, the inputs of the triage and route operations
+(table above), the `RemoveReporterLink` marker (KR-2; an action of the reporter selection input on Edit - "remove
+link" - not a module field: it holds no value of the case, is never stored, and is excluded like the action columns
+named in "Sayim Kurali"), and the system-set fields (`ReporterSource`, `ReporterSourceId` - set by the server from the reporter
+selection since revision 05 -, `ValidityResult`, `ValidityMissingCriteria`).
 
 | Field | Required | Sensitivity class | User-entered | Notes / blocker |
 |---|---|---|---|---|
@@ -261,21 +277,23 @@ metadata, system-generated case number, computed SLA/status timestamps, and the 
 | ProductLines[].LotNumber | No | regulated-safety | Yes | Lot / batch number as given; free text; never in audit payloads. |
 | AwarenessAtUtc | Yes at Create (EK-2, `pvg-mod0230-intake-fields-02.md`) | regulated-safety | Yes | "Farkına varma anı" (day 0): the moment anyone in the company first learned the minimum information. Default value: `ReceivedAtUtc`; an earlier moment may be chosen when the information reached an employee before (EK-2). Rule: `AwarenessAtUtc` <= `ReceivedAtUtc`. When the information reached another employee first (for example a field representative), it is that employee's moment. Which timestamp counts as trusted is a QPPV decision (QPPV-02, REQ-PVG-CRM-01) - not applied until QPPV confirms. Regulatory wording here is general information; QPPV-verified. |
 | CompanyRecipientPersonId | Yes at Create, enforced from the MOD-0288 read contract on (before it, a supplied value is rejected and none is required - an id that cannot be verified is not stored) | confidential | Yes (defaulted, changeable) | Company recipient: the employee who learned it (MOD-0288 person id). A case opened by hand on the PV screen defaults to the MOD-0288 person of the PV user who opens it; the user may change it (AL-2 clarification). Read through the MOD-0288 owner contract (open). Not the reporter (AL-6). |
-| EventCountry | Yes at Create | regulated-safety | Yes | Country where the event occurred, chosen from the Platform reference country list, with an "unknown" option (AL-3). The "unknown" option is a PVG value; PVG adds no value to the reference list (XMC-001). Source of the list: see "Required Interface Contracts" (country-list row, open). |
+| EventCountry | Yes at Create | regulated-safety | Yes | Country where the event occurred, chosen from the Platform reference country list, with an "unknown" option (AL-3). The "unknown" option is a PVG value; PVG adds no value to the reference list (XMC-001). Source of the list: see "Required Interface Contracts" (country-list row, open). Accepted values: "Country rule table" below. |
 | ReportType | Yes at Create | regulated-safety | Yes | PVG option set `Spontaneous`, `Study`, `Literature`, `Solicited`, `Other` (AL-4). Values wait for QPPV confirmation, like the other PVG option sets whose values "still require approval". |
-| ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | Yes at Triage; absent at Create | regulated-safety | Yes (triage input) | The four minimum criteria of a valid case (AL-5; ICH E2D, general information, QPPV-verified). `ValiditySuspectProduct` may be set only when at least one product line has role `Suspect`. Applied only after QPPV confirms (AL-5). |
+| ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | Yes at Triage; absent at Create | regulated-safety | Yes (triage input; not in the create/edit count) | The four minimum criteria of a valid case (AL-5; ICH E2D, general information, QPPV-verified). `ValiditySuspectProduct` may be set only when at least one product line has role `Suspect`. Applied only after QPPV confirms (AL-5). |
 | ValidityResult | Set at Triage | regulated-safety | No (system) | Derived: `Valid` when all four criteria hold; otherwise `InvalidFollowUpRequired`. An invalid notification is not deleted and stays a record (AL-5). Recorded beside `TriageOutcome`; it does not replace it. |
 | ValidityMissingCriteria | Set at Triage when not valid | regulated-safety | No (system) | Codes of the criteria that do not hold (AL-5: "hangi ölçütün eksik olduğu"). |
-| ReporterSource | Yes at Create | public-metadata | No (system) | `Crm` / `PersonDirectory` / `Manual`, set by how the reporter was given (AL-6): selected from CRM contacts (MOD-0150), selected from the person directory (MOD-0288), or typed. |
-| ReporterSourceId | Required when `ReporterSource` is `Crm` or `PersonDirectory`; absent when `Manual` | PII | Yes (search and select) | CRM contact id or MOD-0288 person id. A reporter identifier: never in logs, traces, metrics, or audit payloads ("Runtime Constraints"). Read through the MOD-0150 / MOD-0288 owner contracts (open). |
+| Reporter selection (request pair `ReporterSelectionDirectory` + `ReporterSelectionId`) | No - both or neither; exactly one of the two -> 400 | PII (`ReporterSelectionId`); public-metadata (`ReporterSelectionDirectory`) | Yes (search and select; one input) | Revision 05 (AL-6; review 04 F-1): the only request input of a reporter link. `ReporterSelectionDirectory` = `Crm` (MOD-0150 CRM contact) or `PersonDirectory` (MOD-0288 person); `ReporterSelectionId` = the id **in that directory**. The server resolves the id in the named directory, tenant-scoped; it never guesses the directory from the id. Not stored as such: the server turns it into `ReporterSource` + `ReporterSourceId`. Full rule: "Reporter selection contract" below. |
+| RemoveReporterLink (request marker) | No; Update only; never together with the selection pair (-> 400) | public-metadata | Action of the reporter selection input on Edit ("remove link"); not counted (see the exclusions above) | KR-2 (`pvg-mod0230-intake-fields-03.md`): the only way to remove an existing reporter link. Boolean; not stored. When `true` on a linked record the server writes `ReporterSource = Manual`, clears `ReporterSourceId`, and keeps the snapshot values as typed values. Full rule: "Reporter selection contract" below. |
+| ReporterSource | Yes (system; set at Create, Update, and by the one-time CRM search) | public-metadata | No (system; response only) | `Crm` / `PersonDirectory` / `Manual`, written by the server only (AL-6): `Crm` or `PersonDirectory` = the directory of a resolved reporter selection; `Manual` when no selection is given at Create or when `RemoveReporterLink` is set on Update (KR-2). A request that carries `ReporterSource` is rejected 400 (BG-31). |
+| ReporterSourceId | Set by the server when `ReporterSource` is `Crm` or `PersonDirectory`; empty when `Manual` | PII | No (system; response only) | The resolved CRM contact id or MOD-0288 person id, copied by the server from the resolved selection. A request that carries `ReporterSourceId` is rejected 400 (BG-31). A reporter identifier: never in logs, traces, metrics, or audit payloads ("Runtime Constraints"). Read through the MOD-0150 / MOD-0288 owner contracts (open). |
 | ReporterNameOrInitials | No at Create; at Triage `ValidityReporterIdentifiable` needs at least one reporter identifier or a link | PII | Yes (copied on a link) | Snapshot (AL-6): name or initials. |
 | ReporterProfession | No | PII | Yes (copied on a link) | Snapshot (AL-6): profession. |
-| ReporterCountry | No | PII | Yes (copied on a link) | Snapshot (AL-6): country, same country list as `EventCountry`. |
+| ReporterCountry | No | PII | Yes (copied on a link) | Snapshot (AL-6): country, same country list as `EventCountry`. Accepted values: "Country rule table" below. A country copied from a linked source is written only if it fits the table at copy time, otherwise left null (KR-3). Null and "unknown" are **not** reporter identifiers (revision 05, review 04 F-2). |
 | Seriousness | Yes | regulated-safety | Yes | Allowed values still require approval. This single value is for triage; the six seriousness criteria belong to MOD-0231 (AL-7, "Follow-up Items"). |
 | IntakePriority | Yes | regulated-safety | Yes | Priority taxonomy and SLA linkage still require approval. |
-| TriageOutcome | Yes | regulated-safety | Yes | Allowed states and transition rules require Workflow/Inbox contract. |
-| TriageReason | No | PHI | Yes | Raw reason text prohibited in logs/traces/audit payloads. |
-| RouteTargetQueue | Yes | confidential | Yes | Requires Workflow/Inbox route target contract and permission-filtered visibility. |
+| TriageOutcome | Yes at Triage | regulated-safety | Yes (triage input; not in the create/edit count) | Allowed states and transition rules require Workflow/Inbox contract. |
+| TriageReason | No | PHI | Yes (triage input; not in the create/edit count) | Raw reason text prohibited in logs/traces/audit payloads. |
+| RouteTargetQueue | Yes at Route | confidential | Yes (route input; not in the create/edit count) | Requires Workflow/Inbox route target contract and permission-filtered visibility. |
 | EvidenceLinkReferences | No | confidential | Yes | Requires MOD-0031 Evidence-Link contract; no fake evidence pack fallback. |
 
 Every field included in create/edit/list/detail/export surfaces must receive masking behavior, row/field access
@@ -299,7 +317,8 @@ Reporter (AL-6) - three paths, one record shape:
    not type these. This path is part of the system-to-system intake contract that REQ-PVG-CRM-01 asks for; that
    contract is still deferred and needs operational runtime approval (see "Authorization Convention").
 2. **Opened by hand on the PV screen - search first.** The reporter field is a search box over CRM contacts
-   (physician / pharmacist) and the person directory (employee). A hit is selected and linked.
+   (physician / pharmacist) and the person directory (employee). A hit is selected and linked; the form sends the
+   selection as the pair `ReporterSelectionDirectory` + `ReporterSelectionId` ("Reporter selection contract" below).
 3. **Not in any system - typed.** Patient, relative, physician without a record: `ReporterType` plus at least one
    identifier (name or initials, profession, country, contact summary) typed by hand. Selection is not required; PV
    rejects no notification because "the person is not in the system". Decided (EK-3,
@@ -307,13 +326,93 @@ Reporter (AL-6) - three paths, one record shape:
    create, because PV refuses no notification; at triage it does not meet `ValidityReporterIdentifiable` (AL-5) and
    the case gets "invalid - follow-up required" (`InvalidFollowUpRequired`).
 
+**Reporter identifiers (revision 05, review 04 F-2).** The reporter identifiers are: a resolved reporter link
+(`ReporterSource` = `Crm` or `PersonDirectory`), a non-empty `ReporterNameOrInitials`, a non-empty
+`ReporterProfession`, a non-empty `ReporterContactSummary`, and a `ReporterCountry` that is a code of the country list.
+**`ReporterCountry` = "unknown" and `ReporterCountry` = null are not identifiers**: "unknown" says that the country is
+not known, so it identifies nobody (EK-1 makes "unknown" the only accepted value until the list arrives; EK-3 and AL-5
+make an unidentified reporter invalid at triage). Consequence for an unlinked reporter whose other identifiers are
+empty and whose only value is `ReporterCountry` = "unknown": a triage that declares `ValidityReporterIdentifiable =
+true` is rejected with a reason code and no field value; a triage that declares `false` gives `ValidityResult =
+InvalidFollowUpRequired` with the reporter-identifiable criterion code. Acceptance: BG-28.
+
+**Reporter selection contract (revision 05, AL-6; review 04 F-1).** One request contract for API and screen:
+
+- **Request input.** A reporter link is requested only through the pair `ReporterSelectionDirectory` (`Crm` |
+  `PersonDirectory`) + `ReporterSelectionId` (the id in that directory). Both come together or neither comes; exactly
+  one of the two -> 400 with a reason code and no field value. Any other directory value -> 400.
+- **Server resolution.** The server resolves `ReporterSelectionId` in the named directory only, tenant-scoped
+  (`Crm` -> MOD-0150 read contract; `PersonDirectory` -> MOD-0288 read contract). It never tries the other directory and
+  never infers the directory from the id: a CRM contact id sent with `PersonDirectory` (or a MOD-0288 person id sent
+  with `Crm`) does not resolve and is rejected. An id that does not exist in the named directory for the tenant -
+  including an id that belongs to another tenant - returns the pack's not-found shape: 404 with a safe reason code and
+  no record data (OD-PVG-3: not-found and cross-tenant -> 404); the response does not tell the two cases apart. While
+  the owner read contract of the named directory is absent, any selection naming that directory is rejected with a
+  safe reason code (fail closed; BG-29).
+- **What the server writes.** From a resolved selection the server writes `ReporterSource` (= the directory) and
+  `ReporterSourceId` (= the resolved id) and copies the snapshot (name or initials, profession, country, contact
+  summary). With no selection the server writes `ReporterSource = Manual` and an empty `ReporterSourceId`. The
+  one-time CRM search of a typed reporter (below) is the only other way the server sets `Crm`; it uses the same
+  resolution.
+- **Response-only fields.** `ReporterSource` and `ReporterSourceId` are response fields. A create or update request
+  that carries either of them is rejected 400 (BG-31). The screen never posts them (BG-32).
+- **Update.** The Edit form sends back the pair the record holds, as read with the record (like the record version).
+  An unchanged pair keeps the link and the stored snapshot without a new read of the source (a later change or deletion
+  of the source does not change the case, AL-6; EK-4). A different pair is resolved as at create and copies a new
+  snapshot. An update without the pair and without `RemoveReporterLink` on a record that holds a link is **rejected
+  400** - a permanent rule, no silent unlink (KR-2).
+- **Removing a link (KR-2, `pvg-mod0230-intake-fields-03.md`).** A link is removed only by an Update that carries the
+  explicit marker `RemoveReporterLink = true` (boolean; the Edit screen's "remove link" action). The server then writes
+  `ReporterSource = Manual`, clears `ReporterSourceId`, and keeps the snapshot values (name or initials, profession,
+  country, contact summary) as typed values. The audit payload names the changed fields only, no value - produced
+  locally in DL-2 (BG-29), written by the real audit path in DL-5 (BG-33). `RemoveReporterLink = true` together with the
+  selection pair (either field of it) in the same request -> 400 with a reason code and no field value. The marker on a
+  record without a link, or on Create, -> 400 (nothing to remove). `RemoveReporterLink = false` or absent means no
+  removal.
+- **Reporter and company recipient.** A `PersonDirectory` selection equal to `CompanyRecipientPersonId` is accepted
+  only with the consumer / employee reporter type (AL-6; BG-24).
+
+**Country rule table (revision 05, review 04 F-3).** `EventCountry` and `ReporterCountry` follow one table. Rows: the
+state of the approved MOD-0048 country list for PVG (EK-1). Columns: the value given. "List code" means an ISO 3166-1
+alpha-2 code; "in list" / "not in list" means whether it is in the approved list. Every cell applies to a new value
+(create) and to a changed value (update).
+
+| List state | `EventCountry` null | `EventCountry` "unknown" | `EventCountry` list code | `ReporterCountry` null | `ReporterCountry` "unknown" | `ReporterCountry` list code |
+|---|---|---|---|---|---|---|
+| **Absent** (MOD-0048 approval not recorded; today) | Reject 400 (required, AL-3) | Accept (EK-1, AL-3) | Reject 400 - no list exists, no hardcoded list (EK-1) | Accept (optional; EK-3) | Accept (EK-1) | Reject 400 (EK-1) |
+| **Present** (approved list delivered and readable) | Reject 400 | Accept (AL-3: the "unknown" option exists) | In list: accept. Not in list: reject 400 | Accept | Accept (KR-1 a); not an identifier | In list: accept. Not in list: reject 400 |
+| **Interrupted** (list delivered, read unavailable at request time) | Reject 400 | Accept | Reject with a safe reason code - a code that cannot be verified is not stored (fail closed; "Failure Path to Verify", "Option-Set Ownership") | Accept | Accept (KR-1 a); not an identifier | Reject with a safe reason code (fail closed) |
+
+- **Stored "unknown" kept on update.** A record that already holds `EventCountry` or `ReporterCountry` = "unknown" and
+  receives the same "unknown" unchanged on update keeps it in every list state; the update is not rejected for that
+  field. A changed value follows the table at that moment. Acceptance: BG-26.
+- **Stored list code kept on update (KR-1 b, `pvg-mod0230-intake-fields-03.md`).** A record that already holds a list
+  code in `EventCountry` or `ReporterCountry` and receives the same code unchanged on update keeps it in every list
+  state - also while the list read is interrupted and after the code has left the list; the update is not rejected for
+  that field. Only a new or changed code is checked against the list at that moment. Acceptance: BG-26.
+- **Copied from a linked source (KR-3).** A country copied into `ReporterCountry` from a linked source (CRM
+  `CountryRef`; the MOD-0288 person's country, if the directory holds one) is written only if it fits the
+  `ReporterCountry` columns of this table at copy time; otherwise `ReporterCountry` stays null and the case is **not**
+  rejected for it. Rules below ("What is stored").
+- "Unknown" is a PVG value and is never added to the MOD-0048 list (XMC-001); no hardcoded country list in code or UI.
+- Validation Rules rows `EventCountry` and `ReporterCountry` and acceptance items BG-25 and BG-26 point to this table.
+
 What is stored: when linked, the source person id **and** a snapshot of the source's values at that moment (name or
 initials, profession, country, contact summary). A later change or deletion of the source record does not change the
 case (GxP record); when follow-up needs current contact data, the source record is read. The snapshot is personal data:
 MOD-0019 masking and the audit rules apply unchanged. Editing the snapshot (EK-4, `pvg-mod0230-intake-fields-02.md`;
 DL-2 scope): a snapshot copied from a linked source may be edited on the case; the change is written to the audit
 record with the field name only (no value); the source record (CRM contact, person directory) is not changed, and the
-link id (`ReporterSourceId`) stays. Acceptance: BG-30.
+link id (`ReporterSourceId`) stays. This holds for snapshots copied from CRM (MOD-0150) and from the person directory
+(MOD-0288) alike. Country in the copy (KR-3, `pvg-mod0230-intake-fields-03.md`): the country of the linked source
+(CRM `CountryRef`, a MOD-0048 location code; the MOD-0288 person's country if the directory holds one) is written to
+`ReporterCountry` only if, at copy time, it fits the `ReporterCountry` columns of the "Country rule table" (today, with
+the list absent, no list code fits); otherwise `ReporterCountry` stays null, the rest of the snapshot is copied, and
+the case is not rejected for the country (EK-3: PV refuses no notification). The copy may be corrected by hand later
+(EK-4); the source record is not changed (XMC-001). Acceptance is split by slice (revision 05, review 04 F-5): BG-30 (DL-2) measures the edit, the
+unchanged source and link, and the audit payload produced **locally** by the Update command with the field name only;
+a local test double or the in-memory `PvgAuditIntent` is **not** central audit acceptance. The real audit write of
+that payload is DL-5 and is measured by BG-33.
 
 One CRM search for a typed reporter (AL-6 clarification): when the record is completed, the person is searched in CRM
 once; a hit is linked (link + snapshot, as on path 2). The search runs inside the existing Create / Update command at
@@ -326,8 +425,11 @@ recipient is the employee who learned it (representative). A representative is n
 reporter only when reporting an own adverse event (type consumer / employee).
 
 CRM pre-fill (REQ-PVG-CRM-01): automatic filling from a CRM visit report uses exactly these fields (`AwarenessAtUtc` =
-the moment the representative learned it, `CompanyRecipientPersonId`, `ReporterSource = Crm`, `ReporterSourceId`,
-`ProductLines[].GlobalProductId` - the CRM visit report already holds products by Global Product id). The intake
+the moment the representative learned it, `CompanyRecipientPersonId`, the reporter selection `Crm` + CRM contact id
+from which the server sets `ReporterSource = Crm` and `ReporterSourceId`,
+`ProductLines[].GlobalProductId` - the CRM visit report already holds products by Global Product id). The reporter
+country of the pre-fill follows KR-3: the CRM contact's `CountryRef` is written to `ReporterCountry` only if it fits the
+"Country rule table" at copy time, otherwise `ReporterCountry` stays null and the case is opened. The intake
 contract itself stays deferred; this revision writes no contract.
 
 ## Repo Scope
@@ -396,7 +498,7 @@ W-3A0 dependencies are production blockers, not waived:
 | Audit forwarder for services without an audit trace | AUD-001 §5 K4 shared forwarder package (Control Tower) | BLOCKER for DL-5 |
 | Global Product / GSKU read (revision 04, AL-1) | MOD-0290 Product / Item / SKU Master (master-data-management) | Open - owner contract pending; blocks BG-22 and the product picker of BG-32. PVG does not write to MDM (XMC-001). |
 | CRM contact read (revision 04, AL-6) | MOD-0150 Contact & Relationship Management (commercial-suite) | Open - owner contract pending; blocks BG-30 and the CRM part of the reporter search (BG-32). PVG does not write to CRM (XMC-001). |
-| Person directory read (revision 04, AL-2, AL-6) | MOD-0288 Organization, Person & Position Directory (platform-shared-services) | Open - owner contract pending; blocks BG-24 and the directory part of the pickers (BG-32). PVG does not write to the directory (XMC-001). |
+| Person directory read (revision 04, AL-2, AL-6) | MOD-0288 Organization, Person & Position Directory (platform-shared-services) | Open - owner contract pending; blocks BG-24, the person-directory part of BG-30, and the directory part of the pickers (BG-32). PVG does not write to the directory (XMC-001). |
 | Country list read (revision 04, AL-3, AL-6) | Platform reference data (MOD-0048 Reference Data Management) | Open — owner approval pending (EK-1 and the AL-3 correction, `pvg-mod0230-intake-fields-02.md`; see the country-list row below); blocks BG-26. PVG adds no value to the list (XMC-001). |
 | QPPV confirmations (revision 04) | QPPV (PV process owner) | Open: trusted awareness timestamp (AL-2, QPPV-02), report type values (AL-4), validity criteria (AL-5). Blocks BG-28 and the "approved" status of the AL-4 values. |
 | DCP-004 | PVG Urgent W-3 Development Block | **`approved` 2026-08-09**; build/test gate open, operational runtime gate closed |
@@ -421,9 +523,9 @@ it does not approve a contract and does not open operational runtime. No row in 
 | MOD-0031 Evidence-Link | object reference shape, link/query API, evidence requirement/completeness rule, evidence-pack boundary | whether artifacts require evidence links at create, triage, route, and downstream handoff | **PORTED** - `IPvgEvidenceLinkPort` + `DenyAllEvidenceLinkPort`. Build gate satisfied by the substitute; **operational runtime still BLOCKER**. Today: `DenyAllEvidenceLinkPort.EvaluateAsync` returns `EvidenceLinkDenied` for every request and records nothing. Proposed, not in code: a non-production adapter that records a requirement as `Pending` (never as satisfied), only if the MOD-0031 owner approves a durable pending-evidence state |
 | Blueprint MOD-0040 / TRACE-BUNDLE | canonical/external ID semantics, `X-Correlation-Id`, trace stitching, regulated error model | generated/manual intake ID policy, external source ID policy, correlation propagation, error reason-code policy | **OPEN - owner contract pending.** PvgService references no `Diten.Platform.Common` Observability or Tenancy code. Local behaviour only: `X-Correlation-Id` is required and checked (at most 128 characters, no whitespace) into `PvgCorrelationContext`; draft IDs are generated by the store; request DTOs carry no `Id` or `TenantId`; no shared correlation middleware and no trace stitching. Error model: G-8, OD-PVG-3. |
 | MOD-0290 Product / Item / SKU Master (revision 04) | read of a Global Product by id and of the GSKUs (presentations) of a product, tenant-scoped, read-only; product search for the picker; behaviour when the master is unavailable | which product facts the case keeps (id only; the as-reported name is always typed); an id that cannot be verified fails closed | **Open - owner contract pending.** Registry row MOD-0290 (`execution/registries/module-id-registry.md` line 167): status `canonical`, pack `execution/domains/master-data-management/module-packs/MOD-0290-product-item-sku-master.md`. Nothing is read today (G-22). Until the contract is recorded, every non-empty `GlobalProductId` or `PresentationGskuId` is rejected (BG-21); text-only lines work. PVG reads, never writes. |
-| MOD-0150 Contact & Relationship Management (revision 04) | read of a CRM contact (physician / pharmacist) by id and by search, tenant-scoped, read-only, returning the snapshot values (name, profession, country, contact summary); the match rule for the one-time search of a typed reporter | reporter link and snapshot; one search per completed record; an ambiguous match links nothing | **Open - owner contract pending.** Fact: the registry row MOD-0150 (line 268) says `reserved / planned`, while CRM code exists - `services/Diten.CrmService/src/Diten.CrmService.Domain/Entities/Contact.cs` is documented as "MOD-0150 Contact master" (fields include `DisplayName`, `ProfessionalTitle`, `Specialty`, `Phone`, `Email`, `CountryRef`). The mismatch is CRM's matter (XMC-001). Nothing is read today (G-22). Until the contract is recorded, `ReporterSource = Crm` is rejected (BG-29). PVG reads, never writes. |
-| MOD-0288 Organization, Person & Position Directory (revision 04) | read of a person by id and by search, and of the MOD-0288 person linked to the signed-in user, tenant-scoped, read-only | company recipient default and choice (AL-2); employee reporter (AL-6) | **Open - owner contract pending.** Registry row MOD-0288 (line 165): status `done`, runtime in `services/Diten.Platform`. Nothing is read today (G-22). Until the contract is recorded, a supplied `CompanyRecipientPersonId` is rejected and the field is not required, and `ReporterSource = PersonDirectory` is rejected (BG-24, BG-29). PVG reads, never writes. |
-| Platform reference country list (revision 04) | read-only country list for a tenant module; country code shape | `EventCountry` and `ReporterCountry` values; "unknown" stays a PVG value | **Open — owner approval pending.** Decided (EK-1, `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-02.md`): PVG asks the MOD-0048 owner for an approved country list for PVG (ISO 3166-1 alpha-2, business reference data path); the AL-3 correction in the same record states that AL-3 needs the MOD-0048 owner's approval. Measured: `GET /api/lookups/countries` is Platform provisioning / support only, `PlatformActor` policy, and "any public country list requires a separate approved decision" (`execution/domains/platform-shared-services/module-packs/MOD-0048-lookups-reference-data.md` lines 392, 555); MOD-0048-FU01 holds an ISO 3166-1 alpha-2 country-market set as business reference data; the CRM contact's `CountryRef` is a MOD-0048 published location code. Until the MOD-0048 owner delivers the approved list, `EventCountry` and `ReporterCountry` accept only the PVG "unknown" value (EK-1; `EventCountry` test: BG-25); PVG adds no value to the list; no hardcoded country list (`platform-lookups-reference-data.md`). |
+| MOD-0150 Contact & Relationship Management (revision 04) | read of a CRM contact (physician / pharmacist) by id and by search, tenant-scoped, read-only, returning the snapshot values (name, profession, country, contact summary); the match rule for the one-time search of a typed reporter | reporter link and snapshot; one search per completed record; an ambiguous match links nothing | **Open - owner contract pending.** Fact: the registry row MOD-0150 (line 268) says `reserved / planned`, while CRM code exists - `services/Diten.CrmService/src/Diten.CrmService.Domain/Entities/Contact.cs` is documented as "MOD-0150 Contact master" (fields include `DisplayName`, `ProfessionalTitle`, `Specialty`, `Phone`, `Email`, `CountryRef`). The mismatch is CRM's matter (XMC-001). Nothing is read today (G-22). Until the contract is recorded, a reporter selection with `ReporterSelectionDirectory = Crm` is rejected (BG-29). PVG reads, never writes. |
+| MOD-0288 Organization, Person & Position Directory (revision 04) | read of a person by id and by search, and of the MOD-0288 person linked to the signed-in user, tenant-scoped, read-only | company recipient default and choice (AL-2); employee reporter (AL-6) | **Open - owner contract pending.** Registry row MOD-0288 (line 165): status `done`, runtime in `services/Diten.Platform`. Nothing is read today (G-22). Until the contract is recorded, a supplied `CompanyRecipientPersonId` is rejected and the field is not required, and a reporter selection with `ReporterSelectionDirectory = PersonDirectory` is rejected (BG-24, BG-29). PVG reads, never writes. |
+| Platform reference country list (revision 04) | read-only country list for a tenant module; country code shape | `EventCountry` and `ReporterCountry` values; "unknown" stays a PVG value | **Open — owner approval pending.** Decided (EK-1, `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-02.md`): PVG asks the MOD-0048 owner for an approved country list for PVG (ISO 3166-1 alpha-2, business reference data path); the AL-3 correction in the same record states that AL-3 needs the MOD-0048 owner's approval. Measured: `GET /api/lookups/countries` is Platform provisioning / support only, `PlatformActor` policy, and "any public country list requires a separate approved decision" (`execution/domains/platform-shared-services/module-packs/MOD-0048-lookups-reference-data.md` lines 392, 555); MOD-0048-FU01 holds an ISO 3166-1 alpha-2 country-market set as business reference data; the CRM contact's `CountryRef` is a MOD-0048 published location code. Until the MOD-0048 owner delivers the approved list, `EventCountry` and `ReporterCountry` accept only the PVG "unknown" value (EK-1; `EventCountry` test: BG-25); every list state is fixed by the "Country rule table" in "Entity Fields" (revision 05); PVG adds no value to the list; no hardcoded country list (`platform-lookups-reference-data.md`). |
 
 ### MOD-0230 Owner-Approval Evidence Intake Template
 
@@ -437,7 +539,7 @@ runtime and does not authorize any surface outside the MOD-0230 build/test gate.
 | Approval | Owner/team | Approver | Approval date | Evidence artifact/link | Approved version | Fail-closed proof | Required test evidence | Caveats / exclusions | Readiness decision |
 |---|---|---|---|---|---|---|---|---|---|
 | `PVG-MOD0230-RBAC-Contract v1` | MOD-0018 / AuthService / Platform access governance | MOD-0018 owner role - **Not approved - owner contract pending.** The 2026-08-09 entry named the PVG package owner as approver; that is not an owner approval. | Open | Build/test substitute only: `IPvgPermissionGate` + `DenyAllPermissionGate` (`services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllPermissionGate.cs`), registered only when `Pvg:Runtime:UseNonProductionAdapters` is true. PvgService projects reference no `Diten.Platform.Common` project (`*.csproj`), so the `Diten.Platform.Common/Authorization` types listed on 2026-08-09 are not consumed by this module. | n/a - no owner-approved version | Missing - required proof: deny on missing actor, tenant, permission, scope, seed/grant catalog, or auth context; JWT validated in the service; tenant and actor taken only from validated server context (OD-PVG-2); cross-tenant reads return 404/empty and mutations deny. | Missing - required tests: role/action allow-deny matrix, missing-permission denial, missing or invalid token 401, forged `X-Diten-*` headers without effect, cross-tenant denial, platform/partner/tenant actor behavior, seed/grant ownership proof, and no delete/bulk-delete surface. | **Not owner-approved.** The 2026-08-09 wording "Approved for the build/test gate" applies only to the deny-all substitute: it denies every call, so no permission is ever granted. Real RBAC - JWT validation, Gateway-resolved tenant / actor context, `pvg` permission evidence and tests - is required before operational runtime. Key family: OD-PVG-1; seed/grant ownership stays with MOD-0018 / AuthService. `archive` and `export` keys are out of slice 1; delete and bulk-delete keys are permanently excluded. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build/test gate satisfied by the deny-all substitute only (the box checked on 2026-08-09 covered only that substitute); operational runtime blocked** |
-| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgFieldSecurityPolicy` with `DenyAllFieldSecurityPolicy` | n/a - MOD-0019 contract does not exist | Missing - required proof: deny or omit/mask when field policy is missing or unavailable; raw PHI/PII/free text cannot enter UI/API output, logs, traces, metrics, audit metadata, validation errors, or exports. | Missing - required tests: every field of "Entity Fields" (32 user-entered since revision 04, plus the system-set fields) across list/detail/create/update/export/audit, missing-policy denial, raw-value leak scans, and cross-tenant checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllFieldSecurityPolicy` denies unconditionally. This row continues to **block operational runtime** until MOD-0019 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
+| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgFieldSecurityPolicy` with `DenyAllFieldSecurityPolicy` | n/a - MOD-0019 contract does not exist | Missing - required proof: deny or omit/mask when field policy is missing or unavailable; raw PHI/PII/free text cannot enter UI/API output, logs, traces, metrics, audit metadata, validation errors, or exports. | Missing - required tests: every field of "Entity Fields" (25 create/edit user-entered since revision 05, plus the triage and route inputs and the system-set fields) across list/detail/create/update/export/audit, missing-policy denial, raw-value leak scans, and cross-tenant checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllFieldSecurityPolicy` denies unconditionally. This row continues to **block operational runtime** until MOD-0019 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
 | `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | MOD-0021 owner role - **Not approved - owner contract pending.** The 2026-08-09 entry named the PVG package owner as approver; that is not an owner approval. | Open | Code fact: mutations return a `PvgAuditIntent` (operation, status, permission, actor kind, timestamp) built after the store write; `PvgIntakeDraftApplicationService` has no audit sink or outbox dependency; the host registers none; the API response drops the intent. `tests/architecture/audit-ledger/Diten.PvgService.md`: no trace; the four MOD-0230 write commands are known debt. Nothing is consumed from the `Diten.Platform` audit feature. | n/a - no owner-approved version | Missing - required proof: no unaudited regulated mutation succeeds; an audit write failure blocks the mutation (AUD-001 K2) or uses only an owner-approved durable outbox in the same unit of work; payload redaction happens before persistence/export. | Missing - required tests: create, update, triage, route, denial/failure events; audit-writer failure leaves the store unchanged and the result not `Succeeded`; single-record read audit (AUD-001 §7) and its write-failure behaviour as this contract fixes it (BG-18); redaction; correlation propagation. | **Not owner-approved and not substituted.** No audit record is written today. Mutations cannot succeed outside tests only because the deny-all permission gate denies every call; that is not audit evidence. The audit-write path that blocks the mutation when the record cannot be written is a separate delivery (DL-5) and acceptance condition (BG-11). Planned audited operations: create, update, triage, route, denial/failure; archive and export events are out of slice 1; the payload allow-list excludes every PHI/PII field. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **open; no build/test substitute** |
 | `PVG-MOD0230-WorkflowTransitionGate-v1` | MOD-0023 Workflow/Inbox owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgWorkflowTransitionGate` with `DenyAllWorkflowTransitionGate` | n/a - MOD-0023 contract does not exist | Missing - required proof: gate runs before commit; blocked, unavailable, missing queue, missing assignment policy, missing reason code, tenant/object mismatch, or unapproved `NotApplicable` prevents lifecycle mutation. | Missing - required tests: gate-before-commit, allowed/blocked/not-applicable, outage, missing queue/assignment policy, cross-tenant denial, reason-code validation, correlation propagation, and no-PHI workflow event/log/error checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllWorkflowTransitionGate` denies unconditionally. This row continues to **block operational runtime** until MOD-0023 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
 | `PVG-MOD0230-EvidenceLink-v1` | MOD-0031 Evidence-Link owner | Not approved - no registered owner contract | Open | Build-gate substitute: `IPvgEvidenceLinkPort` with `DenyAllEvidenceLinkPort` | n/a - MOD-0031 contract does not exist | Missing - required proof: missing required evidence or unavailable Evidence-Link blocks triage, route, archive/void, or handoff unless MOD-0031 owner approves a durable pending-evidence state; no fake pack or duplicated content. | Missing - required tests: link/query shape, completeness, outage, cross-tenant denial, link/unlink audit, correlation propagation, workflow handoff blocked on missing evidence, no duplicated document content, and no-PHI evidence-content checks. | **Not owner-approved. Satisfied for the build/test gate only** by a deny-by-default port: every behaviour this row requires is a denial behaviour, and `DenyAllEvidenceLinkPort` denies unconditionally. This row continues to **block operational runtime** until MOD-0031 ships and its owner signs. The port stores no policy data, hosts no engine, and persists nothing. | [ ] Owner-approved for MOD-0230 `ready-for-dev` consumption - **build gate satisfied by fail-closed port; operational runtime still blocked** |
@@ -455,7 +557,7 @@ contract unless the owner explicitly approves the named artifact/version and sup
 | Required approval artifact | Who must approve | Evidence reviewers must supply | What cannot count as approval | Exact condition to mark approved |
 |---|---|---|---|---|
 | `PVG-MOD0230-RBAC-Contract v1` | MOD-0018 / AuthService / Platform access governance | Approver, approval date, artifact/link, approved version, RBAC deny proof, role/action allow-deny tests, cross-tenant denial, platform/partner/tenant actor behavior, seed/grant ownership proof, no delete/bulk-delete proof | Packet recorded only, draft matrix, informal email, unversioned notes, partial permission list, approval by the PVG package owner | All evidence fields are supplied and owner explicitly approves MOD-0230 `ready-for-dev` consumption |
-| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Approver, approval date, artifact/link, version, rules for every field of "Entity Fields" (32 user-entered since revision 04, plus the system-set fields), missing-policy fail-closed proof, raw PHI/PII/free-text leak tests, list/detail/create/update/export/audit tests | Sensitivity vocabulary alone, draft field matrix, generic masking standard, untested policy | Owner-approved artifact proves allow/mask/omit/deny behavior and tests pass for every required surface |
+| `PVG-MOD0230-FieldSecurity-Contract v1` | MOD-0019 masking / row-field security owner | Approver, approval date, artifact/link, version, rules for every field of "Entity Fields" (25 create/edit user-entered since revision 05, plus the triage and route inputs and the system-set fields), missing-policy fail-closed proof, raw PHI/PII/free-text leak tests, list/detail/create/update/export/audit tests | Sensitivity vocabulary alone, draft field matrix, generic masking standard, untested policy | Owner-approved artifact proves allow/mask/omit/deny behavior and tests pass for every required surface |
 | `PVG-MOD0230-AuditEvent-v1` | MOD-0021 AuditEvent / audit owner | Approver, approval date, artifact/link, version, append/event shape, outage fail-closed/outbox proof, redaction proof, create/update/triage/route/archive/export/denial tests, single-record read audit test and its write-failure behaviour (AUD-001 §7) | Generic audit capability, unapproved event names, audit notes without failure-mode proof, an in-memory audit intent, approval by the PVG package owner | Owner approves the PVG event contract and required audit/outage/redaction tests are supplied |
 | `PVG-MOD0230-WorkflowTransitionGate-v1` | MOD-0023 Workflow/Inbox owner | Approver, approval date, artifact/link, version, gate-before-commit proof, queue/assignment/reason-code behavior, outage and blocked transition tests, cross-tenant denial, no-PHI workflow event/log/error proof | Draft workflow states, queue names without owner approval, untested `NotApplicable` behavior | Owner approves the transition gate contract and all blocked/unavailable/missing-policy paths fail closed |
 | `PVG-MOD0230-EvidenceLink-v1` | MOD-0031 Evidence-Link owner | Approver, approval date, artifact/link, version, link/query shape, completeness rules, outage behavior, cross-tenant denial, link/unlink audit, no duplicated content, no-PHI evidence-content tests | Fake evidence pack, duplicated documents, live URL references as authority, generic evidence-link notes | Owner approves the EvidenceLink contract and evidence completeness/outage behavior is test-proven |
@@ -703,7 +805,7 @@ Declaring `data_mode: server` and the table attribute does not make the list ser
 `buildListUrl` sends `pageNumber=1` and `pageSize=100` on every request and the API returns no total counts, so records
 beyond the first 100 are unreachable (G-16). The fix is measured by BG-20 (screen, DL-7) and BG-19 (API counts, DL-4).
 
-The create/edit field count is 32 (16 before revision 04; see "Entity Fields"), so MOD-0230 follows Golden Reference Compact:
+The create/edit field count is 25 (revision 05; revision 04 recorded 32 and the pack before it 16, both including triage / route inputs; see "Entity Fields"), so MOD-0230 follows Golden Reference Compact:
 
 - `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` (MVC proxy; 10 actions).
 - `Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`,
@@ -767,15 +869,17 @@ Route succeed by inventing a queue list must be rejected in review.
 | ProductLines[].LotNumber | No | Max 64 chars (EK-5); trimmed | Not indexed | Length check | regulated-safety; never in audit payloads |
 | AwarenessAtUtc | Yes at Create (EK-2) | UTC instant; default value `ReceivedAtUtc`, an earlier moment may be chosen; `AwarenessAtUtc` <= `ReceivedAtUtc`; same bounds as `ReceivedAtUtc` (not later than server time + 5 min skew, not before 1900-01-01) | Not indexed (planned index decision deferred to MOD-0233 reporting needs) | Server re-normalizes to UTC; awareness later than received rejected 400 with its own reason code; trust policy for the timestamp waits for QPPV (QPPV-02) | regulated-safety; server-side UTC normalization is mandatory |
 | CompanyRecipientPersonId | Yes at Create from the MOD-0288 read contract on | MOD-0288 person id. Default on a case opened by hand: the MOD-0288 person of the PV user who opens it; changeable | Not indexed | **Before the MOD-0288 read contract: a supplied value is rejected, the field is not required.** After it: the id must resolve in MOD-0288 for the tenant; no person linked to the user -> no default, the user selects | confidential |
-| EventCountry | Yes at Create | One code from the Platform reference country list, or the PVG value "unknown" | Not indexed | **Until the country source is settled ("Required Interface Contracts"): only "unknown" is accepted; any other code is rejected.** After it: the code must exist in that list. No hardcoded country list in code or UI | regulated-safety |
+| EventCountry | Yes at Create | One code from the approved country list, or the PVG value "unknown" (AL-3) | Not indexed | **Exactly the `EventCountry` columns of the "Country rule table" ("Entity Fields")**: null rejected in every list state; "unknown" accepted in every list state; a list code rejected while the list is absent (EK-1), accepted only if in the list once it is present, rejected with a safe reason code while the list read is interrupted (these list-code rules apply to a new or changed code). A stored "unknown" or a stored list code received unchanged on update is kept in every list state (KR-1 b). No hardcoded country list in code or UI (BG-25, BG-26) | regulated-safety |
 | ReportType | Yes at Create | Controlled option set `Spontaneous`, `Study`, `Literature`, `Solicited`, `Other` (values wait for QPPV) | Planned index `(TenantId, ReportType)` | Value must exist in the PVG lookup; unknown value rejected 400 | regulated-safety |
-| ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | Yes at Triage, absent at Create (after QPPV confirms AL-5) | Boolean each. `ValiditySuspectProduct = true` requires at least one product line with role `Suspect`; `ValidityReporterIdentifiable = true` requires a linked reporter or at least one reporter identifier | Not indexed | Cross-field checks; a value at Create is rejected | regulated-safety |
+| ValidityReporterIdentifiable, ValidityPatientIdentifiable, ValiditySuspectProduct, ValidityAdverseEvent | Yes at Triage, absent at Create (after QPPV confirms AL-5) | Boolean each. `ValiditySuspectProduct = true` requires at least one product line with role `Suspect`; `ValidityReporterIdentifiable = true` requires a linked reporter or at least one reporter identifier; `ReporterCountry` null or "unknown" is **not** an identifier (revision 05, "Reporter identifiers"): an unlinked reporter whose only value is `ReporterCountry` = "unknown" cannot be declared identifiable (true rejected; false gives `InvalidFollowUpRequired`, BG-28) | Not indexed | Cross-field checks; a value at Create is rejected | regulated-safety |
 | ValidityResult, ValidityMissingCriteria | System, set at Triage | `Valid` when all four criteria hold, otherwise `InvalidFollowUpRequired` with the missing criteria codes; a client-supplied value is rejected | Planned index `(TenantId, ValidityResult)` | Derived on the server only | regulated-safety; an invalid record is never deleted (no delete surface exists) |
-| ReporterSource | Yes at Create (system) | `Crm` / `PersonDirectory` / `Manual` | Not indexed | **Before the MOD-0150 / MOD-0288 read contracts: only `Manual` is accepted** | public-metadata |
-| ReporterSourceId | Required for `Crm` / `PersonDirectory`, absent for `Manual` | CRM contact id or MOD-0288 person id | Not indexed | Must resolve in the owner's read contract; otherwise rejected (fail closed). Reporter = company recipient only with the consumer / employee reporter type | PII; reporter identifier - never in logs/traces/metrics/audit payloads |
+| ReporterSelectionDirectory + ReporterSelectionId (request pair) | No - both or neither | `ReporterSelectionDirectory` in `Crm` / `PersonDirectory`; `ReporterSelectionId` = an id in that directory ("Reporter selection contract", "Entity Fields") | Not stored as such | Exactly one of the two -> 400; other directory value -> 400. **While the owner read contract of the named directory (MOD-0150 for `Crm`, MOD-0288 for `PersonDirectory`) is absent: rejected (fail closed).** After it: resolved in the named directory only, tenant-scoped; never tried in the other directory (a CRM id sent with `PersonDirectory` is rejected); not found or another tenant's id -> 404 with a safe reason code and no record data (OD-PVG-3), the two cases indistinguishable. Update: an unchanged pair keeps link and snapshot without a new read; a missing pair without `RemoveReporterLink` on a linked record -> 400 (permanent rule, KR-2) | PII (`ReporterSelectionId`); never in logs/traces/metrics/audit payloads |
+| RemoveReporterLink (request marker, Update only) | No | Boolean; `true` removes an existing reporter link (KR-2) | Not stored | `true` together with either field of the selection pair -> 400; `true` on Create or on a record without a link -> 400; on a linked record: server writes `ReporterSource = Manual`, clears `ReporterSourceId`, keeps the snapshot values as typed values; audit payload names the changed fields only | public-metadata |
+| ReporterSource | System; always set | `Crm` / `PersonDirectory` / `Manual`, written by the server from the resolved selection (or the one-time CRM search); `Manual` when no selection | Not indexed | **Response only: a request that carries it is rejected 400** (BG-31) | public-metadata |
+| ReporterSourceId | System; set with `Crm` / `PersonDirectory`, empty with `Manual` | The resolved CRM contact id or MOD-0288 person id, copied by the server | Not indexed | **Response only: a request that carries it is rejected 400** (BG-31). Reporter = company recipient only with the consumer / employee reporter type (BG-24) | PII; reporter identifier - never in logs/traces/metrics/audit payloads |
 | ReporterNameOrInitials | No at Create | Max 128 chars (EK-5); trimmed | Not indexed | Length check; copied from the source on a link | PII; deny/mask/omit when field policy is unavailable |
 | ReporterProfession | No | Max 128 chars (EK-5); trimmed | Not indexed | Length check; copied from the source on a link | PII; deny/mask/omit when field policy is unavailable |
-| ReporterCountry | No | Same list as `EventCountry`. **Until the MOD-0048 owner delivers the approved list: only the PVG "unknown" value is accepted (EK-1).** After it: a code from that list (BG-26) | Not indexed | As `EventCountry` | PII (snapshot) |
+| ReporterCountry | No | Same list as `EventCountry`. **Exactly the `ReporterCountry` columns of the "Country rule table" ("Entity Fields")**: null accepted in every list state; "unknown" accepted in every list state (EK-1, KR-1 a); a new or changed list code rejected while the list is absent, accepted only if in the list once present, rejected with a safe reason code while the list read is interrupted. A stored "unknown" or a stored list code received unchanged on update is kept in every list state, also while the list read is interrupted and after the code has left the list (KR-1 b; BG-26). A country copied from a linked source is written only if it fits these rules at copy time, otherwise left null without rejecting the case (KR-3; BG-30). Null and "unknown" are not reporter identifiers (BG-28) | Not indexed | Country rule table | PII (snapshot) |
 | Seriousness | Yes | Controlled option set | Planned index `(TenantId, Seriousness)` | Value must exist in the PVG lookup | regulated-safety |
 | IntakePriority | Yes | Controlled option set; SLA linkage deferred to MOD-0023 | Planned index `(TenantId, IntakePriority)` | Value must exist in the PVG lookup; no SLA is computed in slice 1 | regulated-safety |
 | TriageOutcome | Yes at Triage, absent at Create | Controlled option set: `Triaged`, `Rejected`, `Duplicate` | Planned index `(TenantId, TriageOutcome)` | Transition must return `Allowed` from `IPvgWorkflowTransitionGate.EvaluateAsync` **before** commit (today the deny-all gate denies every triage) | invalid or unapproved transition fails closed |
@@ -815,7 +919,7 @@ Option-set ownership recorded for draft planning for future validation and UI co
 | ValidityResult and missing-criteria codes (revision 04, AL-5) | PVG state model; criteria confirmed by QPPV | PVG-owned, derived (pending QPPV) |
 | EventCountry, ReporterCountry (revision 04, AL-3, AL-6) | Platform reference data country list (source open, "Required Interface Contracts"); "unknown" is a PVG value | Reference-owned, read-only |
 | GlobalProductId, PresentationGskuId (revision 04, AL-1) | MOD-0290 Product / Item / SKU Master | MDM-owned reference, read-only |
-| ReporterSourceId (revision 04, AL-6) | MOD-0150 CRM contact or MOD-0288 person | CRM- / directory-owned reference, read-only |
+| ReporterSourceId (revision 04, AL-6) | MOD-0150 CRM contact or MOD-0288 person; set by the server from the reporter selection pair (revision 05) | CRM- / directory-owned reference, read-only |
 | CompanyRecipientPersonId (revision 04, AL-2) | MOD-0288 person directory | Directory-owned reference, read-only |
 
 Static controlled PVG lookups may be planned as PVG-owned reference data only after the approved reference-data
@@ -863,8 +967,21 @@ until then).
   - Expected: triage/routing transition blocked; no untraceable routing.
 - **Product, person, or country read unavailable, or an id that cannot be verified (revision 04)**
   - Expected: the request carrying that id or code is rejected with a safe reason code and no field value; text-only
-    product lines, a manual reporter, and the "unknown" country stay possible; no invented or hardcoded list. Today: no
-    such field and no read exist (G-17 ... G-22).
+    product lines, a manual reporter, and the "unknown" country stay possible; no invented or hardcoded list. Exceptions
+    (`pvg-mod0230-intake-fields-03.md`): a stored country code received unchanged on update is kept (KR-1 b); a country
+    copied from a linked source that cannot be verified at copy time is left null and the case is not rejected (KR-3).
+    Today: no such field and no read exist (G-17 ... G-22).
+- **Reporter selection incomplete, in the wrong directory, unknown, or of another tenant (revision 05)**
+  - Expected ("Reporter selection contract"): only one of `ReporterSelectionDirectory` / `ReporterSelectionId`, or a
+    request carrying `ReporterSource` / `ReporterSourceId` -> 400 with a reason code and no field value; an id that
+    does not exist in the named directory for the tenant, an id of the other directory, or an id of another tenant ->
+    404 with a safe reason code and no record data, the cases indistinguishable (OD-PVG-3); directory read unavailable
+    -> rejected as in the path above; nothing is linked in any of these cases. Today: no selection field exists (G-21).
+- **Reporter link dropped or removed wrongly (KR-2)**
+  - Expected ("Reporter selection contract"): an update of a linked record without the selection pair and without
+    `RemoveReporterLink` -> 400, the link unchanged (no silent unlink); `RemoveReporterLink = true` together with
+    either field of the selection pair -> 400; `RemoveReporterLink = true` on Create or on a record without a link ->
+    400; no record changed in any of these cases. Today: no link and no marker exist (G-21).
 - **Awareness later than received (revision 04)**
   - Expected: 400 with its own reason code; no record created or changed.
 - **Audit write fails**
@@ -971,7 +1088,7 @@ Event names below are proposals.
 | Command | Event name (proposal) | Object (type) | Path | Before/after or changed fields | Exception class + reason |
 |---|---|---|---|---|---|
 | `CreateIntakeDraftCommand` | `pvg.case-intake.created` | SafetyCaseIntake | none today - dependency: K4 forwarder (path `b`) + MOD-0021 contract | After: status, IntakeChannel, SourceType, ReporterType, Seriousness, IntakePriority (taxonomy codes only); since revision 04 also ReportType, EventCountry code, ReporterSource, CompanyRecipientPersonId, and per product line ProductRole, GlobalProductId, PresentationGskuId (codes and ids only) | - (K2 class) |
-| `UpdateIntakeDraftCommand` | `pvg.case-intake.updated` | SafetyCaseIntake | none today - same dependency | Before/after of changed taxonomy-coded fields and of the revision 04 codes and ids listed for create; for any other changed field (for example `AwarenessAtUtc`, `LotNumber`, `ProductNameAsReported`, the reporter snapshot, a reporter link made by the one-time CRM search) the field name only | - (K2 class) |
+| `UpdateIntakeDraftCommand` | `pvg.case-intake.updated` | SafetyCaseIntake | none today - same dependency | Before/after of changed taxonomy-coded fields and of the revision 04 codes and ids listed for create; for any other changed field (for example `AwarenessAtUtc`, `LotNumber`, `ProductNameAsReported`, the reporter snapshot, a reporter link made by the one-time CRM search) the field name only; a link removal with `RemoveReporterLink` (KR-2, `pvg-mod0230-intake-fields-03.md`) is recorded by field names only (`ReporterSource`, `ReporterSourceId`), no values | - (K2 class) |
 | `TriageIntakeDraftCommand` | `pvg.case-intake.triaged` | SafetyCaseIntake | none today - same dependency | Before/after: status, TriageOutcome, triage reason code; since revision 04 also the four validity criteria, ValidityResult, and the missing-criteria codes | - (K2 class) |
 | `RouteIntakeDraftCommand` | `pvg.case-intake.routed` | SafetyCaseIntake | none today - same dependency | Before/after: status, route target queue code | - (K2 class) |
 | `GetIntakeDraftByIdQuery` (**read**; `GetDraftByIdAsync`) | `pvg.case-intake.viewed` | SafetyCaseIntake | none today - dependency: the same K4 forwarder (path `b`) + MOD-0021 contract (OD-PVG-9); central path `a` / `b` only, path `c` (equivalent trail) is not allowed for reads (AUD-001 §7) | Read: object type and id, actor, server-resolved tenant, correlation id, UTC time, outcome; no field value | - (AUD-001 §7: a patient-safety record - a pharmacovigilance case - opened singly) |
@@ -1060,7 +1177,7 @@ acceptance record.
 - [x] DCP-002 preflight passed for MOD-0230.
 - [x] W-3A0 dependencies are recorded as production blockers, not waived.
 - [x] No operational runtime implementation is authorized.
-- [x] Form field count recorded as `16` (planning value; `32` since revision 04, 2026-10-22).
+- [x] Form field count recorded as `16` (planning value; `32` in revision 04; `25` since revision 05, 2026-10-22 - create/edit only, triage and route inputs not counted).
 - [x] Golden Reference recorded as `compact`.
 - [x] Shell recorded as `tenant`.
 - [x] Entity base recorded as `EntityBase` for the dedicated PVG service boundary.
@@ -1216,16 +1333,35 @@ say "after ..." and cannot be checked before that approval is recorded.
       `Manual_create_defaults_company_recipient_to_acting_users_person`; a chosen recipient replaces the default - test
       `Chosen_company_recipient_replaces_the_default`; an unresolved person id is rejected - test
       `Unresolved_company_recipient_is_rejected`; a reporter equal to the company recipient is rejected unless the
-      reporter type is consumer / employee - test `Reporter_equal_to_company_recipient_requires_consumer_or_employee_type`.
-- [ ] BG-25 (DL-2) - Event country before the source is settled (AL-3, G-19): missing `EventCountry` is rejected - test
+      reporter type is consumer / employee - test `Reporter_equal_to_company_recipient_requires_consumer_or_employee_type`;
+      reporter selection in the person directory (revision 05, "Reporter selection contract"): a MOD-0288 person id sent
+      with `ReporterSelectionDirectory = PersonDirectory` stores `ReporterSource = PersonDirectory`, that id, and the
+      snapshot - test `Person_directory_selection_sets_source_and_snapshot_on_the_server`; a CRM contact id sent with
+      `ReporterSelectionDirectory = PersonDirectory` is rejected and nothing is linked - test
+      `Crm_contact_id_sent_as_person_directory_selection_is_rejected`; a person id of another tenant gives the same
+      not-found result as a missing id (404 shape, no record data) - test
+      `Person_directory_selection_of_another_tenant_is_not_found`.
+- [ ] BG-25 (DL-2) - Event country before the source is settled ("Country rule table" row "Absent"; AL-3, EK-1, G-19): missing `EventCountry` is rejected - test
       `Create_without_event_country_is_rejected`; the "unknown" value is accepted - test
       `Event_country_unknown_is_accepted`; any other code is rejected - test
-      `Event_country_code_is_rejected_while_country_source_is_unsettled`; `grep` over the MOD-0230 service and
-      frontend paths finds no hardcoded country list.
+      `Event_country_code_is_rejected_while_country_source_is_unsettled`; `ReporterCountry` null and "unknown" are
+      accepted and a list code is rejected - test `Reporter_country_accepts_null_and_unknown_only_while_list_is_absent`;
+      `grep` over the MOD-0230 service and frontend paths finds no hardcoded country list.
 - [ ] BG-26 (DL-2; after the country source is settled with the MOD-0048 owner, see "Required Interface Contracts") -
-      `EventCountry` and `ReporterCountry` accept exactly the codes of that list plus, for `EventCountry`, "unknown" -
-      test `Event_country_accepts_reference_list_codes_and_unknown`; list unavailable -> a code other than "unknown" is
-      rejected with a safe reason code - test `Country_list_unavailable_rejects_codes_other_than_unknown`.
+      Every cell of the "Country rule table" rows "Present" and "Interrupted" ("Entity Fields", revision 05; KR-1):
+      `EventCountry` accepts a code of the list and "unknown" and rejects null and a code not in the list - test
+      `Event_country_accepts_reference_list_codes_and_unknown`; `ReporterCountry` accepts null and a code of the list
+      and rejects a code not in the list - test `Reporter_country_accepts_null_and_reference_list_codes`; list read
+      interrupted -> a list code in either field is rejected with a safe reason code, `EventCountry` "unknown" and
+      `ReporterCountry` null still pass - test `Country_list_unavailable_rejects_codes_other_than_unknown`; a record that
+      holds `ReporterCountry` = "unknown" (stored while the list was absent) and receives it unchanged on update keeps
+      it after the list is present - test `Stored_unknown_reporter_country_is_kept_on_update_after_list_arrives`; the
+      same for `EventCountry` - test `Stored_unknown_event_country_is_kept_on_update`; a new or changed
+      `ReporterCountry` = "unknown" is accepted with the list present and with the list read interrupted (KR-1 a,
+      `pvg-mod0230-intake-fields-03.md`) - test `Reporter_country_unknown_is_accepted_in_every_list_state`; a stored list
+      code received unchanged on update is kept while the list read is interrupted - test
+      `Stored_country_code_is_kept_on_update_while_list_is_interrupted` - and after the code has left the list - test
+      `Stored_country_code_is_kept_on_update_after_it_left_the_list` (KR-1 b; both fields).
 - [ ] BG-27 (DL-2; the five values count as approved only after QPPV confirms them) - Report type (AL-4, G-19): missing
       `ReportType` is rejected - test `Create_without_report_type_is_rejected`; a value outside the PVG option set is
       rejected - test `Report_type_outside_option_set_is_rejected`.
@@ -1235,39 +1371,99 @@ say "after ..." and cannot be checked before that approval is recorded.
       `Suspect_product_criterion_without_suspect_line_is_rejected`; a missing criterion gives `InvalidFollowUpRequired`
       with that criterion's code - test `Missing_criterion_gives_invalid_with_missing_criterion_code`; the invalid record
       is still returned by `GetDraftByIdAsync` after triage - test `Invalid_case_remains_a_record_after_triage`; a
-      client-supplied `ValidityResult` is rejected - test `Client_supplied_validity_result_is_rejected`.
-- [ ] BG-29 (DL-2) - Reporter record (AL-6, G-21): a manual reporter with no identifier is accepted at create - test
-      `Manual_reporter_without_identifier_is_accepted_at_create`; `ReporterSource = Crm` or `PersonDirectory` without
-      `ReporterSourceId` is rejected - test `Linked_reporter_without_source_id_is_rejected`; a `Manual` reporter with a
-      source id is rejected - test `Manual_reporter_with_source_id_is_rejected`; while the MOD-0150 / MOD-0288 read
-      contracts are absent only `Manual` is accepted - test
-      `Linked_reporter_source_is_rejected_while_owner_contracts_are_absent`.
-- [ ] BG-30 (DL-2; after the MOD-0150 owner read contract) - CRM link, snapshot, and the one-time search (AL-6): linking
-      a CRM contact stores the id and a snapshot; a later change of the CRM record does not change the case - test
-      `Linked_reporter_snapshot_does_not_change_when_source_changes`; editing a copied snapshot field on the case
-      (EK-4) leaves the source record and `ReporterSourceId` unchanged and writes only the field name, no value, to the
-      audit record - test `Edited_snapshot_field_keeps_source_and_link_and_audits_field_name_only`; a typed reporter
-      is searched in CRM exactly once, inside the completing Create / Update command - test
-      `Typed_reporter_is_searched_in_crm_once_on_save`; an ambiguous match links nothing - test `Ambiguous_crm_match_links_nothing`; no background job is registered (existing
-      host composition tests stay green).
+      client-supplied `ValidityResult` is rejected - test `Client_supplied_validity_result_is_rejected`; "unknown"
+      country is not a reporter identifier (revision 05, "Reporter identifiers"): for an unlinked reporter whose other
+      identifiers are empty and whose only value is `ReporterCountry` = "unknown", `ValidityReporterIdentifiable = true`
+      is rejected with a reason code and no field value - test
+      `Reporter_identifiable_true_with_only_unknown_reporter_country_is_rejected`; the same record declared `false`
+      gives `InvalidFollowUpRequired` with the reporter-identifiable criterion code - test
+      `Reporter_with_only_unknown_country_declared_false_gives_invalid_follow_up_required`.
+- [ ] BG-29 (DL-2) - Reporter record and the reporter selection contract (AL-6, G-21; revision 05, "Reporter
+      selection contract"): a manual reporter with no identifier is accepted at create - test
+      `Manual_reporter_without_identifier_is_accepted_at_create`; a create without a reporter selection stores
+      `ReporterSource = Manual` and an empty `ReporterSourceId`, both set by the server - test
+      `Create_without_reporter_selection_stores_manual_source`; a selection with only `ReporterSelectionDirectory` or
+      only `ReporterSelectionId` is rejected with a reason code and no field value - test
+      `Reporter_selection_with_only_directory_or_only_id_is_rejected`; a directory value outside `Crm` /
+      `PersonDirectory` is rejected - test `Reporter_selection_directory_outside_option_set_is_rejected`; while the
+      MOD-0150 / MOD-0288 read contracts are absent every selection is rejected and only `Manual` results - test
+      `Reporter_selection_is_rejected_while_owner_contracts_are_absent`. Removing a link (KR-2,
+      `pvg-mod0230-intake-fields-03.md`; the linked record is placed directly in the in-memory store, so these tests do
+      not wait for the read contracts): an update without the pair and without `RemoveReporterLink` on a linked record is
+      rejected 400 and the link is unchanged (permanent rule) - test
+      `Update_without_reporter_selection_on_linked_record_is_rejected`; an update with `RemoveReporterLink = true` on a
+      linked record stores `ReporterSource = Manual`, an empty `ReporterSourceId`, and the unchanged snapshot values as
+      typed values, and its locally produced audit payload names the changed fields only, with no value - test
+      `Remove_reporter_link_sets_manual_clears_source_id_and_keeps_snapshot`; `RemoveReporterLink = true` together with
+      the selection pair is rejected 400 - test `Remove_reporter_link_with_selection_pair_is_rejected`;
+      `RemoveReporterLink = true` on Create or on an unlinked record is rejected 400 - test
+      `Remove_reporter_link_without_existing_link_is_rejected`. The shape test `PvgApplicationContractShapeTests` pins
+      that create and update commands carry `ReporterSelectionDirectory` and `ReporterSelectionId`, the update command
+      also `RemoveReporterLink`, and neither carries `ReporterSource` nor `ReporterSourceId`.
+- [ ] BG-30 (DL-2; CRM parts after the MOD-0150 owner read contract, person-directory parts after the MOD-0288 owner
+      read contract) - CRM link, snapshot, snapshot edit with a **local** audit payload, and the one-time search (AL-6,
+      EK-4): a CRM contact id sent with `ReporterSelectionDirectory = Crm` stores `ReporterSource = Crm`, that id, and
+      the snapshot, all set by the server - test `Crm_selection_sets_source_and_snapshot_on_the_server`; a MOD-0288
+      person id sent with `ReporterSelectionDirectory = Crm` is rejected - test
+      `Person_directory_id_sent_as_crm_selection_is_rejected`; a CRM contact id of another tenant gives the same
+      not-found result as a missing id - test `Crm_selection_of_another_tenant_is_not_found`; a later change of the
+      source record does not change the case - test `Linked_reporter_snapshot_does_not_change_when_source_changes`;
+      editing a copied snapshot field on the case (EK-4) leaves the source record and `ReporterSourceId` unchanged, and
+      the audit payload the Update command produces locally (today the in-memory `PvgAuditIntent`) names the field only,
+      with no value - for a CRM (MOD-0150) snapshot, test
+      `Edited_crm_snapshot_field_keeps_source_and_link_and_local_payload_names_field_only`, and for a person-directory
+      (MOD-0288) snapshot, test
+      `Edited_person_directory_snapshot_field_keeps_source_and_link_and_local_payload_names_field_only`. This item
+      measures the payload only: a local test double or the in-memory intent is **not** central audit acceptance; the
+      real audit write is DL-5 (BG-33). Country in the copy (KR-3, `pvg-mod0230-intake-fields-03.md`): with the country
+      list absent, a CRM contact whose `CountryRef` holds a country code is selected - the code is not copied, the case
+      is opened, `ReporterCountry` is null, and the rest of the snapshot is copied - test
+      `Crm_country_code_is_not_copied_while_list_is_absent_and_case_opens_with_null_reporter_country`; the same for a
+      MOD-0288 person whose directory record holds a country, if the MOD-0288 read contract returns one - test
+      `Person_directory_country_is_not_copied_while_list_is_absent`. A typed reporter is searched in CRM exactly once, inside the completing Create /
+      Update command - test `Typed_reporter_is_searched_in_crm_once_on_save`; an ambiguous match links nothing - test
+      `Ambiguous_crm_match_links_nothing`; no background job is registered (existing host composition tests stay green).
 - [ ] BG-31 (DL-4; after DL-2 BG-21, BG-23, BG-25, BG-27, BG-29) - API (G-17 ... G-21): create and update request
-      records carry the revision 04 user-entered fields; item responses return them through the field-security port;
-      `ValidityResult`, `ValidityMissingCriteria`, and `ReporterSource` are response-only (a request value is rejected
-      400); a validation failure on a revision 04 field returns its reason code and no field value. Tests in
-      `Diten.PvgService.Api.Tests`: `Post_with_revision04_fields_round_trips_codes_and_ids`,
-      `Post_with_client_validity_result_is_rejected`, `Validation_failure_on_revision04_field_returns_code_without_value`.
+      records carry the revision 04 user-entered fields, the reporter link only as the pair `ReporterSelectionDirectory`
+      + `ReporterSelectionId` (revision 05, "Reporter selection contract"); item responses return the fields, including
+      the server-set `ReporterSource` and `ReporterSourceId`, through the field-security port; `ValidityResult`,
+      `ValidityMissingCriteria`, `ReporterSource`, and `ReporterSourceId` are response-only (a request value is rejected
+      400); a request with only one field of the selection pair is rejected 400; an update request carries the
+      `RemoveReporterLink` marker (KR-2) and is rejected 400 when the marker comes with the selection pair; a selection that does not resolve in
+      the named directory, or resolves only in another tenant, returns 404 with no record data; a validation failure on
+      a revision 04 field returns its reason code and no field value. Tests in `Diten.PvgService.Api.Tests`:
+      `Post_with_revision04_fields_round_trips_codes_and_ids`, `Post_with_client_validity_result_is_rejected`,
+      `Post_with_reporter_source_or_source_id_is_rejected`, `Post_with_only_one_reporter_selection_field_is_rejected`,
+      `Put_with_remove_reporter_link_and_selection_pair_is_rejected`, `Put_with_remove_reporter_link_round_trips_manual_source`,
+      `Post_with_unresolved_or_cross_tenant_reporter_selection_returns_404` (after the MOD-0150 or MOD-0288 read
+      contract), `Validation_failure_on_revision04_field_returns_code_without_value`.
 - [ ] BG-32 (DL-7; field inputs after DL-4 BG-31; pickers after the MOD-0290, MOD-0150, and MOD-0288 owner read
       contracts and the country-source decision) - Screen: `_Form.cshtml` has the product list, awareness, company
       recipient (prefilled with the acting user's person, changeable), event country with "unknown", report type, and
       the reporter search with a manual path; the triage form has the four criteria; no option list (country, report
       type, product role) is hardcoded in views or JS; pickers call only the same-origin MVC proxy; every new label
       exists in all seven `CaseIntakeTriageIndex.*.resx` files (BG-15). Tests in
-      `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`: `pvg form posts the product lines and reporter
-      source`, `pvg form prefills the company recipient and allows a change`, `pvg pickers call only the mvc proxy`.
-- [ ] BG-33 (DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract) -
+      `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`: `pvg form posts the product lines and the reporter
+      selection reference` (a reporter picked in the search posts `ReporterSelectionDirectory` and
+      `ReporterSelectionId` together, a manual reporter posts neither, and no form post carries `ReporterSource` or
+      `ReporterSourceId` - revision 05, "Reporter selection contract"), `pvg edit form sends back the stored reporter
+      selection`, `pvg remove link action posts RemoveReporterLink without the selection pair` (KR-2: the Edit screen's
+      "remove link" action posts `RemoveReporterLink = true` and neither field of the pair; the action exists only on a
+      linked record), `pvg form prefills the company recipient and allows a change`, `pvg pickers call only the mvc proxy`.
+- [ ] BG-33 (DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract;
+      the snapshot-edit part also after BG-30, i.e. the MOD-0150 / MOD-0288 owner read contracts) -
       Audit payload of the revision 04 fields ("Audited Events"): create, update, and triage records carry only the
       listed codes and ids; no as-reported text, lot number, awareness value, reporter source id, or snapshot value -
-      test `Audit_payload_carries_no_reporter_snapshot_or_as_reported_text`.
+      test `Audit_payload_carries_no_reporter_snapshot_or_as_reported_text`. Real audit write of a snapshot edit (EK-4;
+      moved here from BG-30 in revision 05, review 04 F-5): an Update that edits a copied snapshot field writes, through
+      the real audit path (K4 forwarder, path `b`, under `PVG-MOD0230-AuditEvent-v1`), a record that names the field and
+      carries no value - for a CRM (MOD-0150) snapshot, test `Edited_crm_snapshot_field_is_audited_by_field_name_only`,
+      and for a person-directory (MOD-0288) snapshot, test
+      `Edited_person_directory_snapshot_field_is_audited_by_field_name_only`; the test asserts the record received by
+      the audit path, not a local test double. Real audit write of a link removal (KR-2): an Update with
+      `RemoveReporterLink = true` writes, through the same real audit path, a record that names the changed fields
+      (`ReporterSource`, `ReporterSourceId`) and carries no value - test
+      `Removed_reporter_link_is_audited_by_field_name_only`.
 
 **Operational runtime gate (all open - do not check without owner evidence):**
 
@@ -1430,9 +1626,11 @@ Behaviour that the suites must cover (each with at least one named test):
 - Revision 04 intake fields (2026-10-22, decision record `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-01.md`):
   product list and the MOD-0290 fail-closed rule (BG-21, BG-22); awareness <= received and the recipient
   (BG-23, BG-24); event country with "unknown" and no hardcoded list (BG-25, BG-26); report type (BG-27); validity
-  result, the "at least one suspect product" rule, and no deletion of an invalid record (BG-28); reporter source,
-  link, snapshot, and the one-time CRM search (BG-29, BG-30); API shape (BG-31); screen and seven-language labels
-  (BG-32); audit payload of codes and ids only (BG-33). Items marked "after ..." are measured only after that owner or
+  result, the "at least one suspect product" rule, "unknown" country not an identifier, and no deletion of an invalid
+  record (BG-28); the reporter selection contract (directory + id pair, server-set source), link, snapshot, local
+  snapshot-edit payload, and the one-time CRM search (BG-24, BG-29, BG-30); the country rule table and the kept stored
+  "unknown" (BG-25, BG-26); API shape (BG-31); screen and seven-language labels (BG-32); audit payload of codes and ids
+  only and the real audit write of a snapshot edit, CRM and person directory (BG-33). Items marked "after ..." are measured only after that owner or
   QPPV approval; until then their fail-closed tests (BG-21, BG-23, BG-25, BG-29) are the measurable part. The
   existing `SuspectProductText` tests (5 test files, G-17) are changed in DL-2, not deleted without replacement.
 - REG-PV-BASE port conformance C-01 ... C-17: the document `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md`
@@ -1470,7 +1668,7 @@ Behaviour that the suites must cover (each with at least one named test):
 - [x] `entity_base` recorded as `EntityBase` for the dedicated PVG service boundary.
 - [x] Create/edit user-entered fields defined and marked required/optional.
 - [x] PHI/PII/sensitive-field matrix recorded for every intake field.
-- [x] `form_field_count` recorded as `32` (revision 04, 2026-10-22; `16` before); `golden_reference` recorded as `compact` (unchanged).
+- [x] `form_field_count` recorded as `25` (revision 05, 2026-10-22: create/edit fields only; revision 04 recorded `32` and the pack before it `16`, both including triage / route inputs); `golden_reference` recorded as `compact` (unchanged).
 - [x] `data_mode` declared - `server` in the frontmatter (OD-PVG-8, decided 2026-10-21).
 - [x] Validation rules recorded (max lengths, cross-field rules, planned index decisions, fail-closed behaviour).
 - [x] Option-set ownership recorded for intake, source, reporter, seriousness, priority, triage outcome, and route queue;
@@ -1489,8 +1687,11 @@ Behaviour that the suites must cover (each with at least one named test):
 - [ ] Test expectations concrete - commands and thresholds listed; C-01 ... C-17 unmapped (G-12).
 - [ ] Page help texts (UXH-001) - not measured in this revision.
 - [ ] Revision 04 intake fields (AL-1 ... AL-7) - recorded in this text; not in code (G-17 ... G-22); read contracts
-      with MOD-0290, MOD-0150, MOD-0288, the country-list source, and the QPPV confirmations are open. Needs
-      independent review 04 and a new version-bound approval row.
+      with MOD-0290, MOD-0150, MOD-0288, the country-list source, and the QPPV confirmations are open. Independent
+      review 04 returned "UYGUN DEĞİL" (1 ENGEL, 4 ORTA); revision 05 addresses F-1 ... F-5 and needs independent
+      review 05 and a new version-bound approval row. Owner decisions OD-PVG-11 and OD-PVG-12, opened in revision 05,
+      are closed by `pvg-mod0230-intake-fields-03.md` KR-1 and KR-2 (2026-10-22); KR-3 settles the country copied from a
+      linked source.
 
 ## Implementation Notes
 
@@ -1534,6 +1735,40 @@ Behaviour that the suites must cover (each with at least one named test):
   limits 20 product lines, `LotNumber` 64, reporter name and profession 128 characters (EK-5; review 04 assesses
   them). Still open: the QPPV confirmations (EK-2 trusted timestamp QPPV-02, EK-3 with AL-5) and the MOD-0048 owner's
   approval of the country list (EK-1). Regulatory statements stay general information, QPPV-verified.
+- **2026-10-22 revision 05 - independent review 04 findings F-1 ... F-5.** Review 04 of pack version `23c49893`
+  (commit `778ccaf05`, the version compared for this revision) returned "UYGUN DEĞİL" with one ENGEL and four ORTA
+  (`docs/records/reviews/MOD-0230/2026-10-22-23c49893.md`, sha256
+  `bfb5c82f07671fc363220e2e73492c24a78c98461e78f2176b97a28953c6f8b3`; Control Tower comparison note
+  `docs/records/reviews/MOD-0230/2026-10-22-23c49893-ct-karsilastirma-04.md`). Applied in this text:
+  F-1 (ENGEL) - the reporter selection contract: the request carries the pair `ReporterSelectionDirectory` (`Crm` |
+  `PersonDirectory`) + `ReporterSelectionId`, both or neither (one alone -> 400); the server resolves the id in the
+  named directory only, tenant-scoped, not-found and cross-tenant -> 404 (OD-PVG-3); the server alone writes
+  `ReporterSource` and `ReporterSourceId` (`Manual` without a selection); both are response-only and rejected 400 in a
+  request; the same contract in "Entity Fields", "Validation Rules", BG-24, BG-29 ... BG-32, DL-4, and DL-7; BG-32's
+  test now measures the selection reference, not a posted reporter source (authority AL-6). F-2 - "Reporter
+  identifiers": `ReporterCountry` "unknown" and null are not identifiers; true rejected, false gives
+  `InvalidFollowUpRequired` (BG-28; EK-1, EK-3). F-3 - one "Country rule table" for `EventCountry` and
+  `ReporterCountry` (list absent / present / interrupted x null / "unknown" / list code), a stored "unknown" received
+  unchanged on update is kept, Validation Rules and BG-25 / BG-26 bound to it; cells the decision records do not settle
+  are the new open decision OD-PVG-11. F-4 - `form_field_count: 25`; the count table is split by operation; the
+  triage inputs (four validity criteria, `TriageOutcome`, `TriageReason`) and the route input (`RouteTargetQueue`) are
+  listed separately and not counted; `compact` unchanged. Correction of the record: the first count of 16 already
+  included the three triage / route fields, so the true change of revision 04 was 13 -> 25, not 16 -> 32 (comparison
+  note 04 §3 item 1). F-5 - BG-30 split: DL-2 keeps the snapshot edit and the locally produced field-name-only payload
+  (a local test double is not central audit acceptance); the real audit write moved to DL-5 / BG-33; both cover CRM and
+  person-directory (MOD-0288) snapshots (EK-4). Found while writing F-1: removing an existing reporter link on update is
+  not settled by any record -> new open decision OD-PVG-12 (until decided, an update that drops the pair on a linked
+  record is rejected 400). OD-PVG-1 ... 10 unchanged. No other frontmatter field changed. Author: `module-pack-author`
+  sub-agent; effort: declared 15, applied: high. Needs independent review 05 and a new version-bound approval row.
+  Closed in the same revision 05 (owner, 2026-10-22): OD-PVG-11, OD-PVG-12, and the CRM country-copy gap are settled by
+  `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-03.md` KR-1 ... KR-3 - `ReporterCountry` "unknown"
+  accepted in every list state and an unchanged stored list code kept in every list state (KR-1, "Country rule table",
+  Validation Rules, BG-26); link removal only through the explicit `RemoveReporterLink` marker, marker plus selection
+  pair -> 400, an update of a linked record without pair and marker -> 400 as a permanent rule (KR-2, "Reporter
+  selection contract", Validation Rules, Failure Path, BG-29, BG-31, BG-32, BG-33); a country copied from a linked
+  source is written only if it fits the table at copy time, otherwise `ReporterCountry` stays null and the case is
+  opened (KR-3, "What is stored", CRM pre-fill, BG-30). `RemoveReporterLink` is an action marker, not a module field:
+  `form_field_count` stays 25.
 - **MOD-0231 validity field (fact only).** MOD-0231's `SignalMinimumAssessment` carries `CaseValidityStatus` and
   `CaseValidityReason` (G-20). How MOD-0231 consumes the MOD-0230 validity result is the MOD-0231 pack's matter
   (XMC-001); this pack changes nothing there.
@@ -1567,7 +1802,7 @@ Behaviour that the suites must cover (each with at least one named test):
 - **Domain-config wording.** Domain-config says MOD-0231 / MOD-0232 / MOD-0234 have no API host; the MOD-0230 host
   registers their application services as composition-only wiring ("Runtime Constraints"). This pack is the higher
   authority; the wording difference is recorded only.
-- Frontmatter decisions: `shell: tenant`, `entity_base: EntityBase`, `form_field_count: 32` (16 before revision 04),
+- Frontmatter decisions: `shell: tenant`, `entity_base: EntityBase`, `form_field_count: 25` (revision 05; 32 in revision 04 and 16 before it, both including triage / route inputs),
   `golden_reference: compact`, `data_mode: server` (OD-PVG-8), `service: Diten.PvgService`, `service_port: 5011` (proposal; not allocated).
 - Route/API profile: tenant MVC route `/Pharmacovigilance/CaseIntakeTriage`, view root
   `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**`, same-origin MVC proxy, Gateway family
@@ -1652,9 +1887,17 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   seferlik CRM araması (aynı komut içinde; yeni yazma komutu ve arka plan işi yok), sahip okuma sözleşmeleri
   geldikten sonra `Application/RegPvBase/` altındaki okuma portları ve `Infrastructure/RegPvBase/` uyarlayıcıları,
   ilgili testler ve `PvgApplicationContractShapeTests.cs`'teki alan kümesi. Önkoşul: ölçülebilir kısım (BG-21, BG-23,
-  BG-25, BG-27, BG-29) için yok; BG-22 MOD-0290, BG-24 MOD-0288, BG-26 ülke listesi kaynağı (MOD-0048), BG-28 QPPV,
-  BG-30 MOD-0150 onayından sonra. Kapsam dışı: MDM, CRM ve kişi dizinine yazma (XMC-001); sabit ülke ya da seçenek
-  listesi; MOD-0231 / MOD-0233 alanları (AL-7). Bitiş (revizyon 04): BG-21…BG-30; `pvg-regpv-base` 0 kırmızı.
+  BG-25, BG-27, BG-29) için yok; BG-22 MOD-0290, BG-24 MOD-0288, BG-26 ülke listesi kaynağı (MOD-0048), BG-28 QPPV
+  onayından sonra; BG-30'un CRM kısmı MOD-0150, kişi dizini kısmı MOD-0288 okuma sözleşmesinden sonra.
+  Revizyon 05: bildiren seçimi sözleşmesi (istekte `ReporterSelectionDirectory` + `ReporterSelectionId`, ikisi birlikte
+  ya da hiçbiri; `ReporterSource` / `ReporterSourceId` sunucu yazar), bağın yalnız `RemoveReporterLink` işaretiyle
+  kaldırılması (KR-2), "unknown" ülkenin tanımlayıcı sayılmaması, ülke kuralı tablosu ve kayıtlı kodun korunması
+  (KR-1), bağlı kaynaktan gelen ülkenin tabloya uymuyorsa null kalması (KR-3) bu dilimdedir
+  (`pvg-mod0230-intake-fields-03.md`). Anlık kopya düzenlemesinde (EK-4) bu dilim yalnız düzenlemeyi ve denetim yükünün
+  **yerelde** yalnız alan adıyla üretilmesini teslim eder (BG-30; CRM ve kişi dizini kopyaları); yerel test ikamesi ya
+  da bellek içi `PvgAuditIntent` merkezi denetim kabulü **sayılmaz**. Gerçek denetim yazımı DL-5'tir (BG-33).
+  Kapsam dışı: MDM, CRM ve kişi dizinine yazma (XMC-001); sabit ülke ya da seçenek listesi; MOD-0231 / MOD-0233
+  alanları (AL-7); merkezi denetim yazımı (DL-5). Bitiş (revizyon 05): BG-21…BG-30; `pvg-regpv-base` 0 kırmızı.
 - **DL-3** — Yollar: `src/Diten.PvgService.Api/Program.cs`, `PvgServiceApiHost.cs`, `tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs`.
   Önkoşul: OD-PVG-5 kapandı (2026-10-21); BG-10 için OD-PVG-6 (PVG tarafı karar 2026-10-21; onay satırına bağlama biçimi
   Enterprise Architecture onayını bekliyor). Kapsam dışı: port tahsisi (OD-PVG-7), üretim açılışı, sırlı appsettings.
@@ -1668,8 +1911,12 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   BG-6 için OD-PVG-3 (PVG tarafı karar 2026-10-21; düzenlenmiş hata zarfı MOD-0041 / Ops onayını bekliyor); BG-19 için
   DL-2 (BG-12) — BG-19 OD-PVG-2 / OD-PVG-3'ü beklemez. Kapsam dışı: Gateway ara katmanı, izin tanımı/grant, MOD-0018 sözleşmesi;
   MVC/JS sayfalama ve sürüm taşıması (DL-7). Bitiş: BG-5, BG-6, BG-7, BG-19; `pvg-api` 0 kırmızı.
-  Revizyon 04: `PvgCaseIntakeTriageEndpoints.cs` istek ve yanıt kayıtlarında yeni alanlar (türetilmiş geçerlilik
-  sonucu ve bildiren kaynağı yalnız yanıtta) ve API testleri. Önkoşul: DL-2 (BG-21, BG-23, BG-25, BG-27, BG-29).
+  Revizyon 04: `PvgCaseIntakeTriageEndpoints.cs` istek ve yanıt kayıtlarında yeni alanlar ve API testleri.
+  Revizyon 05 (bildiren seçimi sözleşmesi): istekte bildiren bağı yalnız `ReporterSelectionDirectory` +
+  `ReporterSelectionId` çiftiyle gelir (ikisi birlikte ya da hiçbiri; yalnız biri 400); türetilmiş geçerlilik sonucu,
+  `ReporterSource` ve `ReporterSourceId` yalnız yanıttadır, istekte gelirse 400; seçilen kimlik belirtilen dizinde
+  bulunmazsa ya da başka kiracıya aitse 404 (kayıt verisi yok); güncelleme isteği `RemoveReporterLink` işaretini taşır,
+  işaret seçim çiftiyle birlikte gelirse 400 (KR-2). Önkoşul: DL-2 (BG-21, BG-23, BG-25, BG-27, BG-29).
   Kapsam dışı: alan doğrulaması (DL-2), ekran (DL-7). Bitiş: BG-31.
 - **DL-5** — Yollar: `PvgIntakeDraftApplicationService.cs` içindeki denetim çağrıları (dört yazma komutu ve
   `GetDraftByIdAsync` okuma denetimi), `Application/RegPvBase/` altında denetim yazıcı portu, ilgili testler, defterde yalnız
@@ -1678,6 +1925,11 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   Kapsam dışı: ileticinin ya da merkezi günlüğün yapımı; liste okumasının denetimi (AUD-001 §7 sınıfı değil).
   Bitiş: BG-11, BG-18 (tekil açılış okuma denetimi); `AuditTrailStandardTests` yeşil ve borç listesi küçülmüş.
   Revizyon 04: yeni alanların denetim yükü yalnız taksonomi kodları ve kimlikler ("Audited Events"); aynı önkoşul.
+  Revizyon 05: anlık kopya düzenlemesinin (EK-4) gerçek denetim yazımı bu dilimdedir — DL-2'nin yerelde ürettiği,
+  yalnız alan adını taşıyan yük gerçek denetim yolundan (K4 iletici, yol `b`) yazılır; kabul testi CRM (MOD-0150) ve
+  kişi dizini (MOD-0288) kopyalarının ikisini de ölçer ve yerel test ikamesini değil, denetim yolunun aldığı kaydı
+  doğrular. Bağın `RemoveReporterLink` ile kaldırılmasının (KR-2) gerçek denetim yazımı da buradadır (yalnız alan
+  adları). Önkoşul: aynı (OD-PVG-9, K4, MOD-0021) ve BG-30 (MOD-0150 / MOD-0288 okuma sözleşmeleri).
   Bitiş: BG-33.
 - **DL-6** — Yollar: `PvgIntakeDraftApplicationService.cs` satır 7–11'deki izin sabitleri,
   `tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs`. Önkoşul: OD-PVG-1 (PVG tarafı karar 2026-10-21,
@@ -1697,7 +1949,10 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   Revizyon 04: `_Form.cshtml` ve triyaj formunda yeni alanlar (ürün listesi, farkına varma anı, şirket alıcısı,
   olay ülkesi "bilinmiyor" ile, rapor türü, bildiren arama + elle giriş, dört geçerlilik ölçütü), denetleyici form
   girdileri, `form.js` / `details.js`, yedi dilde yeni etiketler, seçiciler (ürün, kişi, ülke) yalnız aynı kökenli MVC
-  vekili üzerinden. Önkoşul: alan girdileri için DL-4 (BG-31); seçiciler için MOD-0290, MOD-0150, MOD-0288 okuma
+  vekili üzerinden; revizyon 05: bildiren seçimi formdan `ReporterSelectionDirectory` + `ReporterSelectionId` çifti
+  olarak gider, form `ReporterSource` / `ReporterSourceId` göndermez, düzenleme formu okunan çifti geri gönderir;
+  bağlı kayıtta "bağı kaldır" eylemi çift olmadan `RemoveReporterLink = true` gönderir (KR-2).
+  Önkoşul: alan girdileri için DL-4 (BG-31); seçiciler için MOD-0290, MOD-0150, MOD-0288 okuma
   sözleşmeleri ve ülke listesi kaynağı. Kapsam dışı: servis tarafı doğrulama (DL-2); seçicilerin veri kaynağı yeni
   bir Gateway route'u isterse o DL-8 / integration-agent işidir ve bu revizyonla yetkilendirilmez. Bitiş: BG-32.
 - **DL-8** — Yollar: `gateway/Diten.ApiGateway/ocelot.json` içindeki dört MOD-0230 route girdisi (yalnız integration-agent).
@@ -1708,7 +1963,7 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
 
 Başka sahiplerin işi (XMC-001) — hiçbir dilimde değil; bu paket bunları yapmaz, yalnız bekler:
 
-- MOD-0019 sahibi (platform-shared-services): modül paketi, sahip ve runtime; "Entity Fields" hassasiyet matrisi (revizyon 04'ten beri 32 kullanıcı alanı ve sistem alanları) ilk tüketici gereksinimi olarak verilir.
+- MOD-0019 sahibi (platform-shared-services): modül paketi, sahip ve runtime; "Entity Fields" hassasiyet matrisi (revizyon 05'ten beri 25 oluşturma/düzenleme alanı, triyaj ve yönlendirme girdileri ve sistem alanları) ilk tüketici gereksinimi olarak verilir.
 - MOD-0023 sahibi: triage durum kümesi ve route hedefi gereksinimi.
 - MOD-0031 sahibi: kanıt tamlığı gereksinimi.
 - MOD-0018 sahibi / AuthService: seçilen anahtar ailesinin katalog ve grant'ı; `pvg.*` ad alanının PKS-001 §4 tablosuna eklenmesi.
