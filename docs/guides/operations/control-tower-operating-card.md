@@ -29,7 +29,9 @@ Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır
 ## Soru biçimi — her Control Tower, her soru (S-22, sahip kararı 2026-10-21)
 
 Sahibin ya da geliştiricinin karar vermesi gereken her soru, yanıtın **sonunda** ve metnin içinde, şu biçimde yazılır.
-Butonlu soru kutusu yalnız ek kolaylıktır; metinde "soru kutuda" denmez.
+**Butonlu soru kutusu (AskUserQuestion) kullanılmaz** (S-35): uygulamanın kendi talimatı kutu kullanılınca soruyu
+metinde tekrar etmemeyi istiyor ve bu kartla çelişiyor; soru yalnız metindeki bu biçimle sorulur. "Şimdi siz: … yazın"
+satırı soru yerine geçmez: karar gerekiyorsa yanıtın son bloğu ❓ SORU kutusudur.
 
 Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; terminalde ve Codex'te de okunur):
 
@@ -40,8 +42,7 @@ Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; term
 > "`<cevap kelimesi>`" (ya da 1) derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
 ```
 
-Aynı seçenekler istenirse butonlu kutuyla da verilir; görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her
-soruda token harcar.
+Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token harcar.
 
 - Bir yanıtta en çok **bir** soru; en çok üç seçenek. Karar gerekmiyorsa soru yazılmaz.
 - Önerilen seçenek `ÖNERİM` ile işaretlenir ve gerekçesi tek cümledir; öneri yoksa "önerim yok, çünkü …" yazılır.
@@ -53,7 +54,8 @@ soruda token harcar.
 - **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
   soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
   denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
-  çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında tam yolu ve SHA-256'sı yazılır.
+  çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında **mutlak yolu** (`/Users/…` ile başlayan, kısa `.ct-teslim/…` değil)
+  ve SHA-256'sı **ayrı bir kod bloğunda** yazılır, kopyalanabilsin (S-36); araç izin veriyorsa dosya Finder'da gösterilir.
 - **Dış istek (S-30):** başka bir ekipten istek gelince CT (1) her isteği sınıflandırır (modül, kimin kararı, mevcut
   paketi etkiliyor mu), (2) her soruya önerilen cevabı **sohbette** gösterir — yalnız itiraz listesi yetmez, (3) isteyene
   gidecek mesajı kod bloğunda hazırlar; doğrulama gereken yerleri (ör. QPPV, başka modül sahibi) işaretler. Mesajı
@@ -286,6 +288,7 @@ Replanning = Closure
 | Commit, push, PR ve merge | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5 |
 | CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | **Her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
 | Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
+| Ortak bellek (`~/.claude/projects/<depo>/memory/`) | **Yalnız kendi dosyası** — bütün Claude oturumları aynı bellek klasörünü paylaşır. CT yalnız kendi `project_<kuyruk>_…` dosyasını ekler ya da günceller ve `MEMORY.md` dizinine kendi tek satırını yazar; başka oturumların dosyalarına ve dizin satırlarına dokunmaz, kısaltmaz, birleştirmez. Dizin sınırı aşılırsa sahibe sorar (S-37) | Sahip kararı 2026-10-22 |
 | Yıkıcı Git işlemleri | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §6 |
 | `.antigravity/**` değişiklikleri | **Her seferinde açık onay** | [AGENTS.md](../../../AGENTS.md) §4 |
 | Başka modüle müdahale | **Her seferinde açık onay** | [XMC-001](../../../.antigravity/rules/cross-module-change-consent.md) |
