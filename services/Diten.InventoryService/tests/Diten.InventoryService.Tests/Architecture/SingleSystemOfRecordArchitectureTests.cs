@@ -40,6 +40,30 @@ public sealed class SingleSystemOfRecordArchitectureTests
             ["quarantine_block_reasons", "quarantine_blocked_stock", "quarantine_decision_events", "quarantine_decisions", "quarantine_event_inbox",
              "quarantine_history", "quarantine_holds", "quarantine_lot_release_claims", "quarantine_sequences", "quarantine_settings"],
             Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All.OrderBy(x => x).ToList());
+
+        // MOD-0176 (WP-0176-F1) — expiry policy / exception records in the same database, prefix expiry_ (pack §3). None is stock: an
+        // exception Quantity is the quantity the case is about. WP-0176-F5: the evidence export log + the stored file bytes (FEFO-BUNDLE 1.2.0).
+        Assert.Equal(
+            ["expiry_counters", "expiry_date_overrides", "expiry_evidence_exports", "expiry_evidence_files", "expiry_exception_events", "expiry_exceptions", "expiry_fefo_issue_snapshots", "expiry_policies",
+             "expiry_policy_history"],
+            Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All.OrderBy(x => x).ToList());
+
+        // MOD-0177 (WP-0177-R1) — recall records in the same database, prefix recall_ (pack §3). None is stock: a scope item / declaration
+        // Quantity is the quantity the record is about.
+        Assert.Equal(
+            ["recall_case_events", "recall_cases", "recall_consumption_declarations", "recall_counters", "recall_lot_blocks", "recall_notifications",
+             "recall_scope_items", "recall_segregations", "recall_settings", "recall_settings_history"],
+            Diten.InventoryService.Persistence.Recall.RecallCollections.All.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R2) — the insert-only trace snapshots (pack §8.3), declared beside the R1 set
+        Assert.Equal(["recall_trace_snapshots"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R3) — the quarantine requests (KR-B) and the return links (KR-H, insert-only); neither is stock
+        Assert.Equal(["recall_quarantine_requests", "recall_return_links"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR3.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R4) — the prepared settings changes (the MOD-0022 subject recall.settings-change); not stock
+        Assert.Equal(["recall_settings_changes"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R5) — the drill plans, runs and their events (KR-G, read-only rehearsal); not stock
+        Assert.Equal(["recall_drill_events", "recall_drill_plans", "recall_drill_runs"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R7b) — the evidence export log and the stored file bytes (pack §4.13, insert-only); not stock
+        Assert.Equal(["recall_evidence_exports", "recall_evidence_files"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b.OrderBy(x => x).ToList());
     }
 
     [Fact]
@@ -48,11 +72,19 @@ public sealed class SingleSystemOfRecordArchitectureTests
         var persistence = SourceScan.Production("Diten.InventoryService.Persistence");
         var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All)
             .Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections)
-            .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All).ToList();
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.All) // MOD-0177 (WP-0177-R1)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2) // MOD-0177 (WP-0177-R2)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR3) // MOD-0177 (WP-0177-R3)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4) // MOD-0177 (WP-0177-R4)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5) // MOD-0177 (WP-0177-R5)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b) // MOD-0177 (WP-0177-R7b)
+            .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
+            .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All).ToList();
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
-                        || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.Contains("stock"))
+                        || n.StartsWith("recall_", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
+                        || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.StartsWith("expiry_", StringComparison.Ordinal) || n.Contains("stock"))
             .Distinct()
             .ToList();
 
@@ -64,7 +96,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .ToList();
         Assert.All(getCollectionCalls, arg => Assert.True(
             arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal)
-            || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal),
+            || arg.StartsWith("RecallCollections.", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
+            || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal) || arg.StartsWith("ExpiryCollections.", StringComparison.Ordinal),
             $"GetCollection({arg}) does not name a declared collection constant."));
     }
 

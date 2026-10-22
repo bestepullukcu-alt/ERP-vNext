@@ -231,7 +231,7 @@ public sealed class TraceProxyControllerTests
 
         public List<(string Method, string Path, string? Tenant, string? IdempotencyKey, string Body, string? LegalEntity)> Requests { get; } = [];
 
-        public void On(string prefix, int status, string body) => _routes.Add((prefix, status, body));
+        public void On(string prefix, int status, string body) { Contracts.ContractRoutes.Require(prefix, status, body); _routes.Add((prefix, status, body)); } // FU-WEB-CONTRACT-FAKES
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

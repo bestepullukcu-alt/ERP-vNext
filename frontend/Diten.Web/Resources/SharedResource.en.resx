@@ -1236,6 +1236,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-Signature Policy</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Signature Meanings</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Sample Approvals</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Expiry / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Recall Readiness</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO dashboard</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Approaching expiry</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Expired stock</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO order</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Exception inbox</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Exception detail</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Shelf-life rules and settings</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Evidence pack</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Recall readiness</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Recall trace</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Recall cases</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Recall case</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Recall drill planner</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Recall evidence pack</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Recall settings</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
 </root>

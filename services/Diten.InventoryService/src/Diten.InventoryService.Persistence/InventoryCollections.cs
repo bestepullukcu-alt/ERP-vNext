@@ -10,6 +10,10 @@ public static class InventoryCollections
     /// <summary>Append-only movement facts (pack §4).</summary>
     public const string Transactions = "inventory_transactions";
 
+    /// <summary>WP-MVP1-FU-CLEAN1: the BL-501 central audit queue — READ ONLY by <see cref="CentralAuditActorNames"/> (person names of the evidence
+    /// packs); not an Inventory record, so not in <see cref="All"/>.</summary>
+    public const string CentralAuditOutbox = Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord.CollectionName;
+
     /// <summary>Balance projection — the ONLY balance in ERP-vNext (DEC-INV-02/07/15).</summary>
     public const string Balances = "inventory_balances";
 

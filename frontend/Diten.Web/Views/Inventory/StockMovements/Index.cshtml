@@ -7,6 +7,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["StockMovementsTitle"].Value;
+    ViewData["PageCode"] = "STOCKMOVEMENTS"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 
@@ -49,12 +50,12 @@
 <div class="nav-align-top mb-4">
     <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap">
         <li class="nav-item">
-            <a class="nav-link small border shadow-none wc-tab-compact" href="/StockLedger">
+            <a class="nav-link text-none small border shadow-none wc-tab-compact" href="/StockLedger">
                 <i class="bx bx-package me-1 wc-tab-icon"></i>@Localizer["TabStock"]
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active small border shadow-none wc-tab-compact" href="/StockMovements" aria-current="page">
+            <a class="nav-link text-none active small border shadow-none wc-tab-compact" href="/StockMovements" aria-current="page">
                 <i class="bx bx-transfer-alt me-1 wc-tab-icon"></i>@Localizer["TabMovements"]
             </a>
         </li>
@@ -82,9 +83,11 @@
 }
 
 @section Scripts {
+    <partial name="~/Views/Inventory/_MvpOneListL10n.cshtml" /> @* WP-MVP1-FIX-LIVE3: the list words, before the list script *@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/Inventory/StockMovements/_IndexL10n.cshtml" />
     <script src="~/assets/js/Inventory/StockMovements/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Inventory/StockMovements/people.js" asp-append-version="true"></script>
     <script src="~/assets/js/Inventory/StockMovements/index.js" asp-append-version="true"></script>
 }

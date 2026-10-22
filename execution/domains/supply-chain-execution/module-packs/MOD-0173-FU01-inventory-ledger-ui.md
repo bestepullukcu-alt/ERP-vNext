@@ -576,6 +576,7 @@ label in the tenant nav. Nothing in this pack depends on it.
   MOD-0173 against PRODUCT-MASTER (fail-closed). Owner: Ali. Expiry: when PRODUCT-MASTER-BUNDLE gains an additive
   search operation (v1.1, MOD-0290 owner = single writer), and in any case **before G1 sign-off**. Request to the
   MDM owner is a follow-up (§20).
+  **Status (2026-10-20, G1 re-measure): CLOSED in code** by WP-0173-PM1 (pickers read `/stockable-items`, `ProductPickerSource.cs`; no Model A selector call left in Inventory Web) — live data still on the 4010 bridge until PM-LIVE (O-FUB1-2).
 - **W-UI-02 (OD-UI-2, waiver — K19).** Until MOD-0174 exposes lots, a lot-controlled inbound movement takes a
   **typed lot number**. This supersedes, for lots only, the MOD-0173 pack §21 rule "lots selected from masters,
   never typed". Compensating controls: trim + upper-case normalisation; format 1–40 chars `[A-Z0-9./-]`; the
@@ -592,6 +593,7 @@ label in the tenant nav. Nothing in this pack depends on it.
   the migration**: the owner's working tenant has 0 typed groups and the owner decided to keep typing open for now
   (2026-10-06); the seed tenant `…0001` keeps its 6 G1 test groups (36 transactions) unmigrated. W-UI-02 stays OPEN
   until the owner closes it per tenant; MVP-1 closure must record each tenant's state.
+  **Owner decision G1-D4 (2026-10-20) = A:** the seed tenant `…0001` (6 typed-lot groups / 36 transactions not migrated) is a TEST tenant only; it is reset by the PM-LIVE data rebuild (data option A), not migrated. Per-tenant closure for real tenants stays the rule.
 - **OD-UI-3.** As proposed above: InventoryGovernance untouched until FU01 ships, then retired (separate WP).
 - **KD-1 / KD-2 — deviations not accepted; compliant mapping chosen (owner, 2026-10-01).** This supersedes the
   KD-1/KD-2 deviation text in §11/§16: the full Compact file set is delivered and the verifier runs with
@@ -768,6 +770,39 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
   FU-UI2-05 closed (reversal instant fixed at dialog open, server range check). CT re-measured: Diten.Web.Tests 511/511,
   architecture 18/18; no appsettings / ocelot change. Time-boxed: removed when MDM serves PRODUCT-MASTER (FU-PM-01;
   requirements in docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md).
+
+### FIX-LIVE1 — Stok Defteri lot number (WP-MVP1-FIX-LIVE1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-live1` from `acff1f7be`, commit `6c9ac921b`, local only. Evidence `docs/records/audits/2026-10/mvp1-fix-live1-evidence-2026-10-14.md`.
+
+- **Change.**
+  - The LOT column shows the TRACE lot number (`LotNumberResolver`): one `listLots?skuId&skuLevel&pageSize=200` per SKU on the page,
+    not per lot, with the caller's own `trace.lots.read`.
+  - An unreadable registered lot keeps its id with the hint `LotUnresolvedHint` (7 languages; ar / zh follow the lot glossary).
+  - A typed lot text keeps the "kayıtsız" badge.
+- **Tests.** (c) ×3; sabotage s4 → red.
+- **O-LIVE1-2.** More than 200 lots of one SKU → the rest show "unresolved".
+**Owner decision (2026-10-19): FU-0173-UI-USER-01 → A.** INVENTORY 1.5.0 additive optional `TransactionItem.createdBy: { userId, name? }` (the name at the time of the posting: central-audit `ActorDisplayName` of the posting correlation via the shared `IAuditActorNames`; absent → the Web shows the localized "unknown user", never an id) → WP-MVP1-NAMES1. Consumers outside SCE get an additive optional field only.
+
+**WP-MVP1-NAMES1 — FU-0173-UI-USER-01 kapandı (agent result, pending CT, 2026-10-19).** Kanıt `docs/records/audits/2026-10/mvp1-names1-evidence-2026-10-19.md`.
+- **`45e1f524d` + `4cf4f0f23` INVENTORY 1.5.0 (yalnız ekleme, isteğe bağlı):** `TransactionItem.createdBy { userId, name? }` — `userId` = kaydeden, `name` = kayıt anındaki ad (kuyruğun hareket correlation'ı + kaydeden, aynı kiracı ve şirket); kayıt yoksa `name` yok; sayfa başına TEK okuma. SCE dışı tüketici yok (ölçüldü).
+- **`d448114f2` Web:** S-2 "Kaydeden" sütunu (BG-05 "Recorded by" kapandı) — ad, yoksa 7 dilde "Bilinmeyen kullanıcı", kimlik yalnız `title`'da (`people.js`); makbuzda "Kaydeden" = kaydı yapan oturumun token adı (servisin denetim kuyruğu kuralı).
+
+**WP-MVP1-FU-CLEAN2 — FU-0173-MOV-ACTORNAME, StockMovements DataTable, yardım paneli (agent result, pending CT, 2026-10-19).** Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fu-clean2-evidence-2026-10-19.md`.
+- **Hareket kaydına kayıt anındaki ad:** `InventoryTransaction.CreatedByName` (eklemeli; göç yok). İstekte token adı; arka planda başlatan komutun saklı adı (`IPostingActorName.Use` — recall onaylayanı, karantina girişinin kaydedeni); Auth çağrılmaz. Okuma sırası tek yerde (`InventoryMapping.PostingName`): saklı ad → denetim kuyruğu adı (NAMES1) → yok. INVENTORY sözleşmesi değişmedi.
+- **DataTable (doğrulayıcı 22 → 19 satır):** jQuery eklentisi → DataTables v2 API (`onListError`), `getAuthHeaders()` (fabrikanın başlık kuralı). Kalan 16 açığın gerekçesi kanıtta: ortak dosya (satır eylemi delegasyonu), BL-452 dışa aktarma (servis ucu yok, DUR-SOR), hızlı görünüm / kullanılmayan sözlük / alan önekli uç (uymuyor).
+- **Yardım paneli:** 8 stok sayfasının metni (7 dil); `#offcanvasLocationForm` Enter ile kaydeder (`data-dt-primary="enter"`, istisna satırı çıktı).
+- **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+
+**WP-MVP1-FIX-LIVE3 — kapanış canlı turu: lot numarası, arama ipucu, sekme büyük harfi (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (MVP-1 ucu `03c697e1a`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md`.
+- **S-2 lot sütunu (bulgu 1):** kayıtlı lot için TRACE lot numarası (`LotNumberResolver`, sayfa başına SKU başına tek `listLots`, okuyanın kendi `trace.lots.read`'i); okuyana Lot bağlantısı; okunamayan kayıtlı lotta 7 dilde "Bilinmeyen lot", kimlik yalnız `title`'da; yazılmış lot metni değişmedi. Filtre / S-1 "Geçmiş" / "Düzelt" kimlikle.
+- **Liste sözcükleri (bulgu 2):** MVP-1 liste sayfaları ortak sözcükleri (`Search`, `Filter`, `Apply`, `Reset`, `ShowAll`, `SaveView`, `ColumnVisibility`, `Import`…) `SharedResource`'tan `_MvpOneListL10n` ile alır; sayfanın kendi sözcüğü kazanır. `dt-defaults.js` değişmedi.
+- **Sekmeler (bulgu 3):** tema `nav-link`'i `capitalize` yapıyor (core.css, ortak); MVP-1 sekmeleri temanın `.text-none`'unu taşır.
+- **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
+
+**WP-MVP1-FIX-LIVE4 — FU-0173-REQ-COUNTER kapandı, FU-0173-PICKER-CODE ölçüldü (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live4` (MVP-1 ucu `c654429ca`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live4-evidence-2026-10-20.md`.
+- S-3 sayaç: bant gerekçe alanı yalnız bant isterken zorunlu ve doluluğu sınıfla yansıtılır (ortak sayaç yalnız açılışta görünen alanlara dinleyici bağlıyor, sonra yalnız `class` değişiminde sayıyor); bant açıkken 9 / 9'a ulaşılır, kapalıyken gerekçe sayılmaz. Form türü ve kaynak durumu banda geçer.
+- Ürün kodu araması: Web `q`'yu PRODUCT-MASTER `searchStockableItems`'a olduğu gibi geçirir (yerel filtre yok, Inventory yolda değil); sözleşme "kod ön eki ya da ad". GP koduyla bulunamama köprü (4010) / MDM tarafında — DUR-SOR (PM-LIVE sonrası yeniden ölçülecek).
+- **Sayılar:** Web 3962 / 3964 → 3967 / 3969 (yalnız 2 SafetyStock kırmızısı), Inventory 1335 + 4 (servis değişmedi), mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 4 / 4 sabotaj.
+
 
 ## 20. Follow-up Items
 

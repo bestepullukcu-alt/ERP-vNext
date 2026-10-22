@@ -26,11 +26,92 @@
 
 Paket onayı notu: hiç onay satırı olmamış bir paketin ilk onayı HIGH'dır (listedeki, yazardan başka bir kişi onaylar; başka bir kişi birleştirir). Var olan bir sahip değerini değiştirmek (örneğin e-postayı role çevirmek) muaf değişiklik değildir ve bağımsız inceleme ister (SOP §20.4).
 
+## Soru biçimi — her Control Tower, her soru (S-22, sahip kararı 2026-10-21)
+
+Sahibin ya da geliştiricinin karar vermesi gereken her soru, yanıtın **sonunda** ve metnin içinde, şu biçimde yazılır.
+Butonlu soru kutusu yalnız ek kolaylıktır; metinde "soru kutuda" denmez.
+
+Markdown alıntı kutusu olarak yazılır (sohbette çerçeveli görünür; terminalde ve Codex'te de okunur):
+
+```text
+> ❓ **SORU:** <tek cümle — hangi kararı istiyorum>
+> **1) `<cevap kelimesi>` <seçenek> — ÖNERİM**, çünkü <tek cümle neden>
+> **2) `<cevap kelimesi>` <seçenek>** — <seçilirse ne olur>
+> "`<cevap kelimesi>`" (ya da 1) derseniz: <neye izin verir>; <neye izin vermez (ör. push, PR, merge)>.
+```
+
+Aynı seçenekler istenirse butonlu kutuyla da verilir; görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her
+soruda token harcar.
+
+- Bir yanıtta en çok **bir** soru; en çok üç seçenek. Karar gerekmiyorsa soru yazılmaz.
+- Önerilen seçenek `ÖNERİM` ile işaretlenir ve gerekçesi tek cümledir; öneri yoksa "önerim yok, çünkü …" yazılır.
+- Her seçenek neye izin verdiğini ve vermediğini söyler; sahipten uzun onay metni beklenmez.
+- Her seçeneğin bu soruya özgü kısa bir **cevap kelimesi** vardır (`commit`, `düzelt`, `hepsi-evet`); sahip kelimeyi ya da
+  numarayı yazabilir. Art arda gelen sorularda aynı numara farklı anlam taşıyabildiği için, yalnız numara gelir ve bu
+  önerilen seçenek değilse ya da yazma, silme veya geri alınamaz bir adım başlatıyorsa CT seçeneğin adını tekrar
+  edip tek satırla teyit ister: "2 = önce düzelt — bunu mu kastettiniz?" (S-26).
+- **Başkasına gidecek metin (S-28):** Codex'e, bir geliştiriciye, başka bir CT'ye ya da bir ekibe gidecek her prompt,
+  soru listesi ya da mesaj sohbette **tek bir kopyalanabilir kod bloğunda** (```text … ```) verilir; "dosyadan kopyalayın"
+  denmez. Dosyaya da yazılıyorsa orada da aynı kod bloğu içinde durur (başlık ya da `|` satırı markdown olarak
+  çözülmez). Ek dosya (ZIP) varsa kod bloğunun hemen altında tam yolu ve SHA-256'sı yazılır.
+- **Dış istek (S-30):** başka bir ekipten istek gelince CT (1) her isteği sınıflandırır (modül, kimin kararı, mevcut
+  paketi etkiliyor mu), (2) her soruya önerilen cevabı **sohbette** gösterir — yalnız itiraz listesi yetmez, (3) isteyene
+  gidecek mesajı kod bloğunda hazırlar; doğrulama gereken yerleri (ör. QPPV, başka modül sahibi) işaretler. Mesajı
+  kendisi göndermez; kimin ileteceğini sorar. Kuyruğa yazmak ayrı onaydır.
+- **Teslim dosyalarının yeri (S-29):** başkasına gidecek ZIP ve benzeri dosyalar oturumun geçici klasörüne değil,
+  CT worktree'sinde git'in izlemediği kalıcı bir klasöre yazılır (`.ct-teslim/<iş>/`; worktree'de `.git` bir dosyadır, hariç tutma `$(git rev-parse --git-common-dir)/info/exclude`'a yazılır);
+  oturum kapanınca kaybolmaz, depoya da girmez.
+- Soru doğrudan izni sorar ("Geçip main'i merge edeyim mi?"). Bir olgu sorusu ("başka oturum açık mı?") izin vermez:
+  olgu gerekiyorsa seçenekler olgu ile izni birlikte adlandırır ("Açık oturum yok — geç ve merge et") (S-24).
+- Soru teknik terimsiz, düz Türkçe; kod, kimlik ya da yol gerekiyorsa seçeneğin içinde tek parça yazılır.
+- Soruda ya da onay istenen satırda geçen her kod, kişi anahtarı, hesap ya da dosya satırı yanında düz cümleyle
+  açıklanır: "K3 (siz — GMG-ERP hesabı)", "isteyen GMG-ERP (incelemeyi isteyen sizsiniz)". Değeri CT türettiyse
+  nereden türettiğini de yazar. Sahip neyi onayladığını açıklamayı okumadan anlayabilmelidir (S-25).
+
 ## 0. Yeni Control Tower açılışı
 
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
 > için. Eski Control Tower'lar ve onaylı işleri geriye dönük değişmez, durdurulmaz.
 
+- [ ] **Yer (S-18, 2026-10-21; Codex tasarım görüşü KOŞULLU ve bağımsız inceleme bulguları burada):** geliştirici
+  oturumu her zaman ana klasörde açar ve yalnız `/control-tower <modül>` yazar; yeri CT kurar. Hedef doğrulanana kadar
+  hiçbir dosya yazılmaz; ana klasördeki değişiklikler taşınmaz, stash yok, silme yok, `--force` ya da reset yok. "İlk
+  çağrı salt okunur" kuralının tek istisnası bu adımdaki `git fetch` ve `git worktree add`'dir; commit, push, merge ya
+  da dağıtım izni değildir.
+  1. **Kuyruğu bul.** `git fetch origin`, sonra kaydı `git show origin/main:execution/delivery/ct-queue-registry.tsv`
+     ile oku (ana klasördeki kopya eski olabilir). `<q>` şu sırayla (büyük/küçük harf duyarsız): (i) çağrıdaki ad bir
+     `queue_id`'ye eşit; (ii) ad bir `execution/domains/<domain>/` klasörüne eşit ve satırın `path`'i o klasörde; (iii) ad bir
+     `MOD-nnnn` ve kayıtlı bir kuyruk dosyasının `module` sütununda geçiyor. `scope` metni eşleşmede kullanılmaz. Sonuç
+     0 ya da birden çoksa `queue_id — control_tower` listesini göster ve tek soru sor.
+  2. **Yeri bul (salt okunur, dışarıdan).** Geçişten önce hedefe `cd` yapılmaz; okumalar `git -C <wt> …` ve tam yolla
+     yapılır — uygulama `cd` ile oturumu oraya taşıyabilir ve 5. adımın sorusu atlanır (S-23). Modülün dalı yalnız `chore/ct/<q>-ct-NN` (NN iki hane). `git worktree list`, yerel ve
+     `origin` dalları. Her aday için `origin/main`'e göre ileri/geri sayısı, son commit tarihi ve aynı adlı `origin`
+     dalına göre `git rev-list --left-right --count <dal>...origin/<dal>`. Birden çok aday varsa bu bilgilerle listele
+     ve tek soru sor; tahminle seçme.
+  3. **Tek adaya geç.** Worktree'si varsa oturumu oraya taşı (Claude Code: `EnterWorktree`, `path`). Worktree'si yoksa:
+     yerel dal varsa `git worktree add .claude/worktrees/<q>-ct-NN <dal>`; yalnız `origin`'de varsa
+     `git worktree add -b <dal> .claude/worktrees/<q>-ct-NN origin/<dal>`; sonra `EnterWorktree path`. `EnterWorktree
+     name` kullanılmaz (dalı `chore/ct/…` biçiminde açmaz). Dal aynı adlı `origin` dalının yalnız gerisindeyse ilk soru
+     `git merge --ff-only origin/<dal>`; iki yönde ayrışmışsa dur ve sor.
+  4. **Hiç yoksa.** Kayıtlı bir kuyruk için hiç `chore/ct/<q>-ct-NN` yoksa (eski adlandırmalı bir CT olabilir) yeni dal
+     açmadan önce kuyruk dosyasının son commit'ini (`git log --all -1 --format='%h %an %ci %D' -- <path>`) göster ve tek
+     soru sor; kuyruğu başka bir CT yazıyorsa yer kurulmaz, salt okunur devam edilir. Kayıtta hiç satır yoksa (yeni CT)
+     kayıtta olmayan bir `<q>` öner (domain kısa kodu) ve `chore/ct/<q>-ct-01` yolunu tek soruyla sun: "evet" yalnız
+     worktree açar (`git worktree add -b chore/ct/<q>-ct-01 --no-track .claude/worktrees/<q>-ct-01 origin/main`);
+     kuyruk ya da kayıt satırı yazmaz (`--prepare` sınırı).
+  5. **Başkasının işi.** Açık bir oturum süreçten ölçülemez (oturum taşınsa da süreç klasörü değişmez). Hedef worktree
+     kirliyse ya da son 60 dakikada değişmişse (`git -C <wt> log -g -1 --format=%cr`, `find <wt> -mmin -60 -not -path
+     '*/.git*' | head -1`; macOS'ta denendi — `-newermt '-60 minutes'` orada hata verir, S-20) tek soru sor: "Bu worktree'de açık başka bir CT var mı? evet: geçmem /
+     hayır: geçerim". `origin/main` gerisindeyse yazma; ilk soru `git merge --no-edit origin/main` (merge commit;
+     çakışmada `git merge --abort`).
+  6. **Geçemiyorsan devam etme.** Araç oturumu taşıyamıyorsa (Codex) worktree'yi hazırla ve yeni oturumun açılacağı
+     klasörü tek satırla söyle; worktree'yi de açamıyorsa komutu tek satır ver. Ana klasörde devam etme. Geçişten sonra
+     eski mutlak yolları kullanma; hedefte `AGENTS.md` ve bu kartı yeniden oku.
+  İlk yanıtın ilk satırı ölçülmüş durumdur: geçildiyse `Klasör: <hedef> | Dal: … | HEAD: …`; geçilemediyse
+  `Klasör: <ana> (hedef: <yol>, geçilmedi) | Dal: … | HEAD: …`.
+- [ ] **İş takip sayfası (CT-TRK-01, pilot PVG):** block'un sayfası yoksa ilk durum değerlendirmesinden ya da ilk paket /
+  karar commit'inden sonra CT önerir ve `sayfa-ac` ile açar (SOP §22.2/2a); varsa her kabul, prompt ve karardan sonra
+  günceller. Bağlantı SOP §22.2/8'deki yere yazılır.
 - [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
   "tamamlanamadı" der (çıkış 2).
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
@@ -57,6 +138,9 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
 ```
 
 - Araç raporu yalnız ekrana yazar; Control Tower onu tek yönlendirmeyle iş paketinin kanıt yoluna kaydeder.
+- İlk çağrıda (dosyaya yazılmaz) rapor uzunsa (yüzlerce `ref:` satırı) ekrandan süzülerek okunur:
+  `… --discover "<ad>" | grep -v '^ref:'` — `ÖZET`, `kaynak`, `BULGU`, `EKSİK`, `İNCELENEN REF'LER` ve `sonuç`
+  satırları okunur; ref satırları yalnız sayılır. Süzme yine kesilirse inceleme "kısmi"dir (S-21).
 - Rapor: aracın kimliği (commit + betiğin SHA-256'sı), sorgu, `origin/main` SHA'sı ve son fetch zamanı, incelenen
   kaynakların kimlikleri, eksikler, sonuç ve çıkış kodu.
 - Raporun son satırı `rapor-sha256: <hex>`. Değer, bu satır **hariç** önceki bütün satırların `\n` ile birleştirilip
@@ -138,6 +222,8 @@ Allowed paths / Protected paths
 
 Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, missing contract, ownership conflict, unplanned migration, **agent/scope mismatch**.
 
+**S-5 dağıtım kapısı (SOP §20.4 madde 8):** ürün WP'sinin her yeni dağıtımı paket sürümünün main'deki geçerli bağımsız incelemesini ister (katı ya da eski her kuyrukta); kural başladığında yürüyen ve paketi değişmeyen iş korunur, olumsuz inceleme kabulü de durdurur — ENGEL'deki kuralı tanımıyorsanız main'i alın ve yeni Control Tower oturumu açın.
+
 ## 4. EVIDENCE LEVEL
 
 | Level | Evidence | Meaning |
@@ -198,6 +284,8 @@ Replanning = Closure
 | Kendi geçici çalışma dosyalarını kullanma | Kalıcı — tekrar sorulmaz | Sahip kararı 2026-10-15 |
 | Açıkça onaylanmış iş paketi için dal ve worktree oluşturma | Kalıcı — tekrar sorulmaz | [GIT-002](../../../.antigravity/rules/git-safety.md) §1; sahip kararı |
 | Commit, push, PR ve merge | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §4, §5 |
+| CT dalının yedek push'u (gün sonu ya da büyük adım sonrası; PR yok, main'e dokunmaz) | **Her seferinde açık onay, tek kelime** — CT kendisi önerir: "Dalı yedekleyeyim mi? `yedek`". Push'tan önce: dal yalnız CT dalı, `git diff origin/<dal>..HEAD` içinde e-posta, şifre ve anahtar taraması; push sonrası uzak uç = yerel HEAD ölçülür | GIT-002 §5; sahip kararı 2026-10-21 ("orta yol", S-27): her commit'te değil — her push CI'ı çalıştırır ve depo herkese açıktır |
+| Onay ya da inceleme satırını geri almak (`approvals.tsv`, `reviews.tsv`) | **Yalnız sona `revoke` satırı eklenir** — `git revert`, satır silme ya da düzenleme asla: iki dosya yalnız ekleme kabul eder; geçmişte satır silen tek commit main'e girerse o dosyadaki **bütün** onaylar güvenilmez olur ve geri ekleme düzeltmez (S-34). Satır henüz yalnız yereldeyse ve silindiyse, push'tan önce sahibin onayıyla yerel geçmiş yeniden kurulur | [POLICY-START](../../../execution/approvals/POLICY-START.md); sahip kararı 2026-10-22 |
 | Yıkıcı Git işlemleri | **Her seferinde açık onay** | [GIT-002](../../../.antigravity/rules/git-safety.md) §6 |
 | `.antigravity/**` değişiklikleri | **Her seferinde açık onay** | [AGENTS.md](../../../AGENTS.md) §4 |
 | Başka modüle müdahale | **Her seferinde açık onay** | [XMC-001](../../../.antigravity/rules/cross-module-change-consent.md) |

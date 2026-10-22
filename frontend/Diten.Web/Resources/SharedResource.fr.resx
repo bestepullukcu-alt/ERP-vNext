@@ -1178,6 +1178,23 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Politique de signature</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significations de signature</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Approbation des modèles</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Péremption / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Préparation au rappel</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>Tableau de bord FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Péremption proche</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Stock périmé</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>Ordre FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Boîte des exceptions</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Détail de l'exception</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Règles de durée de vie et paramètres</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Dossier de preuves</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Préparation au rappel</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Traçabilité de rappel</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Dossiers de rappel</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Dossier de rappel</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Planificateur d’exercices de rappel</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Dossier de preuves de rappel</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Paramètres de rappel</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
 </root>

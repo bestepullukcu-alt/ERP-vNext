@@ -1,0 +1,862 @@
+openapi: 3.1.0
+info:
+  title: FEFO-BUNDLE
+  description: >
+    MOD-0176 Expiry / FEFO Management — shelf-life policy and FEFO control layer on top of the MOD-0173 ledger and the MOD-0174
+    lot master (Blueprint W-4; report :186 ExpiryPolicy · FEFOAllocationConstraint · FEFOExceptionCase). Frozen from the CT-accepted
+    proposal drafts/fefo-bundle-v1-proposal.md (WP-0176-P0 CT-ACCEPTED 2a25207dc) by WP-0176-F1, with the CT decisions of pack §19.7.
+    MOD-0176 keeps no balance, creates no lot, posts no movement and makes no quarantine decision; it defines no stock status and no
+    movement type. The FEFO order is read-only (KF-F). Tenant from the token, company from the W-0173-02 scope (X-Legal-Entity-Id
+    validated against MDM); another company → 403 CROSS_LE_FORBIDDEN, another tenant → 404. Success bodies are the schemas below
+    (unwrapped); failures are the INVENTORY Error schema.
+  version: 1.2.0
+  x-status: FROZEN
+  x-owner: MOD-0176
+  x-owner-service: Diten.InventoryService (MOD-0176, in-process with MOD-0173 / MOD-0174 / MOD-0175)
+  x-changelog:
+    - "1.0.0 — frozen by WP-0176-F1 from the accepted proposal (2026-10-12) + pack §19.7: CT-F10 adds 409 EXPIRY_SOD_VIOLATION to prepareResolution / resolveException (the user whose action opened a case cannot resolve it); CT-F8 the default meaning of all four signable actions is APPROVE; CT-F14 the list CSV of listApproaching / listExpired is under expiry.dashboard.read and is not an evidence export. Reconciliations of the freeze (F1 evidence §2): R-1 the envelope is the measured INVENTORY / QUARANTINE wire (unwrapped success body, Error on failure); R-2 ExceptionRef.warehouse is {id, code?, name?} and item is {itemId, skuId, skuLevel} — the SKU code / name are not read in F1 (optional members later, additive); ExceptionRef.baseUom is the plain baseUomId string; R-3 openException takes no baseUomId: a manual case carries a quantity without a unit until F4 reads it from the lot's stock; R-4 prepareResolution is POST /exceptions/{exceptionId}/pending-resolution and answers version (the If-Match of resolveException) and expiresAtUtc; R-5 ExceptionEvent.seq is the 1-based position in the case's stream; R-6 the list pages are {items, total, page, pageSize}; R-7 prepareResolution writes the audit row expiry.exception.resolution-prepared (it changes the case head) and the sweeper writes expiry.exception.sla-breached — two audit actions beyond pack §8.10."
+    - "1.0.1 — description only (WP-0176-F2): info.x-implemented-by-slice gains F2 = [createDateOverride] (KF-D, served from F2 on) and not-yet-implemented loses it. No path, parameter, schema, error code or permission changed."
+    - "1.0.2 — description only (WP-0176-F3): info.x-implemented-by-slice gains F3 = [getSignableSubject] (the MOD-0022 subject provider, fx-v1 / do-v1, served from F3 on) and not-yet-implemented loses it. No path, parameter, schema, error code or permission changed. Resolution / lot-date signatures are verified with ESIGN getSignature + the local subject hash (CT decision F3-A), never verifySignature."
+    - "1.1.0 — additive (WP-0176-F4): openException accepts the optional baseUomId (FU-0176-F1-UOM: the unit of quantity; omitted → read from the lot's stock, unreadable → none); ExceptionRef / ExceptionDetail already carry baseUomId. info.x-implemented-by-slice gains F4 = [getDashboard, listApproaching, listExpired, getFefoOrder] and not-yet-implemented loses them. No existing path, parameter, property, type, required list, status code or enum value changed."
+    - "1.2.0 — additive (WP-0176-F5): ExceptionRef gains the optional resolutionReason, resolutionSignatureId and resolvedAtUtc (filled by previewEvidence: the Kanıt Paketi shows each resolution with its MOD-0022 signature id; listExceptions leaves them out); getEvidenceExportFile lists EXPIRY_EVIDENCE_EXPORT_NOT_FOUND (404, new registry code). info.x-implemented-by-slice gains F5 = [previewEvidence, listEvidenceExports, createEvidenceExport, getEvidenceExportFile]; not-yet-implemented is empty. sha256 of an export is the SHA-256 of the produced file bytes; the same idempotency key answers the same stored file. No existing path, parameter, property, type, required list, status code or enum value changed."
+  x-decisions: [KF-A, KF-B, KF-C, KF-D, KF-E, KF-F, KF-G, KF-H, CT-F1, CT-F8, CT-F10, CT-F11, CT-F14]
+  x-implemented-by-slice:
+    F1: [getPolicy, getPolicyHistory, updatePolicy, listExceptions, getException, openException, takeException, commentException, prepareResolution, resolveException, closeException]
+    F2: [createDateOverride]
+    F3: [getSignableSubject]
+    F4: [getDashboard, listApproaching, listExpired, getFefoOrder]
+    F5: [previewEvidence, listEvidenceExports, createEvidenceExport, getEvidenceExportFile]
+    not-yet-implemented: []
+servers: [{ url: /api/expiry }]
+security: [{ bearerAuth: [] }]
+x-rules:
+  - "Every write takes the Idempotency-Key header equal to body idempotencyKey (8–100). Same key + same body → the first result (200); same key + different body → 400 IDEMPOTENCY_KEY_REUSED."
+  - "Mutable records (policy, exception case, date override) need If-Match W/\"<version>\" or \"<version>\" where stated; stale → 409 EXPIRY_CONFLICT. updatePolicy takes If-Match \"0\" before the company's first save."
+  - "This contract moves no stock and writes no lot. Hook outcomes (FEFO bypass KF-B, minimum remaining shelf life KF-C, date override KF-D) happen inside INVENTORY postMovement and TRACE createLot (their own versions, pack §8.9)."
+  - "Every command writes an audit row (inventory_audit, pack §8.10) in the transaction of its change; exception events are insert-only. Signatures are MOD-0022 references only (signatureId, KF-E) — this module keeps no signature record."
+  - "Resolving an exception needs a prepared resolution of the same user, resolution and reason (15 minutes) and, when the MOD-0022 effective policy of its action says required, a verified signatureId (KF-E; default policy: all three resolutions). The user whose action opened the case may not resolve it (CT-F10)."
+  - "No new stock status and no new movement type is defined."
+x-permissions:
+  owned: [expiry.dashboard.read, expiry.fefo-order.read, expiry.exceptions.read, expiry.exceptions.create, expiry.exceptions.comment, expiry.exceptions.review, expiry.exceptions.resolve, expiry.exceptions.close, expiry.policies.read, expiry.policies.manage, expiry.evidence.export, expiry.date-overrides.create]
+  api-only: [expiry.date-overrides.create]
+  external-used-not-declared: [esign.signatures.sign, trace.lots.create, inventory.movements.create, quarantine.holds.read]
+x-signable-actions:
+  module: expiry
+  defaultMeaningCode: APPROVE
+  defaultVisualMode: savedAccepted
+  defaultRequired: true
+  actions: [expiry.lot-date.override, expiry.exception.accept, expiry.exception.fix, expiry.exception.cancel]
+  subjects:
+    expiry.exception: { fieldListVersion: fx-v1, fields: [number, type, status, legalEntityId, itemId, skuId, skuLevel, skuCode, lotId, lotNumber, expiryDate, retestDate, warehouseId, quantity, baseUom, sourceTransactionId, sourceMovementType, openedAtUtc, "facts.*", resolution, resolutionReason, version] }
+    expiry.date-override: { fieldListVersion: do-v1, fields: [overrideId, legalEntityId, itemId, skuId, skuLevel, lotNumber, manufacturingDate, suggestedExpiry, enteredExpiry, suggestedRetest, enteredRetest, reason, shelfLifeDays, retestDays] }
+  note: "Registration (POST /api/internal/esign/actions/register) and the golden vectors of the canonical subjects come with F3."
+paths:
+  /dashboard:
+    get:
+      operationId: getDashboard
+      summary: "FEFO Paneli — KPIs, monthly expiry chart, top-risk lots (F4). Formulas pack §8.8."
+      x-permission: expiry.dashboard.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: warehouseId, in: query, schema: { type: string, format: uuid } }
+        - { name: periodDays, in: query, schema: { type: integer, minimum: 1, maximum: 366, default: 30 } }
+      responses:
+        '200': { description: Panel, content: { application/json: { schema: { $ref: '#/components/schemas/DashboardView' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /lots/approaching:
+    get:
+      operationId: listApproaching
+      summary: "Son Kullanma Yaklaşanlar (F4) — severity from the company horizons (KF-A), not TRACE expiryState. CSV export of this list is under the same key and is not logged as evidence (CT-F14)."
+      x-permission: expiry.dashboard.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: warehouseId, in: query, schema: { type: string, format: uuid } }
+        - { name: skuId, in: query, schema: { type: string, format: uuid } }
+        - { name: severity, in: query, schema: { type: string, enum: [Critical, Approaching] } }
+        - { name: horizonDays, in: query, schema: { type: integer, minimum: 1, maximum: 730 } }
+        - { name: includeHeld, in: query, schema: { type: boolean, default: true } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: sort, in: query, schema: { type: string, enum: [expiryDate, -expiryDate, lotNumber], default: expiryDate } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200': { description: Lots, content: { application/json: { schema: { $ref: '#/components/schemas/LotExpiryPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /lots/expired:
+    get:
+      operationId: listExpired
+      summary: "Süresi Dolmuş Stok (F4) — daysSinceExpiry ('Dolduğundan beri'). CSV as listApproaching (CT-F14)."
+      x-permission: expiry.dashboard.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: warehouseId, in: query, schema: { type: string, format: uuid } }
+        - { name: skuId, in: query, schema: { type: string, format: uuid } }
+        - { name: minDaysSinceExpiry, in: query, schema: { type: integer, minimum: 0 } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200': { description: Lots, content: { application/json: { schema: { $ref: '#/components/schemas/LotExpiryPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /fefo-order:
+    get:
+      operationId: getFefoOrder
+      summary: "FEFO Sırası (F4) — read-only (KF-F): eligible lots in FEFO order (expiry asc, nulls last; tie mfg → retest → lotNumber → lotId) and the excluded lots with their reason; greedy allocation when quantity is given. Creates no reservation. Consumer operation for MOD-0178 / 0172 / 0188."
+      x-permission: expiry.fefo-order.read
+      x-error-codes: [INVALID_REQUEST, UNKNOWN_SKU, CROSS_LE_FORBIDDEN, PRODUCT_MASTER_UNAVAILABLE]
+      parameters:
+        - { name: warehouseId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: itemId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: skuId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: skuLevel, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: quantity, in: query, schema: { type: number, exclusiveMinimum: 0 } }
+        - { name: asOf, in: query, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Order, content: { application/json: { schema: { $ref: '#/components/schemas/FefoOrder' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /exceptions:
+    get:
+      operationId: listExceptions
+      summary: "İstisna Kutusu — type, status (repeatable), late, warehouseId, assignedToMe, q (number / lot number); sort dueAtUtc (default) or -openedAtUtc."
+      x-permission: expiry.exceptions.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: type, in: query, schema: { $ref: '#/components/schemas/ExceptionType' } }
+        - { name: status, in: query, schema: { type: array, items: { $ref: '#/components/schemas/ExceptionStatus' } }, style: form, explode: true }
+        - { name: late, in: query, schema: { type: boolean } }
+        - { name: warehouseId, in: query, schema: { type: string, format: uuid } }
+        - { name: assignedToMe, in: query, schema: { type: boolean } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: sort, in: query, schema: { type: string, enum: [dueAtUtc, -openedAtUtc], default: dueAtUtc } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200': { description: Cases, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: openException
+      summary: "İstisna aç — a manual case (origin Manual, any of the four types). One ACTIVE case per type + lot + warehouse. The opener is the case's origin user (CT-F10)."
+      x-permission: expiry.exceptions.create
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOT, UNKNOWN_LOCATION, EXPIRY_EXCEPTION_ALREADY_OPEN, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, type, lotId, description]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                type: { $ref: '#/components/schemas/ExceptionType' }
+                lotId: { type: string, format: uuid }
+                warehouseId: { type: string, format: uuid }
+                quantity: { type: number, exclusiveMinimum: 0 }
+                baseUomId: { type: string, minLength: 1, maxLength: 32, description: "1.1.0 (FU-0176-F1-UOM) — the unit of quantity; omitted → the lot's stock unit, or none" }
+                description: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '201': { description: Opened, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionDetail' } } } }
+        '200': { description: Idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /exceptions/{exceptionId}:
+    get:
+      operationId: getException
+      x-permission: expiry.exceptions.read
+      x-error-codes: [EXPIRY_EXCEPTION_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/ExceptionId' }]
+      responses:
+        '200': { description: Case, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionDetail' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /exceptions/{exceptionId}/take:
+    post:
+      operationId: takeException
+      summary: "İncelemeye al — Open → InReview, the caller becomes the assignee. The assignee taking it again gets the current case."
+      x-permission: expiry.exceptions.review
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, EXPIRY_EXCEPTION_NOT_FOUND, EXPIRY_INVALID_TRANSITION, EXPIRY_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/ExceptionId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/KeyOnlyRequest' } } } }
+      responses:
+        '200': { description: Taken, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /exceptions/{exceptionId}/comments:
+    post:
+      operationId: commentException
+      summary: "Yorum ekle — append-only, no If-Match, not on a Closed / Cancelled case."
+      x-permission: expiry.exceptions.comment
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, EXPIRY_EXCEPTION_NOT_FOUND, EXPIRY_INVALID_TRANSITION, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/ExceptionId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, text]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                text: { type: string, minLength: 1, maxLength: 2000 }
+      responses:
+        '201': { description: Comment event, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionEvent' } } } }
+        '200': { description: Idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionEvent' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /exceptions/{exceptionId}/pending-resolution:
+    post:
+      operationId: prepareResolution
+      summary: "The decision the caller is about to sign (resolution + reason), held 15 minutes; answers what the MOD-0022 dialog needs (required by the effective policy, action, meaning, visual mode, subject) and the case version for resolveException."
+      x-permission: expiry.exceptions.resolve
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, EXPIRY_EXCEPTION_NOT_FOUND, EXPIRY_INVALID_TRANSITION, EXPIRY_SOD_VIOLATION, EXPIRY_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/ExceptionId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, resolution, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                resolution: { $ref: '#/components/schemas/Resolution' }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '200': { description: Prepared, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ResolutionPrepared' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /exceptions/{exceptionId}/resolve:
+    post:
+      operationId: resolveException
+      summary: "Gerekçeyle kabul / Düzeltildi / İptal (KF-E). Order: reason → case → status → SoD (CT-F10) → prepared resolution (same user, resolution, reason, unexpired) → signature by policy → If-Match. Accepted / Fixed wait for closeException; Cancelled is terminal."
+      x-permission: expiry.exceptions.resolve
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, EXPIRY_EXCEPTION_NOT_FOUND, EXPIRY_INVALID_TRANSITION, EXPIRY_SOD_VIOLATION, EXPIRY_PENDING_RESOLUTION_MISMATCH, EXPIRY_SIGNATURE_REQUIRED, EXPIRY_SIGNATURE_MISMATCH, EXPIRY_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/ExceptionId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, resolution, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                resolution: { $ref: '#/components/schemas/Resolution' }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+                signatureId: { type: string, maxLength: 100 }
+      responses:
+        '200': { description: Resolved, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /exceptions/{exceptionId}/close:
+    post:
+      operationId: closeException
+      summary: "İstisnayı kapat — Accepted / Fixed → Closed. No signature."
+      x-permission: expiry.exceptions.close
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, EXPIRY_EXCEPTION_NOT_FOUND, EXPIRY_INVALID_TRANSITION, EXPIRY_CONFLICT, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/ExceptionId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                note: { type: string, maxLength: 1000 }
+      responses:
+        '200': { description: Closed, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ExceptionDetail' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /policy:
+    get:
+      operationId: getPolicy
+      summary: "Raf Ömrü Kuralları ve Ayarlar — the company's policy, or the defaults (isDefault true, version 0): 90 / 30 / RequireReason / AutoQuarantine / ReasonAndSignature, SLA 24 / 72 / 48 / 120 h, expired-on-hand 14 days. The hooks read the policy in-process, not through this operation."
+      x-permission: expiry.policies.read
+      x-error-codes: [CROSS_LE_FORBIDDEN]
+      responses:
+        '200': { description: Policy, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ExpiryPolicy' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      operationId: updatePolicy
+      summary: "Full replacement; reason 10–1000; one history row per changed field; If-Match (\"0\" before the first save). Nothing changed → 409 EXPIRY_NO_CHANGES."
+      x-permission: expiry.policies.manage
+      x-error-codes: [INVALID_REQUEST, EXPIRY_POLICY_INVALID, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, EXPIRY_CONFLICT, EXPIRY_NO_CHANGES, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, approachingDays, criticalDays, fefoOutboundMode, belowMinRemainingMode, dateOverrideMode, slaHours, expiredOnHandThresholdDays, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                approachingDays: { type: integer, minimum: 1, maximum: 730 }
+                criticalDays: { type: integer, minimum: 1, maximum: 730, description: "must be less than approachingDays" }
+                fefoOutboundMode: { $ref: '#/components/schemas/FefoOutboundMode' }
+                belowMinRemainingMode: { $ref: '#/components/schemas/BelowMinRemainingMode' }
+                dateOverrideMode: { $ref: '#/components/schemas/DateOverrideMode' }
+                slaHours: { $ref: '#/components/schemas/SlaHours' }
+                expiredOnHandThresholdDays: { type: integer, minimum: 0, maximum: 365 }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '200': { description: Saved (or idempotent replay), headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/ExpiryPolicy' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /policy/history:
+    get:
+      operationId: getPolicyHistory
+      x-permission: expiry.policies.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: History, newest first, content: { application/json: { schema: { $ref: '#/components/schemas/PolicyHistoryPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /evidence/preview:
+    get:
+      operationId: previewEvidence
+      summary: "Kanıt Paketi preview (F5) — four sections: summary KPIs, exceptions, policy changes in the period, FEFO bypasses."
+      x-permission: expiry.evidence.export
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: preset, in: query, schema: { type: string, enum: [q, d30, ytd, custom] } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: warehouseIds, in: query, schema: { type: array, items: { type: string, format: uuid } }, style: form, explode: true }
+        - { name: types, in: query, schema: { type: array, items: { $ref: '#/components/schemas/ExceptionType' } }, style: form, explode: true }
+      responses:
+        '200': { description: Preview, content: { application/json: { schema: { $ref: '#/components/schemas/EvidencePreview' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /evidence/exports:
+    get:
+      operationId: listEvidenceExports
+      x-permission: expiry.evidence.export
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: Export log, content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceExportPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: createEvidenceExport
+      summary: "CSV (istisna_no;tur;urun;lot;depo;acilis;durum;cozum;imza) or PDF; sha256 of the produced file bytes; one export-log row. Range ≤ 366 days."
+      x-permission: expiry.evidence.export
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, format]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                preset: { type: string, enum: [q, d30, ytd, custom] }
+                from: { type: string, format: date }
+                to: { type: string, format: date }
+                warehouseIds: { type: array, items: { type: string, format: uuid } }
+                types: { type: array, items: { $ref: '#/components/schemas/ExceptionType' } }
+                format: { type: string, enum: [Csv, Pdf] }
+      responses:
+        '201': { description: Exported, content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceExport' } } } }
+        '200': { description: Idempotent replay (same file and hash), content: { application/json: { schema: { $ref: '#/components/schemas/EvidenceExport' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /evidence/exports/{exportId}/file:
+    get:
+      operationId: getEvidenceExportFile
+      x-permission: expiry.evidence.export
+      x-error-codes: [CROSS_LE_FORBIDDEN, EXPIRY_EVIDENCE_EXPORT_NOT_FOUND]
+      parameters: [{ name: exportId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: The file, content: { text/csv: { schema: { type: string } }, application/pdf: { schema: { type: string, format: binary } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /date-overrides:
+    post:
+      operationId: createDateOverride
+      summary: "KF-D (F2/F3) — prepare a lot-date override (suggestion = manufacturingDate + shelfLifeDays / retestDays, getSku); the client signs subject expiry.date-override/{overrideId} and sends createLot with dateOverride {overrideId, signatureId} (TRACE 1.4.0). API-only key."
+      x-permission: expiry.date-overrides.create
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, EXPIRY_NO_SUGGESTION, EXPIRY_DATE_EQUALS_SUGGESTION, PRODUCT_MASTER_UNAVAILABLE, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [idempotencyKey, itemId, skuId, skuLevel, lotNumber, manufacturingDate, reason]
+              properties:
+                idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+                itemId: { type: string, format: uuid }
+                skuId: { type: string, format: uuid }
+                skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+                lotNumber: { type: string, minLength: 1, maxLength: 64 }
+                manufacturingDate: { type: string, format: date }
+                expiryDate: { type: string, format: date }
+                retestDate: { type: string, format: date }
+                reason: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        '201': { description: Prepared, content: { application/json: { schema: { $ref: '#/components/schemas/DateOverride' } } } }
+        '200': { description: Idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/DateOverride' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /esign-subjects/{subjectType}/{subjectId}:
+    get:
+      operationId: getSignableSubject
+      summary: "MOD-0022 subject provider (F3; ESIGN-BUNDLE x-subject-provider-contract). Called by Platform with the signer's JWT; the company must match the record's."
+      x-permission: "expiry.exceptions.read (expiry.exception) · expiry.date-overrides.create (expiry.date-override)"
+      parameters:
+        - { name: subjectType, in: path, required: true, schema: { type: string, enum: [expiry.exception, expiry.date-override] } }
+        - { name: subjectId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Subject, content: { application/json: { schema: { $ref: '#/components/schemas/SignableSubject' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8, maxLength: 100 } }
+    IfMatch: { name: If-Match, in: header, required: true, schema: { type: string }, description: 'W/"<version>" or "<version>"' }
+    ExceptionId: { name: exceptionId, in: path, required: true, schema: { type: string, format: uuid } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 25 } }
+  headers:
+    ETag: { schema: { type: string, pattern: '^W/"\d+"$' } }
+  schemas:
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood, Item] }
+    ExceptionType: { type: string, enum: [FEFO_BYPASS, BELOW_MIN_REMAINING, EXPIRY_DATE_OVERRIDE, EXPIRED_ON_HAND] }
+    ExceptionOrigin: { type: string, enum: [System, Manual] }
+    ExceptionStatus: { type: string, enum: [Open, InReview, Accepted, Fixed, Closed, Cancelled] }
+    Resolution: { type: string, enum: [AcceptedWithReason, Fixed, Cancelled] }
+    EventAction: { type: string, enum: [Opened, Taken, Commented, Resolved, Closed, Cancelled, SlaBreached] }
+    FefoOutboundMode: { type: string, enum: [Warn, RequireReason, Block] }
+    BelowMinRemainingMode: { type: string, enum: [Warn, AutoQuarantine, Reject] }
+    DateOverrideMode: { type: string, enum: [Reason, ReasonAndSignature] }
+    ExcludedReason: { type: string, enum: [EXPIRED, RETEST_DUE, BLOCKED, HELD, QUARANTINED, BELOW_MIN_REMAINING] }
+    Severity: { type: string, enum: [Expired, Critical, Approaching, Ok] }
+    SlaHours:
+      type: object
+      additionalProperties: false
+      required: [FEFO_BYPASS, BELOW_MIN_REMAINING, EXPIRY_DATE_OVERRIDE, EXPIRED_ON_HAND]
+      properties:
+        FEFO_BYPASS: { type: integer, minimum: 1, maximum: 2160 }
+        BELOW_MIN_REMAINING: { type: integer, minimum: 1, maximum: 2160 }
+        EXPIRY_DATE_OVERRIDE: { type: integer, minimum: 1, maximum: 2160 }
+        EXPIRED_ON_HAND: { type: integer, minimum: 1, maximum: 2160 }
+    UserRef:
+      type: object
+      required: [userId]
+      properties:
+        userId: { type: string, format: uuid }
+    ExpiryPolicy:
+      type: object
+      required: [legalEntityId, isDefault, approachingDays, criticalDays, fefoOutboundMode, belowMinRemainingMode, dateOverrideMode, slaHours, expiredOnHandThresholdDays, version]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        isDefault: { type: boolean }
+        approachingDays: { type: integer }
+        criticalDays: { type: integer }
+        fefoOutboundMode: { $ref: '#/components/schemas/FefoOutboundMode' }
+        belowMinRemainingMode: { $ref: '#/components/schemas/BelowMinRemainingMode' }
+        dateOverrideMode: { $ref: '#/components/schemas/DateOverrideMode' }
+        slaHours: { $ref: '#/components/schemas/SlaHours' }
+        expiredOnHandThresholdDays: { type: integer }
+        updatedAtUtc: { type: string, format: date-time }
+        updatedBy: { $ref: '#/components/schemas/UserRef' }
+        version: { type: integer, minimum: 0 }
+    PolicyHistoryEntry:
+      type: object
+      required: [field, reason, changedBy, changedAtUtc, policyVersion]
+      properties:
+        field: { type: string }
+        oldValue: { type: string }
+        newValue: { type: string }
+        reason: { type: string }
+        changedBy: { $ref: '#/components/schemas/UserRef' }
+        changedAtUtc: { type: string, format: date-time }
+        policyVersion: { type: integer, minimum: 1 }
+    PolicyHistoryPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/PolicyHistoryEntry' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    ItemRef:
+      type: object
+      required: [itemId, skuId, skuLevel]
+      properties:
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+    ExceptionLotRef:
+      type: object
+      required: [lotId, lotNumber]
+      properties:
+        lotId: { type: string }
+        lotNumber: { type: string }
+        expiryDate: { type: string, format: date }
+        retestDate: { type: string, format: date }
+    WarehouseRef:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+    ExceptionRef:
+      type: object
+      required: [exceptionId, number, type, origin, status, item, lot, openedAtUtc, dueAtUtc, late, dueSoon, version]
+      properties:
+        exceptionId: { type: string, format: uuid }
+        number: { type: string, pattern: '^FX-\d{4}-\d{4,}$' }
+        type: { $ref: '#/components/schemas/ExceptionType' }
+        origin: { $ref: '#/components/schemas/ExceptionOrigin' }
+        status: { $ref: '#/components/schemas/ExceptionStatus' }
+        resolution: { $ref: '#/components/schemas/Resolution' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lot: { $ref: '#/components/schemas/ExceptionLotRef' }
+        warehouse: { $ref: '#/components/schemas/WarehouseRef' }
+        quantity: { type: number }
+        baseUomId: { type: string }
+        openedAtUtc: { type: string, format: date-time }
+        dueAtUtc: { type: string, format: date-time }
+        late: { type: boolean }
+        dueSoon: { type: boolean }
+        assignee: { $ref: '#/components/schemas/UserRef' }
+        version: { type: integer, minimum: 0 }
+        resolutionReason: { type: string, description: "1.2.0 (F5) — present in previewEvidence for a resolved case" }
+        resolutionSignatureId: { type: string, description: "1.2.0 (F5) — the MOD-0022 signature id of the resolution (previewEvidence)" }
+        resolvedAtUtc: { type: string, format: date-time, description: "1.2.0 (F5) — previewEvidence" }
+    ExceptionPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ExceptionRef' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    SourceMovement:
+      type: object
+      required: [transactionId]
+      properties:
+        transactionId: { type: string }
+        movementType: { type: string }
+        sourceModule: { type: string }
+        sourceDocumentId: { type: string }
+    PendingResolution:
+      type: object
+      required: [resolution, reason, setBy, setAtUtc, expiresAtUtc]
+      properties:
+        resolution: { $ref: '#/components/schemas/Resolution' }
+        reason: { type: string }
+        setBy: { $ref: '#/components/schemas/UserRef' }
+        setAtUtc: { type: string, format: date-time }
+        expiresAtUtc: { type: string, format: date-time }
+    ExceptionEvent:
+      type: object
+      required: [seq, action, atUtc]
+      properties:
+        seq: { type: integer, minimum: 1 }
+        action: { $ref: '#/components/schemas/EventAction' }
+        actor: { $ref: '#/components/schemas/UserRef' }
+        atUtc: { type: string, format: date-time }
+        text: { type: string }
+        resolution: { $ref: '#/components/schemas/Resolution' }
+        signatureId: { type: string }
+    ExceptionLinks:
+      type: object
+      properties:
+        holdId: { type: string }
+        reversalTransactionId: { type: string }
+    ExceptionDetail:
+      type: object
+      required: [exceptionId, number, type, origin, status, item, lot, openedAtUtc, dueAtUtc, late, dueSoon, version, facts, events, links]
+      properties:
+        exceptionId: { type: string, format: uuid }
+        number: { type: string, pattern: '^FX-\d{4}-\d{4,}$' }
+        type: { $ref: '#/components/schemas/ExceptionType' }
+        origin: { $ref: '#/components/schemas/ExceptionOrigin' }
+        status: { $ref: '#/components/schemas/ExceptionStatus' }
+        resolution: { $ref: '#/components/schemas/Resolution' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lot: { $ref: '#/components/schemas/ExceptionLotRef' }
+        warehouse: { $ref: '#/components/schemas/WarehouseRef' }
+        quantity: { type: number }
+        baseUomId: { type: string }
+        openedAtUtc: { type: string, format: date-time }
+        dueAtUtc: { type: string, format: date-time }
+        late: { type: boolean }
+        dueSoon: { type: boolean }
+        assignee: { $ref: '#/components/schemas/UserRef' }
+        version: { type: integer, minimum: 0 }
+        openedBy: { $ref: '#/components/schemas/UserRef' }
+        description: { type: string }
+        sourceMovement: { $ref: '#/components/schemas/SourceMovement' }
+        facts: { type: object, additionalProperties: { type: string } }
+        resolutionReason: { type: string }
+        resolutionSignatureId: { type: string }
+        resolvedAtUtc: { type: string, format: date-time }
+        resolvedBy: { $ref: '#/components/schemas/UserRef' }
+        closedAtUtc: { type: string, format: date-time }
+        closedBy: { $ref: '#/components/schemas/UserRef' }
+        pendingResolution: { $ref: '#/components/schemas/PendingResolution' }
+        events: { type: array, items: { $ref: '#/components/schemas/ExceptionEvent' } }
+        links: { $ref: '#/components/schemas/ExceptionLinks' }
+    SubjectRef:
+      type: object
+      required: [module, subjectType, subjectId]
+      properties:
+        module: { type: string, enum: [expiry] }
+        subjectType: { type: string, enum: [expiry.exception, expiry.date-override] }
+        subjectId: { type: string, format: uuid }
+    ResolutionPrepared:
+      type: object
+      required: [exceptionId, resolution, signatureRequired, actionCode, meaningCode, visualMode, subject, expiresAtUtc, version]
+      properties:
+        exceptionId: { type: string, format: uuid }
+        resolution: { $ref: '#/components/schemas/Resolution' }
+        signatureRequired: { type: boolean }
+        actionCode: { type: string, enum: [expiry.exception.accept, expiry.exception.fix, expiry.exception.cancel] }
+        meaningCode: { type: string, pattern: '^[A-Z][A-Z0-9_]{1,31}$' }
+        visualMode: { type: string, enum: [none, optional, savedAccepted, drawRequired] }
+        subject: { $ref: '#/components/schemas/SubjectRef' }
+        expiresAtUtc: { type: string, format: date-time }
+        version: { type: integer, minimum: 1 }
+    KeyOnlyRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    OnHandSplit:
+      type: object
+      required: [available, held, baseUomId]
+      properties:
+        available: { type: number }
+        held: { type: number }
+        baseUomId: { type: string }
+    LotExpiryRow:
+      type: object
+      required: [lotId, lotNumber, lotStatus, item, warehouse, expiryDate, severity, onHand]
+      properties:
+        lotId: { type: string }
+        lotNumber: { type: string }
+        lotStatus: { type: string, enum: [Draft, Released, Blocked, Expired] }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        warehouse: { $ref: '#/components/schemas/WarehouseRef' }
+        expiryDate: { type: string, format: date }
+        retestDate: { type: string, format: date }
+        manufacturingDate: { type: string, format: date }
+        daysToExpiry: { type: integer }
+        daysSinceExpiry: { type: integer }
+        severity: { $ref: '#/components/schemas/Severity' }
+        remainingShelfLifePct: { type: number }
+        shelfLifeDays: { type: integer }
+        onHand: { $ref: '#/components/schemas/OnHandSplit' }
+        heldReasons: { type: array, items: { $ref: '#/components/schemas/ExcludedReason' } }
+        openExceptionId: { type: string, format: uuid }
+    LotExpiryPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LotExpiryRow' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    FefoEligibleLot:
+      type: object
+      required: [rank, lotId, lotNumber, available, severity]
+      properties:
+        rank: { type: integer, minimum: 1 }
+        lotId: { type: string }
+        lotNumber: { type: string }
+        expiryDate: { type: string, format: date }
+        manufacturingDate: { type: string, format: date }
+        retestDate: { type: string, format: date }
+        available: { type: number }
+        severity: { $ref: '#/components/schemas/Severity' }
+        allocated: { type: number }
+    FefoExcludedLot:
+      type: object
+      required: [lotId, lotNumber, reason, onHand]
+      properties:
+        lotId: { type: string }
+        lotNumber: { type: string }
+        expiryDate: { type: string, format: date }
+        reason: { $ref: '#/components/schemas/ExcludedReason' }
+        onHand: { type: number }
+    FefoOrder:
+      type: object
+      required: [legalEntityId, warehouseId, itemId, skuId, skuLevel, asOf, basis, skuAvailable, eligible, excluded]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        warehouseId: { type: string, format: uuid }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        asOf: { type: string, format: date }
+        basis: { type: string, enum: [onHandAvailable] }
+        skuAvailable: { type: number }
+        eligible: { type: array, items: { $ref: '#/components/schemas/FefoEligibleLot' } }
+        excluded: { type: array, items: { $ref: '#/components/schemas/FefoExcludedLot' } }
+        requestedQuantity: { type: number }
+        allocatedQuantity: { type: number }
+        shortfall: { type: number }
+    DashboardKpis:
+      type: object
+      required: [fefoIssues, fefoBypasses, critical, approaching, expiredOnHand, openExceptions, lateExceptions]
+      properties:
+        fefoCompliancePct: { type: [number, 'null'] }
+        fefoIssues: { type: integer }
+        fefoBypasses: { type: integer }
+        critical: { type: object, required: [lots, available, held], properties: { lots: { type: integer }, available: { type: number }, held: { type: number } } }
+        approaching: { type: object, required: [lots, available, held], properties: { lots: { type: integer }, available: { type: number }, held: { type: number } } }
+        expiredOnHand: { type: object, required: [lots, quantity], properties: { lots: { type: integer }, quantity: { type: number } } }
+        openExceptions: { type: integer }
+        lateExceptions: { type: integer }
+        avgResolutionHours: { type: number }
+    DashboardView:
+      type: object
+      required: [asOf, period, kpis, expiryByMonth, topRisk]
+      properties:
+        asOf: { type: string, format: date }
+        period: { type: object, required: [from, to], properties: { from: { type: string, format: date }, to: { type: string, format: date } } }
+        warehouseId: { type: string, format: uuid }
+        kpis: { $ref: '#/components/schemas/DashboardKpis' }
+        expiryByMonth: { type: array, items: { type: object, required: [month, available, held], properties: { month: { type: string, pattern: '^\d{4}-\d{2}$' }, available: { type: number }, held: { type: number } } } }
+        topRisk: { type: array, items: { $ref: '#/components/schemas/LotExpiryRow' } }
+        lastSweepAtUtc: { type: string, format: date-time }
+    EvidencePreview:
+      type: object
+      required: [period, summary, exceptions, policyChanges, fefoBypasses]
+      properties:
+        period: { type: object, required: [from, to], properties: { preset: { type: string }, from: { type: string, format: date }, to: { type: string, format: date } } }
+        summary: { $ref: '#/components/schemas/DashboardKpis' }
+        exceptions: { type: array, items: { $ref: '#/components/schemas/ExceptionRef' } }
+        policyChanges: { type: array, items: { $ref: '#/components/schemas/PolicyHistoryEntry' } }
+        fefoBypasses: { type: array, items: { $ref: '#/components/schemas/ExceptionRef' } }
+    EvidenceExport:
+      type: object
+      required: [exportId, period, scope, format, fileName, sha256, rowCount, exportedBy, exportedAtUtc]
+      properties:
+        exportId: { type: string, format: uuid }
+        period: { type: object, required: [from, to], properties: { preset: { type: string }, from: { type: string, format: date }, to: { type: string, format: date } } }
+        scope: { type: object, properties: { warehouseIds: { type: array, items: { type: string, format: uuid } }, types: { type: array, items: { $ref: '#/components/schemas/ExceptionType' } } } }
+        format: { type: string, enum: [Csv, Pdf] }
+        fileName: { type: string }
+        sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+        rowCount: { type: integer }
+        exportedBy: { $ref: '#/components/schemas/UserRef' }
+        exportedAtUtc: { type: string, format: date-time }
+    EvidenceExportPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/EvidenceExport' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    DateOverride:
+      type: object
+      required: [overrideId, itemId, skuId, skuLevel, lotNumber, manufacturingDate, reason, signatureRequired, status, expiresAtUtc, version]
+      properties:
+        overrideId: { type: string, format: uuid }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        lotNumber: { type: string }
+        manufacturingDate: { type: string, format: date }
+        suggestedExpiry: { type: string, format: date }
+        enteredExpiry: { type: string, format: date }
+        suggestedRetest: { type: string, format: date }
+        enteredRetest: { type: string, format: date }
+        reason: { type: string }
+        signatureRequired: { type: boolean }
+        status: { type: string, enum: [Pending, Consumed, Expired] }
+        expiresAtUtc: { type: string, format: date-time }
+        version: { type: integer }
+    SignableSubject:
+      type: object
+      required: [display, summary, legalEntityId, fields]
+      properties:
+        display: { type: string, maxLength: 300 }
+        summary: { type: array, maxItems: 20, items: { type: object, required: [label, value], properties: { label: { type: string }, value: { type: string } } } }
+        legalEntityId: { type: string, format: uuid }
+        fields: { type: object, additionalProperties: { type: [string, 'null'] } }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string }
+        contractVersion: { type: string }
+  responses:
+    BadRequest: { description: Malformed request or a shape / rule code (see x-error-codes), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Forbidden: { description: Missing key / other company (CROSS_LE_FORBIDDEN), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    NotFound: { description: Unknown or another tenant's record, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Conflict: { description: A state / version / SoD / signature rule refused (see x-error-codes), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Unprocessable: { description: A business rule refused (see x-error-codes), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Unavailable: { description: An upstream master (PRODUCT-MASTER) is unreachable, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+x-error-codes:
+  EXPIRY_POLICY_INVALID: 400
+  EXPIRY_SIGNATURE_REQUIRED: 400
+  EXPIRY_SIGNATURE_MISMATCH: 409
+  EXPIRY_PENDING_RESOLUTION_MISMATCH: 409
+  EXPIRY_INVALID_TRANSITION: 409
+  EXPIRY_CONFLICT: 409
+  EXPIRY_NO_CHANGES: 409
+  EXPIRY_EXCEPTION_ALREADY_OPEN: 409
+  EXPIRY_SOD_VIOLATION: 409
+  EXPIRY_EXCEPTION_NOT_FOUND: 404
+  EXPIRY_EVIDENCE_EXPORT_NOT_FOUND: 404
+  EXPIRY_DATE_OVERRIDE_NOT_USABLE: 409
+  EXPIRY_NO_SUGGESTION: 422
+  EXPIRY_DATE_EQUALS_SUGGESTION: 422
+  shared: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOT, UNKNOWN_LOCATION, UNKNOWN_SKU, CROSS_LE_FORBIDDEN, PRODUCT_MASTER_UNAVAILABLE]
+x-state-machine:
+  - "Open ──take──▶ InReview"
+  - "Open | InReview ──resolve(AcceptedWithReason)──▶ Accepted ──close──▶ Closed"
+  - "Open | InReview ──resolve(Fixed)──▶ Fixed ──close──▶ Closed"
+  - "Open | InReview ──resolve(Cancelled)──▶ Cancelled (terminal)"
+  - "System openings (not operations of this contract): FEFO_BYPASS (outbound hook), BELOW_MIN_REMAINING (GR hook), EXPIRY_DATE_OVERRIDE (createLot), EXPIRED_ON_HAND (sweeper). One active case per {type}:{transactionId} or {type}:{lotId}:{warehouseId}."

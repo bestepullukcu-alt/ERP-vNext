@@ -43,13 +43,14 @@
       },
       {
         "path": ".antigravity/skills/control-tower/SKILL.md",
-        "max_bytes": 8000,
+        "max_bytes": 8200,
         "required_sections": [
           {
             "heading": "1. Başlangıç ve kimlik",
             "anchors": [
               "Kayıt, sahiplik ya da onay uydurma.",
-              "ayrı bir worktree ve dal iste. O ana kadar hiçbir dosya yazma, geçici dosya dahil"
+              "hiçbir dosya yazma, geçici dosya dahil; ana klasörde dal değiştirme. Geliştiriciden klasör seçmesini isteme",
+              "§0 \"Yer\" adımıyla modülün worktree ve dalına kendin geç; worktree açmak commit/push izni değildir."
             ]
           },
           {
@@ -93,6 +94,7 @@
               "satır hedefi bunları",
               "Satır numarasını yalnız numaralı bir okumadan ver",
               "\"evet\" ve \"hayır\"ın neyi yetkilendirdiğini söyler",
+              "Soruyu kartın \"Soru biçimi\"yle yanıtın sonunda yaz;",
               "her kabul, prompt ve karardan sonra onu depodan güncelle (SOP CT-TRK-01)."
             ]
           }
@@ -280,7 +282,8 @@
             "name": "module-pack-author",
             "description": "Diten module pack hazırlama ajanı: kod yazmadan yeni module pack ya da DCP oluşturur ve günceller (domain, alan sayısı, Slim/Compact kararı, kapsam, kabul ölçütleri, test beklentileri; Golden Reference şablonu). Yalnız execution/domains/*/module-packs altında çalışır. Module pack ya da DCP oluşturma/düzenleme istendiğinde kullan. Servis, frontend, gateway kodu yazmak, pack'i onaylamak, commit/push yapmak ya da pack'i bağımsız incelemek için KULLANMA.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write",
-            "model": "inherit"
+            "model": "inherit",
+            "effort": "high"
           }
         },
         {

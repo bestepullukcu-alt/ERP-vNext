@@ -1,0 +1,131 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Expiry.Tabs.Evidence"].Value;
+    ViewData["PageCode"] = "EXPIRYEVIDENCE"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0176 F5 — Kanıt Paketi (EXPIRYEVIDENCE, pack §4.7, §11.3; mockup "ev" + "logs"). The period (preset q · d30 · ytd or custom ≤ 366
+    days) and the scope (warehouse, type) → /Expiry/data/evidence/preview (FEFO-BUNDLE previewEvidence: the four sections). "PDF indir" /
+    "CSV indir" → createEvidenceExport (the file's SHA-256 is the server's, of the produced bytes) then the stored file
+    (/Expiry/evidence/file/{id}); the export log shows the hash shortened, the full value copyable.
+    UAS-001 — nothing below is drawn without expiry.evidence.export. No redirect.
+*@
+@if (!Perms.Has("expiry.evidence.export"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Expiry.Tabs.Evidence"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Expiry.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Expiry.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Expiry.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Expiry.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Expiry/_Header.cshtml" model="@("EXPIRYEVIDENCE")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <p class="text-muted mb-3">@Localizer["Expiry.Evidence.Subtitle"]</p>
+    <form class="card mb-4" id="ex-ev-form" novalidate data-no-tracker>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4 col-xl-3">
+                    <label class="form-label" for="ex-ev-preset">@Localizer["Expiry.Evidence.Period"]</label>
+                    <select class="form-select" id="ex-ev-preset">
+                        @foreach (var preset in new[] { "q", "d30", "ytd", "custom" })
+                        {
+                            <option value="@preset">@Localizer["Expiry.Evidence.Preset." + preset]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-6 col-md-4 col-xl-2 d-none" data-ex-custom>
+                    <label class="form-label" for="ex-ev-from">@Localizer["Expiry.Evidence.From"]</label>
+                    <input class="form-control" type="date" id="ex-ev-from" />
+                </div>
+                <div class="col-6 col-md-4 col-xl-2 d-none" data-ex-custom>
+                    <label class="form-label" for="ex-ev-to">@Localizer["Expiry.Evidence.To"]</label>
+                    <input class="form-control" type="date" id="ex-ev-to" />
+                </div>
+                <div class="col-12 col-md-4 col-xl-2">
+                    <label class="form-label" for="ex-ev-warehouse">@Localizer["Expiry.Col.Warehouse"]</label>
+                    <select class="form-select" id="ex-ev-warehouse"><option value="">@Localizer["Expiry.Common.AllWarehouses"]</option></select>
+                </div>
+                <div class="col-12 col-md-4 col-xl-3">
+                    <label class="form-label" for="ex-ev-type">@Localizer["Expiry.Col.Type"]</label>
+                    <select class="form-select" id="ex-ev-type">
+                        <option value="">@Localizer["Expiry.Inbox.AllTypes"]</option>
+                        @foreach (var type in new[] { "FEFO_BYPASS", "BELOW_MIN_REMAINING", "EXPIRY_DATE_OVERRIDE", "EXPIRED_ON_HAND" })
+                        {
+                            <option value="@type">@Localizer["Expiry.Type." + type]</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button type="submit" class="btn btn-label-primary" id="ex-ev-preview"><i class="bx bx-show me-1"></i>@Localizer["Expiry.Evidence.Preview"]</button>
+                <button type="button" class="btn btn-primary" id="ex-ev-pdf" data-ex-format="Pdf"><i class="bx bxs-file-pdf me-1"></i>@Localizer["Expiry.Evidence.DownloadPdf"]</button>
+                <button type="button" class="btn btn-label-secondary" id="ex-ev-csv" data-ex-format="Csv"><i class="bx bx-spreadsheet me-1"></i>@Localizer["Expiry.Evidence.DownloadCsv"]</button>
+            </div>
+        </div>
+    </form>
+    <div id="ex-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="card mb-4" id="ex-ev-result">
+        <div class="card-header">
+            <h5 class="card-title mb-0">@Localizer["Expiry.Evidence.PreviewTitle"]</h5>
+            <small class="text-muted" id="ex-ev-subtitle"></small>
+        </div>
+        <div class="card-body">
+            <h6 class="mt-1">1 · @Localizer["Expiry.Evidence.Summary"]</h6>
+            <dl class="row small mb-4" id="ex-ev-summary"></dl>
+            <h6>2 · @Localizer["Expiry.Evidence.Exceptions"] <span class="badge bg-label-secondary" id="ex-ev-exceptions-count"></span></h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-sm" id="ex-ev-exceptions">
+                    <thead><tr><th>@Localizer["Expiry.Evidence.NoType"]</th><th>@Localizer["Expiry.Col.LotWarehouse"]</th><th>@Localizer["Expiry.Detail.ResolutionLabel"]</th><th>@Localizer["Expiry.Col.Signature"]</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <h6>3 · @Localizer["Expiry.Evidence.PolicyChanges"] <span class="badge bg-label-secondary" id="ex-ev-policy-count"></span></h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-sm" id="ex-ev-policy">
+                    <thead><tr><th>@Localizer["Expiry.Policy.WhenWho"]</th><th>@Localizer["Expiry.Policy.Setting"]</th><th>@Localizer["Expiry.Policy.OldNew"]</th><th>@Localizer["Expiry.Drawer.Reason"]</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <h6>4 · @Localizer["Expiry.Evidence.Bypasses"] <span class="badge bg-label-secondary" id="ex-ev-bypass-count"></span></h6>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0" id="ex-ev-bypasses">
+                    <thead><tr><th>@Localizer["Expiry.Col.ExceptionNo"]</th><th>@Localizer["Expiry.Col.LotWarehouse"]</th><th>@Localizer["Expiry.Col.Opened"]</th><th>@Localizer["Expiry.Col.Status"]</th><th>@Localizer["Expiry.Detail.ResolutionLabel"]</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h5 class="card-title mb-0">@Localizer["Expiry.Evidence.Log"]</h5></div>
+        <ul class="list-group list-group-flush" id="ex-ev-log"><li class="list-group-item text-muted">@Localizer["Expiry.Common.Loading"]</li></ul>
+    </div>
+    <partial name="~/Views/Expiry/_ExpiryAntiforgery.cshtml" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Expiry/evidence.js" asp-append-version="true"></script>
+    }
+}

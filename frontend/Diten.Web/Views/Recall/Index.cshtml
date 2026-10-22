@@ -1,0 +1,124 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Recall.Tabs.Dashboard"].Value;
+    ViewData["PageCode"] = "RECALLDASHBOARD";
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0177 R6 — Hazırlık Paneli (RECALLDASHBOARD, pack §11.1, §8.9, mockup "isDash"). One door /Recall/data/dashboard → RECALL getDashboard.
+    The frequency band, five KPI cards, the drill chart (ApexCharts — the repo's vendored chart library, Tasks/WorkReport) with the target
+    line, the open cases table. R7b: the band's "Tatbikat planla" opens the Tatbikat Planlayıcı (drawn only with recall.drills.read).
+    UAS-001 — nothing below is drawn without recall.dashboard.read: no heading, no card, no table. No redirect.
+*@
+@if (!Perms.Has(Diten.Web.Controllers.RecallKeys.DashboardRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["Recall.Tabs.Dashboard"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Recall.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Recall.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLDASHBOARD")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <p class="text-muted mb-3" id="rc-subtitle"></p>
+
+    <div class="alert alert-warning d-none align-items-center gap-2" role="status" id="rc-freq-band">
+        <i class="bx bx-time-five fs-4"></i>
+        <span class="flex-grow-1"><strong id="rc-freq-title"></strong> <span id="rc-freq-detail"></span></span>
+        @if (Perms.Has(Diten.Web.Controllers.RecallKeys.DrillsRead))
+        {
+            <a class="btn btn-sm btn-warning" href="/Recall/Drills" id="rc-plan-drill">@Localizer["Recall.Dashboard.PlanDrill"]</a>
+        }
+    </div>
+    <div id="rc-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Recall.Common.NamesUnavailable"]</div>
+    <div id="rc-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4 mb-4" id="rc-kpis">
+        @foreach (var (kpi, icon, tone, label) in new[]
+        {
+            ("open", "bx-error-alt", "danger", "Recall.Kpi.Open"), ("lastDrill", "bx-timer", "primary", "Recall.Kpi.LastDrill"),
+            ("coverage", "bx-check-shield", "success", "Recall.Kpi.Coverage"), ("gaps", "bx-error", "warning", "Recall.Kpi.Gaps"),
+            ("returned", "bx-undo", "info", "Recall.Kpi.Returned")
+        })
+        {
+            <div class="col-12 col-sm-6 col-xl" data-kpi-card="@kpi">
+                <div class="card h-100">
+                    <div class="card-body d-flex align-items-start gap-3 p-3">
+                        <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-@tone"><i class="bx @icon"></i></span></div>
+                        <div class="min-w-0">
+                            <small class="text-muted d-block">@Localizer[label]</small>
+                            <div class="d-flex align-items-center gap-2 flex-wrap"><h5 class="mb-0" data-kpi="@kpi">—</h5><span data-kpi-badge="@kpi"></span></div>
+                            <small class="text-muted d-block" data-kpi-sub="@kpi"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="card mb-4" id="rc-chart-card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-3">
+            <h5 class="card-title mb-0 me-auto">@Localizer["Recall.Chart.Title"]</h5>
+            <span class="d-flex align-items-center gap-1 small"><span class="d-inline-block rounded bg-primary" style="width:.75rem;height:.75rem"></span>@Localizer["Recall.Badge.OnTarget"]</span>
+            <span class="d-flex align-items-center gap-1 small"><span class="d-inline-block rounded bg-danger" style="width:.75rem;height:.75rem"></span>@Localizer["Recall.Badge.OverTarget"]</span>
+            <span class="d-flex align-items-center gap-1 small text-muted" id="rc-chart-target"></span>
+        </div>
+        <div class="card-body">
+            <div id="rc-chart" style="min-height:240px"></div>
+            <p class="text-muted mb-0 d-none" id="rc-chart-empty">@Localizer["Recall.Chart.Empty"]</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h5 class="card-title mb-0">@Localizer["Recall.OpenCases.Title"]</h5>
+            @if (Perms.Has(Diten.Web.Controllers.RecallKeys.CasesRead))
+            {
+                <a class="btn btn-sm btn-label-primary" href="/Recall/Cases">@Localizer["Recall.OpenCases.All"]</a>
+            }
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0" id="rc-open-cases">
+                <thead>
+                    <tr>
+                        <th>@Localizer["Recall.Col.Number"]</th>
+                        <th>@Localizer["Recall.Col.ProductLot"]</th>
+                        <th>@Localizer["Recall.Col.Class"]</th>
+                        <th>@Localizer["Recall.Col.Opened"]</th>
+                        <th class="text-end">@Localizer["Recall.Col.Affected"]</th>
+                        <th>@Localizer["Recall.Col.ReturnedPct"]</th>
+                        <th>@Localizer["Recall.Col.Status"]</th>
+                    </tr>
+                </thead>
+                <tbody><tr><td colspan="7" class="text-muted">@Localizer["Recall.Common.Loading"]</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Recall/_RecallActions.cshtml" />
+    <partial name="~/Views/Recall/_RecallL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <link rel="stylesheet" href="~/assets/vendor/libs/apex-charts/apex-charts.css" />
+        <script src="~/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+        <script src="~/assets/js/Recall/dashboard.js" asp-append-version="true"></script>
+    }
+}

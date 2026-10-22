@@ -1,0 +1,16 @@
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.A_master_answering_outside_its_contract_is_treated_as_unavailable
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "products/b1f2c3d4-0000-0000-0000-000000000001", example: "global-product", schema: "ProductRef")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "products/d4e5f6a7-0000-0000-0000-000000000003", example: "item", schema: "ProductRef")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "skus/c3d4e5f6-0000-0000-0000-000000000002?level=Ls"···, example: "lsku", schema: "SkuRef")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "skus/d4e5f6a7-0000-0000-0000-000000000003/uom", example: "item-uom", schema: "UomInfo")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "skus/d4e5f6a7-0000-0000-0000-000000000003?level=It"···, example: "item", schema: "SkuRef")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "skus/e5f6a7b8-0000-0000-0000-000000000004?level=Gs"···, example: "gsku", schema: "SkuRef")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "skus/f6a7b8c9-0000-0000-0000-000000000005?level=Fi"···, example: "fg", schema: "SkuRef")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Every_v1_1_answer_validates_against_the_v1_1_contract(path: "stockable-items?status=Active&amp;q=amoks", example: "page", schema: "StockableItemPage")
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Location_client_reads_every_consumed_operation_of_the_frozen_contract
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Product_master_client_reads_every_consumed_operation_of_the_v1_1_contract
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.The_frozen_v1_0_contract_still_parses_and_gives_no_sku_flags
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.The_v1_0_mock_answer_leaves_the_sku_flags_unknown_never_false
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.The_v1_1_validator_keeps_types_closed_and_enums_open
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Unreachable_masters_fail_closed_on_the_real_clients
+Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Without_a_Prefer_header_the_draft_11_mock_answers_the_v1_1_example
