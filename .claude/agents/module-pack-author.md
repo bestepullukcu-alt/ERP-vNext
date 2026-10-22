@@ -3,6 +3,7 @@ name: module-pack-author
 description: "Diten module pack hazırlama ajanı: kod yazmadan yeni module pack ya da DCP oluşturur ve günceller (domain, alan sayısı, Slim/Compact kararı, kapsam, kabul ölçütleri, test beklentileri; Golden Reference şablonu). Yalnız execution/domains/*/module-packs altında çalışır. Module pack ya da DCP oluşturma/düzenleme istendiğinde kullan. Servis, frontend, gateway kodu yazmak, pack'i onaylamak, commit/push yapmak ya da pack'i bağımsız incelemek için KULLANMA."
 tools: "Read, Grep, Glob, Bash, Edit, Write"
 model: inherit
+effort: high
 ---
 
 > **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/agents/module-pack-author.md` · kaynak özeti: `sha256:968c70e7cdf4` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
