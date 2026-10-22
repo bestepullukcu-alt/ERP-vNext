@@ -296,6 +296,24 @@ Replanning = Closure
 | Canlı ortam müdahalesi | **Her seferinde açık onay** | Sahip kararı 2026-10-15 |
 | Ortak dosyada tek-yazar anlaşması | **Her seferinde**, etkin Control Tower ile | SOP §16.4, K15 |
 
+### 7a. Paralel Control Tower'lar ve paylaşılan dosyalar (S-38, sahip kararı 2026-10-22)
+
+Aynı depoda birden çok CT ve başka ekipler aynı anda çalışır. Şu dosyalar herkesin ortak kaydıdır:
+`execution/approvals/approvals.tsv`, `execution/approvals/reviews.tsv` (ikisi yalnız ekleme kabul eder),
+`execution/delivery/ct-queue-registry.tsv`, `execution/registries/module-id-registry.md`, `AGENTS.md` §3 port tablosu.
+
+1. Push'tan önce: CT dalını main ile birleştirir (merge commit) ve kontrolleri birleşmiş hâlde yeniden koşar:
+   `pack_approval.py check <paket>`, `ct_queue.py validate --queue <kuyruk>`.
+2. Çakışma çıkarsa: kendi satırlarını ana dalın satırlarının ALTINA taşır; başkasının satırını silmez, değiştirmez,
+   sırasını değiştirmez. Emin değilse `git merge --abort` ile geri alır ve sahibe sorar.
+3. Bu dosyalara dokunan PR'lar tek tek merge edilir. Merge'den hemen önce PR'da "Update branch" yapılır, kontroller
+   yeniden koşar, sonra merge commit ile birleştirilir (SOP §20.4/7).
+4. Bir PR merge edilince açık diğer CT dalları bir sonraki push'tan önce main'i alır.
+5. Uygulamayı, geliştirme sunucusunu ya da canlı testleri aynı anda yalnız bir CT çalıştırır (aynı portlar ve aynı
+   geliştirme veritabanı). Başlamadan önce CT, başka bir CT'nin çalışıp çalışmadığını sorar.
+6. Kuralları değiştiren bir PR (`.antigravity/`, kart, SOP) merge edilince her CT kartı yeniden okur; skill
+   değiştiyse yeni oturum açılır.
+
 ## 8. Domain → Control Tower sahipliği (yalnız kanıttan)
 
 > Kanıt = depo yolu@commit. Kanıt yoksa satır "Belirsiz — sahip ataması bekliyor" yazar; sahip kendiliğinden atanmaz.
