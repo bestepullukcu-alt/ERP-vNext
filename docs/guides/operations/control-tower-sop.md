@@ -1545,15 +1545,15 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 
 Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**; biçim istenir.
 
-## 22.2 CT-TRK-01 — Capability block iş takip sayfası (pilot)
+## 22.2 CT-TRK-01 — Capability block iş takip sayfası (zorunlu)
 
 > Kaynak: başka bir ekibin önerisi; sahip uyarlanmış biçimi 2026-10-21'de onayladı.
 
 1. **Amaç.** Her capability block'un (DCP / MVP block) kalan işleri tek, işaretlenebilir bir sayfada durur; sahip ve CT
    aynı listeyi görür.
-2. **Pilot.** Önce Pharmacovigilance block'unda denenir; bir block'ta işe yaradığı görülünce zorunlu yapılır (sahip
-   kararı). Mevcut Control Tower'lara geriye dönük yük yoktur.
-2a. **Ne zaman açılır (S-31, kaynak öneride vardı, uyarlamada atlanmıştı).** Pilot block'ta CT, ilk durum
+2. **Zorunlu (sahip kararı 2026-10-22, S-39).** Pharmacovigilance pilotu işe yaradı; her Control Tower kendi block'u
+   için tek bir iş takip sayfası tutar. Açık bir CT'de sayfa yoksa, main'i aldıktan sonraki ilk uygun adımda önerir.
+2a. **Ne zaman açılır (S-31, kaynak öneride vardı, uyarlamada atlanmıştı).** CT, ilk durum
    değerlendirmesinden sonra ya da block'un ilk paket / karar kaydı commit edildiğinde sayfayı **kendisi önerir** ve tek
    kelimelik onayla (`sayfa-ac`) açar; "sırada" diye ertelemez. Block başına tek sayfa; varsa yenisi açılmaz. Açınca
    depodaki bütün kalan işleri ve bitmiş olanları (geçmiş görünsün) yazar, bir okumayla doğrular, bağlantıyı ve kısa
