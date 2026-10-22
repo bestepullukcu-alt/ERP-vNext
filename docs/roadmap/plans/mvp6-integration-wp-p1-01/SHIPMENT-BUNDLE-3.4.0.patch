@@ -1,0 +1,41 @@
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-22 20:33:24
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-22 20:33:24
+@@ -12,7 +12,7 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 3.3.0
++  version: 3.4.0
+   x-status: FROZEN
+   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+@@ -3132,6 +3132,10 @@
+         quantity: { $ref: '#/components/schemas/Decimal' }
+         uomId: { type: string }
+         inventoryReferenceId: { type: [string, 'null'], description: Frozen INVENTORY reservation/transaction reference; balance degildir. }
++        skuLevel: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — INVENTORY SkuLevel of the line's SKU; required by the GOODS_ISSUE_SALES posted at Dispatched (MOD-0183 §23). Omitted — resolved from PRODUCT-MASTER once frozen (G6); given — cross-checked against it." }
++        lotId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — the lot issued for a lot-tracked SKU. A tenant without a warehouse module enters it; with one, MVP-5 picking fills it. Read at Dispatched; may be empty before." }
++        fromLocationId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — the issuing location inside warehouseReferenceId. Read at Dispatched." }
++        fefoBypassReason: { type: [string, 'null'], minLength: 10, maxLength: 1000, description: "3.4.0 (WP-P1 G1, additive) — forwarded unchanged to INVENTORY 1.3.0 fefoBypassReason when the lot is not the first eligible FEFO lot." }
+     CreateShipmentCommand:
+       type: object
+       additionalProperties: false
+@@ -3343,6 +3347,8 @@
+         occurredAt: { type: string, format: date-time }
+         inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
+         dispositionCode: { type: [string, 'null'] }
++        toWarehouseId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G8, additive) — the warehouse a Received return enters; required by the business rule when targetStatus is Received (MOD-0186 §34). Item, SKU, level and lot come from the shipment line's issue movement, never from the client." }
++        toLocationId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G8, additive) — optional receiving location." }
+     ReturnSummary:
+       type: object
+       properties:
+@@ -3528,6 +3534,9 @@
+             returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+             claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+             inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++            inventoryRefused: { value: { error: { code: INVENTORY_REFUSED, message: "3.4.0 (WP-P1 G7) — INVENTORY refused a line's movement; the shipment did not change state", details: { lineNumber: "1", inventoryCode: LOT_UNDER_RECALL, inventory: { lotId: 3f2b5a1e-0000-4000-8000-000000000105, recallCaseNumber: RC-2026-0004 } }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++            shipmentLineStockIncomplete: { value: { error: { code: SHIPMENT_LINE_STOCK_INCOMPLETE, message: "3.4.0 (WP-P1 G1) — a lot-tracked line has no lotId at Dispatched; INVENTORY was not called", details: { lineNumber: "1" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++            returnSourceMovementMissing: { value: { error: { code: RETURN_SOURCE_MOVEMENT_MISSING, message: "3.4.0 (WP-P1 G8) — the shipment line has no recorded issue movement; no lot is guessed", details: { shipmentLineNumber: "1" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+     DependencyUnavailable:
+       description: Frozen consumed contract mock'u erisilemez
+       content:

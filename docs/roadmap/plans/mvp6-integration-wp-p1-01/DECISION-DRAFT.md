@@ -141,3 +141,22 @@ inceleme** (MVP-1 CT; yazandan ayrı oturum) → **CT-APR-01** satırı: risk **
 | `MOD-0183-section-23.patch` | G1, G5, G7, G9, G10 + DL tablosu; DL-2 / DL-6 "G2–G4 bekliyor" olarak işaretli | G2–G4, sonra CT-APR-02 → CT-APR-01 |
 
 Yamalar `git apply --check` ile denendi; paket dosyaları bu dalda **değiştirilmedi** (tek paket yazıcısı kuralı).
+
+## 9. WP-B4 ölçümü ve DL-1 yaması (2026-10-22, `origin/main` `91a1d6031`)
+
+**WP-B4 — Inventory okuma istemcisi.** `IInventoryReadClient` / `InventoryReadClient` yalnız tanım olarak var
+(`Application/Features/SourceIntake/Contracts/SourceClients.cs:51`, `Infrastructure/SourceIntake/ReadOnlySourceClients.cs:22`);
+**hiçbir üretim kodu onu kullanmıyor** ve kararlaştırılmış hiçbir kural (G1–G10) bir Inventory okumasına ihtiyaç duymuyor:
+çıkış ve iade ret kararını Inventory'nin kendisi veriyor. Öneri: DI'a **kaydedilmez**; bir kural ya da ekran onu isteyince kaydedilir.
+
+**Bulgu (G8'i etkiler).** INVENTORY `getTransactions` yalnız `itemId, lotId, locationId, from, to` ile süzer
+(`inventory-bundle.openapi.yaml:178-190`); `sourceDocumentId` / `documentGroupId` ile arama yok. Bu yüzden iade, orijinal çıkış
+hareketini Inventory'den bulamaz. **DL-2 her satırın `transactionId`'sini (`MovementResponse.transactionId`) ve `lotId`'sini
+sevkiyatta saklamalıdır**; DL-3 bunları sevkiyattan okur. MOD-0183 §23.1'e DL-2 yamasında eklenir.
+
+**DL-1 yaması.** `SHIPMENT-BUNDLE-3.4.0.patch`: `version 3.3.0 → 3.4.0`; `ShipmentLine` + `skuLevel`, `lotId`, `fromLocationId`,
+`fefoBypassReason`; `TransitionReturnCommand` + `toWarehouseId`, `toLocationId`; `Unprocessable` örnekleri `INVENTORY_REFUSED`,
+`SHIPMENT_LINE_STOCK_INCOMPLETE`, `RETURN_SOURCE_MOVEMENT_MISSING`. Yalnız ekleme: kaldırılan tek satır sürüm numarası; YAML
+ayrıştırılıyor; `git apply --check` geçiyor. **Tek başına uygulanmaz:** `ContractErrorCodeParityTests` sözleşmedeki kodlarla
+koddaki `ContractErrorCodes`'u eşit tutar, yeni üç kod DL-2 koduyla aynı değişiklikte gelir. 3.3.0'daki gibi `SHA256SUMS` ve
+uygulama kaydı (`APPLIED.md`) da o değişiklikte güncellenir.
