@@ -1112,6 +1112,7 @@ def _refuses(fn) -> bool:
 
 
 def self_test() -> int:
+    os.environ["PACK_APPROVAL_PR_VERIFY"] = "test"     # temp repositories have no GitHub origin (pack_approval.pr_merge)
     # CT-FIX-05 (F3): C2 is the code commit, C3 = C2 + the run directory the runner wrote (the evidence commit)
     C1, C2, C3 = "a" * 40, "b" * 40, "c" * 40
     RUN = "docs/records/audits/2026-10/x/run-1"

@@ -1423,6 +1423,7 @@ class FakeRepo:
 
 
 def self_test() -> int:
+    os.environ["PACK_APPROVAL_PR_VERIFY"] = "test"     # temp repositories have no GitHub origin (pack_approval.pr_merge)
     v = vmi()
     files = {"AGENTS.md": "x\n", "docs/api.md": "GET /api/things returns 200\nperm crm.thing.read\n",
              "tests/T.cs": "public void Thing_Returns200()\n",
