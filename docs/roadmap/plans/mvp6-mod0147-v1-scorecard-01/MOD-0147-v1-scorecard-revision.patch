@@ -1,0 +1,113 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md	2026-10-22 22:05:35
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md	2026-10-22 22:05:35
+@@ -28,6 +28,26 @@
+ > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
+ > master owner (domain `procurement`). Placement grants no runtime, contract, gateway or permission ownership.
+ 
++## 0.0 v1 scope — performance scorecard now, risk after TPRM (owner decision 2026-10-22) — revision draft
++
++> `docs/records/decisions/2026-10/mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md` (Natig). **Draft revision —
++> not approved**; needs CT-APR-02 and a new CT-APR-01 row (high risk: first product code). Where this section and an older
++> line below disagree about v1, this section wins.
++
++| Area | v1 (now) | Later |
++|---|---|---|
++| Operations | `createSupplierEvaluation`, `submitSupplierEvaluation`, `GET /evaluations[/{id}]`, `GET /scorecards[/{id}]` | risk operations (`POST /risks`, `POST /risks/{id}/status`, `GET /risks`) — after MOD-0216 TPRM, reading TPRM's result |
++| Objects | `SupplierEvaluation`, `EvaluationMetricResult`, `SupplierScorecard` | `SupplierRisk` |
++| Metric policy (DC-04) | pack-held revision `supplier-score-policy/1` = §0.4 set | Metric Registry (MOD-0004) when it exists |
++| Metric values | **entered by the evaluator** per metric (frozen v1 contract shape); server enforces codes, weights, ranges, 3-of-4 rule | **v1.1:** computed from Procurement facts (read contracts MOD-0141/0142/0143 + QC source; XMC-001); 5-receipt-line minimum applies from v1.1 |
++| Supplier (DC-02) | tenant-wide master id from MOD-0140 1.3.0, eligibility per DC-02 D2 (still a gate) | — |
++| Permissions | `.read`, `.evaluate`, `.publish` | `.risk-manage` |
++| Audit (§21) | path b, `supplychain-merkezi-iletim` (central forwarder, PR #198) once merged | risk commands with the risk part |
++| UI | none in v1 (backend first, as §9); a scorecard screen is a later revision with 7-language scope | — |
++
++**Still gates for v1 code:** DC-02 (MOD-0140 1.3.0 contract on `main`), this revision's CT-APR-02 + CT-APR-01, the
++permission/composition single writer (§14), and the replay receipt amendment (Phase 1.5, §0 table).
++
+ ## 0. Requirement status and traceability (review 2026-10-19)
+ 
+ Every requirement below carries one of three labels. A label is a claim about authority, not about code (there is none).
+@@ -87,9 +107,11 @@
+   snapshot; a newer revision never rewrites them. Missing, stale or unverifiable authority → no evaluation, receipt, audit
+   success record or outbox item.
+ 
+-**Still for the Metric/Risk owners to decide (BLOKE):** the live registry pointer and immutable revision shape; scope, UoM,
+-direction, validity and withdrawal oracle; `policy1` weights; band consent; a missing-metric rule (the target above has
+-none: every policy metric is required — owner to confirm).
++**Decided 2026-10-21 (Natig, management; §0.4):** the v1 metric set, `policy1` weights (25 each), the period (calendar
++month), the missing-metric rule (replaces "every policy metric is required") and the minimum volume.
++**Still for the Metric/Risk owners to decide (BLOKE):** the live registry pointer and immutable revision shape (until the
++Metric Registry — MOD-0004 — exists, the §0.4 set is the pack-held revision `supplier-score-policy/1`); validity and
++withdrawal oracle; band consent.
+ 
+ Derived acceptance examples (from the proposed policy; they become acceptance examples only when it is approved):
+ 
+@@ -102,7 +124,40 @@
+ | 60 × 60, 40 × 39.9999 | — | — | 422 (total weight 60 + 39.9999 = 99.9999 ≠ 100) |
+ | 60 × 60, 39.9999 × 40 | 51.99996 | 52.00 | HIGH (weights sum to 100 — a valid input, not a negative case) |
+ | 50.12345 × 100 | — | — | 422 (five fractional digits) |
++
++### 0.4 v1 fixed metric set — DECIDED (Natig, 2026-10-21) — revision draft, applied when MOD-0147 starts
++
++> Source: `docs/records/decisions/2026-10/mvp6-mod0147-v1-metric-set-owner-decision-2026-10-21.md`. MOD-0147 starts after
++> MOD-0216 TPRM (same decision); this section is the pack text of that decision and needs CT-APR-02 and a new CT-APR-01 row
++> like any pack change. It authorizes no code by itself.
++
++Scope per Tenant + LE + supplier + period; every metric `PERCENT`, `0..100`, `HIGHER_IS_BETTER` (§0.1).
++
++| code | metric | formula (period) | weight | source (read contract + XMC-001 needed) |
++|---|---|---|---|---|
++| `OTD` | On-time delivery rate | receipt lines received on or before the promised date — up to 3 days early counts as on time — ÷ receipt lines × 100 | 25 | MOD-0141 PO line promised date, MOD-0142 GRN receipt date |
++| `QTY_ACC` | Quantity accuracy | receipt lines whose received quantity is within ±2 % of the ordered quantity ÷ receipt lines × 100 | 25 | MOD-0141 ordered qty, MOD-0142 received qty |
++| `QUAL_ACC` | Quality acceptance rate (= 100 − reject rate) | accepted quantity ÷ inspected quantity × 100 | 25 | QC inspection result — **source module not yet identified** |
++| `INV_MATCH` | Invoice match rate (= 100 − mismatch rate) | invoices passing 3-way match without exception ÷ invoices × 100 | 25 | MOD-0143 Invoice Capture & 3-Way Match |
+ 
++- **Period:** calendar month (§0.2's duplicate-period rule applies to it).
++- **Missing data:** a metric with no data in the period is left out and the remaining weights are re-scaled to 100; the
++  scorecard is published only when **at least 3 of the 4** metrics have data, and the missing metric is shown on it.
++- **Minimum volume:** fewer than **5 receipt lines** in the period → "insufficient data", no score, no band.
++- Rounding and bands stay as in §0.1 (exact aggregate, two decimals round-half-even once, band from the unrounded value).
++- Changing weights, tolerances or the period later is a new policy revision; published scorecards are never rewritten.
++
++Acceptance examples of the decided rules (in addition to §0.1's):
++
++| Inputs | Result |
++|---|---|
++| OTD 90, QTY_ACC 80, QUAL_ACC 100, INV_MATCH 70 (each × 25) | aggregate 85 → 85.00, MEDIUM |
++| OTD 90, QTY_ACC 80, QUAL_ACC no data, INV_MATCH 70 | weights re-scaled to 33.3333…: aggregate 80 → 80.00, MEDIUM; QUAL_ACC shown as missing |
++| two of four metrics with data | not published ("insufficient metrics"), no band |
++| 4 receipt lines in the month | "insufficient data", no score |
++| a line received 3 days before the promised date | on time; 4 days early → not on time |
++| ordered 100, received 102 / 103 | within ±2 % / outside |
++
+ ### 0.2 Evaluation period, correction and CANCELLED — proposal of this review (not in SPEC-DELTA), MOD-0147 owner decides
+ 
+ - Duplicate period (proposed): at most **one active** evaluation per `(TenantId, LegalEntityId, SupplierId, PeriodStart,
+@@ -320,11 +375,11 @@
+ - [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
+ - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
+ - [ ] Supplier base consumption + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
+-- [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. Blocks deterministic evaluation/score.
+-- [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration.
++- [ ] Metric policy (DC-04) — no Metric Registry service exists; **deferred**. For v1 met by the pack-held policy `supplier-score-policy/1` (§0.4) once this revision is approved.
++- [ ] Risk taxonomy (DC-05) — no Risk Register service exists; **deferred**. Blocks risk registration — **out of v1** (§0.0, risk part after MOD-0216).
+ - [ ] Shared contract successor, replay/concurrency receipt, permission definition/composition, fixture, portal-source
+       resolution — OPEN in `docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md`.
+-- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — the service has no audit-ledger file (BL-615).
++- [ ] SupplyChain service audit trail accepted under AUD-001 (§21) — **met when PR #198 merges** (ledger `Diten.SupplyChainService.md`, trail `supplychain-merkezi-iletim`, path b).
+ - [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev`.
+ - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
+ 
+@@ -361,3 +416,12 @@
+ Not recorded: no credential or token is part of these commands. `Summary` (max 1000) and `resolutionNote` (max 2000) are
+ free text and may carry personal or sensitive data: the audit record keeps their **length and SHA-256, not the text**
+ (proposal of this review; the business record keeps the text under `supplychain.supplier-performance.read`). Owner to confirm.
++
++## Teslim dilimleri
++
++| dilim | ad | kapsadığı bölümler |
++|---|---|---|
++| DL-1 | değerlendirme çekirdeği | §0.0, §0.1, §0.2, §0.4, §3 (değerlendirme/scorecard), §4 SupplierEvaluation/Scorecard, §12, §13 |
++| DL-2 | yayın ve değişmezlik | §0.3, §8, §21 (değerlendirme komutları) |
++| DL-3 | v1.1 hesaplanan metrikler | §0.4 kaynak sütunu, okuma sözleşmeleri (XMC-001), 5 satır kuralı |
++| DL-4 | risk (TPRM sonrası) | §4 SupplierRisk, risk işlemleri |
