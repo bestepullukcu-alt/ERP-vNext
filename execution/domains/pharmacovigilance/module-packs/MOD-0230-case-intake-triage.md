@@ -287,7 +287,7 @@ selection since revision 05 -, `ReporterCrmSearchState` - set by the server only
 | RemoveReporterLink (request marker) | No; Update only; never together with the selection pair (-> 400) | public-metadata | Action of the reporter selection input on Edit ("remove link"); not counted (see the exclusions above) | KR-2 (`pvg-mod0230-intake-fields-03.md`): the only way to remove an existing reporter link. Boolean; not stored. When `true` on a linked record the server writes `ReporterSource = Manual`, clears `ReporterSourceId`, and keeps the snapshot values as typed values. Full rule: "Reporter selection contract" below. |
 | ReporterSource | Yes (system; set at Create, Update, and by the one-time CRM search) | public-metadata | No (system; response only) | `Crm` / `PersonDirectory` / `Manual`, written by the server only (AL-6): `Crm` or `PersonDirectory` = the directory of a resolved reporter selection; `Manual` when no selection is given at Create or when `RemoveReporterLink` is set on Update (KR-2). A request that carries `ReporterSource` is rejected 400 (BG-31). |
 | ReporterSourceId | Set by the server when `ReporterSource` is `Crm` or `PersonDirectory`; empty when `Manual` | PII | No (system; response only) | The resolved CRM contact id or MOD-0288 person id, copied by the server from the resolved selection. A request that carries `ReporterSourceId` is rejected 400 (BG-31). A reporter identifier: never in logs, traces, metrics, or audit payloads ("Runtime Constraints"). Read through the MOD-0150 / MOD-0288 owner contracts (open). |
-| ReporterCrmSearchState | System; always set (`Pending` at Create) | public-metadata | No (system; response only; not counted - the user never fills it) | Revision 06 (KR-4, `pvg-mod0230-intake-fields-04.md`): stored state of the one-time CRM search of a typed reporter. `Pending` = the search may still run; `Searched` = it has run once (hit, no hit, or ambiguous); `ClosedByUserUnlink` = the user removed the link with `RemoveReporterLink` (KR-4 b). The search runs only while `Pending`; `Searched` and `ClosedByUserUnlink` never return to `Pending`. A request that carries it is rejected 400 (BG-31). Audit: field name only, no value ("Audited Events"). Full rule: "One CRM search for a typed reporter" below. |
+| ReporterCrmSearchState | System; always set (`Pending` at Create) | public-metadata | No (system; response only; not counted - the user never fills it) | Revision 06 (KR-4, `pvg-mod0230-intake-fields-04.md`): stored state of the one-time CRM search of a typed reporter. `Pending` = the search has not run and no search call is made until the trigger save; `Searched` = it has run once (hit, no hit, or ambiguous); `ClosedByUserUnlink` = the user removed the link with `RemoveReporterLink` (KR-4 b). The search runs only while `Pending`, and only in the trigger save of KR-5 (revision 07, `pvg-mod0230-intake-fields-05.md`): the first Create or Update after which, with `ReporterSource = Manual`, `ReporterNameOrInitials` is filled and the MOD-0150 read contract is present; `Searched` and `ClosedByUserUnlink` never return to `Pending`. A request that carries it is rejected 400 (BG-31). Audit: field name only, no value ("Audited Events"). Full rule: "One CRM search for a typed reporter" below. |
 | ReporterNameOrInitials | No at Create; at Triage `ValidityReporterIdentifiable` needs at least one reporter identifier or a link | PII | Yes (copied on a link) | Snapshot (AL-6): name or initials. |
 | ReporterProfession | No | PII | Yes (copied on a link) | Snapshot (AL-6): profession. |
 | ReporterCountry | No | PII | Yes (copied on a link) | Snapshot (AL-6): country, same country list as `EventCountry`. Accepted values: "Country rule table" below. A country copied from a linked source is written only if it fits the table at copy time, otherwise left null (KR-3). Null and "unknown" are **not** reporter identifiers (revision 05, review 04 F-2). |
@@ -425,9 +425,12 @@ unchanged source and link, and the audit payload produced **locally** by the Upd
 a local test double or the in-memory `PvgAuditIntent` is **not** central audit acceptance. The real audit write of
 that payload is DL-5 and is measured by BG-33.
 
-One CRM search for a typed reporter (AL-6 clarification): when the record is completed, the person is searched in CRM
-once; a hit is linked (link + snapshot, as on path 2). The search runs inside the existing Create / Update command at
-save, in the same unit of work - not as a new write command (AUD-001 §5 K4) and not as a background job (unauthorized,
+One CRM search for a typed reporter (AL-6 clarification; trigger fixed by KR-5,
+`pvg-mod0230-intake-fields-05.md`, revision 07): the person is searched in CRM once, in the **first** save (Create or
+Update) in which, on a typed (`ReporterSource = Manual`) and not yet searched (`ReporterCrmSearchState = Pending`)
+record, `ReporterNameOrInitials` is filled after the save and the search can be made (MOD-0150 read contract present);
+a hit is linked (link + snapshot, as on path 2). The search runs inside that Create / Update command, in
+the same unit of work - not as a new write command (AUD-001 §5 K4) and not as a background job (unauthorized,
 "Runtime Constraints"). What counts as a hit is part of the MOD-0150 read contract; an ambiguous result links nothing.
 After the MOD-0150 owner contract only.
 
@@ -438,23 +441,50 @@ later search. Revision 06 adds one system field, `ReporterCrmSearchState`, used 
 
 | State | Set by | Effect on the one-time search |
 |---|---|---|
-| `Pending` | Create (initial value) | The search may run, under the existing rule above, in a save where the reporter is typed (`ReporterSource = Manual`) |
-| `Searched` | The save in which the search runs (hit, no hit, or ambiguous result) | Never runs again on this record |
+| `Pending` | Create (initial value) | No CRM search call is made until the trigger save (KR-5); the search runs only in that save |
+| `Searched` | The trigger save (KR-5), in which the one search runs (hit, no hit, or ambiguous result) | Never runs again on this record |
 | `ClosedByUserUnlink` | The save that carries `RemoveReporterLink = true` (from any earlier state) | Never runs again on this record (KR-4 b); the removing save itself does not search (KR-4 a) |
 
 - Priority in one save (KR-4 a): `RemoveReporterLink = true` is applied first and closes the search; no CRM read is made
   for the search in that save, even if CRM would return an exact match.
 - No state returns to `Pending`. Re-linking with the selection pair does not change the state; the link then comes
   only from the user's selection (KR-4 b).
-- The trigger "when the record is completed" is unchanged by this revision; the state only decides whether the search
-  may run at all.
-- Before the MOD-0150 owner contract the search never runs and the state stays `Pending` (or becomes
-  `ClosedByUserUnlink` by a removal).
+- **Trigger (KR-5, revision 07; replaces "when the record is completed").** The trigger save is a Create or Update in
+  which all of the following hold, checked by the server: (1) `ReporterCrmSearchState` is `Pending` before the save;
+  (2) after the save `ReporterSource = Manual`; (3) after the save `ReporterNameOrInitials` is filled (non-empty after
+  trimming) - no "empty before" condition, whether the name was entered in this save or earlier; (4) the MOD-0150
+  read contract is present, so the search can be made; (5) the save does not carry `RemoveReporterLink = true`
+  (KR-4 a). The first save that meets all five is the trigger save: exactly one CRM search call is made and the state
+  becomes `Searched`, whatever the result. Before it the state stays `Pending` and no CRM search call is made; after it
+  no search runs again - "once" is held by the state, not by the name's history. KR-4 applies unchanged.
+- **CRM read outage (reading of KR-5's own wording "the first save in which the search can be made"; not a new
+  decision).** When the MOD-0150 read contract is present but CRM cannot be read in that save (outage, timeout), the
+  search has not been made: the state stays `Pending`, the save is **not** rejected for it (EK-3: PV refuses no
+  notification), nothing is linked, and the search is tried again in the next save that meets conditions (1)-(5). The
+  outage is logged with a safe reason code only - no reporter id, name, or other field value. Acceptance: BG-30
+  (`Crm_read_outage_keeps_pending_and_save_succeeds`).
+- **Boundary cases (KR-5 as clarified by the owner on 2026-10-22, and KR-4; no further rule).**
+  - Create with `ReporterNameOrInitials` filled, no selection pair, contract present: the Create itself is the trigger
+    save - one search, `Searched`.
+  - Create or Update without a name (the EK-3 reporter with no identifier, or other identifiers only): no search,
+    `Pending`; the first later save after which the name is filled is the trigger save.
+  - While the state is `Pending` (contract present), any save after which the name is filled triggers - including a save
+    that only changes a filled name to another value, or one that fills it again after it was cleared; the state then
+    becomes `Searched`.
+  - Once the state is `Searched`, nothing triggers again: not a changed name, not a name cleared and filled again.
+  - A linked reporter (`ReporterSource = Crm` / `PersonDirectory`): no search, even with the name filled (condition 2).
+    If the user later removes the link, the state becomes `ClosedByUserUnlink` and no search follows (KR-4 b).
+  - The save carrying `RemoveReporterLink = true`, even with the name filled: no search (KR-4 a).
+- Before the MOD-0150 owner contract the search never runs (condition 4) and the state stays `Pending` (or becomes
+  `ClosedByUserUnlink` by a removal). A `Manual`, `Pending` record whose name was entered before the contract is
+  searched once in its first save (Create or Update) after the contract, if the name is still filled after that save
+  (KR-5 clarification, owner, 2026-10-22, `pvg-mod0230-intake-fields-05.md`); no background job searches it in
+  between ("Runtime Constraints").
 - `ReporterCrmSearchState` is a system field, not user-entered: it is not in the create/edit count (`form_field_count`
   stays 25), is response-only (a request value -> 400, BG-31), sensitivity public-metadata (a state code that names no
   person), and its change enters the audit record by field name only, with no value ("Audited Events").
-- Acceptance: BG-29 (state set by the removal, no contract needed), BG-30 (search priority and permanence after the
-  MOD-0150 contract), BG-33 (real audit write).
+- Acceptance: BG-29 (state set by the removal, no contract needed), BG-30 (trigger, search priority, and permanence
+  after the MOD-0150 contract), BG-33 (real audit write).
 
 Reporter and company recipient are separate fields: the reporter tells the event (physician, patient); the company
 recipient is the employee who learned it (representative). A representative is not the reporter; an employee is the
@@ -911,7 +941,7 @@ Route succeed by inventing a queue list must be rejected in review.
 | ValidityResult, ValidityMissingCriteria | System, set at Triage | `Valid` when all four criteria hold, otherwise `InvalidFollowUpRequired` with the missing criteria codes; a client-supplied value is rejected | Planned index `(TenantId, ValidityResult)` | Derived on the server only | regulated-safety; an invalid record is never deleted (no delete surface exists) |
 | ReporterSelectionDirectory + ReporterSelectionId (request pair) | No - both or neither | `ReporterSelectionDirectory` in `Crm` / `PersonDirectory`; `ReporterSelectionId` = an id in that directory ("Reporter selection contract", "Entity Fields") | Not stored as such | Exactly one of the two -> 400; other directory value -> 400. **While the owner read contract of the named directory (MOD-0150 for `Crm`, MOD-0288 for `PersonDirectory`) is absent: rejected (fail closed).** After it: resolved in the named directory only, tenant-scoped; never tried in the other directory (a CRM id sent with `PersonDirectory` is rejected); not found or another tenant's id -> 404 with a safe reason code and no record data (OD-PVG-3), the two cases indistinguishable. Update: an unchanged pair keeps link and snapshot without a new read; a missing pair without `RemoveReporterLink` on a linked record -> 400 (permanent rule, KR-2) | PII (`ReporterSelectionId`); never in logs/traces/metrics/audit payloads |
 | RemoveReporterLink (request marker, Update only) | No | Boolean; `true` removes an existing reporter link (KR-2) | Not stored | `true` together with either field of the selection pair -> 400; `true` on Create or on a record without a link -> 400; on a linked record: server writes `ReporterSource = Manual`, clears `ReporterSourceId`, keeps the snapshot values as typed values, sets `ReporterCrmSearchState = ClosedByUserUnlink`, and runs no CRM search in that save (KR-4 a); audit payload names the changed fields only | public-metadata |
-| ReporterCrmSearchState | System; always set | `Pending` / `Searched` / `ClosedByUserUnlink` (revision 06, KR-4) | Not indexed | **Response only: a request that carries it is rejected 400** (BG-31). Server transitions only: `Pending` at Create; `Pending` -> `Searched` in the save where the one-time CRM search runs; any state -> `ClosedByUserUnlink` in a save with `RemoveReporterLink = true`; no transition back to `Pending`. The one-time CRM search runs only while `Pending` | public-metadata; audit by field name only |
+| ReporterCrmSearchState | System; always set | `Pending` / `Searched` / `ClosedByUserUnlink` (revision 06, KR-4) | Not indexed | **Response only: a request that carries it is rejected 400** (BG-31). Server transitions only: `Pending` at Create; `Pending` -> `Searched` in the trigger save of KR-5 (revision 07: the first save with state `Pending` before it, `ReporterSource = Manual` and `ReporterNameOrInitials` non-empty after trimming after it, the MOD-0150 read contract present, and no `RemoveReporterLink = true`), which makes exactly one CRM search call; any state -> `ClosedByUserUnlink` in a save with `RemoveReporterLink = true`; no transition back to `Pending`. No CRM search call in any other save | public-metadata; audit by field name only |
 | ReporterSource | System; always set | `Crm` / `PersonDirectory` / `Manual`, written by the server from the resolved selection (or the one-time CRM search, only while `ReporterCrmSearchState = Pending`); `Manual` when no selection or after `RemoveReporterLink` | Not indexed | **Response only: a request that carries it is rejected 400** (BG-31) | public-metadata |
 | ReporterSourceId | System; set with `Crm` / `PersonDirectory`, empty with `Manual` | The resolved CRM contact id or MOD-0288 person id, copied by the server | Not indexed | **Response only: a request that carries it is rejected 400** (BG-31). Reporter = company recipient only with the consumer / employee reporter type (BG-24) | PII; reporter identifier - never in logs/traces/metrics/audit payloads |
 | ReporterNameOrInitials | No at Create | Max 128 chars (EK-5); trimmed | Not indexed | Length check; copied from the source on a link | PII; deny/mask/omit when field policy is unavailable |
@@ -1024,6 +1054,12 @@ until then).
     `ReporterCrmSearchState = ClosedByUserUnlink` no later save runs it (KR-4 b); only the user's selection pair links
     again. A request that carries `ReporterCrmSearchState` -> 400. Today: no search, no link, and no state exist (G-21,
     G-22).
+- **CRM unreadable during the one-time search (revision 07, KR-5)**
+  - Expected: the save succeeds; nothing is linked; `ReporterCrmSearchState` stays `Pending`; the search is tried
+    again in the next save that meets the trigger conditions; the outage is logged with a safe reason code and no
+    reporter id, name, or other field value. This differs from the "read unavailable" path above: there the request
+    carries an id that cannot be verified and is rejected; here the request carries no CRM id (BG-30). Today: no
+    search exists (G-22).
 - **Awareness later than received (revision 04)**
   - Expected: 400 with its own reason code; no record created or changed.
 - **Audit write fails**
@@ -1464,9 +1500,28 @@ say "after ..." and cannot be checked before that approval is recorded.
       is opened, `ReporterCountry` is null, and the rest of the snapshot is copied - test
       `Crm_country_code_is_not_copied_while_list_is_absent_and_case_opens_with_null_reporter_country`; the same for a
       MOD-0288 person whose directory record holds a country, if the MOD-0288 read contract returns one - test
-      `Person_directory_country_is_not_copied_while_list_is_absent`. A typed reporter is searched in CRM exactly once, inside the completing Create /
-      Update command, and the save that searches sets `ReporterCrmSearchState = Searched`; a later save makes no CRM
-      search call - test `Typed_reporter_is_searched_in_crm_once_on_save`; an ambiguous match links nothing - test
+      `Person_directory_country_is_not_copied_while_list_is_absent`. Trigger of the one-time search (revision 07, KR-5,
+      `pvg-mod0230-intake-fields-05.md`; the CRM read port counts its search calls in every test below): a typed
+      reporter is searched in CRM exactly once, in the first save after which, on a `Manual` and `Pending` record with
+      the contract present, `ReporterNameOrInitials` is filled, and that save sets `ReporterCrmSearchState = Searched`;
+      a later save makes no CRM search call - test `Typed_reporter_is_searched_in_crm_once_on_save`; a record opened
+      without a reporter identifier (EK-3) ends the Create with `Pending` and zero search calls - test
+      `Create_without_reporter_name_keeps_pending_and_makes_no_crm_search`; a later Update after which
+      `ReporterNameOrInitials` is filled makes exactly one search call and sets `Searched` - test
+      `Update_that_first_fills_reporter_name_searches_crm_once`; a further save (name unchanged, changed, or cleared and
+      filled again) makes zero search calls - test `Save_after_searched_state_makes_no_crm_search`; a record whose name
+      was entered while the MOD-0150 read port was absent stays `Pending` with zero calls, and its first save after the
+      port is present (name still filled, no other change needed) makes exactly one search call and sets `Searched`;
+      the next save makes none (KR-5 clarification) - test
+      `Record_named_before_crm_contract_is_searched_once_on_first_save_after_contract`; with the contract present but
+      the CRM read port failing (outage or timeout) in the trigger save, the save succeeds, nothing is linked, the state
+      stays `Pending`, the log entry carries only a safe reason code (no reporter id or name), and the next qualifying
+      save makes exactly one search call and sets `Searched` - test
+      `Crm_read_outage_keeps_pending_and_save_succeeds`; a Create with
+      `ReporterNameOrInitials` filled makes exactly one search call in that Create and sets `Searched` - test
+      `Create_with_reporter_name_searches_crm_once_in_that_save`; a linked reporter (`Crm` / `PersonDirectory`) with the
+      name filled makes zero search calls and stays `Pending` - test `Linked_reporter_with_name_makes_no_crm_search`; an
+      ambiguous match links nothing and still sets `Searched` - test
       `Ambiguous_crm_match_links_nothing`; no background job is registered (existing host composition tests stay green).
       Removal versus the one-time search (revision 06, KR-4, `pvg-mod0230-intake-fields-04.md`; the CRM read port
       returns an exact match for the snapshot in every test below, and the test counts its search calls): (a) a save
@@ -1688,7 +1743,9 @@ Behaviour that the suites must cover (each with at least one named test):
   (BG-23, BG-24); event country with "unknown" and no hardcoded list (BG-25, BG-26); report type (BG-27); validity
   result, the "at least one suspect product" rule, "unknown" country not an identifier, and no deletion of an invalid
   record (BG-28); the reporter selection contract (directory + id pair, server-set source), link, snapshot, local
-  snapshot-edit payload, the one-time CRM search, and its priority and permanence after a user's link removal
+  snapshot-edit payload, the one-time CRM search with its KR-5 trigger (first save with the reporter name filled and
+  the MOD-0150 contract present, including records named before the contract), and its
+  priority and permanence after a user's link removal
   (`ReporterCrmSearchState`, KR-4) (BG-24, BG-29, BG-30); the country rule table and the kept stored
   "unknown" (BG-25, BG-26); API shape (BG-31); screen and seven-language labels (BG-32); audit payload of codes and ids
   only and the real audit write of a snapshot edit, CRM and person directory (BG-33). Items marked "after ..." are measured only after that owner or
@@ -1753,8 +1810,10 @@ Behaviour that the suites must cover (each with at least one named test):
       review 05 and a new version-bound approval row. Owner decisions OD-PVG-11 and OD-PVG-12, opened in revision 05,
       are closed by `pvg-mod0230-intake-fields-03.md` KR-1 and KR-2 (2026-10-22); KR-3 settles the country copied from a
       linked source. Independent review 05 of revision 05 returned "KOŞULLU" (0 ENGEL, 1 ORTA: F-1); revision 06
-      addresses F-1 under `pvg-mod0230-intake-fields-04.md` KR-4 and needs independent review 06 and a new
-      version-bound approval row for its version.
+      addresses F-1 under `pvg-mod0230-intake-fields-04.md` KR-4. Independent review 06 of revision 06 returned
+      "KOŞULLU" (0 ENGEL, 1 ORTA: F-1, unmeasurable search trigger); revision 07 addresses F-1 under
+      `pvg-mod0230-intake-fields-05.md` KR-5 and needs independent review 07 and a new version-bound approval row for
+      its version.
 
 ## Implementation Notes
 
@@ -1848,6 +1907,28 @@ Behaviour that the suites must cover (each with at least one named test):
   CRM search"), Validation Rules, Failure Path, Audited Events, BG-29, BG-30, BG-31, BG-33, DL-2, DL-4, DL-5. OD-PVG-1
   ... 12 unchanged; no other frontmatter field changed. Author: `module-pack-author` sub-agent; effort: declared 15,
   applied: high. Needs independent review 06 and a new version-bound approval row.
+- **2026-10-22 revision 07 - independent review 06 finding F-1.** Review 06 of pack version `31f02845` (commit
+  `5aff9aade`, the version compared for this revision; unchanged in merge `a4fa3e107`) returned "KOŞULLU" with one
+  ORTA finding: the trigger of the one-time CRM search ("when the record is completed") was not measurable
+  (`docs/records/reviews/MOD-0230/2026-10-22-31f02845.md`, sha256
+  `47eb73e47787c28aaa96850cfba0d167a97e036163845f6c9322db02ab1f429d`; Control Tower comparison note
+  `docs/records/reviews/MOD-0230/2026-10-22-31f02845-ct-karsilastirma-06.md`, §1 and §3). Authority:
+  `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-05.md` KR-5 (owner, 2026-10-22, option A, with the
+  owner's clarification of the same day). Applied in this text: the search runs in the **first** save (Create or
+  Update) on a `Manual`, `Pending` record after which `ReporterNameOrInitials` is filled (non-empty after trimming)
+  and the MOD-0150 read contract is present - exactly one search call, state `Searched`; before it `Pending` and zero
+  calls; after it no search. There is no "empty before" condition: "once" is held by `ReporterCrmSearchState`, so a
+  record named before the contract is searched once in its first save after the contract. The five server-checked
+  conditions and the boundary cases are written under "One CRM search for a typed reporter"; the sentence that kept
+  the old trigger is removed; KR-4 applies unchanged. Updated: "Entity Fields" (`ReporterCrmSearchState` row, "One
+  CRM search"), Validation Rules, Failure Path, BG-30 (trigger tests, including
+  `Record_named_before_crm_contract_is_searched_once_on_first_save_after_contract` and
+  `Crm_read_outage_keeps_pending_and_save_succeeds`), Test Expectations, DL-2. A CRM read outage in the trigger save
+  keeps `Pending`, does not reject the save (EK-3), and the search is tried again in the next qualifying save - a
+  reading of KR-5's "the first save in which the search can be made", not a new decision. The "empty before, filled
+  after" condition of the first draft changed with the owner's clarification of KR-5. OD-PVG-1
+  ... 12 and the frontmatter unchanged (`form_field_count: 25`). Author: `module-pack-author` sub-agent; effort:
+  declared 15, applied: high. Needs independent review 07 and a new version-bound approval row.
 - **MOD-0231 validity field (fact only).** MOD-0231's `SignalMinimumAssessment` carries `CaseValidityStatus` and
   `CaseValidityReason` (G-20). How MOD-0231 consumes the MOD-0230 validity result is the MOD-0231 pack's matter
   (XMC-001); this pack changes nothing there.
@@ -1972,7 +2053,10 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   ya da hiçbiri; `ReporterSource` / `ReporterSourceId` sunucu yazar), bağın yalnız `RemoveReporterLink` işaretiyle
   kaldırılması (KR-2) ve revizyon 06'dan beri `ReporterCrmSearchState` durumu (KR-4: bağ kaldırılan kaydetmede ve
   sonraki kaydetmelerde tek seferlik CRM araması çalışmaz; arama yalnız durum `Pending` iken çalışır,
-  `pvg-mod0230-intake-fields-04.md`), "unknown" ülkenin tanımlayıcı sayılmaması, ülke kuralı tablosu ve kayıtlı kodun korunması
+  `pvg-mod0230-intake-fields-04.md`; revizyon 07'den beri tetikleyici KR-5: arama, `ReporterSource = Manual` olan
+  ve `Pending` kayıtta, kaydetmeden sonra `ReporterNameOrInitials`'ın dolu olduğu ve MOD-0150 okuma sözleşmesinin
+  bulunduğu ilk kaydetmede tek kez çalışır; sözleşmeden önce adı girilmiş kayıt sözleşmeden sonraki ilk kaydetmesinde
+  bir kez aranır, `pvg-mod0230-intake-fields-05.md`), "unknown" ülkenin tanımlayıcı sayılmaması, ülke kuralı tablosu ve kayıtlı kodun korunması
   (KR-1), bağlı kaynaktan gelen ülkenin tabloya uymuyorsa null kalması (KR-3) bu dilimdedir
   (`pvg-mod0230-intake-fields-03.md`). Anlık kopya düzenlemesinde (EK-4) bu dilim yalnız düzenlemeyi ve denetim yükünün
   **yerelde** yalnız alan adıyla üretilmesini teslim eder (BG-30; CRM ve kişi dizini kopyaları); yerel test ikamesi ya
