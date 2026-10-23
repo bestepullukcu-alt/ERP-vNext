@@ -32,6 +32,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// person's call with nobody to name must be refused and leave the business data untouched.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TransactionOwnedAuditDeliveryMongoTests
 {
     private static readonly Guid Administrator = Guid.Parse("7b000000-0000-4000-8000-0000000000ad");

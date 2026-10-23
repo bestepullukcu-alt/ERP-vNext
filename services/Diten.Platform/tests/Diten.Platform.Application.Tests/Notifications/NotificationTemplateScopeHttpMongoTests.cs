@@ -43,6 +43,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// platform default exists.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class NotificationTemplateScopeHttpMongoTests
 {
     private const string UpdateBody =

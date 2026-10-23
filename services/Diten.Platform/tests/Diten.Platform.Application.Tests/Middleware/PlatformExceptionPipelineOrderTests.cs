@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Tests.Middleware;
 /// with the PRODUCTION handler — not a copy of its own.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformExceptionPipelineOrderTests
 {
     private const string ExceptionHandler = "app.UseExceptionHandler();";

@@ -15,6 +15,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
  * healing. These tests rebuild that exact state in FIXED-NAME databases the harness owns (never a database per run,
  * never the shared database itself — dropping an index there would break whichever class is running beside us).
  */
+[Trait("Category", "Mongo")]
 public sealed class MongoSchemaResidueHealerMongoTests
 {
     private const string SeriesIndex = "ux_meeting_series_tenant_name";

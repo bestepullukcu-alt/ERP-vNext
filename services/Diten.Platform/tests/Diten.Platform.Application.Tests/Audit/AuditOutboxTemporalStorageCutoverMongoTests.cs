@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Audit;
 
+[Trait("Category", "Mongo")]
 public sealed class AuditOutboxTemporalStorageCutoverMongoTests : IAsyncLifetime
 {
     private const string CollectionName = "audit_outbox_temporal_candidate_benchmark";

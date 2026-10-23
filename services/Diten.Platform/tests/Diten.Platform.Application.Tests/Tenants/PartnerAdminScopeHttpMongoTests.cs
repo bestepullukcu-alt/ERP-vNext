@@ -55,6 +55,7 @@ namespace Diten.Platform.Application.Tests.Tenants;
 /// real Mongo (a test-owned replica set — never the shared database). Two tenants: A (allowed) and B (not).
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PartnerAdminScopeHttpMongoTests
 {
     // ── family 1: the tenant list and its counts ─────────────────────────────────────────────────────────

@@ -55,13 +55,10 @@ internal sealed class LoadTestFactory(LoadProbe probe, string referenceUrl, stri
     private static string Connection => Environment.GetEnvironmentVariable("MOD0185_TEST_MONGO") ?? throw new InvalidOperationException("Set MOD0185_TEST_MONGO to an isolated replica set.");
     // appName rides on the service's own connection string so a fail point can be scoped to this
     // host alone (Q214 R2). f.Db is this same client, so arming and the commits under test agree.
-    private static Dictionary<string, string?> Settings(string referenceUrl, string appName) => new()
+    private static Dictionary<string, string?> Settings(string referenceUrl, string appName) => new(AuthServiceToken.JwtSettings(Secret))
     {
         ["Mongo:ConnectionString"] = new MongoUrlBuilder(Connection) { ApplicationName = appName }.ToMongoUrl().ToString(),
         ["Mongo:DatabaseName"] = DatabaseName,
-        ["JwtSettings:Secret"] = Secret,
-        ["JwtSettings:Issuer"] = "loads-tests",
-        ["JwtSettings:Audience"] = "loads-tests",
         ["Loads:ReferenceBaseUrl"] = referenceUrl
     };
     protected override IHost CreateHost(IHostBuilder builder)
@@ -184,14 +181,9 @@ internal sealed class LoadTestContext : IAsyncDisposable
         return body;
     }
 
-    public static string Token(Guid tenant, Guid le, Guid actor, params string[] permissions)
-    {
-        var claims = new List<Claim> { new("tenant_id", tenant.ToString()), new("legal_entity_id", le.ToString()), new("sub", actor.ToString()) };
-        claims.AddRange(permissions.Select(p => new Claim("permission", "supplychain.loads." + p)));
-        var token = new JwtSecurityToken("loads-tests", "loads-tests", claims, expires: DateTime.UtcNow.AddMinutes(10),
-            signingCredentials: new(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(LoadTestFactory.Secret)), SecurityAlgorithms.HmacSha256));
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
+    // AuthService's real token shape; le is kept for the callers' signature — the legal entity is the header.
+    public static string Token(Guid tenant, Guid le, Guid actor, params string[] permissions) =>
+        AuthServiceToken.Mint(LoadTestFactory.Secret, tenant, actor, permissions.Select(p => "supplychain.loads." + p));
 
     public HttpRequestMessage Request(string method, string path, Guid? tenant = null, Guid? le = null, Guid? actor = null,
         string[]? permissions = null, string? correlation = null, string? key = null, JsonObject? body = null, string? contentType = "application/json")

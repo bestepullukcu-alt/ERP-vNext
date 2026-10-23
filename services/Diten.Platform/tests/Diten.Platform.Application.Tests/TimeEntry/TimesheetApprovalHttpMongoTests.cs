@@ -22,6 +22,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// only reads it back (the pull finalizer) — and recomputes task totals.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
 {
     public TimesheetApprovalHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)
