@@ -595,3 +595,41 @@ Commit: "fix(web): WP-VW-W6 W6-FIX-b — pre-order and pricing screens: line tab
 - **Takip:** FU-MDM-LE-TIMEZONE (MDM tüzel kişiliğinde saat dilimi alanı yok).
   - FU-MDM-LE-ADDRESS-TAX gerekmedi; alanlar MDM'de var. Yerel tüzel kişilikte adres / VKN boşsa antette yalnız ad çıkar (veri işi).
   - W6-FIX-b `totals.listSubtotal` / `totals.discountAmount` okuyabilir → **W6-FIX-b başlayabilir** (FIX-a'dan bağımsız).
+
+## §37 CT kabul — W6-FIX-b E2 ACCEPTED (2026-10-23)
+
+- **Alındı:** `wp/vw-w6-fixb` efc63de73 → test dalına `27eb0d460` (55 dosya, yalnız `frontend/Diten.Web/**`; FIX-a'nın dosyalarına dokunulmadı).
+- **İnceleme:**
+  - **G-2:** ortak `diten-datefield.js` takvim dilini tarayıcının Intl'inden `<html lang>` için kuruyor. Değer ve gösterim biçimi değişmedi. 25 sayfa etkileniyor; İngilizce flatpickr'ın kendisi.
+  - **V-3:** özet yalnız CRM alanlarından oluşuyor; alanı olmayan satır gösterilmiyor, istemcide hesap yok.
+  - **G-6 / G-7:** `showConfirm` kullanılıyor; ticari ekranlarda `window.confirm` 0.
+  - **V-12:** sekmelerdeki büyük harf dönüşümü yalnız fiyat ekranında kapatıldı.
+- **Testler (CT, FIX-a ile birlikte aynı baş):** Diten.Web.Tests 2847 / 3 kırmızı. Kırmızılar bilinen `ShipmentDetailsDateNode` ×2 ve `WorkCenterMenuWithoutPermissions`.
+- **CT bozma denemesi:** ortak tarih seçicide `localizeCalendars()` çağrısı kapatıldı → `PricingWebTests.D14_the_calendar_speaks_the_page_language_from_the_shared_date_field` KIRMIZI. Dosya geri alındı (md5 aynı).
+- **Canlı:**
+  - V-7 kısmen görüldü: Temsilci sütunu Tarih ve Depo'dan önce görünüyor.
+  - Liste ve sipariş formu tam ekran mockup karşılaştırması bir sonraki E4'te yapılacak.
+  - V-8 "Yerel karşılık" sütunu var.
+- **Takip:**
+  - FU-W6-FIXB-CRM-DATA → takip listesinde **W6-FIX-d** (G-3 kişi adı, V-9 etkin indirim eğilimi, V-10 pozisyon adı; CRM verisi).
+  - FU-TABCARD-TITLECASE: aynı sekme kartını kullanan 4 CRM ekranı (PotentialThresholds, VisitEvidenceFlags, VisitEvidenceSettings, VisitNotifications); kural ortak `_TabCard` CSS'ine taşınacak.
+
+## §37 CT kabul — W6-FIX-a E2 ACCEPTED (2026-10-23)
+
+- **Alındı:** `wp/vw-w6-fixa` 6a2f2086c → test dalına `f546a9bd2` (20 dosya). Kullanıcının checkout'undaki yerel G-4 / G-5 kopyaları önce atıldı (`git checkout --` yalnız 3 dosya).
+- **İnceleme:**
+  - **G-12:** gizli değişkenli e-posta istek içinde gönderiliyor; gizlisiz e-postalar kuyrukta kalıyor (F-1 korunuyor).
+  - ACTION_LINK kapanışı ilk kodu `ACTION_LINK_NOT_RETRYABLE;first:<kod>` olarak koruyor; maskelenmiş değer iletiye girmiyor.
+  - **G-13:** W6 sipariş bağlantısı, onay bağlantısı ve W5 rapor bağlantısı `tenantId` taşıyor. Web, giriş yönlendirmesine yalnız geçerli tek bir guid'i taşıyor.
+  - Girişten sonra yalnız yerel adrese dönülüyor; böylece açık yönlendirme (open redirect) de kapandı.
+  - **G-5:** `{verb}` kullanılıyor; Web'de `{action}` rota parametresi kalmadığını bir test denetliyor.
+  - **G-4:** düzenlemede `legalEntityId` gönderilmiyor.
+- **Testler (CT, aynı baş):**
+  - Web 2847 / 3 bilinen kırmızı.
+  - CRM 3261 / 2 kırmızı: bilinen `VisitPlanningFix2` + `ContactLocationPiiHardening` (FU-CRM-PII-GUID-FLAKE; tek başına 18/18).
+  - Platform bildirim testleri 516/0.
+  - Ajanın Platform tam takımı: 24 bilinen ortam kırmızısı + 1 kararsız test (`TaskWorkItemContractGuard`, tek başına 14/0).
+- **CT bozma denemesi:** W5 rapor bağlantısından `&tenantId=` kaldırıldı (ajan yalnız onay bağlantısını denemişti) → `W6FixaLinkTenantTests.L1_every_link_carries_its_tenant` KIRMIZI. Dosya geri alındı (md5 aynı).
+- **Sapma (kabul):** girişli dönüş adresi testi gerçek HTTP değil; `AccountController` host servisleriyle kuruluyor ve ayrıca birim testi var.
+- **Açık:** `known_failures.py` kaydında bazı taban kırmızıları "YENİ" görünüyor → kayıt güncellemesi SYNC-3 ile birlikte.
+- **Sıradaki:** e-posta bağlantısıyla onayın yeniden E4'ü (G-12 + G-13 birlikte). Avast Posta Kalkanı'nın kapalı olması gerekiyor.
