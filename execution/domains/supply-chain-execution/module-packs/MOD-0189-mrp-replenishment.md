@@ -82,6 +82,9 @@ UI ve Gateway ayrı onay konusudur. Frontend doğrudan servis portuna istek atma
 
 Ali kararı: her SKU × Warehouse × ISO haftası için girdi sürüm/asOf kesiti kaydedilir. Hesap izi
 `netRequirement = max(0, grossDemand + approvedSafetyStock - availableStock - openOrderQuantity)` biçimindedir.
+Stok anlık görüntüsü yayımlanmış talebin ilk haftasından sonraysa MRP, görüntünün UTC tarihini
+içeren ISO haftasından başlar; önceki haftalar hesaplanmaz. Görüntü tüm 52 haftalık ufkun
+sonrasındaysa plan üretilmez. Talep revision kimliği ve checksum'ı değişmeden korunur.
 Güvenlik stoğu yalnız MOD-0191'in onaylı politika sürümünden gelir. İlk sürüm lot-for-lot'tur;
 MOQ/koli yuvarlaması yapılmaz. MOD-0141 açık satır görünümü yokken `openOrderQuantity` güvenilir
 bir sıfır olarak yazılmaz: terim hesaptan çıkarılır ve her plan

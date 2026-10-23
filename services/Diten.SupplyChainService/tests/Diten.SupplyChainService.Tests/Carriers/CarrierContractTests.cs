@@ -352,4 +352,35 @@ public sealed class CarrierContractTests
         Assert.Equal(0,probe.RepositoryCalls);
         Assert.Equal(201,(await Send(c,body:Body())).Status);Assert.Equal(1,probe.RepositoryCalls);
     }
+
+    // BL-501 (WP-A1, E-2): the central record is written in the command's own transaction — one for a success, none for a
+    // replay, a refusal or a write that rolled back. Measured on the real host and the real repository.
+    private async Task<List<BsonDocument>> CentralRecords(Factory f) =>
+        await Db(f).GetCollection<BsonDocument>("central_audit_outbox").Find(new BsonDocument("TenantId", _tenant.ToString())).ToListAsync();
+    [Fact]
+    public async Task A_successful_command_files_one_central_record_in_its_transaction_and_a_replay_a_refusal_or_a_rollback_none()
+    {
+        var probe = new Probe(); using var app = new Factory(probe); using var c = app.CreateClient(); var root = Guid.NewGuid();
+        var created = await Send(c, body: Body("AUDIT"), key: "audit-create", correlation: root.ToString()); Assert.Equal(201, created.Status);
+        var id = created.Body["carrierId"]!.GetValue<string>();
+        var record = Assert.Single(await CentralRecords(app));
+        Assert.Equal(_le.ToString(), record["CompanyId"].AsString); Assert.Equal(_actor.ToString(), record["ActorId"].AsString);
+        Assert.Equal(id, record["EntityId"].AsString); Assert.Equal("CreateCarrierCommand", record["RequestType"].AsString);
+        Assert.Equal("carrier-management", record["SourceModule"].AsString); Assert.Equal("Create", record["Operation"].AsString);
+        Assert.Equal("Diten.SupplyChainService", record["SourceService"].AsString); Assert.Equal(root.ToString(), record["CorrelationId"].AsString);
+        Assert.True(record["WrittenInCommandTransaction"].AsBoolean); Assert.Equal("Pending", record["Status"].AsString);
+
+        Assert.True((await Send(c, body: Body("AUDIT"), key: "audit-create")).Body["idempotentReplay"]!.GetValue<bool>());
+        Assert.Equal(409, (await Send(c, body: Body("AUDIT"), key: "audit-conflict")).Status);
+        Assert.Equal(422, (await Send(c, path: $"/{id}/status", body: Change("Active"), key: "audit-same-status")).Status);
+        probe.FailPhase = "beforeCommit";
+        Assert.Equal(500, (await Send(c, path: $"/{id}/status", body: Change("Suspended"), key: "audit-rollback")).Status);
+        Assert.Single(await CentralRecords(app));
+
+        Assert.Equal(200, (await Send(c, path: $"/{id}/status", body: Change("Suspended"), key: "audit-status")).Status);
+        var records = await CentralRecords(app);
+        Assert.Equal(2, records.Count);
+        var transition = records.Single(r => r["RequestType"].AsString == "ChangeCarrierStatusCommand");
+        Assert.Equal(id, transition["EntityId"].AsString); Assert.Equal("LifecycleTransition", transition["Operation"].AsString);
+    }
 }

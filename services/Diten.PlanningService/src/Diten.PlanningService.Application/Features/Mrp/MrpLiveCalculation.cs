@@ -31,11 +31,16 @@ public sealed class MrpLiveCalculation(ILegalEntityScopeReader companies,
             var stock = await inventory.ReadAsync(tenantId, legalEntityId, skuId, warehouseId, ct);
             if (stock is null || stock.TenantId != tenantId || stock.LegalEntityId != legalEntityId ||
                 stock.SkuId != skuId || stock.WarehouseId != warehouseId ||
-                stock.BaseUomId != published.BaseUomId || stock.AsOf == default ||
-                DateOnly.FromDateTime(stock.AsOf.UtcDateTime) > published.Weeks[0].WeekStart)
+                stock.BaseUomId != published.BaseUomId || stock.AsOf == default)
+                return new(MrpCalculationStatus.Unavailable);
+            var stockDate = DateOnly.FromDateTime(stock.AsOf.UtcDateTime);
+            var stockWeekStart = stockDate.AddDays(-(((int)stockDate.DayOfWeek + 6) % 7));
+            var planningWeeks = published.Weeks
+                .Where(week => week.WeekStart >= stockWeekStart).ToArray();
+            if (planningWeeks.Length == 0)
                 return new(MrpCalculationStatus.Unavailable);
             var leadTime = await leadTimes.ReadAsync(tenantId, legalEntityId, skuId, warehouseId,
-                published.Weeks[0].WeekStart, published.Weeks[^1].WeekStart.AddDays(6), ct);
+                planningWeeks[0].WeekStart, planningWeeks[^1].WeekStart.AddDays(6), ct);
             if (leadTime is null || leadTime.TenantId != tenantId ||
                 leadTime.LegalEntityId != legalEntityId || leadTime.SkuId != skuId ||
                 leadTime.WarehouseId != warehouseId)
@@ -48,7 +53,7 @@ public sealed class MrpLiveCalculation(ILegalEntityScopeReader companies,
                 stillPublished.Checksum != published.Checksum)
                 return new(MrpCalculationStatus.Unavailable);
 
-            var weeks = published.Weeks.Select(w =>
+            var weeks = planningWeeks.Select(w =>
                 new MrpWeek(w.WeekStart, w.Quantity, 0m, MrpWeekQuality.Reliable)).ToArray();
             var input = new MrpInput(tenantId, legalEntityId, skuId, warehouseId,
                 published.BaseUomId, published.RevisionId.ToString("D"),
