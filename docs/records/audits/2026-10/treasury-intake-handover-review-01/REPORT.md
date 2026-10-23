@@ -104,6 +104,23 @@ kendi commit mesajı "tek başına derlenmeyebilir" diyor; §O bunu açıklamıy
 - MOD-0120: süresiz denetim sınırlaması taşınırsa §S sapma kaydı (sahip + bitiş) şart.
 - MOD-0057: `*` izni ve `"unknown"` aktör.
 
+## 7a. Ek 1 (2026-10-23, kaynak CT bildirimi sonrası) — bağlanan commit kusuru
+
+Kaynak CT bildirdi (kayıt: kaynak R `f9291e6b`, `treasury-218acaf5-reassessment-20261023/`): MOD-0289 v1.5 ve
+**MOD-0220 v1.2**'nin bağladığı S `218acaf5`'teki dosyalar o commit'te tanımlı olmayan türlere başvuruyor (MOD-0289'da
+34, MOD-0220'de 36 `.cs` dosyası); aynı baytlar S `da4abb20`'de eksiksiz ve derleniyor. Baytlar etkilenmiyor, etiket
+yanlış. Yeni sürümler kaynak kuyruğunda READY: MOD-0289 v1.7 (TRM-B7-03-R1), MOD-0220 v1.3 (TRM-B7-04).
+
+- **§3 değişikliği:** MOD-0220 önerisi "KABUL" → **"KOŞULLU — v1.3'ü bekle"**; MOD-0289 → **v1.7'yi bekle** (v1.6 REWORK).
+- Bu inceleme kusuru yakalamadı: kontrollerimiz bayt eşitliğini ve satır iddialarını ölçtü, bağlanan commit'in tek başına
+  tutarlı olup olmadığını (tür başvuruları) ölçmedi. MOD-0289 için "tek başına derlenmeyebilir" uyarısı §4 H3'te vardı.
+- **MOD-0289 test hataları:** kaynak CT'ye göre 61 hata (F02 HTTP 16, F02 Mongo 27, PAIR 18) kanıt koşusunun sağlamadığı
+  fixture önkoşullarında duruyor; F02/PAIR güvenceleri için ne lehte ne aleyhte kanıt. §4 H3 "doğrulanmamış" olarak kalır.
+- **MOD-0003 düzeltmesi tam doğru değil:** kaynak CT "planned / missing satırı kaynak kaydıdır; Recovery değeri 0 dosya /
+  yok" diyor. Recovery ölçümü (origin/main 96bedc893): `execution/registries/module-id-registry.md:61` satırı **var**
+  ("planned / missing", kimlik rezerve) **ve** kod 0 dosya. İkisi birlikte doğru.
+- MOD-0126 v1.2 ve MOD-0119 v1.1 kaynakta VERIFIED, henüz teslim edilmedi.
+
 ## 8. Ölçülmeyenler
 
 Çalışma zamanı, derleme ve testlerin yeniden koşusu; §N'deki commit edilmemiş kayıtlar; Blueprint hücreleri ve
