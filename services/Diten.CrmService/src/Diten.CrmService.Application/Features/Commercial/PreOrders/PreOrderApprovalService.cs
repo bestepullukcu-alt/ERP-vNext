@@ -57,6 +57,8 @@ public sealed class PreOrderApprovalService
         {
             Required = true, Reasons = reasons.ToList(), ApproverPositionId = managers.Managers.FirstOrDefault()?.PositionId,
             ApproverPositionCode = managers.Managers.FirstOrDefault()?.PositionCode,
+            // W6-FIX-d (V-10) — the seat's name with the approvers (Platform's positionName is the seat the managers hold)
+            ApproverPositionName = managers.Managers.Count > 0 ? managers.PositionName : null,
             ApproverUserIds = managers.Managers.Select(m => m.UserId).Distinct().ToList(),
             ApproverNames = managers.Managers.Where(m => !string.IsNullOrWhiteSpace(m.DisplayName))
                 .GroupBy(m => m.UserId).ToDictionary(g => g.Key.ToString("D"), g => g.First().DisplayName!),

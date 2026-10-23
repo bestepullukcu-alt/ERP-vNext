@@ -17,7 +17,10 @@ public sealed record FxRateInput(Guid? LegalEntityId, string? FromCurrency, stri
 public sealed record FxRateImportInput(IReadOnlyList<FxRateInput>? Rows);
 
 public sealed record FxRateDto(Guid Id, Guid LegalEntityId, string FromCurrency, string ToCurrency, DateOnly RateDate, decimal Rate, string Source,
-    string? CreatedBy, DateTimeOffset CreatedAt, string? UpdatedBy, DateTimeOffset? UpdatedAt, int Version);
+    string? CreatedBy, DateTimeOffset CreatedAt, string? UpdatedBy, DateTimeOffset? UpdatedAt, int Version,
+    /// <summary>W6-FIX-d (G-3) — the display names of <see cref="CreatedBy"/> / <see cref="UpdatedBy"/> (AuthService, the
+    /// IUserDisplayNameResolver seam); null when a name cannot be resolved — the screen then shows "—", never the id.</summary>
+    string? CreatedByName = null, string? UpdatedByName = null);
 
 public sealed record FxRatePageDto(IReadOnlyList<FxRateDto> Items, long Total, int Page, int PageSize);
 
@@ -109,8 +112,13 @@ public static class FxRateValidator
         return null;
     }
 
-    public static FxRateDto ToDto(FxRate r)
-        => new(r.Id, r.LegalEntityId, r.FromCurrency, r.ToCurrency, r.RateDate, r.Rate, r.Source, r.CreatedBy, r.CreatedAt, r.UpdatedBy, r.UpdatedAt, r.Version);
+    public static FxRateDto ToDto(FxRate r, IReadOnlyDictionary<string, string>? names = null)
+        => new(r.Id, r.LegalEntityId, r.FromCurrency, r.ToCurrency, r.RateDate, r.Rate, r.Source, r.CreatedBy, r.CreatedAt, r.UpdatedBy, r.UpdatedAt, r.Version,
+            NameOf(names, r.CreatedBy), NameOf(names, r.UpdatedBy));
+
+    /// <summary>The name of one writer id from the page's map; null when the id is not a user id or was not resolved.</summary>
+    public static string? NameOf(IReadOnlyDictionary<string, string>? names, string? userId)
+        => names is not null && Guid.TryParse(userId, out var id) && names.TryGetValue(id.ToString("D"), out var name) ? name : null;
 }
 
 public sealed class FxRateHandlers :
@@ -124,10 +132,12 @@ public sealed class FxRateHandlers :
     private readonly IFxRateRepository _rates;
     private readonly IPricingLegalEntityDirectory _legalEntities;
     private readonly PricingChangeLogWriter _log;
+    private readonly IUserDisplayNameResolver? _names;
 
     public FxRateHandlers(ITenantContext tenant, IActorContext actor, IFxRateRepository rates, IPricingLegalEntityDirectory legalEntities,
-        PricingChangeLogWriter log)
+        PricingChangeLogWriter log, IUserDisplayNameResolver? names = null)
     {
+        _names = names;
         _tenant = tenant;
         _actor = actor;
         _rates = rates;
@@ -162,7 +172,7 @@ public sealed class FxRateHandlers :
         await _log.WriteAsync(tenantId, PricingChangeEntityTypes.FxRate, rate.Id, rate.Version, rate.LegalEntityId, PricingChangeActions.Created, rate.CreatedBy,
             PricingChangeLogWriter.Created(("pair", $"{rate.FromCurrency}/{rate.ToCurrency}"), ("rateDate", rate.RateDate), ("rate", rate.Rate),
                 ("source", rate.Source)), ct);
-        return Response<FxRateDto>.Success(FxRateValidator.ToDto(rate), 201);
+        return Response<FxRateDto>.Success((await WithNamesAsync([rate], ct))[0], 201);
     }
 
     public async Task<Response<FxRateDto>> Handle(UpdateFxRateCommand request, CancellationToken ct)
@@ -189,7 +199,7 @@ public sealed class FxRateHandlers :
         }
 
         return await CorrectAsync(rate, request.Input.Rate ?? rate.Rate, PricingCommon.Clean(request.Input.Source) ?? rate.Source, ct) is { } result
-            ? Response<FxRateDto>.Success(FxRateValidator.ToDto(result))
+            ? Response<FxRateDto>.Success((await WithNamesAsync([result], ct))[0])
             : PricingCommon.Stale<FxRateDto>();
     }
 
@@ -279,8 +289,16 @@ public sealed class FxRateHandlers :
         var (items, total) = await _rates.ListAsync(tenantId, new FxRateFilter(request.LegalEntityId,
             request.FromCurrency is null ? null : PricingCommon.NormalizeCurrency(request.FromCurrency),
             request.ToCurrency is null ? null : PricingCommon.NormalizeCurrency(request.ToCurrency), request.From, request.To), (page - 1) * size, size, ct);
-        return Response<FxRatePageDto>.Success(new FxRatePageDto(items.Where(r => r.TenantId == tenantId).Select(FxRateValidator.ToDto).ToList(),
+        return Response<FxRatePageDto>.Success(new FxRatePageDto(await WithNamesAsync(items.Where(r => r.TenantId == tenantId).ToList(), ct),
             total, page, size));
+    }
+
+    /// <summary>W6-FIX-d (G-3) — the rows with their writers' names: the distinct ids of the WHOLE page asked in ONE call
+    /// (<see cref="UserDisplayNames.MapAsync"/>, never one call per row); an id it cannot resolve has no name (null).</summary>
+    private async Task<IReadOnlyList<FxRateDto>> WithNamesAsync(IReadOnlyList<FxRate> rates, CancellationToken ct)
+    {
+        var names = await UserDisplayNames.MapAsync(_names, rates.SelectMany(r => new[] { r.CreatedBy, r.UpdatedBy }), ct);
+        return rates.Select(r => FxRateValidator.ToDto(r, names)).ToList();
     }
 
     private FxRate New(Guid tenantId, FxRateInput input) => new()

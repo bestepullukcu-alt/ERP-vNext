@@ -82,11 +82,3 @@
     font-size: 2rem;
     color: var(--bs-primary);
 }
-
-/* V-12 (W6-FIX-b) — the tab card's labels are written as the resource writes them. Sneat's `.nav-pills .nav-link` sets
-   `text-transform: capitalize`, which turned "MF / iskonto kuralları" into "MF / Iskonto Kuralları" (every word capped,
-   and in a page whose language the transform does not apply, a dotless I). Scoped to screen D's card; the shared card
-   on the other screens is the owner's call (reported in W6-FIX-b). */
-.wcn-tabs .nav-link {
-    text-transform: none;
-}

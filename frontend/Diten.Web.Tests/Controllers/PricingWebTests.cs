@@ -475,10 +475,11 @@ process.stdout.write(JSON.stringify({ s: s, none: none, done: done }));")!;
     [Fact]
     public void D13_the_rules_tab_is_written_as_the_resource_writes_it_and_each_tab_says_its_own_sentence()
     {
-        // V-12 — the Turkish label, and no capitalising transform on screen D's tab card (Sneat's nav-pills capitalize)
+        // V-12 — the Turkish label, and no capitalising transform on screen D's tab card (Sneat's nav-pills capitalize);
+        // W6-FIX-d moved the rule to the shared tab card (D16), screen D's card is that card (_PricingHeader → _TabCard)
         Assert.Equal("MF / iskonto kuralları", Page("tr")["TabRules"]);
         Assert.Equal("MF / iskonto kuralları", Page("tr")["RulesTitle"]);
-        Assert.Contains(".wcn-tabs .nav-link {\n    text-transform: none;\n}", Js("Pricing/pricing.css"));
+        Assert.Contains("~/Views/Shared/Components/Tabs/_TabCard.cshtml", View("Pricing/_PricingHeader.cshtml"));
         foreach (var page in new[] { "PriceLists/Index.cshtml", "PricingRules/Index.cshtml", "Pricing/Trial.cshtml", "PricingHistory/Index.cshtml", "FxRates/Index.cshtml" })
         {
             Assert.Contains("~/assets/js/Commercial/Pricing/pricing.css", View(page));                   // every tab page carries the fix
@@ -513,6 +514,47 @@ process.stdout.write(JSON.stringify({ s: s, none: none, done: done }));")!;
         Assert.Equal(1, tr.GetProperty("firstDayOfWeek").GetInt32());                                  // the Turkish week starts on Monday
         Assert.Equal("октябрь", JsonDocument.Parse(Run("ru")).RootElement.GetProperty("months").GetProperty("longhand")[9].GetString()!.ToLowerInvariant());
         Assert.Equal("null", Run("en"));                                                               // English stays flatpickr's own
+    }
+
+    // ═══ 9 · W6-FIX-d — the rate's writer by name, the shared tab card keeps the label's case ═══════════════════
+
+    [Fact]
+    public void D15_the_rates_list_says_who_changed_a_rate_by_the_crm_s_name_and_a_dash_without_one_never_the_id()
+    {
+        // G-3 — both places that print the writer (the list's column and the quick view) go through ONE helper
+        var index = Js("FxRates/index.js");
+        var helper = Regex.Match(index, @"const changedBy = \(r\) => [^\n]+;").Value;
+        Assert.False(string.IsNullOrEmpty(helper), "the writer helper moved");
+        Assert.Equal(2, Regex.Matches(index, @"changedBy\((row|full)\)").Count);
+        Assert.DoesNotMatch(@"U\.bidi\((row|full)\.(updatedBy|createdBy) \|\|", index);                 // the id is never printed
+
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var node = RunNode("const U = { bidi: (s) => '<bdi>' + s + '</bdi>' };\n" + helper + "\nprocess.stdout.write(JSON.stringify(["
+            + "changedBy({ createdBy: 'u1', createdByName: 'Ayşe', updatedBy: 'u2', updatedByName: 'Burak' }),"
+            + "changedBy({ createdBy: 'u1', createdByName: 'Ayşe', updatedBy: 'u2', updatedByName: null }),"
+            + "changedBy({ createdBy: 'u1', createdByName: 'Ayşe' }),"
+            + "changedBy({ createdBy: 'a1000000-0000-4000-8000-0000000000f9' })]));")!;
+        var r = JsonDocument.Parse(node).RootElement.EnumerateArray().Select(x => x.GetString()).ToArray();
+        Assert.Equal(["<bdi>Burak</bdi>", "<bdi>—</bdi>", "<bdi>Ayşe</bdi>", "<bdi>—</bdi>"], r);    // the LAST writer; unresolved → "—"
+    }
+
+    [Fact]
+    public void D16_the_label_case_rule_lives_once_in_the_shared_tab_card_and_not_in_the_pricing_sheet()
+    {
+        // FU-TABCARD-TITLECASE — one rule, in backbone-custom.css, scoped to the shared card's marker (not to every .wcn-tabs:
+        // the Work Center's own strip keeps its look); screen D's sheet no longer carries a copy
+        var shared = File.ReadAllText(Path.Combine(WebRoot(), "wwwroot", "assets", "css", "backbone-custom.css")).Replace("\r\n", "\n");
+        Assert.Single(Regex.Matches(shared, @"\.diten-tabcard \.wcn-tabs \.nav-link \{ text-transform: none; \}"));
+        Assert.DoesNotMatch(@"(?m)^\.wcn-tabs \.nav-link \{[^}]*text-transform", shared);
+        Assert.DoesNotContain("text-transform", Js("Pricing/pricing.css"));
+        var card = File.ReadAllText(Path.Combine(WebRoot(), "Views", "Shared", "Components", "Tabs", "_TabCard.cshtml"));
+        Assert.Contains("<div class=\"card mb-3 wcn-tabcard diten-tabcard\">", card);
+        Assert.Contains("<section class=\"card mb-3 wcn-tabcard diten-tabcard\">", File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitFrequencyPolicies", "Index.cshtml")));
+        Assert.DoesNotContain("diten-tabcard", File.ReadAllText(Path.Combine(WebRoot(), "wwwroot", "assets", "js", "WorkCenterNext", "app.js")));
+        foreach (var page in new[] { "PotentialThresholds", "VisitEvidenceFlags", "VisitEvidenceSettings", "VisitNotifications" })
+        {
+            Assert.Contains("_TabCard.cshtml", File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", page, "Index.cshtml")));  // the card that carries the marker
+        }
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────

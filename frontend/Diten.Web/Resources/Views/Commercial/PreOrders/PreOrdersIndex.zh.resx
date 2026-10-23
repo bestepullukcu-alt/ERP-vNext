@@ -769,9 +769,6 @@
   <data name="ColOrders" xml:space="preserve">
     <value>订单</value>
   </data>
-  <data name="ColBoxes" xml:space="preserve">
-    <value>盒数</value>
-  </data>
   <data name="LinkTitle" xml:space="preserve">
     <value>预订单审批链接</value>
   </data>
@@ -957,5 +954,14 @@
   </data>
   <data name="ApproveConfirmText" xml:space="preserve">
     <value>{0} 将审批通过并转交经销商。此操作无法撤销。</value>
+  </data>
+  <data name="ColAmount" xml:space="preserve">
+    <value>金额</value>
+  </data>
+  <data name="ColEffectiveShort" xml:space="preserve">
+    <value>实际折扣</value>
+  </data>
+  <data name="HistoryTrend" xml:space="preserve">
+    <value>实际折扣趋势（赠品 + 折扣）</value>
   </data>
 </root>

@@ -9,12 +9,14 @@
         [> div.d-flex.align-items-center.gap-2.ms-auto (the tools area)]
     Roving tabindex (the active tab 0, the others -1); below md only the icon shows, so every button carries the label as
     aria-label + title. Behaviour: assets/js/diten-tabs.js (data-diten-tabs). This file produces NO text of its own.
+    FU-TABCARD-TITLECASE (W6-FIX-d) — `diten-tabcard` marks THIS card (not the Work Center's own strip): backbone-custom.css
+    keeps its labels as the resource writes them (Sneat's nav-pills `text-transform: capitalize` is switched off there).
 *@
 @model Diten.Web.Models.Tabs.TabCardViewModel
 @{
     var active = Model.ActiveTab;
 }
-<div class="card mb-3 wcn-tabcard">
+<div class="card mb-3 wcn-tabcard diten-tabcard">
     <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
         <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" data-diten-tabs aria-label="@Model.AriaLabel">
             @foreach (var tab in Model.Tabs)

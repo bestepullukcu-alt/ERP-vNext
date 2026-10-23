@@ -769,9 +769,6 @@
   <data name="ColOrders" xml:space="preserve">
     <value>الطلبات</value>
   </data>
-  <data name="ColBoxes" xml:space="preserve">
-    <value>العلب</value>
-  </data>
   <data name="LinkTitle" xml:space="preserve">
     <value>رابط الموافقة على الطلب المسبق</value>
   </data>
@@ -957,5 +954,14 @@
   </data>
   <data name="ApproveConfirmText" xml:space="preserve">
     <value>ستتم الموافقة على {0} وتحويله إلى المستودع. لا يمكن التراجع عن ذلك.</value>
+  </data>
+  <data name="ColAmount" xml:space="preserve">
+    <value>المبلغ</value>
+  </data>
+  <data name="ColEffectiveShort" xml:space="preserve">
+    <value>الخصم الفعلي</value>
+  </data>
+  <data name="HistoryTrend" xml:space="preserve">
+    <value>اتجاه الخصم الفعلي (البونص + الخصم)</value>
   </data>
 </root>

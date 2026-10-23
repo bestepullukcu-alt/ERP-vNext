@@ -316,13 +316,22 @@
     };
 
     /** Screen C — the pharmacy's six months: a bar per month (orders) and the table (orders · boxes · total PER currency). */
-    const historyHtml = (buckets) => {
-        const max = Math.max(1, ...buckets.map((b) => b.orders));
+    /**
+     * Screen C's six months (V-9, mockup C) — the CRM's `months` as they come: the chart is the effective discount trend
+     * (MF + discount), the table Month · Orders · Amount (each currency on its own) · Effective. Every number is a CRM field;
+     * the page only scales the bars to the tallest month. A month without priced orders shows "—" and no bar.
+     */
+    const historyHtml = (months) => {
+        const list = months || [];
+        const has = (v) => v != null && v !== '';
+        const max = Math.max(0, ...list.filter((m) => has(m.effectiveDiscountPct)).map((m) => Number(m.effectiveDiscountPct)));
         const month = (m) => { try { return new Intl.DateTimeFormat(dateCulture(), { month: 'short', year: '2-digit', timeZone: 'UTC' }).format(new Date(m + '-01T00:00:00Z')); } catch (e) { return m; } };
-        const totalText = (b) => Object.keys(b.totals).sort().map((c) => money(b.totals[c], c)).join(' · ') || '—';
-        const bars = '<div class="po-bars d-flex align-items-end gap-2 mb-3" role="img" aria-label="' + esc(L().HistoryTitle || '') + '">' + buckets.map((b) => '<div class="po-bar-col flex-fill text-center"><small class="d-block text-muted">' + esc(C.num(b.orders, culture(), 0)) + '</small><div class="po-bar" style="--po-bar:' + Math.round((b.orders / max) * 100) + '%"></div><small class="d-block text-muted">' + esc(month(b.month)) + '</small></div>').join('') + '</div>';
-        const table = '<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>' + esc(L().ColMonth || '') + '</th><th>' + esc(L().ColOrders || '') + '</th><th>' + esc(L().ColBoxes || '') + '</th><th>' + esc(L().ColTotal || '') + '</th></tr></thead><tbody>'
-            + buckets.map((b) => '<tr><td>' + esc(month(b.month)) + '</td><td>' + esc(C.num(b.orders, culture(), 0)) + '</td><td>' + esc(C.num(b.quantity, culture(), 0)) + '</td><td>' + esc(totalText(b)) + '</td></tr>').join('') + '</tbody></table></div>';
+        const effText = (m) => (has(m.effectiveDiscountPct) ? pct(m.effectiveDiscountPct) : '—');
+        const grossText = (m) => (m.gross || []).map((g) => money(g.amount, g.currency)).join(' · ') || '—';
+        const height = (m) => (has(m.effectiveDiscountPct) && max > 0 ? Math.round((Number(m.effectiveDiscountPct) / max) * 100) : 0);
+        const bars = '<small class="d-block text-muted mb-2">' + esc(L().HistoryTrend || '') + '</small><div class="po-bars d-flex align-items-end gap-2 mb-3" role="img" aria-label="' + esc(L().HistoryTrend || '') + '">' + list.map((m) => '<div class="po-bar-col flex-fill text-center"><small class="d-block text-muted fw-medium">' + esc(effText(m)) + '</small><div class="po-bar' + (has(m.effectiveDiscountPct) ? '' : ' po-bar-none') + '" style="--po-bar:' + height(m) + '%"></div><small class="d-block text-muted">' + esc(month(m.month)) + '</small></div>').join('') + '</div>';
+        const table = '<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>' + esc(L().ColMonth || '') + '</th><th class="text-center">' + esc(L().ColOrders || '') + '</th><th class="text-end">' + esc(L().ColAmount || '') + '</th><th class="text-end">' + esc(L().ColEffectiveShort || '') + '</th></tr></thead><tbody>'
+            + list.map((m) => '<tr><td>' + esc(month(m.month)) + '</td><td class="text-center">' + esc(C.num(m.orders, culture(), 0)) + '</td><td class="text-end text-nowrap">' + esc(grossText(m)) + '</td><td class="text-end fw-medium">' + esc(effText(m)) + '</td></tr>').join('') + '</tbody></table></div>';
         return bars + table;
     };
 

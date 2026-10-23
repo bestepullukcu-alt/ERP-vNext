@@ -48,6 +48,7 @@ internal sealed class PricingWorld : IDisposable
     public readonly FakeDecisionClient Decisions;
     public readonly CapturingAuditPlatform Audit = new();
     public readonly SwitchActor Actor = new(Marketing);
+    public readonly CountingUserNames Names = new();
     public readonly TenantContext TenantContext = TenantFactory.Tenant(Tenant);
     private readonly ServiceProvider _provider;
 
@@ -76,6 +77,7 @@ internal sealed class PricingWorld : IDisposable
         services.AddHttpClient(Diten.BuildingBlocks.Auditing.PlatformAuditForwarder.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => Audit);
         services.AddSingleton<ITenantContext>(TenantContext);
         services.AddSingleton<IActorContext>(Actor);
+        services.AddSingleton<IUserDisplayNameResolver>(Names);
         services.AddSingleton<TimeProvider>(Clock);
         services.AddSingleton<IPriceListRepository>(Lists);
         services.AddSingleton<IPriceListItemRepository>(Items);

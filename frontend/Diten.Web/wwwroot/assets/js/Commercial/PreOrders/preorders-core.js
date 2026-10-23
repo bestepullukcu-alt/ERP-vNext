@@ -220,27 +220,6 @@
         return why;
     }
 
-    /**
-     * The pharmacy's last six months (screen C): one bucket per month, oldest first, the order count, the boxes and the
-     * total PER CURRENCY (never a sum across currencies — AC-UI-2). `today` = yyyy-MM-dd.
-     */
-    function historyMonths(items, today) {
-        const buckets = [];
-        const start = new Date(today.slice(0, 7) + '-01T00:00:00Z');
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(start); d.setUTCMonth(d.getUTCMonth() - i);
-            buckets.push({ month: d.toISOString().slice(0, 7), orders: 0, quantity: 0, totals: {} });
-        }
-        (items || []).forEach((it) => {
-            const month = String(it.createdAt || '').slice(0, 7);
-            const b = buckets.find((x) => x.month === month);
-            if (!b || it.status === 'cancelled' || it.status === 'rejected') return;
-            b.orders += 1;
-            b.quantity += Number(it.quantity) || 0;
-            if (it.priceMode === 'priced' && it.currency && it.gross != null) b.totals[it.currency] = (b.totals[it.currency] || 0) + Number(it.gross);
-        });
-        return buckets;
-    }
 
     const linkStateKey = (state) => (LINK_STATES.indexOf(state) >= 0 ? 'Link_' + state : 'Link_notfound');
     const hoursLeft = (expiresAt, nowMs) => {
@@ -328,7 +307,7 @@
         rangeOf: rangeOf, customRangeError: customRangeError,
         parseMf: parseMf, mfText: mfText, parseDiscount: parseDiscount, linesInput: linesInput, inputProblem: inputProblem,
         sendBlockers: sendBlockers, approvalBox: approvalBox, timeline: timeline, lockState: lockState,
-        limitCells: limitCells, whyOnMe: whyOnMe, historyMonths: historyMonths, linkStateKey: linkStateKey, hoursLeft: hoursLeft,
+        limitCells: limitCells, whyOnMe: whyOnMe, linkStateKey: linkStateKey, hoursLeft: hoursLeft,
         money: money, pct: pct, num: num, fxArgs: fxArgs, errorCode: errorCode, statusOf: statusOf, outcomeOf: outcomeOf,
         summaryRows: summaryRows, vatRateOf: vatRateOf, skuFacts: skuFacts, sendLabelKey: sendLabelKey, productSummary: productSummary
     };

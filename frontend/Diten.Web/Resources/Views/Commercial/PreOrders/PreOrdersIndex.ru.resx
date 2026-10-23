@@ -769,9 +769,6 @@
   <data name="ColOrders" xml:space="preserve">
     <value>Заказы</value>
   </data>
-  <data name="ColBoxes" xml:space="preserve">
-    <value>Упаковки</value>
-  </data>
   <data name="LinkTitle" xml:space="preserve">
     <value>Ссылка на согласование предзаказа</value>
   </data>
@@ -957,5 +954,14 @@
   </data>
   <data name="ApproveConfirmText" xml:space="preserve">
     <value>{0} будет согласован и передан дистрибьютору. Это действие нельзя отменить.</value>
+  </data>
+  <data name="ColAmount" xml:space="preserve">
+    <value>Сумма</value>
+  </data>
+  <data name="ColEffectiveShort" xml:space="preserve">
+    <value>Скидка</value>
+  </data>
+  <data name="HistoryTrend" xml:space="preserve">
+    <value>Динамика эффективной скидки (бонус + скидка)</value>
   </data>
 </root>

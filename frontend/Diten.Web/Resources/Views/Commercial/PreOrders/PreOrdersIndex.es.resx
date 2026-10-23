@@ -769,9 +769,6 @@
   <data name="ColOrders" xml:space="preserve">
     <value>Pedidos</value>
   </data>
-  <data name="ColBoxes" xml:space="preserve">
-    <value>Cajas</value>
-  </data>
   <data name="LinkTitle" xml:space="preserve">
     <value>Enlace de aprobación del prepedido</value>
   </data>
@@ -957,5 +954,14 @@
   </data>
   <data name="ApproveConfirmText" xml:space="preserve">
     <value>{0} se aprueba y se envía al distribuidor. No se puede deshacer.</value>
+  </data>
+  <data name="ColAmount" xml:space="preserve">
+    <value>Importe</value>
+  </data>
+  <data name="ColEffectiveShort" xml:space="preserve">
+    <value>Descuento</value>
+  </data>
+  <data name="HistoryTrend" xml:space="preserve">
+    <value>Tendencia del descuento efectivo (bonif. + descuento)</value>
   </data>
 </root>

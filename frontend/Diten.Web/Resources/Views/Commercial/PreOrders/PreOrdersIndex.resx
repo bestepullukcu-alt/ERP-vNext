@@ -769,9 +769,6 @@
   <data name="ColOrders" xml:space="preserve">
     <value>Orders</value>
   </data>
-  <data name="ColBoxes" xml:space="preserve">
-    <value>Boxes</value>
-  </data>
   <data name="LinkTitle" xml:space="preserve">
     <value>Pre-order approval link</value>
   </data>
@@ -957,5 +954,14 @@
   </data>
   <data name="ApproveConfirmText" xml:space="preserve">
     <value>{0} is approved and passed to the depot. This cannot be undone.</value>
+  </data>
+  <data name="ColAmount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="ColEffectiveShort" xml:space="preserve">
+    <value>Effective</value>
+  </data>
+  <data name="HistoryTrend" xml:space="preserve">
+    <value>Effective discount trend (MF + discount)</value>
   </data>
 </root>

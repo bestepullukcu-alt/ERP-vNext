@@ -237,6 +237,11 @@
     opacity: 0.85;
 }
 
+/* V-9 (W6-FIX-d) — a month without a priced order has no effective discount: a hairline, not a bar */
+.po-bar.po-bar-none {
+    background: var(--bs-border-color);
+}
+
 .po-pdf {
     display: block;
     inline-size: 100%;

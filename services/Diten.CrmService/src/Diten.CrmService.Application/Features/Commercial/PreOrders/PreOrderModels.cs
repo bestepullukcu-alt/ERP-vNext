@@ -87,9 +87,77 @@ public sealed record PreOrderSettingsDto(
 public sealed record PreOrderApprovalLinkDto(string State, DateTimeOffset ExpiresAt, Guid PreOrderId, PreOrderDto? PreOrder);
 
 public sealed record PreOrderHistoryItemDto(Guid Id, string Code, DateTimeOffset CreatedAt, string Status, int LineCount, int Quantity,
-    string PriceMode, string? Currency, decimal? Gross);
+    string PriceMode, string? Currency, decimal? Gross,
+    /// <summary>W6-FIX-d (V-9) — the order's effective discount (MF + discount, MOD-0156); null for a quantity-only order.</summary>
+    decimal? EffectiveDiscountPct = null);
 
-public sealed record PreOrderPharmacyHistoryDto(Guid PharmacyAccountId, DateTimeOffset From, IReadOnlyList<PreOrderHistoryItemDto> Items);
+/// <summary>One currency's amount — a month's gross is never summed across currencies (AC-UI-2).</summary>
+public sealed record PreOrderMoneyDto(string Currency, decimal Amount);
+
+/// <summary>W6-FIX-d (V-9) — one month (<c>yyyy-MM</c>, UTC) of the pharmacy's submitted orders: the count, the boxes, the gross
+/// PER CURRENCY and the effective discount (net-weighted, priced orders only; null when the month has none).</summary>
+public sealed record PreOrderHistoryMonthDto(string Month, int Orders, int Boxes, IReadOnlyList<PreOrderMoneyDto> Gross, decimal? EffectiveDiscountPct);
+
+public sealed record PreOrderPharmacyHistoryDto(Guid PharmacyAccountId, DateTimeOffset From, IReadOnlyList<PreOrderHistoryItemDto> Items,
+    IReadOnlyList<PreOrderHistoryMonthDto>? Months = null);
+
+/// <summary>
+/// WP-VW-W6 W6-FIX-d (V-9, mockup C) — the approver's six months of the pharmacy, computed HERE (the screen draws, it does not
+/// calculate). One bucket per calendar month (UTC), oldest first, the current month last, an empty month included. A
+/// cancelled / rejected order is not in a month (it was never fulfilled). A month's effective discount is the net-weighted
+/// average of its priced orders' own effective discount; a quantity-only order (no prices) has no effective discount and
+/// stays out of it. The weight is the order's net in its LOCAL currency (the net itself when the list currency is the local
+/// one, else net × the order's own FX snapshot rate), so orders in different currencies weigh by the same unit; a foreign-
+/// currency order without an FX snapshot cannot be weighed and stays out of the percentage (it still counts as an order).
+/// </summary>
+public static class PreOrderPharmacyHistory
+{
+    public const int Months = 6;
+
+    public static PreOrderHistoryItemDto Item(PreOrder o)
+        => new(o.Id, o.Code, o.CreatedAt, o.Status, o.Lines.Count, o.Lines.Sum(l => l.Quantity), o.PriceMode, o.Currency, o.Totals?.Gross,
+            IsPriced(o) ? o.Totals!.EffectiveDiscountPct : null);
+
+    public static IReadOnlyList<PreOrderHistoryMonthDto> MonthsOf(IEnumerable<PreOrder> submitted, DateTimeOffset now)
+    {
+        var current = new DateTime(now.UtcDateTime.Year, now.UtcDateTime.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var counted = submitted.Where(o => o.Status is not (PreOrderStatuses.Cancelled or PreOrderStatuses.Rejected)).ToList();
+        return Enumerable.Range(0, Months).Select(i => current.AddMonths(i - (Months - 1))).Select(start =>
+        {
+            var month = counted.Where(o => o.CreatedAt.UtcDateTime.Year == start.Year && o.CreatedAt.UtcDateTime.Month == start.Month).ToList();
+            var gross = month.Where(o => IsPriced(o) && !string.IsNullOrWhiteSpace(o.Currency))
+                .GroupBy(o => o.Currency!.ToUpperInvariant()).OrderBy(g => g.Key, StringComparer.Ordinal)
+                .Select(g => new PreOrderMoneyDto(g.Key, g.Sum(o => o.Totals!.Gross))).ToList();
+            return new PreOrderHistoryMonthDto(start.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture), month.Count,
+                month.Sum(o => o.Lines.Sum(l => l.Quantity)), gross, EffectiveDiscount(month));
+        }).ToList();
+    }
+
+    /// <summary>Σ(effective % × local net) / Σ local net over the month's priced orders that can be weighed; null without any.</summary>
+    public static decimal? EffectiveDiscount(IEnumerable<PreOrder> month)
+    {
+        decimal weighted = 0m, weight = 0m;
+        foreach (var o in month.Where(IsPriced))
+        {
+            if (LocalNet(o) is not { } net || net <= 0m)
+            {
+                continue;
+            }
+
+            weighted += o.Totals!.EffectiveDiscountPct * net;
+            weight += net;
+        }
+
+        return weight > 0m ? weighted / weight : null;
+    }
+
+    private static bool IsPriced(PreOrder o) => o.PriceMode == PreOrderPriceModes.Priced && o.Totals is not null;
+
+    private static decimal? LocalNet(PreOrder o)
+        => string.Equals(o.Currency, o.LocalCurrencyCode, StringComparison.OrdinalIgnoreCase) ? o.Totals!.Net
+            : o.Fx is { Rate: > 0m } fx ? o.Totals!.Net * fx.Rate
+            : null;
+}
 
 public sealed record PreOrderExportDto(string FileName, byte[] Content);
 

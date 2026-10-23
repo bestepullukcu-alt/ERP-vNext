@@ -208,6 +208,10 @@ public sealed class PreOrderApprovalRequirement
 
     public Guid? ApproverPositionId { get; set; }
     public string? ApproverPositionCode { get; set; }
+
+    /// <summary>W6-FIX-d (V-10) — the NAME of the seat the approvers hold (Platform's line-managers answer), written with the
+    /// approvers at submission; null on an order submitted before W6-FIX-d (never resolved on read, no migration).</summary>
+    public string? ApproverPositionName { get; set; }
     public List<Guid> ApproverUserIds { get; set; } = new();
     public Dictionary<string, string> ApproverNames { get; set; } = new();
 

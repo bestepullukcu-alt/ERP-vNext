@@ -5656,6 +5656,12 @@ tags.diten-tags .tagify__input {
     min-block-size: 2.375rem; block-size: 2.375rem; box-sizing: border-box;
 }
 .wcn-tabs .nav-link .wc-tab-icon { font-size: 1.1rem; }
+/* FU-TABCARD-TITLECASE (W6-FIX-d; was screen D's pricing.css in W6-FIX-b, V-12) — the SHARED tab card (_TabCard.cshtml and
+   the frequency policies' card, marked `diten-tabcard`) writes its labels as the resource writes them. Sneat's
+   `.nav-pills .nav-link { text-transform: capitalize }` capped every word ("MF / Iskonto Kuralları", a dotless I in
+   Turkish). Scoped to the marker on purpose: the Work Center's own strip (WorkCenterNext/app.js) does not carry it and keeps
+   its look — in fr / es / ru its labels would change ("Mes tâches"), which is the Work Center owner's call. */
+.diten-tabcard .wcn-tabs .nav-link { text-transform: none; }
 /* Sneat's `.nav-pills … :hover` drops the bottom border — pin it back so hover
    only tints and the border never flickers (padding already matches, no resize). */
 .wcn-tabs .nav-item .nav-link:not(.active):hover { border-block-end: 1px solid var(--bs-border-color); }

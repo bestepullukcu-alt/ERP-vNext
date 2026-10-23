@@ -64,13 +64,15 @@ const FxRatesList = (function () {
 
     const pair = (r) => esc((r.fromCurrency || '') + ' → ' + (r.toCurrency || ''));
     const rate = (r) => esc(window.PreOrdersCore.num(r.rate, U.culture(), 6));
+    /** G-3 (W6-FIX-d) — the last writer by NAME (the CRM resolves it); no name → "—", never the user id. */
+    const changedBy = (r) => U.bidi((r.updatedBy ? r.updatedByName : r.createdByName) || '—');
 
     const populateQuickView = (row) => {
         if (!row) return;
         byId('oc-subtitle').innerHTML = pair(row) + ' · ' + esc(U.day(row.rateDate));
         byId('oc-details-list').innerHTML = '<div class="px-4 py-3"><dl class="row g-2 mb-0">'
             + [['ColCompany', U.bidi(PU.companyName(companies, row.legalEntityId) || row.legalEntityId)], ['ColPair', pair(row)], ['ColRateDate', esc(U.day(row.rateDate))],
-                ['ColRate', rate(row)], ['ColSource', U.bidi(row.source || '')], ['ColUpdated', esc(U.moment(row.updatedAt || row.createdAt)) + ' · ' + U.bidi(row.updatedBy || row.createdBy || '')]]
+                ['ColRate', rate(row)], ['ColSource', U.bidi(row.source || '')], ['ColUpdated', esc(U.moment(row.updatedAt || row.createdAt)) + ' · ' + changedBy(row)]]
                 .map((x) => '<div class="col-6"><dt class="small text-muted fw-normal">' + esc(L()[x[0]]) + '</dt><dd class="mb-0 text-heading">' + x[1] + '</dd></div>').join('') + '</dl></div>';
         const edit = byId('oc-btn-edit');
         edit.setAttribute('href', '/Commercial/Pricing/FxRates/Edit/' + encodeURIComponent(row.id));
@@ -116,7 +118,7 @@ const FxRatesList = (function () {
                     { targets: 3, render: (d, type, full) => esc(U.day(full.rateDate)) },
                     { targets: 4, render: (d, type, full) => rate(full) },
                     { targets: 5, render: (d, type, full) => U.bidi(full.source || '') },
-                    { targets: 6, render: (d, type, full) => '<small>' + esc(U.moment(full.updatedAt || full.createdAt)) + '</small><small class="d-block text-muted">' + U.bidi(full.updatedBy || full.createdBy || '') + '</small>' },
+                    { targets: 6, render: (d, type, full) => '<small>' + esc(U.moment(full.updatedAt || full.createdAt)) + '</small><small class="d-block text-muted">' + changedBy(full) + '</small>' },
                     {
                         targets: -1, title: L().Actions, searchable: false, className: 'cell-fit all',
                         render: (d, type, full) => window.DitenDataTable.renderActions([

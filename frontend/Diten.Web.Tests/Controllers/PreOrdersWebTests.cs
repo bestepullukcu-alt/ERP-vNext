@@ -504,12 +504,7 @@ out.limits = C.limitCells({ findings: [
   { code: 'discount.hard-exceeded', severity: 'hard', params: { value: '12', limit: '11' } },
   { code: 'quantity.below-min', severity: 'hard', params: { value: '2', min: '5' } },
   { code: 'mf.soft-exceeded', severity: 'soft', params: { value: '10+3', valuePct: '23.1', limit: '10+2', limitPct: '16.7' } }] });
-out.history = C.historyMonths([
-  { createdAt: '2026-10-02T08:00:00Z', status: 'transmitted', quantity: 10, priceMode: 'priced', currency: 'TRY', gross: 100 },
-  { createdAt: '2026-10-05T08:00:00Z', status: 'approved', quantity: 5, priceMode: 'priced', currency: 'USD', gross: 40 },
-  { createdAt: '2026-10-06T08:00:00Z', status: 'cancelled', quantity: 99, priceMode: 'priced', currency: 'TRY', gross: 999 },
-  { createdAt: '2026-05-06T08:00:00Z', status: 'transmitted', quantity: 3, priceMode: 'quantity' },
-  { createdAt: '2026-01-06T08:00:00Z', status: 'transmitted', quantity: 3, priceMode: 'quantity' }], '2026-10-21');
+
 out.links = ['valid', 'expired', 'consumed', 'superseded', 'odd', null].map(C.linkStateKey);
 out.hours = C.hoursLeft('2026-10-23T09:00:00Z', Date.parse('2026-10-21T09:30:00Z'));
 out.range = [C.rangeOf('', '2026-10-21'), C.rangeOf('last30', '2026-10-21'), C.rangeOf('custom', '2026-10-21', '2026-10-09', '2026-10-01')];
@@ -547,14 +542,7 @@ process.stdout.write(JSON.stringify(out));")!;
         Assert.Equal("5", lim.GetProperty("quantity").GetProperty("limit").GetString());
         Assert.Equal(("10+2", "16.7"), (lim.GetProperty("mf").GetProperty("limit").GetString(), lim.GetProperty("mf").GetProperty("limitPct").GetString()));
 
-        var h = r.GetProperty("history");
-        Assert.Equal(6, h.GetArrayLength());
-        Assert.Equal("2026-05", h[0].GetProperty("month").GetString());
-        var october = h[5];
-        Assert.Equal(2, october.GetProperty("orders").GetInt32());                                     // the cancelled one is not history
-        Assert.Equal(15, october.GetProperty("quantity").GetInt32());
-        Assert.Equal(100, october.GetProperty("totals").GetProperty("TRY").GetInt32());                // per currency — never TRY + USD
-        Assert.Equal(40, october.GetProperty("totals").GetProperty("USD").GetInt32());
+        // (the six months moved to the CRM in W6-FIX-d — P25; the page has no bucketing of its own any more)
 
         Assert.Equal(["Link_valid", "Link_expired", "Link_consumed", "Link_superseded", "Link_notfound", "Link_notfound"], Arr(r.GetProperty("links")));
         Assert.Equal(48, r.GetProperty("hours").GetInt32());
@@ -917,6 +905,60 @@ process.stdout.write(JSON.stringify({
         Assert.Equal("ALMIBA", r.GetProperty("products")[0].GetProperty("name").GetString());          // V-4
         Assert.Equal("URO", r.GetProperty("products")[1].GetProperty("name").GetString());
         Assert.Equal(20, r.GetProperty("products")[1].GetProperty("quantity").GetInt32());
+    }
+
+    [Fact]
+    public void P25_screen_c_draws_the_crm_s_six_months_the_effective_trend_and_month_orders_amount_effective_with_no_arithmetic_of_its_own()
+    {
+        // V-9 — the request's answer goes to the drawing as it is; the core no longer buckets, the drawing has no sum / net / weight
+        var approve = Script("approve.js");
+        Assert.Contains("U.historyHtml(d.months || [])", approve);
+        Assert.DoesNotContain("historyMonths", Script("preorders-core.js") + approve);
+        var ui = Script("preorders-ui.js");
+        var drawing = ui[ui.IndexOf("const historyHtml = ", StringComparison.Ordinal)..ui.IndexOf("const toast = ", StringComparison.Ordinal)];
+        Assert.DoesNotMatch(@"\+=|\.reduce\(|\.net\b|\.quantity\b|\.items\b|createdAt|priceMode|status", drawing);
+        Assert.Contains("m.effectiveDiscountPct", drawing);
+        Assert.Contains("(m.gross || []).map((g) => money(g.amount, g.currency))", drawing);          // each currency on its own
+        Assert.DoesNotContain("ColBoxes", ui);
+
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var words = Page("tr");
+        var node = RunNode(Ui() + "globalThis.L10n = " + JsonSerializer.Serialize(words) + "; globalThis.document = { documentElement: { lang: 'tr' }, getElementById: () => null };" + @"
+const html = U.historyHtml([
+  { month: '2026-09', orders: 0, boxes: 0, gross: [], effectiveDiscountPct: null },
+  { month: '2026-10', orders: 4, boxes: 24, gross: [{ currency: 'EUR', amount: 236 }, { currency: 'TRY', amount: 1180 }], effectiveDiscountPct: 18 }]);
+process.stdout.write(JSON.stringify({ html: html, empty: U.historyHtml([]) }));")!;
+        var r = JsonDocument.Parse(node).RootElement;
+        var html = r.GetProperty("html").GetString()!;
+        Assert.Contains(words["HistoryTrend"], html);                                                   // the chart is the effective discount trend
+        var heads = Regex.Matches(html, "<th[^>]*>([^<]*)</th>").Select(m => m.Groups[1].Value).ToArray();
+        Assert.Equal([words["ColMonth"], words["ColOrders"], words["ColAmount"], words["ColEffectiveShort"]], heads); // mockup C
+        Assert.Contains("%18", html);                                                                   // the CRM's percentage, Turkish
+        Assert.Contains("236,00 EUR · 1.180,00 TRY", html);                                            // never EUR + TRY
+        Assert.Contains("--po-bar:100%", html);                                                         // the tallest month
+        Assert.Contains("po-bar po-bar-none\" style=\"--po-bar:0%", html);                             // a month without priced orders: no bar …
+        Assert.Equal(3, Regex.Matches(html, ">—<").Count);                                              // … and "—" over the bar, for its amount and its %
+        Assert.Contains("<tbody></tbody>", r.GetProperty("empty").GetString()!);
+        Assert.Equal(("Tutar", "Etkin", "Etkin indirim eğilimi (MF + iskonto)"), (words["ColAmount"], words["ColEffectiveShort"], words["HistoryTrend"]));
+    }
+
+    [Fact]
+    public void P26_the_reports_to_seat_is_written_by_its_name_and_by_its_code_only_without_one()
+    {
+        // V-10 — approvalRequirement.approverPositionName (CRM, written at submission); an older order has only the code
+        var approve = Script("approve.js");
+        var line = Regex.Match(approve, @"byId\('po-you'\)\.innerHTML = [^\n]+").Value;
+        Assert.False(string.IsNullOrEmpty(line), "the reports-to line moved");
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var words = Page("tr");
+        // the production line itself, run with the order's requirement (an order submitted after / before W6-FIX-d)
+        var node = RunNode(Ui() + "globalThis.L10n = " + JsonSerializer.Serialize(words) + "; globalThis.document = { documentElement: { lang: 'tr' }, getElementById: () => null };"
+            + "const you = (req) => { const el = {}; const byId = () => el; const o = { rep: { displayName: 'Sema' } }; " + line + " return el.innerHTML; };"
+            + "process.stdout.write(JSON.stringify([you({ approverPositionCode: 'POS-MED-DIR', approverPositionName: 'Bölge Müdürü' }), you({ approverPositionCode: 'POS-MED-DIR', approverPositionName: null })]));")!;
+        var r = JsonDocument.Parse(node).RootElement.EnumerateArray().Select(x => x.GetString()!).ToArray();
+        Assert.Contains("Bölge Müdürü", r[0]);
+        Assert.DoesNotContain("POS-MED-DIR", r[0]);
+        Assert.Contains("POS-MED-DIR", r[1]);
     }
 
     [Fact]

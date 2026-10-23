@@ -43,14 +43,16 @@ public sealed class PreOrdersIndex
         "TransmittedAt", "TransmissionFailedLine", "CancelledLine", "PartialLine", "RetryToast", "ApproveTitleOrder", "WhyMeNone",
         "Why_me_tenant", "Why_me_soft", "YouAreReportsTo", "LimitSoft", "LimitHard", "Approve", "Reject", "RequestChanges", "RejectTitle",
         "RejectText", "ChangesTitle", "ChangesText", "Decided_approve", "Decided_reject", "Decided_request_changes", "NotYourDecision",
-        "AlreadyDecided", "HistoryTitle", "HistoryTitleOf", "ColMonth", "ColOrders", "ColBoxes", "LinkOnce", "LinkUsedNow", "Link_consumed",
+        "AlreadyDecided", "HistoryTitle", "HistoryTitleOf", "ColMonth", "ColOrders", "LinkOnce", "LinkUsedNow", "Link_consumed",
         "Link_consumed_text", "Link_expired", "Link_expired_text", "Link_superseded", "Link_superseded_text", "Link_notfound",
         "Link_notfound_text", "DocumentTitleOrder", "TrailNone", "TrailAttempt", "Trail_sent", "Trail_failed", "TierLabel", "TierNone",
         "PrefixNone", "CompanyLabel", "PrefixLabel", "RemoveRow", "SettingsSaved", "SettingsDefault", "SettingsUpdated", "ErrTtl",
         "ErrRetry", "ErrPrefix", "ErrTierDuplicate",
         // W6-FIX-b — the summary rows (V-3), the header (V-5), the send button (V-5), the confirmations (G-6 / G-7)
         "TotalListSubtotal", "TotalDiscount", "TotalVatRate", "FormSubtitleRep", "FormDescription", "SendForApproval", "DiscardDraft",
-        "ApproveConfirmTitle", "ApproveConfirmText"
+        "ApproveConfirmTitle", "ApproveConfirmText",
+        // W6-FIX-d — screen C's six months as mockup C draws them (V-9): the effective discount trend, Month · Orders · Amount · Effective
+        "ColAmount", "ColEffectiveShort", "HistoryTrend"
     ];
 
     /// <summary>The strings the views themselves write (headings, labels, buttons) and the export's column headers.</summary>

@@ -769,9 +769,6 @@
   <data name="ColOrders" xml:space="preserve">
     <value>Commandes</value>
   </data>
-  <data name="ColBoxes" xml:space="preserve">
-    <value>Boîtes</value>
-  </data>
   <data name="LinkTitle" xml:space="preserve">
     <value>Lien de validation de la pré-commande</value>
   </data>
@@ -957,5 +954,14 @@
   </data>
   <data name="ApproveConfirmText" xml:space="preserve">
     <value>{0} est validée et transmise au dépositaire. Cette action est irréversible.</value>
+  </data>
+  <data name="ColAmount" xml:space="preserve">
+    <value>Montant</value>
+  </data>
+  <data name="ColEffectiveShort" xml:space="preserve">
+    <value>Remise</value>
+  </data>
+  <data name="HistoryTrend" xml:space="preserve">
+    <value>Tendance de la remise effective (UG + remise)</value>
   </data>
 </root>

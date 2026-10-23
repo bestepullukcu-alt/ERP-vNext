@@ -72,7 +72,8 @@ const PreOrderApproval = (function () {
         byId('po-history-title').innerHTML = U.Th('HistoryTitleOf', (order.pharmacy || {}).name || '');
         const r = await U.request('GET', endpoint + '/orders/' + encodeURIComponent(order.id) + '/pharmacy-history');
         const d = U.data(r);
-        host.innerHTML = d ? U.historyHtml(C.historyMonths(d.items || [], new Date(Date.now()).toISOString().slice(0, 10))) : '<p class="text-muted small mb-0">' + U.esc(U.errorText(r)) + '</p>';
+        // V-9 (W6-FIX-d) — the months, their amounts and their effective discount are the CRM's (no arithmetic here)
+        host.innerHTML = d ? U.historyHtml(d.months || []) : '<p class="text-muted small mb-0">' + U.esc(U.errorText(r)) + '</p>';
     };
 
     /** G-7 (W6-FIX-b) — "Approve" asks first, through the shared confirmation; the other two ask for their reason. */

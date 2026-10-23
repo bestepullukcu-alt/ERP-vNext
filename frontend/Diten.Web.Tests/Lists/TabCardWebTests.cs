@@ -50,7 +50,7 @@ public sealed class TabCardWebTests : IClassFixture<WebApplicationFactory<Progra
     {
         var html = Normalize(await RenderAsync(TabCard, Model()));
         Assert.Equal(
-            "<div class=\"card mb-3 wcn-tabcard\"><div class=\"card-body p-3 d-flex align-items-center gap-3 flex-wrap\">"
+            "<div class=\"card mb-3 wcn-tabcard diten-tabcard\"><div class=\"card-body p-3 d-flex align-items-center gap-3 flex-wrap\">"
             + "<ul class=\"nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs\" role=\"tablist\" data-diten-tabs aria-label=\"Evidence flags\">"
             + "<li class=\"nav-item\" role=\"presentation\"><button type=\"button\" id=\"tc-visits\" class=\"nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center active\" data-tab-key=\"visits\" role=\"tab\" aria-selected=\"true\" aria-controls=\"pane-visits\" tabindex=\"0\" aria-label=\"Visits\" title=\"Visits\">"
             + "<i class=\"bx bx-list-ul wc-tab-icon me-md-1\" aria-hidden=\"true\"></i><span class=\"d-none d-md-inline\">Visits</span></button></li>"
