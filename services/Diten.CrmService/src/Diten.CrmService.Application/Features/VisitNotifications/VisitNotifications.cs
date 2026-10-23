@@ -436,7 +436,7 @@ public sealed class VisitReportNotifier : IVisitReportNotifier
             ["doctorName"] = contact is null ? string.Empty : NameOf(contact),
             ["institutionName"] = account?.AccountName?.Trim() ?? string.Empty,
             ["visitDate"] = plan.PlannedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            ["reportUrl"] = _links.ReportUrl(plan.Id)
+            ["reportUrl"] = _links.ReportUrl(tenantId, plan.Id)
         };
     }
 
@@ -471,7 +471,8 @@ public sealed class VisitReportNotifier : IVisitReportNotifier
 /// <summary>The Web links an e-mail carries (configured base URL + the page path).</summary>
 public interface IVisitNotificationLinks
 {
-    string ReportUrl(Guid plannedVisitId);
+    /// <summary>WP-VW-W6 W6-FIX-a (G-13) — the tenant travels with the link (the signed-out reader's sign-in page needs it).</summary>
+    string ReportUrl(Guid tenantId, Guid plannedVisitId);
 }
 
 // ── the scheduler's work (K-N7) ───────────────────────────────────────────────────────────────────────────────────

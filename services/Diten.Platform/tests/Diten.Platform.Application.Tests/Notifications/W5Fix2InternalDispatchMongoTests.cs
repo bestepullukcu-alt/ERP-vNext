@@ -101,6 +101,41 @@ public sealed class W5Fix2InternalDispatchMongoTests : IAsyncLifetime
         Assert.DoesNotContain(await SweepAsync(world.Dispatches), a => a.DispatchId == row.Id);
     }
 
+    /// <summary>
+    /// WP-VW-W6 W6-FIX-a (G-12) — the pre-order approval request carries its one-time approval link as a SECRET variable
+    /// (BL-454: never stored). Queued, the sweep could only send the masked mail and closed it ACTION_LINK_NOT_RETRYABLE —
+    /// the approver got nothing. A mail with a secret is sent IN the request: the provider once, the row Sent, the link
+    /// in the mail and nowhere in the row; the sweep has nothing of it to claim.
+    /// </summary>
+    [Fact]
+    public async Task G12_an_approval_request_with_a_secret_link_is_sent_in_the_request_once_and_the_row_keeps_no_link()
+    {
+        var world = await WorldAsync(slow: false);
+        const string Link = "https://web.test/Commercial/PreOrders/ApprovalLink?token=Zm9vYmFyLXNlY3JldC10b2tlbi0xMjM0NTY3ODkw";
+        var request = new InternalEventDispatchRequest(
+            _harness.TenantId, CrmManifestProvider.PreOrderApprovalRequestedEvent, "CRM",
+            new InternalEventRecipients([new InternalEventRecipient(Email: "approver@example.test", DisplayName: "Approver")]),
+            new Dictionary<string, string?> { ["orderCode"] = "MG-ORD-000003", ["pharmacyName"] = "Etap Eczanesi", ["approvalUrl"] = Link, ["expiresAt"] = "24.10.2026 10:00" },
+            "corr-w6fixa", IdempotencyKey: "preorder:w6fixa:approvalrequested:1");
+
+        var response = await world.Service.DispatchAsync(request);
+
+        Assert.True(response.IsSuccessful, string.Join("; ", response.Errors));
+        Assert.Equal(InternalEventDispatchService.StatusSent, response.Data!.Status);
+        var mail = Assert.Single(world.Provider.Requests);
+        Assert.Equal("approver@example.test", Assert.Single(mail.To).Email);
+        Assert.Contains(Link, mail.BodyHtml + mail.BodyText);                                     // the approver gets the link
+        var row = Assert.Single(await world.Dispatches.ListByTenantAsync(_harness.TenantId));
+        Assert.Equal(NotificationDispatchStatus.Sent, row.Status);
+        Assert.Null(row.NextRetryAt);
+        Assert.DoesNotContain("Zm9vYmFyLXNlY3JldC10b2tlbi0xMjM0NTY3ODkw", (row.VariablesJson ?? "") + row.BodyHtmlPreview + row.BodyTextPreview + row.Subject);
+        Assert.DoesNotContain(await SweepAsync(world.Dispatches), a => a.DispatchId == row.Id);
+
+        // KORU — a mail WITHOUT a secret from the same producer is still queued (F-1)
+        var plain = await world.Service.DispatchAsync(Adverse(key: "w6fixa-plain"));
+        Assert.Equal(InternalEventDispatchService.StatusQueued, plain.Data!.Status);
+    }
+
     [Fact]
     public async Task F1_the_same_key_twice_opens_one_dispatch_and_answers_the_first_result()
     {
@@ -199,7 +234,8 @@ public sealed class W5Fix2InternalDispatchMongoTests : IAsyncLifetime
         var dispatches = new NotificationDispatchRepository(_harness.DbContext);
         var templates = new NotificationTemplateRepository(_harness.DbContext);
         foreach (var template in NotificationTemplateSeed.CreatePlatformDefaults()
-                     .Where(t => t.TemplateKey == CrmManifestProvider.VisitReportAdverseEventEvent))
+                     .Where(t => t.TemplateKey == CrmManifestProvider.VisitReportAdverseEventEvent
+                                 || (t.TemplateKey == CrmManifestProvider.PreOrderApprovalRequestedEvent && t.Locale == "tr")))
         {
             template.TenantId = tenantId;
             template.IsPlatformDefault = false;

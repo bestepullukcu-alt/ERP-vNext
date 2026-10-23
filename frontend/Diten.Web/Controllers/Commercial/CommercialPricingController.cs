@@ -341,12 +341,13 @@ public sealed class CommercialPricingController : CrmGatewayProxy
         ["versions"] = ListsCreate, ["discard"] = ListsCreate, ["submit"] = ListsSubmit, ["decision"] = ListsPublish
     };
 
-    [HttpPost("api/price-lists/{id:guid}/{action}")]
-    public async Task<IActionResult> ListAction(Guid id, string action, CancellationToken ct)
+    // W6-FIX-a (G-5) — {verb}, not {action}: "action" is MVC's reserved route value, so the three action routes below 404ed.
+    [HttpPost("api/price-lists/{id:guid}/{verb}")]
+    public async Task<IActionResult> ListAction(Guid id, string verb, CancellationToken ct)
     {
-        if (!ListActionKeys.TryGetValue(action ?? string.Empty, out var key)) return NotFound();
+        if (!ListActionKeys.TryGetValue(verb ?? string.Empty, out var key)) return NotFound();
         if (!HasAny(key)) return Denied();
-        return await ProxyAsync(HttpMethod.Post, $"{Lists}/{id:D}/{action}", await ReadBodyAsync(ct) ?? "{}", true, ct);
+        return await ProxyAsync(HttpMethod.Post, $"{Lists}/{id:D}/{verb}", await ReadBodyAsync(ct) ?? "{}", true, ct);
     }
 
     // ═══ the import (3 steps: file → preview → convert to a draft, then the draft's submit) ═══════════════════════
@@ -364,11 +365,11 @@ public sealed class CommercialPricingController : CrmGatewayProxy
 
     public static readonly IReadOnlyList<string> ImportActions = ["convert", "discard"];
 
-    [HttpPost("api/imports/{id:guid}/{action}")]
-    public async Task<IActionResult> ImportAction(Guid id, string action, CancellationToken ct)
+    [HttpPost("api/imports/{id:guid}/{verb}")]
+    public async Task<IActionResult> ImportAction(Guid id, string verb, CancellationToken ct)
     {
-        if (!ImportActions.Contains(action ?? string.Empty)) return NotFound();
-        return await ProxyAsync(HttpMethod.Post, $"{Imports}/{id:D}/{action}", "{}", HasAny(ListsImport), ct);
+        if (!ImportActions.Contains(verb ?? string.Empty)) return NotFound();
+        return await ProxyAsync(HttpMethod.Post, $"{Imports}/{id:D}/{verb}", "{}", HasAny(ListsImport), ct);
     }
 
     // ═══ rules ═════════════════════════════════════════════════════════════════════════════════════════════════
@@ -395,12 +396,12 @@ public sealed class CommercialPricingController : CrmGatewayProxy
         ["revisions"] = RulesUpdate, ["discard"] = RulesUpdate, ["submit"] = RulesSubmit, ["decision"] = RulesPublish
     };
 
-    [HttpPost("api/rules/{id:guid}/{action}")]
-    public async Task<IActionResult> RuleAction(Guid id, string action, CancellationToken ct)
+    [HttpPost("api/rules/{id:guid}/{verb}")]
+    public async Task<IActionResult> RuleAction(Guid id, string verb, CancellationToken ct)
     {
-        if (!RuleActionKeys.TryGetValue(action ?? string.Empty, out var key)) return NotFound();
+        if (!RuleActionKeys.TryGetValue(verb ?? string.Empty, out var key)) return NotFound();
         if (!HasAny(key)) return Denied();
-        return await ProxyAsync(HttpMethod.Post, $"{Rules}/{id:D}/{action}", await ReadBodyAsync(ct) ?? "{}", true, ct);
+        return await ProxyAsync(HttpMethod.Post, $"{Rules}/{id:D}/{verb}", await ReadBodyAsync(ct) ?? "{}", true, ct);
     }
 
     // ═══ FX rates ══════════════════════════════════════════════════════════════════════════════════════════════

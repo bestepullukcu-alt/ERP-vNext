@@ -43,7 +43,7 @@ const PriceListForm = (function () {
 
     const save = async () => {
         const head = headInput();
-        if (!head.name || !head.legalEntityId || !/^[A-Z]{3}$/.test(head.currency) || !head.validFrom) { alertBox(L().ErrListHead); return; }
+        if (!head.name || (!list && !head.legalEntityId) || !/^[A-Z]{3}$/.test(head.currency) || !head.validFrom) { alertBox(L().ErrListHead); return; }
         let r;
         if (!list) {
             r = await U.request('POST', endpoint, head);
@@ -59,6 +59,9 @@ const PriceListForm = (function () {
             items.push(one.input);
         }
 
+        // W6-FIX-a (G-4) — the company is the draft's from its creation: the edit does not send it (the CRM's update has no
+        // such field and refused the body), and the field is locked on the edit page.
+        delete head.legalEntityId;
         r = await U.request('PUT', endpoint + '/' + encodeURIComponent(list.id), Object.assign(head, { items: items, removeItemIds: removed, expectedVersion: list.version }));
         if (!r.ok) { alertBox(r.status === 409 && !window.CommercialRules?.has(window.PreOrdersCore.errorCode(r.body)) ? L().Err_conflict : U.errorText(r)); return; }
         U.toast(L().DraftSaved, 'success');
@@ -77,6 +80,7 @@ const PriceListForm = (function () {
             if (!list) { alertBox(U.errorText(r)); return; }
             byId('pr-name').value = list.name || '';
             await PU.fillCompanies(byId('pr-company'), list.legalEntityId);
+            byId('pr-company').disabled = true;
             byId('pr-currency').value = list.currency || '';
             byId('pr-kind').value = list.kind || 'official';
             byId('pr-from')._flatpickr ? byId('pr-from')._flatpickr.setDate(list.validFrom, false) : (byId('pr-from').value = list.validFrom || '');

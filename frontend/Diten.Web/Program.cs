@@ -88,7 +88,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         {
             if (context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<JsonAdapterEndpointAttribute>() is null)
             {
-                context.Response.Redirect(context.RedirectUri);
+                // WP-VW-W6 W6-FIX-a (G-13) — an e-mail link names its tenant: the sign-in page gets it too (a valid guid
+                // only; ReturnUrl kept), or the signed-out reader signs in to the wrong tenant.
+                context.Response.Redirect(LoginReturn.WithTenant(context.RedirectUri, context.Request));
                 return;
             }
 

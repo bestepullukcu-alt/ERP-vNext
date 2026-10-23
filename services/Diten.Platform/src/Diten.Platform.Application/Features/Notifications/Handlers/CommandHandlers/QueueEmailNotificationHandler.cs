@@ -186,13 +186,17 @@ public sealed class QueueEmailNotificationHandler
         var persistedAttachments = PrepareAttachmentsForPersistence(request.Request.Attachments, out var attachmentsSkippedForSize);
         // WP-VW-W5 W5-FIX2 (F-1) — the internal event dispatch does not wait for the provider: the row is written due at
         // once and the retry sweep sends it. Only where that sweep runs, and only when the row holds everything the send
-        // needs (an attachment too large to keep would be lost): otherwise the send stays in this request, as before.
-        var queueOnly = request.Request.QueueOnly && _retriesScheduled && !attachmentsSkippedForSize;
+        // needs: otherwise the send stays in this request, as before. Two things the row cannot hold: an attachment too
+        // large to keep, and — WP-VW-W6 W6-FIX-a (G-12) — a SECRET variable (a one-time approval link): BL-454 never stores
+        // it, so the sweep could only send the masked mail and closes it ACTION_LINK_NOT_RETRYABLE — the approver got
+        // nothing. A mail with a secret is therefore sent in the request; a mail without one is still queued.
+        var holdsSecret = secretNames.Count > 0;
+        var queueOnly = request.Request.QueueOnly && _retriesScheduled && !attachmentsSkippedForSize && !holdsSecret;
         if (request.Request.QueueOnly && !queueOnly)
         {
             _logger.LogWarning(
-                "email.dispatch.queue_only_unavailable TenantId={TenantId} TemplateKey={TemplateKey} RetriesScheduled={RetriesScheduled} AttachmentsTooLarge={AttachmentsTooLarge}. Sending in the request.",
-                request.TenantId, template.TemplateKey, _retriesScheduled, attachmentsSkippedForSize);
+                "email.dispatch.queue_only_unavailable TenantId={TenantId} TemplateKey={TemplateKey} RetriesScheduled={RetriesScheduled} AttachmentsTooLarge={AttachmentsTooLarge} HoldsSecret={HoldsSecret}. Sending in the request.",
+                request.TenantId, template.TemplateKey, _retriesScheduled, attachmentsSkippedForSize, holdsSecret);
         }
 
         var queuedAt = DateTimeOffset.UtcNow;

@@ -39,11 +39,12 @@ public static class PreOrderNotificationEvents
 /// <summary>The Web links an e-mail carries (configured base URL + the page path; MOD-0168 §9).</summary>
 public interface IPreOrderLinks
 {
-    /// <summary><c>/Commercial/PreOrders/Details/{id}</c>.</summary>
-    string OrderUrl(Guid preOrderId);
+    /// <summary><c>/Commercial/PreOrders/Details/{id}?tenantId=…</c> — WP-VW-W6 W6-FIX-a (G-13): the tenant travels with the
+    /// link, so a reader who is not signed in lands on the sign-in page of THAT tenant (the Web carries it to the login).</summary>
+    string OrderUrl(Guid tenantId, Guid preOrderId);
 
     /// <summary><c>/Commercial/PreOrders/ApprovalLink?token=…</c> — signs in first (D4); the token is single-use.</summary>
-    string ApprovalLinkUrl(string token);
+    string ApprovalLinkUrl(Guid tenantId, string token);
 }
 
 /// <summary>The depot and pharmacy mails of a transmission (the transmitter decides the state from the depot one).</summary>
@@ -81,7 +82,7 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
     {
         var to = order.ApprovalRequirement?.ApproverUserIds.Select(id => new PlatformNotificationRecipient(UserId: id.ToString("D"))).ToList() ?? [];
         var vars = Internal(order);
-        vars["approvalUrl"] = _links.ApprovalLinkUrl(approvalToken);
+        vars["approvalUrl"] = _links.ApprovalLinkUrl(order.TenantId, approvalToken);
         vars["expiresAt"] = expiresAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " UTC";
         return SendQuietlyAsync(order, PreOrderNotificationEvents.ApprovalRequested, order.SubmissionNo, null, to, [], vars, ct);
     }
@@ -212,7 +213,7 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
     {
         var vars = Common(order);
         vars["repName"] = order.Rep.DisplayName?.Trim() ?? string.Empty;
-        vars["orderUrl"] = _links.OrderUrl(order.Id);
+        vars["orderUrl"] = _links.OrderUrl(order.TenantId, order.Id);
         return vars;
     }
 

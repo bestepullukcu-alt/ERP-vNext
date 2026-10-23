@@ -127,7 +127,7 @@ internal sealed class FakePlatform : IPlatformNotificationClient
 
 internal sealed class FixedLinks : IVisitNotificationLinks
 {
-    public string ReportUrl(Guid plannedVisitId) => "https://crm.test/CRM/VisitReport?plannedVisitId=" + plannedVisitId.ToString("D");
+    public string ReportUrl(Guid tenantId, Guid plannedVisitId) => "https://crm.test/CRM/VisitReport?plannedVisitId=" + plannedVisitId.ToString("D") + "&tenantId=" + tenantId.ToString("D");
 }
 
 internal sealed class W5Clock(DateTimeOffset now) : TimeProvider

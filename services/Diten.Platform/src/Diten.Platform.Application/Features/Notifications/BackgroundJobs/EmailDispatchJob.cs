@@ -135,6 +135,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         // retry is coming" becomes true, never re-entered on a later sweep pass over the same terminal row.
         var linkNotRetryable = string.Equals(result.ErrorCode, ReasonActionLinkNotRetryable, StringComparison.Ordinal);
         var isPermanentFailure = newRetryCount >= args.MaxRetryCount || linkNotRetryable;
+        // WP-VW-W6 W6-FIX-a (G-12) — closing a row ACTION_LINK_NOT_RETRYABLE must not erase WHY its first send failed (an
+        // SMTP refusal, a TLS failure): the code stays the closing one (its readers — the invitation ledger, the monitor —
+        // look for it), the message names both: "ACTION_LINK_NOT_RETRYABLE;first:ProviderTlsFailed".
+        var errorMessage = linkNotRetryable ? ClosingMessage(dispatch.ErrorCode) : Code(Redact(result.ErrorMessage), ProviderRejectedMessage, MaxErrorMessageLength);
         // KS4 — the tenant boundary: the last failure's permanent path writes to tenant-scoped meeting stores.
         using (TenantScopeFor(dispatch.TenantId))
         {
@@ -145,7 +149,7 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                     Code(Redact(result.ErrorCode), "ProviderRejected", MaxErrorCodeLength),
                     // BL-454 — the fallback is a CODE: MarkNotificationDispatchFailedValidator refuses a message with a
                     // space (a possible raw secret) or none at all, and a refused command left the row Failed and due.
-                    Code(Redact(result.ErrorMessage), ProviderRejectedMessage, MaxErrorMessageLength),
+                    errorMessage,
                     RetryCount: newRetryCount,
                     NextRetryAt: nextRetryAt,
                     IsPermanentFailure: isPermanentFailure),
@@ -169,6 +173,25 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                     dispatch.Id, dispatch.TenantId, ex.GetType().Name);
             }
         }
+    }
+
+    /// <summary>
+    /// The message of an ACTION_LINK_NOT_RETRYABLE closing: the closing code, and the first failure's code when the row had
+    /// one — a CODE only (a letter, then letters, digits, "_", "." or "-"; nothing the raw-secret guard flags): anything
+    /// else, "[REDACTED]" included, is left out, so the failed-command validator accepts the message.
+    /// </summary>
+    public static string ClosingMessage(string? firstErrorCode)
+    {
+        var first = firstErrorCode?.Trim();
+        if (string.IsNullOrEmpty(first) || string.Equals(first, ReasonActionLinkNotRetryable, StringComparison.Ordinal)
+            || !char.IsAsciiLetter(first[0]) || !first.All(c => char.IsAsciiLetterOrDigit(c) || c is '_' or '.' or '-')
+            || Diten.Platform.Application.Features.Notifications.NotificationParsing.LooksLikeRawSecret(first))
+        {
+            return ReasonActionLinkNotRetryable;
+        }
+
+        var text = ReasonActionLinkNotRetryable + ";first:" + first;
+        return text.Length <= MaxErrorMessageLength ? text : text[..MaxErrorMessageLength];
     }
 
     private const string TenantInviteTemplateKey = "tenant.invite.email";

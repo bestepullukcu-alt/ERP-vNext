@@ -44,7 +44,8 @@ public sealed partial class VwW4ReportV2Tests
         Assert.StartsWith("Doctor ", request.Variables["doctorName"]);
         Assert.Equal(plan.PlannedDate.ToString("yyyy-MM-dd"), request.Variables["visitDate"]);
         Assert.Equal("Literatür istendi.", request.Variables["note"]);
-        Assert.Equal("https://crm.test/CRM/VisitReport?plannedVisitId=" + plan.Id.ToString("D"), request.Variables["reportUrl"]);
+        // W6-FIX-a (G-13) — the link names its tenant (the signed-out reader's sign-in page needs it)
+        Assert.Equal("https://crm.test/CRM/VisitReport?plannedVisitId=" + plan.Id.ToString("D") + "&tenantId=" + Tenant.ToString("D"), request.Variables["reportUrl"]);
         Assert.Equal(("false", "false"), (request.Variables["adverseEvent"], request.Variables["offLabelRequest"]));
         Assert.DoesNotContain(request.Variables.Keys, k => k.Contains("patient", StringComparison.OrdinalIgnoreCase));
         Assert.Equal("crm:" + VisitNotificationEvents.ReportSubmitted + ":" + row.SubjectId.ToString("D"), request.CorrelationId);

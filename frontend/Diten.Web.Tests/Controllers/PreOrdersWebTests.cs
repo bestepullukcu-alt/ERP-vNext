@@ -347,8 +347,9 @@ public sealed class PreOrdersWebTests
         var repo = Repo();
         var links = File.ReadAllText(Path.Combine(repo, "services", "Diten.CrmService", "src", "Diten.CrmService.Infrastructure", "Commercial", "PreOrderClients.cs"));
         var ports = File.ReadAllText(Path.Combine(repo, "services", "Diten.CrmService", "src", "Diten.CrmService.Application", "Features", "Commercial", "PreOrders", "PreOrderPorts.cs"));
-        Assert.Equal(PreOrdersController.DetailsPath, Regex.Match(links, @"OrderUrl\(Guid preOrderId\) => _base \+ ""([^""]+)""").Groups[1].Value);
-        Assert.Equal(PreOrdersController.ApprovalLinkPath, Regex.Match(links, @"ApprovalLinkUrl\(string token\) => _base \+ ""([^""]+)""").Groups[1].Value);
+        // W6-FIX-a (G-13) — the builders take the tenant too (the link names it); the path they start with is unchanged
+        Assert.Equal(PreOrdersController.DetailsPath, Regex.Match(links, @"OrderUrl\(Guid tenantId, Guid preOrderId\)\s*=> _base \+ ""([^""]+)""").Groups[1].Value);
+        Assert.Equal(PreOrdersController.ApprovalLinkPath, Regex.Match(links, @"ApprovalLinkUrl\(Guid tenantId, string token\)\s*=> _base \+ ""([^""]+)""").Groups[1].Value);
         Assert.Equal(PreOrdersController.ApprovePath, Regex.Match(ports, @"Link\(Guid id\) => \$""([^{]+)\{id:D\}""").Groups[1].Value);
 
         Assert.Equal("/Commercial/PreOrders/Details/", PreOrdersController.DetailsPath);

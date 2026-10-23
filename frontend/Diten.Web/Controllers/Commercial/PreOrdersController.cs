@@ -461,13 +461,15 @@ public sealed class PreOrdersController : CrmGatewayProxy
     };
 
     /// <summary>An order action: the key of <see cref="ActionKeys"/> checked HERE first; an unknown action is 404.</summary>
-    [HttpPost("api/orders/{id:guid}/{action}")]
+    // W6-FIX-a (G-5) — the segment is {verb}: "action" is MVC's reserved route value (the action name), so {action} made the
+    // route never match and every order action answered 404.
+    [HttpPost("api/orders/{id:guid}/{verb}")]
     [RequestSizeLimit(15 * 1024 * 1024)]
-    public async Task<IActionResult> OrderAction(Guid id, string action, CancellationToken ct)
+    public async Task<IActionResult> OrderAction(Guid id, string verb, CancellationToken ct)
     {
-        if (!ActionKeys.TryGetValue(action ?? string.Empty, out var key)) return NotFound();
+        if (!ActionKeys.TryGetValue(verb ?? string.Empty, out var key)) return NotFound();
         if (!HasAny(key)) return Denied();
-        return await ProxyAsync(HttpMethod.Post, $"{Orders}/{id:D}/{action}", await ReadBodyAsync(ct) ?? "{}", true, ct);
+        return await ProxyAsync(HttpMethod.Post, $"{Orders}/{id:D}/{verb}", await ReadBodyAsync(ct) ?? "{}", true, ct);
     }
 
     /// <summary>C — the pharmacy's last six months (the CRM admits the order's approver or read-all).</summary>

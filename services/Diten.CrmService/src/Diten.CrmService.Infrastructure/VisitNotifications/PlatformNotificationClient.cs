@@ -178,5 +178,6 @@ public sealed class ConfigurationVisitNotificationLinks : IVisitNotificationLink
     public ConfigurationVisitNotificationLinks(IConfiguration configuration)
         => _base = (configuration["Crm:Notifications:WebBaseUrl"] ?? "http://localhost:5001").TrimEnd('/');
 
-    public string ReportUrl(Guid plannedVisitId) => _base + "/CRM/VisitReport?plannedVisitId=" + plannedVisitId.ToString("D");
+    public string ReportUrl(Guid tenantId, Guid plannedVisitId)
+        => _base + "/CRM/VisitReport?plannedVisitId=" + plannedVisitId.ToString("D") + "&tenantId=" + tenantId.ToString("D");
 }

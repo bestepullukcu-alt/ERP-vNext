@@ -276,9 +276,13 @@ public sealed class ConfigurationPreOrderLinks : IPreOrderLinks
     public ConfigurationPreOrderLinks(IConfiguration configuration)
         => _base = (configuration["Crm:Notifications:WebBaseUrl"] ?? "http://localhost:5001").TrimEnd('/');
 
-    public string OrderUrl(Guid preOrderId) => _base + "/Commercial/PreOrders/Details/" + preOrderId.ToString("D");
+    // WP-VW-W6 W6-FIX-a (G-13) — every link names its tenant (tenantId, "D" form): opened signed out, the sign-in page
+    // must know the tenant, or the reader signs in to the wrong one (locally the default tenant → tenant-unavailable).
+    public string OrderUrl(Guid tenantId, Guid preOrderId)
+        => _base + "/Commercial/PreOrders/Details/" + preOrderId.ToString("D") + "?tenantId=" + tenantId.ToString("D");
 
-    public string ApprovalLinkUrl(string token) => _base + "/Commercial/PreOrders/ApprovalLink?token=" + Uri.EscapeDataString(token);
+    public string ApprovalLinkUrl(Guid tenantId, string token)
+        => _base + "/Commercial/PreOrders/ApprovalLink?token=" + Uri.EscapeDataString(token) + "&tenantId=" + tenantId.ToString("D");
 }
 
 /// <summary>WP-VW-W6 W6-BE-c1 — a legal entity's MDM country through the MOD-0168 MDM door (the caller's token; fail closed:

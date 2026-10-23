@@ -121,6 +121,42 @@ public sealed partial class EmailShellDispatchTests
         Assert.NotNull(row.PermanentlyFailedNotifiedAt); // permanent: no retry will ever send it
     }
 
+    /// <summary>WP-VW-W6 W6-FIX-a (G-12) — the closing keeps WHY the first send failed: the code is the closing one (its
+    /// readers look for it), the message names the first failure's code too.</summary>
+    [Fact]
+    public async Task A_closing_by_name_keeps_the_first_failures_code_in_the_message()
+    {
+        var rig = new Rig();
+        var template = rig.AddSeeded(NotificationTemplateSeed.TenantInvite("en"));
+        var stored = JsonSerializer.Serialize(new Dictionary<string, string>
+        {
+            ["TenantId"] = Guid.NewGuid().ToString(),
+            ["TenantDisplayName"] = "Diten Pharma",
+            ["SetPasswordUrl"] = "[REDACTED]",
+            ["LinkExpiresAtUtc"] = InviteExpiry
+        });
+        var row = rig.AddFailedDispatch(stored, template.Id);
+        row.ErrorCode = "ProviderTlsFailed";
+        row.ErrorMessage = "ProviderTlsFailed";
+        var mediator = new ValidatingMediator(rig.Dispatches);
+
+        await new EmailDispatchJob(
+                rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
+                new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider), mediator,
+                NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
+            .HandleAsync(new EmailDispatchJobArgs(rig.TenantId, row.Id), new BackgroundJobContext(), CancellationToken.None);
+
+        Assert.Empty(mediator.Refusals);                                                             // the validator accepts the message
+        Assert.Equal(EmailDispatchJob.ReasonActionLinkNotRetryable, row.ErrorCode);
+        Assert.Equal("ACTION_LINK_NOT_RETRYABLE;first:ProviderTlsFailed", row.ErrorMessage);
+        Assert.Equal(EmailDispatchJob.ReasonActionLinkNotRetryable, EmailDispatchJob.ClosingMessage(null));
+        Assert.Equal(EmailDispatchJob.ReasonActionLinkNotRetryable, EmailDispatchJob.ClosingMessage(EmailDispatchJob.ReasonActionLinkNotRetryable));
+        Assert.Equal(EmailDispatchJob.ReasonActionLinkNotRetryable, EmailDispatchJob.ClosingMessage("a b"));
+        Assert.Equal(EmailDispatchJob.ReasonActionLinkNotRetryable, EmailDispatchJob.ClosingMessage("[REDACTED]"));   // never "first:[REDACTED]"
+        Assert.Equal(EmailDispatchJob.ReasonActionLinkNotRetryable, EmailDispatchJob.ClosingMessage("sk-live-abc"));  // a secret shape is left out
+        Assert.Equal("ACTION_LINK_NOT_RETRYABLE;first:SMTP_550", EmailDispatchJob.ClosingMessage("SMTP_550"));
+    }
+
     // ---------------------------------------------------------------- the link's root: configuration, never a silent localhost
 
     [Theory]

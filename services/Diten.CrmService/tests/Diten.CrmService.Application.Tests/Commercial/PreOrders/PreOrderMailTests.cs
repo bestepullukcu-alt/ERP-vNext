@@ -72,6 +72,9 @@ public sealed class PreOrderMailTests : PreOrderTestBase
         Assert.Equal(PreOrderWorld.Rep.ToString("D"), mail.ReplyToUserId);
         Assert.Equal(PreOrderNotificationEvents.SourceModule, mail.SourceModule);
         Assert.StartsWith("https://web.test/Commercial/PreOrders/ApprovalLink?token=", mail.Variables["approvalUrl"]);
+        // W6-FIX-a (G-13) — the link names its tenant, so a signed-out approver signs in to the right one
+        Assert.EndsWith("&tenantId=" + mail.TenantId.ToString("D"), mail.Variables["approvalUrl"]);
+        Assert.EndsWith("/Commercial/PreOrders/Details/" + pending.Id.ToString("D") + "?tenantId=" + mail.TenantId.ToString("D"), mail.Variables["orderUrl"]);
         Assert.Equal((pending.Code, "Eczane Şifa"), (mail.Variables["orderCode"], mail.Variables["pharmacyName"]));
         Assert.Equal($"preorder:{pending.Id:N}:approvalrequested:1", mail.IdempotencyKey);
         Assert.DoesNotContain(mail.Variables.Keys, k => k.Contains("discount", StringComparison.OrdinalIgnoreCase));
@@ -113,6 +116,7 @@ public sealed class PreOrderMailTests : PreOrderTestBase
         Assert.Equal((PreOrderWorld.Rep.ToString("D"), "MF too high"), (changes.To.Single().UserId, changes.Variables["reason"]));
         Assert.Equal((PreOrderWorld.Rep.ToString("D"), "Not this month"), (rejected.To.Single().UserId, rejected.Variables["reason"]));
         Assert.StartsWith("https://web.test/Commercial/PreOrders/Details/", rejected.Variables["orderUrl"]);
+        Assert.EndsWith("?tenantId=" + rejected.TenantId.ToString("D"), rejected.Variables["orderUrl"]);
     }
 
     [Fact]
