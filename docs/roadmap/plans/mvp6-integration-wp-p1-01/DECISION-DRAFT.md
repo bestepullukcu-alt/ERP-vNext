@@ -92,6 +92,14 @@ Açık: **G2, G3, G4** (MVP-1 CT). DL-2 (çıkış çekirdeği) ve DL-6 (rezerva
 | Olay | `Dispatched` olayının biçimi değişmeden bütün satırlar yazıldıktan sonra yayımlanması uygun (MVP-5 outbound'u buna göre Shipped yapar). |
 | Bilgi 2 | MVP-1, CentralAudit outbox yarışı için ortak kodda FU açıyor; SupplyChain'deki ön-yaratma o gelene kadar uygun. |
 
+**Ek notlar (MVP-1 CT, 2026-10-23, kodda doğrulandı):** (1) rezervasyon eşleşmesi aynı SKU içinde birebir metin
+karşılaştırması; boş `sourceDocumentId` hiç eşleşmez; yalnız AVAILABLE'ı azaltan hareket tüketir. (2) süresi dolan
+rezervasyonlar tüketimden hemen önce aynı işlemde kapatılır (`InventoryLedgerRepository.cs:291-293`); sevkiyat rezervasyonunda
+`expiresAt` gönderilmez. (3) G4/1 REVERSAL için de geçerli: geri almanın tarihleri de saklanıp aynen gönderilir; aynı orijinale
+farklı anahtarla ikinci geri alma 422 `ALREADY_REVERSED`. (4) "Önce anahtara bak" = aynı isteği aynı anahtar ve tarihlerle
+yeniden göndermek; işlenmiş istek `idempotentReplay: true` döner (ret değil); reddedilmiş istek saklanmaz, yeniden gönderilince
+kurallar baştan çalışır.
+
 Pakete işlenişi: MOD-0183 §23.4 (karar), §23.1 anahtar, §23.5 S23-8…S23-12, teslim dilimleri DL-1 (3.4.0 + çekirdek) ve
 DL-2 (metinler); ürün doğrulaması ve MVP-5 rezervasyonu dilim değil. Koşul (4) için dondurulmuş yaşam döngüsünde
 `Planned → Exception` oku olmadığından görünür durum `ShipmentDetail.dispatchState` (3.4.0, ekleme) ve 409

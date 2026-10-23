@@ -629,13 +629,20 @@ rule as the legal-entity gate: a permission gap is not a business refusal). A se
 **G2 — reservations.** No INVENTORY change is needed for this slice: INVENTORY consumes an active reservation in the same
 posting transaction when the movement's (`sourceModule`, `sourceDocumentId`, `sourceLineId`) equals the reservation's
 (MOD-0173, ASSUMPTION-0173-15). MOD-0183 opens no reservation in v1, so its issue consumes none; a reservation opened later
-with `MOD-0183` / `shipmentId` / `lineNumber` would be consumed automatically. Consuming an MVP-5 (MOD-0178) reservation needs
+with `MOD-0183` / `shipmentId` / `lineNumber` would be consumed automatically. Matching is an **exact text comparison within
+the same SKU** (`"1"` does not match `"001"`), a reservation with an empty `sourceDocumentId` is never matched, and only a
+movement that reduces `AVAILABLE` consumes one (a normal `GOODS_ISSUE_SALES` does). INVENTORY closes reservations that have
+expired in the same transaction just before consuming, so a shipment reservation, if MOD-0183 ever opens one, carries **no
+`expiresAt`** (or one that covers the dispatch time). Consuming an MVP-5 (MOD-0178) reservation needs
 `MovementRequest.reservationId`, which the MOD-0173 owner adds with the lot / location reservation work (W-5) before MVP-5 S2
 — not MOD-0183 work. "Release first, then issue" is not used.
 
 **G3 — compensation by REVERSAL.** MOD-0183 sends `movementType: REVERSAL` with `sourceModule: MOD-0173`,
 `sourceType: REVERSAL`, `sourceDocumentId` = the original `transactionId`, `documentGroupId` = `shipmentId` and a
-deterministic `Idempotency-Key` `{shipmentId}:{lineNumber}:reversal:v1`. A reversed issue does **not** restore a reservation
+deterministic `Idempotency-Key` `{shipmentId}:{lineNumber}:reversal:v1`. Its `transactionDate` / `postingDate` are also stored
+at the first attempt and sent unchanged on every retry. A second REVERSAL of the same original under another key answers 422
+`ALREADY_REVERSED`; MOD-0183 never sends one (the key is deterministic), and if it is ever seen it is logged as an integrity
+fault, not treated as a failed compensation. A reversed issue does **not** restore a reservation
 it consumed: the stock returns as `AVAILABLE`.
 
 **G4 — two phases, N lines (first slice).** Per-line deterministic keys + REVERSAL compensation; a batch / atomic movement
@@ -645,10 +652,11 @@ endpoint, if ever needed, is the MOD-0173 owner's follow-up. The dispatch:
    validated `occurredAt` as `transactionDate` / `postingDate`. **Those dates are stored at the first attempt and sent
    unchanged on every retry** — INVENTORY's idempotency fingerprint includes them, and changed dates would answer
    `IDEMPOTENCY_KEY_REUSED`.
-2. Posts each line with its key. **On a retry it first checks whether the key was already processed** (the stored per-line
-   `transactionId`, else INVENTORY's replay of the same key): an already-processed key is a success, never a refusal.
-   `IDEMPOTENCY_KEY_REUSED` is an integrity fault (logged, shipment kept in the visible exception state below), not a business
-   refusal and not a reason to post again.
+2. Posts each line with its key. **A retry resends the same request with the same key and the same stored dates** — no
+   separate lookup is needed: INVENTORY answers an already-processed request with `idempotentReplay: true` without calling
+   upstream, and that is a success, never a refusal. A **refused** request is not stored by INVENTORY, so resending it re-runs
+   the rules from the start (expected behaviour). `IDEMPOTENCY_KEY_REUSED` is an integrity fault (logged, the shipment blocked
+   as in step 5), not a business refusal and not a reason to post again.
 3. When every line has a `transactionId` (stored per line with its `lotId`, for MOD-0186's return), the shipment becomes
    `Dispatched` and the frozen `ShipmentDispatched` event is written in the same transaction.
 4. If a line is refused (422), the already-posted lines are reversed (G3) and the shipment returns to `Planned` with the
@@ -674,10 +682,11 @@ endpoint, if ever needed, is the MOD-0173 owner's follow-up. The dispatch:
 | S23-6 | Cross-tenant / cross-LE shipment id → 404, no movement |
 | S23-7 | Every `inventoryCode` has a non-empty text in all 7 languages (resx parity measured by MATCH count) |
 | S23-8 | Three-line dispatch, line 2 refused → line 1 reversed with key `…:1:reversal:v1`, shipment back to `Planned`, no `Dispatched` event |
-| S23-9 | Retry after a crash between line 1 and line 2 (user action) → line 1 not posted again (same key, stored dates), line 2 posted, `Dispatched` once |
+| S23-9 | Retry after a crash between line 1 and line 2 (user action) → line 1 resent with the same key and dates answers `idempotentReplay: true` (no second movement), line 2 posted, `Dispatched` once |
 | S23-10 | Compensating REVERSAL fails → `dispatchState = CompensationFailed`, further transitions 409 `DISPATCH_COMPENSATION_FAILED`, never a silent `Planned`; a user retry with the same keys clears it |
 | S23-11 | Changed dates on a retry are impossible: the stored `transactionDate`/`postingDate` are sent; a forced change in a test shows `IDEMPOTENCY_KEY_REUSED` handled as an integrity fault |
 | S23-12 | A background job never posts or reverses; it only flags a stuck attempt |
+| S23-13 | Compensation retried after a crash → the REVERSAL is resent with the same key and stored dates → `idempotentReplay: true`, no `ALREADY_REVERSED`, no second reversal |
 
 Each rule gets a sabotage proof; the full SupplyChain test assembly runs unfiltered; MDM and INVENTORY consumer tests and the
 MVP-1 CT's live tours are the acceptance.

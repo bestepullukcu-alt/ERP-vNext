@@ -61,6 +61,13 @@ Not: `inventoryTransactionReferenceId` alanı istemciden gelmeye devam eder mi, 
 "Frozen INVENTORY movement reference". §34 ile sunucu yazar; istemcinin değeri yok sayılır mı reddedilir mi, sözleşme
 yazıcısının kararıdır (öneri: 3.4.0'da `deprecated: true`, sunucu değeri yazar, istemci değeri yok sayılır).
 
+## 3a. `ShipmentDetail.dispatchState` ve 409 `DISPATCH_COMPENSATION_FAILED` (G4 koşul 4, 2026-10-23)
+
+MVP-1 CT'nin G4 koşulu: telafi REVERSAL'ı başarısızsa sevkiyat görünür bir hata durumunda kalır. Dondurulmuş yaşam döngüsünde
+`Planned → Exception` oku yok, bu yüzden `status` değişmez; yerine salt-okunur `dispatchState` (`None` / `InProgress` /
+`CompensationFailed`, isteğe bağlı) eklenir ve sonraki her geçiş 409 `DISPATCH_COMPENSATION_FAILED` (`details.lines`) alır.
+Yalnız ekleme; var olan istemciler etkilenmez.
+
 ## 4. Değişmeyenler
 
 `ShipmentStatus` kümesi, `ShipmentEventPayload` ve `LifecycleEventEnvelope` (G9: `ShipmentDispatched` biçimi aynı, yalnız
