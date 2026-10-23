@@ -18,6 +18,7 @@ namespace Diten.Platform.Application.Tests.Audit;
 /// Mongo process and its database are test-owned and removed by this fixture; production startup
 /// never creates an unrelated database or applies a schema as part of this test.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
 {
     // TEST-HIZ-01: CI gives the pinned mongod in DITEN_TEST_MONGOD (Ubuntu has no Homebrew path). PlatformTestMongo's

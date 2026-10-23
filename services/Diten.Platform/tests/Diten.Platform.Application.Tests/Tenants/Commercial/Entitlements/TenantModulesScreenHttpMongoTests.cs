@@ -57,6 +57,7 @@ namespace Diten.Platform.Application.Tests.Tenants.Commercial.Entitlements;
 /// integration-event writer (records nothing). None of them is this file's subject.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TenantModulesScreenHttpMongoTests
 {
     private readonly Xunit.Abstractions.ITestOutputHelper _output;

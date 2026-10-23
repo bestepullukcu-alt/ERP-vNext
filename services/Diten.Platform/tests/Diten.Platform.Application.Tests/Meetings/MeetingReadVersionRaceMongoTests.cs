@@ -27,6 +27,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// winner's content must stay. A publish writes the minutes, the attendance and the meeting's Completed in ONE Platform
 /// transaction. Real handlers, real Mongo repositories (shared itest database on the dev replica set, fresh TenantId).
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class MeetingReadVersionRaceMongoTests : IAsyncLifetime
 {
     private readonly Guid _organizer = Guid.NewGuid();

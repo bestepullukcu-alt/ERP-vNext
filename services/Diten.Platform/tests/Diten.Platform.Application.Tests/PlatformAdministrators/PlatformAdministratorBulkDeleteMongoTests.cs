@@ -33,6 +33,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// database.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorBulkDeleteMongoTests
 {
     [Fact]

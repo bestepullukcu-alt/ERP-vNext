@@ -42,6 +42,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// template placeholder nobody sends: each of them ends in no e-mail, or an e-mail with a <c>{{…}}</c> in it.</para>
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimeEntryNotificationPipelineMongoTests : IAsyncLifetime
 {
     private readonly TimeEntryMongoFixture _fixture;

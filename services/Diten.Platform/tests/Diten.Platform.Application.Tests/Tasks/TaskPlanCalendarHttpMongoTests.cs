@@ -98,6 +98,7 @@ public sealed class PlanCalendarMongoFixture : IAsyncLifetime
 /// 18:00 is 15:00Z. The working calendar is a stub that closes weekends and one named holiday — the calendar engine
 /// has its own suite; what is under test here is how the plan rule and the feed USE the answer.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskPlanCalendarHttpMongoTests : IClassFixture<PlanCalendarMongoFixture>, IAsyncLifetime
 {
     private static readonly Guid Holder = Guid.NewGuid();

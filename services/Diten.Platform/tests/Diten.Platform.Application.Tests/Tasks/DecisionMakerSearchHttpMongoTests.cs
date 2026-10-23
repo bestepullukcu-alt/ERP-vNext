@@ -40,6 +40,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// of the group), 21 planners, one person whose position has ended; tenant B has one person.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class DecisionMakerSearchHttpMongoTests
 {
     [Theory]

@@ -30,6 +30,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// EmailDispatchRetrySweepMongoTests, which this test file's shape deliberately mirrors); only the messaging
 /// provider, the event bus and the Hangfire scheduler are doubled.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifetime
 {
     private const string MeetingTemplateKey = "platform.meetings.invite";

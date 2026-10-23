@@ -84,6 +84,7 @@ public sealed class CountingTaskGateway(TaskGatewayAdapter inner, TaskPortCallLo
 /// "+ Task row" picker under the same read rule a save uses.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimeEntryT2aReadHttpMongoTests : TimerScenario
 {
     private const string PreviousWeek = "2026-W40";
