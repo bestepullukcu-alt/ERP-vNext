@@ -25,6 +25,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// (<see cref="TimeEntryMongoFixture"/>), a fresh tenant per test class.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetReadVersionRaceMongoTests : TimerScenario
 {
     private static readonly DateOnly Tuesday = new(2026, 10, 6);

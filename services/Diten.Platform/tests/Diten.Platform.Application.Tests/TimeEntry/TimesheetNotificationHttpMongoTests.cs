@@ -29,6 +29,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// double (<see cref="TestRecipients"/>).
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetNotificationHttpMongoTests : TimerScenario
 {
     private const string MeetingCategory = "INTERNAL_MEETING";

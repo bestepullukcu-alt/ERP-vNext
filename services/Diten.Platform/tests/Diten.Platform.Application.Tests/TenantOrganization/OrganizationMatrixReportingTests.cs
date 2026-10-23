@@ -19,6 +19,7 @@ namespace Diten.Platform.Application.Tests.TenantOrganization;
 /// <para>⚠ EVERY TEST HERE CALLS THE PRODUCTION HANDLER OR THE PRODUCTION GUARD. None of them re-implements a
 /// rule and then measures its own copy — that is how two defects passed 1,500 green tests in this codebase.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class OrganizationMatrixReportingTests
 {
     private static readonly Guid TenantId = Guid.Parse("00000000-0000-0000-0000-0000000000f2");

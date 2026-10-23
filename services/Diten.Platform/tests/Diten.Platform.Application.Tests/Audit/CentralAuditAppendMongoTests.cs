@@ -40,6 +40,7 @@ namespace Diten.Platform.Application.Tests.Audit;
  *                               alone would have filed the second as a duplicate and lost it
  *   tenant                    → the record is read under its tenant and is invisible to another tenant
  */
+[Trait("Category", "Mongo")]
 public sealed class CentralAuditAppendMongoTests : IAsyncLifetime
 {
     private const string Key = "bl501-platform-append-test-key-0123456789";

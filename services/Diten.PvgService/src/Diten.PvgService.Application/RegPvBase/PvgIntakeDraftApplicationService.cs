@@ -157,17 +157,24 @@ public sealed class PvgIntakeDraftApplicationService
         var replaced = await _draftStore.ReplaceAsync(
             Scope(command.TenantContext),
             command.IntakeDraftId,
+            command.ExpectedVersion,
             updated,
             cancellationToken);
-        if (!replaced)
+        if (replaced.Outcome == PvgIntakeDraftReplaceOutcome.NotFound)
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
+
+        if (replaced.Outcome != PvgIntakeDraftReplaceOutcome.Replaced)
+        {
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftVersionConflict);
         }
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated),
             command.IntakeDraftId,
-            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated, UpdatePermission));
+            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated, UpdatePermission),
+            replaced.Version);
     }
 
     public async ValueTask<PvgIntakeDraftMutationResult> TriageDraftAsync(
@@ -239,17 +246,24 @@ public sealed class PvgIntakeDraftApplicationService
         var triageReplaced = await _draftStore.ReplaceAsync(
             Scope(command.TenantContext),
             command.IntakeDraftId,
+            command.ExpectedVersion,
             draft,
             cancellationToken);
-        if (!triageReplaced)
+        if (triageReplaced.Outcome == PvgIntakeDraftReplaceOutcome.NotFound)
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
+
+        if (triageReplaced.Outcome != PvgIntakeDraftReplaceOutcome.Replaced)
+        {
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftVersionConflict);
         }
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged),
             command.IntakeDraftId,
-            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged, TriagePermission));
+            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged, TriagePermission),
+            triageReplaced.Version);
     }
 
     public async ValueTask<PvgIntakeDraftMutationResult> RouteDraftAsync(
@@ -321,17 +335,24 @@ public sealed class PvgIntakeDraftApplicationService
         var routeReplaced = await _draftStore.ReplaceAsync(
             Scope(command.TenantContext),
             command.IntakeDraftId,
+            command.ExpectedVersion,
             draft,
             cancellationToken);
-        if (!routeReplaced)
+        if (routeReplaced.Outcome == PvgIntakeDraftReplaceOutcome.NotFound)
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
+
+        if (routeReplaced.Outcome != PvgIntakeDraftReplaceOutcome.Replaced)
+        {
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftVersionConflict);
         }
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending),
             command.IntakeDraftId,
-            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending, RoutePermission));
+            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending, RoutePermission),
+            routeReplaced.Version);
     }
 
     public async ValueTask<PvgIntakeDraftQueryResult> GetDraftByIdAsync(
@@ -379,7 +400,7 @@ public sealed class PvgIntakeDraftApplicationService
 
         return new PvgIntakeDraftQueryResult(
             Succeeded(PvgIntakeOperation.GetById, persisted.Intake.Status),
-            [new PvgIntakeDraftSummary(persisted.IntakeDraftId, persisted.Intake.Status)]);
+            [new PvgIntakeDraftSummary(persisted.IntakeDraftId, persisted.Intake.Status, persisted.Version)]);
     }
 
     public async ValueTask<PvgIntakeDraftQueryResult> ListDraftsAsync(
@@ -420,7 +441,7 @@ public sealed class PvgIntakeDraftApplicationService
             new PvgPersistenceListScope(Scope(query.TenantContext), query.PageNumber, query.PageSize, query.Status),
             cancellationToken);
         var items = persistedItems
-            .Select(item => new PvgIntakeDraftSummary(item.IntakeDraftId, item.Intake.Status))
+            .Select(item => new PvgIntakeDraftSummary(item.IntakeDraftId, item.Intake.Status, item.Version))
             .ToArray();
 
         return new PvgIntakeDraftQueryResult(
