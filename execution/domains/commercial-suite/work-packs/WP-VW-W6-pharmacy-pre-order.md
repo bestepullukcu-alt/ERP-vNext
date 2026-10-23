@@ -553,7 +553,7 @@ Commit: "feat(crm): WP-VW-W6 W6-FIX-c — order totals carry the list subtotal a
 ```text
 @[.antigravity/agents/frontend-ui-ux.md]
 WP: WP-VW-W6 · W6-FIX-b — ön sipariş ve fiyat ekranlarında E4 bulguları (G-1, G-2, G-3, G-6, G-7, G-8) + mockup farkları (V-1…V-5, V-7…V-10, V-12) + FU-VISIT-END-SEPARATOR
-Repository: C:\tmp\vw-w6-fixb (worktree, test/crm-content-visit-e2e güncel başı — FIX-a ve FIX-c içinde) · Branch: wp/vw-w6-fixb · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA. Kapsam: frontend/Diten.Web/** (+ Tests). CRM / Platform'a DOKUNMA (gereken veri yoksa DUR ve sor).
+Repository: C:\tmp\vw-w6-fixb (worktree, test/crm-content-visit-e2e güncel başı — FIX-c içinde, FIX-a HENÜZ YOK: paralel çalışıyor) · Branch: wp/vw-w6-fixb · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA. Kapsam: frontend/Diten.Web/** (+ Tests). CRM / Platform'a DOKUNMA (gereken veri yoksa DUR ve sor). FIX-a ile çakışmamak için şunlara DOKUNMA: `assets/js/Commercial/PriceLists/form.js`, `CommercialPricingController` ve `PreOrdersController`'daki eylem rotaları (`.../{action}` → FIX-a `{verb}` yapıyor), `Program.cs`, `AccountController` + `assets/js/Account/login.js`. Bunlardan birine dokunman gerekirse DUR ve sor.
 ÖN KOŞUL: §37 W6-FIX-c test dalında olmalı (listSubtotal / discountAmount) — değilse DUR.
 ÖNCE OKU: DESIGN-GAP-W6 §8 (V tablosu) + §4 standartlar · WP-VW-W6 "W6 yerel E4" 1. tur (G-1…G-3) + 2. tur (G-6…G-8) · mockup A, B, C (`decoded-w6`) · W6-WEB-a / W6-WEB-b §37'leri.
 İŞ:
