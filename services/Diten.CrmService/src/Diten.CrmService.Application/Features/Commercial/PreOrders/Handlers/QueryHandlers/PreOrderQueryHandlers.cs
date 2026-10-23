@@ -202,7 +202,9 @@ public sealed class PreOrderQueryHandlers :
         var from = _c.Now.AddMonths(-PreOrderLimits.PharmacyHistoryMonths);
         var (items, _) = await _c.Orders.ListAsync(tenantId, new PreOrderFilter(CreatedFrom: from, PharmacyAccountId: order.Pharmacy.AccountId), 0,
             PreOrderLimits.PharmacyHistoryMax, ct);
-        var submitted = items.Where(o => o.SubmissionNo > 0).ToList(); // submitted orders only (a draft / a discarded draft is not history)
+        // submitted orders only (a draft / a discarded draft is not history); W6-FIX-e G-18 — the order under decision is not
+        // its own history, so it is left out of the rows AND the months (other pending orders stay with their status)
+        var submitted = items.Where(o => o.SubmissionNo > 0 && o.Id != order.Id).ToList();
         return Response<PreOrderPharmacyHistoryDto>.Success(new PreOrderPharmacyHistoryDto(order.Pharmacy.AccountId, from,
             submitted.Select(PreOrderPharmacyHistory.Item).ToList(), PreOrderPharmacyHistory.MonthsOf(submitted, _c.Now)));
     }

@@ -6,6 +6,9 @@
  *   text(finding, opts)  → "Yönetici onayı gerekir: iskonto %12 > sınır %10"   (plain text; data isolated FSI…PDI)
  *   html(finding, opts)  → the same, escaped, each parameter in <bdi>         (RTL)
  *   outcome(o)           → "Sınır içi" | "Onay gerekir" | "Girilemez"         (Rule.Outcome.{ok|soft|hard})
+ *   reasonText / reasonHtml(finding, badge, opts) → W6-FIX-e (G-17): beside a badge that already says the outcome, the
+ *                          finding without those words ("iskonto %12 > tavan %10", Rule.Reason.{code}) — only when the
+ *                          finding's severity IS the badge's outcome; otherwise (or without such words) the full message
  *   error(code)          → the refusal's words, or null when the code has none (the caller then says its own generic text)
  *   number(v)            → an invariant number ("12.5") in the page's culture ("12,5"); anything else ("10+2") as it is
  *
@@ -49,6 +52,12 @@
         return typeof t === 'string' ? t : '';
     };
 
+    /** W6-FIX-e (G-17) — beside the badge of the same outcome: the words without the outcome, when the resource has them. */
+    const besideBadge = (finding, badge) => {
+        const code = String((finding && finding.code) || '');
+        return finding && badge && finding.severity === badge && template('Reason.' + code) ? 'Reason.' + code : code;
+    };
+
     const fill = (code, params, opts, wrap) => {
         const t = template(code);
         if (!t) return '';
@@ -68,6 +77,8 @@
         has: (code) => !!template(code),
         text: (finding, opts) => fill(finding && finding.code, finding && finding.params, opts, false),
         html: (finding, opts) => fill(finding && finding.code, finding && finding.params, opts, true),
+        reasonText: (finding, badge, opts) => fill(besideBadge(finding, badge), finding && finding.params, opts, false),
+        reasonHtml: (finding, badge, opts) => fill(besideBadge(finding, badge), finding && finding.params, opts, true),
         outcome: (o) => words()[PREFIX + 'Outcome.' + String(o || '')] || '',
         error: (code) => template(code) || null,
         /** The worst of a list of outcomes (hard > soft > ok). */

@@ -364,7 +364,7 @@ process.stdout.write(JSON.stringify({ s: s, none: none, done: done }));")!;
 
         var scripts = View("Pricing/_PricingScripts.cshtml");
         Assert.Contains("<partial name=\"~/Views/Commercial/_CommercialRulesL10n.cshtml\" />", scripts);
-        Assert.Contains("R().html(f,", Js("Pricing/trial.js"));
+        Assert.Contains("R().reasonHtml(f,", Js("Pricing/trial.js")); // W6-FIX-e (G-17): the shared source, beside the badge without its words
         // the shared source carries the MOD-0156 refusal codes too (the W6-WEB-a test reads the CRM constants)
         var rules = Resx(Path.Combine("Views", "Commercial", "CommercialRules.en.resx"));
         Assert.Contains("Rule.price_list_sod", rules.Keys);

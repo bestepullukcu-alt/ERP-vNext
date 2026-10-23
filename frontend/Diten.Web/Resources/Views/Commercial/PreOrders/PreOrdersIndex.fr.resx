@@ -761,7 +761,7 @@
     <value>{0} · 6 derniers mois</value>
   </data>
   <data name="HistoryNote" xml:space="preserve">
-    <value>Commandes envoyées de la pharmacie par mois (chaque devise à part).</value>
+    <value>Commandes envoyées de la pharmacie par mois (chaque devise à part), hors cette commande.</value>
   </data>
   <data name="ColMonth" xml:space="preserve">
     <value>Mois</value>
@@ -963,5 +963,17 @@
   </data>
   <data name="HistoryTrend" xml:space="preserve">
     <value>Tendance de la remise effective (UG + remise)</value>
+  </data>
+  <data name="CancelNotifiedDepot" xml:space="preserve">
+    <value>Le dépositaire a été informé par e-mail.</value>
+  </data>
+  <data name="CancelNotifiedPharmacy" xml:space="preserve">
+    <value>La pharmacie a été informée par e-mail.</value>
+  </data>
+  <data name="CancelNoEmailDepot" xml:space="preserve">
+    <value>Le dépositaire n'a pas d'adresse e-mail ; il n'a pas été informé.</value>
+  </data>
+  <data name="CancelNoEmailPharmacy" xml:space="preserve">
+    <value>La pharmacie n'a pas d'adresse e-mail ; elle n'a pas été informée.</value>
   </data>
 </root>

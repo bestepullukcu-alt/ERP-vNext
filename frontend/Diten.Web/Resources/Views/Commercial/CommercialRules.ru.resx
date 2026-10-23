@@ -16,38 +16,74 @@
   <data name="Rule.discount.soft-exceeded" xml:space="preserve">
     <value>Требуется согласование руководителя: скидка {value}% &gt; лимит {limit}%</value>
   </data>
+  <data name="Rule.Reason.discount.soft-exceeded" xml:space="preserve">
+    <value>скидка {value}% &gt; лимит {limit}%</value>
+  </data>
   <data name="Rule.discount.hard-exceeded" xml:space="preserve">
     <value>Недопустимо: скидка {value}% &gt; потолок {limit}%</value>
+  </data>
+  <data name="Rule.Reason.discount.hard-exceeded" xml:space="preserve">
+    <value>скидка {value}% &gt; потолок {limit}%</value>
   </data>
   <data name="Rule.mf.soft-exceeded" xml:space="preserve">
     <value>Требуется согласование руководителя: бонус {value} ({valuePct}%) &gt; лимит {limit} ({limitPct}%)</value>
   </data>
+  <data name="Rule.Reason.mf.soft-exceeded" xml:space="preserve">
+    <value>бонус {value} ({valuePct}%) &gt; лимит {limit} ({limitPct}%)</value>
+  </data>
   <data name="Rule.mf.hard-exceeded" xml:space="preserve">
     <value>Недопустимо: бонус {value} ({valuePct}%) &gt; потолок {limit} ({limitPct}%)</value>
+  </data>
+  <data name="Rule.Reason.mf.hard-exceeded" xml:space="preserve">
+    <value>бонус {value} ({valuePct}%) &gt; потолок {limit} ({limitPct}%)</value>
   </data>
   <data name="Rule.combined.soft-exceeded" xml:space="preserve">
     <value>Требуется согласование руководителя: совокупная скидка {valuePct}% &gt; лимит {limitPct}%</value>
   </data>
+  <data name="Rule.Reason.combined.soft-exceeded" xml:space="preserve">
+    <value>совокупная скидка {valuePct}% &gt; лимит {limitPct}%</value>
+  </data>
   <data name="Rule.combined.hard-exceeded" xml:space="preserve">
     <value>Недопустимо: совокупная скидка {valuePct}% &gt; потолок {limitPct}%</value>
+  </data>
+  <data name="Rule.Reason.combined.hard-exceeded" xml:space="preserve">
+    <value>совокупная скидка {valuePct}% &gt; потолок {limitPct}%</value>
   </data>
   <data name="Rule.quantity.below-min" xml:space="preserve">
     <value>Недопустимо: количество {value} &lt; минимум {min}</value>
   </data>
+  <data name="Rule.Reason.quantity.below-min" xml:space="preserve">
+    <value>количество {value} &lt; минимум {min}</value>
+  </data>
   <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
     <value>Требуется согласование руководителя: количество {value} &gt; лимит {limit}</value>
+  </data>
+  <data name="Rule.Reason.quantity.soft-exceeded" xml:space="preserve">
+    <value>количество {value} &gt; лимит {limit}</value>
   </data>
   <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
     <value>Недопустимо: количество {value} &gt; потолок {limit}</value>
   </data>
+  <data name="Rule.Reason.quantity.hard-exceeded" xml:space="preserve">
+    <value>количество {value} &gt; потолок {limit}</value>
+  </data>
   <data name="Rule.sku.retired" xml:space="preserve">
     <value>Недопустимо: {skuId} выведен из оборота</value>
+  </data>
+  <data name="Rule.Reason.sku.retired" xml:space="preserve">
+    <value>{skuId} выведен из оборота</value>
   </data>
   <data name="Rule.price.sku-not-in-list" xml:space="preserve">
     <value>Недопустимо: {skuId} нет в прайс-листе {priceListName}</value>
   </data>
+  <data name="Rule.Reason.price.sku-not-in-list" xml:space="preserve">
+    <value>{skuId} нет в прайс-листе {priceListName}</value>
+  </data>
   <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
     <value>Недопустимо: нет действующего прайс-листа, скидку ввести нельзя</value>
+  </data>
+  <data name="Rule.Reason.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>нет действующего прайс-листа, скидку ввести нельзя</value>
   </data>
   <data name="Rule.pre_order_request_invalid" xml:space="preserve">
     <value>Запрос недействителен.</value>

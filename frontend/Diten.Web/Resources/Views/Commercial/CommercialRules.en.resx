@@ -16,38 +16,74 @@
   <data name="Rule.discount.soft-exceeded" xml:space="preserve">
     <value>Manager approval needed: discount {value}% &gt; limit {limit}%</value>
   </data>
+  <data name="Rule.Reason.discount.soft-exceeded" xml:space="preserve">
+    <value>discount {value}% &gt; limit {limit}%</value>
+  </data>
   <data name="Rule.discount.hard-exceeded" xml:space="preserve">
     <value>Not allowed: discount {value}% &gt; ceiling {limit}%</value>
+  </data>
+  <data name="Rule.Reason.discount.hard-exceeded" xml:space="preserve">
+    <value>discount {value}% &gt; ceiling {limit}%</value>
   </data>
   <data name="Rule.mf.soft-exceeded" xml:space="preserve">
     <value>Manager approval needed: MF {value} ({valuePct}%) &gt; limit {limit} ({limitPct}%)</value>
   </data>
+  <data name="Rule.Reason.mf.soft-exceeded" xml:space="preserve">
+    <value>MF {value} ({valuePct}%) &gt; limit {limit} ({limitPct}%)</value>
+  </data>
   <data name="Rule.mf.hard-exceeded" xml:space="preserve">
     <value>Not allowed: MF {value} ({valuePct}%) &gt; ceiling {limit} ({limitPct}%)</value>
+  </data>
+  <data name="Rule.Reason.mf.hard-exceeded" xml:space="preserve">
+    <value>MF {value} ({valuePct}%) &gt; ceiling {limit} ({limitPct}%)</value>
   </data>
   <data name="Rule.combined.soft-exceeded" xml:space="preserve">
     <value>Manager approval needed: combined discount {valuePct}% &gt; limit {limitPct}%</value>
   </data>
+  <data name="Rule.Reason.combined.soft-exceeded" xml:space="preserve">
+    <value>combined discount {valuePct}% &gt; limit {limitPct}%</value>
+  </data>
   <data name="Rule.combined.hard-exceeded" xml:space="preserve">
     <value>Not allowed: combined discount {valuePct}% &gt; ceiling {limitPct}%</value>
+  </data>
+  <data name="Rule.Reason.combined.hard-exceeded" xml:space="preserve">
+    <value>combined discount {valuePct}% &gt; ceiling {limitPct}%</value>
   </data>
   <data name="Rule.quantity.below-min" xml:space="preserve">
     <value>Not allowed: quantity {value} &lt; minimum {min}</value>
   </data>
+  <data name="Rule.Reason.quantity.below-min" xml:space="preserve">
+    <value>quantity {value} &lt; minimum {min}</value>
+  </data>
   <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
     <value>Manager approval needed: quantity {value} &gt; limit {limit}</value>
+  </data>
+  <data name="Rule.Reason.quantity.soft-exceeded" xml:space="preserve">
+    <value>quantity {value} &gt; limit {limit}</value>
   </data>
   <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
     <value>Not allowed: quantity {value} &gt; ceiling {limit}</value>
   </data>
+  <data name="Rule.Reason.quantity.hard-exceeded" xml:space="preserve">
+    <value>quantity {value} &gt; ceiling {limit}</value>
+  </data>
   <data name="Rule.sku.retired" xml:space="preserve">
     <value>Not allowed: {skuId} is retired</value>
+  </data>
+  <data name="Rule.Reason.sku.retired" xml:space="preserve">
+    <value>{skuId} is retired</value>
   </data>
   <data name="Rule.price.sku-not-in-list" xml:space="preserve">
     <value>Not allowed: {skuId} is not on the price list {priceListName}</value>
   </data>
+  <data name="Rule.Reason.price.sku-not-in-list" xml:space="preserve">
+    <value>{skuId} is not on the price list {priceListName}</value>
+  </data>
   <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
     <value>Not allowed: no price list is in force, a discount cannot be entered</value>
+  </data>
+  <data name="Rule.Reason.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>no price list is in force, a discount cannot be entered</value>
   </data>
   <data name="Rule.pre_order_request_invalid" xml:space="preserve">
     <value>The request is not valid.</value>

@@ -620,9 +620,12 @@ public sealed class PreOrderCommandHandlers :
 
         var expected = order.Version;
         var wasTransmitted = order.Status == PreOrderStatuses.Transmitted;
+        // W6-FIX-e G-15 — "notified" only for a party the cancellation mail actually goes to (the notifier's own e-mail rule)
         order.Cancellation = new PreOrderCancellation
         {
-            ByUserId = _c.CallerId!.Value, At = _c.Now, Reason = reason!, NotifiedDepot = wasTransmitted, NotifiedPharmacy = wasTransmitted
+            ByUserId = _c.CallerId!.Value, At = _c.Now, Reason = reason!,
+            NotifiedDepot = wasTransmitted && PreOrderExternalEmail.Depot(order) is not null,
+            NotifiedPharmacy = wasTransmitted && PreOrderExternalEmail.Pharmacy(order) is not null
         };
         PreOrderStateMachine.TryApply(order, PreOrderStateMachine.Actions.Cancel, PreOrderEventTypes.Cancelled, _c.CallerText, _c.Now,
             new Dictionary<string, string?> { ["reason"] = reason });

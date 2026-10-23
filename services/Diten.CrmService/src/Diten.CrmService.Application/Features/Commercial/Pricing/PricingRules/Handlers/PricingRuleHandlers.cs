@@ -341,7 +341,10 @@ public sealed class SubmitPricingRuleHandler : IRequestHandler<SubmitPricingRule
                 "An active rule of the same company, SKU and specificity covers an overlapping period.", 409);
         }
 
-        var display = new ClaimWorkflowDisplayContext($"{rule.SkuCode ?? rule.SkuId.ToString("D")} · {rule.LegalEntityName}",
+        // W6-FIX-e G-14 — the approver reads the product name; the code (then the id) only when the snapshot has no name.
+        var product = !string.IsNullOrWhiteSpace(rule.SkuName) ? rule.SkuName
+            : !string.IsNullOrWhiteSpace(rule.SkuCode) ? rule.SkuCode : rule.SkuId.ToString("D");
+        var display = new ClaimWorkflowDisplayContext($"{product} · {rule.LegalEntityName}",
             $"{rule.ChangeKind} · v{rule.RuleVersion}", PricingAudit.SourceModule, PricingApprovalKinds.PricingRule.Link(rule.Id),
             new[] { rule.ChangeKind, "v" + rule.RuleVersion });
         if (await _flow.SubmitAsync<PricingRule, PricingRuleDto>(_applier.Rules, rule, PricingApprovalKinds.PricingRule,

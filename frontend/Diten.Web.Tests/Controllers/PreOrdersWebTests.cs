@@ -399,15 +399,18 @@ public sealed class PreOrdersWebTests
 
         var english = Rules("en");
         Assert.Equal(english.OrderBy(x => x.Key), Rules("").OrderBy(x => x.Key));
-        var expected = reasons.Concat(refusals).Concat(pricingRefusals).Select(c => CommercialRules.Prefix + c).Concat(CommercialRules.Outcomes.Select(o => CommercialRules.Prefix + "Outcome." + o)).ToList();
+        var expected = reasons.Concat(refusals).Concat(pricingRefusals).Select(c => CommercialRules.Prefix + c).Concat(CommercialRules.Outcomes.Select(o => CommercialRules.Prefix + "Outcome." + o))
+            .Concat(reasons.Select(c => CommercialRules.Prefix + "Reason." + c)).ToList();               // W6-FIX-e (G-17): beside the badge, without its words
         foreach (var language in Languages)
         {
             var words = Rules(language);
             Assert.Equal(expected.Order(), words.Keys.Order());                                       // exactly the CRM's codes: none missing, none invented
             foreach (var code in reasons)
             {
-                var text = words[CommercialRules.Prefix + code];
-                Assert.Equal(parameters[code], Regex.Matches(text, @"\{(\w+)\}").Select(m => m.Groups[1].Value).Distinct().Order().ToList());
+                foreach (var text in new[] { words[CommercialRules.Prefix + code], words[CommercialRules.Prefix + "Reason." + code] })
+                {
+                    Assert.Equal(parameters[code], Regex.Matches(text, @"\{(\w+)\}").Select(m => m.Groups[1].Value).Distinct().Order().ToList());
+                }
             }
 
             foreach (var key in expected)

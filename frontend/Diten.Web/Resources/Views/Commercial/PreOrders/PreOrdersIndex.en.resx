@@ -761,7 +761,7 @@
     <value>{0} · last 6 months</value>
   </data>
   <data name="HistoryNote" xml:space="preserve">
-    <value>The pharmacy's submitted orders per month (each currency on its own).</value>
+    <value>The pharmacy's submitted orders per month (each currency on its own), this order excluded.</value>
   </data>
   <data name="ColMonth" xml:space="preserve">
     <value>Month</value>
@@ -963,5 +963,17 @@
   </data>
   <data name="HistoryTrend" xml:space="preserve">
     <value>Effective discount trend (MF + discount)</value>
+  </data>
+  <data name="CancelNotifiedDepot" xml:space="preserve">
+    <value>The depot was notified by e-mail.</value>
+  </data>
+  <data name="CancelNotifiedPharmacy" xml:space="preserve">
+    <value>The pharmacy was notified by e-mail.</value>
+  </data>
+  <data name="CancelNoEmailDepot" xml:space="preserve">
+    <value>The depot has no e-mail address; it was not notified.</value>
+  </data>
+  <data name="CancelNoEmailPharmacy" xml:space="preserve">
+    <value>The pharmacy has no e-mail address; it was not notified.</value>
   </data>
 </root>

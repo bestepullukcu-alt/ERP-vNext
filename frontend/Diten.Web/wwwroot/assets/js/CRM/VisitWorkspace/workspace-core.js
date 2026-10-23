@@ -23,6 +23,8 @@
  *   accountOptions(visits)            the institution filter: accountDisplayName ONLY (never a doctor's name)
  *   unplacedRows(week, L)             the "N visits did not fit" list (weeks[].unplaced[])
  *   sessionVersionOf(week)            the version approve / reopen expects (weeks[].sessionVersion), null = read it
+ *   weekStateOfSession(session, ws)   W6-FIX-e (G-16) — the week's state from the planning session read (weeks[].status),
+ *                                     in the calendar's words (the CRM's StateOf: empty → none); null = not in the session
  * WP-VW-W2 (WEB-c) — the mockup's look (pure; the page only draws what these say):
  *   cardModel(v, ctx)                 a calendar card: status look, time, name, institution, product chips (promo filled /
  *                                     reminder outlined), the bottom line ("report in 31 h", "mark within 3 h", "→ 13 Oct",
@@ -408,6 +410,14 @@
 
     const sessionVersionOf = week => (week && typeof week.sessionVersion === 'number' ? week.sessionVersion : null);
 
+    /** W6-FIX-e (G-16) — the week's state as the planning session read reports it (no engine run), in the calendar's
+     *  words: GetWorkspaceCalendarHandler.StateOf maps the same display status (past / approved / draft, else none). */
+    const weekStateOfSession = (session, weekStart) => {
+        const w = (session && Array.isArray(session.weeks) ? session.weeks : []).find(x => x && x.weekStart === weekStart);
+        if (!w) { return null; }
+        return w.status === 'past' || w.status === 'approved' || w.status === 'draft' ? w.status : 'none';
+    };
+
     // ── WP-VW-W2 (WEB-c) — the mockup's look ────────────────────────────────────────────────────────────────
     const toMinutes = t => { const m = /^(\d{1,2}):(\d{2})/.exec(String(t || '')); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
     const lengthOf = v => {
@@ -764,7 +774,7 @@
         saveFilters, FILTER_KEY, addDays, mondayOf, weekWindow, capacity, reopenOk, REOPEN_MIN, lastReportOf, visitKey,
         eventOf, unplannedBody, endTimeOf, UNPLANNED_MINUTES,
         canPlanWeek, PIN_STEP, roundToStep, pinFromDrop, pinsWith, PIN_CODES, pinKey, pinText, pinMoveCode,
-        dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf,
+        dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf, weekStateOfSession,
         compactCard, tinyCard, cardModel, stepMinutes, estimate, monthCell, DIALOG_TABS, dialogTabs, dayHead, LEGEND, productDistribution, alertFor, isPromo,
         minutesSince, clockOf, canStart, visitActions, presentationUrl, reportUrl, evidenceNeeds, startMissing, canBegin, locationView,
         geoErrorStatus, startFields, PHOTO_MAX_EDGE, PHOTO_QUALITY, PHOTO_TYPE, photoSize, cameraConstraints, cameraErrorKey,

@@ -210,13 +210,15 @@ public sealed class PreOrderApprovalTests : PreOrderTestBase
     [Fact]
     public async Task V3_the_pharmacy_history_is_for_the_order_s_approver_or_read_all_and_counts_only_submitted_orders()
     {
+        var earlier = await Pending();                                               // another submitted order of the pharmacy
         var pending = await Pending();
         await Draft();                                                               // a draft is not history
 
         var forApprover = Ok(await W.Send(new GetPharmacyOrderHistoryQuery(pending.Id), PreOrderWorld.Manager2));
         var forRep = await W.Send(new GetPharmacyOrderHistoryQuery(pending.Id), PreOrderWorld.Rep);
 
-        Assert.Equal(pending.Id, Assert.Single(forApprover.Items).Id);
+        // W6-FIX-e (G-18): the order under decision is not its own history
+        Assert.Equal(earlier.Id, Assert.Single(forApprover.Items).Id);
         Assert.Equal(404, forRep.StatusCode);
     }
 

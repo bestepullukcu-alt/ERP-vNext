@@ -52,7 +52,9 @@ public sealed class PreOrdersIndex
         "TotalListSubtotal", "TotalDiscount", "TotalVatRate", "FormSubtitleRep", "FormDescription", "SendForApproval", "DiscardDraft",
         "ApproveConfirmTitle", "ApproveConfirmText",
         // W6-FIX-d — screen C's six months as mockup C draws them (V-9): the effective discount trend, Month · Orders · Amount · Effective
-        "ColAmount", "ColEffectiveShort", "HistoryTrend"
+        "ColAmount", "ColEffectiveShort", "HistoryTrend",
+        // W6-FIX-e (G-15) — the cancellation says who the mail reached, or that a party had no e-mail to be told by
+        "CancelNotifiedDepot", "CancelNotifiedPharmacy", "CancelNoEmailDepot", "CancelNoEmailPharmacy"
     ];
 
     /// <summary>The strings the views themselves write (headings, labels, buttons) and the export's column headers.</summary>

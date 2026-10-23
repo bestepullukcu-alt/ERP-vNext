@@ -65,8 +65,10 @@
     };
     const depotResponseBadge = (status) => (status ? '<span class="badge bg-label-info text-nowrap">' + esc(L()['DR_' + status] || status) + '</span>' : '');
 
-    /** A finding in words (the shared rule source; {skuId} named by the line's product). */
-    const findingHtml = (f, skuName) => '<span class="po-msg po-msg-' + esc(f.severity || '') + '">' + (R() ? R().html(f, { skuName: () => skuName, culture: culture() }) : esc(f.code)) + '</span>';
+    /** A finding in words (the shared rule source; {skuId} named by the line's product). Beside the line's outcome badge
+     *  (badge) a finding of that outcome leaves the badge's words out (W6-FIX-e G-17). */
+    const findingHtml = (f, skuName, badge) => '<span class="po-msg po-msg-' + esc(f.severity || '') + '">'
+        + (R() ? R().reasonHtml(f, badge, { skuName: () => skuName, culture: culture() }) : esc(f.code)) + '</span>';
 
     /** The order's facts; V-10 (W6-FIX-b): the date WITH its time, the pharmacy WITH its city (the CRM's snapshot name). */
     const facts = (order) => {
@@ -96,7 +98,7 @@
             ];
             if (priced) cells.push(l.discountPct == null ? '—' : esc(pct(l.discountPct)), esc(money(l.unitPrice, o.currency)), l.vatRate == null ? '—' : esc(pct(l.vatRate)), '<span class="text-heading">' + esc(money(l.netAmount, o.currency)) + '</span>');
             if (showRules) {
-                const msgs = (l.findings || []).map((f) => findingHtml(f, sku.name || sku.code)).join('');
+                const msgs = (l.findings || []).map((f) => findingHtml(f, sku.name || sku.code, l.outcome)).join('');
                 cells.push(outcomeBadge(l.outcome) + (msgs ? '<div class="po-msgs">' + msgs + '</div>' : ''));
             }
             return '<tr>' + cells.map((c) => '<td>' + c + '</td>').join('') + '</tr>';
@@ -244,9 +246,20 @@
         else if (result.mfRatioPct != null && result.freeQuantity) meta.push(T('MfRatioLine', pct(result.mfRatioPct)));
         if (meta.length) parts.push('<small class="text-muted d-block">' + esc(meta.join(' · ')) + '</small>');
         if (c.priceSource) parts.push('<small class="text-muted d-block"><i class="bx bx-purchase-tag-alt me-1"></i>' + c.priceSource + '</small>');
-        const msgs = (result.findings || []).map((f) => findingHtml(f, c.skuName)).join('');
+        const msgs = (result.findings || []).map((f) => findingHtml(f, c.skuName, result.outcome)).join('');
         parts.push('<div class="d-flex flex-wrap align-items-start gap-2 mt-1">' + outcomeBadge(result.outcome) + (msgs ? '<div class="po-msgs">' + msgs + '</div>' : '') + '</div>');
         return parts.join('');
+    };
+
+    /** W6-FIX-e (G-15) — who the cancellation mail reached, as the CRM recorded it (notifiedDepot / notifiedPharmacy: the
+     *  order had been transmitted AND the party had an e-mail). Not notified on a transmitted order = it had no e-mail;
+     *  an order never transmitted tells nobody outside, so it says nothing. */
+    const cancelNotices = (o) => {
+        const c = o.cancellation || {};
+        const transmitted = !!(o.transmission && o.transmission.transmittedAt);
+        const line = (key) => '<small class="d-block text-muted po-cancel-notice">' + esc(L()[key] || '') + '</small>';
+        const of = (notified, party) => (notified ? line('CancelNotified' + party) : (transmitted ? line('CancelNoEmail' + party) : ''));
+        return of(c.notifiedDepot === true, 'Depot') + of(c.notifiedPharmacy === true, 'Pharmacy');
     };
 
     /** Signature · approval (or "approved automatically") · transmission · cancellation · the depot's answer. */
@@ -269,7 +282,7 @@
         const t = o.transmission;
         if (t && t.transmittedAt) row('bx-send', Th('TransmittedAt', (o.depot || {}).name || '', moment(t.transmittedAt)));
         else if (t && t.lastStatus === 'failed') row('bx-error text-danger', esc(L().TransmissionFailedLine || ''));
-        if (o.cancellation) row('bx-block', Th('CancelledLine', moment(o.cancellation.at)) + '<small class="d-block">' + Th('ReasonLine', o.cancellation.reason) + '</small>');
+        if (o.cancellation) row('bx-block', Th('CancelledLine', moment(o.cancellation.at)) + '<small class="d-block">' + Th('ReasonLine', o.cancellation.reason) + '</small>' + cancelNotices(o));
         if (o.depotResponse) {
             const lines = (o.depotResponse.partialLines || []).map((p) => {
                 const l = (o.lines || []).find((x) => x.lineNo === p.lineNo) || {};

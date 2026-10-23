@@ -86,6 +86,8 @@
         layout: C.layoutFor(window.innerWidth),
         calendar: null,
         current: null,
+        loadSeq: 0,     // W6-FIX-e (G-16) — the latest calendar read; an older one answering later is dropped
+        dataSeq: 0,     // the read whose answer state.data holds
         mode: 'execute' // WP-VW-W2 (WEB-b) — 'plan' shows the Targets panel and edits a draft week
     };
 
@@ -100,9 +102,12 @@
         const want = needed();
         if (!force && state.data && covers(want)) { render(); return Promise.resolve(); }
         state.window = want;
+        const seq = ++state.loadSeq;
         setBusy(true);
         return get('/calendar?from=' + state.window.from + '&to=' + state.window.to).then(r => {
+            if (seq !== state.loadSeq) { return; } // a newer read is on its way: this answer may hold the old week
             setBusy(false);
+            state.dataSeq = seq;
             if (!r.ok || !r.body || !r.body.data) {
                 state.data = null;
                 showNotice(C.errorText(r, L) || L.CalendarLoadFailed || '');
@@ -1036,6 +1041,28 @@
         return known != null ? Promise.resolve(known) : withSession(w).then(s => (s ? s.version : null));
     }
 
+    // W6-FIX-e (G-16) — after approve / reopen the band must not wait for the calendar read: that read misses the preview
+    // cache (the session version changed) and runs the whole planning engine (≈ 7 s), so the band kept "Draft" while the
+    // toast said "approved". The session read (no engine) gives the week's new state and version at once; the actions
+    // stay hidden until the calendar read answers with the server's own canApprove / canReopen and replaces it all.
+    function refreshWeek(w) {
+        const reading = load(true);
+        const seq = state.loadSeq;
+        withSession(w).then(s => {
+            const current = weekOf(w.weekStart);
+            const next = C.weekStateOfSession(s, w.weekStart);
+            if (state.dataSeq >= seq || !current || !next) { return; } // the calendar read already answered
+            current.state = next;
+            current.canApprove = false;
+            current.canReopen = false;
+            if (s && typeof s.version === 'number') { current.sessionVersion = s.version; }
+            renderHeader();
+            renderPanel();
+        });
+        if (state.mode === 'plan') { loadPlan(true); } // the Targets panel's session (its version) is stale too
+        return reading;
+    }
+
     function approveWeek() {
         const w = weekOf(state.week); if (!w || !w.planningSessionId) { return; }
         const btn = el('vw-approve'); btn.disabled = true;
@@ -1045,7 +1072,7 @@
         }).then(r => {
             if (!r) { return; }
             btn.disabled = false;
-            if (r.ok) { toast(L.ApproveDone || ''); load(true); } else { toast(C.errorText(r, L), 'error'); }
+            if (r.ok) { toast(L.ApproveDone || ''); refreshWeek(w); } else { toast(C.errorText(r, L), 'error'); }
         });
     }
 
@@ -1075,7 +1102,7 @@
         }).then(r => {
             if (!r) { return; }
             btn.disabled = false;
-            if (r.ok) { hideModal('vw-reopen-modal'); toast(L.ReopenDone || ''); load(true); } else { toast(C.errorText(r, L), 'error'); }
+            if (r.ok) { hideModal('vw-reopen-modal'); toast(L.ReopenDone || ''); refreshWeek(w); } else { toast(C.errorText(r, L), 'error'); }
         });
     }
 

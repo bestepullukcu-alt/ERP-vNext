@@ -16,38 +16,74 @@
   <data name="Rule.discount.soft-exceeded" xml:space="preserve">
     <value>Validation du responsable requise : remise {value} % &gt; limite {limit} %</value>
   </data>
+  <data name="Rule.Reason.discount.soft-exceeded" xml:space="preserve">
+    <value>remise {value} % &gt; limite {limit} %</value>
+  </data>
   <data name="Rule.discount.hard-exceeded" xml:space="preserve">
     <value>Non autorisé : remise {value} % &gt; plafond {limit} %</value>
+  </data>
+  <data name="Rule.Reason.discount.hard-exceeded" xml:space="preserve">
+    <value>remise {value} % &gt; plafond {limit} %</value>
   </data>
   <data name="Rule.mf.soft-exceeded" xml:space="preserve">
     <value>Validation du responsable requise : UG {value} ({valuePct} %) &gt; limite {limit} ({limitPct} %)</value>
   </data>
+  <data name="Rule.Reason.mf.soft-exceeded" xml:space="preserve">
+    <value>UG {value} ({valuePct} %) &gt; limite {limit} ({limitPct} %)</value>
+  </data>
   <data name="Rule.mf.hard-exceeded" xml:space="preserve">
     <value>Non autorisé : UG {value} ({valuePct} %) &gt; plafond {limit} ({limitPct} %)</value>
+  </data>
+  <data name="Rule.Reason.mf.hard-exceeded" xml:space="preserve">
+    <value>UG {value} ({valuePct} %) &gt; plafond {limit} ({limitPct} %)</value>
   </data>
   <data name="Rule.combined.soft-exceeded" xml:space="preserve">
     <value>Validation du responsable requise : remise combinée {valuePct} % &gt; limite {limitPct} %</value>
   </data>
+  <data name="Rule.Reason.combined.soft-exceeded" xml:space="preserve">
+    <value>remise combinée {valuePct} % &gt; limite {limitPct} %</value>
+  </data>
   <data name="Rule.combined.hard-exceeded" xml:space="preserve">
     <value>Non autorisé : remise combinée {valuePct} % &gt; plafond {limitPct} %</value>
+  </data>
+  <data name="Rule.Reason.combined.hard-exceeded" xml:space="preserve">
+    <value>remise combinée {valuePct} % &gt; plafond {limitPct} %</value>
   </data>
   <data name="Rule.quantity.below-min" xml:space="preserve">
     <value>Non autorisé : quantité {value} &lt; minimum {min}</value>
   </data>
+  <data name="Rule.Reason.quantity.below-min" xml:space="preserve">
+    <value>quantité {value} &lt; minimum {min}</value>
+  </data>
   <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
     <value>Validation du responsable requise : quantité {value} &gt; limite {limit}</value>
+  </data>
+  <data name="Rule.Reason.quantity.soft-exceeded" xml:space="preserve">
+    <value>quantité {value} &gt; limite {limit}</value>
   </data>
   <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
     <value>Non autorisé : quantité {value} &gt; plafond {limit}</value>
   </data>
+  <data name="Rule.Reason.quantity.hard-exceeded" xml:space="preserve">
+    <value>quantité {value} &gt; plafond {limit}</value>
+  </data>
   <data name="Rule.sku.retired" xml:space="preserve">
     <value>Non autorisé : {skuId} est retiré</value>
+  </data>
+  <data name="Rule.Reason.sku.retired" xml:space="preserve">
+    <value>{skuId} est retiré</value>
   </data>
   <data name="Rule.price.sku-not-in-list" xml:space="preserve">
     <value>Non autorisé : {skuId} ne figure pas dans la liste de prix {priceListName}</value>
   </data>
+  <data name="Rule.Reason.price.sku-not-in-list" xml:space="preserve">
+    <value>{skuId} ne figure pas dans la liste de prix {priceListName}</value>
+  </data>
   <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
     <value>Non autorisé : aucune liste de prix en vigueur, aucune remise ne peut être saisie</value>
+  </data>
+  <data name="Rule.Reason.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>aucune liste de prix en vigueur, aucune remise ne peut être saisie</value>
   </data>
   <data name="Rule.pre_order_request_invalid" xml:space="preserve">
     <value>La demande n'est pas valide.</value>

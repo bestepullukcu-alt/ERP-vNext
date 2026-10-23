@@ -761,7 +761,7 @@
     <value>{0} · 最近 6 个月</value>
   </data>
   <data name="HistoryNote" xml:space="preserve">
-    <value>药店每月已提交订单（各货币分开）。</value>
+    <value>药店每月已提交订单（各货币分开），不含本订单。</value>
   </data>
   <data name="ColMonth" xml:space="preserve">
     <value>月份</value>
@@ -963,5 +963,17 @@
   </data>
   <data name="HistoryTrend" xml:space="preserve">
     <value>实际折扣趋势（赠品 + 折扣）</value>
+  </data>
+  <data name="CancelNotifiedDepot" xml:space="preserve">
+    <value>已通过电子邮件通知经销商。</value>
+  </data>
+  <data name="CancelNotifiedPharmacy" xml:space="preserve">
+    <value>已通过电子邮件通知药店。</value>
+  </data>
+  <data name="CancelNoEmailDepot" xml:space="preserve">
+    <value>经销商没有电子邮件地址，未通知。</value>
+  </data>
+  <data name="CancelNoEmailPharmacy" xml:space="preserve">
+    <value>药店没有电子邮件地址，未通知。</value>
   </data>
 </root>

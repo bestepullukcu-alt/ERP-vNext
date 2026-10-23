@@ -16,38 +16,74 @@
   <data name="Rule.discount.soft-exceeded" xml:space="preserve">
     <value>Yönetici onayı gerekir: iskonto %{value} &gt; sınır %{limit}</value>
   </data>
+  <data name="Rule.Reason.discount.soft-exceeded" xml:space="preserve">
+    <value>iskonto %{value} &gt; sınır %{limit}</value>
+  </data>
   <data name="Rule.discount.hard-exceeded" xml:space="preserve">
     <value>Girilemez: iskonto %{value} &gt; tavan %{limit}</value>
+  </data>
+  <data name="Rule.Reason.discount.hard-exceeded" xml:space="preserve">
+    <value>iskonto %{value} &gt; tavan %{limit}</value>
   </data>
   <data name="Rule.mf.soft-exceeded" xml:space="preserve">
     <value>Yönetici onayı gerekir: MF {value} (%{valuePct}) &gt; sınır {limit} (%{limitPct})</value>
   </data>
+  <data name="Rule.Reason.mf.soft-exceeded" xml:space="preserve">
+    <value>MF {value} (%{valuePct}) &gt; sınır {limit} (%{limitPct})</value>
+  </data>
   <data name="Rule.mf.hard-exceeded" xml:space="preserve">
     <value>Girilemez: MF {value} (%{valuePct}) &gt; tavan {limit} (%{limitPct})</value>
+  </data>
+  <data name="Rule.Reason.mf.hard-exceeded" xml:space="preserve">
+    <value>MF {value} (%{valuePct}) &gt; tavan {limit} (%{limitPct})</value>
   </data>
   <data name="Rule.combined.soft-exceeded" xml:space="preserve">
     <value>Yönetici onayı gerekir: birleşik indirim %{valuePct} &gt; sınır %{limitPct}</value>
   </data>
+  <data name="Rule.Reason.combined.soft-exceeded" xml:space="preserve">
+    <value>birleşik indirim %{valuePct} &gt; sınır %{limitPct}</value>
+  </data>
   <data name="Rule.combined.hard-exceeded" xml:space="preserve">
     <value>Girilemez: birleşik indirim %{valuePct} &gt; tavan %{limitPct}</value>
+  </data>
+  <data name="Rule.Reason.combined.hard-exceeded" xml:space="preserve">
+    <value>birleşik indirim %{valuePct} &gt; tavan %{limitPct}</value>
   </data>
   <data name="Rule.quantity.below-min" xml:space="preserve">
     <value>Girilemez: adet {value} &lt; en az {min}</value>
   </data>
+  <data name="Rule.Reason.quantity.below-min" xml:space="preserve">
+    <value>adet {value} &lt; en az {min}</value>
+  </data>
   <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
     <value>Yönetici onayı gerekir: adet {value} &gt; sınır {limit}</value>
+  </data>
+  <data name="Rule.Reason.quantity.soft-exceeded" xml:space="preserve">
+    <value>adet {value} &gt; sınır {limit}</value>
   </data>
   <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
     <value>Girilemez: adet {value} &gt; tavan {limit}</value>
   </data>
+  <data name="Rule.Reason.quantity.hard-exceeded" xml:space="preserve">
+    <value>adet {value} &gt; tavan {limit}</value>
+  </data>
   <data name="Rule.sku.retired" xml:space="preserve">
     <value>Girilemez: {skuId} kullanımdan kalktı</value>
+  </data>
+  <data name="Rule.Reason.sku.retired" xml:space="preserve">
+    <value>{skuId} kullanımdan kalktı</value>
   </data>
   <data name="Rule.price.sku-not-in-list" xml:space="preserve">
     <value>Girilemez: {skuId} {priceListName} fiyat listesinde yok</value>
   </data>
+  <data name="Rule.Reason.price.sku-not-in-list" xml:space="preserve">
+    <value>{skuId} {priceListName} fiyat listesinde yok</value>
+  </data>
   <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
     <value>Girilemez: yürürlükte fiyat listesi yok, iskonto girilemez</value>
+  </data>
+  <data name="Rule.Reason.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>yürürlükte fiyat listesi yok, iskonto girilemez</value>
   </data>
   <data name="Rule.pre_order_request_invalid" xml:space="preserve">
     <value>İstek geçerli değil.</value>

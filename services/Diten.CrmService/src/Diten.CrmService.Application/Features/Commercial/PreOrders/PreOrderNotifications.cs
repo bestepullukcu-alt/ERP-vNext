@@ -47,6 +47,20 @@ public interface IPreOrderLinks
     string ApprovalLinkUrl(Guid tenantId, string token);
 }
 
+/// <summary>
+/// WP-VW-W6 W6-FIX-e (G-15) — the ONE rule of "this external party can be e-mailed": a non-blank business e-mail. The
+/// notifier sends by it and the cancellation records by it whether the depot / the pharmacy was notified, so the record
+/// never says "notified" for a party the mail could not reach.
+/// </summary>
+public static class PreOrderExternalEmail
+{
+    public static string? Of(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    public static string? Depot(PreOrder order) => Of(order.Depot?.Email);
+
+    public static string? Pharmacy(PreOrder order) => Of(order.Pharmacy.Email);
+}
+
 /// <summary>The depot and pharmacy mails of a transmission (the transmitter decides the state from the depot one).</summary>
 public interface IPreOrderTransmissionMailer
 {
@@ -96,24 +110,20 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
     public Task RejectedAsync(PreOrder order, string reason, CancellationToken ct)
         => SendQuietlyAsync(order, PreOrderNotificationEvents.Rejected, order.SubmissionNo, null, [Rep(order)], [], WithReason(Internal(order), reason), ct);
 
-    /// <summary>The rep and the manager always; the depot and the pharmacy ONLY when the order had been transmitted (D5,
-    /// AC-FLOW-8 — the cancellation records it). Each external party gets its own mail: nobody sees another's address.</summary>
+    /// <summary>The rep and the manager always; the depot and the pharmacy ONLY when the order had been transmitted and the
+    /// party has an e-mail (D5, AC-FLOW-8 — the cancellation records each, W6-FIX-e G-15). Each external party gets its own
+    /// mail: nobody sees another's address.</summary>
     public async Task CancelledAsync(PreOrder order, string reason, CancellationToken ct)
     {
         await SendQuietlyAsync(order, PreOrderNotificationEvents.Cancelled, 1, "internal", [Rep(order)], [ManagerOf(order)],
             WithReason(Internal(order), reason), ct);
-        if (order.Cancellation?.NotifiedDepot != true)
-        {
-            return;
-        }
-
         var external = WithReason(External(order), reason);
-        if (Email(order.Depot?.Email) is { } depot)
+        if (order.Cancellation?.NotifiedDepot == true && PreOrderExternalEmail.Depot(order) is { } depot)
         {
             await SendQuietlyAsync(order, PreOrderNotificationEvents.Cancelled, 1, "depot", [ExternalRecipient(order, depot)], [], external, ct);
         }
 
-        if (order.Cancellation.NotifiedPharmacy && Email(order.Pharmacy.Email) is { } pharmacy)
+        if (order.Cancellation?.NotifiedPharmacy == true && PreOrderExternalEmail.Pharmacy(order) is { } pharmacy)
         {
             await SendQuietlyAsync(order, PreOrderNotificationEvents.Cancelled, 1, "pharmacy", [ExternalRecipient(order, pharmacy)], [], external, ct);
         }
@@ -121,7 +131,7 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
 
     public async Task<PlatformNotificationResult> SendDepotAsync(PreOrder order, int attemptNo, PreOrderDocuments documents, CancellationToken ct)
     {
-        if (Email(order.Depot?.Email) is not { } depot)
+        if (PreOrderExternalEmail.Depot(order) is not { } depot)
         {
             return PlatformNotificationResult.Unavailable(PreOrderTransmissionReasons.DepotNoEmail);
         }
@@ -133,7 +143,7 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
     }
 
     public async Task<PlatformNotificationResult?> SendPharmacyCopyAsync(PreOrder order, int attemptNo, PreOrderDocuments documents, CancellationToken ct)
-        => Email(order.Pharmacy.Email) is { } pharmacy
+        => PreOrderExternalEmail.Pharmacy(order) is { } pharmacy
             ? await SendAsync(order, PreOrderNotificationEvents.PharmacyCopy, attemptNo, null, [ExternalRecipient(order, pharmacy)], [], External(order), ct,
                 Attachment(order, PreOrderDocumentCopies.Pharmacy, documents.PharmacyCopyRef))
             : null;
@@ -190,8 +200,6 @@ public sealed class PlatformPreOrderNotifier : IPreOrderNotifier, IPreOrderTrans
     /// <summary>An external party: its business e-mail, in the selling company's country language (null = the tenant's).</summary>
     private static PlatformNotificationRecipient ExternalRecipient(PreOrder order, string email)
         => new(Email: email, Locale: ExternalRecipientLanguages.ForCountry(order.CountryCode));
-
-    private static string? Email(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>What every pre-order mail shows (display text; the Platform template words it).</summary>
     private static Dictionary<string, string> Common(PreOrder order) => new(StringComparer.Ordinal)

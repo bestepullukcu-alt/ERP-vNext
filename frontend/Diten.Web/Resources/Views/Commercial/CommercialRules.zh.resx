@@ -16,38 +16,74 @@
   <data name="Rule.discount.soft-exceeded" xml:space="preserve">
     <value>需要经理审批：折扣 {value}% &gt; 限额 {limit}%</value>
   </data>
+  <data name="Rule.Reason.discount.soft-exceeded" xml:space="preserve">
+    <value>折扣 {value}% &gt; 限额 {limit}%</value>
+  </data>
   <data name="Rule.discount.hard-exceeded" xml:space="preserve">
     <value>不允许：折扣 {value}% &gt; 上限 {limit}%</value>
+  </data>
+  <data name="Rule.Reason.discount.hard-exceeded" xml:space="preserve">
+    <value>折扣 {value}% &gt; 上限 {limit}%</value>
   </data>
   <data name="Rule.mf.soft-exceeded" xml:space="preserve">
     <value>需要经理审批：赠品 {value}（{valuePct}%）&gt; 限额 {limit}（{limitPct}%）</value>
   </data>
+  <data name="Rule.Reason.mf.soft-exceeded" xml:space="preserve">
+    <value>赠品 {value}（{valuePct}%）&gt; 限额 {limit}（{limitPct}%）</value>
+  </data>
   <data name="Rule.mf.hard-exceeded" xml:space="preserve">
     <value>不允许：赠品 {value}（{valuePct}%）&gt; 上限 {limit}（{limitPct}%）</value>
+  </data>
+  <data name="Rule.Reason.mf.hard-exceeded" xml:space="preserve">
+    <value>赠品 {value}（{valuePct}%）&gt; 上限 {limit}（{limitPct}%）</value>
   </data>
   <data name="Rule.combined.soft-exceeded" xml:space="preserve">
     <value>需要经理审批：综合折扣 {valuePct}% &gt; 限额 {limitPct}%</value>
   </data>
+  <data name="Rule.Reason.combined.soft-exceeded" xml:space="preserve">
+    <value>综合折扣 {valuePct}% &gt; 限额 {limitPct}%</value>
+  </data>
   <data name="Rule.combined.hard-exceeded" xml:space="preserve">
     <value>不允许：综合折扣 {valuePct}% &gt; 上限 {limitPct}%</value>
+  </data>
+  <data name="Rule.Reason.combined.hard-exceeded" xml:space="preserve">
+    <value>综合折扣 {valuePct}% &gt; 上限 {limitPct}%</value>
   </data>
   <data name="Rule.quantity.below-min" xml:space="preserve">
     <value>不允许：数量 {value} &lt; 最低 {min}</value>
   </data>
+  <data name="Rule.Reason.quantity.below-min" xml:space="preserve">
+    <value>数量 {value} &lt; 最低 {min}</value>
+  </data>
   <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
     <value>需要经理审批：数量 {value} &gt; 限额 {limit}</value>
+  </data>
+  <data name="Rule.Reason.quantity.soft-exceeded" xml:space="preserve">
+    <value>数量 {value} &gt; 限额 {limit}</value>
   </data>
   <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
     <value>不允许：数量 {value} &gt; 上限 {limit}</value>
   </data>
+  <data name="Rule.Reason.quantity.hard-exceeded" xml:space="preserve">
+    <value>数量 {value} &gt; 上限 {limit}</value>
+  </data>
   <data name="Rule.sku.retired" xml:space="preserve">
     <value>不允许：{skuId} 已停用</value>
+  </data>
+  <data name="Rule.Reason.sku.retired" xml:space="preserve">
+    <value>{skuId} 已停用</value>
   </data>
   <data name="Rule.price.sku-not-in-list" xml:space="preserve">
     <value>不允许：{skuId} 不在价目表 {priceListName} 中</value>
   </data>
+  <data name="Rule.Reason.price.sku-not-in-list" xml:space="preserve">
+    <value>{skuId} 不在价目表 {priceListName} 中</value>
+  </data>
   <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
     <value>不允许：没有生效的价目表，不能输入折扣</value>
+  </data>
+  <data name="Rule.Reason.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>没有生效的价目表，不能输入折扣</value>
   </data>
   <data name="Rule.pre_order_request_invalid" xml:space="preserve">
     <value>请求无效。</value>

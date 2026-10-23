@@ -16,38 +16,74 @@
   <data name="Rule.discount.soft-exceeded" xml:space="preserve">
     <value>Requiere aprobación del responsable: descuento {value} % &gt; límite {limit} %</value>
   </data>
+  <data name="Rule.Reason.discount.soft-exceeded" xml:space="preserve">
+    <value>descuento {value} % &gt; límite {limit} %</value>
+  </data>
   <data name="Rule.discount.hard-exceeded" xml:space="preserve">
     <value>No permitido: descuento {value} % &gt; tope {limit} %</value>
+  </data>
+  <data name="Rule.Reason.discount.hard-exceeded" xml:space="preserve">
+    <value>descuento {value} % &gt; tope {limit} %</value>
   </data>
   <data name="Rule.mf.soft-exceeded" xml:space="preserve">
     <value>Requiere aprobación del responsable: bonificación {value} ({valuePct} %) &gt; límite {limit} ({limitPct} %)</value>
   </data>
+  <data name="Rule.Reason.mf.soft-exceeded" xml:space="preserve">
+    <value>bonificación {value} ({valuePct} %) &gt; límite {limit} ({limitPct} %)</value>
+  </data>
   <data name="Rule.mf.hard-exceeded" xml:space="preserve">
     <value>No permitido: bonificación {value} ({valuePct} %) &gt; tope {limit} ({limitPct} %)</value>
+  </data>
+  <data name="Rule.Reason.mf.hard-exceeded" xml:space="preserve">
+    <value>bonificación {value} ({valuePct} %) &gt; tope {limit} ({limitPct} %)</value>
   </data>
   <data name="Rule.combined.soft-exceeded" xml:space="preserve">
     <value>Requiere aprobación del responsable: descuento combinado {valuePct} % &gt; límite {limitPct} %</value>
   </data>
+  <data name="Rule.Reason.combined.soft-exceeded" xml:space="preserve">
+    <value>descuento combinado {valuePct} % &gt; límite {limitPct} %</value>
+  </data>
   <data name="Rule.combined.hard-exceeded" xml:space="preserve">
     <value>No permitido: descuento combinado {valuePct} % &gt; tope {limitPct} %</value>
+  </data>
+  <data name="Rule.Reason.combined.hard-exceeded" xml:space="preserve">
+    <value>descuento combinado {valuePct} % &gt; tope {limitPct} %</value>
   </data>
   <data name="Rule.quantity.below-min" xml:space="preserve">
     <value>No permitido: cantidad {value} &lt; mínimo {min}</value>
   </data>
+  <data name="Rule.Reason.quantity.below-min" xml:space="preserve">
+    <value>cantidad {value} &lt; mínimo {min}</value>
+  </data>
   <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
     <value>Requiere aprobación del responsable: cantidad {value} &gt; límite {limit}</value>
+  </data>
+  <data name="Rule.Reason.quantity.soft-exceeded" xml:space="preserve">
+    <value>cantidad {value} &gt; límite {limit}</value>
   </data>
   <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
     <value>No permitido: cantidad {value} &gt; tope {limit}</value>
   </data>
+  <data name="Rule.Reason.quantity.hard-exceeded" xml:space="preserve">
+    <value>cantidad {value} &gt; tope {limit}</value>
+  </data>
   <data name="Rule.sku.retired" xml:space="preserve">
     <value>No permitido: {skuId} está retirado</value>
+  </data>
+  <data name="Rule.Reason.sku.retired" xml:space="preserve">
+    <value>{skuId} está retirado</value>
   </data>
   <data name="Rule.price.sku-not-in-list" xml:space="preserve">
     <value>No permitido: {skuId} no está en la lista de precios {priceListName}</value>
   </data>
+  <data name="Rule.Reason.price.sku-not-in-list" xml:space="preserve">
+    <value>{skuId} no está en la lista de precios {priceListName}</value>
+  </data>
   <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
     <value>No permitido: no hay lista de precios vigente, no se puede introducir descuento</value>
+  </data>
+  <data name="Rule.Reason.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>no hay lista de precios vigente, no se puede introducir descuento</value>
   </data>
   <data name="Rule.pre_order_request_invalid" xml:space="preserve">
     <value>La solicitud no es válida.</value>

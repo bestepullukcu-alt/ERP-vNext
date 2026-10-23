@@ -761,7 +761,7 @@
     <value>{0} · последние 6 месяцев</value>
   </data>
   <data name="HistoryNote" xml:space="preserve">
-    <value>Отправленные заказы аптеки по месяцам (каждая валюта отдельно).</value>
+    <value>Отправленные заказы аптеки по месяцам (каждая валюта отдельно), без учёта этого заказа.</value>
   </data>
   <data name="ColMonth" xml:space="preserve">
     <value>Месяц</value>
@@ -963,5 +963,17 @@
   </data>
   <data name="HistoryTrend" xml:space="preserve">
     <value>Динамика эффективной скидки (бонус + скидка)</value>
+  </data>
+  <data name="CancelNotifiedDepot" xml:space="preserve">
+    <value>Дистрибьютор уведомлён по электронной почте.</value>
+  </data>
+  <data name="CancelNotifiedPharmacy" xml:space="preserve">
+    <value>Аптека уведомлена по электронной почте.</value>
+  </data>
+  <data name="CancelNoEmailDepot" xml:space="preserve">
+    <value>У дистрибьютора нет адреса электронной почты; он не уведомлён.</value>
+  </data>
+  <data name="CancelNoEmailPharmacy" xml:space="preserve">
+    <value>У аптеки нет адреса электронной почты; она не уведомлена.</value>
   </data>
 </root>

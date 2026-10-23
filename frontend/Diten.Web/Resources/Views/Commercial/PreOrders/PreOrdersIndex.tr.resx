@@ -761,7 +761,7 @@
     <value>{0} · son 6 ay</value>
   </data>
   <data name="HistoryNote" xml:space="preserve">
-    <value>Eczanenin aylara göre gönderilmiş siparişleri (her para birimi ayrı).</value>
+    <value>Eczanenin aylara göre gönderilmiş siparişleri (her para birimi ayrı), bu sipariş hariç.</value>
   </data>
   <data name="ColMonth" xml:space="preserve">
     <value>Ay</value>
@@ -963,5 +963,17 @@
   </data>
   <data name="HistoryTrend" xml:space="preserve">
     <value>Etkin indirim eğilimi (MF + iskonto)</value>
+  </data>
+  <data name="CancelNotifiedDepot" xml:space="preserve">
+    <value>Depoya e-postayla bildirildi.</value>
+  </data>
+  <data name="CancelNotifiedPharmacy" xml:space="preserve">
+    <value>Eczaneye e-postayla bildirildi.</value>
+  </data>
+  <data name="CancelNoEmailDepot" xml:space="preserve">
+    <value>Deponun e-posta adresi yok, bildirilmedi.</value>
+  </data>
+  <data name="CancelNoEmailPharmacy" xml:space="preserve">
+    <value>Eczanenin e-posta adresi yok, bildirilmedi.</value>
   </data>
 </root>

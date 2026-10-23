@@ -761,7 +761,7 @@
     <value>{0} · آخر 6 أشهر</value>
   </data>
   <data name="HistoryNote" xml:space="preserve">
-    <value>الطلبات المرسلة للصيدلية حسب الشهر (كل عملة على حدة).</value>
+    <value>الطلبات المرسلة للصيدلية حسب الشهر (كل عملة على حدة)، باستثناء هذا الطلب.</value>
   </data>
   <data name="ColMonth" xml:space="preserve">
     <value>الشهر</value>
@@ -963,5 +963,17 @@
   </data>
   <data name="HistoryTrend" xml:space="preserve">
     <value>اتجاه الخصم الفعلي (البونص + الخصم)</value>
+  </data>
+  <data name="CancelNotifiedDepot" xml:space="preserve">
+    <value>تم إبلاغ المستودع بالبريد الإلكتروني.</value>
+  </data>
+  <data name="CancelNotifiedPharmacy" xml:space="preserve">
+    <value>تم إبلاغ الصيدلية بالبريد الإلكتروني.</value>
+  </data>
+  <data name="CancelNoEmailDepot" xml:space="preserve">
+    <value>لا يوجد بريد إلكتروني للمستودع، لم يتم إبلاغه.</value>
+  </data>
+  <data name="CancelNoEmailPharmacy" xml:space="preserve">
+    <value>لا يوجد بريد إلكتروني للصيدلية، لم يتم إبلاغها.</value>
   </data>
 </root>

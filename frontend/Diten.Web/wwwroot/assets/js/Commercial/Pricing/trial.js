@@ -32,7 +32,7 @@ const PricingTrial = (function () {
             ['TrialVat', priced ? U.money(line.vatAmount, res.currency) : null],
             ['TrialRule', line.rule ? U.T('RuleRef', line.rule.ruleVersion, L()['Specificity_' + line.rule.specificity] || line.rule.specificity) : L().TrialNoRule]
         ].filter((f) => f[1] != null && f[1] !== '');
-        const msgs = (line.findings || []).map((f) => '<div class="pr-trial-msg pr-trial-' + U.esc(f.severity) + '">' + (R() ? R().html(f, { skuName: () => name, culture: U.culture() }) : U.esc(f.code)) + '</div>').join('');
+        const msgs = (line.findings || []).map((f) => '<div class="pr-trial-msg pr-trial-' + U.esc(f.severity) + '">' + (R() ? R().reasonHtml(f, line.outcome || res.outcome, { skuName: () => name, culture: U.culture() }) : U.esc(f.code)) + '</div>').join('');
         return '<div class="d-flex align-items-center gap-2 mb-3">' + U.outcomeBadge(line.outcome || res.outcome) + '<span class="text-muted small">' + U.bidi(name) + '</span></div>'
             + '<dl class="row g-2 mb-3">' + facts.map((f) => '<div class="col-6 col-md-4"><dt class="small text-muted fw-normal">' + U.esc(L()[f[0]]) + '</dt><dd class="mb-0 text-heading">' + U.bidi(f[1]) + '</dd></div>').join('') + '</dl>'
             + (msgs || '<p class="text-muted small mb-0">' + U.esc(L().TrialNoFindings) + '</p>');

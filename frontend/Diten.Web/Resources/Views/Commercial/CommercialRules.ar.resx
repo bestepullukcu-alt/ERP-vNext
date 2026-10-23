@@ -16,38 +16,74 @@
   <data name="Rule.discount.soft-exceeded" xml:space="preserve">
     <value>تتطلب موافقة المدير: الخصم {value}% &gt; الحد {limit}%</value>
   </data>
+  <data name="Rule.Reason.discount.soft-exceeded" xml:space="preserve">
+    <value>الخصم {value}% &gt; الحد {limit}%</value>
+  </data>
   <data name="Rule.discount.hard-exceeded" xml:space="preserve">
     <value>غير مسموح: الخصم {value}% &gt; السقف {limit}%</value>
+  </data>
+  <data name="Rule.Reason.discount.hard-exceeded" xml:space="preserve">
+    <value>الخصم {value}% &gt; السقف {limit}%</value>
   </data>
   <data name="Rule.mf.soft-exceeded" xml:space="preserve">
     <value>تتطلب موافقة المدير: البونص {value} ({valuePct}%) &gt; الحد {limit} ({limitPct}%)</value>
   </data>
+  <data name="Rule.Reason.mf.soft-exceeded" xml:space="preserve">
+    <value>البونص {value} ({valuePct}%) &gt; الحد {limit} ({limitPct}%)</value>
+  </data>
   <data name="Rule.mf.hard-exceeded" xml:space="preserve">
     <value>غير مسموح: البونص {value} ({valuePct}%) &gt; السقف {limit} ({limitPct}%)</value>
+  </data>
+  <data name="Rule.Reason.mf.hard-exceeded" xml:space="preserve">
+    <value>البونص {value} ({valuePct}%) &gt; السقف {limit} ({limitPct}%)</value>
   </data>
   <data name="Rule.combined.soft-exceeded" xml:space="preserve">
     <value>تتطلب موافقة المدير: الخصم المجمّع {valuePct}% &gt; الحد {limitPct}%</value>
   </data>
+  <data name="Rule.Reason.combined.soft-exceeded" xml:space="preserve">
+    <value>الخصم المجمّع {valuePct}% &gt; الحد {limitPct}%</value>
+  </data>
   <data name="Rule.combined.hard-exceeded" xml:space="preserve">
     <value>غير مسموح: الخصم المجمّع {valuePct}% &gt; السقف {limitPct}%</value>
+  </data>
+  <data name="Rule.Reason.combined.hard-exceeded" xml:space="preserve">
+    <value>الخصم المجمّع {valuePct}% &gt; السقف {limitPct}%</value>
   </data>
   <data name="Rule.quantity.below-min" xml:space="preserve">
     <value>غير مسموح: الكمية {value} &lt; الحد الأدنى {min}</value>
   </data>
+  <data name="Rule.Reason.quantity.below-min" xml:space="preserve">
+    <value>الكمية {value} &lt; الحد الأدنى {min}</value>
+  </data>
   <data name="Rule.quantity.soft-exceeded" xml:space="preserve">
     <value>تتطلب موافقة المدير: الكمية {value} &gt; الحد {limit}</value>
+  </data>
+  <data name="Rule.Reason.quantity.soft-exceeded" xml:space="preserve">
+    <value>الكمية {value} &gt; الحد {limit}</value>
   </data>
   <data name="Rule.quantity.hard-exceeded" xml:space="preserve">
     <value>غير مسموح: الكمية {value} &gt; السقف {limit}</value>
   </data>
+  <data name="Rule.Reason.quantity.hard-exceeded" xml:space="preserve">
+    <value>الكمية {value} &gt; السقف {limit}</value>
+  </data>
   <data name="Rule.sku.retired" xml:space="preserve">
     <value>غير مسموح: {skuId} متوقف</value>
+  </data>
+  <data name="Rule.Reason.sku.retired" xml:space="preserve">
+    <value>{skuId} متوقف</value>
   </data>
   <data name="Rule.price.sku-not-in-list" xml:space="preserve">
     <value>غير مسموح: {skuId} غير موجود في قائمة الأسعار {priceListName}</value>
   </data>
+  <data name="Rule.Reason.price.sku-not-in-list" xml:space="preserve">
+    <value>{skuId} غير موجود في قائمة الأسعار {priceListName}</value>
+  </data>
   <data name="Rule.discount.not-allowed-quantity-mode" xml:space="preserve">
     <value>غير مسموح: لا توجد قائمة أسعار سارية، لا يمكن إدخال خصم</value>
+  </data>
+  <data name="Rule.Reason.discount.not-allowed-quantity-mode" xml:space="preserve">
+    <value>لا توجد قائمة أسعار سارية، لا يمكن إدخال خصم</value>
   </data>
   <data name="Rule.pre_order_request_invalid" xml:space="preserve">
     <value>الطلب غير صالح.</value>
