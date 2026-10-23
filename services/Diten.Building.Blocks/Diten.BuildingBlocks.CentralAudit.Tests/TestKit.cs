@@ -214,6 +214,16 @@ internal sealed class InMemoryOutboxStore : ICentralAuditOutboxStore
             _rows.Values.Count(r => r.Status == CentralAuditOutboxStatus.Rejected)));
     }
 
+    public int EnsureCreatedCalls { get; private set; }
+
+    public bool FailEnsureCreated { get; set; }
+
+    public Task EnsureCreatedAsync(CancellationToken ct)
+    {
+        EnsureCreatedCalls++;
+        return FailEnsureCreated ? throw new InvalidOperationException("store down at startup (test)") : Task.CompletedTask;
+    }
+
     public Task CreateIndexesAsync(CancellationToken ct) => Task.CompletedTask;
 }
 
