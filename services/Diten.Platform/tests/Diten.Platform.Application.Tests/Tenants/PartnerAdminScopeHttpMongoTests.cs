@@ -48,6 +48,34 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.Tenants;
 
 /// <summary>
+/// TEST-HIZ-01 — ONE test-owned replica set (never the shared 27017) and ONE host for <see cref="PartnerAdminScopeHttpMongoTests"/>, not one of
+/// each per test (measured 2026-10-23: starting them was most of every test's time). Each test still starts on empty
+/// collections: <see cref="PartnerAdminScopeHttpMongoTests.Host.ResetAsync"/> empties the class's fixed-name database (DB-010) and clears the quota double's recorded calls.
+/// </summary>
+public sealed class PartnerAdminScopeHttpMongoTestsHostFixture : IAsyncLifetime
+{
+    private DisposableMongoReplicaSet? _mongo;
+    private PartnerAdminScopeHttpMongoTests.Host? _host;
+
+    public PartnerAdminScopeHttpMongoTests.Host Host => _host ?? throw new InvalidOperationException("The class's host was not started.");
+
+    public async Task InitializeAsync()
+    {
+        _mongo = await DisposableMongoReplicaSet.StartAsync();
+        _host = await PartnerAdminScopeHttpMongoTests.Host.CreateAsync(_mongo);
+    }
+
+    public async Task DisposeAsync()
+    {
+        _host?.Shutdown();
+        if (_mongo is not null)
+        {
+            await _mongo.DisposeAsync();
+        }
+    }
+}
+
+/// <summary>
 /// BL-521 — a partner administrator reaches only the tenants its administrator record allows. Measured over HTTP on the
 /// REAL tenant, quota, lookup and account controllers, the production platform-actor policies
 /// (DependencyInjection.AddPlatformActorPolicies), the production scope registration
@@ -56,14 +84,18 @@ namespace Diten.Platform.Application.Tests.Tenants;
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class PartnerAdminScopeHttpMongoTests
+public sealed class PartnerAdminScopeHttpMongoTests : IClassFixture<PartnerAdminScopeHttpMongoTestsHostFixture>
 {
+    private readonly Host _shared;
+
+    public PartnerAdminScopeHttpMongoTests(PartnerAdminScopeHttpMongoTestsHostFixture fixture) => _shared = fixture.Host;
+
     // ── family 1: the tenant list and its counts ─────────────────────────────────────────────────────────
 
     [Fact]
     public async Task A_partner_lists_and_counts_only_its_allowed_tenants()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
 
         var list = await host.ReadAsync(await host.Client(partner).GetAsync("/api/admin/tenants"));
@@ -97,7 +129,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [MemberData(nameof(TenantEndpoints))]
     public async Task A_tenant_outside_the_partners_scope_is_not_found_on_every_endpoint_and_nothing_is_written(string method, string suffix, string? body)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
         var before = await host.TenantDocumentAsync(Host.TenantB);
 
@@ -113,7 +145,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task The_allowed_tenant_answers_the_partner()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
 
         Assert.Equal(HttpStatusCode.OK, (await host.SendAsync(partner, "GET", $"/api/admin/tenants/{Host.TenantA:D}", null)).StatusCode);
@@ -126,7 +158,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task The_out_of_scope_attempt_is_filed_under_the_platform_naming_the_partner_and_the_target_tenant()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
 
         Assert.Equal(HttpStatusCode.NotFound, (await host.SendAsync(partner, "GET", $"/api/admin/tenants/{Host.TenantB:D}", null)).StatusCode);
@@ -146,7 +178,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task The_out_of_scope_404_is_byte_for_byte_the_404_of_a_tenant_that_does_not_exist()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
         var admin = await host.PlatformAdminAsync();
 
@@ -163,7 +195,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_partner_allowed_no_tenant_sees_none()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([]);
 
         await AssertSeesNothingAsync(host, partner);
@@ -177,7 +209,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_partner_whose_record_cannot_be_read_is_answered_503_and_no_security_event_is_filed()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
         // the record no longer deserializes — the scope must not fall open
         await host.Database.GetCollection<BsonDocument>(PlatformCollections.PlatformAdministrators).UpdateOneAsync(
@@ -200,7 +232,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_platform_administrator_whose_record_cannot_be_read_is_answered_503_on_a_platform_only_door()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var admin = await host.PlatformAdminAsync();
         await host.Database.GetCollection<BsonDocument>(PlatformCollections.PlatformAdministrators).UpdateOneAsync(
             new BsonDocument("NormalizedEmail", admin.Email), new BsonDocument("$set", new BsonDocument("Roles", "not a list")));
@@ -226,7 +258,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [InlineData("suspended")]
     public async Task A_partner_whose_record_is_deleted_or_suspended_sees_none(string state)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA], state);
 
         await AssertSeesNothingAsync(host, partner);
@@ -243,7 +275,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [InlineData("suspended")]
     public async Task A_platform_administrator_without_a_live_record_sees_no_tenant(string state)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var admin = state == "missing" ? host.Unrecorded("platform_admin") : await host.PlatformAdminAsync(state);
 
         await AssertSeesNothingAsync(host, admin);
@@ -268,7 +300,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_demoted_administrator_with_a_platform_admin_token_lists_and_reaches_only_its_partner_tenants()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var demoted = await host.DemotedAsync([Host.TenantA]);
 
         var list = await host.ReadAsync(await host.Client(demoted).GetAsync("/api/admin/tenants"));
@@ -281,7 +313,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_demoted_administrator_with_a_platform_admin_token_cannot_delete_tenants()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var demoted = await host.DemotedAsync([Host.TenantA]);
 
         // PlatformAdminOnly, no permission filter on these: only the policy stands between the token and the delete.
@@ -297,7 +329,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_demoted_administrator_with_a_platform_admin_token_cannot_open_or_invite_platform_administrators()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var demoted = await host.DemotedAsync([Host.TenantA]);
 
         // PlatformActor policy + permission filter, unmarked endpoints (global objects).
@@ -315,7 +347,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task An_action_added_without_the_tenant_key_under_a_controller_key_is_closed_to_partners_and_recorded()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
         var admin = await host.PlatformAdminAsync();
 
@@ -331,7 +363,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task An_action_that_declares_it_filters_in_its_query_is_open_and_an_undecided_one_is_closed()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
 
         Assert.Equal(HttpStatusCode.OK, (await host.SendAsync(partner, "GET", "/api/admin/bl521-probe/declared-list", null)).StatusCode);
@@ -345,7 +377,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_partner_cannot_change_the_tenant_type_of_its_own_tenant_but_may_resend_the_same_type()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
         var before = await host.TenantDocumentAsync(Host.TenantA);
 
@@ -363,7 +395,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_platform_administrator_changes_the_tenant_type()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var admin = await host.PlatformAdminAsync();
 
         var response = await host.SendAsync(admin, "PUT", $"/api/admin/tenants/{Host.TenantA:D}",
@@ -378,7 +410,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_partner_record_naming_the_platform_system_tenant_does_not_open_it()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         await host.SeedTenantAsync(SystemTenantRules.PlatformSystemTenantId, "PLATFORM");
         var partner = await host.PartnerAsync([SystemTenantRules.PlatformSystemTenantId, Host.TenantA]);
 
@@ -403,7 +435,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task The_quota_endpoints_answer_the_partner_only_for_its_allowed_tenant()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
 
         var mine = await host.SendAsync(partner, "GET", $"/api/platform/tenants/{Host.TenantA:D}/quotas", null);
@@ -420,7 +452,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_partner_keeps_the_reference_lookups()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
 
         Assert.Equal(HttpStatusCode.OK, (await host.SendAsync(partner, "GET", "/api/lookups/timezones", null)).StatusCode);
@@ -429,7 +461,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_partner_keeps_its_own_account()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
 
         var me = await host.ReadAsync(await host.Client(partner).GetAsync("/api/platform/account/me"));
@@ -458,7 +490,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [MemberData(nameof(PlatformOnlyEndpoints))]
     public async Task Creating_or_deleting_tenants_and_every_global_object_refuse_a_partner(string method, string path, string? body)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var partner = await host.PartnerAsync([Host.TenantA]); // even for its OWN tenant
         var before = await host.TenantDocumentAsync(Host.TenantA);
 
@@ -475,7 +507,7 @@ public sealed class PartnerAdminScopeHttpMongoTests
     [Fact]
     public async Task A_platform_administrator_still_sees_and_reaches_every_tenant()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var admin = await host.PlatformAdminAsync();
 
         var list = await host.ReadAsync(await host.Client(admin).GetAsync("/api/admin/tenants"));
@@ -490,8 +522,10 @@ public sealed class PartnerAdminScopeHttpMongoTests
 
     // ── host ────────────────────────────────────────────────────────────────────────────────────────────
 
-    internal sealed class Host : IAsyncDisposable
+    public sealed class Host : IAsyncDisposable
     {
+        private const string DatabaseName = "diten_platform_tx_partner_admin_scope";
+
         private const string Issuer = "diten-auth-bl521-test";
         private const string Audience = "diten-platform-bl521-test";
         private const string Secret = "BL-521 partner scope http round trip signing key, test only, 0123456789";
@@ -590,24 +624,36 @@ public sealed class PartnerAdminScopeHttpMongoTests
             _server = new TestServer(builder);
         }
 
-        public static async Task<Host> StartAsync()
+        /// <summary>Once per class: the class's ONE fixed-name database (DB-010) and its production indexes.</summary>
+        public static async Task<Host> CreateAsync(DisposableMongoReplicaSet mongo)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             foreach (var collection in PlatformSchemaManifest.For(Enum.GetValues<SchemaProfile>())
                          .Where(c => c.Name is PlatformCollections.Tenants or PlatformCollections.PlatformAdministrators))
             {
                 await collection.ApplyAsync(database, CancellationToken.None);
             }
 
-            var host = new Host(mongo, database);
+            return new Host(mongo, database);
+        }
+
+        /// <summary>TEST-HIZ-01 — before every test: every collection of the class's database emptied (its production
+        /// indexes kept), the quota double's recorded calls cleared, the two tenants seeded again.</summary>
+        public async Task<Host> ResetAsync()
+        {
+            foreach (var name in await (await Database.ListCollectionNamesAsync()).ToListAsync())
+            {
+                await Database.GetCollection<BsonDocument>(name).DeleteManyAsync(FilterDefinition<BsonDocument>.Empty);
+            }
+
+            QuotaWrites.Invocations.Clear();
             foreach (var tenant in new[] { TenantA, TenantB })
             {
                 var tail = tenant.ToString("N")[^8..];
-                await host.SeedTenantAsync(tenant, "T" + tail);
+                await SeedTenantAsync(tenant, "T" + tail);
             }
 
-            return host;
+            return this;
         }
 
         public Task SeedTenantAsync(Guid id, string code)
@@ -706,11 +752,10 @@ public sealed class PartnerAdminScopeHttpMongoTests
                 DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(30),
                 new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256)));
 
-        public ValueTask DisposeAsync()
-        {
-            _server.Dispose();
-            return _mongo.DisposeAsync();
-        }
+        // A test's `await using` ends nothing: the host and the replica set are the class fixture's.
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        public void Shutdown() => _server.Dispose();
 
         private sealed class OnlyControllers(params Type[] controllers) : ControllerFeatureProvider
         {

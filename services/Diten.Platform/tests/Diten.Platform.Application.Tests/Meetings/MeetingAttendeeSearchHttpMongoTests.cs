@@ -47,14 +47,19 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class MeetingAttendeeSearchHttpMongoTests
+public sealed class MeetingAttendeeSearchHttpMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture), a fresh database per test.
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public MeetingAttendeeSearchHttpMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     [Theory]
     [InlineData("")]
     [InlineData("?search=a")]
     public async Task An_attendee_lookup_without_a_two_character_search_is_400_and_never_the_whole_list(string query)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, code, body) = await host.GetAsync("/api/v1/meetings/lookups/attendees" + query);
 
@@ -66,7 +71,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task An_attendee_search_answers_at_most_twenty_rows_of_exactly_four_fields()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, _, body) = await host.GetAsync("/api/v1/meetings/lookups/attendees?search=planlama");
 
@@ -81,7 +86,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task Attendee_ids_never_answer_another_tenants_user()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var (status, _, body) = await host.GetAsync($"/api/v1/meetings/lookups/attendees?ids={Host.Organizer},{Host.OtherTenantPerson}");
 
@@ -92,7 +97,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task The_task_and_meeting_searches_share_ONE_bucket_the_sixty_first_is_429_and_another_user_is_not_affected()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var me = Guid.NewGuid();
 
         // ATT-FIX1 — 60 a minute (CT decision): 40 task searches + 20 meeting searches, then the 61st is refused.
@@ -117,7 +122,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task The_meeting_read_names_its_organizer_and_attendees_in_one_call_and_never_another_tenants_user()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.AuthCalls.Clear();
 
         var (status, _, body) = await host.GetAsync($"/api/v1/meetings/{host.MeetingId}");
@@ -136,7 +141,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task The_list_series_and_report_reads_name_the_organizer_and_the_series_its_attendees()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         var list = await host.GetAsync("/api/v1/meetings?pageSize=50");
         Assert.True(list.Status == HttpStatusCode.OK, list.Body);
@@ -163,7 +168,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task A_hanging_AuthService_costs_the_meeting_read_at_most_the_name_timeout_and_the_read_still_answers()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.AuthHangs = true;
         var clock = System.Diagnostics.Stopwatch.StartNew();
 
@@ -180,7 +185,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task A_list_asked_without_names_and_the_series_list_ask_AuthService_nothing()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.AuthCalls.Clear();
 
         var list = await host.GetAsync("/api/v1/meetings?pageSize=50&includeNames=false");
@@ -196,7 +201,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task One_list_page_answers_at_most_two_hundred_rows_whatever_is_asked()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var typeId = Guid.NewGuid();
         await host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings).InsertManyAsync(Enumerable.Range(0, 230)
             .Select(i => new Meeting
@@ -218,7 +223,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task A_follow_up_shows_the_source_title_only_to_a_reader_who_may_see_the_source()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var reader = Guid.NewGuid();
         var meetings = host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings);
         var secretId = Guid.NewGuid();
@@ -253,7 +258,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task Only_the_organizers_of_the_answered_page_are_named()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         await host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings).InsertOneAsync(new Meeting
         {
             TenantId = Host.TenantA, Title = "Sonraki", MeetingTypeId = Guid.NewGuid(),
@@ -274,7 +279,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task A_hanging_AuthService_costs_the_minutes_read_at_most_the_bound()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var minutes = host.Database.GetCollection<MeetingMinutesVersion>(PlatformCollections.MeetingMinutesVersions);
         foreach (var number in new[] { 1, 2, 3 })
         {
@@ -299,7 +304,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task A_hanging_AuthService_costs_the_assignment_list_at_most_the_bound()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         host.AuthHangs = true;
         var clock = System.Diagnostics.Stopwatch.StartNew();
 
@@ -316,7 +321,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task The_detail_names_a_linked_meeting_only_for_a_reader_who_may_open_it()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var reader = Guid.NewGuid();
         var meetings = host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings);
         var secretBefore = Guid.NewGuid();
@@ -360,7 +365,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     [Fact]
     public async Task Same_moment_meetings_never_swap_between_pages_and_a_titles_only_read_is_light()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var at = DateTimeOffset.UtcNow.AddDays(30);
         var ids = Enumerable.Range(0, 5).Select(_ => Guid.NewGuid()).ToList();
         await host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings).InsertManyAsync(ids.Select(id => new Meeting
@@ -390,6 +395,8 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
 
     private sealed class Host : IAsyncDisposable
     {
+        private const string DatabaseName = "diten_platform_tx_meeting_attendee_search";
+
         private const string Issuer = "diten-auth-bl531-test";
         private const string Audience = "diten-platform-bl531-test";
         private const string Secret = "BL-531 meetings attendee search signing key, test only, 0123456789";
@@ -499,10 +506,9 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
             _server = new TestServer(builder);
         }
 
-        public static async Task<Host> StartAsync()
+        public static async Task<Host> StartAsync(DisposableMongoReplicaSet mongo)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             var auth = new FakeAuth();
             var units = database.GetCollection<OrganizationUnit>(PlatformCollections.OrganizationUnits);
             var positions = database.GetCollection<Position>(PlatformCollections.Positions);
@@ -615,7 +621,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
         public ValueTask DisposeAsync()
         {
             _server.Dispose();
-            return _mongo.DisposeAsync();
+            return ValueTask.CompletedTask; // the replica set is the class fixture's
         }
 
         /// <summary>AuthService's display-name endpoint, played the way the real one behaves: it answers ONLY for the
