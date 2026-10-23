@@ -6,6 +6,7 @@ using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Settings;
+using Diten.Platform.Tests.Shared;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -19,7 +20,9 @@ namespace Diten.Platform.Application.Tests.Audit;
 /// </summary>
 public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
 {
-    private const string MongoExecutable = "/opt/homebrew/bin/mongod";
+    // TEST-HIZ-01: CI gives the pinned mongod in DITEN_TEST_MONGOD (Ubuntu has no Homebrew path). PlatformTestMongo's
+    // rule decides a given value: an absolute path to an existing file, else red. Unset → the local Homebrew default.
+    private const string DefaultMongoExecutable = "/opt/homebrew/bin/mongod";
 
     // DB-010: a seed test that is not tenant-bound gets its own database with a FIXED suffix, not a GUID.
     // Isolation comes from the test-owned mongod (fresh port and temporary dbpath per class), not from the name.
@@ -43,17 +46,14 @@ public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        if (!File.Exists(MongoExecutable))
-        {
-            throw new FileNotFoundException("The test-owned mongod executable is unavailable.", MongoExecutable);
-        }
+        var mongoExecutable = ResolveMongoExecutable();
 
         _port = SelectAllowedPort();
         _temporaryRoot = Path.Combine(Path.GetTempPath(), $"diten-platform-audit-seed-{Guid.NewGuid():N}");
         var dataDirectory = Path.Combine(_temporaryRoot, "data");
         Directory.CreateDirectory(dataDirectory);
 
-        var startInfo = new ProcessStartInfo(MongoExecutable)
+        var startInfo = new ProcessStartInfo(mongoExecutable)
         {
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -177,6 +177,20 @@ public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
         ColdStoragePrepared = _options.ColdStoragePrepared,
         IsActive = true
     };
+
+    private static string ResolveMongoExecutable()
+    {
+        var given = Environment.GetEnvironmentVariable(PlatformTestMongo.MongodVariable);
+        if (given is not null)
+        {
+            var choice = PlatformTestMongo.Choose(null, given, OperatingSystem.IsWindows(), File.Exists);
+            return choice.Executable ?? throw new InvalidOperationException(choice.Failure);
+        }
+
+        return File.Exists(DefaultMongoExecutable)
+            ? DefaultMongoExecutable
+            : throw new FileNotFoundException("The test-owned mongod executable is unavailable.", DefaultMongoExecutable);
+    }
 
     private static int SelectAllowedPort()
     {
