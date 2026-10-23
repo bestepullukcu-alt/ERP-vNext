@@ -41,7 +41,8 @@ form_field_count: 0
 | Actor (DC-03, approved 2026-10-21) | `supplier_user` from the DC-03 binding (Beste, separate Auth/Platform pack): separate portal subdomain, mandatory two-step verification, one account per email per tenant, Gateway allow-list `supplier_user` → `/api/supplier-performance/portal/*` + own session endpoints; `supplierId` resolved from the binding, never the request | — |
 | Supplier (DC-02) | tenant-wide master id (MOD-0140 1.3.0); which supplier–LE statuses may submit follows the **DC-02 D2 decision (open**, joint with the MOD-0140 owner); the `accessStatus` mapping (`ACTIVE` / `SUSPENDED` / `PENDING`) is written when D2 is decided | — |
 | Exposure | **internal only** — not on the internet until `TrustedProxies`, Gateway rate limit (MOD-0032) and a shared limiter store exist (DC-03) | public portal |
-| Payload (§0.2) | frozen v1 wire kept (any object, no schema, no field rejection); **request body limit 1 MiB** for create (Natig, 2026-10-22), measured on the service; over the limit → 400 `INVALID_REQUEST` with `details.limitBytes` (the frozen contract declares no 413); stored as canonical JSON text + SHA-256, so `$`-prefixed or dotted keys are data, never Mongo operators | per-`submissionType` schemas, secret rejection and size/depth limits via a contract successor |
+| Payload (§0.2) | frozen v1 wire kept (any object, no schema, no field rejection); **request body limit 1 MiB** for create (Natig, 2026-10-22), measured on the service; over the limit → 400 `INVALID_REQUEST` with `details.limitBytes` (the frozen create declares neither 400 nor 413 — a
+documented exception, see "Undeclared statuses" below); stored as canonical JSON text + SHA-256, so `$`-prefixed or dotted keys are data, never Mongo operators | per-`submissionType` schemas, secret rejection and size/depth limits via a contract successor |
 | MOD-0147 link | none (portal-source resolution belongs to MOD-0147's risk part, after TPRM; AC-25 is a later slice) | with MOD-0147 risk |
 | Permissions | `getSupplierPortalStatus`, own list and get → `supplychain.supplier-portal.read`; create and submit → `.submit`; `.review` later. The `supplier_user` actor receives `.read`/`.submit` through the DC-03 binding pack (its role or seed — defined there). The service also checks `actor_type = supplier_user`: a company user calling `getSupplierPortalStatus`, the own list or create →
 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` (declared there); on own get and submit, which declare no 403, → 404 (no record is
@@ -58,28 +59,51 @@ permission/composition single writer (§14); and the replay receipt (§0.1, need
 `details.code = PORTAL_DRAFT_LIMIT` and `details.limit = 200`. Submitting a draft frees its place, so the cap is never a
 lifetime block. It is enforced **atomically**: the create transaction increments a per-supplier + LE counter document with a
 conditional update (`openDrafts < 200`) and submit decrements it in its own transaction, so two concurrent creates at 199
-leave at most 200 drafts. **Counter creation (closes review round 3 F-2):** the counter document (unique key Tenant + LE +
-mapped supplier) is created by a separate step in the same transaction — an upsert that only sets `openDrafts = 0` on insert
+leave at most 200 drafts. **Counter creation (closes review round 3 F-2):** the counter document has a **deterministic `_id`**
+(`{tenantId}:{legalEntityId}:{mappedSupplierId}`), so two documents for one supplier + LE cannot exist even without a
+secondary index; it is created by a separate step in the same transaction — an upsert that only sets `openDrafts = 0` on insert
 (`$setOnInsert`) and never filters on the count — and only then is the conditional increment run, **without upsert**. No
-matched document → 422 `PORTAL_DRAFT_LIMIT`, never an insert attempt. A duplicate-key error or transient transaction error
-from two concurrent first creates retries the whole transaction (bounded, at most 3 attempts). A full cap is always 422,
-never 500; only exhausted retries — an infrastructure failure, not a cap result — may return 500, logged with the
-correlation id (create declares no 409, so no new status is invented). Tests: T-0148-V1-CAP-01 (201st draft → 422; submit frees a place; two concurrent creates at 199 → one
-201/one 422; **counter at 200 → create → 422, not 500**; two concurrent first creates for a new supplier + LE → both 201,
-one counter document with `openDrafts = 2`).
+matched document → 422 `PORTAL_DRAFT_LIMIT`, never an insert attempt.
+
+**Contention (closes review round 4 F-1):** the counter is one hot document per supplier + LE, so **both create and submit**
+run inside the MongoDB driver's `WithTransaction` callback API, never a hand-written retry loop: any error labelled
+`TransientTransactionError` (write conflict, the duplicate-key race on the first upsert) re-runs the whole callback with the
+driver's backoff, and `UnknownTransactionCommitResult` retries **only the commit**, so a committed draft is never created
+twice. The retry budget is the driver's time limit (120 s), not an attempt count, so ordinary contention among concurrent
+creates or a create racing a submit always reaches a business answer (201 / 422 for create; 200 / 404 / 422 for submit) —
+never a misleading 409 (`VersionConflict` is `If-Match` only) and never 500. A full cap is always 422. Only an exhausted
+time limit or a lost database is an infrastructure failure (500, logged with the correlation id). Tests: T-0148-V1-CAP-01
+(201st draft → 422; submit frees a place; two concurrent creates at 199 → one 201/one 422; **counter at 200 → create → 422,
+not 500**; two concurrent first creates for a new supplier + LE → both 201, one counter document with `openDrafts = 2`;
+**a create concurrent with a submit → both succeed, counter consistent**; **five concurrent creates below the cap → all 201,
+no 500**; an injected `UnknownTransactionCommitResult` → exactly one draft).
+
+**Undeclared statuses (closes review round 4 F-2):** the frozen `createOwnPortalSubmission` declares only 201, 200, 403 and
+422 and no default response. v1 still returns framework-level statuses that are **not on the frozen wire**: 400 (body over
+1 MiB, malformed JSON, scope override AC-12), 401 (no or invalid token) and 500 (infrastructure failure). These are
+deliberate, documented exceptions, not contract behaviour; a generated client may not know them. The contract successor
+declares them for create (400 and 413, 401, 5xx), together with the paged own list.
 
 **Own-list size (closes review round 3 F-1):** the frozen list has no paging and returns every record with its payload, and
 `SUBMITTED` records are not capped, so the response can grow without bound (each record up to 1 MiB). v1 accepts this only
 while the portal is internal. The service measures, on every own-list call, the record count and the total stored payload
 bytes per supplier + LE and emits a warning (structured log + metric, no behaviour change) above **1,000 records or 100 MiB**
-(confirmed by Natig, 2026-10-23). **Paging is a release-gate precondition:** the portal may not be
-exposed outside the internal network until a contract successor with a paged own list is on `main` (see the release gate
-below). Tests: T-0148-V1-LIST-01 (warning emitted above either threshold, response unchanged).
+(confirmed by Natig, 2026-10-23). **Measurement (closes review round 4 F-3):** the count and bytes cover **all** non-deleted
+records of the supplier + LE, whatever `status` / `submissionType` filter the call carries; "above" is strict — more than
+1,000 records or more than 104,857,600 bytes (exactly 1,000 records → no warning); the metric carries only service and
+operation labels, while tenant, LE and supplier ids are log fields, never metric labels. **Paging is a release-gate
+precondition:** the portal may not be exposed outside the internal network until a contract successor with a paged own list
+is on `main` (see the release gate below). Tests: T-0148-V1-LIST-01 (1,000 records → no warning, 1,001 → warning;
+100 MiB + 1 byte → warning; a filtered call returning 3 records still measures the full total; response unchanged; no
+supplier id among the metric labels).
 
 **Release gate (internal only, measurable):** before any deployment the evidence shows that the portal subdomain and the
 `/portal/*` routes are not published on any public ingress (Gateway route list + ingress configuration, recorded); opening
 them needs `TrustedProxies`, the Gateway rate limit (MOD-0032) and a shared limiter store, each with its owner, and Natig's
-approval, and a contract successor with a paged own list on `main` (review round 3 F-1).
+approval, and a contract successor with a paged own list on `main` (review round 3 F-1) — owner: the MOD-0148 owner
+(MVP-6 CT) writes it, Natig approves; evidence: the frozen successor of `supplier-performance.openapi.yaml` on `main` whose
+`listOwnPortalSubmissions` takes `page` / `pageSize` and returns a paged envelope, plus the service passing its contract
+tests (recorded with the commit).
 
 v1 test IDs (added with this revision; the r2 test map stays unchanged): T-0148-V1-PAY-01 (any object accepted; 1 MiB + 1 →
 400; `$`-keys stored as data), T-0148-V1-PERM-01 (company user: status/list/create → 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED`, get/submit → 404; mapping of §0.0), T-0148-V1-EXP-01
