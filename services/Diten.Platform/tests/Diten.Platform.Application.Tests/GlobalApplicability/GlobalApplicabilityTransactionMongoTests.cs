@@ -25,12 +25,19 @@ namespace Diten.Platform.Application.Tests.GlobalApplicability;
 
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class GlobalApplicabilityTransactionMongoTests
+public sealed class GlobalApplicabilityTransactionMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_global_applicability";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public GlobalApplicabilityTransactionMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     [Fact]
     public async Task EffectiveChange_CommitsAllFiveParticipants_WithExactPlusOne()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(mongo);
         var plan = Plan("PRO", ["PPM"]);
 
@@ -52,7 +59,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
     [Fact]
     public async Task NoOp_WritesExactZeroParticipants()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(mongo);
 
         var result = await fixture.Coordinator.ExecuteAsync(
@@ -66,7 +73,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
     [Fact]
     public async Task ConcurrentEffectiveChanges_DoNotLoseGlobalIncrement()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(mongo);
         await fixture.Database.CreateCollectionAsync(EntitlementStateVersionRepository.CollectionName);
         await fixture.Database.CreateCollectionAsync(GlobalApplicabilityStateRepository.CollectionName);
@@ -91,7 +98,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
     [Fact]
     public async Task AuditParticipantFailure_RollsBackBusinessProjectionCounterAndIntegration()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(mongo, audit: new RejectingAuditWriter());
         var plan = Plan("ROLLBACK", ["PPM"]);
 
@@ -114,7 +121,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
     [InlineData("integration")]
     public async Task EveryPreAuditParticipantFailure_RollsBackAllEarlierParticipants(string faultAfter)
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(
             mongo,
             versions: faultAfter == "counter" ? new RejectingVersionRepository() : null,
@@ -141,7 +148,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
     [Fact]
     public async Task SeedCommand_FirstRunIsTransactional_AndIdenticalSecondRunIsExactZero()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(mongo);
         var handler = new SeedDefaultSubscriptionPlansCommandHandler(
             fixture.Plans,
@@ -163,7 +170,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
     [Fact]
     public async Task ReverseOrderedEventDelivery_CannotRegressAuthoritativeCounterOrProjection()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(mongo);
         var plan = Plan("ORDERED", ["PPM"]);
 
@@ -196,7 +203,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
     [Fact]
     public async Task BulkDelete_IsAllOrNothing_AndEachModuleGetsOwnVersionAndIntents()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var fixture = await Fixture.CreateAsync(mongo);
         var first = Module("FIRST");
         var second = Module("SECOND");
@@ -284,7 +291,7 @@ public sealed class GlobalApplicabilityTransactionMongoTests
             IEntitlementStateVersionRepository? versions = null,
             ITransactionalIntegrationEventWriter? integration = null)
         {
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             var context = new PlatformDbContext(mongo.Client, database);
             var tenant = new TenantContext();
             var plans = new SubscriptionPlanRepository(context, tenant);
