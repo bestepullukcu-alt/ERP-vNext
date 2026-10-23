@@ -502,7 +502,7 @@ def _main_line_set(root: str, main: str) -> frozenset:
 
 def no_pr_proven(root: str, merge: str) -> bool:
     """S-42 / Codex F-1: True only when GitHub's well-formed answer (every page a list, every item an object carrying
-    merge_commit_sha and merged_at) lists no pull request of TRUSTED_REPO whose merge commit is `merge`. A listed one
+    merge_commit_sha — null or a full, lower-case commit id (Codex F-4) — and merged_at) lists no pull request of TRUSTED_REPO whose merge commit is `merge`. A listed one
     (merged or not) is False; a malformed answer raises — "no PR found in a broken answer" is never a proof."""
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge) is None
@@ -511,8 +511,10 @@ def no_pr_proven(root: str, merge: str) -> bool:
         raise Unreadable("GitHub cevabı sayfa listesi değil")
     for x in (x for page in pages for x in page):
         if not isinstance(x, dict) or "merge_commit_sha" not in x or "merged_at" not in x \
-                or not isinstance(x["merge_commit_sha"], (str, type(None))):
-            raise Unreadable("GitHub cevabında eksik ya da bozuk bir PR ögesi var")
+                or not (x["merge_commit_sha"] is None or (isinstance(x["merge_commit_sha"], str)
+                                                         and FULL_COMMIT.fullmatch(x["merge_commit_sha"]))):
+            raise Unreadable("GitHub cevabında eksik ya da bozuk bir PR ögesi var (merge_commit_sha tam bir commit "
+                             "kimliği değil)")                                            # Codex F-4
         if x["merge_commit_sha"] == merge:
             return False
     return True
@@ -563,6 +565,10 @@ def _append_only(root: str, commit: str, path: str, main: str) -> list[tuple[str
         on_line = _main_line_set(root, main) if len(parents) > 1 else frozenset()
         from_main = [p for p in parents if p in on_line]
         alt = from_main[0] if len(from_main) == 1 else None      # Codex F-2: two main-line parents = ambiguous
+        if parents and parents[0] not in on_line and len(from_main) > 1:
+            # Codex F-5: off the main line with two or more main-line parents — ambiguous whatever the first parent says
+            problems.append((c, " — birden çok ebeveyn ana çizgide: belirsiz merge (Codex F-2/F-5)"))
+            continue
         if alt is not None and alt != parents[0]:
             # S-42: a merge that took main in — main's rows are the prefix; the first parent's rows follow in order
             if violated(alt):
@@ -574,8 +580,7 @@ def _append_only(root: str, commit: str, path: str, main: str) -> list[tuple[str
         else:
             if not violated(parents[0] if parents else None):
                 continue
-            why = (" — birden çok ebeveyn ana çizgide: belirsiz, birinci ebeveyn esas (Codex F-2)" if len(from_main) > 1
-                   else _stale_why(root, main, parents) if len(parents) > 1 and not from_main else "")
+            why = _stale_why(root, main, parents) if len(parents) > 1 and not from_main else ""
         problems.append((c, why))
     return problems
 
@@ -618,6 +623,7 @@ def other_merger(root: str, added: str, merge: str) -> tuple[bool, str]:
     return True, f"satırı ekleyen {a[0]}, merge eden {b[0]} ({merge[:12]}) — git'ten türetildi"
 
 
+FULL_COMMIT = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 TRUSTED_REPO = "bestepullukcu-alt/ERP-vNext"     # Codex F-8: the one repository whose pull requests count (code-owned)
 _PR_SOURCE = None                                # self-tests only: set in-process to _test_pr; never from the CLI (F-7)
 _PR_CACHE: dict = {}
@@ -1521,7 +1527,10 @@ def self_test() -> int:
                   proven([[other, pr(merged_at=None)]]) is False))
     for label, pages in (("an item that is no object ([[17]])", [[17]]), ("an item without merged_at", [[{"merge_commit_sha": "1" * 40}]]),
                          ("an item without merge_commit_sha", [[{"merged_at": "x"}]]), ("a page that is no list", [other]), ("an empty object as a page ([{}])", [{}]),
-                         ("an answer that is no list", {"x": 1}), ("a merge_commit_sha that is no string", [[dict(other, merge_commit_sha=7)]])):
+                         ("an answer that is no list", {"x": 1}), ("a merge_commit_sha that is no string", [[dict(other, merge_commit_sha=7)]]),
+                         ("an empty merge_commit_sha (Codex F-4)", [[dict(other, merge_commit_sha="")]]),
+                         ("a shortened merge_commit_sha (Codex F-4)", [[dict(other, merge_commit_sha=pr_merge_sha[:8])]]),
+                         ("an upper-case merge_commit_sha (Codex F-4)", [[dict(other, merge_commit_sha=pr_merge_sha.upper())]])):
         cases.append((f"sabotage S-42 (Codex F-1): {label} -> not measurable, never 'no PR'", proven(pages) == "unreadable"))
     globals()["_gh_json"] = saved
     globals()["_PR_SOURCE"] = _test_pr
@@ -2007,6 +2016,14 @@ def self_test_review(cases: list) -> None:
     amb = append_only_problems(root, octo, APPROVALS, f2m2)
     cases.append(("sabotage S-42 (Codex F-2): branch + two main-line parents (M1 ancestor of M2), M2's rows not a prefix "
                   "-> ambiguous, problem", len(amb) == 1 and "belirsiz" in amb[0]))
+    # Codex F-5: the same three parents, the branch rows ABOVE both main rows (the first parent alone would pass)
+    put(APPROVALS, "\n".join(f2_rows[:-2] + ["F2-B branch row"] + f2_rows[-2:]) + "\n")
+    g("add", APPROVALS)
+    octo5 = g("commit-tree", g("write-tree").strip(), "-p", f2b, "-p", f2m1, "-p", f2m2, "-m", "three parents 2").strip()
+    g("reset", "-q", "--hard", f2m2)
+    amb5 = append_only_problems(root, octo5, APPROVALS, f2m2)
+    cases.append(("sabotage S-42 (Codex F-5): branch + two main-line parents, main rows below the branch row (the first "
+                  "parent alone passes) -> ambiguous, problem", len(amb5) == 1 and "belirsiz" in amb5[0]))
     g("reset", "-q", "--hard", m_other)
     # F-4c: origin/main wins over main; a stale origin/main is read, and named
     g("update-ref", "refs/remotes/origin/main", s42_start)
