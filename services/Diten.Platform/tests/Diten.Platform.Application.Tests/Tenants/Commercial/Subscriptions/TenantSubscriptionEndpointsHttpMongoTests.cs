@@ -354,6 +354,25 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests : IClassFixture<Te
         await host.AssertUntouchedAsync(subscription);
     }
 
+    /// <summary>
+    /// TEST-HIZ-01 (step 4, sabotage S1) — the read endpoints carry only <c>HasPermission(…read)</c>, and that filter
+    /// admits a non-platform caller whose token holds the key. What keeps a tenant user out of them is the controller's
+    /// <c>[Authorize(Policy = "PlatformActor")]</c> alone: with that line removed every other test here stayed green.
+    /// </summary>
+    public static TheoryData<string> EveryReadEndpoint() => new() { "", "history", "{0}", "active", "entitlements" };
+
+    [Theory]
+    [MemberData(nameof(EveryReadEndpoint))]
+    public async Task A_tenant_user_is_refused_on_every_read_endpoint_even_with_the_read_keys_in_the_token(string route)
+    {
+        await using var host = await _shared.ResetAsync();
+        var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Active);
+
+        var response = await host.GetAsync(Host.TenantUserToken(Host.Tenant), Host.Tenant, string.Format(route, subscription.Id.ToString("D")));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     [Theory]
     [MemberData(nameof(EveryWriteEndpoint))]
     public async Task A_platform_actor_who_is_not_an_active_administrator_is_refused(string route, string body)
@@ -668,7 +687,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests : IClassFixture<Te
                 new Claim(JwtRegisteredClaimNames.Email, "tenant.user@di10.test"),
                 new Claim("actor_type", "tenant_user"),
                 new Claim("tenant_id", tenantId.ToString())
-            }.Concat(new[] { "assign", "activate", "cancel", "renew", "expire", "suspend", "reactivate" }
+            }.Concat(new[] { "assign", "activate", "cancel", "renew", "expire", "suspend", "reactivate", "read", "history.read" }
                 .Select(action => new Claim("permission", $"platform.tenants.commercial.subscription.{action}"))).ToArray());
 
         private static string Token(params Claim[] claims)
