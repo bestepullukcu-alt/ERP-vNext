@@ -46,3 +46,11 @@ the supplier id comes from the DC-03 binding, never from the request.
 
 After the answers, the mapping goes into MOD-0147 §0.0 and MOD-0148 §0.0 as one revision (with the MOD-0148 round-5 low
 conditions), which needs a new CT-APR-02 round.
+
+## Owner answers (Natig, 2026-10-23)
+
+- **Q1 — yes:** MOD-0147 may evaluate and publish scorecards for `OnHold`, `Blocked` and `Inactive` suppliers (a block stops
+  new purchasing, not the record of past performance).
+- **Q2 — yes:** MOD-0147 may evaluate a supplier whose onboarding is not approved yet.
+- Q3 and Q4 sent to Cihan by Natig (2026-10-23); open. The mapping enters MOD-0147 / MOD-0148 §0.0 after his answers, as one
+  revision with a new CT-APR-02 round. D2 as a whole stays open until Cihan, as joint owner, confirms the mapping.
