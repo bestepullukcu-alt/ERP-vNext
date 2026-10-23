@@ -58,18 +58,32 @@ permission/composition single writer (§14); and the replay receipt (§0.1, need
 `details.code = PORTAL_DRAFT_LIMIT` and `details.limit = 200`. Submitting a draft frees its place, so the cap is never a
 lifetime block. It is enforced **atomically**: the create transaction increments a per-supplier + LE counter document with a
 conditional update (`openDrafts < 200`) and submit decrements it in its own transaction, so two concurrent creates at 199
-leave at most 200 drafts. The frozen list still returns every record with its payload; it grows only by deliberate
-submissions, and paging comes with a contract successor. Tests: T-0148-V1-CAP-01 (201st draft → 422; submit frees a place;
-two concurrent creates at 199 → one 201/one 422).
+leave at most 200 drafts. **Counter creation (closes review round 3 F-2):** the counter document (unique key Tenant + LE +
+mapped supplier) is created by a separate step in the same transaction — an upsert that only sets `openDrafts = 0` on insert
+(`$setOnInsert`) and never filters on the count — and only then is the conditional increment run, **without upsert**. No
+matched document → 422 `PORTAL_DRAFT_LIMIT`, never an insert attempt. A duplicate-key error or transient transaction error
+from two concurrent first creates retries the whole transaction (bounded, at most 3 attempts). A full cap is always 422,
+never 500; only exhausted retries — an infrastructure failure, not a cap result — may return 500, logged with the
+correlation id (create declares no 409, so no new status is invented). Tests: T-0148-V1-CAP-01 (201st draft → 422; submit frees a place; two concurrent creates at 199 → one
+201/one 422; **counter at 200 → create → 422, not 500**; two concurrent first creates for a new supplier + LE → both 201,
+one counter document with `openDrafts = 2`).
+
+**Own-list size (closes review round 3 F-1):** the frozen list has no paging and returns every record with its payload, and
+`SUBMITTED` records are not capped, so the response can grow without bound (each record up to 1 MiB). v1 accepts this only
+while the portal is internal. The service measures, on every own-list call, the record count and the total stored payload
+bytes per supplier + LE and emits a warning (structured log + metric, no behaviour change) above **1,000 records or 100 MiB**
+(confirmed by Natig, 2026-10-23). **Paging is a release-gate precondition:** the portal may not be
+exposed outside the internal network until a contract successor with a paged own list is on `main` (see the release gate
+below). Tests: T-0148-V1-LIST-01 (warning emitted above either threshold, response unchanged).
 
 **Release gate (internal only, measurable):** before any deployment the evidence shows that the portal subdomain and the
 `/portal/*` routes are not published on any public ingress (Gateway route list + ingress configuration, recorded); opening
 them needs `TrustedProxies`, the Gateway rate limit (MOD-0032) and a shared limiter store, each with its owner, and Natig's
-approval.
+approval, and a contract successor with a paged own list on `main` (review round 3 F-1).
 
 v1 test IDs (added with this revision; the r2 test map stays unchanged): T-0148-V1-PAY-01 (any object accepted; 1 MiB + 1 →
 400; `$`-keys stored as data), T-0148-V1-PERM-01 (company user: status/list/create → 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED`, get/submit → 404; mapping of §0.0), T-0148-V1-EXP-01
-(release gate evidence).
+(release gate evidence, including the paged-list precondition), T-0148-V1-CAP-01 and T-0148-V1-LIST-01 (above).
 
 ## 0. Requirement status and traceability (review 2026-10-19)
 
