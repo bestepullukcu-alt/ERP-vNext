@@ -156,7 +156,7 @@ kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" g
   "attempts": 1, "lastAttemptAtUtc": "date-time",
   "inFlightUntilUtc": "date-time",
   "integrityResolution": "ResolvedOwnMovement | ReturnedToRefused", "resolveReason": "string",
-  "holderMovement": { "transactionId": "string", "transactionNumber": "string", "sourceModule": "MOD-0178", "sourceDocumentId": "string", "sourceLineId": "1", "quantity": "40.000", "fromLocationId": "string", "toLocationId": "string" }
+  "holderMovement": { "transactionId": "string", "transactionNumber": "string", "sourceModule": "MOD-0178", "sourceDocumentId": "string", "sourceLineId": "1", "quantity": "40.000", "fromLocationId": "string", "toLocationId": "string", "lotId": "string", "serialIds": ["string"], "fromStockStatus": "AVAILABLE", "toStockStatus": "AVAILABLE" }
 }
 ```
 
@@ -190,7 +190,7 @@ PRODUCT-MASTER v1.1 `getSku.storageConditions` kopyasıdır (yalnız gösterim; 
 
 ### 3.4 `WarehouseTaskEvent`
 ```json
-{ "seq": 4, "kind": "Created | Updated | Assigned | Claimed | SuggestionApplied | ConfirmationRecorded | ConfirmationPosted | ConfirmationRefused | ConfirmationRetried | ConfirmationReconciled | ConfirmationIntegrityError | IntegrityResolved | ClosedShort | Completed | Cancelled",
+{ "seq": 4, "kind": "Created | Updated | Assigned | Claimed | SuggestionApplied | ConfirmationRecorded | ConfirmationPosted | ConfirmationRefused | ConfirmationRetried | ConfirmationReconciled | ConfirmationIntegrityError | IntegrityResolved | ConfirmationDeviation | ConfirmationSuperseded | ConfirmationReturned | ClosedShort | Completed | Cancelled",
   "actor": { "userId": "uuid", "name": "string" }, "system": false,
   "atUtc": "date-time", "data": { }, "correlationId": "uuid" }
 ```
@@ -246,7 +246,7 @@ cursor şeklini korur, §2.)
 | `POST /putaway-tasks/{taskId}/confirmations/{seq}/returned` | `markPutawayConfirmationReturned` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (10–1000) — "Geri taşındı": mal kaynağa iade edildi, hareket yok (F-4) | 200 `WarehouseTask` (`resolution: ReturnedToSource`) | REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE, WMS_NOT_ASSIGNEE |
 | `POST /putaway-tasks/{taskId}/close-short` | `closePutawayTaskShort` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (en az bir Posted onay; seri SKU'da yok) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_POSTING_INTEGRITY_ERROR |
 | `POST /putaway-tasks/{taskId}/cancel` | `cancelPutawayTask` | `warehouse.putaway-tasks.cancel` | If-Match; `{ idempotencyKey, reason }` (yalnız Posted onay yokken) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_POSTING_INTEGRITY_ERROR |
-| `POST /putaway-tasks/{taskId}/confirmations/{seq}/resolve-integrity` | `resolvePutawayIntegrity` | `warehouse.putaway-tasks.resolve` (öneri, Tier-3) | If-Match; `{ idempotencyKey, reason }` (10–1000) — "Uzlaştır" (inceleme 03 F-2, inceleme 04 F-1): ledger yeniden okunur, anahtarı tutan hareket (`holderMovement`) döner; kaynağı bu onaysa (`MOD-0178` / bu görev / bu `seq`) → onay Posted, defter değerleri yazılır, fark varsa sapma olayı; yabancıysa ya da işlenmemişse → onay çözümsüz Refused, **görev açık kalır** (kapatma ayrı İptal / Kalanı kapat); otomatik kapatma yok; upstream çağrısı yok | 200 `WarehouseTask` (`integrityResolution`) | REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE (onay `IntegrityError` değil), WMS_CONFIRMATION_IN_FLIGHT, WMS_TASK_NOT_FOUND, 403 (izin yok) |
+| `POST /putaway-tasks/{taskId}/confirmations/{seq}/resolve-integrity` | `resolvePutawayIntegrity` | `warehouse.putaway-tasks.resolve` (öneri, Tier-3) | If-Match; `{ idempotencyKey, reason }` (10–1000) — "Uzlaştır" (inceleme 03 F-2, inceleme 04 F-1): ledger yeniden okunur, anahtarı tutan hareket (`holderMovement`) döner; kaynağı bu onaysa (`MOD-0178` / bu görev / bu `seq`) → onay Posted, defter değerleri yazılır, fark varsa sapma olayı; yabancıysa ya da işlenmemişse → onay çözümsüz Refused, **görev açık kalır** (kapatma ayrı İptal / Kalanı kapat); otomatik kapatma yok; upstream çağrısı yok | 200 `WarehouseTask` (`integrityResolution`) | REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE (onay `IntegrityError` değil), WMS_CONFIRMATION_PENDING (görevde Pending / uçuştaki onay var — inceleme 05 F-1), WMS_CONFIRMATION_IN_FLIGHT, WMS_TASK_NOT_FOUND, 403 (izin yok) |
 | `GET /putaway-tasks/{taskId}/events` | `getPutawayTaskEvents` | `warehouse.putaway-tasks.read` | `page`, `pageSize` | 200 sayfa `WarehouseTaskEvent` | WMS_TASK_NOT_FOUND |
 | `GET /location-roles` | `listLocationRoles` | `warehouse.location-roles.read` | `warehouseId?`, `role?`, `page`, `pageSize` | 200 sayfa | INVALID_REQUEST |
 | `POST /location-roles` | `createLocationRole` | `warehouse.location-roles.manage` | `{ idempotencyKey, locationId, roles[], acceptedStorageConditions[], note? }` | 201 + ETag | UNKNOWN_LOCATION, WMS_LOCATION_ROLE_EXISTS, WMS_LOCATION_ROLE_CONFLICT, WMS_LOCATION_ROLE_INHERITED_CONFLICT, WMS_LOCATION_TYPE_NOT_ALLOWED, WMS_STORAGE_CONDITION_INVALID |
@@ -322,15 +322,17 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | — | `Pending` | confirmPutawayTask (işlem 1) | ön kontroller geçti; uçuş kilidi alındı |
 | `Pending` | `Posted` | işlem 2 (2xx) / retry veya uzlaştırıcı (ledger `Committed`) | `AttemptId` (sweeper: kilit boş / geçmiş) + `Confirmed + q ≤ Planned` |
 | `Pending` | `Refused` | işlem 2 (4xx) / retry ön kontrol reddi | — |
-| `Pending` | `IntegrityError` | `IDEMPOTENCY_KEY_REUSED` · işlem 2 durum farkı · `Confirmed + q > Planned` | — |
-| `IntegrityError` | `Posted` | resolvePutawayIntegrity (a) | anahtarı tutan hareket bu onayın (`MOD-0178`, görev, `seq`); defter değerleri yazılır |
+| `Pending` | `IntegrityError` | `IDEMPOTENCY_KEY_REUSED` · işlem 2 durum farkı (`StatusDiverged`) · `Confirmed + q > Planned` (savunma; gerçek akışta tetiklenmez) | — |
+| `Refused` (ön kontrol reddi, son 30 dk, çözümsüz) | `IntegrityError` | uzlaştırıcının savunma dalı, ledger `Committed` (geç commit) | `StatusDiverged` (inceleme 05 F-3) |
+| `IntegrityError` | `Posted` | resolvePutawayIntegrity (a) | görevde Pending onay yok; anahtarı tutan hareket bu onayın (`MOD-0178`, görev, `seq`); defter değerleri (lot, seriler dahil) yazılır; `confirmedQuantity > plannedQuantity` olabilir → sapma olayı |
 | `IntegrityError` | `Refused` (çözümsüz) | resolvePutawayIntegrity (b) | anahtarı tutan hareket yabancı ya da işlenmemiş; görev açık kalır |
 | `Refused` | `Refused` + `resolution` | yeni Posted onay / markPutawayConfirmationReturned | `SupersededByNewConfirmation` / `ReturnedToSource` |
 Onay: `Pending → Posted | Refused`; `Pending` yalnız `retry` ile ilerler (aynı `postingKey`, aynı tarihler) ve görevi kilitler; sonuç
 yazımı koşulludur (`status == Pending`, F-3). `Refused` → `resolution: SupersededByNewConfirmation` (aynı görevde yeni Posted onay) ya
 da `ReturnedToSource` ("Geri taşındı", hareket yok) (F-4). `IntegrityError` istisnadır: resolution ve görev eylemleri kapalı
 (inceleme 02 F-1); **tek çıkış** `resolvePutawayIntegrity` (sorumlu, gerekçe; anahtarı tutan hareket bu onaysa Posted, yabancıysa
-çözümsüz Refused — görev açık kalır, otomatik kapatma yok; inceleme 03 F-2, inceleme 04 F-1). Uçuş kilidi (`inFlightUntilUtc`) geçerliyken yeniden deneme 409 `WMS_CONFIRMATION_IN_FLIGHT`; arka plan uzlaştırıcısı
+çözümsüz Refused — görev açık kalır, otomatik kapatma yok; inceleme 03 F-2, inceleme 04 F-1). Uçuş kilidi (`inFlightUntilUtc`) geçerliyken yeniden deneme 409 `WMS_CONFIRMATION_IN_FLIGHT` (posting süresi aşımında da kilit süresi
+dolana kadar korunur — inceleme 05 F-3); arka plan uzlaştırıcısı
 kaydı atlar, `NotCommitted` turunda hiçbir şey yazmaz (inceleme 03 F-1, 02 F-5). Durum onaylanan miktardan
 türetilir; `integrationFlag` ayrı rozettir. Açık görevde otomatik askı yoktur; karantina / recall kontrolü onay anındadır (M-5).
 
@@ -428,7 +430,7 @@ sistemin kimliği / anahtarı (servis kimliği, `X-Internal-Api-Key` deseni) MOD
 
 ## 15. Açık kararlar
 
-İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5) ve inceleme 04 F-1…F-4 (§19.1.6) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
+İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4), inceleme 03 F-1…F-5 (§19.1.5), inceleme 04 F-1…F-4 (§19.1.6) ve inceleme 05 ön kontrolü F-1…F-5 (§19.1.7) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
 Karar verildi (pack §19.1.1 / §19.1.2, Beste 2026-10-21): Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2, M-1…M-6 — bu taslak onlara göre
 yazıldı (rol + saklama koşulu kaydı 0178'in, ayrı dosya, `WMS_*` burada, geçici RCS sayacı + MDM `Code` öneki, `warehouse.*` 0178'in,
 yalnız `AVAILABLE` yerleştirilir, recall'daki lot reddedilir, saklama koşulu uyumu, üstlenme, onay kilidi, e-imza yok, koli elle).

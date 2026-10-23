@@ -14,7 +14,7 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: pending
-status_note: "draft — P0 (MOD-0178 pack + WMS-BUNDLE taslağı), MVP-1 CT (W-10) için 2026-10-21. Sahip kararları W-1 (Build), W-2 (Diten.InventoryService 5067, ayrı bounded context, ikinci bakiye yok), W-3 (MOD-0179 ertelendi), W-4 (GOODS_ISSUE_SALES MOD-0183'ün), W-5 (lot / lokasyon rezervasyonu MVP-1 CT'den), W-10, E-1, E-2, E-6 bağlayıcı (§19.1). Paket soruları Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2 ve mockup incelemesi kararları M-1…M-6 sahip kararıyla kapandı (Beste 2026-10-21, §19.1.1, §19.1.2). Bağımsız inceleme 01 (hedef 0cb3940af, KOŞULLU) bulguları F-1…F-16 işlendi (§19.1.3); inceleme 02 (hedef 5f7833253, KOŞULLU) bulguları F-1…F-10 işlendi (§19.1.4); inceleme 03 (hedef 367e8ff78, KOŞULLU, ENGEL yok) bulguları F-1…F-5 + inceleme 02 F-5 kalanı işlendi (§19.1.5); inceleme 04 (hedef 13d343c9a, KOŞULLU) bulguları F-1…F-4 işlendi (§19.1.6). Onay yok; açık sorular yalnız diğer ekiplerde + Q-10 (§19.5). golden_reference / form_field_count yalnız S1 ekranları içindir (§9); S2 outbound ekranı compact olacak ve S2 paket revizyonunda screens listesine girer."
+status_note: "draft — P0 (MOD-0178 pack + WMS-BUNDLE taslağı), MVP-1 CT (W-10) için 2026-10-21. Sahip kararları W-1 (Build), W-2 (Diten.InventoryService 5067, ayrı bounded context, ikinci bakiye yok), W-3 (MOD-0179 ertelendi), W-4 (GOODS_ISSUE_SALES MOD-0183'ün), W-5 (lot / lokasyon rezervasyonu MVP-1 CT'den), W-10, E-1, E-2, E-6 bağlayıcı (§19.1). Paket soruları Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2 ve mockup incelemesi kararları M-1…M-6 sahip kararıyla kapandı (Beste 2026-10-21, §19.1.1, §19.1.2). Bağımsız inceleme 01 (hedef 0cb3940af, KOŞULLU) bulguları F-1…F-16 işlendi (§19.1.3); inceleme 02 (hedef 5f7833253, KOŞULLU) bulguları F-1…F-10 işlendi (§19.1.4); inceleme 03 (hedef 367e8ff78, KOŞULLU, ENGEL yok) bulguları F-1…F-5 + inceleme 02 F-5 kalanı işlendi (§19.1.5); inceleme 04 (hedef 13d343c9a, KOŞULLU) bulguları F-1…F-4 işlendi (§19.1.6); inceleme 05 ön kontrolü (hedef 1f185d6a4, KOŞULLU, bağımsız değil) bulguları F-1…F-5 + akış tablosu işlendi (§19.1.7). Onay yok; açık sorular yalnız diğer ekiplerde + Q-10 (§19.5). golden_reference / form_field_count yalnız S1 ekranları içindir (§9); S2 outbound ekranı compact olacak ve S2 paket revizyonunda screens listesine girer."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0178-putaway-picking-packing
 started: 2026-10-21
@@ -195,7 +195,7 @@ Miktarlar SKU'nun **baz biriminde** decimal string (float yok, en çok 6 ondalı
 | `TargetSource` | enum `Manual \| SuggestionApplied` | hedef "Uygula" ile öneriden alındıysa `SuggestionApplied` → zaman çizelgesine `SuggestionApplied` olayı (M-4) |
 | `PlannedQuantity` | decimal string | > 0; yaratmada açık miktarı aşamaz (§12); **seri kontrollü SKU'da = kovadaki bütün miktar** ve değiştirilemez (§8.16) |
 | `BaseUomId` | string | bakiye satırından |
-| `ConfirmedQuantity` | decimal string | Posted onayların toplamı (görev içi türetme, stok bakiyesi değil); `Status` bundan türer (M-4) |
+| `ConfirmedQuantity` | decimal string | Posted onayların toplamı (görev içi türetme, stok bakiyesi değil); `Status` bundan türer (M-4). **Kural:** `ConfirmedQuantity ≤ PlannedQuantity` (işlem 2'nin koşullu artışı). **Tek istisna (inceleme 05 F-1):** "Uzlaştır-a" defter gerçeğini yazar — o zaman `ConfirmedQuantity > PlannedQuantity` olabilir; görev `Completed` olur ve olay `ConfirmationDeviation` (`OverPlanned`) açılır. Defter doğrudur, görev ona uyar |
 | `IntegrationFlag` (türetilmiş, saklanmaz) | enum `None \| PostingPending \| PostingRefused \| PostingIntegrityError` | durumdan **ayrı** rozet: "Onay bekliyor" (Pending onay var) / "Stok reddetti" (son onay Refused) / "Bütünlük hatası" (onay `IntegrityError`, inceleme 03 F-2) (M-4) |
 | `Confirmations[]` | §4.2 | |
 | `AssigneeUserId` | uuid \| null | atanan operatör; sorumlu atar (kullanıcı listesi ucu varsa, Q-13) ya da operatör atanmamış görevi **üstlenir** (kendine atar, M-5) |
@@ -217,7 +217,7 @@ Miktarlar SKU'nun **baz biriminde** decimal string (float yok, en çok 6 ondalı
 | `ToLocationId` | zorunlu; §12 hedef kuralları |
 | `DeviationReason` | 10–1000; hedef planlanandan farklıysa zorunlu |
 | `Status` | `Pending \| Posted \| Refused \| IntegrityError` — `IntegrityError`: ledger aynı `PostingKey` ile **farklı** bir hareket işlemiş (`IDEMPOTENCY_KEY_REUSED`); Refused değildir; Superseded / Returned ve görev eylemleri kapalı, istisna olarak listelenir (inceleme 02 F-1); tek çıkış sorumlunun **"Uzlaştır"** komutudur (`ResolvePutawayIntegrityCommand`, §8.3, inceleme 03 F-2) |
-| `AttemptId`, `InFlightUntilUtc` | **uçuş kilidi** (inceleme 03 F-1): işlem 1'de ve her yeniden deneme başında atomik alınır (koşul: `Status == Pending` ve `InFlightUntilUtc` boş ya da geçmiş); süre = `Warehouse:Putaway:InFlightLeaseSeconds` (öneri 120 sn). **Dayanak (inceleme 04 F-2):** hareket yazımı (işlem 3) süreç içidir; üst sınırı açık bir **posting süresi** `Warehouse:Putaway:PostingTimeoutSeconds` (öneri 60 sn) — işlem 3 bağlı bir `CancellationTokenSource` ile bu süreyle sınırlanır; içindeki her upstream çağrısı ayrıca 5 sn ile sınırlı (`…/Infrastructure/DependencyInjection.cs:51`, `…/Api/appsettings.json:35` `UpstreamServices:TimeoutSeconds`). Açılışta `InFlightLeaseSeconds ≥ PostingTimeoutSeconds + 30` doğrulanır, değilse host başlamaz (fail-closed ayar). Posting süresi aşılırsa onay **Pending kalır** ve kilit **bırakılır** (hareketin commit edilip edilmediği belirsizdir; ledger araması sonradan çözer). İşlem 2 bitince kilit boşaltılır. Kilit geçerliyken yeniden deneme 409 `WMS_CONFIRMATION_IN_FLIGHT`, sweeper kaydı atlar |
+| `AttemptId`, `InFlightUntilUtc` | **uçuş kilidi** (inceleme 03 F-1): işlem 1'de ve her yeniden deneme başında atomik alınır (koşul: `Status == Pending` ve `InFlightUntilUtc` boş ya da geçmiş); süre = `Warehouse:Putaway:InFlightLeaseSeconds` (öneri 120 sn). **Dayanak (inceleme 04 F-2):** hareket yazımı (işlem 3) süreç içidir; üst sınırı açık bir **posting süresi** `Warehouse:Putaway:PostingTimeoutSeconds` (öneri 60 sn) — işlem 3 bağlı bir `CancellationTokenSource` ile bu süreyle sınırlanır; içindeki her upstream çağrısı ayrıca 5 sn ile sınırlı (`…/Infrastructure/DependencyInjection.cs:51`, `…/Api/appsettings.json:35` `UpstreamServices:TimeoutSeconds`). Açılışta `InFlightLeaseSeconds ≥ PostingTimeoutSeconds + 30` doğrulanır, değilse host başlamaz (fail-closed ayar). Posting süresi aşılırsa onay **Pending kalır** ve kilit **`InFlightUntilUtc`'ye kadar korunur** — hemen bırakılmaz (inceleme 05 F-3): iptal istemci tarafındadır, sunucuya ulaşmış bir commit (`InventoryLedgerRepository.cs:172` `WithTransactionAsync`) yine uygulanabilir; +30 sn pay bu görünürlük gecikmesini ve Mongo işlem ömrünü kapsamak içindir (sunucu `transactionLifetimeLimitSeconds` varsayılanı 60 sn — dokümantasyon bilgisi, ölçülmedi). Kilit dolduktan sonraki ilk deneme ledger'a bakar. Kilit ve posting süreleri **`TimeProvider`** üzerinden ölçülür (0175 emsali `QuarantineServiceCollectionExtensions.cs:36`); testler sahte saatle süreyi doldurur, gerçek ayarlar ve açılış doğrulaması değişmez (inceleme 05 F-2). İşlem 2 bitince kilit boşaltılır. Kilit geçerliyken yeniden deneme 409 `WMS_CONFIRMATION_IN_FLIGHT`, sweeper kaydı atlar |
 | `IntegrityResolution` | `null \| ResolvedOwnMovement \| ReturnedToRefused` + `ResolvedBy`, `ResolvedAtUtc`, `ResolveReason` (10–1000), `HolderMovement { transactionId, transactionNumber, sourceModule, sourceDocumentId, sourceLineId, quantity, fromLocationId, toLocationId }` — "Uzlaştır" sonucu (inceleme 04 F-1) |
 | `PostingKey` | `wms:put:{taskId}:{seq}` — INVENTORY Idempotency-Key; yeniden denemede **aynı** anahtar |
 | `TransactionId`, `TransactionNumber` | Posted'da INVENTORY'den |
@@ -229,7 +229,8 @@ Miktarlar SKU'nun **baz biriminde** decimal string (float yok, en çok 6 ondalı
 
 ### 4.3 `WarehouseTaskEvent` (insert-only)
 `TaskId, Seq, Kind (Created | Updated | Assigned | Claimed | SuggestionApplied | ConfirmationRecorded | ConfirmationPosted |
-ConfirmationRefused | ConfirmationRetried | ConfirmationReconciled | ConfirmationIntegrityError | IntegrityResolved | ConfirmationDeviation | ClosedShort |
+ConfirmationRefused | ConfirmationRetried | ConfirmationReconciled | ConfirmationIntegrityError | IntegrityResolved | ConfirmationDeviation |
+ConfirmationSuperseded | ConfirmationReturned | ClosedShort |
 Completed | Cancelled), Actor { userId, name? } | system, AtUtc, Data { … }, CorrelationId`.
 
 ### 4.4 `WarehouseLocationRole`
@@ -306,7 +307,8 @@ Yalnız yeni dosyalar (seam'ler aşağıda tek tek):
 | `services/Diten.InventoryService/src/Diten.InventoryService.Application/Common/Upstream/SkuReference.cs` | record `:13-24` | eklemeli isteğe bağlı `IReadOnlyList<string>? StorageConditions` (yok = bilinmiyor; boş liste = koşul yok) — **sahibi MOD-0173 (MVP-1 CT, aynı sahip; XMC-001 gerekmez, seam açık listelenir)** (F-5) | S1 (DL-1a) |
 | `services/Diten.InventoryService/src/Diten.InventoryService.Infrastructure/Upstream/ProductMasterHttpClient.cs` | `GetSkuAsync` `:62-82` | `storageConditions` dizisini oku (alan yoksa null) — sahibi MOD-0173 (F-5) | S1 (DL-1a) |
 | Seri kovası okuması (MOD-0174 / MOD-0175 emsali) | **ölçüldü (inceleme 02 F-8):** emsal `QuarantineLedgerReads.SerialsAtAsync` (`…/Persistence/Quarantine/QuarantineLedgerReads.cs:108-120`, port `…/Features/Quarantine/Ports/QuarantinePorts.cs:50-55`): kiracı + item + SKU + seviye + lot + depo + lokasyon, `Status Active`, alım sırası, **seri numarası** döner; MOD-0175 `StockActionHandlers.SerialsForAsync` (`…/Quarantine/Handlers/StockActionHandlers.cs:175-200`, ASSUMPTION-0175-Q4-02) açık tutma ve açık bloke kayıtlarının serilerini dışlar | 0178 portu `IWarehouseSerialReader` aynı okumayı ve **aynı dışlamayı** yapar (§8.16); yeni repository sorgusu açılmaz — `SerialsAtAsync` okuması tekrar kullanılır ya da aynı filtreyle 0178 Persistence'ta okunur (geliştirici seçer, ikisi de emsal) — sahibi MOD-0174 / 0175 (MVP-1 CT) | S1 (DL-1b) |
-| Ledger anahtar araması (MOD-0173) — **yeni port** | `IInventoryLedgerRepository.FindByIdempotencyKeyAsync` (`…/Domain/Repositories/IInventoryLedgerRepository.cs:16`); `InternalMovementPostingService` bunu doğrulamadan **önce** çağırır (`InternalMovementPostingService.cs:93-99`; parmak izi farklıysa `Replay` → 400 `IDEMPOTENCY_KEY_REUSED`, `:216-226`) | MOD-0173 Application'a eklemeli port `IPostingKeyLookup.LookupAsync(storedMovementRequest)` → `NotCommitted \| Committed(holder) \| KeyReusedDifferentPayload(holder)`; **`holder`** = anahtarı tutan hareket: `transactionId`, `transactionNumber`, `sourceModule`, `sourceType`, `sourceDocumentId`, `sourceLineId`, `quantity` + `uomId` / `baseQuantity`, `fromWarehouseId` / `fromLocationId`, `toWarehouseId` / `toLocationId`, `postingDate` (repository + `RequestFingerprint.Compute`; **upstream çağrısı yok**; inceleme 04 F-1 / F-4). Defter append-only'dir (`IInventoryLedgerRepository.cs:11-12`): bir anahtara bağlanmış hareket REVERSAL ile serbest kalmaz, yani `KeyReusedDifferentPayload` kalıcıdır. 0178 depoya doğrudan bağlanmaz (AC-6 sınırı korunur) — sahibi MOD-0173 (MVP-1 CT, aynı sahip) (inceleme 02 F-1) | S1 (DL-1b) |
+| Ledger anahtar araması (MOD-0173) — **yeni port** | `IInventoryLedgerRepository.FindByIdempotencyKeyAsync` (`…/Domain/Repositories/IInventoryLedgerRepository.cs:16`); `InternalMovementPostingService` bunu doğrulamadan **önce** çağırır (`InternalMovementPostingService.cs:93-99`; parmak izi farklıysa `Replay` → 400 `IDEMPOTENCY_KEY_REUSED`, `:216-226`) | MOD-0173 Application'a eklemeli port `IPostingKeyLookup.LookupAsync(storedMovementRequest)` → `NotCommitted \| Committed(holder) \| KeyReusedDifferentPayload(holder)`; **`holder`** = anahtarı tutan hareket: `transactionId`, `transactionNumber`, `sourceModule`, `sourceType`, `sourceDocumentId`, `sourceLineId`, `quantity` + `uomId` / `baseQuantity`, `fromWarehouseId` / `fromLocationId`, `toWarehouseId` / `toLocationId`, **`lotId`, `serialIds`,
+`fromStockStatus` / `toStockStatus`** (inceleme 05 F-4), `postingDate` (repository + `RequestFingerprint.Compute`; **upstream çağrısı yok**; inceleme 04 F-1 / F-4). Defter append-only'dir (`IInventoryLedgerRepository.cs:11-12`): bir anahtara bağlanmış hareket REVERSAL ile serbest kalmaz, yani `KeyReusedDifferentPayload` kalıcıdır. 0178 depoya doğrudan bağlanmaz (AC-6 sınırı korunur) — sahibi MOD-0173 (MVP-1 CT, aynı sahip) (inceleme 02 F-1) | S1 (DL-1b) |
 | Dev PRODUCT-MASTER köprüsü 4010 veri seti | depoda izlenmiyor (`git ls-files` 0) — yeri geliştirici ölçer | örnek SKU'lara `storageConditions` eklenir (kabul ortamı, F-5). **Kural (inceleme 02 F-10):** E3 / E4 kabul kanıtında kullanılan veri setinin **kopyası ve SHA-256'sı kanıt klasörüne** konur (klasör yolu kabul aşamasında yazılır); kopyası olmayan koşu yeniden üretilebilir sayılmaz | S1 |
 
 `execution/registries/module-implementation-status.md` dev dilimince yazılmaz; rapor satırı önerir, CT kabulde yazar.
@@ -414,10 +416,35 @@ Refused ──("Geri taşındı")──> Refused (Resolution = ReturnedToSource)
 ```
 Görev durumu Uzlaştır'la **değişmez**, yalnız onaylanan miktar değişirse (Uzlaştır-a) türetilmiş durum ilerler; görevi kapatmak sorumlunun
 ayrı ve açık seçimidir (mevcut İptal / Kalanı kapat) (inceleme 04 F-1).
+
+**Akış tablosu — her geçiş (inceleme 05 tutarlılık geçişi; boş hücre yok):**
+| # | Geçiş | Tetikleyici | Yazılan alanlar | Olay / denetim satırı | AC | Sabotaj |
+|---|---|---|---|---|---|---|
+| 1 | (yok) → Pending | confirm, işlem 1 | Status, PostingKey, TransactionDate / PostingDate, SerialIds, AttemptId, InFlightUntilUtc, Version | ConfirmationRecorded / `confirmation-recorded` | AC-2, AC-5, AC-15 | (a), (x), (v) |
+| 2 | Pending → Posted | işlem 2 (2xx) | TransactionId / Number, ConfirmedQuantity, görev durumu; kilit boşalır | ConfirmationPosted / `confirmation-posted` | AC-2, AC-3, AC-4 | (a), (w) |
+| 3 | Pending → Posted | retry (i), ledger `Committed` | aynı | ConfirmationRetried / `confirmation-retried` | AC-5, AC-54 | (z), (w) |
+| 4 | Pending → Posted | sweeper, ledger `Committed` | aynı | ConfirmationReconciled / `confirmation-reconciled` | AC-66, AC-15 | (as), (ao) |
+| 5 | Pending → Refused | işlem 2 (ledger 4xx) | Error*, ErrorStatus | ConfirmationRefused / `confirmation-refused` | AC-5, AC-9, AC-57 | (x), (ag) |
+| 6 | Pending → Refused | retry (ii), ön kontrol reddi | Error*, ErrorStatus 422 | ConfirmationRetried / `confirmation-retried` | AC-56 | (y) |
+| 7 | Pending → Pending | 503 ya da posting süresi aşımı | Attempts, LastAttemptAtUtc; **kilit `InFlightUntilUtc`'ye kadar korunur** | ilk onayda `confirmation-recorded`; retry'da `confirmation-retried` | AC-5, AC-67 (1) | (x), (ap) |
+| 8 | Pending → Pending | sweeper, `NotCommitted` | hiçbir şey | yok (İ5) | AC-66 | (an) |
+| 9 | Pending → IntegrityError | `IDEMPOTENCY_KEY_REUSED` (confirm ya da retry) | Status, Error* | ConfirmationIntegrityError / `confirmation-integrity-error` (confirm) ya da `confirmation-retried` (retry, sonuç IntegrityError) | AC-63 | (aa) |
+| 10 | Pending → IntegrityError | sweeper, `KeyReusedDifferentPayload` | Status, Error* | ConfirmationIntegrityError / `confirmation-integrity-error` | AC-66 | (aq) |
+| 11 | Pending / Refused → IntegrityError | işlem 2'de 0 kayıt etkilenir, yazılı durum farklı | Status, `details.reason = StatusDiverged` | ConfirmationIntegrityError / `confirmation-integrity-error` | AC-64 | (al) |
+| 12 | Pending → IntegrityError (`OverPlanned`) | işlem 2 koşullu artış — **savunma, gerçek akışta tetiklenmez** (Uzlaştır Pending'de yasak) | Status, `details.reason = OverPlanned` | ConfirmationIntegrityError / `confirmation-integrity-error` | AC-67 (5) birim testi | (ap) |
+| 13 | IntegrityError → Posted | Uzlaştır-a (kendi hareketi) | TransactionId / Number, miktar, hedef, lot, seriler, ConfirmedQuantity, IntegrityResolution, HolderMovement, Resolved* | IntegrityResolved (+ ConfirmationDeviation) / `integrity-resolved` | AC-65, AC-67 (3) | (ar) |
+| 14 | IntegrityError → Refused (çözümsüz) | Uzlaştır-b (yabancı / NotCommitted) | IntegrityResolution, HolderMovement, Resolved* | IntegrityResolved / `integrity-resolved` | AC-65 | (am) |
+| 15 | Refused → Refused + Superseded | aynı görevde yeni onayın Posted olması | Resolution = SupersededByNewConfirmation | ConfirmationSuperseded / `confirmation-superseded` | AC-55 | (at) |
+| 16 | Refused → Refused + Returned | MarkReturned ("Geri taşındı") | Resolution = ReturnedToSource, gerekçe | ConfirmationReturned / `confirmation-returned` | AC-55 | (af) |
+| 17 | (ret) kilit geçerli | retry (0) | hiçbir şey (409 `WMS_CONFIRMATION_IN_FLIGHT`) | yok | AC-64, AC-67 (1) | (ak) |
+| 18 | Refused (ön kontrol) → IntegrityError | sweeper savunma dalı, ledger `Committed` (geç commit) | Status, `details.reason = StatusDiverged` | ConfirmationIntegrityError / `confirmation-integrity-error` | AC-66, AC-67 (3) | (au) |
+| 19 | (ret) Uzlaştır, görevde Pending onay | resolve | hiçbir şey (409 `WMS_CONFIRMATION_PENDING`) | yok | AC-65, AC-67 (4) | (av) |
 - `Completed` / `Cancelled` terminaldir. İptal edilen görevin Posted hareketleri geri alınmaz (geri alma INVENTORY `REVERSAL`'dır,
   0178'in değil; stok yeni lokasyonda kalır). **Onay yoksa yalnız İptal, Posted onay varsa yalnız Kalanı kapat** (M-4): Posted onaylı
   görevin iptali 409 `WMS_INVALID_TRANSITION`. **Gönderilen onay cevap gelene kadar görevi kilitler** (M-4): Pending onay varken yeni
-  onay, düzenleme, üstlenme, kısa kapatma ve iptal 409 `WMS_CONFIRMATION_PENDING`; yalnız `retry` çalışır.
+  onay, düzenleme, üstlenme, kısa kapatma, iptal **ve görevdeki başka bir onayın "Uzlaştır"ı** 409 `WMS_CONFIRMATION_PENDING`; yalnız
+  `retry` çalışır. Gerekçe (inceleme 05 F-1): Pending onay sürerken defter durumu değişebilir; Uzlaştır-a'nın artışı Pending onayın
+  kalanını tüketebilir — bu yasakla işlem 2'nin `Confirmed + q ≤ Planned` koşulu yalnız **savunma** kontrolü olarak kalır.
 - **Onay (`ConfirmPutawayTaskCommand`):**
   1. Doğrula: görev `Open|InProgress`, Pending onay yok, If-Match, onaylayan = atanan ya da sorumlu (§8.13), miktar ≤ kalan
      (planlanandan fazla onay yasak, M-5), hedef kuralları (§12) ve saklama koşulu uyumu (§8.12), lot recall değil (§8.5), lot
@@ -427,7 +454,8 @@ ayrı ve açık seçimidir (mevcut İptal / Kalanı kapat) (inceleme 04 F-1).
      `PostingKey = wms:put:{taskId}:{seq}`, **`TransactionDate = PostingDate = sunucu UTC şimdi` (bir kez, burada)**, seri SKU'da
      kovadan okunan `SerialIds`, **uçuş kilidi** (`AttemptId` + `InFlightUntilUtc`, §4.2; inceleme 03 F-1), `Version++`, olay
      `ConfirmationRecorded`.
-  3. **Posting süresiyle sınırlı** (`PostingTimeoutSeconds`, öneri 60 sn; aşımda onay Pending, kilit bırakılır — §4.2, inceleme 04 F-2)
+  3. **Posting süresiyle sınırlı** (`PostingTimeoutSeconds`, öneri 60 sn; aşımda onay Pending, **kilit `InFlightUntilUtc`'ye kadar korunur**
+     — §4.2, inceleme 04 F-2, inceleme 05 F-3)
      `WarehouseMovementPoster` → `InternalMovementPostingService`: `LOCATION_TRANSFER`, `fromWarehouseId = toWarehouseId =
      WarehouseId`, `fromLocationId = FromLocationId`, `toLocationId`, `fromStockStatus = toStockStatus = StockStatus` (tek adım,
      durum korunur — `MovementDirectionRules.cs:82-94`), `lotId`, `serialIds`, `quantity` + `BaseUomId`, `sourceModule = MOD-0178`,
@@ -461,7 +489,11 @@ ayrı ve açık seçimidir (mevcut İptal / Kalanı kapat) (inceleme 04 F-1).
        ön kontrol ve posting yok. **Yazım filtresi (inceleme 04 F-3):** sweeper kilit almaz ve `AttemptId` taşımaz; okuma ve yazma
        filtresi `Status == Pending` **ve `InFlightUntilUtc` boş ya da geçmiş** (+ `ConfirmedQuantity + q ≤ PlannedQuantity`). Okuma ile
        yazma arasında bir kullanıcı denemesi kilit aldıysa yazım 0 kayıt etkiler ve sweeper o kaydı **hiçbir şey yazmadan bırakır**
-       (sweeper `IntegrityError` üretmez; kayıt kullanıcı denemesiyle ilerler). **Kayıt başına hata yalıtımı:** her kayıt kendi
+       (**yalnız bu "0 kayıt etkilendi" durumunda** sweeper `IntegrityError` üretmez; kayıt kullanıcı denemesiyle ilerler — `Committed` /
+       `KeyReusedDifferentPayload` sonuçlarının kendi dalları aşağıdadır). **Savunma dalı (inceleme 05 F-3):** sweeper ayrıca son 30 dk
+       içinde **ön kontrol reddiyle** Refused olmuş ve çözümsüz onayları ledger'da arar; `Committed` bulursa (geç commit — hareket defterde,
+       WMS'te Refused) onayı `IntegrityError` (`details.reason = StatusDiverged`) yapar (koşul: `Status == Refused`, `Resolution` boş),
+       olay `ConfirmationIntegrityError`, denetim satırı 1; böylece ayrışma kalıcı olmaz ve "Uzlaştır" ile çözülür. **Kayıt başına hata yalıtımı:** her kayıt kendi
        try/catch'inde koşar, bir kaydın hatası diğerlerini durdurmaz, tur başına en çok 200 kayıt (`RecallQuarantineSweeper.cs:65`,
        `:68-88` deseni). **Kiracılar arası tarama okuması açık istisnadır** (yalnız hosted service; her kayıt sonra kendi kiracı + şirket
        kapsamında işlenir). Kilit geçerliyse kayıt atlanır. `Committed` → Posted (işlem 2 koşullu, olay `ConfirmationReconciled`,
@@ -485,13 +517,16 @@ ayrı ve açık seçimidir (mevcut İptal / Kalanı kapat) (inceleme 04 F-1).
   durum istisna olarak listelenir (S3 İstisna Kutusu; o gelene kadar görev detayında kırmızı rozet "Bütünlük hatası — Control Tower'a
   bildirin"). Defter düzeltmesi / REVERSAL 0178'in değil MOD-0173 sahibinin işidir.
 - **"Uzlaştır" — `IntegrityError`'dan tek çıkış (inceleme 03 F-2):** `ResolvePutawayIntegrityCommand`, yalnız sorumlu (izin
-  `warehouse.putaway-tasks.resolve`, §14.2), zorunlu gerekçe (10–1000). Önce ledger **yeniden okunur** (`IPostingKeyLookup`, anahtarı
+  `warehouse.putaway-tasks.resolve`, §14.2), zorunlu gerekçe (10–1000). **Görevde Pending ya da uçuştaki bir onay varken 409
+  `WMS_CONFIRMATION_PENDING`** (inceleme 05 F-1). Önce ledger **yeniden okunur** (`IPostingKeyLookup`, anahtarı
   tutan hareketi `holder` olarak döndürür, §5). Defter append-only olduğu için "defter sonradan düzeltildi" yolu **yoktur** (inceleme 04
   F-1); karar anahtarı tutan hareketin **kaynağına** göre verilir:
   - **(a) Kaynak bu onay** — `holder.sourceModule = MOD-0178`, `sourceType = PUTAWAY_TASK`, `sourceDocumentId = taskId`,
     `sourceLineId = seq` (`Committed` ya da parmak izi farklı `KeyReusedDifferentPayload`; ör. tarih / seri farkı yaratan bir hata): stok
     gerçekten taşınmıştır → onay **Posted** (`IntegrityResolution = ResolvedOwnMovement`); onaya **defterdeki gerçek değerler** yazılır
-    (`TransactionId/Number`, miktar, hedef lokasyon), `ConfirmedQuantity +=` defter miktarı. Onayın kendi değerlerinden farkı varsa ya da
+    (`TransactionId/Number`, miktar, hedef lokasyon, **lot, seriler**, stok durumu — seri SKU'da onayın işlem 1'deki seri listesi
+    defterin serileriyle değiştirilir, fark `ConfirmationDeviation`'da listelenir; inceleme 05 F-4), `ConfirmedQuantity +=` defter miktarı
+    (`ConfirmedQuantity > PlannedQuantity` olabilir — §4.1 istisnası; görev `Completed`). Onayın kendi değerlerinden farkı varsa ya da
     toplam planlananı aşıyorsa olay **`ConfirmationDeviation`** (`details`: farklı alanlar, `OverPlanned`) açılır; görev türetilmiş
     durumuyla ilerler (InProgress / Completed). Ledger doğrudur, görev ona uyar.
   - **(b) Kaynak yabancı** (başka modül / başka görev / başka satır) ya da `NotCommitted`: bu onayın hareketi yazılmamıştır → onay
@@ -828,7 +863,7 @@ harf ve rakam).
 | Gsku seri bayrağı (oluştur) | Gsku | ürün bayrağı (`getProduct.serialControlled`) açıkça `false` | — | PRODUCT-MASTER | 422 `SKU_LEVEL_NOT_STOCKABLE` |
 | ledger bütünlüğü (onay / yeniden deneme / sweeper) | — | aynı `PostingKey` ile farklı hareket yok | — | `IPostingKeyLookup` | 409 `WMS_POSTING_INTEGRITY_ERROR` (onay `IntegrityError`) |
 | uçuş kilidi (yeniden deneme) | — | kilit boş ya da süresi dolmuş | atomik koşullu güncelleme | — | 409 `WMS_CONFIRMATION_IN_FLIGHT` |
-| "Uzlaştır" | sorumlu | yalnız `IntegrityError` onay, gerekçe 10–1000 | — | `IPostingKeyLookup` | 409 `WMS_CONFIRMATION_NOT_RESOLVABLE` / 400 `REASON_REQUIRED` / 403 |
+| "Uzlaştır" | sorumlu | yalnız `IntegrityError` onay, gerekçe 10–1000, görevde Pending / uçuştaki onay yok | — | `IPostingKeyLookup` | 409 `WMS_CONFIRMATION_NOT_RESOLVABLE` / 409 `WMS_CONFIRMATION_PENDING` / 400 `REASON_REQUIRED` / 403 |
 | yeniden deneme | — | yalnız Pending onay | — | — | 409 `WMS_CONFIRMATION_NOT_RETRYABLE` |
 | "Geri taşındı" | — | yalnız çözümsüz Refused onay, gerekçe 10–1000 | — | — | 409 `WMS_CONFIRMATION_NOT_RESOLVABLE` / 400 `REASON_REQUIRED` |
 | geçici sayaç yazımı | görev oluştur | atomik artış | tekil `(TenantId, CompanyCodePrefix, TypePrefix)` | — | 503 `WMS_RECORD_CODE_UNAVAILABLE` |
@@ -893,8 +928,9 @@ harf ve rakam).
 21. **Uçuştaki onay + "Yeniden dene"** → 409 `WMS_CONFIRMATION_IN_FLIGHT`; kilit dolunca replay → Posted (inceleme 03 F-1).
 22. **`IntegrityError` → "Uzlaştır"** (sorumlu, gerekçe) → anahtarı tutan hareket bu onayınsa Posted (defter değerleriyle, gerekirse
     sapma olayı); yabancıysa çözümsüz Refused, görev açık kalır (inceleme 03 F-2, inceleme 04 F-1).
-23. **Posting süresi aşımı** → onay Pending, kilit bırakılır; ledger araması sonradan çözer. Kilit dolduktan sonra commit eden asıl istek
-    planlananı aşarsa → `IntegrityError` (`OverPlanned`) (inceleme 04 F-2).
+23. **Posting süresi aşımı** → onay Pending, kilit `InFlightUntilUtc`'ye kadar korunur; sonraki deneme ledger araması ile çözer. Commit
+    kilit süresinden de geç görünürse ve bu arada deneme ön kontrolle Refused yazdıysa, sweeper'ın savunma dalı onayı `IntegrityError`
+    (`StatusDiverged`) yapar; "Uzlaştır-a" defter gerçeğini yazar (gerekirse `OverPlanned` sapması) (inceleme 04 F-2, inceleme 05 F-1 / F-3).
 
 ## 14. Authorization Convention
 
@@ -1013,8 +1049,8 @@ Süreç içi gerekçe: putaway onayının defter yazımı ve recall / lot / FEFO
 - [ ] AC-51 (zorunlu) — Seri kontrollü SKU tam miktar (F-1): kovada 5 seri → görev miktarı 5 (değiştirilemez); onay kullanıcıdan seri almaz, sistem 5 seriyi okuyup harekete koyar; defterde `SERIAL_COUNT_MISMATCH` yok; serilerin yeni lokasyonu TRACE'te hedef bin.
 - [ ] AC-52 (zorunlu) — Seri SKU'da kısmi onay (3 / 5), kısa kapatma ve miktar düzenleme → 422 `WMS_SERIAL_PARTIAL_NOT_SUPPORTED`, 7 dilde mesaj; aynı kovaya ikinci açık görev → 422 `WMS_QUANTITY_EXCEEDS_OPEN`.
 - [ ] AC-53 (zorunlu) — Seri kovası değişti: görev açıldıktan sonra kovadan 1 seri başka harekete gider → onay (ve Pending'in yeniden denemesi) 422 `WMS_SERIAL_BUCKET_CHANGED` (`expected 5`, `found 4`), hareket yok.
-- [ ] AC-54 (zorunlu) — Eşzamanlı iki yeniden deneme (inceleme 04 F-3 ile kurulabilir hâle getirildi): ledger hareketi yazmış, cevap kaybolmuş, onay Pending; test kilidi ≈ 0 sn (süresi hemen dolar); iki kullanıcı "Yeniden dene"si aynı anda → ikisi de sırayla kilit alır, ikisi de ledger'da `Committed` bulur; yalnız biri yazar (`AttemptId` + `Status == Pending` filtresi), öbürü 0 kayıt etkiler, yeniden okur, aynı `TransactionId` ile Posted görür ve değişiklik yazmaz; tek hareket, `ConfirmedQuantity` bir kez artar, **tek `confirmation-retried` olayı** (AC-15 adlandırması; değişiklik yazmayan ikinci deneme olay ve denetim satırı bırakmaz — İ5). Ayrıca sweeper + kullanıcı: sweeper okuduktan sonra kullanıcı kilit alırsa sweeper'ın yazımı 0 kayıt etkiler, sweeper hiçbir şey yazmaz.
-- [ ] AC-55 (zorunlu) — Refused sonrası akış (F-4): aynı görevde yeni onay (başka hedef) → Posted, eski onay `Resolution = SupersededByNewConfirmation`; "Geri taşındı" (gerekçe) → hareket yok, `Resolution = ReturnedToSource`, "Stok reddetti" rozeti kalkar, görev kalan miktarla açık; Posted / Pending onayda "Geri taşındı" → 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`.
+- [ ] AC-54 (zorunlu) — Eşzamanlı iki yeniden deneme (inceleme 04 F-3 ile kurulabilir hâle getirildi): ledger hareketi yazmış, cevap kaybolmuş, onay Pending; **kilidin süresi sahte saatle (`TimeProvider`) doldurulur** — ayarlar gerçek kalır, açılış doğrulaması bozulmaz (inceleme 05 F-2); iki kullanıcı "Yeniden dene"si aynı anda → ikisi de sırayla kilit alır, ikisi de ledger'da `Committed` bulur; yalnız biri yazar (`AttemptId` + `Status == Pending` filtresi), öbürü 0 kayıt etkiler, yeniden okur, aynı `TransactionId` ile Posted görür ve değişiklik yazmaz; tek hareket, `ConfirmedQuantity` bir kez artar, **tek `confirmation-retried` olayı** (AC-15 adlandırması; değişiklik yazmayan ikinci deneme olay ve denetim satırı bırakmaz — İ5). Ayrıca sweeper + kullanıcı: sweeper okuduktan sonra kullanıcı kilit alırsa sweeper'ın yazımı 0 kayıt etkiler, sweeper hiçbir şey yazmaz.
+- [ ] AC-55 (zorunlu) — Refused sonrası akış (F-4): aynı görevde yeni onay (başka hedef) → Posted, eski onay `Resolution = SupersededByNewConfirmation` + zaman çizelgesinde `ConfirmationSuperseded` olayı ve `confirmation-superseded` denetim satırı (kapatılan seq listesiyle); "Geri taşındı" (gerekçe) → hareket yok, `Resolution = ReturnedToSource`, `ConfirmationReturned` olayı, "Stok reddetti" rozeti kalkar, görev kalan miktarla açık; Posted / Pending onayda "Geri taşındı" → 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`.
 - [ ] AC-56 (zorunlu) — Yeniden deneme ön kontrolleri (F-4): Pending onayın lotu recall'a girer ya da kova karantinaya geçer ya da hedefin saklama koşulu etiketi değişir → yeniden deneme INVENTORY'yi çağırmadan onayı Refused yapar (ön kontrol kodu ile); `LOCATION_TRANSFER` yazılmaz.
 - [ ] AC-57 (zorunlu) — Açık miktar yarışı (CT; tek yol inceleme 02 F-7): 100'lük kovada aynı anda iki 60'lık görev açılabilir (iyimser); ilk onay 60 Posted; ikincinin 60'lık onayı ön kontrolden geçer (durum `AVAILABLE`), onay kaydı açılır, **ledger 422 `INSUFFICIENT_STOCK`** → onay **Refused** (2 denetim satırı); bakiye eksiye düşmez; ikinci görev 40'lık yeni onayla Posted olur.
 
@@ -1025,10 +1061,10 @@ Süreç içi gerekçe: putaway onayının defter yazımı ve recall / lot / FEFO
 - [ ] AC-61 (zorunlu) — Gsku seri bayrağı (inceleme 02 F-3): Gsku stoğunda görev açılışı ürün bayrağını okur; ürün `serialControlled: false` → görev açılır, seri okunmaz; `true` ya da bilinmiyor → 422 `SKU_LEVEL_NOT_STOCKABLE`; Lsku'da `getSku` bayrağı kullanılır.
 - [ ] AC-62 (zorunlu) — Seri kovası ayrımı (inceleme 02 F-2): aynı lokasyonda aynı lot + SKU'nun 3 serisi QUARANTINE tutmasında, 5'i AVAILABLE → seri görevi açılmaz, 422 `WMS_SERIAL_BUCKET_MIXED_STATUS` (7 dilde); tutma kararı sonrası (hepsi AVAILABLE) görev 8 ile açılır ve onayda 8 seri taşınır; açık tutma / bloke serileri asla harekete girmez.
 - [ ] AC-63 (zorunlu) — Bütünlük hatası (inceleme 02 F-1): ledger aynı `PostingKey` ile farklı hareket işlemişse onay `IntegrityError`, cevap 409 `WMS_POSTING_INTEGRITY_ERROR`; "yeni onay ile kapatma" / "Geri taşındı" 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`; görevde yeni onay / iptal / kısa kapatma 409; istisna listesinde görünür; tek çıkış "Uzlaştır" (AC-65).
-- [ ] AC-64 (zorunlu) — Uçuş kilidi (inceleme 03 F-1): asıl onay INVENTORY'de uçuştayken (sahte gecikme) "Yeniden dene" → 409 `WMS_CONFIRMATION_IN_FLIGHT`, hiçbir şey yazılmaz; sweeper kaydı atlar; kilit süresi dolunca "Yeniden dene" → ledger araması → replay → Posted (tek hareket). İşlem 2'de etkilenen 0 ve yazılı durum farklı (kilit süresi dolmuş, başka deneme Refused yazmış, bu deneme Posted almış) → onay `IntegrityError` + olay `ConfirmationIntegrityError`; sessiz dönüş yok.
-- [ ] AC-65 (zorunlu) — "Uzlaştır" (inceleme 03 F-2, inceleme 04 F-1): yalnız `warehouse.putaway-tasks.resolve` sahibi (operatör 403); gerekçe < 10 → 400; yalnız `IntegrityError` onayda (diğerleri 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`). **Kendi hareketi:** anahtarı tutan hareket `MOD-0178` / bu görev / bu `seq` (fikstür: aynı anahtarla tarihi farklı bir 0178 hareketi) → onay Posted, onaya defterin `TransactionId`, miktarı ve hedefi yazılır, fark varsa `ConfirmationDeviation` olayı, görev ilerler. **Yabancı hareket:** anahtarı başka bir `sourceModule` / görev tutuyor → onay çözümsüz Refused, yabancı hareketin kimliği olay verisinde, **görev açık kalır** (durumu değişmez); ardından "yeni onay" ya da "Geri taşındı" çalışır; görevi kapatmak ayrı İptal / Kalanı kapat ile. Denetim satırı 1; düğme ve metin 7 dilde.
-- [ ] AC-66 (zorunlu) — Sweeper = uzlaştırıcı (inceleme 02 F-5 kalanı): `ReconcilePendingConfirmationCommand` her kayıt için `SetScope(tenant, LE, ConfirmedBy)` ile koşar; PRODUCT-MASTER / LOCATION'a 0 çağrı; `Committed` → Posted + 1 satır; `NotCommitted` → `Attempts` aynı, olay yok, denetim satırı 0; kilitli kayıt atlanır; **kayıt başına yalıtım:** tur içinde bir kaydın hatası (enjekte istisna) diğer kayıtların işlenmesini durdurmaz, tur en çok 200 kayıt alır (inceleme 04 F-3).
-- [ ] AC-67 (zorunlu) — Posting süresi ve aşım (inceleme 04 F-2): `PostingTimeoutSeconds` aşılırsa (sahte yavaş ledger) onay Pending kalır, kilit bırakılır, cevap 503; `InFlightLeaseSeconds < PostingTimeoutSeconds + 30` ayarıyla host başlamaz; kilit dolup kalan miktar başka onayla Posted olduktan sonra asıl istek commit ederse işlem 2 koşullu artışı reddeder → onay `IntegrityError` (`OverPlanned`), `ConfirmedQuantity` planlananı aşmaz; "Uzlaştır" (kendi hareketi) defter miktarını yazar ve `ConfirmationDeviation` (`OverPlanned`) açar.
+- [ ] AC-64 (zorunlu) — Uçuş kilidi (inceleme 03 F-1): asıl onay INVENTORY'de uçuştayken (sahte gecikme) "Yeniden dene" → 409 `WMS_CONFIRMATION_IN_FLIGHT`, hiçbir şey yazılmaz; sweeper kaydı atlar; kilit süresi **sahte saatle** (`TimeProvider`) doldurulunca "Yeniden dene" → ledger araması → replay → Posted (tek hareket; inceleme 05 F-2). İşlem 2'de etkilenen 0 ve yazılı durum farklı (kilit süresi dolmuş, başka deneme Refused yazmış, bu deneme Posted almış) → onay `IntegrityError` + olay `ConfirmationIntegrityError`; sessiz dönüş yok.
+- [ ] AC-65 (zorunlu) — "Uzlaştır" (inceleme 03 F-2, inceleme 04 F-1): yalnız `warehouse.putaway-tasks.resolve` sahibi (operatör 403); gerekçe < 10 → 400; yalnız `IntegrityError` onayda (diğerleri 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`). **Kendi hareketi:** anahtarı tutan hareket `MOD-0178` / bu görev / bu `seq` (fikstür: aynı anahtarla tarihi farklı bir 0178 hareketi) → onay Posted, onaya defterin `TransactionId`, miktarı ve hedefi yazılır, fark varsa `ConfirmationDeviation` olayı, görev ilerler. **Yabancı hareket:** anahtarı başka bir `sourceModule` / görev tutuyor → onay çözümsüz Refused, yabancı hareketin kimliği olay verisinde, **görev açık kalır** (durumu değişmez); ardından "yeni onay" ya da "Geri taşındı" çalışır; görevi kapatmak ayrı İptal / Kalanı kapat ile. Görevde Pending onay varken "Uzlaştır" → 409 `WMS_CONFIRMATION_PENDING`. Seri SKU'da kendi hareketi: onaya defterin serileri yazılır, fark `ConfirmationDeviation`'da. Denetim satırı 1; düğme ve metin 7 dilde.
+- [ ] AC-66 (zorunlu) — Sweeper = uzlaştırıcı (inceleme 02 F-5 kalanı): `ReconcilePendingConfirmationCommand` her kayıt için `SetScope(tenant, LE, ConfirmedBy)` ile koşar; PRODUCT-MASTER / LOCATION'a 0 çağrı; `Committed` → Posted + 1 satır; **`KeyReusedDifferentPayload` → `IntegrityError` + olay `ConfirmationIntegrityError` + 1 satır** (inceleme 05 F-5); **savunma dalı:** son 30 dk'da ön kontrolle Refused olmuş onay için ledger `Committed` → `IntegrityError` (`StatusDiverged`) + 1 satır (inceleme 05 F-3); `NotCommitted` → `Attempts` aynı, olay yok, denetim satırı 0; kilitli kayıt atlanır; **kayıt başına yalıtım:** tur içinde bir kaydın hatası (enjekte istisna) diğer kayıtların işlenmesini durdurmaz, tur en çok 200 kayıt alır (inceleme 04 F-3).
+- [ ] AC-67 (zorunlu) — Posting süresi, aşım ve geç commit (inceleme 04 F-2; gerçek akışa göre yeniden yazıldı, inceleme 05 F-1 / F-3): (1) `PostingTimeoutSeconds` aşılırsa (sahte yavaş ledger, sahte saat) onay Pending kalır, cevap 503, **kilit `InFlightUntilUtc`'ye kadar korunur** (bu sürede "Yeniden dene" 409 `WMS_CONFIRMATION_IN_FLIGHT`); (2) `InFlightLeaseSeconds < PostingTimeoutSeconds + 30` gerçek ayarıyla host başlamaz; (3) **geç commit yolu:** 60'lık görev; N onayı (60) posting süresini aşar; kilit dolar; bu arada lot karantinaya girdiği için "Yeniden dene" ön kontrolle N'yi Refused yazar; kalan 60 için P onayı Posted olur; ardından N'nin hareketi defterde görünür → sweeper savunma dalı N'yi `IntegrityError` (`StatusDiverged`) yapar → görevde Pending onay yokken "Uzlaştır" → kendi hareketi → N Posted, `ConfirmedQuantity` = 120 > 60, görev `Completed`, `ConfirmationDeviation` (`OverPlanned`); (4) görevde Pending onay varken "Uzlaştır" → 409 `WMS_CONFIRMATION_PENDING`; (5) işlem 2'nin `Confirmed + q ≤ Planned` savunma koşulu **`PutawayTaskRules` birim testiyle** ölçülür (gerçek akışta tetiklenmez; birim testi koşul tablosunu doğrudan çağırır).
 
 **S3 (iskelet):**
 - [ ] AC-36 (isteğe bağlı) — İstisna Kutusu (Refused / uzun Pending onaylar, outbound uyuşmazlıkları), Etkinlik İzi (görev olayları + `sourceModule MOD-0178` hareketleri), Entegrasyon İzleme (outbox / poll durumu); hepsi salt okunur, şirket kapsamlı.
@@ -1094,8 +1130,18 @@ Süreç içi gerekçe: putaway onayının defter yazımı ve recall / lot / FEFO
        AC-66 "0 çağrı" kırmızı;
   (ao) sweeper yazım filtresinden `InFlightUntilUtc` koşulunu kaldır → AC-54 "sweeper + kullanıcı" testi kırmızı; kayıt başına try/catch'i
        kaldır → AC-66 yalıtım testi kırmızı (inceleme 04 F-3);
-  (ap) işlem 3'ün posting süresi sınırını kaldır → AC-67 aşım testi kırmızı; açılış ayar doğrulamasını kaldır → AC-67 host testi kırmızı;
-       `ConfirmedQuantity + q ≤ PlannedQuantity` koşulunu kaldır → AC-67 `OverPlanned` testi kırmızı (inceleme 04 F-2).
+  (ap) işlem 3'ün posting süresi sınırını kaldır → AC-67 (1) kırmızı; aşımda kilidi hemen bırak → AC-67 (1) "kilit korunur" kırmızı;
+       açılış ayar doğrulamasını kaldır → AC-67 (2) kırmızı; `ConfirmedQuantity + q ≤ PlannedQuantity` koşulunu kaldır →
+       `PutawayTaskRules` birim testi (AC-67 (5)) kırmızı — gerçek akışta tetiklenmeyen savunma koşulu birim testiyle kanıtlanır
+       (inceleme 04 F-2, inceleme 05 F-1);
+  (aq) sweeper'ın `KeyReusedDifferentPayload` dalını kaldır (Pending bırak) → AC-66 KeyReused testi kırmızı (inceleme 05 F-5);
+  (ar) "Uzlaştır"da her holder'ı yabancı say → AC-65 "kendi hareketi" testi kırmızı; seri listesini defterden yazmayı kaldır → AC-65
+       seri testi kırmızı (inceleme 05 F-4, F-5);
+  (as) sweeper'ın `Committed` → Posted yazımını kaldır (Pending bırak) → AC-66 `Committed` testi kırmızı (inceleme 05 F-5);
+  (at) yeni Posted onayda eski Refused onayların `SupersededByNewConfirmation` işaretini / `ConfirmationSuperseded` olayını kaldır →
+       AC-55 Superseded testi kırmızı (inceleme 05 F-5);
+  (au) sweeper savunma dalını kaldır → AC-67 (3) geç commit testi kırmızı (inceleme 05 F-3);
+  (av) "Uzlaştır"daki Pending yasağını kaldır → AC-67 (4) kırmızı (inceleme 05 F-1).
 - Koşulmayan: `AccountKindAcceptanceHost.Tests` (MVP-1 emsali).
 
 ## 18. Ready-for-dev Checklist
@@ -1226,6 +1272,16 @@ Süreç içi gerekçe: putaway onayının defter yazımı ve recall / lot / FEFO
 | F-3 | Sweeper yazım filtresi (`Status == Pending` + `InFlightUntilUtc` boş / geçmiş; kilit almaz; 0 etkilenen → hiçbir şey yazmaz); kayıt başına hata yalıtımı + tur başına 200 (`RecallQuarantineSweeper.cs:65`, `:68-88`); kiracılar arası tarama okuması açık istisna; AC-54 kurulabilir senaryoya ve AC-15 adlandırmasına çevrildi; sabotaj (w) iki koşula hedeflendi | §8.3, AC-54, AC-66, sabotaj (w), (ao) |
 | F-4 | Onay durum makinesi pakette ve WMS §6.1'de: `Pending → IntegrityError`, `IntegrityError → Posted` (Uzlaştır-a), `IntegrityError → Refused` (Uzlaştır-b); port imzası F-1'deki gibi | §8.3, §5, WMS §6.1 |
 
+#### 19.1.7 İnceleme 05 ön kontrolü — kararlar ve düzeltmeler (hedef 1f185d6a4, KOŞULLU; oturum ebfad1f4 — bağımsız değil, bulgular geçerli; CT: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ORTA) | Görevde Pending / uçuştaki onay varken "Uzlaştır" 409 `WMS_CONFIRMATION_PENDING`; işlem 2'nin `OverPlanned` koşulu savunmaya indi ve `PutawayTaskRules` birim testiyle sabotajlanır; AC-67 gerçek akışa göre (geç commit → sweeper savunma dalı `StatusDiverged` → Uzlaştır-a → `ConfirmationDeviation` `OverPlanned`); §4.1'e "onaylanan ≤ planlanan" kuralı ve Uzlaştır-a istisnası | §4.1, §8.3, §12, §13.23, AC-65, AC-67, sabotaj (ap), (av) |
+| F-2 | Kilit / posting süreleri `TimeProvider` ile (0175 emsali `QuarantineServiceCollectionExtensions.cs:36`); AC-54 / AC-64 sahte saatle; açılış doğrulaması gerçek ayarla | §4.2, AC-54, AC-64 |
+| F-3 | Posting süresi aşımında kilit `InFlightUntilUtc`'ye kadar korunur (+30 sn pay commit görünürlüğü ve Mongo işlem ömrü için); sweeper savunma dalı (son 30 dk ön kontrol reddi + ledger `Committed` → `IntegrityError` `StatusDiverged`) | §4.2, §8.3, §13.23, AC-66, AC-67, sabotaj (au) |
+| F-4 | `holder` + `lotId`, `serialIds`, `fromStockStatus` / `toStockStatus`; Uzlaştır-a seri SKU'da defterin serilerini yazar, fark `ConfirmationDeviation`'da | §5, §8.3, AC-65, sabotaj (ar) |
+| F-5 | Olay türleri `ConfirmationSuperseded`, `ConfirmationReturned`; §21 superseded alanları; AC-66 KeyReused dalı; "sweeper IntegrityError üretmez" cümlesi yalnız 0-etkilenen durumuna daraltıldı; sabotajlar (aq)…(at) | §4.3, §8.3, §21, AC-55, AC-66, §17 |
+| Tutarlılık | §8.3'e her geçiş için tetikleyici / yazılan alanlar / olay / AC / sabotaj tablosu (19 satır, boş hücre yok) | §8.3 |
+
 ### 19.2 Ölçülen gerçekler (`47a2c1cb9`, salt okuma)
 - `InternalMovementPostingService.cs:18-31` — `postMovement` ile aynı yol; post-commit `IPostedMovementObserver` bildirimi.
 - `QuarantineMovementPoster.cs:34-39` — tek stok kapısı + belgeden türeyen idempotency anahtarı deseni.
@@ -1257,6 +1313,8 @@ Süreç içi gerekçe: putaway onayının defter yazımı ve recall / lot / FEFO
   - **İnceleme 04 için ölçülenler (`13d343c9a`):** `…/Infrastructure/DependencyInjection.cs:51` — upstream zaman aşımı
     `UpstreamServices:TimeoutSeconds` (yoksa 5 sn), `…/Api/appsettings.json:35` `"TimeoutSeconds": 5`; `IInventoryLedgerRepository.cs:11-12` —
     append-only (yalnız `PostAsync` yazar); `RecallQuarantineSweeper.cs:65` — `Limit(200)`, `:82` kayıt başına `catch`.
+  - **İnceleme 05 için ölçülenler (`1f185d6a4`):** `InventoryLedgerRepository.cs:172` — `session.WithTransactionAsync` (commit sunucu
+    tarafında); `QuarantineServiceCollectionExtensions.cs:36` — `TimeProvider.System` (0175'in uçuş payı saati, testler kendi saatini verir).
 
 ### 19.3 Varsayımlar (yalnız yeni paket sürümüyle değişir)
 - **ASSUMPTION-0178-01:** S1 görev kaynağı elle (Q-M2-1 cevabına kadar).
@@ -1381,9 +1439,9 @@ kaydıdır → **K2 sınıfı**; yol b bu koşulu sağlar (test: denetim yazım�
 | `CreatePutawayTaskCommand` | `warehouse.putaway-task.created` | WarehouseTask | b (K2) | After: Number, kaynak kova, PlannedQuantity, ToLocationId, Assignee, Priority, Origin | — |
 | `UpdatePutawayTaskCommand` | `warehouse.putaway-task.updated` | WarehouseTask | b | Before / After: ToLocationId, PlannedQuantity, Assignee, Priority, Note | — |
 | `BulkAssignPutawayTaskCommand` | `warehouse.putaway-task.assigned` (görev başına bir kayıt) | WarehouseTask | b | Before / After: AssigneeUserId | — |
-| `ConfirmPutawayTaskCommand` | `warehouse.putaway-task.confirmation-recorded` + `warehouse.putaway-task.confirmation-posted` / `.confirmation-refused` / `.confirmation-integrity-error` (ilk onay yolunda `IDEMPOTENCY_KEY_REUSED` ya da işlem 2 durum farkı) | WarehouseTask | b (K2) | Seq, Quantity, From / To, PostingKey, TransactionNumber ya da ErrorCode, Status | — (hareketin kendi kaydı defterde ayrıca) |
+| `ConfirmPutawayTaskCommand` | `warehouse.putaway-task.confirmation-recorded` + `warehouse.putaway-task.confirmation-posted` / `.confirmation-refused` / `.confirmation-integrity-error` (ilk onay yolunda `IDEMPOTENCY_KEY_REUSED` ya da işlem 2 durum farkı); Posted olunca çözümsüz Refused onayları kapatıyorsa ayrıca `.confirmation-superseded` (alanlar: kapatılan `seq` listesi; aynı kural retry / uzlaştırıcı / Uzlaştır-a ile Posted olan onaylar için de geçerlidir — inceleme 05 F-5) | WarehouseTask | b (K2) | Seq, Quantity, From / To, PostingKey, TransactionNumber ya da ErrorCode, Status | — (hareketin kendi kaydı defterde ayrıca) |
 | `RetryPutawayConfirmationCommand` | `warehouse.putaway-task.confirmation-retried` | WarehouseTask | b (K2) | Seq, Attempts, sonuç (Posted / Refused / IntegrityError / Pending) | — (yalnız kullanıcının "Yeniden dene"si; uçuş kilidi reddi 409 kayıt bırakmaz) |
-| `ReconcilePendingConfirmationCommand` | `warehouse.putaway-task.confirmation-reconciled` / `.confirmation-integrity-error` | WarehouseTask | b (K2) — yalnız `Committed` / `KeyReusedDifferentPayload` sonucunda | Seq, TransactionNumber ya da hata kodu | `NotCommitted` turu: yazım yok (İ5 — kalıcı kayıt değiştirmez; `Attempts` da değişmez) |
+| `ReconcilePendingConfirmationCommand` | `warehouse.putaway-task.confirmation-reconciled` / `.confirmation-integrity-error` (`KeyReused` ya da savunma dalı `StatusDiverged`) | WarehouseTask | b (K2) — yalnız `Committed` / `KeyReusedDifferentPayload` / savunma dalı `Committed` sonucunda | Seq, TransactionNumber ya da hata kodu | `NotCommitted` turu: yazım yok (İ5 — kalıcı kayıt değiştirmez; `Attempts` da değişmez) |
 | `ResolvePutawayIntegrityCommand` | `warehouse.putaway-task.integrity-resolved` (+ veri içinde `ConfirmationDeviation`) | WarehouseTask | b (K2) | Seq, IntegrityResolution (`ResolvedOwnMovement` / `ReturnedToRefused`), gerekçe, `holder` (anahtarı tutan hareketin kimliği ve kaynağı), sapma alanları; görev kapanışı yok | — |
 | `ClosePutawayTaskShortCommand` | `warehouse.putaway-task.closed-short` | WarehouseTask | b (K2) | Planned, Confirmed, ShortCloseReason | — |
 | `CancelPutawayTaskCommand` | `warehouse.putaway-task.cancelled` | WarehouseTask | b (K2) | Before Status, CancelReason | — |
