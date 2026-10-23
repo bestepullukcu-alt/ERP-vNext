@@ -109,3 +109,48 @@
   - **Sonuç:** ikisi de CrmService içinde, CRM modüllerinden ayrı sınırlarla (kendi klasör / koleksiyon / izin ad alanı) yaşar. MOD-0168 kaydındaki "SoR boundary with Finance / Order-Mgmt = EA-TBD" notu Program T3'e kalır.
 - **Ön şart (AGENTS çekirdek kural 7):** kod yalnız `approved` / `ready-for-dev` module pack ile yazılır. MOD-0156 ve MOD-0168 için paket yok → **W6-PACK** (iki paket: MOD-0168-FU01 eczane ön siparişi, MOD-0156-FU01 fiyat listesi + iskonto / MF kuralları ilk dilimi) önce yazılır ve onaylanır.
 - **İzin ad alanı:** crm-rbac-integration-plan §2 `commercial.pricing.*` / `commercial.order.*` (PKS-001'de yok; sahip onayı gerekli) — kullanıcı kararı bekleniyor.
+
+
+## 8. E4 görsel karşılaştırma — yerel, 2026-10-21 (CT)
+
+**Ne kullanıldı.**
+- Mockup standalone dosyası `mockups-workspace` sunucusundan açıldı.
+- Canlı ekranlar yerel fleet üzerinde, kiracı 97c5, sipariş MG-ORD-000001 ile açıldı (KONSET, TR fiyat listesi, TEST ECZA DEPOSU).
+- Her iki taraf 1280 px'te ölçüldü: bölüm konumu, sütunlar, alan ve etiket metinleri. Ayrıntılar panel genişliğinde (≈660 px) ekran görüntüsüyle bakıldı.
+- §4 standartları (Golden başlık, `_TabCard`, Golden liste, `.diten-field`) bilerek farklı olan yerlerdir; aşağıda fark sayılmadı.
+
+**Genel sonuç.**
+- Yerleşim mockup'a uyuyor: A'da iki sütun (sol 631 px / sağ 310 px), B ve D'de Golden liste, C'de karar kartı ve 6 ay bölümü, E'de nüsha seçimi ve iletim izi.
+- Farkların çoğu satır ve toplam ayrıntısında, bir kısmı da PDF içeriğinde.
+
+| # | Ekran | Mockup | Canlı | Öneri |
+|---|---|---|---|---|
+| V-1 | A satırlar | Tek satırlık tablo: ÜRÜN · ADET · MF · İSK. % · BİRİM · TOPLAM; başlık satırı bir kez | Her satır ayrı kart; "Ürün" kendi satırında, Adet / MF / İsk. alt satırda; etiketler her satırda tekrar | Masaüstünde tablo satırı, dar ekranda kart. Çok satırlı siparişte sayfa uzuyor. |
+| V-2 | A satır bilgisi | "Form · kutu · GTIN · LSKU" satırı; fiyat kaynağı "liste · tarih · kademe · KDV %10" | Yalnız "Fiyat kaynağı: KONSET TR test listesi" | Kademe, tarih ve KDV % satırda gösterilsin. GTIN / form MDM'den gelince (veri) gösterilsin. |
+| V-3 | A sipariş özeti | Ara toplam (KDV hariç, liste) · İskonto · Net (KDV hariç) · KDV %10 · Etkin indirim (MF + iskonto) · Genel toplam | Net · KDV · Etkin indirim · Genel toplam | Ara toplam ve İskonto satırları eklensin; etiketler mockup'taki gibi açıklayıcı olsun. |
+| V-4 | A önceki siparişler | "ALMIBA × 50, ÜROFLEKS × 20" | "1 satır" | Ürün × adet özeti gösterilsin. |
+| V-5 | A başlık / düğme | Başlıkta "MG-ORD-000123 · Şifa Eczanesi" + durum rozeti; düğme "Yönetici onayına gönder" | "Yeni ön sipariş" (kayıtlı taslakta da); düğme "Gönder" | Kayıtlı taslakta başlık numara + eczane + durum göstersin (Golden başlık içinde); düğme metni bağlama göre değişsin. |
+| V-6 | A eczane | Son / atanmış eczaneler kart olarak, tek dokunuşla seçiliyor | Yalnız arama kutusu | Temsilcinin bölgesindeki son eczaneler hızlı seçim olarak eklensin (isteğe bağlı). |
+| V-7 | B liste | 1280 px'te tüm sütunlar görünür | 1280 px'te Temsilci, Satır, Etkin indirim ve Kural sütunları duyarlı tablo tarafından gizleniyor (`dtr-hidden`) | Sütun önceliği ayarlansın. |
+| V-8 | B liste | "Yerel karşılık sütunu" anahtarı | Yok (sütun görünürlüğünde de bulunamadı) | Doğrulanmalı. |
+| V-9 | C 6 ay | "Etkin indirim eğilimi (MF + iskonto)" grafiği; tablo Ay · Sipariş · Tutar · Etkin | Grafik sipariş sayısını gösteriyor; tablo Ay · Sipariş · Kutu · Toplam | Etkin indirim sütunu ve eğilimi eklensin (yöneticinin karar verisi). |
+| V-10 | C bilgi | Tarih saatle; eczane şehirle; "Reports to (Mehmet Kaya · Bölge Müdürü)" | Saat yok; şehir yok; "(CEO)" pozisyon kodu | Pozisyon adı ve saat gösterilsin. |
+| V-11 | C satırlar | Her hücrenin altında "sınır …" | Kuralsız üründe sınır yok (beklenen) | Kurallı bir satırla yeniden bakılacak (kural dalı testi). |
+| V-12 | D sekmeler | "MF / iskonto kuralları" | "MF-Iskonto Kuralları" (noktasız büyük I — Türkçe büyük harf hatası) | Sekme etiketi düzeltilsin. |
+| V-13 | E PDF antet | Şirket adı + adres + VKN | Yalnız "Satıcı: …" | Şirket adresi ve VKN MDM tüzel kişilikten gelsin. |
+| V-14 | E PDF satırlar | Ürün · Barkod · Adet · MF · İsk. % · Birim fiyat · KDV % · Satır toplamı | Ürün · Adet · Birim fiyat · KDV % · Satır toplamı | Barkod, MF ve İsk. % sütunları eklensin (depo MF'yi görmeli). Önce MF'li bir satırla doğrulanmalı (koşullu olabilir). |
+| V-15 | E PDF toplamlar | Ara toplam · İskonto · Net · KDV · Genel toplam | Net · KDV · Toplam | V-3 ile aynı. |
+| V-16 | E PDF başlık bilgisi | Teslim tarihi, para birimi, depo e-postası | Yok | Eklensin (teslim tarihi boşsa satır yazılmaz). |
+| V-17 | E PDF saatler | Yerel saat | İmza ve onay saati UTC basılıyor (20:08 / 20:10; ekranda iletim 23:10) | Satan şirketin ülke saat dilimiyle basılsın. |
+| V-18 | E PDF eczane | Adres (mahalle, ilçe / il) + GLN + eczane kodu + vergi no | Yalnız ilçe ("ETİMESGUT"); kimlikler boş | Kimlikler veri işi (FU-ACCOUNT-PHARMACY-IDS); il bilgisi eklensin. |
+| V-19 | E PDF | — | "İletim: deneme 1" depo nüshasına basılıyor | İç bilgi; depo nüshasından çıkarılsın. |
+
+**Görsel olmayan bulgular.** Aynı E4'te çıkan G-4…G-11 W6-FIX takibindedir (WP-VW-W6 §37 E4 notu). Bunlar:
+- form kaydı (G-4);
+- `{action}` rotası (G-5);
+- yerel onay kutusu (G-6);
+- onay sorusu (G-7);
+- gönderim sonrası sayfa (G-8);
+- satan şirket kodu (G-9);
+- karar kanalı (G-10);
+- e-posta teslim geri bildirimi (G-11).

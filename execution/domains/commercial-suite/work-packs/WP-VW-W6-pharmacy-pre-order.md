@@ -427,3 +427,171 @@ Ajan commit'i `c559d38c2` (taban `807e80d96`) → test dalına cherry-pick (çak
 
 **W6 yerel E4 — ek (2026-10-21, aynı gün):** Fiyat ekranının ürün seçicisi de `product-master` ucunu kullanıyor → fiyat listesi kalemi ve kural da FU-MDM-PRODUCT-MASTER-READ'e bağlı. Ürünsüz test edilen: Kurlar — GMG · EUR→TRY · 21 Eki · 37,85 · "TCMB (E4 testi)" kaydedildi ve listede. F-2 kapandı (MDM ayrıntı ucunda ülke dolu; lookup DTO'su ülke taşımaz — tasarım gereği; 32/37 şirket dolu, 5 Diten demo şirketi boş). Sema'nın birincil koltuğu POS-MED-DIR "Bağlı olduğu: CEO" yapıldı (yerel test verisi; Admin = Sema'nın yöneticisi). Dış alıcı dili: BDT ülkeleri → Rusça (kullanıcı kararı, test `1b870823a`).
 **Yeni bulgular (W6-FIX adayı):** G-1 Kurlar sekmesinin alt başlığı fiyat listesinin cümlesi ("Her liste bir satış şirketine…") · G-2 tarih seçici (flatpickr) Türkçe arayüzde İngilizce ay / gün adları — ortak mı sayfaya özel mi ölçülecek · G-3 kur listesinde "Son değişiklik" kişi adı yerine kullanıcı kimliği (W5 F-3'ün aynısı; ad çözücü) · F-3 (dar ekranda sekmeler yalnız simge) masaüstü genişlikte etiketli — duyarlı tasarım, kabul.
+
+
+**W6 yerel E4, 2. tur — 2026-10-21/22 (CT, kullanıcıyla birlikte; kiracı 97c5): ana akış GEÇTİ**
+
+**Ürün zinciri açıldı.** Ürün seçici FU-MDM-PRODUCT-MASTER-READ yüzünden boştu.
+- KONSET GSKU onaylandı: Admin gönderdi, Sema Görev Merkezi'nden onayladı.
+- Bunun için yerelde iki değişiklik gerekti:
+  - (1) MDM'in iletilen kullanıcı token'ı sınırı 16 KB'tan 48 KB'a çıkarıldı (geçici, commit YOK). Admin'in token'ı ≈27 KB → FU-MDM-DELEGATED-TOKEN-16K.
+  - (2) MDM'in referans verisi servis kimliği (`AuthWorkflowVerifiedMarketServiceIdentityProvider`, audience `TRUSTED_REFERENCE_DATA_CONSUMER`) bootstrap'ta yoktu. Yerel ayara ikinci Auth istemcisi `diten-mdm-reference` olarak eklendi.
+- Ardından `local_enable_mdm_product_master_read_97c5.py --apply` → seçicide "KONSET · 28 C62" görünüyor.
+
+**Fiyat listesi, dört göz (D13).** Sema "KONSET TR test listesi"ni hazırladı: depo 100 / eczacı 110 / halka 140 TRY, KDV %10. Sema yayıma gönderdi, Admin Görev Merkezi'nden onayladı → yayımlandı (v3).
+- Yerel test verisi: Admin, POS-SALES-OPS'a ikincil olarak atandı. Tek aday gönderenin kendisi olunca Platform haklı olarak reddediyordu.
+
+**Siparişler.**
+- **MG-ORD-000001:** Sema → 1 ETAP ECZANESİ · TEST ECZA DEPOSU (Q-DEPOT-SOR sorusu açık) · 10 × KONSET · 1.210 TRY · imza → onaycı Admin (Reports-to CEO) → onay → `transmitted`, depo PDF'i + eczane kopyası.
+- **MG-ORD-000002:** Sema → Admin "değişiklik iste" (gerekçe zorunlu; sipariş taslağa döndü, imza silindi, olay geçmişi korundu — D2) → Sema düzeltip yeniden imzalatarak gönderdi (`submissionNo` 2) → Admin onay → `transmitted`.
+
+**E-posta.**
+- Yerelde bütün Platform e-postaları `ProviderTlsFailed` ile düşüyordu. Neden Avast Mail Shield: SMTP TLS'ye araya girip kendi sertifikasını sunuyor, MailKit iptal denetiminde reddediyor. Ortam sorunu, kod değil. Avast kapatılınca:
+  - "değişiklik istendi" e-postası gerçekten teslim edildi;
+  - depo e-postası PDF ekiyle teslim edildi (dil tr, `MG-ORD-000002-depot.pdf`).
+- İç alıcıların dili `en`: kiracı varsayılanı (B kararı).
+
+**Mockup görsel karşılaştırması.** Yapıldı → DESIGN-GAP-W6 §8, V-1…V-19.
+
+**Yerelde düzeltilenler (commit YOK, W6-FIX'te gerçek rota / akış testiyle kabul edilecek).**
+- **G-4** — fiyat listesi düzenleme kaydı her zaman 400 dönüyordu: form `legalEntityId` gönderiyordu. `form.js` artık göndermiyor ve şirket alanı kilitli.
+- **G-5** — Web eylem uçlarının rotası `{action}` idi. Bu MVC'nin ayrılmış rota değeri olduğu için şu uçların **hepsi 404** dönüyordu:
+  - fiyat listesi gönder / karar / sürüm / at;
+  - içe aktarma;
+  - kurallar;
+  - **ön sipariş eylemleri**.
+  
+  Rota `{verb}` yapıldı. Testler metodu doğrudan çağırdığı için rotayı hiç sınamıyordu.
+
+**Yeni bulgular (W6-FIX).**
+- **G-6:** fiyat listesinde yerel `window.confirm` kullanılıyor.
+- **G-7:** onay ekranında "Onayla" onay sorusu sormuyor.
+- **G-8:** gönderimden sonra sayfa düzenleme ekranında kalıyor.
+- **G-9:** satan şirket kodu MDM'den `GMGGRANDMEDCALLACLARLTDST-238` olarak geliyor.
+- **G-10:** onay ekranından verilen kararın kanalı `work-center` yazılıyor.
+- **G-11:** CRM'deki "iletildi" yalnız "kuyruğa alındı" demek; e-posta sonradan düşerse CRM'e geri bildirim yok.
+- **G-12 (CİDDİ, Platform; W5-FIX2 × BL-454): onay isteği e-postası HİÇ gitmiyor.**
+  - İç olay ucu e-postayı yalnız kuyruğa yazıyor (QueueOnly).
+  - Gizli değişken `approvalUrl` kayıtta maskeli tutuluyor.
+  - Süpürme maskeli bağlantıyı gönderemiyor ve e-postayı `ACTION_LINK_NOT_RETRYABLE` ile kapatıyor.
+  - Düzeltme: gizli değişken varsa queueOnly olmamalı (`QueueEmailNotificationHandler.cs:190`).
+- **G-13 (CİDDİ): e-postadaki bağlantı oturum kapalıyken açılınca giriş sayfası kiracıyı bilmiyor.**
+  - Ne bağlantıda ne yönlendirmede `tenantId` var.
+  - Yerelde varsayılan kiracı …0001'e giriş yapılıyor → `tenant-unavailable` ile atılıyor.
+  - Canlıda "kiracı eksik" hatası beklenir.
+  - W5 e-posta bağlantıları da aynı risk altında.
+- **Ayrı (MOD-0149):** kurum formunda İstanbul seçilince ilçe listesi Edirne'de kalıyor.
+
+**Kalan.** Şu dallar test edilmedi:
+- reddet;
+- iptal (D5);
+- depo yanıtı (D9);
+- kurallı satır (sınır gösterimi);
+- RU / EN dış e-posta;
+- e-posta bağlantısıyla onay (G-12 + G-13 düzeltilince).
+
+
+## W6-FIX planı (CT, 2026-10-22)
+
+E4'ün 2. turu ve mockup karşılaştırmasında çıkan bulgular üç pakete bölündü.
+
+**Sıra:**
+- **W6-FIX-a ∥ W6-FIX-c** paralel çalışır.
+- **W6-FIX-b**, FIX-c test dalına girdikten sonra başlar. Nedeni: ekran, toplamları CRM yanıtından okur; istemcide hesap yapılmaz.
+
+**Kapsam dışı kalanlar:**
+- **G-9:** satan şirket kodu MDM'den geliyor; MDM notuna gider.
+- **G-11:** "iletildi" ile gerçek teslim arasındaki fark bir kullanıcı kararı; ayrı ele alınacak.
+- **V-6:** eczane hızlı seçimi; FU-W6-PHARMACY-QUICKPICK.
+- **G-10 bulgu değil, kapandı.** `Approve/{id}` Görev Merkezi'nin derin bağlantısıdır, bu yüzden kanalın `work-center` yazılması doğrudur. E-posta bağlantısının kanalı ayrıdır.
+
+**Kullanıcının checkout'undaki yerel değişiklikler:**
+- **G-4** (`form.js`) ve **G-5** (`{verb}`) commit edilmedi. FIX-a bunları kendi worktree'sinde baştan ve testli yazar. CT, kabul sırasında yerel kopyaları atıp FIX-a'nın commit'ini alır.
+- MDM'deki 16 KB geçici değişikliği kullanıcı kararıyla şimdilik yerinde kalıyor.
+
+## §36.1 Agent Prompt — W6-FIX-a (paste-ready · Platform + Web + CRM bağlantıları: onay e-postası, e-posta bağlantısında kiracı, eylem rotaları, fiyat listesi düzenleme)
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W6 · W6-FIX-a — G-12 onay isteği e-postası hiç gitmiyor (Platform), G-13 e-posta bağlantısıyla girişte kiracı kayboluyor (Web + CRM bağlantıları, W5 dahil), G-5 Web eylem rotaları 404 ({action}), G-4 fiyat listesi düzenleme kaydı 400
+Repository: C:\tmp\vw-w6-fixa (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w6-fixa · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA (orada aynı dosyalarda commit edilmemiş yerel düzeltmeler var; onları ALMA, kendin yaz). Kapsam: services/Diten.Platform/** (yalnız bildirim kuyruğu), frontend/Diten.Web/** (+ Tests), services/Diten.CrmService/** (yalnız e-posta bağlantı üreticileri + testleri).
+ÖNCE OKU: WP-VW-W6 "W6 yerel E4, 2. tur" notu (G-4, G-5, G-12, G-13) · WP-VW-W5 K-N1 + §37 W5-FIX2 (F-1 queue-only) · Platform QueueEmailNotificationHandler (BL-454 gizli değişken maskeleme) + EmailDispatchJob (ActionLinkRedacted → ACTION_LINK_NOT_RETRYABLE) · Web Program.cs cookie auth + tenant-shell guard (tenant-unavailable) + AccountController.Login + assets/js/Account/login.js (tenantId sorgu parametresi) · CRM PreOrderClients.cs (IPreOrderLinks) + W5 VisitNotification bağlantı üreticisi (reportUrl).
+İŞ:
+(1) G-12 — QueueEmailNotificationHandler: gizli değişken varsa (secretNames boş değilse) kuyruğa-yalnız yazma YOK; gönderim istek içinde yapılır (W5-FIX2 öncesi yol). Gizlisiz e-postalar kuyrukta kalır (F-1 korunur). İkinci kusur: süpürme ACTION_LINK_NOT_RETRYABLE ile kapatırken İLK hatanın kodunu ezmesin — ilk kod korunur (ErrorCode / ErrorMessage'da ikisi birden okunur biçimde ya da ayrı alan; mevcut okuyucuları kırma).
+(2) G-13 — e-posta bağlantıları kiracıyı taşır: CRM W6 OrderUrl + ApprovalLinkUrl ve W5 reportUrl'e `tenantId=<D-biçimli guid>` eklenir. Web: oturum kapalıyken korunan sayfaya gelen istek giriş sayfasına yönlendirilirken istekteki `tenantId` (geçerli guid ise) giriş adresine taşınır (cookie OnRedirectToLogin ya da eşdeğeri; returnUrl korunur). Giriş sonrası returnUrl'e dönülür; returnUrl yerel olmayan adresse reddedilir (açık yönlendirme yok). Geçersiz / eksik tenantId → bugünkü davranış.
+(3) G-5 — Web'deki dört eylem rotası `{action}` → `{verb}` (MVC'nin ayrılmış rota değeri; yöntem adıyla eşleşip her gerçek eylemi 404 yapıyordu): CommercialPricingController (price-lists / imports / rules) + PreOrdersController (orders). Bütün Web projesinde başka `{action}` rota parametresi kalmadığını tara.
+(4) G-4 — Commercial/PriceLists/form.js: düzenlemede PUT gövdesinde `legalEntityId` GÖNDERİLMEZ (CRM güncellemede her değeri reddediyor); düzenlemede satan şirket alanı kilitli.
+KORU/YAPMA: queue-only'nin gizlisiz e-postalardaki davranışı ve tekillik anahtarı aynı; BL-454 maskeleme aynı (gizli değer kayda yazılmaz); D4 (bağlantı oturum açtırır) aynı; mock / harness kullanıcının sekmesine yok; localhost:27017 YOK (geçici mongod).
+DOĞRULA: (a) Platform: iç olay ucundan gizli değişkenli e-posta → sağlayıcı bir kez çağrılır, durum Sent; gizlisiz → Queued + süpürme gönderir; ACTION_LINK kapanışında ilk kod okunur. (b) Web: GERÇEK yönlendirme testi (WebApplicationFactory / TestServer, metodu doğrudan çağırma DEĞİL): dört rotanın her eylemi 404 değil (yetkisizde 403 / iskeletsiz); oturumsuz `/Commercial/PreOrders/ApprovalLink?token=x&tenantId=<guid>` → giriş adresinde tenantId + returnUrl; geçersiz tenantId taşınmaz. (c) CRM: üç bağlantıda tenantId var. (d) form.js: düzenleme gövdesinde legalEntityId yok (RunNode). Sabotajlar (en az 4): gizli → kuyruk koşulunu kaldır; rotayı {action}'a geri al; tenantId taşımayı kaldır; form.js'e legalEntityId'yi geri koy — her biri kırmızı. Platform tam takım (DITEN_TEST_MONGOD, -o repo içi), Diten.Web.Tests tam takım, CRM Application tam takım; taban aynı test dalı başı (bilinen kırmızılar known_failures.py).
+Commit: "fix(crm): WP-VW-W6 W6-FIX-a — approval e-mails with a secret link are sent in the request, e-mail links carry the tenant to sign-in, action routes no longer 404, price list edit no longer sends the legal entity" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §36.1 Agent Prompt — W6-FIX-c (paste-ready · CRM: sipariş toplamları + depo belgesi PDF farkları · W6-FIX-a ile paralel)
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W6 · W6-FIX-c — MOD-0168 sipariş toplamlarına liste ara toplamı + iskonto tutarı; depo belgesi PDF'i mockup E'ye yaklaştırma (antet, sütunlar, toplamlar, başlık bilgileri, yerel saat, eczane ili, iç iletim bilgisinin çıkarılması)
+Repository: C:\tmp\vw-w6-fixc (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w6-fixc · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA. Kapsam: services/Diten.CrmService/** (+ testleri). Web'e DOKUNMA (FIX-b okur).
+ÖNCE OKU: DESIGN-GAP-W6 §8 (V-3, V-13…V-19) + §1 E + §3 "E belgesi içeriği" · mockup E (`decoded-w6/W6-on-siparis.dc.html`, belge bölümü) · WP-VW-W6 §37 W6-BE-c2 (PDF üretici, PDFsharp, K-W6-PDF-SCRIPT açık) + "W6 yerel E4, 2. tur" notu · MOD-0168 paketi §4.2 (gösterim) · MDM tüzel kişilik ayrıntı istemcisi (adres / vergi no alanları var mı — yoksa DUR, raporla, FU yaz).
+İŞ:
+(1) V-3 / V-15 — toplamlar: `listSubtotal` (Σ adet × liste birim fiyatı, KDV hariç) + `discountAmount` (listSubtotal − net) sipariş yanıtına ve PDF'e; mevcut net / vat / gross / effectiveDiscountPct aynı. Geçmiş siparişler okunurken eksikse hesaplanır (göç yok). Etkin indirim depo nüshasında GİZLİ kalır (DESIGN-GAP §3 kararı), eczane kopyasında / ekranda görünür.
+(2) PDF depo nüshası + eczane kopyası:
+  - V-13 antet: satan şirket adı + adres + vergi no (MDM tüzel kişilik ayrıntısından; alan yoksa yalnız ad + FU-MDM-LE-ADDRESS-TAX);
+  - V-14 satır sütunları: Ürün · Barkod (GTIN; yoksa "—") · Adet · MF · İsk. % · Birim fiyat · KDV % · Satır toplamı (MF / İsk. boşsa "—", sütun hep var);
+  - V-16 başlık bilgileri: teslim tarihi (boşsa satır yok), para birimi, depo e-postası;
+  - V-17 saatler (imza, onay) satan şirketin ülke saat diliminde, dilim adıyla (UTC yok);
+  - V-18 eczane adresi il ile;
+  - V-19 "İletim: deneme N" depo nüshasından ÇIKAR (iç bilgi).
+  Tablo sayfa kenarını aşmasın (dar sütun + kaydırmasız kırma).
+KORU/YAPMA: belge ve e-posta dili kuralı (satıcı ülkesi, BDT → ru) aynı; MOD-0262 yazma / sürüm davranışı aynı; ar / zh K-W6-PDF-SCRIPT açık (değiştirme); localhost:27017 YOK.
+DOĞRULA: birim + üretici testleri: toplamlar (MF + iskontolu, iskontosuz, çok satırlı), PDF metninde sütun başlıkları + "—" + antet + yerel saat + il; depo nüshasında "deneme" ve etkin % yok, eczane kopyasında etkin % var. Sabotajlar (en az 3): discountAmount'u sıfırla; saat dilimini UTC'ye geri al; deneme satırını geri koy — kırmızı. CRM Application + Infrastructure tam takım (-o repo içi; taban aynı baş). Görsel kanıt: üretilen PDF'in sayfa görüntüsü raporda.
+Commit: "feat(crm): WP-VW-W6 W6-FIX-c — order totals carry the list subtotal and discount; depot document letterhead, line columns, totals, local times and no internal transmission note" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §36.1 Agent Prompt — W6-FIX-b (paste-ready · Web: ekran farkları ve küçük bulgular · W6-FIX-c test dalına alındıktan SONRA)
+
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W6 · W6-FIX-b — ön sipariş ve fiyat ekranlarında E4 bulguları (G-1, G-2, G-3, G-6, G-7, G-8) + mockup farkları (V-1…V-5, V-7…V-10, V-12) + FU-VISIT-END-SEPARATOR
+Repository: C:\tmp\vw-w6-fixb (worktree, test/crm-content-visit-e2e güncel başı — FIX-a ve FIX-c içinde) · Branch: wp/vw-w6-fixb · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA. Kapsam: frontend/Diten.Web/** (+ Tests). CRM / Platform'a DOKUNMA (gereken veri yoksa DUR ve sor).
+ÖN KOŞUL: §37 W6-FIX-c test dalında olmalı (listSubtotal / discountAmount) — değilse DUR.
+ÖNCE OKU: DESIGN-GAP-W6 §8 (V tablosu) + §4 standartlar · WP-VW-W6 "W6 yerel E4" 1. tur (G-1…G-3) + 2. tur (G-6…G-8) · mockup A, B, C (`decoded-w6`) · W6-WEB-a / W6-WEB-b §37'leri.
+İŞ:
+- G-1 Kurlar alt başlığı kendi cümlesi;
+- G-2 tarih seçici arayüz diliyle (ortak yardımcıda mı sayfada mı — ölç; ortaksa ortak düzelt, raporla);
+- G-3 kur listesinde "Son değişiklik" kişi adı (mevcut ad çözücü);
+- G-6 fiyat listesi gönder / at → standart onay penceresi (window.confirm YOK);
+- G-7 onay ekranında "Onayla" standart onay penceresiyle;
+- G-8 gönderimden sonra Detay'a geçiş.
+- V-1 sipariş satırları md ve üstünde tek satırlık tablo (başlık satırı bir kez; ÜRÜN · ADET · MF · İSK. % · BİRİM · TOPLAM), dar ekranda kart;
+- V-2 satır altında fiyat kaynağı: liste adı · geçerlilik · kademe · KDV %, ürün bilgisi (form / GTIN varsa);
+- V-3 özet: Ara toplam (KDV hariç, liste) · İskonto · Net (KDV hariç) · KDV %{oran} · Etkin indirim (MF + iskonto) · Genel toplam — değerler CRM yanıtından;
+- V-4 önceki siparişlerde "ürün × adet" özeti;
+- V-5 kayıtlı taslakta başlıkta sipariş no + eczane + durum rozeti (Golden başlık içinde), gönder düğmesi bağlama göre ("Yönetici onayına gönder" / "Gönder");
+- V-7 liste sütun önceliği (1280 px'te Temsilci, Satır, Etkin indirim, Kural görünür);
+- V-8 "Yerel karşılık sütunu" var mı ölç, yoksa sütun görünürlüğüne ekle;
+- V-9 onay ekranı 6 ay: etkin indirim eğilimi + tabloda Etkin sütunu;
+- V-10 onay ekranında tarih saatle, eczane ille, Reports-to pozisyon ADI;
+- V-12 sekme etiketi "MF / iskonto kuralları" (Türkçe büyük harf hatası; başka Title Case dönüşümü varsa tara).
+- FU-VISIT-END-SEPARATOR: ziyaret bitti ekranında kurum boşken "· ·" yazılmaz.
+- Metinler 7 dilde, UXH-001 yardım güncel.
+KORU/YAPMA: Golden standartlar (§4) kazanır; mockup'ın cihaz çerçevesi / kendi üst çubuğu alınmaz; istemcide fiyat / indirim formülü YOK; mock / harness kullanıcının sekmesine yok.
+DOĞRULA: xUnit + RunNode: window.confirm kaynak taraması 0; Onayla onay penceresi; gönderim sonrası Details; özet satırları CRM alanlarından; sekme etiketi; 1280 px sütun önceliği ayarı; resx 7 dil. Sabotajlar (en az 3): window.confirm'e geri dön, özet değerini istemcide hesapla (kaynak taraması yakalamalı), "Iskonto" etiketine geri dön. Diten.Web.Tests tam takım (taban aynı baş). Görsel kanıt: mockup ile yan yana ekran görüntüsü (A satırlar + özet, B liste, C 6 ay) — raporda.
+Commit: "fix(web): WP-VW-W6 W6-FIX-b — pre-order and pricing screens: line table, totals breakdown, confirmations, header and list columns, approval trend, labels" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §37 CT kabul — W6-FIX-c E2 ACCEPTED (2026-10-23)
+
+- **Alındı:** `wp/vw-w6-fixc` 68a891ed6 → test dalına `3bc18e9b2` (cherry-pick, çakışma yok). 21 dosya, yalnız CRM.
+- **İnceleme:**
+  - Toplam hesabı tek yerde, `PricingMath.ListSubtotal` / `DiscountAmount`; MF kutuları sayılmaz.
+  - Değerlendirici, önizleme ve yanıt aynı sayıları taşır. Eski sipariş okurken tamamlanır (`PreOrderTotalsReading`), kayda yazılmaz.
+  - Antet MDM `registeredAddressJson` + `taxId` / `vatNumber`'dan; taslakta ve gönderimde anlık görüntü alınır.
+  - Saat `CountryTimeZones` ile yazılır (başkent dilimi, tabloda olmayan ülke "UTC" adıyla). İl adı MOD-0048 `city`'den.
+  - "İletim: deneme N" depo nüshasından çıktı. 7 dil resx tamam.
+- **Testler (CT, aynı baş):** CRM Application.Tests 3261 başarılı / 1 başarısız / 5 atlanan. Başarısız olan bilinen `VisitPlanningFix2Tests.The_account_and_contact_repositories_search_through_the_shared_pattern`. Ajanın raporuyla birebir.
+- **CT bozma denemesi** (ajanın denemediği kural): eski sipariş tamamlaması 0 döndürsün → `T4_an_order_saved_before_the_fix_is_completed_on_read_and_nothing_is_written` KIRMIZI. Dosya geri alındı (md5 aynı).
+- **Kullanıcı kararı (2026-10-23):** depo nüshasında satır **İsk. %** ve iskonto tutarı GÖRÜNÜR; yalnız **etkin indirim %** (iç bilgi) depo nüshasında gizli, eczane kopyasında görünür. Gerekçe: MOD-0168 §4.7 + DESIGN-GAP §3, ayrıca faturayı depo keser. BE-c2'nin satır iskontosunu da gizleyen eski D1 testi buna göre değişti.
+- **Takip:** FU-MDM-LE-TIMEZONE (MDM tüzel kişiliğinde saat dilimi alanı yok).
+  - FU-MDM-LE-ADDRESS-TAX gerekmedi; alanlar MDM'de var. Yerel tüzel kişilikte adres / VKN boşsa antette yalnız ad çıkar (veri işi).
+  - W6-FIX-b `totals.listSubtotal` / `totals.discountAmount` okuyabilir → **W6-FIX-b başlayabilir** (FIX-a'dan bağımsız).
