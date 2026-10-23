@@ -122,7 +122,6 @@ public sealed class AdminAccountSeedDevelopmentOptInStartTests : IClassFixture<A
 
 /// <summary>The account step itself, on fixed-name databases of the shared test-owned mongod (the seed writes the platform
 /// tenant: never the host's database), each emptied first.</summary>
-[Collection("AccountKindAcceptance")]
 public sealed class AdminAccountSeedRuleTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private static readonly Guid PlatformTenantId = AdminAccountSeedStartUp.PlatformTenantId;

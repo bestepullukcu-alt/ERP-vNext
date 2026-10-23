@@ -20,7 +20,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// tests READ them back rather than trusting the configuration source. Every subject is a disposable account of the
 /// fixture's disposable tenant; the shared 27017 server is never touched.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class UserLifecycleMongoTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private const string MigrationProbe = "users_email_index_migration_probe";

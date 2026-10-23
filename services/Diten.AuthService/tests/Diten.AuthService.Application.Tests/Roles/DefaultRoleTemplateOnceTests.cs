@@ -26,7 +26,6 @@ namespace Diten.AuthService.Application.Tests.Roles;
 /// the production <see cref="RoleProvisioningService"/> and repositories, and <see cref="DataSeeder.SeedAsync"/> for the seed
 /// tenant. Only the outbound edges (internal key check, Platform entitlement / login-settings HTTP) are replaced.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class DefaultRoleTemplateOnceTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private const string AuditEvent = "default_role_provisioned";

@@ -11,7 +11,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// (<see cref="AccountKindAcceptance.SeedDisplayLabelSubjectsAsync"/>). The subjects and actors from
 /// <see cref="AccountKindAcceptance.Seed"/> are reused as-is; nothing here writes to the DefaultTenant.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class UserDisplayLabelEndpointTests : IClassFixture<AccountKindAcceptance.AuthTestHost>, IAsyncLifetime
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

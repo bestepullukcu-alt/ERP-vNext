@@ -16,7 +16,6 @@ namespace Diten.AuthService.Application.Tests.Authorization;
 /// readers receive export once, a marked tenant is not looked at again, a revoke sticks, its own mark key — runs for it in
 /// <c>ExportGrantBackfillScenarioTests</c> ("brands").</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class BrandsExportPermissionSeedTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

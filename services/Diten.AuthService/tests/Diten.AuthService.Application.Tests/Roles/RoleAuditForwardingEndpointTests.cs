@@ -13,7 +13,6 @@ namespace Diten.AuthService.Application.Tests.Roles;
 /// caller's tenant, actor = the caller BY NAME). HTTP round trips through the real Api on a test-owned mongod; only the
 /// network under the forwarder's typed client is fake. Two disposable tenants per class.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class RoleAuditForwardingEndpointTests : IClassFixture<PlatformEdgeTestHost>
 {
     private const string AppendPath = "/api/internal/audit/append";
