@@ -81,3 +81,8 @@ INVENTORY on lane ports 6100–6199 (MVP-1 live tours remain the acceptance).
    (code to choose with the contract owner; 3.4.0 has only `DISPATCH_COMPENSATION_FAILED`).
 4. **Permission pre-check.** §23.2 relies on INVENTORY's 403 → 503. Proposal: keep it (no copy of another service's
    permission in SupplyChain), with a log line naming the missing permission.
+5. **The return reader breaks on the 3.4.0 line fields.** `Infrastructure/Features/Returns/ReturnReferenceReader.cs` rejects
+   any line property except the five required ones and `inventoryReferenceId`, so after this change every return read would
+   answer 502. The reader must accept the new fields in this same change, with a test "shipment detail with 3.4.0 line fields →
+   return create still 201". Also proposed: add read-only `ShipmentLine.issueTransactionId` to 3.4.0 now, so MOD-0186 DL-1 can
+   read the issue over the seam (`MOD-0186-DL1-IMPLEMENTATION-PLAN.md` §4).
