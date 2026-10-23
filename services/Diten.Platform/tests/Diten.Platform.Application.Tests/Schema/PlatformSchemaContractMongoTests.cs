@@ -26,6 +26,7 @@ namespace Diten.Platform.Application.Tests.Schema;
  * TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests would otherwise catch here.
  */
 [Collection("platform-schema-contract")]
+[Trait("Category", "Mongo")]
 public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 {
     /*

@@ -32,6 +32,7 @@ using Task = System.Threading.Tasks.Task;
 /// module's own cross-command real-Mongo tests already take.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TaskTypeEffectivenessGateMongoTests
 {
     [Fact]

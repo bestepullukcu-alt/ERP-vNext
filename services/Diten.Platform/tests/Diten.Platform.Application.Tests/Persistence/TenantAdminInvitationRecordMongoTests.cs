@@ -12,6 +12,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// step, the administrator's times and one activity line, nothing else — so a change made between the writer's read and its
 /// write (here: a suspension) is never put back.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TenantAdminInvitationRecordMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

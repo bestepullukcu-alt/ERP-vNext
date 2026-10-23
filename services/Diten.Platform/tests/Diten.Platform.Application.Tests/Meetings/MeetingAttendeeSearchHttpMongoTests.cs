@@ -46,6 +46,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// AuthService itself is played by a handler that, like the real one, answers for the tenant it is asked about.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class MeetingAttendeeSearchHttpMongoTests
 {
     [Theory]

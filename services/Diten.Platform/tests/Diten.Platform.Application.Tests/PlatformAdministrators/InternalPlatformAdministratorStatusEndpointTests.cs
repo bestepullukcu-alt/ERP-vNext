@@ -32,6 +32,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// <c>PlatformAdministratorStatusClientWireTests</c> feed the production client.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class InternalPlatformAdministratorStatusEndpointTests
 {
     private const string TestOnlyInternalKey = "bl521-fix2-test-only-internal-key-platform";

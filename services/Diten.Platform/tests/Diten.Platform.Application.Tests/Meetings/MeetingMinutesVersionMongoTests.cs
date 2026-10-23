@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// before inserting, so it would keep passing even if the real index were dropped. This file is the ONE place
 /// that would go red if it were.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class MeetingMinutesVersionMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

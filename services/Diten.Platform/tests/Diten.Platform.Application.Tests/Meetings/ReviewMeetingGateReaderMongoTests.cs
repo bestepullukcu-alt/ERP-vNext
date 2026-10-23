@@ -23,6 +23,7 @@ using Task = System.Threading.Tasks.Task;
 /// this file covers every meeting/minutes SHAPE the reader itself must tell apart.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ReviewMeetingGateReaderMongoTests
 {
     [Fact]

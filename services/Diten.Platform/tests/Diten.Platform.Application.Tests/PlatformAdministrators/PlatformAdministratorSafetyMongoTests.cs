@@ -39,6 +39,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// shared database, never the seeded admin.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorSafetyMongoTests
 {
     // ── (a) own actor type, status, e-mail ──────────────────────────────────────────────────────────────

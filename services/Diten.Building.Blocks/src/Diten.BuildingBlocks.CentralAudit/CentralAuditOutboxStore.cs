@@ -38,6 +38,13 @@ public interface ICentralAuditOutboxStore
 
     Task<CentralAuditBacklog> GetBacklogAsync(CancellationToken ct);
 
+    /// <summary>
+    /// Creates the outbox collection explicitly, outside any transaction (an existing one is fine), then its indexes. Runs
+    /// before the host serves requests (<see cref="CentralAuditOutboxInitializerHostedService"/>): a command's transaction
+    /// never creates the collection implicitly, so it cannot collide with the dispatcher's index step (FU-BL501-OUTBOX-RACE).
+    /// </summary>
+    Task EnsureCreatedAsync(CancellationToken ct);
+
     Task CreateIndexesAsync(CancellationToken ct);
 }
 
@@ -47,12 +54,28 @@ public sealed record CentralAuditBacklog(long Pending, DateTime? OldestPendingCr
 public sealed class MongoCentralAuditOutboxStore : ICentralAuditOutboxStore
 {
     private static readonly object MapGate = new();
+    private readonly IMongoDatabase _database;
     private readonly IMongoCollection<CentralAuditOutboxRecord> _collection;
 
     public MongoCentralAuditOutboxStore(IMongoDatabase database)
     {
         EnsureClassMap();
+        _database = database;
         _collection = database.GetCollection<CentralAuditOutboxRecord>(CentralAuditOutboxRecord.CollectionName);
+    }
+
+    public async Task EnsureCreatedAsync(CancellationToken ct)
+    {
+        try
+        {
+            await _database.CreateCollectionAsync(CentralAuditOutboxRecord.CollectionName, cancellationToken: ct);
+        }
+        catch (MongoCommandException ex) when (string.Equals(ex.CodeName, "NamespaceExists", StringComparison.Ordinal))
+        {
+            // Already there (every start after the first, or another instance of the service started at the same moment).
+        }
+
+        await CreateIndexesAsync(ct);
     }
 
     public async Task InsertInTransactionAsync(IClientSessionHandle session, CentralAuditOutboxRecord record, CancellationToken ct)

@@ -14,6 +14,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 // — never a database per test class (the shape MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun
 // forbids).
 
+[Trait("Category", "Mongo")]
 public sealed class MeetingRepositoryMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;
@@ -134,6 +135,7 @@ public sealed class MeetingRepositoryMongoTests : IAsyncLifetime
     }
 }
 
+[Trait("Category", "Mongo")]
 public sealed class MeetingAttendeeRepositoryMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;
@@ -221,6 +223,7 @@ public sealed class MeetingAttendeeRepositoryMongoTests : IAsyncLifetime
     }
 }
 
+[Trait("Category", "Mongo")]
 public sealed class AgendaItemRepositoryMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;
@@ -296,6 +299,7 @@ public sealed class AgendaItemRepositoryMongoTests : IAsyncLifetime
     }
 }
 
+[Trait("Category", "Mongo")]
 public sealed class MeetingTypeRepositoryMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

@@ -57,6 +57,7 @@ namespace Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions;
 /// path.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TenantSubscriptionEndpointsHttpMongoTests
 {
     private const string AuditGateRefusal = "Transaction-owned audit is not authorized";

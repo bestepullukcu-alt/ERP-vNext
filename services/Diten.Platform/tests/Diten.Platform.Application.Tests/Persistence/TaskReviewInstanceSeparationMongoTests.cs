@@ -21,6 +21,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// is never issued — that is exactly how the parallel-array sort defect reached production with 1595 tests green.
 /// The separation asserted here is a property of the QUERY's filter, so only the real query can prove it.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskReviewInstanceSeparationMongoTests : IAsyncLifetime
 {
     private static readonly Guid TaskId = Guid.Parse("835dc3ef-56be-437f-9a5e-7df1b1931324");
