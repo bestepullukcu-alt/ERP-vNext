@@ -1488,9 +1488,10 @@ public sealed class PvgServiceApiHostTests
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public ValueTask<bool> ReplaceAsync(
+        public ValueTask<PvgIntakeDraftReplaceResult> ReplaceAsync(
             PvgPersistenceTenantScope tenantScope,
             string intakeDraftId,
+            long? expectedVersion,
             SafetyCaseIntake intake,
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
