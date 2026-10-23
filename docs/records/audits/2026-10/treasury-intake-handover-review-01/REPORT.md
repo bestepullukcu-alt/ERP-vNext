@@ -121,6 +121,24 @@ yanlış. Yeni sürümler kaynak kuyruğunda READY: MOD-0289 v1.7 (TRM-B7-03-R1)
   ("planned / missing", kimlik rezerve) **ve** kod 0 dosya. İkisi birlikte doğru.
 - MOD-0126 v1.2 ve MOD-0119 v1.1 kaynakta VERIFIED, henüz teslim edilmedi.
 
+## 7b. Ek 2 (2026-10-24) — Batch 7 yeniden yayımları doğrulandı
+
+Girdi: `source-batch7-v1.0/`, SHA256SUMS `ce48b3729a478aaa294661ca7603ee82d483af60002665baeb1fb161b6f97e58` — 82/82 OK,
+listede olmayan dosya yok; 81/81 dosya kaynak commit `182855b11d2e0397f1ee8988bada297600d633aa` baytlarıyla eşit.
+
+| paket | manifest | bağlamalar (Treasury Intake CT, dışa aktarılmış ağaçlarla sha256) | istenen düzeltme |
+|---|---|---|---|
+| MOD-0126 v1.2 | `660ab4c0…cabcc8` | 293 çözüldü; 237 §N untracked; 4 göreli H dosyası | ✅ SoD ve onaylayıcı politikası ölçülmüş ve satırlı (§E, §G, §H.2): `PaymentSodPolicyService.cs:38-66`, `:78-112`, `Tier2AmountThreshold = 50_000m`, ikinci politika `ApproverPolicyContracts.cs`; `WorkflowStartFailed` (8 yer); destination sayıları 199; MOD-0217 ortaklığı. Banka referansları yalnız boş-olmayan-Guid; LE uygunluğu yok — açıkça yazılı |
+| MOD-0119 v1.1 | `f075aeaf…f581c1d31` | 73 çözüldü | ✅ §J.1 üç cutover raporu satır alıntılı. **"Production-live" yerel geliştirme yığınında**: OBSERVATION raporu :17/:25 "local stack … no separate production environment", :95 "no real users"; GO-NOGO :114 "no schema or data added". Bağlanan commit `218acaf5` derlenmedi (uyarı başta yazılı) |
+| MOD-0289 v1.7 | `58be78ae…b6f7b5647` | 218 çözüldü; Recovery `7a1e4d76` rapor bağlaması sha256 `ac415946…` eşit | ✅ `da4abb20`'ye yeniden bağlandı (40 yer), fixture önkoşulları (14), `Guid.Empty` (4), MOD-0003 "planned / missing" (7), derlenmeme uyarısı |
+| MOD-0220 v1.3 | `4c593a62…ae04b9` | 149 çözüldü | ✅ `da4abb20`'ye yeniden bağlandı (38 yer). Kaynak/Recovery pack farkı pakette yok (Recovery §M'de kaydedilecek; istenmemişti) |
+
+**§3 değişikliği:** dört paket için öneri **KOŞULLU KABUL** (H1–H3 kapandı; kalan koşullar §7'deki Recovery-tarafı
+maddeleri). MOD-0220 v1.3 koşulu: kaynak ve Recovery pack farkı §M'de. Eski sürümler (v1.1, v1.0, v1.5, v1.2) tarih
+olarak kalır; level-1 kaydı yeni sürümlerin manifest SHA'sını gösterir. Kanıt özeti v1.2 (F02/PAIR) kaynakta bekliyor.
+
+Not: MOD-0289 v1.7 yazarı Recovery inceleme raporunu "tek bir izinli git show" ile okuduğunu yazıyor (veri olarak).
+
 ## 8. Ölçülmeyenler
 
 Çalışma zamanı, derleme ve testlerin yeniden koşusu; §N'deki commit edilmemiş kayıtlar; Blueprint hücreleri ve
