@@ -49,11 +49,19 @@ public sealed class PlatformExceptionPipelineOrderTests
     [Fact]
     public async Task The_http_test_host_of_the_503_mappings_uses_the_production_exception_handler()
     {
-        await using var host = await PartnerAdminScopeHttpMongoTests.Host.StartAsync();
+        // TEST-HIZ-01: that host is now built once per class by its fixture; this test builds its own, on its own replica set.
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var host = await PartnerAdminScopeHttpMongoTests.Host.CreateAsync(mongo);
+        try
+        {
+            var handlers = host.Services.GetServices<IExceptionHandler>().ToList();
 
-        var handlers = host.Services.GetServices<IExceptionHandler>().ToList();
-
-        Assert.IsType<GlobalExceptionHandler>(Assert.Single(handlers));
+            Assert.IsType<GlobalExceptionHandler>(Assert.Single(handlers));
+        }
+        finally
+        {
+            host.Shutdown();
+        }
     }
 
     /// <summary>Merge WP-CT-LANE-BL521-MERGE-01 — what the order above stands for: authentication and authorization are run by
