@@ -113,4 +113,5 @@
   <data name="Err_visit_execution_not_found" xml:space="preserve"><value>La visite est introuvable.</value></data>
   <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>La visite a changé sur un autre écran. Rechargez la page.</value></data>
   <data name="Err_resource_not_caller" xml:space="preserve"><value>Seul le délégué de la visite peut l'enregistrer.</value></data>
+  <data name="SummaryLineNoAccount" xml:space="preserve"><value>{0} · {1}–{2}</value></data>
 </root>

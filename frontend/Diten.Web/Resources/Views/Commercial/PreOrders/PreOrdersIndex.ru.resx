@@ -338,13 +338,13 @@
     <value>{0} / уп.</value>
   </data>
   <data name="TotalNet" xml:space="preserve">
-    <value>Нетто</value>
+    <value>Нетто (без НДС)</value>
   </data>
   <data name="TotalVat" xml:space="preserve">
     <value>НДС</value>
   </data>
   <data name="TotalEffective" xml:space="preserve">
-    <value>Фактическая скидка</value>
+    <value>Эффективная скидка (бонус + скидка)</value>
   </data>
   <data name="TotalGross" xml:space="preserve">
     <value>Итого</value>
@@ -936,5 +936,26 @@
   </data>
   <data name="ErrTierDuplicate" xml:space="preserve">
     <value>Страна может встречаться только один раз.</value>
+  </data>
+  <data name="TotalListSubtotal" xml:space="preserve">
+    <value>Промежуточный итог (без НДС, по прайс-листу)</value>
+  </data>
+  <data name="TotalDiscount" xml:space="preserve">
+    <value>Скидка</value>
+  </data>
+  <data name="TotalVatRate" xml:space="preserve">
+    <value>НДС {0}</value>
+  </data>
+  <data name="FormSubtitleRep" xml:space="preserve">
+    <value>Представитель: {0}</value>
+  </data>
+  <data name="SendForApproval" xml:space="preserve">
+    <value>Отправить на согласование руководителю</value>
+  </data>
+  <data name="ApproveConfirmTitle" xml:space="preserve">
+    <value>Согласовать заказ?</value>
+  </data>
+  <data name="ApproveConfirmText" xml:space="preserve">
+    <value>{0} будет согласован и передан дистрибьютору. Это действие нельзя отменить.</value>
   </data>
 </root>

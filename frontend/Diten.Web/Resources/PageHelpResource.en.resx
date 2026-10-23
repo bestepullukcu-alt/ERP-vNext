@@ -778,7 +778,7 @@
     <value>Send</value>
   </data>
   <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
-    <value>“Send” opens when nothing blocks it (the reasons are written under it). The order then waits for the approver or, when the tenant allows it, goes straight to the depot.</value>
+    <value>“Send” opens when nothing blocks it (the reasons are written under it); it reads “Send for manager approval” when an approval is needed. The sent order opens on its details page: it waits for the approver or, when the tenant allows it, goes straight to the depot.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
     <value>Decides a pre-order that waits for you: approve it, reject it or send it back for changes.</value>
@@ -802,7 +802,7 @@
     <value>Decide</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
-    <value>“Approve” sends the order to the depot. “Reject” and “Request changes” need a reason; a change request returns it to the representative as a draft.</value>
+    <value>“Approve” asks once more, then sends the order to the depot. “Reject” and “Request changes” need a reason; a change request returns it to the representative as a draft.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
     <value>From the e-mail link</value>

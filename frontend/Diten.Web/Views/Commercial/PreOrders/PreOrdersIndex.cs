@@ -47,7 +47,10 @@ public sealed class PreOrdersIndex
         "Link_consumed_text", "Link_expired", "Link_expired_text", "Link_superseded", "Link_superseded_text", "Link_notfound",
         "Link_notfound_text", "DocumentTitleOrder", "TrailNone", "TrailAttempt", "Trail_sent", "Trail_failed", "TierLabel", "TierNone",
         "PrefixNone", "CompanyLabel", "PrefixLabel", "RemoveRow", "SettingsSaved", "SettingsDefault", "SettingsUpdated", "ErrTtl",
-        "ErrRetry", "ErrPrefix", "ErrTierDuplicate"
+        "ErrRetry", "ErrPrefix", "ErrTierDuplicate",
+        // W6-FIX-b — the summary rows (V-3), the header (V-5), the send button (V-5), the confirmations (G-6 / G-7)
+        "TotalListSubtotal", "TotalDiscount", "TotalVatRate", "FormSubtitleRep", "FormDescription", "SendForApproval", "DiscardDraft",
+        "ApproveConfirmTitle", "ApproveConfirmText"
     ];
 
     /// <summary>The strings the views themselves write (headings, labels, buttons) and the export's column headers.</summary>
@@ -56,7 +59,7 @@ public sealed class PreOrdersIndex
         "PageTitle", "PageDescription", "PeriodLabel", "CustomFrom", "CustomTo", "StatusLabel", "RepLabel", "PharmacyLabel", "DepotLabel",
         "ProductLabel", "AwaitingLabel", "ColCode", "ColDate", "ColPharmacy", "ColDepot", "ColRep", "ColLines", "ColLocal", "ColEffective",
         "ColStatus", "ColActions", "DrawerTitle", "CloseButton", "OpenDocument", "OpenApproval", "DepotResponseTitle", "DepotResponseNote",
-        "DepotResponseSave", "FormTitleCreate", "FormTitleEdit", "FormDescription", "BackToList", "SaveDraft", "DiscardDraft", "FromSystem",
+        "DepotResponseSave", "FormTitleCreate", "FormTitleEdit", "BackToList", "SaveDraft", "FromSystem",
         "PharmacySection", "PharmacyPlaceholder", "LinesSection", "AddLine", "PreviousOrders", "DeliverySection", "DepotPlaceholder",
         "DeliveryLabel", "CurrencyLabel", "NoteLabel", "NotePlaceholder", "SummarySection", "NeedTitle", "SignatureSection", "SignerLabel",
         "SignatureHint", "SignatureClear", "SignatureSave", "Resign", "CancelOrder", "DetailsTitle", "DetailsDescription", "StateSection",

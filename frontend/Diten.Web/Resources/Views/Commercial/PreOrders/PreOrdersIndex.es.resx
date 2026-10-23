@@ -338,13 +338,13 @@
     <value>{0} / caja</value>
   </data>
   <data name="TotalNet" xml:space="preserve">
-    <value>Neto</value>
+    <value>Neto (sin IVA)</value>
   </data>
   <data name="TotalVat" xml:space="preserve">
     <value>IVA</value>
   </data>
   <data name="TotalEffective" xml:space="preserve">
-    <value>Descuento efectivo</value>
+    <value>Descuento efectivo (bonif. + descuento)</value>
   </data>
   <data name="TotalGross" xml:space="preserve">
     <value>Total general</value>
@@ -936,5 +936,26 @@
   </data>
   <data name="ErrTierDuplicate" xml:space="preserve">
     <value>Un país solo puede aparecer una vez.</value>
+  </data>
+  <data name="TotalListSubtotal" xml:space="preserve">
+    <value>Subtotal (sin IVA, lista)</value>
+  </data>
+  <data name="TotalDiscount" xml:space="preserve">
+    <value>Descuento</value>
+  </data>
+  <data name="TotalVatRate" xml:space="preserve">
+    <value>IVA {0}</value>
+  </data>
+  <data name="FormSubtitleRep" xml:space="preserve">
+    <value>Representante: {0}</value>
+  </data>
+  <data name="SendForApproval" xml:space="preserve">
+    <value>Enviar para aprobación del responsable</value>
+  </data>
+  <data name="ApproveConfirmTitle" xml:space="preserve">
+    <value>¿Aprobar el pedido?</value>
+  </data>
+  <data name="ApproveConfirmText" xml:space="preserve">
+    <value>{0} se aprueba y se envía al distribuidor. No se puede deshacer.</value>
   </data>
 </root>

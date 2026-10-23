@@ -338,13 +338,13 @@
     <value>{0} / علبة</value>
   </data>
   <data name="TotalNet" xml:space="preserve">
-    <value>الصافي</value>
+    <value>الصافي (بدون ضريبة القيمة المضافة)</value>
   </data>
   <data name="TotalVat" xml:space="preserve">
     <value>الضريبة</value>
   </data>
   <data name="TotalEffective" xml:space="preserve">
-    <value>الخصم الفعلي</value>
+    <value>الخصم الفعلي (البونص + الخصم)</value>
   </data>
   <data name="TotalGross" xml:space="preserve">
     <value>الإجمالي العام</value>
@@ -936,5 +936,26 @@
   </data>
   <data name="ErrTierDuplicate" xml:space="preserve">
     <value>يمكن أن تظهر الدولة مرة واحدة فقط.</value>
+  </data>
+  <data name="TotalListSubtotal" xml:space="preserve">
+    <value>المجموع الفرعي (بدون ضريبة القيمة المضافة، القائمة)</value>
+  </data>
+  <data name="TotalDiscount" xml:space="preserve">
+    <value>الخصم</value>
+  </data>
+  <data name="TotalVatRate" xml:space="preserve">
+    <value>ضريبة القيمة المضافة {0}</value>
+  </data>
+  <data name="FormSubtitleRep" xml:space="preserve">
+    <value>المندوب: {0}</value>
+  </data>
+  <data name="SendForApproval" xml:space="preserve">
+    <value>إرسال لموافقة المدير</value>
+  </data>
+  <data name="ApproveConfirmTitle" xml:space="preserve">
+    <value>الموافقة على الطلب؟</value>
+  </data>
+  <data name="ApproveConfirmText" xml:space="preserve">
+    <value>ستتم الموافقة على {0} وتحويله إلى المستودع. لا يمكن التراجع عن ذلك.</value>
   </data>
 </root>

@@ -910,4 +910,13 @@
   <data name="Err_conflict" xml:space="preserve">
     <value>Кто-то изменил это тем временем. Обновите и повторите.</value>
   </data>
+  <data name="FxDescription" xml:space="preserve">
+    <value>Промежуточные курсы по компании-продавцу и дню; заказ сохраняет применённый к нему курс.</value>
+  </data>
+  <data name="RulesDescription" xml:space="preserve">
+    <value>Ограничения по компании-продавцу и продукту (сегмент и период — по желанию); действует самое конкретное правило.</value>
+  </data>
+  <data name="HistoryDescription" xml:space="preserve">
+    <value>Каждое изменение прайс-листов, правил и курсов: кто, когда и что.</value>
+  </data>
 </root>

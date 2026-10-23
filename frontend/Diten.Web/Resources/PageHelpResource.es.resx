@@ -778,7 +778,7 @@
     <value>Envíe</value>
   </data>
   <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
-    <value>«Enviar» se activa cuando nada lo impide (los motivos aparecen debajo). Después el pedido espera al aprobador o, si el inquilino lo permite, va directo al distribuidor.</value>
+    <value>«Enviar» se activa cuando nada lo bloquea (los motivos aparecen debajo); dice «Enviar para aprobación del responsable» cuando hace falta una aprobación. El pedido enviado se abre en su página de detalle: espera al aprobador o, si el inquilino lo permite, va directo al distribuidor.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
     <value>Decide sobre un prepedido pendiente de usted: apruébelo, rechácelo o devuélvalo para cambios.</value>
@@ -802,7 +802,7 @@
     <value>Decida</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
-    <value>«Aprobar» envía el pedido al distribuidor. «Rechazar» y «Solicitar cambios» requieren un motivo; una solicitud de cambios lo devuelve como borrador al representante.</value>
+    <value>«Aprobar» pide una confirmación y después envía el pedido al distribuidor. «Rechazar» y «Solicitar cambios» requieren un motivo; una solicitud de cambios lo devuelve como borrador al representante.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
     <value>Desde el enlace del correo</value>

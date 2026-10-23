@@ -66,14 +66,29 @@ const PreOrderForm = (function () {
         return at >= 0 ? (S.preview.lines || [])[at] || null : null;
     };
 
+    /**
+     * Each line's answer: the unit price / line total cells, the product's facts (V-2: the order's MDM snapshot; a fresh
+     * line has none until it is saved), and under the row the price source — list · tier · valid from · the line's VAT
+     * rate — with the free boxes, the outcome and the messages. All of it the CRM's.
+     */
     const drawResults = () => {
         const priced = isPriced();
-        const list = (S.order && S.order.price) || (S.preview && S.preview.priceList);
+        const fromOrder = !!(S.order && S.order.status !== 'draft');
+        const list = fromOrder ? S.order.price : ((S.preview && S.preview.priceList) || (S.order && S.order.price));
+        const tier = fromOrder ? (S.order.price || {}).tier : ((S.preview && S.preview.tier) || (S.order && S.order.price && S.order.price.tier));
         S.lines.forEach((l, i) => {
+            const result = resultOf(i);
             const el = byId('po-res-' + l.key);
             if (!el) return;
-            const priceSource = priced && list ? U.Th('PriceSourceShort', list.name || '') : '';
-            el.innerHTML = U.lineResult(resultOf(i), { priced: priced, currency: currency(), priceSource: priceSource, skuName: l.skuText });
+            const priceSource = priced && list && result ? U.priceSourceHtml(list, tier, result.vatRate) : '';
+            el.innerHTML = U.lineResult(result, { priced: priced, currency: currency(), priceSource: priceSource, skuName: l.skuText });
+            const cells = U.lineCells(result, { priced: priced, currency: currency() });
+            const unit = byId('po-unit-' + l.key);
+            const total = byId('po-total-' + l.key);
+            if (unit) { unit.innerHTML = cells.unit; }
+            if (total) { total.innerHTML = cells.total; }
+            const facts = byId('po-facts-' + l.key);
+            if (facts) { facts.textContent = l.sku ? U.skuFactsText(l.sku) : ''; }
         });
     };
 
@@ -96,16 +111,20 @@ const PreOrderForm = (function () {
             if (!line) return;
             line.skuId = e.params.data.id;
             line.skuText = e.params.data.text;
+            line.sku = null;
             changed();
         });
     };
 
+    /** V-1 — the lines as ONE table from md up (the head drawn once), a card per line below md (preorders.css). */
     const drawLines = () => {
         const host = byId('po-lines');
         const priced = isPriced();
         const isLocked = locked();
         if ($) { host.querySelectorAll('select.po-sku').forEach((s) => { if ($(s).hasClass('select2-hidden-accessible')) { $(s).select2('destroy'); } }); }
-        host.innerHTML = S.lines.map((l) => U.formLineHtml(l, priced, isLocked)).join('') || '<p class="text-muted small mb-0">' + U.esc(L().NoLinesYet) + '</p>';
+        host.innerHTML = S.lines.length
+            ? U.lineHeadHtml(priced) + S.lines.map((l) => U.formLineHtml(l, priced, isLocked)).join('')
+            : '<p class="text-muted small mb-0">' + U.esc(L().NoLinesYet) + '</p>';
         if (!isLocked) { host.querySelectorAll('select.po-sku').forEach(skuPicker); }
         byId('po-add-line').classList.toggle('d-none', isLocked);
         drawResults();
@@ -146,7 +165,7 @@ const PreOrderForm = (function () {
         if (locked() && S.order) { host.innerHTML = U.totals(S.order); return; }
         const p = S.preview;
         if (!p) { host.innerHTML = isPriced() ? '<p class="text-muted small mb-0">' + U.esc(L().SummaryPending) + '</p>' : U.totals({ priceMode: 'quantity' }); return; }
-        host.innerHTML = U.totals({ priceMode: p.mode, currency: p.currency, totals: p.totals, fx: p.fx });
+        host.innerHTML = U.totals({ priceMode: p.mode, currency: p.currency, totals: p.totals, fx: p.fx, lines: p.lines });
     };
 
     const drawNeed = () => {
@@ -195,17 +214,20 @@ const PreOrderForm = (function () {
         if (isLocked) return;
         const why = blockers();
         byId('po-send').disabled = why.length > 0 || S.busy;
+        byId('po-send-text').textContent = L()[C.sendLabelKey(S.preview, S.order)] || '';
         byId('po-send-why').innerHTML = why.map((k) => '<li class="d-flex gap-1"><i class="bx bx-block text-danger mt-1"></i><span>' + U.esc(L()[k] || '') + '</span></li>').join('');
         byId('po-save').classList.toggle('d-none', isLocked);
         byId('po-discard').classList.toggle('d-none', isLocked || !S.order);
     };
 
+    /** V-5 — a saved order's Golden header: its number · the pharmacy, the status badge beside it, the rep under it. */
     const drawHeader = () => {
         const o = S.order;
         const status = byId('po-status');
         if (o) {
-            byId('po-title').innerHTML = U.Th('FormTitleOrder', o.code);
-            byId('po-subtitle').innerHTML = U.bidi((o.pharmacy || {}).name || '') + (o.rep && o.rep.displayName ? ' · ' + U.bidi(o.rep.displayName) : '');
+            const pharmacy = (o.pharmacy || {}).name || '';
+            byId('po-title').innerHTML = pharmacy ? U.bidi(o.code) + ' · ' + U.bidi(pharmacy) : U.Th('FormTitleOrder', o.code);
+            byId('po-subtitle').innerHTML = o.rep && o.rep.displayName ? U.Th('FormSubtitleRep', o.rep.displayName) : U.esc(L().FormDescription || '');
             status.innerHTML = U.statusBadge(o.status);
             status.classList.remove('d-none');
         }
@@ -267,8 +289,15 @@ const PreOrderForm = (function () {
         const r = await U.request('GET', endpoint + '/list?start=0&length=4&pharmacy=' + encodeURIComponent(S.pharmacy.id));
         const items = ((U.data(r) || {}).items || []).filter((x) => !S.order || x.id !== S.order.id).slice(0, 3);
         host.innerHTML = items.length
-            ? '<ul class="list-unstyled mb-0 po-previous">' + items.map((x) => '<li class="d-flex flex-wrap align-items-center gap-2 py-1 border-bottom"><a class="fw-medium" href="/Commercial/PreOrders/Details/' + encodeURIComponent(x.id) + '">' + U.bidi(x.code) + '</a><small class="text-muted">' + U.esc(U.day(x.createdAt)) + '</small><small class="text-muted">' + U.esc(U.T('LinesCount', C.num(x.lineCount, U.culture(), 0))) + '</small><span class="ms-auto text-heading">' + U.esc(x.priceMode === 'priced' ? U.money(x.gross, x.currency) : L().QuantityModeShort) + '</span>' + U.statusBadge(x.status) + '</li>').join('') + '</ul>'
+            ? '<ul class="list-unstyled mb-0 po-previous">' + items.map((x) => '<li class="d-flex flex-wrap align-items-center gap-2 py-1 border-bottom"><a class="fw-medium" href="/Commercial/PreOrders/Details/' + encodeURIComponent(x.id) + '">' + U.bidi(x.code) + '</a><small class="text-muted">' + U.esc(U.day(x.createdAt)) + '</small><small class="text-muted po-prev-products" id="po-prev-' + U.esc(x.id) + '">' + U.esc(U.T('LinesCount', C.num(x.lineCount, U.culture(), 0))) + '</small><span class="ms-auto text-heading">' + U.esc(x.priceMode === 'priced' ? U.money(x.gross, x.currency) : L().QuantityModeShort) + '</span>' + U.statusBadge(x.status) + '</li>').join('') + '</ul>'
             : '<p class="text-muted small mb-0">' + U.esc(L().PreviousOrdersNone) + '</p>';
+        // V-4 — "product × quantity" from each order's own lines (the list row carries only their count, which stays when the read fails)
+        items.forEach(async (x) => {
+            const order = U.data(await U.request('GET', endpoint + '/orders/' + encodeURIComponent(x.id)));
+            const cell = byId('po-prev-' + x.id);
+            const products = C.productSummary(order);
+            if (cell && products.length) { cell.innerHTML = products.map((p) => U.bidi(p.name) + ' × ' + U.esc(C.num(p.quantity, U.culture(), 0))).join(', '); }
+        });
     };
 
     // ── save / sign / send / discard / the way out ──────────────────────────────────────────────────────────
@@ -286,7 +315,7 @@ const PreOrderForm = (function () {
         S.order = order;
         S.pharmacy = order.pharmacy && order.pharmacy.accountId ? { id: order.pharmacy.accountId, text: order.pharmacy.name } : null;
         S.depot = order.depot && order.depot.accountId ? { id: order.depot.accountId, text: order.depot.name } : null;
-        S.lines = (order.lines || []).map((l) => ({ key: newKey(), skuId: l.skuId, skuText: (l.sku || {}).name || (l.sku || {}).code || l.skuId, quantity: l.quantity, mf: C.mfText(l.mf), discount: l.discountPct == null ? '' : String(l.discountPct) }));
+        S.lines = (order.lines || []).map((l) => ({ key: newKey(), skuId: l.skuId, skuText: (l.sku || {}).name || (l.sku || {}).code || l.skuId, sku: l.sku || null, quantity: l.quantity, mf: C.mfText(l.mf), discount: l.discountPct == null ? '' : String(l.discountPct) }));
         setPicked('po-pharmacy', S.pharmacy);
         setPicked('po-depot', S.depot);
         const fp = byId('po-delivery')._flatpickr;
@@ -353,16 +382,21 @@ const PreOrderForm = (function () {
         S.busy = false;
         if (!r.ok) { alertBox(U.errorText(r)); drawSend(); return; }
         alertBox('');
-        const order = U.data(r);
-        fill(order);
-        U.toast(order.status === 'pending_approval' ? L().SubmittedPending : L().SubmittedApproved, 'success');
+        const order = U.data(r) || S.order;
+        // G-8 — a sent order is no longer the form's: its Details page opens, and says what happened there (the toast travels)
+        U.flashToast(order.status === 'pending_approval' ? L().SubmittedPending : L().SubmittedApproved, 'success');
+        S.dirty = false;
+        window.location.href = '/Commercial/PreOrders/Details/' + encodeURIComponent(order.id);
     };
 
-    const discard = async () => {
-        if (!S.order || !window.confirm(L().DiscardConfirm || '')) return;
-        const r = await U.request('POST', endpoint + '/orders/' + encodeURIComponent(S.order.id) + '/discard', { expectedVersion: S.order.version });
-        if (!r.ok) { alertBox(U.errorText(r)); return; }
-        window.location.href = '/Commercial/PreOrders';
+    // G-6 — the shared confirmation (window.showConfirm), never the browser's own box
+    const discard = () => {
+        if (!S.order) return;
+        U.confirm(L().DiscardDraft, L().DiscardConfirm, L().DiscardDraft, 'danger', async () => {
+            const r = await U.request('POST', endpoint + '/orders/' + encodeURIComponent(S.order.id) + '/discard', { expectedVersion: S.order.version });
+            if (!r.ok) { alertBox(U.errorText(r)); return; }
+            window.location.href = '/Commercial/PreOrders';
+        });
     };
 
     const wayOut = async () => {

@@ -1,6 +1,6 @@
 /* WP-VW-W3 (W3-WEB-b) - DOM smoke of visit-presentation.js in Node: a fake document, a stub fetch and controlled timers.
    Run by VisitPresentationWebTests with the CRM script folder as argv[2] and the scenario as argv[3]
-   (run | tablet | summary | notStarted); prints one JSON object. */
+   (run | tablet | summary | summaryNoAccount | notStarted); prints one JSON object. */
 const dir = process.argv[2];
 const scenario = process.argv[3] || 'run';
 const nodes = {};
@@ -24,7 +24,7 @@ const el = id => nodes[id] || (nodes[id] = mk(id));
 const root = el('vp-root');
 Object.assign(root.attrs, {
   'data-api-base': '/api', 'data-workspace-url': '/ws', 'data-report-url': '/report', 'data-planned-visit-id': 'pv1',
-  'data-phase': scenario === 'summary' ? 'summary' : 'run', 'data-can-record': 'true', 'data-can-read-visit': 'true', 'data-can-pick-people': 'true'
+  'data-phase': scenario.startsWith('summary') ? 'summary' : 'run', 'data-can-record': 'true', 'data-can-read-visit': 'true', 'data-can-pick-people': 'true'
 });
 root.addEventListener = (ev, fn) => { listeners.root[ev] = fn; };
 global.document = {
@@ -73,7 +73,7 @@ global.fetch = (url, o) => {
   else if (url === '/api/execution/by-plan/pv1') data = scenario === 'notStarted' ? null : started;
   else if (url.endsWith('/brief')) data = { plannedVisitId: 'pv1', lastVisitDate: '2026-10-01', outcomeCode: 'positive', followUpNotes: 'Literatür gönder', samples: [{ quantity: 2 }] };
   else if (url === '/api/execution/contract') data = { policy: { doctorConfirmation: true, durationConsistency: true, shortVisitSeconds: 120 } };
-  else if (url === '/api/visits/pv1') data = { targetDisplayName: 'Dr. Ayşe Kaya', accountDisplayName: 'Hacettepe' };
+  else if (url === '/api/visits/pv1') data = { targetDisplayName: 'Dr. Ayşe Kaya', accountDisplayName: scenario === 'summaryNoAccount' ? '' : 'Hacettepe' };
   else if (url === '/api/people') data = { people: [{ userId: 'u1', displayName: 'Selin Karaca' }] };
   else if (url.endsWith('/capture')) data = started;
   else if (url.endsWith('/finish')) data = finished;
@@ -91,7 +91,8 @@ global.window.VisitPresentationL10n = {
   TabNotes: 'Notlar', TabMarks: 'İşaretler', TabNote: 'Not al', TalkTrack: 'Konuşma metni', KeyMessage: 'Anahtar mesaj',
   ThisSlide: 'Bu slayt {0}', TargetLabel: 'hedef ≈ {0}', TargetSeconds: '{0} sn', TargetMinutes: '{0} dk', LiveChip: 'Devam ediyor · {0}',
   Flag_objection: 'İtiraz etti', ObjectionWith: '{0}: {1}', ForThisDoctor: 'Bu doktor için', BriefLastVisit: 'Son ziyaret: {0}',
-  SignatureTitleSample: 'Numune teslimi · doktor imzası', SignatureTitleApproval: 'Doktor onayı', SummaryTitle: 'Ziyaret bitti', FinishVisit: 'Ziyareti bitir'
+  SignatureTitleSample: 'Numune teslimi · doktor imzası', SignatureTitleApproval: 'Doktor onayı', SummaryTitle: 'Ziyaret bitti', FinishVisit: 'Ziyareti bitir',
+  SummaryLine: '{0} · {1} · {2}–{3}', SummaryLineNoAccount: '{0} · {1}–{2}'
 };
 require(dir + '/VisitPresentation/visit-presentation.js');
 
@@ -111,7 +112,7 @@ const docHtml = () => ['vp-ptabs', 'vp-slide', 'vp-ref', 'vp-dots', 'vp-slide-no
 
   if (scenario === 'notStarted') { process.stdout.write(JSON.stringify(Object.assign(out, { calls: calls.map(c => c.method + ' ' + c.url) }))); return; }
 
-  if (scenario === 'summary') {
+  if (scenario.startsWith('summary')) {
     out.finishCalls = posts('/finish').length;
     out.summaryShown = !el('vp-summary').classList.contains('d-none');
     out.summary = el('vp-summary').innerHTML;

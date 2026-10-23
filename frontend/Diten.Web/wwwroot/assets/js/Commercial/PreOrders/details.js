@@ -54,6 +54,7 @@ const PreOrderDetails = (function () {
 
     const init = () => {
         if (!root || !U) return;
+        U.takeFlashToast();
         byId('po-cancel').addEventListener('click', async () => {
             const reason = await U.askReason(L().CancelTitle, L().CancelText, L().CancelConfirm);
             if (!reason) return;

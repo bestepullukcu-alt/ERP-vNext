@@ -910,4 +910,13 @@
   <data name="Err_conflict" xml:space="preserve">
     <value>Someone else changed this in the meantime. Reload and try again.</value>
   </data>
+  <data name="FxDescription" xml:space="preserve">
+    <value>Interim exchange rates per selling company and day; an order keeps the rate it was given.</value>
+  </data>
+  <data name="RulesDescription" xml:space="preserve">
+    <value>Limits per selling company and product (optionally a segment and a period); the most specific rule wins.</value>
+  </data>
+  <data name="HistoryDescription" xml:space="preserve">
+    <value>Every change to price lists, rules and rates: who, when and what.</value>
+  </data>
 </root>

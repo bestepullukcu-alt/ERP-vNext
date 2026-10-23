@@ -778,7 +778,7 @@
     <value>发送</value>
   </data>
   <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
-    <value>没有阻碍时“发送”才可用（原因写在按钮下方）。之后订单等待审批人，或在租户允许时直接转交经销商。</value>
+    <value>没有阻碍时“发送”才可用（原因写在下方）；需要审批时按钮显示为“提交经理审批”。发送后的订单在其详情页打开：等待审批人，或在租户允许时直接转交经销商。</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
     <value>审批等待您处理的预订单：通过、拒绝或退回修改。</value>
@@ -802,7 +802,7 @@
     <value>作出决定</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
-    <value>“审批通过”会把订单转交经销商。“拒绝”和“要求修改”需要理由；要求修改会把订单作为草稿退回代表。</value>
+    <value>“审批通过”会再确认一次，然后把订单转交经销商。“拒绝”和“要求修改”需要理由；要求修改会把订单作为草稿退回代表。</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
     <value>通过邮件链接</value>

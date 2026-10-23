@@ -338,13 +338,13 @@
     <value>{0} / boîte</value>
   </data>
   <data name="TotalNet" xml:space="preserve">
-    <value>Net</value>
+    <value>Net (HT)</value>
   </data>
   <data name="TotalVat" xml:space="preserve">
     <value>TVA</value>
   </data>
   <data name="TotalEffective" xml:space="preserve">
-    <value>Remise effective</value>
+    <value>Remise effective (UG + remise)</value>
   </data>
   <data name="TotalGross" xml:space="preserve">
     <value>Total général</value>
@@ -936,5 +936,26 @@
   </data>
   <data name="ErrTierDuplicate" xml:space="preserve">
     <value>Un pays ne peut figurer qu'une fois.</value>
+  </data>
+  <data name="TotalListSubtotal" xml:space="preserve">
+    <value>Sous-total (HT, tarif)</value>
+  </data>
+  <data name="TotalDiscount" xml:space="preserve">
+    <value>Remise</value>
+  </data>
+  <data name="TotalVatRate" xml:space="preserve">
+    <value>TVA {0}</value>
+  </data>
+  <data name="FormSubtitleRep" xml:space="preserve">
+    <value>Délégué : {0}</value>
+  </data>
+  <data name="SendForApproval" xml:space="preserve">
+    <value>Envoyer pour approbation du responsable</value>
+  </data>
+  <data name="ApproveConfirmTitle" xml:space="preserve">
+    <value>Valider la commande ?</value>
+  </data>
+  <data name="ApproveConfirmText" xml:space="preserve">
+    <value>{0} est validée et transmise au dépositaire. Cette action est irréversible.</value>
   </data>
 </root>

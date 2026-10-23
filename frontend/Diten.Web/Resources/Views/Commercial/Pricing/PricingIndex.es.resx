@@ -910,4 +910,13 @@
   <data name="Err_conflict" xml:space="preserve">
     <value>Otra persona lo cambió mientras tanto. Recargue e inténtelo de nuevo.</value>
   </data>
+  <data name="FxDescription" xml:space="preserve">
+    <value>Tipos de cambio provisionales por empresa vendedora y día; un pedido conserva el tipo que se le aplicó.</value>
+  </data>
+  <data name="RulesDescription" xml:space="preserve">
+    <value>Límites por empresa vendedora y producto (segmento y periodo opcionales); se aplica la regla más específica.</value>
+  </data>
+  <data name="HistoryDescription" xml:space="preserve">
+    <value>Cada cambio en listas de precios, reglas y tipos de cambio: quién, cuándo y qué.</value>
+  </data>
 </root>

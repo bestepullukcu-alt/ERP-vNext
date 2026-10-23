@@ -70,16 +70,15 @@ const PriceListDetails = (function () {
     const init = () => {
         if (!root || !U || !K || !PU) return;
         byId('pr-diff').addEventListener('change', loadItems);
-        byId('pr-submit').addEventListener('click', async () => {
-            if (!window.confirm(L().SubmitConfirm || '')) return;
+        // G-6 (W6-FIX-b) — submit and discard ask through the shared confirmation, never the browser's box
+        byId('pr-submit').addEventListener('click', () => U.confirm(L().SubmitForPublishing, L().SubmitConfirm, L().SubmitForPublishing, 'warning', async () => {
             after(await U.request('POST', endpoint + '/' + encodeURIComponent(list.id) + '/submit', { expectedVersion: list.version }), 'SubmittedToast');
-        });
-        byId('pr-discard').addEventListener('click', async () => {
-            if (!window.confirm(L().DiscardConfirm || '')) return;
+        }));
+        byId('pr-discard').addEventListener('click', () => U.confirm(L().DiscardDraft, L().DiscardConfirm, L().DiscardDraft, 'danger', async () => {
             const r = await U.request('POST', endpoint + '/' + encodeURIComponent(list.id) + '/discard', { expectedVersion: list.version });
             if (!r.ok) { alertBox(U.errorText(r)); return; }
             window.location.href = '/Commercial/Pricing/PriceLists';
-        });
+        }));
         byId('pr-version').addEventListener('click', async () => {
             const r = await U.request('POST', endpoint + '/' + encodeURIComponent(list.id) + '/versions', {});
             const v = U.data(r);

@@ -276,13 +276,61 @@
     const statusOf = (s) => STATUSES[s] || { key: 'St_unknown', tone: 'secondary', icon: 'bx-help-circle' };
     const outcomeOf = (o) => OUTCOMES[o] || OUTCOMES.ok;
 
+    // ── W6-FIX-b — the summary, the line's price source, the send button, the previous orders ────────────────────
+
+    /**
+     * V-3 — the summary rows IN ORDER, each naming the CRM field it shows (W6-FIX-c: totals.listSubtotal / discountAmount
+     * beside net / vat / gross / effectiveDiscountPct). A row whose field the answer does not carry is left out — nothing
+     * is derived from the others (MOD-0168 §4.2). `vatRate` is the lines' ONE rate (vatRateOf), else the row has no rate.
+     */
+    function summaryRows(totals, opts) {
+        const t = totals || {};
+        const o = opts || {};
+        const has = (f) => t[f] != null && t[f] !== '';
+        const rows = [];
+        if (has('listSubtotal')) rows.push({ key: 'TotalListSubtotal', field: 'listSubtotal', kind: 'money' });
+        if (has('discountAmount')) rows.push({ key: 'TotalDiscount', field: 'discountAmount', kind: 'discount' });
+        if (has('net')) rows.push({ key: 'TotalNet', field: 'net', kind: 'money' });
+        if (has('vat')) rows.push(o.vatRate != null ? { key: 'TotalVatRate', field: 'vat', kind: 'money', rate: o.vatRate } : { key: 'TotalVat', field: 'vat', kind: 'money' });
+        if (!o.hideEffective && has('effectiveDiscountPct')) rows.push({ key: 'TotalEffective', field: 'effectiveDiscountPct', kind: 'pct' });
+        return rows;
+    }
+
+    /** The lines' VAT rate when they all carry the same one (the CRM's per line); null when they differ or none is known. */
+    function vatRateOf(lines) {
+        const rates = (lines || []).map((l) => (l && l.vatRate != null ? Number(l.vatRate) : null)).filter((r) => r != null);
+        if (!rates.length) return null;
+        return rates.every((r) => r === rates[0]) ? rates[0] : null;
+    }
+
+    /** V-2 — the product's facts as the MDM snapshot carries them (form · pack · GTIN); each only when known. */
+    function skuFacts(sku) {
+        const s = sku || {};
+        const parts = [];
+        if (s.form) parts.push({ key: null, value: String(s.form) });
+        if (s.packQuantity != null && s.packQuantity !== '') parts.push({ key: null, pack: true, value: String(s.packQuantity), unit: s.packUomCode || '' });
+        if (s.gtin) parts.push({ key: 'GtinShort', value: String(s.gtin) });
+        return parts;
+    }
+
+    /** V-5 — the send button's words: to the manager when the CRM's preview says an approval is needed, else plain send. */
+    const sendLabelKey = (preview, order) => {
+        const req = order && order.status === 'draft' && order.approvalRequirement;
+        if (preview) return preview.approvalRequired ? 'SendForApproval' : 'Send';
+        return req && req.required ? 'SendForApproval' : 'Send';
+    };
+
+    /** V-4 — "product × quantity" of an order's lines (the order's own snapshot; nothing summed). */
+    const productSummary = (order) => ((order && order.lines) || []).map((l) => ({ name: (l.sku || {}).name || (l.sku || {}).code || '', quantity: l.quantity }));
+
     const api = {
         STATUSES: STATUSES, STATUS_CODES: STATUS_CODES, OUTCOMES: OUTCOMES, EVENTS: EVENTS, LINK_STATES: LINK_STATES, DEPOT_RESPONSES: DEPOT_RESPONSES,
         rangeOf: rangeOf, customRangeError: customRangeError,
         parseMf: parseMf, mfText: mfText, parseDiscount: parseDiscount, linesInput: linesInput, inputProblem: inputProblem,
         sendBlockers: sendBlockers, approvalBox: approvalBox, timeline: timeline, lockState: lockState,
         limitCells: limitCells, whyOnMe: whyOnMe, historyMonths: historyMonths, linkStateKey: linkStateKey, hoursLeft: hoursLeft,
-        money: money, pct: pct, num: num, fxArgs: fxArgs, errorCode: errorCode, statusOf: statusOf, outcomeOf: outcomeOf
+        money: money, pct: pct, num: num, fxArgs: fxArgs, errorCode: errorCode, statusOf: statusOf, outcomeOf: outcomeOf,
+        summaryRows: summaryRows, vatRateOf: vatRateOf, skuFacts: skuFacts, sendLabelKey: sendLabelKey, productSummary: productSummary
     };
     root.PreOrdersCore = api;
     if (typeof module !== 'undefined' && module.exports) module.exports = api;

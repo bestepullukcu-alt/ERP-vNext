@@ -778,7 +778,7 @@
     <value>Gönderin</value>
   </data>
   <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
-    <value>“Gönder” engel kalmayınca açılır (nedenler altında yazar). Sipariş sonra onaycıyı bekler ya da kiracı izin veriyorsa doğrudan depoya gider.</value>
+    <value>“Gönder” engel kalmayınca açılır (nedenler altında yazar); onay gerekiyorsa “Yönetici onayına gönder” der. Gönderilen sipariş Detay sayfasında açılır: onaycıyı bekler ya da kiracı izin veriyorsa doğrudan depoya gider.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
     <value>Sizi bekleyen bir ön siparişe karar verirsiniz: onaylayın, reddedin ya da değişiklik için geri gönderin.</value>
@@ -802,7 +802,7 @@
     <value>Karar verin</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
-    <value>“Onayla” siparişi depoya gönderir. “Reddet” ve “Değişiklik iste” gerekçe ister; değişiklik isteği siparişi temsilciye taslak olarak döndürür.</value>
+    <value>“Onayla” bir kez daha sorar, ardından siparişi depoya gönderir. “Reddet” ve “Değişiklik iste” gerekçe ister; değişiklik isteği siparişi temsilciye taslak olarak döndürür.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
     <value>E-posta bağlantısından</value>

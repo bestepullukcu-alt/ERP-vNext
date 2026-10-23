@@ -38,7 +38,8 @@ const PreOrderApproval = (function () {
         byId('po-limits').innerHTML = U.limitsTable(o);
         if (byId('po-you')) {
             const req = o.approvalRequirement || {};
-            byId('po-you').innerHTML = U.Th('YouAreReportsTo', (o.rep || {}).displayName || '', req.approverPositionCode || '');
+            // V-10 — the Reports-to seat by its NAME (the code only when no name is known)
+            byId('po-you').innerHTML = U.Th('YouAreReportsTo', (o.rep || {}).displayName || '', req.approverPositionName || req.approverPositionCode || '');
         }
         if (byId('po-link-code')) { byId('po-link-code').innerHTML = U.Th('ApproveTitleOrder', o.code); byId('po-link-pharmacy').innerHTML = U.bidi((o.pharmacy || {}).name || ''); }
         const can = !!(o.can && o.can.decide);
@@ -74,13 +75,20 @@ const PreOrderApproval = (function () {
         host.innerHTML = d ? U.historyHtml(C.historyMonths(d.items || [], new Date(Date.now()).toISOString().slice(0, 10))) : '<p class="text-muted small mb-0">' + U.esc(U.errorText(r)) + '</p>';
     };
 
+    /** G-7 (W6-FIX-b) — "Approve" asks first, through the shared confirmation; the other two ask for their reason. */
     const decide = async (decision) => {
         let reason = null;
-        if (decision !== 'approve') {
-            const words = decision === 'reject' ? ['RejectTitle', 'RejectText', 'Reject'] : ['ChangesTitle', 'ChangesText', 'RequestChanges'];
-            reason = await U.askReason(L()[words[0]], L()[words[1]], L()[words[2]]);
-            if (!reason) return;
+        if (decision === 'approve') {
+            U.confirm(L().ApproveConfirmTitle, U.T('ApproveConfirmText', order.code || ''), L().Approve, 'success', () => send(decision, null));
+            return;
         }
+        const words = decision === 'reject' ? ['RejectTitle', 'RejectText', 'Reject'] : ['ChangesTitle', 'ChangesText', 'RequestChanges'];
+        reason = await U.askReason(L()[words[0]], L()[words[1]], L()[words[2]]);
+        if (!reason) return;
+        await send(decision, reason);
+    };
+
+    const send = async (decision, reason) => {
         ['po-approve', 'po-reject', 'po-changes'].forEach((id) => { byId(id).disabled = true; });
         const body = { decision: decision, reason: reason, expectedVersion: order.version };
         if (isLink()) { body.linkToken = token; }

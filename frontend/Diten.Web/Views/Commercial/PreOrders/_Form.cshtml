@@ -18,12 +18,12 @@
     order" (rejected / cancelled). _CreateEditOffcanvas is NOT used (Compact).
 *@
 <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+    @* V-5 (W6-FIX-b) — the Golden header carries a saved order's number · pharmacy and its status badge *@
     <div class="mb-0">
-        <h5 class="mb-0" id="po-title">@(isEdit ? Localizer["FormTitleEdit"] : Localizer["FormTitleCreate"])</h5>
+        <h5 class="mb-0 d-flex flex-wrap align-items-center gap-2"><span id="po-title">@(isEdit ? Localizer["FormTitleEdit"] : Localizer["FormTitleCreate"])</span><span id="po-status" class="d-none"></span></h5>
         <p class="mb-0 text-muted" id="po-subtitle">@Localizer["FormDescription"]</p>
     </div>
     <div class="d-flex flex-wrap align-items-center gap-2">
-        <span id="po-status" class="d-none"></span>
         <a href="/Commercial/PreOrders" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
         <button type="button" id="po-discard" class="btn btn-label-danger d-none"><i class="bx bx-trash me-1"></i>@Localizer["DiscardDraft"]</button>
         <button type="button" id="po-save" class="btn btn-label-primary"><i class="bx bx-save me-1"></i>@Localizer["SaveDraft"]</button>
@@ -84,7 +84,7 @@
                         <h6 class="card-section-title mb-0"><i class="bx bx-capsule"></i>@Localizer["LinesSection"]</h6>
                         <small class="text-muted" id="po-lines-note"></small>
                     </div>
-                    <div id="po-lines" class="d-flex flex-column gap-3"></div>
+                    <div id="po-lines" class="po-lines-table"></div>
                     <button type="button" class="btn btn-sm btn-label-primary mt-3" id="po-add-line"><i class="bx bx-plus me-1"></i>@Localizer["AddLine"]</button>
                 </div>
             </section>
@@ -157,7 +157,7 @@
 
             <section class="card mb-3" id="po-send-card">
                 <div class="card-body">
-                    <button type="button" class="btn btn-primary w-100" id="po-send" disabled><i class="bx bx-send me-1"></i>@Localizer["Send"]</button>
+                    <button type="button" class="btn btn-primary w-100" id="po-send" disabled><i class="bx bx-send me-1"></i><span id="po-send-text">@Localizer["Send"]</span></button>
                     <ul class="list-unstyled small text-muted mt-2 mb-0" id="po-send-why"></ul>
                 </div>
             </section>

@@ -338,13 +338,13 @@
     <value>{0} / box</value>
   </data>
   <data name="TotalNet" xml:space="preserve">
-    <value>Net</value>
+    <value>Net (excl. VAT)</value>
   </data>
   <data name="TotalVat" xml:space="preserve">
     <value>VAT</value>
   </data>
   <data name="TotalEffective" xml:space="preserve">
-    <value>Effective discount</value>
+    <value>Effective discount (MF + discount)</value>
   </data>
   <data name="TotalGross" xml:space="preserve">
     <value>Grand total</value>
@@ -936,5 +936,26 @@
   </data>
   <data name="ErrTierDuplicate" xml:space="preserve">
     <value>A country can appear only once.</value>
+  </data>
+  <data name="TotalListSubtotal" xml:space="preserve">
+    <value>Subtotal (excl. VAT, list)</value>
+  </data>
+  <data name="TotalDiscount" xml:space="preserve">
+    <value>Discount</value>
+  </data>
+  <data name="TotalVatRate" xml:space="preserve">
+    <value>VAT {0}</value>
+  </data>
+  <data name="FormSubtitleRep" xml:space="preserve">
+    <value>Representative: {0}</value>
+  </data>
+  <data name="SendForApproval" xml:space="preserve">
+    <value>Send for manager approval</value>
+  </data>
+  <data name="ApproveConfirmTitle" xml:space="preserve">
+    <value>Approve the order?</value>
+  </data>
+  <data name="ApproveConfirmText" xml:space="preserve">
+    <value>{0} is approved and passed to the depot. This cannot be undone.</value>
   </data>
 </root>

@@ -68,10 +68,12 @@
     /** A finding in words (the shared rule source; {skuId} named by the line's product). */
     const findingHtml = (f, skuName) => '<span class="po-msg po-msg-' + esc(f.severity || '') + '">' + (R() ? R().html(f, { skuName: () => skuName, culture: culture() }) : esc(f.code)) + '</span>';
 
+    /** The order's facts; V-10 (W6-FIX-b): the date WITH its time, the pharmacy WITH its city (the CRM's snapshot name). */
     const facts = (order) => {
         const o = order || {};
+        const ph = o.pharmacy || {};
         const rows = [
-            ['FactCode', o.code], ['FactDate', day(o.createdAt)], ['FactPharmacy', (o.pharmacy || {}).name], ['FactDepot', (o.depot || {}).name],
+            ['FactCode', o.code], ['FactDate', moment(o.createdAt)], ['FactPharmacy', [ph.name, ph.cityName].filter(Boolean).join(' · ')], ['FactDepot', (o.depot || {}).name],
             ['FactRep', (o.rep || {}).displayName], ['FactDelivery', day(o.requestedDeliveryDate)], ['FactSeller', (o.seller || {}).name],
             ['FactMode', o.priceMode === 'priced' ? T('ModePriced', o.currency || '') : T('ModeQuantity')]
         ].filter((r) => r[1]);
@@ -102,16 +104,20 @@
         return '<div class="table-responsive"><table class="table table-sm align-middle po-lines mb-0"><thead><tr>' + head.map((h) => '<th>' + esc(L()[h] || '') + '</th>').join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
     };
 
-    /** Net · VAT · total · effective discount · the local equivalent (only with an FX snapshot) — or the quantity-mode note. */
+    /**
+     * V-3 (W6-FIX-b) — list subtotal (VAT excl.) · discount · net (VAT excl.) · VAT %rate · effective discount (MF +
+     * discount) · grand total · the local equivalent (only with an FX snapshot) — or the quantity-mode note. EVERY value is
+     * a field of the CRM's totals, written as it came (C.summaryRows names the field); a missing field is a missing row.
+     */
     const totals = (order, opts) => {
         const o = order || {};
         if (o.priceMode !== 'priced' || !o.totals) return '<div class="alert alert-info d-flex gap-2 align-items-start mb-0 py-2"><i class="bx bx-info-circle mt-1"></i><span>' + esc(L().QuantityModeNote || '') + '</span></div>';
         const t = o.totals;
-        const rows = [['TotalNet', money(t.net, o.currency)], ['TotalVat', money(t.vat, o.currency)]];
-        if (!(opts && opts.hideEffective)) rows.push(['TotalEffective', pct(t.effectiveDiscountPct)]);
+        const rows = C.summaryRows(t, { hideEffective: !!(opts && opts.hideEffective), vatRate: C.vatRateOf(o.lines) });
+        const value = (r) => (r.kind === 'pct' ? pct(t[r.field]) : (r.kind === 'discount' ? '− ' + money(t[r.field], o.currency) : money(t[r.field], o.currency)));
         const fx = C.fxArgs(o.fx, culture(), day);
-        return '<div class="po-totals">' + rows.map((r) => '<div class="d-flex justify-content-between"><span class="text-muted">' + esc(L()[r[0]] || '') + '</span><span>' + esc(r[1]) + '</span></div>').join('')
-            + '<div class="d-flex justify-content-between fw-semibold text-heading border-top pt-1 mt-1"><span>' + esc(L().TotalGross || '') + '</span><span>' + esc(money(t.gross, o.currency)) + '</span></div>'
+        return '<div class="po-totals">' + rows.map((r) => '<div class="d-flex justify-content-between gap-2 po-total-' + esc(r.field) + '"><span class="text-muted">' + esc(r.rate != null ? T(r.key, pct(r.rate)) : (L()[r.key] || '')) + '</span><span class="text-nowrap">' + esc(value(r)) + '</span></div>').join('')
+            + '<div class="d-flex justify-content-between gap-2 fw-semibold text-heading border-top pt-1 mt-1 po-total-gross"><span>' + esc(L().TotalGross || '') + '</span><span class="text-nowrap">' + esc(money(t.gross, o.currency)) + '</span></div>'
             + (fx ? '<small class="text-muted d-block mt-1">' + Th('FxLine', ...fx) + '</small>' : '') + '</div>';
     };
 
@@ -159,39 +165,79 @@
     });
 
     /**
-     * Screen A — the INPUTS of one line: product, quantity, MF and, in priced mode only, the discount. In quantity mode no
-     * discount and no price field exists at all (AC-PRICE-3: the CRM refuses a discount there anyway). The price is never an
-     * input: it is drawn by lineResult from the CRM's answer, behind a lock.
+     * Screen A — the head of the line table (V-1, W6-FIX-b): drawn ONCE, shown from md up (preorders.css); below md each
+     * line is a card that carries its own labels. Product · quantity · MF and, in priced mode only, discount % · unit
+     * price · line total.
+     */
+    const lineHeadHtml = (priced) => {
+        const cols = ['ColProduct', 'ColQty', 'ColMf'].concat(priced ? ['ColDiscount', 'ColUnitPrice', 'ColLineTotal'] : []);
+        return '<div class="po-line-head po-line-grid ' + (priced ? 'po-grid-priced' : 'po-grid-quantity') + '" aria-hidden="true">'
+            + cols.map((c, i) => '<span class="po-head-' + (i < 3 ? ['product', 'qty', 'mf'][i] : ['disc', 'unit', 'total'][i - 3]) + '">' + esc(L()[c] || '') + '</span>').join('') + '<span></span></div>';
+    };
+
+    /**
+     * Screen A — the INPUTS of one line: product, quantity, MF and, in priced mode only, the discount — one ROW of the line
+     * table from md up, a card below it (V-1). In quantity mode no discount and no price field exists at all (AC-PRICE-3:
+     * the CRM refuses a discount there anyway). The price is never an input: the unit price and the line total cells are
+     * the CRM's answer (lineCells), behind a lock.
      */
     const formLineHtml = (line, priced, locked) => {
         const k = esc(line.key);
         const dis = locked ? ' disabled' : '';
-        const sku = '<div class="col-12 ' + (priced ? 'col-md-5' : 'col-md-6') + '"><label class="form-label small" for="po-sku-' + k + '">' + esc(L().ColProduct || '') + '</label>'
+        const label = (id, key) => '<label class="form-label small po-cell-label" for="' + id + '-' + k + '">' + esc(L()[key] || '') + '</label>';
+        const sku = '<div class="po-cell po-cell-product">' + label('po-sku', 'ColProduct')
             + '<div class="diten-field"><i class="bx bx-capsule diten-field-icon" aria-hidden="true"></i><select class="form-select po-sku" id="po-sku-' + k + '" data-key="' + k + '"' + dis + '>'
-            + (line.skuId ? '<option value="' + esc(line.skuId) + '" selected>' + esc(line.skuText || line.skuId) + '</option>' : '<option value=""></option>') + '</select></div></div>';
-        const qty = '<div class="col-4 ' + (priced ? 'col-md-2' : 'col-md-3') + '"><label class="form-label small" for="po-qty-' + k + '">' + esc(L().ColQty || '') + '</label>'
+            + (line.skuId ? '<option value="' + esc(line.skuId) + '" selected>' + esc(line.skuText || line.skuId) + '</option>' : '<option value=""></option>') + '</select></div>'
+            + '<small class="text-muted d-block po-sku-facts" id="po-facts-' + k + '"></small></div>';
+        const qty = '<div class="po-cell po-cell-qty">' + label('po-qty', 'ColQty')
             + '<div class="diten-field"><i class="bx bx-package diten-field-icon" aria-hidden="true"></i><input type="number" inputmode="numeric" min="1" step="1" class="form-control po-qty" id="po-qty-' + k + '" data-key="' + k + '" value="' + esc(line.quantity == null ? '' : line.quantity) + '"' + dis + ' /></div></div>';
-        const mf = '<div class="col-4 ' + (priced ? 'col-md-2' : 'col-md-2') + '"><label class="form-label small" for="po-mf-' + k + '">' + esc(L().ColMf || '') + '</label>'
+        const mf = '<div class="po-cell po-cell-mf">' + label('po-mf', 'ColMf')
             + '<div class="diten-field"><i class="bx bx-gift diten-field-icon" aria-hidden="true"></i><input type="text" inputmode="numeric" class="form-control po-mf" id="po-mf-' + k + '" data-key="' + k + '" placeholder="10+2" value="' + esc(line.mf || '') + '"' + dis + ' /></div></div>';
-        const discount = priced
-            ? '<div class="col-4 col-md-2"><label class="form-label small" for="po-disc-' + k + '">' + esc(L().ColDiscount || '') + '</label>'
+        const priceCells = priced
+            ? '<div class="po-cell po-cell-disc">' + label('po-disc', 'ColDiscount')
                 + '<div class="diten-field"><i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i><input type="text" inputmode="decimal" class="form-control po-disc" id="po-disc-' + k + '" data-key="' + k + '" value="' + esc(line.discount == null ? '' : line.discount) + '"' + dis + ' /></div></div>'
+                + '<div class="po-cell po-cell-unit"><span class="small text-muted po-cell-label">' + esc(L().ColUnitPrice || '') + '</span><div class="po-cell-value text-muted" id="po-unit-' + k + '">—</div></div>'
+                + '<div class="po-cell po-cell-total"><span class="small text-muted po-cell-label">' + esc(L().ColLineTotal || '') + '</span><div class="po-cell-value text-heading fw-semibold" id="po-total-' + k + '">—</div></div>'
             : '';
-        const remove = locked ? '' : '<div class="col-12 col-md-1 d-flex align-items-end justify-content-end"><button type="button" class="btn btn-sm btn-icon btn-label-danger po-remove" data-key="' + k + '" aria-label="' + esc(L().RemoveLine || '') + '" title="' + esc(L().RemoveLine || '') + '"><i class="bx bx-trash"></i></button></div>';
-        return '<div class="po-line border rounded p-3" data-key="' + k + '"><div class="row g-2">' + sku + qty + mf + discount + remove + '</div><div class="po-line-result mt-2" id="po-res-' + k + '"></div></div>';
+        const remove = '<div class="po-cell po-cell-act">' + (locked ? '' : '<button type="button" class="btn btn-sm btn-icon btn-label-danger po-remove" data-key="' + k + '" aria-label="' + esc(L().RemoveLine || '') + '" title="' + esc(L().RemoveLine || '') + '"><i class="bx bx-trash"></i></button>') + '</div>';
+        return '<div class="po-line" data-key="' + k + '"><div class="po-line-grid ' + (priced ? 'po-grid-priced' : 'po-grid-quantity') + '">' + sku + qty + mf + priceCells + remove + '</div>'
+            + '<div class="po-line-result" id="po-res-' + k + '"></div></div>';
+    };
+
+    /** Screen A — the line's unit price (locked) and line total cells: the CRM's answer as it came; "—" before it. */
+    const lineCells = (result, ctx) => {
+        const c = ctx || {};
+        if (!c.priced || !result || result.unitPrice == null) return { unit: '—', total: '—' };
+        return {
+            unit: '<span class="text-nowrap"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>' + esc(money(result.unitPrice, c.currency)) + '</span>',
+            // the unit price rides under the total where the table has no room for its own column (preorders.css)
+            total: '<span class="text-nowrap">' + esc(money(result.netAmount, c.currency)) + '</span>'
+                + '<small class="po-unit-inline text-muted fw-normal text-nowrap"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>' + esc(T('PerBox', money(result.unitPrice, c.currency))) + '</small>'
+        };
+    };
+
+    /** V-2 — the product's facts under its name (form · pack · GTIN — each only when MDM carries it). */
+    const skuFactsText = (sku) => C.skuFacts(sku).map((p) => (p.pack ? (C.num(p.value, culture(), 2) + (p.unit ? ' ' + p.unit : '')) : (p.key ? T(p.key, p.value) : p.value))).join(' · ');
+
+    /**
+     * V-2 — where the price comes from: the list · its tier · valid from · the line's VAT rate (the CRM's), as words.
+     * `list` = the order's price snapshot or the preview's list; `tier` its tier code.
+     */
+    const priceSourceHtml = (list, tier, vatRate) => {
+        if (!list) return '';
+        const tierText = L()['Tier_' + String(tier || '').replace(/-/g, '_')] || tier || '';
+        return Th('PriceSource', list.name || '', tierText, day(list.validFrom)) + (vatRate != null ? ' · ' + esc(T('TotalVatRate', pct(vatRate))) : '');
     };
 
     /**
-     * Screen A — what the CRM answered for one line (the preview / the order): in priced mode the locked unit price and the
-     * line total; the free boxes and the combined discount; the price source; the outcome badge and the rule messages.
+     * Screen A — what the CRM answered for one line under its row (the preview / the order): the free boxes and the
+     * combined discount; the price source (V-2); the outcome badge and the rule messages. The unit price and the line total
+     * are the row's own cells (lineCells).
      */
     const lineResult = (result, ctx) => {
         if (!result) return '';
         const c = ctx || {};
         const parts = [];
-        if (c.priced && result.unitPrice != null) {
-            parts.push('<div class="d-flex flex-wrap justify-content-between gap-2"><span class="text-muted"><i class="bx bx-lock-alt me-1"></i>' + esc(T('PerBox', money(result.unitPrice, c.currency))) + '</span><strong class="text-heading">' + esc(money(result.netAmount, c.currency)) + '</strong></div>');
-        }
         const meta = [];
         if (result.freeQuantity) meta.push(T('FreeBoxes', C.num(result.freeQuantity, culture(), 0)));
         if (c.priced && result.combinedDiscountPct != null) meta.push(T('CombinedLine', pct(result.combinedDiscountPct)));
@@ -282,11 +328,35 @@
 
     const toast = (text, kind) => { if (root.showToast) root.showToast(text, kind || 'info'); };
 
+    /**
+     * G-6 / G-7 (W6-FIX-b) — every consequential act asks through the product's ONE confirmation (window.showConfirm,
+     * _GlobalConfirmation — MOD-0286), never the browser's own box. `type` colours the dialog (danger · warning · success ·
+     * info); `onYes` runs only on the confirm button. Fail closed: without the shared dialog nothing happens.
+     */
+    const confirm = (title, text, button, type, onYes) => {
+        if (typeof root.showConfirm !== 'function') return;
+        root.showConfirm(title || '', () => { onYes(); }, { subtext: text || '', confirmButtonText: button || undefined, type: type || 'info' });
+    };
+
+    /** G-8 — a toast that survives the move to the next page (sessionStorage; shown once by takeFlashToast there). */
+    const FLASH = 'po-toast';
+    const flashToast = (text, kind) => { try { root.sessionStorage.setItem(FLASH, JSON.stringify({ text: text || '', kind: kind || 'info' })); } catch (e) { /* storage off: no toast */ } };
+    const takeFlashToast = () => {
+        try {
+            const raw = root.sessionStorage.getItem(FLASH);
+            root.sessionStorage.removeItem(FLASH);
+            const v = raw ? JSON.parse(raw) : null;
+            if (v && v.text) toast(v.text, v.kind);
+        } catch (e) { /* storage off */ }
+    };
+
     const api = {
         esc: esc, bidi: bidi, T: T, Th: Th, day: day, moment: moment, money: money, pct: pct, culture: culture, request: request, data: data,
         errorText: errorText, statusBadge: statusBadge, outcomeBadge: outcomeBadge, depotResponseBadge: depotResponseBadge, findingHtml: findingHtml,
         facts: facts, linesTable: linesTable, totals: totals, timelineHtml: timelineHtml, trailHtml: trailHtml, askReason: askReason, toast: toast,
-        formLineHtml: formLineHtml, lineResult: lineResult, stateHtml: stateHtml, whyHtml: whyHtml, limitsTable: limitsTable, historyHtml: historyHtml
+        formLineHtml: formLineHtml, lineResult: lineResult, stateHtml: stateHtml, whyHtml: whyHtml, limitsTable: limitsTable, historyHtml: historyHtml,
+        lineHeadHtml: lineHeadHtml, lineCells: lineCells, skuFactsText: skuFactsText, priceSourceHtml: priceSourceHtml,
+        confirm: confirm, flashToast: flashToast, takeFlashToast: takeFlashToast
     };
     root.PreOrdersUi = api;
     if (typeof module !== 'undefined' && module.exports) module.exports = api;

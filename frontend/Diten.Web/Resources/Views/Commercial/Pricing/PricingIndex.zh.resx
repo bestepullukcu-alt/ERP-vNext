@@ -910,4 +910,13 @@
   <data name="Err_conflict" xml:space="preserve">
     <value>其他人在此期间已修改。请刷新后重试。</value>
   </data>
+  <data name="FxDescription" xml:space="preserve">
+    <value>按销售公司和日期的临时汇率；订单保留其当时使用的汇率。</value>
+  </data>
+  <data name="RulesDescription" xml:space="preserve">
+    <value>按销售公司和产品设定的限制（可选细分和期间）；最具体的规则优先。</value>
+  </data>
+  <data name="HistoryDescription" xml:space="preserve">
+    <value>价目表、规则和汇率的每一次变更：谁、何时、改了什么。</value>
+  </data>
 </root>

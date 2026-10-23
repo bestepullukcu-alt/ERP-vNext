@@ -778,7 +778,7 @@
     <value>Envoyez</value>
   </data>
   <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
-    <value>« Envoyer » s'active quand rien ne bloque (les raisons sont écrites dessous). La commande attend alors l'approbateur ou, si le locataire le permet, part directement chez le dépositaire.</value>
+    <value>« Envoyer » s'active quand rien ne bloque (les raisons sont écrites dessous) ; il devient « Envoyer pour approbation du responsable » quand une approbation est requise. La commande envoyée s'ouvre sur sa page de détail : elle attend l'approbateur ou, si le locataire le permet, part directement chez le dépositaire.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
     <value>Statuez sur une pré-commande qui vous attend : validez-la, refusez-la ou renvoyez-la pour modification.</value>
@@ -802,7 +802,7 @@
     <value>Statuez</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
-    <value>« Valider » transmet la commande au dépositaire. « Refuser » et « Demander des modifications » exigent un motif ; une demande de modification la renvoie en brouillon au délégué.</value>
+    <value>« Valider » demande une confirmation, puis transmet la commande au dépositaire. « Refuser » et « Demander des modifications » exigent un motif ; une demande de modification la renvoie en brouillon au délégué.</value>
   </data>
   <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
     <value>Depuis le lien de l'e-mail</value>

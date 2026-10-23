@@ -338,13 +338,13 @@
     <value>{0} / kutu</value>
   </data>
   <data name="TotalNet" xml:space="preserve">
-    <value>Net</value>
+    <value>Net (KDV hariç)</value>
   </data>
   <data name="TotalVat" xml:space="preserve">
     <value>KDV</value>
   </data>
   <data name="TotalEffective" xml:space="preserve">
-    <value>Etkin indirim</value>
+    <value>Etkin indirim (MF + iskonto)</value>
   </data>
   <data name="TotalGross" xml:space="preserve">
     <value>Genel toplam</value>
@@ -936,5 +936,26 @@
   </data>
   <data name="ErrTierDuplicate" xml:space="preserve">
     <value>Bir ülke yalnız bir kez yer alabilir.</value>
+  </data>
+  <data name="TotalListSubtotal" xml:space="preserve">
+    <value>Ara toplam (KDV hariç, liste)</value>
+  </data>
+  <data name="TotalDiscount" xml:space="preserve">
+    <value>İskonto</value>
+  </data>
+  <data name="TotalVatRate" xml:space="preserve">
+    <value>KDV {0}</value>
+  </data>
+  <data name="FormSubtitleRep" xml:space="preserve">
+    <value>Temsilci: {0}</value>
+  </data>
+  <data name="SendForApproval" xml:space="preserve">
+    <value>Yönetici onayına gönder</value>
+  </data>
+  <data name="ApproveConfirmTitle" xml:space="preserve">
+    <value>Sipariş onaylansın mı?</value>
+  </data>
+  <data name="ApproveConfirmText" xml:space="preserve">
+    <value>{0} onaylanır ve depoya iletilir. Bu işlem geri alınamaz.</value>
   </data>
 </root>

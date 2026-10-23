@@ -338,13 +338,13 @@
     <value>{0} / 盒</value>
   </data>
   <data name="TotalNet" xml:space="preserve">
-    <value>净额</value>
+    <value>净额（不含增值税）</value>
   </data>
   <data name="TotalVat" xml:space="preserve">
     <value>增值税</value>
   </data>
   <data name="TotalEffective" xml:space="preserve">
-    <value>实际折扣</value>
+    <value>实际折扣（赠品 + 折扣）</value>
   </data>
   <data name="TotalGross" xml:space="preserve">
     <value>总计</value>
@@ -936,5 +936,26 @@
   </data>
   <data name="ErrTierDuplicate" xml:space="preserve">
     <value>每个国家只能出现一次。</value>
+  </data>
+  <data name="TotalListSubtotal" xml:space="preserve">
+    <value>小计（不含增值税，价目表）</value>
+  </data>
+  <data name="TotalDiscount" xml:space="preserve">
+    <value>折扣</value>
+  </data>
+  <data name="TotalVatRate" xml:space="preserve">
+    <value>增值税 {0}</value>
+  </data>
+  <data name="FormSubtitleRep" xml:space="preserve">
+    <value>代表：{0}</value>
+  </data>
+  <data name="SendForApproval" xml:space="preserve">
+    <value>提交经理审批</value>
+  </data>
+  <data name="ApproveConfirmTitle" xml:space="preserve">
+    <value>审批通过该订单？</value>
+  </data>
+  <data name="ApproveConfirmText" xml:space="preserve">
+    <value>{0} 将审批通过并转交经销商。此操作无法撤销。</value>
   </data>
 </root>

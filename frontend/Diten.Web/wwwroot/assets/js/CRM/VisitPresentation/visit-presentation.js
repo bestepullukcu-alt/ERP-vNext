@@ -423,6 +423,17 @@
             : '';
     }
 
+    /**
+     * FU-VISIT-END-SEPARATOR (W6-FIX-b) — "who · where · from–to": a visit with no institution has no middle part, and
+     * the line then has no empty slot between two separators ("AYŞE ABACI · · 17:57" before).
+     */
+    function summaryLine(e) {
+        const account = accountName();
+        return account
+            ? fmt(L.SummaryLine || '{0} · {1} · {2}–{3}', visitName(), account, timeOf(e.startedAt), timeOf(e.finishedAt))
+            : fmt(L.SummaryLineNoAccount || '{0} · {1}–{2}', visitName(), timeOf(e.startedAt), timeOf(e.finishedAt));
+    }
+
     /** E4c — the finish summary (from the SERVER's execution: its timings, marks, note, co-visitors, shortVisit). */
     function renderSummary() {
         const box = el('vp-summary');
@@ -438,7 +449,7 @@
 
         let html = '<div class="vp-sum-head"><div class="vp-sum-icon"><i class="bx bx-check-circle"></i></div><div>'
             + '<div class="vp-sum-title">' + esc(L.SummaryTitle || '') + '</div>'
-            + '<div class="vp-muted">' + esc(fmt(L.SummaryLine || '{0} · {1} · {2}–{3}', visitName(), accountName(), timeOf(e.startedAt), timeOf(e.finishedAt))) + '</div></div></div>';
+            + '<div class="vp-muted">' + esc(summaryLine(e)) + '</div></div></div>';
 
         html += '<div class="vp-card"><div class="d-flex justify-content-between align-items-baseline"><span class="vp-card-cap">' + esc(L.DurationHeading || '') + '</span><span class="vp-sum-total">' + esc(C.clock(e.durationSeconds != null ? e.durationSeconds : total)) + '</span></div>'
             + rows.map(r => '<div class="vp-row"><div class="d-flex justify-content-between"><span><strong>' + esc(r.name) + '</strong> <span class="vp-muted">· ' + esc(r.role === 'promo' ? L.RolePromo || '' : L.RoleReminder || '') + '</span></span><span>' + esc(fmt(L.MinutesClock || '{0}', C.clock(r.seconds))) + '</span></div>'

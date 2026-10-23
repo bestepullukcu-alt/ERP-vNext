@@ -113,4 +113,5 @@
   <data name="Err_visit_execution_not_found" xml:space="preserve"><value>No se encontró la visita.</value></data>
   <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>La visita cambió en otra pantalla. Recargue la página.</value></data>
   <data name="Err_resource_not_caller" xml:space="preserve"><value>Solo el representante de la visita puede registrarla.</value></data>
+  <data name="SummaryLineNoAccount" xml:space="preserve"><value>{0} · {1}–{2}</value></data>
 </root>

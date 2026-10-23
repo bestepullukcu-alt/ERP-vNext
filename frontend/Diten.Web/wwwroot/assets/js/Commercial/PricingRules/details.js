@@ -65,20 +65,18 @@ const PricingRuleDetails = (function () {
 
     const init = () => {
         if (!root || !U || !K || !PU) return;
-        byId('pr-submit').addEventListener('click', async () => {
-            if (!window.confirm(L().SubmitRuleConfirm || '')) return;
+        // G-6 (W6-FIX-b) — every act asks through the shared confirmation, never the browser's box
+        byId('pr-submit').addEventListener('click', () => U.confirm(L().SubmitForApproval, L().SubmitRuleConfirm, L().SubmitForApproval, 'warning', async () => {
             after(await U.request('POST', endpoint + '/' + encodeURIComponent(rule.id) + '/submit', { expectedVersion: rule.version }), 'SubmittedToast');
-        });
-        byId('pr-discard').addEventListener('click', async () => {
-            if (!window.confirm(L().DiscardConfirm || '')) return;
+        }));
+        byId('pr-discard').addEventListener('click', () => U.confirm(L().DiscardDraft, L().DiscardConfirm, L().DiscardDraft, 'danger', async () => {
             const r = await U.request('POST', endpoint + '/' + encodeURIComponent(rule.id) + '/discard', { expectedVersion: rule.version });
             if (!r.ok) { alertBox(U.errorText(r)); return; }
             window.location.href = '/Commercial/Pricing/Rules';
-        });
-        byId('pr-retire').addEventListener('click', async () => {
-            if (!window.confirm(L().RetireConfirm || '')) return;
+        }));
+        byId('pr-retire').addEventListener('click', () => U.confirm(L().Retire, L().RetireConfirm, L().Retire, 'danger', async () => {
             after(await U.request('POST', endpoint + '/' + encodeURIComponent(rule.id) + '/revisions', { changeKind: 'retire' }), 'RetireRequestedToast');
-        });
+        }));
         load();
     };
 

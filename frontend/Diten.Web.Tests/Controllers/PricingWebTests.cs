@@ -470,6 +470,51 @@ process.stdout.write(JSON.stringify({ s: s, none: none, done: done }));")!;
         }
     }
 
+    // ═══ 8 · W6-FIX-b — tab words, the tabs' own sentences, the calendar's language ═════════════════════════════
+
+    [Fact]
+    public void D13_the_rules_tab_is_written_as_the_resource_writes_it_and_each_tab_says_its_own_sentence()
+    {
+        // V-12 — the Turkish label, and no capitalising transform on screen D's tab card (Sneat's nav-pills capitalize)
+        Assert.Equal("MF / iskonto kuralları", Page("tr")["TabRules"]);
+        Assert.Equal("MF / iskonto kuralları", Page("tr")["RulesTitle"]);
+        Assert.Contains(".wcn-tabs .nav-link {\n    text-transform: none;\n}", Js("Pricing/pricing.css"));
+        foreach (var page in new[] { "PriceLists/Index.cshtml", "PricingRules/Index.cshtml", "Pricing/Trial.cshtml", "PricingHistory/Index.cshtml", "FxRates/Index.cshtml" })
+        {
+            Assert.Contains("~/assets/js/Commercial/Pricing/pricing.css", View(page));                   // every tab page carries the fix
+        }
+
+        // G-1 — the price lists' sentence stays on the price lists tab; rules, history and rates say their own
+        Assert.Contains("@Localizer[\"PageDescription\"]", View("PriceLists/Index.cshtml"));
+        foreach (var (page, key) in new[] { ("PricingRules/Index.cshtml", "RulesDescription"), ("PricingHistory/Index.cshtml", "HistoryDescription"), ("FxRates/Index.cshtml", "FxDescription") })
+        {
+            Assert.DoesNotContain("@Localizer[\"PageDescription\"]", View(page));
+            Assert.Contains("@Localizer[\"" + key + "\"]", View(page));
+            foreach (var language in Languages) Assert.NotEqual(Page(language)["PageDescription"], Page(language)[key]);
+        }
+    }
+
+    [Fact]
+    public void D14_the_calendar_speaks_the_page_language_from_the_shared_date_field()
+    {
+        // G-2 — measured: no script gave flatpickr a locale; the shared date field localizes it once for <html lang>
+        var shared = File.ReadAllText(Path.Combine(WebRoot(), "wwwroot", "assets", "js", "shared", "diten-datefield.js"));
+        Assert.Contains("fp.localize(locale);", shared);
+        Assert.Contains("<script src=\"~/assets/js/shared/diten-datefield.js\" asp-append-version=\"true\"></script>", View("Pricing/_PricingScripts.cshtml"));
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var path = Path.Combine(WebRoot(), "wwwroot", "assets", "js", "shared", "diten-datefield.js").Replace("\\", "/");
+        string Run(string lang) => RunNode("let given = null; globalThis.flatpickr = { localize: (l) => { given = l; } }; globalThis.document = { documentElement: { lang: '" + lang + "' } };"
+            + "require('" + path + "'); process.stdout.write(JSON.stringify(given));")!;
+        var tr = JsonDocument.Parse(Run("tr")).RootElement;
+        Assert.Equal("Ocak", tr.GetProperty("months").GetProperty("longhand")[0].GetString());
+        Assert.Equal("Ekim", tr.GetProperty("months").GetProperty("longhand")[9].GetString());
+        Assert.Equal("Pazar", tr.GetProperty("weekdays").GetProperty("longhand")[0].GetString());     // flatpickr's lists start on Sunday
+        Assert.Equal("Pazartesi", tr.GetProperty("weekdays").GetProperty("longhand")[1].GetString());
+        Assert.Equal(1, tr.GetProperty("firstDayOfWeek").GetInt32());                                  // the Turkish week starts on Monday
+        Assert.Equal("октябрь", JsonDocument.Parse(Run("ru")).RootElement.GetProperty("months").GetProperty("longhand")[9].GetString()!.ToLowerInvariant());
+        Assert.Equal("null", Run("en"));                                                               // English stays flatpickr's own
+    }
+
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
 
     private static JsonElement Json(object? value) => JsonDocument.Parse(JsonSerializer.Serialize(value)).RootElement;

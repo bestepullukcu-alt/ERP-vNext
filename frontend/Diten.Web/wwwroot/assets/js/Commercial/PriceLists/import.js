@@ -111,11 +111,13 @@ const PriceListImport = (function () {
             if (!r.ok || !list) { alertBox(U.errorText(r)); byId('pr-convert').disabled = false; return; }
             showConverted(list.id);
         });
-        byId('pr-import-discard').addEventListener('click', async () => {
-            if (!current || !window.confirm(L().DiscardImportConfirm || '')) return;
-            const r = await U.request('POST', endpoint + '/' + encodeURIComponent(current.id) + '/discard', {});
-            if (!r.ok) { alertBox(U.errorText(r)); return; }
-            window.location.href = '/Commercial/Pricing/PriceLists';
+        byId('pr-import-discard').addEventListener('click', () => {
+            if (!current) return;
+            U.confirm(L().DiscardImport, L().DiscardImportConfirm, L().DiscardImport, 'danger', async () => {
+                const r = await U.request('POST', endpoint + '/' + encodeURIComponent(current.id) + '/discard', {});
+                if (!r.ok) { alertBox(U.errorText(r)); return; }
+                window.location.href = '/Commercial/Pricing/PriceLists';
+            });
         });
         const id = root.getAttribute('data-id');
         if (id) { showPreview(id); } else { step(1); }

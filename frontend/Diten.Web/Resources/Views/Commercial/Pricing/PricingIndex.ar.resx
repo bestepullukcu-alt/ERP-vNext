@@ -910,4 +910,13 @@
   <data name="Err_conflict" xml:space="preserve">
     <value>قام شخص آخر بتغييره في الأثناء. أعد التحميل وحاول مجددًا.</value>
   </data>
+  <data name="FxDescription" xml:space="preserve">
+    <value>أسعار صرف مؤقتة لكل شركة بائعة ويوم؛ يحتفظ الطلب بالسعر الذي طُبّق عليه.</value>
+  </data>
+  <data name="RulesDescription" xml:space="preserve">
+    <value>حدود لكل شركة بائعة ومنتج (مع شريحة وفترة اختياريتين)؛ تُطبَّق القاعدة الأكثر تحديدًا.</value>
+  </data>
+  <data name="HistoryDescription" xml:space="preserve">
+    <value>كل تغيير في قوائم الأسعار والقواعد وأسعار الصرف: من ومتى وماذا.</value>
+  </data>
 </root>

@@ -37,14 +37,22 @@ const PreOrdersList = (function () {
     const defaultVisible = () => DATA_COLUMNS.filter((c) => c !== 8 && (flag('sees-team') || c !== 5));
     const EXPORT_COLUMNS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+    /**
+     * V-7 (W6-FIX-b) — which column the responsive table gives up FIRST when the row does not fit (a higher number goes
+     * earlier). At 1280 px the mockup shows every column, the rep, the line count, the effective discount and the rule
+     * included; they rank above the depot and the date, and the long names (pharmacy, depot) are cut to one line with
+     * their full text in the title, so the row fits. The local equivalent is off by default (Column Visibility).
+     */
+    const PRIORITY = { 3: 2, 10: 3, 7: 4, 5: 5, 9: 6, 6: 7, 11: 8, 2: 9, 4: 10, 8: 11 };
+
     // ── the cells ────────────────────────────────────────────────────────────────────────────────────────────
     const totalCell = (row) => (row.priceMode === 'priced'
         ? '<span class="text-heading text-nowrap">' + esc(U.money(row.gross, row.currency)) + '</span>'
         : '<span class="text-muted text-nowrap"><i class="bx bx-package me-1"></i>' + esc(L().QuantityModeShort) + '</span>');
     const localCell = (row) => (row.localGross != null && row.localCurrencyCode && row.localCurrencyCode !== row.currency
         ? '<span class="text-muted text-nowrap">≈ ' + esc(U.money(row.localGross, row.localCurrencyCode)) + '</span>' : '<span class="text-muted">—</span>');
-    const pharmacyCell = (row) => '<div class="d-flex flex-column"><span class="text-heading">' + U.bidi(row.pharmacyName || '') + '</span>'
-        + (row.pharmacyCity ? '<small class="text-muted">' + U.bidi(row.pharmacyCity) + '</small>' : '') + '</div>';
+    const pharmacyCell = (row) => '<div class="d-flex flex-column"><span class="text-heading po-cut" title="' + esc(row.pharmacyName || '') + '">' + U.bidi(row.pharmacyName || '') + '</span>'
+        + (row.pharmacyCity ? '<small class="text-muted po-cut">' + U.bidi(row.pharmacyCity) + '</small>' : '') + '</div>';
     const statusCell = (row) => '<div class="d-flex flex-column gap-1 align-items-start">' + U.statusBadge(row.status) + U.depotResponseBadge(row.depotResponseStatus)
         + (row.awaitingMe ? '<small class="text-warning text-nowrap"><i class="bx bx-user-check me-1"></i>' + esc(L().AwaitingYou) + '</small>' : '') + '</div>';
     const ruleCell = (row) => (row.outcome === 'soft' || row.outcome === 'hard'
@@ -307,16 +315,16 @@ const PreOrdersList = (function () {
                     { targets: '_all', orderable: false },
                     { targets: 0, className: 'control', searchable: false, responsivePriority: 1, render: () => '' },
                     { targets: 1, className: 'all', render: (d, type, full) => (type === 'display' ? '<span class="fw-medium text-heading text-nowrap">' + U.bidi(full.code || '') + '</span>' : (full.code || '')) },
-                    { targets: 2, responsivePriority: 3, render: (d, type, full) => (type === 'display' ? '<span class="text-nowrap">' + esc(U.day(full.createdAt)) + '</span>' : (full.createdAt || '')) },
-                    { targets: 3, responsivePriority: 2, render: (d, type, full) => (type === 'display' ? pharmacyCell(full) : (full.pharmacyName || '')) },
-                    { targets: 4, responsivePriority: 6, render: (d, type, full) => (type === 'display' ? U.bidi(full.depotName || '—') : (full.depotName || '')) },
-                    { targets: 5, responsivePriority: 7, render: (d, type, full) => (type === 'display' ? U.bidi(full.repName || '') : (full.repName || '')) },
-                    { targets: 6, responsivePriority: 8, render: (d, type, full) => (type === 'display' ? esc(C.num(full.lineCount, U.culture(), 0)) : full.lineCount) },
-                    { targets: 7, responsivePriority: 5, render: (d, type, full) => (type === 'display' ? totalCell(full) : (full.priceMode === 'priced' ? U.money(full.gross, full.currency) : L().QuantityModeShort)) },
-                    { targets: 8, render: (d, type, full) => (type === 'display' ? localCell(full) : (full.localGross != null ? U.money(full.localGross, full.localCurrencyCode) : '')) },
-                    { targets: 9, render: (d, type, full) => (full.effectiveDiscountPct == null ? (type === 'display' ? '<span class="text-muted">—</span>' : '') : esc(U.pct(full.effectiveDiscountPct))) },
-                    { targets: 10, responsivePriority: 4, render: (d, type, full) => (type === 'display' ? statusCell(full) : (L()[C.statusOf(full.status).key] || full.status || '')) },
-                    { targets: 11, render: (d, type, full) => (type === 'display' ? ruleCell(full) : (full.outcome && full.outcome !== 'ok' && window.CommercialRules ? window.CommercialRules.outcome(full.outcome) : '')) },
+                    { targets: 2, responsivePriority: PRIORITY[2], render: (d, type, full) => (type === 'display' ? '<span class="text-nowrap">' + esc(U.day(full.createdAt)) + '</span>' : (full.createdAt || '')) },
+                    { targets: 3, responsivePriority: PRIORITY[3], render: (d, type, full) => (type === 'display' ? pharmacyCell(full) : (full.pharmacyName || '')) },
+                    { targets: 4, responsivePriority: PRIORITY[4], render: (d, type, full) => (type === 'display' ? '<span class="po-cut" title="' + esc(full.depotName || '') + '">' + U.bidi(full.depotName || '—') + '</span>' : (full.depotName || '')) },
+                    { targets: 5, responsivePriority: PRIORITY[5], render: (d, type, full) => (type === 'display' ? '<span class="text-nowrap">' + U.bidi(full.repName || '') + '</span>' : (full.repName || '')) },
+                    { targets: 6, responsivePriority: PRIORITY[6], className: 'text-end', render: (d, type, full) => (type === 'display' ? esc(C.num(full.lineCount, U.culture(), 0)) : full.lineCount) },
+                    { targets: 7, responsivePriority: PRIORITY[7], className: 'text-end', render: (d, type, full) => (type === 'display' ? totalCell(full) : (full.priceMode === 'priced' ? U.money(full.gross, full.currency) : L().QuantityModeShort)) },
+                    { targets: 8, responsivePriority: PRIORITY[8], render: (d, type, full) => (type === 'display' ? localCell(full) : (full.localGross != null ? U.money(full.localGross, full.localCurrencyCode) : '')) },
+                    { targets: 9, responsivePriority: PRIORITY[9], className: 'text-end text-nowrap', render: (d, type, full) => (full.effectiveDiscountPct == null ? (type === 'display' ? '<span class="text-muted">—</span>' : '') : esc(U.pct(full.effectiveDiscountPct))) },
+                    { targets: 10, responsivePriority: PRIORITY[10], render: (d, type, full) => (type === 'display' ? statusCell(full) : (L()[C.statusOf(full.status).key] || full.status || '')) },
+                    { targets: 11, responsivePriority: PRIORITY[11], className: 'text-center', render: (d, type, full) => (type === 'display' ? ruleCell(full) : (full.outcome && full.outcome !== 'ok' && window.CommercialRules ? window.CommercialRules.outcome(full.outcome) : '')) },
                     {
                         targets: -1,
                         title: L().Actions,

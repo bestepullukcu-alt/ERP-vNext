@@ -46,7 +46,9 @@ public sealed class PricingIndex
         "TrialNoFindings", "RuleRef", "ErrTrialCompany", "Type_price_list", "Type_price_list_item", "Type_pricing_rule", "Type_fx_rate",
         "Type_unknown", "Act_created", "Act_updated", "Act_version_created", "Act_discarded", "Act_submitted", "Act_published",
         "Act_returned", "Act_refused", "Act_withdrawn", "Act_superseded", "Act_retired", "Act_unknown", "ErrRateHead", "ErrRate",
-        "Err_generic", "Err_unavailable", "Err_permission_denied", "Err_not_found", "Err_conflict"
+        "Err_generic", "Err_unavailable", "Err_permission_denied", "Err_not_found", "Err_conflict",
+        // W6-FIX-b (G-6) — the shared confirmation names the act with its button's own words
+        "SubmitForPublishing", "SubmitForApproval", "DiscardDraft", "Retire", "DiscardImport"
     ];
 
     public static readonly string[] ViewKeys =
@@ -57,13 +59,15 @@ public sealed class PricingIndex
         "ColChanges", "CompanyLabel", "CountryLabel", "CurrencyLabel", "KindLabel", "StatusLabel", "TypeLabel", "FromDate", "ToDate",
         "FromCurrencyLabel", "ToCurrencyLabel", "SoftLabel", "HardLabel", "SoftLegend", "HardLegend", "ListCreateTitle", "ListEditTitle",
         "ListDetailsTitle", "ListHeadSection", "ItemsSection", "ItemsHelp", "AddItem", "NameLabel", "CountryFromCompany", "ValidFromLabel",
-        "ValidToLabel", "BackToList", "SaveDraft", "EditDraft", "DiscardDraft", "NewVersion", "SubmitForPublishing", "DiffToggle",
+        "ValidToLabel", "BackToList", "SaveDraft", "EditDraft", "NewVersion", "DiffToggle",
         "ImportTitle", "StepFile", "StepPreview", "StepPublish", "FileLabel", "FileHelp", "ColumnsTitle", "ColumnsHelp", "ColumnSku",
         "ColumnDepot", "ColumnPharmacist", "ColumnPublic", "ColumnVat", "ColumnGtin", "GtinOffNote", "Upload", "OnlyMatchedNote",
-        "RowStatusLabel", "DiscardImport", "ConvertToDraft", "OpenDraft", "RulesTitle", "RulesNote", "RuleCreateTitle", "RuleEditTitle",
+        "RowStatusLabel", "ConvertToDraft", "OpenDraft", "RulesTitle", "RulesNote", "RuleCreateTitle", "RuleEditTitle",
         "RuleDetailsTitle", "RuleKeySection", "LimitsSection", "SegmentLabel", "SegmentSoon", "Optional", "MaxDiscountLabel", "MaxMfLabel",
-        "MaxCombinedLabel", "QuantityLabel", "QuantityMin", "QuantitySoftMax", "QuantityHardMax", "MfRatioHelp", "Revise", "Retire",
-        "SubmitForApproval", "VersionsTitle", "TrialTitle", "TrialResult", "TrialEmpty", "TryButton", "AsOfLabel", "TierLabel",
-        "HistoryTitle", "FxTitle", "FxCreateTitle", "FxEditTitle", "RateSection", "SaveRate", "EditRate"
+        "MaxCombinedLabel", "QuantityLabel", "QuantityMin", "QuantitySoftMax", "QuantityHardMax", "MfRatioHelp", "Revise",
+        "VersionsTitle", "TrialTitle", "TrialResult", "TrialEmpty", "TryButton", "AsOfLabel", "TierLabel",
+        "HistoryTitle", "FxTitle", "FxCreateTitle", "FxEditTitle", "RateSection", "SaveRate", "EditRate",
+        // W6-FIX-b (G-1) — each tab says its OWN sentence under its title (they all said the price lists' one)
+        "RulesDescription", "HistoryDescription", "FxDescription"
     ];
 }

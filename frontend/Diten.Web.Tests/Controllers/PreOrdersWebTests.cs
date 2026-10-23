@@ -465,8 +465,8 @@ public sealed class PreOrdersWebTests
         var node = RunNode(Ui() + "globalThis.L10n = {};"
             + "const q = U.formLineHtml({ key: 'l1', skuId: 'a', skuText: 'Tutukon', quantity: 5, mf: '10+2', discount: '12' }, false, false);"
             + "const p = U.formLineHtml({ key: 'l1', skuId: 'a', skuText: 'Tutukon', quantity: 5, mf: '10+2', discount: '12' }, true, false);"
-            + "const rq = U.lineResult({ unitPrice: 10, netAmount: 50, outcome: 'ok', findings: [], freeQuantity: 0 }, { priced: false, currency: '' });"
-            + "const rp = U.lineResult({ unitPrice: 10, netAmount: 50, outcome: 'ok', findings: [], freeQuantity: 0 }, { priced: true, currency: 'TRY' });"
+            + "const rq = U.lineResult({ unitPrice: 10, netAmount: 50, outcome: 'ok', findings: [], freeQuantity: 0 }, { priced: false, currency: '' }) + JSON.stringify(U.lineCells({ unitPrice: 10, netAmount: 50 }, { priced: false, currency: '' }));"
+            + "const rp = JSON.stringify(U.lineCells({ unitPrice: 10, netAmount: 50, outcome: 'ok', findings: [], freeQuantity: 0 }, { priced: true, currency: 'TRY' }));"
             + "const lq = C.linesInput([{ skuId: 'a', quantity: '5', mf: '10+2', discount: '12' }], false);"
             + "const lp = C.linesInput([{ skuId: 'a', quantity: '5', mf: '10+2', discount: '12,5' }], true);"
             + "process.stdout.write(JSON.stringify({ qDisc: q.includes('po-disc'), pDisc: p.includes('po-disc'), qInputs: (q.match(/<input/g) || []).length, rqPrice: rq.includes('TRY') || rq.includes('bx-lock-alt'), rpPrice: rp.includes('TRY'), lq: lq, lp: lp,"
@@ -585,7 +585,8 @@ process.stdout.write(JSON.stringify(out));")!;
     public void P15_the_approval_screens_the_reason_is_required_and_the_link_token_travels_with_the_decision()
     {
         var approve = Script("approve.js");
-        Assert.Contains("if (decision !== 'approve') {", approve);
+        Assert.Contains("if (decision === 'approve') {", approve);                                     // G-7: approve asks through the shared confirmation (P20)
+        Assert.Contains("U.confirm(L().ApproveConfirmTitle, U.T('ApproveConfirmText', order.code || ''), L().Approve, 'success', () => send(decision, null));", approve);
         Assert.Contains("if (!reason) return;", approve);
         Assert.Contains("if (isLink()) { body.linkToken = token; }", approve);
         Assert.Contains("endpoint + '/approval-link', { token: token }", approve);                  // the token in the body
@@ -702,6 +703,241 @@ process.stdout.write(JSON.stringify(out));")!;
         {
             Assert.True(Routed(path, method), method + " " + path);
         }
+    }
+
+    // ═══ 7 · W6-FIX-b — the E4 findings and the mockup differences ═════════════════════════════════════════════
+
+    /// <summary>Every script of the commercial screens (A / B / C / Details / E / settings and D's five tabs).</summary>
+    private static IEnumerable<string> CommercialScripts()
+        => Directory.GetFiles(Path.Combine(WebRoot(), "wwwroot", "assets", "js", "Commercial"), "*.js", SearchOption.AllDirectories);
+
+    private static string Code(string file)
+        => Regex.Replace(Regex.Replace(File.ReadAllText(file), @"/\*[\s\S]*?\*/", ""), @"(^|[^:'])//.*$", "$1", RegexOptions.Multiline);
+
+    [Fact]
+    public void P19_no_commercial_script_asks_through_the_browser_box_and_the_shared_confirmation_runs_only_on_yes()
+    {
+        // G-6 / G-7 — a source scan of every commercial script: window.confirm and a bare confirm( are gone
+        var scripts = CommercialScripts().ToList();
+        Assert.True(scripts.Count >= 25);
+        foreach (var file in scripts)
+        {
+            var code = Code(file);
+            Assert.DoesNotMatch(@"window\s*\.\s*confirm\b", code);
+            Assert.DoesNotMatch(@"(?<![\w.$])confirm\s*\(", code);
+        }
+
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var node = RunNode(Ui() + @"
+globalThis.L10n = {};
+const out = { calls: [], ran: 0 };
+U.confirm('T', 'S', 'B', 'danger', () => { out.ran++; });                       // no shared dialog → nothing happens (fail closed)
+out.withoutDialog = out.ran;
+globalThis.showConfirm = (title, cb, o) => { out.calls.push({ title: title, subtext: o.subtext, type: o.type, button: o.confirmButtonText }); out.cb = cb; };
+U.confirm('Approve?', 'MG-ORD-1 goes to the depot', 'Approve', 'success', () => { out.ran++; });
+out.beforeYes = out.ran;
+out.cb();
+out.afterYes = out.ran;
+process.stdout.write(JSON.stringify(out));")!;
+        var r = JsonDocument.Parse(node).RootElement;
+        Assert.Equal(0, r.GetProperty("withoutDialog").GetInt32());
+        var call = r.GetProperty("calls")[0];
+        Assert.Equal(("Approve?", "MG-ORD-1 goes to the depot", "success", "Approve"), (call.GetProperty("title").GetString(), call.GetProperty("subtext").GetString(), call.GetProperty("type").GetString(), call.GetProperty("button").GetString()));
+        Assert.Equal(0, r.GetProperty("beforeYes").GetInt32());                                         // asking is not doing
+        Assert.Equal(1, r.GetProperty("afterYes").GetInt32());
+
+        // the acts that ask: discard (A), submit / discard (price list), discard (import), submit / discard / retire (rule), approve (C)
+        Assert.Contains("U.confirm(L().DiscardDraft, L().DiscardConfirm, L().DiscardDraft, 'danger'", Script("form.js"));
+        var js = Path.Combine(WebRoot(), "wwwroot", "assets", "js", "Commercial");
+        Assert.Equal(2, Regex.Matches(File.ReadAllText(Path.Combine(js, "PriceLists", "details.js")), @"U\.confirm\(").Count);
+        Assert.Single(Regex.Matches(File.ReadAllText(Path.Combine(js, "PriceLists", "import.js")), @"U\.confirm\("));
+        Assert.Equal(3, Regex.Matches(File.ReadAllText(Path.Combine(js, "PricingRules", "details.js")), @"U\.confirm\(").Count);
+    }
+
+    [Fact]
+    public void P20_approve_asks_through_the_shared_confirmation_and_nothing_is_decided_before_yes()
+    {
+        // G-7 — screen C driven in Node on a minimal DOM: the click opens the dialog, the decision travels only on its yes
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var node = RunNode(Ui() + @"
+const els = {};
+const el = (id) => els[id] || (els[id] = { id: id, attrs: id === 'po-root' ? { 'data-screen': 'approve', 'data-order-id': 'o1' } : {}, listeners: {}, innerHTML: '', textContent: '', disabled: false, className: '',
+  classList: { add() {}, remove() {}, toggle() {} }, getAttribute(n) { return this.attrs[n] || null; }, addEventListener(n, f) { this.listeners[n] = f; } });
+globalThis.window = globalThis;
+globalThis.document = { getElementById: el, addEventListener: (n, f) => { globalThis.ready = f; }, documentElement: { lang: 'en' } };
+globalThis.L10n = { Approve: 'Approve', ApproveConfirmTitle: 'Approve the order?', ApproveConfirmText: '{0} is approved' };
+const calls = [];
+globalThis.fetch = (url, o) => { calls.push({ url: url, method: o.method, body: o.body || null });
+  const order = { id: 'o1', code: 'MG-ORD-000009', version: 3, status: 'pending_approval', priceMode: 'quantity', lines: [], can: { decide: true }, approvalRequirement: { reasons: [] } };
+  const body = url.endsWith('/pharmacy-history') ? { data: { items: [] } } : { data: order };
+  return Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve(JSON.stringify(body)) }); };
+const asked = [];
+globalThis.showConfirm = (title, cb, o) => { asked.push({ title: title, text: o.subtext, type: o.type }); globalThis.yes = cb; };
+" + "require('" + Path.Combine(ScriptDir(), "approve.js").Replace("\\", "/") + "');" + @"
+(async () => {
+  globalThis.ready();
+  await new Promise((r) => setTimeout(r, 20));
+  els['po-approve'].listeners.click();
+  await new Promise((r) => setTimeout(r, 20));
+  const before = calls.filter((c) => c.url.endsWith('/decision')).length;
+  globalThis.yes();
+  await new Promise((r) => setTimeout(r, 20));
+  const decisions = calls.filter((c) => c.url.endsWith('/decision'));
+  process.stdout.write(JSON.stringify({ asked: asked, before: before, after: decisions.length, body: decisions[0] ? JSON.parse(decisions[0].body) : null }));
+})();")!;
+        var r = JsonDocument.Parse(node).RootElement;
+        var asked = Assert.Single(r.GetProperty("asked").EnumerateArray());
+        Assert.Equal("Approve the order?", asked.GetProperty("title").GetString());
+        Assert.Equal("MG-ORD-000009 is approved", asked.GetProperty("text").GetString());
+        Assert.Equal("success", asked.GetProperty("type").GetString());
+        Assert.Equal(0, r.GetProperty("before").GetInt32());                                            // the click alone decided nothing
+        Assert.Equal(1, r.GetProperty("after").GetInt32());
+        Assert.Equal("approve", r.GetProperty("body").GetProperty("decision").GetString());
+        Assert.Equal(3, r.GetProperty("body").GetProperty("expectedVersion").GetInt32());
+    }
+
+    [Fact]
+    public void P21_after_send_the_order_opens_on_its_details_page_and_the_toast_travels_there()
+    {
+        // G-8 — the send handler leaves the form for Details; the Details page shows the carried toast once
+        var form = Script("form.js");
+        var send = Regex.Match(form, @"const send = async \(\) => \{[\s\S]*?\n    \};").Value;
+        Assert.Contains("U.flashToast(order.status === 'pending_approval' ? L().SubmittedPending : L().SubmittedApproved, 'success');", send);
+        Assert.Contains("window.location.href = '/Commercial/PreOrders/Details/' + encodeURIComponent(order.id);", send);
+        Assert.DoesNotContain("fill(order)", send);                                                     // no longer drawn locked on the form
+        Assert.Contains("U.takeFlashToast();", Script("details.js"));
+
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var node = RunNode(Ui() + @"
+const store = {};
+globalThis.sessionStorage = { setItem: (k, v) => { store[k] = v; }, getItem: (k) => (k in store ? store[k] : null), removeItem: (k) => { delete store[k]; } };
+const shown = [];
+globalThis.showToast = (t, k) => shown.push([t, k]);
+U.flashToast('Sent: waiting for approval', 'success');
+U.takeFlashToast();
+U.takeFlashToast();                                                                                     // once
+process.stdout.write(JSON.stringify(shown));")!;
+        var shown = JsonDocument.Parse(node).RootElement;
+        Assert.Equal(1, shown.GetArrayLength());
+        Assert.Equal("Sent: waiting for approval", shown[0][0].GetString());
+    }
+
+    [Fact]
+    public void P22_the_summary_rows_are_the_crm_fields_in_the_mockup_order_and_no_amount_is_computed_on_the_page()
+    {
+        // V-3 — a source scan first: no arithmetic on an amount field anywhere in the pre-order scripts
+        const string fields = "listSubtotal|discountAmount|net|vat|gross|netAmount|vatAmount|unitPrice|effectiveDiscountPct|combinedDiscountPct|localGross";
+        foreach (var file in Directory.GetFiles(ScriptDir(), "*.js"))
+        {
+            var code = Code(file);
+            Assert.DoesNotMatch(@"\.(?:" + fields + @")\b\s*[-*/]", code);
+            Assert.DoesNotMatch(@"[-*/]\s*(?:Number\()?[\w.\[\]]*\.(?:" + fields + @")\b", code);
+            Assert.DoesNotMatch(@"\.(?:listSubtotal|discountAmount|net|vat)\b\s*\+\s*(?:Number\()?[\w.\[\]]*\.(?:" + fields + @")\b", code);
+        }
+
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var words = new Dictionary<string, string>
+        {
+            ["TotalListSubtotal"] = "Ara toplam (KDV hariç, liste)", ["TotalDiscount"] = "İskonto", ["TotalNet"] = "Net (KDV hariç)", ["TotalVat"] = "KDV",
+            ["TotalVatRate"] = "KDV {0}", ["TotalEffective"] = "Etkin indirim (MF + iskonto)", ["TotalGross"] = "Genel toplam"
+        };
+        var node = RunNode(Ui() + "globalThis.L10n = " + JsonSerializer.Serialize(words) + "; globalThis.document = { documentElement: { lang: 'tr' }, getElementById: () => null };" + @"
+const totals = { listSubtotal: 1100, discountAmount: 110.5, net: 989.5, vat: 98.95, gross: 1088.45, effectiveDiscountPct: 24.3 };
+const one = U.totals({ priceMode: 'priced', currency: 'TRY', totals: totals, lines: [{ vatRate: 10 }, { vatRate: 10 }] });
+const mixed = U.totals({ priceMode: 'priced', currency: 'TRY', totals: totals, lines: [{ vatRate: 10 }, { vatRate: 1 }] });
+const old = U.totals({ priceMode: 'priced', currency: 'TRY', totals: { net: 989.5, vat: 98.95, gross: 1088.45, effectiveDiscountPct: 24.3 }, lines: [] });
+const depot = U.totals({ priceMode: 'priced', currency: 'TRY', totals: totals, lines: [] }, { hideEffective: true });
+const rows = (h) => (h.match(/po-total-[A-Za-z]+/g) || []);
+process.stdout.write(JSON.stringify({ rows: rows(one), one: one, mixed: mixed, oldRows: rows(old), depotRows: rows(depot) }));")!;
+        var r = JsonDocument.Parse(node).RootElement;
+        Assert.Equal(["po-total-listSubtotal", "po-total-discountAmount", "po-total-net", "po-total-vat", "po-total-effectiveDiscountPct", "po-total-gross"],
+            r.GetProperty("rows").EnumerateArray().Select(x => x.GetString()!).ToArray());              // the mockup's order
+        var one = r.GetProperty("one").GetString()!;
+        foreach (var text in new[] { "Ara toplam (KDV hariç, liste)", "1.100,00 TRY", "İskonto", "− 110,50 TRY", "Net (KDV hariç)", "989,50 TRY", "KDV %10", "98,95 TRY", "Etkin indirim (MF + iskonto)", "%24,3", "Genel toplam", "1.088,45 TRY" })
+        {
+            Assert.Contains(text, one);                                                                 // each value is the field as it came
+        }
+
+        Assert.DoesNotContain("KDV %", r.GetProperty("mixed").GetString()!);                             // two VAT rates: no single rate is claimed
+        Assert.Equal(["po-total-net", "po-total-vat", "po-total-effectiveDiscountPct", "po-total-gross"], r.GetProperty("oldRows").EnumerateArray().Select(x => x.GetString()!).ToArray()); // nothing derived
+        Assert.DoesNotContain("po-total-effectiveDiscountPct", r.GetProperty("depotRows").EnumerateArray().Select(x => x.GetString()!));
+    }
+
+    [Fact]
+    public void P23_the_lines_are_one_table_from_a_wider_column_with_the_price_source_and_the_header_and_button_follow_the_order()
+    {
+        // V-1 — the head once, a grid row per line; a card below 36rem of COLUMN width (container query, not the viewport)
+        var css = File.ReadAllText(Path.Combine(ScriptDir(), "preorders.css")).Replace("\r\n", "\n");
+        Assert.Contains(".po-lines-table {\n    container-type: inline-size;", css);
+        Assert.Contains("@container (min-width: 36rem)", css);
+        Assert.Contains("@container (min-width: 44rem)", css);
+        Assert.Contains("id=\"po-lines\" class=\"po-lines-table\"", View("PreOrders/_Form.cshtml"));
+        Assert.Contains("U.lineHeadHtml(priced) + S.lines.map((l) => U.formLineHtml(l, priced, isLocked)).join('')", Script("form.js"));
+        // V-5 — the status badge sits in the Golden header's h5, the send button's words are its own span
+        var view = View("PreOrders/_Form.cshtml");
+        Assert.Contains("<h5 class=\"mb-0 d-flex flex-wrap align-items-center gap-2\"><span id=\"po-title\">", view);
+        Assert.Contains("<span id=\"po-status\" class=\"d-none\"></span></h5>", view);
+        Assert.Contains("<span id=\"po-send-text\">@Localizer[\"Send\"]</span>", view);
+
+        if (RunNode("process.stdout.write('ok')") is null) return;
+        var words = new Dictionary<string, string>
+        {
+            ["ColProduct"] = "Ürün", ["ColQty"] = "Adet", ["ColMf"] = "MF", ["ColDiscount"] = "İsk. %", ["ColUnitPrice"] = "Birim fiyat", ["ColLineTotal"] = "Satır toplamı",
+            ["PriceSource"] = "Fiyat: {0} · {1} · {2} tarihinden geçerli", ["Tier_pharmacist_purchase"] = "Eczacı alış", ["TotalVatRate"] = "KDV {0}", ["GtinShort"] = "GTIN {0}", ["PerBox"] = "{0} / kutu"
+        };
+        var node = RunNode(Ui() + "globalThis.L10n = " + JsonSerializer.Serialize(words) + "; globalThis.document = { documentElement: { lang: 'tr' }, getElementById: () => null };" + @"
+const heads = (h) => (h.match(/<span class=""po-head-[a-z]+"">[^<]*<\/span>/g) || []).map((s) => s.replace(/<[^>]+>/g, ''));
+const priced = U.formLineHtml({ key: 'l1', skuId: 'a', skuText: 'KONSET' }, true, false);
+const qty = U.formLineHtml({ key: 'l1', skuId: 'a', skuText: 'KONSET' }, false, false);
+const cells = U.lineCells({ unitPrice: 110, netAmount: 1100 }, { priced: true, currency: 'TRY' });
+process.stdout.write(JSON.stringify({
+  headPriced: heads(U.lineHeadHtml(true)), headQty: heads(U.lineHeadHtml(false)),
+  pricedCells: [priced.includes('id=""po-unit-l1""'), priced.includes('id=""po-total-l1""')], qtyCells: [qty.includes('po-unit-'), qty.includes('po-total-')],
+  unit: cells.unit, total: cells.total, qtyResult: U.lineCells({ unitPrice: 110, netAmount: 1100 }, { priced: false }),
+  source: U.priceSourceHtml({ name: 'KONSET TR', validFrom: '2026-10-01' }, 'pharmacist-purchase', 10),
+  facts: U.skuFactsText({ form: 'Tablet', packQuantity: 28, packUomCode: 'C62', gtin: '8699514010015' }), noFacts: U.skuFactsText({ code: 'X' }),
+  send: [C.sendLabelKey({ approvalRequired: true }, null), C.sendLabelKey({ approvalRequired: false }, null), C.sendLabelKey(null, { status: 'draft', approvalRequirement: { required: true } }), C.sendLabelKey(null, null)],
+  products: C.productSummary({ lines: [{ sku: { name: 'ALMIBA' }, quantity: 50 }, { sku: { code: 'URO' }, quantity: 20 }] })
+}));")!;
+        var r = JsonDocument.Parse(node).RootElement;
+        static string[] Arr(JsonElement e) => e.EnumerateArray().Select(x => x.GetString()!).ToArray();
+        Assert.Equal(["Ürün", "Adet", "MF", "İsk. %", "Birim fiyat", "Satır toplamı"], Arr(r.GetProperty("headPriced")));
+        Assert.Equal(["Ürün", "Adet", "MF"], Arr(r.GetProperty("headQty")));                            // AC-PRICE-3: no price column in quantity mode
+        Assert.All(r.GetProperty("pricedCells").EnumerateArray(), x => Assert.True(x.GetBoolean()));
+        Assert.All(r.GetProperty("qtyCells").EnumerateArray(), x => Assert.False(x.GetBoolean()));
+        Assert.Contains("110,00 TRY", r.GetProperty("unit").GetString());
+        Assert.Contains("1.100,00 TRY", r.GetProperty("total").GetString());
+        Assert.Equal("—", r.GetProperty("qtyResult").GetProperty("total").GetString());
+        var source = r.GetProperty("source").GetString()!;                                              // V-2: list · tier · valid from · VAT
+        foreach (var text in new[] { "KONSET TR", "Eczacı alış", "2026", "KDV %10" }) Assert.Contains(text, source);
+        Assert.Equal("Tablet · 28 C62 · GTIN 8699514010015", r.GetProperty("facts").GetString());
+        Assert.Equal("", r.GetProperty("noFacts").GetString());
+        Assert.Equal(["SendForApproval", "Send", "SendForApproval", "Send"], Arr(r.GetProperty("send")));
+        Assert.Equal("ALMIBA", r.GetProperty("products")[0].GetProperty("name").GetString());          // V-4
+        Assert.Equal("URO", r.GetProperty("products")[1].GetProperty("name").GetString());
+        Assert.Equal(20, r.GetProperty("products")[1].GetProperty("quantity").GetInt32());
+    }
+
+    [Fact]
+    public void P24_at_1280_px_the_rep_lines_effective_and_rule_columns_outrank_the_depot_and_the_date_and_the_local_column_is_in_column_visibility()
+    {
+        var index = Script("index.js");
+        var map = Regex.Match(index, @"const PRIORITY = \{([^}]*)\};").Groups[1].Value;
+        var priority = Regex.Matches(map, @"(\d+): (\d+)").ToDictionary(m => int.Parse(m.Groups[1].Value), m => int.Parse(m.Groups[2].Value));
+        Assert.Equal(10, priority.Count);                                                               // every data column but the code (always shown)
+        foreach (var column in new[] { 5, 6, 9, 11 })                                                    // rep · lines · effective · rule (V-7)
+        {
+            Assert.True(priority[column] < priority[4] && priority[column] < priority[2], "column " + column);
+            Assert.Contains("{ targets: " + column + ", responsivePriority: PRIORITY[" + column + "]", index);
+        }
+
+        Assert.Equal(priority.Values.Max(), priority[8]);                                               // the local equivalent goes first
+        Assert.Contains("max-inline-size: 13rem;", File.ReadAllText(Path.Combine(ScriptDir(), "preorders.css")));
+        // V-8 — measured: the local equivalent IS a Column Visibility entry (off by default)
+        Assert.Contains("const DATA_COLUMNS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];", index);
+        Assert.Contains("colvisColumns: DATA_COLUMNS,", index);
+        Assert.Contains("DATA_COLUMNS.filter((c) => c !== 8", index);
+        Assert.Contains("Header = Localizer[\"ColLocal\"].Value", View("PreOrders/_DataTable.cshtml"));
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────

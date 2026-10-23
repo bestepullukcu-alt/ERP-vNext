@@ -10,8 +10,144 @@
     font-weight: 500;
 }
 
+/* V-1 (W6-FIX-b) — the order lines. A narrow place (a phone, or the column under 36rem) draws each line as a CARD with
+   its own labels; a wider one draws ONE TABLE: the head (.po-line-head) once, each line a row of the same grid, the
+   per-line labels stepped aside (still read aloud). The switch is a CONTAINER query, not the viewport's: at 1280 px the
+   lines live in the left column (≈ 590 px), and that is the width the grid has to fit. Every box keeps its field icon
+   (the .diten-field rule), so the numeric columns are sized for the icon + "10+2"; between 36rem and 44rem the unit
+   price rides under the line total (one column less), from 44rem it has its own column. */
+.po-lines-table {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
 .po-line {
+    border: 1px solid var(--bs-border-color);
     border-inline-start: 3px solid var(--bs-border-color) !important;
+    border-radius: var(--bs-border-radius);
+    padding: 0.75rem;
+}
+
+.po-line-grid {
+    display: grid;
+    gap: 0.5rem;
+    align-items: end;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.po-line-grid .po-cell-product {
+    grid-column: 1 / -1;
+}
+
+.po-line-grid .po-cell-act {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.po-cell-value {
+    min-block-size: 2.375rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.po-line-head,
+.po-unit-inline {
+    display: none;
+}
+
+.po-line-result:not(:empty) {
+    margin-block-start: 0.5rem;
+}
+
+@container (min-width: 36rem) {
+    .po-lines-table > .po-line {
+        border: 0;
+        border-block-end: 1px solid var(--bs-border-color);
+        border-inline-start: 3px solid transparent !important;
+        border-radius: 0;
+        padding: 0.5rem 0.25rem;
+    }
+
+    .po-line-grid {
+        gap: 0.375rem;
+        align-items: center;
+    }
+
+    .po-line-grid.po-grid-priced {
+        grid-template-columns: minmax(0, 1fr) 5.5rem 6rem 5.25rem 6.5rem 1.875rem;
+    }
+
+    .po-line-grid.po-grid-quantity {
+        grid-template-columns: minmax(0, 1fr) 6rem 6rem 1.875rem;
+    }
+
+    .po-line-grid.po-grid-priced .po-cell-unit,
+    .po-line-grid.po-grid-priced .po-head-unit {
+        display: none;
+    }
+
+    .po-unit-inline {
+        display: block;
+    }
+
+    .po-line-grid .po-cell-product {
+        grid-column: auto;
+    }
+
+    .po-line-head {
+        display: grid;
+        padding: 0 0.25rem 0.375rem;
+        border-block-end: 1px solid var(--bs-border-color);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: var(--bs-secondary-color);
+    }
+
+    .po-line-head .po-head-unit,
+    .po-line-head .po-head-total,
+    .po-line .po-cell-unit .po-cell-value,
+    .po-line .po-cell-total .po-cell-value {
+        text-align: end;
+        align-items: flex-end;
+    }
+
+    /* a narrow numeric box keeps its icon (the .diten-field rule) and gives its digits the end padding back */
+    .po-line .po-cell-qty .form-control,
+    .po-line .po-cell-mf .form-control,
+    .po-line .po-cell-disc .form-control {
+        padding-inline-end: 0.5rem;
+    }
+
+    /* the head names the columns: each line's own label steps aside (visually hidden, still read aloud) */
+    .po-line .po-cell-label {
+        position: absolute !important;
+        inline-size: 1px !important;
+        block-size: 1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+    }
+}
+
+@container (min-width: 44rem) {
+    .po-line-grid.po-grid-priced {
+        grid-template-columns: minmax(0, 1fr) 5.5rem 6rem 5.25rem 6.5rem 6.75rem 1.875rem;
+    }
+
+    .po-line-grid.po-grid-priced .po-cell-unit,
+    .po-line-grid.po-grid-priced .po-head-unit {
+        display: block;
+    }
+
+    .po-unit-inline {
+        display: none;
+    }
 }
 
 .po-line:has(.po-outcome-soft) {
@@ -142,4 +278,15 @@
     .po-sign-canvas {
         block-size: 9rem;
     }
+}
+
+/* V-7 (W6-FIX-b) — a long pharmacy / depot name is cut to one line (the full name is the cell's title), so the list's
+   row keeps the rep, the line count, the effective discount and the rule columns at 1280 px. */
+.po-cut {
+    display: inline-block;
+    max-inline-size: 13rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
 }

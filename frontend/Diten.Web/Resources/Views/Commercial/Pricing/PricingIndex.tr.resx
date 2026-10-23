@@ -14,7 +14,7 @@
     <value>Fiyat listeleri</value>
   </data>
   <data name="TabRules" xml:space="preserve">
-    <value>MF-iskonto kuralları</value>
+    <value>MF / iskonto kuralları</value>
   </data>
   <data name="TabTrial" xml:space="preserve">
     <value>Kural deneme</value>
@@ -662,7 +662,7 @@
     <value>Taslağı aç</value>
   </data>
   <data name="RulesTitle" xml:space="preserve">
-    <value>MF-iskonto kuralları</value>
+    <value>MF / iskonto kuralları</value>
   </data>
   <data name="RulesNote" xml:space="preserve">
     <value>MF "10+2": 10 kutuya 2 kutu mal fazlası; oran ve birleşik indirim sistemin kendi hesabıdır.</value>
@@ -909,5 +909,14 @@
   </data>
   <data name="Err_conflict" xml:space="preserve">
     <value>Bu arada başka biri değiştirdi. Yenileyip tekrar deneyin.</value>
+  </data>
+  <data name="FxDescription" xml:space="preserve">
+    <value>Satış şirketi ve gün başına ara kurlar; sipariş kendisine verilen kuru korur.</value>
+  </data>
+  <data name="RulesDescription" xml:space="preserve">
+    <value>Satış şirketi ve ürün başına sınırlar (isteğe bağlı segment ve dönem); en özel kural geçerlidir.</value>
+  </data>
+  <data name="HistoryDescription" xml:space="preserve">
+    <value>Fiyat listeleri, kurallar ve kurlardaki her değişiklik: kim, ne zaman, ne.</value>
   </data>
 </root>
