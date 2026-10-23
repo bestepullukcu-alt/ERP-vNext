@@ -24,6 +24,7 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.GlobalApplicability;
 
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class GlobalApplicabilityTransactionMongoTests
 {
     [Fact]

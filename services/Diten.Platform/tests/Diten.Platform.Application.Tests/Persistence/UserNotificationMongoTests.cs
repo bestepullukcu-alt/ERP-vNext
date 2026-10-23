@@ -23,6 +23,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// <para>So the ordering, the paging, the unread count and both mark-read paths are exercised where the
 /// answer comes from mongod rather than from LINQ-to-objects.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class UserNotificationMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

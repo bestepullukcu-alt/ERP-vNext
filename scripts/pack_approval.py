@@ -22,8 +22,9 @@ The rule applies from the commit that added execution/approvals/POLICY-START.md.
 and never approved under it keeps its earlier approval (no retroactive invalidation). Once the file was added, its
 absence is a refusal, not "no rule".
 
-Trust boundary of this version (owner decision 2026-10-19, no GitHub accounts yet): declarations are checked for
-consistency and the human step is derived from git; identities are not verified. Merges must be merge commits (a
+Trust boundary (S-40, owner decision 2026-10-22): the human step is derived from git AND confirmed on GitHub — the
+bringing merge is a merged pull request into main whose merger is a listed person other than its opener; for an approval
+row the merger is the row's approver, for a review row not its author (gh api; not measurable = no human step). Merges must be merge commits (a
 squash or fast-forward merge leaves no merge author and a HIGH approval then fails). Since PR #153 (2026-10-19)
 .github/CODEOWNERS puts the approval files, the approver list and these checks under a code-owner review.
 
@@ -50,6 +51,7 @@ from __future__ import annotations
 
 import difflib
 import hashlib
+import json
 import importlib.util
 import os
 import re
@@ -195,8 +197,22 @@ def approval_rows(root: str, commit: str, path: str) -> list[dict]:
 
 
 def approvers_at(root: str, commit: str) -> dict[str, dict]:
+    """The approver list at `commit`, keyed by login in lower case (GitHub logins are case-insensitive; Codex F-13/F-14).
+    Two rows whose logins differ only in case make the list unreadable."""
     raw = read(root, commit, APPROVERS)
-    return {r["login"]: r for r in parse_tsv(raw.decode("utf-8"), APPROVER_COLUMNS, APPROVERS)} if raw else {}
+    listed: dict[str, dict] = {}
+    for r in (parse_tsv(raw.decode("utf-8"), APPROVER_COLUMNS, APPROVERS) if raw else []):
+        key = r["login"].lower()
+        if key in listed:
+            raise Unreadable(f"{APPROVERS} satır {r['_n']}: '{r['login']}' listede harf farkıyla bir kez daha var")
+        listed[key] = r
+    return listed
+
+
+def person_of(listed: dict[str, dict], login: str | None) -> str | None:
+    """The person key of `login` in an approvers_at list, case-insensitively; None when not listed. Every consumer
+    resolves a login through here (Codex F-14)."""
+    return listed.get((login or "").lower(), {}).get("person")
 
 
 # ------------------------------------------------------------------------------------------------ risk and card
@@ -390,10 +406,13 @@ def judge(ctx: "Ctx", i: int) -> tuple[list[str], list[str], str, bool]:
             fails.append("insan adımı yok: " + why)
         else:
             ok, why = other_merger(root, added_by, merge)
+            if ok:      # Codex F-6: the merge must also be a merged pull request's, merged by another person (GitHub)
+                ok, why2 = pr_person_check(root, merge, approver=row["approver"])
+                why = f"{why}; {why2}" if ok else why2
             (out.append("insan adımı: " + why) if ok else fails.append("insan adımı yok: " + why))
             listed = approvers_at(root, f"{merge}^1")       # the list as it was on main before this merge
-            person = lambda login: listed[login]["person"] if login in listed else f"@{login}"
-            w = listed.get(row["approver"])
+            person = lambda login: person_of(listed, login) or f"@{login.lower()}"
+            w = listed.get(row["approver"].lower())
             if w is None:
                 fails.append(f"onaylayan {row['approver']} merge'den önceki onaylayıcı listesinde yok")
             elif w["high"] != "evet":
@@ -405,7 +424,7 @@ def judge(ctx: "Ctx", i: int) -> tuple[list[str], list[str], str, bool]:
                              f"{person(row['approver'])}) — riski yalnız onaylayan üstlenir")
     else:
         listed = approvers_at(root, list_point(root, ctx.main, added_by))   # Codex K2″: historical, not today's main
-        if row["approver"] != row["author"] and row["approver"] not in listed:
+        if row["approver"].lower() != row["author"].lower() and person_of(listed, row["approver"]) is None:
             fails.append(f"onaylayan {row['approver']} onaylayıcı listesinde yok ve yazan değil")
     if row["card_sha256"] != sha256(card(path, data, risk, reasons).encode("utf-8")):
         fails.append("onay kartının özeti paketin şimdiki kartıyla aynı değil — kart elle değişti ya da satır yeniden "
@@ -509,21 +528,121 @@ def row_commit(root: str, commit: str, line_no: int, path: str = APPROVALS) -> s
 
 @cached(1, 2)
 def other_merger(root: str, added: str, merge: str) -> tuple[bool, str]:
-    """Is the merge's author another person than the row commit's author? Derived from git, not verified on GitHub."""
+    """Is the merge's author another person than the row commit's author? Derived from git only; both callers then ask
+    GitHub (pr_person_check), so the message does not claim either way."""
     who = lambda c: git(root, "log", "-1", "--format=%an\t%ae", c).decode().strip().lower().split("\t")
     a, b = who(added), who(merge)
     if a[0] == b[0] or a[1] == b[1]:
         return False, f"satırı ekleyen ve merge eden aynı yazar ({a[0]}) — türetildi"
-    return True, f"satırı ekleyen {a[0]}, merge eden {b[0]} ({merge[:12]}) — türetildi, GitHub'da doğrulanmadı"
+    return True, f"satırı ekleyen {a[0]}, merge eden {b[0]} ({merge[:12]}) — git'ten türetildi"
 
 
-def human_step(root: str, main: str, added: str) -> tuple[str | None, str]:
-    """(the main-line merge that brought `added` in, why) when another person merged it; else (None, why)."""
+TRUSTED_REPO = "bestepullukcu-alt/ERP-vNext"     # Codex F-8: the one repository whose pull requests count (code-owned)
+_PR_SOURCE = None                                # self-tests only: set in-process to _test_pr; never from the CLI (F-7)
+_PR_CACHE: dict = {}
+
+
+GITHUB_HOST = "github.com"                       # Codex F-15: never the host GH_HOST or gh's config points at
+
+
+def _gh_cmd(path: str, paginate: bool = False) -> list[str]:
+    return ["gh", "api", "--hostname", GITHUB_HOST] + (["--paginate", "--slurp"] if paginate else []) + [path]
+
+
+def _gh_json(path: str, paginate: bool = False):
+    done = subprocess.run(_gh_cmd(path, paginate), capture_output=True, timeout=120)
+    if done.returncode != 0:
+        raise Unreadable(f"gh api {path}: {done.stderr.decode(errors='replace').strip()[:160]} (çıkış {done.returncode})")
+    return json.loads(done.stdout.decode())
+
+
+def _login(x) -> str | None:
+    v = x.get("login") if isinstance(x, dict) else None
+    return v.lower() if isinstance(v, str) and v.strip() else None
+
+
+def _test_pr(root: str, merge: str) -> dict | None:
+    """Self-test stand-in for GitHub: a merge whose subject is 'Merge <branch>' is a pull request merged into main of
+    TRUSTED_REPO by the merge commit's author, opened by the author of its second parent's tip."""
+    subject = git(root, "log", "-1", "--format=%s", merge).decode().strip()
+    if not re.fullmatch(r"Merge (?!main\b)\S+", subject):
+        return None
+    who = lambda c: git(root, "log", "-1", "--format=%an", c).decode().strip().lower()
+    return {"number": 0, "opener": who(f"{merge}^2"), "merger": who(merge), "base": "main", "base_repo": TRUSTED_REPO}
+
+
+def pr_of_merge(root: str, merge: str) -> dict | None:
+    """{number, opener, merger, base, base_repo} of the merged pull request of TRUSTED_REPO whose merge commit is
+    `merge` (GitHub, all pages), or None when `merge` is no such merge. Raises when not measurable. Only a positive read
+    is cached (Codex F-12)."""
+    if _PR_SOURCE is not None:
+        return _PR_SOURCE(root, merge)
+    if merge in _PR_CACHE:
+        return _PR_CACHE[merge]
+    pages = _gh_json(f"repos/{TRUSTED_REPO}/commits/{merge}/pulls", paginate=True)
+    if not isinstance(pages, list):
+        raise Unreadable("GitHub cevabı bir liste değil")
+    pulls = [x for page in pages for x in (page if isinstance(page, list) else [page])]
+    hits = [x for x in pulls if isinstance(x, dict) and x.get("merge_commit_sha") == merge and x.get("merged_at")]
+    if not hits:
+        return None
+    pr = _gh_json(f"repos/{TRUSTED_REPO}/pulls/{int(hits[0]['number'])}")
+    if not isinstance(pr, dict):
+        raise Unreadable("GitHub PR cevabı bir nesne değil")
+    if not (pr.get("merged_at") and pr.get("merge_commit_sha") == merge):
+        return None
+    base = pr.get("base") if isinstance(pr.get("base"), dict) else {}
+    repo = base.get("repo") if isinstance(base.get("repo"), dict) else {}
+    info = {"number": pr.get("number"), "opener": _login(pr.get("user")), "merger": _login(pr.get("merged_by")),
+            "base": base.get("ref") if isinstance(base.get("ref"), str) else None,
+            "base_repo": repo.get("full_name") if isinstance(repo.get("full_name"), str) else None}
+    _PR_CACHE[merge] = info
+    return info
+
+
+def pr_person_check(root: str, merge: str, approver: str | None = None, author_key: str | None = None) -> tuple[bool, str]:
+    """Codex F-6…F-13 + independent review F-1/F-3: the bringing merge is a merged pull request into main of
+    TRUSTED_REPO (GitHub); its opener AND merger are listed (approvers.tsv on main before the merge; logins compared
+    case-insensitively) and are different persons; for an approval row the merger IS the row's approver (S-41 — the
+    approver merges); for a review row the merger is not the row's author. Anything not measurable is no human step."""
+    try:
+        info = pr_of_merge(root, merge)
+    except (Unreadable, OSError, ValueError, TypeError, KeyError, subprocess.TimeoutExpired) as e:
+        return False, f"GitHub'a sorulamadı — merge'ün PR merge'ü olduğu doğrulanamadı ({str(e)[:160]})"
+    if info is None:
+        return False, f"{merge[:12]} bir PR'ın merge commit'i değil (GitHub) — dal korumasını atlayan bir push olabilir"
+    n, opener, merger = info.get("number"), info.get("opener"), info.get("merger")
+    if info.get("base") != "main" or (info.get("base_repo") or "").lower() != TRUSTED_REPO.lower():
+        return False, f"PR #{n}'nin hedefi {TRUSTED_REPO} main değil ({info.get('base_repo')} {info.get('base')}) (GitHub)"
+    if not opener or not merger:
+        return False, f"PR #{n}'yi açan ya da merge eden GitHub cevabında okunamadı"
+    listed = approvers_at(root, f"{merge}^1")
+    pm, po = person_of(listed, merger), person_of(listed, opener)
+    if pm is None:
+        return False, f"PR #{n}'yi merge eden ({merger}) onaylayıcı listesinde yok (GitHub)"
+    if po is None:
+        return False, f"PR #{n}'yi açan ({opener}) onaylayıcı listesinde yok — farklı kişi olduğu ölçülemez (GitHub)"
+    if po == pm:
+        return False, f"PR #{n}'yi açan ve merge eden aynı kişi ({opener}, {merger}) (GitHub)"
+    if approver is not None and person_of(listed, approver) != pm:
+        return False, (f"PR #{n}'yi onaylayan ({approver}) değil {merger} merge etti — onay satırını onaylayan kişi "
+                       "merge etmeli (kart §7a/7) (GitHub)")
+    if author_key is not None and pm == author_key:
+        return False, f"PR #{n}'yi satırın yazarı ({author_key}) merge etti (GitHub)"
+    return True, f"PR #{n}: açan {opener}, merge eden {merger} (GitHub)"
+
+
+def human_step(root: str, main: str, added: str, author_key: str | None = None) -> tuple[str | None, str]:
+    """(the main-line merge that brought `added` in, why) when another person merged it — in git (other_merger) AND on
+    GitHub (pr_person_check); else (None, why)."""
     merge, why = main_merge(root, main, added)
     if merge is None:
         return None, why
     ok, why = other_merger(root, added, merge)
-    return (merge if ok else None), why
+    if not ok:
+        return None, why
+    ok, why2 = pr_person_check(root, merge, author_key=author_key)
+    return (merge if ok else None), (f"{why}; {why2}" if ok else why2)
 
 
 @cached(1, 2)
@@ -531,15 +650,26 @@ def main_merge(root: str, main: str, added: str) -> tuple[str | None, str]:
     """The first-parent merge of the main line that brought `added` in, or (None, why)."""
     if git(root, "merge-base", "--is-ancestor", added, main, ok_fail=True) is None:
         return None, "onay satırı henüz ana çizgide (main) değil"
-    if added in git(root, "rev-list", "--first-parent", main).decode().split():
+    line = git(root, "rev-list", "--first-parent", main).decode().split()
+    if added in line:
         return None, f"onay satırı {added[:12]} ile doğrudan ana çizgiye yazılmış — merge ile gelen ikinci kişi adımı yok"
-    # one walk, not one merge-base per merge (thousands on the real main line): the oldest first-parent commit of main
-    # that descends from `added` is the commit that brought it in; it must be a merge
-    chain = git(root, "rev-list", "--first-parent", "--ancestry-path", f"{added}..{main}").decode().split()
+    # S-40: the oldest first-parent commit of main that descends from `added` brought it in; it must be a merge. The
+    # descendants are walked on the FULL graph (--ancestry-path without --first-parent) and then kept to the main
+    # line: with --first-parent the walk misses a merge whose branch took main after the row (card §7a), because the
+    # row is then reachable only through that merge's second parent, not its own branch tip.
+    below = set(git(root, "rev-list", "--ancestry-path", f"{added}..{main}").decode().split())
+    chain = [c for c in line if c in below]
     if chain:
         m = chain[-1]
-        if len(git(root, "rev-list", "--parents", "-n", "1", m).decode().split()) > 2:
+        parents = git(root, "rev-list", "--parents", "-n", "1", m).decode().split()[1:]
+        # independent review F-1/F-2: the row must be on the merged branch's OWN line (first-parent chain of a non-first
+        # parent); a foxtrot (someone pulls main with a merge and fast-forwards main past the author's self-merge) or a
+        # nested merge (the author merges the row's branch into another branch himself) does not count
+        if len(parents) > 1 and any(added in git(root, "rev-list", "--first-parent", p).decode().split() for p in parents[1:]):
             return m, ""
+        if len(parents) > 1:
+            return None, (f"onay satırı ana çizgiye {m[:12]} ile geldi ama o merge'ün dalının kendi çizgisinde değil (iç içe "
+                          "ya da ters merge) — satırın PR'ı main'e başka bir kişi tarafından doğrudan merge edilmeli")
     return None, "onay satırını ana çizgiye getiren merge commit'i bulunamadı"
 
 
@@ -732,7 +862,7 @@ def review_problems(root: str, main: str, path: str, data: bytes, at: str) -> tu
     for r in cur:
         tag = f"inceleme satır {r['_n']}"
         bad = []
-        merge, why = human_step(root, main, row_commit(root, commit, r["_n"], REVIEWS))
+        merge, why = human_step(root, main, row_commit(root, commit, r["_n"], REVIEWS), r["author"])
         if merge is None:
             bad.append(f"main'e insan adımıyla gelmedi — {why} (dal üzerindeki inceleme satırı sayılmaz)")
         if r["verdict"] not in VERDICTS:
@@ -997,6 +1127,7 @@ def make_review_row(root: str, ref: str, path: str, findings: str, verdict: str,
 
 # ------------------------------------------------------------------------------------------------ self-test
 def self_test() -> int:
+    globals()["_PR_SOURCE"] = _test_pr          # in-process stand-in for GitHub; never reachable from the CLI
     cases = []
     tmp = tempfile.TemporaryDirectory()
     root = tmp.name
@@ -1072,6 +1203,12 @@ def self_test() -> int:
     code, out = check()
     cases.append(("positive control: a change under a non-sensitive heading is LOW; its author approves it -> exit 0",
                   code == 0 and "hesaplanan risk: LOW" in out))
+    put(PACK, get(PACK) + "- c2\n")
+    commit("notes line 2")
+    via_branch("approve-2b", lambda: add_row("dev", "LEAD", "LOW", "2026-10-21"), merger=LEAD)
+    code, out = check()
+    cases.append(("Codex F-13: a LOW row approved by LEAD (the listed lead in capitals) -> exit 0",
+                  code == 0 and not any("listesinde yok" in l for l in out)))
     put(PACK, get(PACK).replace("- services/Diten.X/**\n", "- services/Diten.X/**\n- services/Diten.Y/**\n"))
     commit("scope line")
     via_branch("approve-3", lambda: add_row("dev", "dev", "LOW", "2026-10-22"), merger=LEAD)
@@ -1088,6 +1225,22 @@ def self_test() -> int:
     code, out = high_attempt("h2", "lead-alt", author=LEAD, merger=LEAD2)
     cases.append(("sabotage: HIGH approved by another account of the author (same person) -> exit 1",
                   code == 1 and any("aynı kişinin başka hesabı" in l for l in out)))
+    code, out = high_attempt("h2b", "lead", author=("LEAD", "lead-up@x.invalid"), merger=LEAD)
+    cases.append(("sabotage Codex F-14: HIGH whose author is the approver's login in capitals (same person) -> exit 1",
+                  code == 1 and any("aynı kişinin başka hesabı" in l for l in out)))
+    via_branch("upcase", lambda: put(APPROVERS, get(APPROVERS).replace("\nlead\tK1", "\nLEAD\tK1")), merger=LEAD2)
+    code, out = high_attempt("h2c", "lead")
+    cases.append(("Codex F-13: the list writes LEAD, the row's approver is lead -> the same login, exit 0", code == 0))
+    g("checkout", "-q", "-b", "dupcase")
+    put(APPROVERS, get(APPROVERS) + "lead\tK7\tkıdemli\tevet\n")
+    commit("dupcase")
+    try:
+        approvers_at(root, "HEAD")
+        dup = False
+    except Unreadable as e:
+        dup = "harf farkıyla" in str(e)
+    g("checkout", "-q", "main")
+    cases.append(("sabotage Codex F-14: two list rows whose logins differ only in case -> the list is unreadable", dup))
     code, out = high_attempt("h3", "jun")
     cases.append(("sabotage: HIGH approved by a junior (high = hayır) -> exit 1", code == 1 and any("onaylayamaz" in l for l in out)))
     code, out = high_attempt("h4", "ghost")
@@ -1113,6 +1266,168 @@ def self_test() -> int:
     cases.append(("sabotage: a hand-made card digest -> exit 1", code == 1 and any("kartının özeti" in l for l in out)))
     code, out = high_attempt("h8", "lead")
     cases.append(("positive control: a valid HIGH approval after the refusals -> exit 0", code == 0))
+
+    # S-40: the row's branch takes main AFTER the row (card §7a: merge main before the push), then another person merges
+    # it -> the merge that brought the row in is found; the same with the row's author merging it -> still no human step
+    def row_then_main(name, merger):
+        g("checkout", "-q", "main")
+        put(PACK, get(PACK) + f"- {name}\n")
+        commit(f"pack change {name}")
+        g("checkout", "-q", "-b", name)
+        add_row("dev", "lead", "HIGH", "2026-10-26")
+        commit(f"{name} row", who=DEV)
+        g("checkout", "-q", "main")
+        put(f"other-{name}.txt", "x\n")
+        commit(f"unrelated main commit {name}", who=LEAD2)
+        g("checkout", "-q", name)
+        g("merge", "-q", "--no-ff", "-m", f"Merge main into {name}", "main", who=DEV)
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "-m", f"Merge {name}", name, who=merger)
+        return check()
+    code, out = row_then_main("s40a", LEAD)
+    cases.append(("S-40: the row's branch merged main after the row, then another person merged it -> the bringing merge "
+                  "is found, exit 0", code == 0))
+    code, out = row_then_main("s40b", DEV)
+    cases.append(("sabotage S-40: the same shape merged by the row's own author -> no human step, exit 1",
+                  code == 1 and any("insan adımı yok" in l for l in out)))
+
+    def row_branch(name):
+        g("checkout", "-q", "main")
+        put(PACK, get(PACK) + f"- {name}\n")
+        commit(f"pack change {name}")
+        g("checkout", "-q", "-b", name)
+        add_row("dev", "lead", "HIGH", "2026-10-27")
+        commit(f"{name} row", who=DEV)
+    # F-5: the author merges the row himself, later another person merges something else -> the OLDEST bringing commit
+    # (the author's own merge) decides, never a later merge by someone else
+    row_branch("s40c")
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge s40c", "s40c", who=DEV)
+    via_branch("s40c-other", lambda: put("other-s40c.txt", "x\n"), merger=LEAD)
+    code, out = check()
+    cases.append(("sabotage S-40/F-5: the author merged the row himself, another person merged something later -> the "
+                  "oldest bringing merge (the author's) decides, exit 1", code == 1 and any("insan adımı yok" in l for l in out)))
+    # F-1: foxtrot — the author self-merges the row; another person pulls main into an older branch with a merge and
+    # main is fast-forwarded to it, so the author's merge leaves the first-parent line
+    g("checkout", "-q", "main")
+    g("checkout", "-q", "-b", "s40d-lead")
+    put("lead-work-s40d.txt", "x\n")
+    commit("lead work s40d", who=LEAD)
+    row_branch("s40d")
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge s40d", "s40d", who=DEV)
+    g("checkout", "-q", "s40d-lead")
+    g("merge", "-q", "--no-ff", "-m", "Merge main into lead work", "main", who=LEAD)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--ff-only", "s40d-lead", who=LEAD)
+    code, out = check()
+    cases.append(("sabotage S-40/F-1: foxtrot — another person's pull-merge fast-forwarded past the author's self-merge "
+                  "-> not on the merged branch's own line, exit 1", code == 1 and any("kendi çizgisinde değil" in l for l in out)))
+    # F-2 (owner decision pending; fail-closed default): the author merges the row's branch into another branch himself,
+    # another person merges that branch into main -> the row's own PR had no second person, exit 1
+    row_branch("s40e")
+    g("checkout", "-q", "main")
+    g("checkout", "-q", "-b", "s40e-outer")
+    put("outer-s40e.txt", "x\n")
+    commit("outer s40e", who=LEAD)
+    g("merge", "-q", "--no-ff", "-m", "Merge s40e into outer", "s40e", who=DEV)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge outer", "s40e-outer", who=LEAD)
+    code, out = check()
+    cases.append(("sabotage S-40/F-2: nested — the author merged the row's branch into another branch, another person "
+                  "merged that one -> exit 1", code == 1 and any("kendi çizgisinde değil" in l for l in out)))
+    # positive control after the refusals: the S-40 shape merged by another person still passes
+    code, out = row_then_main("s40f", LEAD)
+    cases.append(("S-40: positive control after the refusals -> exit 0", code == 0))
+    # Codex F-6: the row written straight onto main, an unrelated commit after it, then another person's branch pulls
+    # main with a merge and main is fast-forwarded to it -> the graph looks like a PR merge; GitHub says it is not one
+    g("checkout", "-q", "main")
+    put(PACK, get(PACK) + "- s40g\n")
+    commit("pack change s40g")
+    g("checkout", "-q", "-b", "s40g-lead")
+    put("lead-work-s40g.txt", "x\n")
+    commit("lead work s40g", who=LEAD)
+    g("checkout", "-q", "main")
+    add_row("dev", "lead", "HIGH", "2026-10-28")
+    commit("row straight on main s40g", who=DEV)
+    put("after-s40g.txt", "x\n")
+    commit("unrelated after the row", who=DEV)
+    g("checkout", "-q", "s40g-lead")
+    g("merge", "-q", "--no-ff", "-m", "Merge main into s40g-lead", "main", who=LEAD)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--ff-only", "s40g-lead", who=LEAD)
+    code, out = check()
+    cases.append(("sabotage S-40/Codex F-6: a row straight on main carried by another person's pull-merge and a "
+                  "fast-forward -> not a pull request's merge (GitHub), exit 1",
+                  code == 1 and any("PR'ın merge commit'i değil" in l for l in out)))
+    # the real GitHub path, driven by a fake GitHub (independent review F-2, Codex F-7…F-13)
+    saved = globals()["_gh_json"]
+    globals()["_PR_SOURCE"] = None
+    pr_merge_sha = git(root, "rev-parse", "HEAD").decode().strip()
+    answers: dict = {}
+    def fake_gh(path, paginate=False):
+        if path not in answers:
+            raise Unreadable("ağ yok (test)")
+        return answers[path]
+    globals()["_gh_json"] = fake_gh
+    os.environ["PACK_APPROVAL_PR_VERIFY"] = "test"      # Codex F-7: no environment switch exists any more
+    _PR_CACHE.clear()
+    ok, why = pr_person_check(root, pr_merge_sha, approver="lead")
+    cases.append(("sabotage S-40/Codex F-7: a temp repository with no GitHub remote and PACK_APPROVAL_PR_VERIFY=test -> "
+                  "GitHub is still asked; unreachable = no human step", not ok and "GitHub'a sorulamadı" in why))
+    os.environ.pop("PACK_APPROVAL_PR_VERIFY", None)
+    def pr(**over):
+        base = {"number": 7, "merged_at": "2026-10-22T10:00:00Z", "merge_commit_sha": pr_merge_sha,
+                "user": {"login": "dev"}, "merged_by": {"login": "lead"},
+                "base": {"ref": "main", "repo": {"full_name": TRUSTED_REPO}}}
+        base.update(over)
+        return base
+    def ask(approver=None, author_key=None, pages=None, **over):
+        _PR_CACHE.clear()
+        answers.clear()
+        answers[f"repos/{TRUSTED_REPO}/commits/{pr_merge_sha}/pulls"] = pages if pages is not None else [[pr(**over)]]
+        answers[f"repos/{TRUSTED_REPO}/pulls/7"] = pr(**over)
+        return pr_person_check(root, pr_merge_sha, approver=approver, author_key=author_key)
+    ok, why = ask(approver="lead")
+    cases.append(("S-40 GitHub: a merged PR into main, opened by dev, merged by the approver lead -> human step", ok))
+    ok, why = ask(approver="lead", merged_by={"login": "LEAD"}, user={"login": "Dev"})
+    cases.append(("S-40 GitHub (Codex F-13): logins compared case-insensitively -> human step", ok))
+    ok, why = ask(approver="LEAD")
+    cases.append(("S-40 GitHub (Codex F-13): the row's approver written in capitals still matches the merger -> human step", ok))
+    cases.append(("Codex F-15: gh is pinned to github.com whatever GH_HOST says",
+                  _gh_cmd("x")[:4] == ["gh", "api", "--hostname", "github.com"]
+                  and _gh_cmd("x", True)[:4] == ["gh", "api", "--hostname", "github.com"]))
+    ok, why = ask(approver="lead", pages=[[{"number": 3, "merge_commit_sha": "1" * 40, "merged_at": "x"}], [pr()]])
+    cases.append(("S-40 GitHub (Codex F-11): the matching PR on the second page is found -> human step", ok))
+    for label, kw, text in (
+            ("merged by someone other than the approval row's approver (F-1)", dict(approver="lead2"), "onaylayan"),
+            ("the merger is the review row's author (F-1)", dict(author_key="K1"), "satırın yazarı"),
+            ("opened and merged by the same person", dict(approver="lead", user={"login": "lead"}), "aynı kişi"),
+            ("opened by another account of the merger (same person key)", dict(approver="lead", user={"login": "lead-alt"}), "aynı kişi"),
+            ("opened by a login not on the list (Codex F-9)", dict(approver="lead", user={"login": "stranger"}), "açan (stranger)"),
+            ("no opener in the answer (Codex F-9)", dict(approver="lead", user=None), "okunamadı"),
+            ("a malformed opener / merger (Codex F-10)", dict(approver="lead", user=["x"], merged_by="lead"), "okunamadı"),
+            ("merged by a login not on the approver list", dict(merged_by={"login": "ghost"}), "listesinde yok"),
+            ("merged into another branch, not main (F-3)", dict(approver="lead", base={"ref": "dev", "repo": {"full_name": TRUSTED_REPO}}), "hedefi"),
+            ("merged into a fork's main (Codex F-8)", dict(approver="lead", base={"ref": "main", "repo": {"full_name": "attacker/ERP-vNext"}}), "hedefi"),
+            ("no merged_at (closed, not merged)", dict(approver="lead", merged_at=None), "merge commit'i değil"),
+            ("another merge commit sha", dict(approver="lead", merge_commit_sha="0" * 40), "merge commit'i değil")):
+        ok, why = ask(**kw)
+        cases.append((f"sabotage S-40 GitHub: {label} -> no human step", not ok and text in why))
+    _PR_CACHE.clear()
+    answers.clear()
+    answers[f"repos/{TRUSTED_REPO}/commits/{pr_merge_sha}/pulls"] = {"message": "not a list"}
+    ok, why = pr_person_check(root, pr_merge_sha, approver="lead")
+    cases.append(("sabotage S-40 GitHub (F-6): a 2xx answer that is not a list -> not measurable, no human step",
+                  not ok and "liste değil" in why))
+    _PR_CACHE.clear()
+    answers.clear()
+    answers[f"repos/{TRUSTED_REPO}/commits/{pr_merge_sha}/pulls"] = [[]]
+    pr_person_check(root, pr_merge_sha, approver="lead")
+    cases.append(("S-40 GitHub (Codex F-12): a 'no PR' answer is not cached", pr_merge_sha not in _PR_CACHE))
+    globals()["_gh_json"] = saved
+    globals()["_PR_SOURCE"] = _test_pr
+    _PR_CACHE.clear()
 
     # B2 (independent review): the human step is measured on the MAIN line, not on the checked ref.
     # (a) a worker branch forked BEFORE the row reached main, later merged main in by the row's own author
@@ -1775,6 +2090,27 @@ def self_test_review(cases: list) -> None:
     code, out = check(PACK)
     cases.append(("sabotage CT-APR-02: deleting POLICY-REVIEW-START is a refusal, never 'no rule'", code != 0))
     g("checkout", "-q", "main")
+    # Codex F-6 on the REVIEW path (human_step): a review row written straight onto main, an unrelated commit after it,
+    # another person's branch pulls main with a merge and main is fast-forwarded -> not a pull request's merge
+    put(PACK2, get(PACK2) + "- f6\n")
+    commit("pack2 change f6")
+    g("checkout", "-q", "-b", "f6-lead")
+    put("lead-f6.txt", "x\n")
+    commit("lead work f6", who=LEAD)
+    g("checkout", "-q", "main")
+    review(PACK2, "UYGUN", ["F-1 | DÜŞÜK | yazım | kapandı | - | -"], 0)
+    commit("review row straight on main f6", who=DEV)
+    put("after-f6.txt", "x\n")
+    commit("unrelated after the review row", who=DEV)
+    g("checkout", "-q", "f6-lead")
+    g("merge", "-q", "--no-ff", "-m", "Merge main into f6-lead", "main", who=LEAD)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--ff-only", "f6-lead", who=LEAD)
+    head = git(root, "rev-parse", "HEAD").decode().strip()
+    fails = review_problems(root, head, PACK2, get(PACK2).encode("utf-8"), head)[0]
+    cases.append(("sabotage S-40/Codex F-6 (review path): a review row straight on main carried by another person's "
+                  "pull-merge and a fast-forward -> not a pull request's merge, the row does not count",
+                  any("PR'ın merge commit'i değil" in f for f in fails)))
     tmp.cleanup()
 
 

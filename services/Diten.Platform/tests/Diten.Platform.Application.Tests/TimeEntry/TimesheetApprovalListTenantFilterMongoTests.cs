@@ -20,6 +20,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// Disposable mongod (<see cref="TimeEntryMongoFixture"/>); fresh tenant ids per test.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetApprovalListTenantFilterMongoTests
 {
     private readonly TimeEntryMongoFixture _fixture;

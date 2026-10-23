@@ -40,6 +40,7 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// that runs another user's save right after the handler's read — never the shared database.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class PlatformAdministratorLoadedVersionMongoTests
 {
     public static TheoryData<string, string> Cases()

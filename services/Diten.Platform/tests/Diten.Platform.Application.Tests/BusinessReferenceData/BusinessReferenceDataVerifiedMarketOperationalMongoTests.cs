@@ -17,6 +17,7 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
 [Collection(VerifiedMarketReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
 {
     private static readonly Guid ReferenceTenantId = Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId);
@@ -257,6 +258,7 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
 /// Market catalog is written to THAT tenant — nothing to the platform system tenant.
 /// </summary>
 [Collection(VerifiedMarketOperationalEnvironmentCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class VerifiedMarketOperationalConfiguredReferenceTenantMongoTests : IClassFixture<VerifiedMarketReplicaSetFixture>
 {
     private readonly VerifiedMarketReplicaSetFixture _fixture;
