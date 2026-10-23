@@ -35,6 +35,8 @@ frozen INVENTORY transactions but never stores or adjusts a shadow stock balance
 
 **Does not own:** shipment source, warehouse receiving trigger, inventory movement/balance, Supplier, carrier or claim.
 
+**Requests (E-7, owner decision 2026-10-21; revision §34):** at return receipt, one `CUSTOMER_RETURN` movement per return line into `QUARANTINE`, posted through the frozen INVENTORY `postMovement`. Inventory stays the balance owner; this module keeps only the resulting movement reference (`InventoryTransactionReferenceId`) — never a local or shadow balance.
+
 ## 3. Owned Objects
 
 | Object | Purpose |
@@ -70,14 +72,14 @@ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-
 | Dependency | State | Rule |
 |---|---|---|
 | MOD-0183 Shipment | Required before runtime | Return references an existing eligible shipment/line |
-| INVENTORY v1 | Frozen consumed | Read/reference and movement reconciliation only |
+| INVENTORY v1 | Frozen consumed (1.5.0) | Read/reference, movement reconciliation and — §34 only — `postMovement` with `movementType: CUSTOMER_RETURN`, `toStockStatus: QUARANTINE` |
 | `SHIPMENT-BUNDLE` v1 | Frozen | Reverse API/lifecycle/mock authority |
 | Warehouse outbound | Frozen read-only upstream seam exists | No inbound return, receiving or automatic ingress implied; see §21 |
 
 ## 8. Runtime Constraints
 
-Prospective mutations are tenant/LE scoped, idempotent and correlation-preserving. Receipt does not itself mint or
-modify INVENTORY movement truth. Invalid/terminal lifecycle transitions produce no event or partial write. Draft
+Prospective mutations are tenant/LE scoped, idempotent and correlation-preserving. Receipt requests the §34 `CUSTOMER_RETURN` movements and records their references; it never writes INVENTORY persistence or
+holds a balance. Invalid/terminal lifecycle transitions produce no event or partial write. Draft
 status forbids runtime implementation.
 
 ## 9. Layout & Shell Contract
@@ -880,3 +882,63 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 4. The Returns UI is approved but not built; the route and actions are re-checked against the built UI (M-04/M-05, W-01/W-02).
 5. Rebase required if the Q39 Returns sign-off changes this pack's base first (see the base note).
 6. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 34. Customer return to Inventory (E-7) — revision draft WP-P1
+
+> Owner decisions: E-7 (Beste, 2026-10-21, integration plan §2.1) and G5 / G8 (Natig, 2026-10-22,
+> `docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3a). **Draft revision — not approved.** It changes
+> §2, §7 and §8 above and needs CT-APR-02 (independent review by the MVP-1 CT) and a CT-APR-01 row (high risk:
+> integration and product code path) before any code.
+
+### 34.1 What is posted
+
+| Field (INVENTORY 1.5.0 `MovementRequest`) | Value |
+|---|---|
+| `movementType` | `CUSTOMER_RETURN` |
+| `toStockStatus` | `QUARANTINE` (E-7). A Blocked / Expired lot is accepted into QUARANTINE by INVENTORY CT-R10 |
+| `itemId`, `skuId`, `skuLevel`, `lotId`, `serialIds`, `uomId` | from the **original issue** of the shipment line (G8): MOD-0183 stores each line's issue `transactionId` and `lotId` at dispatch (MOD-0183 §23.4 step 3) — INVENTORY `getTransactions` cannot be searched by shipment; never re-entered |
+| `quantity` | the return line quantity (frozen decimal string) |
+| `toWarehouseId`, `toLocationId` | entered at return receipt (G8; RETURNS contract addition, separately versioned) |
+| `sourceModule` / `sourceType` | `MOD-0186` / `CUSTOMER_RETURN` |
+| `sourceDocumentId` / `sourceLineId` | return id / shipment line number |
+| `documentGroupId` | shipment id (joins the return to its shipment's issue movements) |
+| `transactionDate` / `postingDate` | the validated `occurredAt` of the receipt transition; the posting day is the UTC day (E-6) |
+| `Idempotency-Key` | deterministic: `{returnId}:{shipmentLineNumber}:customer-return:v1` |
+| `X-Correlation-Id` | the receipt command's correlation id, forwarded (E-1) |
+
+The caller's token is forwarded (G5): the receiving role needs `inventory.movements.create`, granted in Roles →
+Permissions (the BL-652 interim path), never through the default role template.
+
+### 34.2 Lifecycle and failure behaviour
+
+- The `Received` transition posts every line first, then commits the transition, its receipt, audit and `ReturnReceived`
+  event, with each line's `InventoryTransactionReferenceId`. The frozen event shape does not change.
+- A line refused by INVENTORY (any 422) leaves the return in its previous state and answers the module's refusal with the
+  INVENTORY code in its details. Lines already posted **stay posted** (the goods are physically in quarantine); a retry of the
+  same command reuses the same keys, so INVENTORY replays them and posts only what is missing. No REVERSAL is used here.
+- INVENTORY unreachable or 5xx → 503 `DEPENDENCY_UNAVAILABLE`, no state change.
+- A shipment line with **no stored issue movement** (dispatched before MOD-0183 §23 DL-1 existed) is refused at receipt with
+  a module code (to be named in the RETURNS addition); no lot is guessed.
+
+### 34.3 Acceptance and tests (in addition to §26)
+
+| AC | Measurable acceptance |
+|---|---|
+| R34-1 | Receipt of a 1-line and an N-line return posts N `CUSTOMER_RETURN` movements into QUARANTINE with the §34.1 fields; the stock rises in QUARANTINE, not AVAILABLE (MVP-1 live tour "iade → karantina") |
+| R34-2 | Replaying the receipt command posts no second movement and no second event |
+| R34-3 | A refused line: return state unchanged, posted lines kept, retry completes; INVENTORY code shown localized (7 languages) |
+| R34-4 | INVENTORY unavailable → 503, no transition, no event |
+| R34-5 | Cross-tenant / cross-LE return id → 404, no movement |
+| R34-6 | No original issue movement → refused, no movement, no lot guessed |
+
+Each rule above gets a sabotage proof (remove the posting, change the status, drop the key → the matching test is red).
+The full SupplyChain test assembly runs unfiltered.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | iade → karantina | §2 Requests, §7 INVENTORY row, §8, §34 |
+
+DL-1 is dispatchable only after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the per-line issue `transactionId` / `lotId`
+that MOD-0183 stores. CT-APR-01 note: "only DL-1; after MOD-0183 DL-1".

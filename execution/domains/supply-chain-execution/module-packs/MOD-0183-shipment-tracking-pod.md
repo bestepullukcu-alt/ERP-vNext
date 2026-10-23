@@ -47,6 +47,9 @@ implementation. Central consumer contracts are present. Unresolved compatibility
 - Proof of delivery, including delivery time, receiver, evidence references and exception note.
 - Shipment lifecycle event payloads in `SHIPMENT-BUNDLE`.
 - Correlation and causation propagation for its own HTTP commands and events.
+- **The sales stock issue request (W-4, owner decision 2026-10-21; revision §23):** MOD-0183 is the single writer of
+  `GOODS_ISSUE_SALES`, posted through the frozen INVENTORY `postMovement` when a shipment becomes `Dispatched`, and keeps the
+  resulting movement references. Inventory remains the balance owner (below).
 
 **Consumes:**
 
@@ -149,7 +152,8 @@ edit it; any additive contract revision is a separately versioned, single-writer
 | Dependency | State for Phase B | Rule |
 |---|---|---|
 | `SHIPMENT-BUNDLE` v1 | SATISFIED when Phase A validation passes | Owned frozen contract |
-| `INVENTORY-BUNDLE` v1 | SATISFIED | Consume via generated/manual contract client or mock; reads only in this slice |
+| `INVENTORY-BUNDLE` v1 | SATISFIED (1.5.0) | Consume via contract client or mock; reads, and — §23 only — `postMovement` (`GOODS_ISSUE_SALES`; `REVERSAL` per §23.4, open) |
+| `PRODUCT-MASTER` 1.1 | DRAFT (`1.1.0-draft.16`) | §23 DL-4 only, written after the contract is frozen (G6) |
 | Event Bus | SATISFIED as platform foundation | Use outbox/event envelope; preserve correlation UUID |
 | Location/Product contracts | SATISFIED | Opaque IDs; validation through frozen mock where invoked |
 | `WAREHOUSE-OUTBOUND` v1 | PRESENT / FROZEN; compatibility PARTIAL | GET list/detail + ready event; mapping and GAP-0183-01/02/03 in readiness record |
@@ -578,3 +582,112 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 3. The details action bar is a page-level bar; `Toolbar` is the nearest supported placement.
 4. `supplychain.shipments.read` is also a UI prerequisite of Returns/Claims create and transition (G-SHIPREAD); the single-key action model cannot express that conjunction.
 5. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 23. Inventory stock issue at dispatch (W-4) — revision draft WP-P1
+
+> Owner decisions: W-4, E-1, E-6, E-7 (Beste, 2026-10-21, integration plan §2.1 / §4.1) and G1, G5, G6, G7, G9, G10 (Natig,
+> 2026-10-22, `docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3a) and the MVP-1 Control Tower's answers
+> to G2, G3 and G4 (2026-10-23, DECISION-DRAFT §3b). **Draft revision — not approved.** Needs CT-APR-02 (MVP-1 CT) and a
+> CT-APR-01 row (high risk) before any code.
+
+### 23.1 What is posted (one movement per shipment line)
+
+| Field (INVENTORY 1.5.0 `MovementRequest`) | Value |
+|---|---|
+| `movementType` | `GOODS_ISSUE_SALES` |
+| `itemId`, `skuId`, `quantity`, `uomId` | the shipment line |
+| `skuLevel`, `lotId`, `fromLocationId`, `fefoBypassReason` | the shipment line's SHIPMENT-BUNDLE 3.4.0 fields (G1); `fromWarehouseId` = `WarehouseReferenceId` |
+| `fromStockStatus` | `AVAILABLE` |
+| `sourceModule` / `sourceType` | `MOD-0183` / `SHIPMENT` |
+| `sourceDocumentId` / `sourceLineId` / `documentGroupId` | shipment id / line number / shipment id |
+| `transactionDate` / `postingDate` | the validated `occurredAt` of the dispatch transition; posting day = UTC day (E-6) |
+| `X-Correlation-Id` | the dispatch command's correlation id, forwarded (E-1) |
+| `Idempotency-Key` | deterministic per line: `{shipmentId}:{lineNumber}:dispatch:v1` (G4) |
+
+Sources of the line stock fields (G1, G10): in a tenant **without** a warehouse module the user enters them on the shipment;
+in a tenant with one, MVP-5 picking (WAREHOUSE-OUTBOUND `ReadyToShip`) fills them — that mapping is written when MOD-0178
+exists. A lot-tracked line without `lotId` is refused before INVENTORY is called (`SHIPMENT_LINE_STOCK_INCOMPLETE`).
+
+### 23.2 Authorization (G5)
+
+The caller's token is forwarded. The dispatching role needs `inventory.movements.create` in addition to
+`supplychain.shipments.dispatch`, granted through Roles → Permissions (the BL-652 interim path), never through the default role
+template. A caller without it gets INVENTORY's 403, answered as 503 `DEPENDENCY_UNAVAILABLE` with no state change (the same
+rule as the legal-entity gate: a permission gap is not a business refusal). A service identity comes with BL-652 Option 2.
+
+### 23.3 Refusals and events (G7, G9)
+
+- Any INVENTORY 422 → 422 `INVENTORY_REFUSED` with `details.lineNumber` and `details.inventoryCode` (SHIPMENT-BUNDLE 3.4.0);
+  the shipment does **not** become `Dispatched`. The Shipments screen shows a localized text per `inventoryCode` (7 languages:
+  `Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx`, already in §5 Repo Scope).
+- INVENTORY unreachable / 5xx → 503 `DEPENDENCY_UNAVAILABLE`, no state change.
+- The `ShipmentDispatched` event keeps its frozen shape; it is written only after every line's movement exists (G9). MVP-5
+  will use it to mark its outbound record `Shipped`; any later change of its shape is announced to the MVP-1 CT first.
+
+### 23.4 Reservations, compensation and the two-phase dispatch — DECIDED (MVP-1 CT, 2026-10-23)
+
+**G2 — reservations.** No INVENTORY change is needed for this slice: INVENTORY consumes an active reservation in the same
+posting transaction when the movement's (`sourceModule`, `sourceDocumentId`, `sourceLineId`) equals the reservation's
+(MOD-0173, ASSUMPTION-0173-15). MOD-0183 opens no reservation in v1, so its issue consumes none; a reservation opened later
+with `MOD-0183` / `shipmentId` / `lineNumber` would be consumed automatically. Consuming an MVP-5 (MOD-0178) reservation needs
+`MovementRequest.reservationId`, which the MOD-0173 owner adds with the lot / location reservation work (W-5) before MVP-5 S2
+— not MOD-0183 work. "Release first, then issue" is not used.
+
+**G3 — compensation by REVERSAL.** MOD-0183 sends `movementType: REVERSAL` with `sourceModule: MOD-0173`,
+`sourceType: REVERSAL`, `sourceDocumentId` = the original `transactionId`, `documentGroupId` = `shipmentId` and a
+deterministic `Idempotency-Key` `{shipmentId}:{lineNumber}:reversal:v1`. A reversed issue does **not** restore a reservation
+it consumed: the stock returns as `AVAILABLE`.
+
+**G4 — two phases, N lines (first slice).** Per-line deterministic keys + REVERSAL compensation; a batch / atomic movement
+endpoint, if ever needed, is the MOD-0173 owner's follow-up. The dispatch:
+
+1. Records the dispatch attempt on the shipment (internal pending state; the wire `Status` set is unchanged) with the
+   validated `occurredAt` as `transactionDate` / `postingDate`. **Those dates are stored at the first attempt and sent
+   unchanged on every retry** — INVENTORY's idempotency fingerprint includes them, and changed dates would answer
+   `IDEMPOTENCY_KEY_REUSED`.
+2. Posts each line with its key. **On a retry it first checks whether the key was already processed** (the stored per-line
+   `transactionId`, else INVENTORY's replay of the same key): an already-processed key is a success, never a refusal.
+   `IDEMPOTENCY_KEY_REUSED` is an integrity fault (logged, shipment kept in the visible exception state below), not a business
+   refusal and not a reason to post again.
+3. When every line has a `transactionId` (stored per line with its `lotId`, for MOD-0186's return), the shipment becomes
+   `Dispatched` and the frozen `ShipmentDispatched` event is written in the same transaction.
+4. If a line is refused (422), the already-posted lines are reversed (G3) and the shipment returns to `Planned` with the
+   refusal shown (§23.3).
+5. **If a compensating REVERSAL itself fails**, the shipment stays in a visible blocked state — it never returns to
+   `Planned` silently. The frozen lifecycle has no `Planned → Exception` arrow, so the wire `status` stays `Planned` while the
+   internal dispatch state is `CompensationFailed`: every further transition answers 409 `DISPATCH_COMPENSATION_FAILED`
+   with the affected lines, and SHIPMENT-BUNDLE 3.4.0 adds the read-only `ShipmentDetail.dispatchState`
+   (`None` / `InProgress` / `CompensationFailed`, additive) so the screen shows it. Resolving it is a user action that retries
+   the reversals with the same keys.
+6. **Resume after a crash happens only on a user action** (the caller's token is forwarded; there is none in a background
+   job). A background job may only *check* status and flag stuck attempts; it posts and reverses nothing.
+
+### 23.5 Acceptance
+
+| AC | Measurable acceptance |
+|---|---|
+| S23-1 | One-line shipment dispatched → one `GOODS_ISSUE_SALES` with the §23.1 fields; AVAILABLE falls by the quantity (MVP-1 live tour "Dispatched → stok düştü") |
+| S23-2 | Lot under recall → 422 `INVENTORY_REFUSED` / `LOT_UNDER_RECALL`, shipment not `Dispatched`, no event (live tour "recall altındaki lot → sevkiyat reddedildi") |
+| S23-3 | Replaying the dispatch command posts no second movement and no second event |
+| S23-4 | INVENTORY unavailable or 403 → 503, no state change, no event |
+| S23-5 | Lot-tracked line without `lotId` → `SHIPMENT_LINE_STOCK_INCOMPLETE`, INVENTORY not called |
+| S23-6 | Cross-tenant / cross-LE shipment id → 404, no movement |
+| S23-7 | Every `inventoryCode` has a non-empty text in all 7 languages (resx parity measured by MATCH count) |
+| S23-8 | Three-line dispatch, line 2 refused → line 1 reversed with key `…:1:reversal:v1`, shipment back to `Planned`, no `Dispatched` event |
+| S23-9 | Retry after a crash between line 1 and line 2 (user action) → line 1 not posted again (same key, stored dates), line 2 posted, `Dispatched` once |
+| S23-10 | Compensating REVERSAL fails → `dispatchState = CompensationFailed`, further transitions 409 `DISPATCH_COMPENSATION_FAILED`, never a silent `Planned`; a user retry with the same keys clears it |
+| S23-11 | Changed dates on a retry are impossible: the stored `transactionDate`/`postingDate` are sent; a forced change in a test shows `IDEMPOTENCY_KEY_REUSED` handled as an integrity fault |
+| S23-12 | A background job never posts or reverses; it only flags a stuck attempt |
+
+Each rule gets a sabotage proof; the full SupplyChain test assembly runs unfiltered; MDM and INVENTORY consumer tests and the
+MVP-1 CT's live tours are the acceptance.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | §2 Owns (W-4), §7 INVENTORY row, §23.1, §23.2, §23.3, §23.4, §23.5 (S23-1…S23-6, S23-8…S23-12); the 3.4.0 contract patch ships in the same change (ContractErrorCodeParityTests) |
+| DL-2 | ret metinleri | §23.3 screen texts, S23-7 |
+
+Not slices of this version: the product check (§7 PRODUCT-MASTER row — dispatchable only after PRODUCT-MASTER is frozen, by a
+new revision) and MVP-5 reservation consumption (`reservationId`, MOD-0173 owner's W-5 work). CT-APR-01 note: "only DL-1, DL-2".

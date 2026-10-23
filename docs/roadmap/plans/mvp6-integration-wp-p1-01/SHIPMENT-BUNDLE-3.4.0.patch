@@ -1,5 +1,5 @@
 --- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-22 20:33:24
-+++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-22 20:33:24
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-23 11:19:37
 @@ -12,7 +12,7 @@
      shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
      yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
@@ -20,7 +20,15 @@
      CreateShipmentCommand:
        type: object
        additionalProperties: false
-@@ -3343,6 +3347,8 @@
+@@ -3205,6 +3209,7 @@
+             lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
+             pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
+             lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
++            dispatchState: { type: [string, 'null'], enum: [None, InProgress, CompensationFailed, null], description: "3.4.0 (WP-P1 G4, additive, read-only) — state of the Inventory stock issue behind Dispatched (MOD-0183 §23.4). CompensationFailed: a compensating REVERSAL failed; status stays Planned and further transitions answer 409 DISPATCH_COMPENSATION_FAILED." }
+             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+     ShipmentListResponse:
+       type: object
+@@ -3343,6 +3348,8 @@
          occurredAt: { type: string, format: date-time }
          inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
          dispositionCode: { type: [string, 'null'] }
@@ -29,7 +37,15 @@
      ReturnSummary:
        type: object
        properties:
-@@ -3528,6 +3534,9 @@
+@@ -3517,6 +3524,7 @@
+           examples:
+             idempotency: { value: { error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency-Key farkli payload ile kullanildi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+             duplicatePod: { value: { error: { code: POD_ALREADY_CAPTURED, message: Shipment icin POD zaten kayitli, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++            dispatchCompensationFailed: { value: { error: { code: DISPATCH_COMPENSATION_FAILED, message: "3.4.0 (WP-P1 G4) — a compensating REVERSAL failed; the shipment is blocked until a user retry succeeds", details: { lines: ["1"] }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+     Unprocessable:
+       description: Is kurali veya lifecycle gecisi gecersiz
+       content:
+@@ -3528,6 +3536,9 @@
              returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }

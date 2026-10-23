@@ -82,6 +82,22 @@ P3 W-4 ile çelişmez (API üzerinden yazma, ikinci bakiye yok); P1, P2, P4, P5 
 
 Açık: **G2, G3, G4** (MVP-1 CT). DL-2 (çıkış çekirdeği) ve DL-6 (rezervasyon) bunlara bağlı.
 
+## 3b. MVP-1 Control Tower cevapları (2026-10-23, Natig iletti; kod ve sözleşme ölçümüne dayalı)
+
+| # | Cevap |
+|---|---|
+| G2 | INVENTORY değişikliği **gerekmiyor**: hareketin (`sourceModule`, `sourceDocumentId`, `sourceLineId`) üçlüsü aktif bir rezervasyonla aynıysa aynı işlemde tüketilir (`ReservationPositionOperations.cs:215-232`, ASSUMPTION-0173-15). `MovementRequest.reservationId` yalnız MVP-5 (MOD-0178) rezervasyonu için; MOD-0173 sahibi W-5 ile, MVP-5 S2'den önce ekler. "Önce release, sonra issue" önerilmiyor. |
+| G3 | **Onay.** REVERSAL `sourceModule=MOD-0173`, `sourceType=REVERSAL`, `sourceDocumentId`=orijinal `transactionId`, `documentGroupId`=`shipmentId`, anahtar `{shipmentId}:{lineNumber}:reversal:v1`. Geri alınan çıkışın tükettiği rezervasyon geri gelmez; stok AVAILABLE döner. |
+| G4 | İlk dilim için satır başına anahtar + REVERSAL telafisi **onay**; toplu/atomik uç gerekirse MOD-0173 FU'su. Dört koşul: (1) `transactionDate`/`postingDate` ilk denemede saklanıp her denemede aynen gönderilir (`RequestFingerprint.cs:42-43`); (2) yeniden denemede önce anahtarın işlenip işlenmediğine bakılır, `IDEMPOTENCY_KEY_REUSED` ret değil bütünlük hatası; (3) çökme sonrası devam kullanıcı eylemiyle (arka planda token yok), arka plan iş yalnız durum kontrolü; (4) telafi REVERSAL'ı da başarısızsa sevkiyat görünür hata durumunda kalır, sessizce Planned'a dönmez. |
+| Olay | `Dispatched` olayının biçimi değişmeden bütün satırlar yazıldıktan sonra yayımlanması uygun (MVP-5 outbound'u buna göre Shipped yapar). |
+| Bilgi 2 | MVP-1, CentralAudit outbox yarışı için ortak kodda FU açıyor; SupplyChain'deki ön-yaratma o gelene kadar uygun. |
+
+Pakete işlenişi: MOD-0183 §23.4 (karar), §23.1 anahtar, §23.5 S23-8…S23-12, teslim dilimleri DL-1 (3.4.0 + çekirdek) ve
+DL-2 (metinler); ürün doğrulaması ve MVP-5 rezervasyonu dilim değil. Koşul (4) için dondurulmuş yaşam döngüsünde
+`Planned → Exception` oku olmadığından görünür durum `ShipmentDetail.dispatchState` (3.4.0, ekleme) ve 409
+`DISPATCH_COMPENSATION_FAILED` ile verilir (CT önerisi). MOD-0186 §34: lot ve kalem, MOD-0183'ün satır başına sakladığı çıkış
+`transactionId`/`lotId`'den okunur; DL-1, MOD-0183 DL-1'den sonra.
+
 ## 4. Önerilen paket değişiklikleri (kararlardan sonra yazılacak — özet)
 
 **MOD-0183**
