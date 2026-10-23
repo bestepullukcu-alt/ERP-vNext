@@ -21,7 +21,6 @@ namespace Diten.AuthService.Application.Tests.ESignReauth;
 /// controllers, pipeline, handlers, repositories and indexes. Platform's login-settings edge is replaced in-process
 /// with the measured tenant defaults (5 failed attempts / 15 minutes).
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class ESignReauthEndpointTests : IClassFixture<ESignReauthEndpointTests.ESignReauthTestHost>
 {
     private const string Reauth = "api/tenant-auth/esign/reauth";

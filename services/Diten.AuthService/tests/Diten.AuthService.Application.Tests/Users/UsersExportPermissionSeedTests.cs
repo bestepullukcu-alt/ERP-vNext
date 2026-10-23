@@ -18,7 +18,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// (and only once — a revoke sticks), and the catalog→Auth sync that the Access Governance manifest now drives refreshes
 /// it without taking away its seeded protection. Disposable tenants only.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class UsersExportPermissionSeedTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

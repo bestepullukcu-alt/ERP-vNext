@@ -11,7 +11,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// account lives in <see cref="DevAccountSeed"/>) against the test-owned mongod. Since BL-521 admin@diten.com is a platform account that every
 /// tenant door refuses; this account is the dev database's tenant-side administrator: tenant Admin role, never platform.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class DevTenantAdminSeedTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");

@@ -13,7 +13,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// pages and none on a third once a tenant passes one page (500). Measured on the real repository over a test-owned
 /// mongod: 1200 users read 500 at a time come back complete, once each, in one stable order (by id).
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class UserTenantPagingMongoTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

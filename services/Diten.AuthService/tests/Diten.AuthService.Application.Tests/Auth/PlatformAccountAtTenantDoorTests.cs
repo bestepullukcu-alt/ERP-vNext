@@ -44,7 +44,6 @@ namespace Diten.AuthService.Application.Tests.Auth;
 /// <para>Real HTTP on the production Api over a test-owned mongod (the production seeder has run there; the tenant …0001 of
 /// this database is the test's own). Only Platform's answers the doors need are fixed. Disposable users only.</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAccountAtTenantDoorTests.Host>
 {
     private static readonly Guid BusinessAndPlatformTenant = PlatformSystemTenant.Id;

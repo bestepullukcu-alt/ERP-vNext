@@ -20,7 +20,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// (traceId differs per request and the default FluentValidation sentence follows the host culture; both are held
 /// out of the comparison, everything else is exact.)
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class ValidationEnvelopeUnchangedTests : IClassFixture<PlatformEdgeTestHost>
 {
     private const string AccountKindDetail = "Validation failed: \n -- Kind: Kind must be one of: Unknown, Human, Service. Severity: Error";

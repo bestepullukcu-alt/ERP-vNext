@@ -12,7 +12,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// resolution and [HasPermission], against a real (throwaway) mongod. The world is a fresh tenant with a known set of
 /// users (<see cref="UserListWorld"/>); expectations are the facts written there, never a re-implementation of the query.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed partial class UserListQueryTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private readonly AccountKindAcceptance.AuthTestHost _host;

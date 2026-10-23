@@ -29,7 +29,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// deterministic with a barrier: the production hasher's Verify, or the login-settings read of a refresh, holds the
 /// request at exactly that point until the test has run the reset.</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<AdminResetInvalidatesEndpointTests.Host>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");

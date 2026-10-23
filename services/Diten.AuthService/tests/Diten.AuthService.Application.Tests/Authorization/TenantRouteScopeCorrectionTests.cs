@@ -332,7 +332,6 @@ public sealed class TenantRouteScopeCorrectionTests
 /// case and the entitlement-sync case run against the host's own database through production DI, each in a fresh
 /// tenant; the two template rows there are reset to PlatformAdmin by each test that needs them.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
 {
     private const string CorrectionDatabase = "diten_auth_itest_scope_correction";

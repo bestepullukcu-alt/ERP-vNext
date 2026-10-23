@@ -17,7 +17,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// the real Api on a test-owned mongod, with Platform's internal quota endpoints faked (requests recorded). One
 /// disposable tenant per test.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class UserQuotaEndpointTests : IClassFixture<PlatformEdgeTestHost>
 {
     private const string ConsumePath = "/api/internal/quotas/consume";

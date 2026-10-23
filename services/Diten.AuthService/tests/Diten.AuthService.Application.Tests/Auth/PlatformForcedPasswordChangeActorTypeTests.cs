@@ -31,7 +31,6 @@ namespace Diten.AuthService.Application.Tests.Auth;
 /// <para>Real HTTP on the production Api over a test-owned mongod (the shared acceptance host); only the outbound
 /// Platform edges are fixed answers. Disposable platform users only — never the seeded admin.</para>
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class PlatformForcedPasswordChangeActorTypeTests : IClassFixture<PlatformForcedPasswordChangeActorTypeTests.Host>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");

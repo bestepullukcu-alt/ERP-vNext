@@ -19,7 +19,6 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// English sentence in <c>errors</c>. Handler tests cannot see a code lost in binding or serialization — that escaped
 /// this repo twice. A disposable tenant per class; the caller holds no steward role, so the last-steward case is real.
 /// </summary>
-[Collection("AccountKindAcceptance")]
 public sealed class UserErrorCodeEndpointTests : IClassFixture<PlatformEdgeTestHost>
 {
     private readonly PlatformEdgeTestHost _host;
