@@ -41,6 +41,37 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions;
 
 /// <summary>
+/// TEST-HIZ-01 — ONE test-owned replica set (never the shared 27017) and ONE host for the class, not one of each per
+/// test: measured 2026-10-23, starting them was ~1.5 s of every test here (mongod ~0.9 s, host ~0.6 s, indexes ~0.3 s).
+/// Each test still starts on EMPTY collections — <see cref="TenantSubscriptionEndpointsHttpMongoTests.Host.ResetAsync"/>
+/// empties every collection of the class's fixed-name database (DB-010) and keeps the production indexes — so no
+/// assertion changed.
+/// </summary>
+public sealed class TenantSubscriptionEndpointsHostFixture : IAsyncLifetime
+{
+    private DisposableMongoReplicaSet? _mongo;
+    private TenantSubscriptionEndpointsHttpMongoTests.Host? _host;
+
+    public TenantSubscriptionEndpointsHttpMongoTests.Host Host =>
+        _host ?? throw new InvalidOperationException("The subscription endpoints host was not started.");
+
+    public async Task InitializeAsync()
+    {
+        _mongo = await DisposableMongoReplicaSet.StartAsync();
+        _host = await TenantSubscriptionEndpointsHttpMongoTests.Host.CreateAsync(_mongo);
+    }
+
+    public async Task DisposeAsync()
+    {
+        _host?.Shutdown();
+        if (_mongo is not null)
+        {
+            await _mongo.DisposeAsync();
+        }
+    }
+}
+
+/// <summary>
 /// WP-PLATFORM-AUDIT-INTX-01 — the seven tenant-subscription endpoints
 /// (<see cref="TenantCommercialSubscriptionsController"/>), over real HTTP, the real MediatR pipeline and a real
 /// replica set.
@@ -58,9 +89,13 @@ namespace Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions;
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class TenantSubscriptionEndpointsHttpMongoTests
+public sealed class TenantSubscriptionEndpointsHttpMongoTests : IClassFixture<TenantSubscriptionEndpointsHostFixture>
 {
     private const string AuditGateRefusal = "Transaction-owned audit is not authorized";
+
+    private readonly Host _shared;
+
+    public TenantSubscriptionEndpointsHttpMongoTests(TenantSubscriptionEndpointsHostFixture fixture) => _shared = fixture.Host;
 
     /// <summary>The seven write endpoints: path suffix, body, the status it needs, the status it leaves, the command.</summary>
     public static TheoryData<string, string, string, string, string> LifecycleEndpoints() => new()
@@ -77,7 +112,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     public async Task A_lifecycle_endpoint_works_and_its_audit_record_reaches_audit_events_once(
         string action, string body, string from, string to, string command)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var subscription = await host.SeedAsync(Host.Tenant, Enum.Parse<TenantSubscriptionStatus>(from));
 
         var response = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, $"{subscription.Id:D}/{action}", body);
@@ -122,7 +157,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [InlineData("{0}/expire", "null")]
     public async Task No_subscription_endpoint_is_refused_by_the_audit_pipeline_gate(string route, string body)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Active);
 
         var response = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, string.Format(route, subscription.Id.ToString("D")), body);
@@ -139,7 +174,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [Fact]
     public async Task Assigning_a_plan_is_delivered_once_with_the_administrator_and_initializes_the_quotas_in_the_same_transaction()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
 
         var response = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody);
 
@@ -163,7 +198,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [Fact]
     public async Task Assigning_a_plan_with_nobody_to_name_is_refused_and_leaves_no_subscription_no_quota_and_the_tenant_as_it_was()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var before = await host.TenantAsync(Host.Tenant);
 
         var answer = await Host.ReadAsync(await host.PostAsync(Host.AdministratorWithoutSubjectToken(), Host.Tenant, "", AssignBody));
@@ -183,7 +218,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [Fact]
     public async Task Activating_a_subscription_is_delivered_once_and_makes_the_tenant_active()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         await host.Database.GetCollection<Tenant>("tenants").UpdateOneAsync(x => x.Id == Host.Tenant,
             Builders<Tenant>.Update.Set(x => x.Status, TenantStatus.Provisioning));
         var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Trialing);
@@ -207,7 +242,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [Fact]
     public async Task Activating_with_nobody_to_name_is_refused_and_leaves_the_subscription_the_quota_and_the_tenant_as_they_were()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         await host.Database.GetCollection<Tenant>("tenants").UpdateOneAsync(x => x.Id == Host.Tenant,
             Builders<Tenant>.Update.Set(x => x.Status, TenantStatus.Provisioning));
         var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Trialing);
@@ -230,7 +265,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [Fact]
     public async Task A_partner_writes_no_subscription_even_for_its_allowed_tenant_and_reads_only_its_own()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var anySubscription = Guid.NewGuid();
 
         foreach (var tenant in new[] { Host.Tenant, Host.OtherTenant })
@@ -261,7 +296,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [Fact]
     public async Task A_second_assign_is_refused_with_its_code_while_a_subscription_is_live()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Trialing);
 
         var answer = await Host.ReadAsync(await host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody));
@@ -278,7 +313,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [InlineData(true)]  // two screens: a trial and a paid assignment — different statuses, which the index alone allows
     public async Task Two_assignments_at_once_leave_exactly_one_live_subscription_and_the_other_hears_a_code_never_a_500(bool differentStatuses)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
 
         var responses = await Task.WhenAll(
             host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody),
@@ -310,7 +345,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [MemberData(nameof(EveryWriteEndpoint))]
     public async Task A_tenant_user_is_refused_even_with_the_permission_key_in_the_token_and_for_their_own_tenant(string route, string body)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Active);
 
         var response = await host.PostAsync(Host.TenantUserToken(Host.Tenant), Host.Tenant, string.Format(route, subscription.Id.ToString("D")), body);
@@ -319,11 +354,30 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         await host.AssertUntouchedAsync(subscription);
     }
 
+    /// <summary>
+    /// TEST-HIZ-01 (step 4, sabotage S1) — the read endpoints carry only <c>HasPermission(…read)</c>, and that filter
+    /// admits a non-platform caller whose token holds the key. What keeps a tenant user out of them is the controller's
+    /// <c>[Authorize(Policy = "PlatformActor")]</c> alone: with that line removed every other test here stayed green.
+    /// </summary>
+    public static TheoryData<string> EveryReadEndpoint() => new() { "", "history", "{0}", "active", "entitlements" };
+
+    [Theory]
+    [MemberData(nameof(EveryReadEndpoint))]
+    public async Task A_tenant_user_is_refused_on_every_read_endpoint_even_with_the_read_keys_in_the_token(string route)
+    {
+        await using var host = await _shared.ResetAsync();
+        var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Active);
+
+        var response = await host.GetAsync(Host.TenantUserToken(Host.Tenant), Host.Tenant, string.Format(route, subscription.Id.ToString("D")));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     [Theory]
     [MemberData(nameof(EveryWriteEndpoint))]
     public async Task A_platform_actor_who_is_not_an_active_administrator_is_refused(string route, string body)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Active);
 
         var response = await host.PostAsync(Host.UnknownPlatformActorToken(), Host.Tenant, string.Format(route, subscription.Id.ToString("D")), body);
@@ -336,7 +390,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [MemberData(nameof(EveryWriteEndpoint))]
     public async Task Nobody_signed_in_is_refused(string route, string body)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Active);
 
         var response = await host.PostAsync(null, Host.Tenant, string.Format(route, subscription.Id.ToString("D")), body);
@@ -356,7 +410,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     [InlineData("expire", "null")]
     public async Task Another_tenants_subscription_is_not_reachable_through_this_tenants_path(string action, string body)
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await _shared.ResetAsync();
         var theirs = await host.SeedAsync(Host.OtherTenant, TenantSubscriptionStatus.Active);
 
         var response = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, $"{theirs.Id:D}/{action}", body);
@@ -368,12 +422,13 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
 
     // ── harness ─────────────────────────────────────────────────────────────────────────────────────────
 
-    private sealed class Host : IAsyncDisposable
+    public sealed class Host : IAsyncDisposable
     {
         private const string Issuer = "diten-auth-intx-test";
         private const string Audience = "diten-platform-intx-test";
         private const string Secret = "WP-PLATFORM-AUDIT-INTX-01 subscription endpoints signing key, test only, 0123456789";
         private const string AdministratorEmail = "platform.admin@di10.test";
+        private const string DatabaseName = "diten_platform_tx_subscription_endpoints";
 
         public static readonly Guid Tenant = Guid.Parse("60060060-0000-4000-8000-0000000000a1");
         public static readonly Guid OtherTenant = Guid.Parse("60060060-0000-4000-8000-0000000000b2");
@@ -469,10 +524,11 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
             _server = new TestServer(builder);
         }
 
-        public static async Task<Host> StartAsync()
+        /// <summary>Once per class: the class's ONE fixed-name database (DB-010) and its production indexes.</summary>
+        public static async Task<Host> CreateAsync(DisposableMongoReplicaSet mongo)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            await mongo.Client.DropDatabaseAsync(DatabaseName);
+            var database = mongo.Client.GetDatabase(DatabaseName);
             // The production indexes of the collections these writes touch — the one-current-subscription rule and the
             // quota rows' uniqueness live there, not in code.
             var wanted = new HashSet<string>(StringComparer.Ordinal) { "tenant_subscriptions", "quota_usages", "quota_events", "tenants" };
@@ -481,10 +537,20 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                 await collection.ApplyAsync(database, CancellationToken.None);
             }
 
-            var host = new Host(mongo, database);
+            return new Host(mongo, database);
+        }
+
+        /// <summary>Before every test: every collection emptied (its indexes kept), the two tenants seeded again.</summary>
+        public async Task<Host> ResetAsync()
+        {
+            foreach (var name in await (await Database.ListCollectionNamesAsync()).ToListAsync())
+            {
+                await Database.GetCollection<BsonDocument>(name).DeleteManyAsync(FilterDefinition<BsonDocument>.Empty);
+            }
+
             foreach (var tenant in new[] { Tenant, OtherTenant })
             {
-                await host.Database.GetCollection<Tenant>("tenants").InsertOneAsync(new Tenant
+                await Database.GetCollection<Tenant>("tenants").InsertOneAsync(new Tenant
                 {
                     // Distinct per tenant: the production indexes (applied above) hold code, slug and domain unique.
                     Id = tenant, Code = "T" + tenant.ToString("N")[^8..], Slug = "t" + tenant.ToString("N")[^8..], Name = "Tenant",
@@ -492,7 +558,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                 });
             }
 
-            return host;
+            return this;
         }
 
         public async Task<TenantSubscription> SeedAsync(Guid tenantId, TenantSubscriptionStatus status)
@@ -621,7 +687,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                 new Claim(JwtRegisteredClaimNames.Email, "tenant.user@di10.test"),
                 new Claim("actor_type", "tenant_user"),
                 new Claim("tenant_id", tenantId.ToString())
-            }.Concat(new[] { "assign", "activate", "cancel", "renew", "expire", "suspend", "reactivate" }
+            }.Concat(new[] { "assign", "activate", "cancel", "renew", "expire", "suspend", "reactivate", "read", "history.read" }
                 .Select(action => new Claim("permission", $"platform.tenants.commercial.subscription.{action}"))).ToArray());
 
         private static string Token(params Claim[] claims)
@@ -666,11 +732,11 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
             return administrators.Object;
         }
 
-        public async ValueTask DisposeAsync()
-        {
-            _server.Dispose();
-            await _mongo.DisposeAsync();
-        }
+        // A test's `await using` ends nothing: the host and the replica set belong to the class fixture, and the next
+        // test's ResetAsync empties the collections.
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        public void Shutdown() => _server.Dispose();
 
         private sealed class OnlyController(Type controller) : ControllerFeatureProvider
         {
