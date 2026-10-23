@@ -113,7 +113,9 @@ Görsel kart (HTML) kullanılmaz — her araçta çalışmaz ve her soruda token
   `Klasör: <ana> (hedef: <yol>, geçilmedi) | Dal: … | HEAD: …`.
 - [ ] **İş takip sayfası (CT-TRK-01, her CT için zorunlu — S-39):** block'un sayfası yoksa ilk durum değerlendirmesinden ya da ilk paket /
   karar commit'inden sonra CT önerir ve `sayfa-ac` ile açar (SOP §22.2/2a); varsa her kabul, prompt ve karardan sonra
-  günceller. Bağlantı SOP §22.2/8'deki yere yazılır.
+  günceller. Bağlantı SOP §22.2/8'deki yere yazılır. **Sayfa salt okunurdur (S-43):** işaretleme / silme düğmesi yok,
+  veri yazma yalnız sayfa sahibine açık; oturum başında ve her main birleştirmesinden sonra CT, merge olmuş / kabul
+  edilmiş işleri kanıtıyla kendiliğinden "bitti" yapar — sahip "bitti" demek zorunda değildir (SOP §22.2/4, /7).
 - [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
   "tamamlanamadı" der (çıkış 2).
 - [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
