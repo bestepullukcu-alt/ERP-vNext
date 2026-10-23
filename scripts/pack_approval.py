@@ -472,12 +472,46 @@ def today_problems(ctx: "Ctx", i: int) -> list[str]:
 
 
 # ------------------------------------------------------------------------------------------------ history checks
-@cached(1)
-def append_only_problems(root: str, commit: str, path: str = APPROVALS) -> list[str]:
+def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: str | None = None) -> list[str]:
     """No row ever disappears. Every commit in the full history that changed the file is compared with EVERY parent:
-    the first parent's rows are the new version's prefix; every other parent's rows appear in it in the same order. The
+    the BASE parent's rows are the new version's prefix; every other parent's rows appear in it in the same order. The
     default history simplification and a first-parent-only comparison miss a merge that drops a row (B3); a
-    multiset comparison misses a merge that reorders an approval behind a revoke (Codex K5)."""
+    multiset comparison misses a merge that reorders an approval behind a revoke (Codex K5).
+    The base is the first parent. S-42: in a merge whose first parent is off the main line (main's first-parent chain)
+    but another parent is on it — a CT branch's `git merge origin/main` (card §7a; the branch is the first parent) —
+    main's rows must be the prefix and the branch's rows follow in their order. If the first parent as the base would also
+    pass, nothing changes; if only the main-line base passes, GitHub must say the merge is no pull request's merge commit:
+    a pull request's merge was on main when it landed, so its first parent stays the base even after main was
+    fast-forwarded past it (independent review F-1). GitHub not measurable = the first parent. `main` is the caller's measured main (independent review F-3); else it is read here."""
+    return _append_only(root, commit, path, main or main_line(root))
+
+
+@cached(1)
+def _main_line_set(root: str, main: str) -> frozenset:
+    return frozenset(git(root, "rev-list", "--first-parent", main).decode().split())
+
+
+def _pr_merge_why(root: str, c: str) -> str | None:
+    """S-42 / independent review F-1: None when GitHub says `c` is no pull request's merge commit; else why it counts as
+    one (a pull request's merge, or not measurable)."""
+    try:
+        info = pr_of_merge(root, c)
+    except (Unreadable, OSError, ValueError, TypeError, KeyError, subprocess.TimeoutExpired) as e:
+        return f" — GitHub'a sorulamadı, {c[:12]}'nin bir PR merge'ü olmadığı ölçülemedi ({str(e)[:120]})"
+    if info is not None:
+        return (f" — {c[:12]} PR #{info.get('number')}'nin merge commit'i: main'e girdiği çizgide birinci ebeveyn esastır "
+                "(main sonradan ileri sarılmış olabilir)")
+    return None
+
+
+def _stale_why(root: str, main: str, parents: list[str]) -> str:
+    stale = [p[:12] for p in parents if git(root, "merge-base", "--is-ancestor", p, main, ok_fail=True) is None]
+    return (f" — ebeveynlerden hiçbiri ana çizgide değil ve {', '.join(stale)} main'de yok: main eski olabilir (git fetch)"
+            if stale else "")
+
+
+@cached(1, 3)
+def _append_only(root: str, commit: str, path: str, main: str) -> list[str]:
     problems = []
     lines = lambda c: content_lines(read(root, c, path).decode("utf-8", errors="replace")) if read(root, c, path) else []
     for entry in git(root, "log", "--full-history", "--format=%H %P", commit, "--", path).decode().split("\n"):
@@ -486,16 +520,34 @@ def append_only_problems(root: str, commit: str, path: str = APPROVALS) -> list[
             continue
         c, parents = ids[0], ids[1:]
         new = lines(c)
-        for parent in parents or [None]:
-            old = lines(parent) if parent else []
-            if len(parents) <= 1 or parent == parents[0]:
-                bad = new[:len(old)] != old          # the line the merge lands on keeps its order: a prefix
+
+        def violated(base):
+            for parent in parents or [None]:
+                old = lines(parent) if parent else []
+                if len(parents) <= 1 or parent == base:
+                    if new[:len(old)] != old:            # the line the merge lands on keeps its order: a prefix
+                        return True
+                else:
+                    it = iter(new)                       # Codex K5: another parent's rows keep their ORDER (subsequence);
+                    if not all(l in it for l in old):    # a multiset check let A0,R0,A1 + R1 become A0,R0,R1,A1
+                        return True
+            return False
+        on_line = _main_line_set(root, main) if len(parents) > 1 else frozenset()
+        alt = next((p for p in parents if p in on_line), None)
+        if alt is not None and alt != parents[0]:
+            # S-42: a merge that took main in — main's rows are the prefix; the first parent's rows follow in order
+            if violated(alt):
+                why = ""
+            elif not violated(parents[0]):
+                continue
             else:
-                it = iter(new)                       # Codex K5: another parent's rows keep their ORDER (subsequence);
-                bad = not all(l in it for l in old)  # a multiset check let A0,R0,A1 + R1 become A0,R0,R1,A1
-            if bad:
-                problems.append(f"{path} {c[:12]}'de yalnız ekleme değil (satır silindi, değişti ya da yeri değişti)")
-                break
+                why = _pr_merge_why(root, c)        # F-1: a pull request's merge keeps its first parent as the base
+        else:
+            if not violated(parents[0] if parents else None):
+                continue
+            why = _stale_why(root, main, parents) if len(parents) > 1 and alt is None else ""
+        if why is not None:
+            problems.append(f"{path} {c[:12]}'de yalnız ekleme değil (satır silindi, değişti ya da yeri değişti){why}")
     return problems
 
 
@@ -856,7 +908,7 @@ def review_problems(root: str, main: str, path: str, data: bytes, at: str) -> tu
         return [f"inceleme yok — bu sürüm ({digest[:12]}) için {REVIEWS}'de satır yok" +
                 (" (var olanlar bayat: paket incelemeden sonra değişti)" if older else "")], notes, set(), set()
     fails, engel, opened, accepted = [], {}, {}, set()
-    problems = append_only_problems(root, commit, REVIEWS)
+    problems = append_only_problems(root, commit, REVIEWS, main)
     if problems:
         return problems + ["inceleme dosyası güvenilmez — hiçbir inceleme sayılmaz"], notes, set(), set()
     for r in cur:
@@ -1052,7 +1104,7 @@ def evaluate(root: str, ref: str, path: str) -> tuple[int, list[str]]:
         if unchanged and not rows:
             return 0, head + [f"paket kural başlangıcından ({ctx.policy[:12]}) beri değişmedi ve yeni kurala göre onay "
                               "satırı yok — eski onay geçerli, geriye dönük düşürülmez", "çıkış: 0"]
-        problems = append_only_problems(root, commit) + append_only_problems(root, ctx.main)
+        problems = append_only_problems(root, commit, main=ctx.main) + append_only_problems(root, ctx.main, main=ctx.main)
         # Codex K4: only THIS pack's approve / revoke chain on main must be the ref's chain prefix (in order); another
         # pack's new approval on main does not force a branch update
         on_main = [r for r in approval_rows(root, ctx.main, path)]
@@ -1820,6 +1872,146 @@ def self_test_review(cases: list) -> None:
     cases.append(("sabotage CT-APR-02 (Codex K5): a merge that keeps every row but moves the approval A1 behind its revoke "
                   "R1 -> append-only problem", bool(append_only_problems(root, "HEAD"))))
     g("reset", "-q", "--hard", k4)
+    # S-42: a CT branch that wrote its own row takes main in with `git merge main` (the branch is the FIRST parent) after
+    # another CT's row reached main; card §7a-2 puts the own row below main's rows
+    s42_start = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "-b", "s42own")
+    append(APPROVALS, "S42-B own row of this CT")
+    commit("own row on the CT branch")
+    own = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    via_branch("s42other", lambda: append(APPROVALS, "S42-C another CT's row"))
+    main_rows = [l for l in get(APPROVALS).split("\n") if l.strip()]
+
+    def take_main(name, rows_after):
+        g("checkout", "-q", "-b", name, own)
+        try:
+            g("merge", "-q", "--no-commit", "--no-ff", "main", who=DEV)
+        except subprocess.CalledProcessError:
+            pass                                    # both sides appended: the conflict is resolved by hand below
+        put(APPROVALS, "\n".join(rows_after) + "\n")
+        commit(f"merge main into {name}", who=DEV)
+        return bool(append_only_problems(root, "HEAD"))
+    cases.append(("S-42: the CT branch takes main in (branch = first parent), own row BELOW main's rows -> append only",
+                  not take_main("s42ok", main_rows + ["S42-B own row of this CT"])))
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "Merge s42ok", "s42ok", who=LEAD)
+    cases.append(("S-42: that branch merged into main afterwards -> still append only on main",
+                  not append_only_problems(root, "HEAD")))
+    g("reset", "-q", "--hard", "HEAD~1")
+    cases.append(("sabotage S-42: the own row placed ABOVE another CT's row that main already had -> problem on the branch",
+                  take_main("s42above", main_rows[:-1] + ["S42-B own row of this CT", main_rows[-1]])))
+    g("checkout", "-q", "main")
+    cases.append(("sabotage S-42: taking main in drops main's row -> problem on the branch",
+                  take_main("s42drop", main_rows[:-1] + ["S42-B own row of this CT"])))
+    g("checkout", "-q", "main")
+    cases.append(("sabotage S-42: taking main in drops the branch's own row -> problem on the branch",
+                  take_main("s42dropown", main_rows)))
+    g("checkout", "-q", "-b", "s42side", own)            # a merge of two side branches: neither parent is on main's line
+    append(APPROVALS, "S42-D second own row")
+    commit("second own row")
+    g("checkout", "-q", "-b", "s42side2", own)
+    append(APPROVALS, "S42-E a colleague's row")
+    commit("a colleague's row")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "s42side", who=DEV)
+    except subprocess.CalledProcessError:
+        pass
+    side_rows = [l for l in get(APPROVALS).split("\n") if l.strip() and not l.startswith(("<<<", "===", ">>>"))]
+    put(APPROVALS, "\n".join(r for r in side_rows if r != "S42-E a colleague's row")
+        .replace("S42-D second own row", "S42-D second own row\nS42-E a colleague's row") + "\n")
+    commit("merge s42side, the other branch's row placed above this branch's own row", who=DEV)
+    cases.append(("sabotage S-42: a merge of two side branches keeps its FIRST parent as the base (the other branch's row "
+                  "above this branch's own row -> problem)", bool(append_only_problems(root, "HEAD"))))
+    g("checkout", "-q", "main")
+    m_other, ok_merge = g("rev-parse", "HEAD").strip(), g("rev-parse", "s42ok").strip()
+    # independent review F-4a/F-2: the cached answer is keyed by the main it was measured against
+    with_main, with_old = (append_only_problems(root, ok_merge, APPROVALS, m_other),
+                           append_only_problems(root, ok_merge, APPROVALS, s42_start))
+    cases.append(("S-42 (review F-4a): the same full commit measured against two mains -> two answers (main is in the "
+                  "cache key); against the older main the branch merge is a problem that says 'git fetch' (F-2)",
+                  with_main == [] and len(with_old) == 1 and "git fetch" in with_old[0]))
+    # F-4c: origin/main wins over main; a stale origin/main is read, and named
+    g("update-ref", "refs/remotes/origin/main", s42_start)
+    stale = append_only_problems(root, "s42ok")
+    g("update-ref", "-d", "refs/remotes/origin/main")
+    cases.append(("S-42 (review F-4c): a stale origin/main is the main line read (before main) -> problem naming 'git fetch'",
+                  len(stale) == 1 and "git fetch" in stale[0]))
+    # F-1: GitHub not measurable -> the branch merge is not relaxed (fail-closed)
+    def no_github(root_, merge_):
+        raise Unreadable("ağ yok (test)")
+    globals()["_PR_SOURCE"] = no_github
+    blind = append_only_problems(root, "s42ok", APPROVALS, m_other)
+    globals()["_PR_SOURCE"] = _test_pr
+    cases.append(("sabotage S-42 (review F-1): GitHub not measurable -> the branch merge keeps its first parent, problem",
+                  len(blind) == 1 and "GitHub'a sorulamadı" in blind[0]))
+    # F-4e: a pull request merged ON main that puts its branch row above main's newer row -> problem, as before
+    g("checkout", "-q", "-b", "e42", m_other)
+    append(APPROVALS, "E42-1 branch row")
+    commit("e42 row")
+    g("checkout", "-q", "main")
+    append(APPROVALS, "E42-2 main's newer row")
+    commit("main row", who=LEAD)
+    e_rows = [l for l in get(APPROVALS).split("\n") if l.strip()]
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "e42", who=LEAD)
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, "\n".join(e_rows[:-1] + ["E42-1 branch row", e_rows[-1]]) + "\n")
+    commit("Merge e42", who=LEAD)
+    cases.append(("sabotage S-42 (review F-4e): a merge on main puts the branch row above main's newer row -> problem",
+                  bool(append_only_problems(root, "HEAD"))))
+    # F-1: a pull request's merge that broke the order on main is not forgiven when main is later fast-forwarded to a
+    # branch that took main in (foxtrot): GitHub says it is a pull request's merge commit
+    g("reset", "-q", "--hard", m_other)
+    g("checkout", "-q", "-b", "fx", m_other)
+    append(APPROVALS, "FX-x1 branch row")
+    commit("x1")
+    g("checkout", "-q", "main")
+    append(APPROVALS, "FX-c1 main row")
+    commit("c1 on main", who=LEAD)
+    fx_rows = [l for l in get(APPROVALS).split("\n") if l.strip()]
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "fx", who=LEAD)
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, "\n".join(fx_rows[:-1] + ["FX-x1 branch row", fx_rows[-1]]) + "\n")
+    commit("Merge fx", who=LEAD)
+    flagged_before = bool(append_only_problems(root, "HEAD"))
+    g("checkout", "-q", "fx")
+    append(APPROVALS, "FX-x2 branch row")
+    commit("x2")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "main", who=DEV)
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, "\n".join(fx_rows[:-1] + ["FX-x1 branch row", "FX-x2 branch row", fx_rows[-1]]) + "\n")
+    commit("merge main into fx", who=DEV)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--ff-only", "fx")
+    after = append_only_problems(root, "HEAD")
+    cases.append(("sabotage S-42 (review F-1): a pull request's merge that broke the order stays a problem after main is "
+                  "fast-forwarded to a branch that took main in", flagged_before and any("PR #" in l for l in after)))
+    # F-4d: the same rule on reviews.tsv
+    g("reset", "-q", "--hard", m_other)
+    g("checkout", "-q", "-b", "r42own", s42_start)
+    append(REVIEWS, "R42-B own review row")
+    commit("own review row")
+    r_own = g("rev-parse", "HEAD").strip()
+    g("checkout", "-q", "main")
+    via_branch("r42other", lambda: append(REVIEWS, "R42-C another CT's review row"))
+    r_rows = [l for l in get(REVIEWS).split("\n") if l.strip()]
+    g("checkout", "-q", "-b", "r42ok", r_own)
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", "main", who=DEV)
+    except subprocess.CalledProcessError:
+        pass
+    put(REVIEWS, "\n".join(r_rows + ["R42-B own review row"]) + "\n")
+    commit("merge main into r42ok", who=DEV)
+    cases.append(("S-42 (review F-4d): reviews.tsv — the CT branch takes main in, own review row below -> append only",
+                  not append_only_problems(root, "HEAD", REVIEWS)))
+    g("checkout", "-q", "main")
+    g("reset", "-q", "--hard", s42_start)
     # Codex K3: a shallow clone is refused (cached history answers could change as it deepens)
     stmp = tempfile.TemporaryDirectory()
     shallow = os.path.join(stmp.name, "s")
