@@ -79,7 +79,7 @@ Tedarikçi master + onboarding (KYC / sanctions / doküman / onay) SoR'u. Hedef 
 - `services/Diten.ProcurementService/src/Diten.ProcurementService.Application/Features/Supplier/**`
 - `services/Diten.ProcurementService/src/Diten.ProcurementService.Domain/**` (Supplier, OnboardingCase entities)
 - `services/Diten.ProcurementService/src/Diten.ProcurementService.Persistence/**` (repositories, Mongo index config, `supplier_masters` / `supplier_company_relationships` koleksiyonları ve göç işi — DL-1)
-- DL-4 yalnız: Procurement içindeki beş tedarikçi doğrulama noktası, yalnız ilişki uygunluğu çağrısı için (K-7 sahip kararıyla bu WP'de; başka değişiklik yok):
+- DL-4 yalnız: Procurement içindeki beş tedarikçi doğrulama noktası, yalnız "Blocked / OnHold tedarikçiye yeni işlem yok" kontrolü için (K-7; XMC-001 sahip onayı 2026-10-23, MOD-0141/0143/0144/0145; başka davranış değişmez):
   `services/Diten.ProcurementService/src/Diten.ProcurementService.Application/Features/PurchaseOrder/Handlers/CommandHandlers/CreatePurchaseOrderHandler.cs` (MOD-0141),
   `…/Features/InvoiceMatch/Handlers/CommandHandlers/CaptureInvoiceHandler.cs` (MOD-0143),
   `…/Features/Sourcing/Handlers/CommandHandlers/CreateRfxEventHandler.cs` + `SubmitBidHandler.cs` (MOD-0145),
@@ -97,7 +97,7 @@ Tedarikçi master + onboarding (KYC / sanctions / doküman / onay) SoR'u. Hedef 
 ## 7. Dependencies
 - **Backbone:** JWT/RBAC (MOD-0018), Audit (MOD-0021), Workflow/Approvals (MOD-0023, onboarding onayı), Evidence/Docs (MOD-0029/0031, doküman referansı), Notification (MOD-0027).
 - **Consumed contracts:** yok (SUPPLIER upstream master; ürün/tedarikçi consume etmez — bu modül supplier'ın kendisidir).
-- **Downstream consumers:** MOD-0141 PO (`supplierId`), MOD-0143 Invoice-Match, MOD-0145 Sourcing (`invitedSupplierIds`/`bid.supplierId`), MOD-0144 Contracting, MVP-6 0147/0148. Uygunluk tanımı (hepsi için): "(kiracı, şirket, kod) için **aktif ilişki** var mı?" — MVP-6 DC-02 "olumlu Tenant+LE uygunluğu" bu sonuçtur. Procurement içi beş nokta DL-4'te bağlanır; MVP-6 (0147/0148) ve Inventory tüketicilerine sahip entegrasyon aşamasında bildirir (bu pack onların kodunu/paketini değiştirmez, XMC-001).
+- **Downstream consumers:** MOD-0141 PO (`supplierId`), MOD-0143 Invoice-Match, MOD-0145 Sourcing (`invitedSupplierIds`/`bid.supplierId`), MOD-0144 Contracting, MVP-6 0147/0148. Uygunluk tanımı (hepsi için): "(kiracı, şirket, kod) için **aktif ilişki** var mı?" — MVP-6 DC-02 "olumlu Tenant+LE uygunluğu" bu sonuçtur; MVP-6 okuyucusu 1.3.0 sözleşmesiyle yazılır. Procurement içi beş noktada DL-4 yalnız Blocked / OnHold reddini ekler; varlık denetimi bugünkü gibi kalır (şirketle ilişki yoksa bulunamaz — bugünkü şirket bazlı kayıtla aynı sonuç); MVP-6 (0147/0148) ve Inventory tüketicilerine sahip entegrasyon aşamasında bildirir (bu pack onların kodunu/paketini değiştirmez, XMC-001).
 - **Denetim altyapısı (AUD-001):** DL-2'deki yeni yazma komutları BL-501 `Diten.BuildingBlocks.CentralAudit` iletimiyle denetlenir; iletim MVP-1 dalıyla main'e gelir. **DL-2 bu gelmeden başlamaz** (K-4). Bugün servis defterinde (`tests/architecture/audit-ledger/Diten.ProcurementService.md`) kabul edilmiş iz yok; Create/Update/Delete/BulkDelete "bilinen borç".
 
 ## 8. Runtime Constraints
@@ -180,8 +180,8 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 ## 17. Test Expectations
 - Unit: validator (duplicate taxId, missing name), handler (create/update/onboarding).
 - Integration: tenant isolation (cross-LE 404), soft-delete, idempotency replay (duplicate side-effect yok), concurrency 409.
-- Integration (2026-10-21 değişikliği; gerçek replica set, 27017–27021 ve ≥49152 dışında geçici Mongo): birleştirme kuralı, vergi no normalizasyonu, farklı ülke aynı no, kod çakışması, idempotent ikinci koşu, verify sayımı, geri alma (DL-1); şirket A/B ilişki izolasyonu, kiracı geneli 409 + mevcut kod, eski kod çözümü, izinsiz kiracı geneli arama 403 (DL-2); her tüketicide ilişkisiz şirket 404 ve Blocked reddi (DL-4).
-- Sabotaj (üretim kodunda, guard kanıtı): birleştirme anahtarından Country çıkarılınca farklı-ülke testi kırmızı; idempotency kontrolü kaldırılınca ikinci koşu testi kırmızı; ilişki sorgusundan `LegalEntityId` kaldırılınca izolasyon testi kırmızı; legacy kod çözümü kaldırılınca eski PO kodu testi kırmızı; bir dilden RESX anahtarı silinince parite testi kırmızı; uygunluk kontrolü atlanınca tüketici testleri kırmızı.
+- Integration (2026-10-21 değişikliği; gerçek replica set, 27017–27021 ve ≥49152 dışında geçici Mongo): birleştirme kuralı, vergi no normalizasyonu, farklı ülke aynı no, kod çakışması, idempotent ikinci koşu, verify sayımı, geri alma (DL-1); şirket A/B ilişki izolasyonu, kiracı geneli 409 + mevcut kod, eski kod çözümü, izinsiz kiracı geneli arama 403 (DL-2); her tüketicide ilişkisiz şirket 404 (bugünkü davranış, değişmedi) ve Blocked / OnHold reddi (DL-4).
+- Sabotaj (üretim kodunda, guard kanıtı): birleştirme anahtarından Country çıkarılınca farklı-ülke testi kırmızı; idempotency kontrolü kaldırılınca ikinci koşu testi kırmızı; ilişki sorgusundan `LegalEntityId` kaldırılınca izolasyon testi kırmızı; legacy kod çözümü kaldırılınca eski PO kodu testi kırmızı; bir dilden RESX anahtarı silinince parite testi kırmızı; Blocked / OnHold kontrolü atlanınca tüketici testleri kırmızı.
 - Contract: `supplier.openapi.yaml` mock (Prism) ile consumer slice uyumu.
 - Frontend: browser smoke + DataTable verifier PASS.
 - Build: ProcurementService + frontend + gateway 0-error.
@@ -198,7 +198,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [ ] Acceptance test edilebilir + G2A zincirinde supplier upstream rolü
 - [ ] Test expectations build/verifier/RESX/smoke/contract-mock kapsıyor
 - [x] DCP-010 approved (Ali, 2026-09-16) + bu pack ready-for-dev onayı (kod kapısı AÇIK)
-- [ ] 2026-10-21 değişikliği: bu sürümün CT-APR-02 bağımsız incelemesi (`reviews.tsv`) + CT-APR-01 onay satırı (`approvals.tsv`, yüksek risk, paketi yazmamış `high: evet` onaylayıcı — K-10); bu olmadan değişen bölümlerin kodu başlamaz
+- [ ] 2026-10-21 değişikliği: bu sürümün CT-APR-02 bağımsız incelemesi (`reviews.tsv`) + CT-APR-01 onay satırı (`approvals.tsv`, yüksek risk, paketi yazmamış `high: evet` onaylayıcı — K-10: Beste, `bestepullukcu-alt`; CT-APR-02 incelemesi MVP-1 Control Tower); bu olmadan değişen bölümlerin kodu başlamaz
 - [ ] DL-2 öncesi: BL-501 `Diten.BuildingBlocks.CentralAudit` MVP-1 ile main'de (K-4) + §21 "Audited Events" yazılı
 
 ## 19. Implementation Notes
@@ -206,8 +206,8 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 
 **2026-10-21 — kiracıda tek tedarikçi, şirket bazında ilişki (WP-MVP2-SUPPLIER-TENANT-01).**
 - Kaynak: `docs/roadmap/plans/mvp2-supplier-tenant-01/PACK-CHANGE-PROPOSAL.md` (hedef model §1, göç §2, sözleşme etkisi §3, dilimler §4, sahip kararları §5a); ölçüm `docs/records/audits/2026-10/mvp2-supplier-tenant-01/MEASUREMENT.md`. Emsal: MOD-0290 kalem ana kaydı (kiracı geneli ana veri, şirket bazında hareket).
-- Sahip kararları (2026-10-21): K-1 ortak alanlar `procurement.suppliers.master.update` · K-2 tekillik kiracı + ülke + normalize vergi no · K-3 tarama sonucu tedarikçide, şirket istisnası ilişkide (`ScreeningOverride`) · K-4 istisna gerekmez, yeni yazma komutları BL-501 `Diten.BuildingBlocks.CentralAudit` ile denetlenir (MVP-1 main'e girince; DL-2 o zamana kadar başlamaz) · K-5 eski kodlar ilişkide takma ad, geçmiş belgeler yeniden yazılmaz · K-6 başka şirkette aynı vergi no → 409 + mevcut kod + "bu şirkete bağla", uyumluluk anahtarı yok · K-7 Blocked/OnHold ilişkiye yeni işlem reddi (Procurement içi beş nokta bu WP'de) · K-8 ilişkide `PaymentTermsCode`, banka bilgisi Finance'ta · K-9 karar ADR'ye yazılır · K-10 pack CT-APR-01'e göre (yüksek risk) paketi yazmamış onaylayıcı tarafından onaylanır.
-- **ADR (K-9):** `docs/records/decisions/2026-10/` altında, yönetimin karar metni (MVP-6 plan v10.0, soru 4 — repoda yok) sahipten gelince yazılır ve ona atıf yapar; `records/` sonradan düzeltilmez.
+- Sahip kararları (2026-10-21): K-1 ortak alanlar `procurement.suppliers.master.update` · K-2 tekillik kiracı + ülke + normalize vergi no · K-3 tarama sonucu tedarikçide, şirket istisnası ilişkide (`ScreeningOverride`) · K-4 istisna gerekmez, yeni yazma komutları BL-501 `Diten.BuildingBlocks.CentralAudit` ile denetlenir (MVP-1 main'e girince; DL-2 o zamana kadar başlamaz) · K-5 eski kodlar ilişkide takma ad, geçmiş belgeler yeniden yazılmaz · K-6 başka şirkette aynı vergi no → 409 + mevcut kod + "bu şirkete bağla", uyumluluk anahtarı yok · K-7 Blocked/OnHold ilişkiye yeni işlem reddi (Procurement içi beş nokta bu WP'de; 2026-10-23: kapsam yalnız bu kontrol); Blocked/OnHold şirkette görünür ve yönetilebilir kalır, yeni işleme yalnız Active girer (2026-10-23); `Suppliers:Model` geri alma anahtarı DL-1'de kalır (2026-10-23) · K-8 ilişkide `PaymentTermsCode`, banka bilgisi Finance'ta · K-9 karar ADR'ye yazılır · K-10 pack CT-APR-01'e göre (yüksek risk) paketi yazmamış onaylayıcı tarafından onaylanır — onaylayıcı Beste (`bestepullukcu-alt`, K2, `high: evet`; 2026-10-23).
+- **ADR (K-9):** `docs/records/decisions/2026-10/mvp2-supplier-tenant-master-management-decision-01.md` — Natig (yönetim) kararı 2026-10-21; repodaki kaynak `docs/roadmap/plans/mvp6-development-plan-v10.0.md` C1 satırı (PR #177).
 - **Mevcut veri:** tedarikçi modülü canlıda kullanılmadı, gerçek veri yok. Göç işi (dry-run / apply / verify / geri alma) yine yazılır, yalnız geliştirme/test verisi içindir; sayım sorgusu (öneri §2.3a) koşulmaz.
 - **§21 "Audited Events"** ve `execution/approvals/approvals.tsv` / `reviews.tsv` satırları bu değişiklikte yazılmadı; ilk yazma komutu değişikliğiyle (DL-2) eklenir (K-4; `module-pack-standard.md` Bölüm 10.1).
 - **Dış konu — Inventory karantina:** `quarantine.openapi.yaml` 1.2.0 `DecisionDisposition.SupplierId` **Guid/uuid** (`QuarantineEntities.cs:177`), Procurement kodu ise `SUP-…` metni — bugünkü tip uyuşmazlığı, bu değişiklikten bağımsız. Sahibi Inventory; entegrasyonda ölçülüp düzeltilir. **Bu pack değiştirmez** (XMC-001).
@@ -217,7 +217,6 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - Supplier performance/risk (0147) ve portal (0148) → MVP-6 (bu modül değil).
 - Supplier bank/payment detayları → Finance/Treasury sınırı (EA-TBD). 2026-10-21: ödeme koşulu **kodu** ilişkiye alındı (K-8); banka bilgisi Finance/Treasury'de kalır; ödeme koşulu ana tablosu sonra.
 - Dış ERP supplier senkron adapter (SourceSystem/ExternalRef; DEC-INV-19 deseni) → follow-up.
-- ADR (K-9) — yönetim karar metni gelince `docs/records/decisions/2026-10/`.
 - Vergi no'suz kayıtların elle birleştirilmesi (göç bunları birleştirmez) → ayrı iş.
 - Inventory karantina `supplierId` uuid / `SUP-` kod uyuşmazlığı → Inventory sahibi (XMC-001).
 
@@ -228,9 +227,9 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 | DL-1 | S1 model + göç: iki varlık, indeksler, göç işi (dry-run / apply / verify / geri alma) | Entity Fields, Validation Rules, Runtime Constraints, Repo Scope |
 | DL-2 | S2 komutlar ve sorgular: iki repository, ilişki üzerinden okuma, bağla-ya-da-oluştur, ortak alan ve ilişki komutları, uygunluk sorusu | Owned Objects, Runtime Constraints, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision |
 | DL-3 | S3 ekranlar (7 dil): şirketin tedarikçileri, "mevcut tedarikçi bulundu → bağla", ilişki paneli, ortak alanlar yalnız yetkiliye | Frontend File Contract, Layout & Shell Contract, Acceptance Criteria |
-| DL-4 | S4 tüketiciler: Procurement içi beş doğrulama noktası ilişki uygunluğuna bağlanır, Blocked / OnHold reddi | Dependencies, Runtime Constraints, Test Expectations |
+| DL-4 | S4 tüketiciler: Procurement içi beş doğrulama noktasına yalnız Blocked / OnHold reddi eklenir | Dependencies, Runtime Constraints, Test Expectations |
 
 - DL-1 notu: model + göç işi `dry-run` / `apply` / `verify` / geri alma kipleriyle yazılır; **yalnız geliştirme/test verisi** — canlıda tedarikçi verisi yok.
 - DL-2 notu: yeni yazma komutları BL-501 `Diten.BuildingBlocks.CentralAudit` ile denetlenir; **MVP-1 main'e girmeden başlamaz** (K-4). §21 "Audited Events" ve onay/inceleme satırları bu dilimle eklenir.
-- DL-4 notu: yalnız Procurement içi tüketiciler (PO, fatura, RFx/teklif, sözleşme); MVP-6 ve Inventory'ye sahip entegrasyonda bildirir.
+- DL-4 notu: yalnız Procurement içi tüketiciler (PO, fatura, RFx/teklif, sözleşme) ve yalnız "bloke tedarikçiye yeni işlem yok" kontrolü; başka davranış değişmez (XMC-001 onayı 2026-10-23). MVP-6 ve Inventory'ye sahip entegrasyonda bildirir.
 - Her dilim ayrı commit, ayrı PR; push öncesi `origin/main` merge + ölçüm yeniden (main'e göre yeni kırmızı yok).

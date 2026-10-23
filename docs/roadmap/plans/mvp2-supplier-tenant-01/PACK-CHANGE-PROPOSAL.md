@@ -3,8 +3,9 @@
 - WP: WP-MVP2-SUPPLIER-TENANT-01 · aşama P0 (ölçüm + öneri; **kod yok**) · tarih 2026-10-21
 - Dal: `feature/mvp2/supplier-tenant-01` · taban `origin/main` `a00538e17`
 - Ölçüm: `docs/records/audits/2026-10/mvp2-supplier-tenant-01/MEASUREMENT.md` (dosya:satır kanıtları orada)
-- Durum: **SAHİP KARARLARI ALINDI (2026-10-21, §5a)** — paket değişikliği taslağı yazılır, CT-APR-01 onayı beklenir.
-  Onaydan sonra S1 başlar. ADR (K-9) yönetimin karar metni gelince yazılır.
+- Durum: **PAKET DEĞİŞİKLİĞİ YAZILDI, İNCELEME VE ONAY BEKLİYOR (2026-10-23, §5a)** — MOD-0140 değişikliği
+  CT-APR-02 incelemesi (MVP-1 Control Tower) ve CT-APR-01 onayı (Beste) bekliyor; onaydan sonra S1 başlar. ADR (K-9)
+  yazıldı: `docs/records/decisions/2026-10/mvp2-supplier-tenant-master-management-decision-01.md`.
 
 ## 0. Neden
 
@@ -206,8 +207,13 @@ paketleri. Onaydan sonra S1'den önce yazılacaklar:
 | K-6 | **Kabul.** Başka şirkette aynı vergi no → 409 + mevcut kod + "bu şirkete bağla" | eski davranışı koruyan anahtar yok |
 | K-7 | **Kabul.** Bloke / beklemedeki tedarikçiye yeni işlem reddedilir | Procurement içindeki beş nokta bu WP'de; MVP-6 ve Inventory sahiplerine entegrasyon aşamasında sahip iletir |
 | K-8 | **Kabul.** İlişkide ödeme koşulu kodu; banka bilgisi Finance'ta | |
-| K-9 | **Kabul.** Karar ADR'ye yazılır; ADR yönetimin karar metnine atıf yapar | metin sahipten gelecek; ADR o gelince yazılır (`records/` sonradan düzeltilmez) |
-| K-10 | Paketi CT-APR-01'e göre onaylayıcı onaylar | onaylayıcının adı bildirilmedi (mesajda yer tutucu) |
+| K-9 | **Kabul.** Karar ADR'ye yazılır; ADR yönetimin karar metnine atıf yapar | 2026-10-23: metin geldi (Natig, 2026-10-21; plan v10.0 C1, PR #177); ADR yazıldı |
+| K-10 | Paketi CT-APR-01'e göre onaylayıcı onaylar | 2026-10-23: onaylayıcı Beste (`bestepullukcu-alt`, K2, `high: evet`); CT-APR-02 incelemesi MVP-1 Control Tower |
+
+**2026-10-23 ek kararlar:** S4'teki beş doğrulama noktası (MOD-0141/0143/0144/0145, XMC-001) onaylandı — kapsam yalnız
+"bloke tedarikçiye yeni işlem yok" kontrolü, başka davranış değişmez. Bloke / beklemedeki tedarikçi şirkette görünür ve
+yönetilebilir kalır; yeni işleme yalnız aktif ilişki girer. `Suppliers:Model` geri alma anahtarı S1'de kalır. BL-501
+main'de; S2'nin önkoşulu sağlandı. MVP-6 (DC-02) uygunluk okuyucusu 1.3.0 sözleşmesi gelince yazılacak.
 
 **Mevcut veri:** tedarikçi modülü canlıda kullanılmadı, gerçek veri yok; sayım sorgusu (§2.3a) koşulmayacak. Göç işi
 (deneme / uygulama / doğrulama, geri alma) yine yazılır ama yalnız geliştirme / test verisi içindir; gerçek veride
