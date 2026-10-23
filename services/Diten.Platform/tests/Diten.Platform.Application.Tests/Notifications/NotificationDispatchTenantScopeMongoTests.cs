@@ -30,6 +30,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// window or by its last retry told nobody. Measured here with the REAL meeting / attendee / notification repositories
 /// over a REAL MongoDB and an UNRESOLVED TenantContext (not the harness's ready-made one), for two tenants at once.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class NotificationDispatchTenantScopeMongoTests : IAsyncLifetime
 {
     private const int MaxRetryCount = 3;

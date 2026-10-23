@@ -15,6 +15,7 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
  * and every one of them was invisible in the test that failed: the message named a ping, or a database belonging
  * to another class. These tests name the rule that was broken instead.
  */
+[Trait("Category", "Mongo")]
 public sealed class BusinessReferenceDataTestHarnessScopeTests
 {
     private const string Scope = "harness_scope_proof";

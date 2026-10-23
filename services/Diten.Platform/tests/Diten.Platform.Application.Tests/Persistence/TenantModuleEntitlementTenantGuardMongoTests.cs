@@ -20,6 +20,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// nothing.</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TenantModuleEntitlementTenantGuardMongoTests
 {
     private static readonly Guid Ours = Guid.Parse("60060060-0000-4000-8000-0000000000a1");

@@ -24,6 +24,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// kinds the delete, comment-edit and attachment handlers ask for).</item>
 /// </list>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed partial class TaskRequestHttpMongoTests
 {
     // ── blocker 1 — the write is about the document the decision was made on ────────────────────────────────────────
