@@ -650,3 +650,29 @@ KORU/YAPMA: MOD-0168 görünürlük ve SoD kuralları aynı; PDF / e-posta içer
 DOĞRULA: CRM: ad çözücü toplu ve null davranışı; aylık özet (karışık para birimi, adetli sipariş hariç, boş ay); approverPositionName gönderimde yazılıyor, eski siparişte null. Web (xUnit + RunNode): kur listesi adı / "—"; onay ekranı eğilimi CRM alanından (kaynak taramasında formül yok); pozisyon adı / kod yedeği; ortak sekme kuralı tek yerde, pricing.css'te kopya yok. Sabotajlar (en az 4): ad çözücüyü satır başına yap ya da kimliği göster; adetli siparişi etkin % hesabına kat; approverPositionName'i yazma; sekme kuralını ortak dosyadan sil — her biri kırmızı. CRM Application tam takım + Diten.Web.Tests tam takım (taban aynı baş; bilinen kırmızılar known_failures.py / §37 FIX-a notu).
 Commit: "feat(crm): WP-VW-W6 W6-FIX-d — FX rate changed-by names, pharmacy six-month effective discount trend, approver position name; shared tab card keeps label case" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W6-FIX-d E2 ACCEPTED (2026-10-23)
+
+- **Alındı:** `wp/vw-w6-fixd` 1b98cc5e3 → test dalına `d2952ab45` (29 dosya, yalnız CRM + Web; Platform / Auth / MDM'e dokunulmadı).
+- **G-3:** kur yanıtında `createdByName` / `updatedByName`.
+  - Sayfanın bütün kimlikleri mevcut ad çözücüyle tek çağrıda çözülüyor.
+  - Çözülemeyen kimlik boş kalıyor, kimlik hiçbir yerde görünmüyor.
+  - Ad servisi hatasında liste adsız ama okunur geliyor.
+- **V-9:** `pharmacy-history` yanıtına sipariş başına `effectiveDiscountPct` ve `months[]` eklendi.
+  - `months[]`: altı takvim ayı (UTC), en eskisi önce, boş ay dahil; her ay için sipariş sayısı, kutu, para birimi başına ayrı brüt tutar, etkin %.
+  - Hesap tamamen CRM'de; Web'deki eski ay hesabı silindi.
+- **V-10:** `approverPositionName` gönderim anında anlık görüntüye yazılıyor; eski siparişte null.
+- **FU-TABCARD-TITLECASE:** kural ortak sekme kartına bağlandı.
+  - `backbone-custom.css` içinde `diten-tabcard` işaret sınıfı; `_TabCard` ve VisitFrequencyPolicies kartı bu sınıfı taşıyor.
+  - `pricing.css`'teki kopya silindi.
+  - Altı ekranın etiketleri 7 dilde cümle düzeninde.
+- **CT kararları (yorum onayı):**
+  - (a) Etkin % ağırlığı **yerel para birimindeki net** tutar: liste para birimi yerelse net, değilse net × siparişin kendi kur görüntüsü. Kur görüntüsü olmayan yabancı para birimli sipariş % hesabına girmez ama sipariş sayısına girer.
+  - (b) **İptal edilen ve reddedilen** siparişler aylık özete girmez (yerine getirilmedi).
+  - (c) **Görev Merkezi** de `.wcn-tabs` kullanıyor ama ona dokunulmadı (XMC-001). Kural oraya uygulansa fr / es / ru etiketlerinin büyük harf düzeni değişirdi → **FU-WCN-TABS-TITLECASE** (Görev Merkezi sahibinin kararı).
+- **Testler (CT, aynı baş):**
+  - CRM 3270 başarılı / 1 kırmızı (bilinen `VisitPlanningFix2`).
+  - Web 2851 başarılı / 3 kırmızı (bilinen `ShipmentDetailsDateNode` ×2, `WorkCenterMenuWithoutPermissions`).
+  - Ajanın 8 bozma denemesinin hepsi kırmızı.
+- **CT bozma denemesi:** iptal ve reddedilen siparişler aylık özete katıldı → `W6FixdHistoryAndApproverTests.H1_six_months_…_cancelled_outside_empty_month_present` KIRMIZI. Dosya geri alındı (md5 aynı).
+- **Canlı E4:** yapılmadı. Onay ekranı eğilimi, kur listesinde ad ve sekme etiketleri bir sonraki yerel turda görülecek.
