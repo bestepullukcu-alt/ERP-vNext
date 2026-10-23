@@ -142,7 +142,7 @@ kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" g
   "quantity": "40.000",
   "toLocationId": "string",
   "deviationReason": "string",
-  "status": "Pending | Posted | Refused",
+  "status": "Pending | Posted | Refused | IntegrityError",
   "postingKey": "wms:put:{taskId}:1",
   "transactionDate": "date-time", "postingDate": "date-time",
   "serialIds": ["string"],
@@ -159,8 +159,11 @@ kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" g
 
 - `transactionDate` / `postingDate` işlem 1'de bir kez yazılır, her denemede aynen gönderilir (ledger idempotency izi tarihleri kapsar).
 - `serialIds` yalnız seri kontrollü SKU'da: kaynak kovanın bütün serileri sistemce okunur (istemci göndermez); adet = miktar (F-1).
-- INVENTORY cevabı: 2xx → `Posted`; 422 ve diğer 4xx (400 / 403 / 404 / 409) → kalıcı `Refused` (`error.status` saklanır); yalnız
-  503 / zaman aşımı / ağ hatası → `Pending` (F-2). `resolution` yalnız `Refused` onayda (F-4).
+- INVENTORY cevabı: 2xx → `Posted`; **400 `IDEMPOTENCY_KEY_REUSED` → `IntegrityError`** (bütünlük hatası; inceleme 02 F-1); 422 ve
+  diğer 4xx (400 / 403 / 404 / 409) → kalıcı `Refused` (`error.status` saklanır); yalnız 503 / zaman aşımı / ağ hatası → `Pending` (F-2).
+  `resolution` yalnız `Refused` onayda (F-4); `IntegrityError`'da resolution kapalı.
+- `serialIds` = seri **numarası** (ledger / TRACE `NormalizeSerial` ile normalleştirir); seri okuma açık tutma / bloke serilerini dışlar
+  (MOD-0175 emsali); aynı lokasyonda aynı lot + SKU'nun AVAILABLE dışı stoğu varsa seri görevi açılmaz (inceleme 02 F-2, F-8).
 
 ### 3.3 `PutawayCandidate` (okuma — saklanmaz, INVENTORY bakiyesinden hesaplanır)
 ```json
@@ -236,7 +239,7 @@ cursor şeklini korur, §2.)
 | `POST /putaway-tasks/{taskId}/claim` | `claimPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey }` — kendine ata (atanmamış görev) | 200 + ETag | WMS_TASK_ALREADY_ASSIGNED, WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_CONFLICT |
 | `POST /putaway-tasks/bulk-assign` | `bulkAssignPutawayTasks` | `warehouse.putaway-tasks.update` | `{ idempotencyKey, assigneeUserId, items: [{ taskId, version }] }` (≤ 100) | 200 `{ results: [{ taskId, outcome: Assigned \| Conflict \| NotFound \| InvalidTransition, version? }] }` — satır başına sonuç, kısmi başarı işaretli | INVALID_REQUEST, WMS_ASSIGNEE_INVALID |
 | `POST /putaway-tasks/{taskId}/confirmations` | `confirmPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, quantity, toLocationId, deviationReason?, channel?, scanRef? }` — seri istemciden alınmaz (F-1) | 201 `WarehouseTask` (onay Posted) · 422 onay Refused (INVENTORY kodu aynen, gövde `Error` + `details.task`) · 503 onay Pending | **ön kontrol (onay kaydı açılmadan):** INVALID_REQUEST, REASON_REQUIRED, WMS_CONFLICT, WMS_NOT_ASSIGNEE (403), WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_QUANTITY_EXCEEDS_REMAINING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_SERIAL_BUCKET_CHANGED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN; **defter (Refused):** INVENTORY postMovement 4xx kodları aynen (`INSUFFICIENT_STOCK`, `LOT_RETEST_DUE`, `SERIAL_NOT_AVAILABLE`, `ITEM_NOT_ACTIVE`, …); **503 (Pending):** INVENTORY_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, LOCATION_MASTER_UNAVAILABLE |
-| `POST /putaway-tasks/{taskId}/confirmations/{seq}/retry` | `retryPutawayConfirmation` | `warehouse.putaway-tasks.confirm` | `{ idempotencyKey }` (yalnız Pending; aynı `postingKey`, aynı tarihler, aynı seriler; deneme sınırı yok, `attempts` / `lastAttemptAtUtc` döner). Önce 0178 ön kontrolleri yeniden koşar (recall, `AVAILABLE`, saklama koşulu, seri kovası) — tutmazsa onay Refused, INVENTORY çağrılmaz (F-4). Sonuç yazımı koşulludur (`status == Pending`, F-3) | 200 `WarehouseTask` | WMS_CONFIRMATION_NOT_RETRYABLE, LOT_UNDER_RECALL, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_SERIAL_BUCKET_CHANGED, + defter 4xx (Refused), 503 (Pending) |
+| `POST /putaway-tasks/{taskId}/confirmations/{seq}/retry` | `retryPutawayConfirmation` | `warehouse.putaway-tasks.confirm` | `{ idempotencyKey }` (yalnız Pending; aynı `postingKey`, aynı tarihler, aynı seriler; deneme sınırı yok, `attempts` / `lastAttemptAtUtc` döner). **Sıra (inceleme 02 F-1):** (i) önce ledger'da `postingKey` aranır (süreç içi, upstream'siz) — işlenmişse Posted, ön kontrol koşmaz; farklı parmak izi → `IntegrityError`; (ii) yalnız işlenmemişse 0178 ön kontrolleri (recall, `AVAILABLE`, saklama koşulu, seri kovası) — tutmazsa Refused, INVENTORY çağrılmaz — sonra posting. Sonuç yazımı koşulludur (`status == Pending`, F-3). Arka plan sweeper'ı yalnız (i)'yi yapar (kullanıcı token'ı yok; inceleme 02 F-5) | 200 `WarehouseTask` | WMS_POSTING_INTEGRITY_ERROR (409), WMS_CONFIRMATION_NOT_RETRYABLE, LOT_UNDER_RECALL, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_SERIAL_BUCKET_CHANGED, + defter 4xx (Refused), 503 (Pending) |
 | `POST /putaway-tasks/{taskId}/confirmations/{seq}/returned` | `markPutawayConfirmationReturned` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (10–1000) — "Geri taşındı": mal kaynağa iade edildi, hareket yok (F-4) | 200 `WarehouseTask` (`resolution: ReturnedToSource`) | REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE, WMS_NOT_ASSIGNEE |
 | `POST /putaway-tasks/{taskId}/close-short` | `closePutawayTaskShort` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (en az bir Posted onay; seri SKU'da yok) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED |
 | `POST /putaway-tasks/{taskId}/cancel` | `cancelPutawayTask` | `warehouse.putaway-tasks.cancel` | If-Match; `{ idempotencyKey, reason }` (yalnız Posted onay yokken) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING |
@@ -286,6 +289,8 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | `WMS_SERIAL_BUCKET_CHANGED` | 422 | onay ya da yeniden deneme anında kovadaki seri kümesi görev miktarından farklı (`details.expected`, `details.found`) |
 | `WMS_CONFIRMATION_NOT_RESOLVABLE` | 409 | "Geri taşındı" yalnız çözümsüz Refused onayda |
 | `WMS_LOCATION_ROLE_INHERITED_CONFLICT` | 409 | atası / alt ağacı karşı rolü taşıyan düğüme Receiving / Staging verilemez (F-13) |
+| `WMS_POSTING_INTEGRITY_ERROR` | 409 | ledger aynı `postingKey` ile farklı bir hareket işlemiş (`IDEMPOTENCY_KEY_REUSED`); onay `IntegrityError`, görev kilitli, istisna (inceleme 02 F-1) |
+| `WMS_SERIAL_BUCKET_MIXED_STATUS` | 422 | aynı lokasyonda aynı lot + SKU'nun AVAILABLE dışı stoğu var — seri görevi S1'de açılmaz / onaylanmaz (inceleme 02 F-2) |
 | S2: `WMS_ALLOCATION_FAILED` (422), `WMS_OUTBOUND_NOT_EDITABLE` (409), `WMS_PACKAGE_INCOMPLETE` (409), `UNKNOWN_OUTBOUND` (404, frozen) | | |
 
 ### 5.2 Yeniden tanımlanmayan, kullanılan kodlar
@@ -307,7 +312,8 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | `Open` / `InProgress` | `Cancelled` | cancelPutawayTask | hiç Posted onay yok, Pending yok, gerekçe (Posted varsa yalnız closePutawayTaskShort) |
 Onay: `Pending → Posted | Refused`; `Pending` yalnız `retry` ile ilerler (aynı `postingKey`, aynı tarihler) ve görevi kilitler; sonuç
 yazımı koşulludur (`status == Pending`, F-3). `Refused` → `resolution: SupersededByNewConfirmation` (aynı görevde yeni Posted onay) ya
-da `ReturnedToSource` ("Geri taşındı", hareket yok) (F-4). Durum onaylanan miktardan
+da `ReturnedToSource` ("Geri taşındı", hareket yok) (F-4). `IntegrityError` terminal-istisnadır: resolution ve görev eylemleri kapalı
+(inceleme 02 F-1). Durum onaylanan miktardan
 türetilir; `integrationFlag` ayrı rozettir. Açık görevde otomatik askı yoktur; karantina / recall kontrolü onay anındadır (M-5).
 
 ### 6.2 Outbound (S2, §2.2) ve pick görevi (S2 — putaway ile aynı makine, `Kind = Pick`).
