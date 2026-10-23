@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.SupplyChainService.Api.CentralAudit;
 using Diten.SupplyChainService.Api.Features.Loads;
 using Diten.SupplyChainService.Application.Features.Loads;
 using Diten.SupplyChainService.Persistence.Features.Loads;
@@ -163,6 +165,10 @@ builder.Services.Configure<ApiBehaviorOptions>(o => o.InvalidModelStateResponseF
     var context = c.HttpContext.RequestServices.GetRequiredService<RequestContext>();
     return new BadRequestObjectResult(ContractError.Create("INVALID_REQUEST", "Request schema validation failed.", context.CorrelationId == Guid.Empty ? Guid.NewGuid() : context.CorrelationId));
 });
+// BL-501 (WP-A1, E-2): every write command is recorded in Platform's central audit log through the shared forwarder.
+// Registered after every MediatR registration above (innermost behavior). RequireEnlistment: each command's write runs in
+// a Mongo transaction that enlists the event (CentralAuditDeclarationTests guards it), so an idempotent replay files nothing.
+builder.Services.AddCentralAudit<SupplyChainCentralAuditScope>(builder.Configuration, "Diten.SupplyChainService", options => options.RequireEnlistment = true);
 var app = builder.Build();
 app.UseAuthentication();
 app.UseWhen(CarrierContextMiddleware.IsCarrierPath, branch => branch.UseMiddleware<CarrierContextMiddleware>());
@@ -193,6 +199,7 @@ app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !Load
     branch => branch.UseMiddleware<ShipmentContextMiddleware>());
 app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183", warehouseIntake = "unimplemented", outboxTransport = "integration-owned" })).AllowAnonymous();
+app.MapHealthChecks("/health/central-audit").AllowAnonymous();
 app.MapControllers();
 app.Run();
 public partial class Program { }

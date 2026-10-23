@@ -13,6 +13,7 @@
 | `CentralAuditBehavior` | `Diten.BuildingBlocks.CentralAudit` | İşaretli komut **başarılı** biterse 1 olay; başarısızsa 0. Gövde kopyalanmaz. |
 | `central_audit_outbox` | servisin KENDİ veritabanı | Kalıcı outbox. Satır asla silinmez (Delivered / Rejected / Abandoned kalır). |
 | `CentralAuditTransaction.EnlistAsync(s, ct: ct)` | aynı | Olayı komutun Mongo işlemine yazar: veriyle birlikte commit olur ya da hiç (K2). |
+| `CentralAuditOutboxInitializerHostedService` | aynı | Başlangıçta, istek kabulünden ÖNCE ve işlem dışında outbox koleksiyonunu + index'lerini kurar (idempotent, `NamespaceExists` yutulur). Boş veritabanında ilk komut işleminin koleksiyonu örtük yaratıp dispatcher'ın `createIndexes`'i ile çakışmasını önler (FU-BL501-OUTBOX-RACE). `RequireEnlistment` varsa başarısızlıkta servis başlamaz. Servisin kendi ön-yaratması gerekmez. |
 | `CentralAuditDispatcher` | aynı | `POST /api/internal/audit/append`, `X-Internal-Api-Key`, `eventId` ile tekil; geri çekilmeli yeniden deneme. |
 | `/health/central-audit` | servis eşler | Adres/anahtar yoksa, bekleyen satır eskiyse ya da Platform reddettiyse **Degraded**. |
 

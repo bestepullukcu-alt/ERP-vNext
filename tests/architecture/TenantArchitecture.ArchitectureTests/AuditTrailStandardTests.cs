@@ -85,6 +85,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
         ["Diten.SafetyStockService"] = new(Debt: 0, Exceptions: 0),
+        // measured 2026-10-21 — WP-A1 (MVP-6, E-2 / BL-501): all 17 write commands audited through supplychain-merkezi-iletim
+        // (shared forwarder, written in the command's own transaction), no debt, no exception. CT decision: CT-DECISIONS.md.
+        ["Diten.SupplyChainService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
         ["Diten.TalentEcosystemService"] = new(Debt: 106, Exceptions: 0),
     };
@@ -128,6 +131,8 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // Owner decision 2026-10-14 (A) / CT work package WP-MVP1-AUDIT1: BL-501, the shared forwarder of rule §5 K4
         // (Diten.BuildingBlocks.CentralAudit), path b. Inventory is the first service on it: "komutlar yol b ile denetleniyor".
         ("Diten.InventoryService", "inventory-merkezi-iletim", "b", "ICentralAuditDeclaration"),
+        // CT decision 2026-10-21 (WP-A1, MVP-6; owner decision E-2 2026-10-21): SupplyChain on the same shared forwarder, path b.
+        ("Diten.SupplyChainService", "supplychain-merkezi-iletim", "b", "ICentralAuditDeclaration"),
         // CT decision 2026-10-14 (WP-MVP1-AUDIT1, CT-DECISIONS.md): MOD-0022 e-signature commands write their central audit
         // intent INSIDE the business transaction; accepted as a trail, path a markers are NOT added (double record, §4.4).
         ("Diten.Platform", "esign-islem-ici-denetim", "a", "ESignatureAuditIntent.EnqueueAsync"),
