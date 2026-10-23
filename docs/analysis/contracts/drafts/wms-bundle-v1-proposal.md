@@ -121,8 +121,8 @@ Bir satır birden çok lot / staging lokasyonuyla toplanırsa: 1.0.0 `OutboundLi
   "note": "string",
   "serialControlled": false,
   "confirmations": [ TaskConfirmation ],
-  "integrationFlag": "None | PostingPending | PostingRefused",
-  "allowedActions": ["Confirm", "Claim", "Update", "Cancel", "CloseShort", "Retry"],
+  "integrationFlag": "None | PostingPending | PostingRefused | PostingIntegrityError",
+  "allowedActions": ["Confirm", "Claim", "Update", "Cancel", "CloseShort", "Retry", "MarkReturned", "ResolveIntegrity"],
   "disabledActions": [ { "action": "Cancel", "reasonCode": "HasPostedConfirmations" } ],
   "shortCloseReason": "string", "cancelReason": "string",
   "created": { "userId": "uuid", "name": "string", "atUtc": "date-time" },
@@ -153,7 +153,9 @@ kişinin o andaki adı; yoksa üye yazılmaz, istemci "bilinmeyen kullanıcı" g
   "channel": "Ui | Api | External",
   "scanRef": "string",
   "confirmedBy": { "userId": "uuid", "name": "string" }, "confirmedAtUtc": "date-time",
-  "attempts": 1, "lastAttemptAtUtc": "date-time"
+  "attempts": 1, "lastAttemptAtUtc": "date-time",
+  "inFlightUntilUtc": "date-time",
+  "integrityResolution": "ResolvedPosted | ResolvedRefused", "resolveReason": "string"
 }
 ```
 
@@ -187,7 +189,7 @@ PRODUCT-MASTER v1.1 `getSku.storageConditions` kopyasıdır (yalnız gösterim; 
 
 ### 3.4 `WarehouseTaskEvent`
 ```json
-{ "seq": 4, "kind": "Created | Updated | Assigned | Claimed | SuggestionApplied | ConfirmationRecorded | ConfirmationPosted | ConfirmationRefused | ConfirmationRetried | ClosedShort | Completed | Cancelled",
+{ "seq": 4, "kind": "Created | Updated | Assigned | Claimed | SuggestionApplied | ConfirmationRecorded | ConfirmationPosted | ConfirmationRefused | ConfirmationRetried | ConfirmationReconciled | ConfirmationIntegrityError | IntegrityResolved | ClosedShort | Completed | Cancelled",
   "actor": { "userId": "uuid", "name": "string" }, "system": false,
   "atUtc": "date-time", "data": { }, "correlationId": "uuid" }
 ```
@@ -233,16 +235,17 @@ cursor şeklini korur, §2.)
 |---|---|---|---|---|---|
 | `GET /putaway-candidates` | `listPutawayCandidates` | `warehouse.putaway-tasks.read` | `warehouseId?`, `skuId?`, `lotId?`, `eligible?`, `q?`, `page`, `pageSize` | 200 sayfa `PutawayCandidate` | INVALID_REQUEST, CROSS_LE_FORBIDDEN |
 | `GET /putaway-tasks` | `listPutawayTasks` | `warehouse.putaway-tasks.read` | `status*`, `warehouseId?`, `assigneeUserId?`, `priority?`, `q?` (numara / lot), `orderBy`, `page`, `pageSize` | 200 sayfa `WarehouseTask` | INVALID_REQUEST, CROSS_LE_FORBIDDEN |
-| `POST /putaway-tasks` | `createPutawayTask` | `warehouse.putaway-tasks.create` | `{ idempotencyKey, candidateKey \| (warehouseId, fromLocationId, item, lotId?, stockStatus), plannedQuantity, toLocationId?, targetSource?, assigneeUserId?, priority?, note? }` | 201 `WarehouseTask` + ETag (replay 200) | WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_SOURCE_STOCK_NOT_FOUND, WMS_SOURCE_NOT_RECEIVING, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_QUANTITY_EXCEEDS_OPEN, WMS_TARGET_NOT_ALLOWED, WMS_ASSIGNEE_INVALID, UNKNOWN_LOCATION, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_RECORD_CODE_UNAVAILABLE |
+| `POST /putaway-tasks` | `createPutawayTask` | `warehouse.putaway-tasks.create` | `{ idempotencyKey, candidateKey \| (warehouseId, fromLocationId, item, lotId?, stockStatus), plannedQuantity, toLocationId?, targetSource?, assigneeUserId?, priority?, note? }` | 201 `WarehouseTask` + ETag (replay 200) | WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_SOURCE_STOCK_NOT_FOUND, WMS_SOURCE_NOT_RECEIVING, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_QUANTITY_EXCEEDS_OPEN, WMS_TARGET_NOT_ALLOWED, WMS_ASSIGNEE_INVALID, UNKNOWN_LOCATION, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_RECORD_CODE_UNAVAILABLE, WMS_SERIAL_BUCKET_MIXED_STATUS, SKU_LEVEL_NOT_STOCKABLE, PRODUCT_MASTER_DATA_INCOMPLETE |
 | `GET /putaway-tasks/{taskId}` | `getPutawayTask` | `warehouse.putaway-tasks.read` | — | 200 + ETag | WMS_TASK_NOT_FOUND, CROSS_LE_FORBIDDEN |
-| `PUT /putaway-tasks/{taskId}` | `updatePutawayTask` | `warehouse.putaway-tasks.update` | If-Match; `{ idempotencyKey, plannedQuantity?, toLocationId?, targetSource?, assigneeUserId?, priority?, note? }` — kaynak kova alanları **kabul edilmez** (400); planned ≥ confirmed + pending | 200 + ETag | INVALID_REQUEST, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_QUANTITY_EXCEEDS_OPEN, WMS_QUANTITY_BELOW_CONFIRMED, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, LOT_UNDER_RECALL, WMS_TASK_NOT_FOUND |
-| `POST /putaway-tasks/{taskId}/claim` | `claimPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey }` — kendine ata (atanmamış görev) | 200 + ETag | WMS_TASK_ALREADY_ASSIGNED, WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_CONFLICT |
+| `PUT /putaway-tasks/{taskId}` | `updatePutawayTask` | `warehouse.putaway-tasks.update` | If-Match; `{ idempotencyKey, plannedQuantity?, toLocationId?, targetSource?, assigneeUserId?, priority?, note? }` — kaynak kova alanları **kabul edilmez** (400); planned ≥ confirmed + pending | 200 + ETag | INVALID_REQUEST, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_QUANTITY_EXCEEDS_OPEN, WMS_QUANTITY_BELOW_CONFIRMED, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, LOT_UNDER_RECALL, WMS_TASK_NOT_FOUND, WMS_POSTING_INTEGRITY_ERROR |
+| `POST /putaway-tasks/{taskId}/claim` | `claimPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey }` — kendine ata (atanmamış görev) | 200 + ETag | WMS_TASK_ALREADY_ASSIGNED, WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_CONFLICT, WMS_POSTING_INTEGRITY_ERROR |
 | `POST /putaway-tasks/bulk-assign` | `bulkAssignPutawayTasks` | `warehouse.putaway-tasks.update` | `{ idempotencyKey, assigneeUserId, items: [{ taskId, version }] }` (≤ 100) | 200 `{ results: [{ taskId, outcome: Assigned \| Conflict \| NotFound \| InvalidTransition, version? }] }` — satır başına sonuç, kısmi başarı işaretli | INVALID_REQUEST, WMS_ASSIGNEE_INVALID |
-| `POST /putaway-tasks/{taskId}/confirmations` | `confirmPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, quantity, toLocationId, deviationReason?, channel?, scanRef? }` — seri istemciden alınmaz (F-1) | 201 `WarehouseTask` (onay Posted) · 422 onay Refused (INVENTORY kodu aynen, gövde `Error` + `details.task`) · 503 onay Pending | **ön kontrol (onay kaydı açılmadan):** INVALID_REQUEST, REASON_REQUIRED, WMS_CONFLICT, WMS_NOT_ASSIGNEE (403), WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_QUANTITY_EXCEEDS_REMAINING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_SERIAL_BUCKET_CHANGED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN; **defter (Refused):** INVENTORY postMovement 4xx kodları aynen (`INSUFFICIENT_STOCK`, `LOT_RETEST_DUE`, `SERIAL_NOT_AVAILABLE`, `ITEM_NOT_ACTIVE`, …); **503 (Pending):** INVENTORY_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, LOCATION_MASTER_UNAVAILABLE |
-| `POST /putaway-tasks/{taskId}/confirmations/{seq}/retry` | `retryPutawayConfirmation` | `warehouse.putaway-tasks.confirm` | `{ idempotencyKey }` (yalnız Pending; aynı `postingKey`, aynı tarihler, aynı seriler; deneme sınırı yok, `attempts` / `lastAttemptAtUtc` döner). **Sıra (inceleme 02 F-1):** (i) önce ledger'da `postingKey` aranır (süreç içi, upstream'siz) — işlenmişse Posted, ön kontrol koşmaz; farklı parmak izi → `IntegrityError`; (ii) yalnız işlenmemişse 0178 ön kontrolleri (recall, `AVAILABLE`, saklama koşulu, seri kovası) — tutmazsa Refused, INVENTORY çağrılmaz — sonra posting. Sonuç yazımı koşulludur (`status == Pending`, F-3). Arka plan sweeper'ı yalnız (i)'yi yapar (kullanıcı token'ı yok; inceleme 02 F-5) | 200 `WarehouseTask` | WMS_POSTING_INTEGRITY_ERROR (409), WMS_CONFIRMATION_NOT_RETRYABLE, LOT_UNDER_RECALL, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_SERIAL_BUCKET_CHANGED, + defter 4xx (Refused), 503 (Pending) |
+| `POST /putaway-tasks/{taskId}/confirmations` | `confirmPutawayTask` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, quantity, toLocationId, deviationReason?, channel?, scanRef? }` — seri istemciden alınmaz (F-1) | 201 `WarehouseTask` (onay Posted) · 422 onay Refused (INVENTORY kodu aynen, gövde `Error` + `details.task`) · 503 onay Pending | **ön kontrol (onay kaydı açılmadan):** INVALID_REQUEST, REASON_REQUIRED, WMS_CONFLICT, WMS_NOT_ASSIGNEE (403), WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_QUANTITY_EXCEEDS_REMAINING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_SERIAL_BUCKET_CHANGED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_SERIAL_BUCKET_MIXED_STATUS, WMS_POSTING_INTEGRITY_ERROR (görev kilitli); **işlem 4 bütünlüğü:** WMS_POSTING_INTEGRITY_ERROR (409, `IDEMPOTENCY_KEY_REUSED` ya da işlem 2 durum farkı); **defter (Refused):** INVENTORY postMovement 4xx kodları aynen (`INSUFFICIENT_STOCK`, `LOT_RETEST_DUE`, `SERIAL_NOT_AVAILABLE`, `ITEM_NOT_ACTIVE`, …); **503 (Pending):** INVENTORY_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, LOCATION_MASTER_UNAVAILABLE |
+| `POST /putaway-tasks/{taskId}/confirmations/{seq}/retry` | `retryPutawayConfirmation` | `warehouse.putaway-tasks.confirm` | `{ idempotencyKey }` (yalnız Pending; aynı `postingKey`, aynı tarihler, aynı seriler; deneme sınırı yok, `attempts` / `lastAttemptAtUtc` döner). **Sıra (inceleme 02 F-1):** (i) önce ledger'da `postingKey` aranır (süreç içi, upstream'siz) — işlenmişse Posted, ön kontrol koşmaz; farklı parmak izi → `IntegrityError`; (ii) yalnız işlenmemişse 0178 ön kontrolleri (recall, `AVAILABLE`, saklama koşulu, seri kovası) — tutmazsa Refused, INVENTORY çağrılmaz — sonra posting. Sonuç yazımı koşulludur (`status == Pending`, F-3). Arka plan sweeper'ı yalnız (i)'yi yapar (kullanıcı token'ı yok; inceleme 02 F-5) | 200 `WarehouseTask` | WMS_CONFIRMATION_IN_FLIGHT (409 — uçuş kilidi; inceleme 03 F-1), WMS_POSTING_INTEGRITY_ERROR (409), WMS_CONFIRMATION_NOT_RETRYABLE, WMS_SERIAL_BUCKET_MIXED_STATUS, LOT_UNDER_RECALL, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_SERIAL_BUCKET_CHANGED, + defter 4xx (Refused), 503 (Pending) |
 | `POST /putaway-tasks/{taskId}/confirmations/{seq}/returned` | `markPutawayConfirmationReturned` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (10–1000) — "Geri taşındı": mal kaynağa iade edildi, hareket yok (F-4) | 200 `WarehouseTask` (`resolution: ReturnedToSource`) | REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE, WMS_NOT_ASSIGNEE |
-| `POST /putaway-tasks/{taskId}/close-short` | `closePutawayTaskShort` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (en az bir Posted onay; seri SKU'da yok) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED |
-| `POST /putaway-tasks/{taskId}/cancel` | `cancelPutawayTask` | `warehouse.putaway-tasks.cancel` | If-Match; `{ idempotencyKey, reason }` (yalnız Posted onay yokken) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING |
+| `POST /putaway-tasks/{taskId}/close-short` | `closePutawayTaskShort` | `warehouse.putaway-tasks.confirm` | If-Match; `{ idempotencyKey, reason }` (en az bir Posted onay; seri SKU'da yok) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_POSTING_INTEGRITY_ERROR |
+| `POST /putaway-tasks/{taskId}/cancel` | `cancelPutawayTask` | `warehouse.putaway-tasks.cancel` | If-Match; `{ idempotencyKey, reason }` (yalnız Posted onay yokken) | 200 | REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_POSTING_INTEGRITY_ERROR |
+| `POST /putaway-tasks/{taskId}/confirmations/{seq}/resolve-integrity` | `resolvePutawayIntegrity` | `warehouse.putaway-tasks.resolve` (öneri, Tier-3) | If-Match; `{ idempotencyKey, reason }` (10–1000) — "Uzlaştır" (inceleme 03 F-2): ledger yeniden okunur; `Committed` → onay Posted, görev ilerler; `NotCommitted` / yabancı anahtar → onay Refused + görev kapanır (Posted onay varsa Completed, yoksa Cancelled); upstream çağrısı yok | 200 `WarehouseTask` (`integrityResolution`) | REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE (onay `IntegrityError` değil), WMS_CONFIRMATION_IN_FLIGHT, WMS_TASK_NOT_FOUND, 403 (izin yok) |
 | `GET /putaway-tasks/{taskId}/events` | `getPutawayTaskEvents` | `warehouse.putaway-tasks.read` | `page`, `pageSize` | 200 sayfa `WarehouseTaskEvent` | WMS_TASK_NOT_FOUND |
 | `GET /location-roles` | `listLocationRoles` | `warehouse.location-roles.read` | `warehouseId?`, `role?`, `page`, `pageSize` | 200 sayfa | INVALID_REQUEST |
 | `POST /location-roles` | `createLocationRole` | `warehouse.location-roles.manage` | `{ idempotencyKey, locationId, roles[], acceptedStorageConditions[], note? }` | 201 + ETag | UNKNOWN_LOCATION, WMS_LOCATION_ROLE_EXISTS, WMS_LOCATION_ROLE_CONFLICT, WMS_LOCATION_ROLE_INHERITED_CONFLICT, WMS_LOCATION_TYPE_NOT_ALLOWED, WMS_STORAGE_CONDITION_INVALID |
@@ -287,9 +290,10 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | `WMS_QUANTITY_BELOW_CONFIRMED` | 422 | planlanan < onaylanan + bekleyen |
 | `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` | 422 | seri kontrollü SKU'da kısmi onay / kısa kapatma / miktar düzenleme (S1 yalnız tam miktar, F-1) |
 | `WMS_SERIAL_BUCKET_CHANGED` | 422 | onay ya da yeniden deneme anında kovadaki seri kümesi görev miktarından farklı (`details.expected`, `details.found`) |
-| `WMS_CONFIRMATION_NOT_RESOLVABLE` | 409 | "Geri taşındı" yalnız çözümsüz Refused onayda |
+| `WMS_CONFIRMATION_NOT_RESOLVABLE` | 409 | "Geri taşındı" yalnız çözümsüz Refused onayda; "Uzlaştır" yalnız `IntegrityError` onayda |
 | `WMS_LOCATION_ROLE_INHERITED_CONFLICT` | 409 | atası / alt ağacı karşı rolü taşıyan düğüme Receiving / Staging verilemez (F-13) |
-| `WMS_POSTING_INTEGRITY_ERROR` | 409 | ledger aynı `postingKey` ile farklı bir hareket işlemiş (`IDEMPOTENCY_KEY_REUSED`); onay `IntegrityError`, görev kilitli, istisna (inceleme 02 F-1) |
+| `WMS_POSTING_INTEGRITY_ERROR` | 409 | ledger aynı `postingKey` ile farklı bir hareket işlemiş (`IDEMPOTENCY_KEY_REUSED`) ya da işlem 2'de yazılı durum bu denemenin sonucundan farklı; onay `IntegrityError`, görev kilitli; çıkış yalnız `resolvePutawayIntegrity` (inceleme 02 F-1, inceleme 03 F-1 / F-2) |
+| `WMS_CONFIRMATION_IN_FLIGHT` | 409 | onayın uçuş kilidi geçerli (asıl istek ya da başka bir deneme sürüyor); `details.inFlightUntilUtc` (inceleme 03 F-1) |
 | `WMS_SERIAL_BUCKET_MIXED_STATUS` | 422 | aynı lokasyonda aynı lot + SKU'nun AVAILABLE dışı stoğu var — seri görevi S1'de açılmaz / onaylanmaz (inceleme 02 F-2) |
 | S2: `WMS_ALLOCATION_FAILED` (422), `WMS_OUTBOUND_NOT_EDITABLE` (409), `WMS_PACKAGE_INCOMPLETE` (409), `UNKNOWN_OUTBOUND` (404, frozen) | | |
 
@@ -312,8 +316,10 @@ istemci yeniden denemenin güvenli olduğunu `postingKey`'den bilir.
 | `Open` / `InProgress` | `Cancelled` | cancelPutawayTask | hiç Posted onay yok, Pending yok, gerekçe (Posted varsa yalnız closePutawayTaskShort) |
 Onay: `Pending → Posted | Refused`; `Pending` yalnız `retry` ile ilerler (aynı `postingKey`, aynı tarihler) ve görevi kilitler; sonuç
 yazımı koşulludur (`status == Pending`, F-3). `Refused` → `resolution: SupersededByNewConfirmation` (aynı görevde yeni Posted onay) ya
-da `ReturnedToSource` ("Geri taşındı", hareket yok) (F-4). `IntegrityError` terminal-istisnadır: resolution ve görev eylemleri kapalı
-(inceleme 02 F-1). Durum onaylanan miktardan
+da `ReturnedToSource` ("Geri taşındı", hareket yok) (F-4). `IntegrityError` istisnadır: resolution ve görev eylemleri kapalı
+(inceleme 02 F-1); **tek çıkış** `resolvePutawayIntegrity` (sorumlu, gerekçe, ledger'a göre Posted ya da Refused + görev kapanışı;
+inceleme 03 F-2). Uçuş kilidi (`inFlightUntilUtc`) geçerliyken yeniden deneme 409 `WMS_CONFIRMATION_IN_FLIGHT`; arka plan uzlaştırıcısı
+kaydı atlar, `NotCommitted` turunda hiçbir şey yazmaz (inceleme 03 F-1, 02 F-5). Durum onaylanan miktardan
 türetilir; `integrationFlag` ayrı rozettir. Açık görevde otomatik askı yoktur; karantina / recall kontrolü onay anındadır (M-5).
 
 ### 6.2 Outbound (S2, §2.2) ve pick görevi (S2 — putaway ile aynı makine, `Kind = Pick`).
@@ -410,7 +416,7 @@ sistemin kimliği / anahtarı (servis kimliği, `X-Internal-Api-Key` deseni) MOD
 
 ## 15. Açık kararlar
 
-İnceleme 01 düzeltmeleri F-1…F-16 işlendi (pack §19.1.3); W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
+İnceleme 01 F-1…F-16 (pack §19.1.3), inceleme 02 F-1…F-10 (§19.1.4) ve inceleme 03 F-1…F-5 (§19.1.5) düzeltmeleri işlendi; W-6 (`Item` outbound) Beste'nin açık S2 kararıdır (pack §19.5).
 Karar verildi (pack §19.1.1 / §19.1.2, Beste 2026-10-21): Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2, M-1…M-6 — bu taslak onlara göre
 yazıldı (rol + saklama koşulu kaydı 0178'in, ayrı dosya, `WMS_*` burada, geçici RCS sayacı + MDM `Code` öneki, `warehouse.*` 0178'in,
 yalnız `AVAILABLE` yerleştirilir, recall'daki lot reddedilir, saklama koşulu uyumu, üstlenme, onay kilidi, e-imza yok, koli elle).
