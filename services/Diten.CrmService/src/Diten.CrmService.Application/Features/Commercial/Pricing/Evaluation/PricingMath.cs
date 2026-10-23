@@ -41,5 +41,13 @@ public static class PricingMath
         _ => 2
     };
 
+    /// <summary>WP-VW-W6 W6-FIX-c — the list subtotal (V-3 / V-15): Σ quantity × list unit price, VAT excluded, free boxes
+    /// not counted (they are not sold); a line without a price adds nothing, as it adds nothing to the net.</summary>
+    public static decimal ListSubtotal(IEnumerable<(int Quantity, decimal? UnitPrice)> lines, string? currency)
+        => RoundMoney(lines.Sum(l => Math.Max(0, l.Quantity) * (l.UnitPrice ?? 0m)), currency);
+
+    /// <summary>The discount amount: list subtotal − net (the line discounts in money).</summary>
+    public static decimal DiscountAmount(decimal listSubtotal, decimal net, string? currency) => RoundMoney(listSubtotal - net, currency);
+
     public static string MfText(int buy, int free) => buy + "+" + free;
 }

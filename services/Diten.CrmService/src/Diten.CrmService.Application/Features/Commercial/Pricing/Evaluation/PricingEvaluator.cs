@@ -197,8 +197,10 @@ public sealed class PricingEvaluator : IPricingEvaluator
         // Σ unit price × (quantity + free boxes): what the boxes would cost at list price
         var list = evaluated.Sum(l => (l.UnitPrice ?? 0m) * ((quantities.TryGetValue(l.LineNo, out var q) ? q : 0) + l.FreeQuantity));
         var effective = list > 0m ? PricingMath.Pct(1m - net / list) : 0m;
-        return new EvaluationTotals(PricingMath.RoundMoney(net, currency), PricingMath.RoundMoney(vat, currency),
-            PricingMath.RoundMoney(net + vat, currency), effective);
+        var roundedNet = PricingMath.RoundMoney(net, currency);
+        var subtotal = PricingMath.ListSubtotal(evaluated.Select(l => (quantities.TryGetValue(l.LineNo, out var q) ? q : 0, l.UnitPrice)), currency);
+        return new EvaluationTotals(roundedNet, PricingMath.RoundMoney(vat, currency),
+            PricingMath.RoundMoney(net + vat, currency), effective, subtotal, PricingMath.DiscountAmount(subtotal, roundedNet, currency));
     }
 
     private async Task<HashSet<Guid>> RetiredAsync(IReadOnlyCollection<Guid> skuIds, CancellationToken ct)

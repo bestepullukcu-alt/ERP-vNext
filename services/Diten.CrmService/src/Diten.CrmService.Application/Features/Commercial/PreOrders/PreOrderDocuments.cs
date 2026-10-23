@@ -20,15 +20,19 @@ public sealed record PreOrderDocumentLine(
     int LineNo, string Product, string? Barcode, string? Form, int Quantity, string? Mf, int FreeQuantity, decimal? DiscountPct,
     decimal? UnitPrice, decimal? VatRate, decimal? NetAmount);
 
-public sealed record PreOrderDocumentTotals(decimal Net, decimal Vat, decimal Gross, decimal? EffectiveDiscountPct);
+public sealed record PreOrderDocumentTotals(decimal ListSubtotal, decimal DiscountAmount, decimal Net, decimal Vat, decimal Gross, decimal? EffectiveDiscountPct);
 
 public sealed record PreOrderDocumentFx(string LocalCurrency, decimal Rate, DateOnly RateDate, string Source, decimal? LocalGross);
 
 /// <summary>
 /// WP-VW-W6 W6-BE-c2 — EVERYTHING the depot document prints, for one copy, in one language. The ONLY source of the PDF and
-/// of its preview (one template, MOD-0168 §4.7: two copy templates are forbidden). A value the order does not carry (GLN,
-/// tax number, pharmacy code, dosage form, the seller's address …) is null and is not printed at all — no label, no "—".
-/// The depot copy carries no discount percentage of any kind (DESIGN-GAP §3: internal information).
+/// of its preview (one template, MOD-0168 §4.7: two copy templates are forbidden). A header value the order does not carry
+/// (GLN, tax number, pharmacy code, dosage form, the seller's address …) is null and is not printed at all — no label; a
+/// line cell without a value prints "—" (W6-FIX-c V-14: the line columns are always there).
+/// <para>W6-FIX-c — the depot copy carries no EFFECTIVE discount % (MOD-0168 §4.7, DESIGN-GAP §3: internal information) and
+/// no transmission attempt (V-19); the line discount % and the discount amount are on both copies (the depot invoices
+/// them). Times (<see cref="SignedAt"/>, <see cref="ApprovedAt"/>) and the order date are the wall clock of the selling
+/// company's country, named by <see cref="TimeZone"/> (V-17).</para>
 /// </summary>
 public sealed record PreOrderDocumentModel(
     string Copy,
@@ -37,7 +41,10 @@ public sealed record PreOrderDocumentModel(
     DateOnly? OrderDate,
     DateOnly? DeliveryDate,
     string SellerName,
+    string? SellerAddress,
+    string? SellerTaxNumber,
     string? DepotName,
+    string? DepotEmail,
     string? RepName,
     string PharmacyName,
     string? PharmacyAddress,
@@ -56,7 +63,8 @@ public sealed record PreOrderDocumentModel(
     string? ApprovedBy,
     DateTimeOffset? ApprovedAt,
     string? Note,
-    int? TransmissionAttempt)
+    int? TransmissionAttempt,
+    string TimeZone)
 {
     public bool IsDepotCopy => Copy == PreOrderDocumentCopies.Depot;
 }
@@ -114,18 +122,23 @@ public static class PreOrderDocumentRules
         var approver = order.Approval?.DecidedByUserId is { } by && order.ApprovalRequirement?.ApproverNames.TryGetValue(by.ToString("D"), out var name) == true
             ? name
             : null;
-        var submitted = order.Events.LastOrDefault(e => e.Type == PreOrderEventTypes.Submitted)?.At;
+        var (zone, zoneName) = CountryTimeZones.ForCountry(order.CountryCode);
+        var submitted = CountryTimeZones.Local(order.Events.LastOrDefault(e => e.Type == PreOrderEventTypes.Submitted)?.At, zone);
+        var totals = priced ? PreOrderTotalsReading.Of(order) : null;
         return new PreOrderDocumentModel(
             Copy: copy,
             Language: language,
             OrderCode: order.Code,
-            OrderDate: submitted is { } at ? DateOnly.FromDateTime(at.UtcDateTime) : null,
+            OrderDate: submitted is { } at ? DateOnly.FromDateTime(at.DateTime) : null,
             DeliveryDate: order.RequestedDeliveryDate,
             SellerName: order.Seller.Name,
+            SellerAddress: Text(order.Seller.Address),
+            SellerTaxNumber: Text(order.Seller.TaxNumber),
             DepotName: Text(order.Depot?.Name),
+            DepotEmail: Text(order.Depot?.Email),
             RepName: Text(order.Rep.DisplayName),
             PharmacyName: order.Pharmacy.Name,
-            PharmacyAddress: Text(order.Pharmacy.Address),
+            PharmacyAddress: PharmacyAddress(order.Pharmacy),
             PharmacyGln: Text(order.Pharmacy.Gln),
             PharmacyCode: Text(order.Pharmacy.PharmacyCode),
             PharmacyTaxNumber: Text(order.Pharmacy.TaxNumber),
@@ -133,18 +146,33 @@ public static class PreOrderDocumentRules
             Currency: priced ? order.Currency : null,
             Lines: order.Lines.OrderBy(l => l.LineNo).Select(l => new PreOrderDocumentLine(
                 l.LineNo, l.Sku.Name, Text(l.Sku.Gtin), Text(l.Sku.Form), l.Quantity, l.Mf is { } mf ? $"{mf.Buy}+{mf.Free}" : null, l.FreeQuantity,
-                depot ? null : l.DiscountPct,
+                priced ? l.DiscountPct : null,
                 priced ? l.UnitPrice : null, priced ? l.VatRate : null, priced ? l.NetAmount : null)).ToList(),
-            Totals: priced && order.Totals is { } t ? new PreOrderDocumentTotals(t.Net, t.Vat, t.Gross, depot ? null : t.EffectiveDiscountPct) : null,
+            Totals: totals is { } t
+                ? new PreOrderDocumentTotals(t.ListSubtotal ?? 0m, t.DiscountAmount ?? 0m, t.Net, t.Vat, t.Gross, depot ? null : t.EffectiveDiscountPct)
+                : null,
             Fx: priced && order.Fx is { } fx ? new PreOrderDocumentFx(fx.LocalCurrency, fx.Rate, fx.RateDate, fx.Source, fx.LocalGross) : null,
             SignerName: Text(order.Signature?.SignerName),
-            SignedAt: order.Signature?.SignedAt,
+            SignedAt: CountryTimeZones.Local(order.Signature?.SignedAt, zone),
             SignatureImage: signatureImage,
             AutoApproved: order.Approval?.Auto == true,
             ApprovedBy: order.Approval?.Auto == true ? null : approver,
-            ApprovedAt: order.Approval?.DecidedAt,
+            ApprovedAt: CountryTimeZones.Local(order.Approval?.DecidedAt, zone),
             Note: Text(order.Note),
-            TransmissionAttempt: attemptNo ?? (order.Transmission?.Attempts.Count is > 0 and var n ? n : null));
+            TransmissionAttempt: depot ? null : attemptNo ?? (order.Transmission?.Attempts.Count is > 0 and var n ? n : null),
+            TimeZone: zoneName);
+    }
+
+    /// <summary>V-18 — the pharmacy's address line with its province: "address / city" (the city's published name).</summary>
+    private static string? PharmacyAddress(PreOrderParty pharmacy)
+    {
+        var parts = new[] { Text(pharmacy.Address), Text(pharmacy.CityName) }.Where(p => p is not null).ToList();
+        if (parts.Count == 2 && parts[0]!.Contains(parts[1]!, StringComparison.CurrentCultureIgnoreCase))
+        {
+            parts.RemoveAt(1); // the address already names the city
+        }
+
+        return parts.Count == 0 ? null : string.Join(" / ", parts);
     }
 
     private static string? Text(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

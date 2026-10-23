@@ -93,11 +93,36 @@ public sealed record PreOrderPharmacyHistoryDto(Guid PharmacyAccountId, DateTime
 
 public sealed record PreOrderExportDto(string FileName, byte[] Content);
 
+/// <summary>
+/// WP-VW-W6 W6-FIX-c (V-3 / V-15) — the totals as they are read: an order saved before W6-FIX-c has no list subtotal and no
+/// discount amount, so they are completed from its stored lines by MOD-0156 (<see cref="PricingTotals"/>, the ONE place of
+/// that arithmetic) — no migration, nothing written. The stored entity is never changed (a copy is returned).
+/// </summary>
+public static class PreOrderTotalsReading
+{
+    public static PreOrderTotals? Of(PreOrder o)
+    {
+        if (o.Totals is not { } t)
+        {
+            return null;
+        }
+
+        var completed = t.ListSubtotal is { } stored && t.DiscountAmount is { } discount
+            ? (ListSubtotal: stored, DiscountAmount: discount)
+            : PricingTotals.ListAndDiscount(o.Lines.Select(l => (l.Quantity, l.UnitPrice)), t.Net, o.Currency);
+        return new PreOrderTotals
+        {
+            Net = t.Net, Vat = t.Vat, Gross = t.Gross, EffectiveDiscountPct = t.EffectiveDiscountPct, ListSubtotal = completed.ListSubtotal,
+            DiscountAmount = completed.DiscountAmount
+        };
+    }
+}
+
 public static class PreOrderMapping
 {
     public static PreOrderDto ToDto(PreOrder o, PreOrderAbilities can)
         => new(o.Id, o.Code, o.Status, o.Fulfilment, o.PriceMode, o.Seller, o.CountryCode, o.LocalCurrencyCode, o.Currency, o.Pharmacy, o.Depot,
-            o.Rep, o.VisitId, o.RequestedDeliveryDate, o.Note, o.Lines, o.Totals, o.Fx, o.Price, o.Evaluation, o.ApprovalRequirement, o.Signature,
+            o.Rep, o.VisitId, o.RequestedDeliveryDate, o.Note, o.Lines, PreOrderTotalsReading.Of(o), o.Fx, o.Price, o.Evaluation, o.ApprovalRequirement, o.Signature,
             o.Approval, o.Transmission, o.Cancellation, o.DepotResponse, o.CopiedFromPreOrderId, o.SubmissionNo, o.Events, o.CreatedBy,
             o.CreatedAt, o.UpdatedAt, o.Version, can);
 

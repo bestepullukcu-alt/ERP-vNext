@@ -41,4 +41,9 @@
   <data name="Disclaimer" xml:space="preserve"><value>هذا طلب مسبق؛ يُصدر المستودع الفاتورة.</value></data>
   <data name="Trace" xml:space="preserve"><value>الإرسال: المحاولة {0}</value></data>
   <data name="Form" xml:space="preserve"><value>الشكل</value></data>
+  <data name="SellerTaxId" xml:space="preserve"><value>الرقم الضريبي</value></data>
+  <data name="Currency" xml:space="preserve"><value>العملة</value></data>
+  <data name="DepotEmail" xml:space="preserve"><value>البريد الإلكتروني للمستودع</value></data>
+  <data name="ListSubtotal" xml:space="preserve"><value>المجموع الفرعي (القائمة، دون ضريبة القيمة المضافة)</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>الخصم</value></data>
 </root>

@@ -41,4 +41,9 @@
   <data name="Disclaimer" xml:space="preserve"><value>这是一份预订单；发票由经销商开具。</value></data>
   <data name="Trace" xml:space="preserve"><value>传送：第 {0} 次尝试</value></data>
   <data name="Form" xml:space="preserve"><value>剂型</value></data>
+  <data name="SellerTaxId" xml:space="preserve"><value>税号</value></data>
+  <data name="Currency" xml:space="preserve"><value>币种</value></data>
+  <data name="DepotEmail" xml:space="preserve"><value>经销商邮箱</value></data>
+  <data name="ListSubtotal" xml:space="preserve"><value>小计（价目表，不含增值税）</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>折扣</value></data>
 </root>

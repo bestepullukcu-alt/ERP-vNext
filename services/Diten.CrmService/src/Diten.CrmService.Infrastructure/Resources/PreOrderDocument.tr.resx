@@ -41,4 +41,9 @@
   <data name="Disclaimer" xml:space="preserve"><value>Bu bir ön sipariştir; faturayı depo düzenler.</value></data>
   <data name="Trace" xml:space="preserve"><value>İletim: deneme {0}</value></data>
   <data name="Form" xml:space="preserve"><value>Form</value></data>
+  <data name="SellerTaxId" xml:space="preserve"><value>VKN</value></data>
+  <data name="Currency" xml:space="preserve"><value>Para birimi</value></data>
+  <data name="DepotEmail" xml:space="preserve"><value>Depo e-postası</value></data>
+  <data name="ListSubtotal" xml:space="preserve"><value>Ara toplam (KDV hariç, liste)</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>İskonto</value></data>
 </root>

@@ -67,7 +67,24 @@ public sealed record EvaluatedLine(
     int LineNo, Guid SkuId, string Outcome, decimal? UnitPrice, decimal? VatRate, decimal? NetAmount, decimal? VatAmount,
     int FreeQuantity, decimal? MfRatioPct, decimal? CombinedDiscountPct, IReadOnlyList<PricingFinding> Findings, AppliedRuleRef? Rule);
 
-public sealed record EvaluationTotals(decimal Net, decimal Vat, decimal Gross, decimal EffectiveDiscountPct);
+/// <summary><see cref="ListSubtotal"/> = Σ quantity × list unit price (VAT excluded); <see cref="DiscountAmount"/> = list
+/// subtotal − net (W6-FIX-c, V-3).</summary>
+public sealed record EvaluationTotals(decimal Net, decimal Vat, decimal Gross, decimal EffectiveDiscountPct, decimal ListSubtotal, decimal DiscountAmount);
+
+/// <summary>
+/// WP-VW-W6 W6-FIX-c — MOD-0156's completion of the totals of an order evaluated before the list subtotal existed: the same
+/// arithmetic the evaluator uses (<see cref="Evaluation.PricingMath"/>), over the order's stored lines and net. The read side
+/// of MOD-0168 asks here; it keeps no copy (AC-PRICE-2).
+/// </summary>
+public static class PricingTotals
+{
+    public static (decimal ListSubtotal, decimal DiscountAmount) ListAndDiscount(IEnumerable<(int Quantity, decimal? UnitPrice)> lines, decimal net,
+        string? currency)
+    {
+        var subtotal = Evaluation.PricingMath.ListSubtotal(lines, currency);
+        return (subtotal, Evaluation.PricingMath.DiscountAmount(subtotal, net, currency));
+    }
+}
 
 public sealed record EvaluationResult(
     string Mode, string? Currency, PriceListRef? PriceList, string Outcome, IReadOnlyList<EvaluatedLine> Lines,

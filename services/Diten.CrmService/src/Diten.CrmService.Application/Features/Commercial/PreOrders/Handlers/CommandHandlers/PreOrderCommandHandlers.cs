@@ -1,5 +1,7 @@
 using Diten.CrmService.Application.Common.Artifacts;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Common.ReferenceValidation;
+using Diten.CrmService.Application.Features.Contact;
 using Diten.CrmService.Application.Features.Commercial.PreOrders.Commands;
 using Diten.CrmService.Application.Features.Commercial.PreOrders.Validators;
 using Diten.CrmService.Application.Features.Commercial.Pricing.Contracts;
@@ -20,11 +22,13 @@ public sealed class PreOrderParts
 {
     private readonly IAccountRepository _accounts;
     private readonly IPreOrderMdmDirectory _mdm;
+    private readonly IReferenceDataCatalogReader? _references;
 
-    public PreOrderParts(IAccountRepository accounts, IPreOrderMdmDirectory mdm)
+    public PreOrderParts(IAccountRepository accounts, IPreOrderMdmDirectory mdm, IReferenceDataCatalogReader? references = null)
     {
         _accounts = accounts;
         _mdm = mdm;
+        _references = references;
     }
 
     /// <summary>The pharmacy (tenant's account of type pharmacy) as a snapshot; 400 otherwise.</summary>
@@ -33,7 +37,29 @@ public sealed class PreOrderParts
         var account = await _accounts.GetByIdAsync(tenantId, accountId, ct);
         return account is null || account.TenantId != tenantId || account.IsDeleted || !PreOrderAccountTypes.IsPharmacy(account.AccountType)
             ? (null, PreOrderResults.Fail<T>(PreOrderErrors.PharmacyInvalid, "The pharmacy is not a pharmacy account of this tenant.", 400))
-            : (Party(account), null);
+            : (Party(account, await CityNameAsync(account.CityRef, ct)), null);
+    }
+
+    /// <summary>W6-FIX-c (V-18) — the published MOD-0048 <c>city</c> name of the account's city code, for the document's
+    /// address line. Display data: an unpublished set, an unknown code or a failed read leave it null (never the code, never
+    /// a local list) and never fail the order.</summary>
+    private async Task<string?> CityNameAsync(string? cityRef, CancellationToken ct)
+    {
+        if (_references is null || string.IsNullOrWhiteSpace(cityRef))
+        {
+            return null;
+        }
+
+        try
+        {
+            var set = await _references.GetPublishedValuesAsync(ContactReferenceValidation.CitySet, ct);
+            return set.Values.FirstOrDefault(v => string.Equals(v.ValueCode, cityRef.Trim(), StringComparison.OrdinalIgnoreCase))?.DisplayName
+                is { Length: > 0 } name ? name.Trim() : null;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return null;
+        }
     }
 
     /// <summary>The depot (a distributor / wholesaler account, K-W13) as a snapshot; 400 otherwise.</summary>
@@ -46,9 +72,10 @@ public sealed class PreOrderParts
     }
 
     /// <summary>MOD-0149 carries no GLN, pharmacy code or tax number yet (W6-BE-a measurement) — those stay null.</summary>
-    private static PreOrderParty Party(Domain.Entities.Account a) => new()
+    private static PreOrderParty Party(Domain.Entities.Account a, string? cityName = null) => new()
     {
-        AccountId = a.Id, Name = a.AccountName, AccountCode = a.AccountCode, AccountType = a.AccountType, CityRef = a.CityRef, Address = a.AddressLine,
+        AccountId = a.Id, Name = a.AccountName, AccountCode = a.AccountCode, AccountType = a.AccountType, CityRef = a.CityRef, CityName = cityName,
+        Address = a.AddressLine,
         Email = PreOrderResults.Clean(a.ResponsiblePersonEmail)
     };
 
@@ -98,6 +125,13 @@ public sealed class PreOrderParts
         }
 
         return (lines, null);
+    }
+
+    /// <summary>W6-FIX-c (V-13) — the seller's letterhead from MDM's legal entity (address, tax id).</summary>
+    public static void Letterhead(PreOrderSeller seller, PreOrderLegalEntity legalEntity)
+    {
+        seller.Address = legalEntity.Address;
+        seller.TaxNumber = legalEntity.TaxNumber;
     }
 
     public static bool SameLines(IReadOnlyList<PreOrderLine> a, IReadOnlyList<PreOrderLine> b)
@@ -175,7 +209,8 @@ public sealed class PreOrderCommandHandlers :
 
         order.Seller = new PreOrderSeller
         {
-            LegalEntityId = seller.LegalEntity.Id, Prefix = seller.Prefix, Code = seller.LegalEntity.Code, Name = seller.LegalEntity.Name
+            LegalEntityId = seller.LegalEntity.Id, Prefix = seller.Prefix, Code = seller.LegalEntity.Code, Name = seller.LegalEntity.Name,
+            Address = seller.LegalEntity.Address, TaxNumber = seller.LegalEntity.TaxNumber
         };
         order.CountryCode = seller.LegalEntity.CountryCode.ToUpperInvariant();
         order.LocalCurrencyCode = seller.LegalEntity.BaseCurrencyCode.ToUpperInvariant();
@@ -212,6 +247,7 @@ public sealed class PreOrderCommandHandlers :
         var expected = order.Version;
         var before = order.Lines.ToList();
         var pharmacyBefore = order.Pharmacy.AccountId;
+        PreOrderParts.Letterhead(order.Seller, legalEntity!);
         if (await FillAsync(order, request.Input!, legalEntity!, order.TenantId, ct) is { } fillError)
         {
             return fillError;
@@ -395,6 +431,13 @@ public sealed class PreOrderCommandHandlers :
             errors.AddRange(result.Lines.SelectMany(l => l.Findings.Where(f => f.Severity == PricingFindingSeverities.Hard)
                 .Select(f => $"L{l.LineNo}:{f.Code}")));
             return Response<PreOrderDto>.Fail(errors, 422);
+        }
+
+        // the letterhead of the submission (V-13): display data — MDM not answering keeps the draft's
+        var (sellerOutcome, sellerNow) = await _c.Mdm.GetLegalEntityAsync(order.Seller.LegalEntityId, ct);
+        if (sellerOutcome == PreOrderLookupOutcome.Found && sellerNow is not null)
+        {
+            PreOrderParts.Letterhead(order.Seller, sellerNow);
         }
 
         // D12: the price, the rate and the outcome are fixed NOW

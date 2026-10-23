@@ -61,6 +61,12 @@ public sealed class PreOrderSeller
     public string Prefix { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>W6-FIX-c (V-13) — the letterhead: MDM <c>registeredAddressJson</c> as one line and the tax id; null when MDM
+    /// carries none (orders saved before W6-FIX-c too).</summary>
+    public string? Address { get; set; }
+
+    public string? TaxNumber { get; set; }
 }
 
 /// <summary>A pharmacy / depot (MOD-0149 Account) snapshot; the fields the account does not carry stay null.</summary>
@@ -71,6 +77,11 @@ public sealed class PreOrderParty
     public string? AccountCode { get; set; }
     public string? AccountType { get; set; }
     public string? CityRef { get; set; }
+
+    /// <summary>W6-FIX-c (V-18) — the published MOD-0048 <c>city</c> name of <see cref="CityRef"/> at the snapshot; null when
+    /// the set does not name it (never the code).</summary>
+    public string? CityName { get; set; }
+
     public string? Address { get; set; }
     public string? Gln { get; set; }
     public string? PharmacyCode { get; set; }
@@ -150,6 +161,13 @@ public sealed class PreOrderTotals
     public decimal Vat { get; set; }
     public decimal Gross { get; set; }
     public decimal EffectiveDiscountPct { get; set; }
+
+    /// <summary>W6-FIX-c (V-3) — Σ quantity × list unit price, VAT excluded; null on an order saved before (completed on
+    /// read by <c>PreOrderTotalsReading</c>, no migration).</summary>
+    public decimal? ListSubtotal { get; set; }
+
+    /// <summary>List subtotal − net; null on an order saved before W6-FIX-c.</summary>
+    public decimal? DiscountAmount { get; set; }
 }
 
 public sealed class PreOrderFxSnapshot

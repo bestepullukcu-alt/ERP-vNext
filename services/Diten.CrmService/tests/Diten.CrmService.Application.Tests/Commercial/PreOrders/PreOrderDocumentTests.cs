@@ -18,7 +18,7 @@ namespace Diten.CrmService.Application.Tests.Commercial.PreOrders;
 /// <summary>
 /// WP-VW-W6 W6-BE-c2 — the depot document on the PRODUCTION template (<see cref="PreOrderDocumentRenderer"/>, PDFsharp-MigraDoc)
 /// and producer (<see cref="PreOrderDocumentProducer"/>) inside the MOD-0168 flow: two copies from one template (the depot copy
-/// carries no discount percentage), the language of the selling company's country, the automatic approval line, no label
+/// carries no effective discount percentage — MOD-0168 §4.7; W6-FIX-c), the language of the selling company's country, the automatic approval line, no label
 /// for a missing field, the 256 KB cap, the documents written once per transmission (a retry reuses the bound refs), the
 /// PDFs attached by reference, the preview through the SAME template and visibility, the pharmacy copy as best effort, and
 /// the approved backlog taken by the scheduler. Doubled: the Platform internal dispatch and MOD-0262 (the internal door).
@@ -48,15 +48,17 @@ public sealed class PreOrderDocumentTests : PreOrderTestBase
     // ── the two copies ───────────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task D1_the_depot_copy_shows_no_discount_percentage_and_the_pharmacy_copy_does_both_say_the_depot_invoices()
+    public async Task D1_the_depot_copy_shows_no_effective_discount_and_the_pharmacy_copy_does_both_say_the_depot_invoices()
     {
         var transmitted = await Approved();
         Assert.Equal(PreOrderStatuses.Transmitted, transmitted.Status);
 
         var depot = Renderer.Text(PreOrderDocumentCopies.Depot);
         var pharmacy = Renderer.Text(PreOrderDocumentCopies.Pharmacy);
-        Assert.DoesNotContain(depot, t => t.Contains("İskonto", StringComparison.Ordinal) || t.Contains("indirim", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(depot, t => t == "5 %");
+        // W6-FIX-c: MOD-0168 §4.7 hides the EFFECTIVE % only — the line discount the depot invoices is on both copies
+        Assert.DoesNotContain(depot, t => t.Contains("indirim", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains("İskonto %", depot);
+        Assert.Contains("5 %", depot);
         Assert.Contains("İskonto %", pharmacy);
         Assert.Contains("5 %", pharmacy);
         Assert.Contains(pharmacy, t => t.StartsWith("Etkin indirim %: ", StringComparison.Ordinal));
@@ -83,16 +85,19 @@ public sealed class PreOrderDocumentTests : PreOrderTestBase
     }
 
     [Fact]
-    public async Task D3_a_field_the_order_does_not_carry_is_not_printed_at_all_no_label_and_no_dash()
+    public async Task D3_a_header_field_the_order_does_not_carry_is_not_printed_at_all_and_an_empty_line_cell_is_a_dash()
     {
         await Approved();
         foreach (var copy in PreOrderDocumentCopies.All)
         {
             var text = Renderer.Text(copy);
             Assert.DoesNotContain(text, t => t.StartsWith("GLN", StringComparison.Ordinal) || t.StartsWith("Eczane kodu", StringComparison.Ordinal)
-                                             || t.StartsWith("Vergi no", StringComparison.Ordinal) || t.Contains(" · Form", StringComparison.Ordinal));
-            Assert.DoesNotContain(text, t => t.Contains('—') && !t.StartsWith("Ön sipariş", StringComparison.Ordinal));
-            Assert.DoesNotContain("Barkod", text);                                         // no line has a GTIN in v1.1
+                                             || t.StartsWith("Vergi no", StringComparison.Ordinal) || t.StartsWith("VKN", StringComparison.Ordinal)
+                                             || t.Contains(" · Form", StringComparison.Ordinal));
+            // a dash only as a whole line cell (W6-FIX-c V-14) — never after a header label
+            Assert.DoesNotContain(text, t => t.Contains('—') && t != PreOrderDocumentRenderer.Empty && !t.StartsWith("Ön sipariş", StringComparison.Ordinal));
+            Assert.Contains("Barkod", text);                                               // the column is always there …
+            Assert.Contains(PreOrderDocumentRenderer.Empty, text);                         // … and no line has a GTIN in v1.1
         }
     }
 

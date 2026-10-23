@@ -41,4 +41,9 @@
   <data name="Disclaimer" xml:space="preserve"><value>This is a pre-order; the depot issues the invoice.</value></data>
   <data name="Trace" xml:space="preserve"><value>Transmission: attempt {0}</value></data>
   <data name="Form" xml:space="preserve"><value>Form</value></data>
+  <data name="SellerTaxId" xml:space="preserve"><value>Tax ID</value></data>
+  <data name="Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="DepotEmail" xml:space="preserve"><value>Depot e-mail</value></data>
+  <data name="ListSubtotal" xml:space="preserve"><value>Subtotal (list, excl. VAT)</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>Discount</value></data>
 </root>

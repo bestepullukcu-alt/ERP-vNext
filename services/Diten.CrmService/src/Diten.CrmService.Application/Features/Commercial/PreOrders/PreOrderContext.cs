@@ -243,7 +243,11 @@ public sealed class PreOrderPricing
         order.PriceMode = result.Mode == PricingModes.Priced ? PreOrderPriceModes.Priced : PreOrderPriceModes.Quantity;
         order.Currency = result.Mode == PricingModes.Priced ? result.Currency : null;
         order.Totals = result.Totals is { } t
-            ? new PreOrderTotals { Net = t.Net, Vat = t.Vat, Gross = t.Gross, EffectiveDiscountPct = t.EffectiveDiscountPct }
+            ? new PreOrderTotals
+            {
+                Net = t.Net, Vat = t.Vat, Gross = t.Gross, EffectiveDiscountPct = t.EffectiveDiscountPct, ListSubtotal = t.ListSubtotal,
+                DiscountAmount = t.DiscountAmount
+            }
             : null;
     }
 

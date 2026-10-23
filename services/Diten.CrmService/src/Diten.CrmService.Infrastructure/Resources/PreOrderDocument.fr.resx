@@ -41,4 +41,9 @@
   <data name="Disclaimer" xml:space="preserve"><value>Ceci est une pré-commande ; le dépositaire établit la facture.</value></data>
   <data name="Trace" xml:space="preserve"><value>Transmission : tentative {0}</value></data>
   <data name="Form" xml:space="preserve"><value>Forme</value></data>
+  <data name="SellerTaxId" xml:space="preserve"><value>N° fiscal</value></data>
+  <data name="Currency" xml:space="preserve"><value>Devise</value></data>
+  <data name="DepotEmail" xml:space="preserve"><value>E-mail du dépositaire</value></data>
+  <data name="ListSubtotal" xml:space="preserve"><value>Sous-total (tarif, HT)</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>Remise</value></data>
 </root>

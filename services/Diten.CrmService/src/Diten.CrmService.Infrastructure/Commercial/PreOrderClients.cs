@@ -62,7 +62,38 @@ public sealed class MdmPreOrderDirectory : IPreOrderMdmDirectory
 
         var code = Text(le, "code") ?? string.Empty;
         return (PreOrderLookupOutcome.Found, new PreOrderLegalEntity(legalEntityId, code, Text(le, "displayName") ?? Text(le, "legalName") ?? code,
-            country.ToUpperInvariant(), (Text(le, "baseCurrencyCode") ?? string.Empty).ToUpperInvariant()));
+            country.ToUpperInvariant(), (Text(le, "baseCurrencyCode") ?? string.Empty).ToUpperInvariant(),
+            AddressLine(Text(le, "registeredAddressJson")), Text(le, "taxId") ?? Text(le, "vatNumber")));
+    }
+
+    /// <summary>W6-FIX-c (V-13) — MDM's registered address (<c>{ line1, line2, postalCode, city, state, country }</c>) as the one
+    /// line the MDM detail page shows; null when absent or not an object (display data: never fails the read).</summary>
+    public static string? AddressLine(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var a = doc.RootElement;
+            if (a.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            var city = string.Join(" ", new[] { Text(a, "postalCode"), Text(a, "city") }.Where(p => p is not null));
+            var parts = new[] { Text(a, "line1"), Text(a, "line2"), city, Text(a, "state"), Text(a, "country") }
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Select(p => string.Join(' ', p!.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)));
+            return string.Join(", ", parts) is { Length: > 0 } line ? line : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     public async Task<IReadOnlyDictionary<Guid, PreOrderSku>?> ReadSkusAsync(IReadOnlyCollection<Guid> skuIds, CancellationToken ct)

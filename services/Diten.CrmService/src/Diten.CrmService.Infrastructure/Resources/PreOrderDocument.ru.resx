@@ -41,4 +41,9 @@
   <data name="Disclaimer" xml:space="preserve"><value>Это предварительный заказ; счёт выставляет дистрибьютор.</value></data>
   <data name="Trace" xml:space="preserve"><value>Передача: попытка {0}</value></data>
   <data name="Form" xml:space="preserve"><value>Форма</value></data>
+  <data name="SellerTaxId" xml:space="preserve"><value>ИНН</value></data>
+  <data name="Currency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="DepotEmail" xml:space="preserve"><value>E-mail дистрибьютора</value></data>
+  <data name="ListSubtotal" xml:space="preserve"><value>Промежуточный итог (по прайсу, без НДС)</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>Скидка</value></data>
 </root>

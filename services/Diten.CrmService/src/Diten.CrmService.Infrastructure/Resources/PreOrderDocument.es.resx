@@ -41,4 +41,9 @@
   <data name="Disclaimer" xml:space="preserve"><value>Esto es un prepedido; el distribuidor emite la factura.</value></data>
   <data name="Trace" xml:space="preserve"><value>Transmisión: intento {0}</value></data>
   <data name="Form" xml:space="preserve"><value>Forma</value></data>
+  <data name="SellerTaxId" xml:space="preserve"><value>NIF</value></data>
+  <data name="Currency" xml:space="preserve"><value>Moneda</value></data>
+  <data name="DepotEmail" xml:space="preserve"><value>Correo del distribuidor</value></data>
+  <data name="ListSubtotal" xml:space="preserve"><value>Subtotal (lista, sin IVA)</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>Descuento</value></data>
 </root>

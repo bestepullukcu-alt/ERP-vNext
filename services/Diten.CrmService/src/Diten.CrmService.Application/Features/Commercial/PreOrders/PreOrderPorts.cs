@@ -13,7 +13,10 @@ public enum PreOrderLookupOutcome
     Unavailable
 }
 
-public sealed record PreOrderLegalEntity(Guid Id, string Code, string Name, string CountryCode, string BaseCurrencyCode);
+/// <summary><see cref="Address"/> / <see cref="TaxNumber"/> (W6-FIX-c, V-13): the registered address as one line and the tax
+/// id, null when MDM carries none.</summary>
+public sealed record PreOrderLegalEntity(Guid Id, string Code, string Name, string CountryCode, string BaseCurrencyCode, string? Address = null,
+    string? TaxNumber = null);
 
 /// <summary>One SKU as product-master v1.1 answers it (bulk-read + getSku): code, name, level, lifecycle, pack, GTIN.</summary>
 public sealed record PreOrderSku(Guid SkuId, string SkuLevel, string Code, string Name, string LifecycleStatus, decimal? PackQuantity = null,
