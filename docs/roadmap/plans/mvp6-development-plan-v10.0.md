@@ -1,4 +1,4 @@
-# MVP6 development plan v10.0 — 2026-10-20 (updated with Ali's answers, same day; Natig's answers of 2026-10-21)
+# MVP6 development plan v10.0 — 2026-10-20 (updated with Ali's answers, same day; Natig's answers of 2026-10-21; state re-checked 2026-10-21 evening on `dfb5de610`)
 
 > **2026-10-21 answers — answered by Natig (management).** Recorded in rows A1, B, C1–C5, D6 and §3a below. The D9
 > question (who builds DC-03) goes to **Ali**; that row stays open for Ali.
@@ -10,7 +10,7 @@
 > question). R8: after 2026-11-18 new work needs a row in the CT's registered task source (or Natig's dated exception);
 > approved work continues, nothing stops automatically. Q358: the team sent Ali a short rollback risk note.
 
-Supersedes v9.9 (2026-10-19). Measured on `origin/main` `9d44e8a1f` (after #173). Every state names the PR, commit
+Supersedes v9.9 (2026-10-19). Measured on `origin/main` `9d44e8a1f` (after #173); **re-checked on `dfb5de610` (after #182), 2026-10-21 evening** — see the 2026-10-21 rows of §1. Every state names the PR, commit
 or record that moved it. Accounts: **Ali = `GMG-ERP`** (product owner), **Beste = `Bestepul` / `bestepullukcu-alt`**
 (senior developer, reviewer/merger), **`gmg-10`** = the SCE / Control Tower author account.
 
@@ -29,6 +29,13 @@ S&OP/Capacity + DemandPlanning (UI, fixture-proven). Everything after it is foll
 | #167 | G7 removed — `sop-workflow-signoffs`, `capacity-planning` out of `AdminModules`; runner made definition-driven, G7 clean-up | `d6c7b9e05` |
 | #168 | CT-APR-01 first approval rows MOD-0147 / MOD-0148 (HIGH) — `pack_approval.py check` exit 0, "onaylı — HIGH" | `7c5848aa4` |
 | #173 | Q358 / G7 retraction runbook (`docs/guides/operations/auth-baseline-grant-retraction-runbook.md`); DCP-009 SupplyChain port 5061 → 5066 | `9d44e8a1f` |
+| #176, #182 | CT-START-05 (Control Tower agents; CT-SETUP-TEST-01 ledger; `pack_approval.py` and SOP touch-ups) — other lane | `9b8fefaec`, `dfb5de610` |
+| #169 | MOD-0191 effective quantity (Beste: merged 2026-10-21) | `a00538e17` |
+| #181 | MVP-6 CT → Codex handoff record (2026-10-16/17) | `94e079df7` |
+| #177 | This plan, owner answers 2026-10-20/21, BL-652 interim, G7 superseded, MOD-0147 metric set, Q358 bulk-rollback runbook | `bc513593f` |
+| #179 | Treasury finance/legal intake folder (TP-001 proposals), DESTINATION-BRIEF v1.0, MOD-0289 placement note | `46f1632d6` |
+| #178 | D5 — Auth `DeletedAt` set on soft delete, cleared on reactivation | `fd4dc780a` |
+| issue #180 | B5 — `auth-app` CI red with a different Mongo test each run (Ali has the review prompt) | — |
 
 Closed without merge: **#171 (DC-02)** and **#172 (DC-03)** — they recorded the decisions as made before their named
 owners decided. Both are kept as **drafts only** on `docs/sce/dc02-supplier-eligibility-draft-01` (`9baf67061`) and
@@ -56,18 +63,18 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 
 | # | step | owner | state |
 |---|---|---|---|
-| A1 | Run Q358 in production: `Q358Retraction__Mode=DryRun` → read the log (`unknown` 0, `failed` 0) → `Apply` → remove the setting. Runbook on main | **Ali** (deploys) | **waiting — Ali 2026-10-20:** run it when production authorizations are updated; production is not in active use yet. 2026-10-21: Natig will notify when production authorizations are updated **Ali 2026-10-21:** runs DryRun → Apply when Natig notifies; asks for the rollback path in writing (runbook has a per-tenant path; bulk rollback is only "a separate owner decision" — to be written). |
+| A1 | Run Q358 in production: `Q358Retraction__Mode=DryRun` → read the log (`unknown` 0, `failed` 0) → `Apply` → remove the setting. Runbook on main | **Ali** (deploys) | **waiting — Ali 2026-10-20:** run it when production authorizations are updated; production is not in active use yet. 2026-10-21: Natig will notify when production authorizations are updated **Ali 2026-10-21:** runs DryRun → Apply when Natig notifies; asks for the rollback path in writing (runbook has a per-tenant path; bulk rollback is only "a separate owner decision" — to be written). **2026-10-21 evening:** bulk-rollback steps are on main (runbook, #177); still waits for Natig's notice. |
 | A2 | G7 clean-up on non-prod hosts with `DemandFixtures` enabled (same runbook, `G7Retraction`) | — | **closed — Ali 2026-10-20:** not needed on other servers |
-| A3 | Mark `mvp6-0190-0192-g7-role-grants-owner-decision-01.md` superseded (still says "IN EFFECT") | **Natig** (`ny@gmgroup.ch` — the record names Natig as owner; earlier rows said Ali) | supersession banner drafted 2026-10-21 (record text above it unchanged) — waits for Natig's approval **Ali 2026-10-21: yes, mark it superseded** (banner committed `64e786055`). |
-| A4 | Fix the account mapping in `mvp6-g7-grant-removal-01/REPORT.md` ("Ali (`bestepullukcu-alt`)" → Ali = `GMG-ERP`) — small docs PR | CT prepares, Beste merges | open |
+| A3 | Mark `mvp6-0190-0192-g7-role-grants-owner-decision-01.md` superseded (still says "IN EFFECT") | **Natig** (`ny@gmgroup.ch` — the record names Natig as owner; earlier rows said Ali) | supersession banner drafted 2026-10-21 (record text above it unchanged) — waits for Natig's approval **Ali 2026-10-21: yes, mark it superseded** (banner committed `64e786055`). **Done** — banner merged in #177 (`bc513593f`). |
+| A4 | Fix the account mapping in `mvp6-g7-grant-removal-01/REPORT.md` ("Ali (`bestepullukcu-alt`)" → Ali = `GMG-ERP`) — small docs PR | CT prepares, Beste merges | open **Done** — `8445c37ef`, merged in #177. |
 
 **B. Main reds (other owners; MVP-6 does not touch them, XMC-001)**
 
 | # | step | owner | state |
 |---|---|---|---|
-| B1 | `MrpLiveCalculationTests` ×2 — fixture fixes the first demand week at 2026-10-19 and stock `AsOf` at `UtcNow`; red every day since 2026-10-20 | MOD-0189 (`ElikPenco`) | issue **#174** **2026-10-21 (team):** analysed — the two MRP tests take the first demand week as a fixed 19.10.2026 and the stock date as "now", red by themselves since 20 Oct; the same rule may make MRP "Unavailable" in production for plans whose first week is already past. Fix prompt sent to ElikPenco. |
-| B2 | `PpmAuditRetentionPolicySeedMongoTests` — CI `platform-app` row has no test-owned mongod | PSS / Platform | issue **#175** |
-| B3 | MOD-0022 `LoginOnlyEndpointGuardTests` ×2 | MVP-1 lane | owner-ruled known red (v9.9 1a) |
+| B1 | `MrpLiveCalculationTests` ×2 — fixture fixes the first demand week at 2026-10-19 and stock `AsOf` at `UtcNow`; red every day since 2026-10-20 | MOD-0189 (`ElikPenco`) | issue **#174** **2026-10-21 (team):** analysed — the two MRP tests take the first demand week as a fixed 19.10.2026 and the stock date as "now", red by themselves since 20 Oct; the same rule may make MRP "Unavailable" in production for plans whose first week is already past. Fix prompt sent to ElikPenco. **2026-10-21 evening:** no fix on main yet (`dfb5de610`). |
+| B2 | `PpmAuditRetentionPolicySeedMongoTests` — CI `platform-app` row has no test-owned mongod | PSS / Platform | issue **#175** **2026-10-21 evening:** no fix on main yet (`dfb5de610`). |
+| B3 | MOD-0022 `LoginOnlyEndpointGuardTests` ×2 | MVP-1 lane | **Closed 2026-10-21** by MVP-1 PR **#183** (`7c0b58783`): `ESignatureSamplesController.Image` and `ESignatureSettingsController.ListMeanings` gated with `[HasAnyPermission]`, `InternalESignActionsController` allow-listed; all 7 `LoginOnlyEndpointGuardTests` green (MVP-1 report, not re-run here). SCE branches cut before #183 merge `origin/main` before any PR. |
 | B4 | BL-615 Arch ×3 (`DocsPathGuard`, `AuditTrailStandard` ×2) | joint with CRM | registered known failures |
 | B5 | main auth-app red in 5 of the last 6 runs, a **different test each run** (`ProductIdentityEntitlementReconciliationMongoTests`, `AnonymousDoorLimitTests`, `OperationalSingleInstanceLockTests`), already before #164; lock test 30/30 locally (macOS) — flaky on Linux CI, not Q358/G7 | Auth owner | measured 2026-10-20; issue to file **Issue #180** (2026-10-21); Ali has the review prompt. |
 
@@ -94,10 +101,10 @@ per-environment configuration remains. CT-APR-02 (independent review before appr
 | D2 | Where contracts live (v9.9 4c): `docs/analysis/contracts/` vs the five docs folders — move, or allow the path in `docs-organization` (rule change, approval) | Ali | open **Closed 2026-10-21 (Ali):** already decided — `docs/analysis/contracts/` is a registered exception in `docs-organization.md` (owner decision 4c); the permanent place is set in the central clean-up after all MVPs. |
 | D3 | Runbook text says MongoDB 7.0, dev machine runs 8.0.18 (v9.9 4b; ruled not blocking) | Ali | open item **Closed 2026-10-21 (Ali):** no pinning; everyone may use their own MongoDB version. |
 | D4 | Gateway `Observability:Correlation:SigningKey` set in every non-Development environment (code fail-fast is on main) | ops / Ali | open **Closed 2026-10-21 (Ali):** the deploy team sets `Observability:Correlation:SigningKey` (≥ 32 characters) in every environment at deploy. |
-| D5 | `DeletedAt` on Auth entities (soft delete records `UpdatedAt`/`UpdatedBy` today) | CT (Auth, XMC-001) | **Ali 2026-10-20: may be added** — work item **PR #178** (`140018f22`; local 22/22) — review: Beste + Auth owner. |
-| D6 | Old open PRs **#49** and **#169** — keep, revive or close | **Beste** | **2026-10-21:** Beste decides **2026-10-21 (Beste):** #169 merged to main; #49 stays as it is, no action. |
+| D5 | `DeletedAt` on Auth entities (soft delete records `UpdatedAt`/`UpdatedBy` today) | CT (Auth, XMC-001) | **Ali 2026-10-20: may be added** — work item **PR #178** (`140018f22`; local 22/22) — review: Beste + Auth owner. **Done** — merged #178 (`fd4dc780a`). |
+| D6 | Old open PRs **#49** and **#169** — keep, revive or close | **Beste** | **2026-10-21:** Beste decides **2026-10-21 (Beste):** #169 merged to main; #49 stays as it is, no action. **Done.** |
 
-**Critical path:** C1 is answered (2026-10-21) → rewrite DC-02 D1 for the tenant-wide master → C3 (D2–D6) → C6 → C8 for the next real code; MOD-0147 itself starts only after MOD-0216 TPRM; A1 waits for the production authorization update.
+**Critical path:** C1 is answered (2026-10-21) → rewrite DC-02 D1 for the tenant-wide master → C3 (D2–D6) → C6 → C8 for the next real code; MOD-0147 itself starts only after MOD-0216 TPRM; A1 waits for the production authorization update. **2026-10-21 evening:** Cihan's S1 (model + migration) is next on the supplier path and depends on BL-501 arriving with MVP-1; the reds B1/B2 are still open (B3 closed by #183); H2 is done locally (§4).
 B1 should close first among the reds: it makes every PR's `planning-tests` red.
 
 **Stacked PRs (lesson of #167):** the repository dismisses approvals when the merge-base changes. Land a stacked
@@ -132,15 +139,62 @@ All four sources are Procurement modules (other owner) — reading them needs XM
 - **Inference (to confirm with Cihan / the status-report owner):** the "Treasury Core" sheet's 7 commits are most likely
   these same 7 DKI commits — i.e. one piece of work, not two.
 
-## 4. Hardening after MVP-6 (unchanged from v9.9)
+## 4. Hardening after MVP-6 (H2 done locally 2026-10-21)
 
 H1 dev JWT secret fail-fast in every service and out of 23 appsettings · H2 test hosts mint AuthService-shaped tokens
 + a legal-entity failing path per gate · H3 BL-615 audit ledger (joint with CRM) · H4 one adapter base.
+
+**H2 — done locally, not pushed (Natig 2026-10-21).** Branch `feature/sce/real-identity-tests-01` (from `dfb5de610`),
+two commits: `f0522e6f2` (slice A) and `e49461a99` (slice B). Push and PR wait until the work unit is reviewed as a whole
+(Natig: no push/PR before a module is finished); before the PR the branch merges `origin/main` (it predates #183).
+- **Slice A** — one shared `AuthServiceToken` helper with AuthService's real claim set (issuer `diten-auth-service`,
+  audience `diten-erp`, no `legal_entity_id`); the 7 hand-made token sites migrated; a legal-entity refusal through the
+  real host for every gate (Returns, Claims, Carriers, Loads, Shipments, S&OP, Capacity: 404/403 and 503, the gate asked
+  MDM, no write). Run once on an owned mongod: full SupplyChain suite **606 passed, 0 failed, 1 skipped**
+  (`ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery`, the child-process half), 15 new tests green.
+- **Slice B** — `tests/acceptance/real_role_probe.py`, run once 2026-10-21 against Auth, Platform, MDM and SupplyChain on an
+  owned 8.0.18 replica set with lane-only secrets: **26/26 steps PASS**. Real logins of seeded users whose roles were made
+  and granted through the tenant Roles API (BL-652 interim); user A (with `mdm.legal-entities.read`) created a shipment,
+  a carrier and a load and read returns and claims; user B (without it) got 503 `DEPENDENCY_UNAVAILABLE` with no write.
+  The token carried AuthService's shape and no `legal_entity_id`. Deviations from the scope draft: returns/claims checked
+  by GET, not create; seeded users, not API-created ones. Not via the gateway. All processes and mongod were stopped.
+Open findings (separate decisions, not fixed in H2):
+- **SourceIntake** `TrustedSourceContext` still requires a `legal_entity_id` claim — no HTTP endpoint calls it today, so no
+  real user is refused yet; recorded as a test (`SourceIntakeRealTokenTests`) that must be inverted when it is aligned.
+- The SupplyChain **runtime probes** mint their own tokens, call the service directly (not the gateway) and set no
+  `LegalEntity:ReferenceBaseUrl`, so every self-started create most likely answers 503 today (from code, not run).
+- The scope question to Ali stays open (`mvp6-follow-up-drafts-01/SUPPLYCHAIN-REAL-ROLE-TESTS-SCOPE-v0.1.md`).
+
+## 4a. Integration phase (owner decisions 2026-10-21; state 2026-10-22, local commits, nothing pushed)
+
+Source: `docs/roadmap/plans/integration-phase-and-mvp5-start-plan-2026-10-21.md` §2.1 / §4.1 (Beste): E-1 correlation, E-2
+central audit now, E-5 MDM through the Gateway, E-6 UTC day, E-7 product check + return → `CUSTOMER_RETURN` (QUARANTINE),
+W-4 MOD-0183 is the single writer of `GOODS_ISSUE_SALES` at `Dispatched`, W-10 MVP-5's CT is the MVP-1 CT.
+
+| # | work package | state | where |
+|---|---|---|---|
+| I1 | WP-A1 — central audit (E-2): `IsSuccessful` on both envelopes, 17 commands marked, 9 transactions enlist, ledger + `AcceptedTrails` + `PinnedCounts` 0/0 (CT decision Natig 2026-10-21) | **done locally** — suite 603/0/1, 4 sabotages red | `feature/sce/central-audit-01` `ca59b5e97` |
+| I2 | WP-A2 — MDM through the Gateway (E-5) + FIX1 outbox created at start-up (race found by the suite: "Conflicted registering namespace", Carrier create 500) | **done locally** — suite 605/0/1; not proven against a live Gateway | same branch `041865e86` |
+| I3 | WP-P1 — MOD-0183 §23 / MOD-0186 §34 pack revision + SHIPMENT-BUNDLE 3.4.0 proposal | **draft** — G1, G5–G10 decided (Natig 2026-10-22); G2 reservation, G3 REVERSAL source (`MOD-0173` only), G4 two-phase multi-line **wait for the MVP-1 CT**; patches `git apply --check` OK, packs not edited | `docs/sce/wp-p1-inventory-writes-01` `c0587c728` |
+| I4 | Wave 2 code: DL-1 contract 3.4.0 · DL-2 issue core · DL-3 return → quarantine (after DL-2) · DL-4 product check (PRODUCT-MASTER frozen first) · DL-5 refusal texts · DL-6 reservations | waits on I3 approval (CT-APR-02 by the MVP-1 CT, CT-APR-01 high risk) | — |
+| I5 | Inventory read client (`ReadOnlySourceClients.cs`, not in DI) | measure first which rule or screen needs it | — |
+
+**Decided 2026-10-22 (Natig):** (1) lane live tours use the **6100–6199** range — a lane-only exception, not a §3 service
+port; (2) the finished units are pushed now, **one PR each** (H2 `feature/sce/real-identity-tests-01`, suite 606/0/1 after the
+main merge; I1+I2; this plan; I3), each after an `origin/main` merge and a re-test; (3) the CT-APR-01 approver of Cihan's
+MOD-0140 pack change is **Beste (K2)**. For the MVP-1 CT: G2–G4, and the FIX1 race may also exist in Inventory
+(the shared dispatcher creates the outbox indexes in the background).
 
 ## 5. Post-MVP-6 (named, not scheduled)
 
 DemandPlanning production authorities (S1, AC-D01…D29); DEMAND v2 (G3) to replace the S&OP/Capacity fixture seed;
 SUPPLY-CONSTRAINTS producer MOD-0193 (G2); BL-652 Option 2; the parked process audit.
+
+**Treasury transfer track (2026-10-21, not MVP-6 scope):** the intake folder and TP-001 proposals are on main (#179,
+unapproved); DESTINATION-BRIEF v1.0 handed to the ERP-vNext Treasury CT (a hash-listed copy outside both repositories on the CT machine).
+Waits on: the producer's first packet (batch 1 = MOD-0289 + MOD-0220) and the MDM owner's placement decision for
+MOD-0289 (`master-data-management` proposed). MOD-0289's Blueprint 8.8 gate names MOD-0126, MOD-0140 and MOD-0269 —
+unmet here.
 
 **Dates:** the R8 transition ends about **2026-11-18** — basis (asked by Ali 2026-10-21): `ct-r8-transition-period-owner-decision-01` (2026-10-15) — "the first 30 days are transition", starting when SOP r3 merges to main; r3 merged in #147 (`913d725a1`, 2026-10-19 10:24 +0300); +30 calendar days = 2026-11-18. Assumptions: the start is that merge (not the decision date) and the days are calendar days — for the owner to confirm. BL-652's expiry 2026-11-03
 is moot since 2026-10-21 (Option 1 never applied, replaced by Option 2); Q358 and G7 are already removed — no open expiry.
