@@ -137,6 +137,12 @@ listede olmayan dosya yok; 81/81 dosya kaynak commit `182855b11d2e0397f1ee8988ba
 maddeleri). MOD-0220 v1.3 koşulu: kaynak ve Recovery pack farkı §M'de. Eski sürümler (v1.1, v1.0, v1.5, v1.2) tarih
 olarak kalır; level-1 kaydı yeni sürümlerin manifest SHA'sını gösterir. Kanıt özeti v1.2 (F02/PAIR) kaynakta bekliyor.
 
+**Kanıt özeti v1.2** (`source-build-evidence-v1.2/`, SHA256SUMS `704bc01e…a89b6`, 94/94 OK): MOD-0289 "TEST fail (56) +
+blocked (61)". Treasury Intake CT trx'ten yeniden saydı: 117 MOD-0289 başarısızlığı = AccountCreateTransactionHttp 16 +
+AccountCreateTransactionMongo 27 + LegalEntityAccountAggregateMongo 18 (61, fixture önkoşulu) + ContractBootstrap 55 +
+SeedBaseline 1 (56). Sayılar tutuyor. 54 başarısızlığın nedeni kaynakta da belirlenmedi; MOD-0289 güvenceleri
+Recovery'de doğrulanmamış kalır ve MOD-0289 pack'i yazılırken bu testler Recovery'de yeniden kurulur.
+
 Not: MOD-0289 v1.7 yazarı Recovery inceleme raporunu "tek bir izinli git show" ile okuduğunu yazıyor (veri olarak).
 
 ## 8. Ölçülmeyenler
