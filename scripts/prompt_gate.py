@@ -616,7 +616,7 @@ def review_negatives(pa, root: str, main: str, commit: str, path: str, data: byt
         first 8 hex of its findings_sha256. An older own UYGUN never settles a later negative.
       - A positive cover comes only from this exact version or an exempt-reachable one."""
     digest = pa.sha256(data)
-    trail = pa.append_only_problems(root, main, pa.REVIEWS)
+    trail = pa.append_only_problems(root, main, pa.REVIEWS, main)
     if trail:
         commits = ", ".join(sorted(set(re.findall(r"([0-9a-f]{12})'de yalnız ekleme değil", " ".join(trail))))) or "bir commit"
         return [f"inceleme dosyası main'de yalnız ekleme değil — {t}" for t in trail], [], [], TRAIL_STEP.format(commits=commits), set()
