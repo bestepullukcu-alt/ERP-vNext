@@ -378,14 +378,17 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     {
         var callLog = new List<string>();
         var permissionGate = new RecordingPermissionGate(callLog);
+        var store = new InMemoryPvgIntakeDraftRepository();
         var service = NewService(
             new RecordingFieldSecurityPolicy(callLog),
             new RecordingWorkflowTransitionGate(callLog),
             new RecordingEvidenceLinkPort(callLog),
-            permissionGate);
+            permissionGate,
+            store);
 
         var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
         Assert.True(created.Result.IsSuccess);
+        var createdVersion = (await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!))!.Version;
 
         var updated = await service.UpdateDraftAsync(
             new UpdateIntakeDraftCommand(
@@ -393,7 +396,8 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                 ActorContext(),
                 CorrelationContext(),
                 created.IntakeDraftId!,
-                ValidUpdateRequest()));
+                ValidUpdateRequest(),
+                createdVersion));
         var detail = await service.GetDraftByIdAsync(ReadByIdQuery(created.IntakeDraftId!));
         var listed = await service.ListDraftsAsync(ReadListQuery());
         var triaged = await service.TriageDraftAsync(
@@ -402,14 +406,16 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                 ActorContext(),
                 CorrelationContext(),
                 created.IntakeDraftId!,
-                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
+                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"),
+                detail.Items[0].Version));
         var routed = await service.RouteDraftAsync(
             new RouteIntakeDraftCommand(
                 TenantContext(),
                 ActorContext(),
                 CorrelationContext(),
                 created.IntakeDraftId!,
-                new PvgRouteIntakeDraftRequest("queue-safety-review")));
+                new PvgRouteIntakeDraftRequest("queue-safety-review"),
+                triaged.Version));
 
         Assert.Equal(
             [
@@ -869,6 +875,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
 
         Assert.True(created.Result.IsSuccess);
         Assert.DoesNotContain("evidence:Create", callLog);
+        var createdVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
         callLog.Clear();
 
         var updated = await service.UpdateDraftAsync(
@@ -877,7 +884,8 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                 ActorContext(),
                 CorrelationContext(),
                 created.IntakeDraftId!,
-                ValidUpdateRequest() with { EvidenceLinkReferences = [] }));
+                ValidUpdateRequest() with { EvidenceLinkReferences = [] },
+                createdVersion));
 
         Assert.True(updated.Result.IsSuccess);
         Assert.DoesNotContain("evidence:Update", callLog);
@@ -990,6 +998,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
             new RecordingPermissionGate(callLog));
         var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
         Assert.True(created.Result.IsSuccess);
+        var createdVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
         callLog.Clear();
 
         var triaged = await service.TriageDraftAsync(
@@ -998,7 +1007,8 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                 ActorContext(),
                 CorrelationContext(),
                 created.IntakeDraftId!,
-                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
+                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"),
+                createdVersion));
 
         Assert.True(triaged.Result.IsSuccess);
         Assert.Contains("field:Triage:triage:TriageOutcome", callLog);
@@ -1143,6 +1153,173 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     }
 
     [Fact]
+    public async Task Update_with_stale_version_returns_version_conflict_and_leaves_store_unchanged()
+    {
+        var store = new InMemoryPvgIntakeDraftRepository();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy([]),
+            new RecordingWorkflowTransitionGate([]),
+            new RecordingEvidenceLinkPort([]),
+            new RecordingPermissionGate([]),
+            store);
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        var readVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
+        var concurrentUpdate = await service.UpdateDraftAsync(
+            UpdateCommand(created.IntakeDraftId!, ValidUpdateRequest(), readVersion));
+        Assert.True(concurrentUpdate.Result.IsSuccess);
+
+        var staleUpdate = await service.UpdateDraftAsync(
+            UpdateCommand(
+                created.IntakeDraftId!,
+                ValidUpdateRequest() with { SuspectProductText = "stale suspect product" },
+                readVersion));
+
+        AssertVersionConflict(staleUpdate);
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
+        Assert.NotNull(persisted);
+        Assert.Equal(concurrentUpdate.Version, persisted.Version);
+        Assert.Equal(PvgIntakeStatus.IntakeUpdated, persisted.Intake.Status);
+        Assert.Equal("updated-source-ref", persisted.Intake.SourceReference);
+        Assert.Equal("suspect product update", persisted.Intake.SuspectProductText);
+    }
+
+    [Fact]
+    public async Task Triage_and_route_with_stale_version_return_version_conflict()
+    {
+        var callLog = new List<string>();
+        var store = new InMemoryPvgIntakeDraftRepository();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog),
+            store);
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        var readVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
+        var concurrentUpdate = await service.UpdateDraftAsync(
+            UpdateCommand(created.IntakeDraftId!, ValidUpdateRequest(), readVersion));
+        Assert.True(concurrentUpdate.Result.IsSuccess);
+        callLog.Clear();
+
+        var staleTriage = await service.TriageDraftAsync(TriageCommand(created.IntakeDraftId!, readVersion));
+        var staleRoute = await service.RouteDraftAsync(RouteCommand(created.IntakeDraftId!, readVersion));
+
+        AssertVersionConflict(staleTriage);
+        AssertVersionConflict(staleRoute);
+        Assert.Equal(
+            [
+                "permission:Triage:pvg.mod0230.intake.triage",
+                "field:Triage:triage:TriageOutcome",
+                "field:Triage:triage:TriageReason",
+                "workflow:Triage",
+                "evidence:Triage",
+                "permission:Route:pvg.mod0230.intake.route",
+                "field:Route:route:RouteTargetQueue",
+                "workflow:Route",
+                "evidence:Route"
+            ],
+            callLog);
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
+        Assert.NotNull(persisted);
+        Assert.Equal(concurrentUpdate.Version, persisted.Version);
+        Assert.Equal(PvgIntakeStatus.IntakeUpdated, persisted.Intake.Status);
+        Assert.Null(persisted.Intake.TriageOutcome);
+        Assert.Null(persisted.Intake.TriageReason);
+        Assert.Null(persisted.Intake.RouteTargetQueue);
+    }
+
+    [Fact]
+    public async Task Get_by_id_returns_current_version_after_update()
+    {
+        var service = NewService(
+            new RecordingFieldSecurityPolicy([]),
+            new RecordingWorkflowTransitionGate([]),
+            new RecordingEvidenceLinkPort([]),
+            new RecordingPermissionGate([]));
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        var initialVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
+
+        var updated = await service.UpdateDraftAsync(
+            UpdateCommand(created.IntakeDraftId!, ValidUpdateRequest(), initialVersion));
+        var fetched = await service.GetDraftByIdAsync(ReadByIdQuery(created.IntakeDraftId!));
+
+        Assert.True(updated.Result.IsSuccess);
+        Assert.NotNull(updated.Version);
+        Assert.True(fetched.Result.IsSuccess);
+        var item = Assert.Single(fetched.Items);
+        Assert.Equal(updated.Version, item.Version);
+        Assert.NotEqual(initialVersion, item.Version);
+        AssertSafe(fetched);
+    }
+
+    [Fact]
+    public async Task List_summary_returns_current_version()
+    {
+        var service = NewService(
+            new RecordingFieldSecurityPolicy([]),
+            new RecordingWorkflowTransitionGate([]),
+            new RecordingEvidenceLinkPort([]),
+            new RecordingPermissionGate([]));
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        var initialVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
+
+        var updated = await service.UpdateDraftAsync(
+            UpdateCommand(created.IntakeDraftId!, ValidUpdateRequest(), initialVersion));
+        var listed = await service.ListDraftsAsync(ReadListQuery());
+
+        Assert.True(updated.Result.IsSuccess);
+        Assert.NotNull(updated.Version);
+        Assert.True(listed.Result.IsSuccess);
+        var item = Assert.Single(listed.Items);
+        Assert.Equal(created.IntakeDraftId, item.IntakeDraftId);
+        Assert.Equal(updated.Version, item.Version);
+        Assert.NotEqual(initialVersion, item.Version);
+        AssertSafe(listed);
+    }
+
+    [Theory]
+    [InlineData(PvgIntakeOperation.Update)]
+    [InlineData(PvgIntakeOperation.Triage)]
+    [InlineData(PvgIntakeOperation.Route)]
+    public async Task Mutation_without_expected_version_is_version_conflict_and_leaves_store_unchanged(PvgIntakeOperation operation)
+    {
+        var store = new InMemoryPvgIntakeDraftRepository();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy([]),
+            new RecordingWorkflowTransitionGate([]),
+            new RecordingEvidenceLinkPort([]),
+            new RecordingPermissionGate([]),
+            store);
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        var initialVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
+
+        var mutation = operation switch
+        {
+            PvgIntakeOperation.Update => await service.UpdateDraftAsync(
+                UpdateCommand(created.IntakeDraftId!, ValidUpdateRequest(), null)),
+            PvgIntakeOperation.Triage => await service.TriageDraftAsync(TriageCommand(created.IntakeDraftId!, null)),
+            PvgIntakeOperation.Route => await service.RouteDraftAsync(RouteCommand(created.IntakeDraftId!, null)),
+            _ => throw new InvalidOperationException($"Unsupported version-less mutation operation {operation}.")
+        };
+
+        AssertVersionConflict(mutation);
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
+        Assert.NotNull(persisted);
+        Assert.Equal(initialVersion, persisted.Version);
+        Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
+        Assert.Equal("source-ref", persisted.Intake.SourceReference);
+        Assert.Equal("suspect product", persisted.Intake.SuspectProductText);
+        Assert.Null(persisted.Intake.TriageOutcome);
+        Assert.Null(persisted.Intake.TriageReason);
+        Assert.Null(persisted.Intake.RouteTargetQueue);
+    }
+
+    [Fact]
     public void Application_service_slice_does_not_add_forbidden_operation_contracts()
     {
         var applicationTypeNames = typeof(PvgIntakeDraftApplicationService)
@@ -1190,6 +1367,51 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     private static GetIntakeDraftListQuery ReadListQuery() =>
         new(TenantContext(), ActorContext(), CorrelationContext(), 1, 10, null);
 
+    private static async ValueTask<long> ReadVersionAsync(PvgIntakeDraftApplicationService service, string intakeDraftId)
+    {
+        var fetched = await service.GetDraftByIdAsync(ReadByIdQuery(intakeDraftId));
+        Assert.True(fetched.Result.IsSuccess);
+        return Assert.Single(fetched.Items).Version;
+    }
+
+    private static UpdateIntakeDraftCommand UpdateCommand(
+        string intakeDraftId,
+        PvgUpdateIntakeDraftRequest request,
+        long? expectedVersion) =>
+        new(TenantContext(), ActorContext(), CorrelationContext(), intakeDraftId, request, expectedVersion);
+
+    private static TriageIntakeDraftCommand TriageCommand(string intakeDraftId, long? expectedVersion) =>
+        new(
+            TenantContext(),
+            ActorContext(),
+            CorrelationContext(),
+            intakeDraftId,
+            new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"),
+            expectedVersion);
+
+    private static RouteIntakeDraftCommand RouteCommand(string intakeDraftId, long? expectedVersion) =>
+        new(
+            TenantContext(),
+            ActorContext(),
+            CorrelationContext(),
+            intakeDraftId,
+            new PvgRouteIntakeDraftRequest("queue-safety-review"),
+            expectedVersion);
+
+    private static void AssertVersionConflict(PvgIntakeDraftMutationResult mutation)
+    {
+        Assert.False(mutation.Result.IsSuccess);
+        Assert.Equal(PvgApplicationOutcome.Blocked, mutation.Result.Outcome);
+        Assert.Equal(PvgApplicationReasonCodes.IntakeDraftVersionConflict, mutation.Result.ReasonCode);
+        Assert.NotEqual(PvgApplicationReasonCodes.IntakeDraftNotFound, mutation.Result.ReasonCode);
+        AssertSafeReasonCode(mutation.Result.ReasonCode);
+        Assert.Empty(mutation.Result.ValidationFailures);
+        Assert.Null(mutation.IntakeDraftId);
+        Assert.Null(mutation.AuditIntent);
+        Assert.Null(mutation.Version);
+        AssertSafe(mutation);
+    }
+
     private static async ValueTask<PvgIntakeDraftMutationResult> MutateAsync(
         PvgIntakeDraftApplicationService service,
         PvgIntakeOperation operation)
@@ -1201,6 +1423,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
 
         var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
         Assert.True(created.Result.IsSuccess);
+        var createdVersion = await ReadVersionAsync(service, created.IntakeDraftId!);
 
         return operation switch
         {
@@ -1210,21 +1433,24 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                     ActorContext(),
                     CorrelationContext(),
                     created.IntakeDraftId!,
-                    ValidUpdateRequest())),
+                    ValidUpdateRequest(),
+                    createdVersion)),
             PvgIntakeOperation.Triage => await service.TriageDraftAsync(
                 new TriageIntakeDraftCommand(
                     TenantContext(),
                     ActorContext(),
                     CorrelationContext(),
                     created.IntakeDraftId!,
-                    new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"))),
+                    new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"),
+                    createdVersion)),
             PvgIntakeOperation.Route => await service.RouteDraftAsync(
                 new RouteIntakeDraftCommand(
                     TenantContext(),
                     ActorContext(),
                     CorrelationContext(),
                     created.IntakeDraftId!,
-                    new PvgRouteIntakeDraftRequest("queue-safety-review"))),
+                    new PvgRouteIntakeDraftRequest("queue-safety-review"),
+                    createdVersion)),
             _ => throw new InvalidOperationException($"Unsupported mutation operation {operation}.")
         };
     }
