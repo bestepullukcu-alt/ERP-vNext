@@ -474,6 +474,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 - **Ödeyen şirket uygunluğu güncel durumdur, kayıt anındaki kopya değildir (TP-001 T14):** Create, Submit, her karar ve
   Release'te MOD-0220 `lookup-validation` çağrılır; `OperationalStatus = Active` **ve** `ApprovalStatus = Approved` değilse
   `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE` (422); MOD-0220 yanıt vermezse `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (503) — geçiş yok.
+  **Reconcile bu kuraldan muaftır** (sahip kararı D15/2): yeni işlem başlatmaz, daha önce kontrol edilip başlatılmış
+  işlemin uzak sonucunu kaydeder; şirket arada pasifleşse de niyet kapanabilmelidir.
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId). Okumalar `IsDeleted = false`.
 - **Idempotency (sahip kararı D12/2 — her yazma komutunda zorunlu):** Create, Update, Delete, BulkDelete, Validate,
   Submit, Reconcile, her karar, kanıt bağlama, onay belgesi ve Release `Idempotency-Key` başlığı **ister**; başlık yoksa

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D14 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D15 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -74,6 +74,13 @@ kanıt). Normal onay ve muafiyet yetkisi ayrı değerlendirilir.
    Cash Positioning yayımı K2 değildir (para yetkisi değil; yine aynı işlemde yazılır).
 4. **Şirket kuralı (D10/1) genişletmesi:** "Evet, yazma işlemlerinde" — AP, AR ve Cash Positioning'de borç, alacak ya da
    nakit pozisyonu oluşturan/değiştiren her işlemde şirket aktif ve onaylı olmalı; okumalar etkilenmez.
+
+## D15 — Pack düzeltme kararları (2026-10-24, soru kutusu; ikisi de önerilen seçenek)
+
+1. **MOD-0120 teslim dilimleri:** "DL-4'ü DL-3 ile birleştir" — elle tahsilat kaydı (RecordPayment) DL-3'te, iptal/silme
+   onayıyla birlikte; eski DL-5 (ekran) DL-4 oldu; O-9 (elle tahsilat bu sürümde mi) açık kalır.
+2. **Reconcile muafiyeti:** "Evet, muaf" — belirsiz sonucu kapatan Reconcile komutları "şirket aktif ve onaylı" kuralından
+   muaftır (D10/1, D14/4); yeni işlem başlatmazlar, kontrol edilmiş işlemin uzak sonucunu kaydederler (dört pack).
 
 ## Karar olmayanlar
 

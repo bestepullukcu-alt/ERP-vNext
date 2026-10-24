@@ -77,7 +77,7 @@ receivables, collections states, credit memos" (paket §A).
   taşınır; içe aktarma, MOD-0125 projeksiyonu, tarih geçersiz kılma ve kanıt dışa aktarma alt sistemleri bu sürümde
   **taşınmaz** (gerekçe "Owned Objects → Kaynak işlemleri"). Kaynakta olmayan elle oluşturma, açma, tahsilat aşaması ve
   onaylı düzeltme Recovery ekleridir. Kaynak kusurları taşınmaz ("Implementation Notes → Taşınmayacaklar").
-- **Para hareketi yok:** AR banka işlemi yapmaz, ödeme almaz; tahsilat yalnız (koşullu DL-4) elle **kayıt** edilir.
+- **Para hareketi yok:** AR banka işlemi yapmaz, ödeme almaz; tahsilat yalnız (koşullu, DL-3) elle **kayıt** edilir.
   MOD-0269 mutabakat/ödeme tüketimi kaynakta da ertelenmiştir (paket §L.13).
 
 ## Ownership and Boundaries
@@ -460,7 +460,7 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
   `TenantId` izolasyonu, pipeline davranışları, `AddCentralAudit<…>(RequireEnlistment = true)`, modül manifest kaydı)
   ilk `ready-for-dev` olan Treasury paketinin DL-1'inde açılır (bugünkü sıra MOD-0126, TRM-S1). MOD-0120 önce gelirse
   iskelet işi MOD-0120 DL-1'e taşınır ve MOD-0126 pack Repo Scope'taki tanımla **aynı** yapılır (tek iskelet, K15).
-  MOD-0120'nin kendi yolları: (DL-1…DL-4)
+  MOD-0120'nin kendi yolları: (DL-1…DL-3)
   - `src/Diten.FinanceTreasuryService.Application/Features/ReceivableInvoice/**` (Golden Reference Compact düzeni)
   - `src/Diten.FinanceTreasuryService.Domain/ReceivableInvoices/**`
   - `src/Diten.FinanceTreasuryService.Persistence/ReceivableInvoices/**` (depolar, indeks hizmeti; her işlem geri çağrısı
@@ -482,7 +482,7 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
   `frontend/Diten.Web/Controllers/FinanceTreasury/ReceivableInvoicesController.cs` (same-origin MVC proxy),
   `PageHelpResource.{7 dil}.resx` içinde `Help.RECEIVABLEINVOICES.*` ve `Services/Help/PageHelpCatalog.cs` satırı,
   nav anahtarları `Nav.Domain.FINANCETREASURY` (MOD-0126 ile ortak), `Nav.Module.ACCOUNTSRECEIVABLE`,
-  `Nav.Page.RECEIVABLEINVOICES`. (DL-5)
+  `Nav.Page.RECEIVABLEINVOICES`. (DL-4)
 
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
 MOD-0149 müşteri doğrulama + dış referans çözümleme eki (commercial-suite, O-3); MOD-0220 TRM-14 (MOD-0126 ile ortak);
@@ -1078,7 +1078,7 @@ paket §H, §L.2) **taşınmaz**.
 - [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak)
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
 - [ ] Düzeltme politikası (O-7) ve muafiyet kararı (O-8 kalan kısmı; K2 kısmı D14/3 ile kapandı) — DL-3 için
-- [ ] Tahsilat kapsamı (O-9) — DL-4 için
+- [ ] Tahsilat kapsamı (O-9) — DL-3'teki RecordPayment için
 - [ ] Kaynağın sınırlı denetim/çoklu yazma devri taşınmıyor (onaylandı mı — sahip, Level-1 koşul 1)
 
 ## Implementation Notes
@@ -1225,7 +1225,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
   miras alır ve "modül kendi SoD kontrolünü icat etmez" der. A1 MOD-0023'ün başlatan kuralıdır; A2 (oluşturan/açan) ve A3–A4
   (eşik) modülün ek kurallarıdır ve çözümleyicide aday dışı bırakılır — MOD-0126 ile aynı yapı.
 - **Neden tahsilat koşullu:** kaynakta elle tahsilat yok; mutabakat MOD-0269'a bırakılmış. Tahsilat olmadan `Paid` hiç
-  oluşmaz ve AR yalnız kayıt defteri olur. Öneri DL-4'te tek aşamalı, K2 elle kayıt; reddedilirse DL-4 çıkarılır ve AC-33
+  oluşmaz ve AR yalnız kayıt defteri olur. Öneri DL-3'te tek aşamalı, K2 elle kayıt; reddedilirse RecordPayment DL-3'ten çıkarılır ve AC-33
   "isteğe bağlı" olmaz, silinmez — "kapsam dışı" notuyla kalır (AC kimlikleri değişmez).
 - **Neden yaşlandırma türetilir:** saklanan `DUE/OVERDUE` bir zamanlayıcı ister ve zamanlayıcı servis kimliği ister (yok).
 - `target: 2027-02-15` planlama yer tutucusudur, sahip kararı değildir.
@@ -1259,7 +1259,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-6 | RCS-001 tür öneki ve ortak kod servisi | `ARI` / başka | `ARI` (§3'te çakışma yok, `INV` dolu — ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-7 | Düzeltme eşiği | MOD-0126 D11/1 deseni (kiracı ayarı, para birimli, ayar yoksa tier-2) / eşiksiz tek kademe | **D11/1 deseni**, ayrı politika anahtarı | sahip (K1) |
 | O-8 | Düzeltme kararları ve tahsilat K2 mı; muafiyet | K2 evet/hayır; muafiyet var/yok | **KARAR (D14/3): K2 evet** — iptal/silme talebi, onay, ret ve elle tahsilat; **muafiyet** (açık): öneri yok (tier-2 aday yoksa 422) | CT + sahip |
-| O-9 | Elle tahsilat bu sürümde mi | DL-4'te / Follow-up (MOD-0269 / MOD-0121'i bekle) | **DL-4'te**, tek aşamalı, K2, ekleme-yalnız | sahip (K1) |
+| O-9 | Elle tahsilat bu sürümde mi | DL-3'te / Follow-up (MOD-0269 / MOD-0121'i bekle) | **DL-3'te** (D15/1), tek aşamalı, K2, ekleme-yalnız | sahip (K1) |
 | O-10 | Toplu içe aktarma (AR-16/17) | bu sürüm / servis kimliği gelince | servis kimliği gelince (Follow-up) | sahip (K1) |
 | O-11 | Satır vergisi | kullanıcı girdisi / vergi motoru | kullanıcı girdisi (motor faturalamanın) | sahip (K1) |
 | O-12 | "Bugün"ün saat dilimi (yaşlandırma, söz tarihi, tahsilat tarihi) | UTC / şirket saat dilimi | UTC (MOD-0126 O-12 ile tutarlı); şirket saat dilimi MOD-0220'de alan olursa yeniden | sahip (K1) |
@@ -1273,9 +1273,8 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 |---|---|---|
 | DL-1 | fatura çekirdeği, müşteri/şirket doğrulaması, veri kapsamı ve denetim | Module Summary, Ownership and Boundaries, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Backend File Convention, Acceptance Criteria, Test Expectations, Ready-for-dev Checklist, Implementation Notes, Follow-up Items, Açık kararlar |
 | DL-2 | açma ve tahsilat aşaması | Validation Rules |
-| DL-3 | onaylı düzeltme (iptal / silme), SoD ve belirsiz sonuç | Runtime Constraints, Failure Path to Verify, Authorization Convention, Audited Events |
-| DL-4 | elle tahsilat (koşullu, O-9) | — (Entity Fields `ReceivablePayment`, AC-33; bölüm kapanışı DL-3'te) |
-| DL-5 | kiracı ekranı | Layout & Shell Contract, Frontend File Contract, Page Help (UXH-001), Gateway / API Routing Decision |
+| DL-3 | onaylı düzeltme (iptal / silme), elle tahsilat (koşullu, O-9), SoD ve belirsiz sonuç | Runtime Constraints, Failure Path to Verify, Authorization Convention, Audited Events |
+| DL-4 | kiracı ekranı | Layout & Shell Contract, Frontend File Contract, Page Help (UXH-001), Gateway / API Routing Decision |
 
 Her bölüm tabloda bir kez, **kapandığı** dilimde yazılıdır; önceki dilimler o bölümün kendilerine düşen kısmını uygular
 (ör. Audited Events tablosundaki denetim kaydı DL-1'in ilk komutuyla gelir, bölüm DL-3'te K2 sabotaj ve kurtarma testiyle
@@ -1293,9 +1292,9 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, MOD-0023 bağdaştırıcısı
   (servis içinde MOD-0126 ile ortak, zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
   Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0031 davranış ölçümü. Bitiş: AC-9…16, 17 (kararlar), 18 (iki aşamalı
-  + sabotaj + kurtarma), 32.
-- **DL-4** — Yollar: RecordPayment. **Neden ayrı:** O-9'a bağlı; reddedilirse dilim düşer, diğerleri etkilenmez. Önkoşul:
-  DL-2 (DL-3'le paralel olabilir; açık düzeltme kilidi DL-3'le birlikte test edilir). Bitiş: AC-33, 32 (c).
-- **DL-5** — Yollar: `Views/FinanceTreasury/ReceivableInvoices/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
+  + sabotaj + kurtarma), 32, 33. **RecordPayment (elle tahsilat) da bu dilimdedir** (sahip kararı D15/1, 2026-10-24:
+  ayrı DL-4 hiçbir bölümü kapatmadığı için dilim tablosu okunamıyordu); iki K2 komutu aynı onay ve denetim altyapısını
+  kullanır. O-9 "bu sürümde değil" kararı çıkarsa RecordPayment ve AC-33 dilimden çıkarılır, dilim yapısı değişmez.
+- **DL-4** — Yollar: `Views/FinanceTreasury/ReceivableInvoices/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). Önkoşul: DL-1 (liste/oluşturma), DL-2/DL-3 (eylem
   düğmeleri), Gateway rotası, O-3 (müşteri seçici). Bitiş: AC-25…29.
