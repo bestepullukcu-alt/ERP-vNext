@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9, D10, D11 ve D12 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D13 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -56,6 +56,12 @@ Sahip, Treasury modüllerinin çalışması için başka modüllerde gereken de�
    güncelleyen asla onaylayamaz; aday seçimi, karar kaydı ve Release aynı modeli uygular.
 2. **Idempotency (O-18):** "Tüm yazma komutlarında zorunlu" — anahtar yoksa 400; sunucu anahtar üretmez; makbuz kapsamı
    kiracı + şirket + aktör + işlem + hedef.
+
+## D13 — Muafiyet adayı (2026-10-24, soru kutusu; önerilen seçenek)
+
+"Yalnız tier-2 aday yoksa" — normalde yalnız tier-2 izni olanlar aday; R1–R3 dışlamasından sonra kiracıda hiç tier-2
+aday kalmıyorsa `waive-sod` izni olanlar muafiyet adayı olarak eklenir ve yalnız muafiyetli onay verebilir (gerekçe +
+kanıt). Normal onay ve muafiyet yetkisi ayrı değerlendirilir.
 
 ## Karar olmayanlar
 

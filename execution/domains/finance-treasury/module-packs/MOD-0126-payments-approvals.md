@@ -91,6 +91,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | 8 | `PaymentOutboxAttemptLog` (:151-163) | **taşınmaz** | aynı neden; teslim denemelerini `CentralAuditDispatcher` tutar |
 | + | — | **yeni** `PaymentWorkflowStartIntent` | uzak başlatmadan önce yerel niyet (level-1 koşul 2) |
 | + | — | **yeni** `PaymentDispatchAttempt` | serbest bırakma denemesi; MOD-0269 "yapılandırılmamış" sonucu kaydı (D5) |
+| + | — | **yeni** `PaymentCommandReceipt` | istemci idempotency makbuzu (D12/2); `Pending`/`Completed` yaşam döngüsü — Entity Fields |
 
 ### Kaynak işlemleri (PP-01…PP-11, paket §C) → Recovery
 
@@ -150,8 +151,17 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 - Kaynakta `Submitted` hiçbir yerde atanmıyor (`git grep PaymentBatchStatus.Submitted` @da4abb20 → 0 atama; gönderme
   doğrudan `PendingApproval` yazıyor, `PaymentWorkflowService.cs:190@da4abb20`). Recovery bu değeri "niyet yazıldı, sonuç
   bekleniyor" anlamında kullanır; yeni durum eklenmez.
-- `PaymentWorkflowStartIntent.Status`: `Pending` → `Started` | `Refused` | `Unknown` → (Reconcile) `Started` | `Refused`.
-- `PaymentApprovalDecision.State`: `Requested` → `Recorded` | `RefusedByWorkflow` | `Unknown` → (Reconcile) `Recorded` | `RefusedByWorkflow`.
+- **Niyet ve karar durumları — tek geçiş matrisi (gap 2/G5):** başlatma niyeti ve karar niyeti aynı sonuç sözlüğünü
+  kullanır. Açık durumlar: `Pending` (başlatma) / `Requested` (karar) ve `Unknown`. Kapalı durumlar: `Started` (başlatma) /
+  `Recorded` (karar), `Refused`, `Cancelled`.
+
+| Niyet | Açık → | tx2 (kesin sonuç) | belirsiz | Reconcile (yalnız `ReconcilePaymentBatchWorkflowCommand`) | Sonuç olayı |
+|---|---|---|---|---|---|
+| `PaymentWorkflowStartIntent.Status` | `Pending` | `Started` · `Refused` | `Unknown` | `Unknown`/`Pending` → `Started` · `Refused` · `Cancelled` | `…submitted` · `…workflow-start-refused` · `…workflow-start-cancelled` |
+| `PaymentApprovalDecision.State` | `Requested` | `Recorded` · `Refused` | `Unknown` | `Unknown`/`Requested` → `Recorded` · `Refused` · `Cancelled` | `…approved`/`…approved-with-sod-waiver`/`…rejected`/`…evidence-requested`/`…escalated` · `…decision-refused` · `…decision-cancelled` |
+
+  `Refused` = MOD-0023 kesin reddetti; `Cancelled` = MOD-0023 örneği ya da görevi iptal edilmiş / kapanmış bulundu
+  (yalnız Reconcile atar). Kaynaktaki `RefusedByWorkflow` adı kullanılmaz.
 - `PaymentSodResult` (kaynak 10 değer, `PaymentProposalEnums.cs:31-43@da4abb20`) Recovery'de: `Passed`,
   `FailedSelfApproval`, `FailedSubmitterApproval`, `FailedUpdaterApproval` (yeni), `FailedRoleConflict`,
   `FailedAmountTier`, `Waived`. **Taşınmaz:** `NotEvaluatedByWorkflowProxy`, `PassedByAdminProxy` (PP-05 ile birlikte),
@@ -258,7 +268,22 @@ Kaynak alanlar (`PaymentProposalEntities.cs:68-97@da4abb20`) korunur: `Decision`
 `DecidedBy` (**Guid**, kaynakta string), `DecidedAt`, `RequestFingerprintVersion`, `RequestFingerprint`, `WorkflowInstanceId`,
 `WorkflowTaskId`, `WorkflowTransitionId`, `WorkflowIsFinalStep`, `SodPolicyVersion`, `WaiverRequested`,
 `WaiverReasonCode`. **Çıkarılan:** `DecisionPath` (tek yol kalır: iş akışı), `AuditOutboxId`, `AuditEventId` (CentralAudit
-taşır). **Eklenen:** `State` (Requested/Recorded/RefusedByWorkflow/Unknown).
+taşır). **Eklenen:** `State` (Requested/Recorded/Refused/Cancelled/Unknown — tek geçiş matrisi yukarıda),
+`IsWaiverCandidate` (bool — onaylayıcı muafiyet adayı olarak atandıysa, D13).
+
+### PaymentCommandReceipt (`payment_command_receipts`) — idempotency makbuzu (gap 2/G2–G3)
+
+| Alan | Tip | Kural |
+|---|---|---|
+| TenantId, LegalEntityId, ActorId, Operation, TargetId, Key | Guid, Guid, Guid, string, Guid?, string | **makbuz kapsamı** (D12/2); `TargetId` Create için `null` |
+| RequestFingerprint / FingerprintVersion | string / int | sunucuda hesaplanır |
+| Status | `Pending` \| `Completed` | tek aşamalı komut: tx1'de doğrudan `Completed`; iki aşamalı komut: tx1'de `Pending`, tx2'de ya da Reconcile'da `Completed` |
+| ResponseStatusCode / ResponseBody | int? / string? | **yalnız `Completed`'da** dolu — kesin (ya da 202 belirsiz) yanıt |
+| LinkedIntentId | Guid? | iki aşamalı komutta başlatma/karar/serbest bırakma niyetinin kimliği |
+| CreatedAt / CompletedAt | DateTimeOffset / DateTimeOffset? | — |
+
+İş varlıklarındaki `IdempotencyKey` alanları istemci anahtarını **taşımaz**; istemci anahtarı yalnız makbuzdadır.
+`PaymentWorkflowStartIntent.IdempotencyKey` MOD-0023'e giden **uzak** anahtardır (deterministik, istemciden bağımsız).
 
 ### PaymentException (`payment_exceptions`), PaymentAttestation (`payment_attestations`), PaymentDispatchAttempt (`payment_dispatch_attempts`)
 
@@ -275,12 +300,11 @@ taşır). **Eklenen:** `State` (Requested/Recorded/RefusedByWorkflow/Unknown).
 | Recovery indeksi | Anahtar | Tekil | Kaynak karşılığı |
 |---|---|---|---|
 | `ux_payment_batch_code` | TenantId + BatchCode | **evet, kısmi filtre YOK** (silinen partinin kodu da dolu sayılır, RCS-001 §6) | `ux_mod0126_payment_batch_number` (kısmi `IsDeleted=false`, `:47-52` — taşınmaz) |
-| `ux_payment_batch_idempotency` | TenantId + IdempotencyKey | evet | `ux_mod0126_payment_batch_idempotency` |
-| `ux_payment_decision_idempotency` | TenantId + IdempotencyKey | evet | `ux_mod0126_payment_decision_idempotency` |
-| `ux_payment_attestation_idempotency` | TenantId + IdempotencyKey | evet | `ux_mod0126_payment_attestation_idempotency` |
-| `ux_payment_start_intent_idempotency` | TenantId + IdempotencyKey | evet | yeni |
-| `ux_payment_start_intent_open` | TenantId + PaymentBatchId, kısmi `Status ∈ {Pending, Unknown}` | evet — partide aynı anda tek açık niyet | yeni |
-| `ux_payment_dispatch_idempotency` | TenantId + IdempotencyKey | evet | yeni |
+| `ux_payment_command_receipt_scope` | TenantId + LegalEntityId + ActorId + Operation + TargetId + Key | evet — **tek istemci idempotency kuralı** (D12/2) | kaynağın dört `ux_mod0126_*_idempotency` indeksinin (TenantId + IdempotencyKey) **yerine geçer**; o dört indeks taşınmaz |
+| `ux_payment_start_intent_remote_key` | TenantId + IdempotencyKey (uzak, deterministik anahtar) | evet — MOD-0023'e aynı anahtarla tek başlatma | yeni |
+| `ux_payment_start_intent_open` | TenantId + PaymentBatchId, kısmi `Status ∈ {Pending, Unknown}` | evet — partide aynı anda tek açık başlatma niyeti | yeni |
+| `ux_payment_decision_open` | TenantId + PaymentBatchId, kısmi `State ∈ {Requested, Unknown}` | evet — partide aynı anda tek açık karar niyeti | yeni |
+| `ix_payment_command_receipt_pending` | TenantId + Status + CreatedAt, kısmi `Status = Pending` | — | yeni (Reconcile listesi) |
 | `ix_payment_batch_list` | TenantId + LegalEntityId + IsDeleted + Status + CreatedAt(desc) | — | `ix_mod0126_payment_batch_status` / `_created` |
 | `ix_payment_batch_workflow_instance` | TenantId + WorkflowInstanceId (kısmi, var olan) | — | aynı |
 | `ix_payment_instruction_batch` | TenantId + PaymentBatchId + LineNumber | — | aynı |
@@ -309,7 +333,8 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
   aktif değil ya da onaylı değil), `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (503 — MOD-0220 yanıt vermedi; geçiş yok),
   `PAYMENT_SOD_POLICY_UNAVAILABLE` (503 — ayar deposu erişilemiyor; ayarın yokluğu hata değildir), `PAYMENT_BANK_DISPATCH_NOT_CONFIGURED`
   (sonuç kodu, serbest bırakma yanıtında), `PAYMENT_RECORD_CODE_UNAVAILABLE` (503), `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`
-  (400), `PAYMENT_DECISION_PENDING` (409 — açık karar niyeti), `PAYMENT_SOD_WAIVER_NOT_ALLOWED` (403 — R1–R3 muaf tutulamaz).
+  (400), `PAYMENT_DECISION_PENDING` (409 — açık karar niyeti), `PAYMENT_SOD_WAIVER_NOT_ALLOWED` (403 — R1–R3 muaf tutulamaz),
+  `PAYMENT_REQUEST_IN_PROGRESS` (202 — aynı anahtarlı istek, makbuz `Pending`; kurtarma yapılmaz).
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
   `PAYMENT_APPROVER_DIRECTORY_*` (O-10'a bağlı).
@@ -412,12 +437,21 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   400 `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`. Sunucu anahtar **üretmez**.
   - **Makbuz kapsamı:** `(TenantId, LegalEntityId, ActorId, Operation, TargetId, Key)` — `TargetId` Create için boş,
     diğerlerinde parti kimliği. Tekil indeks bu altılıdadır; aynı anahtar başka aktör/işlem/hedef için ayrı makbuzdur.
-  - **Makbuz:** istek parmak izi (sunucuda hesaplanır, muafiyet girdilerini içerir —
-    `PaymentWorkflowService.cs:744-746@da4abb20`), ilk yanıtın durum kodu ve gövdesi, oluşturma zamanı.
-  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) makbuz araması: aynı kapsam + aynı parmak
-    izi → **ilk yanıt aynen döner** (202 belirsiz yanıt dahil), başka hiçbir adım çalışmaz; aynı kapsam + farklı parmak izi
-    → 409 `PAYMENT_IDEMPOTENCY_CONFLICT` → (3) açık niyet kontrolü (Submit ve kararlar; aşağıda 2. ve 4. madde) → (4) durum
-    ve `Version` CAS → (5) iş kuralları ve SoD → (6) tx1 (iş verisi + makbuz + denetim). Makbuz tx1 ile aynı işlemde yazılır.
+  - **Makbuz (`PaymentCommandReceipt`, Owned Objects):** istek parmak izi (sunucuda hesaplanır, muafiyet girdilerini içerir —
+    `PaymentWorkflowService.cs:744-746@da4abb20`) ve **yaşam döngüsü**: tek aşamalı komutlarda tx1'de `Completed` + yanıt;
+    iki aşamalı komutlarda (Submit, kararlar, Release) tx1'de `Pending` (yanıt yok, `LinkedIntentId` dolu), yanıt **tx2'de**
+    (kesin sonuç ya da 202 belirsiz) ya da **Reconcile'da** yazılır ve makbuz `Completed` olur.
+  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) makbuz araması: aynı kapsam + farklı parmak
+    izi → 409 `PAYMENT_IDEMPOTENCY_CONFLICT`; aynı kapsam + aynı parmak izi + `Completed` → **kayıtlı yanıt aynen döner**;
+    aynı kapsam + aynı parmak izi + `Pending` → 202 `PAYMENT_REQUEST_IN_PROGRESS` (bağlı niyetin o anki durumuyla). İki
+    durumda da **başka hiçbir adım çalışmaz** — uzak çağrı yok, Reconcile yok. → (3) açık niyet kontrolü (Submit ve
+    kararlar; aşağıda 2. ve 4. madde) → (4) durum ve `Version` CAS → (5) iş kuralları ve SoD → (6) tx1 (iş verisi + makbuz
+    + denetim, tek işlem).
+  - **Kurtarma yalnız `ReconcilePaymentBatchWorkflowCommand` ile yapılır** (kendi `Idempotency-Key`'i ve makbuzuyla); aynı
+    anahtarla tekrar asla kurtarma tetiklemez (replay ve recovery ayrıdır).
+  - **Çökme:** tx1 sonrası çökmede makbuz `Pending` kalır; aynı anahtarla tekrar 202 `PAYMENT_REQUEST_IN_PROGRESS` alır;
+    Reconcile niyeti kapattığında bağlı makbuzu da `Completed` yapar (kesin yanıtla). tx1 commit olmadıysa hiçbir şey
+    yazılmamıştır; aynı anahtarla tekrar baştan çalışır.
 - **Eşzamanlılık:** Update / kararlar `If-Match` (Version) ve durum CAS; bayat istek 409.
 - **Yerel kayıt önce, uzak çağrı sonra (domain-config; TP-001 T16):**
   1. *Submit:* tx1 — parti `Submitted`, `PaymentWorkflowStartIntent(Pending)`, merkezi denetim satırı (işleme yazılır).
@@ -426,8 +460,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      hariç) → niyet `Refused`, parti `PreviousBatchStatus`, tek istisna satırı; **belirsiz** (zaman aşımı, bağlantı kopması,
      5xx, boş ya da okunamayan 2xx gövde) → niyet `Unknown`, parti `Submitted` kalır, yanıt **202**
      `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN`. Belirsiz sonuç **ret olarak kaydedilmez** (kaynak kusuru, paket §H.3).
-  2. *Açık niyet varken* (`Pending` / `Unknown`): **aynı** anahtarla tekrar → makbuzdaki ilk yanıt (202 dahil);
-     **farklı** anahtarla Submit → 409 `PAYMENT_WORKFLOW_START_PENDING`, uzak çağrı yok. Parti başına en fazla bir açık
+  2. *Açık niyet varken* (`Pending` / `Unknown`): **aynı** anahtarla tekrar → makbuz kuralı (kayıtlı yanıt ya da 202
+     `PAYMENT_REQUEST_IN_PROGRESS`); **farklı** anahtarla Submit → 409 `PAYMENT_WORKFLOW_START_PENDING`, uzak çağrı yok. Parti başına en fazla bir açık
      başlatma niyeti: tekil kısmi indeks `(TenantId, BatchId)` where `State ∈ {Pending, Unknown}`.
   3. *Reconcile:* aynı anahtarla başlatma yeniden oynatılır (MOD-0023 anahtarı tanırsa var olan örneği döndürür,
      `StartWorkflowInstanceHandler.cs:79-85`) ya da `instances/by-objects` okunur; sonuç `Started` / `Refused` /
@@ -438,16 +472,17 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      **Parti başına tek açık karar niyeti:** tekil kısmi indeks `(TenantId, BatchId)` where `State ∈ {Requested, Unknown}`;
      tx1 bu indeks + parti `Version` CAS ile atomiktir. Açık karar niyeti varken başka anahtarla ya da başka aktörden
      gelen her karar (çelişen ya da aynı yönde) **uzak sisteme gitmeden** 409 `PAYMENT_DECISION_PENDING` alır; niyet
-     Reconcile ile `Recorded` / `Refused` / `Cancelled` olana kadar yeni karar başlamaz. Aynı anahtarla tekrar →
-     makbuzdaki ilk yanıt.
+     tx2 ya da Reconcile ile `Recorded` / `Refused` / `Cancelled` olana kadar yeni karar başlamaz. Aynı anahtarla tekrar →
+     makbuz kuralı (kayıtlı yanıt ya da 202 `PAYMENT_REQUEST_IN_PROGRESS`).
   4a. *İki aşamalı denetim (tx1 / tx2) ve çökme kurtarma:*
      - tx1 **deneme olayı** yazar (`…workflow-start-requested`, `…decision-requested`, `…release-requested`); tx2 **sonuç
        olayı** yazar (`…submitted`, `…approved`, `…rejected`, `…workflow-start-refused`, `…release-attempted` vb.). Her
        iki olay da kendi işleminde, iş verisiyle birlikte (`RequireEnlistment = true`).
      - Kesin sonuç ancak tx2 commit olunca vardır; tx1 deneme olayı tek başına "yapıldı" anlamına gelmez.
      - **Uzak başarı + tx2 başarısız ya da süreç çöker:** niyet `Requested`/`Pending` kalır; Reconcile (elle) MOD-0023
-       örneği/görevi `instances/by-objects` ve görev geçmişinden okur, uzak çağrıyı **tekrarlamadan** tx2'yi yazar ve sonuç
-       olayını üretir. Aynı anahtarla tekrar istek de Reconcile yolundan geçer; ikinci uzak geçiş oluşmaz.
+       örneği/görevi `instances/by-objects` ve görev geçmişinden okur, uzak çağrıyı **tekrarlamadan** tx2'yi yazar, sonuç
+       olayını üretir ve bağlı makbuzu `Completed` yapar. Aynı anahtarla tekrar istek kurtarma yapmaz; makbuz `Pending`
+       iken 202 `PAYMENT_REQUEST_IN_PROGRESS` alır. İkinci uzak geçiş oluşmaz.
      - **K2 kararları (D11/3):** tx1 deneme olayı yazılamazsa uzak çağrı yapılmaz, komut başarısız; tx2 sonuç olayı
        yazılamazsa niyet açık kalır ve karar "kayıtlı" sayılmaz (Release bunu kabul etmez) — Reconcile tamamlar.
   5. HTTP istemcilerinde **açık zaman aşımı** yapılandırılır (kaynakta yok, paket §H.3 / §N.12); değer
@@ -588,7 +623,7 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 | R1 | Partiyi oluşturan (`CreatedBy`) partide **hiçbir karar** veremez | gönderme çözümleyicisi (aday dışı) + karar kontrolü | `PaymentSodPolicyService.cs:38-44@da4abb20`; `ConfiguredApproverResolver.cs:117-121` |
 | R2 | Gönderen (`SubmittedBy` = MOD-0023 başlatanı) karar veremez | aynı + MOD-0023 `SodViolation` | `:46-56@da4abb20`; Recovery `WorkflowTaskTransitionSupport.cs:964-977` |
 | R3 | Gönderme anındaki son güncelleyen (`UpdatedByBeforeSubmit`) karar veremez | aynı | kaynakta yalnız çözümleyici dışlıyor (`ConfiguredApproverResolver.cs:117-121@da4abb20`), SoD servisi kontrol etmiyor — Recovery'de iki yerde tutarlı |
-| R4 | `IsTier2` parti için **Approve** `finance-treasury.payment-batches.tier2-approve` ister; gönderme çözümleyicisi yalnız bu izni taşıyan adayları seçer | aynı | `PaymentSodPolicyService.cs:58-67@da4abb20`; `ConfiguredApproverResolver.cs:41-43` |
+| R4 | `IsTier2` parti için **Approve** `finance-treasury.payment-batches.tier2-approve` ister; gönderme çözümleyicisi bu izni taşıyan adayları seçer. **Muafiyet adayı (sahip kararı D13):** R1–R3 dışlamasından sonra kiracıda **hiç** tier-2 aday kalmıyorsa, `waive-sod` izni taşıyan kişiler `IsWaiverCandidate = true` ile aday eklenir; bu adaylar yalnız `ApprovePaymentBatchWithSodWaiverCommand` ile onaylayabilir (normal Approve 403 `PAYMENT_TIER2_APPROVER_REQUIRED`); tier-2 aday varken muafiyet adayı eklenmez. Normal onay yetkisi (R4) ve muafiyet yetkisi (R9) ayrı değerlendirilir | gönderme çözümleyicisi + karar | `PaymentSodPolicyService.cs:58-67@da4abb20`; `ConfiguredApproverResolver.cs:41-43`; kaynakta `WaiverApprovers` listesi tanımlı ama okunmuyordu (paket §E) |
 | R5 | `IsTier2` hesabı: `batch.CurrencyCode == Threshold.CurrencyCode && TotalAmount >= Threshold.Amount`; para birimi farklıysa **tier-2 sayılır** (kur çevrimi yok; önerilen ihtiyatlı kural, O-4) | gönderme (sabitlenir) | kaynakta iki ayrı, para birimsiz eşik: `SodPolicyContracts.cs:10@da4abb20` (50 000) ve `ApproverPolicyContracts.cs:13` (null) — ayrışabilir (paket §H.2 (3)); **taşınmaz** |
 | R6 | Eşik, para birimi ve politika sürümü gönderme anında partiye ve niyete yazılır; karar kontrolü yalnız sabitlenmiş değeri kullanır | karar | yeni (level-1 koşul 1) |
 | R7 | Aktör karşılaştırması token `sub`'ının **Guid** değeri üzerindendir; `sub` Guid değilse karar reddedilir (`FailedRoleConflict`) | her yer | kaynakta SoD ordinal, çözümleyici büyük/küçük harf duyarsız (paket §H.2 (3)) — **taşınmaz** |
@@ -617,7 +652,9 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
   anahtarla ilerler ve ikinci uzak örnek oluşmaz.
 - **İş akışı başlatma kesin reddi** (ör. 403 yetkisiz başlatma, 404 şablon yok) → 502 `PAYMENT_WORKFLOW_START_FAILED`,
   niyet `Refused`, parti önceki durumuna döner.
-- **Idempotent tekrar** — aynı anahtar + aynı yük: aynı yanıt, ikinci kayıt/denetim olayı/uzak örnek yok; aynı anahtar +
+- **Idempotent tekrar, makbuz `Pending`** (iki aşamalı komut sonucu henüz yok / çökme) → 202 `PAYMENT_REQUEST_IN_PROGRESS`,
+  kurtarma yapılmaz, uzak çağrı yok.
+- **Idempotent tekrar** — aynı anahtar + aynı yük (makbuz `Completed`): kayıtlı yanıt, ikinci kayıt/denetim olayı/uzak örnek yok; aynı anahtar +
   farklı yük: 409 `PAYMENT_IDEMPOTENCY_CONFLICT`.
 - **Eksik alan** (PaymentMethod, CurrencyCode, talimat) → 400 + alan düzeyi resx iletisi; kayıt oluşmaz.
 - **Hassasiyet aşımı** (ör. JPY'de küsurat) → 400; hane kaynağı yok → 503 `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE`.
@@ -692,8 +729,8 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 | DeletePaymentBatchCommand | finance-treasury.payment-batch.deleted | PaymentBatch | b | BeforeState: BatchCode, Status | evet (öneri) | — |
 | BulkDeletePaymentBatchCommand | finance-treasury.payment-batch.bulk-deleted | PaymentBatch | b | silinen kimlik sayısı; her kimlik için ayrı varlık kaydı (CentralAudit tek varlık kimliği taşır — çoklu kimlik biçimi DL-1'de ölçülür) | evet (öneri) | — |
 | ValidatePaymentBatchCommand | finance-treasury.payment-batch.validated | PaymentBatch | b | Status Draft→Validated, sorun sayısı | evet (öneri) | — |
-| SubmitPaymentBatchCommand | finance-treasury.payment-batch.submitted | PaymentBatch | b | Status →Submitted, niyet anahtarı, SodPolicyVersion, IsTier2 | evet (öneri) | — |
-| ReconcilePaymentBatchWorkflowCommand | finance-treasury.payment-batch.workflow-reconciled | PaymentBatch | b | niyet/karar durumu önce→sonra | evet (öneri) | — |
+| SubmitPaymentBatchCommand | finance-treasury.payment-batch.submitted (sonuç, tx2/Reconcile) | PaymentBatch | b | Status Submitted→PendingApproval, WorkflowInstanceId, SodPolicyVersion, IsTier2 (tx1 deneme olayı `…workflow-start-requested`: Status →Submitted, uzak anahtar) | evet (öneri) | — |
+| ReconcilePaymentBatchWorkflowCommand | kapattığı niyetin **sonuç** olayı (geçiş matrisi; ör. `…submitted`, `…decision-cancelled`); niyet değişmediyse olay yok | PaymentBatch | b | niyet/karar durumu önce→sonra, bağlı makbuz `Completed` | evet (öneri) | — |
 | ApprovePaymentBatchCommand | finance-treasury.payment-batch.approved | PaymentBatch | b | karar kimliği, SodResult, Status | **evet — K2 (D11/3)** | — |
 | ApprovePaymentBatchWithSodWaiverCommand | finance-treasury.payment-batch.approved-with-sod-waiver | PaymentBatch | b | karar kimliği, SodResult=Waived, kaldırılan kural kodları, muafiyet gerekçe kodu, kanıt sayısı | **evet — K2 (D11/3)** | — |
 | RejectPaymentBatchCommand | finance-treasury.payment-batch.rejected | PaymentBatch | b | karar kimliği, ReasonCode, Status | **evet — K2 (D11/3)** | — |
@@ -708,7 +745,9 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   RequestEvidence / Escalate → `finance-treasury.payment-batch.decision-requested` (tx1, karar türü alanda) + yukarıdaki
   sonuç olayı (tx2 / Reconcile); Release → `…release-requested` (tx1) + `…release-attempted` (tx2). Deneme olayı tek başına
   "yapıldı" anlamına gelmez; tabloda yazılan olay **sonuç** olayıdır. K2 kararlarında deneme olayı yazılamazsa uzak çağrı
-  yapılmaz.
+  yapılmaz. Kapalı ama olumsuz sonuçların olayları (Owned Objects geçiş matrisi): `…workflow-start-refused`,
+  `…workflow-start-cancelled`, `…decision-refused`, `…decision-cancelled`. Reconcile kendi tek olayını
+  (`…workflow-reconciled`) değil, kapattığı niyetin **sonuç** olayını yazar; niyet değişmediyse olay yok.
 - **Kayda yazılmayan:** banka referans değerleri, alacaklı referansları, tutarların satır ayrıntısı, yorum serbest metni,
   token. Değişen alanların yalnız **adı** yazılır (AUD-001 §3).
 - **K2 (sahip kararı D11/3, O-6):** Approve / ApproveWithSodWaiver / Reject — para çıkışına yetki veren kararlar; ödeme onayı
@@ -750,6 +789,9 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   `PAYMENT_SOD_DENIED` (`FailedSelfApproval`) döner ve MOD-0023'e hiçbir istek gitmez (sahte istemciyle sayılır).
 - [ ] AC-5 (zorunlu) — Gönderen kullanıcının ve gönderme anındaki son güncelleyenin kararı 403 `PAYMENT_SOD_DENIED`
   (`FailedSubmitterApproval` / `FailedUpdaterApproval`).
+- [ ] AC-6a (zorunlu) — Muafiyet adayı (D13): R1–R3 dışlamasından sonra tier-2 aday yoksa `waive-sod` izni olanlar
+  `IsWaiverCandidate = true` ile aday olur ve yalnız muafiyetli onay verebilir (normal Approve 403); tier-2 aday varken
+  muafiyet adayı eklenmez (iki ayrı test).
 - [ ] AC-6 (zorunlu) — `IsTier2` partide `tier2-approve` izni olmayan onaylayıcı 403 `PAYMENT_TIER2_APPROVER_REQUIRED`
   alır; izni olan geçer.
 - [ ] AC-7 (zorunlu) — Gönderme çözümleyicisi ile karar kontrolü **aynı** eşik nesnesini kullanır: kodda tek eşik tipi
@@ -769,7 +811,8 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   commit eder; uzak çağrı niyetteki `IdempotencyKey` ile yapılır.
 - [ ] AC-12 (zorunlu) — Başlatma zaman aşımı, bağlantı kopması ve boş/okunamayan 2xx yanıtı 202
   `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN` üretir; niyet `Unknown`, parti `Submitted`; ret istisnası yazılmaz.
-- [ ] AC-13 (zorunlu) — Açık niyet varken **aynı** anahtarla Submit makbuzdaki ilk yanıtı (202 dahil) döndürür; **farklı**
+- [ ] AC-13 (zorunlu) — Açık niyet varken **aynı** anahtarla Submit makbuz kuralına uyar (makbuz `Completed` → kayıtlı yanıt,
+  202 belirsiz dahil; `Pending` → 202 `PAYMENT_REQUEST_IN_PROGRESS`, kurtarma yok); **farklı**
   anahtarla Submit 409 `PAYMENT_WORKFLOW_START_PENDING` ve uzak çağrı yok; Reconcile aynı anahtarla ilerler ve MOD-0023'te
   aynı parti için ikinci örnek oluşmaz (sahte MOD-0023 anahtar başına tek örnek sayar).
 - [ ] AC-14 (zorunlu) — Kesin başlatma reddi 502 `PAYMENT_WORKFLOW_START_FAILED`, niyet `Refused`, parti önceki durumuna
@@ -777,7 +820,8 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 - [ ] AC-15 (zorunlu) — Kararlar yerel `Requested` niyetinden sonra MOD-0023'e karar idempotency anahtarıyla gider;
   belirsiz sonuç 202 `PAYMENT_DECISION_OUTCOME_UNKNOWN`, Reconcile kapatır.
 - [ ] AC-16 (zorunlu) — Idempotency (D12/2): her yazma komutu anahtarsız 400 `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`; aynı
-  kapsam (kiracı, şirket, aktör, işlem, hedef, anahtar) + aynı yük ilk yanıtı döndürür ve ikinci kayıt, ikinci uzak çağrı
+  kapsam (kiracı, şirket, aktör, işlem, hedef, anahtar) + aynı yük, makbuz `Completed` ise kayıtlı yanıtı, `Pending` ise
+  202 `PAYMENT_REQUEST_IN_PROGRESS` döndürür (replay kurtarma yapmaz; kurtarma yalnız Reconcile komutuyla) ve ikinci kayıt, ikinci uzak çağrı
   ya da ikinci merkezi denetim olayı oluşmaz; aynı kapsam + farklı yük 409; aynı anahtar başka aktörde ayrı makbuzdur.
   **İlk yanıtın kaybolduğu** senaryo (istemci yanıtı almadan aynı istekle tekrar) testte ayrıca koşulur.
 - [ ] AC-17 (zorunlu) — Merkezi denetim: tek aşamalı komutlar (Create, Update, Delete, Validate, kanıt, onay belgesi)
