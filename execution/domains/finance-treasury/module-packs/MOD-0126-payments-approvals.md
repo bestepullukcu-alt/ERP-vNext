@@ -196,7 +196,7 @@ yalnız tarihtir (`DateOnly`), saat dilimi çevrimi yapılmaz.
 | RiskRating | enum Low/Medium/High | varsayılan Low | `:145@da4abb20` |
 | EvidenceRequired | bool | true ise gönderme/son onay öncesi en az bir kanıt bağlantısı ister | — |
 | Notes | string? | trim, ≤ 2000 (kaynakta sınır yok; öneri) | — |
-| IdempotencyKey | string | `Idempotency-Key` başlığından; yoksa sunucu üretir; ≤ 128 | `:102-104@da4abb20` |
+| IdempotencyKey | string | `Idempotency-Key` başlığından, **zorunlu** (D12/2); sunucu üretmez; 1..128 (kaynakta yoksa sunucu üretiyordu — taşınmaz) | `:102-104@da4abb20` |
 | SubmittedBy / SubmittedAt | Guid? / DateTimeOffset? | sunucu (tx1) | — |
 | UpdatedByBeforeSubmit | Guid? | gönderme anındaki son güncelleyen (SoD R3) | yeni |
 | WorkflowInstanceId / WorkflowStatus / WorkflowCorrelationId | Guid? / string? / string? | yalnız kesin başlatma sonucundan | `:185-189@da4abb20` |
@@ -307,8 +307,9 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
 - **Yeni:** `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN` (202 — ret değildir), `PAYMENT_WORKFLOW_START_PENDING` (409 — açık
   niyet varken yeniden gönderme), `PAYMENT_DECISION_OUTCOME_UNKNOWN` (202), `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE` (422 —
   aktif değil ya da onaylı değil), `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (503 — MOD-0220 yanıt vermedi; geçiş yok),
-  `PAYMENT_SOD_POLICY_UNAVAILABLE` (503), `PAYMENT_BANK_DISPATCH_NOT_CONFIGURED` (sonuç kodu, serbest bırakma yanıtında),
-  `PAYMENT_RECORD_CODE_UNAVAILABLE` (503).
+  `PAYMENT_SOD_POLICY_UNAVAILABLE` (503 — ayar deposu erişilemiyor; ayarın yokluğu hata değildir), `PAYMENT_BANK_DISPATCH_NOT_CONFIGURED`
+  (sonuç kodu, serbest bırakma yanıtında), `PAYMENT_RECORD_CODE_UNAVAILABLE` (503), `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`
+  (400), `PAYMENT_DECISION_PENDING` (409 — açık karar niyeti), `PAYMENT_SOD_WAIVER_NOT_ALLOWED` (403 — R1–R3 muaf tutulamaz).
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
   `PAYMENT_APPROVER_DIRECTORY_*` (O-10'a bağlı).
@@ -378,6 +379,23 @@ eki (O-6). Bkz. "Dependencies".
 | Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellenmedi** (ayrı onay, TRM-04) | iskelet port kaydından sonra |
 | DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft` | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
+### Bağımlılık sözleşmeleri — kapanış tablosu (gap P2, 2026-10-24)
+
+Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen test, canlı entegrasyon kanıtı sayılmaz:**
+"sözleşme testi" sütunu sahte istemcili testi, "canlı kanıt" sütunu gerçek servisle dev ortamında koşulmuş kaydı
+(`scripts/run_record.py`) ister.
+
+| Bağımlılık | Sözleşme dosyası / sürüm | Hash | Sahibi | Hata davranışı (MOD-0126) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
+|---|---|---|---|---|---|---|
+| PAYMENT-BATCH (bu modül) | `docs/analysis/contracts/payment-batch.openapi.yaml` v1.0.0 — **yazılacak** | TBD (dondurulunca) | finance-treasury | — | sözleşme testi AC-29 · — | DL-1 |
+| MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
+| MOD-0023 iş akışı başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + şablon kodu — **TBD** (O-8) | Platform commit SHA'sı DL-2 başında yazılır | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır | sahte MOD-0023 (anahtar başına tek örnek) · dev ortamında gerçek başlatma + onay + ret | DL-2 |
+| MOD-0269 banka arayüzü | `bank-dispatch` arayüz sözleşmesi — **yazılacak** (TRM-06, D5) | TBD | sahip (K1); bankacılık sahibi adlandırılmadı | her çağrı `NotConfigured`, ağ çağrısı yok | bağdaştırıcı birim testi · ağ çağrısı olmadığını gösteren test | DL-3 |
+| MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok** (O-11) | TBD | platform-shared-services | hane yok → 503 `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE` | sahte istemci · dev ortamında TRY/EUR/JPY | DL-1 |
+| RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
+| MOD-0031 kanıt bağlama | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → bağlama yok, parti değişmez | sahte · dev ortamı | DL-3 |
+| CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-17 · AUD-001 §8 dev kanıtı AC-30 | DL-1 |
+
 ## Runtime Constraints
 
 - Servis portu **5071** (D10/3; AGENTS §3 kaydı bekliyor). Tarayıcı ve `Diten.Web` yalnız Gateway (5000) üzerinden
@@ -389,10 +407,17 @@ eki (O-6). Bkz. "Dependencies".
   Release'te MOD-0220 `lookup-validation` çağrılır; `OperationalStatus = Active` **ve** `ApprovalStatus = Approved` değilse
   `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE` (422); MOD-0220 yanıt vermezse `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (503) — geçiş yok.
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId). Okumalar `IsDeleted = false`.
-- **Idempotency:** Create, Submit, kararlar, kanıt bağlama, onay belgesi ve Release `Idempotency-Key` başlığı alır;
-  aynı anahtar + aynı yük → ilk sonuç; aynı anahtar + farklı yük → 409 `PAYMENT_IDEMPOTENCY_CONFLICT` (kaynak davranışı,
-  paket §H). Karar parmak izi sunucuda hesaplanır (kaynak eki 2) ve muafiyet girdilerini içerir
-  (`PaymentWorkflowService.cs:744-746@da4abb20`).
+- **Idempotency (sahip kararı D12/2 — her yazma komutunda zorunlu):** Create, Update, Delete, BulkDelete, Validate,
+  Submit, Reconcile, her karar, kanıt bağlama, onay belgesi ve Release `Idempotency-Key` başlığı **ister**; başlık yoksa
+  400 `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`. Sunucu anahtar **üretmez**.
+  - **Makbuz kapsamı:** `(TenantId, LegalEntityId, ActorId, Operation, TargetId, Key)` — `TargetId` Create için boş,
+    diğerlerinde parti kimliği. Tekil indeks bu altılıdadır; aynı anahtar başka aktör/işlem/hedef için ayrı makbuzdur.
+  - **Makbuz:** istek parmak izi (sunucuda hesaplanır, muafiyet girdilerini içerir —
+    `PaymentWorkflowService.cs:744-746@da4abb20`), ilk yanıtın durum kodu ve gövdesi, oluşturma zamanı.
+  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) makbuz araması: aynı kapsam + aynı parmak
+    izi → **ilk yanıt aynen döner** (202 belirsiz yanıt dahil), başka hiçbir adım çalışmaz; aynı kapsam + farklı parmak izi
+    → 409 `PAYMENT_IDEMPOTENCY_CONFLICT` → (3) açık niyet kontrolü (Submit ve kararlar; aşağıda 2. ve 4. madde) → (4) durum
+    ve `Version` CAS → (5) iş kuralları ve SoD → (6) tx1 (iş verisi + makbuz + denetim). Makbuz tx1 ile aynı işlemde yazılır.
 - **Eşzamanlılık:** Update / kararlar `If-Match` (Version) ve durum CAS; bayat istek 409.
 - **Yerel kayıt önce, uzak çağrı sonra (domain-config; TP-001 T16):**
   1. *Submit:* tx1 — parti `Submitted`, `PaymentWorkflowStartIntent(Pending)`, merkezi denetim satırı (işleme yazılır).
@@ -401,13 +426,30 @@ eki (O-6). Bkz. "Dependencies".
      hariç) → niyet `Refused`, parti `PreviousBatchStatus`, tek istisna satırı; **belirsiz** (zaman aşımı, bağlantı kopması,
      5xx, boş ya da okunamayan 2xx gövde) → niyet `Unknown`, parti `Submitted` kalır, yanıt **202**
      `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN`. Belirsiz sonuç **ret olarak kaydedilmez** (kaynak kusuru, paket §H.3).
-  2. *Açık niyet varken* yeniden Submit 409 `PAYMENT_WORKFLOW_START_PENDING`; yeni anahtar üretilmez.
+  2. *Açık niyet varken* (`Pending` / `Unknown`): **aynı** anahtarla tekrar → makbuzdaki ilk yanıt (202 dahil);
+     **farklı** anahtarla Submit → 409 `PAYMENT_WORKFLOW_START_PENDING`, uzak çağrı yok. Parti başına en fazla bir açık
+     başlatma niyeti: tekil kısmi indeks `(TenantId, BatchId)` where `State ∈ {Pending, Unknown}`.
   3. *Reconcile:* aynı anahtarla başlatma yeniden oynatılır (MOD-0023 anahtarı tanırsa var olan örneği döndürür,
      `StartWorkflowInstanceHandler.cs:79-85`) ya da `instances/by-objects` okunur; sonuç `Started` / `Refused` /
      `Cancelled`'a bağlanır. Belirsiz kalırsa durum değişmez ve deneme sayılır.
   4. *Kararlar:* SoD ön kontrolü → tx1 `PaymentApprovalDecision(Requested)` + denetim satırı → MOD-0023 görev geçişi,
      karar idempotency anahtarıyla (kaynakta da iletiliyor, `WorkflowClientAdapters.cs:222@da4abb20`) → tx2 `Recorded`
      + parti durumu. Belirsiz → `Unknown`, 202 `PAYMENT_DECISION_OUTCOME_UNKNOWN`, Reconcile kapatır.
+     **Parti başına tek açık karar niyeti:** tekil kısmi indeks `(TenantId, BatchId)` where `State ∈ {Requested, Unknown}`;
+     tx1 bu indeks + parti `Version` CAS ile atomiktir. Açık karar niyeti varken başka anahtarla ya da başka aktörden
+     gelen her karar (çelişen ya da aynı yönde) **uzak sisteme gitmeden** 409 `PAYMENT_DECISION_PENDING` alır; niyet
+     Reconcile ile `Recorded` / `Refused` / `Cancelled` olana kadar yeni karar başlamaz. Aynı anahtarla tekrar →
+     makbuzdaki ilk yanıt.
+  4a. *İki aşamalı denetim (tx1 / tx2) ve çökme kurtarma:*
+     - tx1 **deneme olayı** yazar (`…workflow-start-requested`, `…decision-requested`, `…release-requested`); tx2 **sonuç
+       olayı** yazar (`…submitted`, `…approved`, `…rejected`, `…workflow-start-refused`, `…release-attempted` vb.). Her
+       iki olay da kendi işleminde, iş verisiyle birlikte (`RequireEnlistment = true`).
+     - Kesin sonuç ancak tx2 commit olunca vardır; tx1 deneme olayı tek başına "yapıldı" anlamına gelmez.
+     - **Uzak başarı + tx2 başarısız ya da süreç çöker:** niyet `Requested`/`Pending` kalır; Reconcile (elle) MOD-0023
+       örneği/görevi `instances/by-objects` ve görev geçmişinden okur, uzak çağrıyı **tekrarlamadan** tx2'yi yazar ve sonuç
+       olayını üretir. Aynı anahtarla tekrar istek de Reconcile yolundan geçer; ikinci uzak geçiş oluşmaz.
+     - **K2 kararları (D11/3):** tx1 deneme olayı yazılamazsa uzak çağrı yapılmaz, komut başarısız; tx2 sonuç olayı
+       yazılamazsa niyet açık kalır ve karar "kayıtlı" sayılmaz (Release bunu kabul etmez) — Reconcile tamamlar.
   5. HTTP istemcilerinde **açık zaman aşımı** yapılandırılır (kaynakta yok, paket §H.3 / §N.12); değer
      `FinanceTreasury:Workflow:TimeoutSeconds` — başlangıçta yoksa servis açılmaz (öneri 15 sn, O-8 içinde).
 - **SoD politikası tek kaynaktır ve kiracı ayarıdır (sahip kararı D11/1):** kiracı başına PolicyVersion,
@@ -415,9 +457,17 @@ eki (O-6). Bkz. "Dependencies".
   tier-2 sayılır** (güvenli varsayılan) ve parti para birimi eşik para biriminden farklıysa da tier-2 sayılır.
   Çözümleyici (gönderme) ve karar kontrolü **aynı** ayarı, partiye o anda sabitlenen sürümle kullanır. Ayarın kayıt
   yeri (MOD-0126 içi kiracı ayarı ya da Platform ayarları) ve ayar ekranı Follow-up'tadır.
+  - **İki durum ayrıdır:** (a) kiracının ayarı **yok** → bu bir hata değildir; her onay tier-2 sayılır ve partiye
+    `SodPolicySource = DefaultAllTier2` olarak sabitlenir; (b) ayar deposu **erişilemiyor** (altyapı arızası) → Submit ve
+    kararlar 503 `PAYMENT_SOD_POLICY_UNAVAILABLE`, uzak çağrı yok, kayıt değişmez. Servisin açılışı ayara bağlı değildir.
 - **Bankaya dağıtım kapalı (D5):** `IBankDispatchPort`'un tek bağdaştırıcısı `NotConfiguredBankDispatchAdapter`'dır;
   her çağrı `NotConfigured` döner, `PaymentDispatchAttempt` yazılır, parti `Approved` kalır. Gerçek bağdaştırıcı ayrı
   karar ve paket ister.
+  - **Gerçek dağıtım açılmadan önce zorunlu kapı (bu dilimde opak Guid kontrolünün sınırı):** (1) kaynak banka hesabının
+    sahibi ödeyen şirkettir (MOD-0289, güncel durum); (2) hesap ve alacaklı aynı kiracıda ve ödeyen şirket için uygundur
+    (Tenant + LE, MOD-0289/MOD-0220); (3) alacaklı referansı ile hedef hesap eşleşir (MOD-0140 `SupplierCompanyRelationship`
+    Active / MOD-0289 hedef). Bu üçü sözleşmeli kontrol ve testle kapanmadan `IBankDispatchPort`'a gerçek bağdaştırıcı
+    bağlanamaz.
 - `GlobalEntity` kullanılmaz; bütün kayıtlar kiracıya aittir.
 - Mongo GUID V3 / subtype 4; `decimal` → `Decimal128`.
 
@@ -519,7 +569,7 @@ Resources/Views/FinanceTreasury/PaymentBatches/    PaymentBatchesIndex.{en,tr,fr
 | Instruction.CurrencyCode | — | gönderilirse partininkine eşit | — | — |
 | Instruction.RemittanceReference / SourceDocumentRef | Hayır | trim, ≤ 140 / ≤ 128 | — | — |
 | BatchCode | — | istekte bulunursa 400 (OTOMATİK) | Unique (TenantId, BatchCode) | `IRecordCodePort` |
-| Idempotency-Key | Hayır | ≤ 128 yazdırılabilir ASCII | Unique (TenantId, Key) | FindByIdempotencyKey |
+| Idempotency-Key | **Evet** (her yazma komutu, D12/2) | 1..128 yazdırılabilir ASCII; yoksa 400 `PAYMENT_IDEMPOTENCY_KEY_REQUIRED` | Unique (TenantId, LegalEntityId, ActorId, Operation, TargetId, Key) | makbuz araması (Runtime Constraints sırası) |
 | Karar ReasonCode | Reject / RequestEvidence / Escalate için Evet | trim, ≤ 64 (`PaymentWorkflowService.cs:291-296@da4abb20`) | — | — |
 | Karar WorkflowTaskId | Evet | Guid ≠ Empty, partinin örneğine ait | — | MOD-0023 |
 | Muafiyet ReasonCode | Evet | trim, 1..64 | — | — |
@@ -543,9 +593,9 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 | R6 | Eşik, para birimi ve politika sürümü gönderme anında partiye ve niyete yazılır; karar kontrolü yalnız sabitlenmiş değeri kullanır | karar | yeni (level-1 koşul 1) |
 | R7 | Aktör karşılaştırması token `sub`'ının **Guid** değeri üzerindendir; `sub` Guid değilse karar reddedilir (`FailedRoleConflict`) | her yer | kaynakta SoD ordinal, çözümleyici büyük/küçük harf duyarsız (paket §H.2 (3)) — **taşınmaz** |
 | R8 | İzin karar anında yeniden değerlendirilir (o anki token, `[HasPermission]` + handler içi tier-2/muafiyet izni) | karar | SoD değerlendirmesi Q3 "not established" — burada test edilir |
-| R9 | Muafiyet yalnız `ApprovePaymentBatchWithSodWaiverCommand` ile: izin `waive-sod` + `ReasonCode` + en az 1 kanıt; R1/R3/R4 hatasını kaldırabilir, **MOD-0023'ün başlatan ve atama kontrollerini kaldıramaz** | karar | `PaymentSodPolicyService.cs:78-112@da4abb20` (izin, gerekçe, kanıt sırası korunur) |
+| R9 | Muafiyet yalnız `ApprovePaymentBatchWithSodWaiverCommand` ile: izin `waive-sod` + `ReasonCode` + en az 1 kanıt. **Yalnız R4'ü (tier-2 izni eksikliği) kaldırabilir** (sahip kararı D12/1). R1, R2, R3 muaf tutulamaz → 403 `PAYMENT_SOD_WAIVER_NOT_ALLOWED`; MOD-0023'ün başlatan ve atama kontrolleri de kaldırılamaz. Aday çözümleyici R1–R3 kişilerini dışlar (muafiyetle de aday olamazlar); muafiyet yalnız atanmış ama tier-2 izni olmayan onaylayıcı için anlamlıdır | karar | `PaymentSodPolicyService.cs:78-112@da4abb20` (izin, gerekçe, kanıt sırası korunur); kaynak R1/R3/R4 kaldırabiliyordu — **daraltıldı** |
 | R10 | Onaylayan, MOD-0023 görevinin atanmış aktörü olmalıdır (MOD-0023 `WorkflowActorDenied`) | MOD-0023 | SoD değerlendirmesi Q2 |
-| R11 | Release, karar zincirini yeniden doğrular (her `Recorded` onayın aktörü R1–R4'e uyar; tier-2 parti için en az bir tier-2 onayı) | Release | yeni — Görev Merkezi gibi başka yüzeyden verilmiş karara karşı ikinci kontrol (O-7) |
+| R11 | Release, karar zincirini **aynı muafiyet modeliyle** yeniden doğrular: her `Recorded` onayın aktörü R1–R3'e uyar (muafiyet yok); tier-2 partide en az bir onay ya `tier2-approve` izniyle ya da kayıtlı bir R4 muafiyetiyle verilmiştir; açık (`Requested`/`Unknown`) karar niyeti varsa Release 409 | Release | yeni — Görev Merkezi gibi başka yüzeyden verilmiş karara karşı ikinci kontrol (O-7) |
 
 ## Failure Path to Verify
 
@@ -555,7 +605,10 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 - **Son güncelleyenin onayı** → 403 `PAYMENT_SOD_DENIED`, `FailedUpdaterApproval`.
 - **Tier-2 parti, tier-2 izni olmayan onaylayıcı** → 403 `PAYMENT_TIER2_APPROVER_REQUIRED`, `FailedAmountTier`.
 - **Muafiyet izni yok** → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`; **gerekçe yok** → 400 `PAYMENT_SOD_WAIVER_REASON_REQUIRED`;
-  **kanıt yok** → 422 `PAYMENT_SOD_WAIVER_REQUIRED`.
+  **kanıt yok** → 422 `PAYMENT_SOD_WAIVER_REQUIRED`; **R1/R2/R3 için muafiyet istemi** → 403 `PAYMENT_SOD_WAIVER_NOT_ALLOWED`.
+- **Açık karar niyeti varken başka anahtar/aktörden karar** → 409 `PAYMENT_DECISION_PENDING`, MOD-0023 çağrılmaz.
+- **Idempotency-Key yok** → 400 `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`, kayıt yok.
+- **Uzak başarı sonrası tx2 hatası / çökme** → niyet açık kalır; Reconcile uzak çağrıyı tekrarlamadan sonucu yazar.
 - **Ödeyen şirket aktif değil ya da onaylı değil** → Create/Submit/karar/Release 422 `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`,
   kayıt değişmez; MOD-0220 erişilemez → 503 `PAYMENT_LEGAL_ENTITY_UNAVAILABLE`.
 - **Başka kiracı / başka şirket partisi** (okuma, karar, silme) → 404 `PAYMENT_BATCH_NOT_FOUND`, varlık sızdırılmaz.
@@ -573,7 +626,9 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 - **Gönderilmiş partiyi silme/güncelleme** → 409 `PAYMENT_DECISION_STATUS_INVALID`.
 - **Denetim kaydı yazılamıyor** (K2 sınıfı komut, outbox yazımı başarısız) → işlem geri alınır, komut başarısız, iş verisi
   yazılmaz (O-6).
-- **SoD politikası yapılandırılmamış** → servis başlamaz / sağlık kontrolü kırmızı; kod varsayılanına düşülmez.
+- **Kiracının SoD ayarı yok** → hata değil: her onay tier-2 sayılır (D11/1), `SodPolicySource = DefaultAllTier2`.
+- **SoD ayar deposu erişilemiyor** → Submit/karar 503 `PAYMENT_SOD_POLICY_UNAVAILABLE`, uzak çağrı yok, kod varsayılanına
+  düşülmez.
 - **Release** → 200, `dispatchOutcome = NotConfigured`, `PaymentDispatchAttempt` yazılı, parti `Approved` kalır; bankaya
   ağ çağrısı yapılmaz.
 
@@ -648,6 +703,12 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 | GeneratePaymentAttestationCommand | finance-treasury.payment-attestation.generated | PaymentAttestation | b | ContentHash, SchemaVersion | evet (öneri) | — |
 | ReleasePaymentBatchCommand | finance-treasury.payment-batch.release-attempted | PaymentBatch | b | DispatchAttempt kimliği, Outcome=NotConfigured | evet (öneri) | — |
 
+- **İki aşamalı komutların deneme olayları (Runtime Constraints 4a):** Submit → `finance-treasury.payment-batch.workflow-start-requested`
+  (tx1) + sonuç `…submitted` ya da `…workflow-start-refused` (tx2 / Reconcile); Approve / ApproveWithSodWaiver / Reject /
+  RequestEvidence / Escalate → `finance-treasury.payment-batch.decision-requested` (tx1, karar türü alanda) + yukarıdaki
+  sonuç olayı (tx2 / Reconcile); Release → `…release-requested` (tx1) + `…release-attempted` (tx2). Deneme olayı tek başına
+  "yapıldı" anlamına gelmez; tabloda yazılan olay **sonuç** olayıdır. K2 kararlarında deneme olayı yazılamazsa uzak çağrı
+  yapılmaz.
 - **Kayda yazılmayan:** banka referans değerleri, alacaklı referansları, tutarların satır ayrıntısı, yorum serbest metni,
   token. Değişen alanların yalnız **adı** yazılır (AUD-001 §3).
 - **K2 (sahip kararı D11/3, O-6):** Approve / ApproveWithSodWaiver / Reject — para çıkışına yetki veren kararlar; ödeme onayı
@@ -693,29 +754,38 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   alır; izni olan geçer.
 - [ ] AC-7 (zorunlu) — Gönderme çözümleyicisi ile karar kontrolü **aynı** eşik nesnesini kullanır: kodda tek eşik tipi
   vardır (mimari testi: `Tier2` eşiği taşıyan ikinci bir yapılandırma tipi/özelliği yok), değer partiye ve niyete
-  sabitlenir, politika sürümü her kararda kayıtlıdır; `FinanceTreasury:PaymentSod` yoksa servis başlamaz.
+  sabitlenir, politika sürümü her kararda kayıtlıdır. Kiracı ayarı yoksa her onay tier-2 sayılır
+  (`SodPolicySource = DefaultAllTier2`, D11/1) ve servis normal açılır; ayar deposu erişilemezse Submit/karar 503
+  `PAYMENT_SOD_POLICY_UNAVAILABLE` (iki durum ayrı testtir).
 - [ ] AC-8 (zorunlu) — Parti para birimi eşik para biriminden farklıysa parti tier-2 sayılır (O-4 farklı karar verirse bu
   madde o kararla yeniden yazılır, numarası korunur).
 - [ ] AC-9 (zorunlu) — Muafiyetli onay: `waive-sod` izni yok → 403 `PAYMENT_SOD_WAIVER_FORBIDDEN`; gerekçe yok → 400
-  `PAYMENT_SOD_WAIVER_REASON_REQUIRED`; kanıt yok → 422 `PAYMENT_SOD_WAIVER_REQUIRED`; üçü varsa karar `Waived` ve kaldırılan
-  kural kodlarıyla kaydedilir.
+  `PAYMENT_SOD_WAIVER_REASON_REQUIRED`; kanıt yok → 422 `PAYMENT_SOD_WAIVER_REQUIRED`; üçü varsa yalnız R4 hatası kaldırılır
+  ve karar `Waived` + kaldırılan kural kodu (`R4`) ile kaydedilir. R1/R2/R3 hatasında muafiyet istemi 403
+  `PAYMENT_SOD_WAIVER_NOT_ALLOWED` (D12/1); Release aynı modeli uygular (R11).
 - [ ] AC-10 (zorunlu) — Aktör karşılaştırması Guid üzerindendir: aynı kullanıcının büyük/küçük harf farklı yazılmış `sub`'ı
   aynı kişi sayılır; Guid olmayan `sub` ile karar reddedilir.
 - [ ] AC-11 (zorunlu) — Submit, MOD-0023'ü çağırmadan önce `PaymentWorkflowStartIntent(Pending)` ve parti `Submitted`'ı
   commit eder; uzak çağrı niyetteki `IdempotencyKey` ile yapılır.
 - [ ] AC-12 (zorunlu) — Başlatma zaman aşımı, bağlantı kopması ve boş/okunamayan 2xx yanıtı 202
   `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN` üretir; niyet `Unknown`, parti `Submitted`; ret istisnası yazılmaz.
-- [ ] AC-13 (zorunlu) — Açık niyet varken ikinci Submit 409 `PAYMENT_WORKFLOW_START_PENDING`; Reconcile aynı anahtarla
-  ilerler ve MOD-0023'te aynı parti için ikinci örnek oluşmaz (sahte MOD-0023 anahtar başına tek örnek sayar).
+- [ ] AC-13 (zorunlu) — Açık niyet varken **aynı** anahtarla Submit makbuzdaki ilk yanıtı (202 dahil) döndürür; **farklı**
+  anahtarla Submit 409 `PAYMENT_WORKFLOW_START_PENDING` ve uzak çağrı yok; Reconcile aynı anahtarla ilerler ve MOD-0023'te
+  aynı parti için ikinci örnek oluşmaz (sahte MOD-0023 anahtar başına tek örnek sayar).
 - [ ] AC-14 (zorunlu) — Kesin başlatma reddi 502 `PAYMENT_WORKFLOW_START_FAILED`, niyet `Refused`, parti önceki durumuna
   (Draft/Validated) döner.
 - [ ] AC-15 (zorunlu) — Kararlar yerel `Requested` niyetinden sonra MOD-0023'e karar idempotency anahtarıyla gider;
   belirsiz sonuç 202 `PAYMENT_DECISION_OUTCOME_UNKNOWN`, Reconcile kapatır.
-- [ ] AC-16 (zorunlu) — Idempotent tekrar: Create, Submit, kararlar, kanıt bağlama, onay belgesi ve Release için aynı
-  anahtar + aynı yük ilk yanıtı döndürür ve ikinci kayıt ya da ikinci merkezi denetim olayı oluşmaz; farklı yük 409.
-- [ ] AC-17 (zorunlu) — Her yazma komutu tam bir merkezi denetim olayı bırakır (Audited Events tablosu); olay iş verisiyle
-  aynı Mongo işleminde yazılır; outbox yazımı zorla başarısız edildiğinde komut başarısız olur ve iş verisi yazılmaz
-  (sabotaj testi).
+- [ ] AC-16 (zorunlu) — Idempotency (D12/2): her yazma komutu anahtarsız 400 `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`; aynı
+  kapsam (kiracı, şirket, aktör, işlem, hedef, anahtar) + aynı yük ilk yanıtı döndürür ve ikinci kayıt, ikinci uzak çağrı
+  ya da ikinci merkezi denetim olayı oluşmaz; aynı kapsam + farklı yük 409; aynı anahtar başka aktörde ayrı makbuzdur.
+  **İlk yanıtın kaybolduğu** senaryo (istemci yanıtı almadan aynı istekle tekrar) testte ayrıca koşulur.
+- [ ] AC-17 (zorunlu) — Merkezi denetim: tek aşamalı komutlar (Create, Update, Delete, Validate, kanıt, onay belgesi)
+  tam **bir** olay bırakır; iki aşamalı komutlar (Submit, kararlar, Release) tx1'de tam bir **deneme** olayı ve sonuç
+  kesinleştiğinde tx2'de (ya da Reconcile'da) tam bir **sonuç** olayı bırakır; idempotent tekrar yeni olay üretmez. Olay
+  iş verisiyle aynı Mongo işleminde yazılır; outbox yazımı zorla başarısız edildiğinde komut başarısız olur ve iş verisi
+  yazılmaz (sabotaj testi); uzak başarı sonrası tx2 zorla başarısız edildiğinde niyet açık kalır ve Reconcile uzak çağrıyı
+  tekrarlamadan sonuç olayını yazar (kurtarma testi).
 - [ ] AC-18 (zorunlu) — `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard`
   yeşil; `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ | grep -E '^\+- '` boş (borç satırı eklenmemiş).
 - [ ] AC-19 (zorunlu) — Release `Approved` partide 200 ve `dispatchOutcome = NotConfigured` döner, `PaymentDispatchAttempt`
@@ -744,7 +814,10 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   idempotency başlığı sözleşmeyle eşleşir (sözleşme testi).
 - [ ] AC-30 (zorunlu) — Bir oluşturma, bir güncelleme ve bir silme dev ortamında çalıştırılır; üç merkezi kayıt AUD-001 §8
   sorgusuyla gösterilir ve on alan işaretlenir (rapor ortamın adını yazar).
-- [ ] AC-31 (isteğe bağlı) — Approve aynı kullanıcının iki eşzamanlı isteğinde yalnız biri kayıt bırakır (CAS + idempotency).
+- [ ] AC-31 (zorunlu) — Yarış testleri (gerçek replica set, paralel istek): (a) aynı aktörün aynı anahtarla iki eşzamanlı
+  Approve'u → tek karar, tek uzak geçiş; (b) iki farklı onaylayıcının farklı anahtarla eşzamanlı Approve ve Reject'i → tek
+  açık karar niyeti, diğeri 409 `PAYMENT_DECISION_PENDING`, MOD-0023'e tek çağrı; (c) iki eşzamanlı Submit (farklı
+  anahtar) → tek başlatma niyeti, diğeri 409. Tekil kısmi indeksler kaldırıldığında (b) ve (c) kırmızıya döner (sabotaj).
 
 ## Test Expectations
 
@@ -869,8 +942,9 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 - MOD-0023 başlatanın onayını zaten reddediyor; MOD-0126 bunu yeniden yazmaz, yalnız MOD-0023'te olmayan kuralları
   (oluşturan, son güncelleyen, tier-2, muafiyet, para birimli eşik) ekler ve gönderme çözümleyicisinde aday dışı bırakır
   (domain-config "modül kendi SoD kontrolünü icat etmez" ile tutarlı: başlatan kuralı miras, ödeme kuralları ek).
-- Aday dışı bırakma + MOD-0023 atama kontrolü nedeniyle muafiyet pratikte yalnız atanmış bir adayın R3/R4 hatasında
-  devreye girebilir; oluşturan ve gönderen hiçbir zaman aday olmaz. Bu, muafiyetin kapsamını O-17'de soruyu gerektirir.
+- Aday dışı bırakma + MOD-0023 atama kontrolü nedeniyle oluşturan, gönderen ve son güncelleyen hiçbir zaman aday olmaz;
+  sahip kararı D12/1 ile muafiyet yalnız R4'ü (atanmış onaylayıcının tier-2 izni eksikliği) kaldırır. Aday seçimi, karar
+  kaydı ve Release (R11) aynı modeli kullanır.
 - `target: 2026-12-15` planlama yer tutucusudur, sahip kararı değildir.
 
 ## Follow-up Items
@@ -907,7 +981,8 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 | O-14 | Alacaklı referansının varlık doğrulaması | v1 biçim / sözleşmeli doğrulama | v1 biçim; follow-up | sahip |
 | O-15 | MOD-0289 gelene kadar banka referansı giriş biçimi | opak referans alanı / DL-4'ü beklet | opak referans alanı | sahip |
 | O-16 | Kanıt gereksinimi değerlendirmesi (`evaluate`) | bu dilim / sonra | sonra | sahip |
-| O-17 | Muafiyetin kapsamı (bkz. Tasarım notları) | yalnız R3/R4 / kaldır | yalnız R3/R4, MOD-0023 kontrollerini aşamaz | sahip |
+| O-17 | Muafiyetin kapsamı (bkz. Tasarım notları) | yalnız R4 / R3+R4 / kaldır | **KARAR (D12/1): yalnız R4** (tier-2 izni eksikliği); R1–R3 ve MOD-0023 kontrolleri muaf tutulamaz | sahip (K1) |
+| O-18 | Idempotency-Key zorunluluğu | her yazma komutu / yalnız kritik | **KARAR (D12/2): her yazma komutunda zorunlu**; makbuz kapsamı kiracı + şirket + aktör + işlem + hedef | sahip (K1) |
 
 ## Teslim dilimleri
 

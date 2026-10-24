@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9, D10 ve D11 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9, D10, D11 ve D12 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -49,6 +49,13 @@ Sahip, Treasury modüllerinin çalışması için başka modüllerde gereken de�
 2. **AdminDirect (PP-05, O-1):** "Hayır, düşür" — tüm onaylar MOD-0023 iş akışı ve SoD kontrolünden geçer.
 3. **K2 (O-6):** "Evet, K2" — onay, red ve muafiyet komutları fail-closed; denetim kaydı iş verisiyle aynı işlemde.
 4. **İzin öneki (O-5):** "finance-treasury.*".
+
+## D12 — MOD-0126 gap listesinden doğan kararlar (2026-10-24, soru kutusu; ikisi de önerilen seçenek)
+
+1. **Muafiyet kapsamı (O-17):** "Yalnız tier-2 izni" — muafiyet yalnız R4'ü kaldırır; oluşturan, gönderen ve son
+   güncelleyen asla onaylayamaz; aday seçimi, karar kaydı ve Release aynı modeli uygular.
+2. **Idempotency (O-18):** "Tüm yazma komutlarında zorunlu" — anahtar yoksa 400; sunucu anahtar üretmez; makbuz kapsamı
+   kiracı + şirket + aktör + işlem + hedef.
 
 ## Karar olmayanlar
 
