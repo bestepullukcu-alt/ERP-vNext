@@ -166,7 +166,9 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | `PaymentApprovalDecision.State` | `Requested` | `Recorded` · `Refused` | `Unknown` | `Unknown`/`Requested` → `Recorded` · `Refused` · `Cancelled` | `…approved`/`…approved-with-sod-waiver`/`…rejected`/`…evidence-requested`/`…escalated` · `…decision-refused` · `…decision-cancelled` |
 
   `Refused` = MOD-0023 kesin reddetti; `Cancelled` = MOD-0023 örneği ya da görevi iptal edilmiş / kapanmış bulundu
-  (yalnız Reconcile atar). Kaynaktaki `RefusedByWorkflow` adı kullanılmaz.
+  (yalnız Reconcile atar, yalnız uzak tarafın **kesin** iptal/kapalı durumuyla; bulunamadı / 404 / zaman aşımı /
+  belirsiz okuma `Cancelled` sayılmaz, niyet `Unknown` kalır — Runtime Constraints 3a). Kaynaktaki `RefusedByWorkflow`
+  adı kullanılmaz.
 - **Servis geneli durum sözlüğü (sahip kararı D14/2, ortak niyet altyapısı):** bu matris `Diten.FinanceTreasuryService`'in
   **tek** niyet durum sözlüğüdür. Niyet tipleri modüle özgü kalır (MOD-0119, MOD-0120, MOD-0124'ün başlatma, karar ve
   dışa aktarma niyetleri) ama durum adları buradakilerdir: açık `Pending` · `Requested` · `Unknown`; kapalı `Started` ·
@@ -285,7 +287,8 @@ taşır). **Eklenen:** `State` (Requested/Recorded/Refused/Cancelled/Unknown —
 
 **Tek ortak tip (sahip kararı D14/2):** `Diten.FinanceTreasuryService`'in bütün modülleri (MOD-0126, MOD-0119, MOD-0120,
 MOD-0124) **bu tek tipi ve tek koleksiyonu** kullanır; modül önekli makbuz tipi açılmaz. Tip bu paketin DL-1'iyle (servisi
-açan dilim) servis ortak yapı taşı olarak gelir (Repo Scope); diğer paketler burayı başvuru gösterir, yeniden tanımlamaz.
+açan dilim) servis ortak yapı taşı olarak gelir; **tek sahibi ve yazarı MOD-0126 DL-1'dir** (Repo Scope, gap 4/G5); diğer
+paketler burayı başvuru gösterir, yeniden tanımlamaz ve önce açmaz.
 Tipin ya da kurallarının değişmesi dört paketin birlikte değişikliğini ister.
 
 | Alan | Tip | Kural |
@@ -359,7 +362,9 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
   `PAYMENT_SOD_POLICY_UNAVAILABLE` (503 — ayar deposu erişilemiyor; ayarın yokluğu hata değildir), `PAYMENT_BANK_DISPATCH_NOT_CONFIGURED`
   (sonuç kodu, serbest bırakma yanıtında), `PAYMENT_RECORD_CODE_UNAVAILABLE` (503), `PAYMENT_IDEMPOTENCY_KEY_REQUIRED`
   (400), `PAYMENT_DECISION_PENDING` (409 — açık karar niyeti), `PAYMENT_SOD_WAIVER_NOT_ALLOWED` (403 — R1–R3 muaf tutulamaz),
-  `PAYMENT_REQUEST_IN_PROGRESS` (202 — aynı anahtarlı istek, makbuz `Pending`; kurtarma yapılmaz).
+  `PAYMENT_REQUEST_IN_PROGRESS` (202 — aynı anahtarlı istek, makbuz `Pending`; kurtarma yapılmaz),
+  `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH` (409 — Reconcile'ı çağıran asıl komutun aktörü değil; yeniden başlatma
+  yapılmaz, niyet `Unknown` kalır).
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
   `PAYMENT_APPROVER_DIRECTORY_*` (O-10'a bağlı).
@@ -379,10 +384,17 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
     `CentralAuditTransaction.EnlistAsync` çağırır)
   - `src/Diten.FinanceTreasuryService.Infrastructure/{LegalEntities,Workflow,Evidence,Currency,BankDispatch,RecordCodes,DataScope}/**`
     (port bağdaştırıcıları; `DataScope` = SEC-002 tüketim bağdaştırıcısı, servis ortak)
-  - **Servis ortak yapı taşları (D14/1, D14/2):** `src/Diten.FinanceTreasuryService.Application/Common/{CommandReceipts,DataScope}/**`
-    (`FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource`, `FinanceTreasuryDataScope`) ve
-    `src/Diten.FinanceTreasuryService.Persistence/Common/CommandReceipts/**` (koleksiyon + iki makbuz indeksi). Bu dilim
-    açar; MOD-0119/0120/0124 yalnız kullanır, değişiklik dört paketin onayını ister.
+  - **Servis ortak yapı taşları (D14/1, D14/2) — tek sahibi ve tek yazarı bu paketin DL-1'idir (gap 4/G5):**
+    servis iskeleti; `src/Diten.FinanceTreasuryService.Application/Common/{CommandReceipts,DataScope}/**`
+    (`FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource` — okuma ve yazma kapsamı, `FinanceTreasuryDataScope`)
+    ve `src/Diten.FinanceTreasuryService.Persistence/Common/CommandReceipts/**` (koleksiyon + iki makbuz indeksi
+    `ux_finance_treasury_command_receipt_scope`, `ix_finance_treasury_command_receipt_pending`); servis ortak portlar ve
+    bağdaştırıcıları `ILegalEntityEligibilityPort` (`Infrastructure/LegalEntities`), `ICurrencyReferencePort`
+    (`Infrastructure/Currency`), `IRecordCodePort` (`Infrastructure/RecordCodes`), `DataScope` bağdaştırıcısı; CentralAudit
+    kaydı (`AddCentralAudit<FinanceTreasuryCentralAuditScope>(RequireEnlistment = true)`, `FinanceTreasuryCentralAuditScope`,
+    servis defteri). MOD-0119, MOD-0120 ve MOD-0124 bunlara **bağımlıdır** (MOD-0126 DL-1, onların DL-1'inin önkoşuludur)
+    ve bunları **hiçbir zaman yeniden tanımlamaz ya da açmaz** — başka bir paket önce `ready-for-dev` olsa bile MOD-0126
+    DL-1'i bekler. Değişiklik dört paketin birlikte onayını ister.
   - `src/Diten.FinanceTreasuryService.Api/Controllers/PaymentBatchesController.cs`, `PaymentExceptionsController.cs`
   - `src/Diten.FinanceTreasuryService.Api/CentralAudit/FinanceTreasuryCentralAuditScope.cs`
 - `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — yeni defter (`## İzler` satırı
@@ -469,13 +481,28 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   tüm şirketleri görmek ayrı izindir: `finance-treasury.payment-batches.read-tenant-wide` (yalnız açık atama —
   `ExplicitGrantOnlyPermissions`; tek üretici `FinanceTreasuryDataScope.TenantWideScope()`). Kapsam servis genelinde
   **tek yerde** (`IFinanceTreasuryDataScopeSource`, MOD-0119/0120/0124 ile ortak; modül yalnız kendi `read-tenant-wide`
-  anahtarını verir) çözülür; liste, detay, iz, istisna listesi ve yazma aynı kapsamı okur; sayfalama ve toplamlar
-  daraltılmış kümeden hesaplanır. Referans uygulama: `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5).
+  anahtarını verir) çözülür; okumalar (liste, detay, iz, istisna listesi) **okuma kapsamını**, her yazma **yazma
+  kapsamını** kullanır (aşağıda); sayfalama ve toplamlar daraltılmış kümeden hesaplanır. Referans uygulama:
+  `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5).
+- **Okuma kapsamı ile yazma kapsamı ayrıdır (gap 4/G1; D14/1 ile tutarlı — `…read-tenant-wide` şirketleri *görme*
+  iznidir, yazma izni değildir):** `IFinanceTreasuryDataScopeSource` iki ayrı sonuç verir: **okuma kapsamı** = kullanıcının
+  kendi şirket yetkileri ya da `read-tenant-wide` varsa kiracıdaki tüm şirketler (`TenantWideScope()`); **yazma kapsamı**
+  = yalnız kullanıcının kendi şirket yetkileri — `TenantWideScope()` yazma kapsamına **hiçbir zaman** girmez (tek üretici
+  okuma tarafında kalır). Her yazma komutu (Create, Update, Delete, BulkDelete, Validate, Submit, Approve,
+  ApproveWithSodWaiver, Reject, RequestEvidence, Escalate, Reconcile, kanıt bağlama, onay belgesi, Release) hedef kaydın
+  `LegalEntityId`'si için **katman 1**'i ister: `X-Legal-Entity-Id` hedef partinin şirketine eşit **ve** kullanıcının o
+  şirkette kendi yetkisi var. Yalnız `read-tenant-wide` sayesinde görünen bir partiye yazma → **404**
+  `PAYMENT_BATCH_NOT_FOUND` (kapsam dışı kuralıyla aynı; varlık sızdırılmaz, başka adım çalışmaz). Bu ayrım servis ortak
+  yapı taşının parçasıdır (MOD-0126 DL-1; dört paket aynı kuralı uygular).
 - **Ödeyen şirket uygunluğu güncel durumdur, kayıt anındaki kopya değildir (TP-001 T14):** Create, Submit, her karar ve
   Release'te MOD-0220 `lookup-validation` çağrılır; `OperationalStatus = Active` **ve** `ApprovalStatus = Approved` değilse
   `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE` (422); MOD-0220 yanıt vermezse `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (503) — geçiş yok.
   **Reconcile bu kuraldan muaftır** (sahip kararı D15/2): yeni işlem başlatmaz, daha önce kontrol edilip başlatılmış
-  işlemin uzak sonucunu kaydeder; şirket arada pasifleşse de niyet kapanabilmelidir.
+  işlemin uzak sonucunu kaydeder; şirket arada pasifleşse de niyet kapanabilmelidir. **Muafiyetin sınırı (gap 4/G2, D15/2
+  metniyle tutarlı — muafiyet "yeni işlem başlatmayan" kayda dayanır):** muafiyet yalnız Reconcile'ın uzakta **var olan**
+  bir örneğin / geçişin sonucunu kaydettiği yol içindir. Uzakta örnek/geçiş bulunamazsa ve Reconcile çağrıyı yeniden
+  yapacaksa bu **yeni bir uzak işlemdir**: önce şirket uygunluğu (D10/1, D14/4) ve SoD + izin yeniden denetlenir
+  (Runtime Constraints 3a).
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId). Okumalar `IsDeleted = false`.
 - **Idempotency (sahip kararı D12/2 — her yazma komutunda zorunlu):** Create, Update, Delete, BulkDelete, Validate,
   Submit, Reconcile, her karar, kanıt bağlama, onay belgesi ve Release `Idempotency-Key` başlığı **ister**; başlık yoksa
@@ -487,8 +514,9 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     iki aşamalı komutlarda (Submit ve kararlar — Release bu dilimde tek aşamalıdır) tx1'de `Pending` (yanıt yok, `LinkedIntentId` dolu), yanıt **tx2'de**
     (kesin sonuç ya da 202 belirsiz) ya da — makbuz hâlâ `Pending` ise — **Reconcile'da** yazılır ve makbuz `Completed`
     olur. `Completed` makbuz değişmez (Entity Fields, değişmezlik kuralı).
-  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) veri kapsamı (SEC-002, D14/1; kapsam dışı
-    şirket → 404 `PAYMENT_BATCH_NOT_FOUND`, başka adım yok) → (3) makbuz araması: aynı kapsam + farklı parmak
+  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) veri kapsamı (SEC-002, D14/1; okumada
+    okuma kapsamı, **yazmada yazma kapsamı** — hedef partinin şirketi kullanıcının kendi şirket yetkisinde değilse, parti
+    `read-tenant-wide` ile görünse bile → 404 `PAYMENT_BATCH_NOT_FOUND`, başka adım yok) → (3) makbuz araması: aynı kapsam + farklı parmak
     izi → 409 `PAYMENT_IDEMPOTENCY_CONFLICT`; aynı kapsam + aynı parmak izi + `Completed` → **kayıtlı yanıt aynen döner**;
     aynı kapsam + aynı parmak izi + `Pending` → 202 `PAYMENT_REQUEST_IN_PROGRESS` (bağlı niyetin o anki durumuyla). İki
     durumda da **başka hiçbir adım çalışmaz** — uzak çağrı yok, Reconcile yok. → (4) açık niyet kontrolü (Submit ve
@@ -511,9 +539,34 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   2. *Açık niyet varken* (`Pending` / `Unknown`): **aynı** anahtarla tekrar → makbuz kuralı (kayıtlı yanıt ya da 202
      `PAYMENT_REQUEST_IN_PROGRESS`); **farklı** anahtarla Submit → 409 `PAYMENT_WORKFLOW_START_PENDING`, uzak çağrı yok. Parti başına en fazla bir açık
      başlatma niyeti: tekil kısmi indeks `(TenantId, BatchId)` where `Status ∈ {Pending, Unknown}`.
-  3. *Reconcile:* aynı anahtarla başlatma yeniden oynatılır (MOD-0023 anahtarı tanırsa var olan örneği döndürür,
-     `StartWorkflowInstanceHandler.cs:79-85`) ya da `instances/by-objects` okunur; sonuç `Started` / `Refused` /
-     `Cancelled`'a bağlanır. Belirsiz kalırsa durum değişmez ve deneme sayılır.
+  3. *Reconcile:* sonuç `Started` / `Refused` / `Cancelled`'a yalnız uzak tarafın **kesin** durumuyla bağlanır; belirsiz
+     kalırsa durum değişmez ve deneme sayılır. Sıra 3a'dadır.
+  3a. *Reconcile önce okur, sonra (gerekirse) yeniden başlatır (gap 4/G2; her iki aşamalı komut — Submit ve beş karar
+     komutu):*
+     - **Önce okuma:** Reconcile uzak tarafı **okur** — başlatmada `instances/by-objects` (parti kimliği) ve niyetin
+       deterministik uzak anahtarı; kararda örneğin görev geçmişi ve `RemoteIdempotencyKey`. Okuma yazma değildir.
+     - **Uzakta örnek / geçiş var** → kesin durumu kaydedilir (`Started` / `Recorded` / `Refused`; örnek ya da görev
+       uzakta açıkça iptal/kapalıysa `Cancelled`), tx2 yazılır, bağlı makbuz yalnız `Pending` ise `Completed` olur, sonuç
+       olayı yazılır. Bu yol şirket kuralından **muaftır** (D15/2).
+     - **Okuma belirsiz ya da "bulunamadı"** (zaman aşımı, bağlantı kopması, 5xx, okunamayan gövde, 404 / boş sonuç):
+       bu, uzak çağrının **hiç yapılmadığının kesin güvencesi değildir** (yayılma gecikmesi, başka yüzey). Niyet
+       **asla `Cancelled` yapılmaz**; `Unknown` kalır (`Pending` idiyse `Unknown`'a geçer), parti ve makbuz değişmez.
+       Zaman aşımı / 5xx / okunamayan gövdede başka adım yoktur (yalnız deneme sayılır).
+     - **Okuma kesin ve boş sonuç verdiyse yeniden başlatma yeni bir uzak işlemdir:** uzak çağrıdan önce (i) şirket
+       uygunluğu (`OperationalStatus = Active` ve `ApprovalStatus = Approved`, D10/1, D14/4), (ii) SoD (başlatmada R1–R4
+       aday çözümleyicisi yeniden; kararda niyetteki karar verenle R1–R10) ve (iii) izin yeniden denetlenir. Yeniden
+       başlatma MOD-0023'teki başlatanı ya da karar vereni **değiştiremez**: Reconcile'ı çağıran, asıl komutun aktörü
+       (`SubmittedBy` / `DecidedBy`) değilse uzak çağrı yapılmaz (409 `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH`). Hepsi
+       geçerse çağrı **aynı deterministik uzak anahtarla** (başlatmada `IdempotencyKey`, kararda `RemoteIdempotencyKey`)
+       **bir kez** yapılır — MOD-0023 anahtarı tanırsa var olan örneği döndürür (`StartWorkflowInstanceHandler.cs:79-85`),
+       ikinci örnek oluşmaz; sonuç tx2 eşlemesiyle yazılır. Görev geçişinin aynı anahtarı yeniden oynattığı DL-2
+       başında ölçülür; ölçülmeden kararda yeniden geçiş yapılmaz (niyet `Unknown` kalır).
+     - **Uygun değilse** (şirket uygun değil / SoD ya da izin reddi / aktör farklı): uzak çağrı **yapılmaz**; niyet
+       `Unknown` kalır ve `LastOutcomeCode` sebep kodunu taşır (`PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`, `PAYMENT_SOD_DENIED`,
+       `PAYMENT_PERMISSION_DENIED`, `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH`); parti durumu ve bağlı `Pending` makbuz
+       değişmez (aynı anahtarla tekrar yine 202 `PAYMENT_REQUEST_IN_PROGRESS`), niyet kapanmadığı için sonuç olayı yazılmaz.
+       Reconcile'ın kendi makbuzu sebep koduyla (422 / 403 / 409) `Completed` olur. Koşul düzelince (ör. şirket yeniden
+       onaylanınca) yeni bir Reconcile tekrar dener. Niyetin kalıcı olarak kapatılması (açık iptal yolu) Follow-up'tadır.
   4. *Kararlar:* SoD ön kontrolü → tx1 `PaymentApprovalDecision(Requested)` + denetim satırı → MOD-0023 görev geçişi,
      karar idempotency anahtarıyla (kaynakta da iletiliyor, `WorkflowClientAdapters.cs:222@da4abb20`) → tx2 `Recorded`
      + parti durumu. Belirsiz → `Unknown`, 202 `PAYMENT_DECISION_OUTCOME_UNKNOWN`, Reconcile kapatır.
@@ -640,7 +693,7 @@ Resources/Views/FinanceTreasury/PaymentBatches/    PaymentBatchesIndex.{en,tr,fr
 
 | Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol |
 |---|---|---|---|---|
-| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved; kullanıcının veri kapsamında (D14/1) ya da `read-tenant-wide` | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` |
+| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved; okumada kullanıcının okuma kapsamında (kendi şirket yetkisi ya da `read-tenant-wide`, D14/1); **yazmada** hedef partinin şirketine eşit ve kullanıcının **kendi** şirket yetkisinde (yazma kapsamı — `read-tenant-wide` yazma yetkisi vermez, gap 4/G1); değilse 404 | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` (okuma / yazma kapsamı) |
 | Gövde/sorguda tenantId, legalEntityId | — | bulunursa 400 | — | middleware |
 | DefaultSourceBankAccountRef | Evet | Guid ≠ Empty | — | — |
 | PaymentMethod | Evet | trim, 1..32 | — | değer listesi O-13 |
@@ -704,6 +757,13 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 - **Başka kiracı / başka şirket partisi** (okuma, karar, silme) → 404 `PAYMENT_BATCH_NOT_FOUND`, varlık sızdırılmaz.
 - **Kapsam dışı şirket** (kullanıcının veri kapsamında olmayan şirket, `read-tenant-wide` yok — D14/1) → liste 200 boş,
   detay / iz / yazma 404 `PAYMENT_BATCH_NOT_FOUND`; veri kapsamı çözücüsü hata verirse aynı sonuç (boş kapsam).
+- **Yalnız `read-tenant-wide` ile görünen partiye yazma** (kullanıcının o şirkette kendi yetkisi yok — gap 4/G1) →
+  Create / Update / Delete / Validate / Submit / her karar / Reconcile / kanıt / onay belgesi / Release 404
+  `PAYMENT_BATCH_NOT_FOUND`; liste ve detay okuması 200; MOD-0023'e ve MOD-0220'ye çağrı yok, kayıt ve makbuz yazılmaz.
+- **Reconcile, uzakta örnek bulunamadı / okuma belirsiz** (gap 4/G2) → niyet `Cancelled` yapılmaz, `Unknown` kalır;
+  okuma kesin boşsa yeniden başlatmadan önce şirket + SoD + izin + aktör denetlenir: şirket uygun değilse uzak çağrı yok,
+  niyet `Unknown` + `LastOutcomeCode = PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422; aktör farklıysa 409
+  `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH`; uygunsa aynı deterministik anahtarla tek uzak çağrı.
 - **İş akışı başlatma zaman aşımı / bağlantı kopması / boş 2xx** → 202 `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN`, niyet
   `Unknown`, parti `Submitted`; ret istisnası yazılmaz; ikinci Submit 409 `PAYMENT_WORKFLOW_START_PENDING`; Reconcile aynı
   anahtarla ilerler ve ikinci uzak örnek oluşmaz.
@@ -739,7 +799,7 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 | Recovery anahtarı | Katman | Uçlar | Kaynak anahtar (`PermissionContracts.cs:5-22@da4abb20`) |
 |---|---|---|---|
 | `finance-treasury.payment-batches.read` | T1 | GET liste, GET detay | `mod0126.payment_batch.read` |
-| `finance-treasury.payment-batches.read-tenant-wide` | T3 (yalnız açık atama, `ExplicitGrantOnlyPermissions`) | kiracıdaki tüm şirketlerin partileri, izi ve istisnaları (SEC-002 §3.5, D14/1) | — (Recovery eki) |
+| `finance-treasury.payment-batches.read-tenant-wide` | T3 (yalnız açık atama, `ExplicitGrantOnlyPermissions`) | kiracıdaki tüm şirketlerin partileri, izi ve istisnaları (SEC-002 §3.5, D14/1) — **yalnız okuma**; hiçbir yazma komutunun kapsamını genişletmez (gap 4/G1) | — (Recovery eki) |
 | `finance-treasury.payment-batches.create` | T1 | POST | `mod0126.payment_batch.propose` |
 | `finance-treasury.payment-batches.update` | T1 | PUT | — (Recovery eki) |
 | `finance-treasury.payment-batches.delete` | T1 | DELETE | — |
@@ -928,6 +988,21 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   detay 404; `read-tenant-wide` izni olan kullanıcı iki şirketin kayıtlarını görür. Çözücü hata verdiğinde liste boş döner.
   Kapsam daraltması (`IFinanceTreasuryDataScopeSource` süzgeci) kaldırıldığında test kırmızıya döner (sabotaj);
   `read-tenant-wide` otomatik yoldan verilmez (`ExplicitGrantOnlyPermissions` listesinde).
+- [ ] AC-33 (zorunlu) — Okuma kapsamı yazma kapsamını genişletmez (gap 4/G1): `payment-batches.read-tenant-wide` + bütün
+  yazma izinlerine sahip ama LE-B'de **kendi şirket yetkisi olmayan** kullanıcı LE-B partilerini listede ve detayda görür
+  (200), ama LE-B partisinde Create (`X-Legal-Entity-Id = LE-B`), Update, Delete, Submit, Approve, Reject, Reconcile ve
+  Release 404 `PAYMENT_BATCH_NOT_FOUND` döner; MOD-0023 / MOD-0220'ye çağrı gitmez, kayıt, makbuz ve denetim olayı
+  oluşmaz (sahte istemcilerle sayılır). Aynı kullanıcı LE-A'da (kendi yetkisi) aynı komutları çalıştırabilir. Sabotaj:
+  yazma yolunda okuma kapsamı kullanıldığında (`TenantWideScope()` yazma kapsamına sızdırıldığında) test kırmızıya döner.
+- [ ] AC-34 (zorunlu) — Reconcile önce okur (gap 4/G2; Submit ve her karar türü için ayrı test): (a) uzakta örnek / geçiş
+  **var** → şirket `Inactive` ya da `Approved` değilken bile sonuç kaydedilir (MOD-0220 çağrılmaz — D15/2), bağlı
+  `Pending` makbuz `Completed`, tek sonuç olayı; (b) okuma 404 / boş / zaman aşımı / 5xx → niyet **`Cancelled` olmaz**,
+  `Unknown` kalır, parti ve makbuz değişmez; (c) okuma kesin boş + şirket uygun değil → MOD-0023'e **hiç** çağrı yok,
+  niyet `Unknown`, `LastOutcomeCode = PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422, sonuç olayı yok, makbuz `Pending`;
+  (d) okuma kesin boş + şirket uygun + SoD/izin geçer + aktör asıl aktör → tek uzak çağrı **aynı deterministik anahtarla**
+  (sahte MOD-0023 anahtar başına tek örnek sayar; ikinci Reconcile ikinci örnek üretmez); aktör farklıysa 409
+  `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH`, çağrı yok. Sabotaj: okuma adımı atlanıp doğrudan yeniden başlatıldığında
+  ya da "bulunamadı" `Cancelled`'a bağlandığında test kırmızıya döner.
 
 ## Test Expectations
 
@@ -1069,6 +1144,8 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   olur (`PaymentReleaseIntent`, belirsiz sonuç, Reconcile, sonuç olayı) ve gerçek dağıtım kapısı (hesap sahipliği,
   Tenant/LE, alacaklı eşleşmesi) kapanır.
 - CentralAudit reddedilen komut kaydı (`Outcome = Denied`) — BL-501 sahibine (G-AUD-1).
+- Yeniden başlatması engellenen (şirket uygun değil, SoD/izin reddi, aktör farklı) ve bu yüzden `Unknown` kalan niyetin
+  kalıcı kapatılması için açık iptal yolu (gap 4/G2) — sahip kararıyla ayrı komut; bu sürümde niyet açık kalır.
 - Görev Merkezi köprüsü (WC-D1: yeni sınıf değil, yapılandırma satırı) — onay görevlerinin panoda görünmesi.
 - Alacaklı varlık doğrulaması (MOD-0140 `validate`, MOD-0220, çalışan kaynağı) (O-14).
 - AP kaynaklı parti (`ApLinked`, MOD-0119) — TRM-S2 sonrası.
@@ -1119,17 +1196,20 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
 - **DL-1** — Yollar: servis iskeleti, `Features/PaymentBatch/` içinde Create/Update/Delete/BulkDelete/Validate + dört
   sorgu, Domain/Persistence, MOD-0220 ve MOD-0048 bağdaştırıcıları, RCS kod portu, CentralAudit kaydı, denetim defteri,
-  servis ortak yapı taşları (`FinanceTreasuryCommandReceipt` + iki makbuz indeksi, `IFinanceTreasuryDataScopeSource` —
-  D14/1, D14/2), `payment-batch.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001 K4 — ileticisi olmayan serviste yeni yazma komutu
+  servis ortak yapı taşları (`FinanceTreasuryCommandReceipt` + iki makbuz indeksi, `IFinanceTreasuryDataScopeSource` okuma
+  ve yazma kapsamıyla, ortak LE / para birimi / kod portları ve bağdaştırıcıları, CentralAudit kaydı — D14/1, D14/2; tek
+  sahibi bu dilim, MOD-0119/0120/0124 DL-1'inin önkoşulu — gap 4/G5), `payment-batch.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001 K4 — ileticisi olmayan serviste yeni yazma komutu
   yazılamaz; ilk komutla birlikte gelir. Önkoşul: Ready-for-dev engelleri (DCP, port, kod alma, TRM-14, O-9, O-11, O-19, CT
-  defter kararı). Bitiş: AC-1, 2, 3, 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32.
+  defter kararı). Bitiş: AC-1, 2, 3, 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
+  Validate kısmı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/Escalate/ApproveWithSodWaiver, SoD politika
   servisi ve tek eşik yapılandırması, MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç
   modülün çekirdeği ve en riskli kısmıdır; bağımsız inceleme tek başına yapılabilsin. Önkoşul: DL-1, O-4, O-7, O-8, MOD-0023
-  şablonu. Bitiş: AC-4…15, 16 (kararlar), 31.
+  şablonu. Bitiş: AC-4…15, 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34.
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
-  bekletmesin. Önkoşul: DL-2, MOD-0269 sözleşmesi (TRM-06), O-6. Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30.
+  bekletmesin. Önkoşul: DL-2, MOD-0269 sözleşmesi (TRM-06), O-6. Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30, 33 (Release,
+  kanıt, onay belgesi kısmı).
 - **DL-4** — Yollar: `Views/FinanceTreasury/PaymentBatches/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API sözleşmesine
   bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-1 (liste/oluşturma), DL-2 (karar düğmeleri), Gateway rotası, O-15.

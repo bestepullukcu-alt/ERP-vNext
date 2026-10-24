@@ -198,8 +198,8 @@ Treasury & Cash; Blueprint bağımlılık kapısı "Data Contract Registry; Inte
 |---|---|---|---|---|
 | Draft | 0 | elle girilmiş, mutabakatı yapılmamış ya da içeriği değişmiş | Create, Update | Update, Reconcile, Delete |
 | Reconciled | 2 | mutabakat tamamlandı (istisnalı ya da istisnasız) | Reconcile | Update (→ Draft), Reconcile, kanıt, Submit, Publish (onaylıysa), Delete (hiç gönderilmemişse) |
-| Published | 3 | o LE + değer tarihi + para birimi için geçerli pozisyon; **değişmez** | Publish | yalnız Superseded (yeni yayım) |
-| Superseded | 4 | yerini yeni yayım aldı; değişmez | aynı yuvada yeni Publish | — |
+| Published | 3 | o LE + değer tarihi + para birimi için geçerli pozisyon; **içeriği değişmez** (Validation Rules → Yayım sonrası değişmezlik) | Publish | yalnız Superseded (yeni yayım) |
+| Superseded | 4 | yerini yeni yayım aldı; içeriği değişmez | aynı yuvada yeni Publish | — |
 
 - `Imported` (1) ve `Archived` (5) **taşınmaz**: v1'de onları atayan komut yok (içe aktarma ertelendi; arşiv komutu
   kaynakta da yok). Sayısal değerleri ileride aynı anlamla kullanılmak üzere boş bırakılır; yeni değer eklenmez.
@@ -228,7 +228,9 @@ dışa aktarmanın kesin başarısı `Recorded`'dır.
   `PreviousApprovalStatus`; `Cancelled` → `Cancelled`. Karar `Recorded` + onay (son adım) → `Approved`; `Recorded` + ret →
   `Rejected`; karar `Refused` → `PendingApproval` kalır; `Cancelled` → `Cancelled`. Dışa aktarma niyeti anlık görüntünün
   durumunu değiştirmez (yayım kesindir).
-- `Refused` = uzak sistem kesin reddetti; `Cancelled` = uzak örnek/görev iptal ya da kapanmış bulundu (yalnız Reconcile).
+- `Refused` = uzak sistem kesin reddetti; `Cancelled` = uzak örnek/görev iptal ya da kapanmış bulundu (yalnız Reconcile,
+  yalnız uzak tarafın **kesin** iptal/kapalı durumuyla; bulunamadı / 404 / zaman aşımı / belirsiz okuma `Cancelled`
+  sayılmaz, niyet `Unknown` kalır — Runtime Constraints 5a).
 
 ## Entity Fields
 
@@ -289,6 +291,7 @@ makbuz) anlık görüntünün `LegalEntityId`'sini taşır ki her sorgu Tenant +
 | ContentUpdatedBy | Guid? | son Update ya da Reconcile'ı yapan (SoD R3) | yeni |
 | WorkflowInstanceId | Guid? | yalnız kesin başlatma sonucundan; istemci veremez | kaynak istemci girdisini reddediyor (`CashPositionApprovalService.cs:52-53@da4abb20`) — korunur |
 | IsCurrentPublished / PublishedAt / PublishedBy | bool / DateTimeOffset? / Guid? | Publish | `:21, :24` |
+| PublishedContentHash | string? | Publish tx'inde sunucu yazar: yayımlanan içeriğin (başlık para birimi + değer tarihi, satırlar, toplamlar, `ContentRevision`, geçerli kanıt paketi ve karar kimliği) kanonik SHA-256'sı; yayımdan sonra **hiç değişmez**; dışa aktarma niyeti bu değere bağlanır | yeni (gap 4/G3) |
 | SupersededBySnapshotId / SupersededAt | Guid? / DateTimeOffset? | yeni yayım | `:22-23` |
 | Notes | string? | trim, ≤ 2000 (öneri) | — |
 | CreatedBy / UpdatedBy | Guid? | token `sub` | — |
@@ -425,6 +428,7 @@ değildir, `Cancelled` niyet durumudur), `DecidedBy` (**Guid**, kaynakta string)
 | Alan | Tip | Kural |
 |---|---|---|
 | SnapshotId, EvidencePackId | Guid, Guid | yalnız `Locked` paket |
+| SnapshotContentHash | string | tx1'de anlık görüntünün `PublishedContentHash`'inden kopyalanır; tx2 ve Reconcile anlık görüntünün hash'iyle eşitliği denetler (eşit değilse değişmezlik bozulmuştur → 409 `CASH_POSITION_PUBLISHED_IMMUTABLE`, uzak çağrı yok). Dışa aktarma anlık görüntüyü **referansla** (kimlik + hash) gösterir, ona yazmaz (gap 4/G3) |
 | Items | `{ LinkType, DocumentId, DocumentVersionId?, RemoteKey, Outcome, EvidenceLinkId? }[]` | `RemoteKey` deterministik: `mod0124:{evidencePackId:N}:{linkType}:{documentId}:{documentVersionId}` (kaynak anahtarı `CashPositionEvidenceExportService.cs:205-206@da4abb20`, `mod0124:` önekiyle) |
 | Status | enum Pending / Recorded / Refused / Cancelled / Unknown | geçiş matrisi (servis geneli sözlük, D14/2); tüm kalemler bağlandıysa `Recorded`, herhangi biri kesin reddedildiyse `Refused`, herhangi biri belirsizse `Unknown` |
 | LastOutcomeCode / LastAttemptAt / AttemptCount | — | — |
@@ -509,7 +513,9 @@ Recovery öneki `CASH_POSITION_*` (kaynak öneki modül numarasıdır, taşınma
   `CASH_POSITION_WORKFLOW_START_OUTCOME_UNKNOWN` 202 · `CASH_POSITION_WORKFLOW_START_PENDING` 409 ·
   `CASH_POSITION_DECISION_OUTCOME_UNKNOWN` 202 · `CASH_POSITION_DECISION_PENDING` 409 ·
   `CASH_POSITION_WORKFLOW_TRANSITION_FAILED` 502 · `CASH_POSITION_EVIDENCE_EXPORT_FAILED` 502 ·
-  `CASH_POSITION_EVIDENCE_EXPORT_OUTCOME_UNKNOWN` 202 · `CASH_POSITION_EVIDENCE_EXPORT_PENDING` 409.
+  `CASH_POSITION_EVIDENCE_EXPORT_OUTCOME_UNKNOWN` 202 · `CASH_POSITION_EVIDENCE_EXPORT_PENDING` 409 ·
+  `CASH_POSITION_RECONCILE_RESTART_ACTOR_MISMATCH` 409 (Reconcile'ı çağıran asıl komutun aktörü değil; yeniden başlatma
+  yok, niyet `Unknown` kalır).
 - **Taşınmaz:** `OUTBOX_WRITE_FAILED` (kaynakta 400'e düşüyor, paket §E), `IMPORT_*`, `SOURCE_CONTRACT_REQUIRED`,
   `INTEGRATION_RUN_REQUIRED`, `CATEGORY_ASSIGNMENT_MISSING`, `CASH_CATEGORY_*`, `CASH_CATEGORY_RULE_*`,
   `THRESHOLD_POLICY_DUPLICATE_DEFAULT`, `REPORTING_TIMEZONE_MISSING` (O-10), `SUPERSEDE_CONFLICT` (yayım yuvası koduna
@@ -521,22 +527,22 @@ Recovery öneki `CASH_POSITION_*` (kaynak öneki modül numarasıdır, taşınma
 
 Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dilimleri" ile eşleşir.
 
-- `services/Diten.FinanceTreasuryService/**` — **servis MOD-0126 DL-1'de açılır** (`@orchestrator /add-module` iskeleti,
-  port 5071, JWT, `TenantId` izolasyonu, 4 pipeline davranışı, `AddCentralAudit<…>(RequireEnlistment = true)`, modül
-  manifest kaydı). MOD-0124 iskelete **yalnız ekler**; MOD-0124 MOD-0126'dan önce başlarsa iskelet, denetim defteri ve
-  CT kararı bu paketin DL-1'ine düşer (aynı içerik, tek kez). (DL-1)
+- `services/Diten.FinanceTreasuryService/**` — **servis yalnız MOD-0126 DL-1'de açılır** (`@orchestrator /add-module`
+  iskeleti, port 5071, JWT, `TenantId` izolasyonu, 4 pipeline davranışı, `AddCentralAudit<…>(RequireEnlistment = true)`,
+  modül manifest kaydı, servis defteri ve CT kararı). Tek sahibi ve yazarı MOD-0126 DL-1'dir (gap 4/G5; D14/2 ile
+  tutarlı); MOD-0126 DL-1, MOD-0124 DL-1'in önkoşuludur. MOD-0124 iskelete **yalnız ekler**; MOD-0124 önce `ready-for-dev`
+  olsa bile iskeleti, defteri ya da ortak yapı taşını açmaz — MOD-0126 DL-1'i bekler. (DL-1)
   - `src/Diten.FinanceTreasuryService.Application/Features/CashPosition/**` ve `Features/CashPositionThresholdPolicy/**`
     (Golden Reference düzeni)
   - `src/Diten.FinanceTreasuryService.Domain/CashPositions/**`
   - `src/Diten.FinanceTreasuryService.Persistence/CashPositions/**` (depolar, indeks hizmeti; her işlem geri çağrısı
     `CentralAuditTransaction.EnlistAsync` çağırır)
   - `src/Diten.FinanceTreasuryService.Infrastructure/{Workflow,Evidence}/**` içinde MOD-0124 bağdaştırıcıları; LE,
-    para birimi, kod portu ve veri kapsamı (`DataScope`) bağdaştırıcıları servis içinde ortaktır (MOD-0126 açtıysa yeniden
-    yazılmaz)
+    para birimi, kod portu ve veri kapsamı (`DataScope`) bağdaştırıcıları servis ortaktır ve MOD-0126 DL-1'indir (burada
+    yazılmaz, yeniden tanımlanmaz)
   - Servis ortak yapı taşları (`Application/Common/{CommandReceipts,DataScope}/**`, `Persistence/Common/CommandReceipts/**`
-    — `FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource`; D14/1, D14/2) MOD-0126 DL-1 ile açılır ve burada
-    yalnız kullanılır; MOD-0124 önce başlarsa iskeletle aynı kuralla bu paketin DL-1'ine düşer, tanım MOD-0126 pack'teki
-    gibi kalır
+    — `FinanceTreasuryCommandReceipt` + iki indeksi, `IFinanceTreasuryDataScopeSource` okuma / yazma kapsamı; D14/1,
+    D14/2) ve CentralAudit kaydı MOD-0126 DL-1 ile açılır; burada yalnız kullanılır
   - `src/Diten.FinanceTreasuryService.Api/Controllers/CashPositionsController.cs`,
     `CashPositionThresholdPoliciesController.cs`
 - `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — servis defteri MOD-0126 ile ortak (yol `b`, tek iz);
@@ -593,7 +599,7 @@ SEC-002 veri kapsamı çözücüsünün tüketim yolu (platform-shared-services,
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); MOD-0124 anahtarlarının kaydı; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-23)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 O-22, MOD-0120 O-14 ile **tek karar**. `NoOp` kaydı yasak (kapsamı kapatır) |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | anlık görüntü ve politika kodu | **yok** (MOD-0126 Dependencies ölçümü); şirket kısa kodu (§5.4) LE'de ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **engel**: modül kendi sayacını yazamaz (RCS-001 §6); servis gelene kadar Create yazılamaz (O-9) |
-| MOD-0126 Payments & Approvals | servis iskeleti; (isteğe bağlı) taahhütlü çıkış | **pack `draft`** (sahip tasarım PASS kaydı, `3a1c32b9e`); kod yok | iskelet sırası (Repo Scope); onaylı partilerin pozisyonda gösterimi **O-6** (v1'de yok) |
+| MOD-0126 Payments & Approvals | servis iskeleti + servis ortak yapı taşları; (isteğe bağlı) taahhütlü çıkış | **pack `draft`** (sahip tasarım PASS kaydı, `3a1c32b9e`); kod yok | **MOD-0126 DL-1, MOD-0124 DL-1'in önkoşuludur** (iskelet, makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — tek sahibi o dilim, gap 4/G5); onaylı partilerin pozisyonda gösterimi **O-6** (v1'de yok) |
 | MOD-0125 / MOD-0126 / MOD-0127 | yayım tüketicileri | hiçbiri onay vermedi (paket §P PUBLICATION yuvası) | v1'de olay yok; `GetCurrentCashPositionQuery` okuma sözleşmesi (O-14) |
 | Port 5071 | servis portu | sahip kararı D10/3; AGENTS.md §3 ve `ports.md` güncellenmedi (TRM-04) | iskelet port kaydından sonra |
 | DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2 karar 0.3'ü bekliyor (DCP §8, §8.1) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
@@ -636,25 +642,36 @@ ister.
   `finance-treasury.cash-positions.read-tenant-wide` (anlık görüntüler ve eşik politikaları; yalnız açık atama —
   `ExplicitGrantOnlyPermissions`; tek üretici `FinanceTreasuryDataScope.TenantWideScope()`). Kapsam servis genelinde **tek
   yerde** (`IFinanceTreasuryDataScopeSource`, MOD-0126/0119/0120 ile ortak; modül yalnız kendi `read-tenant-wide`
-  anahtarını verir) çözülür; liste, detay, iz, `current`, politika ekranı ve yazma aynı kapsamı okur; sayfalama ve toplamlar
-  daraltılmış kümeden hesaplanır. Referans uygulama: `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Kapsam LE
-  başınadır; grup görünümü O-5'tir.
+  anahtarını verir) çözülür; okumalar (liste, detay, iz, `current`, politika ekranı) **okuma kapsamını**, her yazma **yazma
+  kapsamını** kullanır (aşağıda); sayfalama ve toplamlar daraltılmış kümeden hesaplanır. Referans uygulama:
+  `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Kapsam LE başınadır; grup görünümü O-5'tir.
+- **Okuma kapsamı ile yazma kapsamı ayrıdır (gap 4/G1; D14/1 ile tutarlı — `…read-tenant-wide` *görme* iznidir; tanım
+  MOD-0126 pack Runtime Constraints, servis ortak):** okuma kapsamı = kullanıcının kendi şirket yetkileri ya da
+  `read-tenant-wide` varsa kiracıdaki tüm şirketler; **yazma kapsamı** = yalnız kendi şirket yetkileri (`TenantWideScope()`
+  hiçbir zaman girmez). Her yazma komutu (Create, Update, Delete, BulkDelete, Reconcile (iş), kanıt paketi, Submit, Approve,
+  Reject, iki kurtarma komutu, Publish, ExportEvidence, eşik politikası Create/Update/Delete/BulkDelete) hedef kaydın
+  `LegalEntityId`'si için katman 1'i ister: `X-Legal-Entity-Id` hedef kaydın şirketine eşit **ve** kullanıcının o şirkette
+  kendi yetkisi var. Yalnız `read-tenant-wide` sayesinde görünen kayda yazma → **404** `CASH_POSITION_NOT_FOUND` (kapsam
+  dışı kuralıyla aynı; başka adım çalışmaz).
 - **LE uygunluğu güncel durumdur (TP-001 T14; kaynakta yalnız içe aktarmada, paket §G; sahip kararı D14/4):** nakit
   pozisyonu oluşturan ya da değiştiren **her yazma komutunda** — Create, Update, Delete, BulkDelete, Reconcile (iş
   mutabakatı), kanıt paketi, Submit, Approve, Reject, Publish, ExportEvidence ve eşik politikası
   Create/Update/Delete/BulkDelete — MOD-0220 `lookup-validation` çağrılır; `OperationalStatus = Active` **ve**
   `ApprovalStatus = Approved` değilse 422 `CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE`; MOD-0220 yanıt vermezse 503
   `CASH_POSITION_LEGAL_ENTITY_UNAVAILABLE` — geçiş yok. **İki kurtarma komutu hariç**
-  (`ReconcileCashPositionWorkflowCommand`, `ReconcileCashPositionEvidenceExportCommand`): yeni karar başlatmaz, uygunluğu
-  tx1'de denetlenmiş komutun uzak sonucunu kaydeder (engellemek niyeti açık bırakırdı; MOD-0126 ile aynı). Okumalar
+  (`ReconcileCashPositionWorkflowCommand`, `ReconcileCashPositionEvidenceExportCommand`; D15/2): yeni karar başlatmaz,
+  uygunluğu tx1'de denetlenmiş komutun uzak sonucunu kaydeder (engellemek niyeti açık bırakırdı; MOD-0126 ile aynı).
+  Muafiyet yalnız uzakta **var olan** örneğin / geçişin / bağlantının sonucunu kaydetme yolu içindir; uzakta yoksa yeniden
+  başlatma yeni uzak işlemdir ve şirket + SoD + izin yeniden denetlenir (Runtime Constraints 5a, gap 4/G2). Okumalar
   etkilenmez.
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId + LegalEntityId). Okumalar `IsDeleted = false`.
 - **Idempotency (D12/2 — her yazma komutunda zorunlu):** bütün yazma komutları (anlık görüntü, eşik politikası, kurtarma
   komutları dahil) `Idempotency-Key` başlığı **ister**; yoksa 400 `CASH_POSITION_IDEMPOTENCY_KEY_REQUIRED`. Sunucu
   anahtar **üretmez**.
   - **Makbuz kapsamı:** `(TenantId, LegalEntityId, ActorId, Operation, TargetId, Key)`; tekil indeks bu altılıdadır.
-  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) veri kapsamı (SEC-002, D14/1; kapsam dışı
-    şirket → 404 `CASH_POSITION_NOT_FOUND`, başka adım yok) → (3) makbuz araması: aynı kapsam + farklı parmak
+  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) veri kapsamı (SEC-002, D14/1; okumada
+    okuma kapsamı, **yazmada yazma kapsamı** — hedef kaydın şirketi kullanıcının kendi şirket yetkisinde değilse, kayıt
+    `read-tenant-wide` ile görünse bile → 404 `CASH_POSITION_NOT_FOUND`, başka adım yok) → (3) makbuz araması: aynı kapsam + farklı parmak
     izi → 409 `CASH_POSITION_IDEMPOTENCY_CONFLICT`; aynı kapsam + aynı parmak izi + `Completed` → **kayıtlı yanıt aynen
     döner**; aynı kapsam + aynı parmak izi + `Pending` → 202 `CASH_POSITION_REQUEST_IN_PROGRESS` (bağlı niyetin o anki
     durumuyla). İki durumda da **başka hiçbir adım çalışmaz** — uzak çağrı yok, kurtarma yok. → (4) açık niyet kontrolü →
@@ -668,8 +685,8 @@ ister.
 - **Komut sınıfları:**
   - *Tek aşamalı (tx1'de `Completed`, uzak yan etki yok):* Create, Update, Delete, BulkDelete, Reconcile (iş),
     CreateEvidencePack, Publish, eşik politikası Create/Update/Delete/BulkDelete. Kurtarma komutları da tek yerel
-    işlemdir: uzak taraf yalnız **okunur** (`instances/by-objects`, görev geçmişi, `links/query`) ya da aynı uzak
-    anahtarla idempotent tekrarlanır; sonuç tek işlemde yazılır.
+    işlemdir: uzak taraf önce **okunur** (`instances/by-objects`, görev geçmişi, `links/query`); yalnız okuma kesin boş
+    döner ve 5a'daki denetimler geçerse aynı uzak anahtarla idempotent tekrarlanır; sonuç tek işlemde yazılır.
   - *İki aşamalı (tx1 `Pending` → uzak çağrı → tx2):* Submit, Approve, Reject, ExportEvidence.
 - **Mongo işlem sonucu belirsizliği (kaynak kusuru düzeltilir):** kaynak yayım yolu hata 112'yi `UnknownTransactionCommitResult`
   etiketini ayırmadan "sürüm çakışması" sayıyor (`MongoCashPositionRepository.cs:663@da4abb20`; mutabakat `:291` ve onay
@@ -715,6 +732,27 @@ ister.
      verisiyle (`RequireEnlistment = true`). Kesin sonuç tx2 commit olunca vardır. Uzak başarı + tx2 başarısız ya da çökme
      → niyet açık kalır; ilgili Reconcile komutu uzak durumu **okur**, uzak çağrıyı tekrarlamadan tx2'yi yazar, sonuç
      olayını üretir, bağlı makbuz yalnız `Pending` ise `Completed` olur. İkinci uzak örnek / geçiş / bağlantı oluşmaz.
+  5a. *Reconcile önce okur, sonra (gerekirse) yeniden başlatır (gap 4/G2; Submit, Approve, Reject ve ExportEvidence; kural
+     MOD-0126 pack Runtime Constraints 3a ile aynı):*
+     - **Önce okuma:** başlatmada `instances/by-objects` (anlık görüntü kimliği) + niyetin deterministik uzak anahtarı;
+       kararda görev geçmişi + `RemoteIdempotencyKey`; dışa aktarmada `links/query` + her kalemin `RemoteKey`'i.
+     - **Uzakta örnek / geçiş / bağlantı var** → kesin durum kaydedilir (tx2 + bağlı `Pending` makbuz `Completed` + sonuç
+       olayı); şirket kuralından **muaf** (D15/2).
+     - **Okuma belirsiz ya da "bulunamadı"** (zaman aşımı, bağlantı kopması, 5xx, okunamayan gövde, 404 / boş sonuç): uzak
+       çağrının hiç yapılmadığının kesin güvencesi değildir; niyet **asla `Cancelled` yapılmaz**, `Unknown` kalır
+       (`Pending` idiyse `Unknown`'a geçer); anlık görüntü ve makbuz değişmez.
+     - **Okuma kesin boşsa yeniden başlatma yeni bir uzak işlemdir:** önce (i) şirket uygunluğu (D10/1, D14/4), (ii) SoD
+       (Submit / kararda R1–R5, R7 niyetteki aktörle; dışa aktarmada SoD yok), (iii) izin (`submit` / `approve` / `reject`
+       / `export-evidence`, o anki token) ve (iv) aktör — Submit ve kararlarda Reconcile'ı çağıran asıl komutun aktörü
+       (`SubmittedBy` / `DecidedBy`) değilse çağrı yok (409 `CASH_POSITION_RECONCILE_RESTART_ACTOR_MISMATCH`); dışa
+       aktarmada ayrıca `SnapshotContentHash = PublishedContentHash`. Hepsi geçerse çağrı **aynı deterministik uzak
+       anahtarla bir kez** yapılır (ikinci örnek / geçiş / bağlantı oluşmaz); görev geçişinin ve MOD-0031 bağlamanın anahtarı
+       yeniden oynattığı DL-3 / DL-4 başında ölçülür (O-17), ölçülmeden yeniden çağrı yapılmaz.
+     - **Uygun değilse:** uzak çağrı yok; niyet `Unknown` kalır, `LastOutcomeCode` sebep kodunu taşır
+       (`CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE`, `CASH_POSITION_APPROVAL_SEPARATION_DENIED`, `CASH_POSITION_PERMISSION_DENIED`,
+       `CASH_POSITION_RECONCILE_RESTART_ACTOR_MISMATCH`); anlık görüntü ve bağlı `Pending` makbuz değişmez; sonuç olayı
+       yazılmaz; Reconcile'ın kendi makbuzu sebep koduyla `Completed` olur. Koşul düzelince yeni Reconcile tekrar dener;
+       kalıcı kapatma Follow-up.
   6. HTTP istemcilerinde **açık zaman aşımı**: `FinanceTreasury:Workflow:TimeoutSeconds` (MOD-0126 ile ortak) ve
      `FinanceTreasury:Evidence:TimeoutSeconds`; başlangıçta yoksa servis açılmaz (öneri 15 sn; kaynakta istemci başına 10 sn,
      paket §K).
@@ -723,8 +761,8 @@ ister.
   yok, geçerli kanıt paketi `SnapshotRevision = ContentRevision` ve kilitli değil, geçerli karar `Recorded` + onay +
   `ApprovedSnapshotRevision = ContentRevision`, açık niyet yok, karar zinciri R1–R3'e uyar (R6). Aynı işlemde: aynı
   yuvadaki önceki yayım `Superseded`, kanıt paketi `Locked`, anlık görüntü `Published` + `IsCurrentPublished`, makbuz
-  `Completed`, tek `…published` olayı (`SupersededSnapshotId` alanıyla). Kaynaktaki outbox satırı (`mod0124.snapshot.published.v1`)
-  yazılmaz (O-14).
+  `Completed`, tek `…published` olayı (`SupersededSnapshotId` alanıyla); `PublishedContentHash` bu işlemde hesaplanıp
+  yazılır. Kaynaktaki outbox satırı (`mod0124.snapshot.published.v1`) yazılmaz (O-14).
 - **Banka verisi ve banka akışı yok:** hiçbir bağdaştırıcı banka ile konuşmaz; MOD-0269 portu tanımlanmaz (v1'de
   tüketici yok).
 - `GlobalEntity` kullanılmaz; bütün kayıtlar kiracıya aittir.
@@ -846,7 +884,7 @@ Resources/Views/FinanceTreasury/CashPositionThresholdPolicies/    CashPositionTh
 
 | Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol |
 |---|---|---|---|---|
-| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; yazmada Active + Approved (iki kurtarma komutu hariç — D14/4); kullanıcının veri kapsamında ya da `read-tenant-wide` (D14/1) | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` |
+| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; yazmada Active + Approved (iki kurtarma komutunun kayıt yolu hariç — D14/4, D15/2); okumada okuma kapsamında (kendi şirket yetkisi ya da `read-tenant-wide`, D14/1); **yazmada** hedef kaydın şirketine eşit ve kullanıcının **kendi** şirket yetkisinde (yazma kapsamı — `read-tenant-wide` yazma yetkisi vermez, gap 4/G1); değilse 404 | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` (okuma / yazma kapsamı) |
 | Gövde/sorguda tenantId, legalEntityId | — | bulunursa 400 `CASH_POSITION_SCOPE_INPUT_FORBIDDEN` | — | middleware |
 | Idempotency-Key | **Evet** (her yazma komutu, D12/2) | 1..128 yazdırılabilir ASCII; yoksa 400 | Unique (6 alanlı kapsam) | makbuz araması |
 | ValueDate | Evet | `DateOnly`, default değil; gelecek tarih kuralı TBD (O-10) | — | — |
@@ -878,8 +916,19 @@ Approved}` ve açık niyet yokken; güncelleme anlık görüntüyü `Draft`'a d�
 `ContentRevision + 1`, kanıt paketi ve onayı geçersiz kılar; istisna kayıtlarına dokunmaz — bir sonraki mutabakat onları
 yeniden değerlendirir (kalan koşul açık kalır, kalkan `Resolved` olur). Reconcile yalnız `Status ∈ {Draft, Reconciled}`, en az bir satır, açık niyet yok, `ApprovalStatus ∉
 {Submitted, PendingApproval}`; `Approved` iken Reconcile de onayı düşürür. Delete / BulkDelete yalnız `SubmissionSequence = 0`
-ve `Status ∈ {Draft, Reconciled}`. `Published` / `Superseded` kayıtta her yazma 409 `CASH_POSITION_PUBLISHED_IMMUTABLE`
-(kaynak `:74-77`).
+ve `Status ∈ {Draft, Reconciled}`.
+
+**Yayım sonrası değişmezlik (gap 4/G3; kaynak `:74-77` korumasının Recovery tanımı):** `Published` / `Superseded` anlık
+görüntünün **içeriği** — başlık (değer tarihi, pozisyon para birimi), satırlar ve bakiyeler, toplamlar ve fark,
+`ContentRevision`, mutabakat sonucu ve sabitlenen eşikler, kilitli kanıt paketi, geçerli karar ve `PublishedContentHash` —
+**değişmez**; bunlara dokunan her komut (Update, Delete, BulkDelete, Reconcile (iş), kanıt paketi, Submit, Approve, Reject,
+yeniden Publish) 409 `CASH_POSITION_PUBLISHED_IMMUTABLE`. İçerik dışındaki iki yazım **tanımlı istisnadır**: (1) aynı
+yuvadaki yeni Publish, önceki yayımın yalnız yaşam döngüsü alanlarını (`Status → Superseded`, `IsCurrentPublished = false`,
+`SupersededBySnapshotId`, `SupersededAt`) aynı işlemde yazar; (2) **ExportEvidence anlık görüntüyü hiç değiştirmez** —
+yalnız ayrı kayıtlar yazar: `CashPositionEvidenceExportIntent` (anlık görüntü kimliği + `SnapshotContentHash` ile
+referans), makbuz ve kanıt bağlantı sonuçları (`Items[].EvidenceLinkId`); anlık görüntünün `Version`'ı da artmaz.
+**Kurtarma istisnası:** `ReconcileCashPositionEvidenceExportCommand` yalnız dışa aktarma niyeti, makbuz ve olay kayıtlarını
+yazar; anlık görüntüye ve kanıt paketine yazmaz.
 
 **Onay ayrılığı (SoD) — her karar komutunda, MOD-0023 çağrısından ÖNCE; muafiyet YOK, ikinci kademe YOK (para yetkisi
 olmadığı için):**
@@ -929,6 +978,13 @@ yoktur (O-21).
 - **Kapsam dışı şirket** (kullanıcının veri kapsamında olmayan şirket, `read-tenant-wide` yok — D14/1) → anlık görüntü ve
   politika listeleri 200 boş; detay / iz / `current` / yazma 404 `CASH_POSITION_NOT_FOUND`; veri kapsamı çözücüsü hata
   verirse aynı sonuç.
+- **Yalnız `read-tenant-wide` ile görünen kayda yazma** (kullanıcının o şirkette kendi yetkisi yok — gap 4/G1) → her yazma
+  komutu (Create, Update, Delete, Reconcile, kanıt, Submit, Approve, Reject, Publish, ExportEvidence, kurtarma, eşik
+  politikası) 404 `CASH_POSITION_NOT_FOUND`; liste, detay ve `current` okuması 200; uzak çağrı, kayıt ve makbuz yok.
+- **Reconcile, uzakta örnek / bağlantı bulunamadı ya da okuma belirsiz** (gap 4/G2) → niyet `Cancelled` yapılmaz,
+  `Unknown` kalır; okuma kesin boşsa yeniden başlatmadan önce şirket + SoD + izin + aktör denetlenir: şirket uygun değilse
+  uzak çağrı yok, niyet `Unknown` + `LastOutcomeCode = CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422; aktör
+  farklıysa 409 `CASH_POSITION_RECONCILE_RESTART_ACTOR_MISMATCH`; uygunsa aynı deterministik anahtarla tek uzak çağrı.
 - **Eksik alan** (ValueDate, PositionCurrencyCode, satır) → 400 + alan düzeyi resx iletisi; kayıt yok.
 - **Karışık para birimi satırı** → 400 `CASH_POSITION_MIXED_CURRENCY`; **yinelenen satır anahtarı** → 400
   `CASH_POSITION_DUPLICATE_LINE_KEY`.
@@ -942,7 +998,10 @@ yoktur (O-21).
   `CASH_POSITION_EVIDENCE_REVISION_CONFLICT`.
 - **Onay eski revizyona bağlı** (onaydan sonra Update/Reconcile) → onay düşer; Publish 409 `CASH_POSITION_APPROVAL_REQUIRED`.
 - **Eşzamanlılık** (bayat `If-Match`) → 409 `CASH_POSITION_VERSION_CONFLICT`, sessiz üzerine yazma yok.
-- **Yayımlanmış kayda yazma** → 409 `CASH_POSITION_PUBLISHED_IMMUTABLE`.
+- **Yayımlanmış kaydın içeriğine yazma** (Update, Delete, Reconcile, kanıt paketi, karar, yeniden yayım) → 409
+  `CASH_POSITION_PUBLISHED_IMMUTABLE`; ExportEvidence ve onun Reconcile'ı bu kurala takılmaz çünkü anlık görüntüye yazmaz
+  (yalnız niyet / makbuz / bağlantı / olay); niyetteki `SnapshotContentHash` anlık görüntününkiyle eşleşmezse dışa aktarma
+  uzak çağrısız 409 `CASH_POSITION_PUBLISHED_IMMUTABLE`.
 - **Gönderilmiş kaydı silme** → 409 `CASH_POSITION_INVALID_STATUS_TRANSITION`.
 - **Yetkisiz aktör** (ilgili izin yok) → API 403; UI: kabuk içinde erişim açıklaması, düğme yok (UAS-001).
 - **Denetim kaydı yazılamıyor** (outbox yazımı başarısız) → işlem geri alınır, komut başarısız, iş verisi yazılmaz.
@@ -960,7 +1019,7 @@ yoktur (O-21).
 | Recovery anahtarı | Katman | Uçlar |
 |---|---|---|
 | `finance-treasury.cash-positions.read` | T1 | GET liste, detay, trace, exceptions, current |
-| `finance-treasury.cash-positions.read-tenant-wide` | T3 (yalnız açık atama, `ExplicitGrantOnlyPermissions`) | kiracıdaki tüm şirketlerin anlık görüntüleri, `current`'ı ve eşik politikaları (SEC-002 §3.5, D14/1) |
+| `finance-treasury.cash-positions.read-tenant-wide` | T3 (yalnız açık atama, `ExplicitGrantOnlyPermissions`) | kiracıdaki tüm şirketlerin anlık görüntüleri, `current`'ı ve eşik politikaları (SEC-002 §3.5, D14/1) — **yalnız okuma**; hiçbir yazma komutunun kapsamını genişletmez (gap 4/G1) |
 | `finance-treasury.cash-positions.create` | T1 | POST |
 | `finance-treasury.cash-positions.update` | T1 | PUT |
 | `finance-treasury.cash-positions.delete` | T1 | DELETE |
@@ -1126,7 +1185,8 @@ MOD-0126 O-6 ile ortak eklemeli `Finance` önerisi — karar çıkana kadar değ
   anahtarla ikinci bağlantı oluşturmadan kapatır; hiçbir durumda yayım ya da kilit değişmez.
 - [ ] AC-21 (zorunlu) — Her denetleyici aksiyonunda `[HasPermission]` vardır (mimari testi); izinsiz çağrı 403.
 - [ ] AC-22 (zorunlu) — Soft delete yalnız hiç gönderilmemiş `Draft`/`Reconciled` anlık görüntüde; `IsDeleted` + `DeletedAt`
-  (UTC) birlikte yazılır, silinen kayıt listede görünmez, kodu yeniden kullanılmaz; yayımlanmış kayda her yazma 409.
+  (UTC) birlikte yazılır, silinen kayıt listede görünmez, kodu yeniden kullanılmaz; yayımlanmış kaydın içeriğine her yazma
+  409 (dışa aktarma istisnası AC-34).
 - [ ] AC-23 (zorunlu) — `GET /api/cash-positions/current?valueDate=&currencyCode=` oturum LE'sinin geçerli yayımını döner;
   yoksa 404; `Superseded` kayıt dönmez; yanıt şekli `cash-position.openapi.yaml` ile eşleşir.
 - [ ] AC-24 (zorunlu) — `Views/FinanceTreasury/CashPositions/*.cshtml` ve `Views/FinanceTreasury/CashPositionThresholdPolicies/*.cshtml`
@@ -1160,6 +1220,28 @@ MOD-0126 O-6 ile ortak eklemeli `Finance` önerisi — karar çıkana kadar değ
   süzgeci) kaldırıldığında test kırmızıya döner (sabotaj); `read-tenant-wide` otomatik yoldan verilmez
   (`ExplicitGrantOnlyPermissions` listesinde). Makbuz tipi servis ortak `FinanceTreasuryCommandReceipt`'tir: MOD-0124
   kodunda modül önekli makbuz tipi ya da makbuz koleksiyonu yoktur (mimari testi, D14/2).
+- [ ] AC-32 (zorunlu) — Okuma kapsamı yazma kapsamını genişletmez (gap 4/G1): `cash-positions.read-tenant-wide` + bütün yazma
+  izinlerine sahip ama LE-B'de **kendi şirket yetkisi olmayan** kullanıcı LE-B anlık görüntülerini, politikalarını ve
+  `current`'ını görür (200), ama LE-B'de Create (`X-Legal-Entity-Id = LE-B`), Update, Reconcile, Submit, Approve, Reject,
+  Publish, ExportEvidence ve eşik politikası Create 404 `CASH_POSITION_NOT_FOUND` döner; MOD-0023 / MOD-0031 / MOD-0220'ye
+  çağrı gitmez, kayıt, makbuz ve denetim olayı oluşmaz (sahte istemcilerle sayılır); aynı kullanıcı LE-A'da (kendi yetkisi)
+  aynı komutları çalıştırabilir. Sabotaj: yazma yolunda okuma kapsamı kullanıldığında test kırmızıya döner.
+- [ ] AC-33 (zorunlu) — Reconcile önce okur (gap 4/G2; Submit, Approve, Reject ve ExportEvidence için ayrı test): (a) uzakta
+  örnek / geçiş / bağlantı **var** → şirket uygun değilken bile sonuç kaydedilir (MOD-0220 çağrılmaz — D15/2), bağlı
+  `Pending` makbuz `Completed`, tek sonuç olayı; (b) okuma 404 / boş / zaman aşımı / 5xx → niyet **`Cancelled` olmaz**,
+  `Unknown` kalır, anlık görüntü ve makbuz değişmez; (c) okuma kesin boş + şirket uygun değil → uzak çağrı yok, niyet
+  `Unknown`, `LastOutcomeCode = CASH_POSITION_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422, sonuç olayı yok; (d) okuma kesin
+  boş + şirket uygun + SoD/izin geçer + (Submit/kararda) asıl aktör → tek uzak çağrı aynı deterministik anahtarla (ikinci
+  Reconcile ikinci örnek / bağlantı üretmez); Submit/kararda aktör farklıysa 409
+  `CASH_POSITION_RECONCILE_RESTART_ACTOR_MISMATCH`. Sabotaj: okuma atlanıp doğrudan yeniden başlatıldığında ya da
+  "bulunamadı" `Cancelled`'a bağlandığında test kırmızıya döner.
+- [ ] AC-34 (zorunlu) — Yayım sonrası değişmezlik ve dışa aktarma (gap 4/G3): Publish `PublishedContentHash`'i yazar;
+  ExportEvidence ve `ReconcileCashPositionEvidenceExportCommand` (başarı, ret, belirsiz ve kurtarma yollarında) sonrasında
+  anlık görüntünün belgesi bayt bayt aynıdır (`Version`, içerik ve hash değişmez; test belgeyi önce/sonra karşılaştırır),
+  kanıt paketi `Locked` kalır; yazılan kayıtlar yalnız dışa aktarma niyeti (anlık görüntü kimliği + `SnapshotContentHash`),
+  makbuz, kanıt bağlantı sonuçları ve olaylardır. Aynı yayımlanmış kayda Update / Reconcile / kanıt paketi / karar 409
+  `CASH_POSITION_PUBLISHED_IMMUTABLE`; yeni yayım önceki kaydın yalnız yaşam döngüsü alanlarını (`Superseded`) değiştirir,
+  içeriğini ve hash'ini değiştirmez. Sabotaj: dışa aktarma yolu anlık görüntüye yazdığında test kırmızıya döner.
 
 ## Test Expectations
 
@@ -1227,7 +1309,7 @@ MOD-0126 O-6 ile ortak eklemeli `Finance` önerisi — karar çıkana kadar değ
 - [ ] **MOD-0037 kapısı** için sahip kararı (O-3): v1'in MOD-0037'yi tüketmeden başlaması
 - [ ] **Onay yolu** kararı (O-4): MOD-0023 (öneri) ya da yerel maker-checker
 - [ ] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı; AGENTS §2 ve §9 güncellendi (TRM-03/04)
-- [ ] Servis iskeleti + CentralAudit kurulumu + defter için CT kararı (MOD-0126 DL-1 ya da bu paketin DL-1'i)
+- [ ] Servis iskeleti + servis ortak yapı taşları + CentralAudit kurulumu + defter için CT kararı — **yalnız MOD-0126 DL-1** (tek sahibi o dilim; MOD-0124 DL-1'in önkoşulu — gap 4/G5)
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi (kuralın MOD-0124'e uygulanması D14/4 ile kararlaştırıldı)
 - [ ] Sahip MOD-0124 için kod alma iznini verdi (D1)
 - [ ] RCS-001 ortak kod servisi, şirket kısa kodu kaynağı ve `CPS` / `CTP` önekleri (O-9) — yoksa Create yazılamaz
@@ -1342,6 +1424,8 @@ Borçlu taraf her yuvada sahip (K1), tüketicinin sahibi adlandırılana kadar (
 - Güvenilir servis kimliği (MOD-0033-FU02) gelince arka plan uzlaştırma süpürücüsü (İ2 tetikleyici; her değişiklik
   kurtarma komutlarıyla denetlenir).
 - CentralAudit reddedilen komut kaydı (`Outcome = Denied`) — BL-501 sahibine (G-AUD-1).
+- Yeniden başlatması engellendiği için `Unknown` kalan onay / dışa aktarma niyetinin kalıcı kapatılması için açık iptal
+  yolu (gap 4/G2) — sahip kararıyla ayrı komut.
 - `execution/registries/module-implementation-status.md` satırı ilk kodla açılır.
 
 ## Açık kararlar
@@ -1391,20 +1475,23 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 
 - **DL-1** — Yollar: `Features/CashPosition/` içinde Create/Update/Delete/BulkDelete + List/ById sorguları,
   `Features/CashPositionThresholdPolicy/` tam seti, Domain/Persistence, makbuz kullanımı (`FinanceTreasuryCommandReceipt`,
-  servis ortak — MOD-0126 DL-1), indeks hizmeti, MOD-0220 ve MOD-0048
-  bağdaştırıcıları (servis içinde ortak), RCS kod portu, `cash-position.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001
-  K4 — ileticisi olmayan serviste yazma komutu yazılamaz. Önkoşul: Ready-for-dev engelleri (DCP, 0.3, O-3, port, iskelet,
-  kod alma, TRM-14, O-9, O-8, O-23, CT defter kararı). Bitiş: AC-1, 2, 3, 4, 5, 8, 16 (Create/Update/Delete kısmı), 17
-  (tek aşamalı kısım), 18, 19 (Create), 21, 22, 28, 31.
+  servis ortak — MOD-0126 DL-1), indeks hizmeti, MOD-0220 ve MOD-0048 bağdaştırıcılarının kullanımı (servis ortak,
+  MOD-0126 DL-1'in), RCS kod portu, `cash-position.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001
+  K4 — ileticisi olmayan serviste yazma komutu yazılamaz. Önkoşul: Ready-for-dev engelleri (DCP, 0.3, O-3, port,
+  **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, kod alma, TRM-14, O-9, O-8, O-23).
+  Bitiş: AC-1, 2, 3, 4, 5, 8, 16 (Create/Update/Delete kısmı), 17 (tek aşamalı kısım), 18, 19 (Create), 21, 22, 28, 31,
+  32 (Create / Update / Delete / politika kısmı).
 - **DL-2** — Yollar: `ReconcileCashPositionCommand` + `CashPositionReconciler`, istisna sorgusu,
   `CreateCashPositionEvidencePackCommand`, trace sorgusu. **Neden ayrı:** kaynakla davranış eşitliği tablo güdümlü testle
-  tek başına incelenebilsin. Önkoşul: DL-1. Bitiş: AC-6, 7, 9, 19 (mutabakat).
+  tek başına incelenebilsin. Önkoşul: DL-1. Bitiş: AC-6, 7, 9, 19 (mutabakat), 32 (Reconcile, kanıt paketi kısmı).
 - **DL-3** — Yollar: Submit, Approve, Reject, `ReconcileCashPositionWorkflowCommand`, Publish, `GetCurrentCashPositionQuery`,
   MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır. Önkoşul: DL-2,
-  O-4, O-20, MOD-0023 şablonu. Bitiş: AC-10…15, 16 (kararlar), 19 (yayım, karar), 23, 30 (a–c).
+  O-4, O-20, MOD-0023 şablonu. `PublishedContentHash` bu dilimde Publish ile gelir. Bitiş: AC-10…15, 16 (kararlar), 19
+  (yayım, karar), 23, 30 (a–c), 32 (Submit, kararlar, Publish kısmı), 33 (Submit ve kararlar kısmı).
 - **DL-4** — Yollar: `ExportCashPositionEvidenceCommand`, `ReconcileCashPositionEvidenceExportCommand`, MOD-0031
   bağdaştırıcısı, K2-olmayan sabotaj testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0031 davranış ölçümüne bağlı;
-  DL-3'ü bekletmesin. Önkoşul: DL-3, O-17. Bitiş: AC-16 (kalan), 17 (iki aşamalı + sabotaj), 20, 29, 30 (d).
+  DL-3'ü bekletmesin. Önkoşul: DL-3, O-17. Bitiş: AC-16 (kalan), 17 (iki aşamalı + sabotaj), 20, 29, 30 (d),
+  32 (ExportEvidence kısmı), 33 (ExportEvidence kısmı), 34.
 - **DL-5** — Yollar: `Views/FinanceTreasury/{CashPositions,CashPositionThresholdPolicies}/**`, JS, resx (7 dil), MVC proxy,
   sayfa yardımı, nav anahtarları; Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). Önkoşul: DL-1
   (liste/oluşturma), DL-3 (karar düğmeleri), Gateway rotası, O-15. Bitiş: AC-24…27.

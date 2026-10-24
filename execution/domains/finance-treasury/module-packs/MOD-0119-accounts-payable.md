@@ -118,8 +118,10 @@ koleksiyon `finance_treasury_command_receipts`; tanım MOD-0126 pack Entity Fiel
 önekli makbuz tipi açılmaz. Niyet tipleri AP'ye özgü kalır (`ApWorkflowStartIntent`, `ApApprovalDecision`; koleksiyonlar
 `ap_*`) ama MOD-0126'nın tek geçiş matrisindeki durum adlarını kullanır. Şu **servis-ortak portlar** da paylaşılır:
 `ILegalEntityEligibilityPort` (MOD-0220), `ICurrencyReferencePort` (MOD-0048), `IRecordCodePort` (RCS-001),
-`IFinanceTreasuryDataScopeSource` (SEC-002, D14/1) — MOD-0126 paketindeki adlarla aynı; hangi paket önce kodlanırsa o
-açar, ortak tipte ya da portta değişiklik dört Treasury paketinin onayını ister.
+`IFinanceTreasuryDataScopeSource` (SEC-002, D14/1) — MOD-0126 paketindeki adlarla aynı. **Tek sahibi ve yazarı MOD-0126
+DL-1'dir** (gap 4/G5; D14/2 ile tutarlı): makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod
+portları ve bağdaştırıcıları ve CentralAudit kaydı orada açılır; MOD-0119 bunları **yeniden tanımlamaz ve açmaz**, AP
+DL-1 MOD-0126 DL-1'i bekler. Ortak tipte ya da portta değişiklik dört Treasury paketinin onayını ister.
 
 ### Kaynak işlemleri (AP-01…AP-17, paket §C; rota tabanı `api/v{v}/mod0119/accounts-payable`, `AccountsPayableController.cs:18@218acaf5`) → Recovery
 
@@ -200,8 +202,10 @@ Sayısal değerler kaynakla aynı tutulur (izlenebilirlik); Recovery'ye kaynak v
 | `ApApprovalDecision.State` | `Requested` | `Recorded` · `Refused` | `Unknown` | `Unknown`/`Requested` → `Recorded` · `Refused` · `Cancelled` | `…approved`/`…rejected`/`…info-requested` · `…decision-refused` · `…decision-cancelled` |
 
   `Refused` = MOD-0023 kesin reddetti; `Cancelled` = MOD-0023 örneği ya da görevi iptal edilmiş / kapanmış bulundu
-  (yalnız Reconcile atar). Başlatma `Cancelled` → fatura `Validated`, `ApprovalStatus = DraftRequest`; yeniden gönderme
-  yeni `SubmissionSequence` alır. MOD-0126'dan farkı: AP faturası iş akışı iptalinde terminal olmaz.
+  (yalnız Reconcile atar, yalnız uzak tarafın **kesin** iptal/kapalı durumuyla; bulunamadı / 404 / zaman aşımı / belirsiz
+  okuma `Cancelled` sayılmaz, niyet `Unknown` kalır — Runtime Constraints 3a). Başlatma `Cancelled` → fatura `Validated`,
+  `ApprovalStatus = DraftRequest`; yeniden gönderme yeni `SubmissionSequence` alır. MOD-0126'dan farkı: AP faturası iş akışı
+  iptalinde terminal olmaz.
 
 ## Entity Fields
 
@@ -243,10 +247,12 @@ uygulanmaz). Saat dilimi: zaman damgaları UTC; `InvoiceDate` ve `DueDate` yaln�
 | InvoiceDate / DueDate | DateOnly / DateOnly | zorunlu; `DueDate ≥ InvoiceDate` (`AccountsPayableFoundationValidator.cs:35-40`); ileri tarih kuralı O-19 | :19-20 |
 | CurrencyCode | string(3) | zorunlu, ISO 4217, upper, MOD-0048 listesinde | :22 |
 | NetAmount / TaxAmount / GrossAmount | decimal | sunucu: satır toplamları; `Gross = Net + Tax`; ≥ 0 | :23-25 |
-| OpenAmount | decimal | sunucu: v1'de `GrossAmount` (ödeme dikişi yok); işaret `DocumentDirection`'dan | :26 |
+| OpenAmount | decimal | sunucu: v1'de `GrossAmount − CreditedAmount` (ödeme dikişi yok); işaret `DocumentDirection`'dan; bağlı alacak dekontu **yalnız onaylandığında** (Approve son adım tx2 ya da onu kaydeden Reconcile) azaltır, oluşturma ya da gönderimde azaltmaz (Runtime Constraints → Alacak dekontu kapasitesi) | :26 |
+| CreditReservedAmount / CreditedAmount | decimal / decimal | yalnız orijinal (`PoBackedInvoice` / `NonPoInvoice`) faturada; sunucu: bekleyen (onay akışındaki) ve onaylı bağlı alacak dekontlarının `GrossAmount` toplamı; `CreditedAmount + CreditReservedAmount ≤ GrossAmount` her commit'te değişmezdir; yalnız orijinal faturanın `Version` CAS'ıyla değişir | yeni |
+| CreditStatus | enum `None` / `PartiallyCredited` / `FullyCredited` | sunucu: `CreditedAmount = 0` → None; `0 < CreditedAmount < GrossAmount` → PartiallyCredited; `CreditedAmount = GrossAmount` → FullyCredited (`OpenAmount = 0`); `InvoiceStatus` değişmez (`Approved` kalır) | yeni |
 | MatchInvoiceRef | string? | `PoBackedInvoice` ise **zorunlu**, diğerlerinde yasak; MOD-0143 `invoiceId`; kiracı + şirkette tekil (bir MOD-0143 faturası tek AP kaydına bağlanır) | yeni (kaynakta PO ref satırdaydı, :62-63) |
 | MatchOutcomeSnapshot | { Status, TotalAmount, CurrencyCode, ReadAt } ? | sunucu, Validate/Submit/Approve'da MOD-0143'ten okunan değer — **iz için**; uygunluk her seferinde yeniden okunur | yeni |
-| CreditedApInvoiceId | Guid? | `CreditNote` ise zorunlu (öneri, O-14); aynı kiracı + şirket + tedarikçi + para birimi, durumu `Approved` | yeni |
+| CreditedApInvoiceId | Guid? | `CreditNote` ise zorunlu (öneri, O-14); aynı kiracı + şirket + tedarikçi + para birimi, durumu `Approved`, kendisi alacak dekontu değil; dekontun `GrossAmount`'u orijinalin kalan kapasitesini aşamaz (Runtime Constraints → Alacak dekontu kapasitesi) | yeni |
 | InvoiceStatus / ApprovalStatus | enum / enum | durum makinesi | :34, :37 |
 | HoldStatus / HoldReasonCode / StatusBeforeHold | enum `None`/`OnHold` / string? / `ApInvoiceStatus`? | Hold yazar, ReleaseHold temizler; `Released` değeri taşınmaz (bekletme kaldırılınca `None`) | :39 (`ApHoldStatus` :71-76) |
 | EvidenceLinks | `ApEvidenceLinkReference[]` | MOD-0031 bağlantı kimliği + nesne referansı; ikili veri yok | yeni |
@@ -404,7 +410,9 @@ veri yok; GO-NOGO :114 "No schema or data was added or altered by MOD-0119 commi
   `AP_DECISION_PENDING` 409, `AP_DECISION_REASON_REQUIRED` 400, `AP_WORKFLOW_TASK_INVALID` 400,
   `AP_WORKFLOW_TRANSITION_FAILED` 502, `AP_INVOICE_ON_HOLD` 409, `AP_BLOCKING_EXCEPTION_OPEN` 409,
   `AP_EXCEPTION_ALREADY_ACTIVE` 409, `AP_EXCEPTION_STATUS_INVALID` 409, `AP_EVIDENCE_LINK_INVALID` 422,
-  `AP_EVIDENCE_UNAVAILABLE` 503, `AP_EVIDENCE_REQUIRED` 422 (O-17).
+  `AP_EVIDENCE_UNAVAILABLE` 503, `AP_EVIDENCE_REQUIRED` 422 (O-17), `AP_CREDIT_NOTE_EXCEEDS_CAPACITY` 422 (bağlı alacak
+  dekontu orijinalin kalan kapasitesini aşıyor; tam alacaklanmış orijinal dahil), `AP_RECONCILE_RESTART_ACTOR_MISMATCH` 409
+  (Reconcile'ı çağıran asıl komutun aktörü değil; yeniden başlatma yok, niyet `Unknown` kalır).
 - **Taşınmaz:** `MOD0119_TENANT_CONTEXT_MISSING`, `MOD0119_TENANT_MISMATCH` (gövdede kiracı yok; bağlam yoksa standart
   401/400), `MOD0119_LEGAL_ENTITY_ACCESS_DENIED` / `AP_ABAC_LEGAL_ENTITY_DENIED` (başka şirket → 404), `MOD0119_LEGAL_ENTITY_ABAC_NOT_WIRED`,
   `MOD0119_SOD_RUNTIME_PENDING` (kaynak yer tutucuları, `AccountsPayableSecurity.cs:284-294, 328-338`),
@@ -421,17 +429,19 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
 
 - `services/Diten.FinanceTreasuryService/**` — **servis bu paketle açılmaz.** İskelet (5 katman, port 5071, JWT,
   `TenantId` izolasyonu, 4 pipeline davranışı, `AddCentralAudit<FinanceTreasuryCentralAuditScope>(RequireEnlistment =
-  true)`, modül manifest kaydı) MOD-0126 paketinin DL-1'inde açılır (O-21). MOD-0119 o servise **feature** olarak eklenir:
+  true)`, modül manifest kaydı) ve servis ortak yapı taşları **yalnız** MOD-0126 paketinin DL-1'inde açılır (tek sahibi ve
+  yazarı; O-21 kapandı — gap 4/G5). MOD-0119 bu paket önce `ready-for-dev` olsa bile iskeleti ya da ortak yapı taşını
+  açmaz; MOD-0126 DL-1'i bekler. MOD-0119 o servise **feature** olarak eklenir:
   - `src/Diten.FinanceTreasuryService.Application/Features/ApInvoice/**` (Golden Reference Compact düzeni) (DL-1…DL-3)
   - `src/Diten.FinanceTreasuryService.Domain/ApInvoices/**` (DL-1)
   - `src/Diten.FinanceTreasuryService.Persistence/ApInvoices/**` (depolar, indeksler; her işlem geri çağrısı
     `CentralAuditTransaction.EnlistAsync` çağırır) (DL-1)
   - `src/Diten.FinanceTreasuryService.Infrastructure/{Suppliers,InvoiceMatch,ApWorkflow,ApEvidence}/**` (AP'ye özgü port
-    bağdaştırıcıları); servis-ortak `LegalEntities`, `Currency`, `RecordCodes`, `DataScope` bağdaştırıcıları MOD-0126 ile
-    paylaşılır (DL-1)
+    bağdaştırıcıları); servis-ortak `LegalEntities`, `Currency`, `RecordCodes`, `DataScope` bağdaştırıcıları MOD-0126
+    DL-1'indir, AP yalnız kullanır (DL-1)
   - Servis ortak yapı taşları (`Application/Common/{CommandReceipts,DataScope}/**`, `Persistence/Common/CommandReceipts/**`
-    — `FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource`; D14/1, D14/2) MOD-0126 DL-1 ile açılır; AP
-    yalnız kullanır (DL-1)
+    — `FinanceTreasuryCommandReceipt` + iki indeksi, `IFinanceTreasuryDataScopeSource` okuma / yazma kapsamı; D14/1,
+    D14/2) ve CentralAudit kaydı MOD-0126 DL-1 ile açılır; AP yalnız kullanır, yeniden tanımlamaz (DL-1)
   - `src/Diten.FinanceTreasuryService.Api/Controllers/ApInvoicesController.cs` (DL-1…DL-3)
   - Modül manifestine MOD-0119 girdisi (`module-self-registration-standard`) (DL-1)
 - `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — servisin defteri MOD-0126 DL-1 ile açılır; AP aynı
@@ -489,7 +499,7 @@ MOD-0023 AP iş akışı şablonu; `ocelot.json` rotaları (integration-agent); 
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); rol şablonları O-20; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-22)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile **tek karar**. `NoOp` kaydı yasak (kapsamı kapatır) |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack ölçümü); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **ENGEL**: modül kendi sayacını yazamaz (RCS-001 §6). Servis gelene kadar Create yazılamaz (O-9) |
-| `Diten.FinanceTreasuryService` iskeleti | servis | **yok** | MOD-0126 DL-1 açar (O-21); o olmadan AP DL-1 başlamaz |
+| `Diten.FinanceTreasuryService` iskeleti + servis ortak yapı taşları | servis | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — O-21 kapandı, gap 4/G5); MOD-0126 DL-1, AP DL-1'in önkoşuludur; o olmadan AP DL-1 başlamaz |
 | Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellenmedi** (TRM-04) | iskelet port kaydından sonra |
 | DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2 "karar 0.3 bekliyor" (DCP §8.1) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
@@ -531,15 +541,26 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   ayrı izindir: `finance-treasury.ap-invoices.read-tenant-wide` (yalnız açık atama — `ExplicitGrantOnlyPermissions`; tek
   üretici `FinanceTreasuryDataScope.TenantWideScope()`; `MOD-0119-0120-TENANT-LE-EVIDENCE-v1.0.md` §4'teki "modüle özel
   anahtar" budur). Kapsam servis genelinde **tek yerde** (`IFinanceTreasuryDataScopeSource`, MOD-0126/0120/0124 ile ortak;
-  modül yalnız kendi `read-tenant-wide` anahtarını verir) çözülür; liste, detay, iz, istisna listesi ve yazma aynı kapsamı
-  okur; sayfalama ve toplamlar daraltılmış kümeden hesaplanır. Referans uygulama: `WorkReportScope` /
-  `WorkReportScopeSource` (SEC-002 §5). Tek ekranda şirketler arası birleşik AP listesi v1'de yok (Follow-up).
+  modül yalnız kendi `read-tenant-wide` anahtarını verir) çözülür; okumalar (liste, detay, iz, istisna listesi) **okuma
+  kapsamını**, her yazma **yazma kapsamını** kullanır (aşağıda); sayfalama ve toplamlar daraltılmış kümeden hesaplanır.
+  Referans uygulama: `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Tek ekranda şirketler arası birleşik AP
+  listesi v1'de yok (Follow-up).
+- **Okuma kapsamı ile yazma kapsamı ayrıdır (gap 4/G1; D14/1 ile tutarlı — `…read-tenant-wide` *görme* iznidir;
+  tanım MOD-0126 pack Runtime Constraints, servis ortak):** okuma kapsamı = kullanıcının kendi şirket yetkileri ya da
+  `read-tenant-wide` varsa kiracıdaki tüm şirketler; **yazma kapsamı** = yalnız kendi şirket yetkileri (`TenantWideScope()`
+  hiçbir zaman girmez). Her yazma komutu (Create, Update, Delete, BulkDelete, Validate, Submit, Reconcile, Approve,
+  Reject, RequestInfo, Hold, ReleaseHold, istisna açma / çözme / yeniden açma, LinkEvidence) hedef faturanın
+  `LegalEntityId`'si için katman 1'i ister: `X-Legal-Entity-Id` hedef faturanın şirketine eşit **ve** kullanıcının o
+  şirkette kendi yetkisi var. Yalnız `read-tenant-wide` sayesinde görünen faturaya yazma → **404** `AP_INVOICE_NOT_FOUND`
+  (kapsam dışı kuralıyla aynı; başka adım çalışmaz).
 - **Uygunluk güncel durumdur, kayıt anındaki kopya değildir (TP-001 T14):** (a) MOD-0220 `lookup-validation` — borç
   oluşturan ya da değiştiren **her yazma komutunda** (sahip kararı D14/4: Create, Update, Delete, BulkDelete, Validate,
   Submit, Approve, Reject, RequestInfo, Hold, ReleaseHold, istisna açma / çözme / yeniden açma, LinkEvidence) —
   `OperationalStatus = Active` **ve** `ApprovalStatus = Approved` değilse `AP_LEGAL_ENTITY_NOT_ELIGIBLE` (422), yanıt yoksa
-  `AP_LEGAL_ENTITY_UNAVAILABLE` (503). **Reconcile hariç:** yeni karar başlatmaz, uygunluğu tx1'de denetlenmiş komutun uzak
-  sonucunu kaydeder (engellemek niyeti açık bırakırdı; MOD-0126 ile aynı). Okumalar uygunluk istemez (pasifleşmiş şirketin
+  `AP_LEGAL_ENTITY_UNAVAILABLE` (503). **Reconcile hariç (D15/2):** yeni karar başlatmaz, uygunluğu tx1'de denetlenmiş
+  komutun uzak sonucunu kaydeder (engellemek niyeti açık bırakırdı; MOD-0126 ile aynı). Muafiyet yalnız uzakta **var
+  olan** örneğin / geçişin sonucunu kaydetme yolu içindir; uzakta yoksa yeniden başlatma yeni uzak işlemdir ve şirket +
+  SoD + izin yeniden denetlenir (Runtime Constraints 3a, gap 4/G2). Okumalar uygunluk istemez (pasifleşmiş şirketin
   geçmiş borcu okunabilir; kapsam kuralı yine geçerli). (b) MOD-0140 — Create, Update, Validate, Submit, Approve ve
   ReleaseHold'da çağıran şirketle ilişki `Active` değilse `AP_SUPPLIER_NOT_ELIGIBLE` (422), yanıt yoksa
   `AP_SUPPLIER_UNAVAILABLE` (503); (c) PO'lu faturada
@@ -556,8 +577,9 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     yanıt; iki aşamalı komutlarda (Submit ve kararlar) tx1'de `Pending` (yanıt yok, `LinkedIntentId` dolu), yanıt
     **tx2'de** (kesin sonuç ya da 202 belirsiz) ya da — makbuz hâlâ `Pending` ise — **Reconcile'da** yazılır ve makbuz
     `Completed` olur. `Completed` makbuz değişmez.
-  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) veri kapsamı (SEC-002, D14/1; kapsam dışı
-    şirket → 404 `AP_INVOICE_NOT_FOUND`, başka adım yok) → (3) makbuz araması: aynı kapsam + farklı
+  - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) veri kapsamı (SEC-002, D14/1; okumada
+    okuma kapsamı, **yazmada yazma kapsamı** — hedef faturanın şirketi kullanıcının kendi şirket yetkisinde değilse, fatura
+    `read-tenant-wide` ile görünse bile → 404 `AP_INVOICE_NOT_FOUND`, başka adım yok) → (3) makbuz araması: aynı kapsam + farklı
     parmak izi → 409 `AP_IDEMPOTENCY_CONFLICT`; aynı kapsam + aynı parmak izi + `Completed` → **kayıtlı yanıt aynen
     döner**; aynı kapsam + aynı parmak izi + `Pending` → 202 `AP_REQUEST_IN_PROGRESS` (bağlı niyetin o anki durumuyla).
     İki durumda da **başka hiçbir adım çalışmaz** — uzak çağrı yok, Reconcile yok. → (4) açık niyet kontrolü (Submit ve
@@ -579,9 +601,27 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      kaydedilmez.
   2. *Açık niyet varken* (`Pending` / `Unknown`): **aynı** anahtarla tekrar → makbuz kuralı; **farklı** anahtarla Submit →
      409 `AP_WORKFLOW_START_PENDING`, uzak çağrı yok. Fatura başına en fazla bir açık başlatma niyeti (`ux_ap_start_intent_open`).
-  3. *Reconcile:* başlatma aynı uzak anahtarla yeniden oynatılır (MOD-0023 anahtarı tanırsa var olan örneği döndürür,
-     `StartWorkflowInstanceHandler.cs:79-85`) ya da `instances/by-objects` okunur; sonuç `Started` / `Refused` /
-     `Cancelled`'a bağlanır. Belirsiz kalırsa durum değişmez ve deneme sayılır.
+  3. *Reconcile:* sonuç `Started` / `Refused` / `Cancelled`'a yalnız uzak tarafın **kesin** durumuyla bağlanır; belirsiz
+     kalırsa durum değişmez ve deneme sayılır. Sıra 3a'dadır.
+  3a. *Reconcile önce okur, sonra (gerekirse) yeniden başlatır (gap 4/G2; Submit ve üç karar komutu; kural MOD-0126 pack
+     Runtime Constraints 3a ile aynı):*
+     - **Önce okuma:** başlatmada `instances/by-objects` (fatura kimliği) + niyetin deterministik uzak anahtarı; kararda
+       görev geçmişi + `RemoteIdempotencyKey`.
+     - **Uzakta örnek / geçiş var** → kesin durum kaydedilir (tx2 + bağlı `Pending` makbuz `Completed` + sonuç olayı);
+       şirket kuralından **muaf** (D15/2).
+     - **Okuma belirsiz ya da "bulunamadı"** (zaman aşımı, bağlantı kopması, 5xx, okunamayan gövde, 404 / boş sonuç): uzak
+       çağrının hiç yapılmadığının kesin güvencesi değildir; niyet **asla `Cancelled` yapılmaz**, `Unknown` kalır
+       (`Pending` idiyse `Unknown`'a geçer); fatura ve makbuz değişmez.
+     - **Okuma kesin boşsa yeniden başlatma yeni bir uzak işlemdir:** önce (i) şirket uygunluğu (D10/1, D14/4), (ii) SoD
+       (başlatmada R1–R3 aday dışlaması yeniden; kararda niyetteki karar verenle R1–R6, R8, R9), (iii) izin ve (iv) aktör:
+       Reconcile'ı çağıran asıl komutun aktörü (`SubmittedBy` / `DecidedBy`) değilse çağrı yok (409
+       `AP_RECONCILE_RESTART_ACTOR_MISMATCH`) — MOD-0023'teki başlatan / karar veren değişmez. Hepsi geçerse çağrı **aynı
+       deterministik uzak anahtarla bir kez** yapılır (ikinci örnek oluşmaz); görev geçişinin anahtarı yeniden oynattığı DL-2
+       başında ölçülür, ölçülmeden kararda yeniden geçiş yapılmaz.
+     - **Uygun değilse:** uzak çağrı yok; niyet `Unknown` kalır, `LastOutcomeCode` sebep kodunu taşır
+       (`AP_LEGAL_ENTITY_NOT_ELIGIBLE`, `AP_SOD_DENIED`, `AP_PERMISSION_DENIED`, `AP_RECONCILE_RESTART_ACTOR_MISMATCH`);
+       fatura, alacak dekontu rezervasyonu ve bağlı `Pending` makbuz değişmez; sonuç olayı yazılmaz; Reconcile'ın kendi
+       makbuzu sebep koduyla `Completed` olur. Koşul düzelince yeni Reconcile tekrar dener; kalıcı kapatma Follow-up.
   4. *Kararlar (Approve / Reject / RequestInfo):* SoD ön kontrolü + uygunluk okumaları + engelleyici istisna ve bekletme
      kontrolü → tx1 `ApApprovalDecision(Requested)` + deneme olayı → MOD-0023 görev geçişi, uzak karar anahtarıyla → tx2
      `Recorded` + fatura durumu (Approve son adım → `Approved`; son adım değil → `PendingDecision` kalır; Reject →
@@ -599,6 +639,34 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   5. HTTP istemcilerinde **açık zaman aşımı** (kaynakta yok, paket §L); değer `FinanceTreasury:Workflow:TimeoutSeconds`
      (MOD-0126 ile aynı ayar) — başlangıçta yoksa servis açılmaz (öneri 15 sn, O-11). MOD-0140, MOD-0143, MOD-0220,
      MOD-0031 okumaları için `FinanceTreasury:Reads:TimeoutSeconds` (öneri 5 sn); zaman aşımı 503 sayılır.
+- **Alacak dekontu kapasitesi (orijinal faturaya bağlı `CreditNote`; O-14 önerisinin parçası):**
+  - **Kural:** bir orijinal fatura için `CreditedAmount + CreditReservedAmount + bu dekontun GrossAmount ≤ orijinal
+    GrossAmount` — yani onaylı + bekleyen (onay akışındaki) dekontların toplamı orijinalin **brüt tutarını** aşamaz.
+    **Neden brüt tutar (OpenAmount değil):** brüt tutar orijinal onaylandıktan sonra değişmez; tavan sabit ve işlem
+    sırasından bağımsızdır. OpenAmount v1'de zaten `Gross − CreditedAmount`'tır; "onaylı + bekleyen" toplamını OpenAmount'a
+    karşı ölçmek onaylı dekontları iki kez sayardı, yalnız bekleyenleri OpenAmount'a karşı ölçmek ise aynı sonucu verir —
+    tek, değişmeyen tavan daha basit ve test edilebilir. Ödeme dikişi açılınca (OpenAmount ödemeyle de azalır) kural o
+    paketle yeniden yazılır (Follow-up).
+  - **Bekleyen = onay akışında:** rezervasyon **Submit tx1**'de yapılır (dekont `ApprovalPending`); Validate yalnız ön
+    kontroldür, rezerv etmez (`Received` / `Validated` dekont kapasite tutmaz). Submit tx1 aynı Mongo işleminde orijinal
+    faturanın `CreditReservedAmount += dekont GrossAmount` alanını orijinalin `Version` CAS'ıyla yazar; kapasite aşılırsa
+    422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`, uzak çağrı yok, hiçbir şey yazılmaz.
+  - **Onay tek işlemde:** dekontun son adım onayının tx2'si (ya da onu kaydeden Reconcile) **aynı işlemde** kapasiteyi
+    yeniden denetler (rezervasyon tutulduğu için aşamaz; aşıyorsa değişmez bozulmuştur → tx2 yazılmaz, niyet açık kalır),
+    dekontu `Approved` yapar ve orijinalde `CreditReservedAmount −= tutar`, `CreditedAmount += tutar`, `OpenAmount = Gross −
+    CreditedAmount`, `CreditStatus` (`PartiallyCredited` / `FullyCredited`) yazar — hepsi orijinalin `Version` CAS'ıyla.
+    OpenAmount oluşturmada ya da gönderimde **değil**, yalnız onayda azalır.
+  - **Rezervasyonun bırakılması:** dekontun Reject'i (tx2), başlatmanın kesin reddi (`Refused`, tx2) ya da kesin iptali
+    (`Cancelled`, Reconcile) — aynı işlemde, orijinalin `Version` CAS'ıyla `CreditReservedAmount −= tutar`.
+  - **Belirsizlik:** niyet açıkken (`Pending` / `Unknown` başlatma, `Requested` / `Unknown` karar) rezervasyon sayılmaya
+    devam eder, OpenAmount değişmez; Reconcile G2 kuralıyla yeniden başlatamadığında da (niyet `Unknown`) rezervasyon kalır.
+  - **CAS çakışması = yeniden oku ve yeniden hesapla, kör tekrar değil:** orijinalin `Version`'ı değiştiyse handler
+    orijinali yeniden okur, kapasiteyi ve sayaçları **yeni değerlerden** yeniden hesaplar ve yeniden CAS dener (sınırlı:
+    öneri 3 deneme); eski okunmuş değer hiçbir zaman yazılmaz. Yeniden hesapta kapasite aşılıyorsa 422
+    `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`; deneme biterse 409 `AP_INVOICE_VERSION_CONFLICT` (tx1'de: hiçbir şey yazılmadı;
+    tx2'de: niyet açık kalır, Reconcile tamamlar). Böylece aynı orijinale iki dekont aynı anda fazla alacak yaratamaz.
+  - Tam alacaklanmış (`FullyCredited`, kapasite 0) orijinale yeni dekont Validate / Submit'te 422
+    `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`. Orijinale bekletme (Hold) kapasiteyi değiştirmez.
 - **Tek aşamalı yazma komutları** (Create, Update, Delete, BulkDelete, Validate, Hold, ReleaseHold, istisna komutları,
   LinkEvidence): uzak **yazma** yoktur; uygunluk okumaları tx1'den önce, iş verisi + makbuz + tek denetim olayı tek Mongo
   işleminde. Okuma tx1'den sonra eskiyse (yarış) bir sonraki geçişte yeniden okunur; uygunluk kararı commit anına
@@ -694,7 +762,7 @@ Resources/Views/FinanceTreasury/ApInvoices/    ApInvoicesIndex.{en,tr,fr,es,zh,a
 
 | Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol |
 |---|---|---|---|---|
-| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved (her yazmada, Reconcile hariç — D14/4); kullanıcının veri kapsamında ya da `read-tenant-wide` (D14/1) | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` |
+| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved (her yazmada, Reconcile'ın kayıt yolu hariç — D14/4, D15/2); okumada okuma kapsamında (kendi şirket yetkisi ya da `read-tenant-wide`, D14/1); **yazmada** hedef faturanın şirketine eşit ve kullanıcının **kendi** şirket yetkisinde (yazma kapsamı — `read-tenant-wide` yazma yetkisi vermez, gap 4/G1); değilse 404 | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` (okuma / yazma kapsamı) |
 | Gövde/sorguda tenantId, legalEntityId | — | bulunursa 400 | — | middleware |
 | DocumentType | Evet | tanımlı enum | — | — |
 | SupplierId | Evet | trim, 1..64, MOD-0140 sözleşme biçimi; çağıran şirketle Active ilişki | — | `ISupplierEligibilityPort` |
@@ -703,7 +771,7 @@ Resources/Views/FinanceTreasury/ApInvoices/    ApInvoicesIndex.{en,tr,fr,es,zh,a
 | DueDate | Evet | `DateOnly`; `≥ InvoiceDate` | — | — |
 | CurrencyCode | Evet | `^[A-Z]{3}$` (upper normalize), MOD-0048 listesinde | — | `ICurrencyReferencePort` |
 | MatchInvoiceRef | Koşullu | `PoBackedInvoice` → zorunlu (400 `AP_MATCH_REFERENCE_REQUIRED`); diğer türlerde gönderilirse 400 `AP_MATCH_REFERENCE_NOT_ALLOWED` | Unique (TenantId, LegalEntityId, MatchInvoiceRef), silinmemiş | `IInvoiceMatchPort` (Validate/Submit/Approve) |
-| CreditedApInvoiceId | Koşullu | `CreditNote` → zorunlu (öneri, O-14); aynı tedarikçi + para birimi, `Approved` | — | yerel okuma |
+| CreditedApInvoiceId | Koşullu | `CreditNote` → zorunlu (öneri, O-14); aynı tedarikçi + para birimi, `Approved`, kendisi alacak dekontu değil (aksi 422 `AP_CREDITED_INVOICE_INVALID`); dekont `GrossAmount ≤ orijinal Gross − CreditedAmount − CreditReservedAmount` (aksi 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`; Validate ön kontrol, Submit rezervasyon, Approve kesin) | orijinal faturanın `Version` CAS'ı | yerel okuma |
 | Notes | Hayır | trim, ≤ 2000 | — | — |
 | Lines | Evet | 1..200 satır | — | — |
 | Line.Description | Evet | trim, 1..256 | — | — |
@@ -761,6 +829,22 @@ totalAmount` (MOD-0143 `Decimal` string'i `decimal`'a çevrilerek, yuvarlamasız
 - **Başka kiracı / başka şirket faturası** (okuma, güncelleme, silme, karar, bekletme, istisna) → 404 `AP_INVOICE_NOT_FOUND`.
 - **Kapsam dışı şirket** (kullanıcının veri kapsamında olmayan şirket, `read-tenant-wide` yok — D14/1) → liste 200 boş,
   detay / iz / istisna listesi / yazma 404 `AP_INVOICE_NOT_FOUND`; veri kapsamı çözücüsü hata verirse aynı sonuç.
+- **Yalnız `read-tenant-wide` ile görünen faturaya yazma** (kullanıcının o şirkette kendi yetkisi yok — gap 4/G1) → her
+  yazma komutu (Create, Update, Delete, Validate, Submit, Approve, Reject, RequestInfo, Hold, istisna, kanıt, Reconcile)
+  404 `AP_INVOICE_NOT_FOUND`; liste ve detay okuması 200; uzak çağrı, kayıt ve makbuz yok.
+- **Reconcile, uzakta örnek bulunamadı / okuma belirsiz** (gap 4/G2) → niyet `Cancelled` yapılmaz, `Unknown` kalır; okuma
+  kesin boşsa yeniden başlatmadan önce şirket + SoD + izin + aktör denetlenir: şirket uygun değilse uzak çağrı yok, niyet
+  `Unknown` + `LastOutcomeCode = AP_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422; aktör farklıysa 409
+  `AP_RECONCILE_RESTART_ACTOR_MISMATCH`; uygunsa aynı deterministik anahtarla tek uzak çağrı.
+- **Alacak dekontu orijinalin kalan kapasitesini aşıyor** (onaylı + bekleyen + bu > orijinal brüt; tam alacaklanmış
+  orijinal dahil) → Validate / Submit 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`, uzak çağrı yok, rezervasyon yok.
+- **Orijinal fatura uygun değil** (onaylı değil, başka tedarikçi / para birimi, kendisi alacak dekontu) → 422
+  `AP_CREDITED_INVOICE_INVALID`.
+- **Aynı orijinale eşzamanlı iki dekont** → orijinalin `Version` CAS'ı biri için çakışır; o istek orijinali yeniden okuyup
+  kapasiteyi yeniden hesaplar: sığıyorsa geçer, sığmıyorsa 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`; denemeler tükenirse 409
+  `AP_INVOICE_VERSION_CONFLICT`. Fazla alacak oluşmaz.
+- **Dekont onayı belirsiz** (`AP_DECISION_OUTCOME_UNKNOWN`) → rezervasyon kalır, orijinalin OpenAmount'u değişmez;
+  Reconcile onayı kaydedince aynı işlemde OpenAmount azalır.
 - **Açık karar niyeti varken başka anahtar/aktörden karar** → 409 `AP_DECISION_PENDING`, MOD-0023 çağrılmaz.
 - **İş akışı başlatma zaman aşımı / bağlantı kopması / boş 2xx** → 202 `AP_WORKFLOW_START_OUTCOME_UNKNOWN`, niyet `Unknown`,
   fatura `ApprovalPending`/`Submitted`; ikinci Submit (farklı anahtar) 409 `AP_WORKFLOW_START_PENDING`; Reconcile aynı uzak
@@ -800,7 +884,7 @@ totalAmount` (MOD-0143 `Decimal` string'i `decimal`'a çevrilerek, yuvarlamasız
 | Recovery anahtarı | Katman | Uçlar | Kaynak anahtar |
 |---|---|---|---|
 | `finance-treasury.ap-invoices.read` | T1 | GET liste, GET detay, GET istisnalar | `ap.invoice.read`, `ap.invoice.detail.read` |
-| `finance-treasury.ap-invoices.read-tenant-wide` | T3 (yalnız açık atama, `ExplicitGrantOnlyPermissions`) | kiracıdaki tüm şirketlerin faturaları, izi ve istisnaları (SEC-002 §3.5, D14/1) | — (kaynakta `ap_legal_entity_scope` talebi; taşınmaz) |
+| `finance-treasury.ap-invoices.read-tenant-wide` | T3 (yalnız açık atama, `ExplicitGrantOnlyPermissions`) | kiracıdaki tüm şirketlerin faturaları, izi ve istisnaları (SEC-002 §3.5, D14/1) — **yalnız okuma**; hiçbir yazma komutunun kapsamını genişletmez (gap 4/G1) | — (kaynakta `ap_legal_entity_scope` talebi; taşınmaz) |
 | `finance-treasury.ap-invoices.create` | T1 | POST | `ap.invoice.import` (anlam değişti: elle kayıt) |
 | `finance-treasury.ap-invoices.update` | T1 | PUT | — |
 | `finance-treasury.ap-invoices.delete` | T1 | DELETE | — |
@@ -872,6 +956,10 @@ taşınmaz (level-1 koşul 2).
   Deneme olayı tek başına "yapıldı" anlamına gelmez; tabloda yazılan olay **sonuç** olayıdır. Kapalı ama olumsuz
   sonuçların olayları: `…workflow-start-refused`, `…workflow-start-cancelled`, `…decision-refused`, `…decision-cancelled`.
   Reconcile kendi olayını değil, kapattığı niyetin **sonuç** olayını yazar.
+- **Alacak dekontu etkisi orijinal faturada:** dekontun Submit (rezervasyon), Approve (alacaklama) ve Reject / başlatma
+  reddi / iptal (rezervasyon bırakma) olayları, orijinal fatura kimliğini ve orijinalde değişen alan **adlarını**
+  (`CreditReservedAmount`, `CreditedAmount`, `OpenAmount`, `CreditStatus`) aynı olayda taşır; orijinal için ayrı komut ve
+  ayrı olay yoktur (değişiklik dekont komutunun işlemindedir).
 - **Kayda yazılmayan:** tedarikçi adı, fatura numarası değeri, satır açıklaması, yorum serbest metni, tutarların satır
   ayrıntısı, token. Değişen alanların yalnız **adı** yazılır (AUD-001 §3).
 - **K2 — KARAR (sahip kararı D14/3):** Approve / Reject — borcun ödemeye uygunluğuna karar veren, parayı etkileyen
@@ -1002,6 +1090,37 @@ taşınmaz (level-1 koşul 2).
   `read-tenant-wide` otomatik yoldan verilmez (`ExplicitGrantOnlyPermissions` listesinde). Makbuz tipi servis ortak
   `FinanceTreasuryCommandReceipt`'tir: AP kodunda AP önekli makbuz tipi ya da makbuz koleksiyonu yoktur (mimari
   testi, D14/2).
+- [ ] AC-33 (zorunlu) — Okuma kapsamı yazma kapsamını genişletmez (gap 4/G1): `ap-invoices.read-tenant-wide` + bütün yazma
+  izinlerine sahip ama LE-B'de **kendi şirket yetkisi olmayan** kullanıcı LE-B faturalarını listede ve detayda görür (200),
+  ama LE-B'de Create (`X-Legal-Entity-Id = LE-B`), Update, Validate, Submit, Approve, Reject, Hold ve istisna açma 404
+  `AP_INVOICE_NOT_FOUND` döner; MOD-0023 / MOD-0220 / MOD-0140 / MOD-0143'e çağrı gitmez, kayıt, makbuz ve denetim olayı
+  oluşmaz (sahte istemcilerle sayılır); aynı kullanıcı LE-A'da (kendi yetkisi) aynı komutları çalıştırabilir. Sabotaj:
+  yazma yolunda okuma kapsamı kullanıldığında test kırmızıya döner.
+- [ ] AC-34 (zorunlu) — Reconcile önce okur (gap 4/G2; Submit ve her karar türü için ayrı test): (a) uzakta örnek / geçiş
+  **var** → şirket uygun değilken bile sonuç kaydedilir (MOD-0220 çağrılmaz — D15/2), bağlı `Pending` makbuz `Completed`,
+  tek sonuç olayı; (b) okuma 404 / boş / zaman aşımı / 5xx → niyet **`Cancelled` olmaz**, `Unknown` kalır, fatura ve
+  makbuz değişmez; (c) okuma kesin boş + şirket uygun değil → MOD-0023'e çağrı yok, niyet `Unknown`, `LastOutcomeCode =
+  AP_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422, sonuç olayı yok; (d) okuma kesin boş + şirket uygun + SoD/izin geçer +
+  asıl aktör → tek uzak çağrı aynı deterministik anahtarla (ikinci Reconcile ikinci örnek üretmez); aktör farklıysa 409
+  `AP_RECONCILE_RESTART_ACTOR_MISMATCH`. Sabotaj: okuma atlanıp doğrudan yeniden başlatıldığında ya da "bulunamadı"
+  `Cancelled`'a bağlandığında test kırmızıya döner.
+- [ ] AC-35 (zorunlu) — Alacak dekontu kapasitesi: brüt 1 000'lik onaylı orijinale 600'lük dekont gönderilince orijinal
+  `CreditReservedAmount = 600`, `OpenAmount = 1 000` (değişmez); 500'lük ikinci dekontun Validate'i ve Submit'i 422
+  `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`; 600'lük dekont onaylanınca **aynı işlemde** dekont `Approved`, orijinal
+  `CreditReservedAmount = 0`, `CreditedAmount = 600`, `OpenAmount = 400`, `CreditStatus = PartiallyCredited`; 400'lük
+  dekont onaylanınca `OpenAmount = 0`, `CreditStatus = FullyCredited`, `InvoiceStatus = Approved` kalır; sonra her yeni
+  dekont 422. Dekont oluşturma ve gönderme OpenAmount'u azaltmaz; reddedilen dekontun rezervasyonu aynı işlemde bırakılır.
+  Onaylı olmayan / başka tedarikçinin / alacak dekontu olan orijinal 422 `AP_CREDITED_INVOICE_INVALID`.
+- [ ] AC-36 (zorunlu) — Alacak dekontu yarış ve belirsizlik testleri (gerçek replica set, paralel istek): (a) aynı
+  orijinale tek başına sığan ama birlikte aşan iki dekontun eşzamanlı Submit'i → biri geçer, diğeri 422
+  `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`; `CreditedAmount + CreditReservedAmount ≤ GrossAmount` her an korunur; (b) birlikte
+  sığan iki dekontun eşzamanlı Submit / Approve'u → CAS çakışan istek orijinali yeniden okuyup yeniden hesaplar ve geçer;
+  sayaçlar dekont tutarlarının tam toplamına eşittir (kör tekrar ya da eski değerin üzerine yazılması yok); (c) dekont
+  Submit'i ya da Approve'u belirsiz kaldığında (`Unknown`) rezervasyon sayılmaya devam eder, OpenAmount değişmez ve kalan
+  kapasiteyi aşan üçüncü dekont 422 alır; (d) belirsiz onayı Reconcile kaydedince alacaklama + OpenAmount + CreditStatus
+  sonucu kaydeden işlemle **aynı işlemde** yazılır; başlatma `Refused` / `Cancelled` ya da Reject rezervasyonu aynı işlemde
+  bırakır; tx2 zorla başarısız edildiğinde ne dekont ne orijinal kısmen yazılır. Sabotaj: orijinalin `Version` CAS'ı
+  kaldırıldığında (a) fazla alacakla, (b) kayıp güncellemeyle kırmızıya döner.
 
 ## Test Expectations
 
@@ -1044,7 +1163,7 @@ taşınmaz (level-1 koşul 2).
 - [x] Frontmatter tam (service, shell, golden_reference, data_mode, entity_base, form_field_count)
 - [x] Layout & Shell Contract'ta `Layout = "_LayoutTenantShell"` açık
 - [x] Backend / Frontend file convention Golden Reference ile birebir (suffix yok, CommandHandlers/QueryHandlers ayrı)
-- [x] Validation her alan için yazılı; SoD kuralları R1–R9; MOD-0143 eşleşme kuralı
+- [x] Validation her alan için yazılı; SoD kuralları R1–R9; MOD-0143 eşleşme kuralı; alacak dekontu kapasitesi
 - [x] Failure Path ≥ 4 senaryo (duplicate/idempotency, missing, unauthorized, concurrency) + kiracılar arası + SoD + belirsiz sonuç
 - [x] Authorization: izin listesi + policy + aktör + bağımlı servis izinleri
 - [x] Gateway kararı (gerekli, integration-agent task'ı)
@@ -1060,7 +1179,7 @@ taşınmaz (level-1 koşul 2).
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
-- [ ] `Diten.FinanceTreasuryService` iskeleti ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (O-21)
+- [ ] `Diten.FinanceTreasuryService` iskeleti, servis ortak yapı taşları ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (tek sahibi o dilim; O-21 kapandı)
 - [ ] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı; AGENTS §2 ve §9 (`fin`) güncellendi
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
 - [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de (MVP-2)
@@ -1195,6 +1314,10 @@ taşınmaz (level-1 koşul 2).
   pakette; birleşik görünüm ve şirket filtresi ekranı sonra).
 - Güvenilir servis kimliği (MOD-0033-FU02) gelince arka plan uzlaştırma süpürücüsü (İ2).
 - CentralAudit reddedilen komut kaydı (`Outcome = Denied`) — BL-501 sahibine (G-AUD-1).
+- Yeniden başlatması engellendiği için `Unknown` kalan niyetin (ve tuttuğu alacak dekontu rezervasyonunun) kalıcı
+  kapatılması için açık iptal yolu (gap 4/G2) — sahip kararıyla ayrı komut.
+- Ödeme dikişi açılınca alacak dekontu kapasite kuralının ödenmiş tutarla birlikte yeniden yazılması (brüt tavan →
+  kalan borç).
 - Görev Merkezi köprüsü — onay görevlerinin panoda görünmesi.
 - `execution/registries/module-implementation-status.md` satırı ilk kodla açılır.
 
@@ -1215,14 +1338,14 @@ taşınmaz (level-1 koşul 2).
 | O-11 | MOD-0023 AP şablon kodu, çok adımlı onay adımları, HTTP zaman aşımı | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn (MOD-0126 ile aynı ayar); **TBD** | MOD-0023 sahibi |
 | O-12 | Kod alma kaynağı commit'i | `218acaf5` derlenip test edilir / `da4abb20` (AP satırları eşit, 251/251) | `da4abb20` — D1 "bağlanan commit'te derlendiği ve testleri geçtiği" şartı için ya bağlama `da4abb20`'ye taşınır ya da `218acaf5` derlenir | sahip (K1) |
 | O-13 | İstisna tek aktif kuralı (paket OI-09; kaynak S-OD-2) | tek aktif / kaynak gibi çoklu | fatura + tür başına tek aktif (tekil kısmi indeks) | sahip (K1) |
-| O-14 | Alacak dekontu ve onay kapsamı | orijinal faturaya bağ zorunlu / serbest; onay her belgede / `NotRequired` | bağ zorunlu (aynı tedarikçi + para birimi, `Approved`); her belge türü onay ister | sahip (K1) |
+| O-14 | Alacak dekontu ve onay kapsamı | orijinal faturaya bağ zorunlu / serbest; onay her belgede / `NotRequired`; kapasite tavanı orijinal brüt / onay anındaki OpenAmount | bağ zorunlu (aynı tedarikçi + para birimi, `Approved`); her belge türü onay ister; onaylı + bekleyen dekontlar orijinalin **brüt** tutarını aşamaz (gerekçe Runtime Constraints → Alacak dekontu kapasitesi), rezervasyon Submit'te, OpenAmount azaltımı onayda, orijinalin `Version` CAS'ıyla sıralanır | sahip (K1) |
 | O-15 | Vergi | satır vergi tutarı elle / vergi kodu + oran kaynağı | v1 elle tutar; vergi motoru GL / e-fatura kararıyla | sahip (K1) |
 | O-16 | Kesinti alanları (iskonto, stopaj/tevkifat, teminat, ücret) | v1'de / sonra | sonra | sahip (K1) |
 | O-17 | Gönderme öncesi kanıt zorunluluğu | her belge / yalnız PO'suz / yok | her belge türünde en az 1 kanıt (fatura görüntüsü), yoksa 422 `AP_EVIDENCE_REQUIRED` | sahip (K1) |
 | O-18 | `AuditCategory` değeri (MOD-0126 O-6 ile ortak) | eklemeli `Finance` / başka | eklemeli `Finance` (Platform, D9); **TBD** | CT + Platform sahibi |
 | O-19 | Fatura tarihi kuralı | ileri tarih serbest / yasak | `InvoiceDate ≤ bugün` (UTC); `DueDate ≥ InvoiceDate` (kaynak kuralı) | sahip (K1) |
 | O-20 | AP rolleri ve rol şablonları | — | AP operatörü / onaylayıcı / yönetici; bağımlı servis okuma izinleri şablona dahil; **TBD** | sahip + MOD-0018 sahibi |
-| O-21 | Servis iskeletini hangi paket açar | MOD-0126 DL-1 / AP DL-1 | MOD-0126 DL-1 (ilk modül, D1); AP DL-1 onu bekler — servis ortak yapı taşları (`FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource`) da onunla gelir (D14/2) | sahip (K1) |
+| O-21 | Servis iskeletini ve ortak yapı taşlarını hangi paket açar | MOD-0126 DL-1 / AP DL-1 | **KAPANDI (D14/2 ile tutarlı; gap 4/G5):** tek sahibi ve yazarı MOD-0126 DL-1 — iskelet, `FinanceTreasuryCommandReceipt` + indeksleri, `IFinanceTreasuryDataScopeSource`, ortak LE / para birimi / kod portları, CentralAudit kaydı; AP DL-1 onu bekler ve bunları yeniden tanımlamaz. "Hangi paket önce kodlanırsa" kuralı yoktur | sahip (K1) |
 | O-22 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | Platform sahibiyle kararlaştırılır; servis ortak tek karar (MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
 
 ## Teslim dilimleri
@@ -1243,16 +1366,19 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-1** — Yollar: `Features/ApInvoice/` içinde Create/Update/Delete/BulkDelete/Validate + liste/detay sorguları,
   Domain/Persistence, MOD-0220 / MOD-0140 / MOD-0143 / MOD-0048 bağdaştırıcıları, RCS kod portu, `ap-invoice.openapi.yaml`.
   **Neden ilk:** borç kaydı ve mükerrer koruması modülün temelidir; onay akışı ona dayanır. Önkoşul: Ready-for-dev
-  engelleri (0.3, 0.6, DCP, MOD-0126 DL-1 iskeleti, port, kod alma, TRM-14, MOD-0140 1.3.0, O-9, O-10, O-22). Bitiş:
-  AC-1…6, 15 (Create kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32.
+  engelleri (0.3, 0.6, DCP, **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, port, kod alma,
+  TRM-14, MOD-0140 1.3.0, O-9, O-10, O-22). Alacak dekontunun Validate ön kontrolü (kapasite, orijinal kuralı) bu dilimdedir.
+  Bitiş: AC-1…6, 15 (Create kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32, 33 (Create / Update / Validate kısmı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve / Reject / RequestInfo, SoD politika servisi, MOD-0023 bağdaştırıcısı
   (zaman aşımlı), trace sorgusu. **Neden ayrı:** SoD ve belirsiz sonuç en riskli kısımdır; bağımsız inceleme tek başına
-  yapılabilsin. Önkoşul: DL-1, O-7, O-11, MOD-0023 şablonu (K2 sınıfı D14/3 ile kararlaştırıldı). Bitiş: AC-7…15, 17 (iki aşamalı), 30.
+  yapılabilsin. Alacak dekontu rezervasyonu (Submit), alacaklama (Approve) ve bırakma (Reject / ret / iptal) bu dilimdedir.
+  Önkoşul: DL-1, O-7, O-11, O-14, MOD-0023 şablonu (K2 sınıfı D14/3 ile kararlaştırıldı). Bitiş: AC-7…15, 17 (iki aşamalı),
+  30, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
 - **DL-3** — Yollar: Hold / ReleaseHold, istisna komutları ve sorgusu, LinkEvidence + MOD-0031 bağdaştırıcısı, Submit'e
   kanıt kuralı (O-17 "evet" ise bu dilimde eklenir; DL-2'de Submit kanıtsız çalışır ve bu fark DL-2 kaydına yazılır), Submit / Approve'daki
   bekletme ve engelleyici istisna kapısı (R9 — DL-2'de bu kayıtlar henüz yoktur), K2 sabotaj testi, dev ortamı denetim
   kanıtı. **Neden ayrı:** MOD-0031 davranış ölçümüne ve O-13/O-17'ye bağlı; DL-2'yi bekletmesin.
-  Önkoşul: DL-2, O-13, O-17, O-18. Bitiş: AC-16, 17 (sabotaj), 29.
+  Önkoşul: DL-2, O-13, O-17, O-18. Bitiş: AC-16, 17 (sabotaj), 29, 33 (Hold, istisna, kanıt kısmı).
 - **DL-4** — Yollar: `Views/FinanceTreasury/ApInvoices/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API sözleşmesine
   bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-1 (liste/oluşturma), DL-2 (karar düğmeleri), DL-3 (bekletme, istisna),
