@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9 ve D10 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -29,9 +29,22 @@ Sahip, Treasury modüllerinin çalışması için başka modüllerde gereken de�
 - Şirketler arası ilişki modeli **eklenmez** (bugün hiçbir Treasury modülü istemiyor; tedarikçi–şirket ilişkisi
   Recovery'de MOD-0140'tadır).
 
+## D10 — Üç karar (2026-10-24, sahibin soru kutusundaki seçimleri; üçü de önerilen seçenek)
+
+1. **Ödeme yapan şirket hem aktif hem onaylı olmalı.** Soru: "Aktif ama onay durumu 'onaylandı' olmayan bir şirket
+   adına ödeme yapılabilsin mi?" — Cevap: "Hayır, onaylı olmalı". Kontrolü MOD-0126 yapar (`OperationalStatus = Active`
+   ve `ApprovalStatus = Approved`); MOD-0126 pack'inde kabul ölçütüdür.
+2. **MOD-0220 eki onaylandı.** Cevap: "Evet, ekle" — `lookup-validation` yanıtına `ApprovalStatus` alanı (yalnız ekleme;
+   404 davranışı değişmez) + MOD-0220 sözleşme belgesi. MOD-0220 pack değişikliği önerisiyle, CT-APR-02/01'den geçer;
+   kod MOD-0126 ile birlikte (TRM-14). Sahip burada MDM domain sahibinin kararını kendisi verdi (sahip K1).
+3. **Port 5071.** Cevap: "5071". Ölçüm (2026-10-24, yapılandırma dosyaları): 5056–5070 kullanımda (5069
+   `SafetyStockService` — AGENTS §3'te yok, ayrı kayma); 5071 ve sonrası hiçbir yapılandırmada yok. Sahip burada EA
+   kararını kendisi verdi (AGENTS §3; geçmiş tahsisler de "kullanıcı onaylı"). **AGENTS.md §3 ve
+   `.antigravity/rules/ports.md` (korunan yol; bant 5011–5064 yazıyor) değişikliği ayrı onaydır**; bu kayıt yapmaz.
+
 ## Karar olmayanlar
 
-"Aktif ama onaylanmamış şirket ödeme yapabilir mi" (MDM sahibine ve sahibe soru); port (EA); MOD-0003 (0.3).
+MOD-0003 (0.3); AGENTS.md §2/§3/§9 ve ports.md düzenlemesi; 5069 kayması (SafetyStockService sahibi).
 
 ## Bu kayıt ne değildir
 

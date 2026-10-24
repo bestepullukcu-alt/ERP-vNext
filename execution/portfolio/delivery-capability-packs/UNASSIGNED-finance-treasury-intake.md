@@ -134,7 +134,10 @@ MOD-0126 → MOD-0289 tek yönlüdür; MOD-0126 banka hesabını opak referansla
 
 ## 10. Architecture decisions
 
-- **Servis:** `Diten.FinanceTreasuryService` (D2), domain `finance-treasury`; port TBD (EA).
+- **Servis:** `Diten.FinanceTreasuryService` (D2), domain `finance-treasury`; port 5071 (D10/3; AGENTS §3 ve
+  `ports.md` güncellemesi ayrı onay).
+- **Şirket uygunluğu (D10/1, D10/2):** ödeme yapan şirket aktif ve onaylı olmalı; MOD-0220 `lookup-validation` yanıtına
+  `ApprovalStatus` eklenir (yalnız ekleme) ve MOD-0220 sözleşme belgesi yazılır (TRM-14).
 - **Kod alma:** doğrula, sonra uyarlayarak al (D1); kopya değil. Her dosya `path@commit` + sha256 ile izlenir;
   bilinen kaynak kusurları taşınmaz (inceleme kaydı §7).
 - **MOD-0269:** sağlayıcıdan bağımsız sözleşme, dağıtım kapalı (D5); dört kapalı akış varsayılmaz.
@@ -198,7 +201,7 @@ MOD-0118 GL, MOD-0146; veri taşıma ve canlıya geçiş (ayrı karar, TP-001 §
 ## 18. Open decisions
 
 0.3 MOD-0003 · 0.5 AR fatura sınırı · 0.6 ERP-FIN-BUNDLE (EA) · 0.7 GL · MOD-0289 MDM onayı · MOD-0217 ve MOD-0057
-(TRM-13) · port (EA) · DCP numarası · bankacılık sahibi · AGENTS §2/§9 değişikliği.
+(TRM-13) · DCP numarası · bankacılık sahibi · AGENTS §2/§3/§9 ve `ports.md` değişikliği (port 5071 kararı D10/3 verildi).
 
 ## 19. Future follow-ups
 

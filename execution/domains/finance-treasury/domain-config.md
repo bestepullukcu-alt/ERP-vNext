@@ -27,7 +27,7 @@ henüz yok (`execution/registries/module-id-registry.md`); kimlik rezervasyonu p
 
 - `MOD-0126 Payments & Approvals` — **ödeme partisi / talimat / onay / serbest bırakma SoR** (Blueprint W-3, Treasury &
   Cash). İlk modül. Kapıları: MOD-0023 Workflow, MOD-0021 Audit, MOD-0269 (karar 0.1 = A: önce sözleşme, dağıtım
-  kapalı).
+  kapalı). Ödeme yapan şirket hem aktif hem onaylı olmalıdır (D10/1; MOD-0220'den okunur).
 - `MOD-0119 Accounts Payable (AP)` — **satıcı borcu SoR** (Blueprint W-3, Financial Management). Kapısı MOD-0003
   (karar 0.3 açık).
 - `MOD-0120 Accounts Receivable (AR)` — **müşteri alacağı / fatura SoR** (Blueprint W-3, Financial Management).
@@ -110,8 +110,8 @@ henüz yok (`execution/registries/module-id-registry.md`); kimlik rezervasyonu p
 
 - **Servis:** `Diten.FinanceTreasuryService` (sahip kararı D2) — henüz yok; iskeleti ilk pack `ready-for-dev`
   olduktan sonra `@orchestrator /add-module` ile açılır.
-- **Port:** **TBD — EA kararı** (D4). Mikroservis bandı dolu; numara bu dosyada önerilmez. Tahsisten sonra AGENTS.md §3
-  ve `.antigravity/rules/ports.md` (korunan yol) ayrı onayla güncellenir.
+- **Port:** **5071** — sahip kararı D10 (2026-10-24; sahip EA kararını kendisi verdi). AGENTS.md §3 ve
+  `.antigravity/rules/ports.md` (korunan yol; bant bugün 5011–5064 yazıyor) henüz güncellenmedi — ayrı onay.
 - **Dal kısa kodu:** `fin` (D3) — AGENTS.md §9'a ayrı onayla yazılır.
 - **Persistence:** MongoDB; her sorguda `TenantId` izolasyonu; soft delete (`IsDeleted`, `DeletedAt`).
 - **Gateway:** rotalar yalnız `integration-agent` tarafından eklenir (korunan `ocelot.json`).
