@@ -206,7 +206,6 @@ yalnız tarihtir (`DateOnly`), saat dilimi çevrimi yapılmaz.
 | RiskRating | enum Low/Medium/High | varsayılan Low | `:145@da4abb20` |
 | EvidenceRequired | bool | true ise gönderme/son onay öncesi en az bir kanıt bağlantısı ister | — |
 | Notes | string? | trim, ≤ 2000 (kaynakta sınır yok; öneri) | — |
-| IdempotencyKey | string | `Idempotency-Key` başlığından, **zorunlu** (D12/2); sunucu üretmez; 1..128 (kaynakta yoksa sunucu üretiyordu — taşınmaz) | `:102-104@da4abb20` |
 | SubmittedBy / SubmittedAt | Guid? / DateTimeOffset? | sunucu (tx1) | — |
 | UpdatedByBeforeSubmit | Guid? | gönderme anındaki son güncelleyen (SoD R3) | yeni |
 | WorkflowInstanceId / WorkflowStatus / WorkflowCorrelationId | Guid? / string? / string? | yalnız kesin başlatma sonucundan | `:185-189@da4abb20` |
@@ -239,7 +238,7 @@ yalnız tarihtir (`DateOnly`), saat dilimi çevrimi yapılmaz.
 > ManualOutflowReference, PayeeType, PayeeReferenceId, DestinationReferenceId, SourceBankAccountRef, Amount,
 > RemittanceReference, SourceDocumentRef, ManualOverride. **Sayılmayanlar:** BatchCode (RCS-001 OTOMATİK), SourceKind
 > (sunucu sabit), LegalEntityId (oturum şirketi, `X-Legal-Entity-Id`), satır CurrencyCode (partiden türetilir),
-> IdempotencyKey / CorrelationId (başlık), TotalAmount / PaymentCount (sunucu), kaynaktaki `ApSource` / `Gateway` /
+> Idempotency-Key (başlık; yalnız `PaymentCommandReceipt`'te saklanır) / CorrelationId (başlık), TotalAmount / PaymentCount (sunucu), kaynaktaki `ApSource` / `Gateway` /
 > `ForecastFeed` / `EvidenceLinks` (bu dilimde istek modelinde yok). 16 > 8 → Compact (ayrı Create / Edit / Details).
 
 **Banka verisi yasağı:** hiçbir varlık IBAN, hesap numarası, BIC/SWIFT, banka adı ya da sağlayıcı sırrı tutmaz; yalnız
@@ -264,7 +263,9 @@ anında yapılır (dağıtım bu dilimde kapalı).
 ### PaymentApprovalDecision (`payment_approval_decisions`)
 
 Kaynak alanlar (`PaymentProposalEntities.cs:68-97@da4abb20`) korunur: `Decision`, `ReasonCode`, `Comment`,
-`EvidenceRefs`, `EvidenceLinks`, `SodResult`, `SodCheckDetail` (resx anahtarı + parametre), `IdempotencyKey`,
+`EvidenceRefs`, `EvidenceLinks`, `SodResult`, `SodCheckDetail` (resx anahtarı + parametre), `RemoteIdempotencyKey`
+(kaynakta `IdempotencyKey`; Recovery'de MOD-0023 görev geçişine giden **uzak** anahtar, deterministik
+`mod0126:{decisionId:N}:transition` — istemci anahtarı değildir),
 `DecidedBy` (**Guid**, kaynakta string), `DecidedAt`, `RequestFingerprintVersion`, `RequestFingerprint`, `WorkflowInstanceId`,
 `WorkflowTaskId`, `WorkflowTransitionId`, `WorkflowIsFinalStep`, `SodPolicyVersion`, `WaiverRequested`,
 `WaiverReasonCode`. **Çıkarılan:** `DecisionPath` (tek yol kalır: iş akışı), `AuditOutboxId`, `AuditEventId` (CentralAudit
@@ -277,13 +278,21 @@ taşır). **Eklenen:** `State` (Requested/Recorded/Refused/Cancelled/Unknown —
 |---|---|---|
 | TenantId, LegalEntityId, ActorId, Operation, TargetId, Key | Guid, Guid, Guid, string, Guid?, string | **makbuz kapsamı** (D12/2); `TargetId` Create için `null` |
 | RequestFingerprint / FingerprintVersion | string / int | sunucuda hesaplanır |
-| Status | `Pending` \| `Completed` | tek aşamalı komut: tx1'de doğrudan `Completed`; iki aşamalı komut: tx1'de `Pending`, tx2'de ya da Reconcile'da `Completed` |
-| ResponseStatusCode / ResponseBody | int? / string? | **yalnız `Completed`'da** dolu — kesin (ya da 202 belirsiz) yanıt |
-| LinkedIntentId | Guid? | iki aşamalı komutta başlatma/karar/serbest bırakma niyetinin kimliği |
+| Status | `Pending` \| `Completed` | tek aşamalı komut: tx1'de doğrudan `Completed`; iki aşamalı komut (Submit, kararlar): tx1'de `Pending`, tx2'de ya da — tx2 hiç çalışmadıysa — Reconcile'da `Completed` |
+| ResponseStatusCode / ResponseBody | int? / string? | **yalnız `Completed`'da** dolu; o anda istemciye verilen (ya da verilecek) HTTP yanıtı — kesin sonuç **ya da** 202 belirsiz |
+| LinkedIntentId | Guid? | iki aşamalı komutta başlatma ya da karar niyetinin kimliği |
+
+**Değişmezlik (gap 3/G2):** `Completed` makbuz **bir daha değişmez**. Belirsiz sonuçta kaydedilen 202 yanıtı (gövdesinde
+`intentId` ve durum sorgusu bağlantısı) sonsuza kadar aynı döner; işlemin **gerçek sonucu** makbuzda değil niyette
+(`PaymentWorkflowStartIntent` / `PaymentApprovalDecision`) izlenir ve `GET /api/payment-batches/{id}` ile `…/trace`
+üzerinden okunur. Reconcile yalnız **`Pending`** makbuzu (tx1 sonrası çökme — istemci hiç yanıt almadı) `Completed`
+yapar; zaten `Completed` olan makbuza dokunmaz.
 | CreatedAt / CompletedAt | DateTimeOffset / DateTimeOffset? | — |
 
-İş varlıklarındaki `IdempotencyKey` alanları istemci anahtarını **taşımaz**; istemci anahtarı yalnız makbuzdadır.
-`PaymentWorkflowStartIntent.IdempotencyKey` MOD-0023'e giden **uzak** anahtardır (deterministik, istemciden bağımsız).
+**İstemci anahtarı yalnız makbuzdadır** (gap 3/G1): `PaymentBatch`, `PaymentApprovalDecision`, `PaymentAttestation`,
+`PaymentDispatchAttempt` istemci anahtarı alanı taşımaz. MOD-0023'e giden anahtarlar ayrı ve **uzak** anahtardır:
+`PaymentWorkflowStartIntent.IdempotencyKey` (`mod0126:{batchId:N}:start:{SubmissionSequence}`) ve
+`PaymentApprovalDecision.RemoteIdempotencyKey`; deterministiktir, istemciden bağımsızdır.
 
 ### PaymentException (`payment_exceptions`), PaymentAttestation (`payment_attestations`), PaymentDispatchAttempt (`payment_dispatch_attempts`)
 
@@ -291,7 +300,7 @@ taşır). **Eklenen:** `State` (Requested/Recorded/Refused/Cancelled/Unknown —
   yazar (kaynak iki satır yazıyor, `PaymentWorkflowService.cs:390-412@da4abb20` — taşınmaz).
 - `PaymentAttestation`: kaynak alanları (`:116-130@da4abb20`); `SchemaVersion = payment.attestation.v2`,
   `ContentHash` (SHA-256), `SourceSnapshotJson` (yerel anlık görüntü; banka verisi içermez), `GeneratedBy` Guid.
-- `PaymentDispatchAttempt` (yeni): `PaymentBatchId`, `IdempotencyKey`, `RequestedBy` (Guid), `RequestedAt`, `Outcome`
+- `PaymentDispatchAttempt` (yeni): `PaymentBatchId`, `ReceiptId` (Release makbuzu), `RequestedBy` (Guid), `RequestedAt`, `Outcome`
   (`NotConfigured` | ileride sözleşmenin tanımladığı değerler), `ProviderContractVersion` (MOD-0269 sözleşme sürümü),
   `OutcomeCode`. Ekleme-yalnız; güncelleme/silme yok.
 
@@ -439,7 +448,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     diğerlerinde parti kimliği. Tekil indeks bu altılıdadır; aynı anahtar başka aktör/işlem/hedef için ayrı makbuzdur.
   - **Makbuz (`PaymentCommandReceipt`, Owned Objects):** istek parmak izi (sunucuda hesaplanır, muafiyet girdilerini içerir —
     `PaymentWorkflowService.cs:744-746@da4abb20`) ve **yaşam döngüsü**: tek aşamalı komutlarda tx1'de `Completed` + yanıt;
-    iki aşamalı komutlarda (Submit, kararlar, Release) tx1'de `Pending` (yanıt yok, `LinkedIntentId` dolu), yanıt **tx2'de**
+    iki aşamalı komutlarda (Submit ve kararlar — Release bu dilimde tek aşamalıdır) tx1'de `Pending` (yanıt yok, `LinkedIntentId` dolu), yanıt **tx2'de**
     (kesin sonuç ya da 202 belirsiz) ya da **Reconcile'da** yazılır ve makbuz `Completed` olur.
   - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) makbuz araması: aynı kapsam + farklı parmak
     izi → 409 `PAYMENT_IDEMPOTENCY_CONFLICT`; aynı kapsam + aynı parmak izi + `Completed` → **kayıtlı yanıt aynen döner**;
@@ -475,7 +484,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      tx2 ya da Reconcile ile `Recorded` / `Refused` / `Cancelled` olana kadar yeni karar başlamaz. Aynı anahtarla tekrar →
      makbuz kuralı (kayıtlı yanıt ya da 202 `PAYMENT_REQUEST_IN_PROGRESS`).
   4a. *İki aşamalı denetim (tx1 / tx2) ve çökme kurtarma:*
-     - tx1 **deneme olayı** yazar (`…workflow-start-requested`, `…decision-requested`, `…release-requested`); tx2 **sonuç
+     - tx1 **deneme olayı** yazar (`…workflow-start-requested`, `…decision-requested`); tx2 **sonuç
        olayı** yazar (`…submitted`, `…approved`, `…rejected`, `…workflow-start-refused`, `…release-attempted` vb.). Her
        iki olay da kendi işleminde, iş verisiyle birlikte (`RequireEnlistment = true`).
      - Kesin sonuç ancak tx2 commit olunca vardır; tx1 deneme olayı tek başına "yapıldı" anlamına gelmez.
@@ -498,6 +507,13 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 - **Bankaya dağıtım kapalı (D5):** `IBankDispatchPort`'un tek bağdaştırıcısı `NotConfiguredBankDispatchAdapter`'dır;
   her çağrı `NotConfigured` döner, `PaymentDispatchAttempt` yazılır, parti `Approved` kalır. Gerçek bağdaştırıcı ayrı
   karar ve paket ister.
+  - **Release bu dilimde tek işlemdir (gap 3/G3):** bağdaştırıcı süreç içidir ve ağ çağrısı yapmaz; bu yüzden R11
+    doğrulaması, bağdaştırıcı çağrısı, `PaymentDispatchAttempt`, makbuz (`Completed`, 200) ve tek `…release-attempted`
+    olayı **aynı Mongo işleminde** yazılır. Uzak çağrı olmadığı için niyet, belirsiz sonuç ve Reconcile yoktur; çökme →
+    işlem geri alınır, aynı anahtarla tekrar baştan çalışır.
+  - **Gerçek dağıtım açıldığında** Release iki aşamalı olur ve kendi `PaymentReleaseIntent` yaşam döngüsünü (Pending /
+    Dispatched / Refused / Unknown → Reconcile), sonuç olayını ve kurtarmasını o kararın paketinde alır; bu dilim bunu
+    varsaymaz (Follow-up).
   - **Gerçek dağıtım açılmadan önce zorunlu kapı (bu dilimde opak Guid kontrolünün sınırı):** (1) kaynak banka hesabının
     sahibi ödeyen şirkettir (MOD-0289, güncel durum); (2) hesap ve alacaklı aynı kiracıda ve ödeyen şirket için uygundur
     (Tenant + LE, MOD-0289/MOD-0220); (3) alacaklı referansı ile hedef hesap eşleşir (MOD-0140 `SupplierCompanyRelationship`
@@ -743,7 +759,7 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 - **İki aşamalı komutların deneme olayları (Runtime Constraints 4a):** Submit → `finance-treasury.payment-batch.workflow-start-requested`
   (tx1) + sonuç `…submitted` ya da `…workflow-start-refused` (tx2 / Reconcile); Approve / ApproveWithSodWaiver / Reject /
   RequestEvidence / Escalate → `finance-treasury.payment-batch.decision-requested` (tx1, karar türü alanda) + yukarıdaki
-  sonuç olayı (tx2 / Reconcile); Release → `…release-requested` (tx1) + `…release-attempted` (tx2). Deneme olayı tek başına
+  sonuç olayı (tx2 / Reconcile). Release bu dilimde tek aşamalıdır (aşağıda) ve yalnız `…release-attempted` yazar. Deneme olayı tek başına
   "yapıldı" anlamına gelmez; tabloda yazılan olay **sonuç** olayıdır. K2 kararlarında deneme olayı yazılamazsa uzak çağrı
   yapılmaz. Kapalı ama olumsuz sonuçların olayları (Owned Objects geçiş matrisi): `…workflow-start-refused`,
   `…workflow-start-cancelled`, `…decision-refused`, `…decision-cancelled`. Reconcile kendi tek olayını
@@ -825,7 +841,7 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
   ya da ikinci merkezi denetim olayı oluşmaz; aynı kapsam + farklı yük 409; aynı anahtar başka aktörde ayrı makbuzdur.
   **İlk yanıtın kaybolduğu** senaryo (istemci yanıtı almadan aynı istekle tekrar) testte ayrıca koşulur.
 - [ ] AC-17 (zorunlu) — Merkezi denetim: tek aşamalı komutlar (Create, Update, Delete, Validate, kanıt, onay belgesi)
-  tam **bir** olay bırakır; iki aşamalı komutlar (Submit, kararlar, Release) tx1'de tam bir **deneme** olayı ve sonuç
+  tam **bir** olay bırakır (Release dahil — bu dilimde tek işlem); iki aşamalı komutlar (Submit, kararlar) tx1'de tam bir **deneme** olayı ve sonuç
   kesinleştiğinde tx2'de (ya da Reconcile'da) tam bir **sonuç** olayı bırakır; idempotent tekrar yeni olay üretmez. Olay
   iş verisiyle aynı Mongo işleminde yazılır; outbox yazımı zorla başarısız edildiğinde komut başarısız olur ve iş verisi
   yazılmaz (sabotaj testi); uzak başarı sonrası tx2 zorla başarısız edildiğinde niyet açık kalır ve Reconcile uzak çağrıyı
@@ -996,7 +1012,9 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 - Güvenilir servis kimliği (MOD-0033-FU02, Paket A) gelince: güvenilir başlatma + `start-result` + arka plan uzlaştırma
   süpürücüsü (İ2 tetikleyici; her değişiklik `ReconcilePaymentBatchWorkflowCommand` ile denetlenir).
 - MOD-0289 banka hesabı arama/çözümleme sözleşmesi → banka referansı seçimi ve dağıtım anında çözümleme.
-- MOD-0269 gerçek bağdaştırıcı, banka geri çağrısı, ekstre → ayrı karar ve paket (D5).
+- MOD-0269 gerçek bağdaştırıcı, banka geri çağrısı, ekstre → ayrı karar ve paket (D5); o pakette Release iki aşamalı
+  olur (`PaymentReleaseIntent`, belirsiz sonuç, Reconcile, sonuç olayı) ve gerçek dağıtım kapısı (hesap sahipliği,
+  Tenant/LE, alacaklı eşleşmesi) kapanır.
 - CentralAudit reddedilen komut kaydı (`Outcome = Denied`) — BL-501 sahibine (G-AUD-1).
 - Görev Merkezi köprüsü (WC-D1: yeni sınıf değil, yapılandırma satırı) — onay görevlerinin panoda görünmesi.
 - Alacaklı varlık doğrulaması (MOD-0140 `validate`, MOD-0220, çalışan kaynağı) (O-14).
