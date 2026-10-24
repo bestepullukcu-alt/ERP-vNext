@@ -26,3 +26,9 @@ Sonuç: gap listesi 3 **PASS**; geliştirmeye hazırlık **CONDITIONAL PASS**. K
 (1) Runtime 4a iki aşamalı sonuç olayları listesinden `…release-attempted` çıkarıldı; (2) Reconcile'ın makbuzu tamamladığı
 her yerde "yalnız `Pending` ise" koşulu ve değişmezlik kuralı aynı anlatımla yazıldı (Idempotency maddesi, Çökme, 4a,
 Audited Events Reconcile satırı). `ready-for-dev` için bağımlılık sözleşmeleri, onaylar ve G-AUD-1 kapanmalı.
+
+## Son kapanış kontrolü (2026-10-24, sahip)
+
+İki belge düzeltmesi doğrulandı: **PASS**, yeni bulgu yok (inceleme girdisi `treasury-packs-review-f8e061d87.zip`,
+sha256 `b837b0497a6e3e6cd2413b2d43a94cb6f09cee3cad39b6807d06b3d76c6dbd06`). MOD-0126 pack tasarım incelemesi kapandı;
+geliştirmeye hazırlık koşullu (bağımlılık sözleşmeleri, onaylar, G-AUD-1).
