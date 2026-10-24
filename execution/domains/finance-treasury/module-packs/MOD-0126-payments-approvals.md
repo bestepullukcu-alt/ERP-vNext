@@ -100,7 +100,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | PP-02 | GET payment-batches | `GetPaymentBatchListQuery` | `GET /api/payment-batches` | taşınır (DataTable server) |
 | PP-03 | GET payment-batches/{id} | `GetPaymentBatchByIdQuery` | `GET /api/payment-batches/{id}` | taşınır |
 | PP-04 | POST …/validate | `ValidatePaymentBatchCommand` | `POST /api/payment-batches/{id}/validate` | taşınır |
-| PP-05 | POST …/admin-direct-decision | — | — | **düşürülmesi önerilir** (O-1): kaynak kendini "Phase-1 golden-flow proxy only. Not final MOD-0023 SoD" diye tanımlıyor (`PaymentLifecycleService.cs:13-15@da4abb20`), SoD servisini çağırmıyor ve `PassedByAdminProxy` yazıyor (paket §H.2 (4)) |
+| PP-05 | POST …/admin-direct-decision | — | — | **düşürüldü — sahip kararı D11/2** (O-1): kaynak kendini "Phase-1 golden-flow proxy only. Not final MOD-0023 SoD" diye tanımlıyor (`PaymentLifecycleService.cs:13-15@da4abb20`), SoD servisini çağırmıyor ve `PassedByAdminProxy` yazıyor (paket §H.2 (4)) |
 | PP-06 | POST …/attestation | `GeneratePaymentAttestationCommand` | `POST /api/payment-batches/{id}/attestations` | taşınır |
 | PP-07 | GET …/trace | `GetPaymentBatchTraceQuery` | `GET /api/payment-batches/{id}/trace` | taşınır |
 | PP-08 | POST …/submit-workflow | `SubmitPaymentBatchCommand` | `POST /api/payment-batches/{id}/submit` | **uyarlanır**: yerel niyet önce, idempotency anahtarı, belirsiz sonuç |
@@ -410,10 +410,11 @@ eki (O-6). Bkz. "Dependencies".
      + parti durumu. Belirsiz → `Unknown`, 202 `PAYMENT_DECISION_OUTCOME_UNKNOWN`, Reconcile kapatır.
   5. HTTP istemcilerinde **açık zaman aşımı** yapılandırılır (kaynakta yok, paket §H.3 / §N.12); değer
      `FinanceTreasury:Workflow:TimeoutSeconds` — başlangıçta yoksa servis açılmaz (öneri 15 sn, O-8 içinde).
-- **SoD politikası tek kaynaktır:** `FinanceTreasury:PaymentSod` bölümü (PolicyVersion, Tier2Threshold.Amount,
-  Tier2Threshold.CurrencyCode). Kodda varsayılan değer yoktur; bölüm yoksa ya da eksikse servis **başlamaz**
-  (`PAYMENT_SOD_POLICY_UNAVAILABLE` sağlık durumu). Çözümleyici (gönderme) ve karar kontrolü **aynı** tipi ve aynı
-  sabitlenmiş değeri kullanır. Değer ve para birimi **TBD — sahip kararı (O-4)**.
+- **SoD politikası tek kaynaktır ve kiracı ayarıdır (sahip kararı D11/1):** kiracı başına PolicyVersion,
+  Tier2Threshold.Amount, Tier2Threshold.CurrencyCode. Kodda varsayılan tutar yoktur; kiracının ayarı yoksa **her onay
+  tier-2 sayılır** (güvenli varsayılan) ve parti para birimi eşik para biriminden farklıysa da tier-2 sayılır.
+  Çözümleyici (gönderme) ve karar kontrolü **aynı** ayarı, partiye o anda sabitlenen sürümle kullanır. Ayarın kayıt
+  yeri (MOD-0126 içi kiracı ayarı ya da Platform ayarları) ve ayar ekranı Follow-up'tadır.
 - **Bankaya dağıtım kapalı (D5):** `IBankDispatchPort`'un tek bağdaştırıcısı `NotConfiguredBankDispatchAdapter`'dır;
   her çağrı `NotConfigured` döner, `PaymentDispatchAttempt` yazılır, parti `Approved` kalır. Gerçek bağdaştırıcı ayrı
   karar ve paket ister.
@@ -638,9 +639,9 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 | ValidatePaymentBatchCommand | finance-treasury.payment-batch.validated | PaymentBatch | b | Status Draft→Validated, sorun sayısı | evet (öneri) | — |
 | SubmitPaymentBatchCommand | finance-treasury.payment-batch.submitted | PaymentBatch | b | Status →Submitted, niyet anahtarı, SodPolicyVersion, IsTier2 | evet (öneri) | — |
 | ReconcilePaymentBatchWorkflowCommand | finance-treasury.payment-batch.workflow-reconciled | PaymentBatch | b | niyet/karar durumu önce→sonra | evet (öneri) | — |
-| ApprovePaymentBatchCommand | finance-treasury.payment-batch.approved | PaymentBatch | b | karar kimliği, SodResult, Status | **evet — K2 önerisi (O-6)** | — |
-| ApprovePaymentBatchWithSodWaiverCommand | finance-treasury.payment-batch.approved-with-sod-waiver | PaymentBatch | b | karar kimliği, SodResult=Waived, kaldırılan kural kodları, muafiyet gerekçe kodu, kanıt sayısı | **evet — K2 önerisi (O-6)** | — |
-| RejectPaymentBatchCommand | finance-treasury.payment-batch.rejected | PaymentBatch | b | karar kimliği, ReasonCode, Status | **evet — K2 önerisi (O-6)** | — |
+| ApprovePaymentBatchCommand | finance-treasury.payment-batch.approved | PaymentBatch | b | karar kimliği, SodResult, Status | **evet — K2 (D11/3)** | — |
+| ApprovePaymentBatchWithSodWaiverCommand | finance-treasury.payment-batch.approved-with-sod-waiver | PaymentBatch | b | karar kimliği, SodResult=Waived, kaldırılan kural kodları, muafiyet gerekçe kodu, kanıt sayısı | **evet — K2 (D11/3)** | — |
+| RejectPaymentBatchCommand | finance-treasury.payment-batch.rejected | PaymentBatch | b | karar kimliği, ReasonCode, Status | **evet — K2 (D11/3)** | — |
 | RequestPaymentBatchEvidenceCommand | finance-treasury.payment-batch.evidence-requested | PaymentBatch | b | karar kimliği, Status | evet (öneri) | — |
 | EscalatePaymentBatchCommand | finance-treasury.payment-batch.escalated | PaymentBatch | b | karar kimliği, Status | evet (öneri) | — |
 | LinkPaymentBatchEvidenceCommand | finance-treasury.payment-batch.evidence-linked | PaymentBatch | b | bağlantı kimlikleri | evet (öneri) | — |
@@ -649,7 +650,7 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 
 - **Kayda yazılmayan:** banka referans değerleri, alacaklı referansları, tutarların satır ayrıntısı, yorum serbest metni,
   token. Değişen alanların yalnız **adı** yazılır (AUD-001 §3).
-- **K2 önerisi (O-6):** Approve / ApproveWithSodWaiver / Reject — para çıkışına yetki veren kararlar; ödeme onayı
+- **K2 (sahip kararı D11/3, O-6):** Approve / ApproveWithSodWaiver / Reject — para çıkışına yetki veren kararlar; ödeme onayı
   AUD-001 §4.3 listesinde açıkça sayılmıyor (kimlik, yetki, kiracı durumu, GxP, KVKK-özel). Öneri: K2 sayılsın. Uyulabilir
   yol bugün var: `RequireEnlistment = true` ile kayıt iş işlemiyle aynı Mongo işlemine yazılır; outbox yazımı başarısızsa
   işlem geri alınır ve komut başarısız olur (SupplyChain kabulü, `CT-DECISIONS.md` 2026-10-21 satırı "commit'ten önce aynı
@@ -799,11 +800,11 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 - [ ] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı; AGENTS §2 (domain/servis) ve §9 (`fin`) güncellendi (TRM-03/04)
 - [ ] MOD-0269 arayüz sözleşmesi (dağıtım isteği, sonuç, durum) yazıldı (TRM-06) — en az DL-3 serbest bırakma kısmı için
 - [ ] TRM-14: MOD-0220 pack değişikliği onaylı + `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
-- [ ] SoD eşik **değeri** ve **para birimi** + farklı para birimi kuralı sahip kararıyla yazıldı (O-4)
+- [x] SoD eşiği modeli sahip kararıyla yazıldı (O-4 → D11/1: kiracı ayarı, para birimli; ayar yoksa tier-2)
 - [ ] Sahip MOD-0126 için kod alma iznini verdi (D1)
 - [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (O-9) — yoksa Create yazılamaz
 - [ ] Yeni servis defteri + CT-DECISIONS satırı için Control Tower kararı (yol b izi kabulü)
-- [ ] İzin ad alanı `finance-treasury.*` onayı (O-5)
+- [x] İzin ad alanı `finance-treasury.*` onayı (O-5 → D11/4)
 - [ ] MOD-0023'te MOD-0126 iş akışı şablonu (sahibi platform-shared-services) — DL-2 için
 - [ ] Para birimi küsurat hanesi kaynağı (O-11) — DL-1 Create için
 
@@ -890,12 +891,12 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 
 | # | Karar | Seçenekler | Öneri | Sahibi |
 |---|---|---|---|---|
-| O-1 | PP-05 AdminDirect kalsın mı? | (a) düşür (b) SoD ile koru | **(a) düşür** — kaynak kendini "Phase-1 golden-flow proxy only. Not final MOD-0023 SoD" diye tanımlıyor; SoD atlatma yolu | sahip (K1) |
+| O-1 | PP-05 AdminDirect kalsın mı? | (a) düşür (b) SoD ile koru | **KARAR: (a) düşür** — sahip D11/2 (2026-10-24) | sahip (K1) |
 | O-2 | PP-11 dispatch-once kalsın mı? | (a) düşür (b) İ3 komutu olarak tut | **(a) düşür** — iletim CentralAudit'in | sahip (K1) |
 | O-3 | Taslak düzenleme ve silme (kaynakta yok) | (a) Update + soft Delete/BulkDelete yalnız gönderilmemiş taslak (b) yalnız iptal | (a) — Golden Reference Compact seti; reddedilirse Edit/Delete çıkarılır, sapma kaydedilir | sahip (K1) |
-| O-4 | SoD tier-2 eşiği **değeri**, **para birimi**, politika sürüm adı; farklı para birimi kuralı; ortam mı kiracı mı | — | değer/para birimi **TBD**; farklı para birimi → tier-2 (ihtiyatlı); v1 ortam yapılandırması | sahip (K1) |
-| O-5 | İzin ad alanı ve rol şablonları | `finance-treasury.*` / `treasury.*` / `fin.*` | `finance-treasury.*` (domain adı; `procurement.*` deseni) | sahip + MOD-0018 sahibi |
-| O-6 | Onay/ret/muafiyet AUD-001 K2 sınıfı mı; `AuditCategory` değeri | — | **evet K2** (işlem içi kayıt yolu var); eklemeli `Finance` kategorisi (Platform, D9) | CT + sahip |
+| O-4 | SoD tier-2 eşiği **değeri**, **para birimi**, politika sürüm adı; farklı para birimi kuralı; ortam mı kiracı mı | — | **KARAR (D11/1): kiracı ayarı, para birimli**; ayar yoksa her onay tier-2; farklı para birimi → tier-2. Kalan: politika sürüm adı ve ayar ekranı (Follow-up) | sahip (K1) |
+| O-5 | İzin ad alanı ve rol şablonları | `finance-treasury.*` / `treasury.*` / `fin.*` | **KARAR (D11/4): `finance-treasury.*`**; rol şablonları MOD-0018 sahibiyle | sahip + MOD-0018 sahibi |
+| O-6 | Onay/ret/muafiyet AUD-001 K2 sınıfı mı; `AuditCategory` değeri | — | **KARAR (D11/3): evet K2**; kalan: eklemeli `Finance` kategorisi (Platform, D9) | CT + sahip |
 | O-7 | Onay yüzeyi ve başlatma kimliği | (a) kararlar yalnız MOD-0126 ucundan, kullanıcı token'ıyla genel MOD-0023 uçları (b) güvenilir tüketici yolu | (a) v1 — (b) MDM'ye kilitli; Görev Merkezi'nden verilen karara karşı R11 | sahip + MOD-0023 sahibi |
 | O-8 | MOD-0023 şablon kodu, çok adımlı onay (PartiallyApproved) adım tanımı, HTTP zaman aşımı değeri | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn | MOD-0023 sahibi |
 | O-9 | RCS-001: tür öneki ve şirket kısa kodu kaynağı; ortak kod servisi | `PAY` / başka | `PAY` (§3'te çakışma yok, ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |

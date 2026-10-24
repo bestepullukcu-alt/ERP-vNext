@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9 ve D10 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9, D10 ve D11 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -41,6 +41,14 @@ Sahip, Treasury modüllerinin çalışması için başka modüllerde gereken de�
    `SafetyStockService` — AGENTS §3'te yok, ayrı kayma); 5071 ve sonrası hiçbir yapılandırmada yok. Sahip burada EA
    kararını kendisi verdi (AGENTS §3; geçmiş tahsisler de "kullanıcı onaylı"). **AGENTS.md §3 ve
    `.antigravity/rules/ports.md` (korunan yol; bant 5011–5064 yazıyor) değişikliği ayrı onaydır**; bu kayıt yapmaz.
+
+## D11 — MOD-0126 pack kararları (2026-10-24, soru kutusu; dördü de önerilen seçenek)
+
+1. **SoD tier-2 eşiği (O-4):** "Kiracı ayarı, para birimli" — her kiracı eşiğini ve para birimini ayarlar; ayar yoksa
+   her onay ikinci kademe ister; farklı para birimindeki parti ikinci kademeye gider.
+2. **AdminDirect (PP-05, O-1):** "Hayır, düşür" — tüm onaylar MOD-0023 iş akışı ve SoD kontrolünden geçer.
+3. **K2 (O-6):** "Evet, K2" — onay, red ve muafiyet komutları fail-closed; denetim kaydı iş verisiyle aynı işlemde.
+4. **İzin öneki (O-5):** "finance-treasury.*".
 
 ## Karar olmayanlar
 
