@@ -35,9 +35,11 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > D2 (servis `Diten.FinanceTreasuryService`), D3 (dal kısa kodu `fin`), D5 (MOD-0269 = önce sözleşme, dağıtım kapalı) —
 > `treasury-intake-owner-decisions-01.md`; D9 (başka modüldeki eklemeli değişiklik onayı ve şartları), D10/1 ve D10/2
 > (şirket `OperationalStatus = Active` **ve** `ApprovalStatus = Approved`; MOD-0220 eki TRM-14), D10/3 (port 5071),
-> D11/4 (izin öneki `finance-treasury.*`), D12/2 (her yazma komutunda zorunlu Idempotency-Key) —
-> `treasury-intake-owner-decisions-02.md`. D11/1, D11/3, D12/1, D13 MOD-0126'ya özgüdür; bu pakette **desen** olarak
-> önerilir, MOD-0120 için ayrıca sahip teyidi ister (O-7, O-8). Level-1 koşullu kabul:
+> D11/4 (izin öneki `finance-treasury.*`), D12/2 (her yazma komutunda zorunlu Idempotency-Key), D14/1 (veri kapsamı
+> `LegalEntityId`, kiracı geneli ayrı `…read-tenant-wide` izni), D14/2 (servis genelinde tek `FinanceTreasuryCommandReceipt`,
+> tanımı MOD-0126 pack'inde), D14/3 (AR'de alacağı etkileyen kararlar K2), D14/4 (alacak oluşturan/değiştiren her yazmada
+> şirket Active + Approved) — `treasury-intake-owner-decisions-02.md`. D11/1, D12/1, D13 MOD-0126'ya özgüdür; bu pakette
+> **desen** olarak önerilir, MOD-0120 için ayrıca sahip teyidi ister (O-7, O-8 muafiyet kısmı). Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0120-v1.0.md` (koşul 1–5 → "Implementation Notes →
 > Level-1 koşulları"). DCP: `UNASSIGNED-finance-treasury-intake.md` (taslak; dilim TRM-S2).
 >
@@ -124,14 +126,13 @@ Kaynak sınıflar `services/DitenErpTreasuryService/src/Diten.ErpTreasuryService
 | + | — | **yeni** `ReceivableAdjustmentStartIntent` | uzak başlatmadan önce yerel niyet (domain-config "Yerel kayıt önce") |
 | + | — | **yeni** `ReceivableAdjustmentDecision` | karar niyeti/sonucu (onay, ret) |
 | + | — | **yeni** `ReceivablePayment` (koşullu, O-9) | elle tahsilat kaydı, ekleme-yalnız |
-| + | — | **yeni** `ReceivableCommandReceipt` | istemci idempotency makbuzu (D12/2) |
+| + | — | `FinanceTreasuryCommandReceipt` (**servis ortak**, yeni tip açılmaz) | istemci idempotency makbuzu (D12/2, D14/2) — tanım MOD-0126 pack Entity Fields |
 
-**Makbuz ve niyet adlandırma kararı (bu paket):** makbuz ve niyet tipleri **AR önekiyle ayrı** tanımlanır
-(`ReceivableCommandReceipt`, `ReceivableAdjustmentStartIntent`, `ReceivableAdjustmentDecision`); MOD-0126'nın
-`PaymentCommandReceipt` tipi **yeniden kullanılmaz**. Gerekçe: o tip MOD-0126'nın `Features/PaymentBatch/` klasörüne
-ve tek yazarına (K15) aittir; servis içinde ortak bir "komut makbuzu" yapı taşı bugün yoktur. Davranış (yaşam döngüsü,
-altı alanlı kapsam, değişmezlik) MOD-0126 ile **birebir aynıdır**; ortak tipe çıkarma Follow-up'tadır ve iki paketin
-aynı değişiklikte güncellenmesini ister.
+**Makbuz ve niyet tipi kararı — KARAR (D14/2):** makbuz servis genelinde **tek ortak tiptir**
+(`FinanceTreasuryCommandReceipt`, koleksiyon `finance_treasury_command_receipts`; tanım MOD-0126 pack Entity Fields —
+FinanceTreasuryCommandReceipt); AR önekli makbuz tipi açılmaz. Niyet tipleri AR'ye özgü kalır
+(`ReceivableAdjustmentStartIntent`, `ReceivableAdjustmentDecision`) ama MOD-0126'nın tek geçiş matrisindeki durum
+adlarını kullanır. Ortak tipin ya da kurallarının değişmesi dört Treasury paketinin birlikte değişikliğini ister.
 
 ### Kaynak işlemleri (AR-01…AR-35, paket §C, `CONTRACT-STATE.json.operations`) → Recovery
 
@@ -162,7 +163,7 @@ yalnız `[Authorize]` (:16) ve denetleyici içi izin kontrolü (`EnsureAccess`, 
 | `ApproveReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/approve` | karar (iki aşamalı, K2) |
 | `RejectReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/reject` | karar (iki aşamalı, K2) |
 | `ReconcileReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/workflow/reconcile` | belirsiz başlatma / karar sonucunu MOD-0023'ten okuyup kapatır; **tek kurtarma yolu** |
-| `RecordReceivableInvoicePaymentCommand` (koşullu, O-9) | `POST /api/receivable-invoices/{id}/payments` | elle tahsilat kaydı (tek aşamalı, K2 önerisi) |
+| `RecordReceivableInvoicePaymentCommand` (koşullu, O-9) | `POST /api/receivable-invoices/{id}/payments` | elle tahsilat kaydı (tek aşamalı, K2 — D14/3) |
 
 - **Sorgular:** `GetReceivableInvoiceListQuery`, `GetReceivableInvoiceByIdQuery`, `GetReceivableInvoiceTraceQuery`
   (`GET /api/receivable-invoices/{id}/trace` — düzeltmeler, kararlar, tahsilatlar, aşama geçmişi).
@@ -174,9 +175,10 @@ yalnız `[Authorize]` (:16) ve denetleyici içi izin kontrolü (`EnsureAccess`, 
   DTO ve isteklerde `TenantId` ve `LegalEntityId` **yoktur**.
 - **Portlar (Application):** `ICustomerReferencePort` (MOD-0149), `ILegalEntityEligibilityPort` (MOD-0220),
   `IReceivableWorkflowPort` (MOD-0023), `ICurrencyReferencePort` (MOD-0048), `IRecordCodePort` (RCS-001 ortak kod
-  servisi), `IReceivableDataScopeSource` (SEC-002, tek çözüm noktası), `IReceivableAdjustmentPolicyProvider`
-  (tek eşik, O-7). MOD-0126 ile aynı adı taşıyan portlar (LE, para birimi, kod) servis içinde **tek** bağdaştırıcıya
-  bağlanır; ikinci kopya yazılmaz (bağdaştırıcı kimin dilimi önce gelirse onunla açılır).
+  servisi), `IFinanceTreasuryDataScopeSource` (SEC-002, D14/1 — **servis ortak** tek çözüm noktası, MOD-0126 pack ile
+  aynı arayüz), `IReceivableAdjustmentPolicyProvider` (tek eşik, O-7). MOD-0126 ile aynı adı taşıyan portlar (LE, para
+  birimi, kod, veri kapsamı) servis içinde **tek** bağdaştırıcıya bağlanır; ikinci kopya yazılmaz (bağdaştırıcı kimin
+  dilimi önce gelirse onunla açılır).
 - **Frontend rotası:** `/FinanceTreasury/ReceivableInvoices` (+ `/Create`, `/Edit/{id}`, `/Details/{id}`).
 - **İzinler:** "Authorization Convention" tablosu.
 
@@ -236,7 +238,8 @@ işi yok):
 | StartRefused | 4 | MOD-0023 başlatmayı kesin reddetti; fatura aşaması geri döndü | — (terminal; yeni talep açılabilir) |
 | Cancelled | 5 | MOD-0023 örneği iptal / terk edilmiş bulundu (yalnız Reconcile) | — (terminal) |
 
-Başlatma niyeti ve karar niyeti MOD-0126 ile **aynı sonuç sözlüğünü** kullanır (MOD-0126 pack, gap 2/G5):
+Başlatma niyeti ve karar niyeti MOD-0126 ile **aynı sonuç sözlüğünü** kullanır (MOD-0126 pack, gap 2/G5; servis geneli
+durum sözlüğü, D14/2):
 
 | Niyet | Açık → | tx2 (kesin sonuç) | belirsiz | Reconcile (yalnız `ReconcileReceivableInvoiceAdjustmentCommand`) | Sonuç olayı |
 |---|---|---|---|---|---|
@@ -326,7 +329,7 @@ varlıkta tutulmaz; merkezi denetim taşır).
 > CurrencyCode, CollectionDestinationRef, Notes; **satır 3** — Description, NetAmount, TaxAmount; **taksit 2** —
 > DueDate, Amount. **Sayılmayanlar:** InvoiceCode (RCS-001 OTOMATİK), LegalEntityId (oturum şirketi,
 > `X-Legal-Entity-Id`), müşteri anlık görüntüleri (sunucu, MOD-0149), satır GrossAmount ve tüm toplamlar (sunucu),
-> Status / CollectionStage (ayrı komutlar), Idempotency-Key (başlık; yalnız `ReceivableCommandReceipt`'te saklanır) /
+> Status / CollectionStage (ayrı komutlar), Idempotency-Key (başlık; yalnız `FinanceTreasuryCommandReceipt`'te saklanır) /
 > CorrelationId (başlık). Düzeltme talebi ve tahsilat Details sayfasındaki eylem diyaloglarıdır, create/edit formu
 > değildir. 13 > 8 → Compact (ayrı Create / Edit / Details).
 
@@ -379,22 +382,21 @@ Muafiyet (waiver) **yoktur** (O-8).
 değil, iç referans), `ReceiptId` (tahsilat makbuzu), `RecordedBy` (Guid), `RecordedAt`. **Ekleme-yalnız**; güncelleme ve
 silme yok; geri alma Follow-up. Fazla tahsilat (Outstanding'i aşan) reddedilir — eşleşmemiş nakit Follow-up.
 
-### ReceivableCommandReceipt (`receivable_command_receipts`) — idempotency makbuzu
+### Makbuz — `FinanceTreasuryCommandReceipt` (servis ortak, D14/2)
 
-MOD-0126 `PaymentCommandReceipt` ile **aynı davranış**, ayrı tip (yukarıdaki adlandırma kararı):
+Tip, alanlar, altı alanlı kapsam, `Pending`/`Completed` yaşam döngüsü, değişmezlik (`Completed` makbuz bir daha
+değişmez), "tekrar asla kurtarma yapmaz" ve "Reconcile yalnız `Pending` makbuzu `Completed` yapar" kuralları **tek
+yerde** tanımlıdır: **MOD-0126 pack Entity Fields — FinanceTreasuryCommandReceipt** (koleksiyon
+`finance_treasury_command_receipts`). Burada yeniden tanımlanmaz; AR'ye özgü olanlar yalnız şunlardır:
 
-| Alan | Tip | Kural |
-|---|---|---|
-| TenantId, LegalEntityId, ActorId, Operation, TargetId, Key | Guid, Guid, Guid, string, Guid?, string | **makbuz kapsamı** (D12/2); `TargetId` Create için `null`, diğerlerinde fatura kimliği (karar/uzlaştırmada düzeltme kimliği) |
-| RequestFingerprint / FingerprintVersion | string / int | sunucuda hesaplanır |
-| Status | `Pending` \| `Completed` | tek aşamalı komut: tx1'de doğrudan `Completed`; iki aşamalı komut (RequestAdjustment, Approve, Reject): tx1'de `Pending`, tx2'de ya da — tx2 hiç çalışmadıysa — Reconcile'da `Completed` |
-| ResponseStatusCode / ResponseBody | int? / string? | **yalnız `Completed`'da** dolu; kesin sonuç **ya da** 202 belirsiz |
-| LinkedIntentId | Guid? | iki aşamalı komutta başlatma ya da karar niyetinin kimliği |
-| CreatedAt / CompletedAt | DateTimeOffset / DateTimeOffset? | — |
-
-**Değişmezlik:** `Completed` makbuz **bir daha değişmez**. Belirsiz sonuçta kaydedilen 202 yanıtı (gövdesinde
-`intentId` ve durum sorgusu bağlantısı) hep aynı döner; gerçek sonuç niyette izlenir ve `GET /api/receivable-invoices/{id}`
-ile `…/trace` üzerinden okunur. Reconcile yalnız **`Pending`** makbuzu `Completed` yapar.
+- **`Operation`:** `mod0120:{Komut}` — ör. `mod0120:CreateReceivableInvoice`, `mod0120:RequestReceivableInvoiceAdjustment`,
+  `mod0120:ApproveReceivableInvoiceAdjustment`, `mod0120:RecordReceivableInvoicePayment`.
+- **`TargetId`:** Create ve BulkDelete için `null`, diğerlerinde fatura kimliği (karar ve uzlaştırmada düzeltme kimliği).
+- **İki aşamalı komutlar** (tx1'de `Pending`): RequestAdjustment, Approve, Reject; `LinkedIntentId`
+  `ReceivableAdjustmentStartIntent` ya da `ReceivableAdjustmentDecision` kimliğidir. Diğer bütün yazma komutları tek
+  aşamalıdır (tx1'de `Completed`).
+- Belirsiz sonuçta kayıtlı 202 yanıtının gösterdiği gerçek sonuç `GET /api/receivable-invoices/{id}` ve `…/trace`
+  üzerinden okunur.
 
 **İstemci anahtarı yalnız makbuzdadır:** `ReceivableInvoice`, `ReceivableAdjustmentRequest`, `ReceivableAdjustmentDecision`,
 `ReceivablePayment` istemci anahtarı alanı taşımaz (kaynak `ReceivableInvoice.IdempotencyKey`, :41, taşınmaz).
@@ -407,17 +409,19 @@ Kaynak indekslerinin hiçbiri olduğu gibi taşınmaz (varlıkların çoğu taş
 |---|---|---|---|
 | `ux_receivable_invoice_code` | TenantId + InvoiceCode | **evet, kısmi filtre YOK** (silinen faturanın kodu da dolu, RCS-001 §6) | — |
 | `ux_receivable_invoice_external_number` | TenantId + LegalEntityId + ExternalInvoiceNumberKey, kısmi `{ExternalInvoiceNumberKey: {$type: "string"}}` | evet | mükerrer dış numara (O-5) |
-| `ux_receivable_command_receipt_scope` | TenantId + LegalEntityId + ActorId + Operation + TargetId + Key | evet — tek istemci idempotency kuralı (D12/2) | — |
 | `ux_receivable_adjustment_open` | TenantId + InvoiceId, kısmi `Status ∈ {Submitted, PendingApproval}` | evet — faturada tek açık düzeltme | — |
 | `ux_receivable_adjustment_start_remote_key` | TenantId + IdempotencyKey (uzak) | evet | MOD-0023'e tek başlatma |
 | `ux_receivable_adjustment_start_open` | TenantId + AdjustmentRequestId, kısmi `Status ∈ {Pending, Unknown}` | evet | — |
 | `ux_receivable_adjustment_decision_open` | TenantId + AdjustmentRequestId, kısmi `State ∈ {Requested, Unknown}` | evet — talepte tek açık karar niyeti | — |
-| `ix_receivable_command_receipt_pending` | TenantId + Status + CreatedAt, kısmi `Status = Pending` | — | Reconcile listesi |
 | `ix_receivable_invoice_list` | TenantId + LegalEntityId + IsDeleted + Status + DueDate | — | liste ve yaşlandırma |
 | `ix_receivable_invoice_customer` | TenantId + LegalEntityId + CustomerId + DueDate | — | müşteri filtresi |
 | `ix_receivable_invoice_stage` | TenantId + LegalEntityId + CollectionStage | — | tahsilat aşaması filtresi |
 | `ix_receivable_adjustment_invoice` | TenantId + InvoiceId + RequestedAt(desc) | — | detay sekmesi |
 | `ix_receivable_payment_invoice` | TenantId + InvoiceId + PaymentDate | — | detay sekmesi |
+
+**Makbuz indeksleri burada bildirilmez (D14/2):** `ux_finance_treasury_command_receipt_scope` (altı alanlı tekil kapsam) ve
+`ix_finance_treasury_command_receipt_pending` servis ortak `finance_treasury_command_receipts` koleksiyonundadır ve sahibi
+MOD-0126 DL-1'dir (MOD-0126 pack Entity Fields → Mongo indeksleri); MOD-0120 yeniden bildirmez.
 
 Kısmi indeks ifadeleri `$in` yerine eşitlik/`$type` ile yazılır; Mongo kısmi filtresinin desteklediği biçim DL-1'de
 gerçek replika kümesinde ölçülür (kaynak §N.8: indeks semantiği kaynakta da ölçülmemiş). Kurulum servis iskeletinin
@@ -461,8 +465,12 @@ Hepsi kod alma izninden (D1, MOD-0120) ve `ready-for-dev`'den sonra; dilim sütu
   - `src/Diten.FinanceTreasuryService.Domain/ReceivableInvoices/**`
   - `src/Diten.FinanceTreasuryService.Persistence/ReceivableInvoices/**` (depolar, indeks hizmeti; her işlem geri çağrısı
     `CentralAuditTransaction.EnlistAsync` çağırır)
-  - `src/Diten.FinanceTreasuryService.Infrastructure/{Customers,DataScope}/**` (yeni port bağdaştırıcıları); LE, para
-    birimi, iş akışı, kod bağdaştırıcıları servis içinde **ortak** (MOD-0126 ile tek kopya)
+  - `src/Diten.FinanceTreasuryService.Infrastructure/Customers/**` (yeni port bağdaştırıcısı); LE, para birimi, iş
+    akışı, kod ve veri kapsamı (`DataScope`) bağdaştırıcıları servis içinde **ortak** (MOD-0126 ile tek kopya)
+  - Servis ortak yapı taşları (`Application/Common/{CommandReceipts,DataScope}/**`, `Persistence/Common/CommandReceipts/**`
+    — `FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource`; D14/1, D14/2) MOD-0126 DL-1 ile açılır ve
+    burada yalnız kullanılır; MOD-0120 önce gelirse iskeletle birlikte bu paketin DL-1'ine taşınır, tanım MOD-0126 pack'teki
+    gibi kalır
   - `src/Diten.FinanceTreasuryService.Api/Controllers/ReceivableInvoicesController.cs`
 - `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — aynı servis, aynı iz
   (`finance-treasury-merkezi-iletim | b`); yeni satır gerekmez. `AuditTrailStandardTests` sayaçları (`PinnedCounts`)
@@ -511,12 +519,12 @@ burada yeniden yazılmaz, yalnız AR'ye etkisi yazılır.
 | **ERP-FIN-BUNDLE** | ortak arayüz sepeti | yedi platform kaygısı Recovery'de var (Gateway, JWT, kimlikler, denetim, kanıt, korelasyon, hata modeli — sıra belgesi Amendment 3 §3, devralınmış), yalnız GL veri sözleşmeleri yok | **karar 0.6 (EA) açık**; AR bu sürümde GL veri sözleşmesi istemez (karar 0.7 önerisi "kapsam dışı") |
 | MOD-0118 General Ledger | GL kaydı | kayıt satırı yok (ölçüldü) | **karar 0.7 açık**; öneri kapsam dışı → `PostingStatus`/GL alanları taşınmaz |
 | **MOD-0149 Customer 360** (müşteri SoR) | müşteri doğrulama + seçici + dış referans | **var, sözleşmesiz.** `GET /api/crm/accounts/{id}` izin `crm.account.read` (`services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/AccountController.cs:65-68`), liste `GET /api/crm/accounts` (:23-24); Gateway rotası `/api/crm/accounts` ve `/{everything}` (`ocelot.json:2951-2979`); `Account` kiracı geneli (LE alanı yok), `Status` MOD-0048 değer kodu (`Account.cs:24-25`); `AccountExternalReference` tekil (TenantId, SourceSystem, ExternalId) (`AccountExternalReference.cs:3-8`) ama **çözümleme ucu yok** — depo yalnız `ExistsBySourceExternalAsync` / `ListByAccountAsync` (`IAccountExternalReferenceRepository.cs:5-13`); `docs/analysis/contracts/` altında müşteri sözleşmesi **yok**; kayıt satırı `reserved / planned` iken pack `ready-for-dev` (TRM-09) | **O-3**: MOD-0149'a eklemeli `lookup-validation` + dış referans çözümleme ucu ve sözleşme belgesi (D9; commercial-suite sahibine sorulur, D9/3). O gelmeden müşteri doğrulaması yapılamaz → Create/Issue kapanır (fail-closed) |
-| MOD-0220 LE `lookup-validation` | şirket uygunluğu (D10/1 deseni) | var; yanıtta `ApprovalStatus` yok (MOD-0126 pack Dependencies; `LegalEntitiesController.cs:48`, `LegalEntity.cs:49-50` yeniden ölçüldü) | **TRM-14** (MOD-0126 ile ortak). AR için "Active + Approved" kuralı D10/1'in **uzantısıdır** ve sahip teyidi ister (O-2) |
+| MOD-0220 LE `lookup-validation` | şirket uygunluğu (D10/1 deseni) | var; yanıtta `ApprovalStatus` yok (MOD-0126 pack Dependencies; `LegalEntitiesController.cs:48`, `LegalEntity.cs:49-50` yeniden ölçüldü) | **TRM-14** (MOD-0126 ile ortak). AR için "Active + Approved" kuralı D10/1'in uzantısıdır — **KARAR (D14/4)**: alacak oluşturan/değiştiren her yazmada; o gelmeden "onaylı" kontrolü yapılamaz → AR yazma komutları kapanır (fail-closed) |
 | MOD-0023 Workflow Designer | düzeltme onayı | var (başlatma idempotency, görev onay/ret, başlatanın onayı `SodViolation` — MOD-0126 pack Dependencies) | AR düzeltme **şablonu** (`templateCode` TBD) MOD-0023 sahibinin işi (D9); v1 kullanıcı token'ıyla genel uç (MOD-0126 O-7 ile aynı) |
 | MOD-0021 / CentralAudit (K4) | yol `b` | var (`Diten.BuildingBlocks.CentralAudit`, SupplyChain/Inventory kullanıyor) | servis iskeletiyle gelir; AR yalnız bildirim ekler |
 | MOD-0048 para birimi | kod listesi + küsurat | kısmen — liste var, küsurat yok (MOD-0126 pack) | MOD-0126 **O-11** ile tek karar; yoksa yazma 503 |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack) | **engel**: modül kendi sayacını yazamaz; servis gelene kadar Create yazılamaz (O-6) |
-| **SEC-002 veri kapsamı** (`IDataScopeResolver`) | kullanıcının şirket yetkisi (katman 1) | çözücü yalnız Platform'da kayıtlı; ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **engel (O-14)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + test olmadan `ready-for-dev` yok |
+| **SEC-002 veri kapsamı** (`IDataScopeResolver`) | kullanıcının şirket yetkisi (katman 1; D14/1) | çözücü yalnız Platform'da kayıtlı; ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **engel (O-14)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + test olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 ve MOD-0124 ile **tek karar** |
 | MOD-0031 Evidence Linking | düzeltme kanıt kimliği | var (`api/v1/evidence`, MOD-0126 pack) | yalnız bağlantı kimliği doğrulanır (DL-3 başında davranış ölçülür) |
 | MOD-0289 Bank Account Registry | tahsilat hesabı referansı | yok (D7, TRM-S3) | yalnız boş olmayan opak Guid; çözümleme Follow-up |
 | MOD-0269 / MOD-0121 | mutabakat, banka ekstresi | yok (D5) | kullanılmaz; tahsilat yalnız elle (O-9) |
@@ -539,7 +547,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management | 422 · 503 · geçiş yok | sahte LE · dev ortamında Active+Approved / Approved-değil | DL-1 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat — **yok** (MOD-0126 O-11) | TBD | platform-shared-services | 503 `RECEIVABLE_CURRENCY_PRECISION_UNAVAILABLE` | sahte · dev ortamında TRY/EUR/JPY | DL-1 |
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-6) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
-| SEC-002 veri kapsamı | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-14) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay 404 | kapsam testi AC-6 · dev ortamında iki şirket iki kullanıcı | DL-1 |
+| SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-14; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MOD-0023 başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AR şablon kodu — **TBD** | Platform commit SHA'sı DL-3 başında | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır | sahte MOD-0023 (anahtar başına tek örnek) · dev ortamında gerçek başlatma + onay + ret | DL-3 |
 | MOD-0031 kanıt bağlantısı | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → talep oluşmaz | sahte · dev ortamı | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-18 · AUD-001 §8 dev kanıtı AC-31 | DL-1 |
@@ -550,19 +558,24 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   çağırır; tarayıcı JS 5071'e ve 5061'e (CRM) gitmez.
 - **Kiracı + şirket izolasyonu her sorguda:** `TenantId` `ITenantContext`'ten, `LegalEntityId` `X-Legal-Entity-Id`
   başlığından (MOD-0220'de doğrulanmış); başka kiracı ya da başka şirket kaydı **404**. Üretimde sabit/varsayılan kiracı yok.
-- **Veri kapsamı (SEC-002) — kapsam cümlesi:** kapsamı taşıyan alan **`LegalEntityId`**; çevrilen kapsam türü yalnız
-  **`LegalEntity`** (`OrgUnit`, `Position`, `ManagerChain` çevrilmez → daraltır, sızdırmaz; birim→şirket birleştirmesi
-  uydurulmaz); `IsInclude = false` olan `LegalEntity` kapsamı o şirketi **kapatır**. İstek başlığındaki şirket kullanıcının
-  kapsamında değilse liste **boş** (200, 0 satır) ve detay / her yazma **404** döner; çözücü hatası, kiracı ya da kullanıcı
+- **Veri kapsamı (SEC-002, sahip kararı D14/1) — kapsam cümlesi:** kapsamı taşıyan alan **`LegalEntityId`**; çevrilen
+  kapsam türü yalnız **`LegalEntity`** (`OrgUnit`, `Position`, `ManagerChain` çevrilmez → daraltır, sızdırmaz; birim→şirket
+  birleştirmesi uydurulmaz); `IsInclude = false` olan `LegalEntity` kapsamı o şirketi **kapatır**. Kullanıcı yalnız yetkili
+  olduğu şirketlerin kayıtlarını görür: istek başlığındaki şirket kullanıcının kapsamında değilse liste **boş** (200, 0
+  satır) ve detay / iz / her yazma **404** `RECEIVABLE_INVOICE_NOT_FOUND` döner; çözücü hatası, kiracı ya da kullanıcı
   yokluğu → boş kapsam. Kiracıdaki tüm şirketleri görmek ayrı izindir: `finance-treasury.receivable-invoices.read-tenant-wide`
-  (yalnız açık atama — `ExplicitGrantOnlyPermissions`; tek üretici `ReceivableDataScope.TenantWideScope()`). Kapsam tek yerde
-  (`IReceivableDataScopeSource`) çözülür; liste, detay, iz ve yazma aynı kapsamı okur. Referans uygulama:
+  (yalnız açık atama — `ExplicitGrantOnlyPermissions`; tek üretici `FinanceTreasuryDataScope.TenantWideScope()`). Kapsam
+  servis genelinde **tek yerde** (`IFinanceTreasuryDataScopeSource`, MOD-0126/0119/0124 ile ortak; modül yalnız kendi
+  `read-tenant-wide` anahtarını verir) çözülür; liste, detay, iz ve yazma aynı kapsamı okur. Referans uygulama:
   `WorkReportScope` / `WorkReportScopeSource` (SEC-002 §5). Kaynaktaki `ar_legal_entity_scope` talep (claim) kümesi ve boş
   kümede 400 davranışı taşınmaz.
-- **Şirket uygunluğu güncel durumdur (TP-001 T14):** Create, Update, Issue, düzeltme talebi, her karar ve tahsilatta MOD-0220
-  `lookup-validation` çağrılır; `OperationalStatus = Active` **ve** `ApprovalStatus = Approved` değilse 422
-  `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE` (O-2: D10/1'in AR'ye uzantısı); erişilemezse 503 — geçiş yok. Okumalar uygunluk
-  istemez (pasifleşmiş şirketin geçmiş alacağı okunabilir; kapsam kuralı yine geçerli).
+- **Şirket uygunluğu güncel durumdur (TP-001 T14; sahip kararı D14/4):** alacak oluşturan ya da değiştiren **her yazma
+  komutunda** — Create, Update, Delete, BulkDelete, Issue, SetCollectionStage, RequestAdjustment, Approve, Reject ve
+  RecordPayment — MOD-0220 `lookup-validation` çağrılır; `OperationalStatus = Active` **ve** `ApprovalStatus = Approved`
+  değilse 422 `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE`; erişilemezse 503 `RECEIVABLE_LEGAL_ENTITY_UNAVAILABLE` — geçiş yok.
+  **Reconcile hariç:** yeni bir karar ya da alacak değişikliği başlatmaz, uygunluğu tx1'de denetlenmiş komutun uzak
+  sonucunu kaydeder (engellemek niyeti açık bırakırdı; MOD-0126 ile aynı). Okumalar uygunluk istemez (pasifleşmiş şirketin
+  geçmiş alacağı okunabilir; kapsam kuralı yine geçerli).
 - **Müşteri uygunluğu güncel durumdur:** Create, Update ve Issue'da `ICustomerReferencePort` MOD-0149 sözleşmesini çağırır:
   yok / başka kiracı → 422 `RECEIVABLE_CUSTOMER_NOT_FOUND`; durumu faturalanabilir değil → 422 `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE`
   (faturalanabilir durum kodları O-4); erişilemez → 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE`, geçiş yok. Açılmış faturanın
@@ -719,7 +732,7 @@ Resources/Views/FinanceTreasury/ReceivableInvoices/    ReceivableInvoicesIndex.{
 
 | Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol |
 |---|---|---|---|---|
-| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved (yazmada); kullanıcının veri kapsamında | — | `ILegalEntityEligibilityPort`, `IReceivableDataScopeSource` |
+| X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved (her yazmada, Reconcile hariç — D14/4); kullanıcının veri kapsamında ya da `read-tenant-wide` (D14/1) | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` |
 | Gövde/sorguda tenantId, legalEntityId | — | bulunursa 400 | — | middleware |
 | CustomerId | Evet | Guid ≠ Empty; MOD-0149'da var, aynı kiracı, faturalanabilir durum (O-4) | — | `ICustomerReferencePort` |
 | ExternalInvoiceNumber | Hayır | trim, ≤ 64, ASCII yazdırılabilir; şirket içinde tekil (O-5) | Unique kısmi (TenantId, LegalEntityId, ExternalInvoiceNumberKey) | — |
@@ -791,7 +804,9 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
   faturanın numarası yeniden kullanılabilir.
 - **Müşteri yok / başka kiracının** → 422 `RECEIVABLE_CUSTOMER_NOT_FOUND`; **faturalanabilir değil** → 422
   `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE`; **MOD-0149 erişilemez** → 503 `RECEIVABLE_CUSTOMER_UNAVAILABLE`, kayıt değişmez.
-- **Şirket aktif değil ya da onaylı değil** → 422 `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE`; MOD-0220 erişilemez → 503.
+- **Şirket aktif değil ya da onaylı değil** → her yazma komutu (Create, Update, Delete, BulkDelete, Issue, SetCollectionStage,
+  RequestAdjustment, Approve, Reject, RecordPayment) 422 `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE`, kayıt değişmez; MOD-0220
+  erişilemez → 503; okuma ve Reconcile etkilenmez (D14/4).
 - **Başka kiracı / başka şirket / kapsam dışı şirket faturası** (okuma, yazma, karar) → 404 `RECEIVABLE_INVOICE_NOT_FOUND`;
   kapsam dışı şirketle liste → 200 boş.
 - **Eksik alan** (müşteri, para birimi, satır) → 400 + alan düzeyi resx iletisi; kayıt oluşmaz.
@@ -863,11 +878,11 @@ paket §H, §L.2) **taşınmaz**.
 | BulkDeleteReceivableInvoiceCommand | finance-treasury.receivable-invoice.bulk-deleted | ReceivableInvoice | b | silinen kimlik sayısı; her kimlik için ayrı varlık kaydı (çoklu kimlik biçimi DL-1'de ölçülür, MOD-0126 ile aynı) | evet (öneri) | — |
 | IssueReceivableInvoiceCommand | finance-treasury.receivable-invoice.issued | ReceivableInvoice | b | Status Draft→Open, GrossTotal, CurrencyCode, CustomerId | evet (öneri) | — |
 | SetReceivableInvoiceCollectionStageCommand | finance-treasury.receivable-invoice.collection-stage-changed | ReceivableInvoice | b | CollectionStage önce→sonra, ReasonCode | evet (öneri) | — |
-| RequestReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-submitted (sonuç, tx2/Reconcile) | ReceivableAdjustmentRequest | b | AdjustmentType, Amount, CurrencyCode, IsTier2, PolicyVersion, Status Submitted→PendingApproval (tx1 deneme olayı `…adjustment-start-requested`) | **evet — K2 önerisi (O-8)** | — |
-| ApproveReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-approved | ReceivableAdjustmentRequest | b | karar kimliği, SodResult, AdjustmentType, fatura Status / CollectionStage önce→sonra, OutstandingAmount önce→sonra | **evet — K2 (D11/3 deseni; MOD-0120 için sahip teyidi O-8)** | — |
-| RejectReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-rejected | ReceivableAdjustmentRequest | b | karar kimliği, ReasonCode, CollectionStage geri dönüşü | **evet — K2 (aynı)** | — |
+| RequestReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-submitted (sonuç, tx2/Reconcile) | ReceivableAdjustmentRequest | b | AdjustmentType, Amount, CurrencyCode, IsTier2, PolicyVersion, Status Submitted→PendingApproval (tx1 deneme olayı `…adjustment-start-requested`) | **evet — K2 (D14/3)** | — |
+| ApproveReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-approved | ReceivableAdjustmentRequest | b | karar kimliği, SodResult, AdjustmentType, fatura Status / CollectionStage önce→sonra, OutstandingAmount önce→sonra | **evet — K2 (D14/3)** | — |
+| RejectReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-rejected | ReceivableAdjustmentRequest | b | karar kimliği, ReasonCode, CollectionStage geri dönüşü | **evet — K2 (D14/3)** | — |
 | ReconcileReceivableInvoiceAdjustmentCommand | kapattığı niyetin **sonuç** olayı (geçiş matrisi); niyet değişmediyse olay yok | ReceivableAdjustmentRequest | b | niyet/karar durumu önce→sonra; bağlı makbuz yalnız `Pending` ise `Completed` | evet (öneri) | — |
-| RecordReceivableInvoicePaymentCommand (koşullu) | finance-treasury.receivable-invoice.payment-recorded | ReceivableInvoice | b | Payment kimliği, Amount, Status önce→sonra, OutstandingAmount önce→sonra | **evet — K2 önerisi (O-8)** | — |
+| RecordReceivableInvoicePaymentCommand (koşullu) | finance-treasury.receivable-invoice.payment-recorded | ReceivableInvoice | b | Payment kimliği, Amount, Status önce→sonra, OutstandingAmount önce→sonra | **evet — K2 (D14/3)** | — |
 
 - **İki aşamalı komutların deneme olayları:** RequestAdjustment → `finance-treasury.receivable-invoice.adjustment-start-requested`
   (tx1) + sonuç `…adjustment-submitted` / `…adjustment-start-refused` / `…adjustment-start-cancelled`; Approve / Reject →
@@ -877,8 +892,9 @@ paket §H, §L.2) **taşınmaz**.
   olayını değil kapattığı niyetin sonuç olayını yazar.
 - **Kayda yazılmayan:** müşteri anlık görüntü değerleri, dış fatura numarası değeri, satır açıklamaları, yorum serbest
   metni, tahsilat referans değeri, tahsilat hesabı referansı, token. Değişen alanların yalnız **adı** yazılır (AUD-001 §3).
-- **K2:** alacağı azaltan kararlar (Void / WriteOff onayı ve reddi) ve tahsilat kaydı para hakkını değiştirir; AUD-001 §4.3
-  listesinde açıkça sayılmıyor. Öneri: MOD-0126 D11/3 gibi K2 sayılsın (O-8). Uyulabilir yol bugün var
+- **K2 — KARAR (sahip kararı D14/3):** alacağı etkileyen kararlar — iptal / silme talebi (Void / WriteOff), onayı ve
+  reddi — ve elle tahsilat kaydı K2'dir (fail-closed; denetim kaydı iş verisiyle aynı işlemde). AUD-001 §4.3 listesinde
+  açıkça sayılmıyordu; sahip MOD-0126 D11/3 desenini AR'ye uyguladı. Uyulabilir yol bugün var
   (`RequireEnlistment = true`; SupplyChain kabulü, `CT-DECISIONS.md` 2026-10-21). Diğer komutlar aynı yolla yazıldığı için
   pratikte hepsi kapalı-başarısızdır.
 - **Bilinen boşluk G-AUD-1 (MOD-0126 ile ortak):** `CentralAuditBehavior` başarısız komut için kayıt bırakmaz; SoD reddi ve
@@ -907,9 +923,11 @@ paket §H, §L.2) **taşınmaz**.
 - [ ] AC-1 (zorunlu) — `POST /api/receivable-invoices` geçerli istekle 201 döner; fatura `Draft`, `InvoiceCode` RCS-001
   biçiminde ortak servisten (istekte gönderilen kod 400), toplamlar ve tek varsayılan taksit sunucu hesabı;
   `TenantId`/`LegalEntityId` sunucuda yazılı, yanıt DTO'sunda yok.
-- [ ] AC-2 (zorunlu) — Şirket `OperationalStatus = Active` ve `ApprovalStatus = Approved` değilse Create, Update, Issue,
-  düzeltme talebi, her karar ve tahsilat 422 `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE` döner ve kayıt değişmez; kontrol her
-  çağrıda MOD-0220 `lookup-validation`'dan; MOD-0220 erişilemezse 503 ve geçiş yok.
+- [ ] AC-2 (zorunlu) — Şirket `OperationalStatus = Active` ve `ApprovalStatus = Approved` değilse alacak oluşturan /
+  değiştiren her yazma komutu (Create, Update, Delete, BulkDelete, Issue, SetCollectionStage, RequestAdjustment, Approve,
+  Reject, RecordPayment) 422 `RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE` döner ve kayıt değişmez (komut başına ayrı test); kontrol
+  her çağrıda MOD-0220 `lookup-validation`'dan; MOD-0220 erişilemezse 503 ve geçiş yok. Aynı şirketin faturasının liste ve
+  detay okuması 200 döner (okuma etkilenmez) ve açık niyetin Reconcile'ı tamamlanır (D14/4).
 - [ ] AC-3 (zorunlu) — Müşteri MOD-0149 sözleşmesinden doğrulanır: olmayan / başka kiracının müşterisi 422
   `RECEIVABLE_CUSTOMER_NOT_FOUND`, faturalanabilir olmayan durum 422 `RECEIVABLE_CUSTOMER_NOT_ELIGIBLE`, MOD-0149 erişilemez
   503; MOD-0149 koleksiyonunu doğrudan okuyan kod yok (mimari testi: FinanceTreasury'de `accounts` /
@@ -919,7 +937,8 @@ paket §H, §L.2) **taşınmaz**.
 - [ ] AC-5 (zorunlu) — Başka kiracının ya da başka şirketin faturasına okuma, yazma, karar ve tahsilat 404 döner.
 - [ ] AC-6 (zorunlu) — Veri kapsamı (SEC-002 §4 kanıt testi): aynı yetkili iki kullanıcı, iki ayrı şirket kapsamı → birinin
   listesinde diğerinin şirketinin faturası çıkmaz ve detayı 404; kapsamı olmayan üçüncü kullanıcı boş liste görür;
-  `read-tenant-wide` izni olan görür. Kapsam daraltması kaldırıldığında test kırmızıya döner (sabotaj).
+  `read-tenant-wide` izni olan görür. Kapsam daraltması (`IFinanceTreasuryDataScopeSource` süzgeci) kaldırıldığında test
+  kırmızıya döner (sabotaj); çözücü hata verdiğinde liste boş döner (D14/1).
 - [ ] AC-7 (zorunlu) — Tahsilat aşaması geçişleri tablodaki izinlerle birebir; tablo dışı geçiş 409
   `RECEIVABLE_COLLECTION_TRANSITION_INVALID`; `WriteOffProposed` / `WrittenOff` elle girilemez; her geçiş
   `CollectionStageHistory`'ye ve merkezi denetime yazılır.
@@ -1053,12 +1072,12 @@ paket §H, §L.2) **taşınmaz**.
 - [ ] Sahip **MOD-0120 için** kod alma iznini verdi (D1)
 - [ ] Servis iskeleti (`Diten.FinanceTreasuryService`) ve port 5071 kaydı (AGENTS §2/§3/§9, `ports.md`; TRM-03/04)
 - [ ] MOD-0149 eki: müşteri doğrulama + dış referans çözümleme + sözleşme belgesi (O-3; commercial-suite sahibi, D9)
-- [ ] TRM-14: MOD-0220 `ApprovalStatus` (MOD-0126 ile ortak); O-2 sahip teyidi
+- [ ] TRM-14: MOD-0220 `ApprovalStatus` (MOD-0126 ile ortak) — kural D14/4 ile kararlaştırıldı
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-14)
 - [ ] RCS-001 ortak kod servisi ve `ARI` öneki (O-6)
 - [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak)
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
-- [ ] Düzeltme politikası ve K2 sınıfı (O-7, O-8) — DL-3 için
+- [ ] Düzeltme politikası (O-7) ve muafiyet kararı (O-8 kalan kısmı; K2 kısmı D14/3 ile kapandı) — DL-3 için
 - [ ] Tahsilat kapsamı (O-9) — DL-4 için
 - [ ] Kaynağın sınırlı denetim/çoklu yazma devri taşınmıyor (onaylandı mı — sahip, Level-1 koşul 1)
 
@@ -1222,7 +1241,6 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 - MOD-0269 / MOD-0121 mutabakat olayıyla otomatik tahsilat.
 - MOD-0289 tahsilat hesabı arama/çözümleme.
 - Talep geri çekme (MOD-0023 örnek iptali) ve Görev Merkezi köprüsü (WC-D1).
-- `ReceivableCommandReceipt` / `PaymentCommandReceipt`'in ortak servis-içi tipe çıkarılması (iki paket birlikte).
 - CentralAudit reddedilen komut kaydı (G-AUD-1, BL-501).
 - `execution/registries/module-implementation-status.md` satırı ilk kodla açılır; kayıt satırı (D8) ayrı iş.
 
@@ -1234,19 +1252,19 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-1b | Karar 0.5 — AR fatura sınırı | üretici ata / kısıtlı MVP (T32) | **kısıtlı MVP**: S-2; MOD-0169 sonra; EA üretici kararı ayrı | sahip (K1) + EA |
 | O-1c | Karar 0.6 — ERP-FIN-BUNDLE | arayüz başına sahiplik | EA; AR için yalnız platform kaygıları gerekir | EA |
 | O-1d | Karar 0.7 — GL | içeride / dışarıda | **dışarıda** (AR GL alanı taşımaz) | sahip (K1) |
-| O-2 | AR'de şirket "Active + Approved" kuralı (D10/1 yalnız ödeyen şirket içindi) | aynı kural / yalnız Active | **aynı kural** (Treasury'de tek LE uygunluk modeli) | sahip (K1) |
+| O-2 | AR'de şirket "Active + Approved" kuralı (D10/1 yalnız ödeyen şirket içindi) | aynı kural / yalnız Active | **KARAR (D14/4): aynı kural, yazma işlemlerinde** — alacak oluşturan/değiştiren her yazma komutu (Reconcile hariç); okumalar etkilenmez | sahip (K1) |
 | O-3 | MOD-0149 tüketim yolu | (a) MOD-0149'a eklemeli `GET /api/crm/accounts/{id}/lookup-validation` + `GET …/external-references/resolve` + sözleşme belgesi (D9) (b) mevcut `GET /api/crm/accounts/{id}`, AR kullanıcısına `crm.account.read` | **(a)** — sözleşme-önce; (b) AR kullanıcısına CRM okuma yetkisi verir ve sözleşmesizdir | sahip + commercial-suite sahibi |
 | O-4 | Faturalanabilir müşteri durum kodları (MOD-0048 `account-status`) | — | yalnız "aktif" anlamlı kod(lar); liste MOD-0149 sözleşmesinde yayımlanır, AR'de sabit tablo yok | commercial-suite sahibi |
 | O-5 | Dış fatura numarası tekilliği ve yasal numara | şirket içinde tekil / serbest | şirket içinde tekil (silinen/Void hariç); yasal numara üretimi faturalamanın | sahip (K1) |
 | O-6 | RCS-001 tür öneki ve ortak kod servisi | `ARI` / başka | `ARI` (§3'te çakışma yok, `INV` dolu — ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-7 | Düzeltme eşiği | MOD-0126 D11/1 deseni (kiracı ayarı, para birimli, ayar yoksa tier-2) / eşiksiz tek kademe | **D11/1 deseni**, ayrı politika anahtarı | sahip (K1) |
-| O-8 | Düzeltme kararları ve tahsilat K2 mı; muafiyet | K2 evet/hayır; muafiyet var/yok | **K2 evet** (D11/3 deseni); **muafiyet yok** (tier-2 aday yoksa 422) | CT + sahip |
+| O-8 | Düzeltme kararları ve tahsilat K2 mı; muafiyet | K2 evet/hayır; muafiyet var/yok | **KARAR (D14/3): K2 evet** — iptal/silme talebi, onay, ret ve elle tahsilat; **muafiyet** (açık): öneri yok (tier-2 aday yoksa 422) | CT + sahip |
 | O-9 | Elle tahsilat bu sürümde mi | DL-4'te / Follow-up (MOD-0269 / MOD-0121'i bekle) | **DL-4'te**, tek aşamalı, K2, ekleme-yalnız | sahip (K1) |
 | O-10 | Toplu içe aktarma (AR-16/17) | bu sürüm / servis kimliği gelince | servis kimliği gelince (Follow-up) | sahip (K1) |
 | O-11 | Satır vergisi | kullanıcı girdisi / vergi motoru | kullanıcı girdisi (motor faturalamanın) | sahip (K1) |
 | O-12 | "Bugün"ün saat dilimi (yaşlandırma, söz tarihi, tahsilat tarihi) | UTC / şirket saat dilimi | UTC (MOD-0126 O-12 ile tutarlı); şirket saat dilimi MOD-0220'de alan olursa yeniden | sahip (K1) |
 | O-13 | WriteOff kanıtı zorunlu mu | evet / hayır | evet, en az 1 MOD-0031 bağlantısı | sahip (K1) |
-| O-14 | SEC-002 çözücüsü FinanceTreasury'de | Platform kapsam ucu / servis içi çözücü kaydı | Platform sahibiyle kararlaştırılır; `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
+| O-14 | SEC-002 çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | Platform sahibiyle kararlaştırılır; servis ortak tek karar (MOD-0126 O-19, MOD-0119, MOD-0124 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
 | O-15 | Rol şablonları | — | MOD-0018 sahibiyle; `read-tenant-wide` hiçbir şablonda varsayılan değil | sahip + MOD-0018 sahibi |
 
 ## Teslim dilimleri

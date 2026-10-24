@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D13 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D14 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -62,6 +62,18 @@ Sahip, Treasury modüllerinin çalışması için başka modüllerde gereken de�
 "Yalnız tier-2 aday yoksa" — normalde yalnız tier-2 izni olanlar aday; R1–R3 dışlamasından sonra kiracıda hiç tier-2
 aday kalmıyorsa `waive-sod` izni olanlar muafiyet adayı olarak eklenir ve yalnız muafiyetli onay verebilir (gerekçe +
 kanıt). Normal onay ve muafiyet yetkisi ayrı değerlendirilir.
+
+## D14 — Dört Treasury pack'i için ortak kararlar (2026-10-24, soru kutusu; dördü de önerilen seçenek)
+
+1. **Veri kapsamı (SEC-002):** "Yetkili olduğu şirketler" — kapsam alanı `LegalEntityId`; kullanıcı yalnız yetkili olduğu
+   şirketlerin kayıtlarını görür; kiracıdaki tüm şirketleri görmek ayrı, yalnız açık atanan `…read-tenant-wide` iznidir
+   (MOD-0126, MOD-0119, MOD-0120, MOD-0124).
+2. **Makbuz ve niyet tipi:** "Tek ortak tip" — servis genelinde tek `FinanceTreasuryCommandReceipt` ve ortak niyet
+   altyapısı; dört pack bunu kullanır; kurallar MOD-0126'daki gibi (D12/2, gap listeleri 1–3).
+3. **AP/AR K2:** "Evet" — AP ve AR'da parayı etkileyen kararlar (onay, red, iptal/silme, elle ödeme kaydı) K2.
+   Cash Positioning yayımı K2 değildir (para yetkisi değil; yine aynı işlemde yazılır).
+4. **Şirket kuralı (D10/1) genişletmesi:** "Evet, yazma işlemlerinde" — AP, AR ve Cash Positioning'de borç, alacak ya da
+   nakit pozisyonu oluşturan/değiştiren her işlemde şirket aktif ve onaylı olmalı; okumalar etkilenmez.
 
 ## Karar olmayanlar
 
