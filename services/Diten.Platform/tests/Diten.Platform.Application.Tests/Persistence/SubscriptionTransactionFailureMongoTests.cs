@@ -20,12 +20,19 @@ namespace Diten.Platform.Application.Tests.Persistence;
 
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class SubscriptionTransactionFailureMongoTests
+public sealed class SubscriptionTransactionFailureMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_subscription_failure";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public SubscriptionTransactionFailureMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     [Fact]
     public async Task UnknownBeforeCommit_BodyOnce_CommitTwice_SameSession_AllParticipantsExactOne()
     {
-        await using var fixture = await FailureFixture.StartAsync(new CommitProbe(beforeUnknown: [1]));
+        await using var fixture = await FailureFixture.StartAsync(_mongo, new CommitProbe(beforeUnknown: [1]));
         var result = await fixture.CreateAsync();
         Assert.True(result.IsSuccessful);
         Assert.Equal(1, fixture.SubscriptionWrites);
@@ -36,7 +43,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task UnknownBeforeCommit_Exhaustion_BodyOnce_CommitThree_503AndZeroResidue()
     {
-        await using var fixture = await FailureFixture.StartAsync(new CommitProbe(beforeUnknown: [1, 2, 3]));
+        await using var fixture = await FailureFixture.StartAsync(_mongo, new CommitProbe(beforeUnknown: [1, 2, 3]));
         var error = await Assert.ThrowsAsync<PlatformTransactionUnavailableException>(fixture.CreateAsync);
         Assert.Equal(503, error.StatusCode);
         Assert.Equal(1, fixture.SubscriptionWrites);
@@ -47,7 +54,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task UnknownAfterDurableCommit_BodyOnce_CommitTwice_ReconcilesExactOne()
     {
-        await using var fixture = await FailureFixture.StartAsync(new CommitProbe(afterUnknown: [1]));
+        await using var fixture = await FailureFixture.StartAsync(_mongo, new CommitProbe(afterUnknown: [1]));
         var result = await fixture.CreateAsync();
         Assert.True(result.IsSuccessful);
         Assert.Equal(1, fixture.SubscriptionWrites);
@@ -59,7 +66,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task UnknownAfterDurableCommit_Exhaustion_Is503ButDurableStateRemainsExactOne()
     {
-        await using var fixture = await FailureFixture.StartAsync(new CommitProbe(afterUnknown: [1, 2, 3]));
+        await using var fixture = await FailureFixture.StartAsync(_mongo, new CommitProbe(afterUnknown: [1, 2, 3]));
         var error = await Assert.ThrowsAsync<PlatformTransactionUnavailableException>(fixture.CreateAsync);
         Assert.Equal(503, error.StatusCode);
         Assert.Equal(1, fixture.SubscriptionWrites);
@@ -70,7 +77,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task TransientBodyFailure_RetriesOnNewSession_AbortsFirstAndCommitsExactOne()
     {
-        await using var fixture = await FailureFixture.StartAsync(transientQuotaAttempts: [1]);
+        await using var fixture = await FailureFixture.StartAsync(_mongo, transientQuotaAttempts: [1]);
         var result = await fixture.CreateAsync();
         Assert.True(result.IsSuccessful);
         Assert.Equal(2, fixture.SubscriptionWrites);
@@ -82,7 +89,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task TransientBodyFailure_MaximumThreeAttempts_503AndZeroResidue()
     {
-        await using var fixture = await FailureFixture.StartAsync(transientQuotaAttempts: [1, 2, 3]);
+        await using var fixture = await FailureFixture.StartAsync(_mongo, transientQuotaAttempts: [1, 2, 3]);
         var error = await Assert.ThrowsAsync<PlatformTransactionUnavailableException>(fixture.CreateAsync);
         Assert.Equal(503, error.StatusCode);
         Assert.Equal(3, fixture.SubscriptionWrites);
@@ -94,7 +101,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task CancellationBeforeBody_PropagatesAndLeavesZeroResidue()
     {
-        await using var fixture = await FailureFixture.StartAsync();
+        await using var fixture = await FailureFixture.StartAsync(_mongo);
         using var cts = new CancellationTokenSource(); cts.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => fixture.CreateAsync(cts.Token));
         Assert.Equal(0, fixture.SubscriptionWrites);
@@ -104,7 +111,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task CancellationDuringParticipants_PropagatesAndRollsBackAll()
     {
-        await using var fixture = await FailureFixture.StartAsync(cancelDuringQuota: true);
+        await using var fixture = await FailureFixture.StartAsync(_mongo, cancelDuringQuota: true);
         await Assert.ThrowsAnyAsync<OperationCanceledException>(fixture.CreateAsync);
         Assert.Equal(1, fixture.SubscriptionWrites);
         Assert.Empty(fixture.Probe.CommitAttempts);
@@ -114,7 +121,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task CancellationBeforeCommit_PropagatesAndRollsBackAll()
     {
-        await using var fixture = await FailureFixture.StartAsync(new CommitProbe(cancelBefore: [1]));
+        await using var fixture = await FailureFixture.StartAsync(_mongo, new CommitProbe(cancelBefore: [1]));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(fixture.CreateAsync);
         Assert.Equal(1, fixture.SubscriptionWrites);
         fixture.Probe.AssertAttempts(1);
@@ -124,7 +131,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
     [Fact]
     public async Task CallerCancellationAfterDurableCommit_PropagatesWithExactOneDurableState()
     {
-        await using var fixture = await FailureFixture.StartAsync(new CommitProbe(cancelAfter: [1]));
+        await using var fixture = await FailureFixture.StartAsync(_mongo, new CommitProbe(cancelAfter: [1]));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(fixture.CreateAsync);
         Assert.Equal(1, fixture.SubscriptionWrites);
         fixture.Probe.AssertAttempts(1);
@@ -154,11 +161,10 @@ public sealed class SubscriptionTransactionFailureMongoTests
           _tenant = tenant; _plan = plan; Probe = probe; _transientQuotaAttempts = new(transientQuotaAttempts);
           _cancelDuringQuota = cancelDuringQuota; }
 
-        public static async Task<FailureFixture> StartAsync(CommitProbe? probe = null,
+        public static async Task<FailureFixture> StartAsync(DisposableMongoReplicaSet mongo, CommitProbe? probe = null,
             IEnumerable<int>? transientQuotaAttempts = null, bool cancelDuringQuota = false)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             var context = new PlatformDbContext(mongo.Client, database);
             var tenantId = Guid.NewGuid();
             var tenantContext = new TenantContext(); tenantContext.SetTenant(tenantId);
@@ -213,7 +219,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
         }
         private Task<long> Count(string name) => Database.GetCollection<BsonDocument>(name)
             .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
-        public ValueTask DisposeAsync() => _mongo.DisposeAsync();
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask; // the replica set is the class fixture's
     }
 
     private sealed class CountingSubscriptionRepository(ITenantSubscriptionRepository inner) : ITenantSubscriptionRepository

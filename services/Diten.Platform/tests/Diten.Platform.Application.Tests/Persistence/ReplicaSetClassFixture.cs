@@ -25,6 +25,13 @@ public sealed class ReplicaSetClassFixture : IAsyncLifetime
         return mongo.Client.GetDatabase(name);
     }
 
+    /// <summary>The same, for a harness that builds its database in a constructor or another synchronous helper.</summary>
+    public static IMongoDatabase FreshDatabase(DisposableMongoReplicaSet mongo, string name)
+    {
+        mongo.Client.DropDatabase(name);
+        return mongo.Client.GetDatabase(name);
+    }
+
     public async Task DisposeAsync()
     {
         if (_mongo is not null)

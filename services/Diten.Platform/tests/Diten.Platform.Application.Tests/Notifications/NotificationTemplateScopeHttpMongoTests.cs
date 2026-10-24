@@ -44,15 +44,22 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class NotificationTemplateScopeHttpMongoTests
+public sealed class NotificationTemplateScopeHttpMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_notification_template_scope";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public NotificationTemplateScopeHttpMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     private const string UpdateBody =
         """{"isPlatformDefault":false,"templateKey":"welcome","channel":"Email","locale":"en","subjectTemplate":"Changed","bodyHtmlTemplate":"<p>Changed</p>","bodyTextTemplate":null,"variables":[],"status":"Draft","semanticVersion":null}""";
 
     [Fact]
     public async Task A_template_is_read_by_id_only_in_its_own_scope()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         // a tenant's override: not by the id-only route, not under another tenant — only under its own
         Assert.Equal(HttpStatusCode.NotFound, await host.StatusAsync("GET", $"templates/by-id/{Host.TemplateA:D}"));
@@ -66,7 +73,7 @@ public sealed class NotificationTemplateScopeHttpMongoTests
     [Fact]
     public async Task Another_tenants_template_is_not_archived_by_id_and_nothing_is_written()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var before = await host.TemplateDocumentAsync(Host.TemplateA);
 
         Assert.Equal(HttpStatusCode.NotFound, await host.StatusAsync("POST", $"templates/{Host.TemplateA:D}/archive"));
@@ -80,7 +87,7 @@ public sealed class NotificationTemplateScopeHttpMongoTests
     [Fact]
     public async Task A_tenants_template_is_archived_under_its_own_tenant_and_the_record_names_that_tenant()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         Assert.Equal(HttpStatusCode.NoContent, await host.StatusAsync("POST", $"tenant-settings/{Host.TenantA:D}/templates/{Host.TemplateA:D}/archive"));
 
@@ -95,7 +102,7 @@ public sealed class NotificationTemplateScopeHttpMongoTests
     [Fact]
     public async Task A_platform_default_is_archived_by_id_and_its_record_is_platform_global()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         Assert.Equal(HttpStatusCode.NoContent, await host.StatusAsync("POST", $"templates/{Host.PlatformTemplate:D}/archive"));
 
@@ -107,7 +114,7 @@ public sealed class NotificationTemplateScopeHttpMongoTests
     [Fact]
     public async Task A_platform_default_is_updated_by_id_and_stays_a_platform_default()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         Assert.Equal(HttpStatusCode.OK, await host.StatusAsync("PUT", $"templates/{Host.PlatformTemplate:D}",
             UpdateBody.Replace("\"isPlatformDefault\":false", "\"isPlatformDefault\":true", StringComparison.Ordinal)));
@@ -121,7 +128,7 @@ public sealed class NotificationTemplateScopeHttpMongoTests
     [Fact]
     public async Task Another_tenants_template_is_not_taken_over_by_an_update_and_nothing_is_written()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
         var before = await host.TemplateDocumentAsync(Host.TemplateA);
 
         // the platform route would have turned it into a platform default; tenant B's route would have moved it to B
@@ -135,7 +142,7 @@ public sealed class NotificationTemplateScopeHttpMongoTests
     [Fact]
     public async Task A_tenants_template_is_updated_under_its_own_tenant()
     {
-        await using var host = await Host.StartAsync();
+        await using var host = await Host.StartAsync(_mongo);
 
         Assert.Equal(HttpStatusCode.OK, await host.StatusAsync("PUT", $"tenant-settings/{Host.TenantA:D}/templates/{Host.TemplateA:D}", UpdateBody));
 
@@ -234,10 +241,9 @@ public sealed class NotificationTemplateScopeHttpMongoTests
             _server = new TestServer(builder);
         }
 
-        public static async Task<Host> StartAsync()
+        public static async Task<Host> StartAsync(DisposableMongoReplicaSet mongo)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             foreach (var collection in PlatformSchemaManifest.For(Enum.GetValues<SchemaProfile>())
                          .Where(c => c.Name == PlatformCollections.NotificationTemplates))
             {
@@ -298,7 +304,7 @@ public sealed class NotificationTemplateScopeHttpMongoTests
         public ValueTask DisposeAsync()
         {
             _server.Dispose();
-            return _mongo.DisposeAsync();
+            return ValueTask.CompletedTask; // the replica set is the class fixture's
         }
 
         private sealed class OnlyController(Type controller) : ControllerFeatureProvider

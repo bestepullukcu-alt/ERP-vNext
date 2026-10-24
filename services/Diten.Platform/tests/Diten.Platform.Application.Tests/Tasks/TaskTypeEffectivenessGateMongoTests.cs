@@ -33,12 +33,19 @@ using Task = System.Threading.Tasks.Task;
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class TaskTypeEffectivenessGateMongoTests
+public sealed class TaskTypeEffectivenessGateMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_task_type_effectiveness";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public TaskTypeEffectivenessGateMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     [Fact]
     public async Task Activate_succeeds_when_every_bound_document_is_Effective()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-1", ControlledDocumentLifecycleStatus.Effective));
         var type = new TaskType { TenantId = tenantId, Code = "CNC", Name = "Governed", IsActive = false, GroupDocuments = ["DOC-1"] };
         await types.CreateAsync(type);
@@ -53,7 +60,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Activate_is_refused_when_a_bound_document_is_not_Effective()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-DRAFT", ControlledDocumentLifecycleStatus.Draft));
         var type = new TaskType { TenantId = tenantId, Code = "CNC", Name = "Governed", IsActive = false, GroupDocuments = ["DOC-DRAFT"] };
         await types.CreateAsync(type);
@@ -71,7 +78,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Activate_is_refused_when_a_bound_document_has_no_register_row_at_all()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo); // register left empty
         var type = new TaskType { TenantId = tenantId, Code = "CNC", Name = "Governed", IsActive = false, GroupDocuments = ["DOC-GHOST"] };
         await types.CreateAsync(type);
@@ -88,7 +95,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Activate_checks_LocalDocuments_too_not_only_GroupDocuments()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-LOCAL", ControlledDocumentLifecycleStatus.Retired));
         var type = new TaskType
         {
@@ -107,7 +114,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task A_type_with_no_bound_documents_at_all_activates_freely()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo);
         var type = new TaskType { TenantId = tenantId, Code = "CNC", Name = "Ungoverned", IsActive = false };
         await types.CreateAsync(type);
@@ -121,7 +128,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Deactivating_is_never_gated_even_with_a_blocked_bound_document()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-RETIRED", ControlledDocumentLifecycleStatus.Retired));
         var type = new TaskType { TenantId = tenantId, Code = "CNC", Name = "Governed", IsActive = true, GroupDocuments = ["DOC-RETIRED"] };
         await types.CreateAsync(type);
@@ -139,7 +146,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
         // An already-active type asked to be "activated" again (IsActive: true posted on an active row) must not
         // suddenly retire itself over a document that went Blocked AFTER it first went live — Kural 4 gates the
         // pasif→aktif EDGE only.
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-NOW-RETIRED", ControlledDocumentLifecycleStatus.Retired));
         var type = new TaskType { TenantId = tenantId, Code = "CNC", Name = "Governed", IsActive = true, GroupDocuments = ["DOC-NOW-RETIRED"] };
         await types.CreateAsync(type);
@@ -160,7 +167,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Creating_a_type_with_a_blocked_bound_document_succeeds_but_is_saved_inactive_naming_the_blocker()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-DRAFT-2", ControlledDocumentLifecycleStatus.Draft));
         var tenant = new TenantContext();
         tenant.SetTenant(tenantId);
@@ -184,7 +191,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Creating_a_type_with_an_effective_bound_document_succeeds_active()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-OK", ControlledDocumentLifecycleStatus.Effective));
         var tenant = new TenantContext();
         tenant.SetTenant(tenantId);
@@ -207,7 +214,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Creating_a_type_when_the_register_is_unreachable_succeeds_but_is_saved_inactive_as_unverified()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, _, tenantId) = await ArrangeAsync(mongo);
         var tenant = new TenantContext();
         tenant.SetTenant(tenantId);
@@ -231,7 +238,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Creating_a_type_with_no_bound_documents_is_active_regardless_of_the_register()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo);
         var tenant = new TenantContext();
         tenant.SetTenant(tenantId);
@@ -251,7 +258,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Editing_an_active_types_documents_to_include_a_blocked_one_is_refused_and_nothing_is_written()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-BAD", ControlledDocumentLifecycleStatus.Draft));
         var type = new TaskType { TenantId = tenantId, Code = "ACT", Name = "Active governed", IsActive = true, GroupDocuments = ["DOC-OLD"] };
         await types.CreateAsync(type);
@@ -275,7 +282,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Editing_an_active_types_documents_to_all_Effective_writes_the_change()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-GOOD", ControlledDocumentLifecycleStatus.Effective));
         var type = new TaskType { TenantId = tenantId, Code = "ACT2", Name = "Active governed", IsActive = true, GroupDocuments = ["DOC-OLD"] };
         await types.CreateAsync(type);
@@ -294,7 +301,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Editing_an_active_types_documents_when_the_register_is_unreachable_is_refused_503()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, _, tenantId) = await ArrangeAsync(mongo);
         var type = new TaskType { TenantId = tenantId, Code = "ACT3", Name = "Active governed", IsActive = true, GroupDocuments = ["DOC-OLD"] };
         await types.CreateAsync(type);
@@ -317,7 +324,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     {
         // HaveDocumentsChanged's own point: an already-active type whose bound documents predate this Kural (or
         // were bound before they went Blocked) must remain editable for anything that is NOT a document change.
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-STILL-BAD", ControlledDocumentLifecycleStatus.Retired));
         var type = new TaskType { TenantId = tenantId, Code = "ACT4", Name = "Old name", IsActive = true, GroupDocuments = ["DOC-STILL-BAD"] };
         await types.CreateAsync(type);
@@ -335,7 +342,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
     [Fact]
     public async Task Editing_a_PASSIVE_types_documents_to_a_blocked_one_is_free()
     {
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-BAD2", ControlledDocumentLifecycleStatus.Draft));
         var type = new TaskType { TenantId = tenantId, Code = "PAS", Name = "Passive governed", IsActive = false };
         await types.CreateAsync(type);
@@ -357,7 +364,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
         // Simulates "kütüğe ulaşılamıyor" — the register-read half is not what this test exercises (proven by the
         // other tests in this class against the REAL register); this one proves the gate's own fail-closed
         // exception handling, the same way MeetingInviteMailerNeverThrowsTests isolates ITS OWN failure branch.
-        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var mongo = _mongo;
         var (types, _, tenantId) = await ArrangeAsync(mongo);
         var type = new TaskType { TenantId = tenantId, Code = "CNC", Name = "Governed", IsActive = false, GroupDocuments = ["DOC-1"] };
         await types.CreateAsync(type);
@@ -378,7 +385,7 @@ public sealed class TaskTypeEffectivenessGateMongoTests
         DisposableMongoReplicaSet mongo, params (string Uid, ControlledDocumentLifecycleStatus Status)[] registerRows)
     {
         var tenantId = Guid.NewGuid();
-        var database = mongo.CreateDatabase();
+        var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(tenantId);
         var dbContext = new PlatformDbContext(mongo.Client, database);
