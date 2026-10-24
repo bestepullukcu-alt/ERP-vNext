@@ -449,7 +449,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   - **Makbuz (`PaymentCommandReceipt`, Owned Objects):** istek parmak izi (sunucuda hesaplanır, muafiyet girdilerini içerir —
     `PaymentWorkflowService.cs:744-746@da4abb20`) ve **yaşam döngüsü**: tek aşamalı komutlarda tx1'de `Completed` + yanıt;
     iki aşamalı komutlarda (Submit ve kararlar — Release bu dilimde tek aşamalıdır) tx1'de `Pending` (yanıt yok, `LinkedIntentId` dolu), yanıt **tx2'de**
-    (kesin sonuç ya da 202 belirsiz) ya da **Reconcile'da** yazılır ve makbuz `Completed` olur.
+    (kesin sonuç ya da 202 belirsiz) ya da — makbuz hâlâ `Pending` ise — **Reconcile'da** yazılır ve makbuz `Completed`
+    olur. `Completed` makbuz değişmez (Entity Fields, değişmezlik kuralı).
   - **Kontrol sırası (her komutta aynı):** (1) kimlik + `[HasPermission]` → (2) makbuz araması: aynı kapsam + farklı parmak
     izi → 409 `PAYMENT_IDEMPOTENCY_CONFLICT`; aynı kapsam + aynı parmak izi + `Completed` → **kayıtlı yanıt aynen döner**;
     aynı kapsam + aynı parmak izi + `Pending` → 202 `PAYMENT_REQUEST_IN_PROGRESS` (bağlı niyetin o anki durumuyla). İki
@@ -459,7 +460,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   - **Kurtarma yalnız `ReconcilePaymentBatchWorkflowCommand` ile yapılır** (kendi `Idempotency-Key`'i ve makbuzuyla); aynı
     anahtarla tekrar asla kurtarma tetiklemez (replay ve recovery ayrıdır).
   - **Çökme:** tx1 sonrası çökmede makbuz `Pending` kalır; aynı anahtarla tekrar 202 `PAYMENT_REQUEST_IN_PROGRESS` alır;
-    Reconcile niyeti kapattığında bağlı makbuzu da `Completed` yapar (kesin yanıtla). tx1 commit olmadıysa hiçbir şey
+    Reconcile niyeti kapattığında bağlı makbuz **yalnız `Pending` ise** `Completed` yapılır (kesin yanıtla); `Completed`
+    makbuza dokunulmaz. tx1 commit olmadıysa hiçbir şey
     yazılmamıştır; aynı anahtarla tekrar baştan çalışır.
 - **Eşzamanlılık:** Update / kararlar `If-Match` (Version) ve durum CAS; bayat istek 409.
 - **Yerel kayıt önce, uzak çağrı sonra (domain-config; TP-001 T16):**
@@ -485,12 +487,12 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      makbuz kuralı (kayıtlı yanıt ya da 202 `PAYMENT_REQUEST_IN_PROGRESS`).
   4a. *İki aşamalı denetim (tx1 / tx2) ve çökme kurtarma:*
      - tx1 **deneme olayı** yazar (`…workflow-start-requested`, `…decision-requested`); tx2 **sonuç
-       olayı** yazar (`…submitted`, `…approved`, `…rejected`, `…workflow-start-refused`, `…release-attempted` vb.). Her
+       olayı** yazar (`…submitted`, `…approved`, `…rejected`, `…workflow-start-refused` vb.; Release tek aşamalıdır, burada yoktur). Her
        iki olay da kendi işleminde, iş verisiyle birlikte (`RequireEnlistment = true`).
      - Kesin sonuç ancak tx2 commit olunca vardır; tx1 deneme olayı tek başına "yapıldı" anlamına gelmez.
      - **Uzak başarı + tx2 başarısız ya da süreç çöker:** niyet `Requested`/`Pending` kalır; Reconcile (elle) MOD-0023
        örneği/görevi `instances/by-objects` ve görev geçmişinden okur, uzak çağrıyı **tekrarlamadan** tx2'yi yazar, sonuç
-       olayını üretir ve bağlı makbuzu `Completed` yapar. Aynı anahtarla tekrar istek kurtarma yapmaz; makbuz `Pending`
+       olayını üretir ve bağlı makbuz **yalnız `Pending` ise** `Completed` yapılır. Aynı anahtarla tekrar istek kurtarma yapmaz; makbuz `Pending`
        iken 202 `PAYMENT_REQUEST_IN_PROGRESS` alır. İkinci uzak geçiş oluşmaz.
      - **K2 kararları (D11/3):** tx1 deneme olayı yazılamazsa uzak çağrı yapılmaz, komut başarısız; tx2 sonuç olayı
        yazılamazsa niyet açık kalır ve karar "kayıtlı" sayılmaz (Release bunu kabul etmez) — Reconcile tamamlar.
@@ -746,7 +748,7 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 | BulkDeletePaymentBatchCommand | finance-treasury.payment-batch.bulk-deleted | PaymentBatch | b | silinen kimlik sayısı; her kimlik için ayrı varlık kaydı (CentralAudit tek varlık kimliği taşır — çoklu kimlik biçimi DL-1'de ölçülür) | evet (öneri) | — |
 | ValidatePaymentBatchCommand | finance-treasury.payment-batch.validated | PaymentBatch | b | Status Draft→Validated, sorun sayısı | evet (öneri) | — |
 | SubmitPaymentBatchCommand | finance-treasury.payment-batch.submitted (sonuç, tx2/Reconcile) | PaymentBatch | b | Status Submitted→PendingApproval, WorkflowInstanceId, SodPolicyVersion, IsTier2 (tx1 deneme olayı `…workflow-start-requested`: Status →Submitted, uzak anahtar) | evet (öneri) | — |
-| ReconcilePaymentBatchWorkflowCommand | kapattığı niyetin **sonuç** olayı (geçiş matrisi; ör. `…submitted`, `…decision-cancelled`); niyet değişmediyse olay yok | PaymentBatch | b | niyet/karar durumu önce→sonra, bağlı makbuz `Completed` | evet (öneri) | — |
+| ReconcilePaymentBatchWorkflowCommand | kapattığı niyetin **sonuç** olayı (geçiş matrisi; ör. `…submitted`, `…decision-cancelled`); niyet değişmediyse olay yok | PaymentBatch | b | niyet/karar durumu önce→sonra; bağlı makbuz yalnız `Pending` ise `Completed` | evet (öneri) | — |
 | ApprovePaymentBatchCommand | finance-treasury.payment-batch.approved | PaymentBatch | b | karar kimliği, SodResult, Status | **evet — K2 (D11/3)** | — |
 | ApprovePaymentBatchWithSodWaiverCommand | finance-treasury.payment-batch.approved-with-sod-waiver | PaymentBatch | b | karar kimliği, SodResult=Waived, kaldırılan kural kodları, muafiyet gerekçe kodu, kanıt sayısı | **evet — K2 (D11/3)** | — |
 | RejectPaymentBatchCommand | finance-treasury.payment-batch.rejected | PaymentBatch | b | karar kimliği, ReasonCode, Status | **evet — K2 (D11/3)** | — |
