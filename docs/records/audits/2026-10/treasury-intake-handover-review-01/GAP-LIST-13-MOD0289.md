@@ -28,3 +28,20 @@ Kontroller (yazar ajan, CT tekrar saydı): 24 bölüm, MOD-0126 ile aynı sıra;
 hedef çatıda varlığı ve üretim gizli bilgi deposu, denetim niyeti yolunda sistem aktörü, MOD-0140 1.3.0'da "çağıran şirketle
 aktif ilişkili tedarikçiler" listeleme işlemi (1.2.0'da yalnız durum süzgeci, `supplier.openapi.yaml:26-31`). Belge
 incelemesidir; build / test / runtime yok.
+
+## Gap listesi 14 (2026-10-25, sahip — CONDITIONAL PASS)
+
+İnceleme girdisi `treasury-TRM16-MOD0289-c37f2188d.zip` (sha256 `55b80b0cc92dc06d59cb92c19d569c8319d55a541b76cf5475b510001d9db161`;
+manifest 6/6 geçti). Gap 13 büyük ölçüde karşılandı; dört madde kapandı (pack "Gap 14 kapanışı" tablosu):
+
+| # | Öncelik | Gap | Kapanış |
+|---|---|---|---|
+| 1 | P1 | Anahtar döndürmede eski yapılandırmalı örnek yalnız eski özeti yazabilir | Kiracı başına `BankDataKeyFence` (`mdm_bank_data_key_fences`, tek `KeySetId`); her hesap yazması aynı işlemde fence'e koşullu artış yapar, eski anahtar setiyle 503 `MDM_BANK_KEYSET_STALE`; fence ilerletme uçuştaki eski yazmayla çakışır; sıralı ilerletme K1→K4; "eksik özet sayısı 0" yalnız fence yeni setteyken nihai; şifreleme anahtarı emekliliği de aynı fence. `AdvanceBankDataKeyFenceCommand`, `WrittenWithKeySetId`. AC-43 (eşzamanlı eski/yeni yazar), AC-44 (şifreleme emekliliği), sabotajlı. |
+| 2 | P1 | Banka/şube anahtar alanı kilidi yarışa açık | `DomesticKeyFenceVersion` (Bank, BankBranch): domestic hesap oluşturma ve banka/şube anahtar alanı güncellemesi aynı alana CAS yapar, aynı işlemde; biri 409 (`MDM_BANK_DOMESTIC_KEY_CHANGED` / `MDM_BANK_DOMESTIC_KEY_LOCKED`). AC-45 (100 tekrar, sabotajlı). |
+| 3 | P2 | Döndürme işinin atlama koşulu | Atlama yalnız şifreleme güncel ∧ her aktif sürüm için özet var ∧ emekli özet yok; aksi hâlde yalnız eksik adımlar, tek CAS yazma, adımlar idempotent. AC-46. |
+| 4 | P2 | Gerçek gönderim kapısında Domestic ayrılmalı | `CountryFormat` şartı yalnız IBAN; Domestic için `DomesticFormat` (v1) / `DomesticVerified` (`IBankDirectorySource` + `IDomesticAccountRuleSource`, `Mdm:BankData:DomesticVerificationGate`); **iki kapı da** MOD-0269 gerçek gönderiminden önce zorunlu. AC-47. |
+
+O-6 hâlâ öneri: sahip / güvenlik onayı ve gerçek Mongo testleri olmadan kapanmaz; AC-13, AC-35…39, AC-43…46 yalnız gerçek
+replika setinde geçer sayılır. Ölçülmeyenler pack'te engel: fence kaydının yük altındaki çakışma oranı, `MasterDataAtomicWrite`
+yeniden deneme politikasıyla etkileşim, banka dizini ve domestic hesap kuralı kaynağı / sahibi (TBD). Pack: 24 bölüm, AC-1…47
+tekil. Belge incelemesidir; build / test / runtime yok.

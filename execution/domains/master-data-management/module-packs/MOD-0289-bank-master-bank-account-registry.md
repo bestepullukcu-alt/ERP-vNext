@@ -61,6 +61,11 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 >
 > **Revizyon 2 (2026-10-25):** sahip kararları D23/1–4 uygulandı; sahip gap listesi 13 (CONDITIONAL PASS) kapatıldı —
 > kapanış tablosu "Implementation Notes → Gap 13 kapanışı".
+>
+> **Revizyon 3 (2026-10-25):** sahip gap listesi 14 (CONDITIONAL PASS) kapatıldı — "Implementation Notes → Gap 14
+> kapanışı". Kod atıfları yeniden ölçülmedi: `git diff --stat 158e0dc93 c37f2188d -- services frontend gateway tests
+> docs/analysis AGENTS.md .antigravity` boş (ölçüldü), bu yüzden `@158e0dc93` atıfları `c37f2188d`'de aynı satırlara işaret
+> eder.
 
 ## Module Summary
 
@@ -162,6 +167,7 @@ Kaynak: CONTRACT-STATE `data_catalog.types`, `BankMasterEntities.cs@da4abb20` (p
 | `UpdateBankAccountCommand`, `DeactivateBankAccountCommand`, `DeleteBankAccountCommand`, `BulkDeleteBankAccountCommand` | `PUT /api/mdm/bank-accounts/{id}`, `POST …/{id}/deactivate`, `DELETE …/{id}`, `DELETE /api/mdm/bank-accounts/bulk` | kaynakta API delete yok (paket §F); silme yalnız taslak |
 | `RevealBankAccountIdentifierCommand` | `POST /api/mdm/bank-accounts/{id}/unmasked-reads` | maskesiz okuma: gerekçe gövdede, okuma kaydı yazılır (yan etkili olduğu için `GET` değil) |
 | `ValidateBankAccountReferenceQuery` | `GET /api/mdm/bank-accounts/{id}/lookup-validation` | tüketici okuma sözleşmesi (`BANK-ACCOUNT-LOOKUP`) |
+| `AdvanceBankDataKeyFenceCommand` | uç yok — yalnız döndürme işi gönderir | kiracının anahtar kümesi çitini hedef kümeye ilerletir (gap 14/1) |
 | `RotateBankAccountProtectionCommand` | uç yok — yalnız `BankAccountProtectionRotationWorker` (barındırılan iş, varsayılan kapalı, sistem aktörü) gönderir | anahtar döndürme: hesap başına yeniden şifreleme + eksik özet sürümlerinin yazılması + emekli özet sürümünün silinmesi (gap 13 P1-b, iyileştirme 2) |
 
 - **DTO'lar (tek dosya, Golden Reference):** `BankModels.cs` (`BankListItemDto`, `BankDetailDto`, `BankWriteRequest`,
@@ -224,6 +230,7 @@ iyimser eşzamanlılık sağlamaz. Bu modül `LegalEntityRepository.UpdateEditab
 | CountryCode | string(2) | zorunlu, ISO 3166-1 alfa-2, büyük harf; kaynak liste O-8 | `CountryCode` |
 | Bic | string? | ISO 9362; 8 ya da 11 karakter; Validation Rules | `SwiftBic` |
 | NationalBankCode | string? | normalize: trim, boşluk ve tire atılır, büyük harf; 1..35, `^[A-Z0-9]+$`; ülke içi banka kodu (ör. EFT kodu, BLZ, sort code). Bankada `Domestic` hesap açılacaksa **zorunlu** (gap 13 P1-a) | yeni |
+| DomesticKeyFenceVersion | int | 0'dan başlar; yurt içi anahtar çiti (gap 14/2): yurt içi hesap oluşturan / anahtarını değiştiren her işlem ve bankanın anahtar alanlarını değiştiren her işlem bu alanı **aynı Mongo işleminde** koşullu artırır (CAS) — iki eşzamanlı işlemden biri yazma çakışmasıyla düşer | yeni |
 | DomesticKeyIncludesBranch | bool | varsayılan `false`; `true` ise bu bankadaki `Domestic` hesaplar şube ister ve tekillik anahtarına şube kodu girer (ülkenin hesap numarası şube içinde tekilse). Ülke tablosu yazılmaz; ana veri sorumlusu banka başına ayarlar. Bankada en az bir silinmemiş `Domestic` hesap varken değiştirilemez (409 — anahtarlar değişirdi) | yeni (gap 13 P1-a) |
 | Status | `BankLifecycleStatus` | Durumlar | `Status` |
 | CreatedBy / UpdatedBy / ActivatedBy / DeactivatedBy | Guid? | token `sub` | — |
@@ -237,6 +244,7 @@ iyimser eşzamanlılık sağlamaz. Bu modül `LegalEntityRepository.UpdateEditab
 |---|---|---|---|
 | BankId | Guid | zorunlu; aynı kiracıda var olan, silinmemiş banka | `BankId` |
 | BranchCode | string | zorunlu; normalize NationalBankCode ile aynı (trim, boşluk/tire at, büyük harf), 1..35; bankada tekil; şubede silinmemiş `Domestic` hesap varken değiştirilemez (409) | `BranchCode` |
+| DomesticKeyFenceVersion | int | Bank'taki aynı alan, şube düzeyinde (şube kodu anahtara girdiğinde) | yeni (gap 14/2) |
 | Name | string | zorunlu, 1..200 | `BranchName` |
 | CountryCode | string(2) | zorunlu; bankanın ülkesine eşit (öneri) | `CountryCode` |
 | City | string? | ≤ 100 | `City` |
@@ -258,7 +266,8 @@ iyimser eşzamanlılık sağlamaz. Bu modül `LegalEntityRepository.UpdateEditab
 | EncryptionKeyVersion | string | zarfı üreten anahtar sürümü (ör. `k2026a`); ek doğrulanmış veriye (AAD) de girer | yeni |
 | UniquenessKeyDigests | string[] | tekillik anahtarının **her etkin özet anahtarı sürümüyle** HMAC-SHA256'sı, `"{hashKeyVersion}:{hex}"` biçiminde (döndürme sırasında birden çok öğe); düz SHA-256 değil (IBAN uzayı küçük, düz özet tersine çevrilebilir) | kaynak `FingerprintHash` (yalnız import satırında) |
 | HashKeyVersions | string[] | `UniquenessKeyDigests`'teki sürümler (sorgu ve başlangıç kontrolü için) | yeni (gap 13 P1-b) |
-| IdentifierCheckLevel | enum `FormatAndChecksum`=1, `CountryFormat`=2 | sunucu yazar; v1'de her IBAN `FormatAndChecksum`; ülke biçimi kapısı açık ve kaynak bağlıyken geçen IBAN `CountryFormat`; `Domestic` hesap her zaman `FormatAndChecksum` (yurt içi ülke kuralı v1 dışı) | yeni (gap 13 P2) |
+| WrittenWithKeySetId | string | kaydı son yazan örneğin anahtar kümesi kimliği (gap 14/1 çiti; yalnız tanılama ve döndürme sayımı — doğruluk çitin kendisindedir) | yeni (gap 14/1) |
+| IdentifierCheckLevel | enum `FormatAndChecksum`=1, `CountryFormat`=2, `DomesticFormat`=3, `DomesticVerified`=4 | sunucu yazar. IBAN: v1'de `FormatAndChecksum`; ülke biçimi kapısı açık ve kaynak bağlıyken geçen IBAN `CountryFormat`. Yurt içi: v1'de `DomesticFormat` (genel biçim); yurt içi doğrulama kapısı açık ve kaynaklar bağlıyken geçen hesap `DomesticVerified` (gap 14/4) | yeni (gap 13 P2, gap 14/4) |
 | AccountLast4 | string(4) | sunucu türetir (normalize tanımlayıcının son 4 karakteri); istemciden alınmaz | kaynak `AccountLast4` istemciden alınıp uyumsuzlukta reddediliyordu (paket §E) |
 | MaskedDisplay | string | sunucu türetir: IBAN → ülke kodu + `••••` + son 4 (ör. `TR••••1234`); yurt içi → `••••` + son 4 | kaynak `MaskedAccountDisplay` varsayılan `"MASKED"` |
 | AccountHolderName | string | zorunlu, trim, 1..140 (ISO 20022 ad uzunluğu önerisi) | `AccountHolderName` / `BeneficiaryName` |
@@ -301,6 +310,22 @@ matris C11), `PaymentEligibilityStatus`, `ApprovalStatus`, `ValidationState`, `L
 
 Depo arayüzünde `Update`, `Delete`, `Replace` yoktur (AUD-001 §4.1).
 
+### BankDataKeyFence (`mdm_bank_data_key_fences`, yeni — gap 14/1)
+
+| Alan | Tip | Kural |
+|---|---|---|
+| TenantId | Guid | kiracı başına bir belge (tekil); `EntityBase` |
+| ActiveKeySetId | string | bu kiracıda yazmaya izinli **tek** anahtar kümesi kimliği |
+| PreviousKeySetId | string? | bir önceki küme (tanılama) |
+| Epoch | int | her ilerletmede +1 |
+| WriteSeq | long | bu kiracıdaki her banka hesabı yazımı işlem içinde +1 (çakışmayı zorlamak için) |
+| AdvancedAt / AdvancedBy | DateTimeOffset / string | son ilerletme (sistem aktörü) |
+| AuditIntents / AuditIntentReceipts | — | ilerletme denetlenir (Audited Events) |
+
+**Anahtar kümesi kimliği (`KeySetId`):** örneğin yapılandırmasından türetilir — sıralı `(tür, sürüm, durum, anahtar denetim
+değeri)` listesinin SHA-256'sı; anahtar denetim değeri = `HMAC-SHA256(anahtar, "mdm-bank-kcv")`'nin ilk 8 baytı (anahtarı
+ifşa etmez; aynı adlı ama farklı baytlı anahtarı ayırır). Özet ve şifreleme sürümlerinin ikisi de kümeye girer.
+
 ### Mongo indeksleri
 
 | İndeks | Anahtar | Tekil | Not |
@@ -311,6 +336,7 @@ Depo arayüzünde `Update`, `Delete`, `Replace` yoktur (AUD-001 §4.1).
 | `ux_mdm_bank_branch_code` | TenantId + BankId + BranchCode | evet, kısmi `IsDeleted = false` | kaynak `MOD0289_BRANCH_CODE_CONFLICT` |
 | `ux_mdm_bank_account_code` | TenantId + Code | evet, kısmi filtre yok | — |
 | `ux_mdm_bank_account_identifier` | TenantId + UniquenessKeyDigests (çok anahtarlı — dizi öğesi başına) | evet, kısmi `IsDeleted = false` | aynı hesap kiracıda iki kez (iki sahiple) kayıt olamaz; döndürme sırasında ortak etkin sürümün özeti çakışır (gap 13 P1-b). Çok anahtarlı tekil indeksin kısmi süzgeçle bu sürücüde beklendiği gibi çalıştığı DL-2 başında gerçek replica set'te **ölçülür** (bu oturumda ölçülmedi) |
+| `ux_mdm_bank_data_key_fence_tenant` | TenantId | evet | kiracı başına tek çit belgesi (gap 14/1) |
 | `ix_mdm_bank_account_key_versions` | EncryptionKeyVersion + HashKeyVersions | — | kiracılar arası başlangıç kontrolü ve döndürme işi (kiracı süzgeçsiz tek yönetim sorgusu; yalnız sürüm adlarını okur) |
 | `ix_mdm_bank_account_owner_le` | TenantId + LegalEntityId + Status + CreatedAt(desc) | — | liste ve veri kapsamı süzgeci |
 | `ix_mdm_bank_account_owner_supplier` | TenantId + SupplierId + Status | — | — |
@@ -337,8 +363,11 @@ başka kayda taşınmış zarf; değer dönmez), `MDM_BANK_ACCOUNT_RELATIONSHIP_
 izniyle maskeli gören ama ilişkisi olmayan kullanıcının maskesiz okuması, D23/1), `MDM_BANK_DOMESTIC_BANK_CODE_REQUIRED` 400
 (ulusal banka kodu olmayan bankada yurt içi hesap), `MDM_BANK_DOMESTIC_BRANCH_REQUIRED` 400, `MDM_BANK_DOMESTIC_KEY_LOCKED` 409
 (yurt içi hesabı olan bankada `DomesticKeyIncludesBranch` ya da kod değişikliği), `MDM_BANK_IBAN_COUNTRY_FORMAT_INVALID` 400
-ve `MDM_BANK_IBAN_COUNTRY_FORMAT_UNAVAILABLE` 503 (ülke biçimi kapısı açıkken, gap 13 P2). Kullanıcıya giden ileti resx
-anahtarıdır.
+ve `MDM_BANK_IBAN_COUNTRY_FORMAT_UNAVAILABLE` 503 (ülke biçimi kapısı açıkken, gap 13 P2), `MDM_BANK_KEYSET_STALE` 503
+(yazan örneğin anahtar kümesi kiracının çitindeki küme değil; yazma yok, gap 14/1), `MDM_BANK_DOMESTIC_KEY_CHANGED` 409
+(yurt içi hesap oluşturulurken banka / şube anahtar alanı eşzamanlı değişti, gap 14/2),
+`MDM_BANK_DOMESTIC_VERIFICATION_FAILED` 400 ve `MDM_BANK_DOMESTIC_VERIFICATION_UNAVAILABLE` 503 (yurt içi doğrulama kapısı
+açıkken, gap 14/4). Kullanıcıya giden ileti resx anahtarıdır.
 
 ## Repo Scope
 
@@ -430,6 +459,8 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 | SEC-002 kapsam sağlayıcısı | `ITrustedLegalEntityScopeProvider` (MDM kodu) + Platform sağlayıcı ucu | DL-2 başında | platform-shared-services | hata → boş kapsam, boş liste, detay / yazma 404 | AC-17 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-2 |
 | Şifreleme ve özet anahtarları | O-6 (öneri) — `Mdm:BankData:EncryptionKeys` / `Mdm:BankData:HashKeys` (sürümlü); üretim gizli deposu **ölçülmedi** | — | sahip + güvenlik | eksik / hatalı anahtar → servis açılmaz; kayıttaki sürüm yok → 503; doğrulama hatası → 500, değer yok | AC-13, AC-35, AC-37…AC-39 · dev ortamı anahtar döndürme denemesi | DL-2 |
 | IBAN ülke biçimi kaynağı (ISO 13616 kayıt verisi) | **yok**; sahibi referans veri (MOD-0048 / REF slotu) | — | MOD-0048 sahibi | kapı kapalı (v1) → `FormatAndChecksum`; kapı açık + kaynak yok / erişilemez → 503 | AC-40 (sahte kaynak) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
+| Banka dizini + yurt içi hesap kuralı kaynakları (`IBankDirectorySource`, `IDomesticAccountRuleSource`) | **yok**; sahibi adlandırılmadı (referans veri / bankacılık sahibi) | — | TBD (sahip) | kapı kapalı (v1) → `DomesticFormat`; kapı açık + kaynak yok / erişilemez → 503 | AC-47 (sahte kaynaklar) · — | DL-2 (mekanizma); gerçek veri MOD-0269 öncesi |
+| Anahtar kümesi çiti (`mdm_bank_data_key_fences`) | MDM kodu (bu paket) | — | master-data-management | eski küme → 503, yazma yok | AC-43, AC-44 (iki örnekli eşzamanlı deneme, gerçek replica set) · dev ortamı döndürme provası | DL-2 |
 | MDM denetim niyeti (genişletilmiş) | `LocalAuditIntent` + `AuditIntentDeliveryProcessor` (kod) | MdmService commit SHA'sı DL-1 başında | master-data-management + CT | niyet yazılamazsa komut başarısız (iş verisi yok) | AC-6 (sabotaj) · AC-27 (AUD-001 §8 dev kanıtı) | DL-1 |
 
 ## Runtime Constraints
@@ -492,6 +523,20 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
 - Anahtarı oluşturan banka alanları (`CountryCode`, `NationalBankCode`, `DomesticKeyIncludesBranch`, şubenin `BranchCode`'u)
   bankada / şubede silinmemiş `Domestic` hesap varken değiştirilemez (409 `MDM_BANK_DOMESTIC_KEY_LOCKED`) — yoksa var olan
   kayıtların anahtarı sessizce eskirdi.
+- **Kilit sorgu ile değil çitle korunur (gap 14/2):** "hesap var mı" sorgusu tek başına, eşzamanlı bir hesap oluşturmayla
+  yarışabilir. Bu yüzden iki taraf da aynı belgeye yazar:
+  - **Yurt içi hesap Create / Draft'ta yurt içi anahtarı değiştiren Update:** işlem içinde bankayı `{Id, TenantId,
+    DomesticKeyFenceVersion = okunan, CountryCode = okunan, NationalBankCode = okunan, DomesticKeyIncludesBranch = okunan,
+    Status = Active}` süzgeciyle `$inc DomesticKeyFenceVersion` yapar (şube anahtara giriyorsa şube belgesinde de aynısı,
+    `BranchCode = okunan`), sonra hesabı yazar. Süzgeç tutmazsa (alan arada değişti) 409 `MDM_BANK_DOMESTIC_KEY_CHANGED`,
+    hesap yazılmaz.
+  - **Banka / şube anahtar alanı Update:** aynı işlemde `DomesticKeyFenceVersion`'ı koşullu artırır **ve** silinmemiş
+    yurt içi hesap sayımını işlem içinde yapar; sayım > 0 ise 409 `MDM_BANK_DOMESTIC_KEY_LOCKED`.
+  - İki işlem aynı belgeyi değiştirdiği için Mongo'da yazma çakışması oluşur; biri geçici hatayla geri alınır, yeniden
+    denendiğinde ya hesabı görür (409 kilit) ya da değişmiş alanı görür (409 değişti). İkisinin birlikte başarılı olması
+    yapısal olarak engellenir. `MasterDataAtomicWrite` politikası geçerlidir (işlem yoksa Development dışında yazma yok).
+  - Hesap silme (Draft) çite dokunmaz: silme ile banka değişikliği yarışırsa en kötü durumda banka değişikliği 409 alır
+    (güvenli yön).
 - IBAN ile yurt içi biçim **ayrı anahtar uzaylarıdır**: aynı hesabın bir kez IBAN, bir kez yurt içi numarayla kaydı v1'de
   yakalanmaz (IBAN'dan BBAN çözümlemesi ülke biçimi verisi ister). Bu sınır kabul edilmiş bir boşluktur; ülke biçimi
   kapısıyla (gap 13 P2) birlikte kapanır (Follow-up).
@@ -505,13 +550,31 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
 - **Yinelenen kontrolü** tekil çok anahtarlı indeksle yapılır (`ux_mdm_bank_account_identifier`): yeni kayıt, var olan
   kayıtla en az bir ortak sürümün özetini paylaşırsa indeks çakışır → 409. Uygulama ayrıca yazmadan önce her `Active`
   sürümün özetiyle arar (kullanıcıya erken ve açık hata için); karar yine indeksindir (yarış güvenliği).
-- **Döndürme prosedürü (sıra bağlayıcı):** (1) yeni sürüm `Active` olarak **bütün örneklere** eklenir, eski sürüm `Active`
-  kalır (iki sürümle çift yazma; yeni kayıtlar her iki özeti taşır); (2) `BankAccountProtectionRotationWorker` her kiracıda,
-  200'lük sayfalarla, eksik özeti olan her kayda yeni sürüm özetini ekler (`RotateBankAccountProtectionCommand`, hesap
-  başına CAS + denetim niyeti); iş yeniden başlatılabilir ve idempotenttir; (3) `HashKeyVersions` içinde yeni sürüm olmayan
-  kayıt sayısı (kiracılar arası, `ix_mdm_bank_account_key_versions`) 0 olunca `CurrentHashKeyVersion` yeni sürüme geçer ve
-  eski sürüm `Retiring` olur (artık yeni yazmada hesaplanmaz, aramada kullanılmaz); (4) iş eski sürümün özetlerini
-  kayıtlardan siler; (5) eski sürüm yapılandırmadan çıkarılır.
+- **Yazar çiti (gap 14/1):** "yeni özeti olmayan kayıt sayısı 0" tek başına yetmez — eski yapılandırmayla çalışmaya devam
+  eden bir örnek, sayım bittikten sonra yine yalnız eski özeti yazabilir. Bu yüzden **her banka hesabı yazımı** (Create,
+  Update, Activate, Deactivate, Delete, döndürme) aynı Mongo işleminde kiracının `BankDataKeyFence` belgesini
+  `{TenantId, ActiveKeySetId = örneğin KeySetId}` süzgeciyle `$inc WriteSeq` yapar; süzgeç tutmazsa 503
+  `MDM_BANK_KEYSET_STALE`, hiçbir şey yazılmaz. Çitin ilerletilmesi aynı belgeyi değiştirdiği için yolda olan eski küme
+  yazımıyla yazma çakışması oluşur; ilerletme commit olduktan sonra eski kümeli hiçbir yazım commit olamaz. Hesap yazma
+  hacmi düşük (ana veri) olduğu için kiracı başına tek sıcak belge kabul edilir; gerçek yük altında çakışma ve yeniden deneme
+  oranı **ölçülmedi** (DL-2 başında replica set yük denemesi). Çit belgesi yoksa (yeni kiracı) ilk yazım onu güncel
+  kümeyle oluşturur (tekil indeks yarışı çözer).
+- **Döndürme prosedürü (sıra bağlayıcı):** (1) yeni sürüm `Active` olarak **bütün örneklere** dağıtılır, eski sürüm `Active`
+  kalır (yeni küme K2: iki sürümle çift yazma); (2) çit her kiracıda K1'den K2'ye ilerletilir
+  (`AdvanceBankDataKeyFenceCommand`, yalnız örneğin kendi kümesi `Mdm:BankData:Rotation:TargetKeySetId`'ye eşitse; K1 ile
+  çalışan örnekler bundan sonra 503 alır — dağıtım bitmeden ilerletmek kullanılabilirliği düşürür, güvenliği değil);
+  (3) `BankAccountProtectionRotationWorker` her kiracıda 200'lük sayfalarla eksik adımları yapar (aşağıda "atlama
+  koşulu"); (4) çit K2'deyken `HashKeyVersions` içinde yeni sürüm olmayan kayıt sayısı (kiracılar arası,
+  `ix_mdm_bank_account_key_versions`) 0 ise bu sayım artık kesindir, çünkü eski sürümle yazabilecek bir örnek çit
+  tarafından reddedilir; (5) yeni sürüm güncel, eski sürüm `Retiring` olan küme K3 bütün örneklere dağıtılır ve çit K3'e
+  ilerletilir (K2 örnekleri artık 503); (6) iş eski sürümün özetlerini siler; (7) eski sürüm yapılandırmadan çıkarılır
+  (yeni küme K4, aynı ilerletme). Her ilerletme denetlenir. Operasyon kolaylığı: örnekler `KeySetId`'lerini sağlık ucunda
+  bildirir (doğruluk buna dayanmaz; çite dayanır).
+- **Atlama koşulu (gap 14/3):** iş bir kaydı **yalnız** şu üçü birlikte doğruysa atlar: (a) `EncryptionKeyVersion` =
+  `CurrentEncryptionKeyVersion`; (b) her `Active` özet sürümünün özeti `UniquenessKeyDigests`'te var; (c) `Retiring` ya da
+  yapılandırmada olmayan sürümün özeti yok. Aksi hâlde yalnız eksik adımları yapar — yeniden şifreleme yalnız (a) tutmuyorsa
+  (yeni nonce ile), özet ekleme yalnız (b) için, temizlik yalnız (c) için — hepsi tek CAS yazımında, çit kontrolüyle ve
+  tek denetim niyetiyle. Her adım idempotenttir: aynı kayda ikinci geçiş belgeyi değiştirmez.
 - **Başlangıç kontrolü:** en az bir `Active` sürüm ve `CurrentHashKeyVersion` yoksa, anahtar 32 bayt değilse ya da bir özet
   anahtarı bir şifreleme anahtarıyla aynıysa servis açılmaz; ayrıca **hiçbir `Active` sürümü taşımayan** silinmemiş kayıt
   varsa (`HashKeyVersions` ∩ Active = ∅; tek `limit 1` sorgusu) servis açılmaz — yoksa o kaydın yinelenmesi görünmez olurdu.
@@ -539,8 +602,11 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
 - **Döndürme ve kurtarma:** yeni sürüm `CurrentEncryptionKeyVersion` olur, eski sürüm `DecryptOnly` kalır — karışık sürümlü
   kayıtlar okunabilir. Döndürme işi eski sürümlü her kaydı çözer, **yeni nonce** ile yeni sürümle şifreler, CAS ile yazar
   (aynı `RotateBankAccountProtectionCommand`; özet adımıyla aynı yazım). Çökme sonrası yeniden çalıştırmak kalan kayıtları
-  işler; işlenmiş kayıt tekrar işlenmez (sürüm güncelse atlanır). Eski sürüm yapılandırmadan, yalnız o sürümü taşıyan kayıt
-  sayısı 0 olduktan sonra çıkarılır; erken çıkarılırsa başlangıç kontrolü (a) servisi açmaz.
+  işler; atlama koşulu yukarıdaki üç koşuldur (gap 14/3). **Aynı açık şifrelemede de vardı ve aynı çitle kapanır (gap
+  14/1):** eski kümeyle çalışan örnek, eski sürümü güncel sanarak sayım bittikten sonra eski anahtarla zarf yazabilirdi.
+  Şifreleme sürümleri de `KeySetId`'ye girdiği için yeni güncel sürüme geçiş bir çit ilerletmesidir; eski sürüm
+  yapılandırmadan **yalnız** çit güncel sürümü içeren kümedeyken ve o sürümü taşıyan kayıt sayısı 0 iken çıkarılır; erken
+  çıkarılırsa başlangıç kontrolü (a) servisi açmaz.
 - **IBAN denetim düzeyi (gap 13 P2):** v1 iki düzeyi ayırır — **"biçim + sağlama geçerli"** (`FormatAndChecksum`: genel
   IBAN deseni + ISO 7064 MOD 97-10) ve **"ülke biçimi geçerli"** (`CountryFormat`: ülkeye göre uzunluk ve BBAN yapısı,
   ISO 13616 kayıt verisi). v1 yalnız ilkini yapar; kayıt `IdentifierCheckLevel = FormatAndChecksum` ile saklanır ve bu
@@ -549,8 +615,21 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
   ile çalışır: `On` iken Create ve Draft değişikliği ülke biçimini denetler — geçmezse 400
   `MDM_BANK_IBAN_COUNTRY_FORMAT_INVALID`, kaynak yok / erişilemez ise 503 `MDM_BANK_IBAN_COUNTRY_FORMAT_UNAVAILABLE` (sessizce
   düşük düzeye inilmez); geçerse `CountryFormat`. Var olan `FormatAndChecksum` kayıtlar kendiliğinden yükselmez (yeniden
-  denetim işi Follow-up). **MOD-0269 gerçek dağıtımından önce zorunlu kapı:** kapı `On`, kaynak bağlı ve dağıtılacak her
-  hesap `CountryFormat` (tüketici bunu `lookup-validation`'dan okur).
+  denetim işi Follow-up).
+- **Yurt içi doğrulama düzeyi (gap 14/4):** IBAN kuralı yurt içi hesaba uygulanmaz. Yurt içi hesap v1'de
+  `DomesticFormat` ("genel biçim geçerli": `^[A-Z0-9]{4,34}$` + bankada ulusal banka kodu var) olarak saklanır.
+  `DomesticVerified` ("banka ve ülke kuralı doğrulandı") iki şeyin birlikte doğrulanmasını ister: (1) **banka varlığı** —
+  `CountryCode` + `NationalBankCode` (+ şube kodu, banka anahtara katıyorsa) bir banka dizini kaynağında
+  (`IBankDirectorySource`, ör. ulusal takas dizini) var ve aktif; (2) **hesap numarası kuralı** — o ülkenin numara biçimi ve
+  varsa kontrol hanesi kuralı (`IDomesticAccountRuleSource`). Kapı `Mdm:BankData:DomesticVerificationGate` (`Off` varsayılan /
+  `On`): `On` iken Create ve Draft değişikliği iki kontrolü yapar — geçmezse 400 `MDM_BANK_DOMESTIC_VERIFICATION_FAILED`,
+  kaynaklardan biri yok / erişilemez ise 503 `MDM_BANK_DOMESTIC_VERIFICATION_UNAVAILABLE` (düşük düzeye inilmez); geçerse
+  `DomesticVerified`. İki kaynağın sahibi ve verisi yoktur (Dependencies); sabit ülke tablosu yazılmaz.
+- **MOD-0269 gerçek dağıtımından önce iki zorunlu kapı (ikisi de):** (a) IBAN hesapları için ülke biçimi kapısı `On`,
+  kaynak bağlı ve dağıtılacak her IBAN hesabı `CountryFormat`; (b) yurt içi hesaplar için yurt içi doğrulama kapısı `On`,
+  iki kaynak bağlı ve dağıtılacak her yurt içi hesap `DomesticVerified`. Tüketici bunu `lookup-validation`'daki
+  `identifierType` + `identifierCheckLevel` çiftinden okur; birinin kapısı kapalıyken o türdeki hesaplar gerçek dağıtıma
+  giremez.
 
 ### Sahiplik kuralları
 
@@ -634,7 +713,7 @@ LEGAL-ENTITY-LOOKUP 1.1.0 deseni (`docs/analysis/contracts/drafts/legal-entity-l
 | `bankState` | string | `ACTIVE` \| `INACTIVE` (banka ya da şube pasifse `INACTIVE`) |
 | `currencyCode` | string | `^[A-Z]{3}$` |
 | `identifierType` | string | `IBAN` \| `DOMESTIC` |
-| `identifierCheckLevel` | string | `FORMAT_AND_CHECKSUM` \| `COUNTRY_FORMAT` (gap 13 P2) |
+| `identifierCheckLevel` | string | IBAN: `FORMAT_AND_CHECKSUM` \| `COUNTRY_FORMAT`; yurt içi: `DOMESTIC_FORMAT` \| `DOMESTIC_VERIFIED` (gap 13 P2, gap 14/4); türle uyuşmayan değer çelişkili yanıttır (503) |
 | `maskedDisplay` | string | ör. `TR••••1234` |
 | `contractVersion` | string | `bank-account-lookup/1.0` |
 
@@ -655,7 +734,7 @@ LEGAL-ENTITY-LOOKUP 1.1.0 deseni (`docs/analysis/contracts/drafts/legal-entity-l
   | E5 | `ownerType` + `legalEntityId` / `supplierId` | tutarlı ve tüketicinin beklediği taraf (ör. MOD-0126 kaynak hesabı: `LEGAL_ENTITY` ve `legalEntityId` = ödeyen şirket) |
   | E6 | `ownerState` | `ELIGIBLE` |
   | E7 | `currencyCode` | biçimli ve tüketicinin para birimi kuralına uygun (ör. parti para birimine eşit) |
-  | E8 | `identifierCheckLevel` | tüketicinin istediği en az düzey (v1 tüketicileri için `FORMAT_AND_CHECKSUM` yeterli; MOD-0269 gerçek dağıtımı `COUNTRY_FORMAT` ister) |
+  | E8 | `identifierType` + `identifierCheckLevel` | tüketicinin istediği en az düzey, türe göre (v1 tüketicileri için IBAN `FORMAT_AND_CHECKSUM`, yurt içi `DOMESTIC_FORMAT` yeterli; MOD-0269 gerçek dağıtımı IBAN'da `COUNTRY_FORMAT`, yurt içinde `DOMESTIC_VERIFIED` ister) |
   | E9 | `contractVersion` | `bank-account-lookup/1.` ile başlar |
 
 - **Tüketici sınıflandırma tablosu (sözleşmenin parçası; Treasury paketleri uygular):**
@@ -713,7 +792,8 @@ Features/BankMaster/
 Features/BankAccount/
   Commands/        CreateBankAccountCommand.cs, UpdateBankAccountCommand.cs, ActivateBankAccountCommand.cs,
                    DeactivateBankAccountCommand.cs, DeleteBankAccountCommand.cs, BulkDeleteBankAccountCommand.cs,
-                   RevealBankAccountIdentifierCommand.cs, RotateBankAccountProtectionCommand.cs (yalnız iş gönderir)
+                   RevealBankAccountIdentifierCommand.cs, RotateBankAccountProtectionCommand.cs,
+                   AdvanceBankDataKeyFenceCommand.cs (ikisini yalnız iş gönderir)
   Queries/         GetBankAccountListQuery.cs, GetBankAccountByIdQuery.cs, GetBankAccountSensitiveReadListQuery.cs,
                    ValidateBankAccountReferenceQuery.cs, BankAccountListSort.cs
   Handlers/CommandHandlers/   …Handler.cs
@@ -724,7 +804,8 @@ Features/BankAccount/
                    anahtar; saf işlevler; ağ yok)
 Infrastructure/BankData/
                    AesGcmBankAccountIdentifierProtector.cs, HmacUniquenessDigester.cs, BankDataKeyOptions.cs,
-                   BankDataKeyStartupValidator.cs (anahtar biçimi + kayıtlardaki sürümlerin yapılandırmada olması)
+                   BankDataKeyStartupValidator.cs (anahtar biçimi + kayıtlardaki sürümlerin yapılandırmada olması),
+                   BankDataKeySetId.cs (örneğin anahtar kümesi kimliği), BankDataKeyFenceRepository.cs (Persistence)
 Api/Services/BankData/
                    BankAccountProtectionRotationWorker.cs (barındırılan iş; `Mdm:BankData:Rotation:Enabled` varsayılan false)
   BankAccountModels.cs
@@ -825,6 +906,12 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - **Yurt içi hesap, ulusal banka kodu olmayan banka / şube gerektiren bankada şubesiz** → 400; **yurt içi hesabı olan
   bankada anahtar alanı değişikliği** → 409 `MDM_BANK_DOMESTIC_KEY_LOCKED`.
 - **Özet anahtarı sürümü taşımayan kayıt varken açılış** → servis açılmaz.
+- **Eski anahtar kümesiyle çalışan örnek çit ilerletildikten sonra yazıyor** → 503 `MDM_BANK_KEYSET_STALE`, hiçbir şey
+  yazılmaz; ilerletmeyle eşzamanlı eski küme yazımı → biri geri alınır, yeniden denemede 503.
+- **Yurt içi hesap oluşturma ile bankanın anahtar alanı değişikliği eşzamanlı** → ikisinden biri 409
+  (`MDM_BANK_DOMESTIC_KEY_CHANGED` ya da `MDM_BANK_DOMESTIC_KEY_LOCKED`); ikisi birlikte başarılı olmaz.
+- **Yurt içi doğrulama kapısı açıkken banka dizininde olmayan banka kodu / ülke kuralına uymayan numara** → 400; kaynak yok
+  → 503.
 - **Zarf kurcalanmış / yanlış anahtar / başka kayda taşınmış** → maskesiz okuma 500 `MDM_BANK_PROTECTION_INTEGRITY_FAILED`,
   değer yok; **kayıttaki şifreleme sürümü yapılandırmada yok** → açılışta servis açılmaz, çalışırken 503.
 - **Sağlaması geçerli ama ülke uzunluğu yanlış IBAN** → v1'de (kapı `Off`) kabul, `FormatAndChecksum` işaretli; kapı `On`
@@ -938,6 +1025,7 @@ yazmaları K2 değil ama aynı yoldan yazıldığı için pratikte kapalı-başa
 | DeleteBankAccountCommand | mdm.bank-account.deleted | BankAccount | b | BeforeState: Code, Status | **öneri evet** | — |
 | BulkDeleteBankAccountCommand | mdm.bank-account.deleted (kimlik başına bir niyet) | BankAccount | b | aynı | **öneri evet** | — |
 | RevealBankAccountIdentifierCommand (**okuma satırı**, AUD-001 §7) | mdm.bank-account.identifier-revealed | BankAccountSensitiveRead | b | BankAccountId, ReasonCode (değer yok) — değerden **önce** (KARAR D23/4) | **öneri evet** | — |
+| AdvanceBankDataKeyFenceCommand (sistem aktörü) | mdm.bank-data.key-fence-advanced | BankDataKeyFence | b | Epoch önce→sonra, ActiveKeySetId önce→sonra (kimlik özetleri; anahtar ya da denetim değeri yok) | **öneri evet** | — |
 | RotateBankAccountProtectionCommand (sistem aktörü) | mdm.bank-account.protection-rotated | BankAccount | b | EncryptionKeyVersion önce→sonra, eklenen / silinen özet sürüm **adları** (özet değerleri, zarf ve tanımlayıcı yok) | **öneri evet** | — (İ4 kullanılmaz: zarf değiştiği için kayıt değişir ve denetlenir) |
 
 - **Okuma denetimi:** maskesiz okuma AUD-001 §7'nin üç sınıfından birine açıkça girmez; bu paket onu daha sıkı kuralla
@@ -1132,6 +1220,36 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   "sürer" verir. Sınıflandırıcı yalnız `referenceable`'a bakacak şekilde değiştirildiğinde pasif banka ve onaysız sahip
   fikstürleri kırmızıya döner (sabotaj). Tüketici paketlerinin aynı fikstürleri kendi sınıflandırıcılarına karşı koşması o
   paketlerin işidir (Follow-up tablosu).
+- [ ] AC-43 (zorunlu) — Anahtar kümesi çiti, özet döndürmesi (gap 14/1; gerçek replica set, iki örnek): örnek A eski küme
+  K1 (yalnız `h1`), örnek B yeni küme K2 (`h1` + `h2`) ile çalışır ve ikisi döndürme boyunca eşzamanlı hesap yazar; çit K2'ye
+  ilerletildikten sonra A'nın her yazımı 503 `MDM_BANK_KEYSET_STALE` alır ve hiçbir belge yazılmaz; ilerletmeyle eşzamanlı
+  A yazımları ya ilerletmeden önce commit olur ya da reddedilir; iş bittikten ve `h1` emekliye ayrıldıktan sonra **`h2`
+  özeti olmayan hiçbir kayıt yoktur** ve aynı hesabın yeniden kaydı 409'dur. Çit kontrolü (`ActiveKeySetId` süzgeci ya da
+  `WriteSeq` artırımı) kaldırıldığında "emeklilikten sonra yalnız `h1` özetli kayıt" vakası kırmızıya döner (sabotaj).
+- [ ] AC-44 (zorunlu) — Anahtar kümesi çiti, şifreleme anahtarı emekliliği (gap 14/1): eski güncel şifreleme sürümü `k1`
+  ile çalışan örnek, çit `k2`'yi güncel yapan kümeye ilerletildikten sonra zarf yazamaz (503); iş bittikten sonra `k1`
+  zarflı kayıt sayısı 0'dır ve `k1` çıkarıldıktan sonra bütün kayıtlar okunabilir; çit ilerletilmeden `k1`'i çıkarma adımı
+  reddedilir (iş "çit hedef kümede değil" der). Çit kaldırıldığında eski örneğin emeklilik sonrası `k1` zarfı yazdığı vaka
+  kırmızıya döner (sabotaj).
+- [ ] AC-45 (zorunlu) — Yurt içi anahtar kilidi yarışı (gap 14/2; gerçek replica set, paralel istek): bir istek bankada
+  ilk yurt içi hesabı açarken diğeri bankanın `NationalBankCode`'unu (ayrı denemede `DomesticKeyIncludesBranch`'ı ve şubenin
+  `BranchCode`'unu) değiştirir → tam biri başarılı, diğeri 409 (`MDM_BANK_DOMESTIC_KEY_CHANGED` ya da
+  `MDM_BANK_DOMESTIC_KEY_LOCKED`); son durumda hesabın tekillik anahtarı bankanın güncel alanlarıyla tutarlıdır. Testi 100
+  tekrar koşar. `DomesticKeyFenceVersion` artırımı iki taraftan kaldırıldığında ikisinin birlikte başarılı olduğu bir tekrar
+  bulunur ve test kırmızıya döner (sabotaj).
+- [ ] AC-46 (zorunlu) — Döndürme işinin atlama koşulu (gap 14/3): şifrelemesi güncel ama yeni `Active` özeti eksik kayıt
+  atlanmaz — yalnız özet eklenir, zarf baytları (nonce dahil) değişmez; özeti tam ama şifrelemesi eski kayıt yalnız yeniden
+  şifrelenir; ikisi de tam ama `Retiring` özeti duran kayıt yalnız temizlenir; üçü de tamsa belge değişmez; her durumda tek
+  niyet ve aynı kayda ikinci geçişte değişiklik yok. Atlama koşulu yalnız şifreleme sürümüne bakacak şekilde
+  değiştirildiğinde ilk vaka kırmızıya döner (sabotaj).
+- [ ] AC-47 (zorunlu) — Yurt içi doğrulama kapısı (gap 14/4): kapı `Off` (v1) iken yurt içi hesap `DomesticFormat` olarak
+  kaydedilir ve lookup'ta `identifierType = DOMESTIC` + `identifierCheckLevel = DOMESTIC_FORMAT` döner; kapı `On` + sahte
+  kaynaklar iken dizinde olmayan banka kodu ve ülke kuralına uymayan numara ayrı ayrı 400
+  `MDM_BANK_DOMESTIC_VERIFICATION_FAILED`, ikisi de geçerse `DomesticVerified`; kaynaklardan biri yok / hata → 503; IBAN hesabı
+  bu kapıdan etkilenmez, yurt içi hesap IBAN ülke kapısından etkilenmez. Başvuru sınıflandırıcısı (AC-42) "gerçek dağıtım"
+  profilinde `DOMESTIC_FORMAT` ve `FORMAT_AND_CHECKSUM` için 422, `DOMESTIC_VERIFIED` / `COUNTRY_FORMAT` için "sürer",
+  türle uyuşmayan düzey için 503 verir. Kapı açıkken kaynak hatası "biçim yeter" sayılacak şekilde değiştirildiğinde test
+  kırmızıya döner (sabotaj).
 
 ## Test Expectations
 
@@ -1148,7 +1266,10 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - **Sahte MOD-0140:** dört durum, `known: false`, geçersiz gövde, 401/403/500, zaman aşımı; ilişkili / ilişkisiz / kiracı
   geneli kullanıcı matrisi (AC-41); 1.3.0 main'e girince gerçek sözleşmeye karşı sözleşme testi.
 - **Anahtar döndürme:** iki örnek, iki yapılandırma (h1 / h1+h2) ile eşzamanlı oluşturma (AC-35); kesintili iş (AC-36,
-  AC-39); başlangıç doğrulaması (AC-38).
+  AC-39); başlangıç doğrulaması (AC-38); eski / yeni örnekli kademeli dağıtım ve çit (AC-43, AC-44); atlama koşulu (AC-46).
+- **Yarış:** yurt içi hesap oluşturma ile banka / şube anahtar alanı değişikliği, 100 tekrar (AC-45).
+- **Gerçek Mongo şartı:** O-6 ve çitlerle ilgili AC'ler (AC-13, AC-35…AC-39, AC-43…AC-46) yalnız gerçek replica set'te
+  (işlem ve yazma çakışması olan) geçmiş sayılır; bellek içi sahte depo bu AC'leri kapatmaz.
 - **Mimari:** her aksiyonda `[HasPermission]`; `mod0140_suppliers` / ProcurementService başvurusu yok; DTO'larda tam
   tanımlayıcı alan adı yok (`BankAccountRevealDto` hariç); `AuditTrailStandard` filtresi yeşil.
 - **Sözleşme:** `BANK-ACCOUNT-LOOKUP` 1.0.0 örnek gövdeleri; tüketici paketleri (MOD-0126, MOD-0119, MOD-0120, MOD-0124)
@@ -1203,6 +1324,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   `AesGcm` kullanılabilirliği (O-6) — DL-2 için
 - [ ] Çok anahtarlı kısmi tekil indeksin (`ux_mdm_bank_account_identifier`) gerçek replica set'te beklendiği gibi çalıştığı
   ölçüldü — DL-2 için
+- [ ] O-6 (şifreleme + anahtar çiti tasarımı) sahip ve güvenlik onayından geçti ve gerçek Mongo testleriyle (AC-43…AC-46)
+  doğrulanacağı kabul edildi; kiracı başına çit belgesinin yük altında çakışma oranı ölçüldü — DL-2 için
 - [ ] SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalıştığı ölçüldü (D23/1 kuralı) — DL-2 için
 - [ ] MOD-0140 1.3.0'da "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okumasının hangi işlemle verildiği ölçüldü
   (D23/1 liste süzgeci) — DL-3 için
@@ -1256,6 +1379,16 @@ O-8; AUTH → `[HasPermission]` + explicit-grant; AUDIT → Audited Events (O-5)
 | İyileştirme 1 | Tüketici yalnız `referenceable`'a dayanabilirdi | `referenceable`'ın anlamı daraltıldı; E1…E9 uygunluk alanları zorunlu; negatif uyum fikstürleri + üretici testleri + başvuru sınıflandırıcısı; tüketici testleri tüketici paketlerine (Follow-up) | AC-19, AC-20, AC-42 |
 | İyileştirme 2 | Şifreleme somut değildi | AES-256-GCM, CSPRNG'den 96 bit nonce (yeniden kullanılmaz), AAD = TenantId + hesap kimliği + anahtar sürümü, sürüm kayıtta; kurcalama / yanlış anahtar → 500, eksik anahtar → açılmaz / 503, karışık sürüm okunur, yeniden şifreleme işi. **O-6 hâlâ öneridir** — sahip kararı bulunmadı | AC-13, AC-22, AC-37, AC-38, AC-39 |
 
+### Gap 14 kapanışı (sahip gap listesi 14, CONDITIONAL PASS → revizyon 3)
+
+| Madde | Bulgu | Kapanış (bu pakette) | AC |
+|---|---|---|---|
+| 1 (P1) | Eski yapılandırmalı örnek, "yeni özeti olmayan kayıt 0" sayımından sonra yine yalnız eski özeti yazabilir | Kiracı başına `BankDataKeyFence` (Mongo'da tek etkin `KeySetId`); her hesap yazımı aynı işlemde çiti `ActiveKeySetId` süzgeciyle artırır, eski küme 503; döndürme adımları çit ilerletmeleriyle sıralanır, emeklilik sayımı yalnız çit yeni kümedeyken kesin sayılır. Aynı açık şifreleme anahtarı emekliliğinde de vardı — aynı çitle kapandı (Runtime Constraints → "Özet anahtarı döndürme", "Şifreleme") | AC-43, AC-44 |
+| 2 (P1) | "Yurt içi hesap varsa banka kodu kilitli" sorgusu hesap oluşturmayla yarışabilir | Bank / BankBranch `DomesticKeyFenceVersion`; yurt içi hesap yazımı ve banka / şube anahtar alanı değişikliği aynı işlemde aynı alanı CAS'la artırır → biri yazma çakışmasıyla düşer, 409 (Runtime Constraints → "Tekillik anahtarı") | AC-34, AC-45 |
+| 3 (P2) | Döndürme işi kaydı yalnız şifreleme sürümüne bakarak atlıyordu | Atlama yalnız üç koşul birlikteyken (güncel şifreleme + her etkin özet + emekli özet yok); aksi hâlde yalnız eksik adımlar, idempotent | AC-46 |
+| 4 (P2) | Gerçek dağıtım kapısı yalnız IBAN içindi | Yurt içi için ayrı kapı: banka dizininde ülke + ulusal banka kodu (+ şube) ve ülke hesap numarası kuralı (`IBankDirectorySource`, `IDomesticAccountRuleSource`), düzey `DomesticVerified`; IBAN `CountryFormat` ve yurt içi `DomesticVerified` kapılarının **ikisi de** MOD-0269 gerçek dağıtımından önce zorunlu | AC-47 |
+| — | O-6 | Hâlâ **öneri**: sahip ve güvenlik onayı ile gerçek Mongo testleri (replica set) olmadan kapanmaz (Ready-for-dev engeli) | — |
+
 ### Taşınmayacaklar (do-not-carry)
 
 1. Operasyonel outbox ve iş çalıştırma (`BankAccountOperationalOutboxItem`, `BankAccountOperationalJobRun`, API-071…075):
@@ -1308,6 +1441,8 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
   değerlendirilir).
 - Tüketici uyum testleri (`BANK-ACCOUNT-LOOKUP` negatif fikstürleri, AC-42) — sahipleri: MOD-0126, MOD-0119, MOD-0120,
   MOD-0124 paketleri (finance-treasury); her biri E1…E9'u kendi kuralıyla uygular.
+- Yurt içi doğrulama kaynakları (banka dizini, ülke hesap numarası kuralları) için sahip ve veri — MOD-0269 gerçek
+  dağıtımından önce (gap 14/4).
 - IBAN ülke biçimi kaynağı (ISO 13616 kayıt verisi; sahibi referans veri) ve var olan `FormatAndChecksum` kayıtları
   yeniden denetleyen iş; IBAN ↔ yurt içi numara eşleme (iki anahtar uzayını birleştirme) — MOD-0269 gerçek dağıtımından
   önce.
@@ -1327,7 +1462,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-3 | Maskesiz okuma izni kimde? | (a) `mdm.bank-accounts.read-unmasked`, Tier 3, yalnız açık atama, gerekçe kodu zorunlu (b) hesap oluşturma izniyle birlikte (c) maskesiz okuma yok | **KARAR D23/4 (2026-10-25): (a)** — yalnız açık atama (rol şablonunda varsayılan değil), her okumada gerekçe kodu, değer dönmeden önce denetim kaydı. Kalan (karar değil): gerekçe değer listesi önerisi `PAYMENT_INVESTIGATION`, `BANK_CONFIRMATION`, `AUDIT_REQUEST`, `DATA_CORRECTION`; ilk sahipler rol şablonu MOD-0018 sahibiyle | sahip (K1) + MOD-0018 / Auth sahibi (uygulama) |
 | O-4 | Tedarikçi hesabı aktivasyonunda doğrulama kanıtı | (a) kanıt yok (b) zorunlu doğrulama kodu (`CALLBACK_CONFIRMED`, `BANK_LETTER_ON_FILE`, `SUPPLIER_PORTAL_CONFIRMED`) + dört göz (c) MOD-0031 kanıt bağlantısı zorunlu | **(b)** v1 — MOD-0031 bağımlılığı getirmeden kararın izini bırakır; **(c)** MOD-0269 gerçek dağıtım açılmadan önce zorunlu kapı (Follow-up) | sahip |
 | O-5 | Denetim yolu ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi (aynı yazımda niyet, kapalı-başarısız) (b) `mdm-merkezi-iletim` (en iyi çaba) (c) ortak CentralAudit (Building.Blocks) MDM'ye | **(a)** — bugün MDM'de kapalı-başarısız tek yol; hesap yazmaları ve maskesiz okuma K2 sayılsın; işlem enum'u için ürün adlı `ProductAuditOperation`'a ekleme yerine eklemeli genel `MasterDataAuditOperation` önerilir. Defter belirteci CT kararı ister. `AuditCategory` değeri MOD-0126 O-6 ile ortak | CT + sahip |
-| O-6 | Tam tanımlayıcının saklanması (**öneri — sahip kararı yok**; gap 13 iyileştirme 2 ile somutlaştırıldı, Runtime Constraints → "Şifreleme") | (a) uygulama düzeyi zarf şifreleme (AES-256-GCM, CSPRNG 96 bit nonce, AAD = TenantId + hesap + sürüm, sürümlü anahtar) + ayrı, sürümlü anahtarlı HMAC özet (b) MongoDB istemci tarafı / sorgulanabilir şifreleme (c) dış kasa referansı (kaynak modeli) (d) tam değeri hiç saklamama | **(a)** — repoda hiçbir şifreleme altyapısı yok (ölçüldü), (b) ek sürücü kütüphanesi ve anahtar kasası ister, (c) Recovery'de kasa yok, (d) sistem-of-record amacına aykırı. Anahtar yoksa servis açılmaz (`configuration-safety`); Development anahtarı ayrı; döndürme prosedürü DL-2 önkoşulu | sahip + güvenlik |
+| O-6 | Tam tanımlayıcının saklanması (**öneri — sahip kararı yok; sahip + güvenlik onayı ve gerçek Mongo testleri gerekir**; gap 13 iyileştirme 2 ve gap 14/1 anahtar kümesi çitiyle somutlaştırıldı, Runtime Constraints → "Şifreleme") | (a) uygulama düzeyi zarf şifreleme (AES-256-GCM, CSPRNG 96 bit nonce, AAD = TenantId + hesap + sürüm, sürümlü anahtar) + ayrı, sürümlü anahtarlı HMAC özet (b) MongoDB istemci tarafı / sorgulanabilir şifreleme (c) dış kasa referansı (kaynak modeli) (d) tam değeri hiç saklamama | **(a)** — repoda hiçbir şifreleme altyapısı yok (ölçüldü), (b) ek sürücü kütüphanesi ve anahtar kasası ister, (c) Recovery'de kasa yok, (d) sistem-of-record amacına aykırı. Anahtar yoksa servis açılmaz (`configuration-safety`); Development anahtarı ayrı; döndürme prosedürü DL-2 önkoşulu | sahip + güvenlik |
 | O-7 | RCS-001 kayıt kodları | banka `BNK` (grup öneki, kiracı geneli) · hesap `BAC` (şirket hesabında şirket öneki, tedarikçi hesabında grup öneki) · başka | **önerildiği gibi**, sınıf OTOMATİK (çakışma yok: §3 tablosunda ve depoda `BNK`/`BAC` geçmiyor, ölçüldü); şube kodu doğal anahtar (BranchCode), RCS kodu yok | sahip + CT (`.antigravity` onayı) |
 | O-8 | Ülke kodu kaynağı | (a) yalnız ISO 3166-1 alfa-2 biçim kontrolü (b) PSS-011 ülke listesi (c) MDM iş ülkesi referansı (yok) | **(a)** v1 — domain-config PSS-011'in MDM iş ülkesi kaynağı olmadığını söylüyor; MOD-0220 de `CountryCode`'u serbest dizge tutuyor (`LegalEntity.cs:27`); MDM ülke kararı gelince bağlanır | MDM sahibi |
 | O-9 | Tedarikçi hesabı kapsamı | (a) kiracı geneli (b) **ilişkili şirketler** (c) kapsam yok | **KARAR D23/1 (2026-10-25): (b)** — liste, detay ve lookup yalnız tedarikçiyle MOD-0140'ta `Active` ilişkisi olan şirketin kullanıcısına; ilişkisiz 404; maskesiz okuma ayrıca izin + ilişki; `read-tenant-wide` tüm tedarikçi hesaplarını maskeli gösterir. Şirket hesapları `LegalEntityId` kapsamıyla; bankalar kiracı geneli. Kalan (karar değil): sağlayıcı ölçümü (DL-2) ve ilişkili tedarikçi listesinin 1.3.0 işlemi (DL-3) | sahip (K1) |
@@ -1364,7 +1499,8 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   yapılabilsin. Önkoşul: DL-1, O-6, O-10, O-12 (D23/2–4 karar verildi), şifreleme ve özet anahtarları, Auth explicit-grant
   eki, kapsam sağlayıcısı ölçümü, çok anahtarlı tekil indeks ölçümü, MOD-0048 tüketim yolu, `ValidationBehavior` ölçümü.
   Bitiş: AC-3 (hesap kısmı), 4 (hesap kısmı), 5 (hesap kısmı), 6 (hesap kısmı), 8 (hesap kısmı), 9 (hesap kısmı), 10, 11,
-  12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26 (şirket hesabı kısmı), 33, 34, 35, 36, 37, 38, 39, 40, 42.
+  12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26 (şirket hesabı kısmı), 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46,
+  47.
 - **DL-3** — Yollar: `Infrastructure/Suppliers/**` (`ISupplierEligibilityPort` bağdaştırıcısı), tedarikçi sahibi dalları
   (Create, Update, Activate, Deactivate, Delete, liste, detay, maskesiz okuma, `lookup-validation` — D23/1 ilişki kuralı),
   mimari test (koleksiyon okuması yok), dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0140 1.3.0'a bağlı; DL-2'yi
