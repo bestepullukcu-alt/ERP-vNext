@@ -481,3 +481,96 @@ Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the M
   PlatformAdmin. A tenant administrator can grant the runtime keys to any tenant role (e.g. QA).
 - Follow-ups: FU-0023-FX-WEB (remove the free-text "Actor Id" field from the `/Platform/Workflow` task forms),
   FU-0023-FX-SOD-SWITCH (per-template SoD switch, not built).
+
+## 17. TRM-15 — retention policy, additive reconciliation read fields, same-key race answer (proposal, not approved)
+
+**Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9 and
+D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
+questions sent to the platform code owner). It does **not** change this pack's frontmatter/status and authorizes no code
+until it passes CT-APR-02 and CT-APR-01. TRM-15 is closed only when §17 is approved, AC-W1…W6 have **passed** (running
+a test is not passing it) and the Diten.Platform build is green. Queue: `treasury-intake` TRM-15. The policy decisions
+below do not prove that today's code behaves this way; the ACs do.
+
+### 17.1 Why
+
+Diten.FinanceTreasuryService (MOD-0126, MOD-0119, MOD-0120, MOD-0124) starts MOD-0023 instances and records
+transitions with deterministic idempotency keys. After an unknown outcome its Reconcile must (a) find **its own**
+instance / transition by key, not "the newest one for the object", and (b) rely on the key staying claimed forever
+before it re-issues with the same key. Today neither is guaranteed by contract.
+
+### 17.2 Current code truth (@ef4f3a8bc; Diten.Platform identical to origin/main)
+
+- Entities carry the keys: `WorkflowInstance.IdempotencyKey` (`WorkflowInstance.cs:30`), `WorkflowTransitionLog`
+  `ApprovalTaskId` / `Action` / `IdempotencyKey` (`WorkflowTransitionLog.cs:12-22`).
+- Unique partial indexes `ux_workflow_instances_tenant_idempotency_key_active` and
+  `ux_workflow_transition_logs_task_action_idempotency_active` (`PlatformSchemaManifest.WorkflowWorkCenter.cs:118-131,
+  211-225`), both filtered `IsDeleted = false`.
+- No delete path and no `ExpireAfter` for these two types; the only workflow soft delete
+  (`WorkflowRepositories.cs:961-974`) is `SlaEscalationRule`.
+- Reads do **not** expose the keys: `WorkflowInstanceStatusDto` (`WorkflowModels.cs:200-207`: Id, Status, Outcome,
+  Stage, Step, StartedAt, CompletedAt) used by `GET instances/by-objects`, which hides deleted rows
+  (`GetWorkflowInstancesByObjectsHandler.cs:51`); `WorkflowInstanceDto` (`:406-424`, `GET instances/{id}`);
+  `WorkflowInstanceHistoryEntryDto` (`:451-465`, `GET instances/{id}/history`: SequenceNo, Action, Actor…, no task id,
+  no key).
+- Same-key behaviour: sequential replay returns the stored start (`StartWorkflowInstanceHandler.cs:76-85`) and stored
+  transitions (`RejectWorkflowTaskHandler.cs:79-80`, `WorkflowTaskTransitionSupport.cs:61, 381, 539`). Concurrent same-key
+  starts: the loser re-reads after a write conflict and answers as the winner's replay when the start is whole, 503
+  "replay the same key" when it is not whole yet, 409 when the instance left Active
+  (`StartWorkflowInstanceHandler.cs:300-330, 700-716`); terminal transitions follow the same pattern
+  (`WorkflowTerminalTransitionWriter.cs:112-114, 357-…`). Mongo tests exist in the Platform suite
+  (e.g. `WorkflowCandidateDecisionMongoTests*`, `TrustedWorkflowStartRecoveryMongoTests`); whether they cover concurrent
+  **same-key** start and transition was **not measured**.
+
+### 17.3 Change
+
+1. **Retention policy (D21/1):** `WorkflowInstance` and `WorkflowTransitionLog` are never deleted (no hard delete, no
+   soft delete, no TTL, no archive-and-remove). Written into this pack; guarded by an architecture test (AC-W1).
+2. **No deleted-distinguishing read (D21/2):** not added; the policy plus AC-W1 replace it. Consumers keep their rule:
+   a deleted row that is nevertheless seen means "do not re-issue".
+3. **Additive read fields (D21/3)** — trailing optional members, the existing "additive, trailing" pattern:
+   - `WorkflowInstanceStatusDto` + `string? IdempotencyKey = null` (`by-objects`);
+   - `WorkflowInstanceDto` + `string? IdempotencyKey = null` (`instances/{id}`);
+   - `WorkflowInstanceHistoryEntryDto` + `Guid? ApprovalTaskId = null`, `string? IdempotencyKey = null` (`history`).
+   Values come from the entity unchanged (null when the write had no key). Same permission (`instances.view`), same
+   tenant filter, same 404, same routes; nothing removed or renamed; property order is not part of the contract. The key
+   is not a secret (deterministic for Treasury; caller-chosen otherwise) and is returned only to callers that may
+   already view the instance.
+4. **Same-key race answer (D21/4):** for two concurrent requests with one key the final answers are the **same** record
+   (same instance id / same transition sequence) and exactly one row exists. An interim 503 "replay the same key" is
+   allowed (consumers treat it as unknown and replay); a 409 is allowed only when the instance really left Active. A
+   duplicate-key error is never returned as a business refusal.
+
+Allowed paths: `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`, the three
+read handlers (`GetWorkflowInstancesByObjectsHandler.cs`, `GetWorkflowInstanceByIdHandler`, `GetWorkflowInstanceHistoryHandler.cs`)
+for the mapping only, `services/Diten.Platform/tests/**`, `tests/architecture/**` (new rule only). No index, schema,
+route, permission or write-path change.
+
+### 17.4 Acceptance criteria (defined — not implemented, not run)
+
+- AC-W1 — Retention guard (architecture test): no code path deletes, soft-deletes (`IsDeleted` / `DeletedAt` set) or
+  TTL-expires `WorkflowInstance` / `WorkflowTransitionLog`; the schema manifest declares no `ExpireAfter` on their
+  collections. Sabotage: adding a `DeleteAsync` or an `ExpireAfter` turns the test red.
+- AC-W2 — `by-objects`, `instances/{id}` and `history` return the stored `IdempotencyKey` (and `ApprovalTaskId` on history)
+  for keyed writes and `null` for unkeyed ones; other-tenant id → 404 unchanged.
+- AC-W3 — JSON compatibility: existing properties keep name, JSON type and meaning; the new ones are added; order not
+  asserted. Existing Platform consumer tests pass unchanged.
+- AC-W4 — Code compatibility: `dotnet build` of Diten.Platform succeeds; construction sites
+  (`git grep -n "WorkflowInstanceStatusDto\|WorkflowInstanceDto\|WorkflowInstanceHistoryEntryDto"`) re-scanned at code time;
+  optional trailing members keep existing calls compiling.
+- AC-W5 — Concurrent same-key **start** on a real Mongo replica set (N ≥ 2 parallel requests, repeated): exactly one
+  instance; every final answer (after replaying any 503) names that instance; no answer is a business refusal.
+  Sabotage: removing the post-conflict re-read turns it red.
+- AC-W6 — Concurrent same-key **approve** and **reject** on one task: exactly one transition row per (task, action, key);
+  final answers identical; same rule for 503 / 409.
+
+### 17.5 Delivery
+
+- Code lands **with MOD-0126 DL-2** (first consumer of the reconciliation reads), as its own commit within the paths
+  above; XMC-001 consent is D9 and must be restated in that WP prompt.
+- Consumer-side rules stay in the Treasury packs (MOD-0126 / 0119 / 0120 / 0124 Runtime Constraints): match only by
+  key (+ task + action for transitions); a read without the key field cannot close an `Unknown` intent.
+
+### 17.6 Out of scope
+
+Deleted-row reads; any write-path or index change; trusted service identity (MOD-0033-FU02); background reconciliation
+sweeper; changes to SoD, actor binding or permissions.

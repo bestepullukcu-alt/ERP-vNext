@@ -581,8 +581,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-6) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
 | SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-14; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MOD-0023 başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AR şablon kodu — **TBD** | Platform commit SHA'sı DL-3 başında | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-3 |
-| MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | MOD-0023 pack'inde politika maddesi — **yazılacak** (D9; MOD-0126 ile ortak satır): `WorkflowInstance` ve `WorkflowTransitionLog` en az niyet ömrü boyunca silinmez, temizlenmez, TTL almaz | TBD | platform-shared-services | politika kapanmadan 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c): silme yolu yok (`WorkflowRepositories.cs:961-974` yalnız `SlaEscalationRule`), TTL yok (`PlatformSchemaManifest.WorkflowWorkCenter.cs` sha256 `666b44dcbca19df1f1ebf4f176c9fa86bf66111cc1b935286b625bc1d4706f10`, 0 `ExpireAfter`) — ölçüm politika değildir · politika kaydı + silinmiş kayıt testi AC-37 | DL-3 |
-| MOD-0023 okuma eşleme alanları (gap 6/P1-b) | `instances/by-objects` ve `instances/{id}/history` yanıtına eklemeli `IdempotencyKey` (geçmişte ayrıca `ApprovalTaskId`) ve silinmiş durumu ayırt eden okuma — **yazılacak** (D9; MOD-0126 ile ortak satır) | TBD | platform-shared-services | alan yoksa okuma niyeti kapatmaz → `Unknown` | sahte MOD-0023 (eski + yeni örnek / geçiş) AC-38 · dev ortamında iki karar | DL-3 |
+| MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmişi ayıran okuma istenmez (D21/2) | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-3 |
+| MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-3 |
 | MOD-0031 kanıt bağlantısı | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → talep oluşmaz · AR MOD-0031'e yazmaz, kurtarmada yeniden çağrı yok | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** — AR'ye MOD-0031 yazması ya da kurtarmada yeniden çağrı eklenmeden önce zorunlu (gap 5/G2) | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-18 · AUD-001 §8 dev kanıtı AC-31 | DL-1 |
 
@@ -735,8 +735,18 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        görev kimliğini de taşımaz; alan yanıtta yoksa okuma niyeti kapatamaz → `Unknown`. Kapanış yolu MOD-0126 pack 3a ile
        aynı (MOD-0023'e eklemeli okuma alanı, D9; ya da P1-a koşulları kapalıysa aynı anahtarla yeniden yazmanın yanıtı).
        Düzeltmenin etkisi (Void, WriteOff, tahsilat geri alma) yalnız o talebin kendi niyetine bağlanmış sonuçla yazılır.
-     - **Ölçülmemiş — aynı anahtarlı yarış yanıtı (DL-3 başı ölçüm maddesi):** yarışı kaybeden çağrının var olan örneği /
-       geçişi mi yoksa hata mı aldığı ölçülmedi; doğrulanana kadar yinelenen anahtar hatası **`Unknown`**, asla `Refused`.
+     - **D21 bağı — yeniden yazma kapısının yeni hâli (sahip kararı D21, MOD-0023 pack §17 (TRM-15)):** yukarıdaki kapının iki
+       koşulundan saklama politikası **KARAR D21/1** ile verildi (hiç silinmez, TTL yok) ve MOD-0023 AC-W1 (mimari test) geçince
+       kapanır; silinmişi ayıran okuma koşulu **D21/2 ile kaldırıldı** — politika + AC-W1 onun yerine geçer. §17
+       onaylanıp AC-W1 geçince 404 / boş okumada aynı deterministik anahtarla yeniden yazma açılır; yalnız asıl
+       aktör (**KARAR D21/5**) ve şirket / SoD / izin yeniden kontrolüyle. Silinmiş kayıt yine de görülürse yeniden
+       yazma yok, niyet `Unknown`. Eşleme alanları **KARAR D21/3** (§17.3/3) kodda olana kadar okuma niyeti kapatmaz.
+     - **Aynı anahtarlı yarış yanıtı (KARAR D21/4, §17.3/4; DL-3 başı kanıt maddesi):** politika — eşzamanlı iki
+       istekte son yanıtlar aynı kayıttır ve tek satır oluşur; ara 503 "aynı anahtarla tekrar" olabilir (→ `Unknown`,
+       tekrar), 409 yalnız örnek Active'den çıktıysa. Kod okuması (@ef4f3a8bc) bu deseni gösteriyor
+       (`StartWorkflowInstanceHandler.cs:300-330, 700-716`, `WorkflowTerminalTransitionWriter.cs:357-…`) ama eşzamanlı
+       aynı anahtar testi **ölçülmedi**; MOD-0023 AC-W5/W6 geçene kadar yinelenen anahtar hatası **`Unknown`** sayılır,
+       **asla `Refused`** değildir. `Refused` yalnız tx2 tablosundaki kesin iş reddi kodlarıdır (**KARAR D21/7**).
      - **MOD-0031 yeniden çağrılmaz:** AR MOD-0031'e yazmaz (yalnız bağlantı kimliğini doğrular); hiçbir kurtarma yolu
        MOD-0031'e yazma çağrısı yapmaz. İleride bir yazma eklenirse önce MOD-0031 dedupe ölçümü gerekir (Dependencies
        kapanış tablosu).
@@ -1024,7 +1034,7 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
   / `.reject` (onaylayıcı) izinleri olmalıdır (MOD-0126 pack Authorization); müşteri seçici için O-3'ün sonucuna göre
   `crm.account.read` ya da MOD-0149 lookup izni.
 - Tier-3 eylemler (`read-tenant-wide`, `adjustments.*`, `payments.record`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3).
-- **Tahsilat geri alma (D16)** ayrı uç ve ayrı izin açmaz: `PaymentReversal` bir düzeltme türüdür; talep
+- **Tahsilat geri alma (D16; izin KARAR D21/6)** ayrı uç ve ayrı izin açmaz: `PaymentReversal` bir düzeltme türüdür; talep
   `receivable-adjustments.request`, karar `…approve` / `…tier2-approve` / `…reject`, kurtarma `…reconcile` ister. Tahsilatı
   kaydedenin kararı A7 ile engellenir (izin bunu kaldırmaz).
 
@@ -1324,16 +1334,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] RCS-001 ortak kod servisi ve `ARI` öneki (O-6)
 - [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak)
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
-- [ ] MOD-0023 aynı anahtarlı yarış yanıtı ölçüldü (başlatma + her geçiş eylemi) — DL-3 için; ölçülene kadar yinelenen
-  anahtar hatası `Unknown` (gap 5/G2)
+- [ ] MOD-0023 aynı anahtarlı yarış yanıtı (politika KARAR D21/4) MOD-0023 pack §17 (TRM-15) AC-W5/W6 ile **geçti** — DL-3 için; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [ ] Düzeltme politikası (O-7) ve muafiyet kararı (O-8 kalan kısmı; K2 kısmı D14/3 ile kapandı) — DL-3 için
 - [x] **O-9 — elle tahsilat bu sürümde mi: KARAR (D16)** — v1'de (DL-3, O-9a → D15/1), ödeme referansı iş tekilliği,
   mükerrer tahsilat kontrolü ve onaylı geri alma (karşı kayıt) ile; AC-33, AC-39, AC-40, AC-41
-- [ ] MOD-0023 saklama + silmeme politikası (örnek ve geçiş kayıtları en az niyet ömrü boyunca silinmez, temizlenmez, TTL
-  almaz; sahibi platform-shared-services) ve silinmiş durumu ayırt eden okuma — DL-3 için; kapanmazsa 404 / boş okumada
-  anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a, AC-37)
-- [ ] MOD-0023 okuma yanıtlarında eşleme alanları (`IdempotencyKey`; geçmişte `ApprovalTaskId`) ölçüldü ya da eklemeli
-  olarak eklendi (D9) — DL-3 için; yoksa okuma niyeti kapatmaz (gap 6/P1-b, AC-38)
+- [ ] MOD-0023 pack §17 (TRM-15) onaylandı ve AC-W1 (silmeme mimari testi) **geçti** — politika KARAR D21/1, silinmişi ayıran
+  okuma gerekmez (D21/2); DL-3 için; kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
+- [ ] MOD-0023 okuma eşleme alanları (KARAR D21/3; §17 AC-W2/W3) kodda ve **geçti** — DL-3 için; yoksa okuma niyeti kapatmaz (gap 6/P1-b)
 - [ ] Kaynağın sınırlı denetim/çoklu yazma devri taşınmıyor (onaylandı mı — sahip, Level-1 koşul 1)
 
 ## Implementation Notes
@@ -1558,8 +1565,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   SetCollectionStage kısmı).
 - **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, MOD-0023 bağdaştırıcısı
   (servis içinde MOD-0126 ile ortak, zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
-  Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0023 aynı anahtarlı yarış yanıtı ölçümü (gap 5/G2), MOD-0023
-  saklama + silmeme politikası ve okuma eşleme alanları (gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
+  Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0023 pack §17 (TRM-15) onayı ve AC-W1/W2/W5/W6 geçişi (KARAR D21/1–4; gap 5/G2, gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
   Bitiş: AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32, 33, 35 (düzeltme, karar, Reconcile,
   tahsilat kısmı), 36, 37, 38, 39, 40, 41, 42. **RecordPayment (elle tahsilat) ve tahsilat geri alma (`PaymentReversal`) da bu
   dilimdedir** (sahip kararları D15/1, 2026-10-24 — ayrı DL-4 hiçbir bölümü kapatmadığı için dilim tablosu okunamıyordu —
