@@ -21,9 +21,17 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 
 > **Durum: `draft` (planlama belgesi).** Bu paket kod, servis iskeleti, port kaydı, gateway rotası ya da kaynak
 > projeden kod alma izni vermez. Kod ancak paket `approved` / `ready-for-dev` olduktan, bağımsız inceleme (CT-APR-02)
-> ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten ve sahip MOD-0119 için kod alma iznini verdikten sonra yazılır
-> (sahip kararı D1, `docs/records/decisions/2026-10/treasury-intake-owner-decisions-01.md`). Engeller:
-> "Ready-for-dev Checklist" ve "Açık kararlar".
+> ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; MOD-0119 için kod alma izni **verildi** (KARAR
+> D27/5; kaynak S `da4abb20` — O-12 böylece kapandı). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
+>
+> **D27 (2026-10-25, sahip) — kapı kararları verildi:** karar 0.3 → **KARAR D27/1** süreli T32 sapması: Treasury
+> sözleşmeleri `docs/analysis/contracts/` altında dondurulmuş dosya olarak tutulur ve MOD-0003 gelince oraya kaydedilir;
+> **bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu (hangisi önce gelirse)**. Karar 0.5 → **KARAR D27/2** (AR kısıtlı
+> yerel MVP, sapma S-2). Karar 0.6 → **KARAR D27/3** (v1'de ERP-FIN-BUNDLE yok; her modül kendi sözleşmesini yayımlar;
+> ortak paket GL gelince ayrı karar). Karar 0.7 → **KARAR D27/4** (GL / MOD-0118 kapsam dışı; fiş / yevmiye yok,
+> `VoucherReference` yok). D1 kod alma → **KARAR D27/5** (MOD-0126, MOD-0119, MOD-0120, MOD-0124 için kaynak S `da4abb20`
+> doğrulanıp uyarlanarak alınabilir; kod yine yalnız pack `ready-for-dev` olunca ve dilim sırasıyla yazılır). Kayıt:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md` D27 (bu revizyonla aynı commit'te). Bu revizyon pack'i `ready-for-dev` yapmaz.
 >
 > **Bağlanan kararlar (yeniden karar verilmez):** D1 (doğrula, sonra uyarlayarak al; kod alma modül modül), D2 (servis
 > `Diten.FinanceTreasuryService`), D3 (dal kısa kodu `fin`), D5 (MOD-0269 = önce sözleşme, dağıtım kapalı) —
@@ -37,7 +45,8 @@ slice: "TRM-S2 — satıcı borcu (AP faturası) kaydı + doğrulama + MOD-0023 
 > sorulur (D11/3'ün AP karşılığı D14/3 ile kararlaştırıldı). Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0119-v1.1.md` (koşul 1–4 bu pakette karşılanır, bkz.
 > "Implementation Notes → Level-1 koşulları"). DCP: `execution/portfolio/delivery-capability-packs/UNASSIGNED-finance-treasury-intake.md`
-> (taslak; dilim **TRM-S2**, DCP §8 adım 5: "MOD-0003 kararından sonra").
+> (taslak; dilim **TRM-S2**, DCP §8 adım 5: "MOD-0003 kararından sonra" — bu karar D27/1 ile verildi; DCP metni aynı
+> commit'te güncellendi).
 >
 > **Kimlik ön kontrolü (DCP-002), 2026-10-24, bu worktree:**
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0119 --name "Accounts Payable (AP)"` → çıkış 0
@@ -79,12 +88,12 @@ bağlantısı. Blueprint 8.8 W-3, Financial Management (paket §A).
   ödeme önerisi adayı ve MOD-0126'ya parti beslemesi (`ApLinked` — follow-up); ödeme/tahsilat durumu olayları (AP-16
   MOD-0126, AP-17 MOD-0269 — üreticileri v1'de yok, D5); nakit çıkışı projeksiyonu (AP-07, AP-12 — MOD-0125 adayı,
   MOD-0124 dikişi follow-up); kanıt paketi manifesti, kilitleme ve dışa aktarma (AP-08, AP-13…15 — follow-up); GL
-  kaydı ve fiş referansı (MOD-0118, karar 0.7); tedarikçi, şirket, banka ana kayıtları (MOD-0140, MOD-0220, MOD-0289);
+  kaydı ve fiş referansı (MOD-0118 — KARAR D27/4, kapsam dışı); tedarikçi, şirket, banka ana kayıtları (MOD-0140, MOD-0220, MOD-0289);
   banka hesabı referansları (MOD-0289 yok — v1'de AP banka referansı **taşımaz**); MOD-0146 Payment Run Support (dışlama
   korunur); vergi motoru (O-15).
 - **Sahip olunan sözleşme:** `AP-INVOICE` (yeni, `docs/analysis/contracts/ap-invoice.openapi.yaml`, x-owner MOD-0119) —
-  kaynakta resmi sözleşme yok (paket §B "ABSENT"; level-1 koşul 4). Tek yazıcı MOD-0119 (K15). ERP-FIN-BUNDLE ile ilişkisi
-  karar 0.6'ya bağlı (O-2).
+  kaynakta resmi sözleşme yok (paket §B "ABSENT"; level-1 koşul 4). Tek yazıcı MOD-0119 (K15). ERP-FIN-BUNDLE v1'de yok
+  (KARAR D27/3): AP kendi `AP-INVOICE` sözleşmesini yayımlar.
 - **Tüketilen sözleşmeler:** MOD-0220 `lookup-validation` (+ TRM-14 `ApprovalStatus`), Platform veri kapsamı
   (`IDataScopeResolver`, SEC-002 — D14/1), `SUPPLIER`
   (`supplier.openapi.yaml`, 1.3.0 hedefi — `validateSuppliers` şirket ilişkisi durumu), `INVOICE-MATCH`
@@ -105,7 +114,7 @@ bağlantısı. Blueprint 8.8 W-3, Financial Management (paket §A).
 | 6 | `ApImportEvent` (:144-164), `ApImportFailure` (:166-187) | **taşınmaz** | dış ERP içe aktarma v1 dışı (O-4) |
 | 7 | `ApExternalEventReceipt` (:189-206) | **taşınmaz** | AP-16/AP-17 üreticileri yok |
 | 8 | `ApSourceReconciliationRun` (:208-233), `ApSourceReconciliationLine` (:235-246) | **taşınmaz** | içe aktarma mutabakatı (O-4) |
-| 9 | `ApVoucherReference` (:248-258) | **taşınmaz** | GL kapsam dışı (karar 0.7, O-3) |
+| 9 | `ApVoucherReference` (:248-258) | **taşınmaz** | GL kapsam dışı (KARAR D27/4) |
 | 10 | `ApCashOutflowProjectionLine` (:260-297), `ApCashOutflowProjectionBatchRecord` (:369-387), `ApProjectionSourceEpoch` (:389-394) | **taşınmaz** | MOD-0125 yayını yok (paket §F, OI-08) |
 | 11 | `ApEvidencePackManifest` (:299-353) | **taşınmaz** | dışa aktarma kaynakta kapalı (`RequestExport` → `BlockedPendingBackendContract`, :340-346); v1'de MOD-0031 bağlantı referansı |
 | 12 | `ApPolicyConfig` (:355-367) | **taşınmaz** | politika ayarı v1'de yok (onay kademesi O-7) |
@@ -449,8 +458,8 @@ Hepsi kod alma izninden ve `ready-for-dev`'den sonra; dilim sütunu "Teslim dili
 - `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` — servisin defteri MOD-0126 DL-1 ile açılır; AP aynı
   `b` izini kullanır, yeni iz satırı açmaz; `AuditTrailStandardTests` sayıları değişirse aynı değişiklikte güncellenir ve
   CT kararı ister (DL-1).
-- `docs/analysis/contracts/ap-invoice.openapi.yaml` — yeni üretici sözleşmesi (x-owner MOD-0119); karar 0.3 önerisi
-  kabul edilirse T32 sapması altında dondurulur (DL-1).
+- `docs/analysis/contracts/ap-invoice.openapi.yaml` — yeni üretici sözleşmesi (x-owner MOD-0119); KARAR D27/1 T32 sapması
+  altında dondurulur (bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu) (DL-1).
 - `frontend/Diten.Web/Views/FinanceTreasury/ApInvoices/**`,
   `frontend/Diten.Web/wwwroot/assets/js/FinanceTreasury/ApInvoices/**`,
   `frontend/Diten.Web/Resources/Views/FinanceTreasury/ApInvoices/ApInvoicesIndex.{en,tr,fr,es,zh,ar,ru}.resx`,
@@ -488,9 +497,9 @@ MOD-0023 AP iş akışı şablonu; `ocelot.json` rotaları (integration-agent); 
 
 | Kapı / bağımlılık | Rol | Recovery durumu (ölçüm Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c) | Bu pakete etkisi |
 |---|---|---|---|
-| **MOD-0003 Data Contract Registry** (Blueprint kapısı) | sözleşme kaydı | **yok** (0 dosya; kaynakta da yok, paket §D) | **ENGEL — karar 0.3 AÇIK.** Öneri: süreli T32 sapması + `docs/analysis/contracts/`'ta dondurulmuş sözleşmeler (O-1). Karar verilmeden pack `ready-for-dev` olmaz |
-| **ERP-FIN-BUNDLE** (Min Integration Contract, GL + AP + AR ortak) | finans paket sözleşmesi | **yok**; üreticisi yok (`TREASURY-MIGRATION-SEQUENCE-v1.0.md` Amendment 2 §1, §5) | **ENGEL — karar 0.6 AÇIK (EA).** AP'nin kendi `AP-INVOICE` sözleşmesinin bundle'a nasıl bağlanacağı bu karara bağlı (O-2) |
-| MOD-0118 GL | fiş/yevmiye | yok | karar 0.7 önerisi "kapsam dışı" (O-3); AP v1 fiş üretmez ve `VoucherReference` taşımaz |
+| **MOD-0003 Data Contract Registry** (Blueprint kapısı) | sözleşme kaydı | **yok** (0 dosya; kaynakta da yok, paket §D) | **KARAR D27/1:** süreli T32 sapması — sözleşmeler `docs/analysis/contracts/`'ta dondurulur, MOD-0003 gelince kaydedilir; bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu. Engel değil |
+| **ERP-FIN-BUNDLE** (Min Integration Contract, GL + AP + AR ortak) | finans paket sözleşmesi | **yok**; üreticisi yok (`TREASURY-MIGRATION-SEQUENCE-v1.0.md` Amendment 2 §1, §5) | **KARAR D27/3:** v1'de ERP-FIN-BUNDLE yok; AP kendi `AP-INVOICE` sözleşmesini yayımlar; ortak paket GL gelince ayrı karar. Engel değil |
+| MOD-0118 GL | fiş/yevmiye | yok | **KARAR D27/4: kapsam dışı**; AP v1 fiş üretmez ve `VoucherReference` taşımaz |
 | MOD-0023 Workflow Designer | başlatma + görev geçişleri | **var.** `POST /api/v1/workflow/instances` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs:87`); istekte `IdempotencyKey` ve aynı anahtar yeniden oynatılır (`…/Workflow/Handlers/CommandHandlers/StartWorkflowInstanceHandler.cs:76-85`); görev uçları `tasks/{taskId}/approve` (:196), `reject` (:221), `request-info` (:261); başlatanın onayı `SodViolation` ile reddedilir (`WorkflowTaskTransitionSupport.cs:133-140`, Guid karşılaştırması `:964-977`); uzlaştırma okuması `GET instances/by-objects` (:121); izinler `WorkflowModels.cs:16-20` | v1 kullanıcı token'ıyla genel uçlardan (MOD-0126 O-7 deseni). MOD-0119 iş akışı şablonu (`templateCode` TBD, O-11) MOD-0023 sahibinin işi (D9). Not: MOD-0023 başlatanın **reddine** izin verir (`WorkflowTaskTransitionSupport.cs:445`); AP R2 daha sıkıdır ve yerelde uygulanır |
 | MOD-0021 Audit / CentralAudit (BL-501, K4) | yol `b` | **var** — `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/`; kullananlar Inventory, SupplyChain | servis kaydı MOD-0126 DL-1'de; kaynak NoOp kaydedici taşınmaz (level-1 koşul 2) |
 | MOD-0220 LE `lookup-validation` | borçlu şirket uygunluğu (D10/1 kuralı) | **var** — `GET /api/legal-entities/{id}/lookup-validation` (`services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntitiesController.cs:48`); kayıtta `OperationalStatus` ve `ApprovalStatus` var (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`); yanıtta `ApprovalStatus` **henüz yok** | **TRM-14** (D10/2) MOD-0126 ile ortak; gelmeden "onaylı" kontrolü yapılamaz → AP yazma komutları kapanır (fail-closed) |
@@ -503,7 +512,7 @@ MOD-0023 AP iş akışı şablonu; `ocelot.json` rotaları (integration-agent); 
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack ölçümü); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **ENGEL**: modül kendi sayacını yazamaz (RCS-001 §6). Servis gelene kadar Create yazılamaz (O-9) |
 | `Diten.FinanceTreasuryService` iskeleti + servis ortak yapı taşları | servis | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — O-21 kapandı, gap 4/G5); MOD-0126 DL-1, AP DL-1'in önkoşuludur; o olmadan AP DL-1 başlamaz |
 | Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellenmedi** (TRM-04) | iskelet port kaydından sonra |
-| DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2 "karar 0.3 bekliyor" (DCP §8.1) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
+| DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
 
@@ -514,8 +523,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | Bağımlılık | Sözleşme dosyası / sürüm | Hash | Sahibi | Hata davranışı (MOD-0119) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
 |---|---|---|---|---|---|---|
 | AP-INVOICE (bu modül) | `docs/analysis/contracts/ap-invoice.openapi.yaml` v1.0.0 — **yazılacak** | TBD (dondurulunca) | finance-treasury | — | sözleşme testi AC-28 · — | DL-1 |
-| MOD-0003 kararı | karar kaydı (0.3) — **yok** | — | sahip (K1) | — | karar kaydı | DL-1 önkoşulu |
-| ERP-FIN-BUNDLE kararı | karar kaydı (0.6) — **yok** | — | EA | — | karar kaydı | DL-1 önkoşulu |
+| MOD-0003 kararı | **KARAR D27/1** (T32 sapması, bitiş: MOD-0003 ya da Treasury v1 sonu) | — | sahip (K1) | — | karar kaydı — **kapandı** | — |
+| ERP-FIN-BUNDLE kararı | **KARAR D27/3** (v1'de yok, modül sözleşmeleri; sahip EA kararını verdi) | — | EA (sahip verdi) | — | karar kaydı — **kapandı** | — |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
 | MOD-0140 tedarikçi ilişkisi | `supplier.openapi.yaml` **1.3.0** — MVP-2 DL-2'de yazılacak (bugün main'de 1.2.0) | TBD (main'e girince) | procurement (MVP-2) | ilişki yok / Active değil → 422 · erişilemez → 503 · geçiş yok | sahte istemci · dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi | DL-1 |
 | MOD-0143 eşleşme sonucu | `invoice-match.openapi.yaml` 1.1.0 FROZEN (1.1.1 yalnız açıklama, D26/3); `totalAmount` **net** (üretici ölçümü, D26/1; vergi taşınmaz) | `41fe1f43bc74638c6d409c85b2613d36d00ddbfaeff880dc3c8e929cec513d11` (DL-1 başında yeniden `shasum`) | procurement (MOD-0143 sahibi) | uygun değil → 422 · fark → 422 · erişilemez → 503 · `ClearedForPayment` / `Captured` / `Exception` / `Rejected` → 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE` | sahte istemci · dev ortamında Matched / MatchedWithinTolerance / Exception / ClearedForPayment faturaları | DL-1 |
@@ -1320,9 +1329,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] Acceptance criteria kimlikli ve test edilebilir; test expectations build/verifier/RESX/smoke/sözleşme kapsıyor
 
 **ENGELLER (hepsi kapanmadan `ready-for-dev` olmaz):**
-- [ ] **Karar 0.3 — MOD-0003 Data Contract Registry** (O-1): fon ya da süreli T32 sapması kayıtlı
-- [ ] **Karar 0.6 — ERP-FIN-BUNDLE sahipliği** (O-2, EA) kayıtlı
-- [ ] Karar 0.7 — GL kapsamı (O-3) kayıtlı (öneri "kapsam dışı" kabul edilirse pack değişmez)
+- [x] **Karar 0.3 — MOD-0003** (O-1): KARAR D27/1, süreli T32 sapması (bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu)
+- [x] **Karar 0.6 — ERP-FIN-BUNDLE** (O-2): KARAR D27/3, v1'de yok
+- [x] Karar 0.7 — GL kapsamı (O-3): KARAR D27/4, kapsam dışı (pack değişmez)
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
@@ -1333,7 +1342,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-22; platform-shared-services) — kapsamı soran kod ve AC-32 bu yola bağlı
 - [ ] O-4 (v1 kaynak kapsamı), O-5 (MOD-0143 — KARAR D26, kapandı), O-6 (mükerrer anahtar), O-7 (onay kademesi),
   O-13 (tek aktif istisna), O-14 (alacak dekontu) sahip kararıyla yazıldı (O-8 K2 → D14/3 ile kapandı)
-- [ ] O-12 kod alma kaynağı commit'i kararlaştırıldı ve sahip MOD-0119 için kod alma iznini verdi (D1)
+- [x] O-12 kod alma kaynağı commit'i ve MOD-0119 kod alma izni (KARAR D27/5: kaynak S `da4abb20`)
 - [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı; `APD` öneki §3'e yazıldı (O-9) — yoksa Create yazılamaz
 - [ ] Para birimi küsurat hanesi kaynağı (O-10) — DL-1 Create için
 - [ ] MOD-0023'te MOD-0119 iş akışı şablonu (sahibi platform-shared-services, O-11) — DL-2 için
@@ -1374,7 +1383,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
    bu yolla kapanır; kaynak tarafındaki gerilim sahibin kaynak kararıdır).
 2. NoOp denetim ve önce-yaz-sonra-denetle → AUD-001 yol b, aynı işlem (Audited Events, AC-17, AC-18, AC-29); 2026-11-30
    kaynak sınırlaması taşınmaz.
-3. MOD-0003 (karar 0.3) ve ERP-FIN-BUNDLE (karar 0.6) açık → Dependencies'te ENGEL, Ready-for-dev'de engel, O-1/O-2.
+3. MOD-0003 (karar 0.3) ve ERP-FIN-BUNDLE (karar 0.6) → KARAR D27/1 ve D27/3 (2026-10-25); engel kalktı.
 4. Sözleşme ABSENT → `ap-invoice.openapi.yaml` (AC-28).
 
 ### Tüketici onayı slotları (paket §P, 12 slot, borçlu Natig (K1)) → v1 ilgisi
@@ -1391,8 +1400,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | WORKFLOW (MOD-0023) | **gerekli** | şablon (O-11) + MOD-0023 sahibi |
 | AUDIT (MOD-0021) | **gerekli** — CentralAudit; "canlıyken NoOp mu" sorusu Recovery'de veri taşınmadığı için kaynak tarafında kalır | MOD-0126 DL-1 + AC-17/29 |
 | EVIDENCE (MOD-0028/0031) | **gerekli** (yalnız okuma) | DL-3 başında ölçüm |
-| DATA-CONTRACT (MOD-0003) | **gerekli** | karar 0.3 (O-1) |
-| FIN-BUNDLE | **gerekli** | karar 0.6 (O-2) |
+| DATA-CONTRACT (MOD-0003) | **gerekli** | KARAR D27/1 — T32 sapması (dondurulmuş sözleşme) |
+| FIN-BUNDLE | v1'de yok | KARAR D27/3 |
 
 ### Taşınmayacaklar (do-not-carry)
 
@@ -1448,20 +1457,21 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - MOD-0023 başlatanın onayını zaten reddediyor; AP bunu yeniden yazmaz, yalnız MOD-0023'te olmayan kuralları (oluşturan,
   son güncelleyen, gönderenin reddi) ekler ve gönderme çözümleyicisinde aday dışı bırakır (domain-config "modül kendi SoD
   kontrolünü icat etmez" ile tutarlı: başlatan kuralı miras, AP kuralları ek).
-- `target: 2027-01-29` planlama yer tutucusudur, sahip kararı değildir; TRM-S2 karar 0.3'e bağlıdır.
+- `target: 2027-01-29` planlama yer tutucusudur, sahip kararı değildir; TRM-S2'nin beklediği karar 0.3 D27/1 ile verildi.
 
 ## Follow-up Items
 
 - **AP → MOD-0126 ödeme dikişi:** `Approved` faturadan ödeme önerisi (kaynak `ApPaymentProposalCandidate`), MOD-0126'da
   `ApLinked` kaynak türünün açılması, `PaymentProposed` / `Closed` durumları, `OpenAmount` azaltımı. Her iki paketin
-  değişikliği ve MOD-0289 banka referansı sözleşmesi gerekir; bu paket kapsamı değildir.
+  değişikliği ve MOD-0289 banka referansı sözleşmesi gerekir (taslak: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md`,
+  BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT); bu paket kapsamı değildir.
 - Ödeme ve tahsilat durumu olayları (kaynak AP-16 MOD-0126, AP-17 MOD-0269) — üreticiler açılınca, sözleşmeli ve
   idempotent alım.
 - Dış ERP içe aktarma, içe aktarma hataları ve kaynak kontrol toplamı mutabakatı (AP-03…06, AP-09, AP-10) — kaynak sistem,
   MOD-0037 ve MOD-0003 kararıyla (O-4).
 - Nakit çıkışı projeksiyonu (AP-07, AP-12) — MOD-0124 Cash Positioning / MOD-0125 Cash Forecasting tüketicisi adlandırılınca.
 - Kanıt paketi manifesti, kilitleme, dışa aktarma ve saklama sınıfı (AP-08, AP-13…15; kaynak `FINANCE_AP_7Y` yalnız üst veri).
-- GL fiş referansı ve yevmiye (MOD-0118, karar 0.7).
+- GL fiş referansı ve yevmiye (MOD-0118) — D27/4 ile v1 kapsam dışı; GL gelince ayrı karar.
 - Kesinti alanları (iskonto, stopaj/tevkifat, teminat, ücret) ve vergi kodu/oranı (O-15, O-16).
 - Onay tutar kademesi ve kiracı politika ayarı (O-7; MOD-0126 D11/1 modeli aday).
 - Faturalar arası istisna kuyruğu ekranı, istisna atama ve kapanış (`Assigned`, `Closed` vb.).
@@ -1480,9 +1490,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 | # | Karar | Seçenekler | Öneri | Sahibi |
 |---|---|---|---|---|
-| O-1 | **MOD-0003 Data Contract Registry (karar 0.3)** — ENGEL | fonla / süreli T32 sapması / ertele | süreli T32 sapması (sahip + bitiş tarihi) + `docs/analysis/contracts/`'ta dondurulmuş sözleşmeler (domain-config önerisi); **karar verilmedi** | sahip (K1) |
-| O-2 | **ERP-FIN-BUNDLE sahipliği (karar 0.6)** — ENGEL | GL / AP / AR / ayrı sahip | AP kendi `AP-INVOICE` sözleşmesini sahiplenir; bundle kararı gelince eşlenir; **karar verilmedi** | EA |
-| O-3 | GL (MOD-0118) kapsamı (karar 0.7) | içeri (MOD-0001 ile) / dışarı | dışarı (karar 0.7 önerisi); AP v1 fiş üretmez; **karar verilmedi** | sahip (K1) |
+| O-1 | MOD-0003 Data Contract Registry (karar 0.3) | fonla / süreli T32 sapması / ertele | **KARAR D27/1 (2026-10-25): süreli T32 sapması** — `docs/analysis/contracts/`'ta dondurulmuş sözleşmeler; bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu | sahip (K1) |
+| O-2 | ERP-FIN-BUNDLE (karar 0.6) | GL / AP / AR / ayrı sahip | **KARAR D27/3 (2026-10-25): v1'de yok, modül sözleşmeleri** — AP kendi `AP-INVOICE` sözleşmesini sahiplenir; ortak paket GL gelince ayrı karar | sahip (K1, EA kararını verdi) |
+| O-3 | GL (MOD-0118) kapsamı (karar 0.7) | içeri (MOD-0001 ile) / dışarı | **KARAR D27/4 (2026-10-25): kapsam dışı** — AP v1 fiş üretmez, `VoucherReference` taşımaz | sahip (K1) |
 | O-4 | v1 kaynak kapsamı: dış ERP içe aktarma, içe aktarma hataları, mutabakat (AP-03…06, AP-09, AP-10) | v1'de / sonra | sonra; v1 elle kayıt + MOD-0143 referansı (Tasarım notları) | sahip (K1) |
 | O-5 | MOD-0143 uygun durumları ve tutar kuralı | durum kümesi; `Σ Net = totalAmount` / `Gross = totalAmount` / satır kopyası | **KARAR D26 (2026-10-25):** `{Matched, MatchedWithinTolerance}`; `Σ Net = totalAmount` (taban net — üretici ölçümü); tedarikçi + para birimi eşit; satırlar elle; `ClearedForPayment` sözleşme çözüm türünü gösterene kadar kapalı | sahip + MOD-0143 (procurement) sahibi |
 | O-6 | Mükerrer fatura anahtarı | (şirket, tedarikçi, belge türü, normalize no) / + fatura tarihi / kaynak imzası (tarih + tutar) | (TenantId, LE, SupplierId, DocumentType, InvoiceNumberNormalized), silinmemiş kayıtlarda tekil; `Rejected` de engeller | sahip (K1) |
@@ -1491,7 +1501,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-9 | RCS-001 tür öneki ve ortak kod servisi | `APD` / başka | `APD` (§3 tablosunda ve repoda çakışma yok, ölçüldü 2026-10-24; `INV` Yatırım Dosyası'nda); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-10 | Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak) | MOD-0048 eklemeli alan / başka | MOD-0048'e eklemeli alan (D9); **TBD** | MOD-0048 sahibi |
 | O-11 | MOD-0023 AP şablon kodu, çok adımlı onay adımları, HTTP zaman aşımı | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn (MOD-0126 ile aynı ayar); **TBD** | MOD-0023 sahibi |
-| O-12 | Kod alma kaynağı commit'i | `218acaf5` derlenip test edilir / `da4abb20` (AP satırları eşit, 251/251) | `da4abb20` — D1 "bağlanan commit'te derlendiği ve testleri geçtiği" şartı için ya bağlama `da4abb20`'ye taşınır ya da `218acaf5` derlenir | sahip (K1) |
+| O-12 | Kod alma kaynağı commit'i | `218acaf5` derlenip test edilir / `da4abb20` (AP satırları eşit, 251/251) | **KARAR D27/5 (2026-10-25): kaynak S `da4abb20`** — dört Treasury modülü için kod alma izni verildi; kod yine yalnız pack `ready-for-dev` ve dilim sırasıyla | sahip (K1) |
 | O-13 | İstisna tek aktif kuralı (paket OI-09; kaynak S-OD-2) | tek aktif / kaynak gibi çoklu | fatura + tür başına tek aktif (tekil kısmi indeks) | sahip (K1) |
 | O-14 | Alacak dekontu ve onay kapsamı | orijinal faturaya bağ zorunlu / serbest; onay her belgede / `NotRequired`; kapasite tavanı orijinal brüt / onay anındaki OpenAmount | bağ zorunlu (aynı tedarikçi + para birimi, `Approved`); her belge türü onay ister; onaylı + bekleyen dekontlar orijinalin **brüt** tutarını aşamaz (gerekçe Runtime Constraints → Alacak dekontu kapasitesi), rezervasyon Submit'te, OpenAmount azaltımı onayda, orijinalin `Version` CAS'ıyla sıralanır | sahip (K1) |
 | O-15 | Vergi | satır vergi tutarı elle / vergi kodu + oran kaynağı | v1 elle tutar; vergi motoru GL / e-fatura kararıyla | sahip (K1) |
@@ -1521,7 +1531,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-1** — Yollar: `Features/ApInvoice/` içinde Create/Update/Delete/BulkDelete/Validate + liste/detay sorguları,
   Domain/Persistence, MOD-0220 / MOD-0140 / MOD-0143 / MOD-0048 bağdaştırıcıları, RCS kod portu, `ap-invoice.openapi.yaml`.
   **Neden ilk:** borç kaydı ve mükerrer koruması modülün temelidir; onay akışı ona dayanır. Önkoşul: Ready-for-dev
-  engelleri (0.3, 0.6, DCP, **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, port, kod alma,
+  engelleri (DCP, **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, port,
   TRM-14, MOD-0140 1.3.0, O-9, O-10, O-22). Alacak dekontunun Validate ön kontrolü (kapasite, orijinal kuralı) bu dilimdedir.
   Bitiş: AC-1…6, 15 (Create kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32, 33 (Create / Update / Validate kısmı), 40.
 - **DL-2** — Yollar: Submit, Reconcile, Approve / Reject / RequestInfo, SoD politika servisi, MOD-0023 bağdaştırıcısı

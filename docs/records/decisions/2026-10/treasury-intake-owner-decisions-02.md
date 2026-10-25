@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D26 (D16–D26: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D27 (D16–D27: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -229,9 +229,34 @@ Kaynak: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER
    %20 KDV'li örnek) ve MOD-0143 kodunda kayıt sırasında `lineAmount ≠ quantity × unitPrice` → 422 + sabotajlı test. Yapılışı
    procurement sahibinin kendi dalında; push / PR sahibin onayıyla. Bu Control Tower o dosyalara dokunmaz.
 
+## D27 — Açık kapı kararları ve onaylar (2026-10-25, soru kutusu; on ikisi de önerilen seçenek)
+
+1. **Karar 0.3 — MOD-0003 Data Contract Registry:** "Süreli T32 sapması" — Recovery'de MOD-0003 yok (kayıt satırı
+   `planned / missing`, 0 dosya). Treasury sözleşmeleri `docs/analysis/contracts/` altında dondurulmuş dosya olarak tutulur;
+   MOD-0003 gelince oraya kaydedilir. Süre: MOD-0003 çıkana kadar, en geç Treasury v1 sonu.
+2. **Karar 0.5 — AR fatura sınırı:** "Kısıtlı MVP, yerel" — AR alacak faturasını yerel tutar; faturalama sisteminden
+   (MOD-0169 / AR-BILLING-BUNDLE) almaz, müşteriye göndermez, yasal / e-fatura numarası üretmez (sapma S-2).
+3. **Karar 0.6 — ERP-FIN-BUNDLE:** "v1'de yok, modül sözleşmeleri" (sahip EA kararını verdi) — her modül kendi sözleşmesini
+   yayımlar; ortak paket GL (0.7) gelince ayrı karar.
+4. **Karar 0.7 — GL (MOD-0118):** "Kapsam dışı" — Treasury v1 fiş / yevmiye üretmez, `VoucherReference` taşımaz.
+5. **D1 kod alma izni:** "Dört Treasury modülü" — MOD-0126, MOD-0119, MOD-0120, MOD-0124 için kaynak kod (S `da4abb20`)
+   doğrulanıp uyarlanarak alınabilir. Kod yine ancak pack `ready-for-dev` ve dilim sırasıyla yazılır. MOD-0289 ve MOD-0269
+   için ayrı izin gerekir.
+6. **Port 5071 — AGENTS.md §2/§3/§9 ve `.antigravity/rules/ports.md`:** "Yamayı hazırla, göster" — CT yamayı hazırlar,
+   uygulamadan önce sahibe gösterir (korunan yol; uygulama ayrı onay).
+7. **MOD-0269 BD-1 / BD-4:** "rail'i çıkar, 0.1.0'ı dondur" — `rail` 0.1'den çıkar (sonraki sürümde eklemeli gelir);
+   sözleşme `docs/analysis/contracts/bank-dispatch.md` FROZEN 0.1.0 olarak yayımlanır.
+8. **MOD-0269 BD-3 — bankacılık sahibi:** "Sahip (K1), şimdilik" — gerçek sağlayıcı seçimi (karar 0.1 B/C) yapılınca ayrı sahip.
+9. **MOD-0289 O-13:** "Compact" — hesap amaçları ekranı Compact.
+10. **RCS-001 sözlük kodları (CT teyidi, sahip onayıyla):** "Hayır, doğal anahtar" — kiracı sözlük kodları (ör. hesap amacı
+    kodu, `LegalFormCode` gibi) RCS kodu almaz; RCS-001 kayıt kodları içindir.
+11. **MOD-0289 O-5 denetim defteri (CT kararı, sahip onayıyla):** "Yeni defter satırı, K2" — MOD-0289 komutları audit-ledger'a
+    K2 olarak, `mdm-guvenilir-kaynak-niyeti` yol belirteciyle eklenir; borç satırı yok; CT-DECISIONS kaydı kod aşamasında.
+12. **MOD-0149 çelişkisi:** "Sahibine not yaz" — commercial-suite sahibine bildirim taslağı; Treasury kaydı değiştirmez.
+
 ## Karar olmayanlar
 
-MOD-0003 (0.3); AGENTS.md §2/§3/§9 ve ports.md düzenlemesi; 5069 kayması (SafetyStockService sahibi).
+AGENTS.md §2/§3/§9 ve ports.md düzenlemesinin **uygulanması** (yama D27/6 ile hazırlanır, uygulama ayrı onay); 5069 kayması (SafetyStockService sahibi).
 
 ## Bu kayıt ne değildir
 

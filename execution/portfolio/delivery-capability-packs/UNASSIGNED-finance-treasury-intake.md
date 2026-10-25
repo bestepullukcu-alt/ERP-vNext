@@ -56,7 +56,7 @@ pozisyonu, banka ana verisi) Recovery'ye **doğrulanarak ve Recovery standartlar
 **İçeride:** ödeme partisi / talimat / onay / serbest bırakma (MOD-0126); satıcı borcu (MOD-0119); müşteri alacağı
 (MOD-0120); nakit pozisyonu (MOD-0124); bankaya giden arayüz sözleşmesi, dağıtım kapalı (MOD-0269); banka ana verisi
 (MOD-0289, MDM'de).
-**Dışarıda:** gerçek banka dağıtımı ve banka kimlikli geri çağrılar (karar 0.1 = A); GL (karar 0.7 önerisi); Cash
+**Dışarıda:** gerçek banka dağıtımı ve banka kimlikli geri çağrılar (karar 0.1 = A); GL (karar 0.7 = kapsam dışı, D27/4); Cash
 Forecasting MOD-0125; Bank Reconciliation MOD-0121; MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 
 ## 5. Member modules and follow-ups
@@ -86,7 +86,7 @@ MOD-0149 (müşteri SoR ve `CustomerId` eşlemesi — commercial-suite).
 | MOD-0269 arayüz sözleşmesi; bankacılık sahibi | sahip (K1); bankacılık sahibi henüz adlandırılmadı |
 | Port ve bant | EA |
 | Gateway rotaları | yalnız `integration-agent` |
-| ERP-FIN-BUNDLE arayüz sahipliği | EA (karar 0.6) |
+| ERP-FIN-BUNDLE arayüz sahipliği | **KARAR D27/3**: v1'de yok, modül sözleşmeleri (sahip EA kararını verdi) |
 | Kaynak paket içeriği ve yeni sürümleri | kaynak Treasury Migration CT; karar sahibi K1 |
 
 ## 7. Dependency graph
@@ -96,8 +96,8 @@ MOD-0269 arayüz sözleşmesi (0.1 = A) ─┐
 MOD-0023 Workflow (var) ──────────────┼─> MOD-0126 ──> (MOD-0146 dışarıda)
 MOD-0021 Audit / CentralAudit (var) ──┘       │
                                               └─> MOD-0289 (MDM) <── MOD-0220 LE ilişki modeli (eksik)
-MOD-0003 kararı (0.3, açık) ──> MOD-0119, MOD-0120, MOD-0124 ──> MOD-0289      <── MOD-0140 (1.3.0)
-AR-BILLING-BUNDLE (0.5, açık) ──> MOD-0120
+MOD-0003 (0.3 = süreli T32 sapması, D27/1) ──> MOD-0119, MOD-0120, MOD-0124 ──> MOD-0289      <── MOD-0140 (1.3.0)
+AR-BILLING-BUNDLE (0.5 = kısıtlı yerel MVP, D27/2) ──> MOD-0120
 MOD-0037 (var) ──> MOD-0124
 ```
 
@@ -105,14 +105,16 @@ MOD-0126 → MOD-0289 tek yönlüdür; MOD-0126 banka hesabını opak referansla
 
 ## 8. Ordered delivery sequence
 
-1. **Kararlar (Dalga 0):** 0.0 (D6 ✓), 0.1 (D5 = A ✓), 0.2 (MOD-0126 yerleşimi ✓), 0.3, 0.5, 0.6, 0.7, MOD-0289 MDM onayı,
-   MOD-0217/0057 kararı (TRM-13), port (EA).
+1. **Kararlar (Dalga 0):** 0.0 (D6 ✓), 0.1 (D5 = A ✓), 0.2 (MOD-0126 yerleşimi ✓), 0.3 (D27/1 ✓), 0.5 (D27/2 ✓), 0.6 (D27/3 ✓), 0.7 (D27/4 ✓),
+   MOD-0289 MDM onayı (D20/1 ✓), MOD-0217/0057 kararı (D19 ✓), port 5071 (D10/3 ✓; AGENTS / ports.md yaması D27/6 ile hazır,
+   uygulama ayrı onay), kod alma izni (D27/5 ✓ — MOD-0126/0119/0120/0124).
 2. **Kaynak yeni sürümleri:** MOD-0126 v1.2, MOD-0119 v1.1, MOD-0289 v1.6 (istendi 2026-10-23).
 3. **Level-1 paket kabulleri** (TRM-02), paket başına kayıt.
 4. **Dilim TRM-S1:** MOD-0269 arayüz sözleşmesi → MOD-0126 pack → CT-APR-02/01 → `ready-for-dev` → kod alma izni →
    servis iskeleti (`Diten.FinanceTreasuryService`) → alma ve uyarlama → Recovery testleri (level-2).
-5. **Dilim TRM-S2:** MOD-0003 kararından sonra MOD-0119, MOD-0120, MOD-0124 (birbirinden bağımsız, paralel).
-6. **Dilim TRM-S3:** MOD-0220 ilişki modeli + MOD-0140 1.3.0 + TRM-S1 ve TRM-S2 → MOD-0289.
+5. **Dilim TRM-S2:** MOD-0119, MOD-0120, MOD-0124 (birbirinden bağımsız, paralel; MOD-0003 kapısı D27/1 T32 sapmasıyla aşıldı).
+6. **Dilim TRM-S3:** MOD-0140 1.3.0 + TRM-S1 ve TRM-S2 → MOD-0289 (MOD-0220 LE↔LE ilişki modeli eklenmez — TRM-07; MOD-0220
+   için yalnız §22 `approvalStatus` eki, TRM-14).
 7. **Dilim TRM-S4:** MOD-0217 (yer MDM, D19/1; koşullar kapanınca). MOD-0057 park (D19/2), dilimde değil.
 
 ## 8.1 Delivery slices
@@ -120,8 +122,8 @@ MOD-0126 → MOD-0289 tek yönlüdür; MOD-0126 banka hesabını opak referansla
 | Slice | Kapsam | Not |
 |---|---|---|
 | TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0269 yalnız sözleşme ve kapalı bağdaştırıcı |
-| TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | karar 0.3 bekliyor |
-| TRM-S3 | MOD-0289 | MDM; TRM-S1, TRM-S2, MOD-0220 ve MOD-0140 değişikliklerine bağlı |
+| TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | karar 0.3 = T32 sapması (D27/1); 0.5 / 0.6 / 0.7 karara bağlandı (D27/2–4) |
+| TRM-S3 | MOD-0289 | MDM (D20/1); draft pack yazıldı (TRM-16); TRM-S1, TRM-S2 ve MOD-0140 1.3.0'a bağlı; kod alma izni ayrı (D27/5) |
 | TRM-S4 | MOD-0217 | aday; yer kararı D19/1, pack koşullu (MOD-0057 park — D19/2) |
 
 ## 9. Prerequisites
@@ -173,7 +175,7 @@ MOD-0118 GL, MOD-0146; veri taşıma ve canlıya geçiş (ayrı karar, TP-001 §
 1. TRM-S1'de MOD-0269 sözleşmesi ayrı bir pack mı ister, yoksa sözleşme dosyası + MOD-0126 pack'inde bağımlılık
    satırı yeter mi?
 2. MOD-0126 ödeme onayları AUD-001 K2 (fail-closed) sınıfında mı?
-3. MOD-0003 için süreli sapma (T32) önerisi kabul edilebilir mi?
+3. ~~MOD-0003 için süreli sapma (T32) önerisi kabul edilebilir mi?~~ — **KARAR D27/1: evet.**
 4. MOD-0289'un MDM'ye yerleşimi MOD-0220 ilişki modelini aynı dilimde mi ister?
 
 ## 15. Gate criteria
@@ -195,13 +197,17 @@ MOD-0118 GL, MOD-0146; veri taşıma ve canlıya geçiş (ayrı karar, TP-001 §
 - MOD-0140: tedarikçi durumunu yalnız sözleşmeden (1.3.0, aktif şirket ilişkisi) okuyan tüketiciler; doğrudan
   koleksiyon okuması yok.
 - MOD-0149: `CustomerId` eşlemesi (AR).
-- MOD-0220: LE↔LE ilişki modeli ve sözleşmesi.
-- MOD-0023: ödeme onay şablonları.
+- MOD-0220: §22 `approvalStatus` eki (TRM-14; LEGAL-ENTITY-LOOKUP 1.1.0); LE↔LE ilişki modeli **gerekmez** (TRM-07).
+- MOD-0023: ödeme onay şablonları ve §17 eki (TRM-15) — kod MOD-0023 sahibinin WP'siyle (D25/1).
 
 ## 18. Open decisions
 
-0.3 MOD-0003 · 0.5 AR fatura sınırı · 0.6 ERP-FIN-BUNDLE (EA) · 0.7 GL · MOD-0289 MDM onayı · MOD-0217 ve MOD-0057
-(TRM-13) · DCP numarası · bankacılık sahibi · AGENTS §2/§3/§9 ve `ports.md` değişikliği (port 5071 kararı D10/3 verildi).
+**Kapandı (2026-10-25):** 0.3 (D27/1), 0.5 (D27/2), 0.6 (D27/3), 0.7 (D27/4), MOD-0289 MDM onayı (D20/1), MOD-0217 ve MOD-0057
+(D19), bankacılık sahibi (D27/8), kod alma izni dört Treasury modülü (D27/5).
+
+**Açık:** DCP numarası ve DCP onayı; AGENTS §2/§3/§9 ve `ports.md` yamasının **uygulanması** (hazır:
+`.ct-teslim/treasury-intake/agents-ports-5071-patch.diff`, D27/6; korunan yol); CT-APR-02 / CT-APR-01; MOD-0289 O-6 güvenlik
+onayı; MOD-0289 ve MOD-0269 kod alma izni.
 
 ## 19. Future follow-ups
 

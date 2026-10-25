@@ -21,9 +21,22 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 
 > **Durum: `draft` (planlama belgesi).** Bu paket kod, servis iskeleti, port kaydı, gateway rotası ya da kaynak
 > projeden kod alma izni vermez. Kod ancak paket `approved` / `ready-for-dev` olduktan, bağımsız inceleme (CT-APR-02)
-> ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten ve sahip MOD-0126 için kod alma iznini verdikten sonra yazılır
-> (sahip kararı D1, `docs/records/decisions/2026-10/treasury-intake-owner-decisions-01.md`). Engeller:
-> "Ready-for-dev Checklist" ve "Açık kararlar".
+> ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; MOD-0126 için kod alma izni **verildi** (KARAR
+> D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
+>
+> **D27 (2026-10-25, sahip) — kapı kararları verildi:** karar 0.3 → **KARAR D27/1** süreli T32 sapması: Treasury
+> sözleşmeleri `docs/analysis/contracts/` altında dondurulmuş dosya olarak tutulur ve MOD-0003 gelince oraya kaydedilir;
+> **bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu (hangisi önce gelirse)**. Karar 0.5 → **KARAR D27/2** (AR kısıtlı
+> yerel MVP, sapma S-2). Karar 0.6 → **KARAR D27/3** (v1'de ERP-FIN-BUNDLE yok; her modül kendi sözleşmesini yayımlar;
+> ortak paket GL gelince ayrı karar). Karar 0.7 → **KARAR D27/4** (GL / MOD-0118 kapsam dışı; fiş / yevmiye yok,
+> `VoucherReference` yok). D1 kod alma → **KARAR D27/5** (MOD-0126, MOD-0119, MOD-0120, MOD-0124 için kaynak S `da4abb20`
+> doğrulanıp uyarlanarak alınabilir; kod yine yalnız pack `ready-for-dev` olunca ve dilim sırasıyla yazılır). Kayıt:
+> `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md` D27 (bu revizyonla aynı commit'te). Bu revizyon pack'i `ready-for-dev` yapmaz.
+>
+> **BANK-DISPATCH dondu (D27/7, D27/8):** `docs/analysis/contracts/bank-dispatch.md` FROZEN 0.1.0 (`rail` alanı çıkarıldı;
+> bankacılık sahibi 0.1 için K1) — dosya çalışma ağacında, bu oturumda okundu (`bank-dispatch.md:5`). Bu paketteki bütün
+> MOD-0269 atıfları dondurulmuş dosyaya işaret eder; bölüm numaraları (§5, §5.1, §6) taslak rev 3 ile aynıdır (ölçüldü:
+> `bank-dispatch.md:167, 181, 195`).
 >
 > **Bağlanan kararlar (yeniden karar verilmez):** yerleşim TREASURY-MOD0126-PLACEMENT-01
 > (`docs/records/decisions/2026-10/treasury-mod0126-placement-decision-01.md`); D1 (doğrula, sonra uyarlayarak al),
@@ -70,7 +83,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 - **Out-of-scope:** gerçek banka dağıtımı, banka geri çağrıları, ekstre (MOD-0269, D5 — dört kapalı akış varsayılmaz);
   banka ana verisi ve hesap çözümleme (MOD-0289, MDM — bu modül yalnız opak referans taşır); AP kaynaklı parti
   (`ApLinked`, MOD-0119 — kaynak enum'da var, `PaymentProposalEnums.cs:3-7@da4abb20`; bu dilimde reddedilir); nakit
-  tahmini besleme (MOD-0124/0125); GL kaydı (MOD-0118, karar 0.7); MOD-0146 Payment Run Support (dışlama korunur);
+  tahmini besleme (MOD-0124/0125); GL kaydı (MOD-0118 — KARAR D27/4, kapsam dışı); MOD-0146 Payment Run Support (dışlama korunur);
   tedarikçi, müşteri, şirket ana kayıtları (MOD-0140, MOD-0149, MOD-0220); Görev Merkezi köprüsü (WC-D1; follow-up).
 - **Sahip olunan sözleşme:** `PAYMENT-BATCH` (yeni, `docs/analysis/contracts/payment-batch.openapi.yaml`, x-owner
   MOD-0126) — kaynakta resmi sözleşme yok (paket §B "ABSENT"; level-1 koşul 5). Tek yazıcı MOD-0126 (K15).
@@ -374,7 +387,7 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
   `BankDispatchContractException` ya da sözleşme dışı istisna; işlem geri alınır), `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`
   (502 — `NotConfigured` dışı sonuç; deneme kaydedilir, parti kilitlenir, D17/2), `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW` (409 —
   kilitli partide Release; port çağrılmaz), `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED` (409 — `ReleaseSequence` üst sınırda;
-  artırma ve port çağrısı yok). MOD-0269 eşlemesi: `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` §5.
+  artırma ve port çağrısı yok). MOD-0269 eşlemesi: `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0) §5.
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
   `PAYMENT_APPROVER_DIRECTORY_*` (O-10'a bağlı).
@@ -446,8 +459,8 @@ Bkz. "Dependencies".
 | Güvenilir iş akışı tüketicisi (`api/internal/v1/workflow/trusted-consumer/*`) | servis kimliğiyle başlatma, `start-result` | **var ama yalnız `Diten.MDM`'ye kilitli** — `TrustedServiceTokenValidationExtensions.cs:18`, `ConfiguredTrustedWorkflowStartAuthorizationPolicy.cs:79`, `ServiceIdentityTokenAudiencePolicy.cs:5,16` (Paket A taslağı, `docs/roadmap/plans/erp-finance-legal-module-intake-01/PKG-A-MOD-0033-FU02-TREASURY-WORKFLOW-IDENTITY-DRAFT-v0.1.md`) | v1'de kullanılmaz; arka plan uzlaştırma süpürücüsü bu kimlik gelene kadar yok (follow-up) |
 | MOD-0021 Audit / CentralAudit (BL-501, K4) | yol `b` | **var** — `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/` (`CentralAuditBehavior.cs`, işlem içi `CentralAuditTransaction.EnlistAsync`, `CentralAuditRecorder.cs:6-31`); kullananlar Inventory, SupplyChain | yeni serviste `AddCentralAudit` + defter + CT kararı (Repo Scope). Servis-başı MDM kopyası **yasak** (AUD-001 §5) |
 | MOD-0220 LE `lookup-validation` | ödeyen şirket uygunluğu (D10/1) | **var** — `GET /api/legal-entities/{id}/lookup-validation`, izin `mdm.legal-entities.read` (`LegalEntitiesController.cs:48-54`); kayıtta `OperationalStatus` ve `ApprovalStatus` var (`LegalEntity.cs:49-50`); yanıtta `ApprovalStatus` **henüz yok** | **TRM-14** (D10/2): MOD-0220 pack değişikliği + eklemeli `ApprovalStatus` alanı + MOD-0220 sözleşme belgesi — MOD-0126 kapsamı değildir, eşlik eden değişikliktir; o gelmeden "onaylı" kontrolü yapılamaz → ödeme kapanır (fail-closed) |
-| MOD-0269 Banks/SWIFT/Payments Gateway | serbest bırakma portu | **yok** (0 dosya; karar 0.1 = A, D5) — sözleşme **taslak** `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` (BANK-DISPATCH 0.1.0, DRAFT; TRM-06) | `IBankDispatchPort` sözleşmesi gelmeden DL-3 serbest bırakma kısmı başlamaz; bağdaştırıcı yalnız `NotConfigured` döner |
-| MOD-0289 Bank Master & Bank Account Registry | banka referansı çözümleme | **yok**; yerleşim MDM önerisi (D7), TRM-S3 | bu dilimde yalnız boş olmayan opak Guid; çözümleme dağıtım açılınca (follow-up) |
+| MOD-0269 Banks/SWIFT/Payments Gateway | serbest bırakma portu | **yok** (0 dosya; karar 0.1 = A, D5) — sözleşme **dondu**: `docs/analysis/contracts/bank-dispatch.md` (BANK-DISPATCH FROZEN 0.1.0, `rail` yok — KARAR D27/7; TRM-06 kapandı) | `IBankDispatchPort` dondurulmuş sözleşmeye göre yazılır; bağdaştırıcı yalnız `NotConfigured` döner |
+| MOD-0289 Bank Master & Bank Account Registry | banka referansı çözümleme | kod yok; yerleşim MDM (D20/1), TRM-S3; okuma sözleşmesi **taslak**: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT, fikstürler F-E1…F-E9, F-503) | bu dilimde yalnız boş olmayan opak Guid; çözümleme dağıtım açılınca, sözleşme dondurulunca (follow-up) |
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` (`TenantReferenceLookupsController.cs:18,37-41`), `LookupOptionDto` küsurat hanesi taşımıyor (`LookupModels.cs:3-9`; liste `CultureInfo`'dan, `PlatformLookupProvider.cs:358`) | küsurat hanesi kaynağı **TBD** (O-11); yoksa oluşturma `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE` ile durur — sabit tablo uydurulmaz |
 | MOD-0031 Evidence Linking | kanıt bağlantısı | **var** — `api/v1/evidence` (`EvidenceLinksController.cs:19`) | DL-3; bağlama sözleşmesinin idempotency (dedupe) davranışı DL-3 başında ölçülür; ölçülene kadar hiçbir kurtarma yolu MOD-0031'i yeniden çağırmaz (gap 5/G2) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | yeni `finance-treasury.*` ad alanı kaydı (O-5); `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
@@ -470,7 +483,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | MOD-0023 iş akışı başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + şablon kodu — **TBD** (O-8); anahtarla idempotentlik ölçüldü (tekil indeksler + yeniden oynatma, Runtime Constraints 3a) | Platform commit SHA'sı DL-2 başında yazılır | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-2 |
 | MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | **KARAR D21/1–2** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/1: `WorkflowInstance` ve `WorkflowTransitionLog` hiç silinmez, TTL yok; silinmiş kayıtlar da okunur — `isDeleted` + `includeDeleted=true` (D25/2, D21/2'yi genişletir); silinmiş görülürse yeniden yazma yok | §17 onayında | platform-shared-services (politika: sahip K1, D21) | §17 onaylanıp AC-W1 geçene kadar 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (@ef4f3a8bc): silme yolu ve TTL yok — ölçüm politika değildir · MOD-0023 AC-W1 (mimari test, sabotajlı) + bu pack'in silinmiş kayıt testi | DL-2 |
 | MOD-0023 okuma eşleme alanları (gap 6/P1-b) | **KARAR D21/3** — MOD-0023 pack §17 (TRM-15) önerisi §17.3/3: `by-objects` ve `instances/{id}` → `IdempotencyKey`; `history` → `ApprovalTaskId` + `IdempotencyKey` (yalnız ekleme) | §17 onayında | platform-shared-services | alan kodda yoksa okuma niyeti kapatmaz → `Unknown` | MOD-0023 AC-W2/W3 + bu pack'in eşleme testi | DL-2 |
-| MOD-0269 banka arayüzü | `drafts/bank-dispatch-v0.1-proposal.md` — BANK-DISPATCH 0.1.0 **DRAFT** (TRM-06, D5); dondurulunca `bank-dispatch` 0.1.0 | taslak; dondurulunca yazılır | sahip (K1); bankacılık sahibi adlandırılmadı | her çağrı `NotConfigured`, ağ çağrısı yok | bağdaştırıcı birim testi · ağ çağrısı olmadığını gösteren test | DL-3 |
+| MOD-0269 banka arayüzü | `docs/analysis/contracts/bank-dispatch.md` — BANK-DISPATCH **FROZEN 0.1.0** (KARAR D27/7; TRM-06 kapandı; D5) | dosya özeti DL-3 başında `shasum` ile yazılır (bu revizyonda ölçülmedi) | bankacılık sahibi 0.1 için K1 (KARAR D27/8); gerçek sağlayıcı seçilince ayrı sahip | her çağrı `NotConfigured`, ağ çağrısı yok | bağdaştırıcı birim testi · ağ çağrısı olmadığını gösteren test | DL-3 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok** (O-11) | TBD | platform-shared-services | hane yok → 503 `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE` | sahte istemci · dev ortamında TRY/EUR/JPY | DL-1 |
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
 | SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-19; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-32 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
@@ -701,7 +714,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     doğrulaması, bağdaştırıcı çağrısı, `PaymentDispatchAttempt`, makbuz (`Completed`, 200) ve tek `…release-attempted`
     olayı **aynı Mongo işleminde** yazılır. Uzak çağrı olmadığı için niyet, belirsiz sonuç ve Reconcile yoktur; çökme →
     işlem geri alınır, aynı anahtarla tekrar baştan çalışır.
-  - **Sözleşme bağı (gap 7–8, `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` rev 3):** aynı işlemde `ReleaseSequence` +1 (sürüme
+  - **Sözleşme bağı (gap 7–8, `docs/analysis/contracts/bank-dispatch.md` FROZEN 0.1.0 — taslak rev 3'ten, D27/7):** aynı işlemde `ReleaseSequence` +1 (sürüme
     koşullu) ve `dispatchKey` üretilir; makbuz tekrarı portu çağırmaz ve sıra artırmaz; commit edilmiş makbuz yanıtını
     (ve `dispatchKey`'ini) korur; geri alınan deneme sıra ya da anahtar rezerve etmez — arada başka bir Release commit
     ederse yeniden deneme sonraki sırayı alır (gap 8/P2-a; dağıtım kapalı sürüm için yeterli). İstek her talimatı
@@ -1152,7 +1165,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   görevde başka bir kararın geçişi (farklı `RemoteIdempotencyKey`, görev ya da eylem) açık karar niyetini kapatmaz;
   (c) okuma yanıtı eşleme alanını (uzak anahtar; geçişte görev kimliği) taşımıyorsa niyet `Unknown` kalır. Sabotaj:
   eşleme yalnız nesne (parti) kimliğine indirildiğinde test kırmızıya döner.
-- [ ] AC-37 (zorunlu) — MOD-0269 sözleşme negatif testleri (gap 7/P2-b): `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` §5.1'deki her vaka
+- [ ] AC-37 (zorunlu) — MOD-0269 sözleşme negatif testleri (gap 7/P2-b): `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0) §5.1'deki her vaka
   bağdaştırıcıda `BankDispatchContractException` ve Release'te 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` verir,
   hiçbir deneme / makbuz / olay / sıra artışı kalmaz. Ayrıca: (a) iki kaynak hesaplı partide istekteki her talimat kendi
   `SourceBankAccountRef`'ini taşır, birleştirme yok; (b) aynı istemci anahtarıyla tekrar portu çağırmaz ve
@@ -1239,10 +1252,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-19; platform-shared-services) — kapsamı soran kod ve AC-32 bu yola bağlı
 - [ ] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı; AGENTS §2 (domain/servis) ve §9 (`fin`) güncellendi (TRM-03/04)
-- [ ] MOD-0269 arayüz sözleşmesi (dağıtım isteği, sonuç, durum) yazıldı (TRM-06) — en az DL-3 serbest bırakma kısmı için
+- [x] MOD-0269 arayüz sözleşmesi dondu — `docs/analysis/contracts/bank-dispatch.md` FROZEN 0.1.0 (KARAR D27/7, D27/8; TRM-06 kapandı)
+- [x] Kapı kararları 0.3 / 0.6 / 0.7 (KARAR D27/1, D27/3, D27/4) — T32 sapması bitişi: MOD-0003 çıkana kadar, en geç Treasury v1 sonu
 - [ ] TRM-14: MOD-0220 pack değişikliği onaylı + `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
 - [x] SoD eşiği modeli sahip kararıyla yazıldı (O-4 → D11/1: kiracı ayarı, para birimli; ayar yoksa tier-2)
-- [ ] Sahip MOD-0126 için kod alma iznini verdi (D1)
+- [x] Sahip MOD-0126 için kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
 - [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (O-9) — yoksa Create yazılamaz
 - [ ] Yeni servis defteri + CT-DECISIONS satırı için Control Tower kararı (yol b izi kabulü)
 - [x] İzin ad alanı `finance-treasury.*` onayı (O-5 → D11/4)
@@ -1324,7 +1338,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 - Güvenilir servis kimliği (MOD-0033-FU02, Paket A) gelince: güvenilir başlatma + `start-result` + arka plan uzlaştırma
   süpürücüsü (İ2 tetikleyici; her değişiklik `ReconcilePaymentBatchWorkflowCommand` ile denetlenir).
-- MOD-0289 banka hesabı arama/çözümleme sözleşmesi → banka referansı seçimi ve dağıtım anında çözümleme.
+- MOD-0289 banka hesabı arama/çözümleme — sözleşme taslağı `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT); dondurulunca
+  banka referansı seçimi, dağıtım anında çözümleme ve F-E1…F-E9 / F-503 fikstürlerinin bu modülün sınıflandırıcısına karşı
+  koşulması.
 - MOD-0269 gerçek bağdaştırıcı, banka geri çağrısı, ekstre → ayrı karar ve paket (D5); o pakette Release iki aşamalı
   olur (`PaymentReleaseIntent`, belirsiz sonuç, Reconcile, sonuç olayı) ve gerçek dağıtım kapısı (hesap sahipliği,
   Tenant/LE, alacaklı eşleşmesi) kapanır.
@@ -1386,8 +1402,8 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   servis ortak yapı taşları (`FinanceTreasuryCommandReceipt` + iki makbuz indeksi, `IFinanceTreasuryDataScopeSource` okuma
   ve yazma kapsamıyla, ortak LE / para birimi / kod portları ve bağdaştırıcıları, CentralAudit kaydı — D14/1, D14/2; tek
   sahibi bu dilim, MOD-0119/0120/0124 DL-1'inin önkoşulu — gap 4/G5), `payment-batch.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001 K4 — ileticisi olmayan serviste yeni yazma komutu
-  yazılamaz; ilk komutla birlikte gelir. Önkoşul: Ready-for-dev engelleri (DCP, port, kod alma, TRM-14, O-9, O-11, O-19, CT
-  defter kararı). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
+  yazılamaz; ilk komutla birlikte gelir. Önkoşul: Ready-for-dev engelleri (DCP, port, TRM-14, O-9, O-11, O-19, CT defter kararı; kod alma
+  D27/5 ile verildi). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
   Validate kısmı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/ApproveWithSodWaiver, SoD politika
   servisi ve tek eşik yapılandırması, MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç
@@ -1395,7 +1411,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   şablonu, MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1/W2/W5…W14 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15, 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
-  bekletmesin. Önkoşul: DL-2, MOD-0269 sözleşmesi (TRM-06), O-6, MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse
+  bekletmesin. Önkoşul: DL-2, O-6 (MOD-0269 sözleşmesi dondu — D27/7, TRM-06 kapandı), MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse
   kurtarmada yeniden çağrı yok, gap 5/G2). Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30, 37, 38, 33 (Release,
   kanıt, onay belgesi kısmı).
 - **DL-4** — Yollar: `Views/FinanceTreasury/PaymentBatches/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;

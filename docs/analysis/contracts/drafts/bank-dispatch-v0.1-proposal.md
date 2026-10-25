@@ -1,5 +1,8 @@
 # BANK-DISPATCH 0.1.0 — MOD-0269 arayüz sözleşmesi (TASLAK / öneri)
 
+> **Superseded (2026-10-25):** bu taslak `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0, D27/7) olarak
+> yayımlandı; `rail` alanı çıkarıldı. Bu dosya tarihsel taslaktır, değiştirilmez.
+
     contract       : BANK-DISPATCH
     version        : 0.1.0
     x-status       : DRAFT (rev 3, gap listeleri 7 ve 8 uygulandı) — öneri; CT incelemesi ve sahip onayından önce dondurulmaz

@@ -81,6 +81,14 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 > O-12 ve kiracısız hedef kaydının denetimi) — `treasury-intake-owner-decisions-02.md` D24 (bu pack revizyonuyla aynı commit'te). **O-6'da güvenlik onayı ve gerçek Mongo testleri
 > hâlâ açıktır** (D24/3 onları kapatmaz). Kapanış tablosu "Implementation Notes → D24 uygulaması". Yeniden ölçülen iki satır
 > `@54b605877` ile atıflanır.
+>
+> **Revizyon 7 (2026-10-25):** sahip kararları **D27/5, D27/7–11** uygulandı — O-13 → D27/9 (Compact); hesap amacı kodu →
+> D27/10 (doğal anahtar, RCS kodu yok); denetim defteri → D27/11 (yeni defter satırları K2, `mdm-guvenilir-kaynak-niyeti`
+> yol belirteci, borç satırı yok, CT-DECISIONS satırı kod aşamasında); BANK-DISPATCH donmuş dosyaya bağlandı (D27/7);
+> **MOD-0289 için kod alma izni verilmedi** (D27/5 yalnız dört Treasury modülü içindir). `BANK-ACCOUNT-LOOKUP` 1.0.0 sözleşme
+> dosyası CT tarafından bu paketin tanımından **taslak** olarak yazıldı: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (fikstürler F-E1…F-E9, F-503);
+> dondurulması DL-2 maddesidir. D27 kaydı bu revizyonla aynı commit'te. Bu revizyon pack'i
+> `ready-for-dev` yapmaz. Kapanış tablosu "Implementation Notes → D27 uygulaması".
 
 ## Module Summary
 
@@ -104,7 +112,7 @@ suppliers while payment execution remains with treasury/payment gateway capabili
   `BankAccount` sicili — sahibi **tam olarak bir** taraftır: şirket (MOD-0220 `LegalEntity`, aynı servis, süreç içi) ya
   da tedarikçi (MOD-0140, Gateway üzerinden sözleşme); IBAN / BIC biçim kuralları (dış doğrulama çağrısı yok); şifreli
   saklama, maskeleme, maskesiz okuma ve okuma kaydı; veri kapsamı (SEC-002); tüketici okuma sözleşmesi
-  `BANK-ACCOUNT-LOOKUP` (bu pakette tanımlanır, dosyası sonra yazılır); kiracı ekranları (Banks, BankAccounts).
+  `BANK-ACCOUNT-LOOKUP` (bu pakette tanımlanır; dosyası taslak olarak yazıldı, DL-2'de dondurulur); kiracı ekranları (Banks, BankAccounts).
 - **Out-of-scope (v1):** ödeme yürütme, banka token'ı / yönlendirme token'ı, banka geri çağrısı, ekstre (MOD-0269, D5);
   ödeme partisi ve onayı (MOD-0126); toplu içe aktarma (kaynak import job / row / issue — follow-up); değişiklik talebi +
   MOD-0023 onay akışı (D23/2: v1'de yok); varsayılan hesap ataması, istisna vakaları, kanıt paketi / vekâlet
@@ -112,8 +120,8 @@ suppliers while payment execution remains with treasury/payment gateway capabili
   follow-up); müşteri banka hesabı (kaynakta CUSTOMER slotu sahipsiz — §P; kimlik uydurulmaz); ülke ve para birimi
   referans listelerinin sahipliği (MDM ülke kararı domain-config "Country Boundary"; MOD-0048).
 - **Sahip olunan sözleşme:** `BANK-ACCOUNT-LOOKUP` 1.0.0 (Runtime Constraints → "Okuma sözleşmesi"), x-owner MOD-0289;
-  dosya `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` olarak **follow-up**'ta yazılır,
-  bu pakette yazılmaz. Kaynakta resmi sözleşme yoktur (paket §B "ABSENT").
+  dosya `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` — 1.0.0 **DRAFT**, CT tarafından
+  bu paketin tanımından yazıldı; dondurma DL-2'de (AC-20). Kaynakta resmi sözleşme yoktur (paket §B "ABSENT").
 - **Tüketilen sözleşmeler / yapılar:** MOD-0220 `LegalEntity` (aynı servis — depo üzerinden süreç içi okuma; HTTP
   değil); MOD-0140 `SUPPLIER` `validateSuppliers` (1.3.0 hedefi — bugün yok, Dependencies); MOD-0048 para birimi listesi;
   RCS-001 ortak kod servisi; SEC-002 veri kapsamı (MDM'de var olan `ITrustedLegalEntityScopeProvider` adayı); MDM'nin
@@ -334,8 +342,8 @@ matris C11), `PaymentEligibilityStatus`, `ApprovalStatus`, `ValidationState`, `L
   doğal, anlamlı, kiracının seçtiği bir referans değeridir (ölçüldü:
   `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:14@54b605877`). RCS-001 §6 "kullanıcıya
   görünen kodu olan her yeni kayıt türü" der (`.antigravity/rules/record-coding-standard.md:142@54b605877`); sözlük
-  kodlarının bu kapsamda olup olmadığı kuralda açıkça yazılı değil — bu paket doğal anahtarı seçer ve sınıflandırmanın CT
-  tarafından teyidini Ready-for-dev maddesi yapar.
+  kodlarının bu kapsamda olup olmadığı kuralda açıkça yazılı değildi — **KARAR D27/10 (2026-10-25, CT teyidi, sahip onayıyla):
+  doğal anahtar, RCS kodu yok**; kiracı sözlük kodları RCS kodu almaz, RCS-001 kayıt kodları içindir.
 - **Pasif amaç:** var olan hesaplar değişmez (belge sürümü aynı, `lookup-validation` etkilenmez); yeni Create ya da amacı bu
   koda değiştiren Update 422 `MDM_BANK_ACCOUNT_PURPOSE_INACTIVE`. Yeniden aktive edilebilir.
 - **Silme:** yalnız hiçbir silinmemiş hesap kullanmıyorsa (soft delete); kullanılıyorsa 409
@@ -508,9 +516,10 @@ Hepsi kod alma izninden (D1) ve `ready-for-dev`'den sonra; dilim sütunu "Teslim
 - `services/Diten.MdmService/tests/**` (DL-1…DL-3)
 - `tests/architecture/audit-ledger/Diten.MdmService.md` — `mdm-guvenilir-kaynak-niyeti` izinin belirtecine yeni yazma
   üyeleri + aynı değişiklikte `tests/architecture/audit-ledger/CT-DECISIONS.md` satırı ve `AuditTrailStandardTests`
-  sabitleri — **CT kararı ister** (DL-1)
+  sabitleri — **KARAR D27/11:** yeni defter satırları K2 olarak, `mdm-guvenilir-kaynak-niyeti` yol belirteciyle eklenir; borç
+  satırı yok; CT-DECISIONS satırı kod aşamasında yazılır (DL-1)
 - `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` — `BANK-ACCOUNT-LOOKUP` sözleşme dosyası
-  (DL-2'de yazılır; bu paketle yazılmaz)
+  (taslak yazıldı — CT; DL-2'de dondurulur; bu paketle değişmez)
 - `frontend/Diten.Web/Views/MasterData/{Banks,BankAccounts}/**`, `frontend/Diten.Web/wwwroot/assets/js/MasterData/{Banks,BankAccounts}/**`,
   `frontend/Diten.Web/Resources/Views/MasterData/{Banks,BankAccounts}/{Banks,BankAccounts}Index.{en,tr,fr,es,zh,ar,ru}.resx`,
   `frontend/Diten.Web/Controllers/MasterData/{Banks,BankAccounts}Controller.cs` (`MasterDataGatewayController`'dan türeyen
@@ -560,7 +569,7 @@ satırı ve frontend/gateway kapsam cümlesi; MOD-0048 para birimi listesinin MD
 | MOD-0023 Workflow | hesap onay akışı | var (Platform) | v1'de kullanılmaz (**KARAR D23/2**) |
 | MOD-0031 Evidence | tedarikçi hesabı doğrulama kanıtı | var (Platform) | v1'de kullanılmaz (KARAR D24/1); MOD-0269 gerçek dağıtımından önce zorunlu kapı (Follow-up) |
 | MOD-0126 / MOD-0119 / MOD-0120 / MOD-0124 | tüketici | taslak pack'ler opak Guid tutuyor (MOD-0126 `DefaultSourceBankAccountRef`, `DestinationReferenceId`; MOD-0120 `CollectionDestinationRef`; MOD-0124 `BankAccountRef`) | tüketici sözleşme testi o paketlerin işi; bu paket sözleşmeyi verir |
-| MOD-0269 Banks/SWIFT gateway | ileride tam tanımlayıcı tüketicisi | yok (D5, dağıtım kapalı); `bank-dispatch-v0.1-proposal.md` §3 banka verisi taşımaz | v1'de tam tanımlayıcıyı okuyan sistem tüketicisi yok; açıldığında ayrı karar ve servis kimliği |
+| MOD-0269 Banks/SWIFT gateway | ileride tam tanımlayıcı tüketicisi | yok (D5, dağıtım kapalı); `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0, D27/7) §3 banka verisi taşımaz | v1'de tam tanımlayıcıyı okuyan sistem tüketicisi yok; açıldığında ayrı karar ve servis kimliği |
 | Port | servis | MDM 5059 (`AGENTS.md:75`, `.antigravity/rules/ports.md:25`) | yeni port yok (D20/1) |
 | DCP (`UNASSIGNED-finance-treasury-intake`) | dilim kapısı | taslak (MOD-0126 pack) — TRM-S3 | DCP `approved` olmadan `ready-for-dev` yok |
 
@@ -571,7 +580,7 @@ testi" sahte istemcili testi, "canlı kanıt" gerçek servisle dev ortamında ko
 
 | Bağımlılık | Sözleşme / sürüm | Hash | Sahibi | Hata davranışı (MOD-0289) | Kapanış kanıtı (sözleşme testi · canlı kanıt) | Dilim |
 |---|---|---|---|---|---|---|
-| BANK-ACCOUNT-LOOKUP (bu modül) | `drafts/bank-account-lookup-validation-v1.0-proposal.md` 1.0.0 — **yazılacak** | dondurulunca | master-data-management | — | AC-20 · dev ortamında bir tüketiciyle okuma | DL-2 |
+| BANK-ACCOUNT-LOOKUP (bu modül) | `drafts/bank-account-lookup-validation-v1.0-proposal.md` 1.0.0 — **DRAFT yazıldı** (fikstürler F-E1…F-E9, F-503) | dondurulunca (DL-2) | master-data-management | — | AC-20 · dev ortamında bir tüketiciyle okuma | DL-2 |
 | MOD-0220 LegalEntity (süreç içi) | `ILegalEntityRepository` (kod; sözleşme dosyası yok) | MdmService commit SHA'sı DL-2 başında | master-data-management | kayıt yok / başka kiracı → 404 `MDM_BANK_ACCOUNT_OWNER_NOT_ELIGIBLE` sınıfı 422; uygun değil → 422 | birim + entegrasyon (Active+Approved / Active+Draft / Suspended / silinmiş) · — (aynı süreç) | DL-2 |
 | MOD-0140 `validateSuppliers` + ilişkili tedarikçi listesi | `supplier.openapi.yaml` **1.3.0** — yok (bugün 1.2.0); liste görünümü için "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okuması gerekir — 1.3.0'da hangi işlemle verileceği **ölçülmedi** (1.2.0'da `listSuppliers` durum süzgeçli, `supplier.openapi.yaml:26-54`) | main'e girince `shasum` | procurement (MVP-2) | known + Active → ilişkili; known + OnHold/Blocked/Inactive ya da known:false → ilişkisiz (D23/1: okumada 404, yazmada 422); geçersiz / çelişkili gövde, 401/403, 5xx, zaman aşımı → 503; yazma yok, hesap gösterilmez | sahte istemci (AC-24, AC-41) · dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi | DL-3 |
 | MOD-0048 para birimi | `GET /api/lookups/reference/currencies` | DL-2 başında | platform-shared-services | erişilemez → 503, listede yok → 400 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-2 |
@@ -818,7 +827,7 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
 - **Banka ve şube:** kiracı içinde herkese açık referans verisi (`mdm.banks.read` izni olan herkes görür); SEC-002 §3
   istisnası bu cümleyle yazılıdır.
 
-### Okuma sözleşmesi — `BANK-ACCOUNT-LOOKUP` 1.0.0 (tanım; dosyası DL-2'de yazılır)
+### Okuma sözleşmesi — `BANK-ACCOUNT-LOOKUP` 1.0.0 (tanım; dosyası taslak yazıldı — `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md`, DL-2'de dondurulur)
 
 LEGAL-ENTITY-LOOKUP 1.1.0 deseni (`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md` §1–§2).
 
@@ -1151,7 +1160,8 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - Bu yol bugün yalnız ürün ailesini taşıyor: `AuditAggregateType` dokuz değer (`Domain/Enums/AuditAggregateType.cs:3-14`),
   işlem enum'u `ProductAuditOperation` (`Domain/Enums/ProductAuditOperation.cs:3`), teslim deposu sabit dokuz koleksiyon
   (`Persistence/Repositories/AuditIntentDeliveryRepository.cs:15-23`). Genişletme yalnız eklemedir ama defter belirteci
-  (`Tip.Metot` yazma üyeleri) değişir → **CT kararı**. Bu MDM'nin kendi izidir; başka servise kopya değildir (AUD-001 K4).
+  (`Tip.Metot` yazma üyeleri) değişir → **KARAR D27/11** (yeni K2 defter satırları, bu yol belirteci, borç yok;
+  CT-DECISIONS satırı kod aşamasında). Bu MDM'nin kendi izidir; başka servise kopya değildir (AUD-001 K4).
 - Defterin "Pencere 🟡" notundaki (başlatmadan sonra yazılan niyet) durum bu modülde yoktur: uzak çağrı yapan yazma
   komutu yalnız tedarikçi kontrolüdür ve o çağrı **yazmadan önce** yapılan bir okumadır.
 
@@ -1542,17 +1552,19 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
   paketi yazmamış, `high: evet` onaylayıcı
-- [ ] Sahip MOD-0289 için kod alma iznini verdi (D1 — bugün izin yalnız MOD-0126 ilk adayı için konuşuldu; MOD-0289 için yok)
+- [ ] **Sahip MOD-0289 için kod alma iznini verdi (D1) — verilmedi:** D27/5 yalnız MOD-0126/0119/0120/0124 içindir; MOD-0289
+  için ayrı izin gerekir
 - [ ] DCP (`UNASSIGNED-finance-treasury-intake`) `approved`, TRM-S3 dilimi tanımlı
 - [ ] MDM domain-config'e MOD-0289 satırı ve frontend/gateway kapsam cümlesi (bugün istisna yalnız MOD-0290-FU02)
 - [x] O-1, O-2, O-3, O-9 sahip kararıyla yazıldı (KARAR D23/2, D23/3, D23/4, D23/1)
 - [x] O-4, O-5, O-6 (sahip onayı), O-7, O-8, O-10, O-11, O-12 ve kiracısız hedef denetimi sahip kararıyla yazıldı (KARAR
   D24/1–9)
-- [ ] O-13 (hesap amaçları ekranının şekli) — tek kalan açık karar
-- [ ] Hesap amacı kodunun RCS-001 dışında sözlük anahtarı sayılmasının CT teyidi (D24/6 uygulaması)
+- [x] O-13 (hesap amaçları ekranının şekli) — KARAR D27/9 (Compact)
+- [x] Hesap amacı kodunun RCS-001 dışında sözlük anahtarı sayılması — KARAR D27/10 (doğal anahtar, RCS kodu yok)
 - [ ] RCS-001 ortak kod servisi (BL-565) ve `BNK` / `BAC` önekleri RCS-001 §3'te (D24/4 karar verdi; `.antigravity` satırı ayrı
   onay)
-- [ ] Denetim izinin genişletilmesi için Control Tower kararı (defter belirteci + CT-DECISIONS satırı)
+- [x] Denetim defteri — KARAR D27/11 (yeni defter satırları K2, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok; CT-DECISIONS
+  satırı kod aşamasında yazılır)
 - [ ] Şifreleme ve özet anahtarı kaynağı (üretim gizli deposu) ve döndürme prosedürü yazıldı (O-6) — DL-2 için
 - [ ] **Güvenlik onayı (O-6, D24/3 sahip onayı var) — şifreleme + anahtar çiti + onaylı hedef + revizyon tasarımı; görünür
   engel.** Gerçek Mongo testleri de açıktır; onlar DL-2 dilim kabul kapısındadır (gap 16/2)
@@ -1652,14 +1664,25 @@ D24/5; AUTH → `[HasPermission]` + explicit-grant; AUDIT → Audited Events (D2
 | Karar | Seçim | Bu pakette uygulandığı yer | AC |
 |---|---|---|---|
 | D24/1 (O-4) | doğrulama kodu + dört göz; MOD-0031 MOD-0269 öncesi kapı | Entity Fields (`ActivationVerificationCode`), Validation Rules, Frontend (Activate diyaloğu), Dependencies, Follow-up | AC-18, AC-24 |
-| D24/2 (O-5) | güvenilir niyet yolu, K2, `MasterDataAuditOperation` | Repo Scope, Dependencies, Audited Events (K2 sütunu "evet (K2, D24/2)"); defter belirteci ayrı CT kararı olarak Ready-for-dev'de kaldı | AC-6, AC-7, AC-27 |
+| D24/2 (O-5) | güvenilir niyet yolu, K2, `MasterDataAuditOperation` | Repo Scope, Dependencies, Audited Events (K2 sütunu "evet (K2, D24/2)"); defter belirteci D27/11 ile karar verildi (revizyon 7) | AC-6, AC-7, AC-27 |
 | D24/3 (O-6) | uygulama düzeyi AES-GCM — **yalnız sahip onayı** | Entity Fields, Runtime Constraints → "Şifreleme", Dependencies; **güvenlik onayı** Ready-for-dev'de görünür engel, gerçek Mongo testleri DL-2 dilim kabul kapısında | AC-13, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52 |
 | D24/4 (O-7) | `BNK` / `BAC`, OTOMATİK | Entity Fields (Bank.Code, BankAccount.Code); `.antigravity` §3 satırı ayrı onay | AC-1 |
 | D24/5 (O-8) | yalnız ISO biçimi | Entity Fields, Validation Rules, Frontend, Follow-up | AC-2 |
-| D24/6 (O-10) | çekirdek kodlar + kiracı ek amaçları (sahibin kendi seçimi) | Entity Fields → "Hesap amaçları" (`BankAccountPurpose`), indeksler, hata kodları, Owned Objects, Backend / Frontend File Convention, Authorization (`mdm.bank-account-purposes.*`), Audited Events, Validation Rules, Failure Path, Page Help; ekran DL-4, arka uç DL-2; kod sınıfı (sözlük anahtarı) CT teyidi Ready-for-dev'de | AC-53…AC-58 |
+| D24/6 (O-10) | çekirdek kodlar + kiracı ek amaçları (sahibin kendi seçimi) | Entity Fields → "Hesap amaçları" (`BankAccountPurpose`), indeksler, hata kodları, Owned Objects, Backend / Frontend File Convention, Authorization (`mdm.bank-account-purposes.*`), Audited Events, Validation Rules, Failure Path, Page Help; ekran DL-4, arka uç DL-2; kod sınıfı (sözlük anahtarı) D27/10 ile karar verildi (revizyon 7) | AC-53…AC-58 |
 | D24/7 (O-11) | Banks ekranı Compact | Entity Fields notu | AC-28 |
 | D24/8 (O-12) | küsurat MOD-0048 | Açık kararlar | — |
 | D24/9 | kiracısız hedef denetimi: yerel `History` + kiracı çit niyeti (`Version`, `ApprovalRevision`, `ApprovalRef`) | Audited Events (Approve satırı), Ready-for-dev'den çıkarıldı, Follow-up'a merkezi kiracısız kayıt | AC-49, AC-51 |
+
+### D27 uygulaması (sahip kararları D27, 2026-10-25 → revizyon 7)
+
+| Karar | Seçim | Bu pakette | AC |
+|---|---|---|---|
+| D27/5 | dört Treasury modülüne kod alma izni | **MOD-0289'u kapsamaz** — Ready-for-dev engeli olarak kaldı | — |
+| D27/7 | BANK-DISPATCH FROZEN 0.1.0, `rail` yok | Dependencies satırı donmuş dosyaya işaret eder | — |
+| D27/9 (O-13) | hesap amaçları ekranı Compact | Açık kararlar, DL-4 önkoşulu | AC-58 |
+| D27/10 | sözlük kodları doğal anahtar, RCS kodu yok | Entity Fields → "Hesap amaçları"; Ready-for-dev maddesi kapandı | AC-54 |
+| D27/11 (O-5 defter) | yeni defter satırları K2, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok; CT-DECISIONS kod aşamasında | Repo Scope, Audited Events, Ready-for-dev maddesi kapandı | AC-6, AC-7 |
+| — | `BANK-ACCOUNT-LOOKUP` 1.0.0 taslak dosyası (CT yazdı, F-E1…F-E9, F-503) | Ownership, Repo Scope, Dependencies kapanış tablosu, Runtime Constraints başlığı, Follow-up; dondurma DL-2 | AC-20, AC-42 |
 
 ### Taşınmayacaklar (do-not-carry)
 
@@ -1703,8 +1726,8 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 
 ## Follow-up Items
 
-- `BANK-ACCOUNT-LOOKUP` sözleşme dosyası (`docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md`) —
-  DL-2 başında; tüketici paketlerine (MOD-0126, MOD-0119, MOD-0120, MOD-0124) bağ.
+- `BANK-ACCOUNT-LOOKUP` sözleşme dosyası (`docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md`) — taslak yazıldı;
+  DL-2'de dondurulur; tüketici paketlerine (MOD-0126, MOD-0119, MOD-0120, MOD-0124) bağ.
 - Hesap arama ucu (maskeli, kapsamlı) — tüketici ekranlarındaki "opak referans giriş" geçici çözümünün (MOD-0126 O-15,
   MOD-0124 O-15) yerine.
 - MOD-0269 gerçek dağıtım açılmadan önce: tam tanımlayıcıyı okuyacak servis kimliği ve dar sözleşme, tedarikçi hesabı
@@ -1737,7 +1760,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-2 | Şirket hesabı için şirket Active **ve** Approved mı olmalı? | (a) Create ve Activate'te Active + Approved (b) Create'te Active, Activate'te Active + Approved (c) yalnız Active | **KARAR D23/3 (2026-10-25): (b)** — oluşturmada `Active`; etkinleştirmede ve lookup'ta `Active` + `Approved` (D10/1 ile aynı çizgi) | sahip (K1) |
 | O-3 | Maskesiz okuma izni kimde? | (a) `mdm.bank-accounts.read-unmasked`, Tier 3, yalnız açık atama, gerekçe kodu zorunlu (b) hesap oluşturma izniyle birlikte (c) maskesiz okuma yok | **KARAR D23/4 (2026-10-25): (a)** — yalnız açık atama (rol şablonunda varsayılan değil), her okumada gerekçe kodu, değer dönmeden önce denetim kaydı. Kalan (karar değil): gerekçe değer listesi önerisi `PAYMENT_INVESTIGATION`, `BANK_CONFIRMATION`, `AUDIT_REQUEST`, `DATA_CORRECTION`; ilk sahipler rol şablonu MOD-0018 sahibiyle | sahip (K1) + MOD-0018 / Auth sahibi (uygulama) |
 | O-4 | Tedarikçi hesabı aktivasyonunda doğrulama kanıtı | (a) kanıt yok (b) zorunlu doğrulama kodu + dört göz (c) MOD-0031 kanıt bağlantısı zorunlu | **KARAR D24/1 (2026-10-25): (b)** — etkinleştirmede zorunlu kod (`CALLBACK_CONFIRMED` / `BANK_LETTER_ON_FILE` / `SUPPLIER_PORTAL_CONFIRMED`) ve farklı kişi; MOD-0031 kanıt bağlantısı MOD-0269 gerçek gönderiminden önce zorunlu kapı (Follow-up) | sahip (K1) |
-| O-5 | Denetim yolu ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi (b) `mdm-merkezi-iletim` (c) ortak CentralAudit | **KARAR D24/2 (2026-10-25): (a)** — kapalı-başarısız güvenilir niyet yolu, eklemeli genel `MasterDataAuditOperation`; hesap yazmaları ve maskesiz okuma K2. **Kalan (karar değil): defter belirteci ayrı CT kararı.** `AuditCategory` değeri MOD-0126 O-6 ile ortak | sahip (K1); defter: CT |
+| O-5 | Denetim yolu ve K2 | (a) `mdm-guvenilir-kaynak-niyeti` genişletmesi (b) `mdm-merkezi-iletim` (c) ortak CentralAudit | **KARAR D24/2 (2026-10-25): (a)** — kapalı-başarısız güvenilir niyet yolu, eklemeli genel `MasterDataAuditOperation`; hesap yazmaları ve maskesiz okuma K2. Defter belirteci: **KARAR D27/11** (yeni K2 satırları, borç yok, CT-DECISIONS kod aşamasında). `AuditCategory` değeri MOD-0126 O-6 ile ortak | sahip (K1); defter: D27/11 |
 | O-6 | Tam tanımlayıcının saklanması | (a) uygulama düzeyi AES-GCM (b) MongoDB istemci tarafı şifreleme (c) dış kasa referansı (d) saklamama | **KARAR D24/3 (2026-10-25): (a) — yalnız sahip onayı.** Pack'teki tasarım (AES-256-GCM, rastgele 96 bit nonce, AAD = kiracı + hesap + sürüm, sürümlü anahtar, ayrı sürümlü HMAC özet, anahtar kümesi çiti, onaylı hedef + revizyon). **Güvenlik onayı ve gerçek Mongo testleri hâlâ açık**; bu karar onları kapatmaz (Ready-for-dev: güvenlik onayı; DL-2 dilim kabul kapısı: testler) | sahip (K1) — **güvenlik onayı açık** |
 | O-7 | RCS-001 kayıt kodları | `BNK` / `BAC` OTOMATİK · başka | **KARAR D24/4 (2026-10-25):** banka `BNK` (grup öneki), hesap `BAC` (şirket hesabında şirket öneki, tedarikçide grup öneki), OTOMATİK; şube kodu doğal anahtar. `.antigravity` §3 satırı ayrı onay | sahip (K1); `.antigravity`: ayrı onay |
 | O-8 | Ülke kodu kaynağı | (a) yalnız ISO biçimi (b) PSS-011 (c) MDM iş ülkesi referansı | **KARAR D24/5 (2026-10-25): (a)** — ISO 3166-1 alfa-2 biçimi; MDM iş ülkesi kaynağı gelince bağlanır | sahip (K1) |
@@ -1745,7 +1768,7 @@ paketi ve vekâlet, ülke-kanal kural seti, doğrulama koşuları ve muafiyetler
 | O-10 | `AccountPurpose` değer listesi | (a) serbest metin (b) kapalı kod listesi (c) **kod listesi + kiracı ekler** | **KARAR D24/6 (2026-10-25): (c) — sahibin kendi seçimi, önceki öneri (b) değil.** Sabit çekirdek kodlar + kiracı referans listesi (`BankAccountPurpose`, 7 dilde etiket) — tasarım Entity Fields → "Hesap amaçları" | sahip (K1) |
 | O-11 | Banks ekranının şekli | Compact / Slim | **KARAR D24/7 (2026-10-25): Compact** — Details'ta şube alt tablosu | sahip (K1) |
 | O-12 | Para birimi küsurat hanesi kaynağı | MOD-0289 / MOD-0048 | **KARAR D24/8 (2026-10-25): MOD-0048** — MOD-0289 yalnız ISO kodu saklar ve MOD-0048 listesinde olduğunu doğrular | sahip (K1) |
-| O-13 | Hesap amaçları ekranının şekli (form 8 alan: Code + 7 etiket — tek başına Slim'e düşer) | Compact (pack'in tek `golden_reference` değeri) / Slim (sapma kaydıyla) | **Compact** — pack tek `golden_reference` taşır (module-pack-standard `screens` yalnız `data_mode` taşır); Details'ta kullanan hesap sayısı; sapma kaydı gerekmez | sahip |
+| O-13 | Hesap amaçları ekranının şekli (form 8 alan: Code + 7 etiket — tek başına Slim'e düşer) | Compact (pack'in tek `golden_reference` değeri) / Slim (sapma kaydıyla) | **KARAR D27/9 (2026-10-25): Compact** — pack tek `golden_reference` taşır (module-pack-standard `screens` yalnız `data_mode` taşır); Details'ta kullanan hesap sayısı | sahip (K1) |
 
 ## Teslim dilimleri
 
@@ -1787,7 +1810,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-4** — Yollar: `Views/MasterData/{Banks,BankAccounts}/**`, JS, resx (7 dil), MVC vekilleri, sayfa yardımı, nav
   anahtarları; Gateway rotaları integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API
   sözleşmesine bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-2 (hesap ekranı), DL-3 (tedarikçi sahibi seçimi), Gateway
-  rotaları, MDM domain-config frontend/gateway kapsam cümlesi, O-13. Bitiş: AC-28, 29, 30, 31, 32, 58.
+  rotaları, MDM domain-config frontend/gateway kapsam cümlesi (O-13 → D27/9 karar verildi). Bitiş: AC-28, 29, 30, 31, 32, 58.
 
 **Dilim kabul kapısı (gap 16/2) — her dilim için, kabul / birleştirmeden önce (`ready-for-dev`'den önce değil):**
 
