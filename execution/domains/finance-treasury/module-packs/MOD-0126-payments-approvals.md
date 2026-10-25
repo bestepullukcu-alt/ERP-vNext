@@ -494,7 +494,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 
 ## Runtime Constraints
 
-- Servis portu **5071** (D10/3; AGENTS §3 kaydı bekliyor). Tarayıcı ve `Diten.Web` yalnız Gateway (5000) üzerinden
+- Servis portu **5071** (D10/3; AGENTS §3 ve `ports.md` kaydı yapıldı — D30). Tarayıcı ve `Diten.Web` yalnız Gateway (5000) üzerinden
   çağırır; tarayıcı JS 5071'e gitmez.
 - **Kiracı + şirket izolasyonu her sorguda:** `TenantId` `ITenantContext`'ten, `LegalEntityId` `X-Legal-Entity-Id`
   başlığından (MOD-0220'de doğrulanmış); başka kiracı ya da başka şirket kaydı **404**. Üretimde sabit/varsayılan kiracı
@@ -939,9 +939,8 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 
 - Policy: `[Authorize]` (kiracı aktörü) + her aksiyonda `[HasPermission("…")]` (kaynakta MOD-0126 denetleyicilerinde
   `[HasPermission]` yok, paket §C — level-1 koşul 4).
-- Biçim (PKS-001): küçük harf, noktalı, ≥ 3 parça, çok kelimede tire. **Ad alanı önerisi `finance-treasury.*`**
-  (procurement'ın `procurement.*` deseni; domain-config "İzin anahtarı öneki (OPEN)") — MOD-0018 kaydı ve sahip kararı
-  **O-5**. Kaynak `mod0126.*` anahtarları **kopyalanmaz**; aşağıdaki eşleme yalnız izlenebilirlik içindir (kaynak anahtar
+- Biçim (PKS-001): küçük harf, noktalı, ≥ 3 parça, çok kelimede tire. **Ad alanı `finance-treasury.*` — KARAR D11/4**
+  (procurement'ın `procurement.*` deseni); MOD-0018 kaydı (anahtarların Auth'a eklenmesi) ayrıca yapılır. Kaynak `mod0126.*` anahtarları **kopyalanmaz**; aşağıdaki eşleme yalnız izlenebilirlik içindir (kaynak anahtar
   hiçbir zaman yayımlanmadığından takma ad gerekmez — PKS-001 §3 yalnız yayımlanmış anahtar için).
 - Aktör: `tenant_user`; `platform_admin` geçişi standarttır. Arka plan aktörü bu dilimde yok.
 
@@ -1418,16 +1417,16 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   ve yazma kapsamıyla, ortak LE / para birimi / kod portları ve bağdaştırıcıları, CentralAudit kaydı — D14/1, D14/2; tek
   sahibi bu dilim, MOD-0119/0120/0124 DL-1'inin önkoşulu — gap 4/G5), `payment-batch.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001 K4 — ileticisi olmayan serviste yeni yazma komutu
   yazılamaz; ilk komutla birlikte gelir. Önkoşul: Ready-for-dev engelleri (DCP, port, TRM-14, O-9, O-11, O-19, CT defter kararı; kod alma
-  D27/5 ile verildi). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 41, 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
+  D27/5 ile verildi). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 41 (a–c, e; Create / Update), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
   Validate kısmı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/ApproveWithSodWaiver, SoD politika
   servisi ve tek eşik yapılandırması, MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç
   modülün çekirdeği ve en riskli kısmıdır; bağımsız inceleme tek başına yapılabilsin. Önkoşul: DL-1, O-4, O-7, O-8, MOD-0023
-  şablonu, MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1/W2/W5…W14 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15, 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
+  şablonu, MOD-0023 pack §17 (TRM-15) onayı — kod MOD-0023 sahibinin WP'siyle gelir (D25/1); AC-W1/W2/W5…W14 geçişi dilimin **kabul kapısıdır, önkoşulu değil** (gap 16/P2) (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-40, AC-4…15, AC-6a, 41 (d: Approve kısmı), 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
   bekletmesin. Önkoşul: DL-2, O-6 (MOD-0269 sözleşmesi dondu — D27/7, TRM-06 kapandı), MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse
-  kurtarmada yeniden çağrı yok, gap 5/G2). Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30, 37, 38, 33 (Release,
+  kurtarmada yeniden çağrı yok, gap 5/G2). Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30, 37, 38, 41 (d: Release kısmı — AC-41 tam kapanışı), 33 (Release,
   kanıt, onay belgesi kısmı).
 - **DL-4** — Yollar: `Views/FinanceTreasury/PaymentBatches/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API sözleşmesine

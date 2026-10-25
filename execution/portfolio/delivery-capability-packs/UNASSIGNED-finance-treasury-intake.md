@@ -72,7 +72,7 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 | modül | Blueprint (8.8) | Recovery durumu (kayıt · pack · kod) | rol |
 |---|---|---|---|
 | MOD-0126 Payments & Approvals | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…41 + 6a) · 0 | üye — ilk (TRM-S1); kod alma izni D27/5 |
-| MOD-0269 Banks/SWIFT/Payments Gateway [External Provider] | W-1, External Provider | kayıt yok (dış sağlayıcı) · **pack yok, sözleşme `bank-dispatch.md` FROZEN 0.1.0** (D27/7) · 0 | üye — yalnız arayüz sözleşmesi + kapalı bağdaştırıcı (MOD-0126 içinde) |
+| MOD-0269 Banks/SWIFT/Payments Gateway [External Provider] | W-1, External Provider | kayıt yok (dış sağlayıcı) · **pack yok, sözleşme `bank-dispatch.md` FROZEN 0.1.0** (D27/7) · 0 | üye — yalnız arayüz sözleşmesi + kapalı bağdaştırıcı; **MOD-0126 pack kapısından teslim** (§15) |
 | MOD-0119 Accounts Payable (AP) | W-3, Financial Management | `reserved / planned` · draft (AC-1…41) · 0 | üye (TRM-S2); kod alma izni D27/5 |
 | MOD-0120 Accounts Receivable (AR) | W-3, Financial Management | `reserved / planned` · draft (AC-1…43) · 0 | üye (TRM-S2); kod alma izni D27/5 |
 | MOD-0124 Cash Positioning | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…37) · 0 | üye (TRM-S2); kod alma izni D27/5 |
@@ -144,7 +144,7 @@ MOD-0126 → MOD-0289 bağı opak referanstır; MOD-0289 gelene kadar Treasury p
 | TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0269 yalnız FROZEN sözleşme ve kapalı bağdaştırıcı |
 | TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | kapı kararları verildi (D27/1–4); MOD-0126 DL-1'e bağlı |
 | TRM-S3 | MOD-0289 | MDM (D20/1); draft pack (AC-1…58); MOD-0140 1.3.0, O-6 güvenlik onayı, ayrı kod alma izni |
-| TRM-S4 | MOD-0217 | aday; yer MDM (D19/1), pack koşullu |
+| TRM-S4 | MOD-0217 | **planlı, bu DCP onayıyla dağıtılamaz** (§11: aday kapsam dışı) — yer MDM (D19/1), pack koşullu; kapsama girmesi DCP değişikliği ister |
 
 ## 9. Prerequisites
 
@@ -206,7 +206,11 @@ kaynak projedeki her değişiklik.
 ## 15. Gate criteria
 
 - DCP `approved` olmadan hiçbir üye pack'i `ready-for-dev` olmaz.
-- Bir dilim, üyelerinin pack'leri `ready-for-dev`, kod alma izni verilmiş ve level-1 paket kabulü kayıtlıyken başlar.
+- Bir dilim, **pack'i olan** üyelerinin pack'leri `ready-for-dev`, kod alma izni verilmiş ve level-1 paket kabulü kayıtlıyken
+  başlar. **MOD-0269 istisnası (CT-APR-02 F-1):** MOD-0269'un pack'i yoktur ve ayrı modül uygulaması değildir; teslimi
+  FROZEN `bank-dispatch.md` 0.1.0 sözleşmesi + MOD-0126 içindeki `IBankDispatchPort` / `NotConfiguredBankDispatchAdapter`
+  ile, yalnız **MOD-0126 pack kapısından** (MOD-0126 `ready-for-dev`, MOD-0126 kod alma izni D27/5, MOD-0126 DL-3) geçer.
+  MOD-0269 için ayrı `ready-for-dev` ya da kod alma izni aranmaz; gerçek sağlayıcı bağdaştırıcısı ayrı karar ve pack ister.
 - Dilim kabulü (merge) dilim kabul kapısından geçer: AC geçişleri, gerçek replika seti testleri, build, tüketici kanıtı
   (gap 16/P2 — ready-for-dev kapısından ayrıdır).
 - MOD-0126 `ready-for-dev` için: MOD-0269 sözleşmesi ✓ (FROZEN), SoD tanımı ✓ (D11), MOD-0126 v1.2 paketi ✓, MOD-0023 §17

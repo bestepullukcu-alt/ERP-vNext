@@ -595,7 +595,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 
 ## Runtime Constraints
 
-- Servis portu **5071** (D10/3; AGENTS §3 kaydı bekliyor). Tarayıcı ve `Diten.Web` yalnız Gateway (5000) üzerinden
+- Servis portu **5071** (D10/3; AGENTS §3 ve `ports.md` kaydı yapıldı — D30). Tarayıcı ve `Diten.Web` yalnız Gateway (5000) üzerinden
   çağırır; tarayıcı JS 5071'e ve 5061'e (CRM) gitmez.
 - **Kiracı + şirket izolasyonu her sorguda:** `TenantId` `ITenantContext`'ten, `LegalEntityId` `X-Legal-Entity-Id`
   başlığından (MOD-0220'de doğrulanmış); başka kiracı ya da başka şirket kaydı **404**. Üretimde sabit/varsayılan kiracı yok.

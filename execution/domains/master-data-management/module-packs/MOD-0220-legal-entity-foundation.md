@@ -925,7 +925,7 @@ read path or a copy in Treasury would duplicate MDM state; one additive field is
 Allowed paths: `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs`
 and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other service.
 
-### 22.4 Acceptance criteria (defined — not implemented, not run)
+### 22.4 Acceptance criteria (defined; not implemented or run)
 
 - AC-T1 — `lookup-validation` for an Active entity returns `approvalStatus` equal to the entity's `ApprovalStatus`
   in upper case, for each of the four values (theory test).
@@ -970,3 +970,14 @@ and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other s
 
 Rejecting unapproved entities inside MOD-0220; any change to the 404 rule (that would be a major contract version);
 fixing the §4/§12 status-name drift; frontend; gateway; new permission; any other MDM field.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | TRM-14 `approvalStatus` eki (yalnız §22) | Change (additive only), Acceptance criteria (defined; not implemented or run), Delivery |
+
+Bu tablo **yalnız §22 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25). §1–§21'in eski kapsamı ve pack'in mevcut
+`ready-for-dev` durumu bu dilime yetki **vermez**; bu dilim de eski kapsamdan yetki almaz. Bitiş: AC-T1, AC-T2, AC-T3,
+AC-T4 (tüketici sahiplerinin kanıtıyla), AC-T5. Tek dilim olduğu için onay satırı `note` alanında `whole_pack=<WP>` taşır
+(onaylayanın kararı); kod MOD-0126 DL-1 ile aynı WP'de, yalnız §22.3'teki izinli yollarda.

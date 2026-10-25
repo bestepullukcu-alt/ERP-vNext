@@ -557,13 +557,14 @@ read handlers (`GetWorkflowInstancesByObjectsHandler.cs`, `GetWorkflowInstanceBy
 for the mapping only, `services/Diten.Platform/tests/**`, `tests/architecture/**` (new rule only). No index, schema,
 route, permission or write-path change (D22/2) — if the race ACs fail, see the status note above.
 
-### 17.4 Acceptance criteria (defined — not implemented, not run)
+### 17.4 Acceptance criteria (defined; not implemented or run)
 
 - AC-W1 — Retention guard (architecture test): no code path deletes, soft-deletes (`IsDeleted` / `DeletedAt` set) or
   TTL-expires `WorkflowInstance` / `WorkflowTransitionLog`; the schema manifest declares no `ExpireAfter` on their
   collections. Sabotage: adding a `DeleteAsync` or an `ExpireAfter` turns the test red.
-- AC-W2 — `by-objects`, `instances/{id}` and `history` return the stored `IdempotencyKey` (and `ApprovalTaskId` on history)
-  for keyed writes and `null` for unkeyed ones; other-tenant id → 404 unchanged.
+- AC-W2 — `by-objects` and `history` return the stored `idempotencyKey` (and `approvalTaskId` on history) for keyed writes
+  and `null` for unkeyed ones; other-tenant id → 404 unchanged. `instances/{id}` + `idempotencyKey` is **optional** (§17.7/4)
+  and not asserted by this AC.
 - AC-W3 — JSON compatibility: existing properties keep name, JSON type and meaning; the new ones are added; order not
   asserted. **Consumers (measured @ef4f3a8bc) — each one's own test must pass against a body with the new fields;
   status until run: expected compatibility, not tested:**
@@ -583,10 +584,12 @@ route, permission or write-path change (D22/2) — if the race ACs fail, see the
 - AC-W5 — Concurrent same-key **start** on a real Mongo replica set (N ≥ 2 parallel requests, repeated): exactly one
   instance; every final answer (after replaying any 503) names that instance; no answer is a business refusal.
   Sabotage: removing the post-conflict re-read turns it red.
-- AC-W6 — **Approve–Approve** replay race: two concurrent approves, same task and key → one transition row, both final
-  answers 200 and identical.
-- AC-W7 — **Reject–Reject** replay race: same as AC-W6 for reject; and **RequestInfo–RequestInfo** (used by MOD-0119
-  RequestInfo and MOD-0126 RequestEvidence) the same.
+- AC-W6 — **Approve–Approve** replay race (final expectation per §17.7/5): two concurrent approves, same task and key →
+  exactly one transition row; each answer is either 200 (that transition) or 409 `WORKFLOW_TRANSITION_CONFLICT` / 503
+  `WORKFLOW_TRANSACTION_UNAVAILABLE` / 503 `WORKFLOW_TRANSITION_CONFLICT`; a replay of the same key after the race returns
+  200 with `isIdempotent = true` and the same transition.
+- AC-W7 — **Reject–Reject** and **RequestInfo–RequestInfo** replay races (MOD-0119 RequestInfo, MOD-0126 RequestEvidence):
+  the same final expectation as AC-W6.
 - AC-W8 — **Approve–Reject conflict** (different keys / actions, one pending task): exactly one terminal decision is
   recorded; the loser's final answer is 409 `WORKFLOW_TASK_INVALID_STATE`; no second terminal row; a replay of the
   loser's own key afterwards returns the same 409 (never 200 for a decision that was not recorded).
@@ -678,3 +681,16 @@ measured at origin/main @05f311784, read-only, no tests run — producer's state
    deterministic per intent).
 
 TRM-15 closure now needs AC-W1…W14 passed in the MOD-0023 owner's WP, the Platform build green and consumer evidence.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | §17 silmeme politikası + eklemeli okuma alanları | Change, Acceptance criteria (defined; not implemented or run), Delivery |
+| DL-2 | §17 aynı anahtar yanıtı: yarış, sıralı tekrar ve fingerprint düzeltmesi | Change, Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict, Delivery |
+
+Bu tablo **yalnız §17 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25); §1–§16'nın eski kapsamı ve mevcut `ready-for-dev`
+durumu bu dilimlere yetki vermez. Teslim: MOD-0023 sahibinin WP'si (D25/1). Bitiş — **DL-1:** AC-W1 (üç tip), AC-W2, AC-W3
+(tüketici sahiplerinin kanıtıyla), AC-W4, AC-W13. **DL-2:** AC-W5…AC-W12, AC-W14 (fingerprint düzeltmesi bir yazma yolu
+değişikliğidir ve yalnız bu dilimde, sahibin onayıyla yapılır — D25/1). Treasury'nin MOD-0023 kullanan dilimleri DL-1 **ve**
+DL-2 main'e girmeden kabul edilmez.

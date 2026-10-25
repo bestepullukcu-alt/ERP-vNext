@@ -2906,7 +2906,7 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
   `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
   error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
 
-### 21.5 Acceptance criteria (defined — not implemented, not run)
+### 21.5 Acceptance criteria (defined; not implemented or run)
 
 - AC-R1 — Both sets are returned by the published-values endpoint for any signed-in tenant user, with `IsActive` values only
   counted as valid; a set code not in the allow-list still answers as today (unchanged behaviour).
@@ -2919,9 +2919,14 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
   that is caught and logged, `:105, 112-114`). The platform start-up is therefore **not** the stopping point. The stopping
   point is the consumer write: with a set missing, the published-values read fails and every Treasury command that needs
   it answers 503 (`PAYMENT_METHOD_SOURCE_UNAVAILABLE`, `…_CURRENCY_PRECISION_UNAVAILABLE`) and writes nothing (MOD-0126
-  AC-41(c) and the precision ACs of the four packs). This AC checks: (a) with `treasury-reference.json` absent, the
-  verification log contains `published_set_not_found` for both codes; (b) the published-values endpoint answers not-found for
-  them; (c) a stubbed Treasury consumer then returns 503 and no write. **Scope stays seed + config only**; a readiness
+  AC-41(c) and the precision ACs of the four packs). This AC checks, **on a clean database where neither set was ever published** (precondition): (a) with
+  `treasury-reference.json` absent, the verification log contains `published_set_not_found` for both codes; (b) the
+  published-values endpoint answers not-found for them; (c) a stubbed Treasury consumer then returns 503 and no write.
+  **Separate case (CT-APR-02 F-2):** if the sets were published earlier and the seed file is later removed, the loader reads
+  the published versions from the database (`RequiredSetCodes` verification queries DB state), so the sets **stay
+  published** and consumers keep working on the last published version; removing a set needs an explicit unpublish /
+  deactivation through the reference-data stewardship flow, not the deletion of the seed file. AC-R3(d) asserts this:
+  published once, file removed, restart → published-values still returns the last version. **Scope stays seed + config only**; a readiness
   health-check entry that would make the missing sets visible as `Unhealthy` is a code change and is listed as a follow-up
   (§21.6), not part of this amendment.
 - AC-R4 — Existing consumable-set consumers are unaffected (their tests pass unchanged).
@@ -2933,3 +2938,14 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 - Out of scope: a tenant-editable payment-method list, FX rates, currency names / symbols beyond `display_name`; a readiness
   health check for the two sets (`BusinessReferenceDataProviderReadinessHealthCheck`, code change — follow-up for the
   reference-data owner).
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | TRM-17 Treasury consumable sets (yalnız §21) | Change (configuration + seed data only — no code), Acceptance criteria (defined; not implemented or run), Delivery and out of scope |
+
+Bu tablo **yalnız §21 ekini** kapsar (CT-APR-02 bulgusu F-1, 2026-10-25). Pack'in mevcut adlandırılmış `ready-for-dev`
+adımı ("BRD Provider Internal Foundation") bu dilime yetki **vermez**; bu dilim ayrı onay ister ve eski kapsamı genişletmez.
+Bitiş: AC-R1, AC-R2, AC-R3 (a–d), AC-R4. Tek dilim olduğu için onay satırı `note` alanında `whole_pack=<WP>` taşır
+(onaylayanın kararı); teslim reference-data sahibinin WP'siyle (§21.6).

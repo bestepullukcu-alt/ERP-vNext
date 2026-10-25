@@ -1810,7 +1810,9 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   sözleşmesine bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-2 (hesap ekranı), DL-3 (tedarikçi sahibi seçimi), Gateway
   rotaları, MDM domain-config frontend/gateway kapsam cümlesi (O-13 → D27/9 karar verildi). Bitiş: AC-28, 29, 30, 31, 32, 58.
 
-**Dilim kabul kapısı (gap 16/2) — her dilim için, kabul / birleştirmeden önce (`ready-for-dev`'den önce değil):**
+## Dilim kabul kapısı
+
+**(gap 16/2; ayrı başlık — `Teslim dilimleri` bölümünde tek tablo kuralı, CT-APR-02) her dilim için, kabul / birleştirmeden önce (`ready-for-dev`'den önce değil):**
 
 | Dilim | Geçmesi gerekenler (çalıştırmak geçmek değildir) |
 |---|---|
