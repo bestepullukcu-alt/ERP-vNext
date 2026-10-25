@@ -25,12 +25,19 @@ namespace Diten.Platform.Application.Tests.Persistence;
 
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 [Trait("Category", "Mongo")]
-public sealed class SubscriptionConcurrencySecurityMongoTests
+public sealed class SubscriptionConcurrencySecurityMongoTests : IClassFixture<ReplicaSetClassFixture>
 {
+    // TEST-HIZ-01: one replica set for the class (ReplicaSetClassFixture); each test starts on this database, emptied.
+    private const string DatabaseName = "diten_platform_tx_subscription_concurrency";
+
+    private readonly DisposableMongoReplicaSet _mongo;
+
+    public SubscriptionConcurrencySecurityMongoTests(ReplicaSetClassFixture replicaSet) => _mongo = replicaSet.Mongo;
+
     [Fact]
     public async Task ConcurrentAssign_SameBusinessIdentity_OneWinnerAndExactParticipants()
     {
-        await using var fixture = await Fixture.StartAsync();
+        await using var fixture = await Fixture.StartAsync(_mongo);
         var gate = new TwoCallerGate();
         var repository = new GatedSubscriptionRepository(fixture.Subscriptions, gate, gateHasCurrent: true);
         var handlers = new[] { fixture.Assign(repository), fixture.Assign(repository) };
@@ -58,7 +65,7 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
     public async Task ConcurrentLifecycle_ExactPackResult_IsSingleWinner(string pair, TenantSubscriptionStatus initial,
         TenantSubscriptionStatus expectedIfFirstWins)
     {
-        await using var fixture = await Fixture.StartAsync(initial);
+        await using var fixture = await Fixture.StartAsync(_mongo, initial);
         var gate = new TwoCallerGate();
         var repository = new GatedSubscriptionRepository(fixture.Subscriptions, gate, gateGet: true);
         var rowVersion = fixture.Subscription!.RowVersion.ToArray();
@@ -104,7 +111,7 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
     [Fact]
     public async Task CrossTenant_ProductionHandler_ReturnsNonDisclosing404AndZeroMutation()
     {
-        await using var fixture = await Fixture.StartAsync(TenantSubscriptionStatus.Active);
+        await using var fixture = await Fixture.StartAsync(_mongo, TenantSubscriptionStatus.Active);
         var otherTenant = Guid.NewGuid();
         var context = TenantContextFor(otherTenant);
         var repository = new TenantSubscriptionRepository(fixture.Context, context);
@@ -125,7 +132,7 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
     public async Task MissingOrSoftDeleted_FailsClosedWithZeroParticipantDelta(string scenario)
     {
         var seedSubscription = !scenario.Contains("missing-subscription", StringComparison.Ordinal);
-        await using var fixture = await Fixture.StartAsync(TenantSubscriptionStatus.Active, seedSubscription);
+        await using var fixture = await Fixture.StartAsync(_mongo, TenantSubscriptionStatus.Active, seedSubscription);
         if (scenario == "soft-deleted-subscription")
             await fixture.Database.GetCollection<TenantSubscription>("tenant_subscriptions")
                 .UpdateOneAsync(x => x.Id == fixture.Subscription!.Id, Builders<TenantSubscription>.Update.Set(x => x.IsDeleted, true));
@@ -146,7 +153,7 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
     [Fact]
     public async Task DuplicateRequest_SamePayloadIsNoDuplicate_ChangedPayloadFailsClosed()
     {
-        await using var fixture = await Fixture.StartAsync(TenantSubscriptionStatus.Active);
+        await using var fixture = await Fixture.StartAsync(_mongo, TenantSubscriptionStatus.Active);
         var handler = fixture.Cancel(fixture.Subscriptions);
         var first = await handler.Handle(new(fixture.Tenant.Id, fixture.Subscription!.Id,
             new("same", true, fixture.Subscription.RowVersion)), default);
@@ -182,10 +189,9 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
         { _mongo = mongo; Database = database; Context = context; Subscriptions = subscriptions; Tenants = tenants; Plans = plans;
           Tenant = tenant; Plan = plan; Subscription = subscription; _user = user; _quota = quota; _writer = writer; }
 
-        public static async Task<Fixture> StartAsync(TenantSubscriptionStatus? status = null, bool seedSubscription = true)
+        public static async Task<Fixture> StartAsync(DisposableMongoReplicaSet mongo, TenantSubscriptionStatus? status = null, bool seedSubscription = true)
         {
-            var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var database = mongo.CreateDatabase();
+            var database = await ReplicaSetClassFixture.FreshDatabaseAsync(mongo, DatabaseName);
             var context = new PlatformDbContext(mongo.Client, database);
             var tenantId = Guid.NewGuid();
             var tenantContext = TenantContextFor(tenantId);
@@ -241,7 +247,7 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
         { Assert.Equal(0, await Count(EntitlementStateVersionRepository.CollectionName)); Assert.Equal(0, await Count("quota_usages"));
           Assert.Equal(0, await Count("quota_events")); Assert.Equal(0, await Count("outbox_events")); Assert.Equal(0, await Count("audit_outbox")); }
         private Task<long> Count(string name) => Database.GetCollection<BsonDocument>(name).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
-        public ValueTask DisposeAsync() => _mongo.DisposeAsync();
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask; // the replica set is the class fixture's
     }
 
     private sealed class TwoCallerGate
