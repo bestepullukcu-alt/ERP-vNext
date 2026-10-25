@@ -487,8 +487,11 @@ Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the M
 **Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9 and
 D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
 questions sent to the platform code owner). It does **not** change this pack's frontmatter/status and authorizes no code
-until it passes CT-APR-02 and CT-APR-01. TRM-15 is closed only when §17 is approved, AC-W1…W6 have **passed** (running
-a test is not passing it) and the Diten.Platform build is green. Queue: `treasury-intake` TRM-15. The policy decisions
+until it passes CT-APR-02 and CT-APR-01. TRM-15 is closed only when §17 is approved, AC-W1…W8 have **passed** (running
+a test is not passing it), the Diten.Platform build is green and every AC-W3 consumer result is bound to that
+consumer owner's evidence. **If AC-W5…W8 fail against today's write path, §17 stays blocked**: §17 authorizes no
+write-path change (owner decision D22/2); the needed fix is scoped in a separate §17 revision with its own approval,
+and the Treasury re-issue gate stays closed until then. Queue: `treasury-intake` TRM-15. The policy decisions
 below do not prove that today's code behaves this way; the ACs do.
 
 ### 17.1 Why
@@ -535,15 +538,23 @@ before it re-issues with the same key. Today neither is guaranteed by contract.
    tenant filter, same 404, same routes; nothing removed or renamed; property order is not part of the contract. The key
    is not a secret (deterministic for Treasury; caller-chosen otherwise) and is returned only to callers that may
    already view the instance.
-4. **Same-key race answer (D21/4):** for two concurrent requests with one key the final answers are the **same** record
-   (same instance id / same transition sequence) and exactly one row exists. An interim 503 "replay the same key" is
-   allowed (consumers treat it as unknown and replay); a 409 is allowed only when the instance really left Active. A
-   duplicate-key error is never returned as a business refusal.
+4. **Same-key answer (D21/4, clarified by D22/3) — target behaviour, measured against today's code:**
+   | Case | Final answer (after any replay) | Today's code (@ef4f3a8bc, read, not run) |
+   |---|---|---|
+   | two concurrent starts, one key, same facts and starter | both **200**, same instance id; one instance row | re-read after write conflict (`StartWorkflowInstanceHandler.cs:300-330, 700-716`) |
+   | replay after the first start was **whole**, whatever the instance became since (approved, rejected, cancelled, closed) | **200**, same instance id, current status — never a new refusal | `ExistingStartResponseAsync` returns the whole start "whatever has become of the instance since" (`:372-391`) |
+   | replay of a start that was **never whole** and was closed by the abandoned-start recovery | **409** `WORKFLOW_INSTANCE_START_CONFLICT` — a defined *closed* answer, not a business refusal; Treasury closes the intent only from the recovery's close record (`Cancelled`), otherwise `Unknown` | `:393-398` |
+   | same key, different facts or a different starter | **409** `WORKFLOW_INSTANCE_START_CONFLICT` (key misuse) — Treasury never sends this (deterministic keys); treated as `Unknown` + alert | `:419-438` |
+   | two concurrent identical transitions (same task, action, key) | both **200**, same transition (one log row) | replay by (task, action, key) (`WorkflowTaskTransitionSupport.cs:61, 381, 539`; terminal writer `WorkflowTerminalTransitionWriter.cs:357-…`) |
+   | replay of a transition that was recorded, after the task moved on | **200**, the recorded transition | same lookup |
+   | two different decisions on one task (e.g. approve vs reject, different keys) | exactly one terminal decision; the loser gets **409** `WORKFLOW_TASK_INVALID_STATE` — a defined conflict, not a business refusal of the loser's own intent | `WorkflowTaskTransitionSupport.cs:87` (409) |
+   An interim **503** "replay the same key" (start or transition not whole yet) is not a final answer: consumers keep
+   the intent `Unknown` and replay. A duplicate-key error is never returned as a business refusal.
 
 Allowed paths: `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`, the three
 read handlers (`GetWorkflowInstancesByObjectsHandler.cs`, `GetWorkflowInstanceByIdHandler`, `GetWorkflowInstanceHistoryHandler.cs`)
 for the mapping only, `services/Diten.Platform/tests/**`, `tests/architecture/**` (new rule only). No index, schema,
-route, permission or write-path change.
+route, permission or write-path change (D22/2) — if the race ACs fail, see the status note above.
 
 ### 17.4 Acceptance criteria (defined — not implemented, not run)
 
@@ -553,15 +564,45 @@ route, permission or write-path change.
 - AC-W2 — `by-objects`, `instances/{id}` and `history` return the stored `IdempotencyKey` (and `ApprovalTaskId` on history)
   for keyed writes and `null` for unkeyed ones; other-tenant id → 404 unchanged.
 - AC-W3 — JSON compatibility: existing properties keep name, JSON type and meaning; the new ones are added; order not
-  asserted. Existing Platform consumer tests pass unchanged.
+  asserted. **Consumers (measured @ef4f3a8bc) — each one's own test must pass against a body with the new fields;
+  status until run: expected compatibility, not tested:**
+  | Read | Consumer | Test |
+  |---|---|---|
+  | `by-objects`, `history` | Diten.InventoryService `GatewayWorkflowClient.cs:103, 129` (+ `QuarantineWorkflow.cs:183`) | `QuarantineWorkflowTests`, `QuarantineArchitectureTests` (`FakeWorkflowGateway`) |
+  | `by-objects`, `history` | Diten.CrmService `GatewayClaimWorkflowClient.cs:109, 236` | `ClaimsWorkflowApprovalTests`, `KnowledgePathReviewTests` |
+  | `by-objects`, `history` | Diten.MdmService `GatewayWorkflowClient.cs:110, 237` | **none found** (no test references it) — owner follow-up |
+  | `history` | Diten.Web `ClaimsController.V2.cs:280` (MVC proxy) | owner to name; none found by name |
+  | all three | Treasury (MOD-0126/0119/0120/0124) | new consumer; its own AC (AC-36/38 family) |
+  Measured by `grep` for `workflow/instances` / `instances/by-objects` over `services/` and `frontend/` outside Diten.Platform
+  (@ef4f3a8bc); `instances/{id}` (single read) has no consumer outside Platform in this scan. Re-run at code time.
+  A Platform build alone is **not** compatibility evidence (gap 11 improvement).
 - AC-W4 — Code compatibility: `dotnet build` of Diten.Platform succeeds; construction sites
   (`git grep -n "WorkflowInstanceStatusDto\|WorkflowInstanceDto\|WorkflowInstanceHistoryEntryDto"`) re-scanned at code time;
   optional trailing members keep existing calls compiling.
 - AC-W5 — Concurrent same-key **start** on a real Mongo replica set (N ≥ 2 parallel requests, repeated): exactly one
   instance; every final answer (after replaying any 503) names that instance; no answer is a business refusal.
   Sabotage: removing the post-conflict re-read turns it red.
-- AC-W6 — Concurrent same-key **approve** and **reject** on one task: exactly one transition row per (task, action, key);
-  final answers identical; same rule for 503 / 409.
+- AC-W6 — **Approve–Approve** replay race: two concurrent approves, same task and key → one transition row, both final
+  answers 200 and identical.
+- AC-W7 — **Reject–Reject** replay race: same as AC-W6 for reject; and **RequestInfo–RequestInfo** (used by MOD-0119
+  RequestInfo and MOD-0126 RequestEvidence) the same.
+- AC-W8 — **Approve–Reject conflict** (different keys / actions, one pending task): exactly one terminal decision is
+  recorded; the loser's final answer is 409 `WORKFLOW_TASK_INVALID_STATE`; no second terminal row; a replay of the
+  loser's own key afterwards returns the same 409 (never 200 for a decision that was not recorded).
+  Sabotage for W5–W8: removing the post-conflict re-read or the (task, action, key) lookup turns them red.
+
+### 17.4a Treasury → MOD-0023 action matrix (gap 11/P2)
+
+| Treasury command | Packs | MOD-0023 endpoint | Action | Same-key replay AC | Race AC |
+|---|---|---|---|---|---|
+| Submit (start) | 0126, 0119, 0120, 0124 | `POST instances` | start | AC-W5 | AC-W5 |
+| Approve, ApproveWithSodWaiver (0126) | all four | `POST tasks/{taskId}/approve` | approve | AC-W6 | AC-W6, AC-W8 |
+| Reject | all four | `POST tasks/{taskId}/reject` | reject | AC-W7 | AC-W7, AC-W8 |
+| RequestEvidence (0126), RequestInfo (0119) | 0126, 0119 | `POST tasks/{taskId}/request-info` | request-info | AC-W7 | AC-W7 |
+| Escalate (0126) | — | **none** — no task-level endpoint (only `POST escalations/run`, an SLA job) | — | — | **removed from v1 (D22/1)** |
+| (no Treasury command) | — | `delegate`, `cancel` | — | not used by Treasury | — |
+
+Reads used by Reconcile: `GET instances/by-objects`, `GET instances/{id}`, `GET instances/{id}/history` (AC-W2).
 
 ### 17.5 Delivery
 

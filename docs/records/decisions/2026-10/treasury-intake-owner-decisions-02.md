@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D21 (D16–D21: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D22 (D16–D22: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -151,6 +151,19 @@ Cihan'da kaldı. Bunlar **politika kararıdır**; MOD-0023 kodunun bugün böyle
    reddi kodları `Refused`; yinelenen anahtar, 404, zaman aşımı, 5xx hiçbir zaman `Refused` değildir (`Unknown`).
 8. **MOD-0143 `totalAmount` net/brüt:** "Cihan'a bırak" — kod sahibinin ölçümü beklenir; o zamana kadar AP'de PO'lu
    faturanın onayı `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (422) ile kapalı kalır.
+
+## D22 — TRM-15 gap listesi 11 kararları (2026-10-25, soru kutusu; ikisi de önerilen seçenek)
+
+1. **MOD-0126 Escalate:** "v1'den çıkar" — MOD-0023'te görev düzeyinde escalate ucu yok (ölçüldü: yalnız SLA işi
+   `POST escalations/run`, PlatformAdmin). `EscalatePaymentBatchCommand`, izni, denetim olayı ve uçları v1'de yok;
+   `Escalated` (7) enum'da korunur ama girişi yoktur; yükseltme MOD-0023 SLA kurallarıyla olur.
+2. **Yarış testleri geçmezse:** "Ek bloke, kapsam ayrıca" — MOD-0023 §17 yazma yolu değişikliğine izin vermez; AC-W5…W8
+   bugünkü kodla geçmezse §17 bloke kalır, gereken düzeltme ayrı bir §17 revizyonuyla (yeni onay) kapsamlanır; Treasury
+   yeniden yazma kapısı o zamana kadar kapalı.
+3. **D21/4 açıklaması (gap 11/P1, CT; karar değişikliği değil):** D21/4'teki "aynı sonucu 200 ile döner" **son yanıttır**:
+   ara 503 "aynı anahtarla tekrar" son yanıt değildir; bütünleşmiş başlatmanın / kaydedilmiş geçişin tekrarı örnek
+   sonradan kapansa da 200 ve aynı kayıttır; hiç bütünleşmemiş, kurtarmanın kapattığı başlatma ve aynı göreve farklı
+   karar çatışması tanımlı 409'dur (MOD-0023 pack §17.3/4 tablosu). Sahip bu yorumu gap 11 kapanış incelemesinde onaylar.
 
 ## Karar olmayanlar
 

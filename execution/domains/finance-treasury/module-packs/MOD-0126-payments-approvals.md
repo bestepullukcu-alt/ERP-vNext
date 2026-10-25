@@ -108,7 +108,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | PP-06 | POST …/attestation | `GeneratePaymentAttestationCommand` | `POST /api/payment-batches/{id}/attestations` | taşınır |
 | PP-07 | GET …/trace | `GetPaymentBatchTraceQuery` | `GET /api/payment-batches/{id}/trace` | taşınır |
 | PP-08 | POST …/submit-workflow | `SubmitPaymentBatchCommand` | `POST /api/payment-batches/{id}/submit` | **uyarlanır**: yerel niyet önce, idempotency anahtarı, belirsiz sonuç |
-| PP-09 | POST …/workflow-decision | `ApprovePaymentBatchCommand`, `RejectPaymentBatchCommand`, `RequestPaymentBatchEvidenceCommand`, `EscalatePaymentBatchCommand`, `ApprovePaymentBatchWithSodWaiverCommand` | `POST /api/payment-batches/{id}/{approve\|reject\|request-evidence\|escalate\|approve-with-sod-waiver}` | **bölünür**: karar türü başına bir komut (her biri kendi izni ve denetim olayıyla); muafiyet ayrı komut |
+| PP-09 | POST …/workflow-decision | `ApprovePaymentBatchCommand`, `RejectPaymentBatchCommand`, `RequestPaymentBatchEvidenceCommand`, `ApprovePaymentBatchWithSodWaiverCommand` | `POST /api/payment-batches/{id}/{approve\|reject\|request-evidence\|approve-with-sod-waiver}` | **bölünür**: karar türü başına bir komut (her biri kendi izni ve denetim olayıyla); muafiyet ayrı komut. **Escalate v1 dışı (D22/1)**: MOD-0023'te görev düzeyinde karşılığı yok; yükseltme MOD-0023 SLA kurallarıyla olur |
 | PP-10 | GET payment-exceptions | `GetPaymentExceptionListQuery` | `GET /api/payment-exceptions` | taşınır |
 | PP-11 | POST outbox/dispatch-once | — | — | **düşürülür** (O-2): elle "bir kez gönder" ucu kaynak denetim outbox'ına aittir; Recovery'de iletim `CentralAuditDispatcher`'ındır |
 
@@ -148,7 +148,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | PendingApproval | 8 | MOD-0023 örneği başladı, karar bekleniyor | kesin başlatma başarısı / Reconcile | kararlar |
 | PartiallyApproved | 9 | son adım olmayan onay | Approve (son adım değil) | kararlar |
 | EvidenceRequested | 6 | kanıt istendi | RequestEvidence | kararlar |
-| Escalated | 7 | yükseltildi | Escalate | kararlar |
+| Escalated | 7 | yükseltildi — **v1'de girişi yok** (D22/1; değer enum'da korunur, kaynakla aynı 10 değer) | — | — |
 | Approved | 3 | son onay (terminal karar) | Approve (son adım) | Release denemesi (durum değişmez) |
 | Rejected | 4 | ret (terminal) | Reject | — |
 | Cancelled | 5 | MOD-0023 örneği iptal / kapatıldı (terminal) | yalnız Reconcile, MOD-0023 örneği iptal ya da terk edilmiş olarak kapandı dediğinde | — |
@@ -163,7 +163,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 | Niyet | Açık → | tx2 (kesin sonuç) | belirsiz | Reconcile (yalnız `ReconcilePaymentBatchWorkflowCommand`) | Sonuç olayı |
 |---|---|---|---|---|---|
 | `PaymentWorkflowStartIntent.Status` | `Pending` | `Started` · `Refused` | `Unknown` | `Unknown`/`Pending` → `Started` · `Refused` · `Cancelled` | `…submitted` · `…workflow-start-refused` · `…workflow-start-cancelled` |
-| `PaymentApprovalDecision.State` | `Requested` | `Recorded` · `Refused` | `Unknown` | `Unknown`/`Requested` → `Recorded` · `Refused` · `Cancelled` | `…approved`/`…approved-with-sod-waiver`/`…rejected`/`…evidence-requested`/`…escalated` · `…decision-refused` · `…decision-cancelled` |
+| `PaymentApprovalDecision.State` | `Requested` | `Recorded` · `Refused` | `Unknown` | `Unknown`/`Requested` → `Recorded` · `Refused` · `Cancelled` | `…approved`/`…approved-with-sod-waiver`/`…rejected`/`…evidence-requested` · `…decision-refused` · `…decision-cancelled` |
 
   `Refused` = MOD-0023 kesin reddetti; `Cancelled` = MOD-0023 örneği ya da görevi iptal edilmiş / kapanmış bulundu
   (yalnız Reconcile atar, yalnız uzak tarafın **kesin** iptal/kapanış kaydıyla — o örnek için MOD-0023 iptal geçiş
@@ -501,7 +501,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   kendi şirket yetkileri ya da `read-tenant-wide` varsa kiracıdaki tüm şirketler (`TenantWideScope()`); **yazma kapsamı**
   = yalnız kullanıcının kendi şirket yetkileri — `TenantWideScope()` yazma kapsamına **hiçbir zaman** girmez (tek üretici
   okuma tarafında kalır). Her yazma komutu (Create, Update, Delete, BulkDelete, Validate, Submit, Approve,
-  ApproveWithSodWaiver, Reject, RequestEvidence, Escalate, Reconcile, kanıt bağlama, onay belgesi, Release) hedef kaydın
+  ApproveWithSodWaiver, Reject, RequestEvidence, Reconcile, kanıt bağlama, onay belgesi, Release) hedef kaydın
   `LegalEntityId`'si için **katman 1**'i ister: `X-Legal-Entity-Id` hedef partinin şirketine eşit **ve** kullanıcının o
   şirkette kendi yetkisi var. Yalnız `read-tenant-wide` sayesinde görünen bir partiye yazma → **404**
   `PAYMENT_BATCH_NOT_FOUND` (kapsam dışı kuralıyla aynı; varlık sızdırılmaz, başka adım çalışmaz). Bu ayrım servis ortak
@@ -618,7 +618,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        sonucu bir niyete yalnız şu alanların **hepsi** eşleşirse bağlanır: kiracı; nesne (parti) kimliği; başlatmada
        `SubmissionSequence`, kararda karar kimliği (`PaymentApprovalDecision.Id`); niyetin deterministik uzak anahtarı
        (`IdempotencyKey` / `RemoteIdempotencyKey` — sıra ve karar kimliğini içerir); geçişte ek olarak görev kimliği
-       (`WorkflowTaskId`) + eylem (approve / reject / request-info / escalate / cancel). Daha eski bir denemenin sonucu
+       (`WorkflowTaskId`) + eylem (approve / reject / request-info; eylem matrisi MOD-0023 pack §17.4a). Daha eski bir denemenin sonucu
        (önceki `SubmissionSequence`'in örneği, başka bir kararın geçişi ya da iptali) daha yeni bir niyeti **asla**
        kapatmaz; yalnız nesne kimliğiyle ya da "en yeni örnek" sırasıyla eşleme yasaktır. Ölçüldü (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c):
        `WorkflowInstanceStatusDto` (`services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs:200-207`)
@@ -631,15 +631,21 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      - **D21 bağı — yeniden yazma kapısının yeni hâli (sahip kararı D21, MOD-0023 pack §17 (TRM-15)):** yukarıdaki kapının iki
        koşulundan saklama politikası **KARAR D21/1** ile verildi (hiç silinmez, TTL yok) ve MOD-0023 AC-W1 (mimari test) geçince
        kapanır; silinmişi ayıran okuma koşulu **D21/2 ile kaldırıldı** — politika + AC-W1 onun yerine geçer. §17
-       onaylanıp AC-W1 geçince 404 / boş okumada aynı deterministik anahtarla yeniden yazma açılır; yalnız asıl
+       onaylanıp AC-W1 geçince (ve AC-W5…W8 geçmişse, D22/2) 404 / boş okumada aynı deterministik anahtarla yeniden yazma açılır; yalnız asıl
        aktör (**KARAR D21/5**) ve şirket / SoD / izin yeniden kontrolüyle. Silinmiş kayıt yine de görülürse yeniden
        yazma yok, niyet `Unknown`. Eşleme alanları **KARAR D21/3** (§17.3/3) kodda olana kadar okuma niyeti kapatmaz.
      - **Aynı anahtarlı yarış yanıtı (KARAR D21/4, §17.3/4; DL-2 başı kanıt maddesi):** politika — eşzamanlı iki
        istekte son yanıtlar aynı kayıttır ve tek satır oluşur; ara 503 "aynı anahtarla tekrar" olabilir (→ `Unknown`,
        tekrar), 409 yalnız örnek Active'den çıktıysa. Kod okuması (@ef4f3a8bc) bu deseni gösteriyor
        (`StartWorkflowInstanceHandler.cs:300-330, 700-716`, `WorkflowTerminalTransitionWriter.cs:357-…`) ama eşzamanlı
-       aynı anahtar testi **ölçülmedi**; MOD-0023 AC-W5/W6 geçene kadar yinelenen anahtar hatası **`Unknown`** sayılır,
+       aynı anahtar testi **ölçülmedi**; MOD-0023 AC-W5…W8 geçene kadar yinelenen anahtar hatası **`Unknown`** sayılır,
        **asla `Refused`** değildir. `Refused` yalnız tx2 tablosundaki kesin iş reddi kodlarıdır (**KARAR D21/7**).
+       Hedef yanıtlar MOD-0023 pack §17.3/4 tablosundadır (D22/3): bütünleşmiş başlatmanın ya da kaydedilmiş geçişin
+       tekrarı, örnek sonradan kapansa da **200** ve aynı kayıt — yeni ret sayılmaz; hiç bütünleşmemiş ve kurtarmanın
+       kapattığı başlatma 409 `WORKFLOW_INSTANCE_START_CONFLICT` → yalnız kurtarmanın kapanış kaydıyla `Cancelled`,
+       yoksa `Unknown`; aynı göreve farklı karar çatışmasında kaybeden 409 `WORKFLOW_TASK_INVALID_STATE` → kaybeden
+       niyet tx2 eşlemesiyle `Refused` (kendi kararı kaydedilmedi). Kullanılan uzak eylemler: §17.4a matrisi. AC-W5…W8
+       bugünkü kodla geçmezse §17 bloke kalır ve yeniden yazma kapısı kapalı kalır (D22/2).
      - **Anahtarla idempotent olduğu ölçülmemiş uzak yazma yeniden çağrılmaz:** MOD-0031 kanıt bağlamada aynı uzak
        anahtarın tekrarının güvenli olduğu (dedupe) ölçülmedi → Reconcile ve hiçbir kurtarma yolu MOD-0031'e yeniden
        yazma çağrısı yapmaz; yalnız okur, okuma kesin sonuç gösterene kadar sonuç belirsiz kalır. Yeniden çağrıyı açmak için
@@ -730,7 +736,7 @@ Commands/          CreatePaymentBatchCommand.cs, UpdatePaymentBatchCommand.cs, D
                    BulkDeletePaymentBatchCommand.cs, ValidatePaymentBatchCommand.cs, SubmitPaymentBatchCommand.cs,
                    ReconcilePaymentBatchWorkflowCommand.cs, ApprovePaymentBatchCommand.cs,
                    ApprovePaymentBatchWithSodWaiverCommand.cs, RejectPaymentBatchCommand.cs,
-                   RequestPaymentBatchEvidenceCommand.cs, EscalatePaymentBatchCommand.cs,
+                   RequestPaymentBatchEvidenceCommand.cs,
                    LinkPaymentBatchEvidenceCommand.cs, GeneratePaymentAttestationCommand.cs, ReleasePaymentBatchCommand.cs
 Queries/           GetPaymentBatchListQuery.cs, GetPaymentBatchByIdQuery.cs, GetPaymentBatchTraceQuery.cs,
                    GetPaymentExceptionListQuery.cs, PaymentBatchListSort.cs
@@ -809,7 +815,7 @@ Resources/Views/FinanceTreasury/PaymentBatches/    PaymentBatchesIndex.{en,tr,fr
 | Instruction.RemittanceReference / SourceDocumentRef | Hayır | trim, ≤ 140 / ≤ 128 | — | — |
 | BatchCode | — | istekte bulunursa 400 (OTOMATİK) | Unique (TenantId, BatchCode) | `IRecordCodePort` |
 | Idempotency-Key | **Evet** (her yazma komutu, D12/2) | 1..128 yazdırılabilir ASCII; yoksa 400 `PAYMENT_IDEMPOTENCY_KEY_REQUIRED` | Unique (TenantId, LegalEntityId, ActorId, Operation, TargetId, Key) | makbuz araması (Runtime Constraints sırası) |
-| Karar ReasonCode | Reject / RequestEvidence / Escalate için Evet | trim, ≤ 64 (`PaymentWorkflowService.cs:291-296@da4abb20`) | — | — |
+| Karar ReasonCode | Reject / RequestEvidence için Evet | trim, ≤ 64 (`PaymentWorkflowService.cs:291-296@da4abb20`) | — | — |
 | Karar WorkflowTaskId | Evet | Guid ≠ Empty, partinin örneğine ait | — | MOD-0023 |
 | Muafiyet ReasonCode | Evet | trim, 1..64 | — | — |
 | Muafiyet EvidenceRefs | Evet | en az 1 MOD-0031 bağlantı kimliği ya da belge sürüm kimliği (`:364-372@da4abb20`) | — | — |
@@ -927,7 +933,6 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 | `finance-treasury.payment-batches.waive-sod` | T3 | approve-with-sod-waiver | `mod0126.payment_batch.waive_sod` |
 | `finance-treasury.payment-batches.reject` | T2 | reject | `mod0126.payment_batch.reject` |
 | `finance-treasury.payment-batches.request-evidence` | T3 | request-evidence | `mod0126.payment_batch.request_evidence` |
-| `finance-treasury.payment-batches.escalate` | T3 | escalate | `mod0126.payment_batch.escalate` |
 | `finance-treasury.payment-batches.release` | T3 | release | — |
 | `finance-treasury.payment-trace.read` | T1 | trace | `mod0126.payment_trace.read` |
 | `finance-treasury.payment-attestations.create` | T1 | attestations | `mod0126.payment_attestation.generate` |
@@ -941,7 +946,7 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 - Kullanıcının MOD-0023 tarafında da `platform.workflow.instances.start` (gönderen) ve `platform.workflow.tasks.approve` /
   `.reject` / `.request-info` (onaylayıcı) izinleri olmalıdır (`WorkflowModels.cs:14-19`); rol şablonu O-5 içinde.
 - Tier-3 eylemler (`read-tenant-wide`, `submit`, `reconcile`, `tier2-approve`, `waive-sod`, `request-evidence`,
-  `escalate`, `release`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3). `read-tenant-wide` hiçbir rol şablonunda varsayılan
+  `release`; `escalate` v1 dışı — D22/1) bu pakette kayıtlıdır (PKS-001 §5 Tier 3). `read-tenant-wide` hiçbir rol şablonunda varsayılan
   değildir (O-5).
 
 ## Audited Events
@@ -969,14 +974,13 @@ ister (Dependencies). Kaynak MOD-0021 aktarımı (kapalı, FailClosed — paket 
 | ApprovePaymentBatchWithSodWaiverCommand | finance-treasury.payment-batch.approved-with-sod-waiver | PaymentBatch | b | karar kimliği, SodResult=Waived, kaldırılan kural kodları, muafiyet gerekçe kodu, kanıt sayısı | **evet — K2 (D11/3)** | — |
 | RejectPaymentBatchCommand | finance-treasury.payment-batch.rejected | PaymentBatch | b | karar kimliği, ReasonCode, Status | **evet — K2 (D11/3)** | — |
 | RequestPaymentBatchEvidenceCommand | finance-treasury.payment-batch.evidence-requested | PaymentBatch | b | karar kimliği, Status | evet (öneri) | — |
-| EscalatePaymentBatchCommand | finance-treasury.payment-batch.escalated | PaymentBatch | b | karar kimliği, Status | evet (öneri) | — |
 | LinkPaymentBatchEvidenceCommand | finance-treasury.payment-batch.evidence-linked | PaymentBatch | b | bağlantı kimlikleri | evet (öneri) | — |
 | GeneratePaymentAttestationCommand | finance-treasury.payment-attestation.generated | PaymentAttestation | b | ContentHash, SchemaVersion | evet (öneri) | — |
 | ReleasePaymentBatchCommand | finance-treasury.payment-batch.release-attempted | PaymentBatch | b | DispatchAttempt kimliği, Outcome=NotConfigured | evet (öneri) | — |
 
 - **İki aşamalı komutların deneme olayları (Runtime Constraints 4a):** Submit → `finance-treasury.payment-batch.workflow-start-requested`
   (tx1) + sonuç `…submitted` ya da `…workflow-start-refused` (tx2 / Reconcile); Approve / ApproveWithSodWaiver / Reject /
-  RequestEvidence / Escalate → `finance-treasury.payment-batch.decision-requested` (tx1, karar türü alanda) + yukarıdaki
+  RequestEvidence → `finance-treasury.payment-batch.decision-requested` (tx1, karar türü alanda) + yukarıdaki
   sonuç olayı (tx2 / Reconcile). Release bu dilimde tek aşamalıdır (aşağıda) ve yalnız `…release-attempted` yazar. Deneme olayı tek başına
   "yapıldı" anlamına gelmez; tabloda yazılan olay **sonuç** olayıdır. K2 kararlarında deneme olayı yazılamazsa uzak çağrı
   yapılmaz. Kapalı ama olumsuz sonuçların olayları (Owned Objects geçiş matrisi): `…workflow-start-refused`,
@@ -1023,7 +1027,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   her karar ve Release 422 `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE` döner ve kayıt değişmez; kontrol her çağrıda MOD-0220
   `lookup-validation`'dan yapılır (D10/1). MOD-0220 erişilemezse 503 ve geçiş yok.
 - [ ] AC-3 (zorunlu) — Başka kiracının ya da başka şirketin partisine okuma, güncelleme, silme, karar ve Release 404 döner.
-- [ ] AC-4 (zorunlu) — Partiyi oluşturan kullanıcının Approve / Reject / RequestEvidence / Escalate çağrısı 403
+- [ ] AC-4 (zorunlu) — Partiyi oluşturan kullanıcının Approve / Reject / RequestEvidence çağrısı 403
   `PAYMENT_SOD_DENIED` (`FailedSelfApproval`) döner ve MOD-0023'e hiçbir istek gitmez (sahte istemciyle sayılır).
 - [ ] AC-5 (zorunlu) — Gönderen kullanıcının ve gönderme anındaki son güncelleyenin kararı 403 `PAYMENT_SOD_DENIED`
   (`FailedSubmitterApproval` / `FailedUpdaterApproval`).
@@ -1231,7 +1235,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] Yeni servis defteri + CT-DECISIONS satırı için Control Tower kararı (yol b izi kabulü)
 - [x] İzin ad alanı `finance-treasury.*` onayı (O-5 → D11/4)
 - [ ] MOD-0023'te MOD-0126 iş akışı şablonu (sahibi platform-shared-services) — DL-2 için
-- [ ] MOD-0023 aynı anahtarlı yarış yanıtı (politika KARAR D21/4) MOD-0023 pack §17 (TRM-15) AC-W5/W6 ile **geçti** — DL-2 için; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
+- [ ] MOD-0023 aynı anahtarlı yarış yanıtı (politika KARAR D21/4, D22/3) MOD-0023 pack §17 (TRM-15) AC-W5…W8 ile **geçti** — DL-2 için; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [ ] MOD-0023 pack §17 (TRM-15) onaylandı ve AC-W1 (silmeme mimari testi) **geçti** — politika KARAR D21/1, silinmişi ayıran
   okuma gerekmez (D21/2); DL-2 için; kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
 - [ ] MOD-0023 okuma eşleme alanları (KARAR D21/3; §17 AC-W2/W3) kodda ve **geçti** — DL-2 için; yoksa okuma niyeti kapatmaz (gap 6/P1-b)
@@ -1374,10 +1378,10 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   yazılamaz; ilk komutla birlikte gelir. Önkoşul: Ready-for-dev engelleri (DCP, port, kod alma, TRM-14, O-9, O-11, O-19, CT
   defter kararı). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
   Validate kısmı).
-- **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/Escalate/ApproveWithSodWaiver, SoD politika
+- **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/ApproveWithSodWaiver, SoD politika
   servisi ve tek eşik yapılandırması, MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç
   modülün çekirdeği ve en riskli kısmıdır; bağımsız inceleme tek başına yapılabilsin. Önkoşul: DL-1, O-4, O-7, O-8, MOD-0023
-  şablonu, MOD-0023 pack §17 (TRM-15) onayı ve AC-W1/W2/W5/W6 geçişi (KARAR D21/1–4; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-4…15, 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
+  şablonu, MOD-0023 pack §17 (TRM-15) onayı ve AC-W1/W2/W5…W8 geçişi (KARAR D21/1–4, D22/2–3; gap 5/G2, gap 6/P1-a, P1-b). Bitiş: AC-4…15, 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
   bekletmesin. Önkoşul: DL-2, MOD-0269 sözleşmesi (TRM-06), O-6, MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse
