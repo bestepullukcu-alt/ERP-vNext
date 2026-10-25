@@ -2853,3 +2853,71 @@ Auth real-Mongo grant evidence belongs to Section D. The universal GSKU resolver
 a test file named VerifiedResolveMongo is not counted as real-Mongo execution.
 Platform/Auth Release builds and MDM Release build passed. No credentials, configuration, grants, live requests,
 application data or services were changed. GSKU lifecycle integration and live acceptance remain separate gates.
+
+## 21. TRM-17 — Treasury consumable sets `payment-method` and `currency-minor-units` (proposal, not approved)
+
+**Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9, D28
+(MOD-0126 O-13) and D31/4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`). It does **not** change
+this pack's frontmatter/status and authorizes no change until it passes CT-APR-02 and CT-APR-01 and the reference-data owner
+accepts it. Queue: `treasury-intake` TRM-17. The value lists below are a starting proposal; the owner of the values is
+the reference-data owner together with Finance.
+
+### 21.1 Why
+
+Treasury (MOD-0126, MOD-0119, MOD-0120, MOD-0124) needs (a) a governed list of payment methods (MOD-0126 `PaymentMethod`,
+D28 / O-13) and (b) the ISO 4217 minor units of each currency (amount precision; MOD-0126 O-11, MOD-0119 O-10, MOD-0124 O-8,
+shared). Today neither exists: the consumable allow-list `BusinessReferenceData:ConsumableSets`
+(`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104@ec53ec2d3`) has no `payment-method` and no currency
+set with minor units; `GET /api/lookups/reference/currencies` returns codes and names from `CultureInfo` without minor units
+(MOD-0126 pack, Dependencies).
+
+### 21.2 Current code truth (@ec53ec2d3; read, not run)
+
+- Read endpoint: `GET /api/lookups/reference-data/consumable-sets/{setCode}/published-values`, `[LoginOnly]`, caller tenant
+  from the token, set read by its own scope (`ConsumableReferenceDataController.cs:25, 43-60`).
+- Item shape: `Code`, `Label`, `Description`, `IsActive`, `SortOrder`, `Attributes` (`BusinessReferenceDataStewardshipModels.cs:159-165`).
+- Seed catalogs are JSON files under `services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/`
+  (`catalog_version`, `module`, `sets[]` with `set_code`, `scope_type`, `status`, `values[]` of `value_code`, `display_name`,
+  `is_active`, `sort_order`, optional `attributes`), loaded through `BusinessReferenceDataCatalogLoadOptions`
+  (`BusinessReferenceData:CatalogLoad`, `CatalogPath`, `RequiredSetCodes`; e.g. `appsettings.Development.json:212`).
+- `attributes` per value is already used by existing seeds (e.g. `mdm-competitor-reference.json:57`).
+
+### 21.3 Change (configuration + seed data only — no code)
+
+1. New seed catalog `Seed/business-reference-data/treasury-reference.json` (`module`: `FinanceTreasury`) with two global sets:
+   - **`payment-method`** (`scope_type: global`): proposed values `BANK_TRANSFER`, `SEPA_CREDIT_TRANSFER`, `SWIFT_TRANSFER`,
+     `DOMESTIC_TRANSFER`, `CHEQUE`, `CASH`; `display_name` in English; labels for the UI come from resx keys
+     `PaymentMethod.{CODE}` in the consumer (7 tenant languages) — the set carries codes, not translations.
+   - **`currency-minor-units`** (`scope_type: global`): one value per ISO 4217 alpha-3 code in use, `attributes.minorUnits`
+     as a string `"0"`…`"4"` (e.g. `CHF`/`EUR`/`USD`/`TRY` `"2"`, `JPY` `"0"`, `KWD`/`BHD` `"3"`); source ISO 4217 list,
+     `catalog_version` names the ISO edition.
+2. Add both set codes to `BusinessReferenceData:ConsumableSets` and to the catalog load `RequiredSetCodes`.
+3. No endpoint, schema, index, permission or route change; existing sets untouched.
+
+Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/treasury-reference.json` (new),
+`services/Diten.Platform/src/Diten.Platform.API/appsettings*.json` (the two list entries and one catalog-load block),
+`services/Diten.Platform/tests/**`.
+
+### 21.4 Consumer rules (Treasury packs; not this pack)
+
+- `payment-method`: published + `IsActive` code → valid; unknown / inactive → 422 `PAYMENT_METHOD_NOT_ALLOWED`; set
+  unreadable → 503 (MOD-0126 AC-41).
+- `currency-minor-units`: missing code, missing / non-integer / out-of-range `minorUnits` → 503
+  `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → 422 (no rounding).
+
+### 21.5 Acceptance criteria (defined — not implemented, not run)
+
+- AC-R1 — Both sets are returned by the published-values endpoint for any signed-in tenant user, with `IsActive` values only
+  counted as valid; a set code not in the allow-list still answers as today (unchanged behaviour).
+- AC-R2 — `currency-minor-units`: every value has `attributes.minorUnits` ∈ {"0","1","2","3","4"}; no duplicate codes
+  (case-insensitive); the codes are a superset of the codes returned by `GET /api/lookups/reference/currencies`.
+  Sabotage: removing `minorUnits` from one value turns the test red.
+- AC-R3 — Catalog load with `RequiredSetCodes` containing both sets fails closed if the seed file is missing or a set is
+  absent (existing loader behaviour, measured at code time).
+- AC-R4 — Existing consumable-set consumers are unaffected (their tests pass unchanged).
+
+### 21.6 Delivery and out of scope
+
+- Delivered by the reference-data owner (platform-shared-services) before MOD-0126 DL-1 Create; Treasury does not write
+  Platform files (XMC-001; D9 consent restated in that WP).
+- Out of scope: a tenant-editable payment-method list, FX rates, currency names / symbols beyond `display_name`.

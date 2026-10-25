@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D30 (D16–D30: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D31 (D16–D31: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -293,6 +293,19 @@ Sahibin mesajı: "Önce AGENTS/ports 5071 ve RCS-001 yamalarını uygula, sync_a
    21 991 bayttı).
 4. Bilinen sapma (düzeltilmedi, başka sahip): `scripts/evidence-kit/k03_ports.py` ("CANDIDATE — NOT ACTIVE", MVP-6) yasaklı
    bandı hâlâ 5011–5064 olarak kodluyor; şerit portları 5100+ olduğu için 5071 ile çakışmaz.
+
+## D31 — Kalan açıkların kapatılma yolu (2026-10-25, soru kutusu)
+
+1. **AR O-8 muafiyet:** "Muafiyet yok, 422" (önerilen) — AR düzeltme onayında tier-2 aday yoksa talep 422 ile durur;
+   muafiyet komutu v1'de yok.
+2. **CT-APR-02 bağımsız inceleme:** "Codex ile siz yapacaksınız" (önerilen seçenek ayrı Claude oturumuydu) — sahip incelemeyi
+   Codex'te başlatır; CT inceleme prompt'unu, hedef pack'lerin SHA-256'larını ve `scripts/pack_approval.py review-row`
+   komutunu hazırlar.
+3. **Onay PR'ı zamanı:** "İncelemeden sonra" (önerilen) — CT-APR-02 bulgu dosyaları ve inceleme satırları bu dala commit
+   edildikten sonra tek push + PR (inceleme altındaki PR'a push yok).
+4. **Başka sahiplerin işleri:** "Ek önerileri + mesajlar" (önerilen) — MOD-0048-FU01 §21 (TRM-17: `payment-method` ve
+   `currency-minor-units` kümeleri) eki yazılır; Ali, procurement, commercial-suite, MOD-0018, BL-565 ve güvenlik için
+   gönderilmeye hazır mesajlar hazırlanır.
 
 ## Karar olmayanlar
 

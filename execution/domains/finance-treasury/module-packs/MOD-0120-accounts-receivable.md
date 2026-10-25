@@ -1361,7 +1361,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak)
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-3 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
-- [ ] Düzeltme politikası (O-7: KARAR D28 — D11/1 deseni) ve muafiyet kararı (O-8 kalan kısmı; K2 kısmı D14/3 ile kapandı) — DL-3 için
+- [ ] Düzeltme politikası (O-7: KARAR D28 — D11/1 deseni) ve muafiyet kararı (O-8: K2 D14/3, muafiyet yok D31/1 — kapandı) — DL-3 için
 - [x] **O-9 — elle tahsilat bu sürümde mi: KARAR (D16)** — v1'de (DL-3, O-9a → D15/1), ödeme referansı iş tekilliği,
   mükerrer tahsilat kontrolü ve onaylı geri alma (karşı kayıt) ile; AC-33, AC-39, AC-40, AC-41
 - [ ] Silmeme politikası (KARAR D21/1) MOD-0023 pack §17'de onaylı; silinmiş kayıtlar `isDeleted` / `includeDeleted=true` ile okunur (D25/2; AC-W13) — DL-3 için; AC-W1 (silmeme mimari testi) DL-3 uygulama kabul kapısındadır (gap 16/P2); kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
@@ -1553,7 +1553,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-5 | Dış fatura numarası tekilliği ve yasal numara | şirket içinde tekil / serbest | **KARAR D28 (2026-10-25): öneri kabul** — şirket içinde tekil (silinen/Void hariç); yasal numara üretimi faturalamanın | sahip (K1) |
 | O-6 | RCS-001 tür öneki ve ortak kod servisi | `ARI` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `ARI` (§3'te çakışma yok, `INV` dolu — ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-7 | Düzeltme eşiği | MOD-0126 D11/1 deseni (kiracı ayarı, para birimli, ayar yoksa tier-2) / eşiksiz tek kademe | **KARAR D28 (2026-10-25): öneri kabul** — **D11/1 deseni**, ayrı politika anahtarı | sahip (K1) |
-| O-8 | Düzeltme kararları ve tahsilat K2 mı; muafiyet | K2 evet/hayır; muafiyet var/yok | **KARAR (D14/3): K2 evet** — iptal/silme talebi, onay, ret ve elle tahsilat; **muafiyet** (açık): öneri yok (tier-2 aday yoksa 422) | CT + sahip |
+| O-8 | Düzeltme kararları ve tahsilat K2 mı; muafiyet | K2 evet/hayır; muafiyet var/yok | **KARAR (D14/3): K2 evet** — iptal/silme talebi, onay, ret ve elle tahsilat; **muafiyet: KARAR D31/1 (2026-10-25) — yok**; tier-2 aday yoksa 422 | CT + sahip |
 | O-9 | Elle tahsilat **bu sürümde mi** | bu sürümde / Follow-up (MOD-0269 / MOD-0121'i bekle) | **KARAR (D16, 2026-10-25): bu sürümde, kurallarıyla** — tek aşamalı, K2 (D14/3), ekleme-yalnız; ödeme referansı iş tekilliği (kiracı + şirket + müşteri + referans), mükerrer tahsilat kontrolü (farklı anahtar / aktör), onaylı geri alma (karşı kayıt, `PaymentReversal`); AC-33, AC-39…41 | sahip (K1) |
 | O-9a | Elle tahsilat **hangi dilimde** | ayrı dilim / DL-3 | **KARAR (D15/1): DL-3** — iptal/silme onayıyla birlikte; eski DL-4 DL-3'e katıldı. Bu karar yalnız dilimi belirler; kapsam O-9'da D16 ile kararlaştırıldı | sahip (K1) |
 | O-10 | Toplu içe aktarma (AR-16/17) | bu sürüm / servis kimliği gelince | **KARAR D28 (2026-10-25): öneri kabul** — servis kimliği gelince (Follow-up) | sahip (K1) |

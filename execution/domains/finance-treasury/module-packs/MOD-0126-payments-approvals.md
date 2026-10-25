@@ -1385,7 +1385,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-8 | MOD-0023 şablon kodu, çok adımlı onay (PartiallyApproved) adım tanımı, HTTP zaman aşımı değeri | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn | MOD-0023 sahibi |
 | O-9 | RCS-001: tür öneki ve şirket kısa kodu kaynağı; ortak kod servisi | `PAY` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `PAY` (§3'te çakışma yok, ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-10 | Onaylayıcı adayları nereden (kaynakta yapılandırma listesi / dizin) | MOD-0023 atama (pozisyon/rol) / izin dizini | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi açık** — MOD-0023 şablonunun atama kuralı + R1–R4 dışlaması; ayrı dizin istemcisi taşınmaz | sahip + MOD-0023 sahibi |
-| O-11 | Para birimi küsurat hanesi kaynağı | MOD-0048 `LookupOptionDto.Metadata["minorUnits"]` eki / başka | MOD-0048'e eklemeli alan (D9) | MOD-0048 sahibi |
+| O-11 | Para birimi küsurat hanesi kaynağı | MOD-0048 `LookupOptionDto.Metadata["minorUnits"]` eki / başka | öneri: MOD-0048-FU01 §21 `currency-minor-units` kümesi (TRM-17, D31/4) — MOD-0048'e eklemeli alan (D9) | MOD-0048 sahibi |
 | O-12 | Geçmiş değer tarihine izin | — | **KARAR D28 (2026-10-25): öneri kabul** — Create/Submit'te bugünden (UTC) önce ret | sahip |
 | O-13 | `PaymentMethod` değer listesi | serbest metin / referans listesi | **KARAR D28 (2026-10-25): öneri kabul** — MOD-0048 referans listesi | sahip |
 | O-14 | Alacaklı referansının varlık doğrulaması | v1 biçim / sözleşmeli doğrulama | **KARAR D28 (2026-10-25): öneri kabul** — v1 biçim; follow-up | sahip |
