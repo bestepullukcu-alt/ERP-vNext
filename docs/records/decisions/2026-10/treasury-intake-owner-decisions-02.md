@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D17 (D16, D17: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D18 (D16–D18: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -97,6 +97,13 @@ aktörle aynı ödeme) ve onaylı geri alma (reversal / karşı kayıt) akışı
 2. **Beklenmeyen sonuç:** "Kaydet, kilitle, başarı sayma" — 0.1 tüketicisi `NotConfigured` dışı bir sonuç alırsa deneme
    alınan sonuçla kaydedilir, parti `Approved` kalır ve `ReleaseBlockedForReview` ile kilitlenir, Release 502
    `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED` döner; sonraki Release 409. Kilidi açma komutu Follow-up'tır.
+
+## D18 — Onay PR'ının zamanı (2026-10-25, soru kutusu; ikisi de önerilen seçenek)
+
+1. **PR zamanı:** "S1+S2 hazır olunca" — tek belge PR'ı (kod yok) MOD-0126, MOD-0119, MOD-0120, MOD-0124 pack'leri ve
+   MOD-0269 BANK-DISPATCH sözleşmesi için, ancak TRM-14 (MOD-0220 eklemeli değişiklik) yazıldıktan ve MOD-0023 / MOD-0143
+   üretici cevapları pack'lere işlendikten sonra açılır. MOD-0289, MOD-0217, MOD-0057 sonraki ayrı PR'dadır.
+2. **Yedek push:** "Hayır, yerelde kalsın" — dal o zamana kadar push edilmez.
 
 ## Karar olmayanlar
 
