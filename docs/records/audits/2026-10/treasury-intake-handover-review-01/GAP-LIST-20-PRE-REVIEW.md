@@ -18,3 +18,9 @@ previous: GAP-LIST-19-ALL.md
 | 4 | P2 | DCP §18 AR O-8 muafiyetini açık gösteriyor | "Açık" listesinden çıkarıldı; "Kapandı" listesine D31/1 olarak eklendi. |
 
 Bu ön inceleme resmî CT-APR-02 kaydı değildir. Belge incelemesidir; build / test / runtime yok.
+
+## Kapanış (2026-10-25, sahip)
+
+Sonuç: **PASS** — dört bulgu kapandı; prompt'taki 9/9 hedef SHA-256 `@e26014bbe` eşleşiyor; prompt resmî CT-APR-02
+incelemesini başlatmaya uygun. Bu, dokuz hedefin resmî incelemesinin tamamlandığı anlamına gelmez; bulgu dosyası ve
+inceleme satırı henüz yok.
