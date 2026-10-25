@@ -44,3 +44,7 @@ manifestteki 10 hash geçti). Yeni kesin belge hatası yok. Kalan iş kanıt ür
 4. SEC-002 kapsamı, denetim ve makbuz kurallarının gerçek Mongo işlem testleriyle kanıtı — kod yazıldığında (level 2).
 
 `draft → ready-for-dev` açık bağımlılıklar kapanmadan yapılmaz.
+
+**İstekler gönderildi (2026-10-25, sahip):** 1. madde (MOD-0023: saklama, okuma alanları, yarış yanıtı) platform kod
+sahibine; 2. madde (MOD-0143 `totalAmount` net/brüt) procurement kod sahibine. Cevaplar beklenir; gelince pack kapanış
+tablolarına işlenir.
