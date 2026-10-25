@@ -510,9 +510,11 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   Release'te MOD-0220 `lookup-validation` çağrılır; `OperationalStatus = Active` **ve** `ApprovalStatus = Approved` değilse
   `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE` (422); MOD-0220 yanıt vermezse `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (503) — geçiş yok.
   Sözleşme: LEGAL-ENTITY-LOOKUP 1.1.0 (`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md`,
-  MOD-0220 pack §22, TRM-14). Eşleme: 200 + `approvalStatus = APPROVED` → uygun; 200 + başka değer ya da 404 → 422
-  `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`; 200 ama `approvalStatus` alanı yok (eski MdmService), 5xx, zaman aşımı → 503
-  `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (kapalı-güvenli: alan yokluğu asla "onaylı" sayılmaz).
+  MOD-0220 pack §22, TRM-14; sınıflandırma tablosu sözleşme §2). Tutarlı 200 + `approvalStatus = APPROVED` → uygun;
+  tutarlı 200 + `DRAFT` / `SUBMITTED` / `REJECTED` ya da 404 → 422 `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`; geçersiz ya da
+  çelişkili 200 (`approvalStatus` yok / `null` / boş / bilinmeyen; `legalEntityId` yok ya da farklı; `referenceable = false`;
+  `lifecycleState ≠ ACTIVE`; ayrıştırılamayan gövde), 401/403, 5xx, zaman aşımı → 503 `PAYMENT_LEGAL_ENTITY_UNAVAILABLE`
+  (kapalı-güvenli: belirsiz yanıt asla "onaylı" sayılmaz). Test: her satır için ayrı vaka (AC-39).
   **Reconcile bu kuraldan muaftır** (sahip kararı D15/2): yeni işlem başlatmaz, daha önce kontrol edilip başlatılmış
   işlemin uzak sonucunu kaydeder; şirket arada pasifleşse de niyet kapanabilmelidir. **Muafiyetin sınırı (gap 4/G2, D15/2
   metniyle tutarlı — muafiyet "yeni işlem başlatmayan" kayda dayanır):** muafiyet yalnız Reconcile'ın uzakta **var olan**
@@ -1147,6 +1149,14 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   sonuçla kayıtlı, parti `Approved` ve `ReleaseBlockedForReview = true`, tek `…release-attempted` olayı sonucu taşır;
   sonraki Release 409 `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW` ve port çağrı sayısı değişmez. Sabotaj: sonuç kontrolü
   kaldırılıp her sonuç 200 sayıldığında test kırmızıya döner.
+- [ ] AC-39 (zorunlu) — Şirket uygunluk yanıtının sınıflandırılması (TRM-14, gap 9/2): sahte MOD-0220 ile her vaka ayrı —
+  tutarlı 200 + `APPROVED` → işlem sürer; tutarlı 200 + `DRAFT` / `SUBMITTED` / `REJECTED` ve 404 → 422
+  `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`; `approvalStatus` yok / `null` / `""` / `"approved"` (küçük harf) / `"UNKNOWN"`,
+  `legalEntityId` yok ya da farklı, `referenceable = false`, `lifecycleState = SUSPENDED`, ayrıştırılamayan gövde, 403, 500
+  ve zaman aşımı → 503 `PAYMENT_LEGAL_ENTITY_UNAVAILABLE`; hiçbir vakada kayıt yazılmaz ve uzak çağrı yapılmaz.
+  Reconcile: var olan uzak sonucu kaydetme yolu şirket `REJECTED` iken de kapanır; aynı anahtarla yeniden yazma yolu
+  aynı yanıtla 422, uzak çağrı yok. Sabotaj: `approvalStatus` kontrolü "alan yoksa onaylı" yapıldığında ya da kimlik
+  karşılaştırması kaldırıldığında test kırmızıya döner. DL-1'de kapanır (Reconcile kısmı DL-2).
 
 ## Test Expectations
 
@@ -1356,13 +1366,13 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   ve yazma kapsamıyla, ortak LE / para birimi / kod portları ve bağdaştırıcıları, CentralAudit kaydı — D14/1, D14/2; tek
   sahibi bu dilim, MOD-0119/0120/0124 DL-1'inin önkoşulu — gap 4/G5), `payment-batch.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001 K4 — ileticisi olmayan serviste yeni yazma komutu
   yazılamaz; ilk komutla birlikte gelir. Önkoşul: Ready-for-dev engelleri (DCP, port, kod alma, TRM-14, O-9, O-11, O-19, CT
-  defter kararı). Bitiş: AC-1, 2, 3, 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
+  defter kararı). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
   Validate kısmı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/Escalate/ApproveWithSodWaiver, SoD politika
   servisi ve tek eşik yapılandırması, MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç
   modülün çekirdeği ve en riskli kısmıdır; bağımsız inceleme tek başına yapılabilsin. Önkoşul: DL-1, O-4, O-7, O-8, MOD-0023
   şablonu, MOD-0023 aynı anahtarlı yarış yanıtı ölçümü (gap 5/G2), MOD-0023 saklama + silmeme politikası ve okuma eşleme
-  alanları (gap 6/P1-a, P1-b). Bitiş: AC-4…15, 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
+  alanları (gap 6/P1-a, P1-b). Bitiş: AC-4…15, 39 (Reconcile kısmı), 16 (kararlar), 31, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
   bekletmesin. Önkoşul: DL-2, MOD-0269 sözleşmesi (TRM-06), O-6, MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse

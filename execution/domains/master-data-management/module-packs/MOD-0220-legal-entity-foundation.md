@@ -887,7 +887,8 @@ and D10/2 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md
 MDM domain owner's decision for this change). It does **not** change this pack's frontmatter/status and authorizes no
 code until it passes CT-APR-02 (independent review) and CT-APR-01 (approval rows bound to this pack's hash). Contract:
 [`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md`](../../../../docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md)
-(LEGAL-ENTITY-LOOKUP 1.1.0). Queue: `treasury-intake` TRM-14.
+(LEGAL-ENTITY-LOOKUP 1.1.0, rev 2). Queue: `treasury-intake` TRM-14. This pack's existing `ready-for-dev` status covers
+the earlier slices only and does **not** approve §22; TRM-14 is not closed until §22 is approved and AC-T1…T5 have run.
 
 ### 22.1 Why
 
@@ -910,8 +911,11 @@ read path or a copy in Treasury would duplicate MDM state; one additive field is
 
 ### 22.3 Change (additive only)
 
-1. Append `string ApprovalStatus` as the **last** positional member of `LegalEntityLookupDto`; map it in `ToLookupDto` as
-   `e.ApprovalStatus.ToString().ToUpperInvariant()` (`DRAFT` | `SUBMITTED` | `APPROVED` | `REJECTED`).
+1. Add `string ApprovalStatus` to `LegalEntityLookupDto` (appended as the last positional member); map it in
+   `ToLookupDto` as `e.ApprovalStatus.ToString().ToUpperInvariant()` (`DRAFT` | `SUBMITTED` | `APPROVED` | `REJECTED`).
+   The constructor signature changes: measured (@4cf291b94) the only construction site is `ToLookupDto`
+   (`LegalEntityModels.cs:238-245`); no other `new LegalEntityLookupDto(` in `services/`, `frontend/` or `tests/`, and the
+   type is not shared as a compiled reference outside MdmService.
 2. No other change: 404 decision, `Referenceable`, `LifecycleState`, route, permission, gateway, index, schema and
    collection unchanged. `ApprovalStatus` never takes part in the 404 decision or in `Referenceable`.
 3. The `/lookup` list gains the same field through the shared mapping (no second DTO).
@@ -927,21 +931,38 @@ and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other s
   Approved, Suspended, Archived) still return 404 with the same body, **including** when `ApprovalStatus = Approved`;
   an Active entity with `ApprovalStatus = Rejected` still returns 200 with `referenceable = true`. Sabotage: if the
   handler is changed to use `ApprovalStatus` in the 404 decision, the test turns red.
-- AC-T3 — Contract shape: the 200 JSON keeps the six existing property names and types and adds exactly one,
-  `approvalStatus` (serialized-shape test against `LegalEntityLookupDto`); `/lookup` list items carry the same seven.
+- AC-T3 — JSON compatibility: the 200 JSON keeps the six existing properties with the same **name, JSON type and
+  meaning** and adds exactly one, `approvalStatus` (non-empty string, one of four values); `/lookup` list items carry the
+  same seven. **Property order is not asserted.** The contract example (full UUID) deserializes into the test's
+  expectation unchanged.
 - AC-T4 — Existing consumers unaffected: the existing MdmService tests and the consumer parsers' own tests
   (Manufacturing `MdmLegalEntityReferenceValidatorTests`, SupplyChain `LegalEntityScopeValidatorTests`, Planning
   `MrpUpstreamReaderTests` / `LiveHistoryImportReferencesTests`, Web `CompanySelectionTests`) pass unchanged, run
   against a body that includes `approvalStatus`. CRM `MdmCyclePeriodLegalEntityValidator` has no parser test
   (measured: no test file references it); its typed `System.Text.Json` read ignores unknown members by default. Adding a
   CRM test is another service (XMC-001) and is listed as a follow-up, not done here.
+  **Status until run: expected compatibility, not tested** — for all 13 read points listed in the contract §3 (CRM ×2,
+  SupplyChain, Manufacturing, Planning ×2, Inventory, Platform ×2, HCM, SafetyStock, Web ×2). Running or adding a
+  consumer's test is that service owner's task (§22.7); only MdmService tests are in this amendment's paths.
+- AC-T5 — Code compatibility (separate from JSON): `dotnet build` of `Diten.MdmService` succeeds and the construction-site
+  scan (`git grep -n "LegalEntityLookupDto"` over `services/ frontend/ tests/`) is re-run at code time and shows no
+  construction outside `ToLookupDto`; any new site found is updated in the same commit or the change stops.
 
 ### 22.5 Delivery
 
 - Code lands **together with MOD-0126 DL-1** (first Treasury consumer), as a separate commit inside the MdmService
   allowed paths above; XMC-001 consent is D9 and must be restated in that WP prompt.
-- Treasury side (not this pack): `ILegalEntityEligibilityPort` treats a 200 without `approvalStatus` as unavailable
-  (503, fail-closed), never as approved.
+- Treasury side (not this pack): `ILegalEntityEligibilityPort` classifies responses by the contract §2 table — invalid or
+  contradictory 200 (missing / null / empty / unknown `approvalStatus`, missing or different `legalEntityId`,
+  `referenceable = false`, `lifecycleState ≠ ACTIVE`) → 503; defined but not approved, or 404 → 422; never approved by
+  default. Reconcile is exempt only when recording an existing remote result; a Reconcile re-issue re-checks.
+
+### 22.6a Consumer-test follow-ups (owners, not this amendment)
+
+| Service | Test to run / add with an `approvalStatus` body | Owner |
+|---|---|---|
+| CRM | add parser tests for `MdmCyclePeriodLegalEntityValidator` and `MdmCyclePeriodLegalEntityCatalog` (none exist) | commercial-suite |
+| SupplyChain, Manufacturing, Planning, Inventory, Platform, HCM, SafetyStock, Web | run existing tests (contract §3) with the new body | each service owner |
 
 ### 22.6 Out of scope
 
