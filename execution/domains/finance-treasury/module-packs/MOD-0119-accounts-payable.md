@@ -405,8 +405,8 @@ veri yok; GO-NOGO :114 "No schema or data was added or altered by MOD-0119 commi
   `AP_LEGAL_ENTITY_NOT_ELIGIBLE` 422, `AP_LEGAL_ENTITY_UNAVAILABLE` 503, `AP_SUPPLIER_NOT_ELIGIBLE` 422 (ilişki yok ya da
   Active değil), `AP_SUPPLIER_UNAVAILABLE` 503, `AP_MATCH_REFERENCE_REQUIRED` 400, `AP_MATCH_REFERENCE_NOT_ALLOWED` 400,
   `AP_MATCH_OUTCOME_NOT_ELIGIBLE` 422, `AP_MATCH_REFERENCE_MISMATCH` 422 (tedarikçi / para birimi / tutar farkı),
-  `AP_MATCH_REFERENCE_ALREADY_USED` 409, `AP_MATCH_UNAVAILABLE` 503, `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` 422 (MOD-0143
-  `totalAmount`'un net mi brüt mü olduğu sözleşmede doğrulanmadı — O-5; PO'lu fatura onaya ilerlemez), `AP_CREDITED_INVOICE_INVALID` 422,
+  `AP_MATCH_REFERENCE_ALREADY_USED` 409, `AP_MATCH_UNAVAILABLE` 503 (`AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` D26 ile kaldırıldı —
+  taban net), `AP_CREDITED_INVOICE_INVALID` 422,
   `AP_CURRENCY_PRECISION_UNAVAILABLE` 503, `AP_RECORD_CODE_UNAVAILABLE` 503, `AP_WORKFLOW_START_FAILED` 502 (yalnız kesin
   ret), `AP_WORKFLOW_START_OUTCOME_UNKNOWN` 202, `AP_WORKFLOW_START_PENDING` 409, `AP_DECISION_OUTCOME_UNKNOWN` 202,
   `AP_DECISION_PENDING` 409, `AP_DECISION_REASON_REQUIRED` 400, `AP_WORKFLOW_TASK_INVALID` 400,
@@ -495,7 +495,7 @@ MOD-0023 AP iş akışı şablonu; `ocelot.json` rotaları (integration-agent); 
 | MOD-0021 Audit / CentralAudit (BL-501, K4) | yol `b` | **var** — `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/`; kullananlar Inventory, SupplyChain | servis kaydı MOD-0126 DL-1'de; kaynak NoOp kaydedici taşınmaz (level-1 koşul 2) |
 | MOD-0220 LE `lookup-validation` | borçlu şirket uygunluğu (D10/1 kuralı) | **var** — `GET /api/legal-entities/{id}/lookup-validation` (`services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntitiesController.cs:48`); kayıtta `OperationalStatus` ve `ApprovalStatus` var (`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:49-50`); yanıtta `ApprovalStatus` **henüz yok** | **TRM-14** (D10/2) MOD-0126 ile ortak; gelmeden "onaylı" kontrolü yapılamaz → AP yazma komutları kapanır (fail-closed) |
 | MOD-0140 Supplier (`SUPPLIER`) | tedarikçi kimliği + şirket ilişkisi durumu | **main'de 1.2.0 FROZEN**, `supplierId: string`, `POST /api/suppliers/validate` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/SuppliersController.cs:112`); **tedarikçi kiracıda tek + LE bazlı `SupplierCompanyRelationship` değişikliği `origin/feature/mvp2/supplier-tenant-01` dalında** (MOD-0140 pack `ready-for-dev`, 1.3.0 dosyası "bu pack'in onayından sonra, DL-2 ile yazılır"; `validate` yanıtındaki `status` = çağıran şirketin ilişki durumu; Blocked/OnHold yeni işleme kapalı, K-7; banka bilgisi MOD-0140'ta yok, K-8) | AP yalnız `supplierId` + çağıran şirketle **Active** ilişkiyi sözleşmeden tüketir; koleksiyon okuması yok. **1.3.0 main'e girmeden DL-1 başlamaz.** Treasury MOD-0140'a yazmaz (K15, D9/4) |
-| MOD-0143 Invoice Capture & 3-Way Match (`INVOICE-MATCH`) | eşleşme sonucu | **var** — `invoice-match.openapi.yaml` 1.1.0 FROZEN, `GET /api/invoice-match/invoices/{invoiceId}` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/InvoiceMatchController.cs:52-53`, izin `procurement.invoice-match.read`); durumlar `Captured / Matched / MatchedWithinTolerance / Exception / Rejected / ClearedForPayment` (`…/Domain/Entities/Invoice.cs:16`; `ClearedForPayment` "yalnız işaret", `ResolveMatchExceptionHandler.cs:70`); `Invoice` şeması `supplierId`, `currency`, `totalAmount` (Decimal string) taşır | AP sonucu **okur**, eşleştirme yapmaz; uygun durum kümesi ve tutar kuralı O-5. MOD-0143 değişikliği gerekmez |
+| MOD-0143 Invoice Capture & 3-Way Match (`INVOICE-MATCH`) | eşleşme sonucu | **var** — `invoice-match.openapi.yaml` 1.1.0 FROZEN, `GET /api/invoice-match/invoices/{invoiceId}` (`services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/InvoiceMatchController.cs:52-53`, izin `procurement.invoice-match.read`); durumlar `Captured / Matched / MatchedWithinTolerance / Exception / Rejected / ClearedForPayment` (`…/Domain/Entities/Invoice.cs:16`; `ClearedForPayment` "yalnız işaret", `ResolveMatchExceptionHandler.cs:70`); `Invoice` şeması `supplierId`, `currency`, `totalAmount` (Decimal string) taşır | AP sonucu **okur**, eşleştirme yapmaz; uygun durum kümesi `{Matched, MatchedWithinTolerance}` ve tutar kuralı `Σ Net = totalAmount` (KARAR D26). MOD-0143 değişikliği gerekmez; sözleşme 1.1.1 açıklaması + kayıt tutarlılık kontrolü procurement tarafında onaylandı (D26/3) |
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` var, küsurat hanesi yok (MOD-0126 pack Dependencies ölçümü) | küsurat kaynağı **TBD** (O-10, MOD-0126 O-11 ile ortak); yoksa Create 503 `AP_CURRENCY_PRECISION_UNAVAILABLE` — sabit tablo uydurulmaz |
 | MOD-0031 Evidence Linking | kanıt bağlantısı okuma | **var** — `GET /api/v1/evidence/links/{id}` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/EvidenceLinksController.cs:83-84`); bağlantı nesne referansı `EvidenceObjectRefDto(Module, ObjectType, ObjectId, ObjectVersion)` (`…/Features/EvidenceLinking/EvidenceLinkingModels.cs:67`) | AP bağlantıyı **oluşturmaz**, var olanın nesnesinin `(MOD-0119, ApInvoice, {id})` olduğunu doğrular (DL-3) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` ad alanı (D11/4); rol şablonları O-20; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
@@ -518,7 +518,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | ERP-FIN-BUNDLE kararı | karar kaydı (0.6) — **yok** | — | EA | — | karar kaydı | DL-1 önkoşulu |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
 | MOD-0140 tedarikçi ilişkisi | `supplier.openapi.yaml` **1.3.0** — MVP-2 DL-2'de yazılacak (bugün main'de 1.2.0) | TBD (main'e girince) | procurement (MVP-2) | ilişki yok / Active değil → 422 · erişilemez → 503 · geçiş yok | sahte istemci · dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi | DL-1 |
-| MOD-0143 eşleşme sonucu | `invoice-match.openapi.yaml` 1.1.0 FROZEN; **açık soru:** `totalAmount` net mi brüt mü (sözleşmede açıklama ve satır vergi alanı yok, `:160-168`, `:190` — O-5) | `41fe1f43bc74638c6d409c85b2613d36d00ddbfaeff880dc3c8e929cec513d11` (DL-1 başında yeniden `shasum`) | procurement (MOD-0143 sahibi) | uygun değil → 422 · fark → 422 · erişilemez → 503 · net/brüt doğrulanmadı → 422 `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (onay yok) | sahte istemci · dev ortamında Matched / Exception / ClearedForPayment üç fatura | DL-1 |
+| MOD-0143 eşleşme sonucu | `invoice-match.openapi.yaml` 1.1.0 FROZEN (1.1.1 yalnız açıklama, D26/3); `totalAmount` **net** (üretici ölçümü, D26/1; vergi taşınmaz) | `41fe1f43bc74638c6d409c85b2613d36d00ddbfaeff880dc3c8e929cec513d11` (DL-1 başında yeniden `shasum`) | procurement (MOD-0143 sahibi) | uygun değil → 422 · fark → 422 · erişilemez → 503 · `ClearedForPayment` / `Captured` / `Exception` / `Rejected` → 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE` | sahte istemci · dev ortamında Matched / MatchedWithinTolerance / Exception / ClearedForPayment faturaları | DL-1 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok** (O-10) | TBD | platform-shared-services | hane yok → 503 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-1 |
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
 | SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-22; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-32 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
@@ -570,8 +570,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   ReleaseHold'da çağıran şirketle ilişki `Active` değilse `AP_SUPPLIER_NOT_ELIGIBLE` (422), yanıt yoksa
   `AP_SUPPLIER_UNAVAILABLE` (503); (c) PO'lu faturada
   Validate, Submit ve Approve'da MOD-0143 — durum uygun küme dışında ise `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (422), tedarikçi /
-  para birimi / tutar farkı `AP_MATCH_REFERENCE_MISMATCH` (422), yanıt yoksa `AP_MATCH_UNAVAILABLE` (503); `totalAmount`'un
-  net / brüt tabanı doğrulanmadıysa `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (422 — Validation Rules → MOD-0143, O-5). Hiçbirinde
+  para birimi / tutar farkı `AP_MATCH_REFERENCE_MISMATCH` (422), yanıt yoksa `AP_MATCH_UNAVAILABLE` (503); tutar kuralı
+  `Σ Net = totalAmount` (KARAR D26 — Validation Rules → MOD-0143). Hiçbirinde
   geçiş yapılmaz. Bu **okumalar** uzak yan etki değildir ve tx1'den önce yapılır.
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId + LegalEntityId). Okumalar `IsDeleted = false`.
 - **Idempotency (D12/2 kuralı — her yazma komutunda zorunlu):** Create, Update, Delete, BulkDelete, Validate, Submit,
@@ -875,17 +875,18 @@ tutar kuralları, mükerrer kontrol (indeks), alacak dekontu kuralı; başarıl�
 `HoldStatus = None`, engelleyici açık istisna yok, kanıt kuralı (O-17). Delete / BulkDelete yalnız `SubmissionSequence = 0`
 ve `Received`/`Validated`. Hold yalnız `Validated`/`Approved`; ReleaseHold yalnız `OnHold` ve engelleyici açık istisna yok.
 
-**MOD-0143 eşleşme kuralları (PO'lu fatura; öneri, O-5):** MOD-0143 faturası aynı kiracı + şirkette bulunur; `status ∈
-{Matched, MatchedWithinTolerance, ClearedForPayment}`; `supplierId` ve `currency` AP kaydıyla eşit; tutar kuralı
-(`Σ Line.NetAmount = totalAmount` ya da `GrossAmount = totalAmount`; MOD-0143 `Decimal` string'i `decimal`'a çevrilerek,
-yuvarlamasız) **henüz belirlenmedi**. AP eşleştirme yapmaz, tolerans uygulamaz (tolerans MOD-0143'ün ASSUMPTION-P2P-01'idir).
-**Net mi brüt mü — açık bağımlılık sorusu (O-5, MOD-0143 / procurement sahibi):** ölçüldü
-(`docs/analysis/contracts/invoice-match.openapi.yaml`, sha256 `41fe1f43bc74638c6d409c85b2613d36d00ddbfaeff880dc3c8e929cec513d11`): `Invoice.totalAmount` (`:190`) net ya da brüt
-açıklaması taşımaz; `InvoiceLine` (`:160-168`) `quantity`, `unitPrice`, `lineAmount` taşır, **vergi alanı yoktur**. Bu
-yüzden `totalAmount`'un net mi brüt mü olduğu sözleşmeden çıkarılamaz ve varsayılmaz: procurement sahibi sözleşmede
-doğrulayana kadar PO'lu faturanın tutar kuralı **kapalıdır** — Validate, Submit ve Approve 422
-`AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` döner (fail-closed; onay yok); PO'suz fatura ve alacak dekontu etkilenmez. Doğrulama
-gelince kural o cevapla yazılır ve vergili fatura testi (AC-40) zorunludur.
+**MOD-0143 eşleşme kuralları (PO'lu fatura; KARAR D26, O-5):** MOD-0143 faturası aynı kiracı + şirkette bulunur; `status ∈
+{Matched, MatchedWithinTolerance}` (D26/2 — `ClearedForPayment` tolerance-override ile gelmiş olabilir, `Captured` /
+`Exception` / `Rejected` doğrulanmamış tutar taşıyabilir; hepsi 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`); `supplierId` ve
+`currency` AP kaydıyla eşit; tutar kuralı **`Σ Line.NetAmount = totalAmount`** (D26/1; MOD-0143 `Decimal` string'i
+`decimal`'a çevrilerek, yuvarlamasız), fark 422 `AP_MATCH_REFERENCE_MISMATCH`. AP eşleştirme yapmaz, tolerans uygulamaz.
+**Taban (üretici cevabı, `PRODUCER-ANSWER-MOD0143-01.md`, ölçüm origin/main @05f311784):** `totalAmount = Σ lineAmount`
+sunucuda hesaplanır (`CaptureInvoiceHandler.cs:138`, `InvoiceMatchValidationRules.cs:48`); `lineAmount` yoksa
+`quantity × unitPrice` (`:116-118`); 3'lü eşleştirme satırı fatura miktarı × PO birim fiyatıyla karşılaştırır ve PO'da vergi
+yoktur (`RunThreeWayMatchHandler.cs:223-224`) — yani `Matched` / `MatchedWithinTolerance` faturada `totalAmount` nettir
+(ikincisinde PO'ya göre tolerans kadar fark olabilir; faturanın kendi satır toplamı yine `totalAmount`'tır). Vergi
+INVOICE-MATCH'te taşınmaz; AP `TaxAmount`'u kendi tutar. Sözleşme 1.1.1 açıklaması ve kayıtta `lineAmount` tutarlılık
+kontrolü procurement tarafında onaylandı (D26/3) — gelene kadar kural yalnız iki durumla sınırlı olduğu için güvenlidir.
 
 **SoD kuralları (her karar komutunda, MOD-0023 çağrısından ÖNCE):**
 
@@ -939,8 +940,10 @@ gelince kural o cevapla yazılır ve vergili fatura testi (AC-40) zorunludur.
   orijinal dahil) → Validate / Submit 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`, uzak çağrı yok, rezervasyon yok.
 - **Kalan kapasitenin tamamını kullanan dekontun onayı** (gap 6/P1-c) → Approve formülü bu dekontun rezervasyonunu düşerek
   hesaplar; onay geçer (`OpenAmount = 0`), çift sayımla 422 dönmez.
-- **MOD-0143 `totalAmount`'un net / brüt tabanı doğrulanmadı** (O-5) → PO'lu faturada Validate / Submit / Approve 422
-  `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED`, uzak çağrı yok, onay yok; tutar kuralı varsayılmaz.
+- **MOD-0143 faturası `ClearedForPayment` / `Captured` / `Exception` / `Rejected`** (D26/2) → PO'lu faturada Validate / Submit /
+  Approve 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`, uzak çağrı yok, onay yok.
+- **Vergili PO'lu fatura** (D26/1) → `Σ Net = totalAmount` ise geçer (vergi AP'de `TaxAmount`); `Gross = totalAmount` ama
+  `Σ Net ≠ totalAmount` ise 422 `AP_MATCH_REFERENCE_MISMATCH`.
 - **Orijinal fatura uygun değil** (onaylı değil, başka tedarikçi / para birimi, kendisi alacak dekontu) → 422
   `AP_CREDITED_INVOICE_INVALID`.
 - **Aynı orijinale eşzamanlı iki dekont** → orijinalin `Version` CAS'ı biri için çakışır; o istek orijinali yeniden okuyup
@@ -1117,10 +1120,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   MOD-0140 sözleşmesinden okunur, AP'de tedarikçi koleksiyonu okuması yoktur (mimari testi: ProcurementService
   koleksiyon adı ya da Mongo bağlantısı AP kodunda geçmez).
 - [ ] AC-5 (zorunlu) — PO'lu faturada `MatchInvoiceRef` yoksa 400; MOD-0143 durumu uygun küme dışındaysa 422
-  `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tedarikçi, para birimi ya da (O-5'te doğrulanan net / brüt tabanına göre) tutar farkı
-  varsa 422 `AP_MATCH_REFERENCE_MISMATCH`; taban doğrulanmadıysa Validate / Submit / Approve 422
-  `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (AC-40); aynı MOD-0143 faturasına ikinci kayıt 409 (O-5 farklı karar verirse madde o kararla yeniden
-  yazılır, numarası korunur).
+  `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tedarikçi, para birimi ya da net tutar farkı
+  (`Σ Net ≠ totalAmount`, KARAR D26) varsa 422 `AP_MATCH_REFERENCE_MISMATCH`; `ClearedForPayment` 422
+  `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (AC-40); aynı MOD-0143 faturasına ikinci kayıt 409.
 - [ ] AC-6 (zorunlu) — Mükerrer fatura (aynı şirket + tedarikçi + belge türü + normalize numara) 409 `AP_INVOICE_DUPLICATE`;
   eşzamanlı iki Create'te biri 201, diğeri 409 (gerçek replica set); tekil indeks kaldırıldığında test kırmızıya döner
   (sabotaj).
@@ -1251,11 +1253,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   FullyCredited`; aynı orijinale 1 birim fazlası olan dekont Validate / Submit'te 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`
   (kapasite aşımı testi korunur). Sabotaj: onayda Submit formülü (`CreditedAmount + CreditReservedAmount + thisAmount ≤
   GrossAmount`) kullanıldığında tam kapasite onayı 422 alır ve test kırmızıya döner.
-- [ ] AC-40 (zorunlu) — Vergili PO'lu fatura testi (O-5, MOD-0143 net / brüt): `TaxAmount > 0` olan PO'lu fatura için
-  (a) procurement sahibi `totalAmount` tabanını doğrulamadıysa Validate, Submit ve Approve 422
-  `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED`, MOD-0023'e çağrı yok, onay yok; (b) taban doğrulandıktan sonra `Σ Net` ile `Gross`'un
-  farklı olduğu fatura doğrulanan tabana göre değerlendirilir: yalnız o tabanda eşit olan geçer, diğeri 422
-  `AP_MATCH_REFERENCE_MISMATCH`. Sabotaj: tutar kuralı tabanı doğrulanmadan net (ya da brüt) varsayılarak yazıldığında (a)
+- [ ] AC-40 (zorunlu) — Vergili PO'lu fatura ve durum kümesi (KARAR D26): `TaxAmount > 0` olan PO'lu fatura için (a)
+  `Σ Net = totalAmount` (MOD-0143 `Matched`) → Validate / Submit / Approve geçer, `GrossAmount = Net + Tax`; (b)
+  `Gross = totalAmount` ama `Σ Net ≠ totalAmount` → 422 `AP_MATCH_REFERENCE_MISMATCH`; (c) MOD-0143 `MatchedWithinTolerance`
+  → kural aynı; (d) `ClearedForPayment`, `Captured`, `Exception`, `Rejected` → 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`, MOD-0023'e
+  çağrı yok, onay yok. Sabotaj: kural brüte çevrildiğinde (a)/(b), durum kümesine `ClearedForPayment` eklendiğinde (d)
   kırmızıya döner.
 
 ## Test Expectations
@@ -1321,7 +1323,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
 - [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de (MVP-2)
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-22; platform-shared-services) — kapsamı soran kod ve AC-32 bu yola bağlı
-- [ ] O-4 (v1 kaynak kapsamı), O-5 (MOD-0143 uygun durumlar ve tutar kuralı), O-6 (mükerrer anahtar), O-7 (onay kademesi),
+- [ ] O-4 (v1 kaynak kapsamı), O-5 (MOD-0143 — KARAR D26, kapandı), O-6 (mükerrer anahtar), O-7 (onay kademesi),
   O-13 (tek aktif istisna), O-14 (alacak dekontu) sahip kararıyla yazıldı (O-8 K2 → D14/3 ile kapandı)
 - [ ] O-12 kod alma kaynağı commit'i kararlaştırıldı ve sahip MOD-0119 için kod alma iznini verdi (D1)
 - [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı; `APD` öneki §3'e yazıldı (O-9) — yoksa Create yazılamaz
@@ -1330,8 +1332,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-2 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-2 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-2 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [ ] Silmeme politikası (KARAR D21/1) MOD-0023 pack §17'de onaylı; silinmişi ayıran okuma gerekmez (D21/2) — DL-2 için; AC-W1 (silmeme mimari testi) DL-2 uygulama kabul kapısındadır (gap 16/P2); kapanmazsa 404 / boş okumada anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a)
 - [ ] MOD-0023 okuma eşleme alanları (KARAR D21/3) §17'de onaylı — DL-2 için; kod MOD-0023 sahibinin WP'siyle gelir (D25/1), AC-W2/W3 uygulama kabul kapısındadır (gap 16/P2); yoksa okuma niyeti kapatmaz (gap 6/P1-b)
-- [ ] MOD-0143 `totalAmount` net mi brüt mü — procurement (MOD-0143) sahibi sözleşmede doğruladı (O-5); doğrulanana kadar
-  PO'lu fatura `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` ile onaya ilerlemez (AC-40)
+- [x] MOD-0143 `totalAmount` tabanı — üretici ölçümü net (`PRODUCER-ANSWER-MOD0143-01.md`), KARAR D26/1; kabul durumları D26/2.
+  Sözleşme 1.1.1 açıklaması + kayıt tutarlılık kontrolü procurement tarafında (D26/3) — ready-for-dev engeli değildir
 - [ ] Tüketici onayı slotları (paket §P → §U) "Implementation Notes"taki tabloya göre kapatıldı — level 3'ten önce hepsi
 
 ## Implementation Notes
@@ -1474,7 +1476,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-2 | **ERP-FIN-BUNDLE sahipliği (karar 0.6)** — ENGEL | GL / AP / AR / ayrı sahip | AP kendi `AP-INVOICE` sözleşmesini sahiplenir; bundle kararı gelince eşlenir; **karar verilmedi** | EA |
 | O-3 | GL (MOD-0118) kapsamı (karar 0.7) | içeri (MOD-0001 ile) / dışarı | dışarı (karar 0.7 önerisi); AP v1 fiş üretmez; **karar verilmedi** | sahip (K1) |
 | O-4 | v1 kaynak kapsamı: dış ERP içe aktarma, içe aktarma hataları, mutabakat (AP-03…06, AP-09, AP-10) | v1'de / sonra | sonra; v1 elle kayıt + MOD-0143 referansı (Tasarım notları) | sahip (K1) |
-| O-5 | MOD-0143 uygun durumları ve tutar kuralı | durum kümesi; `Σ Net = totalAmount` / `Gross = totalAmount` / satır kopyası | `{Matched, MatchedWithinTolerance, ClearedForPayment}`; tedarikçi + para birimi eşit; satırlar elle. **Net mi brüt mü — açık bağımlılık sorusu (gap 6):** `invoice-match.openapi.yaml` `totalAmount` (`:190`) taban açıklaması, `InvoiceLine` (`:160-168`) vergi alanı taşımıyor; procurement sahibi doğrulayana kadar PO'lu fatura 422 `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (onay yok), vergili fatura testi AC-40 zorunlu | sahip + MOD-0143 (procurement) sahibi |
+| O-5 | MOD-0143 uygun durumları ve tutar kuralı | durum kümesi; `Σ Net = totalAmount` / `Gross = totalAmount` / satır kopyası | **KARAR D26 (2026-10-25):** `{Matched, MatchedWithinTolerance}`; `Σ Net = totalAmount` (taban net — üretici ölçümü); tedarikçi + para birimi eşit; satırlar elle; `ClearedForPayment` sözleşme çözüm türünü gösterene kadar kapalı | sahip + MOD-0143 (procurement) sahibi |
 | O-6 | Mükerrer fatura anahtarı | (şirket, tedarikçi, belge türü, normalize no) / + fatura tarihi / kaynak imzası (tarih + tutar) | (TenantId, LE, SupplierId, DocumentType, InvoiceNumberNormalized), silinmemiş kayıtlarda tekil; `Rejected` de engeller | sahip (K1) |
 | O-7 | Onay tutar kademesi | v1 tek kademe / MOD-0126 D11/1 modeli | v1 tek kademe; kademe Follow-up | sahip (K1) |
 | O-8 | AP Approve / Reject K2 mi | evet / hayır | **KARAR (D14/3): evet** — AP'de parayı etkileyen kararlar (onay, ret; açılırsa iptal/silme ve elle ödeme kaydı) K2 | CT + sahip |

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D25 (D16–D25: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D26 (D16–D26: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -214,6 +214,20 @@ Kaynak: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER
 
 CT uygulaması (karar değil, D21/7'nin uygulaması): eşzamanlı aynı anahtarlı geçişte 409 `WORKFLOW_TRANSITION_CONFLICT` ve
 503 `WORKFLOW_TRANSACTION_UNAVAILABLE` Treasury'de kesin ret değildir → `Unknown`.
+
+## D26 — MOD-0143 `totalAmount` tabanı ve AP kuralı (2026-10-25, soru kutusu; üçü de önerilen seçenek)
+
+Kaynak: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER-ANSWER-MOD0143-01.md`.
+
+1. **Tutar tabanı:** "Net" — MOD-0119'da PO'lu fatura kuralı `Σ Line.NetAmount = totalAmount` (MOD-0143 `Decimal`
+   string'i `decimal`'a, yuvarlamasız); vergi (`TaxAmount`) AP'de tutulur. `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` kapısı kalkar.
+2. **Kabul edilen MOD-0143 durumları:** "Yalnız Matched + MatchedWithinTolerance" — `ClearedForPayment` (tolerance-override ile
+   gelmiş olabilir), `Captured`, `Exception`, `Rejected` → 422 `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; sözleşme çözüm türünü
+   (override mı) göstermeden `ClearedForPayment` açılmaz.
+3. **Procurement değişiklikleri:** "Evet, ikisi de" — sahip, MOD-0143 sahibinin önerdiği iki değişikliği onayladı:
+   `invoice-match.openapi.yaml` 1.1.0 → 1.1.1 (yalnız açıklama: `totalAmount` / `lineAmount` vergi hariç, vergi taşınmaz;
+   %20 KDV'li örnek) ve MOD-0143 kodunda kayıt sırasında `lineAmount ≠ quantity × unitPrice` → 422 + sabotajlı test. Yapılışı
+   procurement sahibinin kendi dalında; push / PR sahibin onayıyla. Bu Control Tower o dosyalara dokunmaz.
 
 ## Karar olmayanlar
 
