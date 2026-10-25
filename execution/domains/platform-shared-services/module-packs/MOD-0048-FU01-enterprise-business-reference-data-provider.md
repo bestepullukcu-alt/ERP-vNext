@@ -2903,7 +2903,8 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 - `payment-method`: published + `IsActive` code → valid; unknown / inactive → 422 `PAYMENT_METHOD_NOT_ALLOWED`; set
   unreadable → 503 (MOD-0126 AC-41).
 - `currency-minor-units`: missing code, missing / non-integer / out-of-range `minorUnits` → 503
-  `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → 422 (no rounding).
+  `…_CURRENCY_PRECISION_UNAVAILABLE` (never a default); amounts with more decimals than `minorUnits` → **400** validation
+  error (`…_VALIDATION_FAILED`, no rounding) — the same code in all four Treasury packs (Failure Path "Hassasiyet aşımı").
 
 ### 21.5 Acceptance criteria (defined — not implemented, not run)
 
@@ -2912,12 +2913,23 @@ Allowed paths: `services/Diten.Platform/src/Diten.Platform.API/Seed/business-ref
 - AC-R2 — `currency-minor-units`: every value has `attributes.minorUnits` ∈ {"0","1","2","3","4"}; no duplicate codes
   (case-insensitive); the codes are a superset of the codes returned by `GET /api/lookups/reference/currencies`.
   Sabotage: removing `minorUnits` from one value turns the test red.
-- AC-R3 — Catalog load with `RequiredSetCodes` containing both sets fails closed if the seed file is missing or a set is
-  absent (existing loader behaviour, measured at code time).
+- AC-R3 — Missing set behaviour (gap 20/1, measured @e66746606): the loader does **not** stop — a required set that is not
+  published is reported as `published_set_not_found` in the lookup verification (`BusinessReferenceDataCatalogLoaderService.cs:506-513`)
+  and the worker logs it and continues (`BusinessReferenceDataCatalogLoadWorker.cs:86-92`; only blocked conflicts throw, and
+  that is caught and logged, `:105, 112-114`). The platform start-up is therefore **not** the stopping point. The stopping
+  point is the consumer write: with a set missing, the published-values read fails and every Treasury command that needs
+  it answers 503 (`PAYMENT_METHOD_SOURCE_UNAVAILABLE`, `…_CURRENCY_PRECISION_UNAVAILABLE`) and writes nothing (MOD-0126
+  AC-41(c) and the precision ACs of the four packs). This AC checks: (a) with `treasury-reference.json` absent, the
+  verification log contains `published_set_not_found` for both codes; (b) the published-values endpoint answers not-found for
+  them; (c) a stubbed Treasury consumer then returns 503 and no write. **Scope stays seed + config only**; a readiness
+  health-check entry that would make the missing sets visible as `Unhealthy` is a code change and is listed as a follow-up
+  (§21.6), not part of this amendment.
 - AC-R4 — Existing consumable-set consumers are unaffected (their tests pass unchanged).
 
 ### 21.6 Delivery and out of scope
 
 - Delivered by the reference-data owner (platform-shared-services) before MOD-0126 DL-1 Create; Treasury does not write
   Platform files (XMC-001; D9 consent restated in that WP).
-- Out of scope: a tenant-editable payment-method list, FX rates, currency names / symbols beyond `display_name`.
+- Out of scope: a tenant-editable payment-method list, FX rates, currency names / symbols beyond `display_name`; a readiness
+  health check for the two sets (`BusinessReferenceDataProviderReadinessHealthCheck`, code change — follow-up for the
+  reference-data owner).

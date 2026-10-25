@@ -232,12 +232,12 @@ kaynak projedeki her değişiklik.
 
 **Kapandı (2026-10-25):** 0.3 (D27/1), 0.5 (D27/2), 0.6 (D27/3), 0.7 (D27/4), MOD-0289 MDM onayı (D20/1), MOD-0217 ve
 MOD-0057 (D19), bankacılık sahibi (D27/8), kod alma izni dört Treasury modülü (D27/5), pack'lerde sahibe ait açık kararlar
-(D28), ortak kararlarda sahip payı ve RCS önekleri (D29).
+(D28), ortak kararlarda sahip payı ve RCS önekleri (D29), AR O-8 muafiyeti — yok, tier-2 aday yoksa 422 (D31/1).
 
 **Kapandı (D30):** AGENTS §2/§3/§9 + `ports.md` 5071 ve RCS-001 §3 önekleri uygulandı.
 
 **Açık:** DCP numarası ve DCP onayı; ortak sahipli kararlarda diğer sahiplerin teyidi
-(D29/1); CT-APR-02 / CT-APR-01; MOD-0289 O-6 güvenlik onayı; MOD-0289 ve MOD-0269 kod alma izni; AR O-8 muafiyet kısmı.
+(D29/1); CT-APR-02 / CT-APR-01; MOD-0289 O-6 güvenlik onayı; MOD-0289 ve MOD-0269 kod alma izni.
 
 ## 19. Future follow-ups
 
