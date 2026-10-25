@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D19 (D16–D19: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D21 (D16–D21: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -116,6 +116,41 @@ aktörle aynı ödeme) ve onaylı geri alma (reversal / karşı kayıt) akışı
 2. **MOD-0057 Semantic Tagging & Taxonomy Management:** "Park et" — bu intake'ten çıkar; level-1 kaydı
    (`treasury-level1-acceptance-01/MOD-0057-v1.0.md`) kalır. MOD-0053 ve MOD-0056 Recovery'de olunca yeniden açılır
    (Blueprint W-4). Kimlik exit 0 (2026-10-25).
+
+## D20 — MDM yerleşimi (TRM-10) (2026-10-25, soru kutusu; ikisi de önerilen seçenek)
+
+Sahip (K1) burada MDM domain sahibinin kararını kendisi verdi (D10/2 ile aynı yol; depoda MDM sahibi kişi olarak
+adlandırılmamış, MOD-0220 pack'inde `owner: mdm-domain-team`).
+
+1. **MOD-0289 Bank Master & Bank Account Registry:** "MDM" — `master-data-management` / `Diten.MdmService`; yeni servis
+   ve port yok. D7'deki "MDM sahibinin onayı" koşulu kapandı; kimlik kaydı satırı ve pack taslağı açılabilir
+   (`MOD-0289-PLACEMENT-NOTE-v0.1.md`).
+2. **MOD-0217 CLM:** "MDM, pack koşullu" — D19/1 teyit edildi; pack TRM-11 cevabı ve Document Management
+   bağımlılığı çözülünce.
+
+## D21 — MOD-0023 ve Treasury açık onayları (2026-10-25, soru kutusu; altısı önerilen seçenek, biri sahibe bırakıldı)
+
+Sahip (K1), platform kod sahibine (Ali) gönderilen üç sorunun ikisini D9 yetkisiyle kendisi cevapladı; MOD-0143 sorusu
+Cihan'da kaldı. Bunlar **politika kararıdır**; MOD-0023 kodunun bugün böyle davrandığını kanıtlamaz — kanıt testle gelir.
+
+1. **MOD-0023 saklama:** "Hiç silinmez" — `WorkflowInstance` ve `WorkflowTransitionLog` silinmez, TTL konmaz; kural
+   MOD-0023 pack'ine yazılır ve mimari testle korunur. Ölçüm (@0baa556d6): bu iki tip için silme yolu ve `ExpireAfter`
+   yok; `WorkflowRepositories.cs:961-974`'teki soft delete yalnız `SlaEscalationRule` içindir.
+2. **Silinmişi ayırt eden okuma:** "Gerekmez, politika yeter" — 1. madde mimari testle korunduğu sürece Treasury'nin
+   yeniden yazma kapısı için ayrıca silinmiş okuması istenmez (gap 6 kaydındaki "daha gevşek seçenek"). Silinmiş kayıt
+   yine de görülürse yeniden yazma yok, niyet `Unknown` (dört pack'teki kural aynen kalır).
+3. **Okuma eşleme alanları:** "Evet, eklemeli" — `WorkflowInstanceStatusDto`'ya `IdempotencyKey`, geçiş okumasına
+   `TaskId` + `Action` + `IdempotencyKey`; yalnız ekleme; MOD-0023 pack değişikliği (TRM-14 deseni), kod MOD-0126 DL-2 ile.
+4. **Aynı anahtarlı yarış:** "Aynı kaydı dön" — kaybeden istek tekil indeks çakışmasını yakalar, var olan örneği /
+   geçişi okuyup aynı sonucu 200 ile döner. Bugünkü kod sıralı tekrarda kayıtlı sonucu dönüyor
+   (`StartWorkflowInstanceHandler.cs:76-85`); **eşzamanlı** yarış davranışı ölçülmedi — gerçek Mongo yarış testiyle kanıtlanır.
+5. **Reconcile yeniden yazma aktörü:** "Evet, yalnız asıl aktör" — gap 4'te ajanın eklediği kural onaylandı
+   (`…_RECONCILE_RESTART_ACTOR_MISMATCH` 409); okuyup sonucu kaydetme yolu herkese açık kalır.
+6. **AR geri alma izni:** "Mevcut izinler" — `receivable-adjustments.*` ve SoD A7; ayrı izin anahtarı yok.
+7. **"Kesin ret" tanımı:** "tx2 eşlemesi, yinelenen anahtar hariç" — yalnız pack'lerdeki tx2 tablosundaki kesin iş
+   reddi kodları `Refused`; yinelenen anahtar, 404, zaman aşımı, 5xx hiçbir zaman `Refused` değildir (`Unknown`).
+8. **MOD-0143 `totalAmount` net/brüt:** "Cihan'a bırak" — kod sahibinin ölçümü beklenir; o zamana kadar AP'de PO'lu
+   faturanın onayı `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (422) ile kapalı kalır.
 
 ## Karar olmayanlar
 
