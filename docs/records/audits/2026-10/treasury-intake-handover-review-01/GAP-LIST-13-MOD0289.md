@@ -45,3 +45,20 @@ O-6 hâlâ öneri: sahip / güvenlik onayı ve gerçek Mongo testleri olmadan ka
 replika setinde geçer sayılır. Ölçülmeyenler pack'te engel: fence kaydının yük altındaki çakışma oranı, `MasterDataAtomicWrite`
 yeniden deneme politikasıyla etkileşim, banka dizini ve domestic hesap kuralı kaynağı / sahibi (TBD). Pack: 24 bölüm, AC-1…47
 tekil. Belge incelemesidir; build / test / runtime yok.
+
+## Gap listesi 15 (2026-10-25, sahip — CONDITIONAL PASS)
+
+İnceleme girdisi `treasury-TRM16-MOD0289-373513765.zip` (sha256 `948e223f427de7b59c597764b4234de3699487036224262480589c731fe5eefe`;
+manifest 6/6 geçti). Gap 14 kapandı; iki writer fence maddesi kapandı (pack "Gap 15 kapanışı" tablosu):
+
+| # | Öncelik | Gap | Kapanış |
+|---|---|---|---|
+| 1 | P1 | `KeySetId` güncel anahtar seçimini içermiyor | Kanonik serileştirme (`mdm-bank-keyset/2`, `enc.current=`, `hash.current=`, sıralı anahtar satırları `<kind>\|<version>\|<state>\|<kcv>`), kimlik `ks2-` + SHA-256; sürüm adı deseni ve current'ın `Active` olması açılış koşulu. AC-48 (aynı liste + farklı current → 503 `MDM_BANK_KEYSET_STALE`, sabit değer testi, sabotajlı). |
+| 2 | P1 | Yeni kiracının fence'ini ilk writer belirliyor | Servis düzeyi `BankDataKeySetTarget` (`mdm_bank_data_key_set_targets`, `ApprovedKeySetId`, `Version`, `BootstrapSeq`, `ApprovalRef`, ekleme-yalnız `History`), yalnız `ApproveBankDataKeySetTargetCommand` yazar; fence yoksa yazma işlemi hedefte koşullu artış + fence'i onaylı hedefle oluşturma + kayıt; hedefle eşleşmeyen writer 503, hedef yok 503 `MDM_BANK_KEYSET_TARGET_UNAVAILABLE`. AC-49 (yeni kiracı + eski/yeni writer yarışı, 50 tekrar, sabotajlı). |
+| ek | — | Fence yük testi ve gerçek Mongo testleri | AC-50 adlı yük testi (≥ 8 paralel writer, 10 dk, koşu sırasında bir fence ilerletmesi; yeniden deneme oranı, p95/p99); eşik DL-2 başında sahip + güvenlik yazar, o zamana kadar geçemez. Ready-for-dev: AC-50 ve gerçek replika seti AC'leri (AC-13, 35…39, 43…46, 48, 49) geçmeden geliştirme kapısı kapanmaz. |
+
+**Yeni engel (ölçüldü):** `ApproveBankDataKeySetTargetCommand` için kabul edilmiş denetim yolu yok — MDM denetim niyeti yolu
+kiracısız kayıtta merkezi anahtarı üretemez (`AuditIntentContract.cs:12@373513765`); hedef kaydın kendi geçmişi ve her
+kiracının fence denetim niyeti hedef `Version` / `ApprovalRef` taşır; merkezi denetime yazılması CT kararı ister. O-6 hâlâ
+öneri. Ölçülmeyenler: `ApprovalRef`'in arkasındaki insan onayı, yük testi eşikleri, çok sayıda yeni kiracıda hedef kaydı
+çakışması. Pack: 24 bölüm, AC-1…50 tekil. Belge incelemesidir; build / test / runtime yok.
