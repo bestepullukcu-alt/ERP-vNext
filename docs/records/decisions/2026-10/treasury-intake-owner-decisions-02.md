@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D18 (D16–D18: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D19 (D16–D19: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -104,6 +104,18 @@ aktörle aynı ödeme) ve onaylı geri alma (reversal / karşı kayıt) akışı
    MOD-0269 BANK-DISPATCH sözleşmesi için, ancak TRM-14 (MOD-0220 eklemeli değişiklik) yazıldıktan ve MOD-0023 / MOD-0143
    üretici cevapları pack'lere işlendikten sonra açılır. MOD-0289, MOD-0217, MOD-0057 sonraki ayrı PR'dadır.
 2. **Yedek push:** "Hayır, yerelde kalsın" — dal o zamana kadar push edilmez.
+
+## D19 — MOD-0217 ve MOD-0057 (TRM-13) (2026-10-25, soru kutusu; ikisi de önerilen seçenek)
+
+1. **MOD-0217 Contract Lifecycle Management (CLM):** "MDM'e yerleş, sonra pack" — yer `master-data-management`
+   (kaynakta eski kimlik MDM-070; Blueprint yetenek grubu Legal Governance; kimlik `verify_module_id.py --check-id
+   MOD-0217 --name "Contract Lifecycle Management (CLM)"` → exit 0, 2026-10-25). Pack ancak TRM-11 cevabı (kaynaktaki 6
+   kırık ve 18 koşmayan işlem testinin nedeni, S mi R mi) geldikten ve 'Document Management' kapısı bir modüle
+   çözüldükten sonra yazılır; MDM domain sahibinin onayı gerekir (MOD-0289 ile aynı yol, TRM-10). Treasury S1/S2 buna
+   bağlı değildir.
+2. **MOD-0057 Semantic Tagging & Taxonomy Management:** "Park et" — bu intake'ten çıkar; level-1 kaydı
+   (`treasury-level1-acceptance-01/MOD-0057-v1.0.md`) kalır. MOD-0053 ve MOD-0056 Recovery'de olunca yeniden açılır
+   (Blueprint W-4). Kimlik exit 0 (2026-10-25).
 
 ## Karar olmayanlar
 

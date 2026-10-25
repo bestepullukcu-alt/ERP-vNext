@@ -69,8 +69,8 @@ Forecasting MOD-0125; Bank Reconciliation MOD-0121; MOD-0146; tedarikçi, müşt
 | MOD-0120 Accounts Receivable (AR) | W-3, Financial Management | 0 · 0 · 0 | üye |
 | MOD-0124 Cash Positioning | W-3, Treasury & Cash | 0 · 0 · 0 | üye |
 | MOD-0289 Bank Master & Bank Account Registry | W-3, Treasury & Cash | 0 · 0 · 0 | üye — MDM'de (D7, MDM sahibi onayı bekliyor) |
-| MOD-0217 Contract Lifecycle Management (CLM) | Legal Governance | 0 · 0 · 0 | aday (TRM-13) |
-| MOD-0057 Semantic Tagging & Taxonomy Management | W-4 | 0 · 0 · 0 | aday — park önerisi (TRM-13) |
+| MOD-0217 Contract Lifecycle Management (CLM) | Legal Governance | 0 · 0 · 0 | aday — yer MDM (D19/1); pack TRM-11 + Document Management kapısı + MDM sahibi onayından sonra |
+| MOD-0057 Semantic Tagging & Taxonomy Management | W-4 | 0 · 0 · 0 | **park** (D19/2) — MOD-0053/0056 gelince yeniden açılır |
 
 **Üye olmayan, değişiklik önerisi alacak modüller** (kendi domain sahiplerinin onayıyla, XMC-001): MOD-0220 (LE↔LE
 ilişki modeli — MDM), MOD-0140 (tüketici gereksinimleri; MVP-2 değişikliği main'e girdikten sonra — procurement),
@@ -113,7 +113,7 @@ MOD-0126 → MOD-0289 tek yönlüdür; MOD-0126 banka hesabını opak referansla
    servis iskeleti (`Diten.FinanceTreasuryService`) → alma ve uyarlama → Recovery testleri (level-2).
 5. **Dilim TRM-S2:** MOD-0003 kararından sonra MOD-0119, MOD-0120, MOD-0124 (birbirinden bağımsız, paralel).
 6. **Dilim TRM-S3:** MOD-0220 ilişki modeli + MOD-0140 1.3.0 + TRM-S1 ve TRM-S2 → MOD-0289.
-7. **Dilim TRM-S4:** aday modüller (karar verilirse).
+7. **Dilim TRM-S4:** MOD-0217 (yer MDM, D19/1; koşullar kapanınca). MOD-0057 park (D19/2), dilimde değil.
 
 ## 8.1 Delivery slices
 
@@ -122,7 +122,7 @@ MOD-0126 → MOD-0289 tek yönlüdür; MOD-0126 banka hesabını opak referansla
 | TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0269 yalnız sözleşme ve kapalı bağdaştırıcı |
 | TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | karar 0.3 bekliyor |
 | TRM-S3 | MOD-0289 | MDM; TRM-S1, TRM-S2, MOD-0220 ve MOD-0140 değişikliklerine bağlı |
-| TRM-S4 | MOD-0217, MOD-0057 | aday; karar verilmedi |
+| TRM-S4 | MOD-0217 | aday; yer kararı D19/1, pack koşullu (MOD-0057 park — D19/2) |
 
 ## 9. Prerequisites
 
