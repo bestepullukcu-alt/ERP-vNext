@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D16 (D16: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D17 (D16, D17: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -88,6 +88,15 @@ Soru: "AR'de elle tahsilat kaydı (O-9) bu sürüme dahil olsun mu?" — Cevap: 
 seçenek "Hayır, sonraki sürüm" idi; sahip dahil etmeyi seçti). Elle tahsilat AR v1'de (DL-3) kalır; şunlarla birlikte:
 ödeme referansı için iş tekilliği (kiracı + şirket + müşteri + referans), mükerrer tahsilat kontrolü (farklı anahtar ya da
 aktörle aynı ödeme) ve onaylı geri alma (reversal / karşı kayıt) akışı.
+
+## D17 — MOD-0269 BANK-DISPATCH sözleşmesi (gap listesi 7) (2026-10-25, soru kutusu; ikisi de önerilen seçenek)
+
+1. **Kaynak hesap:** "Talimat düzeyinde ref" — her `BankDispatchInstruction` kendi `sourceBankAccountRef`'ini taşır
+   (MOD-0126 `PaymentInstruction.SourceBankAccountRef`, olduğu gibi); parti düzeyindeki alan kalkar; port ve bağdaştırıcı
+   talimatları birleştirmez, gruplamaz, tek hesaba indirgemez.
+2. **Beklenmeyen sonuç:** "Kaydet, kilitle, başarı sayma" — 0.1 tüketicisi `NotConfigured` dışı bir sonuç alırsa deneme
+   alınan sonuçla kaydedilir, parti `Approved` kalır ve `ReleaseBlockedForReview` ile kilitlenir, Release 502
+   `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED` döner; sonraki Release 409. Kilidi açma komutu Follow-up'tır.
 
 ## Karar olmayanlar
 

@@ -223,6 +223,8 @@ yalnız tarihtir (`DateOnly`), saat dilimi çevrimi yapılmaz.
 | WorkflowInstanceId / WorkflowStatus / WorkflowCorrelationId | Guid? / string? / string? | yalnız kesin başlatma sonucundan | `:185-189@da4abb20` |
 | SodPolicyVersion / Tier2ThresholdAmount / Tier2ThresholdCurrency / IsTier2 | string / decimal / string(3) / bool | gönderme anında sabitlenir (pinned); karar aynı değeri kullanır | yeni (koşul 1) |
 | EvidenceLinks | `PaymentEvidenceLinkReference[]` | MOD-0031 referansı; ikili veri yok | :24 |
+| ReleaseSequence | int | 0'dan başlar; her **yeni** Release denemesi aynı işlemde +1 (sürüme koşullu, CAS); makbuz tekrarı artırmaz; MOD-0269 `dispatchKey = mod0126:{batchId:N}:release:{ReleaseSequence}` (gap 7/P1-b) | yeni |
+| ReleaseBlockedForReview | bool | varsayılan false; bağdaştırıcı `NotConfigured` dışı sonuç döndürürse true olur ve sonraki Release'i kapatır (D17/2) | yeni |
 | CreatedBy / UpdatedBy | Guid? | token `sub` | — |
 
 ### PaymentInstruction (`payment_instructions`)
@@ -320,9 +322,11 @@ modülde aynıdır.
   yazar (kaynak iki satır yazıyor, `PaymentWorkflowService.cs:390-412@da4abb20` — taşınmaz).
 - `PaymentAttestation`: kaynak alanları (`:116-130@da4abb20`); `SchemaVersion = payment.attestation.v2`,
   `ContentHash` (SHA-256), `SourceSnapshotJson` (yerel anlık görüntü; banka verisi içermez), `GeneratedBy` Guid.
-- `PaymentDispatchAttempt` (yeni): `PaymentBatchId`, `ReceiptId` (Release makbuzu), `RequestedBy` (Guid), `RequestedAt`, `Outcome`
-  (`NotConfigured` | ileride sözleşmenin tanımladığı değerler), `ProviderContractVersion` (MOD-0269 sözleşme sürümü),
-  `OutcomeCode`. Ekleme-yalnız; güncelleme/silme yok.
+- `PaymentDispatchAttempt` (yeni): `PaymentBatchId`, `ReceiptId` (Release makbuzu), `ReleaseSequence`, `DispatchKey`,
+  `RequestedBy` (Guid), `RequestedAt`, `Outcome` (bağdaştırıcının döndürdüğü değer olduğu gibi: `NotConfigured` ya da
+  beklenmeyen `Accepted` / `Rejected` / `Unknown` — D17/2), `OutcomeCode`, `ProviderReference?`,
+  `ProviderContractVersion` (MOD-0269 sözleşme sürümü). Ekleme-yalnız; güncelleme/silme yok. Talimat başına kaynak
+  hesap porta olduğu gibi gider (D17/1); deneme kaydı banka verisi taşımaz.
 
 ### Mongo indeksleri (kaynak 18 ad, 4 tekil — `PaymentProposalsMongoIndexes.cs:8-28@da4abb20`)
 
@@ -334,6 +338,7 @@ modülde aynıdır.
 | `ux_payment_start_intent_open` | TenantId + PaymentBatchId, kısmi `Status ∈ {Pending, Unknown}` | evet — partide aynı anda tek açık başlatma niyeti | yeni |
 | `ux_payment_decision_open` | TenantId + PaymentBatchId, kısmi `State ∈ {Requested, Unknown}` | evet — partide aynı anda tek açık karar niyeti | yeni |
 | `ix_finance_treasury_command_receipt_pending` | TenantId + Status + CreatedAt, kısmi `Status = Pending` (`finance_treasury_command_receipts`) | — | yeni (Reconcile listesi); servis ortak, sahibi bu paketin DL-1'i (D14/2) |
+| `ux_payment_dispatch_attempt_key` | TenantId + DispatchKey (`payment_dispatch_attempts`) | evet — bir `dispatchKey` tek denemeye bağlanır (gap 7/P1-c; anahtar/yük çatışması yapısal olarak engellenir) | yeni |
 | `ix_payment_batch_list` | TenantId + LegalEntityId + IsDeleted + Status + CreatedAt(desc) | — | `ix_mod0126_payment_batch_status` / `_created` |
 | `ix_payment_batch_workflow_instance` | TenantId + WorkflowInstanceId (kısmi, var olan) | — | aynı |
 | `ix_payment_instruction_batch` | TenantId + PaymentBatchId + LineNumber | — | aynı |
@@ -365,7 +370,10 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
   (400), `PAYMENT_DECISION_PENDING` (409 — açık karar niyeti), `PAYMENT_SOD_WAIVER_NOT_ALLOWED` (403 — R1–R3 muaf tutulamaz),
   `PAYMENT_REQUEST_IN_PROGRESS` (202 — aynı anahtarlı istek, makbuz `Pending`; kurtarma yapılmaz),
   `PAYMENT_RECONCILE_RESTART_ACTOR_MISMATCH` (409 — Reconcile'ı çağıran asıl komutun aktörü değil; uzak yazma/başlatma
-  çağrısı yapılmaz, niyet `Unknown` kalır).
+  çağrısı yapılmaz, niyet `Unknown` kalır), `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` (500 — porttan
+  `BankDispatchContractException` ya da sözleşme dışı istisna; işlem geri alınır), `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`
+  (502 — `NotConfigured` dışı sonuç; deneme kaydedilir, parti kilitlenir, D17/2), `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW` (409 —
+  kilitli partide Release; port çağrılmaz). MOD-0269 eşlemesi: `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` §5.
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
   `PAYMENT_APPROVER_DIRECTORY_*` (O-10'a bağlı).
@@ -667,6 +675,14 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     doğrulaması, bağdaştırıcı çağrısı, `PaymentDispatchAttempt`, makbuz (`Completed`, 200) ve tek `…release-attempted`
     olayı **aynı Mongo işleminde** yazılır. Uzak çağrı olmadığı için niyet, belirsiz sonuç ve Reconcile yoktur; çökme →
     işlem geri alınır, aynı anahtarla tekrar baştan çalışır.
+  - **Sözleşme bağı (gap 7, `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` rev 2):** aynı işlemde `ReleaseSequence` +1 (sürüme
+    koşullu) ve `dispatchKey` üretilir; makbuz tekrarı portu çağırmaz ve sıra artırmaz; geri alınan işlemin sıra artışı
+    da geri alınır, bu yüzden aynı istemci anahtarıyla yeniden deneme aynı `dispatchKey`'i üretir. İstek her talimatı
+    kendi `SourceBankAccountRef`'iyle taşır; `DefaultSourceBankAccountRef` talimat değerinin yerine konmaz, talimatlar
+    birleştirilmez (D17/1). Port iş sonucunu tipli döndürür: `NotConfigured` → 200; `BankDispatchContractException` /
+    sözleşme dışı istisna → geri alma + 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`; iptal → geri alma, kayıt yok;
+    `NotConfigured` dışı sonuç → deneme kaydedilir, `ReleaseBlockedForReview = true`, olay sonucu taşır, 502
+    `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED` (makbuz bu yanıtla `Completed`) — başarılı Release sayılmaz (D17/2).
   - **Gerçek dağıtım açıldığında** Release iki aşamalı olur ve kendi `PaymentReleaseIntent` yaşam döngüsünü (Pending /
     Dispatched / Refused / Unknown → Reconcile), sonuç olayını ve kurtarmasını o kararın paketinde alır; bu dilim bunu
     varsaymaz (Follow-up).
@@ -862,6 +878,12 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
   düşülmez.
 - **Release** → 200, `dispatchOutcome = NotConfigured`, `PaymentDispatchAttempt` yazılı, parti `Approved` kalır; bankaya
   ağ çağrısı yapılmaz.
+- **Port sözleşme ihlali** (sürüm, geçersiz istek, sözleşme dışı istisna) → 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`,
+  işlem geri alınır: deneme, sıra artışı, makbuz ve olay yok.
+- **Release sırasında iptal** → işlem geri alınır, kayıt yok; aynı anahtarla tekrar aynı `dispatchKey`'i üretir.
+- **Beklenmeyen bağdaştırıcı sonucu** (`Accepted` / `Rejected` / `Unknown`) → 502 `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`,
+  deneme alınan sonuçla kayıtlı, parti `Approved` + `ReleaseBlockedForReview`; sonraki Release 409
+  `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW`, port çağrılmaz (D17/2).
 
 ## Authorization Convention
 
@@ -1102,6 +1124,19 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   görevde başka bir kararın geçişi (farklı `RemoteIdempotencyKey`, görev ya da eylem) açık karar niyetini kapatmaz;
   (c) okuma yanıtı eşleme alanını (uzak anahtar; geçişte görev kimliği) taşımıyorsa niyet `Unknown` kalır. Sabotaj:
   eşleme yalnız nesne (parti) kimliğine indirildiğinde test kırmızıya döner.
+- [ ] AC-37 (zorunlu) — MOD-0269 sözleşme negatif testleri (gap 7/P2-b): `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` §5.1'deki her vaka
+  bağdaştırıcıda `BankDispatchContractException` ve Release'te 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` verir,
+  hiçbir deneme / makbuz / olay / sıra artışı kalmaz. Ayrıca: (a) iki kaynak hesaplı partide istekteki her talimat kendi
+  `SourceBankAccountRef`'ini taşır, birleştirme yok; (b) aynı istemci anahtarıyla tekrar portu çağırmaz ve
+  `ReleaseSequence`'i artırmaz; (c) işlem geri alındıktan sonra aynı anahtarla tekrar aynı `dispatchKey`'i üretir;
+  (d) iki eşzamanlı Release aynı sırayı alamaz (biri 409); (e) Release sırasında iptal hiçbir kayıt bırakmaz.
+  Sabotaj: `Guid.Empty` ya da toplam kontrolü kaldırıldığında ya da talimatlar parti hesabına indirildiğinde test
+  kırmızıya döner.
+- [ ] AC-38 (zorunlu) — Beklenmeyen bağdaştırıcı sonucu başarı sayılmaz (D17/2): sahte bağdaştırıcı `Accepted`,
+  `Rejected`, `Unknown` döndürdüğünde her biri için Release 502 `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`, deneme alınan
+  sonuçla kayıtlı, parti `Approved` ve `ReleaseBlockedForReview = true`, tek `…release-attempted` olayı sonucu taşır;
+  sonraki Release 409 `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW` ve port çağrı sayısı değişmez. Sabotaj: sonuç kontrolü
+  kaldırılıp her sonuç 200 sayıldığında test kırmızıya döner.
 
 ## Test Expectations
 
@@ -1252,6 +1287,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - MOD-0269 gerçek bağdaştırıcı, banka geri çağrısı, ekstre → ayrı karar ve paket (D5); o pakette Release iki aşamalı
   olur (`PaymentReleaseIntent`, belirsiz sonuç, Reconcile, sonuç olayı) ve gerçek dağıtım kapısı (hesap sahipliği,
   Tenant/LE, alacaklı eşleşmesi) kapanır.
+- `ReleaseBlockedForReview` kilidinin elle inceleme ve açma komutu (D17/2; izin, K2 ve denetim o kararla) — bu sürümde
+  kilit açılmaz.
 - CentralAudit reddedilen komut kaydı (`Outcome = Denied`) — BL-501 sahibine (G-AUD-1).
 - Yeniden başlatması engellenen (şirket uygun değil, SoD/izin reddi, aktör farklı) ve bu yüzden `Unknown` kalan niyetin
   kalıcı kapatılması için açık iptal yolu (gap 4/G2) — sahip kararıyla ayrı komut; bu sürümde niyet açık kalır.
@@ -1319,7 +1356,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
 - **DL-3** — Yollar: LinkEvidence, Attestation (v2), Release + `NotConfiguredBankDispatchAdapter`, R11 doğrulaması, K2 sabotaj
   testi, dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0269 sözleşmesine ve MOD-0031 davranış ölçümüne bağlı; DL-2'yi
   bekletmesin. Önkoşul: DL-2, MOD-0269 sözleşmesi (TRM-06), O-6, MOD-0031 dedupe ölçümü (yeniden çağrı için; ölçülmezse
-  kurtarmada yeniden çağrı yok, gap 5/G2). Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30, 33 (Release,
+  kurtarmada yeniden çağrı yok, gap 5/G2). Bitiş: AC-16 (kalan), 17 (sabotaj), 19, 30, 37, 38, 33 (Release,
   kanıt, onay belgesi kısmı).
 - **DL-4** — Yollar: `Views/FinanceTreasury/PaymentBatches/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API sözleşmesine
