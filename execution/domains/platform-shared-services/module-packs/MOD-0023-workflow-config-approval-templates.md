@@ -487,9 +487,9 @@ Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the M
 **Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9 and
 D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
 questions sent to the platform code owner). It does **not** change this pack's frontmatter/status and authorizes no code
-until it passes CT-APR-02 and CT-APR-01. TRM-15 is closed only when §17 is approved, AC-W1…W8 have **passed** (running
+until it passes CT-APR-02 and CT-APR-01. TRM-15 is closed only when §17 is approved, AC-W1…W12 have **passed** (running
 a test is not passing it), the Diten.Platform build is green and every AC-W3 consumer result is bound to that
-consumer owner's evidence. **If AC-W5…W8 fail against today's write path, §17 stays blocked**: §17 authorizes no
+consumer owner's evidence. **If AC-W5…W12 fail against today's write path, §17 stays blocked**: §17 authorizes no
 write-path change (owner decision D22/2); the needed fix is scoped in a separate §17 revision with its own approval,
 and the Treasury re-issue gate stays closed until then. Queue: `treasury-intake` TRM-15. The policy decisions
 below do not prove that today's code behaves this way; the ACs do.
@@ -591,14 +591,34 @@ route, permission or write-path change (D22/2) — if the race ACs fail, see the
   loser's own key afterwards returns the same 409 (never 200 for a decision that was not recorded).
   Sabotage for W5–W8: removing the post-conflict re-read or the (task, action, key) lookup turns them red.
 
+Sequential (non-concurrent) replay cases of the §17.3/4 table — separate from the race tests (gap 12):
+
+- AC-W9 — **Replay after a whole start, instance since closed:** start with key K, let the instance reach each terminal
+  state in turn (approved, rejected, cancelled by the user, closed by the abandoned-start recovery *after* it was whole);
+  replay K with the same facts and starter → **200**, the same instance id, its current status; no second instance; no
+  business refusal. Sabotage: answering a non-Active instance with 409 turns it red.
+- AC-W10 — **Replay of a recorded transition after the task moved on:** approve (and separately reject, request-info)
+  with key K; advance the instance (next step, or terminal); replay the same (task, action, K) → **200**, the same
+  transition (same `SequenceNo`), no new log row, no state change. Sabotage: re-evaluating the task's current state
+  before the (task, action, key) lookup turns it red.
+- AC-W11 — **Same key, different facts or a different starter:** replay K with (a) a different template, (b) a different
+  object id / ref, (c) a different candidate set (fingerprint), (d) another authenticated starter → each **409**
+  `WORKFLOW_INSTANCE_START_CONFLICT`; the first instance is unchanged and no second one exists. For transitions: the
+  same (task, action, K) with a different actor or reason → the defined conflict code measured at code time (no new row).
+- AC-W12 — **Never-whole start closed by recovery:** a start that wrote its instance but not its task, then closed by
+  `CloseAbandonedWorkflowStart` → replay K → **409** `WORKFLOW_INSTANCE_START_CONFLICT`; the recovery's close record for
+  that instance (transition log, key `workflow-start-recovery-close:{instanceId:N}`) is readable through `history`
+  with its `IdempotencyKey`, so a consumer can map the 409 to that close evidence (Treasury: `Cancelled` only with that
+  record; without it `Unknown`).
+
 ### 17.4a Treasury → MOD-0023 action matrix (gap 11/P2)
 
 | Treasury command | Packs | MOD-0023 endpoint | Action | Same-key replay AC | Race AC |
 |---|---|---|---|---|---|
-| Submit (start) | 0126, 0119, 0120, 0124 | `POST instances` | start | AC-W5 | AC-W5 |
-| Approve, ApproveWithSodWaiver (0126) | all four | `POST tasks/{taskId}/approve` | approve | AC-W6 | AC-W6, AC-W8 |
-| Reject | all four | `POST tasks/{taskId}/reject` | reject | AC-W7 | AC-W7, AC-W8 |
-| RequestEvidence (0126), RequestInfo (0119) | 0126, 0119 | `POST tasks/{taskId}/request-info` | request-info | AC-W7 | AC-W7 |
+| Submit (start) | 0126, 0119, 0120, 0124 | `POST instances` | start | AC-W9, W11, W12 | AC-W5 |
+| Approve, ApproveWithSodWaiver (0126) | all four | `POST tasks/{taskId}/approve` | approve | AC-W10, W11 | AC-W6, AC-W8 |
+| Reject | all four | `POST tasks/{taskId}/reject` | reject | AC-W10, W11 | AC-W7, AC-W8 |
+| RequestEvidence (0126), RequestInfo (0119) | 0126, 0119 | `POST tasks/{taskId}/request-info` | request-info | AC-W10, W11 | AC-W7 |
 | Escalate (0126) | — | **none** — no task-level endpoint (only `POST escalations/run`, an SLA job) | — | — | **removed from v1 (D22/1)** |
 | (no Treasury command) | — | `delegate`, `cancel` | — | not used by Treasury | — |
 

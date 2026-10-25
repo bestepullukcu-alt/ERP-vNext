@@ -738,20 +738,20 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      - **D21 bağı — yeniden yazma kapısının yeni hâli (sahip kararı D21, MOD-0023 pack §17 (TRM-15)):** yukarıdaki kapının iki
        koşulundan saklama politikası **KARAR D21/1** ile verildi (hiç silinmez, TTL yok) ve MOD-0023 AC-W1 (mimari test) geçince
        kapanır; silinmişi ayıran okuma koşulu **D21/2 ile kaldırıldı** — politika + AC-W1 onun yerine geçer. §17
-       onaylanıp AC-W1 geçince (ve AC-W5…W8 geçmişse, D22/2) 404 / boş okumada aynı deterministik anahtarla yeniden yazma açılır; yalnız asıl
+       onaylanıp AC-W1 geçince (ve AC-W5…W12 geçmişse, D22/2) 404 / boş okumada aynı deterministik anahtarla yeniden yazma açılır; yalnız asıl
        aktör (**KARAR D21/5**) ve şirket / SoD / izin yeniden kontrolüyle. Silinmiş kayıt yine de görülürse yeniden
        yazma yok, niyet `Unknown`. Eşleme alanları **KARAR D21/3** (§17.3/3) kodda olana kadar okuma niyeti kapatmaz.
      - **Aynı anahtarlı yarış yanıtı (KARAR D21/4, §17.3/4; DL-3 başı kanıt maddesi):** politika — eşzamanlı iki
        istekte son yanıtlar aynı kayıttır ve tek satır oluşur; ara 503 "aynı anahtarla tekrar" olabilir (→ `Unknown`,
        tekrar), 409 yalnız örnek Active'den çıktıysa. Kod okuması (@ef4f3a8bc) bu deseni gösteriyor
        (`StartWorkflowInstanceHandler.cs:300-330, 700-716`, `WorkflowTerminalTransitionWriter.cs:357-…`) ama eşzamanlı
-       aynı anahtar testi **ölçülmedi**; MOD-0023 AC-W5…W8 geçene kadar yinelenen anahtar hatası **`Unknown`** sayılır,
+       aynı anahtar testi **ölçülmedi**; MOD-0023 AC-W5…W12 geçene kadar yinelenen anahtar hatası **`Unknown`** sayılır,
        **asla `Refused`** değildir. `Refused` yalnız tx2 tablosundaki kesin iş reddi kodlarıdır (**KARAR D21/7**).
        Hedef yanıtlar MOD-0023 pack §17.3/4 tablosundadır (D22/3): bütünleşmiş başlatmanın ya da kaydedilmiş geçişin
        tekrarı, örnek sonradan kapansa da **200** ve aynı kayıt — yeni ret sayılmaz; hiç bütünleşmemiş ve kurtarmanın
        kapattığı başlatma 409 `WORKFLOW_INSTANCE_START_CONFLICT` → yalnız kurtarmanın kapanış kaydıyla `Cancelled`,
        yoksa `Unknown`; aynı göreve farklı karar çatışmasında kaybeden 409 `WORKFLOW_TASK_INVALID_STATE` → kaybeden
-       niyet tx2 eşlemesiyle `Refused` (kendi kararı kaydedilmedi). Kullanılan uzak eylemler: §17.4a matrisi. AC-W5…W8
+       niyet tx2 eşlemesiyle `Refused` (kendi kararı kaydedilmedi). Kullanılan uzak eylemler: §17.4a matrisi. AC-W5…W12
        bugünkü kodla geçmezse §17 bloke kalır ve yeniden yazma kapısı kapalı kalır (D22/2).
      - **MOD-0031 yeniden çağrılmaz:** AR MOD-0031'e yazmaz (yalnız bağlantı kimliğini doğrular); hiçbir kurtarma yolu
        MOD-0031'e yazma çağrısı yapmaz. İleride bir yazma eklenirse önce MOD-0031 dedupe ölçümü gerekir (Dependencies
@@ -1340,7 +1340,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] RCS-001 ortak kod servisi ve `ARI` öneki (O-6)
 - [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak)
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
-- [ ] MOD-0023 aynı anahtarlı yarış yanıtı (politika KARAR D21/4, D22/3) MOD-0023 pack §17 (TRM-15) AC-W5…W8 ile **geçti** — DL-3 için; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
+- [ ] MOD-0023 aynı anahtarlı yarış yanıtı (politika KARAR D21/4, D22/3) MOD-0023 pack §17 (TRM-15) AC-W5…W12 ile **geçti** — DL-3 için; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
 - [ ] Düzeltme politikası (O-7) ve muafiyet kararı (O-8 kalan kısmı; K2 kısmı D14/3 ile kapandı) — DL-3 için
 - [x] **O-9 — elle tahsilat bu sürümde mi: KARAR (D16)** — v1'de (DL-3, O-9a → D15/1), ödeme referansı iş tekilliği,
   mükerrer tahsilat kontrolü ve onaylı geri alma (karşı kayıt) ile; AC-33, AC-39, AC-40, AC-41

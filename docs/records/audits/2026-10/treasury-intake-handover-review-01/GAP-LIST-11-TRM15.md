@@ -23,3 +23,21 @@ Dört Treasury pack'i: yarış maddesi §17.3/4 ve §17.4a'ya bağlandı, kontro
 yazma kapısı "AC-W5…W8 geçmişse" koşulunu aldı. MOD-0126'da Escalate kaldırıldı (11 yer).
 
 Kontroller: dört pack 24 bölüm, AC'ler tekil, dilimler okunuyor. Belge incelemesidir; build / test / runtime yok.
+
+## Kapanış incelemesi ve gap 12 (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-TRM15-MOD0023-65ceb772f.zip` (sha256 `4cd7d2bdcc26ee3f9815879aa22fe17846ae141e788f983635ce00f73fe1981a`;
+manifest 7/7 geçti). Sonuç: **belge PASS**; TRM-15 geliştirme kapanışı koşullu. Sahip son 200 / geçici 503 / tanımlı 409
+ayrımını doğruladı — **D22/3 okuması bu incelemeyle onaylı sayılır.**
+
+Test iyileştirmesi (gap 12) — §17.3/4'ün sıralı tekrar davranışları ayrı AC oldu (yarış testlerinden ayrı):
+
+| AC | Vaka |
+|---|---|
+| AC-W9 | bütünleşmiş başlatma, örnek sonra kapandı → aynı anahtar tekrarı 200, aynı örnek |
+| AC-W10 | kayıtlı geçiş, görev ilerledi → aynı (görev, eylem, anahtar) tekrarı 200, aynı geçiş |
+| AC-W11 | aynı anahtar + farklı olgu / başlatan → tanımlı 409 `WORKFLOW_INSTANCE_START_CONFLICT`; geçişte tanımlı çakışma kodu |
+| AC-W12 | hiç bütünleşmemiş, kurtarmanın kapattığı başlatma → 409 + kapanış kaydı `history` üzerinden anahtarıyla eşlenir |
+
+§17.4a matrisinin "replay AC" sütunu W9–W11'e bağlandı; kapanış koşulu ve dört Treasury pack'i AC-W5…W12. Onay, build ve
+test kanıtları gelmeden TRM-15 kapatılmaz.
