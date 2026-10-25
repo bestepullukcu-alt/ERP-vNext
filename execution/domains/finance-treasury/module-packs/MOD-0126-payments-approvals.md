@@ -886,8 +886,11 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 - **İş akışı başlatma zaman aşımı / bağlantı kopması / boş 2xx** → 202 `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN`, niyet
   `Unknown`, parti `Submitted`; ret istisnası yazılmaz; ikinci Submit 409 `PAYMENT_WORKFLOW_START_PENDING`; Reconcile aynı
   anahtarla ilerler ve ikinci uzak örnek oluşmaz.
-- **İş akışı başlatma kesin reddi** (ör. 403 yetkisiz başlatma, 404 şablon yok) → 502 `PAYMENT_WORKFLOW_START_FAILED`,
+- **İş akışı başlatma kesin reddi** (ör. 400 doğrulama, 403 yetkisiz başlatma) → 502 `PAYMENT_WORKFLOW_START_FAILED`,
   niyet `Refused`, parti önceki durumuna döner.
+- **MOD-0023 başlatmada 404** (ör. şablon yok) → kesin ret **değildir** (D21/7): 202 `PAYMENT_WORKFLOW_START_OUTCOME_UNKNOWN`,
+  niyet `Unknown`, parti `Submitted` kalır (geri alınmaz), sonuç olayı yok; Reconcile okumasıyla kapanır ya da `Unknown`
+  kalır (AC-40).
 - **Idempotent tekrar, makbuz `Pending`** (iki aşamalı komut sonucu henüz yok / çökme) → 202 `PAYMENT_REQUEST_IN_PROGRESS`,
   kurtarma yapılmaz, uzak çağrı yok.
 - **Idempotent tekrar** — aynı anahtar + aynı yük (makbuz `Completed`): kayıtlı yanıt, ikinci kayıt/denetim olayı/uzak örnek yok; aynı anahtar +

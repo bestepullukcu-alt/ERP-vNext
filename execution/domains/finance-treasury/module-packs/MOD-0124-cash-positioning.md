@@ -1042,8 +1042,11 @@ yoktur (O-21).
 - **İş akışı başlatma zaman aşımı / bağlantı kopması / boş 2xx** → 202 `CASH_POSITION_WORKFLOW_START_OUTCOME_UNKNOWN`,
   niyet `Unknown`, `ApprovalStatus = Submitted`; ikinci Submit (farklı anahtar) 409 `CASH_POSITION_WORKFLOW_START_PENDING`;
   Reconcile aynı uzak anahtarla ilerler, ikinci örnek oluşmaz.
-- **İş akışı başlatma kesin reddi** (403 yetkisiz, 404 şablon yok) → 502 `CASH_POSITION_WORKFLOW_START_FAILED`, niyet
+- **İş akışı başlatma kesin reddi** (400 doğrulama, 403 yetkisiz) → 502 `CASH_POSITION_WORKFLOW_START_FAILED`, niyet
   `Refused`, `ApprovalStatus` önceki değerine döner.
+- **MOD-0023 başlatmada 404** (ör. şablon yok) → kesin ret **değildir** (D21/7): 202
+  `CASH_POSITION_WORKFLOW_START_OUTCOME_UNKNOWN`, niyet `Unknown`, `ApprovalStatus = Submitted` kalır (geri alınmaz), sonuç
+  olayı yok; Reconcile okumasıyla kapanır ya da `Unknown` kalır (AC-37).
 - **Mongo commit sonucu belirsiz** (`UnknownTransactionCommitResult`) → çakışma kodu verilmez; 503
   `CASH_POSITION_COMMIT_OUTCOME_UNKNOWN`; aynı anahtarla tekrar commit olduysa kayıtlı yanıtı, olmadıysa yeni çalışmayı
   verir; ikinci yayım / ikinci olay oluşmaz.

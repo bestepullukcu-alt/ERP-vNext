@@ -16,5 +16,13 @@ previous: GAP-LIST-13-MOD0289.md
 | 2 | P2 | D25 eski metinlere uygulanmamış ("silinmişi ayıran okuma gerekmez") | Dört pack'te bağımlılık satırı, yeniden yazma kapısı maddesi ve kontrol listesi D25/2'ye göre birleştirildi: silmeme politikası korunur, silinmiş kayıtlar `isDeleted` / `includeDeleted=true` ile de okunur, görülürse yeniden yazma yok (AC-W13). Kalan "AC-W…W12" atıfları W14'e güncellendi. |
 
 D26 tutar kuralında yeni açık yok (sahip). Procurement değişiklikleri ve çalışma zamanı testleri bu belgelerle doğrulanamaz.
-Kontroller: dört pack 24 bölüm, AC'ler tekil (MOD-0126 41 satır, MOD-0119 41, MOD-0120 43, MOD-0124 37), yeni AC'ler dilimlerinde
+Kontroller: dört pack 24 bölüm, AC'ler tekil (MOD-0126 40 numara + AC-6a = 41 satır, MOD-0119 41, MOD-0120 43, MOD-0124 37), yeni AC'ler dilimlerinde
 kapanıyor. Belge incelemesidir; build / test / runtime yok.
+
+## Gap 18 (2026-10-25, sahip — CONDITIONAL PASS)
+
+D25 hizalaması kapandı. 404 düzeltmesi kısmen kapanmıştı: Failure Path satırları hâlâ "404 şablon yok → kesin ret / 502"
+diyordu (MOD-0119 :959, MOD-0126 :889, MOD-0124 :1045). Üçü düzeltildi: kesin ret örnekleri 400 / 403; ayrı satır
+"MOD-0023 başlatmada 404 → kesin ret değildir: 202 `…_OUTCOME_UNKNOWN`, niyet `Unknown`, durum geri alınmaz, sonuç olayı
+yok" (yeni AC'lere bağlı). MOD-0120'de bu satır yoktu (ölçüldü). Kayıttaki MOD-0126 sayımı düzeltildi: 40 tekil AC numarası
+(+ AC-6a satırı).

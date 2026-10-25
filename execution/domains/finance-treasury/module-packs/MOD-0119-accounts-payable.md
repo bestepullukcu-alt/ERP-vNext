@@ -956,7 +956,10 @@ kontrolü procurement tarafında onaylandı (D26/3) — gelene kadar kural yaln�
 - **İş akışı başlatma zaman aşımı / bağlantı kopması / boş 2xx** → 202 `AP_WORKFLOW_START_OUTCOME_UNKNOWN`, niyet `Unknown`,
   fatura `ApprovalPending`/`Submitted`; ikinci Submit (farklı anahtar) 409 `AP_WORKFLOW_START_PENDING`; Reconcile aynı uzak
   anahtarla ilerler ve ikinci uzak örnek oluşmaz.
-- **İş akışı başlatma kesin reddi** (ör. 404 şablon yok) → 502 `AP_WORKFLOW_START_FAILED`, niyet `Refused`, fatura `Validated`.
+- **İş akışı başlatma kesin reddi** (ör. 400 doğrulama, 403 yetkisiz başlatma) → 502 `AP_WORKFLOW_START_FAILED`, niyet
+  `Refused`, fatura `Validated`.
+- **MOD-0023 başlatmada 404** (ör. şablon yok) → kesin ret **değildir** (D21/7): 202 `AP_WORKFLOW_START_OUTCOME_UNKNOWN`,
+  niyet `Unknown`, fatura durumu geri alınmaz, sonuç olayı yok; Reconcile okumasıyla kapanır ya da `Unknown` kalır (AC-41).
 - **MOD-0023 örneği başka yüzeyden iptal edildi** → Reconcile niyeti `Cancelled` yapar, fatura `Validated`; yeniden
   gönderme yeni sıra alır.
 - **Uzak başarı sonrası tx2 hatası / çökme** → niyet açık kalır; Reconcile uzak çağrıyı tekrarlamadan sonucu yazar.
