@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D22 (D16–D22: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D23 (D16–D23: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -164,6 +164,17 @@ Cihan'da kaldı. Bunlar **politika kararıdır**; MOD-0023 kodunun bugün böyle
    ara 503 "aynı anahtarla tekrar" son yanıt değildir; bütünleşmiş başlatmanın / kaydedilmiş geçişin tekrarı örnek
    sonradan kapansa da 200 ve aynı kayıttır; hiç bütünleşmemiş, kurtarmanın kapattığı başlatma ve aynı göreve farklı
    karar çatışması tanımlı 409'dur (MOD-0023 pack §17.3/4 tablosu). Sahip bu yorumu gap 11 kapanış incelemesinde onaylar.
+
+## D23 — MOD-0289 pack kararları (2026-10-25, soru kutusu; dördü de önerilen seçenek)
+
+1. **O-9 tedarikçi hesabı kapsamı:** "İlişkili şirketler" — liste, detay ve lookup yalnız tedarikçiyle aktif şirket ilişkisi
+   (MOD-0140 sözleşmesi) olan şirketin kullanıcısına; ilişkisiz kullanıcı 404. Maskesiz okuma ayrıca izin + ilişki ister.
+   `read-tenant-wide` izni tüm tedarikçi hesaplarını **maskeli** gösterir.
+2. **O-1 onay akışı:** "Hayır, dört göz" — v1'de MOD-0023 akışı yok; hesabı oluşturan ya da son güncelleyen etkinleştiremez.
+3. **O-2 şirket durumu:** "Aktif; etkinleştirmede +Onaylı" — oluşturmada şirket `Active`; etkinleştirmede ve lookup'ta
+   `Active` + `Approved` (D10/1 ile aynı çizgi).
+4. **O-3 maskesiz okuma:** "Ayrı izin + gerekçe" — `mdm.bank-accounts.read-unmasked`, yalnız açık atama (rol şablonunda
+   varsayılan değil), her okumada gerekçe kodu, değer dönmeden önce denetim kaydı.
 
 ## Karar olmayanlar
 
