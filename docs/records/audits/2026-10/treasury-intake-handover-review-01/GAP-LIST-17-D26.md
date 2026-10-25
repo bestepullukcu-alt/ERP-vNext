@@ -26,3 +26,10 @@ diyordu (MOD-0119 :959, MOD-0126 :889, MOD-0124 :1045). Üçü düzeltildi: kesi
 "MOD-0023 başlatmada 404 → kesin ret değildir: 202 `…_OUTCOME_UNKNOWN`, niyet `Unknown`, durum geri alınmaz, sonuç olayı
 yok" (yeni AC'lere bağlı). MOD-0120'de bu satır yoktu (ölçüldü). Kayıttaki MOD-0126 sayımı düzeltildi: 40 tekil AC numarası
 (+ AC-6a satırı).
+
+## Belge kapanışı (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-gap18-32c2e99ea.zip` (sha256 `1f944616108ad3ef4f139b2ed11ffe7603768bb65e4631effc6127c9a6b18a6b`;
+manifest 6/6 geçti). Sonuç: **PASS** — gap 17/18 belge düzeltmeleri kapandı; yeni belge açığı yok. Sahip kendi sayımını
+düzeltti: MOD-0126'da AC-1…40 + AC-6a = 41 tekil kabul ölçütü. Bu PASS geliştirme hazırlığı ya da çalışan kod onayı
+değildir; açık bağımlılıklar ve uygulama testleri ayrıca kapanır.
