@@ -88,7 +88,7 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 - **Sahip olunan sözleşme:** `PAYMENT-BATCH` (yeni, `docs/analysis/contracts/payment-batch.openapi.yaml`, x-owner
   MOD-0126) — kaynakta resmi sözleşme yok (paket §B "ABSENT"; level-1 koşul 5). Tek yazıcı MOD-0126 (K15).
 - **Tüketilen sözleşmeler:** MOD-0220 `lookup-validation` (+ TRM-14 `ApprovalStatus`), MOD-0023 iş akışı başlatma ve
-  görev geçişleri, MOD-0031 kanıt bağlantısı, MOD-0048 para birimi, MOD-0269 dağıtım arayüzü (taslak, TBD), Platform veri
+  görev geçişleri, MOD-0031 kanıt bağlantısı, MOD-0048 para birimi, MOD-0269 dağıtım arayüzü (BANK-DISPATCH 0.1.0 FROZEN, D27/7), Platform veri
   kapsamı (`IDataScopeResolver`, SEC-002 — D14/1).
 
 ## Owned Objects
@@ -222,7 +222,7 @@ yalnız tarihtir (`DateOnly`), saat dilimi çevrimi yapılmaz.
 | BatchCode | string | RCS-001 OTOMATİK `{ŞİRKET}-{TÜR}-{SAYAÇ}`; tür öneki önerisi `PAY` (O-9); kullanıcı giremez/değiştiremez; silinen partinin kodu yeniden kullanılmaz | kaynak `BatchNumber` istemciden de alınıyor (`PaymentProposalService.cs:126-128@da4abb20`) ve sayaç `CountAsync()+1` (`:471-475`) — taşınmaz |
 | SourceKind | enum `ManualTreasury`=1 | sunucu sabitler; `ApLinked` reddedilir | `:369-377@da4abb20` |
 | DefaultSourceBankAccountRef | Guid | zorunlu, boş olmayan; **opak** MOD-0289 referansı | `:384-387@da4abb20` |
-| PaymentMethod | string | zorunlu, trim, ≤ 32; değer listesi TBD (O-13) | `:389-398@da4abb20` |
+| PaymentMethod | string | zorunlu, trim, ≤ 32; değer MOD-0048 `payment-method` kümesinin **yayımlanmış ve aktif** bir `Code`'u (KARAR D28 / O-13; kural Validation Rules) | `:389-398@da4abb20` |
 | CurrencyCode | string(3) | zorunlu, ISO 4217, upper | `:400-405@da4abb20` |
 | TotalAmount | decimal | sunucu: talimatların toplamı; > 0 | `:130@da4abb20` |
 | PaymentCount | int | sunucu: talimat sayısı | — |
@@ -386,7 +386,8 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
   çağrısı yapılmaz, niyet `Unknown` kalır), `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` (500 — porttan
   `BankDispatchContractException` ya da sözleşme dışı istisna; işlem geri alınır), `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`
   (502 — `NotConfigured` dışı sonuç; deneme kaydedilir, parti kilitlenir, D17/2), `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW` (409 —
-  kilitli partide Release; port çağrılmaz), `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED` (409 — `ReleaseSequence` üst sınırda;
+  kilitli partide Release; port çağrılmaz), `PAYMENT_METHOD_NOT_ALLOWED` (422 — ödeme yöntemi MOD-0048 kümesinde yok ya da pasif), `PAYMENT_METHOD_SOURCE_UNAVAILABLE`
+  (503 — küme okunamıyor), `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED` (409 — `ReleaseSequence` üst sınırda;
   artırma ve port çağrısı yok). MOD-0269 eşlemesi: `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0) §5.
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
@@ -462,6 +463,7 @@ Bkz. "Dependencies".
 | MOD-0269 Banks/SWIFT/Payments Gateway | serbest bırakma portu | **yok** (0 dosya; karar 0.1 = A, D5) — sözleşme **dondu**: `docs/analysis/contracts/bank-dispatch.md` (BANK-DISPATCH FROZEN 0.1.0, `rail` yok — KARAR D27/7; TRM-06 kapandı) | `IBankDispatchPort` dondurulmuş sözleşmeye göre yazılır; bağdaştırıcı yalnız `NotConfigured` döner |
 | MOD-0289 Bank Master & Bank Account Registry | banka referansı çözümleme | kod yok; yerleşim MDM (D20/1), TRM-S3; okuma sözleşmesi **taslak**: `docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md` (BANK-ACCOUNT-LOOKUP 1.0.0 DRAFT, fikstürler F-E1…F-E9, F-503) | bu dilimde yalnız boş olmayan opak Guid; çözümleme dağıtım açılınca, sözleşme dondurulunca (follow-up) |
 | MOD-0048 Reference Data (para birimi) | kod listesi + küsurat hanesi | **kısmen** — `GET /api/lookups/reference/currencies` (`TenantReferenceLookupsController.cs:18,37-41`), `LookupOptionDto` küsurat hanesi taşımıyor (`LookupModels.cs:3-9`; liste `CultureInfo`'dan, `PlatformLookupProvider.cs:358`) | küsurat hanesi kaynağı **TBD** (O-11); yoksa oluşturma `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE` ile durur — sabit tablo uydurulmaz |
+| MOD-0048 Reference Data (`payment-method` kümesi, D28 / O-13) | ödeme yöntemi kod listesi | **uç var, küme yok** — `GET /api/lookups/reference-data/consumable-sets/{setCode}/published-values` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/ConsumableReferenceDataController.cs:25, 43-44@b9df4e281`; öğe `Code`, `Label`, `IsActive`, `BusinessReferenceDataStewardshipModels.cs:159-165`); izin listesi `BusinessReferenceData:ConsumableSets` (`services/Diten.Platform/src/Diten.Platform.API/appsettings.json:104`) `payment-method` içermiyor (ölçüldü @b9df4e281) | MOD-0048 sahibi kümeyi tanımlar, yayımlar ve izin listesine ekler (**açık üretici bağımlılığı**); gelene kadar Create 503 `PAYMENT_METHOD_SOURCE_UNAVAILABLE` — sabit liste uydurulmaz |
 | MOD-0031 Evidence Linking | kanıt bağlantısı | **var** — `api/v1/evidence` (`EvidenceLinksController.cs:19`) | DL-3; bağlama sözleşmesinin idempotency (dedupe) davranışı DL-3 başında ölçülür; ölçülene kadar hiçbir kurtarma yolu MOD-0031'i yeniden çağırmaz (gap 5/G2) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | yeni `finance-treasury.*` ad alanı kaydı (O-5); `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-19)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); dört Treasury paketi için tek karar (MOD-0120 O-14 ile aynı). `NoOp` kaydı yasak (kapsamı kapatır) |
@@ -816,7 +818,7 @@ Resources/Views/FinanceTreasury/PaymentBatches/    PaymentBatchesIndex.{en,tr,fr
 | X-Legal-Entity-Id | Evet | Guid; kiracıya ait; Active + Approved; okumada kullanıcının okuma kapsamında (kendi şirket yetkisi ya da `read-tenant-wide`, D14/1); **yazmada** hedef partinin şirketine eşit ve kullanıcının **kendi** şirket yetkisinde (yazma kapsamı — `read-tenant-wide` yazma yetkisi vermez, gap 4/G1); değilse 404 | — | `ILegalEntityEligibilityPort`, `IFinanceTreasuryDataScopeSource` (okuma / yazma kapsamı) |
 | Gövde/sorguda tenantId, legalEntityId | — | bulunursa 400 | — | middleware |
 | DefaultSourceBankAccountRef | Evet | Guid ≠ Empty | — | — |
-| PaymentMethod | Evet | trim, 1..32 | — | değer listesi O-13 |
+| PaymentMethod | Evet | trim, 1..32; MOD-0048 `payment-method` kümesinde yayımlanmış ve `IsActive = true` kod (büyük-küçük harf duyarlı) | — | MOD-0048 consumable set (D28 / O-13) |
 | CurrencyCode | Evet | `^[A-Z]{3}$` (upper normalize), MOD-0048 listesinde | — | `ICurrencyReferencePort` |
 | RequestedValueDate | Evet | `DateOnly`, default değil; geçmiş tarih O-12 | — | — |
 | RiskRating | Hayır | enum | — | — |
@@ -909,6 +911,11 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
 - **Idempotent tekrar** — aynı anahtar + aynı yük (makbuz `Completed`): kayıtlı yanıt, ikinci kayıt/denetim olayı/uzak örnek yok; aynı anahtar +
   farklı yük: 409 `PAYMENT_IDEMPOTENCY_CONFLICT`.
 - **Eksik alan** (PaymentMethod, CurrencyCode, talimat) → 400 + alan düzeyi resx iletisi; kayıt oluşmaz.
+- **PaymentMethod kümede yok ya da pasif** (D28 / O-13) → Create / Update / Validate / Submit 422 `PAYMENT_METHOD_NOT_ALLOWED`,
+  kayıt değişmez. Daha önce kaydedilmiş partide kod sonradan pasifleşirse Approve / Release etkilenmez (değer partide sabit);
+  yeniden Update / Submit yine kontrol eder.
+- **MOD-0048 kümesi okunamıyor** (5xx, zaman aşımı, ayrıştırılamayan gövde, küme yok / izin listesinde değil) → 503
+  `PAYMENT_METHOD_SOURCE_UNAVAILABLE`, yazma yok; serbest metne ya da gömülü listeye düşülmez.
 - **Hassasiyet aşımı** (ör. JPY'de küsurat) → 400; hane kaynağı yok → 503 `PAYMENT_CURRENCY_PRECISION_UNAVAILABLE`.
 - **Eşzamanlılık** (bayat `If-Match`) → 409 `PAYMENT_BATCH_VERSION_CONFLICT`, sessiz üzerine yazma yok.
 - **Yetkisiz aktör** (ilgili izin yok) → API 403; UI: kabuk içinde erişim açıklaması, düğme yok (UAS-001).
@@ -1165,9 +1172,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   görevde başka bir kararın geçişi (farklı `RemoteIdempotencyKey`, görev ya da eylem) açık karar niyetini kapatmaz;
   (c) okuma yanıtı eşleme alanını (uzak anahtar; geçişte görev kimliği) taşımıyorsa niyet `Unknown` kalır. Sabotaj:
   eşleme yalnız nesne (parti) kimliğine indirildiğinde test kırmızıya döner.
-- [ ] AC-37 (zorunlu) — MOD-0269 sözleşme negatif testleri (gap 7/P2-b): `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0) §5.1'deki her vaka
-  bağdaştırıcıda `BankDispatchContractException` ve Release'te 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` verir,
-  hiçbir deneme / makbuz / olay / sıra artışı kalmaz. Ayrıca: (a) iki kaynak hesaplı partide istekteki her talimat kendi
+- [ ] AC-37 (zorunlu) — MOD-0269 sözleşme negatif testleri (gap 7/P2-b): `docs/analysis/contracts/bank-dispatch.md` (FROZEN 0.1.0) §5.1 tablosundaki
+  katmanlar ayrı beklentilerle koşulur: (A) bağdaştırıcı doğrudan → `BankDispatchContractException`; (B1) API'den üretilebilen
+  bozuk veri → MOD-0126 doğrulaması porttan önce kendi 400 / 409 / 422 kodunu döner, port çağrısı yok; (B2) porta ulaşan
+  ihlal (bozuk istek kurucu) → 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`; A, B1 ve B2'de hiçbir deneme / makbuz /
+  olay / sıra artışı kalmaz. Ayrıca: (a) iki kaynak hesaplı partide istekteki her talimat kendi
   `SourceBankAccountRef`'ini taşır, birleştirme yok; (b) aynı istemci anahtarıyla tekrar portu çağırmaz ve
   `ReleaseSequence`'i artırmaz; (c) commit edilmiş makbuzun tekrarı aynı yanıtı ve aynı `dispatchKey`'i döner; geri
   alınan deneme hiçbir sıra / anahtar bırakmaz (geri alma sonrası `ReleaseSequence` önceki değerinde, deneme kaydı yok) ve
@@ -1195,6 +1204,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   MOD-0023 404 döndürdüğünde niyet **`Unknown`** kalır (`Refused` değil), iş kaydının durumu geri alınmaz (önceki duruma
   dönüş yok), yanıt 202 `…_OUTCOME_UNKNOWN`, sonuç olayı yok; ardından Reconcile okumasıyla kapanır ya da `Unknown`
   kalır. Sabotaj: 404 tx2'de kesin ret grubuna geri eklendiğinde test kırmızıya döner.
+- [ ] AC-41 (zorunlu) — Ödeme yöntemi (D28 / O-13, gap 19/2): sahte MOD-0048 kümesiyle (a) yayımlanmış aktif kod → Create
+  geçer; (b) kümede olmayan kod ve `IsActive = false` kod → 422 `PAYMENT_METHOD_NOT_ALLOWED`, kayıt yok; (c) küme 5xx / zaman
+  aşımı / ayrıştırılamayan gövde / küme bulunamadı → 503 `PAYMENT_METHOD_SOURCE_UNAVAILABLE`, kayıt yok; (d) partide kayıtlı
+  kod sonradan pasifleşince Approve ve Release etkilenmez, Update 422 döner; (e) karşılaştırma büyük-küçük harfe duyarlı.
+  Sabotaj: küme kontrolü kaldırılıp serbest metin kabul edildiğinde (b) kırmızıya döner. DL-1'de kapanır.
 
 ## Test Expectations
 
@@ -1267,6 +1281,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] MOD-0031 kanıt bağlama dedupe ölçümü — kurtarmada yeniden çağrıyı açmak için önkoşul (DL-3; ölçülmezse yeniden
   çağrı kapalı kalır, gap 5/G2)
 - [ ] Para birimi küsurat hanesi kaynağı (O-11) — DL-1 Create için
+- [ ] MOD-0048 `payment-method` kümesi tanımlı, yayımlanmış ve `ConsumableSets` izin listesinde (D28 / O-13; MOD-0048 sahibi) — DL-1 Create için
 
 ## Implementation Notes
 
@@ -1403,7 +1418,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   ve yazma kapsamıyla, ortak LE / para birimi / kod portları ve bağdaştırıcıları, CentralAudit kaydı — D14/1, D14/2; tek
   sahibi bu dilim, MOD-0119/0120/0124 DL-1'inin önkoşulu — gap 4/G5), `payment-batch.openapi.yaml`. **Neden denetim DL-1'de:** AUD-001 K4 — ileticisi olmayan serviste yeni yazma komutu
   yazılamaz; ilk komutla birlikte gelir. Önkoşul: Ready-for-dev engelleri (DCP, port, TRM-14, O-9, O-11, O-19, CT defter kararı; kod alma
-  D27/5 ile verildi). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
+  D27/5 ile verildi). Bitiş: AC-1, 2, 3, 39 (Create kısmı), 41, 16 (Create kısmı), 17, 18, 20, 21, 22, 23, 29, 32, 33 (Create / Update / Delete /
   Validate kısmı).
 - **DL-2** — Yollar: Submit, Reconcile, Approve/Reject/RequestEvidence/ApproveWithSodWaiver, SoD politika
   servisi ve tek eşik yapılandırması, MOD-0023 bağdaştırıcısı (zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç

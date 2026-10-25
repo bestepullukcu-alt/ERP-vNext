@@ -178,19 +178,28 @@ kararıdır (§6/2) ve talimat → hesap eşleşmesini değiştiremez.
 Geri alma durumlarında makbuz da işlemle birlikte geri alındığı için aynı istemci anahtarıyla tekrar baştan çalışır ve
 aynı deterministik hatayı üretir; 500 yanıtı makbuzda saklanmaz.
 
-### 5.1 Sözleşme negatif testleri (gap 7/P2-b; MOD-0126 AC-37; beklenmeyen sonuç AC-38)
+### 5.1 Sözleşme negatif testleri (gap 7/P2-b, gap 19/3; MOD-0126 AC-37; beklenmeyen sonuç AC-38)
 
-Bağdaştırıcı (doğrudan) ve Release (uçtan uca) için her biri ayrı vaka: `contractVersion` farklı; her `Guid` alanında
-`Guid.Empty` (tenantId, legalEntityId, paymentBatchId, requestedBy, instructionId, sourceBankAccountRef, verilmiş payeeRef
-ve destinationRef); `dispatchKey` desen dışı ya da parti/sıradan üretilenle farklı; `releaseSequence` 0 ve 1 000 000 000; boş ve 501
-talimat; yinelenen `instructionId`; `totalAmount` ≠ Σ `amount` (bir en küçük birim farkla); `amount` ölçeği >
-`currencyMinorUnits`; `amount` 0 ya da negatif; talimat para birimi farklı; `payeeType ≠ Other` ve `payeeRef` yok;
-`remittanceReference` 141 karakter ya da IBAN deseni; `correlationId` boş ya da 129 karakter; durum sorgusunda boş Guid,
-desen dışı anahtar ve farklı `contractVersion` (→ `…_VERSION_UNSUPPORTED`). Release'te `ReleaseSequence = 999 999 999`
-olan parti → 409 `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED`, port çağrısı ve kayıt yok. Beklenen: her vaka `BankDispatchContractException(BANK_DISPATCH_REQUEST_INVALID | …_VERSION_UNSUPPORTED)`;
-Release'te 500 ve hiçbir kalıcı kayıt. Ayrıca: iki kaynak hesaplı partide istekteki her talimat kendi hesabını taşır
-(birleştirme yok); `decidedAt` farklı iki çağrının diğer alanları aynıdır. Sabotaj: `Guid.Empty` ya da toplam kontrolü
-kaldırıldığında ilgili vaka kırmızıya döner.
+Vaka listesi: `contractVersion` farklı; her `Guid` alanında `Guid.Empty` (tenantId, legalEntityId, paymentBatchId,
+requestedBy, instructionId, sourceBankAccountRef, verilmiş payeeRef ve destinationRef); `dispatchKey` desen dışı ya da
+parti/sıradan üretilenle farklı; `releaseSequence` 0 ve 1 000 000 000; boş ve 501 talimat; yinelenen `instructionId`;
+`totalAmount` ≠ Σ `amount` (bir en küçük birim farkla); `amount` ölçeği > `currencyMinorUnits`; `amount` 0 ya da negatif;
+talimat para birimi farklı; `payeeType ≠ Other` ve `payeeRef` yok; `remittanceReference` 141 karakter ya da IBAN deseni;
+`correlationId` boş ya da 129 karakter; durum sorgusunda boş Guid, desen dışı anahtar ve farklı `contractVersion`.
+
+Aynı vakalar **üç ayrı test katmanında** ve ayrı beklenen sonuçlarla koşulur:
+
+| Katman | Nasıl | Beklenen |
+|---|---|---|
+| **A — doğrudan port** | bağdaştırıcı (`NotConfiguredBankDispatchAdapter`) her vakayla doğrudan çağrılır | `BankDispatchContractException(BANK_DISPATCH_REQUEST_INVALID)`; yalnız `contractVersion` vakasında `…_VERSION_UNSUPPORTED` (gönderim ve durum sorgusu aynı eşleme) |
+| **B1 — Release, tüketici doğrulaması** | API'den üretilebilen bozuk veri (ör. talimatta `SourceBankAccountRef = Guid.Empty`, para birimi farkı, ölçek aşımı, 501 talimat, eksik `payeeRef`) ile `POST …/release` | MOD-0126 doğrulaması **porttan önce** yakalar: kendi kodu (400 `PAYMENT_VALIDATION_FAILED` / 409 / 422, MOD-0126 Validation Rules); **port çağrısı yok**, deneme / makbuz `Completed` / olay / sıra artışı yok |
+| **B2 — Release, porta ulaşan ihlal** | API'den üretilemeyen vakalar (sunucu alanları: `tenantId`, `dispatchKey`, `correlationId`, `contractVersion`, toplam) — test, istek kurucuyu bozan sahte bir kurucuyla ya da doğrulamayı atlayan test çiftiyle porta bozuk istek gönderir | işlem geri alınır, **500** `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`; deneme / makbuz / olay / sıra artışı yok; 500 makbuzda saklanmaz |
+| **C — sıra tükenmesi** | `ReleaseSequence = 999 999 999` olan partide Release | **409** `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED`; **port çağrısı yok**, kayıt yok (istisna değildir, 500 değildir) |
+| **D — beklenmeyen sonuç** | sahte bağdaştırıcı `Accepted` / `Rejected` / `Unknown` döner | **502** `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`, deneme kaydı, parti kilidi (§4.8, MOD-0126 AC-38) |
+
+Ayrıca: iki kaynak hesaplı partide istekteki her talimat kendi hesabını taşır (birleştirme yok); `decidedAt` farklı iki
+çağrının diğer alanları aynıdır. Sabotaj: `Guid.Empty` ya da toplam kontrolü kaldırıldığında A kırmızıya döner; MOD-0126
+doğrulaması kaldırıldığında B1'deki vaka port çağrısına ulaşır ve test kırmızıya döner.
 
 ## 6. Gerçek gönderim kapısı (bu sözleşmenin 0.1'den sonraki sürümü için)
 
@@ -221,6 +230,8 @@ Gerçek bir bağdaştırıcı `IBankDispatchPort`'a ancak şunlar kapandığınd
 
 ## 8. Değişiklik geçmişi
 
+- 0.1.0 FROZEN, belge düzeltmesi (2026-10-25, gap 19/3) — §5.1 test beklentileri katmanlara ayrıldı (doğrudan port,
+  tüketici doğrulaması, porta ulaşan ihlal, sıra tükenmesi, beklenmeyen sonuç); arayüz değişmedi.
 - 0.1.0 FROZEN (2026-10-25) — taslak rev 3'ten; `rail` alanı çıkarıldı (D27/7), bankacılık sahibi K1 (D27/8).
 - 0.1.0 rev 3 (2026-10-25) — gap listesi 8: geri alınan deneme anahtar rezerve etmez (yalnız commit edilmiş makbuz
   yanıtı korur); `releaseSequence` 1..999 999 999 ve tükenmede kontrollü 409; durum sorgusunda sürüm hatası tek eşleme.
