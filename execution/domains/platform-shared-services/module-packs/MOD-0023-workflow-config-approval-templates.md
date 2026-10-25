@@ -487,7 +487,7 @@ Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the M
 **Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9 and
 D21/1–4 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, answered the
 questions sent to the platform code owner). It does **not** change this pack's frontmatter/status and authorizes no code
-until it passes CT-APR-02 and CT-APR-01. TRM-15 is closed only when §17 is approved, AC-W1…W12 have **passed** (running
+until it passes CT-APR-02 and CT-APR-01. **Read §17.7 first: the producer answer and D25 supersede earlier text where they conflict.** TRM-15 is closed only when §17 is approved, AC-W1…W14 have **passed** (running
 a test is not passing it), the Diten.Platform build is green and every AC-W3 consumer result is bound to that
 consumer owner's evidence. **If AC-W5…W12 fail against today's write path, §17 stays blocked**: §17 authorizes no
 write-path change (owner decision D22/2); the needed fix is scoped in a separate §17 revision with its own approval,
@@ -538,7 +538,8 @@ before it re-issues with the same key. Today neither is guaranteed by contract.
    tenant filter, same 404, same routes; nothing removed or renamed; property order is not part of the contract. The key
    is not a secret (deterministic for Treasury; caller-chosen otherwise) and is returned only to callers that may
    already view the instance.
-4. **Same-key answer (D21/4, clarified by D22/3) — target behaviour, measured against today's code:**
+4. **Same-key answer (D21/4, clarified by D22/3) — target behaviour, measured against today's code** (rows for a whole start
+   with different facts and for concurrent transitions are **corrected in §17.7/5**):
    | Case | Final answer (after any replay) | Today's code (@ef4f3a8bc, read, not run) |
    |---|---|---|
    | two concurrent starts, one key, same facts and starter | both **200**, same instance id; one instance row | re-read after write conflict (`StartWorkflowInstanceHandler.cs:300-330, 700-716`) |
@@ -635,3 +636,45 @@ Reads used by Reconcile: `GET instances/by-objects`, `GET instances/{id}`, `GET 
 
 Deleted-row reads; any write-path or index change; trusted service identity (MOD-0033-FU02); background reconciliation
 sweeper; changes to SoD, actor binding or permissions.
+
+### 17.7 Producer answer and owner decisions D25 (2026-10-25) — supersedes §17.1–17.6 where they conflict
+
+Source: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER-ANSWER-MOD0023-01.md` (platform code owner,
+measured at origin/main @05f311784, read-only, no tests run — producer's statement). Decisions: D25 in
+`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`.
+
+1. **Delivery (D25/1):** §17 is the specification for the **MOD-0023 owner's WP** (policy + guard, additive read fields,
+   fingerprint fix + race tests). The owner writes and merges the code. The §17 rule "no write-path change" (D22/2) does
+   not apply to that WP: the fingerprint fix is a write-path change made under the owner's own approval. Treasury slices
+   that use MOD-0023 (MOD-0126/0119 DL-2, MOD-0120/0124 DL-3) are not accepted before this WP is on main.
+2. **Retention (17.3/1, widened):** the policy covers `WorkflowInstance`, **`ApprovalTask`** and `WorkflowTransitionLog`:
+   never deleted, never expired; a change needs an owner decision and prior notice to consumers (Treasury). AC-W1 guards
+   all three.
+3. **Deleted flag (D25/2 — replaces 17.3/2):** `by-objects` and `history` return `isDeleted`; `by-objects` hides deleted rows
+   by default and returns them flagged with `includeDeleted=true`. Treasury Reconcile reads with `includeDeleted=true`; a
+   deleted row seen means no re-issue. New AC-W13: `includeDeleted` default unchanged for existing consumers; with
+   `includeDeleted=true` a soft-deleted row (test fixture) is returned with `isDeleted=true`.
+4. **Read fields (17.3/3, producer's list):** `by-objects` → `idempotencyKey`, `isDeleted`; `history` → `approvalTaskId`,
+   `idempotencyKey`, `isDeleted` (`action` already present). `instances/{id}` + `idempotencyKey` was not in the producer's
+   list — optional; Treasury does not depend on it (reads use `by-objects` and `history`).
+5. **Corrections to the 17.3/4 table (CT's earlier reading was wrong):**
+   - *Same key + different facts on a **whole** start:* today **200 + existing instance, facts not compared**
+     (`StartWorkflowInstanceHandler.cs:385-391`, producer). The `:419-438` comparison applies only to an **incomplete**
+     start. Target after the owner's fix: 409 `WORKFLOW_INSTANCE_START_CONFLICT`, plus an `idempotentReplay` flag on
+     replays. AC-W11 fails on today's code and passes only after the fix.
+   - *Concurrent identical starts:* loser gets the winner's 200, or a retryable **503 `WORKFLOW_TRANSITION_CONFLICT`** if the
+     winner is not whole yet (existing test `Parallel_submits_of_one_key_write_one_task_and_answer_200_or_a_retryable_503`).
+   - *Concurrent identical transitions:* the loser usually gets **409 `WORKFLOW_TRANSITION_CONFLICT`** (not 200); without a
+     transaction: 200 replay / 409 / 503 `WORKFLOW_TRANSACTION_UNAVAILABLE`. Sequential replay: 200 + `isIdempotent=true`
+     (`WorkflowTaskTransitionSupport.cs:1054-1084`). AC-W6/W7 are restated: one transition row; every final answer is
+     either 200 (same transition) or 409 `WORKFLOW_TRANSITION_CONFLICT` / 503, and a replay of the same key after the race
+     returns 200 `isIdempotent=true`.
+   - *Same key + different body on a transition (D25/3):* today only the actor is compared (403); target 409. New AC-W14
+     (sequential and concurrent).
+6. **Consumer rule (CT, applying D21/7):** for Treasury, 409 `WORKFLOW_TRANSITION_CONFLICT` and 503
+   `WORKFLOW_TRANSACTION_UNAVAILABLE` / `WORKFLOW_TRANSITION_CONFLICT` are **never a business refusal** → intent `Unknown`,
+   replay the same key or read. 409 `WORKFLOW_TASK_INVALID_STATE` (task decided by another decision, AC-W8) stays a definite
+   refusal of the loser's own intent. Never reuse a key for a different intent (producer's warning; Treasury keys are
+   deterministic per intent).
+
+TRM-15 closure now needs AC-W1…W14 passed in the MOD-0023 owner's WP, the Platform build green and consumer evidence.

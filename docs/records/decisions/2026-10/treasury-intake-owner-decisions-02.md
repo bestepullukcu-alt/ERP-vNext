@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D23 (D16–D23: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D25 (D16–D25: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -175,6 +175,45 @@ Cihan'da kaldı. Bunlar **politika kararıdır**; MOD-0023 kodunun bugün böyle
    `Active` + `Approved` (D10/1 ile aynı çizgi).
 4. **O-3 maskesiz okuma:** "Ayrı izin + gerekçe" — `mdm.bank-accounts.read-unmasked`, yalnız açık atama (rol şablonunda
    varsayılan değil), her okumada gerekçe kodu, değer dönmeden önce denetim kaydı.
+
+## D24 — MOD-0289 kalan açık kararlar (2026-10-25, soru kutusu; sekizi önerilen seçenek, O-10 sahibin kendi seçimi)
+
+1. **O-4 tedarikçi hesabı doğrulama kanıtı:** "Doğrulama kodu + dört göz" — etkinleştirmede zorunlu kod
+   (`CALLBACK_CONFIRMED` / `BANK_LETTER_ON_FILE` / `SUPPLIER_PORTAL_CONFIRMED`) ve farklı kişi; MOD-0031 kanıt bağlantısı
+   MOD-0269 gerçek gönderiminden önce zorunlu kapı.
+2. **O-5 denetim yolu:** "Güvenilir niyet yolu, K2" — MDM'in kapalı-başarısız `mdm-guvenilir-kaynak-niyeti` yolu genel
+   `MasterDataAuditOperation` ile genişletilir; hesap yazmaları ve maskesiz okuma K2. Defter belirteci CT kararı (ayrı).
+3. **O-6 tam tanımlayıcının saklanması:** "Uygulama düzeyi AES-GCM" — pack'teki tasarım (AES-256-GCM, rastgele 96-bit
+   nonce, AAD = kiracı + hesap + sürüm, sürümlü anahtar, ayrı sürümlü HMAC özet, anahtar seti fence'i) **sahip tarafından**
+   onaylandı. **Güvenlik onayı ve gerçek Mongo testleri ayrıca açıktır**; bu karar onları kapatmaz.
+4. **O-7 kayıt kodları:** "BNK / BAC, OTOMATİK" — banka `BNK` (grup öneki), hesap `BAC` (şirket hesabında şirket öneki,
+   tedarikçide grup öneki); şube kodu doğal anahtar. `.antigravity` satırı ayrı onaydır.
+5. **O-8 ülke kodu:** "Yalnız ISO biçim kontrolü" — ISO 3166-1 alfa-2 biçimi; MDM iş ülkesi kaynağı gelince bağlanır.
+6. **O-10 `AccountPurpose`:** "Kod listesi + kiracı ekler" (önerilen kapalı liste değil) — sabit çekirdek kodlar
+   (`OPERATING`, `PAYROLL`, `COLLECTION`, `TAX`, `SUPPLIER_PAYMENT`, `OTHER`) + kiracının ekleyebildiği ek amaçlar
+   (kiracı referans listesi, 7 dilde etiket).
+7. **O-11 Bankalar ekranı:** "Compact" — Details'ta şube alt tablosu.
+8. **O-12 küsurat hanesi:** "MOD-0048" — MOD-0289 yalnız ISO kodu saklar ve MOD-0048 listesinde olduğunu doğrular.
+9. **Kiracısız anahtar seti hedef kaydının denetimi:** "Yerel geçmiş + kiracı fence kaydı" — hedef kaydın ekleme-yalnız
+   geçmişi ve her kiracının fence oluşturma / ilerletme denetim kaydı hedef sürümünü, revizyonu ve `ApprovalRef`'i taşır;
+   başka modül değişmez; merkezi kiracısız kayıt Follow-up.
+
+## D25 — MOD-0023 üretici cevabına göre (2026-10-25, soru kutusu; üçü de önerilen seçenek)
+
+Kaynak: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER-ANSWER-MOD0023-01.md`.
+
+1. **§17 teslimi:** "MOD-0023 sahibinin WP'si" — MOD-0023 pack §17 (TRM-15) MOD-0023 sahibinin WP'sinin şartnamesidir;
+   kodu (silmeme politikası + guard, eklemeli okuma alanları, fingerprint düzeltmesi + yarış testleri) sahip yazar ve merge
+   eder. D22/2'deki "§17 yazma yolu değişikliğine izin vermez" kuralı bu WP için geçmez: fingerprint düzeltmesi sahibin
+   WP'sinde, kendi onayıyla yapılır. Treasury DL-2 / DL-3 (MOD-0023 kullanan dilimler) bu WP main'e girmeden kabul edilmez.
+2. **`isDeleted` okuma alanı:** "Evet, kabul" — by-objects ve history `isDeleted` döner (by-objects'te `includeDeleted=true`);
+   D21/2 ("gerekmez") bununla genişler; Treasury Reconcile `includeDeleted=true` ile okur, silinmiş kayıt görülürse
+   yeniden yazmaz.
+3. **Geçişte gövde farkı:** "Evet, fark → 409" — aynı anahtar + farklı gövde geçişte de 409; yanıtta `isIdempotent` /
+   `idempotentReplay` bayrağı.
+
+CT uygulaması (karar değil, D21/7'nin uygulaması): eşzamanlı aynı anahtarlı geçişte 409 `WORKFLOW_TRANSITION_CONFLICT` ve
+503 `WORKFLOW_TRANSACTION_UNAVAILABLE` Treasury'de kesin ret değildir → `Unknown`.
 
 ## Karar olmayanlar
 
