@@ -879,3 +879,71 @@ amendment; gateway changes; live acceptance; and any runtime/test/build/Mongo/Gi
 A1a implementation/evidence is complete, subject to the stated parent-referenceability limitation. A1b has no
 code-start until its producer/transport, durable outcome/audit and startup-migration writer decisions are explicitly
 approved. No `ready-for-dev`, all-writer-fence, Production or live-acceptance claim is granted.
+
+## 22. TRM-14 — additive `approvalStatus` on the lookup / validation contract (proposal, not approved)
+
+**Status of this amendment:** `proposed` — authored by the Treasury Intake Control Tower under owner decisions D9
+and D10/2 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`; the repository owner, K1, took the
+MDM domain owner's decision for this change). It does **not** change this pack's frontmatter/status and authorizes no
+code until it passes CT-APR-02 (independent review) and CT-APR-01 (approval rows bound to this pack's hash). Contract:
+[`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md`](../../../../docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md)
+(LEGAL-ENTITY-LOOKUP 1.1.0). Queue: `treasury-intake` TRM-14.
+
+### 22.1 Why
+
+Treasury (MOD-0126, MOD-0119, MOD-0120, MOD-0124) may move money only for a legal entity that is **Active and
+Approved** (D10/1, D14/4). The current contract returns only `lifecycleState` (from `OperationalStatus`) and
+`referenceable`; `ApprovalStatus` exists on the entity (`LegalEntity.cs:50@03fb1257c`) but is not exposed. A second
+read path or a copy in Treasury would duplicate MDM state; one additive field is the smallest change (D9).
+
+### 22.2 Current code truth (@03fb1257c; MdmService identical to origin/main, last change e87fa5a4)
+
+- Endpoint `GET /api/legal-entities/{id}/lookup-validation`, `[HasPermission("mdm.legal-entities.read")]`
+  (`LegalEntitiesController.cs:48-54`).
+- Handler returns 404 when the entity is missing or `OperationalStatus != Active`
+  (`ValidateLegalEntityReferenceHandler.cs:19-25`); tenant and soft-delete filters in the repository
+  (`LegalEntityRepository.cs:22, 41-43`).
+- Response `LegalEntityLookupDto(LegalEntityId, Code, LegalName, DisplayName, LifecycleState, Referenceable)`
+  (`LegalEntityModels.cs:100-106`), single mapping `ToLookupDto` (`:238-245`), also used by `GET /api/legal-entities/lookup`.
+- Drift noted, not fixed here: §4/§12 of this pack still say `LifecycleStatus` / `Status == ACTIVE`; code uses
+  `OperationalStatus` (six values) plus a separate `ApprovalStatus` (four values).
+
+### 22.3 Change (additive only)
+
+1. Append `string ApprovalStatus` as the **last** positional member of `LegalEntityLookupDto`; map it in `ToLookupDto` as
+   `e.ApprovalStatus.ToString().ToUpperInvariant()` (`DRAFT` | `SUBMITTED` | `APPROVED` | `REJECTED`).
+2. No other change: 404 decision, `Referenceable`, `LifecycleState`, route, permission, gateway, index, schema and
+   collection unchanged. `ApprovalStatus` never takes part in the 404 decision or in `Referenceable`.
+3. The `/lookup` list gains the same field through the shared mapping (no second DTO).
+
+Allowed paths: `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs`
+and `services/Diten.MdmService/tests/**`. Nothing else in MdmService; no other service.
+
+### 22.4 Acceptance criteria (defined — not implemented, not run)
+
+- AC-T1 — `lookup-validation` for an Active entity returns `approvalStatus` equal to the entity's `ApprovalStatus`
+  in upper case, for each of the four values (theory test).
+- AC-T2 — 404 unchanged: missing, soft-deleted, other-tenant and every non-Active `OperationalStatus` (Draft, InReview,
+  Approved, Suspended, Archived) still return 404 with the same body, **including** when `ApprovalStatus = Approved`;
+  an Active entity with `ApprovalStatus = Rejected` still returns 200 with `referenceable = true`. Sabotage: if the
+  handler is changed to use `ApprovalStatus` in the 404 decision, the test turns red.
+- AC-T3 — Contract shape: the 200 JSON keeps the six existing property names and types and adds exactly one,
+  `approvalStatus` (serialized-shape test against `LegalEntityLookupDto`); `/lookup` list items carry the same seven.
+- AC-T4 — Existing consumers unaffected: the existing MdmService tests and the consumer parsers' own tests
+  (Manufacturing `MdmLegalEntityReferenceValidatorTests`, SupplyChain `LegalEntityScopeValidatorTests`, Planning
+  `MrpUpstreamReaderTests` / `LiveHistoryImportReferencesTests`, Web `CompanySelectionTests`) pass unchanged, run
+  against a body that includes `approvalStatus`. CRM `MdmCyclePeriodLegalEntityValidator` has no parser test
+  (measured: no test file references it); its typed `System.Text.Json` read ignores unknown members by default. Adding a
+  CRM test is another service (XMC-001) and is listed as a follow-up, not done here.
+
+### 22.5 Delivery
+
+- Code lands **together with MOD-0126 DL-1** (first Treasury consumer), as a separate commit inside the MdmService
+  allowed paths above; XMC-001 consent is D9 and must be restated in that WP prompt.
+- Treasury side (not this pack): `ILegalEntityEligibilityPort` treats a 200 without `approvalStatus` as unavailable
+  (503, fail-closed), never as approved.
+
+### 22.6 Out of scope
+
+Rejecting unapproved entities inside MOD-0220; any change to the 404 rule (that would be a major contract version);
+fixing the §4/§12 status-name drift; frontend; gateway; new permission; any other MDM field.

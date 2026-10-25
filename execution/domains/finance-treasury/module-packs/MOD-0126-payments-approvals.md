@@ -509,6 +509,10 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 - **Ödeyen şirket uygunluğu güncel durumdur, kayıt anındaki kopya değildir (TP-001 T14):** Create, Submit, her karar ve
   Release'te MOD-0220 `lookup-validation` çağrılır; `OperationalStatus = Active` **ve** `ApprovalStatus = Approved` değilse
   `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE` (422); MOD-0220 yanıt vermezse `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (503) — geçiş yok.
+  Sözleşme: LEGAL-ENTITY-LOOKUP 1.1.0 (`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md`,
+  MOD-0220 pack §22, TRM-14). Eşleme: 200 + `approvalStatus = APPROVED` → uygun; 200 + başka değer ya da 404 → 422
+  `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`; 200 ama `approvalStatus` alanı yok (eski MdmService), 5xx, zaman aşımı → 503
+  `PAYMENT_LEGAL_ENTITY_UNAVAILABLE` (kapalı-güvenli: alan yokluğu asla "onaylı" sayılmaz).
   **Reconcile bu kuraldan muaftır** (sahip kararı D15/2): yeni işlem başlatmaz, daha önce kontrol edilip başlatılmış
   işlemin uzak sonucunu kaydeder; şirket arada pasifleşse de niyet kapanabilmelidir. **Muafiyetin sınırı (gap 4/G2, D15/2
   metniyle tutarlı — muafiyet "yeni işlem başlatmayan" kayda dayanır):** muafiyet yalnız Reconcile'ın uzakta **var olan**
