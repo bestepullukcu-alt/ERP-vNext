@@ -1153,7 +1153,9 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   tutarlı 200 + `APPROVED` → işlem sürer; tutarlı 200 + `DRAFT` / `SUBMITTED` / `REJECTED` ve 404 → 422
   `PAYMENT_LEGAL_ENTITY_NOT_ELIGIBLE`; `approvalStatus` yok / `null` / `""` / `"approved"` (küçük harf) / `"UNKNOWN"`,
   `legalEntityId` yok ya da farklı, `referenceable = false`, `lifecycleState = SUSPENDED`, ayrıştırılamayan gövde, 403, 500
-  ve zaman aşımı → 503 `PAYMENT_LEGAL_ENTITY_UNAVAILABLE`; hiçbir vakada kayıt yazılmaz ve uzak çağrı yapılmaz.
+  ve zaman aşımı → 503 `PAYMENT_LEGAL_ENTITY_UNAVAILABLE`; **reddedilen (422) ya da geçersiz / erişilemeyen (503)
+  yanıt vakalarında** iş kaydı, makbuz `Completed` ve uzak yazma / başlatma çağrısı oluşmaz (MOD-0023 ve diğer uzak
+  okumalara izin vardır; Reconcile'ın uzak okuması bu yasağa girmez). Pozitif vaka (`APPROVED`) normal akışla sürer.
   Reconcile: var olan uzak sonucu kaydetme yolu şirket `REJECTED` iken de kapanır; aynı anahtarla yeniden yazma yolu
   aynı yanıtla 422, uzak çağrı yok. Sabotaj: `approvalStatus` kontrolü "alan yoksa onaylı" yapıldığında ya da kimlik
   karşılaştırması kaldırıldığında test kırmızıya döner. DL-1'de kapanır (Reconcile kısmı DL-2).

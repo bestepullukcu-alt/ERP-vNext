@@ -23,3 +23,16 @@ kapanmış sayılmaz (§22 başlığına yazıldı).
 
 Kontroller: MOD-0126 pack 24 bölüm, 40 AC satırı (AC-6a dahil), mükerrer yok, dilimler okunuyor. Belge incelemesidir;
 build / test / runtime yok.
+
+## Gap listesi 10 — kapanış incelemesi (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-TRM14-MOD0220-1adad61f4.zip` (sha256 `1fb4bb1350dfa9e23dee0135d32b82d85074c7542590bc582984497715949bed`;
+manifest 5/5 geçti). Sonuç: **CONDITIONAL PASS** — gap 9 tasarım düzeyinde kapandı; iki ifade düzeltmesi:
+
+| # | Gap | Kapanış |
+|---|---|---|
+| 1 | MOD-0126 AC-39: pozitif `APPROVED` vakası varken "hiçbir vakada kayıt yazılmaz" | Daraltıldı: kayıt / makbuz `Completed` / uzak yazma-başlatma yasağı yalnız reddedilen (422) ve geçersiz / erişilemeyen (503) vakalarda; uzak okumalara (Reconcile dahil) izin korunur; pozitif vaka normal akışla sürer. |
+| 2 | TRM-14 kapanış koşulu "AC-T1…T5 çalışmış olmalı" | "AC-T1…T5 **geçmiş** olmalı (çalıştırmak geçmek değildir); MdmService build yeşil; AC-T4 tüketici sonuçları servis sahiplerinin kanıtına bağlı" — MOD-0220 §22 başlığı, sözleşme `x-status` (rev 3) ve kuyruk TRM-14 satırı. |
+
+Sahibin notu: bu iki düzeltmeden sonra belge kapanışı PASS verilebilir; §22 onayı, MdmService build'i ve tüketici testleri
+tamamlanmadan TRM-14 geliştirme koşulu kapanmış sayılmaz.

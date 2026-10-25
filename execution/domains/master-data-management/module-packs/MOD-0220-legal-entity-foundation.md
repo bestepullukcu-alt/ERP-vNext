@@ -888,7 +888,9 @@ MDM domain owner's decision for this change). It does **not** change this pack's
 code until it passes CT-APR-02 (independent review) and CT-APR-01 (approval rows bound to this pack's hash). Contract:
 [`docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md`](../../../../docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md)
 (LEGAL-ENTITY-LOOKUP 1.1.0, rev 2). Queue: `treasury-intake` TRM-14. This pack's existing `ready-for-dev` status covers
-the earlier slices only and does **not** approve §22; TRM-14 is not closed until §22 is approved and AC-T1…T5 have run.
+the earlier slices only and does **not** approve §22; TRM-14 is not closed until §22 is approved, AC-T1…T5 have **passed** (running a test is not passing
+it), the MdmService build is green (AC-T5) and every AC-T4 consumer result is bound to that service owner's evidence
+(§22.6a).
 
 ### 22.1 Why
 

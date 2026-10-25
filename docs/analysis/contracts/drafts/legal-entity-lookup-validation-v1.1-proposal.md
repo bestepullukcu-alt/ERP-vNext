@@ -2,8 +2,9 @@
 
     contract       : LEGAL-ENTITY-LOOKUP
     version        : 1.1.0 (önceki: 1.0.0 — yazılı sözleşme belgesi yoktu; MOD-0220 pack §12 "OD-MDM-le-contract" ve kod)
-    x-status       : DRAFT (rev 2, gap listesi 9 uygulandı) — öneri; MOD-0220 pack §22 (TRM-14) CT-APR-02 / CT-APR-01'den
-                     geçmeden ve §22 AC'leri çalışmadan dondurulmaz; TRM-14 kapanmış sayılmaz
+    x-status       : DRAFT (rev 3, gap listeleri 9–10 uygulandı) — öneri; MOD-0220 pack §22 (TRM-14) CT-APR-02 / CT-APR-01'den
+                     geçmeden ve §22 AC-T1…T5 **geçmeden** (çalıştırmak geçmek değildir; AC-T4 tüketici sonuçları sahiplerinin
+                     kanıtına bağlı) dondurulmaz; TRM-14 kapanmış sayılmaz
     x-owner        : MOD-0220 Corporate Secretarial / Entity Management (master-data-management, Diten.MdmService)
     x-consumers    : mevcut — §3 tablosu (9 servis + Web, 13 okuma noktası); yeni — Diten.FinanceTreasuryService
                      (MOD-0126, MOD-0119, MOD-0120, MOD-0124)
@@ -124,6 +125,8 @@ yanıtı okuyan bir tipte yok. Bu bir **beklentidir, kanıt değildir**.
 
 ## 6. Değişiklik geçmişi
 
+- 1.1.0 rev 3 (2026-10-25) — gap listesi 10: kapanış koşulu "AC'ler geçmiş, AC-T4 sahip kanıtına bağlı"; MOD-0126 AC-39
+  kayıt yasağı yalnız reddedilen / geçersiz yanıt vakalarına daraltıldı.
 - 1.1.0 rev 2 (2026-10-25) — gap listesi 9: Reconcile muafiyeti yalnız var olan sonucu kaydetmeyle sınırlandı; geçersiz /
   çelişkili yanıt (503) ve tanımlı onaysız durum (422) tablosu; JSON ve kod uyumluluğu ayrıldı, özellik sırası şart değil,
   DTO oluşturma noktaları ölçüldü; tüketici taraması 7'den 13 noktaya genişletildi ve hepsi "beklenen uyumluluk, test
