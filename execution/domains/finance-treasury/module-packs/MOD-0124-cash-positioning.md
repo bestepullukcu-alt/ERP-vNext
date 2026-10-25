@@ -1567,27 +1567,27 @@ Borçlu taraf her yuvada sahip (K1), tüketicinin sahibi adlandırılana kadar (
 
 | # | Karar | Seçenekler | Öneri | Sahibi |
 |---|---|---|---|---|
-| O-1 | v1 pozisyon kaynağı | (a) elle bilinen bakiye (b) kapılar açılana kadar bekle | **(a)** — üç kapıdan bağımsız, kanıtla desteklenir | sahip (K1) |
+| O-1 | v1 pozisyon kaynağı | (a) elle bilinen bakiye (b) kapılar açılana kadar bekle | **KARAR D28 (2026-10-25): öneri kabul** — **(a)** — üç kapıdan bağımsız, kanıtla desteklenir | sahip (K1) |
 | O-2 | MOD-0003 (karar 0.3) | tam modül / süreli sapma (T32) + dondurulmuş sözleşme | **KARAR D27/1 (2026-10-25): süreli sapma (T32)**, `cash-position.openapi.yaml`; bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu | sahip (K1) |
-| O-3 | MOD-0037 Blueprint kapısı v1'de tüketilmeden başlanabilir mi | (a) evet, içe aktarmayla birlikte tüketilir (b) MOD-0037 uygulanana kadar bekle | **(a)** — v1 dış kaynak sağlığı üretmez; ölçüm: paket var, uygulama yok | sahip (K1) + platform-shared-services |
-| O-4 | Onay yolu | (a) MOD-0023 iş akışı (b) yerel maker-checker | **(a)** — domain-config SoD kuralı | sahip (K1) |
-| O-5 | Grup (çoklu LE) konsolidasyonu | v1 LE başına / LE↔LE modeli ile grup görünümü | **v1 LE başına**; model D9 gereği eklenmedi, kaynakta da yok | sahip (K1) + MDM |
-| O-6 | MOD-0126 onaylı partileri taahhütlü çıkış olarak gösterme | v1 / sonra | **sonra** — partiler bankaya gitmiyor (D5), bakiyeyi değiştirmez; PAYMENT-BATCH sözleşmesi dondurulunca | sahip (K1) |
-| O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
+| O-3 | MOD-0037 Blueprint kapısı v1'de tüketilmeden başlanabilir mi | (a) evet, içe aktarmayla birlikte tüketilir (b) MOD-0037 uygulanana kadar bekle | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi açık** — **(a)** — v1 dış kaynak sağlığı üretmez; ölçüm: paket var, uygulama yok | sahip (K1) + platform-shared-services |
+| O-4 | Onay yolu | (a) MOD-0023 iş akışı (b) yerel maker-checker | **KARAR D28 (2026-10-25): öneri kabul** — **(a)** — domain-config SoD kuralı | sahip (K1) |
+| O-5 | Grup (çoklu LE) konsolidasyonu | v1 LE başına / LE↔LE modeli ile grup görünümü | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — **v1 LE başına**; model D9 gereği eklenmedi, kaynakta da yok | sahip (K1) + MDM |
+| O-6 | MOD-0126 onaylı partileri taahhütlü çıkış olarak gösterme | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — partiler bankaya gitmiyor (D5), bakiyeyi değiştirmez; PAYMENT-BATCH sözleşmesi dondurulunca | sahip (K1) |
+| O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0048 sahibi teyidi açık** — v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
 | O-8 | Para birimi küsurat hanesi kaynağı | MOD-0048 eklemeli alan / başka | MOD-0048'e eklemeli alan (D9) — MOD-0126 O-11 ile ortak, **TBD** | MOD-0048 sahibi |
-| O-9 | RCS-001: `CPS` (anlık görüntü) ve `CTP` (eşik politikası) önekleri, şirket kısa kodu, ortak servis | — | `CPS`, `CTP` (§3 tablosunda çakışma yok, ölçüldü; aynı dalda yazılan MOD-0119/0120 önerileriyle çakışma CT'de kontrol edilir); servis BL-565 | sahip + CT (`.antigravity` onayı) |
-| O-10 | Raporlama saat dilimi ve değer tarihi kuralı (gelecek tarih) | LE alanı (MOD-0220 eki) / kiracı ayarı / yok | v1 çevrim yok; gelecek tarihli `ValueDate` reddi; alan gerekiyorsa MOD-0220'ye eklemeli öneri | sahip + MDM |
-| O-11 | Nakit kategori ana verisi + atama kuralları (CP-13…CP-18) | v1 / içe aktarmayla | **içe aktarmayla**; v1 kaynak enum `CashCategoryType` | sahip (K1) |
-| O-12 | Eşik politikası kapsamı | kaynak (kiracı geneli, para birimsiz, `IsDefault`) / LE + para birimi zorunlu | **LE + para birimi zorunlu**, varsayılan politika yok | sahip (K1) |
-| O-13 | Engelleyici istisnanın atanması / muafiyeti | v1 / sonra | **sonra** — kaynakta da komut yok; v1'de düzeltip yeniden mutabakat | sahip (K1) |
-| O-14 | Yayım olayı (`…published.v1`) | olay + tüketici sözleşmesi / okuma ucu | **v1 okuma ucu** (`current`); olay tüketici onayıyla | sahip + tüketiciler |
-| O-15 | MOD-0289 gelene kadar banka referansı girişi | opak referans / DL-5'i beklet | opak referans alanı (MOD-0126 O-15 ile aynı) | sahip (K1) |
+| O-9 | RCS-001: `CPS` (anlık görüntü) ve `CTP` (eşik politikası) önekleri, şirket kısa kodu, ortak servis | — | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı yaması hazır, uygulama ayrı onay — `CPS`, `CTP` (§3 tablosunda çakışma yok, ölçüldü; aynı dalda yazılan MOD-0119/0120 önerileriyle çakışma CT'de kontrol edilir); servis BL-565 | sahip + CT (`.antigravity` onayı) |
+| O-10 | Raporlama saat dilimi ve değer tarihi kuralı (gelecek tarih) | LE alanı (MOD-0220 eki) / kiracı ayarı / yok | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — v1 çevrim yok; gelecek tarihli `ValueDate` reddi; alan gerekiyorsa MOD-0220'ye eklemeli öneri | sahip + MDM |
+| O-11 | Nakit kategori ana verisi + atama kuralları (CP-13…CP-18) | v1 / içe aktarmayla | **KARAR D28 (2026-10-25): öneri kabul** — **içe aktarmayla**; v1 kaynak enum `CashCategoryType` | sahip (K1) |
+| O-12 | Eşik politikası kapsamı | kaynak (kiracı geneli, para birimsiz, `IsDefault`) / LE + para birimi zorunlu | **KARAR D28 (2026-10-25): öneri kabul** — **LE + para birimi zorunlu**, varsayılan politika yok | sahip (K1) |
+| O-13 | Engelleyici istisnanın atanması / muafiyeti | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — kaynakta da komut yok; v1'de düzeltip yeniden mutabakat | sahip (K1) |
+| O-14 | Yayım olayı (`…published.v1`) | olay + tüketici sözleşmesi / okuma ucu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; tüketiciler teyidi açık** — **v1 okuma ucu** (`current`); olay tüketici onayıyla | sahip + tüketiciler |
+| O-15 | MOD-0289 gelene kadar banka referansı girişi | opak referans / DL-5'i beklet | **KARAR D28 (2026-10-25): öneri kabul** — opak referans alanı (MOD-0126 O-15 ile aynı) | sahip (K1) |
 | O-16 | D10/1 (Active + Approved) MOD-0124'e uygulanır mı | evet / yalnız Active | **KARAR (D14/4): evet, yazma işlemlerinde** — nakit pozisyonu oluşturan/değiştiren her yazma komutu (iki kurtarma komutu hariç); okumalar etkilenmez | sahip (K1) |
-| O-17 | Kanıt dışa aktarımı v1'de mi; yayımı engellesin mi | DL-4 ayrı komut / yok / yayımı engelleyen zorunlu mod | **DL-4 ayrı komut, yayımı engellemez**; MOD-0031 idempotency ölçümüne bağlı | sahip + platform-shared-services |
-| O-18 | Bakiye işaret kuralları | — | Ledger/Available işaretli; Collected/Blocked/Restricted ≥ 0 | sahip (K1) |
+| O-17 | Kanıt dışa aktarımı v1'de mi; yayımı engellesin mi | DL-4 ayrı komut / yok / yayımı engelleyen zorunlu mod | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi açık** — **DL-4 ayrı komut, yayımı engellemez**; MOD-0031 idempotency ölçümüne bağlı | sahip + platform-shared-services |
+| O-18 | Bakiye işaret kuralları | — | **KARAR D28 (2026-10-25): öneri kabul** — Ledger/Available işaretli; Collected/Blocked/Restricted ≥ 0 | sahip (K1) |
 | O-19 | İdempotency makbuz tipi | modül önekli / servis geneli ortak | **KARAR (D14/2): servis geneli tek ortak tip** `FinanceTreasuryCommandReceipt` (tanım MOD-0126 pack Entity Fields); niyetler modül önekli, durum sözlüğü ortak | sahip + CT |
 | O-20 | MOD-0023 şablon kodu, adım sayısı, zaman aşımı | — | tek adımlı şablon; zaman aşımı 15 sn | MOD-0023 sahibi |
-| O-21 | Yayımlayana ek SoD | yok / oluşturan yayımlayamaz | **yok** — ayrılık onayda | sahip (K1) |
+| O-21 | Yayımlayana ek SoD | yok / oluşturan yayımlayamaz | **KARAR D28 (2026-10-25): öneri kabul** — **yok** — ayrılık onayda | sahip (K1) |
 | O-22 | Approve / Reject / Publish AUD-001 K2 mı | evet / hayır | **KARAR (D14/3): hayır** — Cash Positioning yayımı K2 değildir (para yetkisi değil); onay/ret de K2 sayılmaz; kayıt yine iş verisiyle aynı işlemde yazılır (`RequireEnlistment`) | CT + sahip |
 | O-23 | SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (kapsamın kendisi **KARAR (D14/1)**: `LegalEntityId`, `read-tenant-wide` ayrı izin) | Platform kapsam ucu / servis içi çözücü kaydı | Platform sahibiyle kararlaştırılır; servis ortak tek karar (MOD-0126 O-19, MOD-0119 O-22, MOD-0120 O-14 ile aynı); `NoOp` kaydı yasak (kapsamı kapatır) | sahip + platform-shared-services |
 

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D27 (D16–D27: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D29 (D16–D29: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -253,6 +253,33 @@ Kaynak: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER
 11. **MOD-0289 O-5 denetim defteri (CT kararı, sahip onayıyla):** "Yeni defter satırı, K2" — MOD-0289 komutları audit-ledger'a
     K2 olarak, `mdm-guvenilir-kaynak-niyeti` yol belirteciyle eklenir; borç satırı yok; CT-DECISIONS kaydı kod aşamasında.
 12. **MOD-0149 çelişkisi:** "Sahibine not yaz" — commercial-suite sahibine bildirim taslağı; Treasury kaydı değiştirmez.
+
+## D28 — Treasury pack'lerinde sahibe ait açık kararlar (2026-10-25, soru kutusu; önerilen seçenek)
+
+1. **Toplu karar:** "Tüm önerileri kabul et" — dört Treasury pack'inin "Açık kararlar" tablosunda sahibi yalnız sahip (K1)
+   olan ve henüz karara bağlanmamış her satır, pack'te yazılı **öneriyle** karara bağlandı. Başka sahipli ya da ortak sahipli
+   satırlar (MOD-0023, MOD-0018, MOD-0048, Platform, CT + Platform, MOD-0149, procurement) açık kalır. Sahip sonradan tek tek
+   değiştirebilir; değişiklik yeni karar kaydıyla yapılır. Karara bağlanan satırlar:
+   - MOD-0119: O-4, O-6, O-7, O-13, O-14, O-15, O-16, O-17, O-19
+   - MOD-0120: O-5, O-7, O-10, O-11, O-12, O-13
+   - MOD-0124: O-1, O-4, O-6, O-11, O-12, O-13, O-15, O-18, O-21
+   - MOD-0126: O-2, O-3, O-12, O-13, O-14, O-15, O-16
+2. **MOD-0120 sapma S-2 bitişi:** "MOD-0169 ready-for-dev ya da v1 sonu" — faturalama modülü (MOD-0169) `ready-for-dev`
+   olunca ya da en geç Treasury v1 sonunda S-2 gözden geçirilir (T32 ile aynı çizgi).
+
+## D29 — Ortak sahipli kararlar ve RCS önekleri (2026-10-25, soru kutusu; ikisi de önerilen seçenek)
+
+1. **Ortak sahipli kararlar:** "Öneriyi kabul, diğerinin teyidi açık" — sahibin payı pack önerisiyle karara bağlandı;
+   diğer sahibin (platform-shared-services, MOD-0023, MOD-0018, commercial-suite, tüketiciler) teyidi ready-for-dev engeli
+   olarak kalır. MDM ortaklı kararlar tamamen kapanır (sahip MDM sahibi rolünü D20'de üstlendi).
+2. **RCS-001 önekleri:** "Önekleri kabul, yama hazırla" — `PAY` (ödeme partisi), `APD` (AP belgesi), `ARI` (AR faturası),
+   `CPS` (nakit pozisyonu), `CTP` (eşik politikası), `BNK` (banka), `BAC` (banka hesabı); OTOMATİK sınıf. `.antigravity`
+   RCS-001 §3 tablosu yaması hazırlanır, uygulamadan önce sahibe gösterilir (korunan yol).
+   Karara bağlanan satırlar:
+   - MOD-0119: O-9, O-20
+   - MOD-0120: O-3, O-6, O-15
+   - MOD-0124: O-3, O-5, O-7, O-9, O-10, O-14, O-17
+   - MOD-0126: O-7, O-9, O-10
 
 ## Karar olmayanlar
 
