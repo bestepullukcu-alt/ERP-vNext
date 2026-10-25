@@ -570,7 +570,7 @@ burada yeniden yazılmaz, yalnız AR'ye etkisi yazılır.
 | MOD-0125 Cash Forecasting | projeksiyon tüketicisi | aday, paketi yok (domain-config) | kullanılmaz; FORECAST tüketici yuvası açık (§U) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` (D11/4) altında yeni anahtarlar; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
 | Servis iskeleti + servis ortak yapı taşları | `Diten.FinanceTreasuryService` | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — gap 4/G5); MOD-0120 DL-1'in önkoşulu |
-| Port 5071 | servis portu | D10/3; AGENTS §3 / `ports.md` güncellenmedi (TRM-04) | iskelet port kaydından sonra |
+| Port 5071 | servis portu | D10/3; AGENTS §3 / `ports.md` güncellendi (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
 | DCP | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan `ready-for-dev` yok |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
@@ -1357,7 +1357,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] MOD-0149 eki: müşteri doğrulama + dış referans çözümleme + sözleşme belgesi (O-3: sahip payı KARAR D29/1; commercial-suite sahibinin teyidi ve eki açık, D9)
 - [ ] TRM-14: MOD-0220 `ApprovalStatus` (MOD-0126 ile ortak) — kural D14/4 ile kararlaştırıldı
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-14)
-- [ ] RCS-001 ortak kod servisi (önek `ARI` KARAR D29/2; `.antigravity` §3 yaması hazır, uygulama ayrı onay)
+- [ ] RCS-001 ortak kod servisi (önek `ARI` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30))
 - [ ] Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak)
 - [ ] MOD-0023'te AR düzeltme iş akışı şablonu — DL-3 için
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-3 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
@@ -1551,7 +1551,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-3 | MOD-0149 tüketim yolu | (a) MOD-0149'a eklemeli `GET /api/crm/accounts/{id}/lookup-validation` + `GET …/external-references/resolve` + sözleşme belgesi (D9) (b) mevcut `GET /api/crm/accounts/{id}`, AR kullanıcısına `crm.account.read` | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; commercial-suite sahibi teyidi açık** — **(a)** — sözleşme-önce; (b) AR kullanıcısına CRM okuma yetkisi verir ve sözleşmesizdir | sahip + commercial-suite sahibi |
 | O-4 | Faturalanabilir müşteri durum kodları (MOD-0048 `account-status`) | — | yalnız "aktif" anlamlı kod(lar); liste MOD-0149 sözleşmesinde yayımlanır, AR'de sabit tablo yok | commercial-suite sahibi |
 | O-5 | Dış fatura numarası tekilliği ve yasal numara | şirket içinde tekil / serbest | **KARAR D28 (2026-10-25): öneri kabul** — şirket içinde tekil (silinen/Void hariç); yasal numara üretimi faturalamanın | sahip (K1) |
-| O-6 | RCS-001 tür öneki ve ortak kod servisi | `ARI` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı yaması hazır, uygulama ayrı onay — `ARI` (§3'te çakışma yok, `INV` dolu — ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
+| O-6 | RCS-001 tür öneki ve ortak kod servisi | `ARI` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `ARI` (§3'te çakışma yok, `INV` dolu — ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-7 | Düzeltme eşiği | MOD-0126 D11/1 deseni (kiracı ayarı, para birimli, ayar yoksa tier-2) / eşiksiz tek kademe | **KARAR D28 (2026-10-25): öneri kabul** — **D11/1 deseni**, ayrı politika anahtarı | sahip (K1) |
 | O-8 | Düzeltme kararları ve tahsilat K2 mı; muafiyet | K2 evet/hayır; muafiyet var/yok | **KARAR (D14/3): K2 evet** — iptal/silme talebi, onay, ret ve elle tahsilat; **muafiyet** (açık): öneri yok (tier-2 aday yoksa 422) | CT + sahip |
 | O-9 | Elle tahsilat **bu sürümde mi** | bu sürümde / Follow-up (MOD-0269 / MOD-0121'i bekle) | **KARAR (D16, 2026-10-25): bu sürümde, kurallarıyla** — tek aşamalı, K2 (D14/3), ekleme-yalnız; ödeme referansı iş tekilliği (kiracı + şirket + müşteri + referans), mükerrer tahsilat kontrolü (farklı anahtar / aktör), onaylı geri alma (karşı kayıt, `PaymentReversal`); AC-33, AC-39…41 | sahip (K1) |

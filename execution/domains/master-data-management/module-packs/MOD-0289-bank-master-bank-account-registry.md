@@ -532,8 +532,7 @@ Hepsi kod alma izninden (D1) ve `ready-for-dev`'den sonra; dilim sütunu "Teslim
 
 **Bu paketin kapsamında OLMAYAN ama bağımlı değişiklikler** (her biri kendi sahibinin onayıyla, D9; burada yazılmaz):
 `ocelot.json` rotaları (integration-agent); `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`
-(iki yeni anahtar — Auth sahibi); `.antigravity/rules/record-coding-standard.md` §3 tablosuna `BNK` / `BAC` satırları
-(`.antigravity` onayı); MOD-0140 `supplier.openapi.yaml` 1.3.0 (MVP-2 tek yazar, K15); MDM domain-config'e MOD-0289
+(iki yeni anahtar — Auth sahibi); `.antigravity/rules/record-coding-standard.md` §3 `BNK` / `BAC` satırları (**yazıldı, D30**); MOD-0140 `supplier.openapi.yaml` 1.3.0 (MVP-2 tek yazar, K15); MDM domain-config'e MOD-0289
 satırı ve frontend/gateway kapsam cümlesi; MOD-0048 para birimi listesinin MDM'den tüketim yolu.
 
 ## Protected Paths
@@ -1561,8 +1560,7 @@ replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimler
   D24/1–9)
 - [x] O-13 (hesap amaçları ekranının şekli) — KARAR D27/9 (Compact)
 - [x] Hesap amacı kodunun RCS-001 dışında sözlük anahtarı sayılması — KARAR D27/10 (doğal anahtar, RCS kodu yok)
-- [ ] RCS-001 ortak kod servisi (BL-565) ve `BNK` / `BAC` önekleri RCS-001 §3'te (D24/4 karar verdi; `.antigravity` satırı ayrı
-  onay)
+- [ ] RCS-001 ortak kod servisi (BL-565); `BNK` / `BAC` önekleri RCS-001 §3'e yazıldı (D24/4, D30)
 - [x] Denetim defteri — KARAR D27/11 (yeni defter satırları K2, `mdm-guvenilir-kaynak-niyeti` belirteci, borç yok; CT-DECISIONS
   satırı kod aşamasında yazılır)
 - [ ] Şifreleme ve özet anahtarı kaynağı (üretim gizli deposu) ve döndürme prosedürü yazıldı (O-6) — DL-2 için
@@ -1666,7 +1664,7 @@ D24/5; AUTH → `[HasPermission]` + explicit-grant; AUDIT → Audited Events (D2
 | D24/1 (O-4) | doğrulama kodu + dört göz; MOD-0031 MOD-0269 öncesi kapı | Entity Fields (`ActivationVerificationCode`), Validation Rules, Frontend (Activate diyaloğu), Dependencies, Follow-up | AC-18, AC-24 |
 | D24/2 (O-5) | güvenilir niyet yolu, K2, `MasterDataAuditOperation` | Repo Scope, Dependencies, Audited Events (K2 sütunu "evet (K2, D24/2)"); defter belirteci D27/11 ile karar verildi (revizyon 7) | AC-6, AC-7, AC-27 |
 | D24/3 (O-6) | uygulama düzeyi AES-GCM — **yalnız sahip onayı** | Entity Fields, Runtime Constraints → "Şifreleme", Dependencies; **güvenlik onayı** Ready-for-dev'de görünür engel, gerçek Mongo testleri DL-2 dilim kabul kapısında | AC-13, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52 |
-| D24/4 (O-7) | `BNK` / `BAC`, OTOMATİK | Entity Fields (Bank.Code, BankAccount.Code); `.antigravity` §3 satırı ayrı onay | AC-1 |
+| D24/4 (O-7) | `BNK` / `BAC`, OTOMATİK | Entity Fields (Bank.Code, BankAccount.Code); RCS-001 §3 satırı yazıldı (D30) | AC-1 |
 | D24/5 (O-8) | yalnız ISO biçimi | Entity Fields, Validation Rules, Frontend, Follow-up | AC-2 |
 | D24/6 (O-10) | çekirdek kodlar + kiracı ek amaçları (sahibin kendi seçimi) | Entity Fields → "Hesap amaçları" (`BankAccountPurpose`), indeksler, hata kodları, Owned Objects, Backend / Frontend File Convention, Authorization (`mdm.bank-account-purposes.*`), Audited Events, Validation Rules, Failure Path, Page Help; ekran DL-4, arka uç DL-2; kod sınıfı (sözlük anahtarı) D27/10 ile karar verildi (revizyon 7) | AC-53…AC-58 |
 | D24/7 (O-11) | Banks ekranı Compact | Entity Fields notu | AC-28 |

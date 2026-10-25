@@ -469,7 +469,7 @@ Bkz. "Dependencies".
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-19)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); dört Treasury paketi için tek karar (MOD-0120 O-14 ile aynı). `NoOp` kaydı yasak (kapsamı kapatır) |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | parti kodu | **yok** (Building.Blocks'ta yok; MDM'de yalnız kendi `CodeReservation`'ı, `CodeReservation.cs:5`); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **engel**: modül kendi sayacını yazamaz (RCS-001 §6). Servis gelene kadar oluşturma yazılamaz (O-9) |
 | MOD-0140 Supplier (PayeeType = Supplier) | alacaklı doğrulaması | var — `POST /api/suppliers/validate` (MOD-0140 pack §3) | varlık doğrulaması O-14 (bu dilimde yalnız biçim) |
-| Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellenmedi** (ayrı onay, TRM-04) | iskelet port kaydından sonra |
+| Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellendi** (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
 | DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft` | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu (gap P2, 2026-10-24)
@@ -1265,13 +1265,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-19; platform-shared-services) — kapsamı soran kod ve AC-32 bu yola bağlı
-- [ ] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı; AGENTS §2 (domain/servis) ve §9 (`fin`) güncellendi (TRM-03/04)
+- [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 (domain/servis) ve §9 (`fin`) güncellendi (TRM-03/04)
 - [x] MOD-0269 arayüz sözleşmesi dondu — `docs/analysis/contracts/bank-dispatch.md` FROZEN 0.1.0 (KARAR D27/7, D27/8; TRM-06 kapandı)
 - [x] Kapı kararları 0.3 / 0.6 / 0.7 (KARAR D27/1, D27/3, D27/4) — T32 sapması bitişi: MOD-0003 çıkana kadar, en geç Treasury v1 sonu
 - [ ] TRM-14: MOD-0220 pack değişikliği onaylı + `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
 - [x] SoD eşiği modeli sahip kararıyla yazıldı (O-4 → D11/1: kiracı ayarı, para birimli; ayar yoksa tier-2)
 - [x] Sahip MOD-0126 için kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
-- [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (önek `PAY` KARAR D29/2; `.antigravity` §3 yaması hazır, uygulama ayrı onay) — yoksa Create yazılamaz
+- [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (önek `PAY` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30)) — yoksa Create yazılamaz
 - [ ] Yeni servis defteri + CT-DECISIONS satırı için Control Tower kararı (yol b izi kabulü)
 - [x] İzin ad alanı `finance-treasury.*` onayı (O-5 → D11/4)
 - [ ] MOD-0023'te MOD-0126 iş akışı şablonu (sahibi platform-shared-services) — DL-2 için
@@ -1383,7 +1383,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-6 | Onay/ret/muafiyet AUD-001 K2 sınıfı mı; `AuditCategory` değeri | — | **KARAR (D11/3): evet K2**; kalan: eklemeli `Finance` kategorisi (Platform, D9) | CT + sahip |
 | O-7 | Onay yüzeyi ve başlatma kimliği | (a) kararlar yalnız MOD-0126 ucundan, kullanıcı token'ıyla genel MOD-0023 uçları (b) güvenilir tüketici yolu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi açık** — (a) v1 — (b) MDM'ye kilitli; Görev Merkezi'nden verilen karara karşı R11 | sahip + MOD-0023 sahibi |
 | O-8 | MOD-0023 şablon kodu, çok adımlı onay (PartiallyApproved) adım tanımı, HTTP zaman aşımı değeri | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn | MOD-0023 sahibi |
-| O-9 | RCS-001: tür öneki ve şirket kısa kodu kaynağı; ortak kod servisi | `PAY` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı yaması hazır, uygulama ayrı onay — `PAY` (§3'te çakışma yok, ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
+| O-9 | RCS-001: tür öneki ve şirket kısa kodu kaynağı; ortak kod servisi | `PAY` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `PAY` (§3'te çakışma yok, ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-10 | Onaylayıcı adayları nereden (kaynakta yapılandırma listesi / dizin) | MOD-0023 atama (pozisyon/rol) / izin dizini | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi açık** — MOD-0023 şablonunun atama kuralı + R1–R4 dışlaması; ayrı dizin istemcisi taşınmaz | sahip + MOD-0023 sahibi |
 | O-11 | Para birimi küsurat hanesi kaynağı | MOD-0048 `LookupOptionDto.Metadata["minorUnits"]` eki / başka | MOD-0048'e eklemeli alan (D9) | MOD-0048 sahibi |
 | O-12 | Geçmiş değer tarihine izin | — | **KARAR D28 (2026-10-25): öneri kabul** — Create/Submit'te bugünden (UTC) önce ret | sahip |

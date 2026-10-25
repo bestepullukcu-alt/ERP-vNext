@@ -99,10 +99,10 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 | finance-treasury domain'i, MOD-0126/0119/0120/0124 pack'leri | finance-treasury (Treasury Intake CT hazırlar; sahip onaylar) |
 | MOD-0289, MOD-0217 yerleşimi | master-data-management — MDM sahibi kararını sahip (K1) verdi (D20) |
 | MOD-0269 arayüz sözleşmesi; bankacılık sahibi | sahip (K1) — 0.1 için bankacılık sahibi K1 (D27/8); gerçek sağlayıcı seçilince ayrı sahip |
-| Port ve bant | 5071 sahip kararı (D10/3); AGENTS / `ports.md` yaması hazır, uygulama ayrı onay (D27/6) |
+| Port ve bant | 5071 sahip kararı (D10/3); AGENTS §2/§3/§9 ve `ports.md` güncellendi (D30) |
 | Gateway rotaları | yalnız `integration-agent` |
 | ERP-FIN-BUNDLE | **KARAR D27/3**: v1'de yok, modül sözleşmeleri |
-| RCS-001 önekleri | `PAY` / `APD` / `ARI` / `CPS` / `CTP` / `BNK` / `BAC` (D29/2); `.antigravity` §3 yaması hazır, uygulama ayrı onay |
+| RCS-001 önekleri | `PAY` / `APD` / `ARI` / `CPS` / `CTP` / `BNK` / `BAC` (D29/2); RCS-001 §3 tablosuna yazıldı (D30) |
 | Kaynak paket içeriği ve yeni sürümleri | kaynak Treasury Migration CT; karar sahibi K1 |
 
 ## 7. Dependency graph
@@ -125,12 +125,12 @@ MOD-0126 → MOD-0289 bağı opak referanstır; MOD-0289 gelene kadar Treasury p
 ## 8. Ordered delivery sequence
 
 1. **Kararlar (Dalga 0):** 0.0 (D6 ✓), 0.1 (D5 = A ✓), 0.2 (MOD-0126 yerleşimi ✓), 0.3 (D27/1 ✓), 0.5 (D27/2 ✓), 0.6
-   (D27/3 ✓), 0.7 (D27/4 ✓), MOD-0289 MDM onayı (D20/1 ✓), MOD-0217/0057 (D19 ✓), port 5071 (D10/3 ✓; yama D27/6 hazır),
+   (D27/3 ✓), 0.7 (D27/4 ✓), MOD-0289 MDM onayı (D20/1 ✓), MOD-0217/0057 (D19 ✓), port 5071 (D10/3 ✓; AGENTS / ports.md D30 ✓),
    kod alma izni (D27/5 ✓ — MOD-0126/0119/0120/0124), pack açık kararları (D28 ✓, D29 sahip payı ✓).
 2. **Kaynak yeni sürümleri:** ✓ alındı ve doğrulandı (MOD-0126 v1.2, MOD-0119 v1.1, MOD-0289 v1.7, MOD-0220 v1.3; batch 7).
 3. **Level-1 paket kabulleri:** ✓ 11/11 koşullu kabul (TRM-02).
 4. **Onay:** belge onay PR'ı (D18; sahip push / PR onayı bekleniyor) → CT-APR-02 bağımsız inceleme → CT-APR-01 onay satırları
-   → DCP numarası + `approved` → AGENTS / ports ve RCS yamalarının uygulanması.
+   → DCP numarası + `approved` (AGENTS / ports ve RCS yamaları D30 ile uygulandı).
 5. **Dilim TRM-S1:** MOD-0126 `ready-for-dev` → servis iskeleti (`Diten.FinanceTreasuryService`, port 5071) + ortak yapı
    taşları (DL-1) → alma ve uyarlama → Recovery testleri (dilim kabul kapısı). DL-2 MOD-0023 §17 WP'si main'de olunca.
 6. **Dilim TRM-S2:** MOD-0119, MOD-0120, MOD-0124 (MOD-0126 DL-1'den sonra; birbirinden bağımsız, paralel).
@@ -234,9 +234,9 @@ kaynak projedeki her değişiklik.
 MOD-0057 (D19), bankacılık sahibi (D27/8), kod alma izni dört Treasury modülü (D27/5), pack'lerde sahibe ait açık kararlar
 (D28), ortak kararlarda sahip payı ve RCS önekleri (D29).
 
-**Açık:** DCP numarası ve DCP onayı; AGENTS §2/§3/§9 ve `ports.md` yamasının **uygulanması** (hazır:
-`.ct-teslim/treasury-intake/agents-ports-5071-patch.diff`, D27/6); RCS-001 §3 önek yamasının **uygulanması** (hazır:
-`.ct-teslim/treasury-intake/rcs001-treasury-prefixes-patch.diff`, D29/2); ortak sahipli kararlarda diğer sahiplerin teyidi
+**Kapandı (D30):** AGENTS §2/§3/§9 + `ports.md` 5071 ve RCS-001 §3 önekleri uygulandı.
+
+**Açık:** DCP numarası ve DCP onayı; ortak sahipli kararlarda diğer sahiplerin teyidi
 (D29/1); CT-APR-02 / CT-APR-01; MOD-0289 O-6 güvenlik onayı; MOD-0289 ve MOD-0269 kod alma izni; AR O-8 muafiyet kısmı.
 
 ## 19. Future follow-ups

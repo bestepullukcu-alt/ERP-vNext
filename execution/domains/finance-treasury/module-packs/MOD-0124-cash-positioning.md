@@ -611,7 +611,7 @@ SEC-002 veri kapsamı çözücüsünün tüketim yolu (platform-shared-services,
 | RCS-001 ortak kod servisi (§5.12, BL-565) | anlık görüntü ve politika kodu | **yok** (MOD-0126 Dependencies ölçümü); şirket kısa kodu (§5.4) LE'de ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **engel**: modül kendi sayacını yazamaz (RCS-001 §6); servis gelene kadar Create yazılamaz (O-9) |
 | MOD-0126 Payments & Approvals | servis iskeleti + servis ortak yapı taşları; (isteğe bağlı) taahhütlü çıkış | **pack `draft`** (sahip tasarım PASS kaydı, `3a1c32b9e`); kod yok | **MOD-0126 DL-1, MOD-0124 DL-1'in önkoşuludur** (iskelet, makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — tek sahibi o dilim, gap 4/G5); onaylı partilerin pozisyonda gösterimi **O-6** (v1'de yok) |
 | MOD-0125 / MOD-0126 / MOD-0127 | yayım tüketicileri | hiçbiri onay vermedi (paket §P PUBLICATION yuvası) | v1'de olay yok; `GetCurrentCashPositionQuery` okuma sözleşmesi (O-14) |
-| Port 5071 | servis portu | sahip kararı D10/3; AGENTS.md §3 ve `ports.md` güncellenmedi (TRM-04) | iskelet port kaydından sonra |
+| Port 5071 | servis portu | sahip kararı D10/3; AGENTS.md §3 ve `ports.md` güncellendi (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
 | DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
@@ -1436,11 +1436,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [x] **Karar 0.3 (MOD-0003)** verildi — KARAR D27/1, süreli T32 sapması (O-2); bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu
 - [x] **MOD-0037 kapısı** için sahip kararı (O-3): KARAR D29/1 (sahip payı); platform-shared-services teyidi açık
 - [x] **Onay yolu** kararı (O-4): KARAR D28 — MOD-0023
-- [ ] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı; AGENTS §2 ve §9 güncellendi (TRM-03/04)
+- [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 güncellendi (TRM-03/04)
 - [ ] Servis iskeleti + servis ortak yapı taşları + CentralAudit kurulumu + defter için CT kararı — **yalnız MOD-0126 DL-1** (tek sahibi o dilim; MOD-0124 DL-1'in önkoşulu — gap 4/G5)
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi (kuralın MOD-0124'e uygulanması D14/4 ile kararlaştırıldı)
 - [x] Sahip MOD-0124 için kod alma iznini verdi (KARAR D27/5; kaynak S `da4abb20`)
-- [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (önekler `CPS` / `CTP` KARAR D29/2; `.antigravity` §3 yaması hazır, uygulama ayrı onay) — yoksa Create yazılamaz
+- [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (önekler `CPS` / `CTP` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30)) — yoksa Create yazılamaz
 - [ ] Para birimi küsurat hanesi kaynağı (O-8) — DL-1 için
 - [ ] MOD-0023'te nakit pozisyonu onay şablonu (tek adım; O-20) — DL-3 için
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-3 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-3 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-3 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
@@ -1575,7 +1575,7 @@ Borçlu taraf her yuvada sahip (K1), tüketicinin sahibi adlandırılana kadar (
 | O-6 | MOD-0126 onaylı partileri taahhütlü çıkış olarak gösterme | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — partiler bankaya gitmiyor (D5), bakiyeyi değiştirmez; PAYMENT-BATCH sözleşmesi dondurulunca | sahip (K1) |
 | O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0048 sahibi teyidi açık** — v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
 | O-8 | Para birimi küsurat hanesi kaynağı | MOD-0048 eklemeli alan / başka | MOD-0048'e eklemeli alan (D9) — MOD-0126 O-11 ile ortak, **TBD** | MOD-0048 sahibi |
-| O-9 | RCS-001: `CPS` (anlık görüntü) ve `CTP` (eşik politikası) önekleri, şirket kısa kodu, ortak servis | — | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı yaması hazır, uygulama ayrı onay — `CPS`, `CTP` (§3 tablosunda çakışma yok, ölçüldü; aynı dalda yazılan MOD-0119/0120 önerileriyle çakışma CT'de kontrol edilir); servis BL-565 | sahip + CT (`.antigravity` onayı) |
+| O-9 | RCS-001: `CPS` (anlık görüntü) ve `CTP` (eşik politikası) önekleri, şirket kısa kodu, ortak servis | — | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `CPS`, `CTP` (§3 tablosunda çakışma yok, ölçüldü; aynı dalda yazılan MOD-0119/0120 önerileriyle çakışma CT'de kontrol edilir); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-10 | Raporlama saat dilimi ve değer tarihi kuralı (gelecek tarih) | LE alanı (MOD-0220 eki) / kiracı ayarı / yok | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — v1 çevrim yok; gelecek tarihli `ValueDate` reddi; alan gerekiyorsa MOD-0220'ye eklemeli öneri | sahip + MDM |
 | O-11 | Nakit kategori ana verisi + atama kuralları (CP-13…CP-18) | v1 / içe aktarmayla | **KARAR D28 (2026-10-25): öneri kabul** — **içe aktarmayla**; v1 kaynak enum `CashCategoryType` | sahip (K1) |
 | O-12 | Eşik politikası kapsamı | kaynak (kiracı geneli, para birimsiz, `IsDefault`) / LE + para birimi zorunlu | **KARAR D28 (2026-10-25): öneri kabul** — **LE + para birimi zorunlu**, varsayılan politika yok | sahip (K1) |

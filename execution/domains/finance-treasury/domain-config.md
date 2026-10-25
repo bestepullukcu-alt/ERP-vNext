@@ -111,7 +111,7 @@ henüz yok (`execution/registries/module-id-registry.md`); kimlik rezervasyonu p
 - **Servis:** `Diten.FinanceTreasuryService` (sahip kararı D2) — henüz yok; iskeleti ilk pack `ready-for-dev`
   olduktan sonra `@orchestrator /add-module` ile açılır.
 - **Port:** **5071** — sahip kararı D10 (2026-10-24; sahip EA kararını kendisi verdi). AGENTS.md §3 ve
-  `.antigravity/rules/ports.md` (korunan yol; bant bugün 5011–5064 yazıyor) henüz güncellenmedi — ayrı onay.
+  `.antigravity/rules/ports.md` güncellendi (bant 5011–5071; sahip onayıyla D30, 2026-10-25).
 - **Dal kısa kodu:** `fin` (D3) — AGENTS.md §9'a ayrı onayla yazılır.
 - **Persistence:** MongoDB; her sorguda `TenantId` izolasyonu; soft delete (`IsDeleted`, `DeletedAt`).
 - **Gateway:** rotalar yalnız `integration-agent` tarafından eklenir (korunan `ocelot.json`).

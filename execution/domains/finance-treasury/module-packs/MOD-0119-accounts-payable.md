@@ -511,7 +511,7 @@ MOD-0023 AP iş akışı şablonu; `ocelot.json` rotaları (integration-agent); 
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`, MOD-0018-FU15) | kullanıcının şirket yetkisi (D14/1) | çözücü yalnız Platform'da kayıtlı (`Diten.Platform.Application/DependencyInjection.cs` → `OrgDataScopeResolver`); ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **ENGEL (O-22)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + kanıt testi olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0120 O-14, MOD-0124 ile **tek karar**. `NoOp` kaydı yasak (kapsamı kapatır) |
 | RCS-001 ortak kod servisi (§5.12, BL-565) | fatura kodu | **yok** (MOD-0126 pack ölçümü); şirket kısa kodu (§5.4) LE kaydında ayrı alan değil (`LegalEntity.cs:11` yalnız `Code`) | **ENGEL**: modül kendi sayacını yazamaz (RCS-001 §6). Servis gelene kadar Create yazılamaz (O-9) |
 | `Diten.FinanceTreasuryService` iskeleti + servis ortak yapı taşları | servis | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — O-21 kapandı, gap 4/G5); MOD-0126 DL-1, AP DL-1'in önkoşuludur; o olmadan AP DL-1 başlamaz |
-| Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellenmedi** (TRM-04) | iskelet port kaydından sonra |
+| Port 5071 | servis portu | sahip kararı D10/3; **AGENTS.md §3 ve `.antigravity/rules/ports.md` güncellendi** (D30: AGENTS §2/§3/§9 ve `ports.md` 5071 uygulandı, 2026-10-25) | iskelet port kaydından sonra |
 | DCP (UNASSIGNED-finance-treasury-intake) | dilim kapısı | `draft`; TRM-S2'nin beklediği karar 0.3 verildi (D27/1; DCP metni aynı commit'te güncellendi) | DCP `approved` olmadan pack `ready-for-dev` olmaz (DCP §15) |
 
 ### Bağımlılık sözleşmeleri — kapanış tablosu
@@ -1336,14 +1336,14 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk — paketi yazmamış, `high: evet` onaylayıcı
 - [ ] DCP (UNASSIGNED-finance-treasury-intake) `approved` ve numarası atanmış
 - [ ] `Diten.FinanceTreasuryService` iskeleti, servis ortak yapı taşları ve CentralAudit kaydı MOD-0126 DL-1 ile açıldı (tek sahibi o dilim; O-21 kapandı)
-- [ ] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı; AGENTS §2 ve §9 (`fin`) güncellendi
+- [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 (`fin`) güncellendi
 - [ ] TRM-14: MOD-0220 `lookup-validation` yanıtında `ApprovalStatus` + MOD-0220 sözleşme belgesi
 - [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de (MVP-2)
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-22; platform-shared-services) — kapsamı soran kod ve AC-32 bu yola bağlı
 - [x] O-4, O-6, O-7 (KARAR D28), O-5 (KARAR D26),
   O-13, O-14 (KARAR D28) yazıldı (O-8 K2 → D14/3 ile kapandı)
 - [x] O-12 kod alma kaynağı commit'i ve MOD-0119 kod alma izni (KARAR D27/5: kaynak S `da4abb20`)
-- [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (önek `APD` KARAR D29/2; `.antigravity` §3 yaması hazır, uygulama ayrı onay) — yoksa Create yazılamaz
+- [ ] RCS-001 ortak kod servisi ve şirket kısa kodu kaynağı (önek `APD` KARAR D29/2; `.antigravity` RCS-001 §3 satırı uygulandı (D30)) — yoksa Create yazılamaz
 - [ ] Para birimi küsurat hanesi kaynağı (O-10) — DL-1 Create için
 - [ ] MOD-0023'te MOD-0119 iş akışı şablonu (sahibi platform-shared-services, O-11) — DL-2 için
 - [ ] MOD-0023 pack §17 (TRM-15) **onaylandı** (CT-APR-02/01; yarış yanıtı politikası KARAR D21/4, D22/3) — DL-2 için. **Testlerin geçmesi ready-for-dev engeli değildir** (gap 16/P2): §17 kodu MOD-0023 sahibinin WP'siyle gelir (D25/1) ve DL-2 kabulünden önce main'de olmalıdır; AC-W5…W14 DL-2 uygulama kabul kapısındadır; geçene kadar yinelenen anahtar hatası `Unknown` (D21/7)
@@ -1498,7 +1498,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-6 | Mükerrer fatura anahtarı | (şirket, tedarikçi, belge türü, normalize no) / + fatura tarihi / kaynak imzası (tarih + tutar) | **KARAR D28 (2026-10-25): öneri kabul** — (TenantId, LE, SupplierId, DocumentType, InvoiceNumberNormalized), silinmemiş kayıtlarda tekil; `Rejected` de engeller | sahip (K1) |
 | O-7 | Onay tutar kademesi | v1 tek kademe / MOD-0126 D11/1 modeli | **KARAR D28 (2026-10-25): öneri kabul** — v1 tek kademe; kademe Follow-up | sahip (K1) |
 | O-8 | AP Approve / Reject K2 mi | evet / hayır | **KARAR (D14/3): evet** — AP'de parayı etkileyen kararlar (onay, ret; açılırsa iptal/silme ve elle ödeme kaydı) K2 | CT + sahip |
-| O-9 | RCS-001 tür öneki ve ortak kod servisi | `APD` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı yaması hazır, uygulama ayrı onay — `APD` (§3 tablosunda ve repoda çakışma yok, ölçüldü 2026-10-24; `INV` Yatırım Dosyası'nda); servis BL-565 | sahip + CT (`.antigravity` onayı) |
+| O-9 | RCS-001 tür öneki ve ortak kod servisi | `APD` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `APD` (§3 tablosunda ve repoda çakışma yok, ölçüldü 2026-10-24; `INV` Yatırım Dosyası'nda); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-10 | Para birimi küsurat hanesi kaynağı (MOD-0126 O-11 ile ortak) | MOD-0048 eklemeli alan / başka | MOD-0048'e eklemeli alan (D9); **TBD** | MOD-0048 sahibi |
 | O-11 | MOD-0023 AP şablon kodu, çok adımlı onay adımları, HTTP zaman aşımı | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn (MOD-0126 ile aynı ayar); **TBD** | MOD-0023 sahibi |
 | O-12 | Kod alma kaynağı commit'i | `218acaf5` derlenip test edilir / `da4abb20` (AP satırları eşit, 251/251) | **KARAR D27/5 (2026-10-25): kaynak S `da4abb20`** — dört Treasury modülü için kod alma izni verildi; kod yine yalnız pack `ready-for-dev` ve dilim sırasıyla | sahip (K1) |

@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D29 (D16–D29: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D30 (D16–D30: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -281,9 +281,22 @@ Kaynak: `docs/records/audits/2026-10/treasury-intake-handover-review-01/PRODUCER
    - MOD-0124: O-3, O-5, O-7, O-9, O-10, O-14, O-17
    - MOD-0126: O-7, O-9, O-10
 
+## D30 — Korunan yol yamalarının uygulanması (2026-10-25, sahibin açık talimatı)
+
+Sahibin mesajı: "Önce AGENTS/ports 5071 ve RCS-001 yamalarını uygula, sync_adapters.py çalıştır ve commit et; push yok."
+
+1. **AGENTS.md:** §2 domain listesine `finance-treasury` (12), §3 port tablosuna `FinanceTreasury Service (planlı — kod yok) | 5071`,
+   §9 `domain-kısa` listesine `fin` + örnek dal. `.antigravity/rules/ports.md`: bant 5011–5071, 5071 satırı (D10/3, D27/6).
+2. **`.antigravity/rules/record-coding-standard.md` §3:** `PAY`, `APD`, `ARI`, `CPS`, `CTP`, `BNK`, `BAC` satırları (OTOMATİK; D29/2).
+3. `python3 .antigravity/scripts/sync_adapters.py` koşuldu; `--check`: "OK 13 adapter(s) match their sources" (çekirdek blok
+   değişmedi, üretilmiş kopyalarda fark yok). Uyarı: AGENTS.md 22 226 bayt, uyarı eşiği 22 000 (sınır değil; origin/main'de
+   21 991 bayttı).
+4. Bilinen sapma (düzeltilmedi, başka sahip): `scripts/evidence-kit/k03_ports.py` ("CANDIDATE — NOT ACTIVE", MVP-6) yasaklı
+   bandı hâlâ 5011–5064 olarak kodluyor; şerit portları 5100+ olduğu için 5071 ile çakışmaz.
+
 ## Karar olmayanlar
 
-AGENTS.md §2/§3/§9 ve ports.md düzenlemesinin **uygulanması** (yama D27/6 ile hazırlanır, uygulama ayrı onay); 5069 kayması (SafetyStockService sahibi).
+5069 kayması (SafetyStockService sahibi).
 
 ## Bu kayıt ne değildir
 
