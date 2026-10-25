@@ -36,3 +36,10 @@ manifest 5/5 geçti). Sonuç: **CONDITIONAL PASS** — gap 9 tasarım düzeyinde
 
 Sahibin notu: bu iki düzeltmeden sonra belge kapanışı PASS verilebilir; §22 onayı, MdmService build'i ve tüketici testleri
 tamamlanmadan TRM-14 geliştirme koşulu kapanmış sayılmaz.
+
+## Belge kapanışı (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-TRM14-MOD0220-0baa556d6.zip` (sha256 `0003a279d4ae5498cff6857446682928419228d8789a7710abd263552d82df12`;
+manifest 5/5 geçti). Sonuç: **belge kapanışı PASS**. Tek referans düzeltmesi: MOD-0220 §22 sözleşmeyi "rev 2" diye
+anıyordu → rev 3 (bu bölümün commit'i). TRM-14 geliştirme açısından **kapalı değildir**: §22 onayı (CT-APR-02/01), AC-T1…T5
+geçişi, MdmService build ve tüketici sahiplerinin test kanıtları bekleniyor.
