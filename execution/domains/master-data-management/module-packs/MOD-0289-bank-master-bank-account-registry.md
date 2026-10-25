@@ -69,6 +69,10 @@ slice: "TRM-S3 — banka ana verisi + şirket ve tedarikçi banka hesabı sicili
 >
 > **Revizyon 4 (2026-10-25):** sahip gap listesi 15 (CONDITIONAL PASS) kapatıldı — "Implementation Notes → Gap 15
 > kapanışı". Bu revizyonda yeniden ölçülen iki satır `@373513765` ile atıflanır; diğer atıflar değişmedi.
+>
+> **Revizyon 5 (2026-10-25):** sahip gap listesi 16 (CONDITIONAL PASS) kapatıldı — "Implementation Notes → Gap 15b /
+> Gap 16 kapanışı". Kapılar ikiye ayrıldı: tasarım / onay kapısı = `ready-for-dev`; dilim kabul kapısı = "Teslim
+> dilimleri → Dilim kabul kapısı". Bu revizyonda kod yeniden ölçülmedi.
 
 ## Module Summary
 
@@ -322,6 +326,7 @@ Depo arayüzünde `Update`, `Delete`, `Replace` yoktur (AUD-001 §4.1).
 | ActiveKeySetId | string | bu kiracıda yazmaya izinli **tek** anahtar kümesi kimliği |
 | PreviousKeySetId | string? | bir önceki küme (tanılama) |
 | Epoch | int | her ilerletmede +1 |
+| AppliedTargetRevision | long | çitin uyguladığı hedef revizyonu; ilerletme yalnız `target.ApprovalRevision > AppliedTargetRevision` iken ve hedefe yapılır — eski iş bir çiti geri alamaz (gap 16/1) |
 | WriteSeq | long | bu kiracıdaki her banka hesabı yazımı işlem içinde +1 (çakışmayı zorlamak için) |
 | AdvancedAt / AdvancedBy | DateTimeOffset / string | son ilerletme (sistem aktörü) |
 | AuditIntents / AuditIntentReceipts | — | ilerletme denetlenir (Audited Events) |
@@ -358,13 +363,26 @@ Kiracıya ait değildir; `EntityBase` / `GlobalEntity` değil, MDM'deki servis d
 | Id | string | sabit `bank-data` |
 | ApprovedKeySetId | string | yeni kiracı çitinin **tek** kaynağı ve her çit ilerletmesinin hedefi |
 | Version | int | her onayda +1 (CAS) |
+| ApprovalRevision | long | onaylı dağıtım revizyonu; **kesin artan** — yeni onay yalnız `revizyon > ApprovalRevision` iken yazılır (gap 16/1) |
 | BootstrapSeq | long | her kiracı çiti oluşturulmasında işlem içinde +1 (hedef değişikliğiyle çakışmayı zorlamak için) |
 | ApprovalRef | string | onay kaynağı (değişiklik kaydı / onay kimliği); zorunlu |
-| History | liste | yalnız ekleme: `{Version, FromKeySetId, ToKeySetId, ApprovalRef, ApprovedAt, Actor}` |
+| History | liste | yalnız ekleme: `{Version, ApprovalRevision, ExpectedPreviousKeySetId, FromKeySetId, ToKeySetId, ApprovalRef, ApprovedAt, Actor}` |
 
-- **Yalnız** `ApproveBankDataKeySetTargetCommand` yazar. Komutu döndürme işi gönderir: yapılandırmadaki
-  `Mdm:BankData:Rotation:ApprovedTargetKeySetId` + `Mdm:BankData:Rotation:ApprovalRef` okunur ve hedef **yalnız** işi
-  çalıştıran örneğin kendi `KeySetId`'si bu değere eşitse yazılır (ilk kurulumda hedef yoksa da aynı kural). Onayın insan
+- **Yalnız** `ApproveBankDataKeySetTargetCommand` yazar. Komutu döndürme işi gönderir: onaylı yapılandırma dört değeri
+  birlikte taşır — `Mdm:BankData:Rotation:ApprovedTargetKeySetId`, `…:ApprovalRef`, `…:ApprovalRevision` (long, ≥ 1) ve
+  `…:ExpectedPreviousKeySetId` (ilk kurulumda boş). Hedef **tek koşullu güncellemeyle** yazılır ve yalnız şunların hepsi
+  doğruysa: (i) işi çalıştıran örneğin `KeySetId`'si `ApprovedTargetKeySetId`'ye eşit; (ii) `ApprovalRevision` >
+  `target.ApprovalRevision` (kesin artan); (iii) `target.ApprovedKeySetId == ExpectedPreviousKeySetId` (ilk kurulumda hedef
+  yok ve beklenen boş — eşzamanlı iki ilk kurulumu birincil anahtar çözer); (iv) kayıtlarda geçen her şifreleme ve özet
+  sürümü bu örneğin kümesinde var (`ix_mdm_bank_account_key_versions` üzerinde kiracılar arası `distinct`; yoksa
+  okunamayacak kayıt bırakan kümeye geçilmez). Süzgeç ve `History` `$push`'u aynı tek belge güncellemesindedir (atomik).
+  **Ret:** revizyon eski ya da eşit → 409 `MDM_BANK_KEYSET_TARGET_REVISION_STALE`; beklenen önceki küme tutmuyor → 409
+  `MDM_BANK_KEYSET_TARGET_PREVIOUS_MISMATCH`; (iv) tutmuyor → 409 `MDM_BANK_KEYSET_TARGET_INCOMPLETE`; her retde hedef
+  **değişmez** ve iş aynı revizyonu yeniden denemez (sınıflandırma, ret sonrası okunan hedefe göre yapılır; karar
+  süzgecindir). Böylece eski yapılandırmayla kalmış bir iş, K2'den sonra K1'i yeniden onaylayamaz.
+- **Geri dönüş yalnız yeni ve açık bir revizyondur:** K2'den K1'e dönmek için daha yüksek revizyon, `ExpectedPreviousKeySetId
+  = K2` ve kendi `ApprovalRef`'i olan yeni bir onaylı yapılandırma dağıtılır; eski revizyonun tekrar oynatılması geri dönüş
+  sayılmaz. Onayın insan
   tarafı yapılandırma değişikliğinin onaylı dağıtımıdır (`ApprovalRef` ona işaret eder); hangi onay kaydının kullanılacağı
   O-6 içinde sahip + güvenlik kararıdır.
 - Hedef yoksa hiçbir kiracı çiti oluşturulamaz → banka hesabı yazmaları 503 `MDM_BANK_KEYSET_TARGET_UNAVAILABLE`
@@ -410,7 +428,9 @@ izniyle maskeli gören ama ilişkisi olmayan kullanıcının maskesiz okuması, 
 (yurt içi hesabı olan bankada `DomesticKeyIncludesBranch` ya da kod değişikliği), `MDM_BANK_IBAN_COUNTRY_FORMAT_INVALID` 400
 ve `MDM_BANK_IBAN_COUNTRY_FORMAT_UNAVAILABLE` 503 (ülke biçimi kapısı açıkken, gap 13 P2), `MDM_BANK_KEYSET_STALE` 503
 (yazan örneğin anahtar kümesi kiracının çitindeki ya da onaylı hedefteki küme değil; yazma yok, gap 14/1, 15/2),
-`MDM_BANK_KEYSET_TARGET_UNAVAILABLE` 503 (onaylı hedef yok; yeni kiracı çiti kurulamaz, gap 15/2), `MDM_BANK_DOMESTIC_KEY_CHANGED` 409
+`MDM_BANK_KEYSET_TARGET_UNAVAILABLE` 503 (onaylı hedef yok; yeni kiracı çiti kurulamaz, gap 15/2),
+`MDM_BANK_KEYSET_TARGET_REVISION_STALE` 409, `MDM_BANK_KEYSET_TARGET_PREVIOUS_MISMATCH` 409,
+`MDM_BANK_KEYSET_TARGET_INCOMPLETE` 409 (onay reddi; hedef değişmez, gap 16/1), `MDM_BANK_DOMESTIC_KEY_CHANGED` 409
 (yurt içi hesap oluşturulurken banka / şube anahtar alanı eşzamanlı değişti, gap 14/2),
 `MDM_BANK_DOMESTIC_VERIFICATION_FAILED` 400 ve `MDM_BANK_DOMESTIC_VERIFICATION_UNAVAILABLE` 503 (yurt içi doğrulama kapısı
 açıkken, gap 14/4). Kullanıcıya giden ileti resx anahtarıdır.
@@ -603,7 +623,7 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
   `MDM_BANK_KEYSET_STALE`, hiçbir şey yazılmaz. Çitin ilerletilmesi aynı belgeyi değiştirdiği için yolda olan eski küme
   yazımıyla yazma çakışması oluşur; ilerletme commit olduktan sonra eski kümeli hiçbir yazım commit olamaz. Hesap yazma
   hacmi düşük (ana veri) olduğu için kiracı başına tek sıcak belge kabul edilir; gerçek yük altında çakışma ve yeniden deneme
-  oranı **ölçülmedi** — yük testi AC-50 ve Ready-for-dev engelidir.
+  oranı **ölçülmedi** — yük testi AC-50, DL-2'nin **dilim kabul kapısıdır** (eşiğin yazılması `ready-for-dev` maddesidir).
 - **Yeni kiracı çitinin kurulması ilk yazana bırakılmaz (gap 15/2):** kiracının çit belgesi yoksa, yazma işlemi aynı Mongo
   işleminde (1) hedef belgesini `{Id = "bank-data", ApprovedKeySetId = örneğin KeySetId}` süzgeciyle `$inc BootstrapSeq`
   yapar — süzgeç tutmazsa (örneğin kümesi onaylı hedef değil ya da hedef yok) 503 `MDM_BANK_KEYSET_STALE` /
@@ -615,8 +635,8 @@ numara iki farklı bankada iki ayrı hesaptır). Türe göre ayrı normalize edi
 - **Döndürme prosedürü (sıra bağlayıcı):** (1) yeni sürüm `Active` olarak **bütün örneklere** dağıtılır, eski sürüm `Active`
   kalır (yeni küme K2: iki sürümle çift yazma); (2) hedef K2 olarak onaylanır (`ApproveBankDataKeySetTargetCommand`) ve
   çit her kiracıda K1'den onaylı hedefe ilerletilir (`AdvanceBankDataKeyFenceCommand`, yalnız örneğin kendi kümesi onaylı
-  hedefe eşitse; K1 ile çalışan örnekler bundan sonra 503 alır — dağıtım bitmeden ilerletmek kullanılabilirliği düşürür,
-  güvenliği değil);
+  hedefe eşitse ve hedef revizyonu çitin `AppliedTargetRevision`'ından büyükse; K1 ile çalışan örnekler bundan sonra 503
+  alır — dağıtım bitmeden ilerletmek kullanılabilirliği düşürür, güvenliği değil);
   (3) `BankAccountProtectionRotationWorker` her kiracıda 200'lük sayfalarla eksik adımları yapar (aşağıda "atlama
   koşulu"); (4) çit K2'deyken `HashKeyVersions` içinde yeni sürüm olmayan kayıt sayısı (kiracılar arası,
   `ix_mdm_bank_account_key_versions`) 0 ise bu sayım artık kesindir, çünkü eski sürümle yazabilecek bir örnek çit
@@ -964,6 +984,8 @@ Guid değeri üzerindendir; Guid olmayan `sub` reddedilir.
 - **Eski anahtar kümesiyle çalışan örnek çit ilerletildikten sonra yazıyor** → 503 `MDM_BANK_KEYSET_STALE`, hiçbir şey
   yazılmaz; ilerletmeyle eşzamanlı eski küme yazımı → biri geri alınır, yeniden denemede 503.
 - **Aynı anahtar listesi, farklı güncel sürüm seçimi** → farklı `KeySetId`, 503 `MDM_BANK_KEYSET_STALE`.
+- **Eski iş eski revizyonu yeniden onaylıyor** (K2 rev n'den sonra K1 rev n-1) → 409 `MDM_BANK_KEYSET_TARGET_REVISION_STALE`,
+  hedef K2 kalır; beklenen önceki küme tutmuyor → 409 `MDM_BANK_KEYSET_TARGET_PREVIOUS_MISMATCH`.
 - **Yeni kiracı, onaylı hedefle uyuşmayan yazar** → çit kurulmaz, 503, kayıt yok; **onaylı hedef yok** → 503
   `MDM_BANK_KEYSET_TARGET_UNAVAILABLE`.
 - **Yurt içi hesap oluşturma ile bankanın anahtar alanı değişikliği eşzamanlı** → ikisinden biri 409
@@ -1083,7 +1105,7 @@ yazmaları K2 değil ama aynı yoldan yazıldığı için pratikte kapalı-başa
 | DeleteBankAccountCommand | mdm.bank-account.deleted | BankAccount | b | BeforeState: Code, Status | **öneri evet** | — |
 | BulkDeleteBankAccountCommand | mdm.bank-account.deleted (kimlik başına bir niyet) | BankAccount | b | aynı | **öneri evet** | — |
 | RevealBankAccountIdentifierCommand (**okuma satırı**, AUD-001 §7) | mdm.bank-account.identifier-revealed | BankAccountSensitiveRead | b | BankAccountId, ReasonCode (değer yok) — değerden **önce** (KARAR D23/4) | **öneri evet** | — |
-| ApproveBankDataKeySetTargetCommand (sistem aktörü) | mdm.bank-data.key-set-target-approved | BankDataKeySetTarget | **aday** — kiracısız servis kaydıdır; MDM niyet yolu kiracısız niyeti reddeder (`AuditIntentContract.BuildCentralIdempotencyKey` boş kiracıda istisna atar, `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/AuditIntentContract.cs:12@373513765`). Hedef belgesi kendi yalnız-ekleme `History`'sini taşır; her kiracıdaki çit kurulumu / ilerletmesi niyetinde hedef `Version` + `ApprovalRef` yazılır. Merkezi kayıt yolu **CT kararı** (Ready-for-dev engeli) | Version, ApprovedKeySetId önce→sonra, ApprovalRef (anahtar yok) | **öneri evet** | — |
+| ApproveBankDataKeySetTargetCommand (sistem aktörü) | mdm.bank-data.key-set-target-approved | BankDataKeySetTarget | **aday** — kiracısız servis kaydıdır; MDM niyet yolu kiracısız niyeti reddeder (`AuditIntentContract.BuildCentralIdempotencyKey` boş kiracıda istisna atar, `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/AuditIntentContract.cs:12@373513765`). Hedef belgesi kendi yalnız-ekleme `History`'sini taşır; her kiracıdaki çit kurulumu / ilerletmesi niyetinde hedef `Version` + `ApprovalRef` yazılır. Merkezi kayıt yolu **CT kararı** (Ready-for-dev engeli) | Version, ApprovalRevision, ExpectedPreviousKeySetId, ApprovedKeySetId önce→sonra, ApprovalRef (anahtar yok); ret (409) merkezi kayıt bırakmaz — bilinen boşluk | **öneri evet** | — |
 | AdvanceBankDataKeyFenceCommand (sistem aktörü) | mdm.bank-data.key-fence-advanced (kurulumda `…key-fence-created`) | BankDataKeyFence | b | Epoch önce→sonra, ActiveKeySetId önce→sonra, hedef `Version` + `ApprovalRef` (kimlik özetleri; anahtar ya da denetim değeri yok) | **öneri evet** | — |
 | RotateBankAccountProtectionCommand (sistem aktörü) | mdm.bank-account.protection-rotated | BankAccount | b | EncryptionKeyVersion önce→sonra, eklenen / silinen özet sürüm **adları** (özet değerleri, zarf ve tanımlayıcı yok) | **öneri evet** | — (İ4 kullanılmaz: zarf değiştiği için kayıt değişir ve denetlenir) |
 
@@ -1322,12 +1344,24 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
   kurulmaz; hedef K1'den K2'ye onaylanırken eşzamanlı K1 çit kurulumu ya hedef değişikliğinden önce commit olur (sonra
   normal ilerletme kuralı) ya da reddedilir. "İlk yazan kendi kümesiyle kurar" davranışına dönüldüğünde K1'in kazandığı bir
   tekrar bulunur ve test kırmızıya döner (sabotaj).
-- [ ] AC-50 (zorunlu) — Çit yük testi (gap 14/1 ölçülmeyen kalemi; geliştirme kapısı kapanmadan geçmeli): gerçek replica
+- [ ] AC-50 (zorunlu) — Çit yük testi (gap 14/1 ölçülmeyen kalemi; DL-2 dilim kabul kapısında geçmeli): gerçek replica
   set'te tek kiracıda en az 8 paralel yazar 10 dakika banka hesabı Create / Update yazar ve aynı sürede bir çit ilerletmesi
   yapılır; her istek ya başarılı ya tanımlı sonuçla (409 / 503) biter, kayıp ya da çift yazım yoktur, ilerletmeden sonra eski
   kümeli commit yoktur; çakışma ve yeniden deneme oranı, p95 / p99 gecikme `scripts/run_record.py` ile kaydedilir. Kabul
-  eşiği (ör. yeniden deneme oranı ve p95 üst sınırı) DL-2 başında sahip + güvenlik tarafından yazılır; eşik yazılmadan bu AC
-  geçmiş sayılamaz.
+  eşiği (ör. yeniden deneme oranı ve p95 üst sınırı) sahip + güvenlik tarafından **`ready-for-dev`'den önce** yazılır (tasarım
+  kapısı maddesi); eşik yazılmadan bu AC geçmiş sayılamaz.
+- [ ] AC-51 (zorunlu) — Onaylı hedef geri alınamaz (gap 16/1): hedef K2 (revizyon n) iken, eski yapılandırmayla kalmış iş K1'i
+  revizyon n-1 ile yeniden onaylamaya çalışır → 409 `MDM_BANK_KEYSET_TARGET_REVISION_STALE`, hedef K2, `ApprovalRevision` n,
+  `History` değişmez; aynı revizyon n'nin tekrarı da 409; revizyon n+1 ama `ExpectedPreviousKeySetId = K1` → 409
+  `MDM_BANK_KEYSET_TARGET_PREVIOUS_MISMATCH`; açık geri dönüş — revizyon n+1, `ExpectedPreviousKeySetId = K2`, yeni
+  `ApprovalRef`, K1 kayıtlardaki bütün sürümleri içeriyor → kabul, hedef K1, `History`'de revizyon n+1 satırı; K1 kayıtlarda
+  geçen bir sürümü içermiyorsa → 409 `MDM_BANK_KEYSET_TARGET_INCOMPLETE`. Revizyon kontrolü süzgeçten çıkarıldığında eski
+  K1 tekrarının kazandığı görülür ve test kırmızıya döner (sabotaj).
+- [ ] AC-52 (zorunlu) — Onay yarışı ve çit revizyonu (gap 16/1; gerçek replica set, 50 tekrar): yeni iş K2'yi revizyon n ile
+  onaylarken eski iş K1'i revizyon n-1 ile eşzamanlı onaylamaya çalışır → her tekrarda son hedef K2'dir (K1 ya hiç yazılmaz
+  ya da önce yazılıp K2 tarafından geçilir; K2'den sonra K1 yazımı yoktur); eski iş bir kiracı çitini düşük revizyonlu hedefe
+  ilerletmeye çalışırsa ilerletme reddedilir ve çitin `AppliedTargetRevision`'ı hiç azalmaz. Çit ilerletmesinden revizyon
+  koşulu kaldırıldığında çitin K1'e döndüğü bir tekrar bulunur ve test kırmızıya döner (sabotaj).
 
 ## Test Expectations
 
@@ -1346,7 +1380,7 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - **Anahtar döndürme:** iki örnek, iki yapılandırma (h1 / h1+h2) ile eşzamanlı oluşturma (AC-35); kesintili iş (AC-36,
   AC-39); başlangıç doğrulaması (AC-38); eski / yeni örnekli kademeli dağıtım ve çit (AC-43, AC-44); atlama koşulu (AC-46).
 - **Yarış:** yurt içi hesap oluşturma ile banka / şube anahtar alanı değişikliği, 100 tekrar (AC-45).
-- **Gerçek Mongo şartı:** O-6 ve çitlerle ilgili AC'ler (AC-13, AC-35…AC-39, AC-43…AC-46, AC-48…AC-50) yalnız gerçek replica set'te
+- **Gerçek Mongo şartı:** O-6 ve çitlerle ilgili AC'ler (AC-13, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52) yalnız gerçek replica set'te
   (işlem ve yazma çakışması olan) geçmiş sayılır; bellek içi sahte depo bu AC'leri kapatmaz.
 - **Mimari:** her aksiyonda `[HasPermission]`; `mod0140_suppliers` / ProcurementService başvurusu yok; DTO'larda tam
   tanımlayıcı alan adı yok (`BankAccountRevealDto` hariç); `AuditTrailStandard` filtresi yeşil.
@@ -1387,7 +1421,13 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - [x] Sayfa yardımı anahtarları ve "tur yok"
 - [x] Acceptance criteria kimlikli ve test edilebilir
 
-**ENGELLER (hepsi kapanmadan `ready-for-dev` olmaz):**
+**İki kapı (gap 16/2):** (a) **tasarım / onay kapısı = `ready-for-dev`** — aşağıdaki ENGELLER: kararlar, onaylar,
+sözleşmeler, yazılmış eşikler ve yalnız var olan kodun / sözleşmenin **okunarak** ölçülmesi. Yeni kodun test geçmesi bu
+kapının maddesi **değildir** (kod `ready-for-dev`'den önce yazılamaz; ikisini birden istemek kilitlenme olurdu). (b) **Dilim
+kabul kapısı** — her dilimin kabulü / birleştirilmesi için: o dilimin AC'lerinin geçmesi (AC-50 yük testi ve her gerçek
+replica set AC'si dahil), build ve tüketici kanıtı. Tanımı "Teslim dilimleri → Dilim kabul kapısı"ndadır.
+
+**ENGELLER — tasarım / onay kapısı (hepsi kapanmadan `ready-for-dev` olmaz):**
 - [ ] CT-APR-02 bağımsız inceleme bu paket sürümü için kaydedildi (`execution/approvals/reviews.tsv`), açık ENGEL yok
 - [ ] CT-APR-01 sürüme bağlı onay satırı (`execution/approvals/approvals.tsv`); yüksek risk (hassas finansal veri) —
   paketi yazmamış, `high: evet` onaylayıcı
@@ -1398,14 +1438,11 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - [ ] Kalan açık kararlar O-4…O-8, O-10…O-12 (özellikle O-5 denetim yolu + K2, O-6 şifreleme ve anahtar yönetimi)
 - [ ] RCS-001 ortak kod servisi (BL-565) ve `BNK` / `BAC` önekleri RCS-001 §3'te (O-7; `.antigravity` onayı)
 - [ ] Denetim izinin genişletilmesi için Control Tower kararı (defter belirteci + CT-DECISIONS satırı)
-- [ ] Şifreleme ve özet anahtarı kaynağı (üretim gizli deposu), döndürme prosedürü ve MdmService hedef çerçevesinde
-  `AesGcm` kullanılabilirliği (O-6) — DL-2 için
-- [ ] Çok anahtarlı kısmi tekil indeksin (`ux_mdm_bank_account_identifier`) gerçek replica set'te beklendiği gibi çalıştığı
-  ölçüldü — DL-2 için
-- [ ] O-6 (şifreleme + anahtar çiti + onaylı hedef tasarımı) sahip ve güvenlik onayından geçti — DL-2 için
-- [ ] Geliştirme kapısı kapanmadan: çit yük testi (AC-50, eşiğiyle) ve gerçek Mongo testleri (AC-13, AC-35…AC-39,
-  AC-43…AC-46, AC-48, AC-49) gerçek replica set'te **geçti** (çalıştırmak geçmek değildir)
-- [ ] Onaylı anahtar kümesi hedefinin (kiracısız servis kaydı) merkezi denetim yolu için CT kararı — DL-2 için
+- [ ] Şifreleme ve özet anahtarı kaynağı (üretim gizli deposu) ve döndürme prosedürü yazıldı (O-6) — DL-2 için
+- [ ] **O-6 (şifreleme + anahtar çiti + onaylı hedef + revizyon tasarımı) sahip ve güvenlik onayından geçti — görünür engel**
+- [ ] **Onaylı anahtar kümesi hedefinin (kiracısız servis kaydı) merkezi denetim yolu için CT kararı — görünür engel**
+- [ ] Çit yük testinin kabul eşiği (AC-50 için: yeniden deneme oranı, p95 / p99 üst sınırı) sahip + güvenlik tarafından yazıldı
+- [ ] Onaylı dağıtım revizyonunun (`ApprovalRevision`) ve `ApprovalRef`'in hangi onay kaydından geldiği yazıldı (O-6 içinde)
 - [ ] SEC-002 kapsam sağlayıcısının MOD-0289 anahtarlarıyla çalıştığı ölçüldü (D23/1 kuralı) — DL-2 için
 - [ ] MOD-0140 1.3.0'da "çağıran şirketle Active ilişkili tedarikçi kimlikleri" okumasının hangi işlemle verildiği ölçüldü
   (D23/1 liste süzgeci) — DL-3 için
@@ -1414,6 +1451,14 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız **"tanımlı"**dır.
 - [ ] MOD-0140 `supplier.openapi.yaml` 1.3.0 main'de (MVP-2) ve MdmService → MOD-0140 çağrı kimliği belirlendi — DL-3 için
 - [ ] MDM `ValidationBehavior`'ın 400 gövdesinde girilen değeri döndürüp döndürmediği ölçüldü — DL-2 için
 - [ ] Gateway rotaları (integration-agent) — DL-4 için
+
+**İsteğe bağlı teknik ön doğrulama (öneri — yapılması şart değil, sahip onayı ister):** iki dar soru `ready-for-dev`'den
+önce tasarımı etkileyebilir: (S-1) dizi alanı üzerinde kısmi süzgeçli tekil indeksin gerçek replica set'te beklendiği gibi
+çakıştığı; (S-2) MdmService'in hedef çerçevesinde `System.Security.Cryptography.AesGcm`'in kullanılabildiği. Yapılırsa:
+yalnız ayrı, atılacak bir doğrulama kapsamında (depoda üretim yolu yok, `services/**` değişmez, birleştirme yok, dal ya da
+çalışma klasörü atılır), sonuç `scripts/run_record.py` kaydıyla bu pakete ölçüm olarak yazılır; sahip açıkça onaylamadan
+başlamaz. Yapılmazsa iki soru DL-2 dilim kabul kapısında AC-35 ve AC-37 ile cevaplanır; olumsuz çıkarsa tasarım o dilimde
+bu paketin revizyonuyla değişir.
 
 ## Implementation Notes
 
@@ -1467,7 +1512,7 @@ O-8; AUTH → `[HasPermission]` + explicit-grant; AUDIT → Audited Events (O-5)
 | 2 (P1) | "Yurt içi hesap varsa banka kodu kilitli" sorgusu hesap oluşturmayla yarışabilir | Bank / BankBranch `DomesticKeyFenceVersion`; yurt içi hesap yazımı ve banka / şube anahtar alanı değişikliği aynı işlemde aynı alanı CAS'la artırır → biri yazma çakışmasıyla düşer, 409 (Runtime Constraints → "Tekillik anahtarı") | AC-34, AC-45 |
 | 3 (P2) | Döndürme işi kaydı yalnız şifreleme sürümüne bakarak atlıyordu | Atlama yalnız üç koşul birlikteyken (güncel şifreleme + her etkin özet + emekli özet yok); aksi hâlde yalnız eksik adımlar, idempotent | AC-46 |
 | 4 (P2) | Gerçek dağıtım kapısı yalnız IBAN içindi | Yurt içi için ayrı kapı: banka dizininde ülke + ulusal banka kodu (+ şube) ve ülke hesap numarası kuralı (`IBankDirectorySource`, `IDomesticAccountRuleSource`), düzey `DomesticVerified`; IBAN `CountryFormat` ve yurt içi `DomesticVerified` kapılarının **ikisi de** MOD-0269 gerçek dağıtımından önce zorunlu | AC-47 |
-| — | O-6 | Hâlâ **öneri**: sahip ve güvenlik onayı ile gerçek Mongo testleri (replica set) olmadan kapanmaz (Ready-for-dev engeli) | — |
+| — | O-6 | Hâlâ **öneri**: sahip ve güvenlik onayı (`ready-for-dev` engeli) ile gerçek Mongo testleri (DL-2 dilim kabul kapısı — gap 16/2) olmadan kapanmaz | — |
 
 ### Gap 15 kapanışı (sahip gap listesi 15, CONDITIONAL PASS → revizyon 4)
 
@@ -1475,8 +1520,16 @@ O-8; AUTH → `[HasPermission]` + explicit-grant; AUDIT → Audited Events (O-5)
 |---|---|---|---|
 | 1 (P1) | `KeySetId` güncel anahtar seçimini içermiyordu; aynı listede farklı "güncel" seçen örnek aynı çit kimliğini üretirdi | Kanonik serileştirme tanımlandı (`mdm-bank-keyset/2`, `enc.current=`, `hash.current=`, sıralı anahtar satırları, `ks2-` + SHA-256); sürüm adı deseni ve başlangıç doğrulaması (Entity Fields → BankDataKeyFence) | AC-48 |
 | 2 (P1) | Yeni kiracı çitini ilk yazan kendi kümesiyle kuruyordu | Servis düzeyi `BankDataKeySetTarget` (yalnız `ApproveBankDataKeySetTargetCommand` yazar, onaylı yapılandırmadan, `ApprovalRef` + yalnız-ekleme geçmiş); çit yalnız onaylı hedefle, yazma işlemi içinde hedef belgesi koşullu artırılarak kurulur; hedefle uyuşmayan yazar çit kuramaz ve yazamaz (503); hedef değişikliği kurulumla yazma çakışması üretir (Runtime Constraints → "Yazar çiti") | AC-49 |
-| — | Çit yük testi ve gerçek Mongo testleri açıkça kapı olmalı | Adlandırılmış yük testi AC-50 (eşik DL-2 başında sahip + güvenlikçe yazılır) ve Ready-for-dev maddesi: AC-50 ile bütün gerçek Mongo AC'leri geliştirme kapısı kapanmadan **geçmiş** olmalı | AC-50 |
+| — | Çit yük testi ve gerçek Mongo testleri açıkça kapı olmalı | Adlandırılmış yük testi AC-50; gap 16/2 ile netleşti: eşiğin yazılması `ready-for-dev` maddesi, AC-50 ve gerçek Mongo AC'lerinin geçmesi DL-2 dilim kabul kapısı | AC-50 |
 | — | O-6 | Hâlâ **öneri** (sahip + güvenlik onayı yok) | — |
+
+### Gap 15b / Gap 16 kapanışı (sahip gap listesi 16, CONDITIONAL PASS → revizyon 5)
+
+| Madde | Bulgu | Kapanış (bu pakette) | AC |
+|---|---|---|---|
+| 1 (P1) | Eski iş, yerel onaylı yapılandırmasından K2'den sonra K1'i yeniden onaylayabilirdi; CAS tek başına durdurmaz | Kesin artan `ApprovalRevision` + `ExpectedPreviousKeySetId` onaylı yapılandırmada birlikte taşınır; onay tek koşullu güncellemedir (revizyon büyük **ve** önceki küme beklenen **ve** örneğin kümesi hedef **ve** küme kayıtlardaki sürümleri içeriyor); eski / eşit revizyon 409 `MDM_BANK_KEYSET_TARGET_REVISION_STALE`, hedef değişmez; geri dönüş yalnız yeni revizyonla; `History` revizyonu yazar; çit `AppliedTargetRevision` ile yalnız ileri gider (Entity Fields → BankDataKeySetTarget, BankDataKeyFence) | AC-51, AC-52 |
+| 2 (P2) | Yeni kodun gerçek Mongo testleri `ready-for-dev`'den önce istenirken kod `ready-for-dev`'den önce yasaktı (kilitlenme) | Kapılar ayrıldı: tasarım / onay kapısı = `ready-for-dev` (kararlar, onaylar, sözleşmeler, yazılmış eşikler, var olan kodun okunarak ölçümü); dilim kabul kapısı = her dilimin AC'leri (AC-50 ve gerçek replica set AC'leri dahil), build ve tüketici kanıtı. "Geçti" isteyen her madde Ready-for-dev listesinden dilim kabul kapısına taşındı; S-1 / S-2 isteğe bağlı, atılacak, sahip onaylı ön doğrulama olarak tanımlandı (Ready-for-dev Checklist, Teslim dilimleri → Dilim kabul kapısı) | — |
+| — | Görünür engeller | Kiracısız hedef kaydının merkezi denetim yolu (CT kararı) ve O-6 (sahip + güvenlik onayı) Ready-for-dev listesinde **görünür engel** olarak duruyor | — |
 
 ### Taşınmayacaklar (do-not-carry)
 
@@ -1586,10 +1639,11 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   `Rules/`, `Infrastructure/{BankData,Currency}/**`, `BankAccountsController`, `BANK-ACCOUNT-LOOKUP` sözleşme dosyası.
   **Neden ayrı:** hassas veri, şifreleme ve veri kapsamı modülün en riskli kısmıdır; bağımsız inceleme tek başına
   yapılabilsin. Önkoşul: DL-1, O-6, O-10, O-12 (D23/2–4 karar verildi), şifreleme ve özet anahtarları, Auth explicit-grant
-  eki, kapsam sağlayıcısı ölçümü, çok anahtarlı tekil indeks ölçümü, MOD-0048 tüketim yolu, `ValidationBehavior` ölçümü.
+  eki, kapsam sağlayıcısı ölçümü, MOD-0048 tüketim yolu, `ValidationBehavior` ölçümü, AC-50 eşiği yazılmış (çok
+  anahtarlı tekil indeks ve `AesGcm` soruları isteğe bağlı S-1 / S-2'de ya da bu dilimin kabul kapısında cevaplanır).
   Bitiş: AC-3 (hesap kısmı), 4 (hesap kısmı), 5 (hesap kısmı), 6 (hesap kısmı), 8 (hesap kısmı), 9 (hesap kısmı), 10, 11,
   12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 26 (şirket hesabı kısmı), 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46,
-  47, 48, 49, 50.
+  47, 48, 49, 50, 51, 52.
 - **DL-3** — Yollar: `Infrastructure/Suppliers/**` (`ISupplierEligibilityPort` bağdaştırıcısı), tedarikçi sahibi dalları
   (Create, Update, Activate, Deactivate, Delete, liste, detay, maskesiz okuma, `lookup-validation` — D23/1 ilişki kuralı),
   mimari test (koleksiyon okuması yok), dev ortamı denetim kanıtı. **Neden ayrı:** MOD-0140 1.3.0'a bağlı; DL-2'yi
@@ -1599,3 +1653,14 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   anahtarları; Gateway rotaları integration-agent task'ı olarak açılır (bu dilim yazmaz). **Neden ayrı:** ekran API
   sözleşmesine bağlıdır, arka uç değişmeden ilerler. Önkoşul: DL-2 (hesap ekranı), DL-3 (tedarikçi sahibi seçimi), Gateway
   rotaları, MDM domain-config frontend/gateway kapsam cümlesi. Bitiş: AC-28, 29, 30, 31, 32.
+
+**Dilim kabul kapısı (gap 16/2) — her dilim için, kabul / birleştirmeden önce (`ready-for-dev`'den önce değil):**
+
+| Dilim | Geçmesi gerekenler (çalıştırmak geçmek değildir) |
+|---|---|
+| DL-1 | "Bitiş" listesindeki AC'ler; AC-2 ve AC-9'un gerçek replica set yarış testleri; `AuditTrailStandard` (AC-7); `Diten.MdmService` build 0 hata; yerel kapıda `scripts/` Python testleri |
+| DL-2 | "Bitiş" listesindeki AC'ler; gerçek replica set AC'leri (AC-13, AC-35…AC-39, AC-43…AC-46, AC-48…AC-52) ve **AC-50 yük testi** yazılmış eşiğe göre; tüketici kanıtı: `BANK-ACCOUNT-LOOKUP` sözleşme testi (AC-20, AC-42) ve en az bir Treasury tüketicisinin fikstür koşusunun kendi sahibince kaydı (Follow-up tablosu); build |
+| DL-3 | "Bitiş" listesindeki AC'ler; MOD-0140 1.3.0'a karşı sözleşme testi; AC-27 dev ortamı denetim kanıtı; build |
+| DL-4 | "Bitiş" listesindeki AC'ler; tarayıcı smoke ve UAS-001 canlı denemesi; DataTable doğrulayıcı; RESX 7 dil parite; `Diten.Web` build |
+
+AC durumu kabul kaydında (`scripts/acceptance_record.py`) izlenir; bu pakette her AC yalnız "tanımlı"dır.

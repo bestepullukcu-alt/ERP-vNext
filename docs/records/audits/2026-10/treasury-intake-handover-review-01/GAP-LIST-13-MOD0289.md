@@ -62,3 +62,20 @@ kiracısız kayıtta merkezi anahtarı üretemez (`AuditIntentContract.cs:12@373
 kiracının fence denetim niyeti hedef `Version` / `ApprovalRef` taşır; merkezi denetime yazılması CT kararı ister. O-6 hâlâ
 öneri. Ölçülmeyenler: `ApprovalRef`'in arkasındaki insan onayı, yük testi eşikleri, çok sayıda yeni kiracıda hedef kaydı
 çakışması. Pack: 24 bölüm, AC-1…50 tekil. Belge incelemesidir; build / test / runtime yok.
+
+## Gap listesi 16 (2026-10-25, sahip — CONDITIONAL PASS)
+
+İnceleme girdisi `treasury-TRM16-MOD0289-9518927bd.zip` (sha256 `3cb6e19a0f715838ee316a1791da689db47e4ff5e566796a9b4195e79b2309f0`;
+manifest 6/6 geçti). Gap 15 kapandı; iki madde kapandı (pack "Gap 15b / Gap 16 kapanışı" tablosu):
+
+| # | Öncelik | Gap | Kapanış |
+|---|---|---|---|
+| 1 | P1 | Eski worker hedefi geriye çevirebilir | Onaylı yapılandırmada kesin artan `ApprovalRevision` + `ExpectedPreviousKeySetId`; `ApproveBankDataKeySetTargetCommand` tek atomik koşullu güncelleme (worker kendi seti = hedef ∧ revizyon > kayıtlı ∧ kayıtlı set = beklenen önceki ∧ hedef set kayıtlarda kullanılan tüm anahtar sürümlerini içeriyor); retler 409 `MDM_BANK_KEYSET_TARGET_REVISION_STALE` / `…_PREVIOUS_MISMATCH` / `…_INCOMPLETE`, hedef değişmez; geri dönüş yalnız yeni, açık revizyonla. Aynı açık fence ilerletmesinde de kapatıldı (`AppliedTargetRevision`, yalnız daha yüksek revizyon). AC-51, AC-52 (sabotajlı). |
+| 2 | P2 | Hazırlık kapısında döngü | İki kapı ayrıldı: tasarım / onay kapısı = `ready-for-dev` (kararlar, onaylar, sözleşmeler, yazılmış eşikler, yalnız okuyarak ölçümler); dilim kabul kapısı (Teslim dilimleri'nde dilim başına tablo: AC geçişleri, gerçek replika seti AC'leri, DL-2'de AC-50, build, tüketici kanıtı) — dilim kabulü / merge öncesi, ready-for-dev öncesi değil. İsteğe bağlı ön kontrol (öneri): S-1 dizi üzerinde kısmi tekil indeks, S-2 `AesGcm` — atılacak, üretim yolu yok, merge yok, sahip onayıyla. |
+
+**CT notu:** aynı döngü dört Treasury pack'inde de vardı (ready-for-dev listesinde "MOD-0023 AC-W… geçti"; §17 kodu DL-2/DL-3
+ile yazılıyor). Düzeltildi: ready-for-dev yalnız §17 onayını ister; AC-W1/W2/W5…W12 dilim kabul kapısında; dilim önkoşulları
+aynı şekilde (MOD-0126, 0119, 0120, 0124).
+
+Açık engeller görünür: O-6 (sahip + güvenlik), kiracısız hedef kaydının merkezi denetim yolu (CT kararı). Pack: 24 bölüm,
+AC-1…52 tekil. Belge incelemesidir; build / test / runtime yok.
