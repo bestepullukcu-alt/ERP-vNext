@@ -79,3 +79,11 @@ aynı şekilde (MOD-0126, 0119, 0120, 0124).
 
 Açık engeller görünür: O-6 (sahip + güvenlik), kiracısız hedef kaydının merkezi denetim yolu (CT kararı). Pack: 24 bölüm,
 AC-1…52 tekil. Belge incelemesidir; build / test / runtime yok.
+
+## Belge kapanışı (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-TRM16-MOD0289-2039ba486.zip` (sha256 `bb8accfb8709c1788569f7b0f270be8c4f18986945761b02c24a3c60b3ca8bec`;
+manifest 8/8 geçti). Sonuç: gap 16 belge düzeyinde kapandı; yeni doğrulanmış belge açığı yok. **`ready-for-dev` değildir.**
+Açık kalanlar: (1) O-6 şifreleme / anahtar yönetimi / rotasyon tasarımının sahip + güvenlik onayı; (2) kiracısız anahtar
+hedef kaydının merkezi denetim yolu (CT kararı); (3) diğer açık kararlar, sözleşmeler ve performans eşikleri (readiness
+engelleri); (4) gerçek Mongo yarış / yük testleri ve build sonuçları — yalnız kabul şartları tanımlı, kanıt yok.
