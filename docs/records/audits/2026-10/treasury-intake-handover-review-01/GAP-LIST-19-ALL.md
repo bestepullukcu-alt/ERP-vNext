@@ -18,3 +18,9 @@ previous: GAP-LIST-17-D26.md
 
 Ek düzeltme: MOD-0126 bağımlılık özetindeki "MOD-0269 dağıtım arayüzü (taslak, TBD)" → FROZEN 0.1.0.
 Kontroller: MOD-0126 24 bölüm, 42 AC satırı (AC-1…41 + 6a), tekil. Belge incelemesidir; build / test / runtime yok.
+
+## Belge kapanışı (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-ALL-54eb86dcf.zip` (sha256 `54f03426f91cad9ee73ba03da9500ac37c7b43dc3eef934af79df94a60edcc88`;
+manifest 17/17 geçti). Sonuç: **PASS** — gap 19 kapandı; yeni engelleyici belge açığı yok. MOD-0126'da 42 tekil AC
+(AC-1…41 + AC-6a). Paket `ready-for-dev` değildir: kayıtlı onaylar, üretici bağımlılıkları ve MOD-0289 güvenlik onayı açık.
