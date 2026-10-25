@@ -676,7 +676,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     doğrulaması, bağdaştırıcı çağrısı, `PaymentDispatchAttempt`, makbuz (`Completed`, 200) ve tek `…release-attempted`
     olayı **aynı Mongo işleminde** yazılır. Uzak çağrı olmadığı için niyet, belirsiz sonuç ve Reconcile yoktur; çökme →
     işlem geri alınır, aynı anahtarla tekrar baştan çalışır.
-  - **Sözleşme bağı (gap 7, `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` rev 2):** aynı işlemde `ReleaseSequence` +1 (sürüme
+  - **Sözleşme bağı (gap 7–8, `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` rev 3):** aynı işlemde `ReleaseSequence` +1 (sürüme
     koşullu) ve `dispatchKey` üretilir; makbuz tekrarı portu çağırmaz ve sıra artırmaz; commit edilmiş makbuz yanıtını
     (ve `dispatchKey`'ini) korur; geri alınan deneme sıra ya da anahtar rezerve etmez — arada başka bir Release commit
     ederse yeniden deneme sonraki sırayı alır (gap 8/P2-a; dağıtım kapalı sürüm için yeterli). İstek her talimatı

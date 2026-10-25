@@ -18,3 +18,23 @@ previous: GAP-LIST-07-BANK-DISPATCH.md
 | iyileştirme | — | Durum sorgusunda yanlış `contractVersion` için §3.4 ve §5 farklı kod | Tek eşleme: gönderimde ve durum sorgusunda `BANK_DISPATCH_CONTRACT_VERSION_UNSUPPORTED`; diğer ihlaller `REQUEST_INVALID`. §5.1'e vaka eklendi. |
 
 Belge incelemesidir; build / test / runtime yok.
+
+## Kapanış incelemesi (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-packs-126-119-120-124-269-473e3b3ee.zip` (sha256 `f67ff17a08eb7cc9e45a447a012b71b57c687a0ba649a97a84f2f4b26550c237`;
+manifest 9/9 geçti). Sonuç: tasarım/belge incelemesi **PASS**; geliştirmeye hazırlık **CONDITIONAL PASS**.
+
+| Modül | Sonuç |
+|---|---|
+| MOD-0126 Payments | PASS |
+| MOD-0119 AP | PASS |
+| MOD-0120 AR | PASS |
+| MOD-0124 Cash Positioning | PASS |
+| MOD-0269 Bank Dispatch | PASS — sözleşme taslağı (ayrı uygulama pack'i yok) |
+
+Tek küçük düzeltme: MOD-0126 "Sözleşme bağı" satırı rev 2 diyordu → rev 3 yapıldı (bu bölümün commit'i).
+
+Geliştirme öncesi açık koşullar (sahibin listesi): MOD-0023 saklama politikası, Reconcile eşleme alanları ve aynı anahtarlı
+yarış kanıtı; MOD-0143 `totalAmount` net/brüt onayı; SEC-002 tüketim yolu, para birimi hassasiyeti, RCS ve ilgili
+sözleşmeler; merkezi denetim `Denied` boşluğu (G-AUD-1) ve sürüme bağlı onaylar (CT-APR-01/02); tanımlı AC'lerin uygulanıp
+çalıştırılması (belgedeki testler çalışma kanıtı değildir). Dört pack'te toplam 157 AC tanımı, modül içinde mükerrer yok.
