@@ -223,7 +223,7 @@ yalnız tarihtir (`DateOnly`), saat dilimi çevrimi yapılmaz.
 | WorkflowInstanceId / WorkflowStatus / WorkflowCorrelationId | Guid? / string? / string? | yalnız kesin başlatma sonucundan | `:185-189@da4abb20` |
 | SodPolicyVersion / Tier2ThresholdAmount / Tier2ThresholdCurrency / IsTier2 | string / decimal / string(3) / bool | gönderme anında sabitlenir (pinned); karar aynı değeri kullanır | yeni (koşul 1) |
 | EvidenceLinks | `PaymentEvidenceLinkReference[]` | MOD-0031 referansı; ikili veri yok | :24 |
-| ReleaseSequence | int | 0'dan başlar; her **yeni** Release denemesi aynı işlemde +1 (sürüme koşullu, CAS); makbuz tekrarı artırmaz; MOD-0269 `dispatchKey = mod0126:{batchId:N}:release:{ReleaseSequence}` (gap 7/P1-b) | yeni |
+| ReleaseSequence | int | 0'dan başlar; her **yeni** Release denemesi aynı işlemde +1 (sürüme koşullu, CAS); makbuz tekrarı artırmaz; üst sınır 999 999 999 — ulaşılmışsa 409 `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED` (artırma ve port çağrısı yok; gap 8/P2-b); MOD-0269 `dispatchKey = mod0126:{batchId:N}:release:{ReleaseSequence}` (gap 7/P1-b) | yeni |
 | ReleaseBlockedForReview | bool | varsayılan false; bağdaştırıcı `NotConfigured` dışı sonuç döndürürse true olur ve sonraki Release'i kapatır (D17/2) | yeni |
 | CreatedBy / UpdatedBy | Guid? | token `sub` | — |
 
@@ -373,7 +373,8 @@ Taşınan kodlar korunur (`PAYMENT_VALIDATION_FAILED` 400, `PAYMENT_PERMISSION_D
   çağrısı yapılmaz, niyet `Unknown` kalır), `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` (500 — porttan
   `BankDispatchContractException` ya da sözleşme dışı istisna; işlem geri alınır), `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`
   (502 — `NotConfigured` dışı sonuç; deneme kaydedilir, parti kilitlenir, D17/2), `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW` (409 —
-  kilitli partide Release; port çağrılmaz). MOD-0269 eşlemesi: `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` §5.
+  kilitli partide Release; port çağrılmaz), `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED` (409 — `ReleaseSequence` üst sınırda;
+  artırma ve port çağrısı yok). MOD-0269 eşlemesi: `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` §5.
 - **Taşınmaz:** `PAYMENT_AUDIT_DISPATCH_*`, `PAYMENT_AUDIT_CONTRACT_UNAVAILABLE`, `PAYMENT_AUDIT_RESPONSE_INVALID`,
   `PAYMENT_OUTBOX_*` (CentralAudit), `PAYMENT_UNSUPPORTED_P0_OPERATION` (istek modelinde o alanlar yok),
   `PAYMENT_APPROVER_DIRECTORY_*` (O-10'a bağlı).
@@ -676,8 +677,9 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     olayı **aynı Mongo işleminde** yazılır. Uzak çağrı olmadığı için niyet, belirsiz sonuç ve Reconcile yoktur; çökme →
     işlem geri alınır, aynı anahtarla tekrar baştan çalışır.
   - **Sözleşme bağı (gap 7, `docs/analysis/contracts/drafts/bank-dispatch-v0.1-proposal.md` rev 2):** aynı işlemde `ReleaseSequence` +1 (sürüme
-    koşullu) ve `dispatchKey` üretilir; makbuz tekrarı portu çağırmaz ve sıra artırmaz; geri alınan işlemin sıra artışı
-    da geri alınır, bu yüzden aynı istemci anahtarıyla yeniden deneme aynı `dispatchKey`'i üretir. İstek her talimatı
+    koşullu) ve `dispatchKey` üretilir; makbuz tekrarı portu çağırmaz ve sıra artırmaz; commit edilmiş makbuz yanıtını
+    (ve `dispatchKey`'ini) korur; geri alınan deneme sıra ya da anahtar rezerve etmez — arada başka bir Release commit
+    ederse yeniden deneme sonraki sırayı alır (gap 8/P2-a; dağıtım kapalı sürüm için yeterli). İstek her talimatı
     kendi `SourceBankAccountRef`'iyle taşır; `DefaultSourceBankAccountRef` talimat değerinin yerine konmaz, talimatlar
     birleştirilmez (D17/1). Port iş sonucunu tipli döndürür: `NotConfigured` → 200; `BankDispatchContractException` /
     sözleşme dışı istisna → geri alma + 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`; iptal → geri alma, kayıt yok;
@@ -880,7 +882,8 @@ Delete / BulkDelete yalnız hiç gönderilmemiş (`SubmissionSequence = 0`) `Dra
   ağ çağrısı yapılmaz.
 - **Port sözleşme ihlali** (sürüm, geçersiz istek, sözleşme dışı istisna) → 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`,
   işlem geri alınır: deneme, sıra artışı, makbuz ve olay yok.
-- **Release sırasında iptal** → işlem geri alınır, kayıt yok; aynı anahtarla tekrar aynı `dispatchKey`'i üretir.
+- **Release sırasında iptal** → işlem geri alınır, kayıt yok; geri alınan deneme anahtar rezerve etmez.
+- **`ReleaseSequence` tükendi** (999 999 999) → 409 `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED`, port çağrısı ve kayıt yok.
 - **Beklenmeyen bağdaştırıcı sonucu** (`Accepted` / `Rejected` / `Unknown`) → 502 `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`,
   deneme alınan sonuçla kayıtlı, parti `Approved` + `ReleaseBlockedForReview`; sonraki Release 409
   `PAYMENT_RELEASE_BLOCKED_FOR_REVIEW`, port çağrılmaz (D17/2).
@@ -1128,7 +1131,10 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   bağdaştırıcıda `BankDispatchContractException` ve Release'te 500 `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` verir,
   hiçbir deneme / makbuz / olay / sıra artışı kalmaz. Ayrıca: (a) iki kaynak hesaplı partide istekteki her talimat kendi
   `SourceBankAccountRef`'ini taşır, birleştirme yok; (b) aynı istemci anahtarıyla tekrar portu çağırmaz ve
-  `ReleaseSequence`'i artırmaz; (c) işlem geri alındıktan sonra aynı anahtarla tekrar aynı `dispatchKey`'i üretir;
+  `ReleaseSequence`'i artırmaz; (c) commit edilmiş makbuzun tekrarı aynı yanıtı ve aynı `dispatchKey`'i döner; geri
+  alınan deneme hiçbir sıra / anahtar bırakmaz (geri alma sonrası `ReleaseSequence` önceki değerinde, deneme kaydı yok) ve
+  arada başka Release commit ederse yeniden deneme sonraki sırayı alır; (c2) `ReleaseSequence = 999 999 999` partide
+  409 `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED`, port çağrısı yok;
   (d) iki eşzamanlı Release aynı sırayı alamaz (biri 409); (e) Release sırasında iptal hiçbir kayıt bırakmaz.
   Sabotaj: `Guid.Empty` ya da toplam kontrolü kaldırıldığında ya da talimatlar parti hesabına indirildiğinde test
   kırmızıya döner.

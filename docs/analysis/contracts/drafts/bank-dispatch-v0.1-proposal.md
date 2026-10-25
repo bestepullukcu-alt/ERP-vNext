@@ -2,7 +2,7 @@
 
     contract       : BANK-DISPATCH
     version        : 0.1.0
-    x-status       : DRAFT (rev 2, gap listesi 7 uygulandı) — öneri; CT incelemesi ve sahip onayından önce dondurulmaz
+    x-status       : DRAFT (rev 3, gap listeleri 7 ve 8 uygulandı) — öneri; CT incelemesi ve sahip onayından önce dondurulmaz
     x-owner        : MOD-0269 Banks/SWIFT/Payments Gateway [External Provider] (Blueprint W-1, External Systems Register)
     x-consumers    : MOD-0126 Payments & Approvals (serbest bırakma) · MOD-0124 Cash Positioning (durum / ekstre — bu sürümde KAPALI)
     x-decision     : sahip kararı D5 = karar 0.1 seçenek A — "önce sözleşme, dağıtım kapalı"
@@ -66,7 +66,7 @@ MOD-0289'a aittir ve gerçek gönderimde yapılır — §6).
 | tenantId | Guid | evet | sunucuda çözülür; istemciden alınmaz; ≠ Empty |
 | legalEntityId | Guid | evet | ödeyen şirket; Active + Approved (D10/1) MOD-0126 tarafından önceden kontrol edilmiş; ≠ Empty |
 | paymentBatchId | Guid | evet | MOD-0126 parti kimliği; ≠ Empty |
-| releaseSequence | int | evet | ≥ 1; MOD-0126 `PaymentBatch.ReleaseSequence` (§4.2) |
+| releaseSequence | int | evet | **1..999 999 999** (dokuz hane; `int` aralığında, taşma yok); MOD-0126 `PaymentBatch.ReleaseSequence` (§4.2); aralık dışı → `BANK_DISPATCH_REQUEST_INVALID` |
 | dispatchKey | string | evet | **tam olarak** `mod0126:{paymentBatchId:N}:release:{releaseSequence}` (desen `^mod0126:[0-9a-f]{32}:release:[1-9][0-9]{0,8}$`); istekteki `paymentBatchId` ve `releaseSequence`'ten yeniden üretilen değere eşit olmalı |
 | paymentBatchCode | string | evet | RCS-001 kayıt kodu; boş değil, ≤ 64 |
 | currency | string | evet | `^[A-Z]{3}$`; partinin tek para birimi |
@@ -113,8 +113,9 @@ kararıdır (§6/2) ve talimat → hesap eşleşmesini değiştiremez.
 
 ### 3.4 `BankDispatchStatusQuery` / `BankDispatchStatus`
 
-- Sorgu: `contractVersion`, `tenantId`, `legalEntityId`, `dispatchKey` — §3.1'deki kurallarla (Guid ≠ Empty, anahtar
-  deseni); ihlal → `BANK_DISPATCH_REQUEST_INVALID`.
+- Sorgu: `contractVersion`, `tenantId`, `legalEntityId`, `dispatchKey` — §3.1'deki kurallarla. Hata eşlemesi gönderimle
+  **aynıdır** (§5): `contractVersion` ≠ `bank-dispatch/0.1` → `BANK_DISPATCH_CONTRACT_VERSION_UNSUPPORTED`; diğer ihlaller
+  (Guid = Empty, anahtar deseni) → `BANK_DISPATCH_REQUEST_INVALID`.
 - Yanıt: `dispatchKey`, `outcome` (§3.3 sözlüğü), `outcomeCode`, `providerReference?`, `asOf` (UTC). 0.1'de her zaman
   `NotConfigured`. Bu sürümde sorguyu çağıran bir MOD-0126 akışı yoktur (Release tek işlemdir); sözleşme yeri ayrılır.
 
@@ -136,8 +137,14 @@ kararıdır (§6/2) ve talimat → hesap eşleşmesini değiştiremez.
      işleminde** +1 yapar; artış parti sürümüne koşullu (CAS) yazılır, iki eşzamanlı Release aynı sırayı alamaz
      (kaybeden 409 `PAYMENT_BATCH_VERSION_CONFLICT`, port çağrısı yok).
    - Aynı makbuzun tekrarı (aynı istemci anahtarı, makbuz `Completed`) yeni sıra almaz, portu çağırmaz, kayıtlı yanıtı döner.
-   - İşlem geri alınırsa (çökme, iptal, sözleşme ihlali) sıra artışı da geri alınır; aynı istemci anahtarıyla yeniden
-     deneme **aynı** sırayı ve **aynı** `dispatchKey`'i üretir.
+   - **Commit edilmiş** makbuz yanıtını korur: aynı istemci anahtarıyla tekrar kayıtlı yanıtı (ve o denemenin
+     `dispatchKey`'ini) döner (gap 8/P2-a).
+   - **Geri alınan** deneme (çökme, iptal, sözleşme ihlali) hiçbir sıra ya da anahtar **rezerve etmez**: sıra artışı da
+     geri alınır, ama arada başka bir Release commit ederse aynı istemci anahtarıyla yeniden deneme bir sonraki sırayı
+     ve dolayısıyla **farklı** bir `dispatchKey`'i alır. Geri alınan denemenin porta etkisi olmadığı için (0.1, ağ yok)
+     bu davranış bu sürüm için yeterlidir; gerçek bağdaştırıcıda anahtar uzak çağrıdan önce kalıcı niyete yazılır (§6/3).
+   - **Üst sınır (gap 8/P2-b):** `ReleaseSequence` 999 999 999'a ulaşmışsa MOD-0126 yeni Release'i artırma ve port
+     çağrısından **önce** reddeder: 409 `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED`, kayıt yok; taşma (overflow) oluşmaz.
    - Kesin ret sonrası yeniden serbest bırakma kavramı 0.1'de yoktur (sonuç hep `NotConfigured`); gerçek bağdaştırıcıda
      her yeni deneme yine yeni sıra alır, anahtar kuralı değişmez (K16).
 3. **Ağ yok:** 0.1 bağdaştırıcısı hiçbir dış adrese çağrı yapmaz; testte ağ çağrısı olmadığı ölçülür (MOD-0126 AC-19).
@@ -162,7 +169,7 @@ kararıdır (§6/2) ve talimat → hesap eşleşmesini değiştiremez.
 | Kod | Biçim | Ne zaman | MOD-0126 Release'teki eşleme |
 |---|---|---|---|
 | `BANK_DISPATCH_NOT_CONFIGURED` | tipli sonuç (`outcomeCode`) | her geçerli gönderim ve durum sorgusu (0.1) | sonuç, hata değil: **200**, `dispatchOutcome = NotConfigured`, deneme kaydı + makbuz `Completed` + olay aynı işlemde |
-| `BANK_DISPATCH_CONTRACT_VERSION_UNSUPPORTED` | `BankDispatchContractException` | `contractVersion` ≠ `bank-dispatch/0.1` | programlama hatası: işlem **geri alınır** (deneme, sıra artışı, makbuz, olay yok), **500** `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`, yapılandırılmış hata günlüğü |
+| `BANK_DISPATCH_CONTRACT_VERSION_UNSUPPORTED` | `BankDispatchContractException` | gönderimde **ve** durum sorgusunda `contractVersion` ≠ `bank-dispatch/0.1` (tek eşleme) | programlama hatası: işlem **geri alınır** (deneme, sıra artışı, makbuz, olay yok), **500** `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION`, yapılandırılmış hata günlüğü |
 | `BANK_DISPATCH_REQUEST_INVALID` | `BankDispatchContractException` | §3 kurallarına uymayan istek | MOD-0126 doğrulaması önce yakalar (iş hatası 400/409/422 orada); port ikinci savunma hattıdır — porta ulaşan geçersiz istek programlama hatasıdır: yukarıdaki gibi geri alma + **500** `PAYMENT_BANK_DISPATCH_CONTRACT_VIOLATION` |
 | (beklenmeyen `outcome`) | tipli sonuç | `NotConfigured` dışı sonuç (§4.8) | **502** `PAYMENT_BANK_DISPATCH_OUTCOME_UNSUPPORTED`, deneme kaydedilir, parti kilitlenir (D17/2) |
 | (iptal) | `OperationCanceledException` | `ct` iptal | geri alma; yanıt yok (bağlantı kapanmış); kayıt yok |
@@ -175,11 +182,12 @@ aynı deterministik hatayı üretir; 500 yanıtı makbuzda saklanmaz.
 
 Bağdaştırıcı (doğrudan) ve Release (uçtan uca) için her biri ayrı vaka: `contractVersion` farklı; her `Guid` alanında
 `Guid.Empty` (tenantId, legalEntityId, paymentBatchId, requestedBy, instructionId, sourceBankAccountRef, verilmiş payeeRef
-ve destinationRef); `dispatchKey` desen dışı ya da parti/sıradan üretilenle farklı; `releaseSequence` 0; boş ve 501
+ve destinationRef); `dispatchKey` desen dışı ya da parti/sıradan üretilenle farklı; `releaseSequence` 0 ve 1 000 000 000; boş ve 501
 talimat; yinelenen `instructionId`; `totalAmount` ≠ Σ `amount` (bir en küçük birim farkla); `amount` ölçeği >
 `currencyMinorUnits`; `amount` 0 ya da negatif; talimat para birimi farklı; `payeeType ≠ Other` ve `payeeRef` yok;
-`remittanceReference` 141 karakter ya da IBAN deseni; `correlationId` boş ya da 129 karakter; durum sorgusunda boş Guid ve
-desen dışı anahtar. Beklenen: her vaka `BankDispatchContractException(BANK_DISPATCH_REQUEST_INVALID | …_VERSION_UNSUPPORTED)`;
+`remittanceReference` 141 karakter ya da IBAN deseni; `correlationId` boş ya da 129 karakter; durum sorgusunda boş Guid,
+desen dışı anahtar ve farklı `contractVersion` (→ `…_VERSION_UNSUPPORTED`). Release'te `ReleaseSequence = 999 999 999`
+olan parti → 409 `PAYMENT_RELEASE_SEQUENCE_EXHAUSTED`, port çağrısı ve kayıt yok. Beklenen: her vaka `BankDispatchContractException(BANK_DISPATCH_REQUEST_INVALID | …_VERSION_UNSUPPORTED)`;
 Release'te 500 ve hiçbir kalıcı kayıt. Ayrıca: iki kaynak hesaplı partide istekteki her talimat kendi hesabını taşır
 (birleştirme yok); `decidedAt` farklı iki çağrının diğer alanları aynıdır. Sabotaj: `Guid.Empty` ya da toplam kontrolü
 kaldırıldığında ilgili vaka kırmızıya döner.
@@ -213,6 +221,8 @@ Gerçek bir bağdaştırıcı `IBankDispatchPort`'a ancak şunlar kapandığınd
 
 ## 8. Değişiklik geçmişi
 
+- 0.1.0 rev 3 (2026-10-25) — gap listesi 8: geri alınan deneme anahtar rezerve etmez (yalnız commit edilmiş makbuz
+  yanıtı korur); `releaseSequence` 1..999 999 999 ve tükenmede kontrollü 409; durum sorgusunda sürüm hatası tek eşleme.
 - 0.1.0 rev 2 (2026-10-25) — gap listesi 7: kaynak hesap talimat düzeyinde (D17/1); `releaseSequence` + `dispatchKey`
   üretimi (BD-2 kapandı); idempotency güvencesi daraltıldı, tam tekrar ve çatışma sahibi MOD-0126; tipli sonuç /
   istisna / iptal / HTTP eşlemesi; `Guid.Empty`, korelasyon, tekil talimat, hassasiyet (`currencyMinorUnits`), durum
