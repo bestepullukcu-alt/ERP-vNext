@@ -29,3 +29,18 @@ izni ayrı değil, `receivable-adjustments.*` izinleri kullanılıyor.
 
 Kontroller: 24 bölüm; AC kimlikleri tekil (MOD-0126 37, AP 40, AR 41, CP 36); dilim tabloları okunuyor; her AC bir dilimde
 kapanıyor. Belge incelemesidir; build / test / runtime yok.
+
+## Kapanış incelemesi (2026-10-25, sahip)
+
+Sonuç: gap listesi 6'nın belge düzeltmeleri **PASS**; geliştirmeye hazırlık **CONDITIONAL PASS**. İnceleme girdisi
+`treasury-AP-AR-CP-packs-14e650974.zip` (sha256 `1d82ae81b456cec72525c0fcebd971db6744745896140504c13824df4d2df43d`;
+manifestteki 10 hash geçti). Yeni kesin belge hatası yok. Kalan iş kanıt üretmektir:
+
+1. MOD-0023 saklama politikası, Reconcile eşleme alanları ve aynı anahtarlı yarış davranışı — üretici sahibiyle (platform-shared-services).
+2. AP `totalAmount` net/brüt — procurement (MOD-0143) sahibiyle; vergili fatura testi çalıştırılacak.
+3. AR geri alma senaryoları — sahip önerisiyle MOD-0120 pack'ine **AC-42** (tamamen ödenmiş faturanın yeniden açılması,
+   birden fazla tahsilattan birinin geri alınması, aynı tahsilata eşzamanlı iki geri alma, uzak onay sonrası yerel commit
+   hatası; sabotajlı) eklendi, DL-3'te kapanır.
+4. SEC-002 kapsamı, denetim ve makbuz kurallarının gerçek Mongo işlem testleriyle kanıtı — kod yazıldığında (level 2).
+
+`draft → ready-for-dev` açık bağımlılıklar kapanmadan yapılmaz.

@@ -1247,6 +1247,17 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
   gönderen, faturayı oluşturan / açan ve **tahsilatı kaydeden** kişinin kararı 403 `RECEIVABLE_SOD_DENIED`
   (`FailedPaymentRecorderDecision` dahil) ve MOD-0023'e istek gitmez; tier-2 eşiği geri alınan tutara uygulanır. Sabotaj: A7
   kaldırıldığında tahsilatı kaydedenin onayı geçer ve test kırmızıya döner.
+- [ ] AC-42 (zorunlu) — Tahsilat geri alma senaryoları (sahip incelemesi 2026-10-25, gerçek replica set): (a) **tamamen
+  ödenmiş** fatura (100/100, `Paid`) tek tahsilatın geri alınmasıyla yeniden açılır: `PaidAmount = 0`, `OutstandingAmount =
+  100`, `Status = Open`, taksitler geri gelir; (b) **birden fazla tahsilattan biri** (30 + 70 = 100, `Paid`) geri alınınca
+  yalnız o tahsilat `IsReversed`, `PaidAmount = 70`, `OutstandingAmount = 30`, `Status = PartiallyPaid`, diğer tahsilat ve
+  referansı değişmez; (c) **aynı tahsilata eşzamanlı iki geri alma talebi** (farklı anahtar / aktör) → tek açık talep,
+  ikincisi 409 `RECEIVABLE_ADJUSTMENT_PENDING`, MOD-0023'e tek başlatma; onay sonrası tek karşı kayıt
+  (`ux_receivable_payment_reversal_of`); (d) **uzak onay sonrası yerel commit hatası** (MOD-0023 onayı başarılı, tx2 zorla
+  başarısız) → talep niyeti açık kalır, karşı kayıt yok, fatura tutarları değişmez; Reconcile uzak onayı (anahtar ve
+  eşleşme alanları — P1-a/P1-b engelleri kapandıktan sonra) okuyup tek karşı kaydı ve sonuç olayını yazar, ikinci uzak geçiş
+  yok. Sabotaj: (b)'de faturanın tüm tahsilatları sıfırlanırsa, (c)'de `ux_receivable_payment_reversal_of` kaldırılırsa, (d)'de
+  karşı kayıt tx2 dışında yazılırsa test kırmızıya döner.
 
 ## Test Expectations
 
@@ -1550,7 +1561,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0023 aynı anahtarlı yarış yanıtı ölçümü (gap 5/G2), MOD-0023
   saklama + silmeme politikası ve okuma eşleme alanları (gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
   Bitiş: AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32, 33, 35 (düzeltme, karar, Reconcile,
-  tahsilat kısmı), 36, 37, 38, 39, 40, 41. **RecordPayment (elle tahsilat) ve tahsilat geri alma (`PaymentReversal`) da bu
+  tahsilat kısmı), 36, 37, 38, 39, 40, 41, 42. **RecordPayment (elle tahsilat) ve tahsilat geri alma (`PaymentReversal`) da bu
   dilimdedir** (sahip kararları D15/1, 2026-10-24 — ayrı DL-4 hiçbir bölümü kapatmadığı için dilim tablosu okunamıyordu —
   ve D16, 2026-10-25 — elle tahsilat v1'de, kurallarıyla); K2 komutları aynı onay ve denetim altyapısını kullanır.
 - **DL-4** — Yollar: `Views/FinanceTreasury/ReceivableInvoices/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
