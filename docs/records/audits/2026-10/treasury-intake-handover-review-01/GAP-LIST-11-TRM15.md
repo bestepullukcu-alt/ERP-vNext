@@ -41,3 +41,10 @@ Test iyileştirmesi (gap 12) — §17.3/4'ün sıralı tekrar davranışları ay
 
 §17.4a matrisinin "replay AC" sütunu W9–W11'e bağlandı; kapanış koşulu ve dört Treasury pack'i AC-W5…W12. Onay, build ve
 test kanıtları gelmeden TRM-15 kapatılmaz.
+
+## Belge kapanışı (2026-10-25, sahip)
+
+İnceleme girdisi `treasury-TRM15-MOD0023-b0c805c82.zip` (sha256 `7a3a5bd3bc43b9a8d5b358173a479653f9085fc553cf0fa330d35a39e1b37d65`;
+manifest 7/7 geçti). Sonuç: **PASS** — AC-W9…W12, eylem matrisi ve dört pack'in kontrol listeleri doğrulandı. TRM-15
+geliştirme açısından **kapalı değildir**: §17 onayı (CT-APR-02/01), yeşil Platform build, AC-W1…W12 geçişi ve tüketici
+sahiplerinin kanıtları bekleniyor.
