@@ -14,7 +14,7 @@ branch: feature/fin/mod-0120-accounts-receivable
 started: 2026-10-24
 target: 2027-02-15
 form_field_count: 13
-slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması + MOD-0023 onaylı düzeltme (iptal / silme) + (koşullu) elle tahsilat; faturalama entegrasyonu YOK, GL YOK, MOD-0125 beslemesi YOK"
+slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması + MOD-0023 onaylı düzeltme (iptal / silme) + elle tahsilat ve onaylı tahsilat geri alma (D16); faturalama entegrasyonu YOK, GL YOK, MOD-0125 beslemesi YOK"
 ---
 
 # MOD-0120 — Accounts Receivable (AR)
@@ -38,7 +38,9 @@ slice: "TRM-S2 — kısıtlı MVP: yerel alacak faturası + tahsilat aşaması +
 > D11/4 (izin öneki `finance-treasury.*`), D12/2 (her yazma komutunda zorunlu Idempotency-Key), D14/1 (veri kapsamı
 > `LegalEntityId`, kiracı geneli ayrı `…read-tenant-wide` izni), D14/2 (servis genelinde tek `FinanceTreasuryCommandReceipt`,
 > tanımı MOD-0126 pack'inde), D14/3 (AR'de alacağı etkileyen kararlar K2), D14/4 (alacak oluşturan/değiştiren her yazmada
-> şirket Active + Approved) — `treasury-intake-owner-decisions-02.md`. D11/1, D12/1, D13 MOD-0126'ya özgüdür; bu pakette
+> şirket Active + Approved), D15/1 (elle tahsilat DL-3'te), D15/2 (Reconcile şirket kuralından muaf), D16 (elle tahsilat
+> v1'de: ödeme referansı iş tekilliği, mükerrer tahsilat kontrolü, onaylı geri alma) —
+> `treasury-intake-owner-decisions-02.md`. D11/1, D12/1, D13 MOD-0126'ya özgüdür; bu pakette
 > **desen** olarak önerilir, MOD-0120 için ayrıca sahip teyidi ister (O-7, O-8 muafiyet kısmı). Level-1 koşullu kabul:
 > `docs/records/decisions/2026-10/treasury-level1-acceptance-01/MOD-0120-v1.0.md` (koşul 1–5 → "Implementation Notes →
 > Level-1 koşulları"). DCP: `UNASSIGNED-finance-treasury-intake.md` (taslak; dilim TRM-S2).
@@ -77,7 +79,8 @@ receivables, collections states, credit memos" (paket §A).
   taşınır; içe aktarma, MOD-0125 projeksiyonu, tarih geçersiz kılma ve kanıt dışa aktarma alt sistemleri bu sürümde
   **taşınmaz** (gerekçe "Owned Objects → Kaynak işlemleri"). Kaynakta olmayan elle oluşturma, açma, tahsilat aşaması ve
   onaylı düzeltme Recovery ekleridir. Kaynak kusurları taşınmaz ("Implementation Notes → Taşınmayacaklar").
-- **Para hareketi yok:** AR banka işlemi yapmaz, ödeme almaz; tahsilat yalnız (koşullu, DL-3) elle **kayıt** edilir.
+- **Para hareketi yok:** AR banka işlemi yapmaz, ödeme almaz; tahsilat yalnız (DL-3, sahip kararı D16) elle **kayıt**
+  edilir ve yalnız MOD-0023 onaylı **karşı kayıtla** geri alınır.
   MOD-0269 mutabakat/ödeme tüketimi kaynakta da ertelenmiştir (paket §L.13).
 
 ## Ownership and Boundaries
@@ -85,12 +88,13 @@ receivables, collections states, credit memos" (paket §A).
 - **In-scope:** `ReceivableInvoice` (satırlar ve taksitler gömülü); taslak oluşturma/düzenleme/silme; açma (Issue);
   tahsilat aşaması (InCollection, Dunning, PromiseToPay, Disputed) ve gün hesabıyla türetilen yaşlandırma (NotDue / Due /
   Overdue); MOD-0023 onaylı düzeltme talebi (Void, WriteOff) — yerel niyet + idempotency + belirsiz sonuç + uzlaştırma;
-  (koşullu, O-9) elle tahsilat kaydı; iz (trace) okuma; kiracı ekranı (liste + oluştur + düzenle + detay).
+  elle tahsilat kaydı (ödeme referansı iş tekilliği + mükerrer tahsilat kontrolü) ve onaylı tahsilat geri alma (karşı
+  kayıt) — D16; iz (trace) okuma; kiracı ekranı (liste + oluştur + düzenle + detay).
 - **Out-of-scope:** faturalama, yasal fatura numarası, e-fatura, fatura PDF'i ve müşteriye gönderim (MOD-0169 /
   AR-BILLING-BUNDLE, karar 0.5); GL kaydı, `PostingStatus`, GL hesap/masraf yeri (MOD-0118, karar 0.7); MOD-0125 nakit
   tahmini beslemesi ve projeksiyon/politika/geçersiz kılma alt sistemi (MOD-0125 aday, paketi yok); toplu içe aktarma ve
   kaynak kontrol toplamı mutabakatı (O-10, servis kimliği engeli); kredi notu (credit memo; Follow-up); kısmi silme,
-  tahsilatın geri alınması, fazla/eşleşmemiş tahsilat (Follow-up); banka mutabakatı ve MOD-0269 mutabakat olayı (MOD-0121,
+  fazla/eşleşmemiş tahsilat, tek ödeme referansının birden çok faturaya bölünmesi (Follow-up); banka mutabakatı ve MOD-0269 mutabakat olayı (MOD-0121,
   MOD-0269 — D5); kanıt dosyası saklama ve dışa aktarma (MOD-0031 sahibi); müşteri, şirket, banka hesabı ana kayıtları
   (MOD-0149, MOD-0220, MOD-0289).
 - **Sahip olunan sözleşme:** `ACCOUNTS-RECEIVABLE` (yeni, `docs/analysis/contracts/accounts-receivable.openapi.yaml`,
@@ -125,7 +129,7 @@ Kaynak sınıflar `services/DitenErpTreasuryService/src/Diten.ErpTreasuryService
 | + | — | **yeni** `ReceivableAdjustmentRequest` | iptal / silme talebi; MOD-0023 onayı |
 | + | — | **yeni** `ReceivableAdjustmentStartIntent` | uzak başlatmadan önce yerel niyet (domain-config "Yerel kayıt önce") |
 | + | — | **yeni** `ReceivableAdjustmentDecision` | karar niyeti/sonucu (onay, ret) |
-| + | — | **yeni** `ReceivablePayment` (koşullu, O-9) | elle tahsilat kaydı, ekleme-yalnız |
+| + | — | **yeni** `ReceivablePayment` (D16) | elle tahsilat kaydı ve onaylı geri almanın karşı kaydı, ekleme-yalnız |
 | + | — | `FinanceTreasuryCommandReceipt` (**servis ortak**, yeni tip açılmaz) | istemci idempotency makbuzu (D12/2, D14/2) — tanım MOD-0126 pack Entity Fields |
 
 **Makbuz ve niyet tipi kararı — KARAR (D14/2):** makbuz servis genelinde **tek ortak tiptir**
@@ -163,7 +167,8 @@ yalnız `[Authorize]` (:16) ve denetleyici içi izin kontrolü (`EnsureAccess`, 
 | `ApproveReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/approve` | karar (iki aşamalı, K2) |
 | `RejectReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/reject` | karar (iki aşamalı, K2) |
 | `ReconcileReceivableInvoiceAdjustmentCommand` | `POST /api/receivable-invoices/{id}/adjustments/{adjustmentId}/workflow/reconcile` | belirsiz başlatma / karar sonucunu MOD-0023'ten okuyup kapatır; **tek kurtarma yolu** |
-| `RecordReceivableInvoicePaymentCommand` (koşullu, O-9) | `POST /api/receivable-invoices/{id}/payments` | elle tahsilat kaydı (tek aşamalı, K2 — D14/3) |
+| `RecordReceivableInvoicePaymentCommand` (D16) | `POST /api/receivable-invoices/{id}/payments` | elle tahsilat kaydı (tek aşamalı, K2 — D14/3); ödeme referansı iş tekilliği (D16) |
+| (geri alma — yeni komut yok) `RequestReceivableInvoiceAdjustmentCommand` `AdjustmentType = PaymentReversal` + Approve / Reject / Reconcile | `POST /api/receivable-invoices/{id}/adjustments` (`paymentId` ile) | **onaylı tahsilat geri alma** (D16): Void / WriteOff gibi MOD-0023 onaylı düzeltme; onayda karşı kayıt (Runtime Constraints) |
 
 - **Sorgular:** `GetReceivableInvoiceListQuery`, `GetReceivableInvoiceByIdQuery`, `GetReceivableInvoiceTraceQuery`
   (`GET /api/receivable-invoices/{id}/trace` — düzeltmeler, kararlar, tahsilatlar, aşama geçmişi).
@@ -191,9 +196,9 @@ Kaynak `InvoiceLifecycleStatus` 8 değer (`AccountsReceivableEnums.cs:7-17@218ac
 | Recovery | Değer | Kaynak karşılığı | Giriş | Çıkış |
 |---|---|---|---|---|
 | Draft | 0 | DRAFT | Create, Update | Issue, Update, Delete |
-| Open | 1 | ISSUED + OPEN (birleştirildi) | Issue | tahsilat (→ PartiallyPaid/Paid), onaylı Void |
-| PartiallyPaid | 2 | PARTIALLY_PAID | tahsilat (kalan > 0) | tahsilat (→ Paid) |
-| Paid | 3 | PAID | tahsilat (kalan = 0) | — (terminal; geri alma Follow-up) |
+| Open | 1 | ISSUED + OPEN (birleştirildi) | Issue; onaylı geri alma sonrası `PaidAmount = 0` | tahsilat (→ PartiallyPaid/Paid), onaylı Void |
+| PartiallyPaid | 2 | PARTIALLY_PAID | tahsilat (kalan > 0); onaylı geri alma sonrası `0 < PaidAmount` | tahsilat (→ Paid); onaylı geri alma (→ PartiallyPaid/Open) |
+| Paid | 3 | PAID | tahsilat (kalan = 0) | yalnız onaylı tahsilat geri alma (→ PartiallyPaid/Open, D16) |
 | Void | 4 | VOID | onaylı Void düzeltmesi | — (terminal) |
 
 - **Taşınmayan değerler:** `ISSUED` (müşteriye gönderim faturalamanın durumudur, karar 0.5; burada `Open` ile
@@ -278,7 +283,7 @@ başlığı, MOD-0220'den doğrulanmış; R-2 deseni, MOD-0126 pack Entity Field
 | hafta sınırı | uygulanmaz — bu sürümde haftalık kova yok (projeksiyon MOD-0125'le birlikte taşınmadı) |
 | giriş/çıkış modeli | AR yalnız **giriş** (alacak) tutar; tüm tutarlar ≥ 0; negatif satır / kredi notu yok (Follow-up) |
 | kur (FX) | çevrim yok; yalnız belge para birimi (kaynak `FxHandling.DOCUMENT_CURRENCY_ONLY`, `AccountsReceivableEnums.cs:239-243@218acaf5`) |
-| değişmez anlık görüntü | `Issue` sonrası satırlar, taksitler, toplamlar, para birimi, müşteri ve müşteri anlık görüntüsü **değişmez**; düzeltme yalnız onaylı Void / WriteOff ya da tahsilatla |
+| değişmez anlık görüntü | `Issue` sonrası satırlar, taksitler, toplamlar, para birimi, müşteri ve müşteri anlık görüntüsü **değişmez**; düzeltme yalnız onaylı Void / WriteOff, tahsilat ya da onaylı tahsilat geri alma (karşı kayıt, D16) ile |
 
 ### ReceivableInvoice (`receivable_invoices`)
 
@@ -345,8 +350,9 @@ varlıkta tutulmaz; merkezi denetim taşır).
 | Alan | Tip | Kural |
 |---|---|---|
 | InvoiceId | Guid | — |
-| AdjustmentType | enum `Void`=1, `WriteOff`=2 | Void: `Status = Open` ve `PaidAmount = 0`; WriteOff: `Status ∈ {Open, PartiallyPaid}`, `Outstanding > 0`, ve (yaşlandırma `Overdue` **ya da** aşama ∈ {InCollection, Dunning, Disputed}) — kaynak `WRITE_OFF_PROPOSED` girişleri (`AccountsReceivableStateGuards.cs:63-98@218acaf5`) |
-| Amount / CurrencyCode | decimal / string(3) | **sunucu**: talep anındaki `OutstandingAmount` (tam tutar; kısmi silme Follow-up), faturanın para birimi; sabitlenir |
+| AdjustmentType | enum `Void`=1, `WriteOff`=2, `PaymentReversal`=3 | Void: `Status = Open` ve `PaidAmount = 0`; WriteOff: `Status ∈ {Open, PartiallyPaid}`, `Outstanding > 0`, ve (yaşlandırma `Overdue` **ya da** aşama ∈ {InCollection, Dunning, Disputed}) — kaynak `WRITE_OFF_PROPOSED` girişleri (`AccountsReceivableStateGuards.cs:63-98@218acaf5`); **PaymentReversal (D16):** `Status ∈ {PartiallyPaid, Paid}`, `CollectionStage ≠ WrittenOff`, `ReversedPaymentId` bu faturanın `EntryType = Receipt` ve `IsReversed = false` tahsilatı |
+| ReversedPaymentId / ReversedPaymentRecordedBy | Guid? / Guid? | yalnız `PaymentReversal`'da zorunlu; geri alınan tahsilat ve onu kaydeden aktör talep anında **sabitlenir** (SoD A7); diğer türlerde istekte gelirse 400 |
+| Amount / CurrencyCode | decimal / string(3) | **sunucu**: Void / WriteOff'ta talep anındaki `OutstandingAmount` (tam tutar; kısmi silme Follow-up), PaymentReversal'da geri alınan tahsilatın `Amount`'u; faturanın para birimi; sabitlenir |
 | ReasonCode | string | zorunlu, trim, 1..64 |
 | Comment | string? | trim, ≤ 2000; denetime yazılmaz |
 | EvidenceRefs | Guid[] | MOD-0031 bağlantı kimlikleri; WriteOff için en az 1 (öneri, O-13); ikili veri yok |
@@ -376,15 +382,31 @@ varlıkta tutulmaz; merkezi denetim taşır).
 giden **uzak** anahtar, deterministik `mod0120:{decisionId:N}:transition` — istemci anahtarı değildir),
 `WorkflowInstanceId`, `WorkflowTaskId`, `WorkflowTransitionId`, `WorkflowIsFinalStep`, `SodResult`
 (`Passed` | `FailedRequesterDecision` | `FailedInvoiceCreatorDecision` | `FailedInvoiceIssuerDecision` |
-`FailedAmountTier` | `FailedRoleConflict`), `PolicyVersion`, `RequestFingerprint` / `FingerprintVersion`.
+`FailedPaymentRecorderDecision` | `FailedAmountTier` | `FailedRoleConflict`), `PolicyVersion`, `RequestFingerprint` / `FingerprintVersion`.
 Muafiyet (waiver) **yoktur** (O-8).
 
-### ReceivablePayment (`receivable_payments`, yeni, koşullu O-9)
+### ReceivablePayment (`receivable_payments`, yeni — sahip kararı D16)
 
-`InvoiceId`, `Amount` (> 0, ≤ OutstandingAmount, küsurat ≤ hane), `CurrencyCode` (= fatura), `PaymentDate` (DateOnly,
-≥ InvoiceDate, bugünden sonra değil — O-12 "bugün"ü), `PaymentReference` (zorunlu, trim, 1..64; banka referansı değeri
-değil, iç referans), `ReceiptId` (tahsilat makbuzu), `RecordedBy` (Guid), `RecordedAt`. **Ekleme-yalnız**; güncelleme ve
-silme yok; geri alma Follow-up. Fazla tahsilat (Outstanding'i aşan) reddedilir — eşleşmemiş nakit Follow-up.
+`InvoiceId`, `CustomerId` (**sunucu**, faturadan; iş tekilliği anahtarının parçası), `EntryType` (`Receipt`=1 — elle
+tahsilat | `Reversal`=2 — onaylı geri almanın karşı kaydı), `Amount` (> 0, Receipt'te ≤ OutstandingAmount, küsurat ≤ hane;
+yön `EntryType`'tan), `CurrencyCode` (= fatura), `PaymentDate` (DateOnly, ≥ InvoiceDate, bugünden sonra değil — O-12
+"bugün"ü; Reversal'da onay günü), `PaymentReference` (Receipt'te zorunlu, trim, 1..64; banka referansı değeri değil, iç
+referans), `PaymentReferenceKey` (**sunucu**: trim + büyük harf + iç boşluklar tekleştirilmiş; mükerrer kontrol anahtarı;
+Reversal'da `null`), `InstallmentAllocations` (taksit numarası + düşülen tutar; Receipt'te en eski taksitten yazılır,
+Reversal'da aynısı geri yazılır), `ReceiptId` (tahsilat makbuzu), `RecordedBy` (Guid), `RecordedAt`. Geri alma alanları:
+Receipt'te `IsReversed` (bool, `false`), `ReversedByPaymentId` / `ReversedAt` (`null`); Reversal'da `ReversesPaymentId` ve
+`AdjustmentRequestId` (onaylı `PaymentReversal` talebi). **Ekleme-yalnız**: güncelleme ve silme yok; tutar, para birimi,
+tarih, referans ve dağılım **hiç değişmez**. Tek istisna: onaylı geri almanın tx2'sinde orijinal Receipt'e **bir kez**
+`IsReversed = true` + `ReversedByPaymentId` + `ReversedAt` yazılır (tek yönlü; geri alma geri alınamaz). Fazla tahsilat
+(Outstanding'i aşan) reddedilir — eşleşmemiş nakit Follow-up.
+
+**İş tekilliği ve mükerrer tahsilat (D16, gap 6/P2-a):** `(TenantId, LegalEntityId, CustomerId, PaymentReferenceKey)`
+geri alınmamış Receipt'ler arasında tekildir (`ux_receivable_payment_reference_active`). Aynı ödeme farklı idempotency
+anahtarıyla ya da başka aktörden (makbuz kapsamı aktör içerdiği için makbuz bunu yakalamaz) ikinci kez gelirse — aynı ya da
+aynı müşterinin başka faturasına — 409 `RECEIVABLE_PAYMENT_DUPLICATE`, kayıt yok. **Politika (v1): geri alınan tahsilatın
+referansı serbest kalır** — onaylı geri almadan sonra aynı referansla yeni Receipt girilebilir (indeks yalnız `IsReversed =
+false` kayıtları kapsar; geri alma çoğunlukla yanlış fatura / tutarla girilmiş tahsilatın düzeltilmesidir). Sahip bunu
+değiştirirse indeksin `IsReversed` filtresi kaldırılır ve bu cümle o kararla yeniden yazılır.
 
 ### Makbuz — `FinanceTreasuryCommandReceipt` (servis ortak, D14/2)
 
@@ -422,6 +444,8 @@ Kaynak indekslerinin hiçbiri olduğu gibi taşınmaz (varlıkların çoğu taş
 | `ix_receivable_invoice_stage` | TenantId + LegalEntityId + CollectionStage | — | tahsilat aşaması filtresi |
 | `ix_receivable_adjustment_invoice` | TenantId + InvoiceId + RequestedAt(desc) | — | detay sekmesi |
 | `ix_receivable_payment_invoice` | TenantId + InvoiceId + PaymentDate | — | detay sekmesi |
+| `ux_receivable_payment_reference_active` | TenantId + LegalEntityId + CustomerId + PaymentReferenceKey, kısmi `{EntryType: "Receipt", IsReversed: false}` | evet — iş tekilliği (D16, gap 6/P2-a) | mükerrer tahsilat; geri alınmış Receipt referansı serbest bırakır (politika, Entity Fields) |
+| `ux_receivable_payment_reversal_of` | TenantId + ReversesPaymentId, kısmi `{EntryType: "Reversal"}` | evet — bir tahsilata en fazla bir karşı kayıt | D16 |
 
 **Makbuz indeksleri burada bildirilmez (D14/2):** `ux_finance_treasury_command_receipt_scope` (altı alanlı tekil kapsam) ve
 `ix_finance_treasury_command_receipt_pending` servis ortak `finance_treasury_command_receipts` koleksiyonundadır ve sahibi
@@ -449,6 +473,8 @@ Kaynak kodları **kopyalanmaz**; anlamı korunanlar Recovery adıyla yeniden yaz
   `RECEIVABLE_DECISION_PENDING` 409, `RECEIVABLE_DECISION_STATUS_INVALID` 409, `RECEIVABLE_WORKFLOW_TASK_INVALID` 400,
   `RECEIVABLE_SOD_DENIED` 403, `RECEIVABLE_TIER2_APPROVER_REQUIRED` 403, `RECEIVABLE_ADJUSTMENT_POLICY_UNAVAILABLE` 503,
   `RECEIVABLE_WORKFLOW_RESOLVER_NO_ELIGIBLE_APPROVER` 422, `RECEIVABLE_PAYMENT_EXCEEDS_OUTSTANDING` 422,
+  `RECEIVABLE_PAYMENT_DUPLICATE` 409 (aynı kiracı + şirket + müşteri + ödeme referansıyla geri alınmamış tahsilat var — D16;
+  anahtar ya da aktör farklı olsa da), `RECEIVABLE_PAYMENT_NOT_FOUND` 404 (geri alınacak tahsilat bu faturada yok),
   `RECEIVABLE_RECONCILE_RESTART_ACTOR_MISMATCH` 409 (Reconcile'ı çağıran asıl komutun aktörü değil; uzak yazma/başlatma
   çağrısı yok, niyet `Unknown` kalır).
 - **Taşınmaz:** `MOD0120_TENANT_MISMATCH` (→ 400 `RECEIVABLE_VALIDATION_FAILED`), `MOD0120_LEGAL_ENTITY_ACCESS_DENIED`
@@ -514,8 +540,8 @@ MOD-0023 AR düzeltme iş akışı şablonu; `ocelot.json` rotaları (integratio
 
 ## Dependencies
 
-Ölçüm 2026-10-24, bu worktree (HEAD `3a1c32b9e`; `services/ frontend/ gateway/` MOD-0126 ölçüm tabanı `d43096a6b`'den
-beri değişmedi — `git diff --stat d43096a6b HEAD` boş). MOD-0126 ile ortak satırlar o pack'in ölçümüne dayanır ve
+Ölçüm Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c (`services/ frontend/ gateway/` MOD-0126 ölçüm tabanı `d43096a6b`'den
+beri değişmedi — `git diff --stat d43096a6b 4e01e986269065cba6f962e0c13b9b2ae4519f6c -- services/ frontend/ gateway/` boş). MOD-0126 ile ortak satırlar o pack'in ölçümüne dayanır ve
 burada yeniden yazılmaz, yalnız AR'ye etkisi yazılır.
 
 | Kapı / bağımlılık | Rol | Recovery durumu | Bu pakete etkisi |
@@ -533,7 +559,7 @@ burada yeniden yazılmaz, yalnız AR'ye etkisi yazılır.
 | **SEC-002 veri kapsamı** (`IDataScopeResolver`) | kullanıcının şirket yetkisi (katman 1; D14/1) | çözücü yalnız Platform'da kayıtlı; ortak kütüphanedeki `NoOpDataScopeResolver` boş liste döner (`.antigravity/rules/data-scope-enforcement.md` §6); FinanceTreasury'den tüketim yolu **yok** | **engel (O-14)**: SEC-002 §4 kapısı — kapsam cümlesi + kapsamı soran kod + test olmadan `ready-for-dev` yok. Tüketim yolu servis ortaktır (`IFinanceTreasuryDataScopeSource`); MOD-0126 O-19, MOD-0119 ve MOD-0124 ile **tek karar** |
 | MOD-0031 Evidence Linking | düzeltme kanıt kimliği | var (`api/v1/evidence`, MOD-0126 pack) | yalnız bağlantı kimliği doğrulanır (DL-3 başında davranış ölçülür) |
 | MOD-0289 Bank Account Registry | tahsilat hesabı referansı | yok (D7, TRM-S3) | yalnız boş olmayan opak Guid; çözümleme Follow-up |
-| MOD-0269 / MOD-0121 | mutabakat, banka ekstresi | yok (D5) | kullanılmaz; tahsilat yalnız elle (O-9) |
+| MOD-0269 / MOD-0121 | mutabakat, banka ekstresi | yok (D5) | kullanılmaz; tahsilat yalnız elle (D16) |
 | MOD-0125 Cash Forecasting | projeksiyon tüketicisi | aday, paketi yok (domain-config) | kullanılmaz; FORECAST tüketici yuvası açık (§U) |
 | MOD-0018 RBAC | `[HasPermission]`, izin tohumu | var | `finance-treasury.*` (D11/4) altında yeni anahtarlar; `read-tenant-wide` yalnız açık atama (`ExplicitGrantOnlyPermissions`) |
 | Servis iskeleti + servis ortak yapı taşları | `Diten.FinanceTreasuryService` | **yok** | **yalnız** MOD-0126 DL-1 açar (makbuz tipi + indeksleri, veri kapsamı kaynağı, ortak LE / para birimi / kod portları, CentralAudit kaydı — gap 4/G5); MOD-0120 DL-1'in önkoşulu |
@@ -555,6 +581,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-6) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
 | SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-14; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-6 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MOD-0023 başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AR şablon kodu — **TBD** | Platform commit SHA'sı DL-3 başında | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-3 |
+| MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | MOD-0023 pack'inde politika maddesi — **yazılacak** (D9; MOD-0126 ile ortak satır): `WorkflowInstance` ve `WorkflowTransitionLog` en az niyet ömrü boyunca silinmez, temizlenmez, TTL almaz | TBD | platform-shared-services | politika kapanmadan 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c): silme yolu yok (`WorkflowRepositories.cs:961-974` yalnız `SlaEscalationRule`), TTL yok (`PlatformSchemaManifest.WorkflowWorkCenter.cs` sha256 `666b44dcbca19df1f1ebf4f176c9fa86bf66111cc1b935286b625bc1d4706f10`, 0 `ExpireAfter`) — ölçüm politika değildir · politika kaydı + silinmiş kayıt testi AC-37 | DL-3 |
+| MOD-0023 okuma eşleme alanları (gap 6/P1-b) | `instances/by-objects` ve `instances/{id}/history` yanıtına eklemeli `IdempotencyKey` (geçmişte ayrıca `ApprovalTaskId`) ve silinmiş durumu ayırt eden okuma — **yazılacak** (D9; MOD-0126 ile ortak satır) | TBD | platform-shared-services | alan yoksa okuma niyeti kapatmaz → `Unknown` | sahte MOD-0023 (eski + yeni örnek / geçiş) AC-38 · dev ortamında iki karar | DL-3 |
 | MOD-0031 kanıt bağlantısı | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → talep oluşmaz · AR MOD-0031'e yazmaz, kurtarmada yeniden çağrı yok | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** — AR'ye MOD-0031 yazması ya da kurtarmada yeniden çağrı eklenmeden önce zorunlu (gap 5/G2) | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız (K2) | sabotaj testi AC-18 · AUD-001 §8 dev kanıtı AC-31 | DL-1 |
 
@@ -610,8 +638,10 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     `read-tenant-wide` ile görünse bile → 404 `RECEIVABLE_INVOICE_NOT_FOUND`)
     → (3) makbuz araması: aynı kapsam + farklı parmak izi → 409 `RECEIVABLE_IDEMPOTENCY_CONFLICT`; aynı + `Completed` →
     **kayıtlı yanıt aynen döner**; aynı + `Pending` → 202 `RECEIVABLE_REQUEST_IN_PROGRESS`. İki durumda da **başka hiçbir
-    adım çalışmaz** — uzak çağrı yok, Reconcile yok. → (4) açık talep / açık niyet kontrolü → (5) durum ve `Version` CAS
-    → (6) iş kuralları, LE + müşteri uygunluğu, SoD → (7) tx1 (iş verisi + makbuz + denetim, tek işlem).
+    adım çalışmaz** — uzak çağrı yok, Reconcile yok. → (4) açık talep / açık niyet kontrolü (RecordPayment'ta ayrıca iş
+    anahtarı mükerrer kontrolü — D16; `Version`'dan önce, böylece mükerrer tahsilat bayat `If-Match` ile gelse de 409
+    `RECEIVABLE_PAYMENT_DUPLICATE` alır) → (5) durum ve `Version` CAS → (6) iş kuralları, LE + müşteri uygunluğu, SoD →
+    (7) tx1 (iş verisi + makbuz + denetim, tek işlem).
   - **Kurtarma yalnız `ReconcileReceivableInvoiceAdjustmentCommand` ile** (kendi anahtarı ve makbuzuyla); aynı anahtarla
     tekrar asla kurtarma tetiklemez.
   - **Çökme:** tx1 sonrası çökmede makbuz `Pending` kalır; aynı anahtarla tekrar 202; Reconcile niyeti kapattığında bağlı
@@ -632,25 +662,31 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      `Submitted` kalır, 202 `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN`. Belirsiz sonuç ret olarak kaydedilmez.
   2. *Açık talep varken* aynı faturaya yeni talep → 409 `RECEIVABLE_ADJUSTMENT_PENDING`, uzak çağrı yok; tahsilat da 409.
      Tekil kısmi indeks `ux_receivable_adjustment_open` + fatura `Version` CAS ile atomik.
-  3. *Kararlar (Approve / Reject):* SoD ön kontrolü (A1–A6) → tx1 `ReceivableAdjustmentDecision(Requested)` + deneme olayı
+  3. *Kararlar (Approve / Reject):* SoD ön kontrolü (A1–A7) → tx1 `ReceivableAdjustmentDecision(Requested)` + deneme olayı
      → MOD-0023 görev geçişi, `RemoteIdempotencyKey` ile → tx2: `Recorded` + talep `Approved` / `Rejected` + **etki aynı
      işlemde**: Approve-Void → fatura `Status = Void`, `OutstandingAmount = 0`, taksit kalanları 0, `ExternalInvoiceNumberKey
      = null`; Approve-WriteOff → `CollectionStage = WrittenOff`, `WrittenOffAmount = Amount`, `OutstandingAmount = 0`;
-     Reject → aşama `PreviousCollectionStage`'e döner; her durumda `OpenAdjustmentRequestId = null`. Etki uygulanırken
+     **Approve-PaymentReversal (D16)** → yeni `ReceivablePayment(EntryType = Reversal, Amount = geri alınan tutar,
+     ReversesPaymentId, AdjustmentRequestId)` **eklenir** (karşı kayıt, ekleme-yalnız), orijinal Receipt'e bir kez
+     `IsReversed = true` + `ReversedByPaymentId` + `ReversedAt`, faturada `PaidAmount −= Amount`, `OutstandingAmount +=
+     Amount` (kalan tutar geri gelir), taksit kalanları orijinalin `InstallmentAllocations`'ından aynen geri yazılır,
+     `Status` yeniden hesaplanır (`PaidAmount = 0` → `Open`, aksi `PartiallyPaid`), referans serbest kalır (politika,
+     Entity Fields); Reject → aşama `PreviousCollectionStage`'e döner (PaymentReversal'da aşama değişmemişti, tahsilat
+     değişmez); her durumda `OpenAdjustmentRequestId = null`. Etki uygulanırken
      faturanın talep anındaki `Version`'ı ile CAS yapılır (talep açıkken fatura kilitlidir). Belirsiz → `Unknown`, 202
      `RECEIVABLE_DECISION_OUTCOME_UNKNOWN`, Reconcile kapatır. **Talep başına tek açık karar niyeti**
      (`ux_receivable_adjustment_decision_open`); açıkken başka anahtar/aktörden karar uzak çağrısız 409 `RECEIVABLE_DECISION_PENDING`.
   4. *İki aşamalı denetim ve çökme kurtarma (MOD-0126 Runtime 4a ile aynı):* tx1 **deneme olayı**, tx2 **sonuç olayı**,
      ikisi de iş verisiyle aynı işlemde (`RequireEnlistment = true`). Uzak başarı + tx2 başarısız ya da çökme → niyet açık
-     kalır; Reconcile MOD-0023 örneği/görevi `instances/by-objects` ve görev geçmişinden okur, uzak çağrıyı **tekrarlamadan**
-     tx2'yi (etki dahil) yazar, sonuç olayını üretir ve bağlı makbuz **yalnız `Pending` ise** `Completed` yapılır. K2
+     kalır; Reconcile MOD-0023 örneği/görevi `instances/by-objects` ve görev geçmişinden okur (yalnız niyetin kendi eşleme
+     alanlarıyla — 4a, gap 6/P1-b), uzak çağrıyı **tekrarlamadan** tx2'yi (etki dahil) yazar, sonuç olayını üretir ve bağlı makbuz **yalnız `Pending` ise** `Completed` yapılır. K2
      kararlarında deneme olayı yazılamazsa uzak çağrı yapılmaz; sonuç olayı yazılamazsa etki uygulanmaz, niyet açık kalır.
   4a. *Reconcile önce okur; uzak yazmayı yalnız anahtarla idempotent olduğu ölçülmüş yerde yeniden yapar (gap 4/G2,
      gap 5/G2; RequestAdjustment, Approve, Reject; kural MOD-0126 pack Runtime Constraints 3a ile aynı):*
      - **Önce okuma:** başlatmada `instances/by-objects` (düzeltme talebi kimliği) + niyetin deterministik uzak anahtarı
        (`mod0120:{adjustmentId:N}:start`); kararda görev geçmişi + `RemoteIdempotencyKey`.
-     - **Uzakta örnek / geçiş var** → kesin durum kaydedilir (tx2, etki dahil + bağlı `Pending` makbuz `Completed` + sonuç
-       olayı); şirket kuralından **muaf** (D15/2).
+     - **Uzakta niyetin kendisine ait örnek / geçiş var** (eşleme aşağıda, gap 6/P1-b) → kesin durum kaydedilir (tx2, etki
+       dahil + bağlı `Pending` makbuz `Completed` + sonuç olayı); şirket kuralından **muaf** (D15/2).
      - **"Kesin boş" okumadan çıkarılmaz (gap 5/G2):** MOD-0023 sözleşmesinde "bulunamadı / boş okuma son durumdur"
        güvencesi yoktur (ilk çağrı hâlâ yolda olabilir); okumaya dayalı "kesin boş → yeniden başlat" dalı yoktur. Okuma
        belirsiz ya da "bulunamadı" ise (zaman aşımı, bağlantı kopması, 5xx, okunamayan gövde, 404 / boş sonuç) niyet
@@ -658,20 +694,47 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        değişmez. Zaman aşımı / 5xx / okunamayan gövdede başka adım yoktur; 404 / boş sonuçta tek ek adım aşağıdaki
        anahtarlı yeniden yazmadır.
      - **Yeniden çağrı yalnız MOD-0023 başlatma ve görev geçişlerinde** — uzak yazmanın kendisi anahtarla idempotent
-       (ölçüldü, Recovery HEAD 2026-10-24): `ux_workflow_instances_tenant_idempotency_key_active` (TenantId +
+       (ölçüldü, Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c): `ux_workflow_instances_tenant_idempotency_key_active` (TenantId +
        IdempotencyKey, kısmi `IsDeleted = false`) ve `ux_workflow_transition_logs_task_action_idempotency_active`
        (TenantId + ApprovalTaskId + Action + IdempotencyKey) tekil indeksleri
        (`PlatformSchemaManifest.WorkflowWorkCenter.cs:118-131`, `:211-225`); başlatma var olan örneği döndürür
        (`StartWorkflowInstanceHandler.cs:76-85`), geçişler anahtarı zorunlu tutar (`ApproveWorkflowTaskValidator.cs:13`) ve
        `GetByTaskActionIdempotencyKeyAsync` ile yeniden oynatır (`RejectWorkflowTaskHandler.cs:79-80`,
        `WorkflowTerminalTransitionWriter.cs:402-407`). Yeniden yazmadan önce (i) şirket uygunluğu (D10/1, D14/4), (ii) SoD
-       (başlatmada A1–A4 aday çözümleyicisi yeniden; kararda niyetteki karar verenle A1–A6), (iii) izin ve (iv) aktör:
+       (başlatmada A1–A4 ve A7 aday çözümleyicisi yeniden; kararda niyetteki karar verenle A1–A7), (iii) izin ve (iv) aktör:
        Reconcile'ı çağıran asıl komutun aktörü (`RequestedBy` / `DecidedBy`) değilse uzak yazma çağrısı yok (409
        `RECEIVABLE_RECONCILE_RESTART_ACTOR_MISMATCH`). Hepsi geçerse aynı uzak yazma **aynı deterministik uzak anahtarla
        bir kez** yapılır; en fazla bir örnek / geçişi MOD-0023'ün tekil indeksi garanti eder. Başarı (yeni ya da yeniden
        oynatılmış) → niyet sonuçla kapanır (tx2 eşlemesi, etki dahil); kesin ret (tx2 eşlemesi; yinelenen anahtar / tekil
        indeks çakışması ret sayılmaz) → `Refused`; kesin ret olmayan her başarısızlık (yinelenen anahtar yarışı yanıtı, 5xx,
        zaman aşımı, okunamayan gövde) → `Unknown` kalır.
+     - **Güvencenin sınırı — silinen ya da temizlenen uzak kayıt (gap 6/P1-a; kural ve ölçüm MOD-0126 pack Runtime
+       Constraints 3a ile aynı):** iki tekil indeks de kısmidir (`IsDeleted = false`); silinmiş ya da temizlenmiş bir
+       örnek / geçiş aynı anahtarla yenisinin oluşmasına izin verir. Ölçüldü (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c):
+       `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs` içindeki
+       tek `IsDeleted = true` yazımı `SlaEscalationRule` içindir (`:961-974`, `DeactivateRulesForTemplateAsync`);
+       `WorkflowInstance` / `WorkflowTransitionLog` için soft delete ya da temizleme yolu bulunmadı;
+       `PlatformSchemaManifest.WorkflowWorkCenter.cs` (sha256
+       `666b44dcbca19df1f1ebf4f176c9fa86bf66111cc1b935286b625bc1d4706f10`) 0 `ExpireAfter` (TTL yok); `instances/by-objects`
+       silinmişleri süzer (`GetWorkflowInstancesByObjectsHandler.cs:51`). Güvence **yalnız örnek ve geçiş kayıtları
+       silinmediği sürece** geçerlidir. Okuma silinmiş kayıt gösterirse **ya da** silinmemiş kayıt yokken niyetin ilk
+       uzak denemesi kayıtlıysa ve okuma silinmiş durumu ayırt edemiyorsa (tx1'i commit olmuş her niyet), Reconcile aynı anahtarla yeniden yazmaz; niyet `Unknown`
+       kalır (202 `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN` / `RECEIVABLE_DECISION_OUTCOME_UNKNOWN`), talep, fatura
+       kilidi, tahsilatlar ve makbuz değişmez. 404 / boş okumadaki anahtarlı yeniden yazma, MOD-0023 saklama + silmeme
+       politikası (en az niyet ömrü boyunca; sahibi platform-shared-services) ve silinmiş durumu ayırt eden okuma kapanana
+       kadar **kapalıdır** (kapanış tablosu, Ready-for-dev engeli).
+     - **Uzak sonuç doğru denemeye bağlanır (gap 6/P1-b):** `instances/by-objects` bir nesnenin bütün silinmemiş
+       örneklerini döndürür (`GetWorkflowInstancesByObjectsHandler.cs:50-69`). Okuma sonucu niyete yalnız **hepsi**
+       eşleşirse bağlanır: kiracı; nesne (düzeltme talebi) kimliği — AR'de her talep kendi nesnesidir ve tek başlatma
+       taşır, gönderim sırası talep kimliğindedir; kararda karar kimliği (`ReceivableAdjustmentDecision.Id`); deterministik
+       uzak anahtar (`mod0120:{adjustmentId:N}:start` / `RemoteIdempotencyKey`); geçişte ek olarak görev kimliği
+       (`WorkflowTaskId`) + eylem (approve / reject). Başka bir talebin ya da kararın sonucu (aynı faturanın önceki talebi,
+       aynı görevde başka kararın geçişi ya da iptali) bu niyeti **asla** kapatmaz; yalnız fatura ya da talep kimliğiyle
+       veya "en yeni örnek" sırasıyla eşleme yasaktır. Ölçüldü (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c): `WorkflowInstanceStatusDto`
+       (`WorkflowModels.cs:200-207`) ve `WorkflowInstanceHistoryEntryDto` (`:451-465`) uzak anahtarı taşımaz, geçmiş satırı
+       görev kimliğini de taşımaz; alan yanıtta yoksa okuma niyeti kapatamaz → `Unknown`. Kapanış yolu MOD-0126 pack 3a ile
+       aynı (MOD-0023'e eklemeli okuma alanı, D9; ya da P1-a koşulları kapalıysa aynı anahtarla yeniden yazmanın yanıtı).
+       Düzeltmenin etkisi (Void, WriteOff, tahsilat geri alma) yalnız o talebin kendi niyetine bağlanmış sonuçla yazılır.
      - **Ölçülmemiş — aynı anahtarlı yarış yanıtı (DL-3 başı ölçüm maddesi):** yarışı kaybeden çağrının var olan örneği /
        geçişi mi yoksa hata mı aldığı ölçülmedi; doğrulanana kadar yinelenen anahtar hatası **`Unknown`**, asla `Refused`.
      - **MOD-0031 yeniden çağrılmaz:** AR MOD-0031'e yazmaz (yalnız bağlantı kimliğini doğrular); hiçbir kurtarma yolu
@@ -688,9 +751,27 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   yoksa her düzeltme tier-2 sayılır (`PolicySource = DefaultAllTier2`) — hata değildir; talep para birimi eşik para
   biriminden farklıysa tier-2; ayar deposu erişilemiyorsa talep ve kararlar 503 `RECEIVABLE_ADJUSTMENT_POLICY_UNAVAILABLE`,
   uzak çağrı yok. Çözümleyici ve karar kontrolü **aynı**, talebe sabitlenmiş değeri kullanır. Kodda varsayılan tutar yok.
-- **Tahsilat (koşullu, O-9) tek aşamalıdır:** uzak çağrı yoktur; doğrulama, `ReceivablePayment`, fatura (Paid/PartiallyPaid,
-  taksit kalanları en eskiden), makbuz (`Completed`, 201) ve tek `…payment-recorded` olayı **aynı işlemde**. Niyet, belirsiz
-  sonuç ve Reconcile yoktur; çökme → geri alınır, aynı anahtarla tekrar baştan çalışır.
+- **Tahsilat (sahip kararı D16 — v1'de, DL-3) tek aşamalıdır:** uzak çağrı yoktur; doğrulama, iş anahtarı mükerrer
+  kontrolü, `ReceivablePayment(EntryType = Receipt)`, fatura (Paid/PartiallyPaid, taksit kalanları en eskiden,
+  `InstallmentAllocations` yazılır), makbuz (`Completed`, 201) ve tek `…payment-recorded` olayı **aynı işlemde**. Niyet,
+  belirsiz sonuç ve Reconcile yoktur; çökme → geri alınır, aynı anahtarla tekrar baştan çalışır.
+  - **Mükerrer tahsilat (D16, gap 6/P2-a):** iş anahtarı `(TenantId, LegalEntityId, CustomerId, PaymentReferenceKey)`
+    geri alınmamış Receipt'ler arasında tekildir (`ux_receivable_payment_reference_active`). Makbuz kapsamı aktörü ve
+    anahtarı içerdiği için iki kullanıcının (ya da aynı kullanıcının iki anahtarla) aynı ödemeyi girmesini makbuz
+    yakalamaz; iş anahtarı yakalar: ön kontrol (kontrol sırası 4) var olan kaydı görürse 409 `RECEIVABLE_PAYMENT_DUPLICATE`;
+    eşzamanlı iki istekte tekil indeks ikinciyi engeller ve handler yazma çakışmasında (tekil indeks ya da fatura `Version`
+    CAS) iş anahtarını **yeniden okur** — aynı anahtarlı geri alınmamış tahsilat varsa 409 `RECEIVABLE_PAYMENT_DUPLICATE`
+    döner (sürüm çakışması ya da 500 değil); yoksa 409 `RECEIVABLE_INVOICE_VERSION_CONFLICT`. Hiçbir durumda ikinci
+    tahsilat, ikinci denetim olayı ya da ikinci `Completed` makbuz başarı yanıtı oluşmaz.
+- **Onaylı tahsilat geri alma (D16, gap 6/P2-b) — `AdjustmentType = PaymentReversal`:** yeni komut yoktur; Void /
+  WriteOff ile **aynı** iki aşamalı akış kullanılır (RequestAdjustment → MOD-0023 başlatma → Approve / Reject → gerekirse
+  Reconcile), aynı yerel niyet, idempotency, belirsiz sonuç ve kurtarma kuralları, aynı SoD (A1–A7) ve K2 (D14/3:
+  tahsilatı geri almak parayı etkileyen karardır — talep, onay ve ret fail-closed, denetim iş verisiyle aynı işlemde).
+  Talep tx1'i faturayı kilitler (`OpenAdjustmentRequestId`; açıkken yeni tahsilat, başka düzeltme ve ikinci geri alma 409
+  `RECEIVABLE_ADJUSTMENT_PENDING`) ama tutarları **değiştirmez**; etki yalnız onayın tx2'sinde (ya da onu kaydeden
+  Reconcile'da) karar sonucuyla aynı işlemde yazılır: karşı kayıt (`EntryType = Reversal`) eklenir, orijinal tahsilatın
+  tutarı değişmez, faturanın kalan tutarı geri gelir (Runtime Constraints → düzeltme akışı 3). Kısmi geri alma yoktur
+  (tam tutar). Geri alma geri alınamaz; yanlış geri alma yeni bir Receipt ile düzeltilir.
 - `GlobalEntity` kullanılmaz; bütün kayıtlar kiracıya aittir. Mongo GUID V3 / subtype 4; `decimal` → `Decimal128`.
 - Arka plan işi yok (yaşlandırma okuma anında türetilir; uzlaştırma süpürücüsü servis kimliği gelene kadar yok).
 
@@ -717,7 +798,7 @@ Commands/          CreateReceivableInvoiceCommand.cs, UpdateReceivableInvoiceCom
                    IssueReceivableInvoiceCommand.cs, SetReceivableInvoiceCollectionStageCommand.cs,
                    RequestReceivableInvoiceAdjustmentCommand.cs, ApproveReceivableInvoiceAdjustmentCommand.cs,
                    RejectReceivableInvoiceAdjustmentCommand.cs, ReconcileReceivableInvoiceAdjustmentCommand.cs,
-                   RecordReceivableInvoicePaymentCommand.cs (koşullu, O-9)
+                   RecordReceivableInvoicePaymentCommand.cs (D16; geri alma ayrı komut değil — PaymentReversal düzeltme türü)
 Queries/           GetReceivableInvoiceListQuery.cs, GetReceivableInvoiceByIdQuery.cs,
                    GetReceivableInvoiceTraceQuery.cs, ReceivableInvoiceListSort.cs
 Handlers/CommandHandlers/   {Verb}ReceivableInvoice{…}Handler.cs (her komut için; suffix YOK) —
@@ -739,7 +820,7 @@ ReceivableInvoiceModels.cs  (tüm DTO'lar tek dosyada)
   `[Authorize]` + `LocalAccountsReceivableAuthorizationGuard`, `AccountsReceivableController.cs:16, 963@218acaf5`).
 - Her yazma komutu `ICentralAuditDeclaration` taşır (`CentralAuditEntityId` açık yazılır). MOD-0023'e dokunan komutlar
   önce yerel niyet yazdığı için `ICentralAuditOutsideTransaction` kullanılmaz.
-- Domain: `ReceivableInvoiceStateRules` (durum + aşama geçiş tabloları tek yerde), `ReceivableAdjustmentSodRules` (A1–A6).
+- Domain: `ReceivableInvoiceStateRules` (durum + aşama geçiş tabloları tek yerde), `ReceivableAdjustmentSodRules` (A1–A7).
 
 ## Frontend File Contract
 
@@ -770,7 +851,8 @@ Resources/Views/FinanceTreasury/ReceivableInvoices/    ReceivableInvoicesIndex.{
   sütunlarından "Expected Collection", "Risk", "Owner", "Next Action" alınmaz — kaynakta veri karşılığı ölçülmedi, paket §N.9.)
 - Durum ve aşama rozetleri `ReceivableInvoiceStatus`'un 5 ve `ReceivableCollectionStage`'in 7 değerinin tamamını gösterir;
   yaşlandırma rozeti 3 değer.
-- Eylem düğmeleri (Aç, Tahsilat aşaması, İptal talebi, Silme talebi, Onayla, Reddet, Tahsilat kaydet) yalnız Details'ta ve
+- Eylem düğmeleri (Aç, Tahsilat aşaması, İptal talebi, Silme talebi, Onayla, Reddet, Tahsilat kaydet, Tahsilatı geri al
+  — talep, D16) yalnız Details'ta ve
   sunucunun verdiği `allowedActions` listesine göre çizilir; SoD nedeniyle karar veremeyen kullanıcıya düğme yerine
   yerelleştirilmiş açıklama çizilir — sunucu kontrolünün yerine geçmez.
 - Müşteri seçici MOD-0149 ucunu **same-origin MVC proxy** üzerinden çağırır (O-3'ün sonucu: lookup ucu ya da
@@ -809,7 +891,8 @@ Resources/Views/FinanceTreasury/ReceivableInvoices/    ReceivableInvoicesIndex.{
 | If-Match | Evet (Update, Issue, SetCollectionStage, RecordPayment, kararlar) | `Version` | — | CAS |
 | CollectionStage hedefi | Evet | aşama tablosunda izinli; `PromiseToPay` → `PromiseToPayDate` zorunlu (≥ bugün, O-12); `Disputed` → `ReasonCode` zorunlu | — | — |
 | CollectionStage ReasonCode | Koşullu | trim, ≤ 64 | — | — |
-| Düzeltme AdjustmentType | Evet | `Void` \| `WriteOff`; tür ön koşulu (Entity Fields) | — | — |
+| Düzeltme AdjustmentType | Evet | `Void` \| `WriteOff` \| `PaymentReversal` (D16); tür ön koşulu (Entity Fields) | — | — |
+| Düzeltme PaymentId (geri alınacak tahsilat) | PaymentReversal için Evet; diğer türlerde yasak (400) | Guid ≠ Empty; bu faturanın `EntryType = Receipt`, `IsReversed = false` tahsilatı (yoksa 404 `RECEIVABLE_PAYMENT_NOT_FOUND`; geri alınmışsa ya da fatura `WrittenOff` / `Void` ise 409 `RECEIVABLE_ADJUSTMENT_NOT_ALLOWED`) | Unique (TenantId, ReversesPaymentId) karşı kayıtta | yerel okuma |
 | Düzeltme ReasonCode | Evet | trim, 1..64 | — | — |
 | Düzeltme Comment | Hayır | trim, ≤ 2000 | — | — |
 | Düzeltme EvidenceRefs | WriteOff için Evet (O-13) | en az 1 MOD-0031 bağlantı kimliği, her biri Guid ≠ Empty, ≤ 20 | — | MOD-0031 (DL-3) |
@@ -817,12 +900,13 @@ Resources/Views/FinanceTreasury/ReceivableInvoices/    ReceivableInvoicesIndex.{
 | Karar ReasonCode | Reject için Evet | trim, 1..64 | — | — |
 | Tahsilat Amount | Evet | > 0; ≤ OutstandingAmount; küsurat ≤ hane | — | — |
 | Tahsilat PaymentDate | Evet | ≥ InvoiceDate; ≤ bugün (O-12) | — | — |
-| Tahsilat PaymentReference | Evet | trim, 1..64 | — | — |
+| Tahsilat PaymentReference | Evet | trim, 1..64; normalize anahtar (`PaymentReferenceKey`) kiracı + şirket + müşteri içinde geri alınmamış tahsilatlar arasında tekil (D16); aksi 409 `RECEIVABLE_PAYMENT_DUPLICATE` | Unique kısmi (TenantId, LegalEntityId, CustomerId, PaymentReferenceKey) `{EntryType: Receipt, IsReversed: false}` | iş anahtarı ön kontrolü (kontrol sırası 4) |
 
 **Durum kuralları:** Update yalnız `Draft`; Delete / BulkDelete yalnız `Draft` (BulkDelete'te bir kimlik uygun değilse
 hiçbiri silinmez — tek işlem); Issue yalnız `Draft` ve müşteri + LE uygun; SetCollectionStage yalnız `Open` /
-`PartiallyPaid` ve açık düzeltme yokken; RequestAdjustment tür ön koşulu ve açık talep yokken; RecordPayment yalnız
-`Open` / `PartiallyPaid`, `CollectionStage ≠ WrittenOff`, açık düzeltme yokken.
+`PartiallyPaid` ve açık düzeltme yokken; RequestAdjustment tür ön koşulu ve açık talep yokken (PaymentReversal: fatura
+`PartiallyPaid` / `Paid`, `CollectionStage ≠ WrittenOff`, tahsilat geri alınmamış); RecordPayment yalnız `Open` /
+`PartiallyPaid`, `CollectionStage ≠ WrittenOff`, açık düzeltme yokken ve iş anahtarı serbestken (D16).
 
 **SoD kuralları (düzeltme kararlarında, MOD-0023 çağrısından ÖNCE; domain-config "başlatan kuralı miras, ek kurallar
 modülde"):**
@@ -835,6 +919,7 @@ modülde"):**
 | A4 | `IsTier2` = `Amount ≥ eşik` (aynı para birimi) ya da para birimi farklı ya da ayar yok; talep anında sabitlenir | talep | MOD-0126 R5/R6 deseni |
 | A5 | Aktör karşılaştırması token `sub`'ının **Guid** değeri üzerindendir; `sub` Guid değilse karar reddedilir (`FailedRoleConflict`) | her yer | kaynak aktör `string` (`AccountsReceivableEntities.cs:388-395@218acaf5`) — taşınmaz |
 | A6 | İzin karar anında yeniden değerlendirilir; onaylayan MOD-0023 görevinin atanmış aktörüdür (`WorkflowActorDenied`) | karar + MOD-0023 | — |
+| A7 | **PaymentReversal (D16):** geri alınan tahsilatı kaydeden (`ReversedPaymentRecordedBy`) o geri almaya karar veremez (`FailedPaymentRecorderDecision`); A1–A6 aynen uygulanır (talebi gönderen, faturayı oluşturan / açan karar veremez; tier-2 eşiği geri alınan tutara uygulanır) | çözümleyici (aday dışı) + karar kontrolü | yeni |
 
 Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çekemez; geri çekme Follow-up).
 
@@ -882,6 +967,23 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
 - **Açılmış faturayı güncelleme / silme** → 409 `RECEIVABLE_INVOICE_STATUS_INVALID`.
 - **İzinsiz geçiş** (aşama tablosu dışı) → 409 `RECEIVABLE_COLLECTION_TRANSITION_INVALID`.
 - **Kalandan büyük tahsilat** → 422 `RECEIVABLE_PAYMENT_EXCEEDS_OUTSTANDING`.
+- **Mükerrer tahsilat** (D16, gap 6/P2-a) — aynı kiracı + şirket + müşteri + ödeme referansıyla geri alınmamış tahsilat
+  varken, farklı idempotency anahtarıyla ya da başka kullanıcıdan, aynı ya da aynı müşterinin başka faturasına → 409
+  `RECEIVABLE_PAYMENT_DUPLICATE`; ikinci kayıt, fatura değişikliği ve denetim olayı yok. Eşzamanlı iki istekte biri 201,
+  diğeri 409 `RECEIVABLE_PAYMENT_DUPLICATE` (sürüm çakışması ya da 500 değil).
+- **Tahsilat geri alma ön koşulu yok** (D16) — tahsilat bu faturada değil → 404 `RECEIVABLE_PAYMENT_NOT_FOUND`; tahsilat
+  zaten geri alınmış, fatura `WrittenOff` ya da `Void`, karşı kayıt için geri alma istenmiş → 409
+  `RECEIVABLE_ADJUSTMENT_NOT_ALLOWED`; açık talep varken → 409 `RECEIVABLE_ADJUSTMENT_PENDING`. Uzak çağrı yok.
+- **Tahsilatı kaydeden kişinin geri alma kararı** (A7) → 403 `RECEIVABLE_SOD_DENIED` (`FailedPaymentRecorderDecision`);
+  MOD-0023 çağrılmaz.
+- **Geri alma onayı belirsiz / tx2 hatası** → fatura ve tahsilatlar değişmez, karşı kayıt yazılmaz, niyet açık; Reconcile
+  kendi niyetine bağlanmış sonuçla etkiyi bir kez yazar (tek karşı kayıt — `ux_receivable_payment_reversal_of`).
+- **Uzak kayıt silinmiş / temizlenmiş** (gap 6/P1-a) → okuma silinmiş kaydı gösterirse ya da silinmemiş kayıt yokken
+  niyetin ilk denemesi kayıtlıysa (okuma silinmiş durumu ayırt edemiyorken) aynı anahtarla yeniden yazma **yapılmaz**; niyet `Unknown`, 202
+  `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN` / `RECEIVABLE_DECISION_OUTCOME_UNKNOWN`; talep, fatura ve makbuz değişmez.
+- **Başka talebin ya da kararın uzak sonucu okunuyor** (gap 6/P1-b) → bu niyete bağlanmaz; eşleme (kiracı, talep, karar
+  kimliği, uzak anahtar, geçişte görev + eylem) tutmazsa ya da yanıt eşleme alanını taşımıyorsa niyet `Unknown` kalır;
+  etki yazılmaz.
 - **Yetkisiz aktör** → API 403; UI: kabuk içinde erişim açıklaması, düğme yok (UAS-001).
 - **Denetim kaydı yazılamıyor** (outbox yazımı başarısız) → işlem geri alınır, komut başarısız, iş verisi yazılmaz.
 - **Ortak kod servisi yanıt vermiyor** → 503 `RECEIVABLE_RECORD_CODE_UNAVAILABLE`, fatura yazılmaz.
@@ -911,7 +1013,7 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
 | `finance-treasury.receivable-adjustments.tier2-approve` | T3 | approve (tier-2, handler içi) | — |
 | `finance-treasury.receivable-adjustments.reject` | T3 | reject | — |
 | `finance-treasury.receivable-adjustments.reconcile` | T3 | workflow/reconcile | — |
-| `finance-treasury.receivable-payments.record` | T3 | payments (koşullu, O-9) | — (`receivable.settlement.consume` MOD-0269 tüketimidir, eşdeğer değil) |
+| `finance-treasury.receivable-payments.record` | T3 | payments (D16) | — (`receivable.settlement.consume` MOD-0269 tüketimidir, eşdeğer değil) |
 | `finance-treasury.receivable-trace.read` | T1 | trace | `receivable.audit.view` |
 
 - **Taşınmayan kaynak anahtarlar:** `receivable.import`, `receivable.reconcile` (içe aktarma, O-10); `receivable.exception.*`;
@@ -922,6 +1024,9 @@ Reject de A1–A2'ye uyar (talebi gönderen kendi talebini reddederek geri çeke
   / `.reject` (onaylayıcı) izinleri olmalıdır (MOD-0126 pack Authorization); müşteri seçici için O-3'ün sonucuna göre
   `crm.account.read` ya da MOD-0149 lookup izni.
 - Tier-3 eylemler (`read-tenant-wide`, `adjustments.*`, `payments.record`) bu pakette kayıtlıdır (PKS-001 §5 Tier 3).
+- **Tahsilat geri alma (D16)** ayrı uç ve ayrı izin açmaz: `PaymentReversal` bir düzeltme türüdür; talep
+  `receivable-adjustments.request`, karar `…approve` / `…tier2-approve` / `…reject`, kurtarma `…reconcile` ister. Tahsilatı
+  kaydedenin kararı A7 ile engellenir (izin bunu kaldırmaz).
 
 ## Audited Events
 
@@ -945,10 +1050,10 @@ paket §H, §L.2) **taşınmaz**.
 | IssueReceivableInvoiceCommand | finance-treasury.receivable-invoice.issued | ReceivableInvoice | b | Status Draft→Open, GrossTotal, CurrencyCode, CustomerId | evet (öneri) | — |
 | SetReceivableInvoiceCollectionStageCommand | finance-treasury.receivable-invoice.collection-stage-changed | ReceivableInvoice | b | CollectionStage önce→sonra, ReasonCode | evet (öneri) | — |
 | RequestReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-submitted (sonuç, tx2/Reconcile) | ReceivableAdjustmentRequest | b | AdjustmentType, Amount, CurrencyCode, IsTier2, PolicyVersion, Status Submitted→PendingApproval (tx1 deneme olayı `…adjustment-start-requested`) | **evet — K2 (D14/3)** | — |
-| ApproveReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-approved | ReceivableAdjustmentRequest | b | karar kimliği, SodResult, AdjustmentType, fatura Status / CollectionStage önce→sonra, OutstandingAmount önce→sonra | **evet — K2 (D14/3)** | — |
+| ApproveReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-approved | ReceivableAdjustmentRequest | b | karar kimliği, SodResult, AdjustmentType, fatura Status / CollectionStage önce→sonra, OutstandingAmount önce→sonra; PaymentReversal'da ayrıca geri alınan tahsilat kimliği, karşı kayıt kimliği, PaidAmount önce→sonra (D16) | **evet — K2 (D14/3)** | — |
 | RejectReceivableInvoiceAdjustmentCommand | finance-treasury.receivable-invoice.adjustment-rejected | ReceivableAdjustmentRequest | b | karar kimliği, ReasonCode, CollectionStage geri dönüşü | **evet — K2 (D14/3)** | — |
 | ReconcileReceivableInvoiceAdjustmentCommand | kapattığı niyetin **sonuç** olayı (geçiş matrisi); niyet değişmediyse olay yok | ReceivableAdjustmentRequest | b | niyet/karar durumu önce→sonra; bağlı makbuz yalnız `Pending` ise `Completed` | evet (öneri) | — |
-| RecordReceivableInvoicePaymentCommand (koşullu) | finance-treasury.receivable-invoice.payment-recorded | ReceivableInvoice | b | Payment kimliği, Amount, Status önce→sonra, OutstandingAmount önce→sonra | **evet — K2 (D14/3)** | — |
+| RecordReceivableInvoicePaymentCommand (D16) | finance-treasury.receivable-invoice.payment-recorded | ReceivableInvoice | b | Payment kimliği, Amount, Status önce→sonra, OutstandingAmount önce→sonra | **evet — K2 (D14/3)** | — |
 
 - **İki aşamalı komutların deneme olayları:** RequestAdjustment → `finance-treasury.receivable-invoice.adjustment-start-requested`
   (tx1) + sonuç `…adjustment-submitted` / `…adjustment-start-refused` / `…adjustment-start-cancelled`; Approve / Reject →
@@ -958,8 +1063,12 @@ paket §H, §L.2) **taşınmaz**.
   olayını değil kapattığı niyetin sonuç olayını yazar.
 - **Kayda yazılmayan:** müşteri anlık görüntü değerleri, dış fatura numarası değeri, satır açıklamaları, yorum serbest
   metni, tahsilat referans değeri, tahsilat hesabı referansı, token. Değişen alanların yalnız **adı** yazılır (AUD-001 §3).
-- **K2 — KARAR (sahip kararı D14/3):** alacağı etkileyen kararlar — iptal / silme talebi (Void / WriteOff), onayı ve
-  reddi — ve elle tahsilat kaydı K2'dir (fail-closed; denetim kaydı iş verisiyle aynı işlemde). AUD-001 §4.3 listesinde
+- **Tahsilat geri alma (D16) yeni olay adı açmaz:** `PaymentReversal` talebi, kararı ve Reconcile'ı yukarıdaki düzeltme
+  olaylarını (`…adjustment-start-requested`, `…adjustment-submitted`, `…adjustment-decision-requested`,
+  `…adjustment-approved` / `…adjustment-rejected` …) `AdjustmentType = PaymentReversal` alanıyla yazar; karşı kayıt onay
+  olayıyla aynı işlemdedir. Mükerrer tahsilat reddi (409) iş verisi yazmaz, olay da yazmaz (G-AUD-1).
+- **K2 — KARAR (sahip kararı D14/3):** alacağı etkileyen kararlar — iptal / silme talebi (Void / WriteOff), tahsilat geri
+  alma talebi (PaymentReversal, D16), onayı ve reddi — ve elle tahsilat kaydı K2'dir (fail-closed; denetim kaydı iş verisiyle aynı işlemde). AUD-001 §4.3 listesinde
   açıkça sayılmıyordu; sahip MOD-0126 D11/3 desenini AR'ye uyguladı. Uyulabilir yol bugün var
   (`RequireEnlistment = true`; SupplyChain kabulü, `CT-DECISIONS.md` 2026-10-21). Diğer komutlar aynı yolla yazıldığı için
   pratikte hepsi kapalı-başarısızdır.
@@ -985,6 +1094,9 @@ paket §H, §L.2) **taşınmaz**.
   (O-14) çağrıları Gateway ya da ortamın servis-servis adresi üzerinden; adresler yapılandırmadan, eksikse servis başlamaz.
 
 ## Acceptance Criteria
+
+AC durumu kabul kaydında (`scripts/acceptance_record.py`) tanımlı / uygulanmış / çalıştırılmış / geçmiş olarak izlenir,
+pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 
 - [ ] AC-1 (zorunlu) — `POST /api/receivable-invoices` geçerli istekle 201 döner; fatura `Draft`, `InvoiceCode` RCS-001
   biçiminde ortak servisten (istekte gönderilen kod 400), toplamlar ve tek varsayılan taksit sunucu hesabı;
@@ -1073,9 +1185,10 @@ paket §H, §L.2) **taşınmaz**.
   eşzamanlı düzeltme talebi → tek talep, diğeri 409; (b) iki onaylayıcının eşzamanlı Approve ve Reject'i → tek açık karar
   niyeti, MOD-0023'e tek çağrı; (c) düzeltme talebi ile eşzamanlı tahsilat → biri 409; (d) aynı fatura için iki eşzamanlı
   Create aynı dış numarayla → biri 409. Tekil kısmi indeksler kaldırıldığında (a), (b), (d) kırmızıya döner (sabotaj).
-- [ ] AC-33 (koşullu — **O-9 AÇIK**; yalnız sahip O-9'da "bu sürümde" derse zorunludur ve DL-3'te kapanır; "bu sürümde
-  değil" derse madde "kapsam dışı" notuyla kalır, numarası korunur; karar yokken DL-3 bu madde için bitmiş sayılmaz) Tahsilat: kalan 100'lük faturada 40 → `PartiallyPaid`, kalan 60, en eski taksit
-  düşer; 60 → `Paid`, aşama `None`; 61 → 422 `RECEIVABLE_PAYMENT_EXCEEDS_OUTSTANDING`; tahsilat kaydı güncellenemez/silinemez.
+- [ ] AC-33 (zorunlu — sahip kararı D16, DL-3) — Tahsilat: kalan 100'lük faturada 40 → `PartiallyPaid`, kalan 60, en eski
+  taksit düşer ve `InstallmentAllocations` yazılır; 60 → `Paid`, aşama `None`; 61 → 422
+  `RECEIVABLE_PAYMENT_EXCEEDS_OUTSTANDING`; tahsilat kaydı güncellenemez/silinemez (güncelleme / silme ucu yok, depoda
+  `Replace` / `Delete` yolu yok — mimari testi).
 - [ ] AC-34 (zorunlu) — Kaynağın sınırlı denetim / çoklu yazma devri taşınmadı: kod alma iz kaydında (`path@218acaf5` +
   sha256) `IAccountsReceivableControlAuditSink`, `FailClosedArControlAuditSink`, içe aktarma / projeksiyon / kanıt servisleri
   yok; §S sapma tablosunda bu devir için satır yok (taşınırsa satır + sahip + bitiş zorunlu ve etkilenen akış level-2'ye
@@ -1083,33 +1196,70 @@ paket §H, §L.2) **taşınmaz**.
 - [ ] AC-35 (zorunlu) — Okuma kapsamı yazma kapsamını genişletmez (gap 4/G1): `receivable-invoices.read-tenant-wide` + bütün
   yazma izinlerine sahip ama LE-B'de **kendi şirket yetkisi olmayan** kullanıcı LE-B faturalarını listede ve detayda görür
   (200), ama LE-B'de Create (`X-Legal-Entity-Id = LE-B`), Update, Issue, SetCollectionStage, RequestAdjustment, Approve ve
-  Reject (O-9 açılırsa RecordPayment de) 404 `RECEIVABLE_INVOICE_NOT_FOUND` döner; MOD-0023 / MOD-0220 / MOD-0149'a çağrı
+  Reject, RecordPayment ve tahsilat geri alma talebi (D16) 404 `RECEIVABLE_INVOICE_NOT_FOUND` döner; MOD-0023 / MOD-0220 / MOD-0149'a çağrı
   gitmez, kayıt, makbuz ve denetim olayı oluşmaz (sahte istemcilerle sayılır); aynı kullanıcı LE-A'da (kendi yetkisi) aynı
   komutları çalıştırabilir. Sabotaj: yazma yolunda okuma kapsamı kullanıldığında test kırmızıya döner.
-- [ ] AC-36 (zorunlu) — Reconcile önce okur (gap 4/G2; RequestAdjustment, Approve, Reject için ayrı test): (a) uzakta örnek /
-  geçiş **var** → şirket uygun değilken bile sonuç ve etki kaydedilir (MOD-0220 çağrılmaz — D15/2), bağlı `Pending` makbuz
+- [ ] AC-36 (zorunlu) — Reconcile önce okur (gap 4/G2; RequestAdjustment, Approve, Reject için ayrı test): (a) uzakta niyetin
+  kendi eşleme alanlarıyla (AC-38) örnek / geçiş **var** → şirket uygun değilken bile sonuç ve etki kaydedilir (MOD-0220 çağrılmaz — D15/2), bağlı `Pending` makbuz
   `Completed`, tek sonuç olayı; (b) okuma 404 / boş / zaman aşımı / 5xx → niyet **`Cancelled` olmaz**, `Unknown` kalır,
   talep, fatura ve makbuz değişmez, zaman aşımı / 5xx'te uzak yazma/başlatma çağrısı yok (okuma çağrısı yapılır); (c)
   okuma örnek / geçiş göstermedi + şirket uygun değil → MOD-0023'e uzak yazma/başlatma çağrısı yok, niyet `Unknown`,
   `LastOutcomeCode = RECEIVABLE_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422, sonuç olayı yok; (d) okuma örnek / geçiş
-  göstermedi + şirket uygun + SoD/izin geçer + asıl aktör → başlatma / geçiş aynı deterministik anahtarla yeniden yazılır
+  göstermedi + gap 6/P1-a'nın iki koşulu kapalı (AC-37) + şirket uygun + SoD/izin geçer + asıl aktör → başlatma / geçiş aynı deterministik anahtarla yeniden yazılır
   ve MOD-0023'te tam **bir** örnek / geçiş vardır (ikinci Reconcile ikincisini üretmez; yinelenen anahtar hatası `Unknown`
   bırakır, asla `Refused` değil); aktör farklıysa 409 `RECEIVABLE_RECONCILE_RESTART_ACTOR_MISMATCH`, uzak yazma/başlatma
   çağrısı yok; (e) MOD-0031'e Reconcile ya da herhangi bir kurtarma yolu hiç yazma çağrısı yapmaz; belirsiz okumada niyet
   `Unknown` kalır (sahte MOD-0031 yazma çağrısı sayısı 0). Sabotaj: okuma atlanıp doğrudan yeniden yazıldığında,
   "bulunamadı" `Cancelled`'a bağlandığında, farklı anahtarla yeniden yazıldığında ya da MOD-0031'e yazıldığında test
   kırmızıya döner.
+- [ ] AC-37 (zorunlu) — Silinmiş uzak kayıttan sonra yeniden yazma güvenli sayılmaz (gap 6/P1-a; RequestAdjustment, Approve,
+  Reject için ayrı test): sahte MOD-0023'te niyetin örneği / geçişi oluşturulup sonra soft delete edilir (ya da temizlenir)
+  ve niyet `Unknown` bırakılır; Reconcile (a) silinmiş kaydı gösteren okumada ve (b) silinmemiş kayıt dönmeyen ve silinmiş durumu göstermeyen okumada niyetin
+  ilk denemesi kayıtlı (tx1 commit olmuş) durumda aynı anahtarla yeniden yazmaz: niyet `Unknown`, 202
+  `RECEIVABLE_WORKFLOW_START_OUTCOME_UNKNOWN` / `RECEIVABLE_DECISION_OUTCOME_UNKNOWN`, talep, fatura (kilit, aşama,
+  tutarlar), tahsilatlar ve bağlı makbuz değişmez, sahte MOD-0023'te yazma çağrısı 0. Sabotaj: silinmiş durum ve ilk deneme
+  kontrolü kaldırıldığında Reconcile ikinci bir örnek / geçiş oluşturur ve test kırmızıya döner.
+- [ ] AC-38 (zorunlu) — Uzak sonuç doğru denemeye bağlanır (gap 6/P1-b): (a) aynı faturanın önceki (reddedilmiş /
+  başlatması reddedilmiş) düzeltme talebinin örneği ve yeni talebin `Unknown` niyeti varken Reconcile yeni niyeti eski
+  örnekle kapatmaz; yeni niyet `Unknown` kalır ya da yalnız kendi uzak anahtarıyla eşleşen örnekle kapanır; (b) aynı görevde
+  başka bir kararın geçişi (farklı `RemoteIdempotencyKey`, görev ya da eylem) açık karar niyetini kapatmaz ve etki (Void,
+  WriteOff, karşı kayıt) yazılmaz; (c) okuma yanıtı eşleme alanını taşımıyorsa niyet `Unknown` kalır. Sabotaj: eşleme
+  yalnız fatura ya da talep kimliğine indirildiğinde test kırmızıya döner.
+- [ ] AC-39 (zorunlu) — Mükerrer tahsilat (D16, gap 6/P2-a; gerçek replika kümesi, paralel istek): (a) iki farklı kullanıcı
+  farklı `Idempotency-Key` ile aynı faturaya aynı müşteri + aynı `PaymentReference` (büyük/küçük harf ve boşluk farkıyla)
+  tahsilatını **eşzamanlı** gönderir → biri 201, diğeri 409 `RECEIVABLE_PAYMENT_DUPLICATE`; fatura tek tahsilat kadar
+  azalır, tek `…payment-recorded` olayı; (b) aynı istek sırayla ve bayat `If-Match` ile gelse de 409
+  `RECEIVABLE_PAYMENT_DUPLICATE` (sürüm çakışması kodu değil); (c) aynı müşterinin başka faturasına aynı referans → 409
+  aynı kod; başka müşteride ya da başka şirkette aynı referans → 201. Sabotaj: `ux_receivable_payment_reference_active`
+  indeksi ve ön kontrol kaldırıldığında (a) iki tahsilatla kırmızıya döner.
+- [ ] AC-40 (zorunlu) — Onaylı tahsilat geri alma (D16, gap 6/P2-b): 100'lük faturada 40'lık tahsilat (`PartiallyPaid`,
+  kalan 60) için `PaymentReversal` talebi → talep `Submitted`, fatura kilitli, tutarlar **değişmez**, MOD-0023 aynı uzak
+  anahtarla başlatılır; onay sonucu (`Recorded`) ile **aynı işlemde**: `EntryType = Reversal` karşı kaydı eklenir
+  (orijinal tahsilatın tutarı, tarihi ve referansı değişmez; yalnız `IsReversed = true` + `ReversedByPaymentId` bir kez),
+  `PaidAmount = 0`, `OutstandingAmount = 100`, taksit kalanları orijinal dağılımla geri gelir, `Status = Open`; aynı
+  referansla yeni tahsilat artık 201 (politika: referans serbest kalır); Reject → tahsilat ve fatura değişmez, kilit
+  kalkar. Talep, onay ve ret K2'dir: outbox yazımı zorla başarısız edilince komut başarısız, karşı kayıt yazılmaz (sabotaj).
+  Belirsiz onayı Reconcile kaydedince karşı kayıt tam bir kez yazılır (ikinci Reconcile ikinci karşı kayıt üretmez —
+  `ux_receivable_payment_reversal_of`).
+- [ ] AC-41 (zorunlu) — Tahsilat geri alma ön koşulları ve SoD (D16): geri alınmış tahsilatın ikinci geri alma talebi,
+  `WrittenOff` / `Void` faturada geri alma ve karşı kayıt için geri alma 409 `RECEIVABLE_ADJUSTMENT_NOT_ALLOWED`; başka
+  faturanın tahsilatı 404 `RECEIVABLE_PAYMENT_NOT_FOUND`; açık talep varken 409 `RECEIVABLE_ADJUSTMENT_PENDING`; talebi
+  gönderen, faturayı oluşturan / açan ve **tahsilatı kaydeden** kişinin kararı 403 `RECEIVABLE_SOD_DENIED`
+  (`FailedPaymentRecorderDecision` dahil) ve MOD-0023'e istek gitmez; tier-2 eşiği geri alınan tutara uygulanır. Sabotaj: A7
+  kaldırıldığında tahsilatı kaydedenin onayı geçer ve test kırmızıya döner.
 
 ## Test Expectations
 
 - **Birim:** validatorlar (her alan); durum ve aşama geçiş tabloları (izinli/izinsiz her çift); yaşlandırma türetme (sınır
-  günleri, taksitli fatura); düzeltme SoD kuralları A1–A6 (eşik sınırı `Amount == eşik`, para birimi farkı, ayar yok, Guid
+  günleri, taksitli fatura); düzeltme SoD kuralları A1–A7 (eşik sınırı `Amount == eşik`, para birimi farkı, ayar yok, Guid
   karşılaştırması); idempotency parmak izi; RCS kod portu sahtesiyle kod biçimi; toplam ve taksit hesapları (hane sınırları).
 - **Entegrasyon (Mongo replika kümesi, işlem):** kiracı/şirket izolasyonu (404); veri kapsamı (AC-6, sabotajlı); soft
   delete; idempotent tekrar; CAS 409; CentralAudit commit/rollback ve outbox yazım hatasında komutun başarısız olması
-  (sabotaj); tekil indeksler (kod, dış numara, açık talep, açık karar, makbuz).
+  (sabotaj); tekil indeksler (kod, dış numara, açık talep, açık karar, makbuz, tahsilat iş anahtarı, karşı kayıt — AC-39,
+  AC-40).
 - **İş akışı sahte sunucusu:** zaman aşımı, bağlantı kopması, boş 2xx, 5xx, kesin 403/404, "başlatma tamamlanmadı" 409; aynı
-  anahtarla tekrar → tek örnek; karar geçişinde uzak anahtar iletimi; tx2 hatası sonrası Reconcile.
+  anahtarla tekrar → tek örnek; karar geçişinde uzak anahtar iletimi; tx2 hatası sonrası Reconcile; silinmiş örnek /
+  geçiş (AC-37) ve başka talebin / kararın örneği (AC-38).
 - **MOD-0149 sahtesi:** uygun / uygun değil / yok / başka kiracı / erişilemez; O-3 sözleşmesi gelince gerçek sözleşmeye karşı
   sözleşme testi. **MOD-0220 sahtesi:** MOD-0126 ile aynı beş durum.
 - **Mimari:** her aksiyonda `[HasPermission]`; tek eşik tipi; banka verisi alan adı yasağı; `float`/`double` para alanı yok;
@@ -1138,7 +1288,7 @@ paket §H, §L.2) **taşınmaz**.
 - [x] Frontmatter tam (service, shell, golden_reference, data_mode, entity_base, form_field_count)
 - [x] Layout & Shell Contract'ta `Layout = "_LayoutTenantShell"` açık
 - [x] Backend / Frontend file convention Golden Reference ile birebir (suffix yok, CommandHandlers/QueryHandlers ayrı)
-- [x] Validation her alan için yazılı; SoD kuralları A1–A6
+- [x] Validation her alan için yazılı; SoD kuralları A1–A7
 - [x] Failure Path ≥ 4 senaryo (duplicate/idempotency, missing, unauthorized, concurrency) + kiracılar arası + SoD + belirsiz sonuç
 - [x] Authorization: izin listesi + policy + aktör
 - [x] Gateway kararı (gerekli, integration-agent task'ı)
@@ -1166,13 +1316,21 @@ paket §H, §L.2) **taşınmaz**.
 - [ ] MOD-0023 aynı anahtarlı yarış yanıtı ölçüldü (başlatma + her geçiş eylemi) — DL-3 için; ölçülene kadar yinelenen
   anahtar hatası `Unknown` (gap 5/G2)
 - [ ] Düzeltme politikası (O-7) ve muafiyet kararı (O-8 kalan kısmı; K2 kısmı D14/3 ile kapandı) — DL-3 için
-- [ ] **O-9 — elle tahsilat bu sürümde mi: AÇIK** (sahip). Dilimi kararlaştırıldı (O-9a → DL-3, D15/1); O-9 kararı olmadan RecordPayment yazılmaz ve AC-33 için DL-3 bitmez
+- [x] **O-9 — elle tahsilat bu sürümde mi: KARAR (D16)** — v1'de (DL-3, O-9a → D15/1), ödeme referansı iş tekilliği,
+  mükerrer tahsilat kontrolü ve onaylı geri alma (karşı kayıt) ile; AC-33, AC-39, AC-40, AC-41
+- [ ] MOD-0023 saklama + silmeme politikası (örnek ve geçiş kayıtları en az niyet ömrü boyunca silinmez, temizlenmez, TTL
+  almaz; sahibi platform-shared-services) ve silinmiş durumu ayırt eden okuma — DL-3 için; kapanmazsa 404 / boş okumada
+  anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a, AC-37)
+- [ ] MOD-0023 okuma yanıtlarında eşleme alanları (`IdempotencyKey`; geçmişte `ApprovalTaskId`) ölçüldü ya da eklemeli
+  olarak eklendi (D9) — DL-3 için; yoksa okuma niyeti kapatmaz (gap 6/P1-b, AC-38)
 - [ ] Kaynağın sınırlı denetim/çoklu yazma devri taşınmıyor (onaylandı mı — sahip, Level-1 koşul 1)
 
 ## Implementation Notes
 
 ### Kaynak ve kanıt (provenance)
 
+- Ortak tanımlar: MOD-0126 pack @bu commit sha256 ZIP manifestine bakın. (Makbuz, niyet durum sözlüğü, Reconcile 3a
+  kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse o sürüm bağlayıcıdır — gap 6/P2-c.)
 - Producer paketi: MOD-0120 v1.0 (TRM-B3-01), manifest sha256 `f92e068a69fc281ddc89cd834758c12703cca3de5b1f18f21aaa2aa8d68f0df9`
   (bu oturumda ölçüldü); paket dosyası `MOD-0120-TRANSFER-PACKET-v1.0.md` sha256 `28102eaf4df558b44794d6e5017ed7e8f7a639a52e2aeefd4fabb14ad5cfa8cd`
   (sahip özet kararı `treasury-b3-digest-MOD-0120-20261022/DECISION.json`, kabul edildi 2026-10-22).
@@ -1274,7 +1432,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | DATA-CONTRACT | MOD-0003 | S-1 sapması önerisi | açık | — | sahip (K1) |
 | BILLING | AR-BILLING-BUNDLE karşılığı (MOD-0169 aday) | S-2 kısıtlı MVP önerisi | açık | — | sahip (K1) + EA |
 | FIN-BUNDLE | MOD-0118, MOD-0119 | GL alanı yok (0.7 önerisi); AP ile ortak sözleşme yok | açık | — | sahip (K1) + EA |
-| SETTLEMENT | MOD-0269 | tüketim yok; elle tahsilat (O-9) | açık | — | sahip (K1) |
+| SETTLEMENT | MOD-0269 | tüketim yok; elle tahsilat ve onaylı geri alma (D16) | açık | — | sahip (K1) |
 
 ### Taşınmayacaklar (do-not-carry)
 
@@ -1312,9 +1470,12 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 - **Neden MOD-0023 onaylı düzeltme:** alacağı azaltan işlem (iptal, silme) bir hak kaybıdır; domain-config SoD'yi MOD-0023'ten
   miras alır ve "modül kendi SoD kontrolünü icat etmez" der. A1 MOD-0023'ün başlatan kuralıdır; A2 (oluşturan/açan) ve A3–A4
   (eşik) modülün ek kurallarıdır ve çözümleyicide aday dışı bırakılır — MOD-0126 ile aynı yapı.
-- **Neden tahsilat koşullu:** kaynakta elle tahsilat yok; mutabakat MOD-0269'a bırakılmış. Tahsilat olmadan `Paid` hiç
-  oluşmaz ve AR yalnız kayıt defteri olur. Öneri DL-3'te tek aşamalı, K2 elle kayıt; reddedilirse RecordPayment DL-3'ten çıkarılır ve AC-33
-  "isteğe bağlı" olmaz, silinmez — "kapsam dışı" notuyla kalır (AC kimlikleri değişmez).
+- **Neden elle tahsilat v1'de (sahip kararı D16):** kaynakta elle tahsilat yok; mutabakat MOD-0269'a bırakılmış. Tahsilat
+  olmadan `Paid` hiç oluşmaz ve AR yalnız kayıt defteri olur. Sahip önerilen "sonraki sürüm" yerine "kurallarıyla dahil"i
+  seçti: tek aşamalı, K2 elle kayıt + ödeme referansı iş tekilliği + mükerrer kontrol + onaylı geri alma. **Neden geri alma
+  ayrı komut değil:** Void / WriteOff'un MOD-0023 onayı, SoD, niyet, belirsiz sonuç ve Reconcile altyapısı aynen gerekir;
+  ikinci bir akış aynı riskleri ikinci kez yazardı. **Neden karşı kayıt:** tahsilat kaydı denetim izinin parçasıdır;
+  silmek ya da tutarını değiştirmek geçmişi bozar — geri alma yeni bir kayıtla görünür olur.
 - **Neden yaşlandırma türetilir:** saklanan `DUE/OVERDUE` bir zamanlayıcı ister ve zamanlayıcı servis kimliği ister (yok).
 - `target: 2027-02-15` planlama yer tutucusudur, sahip kararı değildir.
 
@@ -1323,7 +1484,8 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 - MOD-0169 Billing & Invoicing bağlantısı (AR-BILLING-BUNDLE karşılığı): faturalamadan gelen fatura sözleşmesi, yasal numara,
   müşteri kimliği bağlama, uyuşmazlık referansları (S-2 bitişi).
 - MOD-0003 gelince sözleşme kaydı (S-1 bitişi).
-- Kredi notu (Blueprint SoR "credit memos"), kısmi silme, tahsilatın geri alınması, eşleşmemiş/fazla nakit.
+- Kredi notu (Blueprint SoR "credit memos"), kısmi silme, kısmi tahsilat geri alma, tek ödeme referansının birden çok
+  faturaya bölünmesi, eşleşmemiş/fazla nakit.
 - Toplu içe aktarma + kaynak kontrol toplamı mutabakatı — güvenilir servis kimliği (MOD-0033-FU02) gelince (O-10).
 - MOD-0125 projeksiyon girdisi (paketi açılırsa) — FORECAST yuvası.
 - MOD-0269 / MOD-0121 mutabakat olayıyla otomatik tahsilat.
@@ -1349,8 +1511,8 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 | O-6 | RCS-001 tür öneki ve ortak kod servisi | `ARI` / başka | `ARI` (§3'te çakışma yok, `INV` dolu — ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-7 | Düzeltme eşiği | MOD-0126 D11/1 deseni (kiracı ayarı, para birimli, ayar yoksa tier-2) / eşiksiz tek kademe | **D11/1 deseni**, ayrı politika anahtarı | sahip (K1) |
 | O-8 | Düzeltme kararları ve tahsilat K2 mı; muafiyet | K2 evet/hayır; muafiyet var/yok | **KARAR (D14/3): K2 evet** — iptal/silme talebi, onay, ret ve elle tahsilat; **muafiyet** (açık): öneri yok (tier-2 aday yoksa 422) | CT + sahip |
-| O-9 | Elle tahsilat **bu sürümde mi** — **AÇIK** (D15/1: "O-9 açık kalır") | bu sürümde / Follow-up (MOD-0269 / MOD-0121'i bekle) | öneri: bu sürümde, tek aşamalı, K2 (D14/3), ekleme-yalnız; **karar verilmedi** — AC-33 ve RecordPayment buna bağlı | sahip (K1) |
-| O-9a | Elle tahsilat **hangi dilimde** | ayrı dilim / DL-3 | **KARAR (D15/1): DL-3** — iptal/silme onayıyla birlikte; eski DL-4 DL-3'e katıldı. Bu karar yalnız dilimi belirler, kapsama (O-9) karar vermez | sahip (K1) |
+| O-9 | Elle tahsilat **bu sürümde mi** | bu sürümde / Follow-up (MOD-0269 / MOD-0121'i bekle) | **KARAR (D16, 2026-10-25): bu sürümde, kurallarıyla** — tek aşamalı, K2 (D14/3), ekleme-yalnız; ödeme referansı iş tekilliği (kiracı + şirket + müşteri + referans), mükerrer tahsilat kontrolü (farklı anahtar / aktör), onaylı geri alma (karşı kayıt, `PaymentReversal`); AC-33, AC-39…41 | sahip (K1) |
+| O-9a | Elle tahsilat **hangi dilimde** | ayrı dilim / DL-3 | **KARAR (D15/1): DL-3** — iptal/silme onayıyla birlikte; eski DL-4 DL-3'e katıldı. Bu karar yalnız dilimi belirler; kapsam O-9'da D16 ile kararlaştırıldı | sahip (K1) |
 | O-10 | Toplu içe aktarma (AR-16/17) | bu sürüm / servis kimliği gelince | servis kimliği gelince (Follow-up) | sahip (K1) |
 | O-11 | Satır vergisi | kullanıcı girdisi / vergi motoru | kullanıcı girdisi (motor faturalamanın) | sahip (K1) |
 | O-12 | "Bugün"ün saat dilimi (yaşlandırma, söz tarihi, tahsilat tarihi) | UTC / şirket saat dilimi | UTC (MOD-0126 O-12 ile tutarlı); şirket saat dilimi MOD-0220'de alan olursa yeniden | sahip (K1) |
@@ -1364,7 +1526,7 @@ Level-1 kaydı "level 3'ten önce hepsi kapanır"):
 |---|---|---|
 | DL-1 | fatura çekirdeği, müşteri/şirket doğrulaması, veri kapsamı ve denetim | Module Summary, Ownership and Boundaries, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Backend File Convention, Acceptance Criteria, Test Expectations, Ready-for-dev Checklist, Implementation Notes, Follow-up Items, Açık kararlar |
 | DL-2 | açma ve tahsilat aşaması | Validation Rules |
-| DL-3 | onaylı düzeltme (iptal / silme), elle tahsilat (koşullu, O-9), SoD ve belirsiz sonuç | Runtime Constraints, Failure Path to Verify, Authorization Convention, Audited Events |
+| DL-3 | onaylı düzeltme (iptal / silme / tahsilat geri alma), elle tahsilat (D16), SoD ve belirsiz sonuç | Runtime Constraints, Failure Path to Verify, Authorization Convention, Audited Events |
 | DL-4 | kiracı ekranı | Layout & Shell Contract, Frontend File Contract, Page Help (UXH-001), Gateway / API Routing Decision |
 
 Her bölüm tabloda bir kez, **kapandığı** dilimde yazılıdır; önceki dilimler o bölümün kendilerine düşen kısmını uygular
@@ -1385,12 +1547,12 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   SetCollectionStage kısmı).
 - **DL-3** — Yollar: RequestAdjustment, Approve, Reject, Reconcile, düzeltme politikası ve tek eşik, MOD-0023 bağdaştırıcısı
   (servis içinde MOD-0126 ile ortak, zaman aşımlı). **Neden ayrı:** SoD ve belirsiz sonuç modülün en riskli kısmıdır.
-  Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0023 aynı anahtarlı yarış yanıtı ölçümü (gap 5/G2), MOD-0031
-  davranış ölçümü; RecordPayment için ayrıca **O-9 (AÇIK)**.
-  Bitiş: AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32, 33 (koşullu, O-9), 35 (düzeltme, karar,
-  Reconcile kısmı), 36. **RecordPayment (elle tahsilat) da bu dilimdedir** (sahip kararı D15/1, 2026-10-24:
-  ayrı DL-4 hiçbir bölümü kapatmadığı için dilim tablosu okunamıyordu); iki K2 komutu aynı onay ve denetim altyapısını
-  kullanır. O-9 "bu sürümde değil" kararı çıkarsa RecordPayment ve AC-33 dilimden çıkarılır, dilim yapısı değişmez.
+  Önkoşul: DL-2, O-7, O-8, O-13, MOD-0023 AR şablonu, MOD-0023 aynı anahtarlı yarış yanıtı ölçümü (gap 5/G2), MOD-0023
+  saklama + silmeme politikası ve okuma eşleme alanları (gap 6/P1-a, P1-b), MOD-0031 davranış ölçümü.
+  Bitiş: AC-9…16, 17 (kararlar), 18 (iki aşamalı + sabotaj + kurtarma), 32, 33, 35 (düzeltme, karar, Reconcile,
+  tahsilat kısmı), 36, 37, 38, 39, 40, 41. **RecordPayment (elle tahsilat) ve tahsilat geri alma (`PaymentReversal`) da bu
+  dilimdedir** (sahip kararları D15/1, 2026-10-24 — ayrı DL-4 hiçbir bölümü kapatmadığı için dilim tablosu okunamıyordu —
+  ve D16, 2026-10-25 — elle tahsilat v1'de, kurallarıyla); K2 komutları aynı onay ve denetim altyapısını kullanır.
 - **DL-4** — Yollar: `Views/FinanceTreasury/ReceivableInvoices/**`, JS, resx (7 dil), MVC proxy, sayfa yardımı, nav anahtarları;
   Gateway rotası integration-agent task'ı olarak açılır (bu dilim yazmaz). Önkoşul: DL-1 (liste/oluşturma), DL-2/DL-3 (eylem
   düğmeleri), Gateway rotası, O-3 (müşteri seçici). Bitiş: AC-25…29.

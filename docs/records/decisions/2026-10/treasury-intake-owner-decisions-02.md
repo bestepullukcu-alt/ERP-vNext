@@ -1,6 +1,6 @@
 ---
 decision_id: TREASURY-INTAKE-OWNER-DECISIONS-02
-status: approved — D9–D15 2026-10-24 itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
+status: approved — D9–D16 (D16: 2026-10-25) itibarıyla yürürlükte; "Karar olmayanlar" bölümü karar değildir
 decided_at_local: 2026-10-24
 decided_by: depo sahibi (rol, K1); bu kayıt ad yazmaz
 decision_source: Treasury Intake Control Tower oturumu (Claude Code); sahibin mesajları "treasury modüllerin çalışması için gereken değişiklikleri yapabiliriz" ve "tamam, başlayalım" (2026-10-24)
@@ -81,6 +81,13 @@ kanıt). Normal onay ve muafiyet yetkisi ayrı değerlendirilir.
    onayıyla birlikte; eski DL-5 (ekran) DL-4 oldu; O-9 (elle tahsilat bu sürümde mi) açık kalır.
 2. **Reconcile muafiyeti:** "Evet, muaf" — belirsiz sonucu kapatan Reconcile komutları "şirket aktif ve onaylı" kuralından
    muaftır (D10/1, D14/4); yeni işlem başlatmazlar, kontrol edilmiş işlemin uzak sonucunu kaydederler (dört pack).
+
+## D16 — AR elle tahsilat (O-9) (2026-10-25, soru kutusu)
+
+Soru: "AR'de elle tahsilat kaydı (O-9) bu sürüme dahil olsun mu?" — Cevap: **"Evet, kurallarıyla dahil"** (önerilen
+seçenek "Hayır, sonraki sürüm" idi; sahip dahil etmeyi seçti). Elle tahsilat AR v1'de (DL-3) kalır; şunlarla birlikte:
+ödeme referansı için iş tekilliği (kiracı + şirket + müşteri + referans), mükerrer tahsilat kontrolü (farklı anahtar ya da
+aktörle aynı ödeme) ve onaylı geri alma (reversal / karşı kayıt) akışı.
 
 ## Karar olmayanlar
 

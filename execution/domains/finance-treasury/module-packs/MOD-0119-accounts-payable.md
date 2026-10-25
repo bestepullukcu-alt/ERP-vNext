@@ -405,7 +405,8 @@ veri yok; GO-NOGO :114 "No schema or data was added or altered by MOD-0119 commi
   `AP_LEGAL_ENTITY_NOT_ELIGIBLE` 422, `AP_LEGAL_ENTITY_UNAVAILABLE` 503, `AP_SUPPLIER_NOT_ELIGIBLE` 422 (ilişki yok ya da
   Active değil), `AP_SUPPLIER_UNAVAILABLE` 503, `AP_MATCH_REFERENCE_REQUIRED` 400, `AP_MATCH_REFERENCE_NOT_ALLOWED` 400,
   `AP_MATCH_OUTCOME_NOT_ELIGIBLE` 422, `AP_MATCH_REFERENCE_MISMATCH` 422 (tedarikçi / para birimi / tutar farkı),
-  `AP_MATCH_REFERENCE_ALREADY_USED` 409, `AP_MATCH_UNAVAILABLE` 503, `AP_CREDITED_INVOICE_INVALID` 422,
+  `AP_MATCH_REFERENCE_ALREADY_USED` 409, `AP_MATCH_UNAVAILABLE` 503, `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` 422 (MOD-0143
+  `totalAmount`'un net mi brüt mü olduğu sözleşmede doğrulanmadı — O-5; PO'lu fatura onaya ilerlemez), `AP_CREDITED_INVOICE_INVALID` 422,
   `AP_CURRENCY_PRECISION_UNAVAILABLE` 503, `AP_RECORD_CODE_UNAVAILABLE` 503, `AP_WORKFLOW_START_FAILED` 502 (yalnız kesin
   ret), `AP_WORKFLOW_START_OUTCOME_UNKNOWN` 202, `AP_WORKFLOW_START_PENDING` 409, `AP_DECISION_OUTCOME_UNKNOWN` 202,
   `AP_DECISION_PENDING` 409, `AP_DECISION_REASON_REQUIRED` 400, `AP_WORKFLOW_TASK_INVALID` 400,
@@ -485,7 +486,7 @@ MOD-0023 AP iş akışı şablonu; `ocelot.json` rotaları (integration-agent); 
 
 ## Dependencies
 
-| Kapı / bağımlılık | Rol | Recovery durumu (ölçüm 2026-10-24, bu worktree) | Bu pakete etkisi |
+| Kapı / bağımlılık | Rol | Recovery durumu (ölçüm Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c) | Bu pakete etkisi |
 |---|---|---|---|
 | **MOD-0003 Data Contract Registry** (Blueprint kapısı) | sözleşme kaydı | **yok** (0 dosya; kaynakta da yok, paket §D) | **ENGEL — karar 0.3 AÇIK.** Öneri: süreli T32 sapması + `docs/analysis/contracts/`'ta dondurulmuş sözleşmeler (O-1). Karar verilmeden pack `ready-for-dev` olmaz |
 | **ERP-FIN-BUNDLE** (Min Integration Contract, GL + AP + AR ortak) | finans paket sözleşmesi | **yok**; üreticisi yok (`TREASURY-MIGRATION-SEQUENCE-v1.0.md` Amendment 2 §1, §5) | **ENGEL — karar 0.6 AÇIK (EA).** AP'nin kendi `AP-INVOICE` sözleşmesinin bundle'a nasıl bağlanacağı bu karara bağlı (O-2) |
@@ -517,11 +518,13 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
 | ERP-FIN-BUNDLE kararı | karar kaydı (0.6) — **yok** | — | EA | — | karar kaydı | DL-1 önkoşulu |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
 | MOD-0140 tedarikçi ilişkisi | `supplier.openapi.yaml` **1.3.0** — MVP-2 DL-2'de yazılacak (bugün main'de 1.2.0) | TBD (main'e girince) | procurement (MVP-2) | ilişki yok / Active değil → 422 · erişilemez → 503 · geçiş yok | sahte istemci · dev ortamında Active / OnHold / Blocked / ilişkisiz dört tedarikçi | DL-1 |
-| MOD-0143 eşleşme sonucu | `invoice-match.openapi.yaml` 1.1.0 FROZEN | DL-1 başında `shasum` ile yazılır | procurement | uygun değil → 422 · fark → 422 · erişilemez → 503 | sahte istemci · dev ortamında Matched / Exception / ClearedForPayment üç fatura | DL-1 |
+| MOD-0143 eşleşme sonucu | `invoice-match.openapi.yaml` 1.1.0 FROZEN; **açık soru:** `totalAmount` net mi brüt mü (sözleşmede açıklama ve satır vergi alanı yok, `:160-168`, `:190` — O-5) | `41fe1f43bc74638c6d409c85b2613d36d00ddbfaeff880dc3c8e929cec513d11` (DL-1 başında yeniden `shasum`) | procurement (MOD-0143 sahibi) | uygun değil → 422 · fark → 422 · erişilemez → 503 · net/brüt doğrulanmadı → 422 `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (onay yok) | sahte istemci · dev ortamında Matched / Exception / ClearedForPayment üç fatura | DL-1 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok** (O-10) | TBD | platform-shared-services | hane yok → 503 | sahte istemci · dev ortamında TRY/EUR/JPY | DL-1 |
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
 | SEC-002 veri kapsamı (D14/1) | Platform `IDataScopeResolver` tüketim yolu — **yok** (O-22; dört paket için tek karar) | TBD | platform-shared-services | çözücü hatası → boş kapsam, boş liste, detay / yazma 404 | kapsam testi AC-32 (sabotajlı) · dev ortamında iki şirket iki kullanıcı | DL-1 |
 | MOD-0023 iş akışı başlatma + görev geçişi | Platform `WorkflowModels.cs` (sözleşme dosyası yok) + AP şablon kodu — **TBD** (O-11) | Platform commit SHA'sı DL-2 başında yazılır | platform-shared-services | belirsiz → 202 Unknown · kesin ret → 502 · zaman aşımı yapılandırılır · yinelenen anahtar hatası → Unknown (ret değil) | sahte MOD-0023 (anahtar başına tek örnek / geçiş) · dev ortamında gerçek başlatma + onay + ret + bilgi isteme + **aynı anahtarlı yarış yanıtı ölçümü** (var olan örneği / geçişi döndürdüğü doğrulanmadan yinelenen anahtar hatası `Unknown`) | DL-2 |
+| MOD-0023 saklama + silmeme politikası (örnek ve geçiş kaydı; gap 6/P1-a) | MOD-0023 pack'inde politika maddesi — **yazılacak** (D9; MOD-0126 ile ortak satır): `WorkflowInstance` ve `WorkflowTransitionLog` en az niyet ömrü boyunca silinmez, temizlenmez, TTL almaz | TBD | platform-shared-services | politika kapanmadan 404 / boş okumada anahtarlı yeniden yazma **kapalı**; niyet `Unknown` | ölçüm (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c): silme yolu yok (`WorkflowRepositories.cs:961-974` yalnız `SlaEscalationRule`), TTL yok (`PlatformSchemaManifest.WorkflowWorkCenter.cs` sha256 `666b44dcbca19df1f1ebf4f176c9fa86bf66111cc1b935286b625bc1d4706f10`, 0 `ExpireAfter`) — ölçüm politika değildir · politika kaydı + silinmiş kayıt testi AC-37 | DL-2 |
+| MOD-0023 okuma eşleme alanları (gap 6/P1-b) | `instances/by-objects` ve `instances/{id}/history` yanıtına eklemeli `IdempotencyKey` (geçmişte ayrıca `ApprovalTaskId`) ve silinmiş durumu ayırt eden okuma — **yazılacak** (D9; MOD-0126 ile ortak satır) | TBD | platform-shared-services | alan yoksa okuma niyeti kapatmaz → `Unknown` | sahte MOD-0023 (aynı faturada eski + yeni örnek) AC-38 · dev ortamında aynı faturanın iki gönderimi | DL-2 |
 | MOD-0031 kanıt okuma | `api/v1/evidence` (sözleşme dosyası ölçülecek) | DL-3 başında | platform-shared-services | 503 → bağlama yok, fatura değişmez · AP MOD-0031'e yazmaz, kurtarmada yeniden çağrı yok | sahte · dev ortamı · **MOD-0031 dedupe ölçümü** — AP'ye MOD-0031 yazması ya da kurtarmada yeniden çağrı eklenmeden önce zorunlu (gap 5/G2) | DL-3 |
 | CentralAudit | `Diten.BuildingBlocks.CentralAudit` (kod) | Building.Blocks commit SHA'sı DL-1 başında | BL-501 | yazılamazsa komut başarısız | sabotaj testi AC-17 · AUD-001 §8 dev kanıtı AC-29 | DL-1 |
 
@@ -567,7 +570,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   ReleaseHold'da çağıran şirketle ilişki `Active` değilse `AP_SUPPLIER_NOT_ELIGIBLE` (422), yanıt yoksa
   `AP_SUPPLIER_UNAVAILABLE` (503); (c) PO'lu faturada
   Validate, Submit ve Approve'da MOD-0143 — durum uygun küme dışında ise `AP_MATCH_OUTCOME_NOT_ELIGIBLE` (422), tedarikçi /
-  para birimi / tutar farkı `AP_MATCH_REFERENCE_MISMATCH` (422), yanıt yoksa `AP_MATCH_UNAVAILABLE` (503). Hiçbirinde
+  para birimi / tutar farkı `AP_MATCH_REFERENCE_MISMATCH` (422), yanıt yoksa `AP_MATCH_UNAVAILABLE` (503); `totalAmount`'un
+  net / brüt tabanı doğrulanmadıysa `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (422 — Validation Rules → MOD-0143, O-5). Hiçbirinde
   geçiş yapılmaz. Bu **okumalar** uzak yan etki değildir ve tx1'den önce yapılır.
 - Soft delete (`IsDeleted` + `DeletedAt` UTC, filtrede Id + TenantId + LegalEntityId). Okumalar `IsDeleted = false`.
 - **Idempotency (D12/2 kuralı — her yazma komutunda zorunlu):** Create, Update, Delete, BulkDelete, Validate, Submit,
@@ -609,7 +613,8 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      gap 5/G2; Submit ve üç karar komutu; kural MOD-0126 pack Runtime Constraints 3a ile aynı):*
      - **Önce okuma:** başlatmada `instances/by-objects` (fatura kimliği) + niyetin deterministik uzak anahtarı; kararda
        görev geçmişi + `RemoteIdempotencyKey`.
-     - **Uzakta örnek / geçiş var** → kesin durum kaydedilir (tx2 + bağlı `Pending` makbuz `Completed` + sonuç olayı);
+     - **Uzakta niyetin kendisine ait örnek / geçiş var** (eşleme aşağıda, gap 6/P1-b) → kesin durum kaydedilir (tx2 +
+       bağlı `Pending` makbuz `Completed` + sonuç olayı);
        şirket kuralından **muaf** (D15/2).
      - **"Kesin boş" okumadan çıkarılmaz (gap 5/G2):** MOD-0023 sözleşmesinde "bulunamadı / boş okuma son durumdur"
        güvencesi yoktur (ilk çağrı hâlâ yolda olabilir); okumaya dayalı "kesin boş → yeniden başlat" dalı yoktur. Okuma
@@ -618,7 +623,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        Zaman aşımı / 5xx / okunamayan gövdede başka adım yoktur; 404 / boş sonuçta tek ek adım aşağıdaki anahtarlı
        yeniden yazmadır.
      - **Yeniden çağrı yalnız MOD-0023 başlatma ve görev geçişlerinde** — uzak yazmanın kendisi anahtarla idempotent
-       (ölçüldü, Recovery HEAD 2026-10-24): `ux_workflow_instances_tenant_idempotency_key_active` (TenantId +
+       (ölçüldü, Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c): `ux_workflow_instances_tenant_idempotency_key_active` (TenantId +
        IdempotencyKey, kısmi `IsDeleted = false`) ve `ux_workflow_transition_logs_task_action_idempotency_active`
        (TenantId + ApprovalTaskId + Action + IdempotencyKey) tekil indeksleri
        (`PlatformSchemaManifest.WorkflowWorkCenter.cs:118-131`, `:211-225`); başlatma var olan örneği döndürür
@@ -632,6 +637,33 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
        garanti eder. Başarı (yeni ya da yeniden oynatılmış) → niyet sonuçla kapanır (tx2 eşlemesi); kesin ret (tx2
        eşlemesi; yinelenen anahtar / tekil indeks çakışması ret sayılmaz) → `Refused`; kesin ret olmayan her başarısızlık
        (yinelenen anahtar yarışı yanıtı, 5xx, zaman aşımı, okunamayan gövde) → `Unknown` kalır.
+     - **Güvencenin sınırı — silinen ya da temizlenen uzak kayıt (gap 6/P1-a; kural ve ölçüm MOD-0126 pack Runtime
+       Constraints 3a ile aynı):** iki tekil indeks de kısmidir (`IsDeleted = false`); silinmiş ya da temizlenmiş bir
+       örnek / geçiş aynı anahtarla yenisinin oluşmasına izin verir. Ölçüldü (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c):
+       `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs` içindeki
+       tek `IsDeleted = true` yazımı `SlaEscalationRule` içindir (`:961-974`, `DeactivateRulesForTemplateAsync`);
+       `WorkflowInstance` / `WorkflowTransitionLog` için soft delete ya da temizleme yolu bulunmadı;
+       `PlatformSchemaManifest.WorkflowWorkCenter.cs` (sha256
+       `666b44dcbca19df1f1ebf4f176c9fa86bf66111cc1b935286b625bc1d4706f10`) 0 `ExpireAfter` (TTL yok); `instances/by-objects`
+       silinmişleri süzer (`GetWorkflowInstancesByObjectsHandler.cs:51`). Güvence **yalnız örnek ve geçiş kayıtları
+       silinmediği sürece** geçerlidir. Okuma silinmiş kayıt gösterirse **ya da** silinmemiş kayıt yokken niyetin ilk
+       uzak denemesi kayıtlıysa ve okuma silinmiş durumu ayırt edemiyorsa (tx1'i commit olmuş her niyet), Reconcile aynı anahtarla yeniden yazmaz; niyet `Unknown`
+       kalır (202 `AP_WORKFLOW_START_OUTCOME_UNKNOWN` / `AP_DECISION_OUTCOME_UNKNOWN`), fatura, alacak dekontu
+       rezervasyonu ve makbuz değişmez. 404 / boş okumadaki anahtarlı yeniden yazma, MOD-0023 saklama + silmeme politikası
+       (en az niyet ömrü boyunca; sahibi platform-shared-services) ve silinmiş durumu ayırt eden okuma kapanana kadar
+       **kapalıdır** (kapanış tablosu, Ready-for-dev engeli).
+     - **Uzak sonuç doğru denemeye bağlanır (gap 6/P1-b):** `instances/by-objects` aynı faturanın önceki gönderimlerinin
+       örneklerini de döndürür (`GetWorkflowInstancesByObjectsHandler.cs:50-69`). Okuma sonucu niyete yalnız **hepsi**
+       eşleşirse bağlanır: kiracı; fatura kimliği; başlatmada `SubmissionSequence`, kararda karar kimliği
+       (`ApApprovalDecision.Id`); deterministik uzak anahtar (`ApWorkflowStartIntent.IdempotencyKey` /
+       `ApApprovalDecision.RemoteIdempotencyKey`); geçişte ek olarak görev kimliği (`WorkflowTaskId`) + eylem (approve /
+       reject / request-info). Eski bir denemenin sonucu (önceki `SubmissionSequence`'in örneği, başka kararın geçişi ya da
+       iptali) yeni niyeti **asla** kapatmaz; yalnız fatura kimliğiyle ya da "en yeni örnek" sırasıyla eşleme yasaktır.
+       Ölçüldü (Recovery @4e01e986269065cba6f962e0c13b9b2ae4519f6c): `WorkflowInstanceStatusDto` (`WorkflowModels.cs:200-207`) ve
+       `WorkflowInstanceHistoryEntryDto` (`:451-465`) uzak anahtarı taşımaz, geçmiş satırı görev kimliğini de taşımaz; alan
+       yanıtta yoksa okuma niyeti kapatamaz → `Unknown`. Kapanış yolu MOD-0126 pack 3a ile aynı (MOD-0023'e eklemeli okuma
+       alanı, D9; ya da P1-a koşulları kapalıysa aynı anahtarla yeniden yazmanın yanıtı). Alacak dekontunun alacaklaması
+       ve rezervasyon bırakma yalnız dekontun kendi niyetine bağlanmış sonuçla yazılır.
      - **Ölçülmemiş — aynı anahtarlı yarış yanıtı (DL-2 başı ölçüm maddesi):** yarışı kaybeden çağrının var olan örneği /
        geçişi mi yoksa hata mı aldığı ölçülmedi; doğrulanana kadar yinelenen anahtar hatası **`Unknown`**, asla `Refused`.
      - **MOD-0031 yeniden çağrılmaz:** AP MOD-0031'e yazmaz (yalnız bağlantıyı okur, LinkEvidence tek aşamalıdır); hiçbir
@@ -653,7 +685,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
   4a. *İki aşamalı denetim ve çökme kurtarma:* tx1 **deneme olayı** (`…workflow-start-requested`, `…decision-requested`),
      tx2 **sonuç olayı** yazar; ikisi de kendi işleminde, iş verisiyle birlikte (`RequireEnlistment = true`). Kesin sonuç
      ancak tx2 commit olunca vardır. **Uzak başarı + tx2 başarısız ya da süreç çöker:** niyet açık kalır; Reconcile (elle)
-     MOD-0023 örneği/görev geçmişinden sonucu okur, uzak çağrıyı **tekrarlamadan** tx2'yi yazar, sonuç olayını üretir ve
+     MOD-0023 örneği/görev geçmişinden sonucu okur (yalnız niyetin kendi eşleme alanlarıyla — 3a, gap 6/P1-b), uzak çağrıyı **tekrarlamadan** tx2'yi yazar, sonuç olayını üretir ve
      bağlı makbuz **yalnız `Pending` ise** `Completed` yapılır. **K2 kararlarında (Approve, Reject — sahip kararı D14/3):** tx1 deneme
      olayı yazılamazsa uzak çağrı yapılmaz, komut başarısız; tx2 sonuç olayı yazılamazsa niyet açık kalır ve karar
      "kayıtlı" sayılmaz — Reconcile tamamlar.
@@ -661,8 +693,17 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
      (MOD-0126 ile aynı ayar) — başlangıçta yoksa servis açılmaz (öneri 15 sn, O-11). MOD-0140, MOD-0143, MOD-0220,
      MOD-0031 okumaları için `FinanceTreasury:Reads:TimeoutSeconds` (öneri 5 sn); zaman aşımı 503 sayılır.
 - **Alacak dekontu kapasitesi (orijinal faturaya bağlı `CreditNote`; O-14 önerisinin parçası):**
-  - **Kural:** bir orijinal fatura için `CreditedAmount + CreditReservedAmount + bu dekontun GrossAmount ≤ orijinal
-    GrossAmount` — yani onaylı + bekleyen (onay akışındaki) dekontların toplamı orijinalin **brüt tutarını** aşamaz.
+  - **Kural:** onaylı + bekleyen (onay akışındaki) dekontların toplamı orijinalin **brüt tutarını** aşamaz. Bu dekontun
+    kendi rezervasyonu iki kez sayılmasın diye formül **adım adım ayrı** yazılır (gap 6/P1-c; `thisAmount` = bu dekontun
+    `GrossAmount`'u, `thisReservation` = bu dekontun Submit'te orijinale yazdığı rezervasyon):
+    - **Validate (ön kontrol, rezerv etmez) ve Submit tx1 (rezervasyon):** `CreditedAmount + CreditReservedAmount +
+      thisAmount ≤ GrossAmount` → Submit'te orijinalde `CreditReservedAmount += thisAmount`.
+    - **Approve (son adım tx2 ya da onu kaydeden Reconcile):** `CreditedAmount + (CreditReservedAmount − thisReservation)
+      + thisAmount ≤ GrossAmount` — eşdeğeri: bu dekontun rezervasyonu zaten sayılmışken `CreditedAmount +
+      CreditReservedAmount ≤ GrossAmount` → `thisAmount` `CreditReservedAmount`'tan `CreditedAmount`'a taşınır
+      (`CreditReservedAmount −= thisReservation`, `CreditedAmount += thisAmount`; v1'de `thisReservation = thisAmount`),
+      `OpenAmount = GrossAmount − CreditedAmount`. Submit formülü onayda **kullanılmaz** (bu dekontu iki kez sayardı ve
+      kalan kapasitenin tamamını kullanan dekontu yanlışlıkla reddederdi).
     **Neden brüt tutar (OpenAmount değil):** brüt tutar orijinal onaylandıktan sonra değişmez; tavan sabit ve işlem
     sırasından bağımsızdır. OpenAmount v1'de zaten `Gross − CreditedAmount`'tır; "onaylı + bekleyen" toplamını OpenAmount'a
     karşı ölçmek onaylı dekontları iki kez sayardı, yalnız bekleyenleri OpenAmount'a karşı ölçmek ise aynı sonucu verir —
@@ -673,7 +714,7 @@ Her satır kapanmadan ilgili dilim başlamaz. **Sahte (mock) istemciyle geçen t
     faturanın `CreditReservedAmount += dekont GrossAmount` alanını orijinalin `Version` CAS'ıyla yazar; kapasite aşılırsa
     422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`, uzak çağrı yok, hiçbir şey yazılmaz.
   - **Onay tek işlemde:** dekontun son adım onayının tx2'si (ya da onu kaydeden Reconcile) **aynı işlemde** kapasiteyi
-    yeniden denetler (rezervasyon tutulduğu için aşamaz; aşıyorsa değişmez bozulmuştur → tx2 yazılmaz, niyet açık kalır),
+    yukarıdaki **Approve formülüyle** yeniden denetler (rezervasyon tutulduğu için aşamaz; aşıyorsa değişmez bozulmuştur → tx2 yazılmaz, niyet açık kalır),
     dekontu `Approved` yapar ve orijinalde `CreditReservedAmount −= tutar`, `CreditedAmount += tutar`, `OpenAmount = Gross −
     CreditedAmount`, `CreditStatus` (`PartiallyCredited` / `FullyCredited`) yazar — hepsi orijinalin `Version` CAS'ıyla.
     OpenAmount oluşturmada ya da gönderimde **değil**, yalnız onayda azalır.
@@ -792,7 +833,7 @@ Resources/Views/FinanceTreasury/ApInvoices/    ApInvoicesIndex.{en,tr,fr,es,zh,a
 | DueDate | Evet | `DateOnly`; `≥ InvoiceDate` | — | — |
 | CurrencyCode | Evet | `^[A-Z]{3}$` (upper normalize), MOD-0048 listesinde | — | `ICurrencyReferencePort` |
 | MatchInvoiceRef | Koşullu | `PoBackedInvoice` → zorunlu (400 `AP_MATCH_REFERENCE_REQUIRED`); diğer türlerde gönderilirse 400 `AP_MATCH_REFERENCE_NOT_ALLOWED` | Unique (TenantId, LegalEntityId, MatchInvoiceRef), silinmemiş | `IInvoiceMatchPort` (Validate/Submit/Approve) |
-| CreditedApInvoiceId | Koşullu | `CreditNote` → zorunlu (öneri, O-14); aynı tedarikçi + para birimi, `Approved`, kendisi alacak dekontu değil (aksi 422 `AP_CREDITED_INVOICE_INVALID`); dekont `GrossAmount ≤ orijinal Gross − CreditedAmount − CreditReservedAmount` (aksi 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`; Validate ön kontrol, Submit rezervasyon, Approve kesin) | orijinal faturanın `Version` CAS'ı | yerel okuma |
+| CreditedApInvoiceId | Koşullu | `CreditNote` → zorunlu (öneri, O-14); aynı tedarikçi + para birimi, `Approved`, kendisi alacak dekontu değil (aksi 422 `AP_CREDITED_INVOICE_INVALID`); Validate / Submit: dekont `GrossAmount ≤ orijinal Gross − CreditedAmount − CreditReservedAmount`; Approve: aynı formül bu dekontun kendi rezervasyonu `CreditReservedAmount`'tan düşülerek (aksi 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`; Validate ön kontrol, Submit rezervasyon, Approve kesin — Runtime Constraints → Alacak dekontu kapasitesi, gap 6/P1-c) | orijinal faturanın `Version` CAS'ı | yerel okuma |
 | Notes | Hayır | trim, ≤ 2000 | — | — |
 | Lines | Evet | 1..200 satır | — | — |
 | Line.Description | Evet | trim, 1..256 | — | — |
@@ -814,9 +855,16 @@ tutar kuralları, mükerrer kontrol (indeks), alacak dekontu kuralı; başarıl�
 ve `Received`/`Validated`. Hold yalnız `Validated`/`Approved`; ReleaseHold yalnız `OnHold` ve engelleyici açık istisna yok.
 
 **MOD-0143 eşleşme kuralları (PO'lu fatura; öneri, O-5):** MOD-0143 faturası aynı kiracı + şirkette bulunur; `status ∈
-{Matched, MatchedWithinTolerance, ClearedForPayment}`; `supplierId` ve `currency` AP kaydıyla eşit; `Σ Line.NetAmount =
-totalAmount` (MOD-0143 `Decimal` string'i `decimal`'a çevrilerek, yuvarlamasız). AP eşleştirme yapmaz, tolerans uygulamaz
-(tolerans MOD-0143'ün ASSUMPTION-P2P-01'idir).
+{Matched, MatchedWithinTolerance, ClearedForPayment}`; `supplierId` ve `currency` AP kaydıyla eşit; tutar kuralı
+(`Σ Line.NetAmount = totalAmount` ya da `GrossAmount = totalAmount`; MOD-0143 `Decimal` string'i `decimal`'a çevrilerek,
+yuvarlamasız) **henüz belirlenmedi**. AP eşleştirme yapmaz, tolerans uygulamaz (tolerans MOD-0143'ün ASSUMPTION-P2P-01'idir).
+**Net mi brüt mü — açık bağımlılık sorusu (O-5, MOD-0143 / procurement sahibi):** ölçüldü
+(`docs/analysis/contracts/invoice-match.openapi.yaml`, sha256 `41fe1f43bc74638c6d409c85b2613d36d00ddbfaeff880dc3c8e929cec513d11`): `Invoice.totalAmount` (`:190`) net ya da brüt
+açıklaması taşımaz; `InvoiceLine` (`:160-168`) `quantity`, `unitPrice`, `lineAmount` taşır, **vergi alanı yoktur**. Bu
+yüzden `totalAmount`'un net mi brüt mü olduğu sözleşmeden çıkarılamaz ve varsayılmaz: procurement sahibi sözleşmede
+doğrulayana kadar PO'lu faturanın tutar kuralı **kapalıdır** — Validate, Submit ve Approve 422
+`AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` döner (fail-closed; onay yok); PO'suz fatura ve alacak dekontu etkilenmez. Doğrulama
+gelince kural o cevapla yazılır ve vergili fatura testi (AC-40) zorunludur.
 
 **SoD kuralları (her karar komutunda, MOD-0023 çağrısından ÖNCE):**
 
@@ -860,8 +908,18 @@ totalAmount` (MOD-0143 `Decimal` string'i `decimal`'a çevrilerek, yuvarlamasız
   AP_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422; aktör farklıysa 409 `AP_RECONCILE_RESTART_ACTOR_MISMATCH`; uygunsa aynı
   anahtarla tek uzak yazma — başarı (yeni ya da yeniden oynatılmış) niyeti kapatır, yinelenen anahtar hatası / 5xx /
   zaman aşımı → `Unknown` (asla `Refused` değil). MOD-0031'e hiçbir kurtarma yolu yazmaz.
+- **Uzak kayıt silinmiş / temizlenmiş** (gap 6/P1-a) → okuma silinmiş kaydı gösterirse ya da silinmemiş kayıt yokken
+  niyetin ilk denemesi kayıtlıysa (okuma silinmiş durumu ayırt edemiyorken) aynı anahtarla yeniden yazma **yapılmaz**; niyet `Unknown`, 202
+  `AP_WORKFLOW_START_OUTCOME_UNKNOWN` / `AP_DECISION_OUTCOME_UNKNOWN`, fatura, rezervasyon ve makbuz değişmez.
+- **Aynı faturanın eski örneği / eski kararın geçişi okunuyor** (gap 6/P1-b) → yeni niyete bağlanmaz; eşleme (kiracı,
+  fatura, `SubmissionSequence` / karar kimliği, uzak anahtar, geçişte görev + eylem) tutmazsa ya da yanıt eşleme alanını
+  taşımıyorsa niyet `Unknown` kalır; alacaklama ya da rezervasyon bırakma yazılmaz.
 - **Alacak dekontu orijinalin kalan kapasitesini aşıyor** (onaylı + bekleyen + bu > orijinal brüt; tam alacaklanmış
   orijinal dahil) → Validate / Submit 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`, uzak çağrı yok, rezervasyon yok.
+- **Kalan kapasitenin tamamını kullanan dekontun onayı** (gap 6/P1-c) → Approve formülü bu dekontun rezervasyonunu düşerek
+  hesaplar; onay geçer (`OpenAmount = 0`), çift sayımla 422 dönmez.
+- **MOD-0143 `totalAmount`'un net / brüt tabanı doğrulanmadı** (O-5) → PO'lu faturada Validate / Submit / Approve 422
+  `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED`, uzak çağrı yok, onay yok; tutar kuralı varsayılmaz.
 - **Orijinal fatura uygun değil** (onaylı değil, başka tedarikçi / para birimi, kendisi alacak dekontu) → 422
   `AP_CREDITED_INVOICE_INVALID`.
 - **Aynı orijinale eşzamanlı iki dekont** → orijinalin `Version` CAS'ı biri için çakışır; o istek orijinali yeniden okuyup
@@ -1018,6 +1076,9 @@ taşınmaz (level-1 koşul 2).
 
 ## Acceptance Criteria
 
+AC durumu kabul kaydında (`scripts/acceptance_record.py`) tanımlı / uygulanmış / çalıştırılmış / geçmiş olarak izlenir,
+pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
+
 - [ ] AC-1 (zorunlu) — `POST /api/ap-invoices` geçerli istekle 201 döner; kayıt `Received`, `InvoiceCode` RCS-001 biçiminde
   ortak servisten (istekte gönderilen kod 400), `NetAmount` / `TaxAmount` / `GrossAmount` / `OpenAmount` sunucu hesabı
   (`Gross = Net + Tax`, satır toplamları), `DocumentDirection` belge türünden; `TenantId`/`LegalEntityId` sunucuda yazılı,
@@ -1035,8 +1096,9 @@ taşınmaz (level-1 koşul 2).
   MOD-0140 sözleşmesinden okunur, AP'de tedarikçi koleksiyonu okuması yoktur (mimari testi: ProcurementService
   koleksiyon adı ya da Mongo bağlantısı AP kodunda geçmez).
 - [ ] AC-5 (zorunlu) — PO'lu faturada `MatchInvoiceRef` yoksa 400; MOD-0143 durumu uygun küme dışındaysa 422
-  `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tedarikçi, para birimi ya da `Σ satır Net ≠ totalAmount` ise 422
-  `AP_MATCH_REFERENCE_MISMATCH`; aynı MOD-0143 faturasına ikinci kayıt 409 (O-5 farklı karar verirse madde o kararla yeniden
+  `AP_MATCH_OUTCOME_NOT_ELIGIBLE`; tedarikçi, para birimi ya da (O-5'te doğrulanan net / brüt tabanına göre) tutar farkı
+  varsa 422 `AP_MATCH_REFERENCE_MISMATCH`; taban doğrulanmadıysa Validate / Submit / Approve 422
+  `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (AC-40); aynı MOD-0143 faturasına ikinci kayıt 409 (O-5 farklı karar verirse madde o kararla yeniden
   yazılır, numarası korunur).
 - [ ] AC-6 (zorunlu) — Mükerrer fatura (aynı şirket + tedarikçi + belge türü + normalize numara) 409 `AP_INVOICE_DUPLICATE`;
   eşzamanlı iki Create'te biri 201, diğeri 409 (gerçek replica set); tekil indeks kaldırıldığında test kırmızıya döner
@@ -1120,13 +1182,13 @@ taşınmaz (level-1 koşul 2).
   `AP_INVOICE_NOT_FOUND` döner; MOD-0023 / MOD-0220 / MOD-0140 / MOD-0143'e çağrı gitmez, kayıt, makbuz ve denetim olayı
   oluşmaz (sahte istemcilerle sayılır); aynı kullanıcı LE-A'da (kendi yetkisi) aynı komutları çalıştırabilir. Sabotaj:
   yazma yolunda okuma kapsamı kullanıldığında test kırmızıya döner.
-- [ ] AC-34 (zorunlu) — Reconcile önce okur (gap 4/G2; Submit ve her karar türü için ayrı test): (a) uzakta örnek / geçiş
-  **var** → şirket uygun değilken bile sonuç kaydedilir (MOD-0220 çağrılmaz — D15/2), bağlı `Pending` makbuz `Completed`,
+- [ ] AC-34 (zorunlu) — Reconcile önce okur (gap 4/G2; Submit ve her karar türü için ayrı test): (a) uzakta niyetin kendi
+  eşleme alanlarıyla (AC-38) örnek / geçiş **var** → şirket uygun değilken bile sonuç kaydedilir (MOD-0220 çağrılmaz — D15/2), bağlı `Pending` makbuz `Completed`,
   tek sonuç olayı; (b) okuma 404 / boş / zaman aşımı / 5xx → niyet **`Cancelled` olmaz**, `Unknown` kalır, fatura ve
   makbuz değişmez, zaman aşımı / 5xx'te uzak yazma/başlatma çağrısı yok (okuma çağrısı yapılır); (c) okuma örnek / geçiş
   göstermedi + şirket uygun değil → MOD-0023'e uzak yazma/başlatma çağrısı yok, niyet `Unknown`, `LastOutcomeCode =
-  AP_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422, sonuç olayı yok; (d) okuma örnek / geçiş göstermedi + şirket uygun +
-  SoD/izin geçer + asıl aktör → başlatma / geçiş aynı deterministik anahtarla yeniden yazılır ve MOD-0023'te tam **bir**
+  AP_LEGAL_ENTITY_NOT_ELIGIBLE`, Reconcile 422, sonuç olayı yok; (d) okuma örnek / geçiş göstermedi + gap 6/P1-a'nın
+  iki koşulu kapalı (AC-37) + şirket uygun + SoD/izin geçer + asıl aktör → başlatma / geçiş aynı deterministik anahtarla yeniden yazılır ve MOD-0023'te tam **bir**
   örnek / geçiş vardır (ikinci Reconcile ikincisini üretmez; yinelenen anahtar hatası `Unknown` bırakır, asla `Refused`
   değil); aktör farklıysa 409 `AP_RECONCILE_RESTART_ACTOR_MISMATCH`, uzak yazma/başlatma çağrısı yok; (e) MOD-0031'e
   Reconcile ya da herhangi bir kurtarma yolu hiç yazma çağrısı yapmaz; belirsiz okumada niyet `Unknown` kalır (sahte
@@ -1149,6 +1211,31 @@ taşınmaz (level-1 koşul 2).
   sonucu kaydeden işlemle **aynı işlemde** yazılır; başlatma `Refused` / `Cancelled` ya da Reject rezervasyonu aynı işlemde
   bırakır; tx2 zorla başarısız edildiğinde ne dekont ne orijinal kısmen yazılır. Sabotaj: orijinalin `Version` CAS'ı
   kaldırıldığında (a) fazla alacakla, (b) kayıp güncellemeyle kırmızıya döner.
+- [ ] AC-37 (zorunlu) — Silinmiş uzak kayıttan sonra yeniden yazma güvenli sayılmaz (gap 6/P1-a; Submit ve her karar türü
+  için ayrı test): sahte MOD-0023'te niyetin örneği / geçişi oluşturulup sonra soft delete edilir (ya da temizlenir) ve
+  niyet `Unknown` bırakılır; Reconcile (a) silinmiş kaydı gösteren okumada ve (b) silinmemiş kayıt dönmeyen ve silinmiş durumu göstermeyen okumada niyetin
+  ilk denemesi kayıtlı (tx1 commit olmuş) durumda aynı anahtarla yeniden yazmaz: niyet `Unknown`, 202
+  `AP_WORKFLOW_START_OUTCOME_UNKNOWN` / `AP_DECISION_OUTCOME_UNKNOWN`, fatura, alacak dekontu rezervasyonu ve bağlı makbuz
+  değişmez, sahte MOD-0023'te yazma çağrısı 0. Sabotaj: silinmiş durum ve ilk deneme kontrolü kaldırıldığında Reconcile
+  ikinci bir örnek / geçiş oluşturur ve test kırmızıya döner.
+- [ ] AC-38 (zorunlu) — Uzak sonuç doğru denemeye bağlanır (gap 6/P1-b): (a) aynı faturada önceki `SubmissionSequence`'in
+  kapanmış (reddedilmiş / iptal) örneği ve yeni gönderimin `Unknown` niyeti varken Reconcile yeni niyeti eski örnekle
+  kapatmaz; yeni niyet `Unknown` kalır ya da yalnız kendi uzak anahtarıyla eşleşen örnekle kapanır; (b) aynı görevde başka
+  bir kararın geçişi (farklı `RemoteIdempotencyKey`, görev ya da eylem) açık karar niyetini kapatmaz ve alacak dekontu
+  sayaçlarını değiştirmez; (c) okuma yanıtı eşleme alanını taşımıyorsa niyet `Unknown` kalır. Sabotaj: eşleme yalnız
+  fatura kimliğine indirildiğinde test kırmızıya döner.
+- [ ] AC-39 (zorunlu) — Alacak dekontu formülü onayda çift saymaz (gap 6/P1-c): brüt 1 000'lik onaylı orijinalde
+  `CreditedAmount = 600` iken 400'lük dekont (kalan kapasitenin **tamamı**) Submit'te geçer (`CreditReservedAmount =
+  400`) ve onayı **başarılı** olur: `CreditReservedAmount = 0`, `CreditedAmount = 1 000`, `OpenAmount = 0`, `CreditStatus =
+  FullyCredited`; aynı orijinale 1 birim fazlası olan dekont Validate / Submit'te 422 `AP_CREDIT_NOTE_EXCEEDS_CAPACITY`
+  (kapasite aşımı testi korunur). Sabotaj: onayda Submit formülü (`CreditedAmount + CreditReservedAmount + thisAmount ≤
+  GrossAmount`) kullanıldığında tam kapasite onayı 422 alır ve test kırmızıya döner.
+- [ ] AC-40 (zorunlu) — Vergili PO'lu fatura testi (O-5, MOD-0143 net / brüt): `TaxAmount > 0` olan PO'lu fatura için
+  (a) procurement sahibi `totalAmount` tabanını doğrulamadıysa Validate, Submit ve Approve 422
+  `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED`, MOD-0023'e çağrı yok, onay yok; (b) taban doğrulandıktan sonra `Σ Net` ile `Gross`'un
+  farklı olduğu fatura doğrulanan tabana göre değerlendirilir: yalnız o tabanda eşit olan geçer, diğeri 422
+  `AP_MATCH_REFERENCE_MISMATCH`. Sabotaj: tutar kuralı tabanı doğrulanmadan net (ya da brüt) varsayılarak yazıldığında (a)
+  kırmızıya döner.
 
 ## Test Expectations
 
@@ -1160,9 +1247,10 @@ taşınmaz (level-1 koşul 2).
   delete; idempotent tekrar; CAS 409; tekil indeksler (kod, iş anahtarı, MOD-0143 referansı, açık niyet, aktif istisna); CentralAudit kaydının iş işlemiyle
   birlikte commit/rollback'i ve outbox yazım hatasında komutun başarısız olması (sabotaj).
 - **İş akışı sahte sunucusu:** zaman aşımı, bağlantı kopması, boş 2xx, 5xx, kesin 403/404, MOD-0023 "başlatma tamamlanmadı"
-  409; aynı anahtarla tekrar → tek örnek; karar geçişinde anahtar iletimi; çok adımlı onay; iptal edilmiş örnek.
+  409; aynı anahtarla tekrar → tek örnek; karar geçişinde anahtar iletimi; çok adımlı onay; iptal edilmiş örnek; silinmiş
+  örnek / geçiş (AC-37) ve aynı faturanın eski örneği (AC-38).
 - **MOD-0220 / MOD-0140 / MOD-0143 / MOD-0031 sahteleri:** her biri için uygun / uygun değil / bulunamadı / erişilemez;
-  MOD-0140 için Active / OnHold / Blocked / Inactive / ilişkisiz; MOD-0143 için altı durum; gerçek sözleşmeler geldiğinde
+  MOD-0140 için Active / OnHold / Blocked / Inactive / ilişkisiz; MOD-0143 için altı durum ve vergili fatura (AC-40); gerçek sözleşmeler geldiğinde
   sözleşme testi (1.3.0, 1.1.0, TRM-14).
 - **Mimari:** her aksiyonda `[HasPermission]`; banka verisi alan adı yasağı; `float`/`double` para alanı yok; muafiyet /
   break-glass tipi yok; başka servisin koleksiyon adı yok; `AuditTrailStandard` filtresi yeşil.
@@ -1220,12 +1308,21 @@ taşınmaz (level-1 koşul 2).
 - [ ] MOD-0023'te MOD-0119 iş akışı şablonu (sahibi platform-shared-services, O-11) — DL-2 için
 - [ ] MOD-0023 aynı anahtarlı yarış yanıtı ölçüldü (başlatma + her geçiş eylemi) — DL-2 için; ölçülene kadar yinelenen
   anahtar hatası `Unknown` (gap 5/G2)
+- [ ] MOD-0023 saklama + silmeme politikası (örnek ve geçiş kayıtları en az niyet ömrü boyunca silinmez, temizlenmez, TTL
+  almaz; sahibi platform-shared-services) ve silinmiş durumu ayırt eden okuma — DL-2 için; kapanmazsa 404 / boş okumada
+  anahtarlı yeniden yazma kapalı kalır (gap 6/P1-a, AC-37)
+- [ ] MOD-0023 okuma yanıtlarında eşleme alanları (`IdempotencyKey`; geçmişte `ApprovalTaskId`) ölçüldü ya da eklemeli
+  olarak eklendi (D9) — DL-2 için; yoksa okuma niyeti kapatmaz (gap 6/P1-b, AC-38)
+- [ ] MOD-0143 `totalAmount` net mi brüt mü — procurement (MOD-0143) sahibi sözleşmede doğruladı (O-5); doğrulanana kadar
+  PO'lu fatura `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` ile onaya ilerlemez (AC-40)
 - [ ] Tüketici onayı slotları (paket §P → §U) "Implementation Notes"taki tabloya göre kapatıldı — level 3'ten önce hepsi
 
 ## Implementation Notes
 
 ### Kaynak ve kanıt (provenance)
 
+- Ortak tanımlar: MOD-0126 pack @bu commit sha256 ZIP manifestine bakın. (Makbuz, niyet durum sözlüğü, Reconcile 3a
+  kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse o sürüm bağlayıcıdır — gap 6/P2-c.)
 - Producer paketi: MOD-0119 v1.1 (TRM-B7-02), `source-batch7-v1.0/…/mod0119-transfer-packet-v1.1/`, `manifest.json`
   sha256 `f075aeafbdb17ffa3015e6dea248f0bd407bc0db0064ce94df10c37f581c1d31` (bu oturumda `shasum -a 256` ile ölçüldü);
   paket dosyası `MOD-0119-TRANSFER-PACKET-v1.1.md` sha256 `733db5135b67c4c0f05318b274d724c72b687592f322646d8c24fc6a64bb88b4`
@@ -1315,7 +1412,8 @@ taşınmaz (level-1 koşul 2).
   MOD-0143'tür (`invoice-match.openapi.yaml` "AP/ödeme YÜRÜTMEZ"), dış ERP kaynağı adlandırılmamıştır ve MOD-0037 /
   MOD-0003 kararları yoktur. Bu yüzden v1, borcun kendisini (AP kaydı) Recovery'nin kendi kaynaklarından kurar; içe
   aktarma ayrı bir kaynak sistem kararı ve sözleşmesiyle açılır.
-- **MOD-0143 ile çift kayıt:** PO'lu faturada satırlar AP'de yeniden girilir (tutar MOD-0143 toplamına eşitlenir). Bu
+- **MOD-0143 ile çift kayıt:** PO'lu faturada satırlar AP'de yeniden girilir (tutar MOD-0143 toplamına, O-5'te doğrulanan
+  net / brüt tabanında eşitlenir; taban doğrulanana kadar PO'lu fatura onaya ilerlemez). Bu
   bilinçli bir v1 sadeleştirmesidir; MOD-0143 satırlarının AP'ye otomatik kopyası O-5'in alt seçeneğidir.
 - **Uygunluk okuması ile commit arası yarış:** okuma tx1'den önce yapılır; tedarikçi ilişkisi okuma ile commit arasında
   değişirse kayıt o anki geçişte eski okumayla commit olabilir. Sonraki her geçiş (Validate, Submit, Approve) yeniden
@@ -1359,7 +1457,7 @@ taşınmaz (level-1 koşul 2).
 | O-2 | **ERP-FIN-BUNDLE sahipliği (karar 0.6)** — ENGEL | GL / AP / AR / ayrı sahip | AP kendi `AP-INVOICE` sözleşmesini sahiplenir; bundle kararı gelince eşlenir; **karar verilmedi** | EA |
 | O-3 | GL (MOD-0118) kapsamı (karar 0.7) | içeri (MOD-0001 ile) / dışarı | dışarı (karar 0.7 önerisi); AP v1 fiş üretmez; **karar verilmedi** | sahip (K1) |
 | O-4 | v1 kaynak kapsamı: dış ERP içe aktarma, içe aktarma hataları, mutabakat (AP-03…06, AP-09, AP-10) | v1'de / sonra | sonra; v1 elle kayıt + MOD-0143 referansı (Tasarım notları) | sahip (K1) |
-| O-5 | MOD-0143 uygun durumları ve tutar kuralı | durum kümesi; `Σ Net = totalAmount` / `Gross = totalAmount` / satır kopyası | `{Matched, MatchedWithinTolerance, ClearedForPayment}`; tedarikçi + para birimi eşit; `Σ Net = totalAmount`; satırlar elle | sahip + MOD-0143 sahibi |
+| O-5 | MOD-0143 uygun durumları ve tutar kuralı | durum kümesi; `Σ Net = totalAmount` / `Gross = totalAmount` / satır kopyası | `{Matched, MatchedWithinTolerance, ClearedForPayment}`; tedarikçi + para birimi eşit; satırlar elle. **Net mi brüt mü — açık bağımlılık sorusu (gap 6):** `invoice-match.openapi.yaml` `totalAmount` (`:190`) taban açıklaması, `InvoiceLine` (`:160-168`) vergi alanı taşımıyor; procurement sahibi doğrulayana kadar PO'lu fatura 422 `AP_MATCH_AMOUNT_BASIS_UNCONFIRMED` (onay yok), vergili fatura testi AC-40 zorunlu | sahip + MOD-0143 (procurement) sahibi |
 | O-6 | Mükerrer fatura anahtarı | (şirket, tedarikçi, belge türü, normalize no) / + fatura tarihi / kaynak imzası (tarih + tutar) | (TenantId, LE, SupplierId, DocumentType, InvoiceNumberNormalized), silinmemiş kayıtlarda tekil; `Rejected` de engeller | sahip (K1) |
 | O-7 | Onay tutar kademesi | v1 tek kademe / MOD-0126 D11/1 modeli | v1 tek kademe; kademe Follow-up | sahip (K1) |
 | O-8 | AP Approve / Reject K2 mi | evet / hayır | **KARAR (D14/3): evet** — AP'de parayı etkileyen kararlar (onay, ret; açılırsa iptal/silme ve elle ödeme kaydı) K2 | CT + sahip |
@@ -1398,13 +1496,13 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   **Neden ilk:** borç kaydı ve mükerrer koruması modülün temelidir; onay akışı ona dayanır. Önkoşul: Ready-for-dev
   engelleri (0.3, 0.6, DCP, **MOD-0126 DL-1** — iskelet ve servis ortak yapı taşları, tek sahibi o dilim, port, kod alma,
   TRM-14, MOD-0140 1.3.0, O-9, O-10, O-22). Alacak dekontunun Validate ön kontrolü (kapasite, orijinal kuralı) bu dilimdedir.
-  Bitiş: AC-1…6, 15 (Create kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32, 33 (Create / Update / Validate kısmı).
+  Bitiş: AC-1…6, 15 (Create kısmı), 17 (tek aşamalı), 18…22, 28, 31, 32, 33 (Create / Update / Validate kısmı), 40.
 - **DL-2** — Yollar: Submit, Reconcile, Approve / Reject / RequestInfo, SoD politika servisi, MOD-0023 bağdaştırıcısı
   (zaman aşımlı), trace sorgusu. **Neden ayrı:** SoD ve belirsiz sonuç en riskli kısımdır; bağımsız inceleme tek başına
   yapılabilsin. Alacak dekontu rezervasyonu (Submit), alacaklama (Approve) ve bırakma (Reject / ret / iptal) bu dilimdedir.
   Önkoşul: DL-1, O-7, O-11, O-14, MOD-0023 şablonu (K2 sınıfı D14/3 ile kararlaştırıldı), MOD-0023 aynı anahtarlı yarış
-  yanıtı ölçümü (gap 5/G2). Bitiş: AC-7…15, 17 (iki aşamalı),
-  30, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36.
+  yanıtı ölçümü (gap 5/G2), MOD-0023 saklama + silmeme politikası ve okuma eşleme alanları (gap 6/P1-a, P1-b). Bitiş:
+  AC-7…15, 17 (iki aşamalı), 30, 33 (Submit, kararlar, Reconcile kısmı), 34, 35, 36, 37, 38, 39.
 - **DL-3** — Yollar: Hold / ReleaseHold, istisna komutları ve sorgusu, LinkEvidence + MOD-0031 bağdaştırıcısı, Submit'e
   kanıt kuralı (O-17 "evet" ise bu dilimde eklenir; DL-2'de Submit kanıtsız çalışır ve bu fark DL-2 kaydına yazılır), Submit / Approve'daki
   bekletme ve engelleyici istisna kapısı (R9 — DL-2'de bu kayıtlar henüz yoktur), K2 sabotaj testi, dev ortamı denetim
