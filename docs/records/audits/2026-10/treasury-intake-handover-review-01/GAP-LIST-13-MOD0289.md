@@ -87,3 +87,12 @@ manifest 8/8 geçti). Sonuç: gap 16 belge düzeyinde kapandı; yeni doğrulanm�
 Açık kalanlar: (1) O-6 şifreleme / anahtar yönetimi / rotasyon tasarımının sahip + güvenlik onayı; (2) kiracısız anahtar
 hedef kaydının merkezi denetim yolu (CT kararı); (3) diğer açık kararlar, sözleşmeler ve performans eşikleri (readiness
 engelleri); (4) gerçek Mongo yarış / yük testleri ve build sonuçları — yalnız kabul şartları tanımlı, kanıt yok.
+
+## D24 uygulaması (2026-10-25)
+
+Sahip kararları D24 (O-4, O-5, O-6 sahip onayı, O-7, O-8, O-10, O-11, O-12, kiracısız hedef denetimi) pack'e işlendi (pack
+"D24 uygulaması" tablosu). O-10 sahibin kendi seçimi: sabit çekirdek kodlar (`BankAccountPurposeCatalog.Core`, resx 7 dil) +
+kiracı amaçları (`BankAccountPurpose`, 7 dil etiket zorunlu, çekirdekle çakışma 409, kullanımdaki amaç pasifleştirme /
+silme kuralı, `UsageFenceVersion` yarış koruması, `mdm.bank-account-purposes.*`, DL-4 ekranı). Yeni AC-53…58. Yeni açık karar
+**O-13** (amaçlar ekranının şablonu; öneri Compact) ve CT teyidi (RCS-001'in sözlük kodlarını kapsayıp kapsamadığı). O-6'da
+**güvenlik onayı ve gerçek Mongo testleri açık**. Pack: 24 bölüm, AC-1…58 tekil.
