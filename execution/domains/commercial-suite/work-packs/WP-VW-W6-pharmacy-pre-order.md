@@ -676,3 +676,83 @@ Commit: "feat(crm): WP-VW-W6 W6-FIX-d — FX rate changed-by names, pharmacy six
   - Ajanın 8 bozma denemesinin hepsi kırmızı.
 - **CT bozma denemesi:** iptal ve reddedilen siparişler aylık özete katıldı → `W6FixdHistoryAndApproverTests.H1_six_months_…_cancelled_outside_empty_month_present` KIRMIZI. Dosya geri alındı (md5 aynı).
 - **Canlı E4:** yapılmadı. Onay ekranı eğilimi, kur listesinde ad ve sekme etiketleri bir sonraki yerel turda görülecek.
+
+## §37 CT — W6 yerel E4, 3. tur (2026-10-23 · kapanış · kiracı 97c5, Avast kapalı)
+
+**Hazırlık.** FIX-a/b/c/d test dalında; Platform ve MDM yeniden derlenip başlatıldı (Platform FIX-a'dan önceki derlemeyle çalışıyordu). MDM 16 KB → 48 KB yerel değişikliği duruyor (commit YOK, kullanıcı kararı).
+
+**Admin (onaycı, CEO) — GEÇTİ.**
+- **E-posta bağlantısıyla onay (G-12 + G-13):** MG-ORD-000005 onay isteği e-postası gerçekten teslim edildi; bağlantı oturum kapalıyken açılınca giriş sayfası kiracıyı taşıdı; onay verildi (`channel = email-link`, `transmitted`); sayfa yenilenince bağlantı kullanılmış görünüyor (tek kullanımlık).
+- **Reddet:** MG-ORD-000004 gerekçeyle reddedildi (`rejected`, `can.copy = true`).
+- **Görev Merkezi'nden onay:** MG-ORD-000003 → `transmitted`.
+- **Kural yayımı (dört göz):** KONSET kuralı Görev Merkezi'nden onaylandı → yürürlükte. Sınırlar: iskonto yumuşak %5 / sert %10; MF 10+1 / 10+2; birleşik %12 / %20; adet en az 1, yumuşak 50, sert 100.
+- **Depo yanıtı (D9):** MG-ORD-000001 eksik teslim, 8/10 + not.
+- **İptal (D5):** MG-ORD-000002 gerekçeyle iptal. Depoya Türkçe, temsilciye (yöneticisi cc) İngilizce iptal e-postası gitti.
+- **Ekran düzeltmeleri canlıda:**
+  - G-1: kur sekmesi alt başlığı doğru.
+  - G-2: tarih seçici Türkçe — Ocak / Şubat / Mart, Paz / Pzt / Sal, hafta pazartesi başlıyor.
+  - G-3: kur listesinde "Son değişiklik" = "Admin User".
+  - V-9: onay ekranında altı aylık etkin indirim eğilimi; reddedilen sipariş özete girmiyor.
+  - V-10: onaycının pozisyon adı ("Chief Executive Officer").
+
+**Sema (temsilci) — GEÇTİ.**
+- **Reddedileni kopyala:** MG-ORD-000004 iki kez kopyalandı → MG-ORD-000006 ve 000007. Eczane, depo, ürün ve fiyat listesi aynen geldi; "Bu eczanenin önceki siparişleri" kutusu reddedileni gösteriyor.
+- **Yumuşak aşım:** 000006'da 20 adet, iskonto %7.
+  - Satırda "Onay gerekir · iskonto %7 > sınır %5"; özette "Bir satır yumuşak sınırı aşıyor".
+  - Tutarlar: 2.200 − 154 = 2.046 TRY, KDV 204,60, genel toplam 2.250,60 TRY.
+  - Gönderim → `pending_approval`, satır sonucu `soft`; onay ekranının "Neden onayımda?" bölümünde aynı gerekçe, iskonto hücresinde "%7 / sınır %5".
+  - Admin onayladı → `transmitted`; depo e-postası PDF ekiyle ~44 sn sonra gönderildi.
+- **Sert aşım:** 000007'de 20 adet, iskonto %12.
+  - Satırda "Girilemez: iskonto %12 > tavan %10"; taslak kaydedilebiliyor; "Yönetici onayına gönder" kilitli ("Bir satır aşılamaz bir sınırı aşıyor").
+  - Ekran atlanıp istek doğrudan yollandı (imzalı taslak): **422 `pre_order_hard_limit`**, `L1:discount.hard-exceeded`; sipariş `draft` kaldı; ekran mesajı Türkçe.
+
+**E-posta kayıtları (`notification_dispatches`, salt okuma).**
+- Avast açıkken kaybolan 000003 / 000004 onay e-postaları `ACTION_LINK_NOT_RETRYABLE;first:ProviderTlsFailed` ile kapanmış → ilk hata korunuyor (FIX-a). FIX-a'dan önceki 000001 / 000002 kayıtlarında bu ek yok (beklenen).
+
+**Yeni bulgular.**
+- **G-14:** Görev Merkezi'ndeki kural yayımı görevinin başlığında ürün adı yerine SKU kodu var.
+- **G-15:** İptalde `notifiedPharmacy` gerçek gönderime değil "iletilmiş miydi" bilgisine bağlı (`PreOrderCommandHandlers.cs:625` — `NotifiedPharmacy = wasTransmitted`). E-postası olmayan eczane için de "eczaneye bildirildi" görünüyor; eczaneye e-posta gitmedi.
+- **G-16 (Ziyaret Çalışma Alanı, demo sırasında):** "Haftayı onayla"dan sonra üstteki hafta bandı sayfa yenilenene kadar "Taslak" yazmaya devam etti (`visit-workspace.js` `approveWeek` başarıda `load(true)` çağırıyor; bant yine de eski durumda).
+- **G-17:** Sert aşım satırında "Girilemez" iki kez yazıyor (rozet + "Girilemez:" metni). Yumuşak aşımda rozet "Onay gerekir", metin "Yönetici onayı gerekir:" — orada tekrar yok.
+- **G-18 (karar):** Onay ekranının altı aylık eğilimi, karar verilen bekleyen siparişin kendisini de sayıyor (Eki 26: 1 sipariş, %7). Bekleyen sipariş özete girsin mi, girmesin mi — kullanıcı kararı.
+- **Geçici:** Web yeniden başlatıldıktan hemen sonra bir kez "Menü yüklenemedi" görüldü; yenilemeyle düzeldi.
+- **Ayrı (ziyaret tarafı, W6 değil, yeniden ölçülecek):** demoda `plannedContent` ürün adı taşımıyordu; kodda `VisitCalendarPlannedContentDto.ProductName` var (onay anı anlık görüntüsü) — eski onaylı haftalarda boş olabilir. W6-FIX-e kapsamında DEĞİL.
+
+**Denenmedi.** RU / EN dış alıcı e-postası (yerelde Rusça ya da İngilizce dilli dış alıcı yok); birim testleriyle kapsanıyor.
+
+**Test kayıtları (kalıyor).** MG-ORD-000001 … 000007; 000007 sert aşım taslağı olarak `draft`.
+
+**Sonuç: W6 yerel E4 KAPANDI.** Ana akış ve bütün dallar geçti. G-14 … G-18 küçük bulgular → W6-FIX-e adayı ya da birikmiş işler (kullanıcı kararı).
+
+## §36.1 Agent Prompt — W6-FIX-e (paste-ready · CRM + Web: E4 3. tur küçük bulguları G-14 … G-18)
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W6 · W6-FIX-e — E4 3. tur bulguları: G-14 kural onay görevinin başlığında ürün adı, G-15 iptalde "eczaneye bildirildi" yalnız gerçekten e-posta gidince, G-16 Ziyaret Çalışma Alanı'nda hafta onayından sonra bant yenilenmiyor, G-17 "Girilemez" tekrarı, G-18 onay ekranının 6 aylık eğilimi karar verilen siparişi saymasın
+Repository: C:\tmp\vw-w6-fixe (worktree, test/crm-content-visit-e2e güncel başı — W6-FIX-a/b/c/d içinde) · Branch: wp/vw-w6-fixe · commit bu dala, push YOK. Kullanıcının checkout'una DOKUNMA (orada commit edilmemiş MDM değişikliği var; alma). Kapsam: services/Diten.CrmService/** (+ testleri), frontend/Diten.Web/** (+ testleri). Platform / Auth / MDM / Workflow'a DOKUNMA (gereken bir şey oralardaysa DUR ve sor).
+ÖNCE OKU: WP-VW-W6 "§37 CT — W6 yerel E4, 3. tur" (G-14 … G-18) + §37 W6-FIX-d (CT kararları a/b) · CRM `PricingRuleHandlers.cs` (gönderim, `ClaimWorkflowDisplayContext`, ~344) ve `PriceListCommandHandlers.cs` (~384, aynı desen) · `PreOrderCommandHandlers.cs` iptal (~600–636) + `PreOrderNotifications.cs` (`CancelledAsync`, `Email(...)`, `SendPharmacyCopyAsync`) · `PreOrderQueryHandlers.cs` `GetPharmacyOrderHistoryQuery` (~189) + `PreOrderPharmacyHistory` (`Item`, `MonthsOf`) · Web `assets/js/CRM/VisitWorkspace/visit-workspace.js` (`approveWeek` ~1039, `load`, bandı çizen kod) · `assets/js/Commercial/commercial-rules.js` + `Resources/Views/Commercial/CommercialRules.*.resx` · `PreOrders/approve.js` (eğilim kartı) + `PreOrders/details.js` (iptal bilgisi).
+İŞ:
+(1) G-14 — Kural onaya gönderilirken iş akışı başlığı `{SkuName ?? SkuCode ?? SkuId} · {LegalEntityName}` olur (bugün SkuCode önce). Aynı yardımcıyı fiyat listesi gönderimi kullanıyorsa onu da hizala; liste başlığı zaten ad içeriyorsa değiştirme. Yalnız yeni gönderimler; açık görevlere göç YOK.
+(2) G-15 — İptalde `NotifiedPharmacy` = sipariş iletilmişti VE eczanenin geçerli e-postası var (bildirimdeki `Email(order.Pharmacy.Email)` kuralıyla AYNI — tek yerde tanımla, iki kopya olmasın). `NotifiedDepot` için aynı denetim (depo e-postası yoksa false). Eski kayıtlar değişmez. Web Details iptal kartı "eczaneye / depoya bildirildi" yalnız true iken; false ve sipariş iletilmişse "e-posta adresi yok, bildirilmedi" (7 dil).
+(3) G-16 — Ziyaret Çalışma Alanı: "Haftayı onayla" 200 döndükten sonra üstteki hafta bandı sayfa yenilenene kadar "Taslak" kalıyor (`load(true)` çağrılıyor). Kök nedeni ÖLÇ (bant ayrı bir durumdan mı okuyor, takvim okuması önbellekten mi geliyor, yanıt gelmeden mi çiziliyor) ve düzelt: başarılı onay ve yeniden açmadan sonra bant, düğmeler ve hafta şeridi yeni durumu yenilemeden gösterir. Neden raporda yazılı olsun.
+(4) G-17 — Kurallı satırda rozet ("Girilemez" / "Onay gerekir") ve gerekçe metni aynı sözcükle başlıyor ("Girilemez: iskonto %12 > tavan %10"). Rozetin yanında gerekçe ön eksiz gösterilir ("iskonto %12 > tavan %10"); rozetin olmadığı yerlerde (onay ekranı "Neden onayımda?", hata mesajları) anlam korunur. Dize birleştirme YOK; gerekirse ayrı anahtar. Kiracı modülü → 7 dil (en, tr, fr, es, zh, ar, ru); `CommercialRules` dışındaki metinlere dokunma.
+(5) G-18 — `pharmacy-history` yanıtında karar verilen siparişin KENDİSİ (`request.PreOrderId`) hem satır listesinden hem `months[]` özetinden çıkarılır. İptal ve reddedilenler zaten çıkıyor (FIX-d kararı b) — değişmez. Diğer bekleyen siparişler listede durumuyla kalır, kural değişmez. Web onay ekranı kart alt başlığı "Bu sipariş hariç" bilgisini taşır (7 dil).
+KORU/YAPMA: MOD-0168 görünürlük ve SoD kuralları aynı; PDF / e-posta şablonları değişmez; istemcide hesap yok; mock / harness kullanıcının sekmesine yok; localhost:27017 YOK; Görev Merkezi ve Workflow servisine dokunma.
+DOĞRULA: CRM: kural başlığı adı kullanıyor, ad yoksa kod; iptalde e-postasız eczane / depo → false, e-postalı → true, iletilmemiş → false; pharmacy-history kendi siparişini saymıyor (liste + ay), iptal / ret hâlâ dışarıda. Web (xUnit + RunNode): Details iptal metinleri; G-16 onay ve yeniden açma sonrası bandın yenilendiğini sınayan test; rozetli satırda ön eksiz gerekçe, "Neden onayımda?" anlamı korunuyor; 7 dil anahtarları tam. Sabotajlar (en az 5): başlıkta kodu öne al; NotifiedPharmacy = wasTransmitted'e dön; bandı yenileyen çağrıyı kaldır; ön eki geri koy; kendi siparişini özete kat — her biri kırmızı. CRM Application tam takım + Diten.Web.Tests tam takım (taban aynı baş; bilinen kırmızılar: CRM `VisitPlanningFix2Tests.The_account_and_contact_repositories_search_through_the_shared_pattern`, Web `ShipmentDetailsDateNode` ×2 + `WorkCenterMenuWithoutPermissions`).
+Commit: "fix(crm): WP-VW-W6 W6-FIX-e — rule approval title by product name, cancellation notice only when e-mailed, workspace band refresh after week approval, rule reason without repeated badge word, pharmacy trend excludes the order under decision" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §37 CT kabul — W6-FIX-e E2 ACCEPTED (2026-10-26)
+
+- **Alındı:** `wp/vw-w6-fixe` a287562c9 → main senkronundan sonra test dalına `aa2f544a0` (33 dosya, yalnız CRM + Web).
+- **G-14:** kural onay görevi başlığı `{SkuName ?? SkuCode ?? SkuId} · {LegalEntityName}`; yalnız yeni gönderimler. Fiyat listesi başlığı zaten liste adını taşıyor, değişmedi.
+- **G-15:** `PreOrderExternalEmail` tek e-posta kuralı: bildirim de iptal kaydı da onu kullanıyor. `NotifiedDepot` / `NotifiedPharmacy` = iletilmişti VE adres var. Eczane e-postası artık depo bayrağına bağlı değil. Details: "e-postayla bildirildi" / "e-posta adresi yok, bildirilmedi" (7 dil).
+- **G-16 kök neden:** onay / yeniden açma sonrası takvim okuması önizleme önbelleğini kaçırıyor (oturum sürümü değişti) ve planlama motorunu baştan çalıştırıyor (≈ 7 sn); bant o yanıtı bekliyordu. Düzeltme: bant motorsuz oturum okumasıyla hemen güncelleniyor, eylem düğmeleri takvim yanıtına kadar gizli; geç gelen eski takvim yanıtı atılıyor; plan kipinde oturum yeniden okunuyor.
+- **G-17:** `Rule.Reason.{code}` anahtarları (7 dil). Ön ek yalnız bulgunun önem derecesi rozetle AYNIYKEN düşüyor; "Neden onayımda?" ve hata metinleri tam kalıyor.
+- **G-18:** `pharmacy-history` karar verilen siparişi hem satırlardan hem aylardan çıkarıyor; diğer bekleyenler durumlarıyla kalıyor. Kart notu "bu sipariş hariç" (7 dil).
+- **Testler (CT, ajanın başı f0057d4f5):** CRM 3280 başarılı / 0 kırmızı; Web hedefli (W6Fixe, PreOrders, Pricing, VisitWorkspace, CommercialRules) 150 / 0.
+- **CT bozma denemeleri:**
+  - G-17: önem derecesi koşulu kaldırıldı → `W6FixeWebTests.G17_beside_the_badge_…` KIRMIZI.
+  - G-18: `o.Id != order.Id` kaldırıldı → `W6FixeCancellationAndHistoryTests.H1` + `H2` KIRMIZI.
+  - İki dosya da geri alındı (md5 aynı).
+- **Canlı E4:** yapılmadı; bir sonraki yerel turda (fleet yeniden başlatma sonrası).
