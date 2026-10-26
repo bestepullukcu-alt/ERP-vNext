@@ -158,4 +158,73 @@ public sealed class FirstGskuConcurrencyMongoTests(
         }
     }
 
+    /// <summary>
+    /// TEST-HIZ-01 — the retry above is safe only because the allocator's filter excludes a command whose allocation is
+    /// already there (<c>Allocations.CreationCommandId</c> ≠ the command). A command sent again after its allocation was
+    /// written meets the same duplicate key on its first findAndModify, retries, and must find its own allocation: the
+    /// same revision, GSKU and ordinal, not a second allocation. The same holds for one command sent twice at once.
+    /// </summary>
+    [Fact]
+    public async Task A_command_sent_again_after_a_lost_upsert_keeps_its_one_allocation()
+    {
+        var scope = await ProductItemSkuMasterMongoTests.MongoTestScope.CreateReplicaAsync(mongo);
+        var admin = scope.Database.Client.GetDatabase("admin");
+        try
+        {
+            var parent = await ProductItemSkuMasterMongoTests.InsertParentAsync(scope, scope.TenantA);
+            var repository = new Diten.MdmService.Persistence.Repositories.ProductDefinitionRevisionRepository(
+                scope.Database, scope.Context(scope.TenantA));
+            var first = await repository.AllocateForFirstGskuAsync(parent.Id, "sent-again");
+
+            async Task LoseTheNextUpsertAsync(int times) =>
+                await admin.RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument
+                {
+                    { "configureFailPoint", "failCommand" },
+                    { "mode", new MongoDB.Bson.BsonDocument("times", times) },
+                    { "data", new MongoDB.Bson.BsonDocument
+                        {
+                            { "failCommands", new MongoDB.Bson.BsonArray { "findAndModify" } },
+                            { "errorCode", 11000 },
+                            { "errorExtraInfo", new MongoDB.Bson.BsonDocument
+                                {
+                                    { "keyPattern", new MongoDB.Bson.BsonDocument("_id", 1) },
+                                    { "keyValue", new MongoDB.Bson.BsonDocument("_id", $"{scope.TenantA:N}:{parent.Id:N}") }
+                                }
+                            }
+                        }
+                    }
+                });
+            try
+            {
+                await LoseTheNextUpsertAsync(1);
+                var again = await repository.AllocateForFirstGskuAsync(parent.Id, "sent-again");
+
+                await LoseTheNextUpsertAsync(1);
+                var twice = await Task.WhenAll(
+                    repository.AllocateForFirstGskuAsync(parent.Id, "sent-twice"),
+                    repository.AllocateForFirstGskuAsync(parent.Id, "sent-twice"));
+
+                Assert.Equal((first.RevisionId, first.GskuId, first.RevisionOrdinal), (again.RevisionId, again.GskuId, again.RevisionOrdinal));
+                Assert.Equal((twice[0].RevisionId, twice[0].GskuId, twice[0].RevisionOrdinal), (twice[1].RevisionId, twice[1].GskuId, twice[1].RevisionOrdinal));
+                var allocator = await scope.Database.GetCollection<MongoDB.Bson.BsonDocument>("mdm_product_definition_revision_allocators")
+                    .Find(Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("_id", $"{scope.TenantA:N}:{parent.Id:N}"))
+                    .SingleAsync();
+                Assert.Equal(["sent-again", "sent-twice"], allocator["Allocations"].AsBsonArray
+                    .Select(value => value["CreationCommandId"].AsString).Order(StringComparer.Ordinal));
+                Assert.Equal(2, allocator["LastOrdinal"].ToInt32());
+            }
+            finally
+            {
+                await admin.RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument
+                {
+                    { "configureFailPoint", "failCommand" }, { "mode", "off" }
+                });
+            }
+        }
+        finally
+        {
+            await scope.DisposeAsync();
+        }
+    }
+
 }
