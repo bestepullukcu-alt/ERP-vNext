@@ -39,6 +39,10 @@ slice: "TRM-S2 — tüzel kişilik başına nakit pozisyonu: elle girilen biline
 > doğrulanıp uyarlanarak alınabilir; kod yine yalnız pack `ready-for-dev` olunca ve dilim sırasıyla yazılır). Kayıt:
 > `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md` D27 (bu revizyonla aynı commit'te). Bu revizyon pack'i `ready-for-dev` yapmaz.
 >
+> **Revizyon (2026-10-26, D36 + D43):** D29/1'in diğer sahip teyitleri sahip teyidiyle kapandı — O-3 (D36/1), O-17 (D36/2),
+> O-14 (D36/3; `treasury-intake-owner-decisions-03.md`, PR #242) ve O-7 (D43; `treasury-intake-owner-decisions-04.md`); checklist
+> satırları kapandı. MOD-0126 sabitlemesi D42 revizyonuna (`3773c4ee…`) çekildi. Bu revizyon pack'i `ready-for-dev` yapmaz.
+>
 > **Revizyon (2026-10-26): hazırlık incelemesi tutarsızlıkları kapatıldı** — kaynak:
 > `execution/domains/finance-treasury/work-packs/MOD-0124-DL1-hazirlik.md` §6. (1) O-3: sahip payı verildi (D29/1),
 > platform-shared-services teyidi açık ve D29/1 gereği `ready-for-dev` engeli, dolayısıyla DL-1 önkoşulu — Dependencies,
@@ -643,7 +647,7 @@ ister.
 |---|---|---|---|---|---|---|
 | CASH-POSITION (bu modül) | `docs/analysis/contracts/cash-position.openapi.yaml` v1.0.0 — **yazılacak** | TBD (dondurulunca) | finance-treasury | — | sözleşme testi AC-28 · — | DL-1 (DL-3'te `current`) |
 | MOD-0003 kararı (0.3) | **KARAR D27/1** — T32 sapması (bitiş: MOD-0003 ya da Treasury v1 sonu) | — | sahip (K1) | — (çağrı yok) | karar kaydı — **kapandı** | — |
-| MOD-0037 kapı kararı | **KARAR D29/1** (sahip payı, 2026-10-25: v1 MOD-0037'yi tüketmez, O-3); platform-shared-services teyidi **açık** | — | sahip (K1) + platform-shared-services | — (çağrı yok) | karar kaydı D29/1 · platform-shared-services teyit kaydı | DL-1 önkoşulu (teyit D29/1 gereği `ready-for-dev` engeli) |
+| MOD-0037 kapı kararı | **KARAR D29/1** (sahip payı, 2026-10-25: v1 MOD-0037'yi tüketmez, O-3); platform-shared-services teyidi yerine sahip teyidi **KARAR D36/1** (2026-10-26, PR #242) | — | sahip (K1) | — (çağrı yok) | karar kayıtları D29/1 · D36/1 | kapandı — önkoşul değil |
 | MOD-0220 LE uygunluğu + `ApprovalStatus` | MOD-0220 sözleşme belgesi — **yazılacak** (TRM-14) | TBD | master-data-management (D10/2) | 422 uygun değil · 503 erişilemez · geçiş yok | sahte LE istemcisi · dev ortamında Active+Approved / Approved-değil iki kayıt | DL-1 |
 | MOD-0048 para birimi + küsurat | `GET /api/lookups/reference/currencies` + küsurat alanı — **yok** (O-8) | TBD | platform-shared-services | hane yok → 503 | sahte · dev ortamında TRY/EUR/JPY | DL-1 |
 | RCS-001 ortak kod servisi | **yok** (BL-565, O-9) | — | CT + `.antigravity` onayı | servis yoksa Create yazılamaz | — · — | DL-1 önkoşulu |
@@ -1466,10 +1470,10 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 - [ ] SEC-002 veri kapsamı çözücüsünün FinanceTreasury'de tüketim yolu (O-23; platform-shared-services) — kapsamı soran kod ve AC-31 bu yola bağlı
 - [x] **Karar 0.3 (MOD-0003)** verildi — KARAR D27/1, süreli T32 sapması (O-2); bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu
 - [x] **MOD-0037 kapısı** için sahip kararı (O-3): KARAR D29/1 (sahip payı verildi)
-- [ ] O-3 platform-shared-services teyidi — D29/1 gereği `ready-for-dev` engeli (dolayısıyla DL-1 önkoşulu)
-- [ ] O-7 MOD-0048 sahibi teyidi (FX kaynağı; v1 kur çevrimi yok) — D29/1 gereği `ready-for-dev` engeli
-- [ ] O-14 tüketicilerin teyidi (v1 okuma ucu `current`; olay tüketici onayıyla) — D29/1 gereği `ready-for-dev` engeli
-- [ ] O-17 platform-shared-services teyidi (kanıt dışa aktarımı DL-4 ayrı komut, yayımı engellemez) — D29/1 gereği `ready-for-dev` engeli
+- [x] O-3 platform-shared-services teyidi — sahip teyidi KARAR D36/1 (2026-10-26; `treasury-intake-owner-decisions-03.md`, PR #242)
+- [x] O-7 MOD-0048 sahibi teyidi (FX kaynağı; v1 kur çevrimi yok) — sahip teyidi KARAR D43 (2026-10-26; `treasury-intake-owner-decisions-04.md`)
+- [x] O-14 tüketicilerin teyidi (v1 okuma ucu `current`; olay tüketici onayıyla) — sahip teyidi KARAR D36/3 (2026-10-26; PR #242)
+- [x] O-17 platform-shared-services teyidi (kanıt dışa aktarımı DL-4 ayrı komut, yayımı engellemez) — sahip teyidi KARAR D36/2 (2026-10-26; PR #242)
 - [x] **Onay yolu** kararı (O-4): KARAR D28 — MOD-0023
 - [x] Port 5071 AGENTS.md §3 ve `.antigravity/rules/ports.md`'ye yazıldı (D30); AGENTS §2 ve §9 güncellendi (TRM-03/04)
 - [ ] Servis iskeleti + servis ortak yapı taşları (indeks barındırılan hizmeti dahil) + CentralAudit kurulumu + servis defteri — **yalnız MOD-0126 DL-1** (tek sahibi o dilim; MOD-0124 DL-1'in önkoşulu — gap 4/G5); defter için CT kararı **verildi** (KARAR D35, `treasury-intake-owner-decisions-02.md` D35 (PR #235))
@@ -1490,8 +1494,8 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 ### Kaynak ve kanıt (provenance)
 
 - Ortak tanımlar: `execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md`, sha256
-  `94d3ad937f55dc56962ef837646d156d27c2fa4385327949b51b8cbb0aaaf587` (bu revizyonla aynı commit, dal
-  `docs/ct/treasury-packs-rev-02`; önceki sabitleme main @ `f3fcd3b4d` `684e89d6…` idi). (Makbuz, niyet durum sözlüğü,
+  `3773c4ee6e2b6acccd0eb976ba39b8093c7f141753512a686501cad155fe6ca1` (bu revizyonla aynı commit, dal
+  `docs/ct/treasury-decisions-04`; önceki sabitlemeler `94d3ad93…` (PR #239) ve `684e89d6…` (main @ `f3fcd3b4d`)). (Makbuz, niyet durum sözlüğü,
   Reconcile 3a kuralları ve servis ortak portlar orada tanımlıdır; bu pack ile çelişirse **bu sabitlenmiş sürüm**
   bağlayıcıdır — gap 6/P2-c.) MOD-0126'nın sonraki bir revizyonu bu sabitlemenin yerini ancak bu paketin yeniden
   incelenmesiyle (yeni CT-APR-02) alır; o zamana kadar sabitlenmiş sürüm geçerlidir.
@@ -1609,21 +1613,21 @@ Borçlu taraf her yuvada sahip (K1), tüketicinin sahibi adlandırılana kadar (
 |---|---|---|---|---|
 | O-1 | v1 pozisyon kaynağı | (a) elle bilinen bakiye (b) kapılar açılana kadar bekle | **KARAR D28 (2026-10-25): öneri kabul** — **(a)** — üç kapıdan bağımsız, kanıtla desteklenir | sahip (K1) |
 | O-2 | MOD-0003 (karar 0.3) | tam modül / süreli sapma (T32) + dondurulmuş sözleşme | **KARAR D27/1 (2026-10-25): süreli sapma (T32)**, `cash-position.openapi.yaml`; bitiş: MOD-0003 çıkana kadar, en geç Treasury v1 sonu | sahip (K1) |
-| O-3 | MOD-0037 Blueprint kapısı v1'de tüketilmeden başlanabilir mi | (a) evet, içe aktarmayla birlikte tüketilir (b) MOD-0037 uygulanana kadar bekle | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi açık** (D29/1 gereği `ready-for-dev` engeli → DL-1 önkoşulu) — **(a)** — v1 dış kaynak sağlığı üretmez; ölçüm: paket var, uygulama yok | sahip (K1) + platform-shared-services |
+| O-3 | MOD-0037 Blueprint kapısı v1'de tüketilmeden başlanabilir mi | (a) evet, içe aktarmayla birlikte tüketilir (b) MOD-0037 uygulanana kadar bekle | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi yerine sahip teyidi — KARAR D36/1 (2026-10-26)** — **(a)** — v1 dış kaynak sağlığı üretmez; ölçüm: paket var, uygulama yok | sahip (K1) + platform-shared-services |
 | O-4 | Onay yolu | (a) MOD-0023 iş akışı (b) yerel maker-checker | **KARAR D28 (2026-10-25): öneri kabul** — **(a)** — domain-config SoD kuralı | sahip (K1) |
 | O-5 | Grup (çoklu LE) konsolidasyonu | v1 LE başına / LE↔LE modeli ile grup görünümü | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — **v1 LE başına**; model D9 gereği eklenmedi, kaynakta da yok | sahip (K1) + MDM |
 | O-6 | MOD-0126 onaylı partileri taahhütlü çıkış olarak gösterme | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — partiler bankaya gitmiyor (D5), bakiyeyi değiştirmez; PAYMENT-BATCH sözleşmesi dondurulunca | sahip (K1) |
-| O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0048 sahibi teyidi açık** — v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
+| O-7 | FX kaynağı, kur tarihi (as-of) ve çok para birimli görünüm | — | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0048 sahibi teyidi yerine sahip teyidi — KARAR D43 (2026-10-26)** — v1 kur çevrimi yok; kaynak **TBD** (Recovery'de kur kaynağı yok) | sahip + MOD-0048 sahibi |
 | O-8 | Para birimi küsurat hanesi kaynağı | MOD-0048 eklemeli alan / başka | öneri: MOD-0048-FU01 §21 `currency-minor-units` kümesi (TRM-17, D31/4) — MOD-0048'e eklemeli alan (D9) — MOD-0126 O-11 ile ortak, **TBD** | MOD-0048 sahibi |
 | O-9 | RCS-001: `CPS` (anlık görüntü) ve `CTP` (eşik politikası) önekleri, şirket kısa kodu, ortak servis | — | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `CPS`, `CTP` (§3 tablosunda çakışma yok, ölçüldü; aynı dalda yazılan MOD-0119/0120 önerileriyle çakışma CT'de kontrol edilir); servis BL-565 | sahip + CT (`.antigravity` onayı) |
 | O-10 | Raporlama saat dilimi ve değer tarihi kuralı (gelecek tarih) | LE alanı (MOD-0220 eki) / kiracı ayarı / yok | **KARAR D29/1 (2026-10-25): öneri kabul** (MDM payı D20 ile sahipte) — v1 çevrim yok; gelecek tarihli `ValueDate` reddi; alan gerekiyorsa MOD-0220'ye eklemeli öneri | sahip + MDM |
 | O-11 | Nakit kategori ana verisi + atama kuralları (CP-13…CP-18) | v1 / içe aktarmayla | **KARAR D28 (2026-10-25): öneri kabul** — **içe aktarmayla**; v1 kaynak enum `CashCategoryType` | sahip (K1) |
 | O-12 | Eşik politikası kapsamı | kaynak (kiracı geneli, para birimsiz, `IsDefault`) / LE + para birimi zorunlu | **KARAR D28 (2026-10-25): öneri kabul** — **LE + para birimi zorunlu**, varsayılan politika yok | sahip (K1) |
 | O-13 | Engelleyici istisnanın atanması / muafiyeti | v1 / sonra | **KARAR D28 (2026-10-25): öneri kabul** — **sonra** — kaynakta da komut yok; v1'de düzeltip yeniden mutabakat | sahip (K1) |
-| O-14 | Yayım olayı (`…published.v1`) | olay + tüketici sözleşmesi / okuma ucu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; tüketiciler teyidi açık** — **v1 okuma ucu** (`current`); olay tüketici onayıyla | sahip + tüketiciler |
+| O-14 | Yayım olayı (`…published.v1`) | olay + tüketici sözleşmesi / okuma ucu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; tüketiciler teyidi yerine sahip teyidi — KARAR D36/3 (2026-10-26)** — **v1 okuma ucu** (`current`); olay tüketici onayıyla | sahip + tüketiciler |
 | O-15 | MOD-0289 gelene kadar banka referansı girişi | opak referans / DL-5'i beklet | **KARAR D28 (2026-10-25): öneri kabul** — opak referans alanı (MOD-0126 O-15 ile aynı) | sahip (K1) |
 | O-16 | D10/1 (Active + Approved) MOD-0124'e uygulanır mı | evet / yalnız Active | **KARAR (D14/4): evet, yazma işlemlerinde** — nakit pozisyonu oluşturan/değiştiren her yazma komutu (iki kurtarma komutu hariç); okumalar etkilenmez | sahip (K1) |
-| O-17 | Kanıt dışa aktarımı v1'de mi; yayımı engellesin mi | DL-4 ayrı komut / yok / yayımı engelleyen zorunlu mod | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi açık** — **DL-4 ayrı komut, yayımı engellemez**; MOD-0031 idempotency ölçümüne bağlı | sahip + platform-shared-services |
+| O-17 | Kanıt dışa aktarımı v1'de mi; yayımı engellesin mi | DL-4 ayrı komut / yok / yayımı engelleyen zorunlu mod | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; platform-shared-services teyidi yerine sahip teyidi — KARAR D36/2 (2026-10-26)** — **DL-4 ayrı komut, yayımı engellemez**; MOD-0031 idempotency ölçümüne bağlı | sahip + platform-shared-services |
 | O-18 | Bakiye işaret kuralları | — | **KARAR D28 (2026-10-25): öneri kabul** — Ledger/Available işaretli; Collected/Blocked/Restricted ≥ 0 | sahip (K1) |
 | O-19 | İdempotency makbuz tipi | modül önekli / servis geneli ortak | **KARAR (D14/2): servis geneli tek ortak tip** `FinanceTreasuryCommandReceipt` (tanım MOD-0126 pack Entity Fields); niyetler modül önekli, durum sözlüğü ortak | sahip + CT |
 | O-20 | MOD-0023 şablon kodu, adım sayısı, zaman aşımı | — | tek adımlı şablon; zaman aşımı 15 sn | MOD-0023 sahibi |

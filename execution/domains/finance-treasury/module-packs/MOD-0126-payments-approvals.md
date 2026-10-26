@@ -24,6 +24,10 @@ slice: "TRM-S1 — ödeme partisi + doğrulama + MOD-0023 onay akışı + SoD + 
 > ve sürüme bağlı onay satırı (CT-APR-01) kaydedildikten sonra yazılır; MOD-0126 için kod alma izni **verildi** (KARAR
 > D27/5; D1 yöntemi). Engeller: "Ready-for-dev Checklist" ve "Açık kararlar".
 >
+> **Revizyon (2026-10-26, D42):** O-7 (onay yüzeyi ve başlatma kimliği) ve O-10 (onaylayıcı adayları) için D29/1'in "MOD-0023
+> sahibi teyidi açık" koşulu sahip teyidiyle kapandı — `docs/records/decisions/2026-10/treasury-intake-owner-decisions-04.md` D42;
+> O-8 (şablon kodu, adım sayısı) MOD-0023 sahibinde açık. Bu revizyon pack'i `ready-for-dev` yapmaz.
+>
 > **Revizyon (2026-10-26):** paket, yazıldıktan sonra verilen kararlara ve DL-1 hazırlık kaydına
 > (`execution/domains/finance-treasury/work-packs/MOD-0126-DL1-hazirlik.md`, MOD-0126-DL1-HAZIRLIK-01) hizalandı —
 > (1) MOD-0048 `payment-method` kümesi için `IPaymentMethodReferencePort` + MOD-0048 bağdaştırıcısı (`Infrastructure/Currency/`)
@@ -1436,10 +1440,10 @@ pack'te asla izlenmez; bu pack'teki her AC yalnız "tanımlı"dır.
 | O-4 | SoD tier-2 eşiği **değeri**, **para birimi**, politika sürüm adı; farklı para birimi kuralı; ortam mı kiracı mı | — | **KARAR (D11/1): kiracı ayarı, para birimli**; ayar yoksa her onay tier-2; farklı para birimi → tier-2. Kalan: politika sürüm adı ve ayar ekranı (Follow-up) | sahip (K1) |
 | O-5 | İzin ad alanı ve rol şablonları | `finance-treasury.*` / `treasury.*` / `fin.*` | **KARAR (D11/4): `finance-treasury.*`**; rol şablonları MOD-0018 sahibiyle | sahip + MOD-0018 sahibi |
 | O-6 | Onay/ret/muafiyet AUD-001 K2 sınıfı mı; `AuditCategory` değeri | — | **KARAR (D11/3): evet K2**; **KARAR D35/3 (2026-10-26, `treasury-intake-owner-decisions-02.md` D35, PR #235):** Platform `AuditCategory`'ye yalnız ekleme olarak `Finance` (`MasterData` ara çözümü seçilmedi); Platform sahibinin işi (XMC-001, D9); **DL-1 bu değer main'e girmeden başlamaz**. Defter izi D35/1–2: `finance-treasury-merkezi-iletim \| b \| işaret \| ICentralAuditDeclaration`, borç / istisna 0; defter + CT-DECISIONS satırı + `AuditTrailStandardTests` DL-1 değişikliğinde (D35/4) | CT + sahip; `Finance` değeri: Platform (Beste) |
-| O-7 | Onay yüzeyi ve başlatma kimliği | (a) kararlar yalnız MOD-0126 ucundan, kullanıcı token'ıyla genel MOD-0023 uçları (b) güvenilir tüketici yolu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi açık** — (a) v1 — (b) MDM'ye kilitli; Görev Merkezi'nden verilen karara karşı R11 | sahip + MOD-0023 sahibi |
+| O-7 | Onay yüzeyi ve başlatma kimliği | (a) kararlar yalnız MOD-0126 ucundan, kullanıcı token'ıyla genel MOD-0023 uçları (b) güvenilir tüketici yolu | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi yerine sahip teyidi — KARAR D42 (2026-10-26)** — (a) v1 — (b) MDM'ye kilitli; Görev Merkezi'nden verilen karara karşı R11 | sahip + MOD-0023 sahibi |
 | O-8 | MOD-0023 şablon kodu, çok adımlı onay (PartiallyApproved) adım tanımı, HTTP zaman aşımı değeri | — | şablon MOD-0023 sahibince; zaman aşımı 15 sn | MOD-0023 sahibi |
 | O-9 | RCS-001: tür öneki ve şirket kısa kodu kaynağı; ortak kod servisi | `PAY` / başka | **KARAR D29/2 (2026-10-25): önek kabul** — `.antigravity` RCS-001 §3 satırı uygulandı (D30) — `PAY` (§3'te çakışma yok, ölçüldü); servis BL-565 | sahip + CT (`.antigravity` onayı) |
-| O-10 | Onaylayıcı adayları nereden (kaynakta yapılandırma listesi / dizin) | MOD-0023 atama (pozisyon/rol) / izin dizini | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi açık** — MOD-0023 şablonunun atama kuralı + R1–R4 dışlaması; ayrı dizin istemcisi taşınmaz | sahip + MOD-0023 sahibi |
+| O-10 | Onaylayıcı adayları nereden (kaynakta yapılandırma listesi / dizin) | MOD-0023 atama (pozisyon/rol) / izin dizini | **KARAR D29/1 (sahip payı, 2026-10-25): öneri kabul; MOD-0023 sahibi teyidi yerine sahip teyidi — KARAR D42 (2026-10-26)** — MOD-0023 şablonunun atama kuralı + R1–R4 dışlaması; ayrı dizin istemcisi taşınmaz | sahip + MOD-0023 sahibi |
 | O-11 | Para birimi küsurat hanesi kaynağı | MOD-0048 `LookupOptionDto.Metadata["minorUnits"]` eki / başka | öneri: MOD-0048-FU01 §21 `currency-minor-units` kümesi (TRM-17, D31/4) — MOD-0048'e eklemeli alan (D9) | MOD-0048 sahibi |
 | O-12 | Geçmiş değer tarihine izin | — | **KARAR D28 (2026-10-25): öneri kabul** — Create/Submit'te bugünden (UTC) önce ret | sahip |
 | O-13 | `PaymentMethod` değer listesi | serbest metin / referans listesi | **KARAR D28 (2026-10-25): öneri kabul** — MOD-0048 referans listesi | sahip |
