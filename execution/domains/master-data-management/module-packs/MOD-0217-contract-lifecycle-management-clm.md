@@ -73,6 +73,11 @@ slice: "TRM-13 — sözleşme kaydı + sözleşme sürümleri + belge bağlantı
 > P2-c tek kapı kuralı: işaretsiz checklist maddeleri paket düzeyi, "— DL-n için" maddeleri o dilimin önkoşulu (O-2 → DL-2);
 > küçük: Create'in iki niyeti AC-4 ve işlem tablosunda adıyla yazıldı. Açık kararlar O-1…O-15 açık kalır; bu revizyon pack'i
 > `ready-for-dev` yapmaz.
+>
+> **Revizyon 3 (2026-10-26):** sahip denetimi gap listesi 22, 2. tur kapatıldı — (P1) işaretçinin okunmaması tek başına
+> telafi izni değildir: önce aynı oturumla commit yeniden denemesi, sonra çoğunluk okuması, bağsızlık yalnız `Version`'a koşullu
+> **çit yazımı** uygulanınca kanıtlanır (AC-58, geç commit testi); (P2) başlatma yanıtı sınıflayıcısına öncelik sırası: tanınan
+> kod → gönderilmedi → gönderildi ve kodsuz = bilinmiyor.
 
 ## Module Summary
 
@@ -273,6 +278,7 @@ Gövdede / sorguda `tenantId` gelirse 400. `X-Tenant-Id` başlığı kiracı kay
 | Summary | string? | ≤ 2000 |
 | Signatories | `List<ContractSignatory>` | `Id` (sunucu), `Side` (`Internal`=1, `Counterparty`=2), `Name` 1..140, `RoleTitle` ≤ 100, `InternalUserId` Guid? (`Internal`'da isteğe bağlı), `SignedAt` DateTimeOffset?, `SignatureRecordedBy` Guid?, `SignedCopyContentId` Guid?; onaya göndermeden önce en az bir `Internal` ve bir `Counterparty` (öneri). **`SignedCopyContentId` imza kaydında bir kez yazılır, sonra değişmez**; gösterdiği belge geri çekilemez (Validation Rules → WithdrawContractDocument) |
 | Documents | `List<ContractDocumentRef>` | `ContentId` (MOD-0262-FU01; sürüm içinde belge anahtarı), `DocumentRole` (`Draft`=1, `SignedCopy`=2, `Annex`=3), `FileName`, `MediaType`, `ByteSize`, `Checksum` (MOD-0262'nin hesapladığı, istemciden alınmaz), `AddedAt`, `AddedBy`, `WithdrawnAt` / `WithdrawnBy`, `DocumentRecordRef` string? (MOD-0028, O-2). Bir imzacının `SignedCopyContentId`'si olan belge **imzaya bağlıdır**: geri çekme 409 `MDM_CONTRACT_DOCUMENT_IN_USE` |
+| AbandonedContentIds | `List<Guid>` | yalnız çit yazımı ekler (Runtime Constraints → "Uzak çağrı sırası" (4b)(iii)); listedeki `ContentId` bu sürüme hiçbir zaman bağlanamaz; API'de görünmez |
 | WorkflowIdempotencyKey | string? | **güncel onay denemesinin** anahtarı `mdm-contract:{ContractId}:v{VersionNo}:a{ApprovalAttempt}`; her Submit'te sunucu yeni denemeyle yazar (önceki denemenin anahtarı yeniden kullanılmaz) |
 | WorkflowInstanceId | Guid? | güncel denemenin MOD-0023 örneği; yalnız başlatma **doğrulandığında** yazılır (başlatma 200/201 yanıtı ya da Sync'te güncel anahtarla tek eşleşen satır); her Submit'te `null`'a döner |
 | ApprovalAttempt | int | her Submit'te +1; güncel deneme = (`ApprovalAttempt`, `WorkflowIdempotencyKey`, `WorkflowInstanceId`) üçlüsü |
@@ -476,11 +482,12 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
   | Sınıf | (3)'te görülen | Yapılan | Yanıt |
   |---|---|---|---|
   | (4a) kesin geri alma — yazım **kesinlikle uygulanmadı** | CAS eşleşmedi (`matchedCount = 0`: bayat sürüm ya da durum değişti); işlem commit çağrılmadan iptal edildi; doğrulama ya da tekil indeks hatası; niyet yazımı reddedildi | telafi tam bir kez | 409 (CAS) / 503 |
-  | (4b) sonuç bilinmiyor — yazım işlenmiş olabilir | zaman aşımı; bağlantı sıfırlama / kopma; `UnknownTransactionCommitResult`; yazma onayı (write concern) zaman aşımı ya da hatası; tanınmayan sürücü hatası | **önce mutabakat okuması:** sürüm (TenantId, ContractId, VersionNo) çoğunluk (`majority`) okumasıyla, (3)'ün süre sınırı geçtikten sonra okunur ve belge anahtarı `Documents[].ContentId = contentId` aranır. Bulundu → bağlı: telafi **yok**, işaretçi yerinde, sonuç başarılı. Bulunmadı → bağsızlık kanıtlandı: telafi tam bir kez | bağlı → 201 (aynı `ContentId`, tek niyet); bağsız → 503 |
+  | (4b) sonuç bilinmiyor — yazım işlenmiş olabilir | zaman aşımı; bağlantı sıfırlama / kopma; `UnknownTransactionCommitResult`; yazma onayı (write concern) zaman aşımı ya da hatası; tanınmayan sürücü hatası | (i) işlem kullanıldıysa **aynı oturumla `commitTransaction` yeniden denenir** (sürücünün yeniden denenebilir commit'i) — kesin sonuç gelirse ona göre: işlendi → bağlı, iptal → (4a). (ii) Sonuç hâlâ bilinmiyorsa **mutabakat okuması**: sürüm çoğunluk (`majority`) okumasıyla aranır; `Documents[].ContentId = contentId` **bulunursa bağlıdır** (telafi yok). **Bulunmaması tek başına telafi izni değildir** — çoğunluk okuması geç commit'i dışlamaz. (iii) Bulunmazsa **çit yazımı**: (3)'teki beklenen sürüme (`Version = V`) koşullu, çoğunluk onaylı tek yazım `Version = V+1` ve `AbandonedContentIds += contentId` yazar. Çit **uygulandıysa** (`matchedCount = 1`, majority onayı) (3)'ün yazımı uygulanmamıştır ve artık uygulanamaz (aynı `Version = V` koşuluna bağlı) → telafi tam bir kez. Çit eşleşmediyse (`matchedCount = 0`) sürüm yeniden okunur: işaretçi varsa bağlı (telafi yok); yoksa başka bir yazım araya girmiştir → (4c), telafi yok | bağlı → 201 (aynı `ContentId`, tek niyet); çitle bağsızlık kanıtlandı → 503 |
   | (4c) okuma da yok | (4b)'nin okuması erişilemez, zaman aşımına uğradı ya da çoğunluk okuması verilemedi | telafi **yok**; durum **bilinmiyor**; uygulama günlüğüne yapılandırılmış uyarı (kiracı, sözleşme, sürüm, `contentId`; içerik ve dosya adı yok); nesne yetim sayılmaz, MOD-0262-FU03 mutabakatına verilmez | 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN` + `contentId` |
 
   **(4c)'nin sonradan çözümü:** `ReconcileContractDocumentCommand` (izin `mdm.contracts.documents.create`, aynı kiracı / kapsam
-  / durum denetimi) (4b)'nin okumasını yeniden yapar: bağlı → 200, telafi yok; bağsızlık kanıtlandı **ve** MOD-0262 meta okuması
+  / durum denetimi) (4b)'nin (ii)–(iii) adımlarını yeniden yapar: bağlı → 200, telafi yok; bağsızlık **çit yazımıyla** kanıtlandı
+  (işaretçinin okunmaması tek başına yetmez) **ve** MOD-0262 meta okuması
   nesnenin bu sözleşmenin bu sürümüne ait olduğunu gösterdi (`owningItemId = ContractId`, `owningVersionId = ContractVersion.Id`;
   bu alanların meta yanıtında döndüğü DL-2 başında ölçülür — dönmüyorsa telafi yok, 503) → telafi tam bir kez, 200; okuma
   yine yok → 503 `MDM_CONTRACT_DOCUMENT_BINDING_UNKNOWN`, telafi yok; nesne başka sözleşmenin / sürümün ya da başka kiracının
@@ -493,14 +500,18 @@ Development'taki sıralı yazma geri dönüşü **kanıt sayılmaz**.
   işlenir. Başarı (200 / 201): dönen örnek kimliği koşullu yazılır + niyet `mdm.contract-version.workflow-start-confirmed`
   (başlatma doğrulandı). Sürüm `InApproval`'da donmuştur; içerik / anahtar uyuşmazlığı oluşamaz.
 
-  **Başlatma yanıtı sınıfları** (MOD-0023 §17 rev 2 anlamıyla — 803fbaa5…, PR #235; yalnız MOD-0023'ün tanınan hata
-  gövdesiyle sınıflanır, tanınmayan gövdeli 4xx — ör. Gateway rota 404'ü — "bilinmiyor"dur):
+  **Başlatma yanıtı sınıfları** (MOD-0023 §17 rev 2 anlamıyla — 803fbaa5…, PR #235). **Her yanıt tam bir sınıfa girer;
+  sınıflayıcı şu öncelik sırasıyla karar verir ve ilk eşleşen kural kazanır:** (1) MOD-0023'ün tanınan hata kodu (gövdedeki
+  `code`) — tablodaki satırına; (2) istek **gönderilmediyse** (bağlantı kurulamadı, gönderimden önce zaman aşımı) ya da 401
+  (Gateway kimlik doğrulaması, MOD-0023'e ulaşmadı) → geçici; (3) gönderildiyse ve tanınan kod yoksa — genel 5xx / 503,
+  tanınmayan gövdeli 4xx (ör. Gateway rota 404'ü), gönderimden sonra zaman aşımı ya da bağlantı kopması → **bilinmiyor**
+  (üretici işlemediğini garanti etmediği için). MOD-0023'ün ara "aynı anahtarla tekrar" 503'ü de (3)'tür:
 
   | Sınıf | MOD-0023 yanıtı | Sürüm | MOD-0217 yanıtı |
   |---|---|---|---|
   | Kesin ret — başlatma kesinlikle olmadı ya da üreticinin kapanış kaydıyla kapandı | 400 doğrulama; 403 izin ya da SoD; 404 şablon bulunamadı; 409 `WORKFLOW_INSTANCE_START_CONFLICT` **yalnız** güncel anahtarlı örneğin `history`'sinde üreticinin kapanış kaydı (`workflow-start-recovery-close:{instanceId:N}` anahtarlı satır — MOD-0023 AC-W12: hiç bütün olmamış başlatma kapatıldı) okunduğunda | aynı koşullu yazımda `InApproval → Draft` (Submit öncesi hâl), `LastApprovalOutcome = StartRefused`, `LastApprovalReasonCode`, `WorkflowInstanceId = null` + niyet `mdm.contract-version.submission-refused`; `ApprovalAttempt` geri alınmaz (anahtar yandı; sonraki Submit `a{n+1}`) | 422 `MDM_CONTRACT_WORKFLOW_START_REFUSED` + `reasonCode` |
-  | Geçici — gönderilmedi ya da işlenmedi | bağlantı kurulamadı ya da gönderimden önce zaman aşımı; 5xx; 503 (MOD-0023'ün ara "aynı anahtarla tekrar" yanıtı dahil); 401 (oturum yenilenir) | `InApproval`, başlatma bekliyor (`WorkflowInstanceId = null`); değişiklik yok | 503 `MDM_CONTRACT_WORKFLOW_UNAVAILABLE` |
-  | Bilinmiyor — işlenmiş olabilir | gönderimden **sonra** zaman aşımı ya da bağlantı kopması; 409 `WORKFLOW_TRANSITION_CONFLICT`; 503 `WORKFLOW_TRANSACTION_UNAVAILABLE`; 503 `WORKFLOW_TRANSITION_CONFLICT`; kapanış kaydı okunamayan ya da bulunmayan 409 `WORKFLOW_INSTANCE_START_CONFLICT` (anahtar kötüye kullanımı dahil); tanınmayan gövde | `InApproval`, başlatma bekliyor; değişiklik yok; uyarı günlüğü | 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` |
+  | Geçici — **gönderilmedi** (kural 2) | bağlantı kurulamadı ya da gönderimden önce zaman aşımı; 401 (oturum yenilenir) | `InApproval`, başlatma bekliyor (`WorkflowInstanceId = null`); değişiklik yok | 503 `MDM_CONTRACT_WORKFLOW_UNAVAILABLE` |
+  | Bilinmiyor — işlenmiş olabilir (kural 1 ve 3) | tanınan kodlar: 409 `WORKFLOW_TRANSITION_CONFLICT`; 503 `WORKFLOW_TRANSACTION_UNAVAILABLE`; 503 `WORKFLOW_TRANSITION_CONFLICT`; kapanış kaydı okunamayan ya da bulunmayan 409 `WORKFLOW_INSTANCE_START_CONFLICT` (anahtar kötüye kullanımı dahil). Kural 3: gönderildikten sonra tanınan kodsuz her 5xx / 503 (ara "aynı anahtarla tekrar" 503'ü dahil), tanınmayan gövdeli 4xx, gönderimden sonra zaman aşımı ya da bağlantı kopması | `InApproval`, başlatma bekliyor; değişiklik yok; uyarı günlüğü | 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN` |
 
   - **Zaman aşımı ve `WORKFLOW_TRANSITION_CONFLICT` hiçbir zaman kesin ret değildir** (MOD-0023 §17.7/6 tüketici kuralı):
     sürüm bunlarda `Draft`'a dönmez — dönseydi sonraki Submit yeni anahtarla ikinci bir örnek açabilirdi.
@@ -942,6 +953,13 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   bağsızlık kanıtlanır ve MOD-0262 meta `owningItemId` / `owningVersionId` bu sürümü gösterirse telafi tam bir kez; okuma yine
   yoksa 503 ve telafi yok; nesne başka sürümün / sözleşmenin / kiracının ise 404 ve telafi yok. Sabotaj: Reconcile'da sahiplik
   ya da okuma denetimi kaldırıldığında ilgili durum kırmızıya döner.
+- [ ] AC-58 (zorunlu) — **Geç commit ve çit (gap 22 / 2. tur P1):** gerçek replica set'te işaretçi yazımı sonucu bilinmiyor;
+  mutabakat okuması işaretçiyi bulamaz, ama yazım okumadan **sonra** görünür hâle gelir (gecikmiş commit dikişi) → çit yazımı
+  eşleşmez (`matchedCount = 0`), yeniden okuma işaretçiyi bulur, `compensate` **hiç** çağrılmaz, sürüm bağlı. İkinci durum:
+  yazım gerçekten uygulanmadı → çit uygulanır (`Version = V+1`, `AbandonedContentIds` içinde `contentId`), telafi tam bir kez ve
+  geç gelen eski yazım `Version = V` koşulu yüzünden uygulanamaz. Üçüncü durum: aynı oturumla commit yeniden denemesi kesin
+  sonuç verir → okuma ve çit adımlarına geçilmez. Sabotaj: işaretçinin okunmaması telafi izni sayıldığında (çit atlandığında)
+  birinci durum kırmızıya döner (telafi çağrılır, sürümün gösterdiği nesne silinir).
 - [ ] AC-51 (zorunlu) — **Sync güncel denemeye bağlı (P1-b):** sahte MOD-0023 `by-objects` (`includeDeleted=true`) yanıtlarıyla
   (a) önceki reddedilmiş denemenin anahtarlı örneği "Rejected", güncel denemenin örneği terminal değil → durum değişmez (sürüm
   `Draft`'a çekilmez); (b) başka nesnenin anahtarlı "Approved" örneği → durum değişmez; (c) güncel anahtarla iki satır → durum
@@ -958,9 +976,11 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
   `mdm.contract-version.submission-refused` niyeti tam bir kez; yanıt 422 `MDM_CONTRACT_WORKFLOW_START_REFUSED`; sonraki Submit
   `a{n+1}` anahtarıyla başlar. Kapanış kaydı olmayan 409 `WORKFLOW_INSTANCE_START_CONFLICT` ve tanınmayan gövdeli 404 bu yola
   girmez (bilinmiyor).
-- [ ] AC-54 (zorunlu) — **Geçici / bilinmiyor (P1-c):** gönderimden önce bağlantı hatası, 500, 503 → 503
-  `MDM_CONTRACT_WORKFLOW_UNAVAILABLE`; gönderimden sonra zaman aşımı, 409 `WORKFLOW_TRANSITION_CONFLICT`, 503
-  `WORKFLOW_TRANSACTION_UNAVAILABLE`, 503 `WORKFLOW_TRANSITION_CONFLICT` → 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN`; her
+- [ ] AC-54 (zorunlu) — **Geçici / bilinmiyor (P1-c; öncelik sırası gap 22 / 2. tur):** gönderimden önce bağlantı hatası ve
+  401 → 503 `MDM_CONTRACT_WORKFLOW_UNAVAILABLE`; gönderildikten sonra tanınan kodsuz 500, 503 (ara tekrar 503'ü dahil),
+  tanınmayan gövdeli 404, zaman aşımı, 409 `WORKFLOW_TRANSITION_CONFLICT`, 503 `WORKFLOW_TRANSACTION_UNAVAILABLE`, 503
+  `WORKFLOW_TRANSITION_CONFLICT` → 503 `MDM_CONTRACT_WORKFLOW_STATE_UNKNOWN`; sınıflayıcı her girdiyi tam bir sınıfa koyar
+  (tablo testi: aynı yanıt iki sınıfa düşmez); her
   durumda sürüm `InApproval`, `WorkflowInstanceId` boş, `ApprovalAttempt` ve anahtar aynı; çözüm yalnız Sync ya da aynı
   anahtarla tekrar (tekrar sonrası sahte MOD-0023'te tek örnek). Sabotaj: zaman aşımı ya da `WORKFLOW_TRANSITION_CONFLICT`
   kesin ret sayıldığında sürüm `Draft`'a döner, sonraki Submit ikinci örneği açar ve test kırmızıya döner.
@@ -984,7 +1004,7 @@ kendi Mongo URI'siyle açılan küme (Test Expectations).
 - **Birim:** doğrulayıcılar (her alan); durum makinesi (Durumlar tabloları); `allowedActions`; idempotency gövde özeti
   (normalize, alan sırası bağımsız); MOD-0023 sonuç eşlemesi (tanınmayan → 503); başlatma yanıtı sınıflayıcısı (her yanıt tam
   bir sınıfa; zaman aşımı ve `WORKFLOW_TRANSITION_CONFLICT` kesin ret değil) ve güncel deneme eşleyicisi (AC-51…AC-54); MOD-0048 / MOD-0262 / MOD-0028 / RCS-001 yanıt
-  sınıflandırması (erişilemez → 503, ret → 400 / 413 / 422); ticari değer maskesi.
+  sınıflandırması (erişilemez → 503, ret → 400 / 413 / 422); ticari değer maskesi; çit yazımı karar tablosu (AC-58).
 - **Entegrasyon (gerçek Mongo replica set, işlem):** kiracı izolasyonu (AC-5), veri kapsamı (AC-6), soft delete, CAS 409,
   tekil indeksler ve yarışlar (AC-4, AC-10, AC-31, AC-33, AC-37, AC-57), işlem bütünlüğü ve hata enjeksiyonu (AC-13, AC-37,
   AC-49), niyetin iş
@@ -1239,7 +1259,7 @@ Dilim ayrıntıları (yollar · önkoşul · bitiş):
   değişiklik uçları kısmı), AC-7 (DL-2 yazmaları kısmı), AC-10 (DL-2 komutları kısmı), AC-11 (DL-2 yazmaları kısmı), AC-12
   (DL-2 defter satırları kısmı), AC-14 (DL-2 yazmaları kısmı), AC-15 (DL-2 uçları kısmı), AC-16 (DL-2 aksiyonları kısmı), AC-17
   (belge ve değişiklik alanları kısmı), AC-21 (DL-2 yazmaları kısmı), AC-22 (DL-2 yazmaları kısmı), AC-24…AC-31, AC-39, AC-42
-  (belge ve değişiklik eylemleri kısmı), AC-49, AC-50.
+  (belge ve değişiklik eylemleri kısmı), AC-49, AC-50, AC-58.
 - **DL-3** — Yollar: `SubmitContractVersionForApprovalCommand`, `SyncContractVersionApprovalCommand`,
   `RecordContractSignatureCommand`, `RecordContractRenewalDecisionCommand`, `TerminateContractCommand`, `ArchiveContractCommand`,
   `Rules/{WorkflowStartOutcomeClassifier,WorkflowAttemptMatcher}.cs`, `Infrastructure/Workflow/**`. **Neden ayrı:** MOD-0023
