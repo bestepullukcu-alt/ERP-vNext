@@ -21,13 +21,23 @@ DL-1 prompt'u ancak bunlar kapanınca dağıtılabilir (paket "Ready-for-dev Che
 | Koşul | Bugün | Kimden |
 |---|---|---|
 | Paket künyesi `ready-for-dev` + o sürüme CT-APR-02 ve CT-APR-01 (S-49, D34) | `draft` | CT + Beste |
-| DCP numarası ve `approved` | `UNASSIGNED`, `draft` | Beste |
+| DCP numarası ve `approved` — pack checklist satırı ("`approved` ve numarası atanmış") **değişmez** | `UNASSIGNED`, `draft` | Beste |
 | TRM-14: MOD-0220 §22 onayı (`ApprovalStatus`) | onay turu açık (D34/1) | Beste |
 | O-9 RCS-001 ortak kod servisi (BL-565) | yok; sahibi belirlenmedi | sahip ataması |
 | O-11 küsurat hanesi + O-13 `payment-method` kümesi (TRM-17, MOD-0048-FU01 §21) | önerildi; onay turu açık | Beste |
 | O-19 SEC-002 tüketim yolu | yok | Beste |
 | Yeni servis defteri + CT-DECISIONS satırı için CT kararı | açık | CT + sahip |
 | MOD-0018 `finance-treasury.*` izin tohumu ve rol şablonları | açık | Beste |
+
+**Dayanak kararlar (D34 henüz main'de değil):** `docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md`
+@ `8b9a3c2d0` (yerel dal `docs/ct/treasury-mod0023-s17-rev2`, push yok; bu ZIP'te ayrıca var). D34/1: bu onay turunda K2 yalnız
+MOD-0220 §22 ve MOD-0048-FU01 §21'i onaylar. D34/2: taslak paketler (MOD-0126 dahil) ve DCP künyeleri `ready-for-dev` olunca tek
+seferde onaya gelir; DCP numarası **önce ve ayrıca** istenir.
+
+**DCP numarası (D32/8 ile hizalama):** D32/8 "DCP numarasız onaylanır, numara sonra" diyordu; bu, sekiz hedefli onay turu
+içindi. D34/2 o turu daralttı ve DCP'yi `ready-for-dev` turuna aldı: önce numara atanır (dosya adı değişir), yeni sürüm
+CT-APR-02 incelemesinden geçer, sonra onaylanır. Bu yüzden D32/8'deki numarasız onay istisnası **artık kullanılmaz**; pack
+checklist satırı ("DCP `approved` ve numarası atanmış") olduğu gibi kalır, pack değişikliği gerekmez.
 
 ## 2. Kaynak dosyaların sınıflandırması (DL-1)
 
@@ -64,7 +74,7 @@ göre yeniden yaz, iz kaydına `path@da4abb20 + sha256`), **yalnız referans** (
 | Kaynak | Özet · satır | Karar | Recovery hedefi | Not |
 |---|---|---|---|---|
 | `…/Persistence/PaymentProposals/MongoPaymentBatchRepository.cs` | `2dd642c8c777e253` · 718 | al-uyarla (DL-1 kısmı) | `Persistence/PaymentBatches/` depolar | her işlem geri çağrısı `CentralAuditTransaction.EnlistAsync`; soft delete (`IsDeleted`, `DeletedAt`) |
-| `…/PaymentProposalsMongoIndexes.cs` | `2bcb2622103f0e39` · 198 | al-uyarla | indeks kataloğu | 18 ad (4 tekil); `mod0126_` önekleri **alma** (madde 13); `IsDeleted=false` kısmi tekil parti no indeksi **alma** (madde 9) — kod RCS'den gelir |
+| `…/PaymentProposalsMongoIndexes.cs` | `2bcb2622103f0e39` · 198 | al-uyarla | indeks kataloğu | 18 ad (4 tekil); `mod0126_` önekleri **alma** (madde 13). Kaynağın `ux_mod0126_payment_batch_number` indeksi (kısmi `IsDeleted=false`, `:47-52`) **alınmaz**; yerine pack'in `ux_payment_batch_code` = **Unique(TenantId, BatchCode), kısmi filtre YOK** — silinmiş partinin kodu da dolu sayılır (pack "Mongo indeksleri" satır 348, RCS-001 §6). Kodun RCS'den gelmesi veritabanı tekilliğini kaldırmaz; ikisi birlikte. Test: aynı kiracıda aynı kodla ikinci kayıt — silinmiş bir partinin koduyla dahil — reddedilir; sabotaj: indekse `IsDeleted=false` filtresi eklenince silinmiş-kod vakası kırmızıya döner |
 | `…/PaymentProposalsMongoContext.cs` | `977aa0d20bbbb5f1` · 26 | al-uyarla | `Persistence` bağlamı | koleksiyon adları `payment_batches`, `payment_instructions` |
 | `…/PaymentProposalsIndexHostedService.cs` | `43c53eaad05a9717` · 29 | al-uyarla | indeks hizmeti | Recovery şema manifest deseni varsa ona uyulur |
 | — | — | **yeni** | `Persistence/Common/CommandReceipts/**` | `FinanceTreasuryCommandReceipt` + `ux_finance_treasury_command_receipt_scope`, `ix_finance_treasury_command_receipt_pending` (servis ortak; kaynakta yok) |
@@ -102,6 +112,20 @@ Devralınmış kaynak kanıtı (`MOD-0126 TEST 510/510 @ da4abb20`) Recovery haz
   `FinanceTreasuryCommandReceipt`, `IFinanceTreasuryDataScopeSource` (okuma + yazma kapsamı), `ILegalEntityEligibilityPort`
   (MOD-0220 + `ApprovalStatus`), `ICurrencyReferencePort` (MOD-0048 `currency-minor-units`), `IRecordCodePort` (RCS-001),
   `DataScope` bağdaştırıcısı (`NoOp` kaydı yasak), CentralAudit kaydı + `FinanceTreasuryCentralAuditScope`.
+- **Ödeme yöntemi kaynağı (MOD-0048 `payment-method` kümesi, D28 / O-13):** pack bu bileşene ad vermiyor ("Portlar" listesinde
+  yok); öneri — `IPaymentMethodReferencePort` (Application) + `Infrastructure/Currency/` yanında MOD-0048 bağdaştırıcısı
+  (`GET /api/lookups/reference-data/consumable-sets/payment-method/published-values`, zaman aşımlı `HttpClient`). Ad, pack'in
+  `ready-for-dev` revizyonunda "Portlar" listesine yazılır (CT işi; pack değişikliği → yeni inceleme). Davranış (pack
+  "Validation Rules" satır 821, "Failure Path" satır 914-917):
+  - Create / Update / Validate (Submit DL-2'de) yayımlanmış ve `IsActive = true` kodu ister; karşılaştırma büyük-küçük harfe
+    duyarlı ve `StringComparison.Ordinal` (code-style S-56).
+  - Kümede yok ya da pasif → 422 `PAYMENT_METHOD_NOT_ALLOWED`, kayıt değişmez.
+  - Küme okunamıyor (5xx, zaman aşımı, ayrıştırılamayan gövde, küme yok / izin listesinde değil) → 503
+    `PAYMENT_METHOD_SOURCE_UNAVAILABLE`, yazma yok; serbest metne ya da gömülü listeye düşülmez.
+  - DL-1 kabulü: AC-41 (a) aktif kod → Create geçer; (b) kümede olmayan ve pasif kod → 422, kayıt yok; (c) 5xx / zaman aşımı /
+    bozuk gövde / küme bulunamadı → 503, kayıt yok; (e) harfe duyarlı karşılaştırma; Update için (b) ve (c) aynı. AC-41 (d)
+    (kayıtlı kod pasifleşince Approve ve Release etkilenmez) DL-2 / DL-3'te kapanır. Sabotaj: küme kontrolü kaldırılıp serbest
+    metin kabul edilince (b) kırmızıya döner; `Ordinal` yerine harfe duyarsız karşılaştırma konunca (e) kırmızıya döner.
 - `UpdatePaymentBatchCommand`, `DeletePaymentBatchCommand`, `BulkDeletePaymentBatchCommand` (O-3; yalnız gönderilmemiş taslak,
   soft delete).
 - `tests/architecture/audit-ledger/Diten.FinanceTreasuryService.md` + `CT-DECISIONS.md` satırı + `AuditTrailStandardTests`
