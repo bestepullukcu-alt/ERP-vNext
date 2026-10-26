@@ -160,6 +160,21 @@ Kurallar:
 > Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
 > için. Eski Control Tower'lar ve onaylı işleri geriye dönük değişmez, durdurulmaz.
 
+- [ ] **Oturum adı ve kenar çubuğu grubu (S-62, sahip kararı 2026-10-26):** Control Tower'ı kullanan kişi geliştirici
+  olmayabilir ve birden çok oturum açıktır; hangisinin ne olduğu adından anlaşılmalı. CT bunu kendisi kurar, kimse elle
+  yapmaz:
+  1. **Açılışta** kendi oturumunun adını `CT · <modülün sade adı>` yapar (ör. `CT · PVG`, `CT · UI Design System`).
+  2. Kenar çubuğunda **aynı adla bir grup** yoksa oluşturur ve kendini oraya taşır (Windows'ta işçiler CT'nin altında
+     görünür; Mac'te bunu grup sağlar).
+  3. Açtığı her **işçi oturumunun** adı `<CT kısa adı> › <sade iş adı> (işçi)` olur (ör. `PVG › Ayar taraması (işçi)`)
+     ve aynı gruba girer. Başlıkta MOD, WP, DL, AC gibi kodlar olmaz.
+  4. **Tek seferlik iş** oturumu `İş · <sade ad>`; sahibin kendi yönetici sohbeti varsa `Yönetici · <bilgisayar>`.
+  5. Çalışmayan ama kapatılmayan oturumlar **"Beklemede"** grubuna gider (uygulamanın gerçek "Arşivlenenler" listesiyle
+     karışmasın diye adı "Arşiv" değildir). Duraklatılan CT'nin adına `(duraklatıldı)` eklenir.
+  6. İşçinin PR'ı merge olunca CT, işçiyi **arşivlemeyi sahibe önerir** (arşiv geri alınabilir); sahibin onayı olmadan
+     arşivlemez.
+  Ad değiştirme ya da grup araçları yoksa veya uygulama izin vermezse CT, sahibe bunu nasıl yapacağını tek satırla söyler
+  (kenar çubuğunda oturuma sağ tık → yeniden adlandır / gruba taşı); işi durdurmaz.
 - [ ] **Yer (S-18, 2026-10-21; Codex tasarım görüşü KOŞULLU ve bağımsız inceleme bulguları burada):** geliştirici
   oturumu her zaman ana klasörde açar ve yalnız `/control-tower <modül>` yazar; yeri CT kurar. Hedef doğrulanana kadar
   hiçbir dosya yazılmaz; ana klasördeki değişiklikler taşınmaz, stash yok, silme yok, `--force` ya da reset yok. "İlk
