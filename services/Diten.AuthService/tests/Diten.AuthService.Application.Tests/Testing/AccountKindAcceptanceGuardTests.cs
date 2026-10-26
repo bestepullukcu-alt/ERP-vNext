@@ -8,8 +8,10 @@ using Microsoft.Extensions.Hosting;
 
 namespace Diten.AuthService.Application.Tests.Testing;
 
-// Shares the SAME xunit collection as AccountKindEndpointTests: env vars are process-global (C1 §3), so no test
-// touching AuthTestHost anywhere in this assembly may run concurrently with another one outside its own control.
+// A serialized collection, run alone after the parallel ones. TEST-HIZ-01: it now holds only the classes that change
+// process-global state THEMSELVES — this class (it sets the environment and measures the start lock directly) and
+// GuidSerializerRegistrationTests (the BSON Guid serializer registry). The test classes that only USE an AuthTestHost
+// left it and run in parallel: the host's env-var window is serialized by AuthTestHost's own static start lock (C1/C3 §3).
 [CollectionDefinition("AccountKindAcceptance", DisableParallelization = true)]
 public sealed class AccountKindAcceptanceCollection;
 
@@ -23,6 +25,7 @@ public sealed class AccountKindAcceptanceCollection;
 /// slower; each spins at most one or two real <see cref="AccountKindAcceptance.AuthTestHost"/> instances.</para>
 /// </summary>
 [Collection("AccountKindAcceptance")]
+[Trait("Category", "Mongo")]
 public sealed class AccountKindAcceptanceGuardTests
 {
     // ── §1(a) — the environment actually holds the override (pure) ─────────────────────────────────────────

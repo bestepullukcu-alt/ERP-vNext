@@ -12,11 +12,23 @@ using Proxy = Diten.MdmService.Application.Tests.FirstGskuIdentityWorkflowProces
 namespace Diten.MdmService.Application.Tests;
 
 /// <summary>
+/// TEST-HIZ-01 — these tests measure wall time against the half-lease budget (500 ms, at most 850 ms). Next to the
+/// rest of the assembly running in parallel the thread pool can delay the timer: measured on CI, 932 ms. They run
+/// alone, after the parallel collections, so the budget is measured and not the runner's load; the bounds are unchanged.
+/// </summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class GskuBoundedClaimTimingCollection
+{
+    public const string Name = "GSKU bounded claim timing (alone)";
+}
+
+/// <summary>
 /// WP-MDM-GSKU-ACCEPT-01 FIX2 item 9 (and the "FR:93 lease / 2" rule): the correction, the retirement request and the
 /// pair retirement claim through the shared bounded claim. A store that never answers is answered within HALF the lease
 /// (measured, not only the code) with 503, and a claim the store may have written is given back. In FIX1 these three
 /// still called TryClaimAsync with the caller's token: a silent store hung the request and kept the lease.
 /// </summary>
+[Collection(GskuBoundedClaimTimingCollection.Name)]
 public sealed class GskuBoundedClaimTests
 {
     private static readonly TimeSpan Lease = TimeSpan.FromSeconds(1);

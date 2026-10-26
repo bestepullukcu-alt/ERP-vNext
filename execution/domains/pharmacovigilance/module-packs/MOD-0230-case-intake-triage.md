@@ -43,6 +43,11 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 > acceptance record binds its full text (review 08 F-1). Only line breaks inside criteria were removed; no word
 > changed. A version-bound approval row for this version is still required.
 >
+> **Revision 10 (2026-10-26).** The delivery slices table carries a `gerekli kanıt` column, one level per slice
+> (SOP §23.1; CT-Setup answer with owner approval, 2026-10-26) so an acceptance record can cite its required
+> evidence level. No criterion, decision or scope changed. A version-bound approval row for this version is still
+> required.
+>
 > **Two gates, not one:**
 >
 > | Gate | State | Authorizes |
@@ -1777,17 +1782,21 @@ into the named pack only by its owner (MOD-0231 / MOD-0233 owners are TBD today)
 
 ## Teslim dilimleri
 
-| dilim | ad | kapsadığı bölümler |
-|---|---|---|
-| DL-1 | ortak çerçeve ve kapsam | Build Authorization (Non-Production) - 2026-08-09, Build-Gate Gaps (Measured 2026-10-21), Open Decisions (Owner Decision Pending), Module Summary, Ownership and Boundaries, Repo Scope, Protected Paths, Dependencies, Required Interface Contracts for Build/Test and Operational Runtime, MOD-0230 Owner-Approval Evidence Intake Template, External Owner-Evidence Submission Checklist, MOD-0040 / MOD-0288 Identity Clarification, Runtime Constraints, Acceptance Criteria, Gate State and Acceptance History, Test Expectations, Ready-for-dev Checklist, Implementation Notes, Follow-up Items |
-| DL-2 | sözleşme alanları ve doğrulama | Owned Objects, Entity Fields, Validation Rules, Option-Set Ownership, Backend File Convention |
-| DL-3 | host açılışı ve yapılandırma | Service Port And Appsettings Policy, Startup Fail-Closed Requirements |
-| DL-4 | kimlik doğrulama, kiracı bağlamı ve hata modeli | Tenant Isolation Rules, Failure Path to Verify, PHI/PII And Regulated Safety Controls |
-| DL-5 | denetim yazımı | Audited Events, Audit / Workflow / Evidence / Trace / Error Requirements |
-| DL-6 | izin anahtarı sözleşmesi | Authorization Convention |
-| DL-7 | tenant UI ve MVC proxy | Layout & Shell Contract, Frontend File Contract |
-| DL-8 | Gateway route ailesi | Gateway / API Routing Decision |
-| DL-9 | operasyonel runtime kapısı (kapalı) | MOD-0230 Runtime Authorization Packet (Draft / Not Approved), Current Handoff Evidence - `MOD0230HandoffReference v0.1` Build/Test, Required Approval Gates, Allowed Paths After Explicit Runtime Approval, Forbidden Until Separately Approved, Validation Required Before Runtime Work Can Be Accepted |
+| dilim | ad | kapsadığı bölümler | gerekli kanıt |
+|---|---|---|---|
+| DL-1 | ortak çerçeve ve kapsam | Build Authorization (Non-Production) - 2026-08-09, Build-Gate Gaps (Measured 2026-10-21), Open Decisions (Owner Decision Pending), Module Summary, Ownership and Boundaries, Repo Scope, Protected Paths, Dependencies, Required Interface Contracts for Build/Test and Operational Runtime, MOD-0230 Owner-Approval Evidence Intake Template, External Owner-Evidence Submission Checklist, MOD-0040 / MOD-0288 Identity Clarification, Runtime Constraints, Acceptance Criteria, Gate State and Acceptance History, Test Expectations, Ready-for-dev Checklist, Implementation Notes, Follow-up Items | E1 |
+| DL-2 | sözleşme alanları ve doğrulama | Owned Objects, Entity Fields, Validation Rules, Option-Set Ownership, Backend File Convention | E4 |
+| DL-3 | host açılışı ve yapılandırma | Service Port And Appsettings Policy, Startup Fail-Closed Requirements | E3 |
+| DL-4 | kimlik doğrulama, kiracı bağlamı ve hata modeli | Tenant Isolation Rules, Failure Path to Verify, PHI/PII And Regulated Safety Controls | E4 |
+| DL-5 | denetim yazımı | Audited Events, Audit / Workflow / Evidence / Trace / Error Requirements | E5 |
+| DL-6 | izin anahtarı sözleşmesi | Authorization Convention | E5 |
+| DL-7 | tenant UI ve MVC proxy | Layout & Shell Contract, Frontend File Contract | E4 |
+| DL-8 | Gateway route ailesi | Gateway / API Routing Decision | E3 |
+| DL-9 | operasyonel runtime kapısı (kapalı) | MOD-0230 Runtime Authorization Packet (Draft / Not Approved), Current Handoff Evidence - `MOD0230HandoffReference v0.1` Build/Test, Required Approval Gates, Allowed Paths After Explicit Runtime Approval, Forbidden Until Separately Approved, Validation Required Before Runtime Work Can Be Accepted | E5 |
+
+`gerekli kanıt` is the minimum evidence level (SOP §23.1) an acceptance record of a work package of that slice must
+reach; it is not lowered under the build/test gate; the acceptance record cites this table row as
+`required_evidence_source`.
 
 Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · ölçülebilir bitiş koşulu):
 

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Diten.PvgService.RegPvBase.Tests;
 
-public sealed class PvgIntakeDraftApplicationServiceTests
+public sealed partial class PvgIntakeDraftApplicationServiceTests
 {
     private static readonly string[] SensitiveSamples =
     [
@@ -190,7 +190,8 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                 (nameof(PvgAuditIntent.RequiredPermission), typeof(string)),
                 (nameof(PvgAuditIntent.ActorKind), typeof(string)),
                 (nameof(PvgAuditIntent.HasCorrelation), typeof(bool)),
-                (nameof(PvgAuditIntent.AcceptedAtUtc), typeof(DateTimeOffset))
+                (nameof(PvgAuditIntent.AcceptedAtUtc), typeof(DateTimeOffset)),
+                (nameof(PvgAuditIntent.ChangedFields), typeof(IReadOnlyList<PvgIntakeField>))
             ],
             properties);
         Assert.DoesNotContain(properties, property =>
@@ -749,7 +750,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         Assert.NotNull(persisted);
         Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
         Assert.Equal("source-ref", persisted.Intake.SourceReference);
-        Assert.Equal("suspect product", persisted.Intake.SuspectProductText);
+        AssertSingleSuspectLine(persisted.Intake, "suspect product");
         AssertSafe(updated);
     }
 
@@ -1172,7 +1173,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         var staleUpdate = await service.UpdateDraftAsync(
             UpdateCommand(
                 created.IntakeDraftId!,
-                ValidUpdateRequest() with { SuspectProductText = "stale suspect product" },
+                ValidUpdateRequest() with { ProductLines = [SuspectLineRequest("stale suspect product")] },
                 readVersion));
 
         AssertVersionConflict(staleUpdate);
@@ -1181,7 +1182,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(concurrentUpdate.Version, persisted.Version);
         Assert.Equal(PvgIntakeStatus.IntakeUpdated, persisted.Intake.Status);
         Assert.Equal("updated-source-ref", persisted.Intake.SourceReference);
-        Assert.Equal("suspect product update", persisted.Intake.SuspectProductText);
+        AssertSingleSuspectLine(persisted.Intake, "suspect product update");
     }
 
     [Fact]
@@ -1313,7 +1314,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(initialVersion, persisted.Version);
         Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
         Assert.Equal("source-ref", persisted.Intake.SourceReference);
-        Assert.Equal("suspect product", persisted.Intake.SuspectProductText);
+        AssertSingleSuspectLine(persisted.Intake, "suspect product");
         Assert.Null(persisted.Intake.TriageOutcome);
         Assert.Null(persisted.Intake.TriageReason);
         Assert.Null(persisted.Intake.RouteTargetQueue);
@@ -1466,10 +1467,19 @@ public sealed class PvgIntakeDraftApplicationServiceTests
             "patient-subject-code",
             DateOnly.FromDateTime(DateTime.UnixEpoch),
             "free text narrative with PHI",
-            "suspect product",
+            [SuspectLineRequest("suspect product")],
             "Serious",
             "High",
-            ["evidence-ref"]);
+            ["evidence-ref"],
+            DateTimeOffset.UnixEpoch,
+            null,
+            "unknown",
+            "Spontaneous",
+            null,
+            null,
+            null,
+            null,
+            null);
 
     private static PvgCreateIntakeDraftRequest InvalidCreateRequest() =>
         ValidCreateRequest() with
@@ -1494,10 +1504,30 @@ public sealed class PvgIntakeDraftApplicationServiceTests
             "patient-subject-code",
             DateOnly.FromDateTime(DateTime.UnixEpoch),
             "free text narrative with PHI",
-            "suspect product update",
+            [SuspectLineRequest("suspect product update")],
             "Serious",
             "High",
-            ["evidence-ref"]);
+            ["evidence-ref"],
+            DateTimeOffset.UnixEpoch,
+            null,
+            "unknown",
+            "Spontaneous",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+
+    private static PvgIntakeProductLineRequest SuspectLineRequest(string productNameAsReported) =>
+        new("Suspect", null, productNameAsReported, null, null);
+
+    private static void AssertSingleSuspectLine(SafetyCaseIntake intake, string expectedProductNameAsReported)
+    {
+        var line = Assert.Single(intake.ProductLines);
+        Assert.Equal("Suspect", line.ProductRole);
+        Assert.Equal(expectedProductNameAsReported, line.ProductNameAsReported);
+    }
 
     private static PvgPortDecision AllowedDecision() => new(true, true, "PVG_TEST_ALLOWED");
 
