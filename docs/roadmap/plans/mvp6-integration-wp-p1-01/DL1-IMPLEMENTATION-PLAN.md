@@ -1,5 +1,7 @@
 # MOD-0183 DL-1 — implementation plan (stock issue at dispatch)
 
+> **Revizyon r2 (2026-10-26):** paket MVP-1 CT incelemesine göre değişti (deneme anahtarı `…:a{n}`, tek aktif deneme, 403 → 403, saklı ilk deneme, seri iade v1 dışı, ortak senaryo). Bu plan r2 paketine göre okunur; paketle çelişen satırda paket kazanır. §4/§5'teki açık noktalar r2'de kapandı.
+
 DURUM: PLAN — kod izni değildir. Kod, MOD-0183 revizyonunun CT-APR-02 incelemesi (MVP-1 CT) ve `main`'deki CT-APR-01
 satırından (Beste) sonra başlar (Çekirdek 7). Kaynak: `MOD-0183-shipment-tracking-pod.md` §23 (pack sha256
 `febf6e35…`), `SHIPMENT-BUNDLE-3.4.0.patch`, INVENTORY-BUNDLE 1.5.0 `postMovement`. Kod tabanı: `origin/main` (2026-10-23;

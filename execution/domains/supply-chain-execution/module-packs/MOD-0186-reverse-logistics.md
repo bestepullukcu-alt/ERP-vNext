@@ -883,12 +883,16 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 5. Rebase required if the Q39 Returns sign-off changes this pack's base first (see the base note).
 6. Runtime tests R-02…R-04 need a native executor and the integrated target.
 
-## 34. Customer return to Inventory (E-7) — revision draft WP-P1
+## 34. Customer return to Inventory (E-7) — revision draft WP-P1 r2
 
 > Owner decisions: E-7 (Beste, 2026-10-21, integration plan §2.1) and G5 / G8 (Natig, 2026-10-22,
-> `docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3a). **Draft revision — not approved.** It changes
-> §2, §7 and §8 above and needs CT-APR-02 (independent review by the MVP-1 CT) and a CT-APR-01 row (high risk:
-> integration and product code path) before any code.
+> `docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3a), revised after the MVP-1 CT's CT-APR-02 review of
+> 2026-10-23 (`docs/records/reviews/MOD-0186/2026-10-23-6811f18c.md`, KOŞULLU): the receipt stores its requests, dates and
+> target location at the first attempt (F-1), a retry after partial success leaves completed lines untouched (F-2), the
+> company header comes from the return (F-4), the issue is read over the shipment seam (F-5), serial-tracked returns are
+> out of v1. It changes §2, §7, §8 and the `InTransit → Received` row of the transition table above (the client's
+> `inventoryTransactionReferenceId` is refused on `Received`). **Draft revision — not approved.** Needs a new CT-APR-02 round
+> (MVP-1 CT) and a CT-APR-01 row (high risk: integration and product code path) before any code.
 
 ### 34.1 What is posted
 
@@ -896,49 +900,64 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 |---|---|
 | `movementType` | `CUSTOMER_RETURN` |
 | `toStockStatus` | `QUARANTINE` (E-7). A Blocked / Expired lot is accepted into QUARANTINE by INVENTORY CT-R10 |
-| `itemId`, `skuId`, `skuLevel`, `lotId`, `serialIds`, `uomId` | from the **original issue** of the shipment line (G8): MOD-0183 stores each line's issue `transactionId` and `lotId` at dispatch (MOD-0183 §23.4 step 3) — INVENTORY `getTransactions` cannot be searched by shipment; never re-entered |
-| `quantity` | the return line quantity (frozen decimal string) |
-| `toWarehouseId`, `toLocationId` | entered at return receipt (G8; RETURNS contract addition, separately versioned) |
+| `itemId`, `skuId`, `skuLevel`, `lotId`, `uomId` | from the **completed dispatch attempt's** issue of the shipment line (G8, MOD-0183 §23.4), read over the shipment seam: SHIPMENT-BUNDLE 3.4.0 `ShipmentLine.issueTransactionId` (read-only) plus the line's `skuLevel` / `lotId` (F-5) — never re-entered, never guessed |
+| `serialIds` | not sent: MOD-0183 v1 issues no serial-tracked stock (§23.1), so no v1 shipment line can hold serials; a return line whose SKU INVENTORY treats as serial-tracked is refused by INVENTORY (`SERIAL_COUNT_MISMATCH`, shown as the refusal) — serial-tracked returns are out of v1 |
+| `quantity` | the return line quantity (frozen decimal string; never above the shipped quantity, existing rule) |
+| `toWarehouseId`, `toLocationId` | entered at return receipt (G8) — SHIPMENT-BUNDLE 3.4.0 `TransitionReturnCommand.toWarehouseId` / `toLocationId`, required when `targetStatus = Received` |
 | `sourceModule` / `sourceType` | `MOD-0186` / `CUSTOMER_RETURN` |
 | `sourceDocumentId` / `sourceLineId` | return id / shipment line number |
 | `documentGroupId` | shipment id (joins the return to its shipment's issue movements) |
-| `transactionDate` / `postingDate` | the validated `occurredAt` of the receipt transition; the posting day is the UTC day (E-6) |
-| `Idempotency-Key` | deterministic: `{returnId}:{shipmentLineNumber}:customer-return:v1` |
+| `transactionDate` / `postingDate` | the validated `occurredAt` of the receipt command that **opened the attempt**; posting day = UTC day (E-6); stored and never changed (F-1) |
+| `idempotencyKey` / `Idempotency-Key` | deterministic: `{returnId}:{shipmentLineNumber}:customer-return:v1` — one key per line suffices because a receipt is never compensated or redone with other data |
+| `X-Legal-Entity-Id` | the return's stored, validated `LegalEntityId`, always sent (F-4) |
 | `X-Correlation-Id` | the receipt command's correlation id, forwarded (E-1) |
 
 The caller's token is forwarded (G5): the receiving role needs `inventory.movements.create`, granted in Roles →
-Permissions (the BL-652 interim path), never through the default role template.
+Permissions (the BL-652 interim path), never through the default role template. An INVENTORY 403 is answered as 403
+`INVALID_REQUEST`, never 503 (F-4).
 
-### 34.2 Lifecycle and failure behaviour
+### 34.2 Receipt attempt, lifecycle and failure behaviour
 
-- The `Received` transition posts every line first, then commits the transition, its receipt, audit and `ReturnReceived`
-  event, with each line's `InventoryTransactionReferenceId`. The frozen event shape does not change.
-- A line refused by INVENTORY (any 422) leaves the return in its previous state and answers the module's refusal with the
-  INVENTORY code in its details. Lines already posted **stay posted** (the goods are physically in quarantine); a retry of the
-  same command reuses the same keys, so INVENTORY replays them and posts only what is missing. No REVERSAL is used here.
-- INVENTORY unreachable or 5xx → 503 `DEPENDENCY_UNAVAILABLE`, no state change.
-- A shipment line with **no stored issue movement** (dispatched before MOD-0183 §23 DL-1 existed) is refused at receipt with
-  a module code (to be named in the RETURNS addition); no lot is guessed.
+- **First attempt stores everything (F-1).** The first `Received` command stores on the return a `ReceiptAttempt`: per line
+  the full §34.1 request body, the dates and the target warehouse / location, plus a single-writer lease (as MOD-0183
+  §23.4). Every later attempt resends exactly these stored requests. A later `Received` command whose `toWarehouseId`,
+  `toLocationId` or `occurredAt` differs from the stored attempt → 409 `RETURN_RECEIPT_IN_PROGRESS` (3.4.0) with the stored
+  values in `details`; a concurrent command while another holds the lease → the same 409.
+- **Posting and completion.** Lines are posted in line order. When every line has a `transactionId`, the `Received`
+  transition commits with its receipt, central audit, the frozen `ReturnReceived` event and each line's
+  `InventoryTransactionReferenceId` (set by the service; a client value on `Received` → 400 `INVALID_REQUEST`).
+- **Partial success (F-2).** A line refused by INVENTORY (any 422) leaves the return `InTransit` and answers the refusal with
+  the INVENTORY code in its details. Lines already posted **stay posted** and their stored `transactionId` is never changed:
+  the goods are physically in quarantine and no REVERSAL is used. A retry resends every line with its stored request and key;
+  posted lines answer `idempotentReplay: true` (success, same `transactionId`), only the missing lines are posted.
+- INVENTORY unreachable / 5xx / timeout → 503 `DEPENDENCY_UNAVAILABLE`; no transition; posted lines stay posted.
+- A shipment line whose shipment has **no completed dispatch attempt or no `issueTransactionId`** (dispatched before MOD-0183
+  §23 DL-1) is refused at receipt with 422 `RETURN_SOURCE_MOVEMENT_MISSING` (SHIPMENT-BUNDLE 3.4.0); no movement, no lot
+  guessed.
 
 ### 34.3 Acceptance and tests (in addition to §26)
 
 | AC | Measurable acceptance |
 |---|---|
-| R34-1 | Receipt of a 1-line and an N-line return posts N `CUSTOMER_RETURN` movements into QUARANTINE with the §34.1 fields; the stock rises in QUARANTINE, not AVAILABLE (MVP-1 live tour "iade → karantina") |
+| R34-1 | Receipt of a 1-line and an N-line return posts N `CUSTOMER_RETURN` movements into QUARANTINE with the §34.1 fields and `X-Legal-Entity-Id` = the return's LE; the stock rises in QUARANTINE, not AVAILABLE (MVP-1 live tour "iade → karantina") |
 | R34-2 | Replaying the receipt command posts no second movement and no second event |
-| R34-3 | A refused line: return state unchanged, posted lines kept, retry completes; INVENTORY code shown localized (7 languages) |
-| R34-4 | INVENTORY unavailable → 503, no transition, no event |
+| R34-3 | A refused line: return state unchanged, posted lines kept with their `transactionId`, retry completes with replay for them; INVENTORY code shown localized (7 languages) |
+| R34-4 | INVENTORY unavailable → 503, no transition, no event; INVENTORY 403 → 403, never 503 |
 | R34-5 | Cross-tenant / cross-LE return id → 404, no movement |
-| R34-6 | No original issue movement → refused, no movement, no lot guessed |
+| R34-6 | No completed issue on the shipment line → 422 `RETURN_SOURCE_MOVEMENT_MISSING`, no movement, no lot guessed |
+| R34-7 | **Stored first attempt (F-1):** a retry with another `toLocationId` or `occurredAt` → 409 `RETURN_RECEIPT_IN_PROGRESS`, nothing posted; a retry with the same values resends the stored requests byte-for-byte (dates included) |
+| R34-8 | **Joint scenario with MOD-0183 (S23-16):** three-line shipment, line quantities 10 / 10 / 10. (1) Dispatch attempt a1, line 2 refused → line 1 issued (`T1`) and reversed (`R1`), AVAILABLE net 0. (2) Re-dispatch a2 → issues `T2`, `T3`, `T4`, all different from `T1`, AVAILABLE net −30. (3) Return line 1 (4 units) and line 3 (10 units); line 3 refused → line 1 posted into QUARANTINE (`C1`, +4). (4) Retry → line 1 replays `C1` unchanged, line 3 posted (`C2`, +10). Final: AVAILABLE −30, QUARANTINE +14; the return reads `T2` and `T4` (attempt a2), never `T1` |
+| R34-9 | Serial-tracked SKU on a return line → INVENTORY's serial refusal shown; nothing posted for that line |
 
-Each rule above gets a sabotage proof (remove the posting, change the status, drop the key → the matching test is red).
-The full SupplyChain test assembly runs unfiltered.
+Each rule above gets a sabotage proof (remove the posting, change the status, drop the key, recompute the dates on retry,
+read attempt a1's issue → the matching test is red). The full SupplyChain test assembly runs unfiltered.
 
 ## Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | iade → karantina | §2 Requests, §7 INVENTORY row, §8, §34 |
+| DL-1 | iade → karantina | §2 Requests, §7 INVENTORY row, §8, §34 (R34-1…R34-9) |
 
-DL-1 is dispatchable only after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the per-line issue `transactionId` / `lotId`
-that MOD-0183 stores. CT-APR-01 note: "only DL-1; after MOD-0183 DL-1".
+DL-1 is dispatchable only after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue
+(`issueTransactionId`, `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1; after
+MOD-0183 DL-1".

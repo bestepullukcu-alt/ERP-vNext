@@ -1,5 +1,5 @@
---- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-22 20:33:24
-+++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-23 11:19:37
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 15:50:18
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-10-26 15:50:33
 @@ -12,7 +12,7 @@
      shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
      yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
@@ -9,7 +9,7 @@
    x-status: FROZEN
    x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
    x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
-@@ -3132,6 +3132,10 @@
+@@ -3132,6 +3132,11 @@
          quantity: { $ref: '#/components/schemas/Decimal' }
          uomId: { type: string }
          inventoryReferenceId: { type: [string, 'null'], description: Frozen INVENTORY reservation/transaction reference; balance degildir. }
@@ -17,18 +17,19 @@
 +        lotId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — the lot issued for a lot-tracked SKU. A tenant without a warehouse module enters it; with one, MVP-5 picking fills it. Read at Dispatched; may be empty before." }
 +        fromLocationId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — the issuing location inside warehouseReferenceId. Read at Dispatched." }
 +        fefoBypassReason: { type: [string, 'null'], minLength: 10, maxLength: 1000, description: "3.4.0 (WP-P1 G1, additive) — forwarded unchanged to INVENTORY 1.3.0 fefoBypassReason when the lot is not the first eligible FEFO lot." }
++        issueTransactionId: { type: [string, 'null'], readOnly: true, description: "3.4.0 (WP-P1 G8, MOD-0186 review F-5, additive, read-only) — the INVENTORY transactionId of this line's GOODS_ISSUE_SALES in the completed dispatch attempt (MOD-0183 §23.4); null until Dispatched. Ignored on create. MOD-0186 reads it for the CUSTOMER_RETURN." }
      CreateShipmentCommand:
        type: object
        additionalProperties: false
-@@ -3205,6 +3209,7 @@
+@@ -3205,6 +3210,7 @@
              lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
              pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
              lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
-+            dispatchState: { type: [string, 'null'], enum: [None, InProgress, CompensationFailed, null], description: "3.4.0 (WP-P1 G4, additive, read-only) — state of the Inventory stock issue behind Dispatched (MOD-0183 §23.4). CompensationFailed: a compensating REVERSAL failed; status stays Planned and further transitions answer 409 DISPATCH_COMPENSATION_FAILED." }
++            dispatchState: { type: [string, 'null'], enum: [None, InProgress, CompensationFailed, null], description: "3.4.0 (WP-P1 G4, additive, read-only) — state of the open Inventory dispatch attempt behind Dispatched (MOD-0183 §23.4). None: no open attempt. InProgress: an attempt holds the lease; Cancelled and POD answer 409 DISPATCH_IN_PROGRESS. CompensationFailed: a compensating REVERSAL failed; status stays Planned and every transition except the exit (Dispatched or Cancelled, which first resends the reversals) answers 409 DISPATCH_COMPENSATION_FAILED." }
              contractVersion: { $ref: '#/components/schemas/ContractVersion' }
      ShipmentListResponse:
        type: object
-@@ -3343,6 +3348,8 @@
+@@ -3343,6 +3349,8 @@
          occurredAt: { type: string, format: date-time }
          inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
          dispositionCode: { type: [string, 'null'] }
@@ -37,15 +38,17 @@
      ReturnSummary:
        type: object
        properties:
-@@ -3517,6 +3524,7 @@
+@@ -3517,6 +3525,9 @@
            examples:
              idempotency: { value: { error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency-Key farkli payload ile kullanildi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              duplicatePod: { value: { error: { code: POD_ALREADY_CAPTURED, message: Shipment icin POD zaten kayitli, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
 +            dispatchCompensationFailed: { value: { error: { code: DISPATCH_COMPENSATION_FAILED, message: "3.4.0 (WP-P1 G4) — a compensating REVERSAL failed; the shipment is blocked until a user retry succeeds", details: { lines: ["1"] }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++            dispatchInProgress: { value: { error: { code: DISPATCH_IN_PROGRESS, message: "3.4.0 (MOD-0183 review F-2) — another dispatch attempt holds this shipment; one active attempt per shipment", details: { attempt: 1 }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++            returnReceiptInProgress: { value: { error: { code: RETURN_RECEIPT_IN_PROGRESS, message: "3.4.0 (MOD-0186 review F-1) — a receipt attempt is open with other stored values, or another command holds it", details: { toWarehouseId: wh-01, toLocationId: loc-q1, occurredAt: "2026-10-26T08:00:00Z" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
      Unprocessable:
        description: Is kurali veya lifecycle gecisi gecersiz
        content:
-@@ -3528,6 +3536,9 @@
+@@ -3528,6 +3539,9 @@
              returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
              inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }

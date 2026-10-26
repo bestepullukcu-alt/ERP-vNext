@@ -1,5 +1,7 @@
 # MOD-0186 DL-1 — implementation plan (customer return → quarantine)
 
+> **Revizyon r2 (2026-10-26):** paket MVP-1 CT incelemesine göre değişti (deneme anahtarı `…:a{n}`, tek aktif deneme, 403 → 403, saklı ilk deneme, seri iade v1 dışı, ortak senaryo). Bu plan r2 paketine göre okunur; paketle çelişen satırda paket kazanır. §4/§5'teki açık noktalar r2'de kapandı.
+
 DURUM: PLAN — kod izni değildir. Kod, MOD-0186 revizyonunun CT-APR-02 incelemesi (MVP-1 CT), `main`'deki CT-APR-01 satırı
 (Beste) **ve MOD-0183 §23 DL-1'in `main`'e girmesinden** sonra başlar (pack "only DL-1; after MOD-0183 DL-1"). Kaynak:
 `MOD-0186-reverse-logistics.md` §34 (pack sha256 `6811f18c…`), `SHIPMENT-BUNDLE-3.4.0.patch`, INVENTORY-BUNDLE 1.5.0

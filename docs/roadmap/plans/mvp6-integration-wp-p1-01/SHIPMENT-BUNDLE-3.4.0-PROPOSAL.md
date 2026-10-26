@@ -59,7 +59,8 @@ olmayan satır için yeni 422 kodu `RETURN_SOURCE_MOVEMENT_MISSING` (`details.sh
 
 Not: `inventoryTransactionReferenceId` alanı istemciden gelmeye devam eder mi, yoksa sunucu mu yazar — bugünkü anlamı
 "Frozen INVENTORY movement reference". §34 ile sunucu yazar; istemcinin değeri yok sayılır mı reddedilir mi, sözleşme
-yazıcısının kararıdır (öneri: 3.4.0'da `deprecated: true`, sunucu değeri yazar, istemci değeri yok sayılır).
+yazıcısının kararıdır. **Karar (revizyon r2, 2026-10-26, MOD-0186 §34.2):** `Received` geçişinde istemci değeri 400
+`INVALID_REQUEST` ile **reddedilir** (sessizce yok sayılmaz); sunucu satır başına yazar. Diğer geçişlerde alan bugünkü gibidir.
 
 ## 3a. `ShipmentDetail.dispatchState` ve 409 `DISPATCH_COMPENSATION_FAILED` (G4 koşul 4, 2026-10-23)
 
@@ -67,6 +68,18 @@ MVP-1 CT'nin G4 koşulu: telafi REVERSAL'ı başarısızsa sevkiyat görünür b
 `Planned → Exception` oku yok, bu yüzden `status` değişmez; yerine salt-okunur `dispatchState` (`None` / `InProgress` /
 `CompensationFailed`, isteğe bağlı) eklenir ve sonraki her geçiş 409 `DISPATCH_COMPENSATION_FAILED` (`details.lines`) alır.
 Yalnız ekleme; var olan istemciler etkilenmez.
+
+## 3b. CT-APR-02 incelemesinden gelen ekler (MVP-1 CT, 2026-10-23; revizyon r2, 2026-10-26)
+
+| Ek | Tür | Neden |
+|---|---|---|
+| `ShipmentLine.issueTransactionId` | `[string, 'null']`, salt-okunur | MOD-0186 F-5: iade, tamamlanmış sevk denemesinin çıkış hareketini sevkiyat seam'i üzerinden okur; create'te yok sayılır |
+| `dispatchState` açıklaması | yalnız metin | MOD-0183 F-2 / F-4: `InProgress` iken iptal ve POD 409 `DISPATCH_IN_PROGRESS`; `CompensationFailed`'dan çıkış `Dispatched` ya da `Cancelled` ile, önce REVERSAL'lar yeniden gönderilir |
+| 409 `DISPATCH_IN_PROGRESS` | yeni örnek kod | MOD-0183 F-2: sevkiyat başına tek aktif deneme |
+| 409 `RETURN_RECEIPT_IN_PROGRESS` | yeni örnek kod | MOD-0186 F-1: açık alım denemesi başka saklı değerlerle, ya da başka bir komut kilidi tutuyor |
+
+Hepsi ekleme; var olan istemciler etkilenmez. İki yeni kod `ContractErrorCodeParityTests` için DL-1 koduyla aynı değişiklikte
+sabit olarak eklenir.
 
 ## 4. Değişmeyenler
 

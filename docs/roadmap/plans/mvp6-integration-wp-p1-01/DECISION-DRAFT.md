@@ -106,6 +106,25 @@ DL-2 (metinler); ürün doğrulaması ve MVP-5 rezervasyonu dilim değil. Koşul
 `DISPATCH_COMPENSATION_FAILED` ile verilir (CT önerisi). MOD-0186 §34: lot ve kalem, MOD-0183'ün satır başına sakladığı çıkış
 `transactionId`/`lotId`'den okunur; DL-1, MOD-0183 DL-1'den sonra.
 
+## 3c. MVP-1 CT CT-APR-02 incelemesi ve düzeltilmiş kural (2026-10-23, Natig iletti 2026-10-26)
+
+Sonuç: MOD-0183 **UYGUN DEĞİL** (1 ENGEL, 6 ORTA, 4 DÜŞÜK), MOD-0186 **KOŞULLU** (0 ENGEL, 4 ORTA, 2 DÜŞÜK); inceleme
+`d0366fa73`'te, paket özetleri `c0111bcb8`'de aynı. Bulgu dosyaları: `docs/records/reviews/MOD-0183/2026-10-23-febf6e35.md`,
+`docs/records/reviews/MOD-0186/2026-10-23-6811f18c.md` (**dosyalar henüz bu dalda değil** — MVP-1 CT'den istendi).
+
+- **ENGEL (G3/G4 cevabından):** sabit anahtar telafiden sonra yeniden sevkte geri alınmış eski hareketi `idempotentReplay`
+  ile döndürür. **Düzeltilmiş kural (MVP-1 CT):** saklı deneme numarası `n`; anahtarlar `…:dispatch:a{n}` /
+  `…:reversal:a{n}`; `n` yalnız telafisi tamamlanmış deneme kapanınca artar; tarihler deneme başına saklanır. G3/G4'ün
+  diğer koşulları geçerli.
+- F-2 tek aktif deneme; F-3/F-4 REVERSAL gövdesi ve başarısız telafiden çıkış; F-5 / MOD-0186 F-4 `X-Legal-Entity-Id`
+  sevkiyatın / iadenin doğrulanmış LE'si, INVENTORY 403 → 403 (503 değil); F-10 `inventoryReferenceId` v1'de kullanılmaz.
+- MOD-0186: ilk denemede istek, tarih ve hedef lokasyon saklanır; kısmi başarı sonrası tamamlanan satırlar değişmez; seri
+  takipli iade v1'de yok; `issueTransactionId` önerisi F-5 ile uyumlu.
+- Ortak kabul senaryosu: kısmi sevk → telafi → yeniden sevk → kısmi iade → tekrar (MOD-0183 S23-16, MOD-0186 R34-8).
+
+İşlendiği yer: MOD-0183 §23 r2, MOD-0186 §34 r2, `SHIPMENT-BUNDLE-3.4.0.patch` + PROPOSAL §3b (2026-10-26). §8'deki
+`MOD-0183-section-23.patch` / `MOD-0186-section-34.patch` tarihseldir; güncel metin paketlerdedir.
+
 ## 4. Önerilen paket değişiklikleri (kararlardan sonra yazılacak — özet)
 
 **MOD-0183**
