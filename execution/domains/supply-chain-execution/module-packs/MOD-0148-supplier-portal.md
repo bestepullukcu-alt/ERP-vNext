@@ -28,7 +28,9 @@ form_field_count: 0
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
 > master owner (domain `procurement`). Placement grants no runtime, contract, gateway or permission ownership.
 
-## 0.0 v1 scope — the supplier's own submissions, internal only (owner decision 2026-10-22) — revision draft
+## 0.0 v1 scope — the supplier's own submissions for internal use only
+
+Owner decision 2026-10-22 — revision draft.
 
 > `docs/records/decisions/2026-10/mvp6-mod0148-start-owner-decision-2026-10-22.md` (Natig): MOD-0148 starts now, which is
 > the D9 trigger for Beste's DC-03 binding. **Draft revision — not approved**; needs CT-APR-02 and a new CT-APR-01 row
@@ -181,7 +183,9 @@ Test IDs added in r2 (MOD-0148) — the behaviours are proposed (§0.2, §0.3); 
 | T-0148-TXN-03 | A crash between commit and publish is recovered by the publisher from the Pending record | §0.3 |
 | T-0148-PAY-01 | Per-`submissionType` schema, size and depth limits — BLOKE until the contract successor | §0.2 |
 
-### 0.1 Replay receipt — ÖNERİLEN (SPEC-DELTA "Create and submit"), BLOKE on DC-03
+### 0.1 Replay receipt
+
+ÖNERİLEN (SPEC-DELTA "Create and submit"), BLOKE on DC-03.
 
 - Receipt scope `(TenantId, LegalEntityId, mappedSupplierId, validatedIssuer, subject, operationId, targetId-or-CREATE,
   exactIdempotencyKey)`; key 1..200, surrounding whitespace rejected (not trimmed), exact ordinal comparison.
@@ -202,7 +206,9 @@ contract successor through the single CT Supplier Seam Owner, with consumer cons
 stays as frozen — no schema, no field rejection — and only the 1 MiB request limit applies (§0.0). T-0148-PAY-01 applies to the
 contract successor, not to v1.
 
-### 0.3 Transaction, outbox and delivery — ÖNERİLEN (SPEC-DELTA "Persistence and evidence invariants")
+### 0.3 Transaction outbox and delivery
+
+ÖNERİLEN (SPEC-DELTA "Persistence and evidence invariants").
 
 - Create/submit commit business state, receipt, audit record and Pending outbox in one MongoDB transaction; denied
   operations write none of them. Publishing is outside this slice.
@@ -442,8 +448,11 @@ module). v1 has no secret validator; the payload is data only.
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | portal durumu ve kendi kayıtlarını okuma, oluşturma | §0.0, §0.1, §3, §4, §8, §12, §13 (oluşturma ve okuma), §14 (v1 eşlemesi) |
-| DL-2 | gönderim (DRAFT → SUBMITTED) ve değişmezlik | §0.3, §13 (gönderim), §21, submit |
+| DL-1 | portal durumu ve kendi kayıtlarını okuma, oluşturma | v1 scope — the supplier's own submissions for internal use only, Replay receipt, Owned Objects, Entity Fields, Runtime Constraints, Validation Rules, Failure Path to Verify, Authorization Convention |
+| DL-2 | gönderim (DRAFT → SUBMITTED) ve değişmezlik | Transaction outbox and delivery, Failure Path to Verify, Audited Events |
+
+DL-1: durum, kendi listesi ve kaydı, oluşturma, D2 uygunluk eşlemesi ve servis kimliği (§0.0), v1 eşlemesi (§14). DL-2:
+gönderim (submit) ve değişmezlik, denetim (§21).
 
 DC-03 bağlaması (Beste, ayrı Auth/Platform paketi), iç inceleme komutu (sözleşme halefi) ve tedarikçi ekranı (portal alt
 alanı, 7 dil) bu paketin dilimi **değildir**: ilki dış kapıdır, diğer ikisi ayrı bir paket revizyonu ve onayıyla gelir.

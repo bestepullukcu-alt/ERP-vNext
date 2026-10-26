@@ -28,7 +28,9 @@ form_field_count: 0
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
 > master owner (domain `procurement`). Placement grants no runtime, contract, gateway or permission ownership.
 
-## 0.0 v1 scope — performance scorecard now, risk after TPRM (owner decision 2026-10-22) — revision draft
+## 0.0 v1 scope — performance scorecard now and risk after TPRM
+
+Owner decision 2026-10-22 — revision draft.
 
 > `docs/records/decisions/2026-10/mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md` (Natig). **Draft revision —
 > not approved**; needs CT-APR-02 and a new CT-APR-01 row (high risk: first product code). Where this section and an older
@@ -199,7 +201,9 @@ Derived acceptance examples (from the proposed policy; they become acceptance ex
 | 60 × 60, 39.9999 × 40 | 51.99996 | 52.00 | HIGH (weights sum to 100 — a valid input, not a negative case) |
 | 50.12345 × 100 | — | — | 422 (five fractional digits) |
 
-### 0.4 v1 fixed metric set — DECIDED (Natig, 2026-10-21) — revision draft
+### 0.4 v1 fixed metric set
+
+DECIDED (Natig, 2026-10-21) — revision draft.
 
 > Source: `docs/records/decisions/2026-10/mvp6-mod0147-v1-metric-set-owner-decision-2026-10-21.md`. Timing changed on
 > 2026-10-22 (`mvp6-mod0147-v1-scorecard-split-owner-decision-2026-10-22.md`): v1 (this scorecard) starts now; only the risk
@@ -258,7 +262,9 @@ Acceptance examples of the decided rules (in addition to §0.1's):
     A foreign-scope target is reported as 422 without disclosing that it exists.
   - The field is not in v1 — contract successor (CT contract writer); until then no correction path exists.
 
-### 0.3 Transaction, outbox and delivery — ÖNERİLEN (SPEC-DELTA "Failure, isolation and atomicity targets")
+### 0.3 Transaction outbox and delivery
+
+ÖNERİLEN (SPEC-DELTA "Failure, isolation and atomicity targets").
 
 - One MongoDB multi-document transaction commits business state, idempotency receipt, audit record and Pending outbox
   item; no compensation path. Replay adds no state, version or event.
@@ -504,8 +510,11 @@ any module-local trail.)
 
 | dilim | ad | kapsadığı bölümler |
 |---|---|---|
-| DL-1 | değerlendirme çekirdeği ve okumalar | §0.0, §0.4, §3 (değerlendirme/scorecard), §4 SupplierEvaluation/Scorecard, §12, §13 (oluşturma), §14 (v1 eşlemesi), dört GET |
-| DL-2 | gönderim, yayın ve değişmezlik | §0.3, §8, §13 (gönderim), §21 (değerlendirme komutları), submit |
+| DL-1 | değerlendirme çekirdeği ve okumalar | v1 scope — performance scorecard now and risk after TPRM, v1 fixed metric set, Owned Objects, SupplierEvaluation / SupplierScorecard, Validation Rules, Failure Path to Verify, Authorization Convention |
+| DL-2 | gönderim, yayın ve değişmezlik | Transaction outbox and delivery, Runtime Constraints, Failure Path to Verify, Audited Events |
+
+DL-1: oluşturma, dört GET, D2 uygunluk okuması (§0.0), v1 eşlemesi (§14). DL-2: gönderim (submit), yayın ve değişmezlik,
+değerlendirme komutlarının denetimi (§21).
 
 v1 dışı işler (v1.1 hesaplanan metrikler — okuma sözleşmeleri ve XMC-001; risk kısmı — MOD-0216 TPRM ve DC-05) bu sürümde dilim
 **değildir**; ayrı bir paket revizyonu ve onayıyla gelir. CT-APR-01 satırının not alanı: "yalnız DL-1, DL-2".
