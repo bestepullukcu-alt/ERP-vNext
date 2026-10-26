@@ -40,7 +40,7 @@ public sealed class AuthInternalClientsRedirectTests
     [MemberData(nameof(Callers))]
     public async Task A_redirect_answer_is_never_followed_with_the_credential(string caller)
     {
-        await using var server = new RedirectingServer();
+        await using var server = await RedirectingServer.StartAsync();
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddMemoryCache();
@@ -114,38 +114,59 @@ public sealed class AuthInternalClientsRedirectTests
         private int _first;
         private int _trapped;
 
-        public RedirectingServer()
+        private RedirectingServer(WebApplication app) => _app = app;
+
+        public string Url { get; private set; } = "";
+        public int First => Volatile.Read(ref _first);
+        public int Trapped => Volatile.Read(ref _trapped);
+
+        public static async Task<RedirectingServer> StartAsync()
         {
             var builder = WebApplication.CreateSlimBuilder();
             builder.WebHost.UseUrls("http://127.0.0.1:0");
             builder.Logging.ClearProviders();
-            _app = builder.Build();
-            _app.Run(async context =>
+            var app = builder.Build();
+            var server = new RedirectingServer(app);
+            app.Run(server.AnswerAsync);
+            try
             {
-                if (context.Request.Path.StartsWithSegments("/trap"))
-                {
-                    Interlocked.Increment(ref _trapped);
-                    context.Response.StatusCode = 200;
-                }
-                else
-                {
-                    Interlocked.Increment(ref _first);
-                    context.Response.StatusCode = 302;
-                    context.Response.Headers.Location = Url + "/trap";
-                }
-
-                context.Response.ContentType = "application/json";
-                await context.Response.WriteAsync("{}");
-            });
-            _app.StartAsync().GetAwaiter().GetResult();
-            Url = _app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single().TrimEnd('/');
+                await app.StartAsync();
+                server.Url = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()?.Addresses
+                    .FirstOrDefault()?.TrimEnd('/')
+                    ?? throw new InvalidOperationException("The redirecting server did not report a bound address.");
+                return server;
+            }
+            catch
+            {
+                await app.DisposeAsync();
+                throw;
+            }
         }
 
-        public string Url { get; } = "";
-        public int First => Volatile.Read(ref _first);
-        public int Trapped => Volatile.Read(ref _trapped);
+        private async Task AnswerAsync(HttpContext context)
+        {
+            if (context.Request.Path.StartsWithSegments("/trap"))
+            {
+                Interlocked.Increment(ref _trapped);
+                context.Response.StatusCode = 200;
+            }
+            else
+            {
+                Interlocked.Increment(ref _first);
+                context.Response.StatusCode = 302;
+                context.Response.Headers.Location = Url + "/trap";
+            }
 
-        public ValueTask DisposeAsync() => _app.DisposeAsync();
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync("{}");
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            using var stopping = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            await _app.StopAsync(stopping.Token);
+            await _app.DisposeAsync();
+        }
     }
 
     private sealed class NothingMediator : IMediator
