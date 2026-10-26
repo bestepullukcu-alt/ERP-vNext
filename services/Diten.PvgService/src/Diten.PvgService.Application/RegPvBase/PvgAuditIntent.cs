@@ -8,4 +8,5 @@ public sealed record PvgAuditIntent(
     string RequiredPermission,
     string ActorKind,
     bool HasCorrelation,
-    DateTimeOffset AcceptedAtUtc);
+    DateTimeOffset AcceptedAtUtc,
+    IReadOnlyList<PvgIntakeField> ChangedFields);
